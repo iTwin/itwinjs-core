@@ -6,7 +6,6 @@ parameters:
 steps:
 - script: node common/scripts/install-run-rush.js publish --publish --pack --include-all
   displayName: rush publish pack
-  condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'))
   workingDirectory: ${{ parameters.workingDir }}
 
 - task: PythonScript@0
@@ -114,11 +113,9 @@ steps:
        print ("All packages are up-to-date.")
 
     arguments: '$(Build.ArtifactStagingDirectory) $(Build.SourcesDirectory) $(Build.SourceBranch)'
-  condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'))
 
 - task: PublishBuildArtifacts@1
   displayName: 'Publish Artifact: packages'
   inputs:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)/imodeljs/packages'
     ArtifactName: packages
-  condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'))
