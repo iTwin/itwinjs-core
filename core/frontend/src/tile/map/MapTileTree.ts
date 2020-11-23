@@ -691,7 +691,7 @@ export class MapTileTreeReference extends TileTreeReference {
       return undefined;
 
     const worldPoint = hit.hitPoint.clone();
-    const cartoGraphic = backgroundMapGeometry.dbToCartographic(worldPoint);
+    const cartoGraphic = await backgroundMapGeometry.dbToCartographicFromGcs(worldPoint);
     const strings = [];
     const imageryTreeRef = this.imageryTreeFromTreeModelIds(hit.modelId, hit.sourceId);
     if (imageryTreeRef !== undefined) {

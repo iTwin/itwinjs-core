@@ -1300,6 +1300,16 @@ export abstract class ViewState3d extends ViewState {
     return backgroundMapGeometry ? backgroundMapGeometry.cartographicToDb(cartographic, result) : undefined;
   }
 
+  public async rootToCartographicFromGcs(root: XYAndZ, result?: Cartographic): Promise<Cartographic | undefined> {
+    const backgroundMapGeometry = this.displayStyle.getBackgroundMapGeometry();
+    return backgroundMapGeometry ? backgroundMapGeometry.dbToCartographicFromGcs(root, result) : undefined;
+  }
+
+  public async cartographicToRootFromGcs(cartographic: Cartographic, result?: Point3d): Promise<Point3d | undefined> {
+    const backgroundMapGeometry = this.displayStyle.getBackgroundMapGeometry();
+    return backgroundMapGeometry ? backgroundMapGeometry.cartographicToDbFromGcs(cartographic, result) : undefined;
+  }
+
   public setupFromFrustum(frustum: Frustum, opts?: ViewChangeOptions): ViewStatus {
     const stat = super.setupFromFrustum(frustum, opts);
     if (ViewStatus.Success !== stat)

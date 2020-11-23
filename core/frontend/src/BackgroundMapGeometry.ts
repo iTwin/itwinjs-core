@@ -76,15 +76,13 @@ export class BackgroundMapGeometry {
     return BackgroundMapGeometry.getCartesianRange(iModel, scratchRange).diagonal().magnitudeXY() * BackgroundMapGeometry._transitionDistanceMultiplier;
   }
 
+  public async dbToCartographicFromGcs(db: XYAndZ, result?: Cartographic): Promise<Cartographic> {
+    return this.cartesianRange.containsPoint(Point3d.createFrom(db)) ? this._iModel.spatialToCartographic(db, result) : this.dbToCartographic(db, result);
+  }
+
   public dbToCartographic(db: XYAndZ, result?: Cartographic): Cartographic {
     if (undefined === result)
       result = Cartographic.fromRadians(0, 0, 0);
-
-    if (this.cartesianRange.containsPoint(Point3d.createFrom(db))) {
-      (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
-        return await this._iModel.spatialToCartographic(db);
-      })().catch(() => { });
-    }
 
     if (this.globeMode === GlobeMode.Plane) {
       const mercatorFraction = this._mercatorFractionToDb.multiplyInversePoint3d(db)!;
@@ -95,7 +93,7 @@ export class BackgroundMapGeometry {
     }
   }
 
-  public cartographicToDb(cartographic: Cartographic, result?: Point3d): Point3d {
+  public async cartographicToDbFromGcs(cartographic: Cartographic, result?: Point3d): Promise<Point3d> {
     let db;
     if (this.globeMode === GlobeMode.Plane) {
       const fraction = Point2d.create(0, 0);
@@ -104,13 +102,16 @@ export class BackgroundMapGeometry {
     } else {
       db = this._ecefToDb.multiplyPoint3d(cartographic.toEcef())!;
     }
-    if (this.cartesianRange.containsPoint(db)) {
-      (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
-        db = await this._iModel.cartographicToSpatialFromGcs(cartographic);
-      })().catch(() => { })
+    return this.cartesianRange.containsPoint(db) ? await this._iModel.cartographicToSpatialFromGcs(cartographic) : db;
+  }
+  public cartographicToDb(cartographic: Cartographic, result?: Point3d): Point3d {
+    if (this.globeMode === GlobeMode.Plane) {
+      const fraction = Point2d.create(0, 0);
+      this._mercatorTilingScheme.cartographicToFraction(cartographic.latitude, cartographic.longitude, fraction);
+      return this._mercatorFractionToDb.multiplyXYZ(fraction.x, fraction.y, cartographic.height, result);
+    } else {
+      return this._ecefToDb.multiplyPoint3d(cartographic.toEcef())!;
     }
-    return db;
-
   }
 
   public getEarthEllipsoid(radiusOffset = 0): Ellipsoid {
