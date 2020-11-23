@@ -1,6 +1,11 @@
 # Change Log - @bentley/imodeljs-i18n
 
-This log was last generated on Mon, 23 Nov 2020 15:33:50 GMT and should not be manually modified.
+This log was last generated on Mon, 23 Nov 2020 20:57:56 GMT and should not be manually modified.
+
+## 2.9.3
+Mon, 23 Nov 2020 20:57:56 GMT
+
+_Version update only_
 
 ## 2.9.2
 Mon, 23 Nov 2020 15:33:50 GMT
