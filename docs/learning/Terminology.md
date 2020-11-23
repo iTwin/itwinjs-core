@@ -38,6 +38,7 @@ Properties are considered similar if:
 
 - Names are equal
 - Types are equal
+- Renderers are equal
 - Editors are equal
 - For [related properties](#related-properties) only: related to the same property
 
@@ -50,19 +51,19 @@ case where we may request content for multiple selected elements.
 
 Example of merged values:
 
-Row       |    Field 1    |         Field 2        |         Field 1        |
-----------|---------------|------------------------|------------------------|
-row 1     |   has value   |        has value       |            -           |
-row 2     |   has value   |           -            |        has value       |
-**Result**| **has value** | **\*\*\*Varies\*\*\*** | **\*\*\*Varies\*\*\*** |
+| Row        | Field 1       | Field 2                | Field 1                |
+| ---------- | ------------- | ---------------------- | ---------------------- |
+| row 1      | has value     | has value              | -                      |
+| row 2      | has value     | -                      | has value              |
+| **Result** | **has value** | **\*\*\*Varies\*\*\*** | **\*\*\*Varies\*\*\*** |
 
 The above example would render into a similar property grid:
 
-Field       | Value               |
-------------|---------------------|
-**Field 1** | has value           |
-**Field 2** | \*\*\*Varies\*\*\*  |
-**Field 3** | \*\*\*Varies\*\*\*  |
+| Field       | Value              |
+| ----------- | ------------------ |
+| **Field 1** | has value          |
+| **Field 2** | \*\*\*Varies\*\*\* |
+| **Field 3** | \*\*\*Varies\*\*\* |
 
 ## Nested Content
 
@@ -73,7 +74,7 @@ nested content.
 
 Example:
 
-```
+```text
            Model
           /  |  \
          /   |   \
