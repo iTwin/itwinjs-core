@@ -110,6 +110,9 @@ let iModelJsCss: string | undefined = `
 
 // add the iModel.js frontend .css styles into DOM head when we load
 (() => {
+  // Skip adding the css to document if document does not exist.
+  if ("undefined" === typeof document)
+    return;
   const style = document.createElement("style");
   style.appendChild(document.createTextNode(iModelJsCss.replace(/\s+/gm, " "))); // strips multiple spaces and space+\r
   const openSans = document.createElement("link");

@@ -31,7 +31,7 @@ export interface IModelElectronApi extends IModelElectronIpc {
  * @note Frontend use only.
  * @see @bentley/electron-manager/ElectronPreload.ts
  * @internal */
-export const getIModelElectronApi = () => (window as any).imodeljs_api as IModelElectronApi | undefined;
+export const getIModelElectronApi = () => typeof window === "undefined" ? undefined : (window as any).imodeljs_api as IModelElectronApi | undefined;
 
 /** Initialization parameters for ElectronRpcConfiguration.
  * @beta
