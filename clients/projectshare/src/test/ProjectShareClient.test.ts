@@ -59,7 +59,7 @@ describe("ProjectShareClient (#integration)", () => {
     chai.assert.isNotNull(res1);
   });
 
-  it("should be able to query folders with different options", async () => {
+  it.skip("should be able to query folders with different options", async () => {
     // inRootFolder
     let folders: ProjectShareFolder[] = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inRootFolder(projectId));
     chai.assert.strictEqual(2, folders.length);
@@ -105,7 +105,7 @@ describe("ProjectShareClient (#integration)", () => {
     chai.assert.strictEqual(3, folders.length);
   });
 
-  it("should be able to query files with different options", async () => {
+  it.skip("should be able to query files with different options", async () => {
     const folder360Images = (await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inRootFolder(projectId)))[0];
     const subFolders = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inFolder(folder360Images.wsgId));
     const folder2A = subFolders[0];
@@ -153,7 +153,7 @@ describe("ProjectShareClient (#integration)", () => {
     return file.customProperties.find((customProp: any) => customProp.Name === name);
   }
 
-  it("should be able to CRUD custom properties", async () => {
+  it.skip("should be able to CRUD custom properties", async () => {
     const firstImageFile = (await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFileQuery().startsWithPathAndNameLike(projectId, "360-Images/2A", "2A_v0410470")))[0];
 
     // Create custom properties and validate returned file
