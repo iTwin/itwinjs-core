@@ -29,7 +29,7 @@ export class IModeljsLibraryExportsPlugin {
     compiler.hooks.compilation.tap("IModeljsLibraryExportsPlugin", (compilation) => {
       compilation.moduleTemplates.javascript.hooks.content.tap("IModeljsLibraryExportsPlugin", (source, module) => {
         let currentModule = module;
-        // check for a rootModule (for concatenated and lazily loaded modules)
+        // check for a rootModule (for concatenated and/or lazily loaded modules)
         if (!currentModule.___IS_BENTLEY && currentModule.rootModule && currentModule.rootModule.___IS_BENTLEY) {
             currentModule.rootModule.id = currentModule.id;
             currentModule = currentModule.rootModule;
