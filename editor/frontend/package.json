@@ -1,9 +1,9 @@
 {
-  "name": "@bentley/imodeljs-frontend",
+  "name": "@bentley/imodeljs-editor-frontend",
   "version": "2.10.0-dev.13",
   "description": "iModel.js frontend components",
-  "main": "lib/imodeljs-frontend.js",
-  "typings": "lib/imodeljs-frontend",
+  "main": "lib/imodeljs-editor-frontend.js",
+  "typings": "lib/imodeljs-editor-frontend",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {
@@ -11,8 +11,8 @@
     "build": "npm run copy:assets && npm run pseudolocalize && tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:assets": "cpx ./src/loader/checkbrowser.js ./lib/loader && cpx \"./src/public/**/*\" ./lib/public",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-frontend/file.json --tsIndexFile=./imodeljs-frontend.ts --onlyJson --excludes=webgl/**/*,**/primitives --excludeGlob=**/*-css.ts",
-    "extract-api": "betools extract-api --entry=imodeljs-frontend",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/editor/imodeljs-editor-frontend/file.json --tsIndexFile=./imodeljs-editor-frontend.ts --onlyJson --excludes=webgl/**/*,**/primitives --excludeGlob=**/*-css.ts",
+    "extract-api": "betools extract-api --entry=imodeljs-editor-frontend",
     "lint": "eslint -f visualstudio --max-warnings 0 ./src/**/*.ts 1>&2",
     "pseudolocalize": "betools pseudolocalize --englishDir ./src/public/locales/en --out ./lib/public/locales/en-PSEUDO",
     "test": "npm run webpackTests && certa -r chrome",
@@ -22,7 +22,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/frontend"
+    "url": "https://github.com/imodeljs/imodeljs/tree/master/editor/frontend"
   },
   "keywords": [
     "Bentley",
@@ -37,19 +37,8 @@
   },
   "peerDependencies": {
     "@bentley/bentleyjs-core": "^2.10.0-dev.13",
-    "@bentley/frontend-authorization-client": "^2.10.0-dev.13",
-    "@bentley/geometry-core": "^2.10.0-dev.13",
-    "@bentley/imodelhub-client": "^2.10.0-dev.13",
     "@bentley/imodeljs-common": "^2.10.0-dev.13",
-    "@bentley/imodeljs-i18n": "^2.10.0-dev.13",
-    "@bentley/imodeljs-quantity": "^2.10.0-dev.13",
-    "@bentley/itwin-client": "^2.10.0-dev.13",
-    "@bentley/orbitgt-core": "^2.10.0-dev.13",
-    "@bentley/product-settings-client": "^2.10.0-dev.13",
-    "@bentley/rbac-client": "^2.10.0-dev.13",
-    "@bentley/telemetry-client": "^2.10.0-dev.13",
-    "@bentley/ui-abstract": "^2.10.0-dev.13",
-    "@bentley/webgl-compatibility": "^2.10.0-dev.13"
+    "@bentley/imodeljs-i18n": "^2.10.0-dev.13"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -60,21 +49,9 @@
     "@bentley/build-tools": "2.10.0-dev.13",
     "@bentley/certa": "2.10.0-dev.13",
     "@bentley/eslint-plugin": "2.10.0-dev.13",
-    "@bentley/frontend-authorization-client": "2.10.0-dev.13",
-    "@bentley/geometry-core": "2.10.0-dev.13",
-    "@bentley/imodelhub-client": "2.10.0-dev.13",
     "@bentley/imodeljs-common": "2.10.0-dev.13",
     "@bentley/imodeljs-i18n": "2.10.0-dev.13",
-    "@bentley/imodeljs-quantity": "2.10.0-dev.13",
-    "@bentley/itwin-client": "2.10.0-dev.13",
-    "@bentley/orbitgt-core": "2.10.0-dev.13",
-    "@bentley/product-settings-client": "2.10.0-dev.13",
-    "@bentley/rbac-client": "2.10.0-dev.13",
-    "@bentley/telemetry-client": "2.10.0-dev.13",
-    "@bentley/ui-abstract": "2.10.0-dev.13",
-    "@bentley/webgl-compatibility": "2.10.0-dev.13",
     "@types/chai": "^4.1.4",
-    "@types/js-base64": "^2.3.1",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
     "@types/semver": "^5.5.0",
@@ -91,20 +68,10 @@
   },
   "//dependencies": [
     "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API",
-    "NOTE: imodeljs-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
+    "NOTE: imodeljs-editor-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
-    "@azure/storage-blob": "10.4.0",
-    "@bentley/context-registry-client": "2.10.0-dev.13",
-    "@bentley/extension-client": "2.10.0-dev.13",
-    "@bentley/reality-data-client": "2.10.0-dev.13",
-    "@bentley/usage-logging-client": "2.10.0-dev.13",
-    "fuse.js": "^3.3.0",
-    "js-base64": "^2.4.5",
-    "ldclient-js": "^2.6.0",
-    "oidc-client": "^1.9.1",
-    "semver": "^5.5.0",
-    "wms-capabilities": "0.4.0"
+    "@bentley/imodeljs-frontend": "2.10.0-dev.13"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"

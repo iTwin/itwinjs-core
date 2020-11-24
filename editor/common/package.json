@@ -1,24 +1,24 @@
 {
-  "name": "@bentley/imodeljs-common",
+  "name": "@bentley/imodeljs-editor-common",
   "version": "2.10.0-dev.13",
-  "description": "iModel.js components common to frontend and backend",
-  "main": "lib/imodeljs-common.js",
-  "typings": "lib/imodeljs-common",
+  "description": "iModel.js editing properties common to frontend and backend",
+  "main": "lib/imodeljs-editor-common.js",
+  "typings": "lib/imodeljs-editor-common",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {
     "compile": "npm run build",
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-common/file.json --tsIndexFile=./imodeljs-common.ts --onlyJson",
-    "extract-api": "betools extract-api --entry=imodeljs-common",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/editor/imodeljs-editor-common/file.json --tsIndexFile=./imodeljs-editor-common.ts --onlyJson",
+    "extract-api": "betools extract-api --entry=imodeljs-editor-common",
     "lint": "eslint -f visualstudio --max-warnings 0 ./src/**/*.ts 1>&2",
     "test": "betools test",
     "cover": "nyc npm test"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/common"
+    "url": "https://github.com/imodeljs/imodeljs/tree/master/editor/common"
   },
   "keywords": [
     "Bentley",
@@ -31,35 +31,20 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
-  "dependencies": {
-    "@types/js-base64": "^2.3.1",
-    "@ungap/url-search-params": "^0.1.2",
-    "flatbuffers": "~1.12.0",
-    "semver": "^5.5.0"
-  },
+  "dependencies": {},
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.10.0-dev.13",
-    "@bentley/geometry-core": "^2.10.0-dev.13",
-    "@bentley/imodelhub-client": "^2.10.0-dev.13",
-    "@bentley/itwin-client": "^2.10.0-dev.13",
-    "@bentley/rbac-client": "^2.10.0-dev.13"
+    "@bentley/bentleyjs-core": "^2.10.0-dev.13"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "2.10.0-dev.13",
     "@bentley/build-tools": "2.10.0-dev.13",
     "@bentley/eslint-plugin": "2.10.0-dev.13",
-    "@bentley/geometry-core": "2.10.0-dev.13",
-    "@bentley/imodelhub-client": "2.10.0-dev.13",
-    "@bentley/itwin-client": "2.10.0-dev.13",
-    "@bentley/rbac-client": "2.10.0-dev.13",
     "@types/chai": "^4.1.4",
-    "@types/flatbuffers": "~1.10.0",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
     "@types/semver": "^5.5.0",
     "chai": "^4.1.2",
     "eslint": "^6.8.0",
-    "js-base64": "^2.4.5",
     "mocha": "^5.2.0",
     "rimraf": "^3.0.2",
     "ts-node": "^7.0.1",
