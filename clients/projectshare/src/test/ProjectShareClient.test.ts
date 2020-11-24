@@ -213,6 +213,7 @@ describe("ProjectShareClient (#integration)", () => {
 
   // folder remove
   it("should be able to create and permanent delete a folder", async () => {
+    // arrange
     const testFolder = new ProjectShareFolder();
     testFolder.name = `${Guid.createValue()}_testFolder`;
     const createdFolder: ProjectShareFolder = await projectShareClient.createFolder(requestContext, projectId, projectId, testFolder); // Create a folder
@@ -220,14 +221,17 @@ describe("ProjectShareClient (#integration)", () => {
     chai.assert.strictEqual(1, folders.length);
     chai.assert.strictEqual(folders[0].name, createdFolder.name);
 
+    // act
     const res = await projectShareClient.deleteFolder(requestContext, projectId, createdFolder.wsgId); // Permanent deleting Folder.
-    chai.assert.isUndefined(res);
 
+    // assert
+    chai.assert.isUndefined(res);
     const foldersAfterDelete = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().startsWithPathAndNameLike(projectId, "/", testFolder.name)); // assert folders amount after delete
     chai.assert.strictEqual(foldersAfterDelete.length, 0);
   })
 
   it("should be able to create folder and send it to recycle bin", async () => {
+    // arrange
     const testFolder = new ProjectShareFolder();
     testFolder.name = `${Guid.createValue()}_testFolder`;
     const createdfolder: ProjectShareFolder = await projectShareClient.createFolder(requestContext, projectId, projectId, testFolder); // Create a folder
@@ -235,8 +239,10 @@ describe("ProjectShareClient (#integration)", () => {
     chai.assert.strictEqual(1, folders.length);
     chai.assert.strictEqual(folders[0].name, createdfolder.name);
 
+    // act
     await projectShareClient.deleteFolder(requestContext, projectId, createdfolder.wsgId, RecycleOption.SendToRecycleBin); // Move folder, to recycle bin.
 
+    // assert
     const foldersAfterDelete = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().startsWithPathAndNameLike(projectId, "/", testFolder.name)); // assert folders amount after delete
     chai.assert.strictEqual(foldersAfterDelete.length, 0);
   })
@@ -366,7 +372,7 @@ describe("ProjectShareClient (#integration)", () => {
   })
 
   // file remove
-  it("should be able to upload a file and permanent delete it", async () => {
+  it("should be able to permanent delete file", async () => {
     // arrange
     const FoldersInRootFolder = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inRootFolder(projectId));
     await CreateFoldersWithFiles(projectShareClient, requestContext, projectId, FoldersInRootFolder[0].wsgId);
@@ -385,12 +391,16 @@ describe("ProjectShareClient (#integration)", () => {
     const dataA = { name: "John", age: 30, city: "New York" };
     const changedFileA = await projectShareClient.uploadContentInFile(requestContext, projectId, fileA, JSON.stringify(dataA)); // upload content into file
     chai.assert.equal(changedFileA.fileExists, true);
+
+    // act
     const resA = await projectShareClient.deleteFile(requestContext, projectId, fileA.wsgId); // Permanent deleting File.
+
+    // assert
     chai.assert.isUndefined(resA);
 
   });
 
-  it("should be able to upload a file and send it to recycle bin", async () => {
+  it("should be able to send file to recycle bin", async () => {
     const FoldersInRootFolder = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inRootFolder(projectId));
     await CreateFoldersWithFiles(projectShareClient, requestContext, projectId, FoldersInRootFolder[0].wsgId)
 
@@ -409,7 +419,11 @@ describe("ProjectShareClient (#integration)", () => {
     const dataB = { name: "xyz", age: 31, city: "aus" };
     const changedFileB = await projectShareClient.uploadContentInFile(requestContext, projectId, fileB, JSON.stringify(dataB));
     chai.assert.equal(changedFileB.fileExists, true);
+
+    // act
     const resB = await projectShareClient.deleteFile(requestContext, projectId, fileB.wsgId, RecycleOption.SendToRecycleBin); // file move to recycleBin.
+
+    // assert
     chai.assert.isNotNull(resB);
   });
 
