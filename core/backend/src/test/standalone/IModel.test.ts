@@ -1722,7 +1722,7 @@ describe("iModel", () => {
     iModel.close();
   });
 
-  it.only("should be able to open checkpoints", async () => {
+  it("should be able to open checkpoints", async () => {
     // Just create an empty snapshot, and we'll use that as our fake "checkpoint" (so it opens)
     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint.bim");
     const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
