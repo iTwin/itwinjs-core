@@ -30,9 +30,9 @@ The tools affected are:
 
 The [ViewGlobeLocationTool]($frontend) has been further improved to navigate better across long distances when using plane mode.
 
-There is now a method called 'lookAtGlobalLocationFromGcs' on [ViewState3d]($frontend). This method behaves exactly like 'lookAtGlobalLocation' except that is async and uses the GCS to reproject the location.
+There is now a method called `lookAtGlobalLocationFromGcs` on [ViewState3d]($frontend). This method behaves exactly like 'lookAtGlobalLocation' except that is async and uses the GCS to reproject the location.
 
 [ViewState3d]($frontend) also has GCS versions of these methods:
 
-* 'rootToCartographicFromGcs' behaves like 'rootToCartographic' except it is async and uses the GCS to reproject the location.
-* 'cartographicToRootFromGcs' behaves like 'cartographicToRoot' except it is async and uses the GCS to reproject the location.
+* `rootToCartographicFromGcs` behaves like `rootToCartographic` except it is async and uses the GCS to reproject the location.
+* `cartographicToRootFromGcs` behaves like `cartographicToRoot` except it is async and uses the GCS to reproject the location.
