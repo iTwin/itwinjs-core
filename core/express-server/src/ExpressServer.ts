@@ -7,6 +7,14 @@ import { Server as HttpServer } from "http";
 import { BentleyCloudRpcConfiguration, RpcConfiguration, WebAppRpcProtocol } from "@bentley/imodeljs-common";
 
 /**
+ * Options for configuring IModelJsExpressServer.
+ * @public
+ */
+export interface IModelJsExpressServerConfig {
+  uploadLimit: string;
+}
+
+/**
  * An express web server with some reasonable defaults for web applications built with @bentley/webpack-tools.
  * @note This server is not designed to be a hardened, secure endpoint on the public internet.
  *       It is intended to participate in a private HTTP exchange with a public-facing routing and provisioning infrastructure
@@ -14,23 +22,26 @@ import { BentleyCloudRpcConfiguration, RpcConfiguration, WebAppRpcProtocol } fro
  * @public
  */
 export class IModelJsExpressServer {
-  public static defaults = {
+  /** The default configuration for servers. */
+  public static readonly defaults: IModelJsExpressServerConfig = {
     uploadLimit: "5mb",
   };
 
   private _protocol: WebAppRpcProtocol;
+  private _config: IModelJsExpressServerConfig;
   protected _app: import("express").Application = express();
 
   /** @alpha */
   public get rpcConfiguration(): RpcConfiguration { return this._protocol.configuration; }
 
-  constructor(protocol: WebAppRpcProtocol) {
+  constructor(protocol: WebAppRpcProtocol, config = IModelJsExpressServer.defaults) {
     this._protocol = protocol;
+    this._config = config;
   }
 
   protected _configureMiddleware() {
-    this._app.use(express.text({ limit: IModelJsExpressServer.defaults.uploadLimit }));
-    this._app.use(express.raw({ limit: IModelJsExpressServer.defaults.uploadLimit }));
+    this._app.use(express.text({ limit: this._config.uploadLimit }));
+    this._app.use(express.raw({ limit: this._config.uploadLimit }));
   }
 
   protected _configureHeaders() {
