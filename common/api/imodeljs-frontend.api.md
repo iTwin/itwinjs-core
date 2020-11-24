@@ -1083,6 +1083,9 @@ export class ArcGisUtilities {
 // @internal
 export function areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): number;
 
+// @internal
+export function areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise<number>;
+
 // @public
 export class AuthorizedFrontendRequestContext extends AuthorizedClientRequestContext {
     constructor(accessToken: AccessToken, activityId?: string);
@@ -1185,7 +1188,7 @@ export class B3dmReader extends GltfReader {
 
 // @internal
 export class BackgroundMapGeometry {
-    constructor(_bimElevationBias: number, globeMode: GlobeMode, iModel: IModelConnection);
+    constructor(_bimElevationBias: number, globeMode: GlobeMode, _iModel: IModelConnection);
     // (undocumented)
     addFrustumDecorations(builder: GraphicBuilder, frustum: Frustum): void;
     // (undocumented)
@@ -1201,7 +1204,11 @@ export class BackgroundMapGeometry {
     // (undocumented)
     cartographicToDb(cartographic: Cartographic, result?: Point3d): Point3d;
     // (undocumented)
+    cartographicToDbFromGcs(cartographic: Cartographic, result?: Point3d): Promise<Point3d>;
+    // (undocumented)
     dbToCartographic(db: XYAndZ, result?: Cartographic): Cartographic;
+    // (undocumented)
+    dbToCartographicFromGcs(db: XYAndZ, result?: Cartographic): Promise<Cartographic>;
     // (undocumented)
     readonly geometry: Plane3dByOriginAndUnitNormal | Ellipsoid;
     // (undocumented)
@@ -2766,6 +2773,9 @@ export function extractImageSourceDimensions(source: ImageSource): Promise<Point
 
 // @internal
 export function eyeToCartographicOnGlobe(viewport: ScreenViewport, preserveHeight?: boolean): Cartographic | undefined;
+
+// @internal
+export function eyeToCartographicOnGlobeFromGcs(viewport: ScreenViewport, preserveHeight?: boolean): Promise<Cartographic | undefined>;
 
 // @alpha
 export class FeatureLogBatchClient {
@@ -7572,7 +7582,7 @@ export class ScreenViewport extends Viewport {
     // @internal (undocumented)
     addNewDiv(className: string, overflowHidden: boolean, z: number): HTMLDivElement;
     // @internal
-    animateFlyoverToGlobalLocation(destination: GlobalLocation): void;
+    animateFlyoverToGlobalLocation(destination: GlobalLocation): Promise<void>;
     // @internal (undocumented)
     animateFrustumChange(options?: ViewAnimationOptions): void;
     // @internal
@@ -11532,6 +11542,8 @@ export abstract class ViewState3d extends ViewState {
     protected _cameraOn: boolean;
     // (undocumented)
     cartographicToRoot(cartographic: Cartographic, result?: Point3d): Point3d | undefined;
+    // (undocumented)
+    cartographicToRootFromGcs(cartographic: Cartographic, result?: Point3d): Promise<Point3d | undefined>;
     centerEyePoint(backDistance?: number): void;
     centerFocusDistance(): void;
     // @internal
@@ -11593,6 +11605,8 @@ export abstract class ViewState3d extends ViewState {
     lookAt(eyePoint: XYAndZ, targetPoint: XYAndZ, upVector: Vector3d, newExtents?: XAndY, frontDistance?: number, backDistance?: number, opts?: ViewChangeOptions): ViewStatus;
     // @alpha
     lookAtGlobalLocation(eyeHeight: number, pitchAngleRadians?: number, location?: GlobalLocation, eyePoint?: Point3d): number;
+    // @alpha
+    lookAtGlobalLocationFromGcs(eyeHeight: number, pitchAngleRadians?: number, location?: GlobalLocation, eyePoint?: Point3d): Promise<number>;
     lookAtUsingLensAngle(eyePoint: Point3d, targetPoint: Point3d, upVector: Vector3d, fov: Angle, frontDistance?: number, backDistance?: number, opts?: ViewChangeOptions): ViewStatus;
     // (undocumented)
     minimumFrontDistance(): number;
@@ -11603,6 +11617,8 @@ export abstract class ViewState3d extends ViewState {
     readonly origin: Point3d;
     // (undocumented)
     rootToCartographic(root: XYAndZ, result?: Cartographic): Cartographic | undefined;
+    // (undocumented)
+    rootToCartographicFromGcs(root: XYAndZ, result?: Cartographic): Promise<Cartographic | undefined>;
     rotateCameraLocal(angle: Angle, axis: Vector3d, aboutPt?: Point3d): ViewStatus;
     rotateCameraWorld(angle: Angle, axis: Vector3d, aboutPt?: Point3d): ViewStatus;
     readonly rotation: Matrix3d;

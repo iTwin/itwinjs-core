@@ -24,7 +24,7 @@ import { GraphicType } from "../render/GraphicBuilder";
 import { StandardViewId } from "../StandardView";
 import { DecorateContext } from "../ViewContext";
 import {
-  eyeToCartographicOnGlobe, GlobalLocation, queryTerrainElevationOffset, rangeToCartographicArea, viewGlobalLocation, ViewGlobalLocationConstants,
+  eyeToCartographicOnGlobeFromGcs, GlobalLocation, queryTerrainElevationOffset, rangeToCartographicArea, viewGlobalLocation, ViewGlobalLocationConstants,
 } from "../ViewGlobalLocation";
 import { Animator, CoordSystem, DepthPointSource, ScreenViewport, ViewChangeOptions, Viewport } from "../Viewport";
 import { ViewRect } from "../ViewRect";
@@ -3182,8 +3182,8 @@ export class ViewGlobeSatelliteTool extends ViewTool {
       this._beginSatelliteView(viewport, this.oneShot, this.doAnimate);
   }
 
-  private _beginSatelliteView(viewport: ScreenViewport, oneShot: boolean, doAnimate = true): boolean {
-    const carto = eyeToCartographicOnGlobe(viewport);
+  private async _beginSatelliteView(viewport: ScreenViewport, oneShot: boolean, doAnimate = true): Promise<boolean> {
+    const carto = await eyeToCartographicOnGlobeFromGcs(viewport);
     if (carto !== undefined) {
       (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
         let elevationOffset = 0;
@@ -3233,8 +3233,8 @@ export class ViewGlobeBirdTool extends ViewTool {
       this._beginDoBirdView(viewport, this.oneShot, this.doAnimate);
   }
 
-  private _beginDoBirdView(viewport: ScreenViewport, oneShot: boolean, doAnimate = true): boolean {
-    const carto = eyeToCartographicOnGlobe(viewport);
+  private async _beginDoBirdView(viewport: ScreenViewport, oneShot: boolean, doAnimate = true): Promise<boolean> {
+    const carto = await eyeToCartographicOnGlobeFromGcs(viewport);
     if (carto !== undefined) {
       (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
         let elevationOffset = 0;

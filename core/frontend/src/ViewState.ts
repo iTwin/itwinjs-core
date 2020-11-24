@@ -34,7 +34,7 @@ import { RenderScheduleState } from "./RenderScheduleState";
 import { StandardView, StandardViewId } from "./StandardView";
 import { addAnimatedTileTreeReferences, TileTreeReference, TileTreeSet } from "./tile/internal";
 import { DecorateContext, SceneContext } from "./ViewContext";
-import { areaToEyeHeight, GlobalLocation } from "./ViewGlobalLocation";
+import { areaToEyeHeight, areaToEyeHeightFromGcs, GlobalLocation } from "./ViewGlobalLocation";
 import { ViewingSpace } from "./ViewingSpace";
 import { ViewChangeOptions, Viewport } from "./Viewport";
 
@@ -1271,6 +1271,52 @@ export abstract class ViewState3d extends ViewState {
 
     targetPointCartographic.latitude += 10.0;
     const northOfEyePoint = this.cartographicToRoot(targetPointCartographic)!;
+    let upVector = northOfEyePoint.unitVectorTo(lEyePoint)!;
+    if (this.globeMode === GlobeMode.Plane)
+      upVector = Vector3d.create(Math.abs(upVector.x), Math.abs(upVector.y), Math.abs(upVector.z));
+
+    if (0 !== pitchAngleRadians) {
+      const pitchAxis = upVector.unitCrossProduct(Vector3d.createStartEnd(targetPoint, lEyePoint));
+      if (undefined !== pitchAxis) {
+        const pitchMatrix = Matrix3d.createRotationAroundVector(pitchAxis, Angle.createRadians(pitchAngleRadians))!;
+        const pitchTransform = Transform.createFixedPointAndMatrix(targetPoint, pitchMatrix);
+        lEyePoint = pitchTransform.multiplyPoint3d(lEyePoint);
+        pitchMatrix.multiplyVector(upVector, upVector);
+      }
+    }
+
+    this.lookAtUsingLensAngle(lEyePoint, targetPoint, upVector, this.camera.getLensAngle());
+
+    return lEyePoint.distance(origEyePoint);
+  }
+
+  /** Look at a global location, placing the camera's eye at the specified eye height above a viewed location using the GCS.
+   *  If location is defined, its center position will be viewed using the specified eye height.
+   *  If location also has an area specified, the eye height will be adjusted to view the specified location based on that area.
+   *  Otherwise, this function views a point on the earth as if the current eye point was placed on the earth. If the eyePoint parameter is defined, instead this point will be placed on the earth and viewed.
+   *  Specify pitchAngleRadians to tilt the final view; this defaults to 0.
+   *  Returns the distance from original eye point to new eye point.
+   *  @alpha
+   */
+  public async lookAtGlobalLocationFromGcs(eyeHeight: number, pitchAngleRadians = 0, location?: GlobalLocation, eyePoint?: Point3d): Promise<number> {
+    if (!this.iModel.isGeoLocated)
+      return 0;
+
+    if (location !== undefined && location.area !== undefined)
+      eyeHeight = await areaToEyeHeightFromGcs(this, location.area, location.center.height);
+
+    const origEyePoint = eyePoint !== undefined ? eyePoint.clone() : this.getEyePoint().clone();
+
+    let targetPoint = origEyePoint;
+    const targetPointCartographic = location !== undefined ? location.center.clone() : this.rootToCartographic(targetPoint)!;
+    targetPointCartographic.height = 0.0;
+    targetPoint = (await this.cartographicToRootFromGcs(targetPointCartographic))!;
+
+    targetPointCartographic.height = eyeHeight;
+    let lEyePoint = (await this.cartographicToRootFromGcs(targetPointCartographic))!;
+
+    targetPointCartographic.latitude += 10.0;
+    const northOfEyePoint = (await this.cartographicToRootFromGcs(targetPointCartographic))!;
     let upVector = northOfEyePoint.unitVectorTo(lEyePoint)!;
     if (this.globeMode === GlobeMode.Plane)
       upVector = Vector3d.create(Math.abs(upVector.x), Math.abs(upVector.y), Math.abs(upVector.z));
