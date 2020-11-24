@@ -11598,9 +11598,7 @@ export abstract class ViewState3d extends ViewState {
     protected static calculateMaxDepth(delta: Vector3d, zVec: Vector3d): number;
     readonly camera: Camera;
     protected _cameraOn: boolean;
-    // (undocumented)
     cartographicToRoot(cartographic: Cartographic, result?: Point3d): Point3d | undefined;
-    // (undocumented)
     cartographicToRootFromGcs(cartographic: Cartographic, result?: Point3d): Promise<Point3d | undefined>;
     centerEyePoint(backDistance?: number): void;
     centerFocusDistance(): void;
@@ -11673,9 +11671,7 @@ export abstract class ViewState3d extends ViewState {
     // @deprecated
     onRenderFrame(_viewport: Viewport): void;
     readonly origin: Point3d;
-    // (undocumented)
     rootToCartographic(root: XYAndZ, result?: Cartographic): Cartographic | undefined;
-    // (undocumented)
     rootToCartographicFromGcs(root: XYAndZ, result?: Cartographic): Promise<Cartographic | undefined>;
     rotateCameraLocal(angle: Angle, axis: Vector3d, aboutPt?: Point3d): ViewStatus;
     rotateCameraWorld(angle: Angle, axis: Vector3d, aboutPt?: Point3d): ViewStatus;
