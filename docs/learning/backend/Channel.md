@@ -1,6 +1,6 @@
 # Channels
 
-A [ConcurrencyControlChannel]($backend) is a tree of elements. The root of the tree is called the channel "root" element. The tree includes the root and all of its child elements and sub-models, recursively. Channels do not nest.
+A "channel" is a tree of elements. The root of the tree is called the channel "root" element. The tree includes the root and all of its child elements and sub-models, recursively. Channels do not nest.
 
 To be a channel root, an element must have a [ChannelRootAspect]($backend). (Legacy iModel bridges/connectors mark their channel roots with a special JSON property.)
 
