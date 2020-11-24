@@ -95,7 +95,7 @@ export interface HorizontalCRSProps {
   /** The identifier of the geodetic datum as stored in the dictionary or the service database. */
   datumId?: string;
   /** The complete definition of the geodetic datum referred to by datumId. It can also be used if the datum is not stored
-   *  in either service or dictionary
+   *  in either service or dictionary.
    */
   datum?: GeodeticDatumProps;
   /** The identifier of the geodetic ellipsoid as stored in the dictionary or the service database. This property is exclusive
