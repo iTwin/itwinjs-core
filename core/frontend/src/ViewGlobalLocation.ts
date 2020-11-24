@@ -76,7 +76,8 @@ function _areaToEyeHeight(view3d: ViewState3d, ne?: Point3d, sw?: Point3d, offse
   if (ne === undefined || sw === undefined)
     return 0;
   const diagonal = ne.distance(sw);
-  return diagonal / Math.tan(view3d.camera.getLensAngle().radians / 2.0) + offset;
+  const td = Math.tan(view3d.camera.getLensAngle().radians / 2.0);
+  return 0 !== td ? diagonal / td + offset : offset;
 }
 
 /** Converts a cartographic area on the globe to an ideal eye height to view that area.
