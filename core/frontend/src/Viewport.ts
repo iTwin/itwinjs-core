@@ -776,6 +776,16 @@ class PerModelCategoryVisibilityOverrides extends SortedArray<PerModelCategoryVi
   }
 }
 
+/** @beta
+ * Options for OpenStreetMap building display
+ */
+export interface OsmBuildingDisplayOptions {
+  /**  If defined will turn the display of the OpenStreetMap buildings on or off by attaching or detaching the OSM reality model. */
+  onOff?: boolean;
+  /** If defined will apply appearance overrides to to the OpenStreetMap building reality model. Has no effect if the OSM reality model is not displayed. */
+  appearanceOverrides?: FeatureAppearance;
+}
+
 /** A Viewport renders the contents of one or more Models onto an `HTMLCanvasElement`.
  *
  * It holds a [[ViewState]] object that defines its viewing parameters. [[ViewTool]]s may
@@ -1331,13 +1341,30 @@ export abstract class Viewport implements IDisposable {
   }
 
   /** Obtain the override applied to a "contextual" reality model displayed in this viewport.
- * @param index The reality model index
- * @returns The corresponding FeatureAppearance, or undefined if the Model's appearance is not overridden.
- * @see [[overrideRealityModelAppearance]]
- * @beta
- */
+   * @param index The reality model index
+   * @returns The corresponding FeatureAppearance, or undefined if the Model's appearance is not overridden.
+   * @see [[overrideRealityModelAppearance]]
+   * @beta
+   */
   public getRealityModelAppearanceOverride(index: number): FeatureAppearance | undefined {
     return this.displayStyle.getRealityModelAppearanceOverride(index);
+  }
+
+  /** @beta
+   * Set the display of the OpenStreetMap worldwide building layer in this viewport by attaching or detaching the reality model displaying the buildings.
+   * The OSM buildings are displayed from a reality model aggregated and served from Cesium ion.<(https://cesium.com/content/cesium-osm-buildings/>
+   * The options [[OsmBuildingDisplayOptions]] control the display and appearance overrides.
+   */
+  public setOSMBuildingDisplay(options: OsmBuildingDisplayOptions) {
+    const originalOn = this.displayStyle.getOSMBuildingDisplayIndex() >= 0;
+    if (this.displayStyle.setOSMBuildingDisplay(options)) {
+      const newOn = this.displayStyle.getOSMBuildingDisplayIndex() >= 0;
+      this._changeFlags.setDisplayStyle();
+      if (newOn !== originalOn)
+        this.synchWithView(false);      // May change frustum depth...
+      if (options.appearanceOverrides)
+        this.invalidateRenderPlan();
+    }
   }
 
   /** Some changes may or may not require us to invalidate the scene.

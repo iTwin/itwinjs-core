@@ -6,8 +6,9 @@
  * @module Views
  */
 import { assert, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
-import { Angle, Point3d, Vector3d } from "@bentley/geometry-core";
+import { Angle, Point3d, Range1d, Vector3d } from "@bentley/geometry-core";
 import { BackgroundMapProps, BackgroundMapSettings, BaseLayerSettings, calculateSolarDirection, Cartographic, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps, DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EnvironmentProps, FeatureAppearance, GlobeMode, GroundPlane, LightSettings, MapImagerySettings, MapLayerProps, MapLayerSettings, MapSubLayerProps, RenderTexture, SkyBoxImageType, SkyBoxProps, SkyCubeProps, SolarShadowSettings, SubCategoryOverride, SubLayerId, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ViewFlags } from "@bentley/imodeljs-common";
+import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
 import { ContextRealityModelState } from "./ContextRealityModelState";
 import { ElementState } from "./EntityState";
@@ -17,9 +18,9 @@ import { IModelConnection } from "./IModelConnection";
 import { AnimationBranchStates } from "./render/GraphicBranch";
 import { RenderSystem, TextureImage } from "./render/RenderSystem";
 import { RenderScheduleState } from "./RenderScheduleState";
-import { MapCartoRectangle, MapTileTree, MapTileTreeReference, TileTreeReference } from "./tile/internal";
+import { getCesiumOSMBuildingsUrl, MapCartoRectangle, MapTileTree, MapTileTreeReference, TileTreeReference } from "./tile/internal";
 import { viewGlobalLocation, ViewGlobalLocationConstants } from "./ViewGlobalLocation";
-import { ScreenViewport, Viewport } from "./Viewport";
+import { OsmBuildingDisplayOptions, ScreenViewport, Viewport } from "./Viewport";
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a [[ViewState]]
  * @note If the DisplayStyle is associated with a [[ViewState]] which is being rendered inside a [[Viewport]], modifying
@@ -35,6 +36,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   private readonly _backgroundDrapeMap: MapTileTreeReference;
   private readonly _contextRealityModels: ContextRealityModelState[] = [];
   private _scheduleScript?: RenderScheduleState.Script;
+  private _ellipsoidMapGeometry: BackgroundMapGeometry | undefined;
 
   /** The container for this display style's settings. */
   public abstract get settings(): DisplayStyleSettings;
@@ -206,6 +208,40 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     const index = this._contextRealityModels.findIndex((x) => x.matchesNameAndUrl(name, url));
     if (- 1 !== index)
       this.detachRealityModelByIndex(index);
+  }
+
+  /** @beta
+   * Return the index for the OpenStreetMap world building layer or -1 if it is not enabled for this display stye.
+   */
+  public getOSMBuildingDisplayIndex(): number {
+    const tilesetUrl = getCesiumOSMBuildingsUrl();
+    return this._contextRealityModels.findIndex((x) => x.url === tilesetUrl);
+  }
+
+  /** @beta
+   * Set the display of the OpenStreetMap worldwide building layer in this display style by attaching or detaching the reality model displaying the buildings.
+   * The OSM buildings are displayed from a reality model aggregated and served from Cesium ion.<(https://cesium.com/content/cesium-osm-buildings/>
+   * The options [[OsmBuildingDisplayOptions]] control the display and appearance overrides.
+   */
+  public setOSMBuildingDisplay(options: OsmBuildingDisplayOptions): boolean {
+    if (!this.iModel.isGeoLocated || this.globeMode !== GlobeMode.Ellipsoid)  // The OSM tile tree is ellipsoidal.
+      return false;
+
+    let currentIndex = this.getOSMBuildingDisplayIndex();
+    if (options.onOff === false && currentIndex >= 0) {
+      this.detachRealityModelByIndex(currentIndex);
+      return true;
+    }
+    if (options.onOff === true && currentIndex < 0) {
+      const tilesetUrl = getCesiumOSMBuildingsUrl();
+      const name = IModelApp.i18n.translate("iModelJs:RealityModelNames.OSMBuildings");
+      currentIndex = this._contextRealityModels.length;
+      this.attachRealityModel({ tilesetUrl, name });
+    }
+    if (options.appearanceOverrides)
+      this.overrideRealityModelAppearance(currentIndex, options.appearanceOverrides);
+
+    return true;
   }
 
   /** Find index of a reality model.
@@ -612,8 +648,13 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** @internal */
+  public getIsBackgroundMapVisible(): boolean {
+    return undefined !== this.iModel.ecefLocation && (this.viewFlags.backgroundMap || this.anyMapLayersVisible(false));
+  }
+
+  /** @internal */
   public getBackgroundMapGeometry(): BackgroundMapGeometry | undefined {
-    if ((!this.viewFlags.backgroundMap && !this.anyMapLayersVisible(false)) || undefined === this.iModel.ecefLocation)
+    if (undefined === this.iModel.ecefLocation)
       return undefined;
 
     let bimElevationBias = this.backgroundMapSettings.groundBias;
@@ -628,6 +669,25 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       this._backgroundMapGeometry = { bimElevationBias, geometry, globeMode };
     }
     return this._backgroundMapGeometry.geometry;
+  }
+
+  /** @internal */
+  public getGlobalGeometryAndHeightRange(): { geometry: BackgroundMapGeometry, heightRange: Range1d } | undefined {
+    let geometry = this.getIsBackgroundMapVisible() ? this.getBackgroundMapGeometry() : undefined;
+    const terrainRange = ApproximateTerrainHeights.instance.globalHeightRange;
+    let heightRange = this.displayTerrain ? terrainRange : Range1d.createXX(-1, 1);
+    if (this.globeMode === GlobeMode.Ellipsoid && this._contextRealityModels.find((model) => model.isGlobal)) {
+      if (!geometry) {
+        if (!this._ellipsoidMapGeometry)
+          this._ellipsoidMapGeometry = new BackgroundMapGeometry(0, GlobeMode.Ellipsoid, this.iModel);
+
+        geometry = this._ellipsoidMapGeometry;
+      }
+
+      heightRange = terrainRange;
+    }
+
+    return geometry ? { geometry, heightRange } : undefined;
   }
 
   /** Returns true if this is a 3d display style. */
