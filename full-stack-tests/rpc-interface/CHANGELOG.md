@@ -1,6 +1,16 @@
 # Change Log - @bentley/rpcinterface-full-stack-tests
 
-This log was last generated on Sat, 21 Nov 2020 16:42:45 GMT and should not be manually modified.
+This log was last generated on Mon, 23 Nov 2020 22:19:30 GMT and should not be manually modified.
+
+## 2.9.3
+Mon, 23 Nov 2020 20:57:56 GMT
+
+_Version update only_
+
+## 2.9.2
+Mon, 23 Nov 2020 15:33:50 GMT
+
+_Version update only_
 
 ## 2.9.1
 Thu, 19 Nov 2020 17:03:42 GMT
