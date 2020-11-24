@@ -1,6 +1,6 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Mon, 23 Nov 2020 20:57:56 GMT and should not be manually modified.
+This log was last generated on Mon, 23 Nov 2020 22:19:30 GMT and should not be manually modified.
 
 ## 2.9.3
 Mon, 23 Nov 2020 20:57:56 GMT
@@ -33,6 +33,11 @@ Wed, 18 Nov 2020 16:01:50 GMT
 - Added MessagePopup - Displays Toast & Sticky messages without a StatusBar
 - Update EditorContainer tests in attempt to fix sporadic test failures.
 
+## 2.8.1
+Tue, 03 Nov 2020 00:33:56 GMT
+
+_Version update only_
+
 ## 2.8.0
 Fri, 23 Oct 2020 17:04:02 GMT
 
@@ -44,6 +49,11 @@ Fri, 23 Oct 2020 17:04:02 GMT
 - Update all editors to be controlled components.
 - PropertyGrid: Fix component not updating on data provider change
 - Added jsdoc ESLint rule for UI packages
+
+## 2.7.6
+Wed, 11 Nov 2020 16:28:23 GMT
+
+_Version update only_
 
 ## 2.7.5
 Fri, 23 Oct 2020 16:23:51 GMT
