@@ -486,7 +486,6 @@ export class ProjectShareClient extends WsgClient {
     const parentFolder = new ProjectShareFolder();
     parentFolder.wsgId = parentFolderId;
     parentFolder.changeState = "existing";
-    parentFolder.ecId = parentFolderId;
     const mappedFolder: any = ECJsonTypeMap.toJson<ProjectShareFolder>("wsg", parentFolder);
     folder.parentFolder = mappedFolder;
     const relativeUrl = `/repositories/BentleyCONNECT.ProjectShareV2--${contextId}/ProjectShare/Folder/`;
