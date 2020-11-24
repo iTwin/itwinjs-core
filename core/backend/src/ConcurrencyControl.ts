@@ -1736,3 +1736,5 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
   }
 
 }
+
+export type ConcurrencyControlChannel = ConcurrencyControl.Channel;
