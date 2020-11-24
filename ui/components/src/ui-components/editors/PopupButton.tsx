@@ -60,19 +60,19 @@ export class PopupButton extends React.PureComponent<PopupButtonProps, PopupButt
   public componentDidMount() {
     if (this.props.setFocus && this._buttonRef.current)
       this._buttonRef.current.focus();
-    this._buttonRef.current?.addEventListener ("keydown", this._handleKeyDown)
+    this._buttonRef.current?.addEventListener("keydown", this._handleKeyDown);
   }
 
   /** @internal */
   public componentWillUnmount() {
-    this._buttonRef.current?.removeEventListener ("keydown", this._handleKeyDown)
+    this._buttonRef.current?.removeEventListener("keydown", this._handleKeyDown);
   }
 
   private _togglePopup = (event: React.MouseEvent) => {
     this.setState(
       (prevState) => ({ showPopup: !prevState.showPopup }),
       () => this.props.onClick && this.props.onClick(event));
-  }
+  };
 
   private _closePopup = () => {
     this.setState(
@@ -84,11 +84,11 @@ export class PopupButton extends React.PureComponent<PopupButtonProps, PopupButt
         if (this._buttonRef.current)
           this._buttonRef.current.focus();
       });
-  }
+  };
 
   private _emptyKeyDown = (_event: React.KeyboardEvent) => {
 
-  }
+  };
   private _handleKeyDown = (event: KeyboardEvent) => {
     // istanbul ignore else
     if ((event.key === SpecialKey.ArrowDown || event.key === SpecialKey.Space || event.key === SpecialKey.Enter) && !this.state.showPopup) {
@@ -96,7 +96,7 @@ export class PopupButton extends React.PureComponent<PopupButtonProps, PopupButt
       event.stopPropagation();
       this.setState({ showPopup: true });
     }
-  }
+  };
 
   /** @internal */
   public render(): React.ReactNode {

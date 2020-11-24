@@ -99,7 +99,7 @@ export const getRpcInterfaces = (appType: "native" | "browser"): RpcInterfaceDef
     rpcs.push(NativeAppRpcInterface);
 
   return rpcs;
-}
+};
 
 const setupStandaloneConfiguration = () => {
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
@@ -224,7 +224,7 @@ const setupStandaloneConfiguration = () => {
   try { fs.writeFileSync(configPathname, JSON.stringify(configuration), "utf8"); } catch { }
 
   return configuration;
-}
+};
 
 export const initializeDtaBackend = async () => {
   const dtaConfig = setupStandaloneConfiguration();
@@ -262,4 +262,4 @@ export const initializeDtaBackend = async () => {
 
   if (dtaConfig.useFakeCloudStorageTileCache)
     IModelHost.tileCacheService = new FakeTileCacheService(path.normalize(path.join(__dirname, "tiles")), "http://localhost:3001"); // puts the cache in "./lib/backend/tiles" and serves them from "http://localhost:3001/tiles"
-}
+};

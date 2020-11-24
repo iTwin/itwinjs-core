@@ -214,11 +214,11 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
           this._showCursorPrompt();
         },
       );
-  }
+  };
 
   private _isBothInstruction = (instruction: ToolAssistanceInstruction) => {
     return instruction.inputMethod === undefined || instruction.inputMethod === ToolAssistanceInputMethod.Both;
-  }
+  };
 
   private _isMouseInstruction = (instruction: ToolAssistanceInstruction) => instruction.inputMethod === ToolAssistanceInputMethod.Mouse;
 
@@ -234,7 +234,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
         },
       );
 
-  }
+  };
 
   private _showCursorPrompt() {
     if (this.state.showPromptAtCursor && this.state.instructions)
@@ -270,7 +270,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
       }, async () => {
         await this._mouseTouchTabIndexSetting.saveSetting(this.props.uiSettings);
       });
-  }
+  };
 
   /** @internal */
   public render(): React.ReactNode {
@@ -403,7 +403,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
 
   private _handleTargetRef = (target: HTMLElement | null) => {
     this._target = target;
-  }
+  };
 
   private _onPromptAtCursorChange = async (checked: boolean) => {
     // istanbul ignore else
@@ -413,11 +413,11 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
       }, async () => {
         await this._showPromptAtCursorSetting.saveSetting(this.props.uiSettings);
       });
-  }
+  };
 
   private _handleClose = () => {
     this.setOpenWidget(null);
-  }
+  };
 
   private _handleOutsideClick = (e: MouseEvent) => {
     if (this.state.isPinned)
@@ -430,7 +430,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
       return;
 
     this._handleClose();
-  }
+  };
 
   private _handleToolAssistanceIndicatorClick = () => {
     const isOpen = this.props.openWidget === this._className;
@@ -438,17 +438,17 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
       this.setOpenWidget(null);
     } else
       this.setOpenWidget(this._className);
-  }
+  };
 
   private _handlePinButtonClick = () => {
     // istanbul ignore else
     if (this._isMounted)
       this.setState({ isPinned: true });
-  }
+  };
 
   private _handleCloseButtonClick = () => {
     this._handleClose();
-  }
+  };
 
   private setOpenWidget(openWidget: StatusBarFieldId) {
     // istanbul ignore else

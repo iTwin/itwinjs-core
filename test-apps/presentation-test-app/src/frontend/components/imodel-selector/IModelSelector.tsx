@@ -50,7 +50,7 @@ export default class IModelSelector extends React.Component<Props, State> {
       }
     }
     this.props.onIModelSelected(imodel);
-  }
+  };
 
   public render() {
     let error = null;

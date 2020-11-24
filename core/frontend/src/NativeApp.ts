@@ -26,10 +26,10 @@ export class NativeApp {
   private static _storages = new Map<string, Storage>();
   private static _onOnline = async () => {
     await NativeApp.setConnectivity(OverriddenBy.Browser, InternetConnectivityStatus.Online);
-  }
+  };
   private static _onOffline = async () => {
     await NativeApp.setConnectivity(OverriddenBy.Browser, InternetConnectivityStatus.Offline);
-  }
+  };
   private static async setConnectivity(by: OverriddenBy, status: InternetConnectivityStatus) {
     RequestGlobalOptions.online = (status === InternetConnectivityStatus.Online);
     await NativeAppRpcInterface.getClient().overrideInternetConnectivity(by, status);

@@ -79,7 +79,7 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
         }
       }
     });
-  }
+  };
 
   /** @internal */
   public componentDidMount() {

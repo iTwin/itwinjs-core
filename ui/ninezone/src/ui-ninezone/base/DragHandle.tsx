@@ -68,7 +68,7 @@ export class DragHandle extends React.PureComponent<DragHandleProps, DragHandleS
     e.preventDefault();
     this._isDragged = false;
     this._initial = new Point(e.clientX, e.clientY);
-  }
+  };
 
   private _handlePointerMove = (e: PointerEvent) => {
     const current = new Point(e.clientX, e.clientY);
@@ -82,7 +82,7 @@ export class DragHandle extends React.PureComponent<DragHandleProps, DragHandleS
       this._isDragged = true;
       this.props.onDragStart && this.props.onDragStart(this._initial);
     }
-  }
+  };
 
   private _handlePointerUp = () => {
     this.setState({ isPointerDown: false });
@@ -91,11 +91,11 @@ export class DragHandle extends React.PureComponent<DragHandleProps, DragHandleS
       this.props.onDragEnd && this.props.onDragEnd();
       return;
     }
-  }
+  };
 
   private _handleClick = () => {
     if (this._isDragged)
       return;
     this.props.onClick && this.props.onClick();
-  }
+  };
 }

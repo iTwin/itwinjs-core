@@ -77,7 +77,7 @@ export class SignIn extends React.PureComponent<SignInProps> {
     // istanbul ignore else
     if (this.props.onStartSignIn)
       this.props.onStartSignIn();
-  }
+  };
 
   public render() {
 

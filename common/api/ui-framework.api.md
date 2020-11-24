@@ -2685,9 +2685,6 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
     processIsolateSelectedElementsModel(): Promise<void>;
     }
 
-// @internal
-export function HollowIcon(props: IconProps): JSX.Element;
-
 // @alpha
 export class HTMLElementPopup extends React.PureComponent<HTMLElementPopupProps, HTMLElementPopupState> {
     // (undocumented)
@@ -3419,14 +3416,9 @@ export interface MessageCenterFieldProps extends StatusFieldProps {
     targetRef?: React.Ref<HTMLElement>;
 }
 
-// @internal
-export function MessageLabel(props: {
-    message: NotifyMessageType;
-    className: string;
-}): JSX.Element;
-
 // @public
 export class MessageManager {
+    static get activeMessageManager(): StatusMessageManager;
     static addMessage(message: NotifyMessageDetailsType): void;
     static addToMessageCenter(message: NotifyMessageDetailsType): void;
     static clearMessages(): void;
@@ -3461,7 +3453,21 @@ export class MessageManager {
     static setupActivityMessageValues(message: NotifyMessageType, percentage: number, restored?: boolean): boolean;
     // @internal (undocumented)
     static showAlertMessageBox(messageDetails: NotifyMessageDetailsType): void;
-    }
+    static updateMessages(): void;
+}
+
+// @beta
+export function MessageRenderer(props: MessageRendererProps): JSX.Element | null;
+
+// @beta
+export interface MessageRendererProps extends CommonProps {
+    // (undocumented)
+    cancelActivityMessage?: () => void;
+    // (undocumented)
+    closeMessage?: (id: string) => void;
+    // (undocumented)
+    dismissActivityMessage?: () => void;
+}
 
 // @public
 export class MessagesUpdatedEvent extends UiEvent<{}> {
@@ -5264,6 +5270,8 @@ export type StateType<R extends Reducer<any, any>> = DeepReadonly<ReturnType<R>>
 
 // @public
 export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
+    // @internal
+    constructor(props: StatusBarProps);
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
@@ -5272,8 +5280,6 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
     render(): React.ReactNode;
     // (undocumented)
     static severityToStatus(severity: MessageSeverity): Status;
-    // @internal (undocumented)
-    readonly state: Readonly<StatusBarState>;
 }
 
 // @public

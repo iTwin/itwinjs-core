@@ -158,7 +158,7 @@ export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     private onSelectionChanged = (evt: SelectionChangeEventArgs): void => {
       this.displaySelection(evt.level);
-    }
+    };
 
     private async getRowKeys(rows: AsyncIterableIterator<RowItem>): Promise<InstanceKey[]> {
       const keys = new Array<InstanceKey>();
@@ -178,7 +178,7 @@ export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: 
 
       const selection = this._selectionHandler.getSelection(this._boundarySelectionLevel);
       return selection.has(this.props.dataProvider.getRowKey(row));
-    }
+    };
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     private onRowsSelected = async (rows: AsyncIterableIterator<RowItem>, replace: boolean): Promise<boolean> => {
@@ -196,7 +196,7 @@ export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: 
           this._selectionHandler.addToSelection(keys, this._boundarySelectionLevel);
       }
       return true;
-    }
+    };
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     private onRowsDeselected = async (rows: AsyncIterableIterator<RowItem>): Promise<boolean> => {
@@ -211,7 +211,7 @@ export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: 
         this._selectionHandler.removeFromSelection(keys, this._boundarySelectionLevel);
       }
       return true;
-    }
+    };
 
     public render() {
       const {

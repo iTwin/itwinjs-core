@@ -17,7 +17,7 @@ import { TestUtils } from "../../../TestUtils";
 describe("CompositePropertyDataFilterer", () => {
 
   const testRecord = TestUtils.createPrimitiveStringProperty("Test", "Test");
-  const testArray: PropertyRecord[] = [TestUtils.createPrimitiveStringProperty("TestParent", "TestParent")]
+  const testArray: PropertyRecord[] = [TestUtils.createPrimitiveStringProperty("TestParent", "TestParent")];
   let leftFilterMock = moq.Mock.ofType<IPropertyDataFilterer>();
   let rightFilterMock = moq.Mock.ofType<IPropertyDataFilterer>();
 

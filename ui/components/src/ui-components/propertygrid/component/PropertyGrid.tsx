@@ -118,7 +118,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
   private _onPropertyDataChanged = () => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.gatherData();
-  }
+  };
 
   private async gatherData(): Promise<void> {
     if (this._isInDataRequest) {
@@ -173,7 +173,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
 
   private _onResize = (width: number, _height: number) => {
     this.updateOrientation(width);
-  }
+  };
 
   private _onCategoryExpansionToggled = (categoryName: string) => {
     this.setState((state) => {
@@ -185,7 +185,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
         }
       });
     });
-  }
+  };
 
   private updateOrientation(width: number): void {
     const { orientation, isOrientationFixed, horizontalOrientationMinWidth } = { ...this.props };

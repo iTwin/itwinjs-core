@@ -81,6 +81,7 @@ export * from "./domains/GenericElementProps";
 export * from "./geometry/AreaPattern";
 export * from "./geometry/BoundingSphere";
 export * from "./geometry/Cartographic";
+export * from "./geometry/ElementGeometry";
 export * from "./geometry/FrustumPlanes";
 export * from "./geometry/GeometryStream";
 export * from "./geometry/ImageGraphic";
@@ -149,6 +150,10 @@ export * from "./tile/TileMetadata";
 /**
  * @docs-group-description Geometry
  * Types for working with geometry.
+ */
+/**
+ * @docs-group-description Serialization
+ * Types for serializing geometry
  */
 /**
  * @docs-group-description Views

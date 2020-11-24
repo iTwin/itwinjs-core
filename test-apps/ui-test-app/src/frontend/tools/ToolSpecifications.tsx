@@ -12,10 +12,10 @@ import {
   BackstageItem, BackstageItemUtilities, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue, StatusBarSection,
   UiItemsManager, UiItemsProvider,
 } from "@bentley/ui-abstract";
-import { MessageSeverity, SvgPath, SvgSprite, UnderlinedButton } from "@bentley/ui-core";
+import { MessageSeverity, ReactMessage, SvgPath, SvgSprite, UnderlinedButton } from "@bentley/ui-core";
 import {
   Backstage, BaseItemState, CommandItemDef, ContentViewManager, FrontstageManager, MessageManager, ModalDialogManager,
-  ReactMessage, ReactNotifyMessageDetails, StatusBarItemUtilities, SyncUiEventDispatcher, SyncUiEventId, ToolItemDef, WidgetState, withStatusFieldProps,
+  ReactNotifyMessageDetails, StatusBarItemUtilities, SyncUiEventDispatcher, SyncUiEventId, ToolItemDef, WidgetState, withStatusFieldProps,
 } from "@bentley/ui-framework";
 import { FooterSeparator } from "@bentley/ui-ninezone";
 import { SampleAppIModelApp } from "../";
@@ -303,7 +303,6 @@ export class AppTools {
     return span;
   }
 
-  // eslint-disable-next-line deprecation/deprecation
   private static get _reactMessage(): ReactMessage {
     const reactNode = (
       <span>
@@ -315,7 +314,7 @@ export class AppTools {
 
   private static _handleLink = () => {
     window.alert("The link was clicked");
-  }
+  };
 
   public static get infoMessageCommand() {
     return new CommandItemDef({
@@ -426,7 +425,7 @@ export class AppTools {
         title={title}
       />
     );
-  }
+  };
 
   public static get errorMessageBoxCommand() {
     return new CommandItemDef({

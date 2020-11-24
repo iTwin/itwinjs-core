@@ -110,12 +110,12 @@ export class DragDropLayerRendererComponent extends React.Component<DragDropLaye
   // istanbul ignore next
   private _handleDragStart = () => {
     this._dragging = true;
-  }
+  };
 
   // istanbul ignore next
   private _handleDragEnd = () => {
     this._dragging = false;
-  }
+  };
 
   // istanbul ignore next
   public render(): React.ReactNode {

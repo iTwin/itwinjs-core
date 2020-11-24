@@ -91,7 +91,7 @@ export class WeightEditor extends React.PureComponent<PropertyEditorProps, Weigh
         }
       }
     });
-  }
+  };
 
   /** @internal */
   public componentDidMount() {

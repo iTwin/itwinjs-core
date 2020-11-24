@@ -253,7 +253,7 @@ export class Matrix3d implements BeJSONFunctions {
    * * An array of 3 arrays, each of which has the 3 numbers for a row of the matrix.
    * * An array of 9 numbers in row major order.
    */
-  public setFromJSON(json?: Matrix3dProps): void {
+  public setFromJSON(json?: Matrix3dProps | Matrix3d): void {
     this.inverseCoffs = undefined;
     if (!json) {
       this.setRowValues(0, 0, 0, 0, 0, 0, 0, 0, 0);

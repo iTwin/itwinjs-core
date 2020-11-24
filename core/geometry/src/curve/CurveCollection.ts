@@ -37,13 +37,15 @@ import { StrokeOptions } from "./StrokeOptions";
 export type CurveCollectionType = "loop" | "path" | "unionRegion" | "parityRegion" | "bagOfCurves";
 
 /**
- * * A `CurveCollection` is an abstract (non-instantiable) class for various sets of curves with particular structures:
- *   * `CurveChain` is a (non-instantiable) intermediate class for a sequence of `CurvePrimitive ` joining head-to-tail.  The two instantiable forms of `CurveChain` are
- *     * `Path` - A chain not required to close, and not enclosing a planar area
- *     * `Loop` - A chain required to close from last to first so that a planar area is enclosed.
- *   * `ParityRegion` -- a collection of coplanar `Loop`s, with "in/out" classification by parity rules
- *   * `UnionRegion` -- a collection of coplanar `Loop`s, with "in/out" classification by union rules
- *   * `BagOfCurves` -- a collection of `AnyCurve` with no implied structure.
+ * A `CurveCollection` is an abstract (non-instantiable) class for various sets of curves with particular structures:
+ * - `CurveChain` is a (non-instantiable) intermediate class for a sequence of `CurvePrimitive ` joining head-to-tail.  The two instantiable forms of `CurveChain` are
+ *   - `Path` - A chain not required to close, and not enclosing a planar area
+ *   - `Loop` - A chain required to close from last to first so that a planar area is enclosed.
+ * - `ParityRegion` -- a collection of coplanar `Loop`s, with "in/out" classification by parity rules
+ * - `UnionRegion` -- a collection of coplanar `Loop`s, with "in/out" classification by union rules
+ * - `BagOfCurves` -- a collection of `AnyCurve` with no implied structure.
+ *
+ * @see [Curve Collections]($docs/learning/geometry/CurveCollection.md) learning article.
  * @public
  */
 export abstract class CurveCollection extends GeometryQuery {
@@ -188,12 +190,13 @@ export abstract class CurveCollection extends GeometryQuery {
   }
 }
 /** Shared base class for use by both open and closed paths.
- * * A `CurveChain` contains only curvePrimitives.  No other paths, loops, or regions allowed.
- * * A single entry in the chain can in fact contain multiple curve primitives if the entry itself is (for instance) `CurveChainWithDistanceIndex`
+ * - A `CurveChain` contains only curvePrimitives.  No other paths, loops, or regions allowed.
+ * - A single entry in the chain can in fact contain multiple curve primitives if the entry itself is (for instance) `CurveChainWithDistanceIndex`
  *   which presents itself (through method interface) as a CurvePrimitive with well defined mappings from fraction to xyz, but in fact does all the
- *    calculations over multiple primitives.
- * * The specific derived classes are `Path` and `Loop`
- * * `CurveChain` is an intermediate class.   It is not instantiable on its own.
+ *   calculations over multiple primitives.
+ * - The specific derived classes are `Path` and `Loop`
+ * - `CurveChain` is an intermediate class.   It is not instantiable on its own.
+ * @see [Curve Collections]($docs/learning/geometry/CurveCollection.md) learning article.
  * @public
  */
 export abstract class CurveChain extends CurveCollection {
@@ -282,7 +285,6 @@ export abstract class CurveChain extends CurveCollection {
   }
   /** Evaluate an indexed curve at a fraction.  Return as a CurveLocationDetail that indicates the primitive.
    */
-
   public primitiveIndexAndFractionToCurveLocationDetailPointAndDerivative(index: number, fraction: number, cyclic: boolean = false, result?: CurveLocationDetail): CurveLocationDetail | undefined {
     const primitive = this.cyclicCurvePrimitive(index, cyclic);
     if (primitive) {

@@ -144,7 +144,7 @@ export class Capabilities {
     return this.supportsTextureFloat || this.supportsTextureHalfFloat;
   }
 
-  public get supportsAntiAliasing(): boolean { return this._isWebGL2 && this.maxAntialiasSamples > 1 }
+  public get supportsAntiAliasing(): boolean { return this._isWebGL2 && this.maxAntialiasSamples > 1; }
 
   public get isMobile(): boolean { return this._isMobile; }
 

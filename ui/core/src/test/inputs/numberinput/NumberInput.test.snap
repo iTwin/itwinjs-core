@@ -1,0 +1,36 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`NumberInput should render correctly 1`] = `
+<div
+  className="core-number-input-container"
+>
+  <ForwardRef(Input)
+    onBlur={[Function]}
+    onChange={[Function]}
+    onKeyDown={[Function]}
+    value=""
+  />
+  <div
+    className="core-number-input-buttons-container"
+  >
+    <div
+      className="core-number-input-button core-number-input-button-up"
+      onClick={[Function]}
+      tabIndex={-1}
+    >
+      <WebFontIcon
+        iconName="icon-caret-up"
+      />
+    </div>
+    <div
+      className="core-number-input-button core-number-input-button-down"
+      onClick={[Function]}
+      tabIndex={-1}
+    >
+      <WebFontIcon
+        iconName="icon-caret-down"
+      />
+    </div>
+  </div>
+</div>
+`;

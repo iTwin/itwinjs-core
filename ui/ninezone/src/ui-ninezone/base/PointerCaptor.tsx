@@ -63,19 +63,19 @@ export class PointerCaptor extends React.PureComponent<PointerCaptorProps> {
 
   private _handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     this.props.onPointerDown && this.props.onPointerDown(e.nativeEvent);
-  }
+  };
 
   private _handleDocumentPointerUp = (e: PointerEvent) => {
     if (!this.props.isPointerDown)
       return;
     this.props.onPointerUp && this.props.onPointerUp(e);
-  }
+  };
 
   private _handleDocumentPointerMove = (e: PointerEvent) => {
     if (!this.props.isPointerDown)
       return;
     this.props.onPointerMove && this.props.onPointerMove(e);
-  }
+  };
 }
 
 /** @internal */

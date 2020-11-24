@@ -64,7 +64,7 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
         }
       });
     }
-  }
+  };
 
   /** @internal */
   public componentDidMount() {

@@ -369,7 +369,7 @@ export class BeInspireTree<TNodePayload> {
       this._tree.mute(events.concat(this._tree.muted() as any));
     else
       this._tree.mute(events);
-  }
+  };
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
   private doUnmute = (events: BeInspireTreeEvent[]) => {
@@ -382,12 +382,12 @@ export class BeInspireTree<TNodePayload> {
     });
     this._tree.unmute(eventsToUnmute);
     return (eventsToUnmute.length > 0);
-  }
+  };
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
   private doEmit = (events: BeInspireTreeEvent[]) => {
     events.forEach((e) => this._tree.emit(e));
-  }
+  };
 
   /**
    * Stop calling the renderer method until the returned
@@ -839,10 +839,10 @@ class PayloadToNodeRemapper<TPayload> {
     ...this._mapPayloadToInspireNodeConfig(payload, this.remapOne),
     beInspireTree: this._tree,
     payload,
-  })
+  });
   public remapMany = (payload: TPayload[]): Array<BeInspireTreeNodePayloadConfig<TPayload>> => {
     return payload.map(this.remapOne);
-  }
+  };
 }
 
 function onNodesDelayLoaded<TPayload>(parent: BeInspireTreeNode<TPayload> | undefined, nodes: Array<BeInspireTreeNodePayloadConfig<TPayload>>) {
@@ -918,7 +918,7 @@ class WrappedInterfaceProvider<TPayload> extends CallableInstance implements Def
     if (!this._paginationHelper)
       throw new UiError(UiComponents.loggerCategory(this), `requestNodeLoad should only be called when pagination is enabled`);
     await this._paginationHelper.request(parent ? parent.id : undefined, index);
-  }
+  };
 
   public disposeNodeCaches(node?: BeInspireTreeNode<TPayload>) {
     if (!node) {
@@ -967,7 +967,7 @@ class WrappedInterfaceProvider<TPayload> extends CallableInstance implements Def
       totalNodesCount,
       nodes,
     };
-  }
+  };
 
   /** Called by PaginationHelper when a page is finished loading */
   private _onPageLoaded = async (parentId: string | undefined, pageStart: number, result: NodesLoadResult<TPayload>) => {
@@ -992,7 +992,7 @@ class WrappedInterfaceProvider<TPayload> extends CallableInstance implements Def
           await this._tree.loadNodes();
       });
     }
-  }
+  };
 
   private createPagedNodesResult(parent: BeInspireTreeNode<TPayload> | undefined): Array<BeInspireTreeNodePayloadConfig<TPayload>> {
     const parentId = parent ? parent.id : undefined;

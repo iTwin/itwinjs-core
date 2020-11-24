@@ -105,7 +105,7 @@ export class TreeNodeContent extends React.Component<TreeNodeContentProps, TreeN
   private _onLabelStateChanged = () => {
     if (this.props.renderId && this.props.onFinalRenderComplete)
       this.props.onFinalRenderComplete(this.props.renderId);
-  }
+  };
 
   private updateLabel(props: TreeNodeContentProps) {
     const label = this.getLabel(props);

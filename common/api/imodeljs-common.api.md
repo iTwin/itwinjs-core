@@ -47,6 +47,7 @@ import { Map4d } from '@bentley/geometry-core';
 import { Matrix3d } from '@bentley/geometry-core';
 import { Matrix4dProps } from '@bentley/geometry-core';
 import { OpenMode } from '@bentley/bentleyjs-core';
+import { OrderedId64Iterable } from '@bentley/bentleyjs-core';
 import { Point2d } from '@bentley/geometry-core';
 import { Point3d } from '@bentley/geometry-core';
 import { PolyfaceVisitor } from '@bentley/geometry-core';
@@ -716,6 +717,10 @@ export interface ChangedElements {
     modelIds?: Id64String[];
     // (undocumented)
     opcodes: number[];
+    // (undocumented)
+    parentClassIds?: Id64String[];
+    // (undocumented)
+    parentIds?: Id64String[];
     // (undocumented)
     properties?: Id64String[][];
     // (undocumented)
@@ -1456,8 +1461,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 1048576,
-    Major = 16,
+    Combined = 1179648,
+    Major = 18,
     Minor = 0
 }
 
@@ -1614,6 +1619,12 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
     thematic?: ThematicDisplayProps;
 }
 
+// @public
+export interface DisplayStyleLoadProps {
+    compressExcludedElementIds?: boolean;
+    omitScheduleScriptElementIds?: boolean;
+}
+
 // @beta
 export interface DisplayStyleModelAppearanceProps extends FeatureAppearanceProps {
     modelId?: Id64String;
@@ -1640,7 +1651,7 @@ export class DisplayStyleSettings {
     constructor(jsonProperties: {
         styles?: DisplayStyleSettingsProps;
     });
-    addExcludedElements(id: Id64String): void;
+    addExcludedElements(id: Id64String | Iterable<Id64String>): void;
     // @alpha (undocumented)
     get analysisFraction(): number;
     set analysisFraction(fraction: number);
@@ -1655,13 +1666,19 @@ export class DisplayStyleSettings {
     set backgroundColor(color: ColorDef);
     get backgroundMap(): BackgroundMapSettings;
     set backgroundMap(map: BackgroundMapSettings);
+    clearExcludedElements(): void;
+    // @internal (undocumented)
+    get compressedExcludedElementIds(): CompressedId64Set;
     dropExcludedElement(id: Id64String): void;
+    dropExcludedElements(id: Id64String | Iterable<Id64String>): void;
     dropModelAppearanceOverride(id: Id64String): void;
     dropSubCategoryOverride(id: Id64String): void;
     // @internal (undocumented)
     equalModelAppearanceOverrides(other: DisplayStyleSettings): boolean;
     // @internal (undocumented)
     equalSubCategoryOverrides(other: DisplayStyleSettings): boolean;
+    get excludedElementIds(): OrderedId64Iterable;
+    // @deprecated
     get excludedElements(): Set<Id64String>;
     getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined;
     getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
@@ -1707,7 +1724,7 @@ export interface DisplayStyleSettingsProps {
     backgroundColor?: ColorDefProps;
     backgroundMap?: BackgroundMapProps;
     contextRealityModels?: ContextRealityModelProps[];
-    excludedElements?: Id64String[];
+    excludedElements?: Id64Array | CompressedId64Set;
     // @alpha
     mapImagery?: MapImageryProps;
     // @beta
@@ -2030,12 +2047,114 @@ export interface ElementAspectProps extends EntityProps {
 }
 
 // @alpha
+export namespace ElementGeometry {
+    // (undocumented)
+    export function appendGeometryParams(geomParams: GeometryParams, entries: ElementGeometryDataEntry[]): boolean;
+    // (undocumented)
+    export function fromBRep(brep: BRepEntity.DataProps): ElementGeometryDataEntry | undefined;
+    // (undocumented)
+    export function fromGeometryPart(partId: Id64String, partToElement?: Transform): ElementGeometryDataEntry | undefined;
+    // (undocumented)
+    export function fromGeometryQuery(geom: GeometryQuery): ElementGeometryDataEntry | undefined;
+    // (undocumented)
+    export function fromImageGraphic(image: ImageGraphicProps): ElementGeometryDataEntry | undefined;
+    // (undocumented)
+    export function fromSubGraphicRange(bbox: ElementAlignedBox3d): ElementGeometryDataEntry | undefined;
+    // (undocumented)
+    export function fromTextString(text: TextStringProps): ElementGeometryDataEntry | undefined;
+    // (undocumented)
+    export function isAppearanceEntry(entry: ElementGeometryDataEntry): boolean;
+    // (undocumented)
+    export function isGeometricEntry(entry: ElementGeometryDataEntry): boolean;
+    // (undocumented)
+    export function isGeometryQueryEntry(entry: ElementGeometryDataEntry): boolean;
+    // (undocumented)
+    export function toBRep(entry: ElementGeometryDataEntry, wantBRepData?: boolean): BRepEntity.DataProps | undefined;
+    export function toElementAlignedBox3d(bbox: Float64Array): ElementAlignedBox3d | undefined;
+    // (undocumented)
+    export function toGeometryPart(entry: ElementGeometryDataEntry, partToElement?: Transform): Id64String | undefined;
+    // (undocumented)
+    export function toGeometryQuery(entry: ElementGeometryDataEntry): GeometryQuery | undefined;
+    // (undocumented)
+    export function toImageGraphic(entry: ElementGeometryDataEntry): ImageGraphicProps | undefined;
+    // (undocumented)
+    export function toSubGraphicRange(entry: ElementGeometryDataEntry): ElementAlignedBox3d | undefined;
+    // (undocumented)
+    export function toTextString(entry: ElementGeometryDataEntry): TextStringProps | undefined;
+    export function toTransform(sourceToWorld: Float64Array): Transform | undefined;
+    // (undocumented)
+    export function updateGeometryParams(entry: ElementGeometryDataEntry, geomParams: GeometryParams): boolean;
+}
+
+// @alpha
 export type ElementGeometryChange = ExtantElementGeometryChange | DeletedElementGeometryChange;
 
 // @alpha
 export namespace ElementGeometryChange {
     export function iterable(modelChanges: ModelGeometryChangesProps): Iterable<ElementGeometryChange>;
     export function iterator(modelChanges: ModelGeometryChangesProps): Iterator<ElementGeometryChange>;
+}
+
+// @alpha
+export interface ElementGeometryDataEntry {
+    data: Uint8Array;
+    opcode: number;
+}
+
+// @alpha
+export type ElementGeometryFunction = (info: ElementGeometryInfo) => void;
+
+// @alpha
+export interface ElementGeometryInfo {
+    bbox?: Float64Array;
+    brepsPresent?: boolean;
+    categoryId?: Id64String;
+    entryArray: ElementGeometryDataEntry[];
+    sourceToWorld?: Float64Array;
+    viewIndependent?: boolean;
+}
+
+// @alpha
+export enum ElementGeometryOpcode {
+    ArcPrimitive = 7,
+    BasicSymbology = 4,
+    BRep = 25,
+    BsplineSurface = 12,
+    CurveCollection = 8,
+    CurvePrimitive = 10,
+    Fill = 19,
+    Image = 28,
+    LineStyleModifiers = 23,
+    Material = 21,
+    PartReference = 3,
+    Pattern = 20,
+    PointPrimitive = 5,
+    PointPrimitive2d = 6,
+    Polyface = 9,
+    SolidPrimitive = 11,
+    SubGraphicRange = 2,
+    TextString = 22
+}
+
+// @alpha
+export interface ElementGeometryRequest {
+    angleTol?: number;
+    chordTol?: number;
+    elementId: Id64String;
+    maxEdgeLength?: number;
+    minBRepFeatureSize?: number;
+    onGeometry: ElementGeometryFunction;
+    replaceBReps?: boolean;
+    skipBReps?: boolean;
+}
+
+// @alpha
+export interface ElementGeometryUpdate {
+    elementId: Id64String;
+    entryArray: ElementGeometryDataEntry[];
+    is2dPart?: boolean;
+    isWorld?: boolean;
+    viewIndependent?: boolean;
 }
 
 // @internal
@@ -2062,9 +2181,7 @@ export interface ElementLoadProps {
     // (undocumented)
     code?: CodeProps;
     // @internal
-    displayStyle?: {
-        omitScheduleScriptElementIds?: boolean;
-    };
+    displayStyle?: DisplayStyleLoadProps;
     // (undocumented)
     federationGuid?: GuidString;
     // (undocumented)
@@ -3616,7 +3733,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     // (undocumented)
     getToolTipMessage(_iModelToken: IModelRpcProps, _elementId: string): Promise<string[]>;
     // (undocumented)
-    getViewStateData(_iModelToken: IModelRpcProps, _viewDefinitionId: string): Promise<ViewStateProps>;
+    getViewStateData(_iModelToken: IModelRpcProps, _viewDefinitionId: string, _options?: ViewStateLoadProps): Promise<ViewStateProps>;
     // (undocumented)
     getViewThumbnail(_iModelToken: IModelRpcProps, _viewId: string): Promise<Uint8Array>;
     static readonly interfaceName = "IModelReadRpcInterface";
@@ -4303,6 +4420,14 @@ export interface ModelGeometryChangesProps {
     readonly inserted?: ElementIdsAndRangesProps;
     readonly range: Range3dProps;
     readonly updated?: ElementIdsAndRangesProps;
+}
+
+// @public
+export interface ModelLoadProps {
+    // (undocumented)
+    code?: CodeProps;
+    // (undocumented)
+    id?: Id64String;
 }
 
 // @public
@@ -5274,6 +5399,10 @@ export class RelatedElement implements RelatedElementProps {
 export interface RelatedElementProps {
     id: Id64String;
     relClassName?: string;
+}
+
+// @public
+export interface RelationshipProps extends EntityProps, SourceAndTarget {
 }
 
 // @beta
@@ -6449,6 +6578,14 @@ export interface SolarShadowSettingsProps {
     // @internal (undocumented)
     bias?: number;
     color?: ColorDefProps;
+}
+
+// @public
+export interface SourceAndTarget {
+    // (undocumented)
+    sourceId: Id64String;
+    // (undocumented)
+    targetId: Id64String;
 }
 
 // @beta
@@ -7631,6 +7768,11 @@ export class ViewFlags {
 export interface ViewQueryParams extends EntityQueryParams {
     // (undocumented)
     wantPrivate?: boolean;
+}
+
+// @public
+export interface ViewStateLoadProps {
+    displayStyle?: DisplayStyleLoadProps;
 }
 
 // @public

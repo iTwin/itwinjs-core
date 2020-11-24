@@ -62,7 +62,7 @@ export class TestRadialMenu extends React.Component<TestRadialMenuProps, TestRad
       if (this.props.onClose)
         this.props.onClose();
     });
-  }
+  };
 
   public componentDidUpdate(prevProps: TestRadialMenuProps) {
     if (prevProps.opened !== this.props.opened) {

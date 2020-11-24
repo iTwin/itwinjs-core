@@ -134,12 +134,12 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
   /* tab changed */
   private _onTabChanged = (tabIndex: number) => {
     this.setState({ currentCategory: tabIndex, header: undefined });
-  }
+  };
 
   // /* header callback - allows the category tabs to render content in the header */
   private _onAddHeader = (_header: React.ReactNode) => {
     this.setState({ header: _header });
-  }
+  };
 
   private _onEnter = (viewIds: Id64String[]) => {
     this.setState(
@@ -148,11 +148,11 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
         if (this.props.onOpen)
           this.props.onOpen(viewIds);
       });
-  }
+  };
 
   private _onSetCategory = (category: number) => {
     this.setState({ currentCategory: category, header: undefined });
-  }
+  };
 
   /* render the Sheets tab */
   private _renderSheets = () => {
@@ -161,13 +161,13 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
         showSheets={true} onAddHeader={this._onAddHeader} onSetCategory={this._onSetCategory}
         onEnter={this._onEnter} />
     );
-  }
+  };
 
   /* render the 3d Models tab */
   private _render3dModels = () => {
     return (<ModelsTab key={2} iModelConnection={this.props.iModelConnection}
       showFlatList={true} onEnter={this._onEnter} showToast={false} />);
-  }
+  };
 
   private _renderWaiting() {
     return (

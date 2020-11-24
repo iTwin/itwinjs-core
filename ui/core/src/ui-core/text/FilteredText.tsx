@@ -53,5 +53,5 @@ export function FilteredText(props: FilteredTextProps) {
     return <div {...otherProps} className={classnames("uicore-filtered-text", className)} title={value}>{spans}</div>;
   }
 
-  return <span {...otherProps} className={classnames("uicore-filtered-text", className)} title={value}>{value}</span>
+  return <span {...otherProps} className={classnames("uicore-filtered-text", className)} title={value}>{value}</span>;
 }

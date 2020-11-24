@@ -91,11 +91,11 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
 
   private _onViewedModelsChanged = () => {
     this._resetCheckBoxState();
-  }
+  };
 
   private _onViewedCategoriesChanged = () => {
     this._resetCheckBoxState();
-  }
+  };
 
   private createCheckBoxInfoCallback() {
     const combine = (status: CheckBoxInfo) => ({

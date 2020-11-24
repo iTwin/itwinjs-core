@@ -3,19 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 .nz-widget-panelWidget {
-  &.nz-transition {
-    flex: 1 1 100%;
+  &.nz-init, &.nz-transition {
+    flex-grow: 1;
+    flex-shrink: 1;
   }
 
   &.nz-horizontal {
-    &.nz-transitioning {
-      transition: max-width 0.25s ease-out;
+    &.nz-transition {
+      transition: flex-basis 0.25s ease-out;
     }
   }
 
   &:not(.nz-horizontal) {
-    &.nz-transitioning {
-      transition: max-height 0.25s ease-out;
+    &.nz-transition {
+      transition: flex-basis 0.25s ease-out;
     }
   }
 

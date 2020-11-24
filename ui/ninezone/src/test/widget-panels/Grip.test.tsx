@@ -205,7 +205,7 @@ describe("useResizeGrip", () => {
           {children}
         </PanelStateContext.Provider>
       </WidgetPanelContext.Provider>
-    </NineZoneProvider>
+    </NineZoneProvider>;
   }
   const wrapper = Wrapper;
 
@@ -256,7 +256,7 @@ describe("useResizeGrip", () => {
       type: "PANEL_SET_SIZE",
       side: "bottom",
       size: 210,
-    })
+    });
   });
 
   it("should not invoke onResize if ref is unset", () => {

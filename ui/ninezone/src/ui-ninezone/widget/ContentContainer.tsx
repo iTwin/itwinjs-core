@@ -18,7 +18,9 @@ export const WidgetContentContainer = React.memo(function WidgetContentContainer
   const widget = React.useContext(WidgetStateContext);
   const widgetContentManager = React.useContext(WidgetContentManagerContext);
   assert(widget);
-  const ref = widgetContentManager.getWidgetContentContainerRef(widget.activeTabId);
+  const ref = React.useCallback((instance: HTMLDivElement | null) => {
+    widgetContentManager.setContainer(widget.activeTabId, instance);
+  }, [widget.activeTabId, widgetContentManager]);
   const className = classnames(
     "nz-widget-content-container",
     widget.minimized && "nz-minimized",
@@ -26,7 +28,7 @@ export const WidgetContentContainer = React.memo(function WidgetContentContainer
   return (
     <div
       className={className}
-      ref={ref as React.Ref<HTMLDivElement>}
+      ref={ref}
     />
   );
 });

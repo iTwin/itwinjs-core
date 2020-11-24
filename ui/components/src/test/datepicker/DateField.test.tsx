@@ -103,9 +103,9 @@ describe("<DateField />", () => {
     expect(input!.disabled).to.be.false;
     fireEvent.change(input!, { target: { value: localValue } });
     fireEvent.keyDown(input!, { key: SpecialKey.Enter });
-    input!.focus()
+    input!.focus();
     fireEvent.change(input!, { target: { value: localValue } });
-    input!.blur()
+    input!.blur();
 
     // touch all the time options
     renderedComponent.rerender(<DateField initialDate={testDate} timeDisplay={TimeDisplay.H12MC} />);

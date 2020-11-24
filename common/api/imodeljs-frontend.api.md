@@ -5354,7 +5354,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
     // (undocumented)
     protected _totalDistanceMarker?: MeasureLabel;
     // (undocumented)
-    protected updateSelectedMarkerToolTip(seg: any, ev: BeButtonEvent): Promise<void>;
+    protected updateSelectedMarkerToolTip(seg: any, ev: BeButtonEvent, reopenToolTip: boolean): Promise<void>;
     // (undocumented)
     protected updateTotals(): Promise<void>;
 }
@@ -6375,6 +6375,7 @@ export class QuadId {
 
 // @alpha
 export class QuantityFormatter implements UnitsProvider {
+    constructor(showMetricValues?: boolean);
     // (undocumented)
     protected _activeSystemIsImperial: boolean;
     findFormatterSpecByQuantityType(type: QuantityType, imperial?: boolean): FormatterSpec | undefined;
@@ -6414,6 +6415,9 @@ export class QuantityFormatter implements UnitsProvider {
     protected _metricFormatSpecsByType: Map<QuantityType, FormatterSpec>;
     // (undocumented)
     protected _metricUnitParserSpecsByType: Map<QuantityType, ParserSpec>;
+    readonly onActiveUnitSystemChanged: BeUiEvent<{
+        useImperial: boolean;
+    }>;
     // (undocumented)
     onInitialized(): void;
     parseIntoQuantityValue(inString: string, parserSpec: ParserSpec): ParseResult;

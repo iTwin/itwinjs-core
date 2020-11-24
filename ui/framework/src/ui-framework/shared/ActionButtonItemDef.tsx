@@ -52,7 +52,7 @@ export abstract class ActionButtonItemDef extends ItemDefBase {
   /** Called when the size of the action button is initialized and the size is known */
   public handleSizeKnown = (size: SizeProps) => {
     this.size = size;
-  }
+  };
 
   /** Determines the dimension in a given orientation */
   public getDimension(orientation: Orientation): number {
@@ -72,7 +72,7 @@ export abstract class ActionButtonItemDef extends ItemDefBase {
   public getKey = (index?: number): string => {
     const key = (!!this.id) ? this.id : (index !== undefined) ? index.toString() : ActionButtonItemDef.getRandomId();
     return key;
-  }
+  };
 
   /** @internal */
   public toolbarReactNode(index?: number): React.ReactNode {

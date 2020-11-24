@@ -293,6 +293,8 @@ alpha;OrthogonalDirection
 internal;OrthogonalDirectionHelpers
 beta;PagedTreeNodeLoader
 public;PageOptions
+beta;ParsedInput: React.ForwardRefExoticComponent
+beta;ParsedInputProps 
 alpha;PlaybackSettings
 alpha;PlaybackSettingsChangeHandler = (settingsChange: PlaybackSettings) => void
 internal;PlayButton 
@@ -349,6 +351,8 @@ public;PropertyValueRendererContext
 public;PropertyValueRendererManager
 public;PropertyView 
 public;PropertyViewProps 
+beta;QuantityInput: React.ForwardRefExoticComponent
+beta;QuantityProps 
 public;ReactDataGridColumn 
 public;ResultSelector 
 public;ResultSelectorProps 

@@ -44,13 +44,13 @@ export class CalculatorDialog extends React.Component<CalculatorDialogProps, Cal
   private _handleOk = (value: number) => {
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Calculated value is ${value}`));
     this._handleClose();
-  }
+  };
 
   private _handleClose = () => {
     this.setState({ opened: false }, () => {
       ModalDialogManager.closeDialog();
     });
-  }
+  };
 
   public componentDidUpdate(oldProps: CalculatorDialogProps) {
     if (oldProps.opened !== this.props.opened) {

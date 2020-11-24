@@ -1,6 +1,6 @@
 {
   "name": "@bentley/projectshare-client",
-  "version": "2.9.0-dev.8",
+  "version": "2.10.0-dev.5",
   "description": "iModel.js ProjectShare Client",
   "main": "lib/projectshare-client.js",
   "typings": "lib/projectshare-client",
@@ -34,20 +34,19 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
-  "dependencies": {},
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.9.0-dev.8",
-    "@bentley/itwin-client": "^2.9.0-dev.8"
+    "@bentley/bentleyjs-core": "^2.10.0-dev.5",
+    "@bentley/itwin-client": "^2.10.0-dev.5"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.9.0-dev.8",
-    "@bentley/build-tools": "2.9.0-dev.8",
-    "@bentley/eslint-plugin": "2.9.0-dev.8",
-    "@bentley/certa": "2.9.0-dev.8",
-    "@bentley/config-loader": "2.9.0-dev.8",
-    "@bentley/context-registry-client": "2.9.0-dev.8",
-    "@bentley/itwin-client": "2.9.0-dev.8",
-    "@bentley/oidc-signin-tool": "2.9.0-dev.8",
+    "@bentley/bentleyjs-core": "2.10.0-dev.5",
+    "@bentley/build-tools": "2.10.0-dev.5",
+    "@bentley/certa": "2.10.0-dev.5",
+    "@bentley/config-loader": "2.10.0-dev.5",
+    "@bentley/context-registry-client": "2.10.0-dev.5",
+    "@bentley/eslint-plugin": "2.10.0-dev.5",
+    "@bentley/itwin-client": "2.10.0-dev.5",
+    "@bentley/oidc-signin-tool": "2.10.0-dev.5",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",

@@ -76,11 +76,11 @@ class ThemeManagerComponent extends React.Component<ThemeProps> {
     document.documentElement.classList.add("theme-transition");
     document.documentElement.setAttribute("data-theme", theme);
     window.setTimeout(() => document.documentElement.classList.remove("theme-transition"), 1000);
-  }
+  };
 
   private _setWidgetOpacity = (opacity: number) => {
     document.documentElement.style.setProperty("--buic-widget-opacity", opacity.toString());
-  }
+  };
 
   public render(): React.ReactNode {
     return this.props.children;

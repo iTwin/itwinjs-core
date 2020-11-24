@@ -50,6 +50,7 @@ import { Orientation } from '@bentley/ui-core';
 import { OutputMessageAlert } from '@bentley/imodeljs-frontend';
 import { OutputMessagePriority } from '@bentley/imodeljs-frontend';
 import { OutputMessageType } from '@bentley/imodeljs-frontend';
+import { ParseResults } from '@bentley/ui-abstract';
 import { Point2d } from '@bentley/geometry-core';
 import { Point3d } from '@bentley/geometry-core';
 import { Primitives } from '@bentley/ui-abstract';
@@ -57,6 +58,7 @@ import { PropertyDescription } from '@bentley/ui-abstract';
 import { PropertyRecord } from '@bentley/ui-abstract';
 import { PropertyValue } from '@bentley/ui-abstract';
 import * as PropTypes from 'prop-types';
+import { QuantityType } from '@bentley/imodeljs-frontend';
 import { RatioChangeResult } from '@bentley/ui-core';
 import * as React from 'react';
 import ReactDataGrid = require('react-data-grid');
@@ -2988,6 +2990,18 @@ export interface PageOptions {
     start?: number;
 }
 
+// @beta
+export const ParsedInput: React.ForwardRefExoticComponent<ParsedInputProps & React.RefAttributes<HTMLInputElement>>;
+
+// @beta
+export interface ParsedInputProps extends CommonProps {
+    formatValue: (value: number) => string;
+    initialValue: number;
+    onChange?: (newValue: number) => void;
+    parseString: (stringValue: string) => ParseResults;
+    readonly?: boolean;
+}
+
 // @alpha
 export interface PlaybackSettings {
     allowMilestoneEdits?: boolean;
@@ -3430,6 +3444,17 @@ export interface PropertyViewProps extends SharedRendererProps {
     labelElement: React.ReactNode;
     valueElement?: React.ReactNode;
     valueElementRenderer?: () => React.ReactNode;
+}
+
+// @beta
+export const QuantityInput: React.ForwardRefExoticComponent<QuantityProps & React.RefAttributes<HTMLInputElement>>;
+
+// @beta
+export interface QuantityProps extends CommonProps {
+    initialValue: number;
+    onQuantityChange: (newQuantityValue: number) => void;
+    quantityType: QuantityType;
+    readonly?: boolean;
 }
 
 // @public

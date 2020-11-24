@@ -28,7 +28,7 @@ describe("StatusBarComposer", () => {
     public static triggerSyncRefresh = () => {
       TestUiProvider.statusBarItemIsVisible = false;
       SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(TestUiProvider.uiSyncEventId);
-    }
+    };
 
     public provideStatusBarItems(_stageId: string, stageUsage: string): CommonStatusBarItem[] {
 

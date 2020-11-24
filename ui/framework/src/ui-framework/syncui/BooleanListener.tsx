@@ -65,7 +65,7 @@ export class BooleanSyncUiListener extends React.Component<BooleanListenerProps,
         this.setState({ boolValue });
       }
     }
-  }
+  };
 
   public componentDidMount() {
     /* istanbul ignore else */

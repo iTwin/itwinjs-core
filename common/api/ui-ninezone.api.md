@@ -1485,9 +1485,6 @@ export interface PanelInitializeAction {
     readonly type: "PANEL_INITIALIZE";
 }
 
-// @internal (undocumented)
-export const PanelPinnedContext: React.Context<boolean>;
-
 // @alpha
 export interface PanelProps extends CommonProps {
     children?: React.ReactNode;
@@ -1521,9 +1518,6 @@ export const PanelSideContext: React.Context<"left" | "right" | "top" | "bottom"
 
 // @internal (undocumented)
 export const panelSides: [LeftPanelSide, RightPanelSide, TopPanelSide, BottomPanelSide];
-
-// @internal (undocumented)
-export const PanelSpanContext: React.Context<boolean | undefined>;
 
 // @alpha
 export class PanelsProvider extends React.PureComponent<PanelsProviderProps> {
@@ -1612,7 +1606,7 @@ export interface PanelToggleSpanAction {
 }
 
 // @internal (undocumented)
-export const PanelWidget: React.NamedExoticComponent<PanelWidgetProps>;
+export const PanelWidget: React.MemoExoticComponent<React.ForwardRefExoticComponent<PanelWidgetProps & React.RefAttributes<WidgetComponent>>>;
 
 // @internal
 export interface PanelWidgetDragStartAction {
@@ -1630,6 +1624,16 @@ export interface PanelWidgetDragStartAction {
 
 // @internal (undocumented)
 export interface PanelWidgetProps {
+    // (undocumented)
+    onBeforeTransition(): void;
+    // (undocumented)
+    onPrepareTransition(): void;
+    // (undocumented)
+    onTransitionEnd(): void;
+    // (undocumented)
+    size: number | undefined;
+    // (undocumented)
+    transition: "init" | "transition" | undefined;
     // (undocumented)
     widgetId: WidgetState["id"];
 }
@@ -2767,6 +2771,18 @@ export class UpdateWindowResizeSettings implements ResizeStrategy {
 // @internal (undocumented)
 export function useAllowedPanelTarget(): boolean;
 
+// @internal (undocumented)
+export function useAnimatePanelWidgets(): {
+    handleBeforeTransition: PanelWidgetProps["onBeforeTransition"];
+    handlePrepareTransition: PanelWidgetProps["onPrepareTransition"];
+    handleTransitionEnd: PanelWidgetProps["onTransitionEnd"];
+    getRef(widgetId: WidgetState["id"]): React.Ref<WidgetComponent>;
+    transition: PanelWidgetProps["transition"];
+    sizes: {
+        [id: string]: PanelWidgetProps["size"];
+    };
+};
+
 // @internal
 export function useCursor(): void;
 
@@ -2859,9 +2875,6 @@ export interface UseDragWidgetArgs {
     widgetId: WidgetState["id"];
 }
 
-// @internal
-export function useForceFill(): boolean;
-
 // @internal (undocumented)
 export function useIsDragged(callback: () => boolean): boolean;
 
@@ -2876,6 +2889,9 @@ export function useIsMainPanelWidget(): boolean;
 
 // @internal (undocumented)
 export function useLabel(labelKey: keyof NineZoneLabels): string | undefined;
+
+// @internal (undocumented)
+export function useMode(widgetId: string): "fit" | "fill" | "minimized";
 
 // @internal
 export function useOverflow(children: React.ReactNode, activeChildIndex?: number): [ReadonlyArray<string> | undefined, (size: number) => void, (size: number) => void, (key: string) => (size: number) => void];
@@ -2894,9 +2910,6 @@ export interface UsePanelTargetArgs {
 
 // @internal
 export const usePointerCaptor: <T extends HTMLElement>(onPointerDown?: ((args: PointerCaptorArgs, e: PointerCaptorEvent) => void) | undefined, onPointerMove?: ((args: PointerCaptorArgs, e: PointerCaptorEvent) => void) | undefined, onPointerUp?: ((e: PointerCaptorEvent) => void) | undefined) => (instance: T | null) => void;
-
-// @internal (undocumented)
-export function usePreferredPanelWidgetSize(widgetId: WidgetState["id"]): "fit-content" | undefined;
 
 // @internal (undocumented)
 export const useResizeGrip: <T extends HTMLElement>() => [(instance: T | null) => void, boolean, boolean];
@@ -3012,11 +3025,11 @@ export const WidgetContentManagerContext: React.Context<WidgetContentManagerCont
 // @internal (undocumented)
 export interface WidgetContentManagerContextArgs {
     // (undocumented)
-    getWidgetContentContainerRef: (tabId: TabState["id"]) => React.Ref<Element>;
-    // (undocumented)
     onRestoreTransientState: EventEmitter<(tabId: TabState["id"]) => void>;
     // (undocumented)
     onSaveTransientState: EventEmitter<(tabId: TabState["id"]) => void>;
+    // (undocumented)
+    setContainer(tabId: TabState["id"], container: Element | null): void;
 }
 
 // @internal (undocumented)
@@ -3124,8 +3137,6 @@ export const WidgetPanelComponent: React.NamedExoticComponent<WidgetPanelCompone
 
 // @internal (undocumented)
 export interface WidgetPanelComponentProps {
-    // (undocumented)
-    panel: PanelState;
     // (undocumented)
     spanBottom?: boolean;
     // (undocumented)

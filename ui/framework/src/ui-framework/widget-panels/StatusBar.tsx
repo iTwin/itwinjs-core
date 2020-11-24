@@ -6,7 +6,7 @@
  * @module StatusBar
  */
 
-import "./StatusBar.scss"
+import "./StatusBar.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";

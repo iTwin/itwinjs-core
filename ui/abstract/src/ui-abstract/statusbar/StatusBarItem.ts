@@ -140,7 +140,7 @@ export class AbstractStatusBarItemUtilities {
     icon, tooltip,
     execute,
     ...overrides,
-  })
+  });
 
   /** Creates a StatusBar item to display a label */
   public static createLabelItem = (id: string, section: StatusBarSection, itemPriority: number, icon: string | ConditionalStringValue, label: string | ConditionalStringValue, labelSide = StatusBarLabelSide.Right, overrides?: Partial<AbstractStatusBarLabelItem>): AbstractStatusBarLabelItem => ({
@@ -148,5 +148,5 @@ export class AbstractStatusBarItemUtilities {
     icon, label,
     labelSide,
     ...overrides,
-  })
+  });
 }

@@ -234,6 +234,7 @@ export * from "./polyface/AuxData";
 export * from "./polyface/BoxTopology";
 export * from "./polyface/FacetFaceData";
 export * from "./polyface/Polyface";
+export * from "./polyface/IndexedPolyfaceVisitor";
 export * from "./polyface/PolyfaceBuilder";
 export * from "./polyface/PolyfaceData";
 export * from "./polyface/PolyfaceQuery";

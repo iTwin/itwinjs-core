@@ -302,7 +302,7 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
     } catch (err) {
       Logger.logError(FrontendAuthorizationClientLoggerCategory.Authorization, "Error thrown when handing OidcBrowserClient.onUserStateChanged event", () => ({ message: err.message }));
     }
-  }
+  };
 
   /**
    * Raised when a user session has been established (or re-established).
@@ -310,40 +310,40 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
    */
   protected _onUserLoaded = (user: User) => {
     this._onUserStateChanged(user);
-  }
+  };
 
   /**
    * Raised when a user session has been terminated.
    */
   protected _onUserUnloaded = () => {
     this._onUserStateChanged(undefined);
-  }
+  };
 
   /**
    * Raised prior to the access token expiring
    */
   protected _onAccessTokenExpiring = async () => {
-  }
+  };
 
   /**
    * Raised after the access token has expired.
    */
   protected _onAccessTokenExpired = () => {
     this._onUserStateChanged(undefined);
-  }
+  };
 
   /**
    * Raised when the automatic silent renew has failed.
    */
   protected _onSilentRenewError = () => {
-  }
+  };
 
   /**
    * Raised when the user's sign-in status at the OP has changed.
    */
   protected _onUserSignedOut = () => {
     this._onUserStateChanged(undefined);
-  }
+  };
 
   /** Disposes the resources held by this client */
   public dispose(): void {

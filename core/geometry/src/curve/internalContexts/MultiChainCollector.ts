@@ -15,13 +15,14 @@ import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
 import { Path } from "../../curve/Path";
-import { ChainTypes } from "../../curve/RegionOps";
+import { ChainTypes, RegionOps } from "../../curve/RegionOps";
 import { Geometry } from "../../Geometry";
 import { CurveCurve } from "../../curve/CurveCurve";
 import { CurveChainWireOffsetContext } from "./PolygonOffsetContext";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import { XYAndZ } from "../../geometry3d/XYZProps";
+import { FrameBuilder } from "../../geometry3d/FrameBuilder";
 
 /**
  * Manage a growing array of arrays of curve primitives that are to be joined "head to tail" in paths.
@@ -47,14 +48,17 @@ export class MultiChainCollector {
   private _endPointShiftTolerance: number;
   /** TIGHT tolerance for snap to end */
   private _endPointHitTolerance: number;
-
+  /** tolerance for choosing Path or Loop.   If undefined, ALWAYS PATH */
+  private _planarityTolerance: number | undefined;
   /** Initialize with an empty array of chains.
-   * @param makeClones if true, all CurvePrimitives sent to `announceCurvePrimitive` is immediately cloned.  If false, the reference to the original curve is maintained.
+   * @param endPointShiftTolerance tolerance for calling endpoints identical
+   * @param planeTolerance tolerance for considering a loop to be planar.  If undefined, only create Path.  If defined, create Loop curves are if within tolerance of a plane.
    */
-  public constructor(endPointShiftTolerance = Geometry.smallMetricDistance) {
+  public constructor(endPointShiftTolerance = Geometry.smallMetricDistance, planeTolerance: number | undefined = Geometry.smallMetricDistance) {
     this._chains = [];
     this._endPointShiftTolerance = endPointShiftTolerance;
     this._endPointHitTolerance = Geometry.smallMetricDistance;
+    this._planarityTolerance = planeTolerance;
   }
 
   private _xyzWork0?: Point3d;
@@ -229,8 +233,19 @@ export class MultiChainCollector {
         MultiChainCollector._staticPointA = primitive0.startPoint(MultiChainCollector._staticPointA);
         MultiChainCollector._staticPointB = primitiveN.endPoint(MultiChainCollector._staticPointB);
       }
-      if (MultiChainCollector._staticPointA.isAlmostEqual(MultiChainCollector._staticPointB))
-        return Loop.createArray(curves);
+      if (MultiChainCollector._staticPointA.isAlmostEqual(MultiChainCollector._staticPointB)) {
+        const localToWorld = FrameBuilder.createRightHandedLocalToWorld(curves);
+        if (localToWorld) {
+          const worldToLocal = localToWorld.inverse();
+          if (worldToLocal) {
+            const range = RegionOps.curveArrayRange(curves, worldToLocal);
+            if (this._planarityTolerance !== undefined && range.zLength() <= this._planarityTolerance) {
+              return Loop.createArray(curves);
+            }
+          }
+        }
+        return Path.createArray(curves);
+      }
     }
     if (curves.length === 1)
       return curves[0];
@@ -338,8 +353,8 @@ export class OffsetHelpers {
    * @param fragments fragments to be chained
    * @param offsetDistance offset distance.
    */
-  public static collectChains(fragments: GeometryQuery[], gapTolerance: number): ChainTypes {
-    const collector = new MultiChainCollector(gapTolerance);
+  public static collectChains(fragments: GeometryQuery[], gapTolerance: number, planarTolerance: number = Geometry.smallMetricDistance): ChainTypes {
+    const collector = new MultiChainCollector(gapTolerance, planarTolerance);
     for (const s of fragments) {
       collector.captureCurve(s);
     }

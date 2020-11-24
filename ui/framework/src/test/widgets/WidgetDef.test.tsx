@@ -225,6 +225,6 @@ describe("WidgetDef", () => {
         widgetId: "abc",
         widgetIndex: 5,
       });
-    })
-  })
+    });
+  });
 });

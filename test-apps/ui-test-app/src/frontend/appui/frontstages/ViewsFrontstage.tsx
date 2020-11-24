@@ -113,7 +113,7 @@ export class ViewsFrontstage extends FrontstageProvider {
   private _onEmphasizeElementsChangedHandler = (args: EmphasizeElementsChangedArgs) => {
     if (FrontstageManager.activeFrontstageDef && FrontstageManager.activeFrontstageId === ViewsFrontstage.stageId)
       this.applyVisibilityOverrideToSpatialViewports(FrontstageManager.activeFrontstageDef, args.viewport, args.action); // eslint-disable-line @typescript-eslint/no-floating-promises
-  }
+  };
 
   constructor(public viewStates: ViewState[], public iModelConnection: IModelConnection) {
     super();
@@ -424,7 +424,7 @@ class AdditionalTools {
 
     const endReason = isCancelled ? ActivityMessageEndReason.Cancelled : ActivityMessageEndReason.Completed;
     IModelApp.notifications.endActivityMessage(endReason);
-  }
+  };
 
   /** Tool that will display a pointer message on keyboard presses.
    */
@@ -440,7 +440,7 @@ class AdditionalTools {
     IModelApp.notifications.outputMessage(details);
     document.addEventListener("keyup", this._handleTool4Keypress);
     document.addEventListener("mousemove", this._handleTool4MouseMove);
-  }
+  };
 
   private _handleTool4Keypress = (event: KeyboardEvent) => {
     const details = new NotifyMessageDetails(OutputMessagePriority.Info, "", this._tool4Detailed);
@@ -476,17 +476,17 @@ class AdditionalTools {
       IModelApp.notifications.outputMessage(details);
       IModelApp.notifications.updatePointerMessage({ x: CursorInformation.cursorX, y: CursorInformation.cursorY }, this._toolRelativePosition);
     }
-  }
+  };
 
   private _handleTool4MouseMove = () => {
     IModelApp.notifications.updatePointerMessage({ x: CursorInformation.cursorX, y: CursorInformation.cursorY }, this._toolRelativePosition);
-  }
+  };
 
   private _handleTool4Dismiss = () => {
     IModelApp.notifications.closePointerMessage();
     document.removeEventListener("keyup", this._handleTool4Keypress);
     document.removeEventListener("mousemove", this._handleTool4Dismiss);
-  }
+  };
 
   private get _activityMessageItem() {
     return new CommandItemDef({
@@ -527,7 +527,7 @@ class AdditionalTools {
 
   private _closeModal = () => {
     ModalDialogManager.closeDialog();
-  }
+  };
 
   private get _openCalculatorItem() {
     return new CommandItemDef({
@@ -668,7 +668,7 @@ class AdditionalTools {
         this._closeCursorPopup();
         break;
     }
-  }
+  };
 
   private get _clearMessages() {
     return new CommandItemDef({
@@ -726,7 +726,7 @@ class AdditionalTools {
     ]);
     const item = ToolbarItemUtilities.createGroupButton("tool-formatting-setting", 135, "icon-placeholder", "set formatting units", children, { badgeType: BadgeType.New, groupPriority: 40 });
     return item;
-  }
+  };
 
   // cSpell:enable
   public additionalHorizontalToolbarItems: CommonToolbarItem[] = [
@@ -777,7 +777,7 @@ class AdditionalTools {
     const groupHiddenCondition = new ConditionalBooleanValue(() => SampleAppIModelApp.getTestProperty() === "HIDE", [SampleAppUiActionId.setTestProperty]);
     const item = ToolbarItemUtilities.createGroupButton("SampleApp:buttons.anotherGroup", 130, "icon-placeholder", IModelApp.i18n.translate("SampleApp:buttons.anotherGroup"), children, { badgeType: BadgeType.New, isHidden: groupHiddenCondition, groupPriority: 30 });
     return item;
-  }
+  };
 
   // test ToolbarHelper.createToolbarItemsFromItemDefs
   public additionalVerticalToolbarItems: CommonToolbarItem[] = [...ToolbarHelper.createToolbarItemsFromItemDefs([

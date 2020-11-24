@@ -257,19 +257,19 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
 
   private _isViewport3D = () => {
     return this.state.view !== undefined && this.state.view.is3d();
-  }
+  };
 
   private _rootElementRef = (el: HTMLDivElement | null) => {
     this._rootElement = el;
-  }
+  };
 
   private _viewElementRef = (el: HTMLDivElement | null) => {
     this._viewElement = el;
-  }
+  };
 
   private _viewContainerElementRef = (el: HTMLDivElement | null) => {
     this._viewContainerElement = el;
-  }
+  };
 
   private _lastTime: number | undefined;
 
@@ -292,7 +292,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
       this._lastTime = undefined;
       this._animationEnd();
     }
-  }
+  };
 
   private _animationEnd = () => {
     const hasViewportMoved = !this.state.origin.isAlmostEqual(this.state.startOrigin) ||
@@ -312,7 +312,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
           this._updateFrustum(true);
       });
     }
-  }
+  };
 
   private _lastPanTime: number | undefined;
 
@@ -339,7 +339,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
       this._lastPanTime = undefined;
       this._updateFrustum(true);
     }
-  }
+  };
 
   public componentDidMount() {
     this._mounted = true;
@@ -400,14 +400,14 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
         });
       }
     }
-  }
+  };
 
   private _updateFrustum = (complete: boolean = false) => {
     const halfExtents = this.state.extents.scale(.5);
     const offset = this.state.rotateMinimapWithView || this._isViewport3D() ? this.state.rotation.multiplyTransposeVector(halfExtents) : halfExtents;
     const origin = this.state.origin.minus(offset);
     ViewportComponentEvents.setDrawingViewportState(origin, this.state.rotation, complete);
-  }
+  };
 
   private _toggleRotationMode = () => {
     const rotateMinimapWithView = !this.state.rotateMinimapWithView;
@@ -415,14 +415,14 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
       if (this._viewport)
         this._handleViewRotationChangeEvent({ viewport: this._viewport });
     });
-  }
+  };
 
   private _handleKeyUp = (event: React.KeyboardEvent) => {
     // istanbul ignore else
     if (event.key === SpecialKey.Escape && this.state.mode === MapMode.Opened) {
       this._closeLargeMap();
     }
-  }
+  };
 
   private _lastClientXY: Point2d = Point2d.createZero();
   private _processWindowDrag(movement: Point2d) {
@@ -460,19 +460,19 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
     const mouseStart = Point2d.create(event.clientX, event.clientY);
     this.setState({ mouseStart });
     this._lastClientXY = Point2d.create(event.clientX, event.clientY);
-  }
+  };
 
   private _handleDrawingMouseDown = (event: React.MouseEvent) => {
     if (this.state.mode === MapMode.Opened) {
       event.preventDefault();
       this.setState({ isPanning: true });
     }
-  }
+  };
 
   private _handleWindowMouseDown = (event: React.MouseEvent) => {
     event.preventDefault();
     this.setState({ isMoving: true });
-  }
+  };
 
   private _handleMouseDrag = (event: React.MouseEvent) => {
     const mouse = Point2d.create(event.clientX, event.clientY);
@@ -490,7 +490,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
       }
     }
     this._lastClientXY = mouse;
-  }
+  };
 
   private _handleMouseDragEnd = (event: React.MouseEvent) => {
     const mouse = Point2d.create(event.clientX, event.clientY);
@@ -510,7 +510,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
       this._closeLargeMap();
     }
     this._lastClientXY = Point2d.create(event.clientX, event.clientY);
-  }
+  };
 
   private _handleWindowTouchStart = (event: any) => {
     if (1 !== event.targetTouches.length)
@@ -521,7 +521,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
     this.setState({ mouseStart });
     this._lastClientXY = mouseStart.clone();
     this.setState({ isMoving: true });
-  }
+  };
 
   private _onTouchMove = (event: TouchEvent) => {
     if (1 !== event.targetTouches.length)
@@ -531,7 +531,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
     // add scaled mouse movement
     this._processWindowDrag(movement);
     this._lastClientXY = mouse;
-  }
+  };
 
   private _onTouchEnd = (event: TouchEvent) => {
     if (0 !== event.targetTouches.length)
@@ -541,28 +541,28 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
       this._lastClientXY = Point2d.create(event.changedTouches[0].clientX, event.changedTouches[0].clientY); // Doesn't seem necessary...but _handleMouseDragEnd sets it...
     window.removeEventListener("touchmove", this._onTouchMove);
     window.removeEventListener("touchend", this._onTouchEnd);
-  }
+  };
 
   /** @internal */
   public static getDefaultClosedMapSize = (): Vector3d => {
     return Vector3d.create(96, 96);
-  }
+  };
 
   /** @internal */
   public static getDefaultOpenedMapSize = (paddingX: number = 0, paddingY: number = 0): Vector3d => {
     return Vector3d.create(window.innerWidth / 3 - 2 * (window.innerWidth - paddingX), window.innerHeight / 3 - 2 * paddingY);
-  }
+  };
 
   private _getClosedMapSize = (): Vector3d => {
     if (this.props.closeSize === undefined)
       return DrawingNavigationAid.getDefaultClosedMapSize();
     return this.props.closeSize;
-  }
+  };
   private _getOpenedMapSize = (): Vector3d => {
     if (this.props.openSize === undefined)
       return DrawingNavigationAid.getDefaultOpenedMapSize(this._rootOffset.right, this._rootOffset.top);
     return this.props.openSize;
-  }
+  };
 
   private _openLargeMap = () => {
     // istanbul ignore else
@@ -583,7 +583,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
         this._animationFrame = setTimeout(this._animation);
       });
     }
-  }
+  };
 
   private _closeLargeMap = () => {
     // istanbul ignore else
@@ -609,7 +609,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
         this._animationFrame = setTimeout(this._animation, 16.667);
       });
     }
-  }
+  };
 
   private _getPanVector = () => {
     const is3D = this._isViewport3D();
@@ -635,7 +635,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
     const vect = Vector3d.createFrom(this.state.origin.minus(this.state.mapOrigin)); // vect will never be zero or magnitude would also be zero
     const norm = vect.normalize();
     return norm!.scale(magnitude); // norm is only undefined when vect is zero, in which it would have returned at magnitudeVector.isAlmostZero
-  }
+  };
 
   private _handleWheel = (event: React.WheelEvent) => {
     // istanbul ignore else
@@ -661,17 +661,17 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
         this.setState({ mapOrigin: m, drawingZoom: zoom });
       }
     }
-  }
+  };
 
   private _handleZoomIn = () => {
     const zoom = this.state.drawingZoom * 1.4;
     this.setState({ drawingZoom: zoom });
-  }
+  };
 
   private _handleZoomOut = () => {
     const zoom = this.state.drawingZoom / 1.4;
     this.setState({ drawingZoom: zoom });
-  }
+  };
 
   private _handleUnrotate = () => {
     const startRotation = this.state.rotation;
@@ -684,7 +684,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
     this.setState({ animation: 0, startOrigin, origin, startMapOrigin, mapOrigin, startRotation, rotation: Matrix3d.createIdentity() }, () => {
       this._animationFrame = setTimeout(this._animation, 16.667);
     });
-  }
+  };
 
   /** @internal */
   public static findRotatedWindowDimensions = (extents: Vector3d, rotation: Matrix3d) => {
@@ -713,7 +713,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
       const y4 = cosHeight - sinWidth;
       return Vector3d.create(Math.abs(x1 - x3) / 2, Math.abs(y2 - y4) / 2);
     }
-  }
+  };
 }
 
 /** @internal */
@@ -772,7 +772,7 @@ export class DrawingNavigationCanvas extends React.Component<DrawingNavigationCa
       this._vp.view.setExtents(this.props.extents);
       this._vp.applyViewState(this._vp.view);
     }
-  }
+  };
 
   public componentDidUpdate(oldProps: DrawingNavigationCanvasProps) {
     const viewManager = this.props.viewManagerOverride ? this.props.viewManagerOverride : /* istanbul ignore next */ IModelApp.viewManager;
@@ -806,6 +806,6 @@ export class DrawingNavigationCanvas extends React.Component<DrawingNavigationCa
 
   private _canvasElementRef = (el: HTMLDivElement | null) => {
     this._canvasElement = el;
-  }
+  };
 
 }

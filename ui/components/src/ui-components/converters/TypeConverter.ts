@@ -77,7 +77,7 @@ export abstract class TypeConverter implements SortComparer, OperatorProcessor, 
 
   /** Default implementation just calls convertFromString with no options */
   public convertFromStringWithOptions(value: string, _options?: { [key: string]: any }): ConvertedPrimitives.Value | undefined | Promise<ConvertedPrimitives.Value | undefined> {
-    return this.convertFromString (value);
+    return this.convertFromString(value);
   }
 
   /** Converts a value associated with a property description to a string */

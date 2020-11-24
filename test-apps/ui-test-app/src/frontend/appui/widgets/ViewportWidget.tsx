@@ -66,7 +66,7 @@ export class ViewportWidget extends React.Component<ViewportWidgetProps, Viewpor
         iModelConnection: args.iModelConnection,
       });
     }
-  }
+  };
 
   public render() {
     const divStyle: React.CSSProperties = {

@@ -60,7 +60,7 @@ export class FilteringPropertyDataProvider implements IPropertyDataProvider {
       if (filteredRecords.length !== 0 || filteredCategories.length !== 0) {
         const newCategory = this.copyPropertyCategory(category, filteredCategories);
         newRecords[newCategory.name] = filteredRecords;
-        newCategories.push(newCategory)
+        newCategories.push(newCategory);
       }
     };
 

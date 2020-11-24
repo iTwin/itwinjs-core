@@ -81,7 +81,7 @@ export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> 
         });
       }
     }
-  }
+  };
 
   public componentDidMount() {
     SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
@@ -101,14 +101,14 @@ export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> 
       if (thisTool)
         (new thisTool()).run();
     }
-  }
+  };
 
   private _handleKeyDown = (e: React.KeyboardEvent): void => {
     // istanbul ignore else
     if (e.key === SpecialKey.Escape) {
       KeyboardShortcutManager.setFocusToHome();
     }
-  }
+  };
 
   public get label(): string {
     return PropsHelper.getStringFromSpec(this._label);

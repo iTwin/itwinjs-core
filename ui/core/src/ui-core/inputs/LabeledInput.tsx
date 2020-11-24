@@ -19,18 +19,18 @@ export interface LabeledInputProps extends InputProps, LabeledComponentProps, Me
 /** Text input wrapper that provides additional styling and labeling
  * @public
  */
-export class LabeledInput extends React.PureComponent<LabeledInputProps> {
-  public render(): JSX.Element {
+export const LabeledInput = React.forwardRef<HTMLInputElement, LabeledInputProps>(
+  function LabeledInput(props, ref) {
     const { label, status, className, style,
       inputClassName, inputStyle,
-      labelClassName, labelStyle,
+      labelClassName, labelStyle, disabled,
       message, messageClassName, messageStyle,
-      ...props } = this.props;
+      ...otherProps } = props;
 
     return (
       <label style={style} className={classnames(
         "uicore-inputs-labeled-input",
-        this.props.disabled && "uicore-disabled",
+        disabled && "uicore-disabled",
         status,
         className,
       )}>
@@ -38,7 +38,7 @@ export class LabeledInput extends React.PureComponent<LabeledInputProps> {
           <div className={classnames("uicore-label", labelClassName)} style={labelStyle}> {label} </div>
         }
         <div className={classnames("input", { "with-icon": !!status })}>
-          <Input disabled={this.props.disabled} className={inputClassName} style={inputStyle} {...props} />
+          <Input ref={ref} disabled={disabled} className={inputClassName} style={inputStyle} {...otherProps} />
           {status &&
             <i className={classnames("icon", `icon-status-${status}`)} />
           }
@@ -49,4 +49,4 @@ export class LabeledInput extends React.PureComponent<LabeledInputProps> {
       </label>
     );
   }
-}
+);

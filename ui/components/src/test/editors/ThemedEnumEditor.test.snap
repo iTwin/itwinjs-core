@@ -1,20 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`<EnumEditor /> renders correctly 1`] = `
-<ThemedSelect
-  className="components-cell-editor components-enum-editor"
-  data-testid="components-select-editor"
-  isMulti={false}
-  onChange={[Function]}
-  options={Array []}
-  styles={
-    Object {
-      "minWidth": "4.5em",
-    }
-  }
-/>
-`;
-
 exports[`<ThemedEnumEditor /> renders correctly 1`] = `
 <ThemedSelect
   className="components-cell-editor components-enum-editor"

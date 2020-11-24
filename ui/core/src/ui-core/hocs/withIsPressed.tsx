@@ -28,22 +28,22 @@ export const withIsPressed = <ComponentProps extends {}>(
   return class WithIsPressed extends React.PureComponent<ComponentProps & WithIsPressedProps> {
     public handleOnPointerDown = () => {
       this.changeIsPressed(true);
-    }
+    };
 
     public handleOnPointerUp = () => {
       this.changeIsPressed(false);
-    }
+    };
 
     public handleOnMouseLeave = () => {
       this.changeIsPressed(false);
-    }
+    };
 
     public changeIsPressed = (isPressed: boolean) => {
       if (this.props.isPressed === isPressed)
         return;
 
       this.props.onIsPressedChange && this.props.onIsPressedChange(isPressed);
-    }
+    };
 
     public render() {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars

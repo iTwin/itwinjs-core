@@ -139,7 +139,7 @@ export class BGFBWriter {
     const order = bcurve.order;
     const closed = false;   // typescript bcurves are not closed.  There is API to impose wrapping . . .
     const polesOffset = this.writeNumberArray(bcurve.copyXYZFloat64Array(false));
-    const weightsOffset = this.writeNumberArray(bcurve.copyWeightsFloat64Array())
+    const weightsOffset = this.writeNumberArray(bcurve.copyWeightsFloat64Array());
     const knotsOffset = this.writeNumberArray(bcurve.copyKnots(true));
     const headerOffset = BGFBAccessors.BsplineCurve.createBsplineCurve(this.builder,
       order, closed, polesOffset, weightsOffset, knotsOffset);
@@ -223,7 +223,7 @@ export class BGFBWriter {
       const carrierOffset = BGFBAccessors.DgnSphere.createDgnSphere(this.builder, detailOffset);
       return BGFBAccessors.VariantGeometry.createVariantGeometry(this.builder, BGFBAccessors.VariantGeometryUnion.tagDgnSphere, carrierOffset, 0);
     } else if (solid instanceof Cone) {
-      const centerA = solid.getCenterA()
+      const centerA = solid.getCenterA();
       const centerB = solid.getCenterB();
       const vectorX = solid.getVectorX();
       const vectorY = solid.getVectorY();

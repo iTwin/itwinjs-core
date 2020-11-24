@@ -2613,7 +2613,17 @@ export class IndexedPolyface extends Polyface {
 }
 
 // @public
+export class IndexedPolyfaceSubsetVisitor extends IndexedPolyfaceVisitor {
+    static createSubsetVisitor(polyface: IndexedPolyface, activeFacetIndices: number[], numWrap: number): IndexedPolyfaceSubsetVisitor;
+    moveToNextFacet(): boolean;
+    moveToReadIndex(activeIndex: number): boolean;
+    parentFacetIndex(activeIndex: number): number | undefined;
+    reset(): void;
+}
+
+// @public
 export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisitor {
+    protected constructor(facets: IndexedPolyface, numWrap: number);
     clearArrays(): void;
     clientAuxIndex(i: number): number;
     clientColorIndex(i: number): number;
@@ -2733,6 +2743,9 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
 
 // @public
 export type IntegratedSpiralTypeName = "clothoid" | "bloss" | "biquadratic" | "cosine" | "sine";
+
+// @internal
+export function interpolateColor(color0: number, fraction: number, color1: number): number;
 
 // @public
 export enum InverseMatrixState {
@@ -3161,7 +3174,7 @@ export class Matrix3d implements BeJSONFunctions {
     setColumns(vectorX: Vector3d | undefined, vectorY: Vector3d | undefined, vectorZ?: Vector3d | undefined): void;
     setColumnsPoint4dXYZ(vectorU: Point4d, vectorV: Point4d, vectorW: Point4d): void;
     setFrom(other: Matrix3d | undefined): void;
-    setFromJSON(json?: Matrix3dProps): void;
+    setFromJSON(json?: Matrix3dProps | Matrix3d): void;
     setIdentity(): void;
     setRow(rowIndex: number, value: Vector3d): void;
     setRowValues(axx: number, axy: number, axz: number, ayx: number, ayy: number, ayz: number, azx: number, azy: number, azz: number): void;
@@ -3188,7 +3201,7 @@ export class Matrix3d implements BeJSONFunctions {
 }
 
 // @public
-export type Matrix3dProps = number[][] | Matrix3d | number[];
+export type Matrix3dProps = number[][] | number[];
 
 // @public
 export class Matrix4d implements BeJSONFunctions {
@@ -4076,7 +4089,8 @@ export class PolyfaceData {
 export class PolyfaceQuery {
     static announceDuplicateFacetIndices(polyface: Polyface, announceCluster: (clusterFacetIndices: number[]) => void): void;
     static announceSweepLinestringToConvexPolyfaceXY(linestringPoints: GrowableXYZArray, polyface: Polyface, announce: AnnounceDrapePanel): any;
-    static boundaryEdges(source: Polyface | undefined, includeDanglers?: boolean, includeMismatch?: boolean, includeNull?: boolean): CurveCollection | undefined;
+    static boundaryEdges(source: Polyface | PolyfaceVisitor | undefined, includeDanglers?: boolean, includeMismatch?: boolean, includeNull?: boolean): CurveCollection | undefined;
+    static boundaryOfVisibleSubset(polyface: IndexedPolyface, visibilitySelect: 0 | 1 | 2, vectorToEye: Vector3d, sideAngleTolerance?: Angle): CurveCollection | undefined;
     static buildAverageNormals(polyface: IndexedPolyface, toleranceAngle?: Angle): void;
     static buildPerFaceNormals(polyface: IndexedPolyface): void;
     static cloneByFacetDuplication(source: Polyface, includeSingletons: boolean, clusterSelector: DuplicateFacetClusterSelector): Polyface;
@@ -4365,7 +4379,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     extendArray(points: Point3d[] | GrowableXYZArray, transform?: Transform): void;
     extendInverseTransformedArray(points: Point3d[] | GrowableXYZArray, transform: Transform): void;
     extendInverseTransformedXYZ(transform: Transform, x: number, y: number, z: number): boolean;
-    extendPoint(point: Point3d): void;
+    extendPoint(point: Point3d, transform?: Transform): void;
     extendRange(other: LowAndHighXYZ): void;
     extendSingleAxis(a: number, axisIndex: AxisIndex): void;
     extendTransformedPoint(transform: Transform, point: Point3d): void;
@@ -4594,7 +4608,7 @@ export class RegionOps {
     // @internal
     static addLoopsWithEdgeTagToGraph(graph: HalfEdgeGraph, data: MultiLineStringDataVariant, mask: HalfEdgeMask, edgeTag: any): HalfEdge[] | undefined;
     static cloneCurvesWithXYSplitFlags(curvesToCut: CurvePrimitive | CurveCollection | undefined, cutterCurves: CurveCollection): CurveCollection | CurvePrimitive | undefined;
-    static collectChains(fragments: GeometryQuery[], gapTolerance: number): ChainTypes;
+    static collectChains(fragments: GeometryQuery[], gapTolerance?: number): ChainTypes;
     static collectCurvePrimitives(candidates: AnyCurve | AnyCurve[], collectorArray?: CurvePrimitive[], smallestPossiblePrimitives?: boolean, explodeLinestrings?: boolean): CurvePrimitive[];
     static collectInsideAndOutsideOffsets(fragments: GeometryQuery[], offsetDistance: number, gapTolerance: number): {
         insideOffsets: GeometryQuery[];
@@ -4610,7 +4624,7 @@ export class RegionOps {
     static constructCurveXYOffset(curves: Path | Loop, offsetDistanceOrOptions: number | JointOptions): CurveCollection | undefined;
     static constructPolygonWireXYOffset(points: Point3d[], wrap: boolean, offsetDistance: number): CurveCollection | undefined;
     static createLoopPathOrBagOfCurves(curves: CurvePrimitive[], wrap?: boolean, consolidateAdjacentPrimitives?: boolean): CurveCollection | undefined;
-    static curveArrayRange(data: any): Range3d;
+    static curveArrayRange(data: any, worldToLocal?: Transform): Range3d;
     static expandLineStrings(candidates: CurvePrimitive[]): CurvePrimitive[];
     static polygonBooleanXYToLoops(inputA: MultiLineStringDataVariant[], operation: RegionBinaryOpType, inputB: MultiLineStringDataVariant[]): AnyRegion | undefined;
     static polygonBooleanXYToPolyface(inputA: MultiLineStringDataVariant[], operation: RegionBinaryOpType, inputB: MultiLineStringDataVariant[], triangulate?: boolean): Polyface | undefined;
@@ -5128,7 +5142,7 @@ export class Transform implements BeJSONFunctions {
     multiplyXYZWToFloat64Array(x: number, y: number, z: number, w: number, result?: Float64Array): Float64Array;
     get origin(): XYZ;
     setFrom(other: Transform): void;
-    setFromJSON(json?: TransformProps): void;
+    setFromJSON(json?: TransformProps | Transform): void;
     setIdentity(): void;
     setMultiplyTransformTransform(transformA: Transform, transformB: Transform): void;
     setOriginAndMatrixColumns(origin: XYZ | undefined, vectorX: Vector3d | undefined, vectorY: Vector3d | undefined, vectorZ: Vector3d | undefined): void;

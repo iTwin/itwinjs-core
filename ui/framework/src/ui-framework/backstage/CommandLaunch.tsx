@@ -77,7 +77,7 @@ export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunc
           this.setState((_prevState) => newState);
       }
     }
-  }
+  };
 
   public execute = (): void => {
     Backstage.hide(); // eslint-disable-line deprecation/deprecation
@@ -89,7 +89,7 @@ export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunc
         this.props.execute(this.props.parameters);
     } else
       Logger.logError(UiFramework.loggerCategory(this), `'${this.props.commandId}' has no execute() function`);
-  }
+  };
 
   // deprecated class
   // istanbul ignore next

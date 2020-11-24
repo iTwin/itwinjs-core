@@ -52,7 +52,7 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
   private _onCardClicked = () => {
     if (this.props.onSelectIModel)
       this.props.onSelectIModel(this.props.iModel);
-  }
+  };
 
   private renderDescription() {
     if (this.props.iModel.description && this.props.iModel.description.length > 0) {

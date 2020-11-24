@@ -159,7 +159,7 @@ export class GpuProfiler {
     }
 
     this.stopRecording();
-  }
+  };
 
   private stopRecording() {
     this._isRecording = false;
@@ -247,5 +247,5 @@ export class GpuProfiler {
 
     this._resultsDiv.innerHTML = "";
     this._resultsDiv.appendChild(fragment);
-  }
+  };
 }

@@ -58,7 +58,7 @@ export class ExpandableList extends React.PureComponent<ExpandableListProps, Exp
     if (onClick) {
       onClick(); // fire the ExpandableBlock onClick
     }
-  }
+  };
 
   private renderBlocks() {
     return React.Children.map(this.props.children, (child: any, i) => {

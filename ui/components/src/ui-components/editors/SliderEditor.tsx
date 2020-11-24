@@ -82,7 +82,7 @@ export class SliderEditor extends React.PureComponent<PropertyEditorProps, Slide
       this.setState({
         value: newValue,
       });
-  }
+  };
 
   /** @internal */
   public componentDidMount() {
@@ -169,7 +169,7 @@ export class SliderEditor extends React.PureComponent<PropertyEditorProps, Slide
   private _handleEnter = async (): Promise<void> => {
     this._enterKey = true;
     await this._handleCommit();
-  }
+  };
 
   private _handleClose = async (): Promise<void> => {
     if (this._enterKey) {
@@ -179,18 +179,18 @@ export class SliderEditor extends React.PureComponent<PropertyEditorProps, Slide
       if (this.props.onCancel)
         this.props.onCancel();
     }
-  }
+  };
 
   private _handleOk = async (_event: React.MouseEvent): Promise<void> => {
     await this._handleCommit();
-  }
+  };
 
   private _handleCancel = (_event: React.MouseEvent): void => {
     // istanbul ignore else
     if (this.props.onCancel) {
       this.props.onCancel();
     }
-  }
+  };
 
   private _handleCommit = async (): Promise<void> => {
     // istanbul ignore else
@@ -201,7 +201,7 @@ export class SliderEditor extends React.PureComponent<PropertyEditorProps, Slide
         this.props.onCommit({ propertyRecord: this.props.propertyRecord, newValue: propertyValue });
       }
     }
-  }
+  };
 
   /** @internal */
   public render(): React.ReactNode {

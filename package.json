@@ -27,9 +27,7 @@
     "url": "http://www.bentley.com"
   },
   "//dependencies": "NOTE: dependencies will be empty here and instead specified in each package.",
-  "dependencies": {
-    "flatbuffers": "^1.12.0"
-  },
+  "dependencies": {},
   "//devDependencies": "NOTE: devDependencies will be empty here and instead specified in each package.",
   "devDependencies": {}
 }

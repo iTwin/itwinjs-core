@@ -108,7 +108,7 @@ export class DragDropRowWrapper extends React.Component<RowWrapperProps, RowWrap
         }
       }
     }
-  }
+  };
 }
 
 /** @internal */

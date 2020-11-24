@@ -59,22 +59,22 @@ class UnifiedSelectionTableWidget extends React.PureComponent<UnifiedSelectionTa
   private _onCellContextMenu = (args: TableCellContextMenuArgs) => {
     args.event.persist();
     this.buildContextMenu(args);
-  }
+  };
 
   private _onContextMenuOutsideClick = () => {
     this.setState({ contextMenu: undefined });
-  }
+  };
 
   private _onContextMenuEsc = () => {
     this.setState({ contextMenu: undefined });
-  }
+  };
 
   private _onSampleItem = () => {
     this.setState(
       { contextMenu: undefined },
       () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Menu item clicked")),
     );
-  }
+  };
 
   private buildContextMenu(args: TableCellContextMenuArgs) {
     const items: ContextMenuItemInfo[] = [];

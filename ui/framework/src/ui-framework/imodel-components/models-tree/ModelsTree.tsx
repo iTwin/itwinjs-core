@@ -490,17 +490,17 @@ export class VisibilityHandler implements IVisibilityHandler {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   private onViewChanged = (_vp: Viewport) => {
     this.onVisibilityChangeInternal();
-  }
+  };
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
   private onElementAlwaysDrawnChanged = () => {
     this.onVisibilityChangeInternal();
-  }
+  };
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
   private onElementNeverDrawnChanged = () => {
     this.onVisibilityChangeInternal();
-  }
+  };
 
   private async getSubjectModelIds(subjectIds: Id64String[]) {
     return (await Promise.all(subjectIds.map(async (id) => this._subjectModelIdsCache.getSubjectModelIds(id))))

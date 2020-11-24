@@ -27,7 +27,7 @@ const getWindowSize = () => {
     }
   }
   return { width, height };
-}
+};
 
 /** This is the function that gets called when we start display-test-app via `electron DtaElectronMain.js` from the command line.
  * It runs in the Electron main process and hosts the iModeljs backend (IModelHost) code. It starts the render (frontend) process
@@ -43,7 +43,7 @@ const dtaElectronMain = async () => {
   const opts: ElectronManagerOptions = {
     webResourcesPath: path.join(__dirname, "..", "..", "build"),
     iconName: "display-test-app.ico",
-  }
+  };
 
   const manager = (process.env.NODE_ENV === "development") ?
     new WebpackDevServerElectronManager(opts) : // port should match the port of the local dev server

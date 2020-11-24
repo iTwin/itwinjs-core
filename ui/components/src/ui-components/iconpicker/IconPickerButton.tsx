@@ -105,11 +105,11 @@ export class IconPickerButton extends React.PureComponent<IconPickerProps, IconP
       return;
 
     this.setState((prevState) => ({ showPopup: !prevState.showPopup }));
-  }
+  };
 
   private _closePopup = () => {
     this.setState({ showPopup: false });
-  }
+  };
 
   private _handleIconPicked = (icon: string) => {
     this.setState(
@@ -119,7 +119,7 @@ export class IconPickerButton extends React.PureComponent<IconPickerProps, IconP
         if (this.props.onIconChange)
           this.props.onIconChange(icon);
       });
-  }
+  };
 
   private renderPopup(title: string | undefined) {
     const containerStyle: React.CSSProperties = { gridTemplateColumns: `repeat(${this.props.numColumns}, 1fr)` };

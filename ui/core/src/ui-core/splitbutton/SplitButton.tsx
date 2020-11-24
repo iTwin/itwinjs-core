@@ -138,7 +138,7 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
     } else {
       this._closing = false;
     }
-  }
+  };
 
   private _open = () => {
     // istanbul ignore else
@@ -147,7 +147,7 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
     } else {
       this._closing = false;
     }
-  }
+  };
 
   private _handleArrowClick = (event: React.MouseEvent) => {
     if (this.state.expanded) {
@@ -157,7 +157,7 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
     } else {
       this._open();
     }
-  }
+  };
 
   private _handleClose = (event: any) => {
     // istanbul ignore else
@@ -168,5 +168,5 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
       this.setState((_prevState) => ({ expanded: false }));
       this._buttonRef.current.focus();
     }
-  }
+  };
 }

@@ -47,11 +47,11 @@ export class NonPrimitivePropertyRenderer extends React.Component<NonPrimitivePr
 
   private _onExpanded = () => {
     this.setState({ isExpanded: true });
-  }
+  };
 
   private _onCollapsed = () => {
     this.setState({ isExpanded: false });
-  }
+  };
 
   private getLabel(props: NonPrimitivePropertyRendererProps, state: NonPrimitivePropertyRendererState): React.ReactNode {
     const { orientation, indentation, width, columnRatio, columnInfo } = props;
@@ -106,7 +106,7 @@ export class NonPrimitivePropertyRenderer extends React.Component<NonPrimitivePr
         columnInfo={this.props.columnInfo}
       />
     );
-  }
+  };
 
   /** @internal */
   public render() {

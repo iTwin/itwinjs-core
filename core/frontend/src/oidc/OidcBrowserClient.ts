@@ -367,7 +367,7 @@ export class OidcBrowserClient extends ImsAuthorizationClient implements Fronten
     } catch (err) {
       Logger.logError(loggerCategory, "Error thrown when handing OidcBrowserClient.onUserStateChanged event", () => ({ message: err.message }));
     }
-  }
+  };
 
   /**
    * Raised when a user session has been established (or re-established).
@@ -375,40 +375,40 @@ export class OidcBrowserClient extends ImsAuthorizationClient implements Fronten
    */
   private _onUserLoaded = (user: User) => {
     this._onUserStateChanged(user);
-  }
+  };
 
   /**
    * Raised when a user session has been terminated.
    */
   private _onUserUnloaded = () => {
     this._onUserStateChanged(undefined);
-  }
+  };
 
   /**
    * Raised prior to the access token expiring
    */
   private _onAccessTokenExpiring = () => {
-  }
+  };
 
   /**
    * Raised after the access token has expired.
    */
   private _onAccessTokenExpired = () => {
     this._onUserStateChanged(undefined);
-  }
+  };
 
   /**
    * Raised when the automatic silent renew has failed.
    */
   private _onSilentRenewError = () => {
     this._onUserStateChanged(undefined);
-  }
+  };
 
   /**
    * Raised when the user's sign-in status at the OP has changed.
    */
   private _onUserSignedOut = () => {
     this._onUserStateChanged(undefined);
-  }
+  };
 
 }

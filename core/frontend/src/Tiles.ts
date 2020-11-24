@@ -145,10 +145,10 @@ export class Tiles {
 
   /** Obtain the TileTreeOwners supplied by the specified supplier. */
   public getTreeOwnersForSupplier(supplier: TileTreeSupplier): Iterable<{ id: any, owner: TileTreeOwner }> {
-    function * iterator(trees: Dictionary<any, TreeOwner> | undefined) {
+    function* iterator(trees: Dictionary<any, TreeOwner> | undefined) {
       if (trees)
         for (const entry of trees)
-          yield { id: entry.key, owner: entry.value }
+          yield { id: entry.key, owner: entry.value };
     }
 
     return {

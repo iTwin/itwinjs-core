@@ -82,7 +82,7 @@ export class UserProfileBackstageItem extends React.PureComponent<UserProfileBac
     // istanbul ignore else
     if (this.props.onOpenSignOut)
       this.props.onOpenSignOut();
-  }
+  };
 
   private _getInitials(firstName: string, lastName: string): string {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`;

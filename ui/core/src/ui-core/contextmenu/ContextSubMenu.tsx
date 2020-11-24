@@ -160,7 +160,7 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
       if (this.props.onHotKeyParsed)
         this.props.onHotKeyParsed(hotKey);
     }
-  }
+  };
 
   public select = () => {
     this.setState({ opened: true }, () => {
@@ -170,7 +170,7 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
       if (this.props.onSelect !== undefined)
         this.props.onSelect(undefined);
     });
-  }
+  };
 
   public close = (propagate?: boolean) => {
     this.setState({ opened: false }, () => {
@@ -182,14 +182,14 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
     if (propagate && this.props.parentMenu && this.props.parentMenu.props.parentSubmenu) {
       this.props.parentMenu.props.parentSubmenu.close(true);
     }
-  }
+  };
 
   private _handleMouseOver = (_event: React.MouseEvent<HTMLDivElement>) => {
     // istanbul ignore else
     if (this._menuButtonElement && this._menuButtonElement.style.visibility !== "hidden" && this.props.onHover) {
       this.props.onHover();
     }
-  }
+  };
 
   private _handleClick = (event: any) => {
     event.stopPropagation();
@@ -204,10 +204,10 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
       else
         this.select();
     }
-  }
+  };
 
   private _handleClickGlobal = (event: any) => {
     if (this._subMenuElement && !this._subMenuElement.contains(event.target))
       this.setState((_prevState) => ({ opened: false }));
-  }
+  };
 }

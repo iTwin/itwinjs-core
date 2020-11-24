@@ -93,7 +93,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
 
   private _onNavigationChanged = (expanded: boolean) => {
     this.setState({ isNavigationExpanded: expanded });
-  }
+  };
 
   private _selectProject(project: ProjectInfo) {
     this.startRetrieveIModels(project); // eslint-disable-line @typescript-eslint/no-floating-promises
@@ -107,7 +107,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
       if (this.props.onIModelSelected)
         this.props.onIModelSelected(iModelInfo);
     });
-  }
+  };
 
   private renderIModels() {
     if (this.state.isLoadingProjects || this.state.isLoadingiModels) {
@@ -147,7 +147,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
 
     const endReason = isCancelled ? ActivityMessageEndReason.Cancelled : ActivityMessageEndReason.Completed;
     IModelApp.notifications.endActivityMessage(endReason);
-  }
+  };
 
   public render() {
     const contentStyle = classnames("open-content", this.state.isNavigationExpanded && "pinned");

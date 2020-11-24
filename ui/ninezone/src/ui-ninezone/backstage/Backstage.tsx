@@ -88,11 +88,11 @@ export class Backstage extends React.PureComponent<BackstageProps> {
 
   private _onClose = () => {
     this.props.onClose && this.props.onClose();
-  }
+  };
 
   private _onEsc = (event: KeyboardEvent): void => {
     if (this.props.isOpen && event.key === SpecialKey.Escape) {
       this._onClose();
     }
-  }
+  };
 }

@@ -29,11 +29,11 @@ export class CheckListBoxItem extends React.Component<CheckListBoxItemProps> {
     if (this.props.onClick) {
       this.props.onClick();
     }
-  }
+  };
 
   private _onCheckBoxChange = (_event: React.ChangeEvent<HTMLInputElement>) => {
     this._onClick();
-  }
+  };
 
   public render() {
     const listClassName = classnames("check-box-item", this.props.checked && "selected", this.props.className);

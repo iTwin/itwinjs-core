@@ -42,7 +42,7 @@ export default class SelectionScopePicker extends React.Component<SelectionScope
   private onSelectedScopeChanged = (e: React.ChangeEvent<HTMLSelectElement>) => {
     Presentation.selection.scopes.activeScope = e.target.value;
     this.setState({ activeScopeId: e.target.value });
-  }
+  };
   public render() {
     if (!this.state.availableSelectionScopes || 0 === this.state.availableSelectionScopes.length)
       return null;

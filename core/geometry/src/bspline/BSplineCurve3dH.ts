@@ -203,7 +203,7 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
       return undefined;
     const controlPoints = this.assemblePackedXYZW(controlPointData);
     if (controlPoints instanceof Float64Array) {
-      const numPoles = Math.floor(controlPoints.length / 4)
+      const numPoles = Math.floor(controlPoints.length / 4);
       const numKnots = knotArray.length;
       // shift knots-of-interest limits for overclamped case ...
       const skipFirstAndLast = (numPoles + order === numKnots);

@@ -65,13 +65,13 @@ export class NumericFilter extends React.Component<NumericFilterProps> {
     if (result === false) {
       e.preventDefault();
     }
-  }
+  };
 
   private _handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     const filters = this.getRules(value);
     this.props.onChange({ filterTerm: (filters.length > 0 ? filters : null), column: this.props.column });
-  }
+  };
 
   public render() {
     const inputKey = `header-filter-${this.props.column.key}`;

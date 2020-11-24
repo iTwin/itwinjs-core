@@ -34,7 +34,7 @@ export class MenuButtonPopup extends React.PureComponent<MenuButtonPopupProps, M
     // istanbul ignore else
     if (!this.state.size.equals(newSize))
       this.setState({ size: Size.create(newSize) });
-  }
+  };
 
   /** @internal */
   public render() {

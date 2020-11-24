@@ -133,7 +133,7 @@ function testGeometryQueryRoundTrip(ck: Checker, g: GeometryQuery | GeometryQuer
 
       } else {
         for (let i = 0; i < g.length; i++) {
-          ck.testGeometry(g[i], g1[i], ` FB round trip array ${i}`)
+          ck.testGeometry(g[i], g1[i], ` FB round trip array ${i}`);
         }
       }
     }

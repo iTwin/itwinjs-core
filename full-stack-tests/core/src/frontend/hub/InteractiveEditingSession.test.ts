@@ -89,7 +89,7 @@ describe("InteractiveEditingSession (#integration)", () => {
     const editor = await ElementEditor3d.start(imodel);
     const modelId = await imodel.editing.models.createAndInsertPhysicalModel(await imodel.editing.codes.makeModelCode(imodel.models.repositoryModelId, "GeomChanges"));
     const dictModelId = await imodel.models.getDictionaryModel();
-    const category = await imodel.editing.categories.createAndInsertSpatialCategory(dictModelId, "GeomChanges",  { color: 0 });
+    const category = await imodel.editing.categories.createAndInsertSpatialCategory(dictModelId, "GeomChanges", { color: 0 });
     await imodel.saveChanges();
     await imodel.pushChanges("line 1"); // release locks
 
@@ -124,39 +124,39 @@ describe("InteractiveEditingSession (#integration)", () => {
     await expectChanges([]);
     await imodel.saveChanges();
     const insertElem1 = makeInsert(elem1);
-    await expectChanges([ insertElem1 ]);
+    await expectChanges([insertElem1]);
 
     // Modify the line element.
-    await editor.startModifyingElements([ elem1 ]);
-    await editor.applyTransform(Transform.createTranslationXYZ(1, 0, 0));
+    await editor.startModifyingElements([elem1]);
+    await editor.applyTransform(Transform.createTranslationXYZ(1, 0, 0).toJSON());
     await editor.write();
     const updateElem1 = makeUpdate(elem1);
-    await expectChanges([ insertElem1 ]);
+    await expectChanges([insertElem1]);
     await imodel.saveChanges();
-    await expectChanges([ updateElem1 ]);
+    await expectChanges([updateElem1]);
 
     // Modify the line element twice.
-    await editor.startModifyingElements([ elem1 ]);
-    await editor.applyTransform(Transform.createTranslationXYZ(0, 1, 0));
+    await editor.startModifyingElements([elem1]);
+    await editor.applyTransform(Transform.createTranslationXYZ(0, 1, 0).toJSON());
     await editor.write();
-    await editor.startModifyingElements([ elem1 ]);
-    await editor.applyTransform(Transform.createTranslationXYZ(-1, 0, 0));
+    await editor.startModifyingElements([elem1]);
+    await editor.applyTransform(Transform.createTranslationXYZ(-1, 0, 0).toJSON());
     await editor.write();
-    await expectChanges([ updateElem1 ]);
+    await expectChanges([updateElem1]);
     await imodel.saveChanges();
-    await expectChanges([ updateElem1 ]);
+    await expectChanges([updateElem1]);
 
     // Insert a new line element, modify both elements, then delete the old line element.
     const elem2 = await createLineElement(editor, modelId, category, makeLine());
-    await editor.startModifyingElements([ elem1, elem2 ]);
-    await editor.applyTransform(Transform.createTranslationXYZ(0, 0, 1));
+    await editor.startModifyingElements([elem1, elem2]);
+    await editor.applyTransform(Transform.createTranslationXYZ(0, 0, 1).toJSON());
     await editor.write();
-    await imodel.editing.deleteElements([ elem1 ]);
+    await imodel.editing.deleteElements([elem1]);
     const deleteElem1 = makeDelete(elem1);
     const insertElem2 = makeInsert(elem2);
-    await expectChanges([ updateElem1 ]);
+    await expectChanges([updateElem1]);
     await imodel.saveChanges();
-    await expectChanges([ deleteElem1, insertElem2 ]);
+    await expectChanges([deleteElem1, insertElem2]);
 
     // ###TODO: No frontend API for testing undo/redo...
 
@@ -173,7 +173,7 @@ describe("InteractiveEditingSession (#integration)", () => {
     const editor = await ElementEditor3d.start(imodel);
     const modelId = await imodel.editing.models.createAndInsertPhysicalModel(await imodel.editing.codes.makeModelCode(imodel.models.repositoryModelId, "TreeState"));
     const dictModelId = await imodel.models.getDictionaryModel();
-    const category = await imodel.editing.categories.createAndInsertSpatialCategory(dictModelId, "TreeState",  { color: 0 });
+    const category = await imodel.editing.categories.createAndInsertSpatialCategory(dictModelId, "TreeState", { color: 0 });
     const elem1 = await createLineElement(editor, modelId, category, makeLine(new Point3d(0, 0, 0), new Point3d(10, 0, 0)));
     await imodel.saveChanges();
 
@@ -221,7 +221,7 @@ describe("InteractiveEditingSession (#integration)", () => {
       await BeDuration.wait(waitTime);
 
       const rangeTolerance = 0.0001;
-      const treeList = tree instanceof IModelTileTree ? [ tree ] : tree;
+      const treeList = tree instanceof IModelTileTree ? [tree] : tree;
       for (const t of treeList) {
         expect(t.tileState).to.equal(expectedState);
         expect(t.hiddenElements.length).to.equal(expectedHiddenElementCount);
@@ -242,7 +242,7 @@ describe("InteractiveEditingSession (#integration)", () => {
 
     // Begin an editing session.
     let session = await InteractiveEditingSession.begin(imodel);
-    const trees = [ tree1, createTileTree() ];
+    const trees = [tree1, createTileTree()];
     await expectTreeState(trees, "interactive", 0, modelRange);
     await expectTreeState(tree0, "disposed", 0, modelRange);
 
@@ -259,8 +259,8 @@ describe("InteractiveEditingSession (#integration)", () => {
     await expectTreeState(trees, "dynamic", 0, range2);
 
     // Modify an element.
-    await editor.startModifyingElements([ elem1 ]);
-    await editor.applyTransform(Transform.createTranslationXYZ(0, 5, 0));
+    await editor.startModifyingElements([elem1]);
+    await editor.applyTransform(Transform.createTranslationXYZ(0, 5, 0).toJSON());
     await editor.write();
     await imodel.saveChanges();
 
@@ -271,14 +271,14 @@ describe("InteractiveEditingSession (#integration)", () => {
     await expectTreeState(trees, "dynamic", 1, range3);
 
     // Delete the same element.
-    await imodel.editing.deleteElements([ elem1 ]);
+    await imodel.editing.deleteElements([elem1]);
     await imodel.saveChanges();
     trees.push(createTileTree());
     await expectTreeState(tree0, "disposed", 0, modelRange);
     await expectTreeState(trees, "dynamic", 1, range2);
 
     // Delete the other element.
-    await imodel.editing.deleteElements([ elem2 ]);
+    await imodel.editing.deleteElements([elem2]);
     await imodel.saveChanges();
     trees.push(createTileTree());
     await expectTreeState(tree0, "disposed", 0, modelRange);

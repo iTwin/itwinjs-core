@@ -46,7 +46,7 @@ export class CardPopup extends React.PureComponent<CardPopupProps, CardPopupStat
     // istanbul ignore else
     if (!this.state.size.equals(newSize))
       this.setState({ size: Size.create(newSize) });
-  }
+  };
 
   private _handleKeyDown = (event: React.KeyboardEvent): void => {
     switch (event.key) {
@@ -54,7 +54,7 @@ export class CardPopup extends React.PureComponent<CardPopupProps, CardPopupStat
         this._cancel();
         break;
     }
-  }
+  };
 
   private _cancel() {
     // istanbul ignore else

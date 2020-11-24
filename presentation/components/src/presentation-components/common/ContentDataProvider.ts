@@ -423,18 +423,18 @@ export class ContentDataProvider implements IContentDataProvider {
   private onIModelContentChanged = (args: { ruleset: Ruleset }) => {
     if (args.ruleset.id === this.rulesetId)
       this.onContentUpdate();
-  }
+  };
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
   private onRulesetModified = (curr: RegisteredRuleset) => {
     if (curr.id === this.rulesetId)
       this.onContentUpdate();
-  }
+  };
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
   private onRulesetVariableChanged = () => {
     this.onContentUpdate();
-  }
+  };
 
 }
 

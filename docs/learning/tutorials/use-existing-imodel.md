@@ -1,28 +1,13 @@
-# Online viewer
+# iTwin Hub
 
 If you already have access to an iModel this will guide you through locating the name of the Project, iModel, and viewing the iModel in an iModel.js based online viewer.
 
-- [Navigate to Connect Projects](https://connect.bentley.com/SelectProject/Index#MYPROJ)
+- [Navigate to iTwin Hub](https://itwin.bentley.com/)
+- Login
+- Select your project in the header
+- Locate your iModel in the grid
+- Click on the card to launch [Design Review](https://www.bentley.com/en/products/product-line/digital-twins/itwin-design-review/project-coordination)
 
-- Select your project
-- Choose iModel Manager from the iTwin Services grid
-- iModel information is displayed
 
-![imodel overview page]($docs/learning/tutorials/images/imodel-manager-overview.png "iModel Overview Page")
-
-- Click View
-- Select all 3D models
-- Click Enter iModel
-
-![design review model select]($docs/learning/tutorials/images/design-review-model-select.png "Design Review Model")
-
-<br/>
-<br/>
-
----
-
-<style>
-    a#explore-imodel---build-application {
-        display: none;
-    }
-</style>
+### iTwin Hub screenshot
+![itwin hub overview]($docs/learning/tutorials/images/itwin-hub.png)

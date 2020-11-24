@@ -258,7 +258,7 @@ const dtaFrontendMain = async () => {
     alert(reason);
     return;
   }
-}
+};
 
 async function documentLoaded(): Promise<void> {
   const readyState = /^complete$/;

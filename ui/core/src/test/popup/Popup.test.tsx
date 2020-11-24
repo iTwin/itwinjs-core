@@ -677,6 +677,33 @@ describe("<Popup />", () => {
       expect(wrapper.state().isOpen).true;
       wrapper.unmount();
     });
+
+    it("should not hide when scrolling if closeOnWheel=false", () => {
+      const wrapper = mount<Popup>(<Popup isOpen closeOnWheel={false} />);
+
+      const scroll = document.createEvent("HTMLEvents");
+      scroll.initEvent("wheel");
+      sinon.stub(scroll, "target").get(() => document.createElement("div"));
+      window.dispatchEvent(scroll);
+
+      expect(wrapper.state().isOpen).true;
+      wrapper.unmount();
+    });
+
+    it("should not hide when scrolling if onWheel prop is passed", () => {
+      const spyWheel = sinon.spy();
+      const wrapper = mount<Popup>(<Popup isOpen onWheel={spyWheel} />);
+
+      const scroll = document.createEvent("HTMLEvents");
+      scroll.initEvent("wheel");
+      sinon.stub(scroll, "target").get(() => document.createElement("div"));
+      window.dispatchEvent(scroll);
+
+      expect(wrapper.state().isOpen).true;
+      sinon.assert.called(spyWheel);
+      wrapper.unmount();
+    });
+
   });
 
   describe("keyboard handling", () => {

@@ -179,7 +179,7 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
     event && this.setState({
       index: event.index,
     });
-  }
+  };
 
   /** Updates view to the next lowest index in sheetData */
   // istanbul ignore next
@@ -187,7 +187,7 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
     this.setState(
       (prevState) => ({ index: prevState.index <= 0 ? prevState.sheetData.length - 1 : prevState.index - 1 }),
       async () => this._updateView());
-  }
+  };
 
   /** Updates view to next highest index in sheetData */
   // istanbul ignore next
@@ -195,7 +195,7 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
     this.setState(
       (prevState) => ({ index: (prevState.index + 1) % prevState.sheetData.length }),
       async () => this._updateView());
-  }
+  };
 
   /** Handles a Viewport change & synchs the index */
   // istanbul ignore next
@@ -203,13 +203,13 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
     if (args.current) {
       this._handleViewportChanged(args.current);
     }
-  }
+  };
 
   // istanbul ignore next
   private _handleViewIdChanged = (args: ViewIdChangedEventArgs) => {
     if (this._viewport === args.viewport)
       this._handleViewportChanged(args.viewport as ScreenViewport);
-  }
+  };
 
   /** Handles a Viewport change & synchs the index */
   // istanbul ignore next
@@ -228,7 +228,7 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
       if (index >= 0)
         this.setState({ index });
     }
-  }
+  };
 
   /** Updates view to currently set sheet */
   // istanbul ignore next
@@ -248,5 +248,5 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
   // istanbul ignore next
   private _handleOnClickSheetName = () => {
     FrontstageManager.openModalFrontstage(this.modalFrontstage());
-  }
+  };
 }

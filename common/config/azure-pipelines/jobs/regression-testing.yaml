@@ -6,20 +6,21 @@
 #
 # The current LTS is tested in all normal CI/PR builds so no need to test it here.
 
-trigger:
-  schedules:
-  - cron: "0 0 * * *"
-    displayName: Daily midnight build
-    branches:
-      include:
-      - master
-      - releases/*
+trigger: none
+
+schedules:
+- cron: "0 5 * * *"
+  displayName: Daily midnight build
+  branches:
+    include:
+    - master
+    - releases/*
 
 jobs:
 - template: ci-core.yaml
   parameters:
-    name: Node_10_16
-    nodeVersion: 10.16.0
+    name: Node_10_17
+    nodeVersion: 10.17.0
     pool:
       demands: Agent.OS -equals $(platform)
 - template: ci-core.yaml
