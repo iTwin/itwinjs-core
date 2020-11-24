@@ -1,6 +1,11 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Sat, 21 Nov 2020 16:42:45 GMT and should not be manually modified.
+This log was last generated on Mon, 23 Nov 2020 15:33:50 GMT and should not be manually modified.
+
+## 2.9.2
+Mon, 23 Nov 2020 15:33:50 GMT
+
+_Version update only_
 
 ## 2.9.1
 Thu, 19 Nov 2020 17:03:42 GMT
@@ -25,11 +30,6 @@ Wed, 18 Nov 2020 16:01:50 GMT
 - Added MessagePopup - Displays Toast & Sticky messages without a StatusBar
 - Respect WidgetState.Hidden when rendering widget tabs.
 
-## 2.8.1
-Tue, 03 Nov 2020 00:33:56 GMT
-
-_Version update only_
-
 ## 2.8.0
 Fri, 23 Oct 2020 17:04:02 GMT
 
@@ -38,11 +38,6 @@ Fri, 23 Oct 2020 17:04:02 GMT
 - ModelsTree: Handle GraphicalPartition3d similar to PhysicalPartition - it should not be displayed if there's a 'GraphicalPartition3d.Model.Content' attribute in JsonProperties
 - Added jsdoc ESLint rule for UI packages
 - Upgraded react-split-pane to 0.1.92
-
-## 2.7.6
-Wed, 11 Nov 2020 16:28:23 GMT
-
-_Version update only_
 
 ## 2.7.5
 Fri, 23 Oct 2020 16:23:51 GMT
