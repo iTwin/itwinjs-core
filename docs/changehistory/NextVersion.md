@@ -16,3 +16,16 @@ ignore: true
 ## Updated version of Electron
 
 Updated version of electron used from 8.2.1 to 10.1.3. Note that Electron is specified as a peer dependency in the iModel.js stack - so it's recommended but not mandatory that applications migrate to this electron version.
+
+## Globe location tool fixes
+
+The globe location tools now will properly use GCS reprojection when navigating. Previously, navigating to certain cartographic locations within the iModel extents could be slightly inaccurate.
+
+The tools affected are:
+
+* [ViewGlobeSatelliteTool]($frontend)
+* [ViewGlobeBirdTool]($frontend)
+* [ViewGlobeLocationTool]($frontend)
+* [ViewGlobeIModelTool]($frontend)
+
+The [ViewGlobeLocationTool]($frontend) has been further improved to navigate better across long distances when using plane mode.
