@@ -1737,4 +1737,8 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
 
 }
 
+/**
+ * Alias for the Channel class in the ConcurrencyControl namespace.
+ * @alpha
+ */
 export type ConcurrencyControlChannel = ConcurrencyControl.Channel;
