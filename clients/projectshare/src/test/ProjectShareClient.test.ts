@@ -212,38 +212,32 @@ describe("ProjectShareClient (#integration)", () => {
   })
 
   // folder remove
-  it("should be able to create and permanent delete a folder", async () => {
+  it("should be able to permanent delete a folder", async () => {
     // arrange
-    const testFolder = new ProjectShareFolder();
-    testFolder.name = `${Guid.createValue()}_testFolder`;
-    const createdFolder: ProjectShareFolder = await projectShareClient.createFolder(requestContext, projectId, projectId, testFolder); // Create a folder
-    const folders = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().startsWithPathAndNameLike(projectId, "/", testFolder.name));
-    chai.assert.strictEqual(1, folders.length);
-    chai.assert.strictEqual(folders[0].name, createdFolder.name);
+    const FoldersInRootFolder: ProjectShareFolder[] = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inRootFolder(projectId));
+    const mainFolder = FoldersInRootFolder[0];
+    await CreateFoldersWithFiles(projectShareClient, requestContext, projectId, mainFolder.wsgId);
 
     // act
-    const res = await projectShareClient.deleteFolder(requestContext, projectId, createdFolder.wsgId); // Permanent deleting Folder.
+    const res = await projectShareClient.deleteFolder(requestContext, projectId, mainFolder.wsgId); // Permanent deleting Folder.
 
     // assert
     chai.assert.isUndefined(res);
-    const foldersAfterDelete = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().startsWithPathAndNameLike(projectId, "/", testFolder.name)); // assert folders amount after delete
+    const foldersAfterDelete = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().startsWithPathAndNameLike(projectId, "/", mainFolder.name)); // assert folders amount after delete
     chai.assert.strictEqual(foldersAfterDelete.length, 0);
   })
 
-  it("should be able to create folder and send it to recycle bin", async () => {
+  it("should be able to send folder to recycle bin", async () => {
     // arrange
-    const testFolder = new ProjectShareFolder();
-    testFolder.name = `${Guid.createValue()}_testFolder`;
-    const createdfolder: ProjectShareFolder = await projectShareClient.createFolder(requestContext, projectId, projectId, testFolder); // Create a folder
-    const folders = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().startsWithPathAndNameLike(projectId, "/", testFolder.name));
-    chai.assert.strictEqual(1, folders.length);
-    chai.assert.strictEqual(folders[0].name, createdfolder.name);
+    const FoldersInRootFolder: ProjectShareFolder[] = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inRootFolder(projectId));
+    const mainFolder = FoldersInRootFolder[0];
+    await CreateFoldersWithFiles(projectShareClient, requestContext, projectId, mainFolder.wsgId);
 
     // act
-    await projectShareClient.deleteFolder(requestContext, projectId, createdfolder.wsgId, RecycleOption.SendToRecycleBin); // Move folder, to recycle bin.
+    await projectShareClient.deleteFolder(requestContext, projectId, mainFolder.wsgId, RecycleOption.SendToRecycleBin); // Move folder, to recycle bin.
 
     // assert
-    const foldersAfterDelete = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().startsWithPathAndNameLike(projectId, "/", testFolder.name)); // assert folders amount after delete
+    const foldersAfterDelete = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().startsWithPathAndNameLike(projectId, "/", mainFolder.name)); // assert folders amount after delete
     chai.assert.strictEqual(foldersAfterDelete.length, 0);
   })
 
