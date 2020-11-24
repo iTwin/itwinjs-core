@@ -1,6 +1,11 @@
 # Change Log - @bentley/frontend-devtools
 
-This log was last generated on Mon, 23 Nov 2020 15:33:50 GMT and should not be manually modified.
+This log was last generated on Mon, 23 Nov 2020 22:19:30 GMT and should not be manually modified.
+
+## 2.9.3
+Mon, 23 Nov 2020 20:57:56 GMT
+
+_Version update only_
 
 ## 2.9.2
 Mon, 23 Nov 2020 15:33:50 GMT
@@ -19,12 +24,22 @@ Wed, 18 Nov 2020 16:01:50 GMT
 
 - produce an imjs extension from frontend-devtools
 
+## 2.8.1
+Tue, 03 Nov 2020 00:33:56 GMT
+
+_Version update only_
+
 ## 2.8.0
 Fri, 23 Oct 2020 17:04:02 GMT
 
 ### Updates
 
 - Add tool to detach reality models.
+
+## 2.7.6
+Wed, 11 Nov 2020 16:28:23 GMT
+
+_Version update only_
 
 ## 2.7.5
 Fri, 23 Oct 2020 16:23:50 GMT
