@@ -438,12 +438,22 @@ export class SurfaceGeometry extends MeshGeometry {
 
   protected _draw(numInstances: number, instanceBuffersContainer?: BuffersContainer): void {
     const system = System.instance;
-    const bufs = instanceBuffersContainer !== undefined ? instanceBuffersContainer : this._buffers;
 
+    // If we can't write depth in the fragment shader, use polygonOffset to force blanking regions to draw behind.
+    const offset = RenderOrder.BlankingRegion === this.renderOrder && !system.supportsLogZBuffer;
+    if (offset) {
+      system.context.enable(GL.POLYGON_OFFSET_FILL);
+      system.context.polygonOffset(1.0, 1.0);
+    }
+
+    const bufs = instanceBuffersContainer !== undefined ? instanceBuffersContainer : this._buffers;
     bufs.bind();
     const primType = system.drawSurfacesAsWiremesh ? GL.PrimitiveType.Lines : GL.PrimitiveType.Triangles;
     system.drawArrays(primType, 0, this._numIndices, numInstances);
     bufs.unbind();
+
+    if (offset)
+      system.context.disable(GL.POLYGON_OFFSET_FILL);
   }
 
   public wantMixMonochromeColor(target: Target): boolean {
