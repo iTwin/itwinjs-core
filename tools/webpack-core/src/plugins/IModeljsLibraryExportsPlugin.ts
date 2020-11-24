@@ -28,16 +28,22 @@ export class IModeljsLibraryExportsPlugin {
     });
     compiler.hooks.compilation.tap("IModeljsLibraryExportsPlugin", (compilation) => {
       compilation.moduleTemplates.javascript.hooks.content.tap("IModeljsLibraryExportsPlugin", (source, module) => {
-        if (!module.___IS_BENTLEY)
+        let currentModule = module;
+        // check for a rootModule (for concatenated and lazily loaded modules)
+        if (!currentModule.___IS_BENTLEY && currentModule.rootModule && currentModule.rootModule.___IS_BENTLEY) {
+            currentModule.rootModule.id = currentModule.id;
+            currentModule = currentModule.rootModule;
+        }
+        if (!currentModule.___IS_BENTLEY)
           return source;
-        const pkgName = JSON.stringify(module.___IMJS_NAME);
+        const pkgName = JSON.stringify(currentModule.___IMJS_NAME);
         return new ConcatSource(
           source,
           `\nif ((typeof window !== "undefined") && window && !window.${utils.IMJS_GLOBAL_OBJECT}) window.${utils.IMJS_GLOBAL_OBJECT} = {};`,
           `\nif ((typeof window !== "undefined") && window && !window.${utils.IMJS_GLOBAL_LIBS}) window.${utils.IMJS_GLOBAL_LIBS} = {};`,
           `\nif ((typeof window !== "undefined") && window && !window.${utils.IMJS_GLOBAL_LIBS_VERS}) window.${utils.IMJS_GLOBAL_LIBS_VERS} = {};`,
-          `\nwindow.${utils.IMJS_GLOBAL_LIBS}[${pkgName}] = __webpack_require__(${JSON.stringify(module.id)});`,
-          `\nwindow.${utils.IMJS_GLOBAL_LIBS_VERS}[${pkgName}] = ${JSON.stringify(module.___IMJS_VER)};\n`,
+          `\nwindow.${utils.IMJS_GLOBAL_LIBS}[${pkgName}] = __webpack_require__(${JSON.stringify(currentModule.id)});`,
+          `\nwindow.${utils.IMJS_GLOBAL_LIBS_VERS}[${pkgName}] = ${JSON.stringify(currentModule.___IMJS_VER)};\n`,
         );
       });
     });
