@@ -61,7 +61,7 @@ You will get this error if you try to change channels without pushing your chang
 
 > An app should not get into or try to modify a channel that it does not own.
 
-A channel has an owner. The owner is the app that created the channel and knows what it is for. The concept of a channel was first developed for connectors ([IModelBridge]($imodel-bridge)). A connector reads data from an external source and writes it to a channel that it owns. You might say that the channel is "tuned" to the external source and receives its data from there. It makes no sense for any other app to change the data in that channel, since the source of truth is the external source.
+A channel has an owner. The owner is the app that created the channel and knows what it is for. The concept of a channel was first developed for connectors. A connector reads data from an external source and writes it to a channel that it owns. You might say that the channel is "tuned" to the external source and receives its data from there. It makes no sense for any other app to change the data in that channel, since the source of truth is the external source.
 
 The rules of locking are slightly different for channels:
 
@@ -70,7 +70,7 @@ The rules of locking are slightly different for channels:
 
 ## Connectors and Channels
 
-A connector ([IModelBridge]($imodel-bridge)) always works in a channel. A connector does not create channels or change the channel. That is done by [BridgeRunner]($imodel-bridge). It calls some connector methods in the repository channel and others in the bridge's own private channel. The channel is locked by BridgeRunner.
+A connector always works in a channel. A connector does not create channels or change the channel. A supervisor calls some connector methods in the repository channel and others in the bridge's own private channel. The channel is locked by the supervisor.
 
 ## Non-Connector Apps and Channels
 
