@@ -1776,22 +1776,22 @@ describe("iModel", () => {
   it("should throw when opening checkpoint without blockcache dir env", async () => {
     process.env.BLOCKCACHE_DIR = "";
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const error = await getIModelError(SnapshotDb.openCheckpoint(ctx, Guid.createValue(), Guid.createValue(), Guid.createValue()));
+    const error = await getIModelError(SnapshotDb.openCheckpoint(ctx, Guid.createValue(), Guid.createValue(), generateChangeSetId()));
     expectIModelError(IModelStatus.BadRequest, error);
   });
 
   it("should throw for missing/invalid checkpoint in hub", async () => {
     process.env.BLOCKCACHE_DIR = "/foo/";
-    const checkpointsHandler = BriefcaseManager.imodelClient.checkpoints;
-    const hubMock = sinon.stub(checkpointsHandler, "get").callsFake(async () => []);
-    sinon.stub(BriefcaseManager.imodelClient, "checkpoints").get(() => checkpointsHandler);
+    const checkpointsV2Handler = BriefcaseManager.imodelClient.checkpointsV2;
+    const hubMock = sinon.stub(checkpointsV2Handler, "get").callsFake(async () => []);
+    sinon.stub(BriefcaseManager.imodelClient, "checkpointsV2").get(() => checkpointsV2Handler);
 
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
-    let error = await getIModelError(SnapshotDb.openCheckpoint(ctx, Guid.createValue(), Guid.createValue(), Guid.createValue()));
+    let error = await getIModelError(SnapshotDb.openCheckpoint(ctx, Guid.createValue(), Guid.createValue(), generateChangeSetId()));
     expectIModelError(IModelStatus.NotFound, error);
 
     hubMock.callsFake(async () => [{} as any]);
-    error = await getIModelError(SnapshotDb.openCheckpoint(ctx, Guid.createValue(), Guid.createValue(), Guid.createValue()));
+    error = await getIModelError(SnapshotDb.openCheckpoint(ctx, Guid.createValue(), Guid.createValue(), generateChangeSetId()));
     expectIModelError(IModelStatus.BadRequest, error);
   });
 
