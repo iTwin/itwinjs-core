@@ -1,6 +1,13 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Sat, 21 Nov 2020 16:42:45 GMT and should not be manually modified.
+This log was last generated on Mon, 23 Nov 2020 15:33:50 GMT and should not be manually modified.
+
+## 2.9.2
+Mon, 23 Nov 2020 15:33:50 GMT
+
+### Updates
+
+- Apply workaround for transparency anomalies caused by buggy Intel drivers.
 
 ## 2.9.1
 Thu, 19 Nov 2020 17:03:42 GMT
@@ -29,13 +36,6 @@ Wed, 18 Nov 2020 16:01:50 GMT
 - Add call to reload tool settings UI.
 - Added ViewCreator APIs
 
-## 2.8.1
-Tue, 03 Nov 2020 00:33:56 GMT
-
-### Updates
-
-- disable frontend Bentley telemetry in iModelBank use case
-
 ## 2.8.0
 Fri, 23 Oct 2020 17:04:02 GMT
 
@@ -59,11 +59,6 @@ Fri, 23 Oct 2020 17:04:02 GMT
 - Add support for OPC point clouds in Reality Data widget.
 - Added color mix to thematic display for background map terrain and point clouds
 - added IModelApp.translateErrorNumber
-
-## 2.7.6
-Wed, 11 Nov 2020 16:28:23 GMT
-
-_Version update only_
 
 ## 2.7.5
 Fri, 23 Oct 2020 16:23:50 GMT
