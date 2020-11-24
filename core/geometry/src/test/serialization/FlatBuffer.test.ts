@@ -22,6 +22,7 @@ import { BentleyGeometryFlatBuffer } from "../../serialization/BentleyGeometryFl
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { SolidPrimitive } from "../../solid/SolidPrimitive";
 import { PointString3d } from "../../curve/PointString3d";
+import { AuxChannelDataType } from "../../polyface/AuxData";
 // cSpell:word flatbuffers
 // cSpell:word fbjs
 /* eslint-disable no-console, comma-dangle, quote-props */
@@ -252,3 +253,17 @@ function geometryTypes(g: GeometryQuery | GeometryQuery[] | undefined): any {
 function isGeometry(g: GeometryQuery | GeometryQuery[] | undefined): boolean {
   return g instanceof GeometryQuery || Array.isArray(g);
 }
+it("PolyfaceAuxData", () => {
+  const ck = new Checker();
+  const polyfaces = Sample.createSimpleIndexedPolyfaces(1.0);
+  for (let i = 0; i < 1; i++) {
+    const p = polyfaces[i];
+    Sample.addAuxDataScalarChannel(p.data, 2,
+      "distance", "time",
+      5, 2, 3, AuxChannelDataType.Distance,
+      (t: number, xyz: Point3d) => (t * xyz.x + t * (t - 1) * xyz.y)
+    );
+    testGeometryQueryRoundTrip(ck, p);
+  }
+  expect(ck.getNumErrors()).equals(0);
+});

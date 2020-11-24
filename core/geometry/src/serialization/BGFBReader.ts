@@ -32,6 +32,7 @@ import { RuledSweep } from "../solid/RuledSweep";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { BSplineSurface3d, BSplineSurface3dH } from "../bspline/BSplineSurface";
 import { PointString3d } from "../curve/PointString3d";
+import { AuxChannel, AuxChannelData, PolyfaceAuxData } from "../polyface/AuxData";
 
 /**
  * Context to write to a flatbuffer blob.
@@ -142,7 +143,66 @@ export class BGFBReader {
     }
     return undefined;
   }
+  /**
+ * Extract auxData for a mesh
+ * @param variant read position in the flat buffer.
+ */
+  public readPolyfaceAuxChannelData(channelDataHeader: BGFBAccessors.PolyfaceAuxChannelData | null): AuxChannelData | undefined {
+    if (channelDataHeader !== null) {
+      const input = channelDataHeader.input();
+      const values = channelDataHeader.valuesArray();
+      if (values !== null)
+        return new AuxChannelData(input, values);
+    }
+    return undefined;
+  }
 
+  /**
+ * Extract auxData for a mesh
+ * @param variant read position in the flat buffer.
+ */
+  public readPolyfaceAuxChannel(channelHeader: BGFBAccessors.PolyfaceAuxChannel | null): AuxChannel | undefined {
+    if (channelHeader) {
+      const dataType = channelHeader.dataType();
+      const dataLength = channelHeader.dataLength();
+      const channelDataArray: AuxChannelData[] = [];
+      const name = channelHeader.name();
+      const inputName = channelHeader.inputName();
+      for (let i = 0; i < dataLength; i++) {
+        const channelData = this.readPolyfaceAuxChannelData(channelHeader.data(i));
+        if (channelData)
+          channelDataArray.push(channelData);
+      }
+      return new AuxChannel(channelDataArray, dataType, name ? name : undefined, inputName ? inputName : undefined);
+    }
+    return undefined;
+  }
+  /**
+ * Extract auxData for a mesh
+ * @param variant read position in the flat buffer.
+ */
+  public readPolyfaceAuxData(auxDataHeader: BGFBAccessors.PolyfaceAuxData | null): PolyfaceAuxData | undefined {
+    if (auxDataHeader) {
+      const channelsLength = auxDataHeader.channelsLength();
+      const indicesArray = auxDataHeader.indicesArray();
+      const indices: number[] = [];
+      const channels: AuxChannel[] = [];
+      if (null !== indicesArray) {
+        for (const i of indicesArray)
+          indices.push(i);
+      }
+      if (0 !== channelsLength) {
+        for (let i = 0; i < channelsLength; i++) {
+          const channelHeader = auxDataHeader.channels(i);
+          const channelContent = this.readPolyfaceAuxChannel(channelHeader);
+          if (channelContent)
+            channels.push(channelContent);
+        }
+      }
+      return new PolyfaceAuxData(channels, indices);
+    }
+    return undefined;
+  }
   /**
  * Extract a mesh
  * @param variant read position in the flat buffer.
@@ -150,20 +210,20 @@ export class BGFBReader {
   public readPolyfaceFromVariant(variant: BGFBAccessors.VariantGeometry): IndexedPolyface | undefined {
     const geometryType = variant.geometryType();
     if (geometryType === BGFBAccessors.VariantGeometryUnion.tagPolyface) {
-      const offsetToPolyface = variant.geometry(new BGFBAccessors.Polyface());
-      if (offsetToPolyface) {
-        const twoSided = offsetToPolyface.twoSided();
-        const meshStyle = offsetToPolyface.meshStyle();
+      const polyfaceHeader = variant.geometry(new BGFBAccessors.Polyface());
+      if (polyfaceHeader) {
+        const twoSided = polyfaceHeader.twoSided();
+        const meshStyle = polyfaceHeader.meshStyle();
 
-        const pointF64 = nullToUndefined<Float64Array>(offsetToPolyface.pointArray());
-        const paramF64 = nullToUndefined<Float64Array>(offsetToPolyface.paramArray());
-        const normalF64 = nullToUndefined<Float64Array>(offsetToPolyface.normalArray());
-        const intColorU32 = nullToUndefined<Uint32Array>(offsetToPolyface.intColorArray());
+        const pointF64 = nullToUndefined<Float64Array>(polyfaceHeader.pointArray());
+        const paramF64 = nullToUndefined<Float64Array>(polyfaceHeader.paramArray());
+        const normalF64 = nullToUndefined<Float64Array>(polyfaceHeader.normalArray());
+        const intColorU32 = nullToUndefined<Uint32Array>(polyfaceHeader.intColorArray());
 
-        const pointIndexI32 = nullToUndefined<Int32Array>(offsetToPolyface.pointIndexArray());
-        const paramIndexI32 = nullToUndefined<Int32Array>(offsetToPolyface.paramIndexArray());
-        const normalIndexI32 = nullToUndefined<Int32Array>(offsetToPolyface.normalIndexArray());
-        const colorIndexI32 = nullToUndefined<Int32Array>(offsetToPolyface.colorIndexArray());
+        const pointIndexI32 = nullToUndefined<Int32Array>(polyfaceHeader.pointIndexArray());
+        const paramIndexI32 = nullToUndefined<Int32Array>(polyfaceHeader.paramIndexArray());
+        const normalIndexI32 = nullToUndefined<Int32Array>(polyfaceHeader.normalIndexArray());
+        const colorIndexI32 = nullToUndefined<Int32Array>(polyfaceHeader.colorIndexArray());
         // const colorIndexI32 = nullToUndefined<Int32Array>(offsetToPolyface.colorIndexArray());
         if (meshStyle === 1 && pointF64 && pointIndexI32) {
           const polyface = IndexedPolyface.create(normalF64 !== undefined, paramF64 !== undefined, intColorU32 !== undefined, twoSided);
@@ -206,10 +266,10 @@ export class BGFBReader {
               i0 = i1 + 1;
             }
           }
+          polyface.data.auxData = this.readPolyfaceAuxData(polyfaceHeader.auxData());
           return polyface;
         }
       }
-
     }
     return undefined;
   }
