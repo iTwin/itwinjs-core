@@ -33,6 +33,9 @@ import { BSplineSurface3d, BSplineSurface3dH, UVSelect } from "../bspline/BSplin
 import { PointString3d } from "../curve/PointString3d";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { AuxChannel, AuxChannelData, PolyfaceAuxData } from "../polyface/AuxData";
+import { TransitionSpiral3d } from "../curve/spiral/TransitionSpiral3d";
+import { IntegratedSpiral3d } from "../curve/spiral/IntegratedSpiral3d";
+import { DgnSpiralTypeQueries } from "./BGFBReader";
 
 
 /**
@@ -177,6 +180,23 @@ export class BGFBWriter {
       return this.writeBsplineCurve3dAsFBVariantGeometry(curvePrimitive);
     } else if (curvePrimitive instanceof BSplineCurve3dH) {
       return this.writeBsplineCurve3dAHsFBVariantGeometry(curvePrimitive);
+    } else if (curvePrimitive instanceof IntegratedSpiral3d) {
+      const placement = curvePrimitive.localToWorld;
+      const typeCode = DgnSpiralTypeQueries.stringToTypeCode(curvePrimitive.spiralType, true)!;
+      const spiralDetailOffset = BGFBAccessors.TransitionSpiralDetail.createTransitionSpiralDetail(this.builder,
+        placement.matrix.coffs[0], placement.matrix.coffs[1], placement.matrix.coffs[2], placement.origin.x,
+        placement.matrix.coffs[3], placement.matrix.coffs[4], placement.matrix.coffs[5], placement.origin.y,
+        placement.matrix.coffs[6], placement.matrix.coffs[5], placement.matrix.coffs[8], placement.origin.z,
+        curvePrimitive.activeFractionInterval.x0, curvePrimitive.activeFractionInterval.x1,
+        curvePrimitive.bearing01.startRadians, curvePrimitive.bearing01.endRadians,
+        TransitionSpiral3d.radiusToCurvature(curvePrimitive.radius01.x0),
+        TransitionSpiral3d.radiusToCurvature(curvePrimitive.radius01.x1),
+        typeCode,
+        0);
+      const transitionTableOffset = BGFBAccessors.TransitionSpiral.createTransitionSpiral(this.builder,
+        spiralDetailOffset, 0, 0);
+      return BGFBAccessors.VariantGeometry.createVariantGeometry(this.builder,
+        BGFBAccessors.VariantGeometryUnion.tagTransitionSpiral, transitionTableOffset, 0);
     }
     return undefined;
   }

@@ -23,6 +23,8 @@ import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { SolidPrimitive } from "../../solid/SolidPrimitive";
 import { PointString3d } from "../../curve/PointString3d";
 import { AuxChannelDataType } from "../../polyface/AuxData";
+import { IntegratedSpiral3d } from "../../curve/spiral/IntegratedSpiral3d";
+import { Segment1d } from "../../geometry3d/Segment1d";
 // cSpell:word flatbuffers
 // cSpell:word fbjs
 /* eslint-disable no-console, comma-dangle, quote-props */
@@ -92,6 +94,17 @@ it("HelloMesh", () => {
   expect(ck.getNumErrors()).equals(0);
 });
 
+it("HelloSpirals", () => {
+  const ck = new Checker();
+  const clothoid = IntegratedSpiral3d.createRadiusRadiusBearingBearing(
+    Segment1d.create(0, 1000),
+    AngleSweep.createStartEndDegrees(0, 5),
+    Segment1d.create(0, 1),
+    Transform.createOriginAndMatrix(Point3d.create(1, 2, 3), Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(-10))),
+    "bloss");
+  testGeometryQueryRoundTrip(ck, clothoid);
+  expect(ck.getNumErrors()).equals(0);
+});
 
 function testGeometryQueryRoundTrip(ck: Checker, g: GeometryQuery | GeometryQuery[] | undefined) {
   if (!g)

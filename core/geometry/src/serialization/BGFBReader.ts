@@ -33,9 +33,12 @@ import { GeometryQuery } from "../curve/GeometryQuery";
 import { BSplineSurface3d, BSplineSurface3dH } from "../bspline/BSplineSurface";
 import { PointString3d } from "../curve/PointString3d";
 import { AuxChannel, AuxChannelData, PolyfaceAuxData } from "../polyface/AuxData";
+import { TransitionSpiral3d } from "../curve/spiral/TransitionSpiral3d";
+import { Geometry } from "../Geometry";
+import { Segment1d } from "../geometry3d/Segment1d";
+import { IntegratedSpiral3d } from "../curve/spiral/IntegratedSpiral3d";
 
-/**
- * Context to write to a flatbuffer blob.
+/** * Context to write to a flatbuffer blob.
  * @internal
  *  * This class is internal.
  *  * Public access is through BentleyGeometryFlatBuffer.geometryToBytes()
@@ -91,6 +94,40 @@ export class BGFBReader {
     return undefined;
   }
   /**
+   * Extract a bspline curve
+   * @param variant read position in the flat buffer.
+   */
+  public readTransitionSpiral(header: BGFBAccessors.TransitionSpiral): TransitionSpiral3d | undefined {
+    const detailHeader = header.detail();
+    if (detailHeader) {
+      const directDetailHeader = header.directDetail();
+      const _extraDataArray = header.extraDataArray();
+      const spiralTypeName = DgnSpiralTypeQueries.typeCodeToString(detailHeader.spiralType());
+      const curvature0 = detailHeader.curvature0();
+      const curvature1 = detailHeader.curvature1();
+      const bearing0Radians = detailHeader.bearing0Radians();
+      const bearing1Radians = detailHeader.bearing1Radians();
+      const fbTransform = detailHeader.transform();
+      const localToWorld = fbTransform ? Transform.createRowValues(
+        fbTransform.axx(), fbTransform.axy(), fbTransform.axz(), fbTransform.axw(),
+        fbTransform.ayx(), fbTransform.ayy(), fbTransform.ayz(), fbTransform.ayw(),
+        fbTransform.azx(), fbTransform.azy(), fbTransform.azz(), fbTransform.azw()) :
+        Transform.createIdentity();
+
+      const activeFractionInterval = Segment1d.create(detailHeader.fractionA(),
+        detailHeader.fractionB());
+      if (!directDetailHeader) {
+        const spiral = IntegratedSpiral3d.createRadiusRadiusBearingBearing(
+          Segment1d.create(IntegratedSpiral3d.curvatureToRadius(curvature0), IntegratedSpiral3d.curvatureToRadius(curvature1)),
+          AngleSweep.createStartEndRadians(bearing0Radians, bearing1Radians),
+          activeFractionInterval, localToWorld, spiralTypeName);
+        if (spiral)
+          return spiral;
+      }
+    }
+    return undefined;
+  }
+  /**
    * Extract a curve primitive
    * @param variant read position in the flat buffer.
    */
@@ -123,6 +160,9 @@ export class BGFBReader {
       if (offsetToBCurve !== null)
         return this.readBSplineCurve(offsetToBCurve);
     } else if (geometryType === BGFBAccessors.VariantGeometryUnion.tagTransitionSpiral) {
+      const offsetToTransitionSpiralTable = variant.geometry(new BGFBAccessors.TransitionSpiral());
+      if (offsetToTransitionSpiralTable !== null)
+        return this.readTransitionSpiral(offsetToTransitionSpiralTable);
     }
     return undefined;
   }
@@ -403,6 +443,7 @@ export class BGFBReader {
       case BGFBAccessors.VariantGeometryUnion.tagLineString:
       case BGFBAccessors.VariantGeometryUnion.tagEllipticArc:
       case BGFBAccessors.VariantGeometryUnion.tagBsplineCurve:
+      case BGFBAccessors.VariantGeometryUnion.tagTransitionSpiral:
         {
           return this.readCurvePrimitiveFromVariant(variant);
         }
@@ -488,3 +529,52 @@ function createTypedCurveCollection(collectionType: number): CurveCollection {
   if (collectionType === 5) return new UnionRegion();
   return new BagOfCurves();
 }
+/**
+ * mappings between typescript spiral type strings and native integers.
+ */
+export class DgnSpiralTypeQueries {
+  // remark: this is the full list based on nativve DSpiral2dBase.h.
+  //   This does not guarantee all types are supported.
+  private static spiralTypeCodeMap = [
+    [10, "clothoid"],
+    [11, "bloss"],
+    [12, "biquadratic"],
+    [13, "cosine"],
+    [14, "sine"],
+    [15, "Viennese"],
+    [16, "weightedViennese"],
+
+    [50, "WesternAustralian"],
+    [51, "Czech"],
+    [52, "AustralianRailCorp"],
+    [53, "Italian"],
+    [54, "PolishCubic"],
+    [55, "Arema"],
+    [56, "MXCubicAlongArc"],
+    [57, "MXCubicAlongTangent"],
+    [58, "ChineseCubic"],
+    [60, "HalfCosine"],
+    [61, "JapaneseCubic"]
+  ];
+  /** Convert native integer type (e.g. from flatbuffer) to typescript string */
+  public static typeCodeToString(typeCode: number): string | undefined {
+    for (const entry of DgnSpiralTypeQueries.spiralTypeCodeMap) {
+      if (entry[0] === typeCode)
+        return entry[1] as string;
+    }
+    return undefined;
+  }
+
+  /** Convert typescript string to native integer type */
+  public static stringToTypeCode(s: string, defaultToClothoid: boolean = true): number | undefined {
+    for (const entry of DgnSpiralTypeQueries.spiralTypeCodeMap) {
+      if (Geometry.equalStringNoCase(s, entry[1] as string))
+        return entry[0] as number;
+    }
+    return defaultToClothoid ? 10 : undefined;
+  }
+  /** Ask if the indicated type code is a "direct" spiral */
+  public static isDirectSpiralType(typeCode: number): boolean {
+    return typeCode >= 50;
+  }
+};
