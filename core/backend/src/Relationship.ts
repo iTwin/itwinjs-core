@@ -213,11 +213,11 @@ export class Relationships {
   /** Check classFullName to ensure it is a link table relationship class. */
   private checkRelationshipClass(classFullName: string) {
     if (!this._iModel.nativeDb.isLinkTableRelationship(classFullName)) {
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, `Class "${classFullName} must be a relationship class and descendant of BisCore:ElementRefersToElements or BisCore:ElementDrivesElement."`, Logger.logWarning, loggerCategory);
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, `Class "${classFullName} must be a relationship class and it should be subclass of BisCore:ElementRefersToElements or BisCore:ElementDrivesElement."`, Logger.logWarning, loggerCategory);
     }
   }
 
-  /** Insert a new relationship instance into the iModel. The relationship provided must be subclass of BisCore:ElementRefersToElements or BisCore:ElementDrivesElement
+  /** Insert a new relationship instance into the iModel. The relationship provided must be subclass of BisCore:ElementRefersToElements or BisCore:ElementDrivesElement.
    * @param props The properties of the new relationship.
    * @returns The Id of the newly inserted relationship.
    * @note The id property of the props object is set as a side effect of this function.
@@ -233,21 +233,23 @@ export class Relationships {
     return props.id;
   }
 
-  /** Update the properties of an existing relationship instance in the iModel.
+  /** Update the properties of an existing relationship instance in the iModel.The relationship provided must be subclass of BisCore:ElementRefersToElements or BisCore:ElementDrivesElement.
    * @param props the properties of the relationship instance to update. Any properties that are not present will be left unchanged.
    * @throws [[IModelError]] if unable to update the relationship instance.
    */
   public updateInstance(props: RelationshipProps): void {
+    this.checkRelationshipClass(props.classFullName);
     const error = this._iModel.nativeDb.updateLinkTableRelationship(JSON.stringify(props, BinaryPropertyTypeConverter.createReplacerCallback(false)));
     if (error !== DbResult.BE_SQLITE_OK)
       throw new IModelError(error, "Error updating relationship instance", Logger.logWarning, loggerCategory);
   }
 
-  /** Delete an Relationship instance from this iModel.
+  /** Delete an Relationship instance from this iModel.The relationship provided must be subclass of BisCore:ElementRefersToElements or BisCore:ElementDrivesElement.
    * @param id The Id of the Relationship to be deleted
    * @throws [[IModelError]]
    */
   public deleteInstance(props: RelationshipProps): void {
+    this.checkRelationshipClass(props.classFullName);
     const error = this._iModel.nativeDb.deleteLinkTableRelationship(JSON.stringify(props));
     if (error !== DbResult.BE_SQLITE_DONE)
       throw new IModelError(error, "", Logger.logWarning, loggerCategory);
