@@ -22,10 +22,12 @@ class TestEditTool1 extends EditTool {
   public isCompatibleViewport(_vp: Viewport | undefined, _isSelectedViewChange: boolean): boolean { return true; }
 
   public async go(cmd: string, args: Test1Args) {
-    const ret = await EditTool.startCommand<Test1Args, Test1Response>(cmd, args);
-    if (ret.result) {
-      testNum = ret.result.outNum;
-      testStr = ret.result.outStr;
+    const ret = await EditTool.startCommand<string, string>(cmd, "test command 123");
+    assert(ret.result === "test command 1231");
+    const ret2 = await EditTool.callCommand<Test1Args, Test1Response>("testMethod1", args);
+    if (ret2.result) {
+      testNum = ret2.result.outNum;
+      testStr = ret2.result.outStr;
     }
   }
 
@@ -47,7 +49,7 @@ if (ElectronRpcConfiguration.isElectron) {
     it.only("should start test commands", async () => {
       expect(IModelApp.tools.run("TestEditTool1")).to.be.true;
       const tool = IModelApp.toolAdmin.currentTool as TestEditTool1;
-      chai.assert.isTrue(tool instanceof TestEditTool1);
+      assert.isTrue(tool instanceof TestEditTool1);
       await tool.go(cmdIds.cmd1,
         {
           str1: "abc",
@@ -61,6 +63,18 @@ if (ElectronRpcConfiguration.isElectron) {
       assert.equal(testNum, 30);
       assert.equal(testStr, "abcdef");
 
+      await tool.go(cmdIds.cmd2,
+        {
+          str1: "abc",
+          str2: "def",
+          obj1: {
+            i1: 10,
+            i2: 20,
+          },
+        });
+
+      assert.equal(testNum, -10);
+      assert.equal(testStr, "defabc");
     });
 
   });

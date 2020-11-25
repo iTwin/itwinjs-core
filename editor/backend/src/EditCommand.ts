@@ -103,7 +103,7 @@ export class EditCommandAdmin {
       return { error: "MethodNotFound" };
 
     try {
-      return func.apply(this._activeCommand, method.args);
+      return func.call(this._activeCommand, method.args);
     } catch (e) {
       return { error: "Exception", result: e };
     }
