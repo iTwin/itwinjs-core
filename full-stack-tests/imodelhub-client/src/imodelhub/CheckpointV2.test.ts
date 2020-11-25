@@ -134,7 +134,7 @@ describe("iModelHub CheckpointV2Handler", () => {
 
   // CheckpointV2 not in QA yet, make unit tests until they can be reenabled as integration tests
   it("should create successful CheckpointV2 (#unit)", async () => {
-    const changeSetId = changeSets[2].id;
+    const changeSetId = changeSets[2].id!;
     const createCheckpoint = new CheckpointV2();
     createCheckpoint.changeSetId = changeSetId;
 
@@ -158,8 +158,8 @@ describe("iModelHub CheckpointV2Handler", () => {
     chai.expect(updatedCheckpoint.state).to.be.eq(CheckpointV2State.Successful);
 
     // Verify CheckpointV2 was updated
-    mockGetCheckpointV2(imodelId, `?$filter=ChangeSetId+eq+%27${changeSets[2].id!}%27`, mockCheckpointV2(changeSets[2].id!, CheckpointV2State.Successful, createdCheckpoint.wsgId));
-    const checkpoints = await iModelClient.checkpointsV2.get(requestContext, imodelId, new CheckpointV2Query().byChangeSetId(changeSets[2].id!));
+    mockGetCheckpointV2(imodelId, `?$filter=ChangeSetId+eq+%27${changeSetId}%27`, mockCheckpointV2(changeSetId, CheckpointV2State.Successful, createdCheckpoint.wsgId));
+    const checkpoints = await iModelClient.checkpointsV2.get(requestContext, imodelId, new CheckpointV2Query().byChangeSetId(changeSetId));
     chai.assert(checkpoints);
     chai.expect(checkpoints.length).to.be.equal(1);
     chai.expect(checkpoints[0].wsgId).to.be.equal(createdCheckpoint.wsgId);
@@ -168,22 +168,32 @@ describe("iModelHub CheckpointV2Handler", () => {
 
   // CheckpointV2 not in QA yet, make unit tests until they can be reenabled as integration tests
   it("should create failed CheckpointV2 (#unit)", async () => {
-    const changeSetId = changeSets[1].id;
+    const changeSetId = changeSets[1].id!;
     const createCheckpoint = new CheckpointV2();
     createCheckpoint.changeSetId = changeSetId;
-    createCheckpoint.state = CheckpointV2State.Failed;
 
-    // Create Failed CheckpointV2
+    // Create InProgress CheckpointV2
     mockCreateCheckpointV2(imodelId, 2, createCheckpoint);
     const createdCheckpoint = await iModelClient.checkpointsV2.create(requestContext, imodelId, createCheckpoint);
     chai.assert(createdCheckpoint);
+    chai.expect(!!createdCheckpoint.wsgId);
     chai.expect(createdCheckpoint.changeSetId).to.be.eq(changeSetId);
-    chai.expect(createdCheckpoint.state).to.be.eq(CheckpointV2State.Failed);
-    chai.expect(createdCheckpoint.containerAccessKeyAccount).to.be.undefined;
+    chai.expect(createdCheckpoint.state).to.be.eq(CheckpointV2State.InProgress);
+    assertContainerAccessKey(createdCheckpoint);
+
+    // Update CheckpointV2 to Failed state
+    const checkpointToUpdate = new CheckpointV2();
+    checkpointToUpdate.wsgId = createdCheckpoint.wsgId;
+    checkpointToUpdate.state = CheckpointV2State.Failed;
+    mockUpdateCheckpointV2(imodelId, checkpointToUpdate);
+    const updatedCheckpoint = await iModelClient.checkpointsV2.update(requestContext, imodelId, checkpointToUpdate);
+    chai.assert(updatedCheckpoint);
+    chai.expect(updatedCheckpoint.containerAccessKeyAccount).to.be.undefined;
+    chai.expect(updatedCheckpoint.state).to.be.eq(CheckpointV2State.Failed);
 
     // Verify CheckpointV2 was created
-    mockGetCheckpointV2(imodelId, `?$filter=ChangeSetId+eq+%27${changeSets[1].id!}%27`, mockCheckpointV2(changeSets[1].id!, CheckpointV2State.Failed, createdCheckpoint.wsgId));
-    const checkpoints = await iModelClient.checkpointsV2.get(requestContext, imodelId, new CheckpointV2Query().byChangeSetId(changeSets[1].id!));
+    mockGetCheckpointV2(imodelId, `?$filter=ChangeSetId+eq+%27${changeSetId}%27`, mockCheckpointV2(changeSetId, CheckpointV2State.Failed, createdCheckpoint.wsgId));
+    const checkpoints = await iModelClient.checkpointsV2.get(requestContext, imodelId, new CheckpointV2Query().byChangeSetId(changeSetId));
     chai.assert(checkpoints);
     chai.expect(checkpoints.length).to.be.equal(1);
     chai.expect(checkpoints[0].wsgId).to.be.equal(createdCheckpoint.wsgId);

@@ -140,8 +140,8 @@ export class CheckpointV2Handler {
   /** Create a [[CheckpointV2]] for the specified iModel.
    * @param requestContext The client request context
    * @param iModelId Id of the iModel. See [[HubIModel]].
-   * @param checkpoint [[CheckpointV2]] instance to create. Requires changeSetId to be set. State is optional, default value is 'InProgress'. [[CheckpointV2]] can be created with states 'InProgress' or 'Failed'.
-   * @returns The created [[CheckpointV2]] instance from iModelHub. Container AccessKey is returned if [[CheckpointV2]] state is 'InProgress'.
+   * @param checkpoint [[CheckpointV2]] instance to create. Requires changeSetId to be set. [[CheckpointV2]] is always created with state 'InProgress'.
+   * @returns The created [[CheckpointV2]] instance from iModelHub. Container AccessKey is always returned.
    * @throws [[IModelHubError]] with [IModelHubStatus.CheckpointAlreadyExists]($bentley) if [[CheckpointV2]] for a given [[ChangeSet]] was already created.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    * @internal
