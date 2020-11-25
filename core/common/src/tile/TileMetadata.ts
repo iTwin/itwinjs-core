@@ -106,11 +106,23 @@ export enum TreeFlags {
  * @internal
  */
 export interface PrimaryTileTreeId {
+  /** Describes the type of tile tree. */
   type: BatchType.Primary;
+  /** Whether to include edges in tile content. */
   edgesRequired: boolean;
+  /** Id of the [DisplayStyle]($backend) holding the [[RenderSchedule]] script to be applied to the tiles. */
   animationId?: Id64String;
+  /** Id of the transform node within the [[RenderSchedule]] script to be applied to the tiles. */
   animationTransformNodeId?: number;
+  /** If true, meshes within the tiles will be grouped into nodes based on the display priority associated with their subcategories,
+   * for ensuring the graphics display with correct priority.
+   */
   enforceDisplayPriority?: boolean;
+  /** If defined, the compact string representation of a clip vector applied to the tiles to produce cut geometry at the intersections with the clip planes.
+   * Any geometry *not* intersecting the clip planes is omitted from the tiles.
+   * @see [ClipVector.toCompactString[($geometry-core).
+   */
+  sectionCut?: string;
 }
 
 /** Describes a tile tree that can classify the contents of other tile trees using the model's geometry.
@@ -148,10 +160,9 @@ export function iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTile
     else if (treeId.enforceDisplayPriority) // animation and priority are currently mutually exclusive
       flags |= TreeFlags.EnforceDisplayPriority;
 
-    if (!treeId.edgesRequired) {
-      // Tell backend not to bother generating+returning edges - we would just discard them anyway
-      idStr = `${idStr}E:0_`;
-    }
+    const edges = treeId.edgesRequired ? "" : "E:0_";
+    const sectionCut = treeId.sectionCut ? `S:${treeId.sectionCut}_` : "";
+    idStr = `${idStr}${edges}${sectionCut}`;
   } else {
     const typeStr = BatchType.PlanarClassifier === treeId.type ? "CP" : "C";
     idStr = `${idStr + typeStr}:${treeId.expansion.toFixed(6)}_`;
@@ -190,8 +201,11 @@ export function compareIModelTileTreeIds(lhs: IModelTileTreeId, rhs: IModelTileT
   assert(lhs.type === rhs.type);
   if (BatchType.Primary === lhs.type && BatchType.Primary === rhs.type) {
     cmp = compareBooleans(lhs.edgesRequired, rhs.edgesRequired);
-    if (0 === cmp)
+    if (0 === cmp) {
       cmp = compareBooleansOrUndefined(lhs.enforceDisplayPriority, rhs.enforceDisplayPriority);
+      if (0 === cmp)
+        cmp = compareStringsOrUndefined(lhs.sectionCut, rhs.sectionCut);
+    }
   } else if (BatchType.Primary !== lhs.type && BatchType.Primary !== rhs.type) {
     cmp = compareNumbers(lhs.expansion, rhs.expansion);
   }
