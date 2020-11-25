@@ -14,13 +14,13 @@ describe("PropertyDescriptionHelper", () => {
   const additionParam = [{
     type: PropertyEditorParamTypes.SuppressEditorLabel,
     suppressLabelPlaceholder: true,
-  } as SuppressLabelEditorParams]
+  } as SuppressLabelEditorParams];
 
   describe("WeightPicker Description", () => {
     const typename = "number";
 
     it("should build correctly", () => {
-      const editor = "weight-picker"
+      const editor = "weight-picker";
       const editorDescription = PropertyDescriptionHelper.buildWeightPickerDescription(testName, testLabel);
       expect(editorDescription.name).to.eq(testName);
       expect(editorDescription.typename).to.eq(typename);
@@ -30,7 +30,7 @@ describe("PropertyDescriptionHelper", () => {
     });
 
     it("should build with additional editor params correctly", () => {
-      const editor = "weight-picker"
+      const editor = "weight-picker";
       const editorDescription = PropertyDescriptionHelper.buildWeightPickerDescription(testName, testLabel, additionParam);
       expect(editorDescription.name).to.eq(testName);
       expect(editorDescription.typename).to.eq(typename);

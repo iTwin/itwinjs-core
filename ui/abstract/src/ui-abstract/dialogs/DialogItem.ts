@@ -97,16 +97,19 @@ export class DialogProperty<T> {
   }
 
   public get dialogItemValue() {
+    // istanbul ignore else
     if (typeof this._value === "string" || typeof this._value === "number" || typeof this._value === "undefined" || typeof this._value === "boolean" || this._value instanceof Date)
       return {
         value: this._value,
         displayValue: this._displayValue,
       } as DialogItemValue;
+    // istanbul ignore next
     throw new Error("Not valid primitive type");
   }
 
   public set dialogItemValue(val: DialogItemValue) {
-    this._value = val as T;
+    this._value = val.value as unknown as T;
+    this._displayValue = val.displayValue;
   }
 
   public get syncItem(): DialogPropertySyncItem {

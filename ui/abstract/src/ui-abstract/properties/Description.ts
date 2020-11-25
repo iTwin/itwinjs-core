@@ -141,7 +141,7 @@ export class PropertyDescriptionHelper {
         numColumns,
       } as ColorEditorParams,
       ...additionalParams,
-    ]
+    ];
 
     return {
       name,
@@ -171,7 +171,7 @@ export class PropertyDescriptionHelper {
       type: PropertyEditorParamTypes.CheckBoxImages,
       imageOff,
       imageOn,
-    } as ImageCheckBoxParams, ...additionalParams]
+    } as ImageCheckBoxParams, ...additionalParams];
 
     return {
       name,
