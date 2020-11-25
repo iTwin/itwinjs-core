@@ -348,4 +348,50 @@ describe("TxnManager", () => {
     removals.forEach((drop) => drop());
   });
 
+  it.skip("change propagation should leave txn empty", async () => {
+    const elements = imodel.elements;
+
+    // Insert elements root, child and dependency between them
+    const rootProps = { ...props, intProperty: 0 };
+    const rootId = elements.insertElement(rootProps);
+    const childProps = { ...props, intProperty: 10 };
+    const childId = elements.insertElement(childProps);
+    const relationship = TestElementDrivesElement.create<TestElementDrivesElement>(imodel, rootId, childId);
+    relationship.property1 = "Root drives child";
+    relationship.insert();
+    imodel.saveChanges("Inserted root, child element and dependency");
+
+    // Setup dependency handler to update childElement
+    let handlerCalled = false;
+    const dropListener = TestPhysicalObject.allInputsHandled.addListener((id) => {
+      handlerCalled = true;
+      assert.equal(id, childId);
+      const childEl = elements.getElement<TestPhysicalObject>(childId);
+      assert.equal(childEl.intProperty, 10, "int property should be 10");
+      childEl.intProperty += 10;
+      childEl.update();
+    });
+
+    // Validate state
+    const txns = imodel.txns;
+    assert.isFalse(txns.hasUnsavedChanges);
+    assert.isTrue(txns.hasPendingTxns);
+    assert.isTrue(txns.hasLocalChanges);
+
+    // Update rootElement and saveChanges
+    const rootEl = elements.getElement<TestPhysicalObject>(rootId);
+    rootEl.intProperty += 10;
+    rootEl.update();
+    imodel.saveChanges("Updated root");
+
+    // Validate state
+    assert.isTrue(handlerCalled);
+    assert.isFalse(txns.hasUnsavedChanges, "should not have unsaved changes");
+    assert.isTrue(txns.hasPendingTxns);
+    assert.isTrue(txns.hasLocalChanges);
+
+    // Cleanup
+    dropListener();
+  });
+
 });
