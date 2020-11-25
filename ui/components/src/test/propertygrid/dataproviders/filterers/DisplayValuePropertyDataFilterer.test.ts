@@ -46,6 +46,13 @@ describe("DisplayValuePropertyDataFilterer", () => {
         expect(matchResult).to.deep.eq({ matchesFilter: true });
       });
     }
+
+    it(`Should return 'matchesFilter: true' when calling categoryMatchesFilter`, async () => {
+      const filterer = new DisplayValuePropertyDataFilterer();
+
+      const matchResult = await filterer.categoryMatchesFilter();
+      expect(matchResult).to.deep.eq({ matchesFilter: true });
+    });
   });
 
   describe("When filter text set", () => {
@@ -72,6 +79,14 @@ describe("DisplayValuePropertyDataFilterer", () => {
 
       filterer.filterText = "Struct";
       const matchResult = await filterer.recordMatchesFilter(record);
+      expect(matchResult).to.deep.eq({ matchesFilter: false });
+    });
+
+    it("Should return false when calling `categoryMatchesFilter`", async () => {
+      const filterer = new DisplayValuePropertyDataFilterer();
+
+      filterer.filterText = "test";
+      const matchResult = await filterer.categoryMatchesFilter();
       expect(matchResult).to.deep.eq({ matchesFilter: false });
     });
 

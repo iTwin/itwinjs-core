@@ -44,6 +44,13 @@ describe("LabelPropertyDataFilterer", () => {
         expect(matchResult).to.deep.eq({ matchesFilter: true });
       });
     }
+
+    it(`Should always return 'matchesFilter: true' when calling categoryMatchesFilter`, async () => {
+      const filterer = new LabelPropertyDataFilterer();
+
+      const matchResult = await filterer.categoryMatchesFilter();
+      expect(matchResult).to.deep.eq({ matchesFilter: true });
+    });
   });
 
   describe("When filter text set", () => {
@@ -62,6 +69,14 @@ describe("LabelPropertyDataFilterer", () => {
       filterer.filterText = faker.random.word();
 
       expect(filterer.isActive).to.be.true;
+    });
+
+    it("Should not match when calling `categoryMatchesFilter`", async () => {
+      const filterer = new LabelPropertyDataFilterer();
+
+      filterer.filterText = "test";
+      const matchResult = await filterer.categoryMatchesFilter();
+      expect(matchResult).to.deep.eq({ matchesFilter: false });
     });
 
     it("Should not match when given empty display value property record", async () => {

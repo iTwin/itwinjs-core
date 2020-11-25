@@ -80,7 +80,7 @@ export class FavoritePropertiesDataFilterer extends PropertyDataFiltererBase {
   }
 
   public async categoryMatchesFilter(): Promise<PropertyDataFilterResult> {
-    return { matchesFilter: true };
+    return { matchesFilter: !this.isActive };
   }
 }
 

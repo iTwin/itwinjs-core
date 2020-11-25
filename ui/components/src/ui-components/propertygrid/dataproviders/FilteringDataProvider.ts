@@ -10,7 +10,7 @@ import { PropertyRecord, PropertyValue, PropertyValueFormat } from "@bentley/ui-
 import { PropertyMatchInfo } from "../component/VirtualizedPropertyGrid";
 import { CategoryRecordsDict } from "../internal/flat-items/MutableGridCategory";
 import { IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent } from "../PropertyDataProvider";
-import { IPropertyDataFilterer } from "./filterers/PropertyDataFiltererBase";
+import { IPropertyDataFilterer, PropertyDataFilterResult } from "./filterers/PropertyDataFiltererBase";
 
 interface FilteredRecords {
   filteredRecords: PropertyRecord[];
@@ -112,37 +112,43 @@ export class FilteringPropertyDataProvider implements IPropertyDataProvider, IDi
   }
 }
 
-async function matchHierarchy(filterer: IPropertyDataFilterer, categories: PropertyCategory[], records: CategoryRecordsDict, newRecords?: CategoryRecordsDict) {
+async function matchHierarchy(filterer: IPropertyDataFilterer, categories: PropertyCategory[], records: CategoryRecordsDict, newRecords?: CategoryRecordsDict, parentMatchInfo?: PropertyDataFilterResult) {
   const newCategories: PropertyCategory[] = [];
   newRecords = newRecords ?? {};
   let matchesCount = 0;
   let allFilteredResultMatches: { id: string, matchesCount: { label?: number, value?: number } }[] = [];
 
   for (const category of categories) {
-
-    const parentMatchInfo = category.parentCategory ? await filterer.categoryMatchesFilter(category.parentCategory, []) : undefined;
     const matchInfo = await filterer.categoryMatchesFilter(category, []);
-    if (matchInfo.matchesFilter || parentMatchInfo?.matchesFilter) {
-      newRecords[category.name] = records[category.name] ?? [];
-      newCategories.push(category);
-      if (matchInfo.matchesFilter) {
-        allFilteredResultMatches.push({ id: category?.name ?? "", matchesCount: (matchInfo.matchesCount ?? { label: 0, value: 0 }) });
-        matchesCount += matchInfo.matchesCount?.label ?? 0;
-      }
+
+    if (matchInfo.matchesFilter) {
+      allFilteredResultMatches.push({ id: category.name, matchesCount: (matchInfo.matchesCount ?? { label: 0, value: 0 }) });
+      matchesCount += matchInfo.matchesCount?.label ?? 0;
     }
+
     const childRecords = records[category.name] ?? [];
     const { filteredRecords, matchesCount: count, filteredResultMatches } = await matchRecordHierarchy(filterer, childRecords, []);
     allFilteredResultMatches = allFilteredResultMatches.concat(filteredResultMatches);
     matchesCount += count;
 
     const childCategories = category.childCategories ?? [];
-    const { filteredCategories, matchesCount: childCount, filteredResultMatches: childFilteredResultMatches } = await matchHierarchy(filterer, childCategories, records, newRecords);
+    const { filteredCategories, matchesCount: childCount, filteredResultMatches: childFilteredResultMatches } = await matchHierarchy(filterer, childCategories, records, newRecords, matchInfo);
     allFilteredResultMatches = allFilteredResultMatches.concat(childFilteredResultMatches);
 
     matchesCount += childCount;
 
-    if ((filteredRecords.length !== 0 || filteredCategories.length !== 0) && !matchInfo.matchesFilter) {
-      const newCategory = copyPropertyCategory(category, filteredCategories);
+    let expand = !(count === 0 && childCount === 0);
+    if (matchInfo.matchesFilter || (parentMatchInfo?.matchesFilter && parentMatchInfo.shouldForceIncludeDescendants)) {
+      newRecords[category.name] = records[category.name];
+      if (matchInfo.matchesFilter) {
+        expand = true;
+      }
+      const newCategory = copyPropertyCategory(category, filteredCategories, expand);
+      newCategories.push(newCategory);
+    }
+
+    if ((filteredRecords.length !== 0 || filteredCategories.length !== 0) && !matchInfo.matchesFilter && !(parentMatchInfo?.shouldExpandNodeParents && parentMatchInfo?.matchesFilter)) {
+      const newCategory = copyPropertyCategory(category, filteredCategories, expand);
       newRecords[newCategory.name] = filteredRecords;
       newCategories.push(newCategory);
     }
@@ -177,7 +183,7 @@ async function matchRecordHierarchy(filterer: IPropertyDataFilterer, records: Pr
       // then `expandParent` should be set to true
       expandParent = expandParent || !!matchInfo.shouldExpandNodeParents;
       newRecord = copyPropertyRecord(record, filteredChildren, shouldExpandNodeParents);
-      filteredResultMatches.push({ id: newRecord?.property.name ?? "", matchesCount: (recordMatchesCount ?? { label: 0, value: 0 }) });
+      filteredResultMatches.push({ id: newRecord.property.name, matchesCount: (recordMatchesCount ?? { label: 0, value: 0 }) });
     } else if (filteredChildren.length !== 0 || forceIncludeItem) {
       // Item is also included if it has at least one matched child or is forcefully included by its parent
       newRecord = copyPropertyRecord(record, filteredChildren, shouldExpandNodeParents);
@@ -190,11 +196,11 @@ async function matchRecordHierarchy(filterer: IPropertyDataFilterer, records: Pr
   return { filteredRecords: newMatchedRecords, shouldExpandNodeParents: expandParent, matchesCount, filteredResultMatches };
 }
 
-function copyPropertyCategory(propertyCategory: PropertyCategory, newChildren: PropertyCategory[]) {
+function copyPropertyCategory(propertyCategory: PropertyCategory, newChildren: PropertyCategory[], expand: boolean) {
   const newCategory = {
     ...propertyCategory,
     childCategories: newChildren,
-    expand: true,
+    expand,
   };
   newChildren.forEach((child) => child.parentCategory = newCategory);
   return newCategory;

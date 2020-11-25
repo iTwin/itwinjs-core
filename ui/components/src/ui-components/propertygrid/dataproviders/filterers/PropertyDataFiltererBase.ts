@@ -55,7 +55,7 @@ export class PropertyFilterChangeEvent extends BeEvent<PropertyFilterChangesList
 export interface IPropertyDataFilterer {
   readonly isActive: boolean;
   recordMatchesFilter: (node: PropertyRecord, parents: PropertyRecord[]) => Promise<PropertyDataFilterResult>;
-  categoryMatchesFilter: (node: PropertyCategory, parents: PropertyRecord[]) => Promise<PropertyDataFilterResult>;
+  categoryMatchesFilter: (node: PropertyCategory, parents: PropertyCategory[]) => Promise<PropertyDataFilterResult>;
   onFilterChanged: PropertyFilterChangeEvent;
 }
 
@@ -67,5 +67,5 @@ export abstract class PropertyDataFiltererBase implements IPropertyDataFilterer 
   public onFilterChanged: PropertyFilterChangeEvent = new PropertyFilterChangeEvent();
   public abstract get isActive(): boolean;
   public abstract async recordMatchesFilter(node: PropertyRecord, parents: PropertyRecord[]): Promise<PropertyDataFilterResult>;
-  public abstract async categoryMatchesFilter(node: PropertyCategory, parents: PropertyRecord[]): Promise<PropertyDataFilterResult>;
+  public abstract async categoryMatchesFilter(node: PropertyCategory, parents: PropertyCategory[]): Promise<PropertyDataFilterResult>;
 }

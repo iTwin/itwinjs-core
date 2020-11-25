@@ -42,7 +42,7 @@ export class CategoryPropertyDataFilterer extends PropertyDataFiltererBase {
     if (!this.isActive)
       return { matchesFilter: true };
 
-    const displayLabel = node.label?.toLowerCase() ?? "";
+    const displayLabel = node.label.toLowerCase();
     const matchesCount = countMatchesInString(displayLabel, this.filterText);
 
     if (matchesCount === 0)

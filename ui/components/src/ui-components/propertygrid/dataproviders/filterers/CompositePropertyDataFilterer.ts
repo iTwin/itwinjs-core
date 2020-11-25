@@ -50,7 +50,7 @@ export class CompositePropertyDataFilterer extends PropertyDataFiltererBase {
     };
   }
 
-  public async categoryMatchesFilter(node: PropertyCategory, parents: PropertyRecord[]): Promise<PropertyDataFilterResult> {
+  public async categoryMatchesFilter(node: PropertyCategory, parents: PropertyCategory[]): Promise<PropertyDataFilterResult> {
     const [lhs, rhs] = await Promise.all([
       this._leftFilterer.categoryMatchesFilter(node, parents),
       this._rightFilterer.categoryMatchesFilter(node, parents),
@@ -64,7 +64,7 @@ export class CompositePropertyDataFilterer extends PropertyDataFiltererBase {
       matchesFilter: true,
       shouldExpandNodeParents: lhs.shouldExpandNodeParents || rhs.shouldExpandNodeParents,
       shouldForceIncludeDescendants: lhs.shouldForceIncludeDescendants || rhs.shouldForceIncludeDescendants,
-      matchesCount: { label: sumNullableNumbers(lhs.matchesCount?.label, rhs.matchesCount?.label) },
+      matchesCount: { label: sumNullableNumbers(lhs.matchesCount?.label, rhs.matchesCount?.label), value: sumNullableNumbers(lhs.matchesCount?.value, rhs.matchesCount?.value) },
     };
   }
 }

@@ -158,6 +158,10 @@ describe("FavoritePropertiesDataFilterer", () => {
       });
     }
 
+    it(`Should always return 'matchesFilter: true' when calling categoryMatchesFilter`, async () => {
+      const matchResult = await filterer.categoryMatchesFilter();
+      expect(matchResult).to.deep.eq({ matchesFilter: true });
+    });
   });
 
   describe("when filtering is enabled", () => {
@@ -226,5 +230,11 @@ describe("FavoritePropertiesDataFilterer", () => {
         expect(matchResult).to.deep.eq({ matchesFilter: true });
       });
     }
+
+    it("Should not match when calling `categoryMatchesFilter`", async () => {
+      const matchResult = await filterer.categoryMatchesFilter();
+      expect(matchResult).to.deep.eq({ matchesFilter: false });
+    });
+
   });
 });
