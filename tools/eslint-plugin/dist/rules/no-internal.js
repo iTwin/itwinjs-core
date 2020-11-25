@@ -71,7 +71,9 @@ module.exports = {
       checkJsDoc(declaration, node);
       if (declaration.parent && [
         ts.SyntaxKind.ClassDeclaration,
-        ts.SyntaxKind.EnumDeclaration
+        ts.SyntaxKind.EnumDeclaration,
+        ts.SyntaxKind.InterfaceDeclaration,
+        ts.SyntaxKind.ModuleDeclaration,
       ].includes(declaration.parent.kind))
         checkJsDoc(declaration.parent, node);
     }
@@ -108,6 +110,8 @@ module.exports = {
 
       MemberExpression(node) {
         const tsCall = parserServices.esTreeNodeToTSNodeMap.get(node);
+        if (!tsCall)
+          return;
 
         const resolved = typeChecker.getSymbolAtLocation(tsCall);
         if (!resolved || !resolved.valueDeclaration)
@@ -132,8 +136,8 @@ module.exports = {
           return;
 
         const resolved = typeChecker.getResolvedSignature(tsCall);
-        if(!resolved)
-        return;
+        if (!resolved)
+          return;
         if (resolved.resolvedReturnType && resolved.resolvedReturnType.symbol)
           checkJsDoc(resolved.resolvedReturnType.symbol.valueDeclaration, node); // class
         if(resolved.declaration)
@@ -142,6 +146,9 @@ module.exports = {
 
       TaggedTemplateExpression(node) {
         const tsCall = parserServices.esTreeNodeToTSNodeMap.get(node);
+        if (!tsCall)
+          return;
+
         const resolved = typeChecker.getResolvedSignature(tsCall);
         if (resolved)
           checkJsDoc(resolved.declaration, node);
