@@ -378,7 +378,7 @@ describe("iModelHub iModelsHandler", () => {
     chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.iModelAlreadyExists);
   });
 
-  it("should create iModel and upload SeedFile", async function () {
+  it("should create iModel and upload SeedFile", async () => {
     const testIModelName = utils.getUniqueIModelName(createIModelName);
     const filePath = `${assetsPath}LargerSeedFile.bim`;
     const description = "Test iModel created by imodeljs-clients tests";
@@ -518,7 +518,7 @@ describe("iModelHub iModelsHandler", () => {
     chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.InvalidArgumentError);
   });
 
-  it("should create iModel from another iModel", async function () {
+  it("should create iModel from another iModel", async () => {
     const testIModelName = utils.getUniqueIModelName(createIModelName);
     await utils.deleteIModelByName(requestContext, projectId, testIModelName);
 
@@ -830,7 +830,7 @@ describe("iModelHub iModelsHandler", () => {
     chai.expect(iModelsWithLibraryType.some((x) => x.id === iModel.id)).to.be.true;
   });
 
-  it("should filter iModels by template", async function () {
+  it("should filter iModels by template", async () => {
     const testIModelName = utils.getUniqueIModelName(createIModelName);
     const emptyTemplate = "Empty";
     mockGetIModelByTemplate(projectId, testIModelName, imodelId, emptyTemplate);
