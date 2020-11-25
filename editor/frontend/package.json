@@ -8,13 +8,11 @@
   "license": "MIT",
   "scripts": {
     "compile": "npm run build",
-    "build": "npm run copy:assets && npm run pseudolocalize && tsc 1>&2",
+    "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "copy:assets": "cpx ./src/loader/checkbrowser.js ./lib/loader && cpx \"./src/public/**/*\" ./lib/public",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/editor/imodeljs-editor-frontend/file.json --tsIndexFile=./imodeljs-editor-frontend.ts --onlyJson --excludes=webgl/**/*,**/primitives --excludeGlob=**/*-css.ts",
     "extract-api": "betools extract-api --entry=imodeljs-editor-frontend",
     "lint": "eslint -f visualstudio --max-warnings 0 ./src/**/*.ts 1>&2",
-    "pseudolocalize": "betools pseudolocalize --englishDir ./src/public/locales/en --out ./lib/public/locales/en-PSEUDO",
     "test": "npm run webpackTests && certa -r chrome",
     "cover": "npm test -- --cover",
     "test:debug": "certa -r chrome --debug",
@@ -71,7 +69,8 @@
     "NOTE: imodeljs-editor-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
-    "@bentley/imodeljs-frontend": "2.10.0-dev.13"
+    "@bentley/imodeljs-frontend": "2.10.0-dev.13",
+    "@bentley/imodeljs-editor-common": "2.10.0-dev.13"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"

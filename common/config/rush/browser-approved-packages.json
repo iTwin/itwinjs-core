@@ -107,8 +107,16 @@
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
+      "name": "@bentley/imodeljs-editor-backend",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@bentley/imodeljs-editor-common",
-      "allowedCategories": [ "edit" ]
+      "allowedCategories": [ "edit", "internal" ]
+    },
+    {
+      "name": "@bentley/imodeljs-editor-frontend",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@bentley/imodeljs-frontend",

@@ -8,7 +8,7 @@
 
 import { ipcMain } from "electron";
 import { isElectronMain } from "@bentley/bentleyjs-core";
-import { CallMethodProps, CommandResult, editIpcPrefix, PingResult, StartCommandProps } from "@bentley/imodeljs-editor-common";
+import { CommandMethodProps, CommandResult, editCommandApi, PingResult, StartCommandProps } from "@bentley/imodeljs-editor-common";
 
 /** @public */
 export type EditCommandType = typeof EditCommand;
@@ -22,13 +22,13 @@ export class EditCommand {
   public static commandId = "";
   public static version = "1.0.0";
 
-  public constructor(_arg: any) { }
+  public constructor(_arg?: any) { }
   public get ctor() { return this.constructor as EditCommandType; }
 
-  public onStart(): CommandResult<any> { return { status: "Success" }; }
+  public onStart(): CommandResult<any> { return {}; }
 
-  public onPing(): PingResult {
-    return { status: "Success", version: this.ctor.version, commandId: this.ctor.commandId };
+  public onPing(): CommandResult<PingResult> {
+    return { result: { version: this.ctor.version, commandId: this.ctor.commandId } };
   }
   public onCleanup(): void { }
 
@@ -44,6 +44,7 @@ export class EditCommandAdmin {
   public static readonly commands = new Map<string, EditCommandType>();
 
   private static _activeCommand?: EditCommand;
+  private static _isInitialized = false;
 
   /**
    * Un-register a previously registered EditCommand class.
@@ -56,6 +57,14 @@ export class EditCommandAdmin {
    * @param commandType the subclass of Tool to register.
    */
   public static register(commandType: EditCommandType) {
+    if (!this._isInitialized) {
+      this._isInitialized = true;
+      if (!isElectronMain)
+        throw new Error("Edit Commands only allowed in Electron");
+
+      ipcMain.handle(editCommandApi.start, async (_event, arg) => EditCommandAdmin.startCommand(arg));
+      ipcMain.handle(editCommandApi.call, async (_event, arg) => EditCommandAdmin.callMethod(arg));
+    }
     if (commandType.commandId.length !== 0)
       this.commands.set(commandType.commandId, commandType);
   }
@@ -77,33 +86,27 @@ export class EditCommandAdmin {
     if (this._activeCommand)
       this._activeCommand.onFinish();
     this._activeCommand = cmd;
-    return cmd ? cmd.onStart() : { status: "NoActiveCommand" };
+    return cmd ? cmd.onStart() : { error: "NoActiveCommand" };
   }
 
-  public static startCommand(props: StartCommandProps) {
+  public static startCommand(props: StartCommandProps<any>): CommandResult<any> {
     const commandClass = this.commands.get(props.commandId);
-    return commandClass ? this.runCommand(new commandClass(props.args)) : { status: "CommandNotFound" };
+    return commandClass ? this.runCommand(new commandClass(props.args)) : { error: "CommandNotFound" };
   }
 
-  public static callMethod(method: CallMethodProps): CommandResult<any> {
+  public static callMethod(method: CommandMethodProps<any>): CommandResult<any> {
     if (!this._activeCommand)
-      return { status: "NoActiveCommand" };
+      return { error: "NoActiveCommand" };
 
     const func = (this._activeCommand as any)[method.name];
     if (typeof func !== "function")
-      return { status: "MethodNotFound" };
+      return { error: "MethodNotFound" };
 
-    return func.apply(this._activeCommand, method.args);
+    try {
+      return func.apply(this._activeCommand, method.args);
+    } catch (e) {
+      return { error: "Exception", result: e };
+    }
   }
 
 };
-
-const editCommandMain = () => {
-  if (!isElectronMain)
-    throw new Error("Editing only supported in Electron");
-
-  ipcMain.handle(`${editIpcPrefix}startCommand`, async (_event, arg) => EditCommandAdmin.startCommand(arg));
-  ipcMain.handle(`${editIpcPrefix}callMethod`, async (_event, arg) => EditCommandAdmin.callMethod(arg));
-};
-
-editCommandMain();

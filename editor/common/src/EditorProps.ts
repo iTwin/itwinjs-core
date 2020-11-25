@@ -6,32 +6,34 @@
  * @module Editing
  */
 
-export const editIpcPrefix = "imodeljs.edit.";
+export const editCommandApi = {
+  start: "imodeljs.editcmd.start",
+  call: "imodeljs.editcmd.call",
+};
 
-export type CommandStatus =
-  "Success" |
+export type CommandError =
   "CommandNotFound" |
-  "NoActiveCommand" |
-  "MethodNotFound";
+  "Exception" |
+  "MethodNotFound" |
+  "NoActiveCommand";
 
 export interface CommandResult<T> {
-  status: CommandStatus;
+  error?: CommandError;
   result?: T;
 }
 
 export interface PingResult {
-  status: CommandStatus;
   commandId?: string;
   version?: string;
   [propName: string]: any;
 }
 
-export interface CallMethodProps {
+export interface CommandMethodProps<T> {
   name: string;
-  args?: any;
+  args?: T;
 }
 
-export interface StartCommandProps {
+export interface StartCommandProps<T> {
   commandId: string;
-  args?: any;
+  args?: T;
 }
