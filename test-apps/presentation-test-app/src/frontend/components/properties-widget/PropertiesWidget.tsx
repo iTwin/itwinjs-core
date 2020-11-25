@@ -61,7 +61,7 @@ export function PropertiesWidget(props: Props) {
     const valueFilterer = new DisplayValuePropertyDataFilterer(filterText);
     const labelFilterer = new LabelPropertyDataFilterer(filterText);
     const categoryFilterer = new CategoryPropertyDataFilterer(filterText);
-    const favoriteFilterer = new FavoritePropertiesDataFilterer({ source: dataProvider, favoritesScope: FAVORITES_SCOPE, isActive: isFavoritesFilterActive })
+    const favoriteFilterer = new FavoritePropertiesDataFilterer({ source: dataProvider, favoritesScope: FAVORITES_SCOPE, isActive: isFavoritesFilterActive });
 
     const recordFilterer = new CompositePropertyDataFilterer(labelFilterer, CompositeFilterType.Or, valueFilterer);
     const textFilterer = new CompositePropertyDataFilterer(recordFilterer, CompositeFilterType.Or, categoryFilterer);
@@ -84,20 +84,20 @@ export function PropertiesWidget(props: Props) {
     return filteringResult?.matchesCount !== undefined ? {
       onSelectedChanged: (index: React.SetStateAction<number>) => setActiveMatchIndex(index),
       resultCount: filteringResult.matchesCount,
-    } : undefined
+    } : undefined;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filteringResult, filteringProvDataChanged])
+  }, [filteringResult, filteringProvDataChanged]);
 
   React.useEffect(() => {
     if (filteringResult?.getMatchByIndex)
       setActiveMatch(filteringResult.getMatchByIndex(activeMatchIndex));
-  }, [activeMatchIndex, filteringDataProvider, filteringResult])
+  }, [activeMatchIndex, filteringDataProvider, filteringResult]);
 
   const setFilter = React.useCallback((filter) => {
     if (filter !== filterText) {
       setFilterText(filter);
     }
-  }, [filterText])
+  }, [filterText]);
 
   let content;
   if (isOverLimit) {
@@ -122,9 +122,9 @@ export function PropertiesWidget(props: Props) {
       <h3>{IModelApp.i18n.translate("Sample:controls.properties.widget-label")}</h3>
       <div className="SearchBar" >
         <FilteringInput
-          onFilterCancel={() => { setFilter("") }}
-          onFilterClear={() => { setFilter("") }}
-          onFilterStart={(newFilter) => { setFilter(newFilter) }}
+          onFilterCancel={() => { setFilter(""); }}
+          onFilterClear={() => { setFilter(""); }}
+          onFilterStart={(newFilter) => { setFilter(newFilter); }}
           style={{ flex: "auto" }}
           resultSelectorProps={resultSelectorProps}
           status={filterText.length !== 0 ? FilteringInputStatus.FilteringFinished : FilteringInputStatus.ReadyToFilter}
