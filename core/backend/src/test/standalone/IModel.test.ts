@@ -1735,7 +1735,7 @@ describe("iModel", () => {
     const mockCheckpointV2: CheckpointV2 = {
       wsgId: "INVALID",
       ecId: "INVALID",
-      changeSetId: changeSetId,
+      changeSetId,
       containerAccessKeyAccount: "testAccount",
       containerAccessKeyContainer: `imodelblocks-${imodelId}`,
       containerAccessKeySAS: "testSAS",
