@@ -1035,6 +1035,10 @@
       "allowedCategories": [ "backend" ]
     },
     {
+      "name": "xml-js",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "xmldom",
       "allowedCategories": [ "backend", "common", "tools" ]
     },

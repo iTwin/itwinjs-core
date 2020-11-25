@@ -17,6 +17,7 @@ import { BingMapsImageryLayerProvider, ImageryMapLayerTreeReference, ImageryMapT
 import { ArcGisUtilities } from "./ArcGisUtilities";
 import { MapCartoRectangle } from "./MapCartoRectangle";
 import { WmsCapabilities, WmsCapability } from "./WmsCapabilities";
+import { WmtsCapabilities } from "./WmtsCapabilities";
 
 const tileImageSize = 256, untiledImageSize = 256;
 // eslint-disable-next-line prefer-const
@@ -289,10 +290,19 @@ class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
 }
 class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
   private _baseUrl: string;
+  private _capabilities?: WmtsCapabilities;
   constructor(settings: MapLayerSettings) {
     super(settings, true);
     this._baseUrl = WmsUtilities.getBaseUrl(this._settings.url);
   }
+  public async initialize(): Promise<void> {
+    try {
+      this._capabilities = await WmtsCapabilities.create(this._baseUrl);
+    } catch (_error) {
+      throw new ServerError(IModelStatus.ValidationFailed, "");
+    }
+  }
+
   public constructUrl(row: number, column: number, zoomLevel: number): string {
     const layerNames = new Array<string>();
     this._settings.subLayers.forEach((subLayer) => layerNames.push(subLayer.name));
@@ -590,9 +600,24 @@ class WmsMapLayerFormat extends ImageryMapLayerFormat {
 
 class WmtsMapLayerFormat extends ImageryMapLayerFormat {
   public static formatId = "WMTS";
+
   public static createImageryProvider(settings: MapLayerSettings): MapLayerImageryProvider | undefined {
     return new WmtsMapLayerImageryProvider(settings);
   }
+
+  public static async validateSource(url: string, credentials?: RequestBasicCredentials): Promise<MapLayerSourceValidation> {
+    try {
+      let subLayers: MapSubLayerProps[] | undefined;
+      const capabilities = await WmtsCapabilities.create(url, credentials);
+      if (capabilities !== undefined) {
+      }
+
+      return { status: MapLayerSourceStatus.Valid, subLayers };
+    } catch (err) {
+      return { status: MapLayerSourceStatus.InvalidUrl };
+    }
+  }
+
 }
 
 class ArcGISMapLayerFormat extends ImageryMapLayerFormat {
