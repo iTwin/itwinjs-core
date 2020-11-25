@@ -533,7 +533,7 @@ function createTypedCurveCollection(collectionType: number): CurveCollection {
  * mappings between typescript spiral type strings and native integers.
  */
 export class DgnSpiralTypeQueries {
-  // remark: this is the full list based on nativve DSpiral2dBase.h.
+  // remark: this is the full list based on native DSpiral2dBase.h.
   //   This does not guarantee all types are supported.
   private static spiralTypeCodeMap = [
     [10, "clothoid"],
@@ -554,7 +554,7 @@ export class DgnSpiralTypeQueries {
     [57, "MXCubicAlongTangent"],
     [58, "ChineseCubic"],
     [60, "HalfCosine"],
-    [61, "JapaneseCubic"]
+    [61, "JapaneseCubic"],
   ];
   /** Convert native integer type (e.g. from flatbuffer) to typescript string */
   public static typeCodeToString(typeCode: number): string | undefined {
