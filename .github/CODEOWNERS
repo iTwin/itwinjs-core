@@ -9,11 +9,7 @@
 # @global-owner1 and @global-owner2 will be requested for
 # review when someone opens a pull request.
 
-# *  @kabentley @scsewall @ramanujam-raman @pmconne @calebmshafer @swwilson-bsi
-*  @kabentley @scsewall @ramanujam-raman @pmconne @calebmshafer
-
-# No one specific needs to review changelogs. That will be left up to the reviewers specified in other places
-# !/common/changes
+* @imodeljs/admins
 
 .github/workflows @calebmshafer @wgoehrig @ColinKerr
 
@@ -24,11 +20,10 @@ rush.json @calebmshafer @scsewall
 /clients              @calebmshafer @ramanujam-raman
 # /clients/imodelhub    @amikoliunas @Animagne
 
-# /common/api/analytical-backend.api.md              @diegoalexdiaz @scsewall
-/common/api/analytical-backend.api.md               @scsewall
+/common/api/analytical-backend.api.md               @diegoalexdiaz @scsewall
 /common/api/backend-application-insights-client.api.md @calebmshafer @ramanujam-raman
 /common/api/backend-itwin-client.api.md             @calebmshafer @ramanujam-raman
-/common/api/bentleyjs-core.api.md                   @kabentley @grigasp @pmconne @ramanujam-raman @swwilson-bsi @scsewall
+/common/api/bentleyjs-core.api.md                   @imodeljs/admins
 /common/api/config-loader.api.md                    @calebmshafer @wgoehrig
 /common/api/context-registry-client.api.md          @calebmshafer @ramanujam-raman
 /common/api/ecschema-locaters.api.md                @calebmshafer @ColinKerr @wgoehrig
@@ -41,65 +36,59 @@ rush.json @calebmshafer @scsewall
 /common/api/frontend-application-insights-client.api.md     @calebmshafer @ramanujam-raman
 /common/api/frontend-authorization-client.api.md     @calebmshafer @ramanujam-raman
 /common/api/frontend-devtools.api.md                @pmconne @mgooding
-# /common/api/geometry-core.api.md                   @EarlinLutz @mgooding @RBBentley @bbastings
-/common/api/geometry-core.api.md                    @EarlinLutz @mgooding
-# /common/api/hypermodeling-frontend.api.md           @pmconne @bbastings
-/common/api/hypermodeling-frontend.api.md           @pmconne
-# /common/api/imodel-bridge.api.md                    @abeesh @c-macdonald @swwilson-bsi
-/common/api/imodel-bridge.api.md                    @abeesh @swwilson-bsi
+/common/api/geometry-core.api.md                    @EarlinLutz @mgooding @RBBentley @bbastings
+/common/api/hypermodeling-frontend.api.md           @pmconne @bbastings
+/common/api/imodel-bridge.api.md                    @abeesh @c-macdonald @swwilson-bsi
 # /common/api/imodelhub-client.api.md                 @amikoliunas @Animagne
-/common/api/imodeljs-backend.api.md                 @kabentley @pmconne @ramanujam-raman @swwilson-bsi @scsewall
-/common/api/imodeljs-common.api.md                  @kabentley @pmconne @ramanujam-raman @swwilson-bsi @scsewall
-/common/api/imodeljs-frontend.api.md                @kabentley @pmconne @ramanujam-raman @swwilson-bsi @scsewall
+/common/api/imodeljs-backend.api.md                 @imodeljs/admins
+/common/api/imodeljs-common.api.md                  @imodeljs/admins
+/common/api/imodeljs-frontend.api.md                @imodeljs/admins
 /common/api/imodeljs-i18n.api.md                    @calebmshafer @wgoehrig
 /common/api/imodeljs-markup.api.md                  @kabentley @pmconne
 /common/api/imodeljs-quantity.api.md                @bsteinbk @calebmshafer
 /common/api/itwin-client.api.md                     @calebmshafer @ramanujam-raman
-# /common/api/linear-referencing-backend.api.md       @diegoalexdiaz @scsewall
-# /common/api/linear-referencing-common.api.md        @diegoalexdiaz @scsewall
-/common/api/linear-referencing-backend.api.md       @scsewall
-/common/api/linear-referencing-common.api.md        @scsewall
+/common/api/linear-referencing-backend.api.md       @diegoalexdiaz @scsewall
+/common/api/linear-referencing-common.api.md        @diegoalexdiaz @scsewall
 /common/api/logger-config.api.md                    @swwilson-bsi @scsewall
 /common/api/oauth-introspection-client.api.md       @calebmshafer @ramanujam-raman
-# /common/api/orbitgt-core.api.md                     @pmconne @RBBentley
-/common/api/orbitgt-core.api.md                     @pmconne
+/common/api/orbitgt-core.api.md                     @pmconne @RBBentley
 /common/api/perf-tools.api.md                       @calebmshafer @wgoehrig
 /common/api/physical-material-backend.api.md        @scsewall
-# /common/api/presentation-*.api.md                   @grigasp @roluk @saskliutas
-/common/api/presentation-*.api.md                   @grigasp @saskliutas
+/common/api/presentation-*.api.md                   @imodeljs/presentation
 /common/api/product-settings-client.api.md          @calebmshafer @ramanujam-raman
 /common/api/projectshare-client.api.md              @calebmshafer @ramanujam-raman
 /common/api/rbac-client.api.md                      @calebmshafer @ramanujam-raman
 /common/api/reality-data-client.api.md              @calebmshafer @ramanujam-raman
 /common/api/telemetry-client.api.md                 @calebmshafer @ramanujam-raman
- /common/api/ui-*.api.md                             @bsteinbk @DanEastBentley @GerardasB @grigasp
+/common/api/ui-*.api.md                             @imodeljs/ui
 /common/api/usage-logging-client.api.md             @calebmshafer @ramanujam-raman
 /common/api/webgl-compatibility.api.md              @pmconne
 
+# Specifying both of these with a large number of possible reviewers.
+# All significant changes will be covered by other requirements.
+/common/api/summary @imodeljs/core
+/common/changes @imodeljs/core
+
 /common/config/azure-pipelines  @calebmshafer @wgoehrig @ColinKerr
 
-/core/backend                   @kabentley @pmconne @ramanujam-raman @swwilson-bsi @scsewall
+/core/backend                   @imodeljs/admins
 /core/backend-itwin-client      @calebmshafer @ramanujam-raman
-/core/bentley                   @kabentley @pmconne @ramanujam-raman @swwilson-bsi @scsewall
-/core/common                    @kabentley @pmconne @ramanujam-raman @swwilson-bsi @scsewall
+/core/bentley                   @imodeljs/admins
+/core/common                    @imodeljs/admins
 /core/common/src/rpc/IModelTileRpcInterface.ts    @pmconne
 /core/ecschema-locaters         @calebmshafer @ColinKerr @wgoehrig
 /core/ecschema-metadata         @calebmshafer @ColinKerr @wgoehrig
 /core/electron-manager          @wgoehrig @ramanujam-raman
 /core/express-server            @calebmshafer @wgoehrig @ramanujam-raman
-/core/frontend                  @kabentley @pmconne @ramanujam-raman @swwilson-bsi @scsewall
+/core/frontend                  @imodeljs/admins
 /core/frontend-devtools         @pmconne @mgooding
-# /core/geometry                  @bbastings @EarlinLutz @mgooding @RBBentley
-/core/geometry                  @EarlinLutz @mgooding
-# /core/hypermodeling             @pmconne @bbastings
-/core/hypermodeling             @pmconne
+/core/geometry                  @bbastings @EarlinLutz @mgooding @RBBentley
+/core/hypermodeling             @bbastings @pmconne
 /core/i18n                      @wgoehrig @calebmshafer
-# /core/imodel-bridge             @abeesh @c-macdonald @swwilson-bsi
-/core/imodel-bridge             @abeesh @swwilson-bsi
+/core/imodel-bridge             @abeesh @c-macdonald @swwilson-bsi
 /core/logger-config             @swwilson-bsi @scsewall
 /core/markup                    @kabentley @pmconne
-# /core/orbitgt                   @RBBentley @pmconne
-/core/orbitgt                   @pmconne
+/core/orbitgt                   @RBBentley @pmconne
 /core/quantity                  @bsteinbk @calebmshafer
 /core/webgl-compatibility       @pmconne @mgooding
 
@@ -108,41 +97,37 @@ rush.json @calebmshafer @scsewall
 
 # These domains should be split up a bit more
 /domains      @scsewall
-# /domains/analytical @diegoalexdiaz @scsewall
-# /domains/linear-referencing @diegoalexdiaz @scsewall
+/domains/analytical @diegoalexdiaz @scsewall
+/domains/linear-referencing @diegoalexdiaz @scsewall
 
 /example-code                         @scsewall @swwilson-bsi
 
 /extensions                           @bsteinbk @calebmshafer
 
-/full-stack-tests/core                @kabentley @pmconne @scsewall @ramanujam-raman
+/full-stack-tests/core                @imodeljs/admins
 # /full-stack-tests/imodelhub-client    @amikoliunas @Animagne
 /full-stack-tests/native-app    @calebmshafer @khanaffan @ramanujam-raman
-# /full-stack-tests/presentation  @grigasp @roluk @saskliutas
-/full-stack-tests/presentation  @grigasp @saskliutas
+/full-stack-tests/presentation  @imodeljs/presentation
 /full-stack-tests/rpc           @calebmshafer @wgoehrig @swbsi
 /full-stack-tests/rpc-interface @calebmshafer @wgoehrig
 
-# /presentation                   @grigasp @roluk @saskliutas
-/presentation                   @grigasp @saskliutas
+/presentation                   @imodeljs/presentation
 /presentation/common/src/presentation-common/PresentationRpcInterface.ts @grigasp
 
-# /test-apps/analysis-importer                @RBBentley
+/test-apps/analysis-importer                @RBBentley
 /test-apps/display-performance-test-app     @hnn0003 @pmconne
-# /test-apps/display-test-app                 @kabentley @mgooding @pmconne @RBBentley
-/test-apps/display-test-app                 @kabentley @mgooding @pmconne
+/test-apps/display-test-app                 @kabentley @mgooding @pmconne @RBBentley
 /test-apps/export-gltf                      @mgooding
 /test-apps/export-obj                       @mgooding
-# /test-apps/imjs-importer                    @EarlinLutz
+/test-apps/imjs-importer                    @EarlinLutz
 /test-apps/imodel-from-geojson              @mgooding
-# /test-apps/imodel-from-orbitgt              @RBBentley
-# /test-apps/imodel-from-reality-model        @RBBentley
-/test-apps/ninezone-test-app                @bsteinbk @DanEastBentley @GerardasB
-# /test-apps/presentation-test-app            @grigasp @saskliutas @roluk
-/test-apps/presentation-test-app            @grigasp @saskliutas
-# /test-apps/synchro-schedule-importer        @RBBentley
-/test-apps/ui-test-app                      @bsteinbk @DanEastBentley @GerardasB @grigasp
-/test-apps/ui-test-extension                @bsteinbk @DanEastBentley @GerardasB
+/test-apps/imodel-from-orbitgt              @RBBentley
+/test-apps/imodel-from-reality-model        @RBBentley
+/test-apps/ninezone-test-app                @imodeljs/ui
+/test-apps/presentation-test-app            @imodeljs/presentation
+/test-apps/synchro-schedule-importer        @RBBentley
+/test-apps/ui-test-app                      @imodeljs/ui
+/test-apps/ui-test-extension                @imodeljs/ui
 
 /tools/backend-webpack @calebmshafer @wgoehrig
 /tools/build @calebmshafer @wgoehrig
@@ -157,10 +142,7 @@ rush.json @calebmshafer @scsewall
 /tools/internal @calebmshafer @wgoehrig
 /tools/perf-tools @calebmshafer @wgoehrig
 
-/ui @bsteinbk @DanEastBentley @GerardasB @grigasp
-/ui/components/src/ui-components/properties   @bsteinbk @DanEastBentley @grigasp @saskliutas
-/ui/components/src/ui-components/propertygrid @bsteinbk @DanEastBentley @grigasp @saskliutas
-/ui/components/src/ui-components/tree         @bsteinbk @DanEastBentley @grigasp @saskliutas
-# /ui/components/src/ui-components/properties   @bsteinbk @DanEastBentley @grigasp @saskliutas @roluk
-# /ui/components/src/ui-components/propertygrid @bsteinbk @DanEastBentley @grigasp @saskliutas @roluk
-# /ui/components/src/ui-components/tree         @bsteinbk @DanEastBentley @grigasp @saskliutas @roluk
+/ui @imodeljs/ui
+/ui/components/src/ui-components/properties   @imodeljs/ui @imodeljs/presentation
+/ui/components/src/ui-components/propertygrid @imodeljs/ui @imodeljs/presentation
+/ui/components/src/ui-components/tree         @imodeljs/ui @imodeljs/presentation

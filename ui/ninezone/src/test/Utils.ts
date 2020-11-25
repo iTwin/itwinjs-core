@@ -9,6 +9,9 @@ before(() => {
   window.requestAnimationFrame = (cb: FrameRequestCallback) => {
     return window.setTimeout(cb, 1);
   };
+  window.cancelAnimationFrame = (handle: number) => {
+    window.clearTimeout(handle);
+  };
 });
 
 /** @internal */

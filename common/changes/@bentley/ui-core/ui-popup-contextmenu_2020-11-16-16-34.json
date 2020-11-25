@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/ui-core",
-      "comment": "Added AutoSuggest props - renderInputComponent, renderSuggestionsContainer, onSuggestionsClearRequested",
+      "comment": "Popup - added onContextMenu & closeOnContextMenu props",
       "type": "none"
     }
   ],

@@ -69,7 +69,7 @@ function findOrAddMaterialIndexForTexture(textureId: Id64String): number {
   const textureInfo = GltfGlobals.iModel.elements.getElement<Texture>(textureId);
   const textureName = textureId + (textureInfo.format === ImageSourceFormat.Jpeg ? ".jpg" : ".png");
   const texturePath = path.join(GltfGlobals.texturesDir, textureName);
-  fs.writeFile(texturePath, Buffer.from(textureInfo.data, "base64"), () => { }); // async is fine
+  fs.writeFile(texturePath, textureInfo.data, () => { }); // async is fine
 
   const texture: GltfTexture = { source: GltfGlobals.gltf.images!.length, sampler: 0 };
   GltfGlobals.gltf.textures.push(texture);

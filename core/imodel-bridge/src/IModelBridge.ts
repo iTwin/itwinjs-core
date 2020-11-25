@@ -13,7 +13,7 @@ import { Subject } from "@bentley/imodeljs-backend";
 import { BridgeJobDefArgs } from "./BridgeRunner";
 
 /** Abstract implementation of the IModelBridge.
- * @alpha
+ * @beta
  */
 export abstract class IModelBridge {
   private _synchronizer: Synchronizer | undefined;
@@ -35,7 +35,7 @@ export abstract class IModelBridge {
   /** The source data can be an actual source file on disk (json, csv, xml, etc), a data dump of a native source (IFC), a URL for a rest API, etc.
    * The bridge creates a connection to this source data and performs any steps necessary before reading.
    */
-  public abstract async openSourceData(sourcePath: string): Promise<BentleyStatus>;
+  public abstract async openSourceData(sourcePath: string): Promise<void>;
 
   /** Import any elements that belong in a DefinitionModel (Categories, LineStyles, Materials, etc).  This includes elements necessary for all
    * imodels created by this bridge as well as any that are unique to this source data.
@@ -89,4 +89,7 @@ export abstract class IModelBridge {
   public abstract getApplicationId(): string;
   public abstract getApplicationVersion(): string;
   public abstract getBridgeName(): string;
+
+  /** Returns the description for data changeset. If method is undefined, "Data changes" is used for the description. */
+  public getDataChangesDescription?(): string;
 }

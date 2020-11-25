@@ -487,9 +487,18 @@ describe("Table", () => {
       });
 
       describe("Extended", () => {
+        let buttonElement: HTMLElement;
 
         beforeEach(() => {
           table.setProps({ selectionMode: SelectionMode.Extended });
+
+          buttonElement = document.createElement("button");
+          document.body.appendChild(buttonElement);
+          buttonElement.focus();
+        });
+
+        afterEach(() => {
+          document.body.removeChild(buttonElement);
         });
 
         it("shift select rows from top to bottom", async () => {

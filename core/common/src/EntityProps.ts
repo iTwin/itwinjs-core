@@ -22,6 +22,20 @@ export interface EntityProps {
   jsonProperties?: { [key: string]: any };
 }
 
+/** Specifies the source and target elements of a [[Relationship]] instance.
+ * @public
+ */
+export interface SourceAndTarget {
+  sourceId: Id64String;
+  targetId: Id64String;
+}
+
+/** Properties that are common to all types of link table ECRelationships
+ * @public
+ */
+export interface RelationshipProps extends EntityProps, SourceAndTarget {
+}
+
 /** Parameters for performing a query on [Entity]($backend) classes.
  * @public
  */

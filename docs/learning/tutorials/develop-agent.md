@@ -5,6 +5,7 @@
 - [Register an Agent Application](../registration-dashboard?tab=0&create=AGENT_APP)
     - Accept all defaults
 - [Clone imodeljs-samples repo](https://github.com/imodeljs/imodeljs-samples)
+- Have access to a cloud hosted iModel. If you do not have access to one, follow one of our tutorials to [create an online iModel]($docs/learning/tutorials/index.md)
 - Add {client_id}@apps.imsoidc.bentley.com as a project participant of your test iModel on the [iModel Registration Dashboard]($docs/getting-started/registration-dashboard)
  > Allow some time after registering the agent application. The identity profile of the agent is being created in the background and can take between 5 and 10 minutes.
 

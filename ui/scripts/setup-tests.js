@@ -2,6 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+const path = require("path");
+
 // A workaround to @testing-library/react {@testing-library/dom {wait-for-expect}} breaking somewhere,
 // because somewhere (most likely in jsdom) window.Date becomes undefined.
 // Similar issue mentioned in https://github.com/vuejs/vue-test-utils/issues/936
@@ -84,7 +86,7 @@ beforeEach(function () {
   }
 
   // set up snapshot name
-  const sourceFilePath = currentTest.file.replace("lib\\test", "src\\test").replace(/\.(jsx?|tsx?)$/, "");
+  const sourceFilePath = currentTest.file.replace(path.join("lib", "test"), path.join("src", "test")).replace(/\.(jsx?|tsx?)$/, "");
   const snapPath = sourceFilePath + ".snap";
   chaiJestSnapshot.setFilename(snapPath);
   chaiJestSnapshot.setTestName(currentTest.fullTitle());

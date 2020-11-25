@@ -11,6 +11,7 @@ import {
 } from "../../ui-ninezone";
 import * as NineZoneModule from "../../ui-ninezone/base/NineZone";
 import { NineZoneProvider } from "../Providers";
+import { defaultProps } from "./PanelWidget.test";
 
 describe("PanelWidget", () => {
   describe("PANEL_WIDGET_DRAG_START", () => {
@@ -27,7 +28,7 @@ describe("PanelWidget", () => {
         >
           <PanelStateContext.Provider value={nineZone.panels.left}>
             <PanelSideContext.Provider value="left">
-              <PanelWidget widgetId="w1" />
+              <PanelWidget widgetId="w1" {...defaultProps} />
             </PanelSideContext.Provider>
           </PanelStateContext.Provider>
         </NineZoneProvider>,
@@ -59,7 +60,7 @@ describe("PanelWidget", () => {
         >
           <PanelStateContext.Provider value={nineZone.panels.left}>
             <PanelSideContext.Provider value="left">
-              <PanelWidget widgetId="w1" />
+              <PanelWidget widgetId="w1" {...defaultProps} />
             </PanelSideContext.Provider>
           </PanelStateContext.Provider>
         </NineZoneProvider>,
@@ -100,7 +101,7 @@ describe("PanelWidget", () => {
         >
           <PanelStateContext.Provider value={nineZone.panels.left}>
             <PanelSideContext.Provider value="left">
-              <PanelWidget widgetId="w1" />
+              <PanelWidget widgetId="w1" {...defaultProps} />
             </PanelSideContext.Provider>
           </PanelStateContext.Provider>
         </NineZoneProvider>,
@@ -133,7 +134,7 @@ describe("PanelWidget", () => {
       >
         <PanelStateContext.Provider value={nineZone.panels.left}>
           <PanelSideContext.Provider value="left">
-            <PanelWidget widgetId="w1" />
+            <PanelWidget widgetId="w1" {...defaultProps} />
           </PanelSideContext.Provider>
         </PanelStateContext.Provider>
       </NineZoneProvider>,

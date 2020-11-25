@@ -9,15 +9,17 @@
 import "./Panel.scss";
 import classnames from "classnames";
 import * as React from "react";
+import produce from "immer";
 import { DraggedPanelSideContext } from "../base/DragManager";
-import { NineZoneDispatchContext } from "../base/NineZone";
-import { isHorizontalPanelState, PanelState } from "../base/NineZoneState";
-import { PanelWidget } from "../widget/PanelWidget";
+import { NineZoneDispatchContext, WidgetsStateContext } from "../base/NineZone";
+import { isHorizontalPanelState, PanelState, WidgetState } from "../base/NineZoneState";
+import { PanelWidget, PanelWidgetProps } from "../widget/PanelWidget";
 import { WidgetTarget } from "../widget/WidgetTarget";
 import { WidgetPanelGrip } from "./Grip";
 import { PanelTarget } from "./PanelTarget";
-import { RectangleProps } from "@bentley/ui-core";
+import { RectangleProps, SizeProps } from "@bentley/ui-core";
 import { assert } from "../base/assert";
+import { WidgetComponent } from "../widget/Widget";
 
 /** @internal */
 export type TopPanelSide = "top";
@@ -56,15 +58,10 @@ export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanel(pro
   return (
     <PanelStateContext.Provider value={props.panel}>
       <PanelSideContext.Provider value={props.panel.side}>
-        <PanelPinnedContext.Provider value={props.panel.pinned}>
-          <PanelSpanContext.Provider value={isHorizontalPanelState(props.panel) ? props.panel.span : undefined}>
-            <WidgetPanelComponent
-              panel={props.panel}
-              spanTop={props.spanTop}
-              spanBottom={props.spanBottom}
-            />
-          </PanelSpanContext.Provider>
-        </PanelPinnedContext.Provider>
+        <WidgetPanelComponent
+          spanTop={props.spanTop}
+          spanBottom={props.spanBottom}
+        />
       </PanelSideContext.Provider>
     </PanelStateContext.Provider>
   );
@@ -72,22 +69,25 @@ export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanel(pro
 
 /** @internal */
 export interface WidgetPanelComponentProps {
-  panel: PanelState;
   spanBottom?: boolean;
   spanTop?: boolean;
 }
 
 /** @internal */
-export const WidgetPanelComponent = React.memo<WidgetPanelComponentProps>(function WidgetPanelComponent(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
+export const WidgetPanelComponent = React.memo<WidgetPanelComponentProps>(function WidgetPanelComponent({
+  spanBottom,
+  spanTop,
+}) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
+  const panel = React.useContext(PanelStateContext);
+  assert(panel);
+  const { handleBeforeTransition, handlePrepareTransition, handleTransitionEnd, getRef, sizes, ...animatePanelWidgets } = useAnimatePanelWidgets();
   const draggedPanelSide = React.useContext(DraggedPanelSideContext);
   const dispatch = React.useContext(NineZoneDispatchContext);
-  const captured = draggedPanelSide === props.panel.side;
-  const { panel } = props;
+  const captured = draggedPanelSide === panel.side;
   const horizontalPanel = isHorizontalPanelState(panel) ? panel : undefined;
   const [transition, setTransition] = React.useState<"prepared" | "transitioning">();
   const [size, setSize] = React.useState<number | undefined>(panel.size);
   const firstLayoutEffect = React.useRef(true);
-  // const lastTransitionTo = React.useRef<number | undefined>(0);
   const style = React.useMemo(() => {
     if (size === undefined)
       return undefined;
@@ -165,8 +165,8 @@ export const WidgetPanelComponent = React.memo<WidgetPanelComponentProps>(functi
     panel.collapsed && "nz-collapsed",
     captured && "nz-captured",
     horizontalPanel?.span && "nz-span",
-    !horizontalPanel && props.spanTop && "nz-span-top",
-    !horizontalPanel && props.spanBottom && "nz-span-bottom",
+    !horizontalPanel && spanTop && "nz-span-top",
+    !horizontalPanel && spanBottom && "nz-span-bottom",
     !!transition && "nz-transition",
   );
   return (
@@ -192,7 +192,13 @@ export const WidgetPanelComponent = React.memo<WidgetPanelComponentProps>(functi
                   widgetIndex={0}
                 />}
                 <PanelWidget
+                  onBeforeTransition={handleBeforeTransition}
+                  onPrepareTransition={handlePrepareTransition}
+                  onTransitionEnd={handleTransitionEnd}
+                  size={sizes[widgetId]}
+                  transition={animatePanelWidgets.transition}
                   widgetId={widgetId}
+                  ref={getRef(widgetId)}
                 />
                 {showTargets && <WidgetTarget
                   position={last ? "last" : undefined}
@@ -215,14 +221,6 @@ export const WidgetPanelComponent = React.memo<WidgetPanelComponentProps>(functi
 /** @internal */
 export const PanelSideContext = React.createContext<PanelSide | undefined>(undefined); // eslint-disable-line @typescript-eslint/naming-convention
 PanelSideContext.displayName = "nz:PanelSideContext";
-
-/** @internal */
-export const PanelPinnedContext = React.createContext<boolean>(false); // eslint-disable-line @typescript-eslint/naming-convention
-PanelPinnedContext.displayName = "nz:PanelPinnedContext";
-
-/** @internal */
-export const PanelSpanContext = React.createContext<boolean | undefined>(undefined); // eslint-disable-line @typescript-eslint/naming-convention
-PanelSpanContext.displayName = "nz:PanelStateContext";
 
 /** @internal */
 export const PanelStateContext = React.createContext<PanelState | undefined>(undefined); // eslint-disable-line @typescript-eslint/naming-convention
@@ -249,3 +247,203 @@ export const panelSides: [LeftPanelSide, RightPanelSide, TopPanelSide, BottomPan
   "top",
   "bottom",
 ];
+
+/** @internal */
+export function useAnimatePanelWidgets(): {
+  handleBeforeTransition: PanelWidgetProps["onBeforeTransition"];
+  handlePrepareTransition: PanelWidgetProps["onPrepareTransition"];
+  handleTransitionEnd: PanelWidgetProps["onTransitionEnd"];
+  getRef(widgetId: WidgetState["id"]): React.Ref<WidgetComponent>;
+  transition: PanelWidgetProps["transition"];
+  sizes: { [id: string]: PanelWidgetProps["size"] };
+} {
+  const panel = React.useContext(PanelStateContext);
+  const widgets = React.useContext(WidgetsStateContext);
+  assert(panel);
+  const [prepareTransition, setPrepareTransition] = React.useState(false);
+  const [transition, setTransition] = React.useState<PanelWidgetProps["transition"] | undefined>();
+  const [prevPanelWidgets, setPrevPanelWidgets] = React.useState(panel.widgets);
+  const [prevWidgets, setPrevWidgets] = React.useState(widgets);
+  const [sizes, setSizes] = React.useState<{ [id: string]: number | undefined }>({});
+  const refs = React.useRef(new Map<WidgetState["id"], React.RefObject<WidgetComponent>>());
+  const widgetTransitions = React.useRef(new Map<WidgetState["id"], {
+    from: number;
+    to: number | undefined;
+  }>());
+  const measured = React.useRef(false);
+  const horizontal = React.useRef(false);
+  horizontal.current = isHorizontalPanelSide(panel.side);
+  if (prevPanelWidgets !== panel.widgets) {
+    const widgetsToMeasure = panel.widgets.length > prevPanelWidgets.length ? panel.widgets : prevPanelWidgets;
+    for (const widgetId of widgetsToMeasure) {
+      const ref = refs.current.get(widgetId);
+
+      if (!ref || !ref.current) {
+        widgetTransitions.current.set(widgetId, { from: 0, to: undefined });
+        continue;
+      }
+      const size = ref.current.measure();
+      widgetTransitions.current.set(widgetId, { from: getSize(horizontal.current, size), to: undefined });
+    }
+    if (panel.widgets.length < prevPanelWidgets.length) {
+      // Widget removed.
+      let removedWidgetIndex = 0;
+      for (let i = 0; i < prevPanelWidgets.length; i++) {
+        const newWidget = panel.widgets[i];
+        const lastWidget = prevPanelWidgets[i];
+        if (newWidget !== lastWidget) {
+          removedWidgetIndex = i;
+          break;
+        }
+      }
+
+      const removedWidget = prevPanelWidgets[removedWidgetIndex];
+      let fillWidget: string | undefined;
+      if (removedWidgetIndex === 0) {
+        for (let i = removedWidgetIndex + 1; i < prevPanelWidgets.length; i++) {
+          const widgetId = prevPanelWidgets[i];
+          const widget = prevWidgets[widgetId];
+          if (widget.minimized)
+            continue;
+          fillWidget = widgetId;
+          break;
+        }
+      } else {
+        for (let i = removedWidgetIndex - 1; i >= 0; i--) {
+          const widgetId = prevPanelWidgets[i];
+          const widget = prevWidgets[widgetId];
+          if (widget.minimized)
+            continue;
+          fillWidget = widgetId;
+          break;
+        }
+      }
+
+      if (fillWidget) {
+        const removedWidgetTransition = widgetTransitions.current.get(removedWidget);
+        const fillWidgetTransition = widgetTransitions.current.get(fillWidget);
+        assert(removedWidgetTransition);
+        assert(fillWidgetTransition);
+        const removedWidgetSize = removedWidgetTransition.from;
+        const fillWidgetSize = fillWidgetTransition.from;
+
+        widgetTransitions.current.delete(removedWidget);
+        fillWidgetTransition.from = removedWidgetSize + fillWidgetSize;
+      }
+    }
+    measured.current = true;
+    setPrepareTransition(true);
+    // Reset before measuring in case we were already in a transition.
+    setTransition(undefined);
+    setSizes({});
+    setPrevPanelWidgets(panel.widgets);
+  }
+  React.useEffect(() => {
+    setPrevWidgets(widgets);
+  }, [widgets]);
+  React.useEffect(() => {
+    measured.current = false;
+  });
+  const handleTransitionEnd = React.useCallback(() => {
+    widgetTransitions.current.clear();
+    setSizes({});
+    setTransition(undefined);
+  }, []);
+  React.useLayoutEffect(() => {
+    if (!prepareTransition)
+      return;
+    let initTransition = false;
+    for (const [widgetId, widgetTransition] of widgetTransitions.current) {
+      const ref = refs.current.get(widgetId);
+      if (!ref || !ref.current) {
+        initTransition = false;
+        widgetTransitions.current.clear();
+        break;
+      }
+      const size = ref.current.measure();
+      widgetTransition.to = getSize(horizontal.current, size);
+
+      if (widgetTransition.from !== widgetTransition.to) {
+        initTransition = true;
+      }
+    }
+    setPrepareTransition(false);
+    if (initTransition) {
+      // Transition needs to be started.
+      setSizes((prev) => produce(prev, (draft) => {
+        for (const [widgetId, widgetTransition] of widgetTransitions.current) {
+          draft[widgetId] = widgetTransition.from;
+        }
+      }));
+      setTransition("init");
+    }
+  }, [prepareTransition]);
+  React.useEffect(() => {
+    if (transition !== "init")
+      return;
+    const handle = window.requestAnimationFrame(() => {
+      setSizes((prev) => produce(prev, (draft) => {
+        for (const [widgetId, widgetTransition] of widgetTransitions.current) {
+          draft[widgetId] = widgetTransition.to;
+        }
+      }));
+      setTransition("transition");
+    });
+    return () => {
+      window.cancelAnimationFrame(handle);
+    };
+  }, [transition]);
+  const getRef = React.useCallback((widgetId: WidgetState["id"]) => {
+    let ref = refs.current.get(widgetId);
+    if (!ref) {
+      ref = React.createRef();
+      refs.current.set(widgetId, ref);
+    }
+    return ref;
+  }, []);
+  React.useEffect(() => {
+    // Clean-up ref objects.
+    const newRefs: typeof refs.current = new Map();
+    for (const widgetId of panel.widgets) {
+      const ref = refs.current.get(widgetId);
+      if (ref)
+        newRefs.set(widgetId, ref);
+    }
+    refs.current = newRefs;
+  }, [panel.widgets]);
+  const handleBeforeTransition = React.useCallback(() => {
+    // PanelWidget reports mode changes on same render pass, but we want to keep our initial measurements if panel.widgets have changed.
+    if (measured.current)
+      return;
+    for (const wId of panel.widgets) {
+      const ref = refs.current.get(wId);
+      if (!ref || !ref.current) {
+        widgetTransitions.current.clear();
+        return;
+      }
+      const size = ref.current.measure();
+      const from = getSize(horizontal.current, size);
+      widgetTransitions.current.set(wId, { from, to: undefined });
+    }
+  }, [panel.widgets]);
+  const handlePrepareTransition = React.useCallback(() => {
+    if (widgetTransitions.current.size === 0)
+      return;
+    setPrepareTransition(true);
+    // Reset before measuring in case we were already in a transition.
+    setTransition(undefined);
+    setSizes({});
+  }, []);
+  return {
+    handleBeforeTransition,
+    handlePrepareTransition,
+    handleTransitionEnd,
+    getRef,
+    transition,
+    sizes,
+  };
+}
+
+function getSize(horizontal: boolean, size: SizeProps) {
+  return horizontal ? size.width : size.height;
+}
