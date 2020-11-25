@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/projectshare-client",
+      "comment": "I have added two methods in ProjectShareClient class: createFolder & deleteFolder ",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/projectshare-client",
+  "email": "Paulius.Grigaliunas@bentley.com"
+}
