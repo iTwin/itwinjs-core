@@ -69,7 +69,10 @@ module.exports = {
       if(!declaration)
         return;
       checkJsDoc(declaration, node);
-      if (declaration.parent && declaration.parent.kind === ts.SyntaxKind.ClassDeclaration)
+      if (declaration.parent && [
+        ts.SyntaxKind.ClassDeclaration,
+        ts.SyntaxKind.EnumDeclaration
+      ].includes(declaration.parent.kind))
         checkJsDoc(declaration.parent, node);
     }
 
@@ -107,9 +110,9 @@ module.exports = {
         const tsCall = parserServices.esTreeNodeToTSNodeMap.get(node);
 
         const resolved = typeChecker.getSymbolAtLocation(tsCall);
-        if (!resolved || !resolved.declaration)
+        if (!resolved || !resolved.valueDeclaration)
           return;
-        checkWithParent(resolved.declaration, node);
+        checkWithParent(resolved.valueDeclaration, node);
       },
 
       Decorator(node) {
