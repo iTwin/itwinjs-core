@@ -45,6 +45,7 @@ public;DialogButtonType
 beta;DialogItem 
 beta;DialogItemValue
 beta;class DialogLayoutDataProvider 
+beta;DialogProperty
 beta;DialogPropertyItem
 beta;DialogPropertySyncItem 
 beta;DialogProps

@@ -954,6 +954,31 @@ export abstract class DialogLayoutDataProvider extends UiLayoutDataProvider {
 }
 
 // @beta
+export class DialogProperty<T> {
+    constructor(description: PropertyDescription, _value: T, _displayValue?: string | undefined, _isDisabled?: boolean | undefined);
+    // (undocumented)
+    description: PropertyDescription;
+    // (undocumented)
+    get dialogItemValue(): DialogItemValue;
+    set dialogItemValue(val: DialogItemValue);
+    set displayValue(val: string | undefined);
+    // (undocumented)
+    get displayValue(): string | undefined;
+    // (undocumented)
+    get isDisabled(): boolean;
+    set isDisabled(val: boolean);
+    // (undocumented)
+    get name(): string;
+    // (undocumented)
+    get syncItem(): DialogPropertySyncItem;
+    // (undocumented)
+    toDialogItem(editorPosition: EditorPosition, lockProperty?: DialogItem): DialogItem;
+    // (undocumented)
+    get value(): T;
+    set value(val: T);
+    }
+
+// @beta
 export interface DialogPropertyItem {
     // (undocumented)
     readonly propertyName: string;
