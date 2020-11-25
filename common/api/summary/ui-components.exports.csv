@@ -58,6 +58,7 @@ beta;BreadcrumbUpdateEvent
 beta;BreadcrumbUpdateEventArgs
 alpha;CategorizedPropertyItem 
 alpha;CategorizedPropertyTypes = FlatGridItemType.Array | FlatGridItemType.Primitive | FlatGridItemType.Struct
+alpha;CategoryPropertyDataFilterer 
 alpha;CategoryRecordsDict
 beta;CellEditingEngine
 public;CellItem
@@ -188,7 +189,7 @@ public;hasSelectionModeFlag: (selectionMode: SelectionMode, flag: SelectionModeF
 public;HexadecimalTypeConverter 
 beta;HighlightableTreeNodeProps
 beta;HighlightableTreeProps
-beta;HighlightedRecordProps
+beta;HighlightedPropertyProps
 beta;HighlightingEngine
 internal;HitBoxX
 internal;HitBoxY
@@ -347,8 +348,8 @@ alpha;PropertyGridModelSource
 public;PropertyGridProps 
 internal;PropertyLabelRenderer 
 public;PropertyLabelRendererProps
+beta;PropertyMatchInfo
 public;PropertyPopupState
-beta;PropertyRecordMatchInfo
 public;PropertyRenderer 
 public;PropertyRendererProps 
 beta;PropertyUpdatedArgs
