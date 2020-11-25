@@ -1,6 +1,18 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Sat, 21 Nov 2020 16:42:45 GMT and should not be manually modified.
+This log was last generated on Mon, 23 Nov 2020 22:19:30 GMT and should not be manually modified.
+
+## 2.9.3
+Mon, 23 Nov 2020 20:57:56 GMT
+
+_Version update only_
+
+## 2.9.2
+Mon, 23 Nov 2020 15:33:50 GMT
+
+### Updates
+
+- Update to @bentley/imodeljs-native@2.9.4
 
 ## 2.9.1
 Thu, 19 Nov 2020 17:03:42 GMT
@@ -38,7 +50,7 @@ Fri, 23 Oct 2020 17:04:02 GMT
 
 ### Updates
 
-- Update to @bentley/imodeljs-native@2.8.5
+- Update to @bentleey/imodeljs-native@2.8.5
 - Update to @bentley/imodeljs-native@2.8.7
 - Add mapImagery to DisplayStyleCreationOptions
 - Allow DisplayStyleCreationOptions to specify any properties of DisplayStyle3dSettingsProps.

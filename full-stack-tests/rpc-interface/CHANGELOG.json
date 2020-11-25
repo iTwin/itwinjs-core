@@ -2,6 +2,18 @@
   "name": "@bentley/rpcinterface-full-stack-tests",
   "entries": [
     {
+      "version": "2.9.3",
+      "tag": "@bentley/rpcinterface-full-stack-tests_v2.9.3",
+      "date": "Mon, 23 Nov 2020 20:57:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.2",
+      "tag": "@bentley/rpcinterface-full-stack-tests_v2.9.2",
+      "date": "Mon, 23 Nov 2020 15:33:50 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.9.1",
       "tag": "@bentley/rpcinterface-full-stack-tests_v2.9.1",
       "date": "Thu, 19 Nov 2020 17:03:42 GMT",

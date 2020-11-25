@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/imodeljs-frontend",
-      "comment": "Apply workaround for transparency anomalies caused by buggy Intel drivers.",
+      "comment": "Fix text z-fighting with background when logarithmic depth buffer is disabled.",
       "type": "none"
     }
   ],

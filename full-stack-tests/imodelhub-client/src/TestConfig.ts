@@ -23,4 +23,5 @@ export class TestConfig {
   public static readonly assetName: string = Config.App.get("imjs_test_asset_name", "iModelJsAssetTest");
   public static readonly enableMocks: boolean = isOfflineSet();
   public static readonly enableIModelBank: boolean = Config.App.has("imjs_test_imodel_bank") && !!JSON.parse(Config.App.get("imjs_test_imodel_bank"));
+  public static readonly initializeiModelTimeout: number = 15 * 60 * 1000; // 15min
 }

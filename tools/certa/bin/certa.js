@@ -100,7 +100,6 @@ else
     }
     if (process.send)
       process.send({ exitCode: 1 });
-    else
-      process.exit(1);
+    process.exit(1);
   }
 })();
