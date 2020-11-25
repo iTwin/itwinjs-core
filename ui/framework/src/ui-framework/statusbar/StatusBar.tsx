@@ -136,12 +136,12 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
 
   private _handleMessageAddedEvent = (_args: MessageAddedEventArgs) => {
     this.setState({ messages: MessageManager.activeMessageManager.messages });
-  }
+  };
 
   /** Respond to clearing the message list */
   private _handleMessagesUpdatedEvent = () => {
     this.setState({ messages: MessageManager.activeMessageManager.messages });
-  }
+  };
 
   /**
    * Sets state of the status bar to updated values reflecting activity progress.
@@ -152,7 +152,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
       activityMessageInfo: args,
       isActivityMessageVisible: args.restored ? true : prevState.isActivityMessageVisible,
     }));
-  }
+  };
 
   /**
    * Hides ActivityMessage after cancellation
@@ -161,7 +161,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
     this.setState({
       isActivityMessageVisible: false,
     });
-  }
+  };
 
   private getFooterMessages(): React.ReactNode {
     if (!(this.state.activityMessageInfo && this.state.isActivityMessageVisible) && this.state.messages.length === 0)
@@ -187,7 +187,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
   private _cancelActivityMessage = () => {
     MessageManager.endActivityMessage(false);
     this._dismissActivityMessage();
-  }
+  };
 
   /**
    * Dismisses ActivityMessage
@@ -196,22 +196,22 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
     this.setState({
       isActivityMessageVisible: false,
     });
-  }
+  };
 
   private _handleOpenWidget = (openWidget: StatusBarFieldId) => {
     this.setState({
       openWidget,
     });
-  }
+  };
 
   private _closeMessage = (id: string) => {
     MessageManager.activeMessageManager.remove(id);
     MessageManager.updateMessages();
-  }
+  };
 
   private _handleToastTargetRef = (toastTarget: HTMLElement | null) => {
     this.setState({ toastTarget });
-  }
+  };
 }
 
 /** StatusBar With Space Between Items React functional component

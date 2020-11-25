@@ -24,11 +24,11 @@ class SignInControl extends ContentControl {
   // user chose to work offline from the sign in page
   private _onWorkOffline = async () => {
     await SampleAppIModelApp.handleWorkOffline();
-  }
+  };
 
   private _onRegister = () => {
     window.open("https://www.imodeljs.org/getting-started/#developer-registration", "_blank");
-  }
+  };
 }
 
 export class SignInFrontstage extends FrontstageProvider {

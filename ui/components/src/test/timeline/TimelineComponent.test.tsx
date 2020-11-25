@@ -23,21 +23,21 @@ class TestTimelineDataProvider extends BaseTimelineDataProvider {
   public onAnimationFractionChanged = (animationFraction: number) => {
     this.pointerCallbackCalled = true;
     this.animationFraction = animationFraction;
-  }
+  };
 
   public onJump = (forward: boolean) => {
     this.forwardCallbackCalled = forward;
     this.backwardCallbackCalled = !forward;
-  }
+  };
 
   public onPlaybackSettingChanged = (settings: PlaybackSettings) => {
     this.settingsCallbackCalled = true;
     this.updateSettings(settings);
-  }
+  };
 
   public onPlayPause = (playing: boolean) => {
     this.playing = playing;
-  }
+  };
 
   constructor(addMilestones: boolean) {
     super();

@@ -143,19 +143,19 @@ export class RadialMenu extends React.Component<RadialMenuProps, RadialMenuState
   private _handleKeyUp = (event: KeyboardEvent) => {
     if (event.key === SpecialKey.Escape && this.props.onEsc)
       this.props.onEsc(event);
-  }
+  };
 
   private _handleClick = (event: MouseEvent) => {
     if (event.target instanceof HTMLElement && this._root && !event.target.contains(this._root) && this.props.onBlur)
       this.props.onBlur(event);
-  }
+  };
 
   /** Manually call onSelect of highlighted button. */
   public select = () => {
     // istanbul ignore else
     if (this._selectedButton)
       this._selectedButton.select();
-  }
+  };
 
   private _generateAnnularSectors = () => {
     const n = React.Children.count(this.props.children);
@@ -170,7 +170,7 @@ export class RadialMenu extends React.Component<RadialMenuProps, RadialMenuState
       sectors.push(new AnnularSector(annulus, angle * i + offset, angle * (i + 1) + offset));
     }
     this.setState({ sectors });
-  }
+  };
 }
 
 /** Properties for [[RadialButton]] component
@@ -268,19 +268,19 @@ export class RadialButton extends React.Component<RadialButtonProps, RadialButto
     // istanbul ignore else
     if (this.props.onSelect)
       this.props.onSelect(undefined);
-  }
+  };
 
   private _handleClick = (event: React.MouseEvent<SVGElement>) => {
     // istanbul ignore else
     if (this.props.onSelect)
       this.props.onSelect(event);
-  }
+  };
 
   private _handleMouseOver = (_event: React.MouseEvent<SVGElement>) => {
     this.setState({ hover: true });
-  }
+  };
 
   private _handleMouseOut = (_event: React.MouseEvent<SVGElement>) => {
     this.setState({ hover: false });
-  }
+  };
 }

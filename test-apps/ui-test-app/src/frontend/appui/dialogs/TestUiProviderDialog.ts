@@ -45,7 +45,7 @@ export class TestUiProvider extends DialogLayoutDataProvider {
         ],
       },
     };
-  }
+  };
 
   private _optionsValue: DialogItemValue = { value: ColorOptions.Blue as number };
 
@@ -83,7 +83,7 @@ export class TestUiProvider extends DialogLayoutDataProvider {
         ],
       },
     };
-  }
+  };
 
   private _colorValue: DialogItemValue = { value: ColorByName.blue as number };
 
@@ -118,7 +118,7 @@ export class TestUiProvider extends DialogLayoutDataProvider {
         ],
       },
     };
-  }
+  };
 
   public get useLength(): boolean {
     return this._useLengthValue.value as boolean;
@@ -156,7 +156,7 @@ export class TestUiProvider extends DialogLayoutDataProvider {
         name: "weight-picker",
       },
     };
-  }
+  };
 
   private _weightValue: DialogItemValue = { value: 3 };
 
@@ -177,7 +177,7 @@ export class TestUiProvider extends DialogLayoutDataProvider {
       typename: "boolean",
       editor: { name: "toggle" },
     };
-  }
+  };
 
   private _lockValue: DialogItemValue = { value: true };
 
@@ -197,7 +197,7 @@ export class TestUiProvider extends DialogLayoutDataProvider {
       displayLabel: "City",
       typename: "string",
     };
-  }
+  };
 
   private _cityValue: DialogItemValue = { value: "Huntsville" };
 
@@ -225,7 +225,7 @@ export class TestUiProvider extends DialogLayoutDataProvider {
         ],
       },
     };
-  }
+  };
 
   private _stateValue: DialogItemValue = { value: "AL" };
 
@@ -302,5 +302,5 @@ export class TestUiProvider extends DialogLayoutDataProvider {
       // not an item we know about
       return;
     }
-  }
+  };
 }

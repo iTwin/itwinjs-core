@@ -60,13 +60,13 @@ export class AutoCompleteFilter extends React.Component<AutoCompleteFilterProps,
       return o;
     });
     return options;
-  }
+  };
 
   private _handleChange = (value: any): void => {
     const filters = value;
     this.setState({ filters });
     this.props.onChange({ filterTerm: filters, column: this.props.column });
-  }
+  };
 
   public render() {
     return (

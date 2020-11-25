@@ -250,7 +250,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
     const testFileName = IModelTestUtils.prepareOutputFile("RelationshipPerformance", "relationship_Read.bim");
 
     const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
-    let minId: number = PerfTestUtility.getMinId(perfimodel, "TestRelationSchema:ChildD")
+    let minId: number = PerfTestUtility.getMinId(perfimodel, "TestRelationSchema:ChildD");
 
     const elementIdIncrement = 4; // we add 4 elements each time
     const startTime = new Date().getTime();

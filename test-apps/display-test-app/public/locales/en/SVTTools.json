@@ -105,6 +105,24 @@
     },
     "ApplyModelTransform": {
       "keyin": "dta model transform"
+    },
+    "EditingSession": {
+      "keyin": "dta edit"
+    },
+    "DeleteElements": {
+      "keyin": "dta delete elements"
+    },
+    "MoveElements": {
+      "keyin": "dta move elements"
+    },
+    "PlaceLineString": {
+      "keyin": "dta place line string"
+    },
+    "DtaUndo": {
+      "keyin": "dta undo"
+    },
+    "DtaRedo": {
+      "keyin": "dta redo"
     }
   }
 }

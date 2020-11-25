@@ -34,7 +34,7 @@ export function MessageRenderer(props: MessageRendererProps) {
   React.useEffect(() => {
     const handleMessageAddedEvent = (_args: MessageAddedEventArgs) => {
       setMessages(MessageManager.activeMessageManager.messages);
-    }
+    };
 
     return MessageManager.onMessageAddedEvent.addListener(handleMessageAddedEvent);
   }, []);
@@ -43,7 +43,7 @@ export function MessageRenderer(props: MessageRendererProps) {
     /** Respond to clearing the message list */
     const handleMessagesUpdatedEvent = () => {
       setMessages(MessageManager.activeMessageManager.messages);
-    }
+    };
 
     return MessageManager.onMessagesUpdatedEvent.addListener(handleMessagesUpdatedEvent);
   }, []);
@@ -53,7 +53,7 @@ export function MessageRenderer(props: MessageRendererProps) {
       setActivityMessageInfo(args);
       if (args.restored)
         setIsActivityMessageVisible(true);
-    }
+    };
 
     return MessageManager.onActivityMessageUpdatedEvent.addListener(handleActivityMessageUpdatedEvent);
   }, [isActivityMessageVisible]);

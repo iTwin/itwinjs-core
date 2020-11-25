@@ -123,7 +123,7 @@ export class CellEditingEngine {
         this._getCurrentlyEditedNode()!.setDirty(true);
     }
     this.deactivateEditor();
-  }
+  };
 
   public deactivateEditor = (): void => {
     if (!this._setCurrentlyEditedNode || !this._getCurrentlyEditedNode)
@@ -135,14 +135,14 @@ export class CellEditingEngine {
 
     node.setDirty(true);
     this._setCurrentlyEditedNode(undefined);
-  }
+  };
 
   public checkStatus = (node: BeInspireTreeNode<TreeNodeItem>, isPressedItemSelected: boolean) => {
     if (node.selected() && isPressedItemSelected && node.payload && node.payload.isEditable)
       this.activateEditor(node);
     else
       this.deactivateEditor();
-  }
+  };
 
   public activateEditor = (node: BeInspireTreeNode<TreeNodeItem>) => {
     if (!this._setCurrentlyEditedNode || !this._getCurrentlyEditedNode)
@@ -157,7 +157,7 @@ export class CellEditingEngine {
 
     this._setCurrentlyEditedNode(node);
     this._props.onCellEditing(node);
-  }
+  };
 
   public isEditingEnabled(node: BeInspireTreeNode<TreeNodeItem>) {
     return this._props && this._getCurrentlyEditedNode && node === this._getCurrentlyEditedNode();

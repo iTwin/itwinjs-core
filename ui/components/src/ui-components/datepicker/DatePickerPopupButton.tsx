@@ -79,7 +79,7 @@ export function DatePickerPopupButton({ displayEditField, timeDisplay, selected,
     newWorkingDate.setHours(workingDate.getHours(), workingDate.getMinutes(), workingDate.getSeconds());
     onDateChange && onDateChange(newWorkingDate);
     !timeDisplay && setIsSettingsOpen(false);
-  }
+  };
 
   const handleOnTimeChanged = (time: TimeSpec) => {
     // Combine new time into selected Date
@@ -87,7 +87,7 @@ export function DatePickerPopupButton({ displayEditField, timeDisplay, selected,
     newWorkingDate.setHours(time.hours, time.minutes, time.seconds);
     setWorkingDate(newWorkingDate);
     onDateChange && onDateChange(newWorkingDate);
-  }
+  };
 
   const [showFocusOutline, setShowFocusOutline] = React.useState(false);
   const handlePopupKeyDown = React.useCallback((event: React.KeyboardEvent<HTMLButtonElement>) => {

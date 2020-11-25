@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { assert, ClientRequestContext, Id64, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Id64, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import { Range3d, Range3dProps } from "@bentley/geometry-core";
 import {
   ElementProps, EntityMetaData, EntityQueryParams, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps,
@@ -76,9 +76,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     const modelJsonArray: ModelProps[] = [];
     for (const id of modelIds) {
       try {
-        // TODO: Change iModelDbModels.getModelJson to return a ModelProps object, rather than a string.
-        const modelProps: any = JSON.parse(iModelDb.models.getModelJson(JSON.stringify({ id })));
-        assert("modeledElement" in modelProps, "iModelDb.models.getModelJson must return a ModelProps object");
+        const modelProps = iModelDb.models.getModelJson({ id });
         modelJsonArray.push(modelProps);
       } catch (error) {
         if (modelIds.size === 1)
@@ -99,7 +97,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     const elementProps: ElementProps[] = [];
     for (const id of elementIds) {
       try {
-        elementProps.push(iModelDb.elements.getElementJson(JSON.stringify({ id })));
+        elementProps.push(iModelDb.elements.getElementJson({ id }));
       } catch (error) {
         if (elementIds.size === 1)
           throw error; // if they're asking for more than one element, don't throw on error.

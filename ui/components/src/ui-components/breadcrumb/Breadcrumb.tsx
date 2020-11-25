@@ -267,7 +267,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
     } else {
       this.setState({ current: undefined, pathString: "" });
     }
-  }
+  };
 
   private _onModelLoaded = (rootNodes: BeInspireTreeNodes<TreeNodeItem>) => {
     if (this.props.onRootNodesLoaded)
@@ -276,7 +276,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
     const p = current ? current.getTextualHierarchy().join(this.props.delimiter) : "";
     if (p !== this.state.pathString)
       this.setState({ pathString: p });
-  }
+  };
 
   private _onChildrenLoaded = (parentNode: BeInspireTreeNode<TreeNodeItem>) => {
     const children = parentNode.getChildren();
@@ -286,12 +286,12 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
     const p = current ? current.getTextualHierarchy().join(this.props.delimiter) : "";
     if (p !== this.state.pathString)
       this.setState({ pathString: p });
-  }
+  };
 
   private _onModelChanged = () => {
     // just re-set the model to initiate update
     this.setState((prev) => ({ model: prev.model }));
-  }
+  };
 
   private _onModelReady = () => {
     // istanbul ignore else
@@ -299,13 +299,13 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
       const current = this.state.current ? this.state.model.node(this.state.current.id) : undefined;
       this.setState((_prevState, props) => ({ modelReady: true, pathString: current ? current.getTextualHierarchy().join(props.delimiter) : "" }));
     }
-  }
+  };
 
   private _onTreeNodeChanged = (_items: Array<TreeNodeItem | undefined>) => {
     using(this.state.model.pauseRendering(), async (_r) => { // eslint-disable-line @typescript-eslint/no-floating-promises
       await this.state.model.reload();
     });
-  }
+  };
 
   private static inspireNodeFromTreeNodeItem(item: TreeNodeItem, remapper: MapPayloadToInspireNodeCallback<TreeNodeItem>): BeInspireTreeNodeConfig {
     const node: BeInspireTreeNodeConfig = {
@@ -389,7 +389,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
     }
     if (this.state.currentMode !== BreadcrumbMode.Dropdown)
       this._setDropdown();
-  }
+  };
 }
 
 /** @internal */
@@ -532,7 +532,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
 
   private _handleMessageBoxClose = () => {
     this.setState({ messageBoxOpened: false });
-  }
+  };
 
   /** @internal */
   public componentDidMount() {
@@ -554,7 +554,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
   private _handleClose = () => {
     this.props.onCancel();
     this.setState({ autocompleting: false });
-  }
+  };
 
   private _getAutocompleteList = async (path: string) => {
     const node = await this._findChildParentPartial(path);
@@ -570,7 +570,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
       const strList = parentRoots.map((n) => n.toString() + this.props.delimiter!);
       return strList.filter((e) => e.substr(0, path.length) === path);
     }
-  }
+  };
 
   private _findChildUserInput = async (p: string): Promise<BeInspireTreeNode<TreeNodeItem> | undefined> => {
     const delimiter = this.props.delimiter!;
@@ -583,7 +583,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
         return found;
     }
     return undefined;
-  }
+  };
   private _findChildParentPartial = async (p: string): Promise<BeInspireTreeNode<TreeNodeItem> | undefined> => {
     const delimiter = this.props.delimiter!;
     const lastDel = p.lastIndexOf(delimiter);
@@ -598,7 +598,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
         return found;
     }
     return undefined;
-  }
+  };
   private _find = async (node: BeInspireTreeNode<TreeNodeItem>, p: string): Promise<BeInspireTreeNode<TreeNodeItem> | undefined> => {
     const delimiter = this.props.delimiter!;
     // remove leading delimiter
@@ -617,7 +617,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
       }
     }
     return undefined;
-  }
+  };
 
   private _handleClick = (event: MouseEvent): void => {
     // istanbul ignore else
@@ -628,7 +628,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
         this._inputElement.focus();
       }
     }
-  }
+  };
 
   private _handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     switch (event.key) {
@@ -636,7 +636,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
       case SpecialKey.ArrowDown:
         event.preventDefault();
     }
-  }
+  };
   private _handleKeyUp = async (event: React.KeyboardEvent<HTMLInputElement>) => {
     switch (event.key) {
       case SpecialKey.Escape:
@@ -674,7 +674,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
         }
         break;
     }
-  }
+  };
 
   private _handleChange = (): void => {
     // istanbul ignore else
@@ -688,7 +688,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
           });
       });
     }
-  }
+  };
 }
 
 /** @internal */
@@ -723,11 +723,11 @@ class BreadcrumbDropdown extends React.Component<BreadcrumbDropdownProps> {
 
   private _onModelLoaded = (_rootNodes: BeInspireTreeNodes<TreeNodeItem>) => {
     this.forceUpdate();
-  }
+  };
 
   private _onChildrenLoaded = (_parentNode: BeInspireTreeNode<TreeNodeItem>) => {
     this.forceUpdate();
-  }
+  };
 
   /** @internal */
   public shouldComponentUpdate(nextProps: BreadcrumbDropdownProps) {
@@ -806,12 +806,12 @@ class BreadcrumbDropdown extends React.Component<BreadcrumbDropdownProps> {
         parent = p.payload;
     }
     this.props.onNodeChange(parent);
-  }
+  };
 
   private _focusInput = (event: React.MouseEvent) => {
     if (event.target === event.currentTarget && this.props.onInputStart) // check if click is direct, or bubbled
       this.props.onInputStart();
-  }
+  };
 }
 
 /** @internal */
@@ -892,7 +892,7 @@ class BreadcrumbDropdownNode extends React.Component<BreadcrumbDropdownNodeProps
   // eslint-disable-next-line @typescript-eslint/naming-convention
   private renderNode = (props: BreadcrumbNodeProps, _node?: TreeNodeItem, _parent?: TreeNodeItem) => {
     return <BreadcrumbNode label={props.label} icon={props.icon} />;
-  }
+  };
 }
 
 /** Properties for [[BreadcrumbNode]] component

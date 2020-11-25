@@ -178,7 +178,7 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
    */
   public getFilteredNodePaths = async (filter: string): Promise<NodePathElement[]> => {
     return this._dataSource.getFilteredNodePaths(this.createRequestOptions(undefined), filter);
-  }
+  };
 
   /**
    * Loads the hierarchy so on-demand requests and filtering works quicker

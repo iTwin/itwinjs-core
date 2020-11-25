@@ -33,5 +33,5 @@ export class PropertyGridEventHandler {
       const item = draftModel.getItem(selectionKey);
       item.isExpanded = !item.isExpanded;
     });
-  }
+  };
 }

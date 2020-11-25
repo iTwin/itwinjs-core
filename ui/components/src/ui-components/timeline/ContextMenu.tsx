@@ -38,7 +38,7 @@ export class ContextMenuItem extends React.Component<MenuItem> {
     if (!this.props.disabled && !this.props.isSeparator && this.props.onClick) {
       this.props.onClick();
     }
-  }
+  };
 
   // istanbul ignore next - WIP
   public render() {

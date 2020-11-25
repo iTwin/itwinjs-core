@@ -76,6 +76,6 @@ export const QuantityInput = React.forwardRef<HTMLInputElement, QuantityProps>(
     }, [quantityType]);
 
     return <ParsedInput data-testid="components-quantity-input" ref={ref} style={style} className={classNames}
-      onChange={onQuantityChange} initialValue={initialValue} readonly={readonly} formatValue={formatValue} parseString={parseString} />
+      onChange={onQuantityChange} initialValue={initialValue} readonly={readonly} formatValue={formatValue} parseString={parseString} />;
   }
 );

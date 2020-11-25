@@ -75,7 +75,7 @@ export class BooleanEditor extends React.PureComponent<PropertyEditorProps, Bool
         }
       });
     }
-  }
+  };
 
   /** @internal */
   public componentDidMount() {

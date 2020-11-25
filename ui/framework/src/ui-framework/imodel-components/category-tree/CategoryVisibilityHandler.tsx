@@ -155,12 +155,12 @@ export class CategoryVisibilityHandler implements IVisibilityHandler {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   private onDisplayStyleChanged = () => {
     this.onVisibilityChangeInternal();
-  }
+  };
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
   private onViewedCategoriesChanged = () => {
     this.onVisibilityChangeInternal();
-  }
+  };
 
   private onVisibilityChangeInternal() {
     if (this._pendingVisibilityChange)

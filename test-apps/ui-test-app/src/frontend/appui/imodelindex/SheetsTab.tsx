@@ -79,7 +79,7 @@ export class SheetsTab extends React.Component<SheetsProps, SheetsState> {
     const ids: Id64String[] = [];
     this.state.selectedViews.forEach((view: ViewState) => { ids.push(view.id); });
     this.props.onEnter(ids);
-  }
+  };
 
   private _updateHeaderContent() {
     const classThumbnails = classnames("viewtype icon icon-thumbnails", !this.state.detailsView && "active");

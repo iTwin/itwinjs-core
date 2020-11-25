@@ -38,7 +38,7 @@ export class PropertyCategoryBlock extends React.Component<PropertyCategoryBlock
 
   private _onClick = () => {
     this.toggleExpansion();
-  }
+  };
 
   private _onKeyPress = (evt: React.KeyboardEvent<HTMLDivElement>) => {
     // Prevent page from scrolling when clicking [Space]:
@@ -49,7 +49,7 @@ export class PropertyCategoryBlock extends React.Component<PropertyCategoryBlock
     if (evt.key === SpecialKey.Space || evt.key === SpecialKey.Enter) {
       this.toggleExpansion();
     }
-  }
+  };
 
   /** @internal */
   public render() {

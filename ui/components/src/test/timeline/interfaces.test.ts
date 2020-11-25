@@ -13,12 +13,12 @@ class TestTimelineDataProvider extends BaseTimelineDataProvider {
   public onAnimationFractionChanged = (animationFraction: number) => {
     this.pointerCallbackCalled = true;
     this.animationFraction = animationFraction;
-  }
+  };
 
   public onPlaybackSettingChanged = (settings: PlaybackSettings) => {
     this.settingsCallbackCalled = true;
     this.updateSettings(settings);
-  }
+  };
 }
 
 describe("Timeline", () => {

@@ -44,7 +44,7 @@ export class ShadowField extends React.Component<StatusFieldProps, ShadowFieldSt
 
   private _handleContentControlActivatedEvent = (args: ContentControlActivatedEventArgs) => {
     setImmediate(() => this.setStateFromActiveContent(args.activeContentControl));
-  }
+  };
 
   public componentDidMount() {
     FrontstageManager.onContentControlActivatedEvent.addListener(this._handleContentControlActivatedEvent);
@@ -75,7 +75,7 @@ export class ShadowField extends React.Component<StatusFieldProps, ShadowFieldSt
         this.forceUpdate();
       }
     }
-  }
+  };
 
   public render(): React.ReactNode {
     if (!this.state.viewport)

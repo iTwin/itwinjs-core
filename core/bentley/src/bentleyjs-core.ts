@@ -25,6 +25,7 @@ export * from "./Logger";
 export * from "./ObservableSet";
 export * from "./OneAtATimeAction";
 export * from "./OrderedId64Iterable";
+export * from "./partitionArray";
 export * from "./PriorityQueue";
 export * from "./SortedArray";
 export * from "./StringUtils";

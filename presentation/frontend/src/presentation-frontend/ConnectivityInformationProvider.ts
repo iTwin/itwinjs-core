@@ -52,7 +52,7 @@ export class ConnectivityInformationProvider implements IConnectivityInformation
 
     this._currentStatus = status;
     this.onInternetConnectivityChanged.raiseEvent({ status });
-  }
+  };
 
   public get status(): InternetConnectivityStatus { return this._currentStatus ?? InternetConnectivityStatus.Offline; }
 }

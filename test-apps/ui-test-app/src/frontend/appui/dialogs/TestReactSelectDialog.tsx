@@ -86,14 +86,14 @@ export class TestReactSelectDialog extends React.Component<TestReactSelectDialog
   private _handleOK = () => {
     this._closeDialog(() => {
     });
-  }
+  };
 
   private _handleCancel = () => {
     this._closeDialog(() => {
       if (this.props.onResult)
         this.props.onResult(DialogButtonType.Cancel);
     });
-  }
+  };
 
   private _closeDialog = (followUp: () => void) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
@@ -104,5 +104,5 @@ export class TestReactSelectDialog extends React.Component<TestReactSelectDialog
         ModalDialogManager.closeDialog();
       followUp();
     });
-  }
+  };
 }

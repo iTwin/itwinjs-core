@@ -717,7 +717,7 @@ describe("Matrix3d.ViewConstructions", () => {
     const matrixC = Matrix3d.fromJSON();  // creates zeros
     ck.testMatrix3d(matrixC, Matrix3d.createZero());
 
-    const matrixD = Matrix3d.fromJSON(matrixA);  // clone!
+    const matrixD = Matrix3d.fromJSON(jsonA);  // clone!
     ck.testMatrix3d(matrixA, matrixD);
 
     const matrixE = Matrix3d.fromJSON([1, 2, 3, 4, 5, 6, 7, 8, 9]);

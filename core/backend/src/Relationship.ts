@@ -7,28 +7,15 @@
  */
 
 import { DbOpcode, DbResult, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
-import { EntityProps, IModelError, IModelStatus } from "@bentley/imodeljs-common";
+import { IModelError, IModelStatus, RelationshipProps, SourceAndTarget } from "@bentley/imodeljs-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { BinaryPropertyTypeConverter } from "./BinaryPropertyTypeConverter";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 
+export { SourceAndTarget, RelationshipProps } from "@bentley/imodeljs-common"; // for backwards compatibility
+
 const loggerCategory = BackendLoggerCategory.Relationship;
-
-/** Specifies the source and target elements of a [[Relationship]] instance.
- * @public
- */
-export interface SourceAndTarget {
-  sourceId: Id64String;
-  targetId: Id64String;
-}
-
-/** Properties that are common to all types of link table ECRelationships
- * @public
- */
-export interface RelationshipProps extends EntityProps, SourceAndTarget {
-}
 
 /** Base class for all link table ECRelationships
  * @public
@@ -225,7 +212,7 @@ export class Relationships {
    */
   public insertInstance(props: RelationshipProps): Id64String {
     this.checkRelationshipClass(props.classFullName);
-    const val = this._iModel.nativeDb.insertLinkTableRelationship(JSON.stringify(props, BinaryPropertyTypeConverter.createReplacerCallback(false)));
+    const val = this._iModel.nativeDb.insertLinkTableRelationship(props);
     if (val.error)
       throw new IModelError(val.error.status, "Error inserting relationship instance", Logger.logWarning, loggerCategory);
 
@@ -239,7 +226,7 @@ export class Relationships {
    */
   public updateInstance(props: RelationshipProps): void {
     this.checkRelationshipClass(props.classFullName);
-    const error = this._iModel.nativeDb.updateLinkTableRelationship(JSON.stringify(props, BinaryPropertyTypeConverter.createReplacerCallback(false)));
+    const error = this._iModel.nativeDb.updateLinkTableRelationship(props);
     if (error !== DbResult.BE_SQLITE_OK)
       throw new IModelError(error, "Error updating relationship instance", Logger.logWarning, loggerCategory);
   }
@@ -250,7 +237,7 @@ export class Relationships {
    */
   public deleteInstance(props: RelationshipProps): void {
     this.checkRelationshipClass(props.classFullName);
-    const error = this._iModel.nativeDb.deleteLinkTableRelationship(JSON.stringify(props));
+    const error = this._iModel.nativeDb.deleteLinkTableRelationship(props);
     if (error !== DbResult.BE_SQLITE_DONE)
       throw new IModelError(error, "", Logger.logWarning, loggerCategory);
   }
@@ -262,7 +249,7 @@ export class Relationships {
    * @see tryGetInstanceProps
    */
   public getInstanceProps<T extends RelationshipProps>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T {
-    const relationshipProps: T | undefined = this.tryGetInstanceProps(relClassFullName, criteria);
+    const relationshipProps = this.tryGetInstanceProps<T>(relClassFullName, criteria);
     if (undefined === relationshipProps) {
       throw new IModelError(IModelStatus.NotFound, "Relationship not found", Logger.logWarning, loggerCategory);
     }
@@ -314,7 +301,7 @@ export class Relationships {
    * @see getInstance
    */
   public tryGetInstance<T extends Relationship>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T | undefined {
-    const relationshipProps: T | undefined = this.tryGetInstanceProps(relClassFullName, criteria);
+    const relationshipProps = this.tryGetInstanceProps<T>(relClassFullName, criteria);
     return undefined !== relationshipProps ? this._iModel.constructEntity<T>(relationshipProps) : undefined;
   }
 }

@@ -87,7 +87,7 @@ export class SheetsModalFrontstage implements ModalFrontstageInfo {
   private _handleSearchValueChanged = (value: string): void => {
     this._searchValue = value;
     FrontstageManager.updateModalFrontstage();
-  }
+  };
 }
 
 /** Properties for [[CardContainer]]
@@ -200,16 +200,16 @@ export class SheetCard extends React.Component<SheetCardProps, SheetCardState> {
 
   private _onClick = () => {
     this.setState({ isActive: true }, () => this.props.onClick());
-  }
+  };
 
   private _onMouseDown = () => {
     this.setState({ isPressed: true });
-  }
+  };
 
   private _onMouseLeave = () => {
     if (this.state.isPressed)
       this.setState({ isPressed: false });
-  }
+  };
 
   public render() {
     const { label, index, iconSpec } = this.props;

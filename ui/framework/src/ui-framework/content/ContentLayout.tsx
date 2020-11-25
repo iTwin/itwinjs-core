@@ -66,7 +66,7 @@ class ContentWrapper extends React.Component<ContentWrapperProps, ContentWrapper
     // event.preventDefault();
 
     ContentViewManager.setActiveContent(this.state.content);
-  }
+  };
 
   public componentDidMount() {
     ContentViewManager.onActiveContentChangedEvent.addListener(this._handleActiveContentChanged);
@@ -81,7 +81,7 @@ class ContentWrapper extends React.Component<ContentWrapperProps, ContentWrapper
     if (this.state.isActive !== isActive) {
       this.setState({ isActive });
     }
-  }
+  };
 
   // istanbul ignore next
   public componentDidUpdate(prevProps: ContentWrapperProps, _prevState: ContentWrapperState) {
@@ -135,7 +135,7 @@ class SplitContainer extends React.Component<SplitContainerProps> {
       if (this.props.onSplitterChange)
         this.props.onSplitterChange(size, percentage);
     }
-  }
+  };
 
   public render(): React.ReactNode {
     const orientation = (this.props.orientation === Orientation.Horizontal) ? "horizontal" : "vertical";
@@ -248,7 +248,7 @@ class HorizontalSplit extends BaseSplit implements LayoutSplit {
 
   private _handleSplitterChange = (_size: number, percentage: number): void => {
     this._props.percentage = percentage;
-  }
+  };
 
   public createContentContainer(contentNodes: React.ReactNode[], resizable: boolean): React.ReactNode {
     if (this.isLocked)
@@ -314,7 +314,7 @@ class VerticalSplit extends BaseSplit implements LayoutSplit {
 
   private _handleSplitterChange = (_size: number, percentage: number): void => {
     this._props.percentage = percentage;
-  }
+  };
 
   public createContentContainer(contentNodes: React.ReactNode[], resizable: boolean): React.ReactNode {
     if (this.isLocked)
@@ -543,7 +543,7 @@ export class ContentLayout extends React.Component<ContentLayoutComponentProps, 
       contentLayoutDef: args.contentLayout,
       contentContainer,
     });
-  }
+  };
 
   public render(): React.ReactNode {
     if (this.state.contentContainer) {
@@ -561,9 +561,9 @@ export class ContentLayout extends React.Component<ContentLayoutComponentProps, 
 
   private _onMouseDown = (_event: React.MouseEvent<HTMLDivElement>) => {
     ContentViewManager.setMouseDown(true);
-  }
+  };
 
   private _onMouseUp = (_event: React.MouseEvent<HTMLDivElement>) => {
     ContentViewManager.setMouseDown(false);
-  }
+  };
 }

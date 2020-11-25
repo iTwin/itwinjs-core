@@ -73,7 +73,7 @@ export class DisplayStyleField extends React.Component<StatusFieldProps, Display
 
   private _handleContentControlActivatedEvent = (args: ContentControlActivatedEventArgs) => {
     setImmediate(async () => this.setStateFromActiveContent(args.activeContentControl));
-  }
+  };
 
   public componentDidMount() {
     FrontstageManager.onContentControlActivatedEvent.addListener(this._handleContentControlActivatedEvent);
@@ -95,7 +95,7 @@ export class DisplayStyleField extends React.Component<StatusFieldProps, Display
     viewport.invalidateScene();
     viewport.synchWithView();
     this.setState({ viewport });
-  }
+  };
 
   public render(): React.ReactNode {
     if (!this.state.viewport)

@@ -667,7 +667,7 @@ export const setWidgetState = produce((
       tabIndex,
       widgetId,
       widgetIndex,
-    }
+    };
     removeTab(nineZone, id);
   }
 });

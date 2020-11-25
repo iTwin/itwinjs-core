@@ -69,5 +69,5 @@ export class StagePanelHeader extends React.PureComponent<StagePanelHeaderProps>
     if (!stagePanel)
       return;
     stagePanel.panelState = StagePanelState.Minimized;
-  }
+  };
 }

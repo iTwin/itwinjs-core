@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { DbOpcode, GuidString, Id64Array, Id64String } from "@bentley/bentleyjs-core";
+import { DbOpcode, GuidString, Id64Array, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
 import { LockLevel } from "@bentley/imodelhub-client";
 import { CodeProps } from "../Code";
 import { AxisAlignedBox3dProps } from "../geometry/Placement";
@@ -32,7 +32,7 @@ export abstract class IModelWriteRpcInterface extends RpcInterface {
   public static readonly interfaceName = "IModelWriteRpcInterface";
 
   /** The version of the interface. */
-  public static interfaceVersion = "0.5.1";
+  public static interfaceVersion = "0.5.2";
 
   /*===========================================================================================
       NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -68,4 +68,8 @@ export abstract class IModelWriteRpcInterface extends RpcInterface {
   public async deleteElements(_tokenProps: IModelRpcProps, _ids: Id64Array): Promise<void> { return this.forward(arguments); }
   public async createAndInsertPhysicalModel(_tokenProps: IModelRpcProps, _newModelCode: CodeProps, _privateModel: boolean): Promise<Id64String> { return this.forward(arguments); }
   public async createAndInsertSpatialCategory(_tokenProps: IModelRpcProps, _scopeModelId: Id64String, _categoryName: string, _appearance: SubCategoryAppearance.Props): Promise<Id64String> { return this.forward(arguments); }
+
+  public async undoRedo(_rpc: IModelRpcProps, _undo: boolean): Promise<IModelStatus> {
+    return this.forward(arguments);
+  }
 }

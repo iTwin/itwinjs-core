@@ -61,6 +61,7 @@ import { RpcInterfaceStatus } from '@bentley/bentleyjs-core';
 import { SerializedClientRequestContext } from '@bentley/bentleyjs-core';
 import { Transform } from '@bentley/geometry-core';
 import { TransformProps } from '@bentley/geometry-core';
+import { Vector2d } from '@bentley/geometry-core';
 import { Vector3d } from '@bentley/geometry-core';
 import { Writable } from 'stream';
 import { XAndY } from '@bentley/geometry-core';
@@ -717,6 +718,10 @@ export interface ChangedElements {
     // (undocumented)
     opcodes: number[];
     // (undocumented)
+    parentClassIds?: Id64String[];
+    // (undocumented)
+    parentIds?: Id64String[];
+    // (undocumented)
     properties?: Id64String[][];
     // (undocumented)
     type: number[];
@@ -1372,9 +1377,24 @@ export function computeChildTileRanges(tile: TileMetadata, root: TileTreeMetadat
 export function computeTileChordTolerance(tile: TileMetadata, is3d: boolean): number;
 
 // @internal
+export enum ContentFlags {
+    // (undocumented)
+    AllowInstancing = 1,
+    // (undocumented)
+    IgnoreAreaPatterns = 4,
+    // (undocumented)
+    ImprovedElision = 2,
+    // (undocumented)
+    None = 0
+}
+
+// @internal
 export abstract class ContentIdProvider {
+    protected constructor(formatVersion: number, contentFlags: ContentFlags);
     // (undocumented)
     protected abstract computeId(depth: number, i: number, j: number, k: number, mult: number): string;
+    // (undocumented)
+    readonly contentFlags: ContentFlags;
     static create(allowInstancing: boolean, options: TileOptions, formatVersion?: number): ContentIdProvider;
     // (undocumented)
     idFromParentAndMultiplier(parentId: string, multiplier: number): string;
@@ -1382,6 +1402,8 @@ export abstract class ContentIdProvider {
     idFromSpec(spec: ContentIdSpec): string;
     // (undocumented)
     protected join(depth: number, i: number, j: number, k: number, mult: number): string;
+    // (undocumented)
+    readonly majorFormatVersion: number;
     // (undocumented)
     get rootContentId(): string;
     // (undocumented)
@@ -1439,8 +1461,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 1048576,
-    Major = 16,
+    Combined = 1114112,
+    Major = 17,
     Minor = 0
 }
 
@@ -1475,6 +1497,12 @@ export const defaultTileOptions: TileOptions;
 export interface DefinitionElementProps extends ElementProps {
     // (undocumented)
     isPrivate?: boolean;
+}
+
+// @alpha
+export interface DeletedElementGeometryChange {
+    readonly id: Id64String;
+    readonly type: DbOpcode.Delete;
 }
 
 // @alpha
@@ -2007,11 +2035,180 @@ export interface ElementAspectProps extends EntityProps {
 }
 
 // @alpha
-export interface ElementGeometryChange {
+export namespace ElementGeometry {
     // (undocumented)
-    id: Id64String;
+    export function appendGeometryParams(geomParams: GeometryParams, entries: ElementGeometryDataEntry[]): boolean;
+    export class Builder {
+        appendBRepData(brep: BRepEntity.DataProps): boolean;
+        appendGeometryParamsChange(geomParams: GeometryParams): boolean;
+        appendGeometryPart(partId: Id64String, partToElement?: Transform): boolean;
+        appendGeometryPart2d(partId: Id64String, instanceOrigin?: Point2d, instanceRotation?: Angle, instanceScale?: number): boolean;
+        appendGeometryPart3d(partId: Id64String, instanceOrigin?: Point3d, instanceRotation?: YawPitchRollAngles, instanceScale?: number): boolean;
+        appendGeometryQuery(geometry: GeometryQuery): boolean;
+        appendGeometryRanges(): boolean;
+        appendImageGraphic(image: ImageGraphic): boolean;
+        appendTextString(text: TextString): boolean;
+        // (undocumented)
+        readonly entries: ElementGeometryDataEntry[];
+    }
     // (undocumented)
-    range?: Range3dProps;
+    export function fromBRep(brep: BRepEntity.DataProps): ElementGeometryDataEntry | undefined;
+    // (undocumented)
+    export function fromGeometryPart(partId: Id64String, partToElement?: Transform): ElementGeometryDataEntry | undefined;
+    // (undocumented)
+    export function fromGeometryQuery(geom: GeometryQuery): ElementGeometryDataEntry | undefined;
+    // (undocumented)
+    export function fromImageGraphic(image: ImageGraphicProps): ElementGeometryDataEntry | undefined;
+    // (undocumented)
+    export function fromSubGraphicRange(bbox: ElementAlignedBox3d): ElementGeometryDataEntry | undefined;
+    // (undocumented)
+    export function fromTextString(text: TextStringProps): ElementGeometryDataEntry | undefined;
+    // (undocumented)
+    export function isAppearanceEntry(entry: ElementGeometryDataEntry): boolean;
+    // (undocumented)
+    export function isGeometricEntry(entry: ElementGeometryDataEntry): boolean;
+    // (undocumented)
+    export function isGeometryQueryEntry(entry: ElementGeometryDataEntry): boolean;
+    export class Iterator implements IterableIterator<IteratorEntry> {
+        // (undocumented)
+        [Symbol.iterator](): IterableIterator<IteratorEntry>;
+        constructor(info: ElementGeometryInfo, categoryOrGeometryParams?: Id64String | GeometryParams, localToWorld?: Transform);
+        readonly brepsPresent?: boolean;
+        readonly entryArray: ElementGeometryDataEntry[];
+        next(): IteratorResult<IteratorEntry>;
+        readonly placement: Placement3d;
+        readonly viewIndependent?: boolean;
+    }
+    export interface IteratorData {
+        readonly geomParams: GeometryParams;
+        readonly localRange?: Range3d;
+        readonly localToWorld?: Transform;
+        readonly value: ElementGeometryDataEntry;
+    }
+    // (undocumented)
+    export class IteratorEntry implements IteratorData {
+        constructor(geomParams: GeometryParams, localToWorld: Transform);
+        // (undocumented)
+        readonly geomParams: GeometryParams;
+        // (undocumented)
+        localRange?: Range3d;
+        // (undocumented)
+        readonly localToWorld?: Transform;
+        toBRepData(wantBRepData?: boolean): BRepEntity.DataProps | undefined;
+        toGeometryPart(partToLocal?: Transform, partToWorld?: Transform): Id64String | undefined;
+        toGeometryQuery(): GeometryQuery | undefined;
+        toImageGraphic(): ImageGraphic | undefined;
+        toTextString(): TextString | undefined;
+        // (undocumented)
+        get value(): ElementGeometryDataEntry;
+        set value(value: ElementGeometryDataEntry);
+        }
+    // (undocumented)
+    export function toBRep(entry: ElementGeometryDataEntry, wantBRepData?: boolean): BRepEntity.DataProps | undefined;
+    export function toElementAlignedBox3d(bbox: Float64Array): ElementAlignedBox3d | undefined;
+    // (undocumented)
+    export function toGeometryPart(entry: ElementGeometryDataEntry, partToElement?: Transform): Id64String | undefined;
+    // (undocumented)
+    export function toGeometryQuery(entry: ElementGeometryDataEntry): GeometryQuery | undefined;
+    // (undocumented)
+    export function toImageGraphic(entry: ElementGeometryDataEntry): ImageGraphicProps | undefined;
+    // (undocumented)
+    export function toSubGraphicRange(entry: ElementGeometryDataEntry): ElementAlignedBox3d | undefined;
+    // (undocumented)
+    export function toTextString(entry: ElementGeometryDataEntry): TextStringProps | undefined;
+    export function toTransform(sourceToWorld: Float64Array): Transform | undefined;
+    // (undocumented)
+    export function updateGeometryParams(entry: ElementGeometryDataEntry, geomParams: GeometryParams): boolean;
+}
+
+// @alpha
+export type ElementGeometryChange = ExtantElementGeometryChange | DeletedElementGeometryChange;
+
+// @alpha
+export namespace ElementGeometryChange {
+    export function iterable(modelChanges: ModelGeometryChangesProps): Iterable<ElementGeometryChange>;
+    export function iterator(modelChanges: ModelGeometryChangesProps): Iterator<ElementGeometryChange>;
+}
+
+// @alpha
+export interface ElementGeometryDataEntry {
+    data: Uint8Array;
+    opcode: number;
+}
+
+// @alpha
+export type ElementGeometryFunction = (info: ElementGeometryInfo) => void;
+
+// @alpha
+export interface ElementGeometryInfo {
+    bbox?: Float64Array;
+    brepsPresent?: boolean;
+    categoryId?: Id64String;
+    entryArray: ElementGeometryDataEntry[];
+    sourceToWorld?: Float64Array;
+    viewIndependent?: boolean;
+}
+
+// @alpha
+export enum ElementGeometryOpcode {
+    ArcPrimitive = 7,
+    BasicSymbology = 4,
+    BRep = 25,
+    BsplineSurface = 12,
+    CurveCollection = 8,
+    CurvePrimitive = 10,
+    Fill = 19,
+    Image = 28,
+    LineStyleModifiers = 23,
+    Material = 21,
+    PartReference = 3,
+    Pattern = 20,
+    PointPrimitive = 5,
+    PointPrimitive2d = 6,
+    Polyface = 9,
+    SolidPrimitive = 11,
+    SubGraphicRange = 2,
+    TextString = 22
+}
+
+// @alpha
+export interface ElementGeometryRequest {
+    angleTol?: number;
+    chordTol?: number;
+    elementId: Id64String;
+    maxEdgeLength?: number;
+    minBRepFeatureSize?: number;
+    onGeometry: ElementGeometryFunction;
+    replaceBReps?: boolean;
+    skipBReps?: boolean;
+}
+
+// @alpha
+export interface ElementGeometryUpdate {
+    elementId: Id64String;
+    entryArray: ElementGeometryDataEntry[];
+    is2dPart?: boolean;
+    isWorld?: boolean;
+    viewIndependent?: boolean;
+}
+
+// @internal
+export interface ElementGraphicsRequestProps {
+    readonly clipToProjectExtents?: boolean;
+    readonly contentFlags?: ContentFlags;
+    readonly elementId: Id64String;
+    readonly formatVersion: number;
+    readonly id: string;
+    readonly location?: TransformProps;
+    readonly omitEdges?: boolean;
+    readonly toleranceLog10: number;
+    readonly treeFlags?: TreeFlags;
+}
+
+// @alpha
+export interface ElementIdsAndRangesProps {
+    readonly ids: CompressedId64Set;
+    readonly ranges: Range3dProps[];
 }
 
 // @public
@@ -2117,6 +2314,13 @@ export namespace Events {
         onUserStateChanged = "onUserStateChanged";
         const modelGeometryChanges = "modelGeometryChanges";
     }
+}
+
+// @alpha
+export interface ExtantElementGeometryChange {
+    readonly id: Id64String;
+    readonly range: Range3d;
+    readonly type: DbOpcode.Insert | DbOpcode.Update;
 }
 
 // @public
@@ -2830,7 +3034,7 @@ export class GltfBufferData {
 
 // @internal
 export class GltfBufferView {
-    constructor(data: Uint8Array, count: number, type: GltfDataType, accessor: any);
+    constructor(data: Uint8Array, count: number, type: GltfDataType, accessor: any, stride: number);
     // (undocumented)
     readonly accessor: any;
     // (undocumented)
@@ -2839,6 +3043,8 @@ export class GltfBufferView {
     readonly count: number;
     // (undocumented)
     readonly data: Uint8Array;
+    // (undocumented)
+    readonly stride: number;
     // (undocumented)
     toBufferData(desiredType: GltfDataType): GltfBufferData | undefined;
     // (undocumented)
@@ -2929,6 +3135,8 @@ export enum GltfMeshMode {
     Lines = 1,
     // (undocumented)
     LineStrip = 3,
+    // (undocumented)
+    Points = 0,
     // (undocumented)
     Triangles = 4
 }
@@ -3612,10 +3820,12 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
     purgeTileTrees(_tokenProps: IModelRpcProps, _modelIds: Id64Array | undefined): Promise<void>;
     // @internal (undocumented)
     queryVersionInfo(): Promise<TileVersionInfo>;
+    // @internal
+    requestElementGraphics(_rpcProps: IModelRpcProps, _request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined>;
     // @internal (undocumented)
     requestTileContent(iModelToken: IModelRpcProps, treeId: string, contentId: string, isCanceled?: () => boolean, guid?: string): Promise<Uint8Array>;
     // @internal (undocumented)
-    requestTileTreeProps(_tokenProps: IModelRpcProps, _id: string): Promise<TileTreeProps>;
+    requestTileTreeProps(_tokenProps: IModelRpcProps, _id: string): Promise<IModelTileTreeProps>;
 }
 
 // @internal
@@ -3623,6 +3833,14 @@ export type IModelTileTreeId = PrimaryTileTreeId | ClassifierTileTreeId;
 
 // @internal
 export function iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTileTreeId, options: TileOptions): string;
+
+// @internal
+export interface IModelTileTreeProps extends TileTreeProps {
+    contentIdQualifier?: string;
+    formatVersion?: number;
+    geometryGuid?: GuidString;
+    maxInitialTilesToSkip?: number;
+}
 
 // @public
 export class IModelVersion {
@@ -3678,6 +3896,8 @@ export abstract class IModelWriteRpcInterface extends RpcInterface {
     saveThumbnail(_iModelToken: IModelRpcProps, _val: Uint8Array): Promise<void>;
     // (undocumented)
     synchConcurrencyControlResourcesCache(_tokenProps: IModelRpcProps): Promise<void>;
+    // (undocumented)
+    undoRedo(_rpc: IModelRpcProps, _undo: boolean): Promise<IModelStatus>;
     // (undocumented)
     updateProjectExtents(_iModelToken: IModelRpcProps, _newExtents: AxisAlignedBox3dProps): Promise<void>;
 }
@@ -4219,11 +4439,36 @@ export class ModelClipGroups {
 
 // @alpha
 export interface ModelGeometryChanges {
-    deleted?: Id64String[];
-    inserted?: ElementGeometryChange[];
-    modelId: Id64String;
-    range?: Range3dProps;
-    updated?: ElementGeometryChange[];
+    readonly elements: Iterable<ElementGeometryChange>;
+    readonly geometryGuid: GuidString;
+    readonly id: Id64String;
+    readonly range: Range3d;
+}
+
+// @alpha
+export namespace ModelGeometryChanges {
+    export function findByModelId(changes: Iterable<ModelGeometryChanges>, modelId: Id64String): ModelGeometryChanges | undefined;
+    export function fromJSON(props: ModelGeometryChangesProps): ModelGeometryChanges;
+    export function iterable(modelChanges: ModelGeometryChangesProps[]): Iterable<ModelGeometryChanges>;
+    export function iterator(modelChanges: ModelGeometryChangesProps[]): Iterator<ModelGeometryChanges>;
+}
+
+// @alpha
+export interface ModelGeometryChangesProps {
+    readonly deleted?: CompressedId64Set;
+    readonly guid: GuidString;
+    readonly id: Id64String;
+    readonly inserted?: ElementIdsAndRangesProps;
+    readonly range: Range3dProps;
+    readonly updated?: ElementIdsAndRangesProps;
+}
+
+// @public
+export interface ModelLoadProps {
+    // (undocumented)
+    code?: CodeProps;
+    // (undocumented)
+    id?: Id64String;
 }
 
 // @public
@@ -4268,6 +4513,7 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
     authInitialize(_issuer: string, _config: any): Promise<void>;
     authSignIn(): Promise<void>;
     authSignOut(): Promise<void>;
+    cancelElementGraphicsRequests(_rpcProps: IModelRpcProps, _requestIds: string[]): Promise<void>;
     cancelTileContentRequests(_iModelToken: IModelRpcProps, _contentIds: TileTreeContentIds[]): Promise<void>;
     checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
     closeBriefcase(_key: BriefcaseKey): Promise<void>;
@@ -4278,6 +4524,8 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
     getConfig(): Promise<any>;
     static readonly interfaceName = "NativeAppRpcInterface";
     static interfaceVersion: string;
+    // (undocumented)
+    isInteractiveEditingSupported(_tokenProps: IModelRpcProps): Promise<boolean>;
     log(_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any): Promise<void>;
     openBriefcase(_key: BriefcaseKey, _openOptions?: OpenBriefcaseOptions): Promise<IModelConnectionProps>;
     overrideInternetConnectivity(_overriddenBy: OverriddenBy, _status?: InternetConnectivityStatus): Promise<void>;
@@ -4291,6 +4539,8 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
     storageRemove(_storageId: string, _key: string): Promise<void>;
     storageRemoveAll(_storageId: string): Promise<void>;
     storageSet(_storageId: string, _key: string, _value: StorageValue): Promise<void>;
+    // (undocumented)
+    toggleInteractiveEditingSession(_tokenProps: IModelRpcProps, _startSession: boolean): Promise<boolean>;
 }
 
 // @public
@@ -4969,6 +5219,8 @@ export class QParams2d {
     // (undocumented)
     readonly origin: Point2d;
     // (undocumented)
+    get rangeDiagonal(): Vector2d;
+    // (undocumented)
     readonly scale: Point2d;
     setFromRange(range: Range2d, rangeScale?: number): void;
 }
@@ -4985,6 +5237,8 @@ export class QParams3d {
     static fromZeroToOne(rangeScale?: number): QParams3d;
     // (undocumented)
     readonly origin: Point3d;
+    // (undocumented)
+    get rangeDiagonal(): Vector3d;
     // (undocumented)
     readonly scale: Point3d;
     setFromOriginAndScale(origin: Point3d, scale: Point3d): void;
@@ -5017,6 +5271,7 @@ export class QPoint2dList {
     add(pt: Point2d): void;
     clear(): void;
     static fromPoints(points: Point2d[], out?: QPoint2dList): QPoint2dList;
+    fromTypedArray(range: Range2d, array: Uint16Array): void;
     get length(): number;
     // (undocumented)
     get list(): QPoint2d[];
@@ -5065,6 +5320,8 @@ export class QPoint3dList {
     // (undocumented)
     static createFrom(points: Point3d[], params: QParams3d): QPoint3dList;
     static fromPoints(points: Point3d[], out?: QPoint3dList): QPoint3dList;
+    // (undocumented)
+    fromTypedArray(range: Range3d, array: Uint16Array): void;
     get length(): number;
     // (undocumented)
     get list(): QPoint3d[];
@@ -5190,6 +5447,10 @@ export class RelatedElement implements RelatedElementProps {
 export interface RelatedElementProps {
     id: Id64String;
     relClassName?: string;
+}
+
+// @public
+export interface RelationshipProps extends EntityProps, SourceAndTarget {
 }
 
 // @beta
@@ -6367,6 +6628,14 @@ export interface SolarShadowSettingsProps {
     color?: ColorDefProps;
 }
 
+// @public
+export interface SourceAndTarget {
+    // (undocumented)
+    sourceId: Id64String;
+    // (undocumented)
+    targetId: Id64String;
+}
+
 // @beta
 export namespace SpatialClassificationProps {
     export interface Classifier {
@@ -7020,12 +7289,9 @@ export interface TileTreeMetadata {
 
 // @internal
 export interface TileTreeProps {
-    contentIdQualifier?: string;
     contentRange?: Range3dProps;
-    formatVersion?: number;
     id: string;
     location: TransformProps;
-    maxInitialTilesToSkip?: number;
     maxTilesToSkip?: number;
     rootTile: TileProps;
 }
@@ -7033,6 +7299,16 @@ export interface TileTreeProps {
 // @alpha
 export interface TileVersionInfo {
     formatVersion: number;
+}
+
+// @internal
+export enum TreeFlags {
+    // (undocumented)
+    EnforceDisplayPriority = 2,
+    // (undocumented)
+    None = 0,
+    // (undocumented)
+    UseProjectExtents = 1
 }
 
 // @beta

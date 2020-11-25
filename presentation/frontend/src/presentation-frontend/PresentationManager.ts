@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { BeEvent, IDisposable } from "@bentley/bentleyjs-core";
+import { BeEvent, IDisposable, Logger } from "@bentley/bentleyjs-core";
 import { EventSource, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import {
   Content, ContentDescriptorRequestOptions, ContentRequestOptions, ContentUpdateInfo, Descriptor, DescriptorOverrides, DisplayLabelRequestOptions,
@@ -17,6 +17,7 @@ import {
   PresentationDataCompareOptions, PresentationError, PresentationRpcEvents, PresentationRpcInterface, PresentationStatus, PresentationUnitSystem,
   RegisteredRuleset, RequestPriority, RpcRequestsHandler, Ruleset, RulesetVariable, SelectionInfo, UpdateInfo, UpdateInfoJSON,
 } from "@bentley/presentation-common";
+import { PresentationFrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { LocalizationHelper } from "./LocalizationHelper";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
@@ -135,7 +136,7 @@ export class PresentationManager implements IDisposable {
   private onUpdate = (report: UpdateInfoJSON) => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.handleUpdateAsync(UpdateInfo.fromJSON(report));
-  }
+  };
 
   /** @note This is only called in native apps after changes in iModels */
   private async handleUpdateAsync(report: UpdateInfo) {
@@ -514,6 +515,10 @@ export const buildPagedResponse = async <TItem>(requestedPage: PageOptions | und
   const items = new Array<TItem>();
   while (true) {
     const partialResult = await getter({ start: pageStart, size: pageSize }, requestIndex++);
+    if (partialResult.total !== 0 && partialResult.items.length === 0) {
+      Logger.logError(PresentationFrontendLoggerCategory.Package, "Paged request returned non zero total count but no items");
+      return { total: 0, items: [] };
+    }
     totalCount = partialResult.total;
     items.push(...partialResult.items);
     if (requestedPageSize !== 0 && items.length >= requestedPageSize || items.length >= (partialResult.total - requestedPageStart))

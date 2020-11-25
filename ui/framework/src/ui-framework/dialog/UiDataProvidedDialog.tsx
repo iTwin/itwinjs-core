@@ -58,7 +58,7 @@ export function UiDataProvidedDialog({ uiDataProvider, id, isModal, ...dialogPro
       ModalDialogManager.closeDialog();
     else
       ModelessDialogManager.closeDialog(dialogId.current);
-  }
+  };
 
   const handleOk = React.useCallback(() => {
     onOK.current && onOK.current();

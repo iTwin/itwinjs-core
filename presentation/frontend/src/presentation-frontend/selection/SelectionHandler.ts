@@ -97,7 +97,7 @@ export class SelectionHandler implements IDisposable {
     this._inSelect = true;
     this.onSelect(evt, provider);
     this._inSelect = false;
-  }
+  };
 
   /** Called to check whether the event should be handled by this handler */
   protected shouldHandle(evt: SelectionChangeEventArgs): boolean {

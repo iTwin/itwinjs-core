@@ -293,7 +293,7 @@ export class TreeSelectionManager implements Pick<TreeActions, "onNodeClicked" |
           itemKeyboardNavigator.handleKeyUpEvent(e, index);
       }
     }
-  }
+  };
 }
 
 type Selection = string | RangeSelection;

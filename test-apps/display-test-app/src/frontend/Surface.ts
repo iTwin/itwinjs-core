@@ -5,7 +5,7 @@
 import { KeyinField, parseArgs } from "@bentley/frontend-devtools";
 import { Range3d } from "@bentley/geometry-core";
 import { Cartographic } from "@bentley/imodeljs-common";
-import { BlankConnection, IModelApp, SnapshotConnection, Tool } from "@bentley/imodeljs-frontend";
+import { BlankConnection, IModelApp, Tool } from "@bentley/imodeljs-frontend";
 import { DisplayTestApp } from "./App";
 import { BrowserFileSelector, selectFileName } from "./FileOpen";
 import { FpsMonitor } from "./FpsMonitor";
@@ -15,6 +15,8 @@ import { TileLoadIndicator } from "./TileLoadIndicator";
 import { createToolButton, ToolBar } from "./ToolBar";
 import { Viewer, ViewerProps } from "./Viewer";
 import { Dock, NamedWindow, NamedWindowProps, Window, WindowProps } from "./Window";
+import { openStandaloneIModel } from "./openStandaloneIModel";
+import { setTitle } from "./Title";
 
 // cspell:ignore textbox topdiv
 
@@ -27,14 +29,16 @@ export class Surface {
   public readonly notifications: NotificationsWindow;
   private readonly _toolbar: ToolBar;
   public readonly browserFileSelector?: BrowserFileSelector;
+  public readonly openReadWrite: boolean;
 
   public static get instance() { return DisplayTestApp.surface; }
 
-  public constructor(surfaceDiv: HTMLElement, toolbarDiv: HTMLElement, browserFileSelector: BrowserFileSelector | undefined) {
+  public constructor(surfaceDiv: HTMLElement, toolbarDiv: HTMLElement, browserFileSelector: BrowserFileSelector | undefined, openReadWrite: boolean) {
     // Ensure iModel gets closed on page close/reload
     window.onbeforeunload = () => this.closeAllViewers();
 
     this.element = surfaceDiv;
+    this.openReadWrite = openReadWrite;
     this.browserFileSelector = browserFileSelector;
     this._toolbarDiv = toolbarDiv;
     this._toolbar = this.createToolBar();
@@ -152,7 +156,8 @@ export class Surface {
     }
 
     try {
-      const iModel = await SnapshotConnection.openFile(filename);
+      const iModel = await openStandaloneIModel(filename, this.openReadWrite);
+      setTitle(iModel);
       const viewer = await this.createViewer({ iModel });
       viewer.dock(Dock.Full);
     } catch (err) {

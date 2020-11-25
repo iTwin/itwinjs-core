@@ -123,7 +123,7 @@ export class ValidationTextbox extends React.PureComponent<ValidationTextboxProp
    */
   private _validateText = (event?: any): void => {
     this.processValidateText(event.target as HTMLInputElement);
-  }
+  };
 
   /**
    * Determines if value provided is valid by calling user defined
@@ -167,5 +167,5 @@ export class ValidationTextbox extends React.PureComponent<ValidationTextboxProp
           this.props.onEnterPressed();
         break;
     }
-  }
+  };
 }

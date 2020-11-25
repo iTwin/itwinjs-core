@@ -12,6 +12,7 @@ import { AxisAlignedBox3d, BisCodeSpec, CodeProps, IModelError, IModelWriteRpcIn
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
+import { InteractiveEditingSession } from "./InteractiveEditingSession";
 
 const loggerCategory = FrontendLoggerCategory.IModelConnection;
 
@@ -103,6 +104,12 @@ export class EditingFunctions {
     if (OpenMode.ReadWrite !== this._connection.openMode)
       throw new IModelError(IModelStatus.ReadOnly, "IModelConnection was opened read-only", Logger.logError);
 
+    if (undefined !== InteractiveEditingSession.get(this._connection)) {
+      // The session will receive notifications about modified elements and hide them in the tiles, drawing their new geometry separately instead.
+      return IModelWriteRpcInterface.getClientForRouting(this._connection.routingContext.token).saveChanges(this._connection.getRpcProps(), description);
+    }
+
+    // ###TODO: Remove all of this once tile healing is fully functional.
     const affectedModels = await IModelWriteRpcInterface.getClientForRouting(this._connection.routingContext.token).getModelsAffectedByWrites(this._connection.getRpcProps()); // TODO: Remove this when we get tile healing
 
     await IModelWriteRpcInterface.getClientForRouting(this._connection.routingContext.token).saveChanges(this._connection.getRpcProps(), description);

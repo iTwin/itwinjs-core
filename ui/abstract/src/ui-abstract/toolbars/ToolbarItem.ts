@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Toolbar
@@ -122,7 +122,7 @@ export class ToolbarItemUtilities {
     icon, label,
     execute,
     ...overrides,
-  })
+  });
 
   /** Creates a Group button */
   public static createGroupButton = (id: string, itemPriority: number, icon: string | ConditionalStringValue, label: string | ConditionalStringValue, items: ReadonlyArray<ActionButton | GroupButton>, overrides?: Partial<GroupButton>): GroupButton => ({
@@ -130,7 +130,7 @@ export class ToolbarItemUtilities {
     icon, label,
     items,
     ...overrides,
-  })
+  });
 
   /** ActionButton type guard. */
   public static isActionButton(item: CommonToolbarItem): item is ActionButton {

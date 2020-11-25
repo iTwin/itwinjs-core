@@ -134,11 +134,11 @@ export class Splitter extends React.PureComponent<SplitterProps, SplitterState> 
   private _handlePointerDown = (e: React.PointerEvent, id: number) => {
     e.preventDefault();
     this._draggedGrip = id;
-  }
+  };
 
   private _handleDocumentPointerUp = (_: PointerEvent) => {
     this._draggedGrip = undefined;
-  }
+  };
 
   private _handleDocumentPointerMove = (e: PointerEvent) => {
     this.setState((prevState, props) => {
@@ -176,5 +176,5 @@ export class Splitter extends React.PureComponent<SplitterProps, SplitterState> 
         },
       };
     });
-  }
+  };
 }

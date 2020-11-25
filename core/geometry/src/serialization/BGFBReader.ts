@@ -77,7 +77,7 @@ export class BGFBReader {
    */
   public readBSplineCurve(header: BGFBAccessors.BsplineCurve): BSplineCurve3d | BSplineCurve3dH | undefined {
     const order = header.order();
-    const xyzArray = header.polesArray()
+    const xyzArray = header.polesArray();
     const knots = header.knotsArray();
     const weightsArray = header.weightsArray();
     // const closed = header.closed();
@@ -418,7 +418,7 @@ export class BGFBReader {
 function nullToUndefined<T>(data: any): T | undefined {
   if (data === null)
     return undefined;
-  return data
+  return data;
 }
 
 function createTypedCurveCollection(collectionType: number): CurveCollection {

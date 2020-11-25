@@ -33,7 +33,7 @@ export function ActivityMessagePopup(props: ActivityMessagePopupProps) {
       setActivityMessageInfo(args);
       if (args.restored)
         setIsActivityMessageVisible(true);
-    }
+    };
 
     return MessageManager.onActivityMessageUpdatedEvent.addListener(handleActivityMessageUpdatedEvent);
   }, [isActivityMessageVisible]);

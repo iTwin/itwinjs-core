@@ -140,7 +140,7 @@ export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBr
 
   private _onClick = () => {
     this._execute();
-  }
+  };
 
   private _execute(): void {
     let toolId: string | undefined;
@@ -192,7 +192,7 @@ export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBr
   private _outputMessage = (msg: string) => {
     const details = new NotifyMessageDetails(OutputMessagePriority.Error, msg, undefined, OutputMessageType.Alert);
     IModelApp.notifications.outputMessage(details);
-  }
+  };
 
   // istanbul ignore next
   private _onKeyinSelected = (selected: AutoSuggestData): void => {
@@ -201,13 +201,13 @@ export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBr
     // istanbul ignore else
     if (this._isMounted)
       this.setState({ currentToolId, currentArgs });
-  }
+  };
 
   private _onArgumentsChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     // istanbul ignore else
     if (this._isMounted)
       this.setState({ currentArgs: event.target.value });
-  }
+  };
 
   private _onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>): void => {
     if (SpecialKey.Enter === event.key) {
@@ -223,14 +223,14 @@ export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBr
         this.props.onCancel();
       return;
     }
-  }
+  };
 
   private _onInputFocus = (event: React.FocusEvent<HTMLInputElement>): void => {
     // istanbul ignore else
     if (event.target) {
       event.target.select();
     }
-  }
+  };
 
   private _onAutoSuggestEnter = (event: React.KeyboardEvent): void => {
     event.stopPropagation();
@@ -242,14 +242,14 @@ export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBr
         this._execute();
       });
     }
-  }
+  };
 
   private _onAutoSuggestTab = (event: React.KeyboardEvent): void => {
     event.stopPropagation();
 
     const inputValue = (event.target as HTMLInputElement).value;
     this._processInputValue(inputValue);
-  }
+  };
 
   private _processInputValue(inputValue: string): boolean {
     let currentKeyin = "";
@@ -287,7 +287,7 @@ export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBr
     // istanbul ignore else
     if (this.props.onCancel)
       this.props.onCancel();
-  }
+  };
 
   /** Calculate suggestions for any given input value. */
   private _getSuggestions = async (value: string): Promise<AutoSuggestData[]> => {
@@ -301,7 +301,7 @@ export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBr
           return data.label.toLowerCase().includes(inputValue) || data.englishKeyin.toLowerCase().includes(inputValue);
         })
     );
-  }
+  };
 
   /** @internal */
   public render(): React.ReactNode {

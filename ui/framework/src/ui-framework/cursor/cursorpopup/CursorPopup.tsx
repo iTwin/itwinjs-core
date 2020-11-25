@@ -82,7 +82,7 @@ export class CursorPopup extends React.Component<CursorPopupProps, CursorPopupSt
       if (this._isMounted)
         this.setState({ showPopup: CursorPopupShow.FadeOut });
     }
-  }
+  };
 
   /** @internal */
   public static getPopupRect(pt: PointProps, offset: PointProps, popupSize: SizeProps | undefined, relativePosition: RelativePosition): RectangleProps {

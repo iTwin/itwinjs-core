@@ -76,15 +76,15 @@ export class SampleStatusField extends React.Component<StatusFieldProps, SampleS
       this.setOpenWidget(null);
     else
       this.setOpenWidget(this._className);
-  }
+  };
 
   private _handleTargetRef = (target: HTMLElement | null) => {
     this.setState({ target });
-  }
+  };
 
   private _handleClose = () => {
     this.setOpenWidget(null);
-  }
+  };
 
   /** Opens the pop-up window. */
   private setOpenWidget(openWidget: StatusBarFieldId) {

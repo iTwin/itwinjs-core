@@ -255,7 +255,7 @@ class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
     const layers = new Array<string>();
     const queryables = this.getQueryableLayers();
     const visibles = this.getVisibleLayers();
-    queryables.forEach((layer: string) => { if (visibles.includes(layer)) layers.push(layer); })
+    queryables.forEach((layer: string) => { if (visibles.includes(layer)) layers.push(layer); });
     return layers.join("%2C");
   }
 
@@ -543,7 +543,7 @@ class WmsMapLayerFormat extends ImageryMapLayerFormat {
       if (capabilities !== undefined) {
         subLayers = capabilities.getSubLayers(false);
         const rootsSubLayer = subLayers?.find((sublayer) => sublayer.parent === undefined);
-        const hasTooManyLayers = subLayers && subLayers.length > maxVisibleSubLayers
+        const hasTooManyLayers = subLayers && subLayers.length > maxVisibleSubLayers;
 
         if (!Array.isArray(subLayers))
           return { status: MapLayerSourceStatus.Valid, subLayers };
@@ -560,7 +560,7 @@ class WmsMapLayerFormat extends ImageryMapLayerFormat {
 
           // Make children of the root node visible.
           if (subLayer.parent && subLayer.parent === rootsSubLayer?.id && !hasTooManyLayers) {
-            const isUnnamedGroup = (layer: MapSubLayerProps) => { return layer.children && layer.children.length > 0 && (!layer.name || layer.name.length === 0) };
+            const isUnnamedGroup = (layer: MapSubLayerProps) => { return layer.children && layer.children.length > 0 && (!layer.name || layer.name.length === 0); };
             const makeChildrenVisible = (layers: MapSubLayerProps[] | undefined, layer: MapSubLayerProps) => {
               layer?.children?.forEach((childId) => {
                 const childSubLayer = subLayers?.find((child) => child?.id === childId);
@@ -570,7 +570,7 @@ class WmsMapLayerFormat extends ImageryMapLayerFormat {
                     makeChildrenVisible(layers, childSubLayer);
                 }
               });
-            }
+            };
 
             subLayer.visible = true;
 

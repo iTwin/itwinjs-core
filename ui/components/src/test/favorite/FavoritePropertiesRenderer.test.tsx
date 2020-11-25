@@ -35,7 +35,7 @@ describe("FavoritePropertiesRenderer", () => {
       records: {
         Favorite: this._records,
       },
-    })
+    });
   }
 
   beforeEach(() => {

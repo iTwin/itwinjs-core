@@ -135,13 +135,13 @@ export class ElementTooltip extends React.Component<CommonProps, ElementTooltipS
       message: args.message,
     });
     this.updatePosition();
-  }
+  };
 
   // istanbul ignore next
   private _handleSizeChanged = (size: SizeProps) => {
     this._size = size;
     this.updatePosition();
-  }
+  };
 
   private updatePosition() {
     this.setState((prevState) => {

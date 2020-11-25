@@ -112,7 +112,7 @@ export class StandardMessageBox extends React.PureComponent<StandardMessageBoxPr
       if (this.props.onResult)
         this.props.onResult(buttonType);
     });
-  }
+  };
 
   private _handleCancel = () => {
     this._closeDialog(() => {
@@ -120,7 +120,7 @@ export class StandardMessageBox extends React.PureComponent<StandardMessageBoxPr
       if (this.props.onResult)
         this.props.onResult(MessageBoxValue.Cancel);
     });
-  }
+  };
 
   private _closeDialog = (followUp: () => void) => {
     this.setState((_prevState) => ({
@@ -129,5 +129,5 @@ export class StandardMessageBox extends React.PureComponent<StandardMessageBoxPr
       ModalDialogManager.closeDialog();
       followUp();
     });
-  }
+  };
 }

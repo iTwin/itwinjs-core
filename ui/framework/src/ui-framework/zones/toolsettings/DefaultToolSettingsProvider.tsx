@@ -24,7 +24,7 @@ class ToolSettingsUiDataProvider extends UiLayoutDataProvider {
   // istanbul ignore next
   public isToolSettingsManager = (): boolean => {
     return true;
-  }
+  };
 
   public supplyDialogItems(): DialogItem[] | undefined {
     return ToolSettingsManager.toolSettingsProperties;
@@ -34,7 +34,7 @@ class ToolSettingsUiDataProvider extends UiLayoutDataProvider {
   public applyUiPropertyChange = (syncItem: DialogPropertySyncItem) => {
     // istanbul ignore next
     IModelApp.toolAdmin.activeTool && IModelApp.toolAdmin.activeTool.applyToolSettingPropertyChange(syncItem);
-  }
+  };
 }
 
 /** ToolUiProvider class that informs ConfigurableUi that Tool Settings are provided for the specified tool.

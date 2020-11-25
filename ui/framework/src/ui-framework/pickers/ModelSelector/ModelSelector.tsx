@@ -86,7 +86,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   private _initGroups = () => {
     this._groups.push(this._getDefaultModelGroup());
     this._groups.push(this._getDefaultCategoryGroup());
-  }
+  };
 
   /** Initializes state to default values */
   private _initState = () => {
@@ -94,7 +94,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
       activeView: (this.props.activeView ||
         IModelApp.viewManager.getFirstOpenView())!,
     };
-  }
+  };
 
   /** Initialize models */
   private _initModelState = async () => {
@@ -106,7 +106,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
 
     await this._setViewType(ruleset);
     this._updateModelsWithViewport(this.state.activeView); // eslint-disable-line @typescript-eslint/no-floating-promises
-  }
+  };
 
   /** Initialize categories */
   private _initCategoryState = async () => {
@@ -117,7 +117,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
 
     await this._setViewType(ruleset);
     this._updateCategoriesWithViewport(this.state.activeView); // eslint-disable-line @typescript-eslint/no-floating-promises
-  }
+  };
 
   /**
    * Sets provided ruleset as new ruleset for tree.
@@ -131,7 +131,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     await Presentation.presentation
       .vars(ruleset.id)
       .setString("ViewType", viewType); // eslint-disable-line @typescript-eslint/no-floating-promises
-  }
+  };
 
   /**
    * Creates initial model group
@@ -149,7 +149,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
       items: [],
       setEnabled: this._onModelsChecked,
     };
-  }
+  };
 
   private async _updateModelsWithViewport(vp?: Viewport) {
     // Query models and add them to state
@@ -202,7 +202,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
         vp.changeModelDisplay(modelIds, checked);
       }
     });
-  }
+  };
 
   /**
    * Creates initial category group
@@ -220,7 +220,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
       items: [],
       setEnabled: this._onCategoriesChecked,
     };
-  }
+  };
 
   /** Modify viewport to display checked categories */
   private _onCategoriesChecked = (items: ListItem[], checked: boolean) => {
@@ -251,7 +251,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     }
 
     // this._updateCategoriesWithViewport(IModelApp.viewManager.selectedView); // eslint-disable-line @typescript-eslint/no-floating-promises
-  }
+  };
 
   private async _updateCategoriesWithViewport(vp?: Viewport) {
     if (!vp) return;
@@ -338,11 +338,11 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
         </ul>
       </div>
     );
-  }
+  };
 
   private _onExpand = async (group: ModelGroup) => {
     if (this._isMounted) this.setState({ activeGroup: group });
-  }
+  };
 
   private _getTabContent = () => {
     return (
@@ -353,7 +353,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
         activeView={this.state.activeView}
       />
     );
-  }
+  };
 }
 
 ConfigurableUiManager.registerControl(

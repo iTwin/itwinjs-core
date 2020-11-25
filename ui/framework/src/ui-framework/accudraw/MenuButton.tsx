@@ -83,7 +83,7 @@ export class MenuButton extends React.PureComponent<MenuButtonProps, MenuButtonS
         if (this._menu)
           this._menu.focus();
       });
-  }
+  };
 
   private _handleClick = (event: any) => {
     if (this.state.expanded) {
@@ -92,11 +92,11 @@ export class MenuButton extends React.PureComponent<MenuButtonProps, MenuButtonS
     } else {
       this._open();
     }
-  }
+  };
 
   // istanbul ignore next
   private _handleClose = () => {
     this.setState({ expanded: false });
-  }
+  };
 
 }

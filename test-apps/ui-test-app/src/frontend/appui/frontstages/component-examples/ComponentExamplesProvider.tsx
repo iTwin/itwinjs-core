@@ -10,7 +10,7 @@ import {
   BetaBadge, BlockText, BodyText, Button, ButtonSize, ButtonType, Checkbox, CheckListBox, CheckListBoxItem, CheckListBoxSeparator, ContextMenuItem,
   DisabledText, ExpandableBlock, ExpandableList, FeaturedTile, Headline, HorizontalTabs, Icon, IconInput, Input, InputStatus, LabeledInput,
   LabeledSelect, LabeledTextarea, LabeledThemedSelect, LabeledToggle, LeadingText, Listbox, ListboxItem, LoadingPrompt, LoadingSpinner, LoadingStatus, MinimalFeaturedTile, MinimalTile, MutedText,
-  NewBadge, NumericInput, ProgressBar, ProgressSpinner, Radio, ReactMessage, SearchBox, Select, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea,
+  NewBadge, NumberInput, NumericInput, ProgressBar, ProgressSpinner, Radio, ReactMessage, SearchBox, Select, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea,
   ThemedSelect, Tile, Title, Toggle, ToggleButtonType, UnderlinedButton, VerticalTabs,
 } from "@bentley/ui-core";
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
@@ -27,6 +27,27 @@ import { SampleImageCheckBox } from "./SampleImageCheckBox";
 import { SampleAppIModelApp } from "../../..";
 import { BeDuration, Logger } from "@bentley/bentleyjs-core";
 import { SamplePopupContextMenu } from "./SamplePopupContextMenu";
+
+function exoticStep(direction: string) {
+  if (direction === "up")
+    return .5;
+  return .1;
+}
+
+function parseDollar(stringValue: string) {
+  const noDollarSign = stringValue.replace(/^\$/, "");
+  let n = parseFloat(noDollarSign);
+  if (isNaN(n) || !isFinite(n))
+    n = 0;
+  return n;
+}
+
+function formatDollar(num: number | undefined | null, fallback: string) {
+  if (undefined === num || null === num)
+    return fallback;
+
+  return `$${num.toFixed(2)}`;
+}
 
 function fahrenheitToCelsius(f: number) {
   return (f - 32) * 5 / 9;
@@ -111,7 +132,7 @@ export function DatePickerHost(props: DatePickerPopupButtonProps) {
   const handleOnDateChange = React.useCallback((day: Date) => {
     onDateChange && onDateChange(day);
     setCurrentDate(day);
-  }, [onDateChange])
+  }, [onDateChange]);
 
   return (
     <DatePickerPopupButton selected={currentDate} onDateChange={handleOnDateChange} {...otherProp} />
@@ -343,11 +364,17 @@ export class ComponentExamplesProvider {
         createComponentExample("Basic Textarea", "Textarea with placeholder", <Textarea placeholder="Basic Textarea" />),
         createComponentExample("Disabled Textarea", "Textarea with disabled prop", <Textarea placeholder="Disabled Textarea" disabled />),
 
-        createComponentExample("Numeric Input", "Numeric Input component", <NumericInput min={1} max={100} className="uicore-full-width" />),
-        createComponentExample("Numeric Input w/precision", "Numeric Input component", <NumericInput placeholder="Enter Number" min={1} max={100} step={.5} precision={1} className="uicore - full - width" />),
+        createComponentExample("Number Input .25 step", "New Numeric Input component", <NumberInput value={10.5} precision={2} step={0.25} containerClassName="uicore-full-width" />),
+        createComponentExample("Number Input .25 step w/snap", "New Numeric Input component", <NumberInput value={10.5} precision={2} step={0.25} snap containerClassName="uicore-full-width" />),
+        createComponentExample("Number Input .25 step w/snap custom format and parser", "New Numeric Input component", <NumberInput value={10.5} format={formatDollar} parse={parseDollar} precision={2} step={0.25} snap containerClassName="uicore-full-width" />),
+        createComponentExample("Number Input w/touch buttons", "New Numeric Input component", <NumberInput value={10.5} precision={2} step={.5} snap showTouchButtons containerClassName="uicore-full-width" />),
+        createComponentExample("Number Input w/snap  & custom step", "New Numeric Input component", <NumberInput value={10.5} precision={2} step={exoticStep} snap containerClassName="uicore-full-width" />),
+        createComponentExample("Number Input w/placeholder", "New Numeric Input component", <NumberInput placeholder="Enter Input" precision={2} step={0.25} containerClassName="uicore-full-width" />),
         createComponentExample("Icon Input", "Icon Input component", <IconInput placeholder="Icon Input" icon={<Icon iconSpec="icon-placeholder" />} containerClassName="uicore-full-width" />),
         createComponentExample("Labeled Input", "Labeled Input component", <LabeledInput label="Labeled Input" placeholder="Labeled Input" className="uicore-full-width" />),
         createComponentExample("Labeled Input", "Labeled Input Icon", <LabeledInput label="Labeled Input with icon" placeholder="Labeled Input with Icon" status={InputStatus.Success} />),
+        createComponentExample("Labeled Input Warning", "Labeled Input Warning", <LabeledInput label="Labeled Input Warning" placeholder="Labeled Input Warning" status={InputStatus.Warning} />),
+        createComponentExample("Labeled Input Error", "Labeled Input Error", <LabeledInput label="Labeled Input Error" placeholder="Labeled Input Error" status={InputStatus.Error} />),
         createComponentExample("Labeled Textarea", "Labeled Textarea component", <LabeledTextarea label="Labeled Textarea" placeholder="Labeled Textarea" className="uicore-full-width" />),
 
         createComponentExample("Image Checkbox", "ImageCheckbox with WebFonts", <SampleImageCheckBox imageOn="icon-more-circular" imageOff="icon-more-vertical-circular" />),
@@ -421,7 +448,7 @@ export class ComponentExamplesProvider {
 
     const endReason = isCancelled ? ActivityMessageEndReason.Cancelled : ActivityMessageEndReason.Completed;
     IModelApp.notifications.endActivityMessage(endReason);
-  }
+  };
 
   private static get messageSamples(): ComponentExampleCategory {
     return {
@@ -477,17 +504,17 @@ export class ComponentExamplesProvider {
     const onAngleChange = (value: number) => {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Angle value set to ${value}`));
       console.log(`Angle value set to: ${value}`);
-    }
+    };
     const onVolumeChange = (value: number) => {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Volume value set to ${value}`));
       console.log(`Volume value set to: ${value}`);
-    }
+    };
     const onTemperatureChange = (value: number) => {
       if (typeof value === "number") {
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Temperature value set to ${value} C`));
         console.log(`Temperature value set to ${value} C`);
       }
-    }
+    };
 
     const initialLength = 3.5; // meters
     const initialAngle = Math.PI / 4; // radians
@@ -604,7 +631,7 @@ export class ComponentExamplesProvider {
           <Slider min={0} max={100} values={[50]} step={1} showTooltip showMinMax
             minImage={<Icon iconSpec="icon-placeholder" />} maxImage={<Icon iconSpec="icon-placeholder" />} />),
         createComponentExample("Slider w/ tick marks", "Slider with showTicks and getTickCount props",
-          <Slider min={0} max={100} values={[50]} step={1} showTooltip showMinMax
+          <Slider min={0} max={5} values={[2.25]} step={.01} showTooltip showMinMax
             showTicks getTickCount={() => 10} />),
         createComponentExample("Slider w/ multiple values", "Slider with array of values",
           <Slider min={0} max={100} values={[30, 70]} step={5} mode={2} showTooltip showMinMax
@@ -760,6 +787,15 @@ export class ComponentExamplesProvider {
       ],
     };
   }
+  private static get deprecatedComponentSamples(): ComponentExampleCategory {
+    return {
+      title: "Deprecated Components",
+      examples: [
+        createComponentExample("Numeric Input", "Numeric Input component", <NumericInput min={1} max={100} className="uicore-full-width" />),
+        createComponentExample("Numeric Input w/precision", "Numeric Input component", <NumericInput placeholder="Enter Number" min={1} max={100} step={.5} precision={1} className="uicore-full-width" />),
+      ],
+    };
+  }
 
   public static get categories(): ComponentExampleCategory[] {
     return [
@@ -784,6 +820,7 @@ export class ComponentExamplesProvider {
       ComponentExamplesProvider.textSamples,
       ComponentExamplesProvider.tileSamples,
       ComponentExamplesProvider.toggleSamples,
+      ComponentExamplesProvider.deprecatedComponentSamples,
     ];
   }
 }

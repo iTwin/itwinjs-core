@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { CompressedId64Set, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  Code, ColorByName, DomainOptions, Events, GeometricElement3dProps, GeometryStreamBuilder, IModel, ModelGeometryChanges, NativeAppRpcInterface,
+  Code, ColorByName, DomainOptions, Events, GeometricElement3dProps, GeometryStreamBuilder, IModel, ModelGeometryChangesProps, NativeAppRpcInterface,
   QueuedEvent, RpcManager, RpcPushChannel, RpcPushConnection, SubCategoryAppearance,
 } from "@bentley/imodeljs-common";
 import {
@@ -83,19 +83,20 @@ describe("Model geometry changes", () => {
 
     expect(Array.isArray(event.data)).to.be.true;
     expect(event.data.length).to.equal(1);
-    const actual = event.data[0] as ModelGeometryChanges;
-    expect(actual.modelId).to.equal(modelId);
+    const actual = event.data[0] as ModelGeometryChangesProps;
+    expect(actual.id).to.equal(modelId);
 
-    const expectElements = (act?: string[], exp?: string[]) => {
-      expect(undefined === act).to.equal(undefined === exp);
-      if (act && exp) {
+    const expectElements = (ids?: CompressedId64Set, exp?: string[]) => {
+      expect(undefined === ids).to.equal(undefined === exp);
+      if (ids && exp) {
+        const act = CompressedId64Set.decompressArray(ids);
         expect(act.length).to.equal(exp.length);
         expect(act.sort()).to.deep.equal(exp.sort());
       }
     };
 
-    expectElements(actual.inserted?.map((x) => x.id), expected.inserted);
-    expectElements(actual.updated?.map((x) => x.id), expected.updated);
+    expectElements(actual.inserted?.ids, expected.inserted);
+    expectElements(actual.updated?.ids, expected.updated);
     expectElements(actual.deleted, expected.deleted);
   }
 
@@ -105,7 +106,8 @@ describe("Model geometry changes", () => {
   }
 
   it("emits events", async () => {
-    expect(imodel.nativeDb.setGeometricModelTrackingEnabled(true)).to.be.true;
+    expect(imodel.nativeDb.isGeometricModelTrackingSupported()).to.be.true;
+    expect(imodel.nativeDb.setGeometricModelTrackingEnabled(true).result).to.be.true;
     const sink = imodel.eventSink;
 
     const builder = new GeometryStreamBuilder();
@@ -154,7 +156,8 @@ describe("Model geometry changes", () => {
     expectChanges(sink, { modelId, deleted: [ elemId0 ] });
 
     // Stop tracking geometry changes
-    expect(imodel.nativeDb.setGeometricModelTrackingEnabled(false)).to.be.false;
+    expect(imodel.nativeDb.setGeometricModelTrackingEnabled(false).result).to.be.false;
+    expect(imodel.nativeDb.isGeometricModelTrackingSupported()).to.be.true;
 
     // Modify element's geometry.
     props.id = elemId1;
@@ -164,7 +167,7 @@ describe("Model geometry changes", () => {
     expectNoChanges(sink);
 
     // Restart tracking and undo everything.
-    expect(imodel.nativeDb.setGeometricModelTrackingEnabled(true)).to.be.true;
+    expect(imodel.nativeDb.setGeometricModelTrackingEnabled(true).result).to.be.true;
     expect(imodel.txns.reverseTo(txnBeforeInsert)).to.equal(IModelStatus.Success);
     expectChanges(sink, { modelId, deleted: [ elemId0, elemId1 ] });
 
@@ -172,6 +175,6 @@ describe("Model geometry changes", () => {
     expect(imodel.txns.reinstateTxn()).to.equal(IModelStatus.Success);
     expectChanges(sink, { modelId, updated: [ elemId1 ], deleted: [ elemId0 ] });
 
-    expect(imodel.nativeDb.setGeometricModelTrackingEnabled(false)).to.be.false;
+    expect(imodel.nativeDb.setGeometricModelTrackingEnabled(false).result).to.be.false;
   });
 });

@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module RpcInterface
  */
-import { assert, ClientRequestContext, DbOpcode, GuidString, Id64, Id64Array, Id64String } from "@bentley/bentleyjs-core";
+import { assert, ClientRequestContext, DbOpcode, GuidString, Id64, Id64Array, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
 import { LockLevel, LockType } from "@bentley/imodelhub-client";
 import {
@@ -183,5 +183,10 @@ export class IModelWriteRpcImpl extends RpcInterface implements IModelWriteRpcIn
   public async createAndInsertSpatialCategory(tokenProps: IModelRpcProps, scopeModelId: Id64String, categoryName: string, appearance: SubCategoryAppearance.Props): Promise<Id64String> {
     const iModelDb = IModelDb.findByKey(tokenProps.key);
     return EditingFunctions.createAndInsertSpatialCategory(ClientRequestContext.current as AuthorizedClientRequestContext, iModelDb, scopeModelId, categoryName, appearance);
+  }
+
+  public async undoRedo(rpc: IModelRpcProps, undo: boolean): Promise<IModelStatus> {
+    const txns = IModelDb.findByKey(rpc.key).txns;
+    return undo ? txns.reverseSingleTxn() : txns.reinstateTxn();
   }
 }

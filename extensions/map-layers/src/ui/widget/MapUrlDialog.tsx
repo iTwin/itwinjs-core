@@ -18,7 +18,7 @@ export const MAP_TYPES = {
   arcGis: "ArcGIS",
   wmts: "WMTS",
   tileUrl: "TileURL",
-}
+};
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function MapUrlDialog({ isOverlay, onOkResult, mapTypesOptions }: { isOverlay: boolean, onOkResult: () => void, mapTypesOptions: MapTypesOptions | undefined }) {

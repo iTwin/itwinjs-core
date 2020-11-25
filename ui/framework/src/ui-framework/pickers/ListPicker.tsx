@@ -126,7 +126,7 @@ export class ExpandableSection extends React.PureComponent<ExpandableSectionProp
 
   private _onClick = () => {
     this.setState((prevState) => ({ expanded: !prevState.expanded }));
-  }
+  };
 
   /** Renders ExpandableSection */
   public render() {
@@ -247,12 +247,12 @@ export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPic
       this.setState({
         expanded: false,
       });
-  }
+  };
 
   /** Checks if ExpandableItem is expanded. */
   public isExpanded = () => {
     return this.state.expanded;
-  }
+  };
 
   /** @internal */
   public componentDidMount() {
@@ -365,13 +365,13 @@ export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPic
       return;
     this.minimize();
     this.props.onExpanded && this.props.onExpanded(false);
-  }
+  };
 
   private _handleToolPanelOpenedEvent = () => {
     if (!this._closeOnPanelOpened)
       return;
     this.minimize();
-  }
+  };
 
   private _handleClick = () => {
     // istanbul ignore next
@@ -400,7 +400,7 @@ export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPic
 
       this.props.onExpanded && this.props.onExpanded(expanded);
     });
-  }
+  };
 }
 
 /**
@@ -514,7 +514,7 @@ export class ListPicker extends React.Component<ListPickerPropsExtended> {
 
     // Call on parent to do processing of the item
     this.props.setEnabled(item, enabled);
-  }
+  };
 
   /** Renders ListPicker */
   public render() {

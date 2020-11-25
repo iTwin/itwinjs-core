@@ -177,7 +177,7 @@ export function DEPRECATED_withTreeDragDrop<P extends TreeProps, DragDropObject 
           {baseNode}
         </DDTreeNode>
       );
-    }
+    };
 
     public render() {
       const { dragProps, dropProps, renderNode, ...treeProps } = this.props as any; // eslint-disable-line @typescript-eslint/no-unused-vars

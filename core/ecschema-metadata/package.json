@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ecschema-metadata",
-  "version": "2.9.0-dev.12",
+  "version": "2.10.0-dev.15",
   "description": "ECObjects core concepts in typescript",
   "license": "MIT",
   "main": "lib/ecschema-metadata.js",
@@ -33,10 +33,10 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.9.0-dev.12",
-    "@bentley/build-tools": "2.9.0-dev.12",
-    "@bentley/eslint-plugin": "2.9.0-dev.12",
-    "@bentley/imodeljs-i18n": "2.9.0-dev.12",
+    "@bentley/bentleyjs-core": "2.10.0-dev.15",
+    "@bentley/build-tools": "2.10.0-dev.15",
+    "@bentley/eslint-plugin": "2.10.0-dev.15",
+    "@bentley/imodeljs-i18n": "2.10.0-dev.15",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^5.2.5",
@@ -55,10 +55,9 @@
     "xmldom": "^0.1.27",
     "xmlhttprequest": "^1.8.0"
   },
-  "dependencies": {},
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.9.0-dev.12",
-    "@bentley/imodeljs-i18n": "^2.9.0-dev.12"
+    "@bentley/bentleyjs-core": "^2.10.0-dev.15",
+    "@bentley/imodeljs-i18n": "^2.10.0-dev.15"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc",

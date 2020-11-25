@@ -11,7 +11,7 @@ pr:
   branches:
     include:
     - master
-    - releases/*
+    - release/*
 
 variables:
 - group: iModel.js non-secret config variables
@@ -22,8 +22,8 @@ jobs:
   condition: succeeded()
   strategy:
     matrix:
-      "Node 10.16.0":
-        Node_Version: 10.16.0
+      "Node 10.17.0":
+        Node_Version: 10.17.0
       "Node 10.x":
         Node_Version: 10.x
       "Node 12.x":
@@ -52,29 +52,31 @@ jobs:
     displayName: rush install
 
   - script: |
-      node ./common/scripts/install-run-rush rebuild -v --to backend-itwin-client
+      node ./common/scripts/install-run-rush build -v --to backend-itwin-client
 
-      node ./common/scripts/install-run-rush rebuild -v --to context-registry-client
+      node ./common/scripts/install-run-rush build -v --to context-registry-client
 
-      node ./common/scripts/install-run-rush rebuild -v --to extension-client
+      node ./common/scripts/install-run-rush build -v --to extension-client
 
-      node ./common/scripts/install-run-rush rebuild -v --to product-settings-client
+      node ./common/scripts/install-run-rush build -v --to forms-data-management-client
 
-      node ./common/scripts/install-run-rush rebuild -v --to projectshare-client
+      node ./common/scripts/install-run-rush build -v --to product-settings-client
 
-      node ./common/scripts/install-run-rush rebuild -v --to rbac-client
+      node ./common/scripts/install-run-rush build -v --to projectshare-client
 
-      node ./common/scripts/install-run-rush rebuild -v --to reality-data-client
+      node ./common/scripts/install-run-rush build -v --to rbac-client
 
-      node ./common/scripts/install-run-rush rebuild -v --to usage-logging-client
+      node ./common/scripts/install-run-rush build -v --to reality-data-client
 
-      node ./common/scripts/install-run-rush rebuild -v --to @bentley/imodelhub-client-tests
+      node ./common/scripts/install-run-rush build -v --to usage-logging-client
 
-      node ./common/scripts/install-run-rush rebuild -v --to rpcinterface-full-stack-tests
+      node ./common/scripts/install-run-rush build -v --to @bentley/imodelhub-client-tests
 
-      node ./common/scripts/install-run-rush rebuild -v --to presentation-full-stack-tests
+      node ./common/scripts/install-run-rush build -v --to rpcinterface-full-stack-tests
 
-      node ./common/scripts/install-run-rush rebuild -v --to oidc-signin-tool
+      node ./common/scripts/install-run-rush build -v --to presentation-full-stack-tests
+
+      node ./common/scripts/install-run-rush build -v --to oidc-signin-tool
     displayName: 'Rush build'
 
   - script: 'npm run test:integration'
@@ -85,6 +87,11 @@ jobs:
   - script: 'npm run test:integration'
     workingDirectory: clients/extension
     displayName: 'Run Extension Client Tests'
+    condition: succeededOrFailed()
+
+  - script: 'npm run test:integration'
+    workingDirectory: clients/forms-data-management
+    displayName: 'Run Forms Client Tests'
     condition: succeededOrFailed()
 
   - script: 'npm run test:integration'
@@ -164,7 +171,6 @@ jobs:
     inputs:
       testResultsFiles: 'clients/forms-data-management/lib/test/junit_results.xml'
       testRunTitle: 'Client - Forms Data Management Tests - $(Node_Version)'
-    enabled: false
     continueOnError: true
     condition: succeededOrFailed()
 

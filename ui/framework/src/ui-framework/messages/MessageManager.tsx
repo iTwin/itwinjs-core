@@ -33,7 +33,7 @@ class MessageBoxCallbacks {
 
   public handleMessageBoxResult = (result: MessageBoxValue) => {
     this.onFulfilled(result);
-  }
+  };
 }
 
 /** [[MessageAddedEvent]] arguments.

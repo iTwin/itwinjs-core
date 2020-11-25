@@ -45,7 +45,7 @@ export class ModalFrontstage extends React.Component<ModalFrontstageProps> {
     if (this.props.navigateBack)
       this.props.navigateBack();
     this.props.closeModal();
-  }
+  };
 
   public render() {
     const classNames = classnames(

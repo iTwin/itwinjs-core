@@ -50,7 +50,7 @@ export default class App extends React.Component<{}, State> {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   private onIModelSelected = async (imodel: IModelConnection | undefined) => {
     this.setState({ imodel });
-  }
+  };
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
   private onRulesetSelected = (rulesetId: string | undefined) => {
@@ -58,13 +58,13 @@ export default class App extends React.Component<{}, State> {
       Presentation.selection.clearSelection("onRulesetChanged", this.state.imodel, 0);
 
     this.setState({ currentRulesetId: rulesetId });
-  }
+  };
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
   private onUnitSystemSelected = (unitSystem: PresentationUnitSystem | undefined) => {
     Presentation.presentation.activeUnitSystem = unitSystem;
     this.setState({ activeUnitSystem: unitSystem });
-  }
+  };
 
   private _onTreePaneRatioChanged = (ratio: number): RatioChangeResult => {
     ratio = Geometry.clamp(ratio, this._minRightPaneRatio, this._maxRightPaneRatio);
@@ -73,7 +73,7 @@ export default class App extends React.Component<{}, State> {
 
     this.setState({ rightPaneRatio: ratio });
     return { ratio };
-  }
+  };
 
   private _onContentRatioChanged = (ratio: number): RatioChangeResult => {
     ratio = Geometry.clamp(ratio, this._minContentRatio, this._maxContentRatio);
@@ -82,7 +82,7 @@ export default class App extends React.Component<{}, State> {
 
     this.setState({ contentRatio: ratio });
     return { ratio };
-  }
+  };
 
   private _selectAllInstances = async (provider: IPresentationTableDataProvider) => {
     const size = await provider.getRowsCount();
@@ -92,7 +92,7 @@ export default class App extends React.Component<{}, State> {
     const rows = await Promise.all(rowPromises);
     const keys = rows.map((r) => provider.getRowKey(r));
     Presentation.selection.addToSelection("app", provider.imodel, keys);
-  }
+  };
 
   private _onFindSimilar = async (provider: IPresentationPropertyDataProvider, record: PropertyRecord) => {
     try {
@@ -106,11 +106,11 @@ export default class App extends React.Component<{}, State> {
       alert(`Can't find similar instances for the selected property`);
       this.setState({ similarInstancesProvider: undefined });
     }
-  }
+  };
 
   private _onSimilarInstancesResultsDismissed = () => {
     this.setState({ similarInstancesProvider: undefined });
-  }
+  };
 
   private _onSelectionChanged = async (args: SelectionChangeEventArgs) => {
     if (!IModelApp.viewManager.selectedView) {
@@ -130,7 +130,7 @@ export default class App extends React.Component<{}, State> {
       // care about them at this moment
       await IModelApp.viewManager.selectedView.zoomToElements(hiliteSet.elements);
     }
-  }
+  };
 
   private renderIModelComponents(imodel: IModelConnection, rulesetId: string) {
     return (

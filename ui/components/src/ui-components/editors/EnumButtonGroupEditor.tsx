@@ -134,7 +134,7 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
         }
       });
     }
-  }
+  };
 
   private getButton(choice: EnumerationChoice, index: number) {
     const choiceValue = this.state.choices ? this.state.choices[index].value : 0;

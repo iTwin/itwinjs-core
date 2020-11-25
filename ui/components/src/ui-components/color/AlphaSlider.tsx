@@ -98,7 +98,7 @@ export class AlphaSlider extends React.PureComponent<AlphaSliderProps> {
     if (t > 1) t = 1;
     // istanbul ignore next
     return (alpha !== t) ? t : undefined;
-  }
+  };
 
   /** @internal */
   public componentWillUnmount() {
@@ -111,7 +111,7 @@ export class AlphaSlider extends React.PureComponent<AlphaSliderProps> {
       const change = this._calculateChange(e, this.props.isHorizontal ? this.props.isHorizontal : false, this.props.alpha, this._container);
       undefined !== change && typeof this.props.onAlphaChange === "function" && this.props.onAlphaChange(change);
     }
-  }
+  };
 
   private _onMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     this._onChange(e);
@@ -120,7 +120,7 @@ export class AlphaSlider extends React.PureComponent<AlphaSliderProps> {
       this._container.focus();
     window.addEventListener("mousemove", this._onChange as any);
     window.addEventListener("mouseup", this._onMouseUp);
-  }
+  };
 
   private _onKeyDown = (evt: React.KeyboardEvent<HTMLDivElement>) => {
     let newTransparency: number | undefined;
@@ -151,11 +151,11 @@ export class AlphaSlider extends React.PureComponent<AlphaSliderProps> {
       if (this.props.onAlphaChange)
         this.props.onAlphaChange(newTransparency);
     }
-  }
+  };
 
   private _onMouseUp = () => {
     this._unbindEventListeners();
-  }
+  };
 
   private _unbindEventListeners() {
     window.removeEventListener("mousemove", this._onChange as any);

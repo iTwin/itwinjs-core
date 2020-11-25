@@ -29,12 +29,24 @@ import { System } from "./System";
 import { Target } from "./Target";
 import { Texture, TextureHandle } from "./Texture";
 
-function createDrawArgs(sceneContext: SceneContext, solarShadowMap: SolarShadowMap, tree: TileTreeReference, frustumPlanes: FrustumPlanes): TileDrawArgs | undefined {
+type ProcessTiles = (tiles: Tile[]) => void;
+
+function createDrawArgs(sceneContext: SceneContext, solarShadowMap: SolarShadowMap, tree: TileTreeReference, frustumPlanes: FrustumPlanes, processTiles: ProcessTiles): TileDrawArgs | undefined {
   class SolarShadowMapDrawArgs extends TileDrawArgs {
     private _useViewportMap?: boolean;
+    private readonly _processTiles: ProcessTiles;
 
-    constructor(private _mapFrustumPlanes: FrustumPlanes, private _shadowMap: SolarShadowMap, args: TileDrawArgs) {
+    constructor(private _mapFrustumPlanes: FrustumPlanes, private _shadowMap: SolarShadowMap, args: TileDrawArgs, process: ProcessTiles) {
       super(args);
+      this._processTiles = process;
+    }
+
+    // The solar shadow projection is parallel - which can cause excessive tile selection if it is along an axis of an unbounded tile
+    // tree such as the OSM buildings.  Rev limit the selection here.
+    public get maxRealityTreeSelectionCount(): undefined | number { return 500; }
+
+    public processSelectedTiles(tiles: Tile[]): void {
+      this._processTiles(tiles);
     }
 
     public get frustumPlanes(): FrustumPlanes {
@@ -52,9 +64,9 @@ function createDrawArgs(sceneContext: SceneContext, solarShadowMap: SolarShadowM
     }
 
     public drawGraphics(): void {
-      if (!this.graphics.isEmpty) {
-        this._shadowMap.addGraphic(this.context.createBranch(this.graphics, this.location));
-      }
+      const graphics = this.produceGraphics();
+      if (graphics)
+        this._shadowMap.addGraphic(graphics);
     }
 
     public getPixelSize(tile: Tile): number {
@@ -73,13 +85,13 @@ function createDrawArgs(sceneContext: SceneContext, solarShadowMap: SolarShadowM
       return size;
     }
 
-    public static create(context: SceneContext, shadowMap: SolarShadowMap, tileTree: TileTreeReference, planes: FrustumPlanes) {
+    public static create(context: SceneContext, shadowMap: SolarShadowMap, tileTree: TileTreeReference, planes: FrustumPlanes, process: ProcessTiles) {
       const args = tileTree.createDrawArgs(context);
-      return undefined !== args ? new SolarShadowMapDrawArgs(planes, shadowMap, args) : undefined;
+      return undefined !== args ? new SolarShadowMapDrawArgs(planes, shadowMap, args, process) : undefined;
     }
   }
 
-  return SolarShadowMapDrawArgs.create(sceneContext, solarShadowMap, tree, frustumPlanes);
+  return SolarShadowMapDrawArgs.create(sceneContext, solarShadowMap, tree, frustumPlanes, processTiles);
 }
 
 const shadowMapWidth = 4096;  // size of original depth buffer map
@@ -214,7 +226,6 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
   private readonly _scratchViewFlags = new ViewFlags();
   private readonly _renderState: RenderState;
   private readonly _noZRenderState: RenderState;
-  private readonly _branchStack = new BranchStack();
   private readonly _batchState: BatchState;
   private _worldToViewMap = Map4d.createIdentity();
   private readonly _target: Target;
@@ -224,7 +235,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
 
   private getBundle(target: Target): Bundle | undefined {
     if (undefined === this._bundle) {
-      this._bundle = Bundle.create(target, this._branchStack, this._batchState);
+      this._bundle = Bundle.create(target, target.uniforms.branch.stack, this._batchState);
       assert(undefined !== this._bundle);
     }
 
@@ -253,7 +264,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
     this._noZRenderState = new RenderState();
     this._noZRenderState.flags.depthMask = false;
 
-    this._batchState = new BatchState(this._branchStack);
+    this._batchState = new BatchState(target.uniforms.branch.stack);
   }
 
   public disable() {
@@ -373,19 +384,16 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
       if (!ref.castsShadows)
         return;
 
-      const drawArgs = createDrawArgs(context, this, ref, scratchFrustumPlanes);
+      const drawArgs = createDrawArgs(context, this, ref, scratchFrustumPlanes, (tiles: Tile[]) => {
+        for (const tile of tiles)
+          tileRange.extendRange(tileToMapTransform.multiplyRange(tile.range, this._scratchRange));
+      });
+
       if (undefined === drawArgs)
         return;
 
       const tileToMapTransform = worldToMapTransform.multiplyTransformTransform(drawArgs.location, this._scratchTransform);
-      const selectedTiles = drawArgs.tree.selectTiles(drawArgs);
-
-      for (const selectedTile of selectedTiles) {
-        tileRange.extendRange(tileToMapTransform.multiplyRange(selectedTile.range, this._scratchRange));
-        selectedTile.drawGraphics(drawArgs);
-      }
-
-      drawArgs.drawGraphics();
+      drawArgs.tree.draw(drawArgs);
     }));
 
     if (tileRange.isNull) {
@@ -459,7 +467,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
     target.uniforms.branch.changeRenderPlan(viewFlags, target.plan.is3d, target.plan.hline);
 
     const renderCommands = bundle.renderCommands;
-    renderCommands.reset(target, this._branchStack, this._batchState);
+    renderCommands.reset(target, target.uniforms.branch.stack, this._batchState);
     renderCommands.addGraphics(this._graphics);
 
     System.instance.frameBufferStack.execute(bundle.fbo, true, false, () => {

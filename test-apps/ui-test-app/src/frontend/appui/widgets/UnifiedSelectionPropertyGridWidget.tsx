@@ -49,25 +49,25 @@ class UnifiedSelectionPropertyGridWidget extends React.Component<UnifiedSelectio
   private _onAddFavorite = async (propertyField: Field) => {
     await Presentation.favoriteProperties.add(propertyField, this.props.iModelConnection, FavoritePropertiesScope.IModel);
     this.setState({ contextMenu: undefined });
-  }
+  };
   private _onRemoveFavorite = async (propertyField: Field) => {
     await Presentation.favoriteProperties.remove(propertyField, this.props.iModelConnection, FavoritePropertiesScope.IModel);
     this.setState({ contextMenu: undefined });
-  }
+  };
 
   private _onPropertyContextMenu = (args: PropertyGridContextMenuArgs) => {
     args.event.persist();
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.buildContextMenu(args);
-  }
+  };
 
   private _onContextMenuOutsideClick = () => {
     this.setState({ contextMenu: undefined });
-  }
+  };
 
   private _onContextMenuEsc = () => {
     this.setState({ contextMenu: undefined });
-  }
+  };
 
   private async buildContextMenu(args: PropertyGridContextMenuArgs) {
     const field = await this.state.dataProvider.getFieldByPropertyRecord(args.propertyRecord);
@@ -144,7 +144,7 @@ class UnifiedSelectionPropertyGridWidget extends React.Component<UnifiedSelectio
         }
       </div>
     );
-  }
+  };
 
   public render() {
     const actionButtonRenderers = [this._favoriteActionButtonRenderer];
@@ -212,7 +212,7 @@ class FavoriteActionButton extends React.Component<FavoriteActionButtonProps> {
 
   private _onActionButtonClicked = () => {
     this.toggleFavoriteProperty(); // eslint-disable-line @typescript-eslint/no-floating-promises
-  }
+  };
 
   private async toggleFavoriteProperty() {
     if (this.isFavorite())

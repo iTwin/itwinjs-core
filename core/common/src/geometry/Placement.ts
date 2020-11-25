@@ -91,11 +91,11 @@ export class Placement3d implements Placement3dProps {
    * @throws [[IModelError]] if the Transform is invalid for a GeometricElement3d.
    */
   public multiplyTransform(other: Transform): void {
-    const transform: Transform = this.transform.multiplyTransformTransform(other);
-    const angles: YawPitchRollAngles | undefined = YawPitchRollAngles.createFromMatrix3d(transform.matrix);
-    if (undefined === angles) {
+    const transform = other.multiplyTransformTransform(this.transform);
+    const angles = YawPitchRollAngles.createFromMatrix3d(transform.matrix);
+    if (undefined === angles)
       throw new IModelError(IModelStatus.BadRequest, "Invalid Transform", Logger.logError, CommonLoggerCategory.Geometry);
-    }
+
     this.angles = angles;
     this.origin.setFrom(transform.origin);
   }
@@ -152,11 +152,11 @@ export class Placement2d implements Placement2dProps {
    * @throws [[IModelError]] if the Transform is invalid for a GeometricElement2d.
    */
   public multiplyTransform(other: Transform): void {
-    const transform: Transform = this.transform.multiplyTransformTransform(other);
-    const angles: YawPitchRollAngles | undefined = YawPitchRollAngles.createFromMatrix3d(transform.matrix);
-    if ((undefined === angles) || !angles.pitch.isAlmostZero || !angles.roll.isAlmostZero) {
+    const transform = other.multiplyTransformTransform(this.transform);
+    const angles = YawPitchRollAngles.createFromMatrix3d(transform.matrix);
+    if ((undefined === angles) || !angles.pitch.isAlmostZero || !angles.roll.isAlmostZero)
       throw new IModelError(IModelStatus.BadRequest, "Invalid Transform", Logger.logError, CommonLoggerCategory.Geometry);
-    }
+
     this.angle = angles.yaw;
     this.origin.setFrom(transform.origin);
   }

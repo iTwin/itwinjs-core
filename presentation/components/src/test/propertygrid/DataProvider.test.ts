@@ -902,7 +902,6 @@ describe("PropertyDataProvider", () => {
             const primitiveField = createPrimitiveField();
             const arrayField = createArrayField();
             const structField = createStructField();
-
             const descriptor = createRandomDescriptor(undefined, [primitiveField, arrayField, structField]);
             const values = {
               [primitiveField.name]: faker.random.word(),

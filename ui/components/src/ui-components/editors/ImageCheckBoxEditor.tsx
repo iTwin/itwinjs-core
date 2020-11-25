@@ -115,7 +115,7 @@ export class ImageCheckBoxEditor extends React.PureComponent<PropertyEditorProps
         }
       }
     });
-  }
+  };
 
   public render() {
     const className = classnames("components-cell-editor", "components-imagecheckbox-editor", this.props.className);

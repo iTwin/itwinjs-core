@@ -148,7 +148,7 @@ export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropert
       this._propertiesOrderOfflineCache.forEach((key, value) => ordersCache.push({ order: value, projectId: key[0], imodelId: key[1]! }));
       ordersCache.forEach(async (cached) => this.savePropertiesOrder(cached.order, cached.projectId, cached.imodelId));
     }
-  }
+  };
 
   public async loadProperties(projectId?: string, imodelId?: string) {
     if (this._connectivityInfo.status === InternetConnectivityStatus.Online) {
