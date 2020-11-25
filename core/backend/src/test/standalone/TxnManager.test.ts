@@ -348,7 +348,7 @@ describe("TxnManager", () => {
     removals.forEach((drop) => drop());
   });
 
-  it.skip("change propagation should leave txn empty", async () => {
+  it("change propagation should leave txn empty", async () => {
     const elements = imodel.elements;
 
     // Insert elements root, child and dependency between them
