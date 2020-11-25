@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/projectshare-client",
-      "comment": "I have added two methods in ProjectShareClient class: createFolder & deleteFolder ",
+      "comment": "I have refactored and splitted integration tests for projectshare-client",
       "type": "none"
     }
   ],
