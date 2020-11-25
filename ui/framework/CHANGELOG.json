@@ -2,6 +2,75 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "2.9.3",
+      "tag": "@bentley/ui-framework_v2.9.3",
+      "date": "Mon, 23 Nov 2020 20:57:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.2",
+      "tag": "@bentley/ui-framework_v2.9.2",
+      "date": "Mon, 23 Nov 2020 15:33:50 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.1",
+      "tag": "@bentley/ui-framework_v2.9.1",
+      "date": "Thu, 19 Nov 2020 17:03:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Revert width change to EnumEditor component instead set width to auto only for docked tool settings. "
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.9.0",
+      "tag": "@bentley/ui-framework_v2.9.0",
+      "date": "Wed, 18 Nov 2020 16:01:50 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Change ComponentGenerator to remove need for setImmediate call."
+          },
+          {
+            "comment": "Update test snapshot file due to change to support ForwardRef of Input controls."
+          },
+          {
+            "comment": "Rename ToolUiManager to ToolSettingsManager"
+          },
+          {
+            "comment": "Add support for reloading enum choices or reloading all components constructed from UiDataProvider data."
+          },
+          {
+            "comment": "Changed AutoSuggest getSuggestions prop to async and removed @deprecated tag"
+          },
+          {
+            "comment": "Added FrameworkUiAdmin.showReactCard"
+          },
+          {
+            "comment": "Update 2.0 status bar background color."
+          },
+          {
+            "comment": "Change Editor components to process native keyboard events instead of synthe"
+          },
+          {
+            "comment": "Added MessagePopup - Displays Toast & Sticky messages without a StatusBar"
+          },
+          {
+            "comment": "Respect WidgetState.Hidden when rendering widget tabs."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.8.1",
+      "tag": "@bentley/ui-framework_v2.8.1",
+      "date": "Tue, 03 Nov 2020 00:33:56 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.8.0",
       "tag": "@bentley/ui-framework_v2.8.0",
       "date": "Fri, 23 Oct 2020 17:04:02 GMT",
@@ -18,6 +87,12 @@
           }
         ]
       }
+    },
+    {
+      "version": "2.7.6",
+      "tag": "@bentley/ui-framework_v2.7.6",
+      "date": "Wed, 11 Nov 2020 16:28:23 GMT",
+      "comments": {}
     },
     {
       "version": "2.7.5",

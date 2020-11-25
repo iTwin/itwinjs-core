@@ -74,43 +74,53 @@ export enum WebGLRenderCompatibilityStatus {
   CannotCreateContext,
 }
 
+/** Driver-specific bugs for which the iModel.js display system can apply workarounds.
+ * @note The presence of such bugs is exposed by [[WebGLRenderCompatibilityInfo]] but not flagged as a problem.
+ * @alpha
+ */
+export interface DriverBugWorkarounds {
+  /** Intel HD/UHD Graphics 620/630 exhibit a bug in which transparent surfaces tend to render mostly behind opaque surfaces.
+   * This occurs if:
+   *  - Camera is on; and
+   *  - Logarithmic depth is enabled; and
+   *  - Visible edges and ViewFlags.forceSurfaceDiscard are off; and
+   *  - Ambient occlusion is off; and
+   *  - Floating point textures are enabled.
+   *
+   * Logarithmic depth involves writing to Z in the fragment shader, so should disable early Z culling; but under these conditions
+   * it appears not to. Adding a conditional never-executed `discard` to the shader causes it to render correctly, supporting this diagnosis.
+   * The fix is to always render as if ViewFlags.forceSurfaceDiscard is turned on; this should produce no visual differences aside from
+   * *less* z-fighting in some views, but may reduce performance in 3d wireframe views or smooth views with edges turned off.
+   */
+  forceSurfaceDiscard?: true;
+}
+
 /** WebGL rendering compatibility information produced by [[queryRenderCompatibility]].
  * @beta
  */
 export interface WebGLRenderCompatibilityInfo {
-  /**
-   * Describes the overall status of rendering compatibility.
-   */
+  /** Describes the overall status of rendering compatibility. */
   status: WebGLRenderCompatibilityStatus;
-  /**
-   * An array containing required features that are unsupported by this system.
-   */
+  /** An array containing required features that are unsupported by this system. */
   missingRequiredFeatures: WebGLFeature[];
-  /**
-   * An array containing optional features that are unsupported by this system.  These are features that could provide
+  /** An array containing optional features that are unsupported by this system. These are features that could provide
    * a performance and/or quality benefit.
    */
   missingOptionalFeatures: WebGLFeature[];
-  /**
-   * An string containing the user agent of the browser that is being used.
-   */
+  /** An string containing the user agent of the browser that is being used. */
   userAgent: string;
-  /**
-   * An string containing the renderer that is being used in the underlying graphics driver.
-   */
+  /** A string containing the renderer that is being used in the underlying graphics driver. */
   unmaskedRenderer?: string;
-  /**
-   * An string containing the vendor that is being used in the underlying graphics driver.
-   */
+  /** A string containing the vendor that is being used in the underlying graphics driver.*/
   unmaskedVendor?: string;
-  /**
-   * Possible supplemental details describing why a context could not be created (due to performance caveat or other reason).
-   */
+  /** Possible supplemental details describing why a context could not be created (due to performance caveat or other reason). */
   contextErrorMessage?: string;
-  /**
-   * The context used to generate the compatibility information.
-   */
+  /** The context used to generate the compatibility information. */
   createdContext?: WebGLRenderingContext | WebGL2RenderingContext | undefined;
+  /** Workarounds that should be applied to address known driver bugs.
+   * @alpha
+   */
+  workarounds?: DriverBugWorkarounds;
 }
 
 /** A function that creates and returns a WebGLRenderingContext given a canvas and desired attributes.

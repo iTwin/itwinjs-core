@@ -3,10 +3,109 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import React from "react";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
+import { render } from "@testing-library/react";
 import { CommonPropertyRenderer } from "../../../ui-components/properties/renderers/CommonPropertyRenderer";
 
 describe("CommonPropertyRenderer", () => {
+  describe("createNewDisplayValue", () => {
+    it("should create a value which is highlighted if highlighProps are provided and searchText matches part of propertyRecord", () => {
+      const propertyRecord = PropertyRecord.fromString("asdtestasd");
+      const highlightProps = {
+        searchText: "test",
+      };
+      const displayValue = CommonPropertyRenderer.createNewDisplayValue(Orientation.Vertical, propertyRecord, 10, undefined, undefined, undefined, undefined, highlightProps);
+      const { container } = render(<div>{displayValue}</div>);
+      const element = container.querySelector("mark");
+      expect(element?.textContent).to.equal("test");
+    });
+
+    it("should create a value which is not highlighted if highlighProps are provided but searchText does not match any part of propertyRecord", () => {
+      const propertyRecord = PropertyRecord.fromString("asdtestasd");
+      const highlightProps = {
+        searchText: "gav",
+      };
+      const displayValue = CommonPropertyRenderer.createNewDisplayValue(Orientation.Vertical, propertyRecord, 10, undefined, undefined, undefined, undefined, highlightProps);
+      const { container } = render(<div>{displayValue}</div>);
+      const element = container.querySelector("mark");
+      expect(element?.textContent).to.be.undefined;
+    });
+
+    it("should create a value which is not highlighted if highlighProps are not provided", () => {
+      const propertyRecord = PropertyRecord.fromString("asdtestasd");
+
+      const displayValue = CommonPropertyRenderer.createNewDisplayValue(Orientation.Vertical, propertyRecord, 10, undefined);
+      const { container } = render(<div>{displayValue}</div>);
+      const element = container.querySelector("mark");
+      expect(element?.textContent).to.be.undefined;
+    });
+
+    it("should create a value which is actively highlighted if highlighProps are provided, searchText matches part of propertyRecord and property name matches highlightProps activeMatch propertyName", () => {
+      const propertyRecord = PropertyRecord.fromString("asdtestasd");
+      propertyRecord.property.name = "testName";
+      const highlightProps = {
+        searchText: "test",
+        activeMatch: {
+          propertyName: "testName",
+          matchIndex: 1,
+          matchCounts: {
+            label: 1,
+            value: 1,
+          },
+        },
+      };
+      const displayValue = CommonPropertyRenderer.createNewDisplayValue(Orientation.Vertical, propertyRecord, 10, undefined, undefined, undefined, undefined, highlightProps);
+      const { container } = render(<div>{displayValue}</div>);
+      const element = container.querySelector("mark");
+      expect(element?.textContent).to.equal("test");
+      expect(element?.classList.contains("components-activehighlight")).to.be.true;
+    });
+
+    it("should not create a value which is actively highlighted if highlighProps are provided, searchText matches part of propertyRecord but property name does not match highlightProps activeMatch propertyName", () => {
+      const propertyRecord = PropertyRecord.fromString("asdtestasd");
+      propertyRecord.property.name = "testName2";
+      const highlightProps = {
+        searchText: "test",
+        activeMatch: {
+          propertyName: "testName",
+          matchIndex: 1,
+          matchCounts: {
+            label: 1,
+            value: 1,
+          },
+        },
+      };
+      const displayValue = CommonPropertyRenderer.createNewDisplayValue(Orientation.Vertical, propertyRecord, 10, undefined, undefined, undefined, undefined, highlightProps);
+      const { container } = render(<div>{displayValue}</div>);
+      const element = container.querySelector("mark");
+      expect(element?.textContent).to.equal("test");
+      expect(element?.classList.contains("components-activehighlight")).to.be.false;
+    });
+
+    it("should not create a value which is actively highlighted if highlighProps are provided, searchText matches part of propertyRecord property name matches highlightProps activeMatch propertyName but matchIndex is in the label scope", () => {
+      const propertyRecord = PropertyRecord.fromString("asdtestasd");
+      propertyRecord.property.name = "testName";
+      const highlightProps = {
+        searchText: "test",
+        activeMatch: {
+          propertyName: "testName",
+          matchIndex: 1,
+          matchCounts: {
+            label: 2,
+            value: 1,
+          },
+        },
+      };
+      const displayValue = CommonPropertyRenderer.createNewDisplayValue(Orientation.Vertical, propertyRecord, 10, undefined, undefined, undefined, undefined, highlightProps);
+      const { container } = render(<div>{displayValue}</div>);
+      const element = container.querySelector("mark");
+      expect(element?.textContent).to.equal("test");
+      expect(element?.classList.contains("components-activehighlight")).to.be.false;
+    });
+  });
+
   describe("getLabelOffset", () => {
     const maxIndent = 17;
     const minIndent = 6;
