@@ -6487,6 +6487,8 @@ export class VisibilityHandler implements IVisibilityHandler {
     // (undocumented)
     get onVisibilityChange(): (() => void) | undefined;
     set onVisibilityChange(callback: (() => void) | undefined);
+    // (undocumented)
+    setFilteredDataProvider(provider: IPresentationTreeDataProvider | undefined): void;
     }
 
 // @internal (undocumented)
