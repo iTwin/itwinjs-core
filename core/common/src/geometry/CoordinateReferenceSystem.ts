@@ -90,7 +90,7 @@ export interface HorizontalCRSProps {
    *  If false or undefined then the definition is not deprecated.
    */
   deprecated?: boolean;
-  /** The EPSG code of the CRS. If undefined or zero then there is no EPSG code associated. */
+  /** The EPSG code of the CRS. If undefined then there is no EPSG code associated. */
   epsg?: number;
   /** The identifier of the geodetic datum as stored in the dictionary or the service database. */
   datumId?: string;
@@ -152,7 +152,7 @@ export class HorizontalCRS implements HorizontalCRSProps {
    *  If false then the definition is not deprecated. Default is false.
    */
   public deprecated: boolean;
-  /** The EPSG code of the CRS. If undefined or zero then there is no EPSG code associated. */
+  /** The EPSG code of the CRS. If undefined then there is no EPSG code associated. */
   public epsg?: number;
 
   private _datumId?: string;

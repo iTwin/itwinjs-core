@@ -426,7 +426,7 @@ export interface GeodeticDatumProps {
   deprecated?: boolean;
   /** A textual description of the source of the geodetic datum definition. */
   source?: string;
-  /** The EPSG code of the geodetic datum. If undefined or zero then there is no EPSG code associated. */
+  /** The EPSG code of the geodetic datum. If undefined then there is no EPSG code associated. */
   epsg?: number;
   /** The key name to the base Ellipsoid. */
   ellipsoidId?: string;
@@ -463,7 +463,7 @@ export class GeodeticDatum implements GeodeticDatumProps {
   public deprecated: boolean;
   /* A textual description of the source of the geodetic datum definition. */
   public source?: string;
-  /** The EPSG code of the geodetic datum. If undefined or zero then there is no EPSG code associated. */
+  /** The EPSG code of the geodetic datum. If undefined then there is no EPSG code associated. */
   public epsg?: number;
   /** The key name to the base Ellipsoid. */
   public ellipsoidId?: string;

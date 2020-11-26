@@ -21,7 +21,7 @@ export interface GeodeticEllipsoidProps {
   deprecated?: boolean;
   /** The textual description of the source of the ellipsoid definition. */
   source?: string;
-  /** The EPSG code of the ellipsoid. If undefined or zero then there is no EPSG code associated. */
+  /** The EPSG code of the ellipsoid. If undefined then there is no EPSG code associated. */
   epsg?: number;
   /** The equatorial radius of the ellipsoid in meters */
   equatorialRadius?: number;
@@ -53,7 +53,7 @@ export class GeodeticEllipsoid implements GeodeticEllipsoidProps {
   public deprecated: boolean;
   /** The textual description of the source of the ellipsoid definition. */
   public source?: string;
-  /** The EPSG code of the ellipsoid. If undefined or zero then there is no EPSG code associated. */
+  /** The EPSG code of the ellipsoid. If undefined then there is no EPSG code associated. */
   public epsg?: number;
   /** The equatorial radius of the ellipsoid in meters. */
   public equatorialRadius?: number;
