@@ -34,7 +34,7 @@
     "@bentley/build-tools": "2.10.0-dev.16",
     "@bentley/eslint-plugin": "2.10.0-dev.16",
     "@types/fs-extra": "^4.0.7",
-    "eslint": "^6.8.0",
+    "eslint": "^7.10.0",
     "rimraf": "^3.0.2",
     "typescript": "~3.7.4"
   },

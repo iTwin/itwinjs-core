@@ -62,7 +62,7 @@
     "null-loader": "^0.1.1",
     "rimraf": "^3.0.2",
     "source-map-loader": "^1.0.0",
-    "eslint": "^6.8.0",
+    "eslint": "^7.10.0",
     "typescript": "~3.7.4",
     "nyc": "^14.0.0",
     "webpack": "4.42.0",

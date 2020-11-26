@@ -153,7 +153,7 @@ function validateElementInfo(info: ElementGeometryInfo, expected: ExpectedElemen
           const brep = ElementGeometry.toBRep(entry);
           assert.exists(brep);
           if (!isWorld && undefined !== expected[i].originalEntry) {
-            const other = ElementGeometry.toBRep(expected[i].originalEntry!);
+            const other = ElementGeometry.toBRep(expected[i].originalEntry);
             assert.exists(other);
             // NOTE: Don't compare brep type; set from entity data by backend, ignored if supplied to update...
             const transform = Transform.fromJSON(brep?.transform);
@@ -168,7 +168,7 @@ function validateElementInfo(info: ElementGeometryInfo, expected: ExpectedElemen
           const text = ElementGeometry.toTextString(entry);
           assert.exists(text);
           if (!isWorld && undefined !== expected[i].originalEntry) {
-            const other = ElementGeometry.toTextString(expected[i].originalEntry!);
+            const other = ElementGeometry.toTextString(expected[i].originalEntry);
             assert.exists(other);
             assert.isTrue(text?.font === other?.font);
             assert.isTrue(text?.text === other?.text);
@@ -189,12 +189,12 @@ function validateElementInfo(info: ElementGeometryInfo, expected: ExpectedElemen
           const image = ElementGeometry.toImageGraphic(entry);
           assert.exists(image);
           if (!isWorld && undefined !== expected[i].originalEntry) {
-            const other = ElementGeometry.toImageGraphic(expected[i].originalEntry!);
+            const other = ElementGeometry.toImageGraphic(expected[i].originalEntry);
             assert.exists(other);
             assert.isTrue(image?.textureId === other?.textureId);
             assert.isTrue(image?.hasBorder === other?.hasBorder);
-            const corners = ImageGraphicCorners.fromJSON(image!.corners);
-            const otherCorners = ImageGraphicCorners.fromJSON(other!.corners);
+            const corners = ImageGraphicCorners.fromJSON(image.corners);
+            const otherCorners = ImageGraphicCorners.fromJSON(other.corners);
             assert.isTrue(corners[0].isAlmostEqual(otherCorners[0]));
             assert.isTrue(corners[1].isAlmostEqual(otherCorners[1]));
             assert.isTrue(corners[2].isAlmostEqual(otherCorners[2]));
@@ -215,7 +215,7 @@ function validateElementInfo(info: ElementGeometryInfo, expected: ExpectedElemen
       assert.exists(part);
       if (!isWorld && undefined !== expected[i].originalEntry) {
         const otherToElement = Transform.createIdentity();
-        const other = ElementGeometry.toGeometryPart(expected[i].originalEntry!, otherToElement);
+        const other = ElementGeometry.toGeometryPart(expected[i].originalEntry, otherToElement);
         assert.exists(other);
         assert.isTrue(partToElement.isAlmostEqual(otherToElement));
       }
@@ -1233,32 +1233,32 @@ describe("ElementGeometry", () => {
 
     const entryLN = ElementGeometry.fromGeometryQuery(LineSegment3d.create(pts[0], pts[1]));
     assert.exists(entryLN);
-    newEntries.push(entryLN!);
+    newEntries.push(entryLN);
     expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curvePrimitive", geometrySubCategory: "lineString" });
 
     const entryLS = ElementGeometry.fromGeometryQuery(LineString3d.create(pts));
     assert.exists(entryLS);
-    newEntries.push(entryLS!);
+    newEntries.push(entryLS);
     expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curvePrimitive", geometrySubCategory: "lineString" });
 
     const entrySH = ElementGeometry.fromGeometryQuery(Loop.createPolygon(pts));
     assert.exists(entrySH);
-    newEntries.push(entrySH!);
+    newEntries.push(entrySH);
     expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curveCollection", geometrySubCategory: "loop" });
 
     const entryPS = ElementGeometry.fromGeometryQuery(PointString3d.create(pts));
     assert.exists(entryPS);
-    newEntries.push(entryPS!);
+    newEntries.push(entryPS);
     expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "pointCollection" });
 
     const entryAR = ElementGeometry.fromGeometryQuery(Arc3d.createXY(pts[0], pts[0].distance(pts[1])));
     assert.exists(entryAR);
-    newEntries.push(entryAR!);
+    newEntries.push(entryAR);
     expected.push({ opcode: ElementGeometryOpcode.ArcPrimitive, geometryCategory: "curvePrimitive", geometrySubCategory: "arc" });
 
     const entryEL = ElementGeometry.fromGeometryQuery(Loop.create(Arc3d.createXY(pts[0], pts[0].distance(pts[1]))));
     assert.exists(entryEL);
-    newEntries.push(entryEL!);
+    newEntries.push(entryEL);
     expected.push({ opcode: ElementGeometryOpcode.ArcPrimitive, geometryCategory: "curveCollection", geometrySubCategory: "loop" });
 
     assert(DbResult.BE_SQLITE_OK === doElementGeometryUpdate(imodel, newId, newEntries, true));
@@ -1357,7 +1357,7 @@ describe("ElementGeometry", () => {
 
     const entry = ElementGeometry.fromBRep(brepProps);
     assert.exists(entry);
-    newEntries.push(entry!);
+    newEntries.push(entry);
     expected.push({ opcode: ElementGeometryOpcode.BRep, originalEntry: entry });
 
     // Why 6 and not 4?
@@ -1416,7 +1416,7 @@ describe("ElementGeometry", () => {
 
     const entry = ElementGeometry.fromTextString(textProps);
     assert.exists(entry);
-    newEntries.push(entry!);
+    newEntries.push(entry);
     expected.push({ opcode: ElementGeometryOpcode.TextString, originalEntry: entry });
 
     assert(DbResult.BE_SQLITE_OK === doElementGeometryUpdate(imodel, newId, newEntries, false));
@@ -1447,7 +1447,7 @@ describe("ElementGeometry", () => {
 
     const entry = ElementGeometry.fromImageGraphic(imageProps);
     assert.exists(entry);
-    newEntries.push(entry!);
+    newEntries.push(entry);
     expected.push({ opcode: ElementGeometryOpcode.Image, originalEntry: entry });
 
     assert(DbResult.BE_SQLITE_OK === doElementGeometryUpdate(imodel, newId, newEntries, false));
@@ -1472,7 +1472,7 @@ describe("ElementGeometry", () => {
 
     const entrySG = ElementGeometry.fromSubGraphicRange(Range3d.create()); // Computed on backend, just need opcode...
     assert.exists(entrySG);
-    newEntries.push(entrySG!);
+    newEntries.push(entrySG);
     expected.push({ opcode: ElementGeometryOpcode.SubGraphicRange });
 
     const pts: Point3d[] = [];
@@ -1482,14 +1482,14 @@ describe("ElementGeometry", () => {
 
     const entryL1 = ElementGeometry.fromGeometryQuery(LineSegment3d.create(pts[0], pts[1]));
     assert.exists(entryL1);
-    newEntries.push(entryL1!);
+    newEntries.push(entryL1);
     expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curvePrimitive", geometrySubCategory: "lineString" });
 
     expected.push({ opcode: ElementGeometryOpcode.SubGraphicRange }); // Added on backend...
 
     const entryL2 = ElementGeometry.fromGeometryQuery(LineSegment3d.create(pts[0], pts[2]));
     assert.exists(entryL2);
-    newEntries.push(entryL2!);
+    newEntries.push(entryL2);
     expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curvePrimitive", geometrySubCategory: "lineString" });
 
     assert(DbResult.BE_SQLITE_OK === doElementGeometryUpdate(imodel, newId, newEntries, false));
@@ -1508,7 +1508,7 @@ describe("ElementGeometry", () => {
 
     const entryAR = ElementGeometry.fromGeometryQuery(Arc3d.createXY(Point3d.createZero(), 2.5));
     assert.exists(entryAR);
-    newPartEntries.push(entryAR!);
+    newPartEntries.push(entryAR);
     expectedPart.push({ opcode: ElementGeometryOpcode.ArcPrimitive, geometryCategory: "curvePrimitive", geometrySubCategory: "arc" });
 
     assert(DbResult.BE_SQLITE_OK === doElementGeometryUpdate(imodel, partId, newPartEntries, false));
@@ -1526,22 +1526,22 @@ describe("ElementGeometry", () => {
 
     const entryPI = ElementGeometry.fromGeometryPart(partId);
     assert.exists(entryPI);
-    newEntries.push(entryPI!);
+    newEntries.push(entryPI);
     expected.push({ opcode: ElementGeometryOpcode.PartReference, originalEntry: entryPI });
 
     const entryPT = ElementGeometry.fromGeometryPart(partId, Transform.createTranslation(Point3d.create(5, 5, 0)));
     assert.exists(entryPT);
-    newEntries.push(entryPT!);
+    newEntries.push(entryPT);
     expected.push({ opcode: ElementGeometryOpcode.PartReference, originalEntry: entryPT });
 
     const entryPR = ElementGeometry.fromGeometryPart(partId, Transform.createOriginAndMatrix(testOrigin, testAngles.toMatrix3d()));
     assert.exists(entryPR);
-    newEntries.push(entryPR!);
+    newEntries.push(entryPR);
     expected.push({ opcode: ElementGeometryOpcode.PartReference, originalEntry: entryPR });
 
     const entryPS = ElementGeometry.fromGeometryPart(partId, Transform.createScaleAboutPoint(testOrigin, 2));
     assert.exists(entryPS);
-    newEntries.push(entryPS!);
+    newEntries.push(entryPS);
     expected.push({ opcode: ElementGeometryOpcode.PartReference, originalEntry: entryPS });
 
     assert(DbResult.BE_SQLITE_OK === doElementGeometryUpdate(imodel, newId, newEntries, false));
@@ -1581,7 +1581,7 @@ describe("ElementGeometry", () => {
     assert.isTrue(added);
     expected.push({ opcode: ElementGeometryOpcode.BasicSymbology, geomParams: geomParams.clone() });
 
-    newEntries.push(entrySH!);
+    newEntries.push(entrySH);
     expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curveCollection", geometrySubCategory: "loop" });
 
     // Shape with gradient fill...
@@ -1597,7 +1597,7 @@ describe("ElementGeometry", () => {
     expected.push({ opcode: ElementGeometryOpcode.BasicSymbology });
     expected.push({ opcode: ElementGeometryOpcode.Fill, geomParams: geomParams.clone() });
 
-    newEntries.push(entrySH!);
+    newEntries.push(entrySH);
     expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curveCollection", geometrySubCategory: "loop" });
 
     // Shape with themaic gradient fill...
@@ -1608,7 +1608,7 @@ describe("ElementGeometry", () => {
     expected.push({ opcode: ElementGeometryOpcode.BasicSymbology });
     expected.push({ opcode: ElementGeometryOpcode.Fill, geomParams: geomParams.clone() });
 
-    newEntries.push(entrySH!);
+    newEntries.push(entrySH);
     expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curveCollection", geometrySubCategory: "loop" });
 
     // Shape with bg fill...
@@ -1619,7 +1619,7 @@ describe("ElementGeometry", () => {
     expected.push({ opcode: ElementGeometryOpcode.BasicSymbology });
     expected.push({ opcode: ElementGeometryOpcode.Fill, geomParams: geomParams.clone() });
 
-    newEntries.push(entrySH!);
+    newEntries.push(entrySH);
     expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curveCollection", geometrySubCategory: "loop" });
 
     // Shape with solid fill...
@@ -1631,7 +1631,7 @@ describe("ElementGeometry", () => {
     expected.push({ opcode: ElementGeometryOpcode.BasicSymbology });
     expected.push({ opcode: ElementGeometryOpcode.Fill, geomParams: geomParams.clone() });
 
-    newEntries.push(entrySH!);
+    newEntries.push(entrySH);
     expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curveCollection", geometrySubCategory: "loop" });
 
     // Shape with solid fill and render material
@@ -1642,7 +1642,7 @@ describe("ElementGeometry", () => {
     expected.push({ opcode: ElementGeometryOpcode.Fill });
     expected.push({ opcode: ElementGeometryOpcode.Material, geomParams: geomParams.clone() });
 
-    newEntries.push(entrySH!);
+    newEntries.push(entrySH);
     expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curveCollection", geometrySubCategory: "loop" });
 
     // Green construction line to test ignoring region specific appearance like fill...
@@ -1668,7 +1668,7 @@ describe("ElementGeometry", () => {
 
     const entryLN = ElementGeometry.fromGeometryQuery(LineSegment3d.create(pts[0], pts[2]));
     assert.exists(entryLN);
-    newEntries.push(entryLN!);
+    newEntries.push(entryLN);
     expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curvePrimitive", geometrySubCategory: "lineString" });
 
     assert(DbResult.BE_SQLITE_OK === doElementGeometryUpdate(imodel, newId, newEntries, false));
@@ -1711,7 +1711,7 @@ describe("ElementGeometry", () => {
     expected.push({ opcode: ElementGeometryOpcode.BasicSymbology });
     expected.push({ opcode: ElementGeometryOpcode.Pattern, geomParams: geomParams.clone() });
 
-    newEntries.push(entrySH!);
+    newEntries.push(entrySH);
     expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curveCollection", geometrySubCategory: "loop" });
 
     // Shape with cross hatch with color/weight override...
@@ -1724,7 +1724,7 @@ describe("ElementGeometry", () => {
     expected.push({ opcode: ElementGeometryOpcode.BasicSymbology });
     expected.push({ opcode: ElementGeometryOpcode.Pattern, geomParams: geomParams.clone() });
 
-    newEntries.push(entrySH!);
+    newEntries.push(entrySH);
     expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curveCollection", geometrySubCategory: "loop" });
 
     // Shape with area pattern w/o overrides...
@@ -1739,7 +1739,7 @@ describe("ElementGeometry", () => {
     expected.push({ opcode: ElementGeometryOpcode.BasicSymbology });
     expected.push({ opcode: ElementGeometryOpcode.Pattern, geomParams: geomParams.clone() });
 
-    newEntries.push(entrySH!);
+    newEntries.push(entrySH);
     expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curveCollection", geometrySubCategory: "loop" });
 
     // Shape with area pattern with color/weight and other overrides...
@@ -1754,7 +1754,7 @@ describe("ElementGeometry", () => {
     expected.push({ opcode: ElementGeometryOpcode.BasicSymbology });
     expected.push({ opcode: ElementGeometryOpcode.Pattern, geomParams: geomParams.clone() });
 
-    newEntries.push(entrySH!);
+    newEntries.push(entrySH);
     expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curveCollection", geometrySubCategory: "loop" });
 
     // Shape with hatch definition w/o overrides (zig-zag)...
@@ -1770,7 +1770,7 @@ describe("ElementGeometry", () => {
     expected.push({ opcode: ElementGeometryOpcode.BasicSymbology });
     expected.push({ opcode: ElementGeometryOpcode.Pattern, geomParams: geomParams.clone() });
 
-    newEntries.push(entrySH!);
+    newEntries.push(entrySH);
     expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curveCollection", geometrySubCategory: "loop" });
 
     // Shape with hatch definition with color/weight overrides...
@@ -1781,7 +1781,7 @@ describe("ElementGeometry", () => {
     expected.push({ opcode: ElementGeometryOpcode.BasicSymbology });
     expected.push({ opcode: ElementGeometryOpcode.Pattern, geomParams: geomParams.clone() });
 
-    newEntries.push(entrySH!);
+    newEntries.push(entrySH);
     expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curveCollection", geometrySubCategory: "loop" });
 
     assert(DbResult.BE_SQLITE_OK === doElementGeometryUpdate(imodel, newId, newEntries, false));

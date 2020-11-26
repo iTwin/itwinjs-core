@@ -49,7 +49,7 @@
     "@types/node": "10.14.1",
     "@types/nock": "^9.1.2",
     "chai": "^4.1.2",
-    "eslint": "^6.8.0",
+    "eslint": "^7.10.0",
     "glob": "^7.1.2",
     "istanbul-instrumenter-loader": "^3.0.1",
     "null-loader": "^0.1.1",
