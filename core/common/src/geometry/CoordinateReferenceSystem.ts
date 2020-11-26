@@ -8,16 +8,10 @@ import { GeodeticDatum, GeodeticDatumProps } from "./GeodeticDatum";
 import { GeodeticEllipsoid, GeodeticEllipsoidProps } from "./GeodeticEllipsoid";
 import { MinMax, MinMaxProps, Projection, ProjectionProps } from "./Projection";
 
-/** This enum indicates possible linear and angular units supported.
+/** This type indicates possible linear and angular units supported.
  *  @alpha
 */
-export enum UnitType {
-  Meter = "Meter",
-  InternationalFoot = "InternationalFoot",
-  USSurveyFoot = "USSurveyFoot",
-  Degree = "Degree",
-  Unsupported = "Unsupported",
-}
+export type UnitType = "Meter" | "InternationalFoot" | "USSurveyFoot" | "Degree" | "Unsupported";
 
 /** The area in latitude, longitude bounds where a horizontal CRS is applicable
  *  @alpha

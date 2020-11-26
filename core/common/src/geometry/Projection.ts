@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-// cspell:ignore Albers, Krovak, OSTN, Cassini, Grinten, Mollweide, Eckert, Homolosine, Carree, Winkel, Tripel
+// cspell:ignore Albers, Krovak, OSTN, Cassini, Grinten, Mollweide, Eckert, Homolosine, Carree, Winkel, Tripel, Polyconic
 
 /** This enum contains the list of all projection methods that can be represented as part of the HorizontalCRS
  *  class. The None method indicates there is no projection and thus the CRS is longitude/latitude based
@@ -10,58 +10,57 @@
  *  All other projection indicated a projected CRS.
  *  @alpha
  */
-export enum ProjectionMethod {
-  None = "None",
-  TransverseMercator = "TransverseMercator",
-  SouthOrientedTransverseMercator = "SouthOrientedTransverseMercator",
-  TransverseMercatorWisconsin = "TransverseMercatorWisconsin",
-  TransverseMercatorMinnesota = "TransverseMercatorMinnesota",
-  TransverseMercatorAffine = "TransverseMercatorAffine",
-  MercatorStandardParallel = "MercatorStandardParallel",
-  MercatorScale = "Mercator",
-  UniversalTransverseMercator = "UniversalTransverseMercator",
-  LambertConformalConicTwoParallels = "LambertConformalConicTwoParallels",
-  LambertConformalConicBelgium = "LambertConformalConicBelgium",
-  LambertConformalConicAffine = "LambertConformalConicAffine",
-  LambertConformalConicWisconsin = "LambertConformalConicWisconsin",
-  LambertConformalConicMinnesota = "LambertConformalConicMinnesota",
-  LambertConformalConicMichigan = "LambertConformalConicMichigan",
-  LambertConformalConicOneParallel = "LambertConformalConicOneParallel",
-  AlbersEqualArea = "AlbersEqualArea",
-  NewZealandNationalGrid = "NewZealandNationalGrid",
-  ObliqueMercator1 = "ObliqueMercator1",
-  ObliqueMercator2 = "ObliqueMercator2",
-  TransverseMercatorOSTN97 = "TransverseMercatorOSTN97",
-  TransverseMercatorOSTN02 = "TransverseMercatorOSTN02",
-  TransverseMercatorOSTN15 = "TransverseMercatorOSTN15",
-  Krovak = "Krovak",
-  KrovakModified = "KrovakModified",
-  ObliqueCylindricalSwiss = "ObliqueCylindricalSwiss",
-  TransverseMercatorDenmarkSystem34 = "TransverseMercatorDenmarkSystem34",
-  TransverseMercatorDenmarkSystem3499 = "TransverseMercatorDenmarkSystem3499",
-  TransverseMercatorDenmarkSystem3401 = "TransverseMercatorDenmarkSystem3401",
-  Cassini = "Cassini",
-  Sinusoidal = "Sinusoidal",
-  VanDerGrinten = "VanDerGrinten",
-  Bonne = "Bonne",
-  Mollweide = "Mollweide",
-  EckertIV = "EckertIV",
-  EckertVI = "EckertVI",
-  GoodeHomolosine = "GoodeHomolosine",
-  Robinson = "Robinson",
-  PlateCarree = "PlateCarree",
-  MillerCylindrical = "MillerCylindrical",
-  WinkelTripel = "WinkelTripel",
-  AzimuthalEqualArea = "AzimuthalEqualArea",
-  ObliqueStereographic = "ObliqueStereographic",
-  RectifiedSkewOrthomorphicCentered = "RectifiedSkewOrthomorphicCentered",
-  RectifiedSkewOrthomorphicOrigin = "RectifiedSkewOrthomorphicOrigin",
-  ObliqueCylindricalHungary = "ObliqueCylindricalHungary",
-  Orthographic = "Orthographic",
-  AmericanPolyconic = "AmericanPolyconic",
-  LambertEquidistantAzimuthal = "LambertEquidistantAzimuthal",
-  ObliqueMercatorMinnesota = "ObliqueMercatorMinnesota",
-}
+export type ProjectionMethod =
+  "None" |
+  "TransverseMercator" |
+  "SouthOrientedTransverseMercator" |
+  "TransverseMercatorWisconsin" |
+  "TransverseMercatorMinnesota" |
+  "TransverseMercatorAffine" |
+  "MercatorStandardParallel" |
+  "Mercator" |
+  "UniversalTransverseMercator" |
+  "LambertConformalConicTwoParallels" |
+  "LambertConformalConicBelgium" |
+  "LambertConformalConicAffine" |
+  "LambertConformalConicWisconsin" |
+  "LambertConformalConicMinnesota" |
+  "LambertConformalConicMichigan" |
+  "LambertConformalConicOneParallel" |
+  "AlbersEqualArea" |
+  "NewZealandNationalGrid" |
+  "ObliqueMercator1" |
+  "ObliqueMercator2" |
+  "TransverseMercatorOSTN97" |
+  "TransverseMercatorOSTN02" |
+  "TransverseMercatorOSTN15" |
+  "Krovak" |
+  "KrovakModified" |
+  "ObliqueCylindricalSwiss" |
+  "TransverseMercatorDenmarkSystem34" |
+  "TransverseMercatorDenmarkSystem3499" |
+  "TransverseMercatorDenmarkSystem3401" |
+  "Cassini" |
+  "Sinusoidal" |
+  "VanDerGrinten" |
+  "Bonne" |
+  "Mollweide" |
+  "EckertIV" |
+  "EckertVI" |
+  "GoodeHomolosine" |
+  "Robinson" |
+  "PlateCarree" |
+  "MillerCylindrical" |
+  "WinkelTripel" |
+  "AzimuthalEqualArea" |
+  "ObliqueStereographic" |
+  "RectifiedSkewOrthomorphicCentered" |
+  "RectifiedSkewOrthomorphicOrigin" |
+  "ObliqueCylindricalHungary" |
+  "Orthographic" |
+  "AmericanPolyconic" |
+  "LambertEquidistantAzimuthal" |
+  "ObliqueMercatorMinnesota";
 
 /** The equations are:
  *  X1 = a1*X + a2*Y + TranslationX
@@ -141,23 +140,16 @@ export class AffineTransform implements AffineTransformProps {
   }
 }
 
-/** Enum used in the definition of UTM Zoning projection. This projection only requires a zone number and
+/** Type used in the definition of UTM Zoning projection. This projection only requires a zone number and
  *  the hemisphere North or South.
  *  @alpha
  */
-export enum HemisphereEnum {
-  South = "South",
-  North = "North",
-}
+export type HemisphereEnum = "South" | "North";
 
 /** The type to define the three zones of the Danish System 34 projections.
  *  @alpha
  */
-export enum DanishSystem34Region {
-  Jylland = "Jylland",
-  Sjaelland = "Sjaelland",
-  Bornholm = "Bornholm",
-}
+export type DanishSystem34Region = "Jylland" | "Sjaelland" | "Bornholm";
 
 /** This class encapsulates the projection of the CRS. The projection relies on a projection method
  *  and a set of projection parameters specific to projection method selected.

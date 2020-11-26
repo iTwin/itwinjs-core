@@ -59,17 +59,16 @@ export class XyzRotation implements XyzRotationProps {
   }
 }
 
-/** Enum indicating the geodetic transformation method
+/** Type indicating the geodetic transformation method
  *  @alpha
  */
-export enum GeodeticTransformMethod {
-  None = "None",
-  Geocentric = "Geocentric",
-  PositionalVector = "PositionalVector",
-  GridFiles = "GridFiles",
-  MultipleRegression = "MultipleRegression",
-  UndefinedMethod = "Undefined",
-}
+export type GeodeticTransformMethod =
+  "None" |
+  "Geocentric" |
+  "PositionalVector" |
+  "GridFiles" |
+  "MultipleRegression" |
+  "Undefined";
 
 /** This interface represents a geocentric (three parameters) geodetic transformation.
  *  @alpha
@@ -177,27 +176,23 @@ export class PositionalVectorTransform implements PositionalVectorTransformProps
   }
 }
 
-/** Enumeration indicating the file format of the grid files.
+/** Type indicating the file format of the grid files.
  *  @alpha
  */
-export enum GridFileFormat {
-  NONE = "NONE",
-  NTv1 = "NTv1",
-  NTv2 = "NTv2",
-  NADCON = "NADCON",
-  FRENCH = "FRENCH",
-  JAPAN = "JAPAN",
-  ATS77 = "ATS77",
-  GEOCN = "GEOCN",
-}
+export type GridFileFormat =
+  "NONE" |
+  "NTv1" |
+  "NTv2" |
+  "NADCON" |
+  "FRENCH" |
+  "JAPAN" |
+  "ATS77" |
+  "GEOCN";
 
-/** Enumeration to indicate the grid file application direction.
+/** type to indicate the grid file application direction.
  *  @alpha
  */
-export enum GridFileDirection {
-  Direct = "Direct",
-  Inverse = "Inverse",
-}
+export type GridFileDirection = "Direct" | "Inverse";
 
 /** Grid file definition containing name of the file, the format and the direction it should be applied
  *  @alpha
@@ -236,15 +231,15 @@ export class GridFileDefinition implements GridFileDefinitionProps {
 
   public constructor(data?: GridFileDefinitionProps) {
     this.fileName = data ? data.fileName : "";
-    this.format = data ? data.format : GridFileFormat.NTv2;
-    this.direction = data ? data.direction : GridFileDirection.Direct;
+    this.format = data ? data.format : "NTv2";
+    this.direction = data ? data.direction : "Direct";
   }
 
   /** @internal */
   public initialize(data?: GridFileDefinitionProps) {
     this.fileName = data ? data.fileName : "";
-    this.format = data ? data.format : GridFileFormat.NTv2;
-    this.direction = data ? data.direction : GridFileDirection.Direct;
+    this.format = data ? data.format : "NTv2";
+    this.direction = data ? data.direction : "Direct";
   }
 
   /** @internal */
@@ -354,7 +349,7 @@ export class GeodeticTransform implements GeodeticTransformProps {
   public gridFile?: GridFileTransform;
 
   public constructor(data?: GeodeticTransformProps) {
-    this.method = GeodeticTransformMethod.None;
+    this.method = "None";
     this.initialize(data);
   }
 

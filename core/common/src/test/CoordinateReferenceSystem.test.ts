@@ -5,10 +5,10 @@
 // cspell:ignore JSONXYZ, ETRF, OSGB, DHDN, CLRK, Benoit, NAVD, NADCON, Xfrm, prvi, stgeorge, stlrnc, stpaul
 
 import { expect } from "chai";
-import { GeographicCRS, GeographicCRSProps, HorizontalCRS, HorizontalCRSProps, UnitType } from "../geometry/CoordinateReferenceSystem";
-import { GeodeticDatum, GeodeticDatumProps, GeodeticTransform, GeodeticTransformMethod, GeodeticTransformProps, GridFileDirection, GridFileFormat } from "../geometry/GeodeticDatum";
+import { GeographicCRS, GeographicCRSProps, HorizontalCRS, HorizontalCRSProps } from "../geometry/CoordinateReferenceSystem";
+import { GeodeticDatum, GeodeticDatumProps, GeodeticTransform, GeodeticTransformProps } from "../geometry/GeodeticDatum";
 import { GeodeticEllipsoid, GeodeticEllipsoidProps } from "../geometry/GeodeticEllipsoid";
-import { ProjectionMethod } from "../geometry/Projection";
+// import { ProjectionMethod2 } from "../geometry/Projection";
 
 describe("Geodetic Settings", () => {
 
@@ -16,7 +16,7 @@ describe("Geodetic Settings", () => {
   it("round-trips GeodeticTransform through JSON", () => {
     const roundTrip = (input: GeodeticTransformProps | undefined, expected: GeodeticTransformProps | "input") => {
       if (!input)
-        input = { method: GeodeticTransformMethod.None };
+        input = { method: "None" };
 
       if ("input" === expected)
         expected = JSON.parse(JSON.stringify(input)) as GeodeticTransform;
@@ -56,17 +56,17 @@ describe("Geodetic Settings", () => {
     };
 
     /** For the moment no property is validated so we always use input as compare base */
-    roundTrip(undefined, { method: GeodeticTransformMethod.None });
-    roundTrip({ method: GeodeticTransformMethod.None }, "input");
+    roundTrip(undefined, { method: "None" });
+    roundTrip({ method: "None" }, "input");
 
-    roundTrip({ method: GeodeticTransformMethod.Geocentric }, "input");
-    roundTrip({ method: GeodeticTransformMethod.PositionalVector }, "input");
-    roundTrip({ method: GeodeticTransformMethod.GridFiles }, "input");
-    roundTrip({ method: GeodeticTransformMethod.MultipleRegression }, "input");
+    roundTrip({ method: "Geocentric" }, "input");
+    roundTrip({ method: "PositionalVector" }, "input");
+    roundTrip({ method: "GridFiles" }, "input");
+    roundTrip({ method: "MultipleRegression" }, "input");
 
-    roundTrip({ method: GeodeticTransformMethod.Geocentric, geocentric: { delta: { x: 12.0, y: 32.3, z: 54.1 } } }, "input");
+    roundTrip({ method: "Geocentric", geocentric: { delta: { x: 12.0, y: 32.3, z: 54.1 } } }, "input");
     roundTrip({
-      method: GeodeticTransformMethod.PositionalVector,
+      method: "PositionalVector",
       positionalVector: {
         delta: { x: 12.0, y: 32.3, z: 54.1 },
         rotation: { x: 12.1, y: 21.1, z: 23.4 },
@@ -75,11 +75,11 @@ describe("Geodetic Settings", () => {
     }, "input");
 
     roundTrip({
-      method: GeodeticTransformMethod.GridFiles,
+      method: "GridFiles",
       gridFile: {
         files: [
-          { fileName: "toto.tat", format: GridFileFormat.NADCON, direction: GridFileDirection.Direct },
-          { fileName: "foo.foo", format: GridFileFormat.NTv1, direction: GridFileDirection.Inverse },
+          { fileName: "toto.tat", format: "NADCON", direction: "Direct" },
+          { fileName: "foo.foo", format: "NTv1", direction: "Inverse" },
         ],
       },
     }, "input");
@@ -217,7 +217,7 @@ describe("Geodetic Settings", () => {
       id: "WGS84",
       epsg: 4326,
       ellipsoidId: "WGS84",
-      transforms: [{ method: GeodeticTransformMethod.None }],
+      transforms: [{ method: "None" }],
     }, "input");
 
     roundTrip({
@@ -237,7 +237,7 @@ describe("Geodetic Settings", () => {
       },
       transforms: [
         {
-          method: GeodeticTransformMethod.Geocentric,
+          method: "Geocentric",
           geocentric: {
             delta: { x: -115, y: 118, z: 426 },
           },
@@ -261,7 +261,7 @@ describe("Geodetic Settings", () => {
       },
       transforms: [
         {
-          method: GeodeticTransformMethod.PositionalVector,
+          method: "PositionalVector",
           positionalVector: {
             scalePPM: -0.191,
             delta: { x: -117.763, y: -51.51, z: 139.061 },
@@ -287,16 +287,16 @@ describe("Geodetic Settings", () => {
       },
       transforms: [
         {
-          method: GeodeticTransformMethod.GridFiles,
+          method: "GridFiles",
           gridFile: {
             files: [
-              { fileName: "./Usa/Nadcon/conus.l?s", format: GridFileFormat.NADCON, direction: GridFileDirection.Direct },
-              { fileName: "./Usa/Nadcon/alaska.l?s", format: GridFileFormat.NADCON, direction: GridFileDirection.Direct },
-              { fileName: "./Usa/Nadcon/prvi.l?s", format: GridFileFormat.NADCON, direction: GridFileDirection.Direct },
-              { fileName: "./Usa/Nadcon/hawaii.l?s", format: GridFileFormat.NADCON, direction: GridFileDirection.Direct },
-              { fileName: "./Usa/Nadcon/stgeorge.l?s", format: GridFileFormat.NADCON, direction: GridFileDirection.Direct },
-              { fileName: "./Usa/Nadcon/stlrnc.l?s", format: GridFileFormat.NADCON, direction: GridFileDirection.Direct },
-              { fileName: "./Usa/Nadcon/stpaul.l?s", format: GridFileFormat.NADCON, direction: GridFileDirection.Direct },
+              { fileName: "./Usa/Nadcon/conus.l?s", format: "NADCON", direction: "Direct" },
+              { fileName: "./Usa/Nadcon/alaska.l?s", format: "NADCON", direction: "Direct" },
+              { fileName: "./Usa/Nadcon/prvi.l?s", format: "NADCON", direction: "Direct" },
+              { fileName: "./Usa/Nadcon/hawaii.l?s", format: "NADCON", direction: "Direct" },
+              { fileName: "./Usa/Nadcon/stgeorge.l?s", format: "NADCON", direction: "Direct" },
+              { fileName: "./Usa/Nadcon/stlrnc.l?s", format: "NADCON", direction: "Direct" },
+              { fileName: "./Usa/Nadcon/stpaul.l?s", format: "NADCON", direction: "Direct" },
             ],
           },
         }],
@@ -360,7 +360,7 @@ describe("Geodetic Settings", () => {
       id: "LatLong-WGS84",
       epsg: 4326,
       datumId: "WGS84",
-      projection: { method: ProjectionMethod.None },
+      projection: { method: "None" },
       area: {
         latitude: { min: 12.1, max: 14.56 },
         longitude: { min: 45.6, max: 58.7 },
@@ -370,7 +370,7 @@ describe("Geodetic Settings", () => {
     roundTrip({
       id: "LatLong-GRS1980",
       ellipsoidId: "GRS1980",
-      projection: { method: ProjectionMethod.None },
+      projection: { method: "None" },
       area: {
         latitude: { min: 12.1, max: 14.56 },
         longitude: { min: 45.6, max: 58.7 },
@@ -384,7 +384,7 @@ describe("Geodetic Settings", () => {
       ellipsoid: { id: "GRS1980", description: "An ellipsoid description" },
       datumId: "WGS84",
       datum: { id: "WGS84", description: "A datum description" },
-      projection: { method: ProjectionMethod.None },
+      projection: { method: "None" },
       area: { latitude: { min: 12.1, max: 14.56 }, longitude: { min: 45.6, max: 58.7 } },
     }, {
       id: "LatLong-GRS1980-INV",
@@ -392,7 +392,7 @@ describe("Geodetic Settings", () => {
       datum: { id: "WGS84", description: "A datum description" },
       ellipsoidId: undefined,
       ellipsoid: undefined,
-      projection: { method: ProjectionMethod.None },
+      projection: { method: "None" },
       area: {
         latitude: { min: 12.1, max: 14.56 },
         longitude: { min: 45.6, max: 58.7 },
@@ -422,24 +422,24 @@ describe("Geodetic Settings", () => {
         },
         transforms: [
           {
-            method: GeodeticTransformMethod.GridFiles,
+            method: "GridFiles",
             gridFile: {
               files: [
-                { fileName: "./Usa/Nadcon/conus.l?s", format: GridFileFormat.NADCON, direction: GridFileDirection.Direct },
-                { fileName: "./Usa/Nadcon/alaska.l?s", format: GridFileFormat.NADCON, direction: GridFileDirection.Direct },
-                { fileName: "./Usa/Nadcon/prvi.l?s", format: GridFileFormat.NADCON, direction: GridFileDirection.Direct },
-                { fileName: "./Usa/Nadcon/hawaii.l?s", format: GridFileFormat.NADCON, direction: GridFileDirection.Direct },
-                { fileName: "./Usa/Nadcon/stgeorge.l?s", format: GridFileFormat.NADCON, direction: GridFileDirection.Direct },
-                { fileName: "./Usa/Nadcon/stlrnc.l?s", format: GridFileFormat.NADCON, direction: GridFileDirection.Direct },
-                { fileName: "./Usa/Nadcon/stpaul.l?s", format: GridFileFormat.NADCON, direction: GridFileDirection.Direct },
+                { fileName: "./Usa/Nadcon/conus.l?s", format: "NADCON", direction: "Direct" },
+                { fileName: "./Usa/Nadcon/alaska.l?s", format: "NADCON", direction: "Direct" },
+                { fileName: "./Usa/Nadcon/prvi.l?s", format: "NADCON", direction: "Direct" },
+                { fileName: "./Usa/Nadcon/hawaii.l?s", format: "NADCON", direction: "Direct" },
+                { fileName: "./Usa/Nadcon/stgeorge.l?s", format: "NADCON", direction: "Direct" },
+                { fileName: "./Usa/Nadcon/stlrnc.l?s", format: "NADCON", direction: "Direct" },
+                { fileName: "./Usa/Nadcon/stpaul.l?s", format: "NADCON", direction: "Direct" },
               ],
             },
           },
         ],
       },
-      unit: UnitType.Meter,
+      unit: "Meter",
       projection: {
-        method: ProjectionMethod.TransverseMercator,
+        method: "TransverseMercator",
         centralMeridian: -115,
         latitudeOfOrigin: 0,
         scaleFactor: 0.9992,
@@ -496,7 +496,7 @@ describe("Geodetic Settings", () => {
         id: "LatLong-WGS84",
         epsg: 4326,
         datumId: "WGS84",
-        projection: { method: ProjectionMethod.None },
+        projection: { method: "None" },
         area: { latitude: { min: 12.1, max: 14.56 }, longitude: { min: 45.6, max: 58.7 } },
       },
       verticalCRS: { id: "ELLIPSOID" },
@@ -526,24 +526,24 @@ describe("Geodetic Settings", () => {
           },
           transforms: [
             {
-              method: GeodeticTransformMethod.GridFiles,
+              method: "GridFiles",
               gridFile: {
                 files: [
-                  { fileName: "./Usa/Nadcon/conus.l?s", format: GridFileFormat.NADCON, direction: GridFileDirection.Direct },
-                  { fileName: "./Usa/Nadcon/alaska.l?s", format: GridFileFormat.NADCON, direction: GridFileDirection.Direct },
-                  { fileName: "./Usa/Nadcon/prvi.l?s", format: GridFileFormat.NADCON, direction: GridFileDirection.Direct },
-                  { fileName: "./Usa/Nadcon/hawaii.l?s", format: GridFileFormat.NADCON, direction: GridFileDirection.Direct },
-                  { fileName: "./Usa/Nadcon/stgeorge.l?s", format: GridFileFormat.NADCON, direction: GridFileDirection.Direct },
-                  { fileName: "./Usa/Nadcon/stlrnc.l?s", format: GridFileFormat.NADCON, direction: GridFileDirection.Direct },
-                  { fileName: "./Usa/Nadcon/stpaul.l?s", format: GridFileFormat.NADCON, direction: GridFileDirection.Direct },
+                  { fileName: "./Usa/Nadcon/conus.l?s", format: "NADCON", direction: "Direct" },
+                  { fileName: "./Usa/Nadcon/alaska.l?s", format: "NADCON", direction: "Direct" },
+                  { fileName: "./Usa/Nadcon/prvi.l?s", format: "NADCON", direction: "Direct" },
+                  { fileName: "./Usa/Nadcon/hawaii.l?s", format: "NADCON", direction: "Direct" },
+                  { fileName: "./Usa/Nadcon/stgeorge.l?s", format: "NADCON", direction: "Direct" },
+                  { fileName: "./Usa/Nadcon/stlrnc.l?s", format: "NADCON", direction: "Direct" },
+                  { fileName: "./Usa/Nadcon/stpaul.l?s", format: "NADCON", direction: "Direct" },
                 ],
               },
             },
           ],
         },
-        unit: UnitType.Meter,
+        unit: "Meter",
         projection: {
-          method: ProjectionMethod.TransverseMercator,
+          method: "TransverseMercator",
           centralMeridian: -115,
           latitudeOfOrigin: 0,
           scaleFactor: 0.9992,
