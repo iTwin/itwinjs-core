@@ -2,6 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Serialization
+ */
 import { flatbuffers } from "flatbuffers";
 import { BGFBAccessors } from "./BGFBAccessors";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
@@ -39,7 +42,6 @@ import { Segment1d } from "../geometry3d/Segment1d";
 import { IntegratedSpiral3d } from "../curve/spiral/IntegratedSpiral3d";
 
 /** * Context to write to a flatbuffer blob.
- * @internal
  *  * This class is internal.
  *  * Public access is through BentleyGeometryFlatBuffer.geometryToBytes()
  * @internal
@@ -531,6 +533,7 @@ function createTypedCurveCollection(collectionType: number): CurveCollection {
 }
 /**
  * mappings between typescript spiral type strings and native integers.
+ * @internal
  */
 export class DgnSpiralTypeQueries {
   // remark: this is the full list based on native DSpiral2dBase.h.
