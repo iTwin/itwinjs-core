@@ -246,7 +246,7 @@ export class HorizontalCRS implements HorizontalCRSProps {
       this.id = _data.id;
       this.description = _data.description;
       this.source = _data.source;
-      this.deprecated = (_data.deprecated ? _data.deprecated : false);
+      this.deprecated = _data.deprecated ?? false;
       this.epsg = _data.epsg;
       this.datumId = _data.datumId;
       this.datum = _data.datum ? GeodeticDatum.fromJSON(_data.datum) : undefined;

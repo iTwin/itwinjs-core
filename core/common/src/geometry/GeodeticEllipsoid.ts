@@ -70,7 +70,7 @@ export class GeodeticEllipsoid implements GeodeticEllipsoidProps {
     if (_data) {
       this.id = _data.id;
       this.description = _data.description;
-      this.deprecated = (_data.deprecated ? _data.deprecated : false);
+      this.deprecated = _data.deprecated ?? false;
       this.source = _data.source;
       this.epsg = _data.epsg;
       this.equatorialRadius = _data.equatorialRadius;
