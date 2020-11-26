@@ -1113,6 +1113,9 @@ export namespace ConcurrencyControl {
 }
 
 // @alpha
+export type ConcurrencyControlChannel = ConcurrencyControl.Channel;
+
+// @alpha
 export interface CrashReportingConfig {
     crashDir: string;
     dumpProcessorScriptFileName?: string;
