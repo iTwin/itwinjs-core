@@ -48,9 +48,9 @@ export class GeodeticEllipsoid implements GeodeticEllipsoidProps {
   /** Description of the ellipsoid */
   public description?: string;
   /** If true then indicates the definition is deprecated. It should then be used for backward compatibility only.
-   *  If false or undefined then the definition is not deprecated.
+   *  If false then the definition is not deprecated. Default is false.
    */
-  public deprecated?: boolean;
+  public deprecated: boolean;
   /** The textual description of the source of the ellipsoid definition. */
   public source?: string;
   /** The EPSG code of the ellipsoid. If undefined or zero then there is no EPSG code associated. */
@@ -61,7 +61,8 @@ export class GeodeticEllipsoid implements GeodeticEllipsoidProps {
   public polarRadius?: number;
 
   public constructor(data?: GeodeticEllipsoidProps) {
-    this.initialize(data)
+    this.deprecated = false;
+    this.initialize(data);
   }
 
   /** @internal */
@@ -69,7 +70,7 @@ export class GeodeticEllipsoid implements GeodeticEllipsoidProps {
     if (_data) {
       this.id = _data.id;
       this.description = _data.description;
-      this.deprecated = _data.deprecated;
+      this.deprecated = (_data.deprecated ? _data.deprecated : false);
       this.source = _data.source;
       this.epsg = _data.epsg;
       this.equatorialRadius = _data.equatorialRadius;
@@ -87,7 +88,8 @@ export class GeodeticEllipsoid implements GeodeticEllipsoidProps {
     const data: GeodeticEllipsoidProps = { equatorialRadius: this.equatorialRadius, polarRadius: this.polarRadius };
     data.id = this.id;
     data.description = this.description;
-    data.deprecated = this.deprecated;
+    /* We prefer to use the default undef instead of false value for deprecated in Json */
+    data.deprecated = (this.deprecated === false ? undefined : true);
     data.source = this.source;
     data.epsg = this.epsg;
     data.equatorialRadius = this.equatorialRadius;

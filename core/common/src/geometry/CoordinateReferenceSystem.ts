@@ -122,7 +122,7 @@ export interface HorizontalCRSProps {
  *  Horizontal Coordinate Systems rely on a projection to flatten the surface of an ellipsoid (see [[GeodeticEllipsoid]]) which is
  *  the mathematical model of the Earth surface.
  *  Explanations in more details of the various concepts can be obtained from other sources including the page on the subject
- *  on itwinJS.org.
+ *  on itwinJS.org (see https://www.itwinjs.org/learning/geolocation/?term=coordinate+system).
  *  A few details are still required to grasp the model. Geographic Coordinate Reference Systems rely on the concept of geodetic datums
  *  (see [[GeodeticDatum]]) to convert latitude/longitude from one frame of reference to another. Such geodetic datum will bind the ellipsoid
  *  and possibly define transformation steps required to convert from the currently used geodetic datum to the common datum WGS84
@@ -149,9 +149,9 @@ export class HorizontalCRS implements HorizontalCRSProps {
   /** The source of the CRS definition. */
   public source?: string;
   /** If true then indicates the definition is deprecated. It should then be used for backward compatibility only.
-   *  If false or undefined then the definition is not deprecated.
+   *  If false then the definition is not deprecated. Default is false.
    */
-  public deprecated?: boolean;
+  public deprecated: boolean;
   /** The EPSG code of the CRS. If undefined or zero then there is no EPSG code associated. */
   public epsg?: number;
 
@@ -242,6 +242,7 @@ export class HorizontalCRS implements HorizontalCRSProps {
   public area?: HorizontalCRSArea;
 
   public constructor(data?: HorizontalCRSProps) {
+    this.deprecated = false;
     this.initialize(data);
   }
 
@@ -251,7 +252,7 @@ export class HorizontalCRS implements HorizontalCRSProps {
       this.id = _data.id;
       this.description = _data.description;
       this.source = _data.source;
-      this.deprecated = _data.deprecated;
+      this.deprecated = (_data.deprecated ? _data.deprecated : false);
       this.epsg = _data.epsg;
       this.datumId = _data.datumId;
       this.datum = _data.datum ? GeodeticDatum.fromJSON(_data.datum) : undefined;
@@ -274,7 +275,8 @@ export class HorizontalCRS implements HorizontalCRSProps {
     data.id = this.id;
     data.description = this.description;
     data.source = this.source;
-    data.deprecated = this.deprecated;
+    /* We prefer to use the default undef instead of false value for deprecated in Json */
+    data.deprecated = (this.deprecated === false ? undefined : true);
     data.epsg = this.epsg;
     data.datumId = this.datumId;
     data.datum = this.datum ? this.datum.toJSON() : undefined;
@@ -330,8 +332,8 @@ export class HorizontalCRS implements HorizontalCRSProps {
  * @alpha
  */
 export interface VerticalCRSProps {
-  /** Vertical CRS Key name */
-  id?: string;
+  /** Vertical CRS Key name. */
+  id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88";
 }
 
 /** Vertical Coordinate reference System implementation.
@@ -342,10 +344,11 @@ export interface VerticalCRSProps {
  *  @alpha
 */
 export class VerticalCRS implements VerticalCRSProps {
-  /** Vertical CRS Key name. The only supported values are currently "GEOID", "ELLIPSOID", "NAVD88" and "NGVD29" */
-  public id?: string;
+  /** Vertical CRS Key name. The only supported values are currently "GEOID", "ELLIPSOID", "NAVD88" and "NGVD29". The default is ELLIPSOID */
+  public id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88";
 
   public constructor(data?: VerticalCRSProps) {
+    this.id = "ELLIPSOID";
     this.initialize(data);
   }
 

@@ -102,7 +102,13 @@ describe("Geodetic Settings", () => {
       expect(output.description === expected.description).to.be.true;
       expect(output.source === expected.source).to.be.true;
       expect(output.epsg === expected.epsg).to.be.true;
-      expect(output.deprecated === expected.deprecated).to.be.true;
+      if (output.deprecated !== undefined && expected.deprecated !== undefined)
+        expect(output.deprecated === expected.deprecated).to.be.true;
+      else if (output.deprecated !== undefined && expected.deprecated === undefined)
+        expect(output.deprecated).to.be.false;
+      else if (output.deprecated === undefined && expected.deprecated !== undefined)
+        expect(expected.deprecated).to.be.false;
+
       expect(output.equatorialRadius === expected.equatorialRadius).to.be.true;
       expect(output.polarRadius === expected.polarRadius).to.be.true;
 
@@ -172,7 +178,13 @@ describe("Geodetic Settings", () => {
       expect(output.description === expected.description).to.be.true;
       expect(output.source === expected.source).to.be.true;
       expect(output.epsg === expected.epsg).to.be.true;
-      expect(output.deprecated === expected.deprecated).to.be.true;
+      if (output.deprecated !== undefined && expected.deprecated !== undefined)
+        expect(output.deprecated === expected.deprecated).to.be.true;
+      else if (output.deprecated !== undefined && expected.deprecated === undefined)
+        expect(output.deprecated).to.be.false;
+      else if (output.deprecated === undefined && expected.deprecated !== undefined)
+        expect(expected.deprecated).to.be.false;
+
       expect(output.ellipsoidId === expected.ellipsoidId).to.be.true;
 
       expect((output.transforms === undefined) === (expected.transforms === undefined)).to.be.true;
@@ -309,7 +321,13 @@ describe("Geodetic Settings", () => {
       expect(output.source === expected.source).to.be.true;
       expect(output.epsg === expected.epsg).to.be.true;
       expect(output.datumId === expected.datumId).to.be.true;
-      expect(output.deprecated === expected.deprecated).to.be.true;
+      if (output.deprecated !== undefined && expected.deprecated !== undefined)
+        expect(output.deprecated === expected.deprecated).to.be.true;
+      else if (output.deprecated !== undefined && expected.deprecated === undefined)
+        expect(output.deprecated).to.be.false;
+      else if (output.deprecated === undefined && expected.deprecated !== undefined)
+        expect(expected.deprecated).to.be.false;
+
       expect(output.ellipsoidId === expected.ellipsoidId).to.be.true;
       expect(output.name === expected.name).to.be.true;
       expect(output.unit === expected.unit);
