@@ -34,7 +34,11 @@ describe("FilteringDataProvider", () => {
           name: "Cat1", label: "Category 1", expand: true, childCategories: [
             {
               name: "Cat1-1", label: "Category 1-1", expand: false, childCategories:
-                [{ name: "Cat1-1-1", label: "Category 1-1-1", expand: false }],
+                [{
+                  name: "Cat1-1-1", label: "Category 1-1-1", expand: false, childCategories: [
+                    { name: "Cat1-1-1-1", label: "Category 1-1-1-1", expand: false },
+                  ],
+                }],
             },
             { name: "Cat1-2", label: "Category 1-2", expand: false },
             { name: "Cat1-3", label: "Category 1-3", expand: false },
@@ -60,6 +64,7 @@ describe("FilteringDataProvider", () => {
           ], true),
         ],
         "Cat1-1-1": [],
+        "Cat1-1-1-1": [],
         "Cat1-2": [
           TestUtils.createArrayProperty("Array1-2-1", [
             TestUtils.createPrimitiveStringProperty("Property1-2-1-1", "V1"),
@@ -234,7 +239,11 @@ describe("FilteringDataProvider", () => {
             name: "Cat1", label: "Category 1", expand: true, childCategories: [
               {
                 name: "Cat1-1", label: "Category 1-1", expand: true, childCategories: [
-                  { name: "Cat1-1-1", label: "Category 1-1-1", expand: false, childCategories: [] }, // If parent category was matched, force include descendant categories, if no records were matched in descendant, it should not be expanded
+                  {
+                    name: "Cat1-1-1", label: "Category 1-1-1", expand: false, childCategories: [
+                      { name: "Cat1-1-1-1", label: "Category 1-1-1-1", expand: false, childCategories: [] },
+                    ],
+                  }, // If parent category was matched, force include descendant categories, if no records were matched in descendant, it should not be expanded
                 ],
               },
               { name: "Cat1-2", label: "Category 1-2", expand: true, childCategories: [] },
@@ -260,6 +269,7 @@ describe("FilteringDataProvider", () => {
             ], true),
           ],
           "Cat1-1-1": [], // If parent category was matched, force include all child categories with their records
+          "Cat1-1-1-1": [], // If parent category was matched, force include all child categories with their records
           "Cat1-2": [
             TestUtils.createArrayProperty("Array1-2-1", [
               TestUtils.createStructProperty("Struct1-2-1-2", {

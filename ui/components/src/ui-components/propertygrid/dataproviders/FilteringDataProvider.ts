@@ -131,8 +131,10 @@ async function matchHierarchy(filterer: IPropertyDataFilterer, categories: Prope
     allFilteredResultMatches = allFilteredResultMatches.concat(filteredResultMatches);
     matchesCount += count;
 
+    const parentInfo = parentMatchInfo?.matchesFilter ? parentMatchInfo : matchInfo;
+
     const childCategories = category.childCategories ?? [];
-    const { filteredCategories, matchesCount: childCount, filteredResultMatches: childFilteredResultMatches } = await matchHierarchy(filterer, childCategories, records, newRecords, matchInfo);
+    const { filteredCategories, matchesCount: childCount, filteredResultMatches: childFilteredResultMatches } = await matchHierarchy(filterer, childCategories, records, newRecords, parentInfo);
     allFilteredResultMatches = allFilteredResultMatches.concat(childFilteredResultMatches);
 
     matchesCount += childCount;
