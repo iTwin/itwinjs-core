@@ -7,14 +7,20 @@
  */
 
 import { assert, compareStrings, Id64String } from "@bentley/bentleyjs-core";
-import { Range3d, Transform } from "@bentley/geometry-core";
-import { BatchType, compareIModelTileTreeIds, iModelTileTreeIdToString, PrimaryTileTreeId, ViewFlagOverrides } from "@bentley/imodeljs-common";
+import { Range3d, StringifiedClipVector, Transform } from "@bentley/geometry-core";
+import {
+  BatchType,
+  compareIModelTileTreeIds,
+  iModelTileTreeIdToString,
+  PrimaryTileTreeId,
+  ViewFlagOverrides,
+} from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { GeometricModelState } from "../ModelState";
+import { GeometricModelState, GeometricModel3dState } from "../ModelState";
 import { RenderClipVolume } from "../render/RenderClipVolume";
 import { SceneContext } from "../ViewContext";
-import { ViewState, ViewState3d } from "../ViewState";
+import { SpatialViewState, ViewState, ViewState3d } from "../ViewState";
 import { RenderScheduleState } from "../RenderScheduleState";
 import { InteractiveEditingSession } from "../InteractiveEditingSession";
 import {
@@ -115,16 +121,16 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
 const primaryTreeSupplier = new PrimaryTreeSupplier();
 
 class PrimaryTreeReference extends TileTreeReference {
-  protected readonly _view: ViewState;
-  protected readonly _model: GeometricModelState;
+  public readonly view: ViewState;
+  public readonly model: GeometricModelState;
   protected readonly _viewFlagOverrides: ViewFlagOverrides;
   protected _id: PrimaryTreeId;
   private _owner: TileTreeOwner;
 
   public constructor(view: ViewState, model: GeometricModelState, isPlanProjection: boolean, transformNodeId?: number) {
     super();
-    this._view = view;
-    this._model = model;
+    this.view = view;
+    this.model = model;
     this._viewFlagOverrides = ViewFlagOverrides.fromJSON(model.jsonProperties.viewFlagOverrides);
     this._id = {
       modelId: model.id,
@@ -146,11 +152,11 @@ class PrimaryTreeReference extends TileTreeReference {
 
   protected getClipVolume(_tree: TileTree): RenderClipVolume | undefined {
     // ###TODO: reduce frequency with which getModelClip() is called
-    return this._view.is3d() ? this._view.getModelClip(this._model.id) : undefined;
+    return this.view.is3d() ? this.view.getModelClip(this.model.id) : undefined;
   }
 
   public get treeOwner(): TileTreeOwner {
-    const newId = this.createTreeId(this._view, this._id.modelId, this._id.treeId.animationTransformNodeId);
+    const newId = this.createTreeId(this.view, this._id.modelId, this._id.treeId.animationTransformNodeId);
     if (0 !== compareIModelTileTreeIds(newId, this._id.treeId)) {
       this._id = {
         modelId: this._id.modelId,
@@ -159,7 +165,7 @@ class PrimaryTreeReference extends TileTreeReference {
         isPlanProjection: this._id.isPlanProjection,
       };
 
-      this._owner = primaryTreeSupplier.getOwner(this._id, this._model.iModel);
+      this._owner = primaryTreeSupplier.getOwner(this._id, this.model.iModel);
     }
 
     return this._owner;
@@ -178,7 +184,7 @@ class PrimaryTreeReference extends TileTreeReference {
 
   protected computeTransform(tree: TileTree): Transform {
     const tf = this.computeBaseTransform(tree);
-    return this._view.getModelDisplayTransform(this._model.id, tf);
+    return this.view.getModelDisplayTransform(this.model.id, tf);
   }
 }
 
@@ -186,7 +192,7 @@ class PrimaryTreeReference extends TileTreeReference {
 export class AnimatedTreeReference extends PrimaryTreeReference {
   protected computeBaseTransform(tree: TileTree): Transform {
     const tf = super.computeBaseTransform(tree);
-    const style = this._view.displayStyle;
+    const style = this.view.displayStyle;
     const script = style.scheduleScript;
     if (undefined === script || undefined === this._id.treeId.animationTransformNodeId)
       return tf;
@@ -201,7 +207,7 @@ export class AnimatedTreeReference extends PrimaryTreeReference {
 }
 
 class PlanProjectionTreeReference extends PrimaryTreeReference {
-  private get _view3d() { return this._view as ViewState3d; }
+  private get _view3d() { return this.view as ViewState3d; }
   private _curTransform?: { transform: Transform, elevation: number };
 
   public constructor(view: ViewState3d, model: GeometricModelState) {
@@ -262,7 +268,7 @@ class PlanProjectionTreeReference extends PrimaryTreeReference {
   }
 
   private getSettings() {
-    return this._view3d.getDisplayStyle3d().settings.getPlanProjectionSettings(this._model.id);
+    return this._view3d.getDisplayStyle3d().settings.getPlanProjectionSettings(this.model.id);
   }
 
   protected createTreeId(view: ViewState, modelId: Id64String): PrimaryTileTreeId {
@@ -294,4 +300,153 @@ export function addAnimatedTileTreeReferences(refs: TileTreeReference[], view: V
   if (nodeIds)
     for (const nodeId of nodeIds)
       refs.push(new AnimatedTreeReference(view, model, false, nodeId));
+}
+
+/** Provides [[TileTreeReference]]s for the loaded models present in a [[SpatialViewState]]'s [[ModelSelectorState]].
+ * @internal
+ */
+export interface SpatialTileTreeReferences extends Iterable<TileTreeReference> {
+  /** Supplies an iterator over all of the [[TileTreeReference]]s. */
+  readonly [Symbol.iterator]: () => Iterator<TileTreeReference>;
+  /** Requests that the set of [[TileTreeReference]]s be updated to match the current state of the view, e.g., after the model selector's contents have changed. */
+  readonly update: () => void;
+}
+
+/** Provides [[TileTreeReference]]s for the loaded models present in a [[SpatialViewState]]'s [[ModelSelectorState]].
+ * @internal
+ */
+export namespace SpatialTileTreeReferences {
+  /** Create a SpatialTileTreeReferences object reflecting the contents of the specified view. */
+  export function create(view: SpatialViewState): SpatialTileTreeReferences {
+    return new SpatialRefs(view);
+  }
+}
+
+/** Represents the [[TileTreeReference]]s associated with one model in a [[SpatialTileTreeReferences]]. */
+class SpatialModelRefs implements Iterable<TileTreeReference> {
+  /** The TileTreeReference representing the model's primary content. */
+  private readonly _modelRef: TileTreeReference;
+  /** TileTreeReferences representing nodes transformed by the view's schedule script. */
+  private readonly _animatedRefs: TileTreeReference[] = [];
+  /** TileTreeReference providing cut geometry intersecting the view's clip volume. */
+  private _sectionCutRef?: TileTreeReference;
+  /** Whether `this._modelRef` is a [[PrimaryTreeReference]] (as opposed to, e.g., a reality model tree reference). */
+  private readonly _isPrimaryRef: boolean;
+
+  public constructor(model: GeometricModel3dState, view: SpatialViewState) {
+    this._modelRef = model.createTileTreeReference(view);
+    this._isPrimaryRef = this._modelRef instanceof PrimaryTreeReference;
+  }
+
+  public * [Symbol.iterator](): Iterator<TileTreeReference> {
+    yield this._modelRef;
+    for (const animated of this._animatedRefs)
+      yield animated;
+
+    if (this._sectionCutRef)
+      yield this._sectionCutRef;
+  }
+
+  public updateAnimated(_script: RenderScheduleState.Script | undefined): void {
+    const ref = this._primaryRef;
+    if (!ref)
+      return;
+
+    this._animatedRefs.length = 0;
+    // ###TODO
+  }
+
+  public updateSectionCut(_clip: StringifiedClipVector | undefined): void {
+    const ref = this._primaryRef;
+    if (!ref)
+      return;
+
+      // ###TODO
+  }
+
+  private get _primaryRef(): PrimaryTreeReference | undefined {
+    if (!this._isPrimaryRef)
+      return undefined;
+
+    assert(this._modelRef instanceof PrimaryTreeReference);
+    return this._modelRef as PrimaryTreeReference;
+  }
+}
+
+/** Provides [[TileTreeReference]]s for the loaded models present in a [[SpatialViewState]]'s [[ModelSelectorState]]. */
+class SpatialRefs implements SpatialTileTreeReferences {
+  private _allLoaded = false;
+  private readonly _view: SpatialViewState;
+  private _refs = new Map<Id64String, SpatialModelRefs>();
+  private _swapRefs = new Map<Id64String, SpatialModelRefs>();
+  private _scheduleScript?: RenderScheduleState.Script;
+  private _sectionCut?: StringifiedClipVector;
+
+  public constructor(view: SpatialViewState) {
+    this._view = view;
+    this._scheduleScript = view.displayStyle.scheduleScript;
+    this._sectionCut = this.getSectionCutFromView();
+  }
+
+  public update(): void {
+    this._allLoaded = false;
+  }
+
+  public * [Symbol.iterator](): Iterator<TileTreeReference> {
+    this.load();
+    for (const modelRef of this._refs.values())
+      for (const ref of modelRef)
+        yield ref;
+  }
+
+  private load(): void {
+    if (!this._allLoaded) {
+      this._allLoaded = true;
+      this.updateModels();
+    }
+
+    const script = this._view.displayStyle.scheduleScript;
+    if (script !== this._scheduleScript) {
+      this._scheduleScript = script;
+      for (const ref of this._refs.values())
+        ref.updateAnimated(script);
+    }
+
+    const sectionCut = this.getSectionCutFromView();
+    if (sectionCut?.clipString !== this._sectionCut?.clipString) {
+      this._sectionCut = sectionCut;
+      for (const ref of this._refs.values())
+        ref.updateSectionCut(sectionCut);
+    }
+  }
+
+  private getSectionCutFromView(): StringifiedClipVector | undefined {
+    const wantCut = this._view.viewFlags.clipVolume && this._view.details.clipStyle.produceCutGeometry;
+    const clip = wantCut ? this._view.getViewClip() : undefined;
+    return StringifiedClipVector.fromClipVector(clip);
+  }
+
+  /** Ensure this._refs contains a SpatialModelRefs for all loaded models in the model selector. */
+  private updateModels(): void {
+    const prev = this._refs;
+    const cur = this._swapRefs;
+    this._refs = cur;
+    this._swapRefs = prev;
+    cur.clear();
+
+    for (const modelId of this._view.modelSelector.models) {
+      let modelRefs = prev.get(modelId);
+      if (!modelRefs) {
+        const model = this._view.iModel.models.getLoaded(modelId)?.asGeometricModel3d;
+        if (model) {
+          modelRefs = new SpatialModelRefs(model, this._view);
+          modelRefs.updateAnimated(this._scheduleScript);
+          modelRefs.updateSectionCut(this._sectionCut)
+        }
+      }
+
+      if (modelRefs)
+        cur.set(modelId, modelRefs);
+    }
+  }
 }

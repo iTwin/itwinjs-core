@@ -379,7 +379,7 @@ export class ClipVector {
    *  Number:
    *    number
    *    _
-   * @internal
+   * @alpha
    */
   public toCompactString(): string {
     function formatNumber(num: number) {
@@ -429,5 +429,37 @@ export class ClipVector {
       result = `${result}${formatPrimitive(primitive)}`;
 
     return `${result}_`;
+  }
+}
+
+/** Bundles a [[ClipVector]] with its compact string representation.
+ * @note The string representation is computed once; the ClipVector is assumed not to be subsequently modified.
+ * @see [[StringifiedClipVector.fromClipVector]] to create from a ClipVector.
+ * @see [[ClipVector.toCompactString]] for a description of the string representation.
+ * @alpha
+ */
+export type StringifiedClipVector = ClipVector & { readonly clipString: string };
+
+/** Bundles a ClipVector with its compact string representation.
+ * @note The string representation is computed once; the ClipVector is assumed not to be subsequently modified.
+ * @alpha
+ */
+export namespace StringifiedClipVector {
+  /** Create from a ClipVector.
+   * @param clip The ClipVector to stringify.
+   * @returns The input ClipVector with its compact string representation, or undefined if the input is undefined or empty.
+   * @note The string representation is computed once; the ClipVector is assumed not to be subsequently modified.
+   */
+  export function fromClipVector(clip?: ClipVector): StringifiedClipVector | undefined {
+    if (!clip || !clip.isValid)
+      return undefined;
+
+    const ret = clip as any;
+    if (undefined === ret.clipString)
+      ret.clipString = clip.toCompactString();
+
+    const stringified = ret as StringifiedClipVector;
+    assert(undefined !== stringified.clipString);
+    return stringified;
   }
 }
