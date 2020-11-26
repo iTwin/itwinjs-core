@@ -8,14 +8,14 @@
 
 import "./ModelsTree.scss";
 import * as React from "react";
-import { Id64String, IDisposable } from "@bentley/bentleyjs-core";
+import { Id64String } from "@bentley/bentleyjs-core";
 import { IModelConnection, PerModelCategoryVisibility, Viewport } from "@bentley/imodeljs-frontend";
 import {
   ContentFlags, DescriptorOverrides, ECClassGroupingNodeKey, GroupingNodeKey, Keys, KeySet, NodeKey, Ruleset,
 } from "@bentley/presentation-common";
 import { ContentDataProvider, IPresentationTreeDataProvider, usePresentationTreeNodeLoader } from "@bentley/presentation-components";
 import { ControlledTree, SelectionMode, TreeNodeItem, useVisibleTreeNodes } from "@bentley/ui-components";
-import { useDisposable } from "@bentley/ui-core";
+import { useDisposable, useOptionalDisposable } from "@bentley/ui-core";
 import { connectIModelConnection } from "../../../ui-framework/redux/connectIModel";
 import { UiFramework } from "../../../ui-framework/UiFramework";
 import { ClassGroupingOption, VisibilityTreeFilterInfo } from "../Common";
@@ -136,13 +136,15 @@ export function ModelsTree(props: ModelsTreeProps) {
 
   const nodeLoaderInUse = props.filterInfo?.filter ? searchNodeLoader : nodeLoader;
   const { filteredNodeLoader, isFiltering, nodeHighlightingProps } = useVisibilityTreeFiltering(nodeLoaderInUse, props.filterInfo, props.onFilterApplied);
+  const filterApplied = filteredNodeLoader !== nodeLoaderInUse;
+  const filteredDataProvider = filterApplied ? filteredNodeLoader.dataProvider : undefined;
 
   const { activeView, modelsVisibilityHandler, selectionPredicate } = props;
   const nodeSelectionPredicate = React.useCallback((key: NodeKey, node: TreeNodeItem) => {
     return !selectionPredicate ? true : selectionPredicate(key, getNodeType(node, nodeLoader.dataProvider));
   }, [selectionPredicate, nodeLoader.dataProvider]);
 
-  const visibilityHandler = useVisibilityHandler(nodeLoaderInUse.dataProvider.rulesetId, activeView, modelsVisibilityHandler);
+  const visibilityHandler = useVisibilityHandler(nodeLoaderInUse.dataProvider.rulesetId, activeView, modelsVisibilityHandler, filteredDataProvider);
   const eventHandler = useDisposable(React.useCallback(() => new VisibilityTreeEventHandler({
     nodeLoader: filteredNodeLoader,
     visibilityHandler,
@@ -150,9 +152,7 @@ export function ModelsTree(props: ModelsTreeProps) {
     selectionPredicate: nodeSelectionPredicate,
   }), [filteredNodeLoader, visibilityHandler, nodeSelectionPredicate]));
 
-  const filterApplied = filteredNodeLoader !== nodeLoaderInUse;
-  const modelSource = filterApplied ? filteredNodeLoader.modelSource : nodeLoader.modelSource;
-  const visibleNodes = useVisibleTreeNodes(modelSource);
+  const visibleNodes = useVisibleTreeNodes(filteredNodeLoader.modelSource);
   const treeRenderer = useVisibilityTreeRenderer(true, false);
 
   const overlay = isFiltering ? <div className="filteredTreeOverlay" /> : undefined;
@@ -188,22 +188,21 @@ export function ModelsTree(props: ModelsTreeProps) {
  */
 export const IModelConnectedModelsTree = connectIModelConnection(null, null)(ModelsTree); // eslint-disable-line @typescript-eslint/naming-convention
 
-const useVisibilityHandler = (rulesetId: string, activeView?: Viewport, visibilityHandler?: VisibilityHandler) => {
-  const previous = React.useRef<IDisposable>();
+const useVisibilityHandler = (rulesetId: string, activeView?: Viewport, visibilityHandler?: VisibilityHandler, filteredDataProvider?: IPresentationTreeDataProvider) => {
+  const defaultVisibilityHandler = useOptionalDisposable(React.useCallback(() => {
+    return visibilityHandler ? undefined : createVisibilityHandler(rulesetId, activeView);
+  }, [visibilityHandler, rulesetId, activeView]));
 
-  React.useEffect(() => () => previous.current?.dispose(), []);
+  const handler = visibilityHandler ?? defaultVisibilityHandler;
 
-  return React.useMemo(() => {
-    if (previous.current)
-      previous.current.dispose();
+  React.useEffect(() => {
+    handler && handler.setFilteredDataProvider(filteredDataProvider);
+  }, [handler, filteredDataProvider]);
 
-    const handler = visibilityHandler ?? createVisibilityHandler(rulesetId, activeView);
-    previous.current = handler;
-    return handler;
-  }, [rulesetId, activeView, visibilityHandler]);
+  return handler;
 };
 
-const createVisibilityHandler = (rulesetId: string, activeView?: Viewport): IVisibilityHandler | undefined => {
+const createVisibilityHandler = (rulesetId: string, activeView?: Viewport): VisibilityHandler | undefined => {
   // istanbul ignore next
   return activeView ? new VisibilityHandler({ rulesetId, viewport: activeView }) : undefined;
 };
@@ -253,6 +252,7 @@ export class VisibilityHandler implements IVisibilityHandler {
   private _pendingVisibilityChange: any | undefined;
   private _subjectModelIdsCache: SubjectModelIdsCache;
   private _onVisibilityChange?: () => void;
+  private _filteredDataProvider?: IPresentationTreeDataProvider;
 
   constructor(props: VisibilityHandlerProps) {
     this._props = props;
@@ -277,6 +277,8 @@ export class VisibilityHandler implements IVisibilityHandler {
   public get onVisibilityChange() { return this._onVisibilityChange; }
   public set onVisibilityChange(callback: (() => void) | undefined) { this._onVisibilityChange = callback; }
 
+  public setFilteredDataProvider(provider: IPresentationTreeDataProvider | undefined) { this._filteredDataProvider = provider; }
+
   public getVisibilityStatus(node: TreeNodeItem, nodeKey: NodeKey): VisibilityStatus | Promise<VisibilityStatus> {
     if (NodeKey.isClassGroupingNodeKey(nodeKey))
       return this.getElementGroupingNodeDisplayStatus(node.id, nodeKey);
@@ -286,7 +288,7 @@ export class VisibilityHandler implements IVisibilityHandler {
 
     if (isSubjectNode(node)) {
       // note: subject nodes may be merged to represent multiple subject instances
-      return this.getSubjectDisplayStatus(nodeKey.instanceKeys.map((k) => k.id));
+      return this.getSubjectNodeVisibility(nodeKey.instanceKeys.map((key) => key.id), node);
     }
     if (isModelNode(node))
       return this.getModelDisplayStatus(nodeKey.instanceKeys[0].id);
@@ -305,7 +307,7 @@ export class VisibilityHandler implements IVisibilityHandler {
       return;
 
     if (isSubjectNode(node)) {
-      await this.changeSubjectState(nodeKey.instanceKeys.map((k) => k.id), on);
+      await this.changeSubjectNodeState(nodeKey.instanceKeys.map((key) => key.id), node, on);
     } else if (isModelNode(node)) {
       await this.changeModelState(nodeKey.instanceKeys[0].id, on);
     } else if (isCategoryNode(node)) {
@@ -327,14 +329,37 @@ export class VisibilityHandler implements IVisibilityHandler {
     return elementNode.extendedData ? elementNode.extendedData.categoryId : /* istanbul ignore next */ undefined;
   }
 
-  private async getSubjectDisplayStatus(ids: Id64String[]): Promise<VisibilityStatus> {
+  private async getSubjectNodeVisibility(ids: Id64String[], node: TreeNodeItem): Promise<VisibilityStatus> {
     if (!this._props.viewport.view.isSpatialView())
       return { isDisabled: true, isDisplayed: false, tooltip: createTooltip("disabled", "subject.nonSpatialView") };
+
+    if (this._filteredDataProvider)
+      return this.getFilteredSubjectDisplayStatus(this._filteredDataProvider, ids, node);
+
+    return this.getSubjectDisplayStatus(ids);
+  }
+
+  private async getSubjectDisplayStatus(ids: Id64String[]): Promise<VisibilityStatus> {
     const modelIds = await this.getSubjectModelIds(ids);
     const isDisplayed = modelIds.some((modelId) => this.getModelDisplayStatus(modelId).isDisplayed);
     if (isDisplayed)
       return { isDisplayed, tooltip: createTooltip("visible", "subject.atLeastOneModelVisible") };
     return { isDisplayed, tooltip: createTooltip("hidden", "subject.allModelsHidden") };
+  }
+
+  private async getFilteredSubjectDisplayStatus(provider: IPresentationTreeDataProvider, ids: Id64String[], node: TreeNodeItem): Promise<VisibilityStatus> {
+    const children = await provider.getNodes(node);
+    if (children.length === 0)
+      return this.getSubjectDisplayStatus(ids);
+
+    const hiddenModelIds = await this.getSubjectHiddenModelIds(ids);
+    if (hiddenModelIds.some((modelId) => this.getModelDisplayStatus(modelId).isDisplayed))
+      return { isDisplayed: true, tooltip: createTooltip("visible", "subject.atLeastOneModelVisible") };
+
+    const childrenDisplayStatuses = await Promise.all(children.map((childNode) => this.getVisibilityStatus(childNode, provider.getNodeKey(childNode))));
+    if (childrenDisplayStatuses.some((status) => status.isDisplayed))
+      return { isDisplayed: true, tooltip: createTooltip("visible", "subject.atLeastOneModelVisible") };
+    return { isDisplayed: false, tooltip: createTooltip("hidden", "subject.allModelsHidden") };
   }
 
   private getModelDisplayStatus(id: Id64String): VisibilityStatus {
@@ -407,10 +432,27 @@ export class VisibilityHandler implements IVisibilityHandler {
     return { isDisplayed: false, tooltip: createTooltip("hidden", "element.hiddenThroughCategory") };
   }
 
-  private async changeSubjectState(ids: Id64String[], on: boolean) {
+  private async changeSubjectNodeState(ids: Id64String[], node: TreeNodeItem, on: boolean) {
     if (!this._props.viewport.view.isSpatialView())
       return;
 
+    if (this._filteredDataProvider)
+      return this.changeFilteredSubjectState(this._filteredDataProvider, ids, node, on);
+
+    return this.changeSubjectState(ids, on);
+  }
+
+  private async changeFilteredSubjectState(provider: IPresentationTreeDataProvider, ids: Id64String[], node: TreeNodeItem, on: boolean) {
+    const children = await provider.getNodes(node);
+    if (children.length === 0)
+      return this.changeSubjectState(ids, on);
+
+    const hiddenModels = await this.getSubjectHiddenModelIds(ids);
+    const childrenPromises = children.map(async (childNode) => this.changeVisibility(childNode, provider.getNodeKey(childNode), on));
+    return Promise.all([this.changeModelsVisibility(hiddenModels, on), ...childrenPromises]);
+  }
+
+  private async changeSubjectState(ids: Id64String[], on: boolean) {
     const modelIds = await this.getSubjectModelIds(ids);
     return this.changeModelsVisibility(modelIds, on);
   }
@@ -507,6 +549,11 @@ export class VisibilityHandler implements IVisibilityHandler {
       .reduce((allModelIds: Id64String[], curr: Id64String[]) => [...allModelIds, ...curr], []);
   }
 
+  private async getSubjectHiddenModelIds(subjectIds: Id64String[]) {
+    return (await Promise.all(subjectIds.map(async (id) => this._subjectModelIdsCache.getSubjectHiddenModels(id))))
+      .reduce((modelIds: Id64String[], currIds: Id64String[]) => [...modelIds, ...currIds]);
+  }
+
   // istanbul ignore next
   private async getAssemblyElementIds(rulesetId: string, assemblyId: Id64String) {
     const provider = new AssemblyElementIdsProvider(this._props.viewport.iModel, rulesetId, assemblyId);
@@ -520,10 +567,15 @@ export class VisibilityHandler implements IVisibilityHandler {
   }
 }
 
+interface ModelInfo {
+  id: Id64String;
+  isHidden: boolean;
+}
+
 class SubjectModelIdsCache {
   private _imodel: IModelConnection;
   private _subjectsHierarchy: Map<Id64String, Id64String[]> | undefined;
-  private _subjectModels: Map<Id64String, Id64String[]> | undefined;
+  private _subjectModels: Map<Id64String, ModelInfo[]> | undefined;
   private _init: Promise<void> | undefined;
 
   constructor(imodel: IModelConnection) {
@@ -547,7 +599,7 @@ class SubjectModelIdsCache {
   private async initSubjectModels() {
     this._subjectModels = new Map();
     const ecsql = `
-      SELECT p.ECInstanceId id, s.ECInstanceId subjectId
+      SELECT p.ECInstanceId id, s.ECInstanceId subjectId, json_extract(p.JsonProperties, '$.PhysicalPartition.Model.Content') content
       FROM bis.InformationPartitionElement p
       INNER JOIN bis.GeometricModel3d m ON m.ModeledElement.Id = p.ECInstanceId
       INNER JOIN bis.Subject s ON (s.ECInstanceId = p.Parent.Id OR json_extract(s.JsonProperties, '$.Subject.Model.TargetPartition') = printf('0x%x', p.ECInstanceId))
@@ -559,7 +611,8 @@ class SubjectModelIdsCache {
         list = [];
         this._subjectModels.set(row.subjectId, list);
       }
-      list.push(row.id);
+      const isHidden = row.content !== undefined;
+      list.push({ id: row.id, isHidden });
     }
   }
 
@@ -573,7 +626,7 @@ class SubjectModelIdsCache {
   private appendSubjectModelsRecursively(modelIds: Id64String[], subjectId: Id64String) {
     const subjectModelIds = this._subjectModels!.get(subjectId);
     if (subjectModelIds)
-      modelIds.push(...subjectModelIds);
+      modelIds.push(...subjectModelIds.map((info) => info.id));
 
     const childSubjectIds = this._subjectsHierarchy!.get(subjectId);
     if (childSubjectIds)
@@ -585,6 +638,12 @@ class SubjectModelIdsCache {
     const modelIds = new Array<Id64String>();
     this.appendSubjectModelsRecursively(modelIds, subjectId);
     return modelIds;
+  }
+
+  public async getSubjectHiddenModels(subjectId: Id64String): Promise<Id64String[]> {
+    await this.initCache();
+    const subjectModels = this._subjectModels!.get(subjectId);
+    return subjectModels ? subjectModels.filter((info) => info.isHidden).map((info) => info.id) : /* istanbul ignore next */[];
   }
 }
 
