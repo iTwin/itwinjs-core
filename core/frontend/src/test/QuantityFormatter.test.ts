@@ -7,6 +7,11 @@ import { assert } from "chai";
 import { Format, FormatterSpec, ParseResult, ParserSpec, QuantityError, QuantityStatus, UnitsProvider } from "@bentley/imodeljs-quantity";
 import { CustomFormatter, QuantityFormatter, QuantityType } from "../QuantityFormatter";
 
+function withinTolerance(x: number, y: number): boolean {
+  const tol: number = 0.1e-6;
+  const z = x - y;
+  return z >= -tol && z <= tol;
+}
 class MyNewFormatter implements CustomFormatter {
   public formatQuantity(_magnitude: number, spec: FormatterSpec): string {
     if (undefined !== spec)
@@ -59,7 +64,7 @@ const invalidFormatProps = {
   },
 };
 
-describe.only("Quantity formatter", async () => {
+describe("Quantity formatter", async () => {
   let quantityFormatter: QuantityFormatter;
   beforeEach(async () => {
     quantityFormatter = new QuantityFormatter();
@@ -117,7 +122,7 @@ describe.only("Quantity formatter", async () => {
     assert.equal((newFormatterSpec.format as MyNewFormat).myProp, expected);
   });
 
-  it("Registering new length override", async () => {
+  it("Set and use length override format", async () => {
     const overrideEntry = {
       metric: {
         composite: {
@@ -157,6 +162,14 @@ describe.only("Quantity formatter", async () => {
     const overrideImperialFormatSpec = await quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length, true);
     const overrideImperialFormattedValue = quantityFormatter.formatQuantity(1.5, overrideImperialFormatSpec);
     assert.equal(overrideImperialFormattedValue, "59.0551 in");
+
+    const overrideImperialParserSpec = await quantityFormatter.getParserSpecByQuantityType(QuantityType.Length, true);
+    const overrideValueInMeters1 = quantityFormatter.parseIntoQuantityValue(`48"`, overrideImperialParserSpec);
+    const overrideValueInMeters2 = quantityFormatter.parseIntoQuantityValue(`48 in`, overrideImperialParserSpec);
+    const overrideValueInMeters3 = quantityFormatter.parseIntoQuantityValue(`4 ft`, overrideImperialParserSpec);
+    assert(withinTolerance(overrideValueInMeters1.value!, 1.2192));
+    assert(withinTolerance(overrideValueInMeters1.value!, overrideValueInMeters2.value!));
+    assert(withinTolerance(overrideValueInMeters3.value!, overrideValueInMeters2.value!));
   });
 
 });
