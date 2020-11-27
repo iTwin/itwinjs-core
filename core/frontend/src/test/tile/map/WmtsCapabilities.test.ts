@@ -8,6 +8,7 @@ import { WmtsCapabilities } from "../../../tile/map/WmtsCapabilities";
 
 describe.only("WmtsCapabilities", () => {
   const SMALL_DEGREES_DIFFERENCE = 1.0e-8;
+  const SMALL_DECIMAL_DIFFERENCE = 1.0e-6;
 
   it("should parse USGS WMTS capabilities", async () => {
     const capabilities = await WmtsCapabilities.create("assets/wmts_capabilities/USGSHydroCached_capabilities.xml");
@@ -70,7 +71,7 @@ describe.only("WmtsCapabilities", () => {
     expect(capabilities?.contents?.layers[0].boundingBox?.range?.low.isAlmostEqualXY(-2.003750785759102E7, -3.024245526192411E7));
     expect(capabilities?.contents?.layers[0].boundingBox?.range?.low.isAlmostEqualXY(2.003872561259901E7, 3.0240971955423884E7));
 
-
+    // WSG84 BoundingBox
     expect(capabilities?.contents?.layers[0].wsg84BoundingBox).to.not.undefined;
 
     expect(capabilities?.contents?.layers[0].wsg84BoundingBox?.west).to.not.undefined;
@@ -89,11 +90,33 @@ describe.only("WmtsCapabilities", () => {
     expect(capabilities?.contents?.layers[0].style?.title).to.equal("Default Style");
     expect(capabilities?.contents?.layers[0].style?.isDefault).to.equal(true);
 
-    // TileMatrixSetLink
+    // TileMatrixSetLinks
     expect(capabilities?.contents?.layers[0].tileMatrixSetLinks.length).to.equal(2);
     expect(capabilities?.contents?.layers[0].tileMatrixSetLinks[0].tileMatrixSet).to.equal("default028mm");
     expect(capabilities?.contents?.layers[0].tileMatrixSetLinks[1].tileMatrixSet).to.equal("GoogleMapsCompatible");
 
+    // Validate TileMatrix set
+    expect(capabilities?.contents?.tileMatrixSet.length).to.equals(2);
+    expect(capabilities?.contents?.tileMatrixSet[0].identifier).to.equal("default028mm");
+    expect(capabilities?.contents?.tileMatrixSet[0].title).to.equal("TileMatrix using 0.28mm");
+    expect(capabilities?.contents?.tileMatrixSet[0].abstract).to.contains("dpi assumes 0.28mm");
+    expect(capabilities?.contents?.tileMatrixSet[0].supportedCrs).to.contains("urn:ogc:def:crs:EPSG::3857");
+
+    // Validate first tile matrix definition.
+    expect(capabilities?.contents?.tileMatrixSet[0].tileMatrix.length).to.equals(24);
+    expect(capabilities?.contents?.tileMatrixSet[0].tileMatrix[0].identifier).to.equals("0");
+
+    expect(capabilities?.contents?.tileMatrixSet[0].tileMatrix[0].scaleDenominator).to.not.undefined;
+    if (capabilities?.contents?.tileMatrixSet[0].tileMatrix[0].scaleDenominator)
+      expect(Math.abs(capabilities.contents.tileMatrixSet[0].tileMatrix[0].scaleDenominator - (5.590822640285016E8))).to.lessThan(SMALL_DECIMAL_DIFFERENCE);
+
+    expect(capabilities?.contents?.tileMatrixSet[0].tileMatrix[0].topLeftCorner).to.not.undefined;
+    if (capabilities?.contents?.tileMatrixSet[0].tileMatrix[0].topLeftCorner)
+      expect(capabilities?.contents?.tileMatrixSet[0].tileMatrix[0].topLeftCorner.isAlmostEqualXY(-2.0037508342787E7, 2.0037508342787E7)).to.true;
+    expect(capabilities?.contents?.tileMatrixSet[0].tileMatrix[0].tileWidth).to.equals(256);
+    expect(capabilities?.contents?.tileMatrixSet[0].tileMatrix[0].tileHeight).to.equals(256);
+    expect(capabilities?.contents?.tileMatrixSet[0].tileMatrix[0].matrixWidth).to.equals(2);
+    expect(capabilities?.contents?.tileMatrixSet[0].tileMatrix[0].matrixHeight).to.equals(2);
   });
 
   it("should parse sample OGC WMTS capabilities", async () => {
@@ -146,16 +169,31 @@ describe.only("WmtsCapabilities", () => {
     }
     expect(capabilities?.operationsMetadata?.getFeatureInfo?.postDcpHttp).to.undefined;
 
-
+    // Content
     expect(capabilities?.version).to.equal("1.0.0");
     expect(capabilities?.contents).to.not.undefined;
-    expect(capabilities?.contents?.layers.length).to.equal(2);
+
+    // layer
+    expect(capabilities?.contents?.layers.length).to.equal(2);  // this sample capabilities has 2 layers
     expect(capabilities?.contents?.layers[0].identifier).to.equal("etopo2");
+
+    // tileMatrixSetLinks
     expect(capabilities?.contents?.layers[0].tileMatrixSetLinks.length).to.equal(1);
     expect(capabilities?.contents?.layers[0].tileMatrixSetLinks[0].tileMatrixSet).to.equal("WholeWorld_CRS_84");
-
     expect(capabilities?.contents?.layers[1].identifier).to.equal("AdminBoundaries");
     expect(capabilities?.contents?.layers[1].tileMatrixSetLinks.length).to.equal(1);
     expect(capabilities?.contents?.layers[1].tileMatrixSetLinks[0].tileMatrixSet).to.equal("WholeWorld_CRS_84");
+
+
+    // Validate first tile matrix definition.
+    expect(capabilities?.contents?.tileMatrixSet.length).to.equals(1);
+    expect(capabilities?.contents?.tileMatrixSet[0].tileMatrix.length).to.equals(7);
+    expect(capabilities?.contents?.tileMatrixSet[0].tileMatrix[0].identifier).to.equals("2g");
+
+
+    expect(capabilities?.contents?.tileMatrixSet[0].tileMatrix[0].tileWidth).to.equals(320);
+    expect(capabilities?.contents?.tileMatrixSet[0].tileMatrix[0].tileHeight).to.equals(200);
+    expect(capabilities?.contents?.tileMatrixSet[0].tileMatrix[0].matrixWidth).to.equals(1);
+    expect(capabilities?.contents?.tileMatrixSet[0].tileMatrix[0].matrixHeight).to.equals(1);
   });
 });

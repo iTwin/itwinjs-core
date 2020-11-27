@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { Range2d } from "@bentley/geometry-core";
+import { Point2d, Range2d } from "@bentley/geometry-core";
 import { request, RequestBasicCredentials, RequestOptions } from "@bentley/itwin-client";
 import { xml2json } from "xml-js";
 import { MapCartoRectangle } from "../../imodeljs-frontend";
@@ -52,13 +52,22 @@ export namespace WmtsCapability {
   export const OWS_POST_XMLTAG = "ows:Post";
   export const OWS_SERVICETYPE_XMLTAG = "ows:ServiceType";
   export const OWS_SERVICETYPEVERSION_XMLTAG = "ows:ServiceTypeVersion";
+  export const OWS_SUPPORTEDCRS_XMLTAG = "ows:SupportedCRS";
   export const OWS_TITLE_XMLTAG = "ows:Title";
   export const OWS_UPPERCORNER_XMLTAG = "ows:UpperCorner";
   export const OWS_VALUE_XMLTAG = "ows:Value";
   export const OWS_WGS84BOUNDINGBOX_XMLTAG = "ows:WGS84BoundingBox";
 
   // xml tag names
+  export const MATRIXWIDTH_XMLTAG = "MatrixWidth";
+  export const MATRIXHEIGHT_XMLTAG = "MatrixHeight";
+  export const SCALEDENOMINATOR_XMLTAG = "ScaleDenominator";
+
+  export const TILEHEIGHT_XMLTAG = "TileHeight";
+  export const TILEMATRIX_XMLTAG = "TileMatrix";
   export const TILEMATRIXSETLINK_XMLTAG = "TileMatrixSetLink";
+  export const TILEWIDTH_XMLTAG = "TileWidth";
+  export const TOPLEFTCORNER_XMLTAG = "TopLeftCorner";
 
   // other strings...
   export const CONSTRAINT_NAME_FILTER = "Encoding";
@@ -174,9 +183,11 @@ export namespace WmtsCapability {
 
   export class Contents {
     public readonly layers: WmtsCapability.Layer[] = [];
+    public readonly tileMatrixSet: WmtsCapability.TileMatrixSet[] = [];
 
     constructor(private _json: any) {
 
+      // Layers
       const jsonLayer = _json?.Layer;
       if (jsonLayer) {
         if (Array.isArray(jsonLayer)) {
@@ -187,8 +198,21 @@ export namespace WmtsCapability {
           this.layers.push(new WmtsCapability.Layer(jsonLayer));
         }
       }
+
+      // TileMatrixSet
+      const jsonTileMatrixSet = _json?.TileMatrixSet;
+      if (jsonTileMatrixSet) {
+        if (Array.isArray(jsonTileMatrixSet)) {
+          jsonTileMatrixSet.forEach((matrixSet: any) => {
+            this.tileMatrixSet.push(new WmtsCapability.TileMatrixSet(matrixSet));
+          });
+        } else {
+          this.tileMatrixSet.push(new WmtsCapability.TileMatrixSet(jsonTileMatrixSet));
+        }
+      }
     }
   }
+
 
   export class Style {
     public readonly isDefault: boolean = true;
@@ -224,8 +248,102 @@ export namespace WmtsCapability {
     public readonly tileMatrixSet: string;
     // TODO: TileMatrixSetLimits
 
-    constructor(json: any) {
-      this.tileMatrixSet = (json?.TileMatrixSet?._text ? json.TileMatrixSet._text : "");
+    constructor(_json: any) {
+      this.tileMatrixSet = (_json?.TileMatrixSet?._text ? _json.TileMatrixSet._text : "");
+    }
+  }
+
+  export class TileMatrixSet {
+    public readonly identifier: string;
+    public readonly title?: string;
+    public readonly abstract?: string;
+    public readonly supportedCrs: string;
+    public readonly tileMatrix: TileMatrix[] = [];
+
+    constructor(_json: any) {
+      this.identifier = _json[OWS_IDENTIFIER_XMLTAG]?._text;
+      if (!this.identifier)
+        throw new Error("No Identifier found.");
+
+      this.title = _json[OWS_TITLE_XMLTAG]?._text;
+      this.abstract = _json[OWS_ABSTRACT_XMLTAG]?._text;
+      this.supportedCrs = _json[OWS_SUPPORTEDCRS_XMLTAG]?._text;
+      if (!this.supportedCrs)
+        throw new Error("No supported CRS found.");
+
+      // TileMatrix:
+      // TileMatrix is mandatory on TileMatrixSet, if it doesn't exists, something is OFF with the capability.
+      const tileMatrix = _json[TILEMATRIX_XMLTAG];
+      if (!tileMatrix)
+        throw new Error("No matrix set link found for WMTS layer");
+
+      if (Array.isArray(tileMatrix)) {
+        tileMatrix.forEach((tm: any) => {
+          this.tileMatrix.push(new TileMatrix(tm));
+        });
+      } else {
+        this.tileMatrix.push(new TileMatrix(tileMatrix));
+      }
+    }
+  }
+
+  export class TileMatrix {
+    public readonly identifier: string;
+    public readonly title?: string;
+    public readonly abstract?: string;
+    public readonly scaleDenominator: number;
+    public readonly topLeftCorner: Point2d;
+    public readonly tileWidth: number;
+    public readonly tileHeight: number;
+    public readonly matrixWidth: number;
+    public readonly matrixHeight: number;
+
+    constructor(_json: any) {
+      if (!_json)
+        throw new Error("Invalid json data provided");
+
+      this.identifier = _json[OWS_IDENTIFIER_XMLTAG]?._text;
+      if (!this.identifier)
+        throw new Error("No Identifier found.");
+
+      this.title = _json[OWS_TITLE_XMLTAG]?._text;
+      this.abstract = _json[OWS_ABSTRACT_XMLTAG]?._text;
+
+      // Scale denominator
+      const scaleDenomStr = _json[SCALEDENOMINATOR_XMLTAG]?._text;
+      if (!scaleDenomStr)
+        throw new Error("No scale denominator found on TileMatrix.");
+      this.scaleDenominator = +scaleDenomStr;
+
+      // Top left corner
+      const topLeftCorner = _json[TOPLEFTCORNER_XMLTAG]?._text?.split(" ").map((x: string) => +x);
+      if (topLeftCorner?.length !== 2)
+        throw new Error("No TopLeftCorner found on TileMatrix.");
+      this.topLeftCorner = Point2d.create(topLeftCorner[0], topLeftCorner[1]);
+
+      // Tile Width
+      const tileWidthStr = _json[TILEWIDTH_XMLTAG]?._text;
+      if (!tileWidthStr)
+        throw new Error("No tile width found on TileMatrix.");
+      this.tileWidth = +tileWidthStr;
+
+      // Tile Height
+      const tileHeightStr = _json[TILEHEIGHT_XMLTAG]?._text;
+      if (!tileHeightStr)
+        throw new Error("No tile eight found on TileMatrix.");
+      this.tileHeight = +tileHeightStr;
+
+      // Matrix Width
+      const matrixWidthStr = _json[MATRIXWIDTH_XMLTAG]?._text;
+      if (!matrixWidthStr)
+        throw new Error("No tile width found on TileMatrix.");
+      this.matrixWidth = +matrixWidthStr;
+
+      // Matrix Height
+      const matrixHeightStr = _json[MATRIXHEIGHT_XMLTAG]?._text;
+      if (!matrixHeightStr)
+        throw new Error("No tile eight found on TileMatrix.");
+      this.matrixHeight = +matrixHeightStr;
     }
   }
 
@@ -309,7 +427,7 @@ export class WmtsCapabilities {
   }
 
   public static createFromXml(xmlCapabilities: string): WmtsCapabilities | undefined {
-    const jsonCapabilities = xml2json(xmlCapabilities, { compact: true, nativeType: true, ignoreComment: true });
+    const jsonCapabilities = xml2json(xmlCapabilities, { compact: true, nativeType: false, ignoreComment: true });
     const capabilities = JSON.parse(jsonCapabilities);
     return new WmtsCapabilities(capabilities);
   }
