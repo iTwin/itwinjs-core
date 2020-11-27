@@ -272,9 +272,15 @@ export class ContentBuilder {
       displayLabel: field.label,
       typename: field.type.typeName,
     };
+
+    if (field.renderer) {
+      descr.renderer = { name: field.renderer.name };
+    }
+
     if (field.editor) {
       descr.editor = { name: field.editor.name, params: [] } as PropertyEditorInfo;
     }
+
     if (field.type.valueFormat === PropertyValueFormat.Primitive && "enum" === field.type.typeName && field.isPropertiesField() && field.properties[0].property.enumerationInfo) {
       const enumInfo = field.properties[0].property.enumerationInfo;
       descr.enum = {
