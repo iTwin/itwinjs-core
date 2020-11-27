@@ -52,7 +52,7 @@ export abstract class NormalizedTransition {
     if (name === "clothoid")
       return this._clothoidEvaluator ? this._clothoidEvaluator : (this._clothoidEvaluator = new NormalizedClothoidTransition());
     if (name === "bloss")
-      return this._blossEvaluator ? this._clothoidEvaluator : (this._blossEvaluator = new NormalizedBlossTransition());
+      return this._blossEvaluator ? this._blossEvaluator : (this._blossEvaluator = new NormalizedBlossTransition());
     if (name === "biquadratic")
       return this._biquadraticEvaluator ? this._biquadraticEvaluator : (this._biquadraticEvaluator = new NormalizedBiQuadraticTransition());
     if (name === "sine")
