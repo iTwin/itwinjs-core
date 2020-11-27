@@ -102,7 +102,7 @@ export interface ModelsTreeProps {
    * Custom visibility handler.
    * @alpha
    */
-  modelsVisibilityHandler?: VisibilityHandler;
+  modelsVisibilityHandler?: ModelsVisibilityHandler;
   /**
    * Custom data provider to use for testing
    * @internal
@@ -188,7 +188,7 @@ export function ModelsTree(props: ModelsTreeProps) {
  */
 export const IModelConnectedModelsTree = connectIModelConnection(null, null)(ModelsTree); // eslint-disable-line @typescript-eslint/naming-convention
 
-const useVisibilityHandler = (rulesetId: string, activeView?: Viewport, visibilityHandler?: VisibilityHandler, filteredDataProvider?: IPresentationTreeDataProvider) => {
+const useVisibilityHandler = (rulesetId: string, activeView?: Viewport, visibilityHandler?: ModelsVisibilityHandler, filteredDataProvider?: IPresentationTreeDataProvider) => {
   const defaultVisibilityHandler = useOptionalDisposable(React.useCallback(() => {
     return visibilityHandler ? undefined : createVisibilityHandler(rulesetId, activeView);
   }, [visibilityHandler, rulesetId, activeView]));
@@ -202,9 +202,9 @@ const useVisibilityHandler = (rulesetId: string, activeView?: Viewport, visibili
   return handler;
 };
 
-const createVisibilityHandler = (rulesetId: string, activeView?: Viewport): VisibilityHandler | undefined => {
+const createVisibilityHandler = (rulesetId: string, activeView?: Viewport): ModelsVisibilityHandler | undefined => {
   // istanbul ignore next
-  return activeView ? new VisibilityHandler({ rulesetId, viewport: activeView }) : undefined;
+  return activeView ? new ModelsVisibilityHandler({ rulesetId, viewport: activeView }) : undefined;
 };
 
 const getNodeType = (item: TreeNodeItem, dataProvider: IPresentationTreeDataProvider) => {
@@ -239,10 +239,10 @@ const isModelNode = (node: TreeNodeItem) => (node.extendedData && node.extendedD
 const isCategoryNode = (node: TreeNodeItem) => (node.extendedData && node.extendedData.isCategory);
 
 /**
- * Props for [[VisibilityHandler]]
+ * Props for [[ModelsVisibilityHandler]]
  * @alpha
  */
-export interface VisibilityHandlerProps {
+export interface ModelsVisibilityHandlerProps {
   rulesetId: string;
   viewport: Viewport;
   onVisibilityChange?: () => void;
@@ -252,14 +252,14 @@ export interface VisibilityHandlerProps {
  * Visibility handler used by [[ModelsTree]] to control visibility of the tree items.
  * @alpha
  */
-export class VisibilityHandler implements IVisibilityHandler {
-  private _props: VisibilityHandlerProps;
+export class ModelsVisibilityHandler implements IVisibilityHandler {
+  private _props: ModelsVisibilityHandlerProps;
   private _pendingVisibilityChange: any | undefined;
   private _subjectModelIdsCache: SubjectModelIdsCache;
   private _onVisibilityChange?: () => void;
   private _filteredDataProvider?: IPresentationTreeDataProvider;
 
-  constructor(props: VisibilityHandlerProps) {
+  constructor(props: ModelsVisibilityHandlerProps) {
     this._props = props;
     this._onVisibilityChange = props.onVisibilityChange;
     this._subjectModelIdsCache = new SubjectModelIdsCache(this._props.viewport.iModel);
