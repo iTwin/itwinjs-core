@@ -9,7 +9,7 @@ export const createRandomId = (): Id64String => {
   return Id64.fromLocalAndBriefcaseIds(faker.random.number(), faker.random.number());
 };
 
-export const createRandomRgbColor = () => {
+export const createRandomRgbColor = (): string => {
   return `rgb(
     ${faker.random.number({ max: 255 })},
     ${faker.random.number({ max: 255 })},
@@ -17,7 +17,7 @@ export const createRandomRgbColor = () => {
   )`;
 };
 
-export const createRandomHexColor = () => {
+export const createRandomHexColor = (): string => {
   const elements = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"];
   let result = "#";
   let length = 6;

@@ -47,7 +47,7 @@ export namespace InstanceKey {
   }
 
   /** Deserialize [[InstanceKey]] from JSON */
-  export function fromJSON(json: InstanceKeyJSON) {
+  export function fromJSON(json: InstanceKeyJSON): InstanceKey {
     return { ...json, id: Id64.fromJSON(json.id) };
   }
 }
@@ -291,7 +291,7 @@ export type RelationshipPath = RelatedClassInfo[];
 export type RelationshipPathJSON = RelatedClassInfoJSON[];
 
 /** @public */
-export namespace RelationshipPath {
+export namespace RelationshipPath { // eslint-disable-line @typescript-eslint/no-redeclare
   /** Reverse direction of the given [[RelationshipPath]] */
   export function reverse(path: RelationshipPath): RelationshipPath {
     return [...path].reverse().map((step) => ({

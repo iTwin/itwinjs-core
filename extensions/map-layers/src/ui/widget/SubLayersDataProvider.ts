@@ -77,7 +77,7 @@ export class SubLayersDataProvider implements ITreeDataProvider {
 
   public onTreeNodeChanged = new BeEvent<TreeDataChangesListener>();
 
-  public async getNodesCount(parent?: TreeNodeItem) {
+  public async getNodesCount(parent?: TreeNodeItem): Promise<number> {
     const nodeArray: TreeNodeItem[] | undefined = parent ? this._nodeMap.get(parent.id) : this._nodeMap.get("");
     if (nodeArray)
       return nodeArray.length;
@@ -85,7 +85,7 @@ export class SubLayersDataProvider implements ITreeDataProvider {
     return 0;
   }
 
-  public async getNodes(parent?: TreeNodeItem) {
+  public async getNodes(parent?: TreeNodeItem): Promise<TreeNodeItem[]> {
     const nodeArray: TreeNodeItem[] | undefined = parent ? this._nodeMap.get(parent.id) : this._nodeMap.get("");
     if (nodeArray)
       return nodeArray;

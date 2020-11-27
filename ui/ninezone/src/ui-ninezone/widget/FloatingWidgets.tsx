@@ -14,7 +14,7 @@ import { FloatingTab } from "./FloatingTab";
 /** This component renders all floating widgets.
  * @internal
  */
-export const FloatingWidgets = React.memo(function FloatingWidgets() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
+export const FloatingWidgets = React.memo(function FloatingWidgets() { // eslint-disable-line @typescript-eslint/naming-convention, @typescript-eslint/no-shadow
   const floatingWidgets = React.useContext(FloatingWidgetsStateContext);
   const widgets = React.useContext(WidgetsStateContext);
   return (

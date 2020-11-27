@@ -100,7 +100,7 @@ export abstract class SchemaFileLocater {
    * Schema files.
    * @param schemaPaths An array of search paths to add
    */
-  public addSchemaSearchPaths(schemaPaths: string[]) {
+  public addSchemaSearchPaths(schemaPaths: string[]): void {
     // If the path is not in the schemaPaths array, add it
     for (const schemaPath of schemaPaths)
       this.addSchemaSearchPath(schemaPath);
@@ -111,7 +111,7 @@ export abstract class SchemaFileLocater {
    * Schema files.
    * @param schemaPath A search path to add
    */
-  public addSchemaSearchPath(schemaPath: string) {
+  public addSchemaSearchPath(schemaPath: string): void {
     // If the path is not in the schemaPaths array, add it
     if (!this.searchPaths.find((entry) => entry === schemaPath))
       this.searchPaths.push(schemaPath);

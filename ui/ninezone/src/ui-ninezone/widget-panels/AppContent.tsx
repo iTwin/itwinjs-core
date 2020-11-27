@@ -16,7 +16,7 @@ import { useRefEffect } from "@bentley/ui-core";
 /** Main app content (i.e. viewport) that will change bounds based on panel pinned settings.
  * @internal
  */
-export const AppContent = React.memo(function AppContent() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
+export const AppContent = React.memo(function AppContent() { // eslint-disable-line @typescript-eslint/naming-convention, @typescript-eslint/no-shadow
   const panels = React.useContext(PanelsStateContext);
   const content = React.useContext(ContentNodeContext);
   const ref = usePanelsAutoCollapse<HTMLDivElement>();

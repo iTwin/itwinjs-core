@@ -135,7 +135,7 @@ async function matchHierarchy(filterer: IPropertyDataFilterer, categories: Prope
       newRecords[newCategory.name] = filteredRecords;
       newCategories.push(newCategory);
     }
-  };
+  }
 
   return { filteredCategories: newCategories, filteredRecords: newRecords, matchesCount, filteredResultMatches: allFilteredResultMatches };
 }

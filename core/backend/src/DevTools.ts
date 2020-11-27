@@ -204,6 +204,7 @@ export class DevTools {
   public static versions() {
     return {
       application: IModelHost.applicationVersion,
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       iModelJs: require("../package.json").version,
     };
   }

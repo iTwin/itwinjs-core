@@ -12,7 +12,7 @@ const ExternalsPlugin = require("webpack/lib/ExternalsPlugin");
 
 export class FrontendDefaultsPlugin {
   constructor(private _enableSourcemaps = true) { }
-  public apply(compiler: Compiler) {
+  public apply(compiler: Compiler): void {
     compiler.options = new IModelJsOptionsDefaulter(this._enableSourcemaps).process(compiler.options);
 
     // Add default plugins

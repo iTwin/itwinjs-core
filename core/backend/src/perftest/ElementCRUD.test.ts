@@ -119,6 +119,7 @@ function getCount(imodel: IModelDb, className: string) {
 
 describe("PerformanceElementsTests", () => {
   const reporter = new Reporter();
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const crudConfig = require(path.join(__dirname, "CRUDConfig.json")).test3d;
 
   before(async () => {
@@ -322,6 +323,7 @@ describe("PerformanceElementsTests", () => {
 describe("PerformanceElementsTests2d", () => {
   const outDir: string = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance2d");
   const reporter = new Reporter();
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const crudConfig = require(path.join(__dirname, "CRUDConfig.json")).test2d;
 
   before(async () => {
@@ -450,7 +452,7 @@ describe("PerformanceElementsTests2d", () => {
 
           const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance2d", `IModelPerformance2d_Read_${name}_${opCount}.bim`);
           const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
-          const minId: number = PerfTestUtility.getMinId(perfimodel, "bis.GraphicalElement2d");;
+          const minId: number = PerfTestUtility.getMinId(perfimodel, "bis.GraphicalElement2d");
           const elementIdIncrement = Math.floor(size / opCount);
 
           const startTime = new Date().getTime();

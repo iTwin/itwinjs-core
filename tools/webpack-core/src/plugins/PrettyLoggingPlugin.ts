@@ -36,7 +36,7 @@ export class PrettyLoggingPlugin {
     this._formatter = formatter || ((s) => s);
   }
 
-  public get isInteractive() { return process.stdout.isTTY && this._isWatch; }
+  public get isInteractive(): boolean | undefined { return process.stdout.isTTY && this._isWatch; }
 
   private clearIfInteractive() {
     if (this.isInteractive) {
@@ -60,7 +60,7 @@ export class PrettyLoggingPlugin {
     this._grouped = true;
   }
 
-  public handlePluginLogs(logs: any) {
+  public handlePluginLogs(logs: any): void {
     const logLevelColors: any = {
       error: chalk.red,
       warn: chalk.yellow,
@@ -112,7 +112,7 @@ export class PrettyLoggingPlugin {
     return true;
   }
 
-  public apply(compiler: Compiler) {
+  public apply(compiler: Compiler): void {
     compiler.hooks.entryOption.tap("PrettyLoggingPlugin", () => {
       this.printHeading(this._startMessage);
     });

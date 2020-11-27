@@ -419,7 +419,7 @@ export class Format implements FormatProps {
   /**
    * Returns a JSON object that contain the specification for this Format.
    */
-  public toJson() {
+  public toJson(): { [value: string]: any } {
     const schemaJson: { [value: string]: any } = {};
     schemaJson.type = Format.formatTypeToString(this.type);
     schemaJson.precision = this.precision;

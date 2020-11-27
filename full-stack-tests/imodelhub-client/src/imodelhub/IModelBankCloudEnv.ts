@@ -27,7 +27,7 @@ import { createIModelBankFileHandler } from "./FileHandler";
 
 let imodelBankClient: IModelBankClient;
 
-export function setIModelBankClient(_client: IModelBankClient) {
+export function setIModelBankClient(_client: IModelBankClient): void {
   imodelBankClient = _client;
 }
 

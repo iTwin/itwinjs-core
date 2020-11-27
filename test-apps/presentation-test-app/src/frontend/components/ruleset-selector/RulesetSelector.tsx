@@ -20,7 +20,7 @@ export default class RulesetSelector extends React.Component<RulesetSelectorProp
     super(props);
     this.state = {};
   }
-  public componentDidMount() {
+  public componentDidMount(): void {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.initAvailableRulesets();
   }
@@ -29,7 +29,7 @@ export default class RulesetSelector extends React.Component<RulesetSelectorProp
     const activeRulesetId = rulesetIds.length > 0 ? rulesetIds[0] : undefined;
     this.setState({ availableRulesets: rulesetIds, activeRulesetId });
   }
-  public componentDidUpdate(_prevProps: RulesetSelectorProps, prevState: RulesetSelectorState) {
+  public componentDidUpdate(_prevProps: RulesetSelectorProps, prevState: RulesetSelectorState): void {
     if (this.props.onRulesetSelected && this.state.activeRulesetId !== prevState.activeRulesetId)
       this.props.onRulesetSelected(this.state.activeRulesetId);
   }
@@ -37,7 +37,7 @@ export default class RulesetSelector extends React.Component<RulesetSelectorProp
   private onSelectedRulesetIdChanged = (e: React.ChangeEvent<HTMLSelectElement>) => {
     this.setState({ activeRulesetId: e.target.value });
   };
-  public render() {
+  public render(): JSX.Element {
     if (!this.state.availableRulesets)
       return (<div className="RulesetSelector">{IModelApp.i18n.translate("Sample:controls.notifications.loading")}</div>);
     if (0 === this.state.availableRulesets.length)

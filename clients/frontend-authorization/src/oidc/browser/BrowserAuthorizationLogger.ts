@@ -55,7 +55,7 @@ export class BrowserAuthorizationLogger implements IOidcClientLogger {
   }
 
   /** Initializes forwarding of OidcClient logs to the Bentley Logger */
-  public static initializeLogger() {
+  public static initializeLogger(): void {
     const logLevel = BrowserAuthorizationLogger.getLogLevel(FrontendAuthorizationClientLoggerCategory.Authorization);
     if (!OidcClientLog.logger) {
       OidcClientLog.logger = new BrowserAuthorizationLogger();
@@ -67,7 +67,7 @@ export class BrowserAuthorizationLogger implements IOidcClientLogger {
   }
 
   /** Resets (or clears) forwarding of OidcClient logs to the Bentley Logger */
-  public static reset() {
+  public static reset(): void {
     OidcClientLog.reset();
   }
 }

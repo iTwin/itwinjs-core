@@ -19,7 +19,7 @@ import { NodeKey, NodeKeyJSON } from "./hierarchy/Key";
 export type Key = Readonly<NodeKey> | Readonly<InstanceKey> | Readonly<EntityProps>;
 
 /** @public */
-export namespace Key {
+export namespace Key { // eslint-disable-line @typescript-eslint/no-redeclare
   /** Check if the supplied key is a `NodeKey` */
   export function isNodeKey(key: Key): key is NodeKey {
     return (key as any).type;
@@ -369,7 +369,7 @@ export class KeySet {
   }
 
   /** Iterate over all keys in this keyset. */
-  public some(callback: (key: Key) => boolean) {
+  public some(callback: (key: Key) => boolean): boolean {
     for (const entry of this._instanceKeys) {
       if (some(entry[1], (id: Id64String) => callback({ className: entry[0], id })))
         return true;
@@ -378,7 +378,7 @@ export class KeySet {
   }
 
   /** Iterate over all keys in this keyset. */
-  public forEach(callback: (key: Key, index: number) => void) {
+  public forEach(callback: (key: Key, index: number) => void): void {
     let index = 0;
     this._instanceKeys.forEach((ids: Set<Id64String>, className: string) => {
       ids.forEach((id: Id64String) => callback({ className, id }, index++));
@@ -389,7 +389,7 @@ export class KeySet {
   }
 
   /** Iterate over all keys in this keyset in batches */
-  public forEachBatch(batchSize: number, callback: (batch: KeySet, index: number) => void) {
+  public forEachBatch(batchSize: number, callback: (batch: KeySet, index: number) => void): void {
     const size = this.size;
     const count = Math.ceil(size / batchSize);
     if (1 === count) {

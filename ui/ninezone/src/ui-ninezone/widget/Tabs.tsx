@@ -19,7 +19,7 @@ import { WidgetTabTarget } from "./TabTarget";
 import { WidgetStateContext } from "./Widget";
 
 /** @internal */
-export const WidgetTabs = React.memo(function WidgetTabs() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
+export const WidgetTabs = React.memo(function WidgetTabs() { // eslint-disable-line @typescript-eslint/naming-convention, @typescript-eslint/no-shadow
   const tabs = React.useContext(TabsStateContext);
   const side = React.useContext(PanelSideContext);
   const widget = React.useContext(WidgetStateContext);
@@ -121,7 +121,7 @@ export interface WidgetTabsEntryContextProviderProps {
 }
 
 /** @internal */
-export const WidgetTabsEntryProvider = React.memo<WidgetTabsEntryContextProviderProps>(function WidgetTabsEntryProvider(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
+export const WidgetTabsEntryProvider = React.memo<WidgetTabsEntryContextProviderProps>(function WidgetTabsEntryProvider(props) { // eslint-disable-line @typescript-eslint/naming-convention, @typescript-eslint/no-shadow
   return (
     <WidgetTabsEntryContext.Provider value={{
       lastNotOverflown: props.lastNotOverflown,

@@ -16,7 +16,7 @@ export interface ViewDefinitionSelectorProps {
 export interface RulesetSelectorState {
   availableViewDefinitions?: string[];
 }
-export default function ViewDefinitionSelector(props: ViewDefinitionSelectorProps) { // eslint-disable-line @typescript-eslint/naming-convention
+export default function ViewDefinitionSelector(props: ViewDefinitionSelectorProps): JSX.Element { // eslint-disable-line @typescript-eslint/naming-convention
   const [availableViewDefinitions, setAvailableViewDefinitions] = React.useState<Array<{ id: Id64String, class: string, label: string }> | undefined>();
   React.useEffect(() => {
     setAvailableViewDefinitions([]);

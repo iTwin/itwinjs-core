@@ -24,8 +24,8 @@ import { setTitle } from "./Title";
 /** If an editing session is currently in progress, end it; otherwise, begin a new one. */
 export class EditingSessionTool extends Tool {
   public static toolId = "EditingSession";
-  public static get minArgs() { return 0; }
-  public static get maxArgs() { return 0; }
+  public static get minArgs(): number { return 0; }
+  public static get maxArgs(): number { return 0; }
 
   public run(): boolean {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -64,19 +64,19 @@ export abstract class UndoRedoTool extends Tool {
 
 export class UndoTool extends UndoRedoTool {
   public static toolId = "DtaUndo";
-  protected get isUndo() { return true; }
+  protected get isUndo(): boolean { return true; }
 }
 
 export class RedoTool extends UndoRedoTool {
   public static toolId = "DtaRedo";
-  protected get isUndo() { return false; }
+  protected get isUndo(): boolean { return false; }
 }
 
 /** Delete all elements currently in the selection set. */
 export class DeleteElementsTool extends Tool {
   public static toolId = "DeleteElements";
-  public static get minArgs() { return 0; }
-  public static get maxArgs() { return 0; }
+  public static get minArgs(): number { return 0; }
+  public static get maxArgs(): number { return 0; }
 
   public run(): boolean {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -302,7 +302,7 @@ export class PlaceLineStringTool extends InteractiveEditingTool {
       return undefined;
 
     const geom = IModelJson.Writer.toIModelJson(LineString3d.create(this._points));
-    return geom ? [ geom ] : undefined;
+    return geom ? [geom] : undefined;
   }
 
   public decorate(context: DecorateContext): void {

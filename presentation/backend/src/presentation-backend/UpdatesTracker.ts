@@ -38,9 +38,9 @@ export class UpdatesTracker implements IDisposable {
     this._intervalHandle = setInterval(this.onInterval.bind(this), props.pollInterval);
   }
 
-  public static create(props: UpdatesTrackerProps) { return new UpdatesTracker(props); }
+  public static create(props: UpdatesTrackerProps): UpdatesTracker { return new UpdatesTracker(props); }
 
-  public dispose() {
+  public dispose(): void {
     clearInterval(this._intervalHandle);
   }
 

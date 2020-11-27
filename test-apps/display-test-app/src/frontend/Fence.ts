@@ -14,8 +14,8 @@ import { ColorDef, GeometryContainmentRequestProps } from "@bentley/imodeljs-com
  */
 export class FenceClassifySelectedTool extends Tool {
   public static toolId = "Fence.ClassifySelected";
-  public static get minArgs() { return 0; }
-  public static get maxArgs() { return 1; }
+  public static get minArgs(): number { return 0; }
+  public static get maxArgs(): number { return 1; }
 
   public async doClassify(vp: ScreenViewport, candidates: Id64Array, clip: ClipVector, allowOverlaps: boolean): Promise<void> {
     const requestProps: GeometryContainmentRequestProps = {

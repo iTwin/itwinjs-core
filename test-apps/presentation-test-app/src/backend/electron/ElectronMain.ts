@@ -9,7 +9,7 @@ import { ElectronRpcManager, RpcInterfaceDefinition } from "@bentley/imodeljs-co
 /**
  * Initializes Electron backend
  */
-export default async function initialize(rpcs: RpcInterfaceDefinition[]) {
+export default async function initialize(rpcs: RpcInterfaceDefinition[]): void {
   // tell ElectronRpcManager which RPC interfaces to handle
   // __PUBLISH_EXTRACT_START__ Presentation.Backend.RpcInterface
   ElectronRpcManager.initializeImpl({}, rpcs);

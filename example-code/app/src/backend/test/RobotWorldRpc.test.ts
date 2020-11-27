@@ -123,14 +123,14 @@ describe("RobotWorldRpc", () => {
 /* eslint-disable no-duplicate-imports */ // The imports are intentionally separated in this case.
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 
-export function initializeRpcClientBentleyCloudForApp(interfaces: RpcInterfaceDefinition[]) {
+export function initializeRpcClientBentleyCloudForApp(interfaces: RpcInterfaceDefinition[]): void {
   const cloudParams: BentleyCloudRpcParams = { info: { title: "RobotWorldEngine", version: "v1.0" } };
   BentleyCloudRpcManager.initializeClient(cloudParams, interfaces);
 }
 // __PUBLISH_EXTRACT_END__
 
 // __PUBLISH_EXTRACT_START__ RpcInterface.initializeClientBentleyCloudRemote
-export function initializeRpcClientBentleyCloud(interfaces: RpcInterfaceDefinition[], serviceUrl?: string) {
+export function initializeRpcClientBentleyCloud(interfaces: RpcInterfaceDefinition[], serviceUrl?: string): void {
   const cloudParams: BentleyCloudRpcParams = { info: { title: "RobotWorldEngine", version: "v1.0" }, uriPrefix: serviceUrl };
   BentleyCloudRpcManager.initializeClient(cloudParams, interfaces);
 }
@@ -139,7 +139,7 @@ export function initializeRpcClientBentleyCloud(interfaces: RpcInterfaceDefiniti
 // __PUBLISH_EXTRACT_START__ RpcInterface.initializeClientDesktop
 import { ElectronRpcManager } from "@bentley/imodeljs-common";
 
-export function initializeRpcClientDesktop(interfaces: RpcInterfaceDefinition[]) {
+export function initializeRpcClientDesktop(interfaces: RpcInterfaceDefinition[]): void {
   ElectronRpcManager.initializeClient({}, interfaces);
 }
 // __PUBLISH_EXTRACT_END__

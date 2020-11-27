@@ -69,7 +69,7 @@ export class BridgeRunner {
   private _bridgeArgs: BridgeJobDefArgs;
   private _serverArgs?: ServerArgs | IModelBankArgs;
 
-  public getCacheDirectory() {
+  public getCacheDirectory(): string | undefined {
     if (this._bridgeArgs.isSnapshot) {
       return this._bridgeArgs.outputDir;
     } else {

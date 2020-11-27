@@ -5,8 +5,9 @@
 import { useState } from "react";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { IPresentationTreeDataProvider, PresentationTreeDataProvider } from "@bentley/presentation-components";
-import { PageOptions, TreeNodeItem } from "@bentley/ui-components";
+import { DelayLoadedTreeNodeItem, PageOptions, TreeNodeItem } from "@bentley/ui-components";
 import { useEffectSkipFirst } from "@bentley/ui-core";
+import { NodeKey, NodePathElement } from "@bentley/presentation-common";
 
 export const PAGING_SIZE = 10;
 
@@ -30,16 +31,16 @@ export class SampleDataProvider implements IPresentationTreeDataProvider {
       appendChildrenCountForGroupingNodes: true,
     });
   }
-  public dispose() { this._wrapped.dispose(); }
-  public get imodel() { return this._wrapped.imodel; }
-  public get rulesetId() { return this._wrapped.rulesetId; }
-  public async getNodesCount(parentNode?: TreeNodeItem) {
+  public dispose(): void { this._wrapped.dispose(); }
+  public get imodel(): IModelConnection { return this._wrapped.imodel; }
+  public get rulesetId(): string { return this._wrapped.rulesetId; }
+  public async getNodesCount(parentNode?: TreeNodeItem): Promise<number> {
     const result = await this._wrapped.getNodesCount(parentNode);
     // eslint-disable-next-line no-console
     console.log(`Total children for "${parentNode ? parentNode.label : "{root}"}": ${result}`);
     return result;
   }
-  public async getNodes(parentNode?: TreeNodeItem, page?: PageOptions) {
+  public async getNodes(parentNode?: TreeNodeItem, page?: PageOptions): Promise<DelayLoadedTreeNodeItem[]> {
     const result = await this._wrapped.getNodes(parentNode, page);
     result.forEach((node) => {
       if (!node.style)
@@ -50,7 +51,7 @@ export class SampleDataProvider implements IPresentationTreeDataProvider {
     });
     return result;
   }
-  public getNodeKey(node: TreeNodeItem) { return this._wrapped.getNodeKey(node); }
-  public async getFilteredNodePaths(filter: string) { return this._wrapped.getFilteredNodePaths(filter); }
-  public async loadHierarchy() { return this._wrapped.loadHierarchy(); }
+  public getNodeKey(node: TreeNodeItem): NodeKey { return this._wrapped.getNodeKey(node); }
+  public async getFilteredNodePaths(filter: string): Promise<NodePathElement[]> { return this._wrapped.getFilteredNodePaths(filter); }
+  public async loadHierarchy(): Promise<void> { return this._wrapped.loadHierarchy(); }
 }

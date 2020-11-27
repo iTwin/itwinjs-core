@@ -42,17 +42,17 @@ export class PixelDataSet extends SortedArray<Pixel.Data> {
 
   public get array(): Pixel.Data[] { return this._array; }
 
-  public containsFeature(elemId?: Id64String, subcatId?: Id64String, geomClass?: GeometryClass) {
+  public containsFeature(elemId?: Id64String, subcatId?: Id64String, geomClass?: GeometryClass): boolean {
     return this.containsWhere((pxl) =>
       (undefined === elemId || pxl.elementId === elemId) &&
       (undefined === subcatId || pxl.subCategoryId === subcatId) &&
       (undefined === geomClass || pxl.geometryClass === geomClass));
   }
-  public containsElement(id: Id64String) { return this.containsWhere((pxl) => pxl.elementId === id); }
-  public containsPlanarity(planarity: Pixel.Planarity) { return this.containsWhere((pxl) => pxl.planarity === planarity); }
-  public containsGeometryType(type: Pixel.GeometryType) { return this.containsWhere((pxl) => pxl.type === type); }
-  public containsGeometry(type: Pixel.GeometryType, planarity: Pixel.Planarity) { return this.containsWhere((pxl) => pxl.type === type && pxl.planarity === planarity); }
-  public containsWhere(criterion: (pxl: Pixel.Data) => boolean) {
+  public containsElement(id: Id64String): boolean { return this.containsWhere((pxl) => pxl.elementId === id); }
+  public containsPlanarity(planarity: Pixel.Planarity): boolean { return this.containsWhere((pxl) => pxl.planarity === planarity); }
+  public containsGeometryType(type: Pixel.GeometryType): boolean { return this.containsWhere((pxl) => pxl.type === type); }
+  public containsGeometry(type: Pixel.GeometryType, planarity: Pixel.Planarity): boolean { return this.containsWhere((pxl) => pxl.type === type && pxl.planarity === planarity); }
+  public containsWhere(criterion: (pxl: Pixel.Data) => boolean): boolean {
     for (const pixel of this.array)
       if (criterion(pixel))
         return true;
@@ -79,8 +79,8 @@ export class Color {
     this.a = ((val & 0xff000000) >>> 0x18) >>> 0;
   }
 
-  public static from(val: number) { return new Color(val); }
-  public static fromRgba(r: number, g: number, b: number, a: number) {
+  public static from(val: number): Color { return new Color(val); }
+  public static fromRgba(r: number, g: number, b: number, a: number): Color {
     const v = (r | (g << 0x08) | (b << 0x10) | (a << 0x18)) >>> 0;
     return Color.from(v);
   }

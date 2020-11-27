@@ -196,20 +196,20 @@ export default class App extends React.Component<{}, State> {
     }
   }
 
-  public componentDidMount() {
+  public componentDidMount(): void {
     this.afterRender();
     this._selectionListener = Presentation.selection.selectionChange.addListener(this._onSelectionChanged);
   }
 
-  public componentDidUpdate() {
+  public componentDidUpdate(): void {
     this.afterRender();
   }
 
-  public componentWillUnmount() {
+  public componentWillUnmount(): void {
     Presentation.selection.selectionChange.removeListener(this._selectionListener);
   }
 
-  public render() {
+  public render(): JSX.Element {
     let imodelComponents = null;
     if (this.state.imodel && this.state.currentRulesetId)
       imodelComponents = this.renderIModelComponents(this.state.imodel, this.state.currentRulesetId);

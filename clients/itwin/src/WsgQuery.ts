@@ -17,7 +17,7 @@ export class WsgQuery {
    * Translate this object into QueryOptions.
    * @internal
    */
-  public getQueryOptions() {
+  public getQueryOptions(): RequestQueryOptions {
     return this._query;
   }
 
@@ -25,7 +25,7 @@ export class WsgQuery {
    * Reset QueryOptions.
    * @internal
    */
-  public resetQueryOptions() {
+  public resetQueryOptions(): void {
     this._query = {};
   }
 
@@ -33,7 +33,7 @@ export class WsgQuery {
    * Append a part of the filter.
    * @internal
    */
-  protected addFilter(filter: string, operator: "and" | "or" = "and") {
+  protected addFilter(filter: string, operator: "and" | "or" = "and"): void {
     if (!this._query.$filter) {
       this._query.$filter = "";
     } else {
@@ -47,7 +47,7 @@ export class WsgQuery {
    * @param filter Filter string to set for the query.
    * @returns This query.
    */
-  public filter(filter: string) {
+  public filter(filter: string): this {
     this._query.$filter = filter;
     return this;
   }
@@ -56,7 +56,7 @@ export class WsgQuery {
    * Append a part of the select.
    * @internal
    */
-  protected addSelect(select: string) {
+  protected addSelect(select: string): this {
     if (this._query.$select) {
       this._query.$select += ",";
     }
@@ -69,7 +69,7 @@ export class WsgQuery {
    * @param select Select string to set for the query.
    * @returns This query.
    */
-  public select(select: string) {
+  public select(select: string): this {
     this._query.$select = select;
     return this;
   }
@@ -79,7 +79,7 @@ export class WsgQuery {
    * @param n Number of top entries to select.
    * @returns This query.
    */
-  public top(n: number) {
+  public top(n: number): this {
     this._query.$top = n;
     return this;
   }
@@ -89,7 +89,7 @@ export class WsgQuery {
    * @param n Number of entries to skip.
    * @returns This query.
    */
-  public skip(n: number) {
+  public skip(n: number): this {
     this._query.$skip = n;
     return this;
   }
@@ -99,7 +99,7 @@ export class WsgQuery {
    * @param orderBy Order string to set.
    * @returns This query.
    */
-  public orderBy(orderBy: string) {
+  public orderBy(orderBy: string): this {
     this._query.$orderby = orderBy;
     return this;
   }
@@ -109,7 +109,7 @@ export class WsgQuery {
    * @param n Maximum number of entries in a single response.
    * @returns This query.
    */
-  public pageSize(n: number) {
+  public pageSize(n: number): this {
     this._query.$pageSize = n;
     return this;
   }

@@ -26,7 +26,7 @@ import * as robots from "./RobotElement";
 export class RobotWorld extends Schema {
   public static get schemaName(): string { return "RobotWorld"; }
   /** An app must call this to register the RobotWorld schema prior to using it. */
-  public static registerSchema() {
+  public static registerSchema(): void {
 
     // Make sure that this Schema is registered.
     // An app may call this more than once. Make sure that's harmless.
@@ -62,7 +62,7 @@ export class RobotWorld extends Schema {
   }
   // __PUBLISH_EXTRACT_END__
 
-  public static bootStrapDefinitions(iModelDb: IModelDb) {
+  public static bootStrapDefinitions(iModelDb: IModelDb): void {
     // Insert some pre-defined categories
     if (true) {
       SpatialCategory.insert(iModelDb, IModelDb.dictionaryId, _schemaNames.Class.Robot, new SubCategoryAppearance({ color: ColorByName.silver }));
@@ -82,7 +82,7 @@ export class RobotWorld extends Schema {
 }
 
 /** Export the schema names so that they appear to be enums nested in the RobotWorldSchema class/ns */
-export namespace RobotWorld { // eslint-disable-line no-redeclare
+export namespace RobotWorld {
   /** The full names of the classes in the RobotWorld schema */
   export const Class = _schemaNames.Class;
 

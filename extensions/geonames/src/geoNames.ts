@@ -160,13 +160,13 @@ export class GeoNameMarkerManager {
     }
     GeoNameMarkerManager.decorator.synch(vp);
   }
-  public static clear(_vp: ScreenViewport) {
+  public static clear(_vp: ScreenViewport): void {
     if (undefined !== GeoNameMarkerManager.decorator) {
       IModelApp.viewManager.dropDecorator(GeoNameMarkerManager.decorator);
       GeoNameMarkerManager.decorator = undefined;
     }
   }
-  public static update(vp: ScreenViewport) {
+  public static update(vp: ScreenViewport): void {
     if (undefined !== GeoNameMarkerManager.decorator) {
       GeoNameMarkerManager.decorator.synch(vp);
     }

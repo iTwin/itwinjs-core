@@ -224,7 +224,7 @@ export class IncidentMarkerDemo {
   private static _numMarkers = 500;
   public static decorator?: IncidentMarkerDemo; // static variable so we can tell if the demo is active.
 
-  public get warningSign() { return this._images[0]; }
+  public get warningSign(): HTMLImageElement | undefined { return this._images[0]; }
 
   // Load one image, logging if there was an error
   private async loadOne(src: string) {
@@ -270,7 +270,7 @@ export class IncidentMarkerDemo {
   }
 
   /** We added this class as a ViewManager.decorator below. This method is called to ask for our decorations. We add the MarkerSet. */
-  public decorate(context: DecorateContext) {
+  public decorate(context: DecorateContext): void {
     if (!context.viewport.view.isSpatialView())
       return;
 
@@ -290,7 +290,7 @@ export class IncidentMarkerDemo {
   }
 
   /** Turn the markers on and off. Each time it runs it creates a new random set of incidents. */
-  public static toggle(extents: AxisAlignedBox3d) {
+  public static toggle(extents: AxisAlignedBox3d): void {
     if (undefined === IncidentMarkerDemo.decorator) {
       // start the demo by creating the IncidentMarkerDemo object and adding it as a ViewManager decorator.
       IncidentMarkerDemo.decorator = new IncidentMarkerDemo(extents);

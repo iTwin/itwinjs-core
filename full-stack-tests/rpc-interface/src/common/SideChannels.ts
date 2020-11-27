@@ -1,12 +1,12 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { executeBackendCallback, registerBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
 
 const getEnvCallbackName = "getEnv";
 
-export function exposeBackendCallbacks() {
+export function exposeBackendCallbacks(): void {
   registerBackendCallback(getEnvCallbackName, () => {
     return JSON.stringify(process.env);
   });

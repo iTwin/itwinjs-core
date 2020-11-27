@@ -20,7 +20,7 @@ export interface SubLayersPopupButtonProps {
 
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function SubLayersPopupButton({ mapLayerSettings, activeViewport }: SubLayersPopupButtonProps) {
+export function SubLayersPopupButton({ mapLayerSettings, activeViewport }: SubLayersPopupButtonProps): JSX.Element {
 
   const [showSubLayersLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:SubLayers.Show"));
   const [hideSubLayersLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:SubLayers.Hide"));

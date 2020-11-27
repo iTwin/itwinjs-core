@@ -1746,7 +1746,7 @@ export class WheelEventProcessor {
 /**
  * @public
  */
-export namespace ToolAdmin { // eslint-disable-line no-redeclare
+export namespace ToolAdmin {
 
   /**
    * Active settings that placement tools will use.

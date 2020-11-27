@@ -286,7 +286,7 @@ export abstract class TileAdmin {
 }
 
 /** @alpha */
-export namespace TileAdmin { // eslint-disable-line no-redeclare
+export namespace TileAdmin {
   /** Statistics regarding the current and cumulative state of the [[TileAdmin]]. Useful for monitoring performance and diagnosing problems.
    * @alpha
    */

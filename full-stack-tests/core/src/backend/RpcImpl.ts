@@ -13,7 +13,7 @@ import { CloudEnvProps, EventsTestRpcInterface, TestRpcInterface } from "../comm
 import { CloudEnv } from "./cloudEnv";
 
 export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
-  public static register() {
+  public static register(): void {
     RpcManager.registerImpl(TestRpcInterface, TestRpcImpl);
   }
 
@@ -85,7 +85,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
  * @internal
  */
 export class EventsTestRpcImpl extends RpcInterface implements EventsTestRpcInterface {
-  public static register() { RpcManager.registerImpl(EventsTestRpcInterface, EventsTestRpcImpl); }
+  public static register(): void { RpcManager.registerImpl(EventsTestRpcInterface, EventsTestRpcImpl); }
 
   // set event that will be send to the frontend
   public async echo(id: GuidString, message: string): Promise<void> {

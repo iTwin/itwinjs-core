@@ -827,7 +827,7 @@ export abstract class SkyBox implements SkyBoxProps {
  *  - A sphere with a [[Gradient]] mapped to its surface.
  * @public
  */
-export namespace SkyBox { // eslint-disable-line no-redeclare
+export namespace SkyBox {
   /** Parameters defining a spherical [[SkyBox]].
    * @public
    */

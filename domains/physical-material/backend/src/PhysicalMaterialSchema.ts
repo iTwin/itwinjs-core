@@ -19,7 +19,7 @@ export class PhysicalMaterialSchema extends Schema {
   public static get schemaName(): string { return "PhysicalMaterial"; }
   public static get schemaFilePath(): string { return path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "Domain", `${PhysicalMaterialSchema.schemaName}.ecschema.xml`); }
 
-  public static registerSchema() {
+  public static registerSchema(): void {
     if (this !== Schemas.getRegisteredSchema(this.schemaName)) {
       Schemas.unregisterSchema(this.schemaName);
       Schemas.registerSchema(this);

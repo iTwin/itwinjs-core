@@ -81,8 +81,8 @@ export type ElementGeometryChange = ExtantElementGeometryChange | DeletedElement
 /** Represents a change to the geometry of a [GeometricElement]($backend).
  * @alpha
  */
-export namespace ElementGeometryChange {
-  function * extantIterator(props: ElementIdsAndRangesProps, type: DbOpcode.Insert | DbOpcode.Update): Iterator<ElementGeometryChange> {
+export namespace ElementGeometryChange { // eslint-disable-line @typescript-eslint/no-redeclare
+  function* extantIterator(props: ElementIdsAndRangesProps, type: DbOpcode.Insert | DbOpcode.Update): Iterator<ElementGeometryChange> {
     let index = 0;
     const ids = CompressedId64Set.iterable(props.ids);
     for (const id of ids) {
@@ -98,12 +98,12 @@ export namespace ElementGeometryChange {
   }
 
   /** Obtain an iterator over the geometry changes for a single [GeometricModel]($backend). A given element will appear at most once. */
-  export function * iterator(modelChanges: ModelGeometryChangesProps): Iterator<ElementGeometryChange> {
+  export function* iterator(modelChanges: ModelGeometryChangesProps): Iterator<ElementGeometryChange> {
     if (modelChanges.inserted)
-      yield * extantIterable(modelChanges.inserted, DbOpcode.Insert);
+      yield* extantIterable(modelChanges.inserted, DbOpcode.Insert);
 
     if (modelChanges.updated)
-      yield * extantIterable(modelChanges.updated, DbOpcode.Update);
+      yield* extantIterable(modelChanges.updated, DbOpcode.Update);
 
     if (modelChanges.deleted)
       for (const id of CompressedId64Set.iterable(modelChanges.deleted))
@@ -135,7 +135,7 @@ export interface ModelGeometryChanges {
  */
 export namespace ModelGeometryChanges {
   /** Obtain an iterator over the geometry changes for a set of models. A given model will appear at most once. */
-  export function * iterator(modelChanges: ModelGeometryChangesProps[]): Iterator<ModelGeometryChanges> {
+  export function* iterator(modelChanges: ModelGeometryChangesProps[]): Iterator<ModelGeometryChanges> {
     for (const props of modelChanges)
       yield fromJSON(props);
   }

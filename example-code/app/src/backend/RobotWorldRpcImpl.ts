@@ -50,7 +50,7 @@ export class RobotWorldWriteRpcImpl extends RpcInterface implements RobotWorldWr
 // __PUBLISH_EXTRACT_START__ RpcInterface.initializeImplBentleyCloud
 import { BentleyCloudRpcManager, BentleyCloudRpcParams } from "@bentley/imodeljs-common";
 
-export function initializeRpcImplBentleyCloud(interfaces: RpcInterfaceDefinition[]) {
+export function initializeRpcImplBentleyCloud(interfaces: RpcInterfaceDefinition[]): void {
   const cloudParams: BentleyCloudRpcParams = { info: { title: "RobotWorldEngine", version: "v1.0" } };
   BentleyCloudRpcManager.initializeImpl(cloudParams, interfaces);
 }
@@ -59,7 +59,7 @@ export function initializeRpcImplBentleyCloud(interfaces: RpcInterfaceDefinition
 // __PUBLISH_EXTRACT_START__ RpcInterface.initializeImplDesktop
 import { ElectronRpcManager } from "@bentley/imodeljs-common";
 
-export function initializeRpcImplDesktop(interfaces: RpcInterfaceDefinition[]) {
+export function initializeRpcImplDesktop(interfaces: RpcInterfaceDefinition[]): void {
   ElectronRpcManager.initializeImpl({}, interfaces);
 }
 // __PUBLISH_EXTRACT_END__

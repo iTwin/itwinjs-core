@@ -14,7 +14,7 @@ export class PresentationRules extends Schema {
   public static get schemaName(): string { return "PresentationRules"; }
 
   /** Registers this schema and it's elements' classes */
-  public static registerSchema() {
+  public static registerSchema(): void {
     if (this !== Schemas.getRegisteredSchema(PresentationRules.schemaName)) {
       Schemas.registerSchema(PresentationRules);
       ClassRegistry.registerModule(RulesetElements, this);
@@ -24,7 +24,7 @@ export class PresentationRules extends Schema {
 
 /** @internal */
 /* istanbul ignore next */
-export namespace PresentationRules { // eslint-disable-line no-redeclare
+export namespace PresentationRules {
   export enum CodeSpec {
     Ruleset = "PresentationRules:Ruleset",
   }

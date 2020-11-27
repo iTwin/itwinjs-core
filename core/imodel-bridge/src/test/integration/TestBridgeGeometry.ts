@@ -1,4 +1,3 @@
-
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
@@ -9,6 +8,8 @@ import { GeometryPart, IModelDb, RenderMaterialElement, SubCategory } from "@ben
 import { ColorByName, ColorDef, GeometryParams, GeometryStreamBuilder, GeometryStreamProps, IModelError } from "@bentley/imodeljs-common";
 import { Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import { TestBridgeLoggerCategory } from "./TestBridgeLoggerCategory";
+
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 const loggerCategory: string = TestBridgeLoggerCategory.Geometry;
 

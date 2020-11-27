@@ -23,7 +23,7 @@ export class StringIdQuery extends WsgQuery {
    * @returns This query.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if id is undefined or it is not a valid [GuidString]($bentley) value.
    */
-  public byId(id: string) {
+  public byId(id: string): this {
     this.checkValue(id);
     this._byId = id;
     this._query.$pageSize = undefined;
@@ -31,7 +31,7 @@ export class StringIdQuery extends WsgQuery {
   }
 
   /** @internal */
-  protected checkValue(id: string) {
+  protected checkValue(id: string): void {
     ArgumentCheck.valid("id", id);
   }
 
@@ -39,7 +39,7 @@ export class StringIdQuery extends WsgQuery {
    * Used by iModelHub handlers to get the id that is queried.
    * @internal
    */
-  public getId() {
+  public getId(): string | undefined {
     return this._byId;
   }
 }
@@ -57,7 +57,7 @@ export class InstanceIdQuery extends WsgQuery {
    * @returns This query.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if id is undefined or it is not a valid [GuidString]($bentley) value.
    */
-  public byId(id: GuidString) {
+  public byId(id: GuidString): this {
     ArgumentCheck.validGuid("id", id);
     this._byId = id;
     this._query.$pageSize = undefined;
@@ -68,7 +68,7 @@ export class InstanceIdQuery extends WsgQuery {
    * Used by iModelHub handlers to get the id that is queried.
    * @internal
    */
-  public getId() {
+  public getId(): GuidString | undefined {
     return this._byId;
   }
 }
@@ -77,7 +77,7 @@ export class InstanceIdQuery extends WsgQuery {
  * Add select for the download URL to the query.
  * @internal
  */
-export function addSelectFileAccessKey(query: RequestQueryOptions) {
+export function addSelectFileAccessKey(query: RequestQueryOptions): void {
   if (!query.$select)
     query.$select = "*";
 
@@ -91,7 +91,7 @@ export function addSelectFileAccessKey(query: RequestQueryOptions) {
  * to read/download iModel in blocks incrementally.
  * @internal
  */
-export function addSelectBCVAccessKey(query: RequestQueryOptions) {
+export function addSelectBCVAccessKey(query: RequestQueryOptions): void {
   if (!query.$select)
     query.$select = "*";
 
@@ -102,7 +102,7 @@ export function addSelectBCVAccessKey(query: RequestQueryOptions) {
  * Add select for the application data to the query.
  * @internal
  */
-export function addSelectApplicationData(query: RequestQueryOptions) {
+export function addSelectApplicationData(query: RequestQueryOptions): void {
   if (!query.$select)
     query.$select = "*";
 

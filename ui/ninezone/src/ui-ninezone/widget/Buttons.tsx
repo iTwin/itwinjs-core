@@ -16,7 +16,7 @@ import { isHorizontalPanelSide, PanelStateContext } from "../widget-panels/Panel
 import { PinToggle } from "./PinToggle";
 
 /** @internal */
-export const TabBarButtons = React.memo(function TabBarButtons() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
+export const TabBarButtons = React.memo(function TabBarButtons() { // eslint-disable-line @typescript-eslint/naming-convention, @typescript-eslint/no-shadow
   const isToolSettings = useIsToolSettingsTab();
   const floatingWidgetId = React.useContext(FloatingWidgetIdContext);
   const isMainPanelWidget = useIsMainPanelWidget();

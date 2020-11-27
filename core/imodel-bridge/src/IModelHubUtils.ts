@@ -71,7 +71,7 @@ export class IModelHubUtils {
     return imodel.wsgId;
   }
 
-  public static async initialize(serverArgs: ServerArgs, requestContext: AuthorizedClientRequestContext, iModelClient: IModelClient) {
+  public static async initialize(serverArgs: ServerArgs, requestContext: AuthorizedClientRequestContext, iModelClient: IModelClient): Promise<void> {
     if (serverArgs === undefined || serverArgs.contextId === undefined && serverArgs.contextName === undefined) {
       throw new Error("Need to supply either a context name or a context id");
     }

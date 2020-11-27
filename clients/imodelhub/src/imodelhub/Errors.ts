@@ -247,28 +247,28 @@ export class IModelHubClientError extends IModelHubError {
 
 /** @internal */
 export class ArgumentCheck {
-  public static defined(argumentName: string, argument?: any, allowEmpty: boolean = false) {
+  public static defined(argumentName: string, argument?: any, allowEmpty: boolean = false): void {
     if (argument === undefined || argument === null || (argument === "" && !allowEmpty))
       throw IModelHubClientError.undefinedArgument(argumentName);
   }
 
-  public static definedNumber(argumentName: string, argument?: number) {
+  public static definedNumber(argumentName: string, argument?: number): void {
     if (typeof argument !== "number")
       throw IModelHubClientError.undefinedArgument(argumentName);
   }
 
-  public static valid(argumentName: string, argument?: any) {
+  public static valid(argumentName: string, argument?: any): void {
     if (!argument)
       throw IModelHubClientError.invalidArgument(argumentName);
   }
 
-  public static validGuid(argumentName: string, argument?: string) {
+  public static validGuid(argumentName: string, argument?: string): void {
     this.defined(argumentName, argument);
     if (!Guid.isGuid(argument!))
       throw IModelHubClientError.invalidArgument(argumentName);
   }
 
-  public static nonEmptyArray(argumentName: string, argument?: any[]) {
+  public static nonEmptyArray(argumentName: string, argument?: any[]): void {
     this.defined(argumentName, argument);
     if (argument!.length < 1)
       throw IModelHubClientError.invalidArgument(argumentName);
@@ -280,7 +280,7 @@ export class ArgumentCheck {
   }
 
   /** Check if Briefcase Id argument is valid. */
-  public static validBriefcaseId(argumentName: string, argument?: number) {
+  public static validBriefcaseId(argumentName: string, argument?: number): void {
     this.definedNumber(argumentName, argument);
     if (!this.isBriefcaseIdValid(argument!))
       throw IModelHubClientError.invalidArgument(argumentName);
@@ -294,7 +294,7 @@ export class ArgumentCheck {
     return changeSetId.length === 40 && pattern.test(changeSetId);
   }
 
-  public static validChangeSetId(argumentName: string, argument?: string, allowEmpty: boolean = false) {
+  public static validChangeSetId(argumentName: string, argument?: string, allowEmpty: boolean = false): void {
     this.defined(argumentName, argument, allowEmpty);
     if (!this.isValidChangeSetId(argument!, allowEmpty))
       throw IModelHubClientError.invalidArgument(argumentName);

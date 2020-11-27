@@ -29,7 +29,7 @@ export abstract class RenderMaterial {
 /** Represents a material which can be applied to a surface to control aspects of its appearance such as color, reflectivity, and so on.
  * @beta
  */
-export namespace RenderMaterial { // eslint-disable-line no-redeclare
+export namespace RenderMaterial { // eslint-disable-line @typescript-eslint/no-redeclare
   function clampToNormalizedRange(value: number): number {
     return Math.max(0.0, Math.min(1.0, value));
   }

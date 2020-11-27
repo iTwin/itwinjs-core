@@ -27,7 +27,7 @@ export class IgnoreOptionalDependenciesPlugin {
     this._requestRegex = new RegExp(`[\\\\\\/]node_modules[\\\\\\/](${packages.map(escapeRegex).join("|")})[\\\\\\/]`);
   }
 
-  public apply(compiler: Compiler) {
+  public apply(compiler: Compiler): void {
     compiler.hooks.normalModuleFactory.tap("IgnoreOptionalDependenciesPlugin", (nmf) => {
       nmf.hooks.parser.for("javascript/auto").tap("IgnoreOptionalDependenciesPlugin", (parser: any) => {
         parser.hooks.call.for("require").tap("IgnoreOptionalDependenciesPlugin", (expr: any) => {

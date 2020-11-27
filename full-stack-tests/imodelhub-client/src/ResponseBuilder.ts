@@ -272,7 +272,7 @@ export class ResponseBuilder {
 }
 
 export class UrlDiscoveryMock {
-  public static mockGetUrl(searchKey: string, env: number, returnedUrl: string) {
+  public static mockGetUrl(searchKey: string, env: number, returnedUrl: string): void {
     if (!TestConfig.enableMocks)
       return;
     ResponseBuilder.mockResponse(Config.App.get("imjs_buddi_url"), RequestType.Get,

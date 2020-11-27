@@ -1163,7 +1163,7 @@ export abstract class IModelDb extends IModel {
 }
 
 /** @public */
-export namespace IModelDb { // eslint-disable-line no-redeclare
+export namespace IModelDb { // eslint-disable-line @typescript-eslint/no-redeclare
 
   /** The collection of models in an [[IModelDb]].
    * @public

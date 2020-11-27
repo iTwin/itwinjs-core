@@ -16,7 +16,7 @@ import {
 } from "./EventsBase";
 import { LockLevel, LockType } from "./Locks";
 
-/* eslint-disable no-shadow */
+/* eslint-disable @typescript-eslint/no-shadow */
 
 const loggerCategory: string = IModelHubClientLoggerCategory.IModelHub;
 
@@ -56,7 +56,7 @@ export enum IModelHubEventType {
   CheckpointCreatedEvent = "CheckpointCreatedEvent",
 }
 
-/* eslint-enable no-shadow */
+/* eslint-enable @typescript-eslint/no-shadow */
 
 /** @beta @deprecated Use [[IModelHubEventType]] instead */
 export type EventType = "LockEvent" | "AllLocksDeletedEvent" | "ChangeSetPostPushEvent" | "ChangeSetPrePushEvent" | "CodeEvent" | "AllCodesDeletedEvent" | "BriefcaseDeletedEvent" | "iModelDeletedEvent" | "VersionEvent" | "CheckpointCreatedEvent";
@@ -72,7 +72,7 @@ export abstract class IModelHubEvent extends IModelHubBaseEvent {
    * @param obj Object instance.
    * @internal
    */
-  public fromJson(obj: any) {
+  public fromJson(obj: any): void {
     super.fromJson(obj);
     this.iModelId = this.eventTopic;
   }
@@ -89,7 +89,7 @@ export abstract class BriefcaseEvent extends IModelHubEvent {
    * @param obj Object instance.
    * @internal
    */
-  public fromJson(obj: any) {
+  public fromJson(obj: any): void {
     super.fromJson(obj);
     this.briefcaseId = obj.BriefcaseId;
   }
@@ -112,7 +112,7 @@ export class LockEvent extends BriefcaseEvent {
    * @param obj Object instance.
    * @internal
    */
-  public fromJson(obj: any) {
+  public fromJson(obj: any): void {
     super.fromJson(obj);
     this.lockType = LockType[obj.LockType as keyof typeof LockType];
     this.lockLevel = LockLevel[obj.LockLevel as keyof typeof LockLevel];
@@ -140,7 +140,7 @@ export class ChangeSetPostPushEvent extends BriefcaseEvent {
    * @param obj Object instance.
    * @internal
    */
-  public fromJson(obj: any) {
+  public fromJson(obj: any): void {
     super.fromJson(obj);
     this.changeSetId = obj.ChangeSetId;
     this.changeSetIndex = obj.ChangeSetIndex;
@@ -170,7 +170,7 @@ export class CodeEvent extends BriefcaseEvent {
    * @param obj Object instance.
    * @internal
    */
-  public fromJson(obj: any) {
+  public fromJson(obj: any): void {
     super.fromJson(obj);
     this.codeSpecId = Id64.fromJSON(obj.CodeSpecId);
     this.codeScope = obj.CodeScope;
@@ -212,7 +212,7 @@ export class VersionEvent extends IModelHubEvent {
    * @param obj Object instance.
    * @internal
    */
-  public fromJson(obj: any) {
+  public fromJson(obj: any): void {
     super.fromJson(obj);
     this.versionId = obj.VersionId;
     this.versionName = obj.VersionName;
@@ -235,7 +235,7 @@ export class CheckpointCreatedEvent extends IModelHubEvent {
    * @param obj Object instance.
    * @internal
    */
-  public fromJson(obj: any) {
+  public fromJson(obj: any): void {
     super.fromJson(obj);
     this.changeSetIndex = obj.ChangeSetIndex;
     this.changeSetId = obj.ChangeSetId;
@@ -282,7 +282,7 @@ export function constructorFromEventType(type: IModelHubEventType): EventConstru
  * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function ParseEvent(response: Response) {
+export function ParseEvent(response: Response): IModelHubEvent {
   const constructor: EventConstructor = constructorFromEventType(response.header["content-type"]);
   const event = new constructor();
   event.fromJson(response.body);
@@ -345,7 +345,7 @@ export class EventSubscriptionHandler {
    * @deprecated Use IModelHubEventType enum for `events` instead.
    */
   public async create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, events: EventType[]): Promise<EventSubscription>; // eslint-disable-line @typescript-eslint/unified-signatures, deprecation/deprecation
-  public async create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, events: IModelHubEventType[] | EventType[]) { // eslint-disable-line deprecation/deprecation
+  public async create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, events: IModelHubEventType[] | EventType[]): Promise<EventSubscription> { // eslint-disable-line deprecation/deprecation
     requestContext.enter();
     Logger.logInfo(loggerCategory, "Creating event subscription on iModel", () => ({ iModelId }));
     ArgumentCheck.defined("requestContext", requestContext);

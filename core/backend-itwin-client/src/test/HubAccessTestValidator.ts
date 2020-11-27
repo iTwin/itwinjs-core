@@ -33,13 +33,13 @@ export class HubAccessTestValidator {
     return HubAccessTestValidator._singletonInstance;
   }
 
-  public async validateContextRegistryAccess(accessToken: AccessToken) {
+  public async validateContextRegistryAccess(accessToken: AccessToken): Promise<void> {
     const requestContext = new AuthorizedClientRequestContext(accessToken);
     const projectId = await TestConfig.queryProjectId(requestContext, this._testProjectName);
     chai.expect(projectId).to.be.equal(this._testProjectId);
   }
 
-  public async validateIModelHubAccess(accessToken: AccessToken) {
+  public async validateIModelHubAccess(accessToken: AccessToken): Promise<void> {
     const requestContext = new AuthorizedClientRequestContext(accessToken);
     const iModelId = await TestConfig.queryIModelId(requestContext, this._testIModelName, this._testProjectId);
     chai.expect(iModelId).to.be.equal(this._testIModelId);

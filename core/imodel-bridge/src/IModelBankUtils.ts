@@ -43,7 +43,7 @@ export class IModelBankUtils {
     return new IModelBankClient(bankArgs.url, new UrlFileHandler()); // TODO: Check with Karolis that this is the right file handler
   }
 
-  public static async initialize(bankArgs: IModelBankArgs, _requestContext: AuthorizedClientRequestContext, _iModelClient: IModelClient) {
+  public static async initialize(bankArgs: IModelBankArgs, _requestContext: AuthorizedClientRequestContext, _iModelClient: IModelClient): Promise<void> {
     if (bankArgs.url === undefined || bankArgs.iModelId === undefined) {
       throw new Error("Need to supply at lesat the URL and iModelId");
     }

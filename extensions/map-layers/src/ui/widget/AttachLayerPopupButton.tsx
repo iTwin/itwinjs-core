@@ -161,7 +161,7 @@ export interface AttachLayerPopupButtonProps {
 
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function AttachLayerPopupButton({ isOverlay }: AttachLayerPopupButtonProps) {
+export function AttachLayerPopupButton({ isOverlay }: AttachLayerPopupButtonProps): JSX.Element {
   const [showAttachLayerLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:AttachLayerPopup.Attach"));
   const [hideAttachLayerLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:AttachLayerPopup.Close"));
   const [popupOpen, setPopupOpen] = React.useState(false);

@@ -111,19 +111,19 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
   console.log(`Backend PID: ${process.pid}`); // eslint-disable-line no-console
 };
 
-export const initialize = async (backendTimeout: number = 0) => {
+export const initialize = async (backendTimeout: number = 0): Promise<void> => {
   await initializeCommon({ backendTimeout });
 };
 
-export const initializeWithClientServices = async () => {
+export const initializeWithClientServices = async (): Promise<void> => {
   await initializeCommon({ useClientServices: true });
 };
 
-export const terminate = async () => {
+export const terminate = async (): Promise<void> => {
   await terminateTesting();
 };
 
-export const resetBackend = () => {
+export const resetBackend = (): void => {
   const props = PresentationBackend.initProps;
   PresentationBackend.terminate();
   PresentationBackend.initialize(props);

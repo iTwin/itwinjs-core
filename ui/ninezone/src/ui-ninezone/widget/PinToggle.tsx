@@ -14,7 +14,7 @@ import { PanelSide, PanelStateContext } from "../widget-panels/Panel";
 import { assert } from "../base/assert";
 
 /** @internal */
-export const PinToggle = React.memo(function PinToggle() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
+export const PinToggle = React.memo(function PinToggle() { // eslint-disable-line @typescript-eslint/naming-convention, @typescript-eslint/no-shadow
   const panelState = React.useContext(PanelStateContext);
   const dispatch = React.useContext(NineZoneDispatchContext);
   assert(panelState);

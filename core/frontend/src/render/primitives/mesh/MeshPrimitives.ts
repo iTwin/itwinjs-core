@@ -301,9 +301,9 @@ export class Mesh {
 }
 
 /** @internal */
-export namespace Mesh { // eslint-disable-line no-redeclare
+export namespace Mesh {
   export enum PrimitiveType {
-    Mesh, // eslint-disable-line no-shadow
+    Mesh, // eslint-disable-line @typescript-eslint/no-shadow
     Polyline,
     Point,
   }

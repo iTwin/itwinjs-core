@@ -9,7 +9,8 @@ import * as path from "path";
 import { ClientRequestContext, Config, Guid, GuidString, Id64, Id64String, Logger, WSStatus } from "@bentley/bentleyjs-core";
 import { Asset, Project } from "@bentley/context-registry-client";
 import {
-  Briefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, CodeState, HubCode, IModelBankClient, IModelBankFileSystemContextClient, IModelBaseHandler,
+  Briefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, CodeState, HubCode, HubIModel, IModelBankClient, IModelBankFileSystemContextClient, IModelBaseHandler,
+  IModelClient,
   IModelCloudEnvironment, IModelHubClient, IModelQuery, LargeThumbnail, Lock, LockLevel, LockType, MultiCode, MultiLock, SmallThumbnail, Thumbnail,
   Version, VersionQuery,
 } from "@bentley/imodelhub-client";
@@ -68,7 +69,7 @@ export function expectMatchesExpectedUrlScheme(url?: string): void {
   chai.assert.fail(`${url} doesn't use any of the schemes [${expectedSchemes.join(", ")}]`);
 }
 
-export function removeFileUrlExpirationTimes(changesets: ChangeSet[]) {
+export function removeFileUrlExpirationTimes(changesets: ChangeSet[]): ChangeSet[] {
   for (const cs of changesets) {
     cs.downloadUrl = removeFileUrlExpirationTime(cs.downloadUrl);
     cs.uploadUrl = removeFileUrlExpirationTime(cs.uploadUrl);
@@ -102,7 +103,7 @@ export class MockAccessToken extends AccessToken {
     return new UserInfo(id, email, profile, organization, featureTracking);
   }
 
-  public toTokenString() { return ""; }
+  public toTokenString(): string { return ""; }
 }
 
 export type RequestBehaviorOptionsList =
@@ -121,12 +122,12 @@ export class RequestBehaviorOptions {
     this._currentOptions = this.getDefaultOptions();
   }
 
-  public enableBehaviorOption(option: RequestBehaviorOptionsList) {
+  public enableBehaviorOption(option: RequestBehaviorOptionsList): void {
     if (!this._currentOptions.find((el) => el === option)) {
       this._currentOptions.push(option);
     }
   }
-  public disableBehaviorOption(option: RequestBehaviorOptionsList) {
+  public disableBehaviorOption(option: RequestBehaviorOptionsList): void {
     const foundIdx: number = this._currentOptions.findIndex((el) => el === option);
     if (-1 < foundIdx) {
       this._currentOptions.splice(foundIdx, 1);
@@ -142,7 +143,7 @@ export class RequestBehaviorOptions {
 const requestBehaviorOptions = new RequestBehaviorOptions();
 
 let imodelHubClient: IModelHubClient;
-export function getIModelHubClient() {
+export function getIModelHubClient(): IModelHubClient {
   if (imodelHubClient !== undefined)
     return imodelHubClient;
   imodelHubClient = new IModelHubClient(createFileHandler());
@@ -160,7 +161,7 @@ export class IModelHubUrlMock {
     return Config.App.get("imjs_imodelhub_url", "");
   }
 
-  public static mockGetUrl() {
+  public static mockGetUrl(): void {
     if (!TestConfig.enableMocks)
       return;
     const url = IModelHubUrlMock.getUrl();
@@ -174,7 +175,7 @@ export class RbacUrlMock {
     return Config.App.get("imjs_rbac_url", "");
   }
 
-  public static mockGetUrl() {
+  public static mockGetUrl(): void {
     if (!TestConfig.enableMocks)
       return;
     const url = RbacUrlMock.getUrl();
@@ -182,7 +183,7 @@ export class RbacUrlMock {
   }
 }
 
-export function getDefaultClient() {
+export function getDefaultClient(): IModelClient {
   IModelHubUrlMock.mockGetUrl();
   return getCloudEnv().isIModelHub ? getIModelHubClient() : imodelBankClient;
 }
@@ -222,7 +223,7 @@ export function createRequestUrl(scope: ScopeType, id: string | GuidString, clas
   return requestUrl;
 }
 
-export async function delay(ms: number) {
+export async function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
@@ -329,7 +330,7 @@ export async function getIModelId(requestContext: AuthorizedClientRequestContext
   return imodels[0].id;
 }
 
-export function mockFileResponse(times = 1) {
+export function mockFileResponse(times = 1): void {
   if (TestConfig.enableMocks)
     ResponseBuilder.mockFileResponse("https://imodelhubqasa01.blob.core.windows.net", "/imodelhubfile", getMockSeedFilePath(), times);
 }
@@ -338,7 +339,7 @@ export function getMockFileSize(): string {
   return fs.statSync(getMockSeedFilePath()).size.toString();
 }
 
-export function mockUploadFile(imodelId: GuidString, chunks = 1) {
+export function mockUploadFile(imodelId: GuidString, chunks = 1): void {
   for (let i = 0; i < chunks; ++i) {
     const blockId = Base64.encode(i.toString(16).padStart(5, "0"));
     ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Put, `/imodelhub-${imodelId}/123456&comp=block&blockid=${blockId}`);
@@ -377,7 +378,7 @@ export function generateBriefcase(id: number): Briefcase {
   return briefcase;
 }
 
-export function mockGetBriefcase(imodelId: GuidString, ...briefcases: Briefcase[]) {
+export function mockGetBriefcase(imodelId: GuidString, ...briefcases: Briefcase[]): void {
   if (!TestConfig.enableMocks)
     return;
 
@@ -386,7 +387,7 @@ export function mockGetBriefcase(imodelId: GuidString, ...briefcases: Briefcase[
   ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
 }
 
-export function mockCreateBriefcase(imodelId: GuidString, id?: number, briefcase: Briefcase = ResponseBuilder.generateObject<Briefcase>(Briefcase)) {
+export function mockCreateBriefcase(imodelId: GuidString, id?: number, briefcase: Briefcase = ResponseBuilder.generateObject<Briefcase>(Briefcase)): void {
   if (!TestConfig.enableMocks)
     return;
 
@@ -401,7 +402,7 @@ export function mockCreateBriefcase(imodelId: GuidString, id?: number, briefcase
   ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
-export function mockDeleteAllLocks(imodelId: GuidString, briefcaseId: number) {
+export function mockDeleteAllLocks(imodelId: GuidString, briefcaseId: number): void {
   if (!TestConfig.enableMocks)
     return;
 
@@ -427,11 +428,11 @@ export function generateChangeSet(id?: string): ChangeSet {
   return changeSet;
 }
 
-export function mockGetChangeSet(imodelId: GuidString, getDownloadUrl: boolean, query?: string, ...changeSets: ChangeSet[]) {
+export function mockGetChangeSet(imodelId: GuidString, getDownloadUrl: boolean, query?: string, ...changeSets: ChangeSet[]): void {
   mockGetChangeSetChunk(imodelId, getDownloadUrl, query, undefined, ...changeSets);
 }
 
-export function mockGetChangeSetChunk(imodelId: GuidString, getDownloadUrl: boolean, query?: string, headers?: any, ...changeSets: ChangeSet[]) {
+export function mockGetChangeSetChunk(imodelId: GuidString, getDownloadUrl: boolean, query?: string, headers?: any, ...changeSets: ChangeSet[]): void {
   if (!TestConfig.enableMocks)
     return;
 
@@ -490,7 +491,7 @@ function convertCodesToMultiCodes(codes: HubCode[]): MultiCode[] {
   return Array.from(map.values());
 }
 
-export function mockGetCodes(imodelId: GuidString, query?: string, ...codes: HubCode[]) {
+export function mockGetCodes(imodelId: GuidString, query?: string, ...codes: HubCode[]): void {
   if (!TestConfig.enableMocks)
     return;
 
@@ -505,7 +506,7 @@ export function mockGetCodes(imodelId: GuidString, query?: string, ...codes: Hub
   }
 }
 
-export function mockUpdateCodes(imodelId: GuidString, ...codes: HubCode[]) {
+export function mockUpdateCodes(imodelId: GuidString, ...codes: HubCode[]): void {
   // assumes all have same scope / specId
   if (!TestConfig.enableMocks)
     return;
@@ -517,7 +518,7 @@ export function mockUpdateCodes(imodelId: GuidString, ...codes: HubCode[]) {
   ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
-export function mockDeniedCodes(imodelId: GuidString, requestOptions?: object, ...codes: HubCode[]) {
+export function mockDeniedCodes(imodelId: GuidString, requestOptions?: object, ...codes: HubCode[]): void {
   // assumes all have same scope / specId
   if (!TestConfig.enableMocks)
     return;
@@ -536,7 +537,7 @@ export function mockDeniedCodes(imodelId: GuidString, requestOptions?: object, .
   ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse, 1, postBody, undefined, 409);
 }
 
-export function mockDeleteAllCodes(imodelId: GuidString, briefcaseId: number) {
+export function mockDeleteAllCodes(imodelId: GuidString, briefcaseId: number): void {
   if (!TestConfig.enableMocks)
     return;
 
@@ -604,7 +605,7 @@ function convertLocksToMultiLocks(locks: Lock[]): MultiLock[] {
   return Array.from(map.values());
 }
 
-export function mockGetLocks(imodelId: GuidString, query?: string, ...locks: Lock[]) {
+export function mockGetLocks(imodelId: GuidString, query?: string, ...locks: Lock[]): void {
   if (!TestConfig.enableMocks)
     return;
 
@@ -619,7 +620,7 @@ export function mockGetLocks(imodelId: GuidString, query?: string, ...locks: Loc
   }
 }
 
-export function mockUpdateLocks(imodelId: GuidString, locks: Lock[], requestOptions?: object) {
+export function mockUpdateLocks(imodelId: GuidString, locks: Lock[], requestOptions?: object): void {
   if (!TestConfig.enableMocks)
     return;
 
@@ -630,7 +631,7 @@ export function mockUpdateLocks(imodelId: GuidString, locks: Lock[], requestOpti
   ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
-export function mockDeniedLocks(imodelId: GuidString, locks: Lock[], requestOptions?: object) {
+export function mockDeniedLocks(imodelId: GuidString, locks: Lock[], requestOptions?: object): void {
   if (!TestConfig.enableMocks)
     return;
 
@@ -663,7 +664,7 @@ export function generateVersion(name?: string, changesetId?: string, addInstance
   return result;
 }
 
-export function mockGetVersions(imodelId: GuidString, query?: string, ...versions: Version[]) {
+export function mockGetVersions(imodelId: GuidString, query?: string, ...versions: Version[]): void {
   if (!TestConfig.enableMocks)
     return;
 
@@ -672,7 +673,7 @@ export function mockGetVersions(imodelId: GuidString, query?: string, ...version
   ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
 }
 
-export function mockGetVersionById(imodelId: GuidString, version: Version) {
+export function mockGetVersionById(imodelId: GuidString, version: Version): void {
   if (!TestConfig.enableMocks)
     return;
 
@@ -681,7 +682,7 @@ export function mockGetVersionById(imodelId: GuidString, version: Version) {
   ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
 }
 
-export function mockCreateVersion(imodelId: GuidString, name?: string, changesetId?: string) {
+export function mockCreateVersion(imodelId: GuidString, name?: string, changesetId?: string): void {
   if (!TestConfig.enableMocks)
     return;
 
@@ -693,7 +694,7 @@ export function mockCreateVersion(imodelId: GuidString, name?: string, changeset
   ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
-export function mockUpdateVersion(imodelId: GuidString, version: Version) {
+export function mockUpdateVersion(imodelId: GuidString, version: Version): void {
   if (!TestConfig.enableMocks)
     return;
 
@@ -718,7 +719,7 @@ function mockThumbnailResponse(requestPath: string, size: "Small" | "Large", ...
   ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
 }
 
-export function mockGetThumbnails(imodelId: GuidString, size: "Small" | "Large", ...thumbnails: Thumbnail[]) {
+export function mockGetThumbnails(imodelId: GuidString, size: "Small" | "Large", ...thumbnails: Thumbnail[]): void {
   if (!TestConfig.enableMocks)
     return;
 
@@ -726,7 +727,7 @@ export function mockGetThumbnails(imodelId: GuidString, size: "Small" | "Large",
   mockThumbnailResponse(requestPath, size, ...thumbnails);
 }
 
-export function mockGetThumbnailById(imodelId: GuidString, size: "Small" | "Large", thumbnail: Thumbnail) {
+export function mockGetThumbnailById(imodelId: GuidString, size: "Small" | "Large", thumbnail: Thumbnail): void {
   if (!TestConfig.enableMocks)
     return;
 
@@ -734,7 +735,7 @@ export function mockGetThumbnailById(imodelId: GuidString, size: "Small" | "Larg
   mockThumbnailResponse(requestPath, size, thumbnail);
 }
 
-export function mockGetThumbnailsByVersionId(imodelId: GuidString, size: "Small" | "Large", versionId: GuidString, ...thumbnails: Thumbnail[]) {
+export function mockGetThumbnailsByVersionId(imodelId: GuidString, size: "Small" | "Large", versionId: GuidString, ...thumbnails: Thumbnail[]): void {
   if (!TestConfig.enableMocks)
     return;
 
@@ -743,12 +744,12 @@ export function mockGetThumbnailsByVersionId(imodelId: GuidString, size: "Small"
 }
 
 /** Integration utilities */
-export function getMockSeedFilePath() {
+export function getMockSeedFilePath(): string {
   const dir = path.join(assetsPath, "SeedFile");
   return path.join(dir, fs.readdirSync(dir).find((value) => value.endsWith(".bim"))!);
 }
 
-export async function createIModel(requestContext: AuthorizedClientRequestContext, name: string, contextId?: string, useUniqueName = true, deleteIfExists = false, fromSeedFile = false) {
+export async function createIModel(requestContext: AuthorizedClientRequestContext, name: string, contextId?: string, useUniqueName = true, deleteIfExists = false, fromSeedFile = false): Promise<HubIModel | undefined> {
   if (TestConfig.enableMocks)
     return;
 
@@ -839,7 +840,7 @@ export function generateBridgeProperties(userCount: number, changedFileCount: nu
   return generatedBridgeProperties;
 }
 
-export function getMockChangeSetPath(index: number, changeSetId: string) {
+export function getMockChangeSetPath(index: number, changeSetId: string): string {
   return path.join(assetsPath, "SeedFile", `${index}_${changeSetId}.cs`);
 }
 
@@ -897,7 +898,7 @@ export async function createChangeSets(requestContext: AuthorizedClientRequestCo
 }
 
 export async function createLocks(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, briefcase: Briefcase, count = 1,
-  lockType: LockType = 1, lockLevel: LockLevel = 1, releasedWithChangeSet?: string, releasedWithChangeSetIndex?: string) {
+  lockType: LockType = 1, lockLevel: LockLevel = 1, releasedWithChangeSet?: string, releasedWithChangeSetIndex?: string): Promise<void> {
   if (TestConfig.enableMocks)
     return;
 
@@ -915,7 +916,7 @@ export async function createLocks(requestContext: AuthorizedClientRequestContext
   await client.locks.update(requestContext, imodelId, generatedLocks);
 }
 
-export async function createVersions(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, changesetIds: string[], versionNames: string[]) {
+export async function createVersions(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, changesetIds: string[], versionNames: string[]): Promise<void> {
   if (TestConfig.enableMocks)
     return;
 
@@ -941,14 +942,14 @@ export class ProgressTracker {
   private _count: number = 0;
 
   public track() {
-    return (progress: ProgressInfo) => {
+    return (progress: ProgressInfo): void => {
       this._loaded = progress.loaded;
       this._total = progress.total!;
       this._count++;
     };
   }
 
-  public check(expectCalled: boolean = true) {
+  public check(expectCalled: boolean = true): void {
     if (expectCalled) {
       chai.expect(this._count).to.be.greaterThan(0);
       chai.expect(this._loaded).to.be.greaterThan(0);

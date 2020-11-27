@@ -32,14 +32,14 @@ export default class GridWidget extends React.PureComponent<Props, State> {
       state.dataProvider = createDataProviderFromProps(props);
     return state;
   }
-  public componentWillUnmount() {
+  public componentWillUnmount(): void {
     this.state.dataProvider.dispose();
   }
-  public componentDidUpdate(_prevProps: Props, prevState: State) {
+  public componentDidUpdate(_prevProps: Props, prevState: State): void {
     if (this.state.dataProvider !== prevState.dataProvider)
       prevState.dataProvider.dispose();
   }
-  public render() {
+  public render(): JSX.Element {
     return (
       <div className="gridwidget">
         <h3>{IModelApp.i18n.translate("Sample:controls.grid")}</h3>

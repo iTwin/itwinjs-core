@@ -35,7 +35,7 @@ function displayElevationError(): void {
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function MapSettingsPanel() {
+export function MapSettingsPanel(): JSX.Element {
   const { activeViewport } = useSourceMapContext();
 
   /*

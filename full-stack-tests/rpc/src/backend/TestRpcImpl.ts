@@ -11,7 +11,7 @@ import {
   TokenValues, ZeroMajorRpcInterface,
 } from "../common/TestRpcInterface";
 
-export async function testInterfaceResource() {
+export async function testInterfaceResource(): Promise<Uint8Array> {
   const data = new Uint8Array(4);
   data[0] = 1;
   data[1] = 2;
@@ -22,12 +22,12 @@ export async function testInterfaceResource() {
 
 let op8Initializer = 0;
 
-export const resetOp8Initializer = () => {
+export const resetOp8Initializer = (): void => {
   op8Initializer = 0;
 };
 
 export class TestZeroMajorRpcImpl extends RpcInterface implements ZeroMajorRpcInterface {
-  public static register() {
+  public static register(): void {
     RpcManager.registerImpl(ZeroMajorRpcInterface, TestZeroMajorRpcImpl);
   }
 
@@ -37,7 +37,7 @@ export class TestZeroMajorRpcImpl extends RpcInterface implements ZeroMajorRpcIn
 }
 
 export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
-  public static register() {
+  public static register(): void {
     RpcManager.registerImpl(TestRpcInterface, TestRpcImpl);
   }
 
@@ -139,7 +139,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
       token.openMode === values.openMode;
   }
 
-  public async op17() {
+  public async op17(): Promise<void> {
     throw new NoContentError();
   }
 
@@ -155,21 +155,21 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
   public async csrfTestDisabled(): Promise<void> {
   }
 
-  public async noContent() {
+  public async noContent(): Promise<void> {
     throw new NoContentError();
   }
 }
 
 export class TestRpcImpl2 extends RpcInterface implements TestRpcInterface2 {
-  public static register() {
+  public static register(): void {
     RpcManager.registerImpl(TestRpcInterface2, TestRpcImpl2);
   }
 
-  public static unregister() {
+  public static unregister(): void {
     RpcManager.unregisterImpl(TestRpcInterface2);
   }
 
-  public static instantiate() {
+  public static instantiate(): void {
     // Demonstrates how a consumer can create and supply an instance of the RPC implementation class if necessary.
     const instance = new TestRpcImpl2();
     RpcManager.supplyImplInstance(TestRpcInterface2, instance);
@@ -182,7 +182,7 @@ export class TestRpcImpl2 extends RpcInterface implements TestRpcInterface2 {
 }
 
 export class TestRpcImpl3 extends RpcInterface implements TestRpcInterface3 {
-  public static register() {
+  public static register(): void {
     RpcManager.registerImpl(TestRpcInterface3, TestRpcImpl3);
   }
 
@@ -205,7 +205,7 @@ export class TestRpcImpl3 extends RpcInterface implements TestRpcInterface3 {
 }
 
 export class MultipleClientsImpl extends RpcInterface implements MultipleClientsInterface {
-  public static register() {
+  public static register(): void {
     RpcManager.registerImpl(MultipleClientsInterface, MultipleClientsImpl);
   }
 
@@ -216,7 +216,7 @@ export class MultipleClientsImpl extends RpcInterface implements MultipleClients
 }
 
 export class AttachedInterfaceImpl extends RpcInterface implements AttachedInterface {
-  public static register() {
+  public static register(): void {
     RpcManager.registerImpl(AttachedInterface, AttachedInterfaceImpl);
   }
 

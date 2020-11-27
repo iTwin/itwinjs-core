@@ -231,7 +231,7 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
     return undefined;
   }
 
-  protected initAccessToken(user: User | undefined) {
+  protected initAccessToken(user: User | undefined): void {
     if (!user) {
       this._accessToken = undefined;
       return;
@@ -295,7 +295,7 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
     return true;
   }
 
-  protected _onUserStateChanged = (user: User | undefined) => {
+  protected _onUserStateChanged = (user: User | undefined): void => {
     this.initAccessToken(user);
     try {
       this.onUserStateChanged.raiseEvent(this._accessToken);
@@ -308,40 +308,40 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
    * Raised when a user session has been established (or re-established).
    * This can happen on startup, after token refresh or token callback.
    */
-  protected _onUserLoaded = (user: User) => {
+  protected _onUserLoaded = (user: User): void => {
     this._onUserStateChanged(user);
   };
 
   /**
    * Raised when a user session has been terminated.
    */
-  protected _onUserUnloaded = () => {
+  protected _onUserUnloaded = (): void => {
     this._onUserStateChanged(undefined);
   };
 
   /**
    * Raised prior to the access token expiring
    */
-  protected _onAccessTokenExpiring = async () => {
+  protected _onAccessTokenExpiring = async (): Promise<void> => {
   };
 
   /**
    * Raised after the access token has expired.
    */
-  protected _onAccessTokenExpired = () => {
+  protected _onAccessTokenExpired = (): void => {
     this._onUserStateChanged(undefined);
   };
 
   /**
    * Raised when the automatic silent renew has failed.
    */
-  protected _onSilentRenewError = () => {
+  protected _onSilentRenewError = (): void => {
   };
 
   /**
    * Raised when the user's sign-in status at the OP has changed.
    */
-  protected _onUserSignedOut = () => {
+  protected _onUserSignedOut = (): void => {
     this._onUserStateChanged(undefined);
   };
 

@@ -14,7 +14,7 @@ import { TabState, toolSettingsTabId } from "../base/NineZoneState";
 import { WidgetContentContainersContext, WidgetContentManagerContext } from "./ContentManager";
 
 /** @internal */
-export const WidgetContentRenderers = React.memo(function WidgetContentRenderers() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
+export const WidgetContentRenderers = React.memo(function WidgetContentRenderers() { // eslint-disable-line @typescript-eslint/naming-convention, @typescript-eslint/no-shadow
   const widgetContent = React.useContext(WidgetContentNodeContext);
   const toolSettingsContent = React.useContext(ToolSettingsNodeContext);
   const widgetContentContainers = React.useContext(WidgetContentContainersContext);
@@ -43,7 +43,7 @@ interface WidgetContentRendererProps {
 }
 
 /** @internal */
-export const WidgetContentRenderer = React.memo(function WidgetContentRenderer(props: WidgetContentRendererProps) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
+export const WidgetContentRenderer = React.memo(function WidgetContentRenderer(props: WidgetContentRendererProps) { // eslint-disable-line @typescript-eslint/naming-convention, @typescript-eslint/no-shadow
   const widgetContentManager = React.useContext(WidgetContentManagerContext);
   const container = React.useRef<HTMLDivElement>(undefined!);
   if (!container.current) {

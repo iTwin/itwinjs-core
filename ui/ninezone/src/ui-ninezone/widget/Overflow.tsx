@@ -21,7 +21,7 @@ export interface WidgetOverflowProps {
 }
 
 /** @internal */
-export const WidgetOverflow = React.memo<WidgetOverflowProps>(function WidgetOverflow(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
+export const WidgetOverflow = React.memo<WidgetOverflowProps>(function WidgetOverflow(props) { // eslint-disable-line @typescript-eslint/naming-convention, @typescript-eslint/no-shadow
   const [open, setOpen] = React.useState(false);
   const ref = React.useRef<HTMLDivElement>(null);
   const [targetRef, target] = useRefState<HTMLDivElement>();

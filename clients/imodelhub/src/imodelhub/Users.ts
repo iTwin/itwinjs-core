@@ -83,7 +83,7 @@ export class UserStatisticsQuery extends WsgQuery {
    * @returns This query.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if id is undefined or it is not a valid [GuidString]($bentley) value.
    */
-  public byId(id: string) {
+  public byId(id: string): this {
     ArgumentCheck.validGuid("id", id);
     this._byId = id;
     return this;
@@ -93,7 +93,7 @@ export class UserStatisticsQuery extends WsgQuery {
    * Used by iModelHub handlers to get the id that is queried.
    * @internal
    */
-  public getId() {
+  public getId(): string | undefined {
     return this._byId;
   }
 
@@ -103,7 +103,7 @@ export class UserStatisticsQuery extends WsgQuery {
    * @returns This query.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if ids array is undefined or empty, or it contains invalid [GuidString]($bentley) values.
    */
-  public byIds(ids: string[]) {
+  public byIds(ids: string[]): this {
     ArgumentCheck.nonEmptyArray("ids", ids);
 
     let filter = "$id+in+[";
@@ -121,27 +121,27 @@ export class UserStatisticsQuery extends WsgQuery {
   }
 
   /** Select all statistics. */
-  public selectAll() {
+  public selectAll(): this {
     return this.addSelect(`${this._statisticsPrefix}.*`);
   }
 
   /** Select currently owned [[Briefcase]]s count. */
-  public selectBriefcasesCount() {
+  public selectBriefcasesCount(): this {
     return this.addSelect(`${this._statisticsPrefix}.BriefcasesCount`);
   }
 
   /** Select total pushed [[ChangeSet]]s count. */
-  public selectPushedChangeSetsCount() {
+  public selectPushedChangeSetsCount(): this {
     return this.addSelect(`${this._statisticsPrefix}.PushedChangeSetsCount`);
   }
 
   /** Select currently owned [[Lock]]s count. */
-  public selectOwnedLocksCount() {
+  public selectOwnedLocksCount(): this {
     return this.addSelect(`${this._statisticsPrefix}.OwnedLocksCount`);
   }
 
   /** Select the last [[ChangeSet]] push date. */
-  public selectLastChangeSetPushDate() {
+  public selectLastChangeSetPushDate(): this {
     return this.addSelect(`${this._statisticsPrefix}.LastChangeSetPushDate`);
   }
 
@@ -149,7 +149,7 @@ export class UserStatisticsQuery extends WsgQuery {
    * Returns whether was object queried by ids or no
    * @internal
    */
-  public get isQueriedByIds() {
+  public get isQueriedByIds(): boolean {
     return this._queriedByIds;
   }
 }
@@ -224,7 +224,7 @@ export class UserInfoQuery extends WsgQuery {
    * @throws [[IModelHubClientError]] if ids array is empty.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if ids array is undefined or empty, or it contains non-Guid values.
    */
-  public byIds(ids: string[]) {
+  public byIds(ids: string[]): this {
     ArgumentCheck.nonEmptyArray("ids", ids);
 
     let filter = "$id+in+[";
@@ -242,7 +242,7 @@ export class UserInfoQuery extends WsgQuery {
   }
 
   /** @internal */
-  public get isQueriedByIds() {
+  public get isQueriedByIds(): boolean {
     return this._queriedByIds;
   }
 
@@ -251,7 +251,7 @@ export class UserInfoQuery extends WsgQuery {
    * @returns This query.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if id is undefined or it is not a valid [GuidString]($bentley) value.
    */
-  public byId(id: string) {
+  public byId(id: string): this {
     ArgumentCheck.validGuid("id", id);
     this._byId = id;
     return this;
@@ -260,7 +260,7 @@ export class UserInfoQuery extends WsgQuery {
   /** Used by iModelHub handlers to get the id that is queried.
    * @internal
    */
-  public getId() {
+  public getId(): string | undefined {
     return this._byId;
   }
 }

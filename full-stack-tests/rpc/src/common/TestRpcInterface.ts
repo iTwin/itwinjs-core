@@ -118,7 +118,7 @@ export abstract class TestRpcInterface extends RpcInterface {
     return this.forward(arguments);
   }
 
-  public async op17() {
+  public async op17(): Promise<void> {
     return this.forward(arguments);
   }
 
@@ -138,7 +138,7 @@ export abstract class TestRpcInterface extends RpcInterface {
     return this.forward(arguments);
   }
 
-  public async noContent() {
+  public async noContent(): Promise<void> {
     return this.forward(arguments);
   }
 }
@@ -185,7 +185,7 @@ export abstract class RpcTransportTest extends RpcInterface {
 }
 
 export class RpcTransportTestImpl extends RpcInterface implements RpcTransportTest {
-  public static register() {
+  public static register(): void {
     RpcManager.registerImpl(RpcTransportTest, RpcTransportTestImpl);
   }
 

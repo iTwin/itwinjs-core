@@ -23,7 +23,7 @@ export class TestChangeSetUtility {
   }
 
   // Initializes the utility
-  public async initialize(projectName: string, iModelBaseName: string, user: TestUserCredentials = TestUsers.manager) {
+  public async initialize(projectName: string, iModelBaseName: string, user: TestUserCredentials = TestUsers.manager): Promise<void> {
     const accessToken = await getAccessTokenFromBackend(user);
     this._testAuthorizationClient = new TestFrontendAuthorizationClient(accessToken);
 

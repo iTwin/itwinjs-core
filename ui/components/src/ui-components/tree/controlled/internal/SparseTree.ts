@@ -220,6 +220,7 @@ export class SparseArray<T> implements Iterable<T | undefined> {
     return lowerBound(index, this._array, SparseArray.compare);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   private static compare<T>(index: number, value: [T, number]): number {
     return compareNumbers(index, value[1]);
   }

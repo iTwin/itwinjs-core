@@ -28,7 +28,7 @@ export interface DockedToolSettingsOverflowProps extends CommonProps {
  */
 export const DockedToolSettingsOverflow = React.memo( // eslint-disable-line @typescript-eslint/naming-convention, react/display-name
   React.forwardRef<HTMLDivElement, DockedToolSettingsOverflowProps>(
-    function DockedToolSettingsOverflow(props, ref) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
+    function DockedToolSettingsOverflow(props, ref) { // eslint-disable-line @typescript-eslint/naming-convention, @typescript-eslint/no-shadow
       const roRef = useResizeObserver<HTMLDivElement>(props.onResize);
       const refs = useRefs(roRef, ref);
       const className = classnames(

@@ -35,7 +35,7 @@ export class FpsMonitor {
       vp.continuousRendering = true;
   }
 
-  public get enabled() { return this._enabled; }
+  public get enabled(): boolean { return this._enabled; }
   public set enabled(enabled: boolean) {
     if (enabled === this.enabled)
       return;
@@ -71,8 +71,8 @@ export class FpsMonitor {
 
 export class RecordFpsTool extends Tool {
   public static toolId = "RecordFps";
-  public static get minArgs() { return 0; }
-  public static get maxArgs() { return 1; }
+  public static get minArgs(): number { return 0; }
+  public static get maxArgs(): number { return 1; }
 
   private _hadContinuousRendering = false;
   private _numFramesToRecord = 0;

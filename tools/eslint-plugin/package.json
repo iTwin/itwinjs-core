@@ -24,8 +24,8 @@
     "cover": ""
   },
   "dependencies": {
-    "@typescript-eslint/eslint-plugin": "2.25.0",
-    "@typescript-eslint/parser": "2.25.0",
+    "@typescript-eslint/eslint-plugin": "4.2.0",
+    "@typescript-eslint/parser": "4.2.0",
     "eslint-import-resolver-node": "^0.3.3",
     "eslint-import-resolver-typescript": "2.0.0",
     "eslint-plugin-deprecation": "1.1.0",

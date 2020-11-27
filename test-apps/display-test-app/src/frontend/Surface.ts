@@ -31,7 +31,7 @@ export class Surface {
   public readonly browserFileSelector?: BrowserFileSelector;
   public readonly openReadWrite: boolean;
 
-  public static get instance() { return DisplayTestApp.surface; }
+  public static get instance(): Surface { return DisplayTestApp.surface; }
 
   public constructor(surfaceDiv: HTMLElement, toolbarDiv: HTMLElement, browserFileSelector: BrowserFileSelector | undefined, openReadWrite: boolean) {
     // Ensure iModel gets closed on page close/reload
@@ -289,8 +289,8 @@ export class Surface {
     this.keyinField.loseFocus();
   }
 
-  public focusNext() { this.focusNextOrPrevious(true); }
-  public focusPrevious() { this.focusNextOrPrevious(false); }
+  public focusNext(): void { this.focusNextOrPrevious(true); }
+  public focusPrevious(): void { this.focusNextOrPrevious(false); }
   private focusNextOrPrevious(next: boolean): void {
     // Focusing a window moves it to the front of the _windows array. So that array is ordered by most-recently- to least-recently-focused.
     if (next) {
@@ -392,8 +392,8 @@ export class Surface {
 
 export class CreateWindowTool extends Tool {
   public static toolId = "CreateWindow";
-  public static get minArgs() { return 1; }
-  public static get maxArgs() { return undefined; }
+  public static get minArgs(): number { return 1; }
+  public static get maxArgs(): number | undefined { return undefined; }
 
   public run(props: NamedWindowProps): boolean {
     DisplayTestApp.surface.createNamedWindow(props);
@@ -430,8 +430,8 @@ export class CreateWindowTool extends Tool {
 }
 
 export abstract class WindowIdTool extends Tool {
-  public static get minArgs() { return 0; }
-  public static get maxArgs() { return 1; }
+  public static get minArgs(): number { return 0; }
+  public static get maxArgs(): number { return 1; }
 
   public abstract execute(_window: Window): void;
 
@@ -478,8 +478,8 @@ export class CloseWindowTool extends WindowIdTool {
 }
 export class ResizeWindowTool extends Tool {
   public static toolId = "ResizeWindow";
-  public static get minArgs() { return 2; }
-  public static get maxArgs() { return 3; }
+  public static get minArgs(): number { return 2; }
+  public static get maxArgs(): number { return 3; }
 
   public run(width: number, height: number, id?: string): boolean {
     const window = undefined !== id ? Surface.instance.findWindowById(id) : Surface.instance.focusedWindow;
@@ -502,8 +502,8 @@ export class ResizeWindowTool extends Tool {
 
 export class DockWindowTool extends Tool {
   public static toolId = "DockWindow";
-  public static get minArgs() { return 1; }
-  public static get maxArgs() { return 2; }
+  public static get minArgs(): number { return 1; }
+  public static get maxArgs(): number { return 2; }
 
   public run(dock: Dock, windowId?: string): boolean {
     const window = undefined !== windowId ? Surface.instance.findWindowById(windowId) : Surface.instance.focusedWindow;
@@ -543,8 +543,8 @@ export class DockWindowTool extends Tool {
 
 export class CloneViewportTool extends Tool {
   public static toolId = "CloneViewport";
-  public static get minArgs() { return 0; }
-  public static get maxArgs() { return 1; }
+  public static get minArgs(): number { return 0; }
+  public static get maxArgs(): number { return 1; }
 
   public run(viewportId?: number): boolean {
     if (undefined === viewportId) {
@@ -571,8 +571,8 @@ export class CloneViewportTool extends Tool {
 
 export class OpenIModelTool extends Tool {
   public static toolId = "OpenIModel";
-  public static get minArgs() { return 0; }
-  public static get maxArgs() { return 1; }
+  public static get minArgs(): number { return 0; }
+  public static get maxArgs(): number { return 1; }
 
   public run(filename?: string): boolean {
     Surface.instance.openFile(filename); // eslint-disable-line @typescript-eslint/no-floating-promises

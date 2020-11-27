@@ -21,7 +21,7 @@ export const MAP_TYPES = {
 };
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function MapUrlDialog({ isOverlay, onOkResult, mapTypesOptions }: { isOverlay: boolean, onOkResult: () => void, mapTypesOptions: MapTypesOptions | undefined }) {
+export function MapUrlDialog({ isOverlay, onOkResult, mapTypesOptions }: { isOverlay: boolean, onOkResult: () => void, mapTypesOptions: MapTypesOptions | undefined }): JSX.Element {
 
   const [dialogTitle] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.AttachCustomLayer"));
   const [typeLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.Type"));

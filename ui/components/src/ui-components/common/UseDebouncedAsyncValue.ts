@@ -18,6 +18,7 @@ import { scheduleSubscription, SubscriptionScheduler } from "./SubscriptionSched
  * @alpha
  */
 export function useDebouncedAsyncValue<TReturn>(valueToBeResolved: undefined | (() => Promise<TReturn>)) {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const scheduler = useMemo(() => new SubscriptionScheduler<TReturn>(), []);
 
   const [value, setValue] = useState<TReturn>();

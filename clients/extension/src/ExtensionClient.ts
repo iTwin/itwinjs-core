@@ -195,7 +195,7 @@ export class ExtensionClient extends Client {
    * @param file Buffer containing extension files in the form of a tar archive
    * @internal
    */
-  public async createExtension(requestContext: AuthorizedClientRequestContext, contextId: string, extensionName: string, version: string, checksum: string, file: Buffer) {
+  public async createExtension(requestContext: AuthorizedClientRequestContext, contextId: string, extensionName: string, version: string, checksum: string, file: Buffer): Promise<void> {
     requestContext.enter();
 
     const requestBody = {
@@ -265,7 +265,7 @@ export class ExtensionClient extends Client {
    * @param extensionName Extension name
    * @param version Extension version. Will delete all versions if undefined.
    */
-  public async deleteExtension(requestContext: AuthorizedClientRequestContext, contextId: string, extensionName: string, version?: string) {
+  public async deleteExtension(requestContext: AuthorizedClientRequestContext, contextId: string, extensionName: string, version?: string): Promise<void> {
     requestContext.enter();
 
     const options: RequestOptions = { method: "DELETE" };

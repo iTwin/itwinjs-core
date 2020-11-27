@@ -26,7 +26,7 @@ const enum MemIndex { // eslint-disable-line no-restricted-syntax
   ViewportTileTrees,
   AllTileTrees,
   RenderTarget,
-  // eslint-disable-next-line no-shadow
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   Viewport, // RenderTarget + Viewed Tile Trees
   System,
   All, // All Tile Trees + System + (RenderTarget for each ViewManager viewport)

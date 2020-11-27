@@ -1066,7 +1066,7 @@ export class TentativeOrAccuSnap {
 }
 
 /** @public */
-export namespace AccuSnap { // eslint-disable-line no-redeclare
+export namespace AccuSnap {
   export class ToolState {
     public enabled = false;
     public locate = false;

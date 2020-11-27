@@ -6,7 +6,7 @@
 import * as path from "path";
 import { IModelJsFs } from "@bentley/imodeljs-backend";
 
-export function createFilePath(filePath: string) {
+export function createFilePath(filePath: string): void {
   // ###TODO: Make this function platform independent
   const files = filePath.split(/\/|\\/); // /\.[^/.]+$/ // /\/[^\/]+$/
   let curFile = "";
@@ -56,7 +56,7 @@ function addColumn(origFile: string, newName: string, columnsIndex: number): str
   return newFile;
 }
 
-export function addColumnsToCsvFile(filePath: string, rowData: Map<string, number | string>) {
+export function addColumnsToCsvFile(filePath: string, rowData: Map<string, number | string>): void {
   let origFile = IModelJsFs.readFileSync(filePath).toString();
   const columns = origFile.split(/[\r\n]+/)[0].split(",");
   const opNamesIter = rowData.keys();
@@ -100,7 +100,7 @@ export function addColumnsToCsvFile(filePath: string, rowData: Map<string, numbe
   IModelJsFs.writeFileSync(filePath, origFile);
 }
 
-export function addDataToCsvFile(file: string, data: Map<string, number | string>) {
+export function addDataToCsvFile(file: string, data: Map<string, number | string>): void {
   try {
     const columns = IModelJsFs.readFileSync(file).toString().split(/[\r\n]+/)[0].split(",");
     let stringData = "";
@@ -124,7 +124,7 @@ export function addDataToCsvFile(file: string, data: Map<string, number | string
   }
 }
 
-export function addEndOfTestToCsvFile(data: string, file: string) {
+export function addEndOfTestToCsvFile(data: string, file: string): void {
   try {
     IModelJsFs.appendFileSync(file, data);
   } catch (err) {

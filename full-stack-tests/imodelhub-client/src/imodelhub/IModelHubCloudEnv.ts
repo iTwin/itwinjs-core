@@ -72,7 +72,7 @@ export class TestIModelHubCloudEnv implements IModelCloudEnvironment {
   public async startup(): Promise<void> { }
   public async shutdown(): Promise<number> { return 0; }
 
-  public getAuthorizationClient(userInfo: UserInfo | undefined, userCredentials: any) {
+  public getAuthorizationClient(userInfo: UserInfo | undefined, userCredentials: any): TestIModelHubUserMgr {
     return new TestIModelHubUserMgr(userInfo, userCredentials);
   }
 }

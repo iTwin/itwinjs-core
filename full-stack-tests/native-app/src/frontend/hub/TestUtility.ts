@@ -58,15 +58,15 @@ export class TestUtility {
     return iModels[0].wsgId;
   }
 
-  public static async purgeStorageCache() {
+  public static async purgeStorageCache(): Promise<void> {
     return TestRpcInterface.getClient().purgeStorageCache();
   }
 
-  public static async createIModel(name: string, contextId: string, deleteIfExists = false) {
+  public static async createIModel(name: string, contextId: string, deleteIfExists = false): Promise<string> {
     return TestRpcInterface.getClient().createIModel(name, contextId, deleteIfExists);
   }
 
-  public static async purgeBriefcaseCache() {
+  public static async purgeBriefcaseCache(): Promise<void> {
     const requestContext = await AuthorizedFrontendRequestContext.create();
     requestContext.enter();
 
@@ -74,7 +74,7 @@ export class TestUtility {
     return TestRpcInterface.getClient().purgeBriefcaseCache();
   }
 
-  public static async restartIModelHost() {
+  public static async restartIModelHost(): Promise<void> {
     return TestRpcInterface.getClient().restartIModelHost();
   }
 

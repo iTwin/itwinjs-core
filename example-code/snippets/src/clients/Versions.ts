@@ -18,7 +18,7 @@ const authorizedRequestContext = new AuthorizedClientRequestContext(accessToken,
 const imodelId: GuidString = Guid.createValue();
 
 // enclosing function avoids compile errors and code analysis report.
-export async function test1() {
+export async function test1(): Promise<void> {
   // __PUBLISH_EXTRACT_START__ VersionHandler.create.example-code
   // Query all ChangeSets
   const changeSets: ChangeSet[] = await imodelHubClient.changeSets.get(authorizedRequestContext, imodelId);
@@ -32,7 +32,7 @@ export async function test1() {
 }
 
 // enclosing function avoids compile errors and code analysis report.
-export async function test2() {
+export async function test2(): Promise<void> {
   // __PUBLISH_EXTRACT_START__ VersionHandler.get.example-code
   // Query all Named Versions
   const allVersions: Version[] = await imodelHubClient.versions.get(authorizedRequestContext, imodelId);
@@ -46,7 +46,7 @@ export async function test2() {
 }
 
 // enclosing function avoids compile errors and code analysis report.
-export async function test3() {
+export async function test3(): Promise<void> {
   // __PUBLISH_EXTRACT_START__ VersionHandler.thumbnail.example-code
   // Query Named Version with its Thumbnail Id
   const thumbnailIdQuery: VersionQuery = new VersionQuery().byName("Version name").selectThumbnailId("Small");

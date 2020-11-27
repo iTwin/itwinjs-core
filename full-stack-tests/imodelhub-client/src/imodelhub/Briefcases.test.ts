@@ -15,7 +15,7 @@ import * as utils from "./TestUtils";
 import { workDir } from "./TestConstants";
 import { createFileHandler } from "./FileHandler";
 
-export function mockDeleteAllLocksWithRegularUser(imodelId: GuidString, briefcaseId: number) {
+export function mockDeleteAllLocksWithRegularUser(imodelId: GuidString, briefcaseId: number): void {
   if (!TestConfig.enableMocks)
     return;
 

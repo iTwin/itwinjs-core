@@ -15,7 +15,7 @@ import { CloudEnv } from "./cloudEnv";
 import { TestChangeSetUtility } from "./TestChangeSetUtility";
 
 export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
-  public static register() {
+  public static register(): void {
     RpcManager.registerImpl(TestRpcInterface, TestRpcImpl);
   }
 

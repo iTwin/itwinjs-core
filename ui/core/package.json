@@ -132,6 +132,9 @@
     "extends": [
       "plugin:@bentley/ui",
       "plugin:@bentley/jsdoc"
-    ]
+    ],
+    "rules": {
+      "@typescript-eslint/explicit-module-boundary-types": "off"
+    }
   }
 }

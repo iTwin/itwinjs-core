@@ -147,7 +147,7 @@ export class ThematicDisplayEditor {
     }
   }
 
-  public updateDefaultRange() {
+  public updateDefaultRange(): void {
     const extents = this._vp.view.iModel.projectExtents;
     ThematicDisplayEditor._defaultSettings.range = { low: extents.zLow, high: extents.zHigh };
   }

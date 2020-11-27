@@ -395,7 +395,6 @@ export class RealityModelTileTree extends RealityTileTree {
 }
 
 /** @internal */
-// eslint-disable-next-line no-redeclare
 export namespace RealityModelTileTree {
   export interface ReferenceProps {
     url: string;

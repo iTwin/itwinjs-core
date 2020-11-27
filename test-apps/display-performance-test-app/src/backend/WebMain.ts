@@ -6,13 +6,13 @@ import * as child_process from "child_process";
 import * as chromeLauncher from "chrome-launcher";
 import * as express from "express";
 import * as path from "path";
-import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, RpcInterfaceDefinition, SnapshotIModelRpcInterface } from "@bentley/imodeljs-common";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { initializeBackend } from "./backend";
 
 /* eslint-disable no-console */
 
-export function getRpcInterfaces() {
+export function getRpcInterfaces(): RpcInterfaceDefinition[] {
   return [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
 }
 

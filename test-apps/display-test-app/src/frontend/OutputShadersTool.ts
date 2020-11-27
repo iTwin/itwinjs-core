@@ -321,8 +321,8 @@ async function outputShaders(dsf: DebugShaderFile[], usedFlag: string, typeFlag:
 
 export class OutputShadersTool extends Tool {
   public static toolId = "OutputShaders";
-  public static get minArgs() { return 0; }
-  public static get maxArgs() { return 2; }
+  public static get minArgs(): number { return 0; }
+  public static get maxArgs(): number { return 2; }
 
   public run(compile: boolean, usedFlag: string, typeFlag: string, langFlag: string, outputDir: string): boolean {
     if (compile) {

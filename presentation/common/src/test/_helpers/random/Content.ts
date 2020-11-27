@@ -8,7 +8,8 @@ import {
   CategoryDescription, CategoryDescriptionJSON, Content, Descriptor, EditorDescription, Field, NestedContentField, PrimitiveTypeDescription,
   PropertiesField, PropertyValueFormat, StructTypeDescription, TypeDescription,
 } from "../../../presentation-common";
-import { SelectClassInfoJSON } from "../../../presentation-common/content/Descriptor";
+import { ContentJSON } from "../../../presentation-common/content/Content";
+import { DescriptorJSON, SelectClassInfoJSON } from "../../../presentation-common/content/Descriptor";
 import { BaseFieldJSON, FieldJSON, NestedContentFieldJSON, PropertiesFieldJSON } from "../../../presentation-common/content/Fields";
 import { PropertyJSON } from "../../../presentation-common/content/Property";
 import { createRandomECClassInfoJSON, createRandomPropertyInfoJSON, createRandomRelatedClassInfoJSON, createRandomRelationshipPathJSON } from "./EC";
@@ -117,7 +118,7 @@ export const createRandomNestedContentField = (nestedFields?: Field[], category?
   return nestedContentField;
 };
 
-export const createRandomDescriptorJSON = (displayType?: string, fields?: FieldJSON[], categories?: CategoryDescriptionJSON[]) => {
+export const createRandomDescriptorJSON = (displayType?: string, fields?: FieldJSON[], categories?: CategoryDescriptionJSON[]): DescriptorJSON => {
   categories = categories ?? (fields ? undefined : [createRandomCategoryJSON()]);
   fields = fields ?? [createRandomPrimitiveFieldJSON(categories![0]), createRandomPrimitiveFieldJSON(categories![0]), createRandomPrimitiveFieldJSON(categories![0])];
   return {
@@ -140,7 +141,7 @@ export const createRandomDescriptor = (displayType?: string, fields?: Field[], c
   ))!;
 };
 
-export const createRandomContentJSON = () => {
+export const createRandomContentJSON = (): ContentJSON => {
   return {
     descriptor: createRandomDescriptorJSON(),
     contentSet: [],

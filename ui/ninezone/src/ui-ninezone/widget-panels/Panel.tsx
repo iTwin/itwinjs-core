@@ -54,7 +54,7 @@ export interface WidgetPanelProps {
 /** Widget panel component is a side panel with multiple widgets.
  * @internal
  */
-export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanel(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
+export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanel(props) { // eslint-disable-line @typescript-eslint/naming-convention, @typescript-eslint/no-shadow
   return (
     <PanelStateContext.Provider value={props.panel}>
       <PanelSideContext.Provider value={props.panel.side}>
@@ -77,7 +77,7 @@ export interface WidgetPanelComponentProps {
 export const WidgetPanelComponent = React.memo<WidgetPanelComponentProps>(function WidgetPanelComponent({
   spanBottom,
   spanTop,
-}) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
+}) { // eslint-disable-line @typescript-eslint/naming-convention, @typescript-eslint/no-shadow
   const panel = React.useContext(PanelStateContext);
   assert(panel);
   const { handleBeforeTransition, handlePrepareTransition, handleTransitionEnd, getRef, sizes, ...animatePanelWidgets } = useAnimatePanelWidgets();

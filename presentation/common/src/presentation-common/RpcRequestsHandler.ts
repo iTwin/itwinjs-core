@@ -59,7 +59,7 @@ export class RpcRequestsHandler implements IDisposable {
     this.clientId = (props && props.clientId) ? props.clientId : Guid.createValue();
   }
 
-  public dispose() {
+  public dispose(): void {
   }
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -95,7 +95,7 @@ export class RpcRequestsHandler implements IDisposable {
    * @internal
    */
   public async request<TResult, TOptions extends { imodel: IModelRpcProps }, TArg = any>(
-    func: (token: IModelRpcProps, options: PresentationRpcRequestOptions<Omit<TOptions, "imodel">>, ...args: TArg[]) => PresentationRpcResponse<TResult>,
+    func: (token: IModelRpcProps, options: PresentationRpcRequestOptions<Omit<TOptions, "imodel">>, ..._args: TArg[]) => PresentationRpcResponse<TResult>,
     options: TOptions,
     ...args: TArg[]): Promise<TResult> {
     type TFuncOptions = PresentationRpcRequestOptions<Omit<TOptions, "imodel">>;
@@ -135,11 +135,11 @@ export class RpcRequestsHandler implements IDisposable {
     return this.request<number, ExtendedContentRequestOptions<IModelRpcProps, DescriptorJSON, KeySetJSON>>(
       this.rpcClient.getContentSetSize.bind(this.rpcClient), options); // eslint-disable-line deprecation/deprecation
   }
-  public async getPagedContent(options: Paged<ExtendedContentRequestOptions<IModelRpcProps, DescriptorJSON, KeySetJSON>>) {
+  public async getPagedContent(options: Paged<ExtendedContentRequestOptions<IModelRpcProps, DescriptorJSON, KeySetJSON>>): Promise<{ descriptor: DescriptorJSON, contentSet: PagedResponse<ItemJSON> } | undefined> {
     return this.request<{ descriptor: DescriptorJSON, contentSet: PagedResponse<ItemJSON> } | undefined, Paged<ExtendedContentRequestOptions<IModelRpcProps, DescriptorJSON, KeySetJSON>>>(
       this.rpcClient.getPagedContent.bind(this.rpcClient), options);
   }
-  public async getPagedContentSet(options: Paged<ExtendedContentRequestOptions<IModelRpcProps, DescriptorJSON, KeySetJSON>>) {
+  public async getPagedContentSet(options: Paged<ExtendedContentRequestOptions<IModelRpcProps, DescriptorJSON, KeySetJSON>>): Promise<PagedResponse<ItemJSON>> {
     return this.request<PagedResponse<ItemJSON>, Paged<ExtendedContentRequestOptions<IModelRpcProps, DescriptorJSON, KeySetJSON>>>(
       this.rpcClient.getPagedContentSet.bind(this.rpcClient), options);
   }

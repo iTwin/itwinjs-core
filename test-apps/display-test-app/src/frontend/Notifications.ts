@@ -19,8 +19,8 @@ export interface NotificationsWindowProps extends WindowProps {
 export class NotificationsWindow extends Window {
   private readonly _maxMessages: number;
 
-  public get isCloseable() { return false; }
-  public get windowId() { return "notifications"; }
+  public get isCloseable(): boolean { return false; }
+  public get windowId(): string { return "notifications"; }
 
   public constructor(surface: Surface, props: NotificationsWindowProps) {
     super(surface, props);
@@ -51,10 +51,10 @@ export class NotificationsWindow extends Window {
 export class Notifications extends NotificationManager {
   private _tooltipDiv?: HTMLDivElement;
 
-  public outputPrompt(prompt: string) { showStatus(prompt); }
+  public outputPrompt(prompt: string): void { showStatus(prompt); }
 
   /** Output a message and/or alert to the user. */
-  public outputMessage(message: NotifyMessageDetails) {
+  public outputMessage(message: NotifyMessageDetails): void {
     showError(message.briefMessage);
     Surface.instance.notifications.addMessage(message);
   }
@@ -91,8 +91,8 @@ export class Notifications extends NotificationManager {
     return promise;
   }
 
-  public get isToolTipSupported() { return true; }
-  public get isToolTipOpen() {
+  public get isToolTipSupported(): boolean { return true; }
+  public get isToolTipOpen(): boolean {
     return undefined !== this._tooltipDiv;
   }
 

@@ -39,7 +39,7 @@ function Toolbar(props: ToolbarProps) {
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function SubLayersPanel({ mapLayer, viewport }: { mapLayer: StyleMapLayerSettings, viewport: ScreenViewport | undefined }) {
+export function SubLayersPanel({ mapLayer, viewport }: { mapLayer: StyleMapLayerSettings, viewport: ScreenViewport | undefined }): JSX.Element {
   const [noneAvailableLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:SubLayers.NoSubLayers"));
   if (!viewport || (undefined === mapLayer.subLayers || 0 === mapLayer.subLayers.length)) {
     return <div className="map-manager-sublayer-panel">
@@ -74,7 +74,7 @@ function getStyleMapLayerSettings(settings: MapLayerSettings, isOverlay: boolean
  * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
+export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }): JSX.Element {
   const [placeholderLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:SubLayers.SearchPlaceholder"));
   const [allOnLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:SubLayers.AllOn"));
   const [allOffLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:SubLayers.AllOff"));

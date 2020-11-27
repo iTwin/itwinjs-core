@@ -138,7 +138,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
       .finally(() => clearTimeout(timeout));
   }
 
-  public async getNodesAndCount(token: IModelRpcProps, requestOptions: Paged<HierarchyRpcRequestOptions>, parentKey?: NodeKeyJSON) {
+  public async getNodesAndCount(token: IModelRpcProps, requestOptions: Paged<HierarchyRpcRequestOptions>, parentKey?: NodeKeyJSON): PresentationRpcResponse<{ count: number, nodes: NodeJSON[] }> {
     return this.makeRequest(token, "getNodesAndCount", requestOptions, async (options) => {
       options = { ...options, parentKey: nodeKeyFromJson(parentKey) };
       const [nodes, count] = await Promise.all([

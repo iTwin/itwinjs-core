@@ -11,7 +11,7 @@ export class BlankConnectionExample {
   // __PUBLISH_EXTRACT_START__ BlankConnection.open
 
   // create a new blank connection centered on Exton PA
-  public openBlankConnection() {
+  public openBlankConnection(): BlankConnection {
     const exton: BlankConnection = BlankConnection.create({
       // call this connection "Exton PA"
       name: "Exton PA",

@@ -226,7 +226,7 @@ const setupStandaloneConfiguration = () => {
   return configuration;
 };
 
-export const initializeDtaBackend = async () => {
+export const initializeDtaBackend = async (): Promise<void> => {
   const dtaConfig = setupStandaloneConfiguration();
 
   const hostConfig = new IModelHostConfiguration();

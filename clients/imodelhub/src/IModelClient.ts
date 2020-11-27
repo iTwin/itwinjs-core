@@ -45,7 +45,7 @@ export abstract class IModelClient {
    * Sets file handler for file upload/download.
    * @param fileHandler File handler to handle file upload/download and file system operations.
    */
-  public setFileHandler(fileHandler: FileHandler) {
+  public setFileHandler(fileHandler: FileHandler): void {
     this._fileHandler = fileHandler;
     this._fileHandler.agent = this._handler.getAgent();
   }
@@ -54,7 +54,7 @@ export abstract class IModelClient {
    * Gets file handler for file upload/download.
    * @returns File handler to handle file upload/download and file system operations.
    */
-  public get fileHandler() {
+  public get fileHandler(): FileHandler | undefined {
     return this._fileHandler;
   }
 
@@ -172,7 +172,7 @@ export abstract class IModelClient {
    * Adds a method that will be called for every request to modify HttpRequestOptions.
    * @param func Method that will be used to modify HttpRequestOptions.
    */
-  public use(transformer: HttpRequestOptionsTransformer) {
+  public use(transformer: HttpRequestOptionsTransformer): void {
     this._handler.use(transformer);
   }
 }

@@ -235,7 +235,7 @@ export class Ntlm {
   }
 
   /** Sets the credentials for NTLM based authentication */
-  public static setCredentials(domain: string, username: string, password: string) {
+  public static setCredentials(domain: string, username: string, password: string): void {
     const magic = "KGS!@#$%"; // Create LM password hash.
     let lmPassword = password.toUpperCase().substr(0, 14);
     while (lmPassword.length < 14)

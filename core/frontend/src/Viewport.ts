@@ -120,7 +120,7 @@ export enum ChangeFlag {
   DisplayStyle = 1 << 4,
   FeatureOverrideProvider = 1 << 5,
   ViewedCategoriesPerModel = 1 << 6,
-  ViewState = 1 << 7, // eslint-disable-line no-shadow
+  ViewState = 1 << 7, // eslint-disable-line @typescript-eslint/no-shadow
   All = 0x0fffffff,
   Overrides = ChangeFlag.All & ~(ChangeFlag.ViewedModels | ChangeFlag.ViewState),
   Initial = ChangeFlag.ViewedCategories | ChangeFlag.ViewedModels | ChangeFlag.DisplayStyle,
@@ -180,7 +180,7 @@ export class ChangeFlags {
 /** @alpha Source of depth point returned by [[Viewport.pickDepthPoint]]. */
 export enum DepthPointSource {
   /** Depth point from geometry within specified radius of pick point */
-  Geometry, // eslint-disable-line no-shadow
+  Geometry, // eslint-disable-line @typescript-eslint/no-shadow
   /** Depth point from reality model within specified radius of pick point */
   Model,
   /** Depth point from ray projection to background map plane */

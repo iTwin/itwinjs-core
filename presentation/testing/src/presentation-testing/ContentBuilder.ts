@@ -101,7 +101,7 @@ export class ContentBuilder {
    * @param displayType Type of content container display. For example:
    * "PropertyPane", "Grid", "List" etc.
    */
-  public async createContent(rulesetOrId: Ruleset | string, instanceKeys: InstanceKey[], displayType: string = DefaultContentDisplayTypes.PropertyPane) {
+  public async createContent(rulesetOrId: Ruleset | string, instanceKeys: InstanceKey[], displayType: string = DefaultContentDisplayTypes.PropertyPane): Promise<PropertyRecord[]> {
     if (typeof rulesetOrId === "string")
       return this.doCreateContent(rulesetOrId, instanceKeys, displayType);
 
@@ -158,7 +158,7 @@ export class ContentBuilder {
    * @param displayType Type of content container display. For example:
    * "PropertyPane", "Grid", "List" etc.
    */
-  public async createContentForAllInstances(rulesetOrId: Ruleset | string, displayType: string = DefaultContentDisplayTypes.PropertyPane) {
+  public async createContentForAllInstances(rulesetOrId: Ruleset | string, displayType: string = DefaultContentDisplayTypes.PropertyPane): Promise<ContentBuilderResult[]> {
     return this.createContentForClasses(rulesetOrId, false, displayType);
   }
 
@@ -169,7 +169,7 @@ export class ContentBuilder {
    * @param displayType Type of content container display. For example:
    * "PropertyPane", "Grid", "List" etc.
    */
-  public async createContentForInstancePerClass(rulesetOrId: Ruleset | string, displayType: string = DefaultContentDisplayTypes.PropertyPane) {
+  public async createContentForInstancePerClass(rulesetOrId: Ruleset | string, displayType: string = DefaultContentDisplayTypes.PropertyPane): Promise<ContentBuilderResult[]> {
     return this.createContentForClasses(rulesetOrId, true, displayType);
   }
 }

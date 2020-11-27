@@ -72,7 +72,7 @@ export class SectionMarker extends Marker {
   }
 
   /** @internal */
-  protected drawActive(ctx: CanvasRenderingContext2D) {
+  protected drawActive(ctx: CanvasRenderingContext2D): boolean {
     ctx.shadowBlur = 30;
     ctx.shadowColor = "gold";
     return false;
@@ -85,7 +85,7 @@ export class SectionMarker extends Marker {
   }
 
   /** @internal */
-  public onMouseEnter(ev: BeButtonEvent) {
+  public onMouseEnter(ev: BeButtonEvent): void {
     // Lazily load the tooltip.
     if (undefined === this.title) {
       IModelReadRpcInterface.getClientForRouting(this.state.iModel.routingContext.token).getToolTipMessage(this.state.iModel.getRpcProps(), this.state.id).then((tooltipMsg) => {
@@ -108,7 +108,7 @@ export class SectionMarker extends Marker {
   }
 
   /** @internal */
-  public addMarker(context: DecorateContext) {
+  public addMarker(context: DecorateContext): void {
     super.addMarker(context);
     if (this.isHilited)
       ViewClipTool.drawClip(context, this.state.clip, undefined, { fillClipPlanes: true, hasPrimaryPlane: true });

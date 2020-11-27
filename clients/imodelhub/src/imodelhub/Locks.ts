@@ -125,7 +125,7 @@ export class ConflictingLocksError extends IModelHubError {
    * @param error Error to get additional conflicting locks from.
    * @internal
    */
-  public addLocks(error: IModelHubError) {
+  public addLocks(error: IModelHubError): void {
     if (!error.data || !error.data.ConflictingLocks) {
       return;
     }
@@ -216,7 +216,7 @@ export class LockQuery extends WsgQuery {
    * Used by the handler to check whether locks in query can be grouped.
    * @internal
    */
-  public get isMultiLockQuery() {
+  public get isMultiLockQuery(): boolean {
     return this._isMultiLockQuery;
   }
 
@@ -226,7 +226,7 @@ export class LockQuery extends WsgQuery {
    * @returns This query.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if briefcaseId is undefined or it contains an invalid [[Briefcase]] id value.
    */
-  public byBriefcaseId(briefcaseId: number) {
+  public byBriefcaseId(briefcaseId: number): this {
     ArgumentCheck.validBriefcaseId("briefcaseId", briefcaseId);
     this.addFilter(`BriefcaseId+eq+${briefcaseId}`);
     return this;
@@ -237,7 +237,7 @@ export class LockQuery extends WsgQuery {
    * @param lockType Lock type to query.
    * @returns This query.
    */
-  public byLockType(lockType: LockType) {
+  public byLockType(lockType: LockType): this {
     this.addFilter(`LockType+eq+${lockType}`);
     return this;
   }
@@ -247,7 +247,7 @@ export class LockQuery extends WsgQuery {
    * @param lockLevel Lock level to query.
    * @returns This query.
    */
-  public byLockLevel(lockLevel: LockLevel) {
+  public byLockLevel(lockLevel: LockLevel): this {
     this.addFilter(`LockLevel+eq+${lockLevel}`);
     return this;
   }
@@ -258,7 +258,7 @@ export class LockQuery extends WsgQuery {
    * @returns This query.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if objectId is undefined.
    */
-  public byObjectId(objectId: Id64String) {
+  public byObjectId(objectId: Id64String): this {
     ArgumentCheck.defined("objectId", objectId);
     this._isMultiLockQuery = false;
     this.addFilter(`ObjectId+eq+'${objectId}'`);
@@ -271,7 +271,7 @@ export class LockQuery extends WsgQuery {
    * @returns This query.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if changeSetId is undefined or empty, or it contains an invalid [[ChangeSet]] id value.
    */
-  public byReleasedWithChangeSet(changeSetId: string) {
+  public byReleasedWithChangeSet(changeSetId: string): this {
     ArgumentCheck.validChangeSetId("changeSetId", changeSetId);
     this.addFilter(`ReleasedWithChangeSet+eq+'${changeSetId}'`);
     return this;
@@ -284,7 +284,7 @@ export class LockQuery extends WsgQuery {
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley)
    * if changeSetIndex is undefined.
    */
-  public byReleasedWithChangeSetIndex(changeSetIndex: number) {
+  public byReleasedWithChangeSetIndex(changeSetIndex: number): this {
     ArgumentCheck.definedNumber("changeSetIndex", changeSetIndex);
     this.addFilter(`ReleasedWithChangeSetIndex+eq+${changeSetIndex}`);
     return this;
@@ -296,7 +296,7 @@ export class LockQuery extends WsgQuery {
    * @returns This query.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if locks array is undefined or empty, or it contains invalid [[Lock]] values.
    */
-  public byLocks(locks: Lock[]) {
+  public byLocks(locks: Lock[]): this {
     ArgumentCheck.nonEmptyArray("locks", locks);
 
     let filter = "$id+in+[";
@@ -324,7 +324,7 @@ export class LockQuery extends WsgQuery {
    * @returns This query.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if one of the values is undefined or briefcaseId is not in a valid [[Briefcase]] id value.
    */
-  public unavailableLocks(briefcaseId: number, lastChangeSetIndex: string) {
+  public unavailableLocks(briefcaseId: number, lastChangeSetIndex: string): this {
     ArgumentCheck.validBriefcaseId("briefcaseId", briefcaseId);
     ArgumentCheck.defined("lastChangeSetIndex", lastChangeSetIndex);
     let filter = `BriefcaseId+ne+${briefcaseId}`;

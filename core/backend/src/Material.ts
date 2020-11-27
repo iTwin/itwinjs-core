@@ -137,7 +137,7 @@ export class RenderMaterialElement extends DefinitionElement implements RenderMa
 }
 
 /** @public */
-export namespace RenderMaterialElement { // eslint-disable-line no-redeclare
+export namespace RenderMaterialElement { // eslint-disable-line @typescript-eslint/no-redeclare
   /** Parameters used to construct a [[RenderMaterial]]. */
   export class Params {
     /** The palette name which categorizes this RenderMaterial */

@@ -17,7 +17,7 @@ export interface WidgetContentManagerProps {
 }
 
 /** @internal */
-export const WidgetContentManager = React.memo<WidgetContentManagerProps>(function WidgetContentManager(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
+export const WidgetContentManager = React.memo<WidgetContentManagerProps>(function WidgetContentManager(props) { // eslint-disable-line @typescript-eslint/naming-convention, @typescript-eslint/no-shadow
   const [containers, setContainers] = React.useState<WidgetContentContainers>({});
   const saveTransientStateRef = React.useRef(new EventEmitter<(tabId: TabState["id"]) => void>());
   const restoreTransientStateRef = React.useRef(new EventEmitter<(tabId: TabState["id"]) => void>());

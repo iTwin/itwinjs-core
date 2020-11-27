@@ -34,7 +34,7 @@ export class MyAppFrontend {
     return value;
   }
 
-  public static async getViewDefinitions(imodel: IModelConnection) {
+  public static async getViewDefinitions(imodel: IModelConnection): Promise<{ id: string, class: string, label: string }[]> {
     const viewQueryParams: ViewQueryParams = { wantPrivate: false };
     const viewSpecs = await imodel.views.queryProps(viewQueryParams);
     return viewSpecs

@@ -69,7 +69,8 @@
     ],
     "extends": "plugin:@bentley/imodeljs-recommended",
     "rules": {
-      "@typescript-eslint/indent": "off"
+      "@typescript-eslint/indent": "off",
+      "@typescript-eslint/explicit-module-boundary-types": "off"
     }
   }
 }

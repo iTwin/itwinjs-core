@@ -85,7 +85,7 @@ interface DockedStatusBarEntryProps {
 }
 
 /** Wrapper for status bar entries so their size can be used to determine if the status bar container can display them or if they will need to be placed in an overflow panel. */
-// eslint-disable-next-line @typescript-eslint/naming-convention, no-shadow
+// eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-shadow
 const DockedStatusBarEntry = React.memo<DockedStatusBarEntryProps>(function DockedStatusbarEntry({ children, entryKey, getOnResize }) {
   const onResize = React.useMemo(() => getOnResize(entryKey), [getOnResize, entryKey]);
   const entry = React.useMemo<DockedStatusBarEntryContextArg>(() => ({

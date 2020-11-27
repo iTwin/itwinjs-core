@@ -174,7 +174,7 @@ export class DisplayParams {
 }
 
 /** @internal */
-export namespace DisplayParams { // eslint-disable-line no-redeclare
+export namespace DisplayParams { // eslint-disable-line @typescript-eslint/no-redeclare
   export enum Type {
     Mesh,
     Linear,

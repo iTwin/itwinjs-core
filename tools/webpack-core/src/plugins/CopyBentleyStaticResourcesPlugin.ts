@@ -60,7 +60,7 @@ export class CopyBentleyStaticResourcesPlugin extends AbstractAsyncStartupPlugin
     this._useDirectoryName = undefined === useDirectoryName ? false : useDirectoryName;
   }
 
-  public async runAsync(compiler: Compiler) {
+  public async runAsync(compiler: Compiler): Promise<void> {
     const bentleyDir = path.resolve(paths.appNodeModules, "@bentley");
     const subDirectoryNames = await fs.readdir(bentleyDir);
     for (const thisSubDir of subDirectoryNames) {
@@ -83,7 +83,7 @@ export class CopyAppAssetsPlugin extends AbstractAsyncStartupPlugin {
     super("CopyAppAssetsPlugin");
   }
 
-  public async runAsync(compiler: Compiler) {
+  public async runAsync(compiler: Compiler): Promise<void> {
     const outAssetsDir = path.resolve(compiler.outputPath, "assets");
     await tryCopyDirectoryContents(resolveApp(this._assetsDir), outAssetsDir);
   }

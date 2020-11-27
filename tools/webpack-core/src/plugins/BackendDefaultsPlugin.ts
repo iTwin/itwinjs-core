@@ -15,7 +15,7 @@ const ExternalsPlugin = require("webpack/lib/ExternalsPlugin");
 /* eslint-enable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
 
 export class BackendDefaultsPlugin {
-  public apply(compiler: Compiler) {
+  public apply(compiler: Compiler): void {
     // By default, webpack will prefer ES Modules over CommonJS modules.
     // This causes trouble with importing node-fetch, so we need to explicitly prefer CommonJS over ES/Harmony.
     // https://github.com/bitinn/node-fetch/issues/450#issuecomment-494475397

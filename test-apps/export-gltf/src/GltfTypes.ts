@@ -5,6 +5,7 @@
 
 /* eslint-disable no-restricted-syntax */
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- false positive
 interface Gltf {
   accessors: GltfAccessor[];
   asset: GltfAsset;

@@ -26,7 +26,7 @@ export class BeEvent<T extends Listener> {
   private _insideRaiseEvent: boolean = false;
 
   /** The number of listeners currently subscribed to the event. */
-  public get numberOfListeners() { return this._listeners.length; }
+  public get numberOfListeners(): number { return this._listeners.length; }
 
   /**
    * Registers a Listener to be executed whenever this event is raised.
@@ -81,7 +81,7 @@ export class BeEvent<T extends Listener> {
    * @param args This method takes any number of parameters and passes them through to the listeners.
    * @see [[BeEvent.removeListener]], [[BeEvent.addListener]]
    */
-  public raiseEvent(...args: any[]) {
+  public raiseEvent(...args: any[]): void {
     this._insideRaiseEvent = true;
 
     const listeners = this._listeners;

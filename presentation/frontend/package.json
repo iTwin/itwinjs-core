@@ -103,6 +103,9 @@
     "plugins": [
       "@bentley"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+    "extends": "plugin:@bentley/imodeljs-recommended",
+    "rules": {
+      "@typescript-eslint/explicit-module-boundary-types": "off"
+    }
   }
 }

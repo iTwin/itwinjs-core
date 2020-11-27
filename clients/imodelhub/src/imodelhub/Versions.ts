@@ -69,7 +69,7 @@ export class VersionQuery extends InstanceIdQuery {
    * @returns This query.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if name is undefined or empty.
    */
-  public byName(name: string) {
+  public byName(name: string): this {
     ArgumentCheck.defined("name", name);
     this.addFilter(`Name+eq+'${encodeURIComponent(name)}'`);
     return this;
@@ -81,7 +81,7 @@ export class VersionQuery extends InstanceIdQuery {
    * @returns This query.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if changeSetId is undefined or not a valid [[ChangeSet.id]] format.
    */
-  public byChangeSet(changeSetId: string) {
+  public byChangeSet(changeSetId: string): this {
     ArgumentCheck.validChangeSetId("changeSetId", changeSetId, true);
     this.addFilter(`ChangeSetId+eq+'${changeSetId}'`);
     return this;
@@ -109,7 +109,7 @@ export class VersionQuery extends InstanceIdQuery {
    * Query only not hidden versions.
    * @returns This query.
    */
-  public notHidden() {
+  public notHidden(): this {
     this.addFilter("Hidden+eq+false");
     return this;
   }

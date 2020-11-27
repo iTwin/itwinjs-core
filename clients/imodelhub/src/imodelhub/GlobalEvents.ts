@@ -57,7 +57,7 @@ export abstract class IModelHubGlobalEvent extends IModelHubBaseEvent {
    * @param obj Object instance.
    * @internal
    */
-  public fromJson(obj: any) {
+  public fromJson(obj: any): void {
     super.fromJson(obj);
     this.iModelId = obj.iModelId;
     this.projectId = obj.ProjectId;
@@ -104,7 +104,7 @@ export class ChangeSetCreatedEvent extends IModelHubGlobalEvent {
   /** Construct this event from object instance.
    * @param obj Object instance.
    */
-  public fromJson(obj: any) {
+  public fromJson(obj: any): void {
     super.fromJson(obj);
     this.changeSetId = obj.ChangeSetId;
     this.changeSetIndex = obj.ChangeSetIndex;
@@ -123,7 +123,7 @@ export class NamedVersionCreatedEvent extends IModelHubGlobalEvent {
   /** Construct this event from object instance.
    * @param obj Object instance.
    */
-  public fromJson(obj: any) {
+  public fromJson(obj: any): void {
     super.fromJson(obj);
     this.versionId = obj.VersionId;
     this.versionName = obj.VersionName;
@@ -142,7 +142,7 @@ export class GlobalCheckpointCreatedEvent extends IModelHubGlobalEvent {
   /** Construct this event from object instance.
    * @param obj Object instance.
    */
-  public fromJson(obj: any) {
+  public fromJson(obj: any): void {
     super.fromJson(obj);
     this.changeSetIndex = obj.ChangeSetIndex;
     this.changeSetId = obj.ChangeSetId;
@@ -231,7 +231,7 @@ export class GlobalEventSubscriptionHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.EventSubscriptionAlreadyExists]($bentley) if [[GlobalEventSubscription]] already exists with the specified subscriptionId.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async create(requestContext: AuthorizedClientRequestContext, subscriptionId: GuidString, globalEvents: GlobalEventType[]) {
+  public async create(requestContext: AuthorizedClientRequestContext, subscriptionId: GuidString, globalEvents: GlobalEventType[]): Promise<GlobalEventSubscription> {
     requestContext.enter();
     Logger.logInfo(loggerCategory, "Creating global event subscription", () => ({ subscriptionId }));
     ArgumentCheck.defined("requestContext", requestContext);

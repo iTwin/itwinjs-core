@@ -27,9 +27,9 @@ class AspectRatioSkewDecorator {
           knots: [0, 0, 0, 1, 1, 1],
           order: 3,
           points: [
-            [ l.x, l.y, c.z ],
-            [ c.x, h.y, c.z ],
-            [ h.x, c.y, c.z ],
+            [l.x, l.y, c.z],
+            [c.x, h.y, c.z],
+            [h.x, c.y, c.z],
           ],
         },
       }],
@@ -75,8 +75,8 @@ export class ToggleAspectRatioSkewDecoratorTool extends Tool {
   private _applyAspectRatioSkew = true;
 
   public static toolId = "ToggleAspectRatioSkewDecorator";
-  public static get minArgs() { return 0; }
-  public static get maxArgs() { return 1; }
+  public static get minArgs(): number { return 0; }
+  public static get maxArgs(): number { return 1; }
 
   public run(): boolean {
     const iModel = IModelApp.viewManager.selectedView?.iModel;

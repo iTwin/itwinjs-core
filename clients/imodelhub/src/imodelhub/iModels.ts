@@ -250,7 +250,7 @@ export class IModelQuery extends InstanceIdQuery {
    * @returns This query.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if name is undefined or empty.
    */
-  public byName(name: string) {
+  public byName(name: string): this {
     ArgumentCheck.defined("name", name);
     this.addFilter(`Name+eq+'${encodeURIComponent(name)}'`);
     return this;
@@ -262,7 +262,7 @@ export class IModelQuery extends InstanceIdQuery {
    * @returns This query.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if iModelType is undefined.
    */
-  public byiModelType(iModelType: IModelType) {
+  public byiModelType(iModelType: IModelType): this {
     ArgumentCheck.defined("iModelType", iModelType);
     this.addFilter(`Type+eq+${iModelType}`);
     return this;
@@ -274,7 +274,7 @@ export class IModelQuery extends InstanceIdQuery {
    * @returns This query.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if iModelTemplate is undefined or empty.
    */
-  public byiModelTemplate(iModelTemplate: string) {
+  public byiModelTemplate(iModelTemplate: string): this {
     ArgumentCheck.defined("iModelTemplate", iModelTemplate, true);
     this.addFilter(`iModelTemplate+eq+'${encodeURIComponent(iModelTemplate)}'`);
     return this;

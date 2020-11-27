@@ -84,7 +84,7 @@ export class RobotWorldEngine {
   }
   // __PUBLISH_EXTRACT_END__
 
-  public static moveRobot(iModelDb: IModelDb, id: Id64String, location: Point3d) {
+  public static moveRobot(iModelDb: IModelDb, id: Id64String, location: Point3d): void {
     const r = iModelDb.elements.getElement<Robot>(id);
     r.placement.origin = location;
     iModelDb.elements.updateElement(r);

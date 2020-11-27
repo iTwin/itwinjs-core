@@ -21,7 +21,7 @@ export class IModelTestUtils {
     return BriefcaseDb.open(requestContext, briefcaseProps.key);
   }
 
-  public static async closeAndDeleteBriefcaseDb(requestContext: AuthorizedClientRequestContext, briefcaseDb: BriefcaseDb) {
+  public static async closeAndDeleteBriefcaseDb(requestContext: AuthorizedClientRequestContext, briefcaseDb: BriefcaseDb): Promise<void> {
     briefcaseDb.close();
     await BriefcaseManager.delete(requestContext, briefcaseDb.briefcaseKey);
   }

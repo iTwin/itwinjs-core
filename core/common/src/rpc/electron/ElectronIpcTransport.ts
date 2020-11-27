@@ -211,7 +211,7 @@ export class BackendIpcTransport extends ElectronIpcTransport<SerializedRpcReque
     }
 
     try { // Wrapping require in a try/catch signals to webpack that this is only an optional dependency
-      this._browserWindow = require("electron").BrowserWindow;
+      this._browserWindow = require("electron").BrowserWindow; // eslint-disable-line @typescript-eslint/no-var-requires
     } catch (err) {
       throw new IModelError(BentleyStatus.ERROR, `Error requiring electron`, undefined, undefined, () => err);
     }
@@ -231,10 +231,10 @@ export function initializeIpc(protocol: ElectronRpcProtocol) {
       // If we're running with nodeIntegration=false, ElectronPreload.ts defines `window.imodeljs_api` and require() won't work.
       // If we're running with nodeIntegration=true (e.g. from tests), ElectronPreload won't have run, just use ipcRenderer.
 
-      const electronIpc = (window as any).imodeljs_api ?? require("electron").ipcRenderer;
+      const electronIpc = (window as any).imodeljs_api ?? require("electron").ipcRenderer; // eslint-disable-line @typescript-eslint/no-var-requires
       transport = new FrontendIpcTransport(electronIpc, protocol);
     } else {
-      transport = new BackendIpcTransport(require("electron").ipcMain, protocol);
+      transport = new BackendIpcTransport(require("electron").ipcMain, protocol); // eslint-disable-line @typescript-eslint/no-var-requires
     }
   } catch (_err) {
     throw new IModelError(BentleyStatus.ERROR, `cannot load electron`);

@@ -114,7 +114,7 @@ export class BGFBReader {
       const numCoordinates = offsetToLineString.pointsLength();
       const result = LineString3d.create();
       for (let i = 0; i + 2 < numCoordinates; i += 3) {
-        result.packedPoints.pushXYZ(offsetToLineString.points(i)!, offsetToLineString?.points(i + 1)!, offsetToLineString?.points(i + 2)!);
+        result.packedPoints.pushXYZ(offsetToLineString.points(i)!, offsetToLineString.points(i + 1)!, offsetToLineString.points(i + 2)!);
       }
       return result;
     } else if (geometryType === BGFBAccessors.VariantGeometryUnion.tagBsplineCurve) {

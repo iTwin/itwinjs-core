@@ -20,7 +20,7 @@ const createTestAppIcon = (iconUnicode: string) => {
   return icon;
 };
 
-export function createToolButton(props: ToolButtonProps) {
+export function createToolButton(props: ToolButtonProps): HTMLDivElement {
   const icon = createTestAppIcon(props.iconUnicode);
   const div = IModelApp.makeHTMLElement("div", { className: "simpleicon" });
 
@@ -38,7 +38,7 @@ export interface ImageButtonProps {
   click: (ev: Event) => void;
 }
 
-export function createImageButton(props: ImageButtonProps) {
+export function createImageButton(props: ImageButtonProps): HTMLImageElement {
   const img = IModelApp.makeHTMLElement("img", { className: "simpleicon" });
   img.src = props.src;
   if (undefined !== props.tooltip)

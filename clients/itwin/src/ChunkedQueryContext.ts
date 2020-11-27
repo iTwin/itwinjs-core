@@ -37,7 +37,7 @@ export class ChunkedQueryContext {
   }
 
   /** Prepares for next chunked query iteration. */
-  public handleIteration(queryOptions: RequestQueryOptions) {
+  public handleIteration(queryOptions: RequestQueryOptions): void {
     let pageSize = this._pageSize;
     if (this._instancesLeft) {
       // Top was greater than PageSize. Update Top if this is the last page.

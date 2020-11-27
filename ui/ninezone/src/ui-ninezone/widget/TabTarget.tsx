@@ -23,7 +23,7 @@ export interface WidgetTabTargetProps {
 /** Component that displays a tab target.
  * @internal
  */
-export const WidgetTabTarget = React.memo<WidgetTabTargetProps>(function WidgetTabTarget(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
+export const WidgetTabTarget = React.memo<WidgetTabTargetProps>(function WidgetTabTarget(props) { // eslint-disable-line @typescript-eslint/naming-convention, @typescript-eslint/no-shadow
   const { first, tabIndex } = props;
   const cursorType = React.useContext(CursorTypeContext);
   const widgetId = React.useContext(WidgetIdContext);

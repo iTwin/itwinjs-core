@@ -38,7 +38,7 @@ export class CopyExternalsPlugin {
     this._appDependencies = new Set([...Object.keys(appPackageJson.dependencies), "@bentley/imodeljs-native"]);
   }
 
-  public apply(compiler: Compiler) {
+  public apply(compiler: Compiler): void {
     compiler.hooks.compilation.tap("CopyExternalsPlugin", (compilation: any) => {
       this._logger = compilation.getLogger("CopyExternalsPlugin");
       compilation.hooks.buildModule.tap("CopyExternalsPlugin", (currentModule: any) => {
@@ -53,7 +53,7 @@ export class CopyExternalsPlugin {
     });
   }
 
-  public async handleModule(currentModule: any, outputDir: string, compilation: any) {
+  public async handleModule(currentModule: any, outputDir: string, compilation: any): Promise<void> {
     const pkgName = this.pathToPackageName(currentModule.request);
     if (pkgName === "electron" || builtinModules.includes(pkgName) || this._copiedPackages.has(pkgName))
       return;

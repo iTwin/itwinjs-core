@@ -24,7 +24,7 @@ export class Ruleset extends DefinitionElement {
    * @param rulesetId   - ID of the ruleset code is being created for (to ensure uniqueness for different rules)
    * @param iModelDb    - db the ruleset is supposed to be inserted into
    */
-  public static createRulesetCode(modelId: Id64String, rulesetId: string, iModelDb: IModelDb) {
+  public static createRulesetCode(modelId: Id64String, rulesetId: string, iModelDb: IModelDb): Code {
     return new Code({
       spec: iModelDb.codeSpecs.getByName(PresentationRules.CodeSpec.Ruleset).id,
       scope: modelId.toString(),

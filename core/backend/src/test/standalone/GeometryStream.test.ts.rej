@@ -1,0 +1,12 @@
+diff a/core/backend/src/test/standalone/GeometryStream.test.ts b/core/backend/src/test/standalone/GeometryStream.test.ts	(rejected hunks)
+@@ -153,8 +153,8 @@
+         case ElementGeometryOpcode.BRep:
+           const brep = ElementGeometry.toBRep(entry);
+           assert.exists(brep);
+-          if (!isWorld && undefined !== expected[i].originalEntry) {
+-            const other = ElementGeometry.toBRep(expected[i].originalEntry!);
++          if (!isWorld && undefined !== originalEntry) {
++            const other = ElementGeometry.toBRep(originalEntry);
+             assert.exists(other);
+             // NOTE: Don't compare brep type; set from entity data by backend, ignored if supplied to update...
+             const transform = Transform.fromJSON(brep?.transform);

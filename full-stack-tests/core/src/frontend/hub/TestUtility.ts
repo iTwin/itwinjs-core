@@ -58,7 +58,7 @@ export class TestUtility {
     return iModels[0].wsgId;
   }
 
-  public static async createIModel(name: string, contextId: string, deleteIfExists = false) {
+  public static async createIModel(name: string, contextId: string, deleteIfExists = false): Promise<string> {
     return TestRpcInterface.getClient().createIModel(name, contextId, deleteIfExists);
   }
 

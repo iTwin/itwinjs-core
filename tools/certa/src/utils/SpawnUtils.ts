@@ -70,7 +70,7 @@ export async function relaunchInElectron(): Promise<number> {
  * test "backend", but with the electron test runner, we want to debug a child process ("electron certa ...args").
  * @param port Port to listen on for inspector connections.
  */
-export function startDebugger(port: number) {
+export function startDebugger(port: number): void {
   // Don't try to activate if there's already an active inspector.
   if (inspector.url())
     return;

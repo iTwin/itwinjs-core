@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as faker from "faker";
-import { Id64 } from "@bentley/bentleyjs-core";
+import { Id64, Id64String } from "@bentley/bentleyjs-core";
 import { EntityProps } from "@bentley/imodeljs-common";
 import { createRandomId } from "./Misc";
 
@@ -20,4 +20,4 @@ export const createRandomEntityProps = (): EntityProps => {
   return props;
 };
 
-export const createRandomTransientId = () => Id64.fromLocalAndBriefcaseIds(123, 0xffffff);
+export const createRandomTransientId = (): Id64String => Id64.fromLocalAndBriefcaseIds(123, 0xffffff);

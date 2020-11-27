@@ -111,7 +111,7 @@ export class FrustumPlanes {
 }
 
 /** @internal */
-export namespace FrustumPlanes { // eslint-disable-line no-redeclare
+export namespace FrustumPlanes { // eslint-disable-line @typescript-eslint/no-redeclare
   /** @internal */
   export enum Containment {
     Outside = 0,

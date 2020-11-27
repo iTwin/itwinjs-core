@@ -29,11 +29,11 @@ export class RegisteredRuleset implements IDisposable, Ruleset {
   }
 
   /** Dispose registered ruleset. */
-  public dispose() {
+  public dispose(): void {
     this._disposeFunc(this);
   }
 
-  public get uniqueIdentifier() { return this._uniqueIdentifier; }
+  public get uniqueIdentifier(): string { return this._uniqueIdentifier; }
   public get id(): string { return this._ruleset.id; }
   public get supportedSchemas(): SchemasSpecification | undefined { return this._ruleset.supportedSchemas; }
   public get supplementationInfo(): SupplementationInfo | undefined { return this._ruleset.supplementationInfo; }

@@ -157,7 +157,7 @@ export class I18N {
   }
 
   /** @internal */
-  public loadNamespace(name: string, i18nCallback: any) { this._i18next.loadNamespaces(name, i18nCallback); }
+  public loadNamespace(name: string, i18nCallback: any): void { this._i18next.loadNamespaces(name, i18nCallback); }
 
   /** Get an already registered Namespace.
    * @param name - the name of the namespace

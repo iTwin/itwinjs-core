@@ -28,7 +28,7 @@ export class MultilineTextPropertyValueRenderer implements IPropertyValueRendere
   public render(record: PropertyRecord, context?: PropertyValueRendererContext): React.ReactNode {
     return <MultilineTextPropertyValueRendererImpl record={record} context={context} />;
   }
-};
+}
 
 interface MultilineTextPropertyValueRendererImplProps {
   record: PropertyRecord;

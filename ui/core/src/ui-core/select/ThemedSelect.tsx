@@ -20,7 +20,7 @@ import { UiCore } from "../UiCore";
 import "./themed-select.scss";
 
 // cspell:ignore reactselect
-/* eslint-disable no-shadow, @typescript-eslint/consistent-type-definitions, @typescript-eslint/array-type */
+/* eslint-disable @typescript-eslint/no-shadow, @typescript-eslint/consistent-type-definitions, @typescript-eslint/array-type */
 type FormatOptionLabelContext = "menu" | "value";
 type FormatOptionLabelMeta = {
   context: FormatOptionLabelContext;

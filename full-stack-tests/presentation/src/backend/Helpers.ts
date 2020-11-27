@@ -40,7 +40,7 @@ const valueMatchesDefault = (key: string, value: any): boolean => {
   return false;
 };
 
-export const tweakRuleset = <T extends { [key: string]: any } | any[]>(src: T, out: T) => {
+export const tweakRuleset = <T extends { [key: string]: any } | any[]>(src: T, out: T): void => {
   try {
     if (Array.isArray(src) && Array.isArray(out)) {
       src.forEach((e: any, i: number) => {

@@ -7,7 +7,7 @@ import { RpcPushConnection } from "@bentley/imodeljs-common";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { testChannel } from "../common/TestRpcInterface";
 
-export async function setupPushTest(before = async () => { }) {
+export async function setupPushTest(before = async () => { }): Promise<void> {
   registerBackendCallback(BackendTestCallbacks.startPushTest, () => {
     setTimeout(async () => {
       await before();

@@ -68,7 +68,7 @@ export class SampleSnapTool extends PrimitiveTool {
     return EventHandled.No;
   }
 
-  public onPostInstall() {
+  public onPostInstall(): void {
     super.onPostInstall();
     IModelApp.accuSnap.enableSnap(true); // Enable AccuSnap so that linestring can be created by snapping to existing geometry
   }
@@ -97,7 +97,7 @@ export class SampleLocateTool extends PrimitiveTool {
     return EventHandled.No;
   }
 
-  public onPostInstall() {
+  public onPostInstall(): void {
     super.onPostInstall();
     this.initLocateElements(); // Enable AccuSnap locate, set view cursor, add CoordinateLockOverrides to disable unwanted pre-locate point adjustments...
   }
@@ -154,7 +154,7 @@ export class CreateByPointsTool extends PrimitiveTool {
     return EventHandled.No;
   }
 
-  public onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
+  public onPostInstall(): void { super.onPostInstall(); this.setupAndPromptForNextAction(); }
   // __PUBLISH_EXTRACT_END__
 
   public onRestartTool(): void {

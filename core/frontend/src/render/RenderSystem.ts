@@ -458,7 +458,7 @@ export abstract class RenderSystem implements IDisposable {
  * @see [[IModelApp.renderSystem]].
  * @public
  */
-export namespace RenderSystem { // eslint-disable-line no-redeclare
+export namespace RenderSystem { // eslint-disable-line @typescript-eslint/no-redeclare
   /** Options passed to [[IModelApp.supplyRenderSystem]] to configure the [[RenderSystem]] on startup. Many of these options serve as "feature flags" used to enable newer, experimental features. As such they typically begin life tagged as "alpha" or "beta" and are subsequently deprecated when the feature is declared stable.
    *
    * @beta

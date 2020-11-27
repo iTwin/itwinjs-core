@@ -84,7 +84,7 @@ export class SeqLoggerConfig {
   }
 
   /** Check that the specified object is a valid SeqConfig. This is useful when reading a config from a .json file. */
-  public static validateProps(seqConfig: any) {
+  public static validateProps(seqConfig: any): void {
     const validProps = ["hostURL", "port"];
     for (const prop of Object.keys(seqConfig)) {
       if (!validProps.includes(prop))
@@ -93,7 +93,7 @@ export class SeqLoggerConfig {
   }
 
   /** @internal Used to flush all pending seq logs right before exiting. */
-  public static async shutdownSeq() {
+  public static async shutdownSeq(): Promise<void> {
     return this._seqStream?.stream?.flush?.();
   }
 }

@@ -5,14 +5,14 @@
 import { MobileRpcConfiguration, MobileRpcManager } from "@bentley/imodeljs-common";
 import { setupPushTest } from "./push";
 
-export async function setupMockMobileTest(port: number) {
+export async function setupMockMobileTest(port: number): Promise<void> {
   MobileRpcConfiguration.setup = {
     obtainPort: () => port,
     checkPlatform: () => true,
   };
 }
 
-export async function initializeMockMobileTest() {
+export async function initializeMockMobileTest(): Promise<void> {
   MobileRpcManager.initializeImpl([]);
 
   await setupPushTest(async () => MobileRpcManager.ready());

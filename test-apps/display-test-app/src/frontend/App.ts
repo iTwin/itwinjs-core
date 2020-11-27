@@ -112,7 +112,7 @@ export class DisplayTestApp {
   };
 
   private static _surface?: Surface;
-  public static get surface() { return this._surface!; }
+  public static get surface(): Surface { return this._surface!; }
   public static set surface(surface: Surface) { this._surface = surface; }
 
   public static async startup(opts?: IModelAppOptions): Promise<void> {

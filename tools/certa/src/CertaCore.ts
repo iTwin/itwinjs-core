@@ -18,7 +18,7 @@ export interface CertaTestRunner {
 export class CertaCore {
   private static _runners: { [environment: string]: CertaTestRunner } = {};
 
-  public static registerTestRunner(environment: string, runner: CertaTestRunner) {
+  public static registerTestRunner(environment: string, runner: CertaTestRunner): void {
     this._runners[environment] = runner;
   }
 

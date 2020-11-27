@@ -61,7 +61,7 @@ export abstract class SamlToken {
   }
 
   /** @internal */
-  public setUserInfo(userInfo: UserInfo) {
+  public setUserInfo(userInfo: UserInfo): void {
     this._userInfo = userInfo;
   }
 

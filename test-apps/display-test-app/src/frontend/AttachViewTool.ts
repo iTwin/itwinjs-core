@@ -94,8 +94,8 @@ async function attachView(opts: AttachmentProps): Promise<void> {
  */
 export class AttachViewTool extends Tool {
   public static toolId = "AttachView";
-  public static get minArgs() { return 1; }
-  public static get maxArgs() { return 7; }
+  public static get minArgs(): number { return 1; }
+  public static get maxArgs(): number { return 7; }
 
   public run(opts?: AttachmentProps): boolean {
     if (opts && opts.viewId)

@@ -26,7 +26,7 @@ export class ProjectExtentsExample {
   }
 
   /** get the low and high Cartographic range of this iModel */
-  public async getProjectMinMaxCartographic(iModel: IModelConnection) {
+  public async getProjectMinMaxCartographic(iModel: IModelConnection): Promise<{ min: Cartographic, max: Cartographic }> {
     let low: Cartographic | undefined;
     let high: Cartographic | undefined;
 

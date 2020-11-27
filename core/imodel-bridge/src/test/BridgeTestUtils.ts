@@ -23,6 +23,8 @@ import { CodeSpecs, RectangleTile, SmallSquareTile } from "./integration/TestBri
 import { ModelNames } from "./integration/TestiModelBridge";
 import { KnownTestLocations } from "./KnownTestLocations";
 
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+
 export class TestIModelInfo {
   private _name: string;
   private _id: string;

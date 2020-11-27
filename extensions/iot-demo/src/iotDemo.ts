@@ -79,7 +79,7 @@ export abstract class IoTAnimation {
   }
 
   // cancel any animation schedule.
-  public stopAnimationSchedule() {
+  public stopAnimationSchedule(): void {
     const displayStyleState = this._selectedView.displayStyle;
     if (displayStyleState.scheduleScript) {
       displayStyleState.scheduleScript = undefined;
@@ -111,14 +111,14 @@ export abstract class IoTAnimation {
     return this._elementMap!.get(deviceId);
   }
 
-  public async run() {
+  public async run(): Promise<void> {
     const sequence: any = await this._makeRequest();
     await this._getElementMap();
     const schedule = this.makeAnimationSchedule(sequence);
     this._showAnimationSchedule(schedule);
   }
 
-  protected makeAnimationSchedule(sequence: any) {
+  protected makeAnimationSchedule(sequence: any): any[] {
     this.scheduleMap = new Map<Id64String, ColorTime[]>();
     if (undefined === this.startMsec)
       this.startMsec = sequence[0].msec;
@@ -448,7 +448,7 @@ export class IoTDemoExtension extends Extension {
   }
 
   // run the animation. Start time is in mSec (from Date.getTime()), duration is in minutes.
-  public runAnimation(type: AnimationType, duration?: number, startMsec?: number) {
+  public runAnimation(type: AnimationType, duration?: number, startMsec?: number): void {
     this.animationView = IModelApp.viewManager.selectedView;
     if (!this.animationView)
       return;
@@ -464,7 +464,7 @@ export class IoTDemoExtension extends Extension {
     }
   }
 
-  public runMonitor(type: AnimationType) {
+  public runMonitor(type: AnimationType): void {
     // stop any existing animation.
     if (this.animation) {
       this.animation.stopAnimationSchedule();

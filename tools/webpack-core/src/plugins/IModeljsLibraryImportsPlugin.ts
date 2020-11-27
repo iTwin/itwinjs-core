@@ -22,7 +22,7 @@ function getLoaderString(pkgName: string, pkgVersion: string) {
 export class IModeljsLibraryImportsPlugin {
   constructor() { }
 
-  public apply(compiler: Compiler) {
+  public apply(compiler: Compiler): void {
     compiler.hooks.normalModuleFactory.tap("IModeljsLibraryImportsPlugin", (normalModuleFactory) => {
       normalModuleFactory.hooks.module.tap("IModeljsLibraryImportsPlugin", (mod, info) => {
         const pkgJson = info.resourceResolveData.descriptionFileData;

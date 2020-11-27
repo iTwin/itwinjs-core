@@ -21,8 +21,8 @@ class TransformProvider {
 /** Apply a display transform to all currently displayed models. */
 export class ApplyModelTransformTool extends Tool {
   public static toolId = "ApplyModelTransform";
-  public static get minArgs() { return 0; }
-  public static get maxArgs() { return 5; }
+  public static get minArgs(): number { return 0; }
+  public static get maxArgs(): number { return 5; }
 
   public run(origin?: Point3d, ypr?: YawPitchRollAngles): boolean {
     const vp = IModelApp.viewManager.selectedView;

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { LogLevel } from "@bentley/bentleyjs-core";
-import { DevToolsRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface } from "@bentley/imodeljs-common";
+import { DevToolsRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import { TestUserCredentials } from "@bentley/oidc-signin-tool";
 import { PresentationRpcInterface } from "@bentley/presentation-common";
 
@@ -29,7 +29,7 @@ export interface IModelData {
   changeSetId?: string;
 }
 
-export function getRpcInterfaces(settings: Settings) {
+export function getRpcInterfaces(settings: Settings): RpcInterfaceDefinition[] {
   const rpcInterfaces = [];
   if (settings.runDevToolsRpcTests)
     rpcInterfaces.push(DevToolsRpcInterface);

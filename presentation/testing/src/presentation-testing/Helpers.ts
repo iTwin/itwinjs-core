@@ -20,7 +20,6 @@ import { PresentationRpcInterface } from "@bentley/presentation-common";
 import { Presentation as PresentationFrontend, PresentationManagerProps as PresentationFrontendProps } from "@bentley/presentation-frontend";
 
 function initializeRpcInterfaces(interfaces: RpcInterfaceDefinition[]) {
-  // eslint-disable-next-line @typescript-eslint/class-name-casing
   const config = class extends RpcDefaultConfiguration {
     public interfaces: any = () => interfaces;
   };
@@ -62,7 +61,7 @@ export interface PresentationTestingInitProps {
  *
  * @public
  */
-export const initialize = async (props?: PresentationTestingInitProps) => {
+export const initialize = async (props?: PresentationTestingInitProps): Promise<void> => {
   if (isInitialized)
     return;
 
@@ -100,7 +99,7 @@ export const initialize = async (props?: PresentationTestingInitProps) => {
  *
  * @public
  */
-export const terminate = async (frontendApp = IModelApp) => {
+export const terminate = async (frontendApp = IModelApp): Promise<void> => {
   if (!isInitialized)
     return;
 

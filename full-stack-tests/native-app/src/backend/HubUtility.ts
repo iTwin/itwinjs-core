@@ -92,7 +92,7 @@ export class HubUtility {
   }
 
   /** Generate a name (for an iModel) that's unique for the user + host */
-  public static generateUniqueName(baseName: string) {
+  public static generateUniqueName(baseName: string): string {
     let username = "AnonymousUser";
     let hostname = "AnonymousHost";
     try {

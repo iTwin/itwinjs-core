@@ -919,7 +919,7 @@ export class ViewAttributesPanel extends ToolBarDropDown {
     return this.populate();
   }
 
-  public get isOpen() { return undefined !== this._attributes; }
+  public get isOpen(): boolean { return undefined !== this._attributes; }
   protected _open(): void {
     this._attributes = new ViewAttributes(this._vp, this._parent, this._disableEdges);
     const loadingComboBox = createComboBox({

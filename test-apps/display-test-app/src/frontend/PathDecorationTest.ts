@@ -34,7 +34,7 @@ export class PathDecorationTest {
   public readonly useCachedDecorations = true;
 
   /** We added this class as a ViewManager.decorator below. This method is called to ask for our decorations. Here we add the line string. */
-  public decorate(context: DecorateContext) {
+  public decorate(context: DecorateContext): void {
     if (undefined === this._pickId)
       this._pickId = context.viewport.iModel.transientIds.next;
     const pathBuilder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined, this._pickId);
@@ -63,7 +63,7 @@ export class PathDecorationTest {
   }
 
   /** Turn the line decoration on and off. */
-  public static toggle(extents: AxisAlignedBox3d) {
+  public static toggle(extents: AxisAlignedBox3d): void {
     if (undefined === PathDecorationTest.decorator)
       this.start(extents);
     else

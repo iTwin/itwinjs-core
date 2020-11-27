@@ -9,7 +9,7 @@ import { BentleyCloudRpcManager, RpcInterfaceDefinition } from "@bentley/imodelj
 /**
  * Initializes Web Server backend
  */
-export default async function initialize(rpcs: RpcInterfaceDefinition[]) {
+export default async function initialize(rpcs: RpcInterfaceDefinition[]): Promise<void> {
   // tell BentleyCloudRpcManager which RPC interfaces to handle
   const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "presentation-test-app", version: "v1.0" } }, rpcs);
 

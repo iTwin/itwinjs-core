@@ -197,7 +197,7 @@ interface MapLayerManagerProps {
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function MapLayerManager(props: MapLayerManagerProps) {
+export function MapLayerManager(props: MapLayerManagerProps): JSX.Element {
   const [mapSources, setMapSources] = React.useState<MapLayerSource[] | undefined>();
   const [baseSources, setBaseSources] = React.useState<MapLayerSource[] | undefined>();
   const [overlaysLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.OverlayLayers"));

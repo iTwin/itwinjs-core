@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 // show status in the output HTML
-export function showStatus(string1: string, string2?: string) {
+export function showStatus(string1: string, string2?: string): void {
   let outString: string = string1;
   if (string2)
     outString = outString.concat(" ", string2);
@@ -12,7 +12,7 @@ export function showStatus(string1: string, string2?: string) {
   if (showstatus)
     showstatus.innerHTML = outString;
 }
-export function showError(string1: string, string2?: string) {
+export function showError(string1: string, string2?: string): void {
   let outString: string = string1;
   if (string2)
     outString = outString.concat(" ", string2);

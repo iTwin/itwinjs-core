@@ -163,7 +163,7 @@ export namespace XmlSerializationUtils {
     }
   }
 
-  export function createXmlTypedName(currentSchema: Schema, typeSchema: Schema, typeName: string) {
+  export function createXmlTypedName(currentSchema: Schema, typeSchema: Schema, typeName: string): string {
     if (currentSchema.schemaKey.matches(typeSchema.schemaKey))
       return typeName;
 

@@ -24,7 +24,7 @@ export interface WidgetProviderProps {
 }
 
 /** @internal */
-export const WidgetProvider = React.memo<WidgetProviderProps>(function WidgetProvider(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
+export const WidgetProvider = React.memo<WidgetProviderProps>(function WidgetProvider(props) { // eslint-disable-line @typescript-eslint/naming-convention, @typescript-eslint/no-shadow
   return (
     <WidgetStateContext.Provider value={props.widget}>
       <WidgetIdContext.Provider value={props.widget.id}>

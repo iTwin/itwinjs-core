@@ -119,6 +119,6 @@ export const getFloatingZoneBounds = (props: ZoneManagerProps) => {
 export const getFloatingZoneStyle = (props: ZoneManagerProps) => {
   return props.floating ? {
     zIndex: props.floating.stackId,
-    position: "relative" as "relative",
+    position: "relative" as const,
   } : undefined;
 };

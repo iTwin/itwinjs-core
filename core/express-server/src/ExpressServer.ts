@@ -24,12 +24,12 @@ export class IModelJsExpressServer {
     this._protocol = protocol;
   }
 
-  protected _configureMiddleware() {
+  protected _configureMiddleware(): void {
     this._app.use(express.text());
     this._app.use(express.raw());
   }
 
-  protected _configureHeaders() {
+  protected _configureHeaders(): void {
     // enable CORS for all apis
     this._app.all("/**", (_req, res, next) => {
       res.header("Access-Control-Allow-Origin", BentleyCloudRpcConfiguration.accessControl.allowOrigin);
@@ -39,7 +39,7 @@ export class IModelJsExpressServer {
     });
   }
 
-  protected _configureRoutes() {
+  protected _configureRoutes(): void {
     this._app.get("/v3/swagger.json", (req, res) => this._protocol.handleOpenApiDescriptionRequest(req, res));
     this._app.post("*", async (req, res) => this._protocol.handleOperationPostRequest(req, res));
     this._app.get(/\/imodel\//, async (req, res) => this._protocol.handleOperationGetRequest(req, res));

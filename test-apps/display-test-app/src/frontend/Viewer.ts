@@ -107,8 +107,8 @@ export class ModelClipTool extends Tool {
 export class MarkupTool extends Tool {
   public static toolId = "Markup";
   public static savedData?: MarkupData;
-  public static get minArgs() { return 0; }
-  public static get maxArgs() { return 1; }
+  public static get minArgs(): number { return 0; }
+  public static get maxArgs(): number { return 1; }
 
   public run(wantSavedData: boolean): boolean {
     const vp = IModelApp.viewManager.selectedView;

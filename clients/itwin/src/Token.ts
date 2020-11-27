@@ -28,7 +28,7 @@ export enum IncludePrefix {
  * @internal
  */
 export function TokenPrefix(prefix: string) { // eslint-disable-line @typescript-eslint/naming-convention
-  return (constructor: any) => {
+  return (constructor: any) => { // eslint-disable-line @typescript-eslint/explicit-module-boundary-types
     TokenPrefixToTypeContainer.tokenPrefixToConstructorDict[prefix] = constructor;
   };
 }
@@ -67,7 +67,7 @@ export class AccessToken {
   }
 
   /** @internal */
-  public setUserInfo(userInfo: UserInfo) {
+  public setUserInfo(userInfo: UserInfo): void {
     this._userInfo = userInfo;
   }
 
@@ -80,7 +80,7 @@ export class AccessToken {
   public getStartsAt(): Date | undefined {
     return this._startsAt;
   }
-  protected setPrefix(prefix: string) {
+  protected setPrefix(prefix: string): void {
     this._prefix = prefix;
   }
 

@@ -125,7 +125,7 @@ export class GeoJsonImporter {
     return categoryId;
   }
   /** Iterate through and accumulate the GeoJSON FeatureCollection range. */
-  protected getFeatureRange(featureMin: Cartographic, featureMax: Cartographic) {
+  protected getFeatureRange(featureMin: Cartographic, featureMax: Cartographic): boolean {
     featureMin.longitude = featureMin.latitude = Angle.pi2Radians;
     featureMax.longitude = featureMax.latitude = -Angle.pi2Radians;
 

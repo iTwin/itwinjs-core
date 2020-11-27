@@ -17,7 +17,7 @@ declare class OSS {
   public putStream(name: string, source: Readable, options: OSS.PutStreamOptions): Promise<void>;
 }
 
-declare namespace OSS { // eslint-disable-line no-redeclare
+declare namespace OSS { // eslint-disable-line @typescript-eslint/no-redeclare
   interface SignatureUrlOptions {
     expires: number;
   }

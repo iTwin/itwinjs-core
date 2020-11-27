@@ -17,12 +17,12 @@ export const configureForPromiseResult = <T>(mock: moq.IMock<T>): void => {
 };
 
 /** typemoq matcher for KeySet */
-export const isKeySet = (expectedKeys: Keys) => {
+export const isKeySet = (expectedKeys: Keys): KeySet => {
   const expected = new KeySet(expectedKeys);
   return moq.It.is<KeySet>((actual: KeySet) => (actual.size === expected.size && actual.hasAll(expected)));
 };
 
 /** typemoq matcher for deep equality */
-export const deepEquals = <T>(expected: T) => {
+export const deepEquals = <T>(expected: T): T => {
   return moq.It.is((actual: T) => deepEqual(actual, expected));
 };

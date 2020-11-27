@@ -27,7 +27,7 @@ export interface Props {
   onFindSimilar?: (propertiesProvider: IPresentationPropertyDataProvider, record: PropertyRecord) => void;
 }
 
-export function PropertiesWidget(props: Props) {
+export function PropertiesWidget(props: Props): JSX.Element {
   const dataProvider = React.useMemo(() => createDataProvider(props.imodel, props.rulesetId), [props.imodel, props.rulesetId]);
 
   const [activeMatchIndex, setActiveMatchIndex] = React.useState(0);

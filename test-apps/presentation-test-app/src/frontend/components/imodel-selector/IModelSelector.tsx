@@ -25,7 +25,7 @@ export default class IModelSelector extends React.Component<Props, State> {
     this.state = { availableImodels: [] };
   }
 
-  public async componentWillMount() { // eslint-disable-line react/no-deprecated
+  public async componentWillMount(): Promise<void> { // eslint-disable-line react/no-deprecated
     const imodels = await MyAppFrontend.getSampleImodels();
     imodels.splice(0, 0, "");
     this.setState({ availableImodels: imodels });
@@ -52,7 +52,7 @@ export default class IModelSelector extends React.Component<Props, State> {
     this.props.onIModelSelected(imodel);
   };
 
-  public render() {
+  public render(): JSX.Element {
     let error = null;
     if (this.state.error)
       error = (<div className="Error">{IModelApp.i18n.translate("Sample:controls.notifications.error")}: {this.state.error.message}</div>);

@@ -25,7 +25,7 @@ const fixEmptyStrings = (obj: any) => {
   }
 };
 
-export const createRandomRuleset = async () => {
+export const createRandomRuleset = async (): Promise<Ruleset> => {
   const jsf = require("json-schema-faker"); // eslint-disable-line @typescript-eslint/no-var-requires
   jsf.option({
     optionalsProbability: 0.8,

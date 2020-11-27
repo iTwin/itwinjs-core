@@ -31,7 +31,7 @@ export interface WidgetPanelsProps extends CommonProps {
 /** Component that displays widget panels.
  * @internal
  */
-export const WidgetPanels = React.memo<WidgetPanelsProps>(function WidgetPanels(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
+export const WidgetPanels = React.memo<WidgetPanelsProps>(function WidgetPanels(props) { // eslint-disable-line @typescript-eslint/naming-convention, @typescript-eslint/no-shadow
   return (
     <ContentNodeContext.Provider value={props.children}>
       <CenterContentNodeContext.Provider value={props.centerContent}>
@@ -45,7 +45,7 @@ export const WidgetPanels = React.memo<WidgetPanelsProps>(function WidgetPanels(
 });
 
 /** @internal */
-const WidgetPanelsComponent = React.memo<CommonProps>(function WidgetPanelsComponent(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
+const WidgetPanelsComponent = React.memo<CommonProps>(function WidgetPanelsComponent(props) { // eslint-disable-line @typescript-eslint/naming-convention, @typescript-eslint/no-shadow
   const panels = React.useContext(PanelsStateContext);
   useCursor();
   const className = classnames(

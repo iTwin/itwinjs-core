@@ -61,7 +61,7 @@ export class ThumbnailQuery extends InstanceIdQuery {
    * @returns This query.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if versionId is undefined or it is not a valid [GuidString]($bentley) value.
    */
-  public byVersionId(versionId: GuidString) {
+  public byVersionId(versionId: GuidString): this {
     ArgumentCheck.validGuid("versionId", versionId);
     this.addFilter(`HasThumbnail-backward-Version.Id+eq+'${versionId}'`);
     return this;

@@ -89,7 +89,7 @@ export class Presentation {
   private constructor() { }
 
   /** Properties used to initialize the presentation framework */
-  public static get initProps() { return this._initProps; }
+  public static get initProps(): PresentationProps | undefined { return this._initProps; }
 
   /**
    * Initializes Presentation library for the backend.

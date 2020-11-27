@@ -20,7 +20,7 @@ export function onOverflowLabelAndEditorResize() {
 }
 
 /** This component takes a DockedToolSetting "wrapper" component and extract only the label and editor components from it */
-// eslint-disable-next-line @typescript-eslint/naming-convention, no-shadow
+// eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-shadow
 const OverflowLabelAndEditor = React.memo(function OverflowLabelAndEditor({ wrapper }: { wrapper: React.ReactNode }) {
   assert(React.isValidElement(wrapper));
   const entryValue = React.useMemo<DockedToolSettingsEntryContextArgs>(() => ({
@@ -157,7 +157,7 @@ interface DockedToolSettingsEntryProps {
   getOnResize: (key: string) => (w: number) => void;
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention, no-shadow
+// eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-shadow
 const DockedToolSettingsEntry = React.memo<DockedToolSettingsEntryProps>(function DockedToolSettingsEntry({ children, entryKey, getOnResize }) {
   const onResize = React.useMemo(() => getOnResize(entryKey), [getOnResize, entryKey]);
   const entry = React.useMemo<DockedToolSettingsEntryContextArgs>(() => ({

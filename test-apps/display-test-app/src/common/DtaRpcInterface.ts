@@ -13,7 +13,7 @@ export class DtaRpcInterface extends RpcInterface {
   public static interfaceVersion = "1.0.0";
 
   /** The types that can be marshaled by the interface. */
-  public static types = () => [];
+  public static types = (): any[] => [];
 
   public static getClient(): DtaRpcInterface { return RpcManager.getClientForInterface(DtaRpcInterface); }
   public async readExternalSavedViews(_filename: string): Promise<string> { return this.forward(arguments); }

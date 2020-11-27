@@ -14,7 +14,7 @@ import * as utils from "./IModeljsLibraryUtils";
 export class IModeljsLibraryExportsPlugin {
   constructor() { }
 
-  public apply(compiler: Compiler) {
+  public apply(compiler: Compiler): void {
     compiler.hooks.normalModuleFactory.tap("IModeljsLibraryExportsPlugin", (normalModuleFactory) => {
       normalModuleFactory.hooks.module.tap("IModeljsLibraryExportsPlugin", (mod, info) => {
         const pkgJson = info.resourceResolveData.descriptionFileData;

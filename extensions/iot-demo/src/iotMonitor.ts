@@ -23,7 +23,7 @@ export class IoTMonitor implements FeatureOverrideProvider {
     this._latestReadingTime = 0;
   }
 
-  public startMonitor(animationType: AnimationType) {
+  public startMonitor(animationType: AnimationType): void {
     this._animationView = IModelApp.viewManager.selectedView;
     if (undefined === this._animationView)
       return;
@@ -54,7 +54,7 @@ export class IoTMonitor implements FeatureOverrideProvider {
     this._intervalHandle = setInterval(this._showLatestReadings.bind(this), 2 * 1000);
   }
 
-  public stopMonitor() {
+  public stopMonitor(): void {
     if (this._animationView)
       this._animationView.dropFeatureOverrideProvider(this);
 

@@ -51,7 +51,7 @@ interface MagicCommentHandlerConfig {
 export class RequireMagicCommentsPlugin {
   constructor(private _configs: MagicCommentHandlerConfig[]) { }
 
-  public apply(compiler: Compiler) {
+  public apply(compiler: Compiler): void {
     compiler.hooks.normalModuleFactory.tap("RequireMagicCommentsPlugin", (nmf) => {
       nmf.hooks.parser.for("javascript/auto").tap("RequireMagicCommentsPlugin", (parser: any) => {
         parser.hooks.call.for("require").tap("RequireMagicCommentsPlugin", this.handleCommonJs(parser, CommonJsRequireDependency, RequireHeaderDependency));
@@ -116,8 +116,8 @@ export class RequireMagicCommentsPlugin {
 }
 
 const externalPrefix = "BeWebpack-EXTERNAL:";
-export const addExternalPrefix = (req: string) => externalPrefix + req;
-export const handlePrefixedExternals = (_ctx: any, request: string, cb: any) => {
+export const addExternalPrefix = (req: string): string => externalPrefix + req;
+export const handlePrefixedExternals = (_ctx: any, request: string, cb: any): void => {
   if (request.startsWith(externalPrefix)) {
     cb(null, request.replace(externalPrefix, ""), "commonjs");
     return;
@@ -126,12 +126,12 @@ export const handlePrefixedExternals = (_ctx: any, request: string, cb: any) => 
 };
 
 const copyFilesSuffix = "BeWebpack-COPYFILE";
-export const addCopyFilesSuffix = (req: string) => `${req}?${copyFilesSuffix}}`;
+export const addCopyFilesSuffix = (req: string): string => `${req}?${copyFilesSuffix}}`;
 export const copyFilesRule = {
   resourceQuery: new RegExp(copyFilesSuffix).compile(),
   loader: require.resolve("file-loader"),
   options: {
     name: "static/[name].[hash:6].[ext]",
-    postTransformPublicPath: (p: string) => `require("path").resolve(__dirname, ${p})`,
+    postTransformPublicPath: (p: string): string => `require("path").resolve(__dirname, ${p})`,
   },
 };

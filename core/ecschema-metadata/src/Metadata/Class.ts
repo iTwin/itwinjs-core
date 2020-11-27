@@ -33,7 +33,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   private _customAttributes?: Map<string, CustomAttribute>;
   private _mergedPropertyCache?: Property[];
 
-  public get modifier() { return this._modifier; }
+  public get modifier(): ECClassModifier { return this._modifier; }
   public get baseClass(): LazyLoadedECClass | undefined { return this._baseClass; }
   public set baseClass(baseClass: LazyLoadedECClass | undefined) { this._baseClass = baseClass; }
   public get properties(): Property[] | undefined { return this._properties; }

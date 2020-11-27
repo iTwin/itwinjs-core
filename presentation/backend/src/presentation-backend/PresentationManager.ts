@@ -333,7 +333,7 @@ export class PresentationManager {
   /**
    * Dispose the presentation manager. Must be called to clean up native resources.
    */
-  public dispose() {
+  public dispose(): void {
     if (this._nativePlatform) {
       this.getNativePlatform().dispose();
       this._nativePlatform = undefined;
@@ -351,7 +351,7 @@ export class PresentationManager {
   }
 
   /** Properties used to initialize the manager */
-  public get props() { return this._props; }
+  public get props(): PresentationManagerProps { return this._props; }
 
   /**
    * Get rulesets manager
@@ -417,7 +417,7 @@ export class PresentationManager {
   }
 
   /** @internal */
-  public getRulesetId(rulesetOrId: Ruleset | string) {
+  public getRulesetId(rulesetOrId: Ruleset | string): string {
     return this.getRulesetIdObject(rulesetOrId).uniqueId;
   }
 
@@ -444,7 +444,7 @@ export class PresentationManager {
    * @return A promise object that returns either a node response containing nodes and node count on success or an error string on error
    * @deprecated Use `getNodes` and `getNodesCount` separately
    */
-  public async getNodesAndCount(requestContext: ClientRequestContext, requestOptions: Paged<HierarchyRequestOptions<IModelDb>>, parentKey?: NodeKey) {
+  public async getNodesAndCount(requestContext: ClientRequestContext, requestOptions: Paged<HierarchyRequestOptions<IModelDb>>, parentKey?: NodeKey): Promise<{ nodes: Node[], count: number }> {
     const options = { ...requestOptions, requestContext, parentKey };
     const [count, nodes] = await Promise.all([
       this.getNodesCount(options),
@@ -663,7 +663,7 @@ export class PresentationManager {
    * @return A promise object that returns either content and content set size on success or an error string on error.
    * @deprecated Use `getContent` and `getContentSetSize` separately
    */
-  public async getContentAndSize(requestContext: ClientRequestContext, requestOptions: Paged<ContentRequestOptions<IModelDb>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet) {
+  public async getContentAndSize(requestContext: ClientRequestContext, requestOptions: Paged<ContentRequestOptions<IModelDb>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<{ content?: Content, size: number }> {
     const [size, content] = await Promise.all<number, Content | undefined>([
       this.getContentSetSize(requestContext, requestOptions, descriptorOrOverrides, keys), // eslint-disable-line deprecation/deprecation
       this.getContent(requestContext, requestOptions, descriptorOrOverrides, keys), // eslint-disable-line deprecation/deprecation

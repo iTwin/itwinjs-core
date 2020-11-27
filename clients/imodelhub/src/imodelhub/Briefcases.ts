@@ -178,7 +178,7 @@ export class BriefcaseQuery extends WsgQuery {
    * Query will additionally select data about application that created this [[Briefcase]].
    * @returns This query.
    */
-  public selectApplicationData() {
+  public selectApplicationData(): this {
     addSelectApplicationData(this._query);
     return this;
   }

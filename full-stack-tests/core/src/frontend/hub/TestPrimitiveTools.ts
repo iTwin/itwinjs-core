@@ -15,7 +15,7 @@ const loggingCategory = "TestPrimitiveTools";
 export abstract class PrimitiveToolEx extends PrimitiveTool {
   private _editorConnection?: ElementEditor3d;
 
-  public async ensureEditorConnection() {
+  public async ensureEditorConnection(): Promise<void> {
     if (this._editorConnection !== undefined)
       return;
     this._editorConnection = await ElementEditor3d.start(this.iModel);
@@ -42,7 +42,7 @@ export abstract class PrimitiveToolEx extends PrimitiveTool {
     return true;
   }
 
-  public onCleanup() {
+  public onCleanup(): void {
     if (this._editorConnection === undefined)
       return;
     this._editorConnection.end()
@@ -69,7 +69,7 @@ export class PlacementTestTool extends PrimitiveToolEx {
   protected _snapGeomId?: string;
 
   public requireWriteableTarget(): boolean { return false; }
-  public onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
+  public onPostInstall(): void { super.onPostInstall(); this.setupAndPromptForNextAction(); }
 
   public setupAndPromptForNextAction(): void {
     IModelApp.accuSnap.enableSnap(true);

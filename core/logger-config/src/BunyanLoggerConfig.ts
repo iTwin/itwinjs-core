@@ -44,7 +44,7 @@ export class BunyanLoggerConfig {
   }
 
   /** Initialize the logger streams to the specified bunyan logger. */
-  public static logToBunyan(blgr: any) {
+  public static logToBunyan(blgr: any): void {
     // Map between iModel.js LogFunction signature and bunyan logger
     const errorLogger: LogFunction = (category: string, message: string, getMetaData?: GetMetaDataFunction): void => blgr.error(BunyanLoggerConfig.makeBunyanMetaData(category, getMetaData), message);
     const warningLogger: LogFunction = (category: string, message: string, getMetaData?: GetMetaDataFunction): void => blgr.warn(BunyanLoggerConfig.makeBunyanMetaData(category, getMetaData), message);

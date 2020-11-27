@@ -73,7 +73,7 @@ export class TestChangeSetUtility {
     return this._iModel;
   }
 
-  public async pushTestChangeSet() {
+  public async pushTestChangeSet(): Promise<void> {
     if (!this._iModel)
       throw new Error("Must first call createTestIModel");
     await this.addTestElements();

@@ -26,7 +26,7 @@ export interface WidgetTabBarProps {
 }
 
 /** @internal */
-export const WidgetTabBar = React.memo(function WidgetTabBar(props: WidgetTabBarProps) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
+export const WidgetTabBar = React.memo(function WidgetTabBar(props: WidgetTabBarProps) { // eslint-disable-line @typescript-eslint/naming-convention, @typescript-eslint/no-shadow
   const dispatch = React.useContext(NineZoneDispatchContext);
   const id = React.useContext(WidgetIdContext);
   const floatingWidgetId = React.useContext(FloatingWidgetIdContext);

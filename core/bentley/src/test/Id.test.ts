@@ -434,7 +434,7 @@ describe("OrderedId64Iterable", () => {
   });
 
   it("should produce the difference of two sets", () => {
-    const  test = (a: string[], b: string[], expected: string[]) => {
+    const test = (a: string[], b: string[], expected: string[]) => {
       const actual: string[] = [];
       for (const id of OrderedId64Iterable.difference(a, b))
         actual.push(id);
@@ -547,17 +547,17 @@ describe("CompressedId64Set", () => {
 
     roundTrip([], "");
     roundTrip(makeIds([2]), "+2");
-    roundTrip(makeIds([1,5]), "+1+4");
-    roundTrip(makeIds([3,7,8,10]), "+3+4+1+2");
+    roundTrip(makeIds([1, 5]), "+1+4");
+    roundTrip(makeIds([3, 7, 8, 10]), "+3+4+1+2");
     roundTrip(makeIds([0xFF, 0x150]), "+FF+51");
 
-    roundTrip(makeIds([1,2,3,4,5]), "+1*5");
-    roundTrip(makeIds([2,4,6,8]), "+2*4");
-    roundTrip(makeIds([1,2,3,4,8,12,16]), "+1*4+4*3");
-    roundTrip(makeIds([1,2,3,4,8,12,16,17]), "+1*4+4*3+1");
+    roundTrip(makeIds([1, 2, 3, 4, 5]), "+1*5");
+    roundTrip(makeIds([2, 4, 6, 8]), "+2*4");
+    roundTrip(makeIds([1, 2, 3, 4, 8, 12, 16]), "+1*4+4*3");
+    roundTrip(makeIds([1, 2, 3, 4, 8, 12, 16, 17]), "+1*4+4*3+1");
 
-    roundTrip(makeIds([100,200,300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500,1600,1700,1800,1900,2000,2100,2200,2300]), "+64*17");
-    roundTrip(makeIds([1,10001,20001,30001,40001,50001,60001,70001,80001,90001,100001,110001,120001,130001,140001,150001,160001,170001,180001,190001,200001,210001,220001,230001, 230002]), "+1+2710*17+1");
+    roundTrip(makeIds([100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000, 2100, 2200, 2300]), "+64*17");
+    roundTrip(makeIds([1, 10001, 20001, 30001, 40001, 50001, 60001, 70001, 80001, 90001, 100001, 110001, 120001, 130001, 140001, 150001, 160001, 170001, 180001, 190001, 200001, 210001, 220001, 230001, 230002]), "+1+2710*17+1");
     roundTrip(makeIds([0x21234567890, 0x31234567890, 0x41234567890, 0x61234567890]), "+21234567890+10000000000*2+20000000000");
     roundTrip(["0xabcdef0123456789", "0xabcdef1123456789"], "+ABCDEF0123456789+1000000000");
     roundTrip(["0xf0a0000000100", "0xf0a0000000120", "0xf0a0000000140", "0xf0a0000000202"], "+F0A0000000100+20*2+C2");
@@ -598,6 +598,6 @@ describe("MutableCompressedId64Set", () => {
       mutate(set);
       expect(set.equals(test[2])).to.be.true;
       expect(set.equals(expected)).to.be.true;
-    };
+    }
   });
 });

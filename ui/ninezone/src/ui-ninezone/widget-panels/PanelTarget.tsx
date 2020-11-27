@@ -17,7 +17,7 @@ import { getCursorClassName } from "../widget-panels/CursorOverlay";
 import { PanelSide, PanelStateContext } from "./Panel";
 
 /** @internal */
-export const PanelTarget = React.memo(function PanelTarget() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
+export const PanelTarget = React.memo(function PanelTarget() { // eslint-disable-line @typescript-eslint/naming-convention, @typescript-eslint/no-shadow
   const panel = React.useContext(PanelStateContext);
   const cursorType = React.useContext(CursorTypeContext);
   const draggedTab = React.useContext(DraggedTabStateContext);

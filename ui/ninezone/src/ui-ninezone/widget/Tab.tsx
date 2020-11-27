@@ -56,7 +56,7 @@ export interface WidgetTabProps extends CommonProps {
 /** Component that displays a tab in a side panel widget.
  * @internal future
  */
-export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
+export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { // eslint-disable-line @typescript-eslint/naming-convention, @typescript-eslint/no-shadow
   const tab = React.useContext(TabStateContext);
   const { first, firstInactive, last } = React.useContext(TabPositionContext);
   const widgetTabsEntryContext = React.useContext(WidgetTabsEntryContext);

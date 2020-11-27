@@ -444,7 +444,7 @@ export interface DragProviderProps {
 }
 
 /** @internal */
-export const DragProvider = React.memo<DragProviderProps>(function DragProvider(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
+export const DragProvider = React.memo<DragProviderProps>(function DragProvider(props) { // eslint-disable-line @typescript-eslint/naming-convention, @typescript-eslint/no-shadow
   const dragManager = React.useRef(new DragManager());
   React.useEffect(() => {
     const mouseMove = (e: MouseEvent) => {

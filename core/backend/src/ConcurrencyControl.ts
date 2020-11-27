@@ -874,7 +874,7 @@ export class ConcurrencyControl {
 }
 
 /** @beta */
-export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
+export namespace ConcurrencyControl { // eslint-disable-line @typescript-eslint/no-redeclare
 
   /**
    * Information about the channel that an element is in.

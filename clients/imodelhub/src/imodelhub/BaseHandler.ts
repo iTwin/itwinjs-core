@@ -49,7 +49,7 @@ export function addHeader(name: string, valueFactory: () => string): HttpRequest
  * This function when used on IModelClient adds specified application version header to every request.
  * @beta
  */
-export function addApplicationVersion(version: string) {
+export function addApplicationVersion(version: string): HttpRequestOptionsTransformer {
   return addHeader(applicationVersionHeaderName, () => version);
 }
 
@@ -88,7 +88,7 @@ export class IModelBaseHandler extends WsgClient {
     this._agent = require("https").Agent({ keepAlive: keepAliveDuration > 0, keepAliveMsecs: keepAliveDuration, secureProtocol: "TLSv1_2_method" });
   }
 
-  public formatContextIdForUrl(contextId: string) { return contextId; }
+  public formatContextIdForUrl(contextId: string): string { return contextId; }
 
   public getFileHandler(): FileHandler | undefined { return this._fileHandler; }
 
@@ -123,7 +123,7 @@ export class IModelBaseHandler extends WsgClient {
    * Adds a method that will be called for every request to modify HttpRequestOptions.
    * @param func Method that will be used to modify HttpRequestOptions.
    */
-  public use(func: HttpRequestOptionsTransformer) {
+  public use(func: HttpRequestOptionsTransformer): void {
     this._httpRequestOptionsTransformers.push(func);
   }
 

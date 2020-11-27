@@ -16,6 +16,7 @@ import {
   WsgInstance,
 } from "@bentley/itwin-client";
 
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/naming-convention */
 
 /** @internal */
@@ -395,8 +396,7 @@ const PREVIEW_IMAGE_NAME = "DesignReview_Preview.png";
 /** @internal */
 export class FormDataManagementClient extends WsgClient {
   public static readonly searchKey: string = "Forms.WSGService";
-  public static readonly configRelyingPartyUri =
-  "imjs_form_data_management_relying_party_uri";
+  public static readonly configRelyingPartyUri = "imjs_form_data_management_relying_party_uri";
   public constructor() {
     super("sv1.2");
   }
@@ -498,9 +498,7 @@ export class FormDataManagementClient extends WsgClient {
       url += `&$filter=${filterString}`;
     }
 
-    const accessTokenString:
-    | string
-    | undefined = requestContext.accessToken.toTokenString();
+    const accessTokenString: string | undefined = requestContext.accessToken.toTokenString();
 
     const options: RequestOptions = {
       method: "GET",
@@ -517,9 +515,7 @@ export class FormDataManagementClient extends WsgClient {
     className: string,
     instanceId: string
   ): Promise<WsgInstance[]> {
-    const accessTokenString:
-    | string
-    | undefined = requestContext.accessToken.toTokenString();
+    const accessTokenString: string | undefined = requestContext.accessToken.toTokenString();
 
     const options: RequestOptions = {
       method: "GET",
@@ -596,9 +592,7 @@ export class FormDataManagementClient extends WsgClient {
       ];
     }
 
-    const accessTokenString:
-    | string
-    | undefined = requestContext.accessToken.toTokenString();
+    const accessTokenString: string | undefined = requestContext.accessToken.toTokenString();
 
     const options: RequestOptions = {
       method: "POST",
@@ -784,9 +778,7 @@ export class FormDataManagementClient extends WsgClient {
     formId: string,
     comment: string
   ): Promise<WsgInstance[]> {
-    const accessTokenString:
-    | string
-    | undefined = requestContext.accessToken.toTokenString();
+    const accessTokenString: string | undefined = requestContext.accessToken.toTokenString();
 
     const postBody = {
       className: "_Comment",
@@ -867,9 +859,7 @@ export class FormDataManagementClient extends WsgClient {
     projectId: string,
     attachmentInstance: object
   ) {
-    const accessTokenString:
-    | string
-    | undefined = requestContext.accessToken.toTokenString();
+    const accessTokenString: string | undefined = requestContext.accessToken.toTokenString();
 
     const options: RequestOptions = {
       method: "POST",
@@ -913,9 +903,7 @@ export class FormDataManagementClient extends WsgClient {
     formId: string,
     attachmentId: string
   ) {
-    const accessTokenString:
-    | string
-    | undefined = requestContext.accessToken.toTokenString();
+    const accessTokenString: string | undefined = requestContext.accessToken.toTokenString();
 
     const postBody = {
       instances: [
@@ -963,9 +951,7 @@ export class FormDataManagementClient extends WsgClient {
     projectId: string,
     templateName: string = "Design Review Punchlist"
   ) {
-    const accessTokenString:
-    | string
-    | undefined = requestContext.accessToken.toTokenString();
+    const accessTokenString: string | undefined = requestContext.accessToken.toTokenString();
 
     const postBody = {
       instance: {

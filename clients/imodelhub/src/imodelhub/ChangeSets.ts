@@ -164,7 +164,7 @@ export class ChangeSetQuery extends StringIdQuery {
    * Query will additionally select [[ChangeSet]] file download URL. This is needed to use the ChangeSet object with [[ChangeSetHandler.download]].
    * @returns This query.
    */
-  public selectDownloadUrl() {
+  public selectDownloadUrl(): this {
     addSelectFileAccessKey(this._query);
     return this;
   }
@@ -173,13 +173,13 @@ export class ChangeSetQuery extends StringIdQuery {
    * Query will additionally select data about application that created this [[ChangeSet]].
    * @returns This query.
    */
-  public selectApplicationData() {
+  public selectApplicationData(): this {
     addSelectApplicationData(this._query);
     return this;
   }
 
   /** @internal */
-  protected checkValue(id: string) {
+  protected checkValue(id: string): void {
     ArgumentCheck.validChangeSetId("id", id);
   }
 
@@ -188,7 +188,7 @@ export class ChangeSetQuery extends StringIdQuery {
    * @param id Id of a ChangeSet.
    * @returns This query.
    */
-  public fromId(id: string) {
+  public fromId(id: string): this {
     ArgumentCheck.validChangeSetId("id", id);
     this._query.$filter = `FollowingChangeSet-backward-ChangeSet.Id+eq+'${id}'`;
     return this;
@@ -198,7 +198,7 @@ export class ChangeSetQuery extends StringIdQuery {
    * Change the order of results to be from newest [[ChangeSet]]s to the oldest ones.
    * @returns This query.
    */
-  public latest() {
+  public latest(): this {
     this._query.$orderby = "Index+desc";
     return this;
   }
@@ -209,7 +209,7 @@ export class ChangeSetQuery extends StringIdQuery {
    * @param secondChangeSetId Id of the second changeSet.
    * @returns This query.
    */
-  public betweenChangeSets(firstChangeSetId: string, secondChangeSetId?: string) {
+  public betweenChangeSets(firstChangeSetId: string, secondChangeSetId?: string): this {
     ArgumentCheck.validChangeSetId("firstChangeSetId", firstChangeSetId);
     if (secondChangeSetId)
       ArgumentCheck.validChangeSetId("secondChangeSetId", secondChangeSetId);
@@ -232,7 +232,7 @@ export class ChangeSetQuery extends StringIdQuery {
    * @param versionId Id of the version.
    * @returns This query.
    */
-  public getVersionChangeSets(versionId: GuidString) {
+  public getVersionChangeSets(versionId: GuidString): this {
     ArgumentCheck.validGuid("versionId", versionId);
     this._query.$filter = `CumulativeChangeSet-backward-Version.Id+eq+'${versionId}'`;
     return this;
@@ -243,7 +243,7 @@ export class ChangeSetQuery extends StringIdQuery {
    * @param versionId Id of the version.
    * @returns This query.
    */
-  public afterVersion(versionId: GuidString) {
+  public afterVersion(versionId: GuidString): this {
     ArgumentCheck.validGuid("versionId", versionId);
     this._query.$filter = `FollowingChangeSet-backward-Version.Id+eq+'${versionId}'`;
     return this;
@@ -255,7 +255,7 @@ export class ChangeSetQuery extends StringIdQuery {
    * @param destinationVersionId Id of the destination version.
    * @returns This query.
    */
-  public betweenVersions(sourceVersionId: GuidString, destinationVersionId: GuidString) {
+  public betweenVersions(sourceVersionId: GuidString, destinationVersionId: GuidString): this {
     ArgumentCheck.validGuid("sourceVersionId", sourceVersionId);
     ArgumentCheck.validGuid("destinationVersionId", destinationVersionId);
     let query: string;
@@ -274,7 +274,7 @@ export class ChangeSetQuery extends StringIdQuery {
    * @param changeSetId Id of the changeSet.
    * @returns This query.
    */
-  public betweenVersionAndChangeSet(versionId: GuidString, changeSetId: string) {
+  public betweenVersionAndChangeSet(versionId: GuidString, changeSetId: string): this {
     ArgumentCheck.validGuid("versionId", versionId);
     ArgumentCheck.validChangeSetId("changeSetId", changeSetId);
     let query: string;
@@ -292,14 +292,14 @@ export class ChangeSetQuery extends StringIdQuery {
    * @returns This query.
    * @internal
    */
-  public bySeedFileId(seedFileId: GuidString) {
+  public bySeedFileId(seedFileId: GuidString): this {
     ArgumentCheck.validGuid("seedFileId", seedFileId);
     this.addFilter(`SeedFileId+eq+'${seedFileId}'`);
     return this;
   }
 
   /** Select all bridge properties. */
-  public selectBridgeProperties() {
+  public selectBridgeProperties(): this {
     if (!this._query.$select)
       this._query.$select = "*";
 

@@ -74,7 +74,7 @@ export class BeDuration {
    * @param args optional arguments to `fn`
    * @return Promise resolved by `fn`
    */
-  public async executeAfter<T>(fn: (...args: any[]) => T, scope?: any, ...args: any[]): Promise<T> {
+  public async executeAfter<T>(fn: (..._args: any[]) => T, scope?: any, ...args: any[]): Promise<T> {
     return new Promise<T>((resolve: any) => setTimeout(() => resolve(fn.apply(scope, args)), this._milliseconds));
   }
 }
@@ -127,7 +127,7 @@ export class BeTimePoint {
   /** Subtract a BeDuration from this BeTimePoint, returning a new BeTimePoint. This moves this BeTimePoint backwards in time if BeDuration.isTowardsFuture() === true
    * @param duration the duration to subtract.
    */
-  public plus(duration: BeDuration) { return new BeTimePoint(this._milliseconds + duration.milliseconds); }
+  public plus(duration: BeDuration): BeTimePoint { return new BeTimePoint(this._milliseconds + duration.milliseconds); }
 }
 
 /** A StopWatch for timing operations.

@@ -101,8 +101,8 @@ class ShadowMapDecoration {
 /** Decorates all other viewports with the tiles selected for drawing the selected viewport's shadow map. */
 export class ToggleShadowMapTilesTool extends Tool {
   public static toolId = "ToggleShadowMapTiles";
-  public static get minArgs() { return 0; }
-  public static get maxArgs() { return 1; }
+  public static get minArgs(): number { return 0; }
+  public static get maxArgs(): number { return 1; }
 
   public run(enable?: boolean): boolean {
     const vp = IModelApp.viewManager.selectedView;

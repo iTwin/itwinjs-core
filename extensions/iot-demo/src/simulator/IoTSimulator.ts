@@ -6,7 +6,7 @@ import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { request, RequestOptions, Response } from "@bentley/itwin-client";
 import { calculateSolarAngles, degToRad } from "./SolarCalculate";
 
-/* eslint-disable no-console, no-shadow */
+/* eslint-disable no-console, @typescript-eslint/no-shadow */
 
 enum IoTDeviceType {
   TemperatureSensor,
@@ -772,7 +772,7 @@ export class IoTSimulator {
     this._doSimulationStep(this._currentMSec, this._currentStep);
   }
 
-  public continueSimulation() {
+  public continueSimulation(): void {
     // do another simulation step every 5 seconds.
     if (this._continuing)
       return;

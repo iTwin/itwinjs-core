@@ -69,7 +69,7 @@ export class RobotWorldApp {
 
   // __PUBLISH_EXTRACT_START__ ViewManager.addViewport
   /** Open a Viewport on the supplied div element. */
-  public static async openView(viewDiv: HTMLDivElement) {
+  public static async openView(viewDiv: HTMLDivElement): Promise<void> {
     const viewState = await this.loadOneView();
     const viewPort = ScreenViewport.create(viewDiv, viewState);
     IModelApp.viewManager.addViewport(viewPort);

@@ -173,7 +173,7 @@ export class ConflictingCodesError extends IModelHubError {
    * @param error Error to get additional conflicting codes from.
    * @internal
    */
-  public addCodes(error: IModelHubError) {
+  public addCodes(error: IModelHubError): void {
     if (!error.data || !error.data.ConflictingCodes) {
       return;
     }
@@ -213,7 +213,7 @@ export class CodeQuery extends WsgQuery {
    * Used by the handler to check whether codes in query can be grouped.
    * @internal
    */
-  public get isMultiCodeQuery() {
+  public get isMultiCodeQuery(): boolean {
     return this._isMultiCodeQuery;
   }
 
@@ -223,7 +223,7 @@ export class CodeQuery extends WsgQuery {
    * @returns This query.
    * @throws [[IModelHubError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if briefcaseId is undefined or has an invalid [[Briefcase]] id value.
    */
-  public byBriefcaseId(briefcaseId: number) {
+  public byBriefcaseId(briefcaseId: number): this {
     ArgumentCheck.validBriefcaseId("briefcaseId", briefcaseId);
     this.addFilter(`BriefcaseId+eq+${briefcaseId}`);
     return this;
@@ -235,7 +235,7 @@ export class CodeQuery extends WsgQuery {
    * @returns This query.
    * @throws [[IModelHubError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if codeSpecId is undefined or empty.
    */
-  public byCodeSpecId(codeSpecId: Id64String) {
+  public byCodeSpecId(codeSpecId: Id64String): this {
     ArgumentCheck.defined("codeSpecId", codeSpecId);
     this.addFilter(`CodeSpecId+eq+'${codeSpecId}'`);
     return this;
@@ -247,7 +247,7 @@ export class CodeQuery extends WsgQuery {
    * @returns This query.
    * @throws [[IModelHubError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if codeScope is undefined or empty.
    */
-  public byCodeScope(codeScope: string) {
+  public byCodeScope(codeScope: string): this {
     ArgumentCheck.defined("codeScope", codeScope);
     this.addFilter(`CodeScope+eq+'${codeScope}'`);
     return this;
@@ -259,7 +259,7 @@ export class CodeQuery extends WsgQuery {
    * @returns This query.
    * @throws [[IModelHubError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if codes array is undefined, empty or it contains invalid [Code]($common) values.
    */
-  public byCodes(codes: HubCode[]) {
+  public byCodes(codes: HubCode[]): this {
     ArgumentCheck.nonEmptyArray("codes", codes);
     this._isMultiCodeQuery = false;
     if (codes.length < 1) {
@@ -290,7 +290,7 @@ export class CodeQuery extends WsgQuery {
    * @returns This query.
    * @throws [[IModelHubError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if briefcaseId is undefined or has an invalid [[Briefcase]] id value.
    */
-  public unavailableCodes(briefcaseId: number) {
+  public unavailableCodes(briefcaseId: number): this {
     ArgumentCheck.validBriefcaseId("briefcaseId", briefcaseId);
     const filter = `BriefcaseId+ne+${briefcaseId}`;
     this.addFilter(filter);

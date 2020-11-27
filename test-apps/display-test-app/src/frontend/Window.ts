@@ -394,13 +394,13 @@ export abstract class Window {
     this.surface.focus(this);
   }
 
-  public get isDocked() { return this._header.isDocked; }
-  public dock(dock: Dock) { this._header.dock(dock); }
-  public updateDock() { this._header.applyDock(); }
-  public undock() { this._header.undock(); }
-  public ensureInSurface() { this._header.ensureInSurface(); }
-  public invalidateDock() { this._header.invalidateDock(); }
-  public addDock(dock: Dock) { this._header.addDock(dock); }
+  public get isDocked(): boolean { return this._header.isDocked; }
+  public dock(dock: Dock): void { this._header.dock(dock); }
+  public updateDock(): void { this._header.applyDock(); }
+  public undock(): void { this._header.undock(); }
+  public ensureInSurface(): void { this._header.ensureInSurface(); }
+  public invalidateDock(): void { this._header.invalidateDock(); }
+  public addDock(dock: Dock): void { this._header.addDock(dock); }
   public updateUi(): void { this._header.hideCloseWidget(!this.isCloseable); }
 
   public onFocus(): void {
@@ -441,5 +441,5 @@ export class NamedWindow extends Window {
       this._header.setTitle(this.windowId);
   }
 
-  public get windowId() { return this._windowId; }
+  public get windowId(): string { return this._windowId; }
 }

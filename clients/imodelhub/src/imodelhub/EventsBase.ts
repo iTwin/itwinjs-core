@@ -56,7 +56,7 @@ export abstract class IModelHubBaseEvent {
    * @param obj Object instance.
    * @internal
    */
-  public fromJson(obj: any) {
+  public fromJson(obj: any): void {
     this.eventTopic = obj.EventTopic;
     this.fromEventSubscriptionId = obj.FromEventSubscriptionId;
     this.toEventSubscriptionId = obj.ToEventSubscriptionId;
@@ -125,7 +125,7 @@ export async function getEventBaseOperationRequestOptions(handler: IModelBaseHan
 export abstract class EventBaseHandler {
   protected _handler: IModelBaseHandler;
   /** Get service bus parser depending on the environment. */
-  protected setServiceBusOptions(options: RequestOptions) {
+  protected setServiceBusOptions(options: RequestOptions): void {
     const parse: (str: string) => any = (message: string) => {
       if (!message)
         return undefined;

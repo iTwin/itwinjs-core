@@ -17,7 +17,7 @@ export class TestBridgeSchema extends Schema {
   public static get schemaFilePath(): string {
     return path.join(KnownTestLocations.assetsDir, "TestBridge.ecschema.xml");
   }
-  public static registerSchema() {
+  public static registerSchema(): void {
     if (this !== Schemas.getRegisteredSchema(this.schemaName)) {
       Schemas.unregisterSchema(this.schemaName);
       Schemas.registerSchema(this);

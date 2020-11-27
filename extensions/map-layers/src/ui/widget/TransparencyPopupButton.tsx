@@ -21,7 +21,7 @@ export interface TransparencyPopupButtonProps {
 
 /** @alpha */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function TransparencyPopupButton({ transparency, onTransparencyChange, buttonToolTip }: TransparencyPopupButtonProps) {
+export function TransparencyPopupButton({ transparency, onTransparencyChange, buttonToolTip }: TransparencyPopupButtonProps): JSX.Element {
   const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
   const [defaultTransparencyLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:TransparencyPopup.SetTransparency"));
   const toolTipLabel = React.useMemo(() => buttonToolTip ? buttonToolTip : defaultTransparencyLabel, [buttonToolTip, defaultTransparencyLabel]);

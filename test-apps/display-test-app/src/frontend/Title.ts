@@ -6,7 +6,7 @@
 import { OpenMode } from "@bentley/bentleyjs-core";
 import { IModelConnection, InteractiveEditingSession } from "@bentley/imodeljs-frontend";
 
-export function setTitle(imodel: IModelConnection) {
+export function setTitle(imodel: IModelConnection): void {
   let prefix = "";
   if (OpenMode.ReadWrite === imodel.openMode)
     prefix = undefined !== InteractiveEditingSession.get(imodel) ? "[ EDIT ] " : "[ R/W ] ";

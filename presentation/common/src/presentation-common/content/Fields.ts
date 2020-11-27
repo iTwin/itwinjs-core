@@ -123,7 +123,7 @@ export class Field {
   public get parent(): NestedContentField | undefined { return this._parent; }
 
   /** @alpha */
-  public clone() {
+  public clone(): Field {
     const clone = new Field(this.category, this.name, this.label, this.type, this.isReadonly, this.priority, this.editor);
     clone.rebuildParentship(this.parent);
     return clone;
@@ -236,7 +236,7 @@ export class PropertiesField extends Field {
   }
 
   /** @alpha */
-  public clone() {
+  public clone(): PropertiesField {
     const clone = new PropertiesField(this.category, this.name, this.label, this.type, this.isReadonly, this.priority, this.properties, this.editor);
     clone.rebuildParentship(this.parent);
     return clone;
@@ -338,7 +338,7 @@ export class NestedContentField extends Field {
   }
 
   /** @alpha */
-  public clone() {
+  public clone(): NestedContentField {
     const clone = new NestedContentField(this.category, this.name, this.label, this.type, this.isReadonly, this.priority,
       this.contentClassInfo, this.pathToPrimaryClass, this.nestedFields, this.editor, this.autoExpand);
     clone.rebuildParentship(this.parent);
@@ -443,7 +443,7 @@ export interface FieldDescriptorBase {
  */
 export type FieldDescriptor = NamedFieldDescriptor | PropertiesFieldDescriptor;
 /** @beta */
-export namespace FieldDescriptor {
+export namespace FieldDescriptor { // eslint-disable-line @typescript-eslint/no-redeclare
   /** Is this a named field descriptor */
   export function isNamed(d: FieldDescriptor): d is NamedFieldDescriptor {
     return d.type === FieldDescriptorType.Name;

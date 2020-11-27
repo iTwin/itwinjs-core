@@ -22,7 +22,7 @@ export interface WmsAutenticationInputProps {
 
 /** @alpha */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function WmsAuthenticationInput(props: WmsAutenticationInputProps) {
+export function WmsAuthenticationInput(props: WmsAutenticationInputProps): JSX.Element {
 
   const warningProtocolLabel = MapLayersUiItemsProvider.i18n.translate("mapLayers:WmsAuthenticationInputs.WarningProtocolLabel");
   const authenticationLabel = MapLayersUiItemsProvider.i18n.translate("mapLayers:WmsAuthenticationInputs.Authentication");

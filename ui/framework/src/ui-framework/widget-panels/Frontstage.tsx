@@ -35,7 +35,7 @@ import { StagePanelMaxSizeSpec } from "../stagepanels/StagePanel";
 import { WidgetPanelsTab } from "./Tab";
 
 // istanbul ignore next
-const WidgetPanelsFrontstageComponent = React.memo(function WidgetPanelsFrontstageComponent() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
+const WidgetPanelsFrontstageComponent = React.memo(function WidgetPanelsFrontstageComponent() { // eslint-disable-line @typescript-eslint/naming-convention, @typescript-eslint/no-shadow
   const activeModalFrontstageInfo = useActiveModalFrontstageInfo();
   return (
     <>
@@ -156,7 +156,7 @@ export function useNineZoneDispatch(frontstageDef: FrontstageDef) {
 }
 
 /** @internal */
-export const WidgetPanelsFrontstage = React.memo(function WidgetPanelsFrontstage() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
+export const WidgetPanelsFrontstage = React.memo(function WidgetPanelsFrontstage() { // eslint-disable-line @typescript-eslint/naming-convention, @typescript-eslint/no-shadow
   const frontstageDef = useActiveFrontstageDef();
   if (!frontstageDef)
     return null;

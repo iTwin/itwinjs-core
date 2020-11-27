@@ -22,11 +22,11 @@ export default class FindSimilarWidget extends React.PureComponent<Props> {
     super(props, context);
     this.state = { prevProps: props };
   }
-  public componentWillUnmount() {
+  public componentWillUnmount(): void {
     if (this.props.dataProvider.dispose)
       this.props.dataProvider.dispose();
   }
-  public componentDidUpdate(prevProps: Props) {
+  public componentDidUpdate(prevProps: Props): void {
     if (this.props.dataProvider !== prevProps.dataProvider && prevProps.dataProvider.dispose)
       prevProps.dataProvider.dispose();
   }
@@ -34,7 +34,7 @@ export default class FindSimilarWidget extends React.PureComponent<Props> {
     if (this.props.onDismissed)
       this.props.onDismissed();
   };
-  public render() {
+  public render(): JSX.Element {
     return (
       <div className="find-similar-widget">
         <div className="find-similar-header">

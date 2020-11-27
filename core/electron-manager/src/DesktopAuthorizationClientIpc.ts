@@ -50,7 +50,7 @@ export class DesktopAuthorizationClientIpc {
   }
 
   /** Initialize the IPC communication for DesktopAuthorizationClient */
-  public static initializeIpc(mainWindow: BrowserWindow) {
+  public static initializeIpc(mainWindow: BrowserWindow): void {
     this.ipcOn(DesktopAuthorizationClientMessages.initialize, async (event: IpcMainEvent, requestContextObj: ClientRequestContext, configuration: DesktopAuthorizationClientConfiguration) => {
       const requestContext = this.createRequestContext(requestContextObj);
       requestContext.enter();

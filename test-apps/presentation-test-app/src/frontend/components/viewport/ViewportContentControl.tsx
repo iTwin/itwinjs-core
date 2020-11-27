@@ -20,7 +20,7 @@ export interface ViewportContentComponentProps {
   imodel: IModelConnection;
 }
 
-export default function ViewportContentComponent(props: ViewportContentComponentProps) { // eslint-disable-line @typescript-eslint/naming-convention
+export default function ViewportContentComponent(props: ViewportContentComponentProps): JSX.Element { // eslint-disable-line @typescript-eslint/naming-convention
   const [selectedViewDefinitionId, setSelectedViewDefinitionId] = React.useState<Id64String | undefined>();
   const [prevIModel, setPrevIModel] = React.useState<IModelConnection | undefined>(props.imodel);
   if (prevIModel !== props.imodel) {

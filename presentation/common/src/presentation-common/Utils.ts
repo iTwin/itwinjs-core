@@ -84,4 +84,4 @@ export const PRESENTATION_COMMON_ROOT = __dirname;
 
 /** @internal */
 // istanbul ignore next
-export const getLocalesDirectory = (assetsDirectory: string) => path.join(assetsDirectory, "locales");
+export const getLocalesDirectory = (assetsDirectory: string): string => path.join(assetsDirectory, "locales");

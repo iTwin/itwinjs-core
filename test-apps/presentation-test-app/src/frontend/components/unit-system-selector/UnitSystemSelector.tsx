@@ -13,7 +13,7 @@ export interface UnitSystemSelectorProps {
   onUnitSystemSelected: (unitSystem: PresentationUnitSystem | undefined) => void;
 }
 
-export default function UnitSystemSelector(props: UnitSystemSelectorProps) { // eslint-disable-line @typescript-eslint/naming-convention
+export default function UnitSystemSelector(props: UnitSystemSelectorProps): JSX.Element | undefined { // eslint-disable-line @typescript-eslint/naming-convention
   const { selectedUnitSystem, onUnitSystemSelected } = props;
   const memoizedOnUnitSystemSelected = React.useCallback((evt: React.ChangeEvent<HTMLSelectElement>) => {
     if (!onUnitSystemSelected)

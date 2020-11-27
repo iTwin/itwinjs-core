@@ -214,7 +214,7 @@ export class AnalysisImporter {
     return polyface;
   }
   /** Demonstrate the creation of models with analytical data. */
-  public import() {
+  public import(): void {
     this.definitionModelId = DefinitionModel.insert(this.iModelDb, IModelDb.rootSubjectId, "Analysis Definitions");
 
     /** Create category for analytical polyfaces */

@@ -14,7 +14,7 @@ function radToDeg(angleRad: number) {
   return (180.0 * angleRad / Math.PI);
 }
 
-export function degToRad(angleDeg: number) {
+export function degToRad(angleDeg: number): number {
   return (Math.PI * angleDeg / 180.0);
 }
 

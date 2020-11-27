@@ -291,14 +291,14 @@ export class Synchronizer {
    * previously existing elements no longer exist and should be deleted.
    * @beta
    */
-  public onElementSeen(id: Id64String) {
+  public onElementSeen(id: Id64String): void {
     this._seenElements.push(id);
   }
 
   /** Deletes elements from a BriefcaseDb that were previously converted but not longer exist in the source data.
    * @beta
    */
-  public detectDeletedElements() {
+  public detectDeletedElements(): void {
     if (this.imodel.isSnapshotDb()) {
       return;
     }

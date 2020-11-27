@@ -50,9 +50,9 @@ export class StandardRotations extends ToolBarDropDown {
     parent.appendChild(this._element);
   }
 
-  public get isOpen() { return "none" !== this._element.style.display; }
-  protected _open() { this._element.style.display = "block"; }
-  protected _close() { this._element.style.display = "none"; }
+  public get isOpen(): boolean { return "none" !== this._element.style.display; }
+  protected _open(): void { this._element.style.display = "block"; }
+  protected _close(): void { this._element.style.display = "none"; }
 
   public get onViewChanged(): Promise<void> {
     this._parent.style.display = this._vp.view.allow3dManipulations() ? "block" : "none";

@@ -32,7 +32,7 @@ interface BaseOption extends OptionType {
 
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function BasemapPanel() {
+export function BasemapPanel(): JSX.Element {
   const [useColorLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Basemap.ColorFill"));
   const { activeViewport, bases } = useSourceMapContext();
 

@@ -73,7 +73,7 @@ export class TemporaryStorage<T> implements IDisposable {
    * Destructor. Must be called to clean up the stored values
    * and other resources
    */
-  public dispose() {
+  public dispose(): void {
     if (this._timer)
       clearInterval(this._timer);
 
@@ -90,7 +90,7 @@ export class TemporaryStorage<T> implements IDisposable {
    * Cleans up values that are currently outdated (based
    * on their lifetime specified through [[Props]]).
    */
-  public disposeOutdatedValues = () => {
+  public disposeOutdatedValues = (): void => {
     const now = (new Date()).getTime();
     const valuesToDispose: string[] = [];
     for (const entry of this._values.entries()) {

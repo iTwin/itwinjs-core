@@ -97,7 +97,7 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
       return fileName.substring(0, backSlashIndex);
   }
 
-  public async savePng(fileName: string, png: string) {
+  public async savePng(fileName: string, png: string): Promise<void> {
     let filePath;
     if (MobileRpcConfiguration.isMobileBackend && process.env.DOCS) {
       filePath = process.env.DOCS;
@@ -111,7 +111,7 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
     IModelJsFs.writeFileSync(fileName, buf);
   }
 
-  public async finishCsv(output: string, outputPath?: string, outputName?: string, csvFormat?: string) {
+  public async finishCsv(output: string, outputPath?: string, outputName?: string, csvFormat?: string): Promise<void> {
     if (outputPath !== undefined && outputName !== undefined) {
       let outputFile = this.createFullFilePath(outputPath, outputName);
       outputFile = outputFile ? outputFile : "";
@@ -123,7 +123,7 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
     }
   }
 
-  public async finishTest() {
+  public async finishTest(): Promise<void> {
     await IModelHost.shutdown();
 
     // Electron only

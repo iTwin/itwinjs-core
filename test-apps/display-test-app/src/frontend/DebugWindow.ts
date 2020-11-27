@@ -42,8 +42,8 @@ export class DebugWindow extends Window {
     this._dispose();
   }
 
-  public get isResizable() { return false; }
-  public get windowId() { return this._windowId; }
+  public get isResizable(): boolean { return false; }
+  public get windowId(): string { return this._windowId; }
 
   public toggle(): void {
     if (this._isOpen)

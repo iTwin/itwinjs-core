@@ -14,7 +14,7 @@ import HttpsProxyAgent = require("https-proxy-agent");
 export class RequestHost {
 
   /** Initialize the configuration for all HTTP service requests made from the backend */
-  public static async initialize() {
+  public static async initialize(): Promise<void> {
     /* Set up requests to be routed through any proxy server identified by the HTTPS_PROXY
      * environment variable. If the environment is not defined, checks if the fiddler proxy
      * is reachable and can be setup for debugging. */

@@ -139,7 +139,7 @@ export class EditingFunctions {
 /**
  * @alpha
  */
-export namespace EditingFunctions { // eslint-disable-line no-redeclare
+export namespace EditingFunctions {
   /**
    * Helper class for defining Codes.
    * @alpha

@@ -2436,7 +2436,7 @@ class ViewLookAndMove extends ViewNavigate {
       return super.onWheel(ev);
     const focusHandle = tool.viewHandles.focusHandle;
     if (undefined === focusHandle || ViewHandleType.LookAndMove !== focusHandle.handleType)
-      return super.onWheel(ev);;
+      return super.onWheel(ev);
     this.changeWalkVelocity(ev.wheelDelta > 0);
     tool.viewport.setAnimator(this); // animator was cleared by wheel event...
     return true;
@@ -4247,7 +4247,8 @@ export class SetupCameraTool extends PrimitiveTool {
 
     // load latest values from session
     IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValues(this.toolId,
-      [SetupCameraTool._useCameraHeightName, SetupCameraTool._cameraHeightName, SetupCameraTool._useTargetHeightName, SetupCameraTool._targetHeightName])?.forEach((value) => {
+      [SetupCameraTool._useCameraHeightName, SetupCameraTool._cameraHeightName, SetupCameraTool._useTargetHeightName, SetupCameraTool._targetHeightName])
+      ?.forEach((value) => {
         if (value.propertyName === SetupCameraTool._useCameraHeightName)
           this._useCameraHeightValue = value.value;
         else if (value.propertyName === SetupCameraTool._cameraHeightName)
