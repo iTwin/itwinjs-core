@@ -1291,7 +1291,7 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
       lock.lockType = reqLock.type;
       lock.objectId = reqLock.objectId;
       lock.releasedWithChangeSet = concurrencyControl.iModel.changeSetId;
-      lock.seedFileId = concurrencyControl.iModel.briefcase.fileId!;
+      lock.seedFileId = concurrencyControl.iModel.iModelId;
       return lock;
     }
 

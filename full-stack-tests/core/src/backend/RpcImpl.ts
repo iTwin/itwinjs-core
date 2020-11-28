@@ -24,7 +24,8 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
 
   public async extractChangeSummaries(tokenProps: IModelRpcProps, options: any): Promise<void> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    await ChangeSummaryManager.extractChangeSummaries(requestContext, BriefcaseDb.findByKey(tokenProps.key), options as ChangeSummaryExtractOptions);
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    await ChangeSummaryManager.extractChangeSummaries(requestContext, BriefcaseDb.findByKey(tokenProps.key) as BriefcaseDb, options as ChangeSummaryExtractOptions);
   }
 
   public async deleteChangeCache(tokenProps: IModelRpcProps): Promise<void> {

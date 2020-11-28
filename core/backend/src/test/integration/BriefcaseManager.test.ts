@@ -7,10 +7,10 @@ import { assert } from "chai";
 import * as os from "os";
 import * as path from "path";
 import * as readline from "readline";
-import { BriefcaseStatus, ClientRequestContext, GuidString, IModelStatus, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
+import { BriefcaseStatus,  GuidString, IModelStatus, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 import { BriefcaseQuery, Briefcase as HubBriefcase, HubIModel } from "@bentley/imodelhub-client";
-import { BriefcaseDownloader, BriefcaseProps, IModelError, IModelVersion, SyncMode } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext, ProgressInfo, UserCancelledError } from "@bentley/itwin-client";
+import { BriefcaseDownloader, IModelError, IModelVersion, SyncMode } from "@bentley/imodeljs-common";
+import { ProgressInfo, UserCancelledError } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import {
   AuthorizedBackendRequestContext, BackendLoggerCategory, BriefcaseDb, BriefcaseEntry, BriefcaseIdValue, BriefcaseManager, Element, IModelDb,
@@ -88,36 +88,10 @@ describe("BriefcaseManager (#integration)", () => {
   });
 
   it("should open and close an iModel from the Hub", async () => {
-    let onOpenCalled: boolean = false;
-    const onOpenListener = (requestContextIn: AuthorizedClientRequestContext | ClientRequestContext, briefcaseProps: BriefcaseProps) => {
-      onOpenCalled = true;
-      const { contextId, iModelId, openMode } = briefcaseProps;
-      assert.isTrue(requestContextIn instanceof AuthorizedClientRequestContext);
-      if (requestContextIn instanceof AuthorizedClientRequestContext)
-        assert.deepEqual(requestContextIn.accessToken, requestContext.accessToken);
-      assert.equal(contextId, testProjectId);
-      assert.equal(iModelId, readOnlyTestIModel.id);
-      assert.equal(openMode, OpenMode.Readonly);
-    };
-    BriefcaseDb.onOpen.addListener(onOpenListener);
-
-    let onOpenedCalled: boolean = false;
-    const onOpenedListener = (_requestContextIn: AuthorizedClientRequestContext | ClientRequestContext, iModelDb: IModelDb) => {
-      onOpenedCalled = true;
-      assert.equal(iModelDb.iModelId, readOnlyTestIModel.id);
-    };
-    BriefcaseDb.onOpened.addListener(onOpenedListener);
-
-    let onBeforeCloseCalled: boolean = false;
-    const onBeforeCloseListener = () => {
-      onBeforeCloseCalled = true;
-    };
 
     try {
       const iModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, readOnlyTestIModel.id, SyncMode.FixedVersion, IModelVersion.first());
       assert.exists(iModel, "No iModel returned from call to BriefcaseManager.open");
-
-      iModel.onBeforeClose.addListener(onBeforeCloseListener);
 
       // Validate that the IModelDb is readonly
       assert(iModel.openMode === OpenMode.Readonly, "iModel not set to Readonly mode");
@@ -126,19 +100,13 @@ describe("BriefcaseManager (#integration)", () => {
       assert.strictEqual<string>(iModel.changeSetId, expectedChangeSetId);
       assert.strictEqual<string>(iModel.changeSetId, expectedChangeSetId);
 
-      assert.isTrue(onOpenedCalled);
-      assert.isTrue(onOpenCalled);
-
       const pathname = iModel.pathName;
       assert.isTrue(IModelJsFs.existsSync(pathname));
       await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
 
       assert.isFalse(IModelJsFs.existsSync(pathname), `Briefcase continues to exist at ${pathname}`);
-      assert.isTrue(onBeforeCloseCalled);
     } finally {
 
-      BriefcaseDb.onOpen.removeListener(onOpenListener);
-      BriefcaseDb.onOpened.removeListener(onOpenedListener);
     }
   });
 

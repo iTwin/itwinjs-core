@@ -494,7 +494,7 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
       const profileUpgradeOptions: UpgradeOptions = {
         profile: ProfileOptions.Upgrade,
       };
-      briefcaseDb = await BriefcaseDb.open(this._requestContext, briefcaseProps.key, profileUpgradeOptions); // throws if open fails
+      briefcaseDb = await BriefcaseDb.openFromRemote(this._requestContext, briefcaseProps.key, profileUpgradeOptions); // throws if open fails
       await briefcaseDb.pushChanges(this._requestContext, "Open with Db Profile update");
       if (this._bridgeArgs.updateDomainSchemas)
         briefcaseDb.close();
@@ -504,12 +504,12 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
       const domainUpgradeOptions: UpgradeOptions = {
         domain: DomainOptions.Upgrade,
       };
-      briefcaseDb = await BriefcaseDb.open(this._requestContext, briefcaseProps.key, domainUpgradeOptions); // throws if open fails
+      briefcaseDb = await BriefcaseDb.openFromRemote(this._requestContext, briefcaseProps.key, domainUpgradeOptions); // throws if open fails
       await briefcaseDb.pushChanges(this._requestContext, "Open with Domain Schema update");
     }
 
     if (briefcaseDb === undefined || !briefcaseDb.isOpen) {
-      briefcaseDb = await BriefcaseDb.open(this._requestContext, briefcaseProps.key); // throws if open fails
+      briefcaseDb = await BriefcaseDb.openFromRemote(this._requestContext, briefcaseProps.key); // throws if open fails
     }
 
     this._imodel = briefcaseDb;

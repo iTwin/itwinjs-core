@@ -17,7 +17,7 @@ import {
 import { Range3d } from "@bentley/geometry-core";
 import { ChangesType, Checkpoint, CheckpointQuery, Lock, LockLevel, LockType } from "@bentley/imodelhub-client";
 import {
-  AxisAlignedBox3d, BriefcaseKey, BriefcaseProps, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps,
+  AxisAlignedBox3d, BriefcaseKey, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps,
   CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DisplayStyleProps, DomainOptions,
   DownloadBriefcaseStatus, EcefLocation, ElementAspectProps, ElementGeometryRequest, ElementGeometryUpdate, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams,
   FilePropertyProps, FontMap, FontMapProps, FontProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
@@ -2160,15 +2160,10 @@ export class TxnManager {
 }
 
 /** A local copy of an iModel from iModelHub.
- *
- * BriefcaseDb raises a set of events to allow apps and subsystems to track its object life cycle, including [[onOpen]] and [[onOpened]].
  * @public
  */
 export class BriefcaseDb extends IModelDb {
-  /**
-   * Mode of synchronizing changes between the briefcase and iModelHub
-   * @beta
-   */
+  /** @deprecated */
   public readonly syncMode: SyncMode;
 
   /**
@@ -2193,21 +2188,17 @@ export class BriefcaseDb extends IModelDb {
    * and has been opened ReadWrite (i.e., openMode = OpenMode.ReadWrite)
    * @beta
    */
-  public get concurrencyControl(): ConcurrencyControl { return this._concurrencyControl; }
-  private _concurrencyControl!: ConcurrencyControl;
+  public get concurrencyControl() { return this._concurrencyControl; }
+  private _concurrencyControl: ConcurrencyControl;
 
   /** Returns `true` if the briefcase can be used to push changes to iModelHub.
    * @internal
    */
-  public get isPushEnabled(): boolean { return this.syncMode === SyncMode.PullAndPush && this.openMode === OpenMode.ReadWrite; }
+  public get isPushEnabled(): boolean { return this.openMode === OpenMode.ReadWrite; }
 
   private constructor(nativeDb: IModelJsNative.DgnDb, token: IModelRpcProps, openMode: OpenMode, syncMode?: SyncMode) {
     super(nativeDb, token, openMode);
     this.syncMode = syncMode ?? SyncMode.PullAndPush;
-    this.setDefaultConcurrentControlAndPolicy();
-  }
-
-  private setDefaultConcurrentControlAndPolicy() {
     this._concurrencyControl = new ConcurrencyControl(this);
     this._concurrencyControl.setPolicy(ConcurrencyControl.PessimisticPolicy);
   }
@@ -2218,13 +2209,9 @@ export class BriefcaseDb extends IModelDb {
    * @throws [[IModelError]] if there is a problem saving changes or if there are pending, un-processed lock or code requests.
    */
   public saveChanges(description?: string): void {
-    if (this.isPushEnabled)
-      this.concurrencyControl.onSaveChanges();
-
+    this.concurrencyControl.onSaveChanges();
     super.saveChanges(description);
-
-    if (this.isPushEnabled)
-      this.concurrencyControl.onSavedChanges();
+    this.concurrencyControl.onSavedChanges();
   }
 
   /**
@@ -2275,7 +2262,7 @@ export class BriefcaseDb extends IModelDb {
     if (briefcaseEntry.downloadStatus !== DownloadBriefcaseStatus.Complete)
       throw new IModelError(IModelStatus.BadRequest, "BriefcaseDb download not complete", Logger.logError, loggerCategory, () => briefcaseEntry.getDebugInfo());
 
-    this.onOpen.raiseEvent(requestContext, briefcaseEntry.getBriefcaseProps());
+    // this.onOpen.raiseEvent(requestContext, briefcaseEntry.getBriefcaseProps());
 
     const openMode = options?.openAsReadOnly ? OpenMode.Readonly : briefcaseEntry.openMode; // Override default openMode if user has requested it
     const isUpgradeRequested = options?.domain === DomainOptions.Upgrade || options?.profile === ProfileOptions.Upgrade;
@@ -2306,7 +2293,7 @@ export class BriefcaseDb extends IModelDb {
     }
 
     briefcaseDb.logUsage(requestContext, briefcaseDb.contextId, briefcaseDb.iModelId, briefcaseDb.changeSetId); // eslint-disable-line @typescript-eslint/no-floating-promises
-    this.onOpened.raiseEvent(requestContext, briefcaseDb);
+    // this.onOpened.raiseEvent(requestContext, briefcaseDb);
     return briefcaseDb;
   }
 
@@ -2424,14 +2411,14 @@ export class BriefcaseDb extends IModelDb {
    * [[include:BriefcaseDb.onOpened]]
    * ```
    */
-  public static readonly onOpened = new BeEvent<(_requestContext: AuthorizedClientRequestContext | ClientRequestContext, _imodelDb: BriefcaseDb) => void>();
+  // public static readonly onOpened = new BeEvent<(_requestContext: AuthorizedClientRequestContext | ClientRequestContext, _imodelDb: BriefcaseDb) => void>();
 
   /** Event raised just after a BriefcaseDb is created in iModelHub.
    * This event is raised only for iModel access initiated by this app only.
    */
-  public static readonly onCreated = new BeEvent<(_imodelDb: BriefcaseDb) => void>();
+  // public static readonly onCreated = new BeEvent<(_imodelDb: BriefcaseDb) => void>();
   /** Event called when the iModel is about to be closed */
-  public readonly onBeforeClose = new BeEvent<() => void>();
+  // public readonly onBeforeClose = new BeEvent<() => void>();
   /** Event called after a changeset is applied to this IModelDb. */
   public readonly onChangesetApplied = new BeEvent<() => void>();
 }

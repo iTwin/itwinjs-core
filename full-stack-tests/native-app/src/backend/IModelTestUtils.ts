@@ -18,7 +18,7 @@ export class IModelTestUtils {
     requestContext.enter();
     const briefcaseProps: BriefcaseProps = await BriefcaseManager.download(requestContext, contextId, iModelId, { syncMode }, version);
     requestContext.enter();
-    return BriefcaseDb.open(requestContext, briefcaseProps.key);
+    return BriefcaseDb.openFromRemote(requestContext, briefcaseProps.key);
   }
 
   public static async closeAndDeleteBriefcaseDb(requestContext: AuthorizedClientRequestContext, briefcaseDb: BriefcaseDb) {

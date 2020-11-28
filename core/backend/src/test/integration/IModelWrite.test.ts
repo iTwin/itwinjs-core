@@ -145,7 +145,7 @@ describe("IModelWriteTest (#integration)", () => {
     codeSpecsLock.lockLevel = LockLevel.Exclusive;
     codeSpecsLock.lockType = LockType.CodeSpecs;
     codeSpecsLock.objectId = "0x1";
-    codeSpecsLock.seedFileId = model.briefcase.fileId;
+    codeSpecsLock.seedFileId = model.iModelId;
     await model.pullAndMergeChanges(superRequestContext);
     codeSpecsLock.releasedWithChangeSet = model.changeSetId;
     const locks = await BriefcaseManager.imodelClient.locks.update(superRequestContext, model.iModelId, [codeSpecsLock]);
