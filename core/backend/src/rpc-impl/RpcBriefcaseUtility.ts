@@ -51,7 +51,7 @@ export class RpcBriefcaseUtility {
      * Open the briefcase
      * Note: This call must be made even if the briefcase is already open - this is to ensure the usage is logged
      */
-    const briefcaseDb: BriefcaseDb = await BriefcaseDb.open(requestContext, briefcaseProps.key);
+    const briefcaseDb: BriefcaseDb = await BriefcaseDb.openFromRemote(requestContext, briefcaseProps.key);
     Logger.logTrace(loggerCategory, "RpcBriefcaseUtility.openWithTimeout: Opened briefcase", () => ({ ...tokenProps, syncMode }));
     return briefcaseDb.getConnectionProps();
   }

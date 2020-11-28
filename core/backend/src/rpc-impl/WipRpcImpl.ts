@@ -29,7 +29,7 @@ export class WipRpcImpl extends RpcInterface implements WipRpcInterface {
   }
 
   public async detachChangeCache(tokenProps: IModelRpcProps): Promise<void> {
-    const iModel: BriefcaseDb = BriefcaseDb.findByKey(tokenProps.key);
+    const iModel = BriefcaseDb.findByKey(tokenProps.key) as BriefcaseDb;
     if (ChangeSummaryManager.isChangeCacheAttached(iModel))
       ChangeSummaryManager.detachChangeCache(iModel);
   }

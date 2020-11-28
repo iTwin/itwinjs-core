@@ -156,7 +156,7 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
     const requestContext = ClientRequestContext.current;
     BriefcaseManager.initializeOffline();
 
-    const db = await BriefcaseDb.open(requestContext, key, openOptions);
+    const db = await BriefcaseDb.openFromRemote(requestContext, key, openOptions);
     requestContext.enter();
     return db.toJSON();
   }

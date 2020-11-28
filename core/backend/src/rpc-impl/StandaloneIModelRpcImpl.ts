@@ -23,10 +23,7 @@ export class StandaloneIModelRpcImpl extends RpcInterface implements StandaloneI
 
   /** Ask the backend to open a standalone iModel from a file name that is resolved by the backend. */
   public async openFile(filePath: string, openMode: OpenMode): Promise<IModelConnectionProps> {
-    let standaloneDb: StandaloneDb | undefined = StandaloneDb.tryFindByKey(filePath);
-    if (undefined === standaloneDb) {
-      standaloneDb = StandaloneDb.openFile(filePath, openMode);
-    }
+    const standaloneDb = StandaloneDb.tryFindByKey(filePath) ?? StandaloneDb.openFile(filePath, openMode);
     return standaloneDb.getConnectionProps();
   }
 
@@ -35,7 +32,7 @@ export class StandaloneIModelRpcImpl extends RpcInterface implements StandaloneI
     const filePath = tokenProps.key;
     const standaloneDb = StandaloneDb.tryFindByKey(filePath);
     if (undefined === standaloneDb) {
-      Logger.logError(loggerCategory, "StandaloneDb not found in the in-memory cache", () => filePath);
+      Logger.logError(loggerCategory, "StandaloneDb was not open", () => filePath);
       throw new IModelNotFoundResponse();
     }
     standaloneDb.close();

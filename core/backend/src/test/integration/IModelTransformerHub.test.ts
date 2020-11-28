@@ -168,7 +168,7 @@ describe("IModelTransformerHub (#integration)", () => {
         transformer.dispose();
         await targetDb.concurrencyControl.request(requestContext);
         targetDb.saveChanges();
-        assert.isFalse(targetDb.briefcase.nativeDb.hasPendingTxns());
+        assert.isFalse(targetDb.nativeDb.hasPendingTxns());
         await targetDb.pushChanges(requestContext, "Should not actually push because there are no changes");
       }
 

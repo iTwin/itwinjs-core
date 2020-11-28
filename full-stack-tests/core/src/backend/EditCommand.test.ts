@@ -13,7 +13,7 @@ export class TestEditCommand1 extends EditCommand {
   public constructor(private _str: string) { super(); }
 
   public onStart(): CommandResult<string> {
-    return { result: this._str + "1" };
+    return { result: `${this._str}:1` };
   }
   public testMethod1(args: Test1Args): CommandResult<Test1Response> {
     return {
@@ -31,7 +31,7 @@ export class TestEditCommand2 extends EditCommand {
   public constructor(private _str: string) { super(); }
 
   public onStart(): CommandResult<string> {
-    return { result: this._str + "2" };
+    return { result: `${this._str}:2` };
   }
   public testMethod1(args: Test1Args): CommandResult<Test1Response> {
     return {

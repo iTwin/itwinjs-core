@@ -16,21 +16,22 @@ chai.use(chaiAsPromised);
 
 let testNum: number;
 let testStr: string;
+const cmdArg = "test command arg";
+let cmdStr: string;
 
 class TestEditTool1 extends EditTool {
   public static toolId = "TestEditTool1";
   public isCompatibleViewport(_vp: Viewport | undefined, _isSelectedViewChange: boolean): boolean { return true; }
 
   public async go(cmd: string, args: Test1Args) {
-    const ret = await EditTool.startCommand<string, string>(cmd, "test command 123");
-    assert(ret.result === "test command 1231");
+    const ret = await EditTool.startCommand<string, string>(cmd, cmdArg);
+    cmdStr = ret.result!;
     const ret2 = await EditTool.callCommand<Test1Args, Test1Response>("testMethod1", args);
     if (ret2.result) {
       testNum = ret2.result.outNum;
       testStr = ret2.result.outStr;
     }
   }
-
 }
 
 if (ElectronRpcConfiguration.isElectron) {
@@ -46,33 +47,26 @@ if (ElectronRpcConfiguration.isElectron) {
       await IModelApp.shutdown();
     });
 
-    it.only("should start test commands", async () => {
+    it.only("should start edit commands", async () => {
       expect(IModelApp.tools.run("TestEditTool1")).to.be.true;
       const tool = IModelApp.toolAdmin.currentTool as TestEditTool1;
       assert.isTrue(tool instanceof TestEditTool1);
-      await tool.go(cmdIds.cmd1,
-        {
-          str1: "abc",
-          str2: "def",
-          obj1: {
-            i1: 10,
-            i2: 20,
-          },
-        });
+      const arg: Test1Args = {
+        str1: "abc",
+        str2: "def",
+        obj1: {
+          i1: 10,
+          i2: 20,
+        },
+      };
 
+      await tool.go(cmdIds.cmd1, arg);
+      assert.equal(cmdStr, `${cmdArg}:1`);
       assert.equal(testNum, 30);
       assert.equal(testStr, "abcdef");
 
-      await tool.go(cmdIds.cmd2,
-        {
-          str1: "abc",
-          str2: "def",
-          obj1: {
-            i1: 10,
-            i2: 20,
-          },
-        });
-
+      await tool.go(cmdIds.cmd2, arg);
+      assert.equal(cmdStr, `${cmdArg}:2`);
       assert.equal(testNum, -10);
       assert.equal(testStr, "defabc");
     });

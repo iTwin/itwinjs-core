@@ -6,7 +6,6 @@
  * @module Editing
  */
 
-import { ipcMain } from "electron";
 import { isElectronMain } from "@bentley/bentleyjs-core";
 import { CommandMethodProps, CommandResult, editCommandApi, PingResult, StartCommandProps } from "@bentley/imodeljs-editor-common";
 
@@ -62,8 +61,9 @@ export class EditCommandAdmin {
       if (!isElectronMain)
         throw new Error("Edit Commands only allowed in Electron");
 
-      ipcMain.handle(editCommandApi.start, async (_event, arg) => EditCommandAdmin.startCommand(arg));
-      ipcMain.handle(editCommandApi.call, async (_event, arg) => EditCommandAdmin.callMethod(arg));
+      const ipcMain = require("electron").ipcMain;
+      ipcMain.handle(editCommandApi.start, async (_event: any, arg: any) => EditCommandAdmin.startCommand(arg));
+      ipcMain.handle(editCommandApi.call, async (_event: any, arg: any) => EditCommandAdmin.callMethod(arg));
     }
     if (commandType.commandId.length !== 0)
       this.commands.set(commandType.commandId, commandType);

@@ -274,27 +274,31 @@ export abstract class IModel implements IModelProps {
    * @internal
    */
   protected _fileKey: string;
-  /** The Guid that identifies the *context* that owns this iModel. */
-  public get contextId(): GuidString | undefined { return this._contextId; }
+
   /** @internal */
   protected _contextId?: GuidString;
-  /** The Guid that identifies this iModel. */
-  public get iModelId(): GuidString | undefined { return this._iModelId; }
+  /** The Guid that identifies the *context* that owns this iModel. */
+  public get contextId() { return this._contextId; }
+
   private _iModelId?: GuidString;
+  /** The Guid that identifies this iModel. */
+  public get iModelId() { return this._iModelId; }
+
+  /** @internal */
+  protected _changeSetId: string | undefined;
   /** The Id of the last changeset that was applied to this iModel.
    * @note An empty string indicates the first version while `undefined` mean no changeset information is available.
    */
-  public get changeSetId(): string | undefined { return this._changeSetId; }
-  /** @internal */
-  protected _changeSetId: string | undefined;
+  public get changeSetId() { return this._changeSetId; }
+
   /** The [[OpenMode]] used for this IModel. */
   public readonly openMode: OpenMode;
 
   /** Return a token that can be used to identify this iModel for RPC operations. */
   public getRpcProps(): IModelRpcProps {
-    if (!this.isOpen) {
+    if (!this.isOpen)
       throw new IModelError(IModelStatus.BadRequest, "Could not generate valid IModelRpcProps", Logger.logError);
-    }
+
     return {
       key: this._fileKey,
       contextId: this.contextId,

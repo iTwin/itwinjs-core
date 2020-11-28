@@ -63,7 +63,7 @@ describe("Channel Control (#integration)", () => {
   it("should create channels (#integration)", async () => {
     const briefcaseProps: BriefcaseProps = await BriefcaseManager.download(managerRequestContext, testProjectId, readWriteTestIModel.id, { syncMode: SyncMode.PullAndPush });
     managerRequestContext.enter();
-    const imodel1 = await BriefcaseDb.open(managerRequestContext, briefcaseProps.key);
+    const imodel1 = await BriefcaseDb.openFromRemote(managerRequestContext, briefcaseProps.key);
     managerRequestContext.enter();
     imodel1.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
     imodel1.concurrencyControl.startBulkMode();

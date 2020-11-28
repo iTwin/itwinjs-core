@@ -32,7 +32,7 @@ async function getIModelAfterApplyingCS(requestContext: AuthorizedClientRequestC
   const endTime = new Date().getTime();
   assert.exists(iModelDb);
   const elapsedTime = (endTime - startTime) / 1000.0;
-  assert.strictEqual<string>(iModelDb.briefcase.currentChangeSetId, firstChangeSetId);
+  assert.strictEqual<string>(iModelDb.changeSetId, firstChangeSetId);
   iModelDb.close();
   reporter.addEntry("ImodelChangesetPerformance", "GetImodel", "Execution time(s)", elapsedTime, { Description: "from hub first CS", Operation: "Open" });
 
@@ -42,7 +42,7 @@ async function getIModelAfterApplyingCS(requestContext: AuthorizedClientRequestC
   const endTime1 = new Date().getTime();
   assert.exists(iModelDb1);
   const elapsedTime1 = (endTime1 - startTime1) / 1000.0;
-  assert.strictEqual<string>(iModelDb1.briefcase.currentChangeSetId, secondChangeSetId);
+  assert.strictEqual<string>(iModelDb1.changeSetId, secondChangeSetId);
   iModelDb1.close();
   reporter.addEntry("ImodelChangesetPerformance", "GetImodel", "Execution time(s)", elapsedTime1, { Description: "from cache second CS", Operation: "Open" });
 

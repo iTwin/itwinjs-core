@@ -31,26 +31,18 @@ export class SnapshotIModelRpcImpl extends RpcInterface implements SnapshotIMode
         throw new IModelNotFoundResponse();
       }
     }
-    let snapshotDb: SnapshotDb | undefined = SnapshotDb.tryFindByKey(resolvedFileName);
-    if (undefined === snapshotDb) {
-      snapshotDb = SnapshotDb.openFile(resolvedFileName);
-    }
+    const snapshotDb = SnapshotDb.tryFindByKey(resolvedFileName) ?? SnapshotDb.openFile(resolvedFileName);
     return snapshotDb.getConnectionProps();
   }
 
   /** Ask the backend to open a snapshot iModel from a key that is resolved by the backend. */
   public async openRemote(fileKey: string): Promise<IModelConnectionProps> {
-    let resolvedFileName: string | undefined;
-    if (IModelHost.snapshotFileNameResolver) {
-      resolvedFileName = IModelHost.snapshotFileNameResolver.resolveKey(fileKey);
-    }
-    if (undefined === resolvedFileName) {
+    const resolvedFileName = IModelHost.snapshotFileNameResolver?.resolveKey(fileKey);
+
+    if (undefined === resolvedFileName)
       throw new IModelNotFoundResponse();
-    }
-    let snapshotDb: SnapshotDb | undefined = SnapshotDb.tryFindByKey(resolvedFileName);
-    if (undefined === snapshotDb) {
-      snapshotDb = SnapshotDb.openFile(resolvedFileName);
-    }
+
+    const snapshotDb = SnapshotDb.tryFindByKey(resolvedFileName) ?? SnapshotDb.openFile(resolvedFileName);
     return snapshotDb.getConnectionProps();
   }
 
@@ -59,7 +51,7 @@ export class SnapshotIModelRpcImpl extends RpcInterface implements SnapshotIMode
     const snapshotFilePath = tokenProps.key;
     const snapshotDb = SnapshotDb.tryFindByKey(snapshotFilePath);
     if (undefined === snapshotDb) {
-      Logger.logError(loggerCategory, "SnapshotDb not found in the in-memory cache", () => snapshotFilePath);
+      Logger.logError(loggerCategory, "SnapshotDb was not open", () => snapshotFilePath);
       throw new IModelNotFoundResponse();
     }
     snapshotDb.close();

@@ -83,9 +83,9 @@ describe("IModelOpen (#integration)", () => {
       openPromises.push(open);
     }
     const iModels: BriefcaseDb[] = await Promise.all(openPromises);
-    const pathname = iModels[0].briefcase.pathname;
+    const pathname = iModels[0].pathName;
     for (let ii = 1; ii < numTries; ii++) {
-      assert.strictEqual(iModels[ii].briefcase.pathname, pathname);
+      assert.strictEqual(iModels[ii].pathName, pathname);
     }
     await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModels[0]);
   });
