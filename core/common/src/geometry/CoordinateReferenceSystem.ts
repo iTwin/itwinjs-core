@@ -28,9 +28,9 @@ export interface HorizontalCRSAreaProps {
  */
 export class HorizontalCRSArea implements HorizontalCRSAreaProps {
   /* The latitude minimum and maximum for the user-defined area of the CRS */
-  public latitude: MinMax;
+  public readonly latitude: MinMax;
   /* The longitude minimum and maximum for the user-defined area of the CRS */
-  public longitude: MinMax;
+  public readonly longitude: MinMax;
 
   public constructor(data?: HorizontalCRSAreaProps) {
     if (data) {
@@ -39,14 +39,6 @@ export class HorizontalCRSArea implements HorizontalCRSAreaProps {
     } else {
       this.latitude = new MinMax();
       this.longitude = new MinMax();
-    }
-  }
-
-  /** @internal */
-  public initialize(_data?: HorizontalCRSAreaProps) {
-    if (_data) {
-      this.latitude = MinMax.fromJSON(_data.latitude);
-      this.longitude = MinMax.fromJSON(_data.longitude);
     }
   }
 
@@ -133,115 +125,46 @@ export interface HorizontalCRSProps {
  */
 export class HorizontalCRS implements HorizontalCRSProps {
   /** The identifier of the horizontal CRS as stored in the dictionary or the service database */
-  public id?: string;
+  public readonly id?: string;
   /** Used only for user-defined definitions that will typically use a GUID as id. A display name for the CRS that allows
    ** a human to understand the nature of the definition
    */
-  public name?: string;
+  public readonly name?: string;
   /** Description */
-  public description?: string;
+  public readonly description?: string;
   /** The source of the CRS definition. */
-  public source?: string;
+  public readonly source?: string;
   /** If true then indicates the definition is deprecated. It should then be used for backward compatibility only.
    *  If false then the definition is not deprecated. Default is false.
    */
-  public deprecated: boolean;
+  public readonly deprecated: boolean;
   /** The EPSG code of the CRS. If undefined then there is no EPSG code associated. */
-  public epsg?: number;
-
-  private _datumId?: string;
-  private _datum?: GeodeticDatum;
-
-  /** Returns the identifier of the geodetic datum as stored in the dictionary or the service database.
-   *  @alpha
-   */
-  public get datumId(): string | undefined {
-    return this._datumId;
-  }
-
-  /** Sets the identifier of the geodetic datum.
-   *  @alpha
-   */
-  public set datumId(newDatumId: string | undefined) {
-    this._datumId = newDatumId;
-    this._ellipsoid = undefined;
-    this._ellipsoidId = undefined;
-  }
-
-  /** Returns the complete definition of the geodetic datum referred to by datumId. It can also be used if the datum is not stored
+  public readonly epsg?: number;
+  /** The identifier of the geodetic datum as stored in the dictionary or the service database. */
+  public readonly datumId?: string;
+  /** The complete definition of the geodetic datum referred to by datumId. It can also be used if the datum is not stored
    *  in either service or dictionary.
-   *  @alpha
    */
-  public get datum(): GeodeticDatum | undefined {
-    return this._datum;
-  }
+  public readonly datum?: GeodeticDatum;
 
-  /** Sets definition of the geodetic datum referred to by datumId. It can also be used if the datum is not stored
-   *  in either service or dictionary.
-   *  @alpha
-   */
-  public set datum(newDatum: GeodeticDatum | undefined) {
-    if (newDatum) {
-      this._datum = new GeodeticDatum(newDatum);
-      this._ellipsoid = undefined;
-      this._ellipsoidId = undefined;
-    } else {
-      this._datum = undefined;
-    }
-  }
-
-
-  private _ellipsoidId?: string;
-  private _ellipsoid?: GeodeticEllipsoid;
-
-  /** Returns the identifier of the geodetic ellipsoid as stored in the dictionary or the service database. This property is exclusive
+  /** The identifier of the geodetic ellipsoid as stored in the dictionary or the service database. This property is exclusive
    *  of having datumId and datum properties undefined.
    *  @alpha
   */
-  public get ellipsoidId(): string | undefined {
-    return this._ellipsoidId;
-  }
-
-  /** Sets the identifier of the geodetic ellipsoid. This property is exclusive
-   *  of having datumId and datum properties undefined. If either datum or datumId are set then this
-   *  call will silently fail maintaining the property undefined.
-   *  @alpha
-  */
-  public set ellipsoidId(newEllipsoidId: string | undefined) {
-    if (!this._datumId && !this._datum)
-      this._ellipsoidId = newEllipsoidId;
-  }
-
-  /** Returns complete definition of the geodetic ellipsoid referred to by ellipsoidId. It can also be used if the ellipsoid is not stored
+  public readonly ellipsoidId?: string;
+  /** The complete definition of the geodetic ellipsoid referred to by ellipsoidId. It can also be used if the ellipsoid is not stored
    *  in either service or dictionary. This property is exclusive
    *  of having datumId and datum properties undefined.
    *  @alpha
   */
-  public get ellipsoid(): GeodeticEllipsoid | undefined {
-    return this._ellipsoid;
-  }
+  public readonly ellipsoid?: GeodeticEllipsoid;
 
-  /** Sets the geodetic ellipsoid. This property is exclusive
-   *  of having datumId and datum properties undefined. If either datum or datumId are set then this
-   *  call will silently fail maintaining the property undefined.
-   *  @alpha
-  */
-  public set ellipsoid(newEllipsoid: GeodeticEllipsoid | undefined) {
-    if (!this._datumId && !this._datum)
-      this._ellipsoid = new GeodeticEllipsoid(newEllipsoid);
-  }
+  public readonly unit?: UnitType;
+  public readonly projection?: Projection;
+  public readonly area?: HorizontalCRSArea;
 
-  public unit?: UnitType;
-  public projection?: Projection;
-  public area?: HorizontalCRSArea;
-
-  public constructor(data?: HorizontalCRSProps) {
+  public constructor(_data?: HorizontalCRSProps) {
     this.deprecated = false;
-    this.initialize(data);
-  }
-
-  /** @internal */
-  public initialize(_data?: HorizontalCRSProps) {
     if (_data) {
       this.id = _data.id;
       this.description = _data.description;
@@ -250,8 +173,10 @@ export class HorizontalCRS implements HorizontalCRSProps {
       this.epsg = _data.epsg;
       this.datumId = _data.datumId;
       this.datum = _data.datum ? GeodeticDatum.fromJSON(_data.datum) : undefined;
-      this.ellipsoidId = _data.ellipsoidId;
-      this.ellipsoid = _data.ellipsoid ? GeodeticEllipsoid.fromJSON(_data.ellipsoid) : undefined;
+      if (!this.datumId && !this.datum) {
+        this.ellipsoidId = _data.ellipsoidId;
+        this.ellipsoid = _data.ellipsoid ? GeodeticEllipsoid.fromJSON(_data.ellipsoid) : undefined;
+      }
       this.unit = _data.unit;
       this.projection = _data.projection ? Projection.fromJSON(_data.projection) : undefined;
       this.area = _data.area ? HorizontalCRSArea.fromJSON(_data.area) : undefined;
@@ -339,17 +264,12 @@ export interface VerticalCRSProps {
 */
 export class VerticalCRS implements VerticalCRSProps {
   /** Vertical CRS Key name. The only supported values are currently "GEOID", "ELLIPSOID", "NAVD88" and "NGVD29". The default is ELLIPSOID */
-  public id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88";
+  public readonly id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88";
 
   public constructor(data?: VerticalCRSProps) {
     this.id = "ELLIPSOID";
-    this.initialize(data);
-  }
-
-  /** @internal */
-  public initialize(_data?: VerticalCRSProps) {
-    if (_data)
-      this.id = _data.id;
+    if (data)
+      this.id = data.id;
   }
 
   /** @internal */
@@ -405,19 +325,14 @@ export interface GeographicCRSProps {
 */
 export class GeographicCRS implements GeographicCRSProps {
   /** The horizontal portion of the geographic coordinate reference system. */
-  public horizontalCRS?: HorizontalCRS;
+  public readonly horizontalCRS?: HorizontalCRS;
   /** The vertical portion of the geographic coordinate reference system. */
-  public verticalCRS?: VerticalCRS;
+  public readonly verticalCRS?: VerticalCRS;
 
   public constructor(data?: GeographicCRSProps) {
-    this.initialize(data);
-  }
-
-  /** @internal */
-  public initialize(_data?: GeographicCRSProps) {
-    if (_data) {
-      this.horizontalCRS = _data.horizontalCRS ? HorizontalCRS.fromJSON(_data.horizontalCRS) : undefined;
-      this.verticalCRS = _data.verticalCRS ? VerticalCRS.fromJSON(_data.verticalCRS) : undefined;
+    if (data) {
+      this.horizontalCRS = data.horizontalCRS ? HorizontalCRS.fromJSON(data.horizontalCRS) : undefined;
+      this.verticalCRS = data.verticalCRS ? VerticalCRS.fromJSON(data.verticalCRS) : undefined;
     }
   }
 

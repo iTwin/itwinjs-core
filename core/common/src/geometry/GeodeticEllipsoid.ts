@@ -44,37 +44,32 @@ export interface GeodeticEllipsoidProps {
  */
 export class GeodeticEllipsoid implements GeodeticEllipsoidProps {
   /** Ellipsoid key name */
-  public id?: string;
+  public readonly id?: string;
   /** Description of the ellipsoid */
-  public description?: string;
+  public readonly description?: string;
   /** If true then indicates the definition is deprecated. It should then be used for backward compatibility only.
    *  If false then the definition is not deprecated. Default is false.
    */
-  public deprecated: boolean;
+  public readonly deprecated: boolean;
   /** The textual description of the source of the ellipsoid definition. */
-  public source?: string;
+  public readonly source?: string;
   /** The EPSG code of the ellipsoid. If undefined then there is no EPSG code associated. */
-  public epsg?: number;
+  public readonly epsg?: number;
   /** The equatorial radius of the ellipsoid in meters. */
-  public equatorialRadius?: number;
+  public readonly equatorialRadius?: number;
   /** The polar radius of the ellipsoid in meters. */
-  public polarRadius?: number;
+  public readonly polarRadius?: number;
 
   public constructor(data?: GeodeticEllipsoidProps) {
     this.deprecated = false;
-    this.initialize(data);
-  }
-
-  /** @internal */
-  public initialize(_data?: GeodeticEllipsoidProps) {
-    if (_data) {
-      this.id = _data.id;
-      this.description = _data.description;
-      this.deprecated = _data.deprecated ?? false;
-      this.source = _data.source;
-      this.epsg = _data.epsg;
-      this.equatorialRadius = _data.equatorialRadius;
-      this.polarRadius = _data.polarRadius;
+    if (data) {
+      this.id = data.id;
+      this.description = data.description;
+      this.deprecated = data.deprecated ?? false;
+      this.source = data.source;
+      this.epsg = data.epsg;
+      this.equatorialRadius = data.equatorialRadius;
+      this.polarRadius = data.polarRadius;
     }
   }
 

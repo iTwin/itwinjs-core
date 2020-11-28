@@ -24,22 +24,17 @@ export interface XyzRotationProps {
  */
 export class XyzRotation implements XyzRotationProps {
   /** X rotation component in arc second */
-  public x!: number;
+  public readonly x!: number;
   /** Y rotation component in arc second*/
-  public y!: number;
+  public readonly y!: number;
   /** Z rotation component in arc second*/
-  public z!: number;
+  public readonly z!: number;
 
   public constructor(data?: XyzRotationProps) {
-    this.initialize(data);
-  }
-
-  /** @internal */
-  public initialize(_data?: XyzRotationProps) {
-    if (_data) {
-      this.x = _data.x;
-      this.y = _data.y;
-      this.z = _data.z;
+    if (data) {
+      this.x = data.x;
+      this.y = data.y;
+      this.z = data.z;
     }
   }
 
@@ -83,16 +78,10 @@ export interface GeocentricTransformProps {
  */
 export class GeocentricTransform implements GeocentricTransformProps {
   /* The frame translation components in meters */
-  public delta: Vector3d;
+  public readonly delta: Vector3d;
 
   public constructor(data?: GeocentricTransformProps) {
     this.delta = data ? Vector3d.fromJSON(data.delta) : new Vector3d();
-    this.initialize(data);
-  }
-
-  /** @internal */
-  public initialize(_data?: GeocentricTransformProps) {
-    this.delta = _data ? Vector3d.fromJSON(_data.delta) : new Vector3d();
   }
 
   /** @internal */
@@ -133,23 +122,18 @@ export interface PositionalVectorTransformProps {
  */
 export class PositionalVectorTransform implements PositionalVectorTransformProps {
   /* The frame translation components in meters */
-  public delta!: Vector3d;
+  public readonly delta!: Vector3d;
   /* The frame rotation components in arc seconds. The rotation sign convention is the one associated with
    * the operation EPSG:9606 following recommendation of ISO 19111 specifications */
-  public rotation!: XyzRotation;
+  public readonly rotation!: XyzRotation;
   /** Scale in parts per million. The scale effectively applied will be 1 plus scale divided by 1 000 000. */
-  public scalePPM!: number;
+  public readonly scalePPM!: number;
 
   public constructor(data?: PositionalVectorTransformProps) {
-    this.initialize(data);
-  }
-
-  /** @internal */
-  public initialize(_data?: PositionalVectorTransformProps) {
-    if (_data) {
-      this.delta = _data.delta ? Vector3d.fromJSON(_data.delta) : new Vector3d();
-      this.rotation = _data.rotation ? XyzRotation.fromJSON(_data.rotation) : new XyzRotation();
-      this.scalePPM = _data.scalePPM;
+    if (data) {
+      this.delta = data.delta ? Vector3d.fromJSON(data.delta) : new Vector3d();
+      this.rotation = data.rotation ? XyzRotation.fromJSON(data.rotation) : new XyzRotation();
+      this.scalePPM = data.scalePPM;
     }
   }
 
@@ -225,18 +209,11 @@ export class GridFileDefinition implements GridFileDefinitionProps {
    *  file name above.
    *  Forward slash is always used to separate the path components.
    */
-  public fileName: string;
-  public format: GridFileFormat;
-  public direction: GridFileDirection;
+  public readonly fileName: string;
+  public readonly format: GridFileFormat;
+  public readonly direction: GridFileDirection;
 
   public constructor(data?: GridFileDefinitionProps) {
-    this.fileName = data ? data.fileName : "";
-    this.format = data ? data.format : "NTv2";
-    this.direction = data ? data.direction : "Direct";
-  }
-
-  /** @internal */
-  public initialize(data?: GridFileDefinitionProps) {
     this.fileName = data ? data.fileName : "";
     this.format = data ? data.format : "NTv2";
     this.direction = data ? data.direction : "Direct";
@@ -273,19 +250,14 @@ export interface GridFileTransformProps {
 export class GridFileTransform implements GridFileTransformProps {
   /** The list of grid files. The order of file is meaningful, the first encountered that covers the area of coordinate
    *  transformation will be used. */
-  public files: GridFileDefinition[];
+  public readonly files: GridFileDefinition[];
 
   public constructor(data?: GridFileTransformProps) {
     this.files = [];
-    this.initialize(data);
-  }
-
-  /** @internal */
-  public initialize(_data?: GridFileTransformProps) {
-    if (_data) {
-      if (Array.isArray(_data.files)) {
+    if (data) {
+      if (Array.isArray(data.files)) {
         this.files = [];
-        for (const item of _data.files)
+        for (const item of data.files)
           this.files.push(GridFileDefinition.fromJSON(item));
       }
     }
@@ -340,26 +312,21 @@ export interface GeodeticTransformProps {
  */
 export class GeodeticTransform implements GeodeticTransformProps {
   /* The method used by the geodetic transform */
-  public method: GeodeticTransformMethod;
+  public readonly method: GeodeticTransformMethod;
   /* When method is Geocentric this property contains the geocentric parameters */
-  public geocentric?: GeocentricTransform;
+  public readonly geocentric?: GeocentricTransform;
   /* When method is PositionalVector this property contains the positional vector parameters */
-  public positionalVector?: PositionalVectorTransform;
+  public readonly positionalVector?: PositionalVectorTransform;
   /* When method is GridFiles this property contains the grid files parameters */
-  public gridFile?: GridFileTransform;
+  public readonly gridFile?: GridFileTransform;
 
   public constructor(data?: GeodeticTransformProps) {
     this.method = "None";
-    this.initialize(data);
-  }
-
-  /** @internal */
-  public initialize(_data?: GeodeticTransformProps) {
-    if (_data) {
-      this.method = _data.method;
-      this.geocentric = _data.geocentric ? GeocentricTransform.fromJSON(_data.geocentric) : undefined;
-      this.positionalVector = _data.positionalVector ? PositionalVectorTransform.fromJSON(_data.positionalVector) : undefined;
-      this.gridFile = _data.gridFile ? GridFileTransform.fromJSON(_data.gridFile) : undefined;
+    if (data) {
+      this.method = data.method;
+      this.geocentric = data.geocentric ? GeocentricTransform.fromJSON(data.geocentric) : undefined;
+      this.positionalVector = data.positionalVector ? PositionalVectorTransform.fromJSON(data.positionalVector) : undefined;
+      this.gridFile = data.gridFile ? GridFileTransform.fromJSON(data.gridFile) : undefined;
     }
   }
 
@@ -449,23 +416,23 @@ export interface GeodeticDatumProps {
  */
 export class GeodeticDatum implements GeodeticDatumProps {
   /** GeodeticDatum key name */
-  public id?: string;
+  public readonly id?: string;
   /** Description */
-  public description?: string;
+  public readonly description?: string;
   /** If true then indicates the definition is deprecated. It should then be used for backward compatibility only.
    *  If false then the definition is not deprecated. Default is false.
    */
-  public deprecated: boolean;
+  public readonly deprecated: boolean;
   /* A textual description of the source of the geodetic datum definition. */
-  public source?: string;
+  public readonly source?: string;
   /** The EPSG code of the geodetic datum. If undefined then there is no EPSG code associated. */
-  public epsg?: number;
+  public readonly epsg?: number;
   /** The key name to the base Ellipsoid. */
-  public ellipsoidId?: string;
+  public readonly ellipsoidId?: string;
   /** The full definition of the geodetic ellipsoid associated to the datum. If undefined then the ellipsoidId must
    *  be used to fetch the definition from the dictionary, geographic coordinate system service or the backend
    */
-  public ellipsoid?: GeodeticEllipsoid;
+  public readonly ellipsoid?: GeodeticEllipsoid;
   /** The transformation to WGS84. If null then there is no known transformation to WGS84. Although
    *  this is rare it occurs in a few cases where the country charges for obtaining and using
    *  the transformation and its parameters, or if the transformation is maintained secret for military reasons.
@@ -474,15 +441,10 @@ export class GeodeticDatum implements GeodeticDatumProps {
    *  The list of transforms contains normally a single transform but there can be a sequence of transformations
    *  required to transform to WGS84, such as the newer datum definitions for Slovakia or Switzerland.
    */
-  public transforms?: GeodeticTransform[];
+  public readonly transforms?: GeodeticTransform[];
 
-  public constructor(data?: GeodeticDatumProps) {
+  public constructor(_data?: GeodeticDatumProps) {
     this.deprecated = false;
-    this.initialize(data);
-  }
-
-  /** @internal */
-  public initialize(_data?: GeodeticDatumProps) {
     if (_data) {
       this.id = _data.id;
       this.description = _data.description;

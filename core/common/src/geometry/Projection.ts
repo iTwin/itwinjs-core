@@ -91,31 +91,26 @@ export interface AffineTransformProps {
  */
 export class AffineTransform implements AffineTransformProps {
   /** The X post translation */
-  public translationX!: number;
+  public readonly translationX!: number;
   /** The Y post-translation */
-  public translationY!: number;
+  public readonly translationY!: number;
   /** A1 value as defined in global comment. */
-  public a1!: number;
+  public readonly a1!: number;
   /** B1 value as defined in global comment. */
-  public b1!: number;
+  public readonly b1!: number;
   /** A2 value as defined in global comment. */
-  public a2!: number;
+  public readonly a2!: number;
   /** B2 value as defined in global comment. */
-  public b2!: number;
+  public readonly b2!: number;
 
   constructor(data?: AffineTransformProps) {
-    this.initialize(data);
-  }
-
-  /** @internal */
-  public initialize(_data?: AffineTransformProps) {
-    if (_data) {
-      this.translationX = _data.translationX;
-      this.translationY = _data.translationY;
-      this.a1 = _data.a1;
-      this.b1 = _data.b1;
-      this.a2 = _data.a2;
-      this.b2 = _data.b2;
+    if (data) {
+      this.translationX = data.translationX;
+      this.translationY = data.translationY;
+      this.a1 = data.a1;
+      this.b1 = data.b1;
+      this.a2 = data.a2;
+      this.b2 = data.b2;
     }
   }
 
@@ -222,17 +217,17 @@ export interface ProjectionProps {
  *  @alpha
  */
 export class Projection implements ProjectionProps {
-  public method!: ProjectionMethod;
+  public readonly method!: ProjectionMethod;
   /** The False Easting of the projection. */
-  public falseEasting?: number;
+  public readonly falseEasting?: number;
   /** The False Northing of the projection. */
-  public falseNorthing?: number;
+  public readonly falseNorthing?: number;
   /** The Central Meridian. */
-  public centralMeridian?: number;
+  public readonly centralMeridian?: number;
   /** The latitude of origin of the projection. */
-  public latitudeOfOrigin?: number;
+  public readonly latitudeOfOrigin?: number;
   /** Longitude of origin of the projection. */
-  public longitudeOfOrigin?: number;
+  public readonly longitudeOfOrigin?: number;
   /** The scale reduction factor applied at origin. The nature of the projection has a
    *  inherent scale factor applied that gradually varies outward from the projection origin.
    *  The scale factor at origin enables to level the inherent scale factor over an use area.
@@ -240,50 +235,45 @@ export class Projection implements ProjectionProps {
    *  can be used instead or in addition to Standard Parallel to define
    *  a scale factor.
    */
-  public scaleFactor?: number;
+  public readonly scaleFactor?: number;
   /** The elevation of the origin of the projection above the geoid. This value
    *  allows compensation for the scale factor related to elevation above the sea level.
    */
-  public elevationAboveGeoid?: number;
+  public readonly elevationAboveGeoid?: number;
   /** The geoid separation. It represents the elevation of the geoid above the ellipsoid at the center of the projection. */
-  public geoidSeparation?: number;
-  public affine?: AffineTransform;
+  public readonly geoidSeparation?: number;
+  public readonly affine?: AffineTransform;
   /** Standard parallel for projection that only use one.
    *  For cylindrical projections (mercator, transverse mercator ...) it defines the parallel at
    ** which the cylinder crosses the ellipsoid resulting in a scale factor being applied.
    *  For conic projections (Lambert Tangential ...) it defines
    *  the standard parallel at which the cone is tangent to the ellipsoid.
    */
-  public standardParallel?: number;
+  public readonly standardParallel?: number;
   /** The first standard parallel at which the cone crosses the ellipsoid. */
-  public standardParallel1?: number;
+  public readonly standardParallel1?: number;
   /** The second standard parallel at which the cone crosses the ellipsoid. */
-  public standardParallel2?: number;
+  public readonly standardParallel2?: number;
   /** The UTM zone number. A number from 0 to 60. */
-  public zoneNumber?: number;
-  public hemisphere?: HemisphereEnum;
+  public readonly zoneNumber?: number;
+  public readonly hemisphere?: HemisphereEnum;
   /** Longitude of the central point. */
-  public centralPointLongitude?: number;
+  public readonly centralPointLongitude?: number;
   /** Latitude of the central point. */
-  public centralPointLatitude?: number;
+  public readonly centralPointLatitude?: number;
   /** Longitude of the first alignment point for some Oblique Mercator and Krovak projections. */
-  public point1Longitude?: number;
+  public readonly point1Longitude?: number;
   /** Latitude of the first alignment point for some Oblique Mercator and Krovak projections. */
-  public point1Latitude?: number;
+  public readonly point1Latitude?: number;
   /** Longitude of the second alignment point for some Oblique Mercator projections. */
-  public point2Longitude?: number;
+  public readonly point2Longitude?: number;
   /** Latitude of the second alignment point for some Oblique Mercator projections. */
-  public point2Latitude?: number;
-  public danishSystem34Region?: DanishSystem34Region;
+  public readonly point2Latitude?: number;
+  public readonly danishSystem34Region?: DanishSystem34Region;
   /** Azimuth. */
-  public azimuth?: number;
+  public readonly azimuth?: number;
 
-  public constructor(data?: ProjectionProps) {
-    this.initialize(data);
-  }
-
-  /** @internal */
-  public initialize(_data?: ProjectionProps) {
+  public constructor(_data?: ProjectionProps) {
     if (_data) {
       this.method = _data.method;
       this.falseEasting = _data.falseEasting;
@@ -397,19 +387,14 @@ export interface MinMaxProps {
  */
 export class MinMax implements MinMaxProps {
   /** Minimum value */
-  public min!: number;
+  public readonly min!: number;
   /** Maximum value */
-  public max!: number;
+  public readonly max!: number;
 
   public constructor(data?: MinMaxProps) {
-    this.initialize(data);
-  }
-
-  /** @internal */
-  public initialize(_data?: MinMaxProps) {
-    if (_data) {
-      this.min = _data.min;
-      this.max = _data.max;
+    if (data) {
+      this.min = data.min;
+      this.max = data.max;
     }
   }
 
