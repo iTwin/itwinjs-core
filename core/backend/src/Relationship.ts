@@ -200,7 +200,7 @@ export class Relationships {
   /** Check classFullName to ensure it is a link table relationship class. */
   private checkRelationshipClass(classFullName: string) {
     if (!this._iModel.nativeDb.isLinkTableRelationship(classFullName.replace(".", ":"))) {
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, `Class "${classFullName} must be a relationship class and it should be subclass of BisCore:ElementRefersToElements or BisCore:ElementDrivesElement."`, Logger.logWarning, loggerCategory);
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, `Class '${classFullName}' must be a relationship class and it should be subclass of BisCore:ElementRefersToElements or BisCore:ElementDrivesElement.`, Logger.logWarning, loggerCategory);
     }
   }
 
