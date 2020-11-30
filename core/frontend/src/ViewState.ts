@@ -416,7 +416,8 @@ export abstract class ViewState extends ElementState {
   /** Execute a function on each viewed model */
   public abstract forEachModel(func: (model: GeometricModelState) => void): void;
 
-  /** Execute a function against the [[TileTreeReference]] associated with each viewed model.
+  /** Execute a function against the [[TileTreeReference]]s associated with each viewed model.
+   * @note Each model may have more than one tile tree reference - for instance, if the view has a schedule script containing animation transforms.
    * @internal
    */
   public abstract forEachModelTreeRef(func: (treeRef: TileTreeReference) => void): void;
