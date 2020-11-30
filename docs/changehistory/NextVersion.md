@@ -16,3 +16,23 @@ ignore: true
 ## Updated version of Electron
 
 Updated version of electron used from 8.2.1 to 10.1.3. Note that Electron is specified as a peer dependency in the iModel.js stack - so it's recommended but not mandatory that applications migrate to this electron version.
+
+## Globe location tool fixes
+
+The globe location tools now will properly use GCS reprojection when navigating. Previously, navigating to certain cartographic locations within the iModel extents could be slightly inaccurate.
+
+The tools affected are:
+
+* [ViewGlobeSatelliteTool]($frontend)
+* [ViewGlobeBirdTool]($frontend)
+* [ViewGlobeLocationTool]($frontend)
+* [ViewGlobeIModelTool]($frontend)
+
+The [ViewGlobeLocationTool]($frontend) has been further improved to navigate better across long distances when using plane mode.
+
+There is now a method called `lookAtGlobalLocationFromGcs` on [ViewState3d]($frontend). This method behaves exactly like `lookAtGlobalLocation` except that is async and uses the GCS to reproject the location.
+
+[ViewState3d]($frontend) also has GCS versions of these methods:
+
+* `rootToCartographicFromGcs` behaves like `rootToCartographic` except it is async and uses the GCS to reproject the location.
+* `cartographicToRootFromGcs` behaves like `cartographicToRoot` except it is async and uses the GCS to reproject the location.
