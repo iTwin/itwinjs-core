@@ -255,6 +255,7 @@ public;RelationshipPath
 public;RelationshipPathJSON = RelatedClassInfoJSON[]
 public;RelationshipPathSpecification = RelationshipStepSpecification | RelationshipStepSpecification[]
 public;RelationshipStepSpecification
+public;RendererDescription
 public;RepeatableRelationshipPathSpecification = RepeatableRelationshipStepSpecification | RepeatableRelationshipStepSpecification[]
 public;RepeatableRelationshipStepSpecification 
 public;RequestOptions
