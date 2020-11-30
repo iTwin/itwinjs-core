@@ -7,8 +7,9 @@
  * @module Tools
  */
 
-import { ColorDef } from "@bentley/imodeljs-common";
+import { ClipStyle, ColorDef } from "@bentley/imodeljs-common";
 import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
+import { parseToggle } from "./parseToggle";
 
 /** Specify or unspecify a clip color to use for pixels inside or outside the clip region.
  * Arguments can be:
@@ -65,6 +66,37 @@ export class ClipColorTool extends Tool {
       this._setOutsideClipColor(args[1]);
     else
       return false;
+    return true;
+  }
+}
+
+/** Controls a [ViewState]($frontend)'s [ViewDetails]($frontend)'s [ClipStyle.produceCutGeometry]($common) flag.
+ * @alpha
+ */
+export class ToggleSectionCutTool extends Tool {
+  public static toolId = "ToggleSectionCut";
+  public static get minArgs() { return 0; }
+  public static get maxArgs() { return 1; }
+
+  public run(produceCutGeometry?: boolean): boolean {
+    const vp = IModelApp.viewManager.selectedView;
+    if (vp) {
+      const style = vp.view.details.clipStyle;
+      produceCutGeometry = produceCutGeometry ?? !style.produceCutGeometry;
+      if (produceCutGeometry !== style.produceCutGeometry) {
+        vp.view.details.clipStyle = ClipStyle.fromJSON({ produceCutGeometry });
+        vp.invalidateScene();
+      }
+    }
+
+    return true;
+  }
+
+  public parseAndRun(...args: string[]): boolean {
+    const enable = parseToggle(args[0]);
+    if (typeof enable !== "string")
+      this.run(enable);
+
     return true;
   }
 }

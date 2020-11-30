@@ -81,6 +81,9 @@
     "ToggleRealityTileLogging": {
       "keyin": "fdt toggle reality logging"
     },
+    "ToggleSectionCut": {
+      "keyin": "fdt section cut"
+    },
     "SetAspectRatioSkew": {
       "keyin": "fdt aspect skew"
     },

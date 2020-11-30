@@ -19,7 +19,7 @@ function expectNumTreesPerModel(numTreesPerModel: number, view: SpatialViewState
   expect(countTileTrees(view)).to.equal(view.modelSelector.models.size * numTreesPerModel);
 }
 
-describe("Section-cut tile tree", () => {
+describe.only("Section-cut tile tree", () => {
   interface TestCase {
     imodel: IModelConnection;
     viewId: string;

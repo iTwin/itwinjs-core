@@ -52,6 +52,7 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
 
 * `fdt project extents` - Toggles display of a decoration illustrating the iModel's project extents.
 * `fdt freeze scene` - Toggles scene freeze for the active viewport. While scene freeze is enabled, the same set of tiles will continue to be displayed until the scene is unfrozen - no new tiles will be loaded. Useful for zooming in or out to inspect geometry inside specific tiles.
+* `fdt section cut` - Specify whether a clip volume applied to the view should produce cut geometry at intersections with the design models. This controls `ViewState.details.clipStyle.produceCutGeometry`.
 * `fdt frustum selected` - Toggles a decoration representing the current frustum of the selected viewport. The decoration is displayed in any *other* open viewports - so if no other viewports are open, this key-in has no effect.
 * `fdt shadow frustum` - Like `fdt frustum selected`, but visualizes the frustum used to select tiles for the shadow map (when shadows are enabled).
 * `fdt frustum snapshot` - Toggles a decoration representing the current frustum of the active viewport. The decoration remains displayed until it is toggled back off. `fdt frustum selected` is much more useful, but requires at least two open viewports.  Including `fdt snapshot preload` will also display the preload frustum decoration.
