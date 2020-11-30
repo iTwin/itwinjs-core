@@ -71,7 +71,7 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
 
     const options = {
       edgesRequired: treeId.edgesRequired,
-      allowInstancing: undefined === treeId.animationId && !treeId.enforceDisplayPriority,
+      allowInstancing: undefined === treeId.animationId && !treeId.enforceDisplayPriority && !treeId.sectionCut,
       is3d: id.is3d,
       batchType: BatchType.Primary,
     };
@@ -126,12 +126,20 @@ class PrimaryTreeReference extends TileTreeReference {
   protected readonly _viewFlagOverrides: ViewFlagOverrides;
   protected _id: PrimaryTreeId;
   private _owner: TileTreeOwner;
+  private readonly _sectionClip?: StringifiedClipVector;
 
-  public constructor(view: ViewState, model: GeometricModelState, isPlanProjection: boolean, transformNodeId?: number) {
+  public constructor(view: ViewState, model: GeometricModelState, isPlanProjection: boolean, transformNodeId?: number, sectionClip?: StringifiedClipVector) {
     super();
     this.view = view;
     this.model = model;
+
+    this._sectionClip = sectionClip;
     this._viewFlagOverrides = ViewFlagOverrides.fromJSON(model.jsonProperties.viewFlagOverrides);
+    if (sectionClip) {
+      // Clipping will be applied on backend; don't clip out cut geometry.
+      this._viewFlagOverrides.setShowClipVolume(false);
+    }
+
     this._id = {
       modelId: model.id,
       is3d: model.is3d,
@@ -152,7 +160,7 @@ class PrimaryTreeReference extends TileTreeReference {
 
   protected getClipVolume(_tree: TileTree): RenderClipVolume | undefined {
     // ###TODO: reduce frequency with which getModelClip() is called
-    return this.view.is3d() ? this.view.getModelClip(this.model.id) : undefined;
+    return this.view.is3d() && !this._sectionClip ? this.view.getModelClip(this.model.id) : undefined;
   }
 
   public get treeOwner(): TileTreeOwner {
@@ -175,7 +183,8 @@ class PrimaryTreeReference extends TileTreeReference {
     const script = view.scheduleScript;
     const animationId = undefined !== script ? script.getModelAnimationId(modelId) : undefined;
     const edgesRequired = true === IModelApp.tileAdmin.alwaysRequestEdges || this._viewFlagOverrides.edgesRequired(view.viewFlags);
-    return { type: BatchType.Primary, edgesRequired, animationId, animationTransformNodeId };
+    const sectionCut = this._sectionClip?.clipString;
+    return { type: BatchType.Primary, edgesRequired, animationId, animationTransformNodeId, sectionCut };
   }
 
   protected computeBaseTransform(tree: TileTree): Transform {
@@ -210,8 +219,8 @@ class PlanProjectionTreeReference extends PrimaryTreeReference {
   private get _view3d() { return this.view as ViewState3d; }
   private _curTransform?: { transform: Transform, elevation: number };
 
-  public constructor(view: ViewState3d, model: GeometricModelState) {
-    super(view, model, true);
+  public constructor(view: ViewState3d, model: GeometricModelState, sectionCut?: StringifiedClipVector) {
+    super(view, model, true, undefined, sectionCut);
     this._viewFlagOverrides.setForceSurfaceDiscard(true);
   }
 
@@ -281,15 +290,21 @@ class PlanProjectionTreeReference extends PrimaryTreeReference {
   }
 }
 
+function isPlanProjection(view: ViewState, model: GeometricModelState): boolean {
+  const model3d = view.is3d() ? model.asGeometricModel3d : undefined;
+  return undefined !== model3d && model3d.isPlanProjection;
+}
+
+function createTreeRef(view: ViewState, model: GeometricModelState, sectionCut: StringifiedClipVector | undefined): TileTreeReference {
+  if (false !== IModelApp.renderSystem.options.planProjections && isPlanProjection(view, model))
+    return new PlanProjectionTreeReference(view as ViewState3d, model, sectionCut);
+
+  return new PrimaryTreeReference(view, model, false, undefined, sectionCut);
+}
+
 /** @internal */
 export function createPrimaryTileTreeReference(view: ViewState, model: GeometricModelState): TileTreeReference {
-  if (false !== IModelApp.renderSystem.options.planProjections) {
-    const model3d = view.is3d() ? model.asGeometricModel3d : undefined;
-    if (undefined !== model3d && model3d.isPlanProjection)
-      return new PlanProjectionTreeReference(view as ViewState3d, model);
-  }
-
-  return new PrimaryTreeReference(view, model, false);
+  return createTreeRef(view, model, undefined);
 }
 
 /** Append to the input list [[TileTreeReference]]s for any animation transforms applied to the model by the schedule script.
@@ -347,21 +362,32 @@ class SpatialModelRefs implements Iterable<TileTreeReference> {
       yield this._sectionCutRef;
   }
 
-  public updateAnimated(_script: RenderScheduleState.Script | undefined): void {
+  public updateAnimated(script: RenderScheduleState.Script | undefined): void {
     const ref = this._primaryRef;
     if (!ref)
       return;
 
     this._animatedRefs.length = 0;
-    // ###TODO
+    const nodeIds = script?.getTransformNodeIds(ref.model.id);
+    if (nodeIds)
+      for (const nodeId of nodeIds)
+        this._animatedRefs.push(new AnimatedTreeReference(ref.view, ref.model, false, nodeId));
   }
 
-  public updateSectionCut(_clip: StringifiedClipVector | undefined): void {
+  public updateSectionCut(clip: StringifiedClipVector | undefined): void {
     const ref = this._primaryRef;
-    if (!ref)
+    if (!ref) {
+      assert(undefined === this._sectionCutRef);
       return;
+    }
 
-      // ###TODO
+    // If the clip isn't supposed to apply to this model, don't produce cut geometry.
+    const vfJson = clip ? ref.model.jsonProperties.viewFlagOverrides : undefined;
+    const vfOvrs = vfJson ? ViewFlagOverrides.fromJSON(vfJson) : undefined;
+    if (vfOvrs && !vfOvrs.clipVolumeOverride)
+      clip = undefined;
+
+    this._sectionCutRef = clip ? createTreeRef(ref.view, ref.model, clip) : undefined;
   }
 
   private get _primaryRef(): PrimaryTreeReference | undefined {
