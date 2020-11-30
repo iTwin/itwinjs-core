@@ -112,6 +112,7 @@ describe("Section-cut tile tree", () => {
   it("applies current section cut to newly-added tile tree references", async () => {
     const modelIds: string[] = [];
     await test((view) => {
+      modelIds.length = 0; // because this test runs multiple times.
       enableClip(view, true, defaultClip);
       for (const model of view.modelSelector.models)
         modelIds.push(model);
