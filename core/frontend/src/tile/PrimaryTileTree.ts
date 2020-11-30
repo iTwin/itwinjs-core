@@ -307,16 +307,6 @@ export function createPrimaryTileTreeReference(view: ViewState, model: Geometric
   return createTreeRef(view, model, undefined);
 }
 
-/** Append to the input list [[TileTreeReference]]s for any animation transforms applied to the model by the schedule script.
- * @internal
- */
-export function addAnimatedTileTreeReferences(refs: TileTreeReference[], view: ViewState, model: GeometricModelState, script: RenderScheduleState.Script): void {
-  const nodeIds = script.getTransformNodeIds(model.id);
-  if (nodeIds)
-    for (const nodeId of nodeIds)
-      refs.push(new AnimatedTreeReference(view, model, false, nodeId));
-}
-
 /** Provides [[TileTreeReference]]s for the loaded models present in a [[SpatialViewState]]'s [[ModelSelectorState]].
  * @internal
  */
