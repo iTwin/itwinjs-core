@@ -404,7 +404,18 @@ export class BackgroundMapLocation {
 
     const xVector = Vector3d.createStartEnd(ecefOrigin, ecefEast);
     const yVector = Vector3d.createStartEnd(ecefOrigin, ecefNorth);
-    const matrix = Matrix3d.createRigidFromColumns(xVector, yVector, AxisOrder.XYZ)!;
+    const matrix = Matrix3d.createRigidFromColumns(xVector, yVector, AxisOrder.XYZ);
+    if (matrix === undefined) {
+      this._ecefValidated = true;   // This is bad - somehow the reprojection failed.  - Just use the GCS directly.
+      return;
+    }
+    const inverse = matrix.inverse();
+    if (inverse === undefined) {
+      assert(false);               // Should never occur.
+      this._ecefValidated = true;
+      return;
+    }
+
     this._ecefToDb = Transform.createMatrixPickupPutdown(matrix, origin, ecefOrigin).inverse()!;
     this._ecefValidated = true;
   }
