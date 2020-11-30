@@ -13,7 +13,7 @@ import {
 import { IModelApp } from "./IModelApp";
 
 /** Class that implements the minimum UnitConversion interface to provide information needed to convert unit values.
- * @alpha
+ * @beta
  */
 export class ConversionData implements UnitConversion {
   public factor: number = 1.0;
@@ -443,7 +443,7 @@ const defaultFormatProps = {
 };
 
 /** Formats quantity values into strings.
- * @alpha
+ * @beta
  */
 export class QuantityFormatter implements UnitsProvider {
   protected _activeSystemIsImperial = true;

@@ -6,13 +6,14 @@ import * as React from "react";
 import imperialIconSvg from "@bentley/icons-generic/icons/app-2.svg?sprite";
 import {
   IModelApp, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType,
+  QuantityType,
   SelectionTool, SnapMode,
 } from "@bentley/imodeljs-frontend";
 import {
-  BackstageItem, BackstageItemUtilities, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue, StatusBarSection,
+  BackstageItem, BackstageItemUtilities, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue, DialogButtonType, StatusBarSection,
   UiItemsManager, UiItemsProvider,
 } from "@bentley/ui-abstract";
-import { MessageSeverity, ReactMessage, SvgPath, SvgSprite, UnderlinedButton } from "@bentley/ui-core";
+import { Dialog, MessageSeverity, Radio, ReactMessage, SvgPath, SvgSprite, UnderlinedButton } from "@bentley/ui-core";
 import {
   Backstage, BaseItemState, CommandItemDef, ContentViewManager, FrontstageManager, MessageManager, ModalDialogManager,
   ReactNotifyMessageDetails, StatusBarItemUtilities, SyncUiEventDispatcher, SyncUiEventId, ToolItemDef, WidgetState, withStatusFieldProps,
@@ -30,6 +31,144 @@ import { Presentation } from "@bentley/presentation-frontend";
 import { PresentationUnitSystem } from "@bentley/presentation-common";
 
 // cSpell:ignore appui appuiprovider
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export function UnitsFormatDialog() {
+  const [unitFormat, setUnitFormat] = React.useState(IModelApp.quantityFormatter.useImperialFormats ? "imperial" : "metric");
+  const dialogTitle = React.useRef("Select Unit Format");
+
+  React.useEffect(() => {
+    async function setFormatType() {
+      const usingImperialFormats = IModelApp.quantityFormatter.useImperialFormats;
+      if (!usingImperialFormats) {
+        if (unitFormat !== "metric")
+          setUnitFormat("metric");
+        return;
+      }
+      const formatSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length, true);
+      if (formatSpec.unitConversions[0].name === "Units.SURVEY_FT") {
+        if (unitFormat !== "us-survey")
+          setUnitFormat("us-survey");
+      } else {
+        if (unitFormat !== "imperial")
+          setUnitFormat("imperial");
+      }
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    setFormatType();
+  }, [unitFormat, setUnitFormat]);
+
+  const handleClose = React.useCallback(() => {
+    ModalDialogManager.closeDialog();
+  }, []);
+
+  const onRadioChange = React.useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+
+    const overrideLengthAndCoordinateEntry = {
+      metric: {
+        composite: {
+          includeZero: true,
+          spacer: " ",
+          units: [{ label: "m", name: "Units.M" }],
+        },
+        formatTraits: ["keepSingleZero", "showUnitLabel"],
+        precision: 4,
+        type: "Decimal",
+      },
+      imperial: {
+        composite: {
+          includeZero: true,
+          spacer: " ",
+          units: [{ label: "ft (US Survey)", name: "Units.SURVEY_FT" }],
+        },
+        formatTraits: ["keepSingleZero", "showUnitLabel"],
+        precision: 4,
+        type: "Decimal",
+      },
+    };
+
+    const areaOverrideEntry = {
+      metric: {
+        composite: {
+          includeZero: true,
+          spacer: " ",
+          units: [{ label: "m²", name: "Units.SQ_M" }],
+        },
+        formatTraits: ["keepSingleZero", "showUnitLabel"],
+        precision: 4,
+        type: "Decimal",
+      },
+      imperial: {
+        composite: {
+          includeZero: true,
+          spacer: " ",
+          units: [{ label: "ft² (US Survey)", name: "Units.SQ_SURVEY_FT" }],
+        },
+        formatTraits: ["keepSingleZero", "showUnitLabel"],
+        precision: 4,
+        type: "Decimal",
+      },
+    };
+
+    const format = event.target.value;
+
+    switch (format) {
+      case "imperial":
+        await IModelApp.quantityFormatter.clearAllOverrideFormats();
+        IModelApp.quantityFormatter.useImperialFormats = true;
+        Presentation.presentation.activeUnitSystem = PresentationUnitSystem.BritishImperial;
+        setUnitFormat(format);
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Set Format to Imperial"));
+        break;
+      case "metric":
+        await IModelApp.quantityFormatter.clearAllOverrideFormats();
+        Presentation.presentation.activeUnitSystem = PresentationUnitSystem.Metric;
+        IModelApp.quantityFormatter.useImperialFormats = false;
+        setUnitFormat(format);
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Set Format to Metric"));
+        break;
+      case "us-survey":
+        await IModelApp.quantityFormatter.setOverrideFormats(QuantityType.Length, overrideLengthAndCoordinateEntry);
+        await IModelApp.quantityFormatter.setOverrideFormats(QuantityType.Coordinate, overrideLengthAndCoordinateEntry);
+        await IModelApp.quantityFormatter.setOverrideFormats(QuantityType.Area, areaOverrideEntry);
+        IModelApp.quantityFormatter.useImperialFormats = true;
+        Presentation.presentation.activeUnitSystem = PresentationUnitSystem.UsSurvey;
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Set US Survey Overrides"));
+        setUnitFormat(format);
+        break;
+      default:
+        break;
+    }
+  }, [setUnitFormat]);
+
+  const buttonCluster = React.useMemo(() => [
+    { type: DialogButtonType.Close, onClick: handleClose },
+  ], [handleClose]);
+
+  return (
+    <div>
+      <Dialog
+        title={dialogTitle.current}
+        opened={true}
+        resizable={false}
+        movable={true}
+        modal={true}
+        buttonCluster={buttonCluster}
+        onClose={handleClose}
+        onEscape={handleClose}
+        minWidth={200}
+        width={"auto"}
+        trapFocus={false}
+      >
+        <div>
+          <Radio label="US Survey" name="unitFormat" value="us-survey" onChange={onRadioChange} checked={unitFormat === "us-survey"} />
+          <Radio label="Imperial" name="unitFormat" value="imperial" onChange={onRadioChange} checked={unitFormat === "imperial"} />
+          <Radio label="Metric" name="unitFormat" value="metric" onChange={onRadioChange} checked={unitFormat === "metric"} />
+        </div>
+      </Dialog>
+    </div>
+  );
+}
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const SampleStatus = withStatusFieldProps(SampleStatusField);
@@ -469,6 +608,15 @@ export class AppTools {
       iconSpec: "icon-status-warning",
       labelKey: "SampleApp:buttons.warningMessageBox",
       execute: () => ModalDialogManager.openDialog(AppTools._messageBox(MessageSeverity.Warning, IModelApp.i18n.translate("SampleApp:buttons.warningMessageBox"))),
+    });
+  }
+
+  public static get openUnitsFormatDialogCommand() {
+    return new CommandItemDef({
+      commandId: " ",
+      iconSpec: " icon-dashboard-2",
+      label: "Open Units Formatting Dialog",
+      execute: () => ModalDialogManager.openDialog(<UnitsFormatDialog />, "unitsFormatDialog"),
     });
   }
 
