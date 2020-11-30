@@ -58,6 +58,8 @@ import { TorusPipe } from "../solid/TorusPipe";
 import { TransitionSpiral3d } from "../curve/spiral/TransitionSpiral3d";
 import { IntegratedSpiral3d } from "../curve/spiral/IntegratedSpiral3d";
 import { DirectSpiral3d } from "../curve/spiral/DirectSpiral3d";
+import { PolyfaceData } from "../polyface/PolyfaceData";
+import { AuxChannel, AuxChannelData, AuxChannelDataType, PolyfaceAuxData } from "../polyface/AuxData";
 
 /* eslint-disable no-console */
 /**
@@ -2306,5 +2308,43 @@ export class Sample {
       }
     }
     return points;
+  }
+  /**
+   * Add an AuxData  (with multiple AuxChannelData) using data evaluated by a function of input and xyz.
+   * @param data existing polyface data object to receive the additional AuxChannel
+   * @param channelIndex
+   * @param name name of channel
+   * @param inputName name of input
+   * @param input0 input value for channel 0
+   * @param inputStep step between inputs (channels)
+   * @param numInput number of channels (inputs)
+   * @param dataType
+   * @param scalarFunction function to return the scalar value at (input, point)
+   */
+  public static addAuxDataScalarChannel(
+    data: PolyfaceData,
+    channelIndex: number,
+    name: string | undefined,
+    inputName: string | undefined,
+    input0: number, inputStep: number, numInput: number,
+    dataType: AuxChannelDataType,
+    scalarFunction: (input: number, xyz: Point3d) => number
+  ): void {
+    if (!data.auxData)
+      data.auxData = new PolyfaceAuxData([], []);
+    const channelDataArray = [];
+    const xyz = Point3d.create();
+    for (let i = 0; i < numInput; i++) {
+      const input = input0 + i * inputStep;
+      const values = [];
+      for (let k = 0; k < data.point.length; k++) {
+        data.point.getPoint3dAtUncheckedPointIndex(k, xyz);
+        values.push(scalarFunction(input, xyz));
+      }
+      channelDataArray.push(new AuxChannelData(input, values));
+    }
+    const channel = new AuxChannel(channelDataArray, dataType, name, inputName);
+    data.auxData.indices.push(channelIndex);
+    data.auxData.channels.push(channel);
   }
 }
