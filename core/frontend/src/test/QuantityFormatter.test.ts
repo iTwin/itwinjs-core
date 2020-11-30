@@ -64,7 +64,7 @@ const invalidFormatProps = {
   },
 };
 
-describe.only("Quantity formatter", async () => {
+describe("Quantity formatter", async () => {
   let quantityFormatter: QuantityFormatter;
   beforeEach(async () => {
     quantityFormatter = new QuantityFormatter();
