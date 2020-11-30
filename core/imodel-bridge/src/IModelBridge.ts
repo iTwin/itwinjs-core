@@ -28,27 +28,27 @@ export abstract class IModelBridge {
   }
 
   /** This is only called the first time this source data is synchronized.  Allows the bridge to perform any steps after the Job Subject has been created.  It
-   * must call synchronizer.recordDocument on the source data.
+   * must call synchronizer.recordDocument on the source data. Called in the [Repository channel]($docs/learning/backend/Channel).
    */
   public abstract async initializeJob(): Promise<void>;
 
   /** The source data can be an actual source file on disk (json, csv, xml, etc), a data dump of a native source (IFC), a URL for a rest API, etc.
-   * The bridge creates a connection to this source data and performs any steps necessary before reading.
+   * The bridge creates a connection to this source data and performs any steps necessary before reading. Called in the [Repository channel]($docs/learning/backend/Channel).
    */
   public abstract async openSourceData(sourcePath: string): Promise<void>;
 
   /** Import any elements that belong in a DefinitionModel (Categories, LineStyles, Materials, etc).  This includes elements necessary for all
-   * imodels created by this bridge as well as any that are unique to this source data.
+   * imodels created by this bridge as well as any that are unique to this source data. Called in the [Repository channel]($docs/learning/backend/Channel).
    */
   public abstract async importDefinitions(): Promise<any>;
 
-  /** Import schema(s) that every imodel synchronized by this bridge will use */
+  /** Import schema(s) that every imodel synchronized by this bridge will use. Called in the [Repository channel]($docs/learning/backend/Channel). */
   public abstract async importDynamicSchema(requestContext?: AuthorizedClientRequestContext | ClientRequestContext): Promise<any>;
 
-  /** Import schema(s) that are specific to this particular source, in addition to the previously imported domain schema(s) */
+  /** Import schema(s) that are specific to this particular source, in addition to the previously imported domain schema(s). Called in the [Repository channel]($docs/learning/backend/Channel). */
   public abstract async importDomainSchema(requestContext?: AuthorizedClientRequestContext | ClientRequestContext): Promise<any>;
 
-  /** Convert the source data to BIS and insert into the imodel.  Use the Synchronizer to determine whether an item is new, changed, or unchanged. */
+  /** Convert the source data to BIS and insert into the imodel.  Use the Synchronizer to determine whether an item is new, changed, or unchanged. Called in the [bridge's private channel]($docs/learning/backend/Channel). */
   public abstract async updateExistingData(): Promise<any>;
 
   /**
@@ -56,6 +56,7 @@ export abstract class IModelBridge {
    * I.	1:1 - Each source file gets its own distinct channel (this is more common)
    * II.	n:1 – A bridge can map multiple files into a single channel (this is rare)
    * In the case of #2, it is up to the bridge to supply the jobSubject name.
+   * See [Channels]($docs/learning/backend/Channel) for an explanation of the concept of channels.
    */
   public supportsMultipleFilesPerChannel(): boolean {
     return false;

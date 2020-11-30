@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-framework",
+      "comment": "Rename 'VisibilityHandler' to 'ModelsVisibilityHandler' and allow subclasses to acces more methods.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "24278440+saskliutas@users.noreply.github.com"
+}
