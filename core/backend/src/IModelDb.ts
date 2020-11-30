@@ -6,16 +6,15 @@
  * @module iModels
  */
 
-// cspell:ignore ulas postrc pollrc CANTOPEN BLOCKCACHE
+// cspell:ignore ulas postrc pollrc CANTOPEN
 /* eslint-disable @typescript-eslint/unbound-method */
 
-import * as os from "os";
 import {
   BeEvent, BentleyStatus, ChangeSetStatus, ClientRequestContext, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, JsonUtils,
   Logger, OpenMode,
 } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
-import { ChangesType, Checkpoint, CheckpointQuery, Lock, LockLevel, LockType } from "@bentley/imodelhub-client";
+import { ChangesType, Lock, LockLevel, LockType } from "@bentley/imodelhub-client";
 import {
   AxisAlignedBox3d, BriefcaseKey, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps,
   CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DisplayStyleProps, DomainOptions,
@@ -26,11 +25,10 @@ import {
   QueryQuota, QueryResponse, QueryResponseStatus, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps,
   SyncMode, ThumbnailProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateProps,
 } from "@bentley/imodeljs-common";
-import { BlobDaemon, BlobDaemonCommandArg, IModelJsNative } from "@bentley/imodeljs-native";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { TelemetryEvent } from "@bentley/telemetry-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { BriefcaseEntry, BriefcaseId, BriefcaseIdValue, BriefcaseManager } from "./BriefcaseManager";
+import { BriefcaseId, BriefcaseIdValue, BriefcaseManager } from "./BriefcaseManager";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { CodeSpecs } from "./CodeSpecs";
 import { ConcurrencyControl } from "./ConcurrencyControl";
@@ -45,8 +43,8 @@ import { IModelJsFs } from "./IModelJsFs";
 import { Model } from "./Model";
 import { Relationship, RelationshipProps, Relationships } from "./Relationship";
 import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./SqliteStatement";
-import { UsageLoggingUtilities } from "./usage-logging/UsageLoggingUtilities";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
+import { CheckpointProps, V1CheckpointManager, V2CheckpointManager } from "./CheckpointManager";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -2218,21 +2216,21 @@ export class BriefcaseDb extends IModelDb {
    * @param requestContext Locks
    * @param briefcase
    */
-  private static async lockSchema(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry): Promise<void> {
+  private async lockSchema(requestContext: AuthorizedClientRequestContext): Promise<void> {
     requestContext.enter();
 
     const lock = new Lock();
-    lock.briefcaseId = briefcase.briefcaseId;
+    lock.briefcaseId = this.briefcaseId;
     lock.lockLevel = LockLevel.Exclusive;
     lock.lockType = LockType.Schemas;
     lock.objectId = "0x1";
-    lock.releasedWithChangeSet = briefcase.currentChangeSetId;
-    lock.seedFileId = briefcase.fileId!;
+    lock.releasedWithChangeSet = this._changeSetId;
+    lock.seedFileId = this.iModelId;
 
     Logger.logTrace(loggerCategory, `lockSchema`);
-    const res = await BriefcaseManager.imodelClient.locks.update(requestContext, briefcase.iModelId, [lock]);
+    const res = await BriefcaseManager.imodelClient.locks.update(requestContext, this.iModelId, [lock]);
     if (res.length !== 1 || res[0].lockLevel !== LockLevel.Exclusive)
-      throw new IModelError(IModelStatus.UpgradeFailed, "BriefcaseManager.lockSchema: Could not acquire schema lock", Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
+      throw new IModelError(IModelStatus.UpgradeFailed, "BriefcaseManager.lockSchema: Could not acquire schema lock", Logger.logError, loggerCategory, () => this.getRpcProps());
   }
 
   public static openFile(filePath: string, openMode: OpenMode = OpenMode.ReadWrite, upgradeOptions?: UpgradeOptions, props?: string) {
@@ -2291,34 +2289,9 @@ export class BriefcaseDb extends IModelDb {
       }
     }
 
-    briefcaseDb.logUsage(requestContext, briefcaseDb.contextId, briefcaseDb.iModelId, briefcaseDb.changeSetId); // eslint-disable-line @typescript-eslint/no-floating-promises
+    BriefcaseManager.logUsage(requestContext, token); // eslint-disable-line @typescript-eslint/no-floating-promises
     // this.onOpened.raiseEvent(requestContext, briefcaseDb);
     return briefcaseDb;
-  }
-
-  /** Log usage when opening the iModel */
-  private async logUsage(requestContext: AuthorizedClientRequestContext | ClientRequestContext, contextId: string, iModelId: string, changeSetId: string): Promise<void> {
-    // NEEDS_WORK: Move usage logging to the native layer, and make it happen even if not authorized
-    if (!(requestContext instanceof AuthorizedClientRequestContext)) {
-      Logger.logTrace(loggerCategory, "BriefcaseDb.logUsage: Cannot log usage without appropriate authorization", () => this.getConnectionProps());
-      return;
-    }
-
-    requestContext.enter();
-    const telemetryEvent = new TelemetryEvent(
-      "imodeljs-backend - Open iModel",
-      "7a6424d1-2114-4e89-b13b-43670a38ccd4", // Feature: "iModel Use"
-      contextId,
-      iModelId,
-      changeSetId,
-    );
-    IModelHost.telemetry.postTelemetry(requestContext, telemetryEvent); // eslint-disable-line @typescript-eslint/no-floating-promises
-
-    UsageLoggingUtilities.postUserUsage(requestContext, contextId, IModelJsNative.AuthType.OIDC, os.hostname(), IModelJsNative.UsageType.Trial)
-      .catch((err) => {
-        requestContext.enter();
-        Logger.logError(loggerCategory, `Could not log user usage`, () => ({ errorStatus: err.status, errorMessage: err.message, ...this.getConnectionProps() }));
-      });
   }
 
   public beforeClose() {
@@ -2402,7 +2375,7 @@ export class BriefcaseDb extends IModelDb {
    * [[include:BriefcaseDb.onOpen]]
    * ```
    */
-  public static readonly onOpen = new BeEvent<(_requestContext: AuthorizedClientRequestContext | ClientRequestContext, _briefcaseProps: BriefcaseProps) => void>();
+  public static readonly onOpen = new BeEvent<(_requestContext: AuthorizedClientRequestContext | ClientRequestContext, _props: IModelRpcProps) => void>();
   /** Event raised just after a BriefcaseDb is opened.
    *
    * **Example:**
@@ -2410,7 +2383,7 @@ export class BriefcaseDb extends IModelDb {
    * [[include:BriefcaseDb.onOpened]]
    * ```
    */
-  // public static readonly onOpened = new BeEvent<(_requestContext: AuthorizedClientRequestContext | ClientRequestContext, _imodelDb: BriefcaseDb) => void>();
+  public static readonly onOpened = new BeEvent<(_requestContext: AuthorizedClientRequestContext | ClientRequestContext, _imodelDb: BriefcaseDb) => void>();
 
   /** Event raised just after a BriefcaseDb is created in iModelHub.
    * This event is raised only for iModel access initiated by this app only.
@@ -2431,9 +2404,8 @@ export class SnapshotDb extends IModelDb {
   /** The full path to the snapshot iModel file. */
   public get filePath(): string { return this.nativeDb.getFilePath(); }
 
-  private constructor(nativeDb: IModelJsNative.DgnDb, openMode: OpenMode) {
-    const filePath = nativeDb.getFilePath();
-    const iModelRpcProps: IModelRpcProps = { key: filePath, iModelId: nativeDb.getDbGuid(), changeSetId: "", openMode };
+  private constructor(nativeDb: IModelJsNative.DgnDb, openMode: OpenMode, key?: string) {
+    const iModelRpcProps: IModelRpcProps = { key: key ?? nativeDb.getFilePath(), iModelId: nativeDb.getDbGuid(), changeSetId: "", openMode };
     super(nativeDb, iModelRpcProps, openMode);
   }
 
@@ -2519,25 +2491,32 @@ export class SnapshotDb extends IModelDb {
    * @see [[close]]
    * @throws [[IModelError]] If the file is not found or is not a valid *snapshot*.
    */
-  public static openFile(filePath: string, props?: SnapshotOpenOptions): SnapshotDb {
+  public static openFile(filePath: string, props?: SnapshotOpenOptions, key?: string): SnapshotDb {
     const nativeDb = this.openDgnDb(filePath, OpenMode.Readonly, undefined, props ? JSON.stringify(props) : undefined);
-    return new SnapshotDb(nativeDb, OpenMode.Readonly);
+    return new SnapshotDb(nativeDb, OpenMode.Readonly, key);
   }
 
-  /** Open a *checkpoint*, a special form of snapshot iModel that represents a read-only snapshot of an iModel from iModelHub at a particular point in time.
+  /** Open a previously downloaded V1 checkpoint file.
+   * @internal
+   */
+  public static openCheckpointV1(checkpoint: CheckpointProps) {
+    const snapshot = this.openFile(V1CheckpointManager.getFileName(checkpoint), undefined, V1CheckpointManager.getKey(checkpoint));
+    snapshot._contextId = checkpoint.contextId;
+    snapshot._changeSetId = checkpoint.changeSetId;
+    return snapshot;
+  }
+
+  /** Open a V2 *checkpoint*, a special form of snapshot iModel that represents a read-only snapshot of an iModel from iModelHub at a particular point in time.
    * > Note: The checkpoint daemon must already be running and a checkpoint must already exist in iModelHub's storage *before* this function is called.
-   * @param requestContext The client request context.
-   * @param contextId The Guid that identifies the *context* that owns this iModel.
-   * @param iModelDb The Guid that identifies this iModel.
-   * @param changeSetId Id of the last ChangeSet that was applied to this checkpoint file.
+   * @param checkpoint The checkpoint to open
    * @throws [[IModelError]] If the checkpoint is not found in iModelHub or the checkpoint daemon is not supported in the current environment.
    * @internal
    */
-  public static async openCheckpoint(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, changeSetId: GuidString): Promise<SnapshotDb> {
-    const filePath = await SnapshotDb.attachCheckpoint(requestContext, iModelId, changeSetId);
-    const snapshot = SnapshotDb.openFile(filePath, { lazyBlockCache: true });
-    snapshot._contextId = contextId;
-    snapshot._changeSetId = changeSetId;
+  public static async openCheckpointV2(checkpoint: CheckpointProps): Promise<SnapshotDb> {
+    const filePath = await V2CheckpointManager.attach(checkpoint);
+    const snapshot = SnapshotDb.openFile(filePath, { lazyBlockCache: true }, V2CheckpointManager.getKey(checkpoint));
+    snapshot._contextId = checkpoint.contextId;
+    snapshot._changeSetId = checkpoint.changeSetId;
     return snapshot;
   }
 
@@ -2549,43 +2528,7 @@ export class SnapshotDb extends IModelDb {
   public async reattachDaemon(requestContext: AuthorizedClientRequestContext): Promise<void> {
     if (!this._changeSetId)
       throw new IModelError(IModelStatus.WrongIModel, `SnapshotDb is not a checkpoint`, Logger.logError, loggerCategory);
-
-    await SnapshotDb.attachCheckpoint(requestContext, this.iModelId, this._changeSetId);
-  }
-
-  private static async attachCheckpoint(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSetId: GuidString): Promise<string> {
-    requestContext.enter();
-    const bcvDaemonCachePath = process.env.BLOCKCACHE_DIR;
-    if (!bcvDaemonCachePath)
-      throw new IModelError(IModelStatus.BadRequest, "Invalid config: BLOCKCACHE_DIR is not set!", Logger.logError, loggerCategory);
-
-    const checkpointQuery = new CheckpointQuery().byChangeSetId(changeSetId).selectBCVAccessKey();
-    const checkpoints: Checkpoint[] = await BriefcaseManager.imodelClient.checkpoints.get(requestContext, iModelId, checkpointQuery);
-    requestContext.enter();
-
-    if (checkpoints.length < 1)
-      throw new IModelError(IModelStatus.NotFound, "Checkpoint not found", Logger.logError, loggerCategory);
-
-    const { bcvAccessKeyContainer, bcvAccessKeySAS, bcvAccessKeyAccount, bcvAccessKeyDbName } = checkpoints[0];
-    if (!bcvAccessKeyContainer || !bcvAccessKeySAS || !bcvAccessKeyAccount || !bcvAccessKeyDbName)
-      throw new IModelError(IModelStatus.BadRequest, "Invalid checkpoint in iModelHub", Logger.logError, loggerCategory);
-
-    // We can assume that a BCVDaemon process is already started if BLOCKCACHE_DIR was set, so we need to just tell the daemon to attach to the Storage Container
-    const attachArgs: BlobDaemonCommandArg = {
-      container: bcvAccessKeyContainer,
-      auth: bcvAccessKeySAS,
-      daemonDir: bcvDaemonCachePath,
-      storageType: "azure",
-      user: bcvAccessKeyAccount,
-      dbAlias: bcvAccessKeyDbName,
-      writeable: false,
-    };
-    const attachResult = await BlobDaemon.command("attach", attachArgs);
-
-    if (attachResult.result !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(attachResult.result, `BlockCacheVfs attach failed: ${attachResult.errMsg}`, Logger.logError, loggerCategory);
-
-    return BlobDaemon.getDbFileName(attachArgs);
+    await V2CheckpointManager.attach({ requestContext, contextId: this.contextId!, iModelId: this.iModelId, changeSetId: this._changeSetId });
   }
 
   public beforeClose(): void {

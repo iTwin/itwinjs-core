@@ -7,11 +7,12 @@
  */
 
 import { BeDuration, Logger, OpenMode } from "@bentley/bentleyjs-core";
-import { BriefcaseProps, IModelConnectionProps, IModelRpcProps, IModelVersion, RpcPendingResponse, SyncMode } from "@bentley/imodeljs-common";
+import { IModelConnectionProps, IModelRpcProps, RpcPendingResponse, SyncMode } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { BriefcaseManager } from "../BriefcaseManager";
-import { BriefcaseDb } from "../IModelDb";
+import { CheckpointProps, V1CheckpointManager } from "../CheckpointManager";
+import { BriefcaseDb, SnapshotDb } from "../IModelDb";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -22,7 +23,7 @@ const loggerCategory: string = BackendLoggerCategory.IModelDb;
 export class RpcBriefcaseUtility {
 
   /**
-   * Download and open a briefcase, ensuring the operation completes within a default timeout. If the time to open exceeds the timeout period,
+   * Download and open checkpoint, ensuring the operation completes within a default timeout. If the time to open exceeds the timeout period,
    * a RpcPendingResponse exception is thrown
    * @param requestContext
    * @param tokenProps
@@ -30,54 +31,44 @@ export class RpcBriefcaseUtility {
    */
   public static async openWithTimeout(requestContext: AuthorizedClientRequestContext, tokenProps: IModelRpcProps, syncMode: SyncMode): Promise<IModelConnectionProps> {
     requestContext.enter();
-    Logger.logTrace(loggerCategory, "RpcBriefcaseUtility.openWithTimeout: Received open request", () => ({ ...tokenProps, syncMode }));
+    Logger.logTrace(loggerCategory, "RpcBriefcaseUtility.openWithTimeout", () => ({ ...tokenProps, syncMode }));
 
+    BriefcaseManager.logUsage(requestContext, tokenProps);
+
+    if (syncMode === SyncMode.PullAndPush) {
+      return BriefcaseManager.openWithTimeout();
+    }
+    const checkpoint: CheckpointProps = {
+      iModelId: tokenProps.iModelId!,
+      contextId: tokenProps.contextId!,
+      changeSetId: tokenProps.changeSetId!,
+      requestContext,
+    };
+
+    // first try v2 checkpoint
+    try {
+      const db = await SnapshotDb.openCheckpointV2(checkpoint);
+      Logger.logTrace(loggerCategory, "using V2 checkpoint briefcase", () => ({ ...tokenProps }));
+      return db.getConnectionProps();
+    } catch (e) {
+      // this isn't a v2 checkpoint
+    }
     /*
-     * Download the briefcase
+     * open or return an already opened V1 checkpoint, potentially downloading it if it isn't already local.
      * Note: This sets up a race between the specified timeout period and the open. Throws a RpcPendingResponse exception if the
      * timeout happens first.
      */
     const timeout = 1000; // 1 second
-    const { contextId, iModelId, changeSetId } = tokenProps;
-    const briefcaseProps: BriefcaseProps | void = await BeDuration.race(timeout, BriefcaseManager.download(requestContext, contextId!, iModelId!, { syncMode }, IModelVersion.asOfChangeSet(changeSetId!)));
+    const checkpointDb = await BeDuration.race(timeout, V1CheckpointManager.getCheckpointDb({ checkpoint }));
     requestContext.enter();
 
-    if (briefcaseProps === undefined) {
-      Logger.logTrace(loggerCategory, "RpcBriefcaseUtility.openWithTimeout: Issued pending status", () => ({ ...tokenProps, syncMode }));
+    if (checkpointDb === undefined) {
+      Logger.logTrace(loggerCategory, "RpcBriefcaseUtility.openWithTimeout: Issued pending status", () => ({ ...tokenProps }));
       throw new RpcPendingResponse();
     }
 
-    /*
-     * Open the briefcase
-     * Note: This call must be made even if the briefcase is already open - this is to ensure the usage is logged
-     */
-    const briefcaseDb: BriefcaseDb = await BriefcaseDb.open(requestContext, briefcaseProps.key);
-    Logger.logTrace(loggerCategory, "RpcBriefcaseUtility.openWithTimeout: Opened briefcase", () => ({ ...tokenProps, syncMode }));
-    return briefcaseDb.getConnectionProps();
-  }
-
-  private async logUsage(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, changeSetId: string): Promise<void> {
-    // NEEDS_WORK: Move usage logging to the native layer, and make it happen even if not authorized
-    if (!(requestContext instanceof AuthorizedClientRequestContext)) {
-      Logger.logTrace(loggerCategory, "BriefcaseDb.logUsage: Cannot log usage without appropriate authorization", () => this.getConnectionProps());
-      return;
-    }
-
-    requestContext.enter();
-    const telemetryEvent = new TelemetryEvent(
-      "imodeljs-backend - Open iModel",
-      "7a6424d1-2114-4e89-b13b-43670a38ccd4", // Feature: "iModel Use"
-      contextId,
-      iModelId,
-      changeSetId,
-    );
-    IModelHost.telemetry.postTelemetry(requestContext, telemetryEvent); // eslint-disable-line @typescript-eslint/no-floating-promises
-
-    UsageLoggingUtilities.postUserUsage(requestContext, contextId, IModelJsNative.AuthType.OIDC, os.hostname(), IModelJsNative.UsageType.Trial)
-      .catch((err) => {
-        requestContext.enter();
-        Logger.logError(loggerCategory, `Could not log user usage`, () => ({ errorStatus: err.status, errorMessage: err.message, ...this.getConnectionProps() }));
-      });
+    Logger.logTrace(loggerCategory, "RpcBriefcaseUtility.openWithTimeout: Opened briefcase", () => ({ ...tokenProps }));
+    return checkpointDb.getConnectionProps();
   }
 
   /** Close the briefcase if necessary */

@@ -82,7 +82,7 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
   }
 
   /**
-   * Request download of a briefcase. The call require internet connection and must have valid token.
+   * Request download of a briefcase. The call requires an internet connection and must have valid token.
    * @param requestProps Properties to download the briefcase
    * @param downloadOptions Options to affect the download of the briefcase
    * @param reportProgress Report progress to frontend
@@ -115,7 +115,7 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
   }
 
   /**
-   * Finishes download of a briefcase. The call require internet connection and must have valid token.
+   * Finishes download of a briefcase. The call requires internet connection and must have valid token.
    * @param key Key to locate the briefcase in the disk cache
    */
   public async downloadRequestCompleted(key: BriefcaseKey): Promise<void> {
@@ -154,9 +154,8 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
    */
   public async openBriefcase(key: BriefcaseKey, openOptions?: OpenBriefcaseOptions): Promise<IModelConnectionProps> {
     const requestContext = ClientRequestContext.current;
-    BriefcaseManager.initializeOffline();
 
-    const db = await BriefcaseDb.openFromRemote(requestContext, key, openOptions);
+    const db = await BriefcaseDb.open(requestContext, key, openOptions);
     requestContext.enter();
     return db.toJSON();
   }
