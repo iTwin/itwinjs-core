@@ -348,6 +348,8 @@ public;ModelsTree(props: ModelsTreeProps): JSX.Element
 beta;ModelsTreeNodeType
 public;ModelsTreeProps
 beta;ModelsTreeSelectionPredicate = (key: NodeKey, type: ModelsTreeNodeType) => boolean
+alpha;ModelsVisibilityHandler 
+alpha;ModelsVisibilityHandlerProps
 public;MouseDownChangedEvent 
 public;MouseDownChangedEventArgs
 beta;NameToReducerMap
@@ -631,8 +633,6 @@ beta;VisibilityComponent
 beta;VisibilityComponentConfig
 public;VisibilityComponentHierarchy
 beta;VisibilityComponentProps
-internal;VisibilityHandler 
-internal;VisibilityHandlerProps
 alpha;VisibilityStatus
 alpha;VisibilityTreeEventHandler 
 alpha;VisibilityTreeEventHandlerParams 
