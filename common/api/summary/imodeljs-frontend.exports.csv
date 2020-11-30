@@ -36,6 +36,7 @@ beta;Animator
 public;AppearanceOverrideProps
 internal;ArcGisUtilities
 internal;areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): number
+internal;areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise
 public;AuthorizedFrontendRequestContext 
 public;AuxCoordSystem2dState 
 public;AuxCoordSystem3dState 
@@ -140,6 +141,7 @@ beta;ExternalServerExtensionLoader
 alpha;ExternalTileStatistics
 public;extractImageSourceDimensions(source: ImageSource): Promise
 internal;eyeToCartographicOnGlobe(viewport: ScreenViewport, preserveHeight?: boolean): Cartographic | undefined
+internal;eyeToCartographicOnGlobeFromGcs(viewport: ScreenViewport, preserveHeight?: boolean): Promise
 alpha;FeatureLogBatchClient
 alpha;FeatureLogBatchOptions
 public;FeatureOverrideProvider
