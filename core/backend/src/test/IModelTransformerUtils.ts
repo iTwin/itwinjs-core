@@ -17,7 +17,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import {
-  AuxCoordSystem, AuxCoordSystem2d, BackendRequestContext, CategorySelector, DefinitionModel, DefinitionPartition, DisplayStyle2d, DisplayStyle3d,
+  AuxCoordSystem, AuxCoordSystem2d, BackendRequestContext, CategorySelector, DefinitionElement, DefinitionModel, DefinitionPartition, DisplayStyle2d, DisplayStyle3d,
   DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition, ECSqlStatement, Element,
   ElementAspect, ElementMultiAspect, ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementRefersToElements,
   ElementUniqueAspect, ExternalSourceAspect, FunctionalModel, FunctionalSchema, GeometricElement3d, GeometryPart, GroupModel, IModelDb,
@@ -363,6 +363,60 @@ export namespace IModelTransformerUtils {
     } as any);
     const relationshipId2: Id64String = sourceDb.relationships.insertInstance(relationship2);
     assert.isTrue(Id64.isValidId64(relationshipId2));
+    // test queryDefinitionElementUsage
+    const definitionElementIds: Id64String[] = [];
+    sourceDb.withPreparedStatement(`SELECT ECInstanceId FROM ${DefinitionElement.classFullName}`, (statement: ECSqlStatement): void => {
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        definitionElementIds.push(statement.getValue(0).getId());
+      }
+    });
+    const usageInfo = sourceDb.nativeDb.queryDefinitionElementUsage(definitionElementIds);
+    assert.exists(usageInfo);
+    // SpatialCategory usage
+    assert.isTrue(usageInfo.spatialCategoryIds.includes(spatialCategoryId));
+    assert.isTrue(usageInfo.usedIds.includes(spatialCategoryId));
+    assert.throws(() => sourceDb.elements.deleteElement(spatialCategoryId));
+    // DrawingCategory usage
+    assert.isTrue(usageInfo.drawingCategoryIds.includes(drawingCategoryId));
+    assert.isTrue(usageInfo.usedIds.includes(drawingCategoryId));
+    assert.throws(() => sourceDb.elements.deleteElement(drawingCategoryId));
+    // SubCategory usage
+    assert.isTrue(usageInfo.subCategoryIds.includes(subCategoryId));
+    assert.isTrue(usageInfo.usedIds.includes(subCategoryId));
+    assert.throws(() => sourceDb.elements.deleteElement(subCategoryId));
+    // GeometryPart usage
+    assert.isTrue(usageInfo.geometryPartIds.includes(geometryPartId));
+    assert.isTrue(usageInfo.usedIds.includes(geometryPartId));
+    assert.throws(() => sourceDb.elements.deleteElement(geometryPartId));
+    // RenderMaterial usage
+    assert.isTrue(usageInfo.renderMaterialIds.includes(renderMaterialId));
+    assert.isTrue(usageInfo.usedIds.includes(renderMaterialId));
+    assert.throws(() => sourceDb.elements.deleteElement(renderMaterialId));
+    // Texture usage
+    assert.isTrue(usageInfo.textureIds.includes(textureId));
+    assert.isFalse(usageInfo.usedIds.includes(textureId));
+    assert.throws(() => sourceDb.elements.deleteElement(textureId));
+    // CategorySelector usage
+    assert.isTrue(usageInfo.categorySelectorIds.includes(spatialCategorySelectorId));
+    assert.isTrue(usageInfo.categorySelectorIds.includes(drawingCategorySelectorId));
+    assert.isTrue(usageInfo.usedIds.includes(spatialCategorySelectorId));
+    assert.isTrue(usageInfo.usedIds.includes(drawingCategorySelectorId));
+    assert.throws(() => sourceDb.elements.deleteElement(spatialCategorySelectorId));
+    assert.throws(() => sourceDb.elements.deleteElement(drawingCategorySelectorId));
+    // ModelSelector usage
+    assert.isTrue(usageInfo.modelSelectorIds.includes(modelSelectorId));
+    assert.isTrue(usageInfo.usedIds.includes(modelSelectorId));
+    assert.throws(() => sourceDb.elements.deleteElement(modelSelectorId));
+    // ViewDefinition usage
+    assert.isTrue(usageInfo.viewDefinitionIds.includes(viewId));
+    assert.isTrue(usageInfo.viewDefinitionIds.includes(drawingViewId));
+    assert.isFalse(usageInfo.usedIds.includes(viewId));
+    assert.isFalse(usageInfo.usedIds.includes(drawingViewId));
+    assert.throws(() => sourceDb.elements.deleteElement(viewId));
+    assert.throws(() => sourceDb.elements.deleteElement(drawingId));
+    // other and used checks
+    assert.isAtLeast(usageInfo.otherDefinitionElementIds.length, 1);
+    assert.isAtLeast(usageInfo.usedIds.length, 10);
   }
 
   export function updateSourceDb(sourceDb: IModelDb): void {
