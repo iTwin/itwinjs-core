@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import { ClipMaskXYZRangePlanes, ClipPrimitive, ClipPrimitiveShapeProps, ClipShape } from "../../clipping/ClipPrimitive";
 import { ClipPlane } from "../../clipping/ClipPlane";
-import { ClipVector } from "../../clipping/ClipVector";
+import { ClipVector, StringifiedClipVector } from "../../clipping/ClipVector";
 import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
@@ -341,5 +341,21 @@ describe("ClipVector", () => {
     const set2 = ConvexClipPlaneSet.createPlanes([ClipPlane.createNormalAndDistance(new Vector3d(1, 0, 0), 4, false, true)!]);
     cv = ClipVector.createCapture([primitive, ClipPrimitive.createCapture(set2, true)]);
     expect(cv.toCompactString()).to.equal("010_1_0_-5_30_0_-1_5e-11___121_0_0_4____");
+  });
+});
+
+describe("StringifiedClipVector", () => {
+  it("creates from ClipVector", () => {
+    expect(StringifiedClipVector.fromClipVector(undefined)).to.be.undefined;
+    expect(StringifiedClipVector.fromClipVector(ClipVector.createEmpty())).to.be.undefined;
+
+    const cv = ClipVector.createCapture([ClipPrimitive.createCapture(ConvexClipPlaneSet.createPlanes([]), false)]);
+    const scv = StringifiedClipVector.fromClipVector(cv)!;
+    expect(scv).not.to.be.undefined;
+    expect(scv).to.equal(cv);
+    expect(scv.clipString).not.to.be.undefined;
+    expect(scv.clipString).to.equal(cv.toCompactString());
+
+    expect(StringifiedClipVector.fromClipVector(cv)).to.equal(scv);
   });
 });
