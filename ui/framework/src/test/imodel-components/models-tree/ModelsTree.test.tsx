@@ -26,7 +26,7 @@ import { PropertyRecord } from "@bentley/ui-abstract";
 import { SelectionMode, TreeDataChangesListener, TreeNodeItem } from "@bentley/ui-components";
 import { isPromiseLike } from "@bentley/ui-core";
 import {
-  ModelsTree, ModelsTreeNodeType, RULESET_MODELS, RULESET_MODELS_GROUPED_BY_CLASS, VisibilityHandler, VisibilityHandlerProps,
+  ModelsTree, ModelsTreeNodeType, ModelsVisibilityHandler, ModelsVisibilityHandlerProps, RULESET_MODELS, RULESET_MODELS_GROUPED_BY_CLASS,
 } from "../../../ui-framework";
 import TestUtils from "../../TestUtils";
 
@@ -170,7 +170,7 @@ describe("ModelsTree", () => {
 
     describe("<ModelsTree />", () => {
 
-      const visibilityHandlerMock = moq.Mock.ofType<VisibilityHandler>();
+      const visibilityHandlerMock = moq.Mock.ofType<ModelsVisibilityHandler>();
 
       beforeEach(() => {
         visibilityHandlerMock.reset();
@@ -493,15 +493,15 @@ describe("ModelsTree", () => {
         return vpMock;
       };
 
-      const createHandler = (partialProps?: Partial<VisibilityHandlerProps>): VisibilityHandler => {
+      const createHandler = (partialProps?: Partial<ModelsVisibilityHandlerProps>): ModelsVisibilityHandler => {
         if (!partialProps)
           partialProps = {};
-        const props: VisibilityHandlerProps = {
+        const props: ModelsVisibilityHandlerProps = {
           rulesetId: "test",
           viewport: partialProps.viewport || mockViewport().object,
           onVisibilityChange: partialProps.onVisibilityChange || sinon.stub(),
         };
-        return new VisibilityHandler(props);
+        return new ModelsVisibilityHandler(props);
       };
 
       interface SubjectModelIdsMockProps {
