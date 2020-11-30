@@ -161,7 +161,7 @@ export function iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTile
       flags |= TreeFlags.EnforceDisplayPriority;
 
     const edges = treeId.edgesRequired ? "" : "E:0_";
-    const sectionCut = treeId.sectionCut ? `S:${treeId.sectionCut}_` : "";
+    const sectionCut = treeId.sectionCut ? `S${treeId.sectionCut}s` : "";
     idStr = `${idStr}${edges}${sectionCut}`;
   } else {
     const typeStr = BatchType.PlanarClassifier === treeId.type ? "CP" : "C";

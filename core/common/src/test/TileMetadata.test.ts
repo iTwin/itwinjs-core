@@ -135,12 +135,12 @@ describe("TileMetadata", () => {
       },
       {
         id: primaryId(false, false, "abcxyz"),
-        baseId: "E:0_S:abcxyz_",
+        baseId: "E:0_Sabcxyzs",
         flags: kExtents,
       },
       {
         id: primaryId(true, true, "fakeclip"),
-        baseId: "S:fakeclip_",
+        baseId: "Sfakeclips",
         flags: kAll,
       },
       {
@@ -156,7 +156,7 @@ describe("TileMetadata", () => {
       },
       {
         id: primaryId(false, false, "clippy", { id: "0x5c", node: 32 }),
-        baseId: "A:0x5c_#20_E:0_S:clippy_",
+        baseId: "A:0x5c_#20_E:0_Sclippys",
         flags: kExtents,
       },
       // Animation and display priority are incompatible - animation wins
