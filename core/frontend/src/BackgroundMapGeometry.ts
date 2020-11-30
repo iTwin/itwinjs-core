@@ -102,7 +102,7 @@ export class BackgroundMapGeometry {
     } else {
       db = this._ecefToDb.multiplyPoint3d(cartographic.toEcef())!;
     }
-    return this.cartesianRange.containsPoint(db) ? await this._iModel.cartographicToSpatialFromGcs(cartographic) : db;
+    return this.cartesianRange.containsPoint(db) ? this._iModel.cartographicToSpatialFromGcs(cartographic) : db;
   }
   public cartographicToDb(cartographic: Cartographic, result?: Point3d): Point3d {
     if (this.globeMode === GlobeMode.Plane) {

@@ -1336,25 +1336,25 @@ export abstract class ViewState3d extends ViewState {
     return lEyePoint.distance(origEyePoint);
   }
 
-  /** Convert a point in root space to a cartographic coordinate. */
+  /** Convert a point in spatial space to a cartographic coordinate. */
   public rootToCartographic(root: XYAndZ, result?: Cartographic): Cartographic | undefined {
     const backgroundMapGeometry = this.displayStyle.getBackgroundMapGeometry();
     return backgroundMapGeometry ? backgroundMapGeometry.dbToCartographic(root, result) : undefined;
   }
 
-  /** Convert a cartographic coordinate to a point in root space. */
+  /** Convert a cartographic coordinate to a point in spatial space. */
   public cartographicToRoot(cartographic: Cartographic, result?: Point3d): Point3d | undefined {
     const backgroundMapGeometry = this.displayStyle.getBackgroundMapGeometry();
     return backgroundMapGeometry ? backgroundMapGeometry.cartographicToDb(cartographic, result) : undefined;
   }
 
-  /** Convert a point in root space to a cartographic coordinate using the GCS reprojection. */
+  /** Convert a point in spatial space to a cartographic coordinate using the GCS reprojection. */
   public async rootToCartographicFromGcs(root: XYAndZ, result?: Cartographic): Promise<Cartographic | undefined> {
     const backgroundMapGeometry = this.displayStyle.getBackgroundMapGeometry();
     return backgroundMapGeometry ? backgroundMapGeometry.dbToCartographicFromGcs(root, result) : undefined;
   }
 
-  /** Convert a cartographic coordinate to a point in root space using the GCS reprojection. */
+  /** Convert a cartographic coordinate to a point in spatial space using the GCS reprojection. */
   public async cartographicToRootFromGcs(cartographic: Cartographic, result?: Point3d): Promise<Point3d | undefined> {
     const backgroundMapGeometry = this.displayStyle.getBackgroundMapGeometry();
     return backgroundMapGeometry ? backgroundMapGeometry.cartographicToDbFromGcs(cartographic, result) : undefined;
