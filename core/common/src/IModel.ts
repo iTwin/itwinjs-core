@@ -252,9 +252,10 @@ export abstract class IModel implements IModelProps {
     this._ecefTrans = undefined;
   }
 
+  /** The geographic coordinate reference system of the iModel.
+   * @alpha
+  */
   private _geographicCoordinateSystem?: GeographicCRS;
-
-  /** The geographic coordinate reference system of the iModel. */
   public get geographicCoordinateSystem(): GeographicCRS | undefined { return this._geographicCoordinateSystem; }
   public set geographicCoordinateSystem(geoCRS: GeographicCRS | undefined) { this._geographicCoordinateSystem = geoCRS; }
   public setGeographicCoordinateSystem(geoCRS: GeographicCRSProps) {
