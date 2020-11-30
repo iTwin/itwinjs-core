@@ -129,7 +129,7 @@ export class MapTileTree extends RealityTileTree {
     (this._rootTile as MapTile).clearLayers();
   }
 
-  public static minReprojectionDepth = 8;             // Reprojection does not work with very large tiles so just do linear transform.
+  public static minReprojectionDepth = 2;             // Reprojection does not work with very large tiles so just do linear transform.
   public static maxGlobeDisplayDepth = 8;
   public static minDisplayableDepth = 3;
   public get mapLoader() { return this.loader as MapTileLoader; }
@@ -305,6 +305,11 @@ export class MapTileTree extends RealityTileTree {
     corners.push(Point3d.create(this.sourceTilingScheme.tileXToFraction(quadId.column + 1, quadId.level), this.sourceTilingScheme.tileYToFraction(quadId.row, quadId.level), 0.0));
     corners.push(Point3d.create(this.sourceTilingScheme.tileXToFraction(quadId.column, quadId.level), this.sourceTilingScheme.tileYToFraction(quadId.row + 1, quadId.level), 0.0));
     corners.push(Point3d.create(this.sourceTilingScheme.tileXToFraction(quadId.column + 1, quadId.level), this.sourceTilingScheme.tileYToFraction(quadId.row + 1, quadId.level), 0.0));
+    return corners;
+  }
+  public getUnprojectedCorners(quadId: QuadId): Point3d[] {
+    const corners = this.getFractionalTileCorners(quadId);
+    this._mercatorFractionToDb.multiplyPoint3dArrayInPlace(corners);
     return corners;
   }
 
