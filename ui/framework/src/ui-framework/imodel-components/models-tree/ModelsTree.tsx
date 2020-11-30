@@ -663,8 +663,11 @@ class RulesetDrivenIdsProvider extends ContentDataProvider {
   }
   protected async getResultIds() {
     const content = await this.getContent();
+    if (!content)
+      return [];
+
     const result: string[] = [];
-    content!.contentSet.forEach((item) => {
+    content.contentSet.forEach((item) => {
       result.push(...item.primaryKeys.map((k) => k.id));
     });
     return result;
