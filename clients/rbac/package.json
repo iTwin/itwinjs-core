@@ -1,6 +1,6 @@
 {
   "name": "@bentley/rbac-client",
-  "version": "2.10.0-dev.3",
+  "version": "2.10.0-dev.14",
   "description": "iModel.js RBAC Client",
   "main": "lib/rbac-client.js",
   "typings": "lib/rbac-client",
@@ -19,7 +19,7 @@
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/clients/rbac-client/file.json --tsIndexFile=rbac-client.ts --onlyJson",
     "lint": "eslint -f visualstudio --max-warnings 0 ./src/**/*.ts 1>&2",
     "test": "",
-    "test:integration": "npm run webpackTests && npm run test:integration:chrome && npm run test:integration:electron",
+    "test:integration": "npm run webpackTests && npm run test:integration:chrome",
     "test:integration:chrome": "certa -r chrome --grep \"#integration\"",
     "test:integration:electron": "certa -r electron --grep \"#integration\"",
     "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2"
@@ -35,19 +35,19 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "2.10.0-dev.3"
+    "@bentley/bentleyjs-core": "2.10.0-dev.14"
   },
   "peerDependencies": {
-    "@bentley/itwin-client": "^2.10.0-dev.3"
+    "@bentley/itwin-client": "^2.10.0-dev.14"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.10.0-dev.3",
-    "@bentley/certa": "2.10.0-dev.3",
-    "@bentley/config-loader": "2.10.0-dev.3",
-    "@bentley/context-registry-client": "2.10.0-dev.3",
-    "@bentley/eslint-plugin": "2.10.0-dev.3",
-    "@bentley/itwin-client": "2.10.0-dev.3",
-    "@bentley/oidc-signin-tool": "2.10.0-dev.3",
+    "@bentley/build-tools": "2.10.0-dev.14",
+    "@bentley/certa": "2.10.0-dev.14",
+    "@bentley/config-loader": "2.10.0-dev.14",
+    "@bentley/context-registry-client": "2.10.0-dev.14",
+    "@bentley/eslint-plugin": "2.10.0-dev.14",
+    "@bentley/itwin-client": "2.10.0-dev.14",
+    "@bentley/oidc-signin-tool": "2.10.0-dev.14",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",

@@ -51,6 +51,7 @@ import { RenderBuffer, RenderBufferMultiSample } from "./RenderBuffer";
 import { TextureUnit } from "./RenderFlags";
 import { RenderState } from "./RenderState";
 import { OffScreenTarget, OnScreenTarget } from "./Target";
+import { TechniqueFlags } from "./TechniqueFlags";
 import { Techniques } from "./Technique";
 import { TerrainMeshGeometry } from "./TerrainMesh";
 import { Texture, TextureHandle } from "./Texture";
@@ -351,18 +352,21 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
       contextAttributes = { ...contextAttributes, ...inputContextAttributes };
     }
 
+    // If requested, first try obtaining a WebGL2 context.
     let context = null;
-    if (useWebGL2) // optionally first try using a WebGL2 context
+    if (useWebGL2)
       context = canvas.getContext("webgl2", contextAttributes);
+
+    // Fall back to WebGL1 if necessary.
     if (null === context)
       context = canvas.getContext("webgl", contextAttributes);
+
     if (null === context) {
-      const context2 = canvas.getContext("experimental-webgl", contextAttributes) as WebGLRenderingContext | null; // IE, Edge...
-      if (null === context2) {
-        return undefined;
-      }
-      return context2;
+      // experimental-webgl is deprecated, but might as well try.
+      const context2 = canvas.getContext("experimental-webgl", contextAttributes) as WebGLRenderingContext | null; // IE, non-Chromium-based Edge.
+      context = context2 ?? undefined;
     }
+
     return context;
   }
 
@@ -373,7 +377,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
       throw new IModelError(BentleyStatus.ERROR, "Failed to obtain HTMLCanvasElement");
 
     const useWebGL2 = (undefined === options.useWebGL2 ? true : options.useWebGL2);
-    const context = System.createContext(canvas, useWebGL2, optionsIn?.contextAttributes);
+    const context = this.createContext(canvas, useWebGL2, optionsIn?.contextAttributes);
     if (undefined === context) {
       throw new IModelError(BentleyStatus.ERROR, "Failed to obtain WebGL context");
     }
@@ -590,7 +594,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return BackgroundMapDrape.create(drapedTree, mapTree);
   }
 
-  private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext | WebGL2RenderingContext, capabilities: Capabilities, options: RenderSystem.Options) {
+  protected constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext | WebGL2RenderingContext, capabilities: Capabilities, options: RenderSystem.Options) {
     super(options);
     this.canvas = canvas;
     this.context = context;
@@ -609,9 +613,11 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     this._removeEventListener = IModelConnection.onClose.addListener((imodel) => this.removeIModelMap(imodel));
 
     canvas.addEventListener("webglcontextlost", async () => this.handleContextLoss(), false);
+
+    TechniqueFlags.requireEdgeTest = capabilities.requiresSurfaceDiscard;
   }
 
-  private async handleContextLoss(): Promise<void> {
+  protected async handleContextLoss(): Promise<void> {
     const msg = IModelApp.i18n.translate("iModelJs:Errors.WebGLContextLost");
     return ToolAdmin.exceptionHandler(msg);
   }

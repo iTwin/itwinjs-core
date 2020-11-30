@@ -63,7 +63,7 @@ export class Transform implements BeJSONFunctions {
    * * An array of 3 number arrays, each with 4 entries which are rows in a 3x4 matrix.
    * * An array of 12 numbers, each block of 4 entries as a row 3x4 matrix.
    */
-  public setFromJSON(json?: TransformProps): void {
+  public setFromJSON(json?: TransformProps | Transform): void {
     if (json) {
       if (json instanceof Object && (json as any).origin && (json as any).matrix) {
         this._origin.setFromJSON((json as any).origin);

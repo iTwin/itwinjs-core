@@ -61,6 +61,7 @@ import { RpcInterfaceStatus } from '@bentley/bentleyjs-core';
 import { SerializedClientRequestContext } from '@bentley/bentleyjs-core';
 import { Transform } from '@bentley/geometry-core';
 import { TransformProps } from '@bentley/geometry-core';
+import { Vector2d } from '@bentley/geometry-core';
 import { Vector3d } from '@bentley/geometry-core';
 import { Writable } from 'stream';
 import { XAndY } from '@bentley/geometry-core';
@@ -716,6 +717,10 @@ export interface ChangedElements {
     modelIds?: Id64String[];
     // (undocumented)
     opcodes: number[];
+    // (undocumented)
+    parentClassIds?: Id64String[];
+    // (undocumented)
+    parentIds?: Id64String[];
     // (undocumented)
     properties?: Id64String[][];
     // (undocumented)
@@ -1456,8 +1461,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 1048576,
-    Major = 16,
+    Combined = 1114112,
+    Major = 17,
     Minor = 0
 }
 
@@ -2033,6 +2038,19 @@ export interface ElementAspectProps extends EntityProps {
 export namespace ElementGeometry {
     // (undocumented)
     export function appendGeometryParams(geomParams: GeometryParams, entries: ElementGeometryDataEntry[]): boolean;
+    export class Builder {
+        appendBRepData(brep: BRepEntity.DataProps): boolean;
+        appendGeometryParamsChange(geomParams: GeometryParams): boolean;
+        appendGeometryPart(partId: Id64String, partToElement?: Transform): boolean;
+        appendGeometryPart2d(partId: Id64String, instanceOrigin?: Point2d, instanceRotation?: Angle, instanceScale?: number): boolean;
+        appendGeometryPart3d(partId: Id64String, instanceOrigin?: Point3d, instanceRotation?: YawPitchRollAngles, instanceScale?: number): boolean;
+        appendGeometryQuery(geometry: GeometryQuery): boolean;
+        appendGeometryRanges(): boolean;
+        appendImageGraphic(image: ImageGraphic): boolean;
+        appendTextString(text: TextString): boolean;
+        // (undocumented)
+        readonly entries: ElementGeometryDataEntry[];
+    }
     // (undocumented)
     export function fromBRep(brep: BRepEntity.DataProps): ElementGeometryDataEntry | undefined;
     // (undocumented)
@@ -2051,6 +2069,40 @@ export namespace ElementGeometry {
     export function isGeometricEntry(entry: ElementGeometryDataEntry): boolean;
     // (undocumented)
     export function isGeometryQueryEntry(entry: ElementGeometryDataEntry): boolean;
+    export class Iterator implements IterableIterator<IteratorEntry> {
+        // (undocumented)
+        [Symbol.iterator](): IterableIterator<IteratorEntry>;
+        constructor(info: ElementGeometryInfo, categoryOrGeometryParams?: Id64String | GeometryParams, localToWorld?: Transform);
+        readonly brepsPresent?: boolean;
+        readonly entryArray: ElementGeometryDataEntry[];
+        next(): IteratorResult<IteratorEntry>;
+        readonly placement: Placement3d;
+        readonly viewIndependent?: boolean;
+    }
+    export interface IteratorData {
+        readonly geomParams: GeometryParams;
+        readonly localRange?: Range3d;
+        readonly localToWorld?: Transform;
+        readonly value: ElementGeometryDataEntry;
+    }
+    // (undocumented)
+    export class IteratorEntry implements IteratorData {
+        constructor(geomParams: GeometryParams, localToWorld: Transform);
+        // (undocumented)
+        readonly geomParams: GeometryParams;
+        // (undocumented)
+        localRange?: Range3d;
+        // (undocumented)
+        readonly localToWorld?: Transform;
+        toBRepData(wantBRepData?: boolean): BRepEntity.DataProps | undefined;
+        toGeometryPart(partToLocal?: Transform, partToWorld?: Transform): Id64String | undefined;
+        toGeometryQuery(): GeometryQuery | undefined;
+        toImageGraphic(): ImageGraphic | undefined;
+        toTextString(): TextString | undefined;
+        // (undocumented)
+        get value(): ElementGeometryDataEntry;
+        set value(value: ElementGeometryDataEntry);
+        }
     // (undocumented)
     export function toBRep(entry: ElementGeometryDataEntry, wantBRepData?: boolean): BRepEntity.DataProps | undefined;
     export function toElementAlignedBox3d(bbox: Float64Array): ElementAlignedBox3d | undefined;
@@ -2982,7 +3034,7 @@ export class GltfBufferData {
 
 // @internal
 export class GltfBufferView {
-    constructor(data: Uint8Array, count: number, type: GltfDataType, accessor: any);
+    constructor(data: Uint8Array, count: number, type: GltfDataType, accessor: any, stride: number);
     // (undocumented)
     readonly accessor: any;
     // (undocumented)
@@ -2991,6 +3043,8 @@ export class GltfBufferView {
     readonly count: number;
     // (undocumented)
     readonly data: Uint8Array;
+    // (undocumented)
+    readonly stride: number;
     // (undocumented)
     toBufferData(desiredType: GltfDataType): GltfBufferData | undefined;
     // (undocumented)
@@ -3081,6 +3135,8 @@ export enum GltfMeshMode {
     Lines = 1,
     // (undocumented)
     LineStrip = 3,
+    // (undocumented)
+    Points = 0,
     // (undocumented)
     Triangles = 4
 }
@@ -4408,6 +4464,14 @@ export interface ModelGeometryChangesProps {
 }
 
 // @public
+export interface ModelLoadProps {
+    // (undocumented)
+    code?: CodeProps;
+    // (undocumented)
+    id?: Id64String;
+}
+
+// @public
 export interface ModelProps extends EntityProps {
     // (undocumented)
     isPrivate?: boolean;
@@ -5155,6 +5219,8 @@ export class QParams2d {
     // (undocumented)
     readonly origin: Point2d;
     // (undocumented)
+    get rangeDiagonal(): Vector2d;
+    // (undocumented)
     readonly scale: Point2d;
     setFromRange(range: Range2d, rangeScale?: number): void;
 }
@@ -5171,6 +5237,8 @@ export class QParams3d {
     static fromZeroToOne(rangeScale?: number): QParams3d;
     // (undocumented)
     readonly origin: Point3d;
+    // (undocumented)
+    get rangeDiagonal(): Vector3d;
     // (undocumented)
     readonly scale: Point3d;
     setFromOriginAndScale(origin: Point3d, scale: Point3d): void;
@@ -5203,6 +5271,7 @@ export class QPoint2dList {
     add(pt: Point2d): void;
     clear(): void;
     static fromPoints(points: Point2d[], out?: QPoint2dList): QPoint2dList;
+    fromTypedArray(range: Range2d, array: Uint16Array): void;
     get length(): number;
     // (undocumented)
     get list(): QPoint2d[];
@@ -5251,6 +5320,8 @@ export class QPoint3dList {
     // (undocumented)
     static createFrom(points: Point3d[], params: QParams3d): QPoint3dList;
     static fromPoints(points: Point3d[], out?: QPoint3dList): QPoint3dList;
+    // (undocumented)
+    fromTypedArray(range: Range3d, array: Uint16Array): void;
     get length(): number;
     // (undocumented)
     get list(): QPoint3d[];
@@ -5376,6 +5447,10 @@ export class RelatedElement implements RelatedElementProps {
 export interface RelatedElementProps {
     id: Id64String;
     relClassName?: string;
+}
+
+// @public
+export interface RelationshipProps extends EntityProps, SourceAndTarget {
 }
 
 // @beta
@@ -6551,6 +6626,14 @@ export interface SolarShadowSettingsProps {
     // @internal (undocumented)
     bias?: number;
     color?: ColorDefProps;
+}
+
+// @public
+export interface SourceAndTarget {
+    // (undocumented)
+    sourceId: Id64String;
+    // (undocumented)
+    targetId: Id64String;
 }
 
 // @beta

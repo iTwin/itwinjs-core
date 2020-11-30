@@ -232,7 +232,7 @@ export namespace RenderScheduleState {
           const interpolatedMatrix = Matrix3d.createFromQuaternion(sum);
 
           const origin = Vector3d.createFrom(transform.origin), origin1 = Vector3d.createFrom(transform1.origin);
-          transform.setFromJSON({ origin: origin.interpolate(interval.fraction, origin1), matrix: interpolatedMatrix });
+          transform.setFromJSON({ origin: origin.interpolate(interval.fraction, origin1), matrix: interpolatedMatrix.toJSON() });
         }
       }
       return transform;

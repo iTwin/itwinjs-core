@@ -2783,6 +2783,14 @@ export function useAnimatePanelWidgets(): {
     };
 };
 
+// @internal (undocumented)
+export function useBorders(widgetId: WidgetState["id"]): {
+    "nz-border-top": boolean;
+    "nz-border-bottom": boolean;
+    "nz-border-left": boolean;
+    "nz-border-right": boolean;
+};
+
 // @internal
 export function useCursor(): void;
 
@@ -3250,7 +3258,13 @@ export const WidgetStateContext: React.Context<WidgetState | undefined>;
 export const WidgetTab: React.NamedExoticComponent<WidgetTabProps>;
 
 // @internal (undocumented)
-export const WidgetTabBar: React.NamedExoticComponent<object>;
+export const WidgetTabBar: React.NamedExoticComponent<WidgetTabBarProps>;
+
+// @internal (undocumented)
+export interface WidgetTabBarProps {
+    // (undocumented)
+    separator?: boolean;
+}
 
 // @internal
 export interface WidgetTabClickAction {

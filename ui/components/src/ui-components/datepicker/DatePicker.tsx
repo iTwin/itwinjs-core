@@ -14,8 +14,6 @@ import { UiComponents } from "../UiComponents";
 
 import "./DatePicker.scss";
 
-const MILLISECONDS_PER_DAY = 86400000;
-
 function isSameDay(a: Date, b: Date) {
   return (
     a &&
@@ -114,15 +112,15 @@ export function DatePicker(props: DatePickerProps) {
   const [focusedDay, setFocusedDay] = React.useState(selectedDay);
   const days = React.useMemo(() => {
     const msFirstDayOfMonth = new Date(displayedYear, displayedMonthIndex, 1).getTime();
-    const offsetToFirst = new Date(msFirstDayOfMonth).getDay();
-    const msFirstDayOfWeek = msFirstDayOfMonth - (offsetToFirst * MILLISECONDS_PER_DAY);
+    let offsetToFirst = new Date(msFirstDayOfMonth).getDay();
+    if (0 === offsetToFirst)
+      offsetToFirst = 7;
 
     const daysInMonth: Date[] = [];
-    let runningTickCount = msFirstDayOfWeek;
     // generate 6 weeks of dates
     for (let i = 0; i < 42; i++) {
-      daysInMonth.push(new Date(runningTickCount));
-      runningTickCount += MILLISECONDS_PER_DAY;
+      const adjustedDay = 1 + i - offsetToFirst;
+      daysInMonth.push(new Date(displayedYear, displayedMonthIndex, adjustedDay));
     }
     return daysInMonth;
   }, [displayedMonthIndex, displayedYear]);

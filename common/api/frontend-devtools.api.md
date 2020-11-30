@@ -101,7 +101,7 @@ export class AttachArcGISMapLayerByUrlTool extends AttachMapLayerByURLBaseTool {
     static toolId: string;
 }
 
-// @alpha (undocumented)
+// @beta
 export class AttachCesiumAssetTool extends Tool {
     // (undocumented)
     static get maxArgs(): number;
@@ -1490,6 +1490,20 @@ export class ToggleFrustumSnapshotTool extends Tool {
     parseAndRun(...args: string[]): boolean;
     // (undocumented)
     run(enable?: boolean, showPreloadFrustum?: boolean, showBackgroundIntersecctions?: boolean): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class ToggleOSMBuildingDisplay extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(onOff?: boolean, transparency?: number): boolean;
     // (undocumented)
     static toolId: string;
 }

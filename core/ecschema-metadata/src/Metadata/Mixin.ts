@@ -73,10 +73,6 @@ export class Mixin extends ECClass {
   public async toXml(schemaXml: Document): Promise<Element> {
     const itemElement = await super.toXml(schemaXml);
 
-    // Modifier is always "Abstract" so no need to show it
-    if (itemElement.hasAttribute("modifier"))
-      itemElement.removeAttribute("modifier");
-
     // When CustomAttributes are added, there must be a check to see if the ECCustomAttributes
     // already exist for this item before creating a new one to apply IsMixin
     const customAttributes = schemaXml.createElement("ECCustomAttributes");

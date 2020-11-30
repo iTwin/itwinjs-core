@@ -7,6 +7,7 @@
  */
 
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
+import { countMatchesInString } from "../../../common/countMatchesInString";
 import { PropertyDataFiltererBase, PropertyDataFilterResult } from "./PropertyDataFiltererBase";
 
 /**
@@ -15,6 +16,11 @@ import { PropertyDataFiltererBase, PropertyDataFilterResult } from "./PropertyDa
  */
 export class DisplayValuePropertyDataFilterer extends PropertyDataFiltererBase {
   private _filterText: string = "";
+
+  public constructor(filterText: string = "") {
+    super();
+    this._filterText = filterText;
+  }
 
   public get filterText(): string { return this._filterText; }
   public set filterText(value: string) {
@@ -35,12 +41,15 @@ export class DisplayValuePropertyDataFilterer extends PropertyDataFiltererBase {
       return { matchesFilter: false };
 
     const displayValue = node.value.displayValue?.toLowerCase() ?? "";
-    if (!displayValue.includes(this.filterText))
+    const matchesCount = countMatchesInString(displayValue, this.filterText);
+
+    if (matchesCount === 0)
       return { matchesFilter: false };
 
     return {
       matchesFilter: true,
       shouldExpandNodeParents: true,
+      matchesCount: { value: matchesCount },
     };
   }
 }

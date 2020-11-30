@@ -28,6 +28,11 @@ export interface PropertyDataFilterResult {
    * Can only be true for nodes that have `matchesFilter` set to true.
    */
   shouldExpandNodeParents?: boolean;
+
+  /**
+   * Indicates how many times filter was matched in the provided item.
+   */
+  matchesCount?: { label?: number, value?: number };
 }
 
 /**
