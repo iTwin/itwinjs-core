@@ -78,7 +78,7 @@
     "null-loader": "^0.1.1",
     "rimraf": "^3.0.2",
     "react": "^16.8.0",
-    "node-sass": "4.13.1",
+    "sass": "^1.29.0",
     "typescript": "~3.7.4",
     "webpack": "4.42.0",
     "semver": "^5.5.0"

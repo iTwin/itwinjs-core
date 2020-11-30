@@ -1535,6 +1535,14 @@
       ]
     },
     {
+      "name": "sass",
+      "allowedCategories": [ "internal", "tools" ]
+    },
+    {
+      "name": "sass-loader",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "save",
       "allowedCategories": [
         "internal"
