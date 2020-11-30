@@ -42,7 +42,7 @@ export class ParserSpec {
   public get format(): Format { return this._format; }
   public get outUnit(): UnitProps { return this._outUnit; }
 
-  /** Static async method to create a FormatSpec given the format and unit of the quantity that will be passed to the Formatter. The input unit will
+  /** Static async method to create a ParserSpec given the format and unit of the quantity that will be passed to the Parser. The input unit will
    * be used to generate conversion information for each unit specified in the Format. This method is async due to the fact that the units provider must make
    * async calls to lookup unit definitions.
    *  @param name     The name of a format specification.
