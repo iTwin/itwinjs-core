@@ -2164,7 +2164,7 @@ export class TxnManager {
  */
 export class BriefcaseDb extends IModelDb {
   /** @deprecated */
-  public readonly syncMode: SyncMode;
+  public get syncMode() { return SyncMode.PullAndPush; }
 
   /**
    * Get the key of this briefcase in the cache
@@ -2196,9 +2196,8 @@ export class BriefcaseDb extends IModelDb {
    */
   public get isPushEnabled(): boolean { return this.openMode === OpenMode.ReadWrite; }
 
-  private constructor(nativeDb: IModelJsNative.DgnDb, token: IModelRpcProps, openMode: OpenMode, syncMode?: SyncMode) {
+  private constructor(nativeDb: IModelJsNative.DgnDb, token: IModelRpcProps, openMode: OpenMode) {
     super(nativeDb, token, openMode);
-    this.syncMode = syncMode ?? SyncMode.PullAndPush;
     this._concurrencyControl = new ConcurrencyControl(this);
     this._concurrencyControl.setPolicy(ConcurrencyControl.PessimisticPolicy);
   }
@@ -2250,7 +2249,7 @@ export class BriefcaseDb extends IModelDb {
    * @note If the briefcase is upgraded, the resulting changes are saved in the briefcase, but it's the caller's responsibility to push these changes
    * to the iModelHub.
    */
-  public static async openFromRemote(requestContext: AuthorizedClientRequestContext | ClientRequestContext, briefcaseKey: BriefcaseKey, options?: OpenBriefcaseOptions & UpgradeOptions): Promise<BriefcaseDb> {
+  public static async open(requestContext: AuthorizedClientRequestContext | ClientRequestContext, briefcaseKey: BriefcaseKey, options?: OpenBriefcaseOptions & UpgradeOptions): Promise<BriefcaseDb> {
     requestContext.enter();
     const alreadyOpen = this.tryFindByKey(briefcaseKey);
     if (undefined !== alreadyOpen)
@@ -2273,7 +2272,7 @@ export class BriefcaseDb extends IModelDb {
 
     const nativeDb = this.openDgnDb(briefcaseEntry.pathname, openMode, options);
     const token: IModelRpcProps = { key: briefcaseEntry.getKey(), iModelId: nativeDb.getDbGuid(), changeSetId: briefcaseEntry.currentChangeSetId, openMode };
-    const briefcaseDb = new BriefcaseDb(nativeDb, token, openMode, briefcaseEntry.syncMode);
+    const briefcaseDb = new BriefcaseDb(nativeDb, token, openMode);
 
     if (isPushEnabled) {
       await briefcaseDb.concurrencyControl.onOpened(requestContext as AuthorizedClientRequestContext);
@@ -2507,6 +2506,12 @@ export class SnapshotDb extends IModelDb {
       snapshotDb._createClassViewsOnClose = true; // save flag that will be checked when close() is called
 
     return snapshotDb;
+  }
+
+  /** @internal */
+  public static openForCheckpointCreation(filePath: string, props?: SnapshotOpenOptions): SnapshotDb {
+    const nativeDb = this.openDgnDb(filePath, OpenMode.ReadWrite, undefined, props ? JSON.stringify(props) : undefined);
+    return new SnapshotDb(nativeDb, OpenMode.ReadWrite);
   }
 
   /** Open a read-only iModel *snapshot*.

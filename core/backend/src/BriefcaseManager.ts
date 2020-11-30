@@ -26,7 +26,7 @@ import {
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext, CancelRequest, ProgressCallback, ProgressInfo, UserCancelledError } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { BriefcaseDb, IModelDb, OpenParams } from "./IModelDb";
+import { BriefcaseDb, IModelDb, OpenParams, SnapshotDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 
@@ -151,9 +151,6 @@ export class BriefcaseEntry {
    */
   public targetChangeSetIndex?: number;
 
-  /** File Id used to upload change sets for this briefcase (only setup in Read-Write cases) */
-  public fileId?: string;
-
   /** Error set if push has succeeded, but updating codes has failed with conflicts */
   public conflictError?: ConflictingCodesError;
 
@@ -250,7 +247,7 @@ export class BriefcaseEntry {
       ...this.getBriefcaseProps(),
       pathname: this.pathname,
       briefcaseId: this.briefcaseId,
-      fileId: this.fileId,
+      fileId: this.iModelId,
       targetChangeSetId: this.targetChangeSetId,
       targetChangeSetIndex: this.targetChangeSetIndex,
       parentChangeSetId: this.parentChangeSetId,
@@ -469,7 +466,7 @@ export class BriefcaseManager {
     BriefcaseManager._cache.addBriefcase(briefcase);
   }
 
-  private static getBriefcaseBasePath(iModelId: GuidString): string {
+  public static getBriefcaseBasePath(iModelId: GuidString): string {
     return path.join(BriefcaseManager.getIModelPath(iModelId), "bc");
   }
 
@@ -493,7 +490,7 @@ export class BriefcaseManager {
     return folderName;
   }
 
-  private static getChangeSetFolderNameFromId(changeSetId: GuidString): string {
+  public static getChangeSetFolderNameFromId(changeSetId: GuidString): string {
     return changeSetId || this._firstChangeSetDir;
   }
 
@@ -661,7 +658,7 @@ export class BriefcaseManager {
     if (changeSetId === "")
       return 0; // the first version
 
-    const changeSet: ChangeSet = (await IModelHost.iModelClient.changeSets.get(requestContext, iModelId, new ChangeSetQuery().byId(changeSetId)))[0];
+    const changeSet = (await IModelHost.iModelClient.changeSets.get(requestContext, iModelId, new ChangeSetQuery().byId(changeSetId)))[0];
     requestContext.enter();
 
     return +changeSet.index!;
@@ -963,12 +960,10 @@ export class BriefcaseManager {
 
       await this.initBriefcaseChangeSetIndexes(requestContext, briefcase);
       requestContext.enter();
-      await this.initBriefcaseFileId(requestContext, briefcase);
-      requestContext.enter();
 
       // Apply change sets if necessary
       if (briefcase.currentChangeSetId !== briefcase.targetChangeSetId) {
-        const db = BriefcaseDb.openFile(briefcase.pathname, OpenMode.ReadWrite);
+        const db = SnapshotDb.openForCheckpointCreation(briefcase.pathname);
         await BriefcaseManager.processChangeSets(requestContext, db, briefcase.targetChangeSetId, briefcase.targetChangeSetIndex!);
         db.close();
         requestContext.enter();
@@ -1010,17 +1005,6 @@ export class BriefcaseManager {
   /** @internal */
   public static isValidBriefcaseId(id: BriefcaseId) {
     return id >= BriefcaseIdValue.FirstValid && id <= BriefcaseIdValue.LastValid;
-  }
-
-  private static async initBriefcaseFileId(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry) {
-    if (!this.isValidBriefcaseId(briefcase.briefcaseId)) // only possible to get fileId only for normal briefcases
-      return;
-
-    const hubBriefcases: HubBriefcase[] = await IModelHost.iModelClient.briefcases.get(requestContext, briefcase.iModelId, new BriefcaseQuery().byId(briefcase.briefcaseId));
-    requestContext.enter();
-    if (hubBriefcases.length === 0)
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, `Unable to find briefcase on the Hub (for the current user)`, Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
-    briefcase.fileId = hubBriefcases[0].fileId!.toString();
   }
 
   private static createFixedVersionBriefcase(requestBriefcaseProps: RequestBriefcaseProps, downloadOptions: DownloadBriefcaseOptions, downloadProgress?: ProgressCallback): BriefcaseEntry {
@@ -1075,8 +1059,6 @@ export class BriefcaseManager {
       if (checkpoints.length === 0)
         throw new IModelError(BriefcaseStatus.VersionNotFound, "Checkpoint not found", Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
       const checkpoint = checkpoints[0];
-      if (checkpoint.fileId)
-        briefcase.fileId = checkpoint.fileId.toString();
 
       briefcase.downloadStatus = DownloadBriefcaseStatus.DownloadingCheckpoint;
       await BriefcaseManager.downloadCheckpoint(requestContext, checkpoint, briefcase.pathname, briefcase.downloadProgress, briefcase.cancelDownloadRequest);
@@ -1556,38 +1538,42 @@ export class BriefcaseManager {
   /** Processes (merges, reverses, reinstates) change sets to get the briefcase to the specified target version.
    * Note: The briefcase must have been opened ReadWrite, and the method keeps it in the same state.
    */
-  private static async processChangeSets(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, targetChangeSetId: string, targetChangeSetIndex: number): Promise<void> {
+  private static async processChangeSets(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb | SnapshotDb, targetChangeSetId: string, targetChangeSetIndex: number): Promise<void> {
     requestContext.enter();
 
-    const briefcase = this.findBriefcaseByKey(db.briefcaseKey)!;
     if (!db.isOpen)
       throw new IModelError(ChangeSetStatus.ApplyError, "Briefcase must be open to process change sets", Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
     if (db.openMode !== OpenMode.ReadWrite)
       throw new IModelError(ChangeSetStatus.ApplyError, "Briefcase must be open ReadWrite to process change sets", Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
-    assert(db.nativeDb.getParentChangeSetId() === briefcase.parentChangeSetId, "Mismatch between briefcase and the native Db");
+
+    const parentChangeSetId = db.nativeDb.getParentChangeSetId();
+    const parentChangeSetIndex = await this.getChangeSetIndexFromId(requestContext, db.iModelId, parentChangeSetId);
+    requestContext.enter();
 
     // Determine the reinstates, reversals or merges required
     let reverseToId: string | undefined, reinstateToId: string | undefined, mergeToId: string | undefined;
     let reverseToIndex: number | undefined, reinstateToIndex: number | undefined, mergeToIndex: number | undefined;
-    if (briefcase.hasReversedChanges) {
-      if (targetChangeSetIndex < briefcase.reversedChangeSetIndex!) {
+    const reversedChangeSetId = db.nativeDb.getReversedChangeSetId();
+    if (undefined !== reversedChangeSetId) {
+      const reversedChangeSetIndex = await BriefcaseManager.getChangeSetIndexFromId(requestContext, db.iModelId, reversedChangeSetId);
+      if (targetChangeSetIndex < reversedChangeSetIndex) {
         reverseToId = targetChangeSetId;
         reverseToIndex = targetChangeSetIndex;
-      } else if (targetChangeSetIndex > briefcase.reversedChangeSetIndex!) {
+      } else if (targetChangeSetIndex > reversedChangeSetIndex) {
         reinstateToId = targetChangeSetId;
         reinstateToIndex = targetChangeSetIndex;
-        if (targetChangeSetIndex > briefcase.parentChangeSetIndex!) {
-          reinstateToId = briefcase.parentChangeSetId;
-          reinstateToIndex = briefcase.parentChangeSetIndex;
+        if (targetChangeSetIndex > parentChangeSetIndex) {
+          reinstateToId = parentChangeSetId;
+          reinstateToIndex = parentChangeSetIndex;
           mergeToId = targetChangeSetId;
           mergeToIndex = targetChangeSetIndex;
         }
       }
     } else {
-      if (targetChangeSetIndex < briefcase.parentChangeSetIndex!) {
+      if (targetChangeSetIndex < parentChangeSetIndex) {
         reverseToId = targetChangeSetId;
         reverseToIndex = targetChangeSetIndex;
-      } else if (targetChangeSetIndex > briefcase.parentChangeSetIndex!) {
+      } else if (targetChangeSetIndex > parentChangeSetIndex) {
         mergeToId = targetChangeSetId;
         mergeToIndex = targetChangeSetIndex;
       }
@@ -1618,12 +1604,6 @@ export class BriefcaseManager {
       }
     } finally {
       perfLogger.dispose();
-
-      // Setup all change set ids and indexes
-      briefcase.parentChangeSetId = db.nativeDb.getParentChangeSetId();
-      briefcase.reversedChangeSetId = db.nativeDb.getReversedChangeSetId();
-      await this.initBriefcaseChangeSetIndexes(requestContext, briefcase);
-      requestContext.enter();
     }
   }
 
@@ -1631,8 +1611,8 @@ export class BriefcaseManager {
     requestContext.enter();
 
     const briefcase = this.findBriefcaseByKey(db.briefcaseKey)!;
-    const currentChangeSetId: string = briefcase.currentChangeSetId;
-    const currentChangeSetIndex: number = briefcase.currentChangeSetIndex;
+    const currentChangeSetId = briefcase.currentChangeSetId;
+    const currentChangeSetIndex = briefcase.currentChangeSetIndex;
     if (targetChangeSetIndex === currentChangeSetIndex)
       return; // nothing to apply
 
@@ -1651,7 +1631,7 @@ export class BriefcaseManager {
     const changeSetTokens = new Array<ChangeSetToken>();
     const changeSetsPath = BriefcaseManager.getChangeSetsPath(db.iModelId);
     let maxFileSize: number = 0;
-    let containsSchemaChanges: boolean = false;
+    let containsSchemaChanges = false;
     changeSets.forEach((changeSet: ChangeSet) => {
       const changeSetPathname = path.join(changeSetsPath, changeSet.fileName!);
       assert(IModelJsFs.existsSync(changeSetPathname), `Change set file ${changeSetPathname} does not exist`);
@@ -1947,7 +1927,7 @@ export class BriefcaseManager {
     changeSet.id = changeSetToken.id;
     changeSet.parentId = changeSetToken.parentId;
     changeSet.changesType = changeSetToken.changeType === ChangesType.Schema ? ChangesType.Schema : changeType;
-    changeSet.seedFileId = briefcase.fileId!;
+    changeSet.seedFileId = db.iModelId;
     changeSet.fileSize = IModelJsFs.lstatSync(changeSetToken.pathname)!.size.toString();
     changeSet.description = description;
     if (changeSet.description.length >= 255) {

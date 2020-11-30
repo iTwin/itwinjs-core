@@ -51,9 +51,33 @@ export class RpcBriefcaseUtility {
      * Open the briefcase
      * Note: This call must be made even if the briefcase is already open - this is to ensure the usage is logged
      */
-    const briefcaseDb: BriefcaseDb = await BriefcaseDb.openFromRemote(requestContext, briefcaseProps.key);
+    const briefcaseDb: BriefcaseDb = await BriefcaseDb.open(requestContext, briefcaseProps.key);
     Logger.logTrace(loggerCategory, "RpcBriefcaseUtility.openWithTimeout: Opened briefcase", () => ({ ...tokenProps, syncMode }));
     return briefcaseDb.getConnectionProps();
+  }
+
+  private async logUsage(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, changeSetId: string): Promise<void> {
+    // NEEDS_WORK: Move usage logging to the native layer, and make it happen even if not authorized
+    if (!(requestContext instanceof AuthorizedClientRequestContext)) {
+      Logger.logTrace(loggerCategory, "BriefcaseDb.logUsage: Cannot log usage without appropriate authorization", () => this.getConnectionProps());
+      return;
+    }
+
+    requestContext.enter();
+    const telemetryEvent = new TelemetryEvent(
+      "imodeljs-backend - Open iModel",
+      "7a6424d1-2114-4e89-b13b-43670a38ccd4", // Feature: "iModel Use"
+      contextId,
+      iModelId,
+      changeSetId,
+    );
+    IModelHost.telemetry.postTelemetry(requestContext, telemetryEvent); // eslint-disable-line @typescript-eslint/no-floating-promises
+
+    UsageLoggingUtilities.postUserUsage(requestContext, contextId, IModelJsNative.AuthType.OIDC, os.hostname(), IModelJsNative.UsageType.Trial)
+      .catch((err) => {
+        requestContext.enter();
+        Logger.logError(loggerCategory, `Could not log user usage`, () => ({ errorStatus: err.status, errorMessage: err.message, ...this.getConnectionProps() }));
+      });
   }
 
   /** Close the briefcase if necessary */
