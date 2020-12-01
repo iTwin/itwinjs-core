@@ -370,53 +370,67 @@ export namespace IModelTransformerUtils {
         definitionElementIds.push(statement.getValue(0).getId());
       }
     });
-    const usageInfo = sourceDb.nativeDb.queryDefinitionElementUsage(definitionElementIds);
+    const usageInfo = sourceDb.nativeDb.queryDefinitionElementUsage(definitionElementIds)!;
     assert.exists(usageInfo);
     // SpatialCategory usage
-    assert.isTrue(usageInfo.spatialCategoryIds.includes(spatialCategoryId));
-    assert.isTrue(usageInfo.usedIds.includes(spatialCategoryId));
+    assert.isTrue(usageInfo.spatialCategoryIds!.includes(spatialCategoryId));
+    assert.isTrue(usageInfo.usedIds!.includes(spatialCategoryId));
     assert.throws(() => sourceDb.elements.deleteElement(spatialCategoryId));
     // DrawingCategory usage
-    assert.isTrue(usageInfo.drawingCategoryIds.includes(drawingCategoryId));
-    assert.isTrue(usageInfo.usedIds.includes(drawingCategoryId));
+    assert.isTrue(usageInfo.drawingCategoryIds!.includes(drawingCategoryId));
+    assert.isTrue(usageInfo.usedIds!.includes(drawingCategoryId));
     assert.throws(() => sourceDb.elements.deleteElement(drawingCategoryId));
     // SubCategory usage
-    assert.isTrue(usageInfo.subCategoryIds.includes(subCategoryId));
-    assert.isTrue(usageInfo.usedIds.includes(subCategoryId));
+    assert.isTrue(usageInfo.subCategoryIds!.includes(subCategoryId));
+    assert.isTrue(usageInfo.usedIds!.includes(subCategoryId));
     assert.throws(() => sourceDb.elements.deleteElement(subCategoryId));
     // GeometryPart usage
-    assert.isTrue(usageInfo.geometryPartIds.includes(geometryPartId));
-    assert.isTrue(usageInfo.usedIds.includes(geometryPartId));
+    assert.isTrue(usageInfo.geometryPartIds!.includes(geometryPartId));
+    assert.isTrue(usageInfo.usedIds!.includes(geometryPartId));
     assert.throws(() => sourceDb.elements.deleteElement(geometryPartId));
     // RenderMaterial usage
-    assert.isTrue(usageInfo.renderMaterialIds.includes(renderMaterialId));
-    assert.isTrue(usageInfo.usedIds.includes(renderMaterialId));
+    assert.isTrue(usageInfo.renderMaterialIds!.includes(renderMaterialId));
+    assert.isTrue(usageInfo.usedIds!.includes(renderMaterialId));
     assert.throws(() => sourceDb.elements.deleteElement(renderMaterialId));
     // Texture usage
-    assert.isTrue(usageInfo.textureIds.includes(textureId));
-    assert.isFalse(usageInfo.usedIds.includes(textureId));
+    assert.isTrue(usageInfo.textureIds!.includes(textureId));
+    assert.isFalse(usageInfo.usedIds!.includes(textureId));
     assert.throws(() => sourceDb.elements.deleteElement(textureId));
+    // DisplayStyle usage
+    assert.isTrue(usageInfo.displayStyleIds!.includes(displayStyle2dId));
+    assert.isTrue(usageInfo.displayStyleIds!.includes(displayStyle3dId));
+    assert.isTrue(usageInfo.usedIds!.includes(displayStyle2dId));
+    assert.isTrue(usageInfo.usedIds!.includes(displayStyle3dId));
+    assert.throws(() => sourceDb.elements.deleteElement(displayStyle2dId));
+    assert.throws(() => sourceDb.elements.deleteElement(displayStyle3dId));
     // CategorySelector usage
-    assert.isTrue(usageInfo.categorySelectorIds.includes(spatialCategorySelectorId));
-    assert.isTrue(usageInfo.categorySelectorIds.includes(drawingCategorySelectorId));
-    assert.isTrue(usageInfo.usedIds.includes(spatialCategorySelectorId));
-    assert.isTrue(usageInfo.usedIds.includes(drawingCategorySelectorId));
+    assert.isTrue(usageInfo.categorySelectorIds!.includes(spatialCategorySelectorId));
+    assert.isTrue(usageInfo.categorySelectorIds!.includes(drawingCategorySelectorId));
+    assert.isTrue(usageInfo.usedIds!.includes(spatialCategorySelectorId));
+    assert.isTrue(usageInfo.usedIds!.includes(drawingCategorySelectorId));
     assert.throws(() => sourceDb.elements.deleteElement(spatialCategorySelectorId));
     assert.throws(() => sourceDb.elements.deleteElement(drawingCategorySelectorId));
     // ModelSelector usage
-    assert.isTrue(usageInfo.modelSelectorIds.includes(modelSelectorId));
-    assert.isTrue(usageInfo.usedIds.includes(modelSelectorId));
+    assert.isTrue(usageInfo.modelSelectorIds!.includes(modelSelectorId));
+    assert.isTrue(usageInfo.usedIds!.includes(modelSelectorId));
     assert.throws(() => sourceDb.elements.deleteElement(modelSelectorId));
     // ViewDefinition usage
-    assert.isTrue(usageInfo.viewDefinitionIds.includes(viewId));
-    assert.isTrue(usageInfo.viewDefinitionIds.includes(drawingViewId));
-    assert.isFalse(usageInfo.usedIds.includes(viewId));
-    assert.isFalse(usageInfo.usedIds.includes(drawingViewId));
+    assert.isTrue(usageInfo.viewDefinitionIds!.includes(viewId));
+    assert.isTrue(usageInfo.viewDefinitionIds!.includes(drawingViewId));
+    assert.isFalse(usageInfo.usedIds!.includes(viewId));
+    assert.isFalse(usageInfo.usedIds!.includes(drawingViewId));
     assert.throws(() => sourceDb.elements.deleteElement(viewId));
     assert.throws(() => sourceDb.elements.deleteElement(drawingId));
     // other and used checks
-    assert.isAtLeast(usageInfo.otherDefinitionElementIds.length, 1);
-    assert.isAtLeast(usageInfo.usedIds.length, 10);
+    assert.isAtLeast(usageInfo.otherDefinitionElementIds!.length, 1);
+    assert.isAtLeast(usageInfo.usedIds!.length, 10);
+    // specify subCategoryId only to test Category filtering
+    const subCategoryUsageInfo = sourceDb.nativeDb.queryDefinitionElementUsage([subCategoryId])!;
+    assert.exists(subCategoryUsageInfo);
+    assert.isTrue(subCategoryUsageInfo.subCategoryIds!.includes(subCategoryId));
+    assert.equal(subCategoryUsageInfo.subCategoryIds!.length, 1);
+    assert.isTrue(subCategoryUsageInfo.usedIds!.includes(subCategoryId));
+    assert.equal(subCategoryUsageInfo.usedIds!.length, 1);
   }
 
   export function updateSourceDb(sourceDb: IModelDb): void {
