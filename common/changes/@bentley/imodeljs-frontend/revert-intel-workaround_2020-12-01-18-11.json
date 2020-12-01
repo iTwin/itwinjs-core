@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/imodeljs-frontend",
-      "comment": "Fix text z-fighting with background when logarithmic depth buffer is disabled.",
+      "comment": "",
       "type": "none"
     }
   ],
