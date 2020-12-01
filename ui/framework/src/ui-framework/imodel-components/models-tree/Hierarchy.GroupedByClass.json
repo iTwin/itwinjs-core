@@ -231,6 +231,7 @@
             ]
           ],
           "suppressSimilarAncestorsCheck": true,
+          "hasChildren": "Always",
           "groupByClass": false,
           "groupByLabel": false
         }
