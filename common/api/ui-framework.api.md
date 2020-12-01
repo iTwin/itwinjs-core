@@ -1523,7 +1523,7 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
     // (undocumented)
     syncToolSettingsProperties(args: SyncToolSettingsPropertiesEventArgs): void;
     // (undocumented)
-    uiDataProvider: ToolSettingsUiDataProvider;
+    get uiDataProvider(): ToolSettingsUiDataProvider;
     // (undocumented)
     updateToolSettingsNodes(): void;
 }
@@ -5916,7 +5916,7 @@ export interface ToolSettingsGridProps {
     settings?: ToolSettingsEntry[];
 }
 
-// @internal
+// @beta
 export class ToolSettingsManager {
     static get activeToolDescription(): string;
     static get activeToolLabel(): string;
@@ -5975,9 +5975,10 @@ export interface ToolSettingsZoneProps extends CommonProps {
 // @public
 export class ToolUiProvider extends ConfigurableUiControl {
     constructor(info: ConfigurableCreateInfo, options: any);
-    // @deprecated
     get dataProvider(): UiDataProvider | undefined;
-    set dataProvider(_d: UiDataProvider | undefined);
+    set dataProvider(d: UiDataProvider | undefined);
+    // (undocumented)
+    protected _dataProvider: UiDataProvider | undefined;
     getType(): ConfigurableUiControlType;
     // @beta
     get horizontalToolSettingNodes(): ToolSettingsEntry[] | undefined;
