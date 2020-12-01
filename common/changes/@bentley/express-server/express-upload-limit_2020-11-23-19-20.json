@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/express-server",
+      "comment": "Changed the max upload size to 5mb",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/express-server",
+  "email": "69857376+swbsi@users.noreply.github.com"
+}

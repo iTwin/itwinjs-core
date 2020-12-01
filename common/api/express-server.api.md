@@ -10,7 +10,7 @@ import { WebAppRpcProtocol } from '@bentley/imodeljs-common';
 
 // @public
 export class IModelJsExpressServer {
-    constructor(protocol: WebAppRpcProtocol);
+    constructor(protocol: WebAppRpcProtocol, config?: IModelJsExpressServerConfig);
     // (undocumented)
     protected _app: import("express").Application;
     // (undocumented)
@@ -19,9 +19,16 @@ export class IModelJsExpressServer {
     protected _configureMiddleware(): void;
     // (undocumented)
     protected _configureRoutes(): void;
+    static readonly defaults: IModelJsExpressServerConfig;
     initialize(port: number | string): Promise<Server>;
     // @alpha (undocumented)
     get rpcConfiguration(): RpcConfiguration;
+}
+
+// @public
+export interface IModelJsExpressServerConfig {
+    // (undocumented)
+    uploadLimit: string;
 }
 
 
