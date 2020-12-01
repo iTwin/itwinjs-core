@@ -20,6 +20,18 @@ describe("<ColorPickerButton/>", () => {
     expect(renderedComponent).not.to.be.undefined;
   });
 
+  it("should re-render properly when initial color prop changes", () => {
+    const renderedComponent = render(<ColorPickerButton initialColor={colorDef} />);
+    expect(renderedComponent).not.to.be.undefined;
+    const button = renderedComponent.getByTestId("components-colorpicker-button");
+    expect(button.getAttribute("data-value")).to.eq("rgb(0,0,255,1)");  // blue
+
+    const newColorDef = ColorDef.create(ColorByName.red);
+    renderedComponent.rerender(<ColorPickerButton initialColor={newColorDef} />);
+    expect(renderedComponent).not.to.be.undefined;
+    expect(button.getAttribute("data-value")).to.eq("rgb(255,0,0,1)"); // red
+  });
+
   it("round swatches with title should render", () => {
     const renderedComponent = render(<ColorPickerButton initialColor={colorDef} round={true} />);
     expect(renderedComponent).not.to.be.undefined;
@@ -34,11 +46,9 @@ describe("<ColorPickerButton/>", () => {
     }
 
     const renderedComponent = render(<ColorPickerButton initialColor={colorDef} onColorPick={handleColorPick} dropDownTitle="test-title" />);
-    expect(renderedComponent.getByTestId("components-colorpicker-button")).to.exist;
-    const pickerButton = renderedComponent.getByTestId("components-colorpicker-button");
-    // renderedComponent.debug();
-    expect(pickerButton.tagName).to.be.equal("BUTTON");
-    fireEvent.click(pickerButton);
+    const button = renderedComponent.getByTestId("components-colorpicker-button");
+    expect(button.getAttribute("data-value")).to.eq("rgb(0,0,255,1)");  // blue
+    fireEvent.click(button);
 
     const popupDiv = await waitForElement(() => renderedComponent.getByTestId("components-colorpicker-popup-colors"));
     expect(popupDiv).not.to.be.undefined;
@@ -52,6 +62,7 @@ describe("<ColorPickerButton/>", () => {
       fireEvent.click(firstColorButton);
 
       expect(spyOnColorPick).to.be.calledOnce;
+      expect(button.getAttribute("data-value")).to.eq("rgb(255,0,0,1)"); // red
     }
   });
 
