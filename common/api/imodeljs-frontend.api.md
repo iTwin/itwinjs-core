@@ -1849,7 +1849,7 @@ export enum CurrentState {
     NotEnabled = 0
 }
 
-// @public (undocumented)
+// @beta
 export interface CustomFormatter {
     // (undocumented)
     formatQuantity(magnitude: number, spec: FormatterSpec): string;
@@ -6162,7 +6162,7 @@ export enum OutputMessageType {
     Toast = 0
 }
 
-// @public (undocumented)
+// @beta
 export interface OverrideFormatEntry {
     // (undocumented)
     imperial: any;
@@ -6512,7 +6512,7 @@ export const QuantityType: {
     LengthEngineering: number;
 };
 
-// @public (undocumented)
+// @beta
 export type QuantityType = (typeof QuantityType)[keyof typeof QuantityType] | string;
 
 // @internal

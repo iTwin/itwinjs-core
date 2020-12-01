@@ -90,7 +90,7 @@ internal;createRealityTileTreeReference(props: RealityModelTileTree.ReferencePro
 internal;createRenderPlanFromViewport(vp: Viewport): RenderPlan
 internal;CurrentInputState
 internal;CurrentState
-public;CustomFormatter
+beta;CustomFormatter
 internal;DebugShaderFile
 public;DecorateContext 
 public;Decorations 
@@ -326,7 +326,7 @@ beta;OsmBuildingDisplayOptions
 public;OutputMessageAlert
 public;OutputMessagePriority
 public;OutputMessageType
-public;OverrideFormatEntry
+beta;OverrideFormatEntry
 internal;overrideRequestTileTreeProps(func: RequestTileTreePropsFunc | undefined): void
 public;PanViewTool 
 beta;ParseAndRunResult
@@ -346,7 +346,7 @@ alpha;PrimitiveVisibility
 internal;QuadId
 beta;QuantityFormatter 
 beta;QuantityType:
-public;QuantityType = (typeof QuantityType)[keyof typeof QuantityType] | string
+beta;QuantityType = (typeof QuantityType)[keyof typeof QuantityType] | string
 internal;queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise
 internal;rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined
 internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined
