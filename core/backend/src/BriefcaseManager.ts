@@ -12,23 +12,23 @@ import * as glob from "glob";
 import * as os from "os";
 import * as path from "path";
 import {
-  assert, AsyncMutex, BeDuration, BeEvent, BentleyStatus, ChangeSetApplyOption, ChangeSetStatus, ClientRequestContext, DbResult, Guid, GuidString,
-  Id64, IModelHubStatus, IModelStatus, Logger, LogLevel, OpenMode, PerfLogger,
+  assert, BeDuration, BentleyStatus, ChangeSetApplyOption, ChangeSetStatus, ClientRequestContext, DbResult, GuidString, Id64, IModelHubStatus,
+  IModelStatus, Logger, OpenMode, PerfLogger,
 } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient } from "@bentley/context-registry-client";
 import {
-  Briefcase as HubBriefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, Checkpoint, CheckpointQuery, ConflictingCodesError, HubCode,
-  HubIModel, IModelClient, IModelHubError,
+  Briefcase as HubBriefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, ConflictingCodesError, HubCode, HubIModel, IModelClient,
+  IModelHubError,
 } from "@bentley/imodelhub-client";
 import {
-  BriefcaseDownloader, BriefcaseKey, BriefcaseProps, BriefcaseStatus, CreateIModelProps, DownloadBriefcaseOptions, DownloadBriefcaseStatus,
-  IModelError, IModelRpcProps, IModelVersion, RequestBriefcaseProps, SyncMode,
+  BriefcaseKey, BriefcaseProps, BriefcaseStatus, CreateIModelProps, DownloadBriefcaseStatus, IModelError, IModelRpcProps,
+  IModelVersion, RequestNewBriefcaseProps, SyncMode,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { AuthorizedClientRequestContext, CancelRequest, ProgressCallback, ProgressInfo, UserCancelledError } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext, ProgressCallback } from "@bentley/itwin-client";
 import { TelemetryEvent } from "@bentley/telemetry-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { BriefcaseDb, IModelDb, OpenParams, SnapshotDb } from "./IModelDb";
+import { BriefcaseDb, IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { UsageLoggingUtilities } from "./usage-logging/UsageLoggingUtilities";
@@ -62,15 +62,6 @@ export enum BriefcaseIdValue {
 
   /** @internal */
   DeprecatedStandalone = 1,
-}
-
-/**
- * Result of validity check of a briefcase in cache or on disk
- */
-enum BriefcaseValidity {
-  Reuse, // the briefcase is valid and can be re-used as is, OR is invalid and cannot be updated/re-created
-  Update, // the briefcase can be made valid by updating it
-  Recreate, // the briefcase can be made valid by re-fetching it
 }
 
 /** A token that represents a ChangeSet
@@ -118,26 +109,35 @@ export class BriefcaseManager {
     return changeSetId || this._firstChangeSetDir;
   }
 
-  private static getBriefcaseFileName(iModelId: GuidString, briefcaseId: BriefcaseId): string {
-    const pathBaseName: string = BriefcaseManager.getBriefcaseBasePath(iModelId);
-    return path.join(pathBaseName, briefcaseId.toString(), "bc.bim");
+  public static getBriefcaseFileName(briefcase: BriefcaseProps): string {
+    const pathBaseName = BriefcaseManager.getBriefcaseBasePath(briefcase.iModelId);
+    const id = briefcase.briefcaseId.toString();
+    return path.join(pathBaseName, id, `${this.makeKey(briefcase)}.bim`);
   }
 
-  private static isBriefcasePresent(iModelId: GuidString, briefcaseId: BriefcaseId) {
-    const fileName = this.getBriefcaseFileName(iModelId, briefcaseId);
+  public static isBriefcasePresent(briefcase: BriefcaseProps) {
+    const fileName = this.getBriefcaseFileName(briefcase);
     return IModelJsFs.existsSync(fileName);
   }
 
-  private static findBriefcaseOnDisk(iModelId: GuidString, hubBriefcases: HubBriefcase[]): { pathname: string, briefcaseId: BriefcaseId } | undefined {
+  public static findBriefcaseOnDisk(iModelId: GuidString, hubBriefcases: HubBriefcase[]) {
     for (const hubBriefcase of hubBriefcases) {
-      const pathname = this.getBriefcaseFileName(iModelId, hubBriefcase.briefcaseId!);
+      const pathname = this.getBriefcaseFileName({ iModelId, briefcaseId: hubBriefcase.briefcaseId! });
       if (IModelJsFs.existsSync(pathname))
         return { pathname, briefcaseId: hubBriefcase.briefcaseId! };
     }
     return undefined;
   }
 
+  public static makeKey(props: BriefcaseProps) { return `${props.iModelId}:${props.briefcaseId}`; }
+  public static parseKey(key: string): BriefcaseProps {
+    const parts = key.split(":");
+    if (parts.length !== 2)
+      return { iModelId: "", briefcaseId: 0 };
+    return { iModelId: parts[0], briefcaseId: +parts[1] };
+  }
   private static _initialized?: boolean;
+
 
   private static setupContextRegistryClient() {
     BriefcaseManager._contextRegistryClient = new ContextRegistryClient();
@@ -249,7 +249,7 @@ export class BriefcaseManager {
     return id >= BriefcaseIdValue.FirstValid && id <= BriefcaseIdValue.LastValid;
   }
 
-  private static createVariableVersionBriefcase(requestBriefcaseProps: RequestBriefcaseProps, downloadOptions: DownloadBriefcaseOptions, briefcaseId: BriefcaseId, downloadProgress?: ProgressCallback): BriefcaseEntry {
+  private static createVariableVersionBriefcase(requestBriefcaseProps: RequestBriefcaseProps, downloadProgress?: ProgressCallback): BriefcaseEntry {
     const { contextId, iModelId, changeSetId } = requestBriefcaseProps;
     const { syncMode } = downloadOptions;
     const openMode = OpenMode.ReadWrite;
@@ -343,15 +343,6 @@ export class BriefcaseManager {
       requestContext.enter();
       Logger.logError(loggerCategory, "Could not delete the acquired briefcase", () => ({ iModelId, briefcaseId })); // Could well be that the current user does not have the appropriate access
     }
-  }
-
-  /** Deletes a briefcase from the cache (if it exists) */
-  private static deleteBriefcaseFromCache(briefcase: BriefcaseEntry) {
-    if (!BriefcaseManager._cache.findBriefcase(briefcase))
-      return;
-
-    Logger.logTrace(loggerCategory, "BriefcaseManager.deleteBriefcaseFromCache: Deleting briefcase entry from in-memory cache", () => db.getRpcProps());
-    BriefcaseManager._cache.deleteBriefcaseByKey(briefcase.getKey());
   }
 
   /**
@@ -587,16 +578,6 @@ export class BriefcaseManager {
       this.deleteFolderContents(this._cacheRootDir!);
     }
     return deletedAllCacheDirs;
-  }
-
-  /** Purge in-memory cache of briefcases */
-  private static async purgeInMemoryCache(requestContext: AuthorizedClientRequestContext) {
-    requestContext.enter();
-    this.clearCache();
-  }
-
-  public static findBriefcaseByKey(key: BriefcaseKey): BriefcaseEntry | undefined {
-    return this._cache.findBriefcaseByKey(key);
   }
 
   private static async evaluateVersion(requestContext: AuthorizedClientRequestContext, version: IModelVersion, iModelId: string): Promise<{ changeSetId: string, changeSetIndex: number }> {

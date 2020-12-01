@@ -255,8 +255,8 @@ export class ConcurrencyControl {
    * @internal
    */
   public onElementWrite(elementClass: typeof Element, element: ElementProps, opcode: DbOpcode): void {
-    if (!this._iModel.isPushEnabled) {
-      throw new IModelError(IModelStatus.ReadOnly, "iModel is read-only - changes cannot be pushed to iModelHub", Logger.logError, loggerCategory);
+    if (!this._iModel.allowLocalChanges) {
+      throw new IModelError(IModelStatus.ReadOnly, "iModel cannot create local changes", Logger.logError, loggerCategory);
     }
     const resourcesNeeded = new ConcurrencyControl.Request();
     this.buildRequestForElementTo(resourcesNeeded, element, opcode, elementClass);
@@ -520,7 +520,7 @@ export class ConcurrencyControl {
 
   /** @internal */
   public async onOpened(requestContext: AuthorizedClientRequestContext): Promise<void> {
-    if (!this._iModel.isPushEnabled)
+    if (!this._iModel.allowLocalChanges)
       return;
 
     assert(!this._iModel.concurrencyControl._cache.isOpen, "BriefcaseDb.onOpened should be raised only once");
@@ -1540,7 +1540,7 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
     }
 
     private mustBeOpenAndWriteable() {
-      if (!this.concurrencyControl.iModel.isPushEnabled)
+      if (!this.concurrencyControl.iModel.allowLocalChanges)
         throw new IModelError(IModelStatus.NotOpenForWrite, "not a briefcase that can be used to push changes to the IModel Hub", Logger.logError, loggerCategory, () => this.concurrencyControl.iModel.getConnectionProps());
       if (!this.isOpen)
         throw new IModelError(IModelStatus.NotOpen, "not open", Logger.logError, loggerCategory, () => ({ cacheFileName: this.computeCacheFileName() }));

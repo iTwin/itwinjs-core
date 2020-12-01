@@ -8,18 +8,79 @@
 
 import { GuidString } from "@bentley/bentleyjs-core";
 
+/**
+ * Status of downloading a briefcase
+ * @internal
+ */
+export enum DownloadBriefcaseStatus {
+  NotStarted,
+  Initializing,
+  QueryCheckpointService,
+  DownloadingCheckpoint,
+  DownloadingChangeSets,
+  ApplyingChangeSets,
+  Complete,
+  Error,
+}
+
 /** Operations allowed when synchronizing changes between the Briefcase and iModelHub
  * @public
- * @deprecated
  */
 export enum SyncMode { FixedVersion = 1, PullAndPush = 2, PullOnly = 3 }
 
-export interface BriefcaseKey {
-  /** Id of the iModel */
-  iModelId: GuidString;
+/**
+ * Key to locate an open briefcase
+ * @internal
+ */
+export type BriefcaseKey = string;
 
-  /** briefcase Id */
-  briefcaseId: number;
+/**
+ * Options to open the briefcase
+ * @beta
+ */
+export interface OpenBriefcaseOptions {
+  /** Limit the opened briefcase for Readonly operations by establishing a Readonly connection with the Db */
+  openAsReadOnly?: boolean;
+}
+
+/**
+ * Properties that specify a local briefcase
+ * @internal
+ */
+export interface BriefcaseProps {
+  /** Id of the iModel */
+  readonly iModelId: GuidString;
+
+  readonly briefcaseId: number;
+}
+
+export interface RequestNewBriefcaseProps {
+  /** Context (Project or Asset) that the iModel belongs to */
+  readonly contextId: GuidString;
+
+  /** identity of the newly downloaded briefcase */
+  readonly props: BriefcaseProps;
+
+  /** Id of the change set */
+  readonly asOf: GuidString;
+
+  /** Status of downloading a briefcase */
+  downloadStatus: DownloadBriefcaseStatus;
+}
+
+/**
+ * Manages the download of a briefcase
+ * @internal
+ */
+export interface BriefcaseDownloader {
+  /** Properties of the briefcase that's being downloaded */
+  briefcaseProps: RequestNewBriefcaseProps;
+
+  /** Promise that resolves when the download completes. await this to complete the download */
+  downloadPromise: Promise<void>;
+
+  /** Request cancellation of the download */
+  requestCancel: () => Promise<boolean>;
 }
 
 /** Option to control the validation and upgrade of domain schemas in the Db

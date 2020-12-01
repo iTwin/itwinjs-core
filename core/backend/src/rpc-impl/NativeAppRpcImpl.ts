@@ -90,7 +90,6 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
    */
   public async requestDownloadBriefcase(requestProps: RequestBriefcaseProps, downloadOptions: DownloadBriefcaseOptions, reportProgress: boolean): Promise<BriefcaseProps> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    BriefcaseManager.initializeOffline();
 
     if (downloadOptions?.syncMode === undefined) {
       // NEEDS_WORK: This should never happen, but does seem to happen with the WebRpc that forces use of IModelRpcProps for some reason as the default -

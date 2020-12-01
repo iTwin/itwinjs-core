@@ -7,7 +7,7 @@
  */
 
 import { LogLevel } from "@bentley/bentleyjs-core";
-import { BriefcaseKey } from "../BriefcaseTypes";
+import { BriefcaseKey, BriefcaseProps, OpenBriefcaseOptions, RequestNewBriefcaseProps } from "../BriefcaseTypes";
 import { IModelConnectionProps, IModelRpcProps } from "../IModel";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
@@ -122,16 +122,16 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
     return this.forward(arguments);
   }
   /**
-   * Request download of a briefcase. The call require internet connection and must have valid token.
+   * Request download of a briefcase. The call requires an internet connection and must have valid token.
    * @param _requestProps Properties required to locate the iModel and download it as a briefcase
    * @param _downloadOptions Options to affect the download of the briefcase
    * @param _reportProgress Report progress to frontend
    * @returns BriefcaseProps The properties of the briefcase to be downloaded
    */
-  public async requestDownloadBriefcase(_requestProps: RequestBriefcaseProps, _downloadOptions: DownloadBriefcaseOptions, _reportProgress: boolean): Promise<BriefcaseProps> { return this.forward(arguments); }
+  public async requestDownloadBriefcase(_requestProps: RequestNewBriefcaseProps, _reportProgress: boolean): Promise<BriefcaseProps> { return this.forward(arguments); }
 
   /**
-   * Finishes download of a briefcase. The call require internet connection and must have valid token.
+   * Finishes download of a briefcase. The call requires an internet connection and must have valid token.
    * @param _key Key to locate the briefcase in the disk cache
    */
   public async downloadRequestCompleted(_key: BriefcaseKey): Promise<void> { return this.forward(arguments); }
