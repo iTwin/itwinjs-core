@@ -189,19 +189,6 @@ export class MapTile extends RealityTile {
         const corner = this._patch.corners[reorder[i]];
         lows.push(corner.plusScaled(normal, heightRange.low));
         highs.push(corner.plusScaled(normal, heightRange.high));
-
-        const debugProjection = true;
-        if (debugProjection) {
-          const projected = this._patch.corners;
-          const unprojected = this.mapTree.getUnprojectedCorners(this.quadId);
-          const red = ColorDef.create(ColorByName.red);
-          builder.setSymbology(red, red, 8)
-          builder.addPointString(unprojected);
-          const yellow = ColorDef.create(ColorByName.yellow);
-          builder.setSymbology(yellow, yellow, 1);
-          for (let i = 0; i < 4; i++)
-            builder.addLineString([unprojected[i], projected[i]]);
-        }
       }
     } else {
       for (let i = 0; i < 5; i++) {
@@ -230,9 +217,9 @@ export class MapTile extends RealityTile {
       else
         outPoints.push(point);
 
-    builder.setSymbology(inColor, inColor, 8);
+    builder.setSymbology(inColor, inColor, 15);
     builder.addPointString(inPoints);
-    builder.setSymbology(outColor, outColor, 8);
+    builder.setSymbology(outColor, outColor, 15);
     builder.addPointString(outPoints);
     builder.setSymbology(transitionColor, transitionColor, 31);
     builder.addPointString(transitionPoints);
