@@ -307,11 +307,6 @@ export class MapTileTree extends RealityTileTree {
     corners.push(Point3d.create(this.sourceTilingScheme.tileXToFraction(quadId.column + 1, quadId.level), this.sourceTilingScheme.tileYToFraction(quadId.row + 1, quadId.level), 0.0));
     return corners;
   }
-  public getUnprojectedCorners(quadId: QuadId): Point3d[] {
-    const corners = this.getFractionalTileCorners(quadId);
-    this._mercatorFractionToDb.multiplyPoint3dArrayInPlace(corners);
-    return corners;
-  }
 
   public getTileRectangle(quadId: QuadId): MapCartoRectangle {
     return this.sourceTilingScheme.tileXYToRectangle(quadId.column, quadId.row, quadId.level);
