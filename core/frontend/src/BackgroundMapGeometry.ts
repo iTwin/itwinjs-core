@@ -386,8 +386,8 @@ export class BackgroundMapLocation {
     const origin = projectExtents.localXYZToWorld(.5, .5, .5)!;
 
     origin.z = 0; // always use ground plane
-    const eastPoint = origin.plusXYZ(10, 0, 0);
-    const northPoint = origin.plusXYZ(0, 10, 0);
+    const eastPoint = origin.plusXYZ(1, 0, 0);
+    const northPoint = origin.plusXYZ(0, 1, 0);
 
     const response = await geoConverter.getGeoCoordinatesFromIModelCoordinates([origin, northPoint, eastPoint]);
     if (response.geoCoords[0].s !== GeoCoordStatus.Success || response.geoCoords[1].s !== GeoCoordStatus.Success || response.geoCoords[2].s !== GeoCoordStatus.Success) {
@@ -404,7 +404,13 @@ export class BackgroundMapLocation {
 
     const xVector = Vector3d.createStartEnd(ecefOrigin, ecefEast);
     const yVector = Vector3d.createStartEnd(ecefOrigin, ecefNorth);
-    const matrix = Matrix3d.createRigidFromColumns(xVector, yVector, AxisOrder.XYZ);
+    const zVector = xVector.unitCrossProduct(yVector);
+    if (undefined === zVector) {
+      assert(false);            // Should never occur.
+      this._ecefValidated = true;
+      return;
+    }
+    const matrix = Matrix3d.createColumns(xVector, yVector, zVector);
     if (matrix === undefined) {
       this._ecefValidated = true;   // This is bad - somehow the reprojection failed.  - Just use the GCS directly.
       return;
