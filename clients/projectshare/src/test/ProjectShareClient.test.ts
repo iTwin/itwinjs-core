@@ -166,7 +166,7 @@ describe("ProjectShareClient (#integration)", () => {
 
     const foldersAfterDelete = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().startsWithPathAndNameLike(projectId, "/", testFolder.name)); // assert folders amount after delete
     chai.assert.strictEqual(0, foldersAfterDelete.length);
-  })
+  });
 
   it("should be able to create folder and move it to recycle bin", async () => {
     const testFolder = new ProjectShareFolder();
@@ -180,7 +180,7 @@ describe("ProjectShareClient (#integration)", () => {
 
     const foldersAfterDelete = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().startsWithPathAndNameLike(projectId, "/", testFolder.name)); // assert folders amount after delete
     chai.assert.strictEqual(0, foldersAfterDelete.length);
-  })
+  });
 
   it("should be able to query folders from the root folder", async () => {
     const foldersInRootFolder: ProjectShareFolder[] = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inPath(projectId, "/"));
@@ -193,7 +193,7 @@ describe("ProjectShareClient (#integration)", () => {
 
     const res = await projectShareClient.deleteFolder(requestContext, projectId, newFolder.wsgId); // Permanent deleting Folder.
     chai.assert.isUndefined(res);
-  })
+  });
 
   it("should be able to query files from the root folder", async () => {
     const filesInRootFolder: ProjectShareFolder[] = await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFolderQuery().startsWithPathAndNameLike(projectId, "/", "*"));
@@ -209,10 +209,10 @@ describe("ProjectShareClient (#integration)", () => {
     chai.assert.equal(changedFile.fileExists, true);
 
     const filesInRootFolderAfterNewFile: ProjectShareFolder[] = await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFolderQuery().startsWithPathAndNameLike(projectId, "/", "*"));
-    chai.assert.strictEqual(filesInRootFolder.length + 1, filesInRootFolderAfterNewFile.length)
+    chai.assert.strictEqual(filesInRootFolder.length + 1, filesInRootFolderAfterNewFile.length);
     const res = await projectShareClient.deleteFile(requestContext, projectId, file.wsgId); // Permanent deleting File.
     chai.assert.isUndefined(res);
-  })
+  });
 
   it("should be able to CRUD custom properties", async () => {
     const firstImageFile = (await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFileQuery().startsWithPathAndNameLike(projectId, "360-Images/2A", "2A_v0410470")))[0];
