@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { Angle, Arc3d, AxisOrder, ClipPlane, ClipPlaneContainment, Constant, CurvePrimitive, Ellipsoid, GrowableXYZArray, LongitudeLatitudeNumber, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range1d, Range3d, Ray3d, Transform, Vector3d, XYAndZ } from "@bentley/geometry-core";
+import { Angle, Arc3d, ClipPlane, ClipPlaneContainment, Constant, CurvePrimitive, Ellipsoid, GrowableXYZArray, LongitudeLatitudeNumber, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range1d, Range3d, Ray3d, Transform, Vector3d, XYAndZ } from "@bentley/geometry-core";
 import { Cartographic, ColorByName, ColorDef, EcefLocation, Frustum, GeoCoordStatus, GlobeMode } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
 import { GraphicBuilder } from "./render/GraphicBuilder";
