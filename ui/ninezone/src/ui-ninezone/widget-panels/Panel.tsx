@@ -11,7 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import produce from "immer";
 import { DraggedPanelSideContext } from "../base/DragManager";
-import { NineZoneDispatchContext, WidgetsStateContext } from "../base/NineZone";
+import { NineZoneDispatchContext, PanelsStateContext, WidgetsStateContext } from "../base/NineZone";
 import { isHorizontalPanelState, PanelState, WidgetState } from "../base/NineZoneState";
 import { PanelWidget, PanelWidgetProps } from "../widget/PanelWidget";
 import { WidgetTarget } from "../widget/WidgetTarget";
@@ -42,39 +42,40 @@ export type VerticalPanelSide = LeftPanelSide | RightPanelSide;
 /** @internal future */
 export type PanelSide = VerticalPanelSide | HorizontalPanelSide;
 
-/** Properties of [[WidgetPanel]] component.
+/** Properties of [[WidgetPanelProvider]] component.
  * @internal
  */
-export interface WidgetPanelProps {
-  panel: PanelState;
-  spanBottom?: boolean;
-  spanTop?: boolean;
+export interface WidgetPanelProviderProps {
+  side: PanelSide;
 }
 
 /** Widget panel component is a side panel with multiple widgets.
  * @internal
  */
-export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanel(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
+export const WidgetPanelProvider = React.memo<WidgetPanelProviderProps>(function WidgetPanelProvider({ side }) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
+  const panels = React.useContext(PanelsStateContext);
+  const panel = panels[side];
+  const element = panel.widgets.length === 0 ? <PanelTarget /> : <WidgetPanel
+    spanTop={panels.top.span}
+    spanBottom={panels.bottom.span}
+  />;
   return (
-    <PanelStateContext.Provider value={props.panel}>
-      <PanelSideContext.Provider value={props.panel.side}>
-        <WidgetPanelComponent
-          spanTop={props.spanTop}
-          spanBottom={props.spanBottom}
-        />
+    <PanelStateContext.Provider value={panel}>
+      <PanelSideContext.Provider value={side}>
+        {element}
       </PanelSideContext.Provider>
     </PanelStateContext.Provider>
   );
 });
 
 /** @internal */
-export interface WidgetPanelComponentProps {
+export interface WidgetPanelProps {
   spanBottom?: boolean;
   spanTop?: boolean;
 }
 
 /** @internal */
-export const WidgetPanelComponent = React.memo<WidgetPanelComponentProps>(function WidgetPanelComponent({
+export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanelComponent({
   spanBottom,
   spanTop,
 }) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
@@ -105,7 +106,7 @@ export const WidgetPanelComponent = React.memo<WidgetPanelComponentProps>(functi
     return {
       width: `${size}px`,
     };
-  }, [panel.size, panel.side, panel.collapsed, panelSize]);
+  }, [panel.side, panel.size, panel.collapsed, panelSize]);
   const contentStyle = React.useMemo(() => {
     if (contentSize === undefined)
       return undefined;
@@ -126,23 +127,23 @@ export const WidgetPanelComponent = React.memo<WidgetPanelComponentProps>(functi
   const [prevCollapsed, setPrevCollapsed] = React.useState(panel.collapsed);
   if (prevCollapsed !== panel.collapsed) {
     setPrevCollapsed(panel.collapsed);
-    if (ref.current) {
-      let from = animateFrom.current;
-      if (from === undefined) {
-        from = getPanelSize(horizontal, ref.current.getBoundingClientRect());
-      }
-      animateFrom.current = from;
-      setPanelSize(undefined);
-      setContentSize(undefined);
-      setTransition(undefined);
-      setPrepareTransition(true);
+    let from = animateFrom.current;
+    // istanbul ignore else
+    if (from === undefined && ref.current) {
+      const bounds = ref.current.getBoundingClientRect();
+      from = getPanelSize(horizontal, bounds);
+    }
 
-      if (panel.collapsed) {
-        collapsing.current = "collapsing";
-        maxPanelSize.current = from;
-      } else {
-        collapsing.current = "expanding";
-      }
+    animateFrom.current = from;
+    setPanelSize(undefined);
+    setContentSize(undefined);
+    setTransition(undefined);
+    setPrepareTransition(true);
+    if (panel.collapsed) {
+      collapsing.current = "collapsing";
+      maxPanelSize.current = from;
+    } else {
+      collapsing.current = "expanding";
     }
   }
 
@@ -178,10 +179,9 @@ export const WidgetPanelComponent = React.memo<WidgetPanelComponentProps>(functi
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   React.useLayoutEffect(() => {
-    if (!ref.current)
-      return;
     if (panel.size !== undefined || panel.collapsed)
       return;
+    assert(ref.current);
     const bounds = ref.current.getBoundingClientRect();
     const newSize = getPanelSize(horizontal, bounds);
     dispatch({
@@ -195,8 +195,8 @@ export const WidgetPanelComponent = React.memo<WidgetPanelComponentProps>(functi
   React.useLayoutEffect(() => {
     if (!prepareTransition)
       return;
-    if (!ref.current)
-      return;
+    setPrepareTransition(false);
+    assert(ref.current);
     animateTo.current = getPanelSize(horizontal, ref.current.getBoundingClientRect());
     if (animateFrom.current === animateTo.current) {
       maxPanelSize.current = undefined;
@@ -205,7 +205,6 @@ export const WidgetPanelComponent = React.memo<WidgetPanelComponentProps>(functi
       setPanelSize(undefined);
       setContentSize(undefined);
       setTransition(undefined);
-      setPrepareTransition(false);
       return;
     }
     if (collapsing.current === "expanding" && maxPanelSize.current === undefined) {
@@ -214,7 +213,6 @@ export const WidgetPanelComponent = React.memo<WidgetPanelComponentProps>(functi
     setPanelSize(animateFrom.current);
     setContentSize(maxPanelSize.current);
     setTransition("init");
-    setPrepareTransition(false);
   });
   React.useLayoutEffect(() => {
     if (transition !== "init")
@@ -240,10 +238,6 @@ export const WidgetPanelComponent = React.memo<WidgetPanelComponentProps>(functi
       getBounds,
     };
   }, [getBounds]);
-  if (panel.widgets.length === 0)
-    return (
-      <PanelTarget />
-    );
   const showTargets = panel.widgets.length < panel.maxWidgetCount;
   const className = classnames(
     "nz-widgetPanels-panel",
