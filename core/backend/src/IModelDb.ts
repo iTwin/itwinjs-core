@@ -1555,6 +1555,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     /** Delete one or more elements from this iModel.
      * @param ids The set of Ids of the element(s) to be deleted
      * @throws [[IModelError]]
+     * @see deleteDefinitionElements
      */
     public deleteElement(ids: Id64Arg): void {
       const iModel = this._iModel;
@@ -1575,6 +1576,64 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
 
         jsClass.onDeleted(props, iModel);
       });
+    }
+
+    /** DefinitionElements can only be deleted if it can be determined that they are not referenced by other Elements.
+     * This *usage query* can be expensive since it may involve scanning the GeometryStreams of all GeometricElements.
+     * Since [[deleteElement]] does not perform these additional checks, it fails in order to prevent potentially referenced DefinitionElements from being deleted.
+     * This method performs those expensive checks and then calls *delete* if not referenced.
+     * @param ids The Ids of the DefinitionElements to attempt to delete. To prevent multiple passes over the same GeometricElements, it is best to pass in the entire array of
+     * DefinitionElements rather than calling this method separately for each one. Ids that are not valid DefinitionElements will be ignored.
+     * @see deleteElement
+     * @beta
+     */
+    public deleteDefinitionElements(definitionElementIds: Id64Array): void {
+      const usageInfo = this._iModel.nativeDb.queryDefinitionElementUsage(definitionElementIds);
+      if (!usageInfo) {
+        throw new IModelError(IModelStatus.BadRequest, "Error querying for DefinitionElement usage", Logger.logError, loggerCategory);
+      }
+      const usedIdSet: Id64Set | undefined = usageInfo.usedIds ? Id64.toIdSet(usageInfo.usedIds) : undefined;
+      const deleteIfUnused = (ids: Id64Array | undefined, used: Id64Set | undefined): void => {
+        if (ids) { ids.forEach((id) => { if (!used?.has(id)) { this._iModel.elements.deleteElement(id); } }); }
+      };
+      try {
+        this._iModel.nativeDb.beginPurgeOperation();
+        deleteIfUnused(usageInfo.spatialCategoryIds, usedIdSet);
+        deleteIfUnused(usageInfo.drawingCategoryIds, usedIdSet);
+        deleteIfUnused(usageInfo.viewDefinitionIds, usedIdSet);
+        deleteIfUnused(usageInfo.geometryPartIds, usedIdSet);
+        deleteIfUnused(usageInfo.lineStyleIds, usedIdSet);
+        deleteIfUnused(usageInfo.renderMaterialIds, usedIdSet);
+        deleteIfUnused(usageInfo.subCategoryIds, usedIdSet);
+        deleteIfUnused(usageInfo.textureIds, usedIdSet);
+        deleteIfUnused(usageInfo.displayStyleIds, usedIdSet);
+        deleteIfUnused(usageInfo.categorySelectorIds, usedIdSet);
+        deleteIfUnused(usageInfo.modelSelectorIds, usedIdSet);
+        if (usageInfo.otherDefinitionElementIds) {
+          this._iModel.elements.deleteElement(usageInfo.otherDefinitionElementIds);
+        }
+      } finally {
+        this._iModel.nativeDb.endPurgeOperation();
+      }
+      // take another pass in case a deleted ViewDefinition was the only usage of these view-related DefinitionElements
+      const viewRelatedIds: Id64Array = [];
+      if (usageInfo.displayStyleIds) { viewRelatedIds.concat(usageInfo.displayStyleIds.filter((id) => usedIdSet?.has(id))); }
+      if (usageInfo.categorySelectorIds) { viewRelatedIds.concat(usageInfo.categorySelectorIds.filter((id) => usedIdSet?.has(id))); }
+      if (usageInfo.modelSelectorIds) { viewRelatedIds.concat(usageInfo.modelSelectorIds.filter((id) => usedIdSet?.has(id))); }
+      if (viewRelatedIds.length > 0) {
+        const viewRelatedUsageInfo = this._iModel.nativeDb.queryDefinitionElementUsage(viewRelatedIds);
+        if (viewRelatedUsageInfo) {
+          const usedViewRelatedIdSet: Id64Set | undefined = viewRelatedUsageInfo.usedIds ? Id64.toIdSet(viewRelatedUsageInfo.usedIds) : undefined;
+          try {
+            this._iModel.nativeDb.beginPurgeOperation();
+            deleteIfUnused(viewRelatedUsageInfo.displayStyleIds, usedViewRelatedIdSet);
+            deleteIfUnused(viewRelatedUsageInfo.categorySelectorIds, usedViewRelatedIdSet);
+            deleteIfUnused(viewRelatedUsageInfo.modelSelectorIds, usedViewRelatedIdSet);
+          } finally {
+            this._iModel.nativeDb.endPurgeOperation();
+          }
+        }
+      }
     }
 
     /** Query for the child elements of the specified element.
