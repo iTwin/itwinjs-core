@@ -301,26 +301,6 @@ describe("ModelsTree", () => {
         await waitForElement(() => result.getByText("subject"));
       });
 
-      it("disposes visibility handler when new is provided", async () => {
-        const node = createModelNode();
-        const disposeSpy = sinon.spy();
-        setupDataProvider([node]);
-
-        visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
-        visibilityHandlerMock.setup((x) => x.dispose).returns(() => disposeSpy);
-
-        const newVisibilityHandlerMock = moq.Mock.ofType<VisibilityHandler>();
-        newVisibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
-
-        const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />);
-        await waitForElement(() => result.getByText("model"));
-
-        result.rerender(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={newVisibilityHandlerMock.object} dataProvider={dataProvider} />);
-        await waitForElement(() => result.getByText("model"));
-
-        expect(disposeSpy).to.be.calledOnce;
-      });
-
       describe("selection", () => {
 
         it("adds node to unified selection", async () => {
@@ -527,7 +507,7 @@ describe("ModelsTree", () => {
       interface SubjectModelIdsMockProps {
         imodelMock: moq.IMock<IModelConnection>;
         subjectsHierarchy: Map<Id64String, Id64String[]>;
-        subjectModels: Map<Id64String, Id64String[]>;
+        subjectModels: Map<Id64String, Array<{ id: Id64String, content?: string }>>;
       }
 
       const mockSubjectModelIds = (props: SubjectModelIdsMockProps) => {
@@ -540,8 +520,8 @@ describe("ModelsTree", () => {
           });
         props.imodelMock.setup((x) => x.query(moq.It.is((q: string) => (-1 !== q.indexOf("FROM bis.InformationPartitionElement")))))
           .returns(async function* () {
-            const list = new Array<{ id: Id64String, subjectId: Id64String }>();
-            props.subjectModels.forEach((modelIds, subjectId) => modelIds.forEach((modelId) => list.push({ id: modelId, subjectId })));
+            const list = new Array<{ id: Id64String, subjectId: Id64String, content?: string }>();
+            props.subjectModels.forEach((modelInfos, subjectId) => modelInfos.forEach((modelInfo) => list.push({ id: modelInfo.id, subjectId, content: modelInfo.content })));
             while (list.length)
               yield list.shift();
           });
@@ -629,8 +609,8 @@ describe("ModelsTree", () => {
               imodelMock,
               subjectsHierarchy: new Map([["0x0", subjectIds]]),
               subjectModels: new Map([
-                [subjectIds[0], ["0x3", "0x4"]],
-                [subjectIds[1], ["0x5", "0x6"]],
+                [subjectIds[0], [{ id: "0x3" }, { id: "0x4" }]],
+                [subjectIds[1], [{ id: "0x5" }, { id: "0x6" }]],
               ]),
             });
 
@@ -657,8 +637,8 @@ describe("ModelsTree", () => {
               imodelMock,
               subjectsHierarchy: new Map([["0x0", subjectIds]]),
               subjectModels: new Map([
-                [subjectIds[0], ["0x3", "0x4"]],
-                [subjectIds[1], ["0x5", "0x6"]],
+                [subjectIds[0], [{ id: "0x3" }, { id: "0x4" }]],
+                [subjectIds[1], [{ id: "0x5" }, { id: "0x6" }]],
               ]),
             });
 
@@ -690,7 +670,7 @@ describe("ModelsTree", () => {
                 ["0x7", ["0x8"]],
               ]),
               subjectModels: new Map([
-                ["0x6", ["0x10", "0x11"]],
+                ["0x6", [{ id: "0x10" }, { id: "0x11" }]],
               ]),
             });
 
@@ -715,7 +695,7 @@ describe("ModelsTree", () => {
             mockSubjectModelIds({
               imodelMock,
               subjectsHierarchy: new Map([["0x0", [key.id]]]),
-              subjectModels: new Map([[key.id, ["0x1", "0x2"]]]),
+              subjectModels: new Map([[key.id, [{ id: "0x1" }, { id: "0x2" }]]]),
             });
 
             const viewStateMock = moq.Mock.ofType<ViewState3d>();
@@ -728,6 +708,164 @@ describe("ModelsTree", () => {
               // expect the `query` to be called only twice (once for subjects and once for models)
               imodelMock.verify((x) => x.query(moq.It.isAnyString()), moq.Times.exactly(2));
             });
+          });
+
+          describe("filtered", () => {
+
+            it("return true when subject node is leaf and at least one model is visible", async () => {
+              const node = createSubjectNode();
+              const key = node.__key.instanceKeys[0];
+
+              const filteredProvider = moq.Mock.ofType<IPresentationTreeDataProvider>();
+              filteredProvider.setup(async (x) => x.getNodes(node)).returns(async () => []).verifiable(moq.Times.once());
+
+              mockSubjectModelIds({
+                imodelMock,
+                subjectsHierarchy: new Map([["0x0", [key.id]]]),
+                subjectModels: new Map([[key.id, [{ id: "0x10" }, { id: "0x20" }]]]),
+              });
+
+              const viewStateMock = moq.Mock.ofType<ViewState3d>();
+              viewStateMock.setup((x) => x.isSpatialView()).returns(() => true);
+              viewStateMock.setup((x) => x.viewsModel("0x10")).returns(() => true);
+              viewStateMock.setup((x) => x.viewsModel("0x20")).returns(() => false);
+
+              const vpMock = mockViewport({ viewState: viewStateMock.object });
+
+              await using(createHandler({ viewport: vpMock.object }), async (handler) => {
+                handler.setFilteredDataProvider(filteredProvider.object);
+                const result = handler.getVisibilityStatus(node, node.__key);
+                expect(isPromiseLike(result)).to.be.true;
+                if (isPromiseLike(result))
+                  expect(await result).to.include({ isDisplayed: true });
+                filteredProvider.verifyAll();
+              });
+            });
+
+            it("return true when subject node has child and at least one hidden model is visible", async () => {
+              const parentSubjectId = "0x1";
+              const childSubjectId = "0x2";
+              const node = createSubjectNode(parentSubjectId);
+              const childNode = createSubjectNode(childSubjectId);
+
+              const filteredProvider = moq.Mock.ofType<IPresentationTreeDataProvider>();
+              filteredProvider.setup(async (x) => x.getNodes(node)).returns(async () => [childNode]).verifiable(moq.Times.once());
+              filteredProvider.setup(async (x) => x.getNodes(childNode)).returns(async () => []).verifiable(moq.Times.never());
+
+              mockSubjectModelIds({
+                imodelMock,
+                subjectsHierarchy: new Map([
+                  [parentSubjectId, [childSubjectId]],
+                ]),
+                subjectModels: new Map([
+                  [parentSubjectId, [{ id: "0x10", content: "reference" }, { id: "0x11", content: "reference" }]],
+                  [childSubjectId, [{ id: "0x20" }]],
+                ]),
+              });
+
+              const viewStateMock = moq.Mock.ofType<ViewState3d>();
+              viewStateMock.setup((x) => x.isSpatialView()).returns(() => true);
+              viewStateMock.setup((x) => x.viewsModel("0x10")).returns(() => true);
+              viewStateMock.setup((x) => x.viewsModel("0x11")).returns(() => false);
+              viewStateMock.setup((x) => x.viewsModel("0x20")).returns(() => false);
+
+              const vpMock = mockViewport({ viewState: viewStateMock.object });
+
+              await using(createHandler({ viewport: vpMock.object }), async (handler) => {
+                handler.setFilteredDataProvider(filteredProvider.object);
+                const result = handler.getVisibilityStatus(node, node.__key);
+                expect(isPromiseLike(result)).to.be.true;
+                if (isPromiseLike(result))
+                  expect(await result).to.include({ isDisplayed: true });
+                filteredProvider.verifyAll();
+              });
+            });
+
+            it("return true when subject node has children and at least one child has visible models", async () => {
+              const parentSubjectId = "0x1";
+              const childSubjectIds = ["0x2", "0x3"];
+              const node = createSubjectNode(parentSubjectId);
+              const childNodes = [createSubjectNode(childSubjectIds[0]), createSubjectNode(childSubjectIds[1])];
+
+              const filteredProvider = moq.Mock.ofType<IPresentationTreeDataProvider>();
+              filteredProvider.setup(async (x) => x.getNodes(node)).returns(async () => childNodes).verifiable(moq.Times.once());
+              filteredProvider.setup(async (x) => x.getNodes(childNodes[0])).returns(async () => []).verifiable(moq.Times.once());
+              filteredProvider.setup(async (x) => x.getNodes(childNodes[1])).returns(async () => []).verifiable(moq.Times.once());
+              filteredProvider.setup((x) => x.getNodeKey(childNodes[0])).returns(() => childNodes[0].__key).verifiable(moq.Times.once());
+              filteredProvider.setup((x) => x.getNodeKey(childNodes[1])).returns(() => childNodes[1].__key).verifiable(moq.Times.once());
+
+              mockSubjectModelIds({
+                imodelMock,
+                subjectsHierarchy: new Map([
+                  [parentSubjectId, childSubjectIds],
+                ]),
+                subjectModels: new Map([
+                  [parentSubjectId, [{ id: "0x10", content: "reference" }]],
+                  [childSubjectIds[0], [{ id: "0x20" }]],
+                  [childSubjectIds[1], [{ id: "0x30" }]],
+                ]),
+              });
+
+              const viewStateMock = moq.Mock.ofType<ViewState3d>();
+              viewStateMock.setup((x) => x.isSpatialView()).returns(() => true);
+              viewStateMock.setup((x) => x.viewsModel("0x10")).returns(() => false);
+              viewStateMock.setup((x) => x.viewsModel("0x20")).returns(() => false);
+              viewStateMock.setup((x) => x.viewsModel("0x30")).returns(() => true);
+
+              const vpMock = mockViewport({ viewState: viewStateMock.object });
+
+              await using(createHandler({ viewport: vpMock.object }), async (handler) => {
+                handler.setFilteredDataProvider(filteredProvider.object);
+                const result = handler.getVisibilityStatus(node, node.__key);
+                expect(isPromiseLike(result)).to.be.true;
+                if (isPromiseLike(result))
+                  expect(await result).to.include({ isDisplayed: true });
+                filteredProvider.verifyAll();
+              });
+            });
+
+            it("return false when subject node has children and children models are not visible", async () => {
+              const parentSubjectIds = ["0x1", "0x2"];
+              const childSubjectId = "0x3";
+              const node = createSubjectNode(parentSubjectIds);
+              const childNode = createSubjectNode(childSubjectId);
+
+              const filteredProvider = moq.Mock.ofType<IPresentationTreeDataProvider>();
+              filteredProvider.setup(async (x) => x.getNodes(node)).returns(async () => [childNode]).verifiable(moq.Times.once());
+              filteredProvider.setup(async (x) => x.getNodes(childNode)).returns(async () => []).verifiable(moq.Times.once());
+              filteredProvider.setup((x) => x.getNodeKey(childNode)).returns(() => childNode.__key).verifiable(moq.Times.once());
+
+              mockSubjectModelIds({
+                imodelMock,
+                subjectsHierarchy: new Map([
+                  [parentSubjectIds[0], [childSubjectId]],
+                  [parentSubjectIds[1], [childSubjectId]],
+                ]),
+                subjectModels: new Map([
+                  [parentSubjectIds[0], [{ id: "0x10", content: "reference" }]],
+                  [parentSubjectIds[1], [{ id: "0x20", content: "reference" }]],
+                  [childSubjectId, [{ id: "0x30" }]],
+                ]),
+              });
+
+              const viewStateMock = moq.Mock.ofType<ViewState3d>();
+              viewStateMock.setup((x) => x.isSpatialView()).returns(() => true);
+              viewStateMock.setup((x) => x.viewsModel("0x10")).returns(() => false);
+              viewStateMock.setup((x) => x.viewsModel("0x20")).returns(() => false);
+              viewStateMock.setup((x) => x.viewsModel("0x30")).returns(() => false);
+
+              const vpMock = mockViewport({ viewState: viewStateMock.object });
+
+              await using(createHandler({ viewport: vpMock.object }), async (handler) => {
+                handler.setFilteredDataProvider(filteredProvider.object);
+                const result = handler.getVisibilityStatus(node, node.__key);
+                expect(isPromiseLike(result)).to.be.true;
+                if (isPromiseLike(result))
+                  expect(await result).to.include({ isDisplayed: false });
+                filteredProvider.verifyAll();
+              });
+            });
+
           });
 
         });
@@ -1267,6 +1405,90 @@ describe("ModelsTree", () => {
               await handler.changeVisibility(node, node.__key, false);
               vpMock.verifyAll();
             });
+          });
+
+          describe("filtered", () => {
+
+            ["visible", "hidden"].map((mode) => {
+              it(`makes all subject models ${mode} when subject node does not have children`, async () => {
+                const node = createSubjectNode();
+                const key = node.__key.instanceKeys[0];
+                const subjectModelIds = ["0x1", "0x2"];
+
+                const filteredDataProvider = moq.Mock.ofType<IPresentationTreeDataProvider>();
+                filteredDataProvider.setup(async (x) => x.getNodes(node)).returns(async () => []).verifiable(moq.Times.once());
+
+                const viewStateMock = moq.Mock.ofType<SpatialViewState>();
+                viewStateMock.setup((x) => x.isSpatialView()).returns(() => true);
+
+                mockSubjectModelIds({
+                  imodelMock,
+                  subjectsHierarchy: new Map([]),
+                  subjectModels: new Map([
+                    [key.id, [{ id: subjectModelIds[0], content: "reference" }, { id: subjectModelIds[1] }]],
+                  ]),
+                });
+
+                const vpMock = mockViewport({ viewState: viewStateMock.object });
+                if (mode === "visible") {
+                  vpMock.setup(async (x) => x.addViewedModels(subjectModelIds)).verifiable();
+                } else {
+                  vpMock.setup((x) => x.changeModelDisplay(subjectModelIds, false)).verifiable();
+                }
+
+                await using(createHandler({ viewport: vpMock.object }), async (handler) => {
+                  handler.setFilteredDataProvider(filteredDataProvider.object);
+                  await handler.changeVisibility(node, node.__key, mode === "visible");
+                  vpMock.verifyAll();
+                  filteredDataProvider.verifyAll();
+                });
+              });
+
+              it(`makes subject hidden models and all children models ${mode}`, async () => {
+                const node = createSubjectNode("0x1");
+                const childNode = createSubjectNode("0x2");
+                const parentSubjectModelIds = ["0x10", "0x11"];
+                const childSubjectModelIds = ["0x20"];
+
+                const filteredDataProvider = moq.Mock.ofType<IPresentationTreeDataProvider>();
+                filteredDataProvider.setup(async (x) => x.getNodes(node)).returns(async () => [childNode]).verifiable(moq.Times.once());
+                filteredDataProvider.setup(async (x) => x.getNodes(childNode)).returns(async () => []).verifiable(moq.Times.once());
+                filteredDataProvider.setup((x) => x.getNodeKey(childNode)).returns(() => childNode.__key).verifiable(moq.Times.once());
+
+                const viewStateMock = moq.Mock.ofType<SpatialViewState>();
+                viewStateMock.setup((x) => x.isSpatialView()).returns(() => true);
+
+                mockSubjectModelIds({
+                  imodelMock,
+                  subjectsHierarchy: new Map([
+                    ["0x1", ["0x2"]],
+                  ]),
+                  subjectModels: new Map([
+                    ["0x1", [{ id: parentSubjectModelIds[0], content: "reference" }, { id: parentSubjectModelIds[1] }]],
+                    ["0x2", [{ id: childSubjectModelIds[0] }]],
+                  ]),
+                });
+
+                const vpMock = mockViewport({ viewState: viewStateMock.object });
+                if (mode === "visible") {
+                  vpMock.setup(async (x) => x.addViewedModels([parentSubjectModelIds[0]])).verifiable();
+                  vpMock.setup(async (x) => x.addViewedModels(childSubjectModelIds)).verifiable();
+                } else {
+                  vpMock.setup((x) => x.changeModelDisplay([parentSubjectModelIds[0]], false)).verifiable();
+                  vpMock.setup((x) => x.changeModelDisplay(childSubjectModelIds, false)).verifiable();
+                }
+
+                await using(createHandler({ viewport: vpMock.object }), async (handler) => {
+                  handler.setFilteredDataProvider(filteredDataProvider.object);
+                  await handler.changeVisibility(node, node.__key, mode === "visible");
+                  vpMock.verifyAll();
+                  filteredDataProvider.verifyAll();
+                });
+
+              });
+
+            });
+
           });
 
         });
