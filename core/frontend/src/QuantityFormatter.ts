@@ -36,15 +36,26 @@ interface UnitDefinition {
   readonly conversion: ConversionDef;
 }
 
+/** Interface that define methods that must be implemented by any Custom Formatter.
+ * @beta
+ */
 export interface CustomFormatter {
   formatQuantity(magnitude: number, spec: FormatterSpec): string;
   parseIntoQuantityValue(inString: string, spec: ParserSpec): ParseResult;
 }
 
+/** Override format entries must define formats for imperial and metric.
+ * @beta
+ */
 export interface OverrideFormatEntry {
   imperial: any;
   metric: any;
 }
+
+/** CustomFormatterSpec is used by a Custom Formatter to provide formatting
+ * capabilities outside that what is needed to do Property Formatting.
+ * @beta
+ */
 class CustomFormatterSpec extends FormatterSpec {
   private _quantityType: QuantityType;
   public get quantityType(): QuantityType { return this._quantityType; }
@@ -55,7 +66,6 @@ class CustomFormatterSpec extends FormatterSpec {
 }
 
 type CustomFormatterImpl<T extends CustomFormatter = CustomFormatter> = new () => T;
-
 type CustomFormatImpl = typeof Format;
 type CustomFormatPair = [CustomFormatImpl, { [value: string]: any }];
 
@@ -107,8 +117,11 @@ const unitData: UnitDefinition[] = [
 /** Defines standard format types for tools that need to display measurements to user.
  * @beta
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const QuantityType = { Length: 1, Angle: 2, Area: 3, Volume: 4, LatLong: 5, Coordinate: 6, Stationing: 7, LengthSurvey: 8, LengthEngineering: 9 };
+export const QuantityType = { Length: 1, Angle: 2, Area: 3, Volume: 4, LatLong: 5, Coordinate: 6, Stationing: 7, LengthSurvey: 8, LengthEngineering: 9 }; //  eslint-disable-line @typescript-eslint/naming-convention
+
+/** QuantityTypes can be numeric 1-9 for standard format types or string for custom format types.
+ * @beta
+ */
 export type QuantityType = (typeof QuantityType)[keyof typeof QuantityType] | string;
 
 // The following provide default formats for different the QuantityTypes. It is important to note that these default should reference
@@ -442,7 +455,7 @@ const defaultFormatProps = {
   type: "Decimal",
 };
 
-/** Formats quantity values into strings.
+/** Formats quantity values into strings and provides parsing of strings to quantity values.
  * @beta
  */
 export class QuantityFormatter implements UnitsProvider {

@@ -67,6 +67,12 @@ export enum DecimalPrecision {
 export class Format implements FormatProps {
     constructor(name: string);
     // (undocumented)
+    protected addCustomPropsToJson(schemaJson: {
+        [value: string]: any;
+    }): {
+        [value: string]: any;
+    };
+    // (undocumented)
     get decimalSeparator(): string;
     // (undocumented)
     protected _decimalSeparator: string;
@@ -84,6 +90,8 @@ export class Format implements FormatProps {
     get includeZero(): boolean | undefined;
     // (undocumented)
     protected _includeZero: boolean;
+    // (undocumented)
+    protected loadCustomPropsFromJson(_unitsProvider: UnitsProvider, _jsonObj: any): Promise<void>;
     // (undocumented)
     get minWidth(): number | undefined;
     // (undocumented)
