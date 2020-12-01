@@ -80,7 +80,7 @@ export abstract class UiLayoutDataProvider extends UiDataProvider {
   /** Applies change of a single property - this is the default method used when property editors are dynamically generated. */
   // istanbul ignore next
   public applyUiPropertyChange = (_updatedValue: DialogPropertySyncItem): void => {
-    throw (new Error ("Derived UiDataProvider should implement this to apply change to a single property."));
+    throw (new Error("Derived UiDataProvider should implement this to apply change to a single property."));
   };
 
   private _rows: DialogRow[] | undefined;
@@ -100,8 +100,8 @@ export abstract class UiLayoutDataProvider extends UiDataProvider {
 
   /** Called by UI to request available properties that can be bound to user supplied UI components (See Tool1UiProvider for example). */
   // istanbul ignore next
-  public supplyDialogItems(): DialogItem[]|undefined {
-    throw (new Error ("Derived UiDataProvider must implement this method to supply set of properties."));
+  public supplyDialogItems(): DialogItem[] | undefined {
+    throw (new Error("Derived UiDataProvider must implement this method to supply set of properties."));
   }
 
   public get items(): ReadonlyArray<DialogItem> {
@@ -116,7 +116,7 @@ export abstract class UiLayoutDataProvider extends UiDataProvider {
     this.loadItemsInternal(this.supplyDialogItems());
     // istanbul ignore else
     if (emitEvent)
-      this.onItemsReloadedEvent.emit();
+      this.fireItemsReloadedEvent();
   }
 
   /**
