@@ -254,6 +254,12 @@ export class ComponentExamplesProvider {
       console.log(`color picked: ${color.toRgbaString()}`);
     };
 
+    const onPopupClose = (color: ColorDef) => {
+      const msg = `popup color value: ${color.toRgbaString()}`;
+      console.log(msg);
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
+    };
+
     return {
       title: "Color Controls",
       examples: [
@@ -262,7 +268,7 @@ export class ComponentExamplesProvider {
         createComponentExample("Color Picker Button", undefined,
           <ColorPickerButton initialColor={colorDef} onColorPick={handleColorPick} />),
         createComponentExample("Color Picker Dialog", undefined, <ColorPickerToggle />),
-        createComponentExample("Color Picker Popup", undefined, <ColorPickerPopup initialColor={colorDef} />),
+        createComponentExample("Color Picker Popup", undefined, <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} />),
       ],
     };
   }
