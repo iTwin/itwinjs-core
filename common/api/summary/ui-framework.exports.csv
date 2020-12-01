@@ -558,7 +558,7 @@ beta;ToolSettingsEntry
 beta;ToolSettingsGrid({ settings }: ToolSettingsGridProps): JSX.Element
 beta;ToolSettingsGridContainer({ componentGenerator }:
 beta;ToolSettingsGridProps
-internal;ToolSettingsManager
+beta;ToolSettingsManager
 internal;ToolSettingsWidgetContent(): JSX.Element
 internal;ToolSettingsZone 
 internal;ToolSettingsZoneProps 
