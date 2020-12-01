@@ -8,13 +8,13 @@
 
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { countMatchesInString } from "../../../common/countMatchesInString";
-import { PropertyDataFiltererBase, PropertyDataFilterResult } from "./PropertyDataFiltererBase";
+import { FilteredType, PropertyDataFilterResult, PropertyRecordDataFiltererBase } from "./PropertyDataFiltererBase";
 
 /**
  * PropertyData filterer which matches on Primitive Property Record display value text.
  * @alpha
  */
-export class DisplayValuePropertyDataFilterer extends PropertyDataFiltererBase {
+export class DisplayValuePropertyDataFilterer extends PropertyRecordDataFiltererBase {
   private _filterText: string = "";
 
   public constructor(filterText: string = "") {
@@ -49,11 +49,8 @@ export class DisplayValuePropertyDataFilterer extends PropertyDataFiltererBase {
     return {
       matchesFilter: true,
       shouldExpandNodeParents: true,
-      matchesCount: { value: matchesCount },
+      matchesCount,
+      filteredTypes: [FilteredType.Value],
     };
-  }
-
-  public async categoryMatchesFilter(): Promise<PropertyDataFilterResult> {
-    return { matchesFilter: !this.isActive };
   }
 }

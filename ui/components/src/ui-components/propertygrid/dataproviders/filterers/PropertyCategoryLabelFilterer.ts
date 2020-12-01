@@ -6,16 +6,15 @@
  * @module PropertyGrid
  */
 
-
 import { countMatchesInString } from "../../../common/countMatchesInString";
 import { PropertyCategory } from "../../PropertyDataProvider";
-import { PropertyDataFiltererBase, PropertyDataFilterResult } from "./PropertyDataFiltererBase";
+import { FilteredType, PropertyCategoryDataFiltererBase, PropertyDataFilterResult } from "./PropertyDataFiltererBase";
 
 /**
  * PropertyData filterer which matches on PropertyCategory's label.
  * @alpha
  */
-export class CategoryPropertyDataFilterer extends PropertyDataFiltererBase {
+export class PropertyCategoryLabelFilterer extends PropertyCategoryDataFiltererBase {
   private _filterText: string = "";
 
   public constructor(filterText: string = "") {
@@ -34,10 +33,6 @@ export class CategoryPropertyDataFilterer extends PropertyDataFiltererBase {
 
   public get isActive() { return this.filterText !== ""; }
 
-  public async recordMatchesFilter(): Promise<PropertyDataFilterResult> {
-    return { matchesFilter: !this.isActive };
-  }
-
   public async categoryMatchesFilter(node: PropertyCategory): Promise<PropertyDataFilterResult> {
     if (!this.isActive)
       return { matchesFilter: true };
@@ -52,7 +47,8 @@ export class CategoryPropertyDataFilterer extends PropertyDataFiltererBase {
       matchesFilter: true,
       shouldExpandNodeParents: true,
       shouldForceIncludeDescendants: true,
-      matchesCount: { label: matchesCount },
+      matchesCount,
+      filteredTypes: [FilteredType.Category],
     };
   }
 }

@@ -9,7 +9,7 @@
 import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
 import { HighlightedText } from "../../common/HighlightedText";
-import { HighlightedPropertyProps } from "../../propertygrid/component/VirtualizedPropertyGrid";
+import { HighlightingComponentProps } from "../../propertygrid/component/VirtualizedPropertyGrid";
 import { CommonPropertyRenderer } from "./CommonPropertyRenderer";
 import { PrimitivePropertyLabelRenderer } from "./label/PrimitivePropertyLabelRenderer";
 import { SharedRendererProps } from "./PropertyRenderer";
@@ -25,10 +25,10 @@ export interface PrimitiveRendererProps extends SharedRendererProps {
   valueElementRenderer?: () => React.ReactNode;
   /** Multiplier of how much the property is indented to the right */
   indentation?: number;
-  /** Properties used for record highlighting
+  /** Properties used for highlighting
    * @beta
   */
-  highlightedPropertyProps?: HighlightedPropertyProps;
+  highlight?: HighlightingComponentProps;
 }
 
 /** React Component that renders primitive properties
@@ -41,13 +41,13 @@ export class PrimitivePropertyRenderer extends React.Component<PrimitiveRenderer
 
   /** @internal */
   public render() {
-    const { children, indentation, highlightedPropertyProps, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
+    const { children, indentation, highlight, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
     const displayLabel = this.props.propertyRecord.property.displayLabel;
     const offset = CommonPropertyRenderer.getLabelOffset(indentation, props.orientation, props.width, props.columnRatio, props.columnInfo?.minLabelWidth);
 
-    const activeMatchIndex = this.props.propertyRecord.property.name === highlightedPropertyProps?.activeMatch?.propertyName? highlightedPropertyProps.activeMatch.matchIndex : undefined;
-    const label = highlightedPropertyProps ?
-      (HighlightedText({ text: displayLabel, searchText: highlightedPropertyProps.searchText, activeMatchIndex })) :
+    const activeMatchIndex = this.props.propertyRecord.property.name === highlight?.activeMatch?.highlightedItemIdentifier ? highlight.activeMatch.highlightIndex : undefined;
+    const label = highlight ?
+      (HighlightedText({ text: displayLabel, searchText: highlight.highlightedText, activeMatchIndex })) :
       displayLabel;
 
     return (

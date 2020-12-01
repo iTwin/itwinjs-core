@@ -11,7 +11,7 @@ import { SpecialKey } from "@bentley/ui-abstract";
 import { CommonProps, ExpandableBlock } from "@bentley/ui-core";
 import { HighlightedText } from "../../common/HighlightedText";
 import { PropertyCategory } from "../PropertyDataProvider";
-import { HighlightedPropertyProps } from "./VirtualizedPropertyGrid";
+import { HighlightingComponentProps } from "./VirtualizedPropertyGrid";
 
 /**
  * Properties for the [[PropertyCategoryBlock]] React component
@@ -22,10 +22,10 @@ export interface PropertyCategoryBlockProps extends CommonProps {
   category: PropertyCategory;
   /** Callback to when PropertyCategoryBlock gets expended or collapsed */
   onExpansionToggled?: (categoryName: string) => void;
-  /** Properties used for property highlighting
+  /** Properties used for highlighting
   * @beta
   */
-  highlightedPropertyProps?: HighlightedPropertyProps;
+  highlight?: HighlightingComponentProps & {applyOnCategory: boolean};
 }
 
 /**
@@ -59,10 +59,10 @@ export class PropertyCategoryBlock extends React.Component<PropertyCategoryBlock
 
   /** @internal */
   public render() {
-    const { highlightedPropertyProps, category, children, ...props} = this.props;
-    const activeMatchIndex = this.props.category.name === highlightedPropertyProps?.activeMatch?.propertyName ? highlightedPropertyProps.activeMatch.matchIndex : undefined;
-    const label = highlightedPropertyProps ?
-      (HighlightedText({ text: category.label, searchText: highlightedPropertyProps.searchText, activeMatchIndex })) :
+    const { highlight, category, children, ...props} = this.props;
+    const activeMatchIndex = this.props.category.name === highlight?.activeMatch?.highlightedItemIdentifier ? highlight.activeMatch.highlightIndex : undefined;
+    const label = highlight?.applyOnCategory ?
+      (<HighlightedText text={category.label} activeMatchIndex={activeMatchIndex} searchText={highlight.highlightedText} />) :
       category.label;
     return (
       <ExpandableBlock

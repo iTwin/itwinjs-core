@@ -13,9 +13,9 @@ import {
 import { FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import {
-  ActionButtonRendererProps, CategoryPropertyDataFilterer, CompositeFilterType, CompositePropertyDataFilterer, DisplayValuePropertyDataFilterer,
-  FilteringInput, FilteringInputStatus, FilteringPropertyDataProvider, LabelPropertyDataFilterer, PropertyCategory, PropertyData,
-  PropertyGridContextMenuArgs, PropertyMatchInfo, useAsyncValue, useDebouncedAsyncValue, VirtualizedPropertyGridWithDataProvider,
+  ActionButtonRendererProps, CompositeFilterType, CompositePropertyDataFilterer, DisplayValuePropertyDataFilterer, FilteringInput,
+  FilteringInputStatus, FilteringPropertyDataProvider, HighlightInfo, LabelPropertyDataFilterer, PropertyCategory, PropertyCategoryLabelFilterer,
+  PropertyData, PropertyGridContextMenuArgs, useAsyncValue, useDebouncedAsyncValue, VirtualizedPropertyGridWithDataProvider,
 } from "@bentley/ui-components";
 import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Orientation, Toggle, useDisposable } from "@bentley/ui-core";
 
@@ -32,7 +32,7 @@ export function PropertiesWidget(props: Props) {
 
   const [activeMatchIndex, setActiveMatchIndex] = React.useState(0);
   const [filteringProvDataChanged, setFilteringProvDataChanged] = React.useState({});
-  const [activeMatch, setActiveMatch] = React.useState<PropertyMatchInfo>();
+  const [activeMatch, setActiveMatch] = React.useState<HighlightInfo>();
   const { isOverLimit } = usePropertyDataProviderWithUnifiedSelection({ dataProvider });
 
   const renderFavoritesActionButton = React.useCallback((buttonProps: ActionButtonRendererProps) => (<FavoritePropertyActionButton {...buttonProps} dataProvider={dataProvider} />), [dataProvider]);
@@ -60,7 +60,7 @@ export function PropertiesWidget(props: Props) {
   const filteringDataProvider = useDisposable(React.useCallback(() => {
     const valueFilterer = new DisplayValuePropertyDataFilterer(filterText);
     const labelFilterer = new LabelPropertyDataFilterer(filterText);
-    const categoryFilterer = new CategoryPropertyDataFilterer(filterText);
+    const categoryFilterer = new PropertyCategoryLabelFilterer(filterText);
     const favoriteFilterer = new FavoritePropertiesDataFilterer({ source: dataProvider, favoritesScope: FAVORITES_SCOPE, isActive: isFavoritesFilterActive });
 
     const recordFilterer = new CompositePropertyDataFilterer(labelFilterer, CompositeFilterType.Or, valueFilterer);
@@ -85,8 +85,11 @@ export function PropertiesWidget(props: Props) {
       onSelectedChanged: (index: React.SetStateAction<number>) => setActiveMatchIndex(index),
       resultCount: filteringResult.matchesCount,
     } : undefined;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filteringResult, filteringProvDataChanged]);
+  }, [filteringResult]);
+
+  const filteredTypes = React.useMemo(()=>{
+    return filteringResult?.filteredTypes;
+  }, [filteringResult]);
 
   React.useEffect(() => {
     if (filteringResult?.getMatchByIndex)
@@ -110,8 +113,8 @@ export function PropertiesWidget(props: Props) {
       actionButtonRenderers={[renderFavoritesActionButton, renderCopyActionButton]}
       orientation={Orientation.Horizontal}
       horizontalOrientationMinWidth={500}
-      highlightedPropertyProps={filterText && filterText.length !== 0 ?
-        { searchText: filterText, activeMatch } :
+      highlight={filterText && filterText.length !== 0 ?
+        { highlightedText: filterText, activeMatch, filteredTypes }:
         undefined
       }
     />);

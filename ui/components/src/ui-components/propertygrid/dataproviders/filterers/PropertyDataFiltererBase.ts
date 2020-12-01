@@ -11,6 +11,16 @@ import { PropertyRecord } from "@bentley/ui-abstract";
 import { PropertyCategory } from "../../PropertyDataProvider";
 
 /**
+ * Enumeration of possible component filtered types
+ * @beta
+ */
+export enum FilteredType {
+  Category,
+  Label,
+  Value
+}
+
+/**
  * Data structure for storing IPropertyDataFilterer matching results
  * @alpha
  */
@@ -33,7 +43,12 @@ export interface PropertyDataFilterResult {
   /**
    * Indicates how many times filter was matched in the provided item.
    */
-  matchesCount?: { label?: number, value?: number };
+  matchesCount?: number;
+
+  /**
+   * Indicates what item types were matched.
+   */
+  filteredTypes?: FilteredType[];
 }
 
 /**
@@ -68,4 +83,22 @@ export abstract class PropertyDataFiltererBase implements IPropertyDataFilterer 
   public abstract get isActive(): boolean;
   public abstract async recordMatchesFilter(node: PropertyRecord, parents: PropertyRecord[]): Promise<PropertyDataFilterResult>;
   public abstract async categoryMatchesFilter(node: PropertyCategory, parents: PropertyCategory[]): Promise<PropertyDataFilterResult>;
+}
+/**
+ * PropertyDataFilter base which is suited for only Category filtering
+ * @alpha
+ */
+export abstract class PropertyCategoryDataFiltererBase extends PropertyDataFiltererBase {
+  public async recordMatchesFilter(): Promise<PropertyDataFilterResult> {
+    return { matchesFilter: !this.isActive };
+  };
+}
+/**
+ * PropertyDataFilter base which is suited for only Record filtering
+ * @alpha
+ */
+export abstract class PropertyRecordDataFiltererBase extends PropertyDataFiltererBase {
+  public async categoryMatchesFilter(): Promise<PropertyDataFilterResult> {
+    return { matchesFilter: !this.isActive };
+  };
 }

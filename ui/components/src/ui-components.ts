@@ -140,7 +140,7 @@ export * from "./ui-components/propertygrid/internal/PropertyGridModel";
 export * from "./ui-components/propertygrid/internal/PropertyGridModelChangeEvent";
 export * from "./ui-components/propertygrid/internal/PropertyGridModelSource";
 export * from "./ui-components/propertygrid/dataproviders/FilteringDataProvider";
-export * from "./ui-components/propertygrid/dataproviders/filterers/CategoryPropertyDataFilterer";
+export * from "./ui-components/propertygrid/dataproviders/filterers/PropertyCategoryLabelFilterer";
 export * from "./ui-components/propertygrid/dataproviders/filterers/CompositePropertyDataFilterer";
 export * from "./ui-components/propertygrid/dataproviders/filterers/DisplayValuePropertyDataFilterer";
 export * from "./ui-components/propertygrid/dataproviders/filterers/LabelPropertyDataFilterer";

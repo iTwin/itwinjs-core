@@ -15,7 +15,7 @@ import { areEqual, ListChildComponentProps, VariableSizeList } from "react-windo
 import { assert } from "@bentley/bentleyjs-core";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { Orientation, RatioChangeResult } from "@bentley/ui-core";
-import { MutableCategorizedPrimitiveProperty, MutableGridCategory } from "../../../ui-components";
+import { FilteredType, MutableCategorizedPrimitiveProperty, MutableGridCategory } from "../../../ui-components";
 import { createContextWithMandatoryProvider } from "../../common/UseContextWithMandatoryProvider";
 import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
 import { ActionButtonRenderer } from "../../properties/renderers/ActionButtonRenderer";
@@ -39,7 +39,7 @@ import { PropertyGridEventsRelatedPropsSupplier } from "./PropertyGridEventsRela
 export interface VirtualizedPropertyGridProps extends CommonPropertyGridProps {
   model: IPropertyGridModel;
   eventHandler: IPropertyGridEventHandler;
-  highlightedPropertyProps?: HighlightedPropertyProps;
+  highlight?: HighlightingComponentProps & { filteredTypes?: FilteredType[] };
 }
 
 /** State of [[VirtualizedPropertyGrid]] React component
@@ -91,35 +91,30 @@ export interface VirtualizedPropertyGridContext {
     onResizeHandleDragChanged?: (isDragStarted: boolean) => void;
     columnInfo?: PropertyGridColumnInfo;
 
-    highlightedPropertyProps?: HighlightedPropertyProps;
+    highlight?: HighlightingComponentProps & { filteredTypes?: FilteredType[] };
   };
 }
 
 /**
- * Record or Category match info used for identification of a specific match in a record
- * while also giving enough information about label and value matches counts
- * to know exactly where the match is located
+ * Record or Category match info used for identification of a specific match in record or category
  * @beta
  */
-export interface PropertyMatchInfo {
+export interface HighlightInfo {
   /* Name of the record's or category's property, used for its identification */
-  propertyName: string;
-  /* Index of actively highlighted part in a record or category */
-  matchIndex: number;
-  /* Number of label matches found in a record or category, used for distinguishing label matches and value matches */
-  matchCounts: { label: number, value: number };
+  highlightedItemIdentifier: string;
+  /* Index of highlighted part in a record or category */
+  highlightIndex: number;
 }
 
 /**
- * Properties used for [[VirtualizedPropertyGrid]]
- * Used for highlighting matching parts in records and actively highlighting one match in a specific record
+ * Properties used for highlighting matching parts in records or categories and actively highlighting one match in a specific record or category
  * @beta
  */
-export interface HighlightedPropertyProps {
+export interface HighlightingComponentProps {
   /* Filter text which we want to highlight */
-  searchText: string;
-  /* Information about the record which we want to actively highlight */
-  activeMatch?: PropertyMatchInfo;
+  highlightedText: string;
+  /* Information about the match which we want to actively highlight */
+  activeMatch?: HighlightInfo;
 }
 
 /**
@@ -175,13 +170,13 @@ export class VirtualizedPropertyGrid extends React.Component<VirtualizedProperty
       this._listRef.current?.resetAfterIndex(0);
     }
 
-    if (this.props.highlightedPropertyProps !== prevProps.highlightedPropertyProps && this.props.highlightedPropertyProps?.activeMatch && this.state.gridItems.length !== 0) {
+    if (this.props.highlight !== prevProps.highlight && this.props.highlight?.activeMatch && this.state.gridItems.length !== 0) {
 
       let index = 0;
       let foundMatchingItem = false;
       for (const item of this.state.gridItems) {
-        if (item instanceof MutableCategorizedPrimitiveProperty && this.props.highlightedPropertyProps?.activeMatch?.propertyName === item.derivedRecord.property.name
-          || item instanceof MutableGridCategory && this.props.highlightedPropertyProps?.activeMatch?.propertyName === item.name) {
+        if (item instanceof MutableCategorizedPrimitiveProperty && this.props.highlight?.activeMatch?.highlightedItemIdentifier === item.derivedRecord.property.name
+          || item instanceof MutableGridCategory && this.props.highlight?.activeMatch?.highlightedItemIdentifier === item.name) {
           foundMatchingItem = true;
           break;
         }
@@ -336,7 +331,7 @@ export class VirtualizedPropertyGrid extends React.Component<VirtualizedProperty
                     actionButtonRenderers: this.props.actionButtonRenderers,
 
                     onNodeHeightChanged: this._handleNodeHeightChange,
-                    highlightedPropertyProps: this.props.highlightedPropertyProps,
+                    highlight: this.props.highlight,
                   },
                 };
 
@@ -397,7 +392,10 @@ const FlatGridItemNode = React.memo(
                 style={gridContext.style}
                 category={node.derivedCategory}
                 onExpansionToggled={onExpansionToggled}
-                highlightedPropertyProps={gridContext.highlightedPropertyProps}
+                highlight={gridContext.highlight ?
+                  { applyOnCategory: (gridContext.highlight.filteredTypes?.includes(FilteredType.Category)) ?? false, ...gridContext.highlight } :
+                  undefined
+                }
               />
             </FlatItemNestedBorderWrapper>
           );
@@ -449,7 +447,10 @@ const FlatGridItemNode = React.memo(
                 onResizeHandleDragChanged={gridContext.onResizeHandleDragChanged}
                 onResizeHandleHoverChanged={gridContext.onResizeHandleHoverChanged}
 
-                highlightedPropertyProps={gridContext.highlightedPropertyProps}
+                highlight={gridContext.highlight ?
+                  { applyOnLabel: (gridContext.highlight.filteredTypes?.includes(FilteredType.Label)) ?? false, applyOnValue: (gridContext.highlight.filteredTypes?.includes(FilteredType.Value)) ?? false, ...gridContext.highlight } :
+                  undefined
+                }
               />
             </FlatItemNestedBorderWrapper>
           );
