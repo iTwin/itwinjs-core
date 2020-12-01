@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-abstract",
+      "comment": "Refactor DialogItem and Property interfaces to make them easier to use.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-abstract",
+  "email": "45079789+NancyMcCallB@users.noreply.github.com"
+}
