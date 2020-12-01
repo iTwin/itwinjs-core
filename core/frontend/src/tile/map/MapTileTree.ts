@@ -129,7 +129,7 @@ export class MapTileTree extends RealityTileTree {
     (this._rootTile as MapTile).clearLayers();
   }
 
-  public static minReprojectionDepth = 2;             // Reprojection does not work with very large tiles so just do linear transform.
+  public static minReprojectionDepth = 8;             // Reprojection does not work with very large tiles so just do linear transform.
   public static maxGlobeDisplayDepth = 8;
   public static minDisplayableDepth = 3;
   public get mapLoader() { return this.loader as MapTileLoader; }
