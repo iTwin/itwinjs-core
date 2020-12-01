@@ -159,19 +159,16 @@ export abstract class MapTilingScheme {
   public computeMercatorFractionToDb(ecefToDb: Transform, bimElevationOffset: number, iModel: IModelConnection, applyTerrain: boolean) {
     const dbToEcef = ecefToDb.inverse()!;
 
-    const projectExtents = iModel.projectExtents;
-    const projectCenter = Point3d.create(projectExtents.center.x, projectExtents.center.y, bimElevationOffset);
-    const xMagnitude = 1; // projectExtents.high.x - projectCenter.x;
-    const yMagnitude = 1; // projectExtents.high.y - projectCenter.y;
-    const projectEast = projectCenter.plusXYZ(xMagnitude, 0, 0);
-    const projectNorth = projectCenter.plusXYZ(0, yMagnitude, 0);
+    const projectCenter = Point3d.create(iModel.projectExtents.center.x, iModel.projectExtents.center.y, bimElevationOffset);
+    const projectEast = projectCenter.plusXYZ(1, 0, 0);
+    const projectNorth = projectCenter.plusXYZ(0, 1, 0);
 
     const mercatorOrigin = this.ecefToPixelFraction(dbToEcef.multiplyPoint3d(projectCenter), applyTerrain);
     const mercatorX = this.ecefToPixelFraction(dbToEcef.multiplyPoint3d(projectEast), applyTerrain);
     const mercatorY = this.ecefToPixelFraction(dbToEcef.multiplyPoint3d(projectNorth), applyTerrain);
 
-    const deltaX = Vector3d.createStartEnd(mercatorOrigin, mercatorX).scale(1 / xMagnitude);
-    const deltaY = Vector3d.createStartEnd(mercatorOrigin, mercatorY).scale(1 / yMagnitude);
+    const deltaX = Vector3d.createStartEnd(mercatorOrigin, mercatorX);
+    const deltaY = Vector3d.createStartEnd(mercatorOrigin, mercatorY);
     const matrix = Matrix3d.createColumns(deltaX, deltaY, Vector3d.create(0, 0, 1));
 
     const dbToMercator = Transform.createMatrixPickupPutdown(matrix, projectCenter, mercatorOrigin);
