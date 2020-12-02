@@ -19,14 +19,19 @@ export class ObservableSet<T> extends Set<T> {
   /** Emitted after this set's contents are cleared. */
   public readonly onCleared = new BeEvent<() => void>();
 
-  /** @internal */
-  public add(item: T): this {
-    const prevSize = this.size;
-    const ret = super.add(item);
-    if (this.size !== prevSize)
-      this.onAdded.raiseEvent(item);
+  /** Construct a new ObservableSet from the specified elements. */
+  public constructor(elements?: Iterable<T> | undefined) {
+    // NB: Set constructor will invoke add(). Do not override until initialized.
+    super(elements);
 
-    return ret;
+    this.add = (item: T) => { // eslint-disable-line @typescript-eslint/unbound-method
+      const prevSize = this.size;
+      const ret = super.add(item);
+      if (this.size !== prevSize)
+        this.onAdded.raiseEvent(item);
+
+      return ret;
+    };
   }
 
   /** @internal */
