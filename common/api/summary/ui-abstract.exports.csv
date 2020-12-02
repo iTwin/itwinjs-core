@@ -45,6 +45,7 @@ public;DialogButtonType
 beta;DialogItem 
 beta;DialogItemValue
 beta;class DialogLayoutDataProvider 
+beta;DialogProperty
 beta;DialogPropertyItem
 beta;DialogPropertySyncItem 
 beta;DialogProps
@@ -109,6 +110,7 @@ beta;PropertyChangeResult
 beta;PropertyChangeStatus
 beta;PropertyConverterInfo
 beta;PropertyDescription
+alpha;PropertyDescriptionHelper
 beta;PropertyEditorInfo
 beta;PropertyEditorParams = BasePropertyEditorParams
 beta;PropertyEditorParamTypes
