@@ -20,7 +20,7 @@
     "clean": "rimraf build lib .rush/temp/package-deps*.json",
     "docs": "npm run extract",
     "extract": "betools extract --fileExt=ts,tsx --extractFrom=./src --recursive --out=../../generated-docs/extract",
-    "lint": "eslint -f visualstudio --config package.json --max-warnings 0 --no-eslintrc ./src/**/*.{ts,tsx} 1>&2",
+    "lint": "eslint -f visualstudio --config package.json --no-eslintrc ./src/**/*.{ts,tsx} 1>&2",
     "electron": "run-p start:webserver start:electron",
     "start:electron": "electron ./lib/backend/main.js",
     "start:webserver": "cross-env BROWSER=none USE_FAST_SASS=true EXTEND_ESLINT=true react-scripts start",

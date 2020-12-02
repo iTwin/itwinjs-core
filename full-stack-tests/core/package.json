@@ -11,7 +11,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json coverage",
     "cover": "npm run test:chrome -- --cover && npm run test:electron -- --cover",
     "docs": "",
-    "lint": "eslint -f visualstudio --max-warnings 0 ./src/**/*.ts 1>&2",
+    "lint": "eslint -f visualstudio ./src/**/*.ts 1>&2",
     "test": "npm run test:chrome && npm run test:electron",
     "test:chrome": "certa -r chrome --grep \"#integration\" --invert",
     "test:electron": "certa -r electron --grep \"#integration\" --invert",

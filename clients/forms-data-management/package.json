@@ -16,7 +16,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "extract-api": "betools extract-api --entry=forms-data-management-client",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/clients/forms-data-management-client/file.json --tsIndexFile=forms-data-management-client.ts --onlyJson",
-    "lint": "eslint -f visualstudio --max-warnings 0 ./src/**/*.ts 1>&2",
+    "lint": "eslint -f visualstudio ./src/**/*.ts 1>&2",
     "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2",
     "test": "",
     "test:integration": "npm run webpackTests && npm run test:integration:chrome",

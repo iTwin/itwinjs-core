@@ -13,7 +13,7 @@
     "cover": "npm test -- --cover",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/hypermodeling-frontend/file.json --tsIndexFile=./hypermodeling-frontend.ts --onlyJson",
     "extract-api": "betools extract-api --entry=hypermodeling-frontend",
-    "lint": "eslint -f visualstudio --max-warnings 0 ./src/**/*.ts 1>&2",
+    "lint": "eslint -f visualstudio ./src/**/*.ts 1>&2",
     "pseudolocalize": "betools pseudolocalize --englishDir ./src/public/locales/en --out ./lib/public/locales/en-PSEUDO",
     "test": "npm run webpackTests && certa -r chrome",
     "test:debug": "certa -r chrome --debug",

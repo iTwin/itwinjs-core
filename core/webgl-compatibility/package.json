@@ -12,7 +12,7 @@
     "cover": "npm test -- --cover",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/webgl-compatibility/file.json --tsIndexFile=./webgl-compatibility.ts --onlyJson",
     "extract-api": "betools extract-api --entry=webgl-compatibility",
-    "lint": "eslint -f visualstudio --max-warnings 0 ./src/**/*.ts 1>&2",
+    "lint": "eslint -f visualstudio ./src/**/*.ts 1>&2",
     "test": "npm run webpackTests && certa -r chrome",
     "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2"
   },

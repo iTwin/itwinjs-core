@@ -14,7 +14,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/express-server/file.json --tsIndexFile=./ExpressServer.ts --onlyJson",
     "extract-api": "betools extract-api --entry=ExpressServer",
-    "lint": "eslint -f visualstudio --max-warnings 0 ./src/**/*.ts 1>&2",
+    "lint": "eslint -f visualstudio ./src/**/*.ts 1>&2",
     "test": "betools test",
     "cover": "nyc npm test"
   },
