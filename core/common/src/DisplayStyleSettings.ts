@@ -8,7 +8,9 @@
 
 // cspell:ignore greyscale ovrs
 
-import { assert, BeEvent, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import {
+  assert, BeEvent, CompressedId64Set, Id64, Id64Array, Id64String, JsonUtils, MutableCompressedId64Set, ObservableSet, OrderedId64Iterable,
+} from "@bentley/bentleyjs-core";
 import { XYZProps } from "@bentley/geometry-core";
 import { AmbientOcclusion } from "./AmbientOcclusion";
 import { AnalysisStyle, AnalysisStyleProps } from "./AnalysisStyle";
@@ -142,8 +144,8 @@ export interface DisplayStyleSettingsProps {
   backgroundMap?: BackgroundMapProps;
   /** Contextual Reality Models */
   contextRealityModels?: ContextRealityModelProps[];
-  /** List of IDs of excluded elements */
-  excludedElements?: Id64String[];
+  /** Ids of elements not to be displayed in the view. Prefer the compressed format, especially when sending between frontend and backend - the number of Ids may be quite large. */
+  excludedElements?: Id64Array | CompressedId64Set;
   /** Map Imagery.
    * @alpha
    */
@@ -238,6 +240,108 @@ export interface DisplayStyleOverridesOptions {
   includeBackgroundMap?: true;
 }
 
+/** DisplayStyleSettings initially persisted its excluded elements as an array of Id64Strings in JSON, and exposed them as a Set<string>.
+ * This becomes problematic when these arrays become very large, in terms of the amount of data and the time required to convert them to a Set.
+ * The Ids are now persisted to JSON as a [[CompressedId64Set]], significantly reducing their size. However, for backwards API compatibility we must
+ * continue to expose [[DisplayStyleSettings.excludedElements]] as a Set<string>. The [[ExcludedElements]] class tries to minimize the impact of that requirement by
+ * maintaining the Ids primarily as a [[MutableCompressedId64Set]], only allocating the Set<string> if a caller actually requests it.
+ * The only operation Set provides more efficiently than MutableCompressedId64Set is checking for the presence of an Id (the `has()` method).
+ * @internal
+ */
+class ExcludedElements implements OrderedId64Iterable {
+  private readonly _json: DisplayStyleSettingsProps;
+  private readonly _ids: MutableCompressedId64Set;
+  private _set?: ObservableSet<Id64String>;
+  private _synchronizing = false;
+
+  public constructor(json: DisplayStyleSettingsProps) {
+    this._json = json;
+    if (Array.isArray(json.excludedElements))
+      this._ids = new MutableCompressedId64Set(CompressedId64Set.compressIds(OrderedId64Iterable.sortArray(json.excludedElements)));
+    else
+      this._ids = new MutableCompressedId64Set(json.excludedElements);
+  }
+
+  public reset(ids: CompressedId64Set | OrderedId64Iterable | undefined) {
+    this.synchronize(() => {
+      this._set?.clear();
+      this._ids.reset((ids && "string" !== typeof ids) ? CompressedId64Set.compressIds(ids) : ids);
+    });
+  }
+
+  public get ids(): CompressedId64Set {
+    return this._ids.ids;
+  }
+
+  public add(ids: Iterable<Id64String>): void {
+    this.synchronize(() => {
+      for (const id of ids) {
+        this._ids.add(id);
+        this._set?.add(id);
+      }
+    });
+  }
+
+  public delete(ids: Iterable<Id64String>): void {
+    this.synchronize(() => {
+      for (const id of ids) {
+        this._ids.delete(id);
+        this._set?.delete(id);
+      }
+    });
+  }
+
+  public obtainSet(): Set<Id64String> {
+    if (this._set)
+      return this._set;
+
+    this.synchronize(() => {
+      this._set = new ObservableSet<string>(this._ids);
+      this._set.onAdded.addListener((id) => this.onAdded(id));
+      this._set.onDeleted.addListener((id) => this.onDeleted(id));
+      this._set.onCleared.addListener(() => this.onCleared());
+    });
+
+    assert(undefined !== this._set);
+    return this._set;
+  }
+
+  public [Symbol.iterator]() {
+    return this._ids[Symbol.iterator]();
+  }
+
+  private onAdded(id: Id64String): void {
+    this.synchronize(() => this._ids.add(id));
+  }
+
+  private onDeleted(id: Id64String): void {
+    this.synchronize(() => this._ids.delete(id));
+  }
+
+  private onCleared(): void {
+    this.synchronize(() => this._ids.clear());
+  }
+
+  /** The JSON must be kept up-to-date at all times. */
+  private synchronize(func: () => void): void {
+    if (this._synchronizing)
+      return;
+
+    this._synchronizing = true;
+    try {
+      func();
+    } finally {
+      this._synchronizing = false;
+
+      const ids = this._ids.ids;
+      if (0 === ids.length)
+        delete this._json.excludedElements;
+      else
+        this._json.excludedElements = ids;
+    }
+  }
+}
+
 /** Provides access to the settings defined by a [[DisplayStyle]] or [[DisplayStyleState]], and ensures that
  * the style's JSON properties are kept in sync.
  * @public
@@ -250,7 +354,7 @@ export class DisplayStyleSettings {
   private _monochromeMode: MonochromeMode;
   private readonly _subCategoryOverrides: Map<Id64String, SubCategoryOverride> = new Map<Id64String, SubCategoryOverride>();
   private readonly _modelAppearanceOverrides: Map<Id64String, FeatureAppearance> = new Map<Id64String, FeatureAppearance>();
-  private readonly _excludedElements: Set<Id64String> = new Set<Id64String>();
+  private readonly _excludedElements: ExcludedElements;
   private _backgroundMap: BackgroundMapSettings;
   private _mapImagery: MapImagerySettings;
   private _analysisStyle?: AnalysisStyle;
@@ -275,12 +379,13 @@ export class DisplayStyleSettings {
     this._backgroundMap = BackgroundMapSettings.fromJSON(this._json.backgroundMap);
     this._mapImagery = MapImagerySettings.fromJSON(this._json.mapImagery, this._json.backgroundMap);
 
+    this._excludedElements = new ExcludedElements(this._json);
+
     if (this._json.analysisStyle)
       this._analysisStyle = AnalysisStyle.fromJSON(this._json.analysisStyle);
 
     this.populateSubCategoryOverridesFromJSON();
     this.populateModelAppearanceOverridesFromJSON();
-    this.populateExcludedElementsFromJSON();
   }
 
   private populateSubCategoryOverridesFromJSON(): void {
@@ -312,19 +417,6 @@ export class DisplayStyleSettings {
       }
     }
   }
-  private populateExcludedElementsFromJSON(): void {
-    this._excludedElements.clear();
-    const exElemArray = JsonUtils.asArray(this._json.excludedElements);
-    if (undefined !== exElemArray) {
-      for (const exElemStr of exElemArray) {
-        const exElem = Id64.fromJSON(exElemStr);
-        if (Id64.isValid(exElem)) {
-          this._excludedElements.add(exElem);
-        }
-      }
-    }
-  }
-
   /** The ViewFlags associated with the display style.
    * @note If the style is associated with a [[ViewState]] attached to a [[Viewport]], use [[ViewState.viewFlags]] to modify the ViewFlags to ensure
    * the changes are promptly visible on the screen.
@@ -490,44 +582,64 @@ export class DisplayStyleSettings {
    * @returns The corresponding FeatureAppearance, or undefined if the Model's appearance is not overridden.
    * @see [[overrideModelAppearance]]
    */
-  public getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined { return this._modelAppearanceOverrides.get(id); }
-
-  /** Returns true if model appearance overrides are defined by this style. */
-  public get hasModelAppearanceOverride(): boolean { return this._modelAppearanceOverrides.size > 0; }
-
-  /** The set of elements that the display style will exclude.
-   * @returns The set of excluded elements.
-   */
-  public get excludedElements(): Set<Id64String> { return this._excludedElements; }
-
-  /** Add an element to the set of excluded elements defined by the display style.
-   * @param id The ID of the element to be excluded.
-   */
-  public addExcludedElements(id: Id64String) {
-    if (Id64.isValid(id)) {
-      if (undefined === this._json.excludedElements)
-        this._json.excludedElements = [];
-      this._json.excludedElements.push(id);
-      this._excludedElements.add(id);
-    }
+  public getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined {
+    return this._modelAppearanceOverrides.get(id);
   }
 
-  /** Remove an element from the set of excluded elements defined by the display style.
-   * @param id The ID of the element to be removed from the set of excluded elements.
+  /** Returns true if model appearance overrides are defined by this style. */
+  public get hasModelAppearanceOverride(): boolean {
+    return this._modelAppearanceOverrides.size > 0;
+  }
+
+  /** The set of elements that will not be drawn by this display style.
+   * @returns The set of excluded elements.
+   * @note The set and the Ids it contains may be very large. It is allocated the first time this property is requested.
+   * @deprecated Use [[excludedElementIds]] for better performance and reduced memory overhead, unless efficient lookup of Ids within the set is required.
    */
-  public dropExcludedElement(id: Id64String) {
-    if (this._json.excludedElements !== undefined) {
-      const index = this._json.excludedElements.indexOf(id);
-      if (index > -1)
-        this._json.excludedElements.splice(index, 1);
-      if (this._json.excludedElements.length === 0)
-        this._json.excludedElements = undefined;
-    }
-    this._excludedElements.delete(id);
+  public get excludedElements(): Set<Id64String> {
+    return this._excludedElements.obtainSet();
+  }
+
+  /** The set of elements that will not be drawn by this display style.
+   * @returns An iterable over the elements' Ids.
+   */
+  public get excludedElementIds(): OrderedId64Iterable {
+    return this._excludedElements;
   }
 
   /** @internal */
-  public toJSON(): DisplayStyleSettingsProps { return this._json; }
+  public get compressedExcludedElementIds(): CompressedId64Set {
+    return this._excludedElements.ids;
+  }
+
+  /** Add one or more elements to the set of elements not to be displayed.
+   * @param id The IDs of the element(s) to be excluded.
+   */
+  public addExcludedElements(id: Id64String | Iterable<Id64String>) {
+    this._excludedElements.add("string" === typeof id ? [id] : id);
+  }
+
+  /** Remove an element from the set of elements not to be displayed. */
+  public dropExcludedElement(id: Id64String): void {
+    this._excludedElements.delete([id]);
+  }
+
+  /** Remove one or more elements from the set of elements not to be displayed.
+   * @param id The IDs of the element(s) to be removed from the set of excluded elements.
+   */
+  public dropExcludedElements(id: Id64String | Iterable<Id64String>) {
+    this._excludedElements.delete("string" === typeof id ? [id] : id);
+  }
+
+  /** Remove all elements from the set of elements not to be displayed. */
+  public clearExcludedElements(): void {
+    this._excludedElements.reset(undefined);
+  }
+
+  /** @internal */
+  public toJSON(): DisplayStyleSettingsProps {
+    return this._json;
+  }
 
   /** Serialize a subset of these settings to JSON, such that they can be applied to another DisplayStyleSettings to selectively override those settings.
    * @param options Specifies which settings should be serialized. By default, settings that are specific to an iModel (e.g., subcategory overrides) or project (e.g., context reality models)
@@ -583,7 +695,7 @@ export class DisplayStyleSettings {
 
       props.subCategoryOvr = this._json.subCategoryOvr ? [...this._json.subCategoryOvr] : [];
       props.modelOvr = this._json.modelOvr ? [...this._json.modelOvr] : [];
-      props.excludedElements = this._json.excludedElements ? [...this._json.excludedElements] : [];
+      props.excludedElements = this._excludedElements.ids;
     }
 
     return props;
@@ -656,10 +768,8 @@ export class DisplayStyleSettings {
       this.populateModelAppearanceOverridesFromJSON();
     }
 
-    if (overrides.excludedElements) {
-      this._json.excludedElements = [...overrides.excludedElements];
-      this.populateExcludedElementsFromJSON();
-    }
+    if (overrides.excludedElements)
+      this._excludedElements.reset("string" === typeof overrides.excludedElements ? overrides.excludedElements : [...overrides.excludedElements]);
   }
 
   private findIndexOfSubCategoryOverrideInJSON(id: Id64String, allowAppend: boolean): number {
@@ -831,7 +941,9 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
   }
 
   /** @internal */
-  public toJSON(): DisplayStyle3dSettingsProps { return this._json3d; }
+  public toJSON(): DisplayStyle3dSettingsProps {
+    return this._json3d;
+  }
 
   /** Serialize a subset of these settings to JSON, such that they can be applied to another DisplayStyleSettings to selectively override those settings.
    * @param options Specifies which settings should be serialized. By default, settings that are specific to an iModel (e.g., subcategory overrides) or project (e.g., context reality models)
