@@ -660,9 +660,6 @@ describe("Content", () => {
 
 });
 
-<<<<<<< HEAD
-function findFieldByLabel(fields: Field[], label: string): Field | undefined {
-=======
 type FieldLabels = Array<string | FieldLabels>;
 function getFieldLabels(fields: Descriptor | Field[]): FieldLabels {
   if (fields instanceof Descriptor)
@@ -789,11 +786,7 @@ class ECClassHierarchy {
   }
 }
 
-function findFieldByLabel(fields: Field[], label: string, allFields?: Field[]): Field | undefined {
-  const isTopLevel = (undefined === allFields);
-  if (!allFields)
-    allFields = new Array<Field>();
->>>>>>> 8a0172e4ea... Presentation: Include actual primary class ids for related content fields (#341)
+function findFieldByLabel(fields: Field[], label: string): Field | undefined {
   for (const field of fields) {
     if (field.label === label)
       return field;

@@ -112,18 +112,9 @@ Object {
             "name": "Frozen",
           },
           "isReadonly": true,
-<<<<<<< HEAD
-          "label": "Ball networks",
-          "name": "Buckinghamshire",
-          "priority": 6880,
-=======
           "label": "Inverse",
           "name": "sensor",
           "priority": 81188,
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
->>>>>>> 8a0172e4ea... Presentation: Include actual primary class ids for related content fields (#341)
           "type": Object {
             "typeName": "binary",
             "valueFormat": "Primitive",
@@ -612,13 +603,6 @@ Object {
             "parent": undefined,
             "priority": 44488,
           },
-<<<<<<< HEAD
-          "editor": undefined,
-          "isReadonly": true,
-          "label": "Robust Gorgeous synergy",
-          "name": "auxiliary",
-          "priority": 20037,
-=======
           "editor": Object {
             "name": "microchip",
           },
@@ -626,10 +610,6 @@ Object {
           "label": "primary",
           "name": "Jewelery",
           "priority": 92023,
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
->>>>>>> 8a0172e4ea... Presentation: Include actual primary class ids for related content fields (#341)
           "type": Object {
             "typeName": "time",
             "valueFormat": "Primitive",
@@ -1094,18 +1074,9 @@ Object {
             "name": "Digitized",
           },
           "isReadonly": true,
-<<<<<<< HEAD
-          "label": "robust Licensed",
-          "name": "Lodge",
-          "priority": 81713,
-=======
           "label": "Ergonomic Soft Chicken SAS",
           "name": "Path",
           "priority": 61491,
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
->>>>>>> 8a0172e4ea... Presentation: Include actual primary class ids for related content fields (#341)
           "type": Object {
             "typeName": "serial",
             "valueFormat": "Primitive",

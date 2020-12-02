@@ -101,18 +101,9 @@ Object {
       },
       "editor": undefined,
       "isReadonly": false,
-<<<<<<< HEAD
-      "label": "Total middleware parse",
-      "name": "back-end",
-      "priority": 50694,
-=======
       "label": "program",
       "name": "neural",
       "priority": 61605,
-      "renderer": Object {
-        "name": "custom_renderer",
-      },
->>>>>>> 8a0172e4ea... Presentation: Include actual primary class ids for related content fields (#341)
       "type": Object {
         "typeName": "set",
         "valueFormat": "Primitive",
@@ -355,20 +346,10 @@ Object {
       "editor": Object {
         "name": "Marketing",
       },
-<<<<<<< HEAD
-      "isReadonly": false,
-      "label": "Product multi-tasking Refined Metal Car",
-      "name": "parse",
-      "priority": 76738,
-=======
       "isReadonly": true,
       "label": "Avon PNG",
       "name": "connecting",
       "priority": 77864,
-      "renderer": Object {
-        "name": "custom_renderer",
-      },
->>>>>>> 8a0172e4ea... Presentation: Include actual primary class ids for related content fields (#341)
       "type": Object {
         "typeName": "set",
         "valueFormat": "Primitive",
@@ -417,14 +398,7 @@ Object {
       },
     },
   ],
-<<<<<<< HEAD
-  "priority": 81712,
-=======
   "priority": 64071,
-  "renderer": Object {
-    "name": "custom_renderer",
-  },
->>>>>>> 8a0172e4ea... Presentation: Include actual primary class ids for related content fields (#341)
   "type": Object {
     "members": Array [
       Object {

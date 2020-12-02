@@ -12,10 +12,6 @@ import { PresentationError, PresentationStatus } from "../Error";
 import { CategoryDescription, CategoryDescriptionJSON } from "./Category";
 import { EditorDescription } from "./Editor";
 import { Property, PropertyJSON } from "./Property";
-<<<<<<< HEAD
-=======
-import { RendererDescription } from "./Renderer";
->>>>>>> 8a0172e4ea... Presentation: Include actual primary class ids for related content fields (#341)
 import { TypeDescription } from "./TypeDescription";
 
 /**
@@ -29,10 +25,6 @@ export interface BaseFieldJSON {
   type: TypeDescription;
   isReadonly: boolean;
   priority: number;
-<<<<<<< HEAD
-=======
-  renderer?: RendererDescription;
->>>>>>> 8a0172e4ea... Presentation: Include actual primary class ids for related content fields (#341)
   editor?: EditorDescription;
 }
 
@@ -92,11 +84,6 @@ export class Field {
   public isReadonly: boolean;
   /** Priority of the field. Higher priority fields should appear first in the UI */
   public priority: number;
-<<<<<<< HEAD
-=======
-  /** Property renderer used to render values of this field */
-  public renderer?: RendererDescription;
->>>>>>> 8a0172e4ea... Presentation: Include actual primary class ids for related content fields (#341)
   /** Property editor used to edit values of this field */
   public editor?: EditorDescription;
   /** Parent field */
@@ -111,16 +98,9 @@ export class Field {
    * @param isReadonly Are values in this field read-only
    * @param priority Priority of the field
    * @param editor Property editor used to edit values of this field
-<<<<<<< HEAD
    */
   public constructor(category: CategoryDescription, name: string, label: string, type: TypeDescription,
     isReadonly: boolean, priority: number, editor?: EditorDescription) {
-=======
-   * @param renderer Property renderer used to render values of this field
-   */
-  public constructor(category: CategoryDescription, name: string, label: string, type: TypeDescription,
-    isReadonly: boolean, priority: number, editor?: EditorDescription, renderer?: RendererDescription) {
->>>>>>> 8a0172e4ea... Presentation: Include actual primary class ids for related content fields (#341)
     this.category = category;
     this.name = name;
     this.label = label;
@@ -128,10 +108,6 @@ export class Field {
     this.isReadonly = isReadonly;
     this.priority = priority;
     this.editor = editor;
-<<<<<<< HEAD
-=======
-    this.renderer = renderer;
->>>>>>> 8a0172e4ea... Presentation: Include actual primary class ids for related content fields (#341)
   }
 
   /**
@@ -151,20 +127,7 @@ export class Field {
 
   /** @alpha */
   public clone() {
-<<<<<<< HEAD
     const clone = new Field(this.category, this.name, this.label, this.type, this.isReadonly, this.priority, this.editor);
-=======
-    const clone = new Field(
-      this.category,
-      this.name,
-      this.label,
-      this.type,
-      this.isReadonly,
-      this.priority,
-      this.editor,
-      this.renderer,
-    );
->>>>>>> 8a0172e4ea... Presentation: Include actual primary class ids for related content fields (#341)
     clone.rebuildParentship(this.parent);
     return clone;
   }
@@ -178,10 +141,6 @@ export class Field {
       type: this.type,
       isReadonly: this.isReadonly,
       priority: this.priority,
-<<<<<<< HEAD
-=======
-      renderer: this.renderer,
->>>>>>> 8a0172e4ea... Presentation: Include actual primary class ids for related content fields (#341)
       editor: this.editor,
     };
   }
@@ -272,47 +231,16 @@ export class PropertiesField extends Field {
    * @param priority Priority of the field
    * @param properties A list of properties this field is created from
    * @param editor Property editor used to edit values of this field
-<<<<<<< HEAD
    */
   public constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription,
     isReadonly: boolean, priority: number, properties: Property[], editor?: EditorDescription) {
     super(category, name, label, description, isReadonly, priority, editor);
-=======
-   * @param renderer Property renderer used to render values of this field
-   */
-  public constructor(
-    category: CategoryDescription,
-    name: string,
-    label: string,
-    description: TypeDescription,
-    isReadonly: boolean,
-    priority: number,
-    properties: Property[],
-    editor?: EditorDescription,
-    renderer?: RendererDescription,
-  ) {
-    super(category, name, label, description, isReadonly, priority, editor, renderer);
->>>>>>> 8a0172e4ea... Presentation: Include actual primary class ids for related content fields (#341)
     this.properties = properties;
   }
 
   /** @alpha */
   public clone() {
-<<<<<<< HEAD
     const clone = new PropertiesField(this.category, this.name, this.label, this.type, this.isReadonly, this.priority, this.properties, this.editor);
-=======
-    const clone = new PropertiesField(
-      this.category,
-      this.name,
-      this.label,
-      this.type,
-      this.isReadonly,
-      this.priority,
-      this.properties,
-      this.editor,
-      this.renderer,
-    );
->>>>>>> 8a0172e4ea... Presentation: Include actual primary class ids for related content fields (#341)
     clone.rebuildParentship(this.parent);
     return clone;
   }
@@ -401,7 +329,6 @@ export class NestedContentField extends Field {
    * @param contentClassInfo Information about an ECClass whose properties are nested inside this field
    * @param pathToPrimaryClass Relationship path to [Primary class]($docs/learning/presentation/Content/Terminology#primary-class)
    * @param nestedFields Contained nested fields
-<<<<<<< HEAD
    * @param autoExpand Flag specifying whether field should be expanded
    * @param editor Property editor used to edit values of this field
    */
@@ -409,27 +336,6 @@ export class NestedContentField extends Field {
     isReadonly: boolean, priority: number, contentClassInfo: ClassInfo, pathToPrimaryClass: RelationshipPath,
     nestedFields: Field[], editor?: EditorDescription, autoExpand?: boolean) {
     super(category, name, label, description, isReadonly, priority, editor);
-=======
-   * @param editor Property editor used to edit values of this field
-   * @param autoExpand Flag specifying whether field should be expanded
-   * @param renderer Property renderer used to render values of this field
-   */
-  public constructor(
-    category: CategoryDescription,
-    name: string,
-    label: string,
-    description: TypeDescription,
-    isReadonly: boolean,
-    priority: number,
-    contentClassInfo: ClassInfo,
-    pathToPrimaryClass: RelationshipPath,
-    nestedFields: Field[],
-    editor?: EditorDescription,
-    autoExpand?: boolean,
-    renderer?: RendererDescription,
-  ) {
-    super(category, name, label, description, isReadonly, priority, editor, renderer);
->>>>>>> 8a0172e4ea... Presentation: Include actual primary class ids for related content fields (#341)
     this.contentClassInfo = contentClassInfo;
     this.pathToPrimaryClass = pathToPrimaryClass;
     this.nestedFields = nestedFields;
@@ -451,23 +357,11 @@ export class NestedContentField extends Field {
       this.nestedFields,
       this.editor,
       this.autoExpand,
-      this.renderer,
     );
     clone.actualPrimaryClassIds = this.actualPrimaryClassIds;
     clone.rebuildParentship(this.parent);
     return clone;
   }
-<<<<<<< HEAD
-
-  /** @alpha */
-  public clone() {
-    const clone = new NestedContentField(this.category, this.name, this.label, this.type, this.isReadonly, this.priority,
-      this.contentClassInfo, this.pathToPrimaryClass, this.nestedFields, this.editor, this.autoExpand);
-    clone.rebuildParentship(this.parent);
-    return clone;
-  }
-=======
->>>>>>> 8a0172e4ea... Presentation: Include actual primary class ids for related content fields (#341)
 
   /**
    * Get field by its name
