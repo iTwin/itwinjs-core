@@ -117,7 +117,7 @@ export class ProjectShareQuery extends WsgQuery {
    * @param contextId Context Id (e.g., projectId or assetId)
    * @note This cannot be combined with other queries.
    */
-  public inRootFolder(contextId: GuidString): ProjectShareQuery {
+  public inRootFolder(contextId: GuidString): this {
     this.filter(`FolderHasContent-backward-Folder.$id+eq+'${contextId}'`);
     return this;
   }
@@ -127,7 +127,7 @@ export class ProjectShareQuery extends WsgQuery {
    * @param folderId Id of the folder
    * @note This cannot be combined with other queries.
    */
-  public inFolder(folderId: GuidString): ProjectShareQuery {
+  public inFolder(folderId: GuidString): this {
     this.filter(`FolderHasContent-backward-Folder.$id+eq+'${folderId}'`);
     return this;
   }
@@ -136,7 +136,7 @@ export class ProjectShareQuery extends WsgQuery {
    * Query for folders or files by ids
    * @param ids (Array of) folder or file ids
    */
-  public byWsgIds(...ids: GuidString[]): ProjectShareQuery {
+  public byWsgIds(...ids: GuidString[]): this {
     const stringOfIds = ids.reduce((prev: GuidString, curr: GuidString) => (!prev ? `'${curr}'` : `${prev},'${curr}'`), "");
     this.filter(`$id in [${stringOfIds}]`);
     this._query.$pageSize = undefined;
@@ -153,7 +153,7 @@ export class ProjectShareQuery extends WsgQuery {
    * <li> This cannot be combined with other queries.
    * <ul>
    */
-  public inFolderWithNameLike(folderId: GuidString, searchName: string): ProjectShareQuery {
+  public inFolderWithNameLike(folderId: GuidString, searchName: string): this {
     this.addFilter(`Name like '${searchName}' and FolderHasContent-backward-Folder.$id+eq+'${folderId}'`);
     return this;
   }
@@ -169,7 +169,7 @@ export class ProjectShareQuery extends WsgQuery {
    * <li> This cannot be combined with other queries.
    * <ul>
    */
-  public startsWithPathAndNameLike(contextId: GuidString, path: string, nameLike: string = "*"): ProjectShareQuery {
+  public startsWithPathAndNameLike(contextId: GuidString, path: string, nameLike: string = "*"): this {
     const correctedPath = path.endsWith("/") ? path : `${path}/`;
     this.addFilter(`startswith(Path,'${contextId}/${correctedPath}') and Name like '${nameLike}'`);
     return this;
@@ -191,7 +191,7 @@ export class ProjectShareFileQuery extends ProjectShareQuery {
    * <li> This cannot be combined with other queries.
    * <ul>
    */
-  public startsWithPath(contextId: GuidString, path: string): ProjectShareQuery {
+  public startsWithPath(contextId: GuidString, path: string): this {
     return this.startsWithPathAndNameLike(contextId, path, "*");
   }
 }
