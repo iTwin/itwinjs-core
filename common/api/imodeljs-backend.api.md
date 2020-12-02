@@ -195,6 +195,7 @@ import { ViewDetails } from '@bentley/imodeljs-common';
 import { ViewDetails3d } from '@bentley/imodeljs-common';
 import { ViewFlags } from '@bentley/imodeljs-common';
 import { ViewQueryParams } from '@bentley/imodeljs-common';
+import { ViewStateLoadProps } from '@bentley/imodeljs-common';
 import { ViewStateProps } from '@bentley/imodeljs-common';
 import { XAndY } from '@bentley/geometry-core';
 import { XYAndZ } from '@bentley/geometry-core';
@@ -2594,7 +2595,7 @@ export namespace IModelDb {
         static readonly defaultQueryParams: ViewQueryParams;
         getThumbnail(viewDefinitionId: Id64String): ThumbnailProps | undefined;
         // (undocumented)
-        getViewStateData(viewDefinitionId: string): ViewStateProps;
+        getViewStateData(viewDefinitionId: string, options?: ViewStateLoadProps): ViewStateProps;
         iterateViews(params: ViewQueryParams, callback: (view: ViewDefinition) => boolean): boolean;
         queryViewDefinitionProps(className?: string, limit?: number, offset?: number, wantPrivate?: boolean): ViewDefinitionProps[];
         saveThumbnail(viewDefinitionId: Id64String, thumbnail: ThumbnailProps): number;
