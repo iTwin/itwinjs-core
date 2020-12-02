@@ -79,7 +79,8 @@ Object {
       },
     },
     Object {
-      "autoExpand": true,
+      "actualPrimaryClassIds": Array [],
+      "autoExpand": false,
       "category": Object {
         "description": "Deserunt blanditiis rerum.",
         "expand": true,
@@ -108,14 +109,14 @@ Object {
             "priority": 35900,
           },
           "editor": Object {
-            "name": "Response",
+            "name": "Frozen",
           },
           "isReadonly": true,
-          "label": "Ball networks",
-          "name": "Buckinghamshire",
-          "priority": 6880,
+          "label": "Inverse",
+          "name": "sensor",
+          "priority": 81188,
           "type": Object {
-            "typeName": "geometry",
+            "typeName": "binary",
             "valueFormat": "Primitive",
           },
         },
@@ -470,10 +471,10 @@ exports[`Descriptor fromJSON creates valid Descriptor from valid JSON without ca
 Object {
   "categories": Array [
     Object {
-      "description": "Illum voluptas totam repellat rerum iste omnis qui dolores doloremque.",
+      "description": "Voluptas totam repellat rerum iste omnis qui dolores doloremque.",
       "expand": false,
-      "label": "Handmade synergies",
-      "name": "monitor",
+      "label": "scalable index Automotive",
+      "name": "Producer",
       "parent": undefined,
       "priority": 76873,
     },
@@ -517,10 +518,10 @@ Object {
   "fields": Array [
     Object {
       "category": Object {
-        "description": "Illum voluptas totam repellat rerum iste omnis qui dolores doloremque.",
+        "description": "Voluptas totam repellat rerum iste omnis qui dolores doloremque.",
         "expand": false,
-        "label": "Handmade synergies",
-        "name": "monitor",
+        "label": "scalable index Automotive",
+        "name": "Producer",
         "parent": undefined,
         "priority": 76873,
       },
@@ -573,6 +574,7 @@ Object {
       },
     },
     Object {
+      "actualPrimaryClassIds": Array [],
       "autoExpand": true,
       "category": Object {
         "description": "Quia et perferendis est distinctio dicta autem aut.",
@@ -601,13 +603,15 @@ Object {
             "parent": undefined,
             "priority": 44488,
           },
-          "editor": undefined,
-          "isReadonly": true,
-          "label": "Robust Gorgeous synergy",
-          "name": "auxiliary",
-          "priority": 20037,
+          "editor": Object {
+            "name": "microchip",
+          },
+          "isReadonly": false,
+          "label": "primary",
+          "name": "Jewelery",
+          "priority": 92023,
           "type": Object {
-            "typeName": "mediumint",
+            "typeName": "time",
             "valueFormat": "Primitive",
           },
         },
@@ -1035,7 +1039,8 @@ Object {
       },
     },
     Object {
-      "autoExpand": true,
+      "actualPrimaryClassIds": Array [],
+      "autoExpand": false,
       "category": Object {
         "description": "Aspernatur ex quia.",
         "expand": true,
@@ -1065,13 +1070,15 @@ Object {
             "parent": undefined,
             "priority": 22923,
           },
-          "editor": undefined,
+          "editor": Object {
+            "name": "Digitized",
+          },
           "isReadonly": true,
-          "label": "robust Licensed",
-          "name": "Lodge",
-          "priority": 81713,
+          "label": "Ergonomic Soft Chicken SAS",
+          "name": "Path",
+          "priority": 61491,
           "type": Object {
-            "typeName": "boolean",
+            "typeName": "serial",
             "valueFormat": "Primitive",
           },
         },

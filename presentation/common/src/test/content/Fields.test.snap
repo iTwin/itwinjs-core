@@ -25,12 +25,12 @@ Object {
 exports[`Field fromJSON creates valid Field from valid JSON with categories 1`] = `
 Object {
   "category": Object {
-    "description": "Exercitationem voluptatum beatae minus molestiae iusto.",
-    "expand": true,
-    "label": "virtual",
-    "name": "Music",
+    "description": "Nihil ut soluta et dolores modi aliquam consequuntur dolorem doloremque.",
+    "expand": false,
+    "label": "Handmade Division",
+    "name": "empower",
     "parent": undefined,
-    "priority": 99622,
+    "priority": 97563,
   },
   "editor": undefined,
   "isReadonly": true,
@@ -70,6 +70,7 @@ Object {
 
 exports[`Field fromJSON creates valid NestedContentField from valid JSON 1`] = `
 Object {
+  "actualPrimaryClassIds": Array [],
   "autoExpand": true,
   "category": Object {
     "description": "Tempora consequuntur quam eveniet distinctio quos labore corporis neque distinctio.",
@@ -91,18 +92,18 @@ Object {
   "nestedFields": Array [
     Object {
       "category": Object {
-        "description": "Dicta rerum nisi quos et recusandae quia.",
-        "expand": true,
-        "label": "Borders transition salmon",
-        "name": "Plains",
+        "description": "Et dicta rerum nisi quos et recusandae.",
+        "expand": false,
+        "label": "Maryland CSS",
+        "name": "Personal Loan Account",
         "parent": undefined,
-        "priority": 15985,
+        "priority": 17378,
       },
       "editor": undefined,
       "isReadonly": false,
-      "label": "Total middleware parse",
-      "name": "back-end",
-      "priority": 50694,
+      "label": "program",
+      "name": "neural",
+      "priority": 61605,
       "type": Object {
         "typeName": "set",
         "valueFormat": "Primitive",
@@ -209,6 +210,7 @@ Object {
 
 exports[`NestedContentField fromJSON creates valid NestedContentField from valid JSON 1`] = `
 Object {
+  "actualPrimaryClassIds": Array [],
   "autoExpand": true,
   "category": Object {
     "description": "Est fugit nisi occaecati ea eos maiores distinctio.",
@@ -232,10 +234,10 @@ Object {
   "nestedFields": Array [
     Object {
       "category": Object {
-        "description": "Omnis rerum perferendis optio voluptatibus maiores.",
+        "description": "Optio voluptatibus maiores.",
         "expand": true,
-        "label": "COM Producer",
-        "name": "Personal Loan Account",
+        "label": "Wisconsin interface calculate",
+        "name": "Designer",
         "parent": undefined,
         "priority": 3086,
       },
@@ -312,104 +314,103 @@ Object {
 
 exports[`NestedContentField fromJSON creates valid NestedContentField from valid JSON with categories 1`] = `
 Object {
+  "actualPrimaryClassIds": Array [],
   "autoExpand": true,
   "category": Object {
-    "description": "Sequi tempore consequuntur hic et repellat veritatis soluta.",
+    "description": "Quaerat omnis delectus porro.",
     "expand": true,
-    "label": "Vietnam",
-    "name": "program",
+    "label": "Gloves wireless input",
+    "name": "Netherlands",
     "parent": undefined,
-    "priority": 4276,
+    "priority": 15292,
   },
   "contentClassInfo": Object {
-    "id": "0x4e7b000000ae07",
-    "label": "navigating",
-    "name": "International",
+    "id": "0xaf930000002175",
+    "label": "optical Rustic Metal Chicken",
+    "name": "Steel",
   },
-  "editor": Object {
-    "name": "Crossing",
-  },
+  "editor": undefined,
   "isReadonly": false,
-  "label": "1080p Towels",
-  "name": "Argentina",
+  "label": "Associate",
+  "name": "Frozen",
   "nestedFields": Array [
     Object {
       "category": Object {
-        "description": "Sequi tempore consequuntur hic et repellat veritatis soluta.",
+        "description": "Quaerat omnis delectus porro.",
         "expand": true,
-        "label": "Vietnam",
-        "name": "program",
+        "label": "Gloves wireless input",
+        "name": "Netherlands",
         "parent": undefined,
-        "priority": 4276,
+        "priority": 15292,
       },
       "editor": Object {
-        "name": "Borders",
+        "name": "Marketing",
       },
-      "isReadonly": false,
-      "label": "Product multi-tasking Refined Metal Car",
-      "name": "parse",
-      "priority": 76738,
+      "isReadonly": true,
+      "label": "Avon PNG",
+      "name": "connecting",
+      "priority": 77864,
       "type": Object {
-        "typeName": "tinyint",
+        "typeName": "set",
         "valueFormat": "Primitive",
       },
     },
   ],
   "pathToPrimaryClass": Array [
     Object {
-      "isForwardRelationship": false,
+      "isForwardRelationship": true,
       "isPolymorphicRelationship": false,
       "isPolymorphicTargetClass": true,
       "relationshipInfo": Object {
-        "id": "0x171d2000000c72a",
-        "label": "forecast cyan",
-        "name": "dynamic",
+        "id": "0x152e0000000860a",
+        "label": "Implemented",
+        "name": "application",
       },
       "sourceClassInfo": Object {
-        "id": "0x2c13000000d9f5",
-        "label": "Sao Tome and Principe Dynamic primary",
-        "name": "hacking",
+        "id": "0xae07000000c095",
+        "label": "Bacon architectures Fresh",
+        "name": "azure",
       },
       "targetClassInfo": Object {
-        "id": "0x16c82000000a1ea",
-        "label": "user-centric application Gorgeous",
-        "name": "Georgia",
+        "id": "0x16476000000376c",
+        "label": "Manat Practical Intranet",
+        "name": "Sao Tome and Principe",
       },
     },
     Object {
       "isForwardRelationship": true,
-      "isPolymorphicRelationship": false,
+      "isPolymorphicRelationship": true,
       "isPolymorphicTargetClass": false,
       "relationshipInfo": Object {
-        "id": "0x1db8000000ca36",
-        "label": "PNG lavender Fish",
-        "name": "PNG",
+        "id": "0xc9cf0000010bc6",
+        "label": "Future sensor",
+        "name": "Small Metal Mouse",
       },
       "sourceClassInfo": Object {
-        "id": "0x36fb000000d839",
-        "label": "Denar Small Metal Mouse Personal Loan Account",
-        "name": "El Salvador Colon US Dollar",
+        "id": "0x900b00000171d2",
+        "label": "sticky",
+        "name": "incubate",
       },
       "targetClassInfo": Object {
-        "id": "0x1199f0000005966",
-        "label": "auxiliary connecting",
-        "name": "Shore",
+        "id": "0x37f9000001569a",
+        "label": "El Salvador Colon US Dollar",
+        "name": "Customer",
       },
     },
   ],
-  "priority": 81712,
+  "priority": 64071,
   "type": Object {
     "members": Array [
       Object {
-        "label": "Libyan Dinar",
-        "name": "Metal",
+        "label": "Soft",
+        "name": "Virginia",
         "type": Object {
-          "typeName": "varchar",
+          "typeName": "datetime",
           "valueFormat": "Primitive",
         },
       },
     ],
-    "typeName": "Sleek Soft Salad",
+    "typeName": "Sleek Soft Fish",
     "valueFormat": "Struct",
   },
 }
@@ -417,6 +418,7 @@ Object {
 
 exports[`NestedContentField fromJSON creates valid NestedContentField from valid serialized JSON 1`] = `
 Object {
+  "actualPrimaryClassIds": Array [],
   "autoExpand": true,
   "category": Object {
     "description": "Et rerum saepe odio quidem incidunt blanditiis.",
@@ -440,10 +442,10 @@ Object {
   "nestedFields": Array [
     Object {
       "category": Object {
-        "description": "Et soluta fuga sint enim voluptatem consequatur quis ipsam.",
+        "description": "Soluta fuga sint enim voluptatem consequatur quis ipsam.",
         "expand": false,
-        "label": "Shoes e-business Applications",
-        "name": "Armenia",
+        "label": "Chief Street",
+        "name": "Handmade Steel Fish",
         "parent": undefined,
         "priority": 68447,
       },
@@ -557,12 +559,12 @@ Object {
 exports[`PropertiesField fromJSON creates valid PropertiesField from valid JSON with categories 1`] = `
 Object {
   "category": Object {
-    "description": "Architecto mollitia in natus nostrum deserunt rerum sapiente nihil impedit.",
+    "description": "Et architecto mollitia in natus nostrum.",
     "expand": true,
-    "label": "Ergonomic Granite Mouse redundant",
-    "name": "Kentucky",
+    "label": "Sleek Concrete Cheese",
+    "name": "hardware",
     "parent": undefined,
-    "priority": 86204,
+    "priority": 59125,
   },
   "editor": Object {
     "name": "Massachusetts",

@@ -6,6 +6,7 @@
  * @module Content
  */
 
+import { Id64String } from "@bentley/bentleyjs-core";
 import { ClassInfo, ClassInfoJSON, RelatedClassInfo, RelationshipPath, RelationshipPathJSON, StrippedRelationshipPath } from "../EC";
 import { PresentationError, PresentationStatus } from "../Error";
 import { CategoryDescription, CategoryDescriptionJSON } from "./Category";
@@ -42,6 +43,8 @@ export interface PropertiesFieldJSON extends BaseFieldJSON {
 export interface NestedContentFieldJSON extends BaseFieldJSON {
   contentClassInfo: ClassInfoJSON;
   pathToPrimaryClass: RelationshipPathJSON;
+  /** @alpha */
+  actualPrimaryClassIds?: Id64String[];
   autoExpand?: boolean;
   nestedFields: FieldJSON[];
 }
@@ -308,6 +311,8 @@ export class NestedContentField extends Field {
   public contentClassInfo: ClassInfo;
   /** Relationship path to [Primary class]($docs/learning/presentation/Content/Terminology#primary-class) */
   public pathToPrimaryClass: RelationshipPath;
+  /** @alpha */
+  public actualPrimaryClassIds: Id64String[];
   /** Contained nested fields */
   public nestedFields: Field[];
   /** Flag specifying whether field should be expanded */
@@ -335,12 +340,25 @@ export class NestedContentField extends Field {
     this.pathToPrimaryClass = pathToPrimaryClass;
     this.nestedFields = nestedFields;
     this.autoExpand = autoExpand;
+    this.actualPrimaryClassIds = [];
   }
 
   /** @alpha */
   public clone() {
-    const clone = new NestedContentField(this.category, this.name, this.label, this.type, this.isReadonly, this.priority,
-      this.contentClassInfo, this.pathToPrimaryClass, this.nestedFields, this.editor, this.autoExpand);
+    const clone = new NestedContentField(
+      this.category,
+      this.name,
+      this.label,
+      this.type,
+      this.isReadonly,
+      this.priority,
+      this.contentClassInfo,
+      this.pathToPrimaryClass,
+      this.nestedFields,
+      this.editor,
+      this.autoExpand,
+    );
+    clone.actualPrimaryClassIds = this.actualPrimaryClassIds;
     clone.rebuildParentship(this.parent);
     return clone;
   }
@@ -360,6 +378,7 @@ export class NestedContentField extends Field {
       ...super.toJSON(),
       contentClassInfo: this.contentClassInfo,
       pathToPrimaryClass: this.pathToPrimaryClass,
+      actualPrimaryClassIds: this.actualPrimaryClassIds,
       nestedFields: this.nestedFields.map((field: Field) => field.toJSON()),
       autoExpand: this.autoExpand,
     };
@@ -386,6 +405,7 @@ export class NestedContentField extends Field {
         .filter((nestedField): nestedField is Field => !!nestedField),
       contentClassInfo: ClassInfo.fromJSON(json.contentClassInfo),
       pathToPrimaryClass: json.pathToPrimaryClass.map(RelatedClassInfo.fromJSON),
+      actualPrimaryClassIds: json.actualPrimaryClassIds ?? [],
       autoExpand: json.autoExpand,
     });
   }

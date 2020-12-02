@@ -97,6 +97,7 @@ export const createRandomNestedFieldJSON = (category?: CategoryDescriptionJSON |
   } as StructTypeDescription,
   contentClassInfo: createRandomECClassInfoJSON(),
   pathToPrimaryClass: createRandomRelationshipPathJSON(),
+  actualPrimaryClassIds: faker.random.boolean() ? undefined : [],
   nestedFields: [createRandomPrimitiveFieldJSON(category)],
   autoExpand: faker.random.boolean(),
 });
