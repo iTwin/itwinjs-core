@@ -855,6 +855,7 @@ Object {
       },
     },
     Object {
+      "actualPrimaryClassIds": Array [],
       "autoExpand": true,
       "category": Object {
         "description": "Voluptates minima eos recusandae temporibus laboriosam est at.",
@@ -1196,6 +1197,7 @@ Object {
       },
     },
     Object {
+      "actualPrimaryClassIds": Array [],
       "autoExpand": false,
       "category": Object {
         "description": "Est ipsum eveniet eius quis expedita cum.",

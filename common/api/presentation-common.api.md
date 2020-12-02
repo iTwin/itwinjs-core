@@ -1209,7 +1209,13 @@ export interface NavigationRuleBase extends RuleBase {
 
 // @public
 export class NestedContentField extends Field {
+<<<<<<< HEAD
     constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription, isReadonly: boolean, priority: number, contentClassInfo: ClassInfo, pathToPrimaryClass: RelationshipPath, nestedFields: Field[], editor?: EditorDescription, autoExpand?: boolean);
+=======
+    constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription, isReadonly: boolean, priority: number, contentClassInfo: ClassInfo, pathToPrimaryClass: RelationshipPath, nestedFields: Field[], editor?: EditorDescription, autoExpand?: boolean, renderer?: RendererDescription);
+    // @alpha (undocumented)
+    actualPrimaryClassIds: Id64String[];
+>>>>>>> 8a0172e4ea... Presentation: Include actual primary class ids for related content fields (#341)
     autoExpand?: boolean;
     // @alpha (undocumented)
     clone(): NestedContentField;
@@ -1229,6 +1235,8 @@ export class NestedContentField extends Field {
 
 // @public
 export interface NestedContentFieldJSON extends BaseFieldJSON {
+    // @alpha (undocumented)
+    actualPrimaryClassIds?: Id64String[];
     // (undocumented)
     autoExpand?: boolean;
     // (undocumented)
