@@ -12,7 +12,7 @@ import {
 } from "../../../ui-framework";
 import { ToolInformation } from "../../../ui-framework/zones/toolsettings/ToolInformation";
 import TestUtils from "../../TestUtils";
-import { DialogItemValue, DialogPropertySyncItem } from "@bentley/ui-abstract";
+import { DialogItemValue, DialogPropertySyncItem, UiLayoutDataProvider } from "@bentley/ui-abstract";
 
 describe("ToolUiProvider", () => {
 
@@ -90,6 +90,15 @@ describe("ToolUiProvider", () => {
     ConfigurableUiManager.registerControl(testToolId, Tool2UiProvider);
   });
 
+  class TestDataProvider extends UiLayoutDataProvider { }
+
+  it("can set/get uidataprovider", () => {
+    const testDataProvider = new TestDataProvider();
+    const tool2uiProvider = new Tool2UiProvider(new ConfigurableCreateInfo("test", "test", "test"), undefined);
+    tool2uiProvider.dataProvider = testDataProvider;
+    expect(tool2uiProvider.dataProvider === testDataProvider);
+  });
+
   it("starting a tool with tool settings", async () => {
     const frontstageDef = FrontstageManager.findFrontstageDef("ToolUiProvider-TestFrontstage");
     expect(frontstageDef).to.not.be.undefined;
@@ -145,5 +154,6 @@ describe("ToolUiProvider", () => {
     expect(() => toolInfo.toolUiProvider).to.throw(Error);
     ConfigurableUiManager.unregisterControl("ToolTest1");
   });
+
 
 });

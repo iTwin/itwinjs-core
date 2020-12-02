@@ -43,7 +43,7 @@ import { TileBoundingBoxes, TileTreeReference, TileTreeSet } from "./tile/intern
 import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolSettings";
 import { DecorateContext, SceneContext } from "./ViewContext";
-import { areaToEyeHeight, eyeToCartographicOnGlobe, GlobalLocation, metersToRange, ViewGlobalLocationConstants } from "./ViewGlobalLocation";
+import { areaToEyeHeight, areaToEyeHeightFromGcs, eyeToCartographicOnGlobe, GlobalLocation, metersToRange, ViewGlobalLocationConstants } from "./ViewGlobalLocation";
 import { ViewingSpace } from "./ViewingSpace";
 import { ViewRect } from "./ViewRect";
 import { MarginPercent, ModelDisplayTransformProvider, ViewPose, ViewPose3d, ViewState, ViewState2d, ViewState3d, ViewStatus } from "./ViewState";
@@ -299,6 +299,7 @@ class GlobeAnimator implements Animator {
   private _fixTakeoffInterpolator?: SmoothTransformBetweenFrusta;
   private _fixTakeoffFraction?: number;
   private _fixLandingInterpolator?: SmoothTransformBetweenFrusta;
+  private _afterLanding: Frustum;
   private readonly _fixLandingFraction: number = 0.9;
   private readonly _scratchFrustum = new Frustum();
 
@@ -311,7 +312,7 @@ class GlobeAnimator implements Animator {
 
     // If we're done, set the final state directly
     if (fraction >= 1.0) {
-      view.lookAtGlobalLocation(this._endHeight!, ViewGlobalLocationConstants.birdPitchAngleRadians, this._endLocation);
+      vp.setupViewFromFrustum(this._afterLanding);
       vp.synchWithView();
       return true;
     }
@@ -326,10 +327,7 @@ class GlobeAnimator implements Animator {
     if (fraction >= this._fixLandingFraction && fraction < 1.0) {
       if (this._fixLandingInterpolator === undefined) {
         const beforeLanding = vp.getWorldFrustum();
-        view.lookAtGlobalLocation(this._endHeight!, ViewGlobalLocationConstants.birdPitchAngleRadians, this._endLocation);
-        vp.setupFromView();
-        const afterLanding = vp.getWorldFrustum();
-        this._fixLandingInterpolator = SmoothTransformBetweenFrusta.create(beforeLanding.points, afterLanding.points);
+        this._fixLandingInterpolator = SmoothTransformBetweenFrusta.create(beforeLanding.points, this._afterLanding.points);
       }
       this._moveFixToFraction((1.0 / (1.0 - this._fixLandingFraction)) * (fraction - this._fixLandingFraction), this._fixLandingInterpolator!);
       return false;
@@ -362,9 +360,27 @@ class GlobeAnimator implements Animator {
     return done;
   }
 
-  public constructor(viewport: ScreenViewport, destination: GlobalLocation) {
+  public static async create(viewport: ScreenViewport, destination: GlobalLocation): Promise<GlobeAnimator | undefined> {
+    const view = viewport.view;
+
+    if (!(view.is3d()) || !viewport.iModel.isGeoLocated) // This animation only works for 3d views and geolocated models
+      return;
+
+    const endHeight = destination.area !== undefined ? await areaToEyeHeightFromGcs(view, destination.area, destination.center.height) : ViewGlobalLocationConstants.birdHeightAboveEarthInMeters;
+
+    const beforeFrustum = viewport.getWorldFrustum();
+    await view.lookAtGlobalLocationFromGcs(endHeight, ViewGlobalLocationConstants.birdPitchAngleRadians, destination);
+    viewport.setupFromView();
+    const afterLanding = viewport.getWorldFrustum();
+    viewport.setupViewFromFrustum(beforeFrustum); // revert old frustum
+
+    return new GlobeAnimator(viewport, destination, afterLanding);
+  }
+
+  private constructor(viewport: ScreenViewport, destination: GlobalLocation, afterLanding: Frustum) {
     this._viewport = viewport;
     this._endLocation = destination;
+    this._afterLanding = afterLanding;
     const view = viewport.view;
 
     if (!(view.is3d()) || !viewport.iModel.isGeoLocated) // This animation only works for 3d views and geolocated models
@@ -417,10 +433,20 @@ class GlobeAnimator implements Animator {
     // We will "fix" the initial frustum so it smoothly transitions to some point along the travel arc depending on the starting height.
     // Alternatively, if the distance to travel is small enough, we will _only_ do a frustum transition to the destination location - ignoring the flight arc.
     const beforeTakeoff = viewport.getWorldFrustum();
-    this._fixTakeoffFraction = this._flightLength <= ViewGlobalLocationConstants.maximumDistanceToDrive ? 1.0 : metersToRange(this._startHeight, 0.1, 0.4, ViewGlobalLocationConstants.birdHeightAboveEarthInMeters);
-    this._moveFlightToFraction(this._fixTakeoffFraction);
-    const afterTakeoff = viewport.getWorldFrustum();
-    this._fixTakeoffInterpolator = SmoothTransformBetweenFrusta.create(beforeTakeoff.points, afterTakeoff.points);
+
+    if (view.globeMode === GlobeMode.Plane) {
+      /// Do not "fix" the take-off for plane mode; SmoothTransformBetweenFrusta can behave wrongly.
+      // However, if within driving distance, still use SmoothTransformBetweenFrusta to navigate there without flight.
+      this._fixTakeoffFraction = this._flightLength <= ViewGlobalLocationConstants.maximumDistanceToDrive ? 1.0 : 0.0;
+    } else {
+      this._fixTakeoffFraction = this._flightLength <= ViewGlobalLocationConstants.maximumDistanceToDrive ? 1.0 : metersToRange(this._startHeight, 0.1, 0.4, ViewGlobalLocationConstants.birdHeightAboveEarthInMeters);
+    }
+
+    if (this._fixTakeoffFraction > 0.0) {
+      this._moveFlightToFraction(this._fixTakeoffFraction);
+      const afterTakeoff = viewport.getWorldFrustum();
+      this._fixTakeoffInterpolator = SmoothTransformBetweenFrusta.create(beforeTakeoff.points, afterTakeoff.points);
+    }
 
     // The duration of the animation will increase the larger the distance to travel.
     const flightDurationInMilliseconds = metersToRange(this._flightLength, 1000, maxFlightDuration, ViewGlobalLocationConstants.largestEarthArc);
@@ -748,6 +774,16 @@ class PerModelCategoryVisibilityOverrides extends SortedArray<PerModelCategoryVi
 
     return true;
   }
+}
+
+/** @beta
+ * Options for OpenStreetMap building display
+ */
+export interface OsmBuildingDisplayOptions {
+  /**  If defined will turn the display of the OpenStreetMap buildings on or off by attaching or detaching the OSM reality model. */
+  onOff?: boolean;
+  /** If defined will apply appearance overrides to to the OpenStreetMap building reality model. Has no effect if the OSM reality model is not displayed. */
+  appearanceOverrides?: FeatureAppearance;
 }
 
 /** A Viewport renders the contents of one or more Models onto an `HTMLCanvasElement`.
@@ -1305,13 +1341,30 @@ export abstract class Viewport implements IDisposable {
   }
 
   /** Obtain the override applied to a "contextual" reality model displayed in this viewport.
- * @param index The reality model index
- * @returns The corresponding FeatureAppearance, or undefined if the Model's appearance is not overridden.
- * @see [[overrideRealityModelAppearance]]
- * @beta
- */
+   * @param index The reality model index
+   * @returns The corresponding FeatureAppearance, or undefined if the Model's appearance is not overridden.
+   * @see [[overrideRealityModelAppearance]]
+   * @beta
+   */
   public getRealityModelAppearanceOverride(index: number): FeatureAppearance | undefined {
     return this.displayStyle.getRealityModelAppearanceOverride(index);
+  }
+
+  /** @beta
+   * Set the display of the OpenStreetMap worldwide building layer in this viewport by attaching or detaching the reality model displaying the buildings.
+   * The OSM buildings are displayed from a reality model aggregated and served from Cesium ion.<(https://cesium.com/content/cesium-osm-buildings/>
+   * The options [[OsmBuildingDisplayOptions]] control the display and appearance overrides.
+   */
+  public setOSMBuildingDisplay(options: OsmBuildingDisplayOptions) {
+    const originalOn = this.displayStyle.getOSMBuildingDisplayIndex() >= 0;
+    if (this.displayStyle.setOSMBuildingDisplay(options)) {
+      const newOn = this.displayStyle.getOSMBuildingDisplayIndex() >= 0;
+      this._changeFlags.setDisplayStyle();
+      if (newOn !== originalOn)
+        this.synchWithView(false);      // May change frustum depth...
+      if (options.appearanceOverrides)
+        this.invalidateRenderPlan();
+    }
   }
 
   /** Some changes may or may not require us to invalidate the scene.
@@ -1630,7 +1683,9 @@ export abstract class Viewport implements IDisposable {
   }
 
   public dispose(): void {
-    assert(undefined !== this._target, "Double disposal of Viewport");
+    if (this.isDisposed)
+      return;
+
     this._disposeDecorationCache();
     this._target = dispose(this._target);
     this.subcategories.dispose();
@@ -3274,12 +3329,13 @@ export class ScreenViewport extends Viewport {
   /** Animate the view frustum to a destination location the earth from the current frustum.
    * @internal
    */
-  public animateFlyoverToGlobalLocation(destination: GlobalLocation) {
+  public async animateFlyoverToGlobalLocation(destination: GlobalLocation) {
     if (!this.isCameraOn) {
       this.turnCameraOn();
       this.setupFromView();
     }
-    this.setAnimator(new GlobeAnimator(this, destination));
+    const animator = await GlobeAnimator.create(this, destination);
+    this.setAnimator(animator);
   }
 
   /** @internal */
