@@ -1,6 +1,19 @@
 # Change Log - @bentley/ui-core
 
-This log was last generated on Mon, 23 Nov 2020 22:19:30 GMT and should not be manually modified.
+This log was last generated on Wed, 02 Dec 2020 13:43:07 GMT and should not be manually modified.
+
+## 2.10.0
+Wed, 02 Dec 2020 13:43:07 GMT
+
+### Updates
+
+- By default format slider tooltip with same number of decimal places as step specification.
+- Change warning/success/error colors for labeledInput to themed variables .
+- Add new NumberInput control to replace NumericInput which wrapped react-numeric-input.
+- Clear FocusTrap timeout on unmount.
+- Popup - added onContextMenu & closeOnContextMenu props
+- Added 'closeOnWheel' and 'onWheel' Popup props
+- Unified UI typography systems
 
 ## 2.9.3
 Mon, 23 Nov 2020 20:57:56 GMT

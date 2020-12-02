@@ -1,6 +1,22 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Mon, 23 Nov 2020 22:19:30 GMT and should not be manually modified.
+This log was last generated on Wed, 02 Dec 2020 13:43:07 GMT and should not be manually modified.
+
+## 2.10.0
+Wed, 02 Dec 2020 13:43:07 GMT
+
+### Updates
+
+- Update minimum Node version to 10.17.0
+- ECSql Support for Binding Sets of Ids
+- Support compact representation of DisplayStyleSettings.excludedElements.
+- Added ElementGeometry.Builder and ElementGeometry.Iterator.
+- changed type of member "data" on Texture from string to UInt8Array. ***breaking change***
+- Provide better error message when relationship insert/update/delete is not a linktable relationship.
+- Compress tiles before upload to blob storage by default.
+- Update to @bentley/imodeljs-native@2.10.4
+- channel documentation
+- Version compare top parents test update
 
 ## 2.9.3
 Mon, 23 Nov 2020 20:57:56 GMT

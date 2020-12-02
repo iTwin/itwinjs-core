@@ -1,6 +1,20 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Mon, 23 Nov 2020 22:19:30 GMT and should not be manually modified.
+This log was last generated on Wed, 02 Dec 2020 13:43:07 GMT and should not be manually modified.
+
+## 2.10.0
+Wed, 02 Dec 2020 13:43:07 GMT
+
+### Updates
+
+- Update minimum Node version to 10.17.0
+- Support compact representation of DisplayStyleSettings.excludedElements.
+- Handle missing 'window' object when run in Node for support of Server-Side Rendering
+- Ensure proper disposal of WebGL resources owned by Target.
+- Correct reprojection to allow non-rigid linear transform.
+- Fix tap on measure distance marker showing information for wrong segment.
+- Make view globe tools use GCS reprojection as necessary to improve precision when navigating within the iModel extents.
+- Support display of OSM Buildings.
 
 ## 2.9.3
 Mon, 23 Nov 2020 20:57:56 GMT

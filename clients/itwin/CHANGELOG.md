@@ -1,6 +1,11 @@
 # Change Log - @bentley/itwin-client
 
-This log was last generated on Mon, 23 Nov 2020 22:19:30 GMT and should not be manually modified.
+This log was last generated on Wed, 02 Dec 2020 13:43:07 GMT and should not be manually modified.
+
+## 2.10.0
+Wed, 02 Dec 2020 13:43:07 GMT
+
+_Version update only_
 
 ## 2.9.3
 Mon, 23 Nov 2020 20:57:56 GMT

@@ -1,6 +1,18 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Mon, 23 Nov 2020 22:19:30 GMT and should not be manually modified.
+This log was last generated on Wed, 02 Dec 2020 13:43:07 GMT and should not be manually modified.
+
+## 2.10.0
+Wed, 02 Dec 2020 13:43:07 GMT
+
+### Updates
+
+- Rename 'VisibilityHandler' to 'ModelsVisibilityHandler' and allow subclasses to acces more methods.
+- Avoid throwing exception in ModelsTree VisibilityHandler if RulesetDrivenIdsProvider got undefined content
+- Correctly handler visibility changes in ModelsTree when filter is applied
+- Refactor DialogItem and Property interfaces to make them easier to use.
+- Add a 'hasChildren' hint for categories in ModelsTree. We know that categories always have nodes under them. Tell that with a `hasChildren: "Always"` hint to improve categories' loading performance
+- Disable pointer events in overlay of default view overlay.
 
 ## 2.9.3
 Mon, 23 Nov 2020 20:57:56 GMT

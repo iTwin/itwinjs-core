@@ -2,6 +2,12 @@
   "name": "@bentley/hypermodeling-frontend",
   "entries": [
     {
+      "version": "2.10.0",
+      "tag": "@bentley/hypermodeling-frontend_v2.10.0",
+      "date": "Wed, 02 Dec 2020 13:43:07 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.9.3",
       "tag": "@bentley/hypermodeling-frontend_v2.9.3",
       "date": "Mon, 23 Nov 2020 20:57:56 GMT",

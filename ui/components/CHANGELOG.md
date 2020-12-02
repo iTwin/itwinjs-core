@@ -1,6 +1,22 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Mon, 23 Nov 2020 22:19:30 GMT and should not be manually modified.
+This log was last generated on Wed, 02 Dec 2020 13:43:07 GMT and should not be manually modified.
+
+## 2.10.0
+Wed, 02 Dec 2020 13:43:07 GMT
+
+### Updates
+
+- Add support for onClose function in ColorPickerPopupProps. This allows color value from popup to be used by caller.
+- Added matchesCount attribute to [[PropertyDataFilterResult]] to optionally tell how many matches there were in a [[PropertyRecord]]. Matches in label and value are separated.
+- Added match counting functionality to [[FilteringPropertyDataProvider]]. The returned [[FilteredPropertyData]] now has total matches count and a function get information about a match at specific index.
+- Added highlightedRecordProps to [[VirtualizedPropertyGridProps]] to allow highlighting specific parts of rendered PropertyRecords.
+- Updated [[FilteringInput]] component. Component's `filteringInProgress` prop was deprecated and new `status` property was introduced. This allows rendering the component in any state, including `filtering finished`, without having to cycle through other states first.
+- fix but in ParsedInput control where formatted text was not updating if underlying parsed value did not change.
+- Refactor DialogItem and Property interfaces to make them eaiser to use.
+- Added support for decimal point in Table numeric filter
+- Enable pointer events in Toolbar items container."
+- Fix issue where entries in ButtonGroup would not properly disable/enable.
 
 ## 2.9.3
 Mon, 23 Nov 2020 20:57:56 GMT
