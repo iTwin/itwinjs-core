@@ -1,8 +1,8 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`WidgetPanel should render captured 1`] = `
+exports[`WidgetPanelProvider should render captured 1`] = `
 <div
-  class="nz-widgetPanels-panel nz-left nz-pinned nz-captured"
+  class="nz-widgetPanels-panel nz-left nz-captured nz-span-top nz-span-bottom"
 >
   <div
     class="nz-content"
@@ -92,9 +92,9 @@ exports[`WidgetPanel should render captured 1`] = `
 </div>
 `;
 
-exports[`WidgetPanel should render collapsed 1`] = `
+exports[`WidgetPanelProvider should render collapsed 1`] = `
 <div
-  class="nz-widgetPanels-panel nz-left nz-pinned nz-collapsed"
+  class="nz-widgetPanels-panel nz-left nz-collapsed nz-span-top nz-span-bottom"
   style="width: 0px;"
 >
   <div
@@ -185,14 +185,13 @@ exports[`WidgetPanel should render collapsed 1`] = `
 </div>
 `;
 
-exports[`WidgetPanel should render horizontal 1`] = `
+exports[`WidgetPanelProvider should render horizontal 1`] = `
 <div
-  class="nz-widgetPanels-panel nz-top nz-pinned nz-horizontal nz-span"
+  class="nz-widgetPanels-panel nz-top nz-span nz-span-top nz-span-bottom"
   style="height: 200px;"
 >
   <div
     class="nz-content"
-    style="height: 200px;"
   >
     <div
       class="nz-widget-widgetTarget nz-hidden nz-top nz-first"
@@ -279,9 +278,9 @@ exports[`WidgetPanel should render horizontal 1`] = `
 </div>
 `;
 
-exports[`WidgetPanel should render multiple widgets 1`] = `
+exports[`WidgetPanelProvider should render multiple widgets 1`] = `
 <div
-  class="nz-widgetPanels-panel nz-left nz-pinned"
+  class="nz-widgetPanels-panel nz-left nz-span-top nz-span-bottom"
 >
   <div
     class="nz-content"
@@ -419,9 +418,9 @@ exports[`WidgetPanel should render multiple widgets 1`] = `
 </div>
 `;
 
-exports[`WidgetPanel should render spanned 1`] = `
+exports[`WidgetPanelProvider should render spanned 1`] = `
 <div
-  class="nz-widgetPanels-panel nz-top nz-pinned nz-horizontal nz-span"
+  class="nz-widgetPanels-panel nz-top nz-span nz-span-top nz-span-bottom"
 >
   <div
     class="nz-content"
@@ -511,14 +510,13 @@ exports[`WidgetPanel should render spanned 1`] = `
 </div>
 `;
 
-exports[`WidgetPanel should render vertical 1`] = `
+exports[`WidgetPanelProvider should render vertical 1`] = `
 <div
-  class="nz-widgetPanels-panel nz-left nz-pinned"
+  class="nz-widgetPanels-panel nz-left nz-span-top nz-span-bottom"
   style="width: 200px;"
 >
   <div
     class="nz-content"
-    style="width: 200px;"
   >
     <div
       class="nz-widget-widgetTarget nz-hidden nz-left nz-first"
@@ -605,9 +603,9 @@ exports[`WidgetPanel should render vertical 1`] = `
 </div>
 `;
 
-exports[`WidgetPanel should render with span bottom 1`] = `
+exports[`WidgetPanelProvider should render with span bottom 1`] = `
 <div
-  class="nz-widgetPanels-panel nz-left nz-pinned nz-span-bottom"
+  class="nz-widgetPanels-panel nz-left nz-span-top nz-span-bottom"
 >
   <div
     class="nz-content"
@@ -697,9 +695,9 @@ exports[`WidgetPanel should render with span bottom 1`] = `
 </div>
 `;
 
-exports[`WidgetPanel should render with top spanned 1`] = `
+exports[`WidgetPanelProvider should render with top spanned 1`] = `
 <div
-  class="nz-widgetPanels-panel nz-left nz-pinned nz-span-top"
+  class="nz-widgetPanels-panel nz-left nz-span-top nz-span-bottom"
 >
   <div
     class="nz-content"
