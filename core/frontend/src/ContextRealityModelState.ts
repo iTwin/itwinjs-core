@@ -16,7 +16,7 @@ import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { SpatialModelState } from "./ModelState";
 import { SpatialClassifiers } from "./SpatialClassifiers";
-import { createOrbitGtTileTreeReference, createRealityTileTreeReference, RealityModelTileClient, RealityModelTileTree, RealityModelTileUtils, RealityTreeReference, TileTreeReference } from "./tile/internal";
+import { createOrbitGtTileTreeReference, createRealityTileTreeReference, OrbitGtTreeReference, RealityModelTileClient, RealityModelTileTree, RealityModelTileUtils, RealityTreeReference, TileTreeReference } from "./tile/internal";
 
 async function getAccessToken(): Promise<AccessToken | undefined> {
   if (!IModelApp.authorizationClient || !IModelApp.authorizationClient.hasSignedIn)
@@ -77,7 +77,7 @@ export class ContextRealityModelState {
   public get classifiers(): SpatialClassifiers | undefined { return this._treeRef.classifiers; }
   public get appearanceOverrides(): FeatureAppearance | undefined { return this._appearanceOverrides; }
   public set appearanceOverrides(overrides: FeatureAppearance | undefined) { this._appearanceOverrides = overrides; }
-  public get modelId(): Id64String | undefined { return (this._treeRef instanceof RealityTreeReference) ? this._treeRef.modelId : undefined; }
+  public get modelId(): Id64String | undefined { return (this._treeRef instanceof RealityTreeReference || this._treeRef instanceof OrbitGtTreeReference) ? this._treeRef.modelId : undefined; }
   /** Return true if the model spans the entire globe ellipsoid in 3D */
   public get isGlobal(): boolean {
     if (undefined === this._isGlobal) {

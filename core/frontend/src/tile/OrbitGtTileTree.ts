@@ -6,7 +6,7 @@
  * @module TileTreeSupplier
  */
 
-import { BeTimePoint, compareStrings, Id64String } from "@bentley/bentleyjs-core";
+import { BeTimePoint, compareStrings, compareStringsOrUndefined, Id64String } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, Transform, TransformProps, Vector3d } from "@bentley/geometry-core";
 import {
   BatchType, ColorDef, Feature,
@@ -40,24 +40,30 @@ import { TileUsageMarker } from "./TileUsageMarker";
 const scratchRange = Range3d.create();
 const scratchWorldFrustum = new Frustum();
 
+interface OrbitGtTreeId {
+  orbitGtProps: OrbitGtBlobProps;
+  modelId: Id64String;
+}
+
 class OrbitGtTreeSupplier implements TileTreeSupplier {
-  public getOwner(treeId: OrbitGtBlobProps, iModel: IModelConnection): TileTreeOwner {
+  public getOwner(treeId: OrbitGtTreeId, iModel: IModelConnection): TileTreeOwner {
     return iModel.tiles.getTileTreeOwner(treeId, this);
   }
 
-  public async createTileTree(treeId: OrbitGtBlobProps, iModel: IModelConnection): Promise<TileTree | undefined> {
-    const modelId = iModel.transientIds.next;
-    return OrbitGtTileTree.createOrbitGtTileTree(treeId, iModel, modelId);
+  public async createTileTree(treeId: OrbitGtTreeId, iModel: IModelConnection): Promise<TileTree | undefined> {
+    return OrbitGtTileTree.createOrbitGtTileTree(treeId.orbitGtProps, iModel, treeId.modelId);
   }
 
-  public compareTileTreeIds(lhs: OrbitGtBlobProps, rhs: OrbitGtBlobProps): number {
-    let cmp = compareStrings(lhs.accountName, rhs.accountName);
+  public compareTileTreeIds(lhs: OrbitGtTreeId, rhs: OrbitGtTreeId): number {
+    let cmp = compareStrings(lhs.orbitGtProps.accountName, rhs.orbitGtProps.accountName);
+    if (0 === cmp)
+      cmp = compareStringsOrUndefined(lhs.modelId, rhs.modelId);
     if (0 === cmp) {
-      cmp = compareStrings(lhs.blobFileName, rhs.blobFileName);
+      cmp = compareStrings(lhs.orbitGtProps.blobFileName, rhs.orbitGtProps.blobFileName);
       if (0 === cmp) {
-        cmp = compareStrings(lhs.containerName, rhs.containerName);
+        cmp = compareStrings(lhs.orbitGtProps.containerName, rhs.orbitGtProps.containerName);
         if (0 === cmp)
-          cmp = compareStrings(lhs.sasToken, rhs.sasToken);
+          cmp = compareStrings(lhs.orbitGtProps.sasToken, rhs.orbitGtProps.sasToken);
       }
     }
     return cmp;
@@ -341,6 +347,7 @@ export namespace OrbitGtTileTree {
     name?: string;
     classifiers?: SpatialClassifiers;
     displayStyle: DisplayStyleState;
+    modelId?: Id64String;
   }
 
   export async function createOrbitGtTileTree(props: OrbitGtBlobProps, iModel: IModelConnection, modelId: Id64String): Promise<TileTree | undefined> {
@@ -388,17 +395,22 @@ export namespace OrbitGtTileTree {
 /** Supplies a reality data [[TileTree]] from a URL. May be associated with a persistent [[GeometricModelState]], or attached at run-time via a [[ContextOrbitGtState]].
  * @internal
  */
-class OrbitGtTreeReference extends RealityModelTileTree.Reference {
+export class OrbitGtTreeReference extends RealityModelTileTree.Reference {
   public readonly treeOwner: TileTreeOwner;
   private readonly _name: string; // tslint:disable-line
   private readonly _classifier?: SpatialClassifierTileTreeReference;
   private _mapDrapeTree?: TileTreeReference;
   public get castsShadows() { return false; }
+  private _modelId: Id64String;
+  public get modelId() { return this._modelId; }
+
 
   public constructor(props: OrbitGtTileTree.ReferenceProps) {
     super();
 
-    this.treeOwner = orbitGtTreeSupplier.getOwner(props.orbitGtBlob, props.iModel);
+    this._modelId = props.modelId ? props.modelId : props.iModel.transientIds.next;
+    const ogtTreeId: OrbitGtTreeId = { orbitGtProps: props.orbitGtBlob, modelId: this._modelId };
+    this.treeOwner = orbitGtTreeSupplier.getOwner(ogtTreeId, props.iModel);
     this._name = undefined !== props.name ? props.name : "";
 
     if (undefined !== props.classifiers)
