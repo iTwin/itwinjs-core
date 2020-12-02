@@ -85,16 +85,14 @@ describe("ProjectShareClient (#integration)", () => {
     const testFolder = new ProjectShareFolder();
     testFolder.name = mainTestFolderName;
     await projectShareClient.createFolder(requestContext, projectId, projectId, testFolder); // Create a folder
-  }
-  )
+  });
 
   afterEach(async () => {
     const folders: ProjectShareFolder[] = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().startsWithPathAndNameLike(projectId, "/", mainTestFolderName));
     if (folders.length === 1 && folders[0].name === mainTestFolderName) {
       await projectShareClient.deleteFolder(requestContext, projectId, folders[0].wsgId);
     }
-  }
-  )
+  });
 
   // query folders with different options
   it("should be able to get folders in root folder", async () => {
@@ -104,7 +102,7 @@ describe("ProjectShareClient (#integration)", () => {
     // assert
     chai.assert.strictEqual(FoldersInRootFolder.length, 1);
     chai.assert.strictEqual(FoldersInRootFolder[0].name, mainTestFolderName);
-  })
+  });
 
   it("should be able to count folders in the root folder after adding a new folder", async () => {
     // arrange
@@ -118,7 +116,7 @@ describe("ProjectShareClient (#integration)", () => {
     chai.assert.strictEqual(foldersInRootFolderAfterNewFolder.length, 3);
     const res = await projectShareClient.deleteFolder(requestContext, projectId, newFolder.wsgId); // Permanent deleting Folder.
     chai.assert.isUndefined(res);
-  })
+  });
 
   it("should be able to get folders in folder", async () => {
     // arrange
@@ -131,7 +129,7 @@ describe("ProjectShareClient (#integration)", () => {
 
     // assert
     chai.assert.strictEqual(folders.length, 2);
-  })
+  });
 
   it("should be able to query folders by WsgIds", async () => {
     // arrange
@@ -152,7 +150,7 @@ describe("ProjectShareClient (#integration)", () => {
     const foundFolder2B = folders.find(x => x.wsgId === folder2B.wsgId);
     chai.assert.strictEqual(foundFolder2A?.name, folder2A.name);
     chai.assert.strictEqual(foundFolder2B?.name, folder2B.name);
-  })
+  });
 
   it("should be able to query folders in path", async () => {
     // arrange
@@ -173,7 +171,7 @@ describe("ProjectShareClient (#integration)", () => {
     const foundFolder2B = folders.find(x => x.wsgId === folder2B.wsgId);
     chai.assert.strictEqual(foundFolder2A?.name, folder2A.name);
     chai.assert.strictEqual(foundFolder2B?.name, folder2B.name);
-  })
+  });
 
   it("should be able to query folders in folder with name like", async () => {
     // arrange
@@ -194,7 +192,7 @@ describe("ProjectShareClient (#integration)", () => {
     const foundFolder2B = folders.find(x => x.wsgId === folder2B.wsgId);
     chai.assert.strictEqual(foundFolder2A?.name, folder2A.name);
     chai.assert.strictEqual(foundFolder2B?.name, folder2B.name);
-  })
+  });
 
   it("should be able to query folders which start with path and name like", async () => {
     // arrange
@@ -209,7 +207,7 @@ describe("ProjectShareClient (#integration)", () => {
     chai.assert.strictEqual(foundFolder2A.name, testFolderAName);
     const folders2 = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().startsWithPathAndNameLike(projectId, mainTestFolderName, "*"));
     chai.assert.strictEqual(2, folders2.length);
-  })
+  });
 
   // folder remove
   it("should be able to permanent delete a folder", async () => {
@@ -225,7 +223,7 @@ describe("ProjectShareClient (#integration)", () => {
     chai.assert.isUndefined(res);
     const foldersAfterDelete = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().startsWithPathAndNameLike(projectId, "/", mainFolder.name)); // assert folders amount after delete
     chai.assert.strictEqual(foldersAfterDelete.length, 0);
-  })
+  });
 
   it("should be able to send folder to recycle bin", async () => {
     // arrange
@@ -239,7 +237,7 @@ describe("ProjectShareClient (#integration)", () => {
     // assert
     const foldersAfterDelete = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().startsWithPathAndNameLike(projectId, "/", mainFolder.name)); // assert folders amount after delete
     chai.assert.strictEqual(foldersAfterDelete.length, 0);
-  })
+  });
 
   // query files with different options
   it("should be able to query files in root folder", async () => {
@@ -253,7 +251,7 @@ describe("ProjectShareClient (#integration)", () => {
     // assert
     chai.assert(files);
     chai.assert.strictEqual(files.length, 0);
-  })
+  });
 
   it("should be able to get files in the root folder after adding a new file", async () => {
     // arrange
@@ -270,10 +268,10 @@ describe("ProjectShareClient (#integration)", () => {
 
     // assert
     chai.assert.equal(changedFile.fileExists, true);
-    chai.assert.strictEqual(filesInRootFolderAfterNewFile.length, 1)
+    chai.assert.strictEqual(filesInRootFolderAfterNewFile.length, 1);
     const res = await projectShareClient.deleteFile(requestContext, projectId, file.wsgId); // Permanent deleting File.
     chai.assert.isUndefined(res);
-  })
+  });
 
   it("should be able to query files in folder", async () => {
     // arrange
@@ -289,7 +287,7 @@ describe("ProjectShareClient (#integration)", () => {
     // assert
     chai.assert(files);
     chai.assert.strictEqual(files.length, 3);
-  })
+  });
 
   it("should be able to query files starts with path", async () => {
     // arrange
@@ -305,7 +303,7 @@ describe("ProjectShareClient (#integration)", () => {
     // assert
     chai.assert(files);
     chai.assert.isAtLeast(files.length, 3);
-  })
+  });
 
   it("should be able to query files in folder with name like", async () => {
     // arrange
@@ -323,7 +321,7 @@ describe("ProjectShareClient (#integration)", () => {
     chai.assert.strictEqual(files.length, 1);
     const firstImage = files[0];
     chai.assert.strictEqual(firstImage.name, testFile2Name);
-  })
+  });
 
   it("should be able to query files which starts with path And name like", async () => {
     // arrange
@@ -341,7 +339,7 @@ describe("ProjectShareClient (#integration)", () => {
     chai.assert.strictEqual(files.length, 1);
     const secondImage = files[0];
     chai.assert.strictEqual(secondImage.name, testFile3Name);
-  })
+  });
 
   it("should be able to query files by WsgIds", async () => {
     // arrange
@@ -363,7 +361,7 @@ describe("ProjectShareClient (#integration)", () => {
     chai.assert.strictEqual(foundFirstImage.name, testFile2Name);
     const foundSecondImage = foundFiles[1];
     chai.assert.strictEqual(foundSecondImage.name, testFile3Name);
-  })
+  });
 
   // file remove
   it("should be able to permanent delete file", async () => {
