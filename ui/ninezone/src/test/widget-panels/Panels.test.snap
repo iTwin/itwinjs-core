@@ -36,7 +36,7 @@ exports[`WidgetPanels should render widget content 1`] = `
     class="nz-widgetPanels-content nz-pinned-left nz-pinned-right nz-pinned-top nz-pinned-bottom nz-widgetPanels-centerContent"
   />
   <div
-    class="nz-widgetPanels-panel nz-left nz-pinned nz-span-top nz-span-bottom"
+    class="nz-widgetPanels-panel nz-left nz-span-top nz-span-bottom"
   >
     <div
       class="nz-content"
