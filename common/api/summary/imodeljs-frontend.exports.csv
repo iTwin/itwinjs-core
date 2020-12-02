@@ -320,6 +320,7 @@ internal;OnScreenTarget
 beta;openImageDataUrlInNewWindow(url: string, title?: string): void
 internal;OrbitGtTileTree 
 internal;OrbitGtTileTree
+internal;OrbitGtTreeReference 
 public;OrthographicViewState 
 beta;OsmBuildingDisplayOptions
 public;OutputMessageAlert
