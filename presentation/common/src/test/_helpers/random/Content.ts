@@ -57,6 +57,7 @@ export const createRandomPrimitiveFieldJSON = (category?: CategoryDescriptionJSO
   type: createRandomPrimitiveTypeDescription(),
   isReadonly: faker.random.boolean(),
   priority: faker.random.number(),
+  renderer: { name: "custom_renderer" },
   editor: nullable(createRandomEditorDescription),
 });
 
