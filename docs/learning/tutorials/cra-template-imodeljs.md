@@ -1,27 +1,21 @@
-## Developing a create-react-app with iModeljs template
+## Developing a create-react-app with iModel.js template
 
 ### Setup
 
 - [Install necessary prerequisites]($docs/getting-started/development-prerequisites)
-- Have access to a cloud hosted iModel. If you do not have access to one, follow one of our tutorials to [create an online iModel]($docs/learning/tutorials/index.md)
-- To use this template, add `--template @bentley/cra-template-imodeljs` when creating a new app. You should also use the @bentley/react-scripts scripts version to compile your application.
+- From a terminal, `npx create-react-app my-app-name --template @bentley/cra-template-imodeljs --scripts-version @bentley/react-scripts`
+  - This will generate a new React application based on the iModel.js template in the `your-app-name` directory.
+- Open the `your-app-name` directory in VS Code.
+- Add a valid clientId, iModelId and projectId for your user in the .env file within the application's root directory.
+  - This will be used for initial development. The idea is that it would be replaced by a proper model selection process in a production application.
+- From a terminal at your application's root directory, `npm start`. This will serve the application with live reloading.
+- Add/Update/Remove files as needed for your use case. If running `npm start` while making changes, your application should re-compile and reload.
 
-For example for creating a React app with iModeljs template, use the following command from command prompt.
+### Build
 
-- `npx create-react-app my-app-name --template @bentley/cra-template-imodeljs --scripts-version @bentley/react-scripts`
+- From a terminal at your application's root directory, `npm run build`. This will create a deployment-ready build in the "build" folder within the application's root directory. It is not necessary to build the application during development.
 
-### Environment Variables
+### Useful Links
 
-Prior to running the app, add a valid clientId, iModelId and projectId for your user in the .env file:
-
-```
-# ---- Test ids ----
-imjs_browser_test_client_id = ""
-imjs_test_imodel = ""
-imjs_test_project = ""
-
-### Run
-
-- `npm start`
-
-```
+- [Create React App](https://create-react-app.dev/)
+- [Bentley React Scripts](https://www.npmjs.com/package/@bentley/react-scripts)
