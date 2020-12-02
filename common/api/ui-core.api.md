@@ -1347,27 +1347,18 @@ export type NodeCheckboxRenderProps = Omit<CheckboxProps, "onChange" | "onClick"
 export const NumberInput: React.ForwardRefExoticComponent<NumberInputProps & React.RefAttributes<HTMLInputElement>>;
 
 // @beta
-export interface NumberInputProps extends Omit<InputProps, "min" | "max" | "step" | "onChange" | "onBlur" | "onKeyDown" | "defaultValue" | "onInvalid"> {
+export interface NumberInputProps extends Omit<InputProps, "min" | "max" | "step" | "onChange" | "onBlur"> {
     containerClassName?: string;
-    // (undocumented)
     format?: (num: number | null | undefined, formattedValue: string) => string;
-    // (undocumented)
     max?: number;
-    // (undocumented)
     min?: number;
-    // (undocumented)
+    onBlur?: React.FocusEventHandler<HTMLInputElement>;
     onChange?: (value: number | undefined, stringValue: string) => void;
-    // (undocumented)
     parse?: ((value: string) => number | null | undefined);
-    // (undocumented)
     precision?: number;
-    // (undocumented)
     showTouchButtons?: boolean;
-    // (undocumented)
     snap?: boolean;
-    // (undocumented)
     step?: StepFunctionProp;
-    // (undocumented)
     value?: number;
 }
 
