@@ -16,7 +16,13 @@ describe("Background map", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    await IModelApp.startup();
+    await IModelApp.startup({
+      renderSys: {
+        // Test wants to read the color of exactly one pixel, specified in CSS pixels. Ignore device pixel ratio.
+        dpiAwareViewports: false,
+      },
+    });
+
     imodel = await SnapshotConnection.openFile("mirukuru.ibim");
   });
 

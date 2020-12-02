@@ -318,7 +318,7 @@ export class AuxChannel {
 
 // @public
 export class AuxChannelData {
-    constructor(input: number, values: number[]);
+    constructor(input: number, values: number[] | Float64Array);
     clone(): AuxChannelData;
     copyValues(other: AuxChannelData, thisIndex: number, otherIndex: number, blockSize: number): void;
     input: number;
@@ -4689,6 +4689,7 @@ export class RuledSweep extends SolidPrimitive {
 
 // @alpha
 export class Sample {
+    static addAuxDataScalarChannel(data: PolyfaceData, channelIndex: number, name: string | undefined, inputName: string | undefined, input0: number, inputStep: number, numInput: number, dataType: AuxChannelDataType, scalarFunction: (input: number, xyz: Point3d) => number): void;
     static readonly angle: Angle[];
     static readonly angleSweep: AngleSweep[];
     static appendPhases(linestring: LineString3d, numPhase: number, ...vectors: Vector3d[]): void;
@@ -4914,6 +4915,7 @@ export class Sphere extends SolidPrimitive implements UVSurface {
     get isClosedVolume(): boolean;
     isSameGeometryClass(other: any): boolean;
     get latitudeSweepFraction(): number;
+    maxAxisRadius(): number;
     maxIsoParametricDistance(): Vector2d;
     readonly solidPrimitiveType = "sphere";
     strokeConstantVSection(v: number, fixedStrokeCount: number | undefined, options?: StrokeOptions): LineString3d;

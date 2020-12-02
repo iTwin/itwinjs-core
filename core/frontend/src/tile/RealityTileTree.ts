@@ -27,7 +27,6 @@ export class TraversalDetails {
     this.childrenSelected = false;
   }
 }
-
 /** @internal */
 export class TraversalChildrenDetails {
   private _childDetails: TraversalDetails[] = [];
@@ -60,7 +59,8 @@ export class TraversalChildrenDetails {
 export class TraversalSelectionContext {
   public preloaded = new Set<RealityTile>();
   public missing = new Array<RealityTile>();
-  constructor(public selected: Tile[], public displayedDescendants: Tile[][], public preloadDebugBuilder?: GraphicBuilder) { }
+  public get selectionCountExceeded() { return this._maxSelectionCount === undefined ? false : (this.missing.length + this.selected.length) > this._maxSelectionCount; }   // Avoid selecting excessive number of tiles.
+  constructor(public selected: Tile[], public displayedDescendants: Tile[][], public preloadDebugBuilder?: GraphicBuilder, private _maxSelectionCount?: number) { }
 
   public selectOrQueue(tile: RealityTile, args: TileDrawArgs, traversalDetails: TraversalDetails) {
     tile.selectSecondaryTiles(args, this);
@@ -238,7 +238,7 @@ export class RealityTileTree extends TileTree {
   public selectRealityTiles(args: TileDrawArgs, displayedDescendants: RealityTile[][], preloadDebugBuilder?: GraphicBuilder): RealityTile[] {
     this._lastSelected = BeTimePoint.now();
     const selected: RealityTile[] = [];
-    const context = new TraversalSelectionContext(selected, displayedDescendants, preloadDebugBuilder);
+    const context = new TraversalSelectionContext(selected, displayedDescendants, preloadDebugBuilder, args.maxRealityTreeSelectionCount);
     const rootTile = this.rootTile;
     const debugControl = args.context.target.debugControl;
     const freezeTiles = debugControl && debugControl.freezeRealityTiles;

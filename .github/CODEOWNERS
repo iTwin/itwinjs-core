@@ -20,8 +20,7 @@ rush.json @calebmshafer @scsewall
 /clients              @calebmshafer @ramanujam-raman
 # /clients/imodelhub    @amikoliunas @Animagne
 
-# /common/api/analytical-backend.api.md              @diegoalexdiaz @scsewall
-/common/api/analytical-backend.api.md               @scsewall
+/common/api/analytical-backend.api.md               @diegoalexdiaz @scsewall
 /common/api/backend-application-insights-client.api.md @calebmshafer @ramanujam-raman
 /common/api/backend-itwin-client.api.md             @calebmshafer @ramanujam-raman
 /common/api/bentleyjs-core.api.md                   @imodeljs/admins
@@ -37,10 +36,8 @@ rush.json @calebmshafer @scsewall
 /common/api/frontend-application-insights-client.api.md     @calebmshafer @ramanujam-raman
 /common/api/frontend-authorization-client.api.md     @calebmshafer @ramanujam-raman
 /common/api/frontend-devtools.api.md                @pmconne @mgooding
-# /common/api/geometry-core.api.md                   @EarlinLutz @mgooding @RBBentley @bbastings
-/common/api/geometry-core.api.md                    @EarlinLutz @mgooding @RBBentley
-# /common/api/hypermodeling-frontend.api.md           @pmconne @bbastings
-/common/api/hypermodeling-frontend.api.md           @pmconne
+/common/api/geometry-core.api.md                    @EarlinLutz @mgooding @RBBentley @bbastings
+/common/api/hypermodeling-frontend.api.md           @pmconne @bbastings
 /common/api/imodel-bridge.api.md                    @abeesh @c-macdonald @swwilson-bsi
 # /common/api/imodelhub-client.api.md                 @amikoliunas @Animagne
 /common/api/imodeljs-backend.api.md                 @imodeljs/admins
@@ -69,8 +66,8 @@ rush.json @calebmshafer @scsewall
 
 # Specifying both of these with a large number of possible reviewers.
 # All significant changes will be covered by other requirements.
-/common/api/summary @imodeljs/core @imodeljs/display
-/common/changes @imodeljs/core @imodeljs/display
+/common/api/summary @imodeljs/core
+/common/changes @imodeljs/core
 
 /common/config/azure-pipelines  @calebmshafer @wgoehrig @ColinKerr
 
@@ -85,10 +82,8 @@ rush.json @calebmshafer @scsewall
 /core/express-server            @calebmshafer @wgoehrig @ramanujam-raman
 /core/frontend                  @imodeljs/admins
 /core/frontend-devtools         @pmconne @mgooding
-# /core/geometry                  @bbastings @EarlinLutz @mgooding @RBBentley
-/core/geometry                  @EarlinLutz @mgooding @RBBentley
-# /core/hypermodeling             @pmconne @bbastings
-/core/hypermodeling             @pmconne
+/core/geometry                  @bbastings @EarlinLutz @mgooding @RBBentley
+/core/hypermodeling             @bbastings @pmconne
 /core/i18n                      @wgoehrig @calebmshafer
 /core/imodel-bridge             @abeesh @c-macdonald @swwilson-bsi
 /core/logger-config             @swwilson-bsi @scsewall

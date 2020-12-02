@@ -1852,6 +1852,11 @@ export interface PropertyRangeGroupSpecification {
 }
 
 // @public
+export interface PropertyRendererSpecification {
+    rendererName: string;
+}
+
+// @public
 export interface PropertySortingRule extends SortingRuleBase {
     propertyName: string;
     ruleType: RuleTypes.PropertySorting;

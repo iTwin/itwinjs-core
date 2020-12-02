@@ -92,8 +92,14 @@ else
   try {
     await certa(yargs.argv.runner, config);
   } catch (error) {
-    console.error(error.message);
-    console.error(error.stack);
+    if (error instanceof Error) {
+      console.error(error.message);
+      console.error(error.stack);
+    } else {
+      console.error(error);
+    }
+    if (process.send)
+      process.send({ exitCode: 1 });
     process.exit(1);
   }
 })();

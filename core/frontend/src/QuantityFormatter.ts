@@ -712,13 +712,13 @@ export class QuantityFormatter implements UnitsProvider {
   }
 
   /** Set the flag to return either metric or imperial formats. This call also makes an async request to refresh the cached formats. */
-  public async loadFormatAndParsingMaps(useImperial: boolean): Promise<void> {
+  public async loadFormatAndParsingMaps(useImperial: boolean, restartActiveTool?: boolean): Promise<void> {
     const formatPromise = this.loadFormatSpecsForQuantityTypes(useImperial);
     const parsePromise = this.loadParsingSpecsForQuantityTypes(useImperial);
     await Promise.all([formatPromise, parsePromise]);
     this._activeSystemIsImperial = useImperial;
     this.onActiveUnitSystemChanged.emit({ useImperial });
-    if (IModelApp.toolAdmin)
+    if (IModelApp.toolAdmin && restartActiveTool)
       IModelApp.toolAdmin.startDefaultTool();
   }
 
@@ -728,6 +728,6 @@ export class QuantityFormatter implements UnitsProvider {
     if (this._activeSystemIsImperial === useImperial)
       return;
 
-    this.loadFormatAndParsingMaps(useImperial); // eslint-disable-line @typescript-eslint/no-floating-promises
+    this.loadFormatAndParsingMaps(useImperial, true); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 }

@@ -231,6 +231,7 @@ public;PropertyInfoJSON
 public;PropertyJSON
 public;PropertyOverrides
 public;PropertyRangeGroupSpecification
+public;PropertyRendererSpecification
 public;PropertySortingRule 
 public;PropertySpecification 
 public;PropertyValueFormat

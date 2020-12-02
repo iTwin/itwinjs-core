@@ -5,6 +5,16 @@
 import { ipcRenderer, remote } from "electron";
 import Mocha = require("mocha");
 
+window.onerror = (_message: any, _source: any, _lineno: any, _colno: any, error: any) => {
+  const { message, stack } = error || {};
+  ipcRenderer.send("certa-error", { message, stack });
+};
+
+window.onunhandledrejection = (event: any) => {
+  const { message, stack } = event.reason;
+  ipcRenderer.send("certa-error", { message, stack });
+};
+
 // Initialize mocha
 declare const window: any;
 window.mocha = new Mocha();
@@ -15,11 +25,6 @@ window._CertaConsole = (name: string, args: any[] = [""]) => {
   return remote.getGlobal("console")[name].apply(remote.getGlobal("console"), args);
 };
 import "../../utils/initMocha";
-
-window.onunhandledrejection = (event: any) => {
-  const { message, stack } = event.reason;
-  ipcRenderer.send("certa-error", { message, stack });
-};
 
 async function startCertaTests(entryPoint: string) {
   try {

@@ -9,6 +9,7 @@
 import "./Panel.scss";
 import classnames from "classnames";
 import * as React from "react";
+import produce from "immer";
 import { DraggedPanelSideContext } from "../base/DragManager";
 import { NineZoneDispatchContext, WidgetsStateContext } from "../base/NineZone";
 import { isHorizontalPanelState, PanelState, WidgetState } from "../base/NineZoneState";
@@ -19,7 +20,6 @@ import { PanelTarget } from "./PanelTarget";
 import { RectangleProps, SizeProps } from "@bentley/ui-core";
 import { assert } from "../base/assert";
 import { WidgetComponent } from "../widget/Widget";
-import produce from "immer";
 
 /** @internal */
 export type TopPanelSide = "top";

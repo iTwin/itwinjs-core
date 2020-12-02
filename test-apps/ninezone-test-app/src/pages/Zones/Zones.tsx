@@ -35,6 +35,7 @@ import {
   WidgetTab,
   TabStateContext,
   createVerticalPanelState,
+  isHorizontalPanelSide,
 } from "@bentley/ui-ninezone";
 import { ToolSettingProps } from "./ToolSetting";
 import ToolSettings from "./ToolSettings";
@@ -456,7 +457,9 @@ export function WidgetContent() {
     <ScrollableWidgetContent>
       <h2>Tab={tabId}</h2>
       <button onClick={() => setState((prev) => !prev)}>state={String(state)}</button>
-      <button onClick={() => side && dispatch({ side, type: "PANEL_TOGGLE_PINNED" })}>toggle pinned</button>
+      {(tabId === "topStart_1" || tabId === "bottomStart_1") && <>
+        <button onClick={() => side && isHorizontalPanelSide(side) && dispatch({ type: "PANEL_TOGGLE_SPAN", side })}>toggle span</button>
+      </>}
       {tabId !== "leftStart_1" && <>
         <br />
         <br />
