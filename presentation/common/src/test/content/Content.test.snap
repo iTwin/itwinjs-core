@@ -62,6 +62,9 @@ Object {
         "label": "Paradigm Lebanese Pound Borders",
         "name": "Arizona",
         "priority": 66082,
+        "renderer": Object {
+          "name": "custom_renderer",
+        },
         "type": Object {
           "typeName": "set",
           "valueFormat": "Primitive",
@@ -81,6 +84,9 @@ Object {
         "label": "generate Rubber Small Fresh Cheese",
         "name": "Personal Loan Account",
         "priority": 39366,
+        "renderer": Object {
+          "name": "custom_renderer",
+        },
         "type": Object {
           "typeName": "text",
           "valueFormat": "Primitive",
@@ -102,6 +108,9 @@ Object {
         "label": "Clothing",
         "name": "Sports",
         "priority": 21234,
+        "renderer": Object {
+          "name": "custom_renderer",
+        },
         "type": Object {
           "typeName": "tinyint",
           "valueFormat": "Primitive",
@@ -456,6 +465,9 @@ Object {
         "label": "leverage orange",
         "name": "Brand",
         "priority": 12709,
+        "renderer": Object {
+          "name": "custom_renderer",
+        },
         "type": Object {
           "typeName": "smallint",
           "valueFormat": "Primitive",
@@ -475,6 +487,9 @@ Object {
         "label": "Green",
         "name": "Shirt",
         "priority": 27397,
+        "renderer": Object {
+          "name": "custom_renderer",
+        },
         "type": Object {
           "typeName": "set",
           "valueFormat": "Primitive",
@@ -494,6 +509,9 @@ Object {
         "label": "Avon Generic",
         "name": "Marketing",
         "priority": 11645,
+        "renderer": Object {
+          "name": "custom_renderer",
+        },
         "type": Object {
           "typeName": "text",
           "valueFormat": "Primitive",
