@@ -431,8 +431,8 @@ export class BriefcaseDb extends IModelDb {
     readonly onBeforeClose: BeEvent<() => void>;
     readonly onChangesetApplied: BeEvent<() => void>;
     static readonly onCreated: BeEvent<(_imodelDb: BriefcaseDb) => void>;
-    static readonly onOpen: BeEvent<(_requestContext: ClientRequestContext | AuthorizedClientRequestContext, _briefcaseProps: BriefcaseProps) => void>;
-    static readonly onOpened: BeEvent<(_requestContext: ClientRequestContext | AuthorizedClientRequestContext, _imodelDb: BriefcaseDb) => void>;
+    static readonly onOpen: BeEvent<(_requestContext: AuthorizedClientRequestContext | ClientRequestContext, _briefcaseProps: BriefcaseProps) => void>;
+    static readonly onOpened: BeEvent<(_requestContext: AuthorizedClientRequestContext | ClientRequestContext, _imodelDb: BriefcaseDb) => void>;
     static open(requestContext: AuthorizedClientRequestContext | ClientRequestContext, briefcaseKey: BriefcaseKey, options?: OpenBriefcaseOptions & UpgradeOptions): Promise<BriefcaseDb>;
     pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
     pushChanges(requestContext: AuthorizedClientRequestContext, description: string, changeType?: ChangesType): Promise<void>;
