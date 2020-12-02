@@ -81,9 +81,7 @@ export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSugge
 
 // @beta
 export interface AutoSuggestData {
-    // (undocumented)
     label: string;
-    // (undocumented)
     value: string;
 }
 
@@ -1467,10 +1465,10 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     render(): React.ReactPortal | null;
     }
 
-// @alpha
+// @beta
 export function PopupContextMenu(props: PopupContextMenuProps): JSX.Element;
 
-// @alpha
+// @beta
 export interface PopupContextMenuProps extends CommonProps {
     animate?: boolean;
     ariaLabel?: string;
