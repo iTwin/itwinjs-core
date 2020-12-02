@@ -1,6 +1,6 @@
 {
   "name": "@bentley/build-tools",
-  "version": "2.9.3",
+  "version": "2.9.4",
   "description": "Bentley build tools",
   "license": "MIT",
   "repository": {
@@ -30,7 +30,7 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/eslint-plugin": "2.9.3",
+    "@bentley/eslint-plugin": "2.9.4",
     "@microsoft/api-extractor": "7.7.3",
     "chai": "^4.1.2",
     "chalk": "^3.0.0",

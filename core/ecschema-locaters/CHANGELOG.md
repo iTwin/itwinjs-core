@@ -1,6 +1,11 @@
 # Change Log - @bentley/ecschema-locaters
 
-This log was last generated on Mon, 23 Nov 2020 22:19:30 GMT and should not be manually modified.
+This log was last generated on Wed, 02 Dec 2020 20:55:40 GMT and should not be manually modified.
+
+## 2.9.4
+Wed, 02 Dec 2020 20:55:40 GMT
+
+_Version update only_
 
 ## 2.9.3
 Mon, 23 Nov 2020 20:57:56 GMT
