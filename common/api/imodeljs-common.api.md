@@ -3642,6 +3642,7 @@ export abstract class IModel implements IModelProps {
     ecefToSpatial(ecef: XYAndZ, result?: Point3d): Point3d;
     // @internal
     protected _fileKey: string;
+    // (undocumented)
     get geographicCoordinateSystem(): GeographicCRS | undefined;
     set geographicCoordinateSystem(geoCRS: GeographicCRS | undefined);
     // @internal (undocumented)
