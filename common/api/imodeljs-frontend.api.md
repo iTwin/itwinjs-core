@@ -1691,7 +1691,7 @@ export class ContextRealityModelState {
     readonly url: string;
 }
 
-// @alpha
+// @beta
 export class ConversionData implements UnitConversion {
     // (undocumented)
     factor: number;
@@ -6154,6 +6154,14 @@ export enum OutputMessageType {
     Toast = 0
 }
 
+// @beta
+export interface OverrideFormatEntry {
+    // (undocumented)
+    imperial: any;
+    // (undocumented)
+    metric: any;
+}
+
 // @internal
 export function overrideRequestTileTreeProps(func: RequestTileTreePropsFunc | undefined): void;
 
@@ -6410,11 +6418,15 @@ export class QuadId {
     row: number;
 }
 
-// @alpha
+// @beta
 export class QuantityFormatter implements UnitsProvider {
     constructor(showMetricValues?: boolean);
     // (undocumented)
     protected _activeSystemIsImperial: boolean;
+    // (undocumented)
+    clearAllOverrideFormats(): Promise<void>;
+    // (undocumented)
+    clearOverrideFormats(type: QuantityType): Promise<void>;
     findFormatterSpecByQuantityType(type: QuantityType, imperial?: boolean): FormatterSpec | undefined;
     protected findKoqFormatterSpec(koq: string, useImperial: boolean): FormatterSpec | undefined;
     findParserSpecByQuantityType(type: QuantityType, imperial?: boolean): ParserSpec | undefined;
@@ -6431,7 +6443,11 @@ export class QuantityFormatter implements UnitsProvider {
     getFormatterSpecByQuantityType(type: QuantityType, imperial?: boolean): Promise<FormatterSpec>;
     protected getKoqFormatterSpec(koq: string, useImperial: boolean): Promise<FormatterSpec | undefined>;
     protected getKoqFormatterSpecsAsync(koq: string, useImperial: boolean): Promise<FormatterSpec[] | undefined>;
+    // (undocumented)
+    protected getOverrideFormat(type: QuantityType, imperial: boolean): Promise<any>;
     getParserSpecByQuantityType(type: QuantityType, imperial?: boolean): Promise<ParserSpec>;
+    // (undocumented)
+    protected _getStandardFormatterSpec(type: QuantityType, useImperial: boolean): Promise<FormatterSpec>;
     protected getUnitByQuantityType(type: QuantityType): Promise<UnitProps>;
     getUnitsByFamily(unitFamily: string): Promise<UnitProps[]>;
     // (undocumented)
@@ -6441,8 +6457,10 @@ export class QuantityFormatter implements UnitsProvider {
     // (undocumented)
     protected _imperialParserSpecsByType: Map<QuantityType, ParserSpec>;
     loadFormatAndParsingMaps(useImperial: boolean, restartActiveTool?: boolean): Promise<void>;
+    protected loadFormatSpecsForQuantityType(quantityType: QuantityType, useImperial: boolean): Promise<void>;
     protected loadFormatSpecsForQuantityTypes(useImperial: boolean): Promise<void>;
     protected loadKoqFormatSpecs(koq: string): Promise<void>;
+    protected loadParsingSpecsForQuantityType(quantityType: QuantityType, useImperial: boolean): Promise<void>;
     protected loadParsingSpecsForQuantityTypes(useImperial: boolean): Promise<void>;
     // (undocumented)
     protected loadStdFormat(type: QuantityType, imperial: boolean): Promise<Format>;
@@ -6457,7 +6475,11 @@ export class QuantityFormatter implements UnitsProvider {
     }>;
     // (undocumented)
     onInitialized(): void;
+    // (undocumented)
+    protected _overrideFormatDataByType: Map<QuantityType, OverrideFormatEntry>;
     parseIntoQuantityValue(inString: string, parserSpec: ParserSpec): ParseResult;
+    // (undocumented)
+    setOverrideFormats(type: QuantityType, entry: OverrideFormatEntry): Promise<void>;
     get useImperialFormats(): boolean;
     set useImperialFormats(useImperial: boolean);
 }
