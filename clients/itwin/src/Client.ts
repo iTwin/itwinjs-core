@@ -48,6 +48,11 @@ export class DefaultRequestOptionsProvider {
 export abstract class Client {
   private static _defaultRequestOptionsProvider: DefaultRequestOptionsProvider;
   protected _url?: string;
+
+  /**
+   * Sets the default base URL to use with this client.
+   * If not set, BUDDI is used to resolve the URL using key returned by [[getUrlSearchKey]].
+   */
   protected baseUrl?: string;
 
   /**  Creates an instance of Client. */
