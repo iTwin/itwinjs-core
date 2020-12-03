@@ -85,10 +85,11 @@ describe.only("WmtsCapabilities", () => {
     }
 
     // Style
-    expect(capabilities?.contents?.layers[0].style).to.not.undefined;
-    expect(capabilities?.contents?.layers[0].style?.identifier).to.equal("default");
-    expect(capabilities?.contents?.layers[0].style?.title).to.equal("Default Style");
-    expect(capabilities?.contents?.layers[0].style?.isDefault).to.equal(true);
+    expect(capabilities?.contents?.layers[0].styles).to.not.undefined;
+    expect(capabilities?.contents?.layers[0].styles.length).to.equal(1);
+    expect(capabilities?.contents?.layers[0].styles[0].identifier).to.equal("default");
+    expect(capabilities?.contents?.layers[0].styles[0].title).to.equal("Default Style");
+    expect(capabilities?.contents?.layers[0].styles[0].isDefault).to.equal(true);
 
     // TileMatrixSetLinks
     expect(capabilities?.contents?.layers[0].tileMatrixSetLinks.length).to.equal(2);
@@ -96,27 +97,30 @@ describe.only("WmtsCapabilities", () => {
     expect(capabilities?.contents?.layers[0].tileMatrixSetLinks[1].tileMatrixSet).to.equal("GoogleMapsCompatible");
 
     // Validate TileMatrix set
-    expect(capabilities?.contents?.tileMatrixSet.length).to.equals(2);
-    expect(capabilities?.contents?.tileMatrixSet[0].identifier).to.equal("default028mm");
-    expect(capabilities?.contents?.tileMatrixSet[0].title).to.equal("TileMatrix using 0.28mm");
-    expect(capabilities?.contents?.tileMatrixSet[0].abstract).to.contains("dpi assumes 0.28mm");
-    expect(capabilities?.contents?.tileMatrixSet[0].supportedCrs).to.contains("urn:ogc:def:crs:EPSG::3857");
+    expect(capabilities?.contents?.tileMatrixSets.length).to.equals(2);
+    expect(capabilities?.contents?.tileMatrixSets[0].identifier).to.equal("default028mm");
+    expect(capabilities?.contents?.tileMatrixSets[0].title).to.equal("TileMatrix using 0.28mm");
+    expect(capabilities?.contents?.tileMatrixSets[0].abstract).to.contains("dpi assumes 0.28mm");
+    expect(capabilities?.contents?.tileMatrixSets[0].supportedCrs).to.contains("urn:ogc:def:crs:EPSG::3857");
+
 
     // Validate first tile matrix definition.
-    expect(capabilities?.contents?.tileMatrixSet[0].tileMatrix.length).to.equals(24);
-    expect(capabilities?.contents?.tileMatrixSet[0].tileMatrix[0].identifier).to.equals("0");
+    expect(capabilities?.contents?.tileMatrixSets[0].tileMatrix.length).to.equals(24);
+    expect(capabilities?.contents?.tileMatrixSets[0].tileMatrix[0].identifier).to.equals("0");
 
-    expect(capabilities?.contents?.tileMatrixSet[0].tileMatrix[0].scaleDenominator).to.not.undefined;
-    if (capabilities?.contents?.tileMatrixSet[0].tileMatrix[0].scaleDenominator)
-      expect(Math.abs(capabilities.contents.tileMatrixSet[0].tileMatrix[0].scaleDenominator - (5.590822640285016E8))).to.lessThan(SMALL_DECIMAL_DIFFERENCE);
+    expect(capabilities?.contents?.tileMatrixSets[0].tileMatrix[0].scaleDenominator).to.not.undefined;
+    if (capabilities?.contents?.tileMatrixSets[0].tileMatrix[0].scaleDenominator)
+      expect(Math.abs(capabilities.contents.tileMatrixSets[0].tileMatrix[0].scaleDenominator - (5.590822640285016E8))).to.lessThan(SMALL_DECIMAL_DIFFERENCE);
 
-    expect(capabilities?.contents?.tileMatrixSet[0].tileMatrix[0].topLeftCorner).to.not.undefined;
-    if (capabilities?.contents?.tileMatrixSet[0].tileMatrix[0].topLeftCorner)
-      expect(capabilities?.contents?.tileMatrixSet[0].tileMatrix[0].topLeftCorner.isAlmostEqualXY(-2.0037508342787E7, 2.0037508342787E7)).to.true;
-    expect(capabilities?.contents?.tileMatrixSet[0].tileMatrix[0].tileWidth).to.equals(256);
-    expect(capabilities?.contents?.tileMatrixSet[0].tileMatrix[0].tileHeight).to.equals(256);
-    expect(capabilities?.contents?.tileMatrixSet[0].tileMatrix[0].matrixWidth).to.equals(2);
-    expect(capabilities?.contents?.tileMatrixSet[0].tileMatrix[0].matrixHeight).to.equals(2);
+    expect(capabilities?.contents?.tileMatrixSets[0].tileMatrix[0].topLeftCorner).to.not.undefined;
+    if (capabilities?.contents?.tileMatrixSets[0].tileMatrix[0].topLeftCorner)
+      expect(capabilities?.contents?.tileMatrixSets[0].tileMatrix[0].topLeftCorner.isAlmostEqualXY(-2.0037508342787E7, 2.0037508342787E7)).to.true;
+    expect(capabilities?.contents?.tileMatrixSets[0].tileMatrix[0].tileWidth).to.equals(256);
+    expect(capabilities?.contents?.tileMatrixSets[0].tileMatrix[0].tileHeight).to.equals(256);
+    expect(capabilities?.contents?.tileMatrixSets[0].tileMatrix[0].matrixWidth).to.equals(2);
+    expect(capabilities?.contents?.tileMatrixSets[0].tileMatrix[0].matrixHeight).to.equals(2);
+
+    expect(capabilities?.contents?.tileMatrixSets[1].wellKnownScaleSet).to.contains("urn:ogc:def:wkss:OGC:1.0:GoogleMapsCompatible");
   });
 
   it("should parse sample OGC WMTS capabilities", async () => {
@@ -186,14 +190,34 @@ describe.only("WmtsCapabilities", () => {
 
 
     // Validate first tile matrix definition.
-    expect(capabilities?.contents?.tileMatrixSet.length).to.equals(1);
-    expect(capabilities?.contents?.tileMatrixSet[0].tileMatrix.length).to.equals(7);
-    expect(capabilities?.contents?.tileMatrixSet[0].tileMatrix[0].identifier).to.equals("2g");
+    expect(capabilities?.contents?.tileMatrixSets.length).to.equals(1);
+    expect(capabilities?.contents?.tileMatrixSets[0].tileMatrix.length).to.equals(7);
+    expect(capabilities?.contents?.tileMatrixSets[0].tileMatrix[0].identifier).to.equals("2g");
 
 
-    expect(capabilities?.contents?.tileMatrixSet[0].tileMatrix[0].tileWidth).to.equals(320);
-    expect(capabilities?.contents?.tileMatrixSet[0].tileMatrix[0].tileHeight).to.equals(200);
-    expect(capabilities?.contents?.tileMatrixSet[0].tileMatrix[0].matrixWidth).to.equals(1);
-    expect(capabilities?.contents?.tileMatrixSet[0].tileMatrix[0].matrixHeight).to.equals(1);
+    expect(capabilities?.contents?.tileMatrixSets[0].tileMatrix[0].tileWidth).to.equals(320);
+    expect(capabilities?.contents?.tileMatrixSets[0].tileMatrix[0].tileHeight).to.equals(200);
+    expect(capabilities?.contents?.tileMatrixSets[0].tileMatrix[0].matrixWidth).to.equals(1);
+    expect(capabilities?.contents?.tileMatrixSets[0].tileMatrix[0].matrixHeight).to.equals(1);
+  });
+
+  it("should parse sample OGC WMTS capabilities", async () => {
+    const capabilities = await WmtsCapabilities.create("assets/wmts_capabilities/great-arttesian-basin.xml");
+    // I check only things that are different from other datasets
+
+
+    //  Check the layer styles
+    expect(capabilities?.contents?.layers).to.not.undefined;
+    expect(capabilities?.contents?.layers.length).to.equal(1);  // this sample capabilities has 2 layers
+    expect(capabilities?.contents?.layers[0].styles.length).to.equal(2);
+    expect(capabilities?.contents?.layers[0].styles[0].identifier).to.equal("gab:gab_formation_elevation_equalised_histogram");
+    expect(capabilities?.contents?.layers[0].styles[0].isDefault).to.equal(false);
+    expect(capabilities?.contents?.layers[0].styles[1].identifier).to.equal("gab:gab_formation_elevation_min-max");
+    expect(capabilities?.contents?.layers[0].styles[1].isDefault).to.equal(true);
+
+    // tileMatrixSetLinks
+    expect(capabilities?.contents?.tileMatrixSets.length).to.equal(6);
+    const googleTms = capabilities?.contents?.getGoogleMapsCompatibleTileMatrixSet();
+    expect(googleTms?.length).to.equal(2);
   });
 });

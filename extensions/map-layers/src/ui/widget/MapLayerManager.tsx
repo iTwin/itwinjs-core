@@ -63,6 +63,8 @@ export interface StyleMapLayerSettings {
   subLayers?: MapSubLayerProps[];
   /** sub-layer panel displayed. */
   showSubLayers: boolean;
+  /** Some format can publish only a single layer at a time (i.e WMTS) */
+  mutualExclusiveSubLayer?: boolean;
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -169,6 +171,7 @@ function getMapLayerSettingsFromStyle(displayStyle: DisplayStyleState | undefine
         subLayers: populateSubLayers ? getSubLayerProps(layerSettings.subLayers) : undefined,
         showSubLayers: false,
         isOverlay: false,
+        mutualExclusiveSubLayer: (layerSettings.formatId === "WMTS"),
       });
     });
   } else {
@@ -182,6 +185,7 @@ function getMapLayerSettingsFromStyle(displayStyle: DisplayStyleState | undefine
         subLayers: populateSubLayers ? getSubLayerProps(layerSettings.subLayers) : undefined,
         showSubLayers: false,
         isOverlay: true,
+        mutualExclusiveSubLayer: (layerSettings.formatId === "WMTS"),
       });
     });
   }
