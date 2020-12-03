@@ -90,6 +90,7 @@ import { FeatureTable } from '@bentley/imodeljs-common';
 import { FillFlags } from '@bentley/imodeljs-common';
 import { FontMap } from '@bentley/imodeljs-common';
 import { Format } from '@bentley/imodeljs-quantity';
+import { FormatProps } from '@bentley/imodeljs-quantity';
 import { FormatterSpec } from '@bentley/imodeljs-quantity';
 import { FrontendAuthorizationClient } from '@bentley/frontend-authorization-client';
 import { Frustum } from '@bentley/imodeljs-common';
@@ -6157,9 +6158,9 @@ export enum OutputMessageType {
 // @beta
 export interface OverrideFormatEntry {
     // (undocumented)
-    imperial: any;
+    imperial: FormatProps;
     // (undocumented)
-    metric: any;
+    metric: FormatProps;
 }
 
 // @internal
@@ -6444,7 +6445,7 @@ export class QuantityFormatter implements UnitsProvider {
     protected getKoqFormatterSpec(koq: string, useImperial: boolean): Promise<FormatterSpec | undefined>;
     protected getKoqFormatterSpecsAsync(koq: string, useImperial: boolean): Promise<FormatterSpec[] | undefined>;
     // (undocumented)
-    protected getOverrideFormat(type: QuantityType, imperial: boolean): Promise<any>;
+    protected getOverrideFormat(type: QuantityType, imperial: boolean): Promise<FormatProps | undefined>;
     getParserSpecByQuantityType(type: QuantityType, imperial?: boolean): Promise<ParserSpec>;
     // (undocumented)
     protected _getStandardFormatterSpec(type: QuantityType, useImperial: boolean): Promise<FormatterSpec>;
