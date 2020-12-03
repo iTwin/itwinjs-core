@@ -8,9 +8,9 @@ The [UiAdmin]($ui-abstract) class contains an API used to display the following:
 * Calculator
 * Input editors
 * Card at Cursor
-* Dialog
-* Keyin Palette
 * Tool Settings popup
+* Keyin Palette
+* Dialog
 * HTML element
 
 The UiAdmin methods are callable from `IModelApp.uiAdmin` in the imodeljs-frontend package.
@@ -337,17 +337,14 @@ The `hideCard` function hides the Card.
   }
 ```
 
-### showKeyinPalette
+### openToolSettingsPopup
 
-The `showKeyinPalette` function shows a Keyin Palette, centered and in the top part of the screen.
+The `openToolSettingsPopup` function opens a popup containing Tool Settings.
+These tool settings are in addition to the tool settings that may be displayed
+in the main Tool Settings widget.
 
-```ts
-IModelApp.uiAdmin.showKeyinPalette();
-```
-
-![uiAdmin-showKeyinPalette](./images/UiAdmin-showKeyinPalette.png "IModelApp.uiAdmin.showKeyinPalette")
-
-### showKeyinPalette
+The following example shows different tool settings popups being
+opened on the first and second data points for the tool.
 
 ```ts
 class PointOnePopupSettingsProvider extends DialogLayoutDataProvider {
@@ -445,7 +442,7 @@ export class MyToolWithSettings extends PrimitiveTool {
   }
 ```
 
-####
+#### closeToolSettingsPopup
 
 The `closeToolSettingsPopup` function closes the popup.
 
@@ -454,6 +451,147 @@ The `closeToolSettingsPopup` function closes the popup.
     IModelApp.uiAdmin.closeToolSettingsPopup();
   };
 
+```
+
+### showKeyinPalette
+
+The `showKeyinPalette` function shows a Keyin Palette, centered and in the top part of the screen.
+
+```ts
+IModelApp.uiAdmin.showKeyinPalette();
+```
+
+![uiAdmin-showKeyinPalette](./images/UiAdmin-showKeyinPalette.png "IModelApp.uiAdmin.showKeyinPalette")
+
+### openDialog
+
+The `openDialog` function opens a Dialog and automatically populates it
+using the properties defined by the DialogLayoutDataProvider,
+which is a subclass of UiDataProvider that includes the buttons
+at the bottom of the dialog.
+
+```ts
+class DynamicModalUiDataProvider extends DialogLayoutDataProvider {
+  public currentPageIndex = 0;
+  public numberOfPages = 2;
+  public static userPropertyName = "username";
+  private static _getUserDescription = (): PropertyDescription => {
+    return {
+      name: DynamicModalUiDataProvider.userPropertyName,
+      displayLabel: "User",
+      typename: StandardTypeNames.String,
+    };
+  };
+
+  private _userValue: DialogItemValue = { value: "unknown" };
+  private get user(): string {
+    return this._userValue.value as string;
+  }
+  private set user(option: string) {
+    this._userValue.value = option;
+  }
+
+  public static cityPropertyName = "city";
+  private static _getCityDescription = (): PropertyDescription => {
+    return {
+      name: DynamicModalUiDataProvider.cityPropertyName,
+      displayLabel: "City",
+      typename: StandardTypeNames.String,
+    };
+  };
+
+  private _cityValue: DialogItemValue = { value: "unknown" };
+  private get city(): string {
+    return this._cityValue.value as string;
+  }
+  private set city(option: string) {
+    this._cityValue.value = option;
+  }
+
+  // called to apply a single property value change.
+  public applyUiPropertyChange = (updatedValue: DialogPropertySyncItem): void => {
+    this.processChangesInUi([updatedValue]);
+  };
+
+  /** Called by UI to inform data provider of changes.  */
+  public processChangesInUi(properties: DialogPropertyItem[]): PropertyChangeResult {
+    if (properties.length > 0) {
+      for (const prop of properties) {
+        if (prop.propertyName === DynamicModalUiDataProvider.userPropertyName) {
+          this.user = prop.value.value ? prop.value.value as string : "";
+          continue;
+        } else if (prop.propertyName === DynamicModalUiDataProvider.cityPropertyName) {
+          this.city = prop.value.value ? prop.value.value as string : "";
+          continue;
+        }
+      }
+    }
+
+    this.fireDialogButtonsReloadEvent();
+    return { status: PropertyChangeStatus.Success };
+  }
+
+  /** Used Called by UI to request available properties when UI is manually created. */
+  public supplyDialogItems(): DialogItem[] | undefined {
+    const items: DialogItem[] = [];
+
+    items.push({ value: this._userValue, property: DynamicModalUiDataProvider._getUserDescription(), editorPosition: { rowPriority: 1, columnIndex: 1 } });
+    if (this.currentPageIndex > 0) {
+      items.push({ value: this._cityValue, property: DynamicModalUiDataProvider._getCityDescription(), editorPosition: { rowPriority: 2, columnIndex: 1 } });
+    }
+    return items;
+  }
+
+  public handleNext = () => {
+    if (this.currentPageIndex < this.numberOfPages) {
+      this.currentPageIndex++;
+      this.reloadDialogItems();
+    }
+  };
+
+  public handlePrevious = () => {
+    if (this.currentPageIndex > 0) {
+      this.currentPageIndex--;
+      this.reloadDialogItems();
+    }
+  };
+
+  public supplyButtonData(): DialogButtonDef[] | undefined {
+    const buttons: DialogButtonDef[] = [];
+
+    if (this.currentPageIndex > 0 && this.currentPageIndex < this.numberOfPages)
+      buttons.push({ type: DialogButtonType.Previous, onClick: this.handlePrevious });
+
+    if (this.currentPageIndex < this.numberOfPages - 1)
+      buttons.push({ type: DialogButtonType.Next, onClick: this.handleNext });
+
+    if (this.currentPageIndex === this.numberOfPages - 1) {
+      buttons.push({ type: DialogButtonType.OK, onClick: () => { }, disabled: (this.user === "unknown" || this.city === "unknown") });
+    }
+
+    buttons.push({ type: DialogButtonType.Cancel, onClick: () => { } });
+    return buttons;
+  }
+}
+```
+
+```ts
+  private handleOpenDynamicModal = () => {
+    IModelApp.uiAdmin.openDialog(
+      new DynamicModalUiDataProvider(),
+      "Dynamic Model",
+      true,
+      "SampleApp:DynamicModal",
+      {movable: true, width: 280, minWidth: 280});
+  };
+```
+
+#### closeDialog
+
+The `closeDialog` function closes a Dialog with a given Id.
+
+```ts
+  IModelApp.uiAdmin.closeDialog("SampleApp:DynamicModal");
 ```
 
 ## API Reference

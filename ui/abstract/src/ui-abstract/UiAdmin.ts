@@ -278,7 +278,7 @@ export class UiAdmin {
   public static readonly onGenericUiEvent = new GenericUiEvent();
 
   /** Opens a Dialog and automatically populates it using the properties defined by the UiDataProvider.
-   * @param _uiDataProvider The UiDataProvider for the tool settings
+   * @param _uiDataProvider The DialogLayoutDataProvider for the Dialog
    * @param _title Specify title for dialog.
    * @param _isModal Specify if the dialog is opened as a modal or modeless.
    * @param _id Id of the dialog that is used to close it.
@@ -290,6 +290,6 @@ export class UiAdmin {
     return false;
   }
 
-  /** Closes the Tool Settings Ui popup. */
+  /** Closes the Dialog with a given Id. */
   public closeDialog(_dialogId: string): boolean { return false; }
 }
