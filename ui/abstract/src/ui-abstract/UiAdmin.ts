@@ -52,7 +52,7 @@ export interface DialogProps {
  */
 export class GenericUiEvent extends BeUiEvent<GenericUiEventArgs> { }
 
-/** Flags that control enabling/disabling certain UI feature
+/** Flags that control enabling/disabling certain UI features
  * @beta
  */
 export interface UiFlags {
@@ -286,7 +286,7 @@ export class UiAdmin {
    * @return true if the tool settings were displayed, false if the tool settings could not be displayed.
    */
   public openDialog(_uiDataProvider: DialogLayoutDataProvider, _title: string, _isModal: boolean, _id: string,
-    _optionalProps?: DialogProps ): boolean {
+    _optionalProps?: DialogProps): boolean {
     return false;
   }
 
