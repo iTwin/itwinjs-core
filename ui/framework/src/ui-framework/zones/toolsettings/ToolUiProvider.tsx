@@ -20,7 +20,7 @@ import { SyncToolSettingsPropertiesEventArgs } from "./ToolSettingsManager";
 export class ToolUiProvider extends ConfigurableUiControl {
   private _toolSettingsNode: React.ReactNode;
   private _horizontalToolSettingNodes: ToolSettingsEntry[] | undefined;
-
+  protected _dataProvider: UiDataProvider | undefined;
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
   }
@@ -35,13 +35,9 @@ export class ToolUiProvider extends ConfigurableUiControl {
   public get horizontalToolSettingNodes(): ToolSettingsEntry[] | undefined { return this._horizontalToolSettingNodes; }
   public set horizontalToolSettingNodes(r: ToolSettingsEntry[] | undefined) { this._horizontalToolSettingNodes = r; }
 
-  /** The UiDataProvider class
-   *  @deprecated no longer participates in Tool Settings
-   */
-  // istanbul ignore next
-  public get dataProvider(): UiDataProvider | undefined { return undefined; }
-  // istanbul ignore next
-  public set dataProvider(_d: UiDataProvider | undefined) { }
+  /** The UiDataProvider class */
+  public get dataProvider(): UiDataProvider | undefined { return this._dataProvider; }
+  public set dataProvider(d: UiDataProvider | undefined) { this._dataProvider = d; }
 
   /** Gets the type of ConfigurableUiControl, which is 'ToolUiProvider' in this case */
   public getType(): ConfigurableUiControlType { return ConfigurableUiControlType.ToolUiProvider; }

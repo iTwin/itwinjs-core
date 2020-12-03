@@ -43,13 +43,10 @@ export const enum IsThematic { No, Yes }
  * @internal
  */
 export class TechniqueFlags {
-  /** System will set this to true upon initialization if necessary. */
-  public static requireEdgeTest = false;
-
-  private _isEdgeTestNeeded: IsEdgeTestNeeded = IsEdgeTestNeeded.No;
   public numClipPlanes = 0;
   public featureMode = FeatureMode.None;
   public isTranslucent: boolean;
+  public isEdgeTestNeeded: IsEdgeTestNeeded = IsEdgeTestNeeded.No;
   public isAnimated: IsAnimated = IsAnimated.No;
   public isInstanced: IsInstanced = IsInstanced.No;
   public isClassified: IsClassified = IsClassified.No;
@@ -63,14 +60,6 @@ export class TechniqueFlags {
 
   public get hasClip(): boolean {
     return this.numClipPlanes > 0;
-  }
-
-  public get isEdgeTestNeeded(): IsEdgeTestNeeded {
-    return TechniqueFlags.requireEdgeTest ? IsEdgeTestNeeded.Yes : this._isEdgeTestNeeded;
-  }
-
-  public set isEdgeTestNeeded(needed: IsEdgeTestNeeded) {
-    this._isEdgeTestNeeded = needed;
   }
 
   public init(target: Target, pass: RenderPass, instanced: IsInstanced, animated: IsAnimated = IsAnimated.No, classified = IsClassified.No, shadowable = IsShadowable.No, thematic = IsThematic.No): void {

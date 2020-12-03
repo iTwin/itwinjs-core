@@ -954,6 +954,31 @@ export abstract class DialogLayoutDataProvider extends UiLayoutDataProvider {
 }
 
 // @beta
+export class DialogProperty<T> {
+    constructor(description: PropertyDescription, _value: T, _displayValue?: string | undefined, _isDisabled?: boolean | undefined);
+    // (undocumented)
+    description: PropertyDescription;
+    // (undocumented)
+    get dialogItemValue(): DialogItemValue;
+    set dialogItemValue(val: DialogItemValue);
+    set displayValue(val: string | undefined);
+    // (undocumented)
+    get displayValue(): string | undefined;
+    // (undocumented)
+    get isDisabled(): boolean;
+    set isDisabled(val: boolean);
+    // (undocumented)
+    get name(): string;
+    // (undocumented)
+    get syncItem(): DialogPropertySyncItem;
+    // (undocumented)
+    toDialogItem(editorPosition: EditorPosition, lockProperty?: DialogItem): DialogItem;
+    // (undocumented)
+    get value(): T;
+    set value(val: T);
+    }
+
+// @beta
 export interface DialogPropertyItem {
     // (undocumented)
     readonly propertyName: string;
@@ -1341,6 +1366,24 @@ export interface PropertyDescription {
     quantityType?: string;
     renderer?: PropertyRendererInfo;
     typename: string;
+}
+
+// @alpha
+export class PropertyDescriptionHelper {
+    // (undocumented)
+    static buildCheckboxDescription(name: string, label: string, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
+    // (undocumented)
+    static buildColorPickerDescription(name: string, label: string, colorValues: number[], numColumns: number, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
+    // (undocumented)
+    static buildEnumPicklistEditorDescription(name: string, label: string, choices: Promise<EnumerationChoice[]> | EnumerationChoice[], additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
+    // (undocumented)
+    static buildImageCheckBoxDescription(name: string, label: string, imageOff: string, imageOn: string, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
+    // (undocumented)
+    static buildTextEditorDescription(name: string, label: string, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
+    // (undocumented)
+    static buildToggleDescription(name: string, label: string, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
+    // (undocumented)
+    static buildWeightPickerDescription(name: string, label: string, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
 }
 
 // @beta

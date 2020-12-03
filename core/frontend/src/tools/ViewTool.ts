@@ -24,7 +24,7 @@ import { GraphicType } from "../render/GraphicBuilder";
 import { StandardViewId } from "../StandardView";
 import { DecorateContext } from "../ViewContext";
 import {
-  eyeToCartographicOnGlobe, GlobalLocation, queryTerrainElevationOffset, rangeToCartographicArea, viewGlobalLocation, ViewGlobalLocationConstants,
+  eyeToCartographicOnGlobeFromGcs, GlobalLocation, queryTerrainElevationOffset, rangeToCartographicArea, viewGlobalLocation, ViewGlobalLocationConstants,
 } from "../ViewGlobalLocation";
 import { Animator, CoordSystem, DepthPointSource, ScreenViewport, ViewChangeOptions, Viewport } from "../Viewport";
 import { ViewRect } from "../ViewRect";
@@ -803,8 +803,10 @@ export abstract class ViewManip extends ViewTool {
       const cartographicCenter = view3d.rootToCartographic(range.center);
       if (undefined !== cartographicCenter) {
         const cartographicArea = rangeToCartographicArea(view3d, range);
-        viewport.animateFlyoverToGlobalLocation({ center: cartographicCenter, area: cartographicArea }); // NOTE: Turns on camera...which is why we checked that it was already on...
-        viewport.viewCmdTargetCenter = undefined;
+        (async () => {
+          await viewport.animateFlyoverToGlobalLocation({ center: cartographicCenter, area: cartographicArea }); // NOTE: Turns on camera...which is why we checked that it was already on...
+          viewport.viewCmdTargetCenter = undefined;
+        })().catch(() => { });
         return;
       }
     }
@@ -3170,7 +3172,7 @@ export class ViewGlobeSatelliteTool extends ViewTool {
 
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     if (ev.viewport)
-      return this._beginSatelliteView(ev.viewport, this.oneShot, this.doAnimate) ? EventHandled.Yes : EventHandled.No;
+      return (await this._beginSatelliteView(ev.viewport, this.oneShot, this.doAnimate)) ? EventHandled.Yes : EventHandled.No;
 
     return EventHandled.No;
   }
@@ -3178,12 +3180,15 @@ export class ViewGlobeSatelliteTool extends ViewTool {
   public onPostInstall() {
     super.onPostInstall();
     const viewport = undefined === this.viewport ? IModelApp.viewManager.selectedView : this.viewport;
-    if (viewport)
-      this._beginSatelliteView(viewport, this.oneShot, this.doAnimate);
+    if (viewport) {
+      (async () => {
+        await this._beginSatelliteView(viewport, this.oneShot, this.doAnimate);
+      })().catch(() => { });
+    }
   }
 
-  private _beginSatelliteView(viewport: ScreenViewport, oneShot: boolean, doAnimate = true): boolean {
-    const carto = eyeToCartographicOnGlobe(viewport);
+  private async _beginSatelliteView(viewport: ScreenViewport, oneShot: boolean, doAnimate = true): Promise<boolean> {
+    const carto = await eyeToCartographicOnGlobeFromGcs(viewport);
     if (carto !== undefined) {
       (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
         let elevationOffset = 0;
@@ -3221,7 +3226,7 @@ export class ViewGlobeBirdTool extends ViewTool {
 
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     if (ev.viewport)
-      return this._beginDoBirdView(ev.viewport, this.oneShot, this.doAnimate) ? EventHandled.Yes : EventHandled.No;
+      return (await this._beginDoBirdView(ev.viewport, this.oneShot, this.doAnimate)) ? EventHandled.Yes : EventHandled.No;
 
     return EventHandled.No;
   }
@@ -3229,12 +3234,15 @@ export class ViewGlobeBirdTool extends ViewTool {
   public onPostInstall() {
     super.onPostInstall();
     const viewport = undefined === this.viewport ? IModelApp.viewManager.selectedView : this.viewport;
-    if (viewport)
-      this._beginDoBirdView(viewport, this.oneShot, this.doAnimate);
+    if (viewport) {
+      (async () => {
+        await this._beginDoBirdView(viewport, this.oneShot, this.doAnimate);
+      })().catch(() => { });
+    }
   }
 
-  private _beginDoBirdView(viewport: ScreenViewport, oneShot: boolean, doAnimate = true): boolean {
-    const carto = eyeToCartographicOnGlobe(viewport);
+  private async _beginDoBirdView(viewport: ScreenViewport, oneShot: boolean, doAnimate = true): Promise<boolean> {
+    const carto = await eyeToCartographicOnGlobeFromGcs(viewport);
     if (carto !== undefined) {
       (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
         let elevationOffset = 0;
@@ -3301,7 +3309,7 @@ export class ViewGlobeLocationTool extends ViewTool {
             if (elevationOffset !== undefined)
               this._globalLocation.center.height = elevationOffset;
           }
-          this._doLocationView();
+          await this._doLocationView();
         }
       })().catch(() => { });
     }
@@ -3313,14 +3321,16 @@ export class ViewGlobeLocationTool extends ViewTool {
 
   public onPostInstall() {
     super.onPostInstall();
-    this._doLocationView();
+    (async () => {
+      await this._doLocationView();
+    })().catch(() => { });
   }
 
-  private _doLocationView(): boolean {
+  private async _doLocationView(): Promise<boolean> {
     const viewport = undefined === this.viewport ? IModelApp.viewManager.selectedView : this.viewport;
     if (viewport) {
       if (undefined !== this._globalLocation)
-        viewport.animateFlyoverToGlobalLocation(this._globalLocation);
+        await viewport.animateFlyoverToGlobalLocation(this._globalLocation);
     }
     if (this.oneShot)
       this.exitTool();
@@ -3364,7 +3374,9 @@ export class ViewGlobeIModelTool extends ViewTool {
       const cartographicCenter = view3d.rootToCartographic(center);
       if (cartographicCenter !== undefined) {
         const cartographicArea = rangeToCartographicArea(view3d, extents);
-        viewport.animateFlyoverToGlobalLocation({ center: cartographicCenter, area: cartographicArea });
+        (async () => {
+          await viewport.animateFlyoverToGlobalLocation({ center: cartographicCenter, area: cartographicArea });
+        })().catch(() => { });
       }
     }
     if (this.oneShot)
