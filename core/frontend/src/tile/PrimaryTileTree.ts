@@ -437,7 +437,7 @@ class SpatialRefs implements SpatialTileTreeReferences {
   }
 
   private getSectionCutFromView(): StringifiedClipVector | undefined {
-    const wantCut = this._view.viewFlags.clipVolume && this._view.details.clipStyle.produceCutGeometry;
+    const wantCut = this._view.viewFlags.clipVolume && this._view.displayStyle.settings.clipStyle.produceCutGeometry;
     const clip = wantCut ? this._view.getViewClip() : undefined;
     return StringifiedClipVector.fromClipVector(clip);
   }

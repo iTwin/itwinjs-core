@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { ClipStyle, ClipStyleProps } from "../ClipStyle";
-import { ViewDetails, ViewDetailsProps } from "../ViewDetails";
+import { DisplayStyleSettings, DisplayStyleSettingsProps } from "../DisplayStyleSettings";
 
 describe("ClipStyle", () => {
   it("should round-trip through JSON", () => {
@@ -43,9 +43,9 @@ describe("ClipStyle", () => {
     expect(ClipStyle.fromJSON({ produceCutGeometry: true }).matchesDefaults).to.be.false;
   });
 
-  it("should serialize to ViewDetails", () => {
-    const props: ViewDetailsProps = {};
-    const details = new ViewDetails({ viewDetails: props });
+  it("should serialize to DisplayStyleSettings", () => {
+    const props: DisplayStyleSettingsProps = {};
+    const details = new DisplayStyleSettings({ styles: props });
     expect(details.clipStyle.matchesDefaults).to.be.true;
     expect(props.hasOwnProperty("clipStyle")).to.be.false;
 

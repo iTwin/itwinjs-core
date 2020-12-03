@@ -8,7 +8,6 @@
 
 import { BeEvent, Id64, Id64Array, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { ClipVector, ClipVectorProps, Geometry, XAndY } from "@bentley/geometry-core";
-import { ClipStyle, ClipStyleProps } from "./ClipStyle";
 import { ModelClipGroup, ModelClipGroupProps, ModelClipGroups } from "./ModelClipGroup";
 
 /** @internal */
@@ -27,8 +26,6 @@ export interface ViewDetailsProps {
   gridSpaceY?: number;
   /** Clip applied to the view. */
   clip?: ClipVectorProps;
-  /** Style applied to the view's [[clip]]. */
-  clipStyle?: ClipStyleProps;
 }
 
 /** Describes the orientation of the grid displayed within a viewport.
@@ -62,7 +59,6 @@ export class ViewDetails {
   /** @internal */
   protected readonly _json: ViewDetailsProps;
   private _clipVector?: ClipVector;
-  private _clipStyle: ClipStyle;
 
   /** @internal */
   public constructor(jsonProperties: { viewDetails?: ViewDetailsProps }) {
@@ -70,7 +66,6 @@ export class ViewDetails {
       jsonProperties.viewDetails = { };
 
     this._json = jsonProperties.viewDetails;
-    this._clipStyle = ClipStyle.fromJSON(this._json.clipStyle);
   }
 
   /** The Id of the auxiliary coordinate system for the view. */
@@ -140,20 +135,6 @@ export class ViewDetails {
       this._json.clip = clip.toJSON();
     else
       this._json.clip = undefined;
-  }
-
-  /** The style applied to the view's [[clipVector]].
-   * @beta
-   */
-  public get clipStyle(): ClipStyle {
-    return this._clipStyle;
-  }
-  public set clipStyle(style: ClipStyle) {
-    this._clipStyle = style;
-    if (style.matchesDefaults)
-      delete this._json.clipStyle;
-    else
-      this._json.clipStyle = style.toJSON();
   }
 
   /** Returns the internal JSON representation. This is *not* a copy.

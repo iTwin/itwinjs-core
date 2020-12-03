@@ -7,6 +7,7 @@
  */
 
 /** Wire format describing a [[ClipStyle]].
+ * @see [[DisplayStyleSettingsProps.clipStyle]].
  * @beta
  */
 export interface ClipStyleProps {
@@ -19,6 +20,7 @@ export interface ClipStyleProps {
 }
 
 /** Describes symbology and behavior applied to a [ClipVector]($geometry-core) when applied to a [ViewState]($frontend) or [[ModelClipGroup]].
+ * @see [[DisplayStyleSettings.clipStyle]].
  * @beta
  */
 export class ClipStyle {

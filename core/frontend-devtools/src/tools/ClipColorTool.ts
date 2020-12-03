@@ -81,10 +81,10 @@ export class ToggleSectionCutTool extends Tool {
   public run(produceCutGeometry?: boolean): boolean {
     const vp = IModelApp.viewManager.selectedView;
     if (vp) {
-      const style = vp.view.details.clipStyle;
+      const style = vp.view.displayStyle.settings.clipStyle;
       produceCutGeometry = produceCutGeometry ?? !style.produceCutGeometry;
       if (produceCutGeometry !== style.produceCutGeometry) {
-        vp.view.details.clipStyle = ClipStyle.fromJSON({ produceCutGeometry });
+        vp.view.displayStyle.settings.clipStyle = ClipStyle.fromJSON({ produceCutGeometry });
         vp.invalidateScene();
       }
     }
