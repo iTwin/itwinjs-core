@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import sinon from "sinon";
-import { BeDuration, BeEvent, using } from "@bentley/bentleyjs-core";
+import { BeDuration, BeEvent, Logger, using } from "@bentley/bentleyjs-core";
 import { IModelRpcProps } from "@bentley/imodeljs-common";
 import { EventSource, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
@@ -954,6 +954,33 @@ describe("PresentationManager", () => {
       const actualResult = await manager.getContentAndSize(options);
       expect(actualResult).to.be.undefined;
       rpcRequestsHandlerMock.verifyAll();
+    });
+
+    it("handles case when partial request does not return items", async () => {
+      const keyset = new KeySet();
+      const descriptor = createRandomDescriptor();
+      const options: Paged<ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet>> = {
+        imodel: testData.imodelMock.object,
+        rulesetOrId: testData.rulesetId,
+        paging: { start: 0, size: 5 },
+        descriptor: descriptor.createDescriptorOverrides(),
+        keys: keyset,
+      };
+      rpcRequestsHandlerMock
+        .setup(async (x) => x.getPagedContent(prepareOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON(), paging: { start: 0, size: 5 } })))
+        .returns(async () => ({ descriptor: descriptor.toJSON(), contentSet: { total: 1, items: [] } }))
+        .verifiable();
+      const loggerSpy = sinon.spy(Logger, "logError");
+      const actualResult = await manager.getContentAndSize(options);
+      expect(actualResult).to.deep.eq({
+        size: 0,
+        content: {
+          descriptor,
+          contentSet: [],
+        },
+      });
+      rpcRequestsHandlerMock.verifyAll();
+      expect(loggerSpy).to.be.calledOnce;
     });
 
   });

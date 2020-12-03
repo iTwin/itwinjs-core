@@ -6,6 +6,7 @@
 import { Extension, IModelApp } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { ExtensionUiItemsProvider } from "./ui/ExtensionUiItemsProvider";
+import { TraceUiItemsProvider } from "./ui/NetworkTraceUIProvider";
 import { UiItemsManager } from "@bentley/ui-abstract";
 import { SampleTool } from "./ui/tools/SampleTool";
 import { ConfigurableUiManager } from "@bentley/ui-framework";
@@ -25,6 +26,7 @@ import { GenericTool } from "./ui/tools/GenericTool";
 export class UiTestExtension extends Extension {
   /** We'll register the uiTestExtension.json as the Extension's namespace/ */
   private _i18NNamespace?: I18NNamespace;
+  private _i18TraceNamespace?: I18NNamespace;
   /** The uiProvider will add a tool to the Toolbar and an item to the StatusBar in the host app */
   public uiProvider?: ExtensionUiItemsProvider;
 
@@ -42,6 +44,7 @@ export class UiTestExtension extends Extension {
 
     // register to add items to "General" usage stages"
     UiItemsManager.register(new ExtensionUiItemsProvider(this.i18n));
+    UiItemsManager.register(new TraceUiItemsProvider(this.i18n, "uiTestExtension"));
   }
 
   /** Invoked the first time this extension is loaded. */

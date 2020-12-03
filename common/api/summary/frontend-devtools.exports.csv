@@ -6,7 +6,7 @@ beta;ApplyRenderingStyleTool
 beta;ApplyViewByIdTool 
 beta;ApplyViewTool 
 alpha;AttachArcGISMapLayerByUrlTool 
-alpha;AttachCesiumAssetTool 
+beta;AttachCesiumAssetTool 
 alpha;AttachMapLayerTool 
 alpha;AttachMapOverlayTool 
 alpha;AttachRealityModelTool 
@@ -141,6 +141,7 @@ alpha;Toggle3dManipulationsTool
 beta;ToggleDPIForLODTool 
 alpha;ToggleDrapeFrustumTool 
 beta;ToggleFrustumSnapshotTool 
+beta;ToggleOSMBuildingDisplay 
 beta;TogglePrimitiveVisibilityTool 
 beta;toggleProjectExtents(imodel: IModelConnection, enabled?: boolean): boolean
 beta;ToggleProjectExtentsTool 

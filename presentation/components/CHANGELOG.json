@@ -2,9 +2,51 @@
   "name": "@bentley/presentation-components",
   "entries": [
     {
+      "version": "2.9.3",
+      "tag": "@bentley/presentation-components_v2.9.3",
+      "date": "Mon, 23 Nov 2020 20:57:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.2",
+      "tag": "@bentley/presentation-components_v2.9.2",
+      "date": "Mon, 23 Nov 2020 15:33:50 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.1",
+      "tag": "@bentley/presentation-components_v2.9.1",
+      "date": "Thu, 19 Nov 2020 17:03:42 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.0",
+      "tag": "@bentley/presentation-components_v2.9.0",
+      "date": "Wed, 18 Nov 2020 16:01:50 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix property data provider including member-less structs and arrays into content"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.8.1",
+      "tag": "@bentley/presentation-components_v2.8.1",
+      "date": "Tue, 03 Nov 2020 00:33:56 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.8.0",
       "tag": "@bentley/presentation-components_v2.8.0",
       "date": "Fri, 23 Oct 2020 17:04:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.7.6",
+      "tag": "@bentley/presentation-components_v2.7.6",
+      "date": "Wed, 11 Nov 2020 16:28:23 GMT",
       "comments": {}
     },
     {

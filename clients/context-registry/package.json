@@ -1,6 +1,6 @@
 {
   "name": "@bentley/context-registry-client",
-  "version": "2.10.0-dev.8",
+  "version": "2.11.0-dev.1",
   "description": "iModel.js Context Registry Client",
   "main": "lib/context-registry-client.js",
   "typings": "lib/context-registry-client",
@@ -38,16 +38,16 @@
     "deep-assign": "^2.0.0"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.10.0-dev.8",
-    "@bentley/itwin-client": "^2.10.0-dev.8"
+    "@bentley/bentleyjs-core": "^2.11.0-dev.1",
+    "@bentley/itwin-client": "^2.11.0-dev.1"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.10.0-dev.8",
-    "@bentley/certa": "2.10.0-dev.8",
-    "@bentley/config-loader": "2.10.0-dev.8",
-    "@bentley/eslint-plugin": "2.10.0-dev.8",
-    "@bentley/itwin-client": "2.10.0-dev.8",
-    "@bentley/oidc-signin-tool": "2.10.0-dev.8",
+    "@bentley/build-tools": "2.11.0-dev.1",
+    "@bentley/certa": "2.11.0-dev.1",
+    "@bentley/config-loader": "2.11.0-dev.1",
+    "@bentley/eslint-plugin": "2.11.0-dev.1",
+    "@bentley/itwin-client": "2.11.0-dev.1",
+    "@bentley/oidc-signin-tool": "2.11.0-dev.1",
     "@types/chai": "^4.1.4",
     "@types/deep-assign": "^0.1.0",
     "@types/mocha": "^5.2.5",
