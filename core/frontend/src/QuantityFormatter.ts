@@ -8,7 +8,7 @@
 
 import { BentleyError, BentleyStatus, BeUiEvent } from "@bentley/bentleyjs-core";
 import {
-  BadUnit, BasicUnit, Format, Formatter, FormatterSpec, Parser, ParseResult, ParserSpec, UnitConversion, UnitProps, UnitsProvider,
+  BadUnit, BasicUnit, Format, FormatProps, Formatter, FormatterSpec, Parser, ParseResult, ParserSpec, UnitConversion, UnitProps, UnitsProvider,
 } from "@bentley/imodeljs-quantity";
 import { IModelApp } from "./IModelApp";
 
@@ -40,8 +40,8 @@ interface UnitDefinition {
  * @beta
  */
 export interface OverrideFormatEntry {
-  imperial: any;
-  metric: any;
+  imperial: FormatProps;
+  metric: FormatProps;
 }
 
 // cSpell:ignore MILLIINCH, MICROINCH, MILLIFOOT
@@ -94,9 +94,19 @@ const unitData: UnitDefinition[] = [
  */
 export enum QuantityType { Length = 1, Angle = 2, Area = 3, Volume = 4, LatLong = 5, Coordinate = 6, Stationing = 7, LengthSurvey = 8, LengthEngineering = 9 }
 
+interface FormatDataEntry {
+  type: number;
+  format: FormatProps;
+}
+
+interface FormatData {
+  metric: FormatDataEntry[];
+  imperial: FormatDataEntry[];
+}
+
 // The following provide default formats for different the QuantityTypes. It is important to note that these default should reference
 // units that are available from the registered units provider.
-const defaultsFormats = {
+const defaultsFormats: FormatData = {
   metric: [{
     type: 1 /* Length */, format: {
       composite: {
@@ -588,10 +598,8 @@ export class QuantityFormatter implements UnitsProvider {
     await this.reloadCachedData();
   }
 
-  protected async getOverrideFormat(type: QuantityType, imperial: boolean): Promise<any> {
+  protected async getOverrideFormat(type: QuantityType, imperial: boolean): Promise<FormatProps | undefined> {
     const formatEntry = this._overrideFormatDataByType.get(type);
-    this._imperialParserSpecsByType.clear();
-    this._metricUnitParserSpecsByType.clear();
     if (formatEntry) {
       if (imperial)
         return formatEntry.imperial;
@@ -665,16 +673,12 @@ export class QuantityFormatter implements UnitsProvider {
 
   /** Asynchronous call to loadParsingSpecsForQuantityTypes. This method caches all the ParserSpecs so they can be quickly accessed. */
   protected async loadParsingSpecsForQuantityTypes(useImperial: boolean): Promise<void> {
-    const typeArray: QuantityType[] = [QuantityType.Length, QuantityType.Angle, QuantityType.Area, QuantityType.Volume, QuantityType.LatLong, QuantityType.Coordinate, QuantityType.Stationing, QuantityType.LengthSurvey, QuantityType.LengthEngineering];
     const activeMap = useImperial ? this._imperialParserSpecsByType : this._metricUnitParserSpecsByType;
     activeMap.clear();
 
+    const typeArray = Object.values(QuantityType).filter((value) => (typeof value !== "string"));
     for (const quantityType of typeArray) {
-      const formatPromise = this.getFormatByQuantityType(quantityType, useImperial);
-      const unitPromise = this.getUnitByQuantityType(quantityType);
-      const [format, outUnit] = await Promise.all([formatPromise, unitPromise]);
-      const parserSpec = await ParserSpec.create(format, this, outUnit);
-      activeMap.set(quantityType, parserSpec);
+      await this.loadParsingSpecsForQuantityType(quantityType as QuantityType, useImperial);
     }
   }
 
@@ -690,16 +694,11 @@ export class QuantityFormatter implements UnitsProvider {
 
   /** Asynchronous call to loadFormatSpecsForQuantityTypes. This method caches all the FormatSpec so they can be quickly accessed. */
   protected async loadFormatSpecsForQuantityTypes(useImperial: boolean): Promise<void> {
-    const typeArray: QuantityType[] = [QuantityType.Length, QuantityType.Angle, QuantityType.Area, QuantityType.Volume, QuantityType.LatLong, QuantityType.Coordinate, QuantityType.Stationing, QuantityType.LengthSurvey, QuantityType.LengthEngineering];
     const activeMap = useImperial ? this._imperialFormatSpecsByType : this._metricFormatSpecsByType;
     activeMap.clear();
-
+    const typeArray = Object.values(QuantityType).filter((value) => (typeof value !== "string"));
     for (const quantityType of typeArray) {
-      const formatPromise = this.getFormatByQuantityType(quantityType, useImperial);
-      const unitPromise = this.getUnitByQuantityType(quantityType);
-      const [format, unit] = await Promise.all([formatPromise, unitPromise]);
-      const spec = await FormatterSpec.create(format.name, format, this, unit);
-      activeMap.set(quantityType, spec);
+      await this.loadFormatSpecsForQuantityType(quantityType as QuantityType, useImperial);
     }
   }
 
@@ -744,7 +743,11 @@ export class QuantityFormatter implements UnitsProvider {
    */
   public async getFormatterSpecByQuantityType(type: QuantityType, imperial?: boolean): Promise<FormatterSpec> {
     const useImperial = undefined !== imperial ? imperial : this._activeSystemIsImperial;
-    return this._getStandardFormatterSpec(type, useImperial);
+    const formatSpec = await this._getStandardFormatterSpec(type, useImperial);
+    if (formatSpec)
+      return formatSpec;
+
+    throw new BentleyError(BentleyStatus.ERROR, "Unable to get FormatSpec");
   }
 
   /** Synchronous call to get a ParserSpec for a QuantityType. If the ParserSpec is not yet cached an undefined object is returned. The
@@ -769,15 +772,15 @@ export class QuantityFormatter implements UnitsProvider {
   public async getParserSpecByQuantityType(type: QuantityType, imperial?: boolean): Promise<ParserSpec> {
     const useImperial = undefined !== imperial ? imperial : this._activeSystemIsImperial;
     const activeMap = useImperial ? this._imperialParserSpecsByType : this._metricUnitParserSpecsByType;
-    if (activeMap.size > 0)
-      return activeMap.get(type) as ParserSpec;
+    let spec = activeMap.get(type);
+    if (spec)
+      return spec;
 
     await this.loadParsingSpecsForQuantityTypes(useImperial);
-    if (activeMap.size > 0) {
-      const spec = activeMap.get(type);
-      if (spec)
-        return spec;
-    }
+    spec = activeMap.get(type);
+    if (spec)
+      return spec;
+
     throw new BentleyError(BentleyStatus.ERROR, "Unable to load ParserSpec");
   }
 

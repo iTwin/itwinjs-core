@@ -2,27 +2,29 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { UnitProps } from "../Interfaces";
-import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "./FormatEnums";
-
-/** This interface defines the properties required to format quantity values.
+/** This interface defines the persistence format for defining the format of quantity values.
  * @alpha
  */
 export interface FormatProps {
-  readonly name: string;
-  readonly roundFactor: number;
-  readonly type: FormatType;
-  readonly precision: DecimalPrecision | FractionalPrecision;
-  readonly minWidth: number | undefined;
-  readonly formatTraits: FormatTraits;
-  readonly showSignOption: ShowSignOption;
-  readonly decimalSeparator: string;
-  readonly thousandSeparator: string;
-  readonly uomSeparator: string;
-  readonly scientificType?: ScientificType;
+  readonly type: string;
+  readonly precision?: number;
+  readonly roundFactor?: number;
+  readonly minWidth?: number;
+  readonly showSignOption?: string;
+  readonly formatTraits?: string | string[];
+  readonly decimalSeparator?: string;
+  readonly thousandSeparator?: string;
+  readonly uomSeparator?: string;
+  readonly scientificType?: string; // conditionally required
+  readonly stationOffsetSize?: number; // conditionally required
   readonly stationSeparator?: string;
-  readonly stationOffsetSize?: number;
-  readonly spacer?: string;
-  readonly includeZero?: boolean;
-  readonly units?: Array<[UnitProps, string | undefined]>;
+  readonly composite?: {
+    readonly spacer?: string;
+    readonly includeZero?: boolean;
+    readonly units: Array<{
+      readonly name: string;
+      readonly label?: string;
+    }>;
+  };
 }
+
