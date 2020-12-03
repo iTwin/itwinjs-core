@@ -36,7 +36,7 @@ exports[`WidgetPanels should render widget content 1`] = `
     class="nz-widgetPanels-content nz-pinned-left nz-pinned-right nz-pinned-top nz-pinned-bottom nz-widgetPanels-centerContent"
   />
   <div
-    class="nz-widgetPanels-panel nz-left nz-pinned nz-span-top nz-span-bottom"
+    class="nz-widgetPanels-panel nz-left nz-span-top nz-span-bottom"
   >
     <div
       class="nz-content"
@@ -45,10 +45,10 @@ exports[`WidgetPanels should render widget content 1`] = `
         class="nz-widget-widgetTarget nz-hidden nz-left nz-first"
       />
       <div
-        class="nz-widget-widget nz-widget-panelWidget nz-fill"
+        class="nz-widget-widget nz-widget-panelWidget nz-fill nz-border-left nz-border-right"
       >
         <div
-          class="nz-widget-tabBar"
+          class="nz-widget-tabBar nz-separator"
         >
           <div
             class="nz-handle"

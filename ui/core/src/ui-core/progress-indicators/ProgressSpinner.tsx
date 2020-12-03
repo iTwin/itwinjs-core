@@ -6,9 +6,9 @@
  * @module Loading
  */
 
-import classnames from "classnames"
-import * as React from "react"
-import { CommonProps } from "../utils/Props"
+import classnames from "classnames";
+import * as React from "react";
+import { CommonProps } from "../utils/Props";
 import { Icon } from "../icons/IconComponent";
 import { SpinnerSize } from "../loading/Spinner";
 
@@ -127,4 +127,4 @@ const setDefaultDimensions = (style: React.CSSProperties, inSize?: SpinnerSize) 
   }
   style.width = style.width ? style.width : size;
   style.height = style.height ? style.height : size;
-}
+};

@@ -19,6 +19,9 @@ import { MutableSchema, Schema } from "../../src/Metadata/Schema";
 import { Unit } from "../../src/Metadata/Unit";
 import { SchemaKey } from "../../src/SchemaKey";
 import { createEmptyXmlDocument, getElementChildren, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
+import * as FileSystem from "fs";
+import { SchemaReadHelper } from "../../src/Deserialization/Helper";
+import { XmlParser } from "../../src/Deserialization/XmlParser";
 
 describe("Schema", () => {
   describe("api creation of schema", () => {
@@ -673,6 +676,7 @@ describe("Schema", () => {
         expect(testSchema).to.exist;
         await testSchema.fromJSON(schemaJson);
 
+
         const serialized = (await testSchema.toXml(newDom)).documentElement;
         expect(serialized.nodeName).to.eql("ECSchema");
         expect(serialized.getAttribute("xmlns")).to.eql("http://www.bentley.com/schemas/Bentley.ECXML.3.2");
@@ -681,6 +685,92 @@ describe("Schema", () => {
         expect(serialized.getAttribute("alias")).to.eql(schemaJson.alias);
         expect(serialized.getAttribute("displayLabel")).to.eql(schemaJson.label);
         expect(serialized.getAttribute("description")).to.eql(schemaJson.description);
+      });
+
+      it("Deserialize after Serialization", async () => {
+
+          const referenceJson = {
+            $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+            name: "RefSchema",
+            version: "1.2.3",
+            alias: "rf",
+            label: "SomeDisplayLabel",
+            description: "A really long description...",
+            items: {
+              testClass: {
+                schemaItemType: "EntityClass",
+                label: "ExampleEntity",
+                description: "An example entity class.",
+                modifier: "Sealed"
+              }}
+            };
+
+        const coreCASchema =
+          {
+            $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+            alias: "CoreCA",
+            description: "Custom attributes to indicate core EC concepts, may include struct classes intended for use in core custom attributes.",
+            items: {
+               XIsMixin: {
+                  appliesTo: "EntityClass",
+                  description: "Applied to abstract ECEntityClasses which serve as secondary base classes for normal ECEntityClasses.",
+                  label: "Is Mixin",
+                  modifier: "Sealed",
+                  CoreCustomAttributes: [{
+                     description: "This mixin may only be applied to entity classes which derive from this class.  Class Name should be fully specified as 'alias:ClassName'",
+                     name: "AppliesToEntityClass",
+                     type: "PrimitiveProperty",
+                     typeName: "string"
+                  }],
+                  schemaItemType: "CustomAttributeClass"
+               }
+            },
+            label: "Core Custom Attributes",
+            name: "CoreCustomAttributes",
+            version: "01.00.03"
+         }
+
+        const context = new SchemaContext();
+        Schema.fromJsonSync(coreCASchema, context);
+        Schema.fromJsonSync(referenceJson, context);
+
+        const schemaJson = {
+          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          name: "ValidSchema",
+          version: "1.2.3",
+          alias: "vs",
+          label: "SomeDisplayLabel",
+          description: "A really long description...",
+          references:[
+            {
+               name:"RefSchema",
+               version:"01.02.03"
+            },
+            {
+               name:"CoreCustomAttributes",
+               version:"01.00.03"
+            }
+         ],
+          items: {
+            IShellMetadata:{
+              schemaItemType:"Mixin",
+              label:"Shell metadata",
+              description:"Common shell metadata",
+              appliesTo:"RefSchema.testClass"
+           }}
+          };
+
+        const schema =Schema.fromJsonSync(schemaJson, context);
+        const serialized = (await schema.toXml(newDom)).documentElement;
+
+        const deserialContext = new SchemaContext();
+        const reader = new SchemaReadHelper(XmlParser, deserialContext);
+        Schema.fromJsonSync(referenceJson, deserialContext);
+        Schema.fromJsonSync(coreCASchema, deserialContext);
+
+        const deserialized = reader.readSchemaSync(new Schema(deserialContext), serialized.ownerDocument!);
+        expect(deserialized).to.not.be.null;
+        expect(deserialized.toJSON()).to.eql(schema.toJSON());
       });
 
       it("Serialization with one reference", async () => {

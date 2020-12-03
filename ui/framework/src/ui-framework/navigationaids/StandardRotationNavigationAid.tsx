@@ -134,15 +134,15 @@ export class StandardRotationNavigationAid extends React.Component<CommonProps, 
 
   private _handleRef = (element: HTMLDivElement | null) => {
     this.setState(() => ({ element }));
-  }
+  };
 
   private _handlePopupClose = () => {
     this.setState(() => ({ isExpanded: false }));
-  }
+  };
 
   private _toggleIsExpanded = () => {
     this.setState((prevState) => ({ isExpanded: !prevState.isExpanded }));
-  }
+  };
 
   private _handleListItemClicked = (item: number) => {
     const selected = item;
@@ -151,7 +151,7 @@ export class StandardRotationNavigationAid extends React.Component<CommonProps, 
       () => ({ isExpanded: false, selected }),
       () => ViewportComponentEvents.setStandardRotation(selected),
     );
-  }
+  };
 
   private getExpandedContent(): React.ReactNode {
     if (!this.state.isExpanded)

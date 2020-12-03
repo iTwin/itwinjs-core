@@ -127,6 +127,7 @@ public;HasZ = Readonly
 public;IModelJson
 public;IndexedCollectionInterval
 public;IndexedPolyface 
+public;IndexedPolyfaceSubsetVisitor 
 public;IndexedPolyfaceVisitor 
 public;class IndexedReadWriteXYZCollection 
 public;class IndexedXYCollection
@@ -135,6 +136,7 @@ public;IndexedXYZCollectionInterval
 public;IndexedXYZCollectionPolygonOps
 public;IntegratedSpiral3d 
 public;IntegratedSpiralTypeName = "clothoid" | "bloss" | "biquadratic" | "cosine" | "sine"
+internal;interpolateColor(color0: number, fraction: number, color1: number): number
 public;InverseMatrixState
 public;IStrokeHandler
 public;JointOptions
@@ -149,7 +151,7 @@ public;LowAndHighXY = Readonly
 public;LowAndHighXYZ = Readonly
 public;Map4d 
 public;Matrix3d 
-public;Matrix3dProps = number[][] | Matrix3d | number[]
+public;Matrix3dProps = number[][] | number[]
 public;Matrix4d 
 public;Matrix4dProps = Point4dProps[]
 public;MomentData

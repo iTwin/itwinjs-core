@@ -26,7 +26,7 @@ export class InputEditorCommitHandler {
       newValue = args.newValue.value;
     }
     this.onCommit(newValue);
-  }
+  };
 }
 
 /** @alpha */
@@ -54,7 +54,7 @@ export class InputEditorPopup extends React.PureComponent<InputEditorPopupProps,
     // istanbul ignore else
     if (!this.state.size.equals(newSize))
       this.setState({ size: Size.create(newSize) });
-  }
+  };
 
   /** @internal */
   public render() {

@@ -93,7 +93,7 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
         });
       }
     }
-  }
+  };
 
   /** @internal */
   public static getDerivedStateFromProps(props: ActionItemButtonProps, state: BaseItemState) {
@@ -121,14 +121,14 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
     if (this.props.actionItem.execute) {
       this.props.actionItem.execute();
     }
-  }
+  };
 
   private _handleKeyDown = (e: React.KeyboardEvent): void => {
     // istanbul ignore else
     if (e.key === SpecialKey.Escape) {
       KeyboardShortcutManager.setFocusToHome();
     }
-  }
+  };
 
   /** @internal */
   public render(): React.ReactNode {

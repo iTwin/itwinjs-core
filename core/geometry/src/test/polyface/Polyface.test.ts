@@ -24,7 +24,8 @@ import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range2d, Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
 import { MomentData } from "../../geometry4d/MomentData";
-import { IndexedPolyface, IndexedPolyfaceVisitor, Polyface } from "../../polyface/Polyface";
+import { IndexedPolyface, Polyface } from "../../polyface/Polyface";
+import { IndexedPolyfaceVisitor } from "../../polyface/IndexedPolyfaceVisitor";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
 import { Sample } from "../../serialization/GeometrySamples";
@@ -381,9 +382,9 @@ describe("Polyface.Box", () => {
 function writeMeshes(ck: Checker, geometry: GeometryQuery[], fileName: string, checkClosure: boolean, options?: StrokeOptions, dx0: number = 0, dy0: number = 0) {
   let fileName1 = `${fileName.slice()}.X`;
   if (options) {
-    if (options.hasMaxEdgeLength) fileName1 = `{fileName1}E`;
-    if (options.needNormals) fileName1 = `{fileName1}N`;
-    if (options.needParams) fileName1 = `{fileName1}P`;
+    if (options.hasMaxEdgeLength) fileName1 = `${fileName1}E`;
+    if (options.needNormals) fileName1 = `${fileName1}N`;
+    if (options.needParams) fileName1 = `${fileName1}P`;
   }
 
   const allMesh = [];
@@ -548,6 +549,78 @@ describe("Polyface.Facets", () => {
     const all = Sample.createSpheres();
     // writeAllMeshes(all, "SphereNN", [optionsN], 0.0, optionYStep);
     writeAllMeshes(all, "Sphere", true, allOptions, y0Sphere, optionYStep);
+  });
+  it("SpheresDensity", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const allCountsA = [];
+    const allCountsB = [];
+    const allCountsC = [];
+    let y0 = 0;
+    for (const a of [10, 22, 45]) {
+      const countsA = [];
+      const countsB = [];
+      const countsC = [];
+      // use a as both angle in degrees and multiplier of chordTol
+      const optionsA = StrokeOptions.createForFacets();
+      const optionsB = StrokeOptions.createForFacets();
+      const optionsC = StrokeOptions.createForFacets();
+      optionsA.angleTol = undefined;
+      optionsB.angleTol = undefined;
+      optionsC.angleTol = undefined;
+      optionsA.angleTol = Angle.createDegrees(a);
+      optionsA.chordTol = undefined;
+      optionsB.chordTol = a * 0.1;
+      optionsB.angleTol = undefined;
+      let xA = 0;
+      let xB = 400;
+      let xC = 800;
+      for (const radius of [1, 64, 4096]) {
+        optionsC.maxEdgeLength = radius / 4.0;
+        xA += 2 * radius;
+        xB += 2 * radius;
+        xC += 2 * radius;
+        const sphere = Sphere.createCenterRadius(Point3d.create(1, 23,), radius);
+        const builderA = PolyfaceBuilder.create(optionsA);
+        builderA.addSphere(sphere);
+        const facetsA = builderA.claimPolyface();
+        ck.testTrue(PolyfaceQuery.isPolyfaceClosedByEdgePairing(facetsA), "closure of sphere mesh with angle tol");
+        if (radius < 80)
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, facetsA, xA, y0);
+        countsA.push(facetsA.facetCount);
+
+        const builderB = PolyfaceBuilder.create(optionsB);
+        builderB.addSphere(sphere);
+        const facetsB = builderB.claimPolyface();
+        ck.testTrue(PolyfaceQuery.isPolyfaceClosedByEdgePairing(facetsB), "closure of sphere mesh with chord tol");
+        countsB.push(facetsB.facetCount);
+        if (radius < 80)
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, facetsB, xB, y0);
+        const builderC = PolyfaceBuilder.create(optionsC);
+        builderC.addSphere(sphere);
+        const facetsC = builderC.claimPolyface();
+        ck.testTrue(PolyfaceQuery.isPolyfaceClosedByEdgePairing(facetsC), "closure of sphere mesh with maxEdgeLength");
+        countsC.push(facetsC.facetCount);
+        if (radius < 80)
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, facetsC, xC, y0);
+
+      }
+      ck.testExactNumber(countsA[0], countsA[1], "angleTol counts not affected by radius");
+      ck.testExactNumber(countsA[1], countsA[2], "angleTol counts not affected by radius");
+      ck.testLT(countsB[0], countsB[1], "radiusTol count increases with radius");
+      ck.testLT(countsB[1], countsB[2], "radiusTol count increases with radius");
+
+      ck.testExactNumber(countsC[0], countsC[1], "fractional maxEdgeLength counts no affected by radius");
+      ck.testExactNumber(countsC[1], countsC[2], "fractional maxEdgeLength counts no affected by radius");
+
+      y0 += 200.0;
+      allCountsA.push(countsA);
+      allCountsB.push(countsB);
+      allCountsC.push(countsC);
+    }
+    console.log({ angleCounts: allCountsA, chordCounts: allCountsB, maxEdgeLengthCounts: allCountsC });
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "SphereDensity");
+    expect(ck.getNumErrors()).equals(0);
   });
   it("Boxes", () => {
     const allBox = flattenGeometry(Sample.createBoxes(false), Sample.createBoxes(true));
@@ -1550,7 +1623,7 @@ function appendIndexErrors(name: string, data: number[], numValues: number, erro
   for (i = 0; i < data.length; i++) {
     k = data[i];
     if (k < 0 || k >= numValues) {
-      errors.push({ indexArrayName: name, indexOfBadPointIndex: i, badPointIndex: k })
+      errors.push({ indexArrayName: name, indexOfBadPointIndex: i, badPointIndex: k });
       return;
     }
   }

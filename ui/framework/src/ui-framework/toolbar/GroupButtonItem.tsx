@@ -188,7 +188,7 @@ export class ToolbarGroupItem extends React.Component<ToolbarGroupItemComponentP
       this.closeGroupButton();
       KeyboardShortcutManager.setFocusToHome();
     }
-  }
+  };
 
   public render(): React.ReactNode {
     if (!this.state.isVisible)
@@ -259,40 +259,40 @@ export class ToolbarGroupItem extends React.Component<ToolbarGroupItemComponentP
     this._closeOnPanelOpened = false;
     FrontstageManager.onToolPanelOpenedEvent.emit();
     this._closeOnPanelOpened = true;
-  }
+  };
 
   private _handleClick = () => {
     this.setState((prevState) => ({
       isPressed: !prevState.isPressed,
     }));
-  }
+  };
 
   private _handleDragInteractionClick = () => {
     const activeItem = this.getItemById(this.state.activeItemId);
     activeItem && ToolbarItemUtilities.isActionButton(activeItem) && activeItem.execute();
-  }
+  };
 
   private _handleDragInteractionOutsideClick = (_e: MouseEvent) => {
     this.closeGroupButton();
-  }
+  };
 
   private _handleOutsideClick = (e: MouseEvent) => {
     this._ref.current && (e.target instanceof Node) && !this._ref.current.contains(e.target) && this.closeGroupButton();
-  }
+  };
 
   // istanbul ignore next
   private _handleToolActivatedEvent = ({ toolId }: ToolActivatedEventArgs) => {
     this.setState({
       activeToolId: toolId,
     });
-  }
+  };
 
   // istanbul ignore next
   private _handleToolPanelOpenedEvent = () => {
     if (!this._closeOnPanelOpened)
       return;
     this.closeGroupButton();
-  }
+  };
 
   private closeGroupButton() {
     const trayId = this.resetTrayId();
@@ -460,7 +460,7 @@ export class ToolbarGroupItem extends React.Component<ToolbarGroupItemComponentP
         backTrays,
       };
     });
-  }
+  };
 
   private _handleExpanderClick = (trayId: string) => {
     this.setState((prevState) => {
@@ -469,7 +469,7 @@ export class ToolbarGroupItem extends React.Component<ToolbarGroupItemComponentP
         backTrays: [...prevState.backTrays, prevState.trayId],
       };
     });
-  }
+  };
 }
 
 /** @internal */

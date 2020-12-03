@@ -50,11 +50,11 @@ export class Checkbox extends React.PureComponent<CheckboxProps> {
 
   private _onCheckboxClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-  }
+  };
 
   private _onCheckboxBlur = (e: React.FocusEvent) => {
     e.stopPropagation();
-  }
+  };
 
   private _setIndeterminate(indeterminate: boolean) {
     // istanbul ignore else

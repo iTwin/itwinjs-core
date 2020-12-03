@@ -224,7 +224,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
     async function fetchWmsMapData() {
       const sources: MapLayerSource[] = [];
       const bases: MapLayerSource[] = [];
-      const sourceLayers = await MapLayerSources.create(undefined, (fetchPublicMapLayerSources && !hideExternalMapLayersSection))
+      const sourceLayers = await MapLayerSources.create(undefined, (fetchPublicMapLayerSources && !hideExternalMapLayersSection));
       if (isMounted.current) {
         sourceLayers?.layers.forEach((source: MapLayerSource) => {
           sources.push(source);

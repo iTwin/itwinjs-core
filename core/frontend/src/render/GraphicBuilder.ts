@@ -238,8 +238,11 @@ export abstract class GraphicBuilder {
 
   /** Add Frustum edges. Useful for debugging. */
   public addFrustum(frustum: Frustum) {
-    const p = frustum.points;
+    this.addRangeBoxFromCorners(frustum.points);
+  }
 
+  /** Add range edges from corner points */
+  public addRangeBoxFromCorners(p: Point3d[]) {
     this.addLineString([
       p[Npc.LeftBottomFront],
       p[Npc.LeftTopFront],

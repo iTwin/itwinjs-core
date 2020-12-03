@@ -23,9 +23,9 @@ Name | Required? | Type | Default | Meaning
   "ruleType": "DefaultPropertyCategoryOverride",
   "priority": 9999,
   "onlyIfNotHandled": true,
-  "specification": [{
+  "specification": {
     "id": "default",
-    "label": "General Properties",
-  }],
+    "label": "General Properties"
+  }
 }
 ```

@@ -40,7 +40,7 @@ export class IntlFormatter implements DateFormatter {
   }
 
   public formateDate(day: Date) {
-    return this.formatter.format (day);
+    return this.formatter.format(day);
   }
 
   // The default implementation does not currently support parsing. If a derived class supports parsing then the

@@ -138,7 +138,7 @@ export class IModelHostConfiguration {
   public restrictTileUrlsByClientIp?: boolean;
 
   /** Whether to compress cached tiles.
-   * @beta
+   * Defaults to `true`.
    */
   public compressCachedTiles?: boolean;
 
@@ -480,7 +480,7 @@ export class IModelHost {
       this._clientAuthIntrospectionManager = new ImsClientAuthIntrospectionManager(introspectionClient);
     }
 
-    if (configuration.applicationType !== ApplicationType.WebAgent) { // ULAS does not support usage without a user (i.e. agent clients)
+    if (!IModelHost.isUsingIModelBankClient && configuration.applicationType !== ApplicationType.WebAgent) { // ULAS does not support usage without a user (i.e. agent clients)
       const usageLoggingClient = new BackendFeatureUsageTelemetryClient({ backendApplicationId: this.applicationId, backendApplicationVersion: this.applicationVersion, backendMachineName: os.hostname(), clientAuthManager: this._clientAuthIntrospectionManager });
       this.telemetry.addClient(usageLoggingClient);
     }
@@ -600,7 +600,7 @@ export class IModelHost {
   /** Whether to compress cached tiles.
    * @internal
    */
-  public static get compressCachedTiles(): boolean { return undefined !== IModelHost.configuration && (IModelHost.configuration.compressCachedTiles ? true : false); }
+  public static get compressCachedTiles(): boolean { return false !== IModelHost.configuration?.compressCachedTiles; }
 
   private static setupTileCache() {
     const config = IModelHost.configuration!;

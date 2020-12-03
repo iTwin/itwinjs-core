@@ -111,25 +111,25 @@ describe("IModelWriteTest (#integration)", () => {
     const codeSpec1 = CodeSpec.create(iModel, "MyCodeSpec1", CodeScopeSpec.Type.Model);
     iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
 
-    const locks = await iModel.concurrencyControl.lockCodeSpecs(superRequestContext);
+    const locks = await iModel.concurrencyControl.locks.lockCodeSpecs(superRequestContext);
     assert.equal(locks.length, 1);
-    const locksRedundant = await iModel.concurrencyControl.lockCodeSpecs(superRequestContext);
+    const locksRedundant = await iModel.concurrencyControl.locks.lockCodeSpecs(superRequestContext);
     assert.equal(locksRedundant.length, 1);
-    assert.isTrue(iModel.concurrencyControl.hasCodeSpecsLock);
+    assert.isTrue(iModel.concurrencyControl.locks.hasCodeSpecsLock);
     iModel.insertCodeSpec(codeSpec1);
     iModel.saveChanges();
     await iModel.pushChanges(superRequestContext, "inserted MyCodeSpec1");
-    assert.isFalse(iModel.concurrencyControl.hasCodeSpecsLock, "pushChanges should automatically release all locks");
+    assert.isFalse(iModel.concurrencyControl.locks.hasCodeSpecsLock, "pushChanges should automatically release all locks");
 
     // Verify that locks are released even if there are no changes.
     const prePushChangesetId = iModel.briefcase.parentChangeSetId;
-    await iModel.concurrencyControl.lockCodeSpecs(superRequestContext);
-    assert.isTrue(iModel.concurrencyControl.hasCodeSpecsLock);
+    await iModel.concurrencyControl.locks.lockCodeSpecs(superRequestContext);
+    assert.isTrue(iModel.concurrencyControl.locks.hasCodeSpecsLock);
     /* make no changes */
     await iModel.pushChanges(superRequestContext, "did nothing");
     assert.equal(prePushChangesetId, iModel.briefcase.parentChangeSetId, "no changeset was pushed");
 
-    assert.isFalse(iModel.concurrencyControl.hasCodeSpecsLock, "pushChanges should automatically release all locks");
+    assert.isFalse(iModel.concurrencyControl.locks.hasCodeSpecsLock, "pushChanges should automatically release all locks");
 
     await IModelTestUtils.closeAndDeleteBriefcaseDb(superRequestContext, iModel);
   });
@@ -390,7 +390,7 @@ describe("IModelWriteTest (#integration)", () => {
     rwIModel.saveChanges("inserted generic objects");
     timer.end();
 
-    assert.isTrue(rwIModel.concurrencyControl.hasReservedCode(code), "I reserved the code newPhysicalModel");
+    assert.isTrue(rwIModel.concurrencyControl.codes.isReserved(code), "I reserved the code newPhysicalModel");
 
     timer = new Timer("push changes");
 
@@ -412,11 +412,11 @@ describe("IModelWriteTest (#integration)", () => {
     // Now verify that code reservations are released even if we call pushChanges with no changes.
     const code2 = IModelTestUtils.getUniqueModelCode(rwIModel, "anotherCode");
     await rwIModel.concurrencyControl.codes.reserve(adminRequestContext, [code2]);
-    assert.isTrue(rwIModel.concurrencyControl.hasReservedCode(code2), "I reserved the code anotherCode");
+    assert.isTrue(rwIModel.concurrencyControl.codes.isReserved(code2), "I reserved the code anotherCode");
     /* make no changes */
     await rwIModel.pushChanges(adminRequestContext, "no changes");
     assert.equal(postPushChangeSetId, rwIModel.changeSetId), "no changeset created or pushed";
-    assert.isFalse(rwIModel.concurrencyControl.hasReservedCode(code2), "I released my reservation of the code anotherCode");
+    assert.isFalse(rwIModel.concurrencyControl.codes.isReserved(code2), "I released my reservation of the code anotherCode");
 
     const codesAfter = await BriefcaseManager.imodelClient.codes.get(adminRequestContext, rwIModelId);
     assert.deepEqual(codesAfter, codes, "The code that used above is still marked as used");
@@ -439,7 +439,7 @@ describe("IModelWriteTest (#integration)", () => {
     const dictionary: DictionaryModel = rwIModel.models.getModel<DictionaryModel>(IModel.dictionaryId);
     const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
     const newCategoryCode2 = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory2");
-    assert.isTrue(await rwIModel.concurrencyControl.areCodesAvailable2(adminRequestContext, [newCategoryCode]));
+    assert.isTrue(await rwIModel.concurrencyControl.codes.areAvailable(adminRequestContext, [newCategoryCode]));
     const subCategory = new SubCategoryAppearance({ color: 0xff0000 });
     const newModelCode = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel");
 
@@ -468,6 +468,22 @@ describe("IModelWriteTest (#integration)", () => {
     await rwIModel.concurrencyControl.request(adminRequestContext);
     assert.isFalse(rwIModel.concurrencyControl.hasPendingRequests);
     rwIModel.saveChanges("inserted generic objects");
+
+    // While we're here, do a quick test of lock management
+    const bcId = rwIModel.concurrencyControl.iModel.briefcase.briefcaseId;
+    const iModelId = rwIModel.concurrencyControl.iModel.iModelId;
+
+    let heldLocks = await BriefcaseManager.imodelClient.locks.get(adminRequestContext, iModelId, new LockQuery().byBriefcaseId(bcId));
+    assert.isTrue(heldLocks.length !== 0);
+
+    await expect(rwIModel.concurrencyControl.abandonResources(adminRequestContext)).to.be.rejectedWith(IModelError, "");
+
+    await rwIModel.pushChanges(adminRequestContext, "");
+
+    heldLocks = await BriefcaseManager.imodelClient.locks.get(adminRequestContext, iModelId, new LockQuery().byBriefcaseId(bcId));
+    assert.isTrue(heldLocks.length === 0);
+
+    await rwIModel.concurrencyControl.abandonResources(adminRequestContext); // should do nothing and be harmless
 
   });
 
@@ -564,7 +580,7 @@ describe("IModelWriteTest (#integration)", () => {
     const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true);
     const dictionary: DictionaryModel = rwIModel.models.getModel<DictionaryModel>(IModel.dictionaryId);
     const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
-    assert.isTrue(await rwIModel.concurrencyControl.areCodesAvailable2(adminRequestContext, [newCategoryCode]));
+    assert.isTrue(await rwIModel.concurrencyControl.codes.areAvailable(adminRequestContext, [newCategoryCode]));
     const spatialCategoryId: Id64String = SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value!, new SubCategoryAppearance({ color: 0xff0000 }));
     const elid1 = rwIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(rwIModel, newModelId, spatialCategoryId));
     const elid2 = rwIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(rwIModel, newModelId, spatialCategoryId));
@@ -604,7 +620,7 @@ describe("IModelWriteTest (#integration)", () => {
       rwIModel.elements.updateElement(el1Props);
       // Also create another new element as part of the same txn.
       elid3 = rwIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(rwIModel, newModelId, spatialCategoryId));
-      assert.isTrue(rwIModel.concurrencyControl.holdsLock(ConcurrencyControl.Request.getElementLock(elid3, LockLevel.Exclusive))); // (tricky: ccmgr pretends that new elements are locked.)
+      assert.isTrue(rwIModel.concurrencyControl.locks.holdsLock(ConcurrencyControl.Request.getElementLock(elid3, LockLevel.Exclusive))); // (tricky: ccmgr pretends that new elements are locked.)
       assert.isTrue(rwIModel.concurrencyControl.hasPendingRequests); // we have to get the lock before we can carry through with this
       let rejectedWithError: Error | undefined;
       try {
@@ -624,10 +640,10 @@ describe("IModelWriteTest (#integration)", () => {
     assert.isFalse(rwIModel.concurrencyControl.hasPendingRequests); // when we abandon changes, we also abandon the pending resource request
     assert.isUndefined(rwIModel.elements.getElement(elid1).userLabel, "the modification of element #1 should have been unwound");
     assert.isUndefined(rwIModel.elements.tryGetElement(elid3), "the insert of element #3 should have been unwound");
-    assert.isFalse(rwIModel.concurrencyControl.holdsLock(ConcurrencyControl.Request.getElementLock(elid3, LockLevel.Exclusive)), "The fake local lock on element #3 should have been discarded");
+    assert.isFalse(rwIModel.concurrencyControl.locks.holdsLock(ConcurrencyControl.Request.getElementLock(elid3, LockLevel.Exclusive)), "The fake local lock on element #3 should have been discarded");
     // ... but all committed changes and temporary locks were retained.
     assert.isTrue(undefined !== rwIModel.elements.tryGetElement(elid4), "the insert of the first new element should have been retained");
-    assert.isTrue(rwIModel.concurrencyControl.holdsLock(ConcurrencyControl.Request.getElementLock(elid4, LockLevel.Exclusive)), "The fake local lock on element #4 should have been retained");
+    assert.isTrue(rwIModel.concurrencyControl.locks.holdsLock(ConcurrencyControl.Request.getElementLock(elid4, LockLevel.Exclusive)), "The fake local lock on element #4 should have been retained");
 
     // This briefcase should be able to modify element #2.
     if (true) {
@@ -753,7 +769,7 @@ describe("IModelWriteTest (#integration)", () => {
     // Find or create a SpatialCategory.
     const dictionary: DictionaryModel = rwIModel.models.getModel<DictionaryModel>(IModel.dictionaryId);
     const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
-    assert.isTrue(await rwIModel.concurrencyControl.areCodesAvailable2(adminRequestContext, [newCategoryCode]));
+    assert.isTrue(await rwIModel.concurrencyControl.codes.areAvailable(adminRequestContext, [newCategoryCode]));
     const spatialCategoryId: Id64String = SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value!, new SubCategoryAppearance({ color: 0xff0000 }));
 
     timer.end();
@@ -988,7 +1004,7 @@ describe("IModelWriteTest (#integration)", () => {
     assert.isTrue(iModel.nativeDb.hasPendingTxns());
 
     // Validate state after upgrade
-    assert.isTrue(iModel.concurrencyControl.hasSchemaLock);
+    assert.isTrue(iModel.concurrencyControl.locks.hasSchemaLock);
     let schemaLocks = await BriefcaseManager.imodelClient.locks.get(managerRequestContext, iModelId, new LockQuery().byLockType(LockType.Schemas).byLockLevel(LockLevel.Exclusive));
     assert.isTrue(schemaLocks.length === 1);
     assert.isFalse(iModel.nativeDb.hasUnsavedChanges());
@@ -1012,7 +1028,7 @@ describe("IModelWriteTest (#integration)", () => {
     await iModel.pushChanges(managerRequestContext, "Upgrading schemas");
 
     // Validate that the schema lock is now released
-    assert.isFalse(iModel.concurrencyControl.hasSchemaLock);
+    assert.isFalse(iModel.concurrencyControl.locks.hasSchemaLock);
     schemaLocks = await BriefcaseManager.imodelClient.locks.get(managerRequestContext, iModelId, new LockQuery().byLockType(LockType.Schemas).byLockLevel(LockLevel.Exclusive));
     assert.isTrue(schemaLocks.length === 0);
 
@@ -1054,7 +1070,7 @@ describe("IModelWriteTest (#integration)", () => {
     assert.isFalse(superIModel.nativeDb.hasPendingTxns()); // Validate no changes were made
     schemaLocks = await BriefcaseManager.imodelClient.locks.get(superRequestContext, iModelId, new LockQuery().byLockType(LockType.Schemas).byLockLevel(LockLevel.Exclusive));
     assert.isTrue(schemaLocks.length === 0); // Validate no schema locks held by the hub
-    assert.isFalse(superIModel.concurrencyControl.hasSchemaLock); // Validate no schema locks cached in briefcase
+    assert.isFalse(superIModel.concurrencyControl.locks.hasSchemaLock); // Validate no schema locks cached in briefcase
 
     /* Cleanup after test */
     iModel.close();

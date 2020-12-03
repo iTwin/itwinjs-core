@@ -79,7 +79,7 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
         }
       }
     });
-  }
+  };
 
   /** @internal */
   public componentDidMount() {
@@ -116,7 +116,6 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
             numColumns = colorParams.numColumns;
         }
       }
-
       this.setState(
         { colorValue, readonly, isDisabled, numColumns, availableColors },
         () => {

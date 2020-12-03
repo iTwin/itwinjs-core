@@ -125,7 +125,7 @@ export function withTableDragDrop<P extends TableProps, DragDropObject extends T
           {baseNode}
         </DDRow>
       );
-    }
+    };
     public render() {
       const { dragProps, dropProps, renderNode, ...tableProps } = this.props as any; // eslint-disable-line @typescript-eslint/no-unused-vars
       const DragDropWrapper = withDropTarget<TableWrapperProps, DragDropObject>(TableWrapper); // eslint-disable-line @typescript-eslint/naming-convention

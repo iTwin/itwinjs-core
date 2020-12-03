@@ -21,6 +21,9 @@ Object {
     "isStrict": true,
   },
   "name": "cross-platform",
+  "renderer": Object {
+    "name": "custom_renderer",
+  },
   "typename": "enum",
 }
 `;
@@ -33,6 +36,9 @@ Object {
     "params": Array [],
   },
   "name": "Gorgeous",
+  "renderer": Object {
+    "name": "custom_renderer",
+  },
   "typename": "double",
 }
 `;
@@ -41,6 +47,9 @@ exports[`ContentBuilder createPropertyDescription creates simple description 1`]
 Object {
   "displayLabel": "redefine Principal Licensed Plastic Shoes",
   "name": "European Unit of Account 17(E.U.A.-17)",
+  "renderer": Object {
+    "name": "custom_renderer",
+  },
   "typename": "real",
 }
 `;
@@ -124,29 +133,27 @@ PropertyRecord {
 }
 `;
 
-exports[`ContentBuilder createPropertyRecord with nested content creates record with merged inside nested content value 1`] = `
+exports[`ContentBuilder createPropertyRecord with nested content creates record with merged nested content value 1`] = `
 PropertyRecord {
   "autoExpand": true,
-  "isReadonly": true,
   "property": Object {
-    "displayLabel": "deposit index",
-    "name": "Tasty Wooden Chair",
-    "typename": "datetime",
+    "displayLabel": "connect",
+    "name": "Savings Account",
+    "typename": "int",
   },
   "value": Object {
     "members": Object {
-      "Buckinghamshire": PropertyRecord {
+      "West Virginia": PropertyRecord {
         "description": "merged",
         "isMerged": true,
         "isReadonly": true,
         "property": Object {
-          "displayLabel": "generating Beauty",
-          "editor": Object {
-            "name": "Intranet",
-            "params": Array [],
+          "displayLabel": "robust Electronics",
+          "name": "Savings Account$West Virginia",
+          "renderer": Object {
+            "name": "custom_renderer",
           },
-          "name": "Tasty Wooden Chair$Buckinghamshire",
-          "typename": "bit",
+          "typename": "serial",
         },
         "value": Object {
           "displayValue": "merged",
@@ -160,13 +167,14 @@ PropertyRecord {
 }
 `;
 
-exports[`ContentBuilder createPropertyRecord with nested content creates record with merged outside nested content value 1`] = `
+exports[`ContentBuilder createPropertyRecord with nested content creates record with merged nesting content value 1`] = `
 PropertyRecord {
+  "autoExpand": true,
   "isMerged": true,
   "isReadonly": true,
   "property": Object {
-    "displayLabel": "seize Fantastic Steel Pizza bandwidth",
-    "name": "Awesome Granite Pants",
+    "displayLabel": "withdrawal",
+    "name": "redundant",
     "typename": "binary",
   },
   "value": Object {
@@ -206,6 +214,9 @@ PropertyRecord {
                   "params": Array [],
                 },
                 "name": "mindshare$Armenian Dram",
+                "renderer": Object {
+                  "name": "custom_renderer",
+                },
                 "typename": "point",
               },
               "value": Object {
@@ -237,6 +248,9 @@ PropertyRecord {
                   "params": Array [],
                 },
                 "name": "mindshare$Armenian Dram",
+                "renderer": Object {
+                  "name": "custom_renderer",
+                },
                 "typename": "point",
               },
               "value": Object {
@@ -285,6 +299,9 @@ PropertyRecord {
               "property": Object {
                 "displayLabel": "SDD",
                 "name": "Florida$Movies",
+                "renderer": Object {
+                  "name": "custom_renderer",
+                },
                 "typename": "float",
               },
               "value": Object {
@@ -316,6 +333,9 @@ PropertyRecord {
               "property": Object {
                 "displayLabel": "SDD",
                 "name": "Florida$Movies",
+                "renderer": Object {
+                  "name": "custom_renderer",
+                },
                 "typename": "float",
               },
               "value": Object {
@@ -368,6 +388,9 @@ PropertyRecord {
                     "property": Object {
                       "displayLabel": "indigo",
                       "name": "Kip$XSS$Ohio",
+                      "renderer": Object {
+                        "name": "custom_renderer",
+                      },
                       "typename": "int",
                     },
                     "value": Object {
@@ -395,6 +418,9 @@ PropertyRecord {
                     "property": Object {
                       "displayLabel": "indigo",
                       "name": "Kip$XSS$Ohio",
+                      "renderer": Object {
+                        "name": "custom_renderer",
+                      },
                       "typename": "int",
                     },
                     "value": Object {
@@ -439,6 +465,9 @@ PropertyRecord {
             "params": Array [],
           },
           "name": "Riel$Bacon",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "text",
         },
         "value": Object {
@@ -490,6 +519,9 @@ PropertyRecord {
                         "params": Array [],
                       },
                       "name": "bluetooth$Fantastic Steel Hat$Home Loan Account",
+                      "renderer": Object {
+                        "name": "custom_renderer",
+                      },
                       "typename": "datetime",
                     },
                     "value": Object {
@@ -521,6 +553,9 @@ PropertyRecord {
                         "params": Array [],
                       },
                       "name": "bluetooth$Fantastic Steel Hat$Home Loan Account",
+                      "renderer": Object {
+                        "name": "custom_renderer",
+                      },
                       "typename": "datetime",
                     },
                     "value": Object {

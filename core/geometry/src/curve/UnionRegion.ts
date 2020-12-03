@@ -19,6 +19,7 @@ import { StrokeOptions } from "./StrokeOptions";
  * * A `UnionRegion` is a collection of other planar region types -- `Loop` and `ParityRegion`.
  * * The composite is the union of the contained regions.
  * * A point is "in" the composite if it is "in" one or more of the contained regions.
+ * @see [Curve Collections]($docs/learning/geometry/CurveCollection.md) learning article.
  * @public
  */
 export class UnionRegion extends CurveCollection {

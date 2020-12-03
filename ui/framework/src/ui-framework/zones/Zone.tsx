@@ -254,7 +254,7 @@ export class Zone extends React.Component<ZoneProps> {
       runtimeProps.widgetChangeHandler.handleWidgetStateChange(id, index, widgetDef.state === WidgetState.Open);
       break;
     }
-  }
+  };
 
   private getWidgetIdForDef(widgetDef: WidgetDef): WidgetZoneId | undefined {
     // istanbul ignore if

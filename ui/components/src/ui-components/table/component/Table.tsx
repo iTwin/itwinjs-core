@@ -359,22 +359,22 @@ export class Table extends React.Component<TableProps, TableState> {
   private _onRowsSelected: OnItemsSelectedCallback<number> = (rowIndices: number[], replace: boolean) => {
     if (this.props.onRowsSelected)
       this.props.onRowsSelected(this.createRowIterator(rowIndices), replace); // eslint-disable-line @typescript-eslint/no-floating-promises
-  }
+  };
 
   private _onRowsDeselected: OnItemsDeselectedCallback<number> = (rowIndices: number[]) => {
     if (this.props.onRowsDeselected)
       this.props.onRowsDeselected(this.createRowIterator(rowIndices)); // eslint-disable-line @typescript-eslint/no-floating-promises
-  }
+  };
 
   private _onCellsSelected: OnItemsSelectedCallback<CellKey> = (cellKeys: CellKey[], replace: boolean) => {
     if (this.props.onCellsSelected)
       this.props.onCellsSelected(this.createCellIterator(cellKeys), replace); // eslint-disable-line @typescript-eslint/no-floating-promises
-  }
+  };
 
   private _onCellsDeselected: OnItemsDeselectedCallback<CellKey> = (cellKeys: CellKey[]) => {
     if (this.props.onCellsDeselected)
       this.props.onCellsDeselected(this.createCellIterator(cellKeys)); // eslint-disable-line @typescript-eslint/no-floating-promises
-  }
+  };
 
   private get _tableSelectionTarget(): TableSelectionTarget {
     return this.props.tableSelectionTarget ? this.props.tableSelectionTarget : TableSelectionTarget.Row;
@@ -532,7 +532,7 @@ export class Table extends React.Component<TableProps, TableState> {
     await this.updateColumns();
 
     this._cellItemSelectionHandlers = undefined;
-  }
+  };
 
   private async updateRows(): Promise<UpdateStatus> {
     if (this._currentUpdate !== TableUpdate.None) {
@@ -570,7 +570,7 @@ export class Table extends React.Component<TableProps, TableState> {
 
   private _onRowsChanged = async () => {
     await this.updateRows();
-  }
+  };
 
   /** @internal */
   public async update(): Promise<UpdateStatus> {
@@ -666,11 +666,11 @@ export class Table extends React.Component<TableProps, TableState> {
     }
 
     return column;
-  }
+  };
 
   private _getCellItem = (row: RowItem, columnKey: string): CellItem => {
     return row.cells.find((cell: CellItem) => cell.key === columnKey) || { key: columnKey };
-  }
+  };
 
   private isCellSelected(key: CellKey) {
     const set = this._selectedCellKeys.get(key.columnKey);
@@ -844,7 +844,7 @@ export class Table extends React.Component<TableProps, TableState> {
 
     // Return placeholder object
     return { item: { key: "", cells: [] }, index: i, cells: {} };
-  }
+  };
 
   private _rowGetterAsync = memoize(async (index: number, clearRows: boolean): Promise<void> => {
     if (index < 0)
@@ -999,7 +999,7 @@ export class Table extends React.Component<TableProps, TableState> {
 
     // Sort the column
     this.gridSortAsync(columnKey, directionEnum); // eslint-disable-line @typescript-eslint/no-floating-promises
-  }
+  };
 
   private getColumnIndexFromKey(columnKey: string): number {
     return this.state.columns.findIndex((column: TableColumn) => column.key === columnKey);
@@ -1174,23 +1174,23 @@ export class Table extends React.Component<TableProps, TableState> {
         return renderRow(rowProps.item, { ...reactDataGridRowProps, cells });
       }
     };
-  }
+  };
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
   private renderRow = (item: RowItem, props: TableRowProps): React.ReactNode => {
     return <TableRow key={item.key} {...props} />;
-  }
+  };
 
   private _onMouseUp = () => {
     if (this._tableSelectionTarget === TableSelectionTarget.Row)
       this._rowSelectionHandler.completeDragAction();
     else
       this._cellSelectionHandler.completeDragAction();
-  }
+  };
 
   private _onMouseDown = () => {
     document.addEventListener("mouseup", this._onMouseUp, { capture: true, once: true });
-  }
+  };
 
   private _onHeaderDrop = (source: string, target: string) => {
     const cols = [...this.state.columns];
@@ -1207,7 +1207,7 @@ export class Table extends React.Component<TableProps, TableState> {
     this.setState({ columns: [] }, () => { // fix react-data-grid update issues
       this.setState({ columns: cols });
     });
-  }
+  };
 
   private cellEditOnClick(column: ReactDataGridColumn, _ev: React.SyntheticEvent<any>, args: ReactDataGridColumnEventArgs): void {
     // Prevent editing when property record is not primitive
@@ -1270,7 +1270,7 @@ export class Table extends React.Component<TableProps, TableState> {
   private _deactivateCellEditor = (): void => {
     if (this.state.cellEditorState.active)
       this.setState({ cellEditorState: { active: false } }, () => setImmediate(() => this.setFocusToSelected()));
-  }
+  };
 
   /** @internal */
   public shouldComponentUpdate(_props: TableProps): boolean {
@@ -1294,13 +1294,13 @@ export class Table extends React.Component<TableProps, TableState> {
         this._deactivateCellEditor();
       }
     }
-  }
+  };
 
   private _getVisibleColumns = (): ReactDataGridColumn[] => {
     return this.state.columns
       .filter((tableColumn: TableColumn) => this.state.hiddenColumns.indexOf(tableColumn.key) === -1)
       .map((tableColumn: TableColumn) => tableColumn.reactDataGridColumn);
-  }
+  };
 
   private _handleShowHideContextMenu = (e: React.MouseEvent) => {
     const header = e.currentTarget.querySelector(".react-grid-Header");
@@ -1319,13 +1319,13 @@ export class Table extends React.Component<TableProps, TableState> {
         });
       }
     }
-  }
+  };
 
   private _hideContextMenu = () => {
     // istanbul ignore else
     if (this.props.showHideColumns)
       this.setState({ menuVisible: false });
-  }
+  };
 
   // istanbul ignore next
   private _handleShowHideChange = (cols: string[]) => {
@@ -1335,7 +1335,7 @@ export class Table extends React.Component<TableProps, TableState> {
       uiSettings.saveSetting(this.props.settingsIdentifier, "ColumnShowHideHiddenColumns", cols); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
     return true;
-  }
+  };
 
   private _onDialogOpen = (dialogState: PropertyDialogState) => this.setState({ dialog: dialogState });
 
@@ -1398,14 +1398,14 @@ export class Table extends React.Component<TableProps, TableState> {
         await DataGridFilterParser.handleFilterChange(filter, tableColumn.columnFilterDescriptor, tableColumn.columnDescription, this._applyFilter);
       });
     }
-  }
+  };
 
   // istanbul ignore next
   private _handleOnClearFilters = () => {
     this.filterDescriptors.clear();
 
     this._applyFilter();  // eslint-disable-line @typescript-eslint/no-floating-promises
-  }
+  };
 
   private _applyFilter = async (): Promise<void> => {
     // istanbul ignore else
@@ -1417,7 +1417,7 @@ export class Table extends React.Component<TableProps, TableState> {
       if (this.props.onApplyFilter)
         this.props.onApplyFilter();
     }
-  }
+  };
 
   // istanbul ignore next
   private _getValidFilterValues = (columnKey: string): any[] => {
@@ -1426,7 +1426,7 @@ export class Table extends React.Component<TableProps, TableState> {
       return tableColumn.distinctValueCollection.values;
     }
     return [];
-  }
+  };
 
   // TODO: Enable, when table gets refactored. Explanation in ./../table/NonPrimitiveValueRenderer
   // private _onPopupShow = (popupState: PropertyPopupState) => this.setState({ popup: popupState });
@@ -1437,10 +1437,19 @@ export class Table extends React.Component<TableProps, TableState> {
   private _onScroll = (scrollData: ScrollState) => {
     if (this.props.onScrollToRow)
       this.props.onScrollToRow(scrollData.rowVisibleStartIdx);
+  };
+
+  /** Determines if focus is in an input element - for filter checking */
+  private isFocusOnInputElement(): boolean {
+    const element: HTMLElement = document.activeElement as HTMLElement;
+    return element &&
+      (element instanceof HTMLInputElement ||
+        element instanceof HTMLSelectElement ||
+        element instanceof HTMLTextAreaElement);
   }
 
   private _onKeyboardEvent = (e: React.KeyboardEvent, keyDown: boolean) => {
-    if (isNavigationKey(e.key) && !this.state.cellEditorState.active) {
+    if (isNavigationKey(e.key) && !this.state.cellEditorState.active && !this.isFocusOnInputElement()) {
       if (this._tableSelectionTarget === TableSelectionTarget.Row) {
         const handleKeyboardSelectItem = (index: number) => {
           const selectionFunction = this._rowSelectionHandler.createSelectionFunction(this._rowComponentSelectionHandler, this.createRowItemSelectionHandler(index));
@@ -1576,7 +1585,7 @@ export class Table extends React.Component<TableProps, TableState> {
           itemKeyboardNavigator.handleKeyUpEvent(e, processedRow);
       }
     }
-  }
+  };
 
   private _onKeyDown = (e: React.KeyboardEvent) => this._onKeyboardEvent(e, true);
   private _onKeyUp = (e: React.KeyboardEvent) => this._onKeyboardEvent(e, false);

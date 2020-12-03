@@ -250,7 +250,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
         this.layout();
         needInitialLayout && this.initializeZoneBounds();
       });
-  }
+  };
 
   private initializeFrontstageLayout(nineZone: NineZoneManagerProps) {
     const nestedPanelsManager = FrontstageManager.NineZoneManager.getNestedPanelsManager();
@@ -296,11 +296,11 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     // istanbul ignore else
     if (this._isMounted)
       this.setState({ modalFrontstageCount: FrontstageManager.modalFrontstageCount });
-  }
+  };
 
   private _closeModal = () => {
     FrontstageManager.closeModalFrontstage();
-  }
+  };
 
   private renderModalFrontstage(): React.ReactNode {
     if (this.state.modalFrontstageCount === 0)
@@ -394,7 +394,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
   // istanbul ignore next
   private _handleWindowResize = () => {
     this.layout();
-  }
+  };
 
   // istanbul ignore next
   public handleResize = (zoneId: WidgetZoneId, resizeBy: number, handle: ResizeHandle, filledHeightDiff: number) => {
@@ -410,7 +410,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
           },
         };
       });
-  }
+  };
 
   public handleTabClick = (widgetId: WidgetZoneId, tabIndex: number) => {
     // istanbul ignore else
@@ -448,7 +448,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
         });
       },
       );
-  }
+  };
 
   // istanbul ignore next
   public handleTabDragStart = (widgetId: WidgetZoneId, tabIndex: number, initialPosition: PointProps, widgetBounds: RectangleProps) => {
@@ -461,7 +461,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
           nineZone,
         };
       });
-  }
+  };
 
   // istanbul ignore next
   public handleTabDragEnd = () => {
@@ -474,7 +474,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
           nineZone,
         };
       });
-  }
+  };
 
   // istanbul ignore next
   public handleTabDrag = (dragged: PointProps) => {
@@ -490,7 +490,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
           },
         };
       });
-  }
+  };
 
   // istanbul ignore next
   public handleTargetChanged(zoneId: WidgetZoneId, type: ZoneTargetType, isTargeted: boolean): void {
@@ -715,16 +715,16 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
       this.setState({
         widgetTabs,
       });
-  }
+  };
 
   private _handlePanelStateChangedEvent = ({ panelDef, panelState }: PanelStateChangedEventArgs) => {
     this.setPanelState(panelDef.location, panelState);
-  }
+  };
 
   // istanbul ignore next
   private _handlePanelSizeChangedEvent = ({ panelDef, size }: PanelSizeChangedEventArgs) => {
     (size !== undefined) && this.handlePanelInitialize(panelDef.location, size);
-  }
+  };
 
   private _handleToolActivatedEvent = () => {
     // istanbul ignore next
@@ -741,20 +741,20 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
         nineZone,
       };
     });
-  }
+  };
 
   // istanbul ignore next
   private _handleToolPanelOpenedEvent = () => {
     this.setAllowPointerUpSelection(true);
-  }
+  };
 
   private _handlePointerDown = () => {
     this.setAllowPointerUpSelection(false);
-  }
+  };
 
   private _handlePointerUp = () => {
     this.setAllowPointerUpSelection(false);
-  }
+  };
 
   private setAllowPointerUpSelection(allowPointerUpSelection: boolean) {
     // istanbul ignore if

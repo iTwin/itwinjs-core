@@ -54,7 +54,7 @@ export class BackstageItemUtilities {
     stageId: frontstageId,
     subtitle,
     ...overrides,
-  })
+  });
 
   /** Creates an action backstage item
    * @beta @deprecated Use BackstageItemUtilities.createActionItem in bentley/ui-abstract instead
@@ -69,7 +69,7 @@ export class BackstageItemUtilities {
     label,
     subtitle,
     ...overrides,
-  })
+  });
 
   /** Helper method to set backstage item state from props */
   public static getBackstageItemStateFromProps = (props: BackstageItemProps): BackstageItemState => { // eslint-disable-line deprecation/deprecation
@@ -85,5 +85,5 @@ export class BackstageItemUtilities {
       iconSpec: props.iconSpec,
       isActive: undefined !== props.isActive ? props.isActive : false,
     };
-  }
+  };
 }

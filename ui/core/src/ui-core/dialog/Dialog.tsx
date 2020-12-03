@@ -440,32 +440,32 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
     if (event.key === SpecialKey.Escape && this.props.opened && this.props.onEscape) {
       this.props.onEscape();
     }
-  }
+  };
 
   private _handleContainerPointerDown = (event: React.PointerEvent): void => {
     if (!this.props.modal) {
       if (this.props.onModelessPointerDown && this.props.modelessId)
         this.props.onModelessPointerDown(event, this.props.modelessId);
     }
-  }
+  };
 
   private _handleStartResizeRight = (event: React.PointerEvent): void => {
     event.preventDefault();
     this.setState({ rightResizing: true });
     window.addEventListener("pointermove", this._handlePointerMove, true);
-  }
+  };
 
   private _handleStartResizeDown = (event: React.PointerEvent): void => {
     event.preventDefault();
     this.setState({ downResizing: true });
     window.addEventListener("pointermove", this._handlePointerMove, true);
-  }
+  };
 
   private _handleStartResizeDownRight = (event: React.PointerEvent): void => {
     event.preventDefault();
     this.setState({ downResizing: true, rightResizing: true });
     window.addEventListener("pointermove", this._handlePointerMove, true);
-  }
+  };
 
   private _handleStartMove = (event: React.PointerEvent): void => {
     if (!this.props.movable)
@@ -485,7 +485,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
     }
 
     window.addEventListener("pointermove", this._handlePointerMove, true);
-  }
+  };
 
   private _handlePointerMove = (event: PointerEvent): void => {
     if ((!this.props.resizable && !this.props.movable) || !this._containerRef.current)
@@ -529,7 +529,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
       y = event.clientY - this.state.grabOffsetY;
       this.setState({ x, y, positionSet: true });
     }
-  }
+  };
 
   private _handlePointerUp = (_event: PointerEvent): void => {
     if (!this.props.movable && !this.props.resizable)
@@ -544,7 +544,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
     });
 
     window.removeEventListener("pointermove", this._handlePointerMove, true);
-  }
+  };
 }
 
 /** Properties for the [[GlobalDialog]] component

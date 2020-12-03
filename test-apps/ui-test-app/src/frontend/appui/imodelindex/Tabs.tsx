@@ -34,7 +34,7 @@ export class Tab extends React.Component<TabProps> {
     if (this.props.onTabClicked) {
       this.props.onTabClicked();
     }
-  }
+  };
 
   public render() {
     const isActive = this.props.index === this.props.selectedTabIndex!;
@@ -92,7 +92,7 @@ export class Tabs extends React.Component<TabsProps, TabsState> {
     // fire the tabs onClick
     if (this.props.onClick)
       this.props.onClick(tabIndex);
-  }
+  };
 
   private renderChildren() {
     return React.Children.map(this.props.children, (child: any, i) => {

@@ -46,6 +46,7 @@ public;DisposableList
 public;dispose(disposable?: IDisposable): undefined
 public;disposeArray(list?: IDisposable[]): undefined
 public;DisposeFunc = () => void
+public;DuplicatePolicy
 public;Entry
 public;EntryContainer
 alpha;EnvMacroSubst
@@ -87,6 +88,7 @@ public;OpenMode
 public;OrderedComparator
 beta;OrderedId64Iterable = Iterable
 beta;OrderedId64Iterable
+beta;partitionArray
 public;PerfLogger 
 public;PriorityQueue
 public;ReadonlySortedArray

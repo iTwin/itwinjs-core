@@ -6,7 +6,7 @@ import { assert } from "chai";
 import { ClientRequestContext, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
 import { IModelHubError } from "@bentley/imodelhub-client";
-import { BisCoreSchema, ClassRegistry, ConcurrencyControl, Element, ElementAspect, PhysicalModel, StandaloneDb } from "@bentley/imodeljs-backend";
+import { BisCoreSchema, BriefcaseDb, ClassRegistry, ConcurrencyControl, Element, ElementAspect, PhysicalModel, StandaloneDb } from "@bentley/imodeljs-backend";
 import { CodeScopeSpec, CodeSpec, IModel } from "@bentley/imodeljs-common";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { IModelTestUtils } from "./IModelTestUtils";
@@ -113,59 +113,62 @@ describe("Example Code", () => {
     assert.equal("Element", elementClass.className);
     // __PUBLISH_EXTRACT_END__
 
-    // __PUBLISH_EXTRACT_START__ ConcurrencyControl.setPolicy
-    // Turn on optimistic concurrency control.
-    // This allows the app to modify elements, models, etc. without first acquiring locks.
-    // Later, when the app downloads and merges changeSets from iModelHub,
-    // IModelDb's ConcurrencyControl will merge changes and handle conflicts,
-    // as specified by this policy.
-    if (iModel.isBriefcaseDb()) {
-      iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
-    }
-    // __PUBLISH_EXTRACT_END__
+    if (iModel.isBriefcase) {
+      const briefcaseDb = iModel as any as BriefcaseDb; // just to eliminate all of the distracting if (iModel.isBriefcase) stuff from the code snippets
 
-    // __PUBLISH_EXTRACT_START__ ConcurrencyControl_Codes.reserve
-    try {
-      if (iModel.isBriefcaseDb()) {
-        await iModel.concurrencyControl.codes.reserve(authorizedRequestContext);
+      // __PUBLISH_EXTRACT_START__ ConcurrencyControl.setPolicy
+
+      // Turn on optimistic concurrency control.
+      // This allows the app to modify elements, models, etc. without first acquiring locks.
+      // Later, when the app downloads and merges changeSets from iModelHub,
+      // IModelDb's ConcurrencyControl will merge changes and handle conflicts,
+      // as specified by this policy.
+      briefcaseDb.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
+      // __PUBLISH_EXTRACT_END__
+
+      // __PUBLISH_EXTRACT_START__ ConcurrencyControl_Codes.reserve
+      try {
+        await briefcaseDb.concurrencyControl.codes.reserve(authorizedRequestContext);
         authorizedRequestContext.enter();
+      } catch (err) {
+        if (err instanceof IModelHubError) {
+          // Do something about unavailable Codes ... or ...
+          briefcaseDb.abandonChanges();
+          return;
+        }
       }
-    } catch (err) {
-      if (err instanceof IModelHubError) {
-        // Do something about unavailable Codes ...
-      }
-    }
-    // __PUBLISH_EXTRACT_END__
+      // __PUBLISH_EXTRACT_END__
 
-    // Create a modeled element and a model.
-    const newModeledElementId = PhysicalModel.insert(iModel, IModel.rootSubjectId, "newModelCode");
+      // Make some local changes. In this example, we'll create a modeled element and a model.
+      const newModeledElementId = PhysicalModel.insert(iModel, IModel.rootSubjectId, "newModelCode");
+      assert.isTrue(newModeledElementId !== undefined);
 
-    // __PUBLISH_EXTRACT_START__ ConcurrencyControl.request
-    // Now acquire all locks and reserve all codes needed.
-    // This is a *perquisite* to saving local changes.
-    try {
-      if (iModel.isBriefcaseDb()) {
-        await iModel.concurrencyControl.request(authorizedRequestContext);
+      // Now, before saving to the briefcase, we must acquire locks and reserve codes.
+
+      // __PUBLISH_EXTRACT_START__ ConcurrencyControl.request
+
+      try {
+        await briefcaseDb.concurrencyControl.request(authorizedRequestContext);
         authorizedRequestContext.enter();
+      } catch (err) {
+        // If we can't get *all* of the locks and codes that are needed,
+        // then we can't go on with this transaction as is.
+        // We could possibly make additional changes to remove the need
+        // for the resources that are unavailable. In this case,
+        // we will just bail out.
+        briefcaseDb.abandonChanges();
+        return;
       }
-    } catch (err) {
-      // If we can't get *all* of the locks and codes that are needed,
-      // then we can't go on with this transaction as is.
-      // We could possibly make additional changes to remove the need
-      // for the resources that are unavailable. In this case,
-      // we will just bail out and print a message.
-      iModel.abandonChanges();
-      // report error ...
+      // __PUBLISH_EXTRACT_END__
+
+      // If we do get the resources we need, we can commit the local changes to a local transaction in the IModelDb.
+      briefcaseDb.saveChanges("inserted generic objects");
+
+      // When all local changes are saved in the briefcase, we push them to the iModel server.
+      await briefcaseDb.pushChanges(authorizedRequestContext, "comment");
+      authorizedRequestContext.enter();
+
     }
-    // Now we can commit the local changes to a local transaction in the
-    // IModelDb.
-    // __PUBLISH_EXTRACT_END__
-
-    // Now we can commit the local changes to a local transaction in the
-    // IModelDb.
-    iModel.saveChanges("inserted generic objects");
-
-    assert.isTrue(newModeledElementId !== undefined);
 
     // assertions to ensure example code is working properly
     assert.equal(BisCoreSchema.schemaName, elementClass.schema.schemaName);

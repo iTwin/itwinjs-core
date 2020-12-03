@@ -1,12 +1,12 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "2.9.0-dev.6",
+  "version": "2.11.0-dev.1",
   "description": "iModel.js backend components",
   "main": "lib/imodeljs-backend.js",
   "typings": "lib/imodeljs-backend",
   "license": "MIT",
   "engines": {
-    "node": ">=10.17.0 <14.16"
+    "node": ">=10.17.0 <13.0"
   },
   "scripts": {
     "compile": "npm run build",
@@ -49,37 +49,37 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.9.0-dev.6",
-    "@bentley/ecschema-metadata": "2.9.0-dev.6",
-    "@bentley/frontend-authorization-client": "^2.9.0-dev.6",
-    "@bentley/geometry-core": "^2.9.0-dev.6",
-    "@bentley/imodelhub-client": "^2.9.0-dev.6",
-    "@bentley/itwin-client": "^2.9.0-dev.6",
-    "@bentley/backend-itwin-client": "^2.9.0-dev.6",
-    "@bentley/imodeljs-common": "^2.9.0-dev.6",
-    "@bentley/telemetry-client": "^2.9.0-dev.6",
-    "@bentley/rbac-client": "^2.9.0-dev.6"
+    "@bentley/backend-itwin-client": "^2.11.0-dev.1",
+    "@bentley/bentleyjs-core": "^2.11.0-dev.1",
+    "@bentley/ecschema-metadata": "^2.11.0-dev.1",
+    "@bentley/frontend-authorization-client": "^2.11.0-dev.1",
+    "@bentley/geometry-core": "^2.11.0-dev.1",
+    "@bentley/imodelhub-client": "^2.11.0-dev.1",
+    "@bentley/imodeljs-common": "^2.11.0-dev.1",
+    "@bentley/itwin-client": "^2.11.0-dev.1",
+    "@bentley/rbac-client": "^2.11.0-dev.1",
+    "@bentley/telemetry-client": "^2.11.0-dev.1"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.9.0-dev.6",
-    "@bentley/build-tools": "2.9.0-dev.6",
-    "@bentley/eslint-plugin": "2.9.0-dev.6",
-    "@bentley/config-loader": "2.9.0-dev.6",
-    "@bentley/ecschema-metadata": "2.9.0-dev.6",
-    "@bentley/frontend-authorization-client": "2.9.0-dev.6",
-    "@bentley/geometry-core": "2.9.0-dev.6",
-    "@bentley/imodelhub-client": "2.9.0-dev.6",
-    "@bentley/itwin-client": "2.9.0-dev.6",
-    "@bentley/backend-itwin-client": "2.9.0-dev.6",
-    "@bentley/imodeljs-common": "2.9.0-dev.6",
-    "@bentley/oidc-signin-tool": "2.9.0-dev.6",
-    "@bentley/perf-tools": "2.9.0-dev.6",
-    "@bentley/telemetry-client": "2.9.0-dev.6",
-    "@bentley/rbac-client": "2.9.0-dev.6",
+    "@bentley/backend-itwin-client": "2.11.0-dev.1",
+    "@bentley/bentleyjs-core": "2.11.0-dev.1",
+    "@bentley/build-tools": "2.11.0-dev.1",
+    "@bentley/config-loader": "2.11.0-dev.1",
+    "@bentley/ecschema-metadata": "2.11.0-dev.1",
+    "@bentley/eslint-plugin": "2.11.0-dev.1",
+    "@bentley/frontend-authorization-client": "2.11.0-dev.1",
+    "@bentley/geometry-core": "2.11.0-dev.1",
+    "@bentley/imodelhub-client": "2.11.0-dev.1",
+    "@bentley/imodeljs-common": "2.11.0-dev.1",
+    "@bentley/itwin-client": "2.11.0-dev.1",
+    "@bentley/oidc-signin-tool": "2.11.0-dev.1",
+    "@bentley/perf-tools": "2.11.0-dev.1",
+    "@bentley/rbac-client": "2.11.0-dev.1",
+    "@bentley/telemetry-client": "2.11.0-dev.1",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/deep-assign": "^0.1.0",
@@ -112,21 +112,21 @@
     "webpack": "4.42.0"
   },
   "dependencies": {
-    "@bentley/imodeljs-native": "2.9.0",
-    "@bentley/context-registry-client": "2.9.0-dev.6",
-    "@bentley/usage-logging-client": "2.9.0-dev.6",
+    "@bentley/imodeljs-native": "2.10.4",
     "@azure/storage-blob": "10.4.0",
+    "@bentley/context-registry-client": "2.11.0-dev.1",
+    "@bentley/usage-logging-client": "2.11.0-dev.1",
+    "@openid/appauth": "^1.2.6",
     "deep-assign": "^2.0.0",
     "form-data": "^2.3.2",
     "fs-extra": "^8.1.0",
     "glob": "^7.1.2",
     "js-base64": "^2.4.5",
     "multiparty": "^4.2.1",
+    "open": "^7.0.0",
     "semver": "^5.5.0",
-    "ws": "^7.2.0",
-    "@openid/appauth": "^1.2.6",
     "username": "^5.1.0",
-    "open": "^7.0.0"
+    "ws": "^7.2.0"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"

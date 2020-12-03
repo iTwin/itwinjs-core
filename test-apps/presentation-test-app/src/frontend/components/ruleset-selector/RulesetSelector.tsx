@@ -36,7 +36,7 @@ export default class RulesetSelector extends React.Component<RulesetSelectorProp
   // eslint-disable-next-line @typescript-eslint/naming-convention
   private onSelectedRulesetIdChanged = (e: React.ChangeEvent<HTMLSelectElement>) => {
     this.setState({ activeRulesetId: e.target.value });
-  }
+  };
   public render() {
     if (!this.state.availableRulesets)
       return (<div className="RulesetSelector">{IModelApp.i18n.translate("Sample:controls.notifications.loading")}</div>);

@@ -10,12 +10,11 @@ import "./Panels.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-import { PanelsStateContext } from "../base/NineZone";
 import { WidgetContentRenderers } from "../widget/ContentRenderer";
 import { AppContent } from "./AppContent";
 import { CenterContent } from "./CenterContent";
 import { useCursor } from "./CursorOverlay";
-import { panelSides, WidgetPanel } from "./Panel";
+import { panelSides, WidgetPanelProvider } from "./Panel";
 import { WidgetPanelExpanders } from "./Expander";
 
 /** Properties of [[WidgetPanels]] component.
@@ -46,7 +45,6 @@ export const WidgetPanels = React.memo<WidgetPanelsProps>(function WidgetPanels(
 
 /** @internal */
 const WidgetPanelsComponent = React.memo<CommonProps>(function WidgetPanelsComponent(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
-  const panels = React.useContext(PanelsStateContext);
   useCursor();
   const className = classnames(
     "nz-widgetPanels-panels",
@@ -62,13 +60,10 @@ const WidgetPanelsComponent = React.memo<CommonProps>(function WidgetPanelsCompo
       <WidgetPanelExpanders />
       <CenterContent />
       {panelSides.map((side) => {
-        const panel = panels[side];
         return (
-          <WidgetPanel
+          <WidgetPanelProvider
             key={side}
-            panel={panel}
-            spanBottom={panels.bottom.span}
-            spanTop={panels.top.span}
+            side={side}
           />
         );
       })}

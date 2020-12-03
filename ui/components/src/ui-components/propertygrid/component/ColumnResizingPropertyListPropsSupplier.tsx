@@ -64,15 +64,15 @@ export class ColumnResizingPropertyListPropsSupplier extends React.Component<Col
 
     this.setState({ columnRatio: ratio });
     return { ratio };
-  }
+  };
 
   private _onResizeHandleHoverChanged = (isHovered: boolean) => {
     this.setState({ isResizeHandleHovered: isHovered });
-  }
+  };
 
   private _onResizeHandleDragChanged = (isDragStarted: boolean) => {
     this.setState({ isResizeHandleBeingDragged: isDragStarted });
-  }
+  };
 
   private _onListWidthChange = (width: number) => {
     if (this.props.orientation !== Orientation.Horizontal)
@@ -92,7 +92,7 @@ export class ColumnResizingPropertyListPropsSupplier extends React.Component<Col
     this._maxRatio = (width - this.props.actionButtonWidth! - this.props.minValueWidth!) / width;
     if (!this.state.isMinimumColumnSizeEnabled)
       this.setState({ isMinimumColumnSizeEnabled: true });
-  }
+  };
 
   private getValidColumnRatio(): number {
     return Geometry.clamp(this.state.columnRatio, this._minRatio, this._maxRatio);

@@ -28,14 +28,14 @@ import {
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "../presentation-backend/Constants";
 import { NativePlatformDefinition, NativePlatformRequestTypes } from "../presentation-backend/NativePlatform";
-import { HierarchyCacheMode, HybridCacheConfig, PresentationManager, PresentationManagerMode, PresentationManagerProps } from "../presentation-backend/PresentationManager";
+import {
+  HierarchyCacheMode, HybridCacheConfig, PresentationManager, PresentationManagerMode, PresentationManagerProps,
+} from "../presentation-backend/PresentationManager";
 import { RulesetManagerImpl } from "../presentation-backend/RulesetManager";
 import { RulesetVariablesManagerImpl } from "../presentation-backend/RulesetVariablesManager";
 import { SelectionScopesHelper } from "../presentation-backend/SelectionScopesHelper";
 import { UpdatesTracker } from "../presentation-backend/UpdatesTracker";
 import { WithClientRequestContext } from "../presentation-backend/Utils";
-
-/* eslint-disable @typescript-eslint/promise-function-async */
 
 const deepEqual = require("deep-equal"); // eslint-disable-line @typescript-eslint/no-var-requires
 describe("PresentationManager", () => {
@@ -102,7 +102,7 @@ describe("PresentationManager", () => {
         const testTaskAllocations = { [999]: 111 };
         const cacheConfig = {
           mode: HierarchyCacheMode.Memory,
-        }
+        };
         const props: PresentationManagerProps = {
           id: faker.random.uuid(),
           presentationAssetsRoot: "/test",
@@ -180,7 +180,7 @@ describe("PresentationManager", () => {
             mode: HierarchyCacheMode.Disk,
             directory: faker.random.word(),
           },
-        }
+        };
         const expectedConfig = {
           ...cacheConfig, disk: { ...cacheConfig.disk, directory: path.resolve(cacheConfig.disk!.directory!) },
         };
@@ -230,13 +230,49 @@ describe("PresentationManager", () => {
         addon.verifyAll();
       });
 
-      it("sets up presentation backend's supplemental ruleset directories using `presentationAssetsRoot` if supplied", () => {
+      it("sets up presentation backend's supplemental ruleset directories using `presentationAssetsRoot` as string if supplied", () => {
         const addonDirs = [path.join("/test", "supplemental-presentation-rules")];
         addon
           .setup((x) => x.setupSupplementalRulesetDirectories(addonDirs))
           .verifiable();
         using(new PresentationManager({ addon: addon.object, presentationAssetsRoot: "/test" }), (_pm: PresentationManager) => { });
         addon.verifyAll();
+      });
+
+      it("sets up presentation backend's supplemental ruleset directories using `presentationAssetsRoot.backend` if supplied", () => {
+        const addonDirs = [path.join("/backend-test", "supplemental-presentation-rules")];
+        addon
+          .setup((x) => x.setupSupplementalRulesetDirectories(addonDirs))
+          .verifiable();
+        using(new PresentationManager({ addon: addon.object, presentationAssetsRoot: { backend: "/backend-test", common: "/common-test" } }), (_pm: PresentationManager) => { });
+        addon.verifyAll();
+      });
+
+      it("sets up default locale directories", () => {
+        const constructorSpy = sinon.spy(IModelHost.platform, "ECPresentationManager");
+        using(new PresentationManager({}), (_manager) => { });
+        expect(constructorSpy).to.be.calledOnce;
+        expect(constructorSpy.firstCall.firstArg).to.containSubset({
+          localeDirectories: [getLocalesDirectory(PRESENTATION_COMMON_ASSETS_ROOT)],
+        });
+      });
+
+      it("sets up default locale directories using `presentationAssetsRoot` as string if supplied", () => {
+        const constructorSpy = sinon.spy(IModelHost.platform, "ECPresentationManager");
+        using(new PresentationManager({ presentationAssetsRoot: "/test" }), (_manager) => { });
+        expect(constructorSpy).to.be.calledOnce;
+        expect(constructorSpy.firstCall.firstArg).to.containSubset({
+          localeDirectories: [getLocalesDirectory("/test")],
+        });
+      });
+
+      it("sets up default locale directories using `presentationAssetsRoot.common` if supplied", () => {
+        const constructorSpy = sinon.spy(IModelHost.platform, "ECPresentationManager");
+        using(new PresentationManager({ presentationAssetsRoot: { backend: "/backend-test", common: "/common-test" } }), (_manager) => { });
+        expect(constructorSpy).to.be.calledOnce;
+        expect(constructorSpy.firstCall.firstArg).to.containSubset({
+          localeDirectories: [getLocalesDirectory("/common-test")],
+        });
       });
 
       it("sets up active locale if supplied", () => {
@@ -472,7 +508,7 @@ describe("PresentationManager", () => {
     it("registers ruleset if `rulesetOrId` is a ruleset", async () => {
       const ruleset = await createRandomRuleset();
       addonMock
-        .setup((x) => x.handleRequest(moq.It.isAny(), moq.It.isAny()))
+        .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAny()))
         .returns(async () => ({ result: "{}" }))
         .verifiable(moq.Times.once());
       addonMock
@@ -486,7 +522,7 @@ describe("PresentationManager", () => {
     it("doesn't register ruleset if `rulesetOrId` is a string", async () => {
       const rulesetId = faker.random.word();
       addonMock
-        .setup((x) => x.handleRequest(moq.It.isAny(), moq.It.isAny()))
+        .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAny()))
         .returns(async () => ({ result: "{}" }))
         .verifiable(moq.Times.once());
       addonMock
@@ -509,7 +545,7 @@ describe("PresentationManager", () => {
       };
       const diagnosticsListener = sinon.spy();
       addonMock
-        .setup((x) => x.handleRequest(moq.It.isAny(), moq.It.is((reqStr) => sinon.match(diagnosticOptions).test(JSON.parse(reqStr).params.diagnostics))))
+        .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((reqStr) => sinon.match(diagnosticOptions).test(JSON.parse(reqStr).params.diagnostics))))
         .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult }))
         .verifiable(moq.Times.once());
       await manager.getNodesCount({ requestContext: ClientRequestContext.current, imodel: imodelMock.object, rulesetOrId: "ruleset", diagnostics: { ...diagnosticOptions, listener: diagnosticsListener } });
@@ -528,7 +564,7 @@ describe("PresentationManager", () => {
       using(new PresentationManager({ addon: nativePlatformMock.object, enableSchemasPreload: true }), (_) => {
         const context = new ClientRequestContext();
         BriefcaseDb.onOpened.raiseEvent(context, imodelMock.object);
-        nativePlatformMock.verify((x) => x.forceLoadSchemas(moq.It.isAny()), moq.Times.once());
+        nativePlatformMock.verify(async (x) => x.forceLoadSchemas(moq.It.isAny()), moq.Times.once());
       });
     });
 
@@ -1225,7 +1261,7 @@ describe("PresentationManager", () => {
           prev: {},
           rulesetOrId: "test",
         });
-        nativePlatformMock.verify((x) => x.handleRequest(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
+        nativePlatformMock.verify(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
         expect(result).to.deep.eq([]);
       });
 
@@ -1241,7 +1277,7 @@ describe("PresentationManager", () => {
           expandedNodeKeys: [],
         };
         await expect(manager.compareHierarchies(options)).to.eventually.be.rejected;
-        nativePlatformMock.verify((x) => x.handleRequest(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
+        nativePlatformMock.verify(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
       });
 
       it("uses manager's `activeLocale` for comparison", async () => {
@@ -1313,7 +1349,7 @@ describe("PresentationManager", () => {
 
     });
 
-    describe("loadHierarhcy", () => {
+    describe("loadHierarchy", () => {
 
       it("[deprecated] requests hierarchy load", async () => {
         // what the addon receives
@@ -2317,36 +2353,6 @@ describe("PresentationManager", () => {
     });
 
     describe("getPagedDistinctValues", () => {
-
-      it("returns empty result for nested content request", async () => {
-        nativePlatformMock.reset();
-        // what the addon receives
-        const keys = new KeySet([createRandomECInstancesNodeKey(), createRandomECInstanceKey()]);
-        const descriptor = createRandomDescriptor();
-        const fieldDescriptor: FieldDescriptor = {
-          type: FieldDescriptorType.Name,
-          fieldName: faker.random.word(),
-          parent: {
-            type: FieldDescriptorType.Name,
-            fieldName: faker.random.word(),
-          },
-        };
-        // test
-        const options: WithClientRequestContext<DistinctValuesRequestOptions<IModelDb, Descriptor, KeySet>> = {
-          requestContext: ClientRequestContext.current,
-          imodel: imodelMock.object,
-          rulesetOrId: testData.rulesetOrId,
-          descriptor,
-          keys,
-          fieldDescriptor,
-        };
-        const result = await manager.getPagedDistinctValues(options);
-        nativePlatformMock.verify(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString()), moq.Times.never());
-        expect(result).to.deep.eq({
-          total: 0,
-          items: [],
-        });
-      });
 
       it("returns distinct values", async () => {
         // what the addon receives

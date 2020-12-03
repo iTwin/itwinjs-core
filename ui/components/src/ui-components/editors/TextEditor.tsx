@@ -59,7 +59,7 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
       this.setState({
         inputValue: e.target.value,
       });
-  }
+  };
 
   /** @internal */
   public componentDidMount() {

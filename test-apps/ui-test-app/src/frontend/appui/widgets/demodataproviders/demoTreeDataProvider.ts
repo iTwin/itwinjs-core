@@ -84,7 +84,7 @@ export class DemoMutableTreeDataProvider implements MutableTreeDataProvider {
       return [];
     }
     return this._data.slice(start, end);
-  }
+  };
 
   public getNodesCount = async (parent?: TreeNodeItem): Promise<number> => {
     if (parent) {
@@ -93,7 +93,7 @@ export class DemoMutableTreeDataProvider implements MutableTreeDataProvider {
       return 0;
     }
     return this._data.length;
-  }
+  };
 
   public insertNode = (parent: TreeNodeItem | undefined, child: TreeNodeItem, index: number = -1): void => {
     let nodes = this._data;
@@ -111,7 +111,7 @@ export class DemoMutableTreeDataProvider implements MutableTreeDataProvider {
       p.hasChildren = true;
     }
     this.onTreeNodeChanged.raiseEvent([parent]);
-  }
+  };
 
   public removeNode = (parent: TreeNodeItem | undefined, child: TreeNodeItem): void => {
     let nodes = this._data;
@@ -128,7 +128,7 @@ export class DemoMutableTreeDataProvider implements MutableTreeDataProvider {
       }
       this.onTreeNodeChanged.raiseEvent([parent]);
     }
-  }
+  };
 
   public moveNode = (parent: TreeNodeItem | undefined, newParent: TreeNodeItem | undefined, child: TreeNodeItem, newIndex: number = -1): void => {
     let nodes = this._data;
@@ -179,7 +179,7 @@ export class DemoMutableTreeDataProvider implements MutableTreeDataProvider {
       }
       this.onTreeNodeChanged.raiseEvent(arr);
     }
-  }
+  };
 
   private _getNodeById(nodes: DelayLoadedTreeNodeItem[] | DelayLoadedTreeNodeItem, id: string): DelayLoadedTreeNodeItem | undefined {
     if (!("length" in nodes)) {
@@ -213,7 +213,7 @@ export class DemoMutableTreeDataProvider implements MutableTreeDataProvider {
     }
     if (c) return true;
     return false;
-  }
+  };
   public getNodeIndex = (parent: TreeNodeItem | undefined, node: TreeNodeItem): number => {
     let nodes = this._data;
     if (parent) {
@@ -227,7 +227,7 @@ export class DemoMutableTreeDataProvider implements MutableTreeDataProvider {
       }
     }
     return -1;
-  }
+  };
 }
 
 export const demoMutableTreeDataProvider = new DemoMutableTreeDataProvider(dataProviderRaw);

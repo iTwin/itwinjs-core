@@ -70,7 +70,7 @@ export class ShowHideMenu<T extends ShowHideID> extends React.PureComponent<Show
       this._hide(item);
     if (this.props.onClose)
       this.props.onClose();
-  }
+  };
 
   private _hide = (item: ShowHideItem<T>) => {
     this.setState(
@@ -79,7 +79,7 @@ export class ShowHideMenu<T extends ShowHideID> extends React.PureComponent<Show
         if (this.props.onShowHideChange)
           this.props.onShowHideChange(this.state.hiddenColumns);
       });
-  }
+  };
 
   private _show = (item: ShowHideItem<T>) => {
     const hiddenColumns = this.state.hiddenColumns.filter((value) => {
@@ -90,7 +90,7 @@ export class ShowHideMenu<T extends ShowHideID> extends React.PureComponent<Show
       if (this.props.onShowHideChange)
         this.props.onShowHideChange(this.state.hiddenColumns);
     });
-  }
+  };
 
   private _showAll = () => {
     this.setState({ hiddenColumns: [] }, () => {
@@ -100,24 +100,24 @@ export class ShowHideMenu<T extends ShowHideID> extends React.PureComponent<Show
     });
     if (this.props.onClose)
       this.props.onClose();
-  }
+  };
   private _showDialog = () => {
     if (this.props.onClose)
       this.props.onClose();
     this.setState({
       dialogOpened: true,
     });
-  }
+  };
 
   private _closeDialog = () => {
     this.setState({
       dialogOpened: false,
     });
-  }
+  };
 
   private _defaultContextMenu = (event: React.MouseEvent) => {
     event.stopPropagation();
-  }
+  };
 
   /** @internal */
   public render(): React.ReactNode {

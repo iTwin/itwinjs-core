@@ -674,7 +674,9 @@ export class IModelTransformer extends IModelExportHandler {
     this.processDeferredElements();
   }
 
-  /** Export everything from the source iModel and import the transformed entities into the target iModel. */
+  /** Export everything from the source iModel and import the transformed entities into the target iModel.
+   * @note [[processSchemas]] is not called automatically since the target iModel may want a different collection of schemas.
+   */
   public processAll(): void {
     this.logSettings();
     this.initFromExternalSourceAspects();
@@ -688,6 +690,7 @@ export class IModelTransformer extends IModelExportHandler {
     this.processDeferredElements();
     this.detectElementDeletes();
     this.detectRelationshipDeletes();
+    this.importer.computeProjectExtents();
   }
 
   /** Export changes from the source iModel and import the transformed entities into the target iModel.
@@ -704,6 +707,7 @@ export class IModelTransformer extends IModelExportHandler {
     await this.exporter.exportChanges(requestContext, startChangeSetId);
     requestContext.enter();
     this.processDeferredElements();
+    this.importer.computeProjectExtents();
   }
 }
 

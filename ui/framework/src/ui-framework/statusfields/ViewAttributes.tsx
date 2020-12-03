@@ -55,7 +55,7 @@ export class ViewAttributesStatusField extends React.Component<StatusFieldProps,
       this.setOpenWidget(null);
     else
       this.setOpenWidget(this._className);
-  }
+  };
 
   // istanbul ignore next
   private updateState() {
@@ -79,12 +79,12 @@ export class ViewAttributesStatusField extends React.Component<StatusFieldProps,
       IModelApp.viewManager.selectedView.viewFlags = viewFlags;
       this.updateState();
     }
-  }
+  };
 
   private _handleToggleCamera = () => {
     IModelApp.tools.run("View.ToggleCamera", IModelApp.viewManager.selectedView);
     this.updateState();
-  }
+  };
 
   // istanbul ignore next
   private stylizeName(name: string) {
@@ -149,11 +149,11 @@ export class ViewAttributesStatusField extends React.Component<StatusFieldProps,
 
   private _handleTargetRef = (target: HTMLElement | null) => {
     this.setState({ target });
-  }
+  };
 
   private _handleClose = () => {
     this.setOpenWidget(null);
-  }
+  };
 
   /** Opens the pop-up window. */
   private setOpenWidget(openWidget: StatusBarFieldId) {

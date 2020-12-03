@@ -53,6 +53,9 @@ Object {
             "params": Array [],
           },
           "name": "Home Loan Account",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "float",
         },
         "value": Object {
@@ -74,6 +77,9 @@ Object {
             "params": Array [],
           },
           "name": "Dynamic",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "bit",
         },
         "value": Object {
@@ -94,6 +100,9 @@ Object {
             "params": Array [],
           },
           "name": "SAS",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "bigint",
         },
         "value": Object {

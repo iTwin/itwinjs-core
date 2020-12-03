@@ -4,6 +4,13 @@ trigger:
   - master
   - release/*
 
+pr:
+  drafts: false
+  branches:
+    include:
+    - master
+    - release/*
+
 jobs:
   - template: ci-core.yaml
     parameters:

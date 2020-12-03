@@ -99,7 +99,7 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
       this.setState({
         isPressed: false,
       });
-  }
+  };
 
   private _handleSyncUiEvent = (args: SyncUiEventArgs): void => {
     // istanbul ignore if
@@ -123,7 +123,7 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
           this.setState({ isActive: newState.isActive, isEnabled: newState.isEnabled, isVisible: newState.isVisible });
       }
     }
-  }
+  };
 
   public componentDidMount() {
     this._isMounted = true;
@@ -142,7 +142,7 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
     if (!this._closeOnPanelOpened)
       return;
     this.minimize();
-  }
+  };
 
   private _handleKeyDown = (e: React.KeyboardEvent): void => {
     // istanbul ignore next
@@ -150,7 +150,7 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
       this.minimize();
       KeyboardShortcutManager.setFocusToHome();
     }
-  }
+  };
 
   /** Renders PopupButton */
   public render() {
@@ -226,9 +226,9 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
 
         this.props.onExpanded && this.props.onExpanded(expand);
       });
-  }
+  };
 
   private _handleOutsideClick = (e: MouseEvent) => {
     this._ref.current && (e.target instanceof Node) && !this._ref.current.contains(e.target) && this.minimize();
-  }
+  };
 }

@@ -132,7 +132,7 @@ describe("WsgClient", async () => {
           await testCase.testFunc(userDefinedRequestOptions);
           expect(savedRequestOptions!.timeout).to.be.undefined;
         });
-      })
+      });
     });
 
     describe("Should pass timeout to request if user does explicitly set it", () => {
@@ -178,8 +178,8 @@ describe("WsgClient", async () => {
     const mockRequestFunction = (response: any | undefined) => {
       (requestModule.request as any) = async (_requestContext: ClientRequestContext, _url: string, options: requestModule.RequestOptions) => {
         savedRequestOptions = options;
-        return Promise.resolve(response ? { body: { ...response } } : {})
-      }
+        return Promise.resolve(response ? { body: { ...response } } : {});
+      };
     };
   });
 });

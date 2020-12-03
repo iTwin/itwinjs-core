@@ -446,7 +446,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
   /* close the toast message */
   private _onCloseToast = () => {
     this.setState({ showToast: false });
-  }
+  };
 
   /* determine if the Ok button should be enabled or disabled */
   private _isOkButtonEnabled(): boolean {
@@ -493,7 +493,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
       // finally set the state
       this.setState({ selectedNodes: _selectedNodes });
     }
-  }
+  };
 
   /** Set item state for selected node and recursive change children if needed */
   private _onNodesSelected = async (_selectedNodes: TreeNodeItem[], node: TreeNodeItem, state: CheckBoxState) => {
@@ -518,7 +518,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
     }
 
     return true;
-  }
+  };
 
   private _getSelectedNodes(): string[] {
     const selectedNodes: string[] = [];
@@ -530,7 +530,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
 
   private _onShowTree = () => {
     this.setState({ showTree: true });
-  }
+  };
 
   private renderContent() {
     if (!this.state.initialized) {

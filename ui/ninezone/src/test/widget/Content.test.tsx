@@ -12,7 +12,7 @@ describe("ScrollableWidgetContent", () => {
     const onSaveTransientState = new EventEmitter<(tabId: TabState["id"]) => void>();
     const onRestoreTransientState = new EventEmitter<(tabId: TabState["id"]) => void>();
     const { container } = render(<WidgetContentManagerContext.Provider value={{
-      getWidgetContentContainerRef: () => React.createRef(),
+      setContainer: () => { },
       onRestoreTransientState,
       onSaveTransientState,
     }}>

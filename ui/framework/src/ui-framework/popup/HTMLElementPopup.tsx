@@ -40,7 +40,7 @@ export class HTMLElementPopup extends React.PureComponent<HTMLElementPopupProps,
     // istanbul ignore else
     if (!this.state.size.equals(newSize))
       this.setState({ size: Size.create(newSize) });
-  }
+  };
 
   public render() {
     let point = PopupManager.getPopupPosition(this.props.el, this.props.pt, new Point(), this.state.size);

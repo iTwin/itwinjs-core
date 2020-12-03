@@ -99,6 +99,18 @@ const testFormatSchema = {
       unitSystem: "Formats.USCustom",
       definition: "ONE",
     },
+    VERTICAL_PER_HORIZONTAL: {
+      schemaItemType: "Unit",
+      phenomenon: "Formats.Length",
+      unitSystem: "Formats.SI",
+      definition: "Vert/Horizontal",
+    },
+    HORIZONTAL_PER_VERTICAL: {
+      schemaItemType: "InvertedUnit",
+      unitSystem: "Formats.SI",
+      invertsUnit: "Formats.VERTICAL_PER_HORIZONTAL",
+      label: "Horizontal/Vertical",
+    },
     DefaultReal: {
       schemaItemType: "Format",
       type: "decimal",

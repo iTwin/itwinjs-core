@@ -177,6 +177,7 @@ describe("Parsing tests:", () => {
       { value: "-2FT 6IN", quantity: { magnitude: -2.5, unitName: "Units.FT" } },
       { value: "1 1/2 FT", quantity: { magnitude: 1.5, unitName: "Units.FT" } },
       { value: "2FT 6IN", quantity: { magnitude: 2.5, unitName: "Units.FT" } },
+      { value: `2'-6"`, quantity: { magnitude: 2.5, unitName: "Units.FT" } },
       { value: "-3IN", quantity: { magnitude: -3.0, unitName: "Units.IN" } },
     ];
 
@@ -184,6 +185,7 @@ describe("Parsing tests:", () => {
     const format = new Format("test");
     await format.fromJson(unitsProvider, formatData).catch(() => { });
     assert.isTrue(format.hasUnits);
+    debugger;
 
     for (const testEntry of testData) {
       const quantityProps = await Parser.parseIntoQuantity(testEntry.value, format, unitsProvider);

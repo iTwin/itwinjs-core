@@ -21,6 +21,10 @@ import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { BentleyGeometryFlatBuffer } from "../../serialization/BentleyGeometryFlatBuffer";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { SolidPrimitive } from "../../solid/SolidPrimitive";
+import { PointString3d } from "../../curve/PointString3d";
+import { AuxChannelDataType } from "../../polyface/AuxData";
+import { IntegratedSpiral3d } from "../../curve/spiral/IntegratedSpiral3d";
+import { Segment1d } from "../../geometry3d/Segment1d";
 // cSpell:word flatbuffers
 // cSpell:word fbjs
 /* eslint-disable no-console, comma-dangle, quote-props */
@@ -59,6 +63,7 @@ it("HelloVariantGeometry", () => {
   testGeometryQueryRoundTrip(ck, LineSegment3d.createXYZXYZ(1, 2, 3, 4, 5, 6));
   testGeometryQueryRoundTrip(ck, Arc3d.createXYZXYZXYZ(1, 2, 3, 4, 5, 6, 8, 3, 2, AngleSweep.createStartEndDegrees(10, 100)));
   testGeometryQueryRoundTrip(ck, LineString3d.create([[1, 2, 3], [6, 2, 4], [2, 3, 1]]));
+  testGeometryQueryRoundTrip(ck, PointString3d.create([[1, 2, 3], [6, 2, 4], [2, 3, 1]]));
   const bCurves = Sample.createBsplineCurves(true);
   const hCurves = Sample.createBspline3dHCurves();
   for (const curve of [...bCurves, ...hCurves]) {
@@ -89,6 +94,17 @@ it("HelloMesh", () => {
   expect(ck.getNumErrors()).equals(0);
 });
 
+it("HelloSpirals", () => {
+  const ck = new Checker();
+  const clothoid = IntegratedSpiral3d.createRadiusRadiusBearingBearing(
+    Segment1d.create(0, 1000),
+    AngleSweep.createStartEndDegrees(0, 5),
+    Segment1d.create(0, 1),
+    Transform.createOriginAndMatrix(Point3d.create(1, 2, 3), Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(-10))),
+    "bloss");
+  testGeometryQueryRoundTrip(ck, clothoid);
+  expect(ck.getNumErrors()).equals(0);
+});
 
 function testGeometryQueryRoundTrip(ck: Checker, g: GeometryQuery | GeometryQuery[] | undefined) {
   if (!g)
@@ -131,7 +147,7 @@ function testGeometryQueryRoundTrip(ck: Checker, g: GeometryQuery | GeometryQuer
 
       } else {
         for (let i = 0; i < g.length; i++) {
-          ck.testGeometry(g[i], g1[i], ` FB round trip array ${i}`)
+          ck.testGeometry(g[i], g1[i], ` FB round trip array ${i}`);
         }
       }
     }
@@ -187,9 +203,24 @@ const singleSegmentBytes = new Uint8Array([
   0, 0, 0, 4, 0, 0, 0, 178, 255, 255, 255, 0, 0, 0, 1, 12, 0, 0, 0, 0, 0, 6, 0, 58, 0, 4, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
   0, 0, 0, 0, 0, 0, 8, 64, 0, 0, 0, 0, 0, 0, 8, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, 14, 0, 7, 0, 8, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 1, 12, 0, 0, 0, 0, 0, 6, 0,
   52, 0, 4, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+const sphereBytes = new Uint8Array(
+  [
+    98, 103, 48, 48, 48, 49, 102, 98, 8, 0, 0, 0, 0, 0, 0, 0, 26, 254, 255, 255, 0, 0, 0, 15, 12, 0, 0, 0, 0, 0, 6, 0, 8, 0, 4, 0, 6, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0, 208,
+    1, 0, 0, 44, 1, 0, 0, 160, 0, 0, 0, 4, 0, 0, 0, 114, 255, 255, 255, 0, 0, 0, 7, 4, 0, 0, 0, 222, 254, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16, 64, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16, 64, 0, 0, 0, 0, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 16, 64, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 64, 24, 45, 68, 84, 251, 33, 233, 191, 24, 45, 68, 84, 251, 33, 249, 63, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 10, 0, 12, 0, 7, 0, 8, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 7, 4, 0, 0, 0, 214, 254, 255, 255, 0, 0, 0, 0, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 8, 64, 24, 45, 68, 84, 251, 33, 233, 191, 138, 173, 132, 250, 10, 116, 1, 64, 1, 0, 0, 0, 0, 0, 0, 0, 106, 255, 255, 255, 0,
+    0, 0, 7, 12, 0, 0, 0, 0, 0, 6, 0, 130, 0, 4, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 64, 0, 0, 0, 0, 0, 0, 8,
+    64, 24, 45, 68, 84, 251, 33, 249, 191, 24, 45, 68, 84, 251, 33, 9, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, 14, 0, 7, 0, 8, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0,
+    7, 12, 0, 0, 0, 0, 0, 6, 0, 124, 0, 4, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 0, 0,
+    24, 45, 68, 84, 251, 33, 249, 191, 24, 45, 68, 84, 251, 33, 9, 64, 0, 0, 0, 0, 0, 0, 0, 0]);
 it("HelloNativeBytes", () => {
   const ck = new Checker();
-  for (const nativeBytes of [singleSegmentBytes, singleArcBytes, arcBytes]) {
+  for (const nativeBytes of [sphereBytes, singleSegmentBytes, singleArcBytes, arcBytes]) {
     const g0 = BentleyGeometryFlatBuffer.bytesToGeometry(nativeBytes, true);
     if (Checker.noisy.flatBuffer)
       console.log("nativeBytes=>g types", geometryTypes(g0));
@@ -235,3 +266,17 @@ function geometryTypes(g: GeometryQuery | GeometryQuery[] | undefined): any {
 function isGeometry(g: GeometryQuery | GeometryQuery[] | undefined): boolean {
   return g instanceof GeometryQuery || Array.isArray(g);
 }
+it("PolyfaceAuxData", () => {
+  const ck = new Checker();
+  const polyfaces = Sample.createSimpleIndexedPolyfaces(1.0);
+  for (let i = 0; i < 1; i++) {
+    const p = polyfaces[i];
+    Sample.addAuxDataScalarChannel(p.data, 2,
+      "distance", "time",
+      5, 2, 3, AuxChannelDataType.Distance,
+      (t: number, xyz: Point3d) => (t * xyz.x + t * (t - 1) * xyz.y)
+    );
+    testGeometryQueryRoundTrip(ck, p);
+  }
+  expect(ck.getNumErrors()).equals(0);
+});

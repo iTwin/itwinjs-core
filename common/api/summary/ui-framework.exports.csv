@@ -241,7 +241,6 @@ public;GroupItemProps
 alpha;HideIsolateEmphasizeAction
 alpha;class HideIsolateEmphasizeActionHandler
 alpha;HideIsolateEmphasizeManager 
-internal;HollowIcon(props: IconProps): JSX.Element
 alpha;HTMLElementPopup 
 alpha;HTMLElementPopupProps 
 beta;IModelAppUiSettings 
@@ -323,8 +322,9 @@ public;MessageAddedEvent
 public;MessageAddedEventArgs
 public;MessageCenterField 
 public;MessageCenterFieldProps 
-internal;MessageLabel(props:
 public;MessageManager
+beta;MessageRenderer(props: MessageRendererProps): JSX.Element | null
+beta;MessageRendererProps 
 public;MessagesUpdatedEvent 
 public;ModalDialogChangedEvent 
 public;ModalDialogManager
@@ -348,6 +348,8 @@ public;ModelsTree(props: ModelsTreeProps): JSX.Element
 beta;ModelsTreeNodeType
 public;ModelsTreeProps
 beta;ModelsTreeSelectionPredicate = (key: NodeKey, type: ModelsTreeNodeType) => boolean
+alpha;ModelsVisibilityHandler 
+alpha;ModelsVisibilityHandlerProps
 public;MouseDownChangedEvent 
 public;MouseDownChangedEventArgs
 beta;NameToReducerMap
@@ -556,7 +558,7 @@ beta;ToolSettingsEntry
 beta;ToolSettingsGrid({ settings }: ToolSettingsGridProps): JSX.Element
 beta;ToolSettingsGridContainer({ componentGenerator }:
 beta;ToolSettingsGridProps
-internal;ToolSettingsManager
+beta;ToolSettingsManager
 internal;ToolSettingsWidgetContent(): JSX.Element
 internal;ToolSettingsZone 
 internal;ToolSettingsZoneProps 
@@ -631,8 +633,6 @@ beta;VisibilityComponent
 beta;VisibilityComponentConfig
 public;VisibilityComponentHierarchy
 beta;VisibilityComponentProps
-internal;VisibilityHandler 
-internal;VisibilityHandlerProps
 alpha;VisibilityStatus
 alpha;VisibilityTreeEventHandler 
 alpha;VisibilityTreeEventHandlerParams 

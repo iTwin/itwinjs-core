@@ -97,7 +97,7 @@ export class Backstage extends React.Component<BackstageProps, BackstageState> {
 
   private _handleBackstageEvent = (args: BackstageEventArgs) => { // eslint-disable-line deprecation/deprecation
     this.setState({ isVisible: args.isVisible });
-  }
+  };
 
   public componentDidUpdate(prevProps: BackstageProps) { // eslint-disable-line deprecation/deprecation
     if (this.props.isVisible !== prevProps.isVisible)
@@ -118,7 +118,7 @@ export class Backstage extends React.Component<BackstageProps, BackstageState> {
     /* istanbul ignore else */
     if (this.props.onClose)
       this.props.onClose();
-  }
+  };
 
   public render(): React.ReactNode {
     Backstage.isBackstageVisible = this.state.isVisible; // eslint-disable-line deprecation/deprecation

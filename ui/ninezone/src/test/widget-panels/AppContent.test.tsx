@@ -35,6 +35,6 @@ describe("usePanelsAutoCollapse", () => {
       type: "PANEL_SET_COLLAPSED",
       side: "right",
       collapsed: true,
-    })
+    });
   });
 });

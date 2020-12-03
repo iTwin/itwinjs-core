@@ -35,6 +35,7 @@ import {
   WidgetTab,
   TabStateContext,
   createVerticalPanelState,
+  isHorizontalPanelSide,
 } from "@bentley/ui-ninezone";
 import { ToolSettingProps } from "./ToolSetting";
 import ToolSettings from "./ToolSettings";
@@ -311,9 +312,9 @@ const page = function () {
 
 function Tab() {
   const { id } = React.useContext(TabStateContext);
-  if (id === "topLeft_2")
+  if (id === "leftStart_2")
     return <WidgetTab className="nzdemo-tab-new" badge={BadgeUtilities.getComponentForBadgeType(BadgeType.New)} />;
-  else if (id === "bottomLeft_1" || id === "topLeft_4")
+  else if (id === "leftEnd_1" || id === "leftStart_4")
     return <WidgetTab className="nzdemo-tab-tp" badge={BadgeUtilities.getComponentForBadgeType(BadgeType.TechnicalPreview)} />;
   return <WidgetTab />;
 }
@@ -333,33 +334,31 @@ export default function Zones() {
   const [state, dispatch] = React.useReducer(NineZoneStateReducer, {}, () => {
     let initialState = createNineZoneState({
       panels: createPanelsState({
-        top: createHorizontalPanelState("top", {
-          // resizable: false,
-        }),
+        top: createHorizontalPanelState("top"),
         left: createVerticalPanelState("left", {
           pinned: false,
         }),
       }),
     });
-    initialState = addPanelWidget(initialState, "left", "topLeft", ["topLeft_1", "topLeft_2", "topLeft_3", "topLeft_4"]);
-    initialState = addPanelWidget(initialState, "left", "centerLeft", ["centerLeft_1"]);
-    initialState = addPanelWidget(initialState, "left", "bottomLeft", ["bottomLeft_1"]);
-    initialState = addPanelWidget(initialState, "right", "topRight", ["topRight_1"]);
-    initialState = addPanelWidget(initialState, "top", "topPanel", ["topPanel_1"]);
-    initialState = addPanelWidget(initialState, "bottom", "bottomPanel1", ["bottomPanel1_1"]);
-    initialState = addPanelWidget(initialState, "bottom", "bottomPanel2", ["bottomPanel2_1"]);
-    initialState = addPanelWidget(initialState, "bottom", "bottomPanel3", ["bottomPanel3_1"]);
-    initialState = addTab(initialState, "topLeft_1", { label: "Tab 1", preferredPanelWidgetSize: "fit-content" });
-    initialState = addTab(initialState, "topLeft_2", { label: "Tab 2", preferredPanelWidgetSize: "fit-content" });
-    initialState = addTab(initialState, "topLeft_3", { label: "Tab 3" });
-    initialState = addTab(initialState, "topLeft_4", { label: "Tab 4" });
-    initialState = addTab(initialState, "bottomLeft_1", { label: "Tab 1 Of Bottom Left Widget" });
-    initialState = addTab(initialState, "centerLeft_1", { label: "Tab 1" });
-    initialState = addTab(initialState, "topRight_1", { label: "Tab 1" });
-    initialState = addTab(initialState, "topPanel_1", { label: "Tab 1" });
-    initialState = addTab(initialState, "bottomPanel1_1", { label: "Tab 1" });
-    initialState = addTab(initialState, "bottomPanel2_1", { label: "Tab 1", preferredPanelWidgetSize: "fit-content" });
-    initialState = addTab(initialState, "bottomPanel3_1", { label: "Tab 1" });
+    initialState = addPanelWidget(initialState, "left", "leftStart", ["leftStart_1", "leftStart_2", "leftStart_3", "leftStart_4"]);
+    initialState = addPanelWidget(initialState, "left", "leftMiddle", ["leftMiddle_1"]);
+    initialState = addPanelWidget(initialState, "left", "leftEnd", ["leftEnd_1"]);
+    initialState = addPanelWidget(initialState, "right", "rightStart", ["rightStart_1"]);
+    initialState = addPanelWidget(initialState, "top", "topStart", ["topStart_1"]);
+    initialState = addPanelWidget(initialState, "bottom", "bottomStart", ["bottomStart_1"]);
+    initialState = addPanelWidget(initialState, "bottom", "bottomMiddle", ["bottomMiddle_1"]);
+    initialState = addPanelWidget(initialState, "bottom", "bottomEnd", ["bottomEnd_1"]);
+    initialState = addTab(initialState, "leftStart_1", { label: "Tab 1", preferredPanelWidgetSize: "fit-content" });
+    initialState = addTab(initialState, "leftStart_2", { label: "Tab 2", preferredPanelWidgetSize: "fit-content" });
+    initialState = addTab(initialState, "leftStart_3", { label: "Tab 3" });
+    initialState = addTab(initialState, "leftStart_4", { label: "Tab 4" });
+    initialState = addTab(initialState, "leftMiddle_1", { label: "Tab 1" });
+    initialState = addTab(initialState, "leftEnd_1", { label: "Tab 1 Of Bottom Left Widget" });
+    initialState = addTab(initialState, "rightStart_1", { label: "Tab 1" });
+    initialState = addTab(initialState, "topStart_1", { label: "Tab 1" });
+    initialState = addTab(initialState, "bottomStart_1", { label: "Tab 1" });
+    initialState = addTab(initialState, "bottomMiddle_1", { label: "Tab 1", preferredPanelWidgetSize: "fit-content" });
+    initialState = addTab(initialState, "bottomEnd_1", { label: "Tab 1" });
     return initialState;
   });
   const labels = React.useMemo<NineZoneLabels>(() => ({
@@ -442,9 +441,9 @@ export function WidgetContent() {
     scrollViewRef.current.scrollTop = scrollPosition.current.y;
   }, []);
   useTransientState(onSave, onRestore);
-  if (tabId === "centerLeft_1") {
+  if (tabId === "leftMiddle_1") {
     return (
-      <div className="nzdemo-centerLeft_1">
+      <div className="nzdemo-leftMiddle_1">
         <h2>Tab={tabId}</h2>
         <div className="nzdemo-block">Block 1</div>
         <div className="nzdemo-block">Block 2</div>
@@ -456,32 +455,40 @@ export function WidgetContent() {
     <ScrollableWidgetContent>
       <h2>Tab={tabId}</h2>
       <button onClick={() => setState((prev) => !prev)}>state={String(state)}</button>
-      <button onClick={() => side && dispatch({ side, type: "PANEL_TOGGLE_PINNED" })}>toggle pinned</button>
-      {tabId !== "topLeft_1" && <>
-        <br />
-        <br />
-        <div
-          className="nzdemo-scroll-view"
-          ref={scrollViewRef}
-        >
-          <div>Entry 1</div>
-          <div>Entry 2</div>
-          <div>Entry 3</div>
-          <div>Entry 4</div>
-          <div>Entry 5</div>
-          <div>Entry 6</div>
-          <div>Entry 7</div>
-          <div>Entry 8</div>
-          <div>Entry 9</div>
-        </div>
-      </>}
-      {tabId === "topLeft_2" && <>
-        <h1>A</h1>
-        <h1>B</h1>
-        <h1>C</h1>
-        <h1>D</h1>
-      </>}
-    </ScrollableWidgetContent>
+      {
+        (tabId === "topStart_1" || tabId === "bottomStart_1") && <>
+          <button onClick={() => side && isHorizontalPanelSide(side) && dispatch({ type: "PANEL_TOGGLE_SPAN", side })}>span</button>
+        </>
+      }
+      {
+        tabId !== "leftStart_1" && <>
+          <br />
+          <br />
+          <div
+            className="nzdemo-scroll-view"
+            ref={scrollViewRef}
+          >
+            <div>Entry 1</div>
+            <div>Entry 2</div>
+            <div>Entry 3</div>
+            <div>Entry 4</div>
+            <div>Entry 5</div>
+            <div>Entry 6</div>
+            <div>Entry 7</div>
+            <div>Entry 8</div>
+            <div>Entry 9</div>
+          </div>
+        </>
+      }
+      {
+        tabId === "leftStart_2" && <>
+          <h1>A</h1>
+          <h1>B</h1>
+          <h1>C</h1>
+          <h1>D</h1>
+        </>
+      }
+    </ScrollableWidgetContent >
   );
 }
 

@@ -5,9 +5,9 @@
 
 ---
 ## [Offline](./offline-quickstart.md)
-##### [1. Get the tools](./index.md#1-get-the-tools)
-##### [2. Get the code](./index.md#2-get-the-code)
-##### [3. Build and run a sample app](./index.md#3-build-and-run-a-sample-app)
+##### [1. Get the tools](./offline-quickstart.md#1-get-the-tools)
+##### [2. Get the code](./offline-quickstart.md#2-get-the-code)
+##### [3. Build and run a sample app](./offline-quickstart.md#3-build-and-run-a-sample-app)
 
 ---
 ## [Online](./online-quickstart.md)

@@ -14,10 +14,10 @@ import { FavoritePropertiesScope, Presentation } from "@bentley/presentation-fro
 import { PropertyRecord } from "@bentley/ui-abstract";
 import {
   ActionButtonRendererProps, CompositeFilterType, CompositePropertyDataFilterer, DisplayValuePropertyDataFilterer, FilteringInput,
-  FilteringPropertyDataProvider, LabelPropertyDataFilterer, PropertyCategory, PropertyData, PropertyGridContextMenuArgs, useAsyncValue,
-  useDebouncedAsyncValue, VirtualizedPropertyGridWithDataProvider,
+  FilteringInputStatus, FilteringPropertyDataProvider, LabelPropertyDataFilterer, PropertyCategory, PropertyData, PropertyGridContextMenuArgs,
+  PropertyRecordMatchInfo, useAsyncValue, useDebouncedAsyncValue, VirtualizedPropertyGridWithDataProvider,
 } from "@bentley/ui-components";
-import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Orientation, Toggle } from "@bentley/ui-core";
+import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Orientation, Toggle, useDisposable } from "@bentley/ui-core";
 
 const FAVORITES_SCOPE = FavoritePropertiesScope.IModel;
 
@@ -30,6 +30,9 @@ export interface Props {
 export function PropertiesWidget(props: Props) {
   const dataProvider = React.useMemo(() => createDataProvider(props.imodel, props.rulesetId), [props.imodel, props.rulesetId]);
 
+  const [activeMatchIndex, setActiveMatchIndex] = React.useState(0);
+  const [filteringProvDataChanged, setFilteringProvDataChanged] = React.useState({});
+  const [activeMatch, setActiveMatch] = React.useState<PropertyRecordMatchInfo>();
   const { isOverLimit } = usePropertyDataProviderWithUnifiedSelection({ dataProvider });
 
   const renderFavoritesActionButton = React.useCallback((buttonProps: ActionButtonRendererProps) => (<FavoritePropertyActionButton {...buttonProps} dataProvider={dataProvider} />), [dataProvider]);
@@ -51,19 +54,48 @@ export function PropertiesWidget(props: Props) {
     setContextMenuArgs(undefined);
   }, [onFindSimilarProp, dataProvider]);
 
-  const labelFilterer = React.useRef(new LabelPropertyDataFilterer());
-  const valueFilterer = React.useRef(new DisplayValuePropertyDataFilterer());
-  const favoriteFilterer = React.useRef(new FavoritePropertiesDataFilterer({ source: dataProvider, favoritesScope: FAVORITES_SCOPE, isActive: false }));
-  const filteringDataProvider = React.useMemo(() => {
-    const textFilterer = new CompositePropertyDataFilterer(labelFilterer.current, CompositeFilterType.Or, valueFilterer.current);
-    const favoriteTextFilterer = new CompositePropertyDataFilterer(textFilterer, CompositeFilterType.And, favoriteFilterer.current);
-    return new FilteringPropertyDataProvider(dataProvider, favoriteTextFilterer);
-  }, [dataProvider]);
+  const [filterText, setFilterText] = React.useState("");
+  const [isFavoritesFilterActive, setIsFavoritesFilterActive] = React.useState(false);
+
+  const filteringDataProvider = useDisposable(React.useCallback(() => {
+    const valueFilterer = new DisplayValuePropertyDataFilterer(filterText);
+    const labelFilterer = new LabelPropertyDataFilterer(filterText);
+    const favoriteFilterer = new FavoritePropertiesDataFilterer({ source: dataProvider, favoritesScope: FAVORITES_SCOPE, isActive: isFavoritesFilterActive });
+
+    const textFilterer = new CompositePropertyDataFilterer(labelFilterer, CompositeFilterType.Or, valueFilterer);
+    const favoriteTextFilterer = new CompositePropertyDataFilterer(textFilterer, CompositeFilterType.And, favoriteFilterer);
+    const filteringDataProv = new FilteringPropertyDataProvider(dataProvider, favoriteTextFilterer);
+    filteringDataProv.onDataChanged.addListener(() => {
+      setFilteringProvDataChanged({});
+    });
+    return filteringDataProv;
+  }, [dataProvider, filterText, isFavoritesFilterActive]));
+
+  const { value: filteringResult } = useDebouncedAsyncValue(React.useCallback(async () => {
+    const result = await filteringDataProvider.getData();
+    return result;
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filteringDataProvider, filteringProvDataChanged]));
+
+  const resultSelectorProps = React.useMemo(() => {
+    return filteringResult?.matchesCount !== undefined ? {
+      onSelectedChanged: (index: React.SetStateAction<number>) => setActiveMatchIndex(index),
+      resultCount: filteringResult.matchesCount,
+    } : undefined;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filteringResult, filteringProvDataChanged]);
+
+  React.useEffect(() => {
+    if (filteringResult?.getMatchByIndex)
+      setActiveMatch(filteringResult.getMatchByIndex(activeMatchIndex));
+  }, [activeMatchIndex, filteringDataProvider, filteringResult]);
 
   const setFilter = React.useCallback((filter) => {
-    labelFilterer.current.filterText = filter;
-    valueFilterer.current.filterText = filter;
-  }, [])
+    if (filter !== filterText) {
+      setFilterText(filter);
+    }
+  }, [filterText]);
 
   let content;
   if (isOverLimit) {
@@ -76,6 +108,10 @@ export function PropertiesWidget(props: Props) {
       actionButtonRenderers={[renderFavoritesActionButton, renderCopyActionButton]}
       orientation={Orientation.Horizontal}
       horizontalOrientationMinWidth={500}
+      highlightedRecordProps={filterText && filterText.length !== 0 ?
+        { searchText: filterText, activeMatch } :
+        undefined
+      }
     />);
   }
 
@@ -84,15 +120,16 @@ export function PropertiesWidget(props: Props) {
       <h3>{IModelApp.i18n.translate("Sample:controls.properties.widget-label")}</h3>
       <div className="SearchBar" >
         <FilteringInput
-          filteringInProgress={false}
           onFilterCancel={() => { setFilter(""); }}
           onFilterClear={() => { setFilter(""); }}
           onFilterStart={(newFilter) => { setFilter(newFilter); }}
           style={{ flex: "auto" }}
+          resultSelectorProps={resultSelectorProps}
+          status={filterText.length !== 0 ? FilteringInputStatus.FilteringFinished : FilteringInputStatus.ReadyToFilter}
         />
         <Toggle
           title="Favorites"
-          onChange={(on) => favoriteFilterer.current.isActive = on}
+          onChange={(on) => setIsFavoritesFilterActive(on)}
         />
       </div>
       <div className="ContentContainer">
@@ -204,8 +241,7 @@ function FavoriteFieldActionButton(props: { imodel: IModelConnection, field: Fie
       await Presentation.favoriteProperties.add(field, imodel, FAVORITES_SCOPE);
   }, [field, imodel]);
   return (
-    // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
-    <div className="favorite-action-button" onClick={toggleFavoriteProperty}>
+    <div className="favorite-action-button" onClick={toggleFavoriteProperty} onKeyDown={toggleFavoriteProperty} role="button" tabIndex={0}>
       {Presentation.favoriteProperties.has(field, imodel, FAVORITES_SCOPE) ?
         <div style={{ width: "20px", height: "20px", background: "orange" }} /> :
         <div style={{ width: "20px", height: "20px", background: "blue" }} />}

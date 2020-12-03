@@ -35,7 +35,7 @@ const cities: MajorCities[] = [
   { state: 2, cities: ["Los Angeles", "San Diego", "San Jose", "San Francisco"] },
   { state: 3, cities: ["Philadelphia", "Pittsburgh", "Allentown", "Erie"] },
   { state: 4, cities: ["New York", "Buffalo", "Rochester", "Yonkers"] },
-]
+];
 
 export class ToolWithDynamicSettings extends PrimitiveTool {
   public static toolId = "ToolWithDynamicSettings";
@@ -73,7 +73,7 @@ export class ToolWithDynamicSettings extends PrimitiveTool {
   // ------------- City List ---------------
   private static _cityPropertyName = "city";
   private static getCityDescription(stateId: number): PropertyDescription {
-    const availableCitiesChoices: EnumerationChoice[] = cities[stateId].cities.map((cityName) => { return { label: cityName, value: cityName } });
+    const availableCitiesChoices: EnumerationChoice[] = cities[stateId].cities.map((cityName) => { return { label: cityName, value: cityName }; });
 
     return {
       name: this._cityPropertyName,
@@ -116,7 +116,7 @@ export class ToolWithDynamicSettings extends PrimitiveTool {
 
   private _handleToolSettingsPopupCancel = () => {
     IModelApp.uiAdmin.closeToolSettingsPopup();
-  }
+  };
 
   /** A tool is responsible for providing tool assistance appropriate to the current tool state following significant events.
    * After onPostInstall to establish instructions for the initial tool state.

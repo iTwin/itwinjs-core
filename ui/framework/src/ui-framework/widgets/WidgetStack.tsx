@@ -103,7 +103,7 @@ export class WidgetStack extends React.PureComponent<WidgetStackProps> {
 
   private _handleOnWidgetResize = (resizeBy: number, handle: ResizeHandle, filledHeightDiff: number) => {
     this.props.widgetChangeHandler.handleResize(this.props.widgets[0], resizeBy, handle, filledHeightDiff);
-  }
+  };
 
   private _handleTabDragStart = (widgetId: WidgetZoneId, tabIndex: number, initialPosition: PointProps, firstTabBounds: RectangleProps) => {
     if (!this._widgetStack.current)
@@ -120,19 +120,19 @@ export class WidgetStack extends React.PureComponent<WidgetStackProps> {
       widgetBounds = stackedWidgetBounds.offsetY(offsetToFirstTab.y);
 
     this.props.widgetChangeHandler.handleTabDragStart(widgetId, tabIndex, initialPosition, widgetBounds);
-  }
+  };
 
   private _handleTabDragEnd = () => {
     this.props.widgetChangeHandler.handleTabDragEnd();
-  }
+  };
 
   private _handleTabClick = (widgetId: WidgetZoneId, tabIndex: number) => {
     this.props.widgetChangeHandler.handleTabClick(widgetId, tabIndex);
-  }
+  };
 
   private _handleTabDrag = (dragged: PointProps) => {
     this.props.widgetChangeHandler.handleTabDrag(dragged);
-  }
+  };
 }
 
 /** Properties for the [[WidgetStackTabs]] component.
@@ -278,11 +278,11 @@ export class WidgetStackTabGroup extends React.PureComponent<WidgetStackTabGroup
 
     const firstTabBounds = Rectangle.create(this._firstTab.current.getBounds()).toProps();
     this.props.onTabDragStart(this.props.widgetId, tabIndex, initialPosition, firstTabBounds);
-  }
+  };
 
   private _handleTabClick = (tabIndex: number) => {
     this.props.onTabClick(this.props.widgetId, tabIndex);
-  }
+  };
 }
 
 /** Properties for the [[WidgetStackTab]] component.
@@ -334,9 +334,9 @@ export class WidgetStackTab extends React.PureComponent<WidgetStackTabProps> {
 
   private _handleDragStart = (initialPosition: PointProps) => {
     this.props.onDragStart(this.props.index, initialPosition);
-  }
+  };
 
   private _handleClick = () => {
     this.props.onClick(this.props.index);
-  }
+  };
 }

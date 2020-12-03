@@ -82,7 +82,7 @@ export class AppUi {
         widgetDef.setWidgetState(WidgetState.Open);
       }
     }
-  }
+  };
 
   public static command2 = () => {
     const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
@@ -92,7 +92,7 @@ export class AppUi {
         widgetDef.setWidgetState(WidgetState.Hidden);
       }
     }
-  }
+  };
 
   /** Define Content Groups referenced by Frontstages.
    */

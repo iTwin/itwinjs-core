@@ -139,7 +139,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
       return;
 
     this.setState(args, async () => this.loadViews());
-  }
+  };
 
   private setStateContainers(views3d: ListItem[], views2d: ListItem[], sheets: ListItem[], unknown?: ListItem[]) {
     const views3dContainer: ListItem = {
@@ -310,14 +310,14 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
 
     // Set state to show enabled the view that got selected
     this.updateState(item.key); // eslint-disable-line @typescript-eslint/no-floating-promises
-  }
+  };
 
   // Hook on the category selector being expanded so that we may initialize if needed
   // istanbul ignore next
   private _onExpanded = (expand: boolean) => {
     if (expand)
       this.updateState(IModelApp.viewManager.selectedView ? IModelApp.viewManager.selectedView.view.id : undefined); // eslint-disable-line @typescript-eslint/no-floating-promises
-  }
+  };
 
   /**
    *  Renders ViewSelector component

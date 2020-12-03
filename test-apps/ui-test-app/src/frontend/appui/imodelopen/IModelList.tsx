@@ -42,28 +42,28 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
 
   private _onShowThumbnails = () => {
     this.setState({ showDetails: false });
-  }
+  };
 
   private _onShowDetails = () => {
     this.setState({ showDetails: true });
-  }
+  };
 
   private _onShowProjectsSelector = () => {
     this.setState({ showProjectDialog: true });
-  }
+  };
 
   private _onProjectsSelectorClose = () => {
     this.setState({ showProjectDialog: false });
-  }
+  };
 
   private _handleSearchValueChanged = (value: string): void => {
     this.setState({ filter: value });
-  }
+  };
 
   private _onIModelClick = (iModelInfo: IModelInfo) => {
     if (this.props.onIModelSelected)
       this.props.onIModelSelected(iModelInfo);
-  }
+  };
 
   public componentDidMount() {
     this.setState((_, props) => {

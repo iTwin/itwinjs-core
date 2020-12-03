@@ -22,7 +22,7 @@ exports[`Calculator renders correctly 1`] = `
   <div
     className="uifw-calculator-top"
   >
-    <Input
+    <ForwardRef(Input)
       readOnly={true}
       value="0"
     />

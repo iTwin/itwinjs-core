@@ -12,24 +12,24 @@
 import * as os from "os";
 import {
   BeEvent, BentleyStatus, ChangeSetStatus, ClientRequestContext, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, JsonUtils,
-  Logger, OpenMode, StatusCodeWithMessage,
+  Logger, OpenMode,
 } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
+import { ChangesType, Checkpoint, CheckpointQuery, Lock, LockLevel, LockType } from "@bentley/imodelhub-client";
 import {
   AxisAlignedBox3d, BriefcaseKey, BriefcaseProps, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps,
   CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DisplayStyleProps, DomainOptions,
-  DownloadBriefcaseStatus, EcefLocation, ElementAspectProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams,
+  DownloadBriefcaseStatus, EcefLocation, ElementAspectProps, ElementGeometryRequest, ElementGeometryUpdate, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams,
   FilePropertyProps, FontMap, FontMapProps, FontProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
-  IModelCoordinatesResponseProps, IModelError, IModelEventSourceProps, IModelNotFoundResponse, IModelProps, IModelRpcProps, IModelStatus, IModelVersion,
+  IModelCoordinatesResponseProps, IModelError, IModelEventSourceProps, IModelNotFoundResponse, IModelProps, IModelRpcProps, IModelStatus, IModelTileTreeProps, IModelVersion,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseOptions, ProfileOptions, PropertyCallback, QueryLimit, QueryPriority,
   QueryQuota, QueryResponse, QueryResponseStatus, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps,
-  SyncMode, ThumbnailProps, TileTreeProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateProps,
+  SyncMode, ThumbnailProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { BlobDaemon, BlobDaemonCommandArg, IModelJsNative } from "@bentley/imodeljs-native";
-import { ChangesType, Checkpoint, CheckpointQuery, Lock, LockLevel, LockType } from "@bentley/imodelhub-client";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { TelemetryEvent } from "@bentley/telemetry-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { BinaryPropertyTypeConverter } from "./BinaryPropertyTypeConverter";
 import { BriefcaseEntry, BriefcaseId, BriefcaseIdValue, BriefcaseManager } from "./BriefcaseManager";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { CodeSpecs } from "./CodeSpecs";
@@ -37,7 +37,7 @@ import { ConcurrencyControl } from "./ConcurrencyControl";
 import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
 import { Element, Subject } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
-import { Entity } from "./Entity";
+import { Entity, EntityClassType } from "./Entity";
 import { EventSink } from "./EventSink";
 import { ExportGraphicsOptions, ExportPartGraphicsOptions } from "./ExportGraphics";
 import { IModelHost } from "./IModelHost";
@@ -47,7 +47,6 @@ import { Relationship, RelationshipProps, Relationships } from "./Relationship";
 import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./SqliteStatement";
 import { UsageLoggingUtilities } from "./usage-logging/UsageLoggingUtilities";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
-import { TelemetryEvent } from "@bentley/telemetry-client";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -162,7 +161,7 @@ export abstract class IModelDb extends IModel {
     this.initializeIModelDb();
 
     // The same file can be opened by multiple IModelDbs - make sure each gets a unique EventSink name.
-    const eventSinkId = `${this._fileKey}-${(IModelDb._nextEventSinkId++).toString()}`
+    const eventSinkId = `${this._fileKey}-${(IModelDb._nextEventSinkId++).toString()}`;
     this._eventSink = new EventSink(eventSinkId);
     this.nativeDb.setEventSink(this._eventSink);
   }
@@ -709,7 +708,7 @@ export abstract class IModelDb extends IModel {
     }
   }
 
-  /** Abandon pending changes in this iModel - also be sure to call [ConcurrencyControl.abandonResources]($backend) if this is a briefcase. */
+  /** Abandon pending changes in this iModel. You might also want to call [ConcurrencyControl.abandonResources]($backend) if this is a briefcase and you want to relinquish locks or codes that you acquired preemptively. */
   public abandonChanges(): void {
     if (this.isBriefcaseDb() && this.isPushEnabled) {
       this.concurrencyControl.abandonRequest();
@@ -742,7 +741,7 @@ export abstract class IModelDb extends IModel {
       throw new IModelError(BentleyStatus.ERROR, "Importing the schema requires an AuthorizedClientRequestContext");
     }
     if (this.isBriefcaseDb() && this.isPushEnabled) {
-      await this.concurrencyControl.lockSchema(requestContext);
+      await this.concurrencyControl.locks.lockSchema(requestContext);
       requestContext.enter();
     }
 
@@ -794,7 +793,7 @@ export abstract class IModelDb extends IModel {
       throw new IModelError(BentleyStatus.ERROR, "Importing the schema requires an AuthorizedClientRequestContext");
     }
     if (this.isBriefcaseDb() && this.isPushEnabled) {
-      await this.concurrencyControl.lockSchema(requestContext);
+      await this.concurrencyControl.locks.lockSchema(requestContext);
       requestContext.enter();
     }
 
@@ -1147,6 +1146,20 @@ export abstract class IModelDb extends IModel {
   public exportPartGraphics(exportProps: ExportPartGraphicsOptions): DbResult {
     return this.nativeDb.exportPartGraphics(exportProps);
   }
+
+  /** Request geometry stream information from an element.
+   * @alpha
+   */
+  public elementGeometryRequest(requestProps: ElementGeometryRequest): DbResult {
+    return this.nativeDb.processGeometryStream(requestProps);
+  }
+
+  /** Update geometry stream for the supplied element.
+   * @alpha
+   */
+  public elementGeometryUpdate(updateProps: ElementGeometryUpdate): DbResult {
+    return this.nativeDb.updateGeometryStream(updateProps);
+  }
 }
 
 /** @public */
@@ -1195,23 +1208,36 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
 
     /** Get the Model with the specified identifier.
      * @param modelId The Model identifier.
-     * @throws [[IModelError]] if the model is not found or cannot be loaded.
+     * @param modelClass Optional class to validate instance against. This parameter can accept abstract or concrete classes, but should be the same as the template (`T`) parameter.
+     * @throws [[IModelError]] if the model is not found, cannot be loaded, or fails validation when `modelClass` is specified.
      * @see tryGetModel
      */
-    public getModel<T extends Model>(modelId: Id64String): T {
-      return this._iModel.constructEntity<T>(this.getModelProps(modelId));
+    public getModel<T extends Model>(modelId: Id64String, modelClass?: EntityClassType<Model>): T {
+      const model: T | undefined = this.tryGetModel(modelId, modelClass);
+      if (undefined === model) {
+        throw new IModelError(IModelStatus.NotFound, `Model=${modelId}`, Logger.logWarning, loggerCategory);
+      }
+      return model;
     }
 
     /** Get the Model with the specified identifier.
      * @param modelId The Model identifier.
-     * @returns The Model or `undefined` if the model is not found.
+     * @param modelClass Optional class to validate instance against. This parameter can accept abstract or concrete classes, but should be the same as the template (`T`) parameter.
+     * @returns The Model or `undefined` if the model is not found or fails validation when `modelClass` is specified.
      * @throws [[IModelError]] if the model cannot be loaded.
      * @note Useful for cases when a model may or may not exist and throwing an `Error` would be overkill.
      * @see getModel
      */
-    public tryGetModel<T extends Model>(modelId: Id64String): T | undefined {
-      const modelProps = this.tryGetModelProps(modelId);
-      return undefined !== modelProps ? this._iModel.constructEntity<T>(modelProps) : undefined;
+    public tryGetModel<T extends Model>(modelId: Id64String, modelClass?: EntityClassType<Model>): T | undefined {
+      const modelProps = this.tryGetModelProps<T>(modelId);
+      if (undefined === modelProps) {
+        return undefined; // no Model with that modelId found
+      }
+      const model = this._iModel.constructEntity<T>(modelProps);
+      if (undefined === modelClass) {
+        return model; // modelClass was not specified, cannot call instanceof to validate
+      }
+      return model instanceof modelClass ? model : undefined;
     }
 
     /** Read the properties for a Model as a json string.
@@ -1224,7 +1250,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     public getModelJson<T extends ModelProps>(modelIdArg: ModelLoadProps): T {
       const modelJson = this.tryGetModelJson<T>(modelIdArg);
       if (undefined === modelJson) {
-        throw new IModelError(IModelStatus.NotFound, `Model=${modelIdArg}`);
+        throw new IModelError(IModelStatus.NotFound, `Model=${modelIdArg}`, Logger.logWarning, loggerCategory);
       }
       return modelJson;
     }
@@ -1249,29 +1275,31 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     /** Get the sub-model of the specified Element.
      * See [[IModelDb.Elements.queryElementIdByCode]] for more on how to find an element by Code.
      * @param modeledElementId Identifies the modeled element.
-     * @throws [[IModelError]] if the sub-model is not found or cannot be loaded.
+     * @param modelClass Optional class to validate instance against. This parameter can accept abstract or concrete classes, but should be the same as the template (`T`) parameter.
+     * @throws [[IModelError]] if the sub-model is not found, cannot be loaded, or fails validation when `modelClass` is specified.
      * @see tryGetSubModel
      */
-    public getSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code): T {
-      const modeledElementProps = this._iModel.elements.getElementProps(modeledElementId);
+    public getSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code, modelClass?: EntityClassType<Model>): T {
+      const modeledElementProps = this._iModel.elements.getElementProps<ElementProps>(modeledElementId);
       if (modeledElementProps.id === IModel.rootSubjectId) {
         throw new IModelError(IModelStatus.NotFound, "Root subject does not have a sub-model", Logger.logWarning, loggerCategory);
       }
-      return this.getModel<T>(modeledElementProps.id!);
+      return this.getModel<T>(modeledElementProps.id!, modelClass);
     }
 
     /** Get the sub-model of the specified Element.
      * See [[IModelDb.Elements.queryElementIdByCode]] for more on how to find an element by Code.
      * @param modeledElementId Identifies the modeled element.
-     * @returns The sub-model or `undefined` if the specified element does not have a sub-model.
+     * @param modelClass Optional class to validate instance against. This parameter can accept abstract or concrete classes, but should be the same as the template (`T`) parameter.
+     * @returns The sub-model or `undefined` if the specified element does not have a sub-model or fails validation when `modelClass` is specified.
      * @see getSubModel
      */
-    public tryGetSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code): T | undefined {
+    public tryGetSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code, modelClass?: EntityClassType<Model>): T | undefined {
       const modeledElementProps = this._iModel.elements.tryGetElementProps(modeledElementId);
       if ((undefined === modeledElementProps) || (IModel.rootSubjectId === modeledElementProps.id)) {
         return undefined;
       }
-      return this.tryGetModel<T>(modeledElementProps.id!);
+      return this.tryGetModel<T>(modeledElementProps.id!, modelClass);
     }
 
     /** Create a new model in memory.
@@ -1293,11 +1321,11 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       const jsClass = this._iModel.getJsClass<typeof Model>(props.classFullName) as any; // "as any" so we can call the protected methods
       jsClass.onInsert(props, this._iModel);
 
-      const val = this._iModel.nativeDb.insertModel(JSON.stringify(props));
+      const val = this._iModel.nativeDb.insertModel(props);
       if (val.error)
         throw new IModelError(val.error.status, "inserting model", Logger.logWarning, loggerCategory);
 
-      props.id = Id64.fromJSON(JSON.parse(val.result!).id);
+      props.id = Id64.fromJSON(val.result!.id);
       jsClass.onInserted(props.id, this._iModel);
       return props.id;
     }
@@ -1310,7 +1338,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       const jsClass = this._iModel.getJsClass<typeof Model>(props.classFullName) as any; // "as any" so we can call the protected methods
       jsClass.onUpdate(props, this._iModel);
 
-      const error = this._iModel.nativeDb.updateModel(JSON.stringify(props));
+      const error = this._iModel.nativeDb.updateModel(props);
       if (error !== IModelStatus.Success)
         throw new IModelError(error, `updating model id=${props.id}`, Logger.logWarning, loggerCategory);
 
@@ -1404,32 +1432,41 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
 
     /** Get an element by Id, FederationGuid, or Code
      * @param elementId either the element's Id, Code, or FederationGuid, or an ElementLoadProps
-     * @throws [[IModelError]] if the element is not found or cannot be loaded.
+     * @param elementClass Optional class to validate instance against. This parameter can accept abstract or concrete classes, but should be the same as the template (`T`) parameter.
+     * @throws [[IModelError]] if the element is not found, cannot be loaded, or fails validation when `elementClass` is specified.
      * @see tryGetElement
      */
-    public getElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps): T {
-      const element = this.tryGetElement<T>(elementId);
+    public getElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element>): T {
+      const element = this.tryGetElement<T>(elementId, elementClass);
       if (undefined === element) {
-        throw new IModelError(IModelStatus.NotFound, `reading element=${elementId}`, Logger.logWarning, loggerCategory);
+        throw new IModelError(IModelStatus.NotFound, `Element=${elementId}`, Logger.logWarning, loggerCategory);
       }
       return element;
     }
 
     /** Get an element by Id, FederationGuid, or Code
      * @param elementId either the element's Id, Code, or FederationGuid, or an ElementLoadProps
-     * @returns The element or `undefined` if the element is not found.
+     * @param elementClass Optional class to validate instance against. This parameter can accept abstract or concrete classes, but should be the same as the template (`T`) parameter.
+     * @returns The element or `undefined` if the element is not found or fails validation when `elementClass` is specified.
      * @throws [[IModelError]] if the element exists, but cannot be loaded.
      * @note Useful for cases when an element may or may not exist and throwing an `Error` would be overkill.
      * @see getElement
      */
-    public tryGetElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps): T | undefined {
+    public tryGetElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element>): T | undefined {
       if (typeof elementId === "string") {
         elementId = Id64.isId64(elementId) ? { id: elementId } : { federationGuid: elementId };
       } else if (elementId instanceof Code) {
         elementId = { code: elementId };
       }
-      const elementProps: T | undefined = this.tryGetElementJson(elementId);
-      return undefined !== elementProps ? this._iModel.constructEntity<T>(elementProps) : undefined;
+      const elementProps = this.tryGetElementJson<T>(elementId);
+      if (undefined === elementProps) {
+        return undefined; // no Element with that elementId found
+      }
+      const element = this._iModel.constructEntity<T>(elementProps);
+      if (undefined === elementClass) {
+        return element; // elementClass was not specified, cannot call instanceof to validate
+      }
+      return element instanceof elementClass ? element : undefined;
     }
 
     /** Query for the Id of the element that has a specified code.
@@ -1754,16 +1791,15 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       return finished;
     }
 
-    public getViewStateData(viewDefinitionId: string): ViewStateProps {
+    public getViewStateData(viewDefinitionId: string, options?: ViewStateLoadProps): ViewStateProps {
       const elements = this._iModel.elements;
       const viewDefinitionElement = elements.getElement<ViewDefinition>(viewDefinitionId);
       const viewDefinitionProps = viewDefinitionElement.toJSON();
       const categorySelectorProps = elements.getElementProps<CategorySelectorProps>(viewDefinitionProps.categorySelectorId);
 
-      // Schedule scripts include huge lists of element Ids that are entirely unneeded for frontend display. Omit them.
       const displayStyleOptions: ElementLoadProps = {
         id: viewDefinitionProps.displayStyleId,
-        displayStyle: { omitScheduleScriptElementIds: true },
+        displayStyle: options?.displayStyle,
       };
       const displayStyleProps = elements.getElementProps<DisplayStyleProps>(displayStyleOptions);
 
@@ -1852,16 +1888,16 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     public constructor(private _iModel: IModelDb) { }
 
     /** @internal */
-    public async requestTileTreeProps(requestContext: ClientRequestContext, id: string): Promise<TileTreeProps> {
+    public async requestTileTreeProps(requestContext: ClientRequestContext, id: string): Promise<IModelTileTreeProps> {
       requestContext.enter();
 
-      return new Promise<TileTreeProps>((resolve, reject) => {
+      return new Promise<IModelTileTreeProps>((resolve, reject) => {
         requestContext.enter();
         this._iModel.nativeDb.getTileTree(id, (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, any>) => {
           if (undefined !== ret.error)
             reject(new IModelError(ret.error.status, `TreeId=${id}`));
           else
-            resolve(ret.result as TileTreeProps);
+            resolve(ret.result as IModelTileTreeProps);
         });
       });
     }
@@ -2233,7 +2269,7 @@ export class BriefcaseDb extends IModelDb {
 
       const alreadyOpenEndTime = new Date();
       Logger.logTrace(loggerCategory, "BriefcaseDb.open: Logging usage", () => briefcaseEntry.getDebugInfo());
-      await briefcaseDb.logUsage(requestContext, briefcaseDb.contextId, briefcaseDb.iModelId, briefcaseDb.changeSetId, startTime, alreadyOpenEndTime);
+      briefcaseDb.logUsage(requestContext, briefcaseDb.contextId, briefcaseDb.iModelId, briefcaseDb.changeSetId, startTime, alreadyOpenEndTime); // eslint-disable-line @typescript-eslint/no-floating-promises
       return briefcaseDb;
     }
 
@@ -2273,14 +2309,14 @@ export class BriefcaseDb extends IModelDb {
 
     const endTime = new Date();
     Logger.logTrace(loggerCategory, "BriefcaseDb.open: Logging usage", () => briefcaseEntry.getDebugInfo());
-    await briefcaseDb.logUsage(requestContext, briefcaseDb.contextId, briefcaseDb.iModelId, briefcaseDb.changeSetId, startTime, endTime);
+    briefcaseDb.logUsage(requestContext, briefcaseDb.contextId, briefcaseDb.iModelId, briefcaseDb.changeSetId, startTime, endTime); // eslint-disable-line @typescript-eslint/no-floating-promises
 
     this.onOpened.raiseEvent(requestContext, briefcaseDb);
     return briefcaseDb;
   }
 
   /** Log usage when opening the iModel */
-  private async logUsage(requestContext: AuthorizedClientRequestContext | ClientRequestContext, contextId: string, iModelId: string, changeSetId: string, startTime: Date, endTime: Date) {
+  private async logUsage(requestContext: AuthorizedClientRequestContext | ClientRequestContext, contextId: string, iModelId: string, changeSetId: string, startTime: Date, endTime: Date): Promise<void> {
     // NEEDS_WORK: Move usage logging to the native layer, and make it happen even if not authorized
     if (!(requestContext instanceof AuthorizedClientRequestContext)) {
       Logger.logTrace(loggerCategory, "BriefcaseDb.logUsage: Cannot log usage without appropriate authorization", () => this.briefcase.getDebugInfo());
@@ -2300,15 +2336,14 @@ export class BriefcaseDb extends IModelDb {
       },
     );
     Logger.logTrace(loggerCategory, "BriefcaseDb.logUsage: posting feature usage/telemetry", () => this.briefcase.getDebugInfo());
-    await IModelHost.telemetry.postTelemetry(requestContext, telemetryEvent);
+    IModelHost.telemetry.postTelemetry(requestContext, telemetryEvent); // eslint-disable-line @typescript-eslint/no-floating-promises
 
-    try {
-      Logger.logTrace(loggerCategory, "BriefcaseDb.logUsage: posting user usage", () => this.briefcase.getDebugInfo());
-      await UsageLoggingUtilities.postUserUsage(requestContext, contextId, IModelJsNative.AuthType.OIDC, os.hostname(), IModelJsNative.UsageType.Trial);
-    } catch (err) {
-      requestContext.enter();
-      Logger.logError(loggerCategory, `Could not log user usage`, () => ({ errorStatus: err.status, errorMessage: err.message, ...this.briefcase.getDebugInfo() }));
-    }
+    Logger.logTrace(loggerCategory, "BriefcaseDb.logUsage: posting user usage", () => this.briefcase.getDebugInfo());
+    UsageLoggingUtilities.postUserUsage(requestContext, contextId, IModelJsNative.AuthType.OIDC, os.hostname(), IModelJsNative.UsageType.Trial)
+      .catch((err) => {
+        requestContext.enter();
+        Logger.logError(loggerCategory, `Could not log user usage`, () => ({ errorStatus: err.status, errorMessage: err.message, ...this.briefcase.getDebugInfo() }));
+      });
   }
 
   /** Close this IModel, if it is currently open.

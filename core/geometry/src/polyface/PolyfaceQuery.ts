@@ -31,6 +31,7 @@ import { UnionFindContext } from "../numerics/UnionFind";
 import { ChainMergeContext } from "../topology/ChainMerge";
 import { FacetOrientationFixup } from "./FacetOrientation";
 import { IndexedEdgeMatcher, SortableEdge, SortableEdgeCluster } from "./IndexedEdgeMatcher";
+import { IndexedPolyfaceSubsetVisitor } from "./IndexedPolyfaceVisitor";
 import { BuildAverageNormalsContext } from "./multiclip/BuildAverageNormalsContext";
 import { XYPointBuckets } from "./multiclip/XYPointBuckets";
 import { IndexedPolyface, Polyface, PolyfaceVisitor } from "./Polyface";
@@ -273,11 +274,11 @@ export class PolyfaceQuery {
   * If not, extract the boundary edges as lines.
   * @param source
   */
-  public static boundaryEdges(source: Polyface | undefined, includeDanglers: boolean = true, includeMismatch: boolean = true, includeNull: boolean = true): CurveCollection | undefined {
+  public static boundaryEdges(source: Polyface | PolyfaceVisitor | undefined, includeDanglers: boolean = true, includeMismatch: boolean = true, includeNull: boolean = true): CurveCollection | undefined {
     if (source === undefined)
       return undefined;
     const edges = new IndexedEdgeMatcher();
-    const visitor = source.createVisitor(1);
+    const visitor = source instanceof Polyface ? source.createVisitor(1) : source;
     visitor.reset();
     while (visitor.moveToNextFacet()) {
       const numEdges = visitor.pointCount - 1;
@@ -298,14 +299,15 @@ export class PolyfaceQuery {
       badList.push(bad0);
     if (badList.length === 0)
       return undefined;
+    const sourcePolyface = visitor.clientPolyface()!;
     const result = new BagOfCurves();
     for (const list of badList) {
       for (const e of list) {
         const e1 = e instanceof SortableEdge ? e : e[0];
         const indexA = e1.vertexIndexA;
         const indexB = e1.vertexIndexB;
-        const pointA = source.data.getPoint(indexA);
-        const pointB = source.data.getPoint(indexB);
+        const pointA = sourcePolyface.data.getPoint(indexA);
+        const pointB = sourcePolyface.data.getPoint(indexB);
         if (pointA && pointB)
           result.tryAddChild(LineSegment3d.create(pointA, pointB));
       }
@@ -438,6 +440,24 @@ export class PolyfaceQuery {
       }
     }
     return facetsInComponent;
+  }
+
+  /**
+   * Return the boundary of facets that are facing the eye.
+   * @param polyface
+   * @param visibilitySubset selector among the visible facet sets extracted by partitionFacetIndicesByVisibilityVector
+   *   * 0 ==> forward facing
+   *   * 1 ==> rear facing
+   *   * 2 ==> side facing
+   * @param vectorToEye
+   * @param sideAngleTolerance
+   */
+  public static boundaryOfVisibleSubset(polyface: IndexedPolyface, visibilitySelect: 0 | 1 | 2, vectorToEye: Vector3d, sideAngleTolerance: Angle = Angle.createDegrees(1.0e-3)): CurveCollection | undefined {
+    const partitionedIndices = this.partitionFacetIndicesByVisibilityVector(polyface, vectorToEye, sideAngleTolerance);
+    if (partitionedIndices[visibilitySelect].length === 0)
+      return undefined;
+    const visitor = IndexedPolyfaceSubsetVisitor.createSubsetVisitor(polyface, partitionedIndices[visibilitySelect], 1);
+    return this.boundaryEdges(visitor, true, false, false);
   }
 
   /** Clone the facets in each partition to a separate polyface.

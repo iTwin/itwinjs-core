@@ -33,21 +33,21 @@ jobs:
         versionSpec: ${{ parameters.nodeVersion }}
         checkLatest: true
 
-    - script: 'git config --local user.email imodeljs-admin@users.noreply.github.com'
-      displayName: 'git config email'
-    - script: 'git config --local user.name imodeljs-admin'
-      displayName: 'git config name'
+    - script: |
+        git config --local user.email imodeljs-admin@users.noreply.github.com
+        git config --local user.name imodeljs-admin
+      displayName: git config
 
-    - powershell: |
-        # Get the new version number.
-        $json = Get-Content -Raw -Path common/config/rush/version-policies.json | ConvertFrom-Json
-        $currVersion = $json[0].version
+    - ${{ if eq(variables['Agent.OS'], 'Windows_NT') }}:
+      - powershell: |
+          # Get the new version number.
+          $json = Get-Content -Raw -Path common/config/rush/version-policies.json | ConvertFrom-Json
+          $currVersion = $json[0].version
 
-        $newBuildNumber = $currVersion + "_$(Build.BuildNumber)"
+          $newBuildNumber = $currVersion + "_$(Build.BuildNumber)"
 
-        Write-Host "##vso[build.updatebuildnumber]$newBuildNumber"
-      displayName: 'Set build number'
-      condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
+          Write-Host "##vso[build.updatebuildnumber]$newBuildNumber"
+        displayName: Set build number
 
     - template: ../templates/core-build.yaml
 

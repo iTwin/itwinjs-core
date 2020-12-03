@@ -6,6 +6,7 @@
  * @module Tile
  */
 
+import { GuidString } from "@bentley/bentleyjs-core";
 import { Range3dProps, TransformProps } from "@bentley/geometry-core";
 
 /** Wire format describing an [IModelTile]($frontend)
@@ -26,7 +27,7 @@ export interface TileProps {
   isLeaf?: boolean;
 }
 
-/** Wire format describing an [IModelTileTree]($frontend)
+/** Wire format describing a [TileTree]($frontend)
  * @internal
  */
 export interface TileTreeProps {
@@ -38,14 +39,22 @@ export interface TileTreeProps {
   location: TransformProps;
   /** If defined, limits the number of child tiles which can be skipped in selecting tiles of appropriate LOD */
   maxTilesToSkip?: number;
+  /** Optional volume within which content of all tiles' contents are guaranteed to be contained - never larger than `rootTile.range` and sometimes much smaller. */
+  contentRange?: Range3dProps;
+}
+
+/** Wire format describing an [IModelTileTree]($frontend).
+ * @internal
+ */
+export interface IModelTileTreeProps extends TileTreeProps {
+  /** Optional namespace applied to tile content Ids for tiles belonging to this tree. */
+  contentIdQualifier?: string;
+  /** The geometry guid used as a baseline for tile content. May not match the model's current geometry guid during an [InteractiveEditingSession]($frontend). */
+  geometryGuid?: GuidString;
   /** If defined, specifies the number of levels of the tile tree that can be skipped when selecting tiles. */
   maxInitialTilesToSkip?: number;
   /** Optionally specifies the maximum tile format version supported. */
   formatVersion?: number;
-  /** Optional volume within which content of all tiles' contents are guaranteed to be contained - never larger than `rootTile.range` and sometimes much smaller. */
-  contentRange?: Range3dProps;
-  /** Optional namespace applied to tile content Ids for tiles belonging to this tree. */
-  contentIdQualifier?: string;
 }
 
 /** Metadata describing the version/format of the tiles supplied by the backend.

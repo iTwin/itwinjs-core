@@ -450,7 +450,7 @@ describe("RulesetsFactory", () => {
           classes: { schemaName: "MySchema", classNames: ["MyClass"] },
           arePolymorphic: true,
           relatedInstances: [],
-          instanceFilter: `this.MyProperty.Id = "0x16"`,
+          instanceFilter: `this.MyProperty.Id = ${parseInt("0x16", 16)}`,
         }],
       }];
       expect(result.ruleset.rules).to.deep.eq(expectedRules);

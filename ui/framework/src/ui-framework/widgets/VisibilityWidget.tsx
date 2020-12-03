@@ -104,36 +104,36 @@ export class VisibilityComponent extends React.Component<VisibilityComponentProp
     if (args.current) {
       this.setState({ viewport: args.current });
     }
-  }
+  };
 
   private _onShowOptions = () => {
     this.setState((state) => ({
       showOptions: !state.showOptions,
     }));
-  }
+  };
 
   private _onCloseOptions = () => {
     this.setState({ showOptions: false });
-  }
+  };
 
   private _onShowTree = (event: any) => {
     const activeTree = event.target.value;
     this.setState({ activeTree, showSearchBox: false });
-  }
+  };
 
   private _onSetEnableAll = () => {
     this._onCloseOptions();
     this.state.showAll.emit();
-  }
+  };
 
   private _onClearAll = () => {
     this._onCloseOptions();
     this.state.hideAll.emit();
-  }
+  };
 
   private _onToggleSearchBox = () => {
     this.setState((prevState) => ({ showSearchBox: !prevState.showSearchBox }));
-  }
+  };
 
   private shouldEnablePreloading(hierarchy: VisibilityComponentHierarchy) {
     return this.props.enableHierarchiesPreloading

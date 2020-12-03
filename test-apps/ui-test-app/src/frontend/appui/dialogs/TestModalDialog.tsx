@@ -40,7 +40,7 @@ export class TestModalDialog extends React.Component<TestModalDialogProps, TestM
 
   private handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     this.setState({ testInput: e.target.value });
-  }
+  };
 
   public render(): JSX.Element {
     // cspell:disable
@@ -87,18 +87,18 @@ export class TestModalDialog extends React.Component<TestModalDialogProps, TestM
       if (this.props.onResult)
         this.props.onResult(DialogButtonType.OK);
     });
-  }
+  };
 
   private _handleCancel = () => {
     this._closeDialog(() => {
       if (this.props.onResult)
         this.props.onResult(DialogButtonType.Cancel);
     });
-  }
+  };
 
   private _closeDialog = (_followUp: () => void) => {
     this.setState({
       opened: false,
     });
-  }
+  };
 }

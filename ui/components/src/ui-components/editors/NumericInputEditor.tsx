@@ -67,7 +67,7 @@ export class NumericInputEditor extends React.PureComponent<PropertyEditorProps,
       this.setState({
         value: newValue,
       });
-  }
+  };
 
   /** @internal */
   public componentDidMount() {

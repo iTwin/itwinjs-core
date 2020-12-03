@@ -3,9 +3,10 @@
   "preferredVersions": {
     "@types/react": "16.9.43",
     "event-stream": "~4.0.1",
+    "flatbuffers": "~1.12.0",
     "lint-staged": "^10.2.11",
+    "object-is": "1.0.2",
     "ssri": "^6.0.1",
-    "typescript": "~3.7.4",
-    "object-is": "1.0.2"
+    "typescript": "~3.7.4"
   }
 }

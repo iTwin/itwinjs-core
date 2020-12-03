@@ -201,7 +201,7 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
       Presentation.favoriteProperties.sortFields(this.imodel, fields);
     else
       fields.sort(priorityAndNameSortFunction);
-  }
+  };
 
   /**
    * Returns property data.
@@ -399,10 +399,6 @@ class PropertyDataBuilder {
       const handleNestedContentRecord = (field: NestedContentField, record: PropertyRecord) => {
         if (1 === fields.fields[category.name].length) {
           // note: special handling if this is the only field in the category
-          if (record.value.valueFormat === PropertyValueFormat.Array && 0 === record.value.items.length) {
-            // don't include empty arrays at all
-            return;
-          }
           if (record.value.valueFormat === PropertyValueFormat.Struct) {
             // for structs just include all their members
             for (const nestedField of field.nestedFields) {
@@ -454,13 +450,14 @@ class PropertyDataBuilder {
     if (createStruct) {
       const rootField = pathToRootField[0];
       const pathToFieldFromRoot = pathToRootField.slice(1);
-      return {
+      return undefinedIfNoRecord({
         record: ContentBuilder.createPropertyRecord(rootField, this._contentItem, {
           exclusiveIncludePath: pathToFieldFromRoot,
           hiddenFieldPaths: filterMatchingFieldPaths(hiddenFieldPaths, rootField),
+          skipChildlessRecords: true,
         }),
         field: rootField,
-      };
+      });
     }
 
     let item = this._contentItem;
@@ -504,14 +501,14 @@ class PropertyDataBuilder {
           }, new Array<DisplayValue>()),
         };
         const extractedItem = new Item(primaryKeys, "", "", undefined, values, displayValues, []);
-        return { record: ContentBuilder.createPropertyRecord(extractedField, extractedItem, { namePrefix }), field: extractedField };
+        return undefinedIfNoRecord({ record: ContentBuilder.createPropertyRecord(extractedField, extractedItem, { namePrefix, skipChildlessRecords: true }), field: extractedField });
       }
 
       const nestedContentValue = nestedContentValues[0];
       item = new Item(nestedContentValue.primaryKeys, "", "", undefined, nestedContentValue.values,
         nestedContentValue.displayValues, nestedContentValue.mergedFieldNames);
     }
-    return { record: ContentBuilder.createPropertyRecord(field, item, { namePrefix, hiddenFieldPaths: filterMatchingFieldPaths(hiddenFieldPaths, field) }), field };
+    return undefinedIfNoRecord({ record: ContentBuilder.createPropertyRecord(field, item, { namePrefix, hiddenFieldPaths: filterMatchingFieldPaths(hiddenFieldPaths, field), skipChildlessRecords: true }), field });
   }
 
   private createNestedCategorizedRecords(): CategorizedRecords {
@@ -595,13 +592,9 @@ class PropertyDataBuilder {
     // some special nested content handling
     categorizedRecords.forEach((entry) => {
       const destructureNoSiblingsStructs = true;
-      const skipNoSiblingsArraysWithoutElements = true;
       if (entry.length === 1) {
         const field = entry[0].field;
         const record = entry[0].record;
-        if (skipNoSiblingsArraysWithoutElements && field.isNestedContentField() && record.value.valueFormat === PropertyValueFormat.Array && 0 === record.value.items.length) {
-          entry.splice(0, 1); // we'll get rid of this entry completely later
-        }
         if (destructureNoSiblingsStructs && field.isNestedContentField() && record.value.valueFormat === PropertyValueFormat.Struct) {
           const replacementRecords = [];
           for (const nestedField of field.nestedFields) {
@@ -619,13 +612,11 @@ class PropertyDataBuilder {
 
     // determine which categories are actually used
     const usedCategoryNames = new Set();
-    categorizedRecords.forEach((entry, categoryName) => {
-      if (entry.length) {
-        let category = categoriesCache.getEntry(categoryName);
-        while (category) {
-          usedCategoryNames.add(category.name);
-          category = category.parent ? categoriesCache.getEntry(category.parent.name) : undefined;
-        }
+    categorizedRecords.forEach((_entry, categoryName) => {
+      let category = categoriesCache.getEntry(categoryName);
+      while (category) {
+        usedCategoryNames.add(category.name);
+        category = category.parent ? categoriesCache.getEntry(category.parent.name) : undefined;
       }
     });
 
@@ -691,8 +682,7 @@ class PropertyDataBuilder {
       records: {},
     };
     categorizedRecords.forEach((recs, categoryName) => {
-      if (usedCategoryNames.has(categoryName))
-        result.records[categoryName] = recs.map((r) => r.record);
+      result.records[categoryName] = recs.map((r) => r.record);
     });
     return result;
   }
@@ -807,4 +797,10 @@ const fieldPathsMatch = (lhs: Field[], rhs: Field[]): boolean => {
 
 const containsFieldPath = (container: Field[][], path: Field[]): boolean => {
   return container.some((candidate) => fieldPathsMatch(candidate, path));
+};
+
+const undefinedIfNoRecord = (entry: { record: PropertyRecord | undefined, field: Field }): { record: PropertyRecord, field: Field } | undefined => {
+  if (!entry.record)
+    return undefined;
+  return { record: entry.record, field: entry.field };
 };

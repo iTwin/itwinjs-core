@@ -53,7 +53,7 @@ export class ConditionalField extends React.PureComponent<ConditionalFieldProps,
     if (this.state.boolValue !== boolValue) {
       this.setState({ boolValue });
     }
-  }
+  };
 
   public componentDidMount() {
     this._resolveBooleanValue();

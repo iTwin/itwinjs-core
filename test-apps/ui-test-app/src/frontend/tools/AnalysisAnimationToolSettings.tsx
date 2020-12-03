@@ -88,7 +88,7 @@ export class AnalysisAnimationToolSettings extends React.Component<{}, Animation
 
       this.setState({ elapsedTime });
     }
-  }
+  };
 
   private _startAnimation = () => {
     this._timeLastCycle = new Date().getTime();
@@ -100,13 +100,13 @@ export class AnalysisAnimationToolSettings extends React.Component<{}, Animation
 
     this.setState({ isAnimating: true, isAnimationPaused: false, elapsedTime: 0 });
     this._requestFrame = window.requestAnimationFrame(this._updateAnimation);
-  }
+  };
 
   private _pauseAnimation = () => {
     if (!this.state.isAnimating)
       return; // already not animating!
     this.setState({ isAnimationPaused: true });
-  }
+  };
 
   private _stopAnimation = () => {
     if (!this.state.isAnimating)
@@ -118,7 +118,7 @@ export class AnalysisAnimationToolSettings extends React.Component<{}, Animation
       activeContentControl.viewport.analysisFraction = 0;
     }
     window.cancelAnimationFrame(this._requestFrame);
-  }
+  };
 
   private _handleSliderChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const activeContentControl = ContentViewManager.getActiveContentControl();
@@ -133,13 +133,13 @@ export class AnalysisAnimationToolSettings extends React.Component<{}, Animation
       activeContentControl.viewport.analysisFraction = elapsedTime / this.state.animationDuration;
       this.setState({ elapsedTime });
     }
-  }
+  };
 
   private _handleLoopChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const target = event.target;
     const value = target.checked;
     this.setState({ isLooping: value });
-  }
+  };
 
   private _handleDurationChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const target = event.target;
@@ -147,7 +147,7 @@ export class AnalysisAnimationToolSettings extends React.Component<{}, Animation
     // min 1 sec, max 30 seconds
     const animationDuration = (value <= 1) ? 1000 : (value >= 30) ? 30000 : value * 1000;
     this.setState({ animationDuration });
-  }
+  };
 
   public render(): React.ReactNode {
     return (

@@ -212,7 +212,7 @@ describe("Descriptor", () => {
       const overrides = descriptor.createDescriptorOverrides();
       expect(overrides).to.deep.eq({
         sorting: {
-          field: { type: FieldDescriptorType.Name, fieldName: descriptorJSON.sortingFieldName, parent: undefined },
+          field: { type: FieldDescriptorType.Name, fieldName: descriptorJSON.sortingFieldName },
           direction: SortDirection.Ascending,
         },
       });
@@ -230,7 +230,7 @@ describe("Descriptor", () => {
       const overrides = descriptor.createDescriptorOverrides();
       expect(overrides).to.deep.eq({
         sorting: {
-          field: { type: FieldDescriptorType.Name, fieldName: descriptorJSON.sortingFieldName, parent: undefined },
+          field: { type: FieldDescriptorType.Name, fieldName: descriptorJSON.sortingFieldName },
           direction: SortDirection.Descending,
         },
       });

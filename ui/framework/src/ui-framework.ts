@@ -91,11 +91,16 @@ export * from "./ui-framework/keyboardshortcut/KeyboardShortcutMenu";
 export * from "./ui-framework/keyboardshortcut/deprecated/KeyboardKey";
 export * from "./ui-framework/keyinbrowser/KeyinBrowser";
 
+export * from "./ui-framework/messages/ActivityMessage";
+export * from "./ui-framework/messages/ActivityMessagePopup";
 export * from "./ui-framework/messages/AppNotificationManager";
-export * from "./ui-framework/messages/MessageManager";
 export * from "./ui-framework/messages/InputField";
+export * from "./ui-framework/messages/MessageManager";
+export * from "./ui-framework/messages/MessageRenderer";
 export * from "./ui-framework/messages/Pointer";
 export * from "./ui-framework/messages/ReactNotifyMessageDetails";
+export * from "./ui-framework/messages/StickyMessage";
+export * from "./ui-framework/messages/ToastMessage";
 
 export * from "./ui-framework/navigationaids/CubeNavigationAidControl";
 export * from "./ui-framework/navigationaids/DrawingNavigationAidControl";
@@ -150,8 +155,6 @@ export * from "./ui-framework/stagepanels/StagePanelDef";
 export * from "./ui-framework/stagepanels/StagePanelHeader";
 export * from "./ui-framework/stagepanels/StagePanelEnums";
 
-export * from "./ui-framework/statusbar/ActivityMessage";
-export * from "./ui-framework/statusbar/ActivityMessagePopup";
 export * from "./ui-framework/statusbar/StatusBar";
 export * from "./ui-framework/statusbar/StatusBarWidgetControl";
 export * from "./ui-framework/statusbar/StatusBarComposer";
@@ -159,8 +162,6 @@ export * from "./ui-framework/statusbar/StatusBarItem";
 export * from "./ui-framework/statusbar/StatusBarItemsManager";
 export * from "./ui-framework/statusbar/StatusBarItemUtilities";
 export * from "./ui-framework/statusbar/StatusBarComposer";
-export * from "./ui-framework/statusbar/StickyMessage";
-export * from "./ui-framework/statusbar/ToastMessage";
 export * from "./ui-framework/statusbar/withMessageCenterFieldProps";
 export * from "./ui-framework/statusbar/useUiItemsProviderStatusBarItems";
 export * from "./ui-framework/statusbar/useDefaultStatusBarItems";

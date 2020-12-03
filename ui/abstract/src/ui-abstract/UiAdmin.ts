@@ -71,7 +71,7 @@ export class UiAdmin {
   }
 
   public updateFeatureFlags(uiFlags: UiFlags) {
-    this._featureFlags = { ...this._featureFlags, ...uiFlags }
+    this._featureFlags = { ...this._featureFlags, ...uiFlags };
   }
 
   /** @internal */

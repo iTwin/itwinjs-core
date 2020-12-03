@@ -139,7 +139,7 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
       this._updateTree(undefined);
     if (this.props.onRootNodesLoaded)
       this.props.onRootNodesLoaded(rootNodes.map((n) => n.payload!));
-  }
+  };
 
   private _onChildrenLoaded = (parentNode: BeInspireTreeNode<TreeNodeItem>) => {
     const node = this.props.path.getCurrentNode();
@@ -150,19 +150,19 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
     const children = parentNode.getChildren();
     if (this.props.onChildrenLoaded)
       this.props.onChildrenLoaded(parentNode.payload!, toNodes<TreeNodeItem>(children).map((c) => c.payload!));
-  }
+  };
 
   private _onModelReady = () => {
     // istanbul ignore else
     if (this._mounted)
       this.setState({ modelReady: true });
-  }
+  };
 
   private _onTreeNodeChanged = (_items: Array<TreeNodeItem | undefined>) => {
     using((this._tree as any).pauseRendering(), async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
       await this._tree.reload();
     });
-  }
+  };
 
   private static inspireNodeFromTreeNodeItem(item: TreeNodeItem, remapper: MapPayloadToInspireNodeCallback<TreeNodeItem>): BeInspireTreeNodeConfig {
     const node: BeInspireTreeNodeConfig = {
@@ -184,7 +184,7 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
   private _treeChange = () => {
     const currentNode = this.props.path.getCurrentNode();
     this._updateTree(currentNode ? this._tree.node(currentNode.id) : undefined);
-  }
+  };
   private _pathChange = (args: BreadcrumbUpdateEventArgs) => {
     this._updateTree(args.currentNode ? this._tree.node(args.currentNode.id) : undefined);
     if (isTreeDataProviderInterface(args.oldDataProvider) && args.oldDataProvider.onTreeNodeChanged) {
@@ -202,7 +202,7 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
           this._recreateTree();
         });
     }
-  }
+  };
   private _updateTree = (node: BeInspireTreeNode<TreeNodeItem> | undefined) => {
     const childNodes = (node ? toNodes<TreeNodeItem>(node.getChildren()) : this._tree.nodes()).map((child) => child.payload!);
     if (childNodes.length === 0) {
@@ -221,7 +221,7 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
     // istanbul ignore else hard to control whether mounted or not
     if (this._mounted)
       this.setState({ table, childNodes });
-  }
+  };
 
   /** @internal */
   public render(): React.ReactNode {
@@ -258,5 +258,5 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
   // eslint-disable-next-line @typescript-eslint/naming-convention
   private renderTable = (props: TableProps, _node: TreeNodeItem | undefined, _children: TreeNodeItem[]) => {
     return <Table {...props} onRender={this.props.onRender} />;
-  }
+  };
 }

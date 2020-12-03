@@ -60,7 +60,7 @@ export class FrontstageUi2 extends FrontstageProvider {
       return <MyCustomViewOverlay />;
     }
     return null;
-  }
+  };
 
   public additionalHorizontalToolbarItems: CommonToolbarItem[] = [
     ToolbarHelper.createToolbarItemFromItemDef(0, CoreTools.keyinBrowserButtonItemDef, { groupPriority: -10 }),

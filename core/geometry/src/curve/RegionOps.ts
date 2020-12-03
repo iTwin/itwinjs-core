@@ -442,7 +442,7 @@ export class RegionOps {
    * @param fragments fragments to be chained
    * @param offsetDistance offset distance.
    */
-  public static collectChains(fragments: GeometryQuery[], gapTolerance: number): ChainTypes {
+  public static collectChains(fragments: GeometryQuery[], gapTolerance: number = Geometry.smallMetricDistance): ChainTypes {
     return OffsetHelpers.collectChains(fragments, gapTolerance);
   }
 
@@ -635,20 +635,20 @@ export class RegionOps {
    * Return the overall range of given curves.
    * @param curves candidate curves
    */
-  public static curveArrayRange(data: any): Range3d {
+  public static curveArrayRange(data: any, worldToLocal?: Transform): Range3d {
     const range = Range3d.create();
     if (data instanceof GeometryQuery)
-      data.extendRange(range);
+      data.extendRange(range, worldToLocal);
     else if (Array.isArray(data)) {
       for (const c of data) {
         if (c instanceof GeometryQuery)
-          range.extendRange(c.range());
+          c.extendRange(range, worldToLocal);
         else if (c instanceof Point3d)
-          range.extendPoint(c);
+          range.extendPoint(c, worldToLocal);
         else if (c instanceof GrowableXYZArray)
-          range.extendRange(c.getRange());
+          range.extendRange(c.getRange(worldToLocal));
         else if (Array.isArray(c))
-          range.extendRange(this.curveArrayRange(c));
+          range.extendRange(this.curveArrayRange(c, worldToLocal));
       }
     }
     return range;

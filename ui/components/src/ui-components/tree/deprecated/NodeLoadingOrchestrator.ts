@@ -284,7 +284,7 @@ export class NodeLoadingOrchestrator {
       this._pendingNodeTracker.getTotalAddedNodes(),
       () => this.cancelLoading(),
     );
-  }
+  };
 
   private async requestNodeLoad(nodeKey: NodeKey): Promise<BeInspireTreeNode<TreeNodeItem>> {
     const parent = nodeKey.parentId ? this._model.node(nodeKey.parentId) : undefined;

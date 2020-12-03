@@ -11,6 +11,7 @@ import { PresentationError, PresentationStatus } from "../Error";
 import { CategoryDescription, CategoryDescriptionJSON } from "./Category";
 import { EditorDescription } from "./Editor";
 import { Property, PropertyJSON } from "./Property";
+import { RendererDescription } from "./Renderer";
 import { TypeDescription } from "./TypeDescription";
 
 /**
@@ -24,6 +25,7 @@ export interface BaseFieldJSON {
   type: TypeDescription;
   isReadonly: boolean;
   priority: number;
+  renderer?: RendererDescription;
   editor?: EditorDescription;
 }
 
@@ -81,6 +83,8 @@ export class Field {
   public isReadonly: boolean;
   /** Priority of the field. Higher priority fields should appear first in the UI */
   public priority: number;
+  /** Property renderer used to render values of this field */
+  public renderer?: RendererDescription;
   /** Property editor used to edit values of this field */
   public editor?: EditorDescription;
   /** Parent field */
@@ -95,9 +99,10 @@ export class Field {
    * @param isReadonly Are values in this field read-only
    * @param priority Priority of the field
    * @param editor Property editor used to edit values of this field
+   * @param renderer Property renderer used to render values of this field
    */
   public constructor(category: CategoryDescription, name: string, label: string, type: TypeDescription,
-    isReadonly: boolean, priority: number, editor?: EditorDescription) {
+    isReadonly: boolean, priority: number, editor?: EditorDescription, renderer?: RendererDescription) {
     this.category = category;
     this.name = name;
     this.label = label;
@@ -105,6 +110,7 @@ export class Field {
     this.isReadonly = isReadonly;
     this.priority = priority;
     this.editor = editor;
+    this.renderer = renderer;
   }
 
   /**
@@ -124,7 +130,16 @@ export class Field {
 
   /** @alpha */
   public clone() {
-    const clone = new Field(this.category, this.name, this.label, this.type, this.isReadonly, this.priority, this.editor);
+    const clone = new Field(
+      this.category,
+      this.name,
+      this.label,
+      this.type,
+      this.isReadonly,
+      this.priority,
+      this.editor,
+      this.renderer,
+    );
     clone.rebuildParentship(this.parent);
     return clone;
   }
@@ -138,6 +153,7 @@ export class Field {
       type: this.type,
       isReadonly: this.isReadonly,
       priority: this.priority,
+      renderer: this.renderer,
       editor: this.editor,
     };
   }
@@ -203,7 +219,6 @@ export class Field {
   public getFieldDescriptor(): FieldDescriptor {
     return {
       type: FieldDescriptorType.Name,
-      parent: this.parent ? this.parent.getFieldDescriptor() : undefined,
       fieldName: this.name,
     } as NamedFieldDescriptor;
   }
@@ -229,16 +244,36 @@ export class PropertiesField extends Field {
    * @param priority Priority of the field
    * @param properties A list of properties this field is created from
    * @param editor Property editor used to edit values of this field
+   * @param renderer Property renderer used to render values of this field
    */
-  public constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription,
-    isReadonly: boolean, priority: number, properties: Property[], editor?: EditorDescription) {
-    super(category, name, label, description, isReadonly, priority, editor);
+  public constructor(
+    category: CategoryDescription,
+    name: string,
+    label: string,
+    description: TypeDescription,
+    isReadonly: boolean,
+    priority: number,
+    properties: Property[],
+    editor?: EditorDescription,
+    renderer?: RendererDescription,
+  ) {
+    super(category, name, label, description, isReadonly, priority, editor, renderer);
     this.properties = properties;
   }
 
   /** @alpha */
   public clone() {
-    const clone = new PropertiesField(this.category, this.name, this.label, this.type, this.isReadonly, this.priority, this.properties, this.editor);
+    const clone = new PropertiesField(
+      this.category,
+      this.name,
+      this.label,
+      this.type,
+      this.isReadonly,
+      this.priority,
+      this.properties,
+      this.editor,
+      this.renderer,
+    );
     clone.rebuildParentship(this.parent);
     return clone;
   }
@@ -272,13 +307,18 @@ export class PropertiesField extends Field {
     });
   }
 
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  private get propertySourceInfo() {
-    // note: properties fields should always have at least one property
+  private get _propertySourceInfo() {
+    const pathFromPropertyToSelectClass = new Array<RelatedClassInfo>();
+    let currAncestor = this.parent;
+    while (currAncestor) {
+      pathFromPropertyToSelectClass.push(...currAncestor.pathToPrimaryClass);
+      currAncestor = currAncestor.parent;
+    }
     return {
+      // note: properties fields should always have at least one property
       propertyClass: this.properties[0].property.classInfo.name,
       propertyName: this.properties[0].property.name,
-      pathFromSelectToPropertyClass: RelationshipPath.strip(this.properties[0].relatedClassPath),
+      pathFromSelectToPropertyClass: RelationshipPath.strip(RelationshipPath.reverse(pathFromPropertyToSelectClass)),
     };
   }
 
@@ -289,8 +329,7 @@ export class PropertiesField extends Field {
   public getFieldDescriptor(): FieldDescriptor {
     return {
       type: FieldDescriptorType.Properties,
-      parent: this.parent ? this.parent.getFieldDescriptor() : undefined,
-      ...this.propertySourceInfo,
+      ...this._propertySourceInfo,
     } as PropertiesFieldDescriptor;
   }
 }
@@ -321,13 +360,25 @@ export class NestedContentField extends Field {
    * @param contentClassInfo Information about an ECClass whose properties are nested inside this field
    * @param pathToPrimaryClass Relationship path to [Primary class]($docs/learning/presentation/Content/Terminology#primary-class)
    * @param nestedFields Contained nested fields
-   * @param autoExpand Flag specifying whether field should be expanded
    * @param editor Property editor used to edit values of this field
+   * @param autoExpand Flag specifying whether field should be expanded
+   * @param renderer Property renderer used to render values of this field
    */
-  public constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription,
-    isReadonly: boolean, priority: number, contentClassInfo: ClassInfo, pathToPrimaryClass: RelationshipPath,
-    nestedFields: Field[], editor?: EditorDescription, autoExpand?: boolean) {
-    super(category, name, label, description, isReadonly, priority, editor);
+  public constructor(
+    category: CategoryDescription,
+    name: string,
+    label: string,
+    description: TypeDescription,
+    isReadonly: boolean,
+    priority: number,
+    contentClassInfo: ClassInfo,
+    pathToPrimaryClass: RelationshipPath,
+    nestedFields: Field[],
+    editor?: EditorDescription,
+    autoExpand?: boolean,
+    renderer?: RendererDescription,
+  ) {
+    super(category, name, label, description, isReadonly, priority, editor, renderer);
     this.contentClassInfo = contentClassInfo;
     this.pathToPrimaryClass = pathToPrimaryClass;
     this.nestedFields = nestedFields;
@@ -336,8 +387,20 @@ export class NestedContentField extends Field {
 
   /** @alpha */
   public clone() {
-    const clone = new NestedContentField(this.category, this.name, this.label, this.type, this.isReadonly, this.priority,
-      this.contentClassInfo, this.pathToPrimaryClass, this.nestedFields, this.editor, this.autoExpand);
+    const clone = new NestedContentField(
+      this.category,
+      this.name,
+      this.label,
+      this.type,
+      this.isReadonly,
+      this.priority,
+      this.contentClassInfo,
+      this.pathToPrimaryClass,
+      this.nestedFields,
+      this.editor,
+      this.autoExpand,
+      this.renderer,
+    );
     clone.rebuildParentship(this.parent);
     return clone;
   }
@@ -432,7 +495,6 @@ export enum FieldDescriptorType {
  */
 export interface FieldDescriptorBase {
   type: FieldDescriptorType;
-  parent?: FieldDescriptor;
 }
 
 /**

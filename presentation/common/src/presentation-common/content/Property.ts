@@ -6,7 +6,7 @@
  * @module Content
  */
 
-import { PropertyInfo, PropertyInfoJSON, RelatedClassInfo, RelationshipPath, RelationshipPathJSON } from "../EC";
+import { PropertyInfo, PropertyInfoJSON, RelationshipPath, RelationshipPathJSON } from "../EC";
 
 /**
  * Data structure that describes one step of property
@@ -36,9 +36,12 @@ export type PropertyAccessorPath = PropertyAccessor[];
 export interface Property {
   /** ECProperty information */
   property: PropertyInfo;
+
   /**
    * Relationship path from [Primary instance]($docs/learning/presentation/Content/Terminology#primary-instance) to
    * this property. This array is not empty only for [Related properties]($docs/learning/presentation/Content/Terminology#related-properties).
+   *
+   * @deprecated All property fields are now contained inside a [[NestedContentField]] with `pathToPrimaryClass` attribute.
    */
   relatedClassPath: RelationshipPath;
 }
@@ -49,7 +52,7 @@ export namespace Property {
   export function toJSON(prop: Property): PropertyJSON {
     return {
       property: PropertyInfo.toJSON(prop.property),
-      relatedClassPath: prop.relatedClassPath.map((rci) => RelatedClassInfo.toJSON(rci)),
+      relatedClassPath: [],
     };
   }
 
@@ -57,7 +60,7 @@ export namespace Property {
   export function fromJSON(json: PropertyJSON): Property {
     return {
       property: PropertyInfo.fromJSON(json.property),
-      relatedClassPath: json.relatedClassPath.map((p) => RelatedClassInfo.fromJSON(p)),
+      relatedClassPath: [],
     };
   }
 }
@@ -68,5 +71,6 @@ export namespace Property {
  */
 export interface PropertyJSON {
   property: PropertyInfoJSON;
+  /** @deprecated See [[Property.relatedClassPath]] */
   relatedClassPath: RelationshipPathJSON;
 }

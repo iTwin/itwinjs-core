@@ -6,15 +6,16 @@
  * @module iModelHubClient
  */
 
-import { GuidString, Logger } from "@bentley/bentleyjs-core";
+import { GuidString, IModelHubStatus, Logger } from "@bentley/bentleyjs-core";
 import {
   AuthorizedClientRequestContext, CancelRequest, ECJsonTypeMap, FileHandler, ProgressCallback, WsgInstance, WsgQuery,
 } from "@bentley/itwin-client";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 import { IModelBaseHandler } from "./BaseHandler";
-import { ArgumentCheck, IModelHubClientError } from "./Errors";
+import { ArgumentCheck, IModelHubClientError, IModelHubError } from "./Errors";
 import { addSelectApplicationData, addSelectBCVAccessKey, addSelectFileAccessKey } from "./HubQuery";
 import { IModelClient } from "../IModelClient";
+import { LockQuery } from "./Locks";
 
 const loggerCategory: string = IModelHubClientLoggerCategory.IModelHub;
 
@@ -279,8 +280,20 @@ export class BriefcaseHandler {
     ArgumentCheck.validGuid("iModelId", iModelId);
     ArgumentCheck.validBriefcaseId("briefcaseId", briefcaseId);
 
-    await this._imodelClient.locks.deleteAll(requestContext, iModelId, briefcaseId);
+    const existingLocksOwnedByBriefcase = await this._imodelClient.locks.get(requestContext, iModelId, new LockQuery().byBriefcaseId(briefcaseId).top(1));
     requestContext.enter();
+    if (existingLocksOwnedByBriefcase.length > 0) {
+      try {
+        await this._imodelClient.locks.deleteAll(requestContext, iModelId, briefcaseId);
+        requestContext.enter();
+      } catch (error) {
+        requestContext.enter();
+        if (!(error instanceof IModelHubError) || error.errorNumber !== IModelHubStatus.UserDoesNotHavePermission) {
+          throw error;
+        }
+      }
+    }
+
     await this._handler.delete(requestContext, this.getRelativeUrl(iModelId, briefcaseId));
     requestContext.enter();
     Logger.logTrace(loggerCategory, "Deleted briefcase from iModel", () => ({ iModelId, briefcaseId }));

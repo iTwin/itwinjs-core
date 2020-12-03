@@ -21,10 +21,10 @@
   },
   "metadata": {
     "home": "learning",
-    "logo": "assets/imodeljs-logo.svg",
-    "smallLogo": "assets/imodeljs-icon.svg",
+    "logo": "assets/itwinjs-logo.svg",
+    "smallLogo": "assets/itwinjs-logo-small.svg",
     "sponsoredByLogo": "assets/bentley.svg",
-    "favicon": "assets/imodeljs_favicon_16.png",
+    "favicon": "assets/iTwinJs.ico",
     "docSiteOrder": [
       "getting-started",
       "learning",
@@ -37,7 +37,7 @@
       "Samples": "sample-showcase",
       "Learning": "learning",
       "API": "reference",
-      "v2.8.0": "changehistory"
+      "v2.9.0": "changehistory"
     },
     "archivedVersions": [
       {

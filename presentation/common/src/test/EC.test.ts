@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { InstanceKey, RelationshipPath } from "../presentation-common";
 import { RelatedClassInfo, StrippedRelatedClassInfo } from "../presentation-common/EC";
-import { createRandomECClassInfo } from "./_helpers/random";
+import { createRandomECClassInfo, createRandomRelatedClassInfo } from "./_helpers/random";
 
 describe("InstanceKey", () => {
 
@@ -47,6 +47,17 @@ describe("InstanceKey", () => {
 });
 
 describe("RelatedClassInfo", () => {
+
+  describe("to/from JSON", () => {
+
+    it("passes roundtrip", () => {
+      const src = createRandomRelatedClassInfo();
+      const json = RelatedClassInfo.toJSON(src);
+      const res = RelatedClassInfo.fromJSON(json);
+      expect(res).to.deep.eq(src);
+    });
+
+  });
 
   describe("equals", () => {
 

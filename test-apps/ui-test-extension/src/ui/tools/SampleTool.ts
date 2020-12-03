@@ -22,7 +22,6 @@ import { Point3d } from "@bentley/geometry-core";
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
 import { FormatterSpec } from "@bentley/imodeljs-quantity";
 import { CursorInformation, MenuItemProps, UiFramework } from "@bentley/ui-framework";
-
 import sampleToolSvg from "./SampleTool.svg?sprite";
 
 enum ToolOptions {
@@ -70,7 +69,7 @@ export class SampleTool extends PrimitiveTool {
       { label: SampleTool.getOptionString("Green"), value: ToolOptions.Green },
       { label: SampleTool.getOptionString("Pink"), value: ToolOptions.Pink },
     ];
-  }
+  };
 
   private static _optionsName = "enumAsPicklist";
   private _getEnumAsPicklistDescription = (): PropertyDescription => {
@@ -82,7 +81,7 @@ export class SampleTool extends PrimitiveTool {
         choices: this._getChoices(),
       },
     };
-  }
+  };
 
   private _optionsValue: DialogItemValue = { value: ToolOptions.Blue };
 
@@ -120,7 +119,7 @@ export class SampleTool extends PrimitiveTool {
         ],
       },
     };
-  }
+  };
 
   private _colorValue: DialogItemValue = { value: ColorByName.blue as number };
 
@@ -151,7 +150,7 @@ export class SampleTool extends PrimitiveTool {
         name: "weight-picker",
       },
     };
-  }
+  };
 
   private _weightValue: DialogItemValue = { value: 3 };
 
@@ -172,7 +171,7 @@ export class SampleTool extends PrimitiveTool {
       typename: "boolean",
       editor: { name: "toggle" },
     };
-  }
+  };
 
   private _lockValue: DialogItemValue = { value: true };
 
@@ -192,7 +191,7 @@ export class SampleTool extends PrimitiveTool {
       displayLabel: SampleTool.getPrompt("City"),
       typename: "string",
     };
-  }
+  };
 
   private _cityValue: DialogItemValue = { value: "Exton" };
 
@@ -220,7 +219,7 @@ export class SampleTool extends PrimitiveTool {
         ],
       },
     };
-  }
+  };
 
   private _stateValue: DialogItemValue = { value: "PA" };
 
@@ -240,7 +239,7 @@ export class SampleTool extends PrimitiveTool {
       displayLabel: SampleTool.getPrompt("Coordinate"),
       typename: "string",
     };
-  }
+  };
 
   private _coordinateValue: DialogItemValue = { value: "0.0, 0.0, 0.0" };
 
@@ -274,7 +273,7 @@ export class SampleTool extends PrimitiveTool {
       displayLabel: SampleTool.getPrompt("Station"),
       typename: "string",
     };
-  }
+  };
 
   private formatStation(numberValue: number): string {
     if (this.stationFormatterSpec) {
@@ -308,7 +307,7 @@ export class SampleTool extends PrimitiveTool {
         ],
       },
     };
-  }
+  };
 
   private _useLengthValue: DialogItemValue = { value: true };
 

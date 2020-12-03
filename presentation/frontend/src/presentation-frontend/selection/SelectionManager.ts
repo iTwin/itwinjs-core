@@ -400,7 +400,7 @@ export class ToolSelectionSyncHandler implements IDisposable {
           break;
       }
     });
-  }
+  };
 }
 
 const parseIds = (ids: Id64Arg): { persistent: Id64Arg, transient: Id64Arg } => {

@@ -123,7 +123,7 @@ const createRecord = (propertyDescription: PropertyDescription, typeDescription:
   return record;
 };
 
-const createNestedStructRecord = (field: NestedContentField, nestedContent: NestedContentValue, props: NestedContentCreationProps & PropertyDescriptionCreationProps): PropertyRecord => {
+const createNestedStructRecord = (field: NestedContentField, nestedContent: NestedContentValue, props: NestedContentCreationProps & PropertyDescriptionCreationProps): PropertyRecord | undefined => {
   const exclusiveIncludePath = props.exclusiveIncludePath ? [...props.exclusiveIncludePath] : undefined;
   let exclusiveIncludePathField: Field | undefined;
   if (exclusiveIncludePath && 0 !== exclusiveIncludePath.length) {
@@ -135,6 +135,7 @@ const createNestedStructRecord = (field: NestedContentField, nestedContent: Nest
 
   const namePrefix = applyOptionalPrefix(field.name, props.namePrefix);
   const members: { [name: string]: PropertyRecord } = {};
+  let hasMembers = false;
   for (const nestedField of field.nestedFields) {
     if (exclusiveIncludePathField && exclusiveIncludePathField !== nestedField) {
       // we know specific field that we want - skip if the current field doesn't match
@@ -149,8 +150,16 @@ const createNestedStructRecord = (field: NestedContentField, nestedContent: Nest
       // pick all paths that start with current field
       hiddenFieldPaths = filterMatchingFieldPaths(hiddenFieldPaths, nestedField);
     }
-    members[nestedField.name] = ContentBuilder.createPropertyRecord(nestedField, item, { exclusiveIncludePath, hiddenFieldPaths, namePrefix });
+    const memberRecord = ContentBuilder.createPropertyRecord(nestedField, item, { ...props, exclusiveIncludePath, hiddenFieldPaths, namePrefix });
+    if (memberRecord) {
+      members[nestedField.name] = memberRecord;
+      hasMembers = true;
+    }
   }
+
+  if (props.skipChildlessRecords && !hasMembers)
+    return undefined;
+
   const value: StructValue = {
     valueFormat: UiPropertyValueFormat.Struct,
     members,
@@ -161,7 +170,7 @@ const createNestedStructRecord = (field: NestedContentField, nestedContent: Nest
   return record;
 };
 
-const createNestedContentRecord = (field: NestedContentField, item: Item, props: NestedContentCreationProps & PropertyDescriptionCreationProps): PropertyRecord => {
+const createNestedContentRecord = (field: NestedContentField, item: Item, props: NestedContentCreationProps & PropertyDescriptionCreationProps): PropertyRecord | undefined => {
   const isMerged = item.isFieldMerged(field.name);
   let value: PropertyValue;
 
@@ -183,9 +192,12 @@ const createNestedContentRecord = (field: NestedContentField, item: Item, props:
     const nestedContentArray: NestedContentValue[] = dictionaryValue;
     value = {
       valueFormat: UiPropertyValueFormat.Array,
-      items: nestedContentArray.map((r) => createNestedStructRecord(field, r, props)),
+      items: nestedContentArray.map((r) => createNestedStructRecord(field, r, props)).filter((r): r is PropertyRecord => !!r),
       itemsTypeName: field.type.typeName,
     };
+    // if array contains no values, return `undefined`
+    if (props.skipChildlessRecords && 0 === value.items.length)
+      return undefined;
     // if array contains just one value, replace it with the value
     if (1 === value.items.length)
       value = value.items[0].value;
@@ -215,6 +227,11 @@ export interface NestedContentCreationProps {
    * Paths of fields which should be omitted from the nested content
    */
   hiddenFieldPaths?: Field[][];
+
+  /**
+   * Should a struct or array record be skipped if it has no members / items.
+   */
+  skipChildlessRecords?: boolean;
 }
 
 /** @internal */
@@ -234,7 +251,7 @@ export class ContentBuilder {
    * @param item Content item containing the values for `field`
    * @param props Parameters for creating the record
    */
-  public static createPropertyRecord(field: Field, item: Item, props?: NestedContentCreationProps & PropertyDescriptionCreationProps): PropertyRecord {
+  public static createPropertyRecord(field: Field, item: Item, props?: NestedContentCreationProps & PropertyDescriptionCreationProps): PropertyRecord | undefined {
     if (field.isNestedContentField())
       return createNestedContentRecord(field, item, props ? props : {});
 
@@ -255,9 +272,15 @@ export class ContentBuilder {
       displayLabel: field.label,
       typename: field.type.typeName,
     };
+
+    if (field.renderer) {
+      descr.renderer = { name: field.renderer.name };
+    }
+
     if (field.editor) {
       descr.editor = { name: field.editor.name, params: [] } as PropertyEditorInfo;
     }
+
     if (field.type.valueFormat === PropertyValueFormat.Primitive && "enum" === field.type.typeName && field.isPropertiesField() && field.properties[0].property.enumerationInfo) {
       const enumInfo = field.properties[0].property.enumerationInfo;
       descr.enum = {

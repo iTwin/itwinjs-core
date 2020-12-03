@@ -23,11 +23,11 @@ import { Synchronizer } from "./Synchronizer";
 import { ServerArgs } from "./IModelHubUtils";
 import { IModelBankArgs, IModelBankUtils } from "./IModelBankUtils";
 
-/** @alpha */
+/** @beta */
 export const loggerCategory: string = BridgeLoggerCategory.Framework;
 
 /** Arguments that define how a bridge job should be run
- * @alpha
+ * @beta
  */
 export class BridgeJobDefArgs {
   /** Comment to be used as the initial string for all changesets.  Can be null. */
@@ -60,7 +60,7 @@ class StaticTokenStore {
 }
 
 /** The driver for synchronizing content to an iModel.
- * @alpha
+ * @beta
  */
 export class BridgeRunner {
   private _bridge?: IModelBridge;
@@ -180,17 +180,18 @@ export class BridgeRunner {
     this.initProgressMeter();
 
     await iModelDbBuilder.acquire();
-    if (undefined === iModelDbBuilder.imodel) {
+    if (undefined === iModelDbBuilder.imodel || !iModelDbBuilder.imodel.isOpen) {
       throw new IModelError(IModelStatus.BadModel, "Failed to open imodel", Logger.logError, loggerCategory);
     }
 
-    await this._bridge.openSourceData(this._bridgeArgs.sourcePath);
-    await this._bridge.onOpenIModel();
-    assert(iModelDbBuilder.imodel !== undefined);
-    await iModelDbBuilder.updateExistingIModel();
-
-    if (iModelDbBuilder.imodel.isBriefcaseDb() || iModelDbBuilder.imodel.isSnapshotDb()) {
-      iModelDbBuilder.imodel.close();
+    try {
+      await this._bridge.openSourceData(this._bridgeArgs.sourcePath);
+      await this._bridge.onOpenIModel();
+      await iModelDbBuilder.updateExistingIModel();
+    } finally {
+      if (iModelDbBuilder.imodel.isBriefcaseDb() || iModelDbBuilder.imodel.isSnapshotDb()) {
+        iModelDbBuilder.imodel.close();
+      }
     }
 
     return BentleyStatus.SUCCESS;
@@ -341,11 +342,11 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
     assert(this._imodel instanceof BriefcaseDb);
     assert(!this._imodel.concurrencyControl.hasPendingRequests);
     assert(this._imodel.concurrencyControl.isBulkMode);
-    assert(!this._imodel.concurrencyControl.hasSchemaLock, "bridgeRunner must release all locks before switching channels");
-    assert(!this._imodel.concurrencyControl.hasCodeSpecsLock, "bridgeRunner must release all locks before switching channels");
+    assert(!this._imodel.concurrencyControl.locks.hasSchemaLock, "bridgeRunner must release all locks before switching channels");
+    assert(!this._imodel.concurrencyControl.locks.hasCodeSpecsLock, "bridgeRunner must release all locks before switching channels");
     const currentRoot = this._imodel.concurrencyControl.channel.channelRoot;
     if (currentRoot !== undefined)
-      assert(!this._imodel.concurrencyControl.holdsLock(ConcurrencyControl.Request.getElementLock(currentRoot, LockLevel.Exclusive)), "bridgeRunner must release channel locks before switching channels");
+      assert(!this._imodel.concurrencyControl.locks.holdsLock(ConcurrencyControl.Request.getElementLock(currentRoot, LockLevel.Exclusive)), "bridgeRunner must release channel locks before switching channels");
   }
 
   protected async _enterChannel(channelRootId: Id64String, lockRoot: boolean = true) {
@@ -385,7 +386,7 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
       await this.enterRepositoryChannel();
     }
 
-    assert(this._imodel.concurrencyControl.hasSchemaLock);
+    assert(this._imodel.concurrencyControl.locks.hasSchemaLock);
     assert(briefcaseDb.concurrencyControl.isBulkMode);
 
     await this._bridge.importDefinitions();
@@ -396,7 +397,7 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
   protected async _initDomainSchema() {
     assert(this._requestContext !== undefined);
     assert(this._imodel instanceof BriefcaseDb);
-    assert(!this._imodel.concurrencyControl.hasSchemaLock);
+    assert(!this._imodel.concurrencyControl.locks.hasSchemaLock);
     assert(this._imodel.concurrencyControl.isBulkMode);
 
     await this._saveAndPushChanges("Initialization", ChangesType.Definition); // in case openSourceData or any other preliminary step wrote anything
@@ -415,7 +416,7 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
   protected async _updateExistingData(): Promise<void> {
     assert(this._requestContext !== undefined);
     assert(this._imodel instanceof BriefcaseDb);
-    assert(!this._imodel.concurrencyControl.hasSchemaLock);
+    assert(!this._imodel.concurrencyControl.locks.hasSchemaLock);
     assert(this._imodel.concurrencyControl.isBulkMode);
 
     await this.enterBridgeChannel();
@@ -424,7 +425,11 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
     // WIP: need detectSpatialDataTransformChanged check?
     await this._bridge.updateExistingData();
 
-    return this._saveAndPushChanges("Data changes", ChangesType.Regular);
+    let dataChangesDescription = "Data changes";
+    if (this._bridge.getDataChangesDescription)
+      dataChangesDescription = this._bridge.getDataChangesDescription();
+
+    return this._saveAndPushChanges(dataChangesDescription, ChangesType.Regular);
   }
 
   /** Pushes any pending transactions to the hub. */
@@ -453,7 +458,10 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
       throw new IModelError(IModelStatus.BadRequest, "Failed to instantiate AuthorizedClientRequestContext", Logger.logError, loggerCategory);
     }
     assert(this._serverArgs.contextId !== undefined);
-    await UsageLoggingUtilities.postUserUsage(this._requestContext, this._serverArgs.contextId, IModelJsNative.AuthType.OIDC, os.hostname(), IModelJsNative.UsageType.Trial);
+    UsageLoggingUtilities.postUserUsage(this._requestContext, this._serverArgs.contextId, IModelJsNative.AuthType.OIDC, os.hostname(), IModelJsNative.UsageType.Trial)
+      .catch((err) => {
+        Logger.logError(loggerCategory, `Could not log user usage for bridge`, () => ({ errorStatus: err.status, errorMessage: err.message }));
+      });
   }
 
   /** This will download the briefcase, open it with the option to update the Db profile, close it, re-open with the option to upgrade core domain schemas */

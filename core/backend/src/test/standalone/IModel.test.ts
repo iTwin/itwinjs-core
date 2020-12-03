@@ -27,9 +27,9 @@ import {
   BriefcaseManager, Category, ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel,
   DefinitionPartition, DictionaryModel, DisplayStyle3d, DisplayStyleCreationOptions, DocumentPartition, DrawingGraphic, ECSqlStatement, Element,
   ElementDrivesElement, ElementGroupsMembers, ElementOwnsChildElements, Entity, GeometricElement2d, GeometricElement3d, GeometricModel,
-  GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, LightLocation, LinkPartition, Model, PhysicalModel,
-  PhysicalObject, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType, StandaloneDb,
-  SubCategory, Subject, Texture, ViewDefinition,
+  GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, LightLocation, LinkPartition, Model, PhysicalElement,
+  PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType,
+  StandaloneDb, SubCategory, Subject, Texture, ViewDefinition,
 } from "../../imodeljs-backend";
 import { DisableNativeAssertions, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -334,6 +334,48 @@ describe("iModel", () => {
     newEl.federationGuid = undefined;
     const newId: Id64String = imodel2.elements.insertElement(newEl);
     assert.isTrue(Id64.isValidId64(newId), "insert worked");
+  });
+
+  it("should optionally detect class mismatches", () => {
+    // tryGetElement
+    const subjectUnvalidated = imodel1.elements.tryGetElement<Subject>(IModel.rootSubjectId);
+    assert.isDefined(subjectUnvalidated);
+    const subjectValidated = imodel1.elements.tryGetElement<Subject>(IModel.rootSubjectId, Subject);
+    assert.isDefined(subjectValidated);
+    const physicalElementUnvalidated = imodel1.elements.tryGetElement<PhysicalElement>(IModel.rootSubjectId);
+    assert.isDefined(physicalElementUnvalidated); // wrong type, but class to validate was not passed
+    const physicalElementValidated = imodel1.elements.tryGetElement<PhysicalElement>(IModel.rootSubjectId, PhysicalElement); // abstract class
+    assert.isUndefined(physicalElementValidated); // wrong type
+    const physicalObjectUnvalidated = imodel1.elements.tryGetElement<PhysicalObject>(IModel.rootSubjectId);
+    assert.isDefined(physicalObjectUnvalidated); // wrong type, but class to validate was not passed
+    const physicalObjectValidated = imodel1.elements.tryGetElement<PhysicalObject>(IModel.rootSubjectId, PhysicalObject); // concrete class
+    assert.isUndefined(physicalObjectValidated); // wrong type
+    // tryGetModel
+    const dictionaryUnvalidated = imodel1.models.tryGetModel<DictionaryModel>(IModel.dictionaryId);
+    assert.isDefined(dictionaryUnvalidated);
+    const dictionaryValidated = imodel1.models.tryGetModel<DictionaryModel>(IModel.dictionaryId, DictionaryModel);
+    assert.isDefined(dictionaryValidated);
+    const geometricModelUnvalidated = imodel1.models.tryGetModel<GeometricModel>(IModel.dictionaryId);
+    assert.isDefined(geometricModelUnvalidated); // wrong type, but class to validate was not passed
+    const geometricModelValidated = imodel1.models.tryGetModel<GeometricModel>(IModel.dictionaryId, GeometricModel); // abstract class
+    assert.isUndefined(geometricModelValidated); // wrong type
+    const physicalModelUnvalidated = imodel1.models.tryGetModel<PhysicalModel>(IModel.dictionaryId);
+    assert.isDefined(physicalModelUnvalidated); // wrong type, but class to validate was not passed
+    const physicalModelValidated = imodel1.models.tryGetModel<PhysicalModel>(IModel.dictionaryId, PhysicalModel); // concrete class
+    assert.isUndefined(physicalModelValidated); // wrong type
+    // tryGetSubModel
+    const dictionarySubUnvalidated = imodel1.models.tryGetSubModel<DictionaryModel>(IModel.dictionaryId);
+    assert.isDefined(dictionarySubUnvalidated);
+    const dictionarySubValidated = imodel1.models.tryGetSubModel<DictionaryModel>(IModel.dictionaryId, DictionaryModel);
+    assert.isDefined(dictionarySubValidated);
+    const geometricSubModelUnvalidated = imodel1.models.tryGetSubModel<GeometricModel>(IModel.dictionaryId);
+    assert.isDefined(geometricSubModelUnvalidated); // wrong type, but class to validate was not passed
+    const geometricSubModelValidated = imodel1.models.tryGetSubModel<GeometricModel>(IModel.dictionaryId, GeometricModel); // abstract class
+    assert.isUndefined(geometricSubModelValidated); // wrong type
+    const physicalSubModelUnvalidated = imodel1.models.tryGetSubModel<PhysicalModel>(IModel.dictionaryId);
+    assert.isDefined(physicalSubModelUnvalidated); // wrong type, but class to validate was not passed
+    const physicalSubModelValidated = imodel1.models.tryGetSubModel<PhysicalModel>(IModel.dictionaryId, PhysicalModel); // concrete class
+    assert.isUndefined(physicalSubModelValidated); // wrong type
   });
 
   it("should create elements", () => {
@@ -2332,7 +2374,7 @@ describe("computeProjectExtents", () => {
   });
 
   it("should report outliers", () => {
-    const elemProps = imodel.elements.getElementProps<GeometricElement3dProps>({ id: "0x38", wantGeometry: true });
+    const elemProps = imodel.elements.getElementProps<GeometricElement3dProps>({ id: "0x39", wantGeometry: true });
     elemProps.id = Id64.invalid;
     const placement = Placement3d.fromJSON(elemProps.placement);
     const originalOrigin = placement.origin.clone();

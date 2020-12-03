@@ -116,7 +116,7 @@ export class PropertyGridCommons {
       else
         window.open(foundLink.url, "_blank")!.focus();
     }
-  }
+  };
 
   public static assignRecordClickHandlers(records: PropertyRecord[], onPropertyLinkClick?: (property: PropertyRecord, text: string) => void) {
     records.forEach((record: PropertyRecord) => {

@@ -181,7 +181,7 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
       this._vp.view.setRotation(args.rotation);
       this._vp.synchWithView({ noSaveInUndo: args.complete !== true });
     }
-  }
+  };
 
   private _getRotatePoint(vp: ScreenViewport): Point3d {
     const tentativePoint = this.props.tentativePointOverride ? this.props.tentativePointOverride : /* istanbul ignore next */ IModelApp.tentativePoint;
@@ -231,7 +231,7 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
         this._vp.synchWithView({ noSaveInUndo: !args.complete });
       }
     }
-  }
+  };
 
   private _handleStandardRotationChangeEvent = (args: StandardRotationChangeEventArgs) => {
     const viewManager = this.props.viewManagerOverride ? this.props.viewManagerOverride : /* istanbul ignore next */ IModelApp.viewManager;
@@ -242,7 +242,7 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
       this._vp.view.setRotationAboutPoint(ViewState.getStandardViewMatrix(args.standardRotation));
       this._vp.synchWithView();
     }
-  }
+  };
 
   private _handleViewChanged = (vp: Viewport) => {
     ViewportComponentEvents.setViewMatrix(vp);
@@ -265,14 +265,14 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
           this.setState({ viewId: vp.view.id });
       });
     }
-  }
+  };
 
   private _handleContextMenu = (e: React.MouseEvent): boolean => {
     e.preventDefault();
     if (this.props.onContextMenu)
       this.props.onContextMenu(e);
     return false;
-  }
+  };
 
   public render() {
     const viewOverlay = this._vp && this.props.getViewOverlay ? this.props.getViewOverlay(this._vp) : null;

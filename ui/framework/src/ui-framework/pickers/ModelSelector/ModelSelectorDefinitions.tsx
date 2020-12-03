@@ -156,7 +156,7 @@ export class ModelSelectorDataProvider implements IPresentationTreeDataProvider 
     filter: string,
   ): Promise<NodePathElement[]> => {
     return this._baseProvider.getFilteredNodePaths(filter);
-  }
+  };
 
   /**
    * Provides count for number of nodes under parent node
@@ -179,7 +179,7 @@ export class ModelSelectorDataProvider implements IPresentationTreeDataProvider 
     pageOptions?: PageOptions,
   ): TreeNodeArrayPromise => {
     return this._baseProvider.getNodes(parentNode, pageOptions);
-  }
+  };
 
   // istanbul ignore next
   public async loadHierarchy() { return this._baseProvider.loadHierarchy(); }

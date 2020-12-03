@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import { Id64, Id64Set, OpenMode } from "@bentley/bentleyjs-core";
@@ -389,7 +389,7 @@ describe("IModelReadRpcInterface Methods requestable from an IModelConnection", 
     // the below clause is created specifically for the test iModel, if that iModel were to be changed and it contained models that were geometricModels
     // but not PhysicalModels then the test may fail.
     let ranges;
-    let modelProps = await iModel.models.queryProps({ limit: 10, from: "BisCore.Model", where: "ec_classname(ECClassId) <> 'BisCore:PhysicalModel'" })
+    let modelProps = await iModel.models.queryProps({ limit: 10, from: "BisCore.Model", where: "ec_classname(ECClassId) <> 'BisCore:PhysicalModel'" });
     let idSet: Id64Set = new Set<string>();
     for (const modelProp of modelProps) {
       idSet.add(modelProp.id!.toString());
@@ -401,7 +401,7 @@ describe("IModelReadRpcInterface Methods requestable from an IModelConnection", 
       expect(ranges).to.not.be.undefined;
       expect(ranges.length).to.be.equal(0);
     }
-    const dictModelId = await iModel.models.getDictionaryModel()
+    const dictModelId = await iModel.models.getDictionaryModel();
     idSet = Id64.toIdSet(dictModelId);
     await expect(iModel.models.queryModelRanges(idSet)).to.be.rejectedWith(Error);
 

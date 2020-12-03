@@ -60,19 +60,19 @@ export class PropertyGridEventsRelatedPropsSupplier extends React.Component<Prop
     // istanbul ignore else
     if (this._isRightClickSupported())
       this.onEnabledPropertyRightClicked(property, key);
-  }
+  };
 
   private _onPropertyClicked = (property: PropertyRecord, key?: string) => {
     // istanbul ignore else
     if (this._isClickSupported())
       this.onEnabledPropertyLeftClicked(property, key);
-  }
+  };
 
   private _onPropertyContextMenu = (property: PropertyRecord, e: React.MouseEvent) => {
     if (this.props.onPropertyContextMenu) {
       this.props.onPropertyContextMenu({ propertyRecord: property, event: e });
     }
-  }
+  };
 
   private _onEditCommit = async (args: PropertyUpdatedArgs, category: PropertyCategory) => {
     // istanbul ignore else
@@ -80,11 +80,11 @@ export class PropertyGridEventsRelatedPropsSupplier extends React.Component<Prop
       await this.props.onPropertyUpdated(args, category);
       this.setState({ editingPropertyKey: undefined });
     }
-  }
+  };
 
   private _onEditCancel = () => {
     this.setState({ editingPropertyKey: undefined });
-  }
+  };
 
   private onEnabledPropertyRightClicked(property: PropertyRecord, key: string | undefined) {
     let selectedPropertyKey = this.state.selectedPropertyKey;

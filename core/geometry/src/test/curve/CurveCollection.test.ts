@@ -7,8 +7,9 @@ import { expect } from "chai";
 import * as fs from "fs";
 import { BezierCurve3d } from "../../bspline/BezierCurve3d";
 import { Arc3d } from "../../curve/Arc3d";
-import { ConsolidateAdjacentCurvePrimitivesOptions, CurveCollection } from "../../curve/CurveCollection";
+import { BagOfCurves, ConsolidateAdjacentCurvePrimitivesOptions, CurveCollection } from "../../curve/CurveCollection";
 import { CurveFactory } from "../../curve/CurveFactory";
+import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
@@ -306,6 +307,46 @@ describe("ConsolidateAdjacentPrimitives", () => {
     ck.testExactNumber(1, singlePointPathB.children.length, "Single point path consolidates to stub");
     expect(ck.getNumErrors()).equals(0);
   });
+  it("ClosestPointInCollection", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const loops = Sample.createSimpleLoops();
+    const paths = Sample.createSimplePaths();
+    const parityRegions = Sample.createSimpleParityRegions();
+    const collection = BagOfCurves.create();
+    let x0 = 0;
+    const tolerance = 1.0e-8;
+    const localPoints: Point3d[] = [];
+    for (const x of [-0.2, 0.3, 0.8, 1.1]) {
+      for (const y of [-0.4, 0.45, 1.2])
+        localPoints.push(Point3d.create(x, y));
+    }
+    for (const c of [...loops, ...paths, ...parityRegions]) {
+      const range = c.range();
+      collection.tryAddChild(c);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, c, x0, 0, 0);
+      for (const xyzLocal of localPoints) {
+        const xyz = range.localToWorld(xyzLocal)!;
+        const detail = c.closestPoint(xyz);
+        GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, xyz, 0.2, x0, 0, 0);
+        if (ck.testType<CurveLocationDetail>(detail) && detail) {
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, [xyz, detail.point], x0, 0, 0);
+          // verify that the close point is closer than a small test set on its own primitive.
+          //  (This does not confirm that the correct primitive was chosen)
+          if (ck.testDefined(detail.curve)) {
+            for (const f of [0.0, 0.153, 0.389, 0.82342, 1.0]) {
+              const xyzF = detail.curve!.fractionToPoint(f);
+              ck.testLE(detail.a, xyz.distance(xyzF) + tolerance);
+            }
+          }
+        }
+      }
+      x0 += 2.0 * range.xLength();
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCollection", "ClosestPoint");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
 
 });
 /**

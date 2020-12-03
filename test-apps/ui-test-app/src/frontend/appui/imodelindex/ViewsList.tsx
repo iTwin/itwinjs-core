@@ -219,7 +219,7 @@ export class ViewsList extends React.Component<ViewsListProps, ViewsListState> {
       }
       this.props.onViewsSelected(viewStates, selectedViews);
     }
-  }
+  };
 
   private async _setFilter(_value: string) {
     if (_value === "") {

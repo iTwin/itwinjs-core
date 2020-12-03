@@ -6,7 +6,7 @@ import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
 import { IModelApp, LengthDescription, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import {
   ColorEditorParams, DialogButtonDef, DialogButtonType, DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertySyncItem, InputEditorSizeParams, PropertyDescription,
-  PropertyEditorParamTypes, SuppressLabelEditorParams, SyncPropertiesChangeEventArgs,
+  PropertyEditorParamTypes, SuppressLabelEditorParams,
 } from "@bentley/ui-abstract";
 
 enum ColorOptions {
@@ -45,7 +45,7 @@ export class TestUiProvider extends DialogLayoutDataProvider {
         ],
       },
     };
-  }
+  };
 
   private _optionsValue: DialogItemValue = { value: ColorOptions.Blue as number };
 
@@ -83,7 +83,7 @@ export class TestUiProvider extends DialogLayoutDataProvider {
         ],
       },
     };
-  }
+  };
 
   private _colorValue: DialogItemValue = { value: ColorByName.blue as number };
 
@@ -118,7 +118,7 @@ export class TestUiProvider extends DialogLayoutDataProvider {
         ],
       },
     };
-  }
+  };
 
   public get useLength(): boolean {
     return this._useLengthValue.value as boolean;
@@ -156,7 +156,7 @@ export class TestUiProvider extends DialogLayoutDataProvider {
         name: "weight-picker",
       },
     };
-  }
+  };
 
   private _weightValue: DialogItemValue = { value: 3 };
 
@@ -177,7 +177,7 @@ export class TestUiProvider extends DialogLayoutDataProvider {
       typename: "boolean",
       editor: { name: "toggle" },
     };
-  }
+  };
 
   private _lockValue: DialogItemValue = { value: true };
 
@@ -197,7 +197,7 @@ export class TestUiProvider extends DialogLayoutDataProvider {
       displayLabel: "City",
       typename: "string",
     };
-  }
+  };
 
   private _cityValue: DialogItemValue = { value: "Huntsville" };
 
@@ -225,7 +225,7 @@ export class TestUiProvider extends DialogLayoutDataProvider {
         ],
       },
     };
-  }
+  };
 
   private _stateValue: DialogItemValue = { value: "AL" };
 
@@ -263,8 +263,7 @@ export class TestUiProvider extends DialogLayoutDataProvider {
 
   private syncLengthState() {
     const syncItem: DialogPropertySyncItem = { value: this._lengthValue, propertyName: TestUiProvider._lengthName, isDisabled: !this.useLength };
-    const synchEventArgs: SyncPropertiesChangeEventArgs = { properties: [syncItem] };
-    this.onSyncPropertiesChangeEvent.emit(synchEventArgs);
+    this.fireSyncPropertiesEvent([syncItem]);
   }
 
   /** Used to send changes from UI */
@@ -302,5 +301,5 @@ export class TestUiProvider extends DialogLayoutDataProvider {
       // not an item we know about
       return;
     }
-  }
+  };
 }

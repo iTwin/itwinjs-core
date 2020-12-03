@@ -8,6 +8,7 @@
 
 import classnames from "classnames";
 import * as React from "react";
+import { useRefs } from "../utils/hooks/useRefs";
 import { CommonProps } from "../utils/Props";
 
 /** Properties for the [[Input]] component
@@ -22,49 +23,38 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement>,
 /** Basic text input, is a wrapper for the `<input type="text">` HTML element.
  * @public
  */
-export class Input extends React.PureComponent<InputProps> {
-  private _inputElement = React.createRef<HTMLInputElement>();
-  private _nativeKeyHandler?: (e: KeyboardEvent) => void;
+export const Input = React.forwardRef<HTMLInputElement, InputProps>(
+  function Input(props, ref) {
+    const { className, style, setFocus, nativeKeyHandler, ...otherProps } = props; // eslint-disable-line @typescript-eslint/no-unused-vars
+    const inputElementRef = React.useRef<HTMLInputElement>();
+    const refs = useRefs(inputElementRef, ref);  // combine ref needed for target with the forwardRef needed by the Parent when parent is a Type Editor.
 
-  public componentDidMount() {
-    // istanbul ignore else
-    if (this._inputElement.current) {
-      // istanbul ignore else
-      if (this.props.setFocus) {
-        this._inputElement.current.focus();
-        this._inputElement.current.select();
-      }
-      // Only use the native key handler if specified and no React key handler is specified
-      // istanbul ignore else
-      if (!this.props.onKeyPress && this.props.nativeKeyHandler) {
-        this._inputElement.current.addEventListener("keydown", this.props.nativeKeyHandler);
-        this._nativeKeyHandler = this.props.nativeKeyHandler;
-      }
-    }
-  }
+    React.useEffect(() => {
+      const currentElement = inputElementRef.current;
+      const currentHandler = nativeKeyHandler;
 
-  public componentDidUpdate(prevProps: InputProps) {
-    if (this.props.nativeKeyHandler !== prevProps.nativeKeyHandler && this._inputElement.current) {
-      // istanbul ignore else
-      if (this._nativeKeyHandler)
-        this._inputElement.current.removeEventListener("keydown", this._nativeKeyHandler);
-      // istanbul ignore else
-      if (this.props.nativeKeyHandler)
-        this._inputElement.current.addEventListener("keydown", this.props.nativeKeyHandler);
-      this._nativeKeyHandler = this.props.nativeKeyHandler;
-    }
-  }
-  public componentWillUnmount() {
-    // Only use the native key handler if specified and no React key handler is specified
-    // istanbul ignore else
-    if (this._inputElement.current && this._nativeKeyHandler)
-      this._inputElement.current.removeEventListener("keydown", this._nativeKeyHandler);
-  }
-  public render(): JSX.Element {
-    const { className, style, setFocus, nativeKeyHandler, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (currentElement && currentHandler) {
+        currentElement.addEventListener("keydown", currentHandler);
+      }
+      return () => {
+        if (currentHandler && currentElement) {
+          currentElement.removeEventListener("keydown", currentHandler);
+        }
+      };
+    }, [nativeKeyHandler]);
+
+    React.useEffect(() => {
+      if (inputElementRef.current && setFocus)
+        inputElementRef.current.focus();
+    }, [setFocus]);
+
+    const handleFocus = React.useCallback((event: React.FocusEvent<HTMLInputElement>) => {
+      event.currentTarget.select();
+    }, []);
+
     return (
-      <input ref={this._inputElement} type="text" {...props}
+      <input ref={refs} type="text" {...otherProps} onFocus={handleFocus}
         className={classnames("uicore-inputs-input", className)} style={style} />
     );
   }
-}
+);

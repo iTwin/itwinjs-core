@@ -166,5 +166,9 @@
     "enum": "Enum Editor",
     "text": "Text Editor",
     "textarea": "Textarea Editor"
+  },
+  "QuantityInput": {
+    "ParseError": "Parse Error, status=",
+    "NoParserDefined": "No Parser Defined!"
   }
 }

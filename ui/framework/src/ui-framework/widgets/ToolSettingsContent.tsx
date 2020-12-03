@@ -70,7 +70,7 @@ export class ToolSettingsContent extends React.PureComponent<ToolSettingsContent
     container.classList.remove("uifw-measure");
 
     this.setState({ availableContentWidth: measurerBounds.width });
-  }
+  };
 }
 
 /** @internal */

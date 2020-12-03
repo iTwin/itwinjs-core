@@ -118,20 +118,40 @@ export interface HybridCacheConfig extends HierarchyCacheConfigBase {
  */
 export interface PresentationManagerProps {
   /**
-   * A path override for presentation-backend's assets. Need to be overriden by application if
-   * it puts these assets someplace else than the default.
+   * Path overrides for presentation assets. Need to be overriden by application if it puts these assets someplace else than the default.
    *
-   * By default the root is determined using this algorithm:
-   * - if 'presentation-backend' is in node_modules, assume the directory structure is:
-   *   - assets/*\*\/*
-   *   - presentation-backend/{source_files}
-   *   which means the assets can be found through a relative path '../assets/' from the JS file being executed.
-   * - else, assume the backend is webpacked into a single file with assets next to it:
-   *   - assets/*\*\/*
-   *   - main.js
-   *   which means the assets can be found through a relative path './assets/' from the JS file being executed.
+   * By default paths to asset directories are determined during the call of [[Presentation.initialize]] using this algorithm:
+   *
+   * - for `presentation-backend` assets:
+   *
+   *   - if path of `.js` file that contains [[PresentationManager]] definition contains "presentation-backend", assume the package is in `node_modules` and the directory structure is:
+   *     - `assets/*\*\/*`
+   *     - `presentation-backend/{presentation-backend source files}`
+   *
+   *     which means the assets can be found through a relative path `../assets/` from the JS file being executed.
+   *
+   * - for `presentation-common` assets:
+   *
+   *   - if path of `.js` files of `presentation-common` package contain "presentation-common", assume the package is in `node_modules` and the directory structure is:
+   *     - `assets/*\*\/*`
+   *     - `presentation-common/{presentation-common source files}`
+   *
+   *     which means the assets can be found through a relative path `../assets/` from the package's source files.
+   *
+   * - in both cases, if we determine that source files are not in `node_modules`, assume the backend is webpacked into a single file with assets next to it:
+   *   - `assets/*\*\/*`
+   *   - `{source file being executed}.js`
+   *
+   *   which means the assets can be found through a relative path `./assets/` from the `{source file being executed}`.
+   *
+   * The overrides can be specified as a single path (when assets of both `presentation-backend` and `presentation-common` packages are merged into a single directory) or as an object with two separate paths for each package.
    */
-  presentationAssetsRoot?: string;
+  presentationAssetsRoot?: string | {
+    /** Path to `presentation-backend` assets */
+    backend: string;
+    /** Path to `presentation-common` assets */
+    common: string;
+  };
 
   /**
    * A list of directories containing application's presentation rulesets.
@@ -352,17 +372,17 @@ export class PresentationManager {
     const imodelAddon = this.getNativePlatform().getImodelAddon(imodel);
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.getNativePlatform().forceLoadSchemas(imodelAddon);
-  }
+  };
 
   /** @internal */
   public getNativePlatform = (): NativePlatformDefinition => {
     if (this._isDisposed)
       throw new PresentationError(PresentationStatus.UseAfterDisposal, "Attempting to use Presentation manager after disposal");
     return this._nativePlatform!;
-  }
+  };
 
   private setupRulesetDirectories(props?: PresentationManagerProps) {
-    const supplementalRulesetDirectories = [path.join(props?.presentationAssetsRoot ?? PRESENTATION_BACKEND_ASSETS_ROOT, "supplemental-presentation-rules")];
+    const supplementalRulesetDirectories = [path.join(getPresentationBackendAssetsRoot(props?.presentationAssetsRoot), "supplemental-presentation-rules")];
     if (props && props.supplementalRulesetDirectories) {
       props.supplementalRulesetDirectories.forEach((dir) => {
         if (-1 === supplementalRulesetDirectories.indexOf(dir))
@@ -684,13 +704,6 @@ export class PresentationManager {
    * @alpha
    */
   public async getPagedDistinctValues(requestOptions: WithClientRequestContext<DistinctValuesRequestOptions<IModelDb, Descriptor, KeySet>>): Promise<PagedResponse<DisplayValueGroup>> {
-    if (requestOptions.fieldDescriptor.parent) {
-      // not supported yet
-      return {
-        total: 0,
-        items: [],
-      };
-    }
     const { rulesetId, strippedOptions } = this.registerRuleset(requestOptions);
     const { descriptor, keys, ...strippedOptionsNoDescriptorAndKeys } = strippedOptions;
     const params = {
@@ -895,7 +908,7 @@ const createContentDescriptorOverrides = (descriptorOrOverrides: Descriptor | De
 };
 
 const createLocaleDirectoryList = (props?: PresentationManagerProps) => {
-  const localeDirectories = [getLocalesDirectory(props?.presentationAssetsRoot ?? PRESENTATION_COMMON_ASSETS_ROOT)];
+  const localeDirectories = [getLocalesDirectory(getPresentationCommonAssetsRoot(props?.presentationAssetsRoot))];
   if (props && props.localeDirectories) {
     props.localeDirectories.forEach((dir) => {
       if (-1 === localeDirectories.indexOf(dir))
@@ -924,7 +937,7 @@ const normalizeLocale = (locale?: string) => {
 
 const normalizeDirectory = (directory?: string) => {
   return directory ? path.resolve(directory) : "";
-}
+};
 
 const createCacheConfig = (config?: HierarchyCacheConfig): IModelJsNative.ECPresentationHierarchyCacheConfig => {
   if (config?.mode === HierarchyCacheMode.Disk)
@@ -934,4 +947,20 @@ const createCacheConfig = (config?: HierarchyCacheConfig): IModelJsNative.ECPres
   if (config?.mode === HierarchyCacheMode.Memory)
     return config;
   return { mode: HierarchyCacheMode.Disk, directory: "" };
-}
+};
+
+const getPresentationBackendAssetsRoot = (ovr?: string | { backend: string }) => {
+  if (typeof ovr === "string")
+    return ovr;
+  if (typeof ovr === "object")
+    return ovr.backend;
+  return PRESENTATION_BACKEND_ASSETS_ROOT;
+};
+
+const getPresentationCommonAssetsRoot = (ovr?: string | { common: string }) => {
+  if (typeof ovr === "string")
+    return ovr;
+  if (typeof ovr === "object")
+    return ovr.common;
+  return PRESENTATION_COMMON_ASSETS_ROOT;
+};

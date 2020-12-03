@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { Guid } from "@bentley/bentleyjs-core";
+import { Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { Field, PropertiesField } from "./content/Fields";
 import { Item } from "./content/Item";
 import { PrimitiveTypeDescription, PropertyValueFormat } from "./content/TypeDescription";
@@ -173,6 +173,10 @@ const createComparison = (type: PrimitiveTypeDescription, name: string, operator
     case "boolean": compareValue = value ? "TRUE" : "FALSE"; break;
     case "number": compareValue = value.toString(); break;
   }
+  if (type.typeName === "navigation" && typeof value === "string" && Id64.isId64(value)) {
+    // note: this is temporary until we support hex ids in instance filters
+    compareValue = hexToDec(value);
+  }
   if (type.typeName === "point2d" || type.typeName === "point3d") {
     if (typeof value !== "object")
       throw new Error("Expecting point values to be supplied as objects");
@@ -226,7 +230,7 @@ const createPathsFromSelectToPropertyClasses = (field: PropertiesField): Relatio
     currField = currField.parent;
   }
   const pathFromSelectToPropertyClass = RelationshipPath.reverse(pathFromPropertyToSelectClass);
-  const relatedPropertyPaths = field.properties.map((prop) => prop.relatedClassPath);
+  const relatedPropertyPaths = field.properties.map((prop) => prop.relatedClassPath); // eslint-disable-line deprecation/deprecation
   const fullPaths = relatedPropertyPaths.map((relatedPropertyPath): RelationshipPath => [
     ...pathFromSelectToPropertyClass,
     ...relatedPropertyPath,
@@ -237,4 +241,21 @@ const createPathsFromSelectToPropertyClasses = (field: PropertiesField): Relatio
 const createRelatedInstanceSpecs = (field: PropertiesField): Array<{ spec: RelatedInstanceSpecification, class: ClassInfo }> => {
   const paths = createPathsFromSelectToPropertyClasses(field);
   return paths.map((path, index) => createRelatedInstanceSpec(path, index));
+};
+
+const hexToDec = (id: Id64String) => {
+  const digits = [0];
+  for (let i = 2; i < id.length; ++i) {
+    let carry = parseInt(id.charAt(i), 16);
+    for (let j = 0; j < digits.length; ++j) {
+      digits[j] = digits[j] * 16 + carry;
+      carry = digits[j] / 10 | 0;
+      digits[j] %= 10;
+    }
+    while (carry > 0) {
+      digits.push(carry % 10);
+      carry = carry / 10 | 0;
+    }
+  }
+  return digits.reverse().join("");
 };

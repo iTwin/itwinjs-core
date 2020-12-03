@@ -41,17 +41,17 @@ export class NumericFilter extends React.Component<NumericFilterProps> {
       // handle each value with comma
       list.forEach((obj) => {
         if (obj.indexOf("-") > 0) { // handle dash
-          const begin = parseInt(obj.split("-")[0], 10);
-          const end = parseInt(obj.split("-")[1], 10);
+          const begin = parseFloat(obj.split("-")[0]);
+          const end = parseFloat(obj.split("-")[1]);
           rules.push({ type: NumericFilterType.Range, begin, end });
         } else if (obj.indexOf(">") > -1) { // handle greater then
-          const begin = parseInt(obj.split(">")[1], 10);
+          const begin = parseFloat(obj.split(">")[1]);
           rules.push({ type: NumericFilterType.GreaterThan, value: begin });
         } else if (obj.indexOf("<") > -1) { // handle less then
-          const end = parseInt(obj.split("<")[1], 10);
+          const end = parseFloat(obj.split("<")[1]);
           rules.push({ type: NumericFilterType.LessThan, value: end });
         } else { // handle normal values
-          const numericValue = parseInt(obj, 10);
+          const numericValue = parseFloat(obj);
           rules.push({ type: NumericFilterType.ExactMatch, value: numericValue });
         }
       });
@@ -60,18 +60,18 @@ export class NumericFilter extends React.Component<NumericFilterProps> {
   }
 
   private _handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => { // Validate the input
-    const regex = ">|<|-|,|([0-9])";
+    const regex = ">|<|-|,|.|([0-9])";
     const result = RegExp(regex).test(e.key);
     if (result === false) {
       e.preventDefault();
     }
-  }
+  };
 
   private _handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     const filters = this.getRules(value);
     this.props.onChange({ filterTerm: (filters.length > 0 ? filters : null), column: this.props.column });
-  }
+  };
 
   public render() {
     const inputKey = `header-filter-${this.props.column.key}`;

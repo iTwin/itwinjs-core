@@ -148,7 +148,7 @@ export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, N
     setTimeout(() => {
       FrontstageManager.setActiveNavigationAid(navigationAidId, this.props.iModelConnection!);
     });
-  }
+  };
 
   private _handleViewClassFullNameChange = (args: ViewClassFullNameChangedEventArgs): void => {
     setTimeout(() => {
@@ -160,7 +160,7 @@ export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, N
         FrontstageManager.setActiveNavigationAid(navigationAidId, this.props.iModelConnection!);
       }
     });
-  }
+  };
 
   public componentDidUpdate(prevProps: NavigationWidgetPropsEx, _prevState: NavigationWidgetState) { // eslint-disable-line deprecation/deprecation
     if (this.props !== prevProps) {
@@ -217,7 +217,7 @@ class NavigationWidgetWithDef extends React.Component<Props, NavigationWidgetWit
     this.props.navigationWidgetDef.updateNavigationAid(args.navigationAidId, args.iModelConnection);
     const navigationAid = this.props.navigationWidgetDef.renderCornerItem();
     this.setState({ cornerItem: navigationAid });
-  }
+  };
 
   public componentDidMount() {
     FrontstageManager.onNavigationAidActivatedEvent.addListener(this._handleNavigationAidActivatedEvent);

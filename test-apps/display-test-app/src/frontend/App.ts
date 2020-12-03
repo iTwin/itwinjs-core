@@ -27,6 +27,7 @@ import { TimePointComparisonTool } from "./TimePointComparison";
 import { FenceClassifySelectedTool } from "./Fence";
 import { ToggleAspectRatioSkewDecoratorTool } from "./AspectRatioSkewDecorator";
 import { PathDecorationTestTool } from "./PathDecorationTest";
+import { DeleteElementsTool, EditingSessionTool, MoveElementTool, PlaceLineStringTool, RedoTool, UndoTool } from "./EditingTools";
 import { MobileRpcConfiguration } from "@bentley/imodeljs-common";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
@@ -139,9 +140,11 @@ export class DisplayTestApp {
       CloseIModelTool,
       CloseWindowTool,
       CreateWindowTool,
+      DeleteElementsTool,
       DetachViewsTool,
       DockWindowTool,
       DrawingAidTestTool,
+      EditingSessionTool,
       FenceClassifySelectedTool,
       FocusWindowTool,
       IncidentMarkerDemoTool,
@@ -150,10 +153,13 @@ export class DisplayTestApp {
       MarkupTool,
       MaximizeWindowTool,
       ModelClipTool,
+      MoveElementTool,
       OpenIModelTool,
       OutputShadersTool,
+      PlaceLineStringTool,
       PurgeTileTreesTool,
       RecordFpsTool,
+      RedoTool,
       RefreshTilesTool,
       ReopenIModelTool,
       ResizeWindowTool,
@@ -164,6 +170,7 @@ export class DisplayTestApp {
       ToggleAspectRatioSkewDecoratorTool,
       TimePointComparisonTool,
       ToggleShadowMapTilesTool,
+      UndoTool,
       ZoomToSelectedElementsTool,
     ].forEach((tool) => tool.register(svtToolNamespace));
 

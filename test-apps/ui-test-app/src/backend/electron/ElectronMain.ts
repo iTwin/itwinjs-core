@@ -6,7 +6,7 @@ import * as electron from "electron";
 import * as path from "path";
 import { ElectronManagerOptions, IModelJsElectronManager, WebpackDevServerElectronManager } from "@bentley/electron-manager";
 import { ElectronRpcManager, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
-import { assert } from "@bentley/bentleyjs-core"
+import { assert } from "@bentley/bentleyjs-core";
 
 /**
  * Initializes Electron backend
@@ -17,7 +17,7 @@ const maximizeWindow = (undefined === process.env.SVT_NO_MAXIMIZE_WINDOW);
 export default async function initialize(rpcs: RpcInterfaceDefinition[]) {
   const opts: ElectronManagerOptions = {
     webResourcesPath: path.join(__dirname, "..", "..", "..", "build"),
-  }
+  };
 
   const manager = (process.env.NODE_ENV === "production") ?
     new IModelJsElectronManager(opts) :

@@ -69,5 +69,5 @@ export class TestMessageBox extends React.Component<TestMessageBoxProps, TestMes
       if (this.props.onResult)
         this.props.onResult(DialogButtonType.Close);
     });
-  }
+  };
 }

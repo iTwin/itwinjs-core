@@ -28,6 +28,14 @@ export interface ModelLoadProps {
   code?: CodeProps;
 }
 
+/** Properties that specify what model should be loaded.
+ * @public
+ */
+export interface ModelLoadProps {
+  id?: Id64String;
+  code?: CodeProps;
+}
+
 /** Parameters for performing a query on [Model]($backend) classes.
  * @public
  */

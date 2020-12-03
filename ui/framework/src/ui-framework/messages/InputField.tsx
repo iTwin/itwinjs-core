@@ -108,7 +108,7 @@ export class InputFieldMessage extends React.PureComponent<InputFieldMessageProp
 
   private _onInputMessageClose = () => {
     this.setState({ isVisible: false });
-  }
+  };
 
   private _handleInputFieldMessageAddedEvent = (args: InputFieldMessageEventArgs) => {
     this.setState({
@@ -118,9 +118,9 @@ export class InputFieldMessage extends React.PureComponent<InputFieldMessageProp
       priority: args.priority,
       detailedMessage: args.detailedMessage,
     });
-  }
+  };
 
   private _handleInputFieldMessageRemovedEvent = () => {
     this.setState({ isVisible: false });
-  }
+  };
 }

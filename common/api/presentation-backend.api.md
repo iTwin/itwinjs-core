@@ -130,6 +130,8 @@ export enum PresentationBackendNativeLoggerCategory {
     // (undocumented)
     ECPresentation_Connections = "ECPresentation.Connections",
     // (undocumented)
+    ECPresentation_Localization = "ECPresentation.Localization",
+    // (undocumented)
     ECPresentation_RulesEngine = "ECPresentation.RulesEngine",
     // (undocumented)
     ECPresentation_RulesEngine_Content = "ECPresentation.RulesEngine.Content",
@@ -257,7 +259,10 @@ export interface PresentationManagerProps {
     id?: string;
     localeDirectories?: string[];
     mode?: PresentationManagerMode;
-    presentationAssetsRoot?: string;
+    presentationAssetsRoot?: string | {
+        backend: string;
+        common: string;
+    };
     rulesetDirectories?: string[];
     supplementalRulesetDirectories?: string[];
     taskAllocationsMap?: {

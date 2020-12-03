@@ -21,6 +21,7 @@ import { KeyboardEventHandler } from 'react-select/src/types';
 import { Matrix3d } from '@bentley/geometry-core';
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
+import * as ReactAutosuggest from 'react-autosuggest';
 import { RelativePosition } from '@bentley/ui-abstract';
 import { SelectComponentsConfig } from 'react-select/src/components/index';
 import { SliderModeFunction } from 'react-compound-slider';
@@ -63,10 +64,17 @@ export class Annulus {
 }
 
 // @beta
+export type AsyncGetAutoSuggestDataFunc = (value: string) => Promise<AutoSuggestData[]>;
+
+// @beta
 export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSuggestState> {
     constructor(props: AutoSuggestProps);
+    // @internal (undocumented)
+    componentDidMount(): void;
     // (undocumented)
     componentDidUpdate(prevProps: AutoSuggestProps): void;
+    // @internal (undocumented)
+    componentWillUnmount(): void;
     // (undocumented)
     render(): JSX.Element;
     }
@@ -84,14 +92,18 @@ export interface AutoSuggestProps extends React.InputHTMLAttributes<HTMLInputEle
     // @internal (undocumented)
     alwaysRenderSuggestions?: boolean;
     getLabel?: (value: string | undefined) => string;
-    // @deprecated
-    getSuggestions?: GetAutoSuggestDataFunc;
+    getSuggestions?: AsyncGetAutoSuggestDataFunc;
     onInputFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
     onPressEnter?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
     onPressEscape?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
     onPressTab?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+    onSuggestionsClearRequested?: () => void;
     onSuggestionSelected: (selected: AutoSuggestData) => void;
-    options: AutoSuggestData[] | GetAutoSuggestDataFunc;
+    options?: AutoSuggestData[] | GetAutoSuggestDataFunc;
+    // @internal
+    renderInputComponent?: ReactAutosuggest.RenderInputComponent<AutoSuggestData>;
+    // @internal
+    renderSuggestionsContainer?: ReactAutosuggest.RenderSuggestionsContainer;
     setFocus?: boolean;
     value?: string;
 }
@@ -122,7 +134,7 @@ export function BlockText(props: TextProps): JSX.Element;
 // @public
 export function BodyText(props: TextProps): JSX.Element;
 
-// @beta
+// @beta @deprecated
 export type BoundsFunctionProp = number | (() => number | undefined);
 
 // @public
@@ -922,10 +934,7 @@ export class IconHelper {
 }
 
 // @public
-export class IconInput extends React.PureComponent<IconInputProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
+export const IconInput: React.ForwardRefExoticComponent<IconInputProps & React.RefAttributes<HTMLInputElement>>;
 
 // @public
 export interface IconInputProps extends InputProps {
@@ -961,16 +970,7 @@ export interface ImageCheckBoxProps extends CommonProps {
 }
 
 // @public
-export class Input extends React.PureComponent<InputProps> {
-    // (undocumented)
-    componentDidMount(): void;
-    // (undocumented)
-    componentDidUpdate(prevProps: InputProps): void;
-    // (undocumented)
-    componentWillUnmount(): void;
-    // (undocumented)
-    render(): JSX.Element;
-}
+export const Input: React.ForwardRefExoticComponent<InputProps & React.RefAttributes<HTMLInputElement>>;
 
 // @public
 export class InputLabel extends React.PureComponent<InputLabelProps> {
@@ -1043,10 +1043,7 @@ export interface LabeledComponentProps {
 }
 
 // @public
-export class LabeledInput extends React.PureComponent<LabeledInputProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
+export const LabeledInput: React.ForwardRefExoticComponent<LabeledInputProps & React.RefAttributes<HTMLInputElement>>;
 
 // @public
 export interface LabeledInputProps extends InputProps, LabeledComponentProps, MessagedComponentProps {
@@ -1063,10 +1060,7 @@ export interface LabeledSelectProps extends SelectProps, LabeledComponentProps, 
 }
 
 // @public
-export class LabeledTextarea extends React.PureComponent<LabeledTextareaProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
+export const LabeledTextarea: React.ForwardRefExoticComponent<LabeledTextareaProps & React.RefAttributes<HTMLTextAreaElement>>;
 
 // @public
 export interface LabeledTextareaProps extends TextareaProps, LabeledComponentProps, MessagedComponentProps {
@@ -1350,6 +1344,34 @@ export type NodeCheckboxRenderProps = Omit<CheckboxProps, "onChange" | "onClick"
 };
 
 // @beta
+export const NumberInput: React.ForwardRefExoticComponent<NumberInputProps & React.RefAttributes<HTMLInputElement>>;
+
+// @beta
+export interface NumberInputProps extends Omit<InputProps, "min" | "max" | "step" | "onChange" | "onBlur" | "onKeyDown" | "defaultValue" | "onInvalid"> {
+    containerClassName?: string;
+    // (undocumented)
+    format?: (num: number | null | undefined, formattedValue: string) => string;
+    // (undocumented)
+    max?: number;
+    // (undocumented)
+    min?: number;
+    // (undocumented)
+    onChange?: (value: number | undefined, stringValue: string) => void;
+    // (undocumented)
+    parse?: ((value: string) => number | null | undefined);
+    // (undocumented)
+    precision?: number;
+    // (undocumented)
+    showTouchButtons?: boolean;
+    // (undocumented)
+    snap?: boolean;
+    // (undocumented)
+    step?: StepFunctionProp;
+    // (undocumented)
+    value?: number;
+}
+
+// @beta @deprecated
 export class NumericInput extends React.Component<NumericInputProps> {
     // @internal (undocumented)
     static readonly defaultProps: NumericInputDefaultProps;
@@ -1357,10 +1379,10 @@ export class NumericInput extends React.Component<NumericInputProps> {
     render(): JSX.Element;
     }
 
-// @internal
+// @internal @deprecated
 export type NumericInputDefaultProps = Pick<NumericInputProps, "strict">;
 
-// @beta
+// @beta @deprecated
 export interface NumericInputProps extends Omit<ReactNumericInputProps, "step">, CommonProps {
     // (undocumented)
     step?: StepFunctionProp;
@@ -1484,7 +1506,10 @@ export interface PopupContextMenuProps extends CommonProps {
 export interface PopupProps extends CommonProps {
     animate?: boolean;
     ariaLabel?: string;
+    closeOnContextMenu?: boolean;
     closeOnEnter?: boolean;
+    closeOnNestedPopupOutsideClick?: boolean;
+    closeOnWheel?: boolean;
     focusTarget?: React.RefObject<HTMLElement> | string;
     isOpen: boolean;
     isPinned?: boolean;
@@ -1492,9 +1517,11 @@ export interface PopupProps extends CommonProps {
     moveFocus?: boolean;
     offset: number;
     onClose?: () => void;
+    onContextMenu?: (e: MouseEvent) => void;
     onEnter?: () => void;
     onOpen?: () => void;
     onOutsideClick?: (e: MouseEvent) => void;
+    onWheel?: (e: WheelEvent) => void;
     position: RelativePosition;
     role?: "dialog" | "alert" | "alertdialog";
     showArrow: boolean;
@@ -1604,7 +1631,7 @@ export interface ReactMessage {
     reactNode: React.ReactNode;
 }
 
-// @internal (undocumented)
+// @internal @deprecated (undocumented)
 export class ReactNumericInput extends React.Component<ReactNumericInputProps, ReactNumericInputState> {
     constructor(props: ReactNumericInputProps);
     componentDidMount(): void;
@@ -1631,7 +1658,7 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
     static SPEED: number;
     }
 
-// @beta
+// @beta @deprecated
 export interface ReactNumericInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "min" | "max" | "step" | "onChange" | "defaultValue" | "onInvalid">, CommonProps {
     // (undocumented)
     componentClass?: string;
@@ -1682,7 +1709,7 @@ export interface ReactNumericInputProps extends Omit<React.InputHTMLAttributes<H
     value?: number | string;
 }
 
-// @internal (undocumented)
+// @internal @deprecated (undocumented)
 export type ReactStepFunctionProp = number | ((component: ReactNumericInput, direction: string) => number | undefined);
 
 // @internal
@@ -1997,14 +2024,7 @@ export interface TabsProps extends React.AllHTMLAttributes<HTMLUListElement>, Co
 }
 
 // @public
-export class Textarea extends React.PureComponent<TextareaProps> {
-    // (undocumented)
-    componentDidMount(): void;
-    // (undocumented)
-    static defaultProps: Partial<TextareaProps>;
-    // (undocumented)
-    render(): JSX.Element;
-    }
+export const Textarea: React.ForwardRefExoticComponent<TextareaProps & React.RefAttributes<HTMLTextAreaElement>>;
 
 // @public
 export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement>, CommonProps {

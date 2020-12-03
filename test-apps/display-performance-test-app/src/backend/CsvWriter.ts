@@ -49,7 +49,7 @@ function addColumn(origFile: string, newName: string, columnsIndex: number): str
         curIndex++;
       }
       if (pos < 0) pos = line.length;
-      newFile += `${line.slice(0, pos) + (pos !== 0 ? "," : "") + (lineIndex === 0 ? newName : (newName === "ReadPixels Selector" ? "" : 0))
+      newFile += `${line.slice(0, pos) + (pos !== 0 ? "," : "") + (lineIndex === 0 ? newName : (newName === "ReadPixels Selector" || newName === "Other Props" ? "" : 0))
         + (line[pos] !== "," ? "," : "") + line.slice(pos)}\r\n`;
     }
   });
@@ -107,12 +107,12 @@ export function addDataToCsvFile(file: string, data: Map<string, number | string
     columns.forEach((colName, index) => {
       let value = data.get(colName);
       if (value === undefined) {
-        if (index < 2 || colName === "ReadPixels Selector")
+        if (index < 2 || colName === "ReadPixels Selector" || colName === "Other Props")
           value = "";
         else
           value = 0;
       }
-      if (colName === "iModel" || colName === "View Flags" || colName === "Disabled Ext" || colName === "ReadPixels Selector" || colName === "Tile Props")
+      if (colName === "iModel" || colName === "View Flags" || colName === "Disabled Ext" || colName === "ReadPixels Selector" || colName === "Tile Props" || colName === "Other Props")
         stringData += `"${value}",`;
       else if (colName !== "" || index !== columns.length - 1)
         stringData += `${value},`;

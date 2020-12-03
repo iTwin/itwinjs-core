@@ -67,12 +67,12 @@ export class SignIn extends React.PureComponent<SignInProps, SignInState> {
   private _onSignInClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     this._onSigningIn();
-  }
+  };
 
   private _onSigningIn = () => {
     this.setState({ isSigningIn: true });
     this.props.onSignIn();
-  }
+  };
 
   private _handleKeyUp = (event: React.KeyboardEvent, onActivate?: () => void) => {
     const key = event.key;
@@ -83,7 +83,7 @@ export class SignIn extends React.PureComponent<SignInProps, SignInState> {
         onActivate && onActivate();
         break;
     }
-  }
+  };
 
   public render() {
     const disableSignInOnClick = this.props.disableSignInOnClick === undefined ? true : this.props.disableSignInOnClick; // disableSignInOnClick defaults to true!

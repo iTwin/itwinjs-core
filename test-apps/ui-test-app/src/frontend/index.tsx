@@ -574,13 +574,13 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
 
   private _initializeSignin = async (authorized: boolean): Promise<void> => {
     return authorized ? SampleAppIModelApp.showSignedIn() : SampleAppIModelApp.showSignedOut();
-  }
+  };
 
   private _onUserStateChanged = (_accessToken: AccessToken | undefined) => {
     const authorized = !!IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized;
     this.setState({ authorized, uiSettings: this.getUiSettings(authorized) });
     this._initializeSignin(authorized); // eslint-disable-line @typescript-eslint/no-floating-promises
-  }
+  };
 
   private getUiSettings(authorized: boolean): UiSettings {
     if (SampleAppIModelApp.testAppConfiguration?.useLocalSettings || !authorized) {
@@ -594,11 +594,11 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
 
   private _handleFrontstageDeactivatedEvent = (args: FrontstageDeactivatedEventArgs): void => {
     Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Frontstage exit: id=${args.deactivatedFrontstageDef.id} totalTime=${args.totalTime} engagementTime=${args.engagementTime} idleTime=${args.idleTime}`);
-  }
+  };
 
   private _handleModalFrontstageClosedEvent = (args: ModalFrontstageClosedEventArgs): void => {
     Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Modal Frontstage close: title=${args.modalFrontstage.title} totalTime=${args.totalTime} engagementTime=${args.engagementTime} idleTime=${args.idleTime}`);
-  }
+  };
 
   public componentDidMount() {
     const oidcClient = IModelApp.authorizationClient;

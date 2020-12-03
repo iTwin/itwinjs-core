@@ -193,7 +193,7 @@ export abstract class Tile {
   }
 
   /** True if this tile has graphics ready to draw. */
-  protected get hasGraphics(): boolean { return undefined !== this._graphic; }
+  public get hasGraphics(): boolean { return undefined !== this._graphic; }
   /** True if this tile has a known volume tightly encompassing its graphics. */
   public get hasContentRange(): boolean { return undefined !== this._contentRange; }
   /** A volume no larger than this tile's `range`, and optionally more tightly encompassing its contents. Used for more accurate culling. */
@@ -476,6 +476,10 @@ export abstract class Tile {
       addRangeGraphic(builder, range, this.tree.is2d);
     }
   }
+  /** If size projection corners are used to compute the screen size of the tile.   These are are used for reality tiles
+   * with OBB to produce more accurate size calculation.
+   * @internal */
+  public getSizeProjectionCorners(): Point3d[] | undefined { return undefined; }
 }
 
 /**
@@ -516,6 +520,8 @@ export enum TileVisibility {
  * @beta
  */
 export enum TileLoadPriority {
+  /** Contents of geometric models that are being interactively edited. */
+  Dynamic = 5,
   /** Background map tiles. */
   Map = 15,
   /** Typically, tiles generated from the contents of geometric models. */

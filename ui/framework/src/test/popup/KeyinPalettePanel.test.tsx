@@ -66,7 +66,7 @@ describe("<KeyinPalettePanel>", () => {
     if (uiSettings) {
       await uiSettings.saveSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY, ["history1", "history2"]);
     }
-    const keyins: KeyinEntry[] = [{ value: "keyin one" }, { value: "keyin two" }]
+    const keyins: KeyinEntry[] = [{ value: "keyin one" }, { value: "keyin two" }];
     const renderedComponent = render(<KeyinPalettePanel keyins={keyins} />);
     expect(renderedComponent).not.to.be.undefined;
 
@@ -81,7 +81,7 @@ describe("<KeyinPalettePanel>", () => {
     if (uiSettings) {
       await uiSettings.saveSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY, ["history1", "history2"]);
     }
-    const keyins: KeyinEntry[] = [{ value: "keyin one" }, { value: "keyin two" }]
+    const keyins: KeyinEntry[] = [{ value: "keyin one" }, { value: "keyin two" }];
     const renderedComponent = render(<KeyinPalettePanel keyins={keyins} />);
     expect(renderedComponent).not.to.be.undefined;
     const selectInput = renderedComponent.getByTestId("command-palette-input") as HTMLInputElement;
@@ -102,7 +102,7 @@ describe("<KeyinPalettePanel>", () => {
     if (uiSettings) {
       await uiSettings.saveSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY, ["history1", "history2"]);
     }
-    const keyins: KeyinEntry[] = [{ value: "keyin one" }, { value: "keyin two" }]
+    const keyins: KeyinEntry[] = [{ value: "keyin one" }, { value: "keyin two" }];
     const renderedComponent = render(<KeyinPalettePanel keyins={keyins} />);
     expect(renderedComponent).not.to.be.undefined;
     const selectInput = renderedComponent.getByTestId("command-palette-input") as HTMLInputElement;
@@ -123,7 +123,7 @@ describe("<KeyinPalettePanel>", () => {
   });
 
   it("Handles keyboard running selection", async () => {
-    const keyins: KeyinEntry[] = [{ value: "keyin one" }, { value: "keyin two" }]
+    const keyins: KeyinEntry[] = [{ value: "keyin one" }, { value: "keyin two" }];
     const renderedComponent = render(<KeyinPalettePanel keyins={keyins} />);
     expect(renderedComponent).not.to.be.undefined;
     const selectInput = renderedComponent.getByTestId("command-palette-input") as HTMLInputElement;
@@ -137,7 +137,7 @@ describe("<KeyinPalettePanel>", () => {
   });
 
   it("Handles keyboard updating input after CTRL + selection", async () => {
-    const keyins: KeyinEntry[] = [{ value: "keyin one" }, { value: "keyin two" }]
+    const keyins: KeyinEntry[] = [{ value: "keyin one" }, { value: "keyin two" }];
     const renderedComponent = render(<KeyinPalettePanel keyins={keyins} />);
     expect(renderedComponent).not.to.be.undefined;
     const selectInput = renderedComponent.getByTestId("command-palette-input") as HTMLInputElement;
@@ -156,7 +156,7 @@ describe("<KeyinPalettePanel>", () => {
     if (uiSettings) {
       await uiSettings.saveSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY, ["history1", "history2"]);
     }
-    const keyins: KeyinEntry[] = [{ value: "keyin one" }, { value: "keyin two" }]
+    const keyins: KeyinEntry[] = [{ value: "keyin one" }, { value: "keyin two" }];
     const renderedComponent = render(<KeyinPalettePanel keyins={keyins} />);
     expect(renderedComponent).not.to.be.undefined;
     await TestUtils.flushAsyncOperations();
@@ -176,7 +176,7 @@ describe("<KeyinPalettePanel>", () => {
     if (uiSettings) {
       await uiSettings.saveSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY, ["history1", "history2"]);
     }
-    const keyins: KeyinEntry[] = [{ value: "keyin one" }, { value: "keyin two" }]
+    const keyins: KeyinEntry[] = [{ value: "keyin one" }, { value: "keyin two" }];
     const renderedComponent = render(<KeyinPalettePanel keyins={keyins} />);
     expect(renderedComponent).not.to.be.undefined;
     await TestUtils.flushAsyncOperations();

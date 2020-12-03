@@ -233,14 +233,12 @@ beta;Overflow
 beta;OverflowProps 
 alpha;Panel 
 internal;PanelInitializeAction
-internal;PanelPinnedContext: React.Context
 alpha;PanelProps 
 internal;PanelSetCollapsedAction
 internal;PanelSetSizeAction
 internal;PanelSide = VerticalPanelSide | HorizontalPanelSide
 internal;PanelSideContext: React.Context
 internal;panelSides: [LeftPanelSide, RightPanelSide, TopPanelSide, BottomPanelSide]
-internal;PanelSpanContext: React.Context
 alpha;PanelsProvider 
 alpha;PanelsProviderProps
 internal;PanelsState
@@ -251,7 +249,7 @@ internal;PanelTarget: React.NamedExoticComponent
 internal;PanelToggleCollapsedAction
 internal;PanelTogglePinnedAction
 internal;PanelToggleSpanAction
-internal;PanelWidget: React.NamedExoticComponent
+internal;PanelWidget: React.MemoExoticComponent
 internal;PanelWidgetDragStartAction
 internal;PanelWidgetProps
 internal;PinToggle: React.NamedExoticComponent
@@ -397,6 +395,8 @@ beta;TooltipProps
 internal;TopPanelSide = "top"
 internal;UpdateWindowResizeSettings 
 internal;useAllowedPanelTarget(): boolean
+internal;useAnimatePanelWidgets():
+internal;useBorders(widgetId: WidgetState["id"]):
 internal;useCursor(): void
 internal;useDoubleClick(onDoubleClick?: () => void): () => void
 internal;useDrag
@@ -413,18 +413,17 @@ internal;useDragToolSettings(args: UseDragToolSettingsArgs): ({ initialPointerPo
 internal;UseDragToolSettingsArgs
 internal;useDragWidget(args: UseDragWidgetArgs): ({ initialPointerPosition }: DragItemDragStartArgs) => void
 internal;UseDragWidgetArgs
-internal;useForceFill(): boolean
 internal;useIsDragged(callback: () => boolean): boolean
 internal;useIsDraggedItem(item: DragItem): boolean
 internal;useIsDraggedType(type: DragItem["type"]): boolean
 internal;useIsMainPanelWidget(): boolean
 internal;useLabel(labelKey: keyof NineZoneLabels): string | undefined
+internal;useMode(widgetId: string): "fit" | "fill" | "minimized"
 internal;useOverflow(children: React.ReactNode, activeChildIndex?: number): [ReadonlyArray
 internal;usePanelsAutoCollapse
 internal;usePanelTarget
 internal;UsePanelTargetArgs
 internal;usePointerCaptor: 
-internal;usePreferredPanelWidgetSize(widgetId: WidgetState["id"]): "fit-content" | undefined
 internal;useResizeGrip: 
 beta;UserProfile 
 beta;UserProfileProps 
@@ -464,8 +463,6 @@ internal;WidgetOverflow: React.NamedExoticComponent
 internal;WidgetOverflowContext: React.Context
 internal;WidgetOverflowProps
 internal;WidgetPanel: React.NamedExoticComponent
-internal;WidgetPanelComponent: React.NamedExoticComponent
-internal;WidgetPanelComponentProps
 internal;WidgetPanelContext: React.Context
 internal;WidgetPanelContextArgs
 internal;WidgetPanelExpander({ side }: WidgetPanelExpanderProps): JSX.Element
@@ -473,6 +470,8 @@ internal;WidgetPanelExpanderProps
 internal;WidgetPanelExpanders(): JSX.Element
 internal;WidgetPanelGrip: React.NamedExoticComponent
 internal;WidgetPanelProps
+internal;WidgetPanelProvider: React.NamedExoticComponent
+internal;WidgetPanelProviderProps
 internal;WidgetPanels: React.NamedExoticComponent
 internal;WidgetPanelsContent: React.MemoExoticComponent
 internal;WidgetPanelsContentProps 
@@ -486,6 +485,7 @@ internal;WidgetState
 internal;WidgetStateContext: React.Context
 internal;WidgetTab: React.NamedExoticComponent
 internal;WidgetTabBar: React.NamedExoticComponent
+internal;WidgetTabBarProps
 internal;WidgetTabClickAction
 internal;WidgetTabDoubleClickAction
 internal;WidgetTabDragAction

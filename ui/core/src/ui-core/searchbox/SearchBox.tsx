@@ -105,7 +105,7 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
         this.props.onValueChanged(this.state.value);
       }
     });
-  }
+  };
 
   private _handleKeyDown = (e: React.KeyboardEvent) => {
     switch (e.key) {
@@ -120,7 +120,7 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
           this.props.onEnterPressed();
         break;
     }
-  }
+  };
 
   private _handleIconClick = (_event: React.MouseEvent<HTMLElement>): void => {
     // istanbul ignore else
@@ -133,14 +133,14 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
       this._inputElement.focus();
     }
     this._trackChange();
-  }
+  };
 
   private _unsetTimeout = (): void => {
     if (this._timeoutId) {
       window.clearTimeout(this._timeoutId);
       this._timeoutId = 0;
     }
-  }
+  };
 
   public componentWillUnmount() {
     this._unsetTimeout();
