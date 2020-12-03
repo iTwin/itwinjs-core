@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { BentleyStatus, DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Angle, Arc3d, Box, ClipMaskXYZRangePlanes, ClipPlane, ClipPlaneContainment, ClipPrimitive, ClipShape, ClipVector, ConvexClipPlaneSet, CurveCollection, CurvePrimitive, Geometry, GeometryQueryCategory, LineSegment3d, LineString3d, Loop, Plane3dByOriginAndUnitNormal, Point2d, Point3d, PointString3d, Range3d, SolidPrimitive, Sphere, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Angle, Arc3d, Box, ClipMaskXYZRangePlanes, ClipPlane, ClipPlaneContainment, ClipPrimitive, ClipShape, ClipVector, ConvexClipPlaneSet, CurveCollection, CurvePrimitive, Geometry, GeometryQueryCategory, IndexedPolyface, LineSegment3d, LineString3d, Loop, Plane3dByOriginAndUnitNormal, Point2d, Point3d, PointString3d, PolyfaceBuilder, Range3d, SolidPrimitive, Sphere, StrokeOptions, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { AreaPattern, BackgroundFill, BRepEntity, Code, ColorByName, ColorDef, ElementGeometry, ElementGeometryDataEntry, ElementGeometryFunction, ElementGeometryInfo, ElementGeometryOpcode, ElementGeometryRequest, ElementGeometryUpdate, FillDisplay, FontProps, FontType, GeometricElement3dProps, GeometricElementProps, GeometryClass, GeometryContainmentRequestProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamFlags, GeometryStreamIterator, GeometryStreamProps, Gradient, ImageGraphicCorners, ImageGraphicProps, IModel, LinePixels, LineStyle, MassPropertiesOperation, MassPropertiesRequestProps, PhysicalElementProps, Placement3d, Placement3dProps, TextString, TextStringProps, ThematicGradientMode, ThematicGradientSettings, ViewFlags } from "@bentley/imodeljs-common";
 import { assert, expect } from "chai";
 import { BackendRequestContext, ExportGraphics, ExportGraphicsInfo, ExportGraphicsMeshVisitor, ExportGraphicsOptions, GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, Platform, SnapshotDb } from "../../imodeljs-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { IModelTestUtils, Timer } from "../IModelTestUtils";
 
 function assertTrue(expr: boolean): asserts expr {
   assert.isTrue(expr);
@@ -86,6 +86,23 @@ function createDisjointCirclesElem(radius: number, origin: Point3d, angles: YawP
   builder.appendGeometryParamsChange(geomParams);
   builder.appendGeometry(Arc3d.createXY(Point3d.create(xOffset), radius));
   return createGeometricElem(builder.geometryStream, { origin, angles }, imodel, seedElement);
+}
+
+function createIndexedPolyface(radius: number, origin?: Point3d, angleTol?: Angle): IndexedPolyface {
+  const options = StrokeOptions.createForFacets();
+
+  options.needParams = true;
+  options.needNormals = true;
+
+  if (angleTol)
+    options.angleTol = angleTol;
+
+  // Create indexed polyface for testing by facetting a sphere...
+  const sphere = Sphere.createCenterRadius(undefined !== origin ? origin : Point3d.createZero(), radius);
+  const polyBuilder = PolyfaceBuilder.create(options);
+  polyBuilder.handleSphere(sphere);
+
+  return polyBuilder.claimPolyface();
 }
 
 interface ExpectedElementGeometryEntry {
@@ -1097,6 +1114,56 @@ describe("GeometryStream", () => {
     }
   });
 
+  it("create GeometricElement3d with local coordinate indexed polyface json data", async () => {
+    // Set up element to be placed in iModel
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+
+    const xOffset = Transform.createTranslation(Point3d.create(2.5));
+    const builder = new GeometryStreamBuilder();
+
+    // NOTE: It's a good idea to request sub-graphic ranges when adding multiple "large" polyfaces to a geometry stream...
+    builder.appendGeometryRanges();
+
+    const polyface = createIndexedPolyface(5.0);
+    builder.appendGeometry(polyface);
+
+    polyface.tryTransformInPlace(xOffset); // translate in x...
+    builder.appendGeometry(polyface);
+
+    polyface.tryTransformInPlace(xOffset); // translate in x again...
+    builder.appendGeometry(polyface);
+
+    // NOTE: For time comparison with ElementGeometry: create GeometricElement3d with local coordinate indexed polyface flatbuffer data
+    let timer = new Timer("createGeometricElem");
+    const testOrigin = Point3d.create(5, 10, 0);
+    const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
+    const newId = createGeometricElem(builder.geometryStream, { origin: testOrigin, angles: testAngles }, imodel, seedElement);
+    timer.end();
+    assert.isTrue(Id64.isValidId64(newId));
+    imodel.saveChanges();
+
+    timer = new Timer("queryGeometricElem");
+    const value = imodel.elements.getElementProps<GeometricElementProps>({ id: newId, wantGeometry: true });
+    assert.isDefined(value.geom);
+
+    const itLocal = new GeometryStreamIterator(value.geom!, value.category);
+    for (const entry of itLocal) {
+      assert.isTrue(entry.geomParams.categoryId === seedElement.category); // Current appearance information (default sub-category appearance in this case)...
+      assert.isTrue(undefined !== entry.localRange && !entry.localRange.isNull); // Make sure sub-graphic ranges were added...
+
+      assertTrue(entry.primitive.type === "geometryQuery");
+      assertTrue(entry.primitive.geometry instanceof IndexedPolyface);
+
+      const polyOut = entry.primitive.geometry;
+      assert.isTrue(polyOut.pointCount === polyface.pointCount);
+      assert.isTrue(polyOut.paramCount === polyface.paramCount);
+      assert.isTrue(polyOut.normalCount === polyface.normalCount);
+    }
+    timer.end();
+  });
+
   it("should preserve header with flags", () => {
     const builder = new GeometryStreamBuilder();
     builder.appendGeometry(Arc3d.createXY(Point3d.create(0, 0), 5));
@@ -1218,6 +1285,66 @@ describe("ElementGeometry", () => {
 
     assert(DbResult.BE_SQLITE_OK === doElementGeometryUpdate(imodel, newId, newEntries, true));
     assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expected, true, elementProps));
+  });
+
+  it("create GeometricElement3d with local coordinate indexed polyface flatbuffer data", async () => {
+    // Set up element to be placed in iModel
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+
+    const xOffset = Transform.createTranslation(Point3d.create(2.5));
+    const builder = new ElementGeometry.Builder();
+
+    // NOTE: It's a good idea to request sub-graphic ranges when adding multiple "large" polyfaces to a geometry stream...
+    builder.appendGeometryRanges();
+
+    const polyface = createIndexedPolyface(5.0);
+    builder.appendGeometryQuery(polyface);
+
+    polyface.tryTransformInPlace(xOffset); // translate in x...
+    builder.appendGeometryQuery(polyface);
+
+    polyface.tryTransformInPlace(xOffset); // translate in x again...
+    builder.appendGeometryQuery(polyface);
+
+    // NOTE: For time comparison with GeometryStream: create GeometricElement3d with local coordinate indexed polyface json data
+    let timer = new Timer("elementNoGeometryInsert");
+    const testOrigin = Point3d.create(5, 10, 0);
+    const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
+    const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
+    const testElem = imodel.elements.createElement(elementProps);
+    const newId = imodel.elements.insertElement(testElem);
+    timer.end();
+
+    timer = new Timer("elementGeometryUpdate");
+    let status = imodel.elementGeometryUpdate({ elementId: newId, entryArray: builder.entries, isWorld: false });
+    timer.end();
+    assert.isTrue(DbResult.BE_SQLITE_OK === status);
+    imodel.saveChanges();
+
+    const onGeometry: ElementGeometryFunction = (info: ElementGeometryInfo): void => {
+      assert.isTrue(6 === info.entryArray.length); // 3 pairs of sub-range + polyface...
+      const it = new ElementGeometry.Iterator(info);
+      for (const entry of it) {
+        assert.isTrue(entry.geomParams.categoryId === info.categoryId); // Current appearance information (default sub-category appearance in this case)...
+        assert.isTrue(undefined !== entry.localRange && !entry.localRange.isNull); // Make sure sub-graphic ranges were added...
+
+        const geom = entry.toGeometryQuery();
+        assert.exists(geom);
+        assert.isTrue(geom instanceof IndexedPolyface);
+
+        const polyOut = geom as IndexedPolyface;
+        assert.isTrue(polyOut.pointCount === polyface.pointCount);
+        assert.isTrue(polyOut.paramCount === polyface.paramCount);
+        assert.isTrue(polyOut.normalCount === polyface.normalCount);
+      }
+    };
+
+    timer = new Timer("elementGeometryRequest");
+    status = imodel.elementGeometryRequest({ onGeometry, elementId: newId });
+    timer.end();
+    assert.isTrue(DbResult.BE_SQLITE_OK === status);
   });
 
   it("create GeometricElement3d from local coordinate brep flatbuffer data", async () => {

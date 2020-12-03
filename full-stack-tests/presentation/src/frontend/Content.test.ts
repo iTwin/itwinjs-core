@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Guid, Id64 } from "@bentley/bentleyjs-core";
+import { Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import {
-  ContentSpecificationTypes, Descriptor, DisplayValueGroup, Field, FieldDescriptor, InstanceKey, KeySet, PresentationError, PresentationStatus,
-  RelationshipDirection, Ruleset, RuleTypes,
+  ContentSpecificationTypes, DefaultContentDisplayTypes, Descriptor, DisplayValueGroup, Field, FieldDescriptor, InstanceKey, KeySet,
+  NestedContentField, PresentationError, PresentationStatus, RelationshipDirection, Ruleset, RuleTypes,
 } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { initialize, terminate } from "../IntegrationTests";
@@ -351,6 +351,273 @@ describe("Content", () => {
 
   });
 
+  describe("Class descriptor", () => {
+
+    it("creates base class descriptor usable for subclasses", async () => {
+      const classHierarchy = await ECClassHierarchy.create(imodel);
+      const createRuleset = (schemaName: string, className: string): Ruleset => ({
+        id: Guid.createValue(),
+        rules: [{
+          ruleType: RuleTypes.Content,
+          specifications: [{
+            specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+            classes: {
+              schemaName,
+              classNames: [className],
+            },
+            handleInstancesPolymorphically: true,
+            handlePropertiesPolymorphically: true,
+          }],
+        }],
+      });
+
+      const descriptorGeometricElement = await Presentation.presentation.getContentDescriptor({
+        imodel,
+        rulesetOrId: createRuleset("BisCore", "GeometricElement"),
+        displayType: DefaultContentDisplayTypes.PropertyPane,
+        keys: new KeySet(),
+      });
+      const allExpectedGeometricElementProperties = [
+        "<0",
+        "<100",
+        "<Infinity",
+        "0-100",
+        "0-1000",
+        "0-Infinity",
+        "Category",
+        "Code",
+        "Color",
+        "Country",
+        "Model",
+        "Movies",
+        "Negative Numbers",
+        "Special Characters",
+        "Sports Stars",
+        "Star Wars",
+        "True-False",
+        "True-False #2",
+        "User Label",
+        [
+          "Btu/(lbm·Δ°R) [btu per pound mass per delta degree rankine]",
+        ],
+        [
+          "Btu/lb [Btu per pound mass]",
+        ],
+        [
+          "cSt",
+          "ft2 s",
+        ],
+        [
+          "Acres",
+          "cm2",
+          "ft ft",
+          "ft mi",
+          "ft2",
+          "ha",
+          "in ft",
+          "in m",
+          "in mi",
+          "in2",
+          "km2",
+          "m km",
+          "m m",
+          "m2",
+          "mi2",
+          "mm km",
+          "thousand ft2",
+        ],
+        [
+          "ft^(1/3)/s [ft^(1/3)/s]",
+        ],
+        [
+          "$ [dollar]",
+        ],
+        [
+          "KA [kiloampere]",
+        ],
+        [
+          "email",
+          "full URL",
+          "mailto",
+          "without http",
+          "without www",
+        ],
+        [
+          "in/deg [inch per degree]",
+        ],
+        [
+          "ft³/(ft²·min) [Foot cubed per foot squared per minute]",
+        ],
+        [
+          "1/Bar [1/Bar]",
+          "Untitled",
+        ],
+        [
+          "mm⁶ [millimeter to the sixth]",
+        ],
+        [
+          "µin [microinch]",
+        ],
+        [
+          "lb/ft [pound per foot]",
+        ],
+        [
+          "lm/ft² [lumen per foot squared]",
+        ],
+        [
+          "lm [lumen]",
+        ],
+        [
+          "KV [kilovolt]",
+        ],
+        [
+          "N·m/deg [newton meter per degree]",
+        ],
+        [
+          "Btu/(lb-mol·Δ°R) [btu per pound mole per delta degree rankine]",
+        ],
+        [
+          "(in·lbf)/(s·in·°F) [inch pound force per second inch fahrenheit]",
+        ],
+        [
+          "lbf/in [pound force per inch]",
+        ],
+        [
+          "µg/L [micrograms per liter]",
+        ],
+        [
+          "lbf·ft² [pound force foot squared]",
+        ],
+        [
+          "µg [microgram]",
+        ],
+        [
+          "ft³/lb-mol [foot cubed per pound mole]",
+        ],
+        [
+          "kmol/s [kilomole per second]",
+        ],
+        [
+          "lb-mol/ft³ [pound mole per foot cubed]",
+        ],
+        [
+          "cycle/sec [cycle per second]",
+        ],
+        [
+          "quadrants [quadrants]",
+        ],
+        [
+          "ft⁴ [foot to the fourth]",
+        ],
+        [
+          "p/ft² [person per foot squared]",
+        ],
+        [
+          "1/mile [1/mile]",
+        ],
+        [
+          "1/tn(short) [one per short ton]",
+        ],
+        [
+          "1/Δ°R [reciprocal delta degree rankine]",
+        ],
+        [
+          "grf/(h·ft²·inHg) [Grain mass per hour per foot squared per inch Mercury conventional]",
+        ],
+        [
+          "1/ million gal",
+        ],
+        [
+          "ft^(1/2)/s [ft^(1/2)/s]",
+        ],
+        [
+          "Gallon per minute per square root pounds per inch squared",
+        ],
+        [
+          "delta degree Kelvin per meter",
+        ],
+        [
+          "Delta celsius",
+        ],
+        [
+          "one per kilowat",
+        ],
+        [
+          "foot squared hour delta degree Fahrenheit per Btu",
+        ],
+        [
+          "kg/kW h",
+        ],
+        [
+          "1/Btu",
+        ],
+        [
+          "days",
+        ],
+        [
+          "ft3/lm",
+        ],
+        [
+          "acre ft/day",
+          "acre ft/h",
+          "acre ft/min",
+          "acre in/h",
+          "acre in/min",
+          "ft3/day",
+          "ft3/min",
+          "ft3/s",
+          "gal(imp)/day",
+          "gal(imp)/s",
+          "gal/s",
+          "gpd/capita",
+          "L/min",
+          "m3/min",
+          "million gal(impl)/day",
+          "ML/day",
+        ],
+        [
+          "thousand gal",
+        ],
+        [
+          "Angle",
+          "Area",
+          "Distance",
+          "Volume",
+        ],
+        [
+          "$óúrçè Fílê Ñâmé",
+          "$óúrçè Fílê Páth",
+        ],
+      ];
+      expect(getFieldLabels(descriptorGeometricElement!)).to.deep.eq(allExpectedGeometricElementProperties);
+
+      // sanity check - ensure filtering the fields by the class we used for request doesn't filter out anything
+      const fieldsGeometricElement = filterFieldsByClass(descriptorGeometricElement!.fields, await classHierarchy.getClassInfo("BisCore", "GeometricElement"));
+      expect(getFieldLabels(fieldsGeometricElement)).to.deep.eq(allExpectedGeometricElementProperties);
+
+      // request properties of Generic.PhysicalObject and ensure it's matches our filtered result of `descriptorGeometricElement`
+      const descriptorPhysicalObject = await Presentation.presentation.getContentDescriptor({
+        imodel,
+        rulesetOrId: createRuleset("Generic", "PhysicalObject"),
+        displayType: DefaultContentDisplayTypes.PropertyPane,
+        keys: new KeySet(),
+      });
+      const fieldsPhysicalObject = filterFieldsByClass(descriptorGeometricElement!.fields, await classHierarchy.getClassInfo("Generic", "PhysicalObject"));
+      expect(getFieldLabels(fieldsPhysicalObject)).to.deep.eq(getFieldLabels(descriptorPhysicalObject!));
+
+      // request properties of PCJ_TestSchema.TestClass and ensure it's matches our filtered result of `descriptorGeometricElement`
+      const descriptorTestClass = await Presentation.presentation.getContentDescriptor({
+        imodel,
+        rulesetOrId: createRuleset("PCJ_TestSchema", "TestClass"),
+        displayType: DefaultContentDisplayTypes.PropertyPane,
+        keys: new KeySet(),
+      });
+      const fieldsTestClass = filterFieldsByClass(descriptorGeometricElement!.fields, await classHierarchy.getClassInfo("PCJ_TestSchema", "TestClass"));
+      expect(getFieldLabels(fieldsTestClass)).to.deep.eq(getFieldLabels(descriptorTestClass!));
+    });
+
+  });
+
   describe("when request in the backend exceeds the backend timeout time", () => {
 
     let raceStub: sinon.SinonStub<[Iterable<unknown>], Promise<unknown>>;
@@ -392,6 +659,132 @@ describe("Content", () => {
   });
 
 });
+
+type FieldLabels = Array<string | FieldLabels>;
+function getFieldLabels(fields: Descriptor | Field[]): FieldLabels {
+  if (fields instanceof Descriptor)
+    fields = fields.fields;
+
+  return fields.map((f) => {
+    if (f.isNestedContentField())
+      return getFieldLabels(f.nestedFields);
+    return f.label;
+  }).sort((lhs, rhs) => {
+    if (typeof lhs === "string" && typeof rhs === "string")
+      return lhs.localeCompare(rhs);
+    if (typeof lhs === "string")
+      return -1;
+    if (typeof rhs === "string")
+      return 1;
+    return 0;
+  });
+}
+
+interface ECClassInfo {
+  id: Id64String;
+  baseClassIds: Id64String[];
+  derivedClassIds: Id64String[];
+}
+
+function cloneFilteredNestedContentField(field: NestedContentField, filterClassInfo: ECClassInfo) {
+  const clone = field.clone();
+  clone.nestedFields = filterNestedContentFieldsByClass(clone.nestedFields, filterClassInfo);
+  return clone;
+}
+function filterNestedContentFieldsByClass(fields: Field[], classInfo: ECClassInfo) {
+  let filteredFields = new Array<Field>();
+  fields.forEach((f) => {
+    if (f.isNestedContentField() && f.actualPrimaryClassIds.some((id) => classInfo.id === id || classInfo.derivedClassIds.includes(id))) {
+      const clone = cloneFilteredNestedContentField(f, classInfo);
+      if (clone.nestedFields.length > 0)
+        filteredFields.push(clone);
+    } else {
+      filteredFields.push(f);
+    }
+  });
+  return filteredFields;
+}
+function filterFieldsByClass(fields: Field[], classInfo: ECClassInfo) {
+  let filteredFields = new Array<Field>();
+  fields.forEach((f) => {
+    if (f.isNestedContentField()) {
+      // always include nested content field if its `actualPrimaryClassIds` contains either id of given class itself or one of its derived class ids
+      // note: nested content fields might have more nested fields inside them and these deeply nested fields might not apply for given class - for
+      // that we need to clone the field and pick only property fields and nested fields that apply.
+      const appliesForGivenClass = f.actualPrimaryClassIds.some((id) => classInfo.id === id || classInfo.derivedClassIds.includes(id));
+      if (appliesForGivenClass) {
+        const clone = cloneFilteredNestedContentField(f, classInfo);
+        if (clone.nestedFields.length > 0)
+          filteredFields.push(clone);
+      }
+    } else if (f.isPropertiesField()) {
+      // always include the field is at least one property in the field belongs to either base or derived class of given class
+      const appliesForGivenClass = f.properties.some((p) => {
+        const propertyClassId = p.property.classInfo.id;
+        return propertyClassId === classInfo.id
+          || classInfo.baseClassIds.includes(propertyClassId)
+          || classInfo.derivedClassIds.includes(propertyClassId);
+      });
+      if (appliesForGivenClass)
+        filteredFields.push(f);
+    } else {
+      filteredFields.push(f);
+    }
+  });
+  return filteredFields;
+}
+
+class ECClassHierarchy {
+  private constructor(private _imodel: IModelConnection, private _baseClasses: Map<Id64String, Id64String[]>, private _derivedClasses: Map<Id64String, Id64String[]>) {
+  }
+  public static async create(imodel: IModelConnection) {
+    const baseClassHierarchy = new Map();
+    const derivedClassHierarchy = new Map();
+
+    const query = "SELECT SourceECInstanceId AS ClassId, TargetECInstanceId AS BaseClassId FROM meta.ClassHasBaseClasses";
+    for await (const row of imodel.query(query)) {
+      const { classId, baseClassId } = row;
+
+      const baseClasses = baseClassHierarchy.get(classId);
+      if (baseClasses)
+        baseClasses.push(baseClassId);
+      else
+        baseClassHierarchy.set(classId, [baseClassId]);
+
+      const derivedClasses = derivedClassHierarchy.get(baseClassId);
+      if (derivedClasses)
+        derivedClasses.push(classId);
+      else
+        derivedClassHierarchy.set(baseClassId, [classId]);
+    }
+
+    return new ECClassHierarchy(imodel, baseClassHierarchy, derivedClassHierarchy);
+  }
+  private getAllBaseClassIds(classId: Id64String) {
+    const baseClassIds = this._baseClasses!.get(classId) ?? [];
+    return baseClassIds.reduce<Id64String[]>((arr, id) => {
+      arr.push(id, ...this.getAllBaseClassIds(id));
+      return arr;
+    }, []);
+  }
+  private getAllDerivedClassIds(baseClassId: Id64String) {
+    const derivedClassIds = this._derivedClasses!.get(baseClassId) ?? [];
+    return derivedClassIds.reduce<Id64String[]>((arr, id) => {
+      arr.push(id, ...this.getAllDerivedClassIds(id));
+      return arr;
+    }, []);
+  }
+  public async getClassInfo(schemaName: string, className: string) {
+    const classQuery = `SELECT c.ECInstanceId FROM meta.ECClassDef c JOIN meta.ECSchemaDef s ON s.ECInstanceId = c.Schema.Id WHERE c.Name = ? AND s.Name = ?`;
+    const result = await this._imodel.queryRows(classQuery, [className, schemaName]);
+    const { id } = result.rows[0];
+    return {
+      id,
+      baseClassIds: this.getAllBaseClassIds(id),
+      derivedClassIds: this.getAllDerivedClassIds(id),
+    };
+  }
+}
 
 function findFieldByLabel(fields: Field[], label: string, allFields?: Field[]): Field | undefined {
   const isTopLevel = (undefined === allFields);

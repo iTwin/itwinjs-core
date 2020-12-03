@@ -1114,6 +1114,9 @@ export namespace ConcurrencyControl {
 }
 
 // @alpha
+export type ConcurrencyControlChannel = ConcurrencyControl.Channel;
+
+// @alpha
 export interface CrashReportingConfig {
     crashDir: string;
     dumpProcessorScriptFileName?: string;
@@ -2727,7 +2730,6 @@ export class IModelHostConfiguration {
     // @deprecated
     briefcaseCacheDir?: string;
     cacheDir?: string;
-    // @beta
     compressCachedTiles?: boolean;
     // (undocumented)
     concurrentQuery: Config;

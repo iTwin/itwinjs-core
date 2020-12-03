@@ -1083,6 +1083,9 @@ export class ArcGisUtilities {
 // @internal
 export function areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): number;
 
+// @internal
+export function areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise<number>;
+
 // @public
 export class AuthorizedFrontendRequestContext extends AuthorizedClientRequestContext {
     constructor(accessToken: AccessToken, activityId?: string);
@@ -1180,12 +1183,12 @@ export class B3dmReader extends GltfReader {
     // (undocumented)
     read(): Promise<GltfReaderResult>;
     // (undocumented)
-    protected readFeatures(features: Mesh.Features, json: any): boolean;
+    protected readBatchTable(mesh: Mesh, json: any): void;
     }
 
 // @internal
 export class BackgroundMapGeometry {
-    constructor(_bimElevationBias: number, globeMode: GlobeMode, iModel: IModelConnection);
+    constructor(_bimElevationBias: number, globeMode: GlobeMode, _iModel: IModelConnection);
     // (undocumented)
     addFrustumDecorations(builder: GraphicBuilder, frustum: Frustum): void;
     // (undocumented)
@@ -1201,7 +1204,11 @@ export class BackgroundMapGeometry {
     // (undocumented)
     cartographicToDb(cartographic: Cartographic, result?: Point3d): Point3d;
     // (undocumented)
+    cartographicToDbFromGcs(cartographic: Cartographic, result?: Point3d): Promise<Point3d>;
+    // (undocumented)
     dbToCartographic(db: XYAndZ, result?: Cartographic): Cartographic;
+    // (undocumented)
+    dbToCartographicFromGcs(db: XYAndZ, result?: Cartographic): Promise<Cartographic>;
     // (undocumented)
     readonly geometry: Plane3dByOriginAndUnitNormal | Ellipsoid;
     // (undocumented)
@@ -1664,6 +1671,7 @@ export class ContextRealityModelState {
     // (undocumented)
     readonly iModel: IModelConnection;
     intersectsProjectExtents(): Promise<boolean>;
+    get isGlobal(): boolean;
     // (undocumented)
     matches(other: ContextRealityModelState): boolean;
     // (undocumented)
@@ -2110,11 +2118,20 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @internal (undocumented)
     getBackgroundMapGeometry(): BackgroundMapGeometry | undefined;
     // @internal (undocumented)
+    getGlobalGeometryAndHeightRange(): {
+        geometry: BackgroundMapGeometry;
+        heightRange: Range1d;
+    } | undefined;
+    // @internal (undocumented)
+    getIsBackgroundMapVisible(): boolean;
+    // @internal (undocumented)
     getMapLayerRange(layerIndex: number, isOverlay: boolean): Promise<MapCartoRectangle | undefined>;
     // @internal (undocumented)
     getMapLayers(isOverlay: boolean): MapLayerSettings[];
     // @beta
     getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined;
+    // @beta
+    getOSMBuildingDisplayIndex(): number;
     // @beta
     getRealityModelAppearanceOverride(index: number): FeatureAppearance | undefined;
     getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
@@ -2161,6 +2178,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @internal (undocumented)
     get scheduleScript(): RenderScheduleState.Script | undefined;
     set scheduleScript(script: RenderScheduleState.Script | undefined);
+    // @beta
+    setOSMBuildingDisplay(options: OsmBuildingDisplayOptions): boolean;
     abstract get settings(): DisplayStyleSettings;
     get viewFlags(): ViewFlags;
     set viewFlags(flags: ViewFlags);
@@ -2767,6 +2786,9 @@ export function extractImageSourceDimensions(source: ImageSource): Promise<Point
 // @internal
 export function eyeToCartographicOnGlobe(viewport: ScreenViewport, preserveHeight?: boolean): Cartographic | undefined;
 
+// @internal
+export function eyeToCartographicOnGlobeFromGcs(viewport: ScreenViewport, preserveHeight?: boolean): Promise<Cartographic | undefined>;
+
 // @alpha
 export class FeatureLogBatchClient {
     constructor(_getRequestContext: () => Promise<AuthorizedClientRequestContext>, options?: Partial<FeatureLogBatchOptions>, _client?: UsageLoggingClient);
@@ -3138,6 +3160,12 @@ export function getCesiumAccessTokenAndEndpointUrl(assetId?: number, requestKey?
     url?: string;
 }>;
 
+// @beta (undocumented)
+export function getCesiumAssetUrl(osmAssetId: number, requestKey: string): string;
+
+// @internal (undocumented)
+export function getCesiumOSMBuildingsUrl(): string;
+
 // @internal (undocumented)
 export function getCesiumTerrainProvider(iModel: IModelConnection, modelId: Id64String, wantSkirts: boolean, exaggeration: number): Promise<TerrainMeshProvider | undefined>;
 
@@ -3220,6 +3248,8 @@ export abstract class GltfReader {
     protected readonly _nodes: any;
     abstract read(): Promise<GltfReaderResult>;
     // (undocumented)
+    protected readBatchTable(_mesh: Mesh, _json: any): void;
+    // (undocumented)
     protected readBufferData(json: any, accessorName: string, type: GltfDataType): GltfBufferData | undefined;
     // (undocumented)
     readBufferData16(json: any, accessorName: string): GltfBufferData | undefined;
@@ -3231,8 +3261,6 @@ export abstract class GltfReader {
     readBufferDataFloat(json: any, accessorName: string): GltfBufferData | undefined;
     // (undocumented)
     protected readFeatureIndices(_json: any): number[] | undefined;
-    // (undocumented)
-    protected readFeatures(features: Mesh.Features, json: any): boolean;
     // (undocumented)
     protected readGltfAndCreateGraphics(isLeaf: boolean, featureTable: FeatureTable, contentRange: ElementAlignedBox3d, transformToRoot?: Transform, pseudoRtcBias?: Vector3d, instances?: InstancedGraphicParams): GltfReaderResult;
     // (undocumented)
@@ -3383,6 +3411,7 @@ export abstract class GraphicBuilder {
     abstract addPointString2d(points: Point2d[], zDepth: number): void;
     abstract addPolyface(meshData: Polyface, filled: boolean): void;
     addRangeBox(range: Range3d): void;
+    addRangeBoxFromCorners(p: Point3d[]): void;
     abstract addShape(points: Point3d[]): void;
     abstract addShape2d(points: Point2d[], zDepth: number): void;
     // @alpha
@@ -4799,6 +4828,8 @@ export class MapTile extends RealityTile {
     // (undocumented)
     getRangeCorners(result: Point3d[]): Point3d[];
     // (undocumented)
+    getSizeProjectionCorners(): Point3d[] | undefined;
+    // (undocumented)
     get graphicType(): TileGraphicType;
     // (undocumented)
     get hasGraphics(): boolean;
@@ -5937,7 +5968,7 @@ export class OffScreenTarget extends Target {
     // (undocumented)
     protected _assignDC(): boolean;
     // (undocumented)
-    protected _beginPaint(): void;
+    protected _beginPaint(fbo: FrameBuffer): void;
     // (undocumented)
     protected _endPaint(): void;
     // (undocumented)
@@ -5989,7 +6020,7 @@ export class OnScreenTarget extends Target {
     // (undocumented)
     protected _assignDC(): boolean;
     // (undocumented)
-    protected _beginPaint(): void;
+    protected _beginPaint(fbo: FrameBuffer): void;
     // (undocumented)
     collectStatistics(stats: RenderMemory.Statistics): void;
     // (undocumented)
@@ -6077,6 +6108,12 @@ export class OrthographicViewState extends SpatialViewState {
     static get className(): string;
     // (undocumented)
     supportsCamera(): boolean;
+}
+
+// @beta
+export interface OsmBuildingDisplayOptions {
+    appearanceOverrides?: FeatureAppearance;
+    onOff?: boolean;
 }
 
 // @public
@@ -6403,7 +6440,7 @@ export class QuantityFormatter implements UnitsProvider {
     protected _imperialFormatSpecsByType: Map<QuantityType, FormatterSpec>;
     // (undocumented)
     protected _imperialParserSpecsByType: Map<QuantityType, ParserSpec>;
-    loadFormatAndParsingMaps(useImperial: boolean): Promise<void>;
+    loadFormatAndParsingMaps(useImperial: boolean, restartActiveTool?: boolean): Promise<void>;
     protected loadFormatSpecsForQuantityTypes(useImperial: boolean): Promise<void>;
     protected loadKoqFormatSpecs(koq: string): Promise<void>;
     protected loadParsingSpecsForQuantityTypes(useImperial: boolean): Promise<void>;
@@ -6454,7 +6491,7 @@ export function queryTerrainElevationOffset(viewport: ScreenViewport, carto: Car
 export function rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined;
 
 // @internal
-export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem, yAxisUp: boolean): RenderGraphic | undefined;
+export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined;
 
 // @internal (undocumented)
 export type RealityModelSource = ViewState | DisplayStyleState;
@@ -6473,6 +6510,8 @@ export class RealityModelTileClient {
 // @internal (undocumented)
 export class RealityModelTileTree extends RealityTileTree {
     constructor(params: RealityTileTreeParams);
+    // (undocumented)
+    get isContentUnbounded(): boolean;
 }
 
 // @internal (undocumented)
@@ -6483,6 +6522,8 @@ export namespace RealityModelTileTree {
     export abstract class Reference extends TileTreeReference {
         // (undocumented)
         abstract get classifiers(): SpatialClassifiers | undefined;
+        // (undocumented)
+        unionFitRange(union: Range3d): void;
     }
     // (undocumented)
     export interface ReferenceProps {
@@ -6510,7 +6551,10 @@ export class RealityModelTileUtils {
     // (undocumented)
     static maximumSizeFromGeometricTolerance(range: Range3d, geometricError: number): number;
     // (undocumented)
-    static rangeFromBoundingVolume(boundingVolume: any): Range3d | undefined;
+    static rangeFromBoundingVolume(boundingVolume: any): {
+        range: Range3d;
+        corners?: Point3d[];
+    } | undefined;
     // (undocumented)
     static transformFromJson(jTrans: number[] | undefined): Transform;
 }
@@ -6520,6 +6564,8 @@ export class RealityTile extends Tile {
     constructor(props: RealityTileParams, tree: RealityTileTree);
     // (undocumented)
     addBoundingGraphic(builder: GraphicBuilder, color: ColorDef): void;
+    // (undocumented)
+    readonly additiveRefinement?: boolean;
     // (undocumented)
     allChildrenIncluded(tiles: Tile[]): boolean;
     // (undocumented)
@@ -6535,7 +6581,11 @@ export class RealityTile extends Tile {
     // (undocumented)
     protected getLoadedRealityChildren(args: TileDrawArgs): boolean;
     // (undocumented)
+    getSizeProjectionCorners(): Point3d[] | undefined;
+    // (undocumented)
     get graphicType(): TileGraphicType | undefined;
+    // (undocumented)
+    get isDisplayable(): boolean;
     // (undocumented)
     get isLoaded(): boolean;
     // (undocumented)
@@ -6553,11 +6603,15 @@ export class RealityTile extends Tile {
     // (undocumented)
     get maxDepth(): number;
     // (undocumented)
+    readonly noContentButTerminateOnSelection?: boolean;
+    // (undocumented)
     preloadRealityTilesAtDepth(depth: number, context: TraversalSelectionContext, args: TileDrawArgs): void;
     // (undocumented)
     preloadTilesInFrustum(args: TileDrawArgs, context: TraversalSelectionContext, preloadSizeModifier: number): void;
     // (undocumented)
     purgeContents(olderThan: BeTimePoint): void;
+    // (undocumented)
+    readonly rangeCorners?: Point3d[];
     // (undocumented)
     readContent(data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<TileContent>;
     // (undocumented)
@@ -6580,9 +6634,9 @@ export class RealityTile extends Tile {
 
 // @internal (undocumented)
 export class RealityTileDrawArgs extends TileDrawArgs {
-    constructor(args: TileDrawArgs, worldToViewMap: Map4d, frustumPlanes: FrustumPlanes);
+    constructor(args: TileDrawArgs, worldToViewMap: Map4d, frustumPlanes: FrustumPlanes, maxSelectionCount?: number | undefined);
     // (undocumented)
-    getPixelSize(tile: Tile): number;
+    maxSelectionCount?: number | undefined;
     // (undocumented)
     get worldToViewMap(): Map4d;
     }
@@ -6634,6 +6688,12 @@ export abstract class RealityTileLoader {
 
 // @internal (undocumented)
 export interface RealityTileParams extends TileParams {
+    // (undocumented)
+    readonly additiveRefinement?: boolean;
+    // (undocumented)
+    readonly noContentButTerminateOnSelection?: boolean;
+    // (undocumented)
+    readonly rangeCorners?: Point3d[];
     // (undocumented)
     readonly transformToRoot?: Transform;
 }
@@ -7572,7 +7632,7 @@ export class ScreenViewport extends Viewport {
     // @internal (undocumented)
     addNewDiv(className: string, overflowHidden: boolean, z: number): HTMLDivElement;
     // @internal
-    animateFlyoverToGlobalLocation(destination: GlobalLocation): void;
+    animateFlyoverToGlobalLocation(destination: GlobalLocation): Promise<void>;
     // @internal (undocumented)
     animateFrustumChange(options?: ViewAnimationOptions): void;
     // @internal
@@ -8481,6 +8541,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     addBatch(batch: Batch): void;
     // (undocumented)
+    protected allocateFbo(): FrameBuffer | undefined;
+    // (undocumented)
     ambientOcclusionSettings: AmbientOcclusion.Settings;
     // (undocumented)
     get analysisFraction(): number;
@@ -8498,7 +8560,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     protected abstract _assignDC(): boolean;
     // (undocumented)
-    protected abstract _beginPaint(): void;
+    protected abstract _beginPaint(fbo: FrameBuffer): void;
     // (undocumented)
     beginPerfMetricFrame(sceneMilSecElapsed?: number, readPixels?: boolean): void;
     // (undocumented)
@@ -8558,8 +8620,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     get currentViewFlags(): ViewFlags;
     // (undocumented)
-    protected _dcAssigned: boolean;
-    // (undocumented)
     get debugControl(): RenderTargetDebugControl;
     // (undocumented)
     readonly decorationsState: BranchState;
@@ -8571,6 +8631,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     displayRealityTileRanges: boolean;
     // (undocumented)
     dispose(): void;
+    // (undocumented)
+    protected disposeFbo(): void;
     // (undocumented)
     drawForReadPixels: boolean;
     // (undocumented)
@@ -8593,8 +8655,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     endPerfMetricFrame(readPixels?: boolean): void;
     // (undocumented)
     endPerfMetricRecord(readPixels?: boolean): void;
-    // (undocumented)
-    protected _fbo?: FrameBuffer;
     // (undocumented)
     get flashed(): Id64.Uint32Pair | undefined;
     // (undocumented)
@@ -8881,6 +8941,8 @@ export abstract class Tile {
     extendRangeForContent(range: Range3d, matrix: Matrix4d, treeTransform: Transform, frustumPlanes?: FrustumPlanes): void;
     // @internal (undocumented)
     getRangeGraphic(context: SceneContext): RenderGraphic | undefined;
+    // @internal
+    getSizeProjectionCorners(): Point3d[] | undefined;
     protected _graphic?: RenderGraphic;
     get hasContentRange(): boolean;
     get hasGraphics(): boolean;
@@ -9181,6 +9243,8 @@ export class TileDrawArgs {
     markChildrenLoading(): void;
     markReady(tile: Tile): void;
     markUsed(tile: Tile): void;
+    // (undocumented)
+    get maxRealityTreeSelectionCount(): number | undefined;
     // @internal (undocumented)
     readonly now: BeTimePoint;
     // @internal (undocumented)
@@ -9873,7 +9937,7 @@ export class TraversalDetails {
 
 // @internal (undocumented)
 export class TraversalSelectionContext {
-    constructor(selected: Tile[], displayedDescendants: Tile[][], preloadDebugBuilder?: GraphicBuilder | undefined);
+    constructor(selected: Tile[], displayedDescendants: Tile[][], preloadDebugBuilder?: GraphicBuilder | undefined, _maxSelectionCount?: number | undefined);
     // (undocumented)
     displayedDescendants: Tile[][];
     // (undocumented)
@@ -9888,6 +9952,8 @@ export class TraversalSelectionContext {
     select(tiles: RealityTile[], args: TileDrawArgs): void;
     // (undocumented)
     selected: Tile[];
+    // (undocumented)
+    get selectionCountExceeded(): boolean;
     // (undocumented)
     selectOrQueue(tile: RealityTile, args: TileDrawArgs, traversalDetails: TraversalDetails): void;
 }
@@ -11126,6 +11192,8 @@ export abstract class Viewport implements IDisposable {
     // @internal
     setModelDisplayTransformProvider(provider: ModelDisplayTransformProvider): void;
     setNeverDrawn(ids: Id64Set): void;
+    // @beta
+    setOSMBuildingDisplay(options: OsmBuildingDisplayOptions): void;
     // @internal (undocumented)
     setRedrawPending(): void;
     // @internal (undocumented)
@@ -11530,8 +11598,8 @@ export abstract class ViewState3d extends ViewState {
     protected static calculateMaxDepth(delta: Vector3d, zVec: Vector3d): number;
     readonly camera: Camera;
     protected _cameraOn: boolean;
-    // (undocumented)
     cartographicToRoot(cartographic: Cartographic, result?: Point3d): Point3d | undefined;
+    cartographicToRootFromGcs(cartographic: Cartographic, result?: Point3d): Promise<Point3d | undefined>;
     centerEyePoint(backDistance?: number): void;
     centerFocusDistance(): void;
     // @internal
@@ -11593,6 +11661,8 @@ export abstract class ViewState3d extends ViewState {
     lookAt(eyePoint: XYAndZ, targetPoint: XYAndZ, upVector: Vector3d, newExtents?: XAndY, frontDistance?: number, backDistance?: number, opts?: ViewChangeOptions): ViewStatus;
     // @alpha
     lookAtGlobalLocation(eyeHeight: number, pitchAngleRadians?: number, location?: GlobalLocation, eyePoint?: Point3d): number;
+    // @alpha
+    lookAtGlobalLocationFromGcs(eyeHeight: number, pitchAngleRadians?: number, location?: GlobalLocation, eyePoint?: Point3d): Promise<number>;
     lookAtUsingLensAngle(eyePoint: Point3d, targetPoint: Point3d, upVector: Vector3d, fov: Angle, frontDistance?: number, backDistance?: number, opts?: ViewChangeOptions): ViewStatus;
     // (undocumented)
     minimumFrontDistance(): number;
@@ -11601,8 +11671,8 @@ export abstract class ViewState3d extends ViewState {
     // @deprecated
     onRenderFrame(_viewport: Viewport): void;
     readonly origin: Point3d;
-    // (undocumented)
     rootToCartographic(root: XYAndZ, result?: Cartographic): Cartographic | undefined;
+    rootToCartographicFromGcs(root: XYAndZ, result?: Cartographic): Promise<Cartographic | undefined>;
     rotateCameraLocal(angle: Angle, axis: Vector3d, aboutPt?: Point3d): ViewStatus;
     rotateCameraWorld(angle: Angle, axis: Vector3d, aboutPt?: Point3d): ViewStatus;
     readonly rotation: Matrix3d;

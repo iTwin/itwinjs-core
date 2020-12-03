@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/geometry-core",
+      "comment": "When faceting a sphere primitive, apply stroke options (instead of ignoring them and using fixed count)",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "69321059+EarlinLutz@users.noreply.github.com"
+}

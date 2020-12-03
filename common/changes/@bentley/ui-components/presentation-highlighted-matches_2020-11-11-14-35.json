@@ -1,0 +1,21 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-components",
+      "comment": "Added matchesCount attribute to [[PropertyDataFilterResult]] to optionally tell how many matches there were in a [[PropertyRecord]]. Matches in label and value are separated.",
+      "type": "none"
+    },
+    {
+      "packageName": "@bentley/ui-components",
+      "comment": "Added match counting functionality to [[FilteringPropertyDataProvider]]. The returned [[FilteredPropertyData]] now has total matches count and a function get information about a match at specific index.",
+      "type": "none"
+    },
+    {
+      "packageName": "@bentley/ui-components",
+      "comment": "Added highlightedRecordProps to [[VirtualizedPropertyGridProps]] to allow highlighting specific parts of rendered PropertyRecords.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "30312645+aurislt7@users.noreply.github.com"
+}
