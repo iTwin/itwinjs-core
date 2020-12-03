@@ -10,8 +10,8 @@ import * as React from "react";
 import { SpecialKey } from "@bentley/ui-abstract";
 import { CommonProps, ExpandableBlock } from "@bentley/ui-core";
 import { HighlightedText } from "../../common/HighlightedText";
+import { HighlightingComponentProps } from "../../common/HighlightingComponentProps";
 import { PropertyCategory } from "../PropertyDataProvider";
-import { HighlightingComponentProps } from "./VirtualizedPropertyGrid";
 
 /**
  * Properties for the [[PropertyCategoryBlock]] React component
@@ -25,7 +25,7 @@ export interface PropertyCategoryBlockProps extends CommonProps {
   /** Properties used for highlighting
   * @beta
   */
-  highlight?: HighlightingComponentProps & {applyOnCategory: boolean};
+  highlight?: HighlightingComponentProps;
 }
 
 /**
@@ -61,7 +61,7 @@ export class PropertyCategoryBlock extends React.Component<PropertyCategoryBlock
   public render() {
     const { highlight, category, children, ...props} = this.props;
     const activeMatchIndex = this.props.category.name === highlight?.activeMatch?.highlightedItemIdentifier ? highlight.activeMatch.highlightIndex : undefined;
-    const label = highlight?.applyOnCategory ?
+    const label = highlight?
       (<HighlightedText text={category.label} activeMatchIndex={activeMatchIndex} searchText={highlight.highlightedText} />) :
       category.label;
     return (

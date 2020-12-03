@@ -7,8 +7,8 @@ import React from "react";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
 import { render } from "@testing-library/react";
+import { HighlightingComponentProps } from "../../../ui-components/common/HighlightingComponentProps";
 import { CommonPropertyRenderer } from "../../../ui-components/properties/renderers/CommonPropertyRenderer";
-import { HighlightingComponentProps } from "../../../ui-components/propertygrid/component/VirtualizedPropertyGrid";
 
 describe("CommonPropertyRenderer", () => {
   describe("createNewDisplayValue", () => {

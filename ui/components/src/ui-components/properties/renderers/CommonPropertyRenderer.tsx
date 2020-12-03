@@ -11,7 +11,7 @@ import { PropertyRecord } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
 import { countMatchesInString } from "../../common/countMatchesInString";
 import { HighlightedText } from "../../common/HighlightedText";
-import { HighlightingComponentProps } from "../../propertygrid/component/VirtualizedPropertyGrid";
+import { HighlightingComponentProps } from "../../common/HighlightingComponentProps";
 import { PropertyContainerType, PropertyValueRendererContext, PropertyValueRendererManager } from "../ValueRendererManager";
 
 /**
@@ -76,7 +76,6 @@ export class CommonPropertyRenderer {
     const activeMatch = highlight.activeMatch;
     const propertyName = activeMatch?.highlightedItemIdentifier;
     const matchIndex = activeMatch?.highlightIndex ?? 0;
-
     let labelMatches: number;
 
     if (highlight.applyOnLabel){
@@ -86,7 +85,6 @@ export class CommonPropertyRenderer {
     }
 
     const activeMatchIndex = (propertyRecord.property.name === propertyName) && ((matchIndex - labelMatches) >= 0) ? (matchIndex - labelMatches) : undefined;
-
     const highlightCallback = (text: string) => (<HighlightedText text={text} activeMatchIndex={activeMatchIndex} searchText={highlight.highlightedText} />);
 
     return highlightCallback;

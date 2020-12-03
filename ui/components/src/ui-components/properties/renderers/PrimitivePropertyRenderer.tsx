@@ -9,7 +9,7 @@
 import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
 import { HighlightedText } from "../../common/HighlightedText";
-import { HighlightingComponentProps } from "../../propertygrid/component/VirtualizedPropertyGrid";
+import { HighlightingComponentProps } from "../../common/HighlightingComponentProps";
 import { CommonPropertyRenderer } from "./CommonPropertyRenderer";
 import { PrimitivePropertyLabelRenderer } from "./label/PrimitivePropertyLabelRenderer";
 import { SharedRendererProps } from "./PropertyRenderer";

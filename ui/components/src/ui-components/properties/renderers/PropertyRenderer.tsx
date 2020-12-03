@@ -9,8 +9,8 @@
 import * as React from "react";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { Orientation, RatioChangeResult } from "@bentley/ui-core";
+import { HighlightingComponentProps } from "../../common/HighlightingComponentProps";
 import { EditorContainer, PropertyUpdatedArgs } from "../../editors/EditorContainer";
-import { HighlightingComponentProps } from "../../propertygrid/component/VirtualizedPropertyGrid";
 import { UiComponents } from "../../UiComponents";
 import { PropertyValueRendererManager } from "../ValueRendererManager";
 import { ActionButtonRenderer } from "./ActionButtonRenderer";

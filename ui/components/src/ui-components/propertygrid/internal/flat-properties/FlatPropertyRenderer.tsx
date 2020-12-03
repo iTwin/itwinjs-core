@@ -9,12 +9,12 @@
 import * as React from "react";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
+import { HighlightingComponentProps } from "../../../common/HighlightingComponentProps";
 import { EditorContainer, PropertyUpdatedArgs } from "../../../editors/EditorContainer";
 import { CommonPropertyRenderer } from "../../../properties/renderers/CommonPropertyRenderer";
 import { PrimitivePropertyRenderer, PrimitiveRendererProps } from "../../../properties/renderers/PrimitivePropertyRenderer";
 import { SharedRendererProps } from "../../../properties/renderers/PropertyRenderer";
 import { PropertyValueRendererManager } from "../../../properties/ValueRendererManager";
-import { HighlightingComponentProps } from "../../component/VirtualizedPropertyGrid";
 import { PropertyCategory } from "../../PropertyDataProvider";
 import { FlatNonPrimitivePropertyRenderer } from "./FlatNonPrimitivePropertyRenderer";
 

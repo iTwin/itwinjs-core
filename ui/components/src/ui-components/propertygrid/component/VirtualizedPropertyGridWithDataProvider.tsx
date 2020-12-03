@@ -10,11 +10,12 @@
 import React from "react";
 import { SpinnerSize } from "@bentley/ui-core";
 import { DelayedSpinner } from "../../common/DelayedSpinner";
+import { HighlightingComponentProps } from "../../common/HighlightingComponentProps";
 import { FilteredType } from "../dataproviders/filterers/PropertyDataFiltererBase";
 import { usePropertyGridEventHandler, usePropertyGridModel, usePropertyGridModelSource } from "../internal/PropertyGridHooks";
 import { IPropertyDataProvider } from "../PropertyDataProvider";
 import { CommonPropertyGridProps } from "./PropertyGridCommons";
-import { HighlightingComponentProps, VirtualizedPropertyGrid } from "./VirtualizedPropertyGrid";
+import { VirtualizedPropertyGrid } from "./VirtualizedPropertyGrid";
 
 /** Properties for [[VirtualizedPropertyGridWithDataProvider]] React component
  * @alpha

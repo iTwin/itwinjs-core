@@ -11,7 +11,7 @@ import * as moq from "typemoq";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
 import { act, fireEvent, getByTitle, render, waitForDomChange, waitForElement } from "@testing-library/react";
-import { HighlightingComponentProps } from "../../../ui-components/propertygrid/component/VirtualizedPropertyGrid";
+import { HighlightingComponentProps } from "../../../ui-components/common/HighlightingComponentProps";
 import { VirtualizedPropertyGridWithDataProvider } from "../../../ui-components/propertygrid/component/VirtualizedPropertyGridWithDataProvider";
 import { FilteredType } from "../../../ui-components/propertygrid/dataproviders/filterers/PropertyDataFiltererBase";
 import * as FlatPropertyRendererExports from "../../../ui-components/propertygrid/internal/flat-properties/FlatPropertyRenderer";

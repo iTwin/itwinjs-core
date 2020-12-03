@@ -756,20 +756,6 @@ export interface CategorizedPropertyItem extends FlatGridItemBase {
 export type CategorizedPropertyTypes = FlatGridItemType.Array | FlatGridItemType.Primitive | FlatGridItemType.Struct;
 
 // @alpha
-export class CategoryPropertyDataFilterer extends PropertyDataFiltererBase {
-    constructor(filterText?: string);
-    // (undocumented)
-    categoryMatchesFilter(node: PropertyCategory): Promise<PropertyDataFilterResult>;
-    // (undocumented)
-    get filterText(): string;
-    set filterText(value: string);
-    // (undocumented)
-    get isActive(): boolean;
-    // (undocumented)
-    recordMatchesFilter(): Promise<PropertyDataFilterResult>;
-}
-
-// @alpha
 export interface CategoryRecordsDict {
     // (undocumented)
     [categoryName: string]: PropertyRecord[];
@@ -1390,10 +1376,8 @@ export class DirectionHelpers {
 }
 
 // @alpha
-export class DisplayValuePropertyDataFilterer extends PropertyDataFiltererBase {
+export class DisplayValuePropertyDataFilterer extends PropertyRecordDataFiltererBase {
     constructor(filterText?: string);
-    // (undocumented)
-    categoryMatchesFilter(): Promise<PropertyDataFilterResult>;
     // (undocumented)
     get filterText(): string;
     set filterText(value: string);
@@ -1842,9 +1826,21 @@ export abstract class FilterDescriptorCollectionBase<TDescriptor extends FilterD
 // @alpha
 export interface FilteredPropertyData extends PropertyData {
     // (undocumented)
-    getMatchByIndex?: (index: number) => PropertyMatchInfo | undefined;
+    filteredTypes?: FilteredType[];
+    // (undocumented)
+    getMatchByIndex?: (index: number) => HighlightInfo | undefined;
     // (undocumented)
     matchesCount?: number;
+}
+
+// @beta
+export enum FilteredType {
+    // (undocumented)
+    Category = 0,
+    // (undocumented)
+    Label = 1,
+    // (undocumented)
+    Value = 2
 }
 
 // @public
@@ -2052,14 +2048,6 @@ export interface HighlightableTreeNodeProps {
 export interface HighlightableTreeProps {
     // (undocumented)
     activeMatch?: ActiveMatchInfo;
-    // (undocumented)
-    searchText: string;
-}
-
-// @beta
-export interface HighlightedPropertyProps {
-    // (undocumented)
-    activeMatch?: PropertyMatchInfo;
     // (undocumented)
     searchText: string;
 }
@@ -2481,10 +2469,8 @@ export interface ITreeNodeLoaderWithProvider<TDataProvider extends TreeDataProvi
 }
 
 // @alpha
-export class LabelPropertyDataFilterer extends PropertyDataFiltererBase {
+export class LabelPropertyDataFilterer extends PropertyRecordDataFiltererBase {
     constructor(filterText?: string);
-    // (undocumented)
-    categoryMatchesFilter(): Promise<PropertyDataFilterResult>;
     // (undocumented)
     get filterText(): string;
     set filterText(value: string);
@@ -3170,7 +3156,7 @@ export function PrimitivePropertyValueRendererImpl(props: PrimitivePropertyValue
 // @public
 export interface PrimitiveRendererProps extends SharedRendererProps {
     // @beta
-    highlightedPropertyProps?: HighlightedPropertyProps;
+    highlight?: HighlightingComponentProps;
     indentation?: number;
     valueElement?: React.ReactNode;
     valueElementRenderer?: () => React.ReactNode;
@@ -3201,8 +3187,26 @@ export class PropertyCategoryBlock extends React.Component<PropertyCategoryBlock
 export interface PropertyCategoryBlockProps extends CommonProps {
     category: PropertyCategory;
     // @beta
-    highlightedPropertyProps?: HighlightedPropertyProps;
+    highlight?: HighlightingComponentProps;
     onExpansionToggled?: (categoryName: string) => void;
+}
+
+// @alpha
+export abstract class PropertyCategoryDataFiltererBase extends PropertyDataFiltererBase {
+    // (undocumented)
+    recordMatchesFilter(): Promise<PropertyDataFilterResult>;
+}
+
+// @alpha
+export class PropertyCategoryLabelFilterer extends PropertyCategoryDataFiltererBase {
+    constructor(filterText?: string);
+    // (undocumented)
+    categoryMatchesFilter(node: PropertyCategory): Promise<PropertyDataFilterResult>;
+    // (undocumented)
+    get filterText(): string;
+    set filterText(value: string);
+    // (undocumented)
+    get isActive(): boolean;
 }
 
 // @public
@@ -3252,10 +3256,8 @@ export abstract class PropertyDataFiltererBase implements IPropertyDataFilterer 
 
 // @alpha
 export interface PropertyDataFilterResult {
-    matchesCount?: {
-        label?: number;
-        value?: number;
-    };
+    filteredTypes?: FilteredType[];
+    matchesCount?: number;
     matchesFilter: boolean;
     shouldExpandNodeParents?: boolean;
     shouldForceIncludeDescendants?: boolean;
@@ -3422,19 +3424,6 @@ export interface PropertyLabelRendererProps {
     tooltip?: string;
 }
 
-// @beta
-export interface PropertyMatchInfo {
-    // (undocumented)
-    matchCounts: {
-        label: number;
-        value: number;
-    };
-    // (undocumented)
-    matchIndex: number;
-    // (undocumented)
-    propertyName: string;
-}
-
 // @public
 export interface PropertyPopupState {
     // (undocumented)
@@ -3444,6 +3433,12 @@ export interface PropertyPopupState {
         top: number;
         left: number;
     };
+}
+
+// @alpha
+export abstract class PropertyRecordDataFiltererBase extends PropertyDataFiltererBase {
+    // (undocumented)
+    categoryMatchesFilter(): Promise<PropertyDataFilterResult>;
 }
 
 // @public
@@ -3465,7 +3460,7 @@ export class PropertyRenderer extends React.Component<PropertyRendererProps, Pro
 // @public
 export interface PropertyRendererProps extends SharedRendererProps {
     // @beta
-    highlightedPropertyProps?: HighlightedPropertyProps;
+    highlight?: HighlightingComponentProps;
     indentation?: number;
     // @beta
     isEditing?: boolean;
@@ -5485,7 +5480,9 @@ export interface VirtualizedPropertyGridContext {
         isResizeHandleBeingDragged?: boolean;
         onResizeHandleDragChanged?: (isDragStarted: boolean) => void;
         columnInfo?: PropertyGridColumnInfo;
-        highlightedPropertyProps?: HighlightedPropertyProps;
+        highlight?: HighlightingComponentProps & {
+            filteredTypes?: FilteredType[];
+        };
     };
     // (undocumented)
     gridEventHandler: IPropertyGridEventHandler;
@@ -5516,7 +5513,9 @@ export interface VirtualizedPropertyGridProps extends CommonPropertyGridProps {
     // (undocumented)
     eventHandler: IPropertyGridEventHandler;
     // (undocumented)
-    highlightedPropertyProps?: HighlightedPropertyProps;
+    highlight?: HighlightingComponentProps & {
+        filteredTypes?: FilteredType[];
+    };
     // (undocumented)
     model: IPropertyGridModel;
 }
@@ -5529,7 +5528,9 @@ export interface VirtualizedPropertyGridWithDataProviderProps extends CommonProp
     // (undocumented)
     dataProvider: IPropertyDataProvider;
     // (undocumented)
-    highlightedPropertyProps?: HighlightedPropertyProps;
+    highlight?: HighlightingComponentProps & {
+        filteredTypes?: FilteredType[];
+    };
 }
 
 // @beta

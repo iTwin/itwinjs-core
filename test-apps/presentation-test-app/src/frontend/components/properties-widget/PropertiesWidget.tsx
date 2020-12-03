@@ -14,9 +14,10 @@ import { FavoritePropertiesScope, Presentation } from "@bentley/presentation-fro
 import { PropertyRecord } from "@bentley/ui-abstract";
 import {
   ActionButtonRendererProps, CompositeFilterType, CompositePropertyDataFilterer, DisplayValuePropertyDataFilterer, FilteringInput,
-  FilteringInputStatus, FilteringPropertyDataProvider, HighlightInfo, LabelPropertyDataFilterer, PropertyCategory, PropertyCategoryLabelFilterer,
-  PropertyData, PropertyGridContextMenuArgs, useAsyncValue, useDebouncedAsyncValue, VirtualizedPropertyGridWithDataProvider,
+  FilteringInputStatus, FilteringPropertyDataProvider, LabelPropertyDataFilterer, PropertyCategory, PropertyCategoryLabelFilterer, PropertyData,
+  PropertyGridContextMenuArgs, useAsyncValue, useDebouncedAsyncValue, VirtualizedPropertyGridWithDataProvider,
 } from "@bentley/ui-components";
+import { HighlightInfo } from "@bentley/ui-components/lib/ui-components/common/HighlightingComponentProps";
 import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Orientation, Toggle, useDisposable } from "@bentley/ui-core";
 
 const FAVORITES_SCOPE = FavoritePropertiesScope.IModel;
@@ -87,10 +88,6 @@ export function PropertiesWidget(props: Props) {
     } : undefined;
   }, [filteringResult]);
 
-  const filteredTypes = React.useMemo(()=>{
-    return filteringResult?.filteredTypes;
-  }, [filteringResult]);
-
   React.useEffect(() => {
     if (filteringResult?.getMatchByIndex)
       setActiveMatch(filteringResult.getMatchByIndex(activeMatchIndex));
@@ -114,7 +111,7 @@ export function PropertiesWidget(props: Props) {
       orientation={Orientation.Horizontal}
       horizontalOrientationMinWidth={500}
       highlight={filterText && filterText.length !== 0 ?
-        { highlightedText: filterText, activeMatch, filteredTypes }:
+        { highlightedText: filterText, activeMatch, filteredTypes: filteringResult?.filteredTypes }:
         undefined
       }
     />);

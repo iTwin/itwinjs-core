@@ -58,7 +58,6 @@ beta;BreadcrumbUpdateEvent
 beta;BreadcrumbUpdateEventArgs
 alpha;CategorizedPropertyItem 
 alpha;CategorizedPropertyTypes = FlatGridItemType.Array | FlatGridItemType.Primitive | FlatGridItemType.Struct
-alpha;CategoryPropertyDataFilterer 
 alpha;CategoryRecordsDict
 beta;CellEditingEngine
 public;CellItem
@@ -166,6 +165,7 @@ beta;FilterDescriptor
 beta;FilterDescriptorCollection 
 beta;class FilterDescriptorCollectionBase
 alpha;FilteredPropertyData 
+beta;FilteredType
 public;FilteringInput 
 public;FilteringInputProps = DEPRECATED_FilteringInputProps | NEW_FilteringInputProps
 beta;FilteringInputStatus
@@ -189,7 +189,6 @@ public;hasSelectionModeFlag: (selectionMode: SelectionMode, flag: SelectionModeF
 public;HexadecimalTypeConverter 
 beta;HighlightableTreeNodeProps
 beta;HighlightableTreeProps
-beta;HighlightedPropertyProps
 beta;HighlightingEngine
 internal;HitBoxX
 internal;HitBoxY
@@ -321,6 +320,8 @@ public;PrimitiveRendererProps
 public;PropertyCategory
 public;PropertyCategoryBlock 
 public;PropertyCategoryBlockProps 
+alpha;class PropertyCategoryDataFiltererBase 
+alpha;PropertyCategoryLabelFilterer 
 public;PropertyContainerType
 public;PropertyData
 public;PropertyDataChangeEvent 
@@ -348,8 +349,8 @@ alpha;PropertyGridModelSource
 public;PropertyGridProps 
 internal;PropertyLabelRenderer 
 public;PropertyLabelRendererProps
-beta;PropertyMatchInfo
 public;PropertyPopupState
+alpha;class PropertyRecordDataFiltererBase 
 public;PropertyRenderer 
 public;PropertyRendererProps 
 beta;PropertyUpdatedArgs

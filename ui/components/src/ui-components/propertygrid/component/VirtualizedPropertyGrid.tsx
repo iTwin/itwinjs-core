@@ -16,6 +16,7 @@ import { assert } from "@bentley/bentleyjs-core";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { Orientation, RatioChangeResult } from "@bentley/ui-core";
 import { FilteredType, MutableCategorizedPrimitiveProperty, MutableGridCategory } from "../../../ui-components";
+import { HighlightingComponentProps } from "../../common/HighlightingComponentProps";
 import { createContextWithMandatoryProvider } from "../../common/UseContextWithMandatoryProvider";
 import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
 import { ActionButtonRenderer } from "../../properties/renderers/ActionButtonRenderer";
@@ -93,28 +94,6 @@ export interface VirtualizedPropertyGridContext {
 
     highlight?: HighlightingComponentProps & { filteredTypes?: FilteredType[] };
   };
-}
-
-/**
- * Record or Category match info used for identification of a specific match in record or category
- * @beta
- */
-export interface HighlightInfo {
-  /* Name of the record's or category's property, used for its identification */
-  highlightedItemIdentifier: string;
-  /* Index of highlighted part in a record or category */
-  highlightIndex: number;
-}
-
-/**
- * Properties used for highlighting matching parts in records or categories and actively highlighting one match in a specific record or category
- * @beta
- */
-export interface HighlightingComponentProps {
-  /* Filter text which we want to highlight */
-  highlightedText: string;
-  /* Information about the match which we want to actively highlight */
-  activeMatch?: HighlightInfo;
 }
 
 /**
@@ -392,8 +371,8 @@ const FlatGridItemNode = React.memo(
                 style={gridContext.style}
                 category={node.derivedCategory}
                 onExpansionToggled={onExpansionToggled}
-                highlight={gridContext.highlight ?
-                  { applyOnCategory: (gridContext.highlight.filteredTypes?.includes(FilteredType.Category)) ?? false, ...gridContext.highlight } :
+                highlight={gridContext.highlight?.filteredTypes?.includes(FilteredType.Category)?
+                  gridContext.highlight :
                   undefined
                 }
               />
