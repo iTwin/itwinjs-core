@@ -558,5 +558,7 @@ public;WindowAreaTool
 internal;WmsCapabilities
 internal;WmsCapability
 internal;WmsUtilities
+internal;WmtsCapabilities
+internal;WmtsCapability
 public;ZoomToOptions
 public;ZoomViewTool 
