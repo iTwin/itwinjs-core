@@ -10,7 +10,7 @@
 - From a terminal at your application's root directory, `npm start`. This will serve the application with live reloading.
 - Add/Update/Remove files as needed for your use case. If running `npm start` while making changes, your application should re-compile and reload.
 - The viewer can be modified via the Viewer component in the App.tsx file. Visit the [iTwin Viewer React](https://www.npmjs.com/package/@bentley/itwin-viewer-react) documentation for more information.
-- Visit the [README.md](https://github.com/imodeljs/itwin-viewer/blob/master/packages/modules/cra-template-itwin-viewer/template/README.md) file within the root directory of your application for additional development information.
+- Visit the README file within the root directory of your application for additional development information.
 
 ### Build
 - From a terminal at your application's root directory, `npm run build`. This will create a deployment-ready build in the "build" folder within the application's root directory. It is not necessary to build the application during development.
@@ -20,3 +20,6 @@
 - [iTwin Viewer React](https://www.npmjs.com/package/@bentley/itwin-viewer-react)
 - [iTwin Viewer Create React App Template](https://www.npmjs.com/package/@bentley/cra-template-itwin-viewer)
 - [Bentley React Scripts](https://www.npmjs.com/package/@bentley/react-scripts)
+
+### Next Steps
+- [Visit the iTwin Sample Showcase](https://www.itwinjs.org/sample-showcase/)
