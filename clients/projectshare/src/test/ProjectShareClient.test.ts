@@ -84,7 +84,7 @@ describe("ProjectShareClient (#integration)", () => {
   beforeEach(async () => {
     const testFolder = new ProjectShareFolder();
     testFolder.name = mainTestFolderName;
-    const folder2B = await projectShareClient.createFolder(requestContext, projectId, projectId, testFolder); // Create a folder
+    await projectShareClient.createFolder(requestContext, projectId, projectId, testFolder); // Create a folder
   });
 
   afterEach(async () => {
