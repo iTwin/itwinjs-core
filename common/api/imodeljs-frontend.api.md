@@ -6094,6 +6094,8 @@ export namespace OrbitGtTileTree {
         // (undocumented)
         iModel: IModelConnection;
         // (undocumented)
+        modelId?: Id64String;
+        // (undocumented)
         name?: string;
         // (undocumented)
         orbitGtBlob: OrbitGtBlobProps;
@@ -6543,8 +6545,11 @@ export namespace RealityModelTileTree {
     export function createRealityModelTileTree(url: string, iModel: IModelConnection, modelId: Id64String, tilesetToDb?: Transform): Promise<TileTree | undefined>;
     // (undocumented)
     export abstract class Reference extends TileTreeReference {
+        constructor(modelId: Id64String | undefined, iModel: IModelConnection);
         // (undocumented)
         abstract get classifiers(): SpatialClassifiers | undefined;
+        // (undocumented)
+        get modelId(): string;
         // (undocumented)
         unionFitRange(union: Range3d): void;
     }
@@ -6777,29 +6782,6 @@ export interface RealityTileTreeParams extends TileTreeParams {
     // (undocumented)
     readonly yAxisUp?: boolean;
 }
-
-// @internal
-export class RealityTreeReference extends RealityModelTileTree.Reference {
-    constructor(props: RealityModelTileTree.ReferenceProps);
-    // (undocumented)
-    addToScene(context: SceneContext): void;
-    // (undocumented)
-    get castsShadows(): boolean;
-    // (undocumented)
-    get classifiers(): SpatialClassifiers | undefined;
-    // (undocumented)
-    collectStatistics(stats: RenderMemory.Statistics): void;
-    // (undocumented)
-    discloseTileTrees(trees: TileTreeSet): void;
-    // (undocumented)
-    getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined>;
-    // (undocumented)
-    protected get _isLoadingComplete(): boolean;
-    // (undocumented)
-    get modelId(): string;
-    // (undocumented)
-    get treeOwner(): TileTreeOwner;
-    }
 
 // @public
 export class RemoteBriefcaseConnection extends BriefcaseConnection {
