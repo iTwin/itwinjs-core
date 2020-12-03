@@ -361,7 +361,6 @@ internal;class RealityTileLoader
 internal;RealityTileParams 
 internal;RealityTileTree 
 internal;RealityTileTreeParams 
-internal;RealityTreeReference 
 public;RemoteBriefcaseConnection 
 beta;RemoveEventListener = () => void
 beta;class RenderClipVolume 
