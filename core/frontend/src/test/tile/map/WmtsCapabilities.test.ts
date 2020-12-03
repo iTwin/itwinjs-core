@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import { WmtsCapabilities } from "../../../tile/map/WmtsCapabilities";
 
-describe.only("WmtsCapabilities", () => {
+describe("WmtsCapabilities", () => {
   const SMALL_DEGREES_DIFFERENCE = 1.0e-8;
   const SMALL_DECIMAL_DIFFERENCE = 1.0e-6;
 
