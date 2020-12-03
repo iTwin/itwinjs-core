@@ -164,7 +164,21 @@ describe("iModelHub CheckpointV2Handler", () => {
     chai.expect(checkpoints.length).to.be.equal(1);
     chai.expect(checkpoints[0].wsgId).to.be.equal(createdCheckpoint.wsgId);
     chai.expect(checkpoints[0].state).to.be.equal(CheckpointV2State.Successful);
+
+    // Verify preceding CheckpointV2
+    await verifyPrecedingCheckpointV2(changeSetId, changeSetId);
+    await verifyPrecedingCheckpointV2(changeSets[1].id!, "");
+    await verifyPrecedingCheckpointV2(changeSets[0].id!, "");
   });
+
+  async function verifyPrecedingCheckpointV2(changeSetId: string, expectedPrecedingChangeSetId: string) {
+    mockGetCheckpointV2(imodelId, `?$filter=PrecedingCheckpoint-backward-ChangeSet.Id+eq+%27${changeSetId}%27`, mockCheckpointV2(expectedPrecedingChangeSetId, CheckpointV2State.Successful, "1"));
+    const checkpoints = await iModelClient.checkpointsV2.get(requestContext, imodelId, new CheckpointV2Query().precedingCheckpoint(changeSetId));
+    chai.assert(checkpoints);
+    chai.expect(checkpoints.length).to.be.equal(1);
+    chai.expect(checkpoints[0].changeSetId).to.be.equal(expectedPrecedingChangeSetId);
+    chai.expect(checkpoints[0].state).to.be.equal(CheckpointV2State.Successful);
+  }
 
   // CheckpointV2 not in QA yet, make unit tests until they can be reenabled as integration tests
   it("should create failed CheckpointV2 (#unit)", async () => {

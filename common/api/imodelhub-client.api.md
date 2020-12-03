@@ -297,6 +297,7 @@ export class CheckpointV2Handler {
 export class CheckpointV2Query extends WsgQuery {
     byChangeSetId(changeSetId: string): this;
     byState(state: CheckpointV2State): this;
+    precedingCheckpoint(targetChangeSetId: string): this;
     selectContainerAccessKey(): this;
 }
 
