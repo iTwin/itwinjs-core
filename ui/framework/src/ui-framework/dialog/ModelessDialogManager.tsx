@@ -29,7 +29,7 @@ interface ModelessDialogInfo {
 /** Used if the 'dialog' z-index CSS variable cannot be read */
 const ZINDEX_DEFAULT = 12000;
 
-/** Modeless Dialog Manager class.
+/** Modeless Dialog Manager class displays and manages multiple modeless dialogs
  * @public
  */
 export class ModelessDialogManager {

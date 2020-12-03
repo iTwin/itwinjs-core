@@ -453,6 +453,10 @@ The `closeToolSettingsPopup` function closes the popup.
 
 ```
 
+![uiAdmin-openToolSettingsPopup1](./images/UiAdmin-openToolSettingsPopup1.png "IModelApp.uiAdmin.openToolSettingsPopup 1")
+
+![uiAdmin-openToolSettingsPopup2](./images/UiAdmin-openToolSettingsPopup2.png "IModelApp.uiAdmin.openToolSettingsPopup 2")
+
 ### showKeyinPalette
 
 The `showKeyinPalette` function shows a Keyin Palette, centered and in the top part of the screen.
@@ -593,6 +597,10 @@ The `closeDialog` function closes a Dialog with a given Id.
 ```ts
   IModelApp.uiAdmin.closeDialog("SampleApp:DynamicModal");
 ```
+
+![uiAdmin-openDialog1](./images/UiAdmin-openDialog1.png "IModelApp.uiAdmin.openDialog 1")
+
+![uiAdmin-openDialog2](./images/UiAdmin-openDialog2.png "IModelApp.uiAdmin.openDialog 2")
 
 ## API Reference
 
