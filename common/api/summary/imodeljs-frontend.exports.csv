@@ -320,7 +320,6 @@ internal;OnScreenTarget
 beta;openImageDataUrlInNewWindow(url: string, title?: string): void
 internal;OrbitGtTileTree 
 internal;OrbitGtTileTree
-internal;OrbitGtTreeReference 
 public;OrthographicViewState 
 beta;OsmBuildingDisplayOptions
 public;OutputMessageAlert
@@ -359,7 +358,6 @@ internal;class RealityTileLoader
 internal;RealityTileParams 
 internal;RealityTileTree 
 internal;RealityTileTreeParams 
-internal;RealityTreeReference 
 public;RemoteBriefcaseConnection 
 beta;RemoveEventListener = () => void
 beta;class RenderClipVolume 
