@@ -30,6 +30,9 @@ async function getXml(requestContext: ClientRequestContext, url: string, credent
   return data.text;
 }
 
+/** Encapsulation of the capabilities for an WMTS server
+ * @internal
+ */
 export namespace WmtsCapability {
 
   export abstract class OwsConstants {
