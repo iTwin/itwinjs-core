@@ -16,10 +16,10 @@ There are numerous React components and TypeScript classes in the ui&#8209;frame
 * [Tool Settings](./ToolSettings.md)
 * [Stage Panels](./StagePanels.md)
 * [Backstage](./Backstage.md)
-* [Workflows and Tasks](./TasksWorkflows.md)
 * [Notifications and Messages](./Notifications.md)
-* [KeyboardShortcut]($ui-framework:KeyboardShortcut) - A keystroke or combination of keystrokes used to launch a command or tool.
 * [Dialogs](./Dialogs.md)
+* [Workflows and Tasks](./TasksWorkflows.md)
+* [KeyboardShortcut]($ui-framework:KeyboardShortcut) - A keystroke or combination of keystrokes used to launch a command or tool.
 
 ## Other Topics
 

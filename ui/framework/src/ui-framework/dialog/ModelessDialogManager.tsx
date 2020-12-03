@@ -160,7 +160,7 @@ export class ModelessDialogManager {
   }
 }
 
-/** ModelessDialogRenderer React component.
+/** ModelessDialogRenderer React component renders modeless dialogs.
  * @public
  */
 export class ModelessDialogRenderer extends React.PureComponent<CommonProps> {

@@ -64,7 +64,7 @@ export class ModalDialogManager {
   }
 }
 
-/** ModalDialogRenderer React component.
+/** ModalDialogRenderer React component renders modal dialogs
  * @public
  */
 export class ModalDialogRenderer extends React.PureComponent<CommonProps> {

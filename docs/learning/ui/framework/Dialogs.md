@@ -1,7 +1,7 @@
 # Dialogs
 
 A **Dialog** is a small temporary window of options presented to the user.
-The `@bentley/ui-framework` and `@bentley/ui-core` packages contains several classes and components for displaying modal and modeless dialogs.
+The `@bentley/ui-framework` and `@bentley/ui-core` packages contain several classes and components for displaying modal and modeless dialogs.
 
 * [ModalDialogManager]($ui-framework) - displays and manages multiple modal dialogs
 * [ModelessDialogManager]($ui-framework) - displays and manages multiple modeless dialogs
@@ -10,13 +10,13 @@ It controls the z-index to keep the focused dialog above others.
 * [Dialog]($ui-core) - Dialog React component with optional resizing and moving functionality.
 Supports modal and modeless dialogs and supports a button cluster in the lower-right.
 
-## Example Modal Dialog
+## Sample Modal Dialog
 
-The following example shows a modal dialog with OK/Cancel buttons.
+The following sample shows a modal dialog with OK/Cancel buttons.
 
 ### SampleModalDialog React component
 
-This example React component uses the [Dialog]($ui-core) component and sets up the buttons and necessary handlers to
+This sample React component uses the [Dialog]($ui-core) component and sets up the buttons and necessary handlers to
 close the dialog properly.
 
 ```tsx
@@ -102,13 +102,17 @@ The `ModalDialogManager.closeDialog` function is called to close a modal dialog.
 ```tsx
   private _handleModalResult(result: DialogButtonType) {
     ModalDialogManager.closeDialog();
-    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Modal dialog result: ${result}`));
+    IModelApp.notifications.outputMessage(
+      new NotifyMessageDetails(OutputMessagePriority.Info, `Modal dialog result: ${result}`)
+    );
   }
 ```
 
+![modal dialog](./images/ModalDialog.png "Modal Dialog")
+
 ## Sample Modeless Dialog
 
-This example React component uses the [ModelessDialog]($ui-framework) component and sets up the necessary handlers to
+This sample React component uses the [ModelessDialog]($ui-framework) component and sets up the necessary handlers to
 close the dialog properly.
 
 ```tsx
@@ -191,9 +195,13 @@ The `ModelessDialogManager.closeDialog` function is called to close a modeless d
 ```tsx
   private _handleModelessClose = (dialogId: string) => {
     ModelessDialogManager.closeDialog(dialogId);
-    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Closed modeless dialog: ${dialogId}`));
+    IModelApp.notifications.outputMessage(
+      new NotifyMessageDetails(OutputMessagePriority.Info, `Closed modeless dialog: ${dialogId}`)
+    );
   };
 ```
+
+![modeless dialog](./images/ModelessDialog.png "Modeless Dialog")
 
 ## API Reference
 
