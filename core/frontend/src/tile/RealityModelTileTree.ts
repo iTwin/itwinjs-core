@@ -468,7 +468,7 @@ export namespace RealityModelTileTree {
 /** Supplies a reality data [[TileTree]] from a URL. May be associated with a persistent [[GeometricModelState]], or attached at run-time via a [[ContextRealityModelState]].
  * @internal
  */
-export class RealityTreeReference extends RealityModelTileTree.Reference {
+class RealityTreeReference extends RealityModelTileTree.Reference {
   private readonly _name: string;
   private readonly _url: string;
   private readonly _classifier?: SpatialClassifierTileTreeReference;

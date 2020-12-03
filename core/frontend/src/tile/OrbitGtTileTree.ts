@@ -395,7 +395,7 @@ export namespace OrbitGtTileTree {
 /** Supplies a reality data [[TileTree]] from a URL. May be associated with a persistent [[GeometricModelState]], or attached at run-time via a [[ContextOrbitGtState]].
  * @internal
  */
-export class OrbitGtTreeReference extends RealityModelTileTree.Reference {
+class OrbitGtTreeReference extends RealityModelTileTree.Reference {
   public readonly treeOwner: TileTreeOwner;
   private readonly _name: string; // tslint:disable-line
   private readonly _classifier?: SpatialClassifierTileTreeReference;
