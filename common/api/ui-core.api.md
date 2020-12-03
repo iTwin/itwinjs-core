@@ -1497,6 +1497,7 @@ export interface PopupProps extends CommonProps {
     ariaLabel?: string;
     closeOnContextMenu?: boolean;
     closeOnEnter?: boolean;
+    closeOnNestedPopupOutsideClick?: boolean;
     closeOnWheel?: boolean;
     focusTarget?: React.RefObject<HTMLElement> | string;
     isOpen: boolean;
