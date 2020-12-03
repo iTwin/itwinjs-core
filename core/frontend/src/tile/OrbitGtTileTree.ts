@@ -401,15 +401,11 @@ export class OrbitGtTreeReference extends RealityModelTileTree.Reference {
   private readonly _classifier?: SpatialClassifierTileTreeReference;
   private _mapDrapeTree?: TileTreeReference;
   public get castsShadows() { return false; }
-  private _modelId: Id64String;
-  public get modelId() { return this._modelId; }
-
 
   public constructor(props: OrbitGtTileTree.ReferenceProps) {
-    super();
+    super(props.modelId, props.iModel);
 
-    this._modelId = props.modelId ? props.modelId : props.iModel.transientIds.next;
-    const ogtTreeId: OrbitGtTreeId = { orbitGtProps: props.orbitGtBlob, modelId: this._modelId };
+    const ogtTreeId: OrbitGtTreeId = { orbitGtProps: props.orbitGtBlob, modelId: this.modelId };
     this.treeOwner = orbitGtTreeSupplier.getOwner(ogtTreeId, props.iModel);
     this._name = undefined !== props.name ? props.name : "";
 
