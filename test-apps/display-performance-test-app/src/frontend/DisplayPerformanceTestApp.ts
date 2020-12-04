@@ -1518,7 +1518,7 @@ async function main() {
   const testConfig = new DefaultConfigs(jsonData);
 
   const logFileName = "_DispPerfTestAppViewLog.txt";
-  const outStr = `View Log,  Model Base Location: ${testConfig.iModelLocation!}\n  format: Time_started  ModelName  [ViewName]`
+  const outStr = `View Log,  Model Base Location: ${testConfig.iModelLocation!}\n  format: Time_started  ModelName  [ViewName]`;
   await consoleLog(outStr);
   await writeExternalFile(testConfig.outputPath!, logFileName, false, `${outStr}\n`);
 
