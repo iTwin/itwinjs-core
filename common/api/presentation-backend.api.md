@@ -250,6 +250,8 @@ export interface PresentationManagerProps {
     addon?: NativePlatformDefinition;
     // @beta
     cacheConfig?: HierarchyCacheConfig;
+    // @alpha (undocumented)
+    contentCacheSize?: number;
     enableSchemasPreload?: boolean;
     // @internal (undocumented)
     eventSink?: EventSink;
