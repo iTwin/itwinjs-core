@@ -21,6 +21,6 @@ export interface TableWrapperProps extends React.HTMLAttributes<HTMLDivElement> 
 export class TableWrapper extends React.Component<TableWrapperProps> {
   public render(): React.ReactNode {
     const { isOver, canDrop, item, type, ...props } = this.props as WithDropTargetProps; // eslint-disable-line @typescript-eslint/no-unused-vars
-    return (<div className="react-data-grid-wrapper" {...props} />);
+    return (<div className="react-data-grid-wrapper" style={{ height: "100%" }} {...props} />);
   }
 }
