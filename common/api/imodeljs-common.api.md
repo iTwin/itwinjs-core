@@ -558,7 +558,7 @@ export interface BRepGeometryCreate {
     entryArray: ElementGeometryDataEntry[];
     onResult: BRepGeometryFunction;
     operation: BRepGeometryOperation;
-    parameters?: any;
+    parameters?: BRepCutProps | BRepThickenProps | BRepHollowProps | BRepRoundProps;
     separateDisjoint?: boolean;
 }
 

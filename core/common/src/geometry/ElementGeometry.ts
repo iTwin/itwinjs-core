@@ -213,7 +213,7 @@ export interface BRepGeometryCreate {
   /** Whether disjoint results should be returned as multiple entries or a single disjoint body */
   separateDisjoint?: boolean;
   /** Options and parameters for this operation */
-  parameters?: any;
+  parameters?: BRepCutProps | BRepThickenProps | BRepHollowProps | BRepRoundProps;
 }
 
 
