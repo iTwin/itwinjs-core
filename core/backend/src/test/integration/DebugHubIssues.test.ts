@@ -256,7 +256,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
   });
 
   it.skip("should purge the briefcase cache", async () => {
-    await BriefcaseManager.purgeCache(requestContext);
+    // await BriefcaseManager.purgeCache(requestContext);
   });
 
   it.skip("display info of all test users that accessed a specific iModel", async () => {

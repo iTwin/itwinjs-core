@@ -11,13 +11,13 @@ import {
 } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, Range3dProps, XYAndZ, XYZProps } from "@bentley/geometry-core";
 import {
-  AxisAlignedBox3d, BentleyStatus, BriefcaseProps, Cartographic, CodeSpec, DbResult, EcefLocation, EcefLocationProps, ElementProps, EntityQueryParams,
-  FontMap, FontMapProps, GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps, ImageSourceFormat, IModel,
-  IModelConnectionProps, IModelError, IModelEventSourceProps, IModelReadRpcInterface, IModelRpcProps, IModelStatus, IModelVersion, IModelWriteRpcInterface,
-  mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams, NativeAppRpcInterface, QueryLimit,
-  QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager, RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent,
-  SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, ThumbnailProps, ViewDefinitionProps, ViewQueryParams,
-  WipRpcInterface,
+  AxisAlignedBox3d, BentleyStatus, Cartographic, CodeSpec, DbResult, EcefLocation, EcefLocationProps, ElementProps, EntityQueryParams, FontMap,
+  FontMapProps, GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps, ImageSourceFormat, IModel, IModelConnectionProps,
+  IModelError, IModelEventSourceProps, IModelReadRpcInterface, IModelRpcProps, IModelStatus, IModelVersion, IModelWriteRpcInterface,
+  mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams, NativeAppRpcInterface,
+  OpenBriefcaseProps, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager, RpcNotFoundResponse, RpcOperation,
+  RpcRequest, RpcRequestEvent, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, ThumbnailProps,
+  ViewDefinitionProps, ViewQueryParams, WipRpcInterface,
 } from "@bentley/imodeljs-common";
 import { BackgroundMapLocation } from "./BackgroundMapGeometry";
 import { EditingFunctions } from "./EditingFunctions";
@@ -849,7 +849,7 @@ export class LocalBriefcaseConnection extends BriefcaseConnection {
   /** Open an IModelConnection to a locally downloaded briefcase of an iModel. Only applicable for Native applications
    * @internal
    */
-  public static async open(briefcaseProps: BriefcaseProps): Promise<LocalBriefcaseConnection> {
+  public static async open(briefcaseProps: OpenBriefcaseProps): Promise<LocalBriefcaseConnection> {
     if (!IModelApp.initialized)
       throw new IModelError(IModelStatus.BadRequest, "Call NativeApp.startup() before calling openBriefcase");
 
@@ -857,7 +857,7 @@ export class LocalBriefcaseConnection extends BriefcaseConnection {
     requestContext.enter();
 
     requestContext.useContextForRpc = true;
-    const iModelProps = await NativeAppRpcInterface.getClient().openBriefcase(briefcaseProps.key);
+    const iModelProps = await NativeAppRpcInterface.getClient().open(briefcaseProps);
     const connection = new this({ ...briefcaseProps, ...iModelProps });
 
     IModelConnection.onOpen.raiseEvent(connection);

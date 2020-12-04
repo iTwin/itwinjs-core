@@ -10,9 +10,9 @@ import { Angle, AngleProps, Point3d, Range3d, XYZProps } from "@bentley/geometry
 import { HubIModel, IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import {
   BriefcaseDb, BriefcaseManager, CategorySelector, ConcurrencyControl, DefinitionModel, DisplayStyle3d, IModelDb, IModelHost, ModelSelector,
-  OrthographicViewDefinition, PhysicalModel, SpatialCategory, Subject,
+  OrthographicViewDefinition, PhysicalModel, RequestNewBriefcaseArg, SpatialCategory, Subject,
 } from "@bentley/imodeljs-backend";
-import { BriefcaseProps, ColorByName, IModel, SyncMode } from "@bentley/imodeljs-common";
+import { ColorByName, IModel } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { Barrier } from "../BarrierElement";
@@ -89,9 +89,13 @@ async function runBridgeFirstTime(requestContext: AuthorizedClientRequestContext
 
   requestContext.enter();
 
-  const briefcaseProps: BriefcaseProps = await BriefcaseManager.download(requestContext, projectId, iModelId, { syncMode: SyncMode.PullAndPush });
+  const args: RequestNewBriefcaseArg = {
+    contextId: projectId,
+    iModelId,
+  };
+  await BriefcaseManager.downloadBriefcase(requestContext, args);
   requestContext.enter();
-  const briefcase: BriefcaseDb = await BriefcaseDb.open(requestContext, briefcaseProps.key);
+  const briefcase = await BriefcaseDb.openBriefcase(requestContext, { file: args.fileName! });
   requestContext.enter();
 
   briefcase.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());

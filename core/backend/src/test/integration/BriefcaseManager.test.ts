@@ -7,14 +7,14 @@ import { assert } from "chai";
 import * as os from "os";
 import * as path from "path";
 import * as readline from "readline";
-import { BriefcaseStatus,  GuidString, IModelStatus, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
+import { BriefcaseStatus, GuidString, IModelStatus, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 import { BriefcaseQuery, Briefcase as HubBriefcase, HubIModel } from "@bentley/imodelhub-client";
-import { BriefcaseDownloader, IModelError, IModelVersion, SyncMode } from "@bentley/imodeljs-common";
+import { IModelError, IModelVersion, SyncMode } from "@bentley/imodeljs-common";
 import { ProgressInfo, UserCancelledError } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import {
-  AuthorizedBackendRequestContext, BackendLoggerCategory, BriefcaseDb, BriefcaseEntry, BriefcaseIdValue, BriefcaseManager, Element, IModelDb,
-  IModelHost, IModelHostConfiguration, IModelJsFs, KnownLocations,
+  AuthorizedBackendRequestContext, BackendLoggerCategory, BriefcaseDb, BriefcaseIdValue, BriefcaseManager, Element, IModelDb,
+  IModelHost, IModelHostConfiguration, IModelJsFs, KnownLocations, RequestNewBriefcaseArg,
 } from "../../imodeljs-backend";
 import { IModelTestUtils, TestIModelInfo } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
@@ -48,16 +48,6 @@ describe("BriefcaseManager (#integration)", () => {
     return count;
   };
 
-  const validateBriefcaseCache = () => {
-    const paths = new Array<string>();
-    (BriefcaseManager as any)._cache._briefcases.forEach((briefcase: BriefcaseEntry, key: string) => {
-      assert.isTrue(IModelJsFs.existsSync(briefcase.pathname), `File corresponding to briefcase cache entry not found: ${briefcase.pathname}`);
-      assert.strictEqual<string>(briefcase.getKey(), key, `Cached key ${key} doesn't match the current generated key ${briefcase.getKey()}`);
-      assert.isFalse(paths.includes(briefcase.pathname), `Briefcase with path: ${briefcase.pathname} (key: ${key}) has a duplicate in the cache`);
-      paths.push(briefcase.pathname);
-    });
-  };
-
   before(async () => {
     IModelTestUtils.setupLogging();
     // IModelTestUtils.setupDebugLogLevels();
@@ -84,7 +74,6 @@ describe("BriefcaseManager (#integration)", () => {
   });
 
   afterEach(() => {
-    validateBriefcaseCache();
   });
 
   it("should open and close an iModel from the Hub", async () => {
@@ -203,12 +192,9 @@ describe("BriefcaseManager (#integration)", () => {
     }
 
     const iModelLatestVersion = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, readOnlyTestIModel.id, SyncMode.FixedVersion, IModelVersion.latest());
-    assert.exists(iModelLatestVersion);
-    const briefcase = BriefcaseManager.findBriefcaseByKey(iModelLatestVersion.briefcaseKey)!;
-    assert.isUndefined(briefcase.reversedChangeSetId);
-    assert.strictEqual<string>(briefcase.parentChangeSetId, readOnlyTestIModel.changeSets[3].wsgId);
+    assert.isDefined(iModelLatestVersion);
+    assert.isUndefined(iModelLatestVersion.nativeDb.getReversedChangeSetId());
     assert.strictEqual<string>(iModelLatestVersion.nativeDb.getParentChangeSetId(), readOnlyTestIModel.changeSets[3].wsgId);
-    assert.isNotTrue(!!briefcase.reversedChangeSetId);
 
     await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModelFirstVersion);
     await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModelLatestVersion);
@@ -275,11 +261,12 @@ describe("BriefcaseManager (#integration)", () => {
 
     await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModelFixed);
 
+    const fileName = iModelPullAndPush.pathName;
     iModelPullAndPush.close();
     assert.isFalse(iModelPullAndPush.isOpen);
 
     // Reopen the briefcase as readonly to validate
-    const iModelPullAndPush2 = await BriefcaseDb.openFromRemote(requestContext, iModelPullAndPush.briefcaseKey, { openAsReadOnly: true });
+    const iModelPullAndPush2 = await BriefcaseDb.openBriefcase(requestContext, { file: fileName, readonly: true });
     assert.exists(iModelPullAndPush2);
     assert.isTrue(iModelPullAndPush2.isReadonly);
     assert.isTrue(iModelPullAndPush2.isOpen);
@@ -429,13 +416,13 @@ describe("BriefcaseManager (#integration)", () => {
     }
   };
 
-  it("should allow purging the cache and delete any acquired briefcases from the hub", async () => {
+  it.skip("should allow purging the cache and delete any acquired briefcases from the hub", async () => {
     const iModel1 = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, readOnlyTestIModel.id, SyncMode.PullAndPush, IModelVersion.latest());
     const briefcaseId1: number = iModel1.briefcaseId;
     let exists = await briefcaseExistsOnHub(readOnlyTestIModel.id, briefcaseId1);
     assert.isTrue(exists);
 
-    await BriefcaseManager.purgeCache(managerRequestContext);
+    //    await BriefcaseManager.purgeCache(managerRequestContext);
 
     exists = await briefcaseExistsOnHub(readOnlyTestIModel.id, briefcaseId1);
     assert.isFalse(exists);
@@ -705,8 +692,6 @@ describe("BriefcaseManager (#integration)", () => {
     const testIModelName = "Stadium Dataset 1";
     const testIModelId = await HubUtility.queryIModelIdByName(requestContext, testProjectId, testIModelName);
 
-    const syncMode = SyncMode.PullOnly;
-
     let numProgressCalls: number = 0;
 
     readline.clearLine(process.stdout, 0);
@@ -722,13 +707,17 @@ describe("BriefcaseManager (#integration)", () => {
       numProgressCalls++;
     };
 
-    const briefcaseDownloader: BriefcaseDownloader = await BriefcaseManager.requestDownload(requestContext, testProjectId, testIModelId, { syncMode }, IModelVersion.latest(), downloadProgress);
+    const args: RequestNewBriefcaseArg = {
+      contextId: testProjectId,
+      iModelId: testIModelId,
+      briefcaseId: 0,
+      onProgress: downloadProgress,
+    };
+
+    await BriefcaseManager.downloadBriefcase(requestContext, args);
     requestContext.enter();
 
-    await briefcaseDownloader.downloadPromise;
-    requestContext.enter();
-
-    const iModel = await BriefcaseDb.openFromRemote(requestContext, briefcaseDownloader.briefcaseProps.key);
+    const iModel = await BriefcaseDb.openBriefcase(requestContext, { file: args.fileName! });
     requestContext.enter();
 
     await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
@@ -739,20 +728,23 @@ describe("BriefcaseManager (#integration)", () => {
     const testIModelName = "Stadium Dataset 1";
     const testIModelId = await HubUtility.queryIModelIdByName(requestContext, testProjectId, testIModelName);
 
-    const syncMode = SyncMode.PullOnly;
-
-    const briefcaseDownloader = await BriefcaseManager.requestDownload(requestContext, testProjectId, testIModelId, { syncMode }, IModelVersion.latest());
+    const args: RequestNewBriefcaseArg = {
+      contextId: testProjectId,
+      iModelId: testIModelId,
+      briefcaseId: 0,
+    };
+    const downloadPromise = BriefcaseManager.downloadBriefcase(requestContext, args);
     requestContext.enter();
 
     let cancelled1: boolean = false;
     setTimeout(async () => {
-      cancelled1 = await briefcaseDownloader.requestCancel();
+      cancelled1 = args.cancelRequest!.cancel();
       requestContext.enter();
     }, 10000);
 
     let cancelled2: boolean = false;
     try {
-      await briefcaseDownloader.downloadPromise;
+      await downloadPromise;
       requestContext.enter();
     } catch (err) {
       requestContext.enter();

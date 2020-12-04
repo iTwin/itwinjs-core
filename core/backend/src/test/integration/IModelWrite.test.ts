@@ -8,8 +8,9 @@ import { CodeScopeSpec, CodeSpec, DomainOptions, IModel, IModelError, IModelVers
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { assert, expect } from "chai";
 import * as semver from "semver";
+import { RequestNewBriefcaseArg } from "../../BriefcaseManager";
 import {
-  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseEntry, BriefcaseManager, ConcurrencyControl, DictionaryModel, Element, IModelJsFs,
+  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, ConcurrencyControl, DictionaryModel, Element, IModelJsFs,
   SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType,
 } from "../../imodeljs-backend";
 import { IModelTestUtils, TestIModelInfo, Timer } from "../IModelTestUtils";
@@ -61,16 +62,6 @@ describe("IModelWriteTest (#integration)", () => {
   let readOnlyTestIModel: TestIModelInfo;
   let readWriteTestIModel: TestIModelInfo;
 
-  const validateBriefcaseCache = () => {
-    const paths = new Array<string>();
-    (BriefcaseManager as any)._cache._briefcases.forEach((briefcase: BriefcaseEntry, key: string) => {
-      assert.isTrue(IModelJsFs.existsSync(briefcase.pathname), `File corresponding to briefcase cache entry not found: ${briefcase.pathname}`);
-      assert.strictEqual<string>(briefcase.getKey(), key, `Cached key ${key} doesn't match the current generated key ${briefcase.getKey()}`);
-      assert.isFalse(paths.includes(briefcase.pathname), `Briefcase with path: ${briefcase.pathname} (key: ${key}) has a duplicate in the cache`);
-      paths.push(briefcase.pathname);
-    });
-  };
-
   let readWriteTestIModelName: string;
 
   before(async () => {
@@ -96,7 +87,6 @@ describe("IModelWriteTest (#integration)", () => {
   });
 
   afterEach(() => {
-    validateBriefcaseCache();
   });
 
   after(async () => {
@@ -973,13 +963,17 @@ describe("IModelWriteTest (#integration)", () => {
     const iModelId = await HubUtility.pushIModel(managerRequestContext, projectId, pathname, hubName);
 
     /* User "manager" upgrades the briefcase */
-    const briefcaseProps = await BriefcaseManager.download(managerRequestContext, projectId, iModelId, { syncMode: SyncMode.PullAndPush }, IModelVersion.latest());
+    const args: RequestNewBriefcaseArg = {
+      contextId: projectId,
+      iModelId,
+    };
+    await BriefcaseManager.downloadBriefcase(managerRequestContext, args);
     managerRequestContext.enter();
 
     // Validate the original state of the BisCore schema in the briefcase
     let iModel: BriefcaseDb;
     let result: DbResult = DbResult.BE_SQLITE_OK;
-    iModel = await BriefcaseDb.openFromRemote(managerRequestContext, briefcaseProps.key);
+    iModel = await BriefcaseDb.openBriefcase(managerRequestContext, { file: args.fileName! });
     const beforeVersion = iModel.querySchemaVersion("BisCore");
     assert.isTrue(semver.satisfies(beforeVersion!, "= 1.0.0"));
     assert.isFalse(iModel.nativeDb.hasPendingTxns());
@@ -987,7 +981,7 @@ describe("IModelWriteTest (#integration)", () => {
 
     // Open the briefcase to find that the BisCore schema can be upgraded
     try {
-      iModel = await BriefcaseDb.openFromRemote(managerRequestContext, briefcaseProps.key, { domain: DomainOptions.CheckRecommendedUpgrades });
+      iModel = await BriefcaseDb.openBriefcase(managerRequestContext, { file: args.fileName!, upgrade: { domain: DomainOptions.CheckRecommendedUpgrades } });
       managerRequestContext.enter();
     } catch (err) {
       managerRequestContext.enter();
@@ -997,7 +991,7 @@ describe("IModelWriteTest (#integration)", () => {
     assert.strictEqual(result, DbResult.BE_SQLITE_ERROR_SchemaUpgradeRecommended);
 
     // Open briefcase and upgrade schemas
-    iModel = await BriefcaseDb.openFromRemote(managerRequestContext, briefcaseProps.key, { domain: DomainOptions.Upgrade });
+    iModel = await BriefcaseDb.openBriefcase(managerRequestContext, { file: args.fileName!, upgrade: { domain: DomainOptions.Upgrade } });
     managerRequestContext.enter();
     const afterVersion = iModel.querySchemaVersion("BisCore");
     assert.isTrue(semver.satisfies(afterVersion!, ">= 1.0.10"));
@@ -1011,11 +1005,16 @@ describe("IModelWriteTest (#integration)", () => {
     assert.isTrue(iModel.nativeDb.hasPendingTxns());
 
     /* User "super" fails to upgrade while the above upgrade in process, and the "manager" holds the schema lock */
-    const superBriefcaseProps = await BriefcaseManager.download(superRequestContext, projectId, iModelId, { syncMode: SyncMode.PullAndPush }, IModelVersion.latest());
+    const superArg: RequestNewBriefcaseArg = {
+      contextId: projectId,
+      iModelId,
+    };
+
+    await BriefcaseManager.downloadBriefcase(superRequestContext, superArg);
     superRequestContext.enter();
     let superStatus = IModelHubStatus.Success;
     try {
-      await BriefcaseDb.openFromRemote(superRequestContext, superBriefcaseProps.key, { domain: DomainOptions.Upgrade });
+      await BriefcaseDb.openBriefcase(superRequestContext, { file: args.fileName!, upgrade: { domain: DomainOptions.Upgrade } });
       superRequestContext.enter();
     } catch (err) {
       superRequestContext.enter();
@@ -1037,7 +1036,7 @@ describe("IModelWriteTest (#integration)", () => {
     // Check for recommended upgrades
     result = DbResult.BE_SQLITE_OK;
     try {
-      await BriefcaseDb.openFromRemote(superRequestContext, superBriefcaseProps.key, { domain: DomainOptions.CheckRecommendedUpgrades });
+      await BriefcaseDb.openBriefcase(superRequestContext, { file: args.fileName!, upgrade: { domain: DomainOptions.CheckRecommendedUpgrades } });
       superRequestContext.enter();
     } catch (err) {
       superRequestContext.enter();
@@ -1060,7 +1059,7 @@ describe("IModelWriteTest (#integration)", () => {
     // assert.strictEqual(superStatus, IModelHubStatus.LockOwnedByAnotherBriefcase);
 
     // Open briefcase and pull change sets to upgrade
-    const superIModel = await BriefcaseDb.openFromRemote(superRequestContext, superBriefcaseProps.key, { domain: DomainOptions.SkipCheck });
+    const superIModel = await BriefcaseDb.openBriefcase(superRequestContext, { file: args.fileName!, upgrade: { domain: DomainOptions.SkipCheck } });
     superRequestContext.enter();
     await superIModel.pullAndMergeChanges(superRequestContext);
     superRequestContext.enter();
@@ -1073,10 +1072,12 @@ describe("IModelWriteTest (#integration)", () => {
     assert.isFalse(superIModel.concurrencyControl.locks.hasSchemaLock); // Validate no schema locks cached in briefcase
 
     /* Cleanup after test */
+    const filename = iModel.pathName;
+    const superName = superIModel.pathName;
     iModel.close();
-    await BriefcaseManager.delete(managerRequestContext, briefcaseProps.key); // delete from local disk
+    await BriefcaseManager.deleteBriefcase(managerRequestContext, filename); // delete from local disk
     superIModel.close();
-    await BriefcaseManager.delete(superRequestContext, superBriefcaseProps.key); // delete from local disk
+    await BriefcaseManager.deleteBriefcase(superRequestContext, superName); // delete from local disk
     managerRequestContext.enter();
     await HubUtility.deleteIModel(managerRequestContext, projectName, hubName); // delete from hub
     managerRequestContext.enter();

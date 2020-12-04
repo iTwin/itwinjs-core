@@ -16,13 +16,13 @@ import {
 import { Range3d } from "@bentley/geometry-core";
 import { ChangesType, Lock, LockLevel, LockType } from "@bentley/imodelhub-client";
 import {
-  AxisAlignedBox3d, BriefcaseKey, BriefcaseProps, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps,
+  AxisAlignedBox3d, BriefcaseKey, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps,
   CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DisplayStyleProps, DomainOptions, EcefLocation,
   ElementAspectProps, ElementGeometryRequest, ElementGeometryUpdate, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams,
   FilePropertyProps, FontMap, FontMapProps, FontProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps,
-  IModel, IModelCoordinatesResponseProps, IModelEncryptionProps, IModelError, IModelEventSourceProps, IModelNotFoundResponse, IModelProps,
+  IModel, IModelCoordinatesResponseProps, IModelError, IModelEventSourceProps, IModelNotFoundResponse, IModelProps,
   IModelRpcProps, IModelStatus, IModelTileTreeProps, IModelVersion, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps,
-  ModelProps, ModelSelectorProps, OpenBriefcaseOptions, ProfileOptions, PropertyCallback, QueryLimit, QueryPriority, QueryQuota, QueryResponse,
+  ModelProps, ModelSelectorProps, OpenBriefcaseOptions, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryLimit, QueryPriority, QueryQuota, QueryResponse,
   QueryResponseStatus, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SyncMode, ThumbnailProps,
   UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateProps,
 } from "@bentley/imodeljs-common";
@@ -730,6 +730,15 @@ export abstract class IModelDb extends IModel {
   /** Abandon pending changes in this iModel. You might also want to call [ConcurrencyControl.abandonResources]($backend) if this is a briefcase and you want to relinquish locks or codes that you acquired preemptively. */
   public abandonChanges(): void {
     this.nativeDb.abandonChanges();
+  }
+
+  /** @internal */
+  public reverseTxns(numOperations: number, allowCrossSessions?: boolean): IModelStatus {
+    return this.nativeDb.reverseTxns(numOperations, allowCrossSessions);
+  }
+  /** @internal */
+  public reinstateTxn(): IModelStatus {
+    return this.nativeDb.reinstateTxn();
   }
 
   /** Import an ECSchema. On success, the schema definition is stored in the iModel.
@@ -2090,11 +2099,7 @@ export class TxnManager {
    * @note If numOperations is too large only the operations are reversible are reversed.
    */
   public reverseTxns(numOperations: number, allowCrossSessions?: boolean): IModelStatus {
-    const status = this._nativeDb.reverseTxns(numOperations, allowCrossSessions);
-    if (this._iModel.isBriefcaseDb() && this._iModel.allowLocalChanges)
-      this._iModel.concurrencyControl.onUndoRedo();
-
-    return status;
+    return this._iModel.reverseTxns(numOperations, allowCrossSessions);
   }
 
   /** Reverse the most recent operation. */
@@ -2121,9 +2126,9 @@ export class TxnManager {
   /** Reinstate the most recently reversed transaction. Since at any time multiple transactions can be reversed, it
    * may take multiple calls to this method to reinstate all reversed operations.
    * @returns Success if a reversed transaction was reinstated, error status otherwise.
-   * @note If there are any outstanding uncommitted changes, they are reversed before the Txn is reinstated.
+   * @note If there are any outstanding uncommitted changes, they are canceled before the Txn is reinstated.
    */
-  public reinstateTxn(): IModelStatus { return this._nativeDb.reinstateTxn(); }
+  public reinstateTxn(): IModelStatus { return this._iModel.reinstateTxn(); }
 
   /** Get the Id of the first transaction, if any.
    * @param allowCrossSessions if true, allow undo from previous sessions.
@@ -2155,14 +2160,6 @@ export class TxnManager {
   public get hasLocalChanges(): boolean { return this.hasUnsavedChanges || this.hasPendingTxns; }
 }
 
-interface BriefcaseOpenArgs {
-  requestContext: AuthorizedClientRequestContext | ClientRequestContext;
-  key?: string;
-  file?: string | BriefcaseProps;
-  options?: OpenBriefcaseOptions & UpgradeOptions;
-  props?: IModelEncryptionProps;
-}
-
 /** A local copy of an iModel from iModelHub that can pull and potentially push changesets.
  *
  * BriefcaseDb raises a set of events to allow apps and subsystems to track its object life cycle, including [[onOpen]] and [[onOpened]].
@@ -2180,6 +2177,22 @@ export class BriefcaseDb extends IModelDb {
    * @beta
    */
   public get briefcaseKey(): BriefcaseKey { return this._fileKey; }
+
+  /** @internal */
+  public reverseTxns(numOperations: number, allowCrossSessions?: boolean): IModelStatus {
+    const status = super.reverseTxns(numOperations, allowCrossSessions);
+    if (status === IModelStatus.Success && this.allowLocalChanges)
+      this.concurrencyControl.onUndoRedo();
+    return status;
+  }
+
+  /** @internal */
+  public reinstateTxn(): IModelStatus {
+    const status = super.reinstateTxn();
+    if (status === IModelStatus.Success && this.allowLocalChanges)
+      this.concurrencyControl.onUndoRedo();
+    return status;
+  }
 
   public abandonChanges(): void {
     if (this.allowLocalChanges)
@@ -2248,27 +2261,33 @@ export class BriefcaseDb extends IModelDb {
       throw new IModelError(IModelStatus.UpgradeFailed, "BriefcaseManager.lockSchema: Could not acquire schema lock", Logger.logError, loggerCategory, () => this.getRpcProps());
   }
 
-  public static async openBriefcase(args: BriefcaseOpenArgs) {
-    const requestContext = args.requestContext;
+  public static async openBriefcase(requestContext: AuthorizedClientRequestContext | ClientRequestContext, args: OpenBriefcaseProps) {
     requestContext.enter();
-    let key = args.key;
-    if (undefined === key) {
-      if (args.file === undefined)
-        throw new IModelError(IModelStatus.BadArg, "no file specified");
-      key = (typeof args.file === "string") ? args.file : BriefcaseManager.makeKey(args.file);
+    let filePath: string;
+    let key: string;
+    if (typeof args.file === "string") {
+      filePath = args.file;
+      key = args.key ?? filePath;
+    } else {
+      filePath = BriefcaseManager.getFileName(args.file);
+      key = args.key ?? BriefcaseManager.makeKey(args.file);
     }
+
     const alreadyOpen = this.tryFindByKey(key);
     if (undefined !== alreadyOpen)
       return alreadyOpen as BriefcaseDb;
     if (undefined === args.file)
       throw new IModelError(IModelStatus.BadArg, "no file specified");
 
-    const filePath = typeof args.file === "string" ? args.file : BriefcaseManager.getBriefcaseFileName(args.file ? args.file : BriefcaseManager.parseKey(key));
-    const openMode = args.options?.openAsReadOnly ? OpenMode.Readonly : OpenMode.ReadWrite;
-    const isUpgradeRequested = args.options?.domain === DomainOptions.Upgrade || args.options?.profile === ProfileOptions.Upgrade;
-    const nativeDb = this.openDgnDb(filePath, openMode, args.options);
-    const changeSetId = nativeDb.getReversedChangeSetId() ?? nativeDb.getParentChangeSetId();
-    const token: IModelRpcProps = { key, iModelId: nativeDb.getDbGuid(), changeSetId, openMode };
+    const openMode = args.readonly ? OpenMode.Readonly : OpenMode.ReadWrite;
+    const nativeDb = this.openDgnDb(filePath, openMode, args.upgrade);
+    const token: IModelRpcProps = {
+      key,
+      iModelId: nativeDb.getDbGuid(),
+      contextId: nativeDb.queryProjectGuid(),
+      changeSetId: nativeDb.getReversedChangeSetId() ?? nativeDb.getParentChangeSetId(),
+      openMode,
+    };
 
     this.onOpen.raiseEvent(requestContext, token);
     const briefcaseDb = new BriefcaseDb(nativeDb, token, openMode);
@@ -2278,7 +2297,7 @@ export class BriefcaseDb extends IModelDb {
         throw new IModelError(BentleyStatus.ERROR, "local changes requires authorization", Logger.logError, loggerCategory, () => token);
       await briefcaseDb.concurrencyControl.onOpened(requestContext);
 
-      if (isUpgradeRequested) {
+      if (args.upgrade?.domain === DomainOptions.Upgrade || args.upgrade?.profile === ProfileOptions.Upgrade) {
         try {
           await briefcaseDb.lockSchema(requestContext);
 
@@ -2295,7 +2314,7 @@ export class BriefcaseDb extends IModelDb {
     }
 
     BriefcaseManager.logUsage(requestContext, token); // eslint-disable-line @typescript-eslint/no-floating-promises
-    // this.onOpened.raiseEvent(requestContext, briefcaseDb);
+    this.onOpened.raiseEvent(requestContext, briefcaseDb);
     return briefcaseDb;
   }
 
@@ -2305,12 +2324,14 @@ export class BriefcaseDb extends IModelDb {
    * @param options Optional parameter to affect the opening and upgrading the briefcase.
    * @note If the briefcase is upgraded, the resulting changes are saved in the briefcase, but it's the caller's responsibility to push these changes
    * to the iModelHub.
+   * @deprecated use BriefcaseDb.openBriefcase
    */
   public static async open(requestContext: AuthorizedClientRequestContext | ClientRequestContext, key: BriefcaseKey, options?: OpenBriefcaseOptions & UpgradeOptions): Promise<BriefcaseDb> {
-    return this.openBriefcase({ requestContext, key, options });
+    return this.openBriefcase(requestContext, { file: BriefcaseManager.parseKey(key), upgrade: options, readonly: options?.openAsReadOnly });
   }
 
   public beforeClose() {
+    super.beforeClose();
     if (this.allowLocalChanges)
       this.concurrencyControl.onClose();
   }
@@ -2417,8 +2438,10 @@ export class BriefcaseDb extends IModelDb {
  */
 export class SnapshotDb extends IModelDb {
   private _createClassViewsOnClose?: boolean;
-  /** The full path to the snapshot iModel file. */
-  public get filePath(): string { return this.nativeDb.getFilePath(); }
+  /** The full path to the snapshot iModel file.
+   * @deprecated use pathName
+  */
+  public get filePath(): string { return this.pathName; }
 
   private constructor(nativeDb: IModelJsNative.DgnDb, openMode: OpenMode, key?: string) {
     const iModelRpcProps: IModelRpcProps = { key: key ?? nativeDb.getFilePath(), iModelId: nativeDb.getDbGuid(), changeSetId: "", openMode };
@@ -2463,7 +2486,7 @@ export class SnapshotDb extends IModelDb {
     if (iModelDb.nativeDb.isEncrypted())
       throw new IModelError(DbResult.BE_SQLITE_MISUSE, "Cannot create a snapshot from an encrypted iModel", Logger.logError, loggerCategory);
 
-    IModelJsFs.copySync(iModelDb.nativeDb.getFilePath(), snapshotFile);
+    IModelJsFs.copySync(iModelDb.pathName, snapshotFile);
     const optionsString: string | undefined = options ? JSON.stringify(options) : undefined;
     if (options?.password) {
       const status = IModelHost.platform.DgnDb.encryptDb(snapshotFile, optionsString!);
@@ -2496,8 +2519,9 @@ export class SnapshotDb extends IModelDb {
     return snapshotDb;
   }
 
-  /** @internal */
-  public static openForCheckpointCreation(filePath: string, props?: SnapshotOpenOptions): SnapshotDb {
+  /** open this SnapshotDb readwrite, strictly to apply incoming changesets. Used for creating new checkpoints.
+   * @internal */
+  public static openToApplyChangesets(filePath: string, props?: SnapshotOpenOptions): SnapshotDb {
     const nativeDb = this.openDgnDb(filePath, OpenMode.ReadWrite, undefined, props ? JSON.stringify(props) : undefined);
     return new SnapshotDb(nativeDb, OpenMode.ReadWrite);
   }
@@ -2548,13 +2572,13 @@ export class SnapshotDb extends IModelDb {
   }
 
   public beforeClose(): void {
+    super.beforeClose();
     if (this._createClassViewsOnClose) { // check for flag set during create
       if (BentleyStatus.SUCCESS !== this.nativeDb.createClassViewsInDb()) {
         throw new IModelError(IModelStatus.SQLiteError, "Error creating class views", Logger.logError, loggerCategory);
       }
     }
   }
-
 }
 
 /** Standalone iModels are read/write files that are not managed by nor synchronized with iModelHub.
@@ -2572,14 +2596,16 @@ export class SnapshotDb extends IModelDb {
  * @internal
  */
 export class StandaloneDb extends IModelDb {
-  /** The full path to the snapshot iModel file. */
-  public get filePath(): string { return this.nativeDb.getFilePath(); }
+  /** The full path to the snapshot iModel file.
+   * @deprecated use pathName
+  */
+  public get filePath(): string { return this.pathName; }
 
   /** This property is always undefined as a StandaloneDb does not accept nor generate changesets. */
-  public get changeSetId(): undefined { return undefined; } // string | undefined for the superclass, but always undefined for StandaloneDb
+  public get changeSetId() { return undefined; } // string | undefined for the superclass, but always undefined for StandaloneDb
 
   private constructor(nativeDb: IModelJsNative.DgnDb, openMode: OpenMode) {
-    const filePath: string = nativeDb.getFilePath();
+    const filePath = nativeDb.getFilePath();
     const iModelRpcProps: IModelRpcProps = { key: filePath, iModelId: nativeDb.getDbGuid(), openMode };
     super(nativeDb, iModelRpcProps, openMode);
   }

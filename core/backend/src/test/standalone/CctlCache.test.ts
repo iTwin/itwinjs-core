@@ -21,11 +21,10 @@ describe("ConcurrencyControl.StateCache", () => {
     const concurrencyControlMock = {
       iModel: {
         needsConcurrencyControl: true,
-        briefcase: {
-          pathname: mockBriefcasePathname,
-        },
+        pathName: mockBriefcasePathname,
+        isOpen: true,
         syncMode: SyncMode.PullAndPush,
-        isPushEnabled: true,
+        allowLocalChanges: true,
       },
     };
 

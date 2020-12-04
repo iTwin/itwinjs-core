@@ -6,8 +6,8 @@
  * @module RpcInterface
  */
 
-import { LogLevel } from "@bentley/bentleyjs-core";
-import { BriefcaseKey, BriefcaseProps, OpenBriefcaseOptions, RequestNewBriefcaseProps } from "../BriefcaseTypes";
+import { GuidString, LogLevel } from "@bentley/bentleyjs-core";
+import { BriefcaseKey, BriefcaseProps, LocalBriefcaseProps, OpenBriefcaseOptions, OpenBriefcaseProps, RequestNewBriefcaseProps } from "../BriefcaseTypes";
 import { IModelConnectionProps, IModelRpcProps } from "../IModel";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
@@ -121,53 +121,48 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
   public async cancelElementGraphicsRequests(_rpcProps: IModelRpcProps, _requestIds: string[]): Promise<void> {
     return this.forward(arguments);
   }
-  /**
-   * Request download of a briefcase. The call requires an internet connection and must have valid token.
-   * @param _requestProps Properties required to locate the iModel and download it as a briefcase
-   * @param _downloadOptions Options to affect the download of the briefcase
-   * @param _reportProgress Report progress to frontend
-   * @returns BriefcaseProps The properties of the briefcase to be downloaded
-   */
-  public async requestDownloadBriefcase(_requestProps: RequestNewBriefcaseProps, _reportProgress: boolean): Promise<BriefcaseProps> { return this.forward(arguments); }
 
-  /**
-   * Finishes download of a briefcase. The call requires an internet connection and must have valid token.
-   * @param _key Key to locate the briefcase in the disk cache
-   */
-  public async downloadRequestCompleted(_key: BriefcaseKey): Promise<void> { return this.forward(arguments); }
+  public async acquireNewBriefcaseId(_iModelId: GuidString): Promise<number> { return this.forward(arguments); }
+  public async getBriefcaseFileName(_props: BriefcaseProps): Promise<string> { return this.forward(arguments); }
+  public async downloadBriefcase(_requestProps: RequestNewBriefcaseProps, _reportProgress: boolean): Promise<void> { return this.forward(arguments); }
 
   /**
    * Cancels the previously requested download of a briefcase
    * @param _key Key to locate the briefcase in the disk cache
    * @returns true if the cancel request was acknowledged. false otherwise
    */
-  public async requestCancelDownloadBriefcase(_key: BriefcaseKey): Promise<boolean> { return this.forward(arguments); }
+  public async requestCancelDownloadBriefcase(_fileName: string): Promise<boolean> { return this.forward(arguments); }
 
   /**
    * Opens the briefcase on disk - this api can be called offline
    * @param _key Key to locate the briefcase in the disk cache
    * @param _openOptions Options to open the briefcase
    * @returns IModelRpcProps which allow to create IModelConnection.
+   * @deprecated
    */
   public async openBriefcase(_key: BriefcaseKey, _openOptions?: OpenBriefcaseOptions): Promise<IModelConnectionProps> { return this.forward(arguments); }
 
   /**
-   * Closes the briefcase on disk - this api can be called offline
-   * @param _key Key to locate the briefcase in the disk cache
+   * Opens the briefcase on disk - this api can be called offline
    */
-  public async closeBriefcase(_key: BriefcaseKey): Promise<void> { return this.forward(arguments); }
+  public async open(_args: OpenBriefcaseProps): Promise<IModelConnectionProps> { return this.forward(arguments); }
+
+  /**
+   * Closes the briefcase on disk - this api can be called offline
+   */
+  public async closeBriefcase(_key: string): Promise<void> { return this.forward(arguments); }
 
   /**
    * Deletes a previously downloaded briefcase. The briefcase must be closed.
-   * @param _key Key to locate the briefcase in the disk cache
+   * @param _briefcase either the filename or the BriefcaseProps
    */
-  public async deleteBriefcase(_key: BriefcaseKey): Promise<void> { return this.forward(arguments); }
+  public async deleteBriefcase(_briefcase: string | BriefcaseProps): Promise<void> { return this.forward(arguments); }
 
   /**
    * Gets all briefcases that were previously requested to be downloaded, or were completely downloaded
    * @returns list of briefcases.
    */
-  public async getBriefcases(): Promise<BriefcaseProps[]> { return this.forward(arguments); }
+  public async getBriefcases(): Promise<LocalBriefcaseProps[]> { return this.forward(arguments); }
 
   /**
    * Open key/value pair base storage

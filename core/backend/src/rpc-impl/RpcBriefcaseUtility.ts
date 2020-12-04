@@ -12,7 +12,7 @@ import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { BriefcaseManager } from "../BriefcaseManager";
 import { CheckpointProps, V1CheckpointManager } from "../CheckpointManager";
-import { BriefcaseDb, SnapshotDb } from "../IModelDb";
+import { BriefcaseDb, IModelDb, SnapshotDb } from "../IModelDb";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -29,15 +29,18 @@ export class RpcBriefcaseUtility {
    * @param tokenProps
    * @param syncMode
    */
-  public static async openWithTimeout(requestContext: AuthorizedClientRequestContext, tokenProps: IModelRpcProps, syncMode: SyncMode): Promise<IModelConnectionProps> {
+  public static async open(requestContext: AuthorizedClientRequestContext, tokenProps: IModelRpcProps, syncMode: SyncMode, timeout: number = 1000): Promise<IModelDb> {
     requestContext.enter();
     Logger.logTrace(loggerCategory, "RpcBriefcaseUtility.openWithTimeout", () => ({ ...tokenProps, syncMode }));
 
     BriefcaseManager.logUsage(requestContext, tokenProps);
 
-    if (syncMode === SyncMode.PullAndPush) {
-      return BriefcaseManager.openWithTimeout();
-    }
+    // if (syncMode === SyncMode.PullOnly || syncMode === SyncMode.PullAndPush) {
+    //   return BriefcaseDb.openBriefcase(requestContext, {
+
+    //   })
+    //   return BriefcaseManager.openWithTimeout();
+    // }
     const checkpoint: CheckpointProps = {
       iModelId: tokenProps.iModelId!,
       contextId: tokenProps.contextId!,
@@ -49,7 +52,7 @@ export class RpcBriefcaseUtility {
     try {
       const db = await SnapshotDb.openCheckpointV2(checkpoint);
       Logger.logTrace(loggerCategory, "using V2 checkpoint briefcase", () => ({ ...tokenProps }));
-      return db.getConnectionProps();
+      return db;
     } catch (e) {
       // this isn't a v2 checkpoint
     }
@@ -58,8 +61,7 @@ export class RpcBriefcaseUtility {
      * Note: This sets up a race between the specified timeout period and the open. Throws a RpcPendingResponse exception if the
      * timeout happens first.
      */
-    const timeout = 1000; // 1 second
-    const checkpointDb = await BeDuration.race(timeout, V1CheckpointManager.getCheckpointDb({ checkpoint }));
+    const checkpointDb = await BeDuration.race(timeout, V1CheckpointManager.getCheckpointDb({ checkpoint, localFile: V1CheckpointManager.getFileName(checkpoint) }));
     requestContext.enter();
 
     if (checkpointDb === undefined) {
@@ -68,7 +70,11 @@ export class RpcBriefcaseUtility {
     }
 
     Logger.logTrace(loggerCategory, "RpcBriefcaseUtility.openWithTimeout: Opened briefcase", () => ({ ...tokenProps }));
-    return checkpointDb.getConnectionProps();
+    return checkpointDb;
+  }
+
+  public static async openWithTimeout(requestContext: AuthorizedClientRequestContext, tokenProps: IModelRpcProps, syncMode: SyncMode, timeout: number = 1000): Promise<IModelConnectionProps> {
+    return (await this.open(requestContext, tokenProps, syncMode, timeout)).toJSON();
   }
 
   /** Close the briefcase if necessary */
@@ -79,8 +85,9 @@ export class RpcBriefcaseUtility {
 
     // For read-write connections, close the briefcase and delete local copies of it
     const briefcaseDb = BriefcaseDb.findByKey(tokenProps.key);
+    const fileName = briefcaseDb.pathName;
     briefcaseDb.close();
-    await BriefcaseManager.delete(requestContext, tokenProps.key);
+    await BriefcaseManager.deleteBriefcase(requestContext, fileName);
     return true;
   }
 }

@@ -1718,7 +1718,7 @@ describe("iModel", () => {
     // Just create an empty snapshot, and we'll use that as our fake "checkpoint" (so it opens)
     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint.bim");
     const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
-    const imodelId = snapshot.getGuid();
+    const iModelId = snapshot.getGuid();
     const contextId = Guid.createValue();
     const changeSetId = Guid.createValue();
     snapshot.close();
@@ -1729,7 +1729,7 @@ describe("iModel", () => {
       ecId: "INVALID",
       mergedChangeSetId: changeSetId,
       bcvAccessKeyAccount: "testAccount",
-      bcvAccessKeyContainer: `imodelblocks-${imodelId}`,
+      bcvAccessKeyContainer: `imodelblocks-${iModelId}`,
       bcvAccessKeySAS: "testSAS",
       bcvAccessKeyDbName: "testDb",
     };
@@ -1745,10 +1745,10 @@ describe("iModel", () => {
 
     process.env.BLOCKCACHE_DIR = "/foo/";
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const checkpoint = await SnapshotDb.openCheckpoint(ctx, contextId, imodelId, changeSetId);
+    const checkpoint = await SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId, iModelId, changeSetId });
     const props = checkpoint.getRpcProps();
     assert.equal(props.openMode, OpenMode.Readonly);
-    assert.equal(props.iModelId, imodelId);
+    assert.equal(props.iModelId, iModelId);
     assert.equal(props.contextId, contextId);
     assert.equal(props.changeSetId, changeSetId);
     assert.equal(commandStub.callCount, 1);
@@ -1768,7 +1768,7 @@ describe("iModel", () => {
   it("should throw when opening checkpoint without blockcache dir env", async () => {
     process.env.BLOCKCACHE_DIR = "";
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const error = await getIModelError(SnapshotDb.openCheckpoint(ctx, Guid.createValue(), Guid.createValue(), Guid.createValue()));
+    const error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: Guid.createValue() }));
     expectIModelError(IModelStatus.BadRequest, error);
   });
 
@@ -1779,11 +1779,11 @@ describe("iModel", () => {
     sinon.stub(BriefcaseManager.imodelClient, "checkpoints").get(() => checkpointsHandler);
 
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
-    let error = await getIModelError(SnapshotDb.openCheckpoint(ctx, Guid.createValue(), Guid.createValue(), Guid.createValue()));
+    let error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: Guid.createValue() }));
     expectIModelError(IModelStatus.NotFound, error);
 
     hubMock.callsFake(async () => [{} as any]);
-    error = await getIModelError(SnapshotDb.openCheckpoint(ctx, Guid.createValue(), Guid.createValue(), Guid.createValue()));
+    error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: Guid.createValue() }));
     expectIModelError(IModelStatus.BadRequest, error);
   });
 
@@ -1952,9 +1952,8 @@ describe("iModel", () => {
     assert.isTrue(standaloneDb1.isStandalone);
     assert.isFalse(standaloneDb1.isReadonly, "Expect standalone iModels to be read-write during create");
     assert.equal(standaloneDb1.getBriefcaseId(), BriefcaseIdValue.Standalone);
-    assert.equal(standaloneDb1.filePath, standaloneFile1);
+    assert.equal(standaloneDb1.pathName, standaloneFile1);
     assert.equal(standaloneDb1, StandaloneDb.tryFindByKey(standaloneFile1), "Should be in the list of open StandaloneDbs");
-    assert.isUndefined(SnapshotDb.tryFindByKey(standaloneFile1), "Should not be in the list of open SnapshotDbs");
     assert.isFalse(standaloneDb1.nativeDb.isEncrypted());
     assert.equal(standaloneDb1.elements.getRootSubject().code.getValue(), standaloneRootSubjectName);
     assert.isTrue(standaloneDb1.isOpen);
@@ -1997,13 +1996,12 @@ describe("iModel", () => {
     assert.equal(snapshotDb2.getBriefcaseId(), BriefcaseIdValue.Standalone);
     assert.equal(snapshotDb3.getBriefcaseId(), BriefcaseIdValue.Standalone);
     assert.equal(imodel1.getBriefcaseId(), BriefcaseIdValue.Standalone);
-    assert.equal(snapshotDb1.filePath, snapshotFile1);
-    assert.equal(snapshotDb2.filePath, snapshotFile2);
-    assert.equal(snapshotDb3.filePath, snapshotFile3);
+    assert.equal(snapshotDb1.pathName, snapshotFile1);
+    assert.equal(snapshotDb2.pathName, snapshotFile2);
+    assert.equal(snapshotDb3.pathName, snapshotFile3);
     assert.equal(snapshotDb1, SnapshotDb.tryFindByKey(snapshotFile1));
     assert.equal(snapshotDb2, SnapshotDb.tryFindByKey(snapshotFile2));
     assert.equal(snapshotDb3, SnapshotDb.tryFindByKey(snapshotFile3));
-    assert.isUndefined(StandaloneDb.tryFindByKey(snapshotFile1), "Should not be in the list of open StandaloneDbs");
     assert.isFalse(snapshotDb1.nativeDb.isEncrypted());
     assert.isFalse(snapshotDb2.nativeDb.isEncrypted());
     assert.isFalse(snapshotDb3.nativeDb.isEncrypted());
@@ -2209,7 +2207,7 @@ describe("iModel", () => {
 
   it("Run plain SQL against readonly connection", () => {
     let iModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IModel", "sqlitesqlreadonlyconnection.bim"), { rootSubject: { name: "test" } });
-    const iModelPath: string = iModel.filePath;
+    const iModelPath = iModel.pathName;
     iModel.close();
     iModel = SnapshotDb.openFile(iModelPath);
 

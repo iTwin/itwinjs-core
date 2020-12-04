@@ -64,12 +64,11 @@ describe("IModelBridgeFwk (#integration)", () => {
     const status = await runner.synchronize();
     expect(status === BentleyStatus.SUCCESS);
     const briefcases = BriefcaseManager.getBriefcases();
-    const briefcaseEntry = BriefcaseManager.findBriefcaseByKey(briefcases[0].key);
+    const briefcaseEntry = briefcases[0];
     expect(briefcaseEntry !== undefined);
 
-    const imodel: BriefcaseDb = await BriefcaseDb.open(new ClientRequestContext(), briefcases[0].key, { openAsReadOnly: true });
+    const imodel = await BriefcaseDb.openBriefcase(new ClientRequestContext(), { file: briefcases[0].fileName, readonly: true });
     BridgeTestUtils.verifyIModel(imodel, bridgeJobDef, isUpdate);
-    briefcaseEntry!.openMode = OpenMode.ReadWrite;
     imodel.close();
   }
 

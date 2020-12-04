@@ -67,7 +67,12 @@ describe.skip("Checkpoints (#integration)", () => {
   });
 
   it("should be able to open and read blockcache checkpoint", async () => {
-    const iModel = await SnapshotDb.openCheckpoint(requestContext, testProjectId, testIModelId, testChangeSetId);
+    const iModel = await SnapshotDb.openCheckpointV2({
+      requestContext,
+      contextId: testProjectId,
+      iModelId: testIModelId,
+      changeSetId: testChangeSetId,
+    });
     assert.equal(iModel.getGuid(), testIModelId);
     assert.equal(iModel.changeSetId, testChangeSetId);
     assert.equal(iModel.contextId, testProjectId);

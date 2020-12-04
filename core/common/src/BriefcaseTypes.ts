@@ -7,6 +7,8 @@
  */
 
 import { GuidString } from "@bentley/bentleyjs-core";
+import { IModelEncryptionProps } from "./IModel";
+import { IModelVersionProps } from "./IModelVersion";
 
 /**
  * Status of downloading a briefcase
@@ -30,12 +32,12 @@ export enum SyncMode { FixedVersion = 1, PullAndPush = 2, PullOnly = 3 }
 
 /**
  * Key to locate an open briefcase
- * @internal
+ * @see BriefcaseManager.makeKey
  */
 export type BriefcaseKey = string;
 
 /**
- * Options to open the briefcase
+ * Options to open a previously downloaded briefcase
  * @beta
  */
 export interface OpenBriefcaseOptions {
@@ -44,28 +46,54 @@ export interface OpenBriefcaseOptions {
 }
 
 /**
- * Properties that specify a local briefcase
- * @internal
+ * Properties that specify a briefcase within the briefcase cache
+ * @see BriefcaseManager.makeKey, BriefcaseManager.getFileName
+ * @beta
  */
 export interface BriefcaseProps {
   /** Id of the iModel */
-  readonly iModelId: GuidString;
+  iModelId: GuidString;
 
-  readonly briefcaseId: number;
+  /** BriefcaseId of the briefcase */
+  briefcaseId: number;
+}
+
+export interface OpenBriefcaseProps extends IModelEncryptionProps {
+  key?: string;
+  file: string | BriefcaseProps;
+  readonly?: boolean;
+  upgrade?: UpgradeOptions;
+}
+
+export interface LocalBriefcaseProps {
+  /** Context (Project or Asset) that the iModel belongs to */
+  contextId: GuidString;
+
+  /** full path of local file to store briefcase. If undefined, it will be inferred via `BriefcaseManager.getFilename(props)` */
+  fileName: string;
+
+  /** identity of the newly downloaded briefcase */
+  iModelId: GuidString;
+
+  briefcaseId: number;
+
+  changesetId: GuidString;
 }
 
 export interface RequestNewBriefcaseProps {
   /** Context (Project or Asset) that the iModel belongs to */
-  readonly contextId: GuidString;
+  contextId: GuidString;
+
+  /** full path of local file to store briefcase. If undefined, it will be inferred via `BriefcaseManager.getFilename(props)` */
+  fileName?: string;
 
   /** identity of the newly downloaded briefcase */
-  readonly props: BriefcaseProps;
+  iModelId: GuidString;
 
-  /** Id of the change set */
-  readonly asOf: GuidString;
+  briefcaseId?: number;
 
-  /** Status of downloading a briefcase */
-  downloadStatus: DownloadBriefcaseStatus;
+  /** Id of the change set. If not present, use latest */
+  asOf?: IModelVersionProps;
 }
 
 /**
@@ -73,8 +101,11 @@ export interface RequestNewBriefcaseProps {
  * @internal
  */
 export interface BriefcaseDownloader {
-  /** Properties of the briefcase that's being downloaded */
-  briefcaseProps: RequestNewBriefcaseProps;
+  /** Id of the briefcase being downloaded */
+  briefcaseId: number;
+
+  /** the name of the local file for the briefcase */
+  fileName: string;
 
   /** Promise that resolves when the download completes. await this to complete the download */
   downloadPromise: Promise<void>;

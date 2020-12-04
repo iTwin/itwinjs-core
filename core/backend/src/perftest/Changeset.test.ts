@@ -614,11 +614,10 @@ describe("ImodelChangesetPerformance own data", () => {
   async function setupLocalIModel(projId: string, modelId: string, localPath: string) {
     requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
     const iModelDb = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projId, modelId, SyncMode.FixedVersion, IModelVersion.named(seedVersionName));
+    const pathName = iModelDb.pathName;
     iModelDb.close();
     if (fs.existsSync(localPath))
-      fs.unlinkSync(localPath);
-    const bc = BriefcaseManager.findBriefcaseByKey(iModelDb.briefcaseKey);
-    fs.copySync(bc!.pathname, localPath);
+      fs.copySync(pathName, localPath);
 
     const nativeDb = new IModelHost.platform.DgnDb();
     const status = nativeDb.openIModel(localPath, OpenMode.ReadWrite);

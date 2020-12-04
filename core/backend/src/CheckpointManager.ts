@@ -43,14 +43,17 @@ export interface CheckpointProps {
  * @internal
  */
 export interface DownloadRequest {
+  /** name of local file to create. */
+  localFile: string;
+
   /** Properties of the checkpoint that's being downloaded */
   checkpoint: CheckpointProps;
 
   /** called to indicate progress is being made */
   onProgress?: ProgressCallback;
 
-  /** Request cancellation of the download */
-  requestCancel?: CancelRequest;
+  /** While download is pending, call `.cancel` method to cancel the download */
+  cancelRequest?: CancelRequest;
 }
 
 export interface DownloadJob {
@@ -69,11 +72,12 @@ export class Downloads {
     return status;
   }
 
-  private static isInProgress(pathName: string): DownloadJob | undefined {
+  public static isInProgress(pathName: string): DownloadJob | undefined {
     return this._active.get(pathName);
   }
 
-  public static async download<T>(request: DownloadRequest, pathName: string, downloadFn: (job: DownloadJob) => Promise<T>) {
+  public static async download<T>(request: DownloadRequest, downloadFn: (job: DownloadJob) => Promise<T>) {
+    const pathName = request.localFile;
     let job = this.isInProgress(pathName);
     if (undefined !== job)
       return job.promise;
@@ -93,7 +97,7 @@ export class V2CheckpointManager {
     requestContext.enter();
     const bcvDaemonCachePath = process.env.BLOCKCACHE_DIR;
     if (!bcvDaemonCachePath)
-      throw new IModelError(IModelStatus.BadRequest, "Invalid config: BLOCKCACHE_DIR is not set!", Logger.logError, loggerCategory);
+      throw new IModelError(IModelStatus.BadRequest, "Invalid config: BLOCKCACHE_DIR is not set"); // don't log - expected for V1 projects
 
     const checkpointQuery = new CheckpointQuery().byChangeSetId(changeSetId).selectBCVAccessKey();
     const checkpoints: Checkpoint[] = await BriefcaseManager.imodelClient.checkpoints.get(requestContext, iModelId, checkpointQuery);
@@ -123,14 +127,23 @@ export class V2CheckpointManager {
     // We can assume that a BCVDaemon process is already started if BLOCKCACHE_DIR was set, so we need to just tell the daemon to attach to the Storage Container
     const attachResult = await BlobDaemon.command("attach", args);
     if (attachResult.result !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(attachResult.result, `BlockCacheVfs attach failed: ${attachResult.errMsg}`, Logger.logError, loggerCategory);
+      throw new IModelError(attachResult.result, `Daemon attach failed: ${attachResult.errMsg}`); // don't log this, it's expected for V1 projects
 
     return BlobDaemon.getDbFileName(args);
   }
 
+  private static async performDownload(job: DownloadJob) {
+    const request = job.request;
+    let aborted = 0;
+    if (request.cancelRequest)
+      request.cancelRequest.cancel = () => { aborted = 1; return true; };
+    const onProgress = (loaded: number, total: number) => { request.onProgress?.({ loaded, total }); return aborted; };
+    return BlobDaemon.command("download", { ... await this.getCommandArgs(request.checkpoint), localFile: request.localFile, onProgress });
+  }
+
   // Fully download a V2 checkpoint to a local file that can be used to create a briefcase or to work offline.
-  public static async downloadLocal(checkpoint: CheckpointProps, localFile: string, onProgress?: (nDone: number, nTotal: number) => number) {
-    return BlobDaemon.command("download", { ... await this.getCommandArgs(checkpoint), localFile, onProgress });
+  public static async downloadCheckpoint(request: DownloadRequest) {
+    return Downloads.download(request, async (job: DownloadJob) => this.performDownload(job));
   }
 }
 
@@ -138,26 +151,18 @@ export class V1CheckpointManager {
   public static getKey(checkpoint: CheckpointProps) { return `${checkpoint.iModelId}:${checkpoint.changeSetId}-V1`; }
 
   public static getFolder(checkpoint: CheckpointProps) {
-    const pathBaseName = path.join(BriefcaseManager.getBriefcaseBasePath(checkpoint.iModelId), "cp");
-    return path.join(pathBaseName, BriefcaseManager.getChangeSetFolderNameFromId(checkpoint.changeSetId));
+    return path.join(BriefcaseManager.getIModelPath(checkpoint.iModelId), "checkpoints");
   }
 
   public static getFileName(checkpoint: CheckpointProps) {
-    return path.join(this.getFolder(checkpoint), "bc.bim");
+    const changeSetId = checkpoint.changeSetId || "first";
+    return path.join(this.getFolder(checkpoint), `${changeSetId}.bim`);
   }
 
   public static async getCheckpointDb(request: DownloadRequest): Promise<SnapshotDb> {
     const checkpoint = request.checkpoint;
-    const key = this.getKey(checkpoint);
-    const db = SnapshotDb.tryFindByKey(key);
-    if (undefined !== db)
-      return db as SnapshotDb;
-
-    const fileName = this.getFileName(checkpoint);
-    if (!this.verifyCheckpoint(checkpoint, fileName))
-      await Downloads.download(request, fileName, this.performDownload);
-
-    return SnapshotDb.openCheckpointV1(checkpoint);
+    const db = SnapshotDb.tryFindByKey(this.getKey(checkpoint));
+    return (undefined !== db) ? db as SnapshotDb : Downloads.download(request, async (job: DownloadJob) => this.downloadAndOpen(job));
   }
 
   public static verifyCheckpoint(checkpoint: CheckpointProps, fileName: string): boolean {
@@ -174,8 +179,16 @@ export class V1CheckpointManager {
     return isValid;
   }
 
-  public static async downloadCheckpoint(checkpoint: CheckpointProps, localFile: string): Promise<void> {
-    return Downloads.download({ checkpoint }, localFile, this.performDownload);
+  public static async downloadCheckpoint(request: DownloadRequest): Promise<void> {
+    return Downloads.download(request, async (job: DownloadJob) => this.performDownload(job));
+  }
+
+  private static async downloadAndOpen(job: DownloadJob) {
+    const checkpoint = job.request.checkpoint;
+    if (!this.verifyCheckpoint(checkpoint, job.pathName)) // if file already exists, just use it
+      await this.performDownload(job);
+
+    return SnapshotDb.openCheckpointV1(checkpoint);
   }
 
   private static async performDownload(job: DownloadJob): Promise<void> {
@@ -201,7 +214,7 @@ export class V1CheckpointManager {
       job.status = DownloadBriefcaseStatus.DownloadingCheckpoint;
       const progressCallback = Logger.isEnabled(loggerCategory, LogLevel.Trace) ? this.enableDownloadTrace(checkpoint, job.request.onProgress) : job.request.onProgress;
       try {
-        await IModelHost.iModelClient.checkpoints.download(requestContext, checkpoint, job.pathName, progressCallback, job.request.requestCancel);
+        await IModelHost.iModelClient.checkpoints.download(requestContext, checkpoint, job.pathName, progressCallback, job.request.cancelRequest);
       } catch (error) {
         requestContext.enter();
         if (!(error instanceof UserCancelledError))
@@ -211,7 +224,7 @@ export class V1CheckpointManager {
       requestContext.enter();
 
       // Open checkpoint for write
-      const db = SnapshotDb.openForCheckpointCreation(job.pathName);
+      const db = SnapshotDb.openToApplyChangesets(job.pathName);
       const nativeDb = db.nativeDb;
 
       // Note: A defect in applying change sets caused some checkpoints to be created with Txns - we need to clear these out
@@ -299,6 +312,20 @@ export class V1CheckpointManager {
     };
     return progressCallbackWrapper;
   }
-
-
 }
+
+export class CheckpointManager {
+  public static async downloadCheckpoint(request: DownloadRequest) {
+    if (IModelJsFs.existsSync(request.localFile))
+      throw new IModelError(IModelStatus.FileAlreadyExists, `Cannot download checkpoint, file ${request.localFile} already exists`);
+
+    try {
+      // first see if there's a V2 checkpoint available.
+      return V2CheckpointManager.downloadCheckpoint(request);
+    } catch (error) {
+      // TODO: check to see if the error is "not available" and keep going. Otherwise rethrow error
+    }
+    return V1CheckpointManager.downloadCheckpoint(request);
+  }
+}
+

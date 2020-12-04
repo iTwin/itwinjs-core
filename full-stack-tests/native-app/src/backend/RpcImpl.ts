@@ -87,11 +87,6 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
     return IModelJsFs.purgeDirSync(NativeAppBackend.appSettingsCacheDir);
   }
 
-  public async purgeBriefcaseCache(): Promise<void> {
-    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    await BriefcaseManager.purgeCache(requestContext);
-  }
-
   public async beginOfflineScope(): Promise<void> {
     nock(/^https:\/\/.*$/i)
       .log((message: any, optionalParams: any[]) => {

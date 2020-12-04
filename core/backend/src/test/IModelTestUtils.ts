@@ -11,23 +11,24 @@ import {
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { ChangeSet, IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
 import {
-  BriefcaseProps, Code, CodeProps, ElementProps, IModel, IModelError, IModelReadRpcInterface, IModelVersion, PhysicalElementProps, RelatedElement,
-  RpcConfiguration, RpcManager, SyncMode,
+  Code, CodeProps, ElementProps, IModel, IModelError, IModelReadRpcInterface, IModelVersion, PhysicalElementProps, RelatedElement, RpcConfiguration,
+  RpcManager,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext, ITwinClientLoggerCategory } from "@bentley/itwin-client";
 import { BackendLoggerCategory as BackendLoggerCategory } from "../BackendLoggerCategory";
+import { RequestNewBriefcaseArg } from "../BriefcaseManager";
 import { ClassRegistry } from "../ClassRegistry";
 import { Drawing, PhysicalElement, Subject } from "../Element";
 import {
   BriefcaseDb, BriefcaseManager, Element, IModelDb, IModelHost, IModelHostConfiguration, IModelJsFs, InformationPartitionElement, Model,
   PhysicalModel, PhysicalPartition, SnapshotDb, SpatialCategory, SubjectOwnsPartitionElements,
 } from "../imodeljs-backend";
+import { DrawingModel } from "../Model";
 import { ElementDrivesElement, RelationshipProps } from "../Relationship";
 import { Schema, Schemas } from "../Schema";
 import { HubUtility } from "./integration/HubUtility";
 import { KnownTestLocations } from "./KnownTestLocations";
-import { DrawingModel } from "../Model";
 
 /* eslint-disable @typescript-eslint/explicit-member-accessibility */
 
@@ -140,16 +141,16 @@ export class TestPhysicalObject extends PhysicalElement implements TestPhysicalO
 
 export class IModelTestUtils {
   /** Helper to open a briefcase db */
-  public static async downloadAndOpenBriefcaseDb(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, syncMode: SyncMode, version: IModelVersion = IModelVersion.latest()): Promise<BriefcaseDb> {
-    requestContext.enter();
-    const briefcaseProps: BriefcaseProps = await BriefcaseManager.download(requestContext, contextId, iModelId, { syncMode }, version);
-    requestContext.enter();
-    return BriefcaseDb.openFromRemote(requestContext, briefcaseProps.key);
+  public static async downloadAndOpenBriefcaseDb(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, briefcaseId?: number, version: IModelVersion = IModelVersion.latest()): Promise<BriefcaseDb> {
+    const args: RequestNewBriefcaseArg = { contextId, iModelId, asOf: version.toJSON(), briefcaseId };
+    await BriefcaseManager.downloadBriefcase(requestContext, { contextId, iModelId, asOf: version.toJSON(), briefcaseId });
+    return BriefcaseDb.openBriefcase(requestContext, { file: args.fileName! });
   }
 
-  public static async closeAndDeleteBriefcaseDb(requestContext: AuthorizedClientRequestContext, briefcaseDb: BriefcaseDb) {
+  public static async closeAndDeleteBriefcaseDb(requestContext: AuthorizedClientRequestContext, briefcaseDb: IModelDb) {
+    const fileName = briefcaseDb.pathName;
     briefcaseDb.close();
-    await BriefcaseManager.delete(requestContext, briefcaseDb.briefcaseKey);
+    await BriefcaseManager.deleteBriefcase(requestContext, fileName);
   }
 
   public static async getTestModelInfo(requestContext: AuthorizedClientRequestContext, testProjectId: string, iModelName: string): Promise<TestIModelInfo> {
@@ -226,7 +227,7 @@ export class IModelTestUtils {
   }
 
   // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
-  public static async createAndInsertPhysicalPartitionAsync(rqctx: AuthorizedClientRequestContext, testDb: IModelDb, newModelCode: CodeProps, parentId?: Id64String): Promise<Id64String> {
+  public static async createAndInsertPhysicalPartitionAsync(reqContext: AuthorizedClientRequestContext, testDb: IModelDb, newModelCode: CodeProps, parentId?: Id64String): Promise<Id64String> {
     const model = parentId ? testDb.elements.getElement(parentId).model : IModel.repositoryModelId;
     const parent = new SubjectOwnsPartitionElements(parentId || IModel.rootSubjectId);
 
@@ -238,8 +239,8 @@ export class IModelTestUtils {
     };
     const modeledElement: Element = testDb.elements.createElement(modeledElementProps);
     if (testDb.isBriefcaseDb()) {
-      await testDb.concurrencyControl.requestResourcesForInsert(rqctx, [modeledElement]);
-      rqctx.enter();
+      await testDb.concurrencyControl.requestResourcesForInsert(reqContext, [modeledElement]);
+      reqContext.enter();
     }
     return testDb.elements.insertElement(modeledElement);
   }
@@ -255,11 +256,11 @@ export class IModelTestUtils {
   }
 
   // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
-  public static async createAndInsertPhysicalModelAsync(rqctx: AuthorizedClientRequestContext, testDb: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Promise<Id64String> {
+  public static async createAndInsertPhysicalModelAsync(reqContext: AuthorizedClientRequestContext, testDb: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Promise<Id64String> {
     const newModel = testDb.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: privateModel });
     if (testDb.isBriefcaseDb()) {
-      await testDb.concurrencyControl.requestResourcesForInsert(rqctx, [], [newModel]);
-      rqctx.enter();
+      await testDb.concurrencyControl.requestResourcesForInsert(reqContext, [], [newModel]);
+      reqContext.enter();
     }
     const newModelId = testDb.models.insertModel(newModel);
     assert.isTrue(Id64.isValidId64(newModelId));
@@ -283,12 +284,12 @@ export class IModelTestUtils {
   // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
   // @return [modeledElementId, modelId]
   //
-  public static async createAndInsertPhysicalPartitionAndModelAsync(rqctx: AuthorizedClientRequestContext, testImodel: IModelDb, newModelCode: CodeProps, privateModel: boolean = false, parentId?: Id64String): Promise<Id64String[]> {
-    const eid = await IModelTestUtils.createAndInsertPhysicalPartitionAsync(rqctx, testImodel, newModelCode, parentId);
-    rqctx.enter();
+  public static async createAndInsertPhysicalPartitionAndModelAsync(reqContext: AuthorizedClientRequestContext, testImodel: IModelDb, newModelCode: CodeProps, privateModel: boolean = false, parentId?: Id64String): Promise<Id64String[]> {
+    const eid = await IModelTestUtils.createAndInsertPhysicalPartitionAsync(reqContext, testImodel, newModelCode, parentId);
+    reqContext.enter();
     const modeledElementRef = new RelatedElement({ id: eid });
-    const mid = await IModelTestUtils.createAndInsertPhysicalModelAsync(rqctx, testImodel, modeledElementRef, privateModel);
-    rqctx.enter();
+    const mid = await IModelTestUtils.createAndInsertPhysicalModelAsync(reqContext, testImodel, modeledElementRef, privateModel);
+    reqContext.enter();
     return [eid, mid];
   }
 

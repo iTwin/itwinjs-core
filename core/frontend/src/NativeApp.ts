@@ -8,16 +8,27 @@
 
 import { BeEvent, Config, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseDownloader, BriefcaseKey, BriefcaseProps, DownloadBriefcaseOptions, Events, IModelError, IModelVersion, InternetConnectivityStatus,
-  NativeAppRpcInterface, OverriddenBy, RequestBriefcaseProps, RpcRegistry, StorageValue,
+  BriefcaseDownloader, BriefcaseProps, Events, IModelError, IModelVersion, InternetConnectivityStatus,
+  LocalBriefcaseProps,
+  NativeAppRpcInterface, OpenBriefcaseProps, OverriddenBy, RequestNewBriefcaseProps, RpcRegistry, StorageValue, SyncMode,
 } from "@bentley/imodeljs-common";
 import { ProgressCallback, ProgressInfo, RequestGlobalOptions } from "@bentley/itwin-client";
 import { EventSource } from "./EventSource";
+import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { AuthorizedFrontendRequestContext, FrontendRequestContext } from "./FrontendRequestContext";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
 import { LocalBriefcaseConnection } from "./IModelConnection";
 import { NativeAppLogger } from "./NativeAppLogger";
-import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
+
+/**
+ * Options to download a briefcase
+ */
+export interface DownloadBriefcaseOptions {
+  /** This setting defines the operations allowed when synchronizing changes between the briefcase and iModelHub */
+  syncMode: SyncMode;
+  fileName?: string;
+}
+
 /**
  * This should be called instead of IModelApp.startup() for native apps.
  * @internal
@@ -89,18 +100,15 @@ export class NativeApp {
     await IModelApp.shutdown();
   }
 
-  public static async requestDownloadBriefcase(contextId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions, version: IModelVersion = IModelVersion.latest(), progress?: ProgressCallback): Promise<BriefcaseDownloader> {
-    const requestContext = await AuthorizedFrontendRequestContext.create();
-    requestContext.enter();
-
+  public static async requestDownloadBriefcase(contextId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions,
+    asOf: IModelVersion = IModelVersion.latest(), progress?: ProgressCallback): Promise<BriefcaseDownloader> {
     if (!IModelApp.initialized)
       throw new IModelError(IModelStatus.BadRequest, "Call NativeApp.startup() before calling requestDownloadBriefcase");
 
-    const changeSetId: string = await version.evaluateChangeSet(requestContext, iModelId, IModelApp.iModelClient);
+    const requestContext = await AuthorizedFrontendRequestContext.create();
     requestContext.enter();
 
-    const requestProps: RequestBriefcaseProps = { contextId, iModelId, changeSetId };
-
+    const rpc = NativeAppRpcInterface.getClient();
     let stopProgressEvents = () => { };
     const reportProgress = progress !== undefined;
     if (reportProgress) {
@@ -111,15 +119,20 @@ export class NativeApp {
         });
     }
 
-    requestContext.useContextForRpc = true;
-    const briefcaseProps = await NativeAppRpcInterface.getClient().requestDownloadBriefcase(requestProps, downloadOptions, reportProgress);
+    const briefcaseId = downloadOptions.syncMode === SyncMode.PullOnly ? 0 : await rpc.acquireNewBriefcaseId(iModelId);
+    requestContext.enter();
 
-    const finishDownload = async (): Promise<void> => {
+    const fileName = downloadOptions.fileName ?? await rpc.getBriefcaseFileName({ briefcaseId, iModelId });
+    requestContext.enter();
+
+    const requestProps: RequestNewBriefcaseProps = { iModelId, briefcaseId, contextId, asOf: asOf.toJSON(), fileName };
+
+    const doDownload = async (): Promise<void> => {
       const locRequestContext = new FrontendRequestContext();
       locRequestContext.enter();
       try {
         locRequestContext.useContextForRpc = true;
-        await NativeAppRpcInterface.getClient().downloadRequestCompleted(briefcaseProps.key);
+        await rpc.downloadBriefcase(requestProps, reportProgress);
       } finally {
         stopProgressEvents();
       }
@@ -129,32 +142,27 @@ export class NativeApp {
       const locRequestContext = new FrontendRequestContext();
       locRequestContext.enter();
       let status = false;
-      status = await NativeAppRpcInterface.getClient().requestCancelDownloadBriefcase(briefcaseProps.key);
+      status = await rpc.requestCancelDownloadBriefcase(fileName);
       if (status) {
         stopProgressEvents();
       }
       return status;
     };
 
-    const downloader: BriefcaseDownloader = {
-      briefcaseProps,
-      downloadPromise: finishDownload(),
-      requestCancel,
-    };
-    return downloader;
+    return { briefcaseId, fileName, downloadPromise: doDownload(), requestCancel };
   }
 
-  public static async deleteBriefcase(briefcaseKey: BriefcaseKey): Promise<void> {
-    const requestContext = new FrontendRequestContext();
-    requestContext.enter();
-
+  public static async deleteBriefcase(briefcaseKey: string | BriefcaseProps): Promise<void> {
     if (!IModelApp.initialized)
       throw new IModelError(IModelStatus.BadRequest, "Call NativeApp.requestDownloadBriefcase first");
+
+    const requestContext = new FrontendRequestContext();
+    requestContext.enter();
     requestContext.useContextForRpc = true;
     await NativeAppRpcInterface.getClient().deleteBriefcase(briefcaseKey);
   }
 
-  public static async openBriefcase(briefcaseProps: BriefcaseProps): Promise<LocalBriefcaseConnection> {
+  public static async openBriefcase(briefcaseProps: OpenBriefcaseProps): Promise<LocalBriefcaseConnection> {
     const requestContext = new FrontendRequestContext();
     requestContext.enter();
     if (!IModelApp.initialized)
@@ -162,20 +170,20 @@ export class NativeApp {
     return LocalBriefcaseConnection.open(briefcaseProps);
   }
 
-  public static async closeBriefcase(briefcaseKey: BriefcaseKey): Promise<void> {
+  public static async closeBriefcase(connection: LocalBriefcaseConnection): Promise<void> {
     const requestContext = new FrontendRequestContext();
     requestContext.enter();
     if (!IModelApp.initialized)
       throw new IModelError(IModelStatus.BadRequest, "Call NativeApp.startup() before calling downloadBriefcase");
     requestContext.useContextForRpc = true;
-    await NativeAppRpcInterface.getClient().closeBriefcase(briefcaseKey);
+    await NativeAppRpcInterface.getClient().closeBriefcase(connection.key);
   }
 
   /**
    * Gets briefcases
    * @returns list of BriefcaseProps in cache
    */
-  public static async getBriefcases(): Promise<BriefcaseProps[]> {
+  public static async getBriefcases(): Promise<LocalBriefcaseProps[]> {
     if (!IModelApp.initialized)
       throw new IModelError(IModelStatus.BadRequest, "Call NativeApp.startup() before calling downloadBriefcase");
 

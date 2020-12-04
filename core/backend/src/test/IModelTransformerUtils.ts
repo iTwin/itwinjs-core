@@ -1099,11 +1099,11 @@ export namespace IModelTransformerUtils {
   }
 
   export function dumpIModelInfo(iModelDb: IModelDb): void {
-    const outputFileName: string = `${iModelDb.nativeDb.getFilePath()}.info.txt`;
+    const outputFileName: string = `${iModelDb.pathName}.info.txt`;
     if (IModelJsFs.existsSync(outputFileName)) {
       IModelJsFs.removeSync(outputFileName);
     }
-    IModelJsFs.appendFileSync(outputFileName, `${iModelDb.nativeDb.getFilePath()}\n`);
+    IModelJsFs.appendFileSync(outputFileName, `${iModelDb.pathName}\n`);
     IModelJsFs.appendFileSync(outputFileName, "\n=== CodeSpecs ===\n");
     iModelDb.withPreparedStatement(`SELECT ECInstanceId,Name FROM BisCore:CodeSpec ORDER BY ECInstanceId`, (statement: ECSqlStatement): void => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {

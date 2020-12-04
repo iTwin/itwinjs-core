@@ -6,7 +6,7 @@
  * @module iModels
  */
 
-import { GeoServiceStatus, GuidString, Id64, Id64String, OpenMode } from "@bentley/bentleyjs-core";
+import { GeoServiceStatus, GuidString, Id64, Id64String, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { Angle, AxisIndex, AxisOrder, Constant, Matrix3d, Point3d, Range3d, Range3dProps, Transform, Vector3d, XYAndZ, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@bentley/geometry-core";
 import { Cartographic, LatLongAndHeight } from "./geometry/Cartographic";
 import { AxisAlignedBox3d } from "./geometry/Placement";
@@ -274,6 +274,8 @@ export abstract class IModel implements IModelProps {
    * @internal
    */
   protected _fileKey: string;
+  /** @internal */
+  public get key() { return this._fileKey; }
 
   /** @internal */
   protected _contextId?: GuidString;
@@ -296,6 +298,9 @@ export abstract class IModel implements IModelProps {
 
   /** Return a token that can be used to identify this iModel for RPC operations. */
   public getRpcProps(): IModelRpcProps {
+    if (!this.isOpen)
+      throw new IModelError(IModelStatus.BadRequest, "Could not generate valid IModelRpcProps", Logger.logError);
+
     return {
       key: this._fileKey,
       contextId: this.contextId,
