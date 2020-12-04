@@ -67,6 +67,7 @@ export interface DefaultNativePlatformProps {
   mode: PresentationManagerMode;
   isChangeTrackingEnabled: boolean;
   cacheConfig?: IModelJsNative.ECPresentationHierarchyCacheConfig;
+  contentCacheSize?: number;
 }
 
 /** @internal */
