@@ -926,6 +926,8 @@ export class BriefcaseManager {
     return Promise.all(promises);
   }
 
+  private static _downloadPromise: Promise<BriefcaseDb> | undefined;
+
   /** hack for backwards compatibility. Do not propagate usage.
    * @internal
    * @deprecated
@@ -940,19 +942,31 @@ export class BriefcaseManager {
       request.briefcaseId = 0;
       try {
         // first see if briefcase 0 already exists
-        const pullOnly = BriefcaseDb.openBriefcase(requestContext, { file: this.getFileName({ briefcaseId: 0, iModelId: tokenProps.iModelId! }), readonly: true });
+        const pullOnly = await BriefcaseDb.openBriefcase(requestContext, { file: this.getFileName({ briefcaseId: 0, iModelId: tokenProps.iModelId! }), readonly: true });
         this.logUsage(requestContext, tokenProps);
         return pullOnly;
       } catch (error) {
       }
     }
 
+    if (this._downloadPromise)
+      return this._downloadPromise;
+
     const downloadAndOpen = async () => {
       await this.downloadBriefcase(requestContext, request);
       return BriefcaseDb.openBriefcase(requestContext, { file: request.fileName!, readonly: syncMode === SyncMode.PullOnly });
     };
 
-    const db = await BeDuration.race(timeout, downloadAndOpen());
+    const wrappedDownload = async () => {
+      try {
+        this._downloadPromise = downloadAndOpen();
+        return await this._downloadPromise;
+      } finally {
+        this._downloadPromise = undefined;
+      }
+    };
+
+    const db = await BeDuration.race(timeout, wrappedDownload());
     requestContext.enter();
 
     if (db === undefined) {
