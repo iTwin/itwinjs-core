@@ -177,7 +177,9 @@
     "showToolbar": "Show Toolbar",
     "showHTMLElement": "Show HTML Element",
     "clearMessages": "Clear Messages",
-    "toggleTimelinePlay": "Toggle Timeline Pause/Play"
+    "toggleTimelinePlay": "Toggle Timeline Pause/Play",
+    "sampleModelessDialog": "Sample Modeless Dialog",
+    "sampleModalDialog": "Sample Modal Dialog"
   },
   "tools": {
     "ToolWithSettings": {
