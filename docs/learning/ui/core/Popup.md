@@ -12,6 +12,19 @@ The `position` prop specifies the direction to which the popup is expanded, rela
 
 The `showShadow` prop indicates whether to show a box shadow, and the `showArrow` indicates whether to show an arrow pointing to the target element.
 
+Several props specify handlers for certain events:
+`onOpen`,
+`onOutsideClick`,
+`onClose`,
+`onEnter`,
+`onWheel` and
+`onContextMenu`.
+
+Several props control whether the popup closes for certain events (all default to `true`):
+`closeOnEnter`
+`closeOnWheel` and
+`closeOnContextMenu`.
+
 ## Example
 
 ```tsx
