@@ -67,13 +67,11 @@ $buic-foreground-body:                    var(--buic-foreground-body);
 $buic-foreground-body-reverse:            var(--buic-foreground-body-reverse);
 $buic-foreground-disabled:                var(--buic-foreground-disabled);
 $buic-foreground-muted:                   var(--buic-foreground-muted);
-$buic-foreground-subdued:                 var(--buic-foreground-subdued);
 $buic-foreground-activehover:             var(--buic-foreground-activehover);
 
 $buic-text-color:                         var(--buic-foreground-body);          // 0.85 opacity
 $buic-text-color-disabled:                var(--buic-foreground-disabled);      // 0.45 opacity (Note: 0.25 is too much)
 $buic-text-color-muted:                   var(--buic-foreground-muted);         // 0.65 opacity
-$buic-text-color-subdued:                 var(--buic-foreground-subdued);       // 0.75 opacity (Note: 0.65 is too much for color contrast checking)
 $buic-text-color-reverse:                 var(--buic-foreground-body-reverse);  // 0.85 opacity
 $buic-text-color-hover:                   var(--buic-foreground-activehover);   // 1.00 opacity
 $buic-text-color-highlight:               var(--buic-foreground-primary);       // themed
@@ -107,7 +105,6 @@ $buic-foreground-success:                 var(--buic-foreground-success);
 $buic-foreground-success-tint:            var(--buic-foreground-success-tint);
 $buic-foreground-alert:                   var(--buic-foreground-alert);
 $buic-foreground-error:                   var(--buic-foreground-alert);
-$buic-foreground-focus:                   var(--buic-foreground-focus);
 $buic-foreground-alert-tint:              var(--buic-foreground-alert-tint);
 $buic-foreground-warning:                 var(--buic-foreground-warning);
 $buic-foreground-warning-tint:            var(--buic-foreground-warning-tint);
