@@ -595,6 +595,7 @@ export const DivWithOutsideClick: {
         isDownOutside: boolean;
         componentDidMount(): void;
         componentWillUnmount(): void;
+        isInCorePopup(element: HTMLElement): boolean;
         onOutsideClick(e: MouseEvent): any;
         handleDocumentClick: (e: MouseEvent) => any;
         handleDocumentPointerDown: (e: PointerEvent) => void;
@@ -626,6 +627,7 @@ export const DivWithOutsideClick: {
         isDownOutside: boolean;
         componentDidMount(): void;
         componentWillUnmount(): void;
+        isInCorePopup(element: HTMLElement): boolean;
         onOutsideClick(e: MouseEvent): any;
         handleDocumentClick: (e: MouseEvent) => any;
         handleDocumentPointerDown: (e: PointerEvent) => void;
@@ -2538,6 +2540,7 @@ export const withOnOutsideClick: <ComponentProps extends {}>(Component: React.Co
         isDownOutside: boolean;
         componentDidMount(): void;
         componentWillUnmount(): void;
+        isInCorePopup(element: HTMLElement): boolean;
         onOutsideClick(e: MouseEvent): any;
         handleDocumentClick: (e: MouseEvent) => any;
         handleDocumentPointerDown: (e: PointerEvent) => void;
@@ -2569,6 +2572,7 @@ export const withOnOutsideClick: <ComponentProps extends {}>(Component: React.Co
         isDownOutside: boolean;
         componentDidMount(): void;
         componentWillUnmount(): void;
+        isInCorePopup(element: HTMLElement): boolean;
         onOutsideClick(e: MouseEvent): any;
         handleDocumentClick: (e: MouseEvent) => any;
         handleDocumentPointerDown: (e: PointerEvent) => void;
@@ -2600,6 +2604,7 @@ export const withOnOutsideClick: <ComponentProps extends {}>(Component: React.Co
 
 // @public
 export interface WithOnOutsideClickProps {
+    closeOnNestedPopupOutsideClick?: boolean;
     onOutsideClick?: (event: MouseEvent) => any;
 }
 

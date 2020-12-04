@@ -33,12 +33,13 @@ describe("WithOnOutsideClick", () => {
     document.body.appendChild(outerNode);
 
     const spyOnClose = sinon.spy();
-    mount(<WithOnOutsideClickDiv onOutsideClick={spyOnClose} />, { attachTo: outerNode });
+    const wrapper = mount(<WithOnOutsideClickDiv onOutsideClick={spyOnClose} />, { attachTo: outerNode });
 
     outerNode.dispatchEvent(new MouseEvent("click"));
     expect(spyOnClose.calledOnce).to.be.true;
 
     document.body.removeChild(outerNode);
+    wrapper.unmount();
   });
 
   it("should handle document click in default", () => {
@@ -46,12 +47,13 @@ describe("WithOnOutsideClick", () => {
     document.body.appendChild(outerNode);
 
     defaultOnClose.resetHistory();
-    mount(<WithOnOutsideClickAndDefaultDiv />, { attachTo: outerNode });
+    const wrapper = mount(<WithOnOutsideClickAndDefaultDiv />, { attachTo: outerNode });
 
     outerNode.dispatchEvent(new MouseEvent("click"));
     expect(defaultOnClose.calledOnce).to.be.true;
 
     document.body.removeChild(outerNode);
+    wrapper.unmount();
   });
 
   it("should handle document pointer events", () => {
@@ -59,13 +61,14 @@ describe("WithOnOutsideClick", () => {
     document.body.appendChild(outerNode);
 
     const spyOnClose = sinon.spy();
-    mount(<WithOnOutsidePointerDiv onOutsideClick={spyOnClose} />, { attachTo: outerNode });
+    const wrapper = mount(<WithOnOutsidePointerDiv onOutsideClick={spyOnClose} />, { attachTo: outerNode });
 
     outerNode.dispatchEvent(new MouseEvent("pointerdown"));
     outerNode.dispatchEvent(new MouseEvent("pointerup"));
     expect(spyOnClose.calledOnce).to.be.true;
 
     document.body.removeChild(outerNode);
+    wrapper.unmount();
   });
 
   it("should handle document pointer events in default", () => {
@@ -73,13 +76,65 @@ describe("WithOnOutsideClick", () => {
     document.body.appendChild(outerNode);
 
     defaultOnClose.resetHistory();
-    mount(<WithOnOutsidePointerAndDefaultDiv />, { attachTo: outerNode });
+    const wrapper = mount(<WithOnOutsidePointerAndDefaultDiv />, { attachTo: outerNode });
 
     outerNode.dispatchEvent(new MouseEvent("pointerdown"));
     outerNode.dispatchEvent(new MouseEvent("pointerup"));
     expect(defaultOnClose.calledOnce).to.be.true;
 
     document.body.removeChild(outerNode);
+    wrapper.unmount();
+  });
+
+  it("should dispatch close processing if clicking on a popup", () => {
+    const outerNode = document.createElement("div");
+    document.body.appendChild(outerNode);
+
+    const popupNode = document.createElement("div");
+    popupNode.setAttribute("class", "core-popup");
+    document.body.appendChild(popupNode);
+
+    defaultOnClose.resetHistory();
+    const wrapper = mount(<WithOnOutsidePointerAndDefaultDiv closeOnNestedPopupOutsideClick />, { attachTo: outerNode });
+
+    popupNode.dispatchEvent(new MouseEvent("pointerdown"));
+    popupNode.dispatchEvent(new MouseEvent("pointerup"));
+    expect(defaultOnClose.calledOnce).to.be.true;
+
+    document.body.removeChild(outerNode);
+    document.body.removeChild(popupNode);
+    wrapper.unmount();
+  });
+
+  it("should not dispatch close processing if clicking on a popup", () => {
+    const outerNode = document.createElement("div");
+    document.body.appendChild(outerNode);
+
+    // build an hierarchy that will test all recursion in code
+    const popupNode = document.createElement("div");
+    popupNode.setAttribute("class", "core-popup");
+    const popupChild = document.createElement("div");
+    popupNode.appendChild(popupChild);
+    const popupGrandChild = document.createElement("div");
+    popupChild.appendChild(popupGrandChild);
+    const popupGrandChildElement = document.createElement("p");
+    popupGrandChild.appendChild(popupGrandChildElement);
+    document.body.appendChild(popupNode);
+
+    defaultOnClose.resetHistory();
+    const wrapper = mount(<WithOnOutsidePointerAndDefaultDiv />, { attachTo: outerNode });
+
+    popupGrandChildElement.dispatchEvent(new MouseEvent("pointerdown"));
+    popupGrandChildElement.dispatchEvent(new MouseEvent("pointerup"));
+    expect(defaultOnClose.calledOnce).to.be.false;
+
+    outerNode.dispatchEvent(new MouseEvent("pointerdown"));
+    outerNode.dispatchEvent(new MouseEvent("pointerup"));
+    expect(defaultOnClose.calledOnce).to.be.true;
+
+    document.body.removeChild(outerNode);
+    document.body.removeChild(popupNode);
+    wrapper.unmount();
   });
 
 });
