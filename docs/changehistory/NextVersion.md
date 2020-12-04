@@ -130,8 +130,14 @@ interface HighlightInfo {
 
 To fix it, naming should be changed. matchIndex -> highlightedItemIdentifier, propertyName -> highlightedItemIdentifier. matchCounts property should be removed.
 
-changed highlightProps?: HighlightedRecordProps property to highlight?: HighlightingComponentProps on PrimitiveRendererProps interface. To fix it, only naming should be changed.
-changed highlightProps?: HighlightedRecordProps property to highlight?: HighlightingComponentProps on PropertyRendererProps interface. To fix it, only naming should be changed.
-added highlight?: HighlightingComponentProps on PropertyCategoryBlockProps interface. Interface works as it used to, highlight is used for category highlighting.
+Changed `highlightProps?: HighlightedRecordProps` property to `highlight?: HighlightingComponentProps` on `PrimitiveRendererProps` interface.
+To fix it, only naming should be changed.
 
-In common/api/ui-core changed title: string property to title: string | JSX.Element and added property tooltip?: string on ExpandableBlockProps interface. Interface works as it used to, changes are used for some highlighting features.
+Changed `highlightProps?: HighlightedRecordProps` property to `highlight?: HighlightingComponentProps` on `PropertyRendererProps` interface.
+To fix it, only naming should be changed.
+
+Added `highlight?: HighlightingComponentProps` on `PropertyCategoryBlockProps` interface.
+Interface works as it used to, highlight is used for category highlighting.
+
+In `common/api/ui-core` changed `title: string` property to `title: string | JSX.Element` and added property `tooltip?: string` on `ExpandableBlockProps` interface.
+Interface works as it used to, changes are used for some highlighting features.
