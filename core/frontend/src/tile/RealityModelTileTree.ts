@@ -6,7 +6,7 @@
  * @module Utils
  */
 
-import { assert, BentleyStatus, compareNumbers, compareStrings, compareStringsOrUndefined, Guid, Id64String } from "@bentley/bentleyjs-core";
+import { assert, BentleyStatus, BeTimePoint, compareNumbers, compareStrings, compareStringsOrUndefined, Guid, Id64String } from "@bentley/bentleyjs-core";
 import { Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Ray3d, Transform, TransformProps, Vector3d, XYZ } from "@bentley/geometry-core";
 import { Cartographic, IModelError, ViewFlagOverrides, ViewFlagPresence } from "@bentley/imodeljs-common";
 import { AccessToken, request, RequestOptions } from "@bentley/itwin-client";
@@ -22,7 +22,7 @@ import { SceneContext } from "../ViewContext";
 import { ViewState } from "../ViewState";
 import {
   BatchedTileIdMap, createClassifierTileTreeReference, getCesiumAccessTokenAndEndpointUrl, RealityTile, RealityTileLoader, RealityTileParams,
-  RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile, TileLoadPriority, TileRequest, TileTree, TileTreeOwner,
+  RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile, TileDrawArgs, TileLoadPriority, TileRequest, TileTree, TileTreeOwner,
   TileTreeReference, TileTreeSet, TileTreeSupplier,
 } from "./internal";
 import { createDefaultViewFlagOverrides } from "./ViewFlagOverrides";
@@ -507,6 +507,28 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
   }
 
   public get classifiers(): SpatialClassifiers | undefined { return undefined !== this._classifier ? this._classifier.classifiers : undefined; }
+  public createDrawArgs(context: SceneContext): TileDrawArgs | undefined {
+    // For global reality models (OSM Building layer only) - offset the reality model by the BIM elevation bias.  This would not be necessary
+    // if iModels had their elevation set correctly but unfortunately many GCS erroneously report Sea (Geoid) elevation rather than
+    // Geodetic.
+    const tree = this.treeOwner.load();
+    if (undefined === tree)
+      return undefined;
+
+    if (!this._iModel.isGeoLocated ||
+      this.computeWorldContentRange().diagonal().magnitude() < 2 * Constant.earthRadiusWGS84.equator)
+      return super.createDrawArgs(context);
+
+    const now = BeTimePoint.now();
+    const location = this.computeTransform(tree);
+    const clipVolume = this.getClipVolume(tree);
+    const viewFlagOverrides = this.getViewFlagOverrides(tree);
+
+    location.origin.z += context.viewport.displayStyle.backgroundMapElevationBias;
+
+    return new TileDrawArgs({ context, location, tree, now, viewFlagOverrides, clipVolume, parentsAndChildrenExclusive: tree.parentsAndChildrenExclusive, symbologyOverrides: this.getSymbologyOverrides(tree) });
+
+  }
 
   public addToScene(context: SceneContext): void {
     // NB: The classifier must be added first, so we can find it when adding our own tiles.
