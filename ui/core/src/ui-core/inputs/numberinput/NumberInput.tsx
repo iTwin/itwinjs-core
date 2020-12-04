@@ -21,37 +21,40 @@ export type StepFunctionProp = number | ((direction: string) => number | undefin
 /** Properties for the [[NumberInput]] component
  * @beta
  */
-export interface NumberInputProps extends Omit<InputProps, "min" | "max" | "step" | "onChange" | "onBlur" | "onKeyDown" | "defaultValue" | "onInvalid"> {
-  // Numeric value, set to `undefined` to show placeholder text
+export interface NumberInputProps extends Omit<InputProps, "min" | "max" | "step" | "onChange" | "onBlur"> {
+  /** Numeric value, set to `undefined` to show placeholder text */
   value?: number;
   /** CSS class name for the NewNumericInput component container div */
   containerClassName?: string;
-  // number or function	Number.MIN_SAFE_INTEGER
+  /** number or function	Number.MIN_SAFE_INTEGER */
   min?: number;
-  // number or function	defaults to Number.MAX_SAFE_INTEGER
+  /** number or function	defaults to Number.MAX_SAFE_INTEGER */
   max?: number;
-  // increment step value used while incrementing or decrementing (up/down buttons or arrow keys) defaults to 1.
+  /** increment step value used while incrementing or decrementing (up/down buttons or arrow keys) defaults to 1. */
   step?: StepFunctionProp;
-  // number of decimal places, defaults to 0
+  /** number of decimal places, defaults to 0 */
   precision?: number;
-  // function parseFloat
+  /** function parseFloat */
   parse?: ((value: string) => number | null | undefined);
-  // function optional formatting function that takes the number value and the internal formatted value in case function just adds prefix or suffix.
+  /** function optional formatting function that takes the number value and the internal formatted value in case function just adds prefix or suffix. */
   format?: (num: number | null | undefined, formattedValue: string) => string;
-  // Set to true to "snap" to the closest step value while incrementing or decrementing (up/down buttons or arrow keys).
+  /** Set to true to "snap" to the closest step value while incrementing or decrementing (up/down buttons or arrow keys). */
   snap?: boolean;
-  // Function to call when value is changed.
+  /** Function to call when value is changed. */
   onChange?: (value: number | undefined, stringValue: string) => void;
-  // if true up/down buttons are shown larger and side by side
+  /** Function to call when focus is lost. */
+  onBlur?: React.FocusEventHandler<HTMLInputElement>;
+  /** if true up/down buttons are shown larger and side by side */
   showTouchButtons?: boolean;
 }
 
-/** Input component with icon to the left of the input field
+/** Input component for numbers with up and down buttons to increment and decrement the value.
  * @beta
  */
 export const NumberInput = React.forwardRef<HTMLInputElement, NumberInputProps>(
   function NewNumericInput(props, ref) {
-    const { containerClassName, value, min, max, precision, format, parse, onChange, step, snap, showTouchButtons, ...otherProps } = props;
+    const { containerClassName, value, min, max, precision, format, parse,
+      onChange, onBlur, step, snap, showTouchButtons, ...otherProps } = props;
     const currentValueRef = React.useRef(value);
 
     /**
@@ -123,8 +126,9 @@ export const NumberInput = React.forwardRef<HTMLInputElement, NumberInputProps>(
 
     const handleBlur = React.useCallback((event: React.FocusEvent<HTMLInputElement>) => {
       const newVal = parseInternal(event.target.value);
+      onBlur && onBlur(event);
       updateValue(newVal);
-    }, [parseInternal, updateValue]);
+    }, [parseInternal, updateValue, onBlur]);
 
     const getIncrementValue = React.useCallback((increment: boolean) => {
       if (typeof step === "function") {
