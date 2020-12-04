@@ -4644,6 +4644,8 @@ export abstract class MapLayerImageryProvider {
     // (undocumented)
     protected _missingTileData?: Uint8Array;
     // (undocumented)
+    get mutualExclusiveSubLayer(): boolean;
+    // (undocumented)
     protected _requestContext: ClientRequestContext;
     // (undocumented)
     protected readonly _settings: MapLayerSettings;
