@@ -33,14 +33,11 @@ export class RpcBriefcaseUtility {
     requestContext.enter();
     Logger.logTrace(loggerCategory, "RpcBriefcaseUtility.openWithTimeout", () => ({ ...tokenProps, syncMode }));
 
-    BriefcaseManager.logUsage(requestContext, tokenProps);
+    if (syncMode === SyncMode.PullOnly || syncMode === SyncMode.PullAndPush) {
+      // eslint-disable-next-line deprecation/deprecation
+      return BriefcaseManager.downloadNewBriefcaseAndOpen(requestContext, tokenProps, syncMode, timeout);
+    }
 
-    // if (syncMode === SyncMode.PullOnly || syncMode === SyncMode.PullAndPush) {
-    //   return BriefcaseDb.openBriefcase(requestContext, {
-
-    //   })
-    //   return BriefcaseManager.openWithTimeout();
-    // }
     const checkpoint: CheckpointProps = {
       iModelId: tokenProps.iModelId!,
       contextId: tokenProps.contextId!,
@@ -69,6 +66,7 @@ export class RpcBriefcaseUtility {
       throw new RpcPendingResponse();
     }
 
+    BriefcaseManager.logUsage(requestContext, tokenProps);
     Logger.logTrace(loggerCategory, "RpcBriefcaseUtility.openWithTimeout: Opened briefcase", () => ({ ...tokenProps }));
     return checkpointDb;
   }

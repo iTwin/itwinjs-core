@@ -69,9 +69,11 @@ export class Downloads {
   private static _active = new Map<string, DownloadJob>();
 
   private static async process<T>(job: DownloadJob, fn: (job: DownloadJob) => Promise<T>) {
-    const status = await fn(job);
-    this._active.delete(job.pathName);
-    return status;
+    try {
+      return await fn(job);
+    } finally {
+      this._active.delete(job.pathName);
+    }
   }
 
   public static isInProgress(pathName: string): DownloadJob | undefined {
@@ -234,7 +236,7 @@ export class V1CheckpointManager {
       requestContext.enter();
 
       // Open checkpoint for write
-      const db = SnapshotDb.openToApplyChangesets(job.pathName);
+      const db = SnapshotDb.openForApplyChangesets(job.pathName);
       const nativeDb = db.nativeDb;
 
       // Note: A defect in applying change sets caused some checkpoints to be created with Txns - we need to clear these out
@@ -325,16 +327,17 @@ export class V1CheckpointManager {
 }
 
 export class CheckpointManager {
-  public static async downloadCheckpoint(request: DownloadRequest) {
+  public static async downloadCheckpoint(request: DownloadRequest): Promise<void> {
     if (IModelJsFs.existsSync(request.localFile))
       throw new IModelError(IModelStatus.FileAlreadyExists, `Cannot download checkpoint, file ${request.localFile} already exists`);
 
     try {
       // first see if there's a V2 checkpoint available.
-      return V2CheckpointManager.downloadCheckpoint(request);
+      return await V2CheckpointManager.downloadCheckpoint(request);
     } catch (error) {
       // TODO: check to see if the error is "not available" and keep going. Otherwise rethrow error
     }
+
     return V1CheckpointManager.downloadCheckpoint(request);
   }
 }

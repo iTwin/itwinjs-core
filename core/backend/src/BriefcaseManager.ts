@@ -20,7 +20,7 @@ import {
   IModelHubError,
 } from "@bentley/imodelhub-client";
 import {
-  BriefcaseProps, BriefcaseStatus, CreateIModelProps, IModelError, IModelRpcProps, IModelVersion, LocalBriefcaseProps, RequestNewBriefcaseProps,
+  BriefcaseProps, BriefcaseStatus, CreateIModelProps, IModelError, IModelRpcProps, IModelVersion, LocalBriefcaseProps, RequestNewBriefcaseProps, RpcPendingResponse, SyncMode,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext, CancelRequest, ProgressCallback } from "@bentley/itwin-client";
@@ -924,6 +924,44 @@ export class BriefcaseManager {
       }));
     });
     return Promise.all(promises);
+  }
+
+  /** hack for backwards compatibility. Do not propagate usage.
+   * @internal
+   * @deprecated
+   */
+  public static async downloadNewBriefcaseAndOpen(requestContext: AuthorizedClientRequestContext, tokenProps: IModelRpcProps, syncMode: SyncMode, timeout: number): Promise<BriefcaseDb> {
+    const request: RequestNewBriefcaseArg = {
+      contextId: tokenProps.contextId!,
+      iModelId: tokenProps.iModelId!,
+    };
+
+    if (syncMode === SyncMode.PullOnly) {
+      request.briefcaseId = 0;
+      try {
+        // first see if briefcase 0 already exists
+        const pullOnly = BriefcaseDb.openBriefcase(requestContext, { file: this.getFileName({ briefcaseId: 0, iModelId: tokenProps.iModelId! }), readonly: true });
+        this.logUsage(requestContext, tokenProps);
+        return pullOnly;
+      } catch (error) {
+      }
+    }
+
+    const downloadAndOpen = async () => {
+      await this.downloadBriefcase(requestContext, request);
+      return BriefcaseDb.openBriefcase(requestContext, { file: request.fileName!, readonly: syncMode === SyncMode.PullOnly });
+    };
+
+    const db = await BeDuration.race(timeout, downloadAndOpen());
+    requestContext.enter();
+
+    if (db === undefined) {
+      Logger.logTrace(loggerCategory, "downloadAndOpen: Issued pending status", () => ({ ...tokenProps }));
+      throw new RpcPendingResponse();
+    }
+    this.logUsage(requestContext, tokenProps);
+    Logger.logTrace(loggerCategory, "downloadAndOpen: Opened briefcase", () => ({ ...tokenProps }));
+    return db;
   }
 
   public static logUsage(requestContext: AuthorizedClientRequestContext | ClientRequestContext, token: IModelRpcProps) {

@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-editor-backend",
-  "version": "2.10.0-dev.18",
+  "version": "2.11.0-dev.2",
   "description": "iModel.js editor backend",
   "main": "lib/imodeljs-editor-backend.js",
   "typings": "lib/imodeljs-editor-backend",
@@ -38,22 +38,22 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.10.0-dev.18",
-    "@bentley/imodeljs-backend": "2.10.0-dev.18",
-    "@bentley/imodeljs-common": "^2.10.0-dev.18",
-    "@bentley/imodeljs-editor-common": "^2.10.0-dev.18"
+    "@bentley/bentleyjs-core": "^2.11.0-dev.2",
+    "@bentley/imodeljs-backend": "2.11.0-dev.2",
+    "@bentley/imodeljs-common": "^2.11.0-dev.2",
+    "@bentley/imodeljs-editor-common": "^2.11.0-dev.2"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.10.0-dev.18",
-    "@bentley/build-tools": "2.10.0-dev.18",
-    "@bentley/eslint-plugin": "2.10.0-dev.18",
-    "@bentley/imodeljs-backend": "2.10.0-dev.18",
-    "@bentley/imodeljs-common": "2.10.0-dev.18",
-    "@bentley/imodeljs-editor-common": "2.10.0-dev.18",
+    "@bentley/bentleyjs-core": "2.11.0-dev.2",
+    "@bentley/build-tools": "2.11.0-dev.2",
+    "@bentley/eslint-plugin": "2.11.0-dev.2",
+    "@bentley/imodeljs-backend": "2.11.0-dev.2",
+    "@bentley/imodeljs-common": "2.11.0-dev.2",
+    "@bentley/imodeljs-editor-common": "2.11.0-dev.2",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/deep-assign": "^0.1.0",

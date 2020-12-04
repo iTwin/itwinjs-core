@@ -71,7 +71,7 @@ async function countElementsInModel(iModel: IModelConnection, modelId: Id64Strin
   return 0;
 }
 
-describe("Element editor tests (#integration)", async () => {
+describe.only("Element editor tests (#integration)", async () => {
   let iModel: BriefcaseConnection;
   let contextId: string;
 

@@ -17,7 +17,7 @@ import {
   mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams, NativeAppRpcInterface,
   OpenBriefcaseProps, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager, RpcNotFoundResponse, RpcOperation,
   RpcRequest, RpcRequestEvent, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, ThumbnailProps,
-  ViewDefinitionProps, ViewQueryParams, WipRpcInterface,
+  ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, WipRpcInterface,
 } from "@bentley/imodeljs-common";
 import { BackgroundMapLocation } from "./BackgroundMapGeometry";
 import { EditingFunctions } from "./EditingFunctions";
