@@ -94,7 +94,8 @@
     "js-base64": "^2.4.5",
     "jsonwebtoken": "^8.5.0",
     "openid-client": "^3.15.3",
-    "semver": "^5.5.0"
+    "semver": "^5.5.0",
+    "@azure-tools/azcopy-node" :"^1.0.0"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
