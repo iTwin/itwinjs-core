@@ -166,5 +166,5 @@ const collect = (monitor: DragLayerMonitor) => ({
  * This component must be placed on a root DOM node at the bottom to render DragLayers properly.
  * @beta
  */
-export const DragDropLayerRenderer: typeof DragDropLayerRendererComponent & DndComponentClass<{}> =  // eslint-disable-line @typescript-eslint/naming-convention
-  DragLayer<DragDropLayerRendererProps>(collect)(DragDropLayerRendererComponent);
+export const DragDropLayerRenderer: typeof DragDropLayerRendererComponent & DndComponentClass<typeof React.Component, {}> =  // eslint-disable-line @typescript-eslint/naming-convention
+  DragLayer<DragDropLayerRendererProps>(collect)(DragDropLayerRendererComponent) as any;

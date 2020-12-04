@@ -6,7 +6,7 @@
  * @module DragDrop
  */
 import * as React from "react";
-import { ConnectDropTarget, DndComponentClass, DropTarget, DropTargetConnector, DropTargetMonitor } from "react-dnd";
+import { ConnectDropTarget, DndComponentClass, DropTarget } from "react-dnd";
 import { DragSourceArguments, DropTargetArguments, DropTargetProps } from "./DragDropDef";
 
 /** React properties for withDropTarget Higher-Order Component
@@ -40,9 +40,8 @@ export interface WithDropTargetProps<DragDropObject = any> {
 export const withDropTarget = <ComponentProps extends {}, DragDropObject = any>(
   // eslint-disable-next-line @typescript-eslint/naming-convention
   Component: React.ComponentType<ComponentProps>,
-): DndComponentClass<ComponentProps & WithDropTargetProps<DragDropObject>> => {
+): DndComponentClass<typeof React.Component, ComponentProps & WithDropTargetProps<DragDropObject>> => {
   type Props = ComponentProps & WithDropTargetProps<DragDropObject>;
-
   return DropTarget((props: Props): Array<string | symbol> => {
     if (props.dropProps.objectTypes) {
       if (typeof props.dropProps.objectTypes === "function")
@@ -52,7 +51,7 @@ export const withDropTarget = <ComponentProps extends {}, DragDropObject = any>(
     }
     return [];
   }, {
-    drop(props: Props, monitor: DropTargetMonitor, component: any) {
+    drop(props, monitor, component) {
       const dragSourceArgs = monitor.getItem() as DragSourceArguments<DragDropObject>;
       if (monitor.isOver({ shallow: props.shallow || false })) {
         let dropRect: ClientRect = {} as ClientRect;
@@ -81,7 +80,7 @@ export const withDropTarget = <ComponentProps extends {}, DragDropObject = any>(
       }
       return;
     },
-    hover(props: Props, monitor: DropTargetMonitor, component: any) {
+    hover(props, monitor, component) {
       if (monitor.isOver({ shallow: props.shallow || false }) && props.dropProps.onDropTargetOver) {
         const dragSourceArgs = monitor.getItem() as DragSourceArguments<DragDropObject>;
         let dropRect: ClientRect = {} as ClientRect;
@@ -108,7 +107,7 @@ export const withDropTarget = <ComponentProps extends {}, DragDropObject = any>(
         props.dropProps.onDropTargetOver(dropTargetArgs);
       }
     },
-    canDrop(props: Props, monitor: DropTargetMonitor) {
+    canDrop(props, monitor) {
       if (monitor.isOver({ shallow: props.shallow || false }) && props.dropProps.canDropTargetDrop) {
         const dragSourceArgs = monitor.getItem() as DragSourceArguments<DragDropObject>;
         const clientOffset = monitor.getClientOffset() || dragSourceArgs.clientOffset;
@@ -127,7 +126,7 @@ export const withDropTarget = <ComponentProps extends {}, DragDropObject = any>(
       }
       return true;
     },
-  }, (connect: DropTargetConnector, monitor: DropTargetMonitor): Partial<WithDropTargetProps<DragDropObject>> => {
+  }, (connect, monitor) => {
     return {
       connectDropTarget: connect.dropTarget(),
       isOver: monitor.isOver({ shallow: true }),
@@ -135,7 +134,7 @@ export const withDropTarget = <ComponentProps extends {}, DragDropObject = any>(
       item: monitor.getItem(),
       type: monitor.getItemType() || undefined,
     };
-  })(class WithDropTarget extends React.Component<Props> {
+  })(class WithDropTarget extends React.Component<any> {
     public rootElement: HTMLDivElement | null = null;
     public render() {
       const {
@@ -157,5 +156,5 @@ export const withDropTarget = <ComponentProps extends {}, DragDropObject = any>(
         </div>,
       );
     }
-  });
+  }) as any;
 };

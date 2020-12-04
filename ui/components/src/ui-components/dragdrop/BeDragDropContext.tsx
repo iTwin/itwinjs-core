@@ -7,26 +7,13 @@
  */
 
 import * as React from "react";
-import { ContextComponent, DragDropContext } from "react-dnd";
-import HTML5Backend from "react-dnd-html5-backend";
-
-/**
- * React component for DragDrop API.
- * This component should not be used directly. Instead, should be used.
- * @beta
- */
-export class BeDragDropContextComponent extends React.PureComponent {
-  public render(): React.ReactNode {
-    return (
-      <>
-        {this.props.children}
-      </>
-    );
-  }
-}
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 
 /**
  * Context component for DragDrop API. All DragSources and DropTargets used in the application must be contained in this component.
  * @beta
  */
-export const BeDragDropContext: typeof BeDragDropContextComponent & ContextComponent<any> = DragDropContext(HTML5Backend)(BeDragDropContextComponent); // eslint-disable-line @typescript-eslint/naming-convention
+export function BeDragDropContext(props: { children?: React.ReactNode }) {
+  return <DndProvider backend={HTML5Backend}>{props.children}</DndProvider>;
+}

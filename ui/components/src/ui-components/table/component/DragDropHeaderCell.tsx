@@ -9,11 +9,10 @@
 import classnames from "classnames";
 import * as React from "react";
 import * as RDG from "react-data-grid";
-import { DndComponentClass } from "react-dnd";
 import { CommonProps } from "@bentley/ui-core";
 import { DragSourceArguments, DropTargetArguments } from "../../dragdrop/DragDropDef";
-import { withDragSource, WithDragSourceProps } from "../../dragdrop/withDragSource";
-import { withDropTarget, WithDropTargetProps } from "../../dragdrop/withDropTarget";
+import { withDragSource } from "../../dragdrop/withDragSource";
+import { withDropTarget } from "../../dragdrop/withDropTarget";
 import { ColumnDragLayer } from "./ColumnDragLayer";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -64,7 +63,7 @@ class HeaderWrapper extends React.Component<HeaderWrapperProps> {
 }
 
 /** @internal */
-export const DragDropHeaderWrapper: DndComponentClass<HeaderWrapperProps & WithDropTargetProps<any> & WithDragSourceProps<any>> = withDragSource(withDropTarget(HeaderWrapper)); // eslint-disable-line @typescript-eslint/naming-convention
+export const DragDropHeaderWrapper = withDragSource(withDropTarget(HeaderWrapper)); // eslint-disable-line @typescript-eslint/naming-convention
 
 // Used only internally in ./Table.tsx
 /** @internal */

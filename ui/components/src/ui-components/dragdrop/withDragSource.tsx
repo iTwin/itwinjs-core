@@ -6,7 +6,7 @@
  * @module DragDrop
  */
 import * as React from "react";
-import { ConnectDragPreview, ConnectDragSource, DndComponentClass, DragSource, DragSourceConnector, DragSourceMonitor } from "react-dnd";
+import { ConnectDragPreview, ConnectDragSource, DndComponentClass, DragSource } from "react-dnd";
 import { DragSourceArguments, DragSourceProps, DropEffects, DropStatus, DropTargetArguments } from "./DragDropDef";
 
 /** React properties for withDragSource Higher-Order Component
@@ -61,9 +61,9 @@ function getEmptyImage(): HTMLImageElement {
 export const withDragSource = <ComponentProps extends {}, DragDropObject = any>(
   // eslint-disable-next-line @typescript-eslint/naming-convention
   Component: React.ComponentType<ComponentProps>,
-): DndComponentClass<ComponentProps & WithDragSourceProps<DragDropObject>> => {
+): DndComponentClass<typeof React.Component, ComponentProps & WithDragSourceProps<DragDropObject>> => {
   type Props = ComponentProps & WithDragSourceProps<DragDropObject>;
-  return DragSource((props: Props): string | symbol => {
+  return DragSource((props: Props) => {
     if (props.dragProps.objectType) {
       if (typeof props.dragProps.objectType === "function")
         return props.dragProps.objectType();
@@ -72,7 +72,7 @@ export const withDragSource = <ComponentProps extends {}, DragDropObject = any>(
     }
     return "";
   }, {
-    beginDrag(props: Props, _monitor: DragSourceMonitor, component: any) {
+    beginDrag(props, _monitor, component) {
       let dropEffect = props.defaultDropEffect || DropEffects.Move;
       if (component.state.ctrlKey) {
         dropEffect = props.ctrlDropEffect || DropEffects.Copy;
@@ -96,7 +96,7 @@ export const withDragSource = <ComponentProps extends {}, DragDropObject = any>(
       if (props.dragProps.onDragSourceBegin) return props.dragProps.onDragSourceBegin(obj);
       return obj;
     },
-    endDrag(props: Props, monitor: DragSourceMonitor, component: any) {
+    endDrag(props, monitor, component) {
       let dragRect: ClientRect = { left: 0, top: 0 } as ClientRect;
       const componentElement = component && component.rootElement;
       if (componentElement) {
@@ -131,7 +131,7 @@ export const withDragSource = <ComponentProps extends {}, DragDropObject = any>(
       if (props.dragProps.onDragSourceEnd)
         props.dragProps.onDragSourceEnd(dragObj);
     },
-  }, (connect: DragSourceConnector, monitor: DragSourceMonitor): Partial<WithDragSourceProps> => {
+  }, (connect, monitor) => {
     return {
       connectDragSource: connect.dragSource(),
       connectDragPreview: connect.dragPreview(),
@@ -140,7 +140,7 @@ export const withDragSource = <ComponentProps extends {}, DragDropObject = any>(
       item: monitor.getItem(),
       type: monitor.getItemType(),
     };
-  })(class WithDragSource extends React.Component<Props, WithDragSourceState> {
+  })(class DragSourceWrapper extends React.Component<any, WithDragSourceState> {
     public rootElement: HTMLDivElement | null = null;
     public readonly state: WithDragSourceState = {
       ctrlKey: false,
@@ -202,5 +202,5 @@ export const withDragSource = <ComponentProps extends {}, DragDropObject = any>(
         this.setState({ altKey });
       }
     };
-  });
+  }) as any;
 };
