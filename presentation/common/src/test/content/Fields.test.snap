@@ -15,6 +15,9 @@ Object {
   "label": "Sleek SAS e-commerce",
   "name": "engineer",
   "priority": 59753,
+  "renderer": Object {
+    "name": "custom_renderer",
+  },
   "type": Object {
     "typeName": "serial",
     "valueFormat": "Primitive",
@@ -37,6 +40,9 @@ Object {
   "label": "New Jersey",
   "name": "cultivate",
   "priority": 7047,
+  "renderer": Object {
+    "name": "custom_renderer",
+  },
   "type": Object {
     "typeName": "serial",
     "valueFormat": "Primitive",
@@ -61,6 +67,9 @@ Object {
   "label": "Electronics tan",
   "name": "Garden",
   "priority": 81468,
+  "renderer": Object {
+    "name": "custom_renderer",
+  },
   "type": Object {
     "typeName": "bit",
     "valueFormat": "Primitive",
@@ -103,6 +112,9 @@ Object {
       "label": "Total middleware parse",
       "name": "back-end",
       "priority": 50694,
+      "renderer": Object {
+        "name": "custom_renderer",
+      },
       "type": Object {
         "typeName": "set",
         "valueFormat": "Primitive",
@@ -152,6 +164,9 @@ Object {
     },
   ],
   "priority": 18043,
+  "renderer": Object {
+    "name": "custom_renderer",
+  },
   "type": Object {
     "members": Array [
       Object {
@@ -200,6 +215,9 @@ Object {
       "relatedClassPath": Array [],
     },
   ],
+  "renderer": Object {
+    "name": "custom_renderer",
+  },
   "type": Object {
     "typeName": "int",
     "valueFormat": "Primitive",
@@ -244,6 +262,9 @@ Object {
       "label": "Graphical User Interface local IB",
       "name": "purple",
       "priority": 67841,
+      "renderer": Object {
+        "name": "custom_renderer",
+      },
       "type": Object {
         "typeName": "float",
         "valueFormat": "Primitive",
@@ -293,6 +314,9 @@ Object {
     },
   ],
   "priority": 50980,
+  "renderer": Object {
+    "name": "custom_renderer",
+  },
   "type": Object {
     "members": Array [
       Object {
@@ -349,6 +373,9 @@ Object {
       "label": "Product multi-tasking Refined Metal Car",
       "name": "parse",
       "priority": 76738,
+      "renderer": Object {
+        "name": "custom_renderer",
+      },
       "type": Object {
         "typeName": "tinyint",
         "valueFormat": "Primitive",
@@ -398,6 +425,9 @@ Object {
     },
   ],
   "priority": 81712,
+  "renderer": Object {
+    "name": "custom_renderer",
+  },
   "type": Object {
     "members": Array [
       Object {
@@ -452,6 +482,9 @@ Object {
       "label": "Specialist calculate bypassing",
       "name": "Avon",
       "priority": 94829,
+      "renderer": Object {
+        "name": "custom_renderer",
+      },
       "type": Object {
         "typeName": "geometry",
         "valueFormat": "Primitive",
@@ -501,6 +534,9 @@ Object {
     },
   ],
   "priority": 5085,
+  "renderer": Object {
+    "name": "custom_renderer",
+  },
   "type": Object {
     "members": Array [
       Object {
@@ -547,6 +583,9 @@ Object {
       "relatedClassPath": Array [],
     },
   ],
+  "renderer": Object {
+    "name": "custom_renderer",
+  },
   "type": Object {
     "typeName": "boolean",
     "valueFormat": "Primitive",
@@ -585,6 +624,9 @@ Object {
       "relatedClassPath": Array [],
     },
   ],
+  "renderer": Object {
+    "name": "custom_renderer",
+  },
   "type": Object {
     "typeName": "boolean",
     "valueFormat": "Primitive",
@@ -623,6 +665,9 @@ Object {
       "relatedClassPath": Array [],
     },
   ],
+  "renderer": Object {
+    "name": "custom_renderer",
+  },
   "type": Object {
     "typeName": "binary",
     "valueFormat": "Primitive",
