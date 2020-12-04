@@ -186,8 +186,8 @@ internal;placementToPosition(placement: TooltipPlacement | undefined): RelativeP
 internal;Point 
 public;PointProps
 public;Popup 
-alpha;PopupContextMenu(props: PopupContextMenuProps): JSX.Element
-alpha;PopupContextMenuProps 
+beta;PopupContextMenu(props: PopupContextMenuProps): JSX.Element
+beta;PopupContextMenuProps 
 public;PopupProps 
 beta;ProgressBar(props: ProgressBarProps): JSX.Element
 beta;ProgressBarProps 

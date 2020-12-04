@@ -14,7 +14,7 @@ import { CommonProps } from "../utils/Props";
 import { ContextMenuDirection } from "./ContextMenuDirection";
 
 /** Properties for [[PopupContextMenu]] component
- * @alpha
+ * @beta
  */
 export interface PopupContextMenuProps extends CommonProps {
   /** Indicates whether the popup is shown or not (defaults to false) */
@@ -60,7 +60,7 @@ export interface PopupContextMenuProps extends CommonProps {
 }
 
 /** Component that displays a ContextMenu within a Popup component, allowing the target element to be specified.
- * @alpha
+ * @beta
  */
 export function PopupContextMenu(props: PopupContextMenuProps) {
   const { style, onSelect, onEsc, autoflip, edgeLimit, hotkeySelect, selectedIndex, children, ...popupProps } = props;
