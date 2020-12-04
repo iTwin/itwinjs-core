@@ -52,7 +52,7 @@ describe("CommonPropertyRenderer", () => {
       propertyRecord.property.name = "testName";
       const highlight: HighlightingComponentProps & { applyOnLabel: boolean, applyOnValue: boolean } = {
         highlightedText: "test",
-        activeMatch: {
+        activeHighlight: {
           highlightedItemIdentifier: "testName",
           highlightIndex: 0,
         },
@@ -71,7 +71,7 @@ describe("CommonPropertyRenderer", () => {
       propertyRecord.property.name = "testName2";
       const highlight: HighlightingComponentProps & { applyOnLabel: boolean, applyOnValue: boolean } = {
         highlightedText: "test",
-        activeMatch: {
+        activeHighlight: {
           highlightedItemIdentifier: "testName",
           highlightIndex: 0,
         },
@@ -91,7 +91,7 @@ describe("CommonPropertyRenderer", () => {
       propertyRecord.property.displayLabel = "tesTtest";
       const highlight: HighlightingComponentProps & { applyOnLabel: boolean, applyOnValue: boolean } = {
         highlightedText: "test",
-        activeMatch: {
+        activeHighlight: {
           highlightedItemIdentifier: "testName",
           highlightIndex: 1,
         },
@@ -111,7 +111,7 @@ describe("CommonPropertyRenderer", () => {
       propertyRecord.property.displayLabel = "tesTtest";
       const highlight: HighlightingComponentProps & { applyOnLabel: boolean, applyOnValue: boolean } = {
         highlightedText: "test",
-        activeMatch: {
+        activeHighlight: {
           highlightedItemIdentifier: "testName",
           highlightIndex: 2,
         },

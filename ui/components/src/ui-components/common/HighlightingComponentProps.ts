@@ -7,23 +7,23 @@
  */
 
 /**
- * Record or Category match info used for identification of a specific match in record or category
+ * Item highlight info used for identification of a specific highlight in an item
  * @beta
  */
 export interface HighlightInfo {
-  /* Name of the record's or category's property, used for its identification */
+  /* item's identifier, used for its identification */
   highlightedItemIdentifier: string;
-  /* Index of highlighted part in a record or category */
+  /* Index of highlighted part in an item */
   highlightIndex: number;
 }
 
 /**
- * Properties used for highlighting matching parts in records or categories and actively highlighting one match in a specific record or category
+ * Properties used for highlighting parts in item by given text and actively highlighting one highlight in a distinct item specified in `activeHighlight`
  * @beta
  */
 export interface HighlightingComponentProps {
   /* Filter text which we want to highlight */
   highlightedText: string;
-  /* Information about the match which we want to actively highlight */
-  activeMatch?: HighlightInfo;
+  /* Information about the highlight which we want to actively highlight */
+  activeHighlight?: HighlightInfo;
 }

@@ -60,7 +60,7 @@ export class PropertyCategoryBlock extends React.Component<PropertyCategoryBlock
   /** @internal */
   public render() {
     const { highlight, category, children, ...props} = this.props;
-    const activeMatchIndex = this.props.category.name === highlight?.activeMatch?.highlightedItemIdentifier ? highlight.activeMatch.highlightIndex : undefined;
+    const activeMatchIndex = this.props.category.name === highlight?.activeHighlight?.highlightedItemIdentifier ? highlight.activeHighlight.highlightIndex : undefined;
     const label = highlight?
       (<HighlightedText text={category.label} activeMatchIndex={activeMatchIndex} searchText={highlight.highlightedText} />) :
       category.label;

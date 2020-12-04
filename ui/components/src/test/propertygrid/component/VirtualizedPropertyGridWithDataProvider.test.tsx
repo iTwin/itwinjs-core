@@ -1042,7 +1042,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
     };
     const highlightValue: HighlightingComponentProps & { filteredTypes: FilteredType[] } = {
       highlightedText: "test",
-      activeMatch: {
+      activeHighlight: {
         highlightedItemIdentifier: "test2",
         highlightIndex: 0,
       },
@@ -1050,7 +1050,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
     };
     const highlightCategory: HighlightingComponentProps & { filteredTypes: FilteredType[] } = {
       highlightedText: "PARENT",
-      activeMatch: {
+      activeHighlight: {
         highlightedItemIdentifier: "ParentCategory",
         highlightIndex: 0,
       },
@@ -1058,7 +1058,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
     };
     const highlightLabel: HighlightingComponentProps & { filteredTypes: FilteredType[] } = {
       highlightedText: "test",
-      activeMatch: {
+      activeHighlight: {
         highlightedItemIdentifier: "test2",
         highlightIndex: 0,
       },
@@ -1066,7 +1066,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
     };
     const highlight1: HighlightingComponentProps & { filteredTypes?: FilteredType[] } = {
       highlightedText: "Test",
-      activeMatch: {
+      activeHighlight: {
         highlightedItemIdentifier: "testtest",
         highlightIndex: 0,
       },

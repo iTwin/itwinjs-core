@@ -149,13 +149,13 @@ export class VirtualizedPropertyGrid extends React.Component<VirtualizedProperty
       this._listRef.current?.resetAfterIndex(0);
     }
 
-    if (this.props.highlight !== prevProps.highlight && this.props.highlight?.activeMatch && this.state.gridItems.length !== 0) {
+    if (this.props.highlight !== prevProps.highlight && this.props.highlight?.activeHighlight && this.state.gridItems.length !== 0) {
 
       let index = 0;
       let foundMatchingItem = false;
       for (const item of this.state.gridItems) {
-        if (item instanceof MutableCategorizedPrimitiveProperty && this.props.highlight?.activeMatch?.highlightedItemIdentifier === item.derivedRecord.property.name
-          || item instanceof MutableGridCategory && this.props.highlight?.activeMatch?.highlightedItemIdentifier === item.name) {
+        if (item instanceof MutableCategorizedPrimitiveProperty && this.props.highlight?.activeHighlight?.highlightedItemIdentifier === item.derivedRecord.property.name
+          || item instanceof MutableGridCategory && this.props.highlight?.activeHighlight?.highlightedItemIdentifier === item.name) {
           foundMatchingItem = true;
           break;
         }

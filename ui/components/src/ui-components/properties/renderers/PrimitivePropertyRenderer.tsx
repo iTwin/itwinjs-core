@@ -45,7 +45,7 @@ export class PrimitivePropertyRenderer extends React.Component<PrimitiveRenderer
     const displayLabel = this.props.propertyRecord.property.displayLabel;
     const offset = CommonPropertyRenderer.getLabelOffset(indentation, props.orientation, props.width, props.columnRatio, props.columnInfo?.minLabelWidth);
 
-    const activeMatchIndex = this.props.propertyRecord.property.name === highlight?.activeMatch?.highlightedItemIdentifier ? highlight.activeMatch.highlightIndex : undefined;
+    const activeMatchIndex = this.props.propertyRecord.property.name === highlight?.activeHighlight?.highlightedItemIdentifier ? highlight.activeHighlight.highlightIndex : undefined;
     const label = highlight ?
       (HighlightedText({ text: displayLabel, searchText: highlight.highlightedText, activeMatchIndex })) :
       displayLabel;

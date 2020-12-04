@@ -33,7 +33,7 @@ export function PropertiesWidget(props: Props) {
 
   const [activeMatchIndex, setActiveMatchIndex] = React.useState(0);
   const [filteringProvDataChanged, setFilteringProvDataChanged] = React.useState({});
-  const [activeMatch, setActiveMatch] = React.useState<HighlightInfo>();
+  const [activeHighlight, setActiveHighlight] = React.useState<HighlightInfo>();
   const { isOverLimit } = usePropertyDataProviderWithUnifiedSelection({ dataProvider });
 
   const renderFavoritesActionButton = React.useCallback((buttonProps: ActionButtonRendererProps) => (<FavoritePropertyActionButton {...buttonProps} dataProvider={dataProvider} />), [dataProvider]);
@@ -90,7 +90,7 @@ export function PropertiesWidget(props: Props) {
 
   React.useEffect(() => {
     if (filteringResult?.getMatchByIndex)
-      setActiveMatch(filteringResult.getMatchByIndex(activeMatchIndex));
+      setActiveHighlight(filteringResult.getMatchByIndex(activeMatchIndex));
   }, [activeMatchIndex, filteringDataProvider, filteringResult]);
 
   const setFilter = React.useCallback((filter) => {
@@ -111,7 +111,7 @@ export function PropertiesWidget(props: Props) {
       orientation={Orientation.Horizontal}
       horizontalOrientationMinWidth={500}
       highlight={filterText && filterText.length !== 0 ?
-        { highlightedText: filterText, activeMatch, filteredTypes: filteringResult?.filteredTypes }:
+        { highlightedText: filterText, activeHighlight, filteredTypes: filteringResult?.filteredTypes }:
         undefined
       }
     />);

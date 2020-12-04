@@ -73,13 +73,13 @@ export class CommonPropertyRenderer {
   }
 
   private static createHighlightCallback(highlight: HighlightingComponentProps & {applyOnLabel: boolean}, propertyRecord: PropertyRecord) {
-    const activeMatch = highlight.activeMatch;
+    const activeMatch = highlight.activeHighlight;
     const propertyName = activeMatch?.highlightedItemIdentifier;
     const matchIndex = activeMatch?.highlightIndex ?? 0;
     let labelMatches: number;
 
     if (highlight.applyOnLabel){
-      labelMatches =  countMatchesInString(propertyRecord.property.displayLabel.toLowerCase(), highlight.highlightedText);
+      labelMatches = countMatchesInString(propertyRecord.property.displayLabel.toLowerCase(), highlight.highlightedText);
     }else{
       labelMatches = 0;
     }
