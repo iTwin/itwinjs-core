@@ -13,6 +13,7 @@ import { AuxCoordSystem3dProps } from '@bentley/imodeljs-common';
 import { AuxCoordSystemProps } from '@bentley/imodeljs-common';
 import { AxisAlignedBox3d } from '@bentley/imodeljs-common';
 import { BeEvent } from '@bentley/bentleyjs-core';
+import { BRepGeometryCreate } from '@bentley/imodeljs-common';
 import { BriefcaseDownloader } from '@bentley/imodeljs-common';
 import { BriefcaseKey } from '@bentley/imodeljs-common';
 import { BriefcaseProps } from '@bentley/imodeljs-common';
@@ -2429,6 +2430,8 @@ export abstract class IModelDb extends IModel {
     };
     constructEntity<T extends Entity>(props: EntityProps): T;
     containsClass(classFullName: string): boolean;
+    // @alpha
+    createBRepGeometry(createProps: BRepGeometryCreate): DbResult;
     // (undocumented)
     static readonly defaultLimit = 1000;
     deleteFileProperty(prop: FilePropertyProps): DbResult;

@@ -17,7 +17,7 @@ import {
 import { Range3d } from "@bentley/geometry-core";
 import { ChangesType, Checkpoint, CheckpointQuery, Lock, LockLevel, LockType } from "@bentley/imodelhub-client";
 import {
-  AxisAlignedBox3d, BriefcaseKey, BriefcaseProps, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps,
+  AxisAlignedBox3d, BRepGeometryCreate, BriefcaseKey, BriefcaseProps, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps,
   CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DisplayStyleProps, DomainOptions,
   DownloadBriefcaseStatus, EcefLocation, ElementAspectProps, ElementGeometryRequest, ElementGeometryUpdate, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams,
   FilePropertyProps, FontMap, FontMapProps, FontProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
@@ -1160,6 +1160,14 @@ export abstract class IModelDb extends IModel {
   public elementGeometryUpdate(updateProps: ElementGeometryUpdate): DbResult {
     return this.nativeDb.updateGeometryStream(updateProps);
   }
+
+  /** Create brep geometry for inclusion in an element's geometry stream.
+   * @alpha
+   */
+  public createBRepGeometry(createProps: BRepGeometryCreate): DbResult {
+    return this.nativeDb.createBRepGeometry(createProps);
+  }
+
 }
 
 /** @public */

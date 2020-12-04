@@ -527,6 +527,12 @@ export class BoundingSphere {
     transformBy(transform: Transform, result: BoundingSphere): BoundingSphere;
 }
 
+// @alpha
+export interface BRepCutProps {
+    bothDirections?: boolean;
+    distance?: number;
+}
+
 // @beta (undocumented)
 export namespace BRepEntity {
     export interface DataProps {
@@ -547,12 +553,60 @@ export namespace BRepEntity {
     }
 }
 
+// @alpha
+export interface BRepGeometryCreate {
+    entryArray: ElementGeometryDataEntry[];
+    onResult: BRepGeometryFunction;
+    operation: BRepGeometryOperation;
+    parameters?: any;
+    separateDisjoint?: boolean;
+}
+
+// @alpha
+export type BRepGeometryFunction = (info: BRepGeometryInfo) => void;
+
+// @alpha
+export interface BRepGeometryInfo {
+    entryArray: ElementGeometryDataEntry[];
+}
+
+// @alpha
+export enum BRepGeometryOperation {
+    Cut = 4,
+    Emboss = 5,
+    Hollow = 7,
+    Intersect = 2,
+    Loft = 9,
+    Round = 10,
+    Sew = 3,
+    Subtract = 1,
+    Sweep = 8,
+    Thicken = 6,
+    Unite = 0
+}
+
+// @alpha
+export interface BRepHollowProps {
+    distance: number;
+}
+
 // @public
 export interface BRepPrimitive {
     // @beta (undocumented)
     readonly brep: BRepEntity.DataProps;
     // (undocumented)
     type: "brep";
+}
+
+// @alpha
+export interface BRepRoundProps {
+    radius: number;
+}
+
+// @alpha
+export interface BRepThickenProps {
+    backDistance?: number;
+    frontDistance?: number;
 }
 
 // @internal
