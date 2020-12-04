@@ -691,6 +691,8 @@ export interface ExpandableBlockProps extends CommonProps {
 // @public
 export class ExpandableList extends React.PureComponent<ExpandableListProps, ExpandableListState> {
     constructor(props: ExpandableListProps);
+    // @internal (undocumented)
+    componentDidUpdate(prevProps: ExpandableListProps): void;
     // (undocumented)
     static defaultProps: Partial<ExpandableListProps>;
     // (undocumented)

@@ -4,7 +4,7 @@ The ui-framework package contains application fragments for Login, Project, iMod
 
 ## Application UI Configuration
 
-There are numerous React components and TypeScript classes in the ui&#8209;framework NPM package for configuring the application user interface. The following constructs are defined using these components and classes:
+There are numerous React components and TypeScript classes in the `@bentley/ui-framework` package for configuring the application user interface. The following constructs are defined using these components and classes:
 
 * [Frontstages and Zones](./Frontstages.md)
   * [Nested Frontstages](./NestedFrontstage.md)

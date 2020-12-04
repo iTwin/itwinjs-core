@@ -1,7 +1,7 @@
 # The ui-core package
 
 The `@bentley/ui-core` package contains general purpose React components, such as Button, ContextMenu, Dialog, MessageBox, SearchBox, RadialMenu and SplitButton.
-It also contains various input components, such as Input, Radio, Checkbox, NumericInput, Select, Slider and Toggle, and components for styled text.
+It also contains various input components, such as Input, Radio, Checkbox, NumberInput, Select, Slider and Toggle, and components for styled text.
 
 ## Topics
 
@@ -17,7 +17,7 @@ It also contains various input components, such as Input, Radio, Checkbox, Numer
 * [Form](./Form.md) - Components used to create a Form using supplied properties to specify fields.
 * [Icon](./Icon.md) - Components that render icons when given an icon name or SVG source or path.
 * [Inputs](./Inputs.md) - Components for working with input controls, such as Input, IconInput, NumberInput and Textarea.
-* [Loading](./Loading.md) - Components for working with Loading spinner and progress indicator.
+* [Loading](./Loading.md) - Components for working with Loading spinners and progress bars.
 * [Notification](./Notification.md) - Components for working with with messages and tooltips.
 * [Popup](./Popup.md) - Components for working with a Popup.
 * [RadialMenu](./RadialMenu.md) - Components for working with a RadialMenu.
@@ -29,7 +29,7 @@ It also contains various input components, such as Input, Radio, Checkbox, Numer
 an action button on the left and an arrow button on the right that opens a context menu.
 * [Style](./Style.md) - Sass variables and mixins for breakpoints, colors, color themes, opacity, sizing, spacing and typography.
 * [Tabs](./Tabs.md) - Components for working with horizontal or vertical tabs.
-* [Text](./Text.md) - Components for working with styled text.
+* [Text](./Text.md) - Components for working with styled text and different text sizes.
 * [Tiles](./Tiles.md) - Components for a container rendering elements that can be grouped together.
 * [Toggle](./Toggle.md) - Component for working with a Toggle switch.
 * [Tooltip](./Tooltip.md) - Component displays tooltip popup for a specified target element.

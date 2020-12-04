@@ -44,6 +44,9 @@
   --buic-background-active-overlay:           rgba(var(--buic-foreground-primary-rgb), 0.2);
   --buic-background-pressed-overlay:          rgba(var(--buic-foreground-primary-rgb), 0.3);
 
+  --buic-background-card:                     var(--buic-background-tooltip);
+  --buic-background-striped_row:              rgba(var(--buic-background-3-rgb), 0.65);
+
   /** background.5 */
   --buic-background-titlebar:                 var(--buic-background-5);
   --buic-background-dialog-stroke:            var(--buic-background-5);
@@ -68,7 +71,6 @@
   --buic-background-widget-panel:             var(--buic-background-3);
   --buic-background-placeholder:              var(--buic-background-3);
   --buic-background-control-disabled:         var(--buic-background-3);
-  --buic-background-striped_row:              rgba(var(--buic-background-3-rgb), 0.65);
 
   /** background.2 */
   --buic-background-tab-active:               var(--buic-background-2);
@@ -78,6 +80,5 @@
   --buic-background-toolbar:                  var(--buic-background-2);
 
   /** background.1 */
-  --buic-background-card:                     var(--buic-background-1);
   --buic-background-control:                  var(--buic-background-1);
 }
