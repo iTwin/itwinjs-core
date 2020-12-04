@@ -78,9 +78,9 @@ export class CommonPropertyRenderer {
     const matchIndex = activeMatch?.highlightIndex ?? 0;
     let labelMatches: number;
 
-    if (highlight.applyOnLabel){
+    if (highlight.applyOnLabel) {
       labelMatches = countMatchesInString(propertyRecord.property.displayLabel.toLowerCase(), highlight.highlightedText);
-    }else{
+    } else {
       labelMatches = 0;
     }
 
