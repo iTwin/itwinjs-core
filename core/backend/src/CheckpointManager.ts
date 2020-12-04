@@ -27,16 +27,18 @@ const loggerCategory: string = BackendLoggerCategory.IModelDb;
  * @internal
  */
 export interface CheckpointProps {
+  expectV2?: boolean;
+
   /** Context (Project or Asset) that the iModel belongs to */
-  readonly contextId: GuidString;
+  contextId: GuidString;
 
   /** Id of the iModel */
-  readonly iModelId: GuidString;
+  iModelId: GuidString;
 
   /** Id of the change set */
-  readonly changeSetId: GuidString;
+  changeSetId: GuidString;
 
-  readonly requestContext: AuthorizedClientRequestContext;
+  requestContext: AuthorizedClientRequestContext;
 }
 
 /**
@@ -96,8 +98,12 @@ export class V2CheckpointManager {
 
     requestContext.enter();
     const bcvDaemonCachePath = process.env.BLOCKCACHE_DIR;
-    if (!bcvDaemonCachePath)
-      throw new IModelError(IModelStatus.BadRequest, "Invalid config: BLOCKCACHE_DIR is not set"); // don't log - expected for V1 projects
+    if (!bcvDaemonCachePath) {
+      if (checkpoint.expectV2)
+        Logger.logError(loggerCategory, "Invalid config: BLOCKCACHE_DIR is not set");
+
+      throw new IModelError(IModelStatus.BadRequest, "Invalid config: BLOCKCACHE_DIR is not set");
+    }
 
     const checkpointQuery = new CheckpointQuery().byChangeSetId(changeSetId).selectBCVAccessKey();
     const checkpoints: Checkpoint[] = await BriefcaseManager.imodelClient.checkpoints.get(requestContext, iModelId, checkpointQuery);
@@ -126,9 +132,13 @@ export class V2CheckpointManager {
 
     // We can assume that a BCVDaemon process is already started if BLOCKCACHE_DIR was set, so we need to just tell the daemon to attach to the Storage Container
     const attachResult = await BlobDaemon.command("attach", args);
-    if (attachResult.result !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(attachResult.result, `Daemon attach failed: ${attachResult.errMsg}`); // don't log this, it's expected for V1 projects
+    if (attachResult.result !== DbResult.BE_SQLITE_OK) {
+      const error = `Daemon attach failed: ${attachResult.errMsg}`;
+      if (checkpoint.expectV2)
+        Logger.logError(loggerCategory, error);
 
+      throw new IModelError(attachResult.result, error);
+    }
     return BlobDaemon.getDbFileName(args);
   }
 
