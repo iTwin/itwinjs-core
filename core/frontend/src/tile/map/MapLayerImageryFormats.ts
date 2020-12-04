@@ -45,6 +45,7 @@ export abstract class MapLayerImageryProvider {
   public get minimumZoomLevel(): number { return 4; }
   public get maximumZoomLevel(): number { return 22; }
   public get usesCachedTiles() { return this._usesCachedTiles; }
+  public get mutualExclusiveSubLayer(): boolean { return false; }
   public cartoRange?: MapCartoRectangle;
   protected get _filterByCartoRange() { return true; }
   constructor(protected readonly _settings: MapLayerSettings, protected _usesCachedTiles: boolean) { }
@@ -296,6 +297,8 @@ class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
   private _capabilities?: WmtsCapabilities;
   private _preferredLayerTileMatrixSet = new Map<string, WmtsCapability.TileMatrixSet>();
   private _preferredLayerStyle = new Map<string, WmtsCapability.Style>();
+
+  public get mutualExclusiveSubLayer(): boolean { return true; }
 
   constructor(settings: MapLayerSettings) {
     super(settings, true);

@@ -66,7 +66,7 @@ function getStyleMapLayerSettings(settings: MapLayerSettings, isOverlay: boolean
     subLayers: settings.subLayers ? getSubLayerProps(settings.subLayers) : undefined,
     showSubLayers: true,
     isOverlay,
-    mutualExclusiveSubLayer: (settings.formatId === "WMTS"),
+    provider: IModelApp.mapLayerFormatRegistry.createImageryProvider(settings),
   };
 }
 
@@ -145,7 +145,7 @@ export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
             onChange={handleFilterTextChanged} />
         }
       >
-        {mapLayer.mutualExclusiveSubLayer ? undefined : [
+        {mapLayer.provider?.mutualExclusiveSubLayer ? undefined : [
           <button key="show-all-btn" title={allOnLabel} onClick={showAll}>
             <WebFontIcon iconName="icon-visibility" />
           </button>,
@@ -289,7 +289,7 @@ class SubLayerCheckboxHandler extends TreeEventHandler {
 
           // Get the previously visible node if any
           let prevVisibleLayer: MapSubLayerProps | undefined;
-          if (this._mapLayer.mutualExclusiveSubLayer) {
+          if (this._mapLayer.provider?.mutualExclusiveSubLayer) {
             prevVisibleLayer = this._mapLayer.subLayers?.find((subLayer) => subLayer.visible && subLayer.id !== subLayerId);
           }
 
@@ -309,7 +309,7 @@ class SubLayerCheckboxHandler extends TreeEventHandler {
 
           // Cascade state
           this.modelSource.modifyModel((model) => {
-            if (this._mapLayer.mutualExclusiveSubLayer)
+            if (this._mapLayer.provider?.mutualExclusiveSubLayer)
               this.applyMutualExclusiveState(model, change.nodeItem.id);
             this.cascadeStateToAllChildren(model, change.nodeItem.id);
           });

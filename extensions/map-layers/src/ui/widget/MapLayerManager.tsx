@@ -11,7 +11,7 @@ import * as React from "react";
 import { DragDropContext, Draggable, DraggableChildrenFn, Droppable, DropResult } from "react-beautiful-dnd";
 import { MapSubLayerProps, MapSubLayerSettings } from "@bentley/imodeljs-common";
 import {
-  DisplayStyleState, IModelApp, MapLayerSettingsService, MapLayerSource, MapLayerSources, NotifyMessageDetails, OutputMessagePriority,
+  DisplayStyleState, IModelApp, MapLayerImageryProvider, MapLayerSettingsService, MapLayerSource, MapLayerSources, NotifyMessageDetails, OutputMessagePriority,
   ScreenViewport, Viewport,
 } from "@bentley/imodeljs-frontend";
 import { ContextMenu, ContextMenuItem, Icon, Slider } from "@bentley/ui-core";
@@ -64,7 +64,7 @@ export interface StyleMapLayerSettings {
   /** sub-layer panel displayed. */
   showSubLayers: boolean;
   /** Some format can publish only a single layer at a time (i.e WMTS) */
-  mutualExclusiveSubLayer?: boolean;
+  provider?: MapLayerImageryProvider;
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -171,7 +171,7 @@ function getMapLayerSettingsFromStyle(displayStyle: DisplayStyleState | undefine
         subLayers: populateSubLayers ? getSubLayerProps(layerSettings.subLayers) : undefined,
         showSubLayers: false,
         isOverlay: false,
-        mutualExclusiveSubLayer: (layerSettings.formatId === "WMTS"),
+        provider: IModelApp.mapLayerFormatRegistry.createImageryProvider(layerSettings),
       });
     });
   } else {
@@ -185,7 +185,7 @@ function getMapLayerSettingsFromStyle(displayStyle: DisplayStyleState | undefine
         subLayers: populateSubLayers ? getSubLayerProps(layerSettings.subLayers) : undefined,
         showSubLayers: false,
         isOverlay: true,
-        mutualExclusiveSubLayer: (layerSettings.formatId === "WMTS"),
+        provider: IModelApp.mapLayerFormatRegistry.createImageryProvider(layerSettings),
       });
     });
   }
