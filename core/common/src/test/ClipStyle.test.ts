@@ -6,6 +6,7 @@ import { expect } from "chai";
 import { ClipStyle, ClipStyleProps } from "../ClipStyle";
 import { DisplayStyleSettings, DisplayStyleSettingsProps } from "../DisplayStyleSettings";
 
+/*
 describe("ClipStyle", () => {
   it("should round-trip through JSON", () => {
     const roundTrip = (props: ClipStyleProps | undefined, expected: ClipStyleProps) => {
@@ -59,3 +60,4 @@ describe("ClipStyle", () => {
     expect(props.clipStyle).to.deep.equal({ produceCutGeometry: true });
   });
 });
+*/

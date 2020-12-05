@@ -84,7 +84,12 @@ export class ToggleSectionCutTool extends Tool {
       const style = vp.view.displayStyle.settings.clipStyle;
       produceCutGeometry = produceCutGeometry ?? !style.produceCutGeometry;
       if (produceCutGeometry !== style.produceCutGeometry) {
-        vp.view.displayStyle.settings.clipStyle = ClipStyle.fromJSON({ produceCutGeometry });
+        const json = {
+          ...vp.view.displayStyle.settings.clipStyle.toJSON(),
+          produceCutGeometry,
+        };
+
+        vp.view.displayStyle.settings.clipStyle = ClipStyle.fromJSON(json);
         vp.invalidateScene();
       }
     }

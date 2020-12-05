@@ -98,6 +98,10 @@ export class FeatureAppearance implements FeatureAppearanceProps {
     return this.fromJSON({ rgb, transparency, weight, ignoresMaterial });
   }
 
+  public get matchesDefaults(): boolean {
+    return this.equals(FeatureAppearance.defaults);
+  }
+
   public get overridesRgb(): boolean { return undefined !== this.rgb; }
   public get overridesTransparency(): boolean { return undefined !== this.transparency; }
   public get overridesLinePixels(): boolean { return undefined !== this.linePixels; }
@@ -109,6 +113,9 @@ export class FeatureAppearance implements FeatureAppearanceProps {
   public get anyOverridden(): boolean { return this.overridesSymbology || this.overridesNonLocatable; }
 
   public equals(other: FeatureAppearance): boolean {
+    if (this === other)
+      return true;
+
     return this.rgbIsEqual(other.rgb)
       && this.weight === other.weight
       && this.transparency === other.transparency
