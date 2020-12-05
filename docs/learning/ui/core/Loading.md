@@ -6,6 +6,8 @@ The [Loading]($ui-core:Loading) category in the `@bentley/ui-core` package inclu
 * [LoadingBar]($ui-core) - determinate loading bar with optional percentage text
 * [LoadingPrompt]($ui-core) - component to display during loading that optionally shows percentage, status text and a cancel button
 * [LoadingSpinner]($ui-core) - loading spinner component that optionally shows a text message
+* [ProgressBar]($ui-core) - horizontal progress bar that supports determinate and indeterminate modes
+* [ProgressSpinner]($ui-core) - circular progress indicator that supports determinate and indeterminate modes
 
 ## Spinner Examples
 
