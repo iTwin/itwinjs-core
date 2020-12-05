@@ -44,9 +44,10 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
   }
 
   public async writeExternalFile(outputPath: string, outputName: string, append: boolean, content: string): Promise<void> {
-    if (outputPath === undefined || outputName === undefined)
-      return;
     const fileName = this.createFullFilePath(outputPath, outputName);
+    if (undefined === fileName)
+      return;
+
     const filePath = this.getFilePath(fileName);
     if (!fs.existsSync(filePath))
       this.createFilePath(filePath);
