@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/imodeljs-backend",
-      "comment": "Update to @bentley/imodeljs-native@2.9.6",
+      "comment": "Update to @bentley/imodeljs-native@2.9.7",
       "type": "none"
     }
   ],

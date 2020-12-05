@@ -3,7 +3,7 @@ dependencies:
   '@babel/core': 7.7.4
   '@bentley/icons-generic': 1.0.29
   '@bentley/icons-generic-webfont': 1.0.29
-  '@bentley/imodeljs-native': 2.9.6
+  '@bentley/imodeljs-native': 2.9.7
   '@bentley/react-scripts': 3.4.6_2ce93b467f9fa052344b2dfa2e61a9ba
   '@microsoft/api-extractor': 7.7.3
   '@microsoft/applicationinsights-web': 2.5.9
@@ -1686,11 +1686,11 @@ packages:
     dev: false
     resolution:
       integrity: sha512-8bWeEstKNiRtZWFt18XKpEUa/yuc/wCsrfg0mIt1aGVtnjdpbYY4/Un05eNy6mOIZCeFmEjLn6sPBeEX2YmDKw==
-  /@bentley/imodeljs-native/2.9.6:
+  /@bentley/imodeljs-native/2.9.7:
     dev: false
     requiresBuild: true
     resolution:
-      integrity: sha512-csK08Dxh5clBRfVYsl+FD6JBMK9SVxGTPY59OdssOnyyp+xALF2X0mIPXvoExOUQFhFNoWH/59W0TxTyX08y+g==
+      integrity: sha512-qBQOiySVfV1Wpo30OQAEc21luNijBmJQ9Iw2zWKoHDmP6nxe6ViJmSmpoK8KV98mWJkVH3NOBgOePQodIjQGfg==
   /@bentley/react-scripts/3.4.6_2ce93b467f9fa052344b2dfa2e61a9ba:
     dependencies:
       '@babel/core': 7.9.0
@@ -19553,7 +19553,7 @@ packages:
   'file:projects/imodeljs-backend.tgz':
     dependencies:
       '@azure/storage-blob': 10.4.0
-      '@bentley/imodeljs-native': 2.9.6
+      '@bentley/imodeljs-native': 2.9.7
       '@openid/appauth': 1.3.0
       '@types/chai': 4.2.14
       '@types/chai-as-promised': 7.1.3
@@ -19598,7 +19598,7 @@ packages:
     dev: false
     name: '@rush-temp/imodeljs-backend'
     resolution:
-      integrity: sha512-U6/boRkZwHqDsDn+sM8AeIHao/8ZsOl0hcpkcYL372vqb5icA1ivK8mGbPE2nxhKkprXlU2YvLqeO7yNG3htHw==
+      integrity: sha512-cyJC0IbuAh9RrtfiRq9QndzzhMt6JZU4jdagSArQgX3y4b5FUNGD2wzfOXgqmPuH0yEz9fd0jE/cgVACz1xvIw==
       tarball: 'file:projects/imodeljs-backend.tgz'
     version: 0.0.0
   'file:projects/imodeljs-common.tgz':
@@ -20909,7 +20909,7 @@ specifiers:
   '@babel/core': 7.7.4
   '@bentley/icons-generic': ^1.0.15
   '@bentley/icons-generic-webfont': ^1.0.15
-  '@bentley/imodeljs-native': 2.9.6
+  '@bentley/imodeljs-native': 2.9.7
   '@bentley/react-scripts': 3.4.6
   '@microsoft/api-extractor': 7.7.3
   '@microsoft/applicationinsights-web': ^2.5.5
