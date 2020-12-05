@@ -11,6 +11,8 @@ import { Range3d, StringifiedClipVector, Transform } from "@bentley/geometry-cor
 import {
   BatchType,
   compareIModelTileTreeIds,
+  FeatureAppearance,
+  FeatureAppearanceProvider,
   iModelTileTreeIdToString,
   PrimaryTileTreeId,
   ViewFlagOverrides,
@@ -127,6 +129,7 @@ class PrimaryTreeReference extends TileTreeReference {
   protected _id: PrimaryTreeId;
   private _owner: TileTreeOwner;
   private readonly _sectionClip?: StringifiedClipVector;
+  private readonly _sectionCutAppearanceProvider?: FeatureAppearanceProvider;
 
   public constructor(view: ViewState, model: GeometricModelState, isPlanProjection: boolean, transformNodeId?: number, sectionClip?: StringifiedClipVector) {
     super();
@@ -138,6 +141,10 @@ class PrimaryTreeReference extends TileTreeReference {
     if (sectionClip) {
       // Clipping will be applied on backend; don't clip out cut geometry.
       this._viewFlagOverrides.setShowClipVolume(false);
+      this._sectionCutAppearanceProvider = FeatureAppearanceProvider.supplement((app: FeatureAppearance) => {
+        const cutApp = this.view.displayStyle.settings.clipStyle.cutStyle.appearance;
+        return cutApp ? app.extendAppearance(cutApp) : app;
+      });
     }
 
     this._id = {
@@ -151,11 +158,31 @@ class PrimaryTreeReference extends TileTreeReference {
   }
 
   protected getViewFlagOverrides(_tree: TileTree) {
+    if (this._sectionClip) {
+      // We do this each time in case the ClipStyle's overrides are modified.
+      // ###TODO: can we avoid that? Event listeners maybe?
+      this.view.displayStyle.settings.clipStyle.cutStyle.viewflags.clone(this._viewFlagOverrides);
+      this._viewFlagOverrides.setShowClipVolume(false);
+      if (this.isPlanProjection)
+        this._viewFlagOverrides.setForceSurfaceDiscard(true);
+    }
+
     return this._viewFlagOverrides;
+  }
+
+  protected getAppearanceProvider(_tree: TileTree): FeatureAppearanceProvider | undefined {
+    if (this._sectionCutAppearanceProvider && this.view.displayStyle.settings.clipStyle.cutStyle.appearance)
+      return this._sectionCutAppearanceProvider;
+
+    return undefined;
   }
 
   public get castsShadows() {
     return true;
+  }
+
+  protected get isPlanProjection(): boolean {
+    return false;
   }
 
   protected getClipVolume(_tree: TileTree): RenderClipVolume | undefined {
@@ -226,6 +253,10 @@ class PlanProjectionTreeReference extends PrimaryTreeReference {
 
   public get castsShadows() {
     return false;
+  }
+
+  protected get isPlanProjection(): boolean {
+    return true;
   }
 
   public createDrawArgs(context: SceneContext): TileDrawArgs | undefined {

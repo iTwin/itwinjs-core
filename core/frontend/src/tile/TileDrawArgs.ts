@@ -35,6 +35,7 @@ export interface TileDrawArgParams {
   clipVolume: RenderClipVolume | undefined;
   parentsAndChildrenExclusive: boolean;
   symbologyOverrides: FeatureSymbology.Overrides | undefined;
+  appearanceProvider?: FeatureAppearanceProvider;
 }
 /**
  * Arguments used when selecting and drawing [[Tile]]s.
@@ -153,6 +154,7 @@ export class TileDrawArgs {
     this.tree = tree;
     this.context = context;
     this.now = now;
+    this._appearanceProvider = params.appearanceProvider;
 
     if (undefined !== clipVolume && !clipVolume.hasOutsideClipColor)
       this.clipVolume = clipVolume;

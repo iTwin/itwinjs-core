@@ -257,7 +257,7 @@ describe("FeatureOverrides", () => {
 
 describe("FeatureAppearanceProvider", () => {
   class Source implements FeatureAppearanceSource {
-    public constructor(public readonly appearance: FeatureAppearance) { }
+    public constructor(public readonly appearance: FeatureAppearance | undefined) { }
 
     public getAppearance(_elemLo: number, _elemHi: number, _subcatLo: number, _subcatHi: number, _geomClass: GeometryClass, _modelLo: number, _modelHi: number, _type: BatchType, _animationNodeId: number) {
       return this.appearance;
@@ -309,6 +309,22 @@ describe("FeatureAppearanceProvider", () => {
     expect(app.transparency).to.equal(0.25);
     expect(app.emphasized).to.be.true;
     expect(app.ignoresMaterial).to.be.true;
+  });
+
+  it("creates supplemental provider", () => {
+    const provider = FeatureAppearanceProvider.supplement((app: FeatureAppearance) => {
+      return FeatureAppearance.fromJSON({
+        ...app.toJSON(),
+        transparency: 0.5,
+      });
+    });
+
+    let appearance = getAppearance(new Source(FeatureAppearance.fromJSON({ weight: 5 })), provider);
+    expect(appearance!.weight).to.equal(5);
+    expect(appearance!.transparency).to.equal(0.5);
+
+    appearance = getAppearance(new Source(undefined), provider);
+    expect(appearance).to.be.undefined;
   });
 
   it("does not introduce infinite recursion", () => {

@@ -8,7 +8,7 @@
 
 import { BeTimePoint } from "@bentley/bentleyjs-core";
 import { Matrix4d, Range1d, Range3d, Transform } from "@bentley/geometry-core";
-import { ElementAlignedBox3d, FrustumPlanes, ViewFlagOverrides } from "@bentley/imodeljs-common";
+import { ElementAlignedBox3d, FeatureAppearanceProvider, FrustumPlanes, ViewFlagOverrides } from "@bentley/imodeljs-common";
 import { HitDetail } from "../HitDetail";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 import { RenderClipVolume } from "../render/RenderClipVolume";
@@ -119,12 +119,17 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
     if (undefined === tree)
       return undefined;
 
-    const now = BeTimePoint.now();
-    const location = this.computeTransform(tree);
-    const clipVolume = this.getClipVolume(tree);
-    const viewFlagOverrides = this.getViewFlagOverrides(tree);
-
-    return new TileDrawArgs({ context, location, tree, now, viewFlagOverrides, clipVolume, parentsAndChildrenExclusive: tree.parentsAndChildrenExclusive, symbologyOverrides: this.getSymbologyOverrides(tree) });
+    return new TileDrawArgs({
+      context,
+      tree,
+      now: BeTimePoint.now(),
+      location: this.computeTransform(tree),
+      viewFlagOverrides: this.getViewFlagOverrides(tree),
+      clipVolume: this.getClipVolume(tree),
+      parentsAndChildrenExclusive: tree.parentsAndChildrenExclusive,
+      symbologyOverrides: this.getSymbologyOverrides(tree),
+      appearanceProvider: this.getAppearanceProvider(tree),
+    });
   }
 
   /** Supply transform from this tile tree reference's location to iModel coordinate space.
@@ -164,6 +169,11 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
 
   /** Return overrides that *replace* any defined for the view. */
   protected getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides | undefined {
+    return undefined;
+  }
+
+  /** Return a provider that can supplement the view's symbology overrides. */
+  protected getAppearanceProvider(_tree: TileTree): FeatureAppearanceProvider | undefined {
     return undefined;
   }
 

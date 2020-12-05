@@ -106,7 +106,10 @@ export class FeatureAppearance implements FeatureAppearanceProps {
   public get overridesTransparency(): boolean { return undefined !== this.transparency; }
   public get overridesLinePixels(): boolean { return undefined !== this.linePixels; }
   public get overridesWeight(): boolean { return undefined !== this.weight; }
-  public get overridesSymbology(): boolean { return this.overridesRgb || this.overridesTransparency || this.overridesWeight || this.overridesLinePixels || !!this.ignoresMaterial; }
+  public get overridesSymbology(): boolean {
+    return this.overridesRgb || this.overridesTransparency || this.overridesWeight || this.overridesLinePixels || !!this.ignoresMaterial
+      || this.emphasized || this.overridesNonLocatable;
+  }
   public get overridesNonLocatable(): boolean { return undefined !== this.nonLocatable; }
   public get isFullyTransparent(): boolean { return undefined !== this.transparency && this.transparency >= 1.0; }
   /** Returns true if any aspect of the appearance is overridden (i.e., if any member is not undefined). */
@@ -604,6 +607,19 @@ export namespace FeatureAppearanceProvider {
     return {
       getAppearance: (elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number) => {
         return provider.getFeatureAppearance(source, elemLo, elemHi, subcatLo, subcatHi, geomClass, modelLo, modelHi, type, animationNodeId);
+      },
+    };
+  }
+
+  /** Create a provider that obtains each feature's appearance from the source, and if the feature is visible, modifies the appearance.
+   * @param supplementAppearance A function accepting the feature's base appearance and returning a supplemental appearance.
+   * @beta
+   */
+  export function supplement(supplementAppearance: (appearance: FeatureAppearance) => FeatureAppearance): FeatureAppearanceProvider {
+    return {
+      getFeatureAppearance: (source: FeatureAppearanceSource, elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number) => {
+        let app = source.getAppearance(elemLo, elemHi, subcatLo, subcatHi, geomClass, modelLo, modelHi, type, animationNodeId);
+        return app ? supplementAppearance(app) : app;
       },
     };
   }
