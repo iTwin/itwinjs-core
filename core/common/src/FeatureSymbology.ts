@@ -210,6 +210,29 @@ export class FeatureAppearance implements FeatureAppearanceProps {
   }
 }
 
+/** Interface adopted by an object that can supply a [[FeatureAppearance]] given a low-level description of a [[Feature]].
+ * @see [[FeatureOverrides]] for the commonly-used implementation.
+ * @see [[FeatureAppearanceProvider]] to supplement the appearance supplied by this interface.
+ * @beta
+ */
+export interface FeatureAppearanceSource {
+  /** Supplies the desired appearance overrides for the specified [[Feature]], or `undefined` if the feature should not be drawn.
+   * The feature is described by its components for efficiency reasons.
+   * @param elemLo The lower 32 bits of the feature's element Id.
+   * @param elemHi The upper 32 bits of the feature's element Id.
+   * @param subcatLo The lower 32 bits of the feature's subcategory Id.
+   * @param subcatHi The upper 32 bits of the feature's subcategory Id.
+   * @param geomClass The geometry class of the feature.
+   * @param modelLo The lower 32 bits of the feature's model Id.
+   * @param modelHi The upper 32 bits of the feature's model Id.
+   * @param type The type of batch to which the feature belongs.
+   * @param animationNodeId The Id of the corresponding node in the [[RenderSchedule]], or `0` if none.
+   * @returns The desired appearance overrides, or `undefined` to indicate the feature should not be displayed.
+   * @see [Id64.isValidUint32Pair]($bentleyjs-core) to determine if the components of an [Id64String]($bentleyjs-core) represent a valid Id.
+   */
+  getAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined;
+}
+
 /** Specifies how to customize the appearance of individual [[Feature]]s, typically within the context of a [Viewport]($frontend).
  * It is possible to override multiple aspects of a Feature. For example, you might specify that all elements belonging to subcategory "A" should be drawn in red, and
  * that the element with Id "0x123" should be drawn with 0.25 transparency. In this case, when drawing a Feature with subcategory "A" and element Id "0x123", the two overrides will
@@ -219,7 +242,7 @@ export class FeatureAppearance implements FeatureAppearanceProps {
  * @see [FeatureSymbology.Overrides]($frontend) to create overrides specific to a [Viewport]($frontend) or [ViewState]($frontend).
  * @public
  */
-export class FeatureOverrides {
+export class FeatureOverrides implements FeatureAppearanceSource {
   /** Ids of elements that should never be drawn. This takes precedence over [[alwaysDrawn]]. @internal */
   protected readonly _neverDrawn = new Id64.Uint32Set();
   /** Ids of elements that should always be drawn. [[neverDrawn]] takes precedence over this set. @internal */
@@ -549,15 +572,16 @@ export class FeatureOverrides {
   }
 }
 
-/** Interface adopted by an object that can supply a [[FeatureAppearance]] given a [[Feature]] and a [[FeatureOverrides]].
+/** Interface adopted by an object that can supply the [[FeatureAppearance]] supplied by a [[FeatureAppearanceSource]].
  * This is useful for selectively overriding or agumenting a [Viewport]($frontend)'s symbology overrides.
- * @see [[FeatureOverrides.getAppearance]].
+ * A typical implementation will invoke [[FeatureAppearanceSource.getAppeaprance]] and customize the returned appearance.
+ * @see [[FeatureAppearanceProvider.chain]] to chain two providers together.
  * @beta
  */
 export interface FeatureAppearanceProvider {
-  /** Given the base symbology overrides, supply the desired appearance overrides for the specified [[Feature]], or `undefined` if the feature should not be drawn.
+  /** Supply the desired appearance overrides for the specified [[Feature]], or `undefined` if the feature should not be drawn.
    * The feature is described by its components for efficiency reasons.
-   * @param overrides The base symbology overrides, e.g., as defined by a [Viewport]($frontend).
+   * @param source The base symbology overrides, e.g., typically defined by a [Viewport]($frontend).
    * @param elemLo The lower 32 bits of the feature's element Id.
    * @param elemHi The upper 32 bits of the feature's element Id.
    * @param subcatLo The lower 32 bits of the feature's subcategory Id.
@@ -568,8 +592,34 @@ export interface FeatureAppearanceProvider {
    * @param type The type of batch to which the feature belongs.
    * @param animationNodeId The Id of the corresponding node in the [[RenderSchedule]], or `0` if none.
    * @returns The desired appearance overrides, or `undefined` to indicate the feature should not be displayed.
-   * @see [[FeatureOverrides.getAppearance]] to forward the request to the symbology overrides.
+   * @see [[FeatureAppearanceSource.getAppearance]] to forward the request to the source.
    * @see [Id64.isValidUint32Pair]($bentleyjs-core) to determine if the components of an [Id64String]($bentleyjs-core) represent a valid Id.
    */
-  getFeatureAppearance(overrides: FeatureOverrides, elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined;
+  getFeatureAppearance(source: FeatureAppearanceSource, elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined;
+}
+
+/** @beta */
+export namespace FeatureAppearanceProvider {
+  function wrap(source: FeatureAppearanceSource, provider: FeatureAppearanceProvider): FeatureAppearanceSource {
+    return {
+      getAppearance: (elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number) => {
+        return provider.getFeatureAppearance(source, elemLo, elemHi, subcatLo, subcatHi, geomClass, modelLo, modelHi, type, animationNodeId);
+      },
+    };
+  }
+
+  /** Chain two FeatureAppearanceProviders together such that `first`'s `getFeatureAppearance` function is applied before `second`'s.
+   * If `second` invokes `source.getAppearance()`, the returned appearance will include any modifications applied by `first`.
+   * @beta
+   */
+  export function chain(first: FeatureAppearanceProvider, second: FeatureAppearanceProvider): FeatureAppearanceProvider {
+    if (first === second)
+      return first;
+
+    return {
+      getFeatureAppearance: (source: FeatureAppearanceSource, elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number) => {
+        return second.getFeatureAppearance(wrap(source, first), elemLo, elemHi, subcatLo, subcatHi, geomClass, modelLo, modelHi, type, animationNodeId);
+      },
+    };
+  }
 }
