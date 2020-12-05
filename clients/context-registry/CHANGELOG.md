@@ -1,6 +1,11 @@
 # Change Log - @bentley/context-registry-client
 
-This log was last generated on Wed, 02 Dec 2020 20:55:40 GMT and should not be manually modified.
+This log was last generated on Sat, 05 Dec 2020 01:55:56 GMT and should not be manually modified.
+
+## 2.9.5
+Sat, 05 Dec 2020 01:55:56 GMT
+
+_Version update only_
 
 ## 2.9.4
 Wed, 02 Dec 2020 20:55:40 GMT
