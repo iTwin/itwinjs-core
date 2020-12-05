@@ -377,7 +377,6 @@ describe("Content", () => {
         displayType: DefaultContentDisplayTypes.PropertyPane,
         keys: new KeySet(),
       });
-
       // sanity check - ensure filtering the fields by the class we used for request doesn't filter out anything
       const fieldsGeometricElement = filterFieldsByClass(descriptorGeometricElement!.fields, await classHierarchy.getClassInfo("BisCore", "GeometricElement"));
       expect(getFieldLabels(fieldsGeometricElement)).to.deep.eq(getFieldLabels(descriptorGeometricElement!));
