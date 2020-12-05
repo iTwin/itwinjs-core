@@ -68,7 +68,7 @@ export class TileDrawArgs {
   /** @internal */
   public parentsAndChildrenExclusive: boolean;
   /** @internal */
-  public appearanceProvider?: FeatureAppearanceProvider;
+  private _appearanceProvider?: FeatureAppearanceProvider;
   /** Tiles that we want to draw and that are ready to draw. May not actually be selected, e.g. if sibling tiles are not yet ready. */
   public readonly readyTiles = new Set<Tile>();
   /** For perspective views, the view-Z of the near plane. */
@@ -200,6 +200,20 @@ export class TileDrawArgs {
   /** @internal */
   public get clip(): ClipVector | undefined {
     return undefined !== this.clipVolume ? this.clipVolume.clipVector : undefined;
+  }
+
+  /** Add a provider to supplement or override the symbology overrides for the view.
+   * @note If a provider already exists, the new provider will be chained such that it sees the base overrides
+   * after they have potentially been modified by the existing provider.
+   * @beta
+   */
+  public addAppearanceProvider(provider: FeatureAppearanceProvider): void {
+    this._appearanceProvider = this._appearanceProvider ? FeatureAppearanceProvider.chain(this._appearanceProvider, provider) : provider;
+  }
+
+  /** @internal */
+  public get appearanceProvider(): FeatureAppearanceProvider | undefined {
+    return this._appearanceProvider;
   }
 
   /** @internal */
