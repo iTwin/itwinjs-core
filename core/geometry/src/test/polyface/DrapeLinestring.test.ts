@@ -32,7 +32,7 @@ export class RFunctions {
   }
 }
 
-it.only("DrapeLinestringAsPanels", () => {
+it("DrapeLinestringAsPanels", () => {
   const ck = new Checker();
   let dy = 0.0;
   const allGeometry: GeometryQuery[] = [];
@@ -61,7 +61,7 @@ it.only("DrapeLinestringAsPanels", () => {
   expect(ck.getNumErrors()).equals(0);
 });
 
-it.only("DrapeLinestringAsLines", () => {
+it("DrapeLinestringAsLines", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
 
@@ -120,7 +120,7 @@ it.only("DrapeLinestringAsLines", () => {
   expect(ck.getNumErrors()).equals(0);
 });
 
-it.only("DrapeLinestringLargeMesh", () => {
+it("DrapeLinestringLargeMesh", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
   const w0 = 4.0;
@@ -166,9 +166,8 @@ it.only("DrapeLinestringLargeMesh", () => {
     // LineString3d.create([[4.2, 3, -2], [6, 3, 3]]),
     // LineString3d.create(loopWithHandle),
     LineString3d.create(wanderingPoints),
-    LineString3d.create(wanderingPoints),
     strokes]) {
-    for (const densityMultiplier of [1, 2, 4, 8]) {
+    for (const densityMultiplier of [1, 2, 4]) {
       const numX = numX0 * densityMultiplier;
       const numY = numY0 * densityMultiplier;
       numTest++;
