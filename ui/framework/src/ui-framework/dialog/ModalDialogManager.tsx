@@ -15,7 +15,7 @@ import { DialogChangedEvent, DialogManagerBase, DialogRendererBase } from "./Dia
  */
 export class ModalDialogChangedEvent extends DialogChangedEvent { }
 
-/** Modal Dialog Manager class.
+/** Modal Dialog Manager class displays and manages multiple modal dialogs
  * @public
  */
 export class ModalDialogManager {
@@ -64,7 +64,7 @@ export class ModalDialogManager {
   }
 }
 
-/** ModalDialogRenderer React component.
+/** ModalDialogRenderer React component renders modal dialogs
  * @public
  */
 export class ModalDialogRenderer extends React.PureComponent<CommonProps> {

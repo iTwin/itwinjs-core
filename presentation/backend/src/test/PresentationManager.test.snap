@@ -72,6 +72,7 @@ Object {
             "relatedClassPath": Array [],
           },
         ],
+        "renderer": undefined,
         "type": Object {
           "typeName": "string",
           "valueFormat": "Primitive",
@@ -284,6 +285,7 @@ Object {
             "relatedClassPath": Array [],
           },
         ],
+        "renderer": undefined,
         "type": Object {
           "typeName": "string",
           "valueFormat": "Primitive",
@@ -381,6 +383,7 @@ Object {
             "relatedClassPath": Array [],
           },
         ],
+        "renderer": undefined,
         "type": Object {
           "typeName": "string",
           "valueFormat": "Primitive",
@@ -478,6 +481,7 @@ Object {
             "relatedClassPath": Array [],
           },
         ],
+        "renderer": undefined,
         "type": Object {
           "typeName": "string",
           "valueFormat": "Primitive",
@@ -575,6 +579,7 @@ Object {
             "relatedClassPath": Array [],
           },
         ],
+        "renderer": undefined,
         "type": Object {
           "typeName": "string",
           "valueFormat": "Primitive",
@@ -672,6 +677,7 @@ Object {
             "relatedClassPath": Array [],
           },
         ],
+        "renderer": undefined,
         "type": Object {
           "typeName": "string",
           "valueFormat": "Primitive",
@@ -784,6 +790,7 @@ Object {
           "relatedClassPath": Array [],
         },
       ],
+      "renderer": undefined,
       "type": Object {
         "typeName": "string",
         "valueFormat": "Primitive",
@@ -823,6 +830,7 @@ Object {
           "relatedClassPath": Array [],
         },
       ],
+      "renderer": undefined,
       "type": Object {
         "memberType": Object {
           "members": Array [
@@ -888,6 +896,7 @@ Object {
           "label": "Money Market Account",
           "name": "Simple property field",
           "priority": 58903,
+          "renderer": undefined,
           "type": Object {
             "typeName": "string",
             "valueFormat": "Primitive",
@@ -917,6 +926,7 @@ Object {
         },
       ],
       "priority": 89331,
+      "renderer": undefined,
       "type": Object {
         "members": Array [
           Object {
@@ -1125,6 +1135,7 @@ Object {
           "relatedClassPath": Array [],
         },
       ],
+      "renderer": undefined,
       "type": Object {
         "typeName": "string",
         "valueFormat": "Primitive",
@@ -1164,6 +1175,7 @@ Object {
           "relatedClassPath": Array [],
         },
       ],
+      "renderer": undefined,
       "type": Object {
         "memberType": Object {
           "members": Array [
@@ -1229,6 +1241,7 @@ Object {
           "label": "Re-contextualized",
           "name": "Simple property field",
           "priority": 89006,
+          "renderer": undefined,
           "type": Object {
             "typeName": "string",
             "valueFormat": "Primitive",
@@ -1258,6 +1271,7 @@ Object {
         },
       ],
       "priority": 54704,
+      "renderer": undefined,
       "type": Object {
         "members": Array [
           Object {

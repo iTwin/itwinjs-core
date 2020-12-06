@@ -72,6 +72,8 @@ export interface PopupProps extends CommonProps {
   closeOnWheel?: boolean;
   /** Indicates whether to close the popup when the right mouse button is pressed (defaults to true) */
   closeOnContextMenu?: boolean;
+  /** If false outside click processing and closing are skipped if click occurs in another Popup component, default to false. */
+  closeOnNestedPopupOutsideClick?: boolean;
 }
 
 /** @internal */
@@ -175,11 +177,28 @@ export class Popup extends React.Component<PopupProps, PopupState> {
       this._hide();
   };
 
+  private isInCorePopup(element: HTMLElement): boolean {
+    if (element.nodeName === "DIV") {
+      if (element.classList && element.classList.contains("core-popup"))
+        return true;
+      if (element.parentElement && this.isInCorePopup(element.parentElement))
+        return true;
+    } else {
+      // istanbul ignore else
+      if (element.parentElement && this.isInCorePopup(element.parentElement))
+        return true;
+    }
+    return false;
+  }
+
   private _handleOutsideClick = (event: MouseEvent): void => {
     if (this._popup && this._popup.contains(event.target as Node))
       return;
 
     if (this.props.isPinned)
+      return;
+
+    if (!this.props.closeOnNestedPopupOutsideClick && this.isInCorePopup(event.target as HTMLElement))
       return;
 
     if (this.props.onOutsideClick)
