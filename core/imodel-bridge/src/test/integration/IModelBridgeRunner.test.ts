@@ -10,7 +10,7 @@ import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { BridgeTestUtils, TestIModelInfo } from "../BridgeTestUtils";
 import { BriefcaseDb, BriefcaseManager, IModelJsFs } from "@bentley/imodeljs-backend";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { BentleyStatus, ClientRequestContext, Guid, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { BentleyStatus, ClientRequestContext, Guid, Logger } from "@bentley/bentleyjs-core";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { BridgeJobDefArgs, BridgeRunner } from "../../BridgeRunner";
 import { HubUtility } from "./HubUtility";
@@ -67,7 +67,7 @@ describe("IModelBridgeFwk (#integration)", () => {
     const briefcaseEntry = briefcases[0];
     expect(briefcaseEntry !== undefined);
 
-    const imodel = await BriefcaseDb.openBriefcase(new ClientRequestContext(), { file: briefcases[0].fileName, readonly: true });
+    const imodel = await BriefcaseDb.open(new ClientRequestContext(), { fileName: briefcases[0].fileName, readonly: true });
     BridgeTestUtils.verifyIModel(imodel, bridgeJobDef, isUpdate);
     imodel.close();
   }

@@ -46,8 +46,8 @@ export interface OpenBriefcaseOptions {
 }
 
 /**
- * Properties that specify a briefcase within the briefcase cache
- * @see BriefcaseManager.makeKey, BriefcaseManager.getFileName
+ * Properties that specify a briefcase within the local briefcase cache
+ * @see BriefcaseManager.getFileName
  * @beta
  */
 export interface BriefcaseProps {
@@ -59,10 +59,10 @@ export interface BriefcaseProps {
 }
 
 export interface OpenBriefcaseProps extends IModelEncryptionProps {
-  key?: string;
-  file: string | BriefcaseProps;
+  fileName: string;
   readonly?: boolean;
   upgrade?: UpgradeOptions;
+  key?: string;
 }
 
 export interface LocalBriefcaseProps {

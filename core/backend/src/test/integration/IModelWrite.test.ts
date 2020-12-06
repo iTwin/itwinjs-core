@@ -973,7 +973,7 @@ describe("IModelWriteTest (#integration)", () => {
     // Validate the original state of the BisCore schema in the briefcase
     let iModel: BriefcaseDb;
     let result: DbResult = DbResult.BE_SQLITE_OK;
-    iModel = await BriefcaseDb.openBriefcase(managerRequestContext, { file: args.fileName! });
+    iModel = await BriefcaseDb.open(managerRequestContext, { fileName: args.fileName! });
     const beforeVersion = iModel.querySchemaVersion("BisCore");
     assert.isTrue(semver.satisfies(beforeVersion!, "= 1.0.0"));
     assert.isFalse(iModel.nativeDb.hasPendingTxns());
@@ -981,7 +981,7 @@ describe("IModelWriteTest (#integration)", () => {
 
     // Open the briefcase to find that the BisCore schema can be upgraded
     try {
-      iModel = await BriefcaseDb.openBriefcase(managerRequestContext, { file: args.fileName!, upgrade: { domain: DomainOptions.CheckRecommendedUpgrades } });
+      iModel = await BriefcaseDb.open(managerRequestContext, { fileName: args.fileName!, upgrade: { domain: DomainOptions.CheckRecommendedUpgrades } });
       managerRequestContext.enter();
     } catch (err) {
       managerRequestContext.enter();
@@ -991,7 +991,7 @@ describe("IModelWriteTest (#integration)", () => {
     assert.strictEqual(result, DbResult.BE_SQLITE_ERROR_SchemaUpgradeRecommended);
 
     // Open briefcase and upgrade schemas
-    iModel = await BriefcaseDb.openBriefcase(managerRequestContext, { file: args.fileName!, upgrade: { domain: DomainOptions.Upgrade } });
+    iModel = await BriefcaseDb.open(managerRequestContext, { fileName: args.fileName!, upgrade: { domain: DomainOptions.Upgrade } });
     managerRequestContext.enter();
     const afterVersion = iModel.querySchemaVersion("BisCore");
     assert.isTrue(semver.satisfies(afterVersion!, ">= 1.0.10"));
@@ -1014,7 +1014,7 @@ describe("IModelWriteTest (#integration)", () => {
     superRequestContext.enter();
     let superStatus = IModelHubStatus.Success;
     try {
-      await BriefcaseDb.openBriefcase(superRequestContext, { file: args.fileName!, upgrade: { domain: DomainOptions.Upgrade } });
+      await BriefcaseDb.open(superRequestContext, { fileName: args.fileName!, upgrade: { domain: DomainOptions.Upgrade } });
       superRequestContext.enter();
     } catch (err) {
       superRequestContext.enter();
@@ -1036,7 +1036,7 @@ describe("IModelWriteTest (#integration)", () => {
     // Check for recommended upgrades
     result = DbResult.BE_SQLITE_OK;
     try {
-      await BriefcaseDb.openBriefcase(superRequestContext, { file: args.fileName!, upgrade: { domain: DomainOptions.CheckRecommendedUpgrades } });
+      await BriefcaseDb.open(superRequestContext, { fileName: args.fileName!, upgrade: { domain: DomainOptions.CheckRecommendedUpgrades } });
       superRequestContext.enter();
     } catch (err) {
       superRequestContext.enter();
@@ -1059,7 +1059,7 @@ describe("IModelWriteTest (#integration)", () => {
     // assert.strictEqual(superStatus, IModelHubStatus.LockOwnedByAnotherBriefcase);
 
     // Open briefcase and pull change sets to upgrade
-    const superIModel = await BriefcaseDb.openBriefcase(superRequestContext, { file: args.fileName!, upgrade: { domain: DomainOptions.SkipCheck } });
+    const superIModel = await BriefcaseDb.open(superRequestContext, { fileName: args.fileName!, upgrade: { domain: DomainOptions.SkipCheck } });
     superRequestContext.enter();
     await superIModel.pullAndMergeChanges(superRequestContext);
     superRequestContext.enter();

@@ -22,7 +22,7 @@ export class IModelTestUtils {
     };
     await BriefcaseManager.downloadBriefcase(requestContext, args);
     requestContext.enter();
-    return BriefcaseDb.openBriefcase(requestContext, { file: args.fileName! });
+    return BriefcaseDb.open(requestContext, { fileName: args.fileName! });
   }
 
   public static async closeAndDeleteBriefcaseDb(requestContext: AuthorizedClientRequestContext, briefcaseDb: BriefcaseDb) {

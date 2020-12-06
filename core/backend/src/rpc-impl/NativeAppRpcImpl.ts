@@ -9,9 +9,9 @@
 
 import { ClientRequestContext, Config, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseKey, BriefcaseProps, Events, IModelConnectionProps, IModelError, IModelRpcProps, InternetConnectivityStatus,
+  BriefcaseProps, Events, IModelConnectionProps, IModelError, IModelRpcProps, InternetConnectivityStatus,
   LocalBriefcaseProps,
-  MobileAuthorizationClientConfiguration, NativeAppRpcInterface, OpenBriefcaseOptions, OpenBriefcaseProps, OverriddenBy, RequestNewBriefcaseProps,
+  MobileAuthorizationClientConfiguration, NativeAppRpcInterface, OpenBriefcaseProps, OverriddenBy, RequestNewBriefcaseProps,
   RpcInterface, RpcManager, StorageValue, TileTreeContentIds,
 } from "@bentley/imodeljs-common";
 import { EmitStrategy, IModelJsNative } from "@bentley/imodeljs-native";
@@ -88,17 +88,9 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
     return (job && job.request.cancelRequest) ? job.request.cancelRequest.cancel() : false;
   }
 
-  public async openBriefcase(key: BriefcaseKey, openOptions?: OpenBriefcaseOptions): Promise<IModelConnectionProps> {
-    const requestContext = ClientRequestContext.current;
-    // eslint-disable-next-line deprecation/deprecation
-    const db = await BriefcaseDb.open(requestContext, key, openOptions);
-    requestContext.enter();
-    return db.toJSON();
-  }
-
   public async open(args: OpenBriefcaseProps): Promise<IModelConnectionProps> {
     const requestContext = ClientRequestContext.current;
-    const db = await BriefcaseDb.openBriefcase(requestContext, args);
+    const db = await BriefcaseDb.open(requestContext, args);
     requestContext.enter();
     return db.toJSON();
   }

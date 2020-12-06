@@ -6,7 +6,7 @@ import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { DbOpcode, Id64String } from "@bentley/bentleyjs-core";
 import { HubIModel } from "@bentley/imodelhub-client";
-import { IModel, IModelVersion, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { BriefcaseManager, RequestNewBriefcaseArg } from "../../BriefcaseManager";
 import { SpatialCategory } from "../../Category";
@@ -67,7 +67,7 @@ describe("Channel Control (#integration)", () => {
     };
     await BriefcaseManager.downloadBriefcase(managerRequestContext, args);
     managerRequestContext.enter();
-    const imodel1 = await BriefcaseDb.openBriefcase(managerRequestContext, { file: args.fileName! });
+    const imodel1 = await BriefcaseDb.open(managerRequestContext, { fileName: args.fileName! });
     managerRequestContext.enter();
     imodel1.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
     imodel1.concurrencyControl.startBulkMode();

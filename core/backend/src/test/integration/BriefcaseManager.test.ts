@@ -266,7 +266,7 @@ describe("BriefcaseManager (#integration)", () => {
     assert.isFalse(iModelPullAndPush.isOpen);
 
     // Reopen the briefcase as readonly to validate
-    const iModelPullAndPush2 = await BriefcaseDb.openBriefcase(requestContext, { file: fileName, readonly: true });
+    const iModelPullAndPush2 = await BriefcaseDb.open(requestContext, { fileName, readonly: true });
     assert.exists(iModelPullAndPush2);
     assert.isTrue(iModelPullAndPush2.isReadonly);
     assert.isTrue(iModelPullAndPush2.isOpen);
@@ -717,7 +717,7 @@ describe("BriefcaseManager (#integration)", () => {
     await BriefcaseManager.downloadBriefcase(requestContext, args);
     requestContext.enter();
 
-    const iModel = await BriefcaseDb.openBriefcase(requestContext, { file: args.fileName! });
+    const iModel = await BriefcaseDb.open(requestContext, { fileName: args.fileName! });
     requestContext.enter();
 
     await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);

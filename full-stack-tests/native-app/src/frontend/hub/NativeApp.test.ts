@@ -54,7 +54,7 @@ describe("NativeApp (#integration)", () => {
       const briefcases = await NativeApp.getBriefcases();
       const rs = briefcases.filter((_: LocalBriefcaseProps) => _.iModelId === testIModelId);
       assert(rs.length > 0);
-      const conn = await NativeApp.openBriefcase({ file: downloader.fileName });
+      const conn = await NativeApp.openBriefcase({ fileName: downloader.fileName });
       const rowCount = await conn.queryRowCount("SELECT ECInstanceId FROM bis.Element");
       assert.notEqual(rowCount, 0);
     });
@@ -83,7 +83,7 @@ describe("NativeApp (#integration)", () => {
     const downloader = await NativeApp.requestDownloadBriefcase(testProjectId, locTestIModelId, { syncMode: SyncMode.PullOnly });
     await downloader.downloadPromise;
 
-    const connection = await NativeApp.openBriefcase({ file: downloader.fileName });
+    const connection = await NativeApp.openBriefcase({ fileName: downloader.fileName });
     await NativeApp.closeBriefcase(connection);
     await NativeApp.deleteBriefcase(downloader.fileName);
   });

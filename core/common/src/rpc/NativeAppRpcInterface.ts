@@ -7,7 +7,7 @@
  */
 
 import { GuidString, LogLevel } from "@bentley/bentleyjs-core";
-import { BriefcaseKey, BriefcaseProps, LocalBriefcaseProps, OpenBriefcaseOptions, OpenBriefcaseProps, RequestNewBriefcaseProps } from "../BriefcaseTypes";
+import { BriefcaseProps, LocalBriefcaseProps, OpenBriefcaseProps, RequestNewBriefcaseProps } from "../BriefcaseTypes";
 import { IModelConnectionProps, IModelRpcProps } from "../IModel";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
@@ -84,7 +84,7 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
   public static readonly interfaceName = "NativeAppRpcInterface";
 
   /** The version of the interface. */
-  public static interfaceVersion = "0.4.2";
+  public static interfaceVersion = "0.5.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -132,15 +132,6 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
    * @returns true if the cancel request was acknowledged. false otherwise
    */
   public async requestCancelDownloadBriefcase(_fileName: string): Promise<boolean> { return this.forward(arguments); }
-
-  /**
-   * Opens the briefcase on disk - this api can be called offline
-   * @param _key Key to locate the briefcase in the disk cache
-   * @param _openOptions Options to open the briefcase
-   * @returns IModelRpcProps which allow to create IModelConnection.
-   * @deprecated
-   */
-  public async openBriefcase(_key: BriefcaseKey, _openOptions?: OpenBriefcaseOptions): Promise<IModelConnectionProps> { return this.forward(arguments); }
 
   /**
    * Opens the briefcase on disk - this api can be called offline

@@ -488,11 +488,11 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
     await BriefcaseManager.downloadBriefcase(this._requestContext, args);
     let briefcaseDb: BriefcaseDb | undefined;
     const openArgs: OpenBriefcaseProps = {
-      file: args.fileName!,
+      fileName: args.fileName!,
     };
     if (this._bridgeArgs.updateDbProfile) {
       openArgs.upgrade = { profile: ProfileOptions.Upgrade };
-      briefcaseDb = await BriefcaseDb.openBriefcase(this._requestContext, openArgs);
+      briefcaseDb = await BriefcaseDb.open(this._requestContext, openArgs);
       await briefcaseDb.pushChanges(this._requestContext, "Open with Db Profile update");
       if (this._bridgeArgs.updateDomainSchemas)
         briefcaseDb.close();
@@ -500,12 +500,12 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
 
     if (this._bridgeArgs.updateDomainSchemas) {
       openArgs.upgrade = { domain: DomainOptions.Upgrade };
-      briefcaseDb = await BriefcaseDb.openBriefcase(this._requestContext, openArgs);
+      briefcaseDb = await BriefcaseDb.open(this._requestContext, openArgs);
       await briefcaseDb.pushChanges(this._requestContext, "Open with Domain Schema update");
     }
 
     if (briefcaseDb === undefined || !briefcaseDb.isOpen) {
-      briefcaseDb = await BriefcaseDb.openBriefcase(this._requestContext, openArgs);
+      briefcaseDb = await BriefcaseDb.open(this._requestContext, openArgs);
     }
 
     this._imodel = briefcaseDb;

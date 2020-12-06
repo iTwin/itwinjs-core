@@ -95,7 +95,7 @@ async function runBridgeFirstTime(requestContext: AuthorizedClientRequestContext
   };
   await BriefcaseManager.downloadBriefcase(requestContext, args);
   requestContext.enter();
-  const briefcase = await BriefcaseDb.openBriefcase(requestContext, { file: args.fileName! });
+  const briefcase = await BriefcaseDb.open(requestContext, { fileName: args.fileName! });
   requestContext.enter();
 
   briefcase.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());

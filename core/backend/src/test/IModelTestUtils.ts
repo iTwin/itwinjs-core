@@ -144,7 +144,7 @@ export class IModelTestUtils {
   public static async downloadAndOpenBriefcaseDb(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, briefcaseId?: number, version: IModelVersion = IModelVersion.latest()): Promise<BriefcaseDb> {
     const args: RequestNewBriefcaseArg = { contextId, iModelId, asOf: version.toJSON(), briefcaseId };
     await BriefcaseManager.downloadBriefcase(requestContext, { contextId, iModelId, asOf: version.toJSON(), briefcaseId });
-    return BriefcaseDb.openBriefcase(requestContext, { file: args.fileName! });
+    return BriefcaseDb.open(requestContext, { fileName: args.fileName! });
   }
 
   public static async closeAndDeleteBriefcaseDb(requestContext: AuthorizedClientRequestContext, briefcaseDb: IModelDb) {

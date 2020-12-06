@@ -22,7 +22,7 @@ import {
   FilePropertyProps, FontMap, FontMapProps, FontProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps,
   IModel, IModelCoordinatesResponseProps, IModelError, IModelEventSourceProps, IModelNotFoundResponse, IModelProps,
   IModelRpcProps, IModelStatus, IModelTileTreeProps, IModelVersion, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps,
-  ModelProps, ModelSelectorProps, OpenBriefcaseOptions, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryLimit, QueryPriority, QueryQuota, QueryResponse,
+  ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryLimit, QueryPriority, QueryQuota, QueryResponse,
   QueryResponseStatus, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SyncMode, ThumbnailProps,
   UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@bentley/imodeljs-common";
@@ -2260,23 +2260,14 @@ export class BriefcaseDb extends IModelDb {
       throw new IModelError(IModelStatus.UpgradeFailed, "BriefcaseManager.lockSchema: Could not acquire schema lock", Logger.logError, loggerCategory, () => this.getRpcProps());
   }
 
-  public static async openBriefcase(requestContext: AuthorizedClientRequestContext | ClientRequestContext, args: OpenBriefcaseProps) {
+  public static async open(requestContext: AuthorizedClientRequestContext | ClientRequestContext, args: OpenBriefcaseProps) {
     requestContext.enter();
-    let filePath: string;
-    let key: string;
-    if (typeof args.file === "string") {
-      filePath = args.file;
-      key = args.key ?? filePath;
-    } else {
-      filePath = BriefcaseManager.getFileName(args.file);
-      key = args.key ?? BriefcaseManager.makeKey(args.file);
-    }
+    const filePath = args.fileName;
+    const key = args.key ?? filePath;
 
     const alreadyOpen = this.tryFindByKey(key);
     if (undefined !== alreadyOpen)
       return alreadyOpen as BriefcaseDb;
-    if (undefined === args.file)
-      throw new IModelError(IModelStatus.BadArg, "no file specified");
 
     const openMode = args.readonly ? OpenMode.Readonly : OpenMode.ReadWrite;
     const nativeDb = this.openDgnDb(filePath, openMode, args.upgrade);
@@ -2315,18 +2306,6 @@ export class BriefcaseDb extends IModelDb {
     BriefcaseManager.logUsage(requestContext, token); // eslint-disable-line @typescript-eslint/no-floating-promises
     this.onOpened.raiseEvent(requestContext, briefcaseDb);
     return briefcaseDb;
-  }
-
-  /** Open a previously downloaded briefcase from a remote requester
-   * @param requestContext The client request context.
-   * @param key Key that identifies the briefcase. See [[BriefcaseManager.makeKey]]
-   * @param options Optional parameter to affect the opening and upgrading the briefcase.
-   * @note If the briefcase is upgraded, the resulting changes are saved in the briefcase, but it's the caller's responsibility to push these changes
-   * to the iModelHub.
-   * @deprecated use BriefcaseDb.openBriefcase
-   */
-  public static async open(requestContext: AuthorizedClientRequestContext | ClientRequestContext, key: BriefcaseKey, options?: OpenBriefcaseOptions & UpgradeOptions): Promise<BriefcaseDb> {
-    return this.openBriefcase(requestContext, { file: BriefcaseManager.parseKey(key), upgrade: options, readonly: options?.openAsReadOnly });
   }
 
   public beforeClose() {

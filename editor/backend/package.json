@@ -13,14 +13,10 @@
     "build": "tsc 1>&2 && npm run copy:assets && npm run copy:test-assets",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/editor/imodeljs-editor-backend/file.json --tsIndexFile=./imodeljs-editor-backend.ts --onlyJson",
-    "copy:assets": "cpx \"./src/assets/**/*\" ./lib/assets",
-    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
-    "cover": "nyc npm test",
-    "cover:integration": "nyc npm run test:integration",
     "extract-api": "betools extract-api --entry=imodeljs-editor-backend",
     "lint": "eslint -f visualstudio --max-warnings 0 ./src/**/*.ts 1>&2",
-    "pretest": "cpx ./src/test/logging.config.json ./lib/test",
-    "test": "betools test --offline=\"mock\" --grep=\"#integration|#WebGLPerformance\" --invert"
+    "test": "",
+    "cover": ""
   },
   "repository": {
     "type": "git",

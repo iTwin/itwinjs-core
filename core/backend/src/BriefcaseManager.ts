@@ -20,7 +20,7 @@ import {
   IModelHubError,
 } from "@bentley/imodelhub-client";
 import {
-  BriefcaseProps, BriefcaseStatus, CreateIModelProps, IModelError, IModelRpcProps, IModelVersion, LocalBriefcaseProps, RequestNewBriefcaseProps, RpcPendingResponse, SyncMode,
+  BriefcaseProps, BriefcaseStatus, CreateIModelProps, IModelError, IModelRpcProps, IModelVersion, LocalBriefcaseProps, RequestNewBriefcaseProps,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext, CancelRequest, ProgressCallback } from "@bentley/itwin-client";
@@ -120,20 +120,11 @@ export class BriefcaseManager {
     return path.join(pathBaseName, id, `${briefcase.briefcaseId}.bim`);
   }
 
-  public static makeKey(props: BriefcaseProps) { return `${props.iModelId}:${props.briefcaseId}`; }
-  public static parseKey(key: string): BriefcaseProps {
-    const parts = key.split(":");
-    if (parts.length !== 2)
-      return { iModelId: "", briefcaseId: 0 };
-    return { iModelId: parts[0], briefcaseId: +parts[1] };
-  }
-  private static _initialized?: boolean;
-
-
   private static setupContextRegistryClient() {
     BriefcaseManager._contextRegistryClient = new ContextRegistryClient();
   }
 
+  private static _initialized?: boolean;
   /** Initialize BriefcaseManager
    * @internal
    */
@@ -278,17 +269,6 @@ export class BriefcaseManager {
       requestContext.enter();
       Logger.logError(loggerCategory, "Could not release briefcase", () => ({ iModelId, briefcaseId })); // Could be that the current user does not have the appropriate access
     }
-  }
-
-  /**
-   * Delete a previously downloaded briefcase
-   * @param requestContext
-   * @param key briefcase key
-   * @throws [[IModelError]] If unable to delete the briefcase - e.g., if it wasn't completely downloaded, OR was left open
-   * @deprecated use BriefcaseManager.deleteBriefcase
-   */
-  public static async delete(requestContext: ClientRequestContext | AuthorizedClientRequestContext, key: string): Promise<void> {
-    return this.deleteBriefcase(requestContext, this.parseKey(key));
   }
 
   /**
@@ -924,58 +904,6 @@ export class BriefcaseManager {
       }));
     });
     return Promise.all(promises);
-  }
-
-  private static _downloadPromise: Promise<BriefcaseDb> | undefined;
-
-  /** hack for backwards compatibility. Do not propagate usage.
-   * @internal
-   * @deprecated
-   */
-  public static async downloadNewBriefcaseAndOpen(requestContext: AuthorizedClientRequestContext, tokenProps: IModelRpcProps, syncMode: SyncMode, timeout: number): Promise<BriefcaseDb> {
-    const request: RequestNewBriefcaseArg = {
-      contextId: tokenProps.contextId!,
-      iModelId: tokenProps.iModelId!,
-    };
-
-    if (syncMode === SyncMode.PullOnly) {
-      request.briefcaseId = 0;
-      try {
-        // first see if briefcase 0 already exists
-        const pullOnly = await BriefcaseDb.openBriefcase(requestContext, { file: this.getFileName({ briefcaseId: 0, iModelId: tokenProps.iModelId! }), readonly: true });
-        this.logUsage(requestContext, tokenProps);
-        return pullOnly;
-      } catch (error) {
-      }
-    }
-
-    if (this._downloadPromise)
-      return this._downloadPromise;
-
-    const downloadAndOpen = async () => {
-      await this.downloadBriefcase(requestContext, request);
-      return BriefcaseDb.openBriefcase(requestContext, { file: request.fileName!, readonly: syncMode === SyncMode.PullOnly });
-    };
-
-    const wrappedDownload = async () => {
-      try {
-        this._downloadPromise = downloadAndOpen();
-        return await this._downloadPromise;
-      } finally {
-        this._downloadPromise = undefined;
-      }
-    };
-
-    const db = await BeDuration.race(timeout, wrappedDownload());
-    requestContext.enter();
-
-    if (db === undefined) {
-      Logger.logTrace(loggerCategory, "downloadAndOpen: Issued pending status", () => ({ ...tokenProps }));
-      throw new RpcPendingResponse();
-    }
-    this.logUsage(requestContext, tokenProps);
-    Logger.logTrace(loggerCategory, "downloadAndOpen: Opened briefcase", () => ({ ...tokenProps }));
-    return db;
   }
 
   public static logUsage(requestContext: AuthorizedClientRequestContext | ClientRequestContext, token: IModelRpcProps) {
