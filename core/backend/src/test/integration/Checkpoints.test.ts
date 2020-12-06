@@ -6,7 +6,7 @@ import { assert } from "chai";
 import { ChildProcess } from "child_process";
 import * as path from "path";
 import { GuidString } from "@bentley/bentleyjs-core";
-import { Checkpoint, CheckpointQuery } from "@bentley/imodelhub-client";
+import { CheckpointV2, CheckpointV2Query } from "@bentley/imodelhub-client";
 import { BlobDaemon } from "@bentley/imodeljs-native";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { AuthorizedBackendRequestContext, BriefcaseManager, IModelJsFs, SnapshotDb } from "../../imodeljs-backend";
@@ -39,16 +39,16 @@ describe.skip("Checkpoints (#integration)", () => {
     testIModelId = await HubUtility.queryIModelIdByName(requestContext, testProjectId, testIModelName);
     testChangeSetId = (await HubUtility.queryLatestChangeSet(requestContext, testIModelId))!.wsgId;
 
-    const checkpointQuery = new CheckpointQuery().byChangeSetId(testChangeSetId).selectBCVAccessKey();
-    const checkpoints: Checkpoint[] = await BriefcaseManager.imodelClient.checkpoints.get(requestContext, testIModelId, checkpointQuery);
+    const checkpointQuery = new CheckpointV2Query().byChangeSetId(testChangeSetId).selectContainerAccessKey();
+    const checkpoints: CheckpointV2[] = await BriefcaseManager.imodelClient.checkpointsV2.get(requestContext, testIModelId, checkpointQuery);
     assert.equal(checkpoints.length, 1, "checkpoint missing");
-    assert.isDefined(checkpoints[0].bcvAccessKeyAccount, "checkpoint storage account is invalid");
+    assert.isDefined(checkpoints[0].containerAccessKeyAccount, "checkpoint storage account is invalid");
 
     // Start daemon process and wait for it to be ready
     daemonProc = BlobDaemon.start({
       daemonDir: blockcacheDir,
       storageType: "azure?sas=1",
-      user: checkpoints[0].bcvAccessKeyAccount!,
+      user: checkpoints[0].containerAccessKeyAccount!,
     });
     while (!IModelJsFs.existsSync(path.join(blockcacheDir, "portnumber.bcv"))) {
       await new Promise((resolve) => setImmediate(resolve));
