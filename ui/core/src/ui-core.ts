@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-// cSpell:ignore focustrap imagecheckbox iconinput hocs numericinput
+// cSpell:ignore focustrap imagecheckbox iconinput hocs numberinput numericinput
 
 export * from "./ui-core/UiCore";
 
@@ -240,7 +240,7 @@ export * from "./ui-core/utils/hooks/useWidgetOpacityContext";
  */
 /**
  * @docs-group-description Inputs
- * Components for working with input controls, such as Input, IconInput, NumericInput and Textarea.
+ * Components for working with input controls, such as Input, IconInput, NumberInput and Textarea.
  */
 /**
  * @docs-group-description Loading
@@ -248,7 +248,7 @@ export * from "./ui-core/utils/hooks/useWidgetOpacityContext";
  */
 /**
  * @docs-group-description Notification
- * Components for working with a messages and tooltips.
+ * Components for working with messages and tooltips.
  */
 /**
  * @docs-group-description Popup
@@ -273,10 +273,6 @@ export * from "./ui-core/utils/hooks/useWidgetOpacityContext";
 /**
  * @docs-group-description Slider
  * Component displays a range slider with thumbs for changing the value.
- */
-/**
- * @docs-group-description SplitButton
- * Components for working with a SplitButton.
  */
 /**
  * @docs-group-description SplitButton
