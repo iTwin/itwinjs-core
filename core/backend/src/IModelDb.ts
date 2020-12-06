@@ -15,7 +15,7 @@ import {
   Logger, OpenMode,
 } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
-import { ChangesType, Checkpoint, CheckpointQuery, Lock, LockLevel, LockType } from "@bentley/imodelhub-client";
+import { ChangesType, CheckpointV2, CheckpointV2Query, Lock, LockLevel, LockType } from "@bentley/imodelhub-client";
 import {
   AxisAlignedBox3d, BriefcaseKey, BriefcaseProps, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps,
   CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DisplayStyleProps, DomainOptions,
@@ -2678,25 +2678,25 @@ export class SnapshotDb extends IModelDb {
     if (!bcvDaemonCachePath)
       throw new IModelError(IModelStatus.BadRequest, "Invalid config: BLOCKCACHE_DIR is not set!", Logger.logError, loggerCategory);
 
-    const checkpointQuery = new CheckpointQuery().byChangeSetId(changeSetId).selectBCVAccessKey();
-    const checkpoints: Checkpoint[] = await BriefcaseManager.imodelClient.checkpoints.get(requestContext, iModelId, checkpointQuery);
+    const checkpointQuery = new CheckpointV2Query().byChangeSetId(changeSetId).selectContainerAccessKey();
+    const checkpoints: CheckpointV2[] = await BriefcaseManager.imodelClient.checkpointsV2.get(requestContext, iModelId, checkpointQuery);
     requestContext.enter();
 
     if (checkpoints.length < 1)
       throw new IModelError(IModelStatus.NotFound, "Checkpoint not found", Logger.logError, loggerCategory);
 
-    const { bcvAccessKeyContainer, bcvAccessKeySAS, bcvAccessKeyAccount, bcvAccessKeyDbName } = checkpoints[0];
-    if (!bcvAccessKeyContainer || !bcvAccessKeySAS || !bcvAccessKeyAccount || !bcvAccessKeyDbName)
+    const { containerAccessKeyContainer, containerAccessKeySAS, containerAccessKeyAccount, containerAccessKeyDbName } = checkpoints[0];
+    if (!containerAccessKeyContainer || !containerAccessKeySAS || !containerAccessKeyAccount || !containerAccessKeyDbName)
       throw new IModelError(IModelStatus.BadRequest, "Invalid checkpoint in iModelHub", Logger.logError, loggerCategory);
 
     // We can assume that a BCVDaemon process is already started if BLOCKCACHE_DIR was set, so we need to just tell the daemon to attach to the Storage Container
     const attachArgs: BlobDaemonCommandArg = {
-      container: bcvAccessKeyContainer,
-      auth: bcvAccessKeySAS,
+      container: containerAccessKeyContainer,
+      auth: containerAccessKeySAS,
       daemonDir: bcvDaemonCachePath,
       storageType: "azure",
-      user: bcvAccessKeyAccount,
-      dbAlias: bcvAccessKeyDbName,
+      user: containerAccessKeyAccount,
+      dbAlias: containerAccessKeyDbName,
       writeable: false,
     };
     const attachResult = await BlobDaemon.command("attach", attachArgs);
