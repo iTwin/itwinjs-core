@@ -11,6 +11,53 @@ import { fireEvent, render, RenderResult } from "@testing-library/react";
 import { Popup, PopupProps } from "../../ui-core";
 import { createBoundingClientRect } from "../Utils";
 
+function NestedPopup() {
+  const [showPopup, setShowPopup] = React.useState(false);
+  const buttonRef = React.useRef<HTMLButtonElement>(null);
+  const togglePopup = React.useCallback(() => {
+    setShowPopup(!showPopup);
+  }, [showPopup]);
+
+  const handleClose = React.useCallback(() => {
+    setShowPopup(false);
+  }, []);
+
+  return (
+    <div>
+      <button data-testid="NestedPopup" onClick={togglePopup} ref={buttonRef}>{showPopup ? "Close" : "Open"}</button>
+      <Popup isOpen={showPopup} position={RelativePosition.Bottom} target={buttonRef.current}
+        onClose={handleClose} showArrow={true} showShadow={true} >
+        <div>
+          <button data-testid="NestedPopup-Button">Test</button>
+        </div>
+      </Popup>
+    </div>
+  );
+}
+
+function PrimaryPopup({ closeOnNestedPopupOutsideClick }: { closeOnNestedPopupOutsideClick?: boolean }) {
+  const [showPopup, setShowPopup] = React.useState(false);
+
+  const buttonRef = React.useRef<HTMLButtonElement>(null);
+  const togglePopup = React.useCallback(() => {
+    setShowPopup(!showPopup);
+  }, [showPopup]);
+
+  const handleClose = React.useCallback(() => {
+    setShowPopup(false);
+  }, []);
+
+  return (
+    <div>
+      <button data-testid="PrimaryPopup" onClick={togglePopup} ref={buttonRef}>{showPopup ? "Close" : "Open"}</button>
+      <Popup isOpen={showPopup} position={RelativePosition.Bottom} target={buttonRef.current}
+        onClose={handleClose} showArrow={true} showShadow={true} closeOnNestedPopupOutsideClick={closeOnNestedPopupOutsideClick}>
+        <NestedPopup />
+      </Popup>
+    </div>
+  );
+}
+
 describe("<Popup />", () => {
   const sandbox = sinon.createSandbox();
 
@@ -231,6 +278,48 @@ describe("<Popup />", () => {
     expect(activeFocusElement).to.eq(component.getByTestId("item-one"));
   });
 
+  it("popup should NOT close when click in nested popup", async () => {
+    const component = render(<PrimaryPopup />);
+    const primaryButton = component.getByTestId("PrimaryPopup");
+    expect(primaryButton).to.exist;
+    fireEvent.click(primaryButton);
+    const secondaryButton = component.getByTestId("NestedPopup");
+    expect(secondaryButton).to.exist;
+    fireEvent.click(secondaryButton);
+    let nestedButton = component.getByTestId("NestedPopup-Button");
+    expect(nestedButton).to.exist;
+    fireEvent.click(nestedButton);
+
+    const mouseDown = document.createEvent("HTMLEvents");
+    mouseDown.initEvent("pointerdown");
+    sinon.stub(mouseDown, "target").get(() => nestedButton);
+    window.dispatchEvent(mouseDown);
+    // component.debug();
+    nestedButton = component.getByTestId("NestedPopup-Button");
+    expect(nestedButton).to.exist;
+  });
+
+  it("popup should close when click in nested popup", async () => {
+    const component = render(<PrimaryPopup closeOnNestedPopupOutsideClick={true} />);
+    const primaryButton = component.getByTestId("PrimaryPopup");
+    expect(primaryButton).to.exist;
+    fireEvent.click(primaryButton);
+    const secondaryButton = component.getByTestId("NestedPopup");
+    expect(secondaryButton).to.exist;
+    fireEvent.click(secondaryButton);
+    const nestedButton = component.getByTestId("NestedPopup-Button");
+    expect(nestedButton).to.exist;
+    fireEvent.click(nestedButton);
+
+    const mouseDown = document.createEvent("HTMLEvents");
+    mouseDown.initEvent("pointerdown");
+    sinon.stub(mouseDown, "target").get(() => nestedButton);
+    window.dispatchEvent(mouseDown);
+    // component.debug();
+
+    expect(component.queryByTestId("NestedPopup-Button")).to.be.null;
+  });
+
   describe("renders", () => {
     it("should render with few props", () => {
       const wrapper = mount(
@@ -268,6 +357,7 @@ describe("<Popup />", () => {
           <Popup isOpen animate={false} />
         </div>).should.matchSnapshot();
     });
+
   });
 
   describe("componentDidUpdate", () => {

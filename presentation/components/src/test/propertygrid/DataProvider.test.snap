@@ -32,6 +32,9 @@ Object {
             "params": Array [],
           },
           "name": "Generic",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "binary",
         },
         "value": Object {
@@ -76,6 +79,9 @@ Object {
         "property": Object {
           "displayLabel": "nested 1",
           "name": "nested content field$nested 1",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "time",
         },
         "value": Object {
@@ -127,6 +133,9 @@ Object {
             "params": Array [],
           },
           "name": "nested content field$nested 3",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "binary",
         },
         "value": Object {
@@ -147,6 +156,9 @@ Object {
             "params": Array [],
           },
           "name": "primitive",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "datetime",
         },
         "value": Object {
@@ -170,6 +182,9 @@ Object {
               "property": Object {
                 "displayLabel": "nested 1",
                 "name": "nested content field$nested 1",
+                "renderer": Object {
+                  "name": "custom_renderer",
+                },
                 "typename": "time",
               },
               "value": Object {
@@ -183,6 +198,9 @@ Object {
               "property": Object {
                 "displayLabel": "nested 2",
                 "name": "nested content field$nested 2",
+                "renderer": Object {
+                  "name": "custom_renderer",
+                },
                 "typename": "double",
               },
               "value": Object {
@@ -265,6 +283,9 @@ Object {
             "params": Array [],
           },
           "name": "nested content field$nested 1",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "serial",
         },
         "value": Object {
@@ -284,6 +305,9 @@ Object {
             "params": Array [],
           },
           "name": "nested content field$nested 3",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "float",
         },
         "value": Object {
@@ -303,6 +327,9 @@ Object {
             "params": Array [],
           },
           "name": "primitive",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "enum",
         },
         "value": Object {
@@ -330,6 +357,9 @@ Object {
                   "params": Array [],
                 },
                 "name": "nested content field$nested 1",
+                "renderer": Object {
+                  "name": "custom_renderer",
+                },
                 "typename": "serial",
               },
               "value": Object {
@@ -342,6 +372,9 @@ Object {
               "property": Object {
                 "displayLabel": "nested 2",
                 "name": "nested content field$nested 2",
+                "renderer": Object {
+                  "name": "custom_renderer",
+                },
                 "typename": "float",
               },
               "value": Object {
@@ -398,6 +431,9 @@ Object {
             "params": Array [],
           },
           "name": "nested content field$nested 3",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "serial",
         },
         "value": Object {
@@ -414,6 +450,9 @@ Object {
         "property": Object {
           "displayLabel": "primitive",
           "name": "primitive",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "smallint",
         },
         "value": Object {
@@ -442,6 +481,9 @@ Object {
                   "params": Array [],
                 },
                 "name": "nested content field$nested 1",
+                "renderer": Object {
+                  "name": "custom_renderer",
+                },
                 "typename": "date",
               },
               "value": Object {
@@ -454,6 +496,9 @@ Object {
               "property": Object {
                 "displayLabel": "nested 2",
                 "name": "nested content field$nested 2",
+                "renderer": Object {
+                  "name": "custom_renderer",
+                },
                 "typename": "int",
               },
               "value": Object {
@@ -512,6 +557,9 @@ Object {
         "property": Object {
           "displayLabel": "nested 1",
           "name": "nested content field$nested 1",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "tinyint[]",
         },
         "value": Object {
@@ -560,6 +608,9 @@ Object {
             "params": Array [],
           },
           "name": "nested content field$nested 3",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "blob[]",
         },
         "value": Object {
@@ -622,6 +673,9 @@ Object {
                     "property": Object {
                       "displayLabel": "nested 2",
                       "name": "nested content field$nested 2",
+                      "renderer": Object {
+                        "name": "custom_renderer",
+                      },
                       "typename": "set",
                     },
                     "value": Object {
@@ -650,6 +704,9 @@ Object {
                     "property": Object {
                       "displayLabel": "nested 2",
                       "name": "nested content field$nested 2",
+                      "renderer": Object {
+                        "name": "custom_renderer",
+                      },
                       "typename": "set",
                     },
                     "value": Object {
@@ -708,6 +765,9 @@ Object {
         "property": Object {
           "displayLabel": "nested 3",
           "name": "nested content field$nested 3",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "varchar[]",
         },
         "value": Object {
@@ -751,6 +811,9 @@ Object {
         "property": Object {
           "displayLabel": "primitive",
           "name": "primitive",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "boolean",
         },
         "value": Object {
@@ -787,6 +850,9 @@ Object {
                         "params": Array [],
                       },
                       "name": "nested content field$nested 1",
+                      "renderer": Object {
+                        "name": "custom_renderer",
+                      },
                       "typename": "smallint",
                     },
                     "value": Object {
@@ -804,6 +870,9 @@ Object {
                         "params": Array [],
                       },
                       "name": "nested content field$nested 2",
+                      "renderer": Object {
+                        "name": "custom_renderer",
+                      },
                       "typename": "bigint",
                     },
                     "value": Object {
@@ -835,6 +904,9 @@ Object {
                         "params": Array [],
                       },
                       "name": "nested content field$nested 1",
+                      "renderer": Object {
+                        "name": "custom_renderer",
+                      },
                       "typename": "smallint",
                     },
                     "value": Object {
@@ -852,6 +924,9 @@ Object {
                         "params": Array [],
                       },
                       "name": "nested content field$nested 2",
+                      "renderer": Object {
+                        "name": "custom_renderer",
+                      },
                       "typename": "bigint",
                     },
                     "value": Object {
@@ -914,6 +989,9 @@ Object {
             "params": Array [],
           },
           "name": "nested content field$nested 3",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "enum[]",
         },
         "value": Object {
@@ -976,6 +1054,9 @@ Object {
                     "property": Object {
                       "displayLabel": "nested 1",
                       "name": "nested content field$nested 1",
+                      "renderer": Object {
+                        "name": "custom_renderer",
+                      },
                       "typename": "geometry",
                     },
                     "value": Object {
@@ -989,6 +1070,9 @@ Object {
                     "property": Object {
                       "displayLabel": "nested 2",
                       "name": "nested content field$nested 2",
+                      "renderer": Object {
+                        "name": "custom_renderer",
+                      },
                       "typename": "decimal",
                     },
                     "value": Object {
@@ -1017,6 +1101,9 @@ Object {
                     "property": Object {
                       "displayLabel": "nested 1",
                       "name": "nested content field$nested 1",
+                      "renderer": Object {
+                        "name": "custom_renderer",
+                      },
                       "typename": "geometry",
                     },
                     "value": Object {
@@ -1030,6 +1117,9 @@ Object {
                     "property": Object {
                       "displayLabel": "nested 2",
                       "name": "nested content field$nested 2",
+                      "renderer": Object {
+                        "name": "custom_renderer",
+                      },
                       "typename": "decimal",
                     },
                     "value": Object {
@@ -1086,6 +1176,9 @@ Object {
         "property": Object {
           "displayLabel": "nested 3",
           "name": "nested content field$nested 3",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "set",
         },
         "value": Object {
@@ -1101,6 +1194,9 @@ Object {
         "property": Object {
           "displayLabel": "primitive",
           "name": "primitive",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "tinyint",
         },
         "value": Object {
@@ -1124,6 +1220,9 @@ Object {
               "property": Object {
                 "displayLabel": "nested 1",
                 "name": "nested content field$nested 1",
+                "renderer": Object {
+                  "name": "custom_renderer",
+                },
                 "typename": "geometry",
               },
               "value": Object {
@@ -1137,6 +1236,9 @@ Object {
               "property": Object {
                 "displayLabel": "nested 2",
                 "name": "nested content field$nested 2",
+                "renderer": Object {
+                  "name": "custom_renderer",
+                },
                 "typename": "boolean",
               },
               "value": Object {
@@ -1192,6 +1294,9 @@ Object {
             "params": Array [],
           },
           "name": "nested content field$nested 3",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "set",
         },
         "value": Object {
@@ -1208,6 +1313,9 @@ Object {
         "property": Object {
           "displayLabel": "nested 1",
           "name": "nested content field$nested 1",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "float",
         },
         "value": Object {
@@ -1220,6 +1328,9 @@ Object {
         "property": Object {
           "displayLabel": "nested 2",
           "name": "nested content field$nested 2",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "double",
         },
         "value": Object {
@@ -1271,6 +1382,9 @@ Object {
             "params": Array [],
           },
           "name": "nested content field$nested 3",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "datetime",
         },
         "value": Object {
@@ -1291,6 +1405,9 @@ Object {
             "params": Array [],
           },
           "name": "nested content field$nested 1",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "bigint",
         },
         "value": Object {
@@ -1308,6 +1425,9 @@ Object {
             "params": Array [],
           },
           "name": "nested content field$nested 2",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "mediumint",
         },
         "value": Object {
@@ -1449,6 +1569,9 @@ Object {
             "params": Array [],
           },
           "name": "tan",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "serial",
         },
         "value": Object {
@@ -1551,6 +1674,9 @@ Object {
         "property": Object {
           "displayLabel": "Liaison Automotive",
           "name": "Ohio",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "set",
         },
         "value": Object {
@@ -1600,6 +1726,9 @@ Object {
             "params": Array [],
           },
           "name": "nested content field$nested 1",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "real",
         },
         "value": Object {
@@ -1657,6 +1786,9 @@ Object {
             "params": Array [],
           },
           "name": "nested content field$nested 3",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "set",
         },
         "value": Object {
@@ -1676,6 +1808,9 @@ Object {
             "params": Array [],
           },
           "name": "primitive",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "text",
         },
         "value": Object {
@@ -1703,6 +1838,9 @@ Object {
                   "params": Array [],
                 },
                 "name": "nested content field$nested 1",
+                "renderer": Object {
+                  "name": "custom_renderer",
+                },
                 "typename": "boolean",
               },
               "value": Object {
@@ -1720,6 +1858,9 @@ Object {
                   "params": Array [],
                 },
                 "name": "nested content field$nested 2",
+                "renderer": Object {
+                  "name": "custom_renderer",
+                },
                 "typename": "mediumint",
               },
               "value": Object {
@@ -1802,6 +1943,9 @@ Object {
             "params": Array [],
           },
           "name": "nested content field$nested 3",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "set",
         },
         "value": Object {
@@ -1827,6 +1971,9 @@ Object {
               "property": Object {
                 "displayLabel": "nested 1",
                 "name": "nested content field$nested 1",
+                "renderer": Object {
+                  "name": "custom_renderer",
+                },
                 "typename": "datetime",
               },
               "value": Object {
@@ -1843,6 +1990,9 @@ Object {
                   "params": Array [],
                 },
                 "name": "nested content field$nested 2",
+                "renderer": Object {
+                  "name": "custom_renderer",
+                },
                 "typename": "bit",
               },
               "value": Object {
@@ -1860,6 +2010,9 @@ Object {
         "property": Object {
           "displayLabel": "primitive",
           "name": "primitive",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "enum",
         },
         "value": Object {
@@ -1916,6 +2069,9 @@ Object {
             "params": Array [],
           },
           "name": "nested content field$nested 3",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "varchar",
         },
         "value": Object {
@@ -1943,6 +2099,9 @@ Object {
                   "params": Array [],
                 },
                 "name": "nested content field$nested 1",
+                "renderer": Object {
+                  "name": "custom_renderer",
+                },
                 "typename": "bit",
               },
               "value": Object {
@@ -1956,6 +2115,9 @@ Object {
               "property": Object {
                 "displayLabel": "nested 2",
                 "name": "nested content field$nested 2",
+                "renderer": Object {
+                  "name": "custom_renderer",
+                },
                 "typename": "mediumint",
               },
               "value": Object {
@@ -1977,6 +2139,9 @@ Object {
             "params": Array [],
           },
           "name": "primitive",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "smallint",
         },
         "value": Object {
@@ -2041,6 +2206,9 @@ Object {
             "params": Array [],
           },
           "name": "nested content field$nested 1",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "text[]",
         },
         "value": Object {
@@ -2085,6 +2253,9 @@ Object {
         "property": Object {
           "displayLabel": "nested 3",
           "name": "nested content field$nested 3",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "binary[]",
         },
         "value": Object {
@@ -2146,6 +2317,9 @@ Object {
                     "property": Object {
                       "displayLabel": "nested 2",
                       "name": "nested content field$nested 2",
+                      "renderer": Object {
+                        "name": "custom_renderer",
+                      },
                       "typename": "boolean",
                     },
                     "value": Object {
@@ -2173,6 +2347,9 @@ Object {
                     "property": Object {
                       "displayLabel": "nested 2",
                       "name": "nested content field$nested 2",
+                      "renderer": Object {
+                        "name": "custom_renderer",
+                      },
                       "typename": "boolean",
                     },
                     "value": Object {
@@ -2239,6 +2416,9 @@ Object {
             "params": Array [],
           },
           "name": "nested content field$nested 3",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "set[]",
         },
         "value": Object {
@@ -2301,6 +2481,9 @@ Object {
                     "property": Object {
                       "displayLabel": "nested 1",
                       "name": "nested content field$nested 1",
+                      "renderer": Object {
+                        "name": "custom_renderer",
+                      },
                       "typename": "geometry",
                     },
                     "value": Object {
@@ -2317,6 +2500,9 @@ Object {
                         "params": Array [],
                       },
                       "name": "nested content field$nested 2",
+                      "renderer": Object {
+                        "name": "custom_renderer",
+                      },
                       "typename": "datetime",
                     },
                     "value": Object {
@@ -2345,6 +2531,9 @@ Object {
                     "property": Object {
                       "displayLabel": "nested 1",
                       "name": "nested content field$nested 1",
+                      "renderer": Object {
+                        "name": "custom_renderer",
+                      },
                       "typename": "geometry",
                     },
                     "value": Object {
@@ -2361,6 +2550,9 @@ Object {
                         "params": Array [],
                       },
                       "name": "nested content field$nested 2",
+                      "renderer": Object {
+                        "name": "custom_renderer",
+                      },
                       "typename": "datetime",
                     },
                     "value": Object {
@@ -2388,6 +2580,9 @@ Object {
             "params": Array [],
           },
           "name": "primitive",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "binary",
         },
         "value": Object {
@@ -2445,6 +2640,9 @@ Object {
             "params": Array [],
           },
           "name": "nested content field$nested 3",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "date[]",
         },
         "value": Object {
@@ -2511,6 +2709,9 @@ Object {
                         "params": Array [],
                       },
                       "name": "nested content field$nested 1",
+                      "renderer": Object {
+                        "name": "custom_renderer",
+                      },
                       "typename": "smallint",
                     },
                     "value": Object {
@@ -2523,6 +2724,9 @@ Object {
                     "property": Object {
                       "displayLabel": "nested 2",
                       "name": "nested content field$nested 2",
+                      "renderer": Object {
+                        "name": "custom_renderer",
+                      },
                       "typename": "bigint",
                     },
                     "value": Object {
@@ -2555,6 +2759,9 @@ Object {
                         "params": Array [],
                       },
                       "name": "nested content field$nested 1",
+                      "renderer": Object {
+                        "name": "custom_renderer",
+                      },
                       "typename": "smallint",
                     },
                     "value": Object {
@@ -2567,6 +2774,9 @@ Object {
                     "property": Object {
                       "displayLabel": "nested 2",
                       "name": "nested content field$nested 2",
+                      "renderer": Object {
+                        "name": "custom_renderer",
+                      },
                       "typename": "bigint",
                     },
                     "value": Object {
@@ -2628,6 +2838,9 @@ Object {
         "property": Object {
           "displayLabel": "nested 3",
           "name": "nested content field$nested 3",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "set",
         },
         "value": Object {
@@ -2644,6 +2857,9 @@ Object {
         "property": Object {
           "displayLabel": "primitive",
           "name": "primitive",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "real",
         },
         "value": Object {
@@ -2668,6 +2884,9 @@ Object {
               "property": Object {
                 "displayLabel": "nested 1",
                 "name": "nested content field$nested 1",
+                "renderer": Object {
+                  "name": "custom_renderer",
+                },
                 "typename": "boolean",
               },
               "value": Object {
@@ -2680,6 +2899,9 @@ Object {
               "property": Object {
                 "displayLabel": "nested 2",
                 "name": "nested content field$nested 2",
+                "renderer": Object {
+                  "name": "custom_renderer",
+                },
                 "typename": "double",
               },
               "value": Object {
@@ -2735,6 +2957,9 @@ Object {
         "property": Object {
           "displayLabel": "nested 3",
           "name": "nested content field$nested 3",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "datetime",
         },
         "value": Object {
@@ -2750,6 +2975,9 @@ Object {
         "property": Object {
           "displayLabel": "nested 1",
           "name": "nested content field$nested 1",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "text",
         },
         "value": Object {
@@ -2763,6 +2991,9 @@ Object {
         "property": Object {
           "displayLabel": "nested 2",
           "name": "nested content field$nested 2",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "enum",
         },
         "value": Object {
@@ -2814,6 +3045,9 @@ Object {
         "property": Object {
           "displayLabel": "nested 3",
           "name": "nested content field$nested 3",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "set",
         },
         "value": Object {
@@ -2829,6 +3063,9 @@ Object {
         "property": Object {
           "displayLabel": "nested 1",
           "name": "nested content field$nested 1",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "tinyint",
         },
         "value": Object {
@@ -2846,6 +3083,9 @@ Object {
             "params": Array [],
           },
           "name": "nested content field$nested 2",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "mediumint",
         },
         "value": Object {
@@ -2992,6 +3232,9 @@ Object {
             "params": Array [],
           },
           "name": "gold",
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "typename": "smallint",
         },
         "value": Object {
