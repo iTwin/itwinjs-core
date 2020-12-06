@@ -7,9 +7,18 @@
  * @module Tools
  */
 
-import { ClipStyle, ColorDef } from "@bentley/imodeljs-common";
-import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
+import {
+  ClipStyle,
+  ClipStyleProps,
+  ColorByName,
+  ColorDef,
+  LinePixels,
+  RenderMode,
+} from "@bentley/imodeljs-common";
+import { IModelApp, Tool, Viewport } from "@bentley/imodeljs-frontend";
 import { parseToggle } from "./parseToggle";
+import { parseBoolean } from "./parseBoolean";
+import { DisplayStyleTool } from "./DisplayStyleTools";
 
 /** Specify or unspecify a clip color to use for pixels inside or outside the clip region.
  * Arguments can be:
@@ -101,6 +110,56 @@ export class ToggleSectionCutTool extends Tool {
     const enable = parseToggle(args[0]);
     if (typeof enable !== "string")
       this.run(enable);
+
+    return true;
+  }
+}
+
+/** Simple tool that toggles a hard-coded [ClipStyle]($frontend) overriding various aspects of the cut geometry appearance.
+ * @alpha
+ */
+export class TestClipStyleTool extends DisplayStyleTool {
+  public static toolId = "TestClipStyle";
+  public static get maxArgs() { return 1; }
+  public static get minArgs() { return 1; }
+
+  private _useStyle = false;
+
+  protected get require3d() { return true; }
+
+  protected parse(args: string[]): boolean {
+    this._useStyle = parseBoolean(args[0]) ?? false;
+    return true;
+  }
+
+  protected execute(vp: Viewport): boolean {
+    const props: ClipStyleProps = { produceCutGeometry: true };
+    if (this._useStyle) {
+      props.cutStyle = {
+        viewflags: {
+          renderMode: RenderMode.SmoothShade,
+          visibleEdges: true,
+          hiddenEdges: false,
+        },
+        appearance: {
+          rgb: { r: 0xff, g: 0x7f, b: 0 },
+          transparency: 0.5,
+          nonLocatable: true,
+        },
+        hiddenLine: {
+          visible: {
+            ovrColor: true,
+            color: ColorByName.blue,
+            pattern: LinePixels.Solid,
+            width: 3,
+          },
+        },
+      };
+    }
+
+    vp.displayStyle.settings.clipStyle = ClipStyle.fromJSON(props);
+    vp.invalidateRenderPlan();
+    vp.setFeatureOverrideProviderChanged();
 
     return true;
   }

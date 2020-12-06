@@ -10,7 +10,7 @@ import { IModelApp } from "@bentley/imodeljs-frontend";
 import { ChangeEmphasisSettingsTool, ChangeHiliteSettingsTool, DefaultTileSizeModifierTool, FadeOutTool, FreezeSceneTool, SetAspectRatioSkewTool, ShowTileVolumesTool, Toggle3dManipulationsTool, ToggleViewAttachmentBoundariesTool, ToggleViewAttachmentClipShapesTool, ToggleViewAttachmentsTool, ViewportAddRealityModel, ViewportTileSizeModifierTool } from "./frontend-devtools";
 import { AnimationIntervalTool } from "./tools/AnimationIntervalTool";
 import { ChangeUnitsTool } from "./tools/ChangeUnitsTool";
-import { ClipColorTool, ToggleSectionCutTool } from "./tools/ClipTools";
+import { ClipColorTool, TestClipStyleTool, ToggleSectionCutTool } from "./tools/ClipTools";
 import { ApplyRenderingStyleTool, ChangeViewFlagsTool, SaveRenderingStyleTool, ToggleSkyboxTool } from "./tools/DisplayStyleTools";
 import { ClearIsolatedElementsTool, EmphasizeSelectedElementsTool, IsolateSelectedElementsTool } from "./tools/EmphasizeElementsTool";
 import { ExtensionServiceTool } from "./tools/ExtensionServiceTool";
@@ -104,6 +104,7 @@ export class FrontendDevTools {
       SetMapBaseTool,
       ShowTileVolumesTool,
       SourceAspectIdFromElementIdTool,
+      TestClipStyleTool,
       Toggle3dManipulationsTool,
       ToggleDPIForLODTool,
       ToggleDrapeFrustumTool,

@@ -153,6 +153,9 @@
     "ClipColorTool": {
       "keyin": "fdt clip color"
     },
+    "TestClipStyle": {
+      "keyin": "fdt test clip style"
+    },
     "SourceAspectIdFromElementId": {
       "keyin": "fdt sourceId from elemId"
     },
