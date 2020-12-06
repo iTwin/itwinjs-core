@@ -8,6 +8,7 @@ export * from "./FrontEndDevTools";
 
 export * from "./tools/AnimationIntervalTool";
 export * from "./tools/ChangeUnitsTool";
+export * from "./tools/ClipTools";
 export * from "./tools/DisplayStyleTools";
 export * from "./tools/EmphasizeElementsTool";
 export * from "./tools/ExtensionServiceTool";
