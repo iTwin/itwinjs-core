@@ -13,6 +13,7 @@ import {
   compareIModelTileTreeIds,
   FeatureAppearance,
   FeatureAppearanceProvider,
+  HiddenLine,
   iModelTileTreeIdToString,
   PrimaryTileTreeId,
   ViewFlagOverrides,
@@ -175,6 +176,10 @@ class PrimaryTreeReference extends TileTreeReference {
       return this._sectionCutAppearanceProvider;
 
     return undefined;
+  }
+
+  protected getHiddenLineSettings(_tree: TileTree): HiddenLine.Settings | undefined {
+    return this._sectionClip ? this.view.displayStyle.settings.clipStyle.cutStyle.hiddenLine : undefined;
   }
 
   public get castsShadows() {

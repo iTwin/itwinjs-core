@@ -8,7 +8,7 @@
 
 import { BeTimePoint } from "@bentley/bentleyjs-core";
 import { ClipVector, Map4d, Point3d, Range3d, Transform } from "@bentley/geometry-core";
-import { FeatureAppearanceProvider, FrustumPlanes, ViewFlagOverrides } from "@bentley/imodeljs-common";
+import { FeatureAppearanceProvider, FrustumPlanes, HiddenLine, ViewFlagOverrides } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { RenderClipVolume } from "../render/RenderClipVolume";
@@ -36,6 +36,7 @@ export interface TileDrawArgParams {
   parentsAndChildrenExclusive: boolean;
   symbologyOverrides: FeatureSymbology.Overrides | undefined;
   appearanceProvider?: FeatureAppearanceProvider;
+  hiddenLineSettings?: HiddenLine.Settings;
 }
 /**
  * Arguments used when selecting and drawing [[Tile]]s.
@@ -70,6 +71,8 @@ export class TileDrawArgs {
   public parentsAndChildrenExclusive: boolean;
   /** @internal */
   private _appearanceProvider?: FeatureAppearanceProvider;
+  /** internal */
+  public hiddenLineSettings?: HiddenLine.Settings;
   /** Tiles that we want to draw and that are ready to draw. May not actually be selected, e.g. if sibling tiles are not yet ready. */
   public readonly readyTiles = new Set<Tile>();
   /** For perspective views, the view-Z of the near plane. */
@@ -155,6 +158,7 @@ export class TileDrawArgs {
     this.context = context;
     this.now = now;
     this._appearanceProvider = params.appearanceProvider;
+    this.hiddenLineSettings = params.hiddenLineSettings;
 
     if (undefined !== clipVolume && !clipVolume.hasOutsideClipColor)
       this.clipVolume = clipVolume;
@@ -228,9 +232,14 @@ export class TileDrawArgs {
     if (graphics.isEmpty)
       return undefined;
 
-    const classifierOrDrape = undefined !== this.planarClassifier ? this.planarClassifier : this.drape;
-    const appearanceProvider = this.appearanceProvider;
-    const opts = { iModel: this.tree.iModel, clipVolume: this.clipVolume, classifierOrDrape, appearanceProvider };
+    const opts = {
+      iModel: this.tree.iModel,
+      clipVolume: this.clipVolume,
+      classifierOrDrape: this.planarClassifier ?? this.drape,
+      appearanceProvider: this.appearanceProvider,
+      hline: this.hiddenLineSettings,
+    };
+
     return this.context.createGraphicBranch(graphics, this.location, opts);
   }
 

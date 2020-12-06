@@ -8,7 +8,7 @@
 
 import { BeTimePoint } from "@bentley/bentleyjs-core";
 import { Matrix4d, Range1d, Range3d, Transform } from "@bentley/geometry-core";
-import { ElementAlignedBox3d, FeatureAppearanceProvider, FrustumPlanes, ViewFlagOverrides } from "@bentley/imodeljs-common";
+import { ElementAlignedBox3d, FeatureAppearanceProvider, FrustumPlanes, HiddenLine, ViewFlagOverrides } from "@bentley/imodeljs-common";
 import { HitDetail } from "../HitDetail";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 import { RenderClipVolume } from "../render/RenderClipVolume";
@@ -129,6 +129,7 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
       parentsAndChildrenExclusive: tree.parentsAndChildrenExclusive,
       symbologyOverrides: this.getSymbologyOverrides(tree),
       appearanceProvider: this.getAppearanceProvider(tree),
+      hiddenLineSettings: this.getHiddenLineSettings(tree),
     });
   }
 
@@ -174,6 +175,11 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
 
   /** Return a provider that can supplement the view's symbology overrides. */
   protected getAppearanceProvider(_tree: TileTree): FeatureAppearanceProvider | undefined {
+    return undefined;
+  }
+
+  /** Return hidden line settings to replace any defined for the view. */
+  protected getHiddenLineSettings(_tree: TileTree): HiddenLine.Settings | undefined {
     return undefined;
   }
 
