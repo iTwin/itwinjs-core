@@ -39,7 +39,7 @@ export class TableDemoWidget extends React.Component<Props, State> {
     checked: false,
   };
   public render() {
-    DragDropLayerManager.registerTypeLayer(TableDragTypes.Row, RowDragLayer);
+    DragDropLayerManager.registerTypeLayer(TableDragTypes.Row, RowDragLayer); // eslint-disable-line deprecation/deprecation
 
     let objectTypes: Array<string | symbol> = [];
     if (tableDropProps.objectTypes) {

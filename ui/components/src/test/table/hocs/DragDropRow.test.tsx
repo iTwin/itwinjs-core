@@ -13,6 +13,8 @@ import {
 import { DragDropRow, DragDropRowWrapper } from "../../../ui-components/table/hocs/DragDropRow";
 import { createDnDRenderer } from "../../tree/deprecated/hocs/withDragDrop.test";
 
+/* eslint-disable deprecation/deprecation */
+
 describe("DragDropRow", () => {
   interface DragDropObject {
     test: boolean;

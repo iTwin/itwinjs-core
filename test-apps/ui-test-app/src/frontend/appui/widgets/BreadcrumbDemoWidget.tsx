@@ -45,8 +45,8 @@ class BreadcrumbDemoWidget extends React.Component<Props, State> {
   public render() {
     const path = new BreadcrumbPath(demoMutableTreeDataProvider);
 
-    DragDropLayerManager.registerTypeLayer(TreeDragTypes.Parent, ParentDragLayer);
-    DragDropLayerManager.registerTypeLayer(TreeDragTypes.Child, ChildDragLayer);
+    DragDropLayerManager.registerTypeLayer(TreeDragTypes.Parent, ParentDragLayer); // eslint-disable-line deprecation/deprecation
+    DragDropLayerManager.registerTypeLayer(TreeDragTypes.Child, ChildDragLayer); // eslint-disable-line deprecation/deprecation
 
     let objectTypes: Array<string | symbol> = [];
     if (treeDropProps.objectTypes) {

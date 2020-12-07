@@ -11,10 +11,11 @@ import { DragSourceArguments, DropTargetArguments, DropTargetProps } from "./Dra
 
 /** React properties for withDropTarget Higher-Order Component
  * @beta
+ * @deprecated
  */
 export interface WithDropTargetProps<DragDropObject = any> {
   /** Properties and callbacks for DropTarget */
-  dropProps: DropTargetProps<DragDropObject>;
+  dropProps: DropTargetProps<DragDropObject>; // eslint-disable-line deprecation/deprecation
   /** Whether to propagate to parent DropTargets. */
   shallow?: boolean;
   /** Style properties for dropTarget wrapper element */
@@ -36,12 +37,13 @@ export interface WithDropTargetProps<DragDropObject = any> {
  * HOC (Higher-Order Component) that transforms wrapped component into a DropTarget.
  * @param Component component to wrap.
  * @beta
+ * @deprecated
  */
 export const withDropTarget = <ComponentProps extends {}, DragDropObject = any>(
   // eslint-disable-next-line @typescript-eslint/naming-convention
   Component: React.ComponentType<ComponentProps>,
-): DndComponentClass<typeof React.Component, ComponentProps & WithDropTargetProps<DragDropObject>> => {
-  type Props = ComponentProps & WithDropTargetProps<DragDropObject>;
+): DndComponentClass<typeof React.Component, ComponentProps & WithDropTargetProps<DragDropObject>> => { // eslint-disable-line deprecation/deprecation
+  type Props = ComponentProps & WithDropTargetProps<DragDropObject>; // eslint-disable-line deprecation/deprecation
   return DropTarget((props: Props): Array<string | symbol> => {
     if (props.dropProps.objectTypes) {
       if (typeof props.dropProps.objectTypes === "function")
@@ -52,7 +54,7 @@ export const withDropTarget = <ComponentProps extends {}, DragDropObject = any>(
     return [];
   }, {
     drop(props, monitor, component) {
-      const dragSourceArgs = monitor.getItem() as DragSourceArguments<DragDropObject>;
+      const dragSourceArgs = monitor.getItem() as DragSourceArguments<DragDropObject>; // eslint-disable-line deprecation/deprecation
       if (monitor.isOver({ shallow: props.shallow || false })) {
         let dropRect: ClientRect = {} as ClientRect;
         const componentElement = component.rootElement;
@@ -65,7 +67,7 @@ export const withDropTarget = <ComponentProps extends {}, DragDropObject = any>(
         const sourceClientOffset = monitor.getSourceClientOffset() || dragSourceArgs.sourceClientOffset;
         const initialSourceClientOffset = monitor.getInitialSourceClientOffset() || dragSourceArgs.initialSourceClientOffset;
 
-        const dropTargetArgs: DropTargetArguments<DragDropObject> = {
+        const dropTargetArgs: DropTargetArguments<DragDropObject> = { // eslint-disable-line deprecation/deprecation
           ...dragSourceArgs,
           row: undefined, // clear stale row/col values to be set while propagating back down
           col: undefined,
@@ -82,7 +84,7 @@ export const withDropTarget = <ComponentProps extends {}, DragDropObject = any>(
     },
     hover(props, monitor, component) {
       if (monitor.isOver({ shallow: props.shallow || false }) && props.dropProps.onDropTargetOver) {
-        const dragSourceArgs = monitor.getItem() as DragSourceArguments<DragDropObject>;
+        const dragSourceArgs = monitor.getItem() as DragSourceArguments<DragDropObject>; // eslint-disable-line deprecation/deprecation
         let dropRect: ClientRect = {} as ClientRect;
         const componentElement = component.rootElement;
         if (componentElement) {
@@ -94,7 +96,7 @@ export const withDropTarget = <ComponentProps extends {}, DragDropObject = any>(
         const sourceClientOffset = monitor.getSourceClientOffset() || dragSourceArgs.sourceClientOffset;
         const initialSourceClientOffset = monitor.getInitialSourceClientOffset() || dragSourceArgs.initialSourceClientOffset;
 
-        const dropTargetArgs: DropTargetArguments<DragDropObject> = {
+        const dropTargetArgs: DropTargetArguments<DragDropObject> = { // eslint-disable-line deprecation/deprecation
           ...dragSourceArgs,
           row: undefined, // clear stale row/col values to be set while propagating back down
           col: undefined,
@@ -109,13 +111,13 @@ export const withDropTarget = <ComponentProps extends {}, DragDropObject = any>(
     },
     canDrop(props, monitor) {
       if (monitor.isOver({ shallow: props.shallow || false }) && props.dropProps.canDropTargetDrop) {
-        const dragSourceArgs = monitor.getItem() as DragSourceArguments<DragDropObject>;
+        const dragSourceArgs = monitor.getItem() as DragSourceArguments<DragDropObject>; // eslint-disable-line deprecation/deprecation
         const clientOffset = monitor.getClientOffset() || dragSourceArgs.clientOffset;
         const initialClientOffset = monitor.getInitialClientOffset() || dragSourceArgs.initialClientOffset;
         const sourceClientOffset = monitor.getSourceClientOffset() || dragSourceArgs.sourceClientOffset;
         const initialSourceClientOffset = monitor.getInitialSourceClientOffset() || dragSourceArgs.initialSourceClientOffset;
 
-        const dropTargetArgs: DropTargetArguments<DragDropObject> = {
+        const dropTargetArgs: DropTargetArguments<DragDropObject> = { // eslint-disable-line deprecation/deprecation
           ...dragSourceArgs,
           clientOffset,
           initialClientOffset,
@@ -142,7 +144,7 @@ export const withDropTarget = <ComponentProps extends {}, DragDropObject = any>(
         connectDropTarget,
         isOver, canDrop, item, type,
         dropStyle, // eslint-disable-line @typescript-eslint/no-unused-vars
-        ...props } = this.props as WithDropTargetProps<DragDropObject>;
+        ...props } = this.props as WithDropTargetProps<DragDropObject>; // eslint-disable-line deprecation/deprecation
 
       const p = {
         item,

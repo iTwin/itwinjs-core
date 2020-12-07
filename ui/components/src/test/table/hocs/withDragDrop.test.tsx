@@ -16,6 +16,8 @@ import { withTableDragDrop } from "../../../ui-components/table/hocs/withDragDro
 import { CellItem, ColumnDescription, RowItem, TableDataChangeEvent, TableDataProvider } from "../../../ui-components/table/TableDataProvider";
 import { createDnDRenderer } from "../../tree/deprecated/hocs/withDragDrop.test";
 
+/* eslint-disable deprecation/deprecation */
+
 describe("Table withDragDrop HOC", () => {
 
   const TableWithDragDrop = withTableDragDrop(Table); // eslint-disable-line @typescript-eslint/naming-convention

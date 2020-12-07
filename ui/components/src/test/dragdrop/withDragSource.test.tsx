@@ -14,7 +14,7 @@ import { createDnDRenderer } from "../tree/deprecated/hocs/withDragDrop.test";
 
 describe("withDragSource", () => {
   class TestComponent extends React.Component<{
-    dragProps: DragSourceProps;
+    dragProps: DragSourceProps; // eslint-disable-line deprecation/deprecation
     connectDragSource?: ConnectDragSource;
   }> {
     public render() {
@@ -24,17 +24,17 @@ describe("withDragSource", () => {
   afterEach(cleanup);
 
   describe("Wrapped component", () => {
-    const testDragSource = withDragSource(TestComponent);
+    const testDragSource = withDragSource(TestComponent); // eslint-disable-line deprecation/deprecation
     const BaseComponent = testDragSource.DecoratedComponent;
     it("mounts wrapped component", () => {
       render(<BaseComponent dragProps={{}} connectDragSource={(e: any) => e} />);
     });
   });
   it("Drag functionality", () => {
-    const TestDragSource = withDragSource(TestComponent);
+    const TestDragSource = withDragSource(TestComponent); // eslint-disable-line deprecation/deprecation
     const ContextTestDragSource = wrapInTestContext(TestDragSource);
     const renderIntoDocument = createDnDRenderer(TestDragSource);
-    const onDragSourceBegin = (args: DragSourceArguments) => {
+    const onDragSourceBegin = (args: DragSourceArguments) => { // eslint-disable-line deprecation/deprecation
       args.dataObject = { test: true };
       return args;
     };

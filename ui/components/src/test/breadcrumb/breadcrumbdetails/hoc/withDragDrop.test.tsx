@@ -15,6 +15,8 @@ import {
 import { mockRawTreeDataProvider } from "../../mockTreeDataProvider";
 import { createDnDRenderer } from "../../../tree/deprecated/hocs/withDragDrop.test";
 
+/* eslint-disable deprecation/deprecation */
+
 describe("Breadcrumb Details withDragDrop HOC", () => {
 
   const BreadcrumbDetailsWithDragDrop = withBreadcrumbDetailsDragDrop(BreadcrumbDetails);

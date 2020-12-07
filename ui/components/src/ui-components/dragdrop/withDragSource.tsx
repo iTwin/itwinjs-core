@@ -11,18 +11,19 @@ import { DragSourceArguments, DragSourceProps, DropEffects, DropStatus, DropTarg
 
 /** React properties for withDragSource Higher-Order Component
  * @beta
+ * @deprecated
  */
 export interface WithDragSourceProps<DragDropObject = any> {
   /** Properties and callbacks for DragSource. */
-  dragProps: DragSourceProps<DragDropObject>;
+  dragProps: DragSourceProps<DragDropObject>; // eslint-disable-line deprecation/deprecation
   /** Style properties for dropTarget wrapper element */
   dragStyle?: React.CSSProperties;
   /** Which dropEffect dragSource should default to. */
-  defaultDropEffect?: DropEffects;
+  defaultDropEffect?: DropEffects; // eslint-disable-line deprecation/deprecation
   /** Which dropEffect dragSource should be used when ctrl button is pressed during start of drag. */
-  ctrlDropEffect?: DropEffects;
+  ctrlDropEffect?: DropEffects; // eslint-disable-line deprecation/deprecation
   /** Which dropEffect dragSource should be used when alt button is pressed during start of drag. */
-  altDropEffect?: DropEffects;
+  altDropEffect?: DropEffects; // eslint-disable-line deprecation/deprecation
   /** @internal */
   connectDragSource?: ConnectDragSource;
   /** @internal */
@@ -57,12 +58,13 @@ function getEmptyImage(): HTMLImageElement {
  * HOC (Higher-Order Component) that transforms wrapped component into a DragSource.
  * @param Component component to wrap.
  * @beta
+ * @deprecated
  */
 export const withDragSource = <ComponentProps extends {}, DragDropObject = any>(
   // eslint-disable-next-line @typescript-eslint/naming-convention
   Component: React.ComponentType<ComponentProps>,
-): DndComponentClass<typeof React.Component, ComponentProps & WithDragSourceProps<DragDropObject>> => {
-  type Props = ComponentProps & WithDragSourceProps<DragDropObject>;
+): DndComponentClass<typeof React.Component, ComponentProps & WithDragSourceProps<DragDropObject>> => { // eslint-disable-line deprecation/deprecation
+  type Props = ComponentProps & WithDragSourceProps<DragDropObject>; // eslint-disable-line deprecation/deprecation
   return DragSource((props: Props) => {
     if (props.dragProps.objectType) {
       if (typeof props.dragProps.objectType === "function")
@@ -73,21 +75,21 @@ export const withDragSource = <ComponentProps extends {}, DragDropObject = any>(
     return "";
   }, {
     beginDrag(props, _monitor, component) {
-      let dropEffect = props.defaultDropEffect || DropEffects.Move;
+      let dropEffect = props.defaultDropEffect || DropEffects.Move; // eslint-disable-line deprecation/deprecation
       if (component.state.ctrlKey) {
-        dropEffect = props.ctrlDropEffect || DropEffects.Copy;
+        dropEffect = props.ctrlDropEffect || DropEffects.Copy; // eslint-disable-line deprecation/deprecation
       } else if (component.state.altKey) {
-        dropEffect = props.altDropEffect || DropEffects.Link;
+        dropEffect = props.altDropEffect || DropEffects.Link; // eslint-disable-line deprecation/deprecation
       }
       let dragRect: ClientRect = { left: 0, top: 0 } as ClientRect;
       const componentElement = component.rootElement;
       if (componentElement) {
         dragRect = componentElement.getBoundingClientRect();
       }
-      const obj: DragSourceArguments<DragDropObject> = {
+      const obj: DragSourceArguments<DragDropObject> = { // eslint-disable-line deprecation/deprecation
         dataObject: {} as DragDropObject,
         dropEffect,
-        dropStatus: DropStatus.None,
+        dropStatus: DropStatus.None, // eslint-disable-line deprecation/deprecation
         dragRect,
         defaultDragLayer: props.dragProps.defaultDragLayer,
         clientOffset: { x: dragRect.left || 0, y: dragRect.top || 0 },
@@ -102,12 +104,14 @@ export const withDragSource = <ComponentProps extends {}, DragDropObject = any>(
       if (componentElement) {
         dragRect = componentElement.getBoundingClientRect();
       }
+      // eslint-disable-next-line deprecation/deprecation
       const obj: DropTargetArguments<DragDropObject> = monitor.getDropResult() as DropTargetArguments<DragDropObject> || // if onDropTargetDrop returns a value
+        // eslint-disable-next-line deprecation/deprecation
         monitor.getItem() as DropTargetArguments<DragDropObject> || // otherwise, get current drag item.
       { // fallback
         dataObject: {},
-        dropEffect: DropEffects.None,
-        dropStatus: DropStatus.None,
+        dropEffect: DropEffects.None, // eslint-disable-line deprecation/deprecation
+        dropStatus: DropStatus.None, // eslint-disable-line deprecation/deprecation
         dragRect,
         clientOffset: { x: 0, y: 0 },
         initialClientOffset: { x: 0, y: 0 },
@@ -122,7 +126,7 @@ export const withDragSource = <ComponentProps extends {}, DragDropObject = any>(
 
       const clientOffset = monitor.getClientOffset() || obj.clientOffset;
       const sourceClientOffset = monitor.getSourceClientOffset() || obj.sourceClientOffset;
-      const dragObj: DragSourceArguments<DragDropObject> = {
+      const dragObj: DragSourceArguments<DragDropObject> = { // eslint-disable-line deprecation/deprecation
         dataObject,
         dropEffect, dropStatus, dropRect, dragRect,
         clientOffset, initialClientOffset, sourceClientOffset, initialSourceClientOffset,
@@ -147,9 +151,9 @@ export const withDragSource = <ComponentProps extends {}, DragDropObject = any>(
       altKey: false,
     };
     public static defaultProps: any = {
-      defaultDropEffect: DropEffects.Move,
-      ctrlDropEffect: DropEffects.Copy,
-      altDropEffect: DropEffects.Link,
+      defaultDropEffect: DropEffects.Move, // eslint-disable-line deprecation/deprecation
+      ctrlDropEffect: DropEffects.Copy, // eslint-disable-line deprecation/deprecation
+      altDropEffect: DropEffects.Link, // eslint-disable-line deprecation/deprecation
     };
     public render() {
       const {
@@ -157,7 +161,7 @@ export const withDragSource = <ComponentProps extends {}, DragDropObject = any>(
         isDragging, canDrag, item, type,
         defaultDropEffect, ctrlDropEffect, altDropEffect,
         dragStyle, // eslint-disable-line @typescript-eslint/no-unused-vars
-        ...props } = this.props as WithDragSourceProps<DragDropObject>;
+        ...props } = this.props as WithDragSourceProps<DragDropObject>; // eslint-disable-line deprecation/deprecation
       const p = {
         item,
         type,
@@ -165,9 +169,9 @@ export const withDragSource = <ComponentProps extends {}, DragDropObject = any>(
         canDrag,
       };
       const effectMap: { [key: number]: string } = {
-        [DropEffects.Move]: "move",
-        [DropEffects.Copy]: "copy",
-        [DropEffects.Link]: "link",
+        [DropEffects.Move]: "move", // eslint-disable-line deprecation/deprecation
+        [DropEffects.Copy]: "copy", // eslint-disable-line deprecation/deprecation
+        [DropEffects.Link]: "link", // eslint-disable-line deprecation/deprecation
       };
 
       const defaultEffect = effectMap[defaultDropEffect as number];

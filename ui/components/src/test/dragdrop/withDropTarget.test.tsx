@@ -20,18 +20,18 @@ describe("withDragSource", () => {
   afterEach(cleanup);
 
   describe("Wrapped component", () => {
-    const testDragSource = withDragSource(TestComponent);
-    const BaseComponent = testDragSource.DecoratedComponent; // eslint-disable-line @typescript-eslint/naming-convention
+    const TestDragSource = withDragSource(TestComponent); // eslint-disable-line deprecation/deprecation
+    const BaseComponent = TestDragSource.DecoratedComponent;
     it("mounts wrapped component", () => {
       render(<BaseComponent dragProps={{}} connectDragSource={(e: any) => e} />);
     });
   });
   it("Drop functionality", () => {
-    const TestDropTarget = withDropTarget(TestComponent);
-    const TestDragSource = withDragSource(TestDropTarget);
+    const TestDropTarget = withDropTarget(TestComponent); // eslint-disable-line deprecation/deprecation
+    const TestDragSource = withDragSource(TestDropTarget); // eslint-disable-line deprecation/deprecation
     const ContextTestDragSource = wrapInTestContext(TestDragSource);
     const renderIntoDocument = createDnDRenderer();
-    const onDragSourceBegin = sinon.spy((args: DragSourceArguments) => {
+    const onDragSourceBegin = sinon.spy((args: DragSourceArguments) => { // eslint-disable-line deprecation/deprecation
       args.dataObject = { test: true };
       return args;
     });
