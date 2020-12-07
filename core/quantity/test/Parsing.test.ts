@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { QuantityStatus } from "../src/Exception";
-import { Format, FormatterSpec } from "../src/Formatter/Format";
+import { Format } from "../src/Formatter/Format";
+import { FormatterSpec } from "../src/Formatter/FormatterSpec";
 import { Formatter } from "../src/Formatter/Formatter";
 import { UnitProps } from "../src/Interfaces";
 import { Parser, ParserSpec } from "../src/Parser";
