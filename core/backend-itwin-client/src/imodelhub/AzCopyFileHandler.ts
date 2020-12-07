@@ -9,14 +9,14 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as urllib from "url";
-import { BentleyError, BriefcaseStatus, Logger } from "@bentley/bentleyjs-core";
+import { AzCopyClient, ICopyJobInfo, ILocalLocation, IRemoteSasLocation } from "@azure-tools/azcopy-node";
+import { BriefcaseStatus, Logger } from "@bentley/bentleyjs-core";
 import { ArgumentCheck } from "@bentley/imodelhub-client";
 import {
-  AuthorizedClientRequestContext, CancelRequest, DownloadFailed, FileHandler, ProgressCallback,
-  SasUrlExpired, UserCancelledError, DownloadError, UploadError
+  AuthorizedClientRequestContext, CancelRequest, DownloadError, DownloadFailed, FileHandler, ProgressCallback, SasUrlExpired, UploadError,
+  UserCancelledError,
 } from "@bentley/itwin-client";
 import { BackendITwinClientLoggerCategory } from "../BackendITwinClientLoggerCategory";
-import { AzCopyClient, ICopyJobInfo, ILocalLocation, IRemoteSasLocation } from "@azure-tools/azcopy-node";
 
 const loggerCategory: string = BackendITwinClientLoggerCategory.FileHandlers;
 
@@ -41,19 +41,19 @@ export class AzCopyFileHandler implements FileHandler {
       return;
 
     AzCopyFileHandler.makeDirectoryRecursive(path.dirname(dirPath));
-
     fs.mkdirSync(dirPath);
   }
+
   private parseBlobUrl(downloadUrl: string): IRemoteSasLocation {
     const url = new URL(downloadUrl);
     const parts = url.pathname.split("/");
-    if (parts[0].length == 0) {
+    if (parts[0].length === 0) {
       parts.shift();
     }
     const container = parts.shift();
-    const resourceUri = url.origin + "/" + container;
+    const resourceUri = `${url.origin}/${container}`;
     const sasToken = url.searchParams.toString();
-    const pathName = "/" + parts.join("/")
+    const pathName = `/${parts.join("/")}`;
     return { sasToken, resourceUri, path: pathName, useWildCard: false, type: "RemoteSas" };
   }
 
@@ -125,7 +125,7 @@ export class AzCopyFileHandler implements FileHandler {
       let signalCancel = false;
 
       if (cancelRequest) {
-        cancelRequest.cancel = () => { signalCancel = true; return true;}
+        cancelRequest.cancel = () => { signalCancel = true; return true; };
       }
       let progressTriggered = false;
       let job: ICopyJobInfo | undefined;
@@ -140,17 +140,17 @@ export class AzCopyFileHandler implements FileHandler {
         if (progressCallback) {
           if (job.latestStatus && job.latestStatus.StatusType === "Progress") {
             progressTriggered = true;
-            progressCallback({total: job.latestStatus.TotalBytesEnumerated, loaded: job.latestStatus.TotalBytesTransferred, percent: job.latestStatus.PercentComplete})
+            progressCallback({ total: job.latestStatus.TotalBytesEnumerated, loaded: job.latestStatus.TotalBytesTransferred, percent: job.latestStatus.PercentComplete });
           }
         }
-      } while (!job.latestStatus || job.latestStatus.StatusType !== "EndOfJob")
+      } while (!job.latestStatus || job.latestStatus.StatusType !== "EndOfJob");
 
       if (job.canceled || signalCancel) {
         throw new UserCancelledError(BriefcaseStatus.DownloadCancelled, "User cancelled download", Logger.logWarning);
       } else if (job.killed) {
         throw new DownloadError(BriefcaseStatus.DownloadError, "Download error", Logger.logError);
       } else if (job.errorMessage) {
-        throw new DownloadError(BriefcaseStatus.DownloadError, job.errorMessage, Logger.logError)
+        throw new DownloadError(BriefcaseStatus.DownloadError, job.errorMessage, Logger.logError);
       }
 
       if (progressCallback && !progressTriggered) {
@@ -197,27 +197,28 @@ export class AzCopyFileHandler implements FileHandler {
     let progressTriggered = false;
     let job: ICopyJobInfo | undefined;
     do {
-       await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
       job = await AzCopyFileHandler.client.getJobInfo(jobId);
       if (progressCallback) {
         if (job.latestStatus && job.latestStatus.StatusType === "Progress") {
           progressTriggered = true;
-          progressCallback({ total: job.latestStatus.TotalBytesEnumerated, loaded: job.latestStatus.TotalBytesTransferred, percent: job.latestStatus.PercentComplete })
+          progressCallback({ total: job.latestStatus.TotalBytesEnumerated, loaded: job.latestStatus.TotalBytesTransferred, percent: job.latestStatus.PercentComplete });
         }
       }
-    } while (!job.latestStatus || job.latestStatus.StatusType !== "EndOfJob")
+    } while (!job.latestStatus || job.latestStatus.StatusType !== "EndOfJob");
 
     if (job.killed) {
       throw new UploadError(BriefcaseStatus.UploadError, "Upload error", Logger.logError);
     } else if (job.canceled) {
-      throw new UserCancelledError(BriefcaseStatus.DownloadCancelled, "User cancelled download", Logger.logWarning);
+      throw new UserCancelledError(BriefcaseStatus.UploadCancelled, "User cancelled upload", Logger.logWarning);
     } else if (job.errorMessage) {
       throw new UploadError(BriefcaseStatus.UploadError, job.errorMessage, Logger.logError);
     }
     if (progressCallback && !progressTriggered) {
       progressCallback({ total: job.latestStatus.TotalBytesEnumerated, loaded: job.latestStatus.TotalBytesTransferred, percent: job.latestStatus.PercentComplete });
     }
-}
+  }
+
   /**
    * Get size of a file.
    * @param filePath Path of the file.

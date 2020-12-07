@@ -111,7 +111,8 @@ export enum BriefcaseStatus {
   CannotApplyChanges = BRIEFCASE_STATUS_BASE + 6,
   DownloadCancelled = BRIEFCASE_STATUS_BASE + 7,
   DownloadError = BRIEFCASE_STATUS_BASE + 8,
-  UploadError =BRIEFCASE_STATUS_BASE + 9,
+  UploadError = BRIEFCASE_STATUS_BASE + 9,
+  UploadCancelled = BRIEFCASE_STATUS_BASE + 10,
 }
 
 /** RpcInterface status codes
