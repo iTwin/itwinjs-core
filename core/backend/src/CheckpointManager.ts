@@ -107,16 +107,14 @@ export class V2CheckpointManager {
       throw new IModelError(IModelStatus.BadRequest, "Invalid config: BLOCKCACHE_DIR is not set");
     }
 
-    let checkpointV2: CheckpointV2;
-    try {
-      const checkpointQuery = new CheckpointV2Query().byChangeSetId(changeSetId).selectContainerAccessKey();
-      checkpointV2 = (await BriefcaseManager.imodelClient.checkpointsV2.get(requestContext, iModelId, checkpointQuery))[0];
-      requestContext.enter();
-    } catch (err) {
-      throw new IModelError(IModelStatus.NotFound, "Checkpoint not found", Logger.logError, loggerCategory);
-    }
+    const checkpointQuery = new CheckpointV2Query().byChangeSetId(changeSetId).selectContainerAccessKey();
+    const checkpoints = await BriefcaseManager.imodelClient.checkpointsV2.get(requestContext, iModelId, checkpointQuery);
+    requestContext.enter();
 
-    const { containerAccessKeyContainer, containerAccessKeySAS, containerAccessKeyAccount, containerAccessKeyDbName } = checkpointV2;
+    if (checkpoints.length < 1)
+      throw new IModelError(IModelStatus.NotFound, "Checkpoint not found", Logger.logError, loggerCategory);
+
+    const { containerAccessKeyContainer, containerAccessKeySAS, containerAccessKeyAccount, containerAccessKeyDbName } = checkpoints[0];
     if (!containerAccessKeyContainer || !containerAccessKeySAS || !containerAccessKeyAccount || !containerAccessKeyDbName)
       throw new IModelError(IModelStatus.BadRequest, "Invalid checkpoint in iModelHub", Logger.logError, loggerCategory);
 

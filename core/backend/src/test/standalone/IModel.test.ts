@@ -1776,22 +1776,22 @@ describe("iModel", () => {
   it("should throw when opening checkpoint without blockcache dir env", async () => {
     process.env.BLOCKCACHE_DIR = "";
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: Guid.createValue() }));
+    const error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: generateChangeSetId() }));
     expectIModelError(IModelStatus.BadRequest, error);
   });
 
-  it.only("should throw for missing/invalid checkpoint in hub", async () => {
+  it("should throw for missing/invalid checkpoint in hub", async () => {
     process.env.BLOCKCACHE_DIR = "/foo/";
     const checkpointsV2Handler = BriefcaseManager.imodelClient.checkpointsV2;
     const hubMock = sinon.stub(checkpointsV2Handler, "get").callsFake(async () => []);
     sinon.stub(BriefcaseManager.imodelClient, "checkpointsV2").get(() => checkpointsV2Handler);
 
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
-    let error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: Guid.createValue() }));
+    let error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: generateChangeSetId() }));
     expectIModelError(IModelStatus.NotFound, error);
 
     hubMock.callsFake(async () => [{} as any]);
-    error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: Guid.createValue() }));
+    error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: generateChangeSetId() }));
     expectIModelError(IModelStatus.BadRequest, error);
   });
 
@@ -1800,24 +1800,6 @@ describe("iModel", () => {
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
     const error = await getIModelError(imodel1.reattachDaemon(ctx));
     expectIModelError(IModelStatus.WrongIModel, error);
-  });
-
-  it("The same promise can have two subscribers, and it will notify both.", async () => {
-    const testPromise = new Promise((resolve, _reject) => {
-      setTimeout(() => resolve("Success!"), 250);
-    });
-
-    let callbackcount = 0;
-    testPromise.then(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
-      ++callbackcount;
-    });
-    testPromise.then(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
-      ++callbackcount;
-    });
-
-    await testPromise;
-
-    assert.equal(callbackcount, 2);
   });
 
   // This is skipped because it fails unpredictably - the timeouts don't seem to happen as expected
