@@ -324,6 +324,7 @@ export class PolyfaceQuery {
         context.projectToPolygon(visitor.point, announce, polyface, visitor.currentReadIndex());
       }
     }
+    // console.log(`numFacet ${numFacet}  numTest    ${numTest}    ratio  ${numTest / numFacet}`);
   }
 
 
