@@ -8,7 +8,7 @@
 
 import { BeEvent, Config, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseDownloader, BriefcaseProps, Events, IModelError, IModelVersion, InternetConnectivityStatus,
+  BriefcaseDownloader, Events, IModelError, IModelVersion, InternetConnectivityStatus,
   LocalBriefcaseProps,
   NativeAppRpcInterface, OpenBriefcaseProps, OverriddenBy, RequestNewBriefcaseProps, RpcRegistry, StorageValue, SyncMode,
 } from "@bentley/imodeljs-common";

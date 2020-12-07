@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Config, GuidString } from "@bentley/bentleyjs-core";
-import { BriefcaseDownloader, BriefcaseProps, IModelVersion, LocalBriefcaseProps, SyncMode } from "@bentley/imodeljs-common";
+import { BriefcaseDownloader, IModelVersion, LocalBriefcaseProps, SyncMode } from "@bentley/imodeljs-common";
 import { IModelApp, NativeApp, NativeAppLogger } from "@bentley/imodeljs-frontend";
 import { ProgressInfo } from "@bentley/itwin-client";
 import { TestFrontendAuthorizationClient, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";

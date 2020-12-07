@@ -13,7 +13,7 @@ import { BriefcaseStatus, ChangeSetStatus, DbResult, Guid, GuidString, IModelSta
 import { AuthorizedClientRequestContext, CancelRequest, ProgressCallback, ProgressInfo, UserCancelledError } from "@bentley/itwin-client";
 import { BriefcaseIdValue, BriefcaseManager } from "./BriefcaseManager";
 import { SnapshotDb } from "./IModelDb";
-import { Checkpoint, CheckpointQuery, CheckpointV2, CheckpointV2Query } from "@bentley/imodelhub-client";
+import { Checkpoint, CheckpointQuery, CheckpointV2Query } from "@bentley/imodelhub-client";
 import { IModelHost } from "./IModelHost";
 import { DownloadBriefcaseStatus, IModelError } from "@bentley/imodeljs-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
