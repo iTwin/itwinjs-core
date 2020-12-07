@@ -495,6 +495,12 @@ describe("GeometryStream", () => {
     const newId = imodel.elements.insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
+
+    const usageInfo = imodel.nativeDb.queryDefinitionElementUsage([partId, styleId])!;
+    assert.isTrue(usageInfo.geometryPartIds!.includes(partId));
+    assert.isTrue(usageInfo.lineStyleIds!.includes(styleId));
+    assert.isTrue(usageInfo.usedIds!.includes(partId));
+    assert.isTrue(usageInfo.usedIds!.includes(styleId));
   });
 
   it("create GeometricElement3d using compound style with dash widths and symbol", async () => {
@@ -552,6 +558,14 @@ describe("GeometryStream", () => {
     const newId = imodel.elements.insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
+
+    const usageInfo = imodel.nativeDb.queryDefinitionElementUsage([partId, styleId, seedElement.category])!;
+    assert.isTrue(usageInfo.geometryPartIds!.includes(partId));
+    assert.isTrue(usageInfo.lineStyleIds!.includes(styleId));
+    assert.isTrue(usageInfo.spatialCategoryIds!.includes(seedElement.category));
+    assert.isTrue(usageInfo.usedIds!.includes(partId));
+    assert.isTrue(usageInfo.usedIds!.includes(styleId));
+    assert.isTrue(usageInfo.usedIds!.includes(seedElement.category));
   });
 
   it("create GeometricElement3d using shapes with fill/gradient", async () => {
@@ -789,6 +803,10 @@ describe("GeometryStream", () => {
       }
     }
     assert.isTrue(6 === iShape);
+
+    const usageInfo = imodel.nativeDb.queryDefinitionElementUsage([partId])!;
+    assert.isTrue(usageInfo.geometryPartIds!.includes(partId));
+    assert.isTrue(usageInfo.usedIds!.includes(partId));
   });
 
   it("create GeometricElement3d from world coordinate text using a newly embedded font", async () => {
@@ -910,6 +928,10 @@ describe("GeometryStream", () => {
     for (let i = 0; i < geomArrayOut.length; i++) {
       assert.isTrue(geomArrayOut[i].isAlmostEqual(geomArray[i]));
     }
+
+    const usageInfo = imodel.nativeDb.queryDefinitionElementUsage([partId])!;
+    assert.isTrue(usageInfo.geometryPartIds!.includes(partId));
+    assert.isUndefined(usageInfo.usedIds, "GeometryPart should not to be used by any GeometricElement");
   });
 
   it("create GeometricElement3d from arcs", async () => {
@@ -1388,7 +1410,7 @@ describe("ElementGeometry", () => {
     assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expectedSkip, false, undefined, 2));
   });
 
-  it("create GeometricElement3d from local coordinate textstring flatbuffer data", async () => {
+  it("create GeometricElement3d from local coordinate text string flatbuffer data", async () => {
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
@@ -1614,7 +1636,7 @@ describe("ElementGeometry", () => {
     newEntries.push(entrySH!);
     expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curveCollection", geometrySubCategory: "loop" });
 
-    // Shape with themaic gradient fill...
+    // Shape with thematic gradient fill...
     geomParams.gradient.mode = Gradient.Mode.Thematic;
     geomParams.gradient.thematicSettings = ThematicGradientSettings.fromJSON({ mode: ThematicGradientMode.Stepped, stepCount: 5 });
     added = ElementGeometry.appendGeometryParams(geomParams, newEntries);
