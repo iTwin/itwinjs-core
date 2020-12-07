@@ -17,7 +17,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import {
-  AuxCoordSystem, AuxCoordSystem2d, BackendRequestContext, CategorySelector, DefinitionElement, DefinitionModel, DefinitionPartition, DisplayStyle2d, DisplayStyle3d,
+  AuxCoordSystem, AuxCoordSystem2d, BackendRequestContext, CategorySelector, DefinitionModel, DefinitionPartition, DisplayStyle2d, DisplayStyle3d,
   DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition, ECSqlStatement, Element,
   ElementAspect, ElementMultiAspect, ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementRefersToElements,
   ElementUniqueAspect, ExternalSourceAspect, FunctionalModel, FunctionalSchema, GeometricElement3d, GeometryPart, GroupModel, IModelDb,
@@ -363,74 +363,6 @@ export namespace IModelTransformerUtils {
     } as any);
     const relationshipId2: Id64String = sourceDb.relationships.insertInstance(relationship2);
     assert.isTrue(Id64.isValidId64(relationshipId2));
-    // test queryDefinitionElementUsage
-    const definitionElementIds: Id64String[] = [];
-    sourceDb.withPreparedStatement(`SELECT ECInstanceId FROM ${DefinitionElement.classFullName}`, (statement: ECSqlStatement): void => {
-      while (DbResult.BE_SQLITE_ROW === statement.step()) {
-        definitionElementIds.push(statement.getValue(0).getId());
-      }
-    });
-    const usageInfo = sourceDb.nativeDb.queryDefinitionElementUsage(definitionElementIds)!;
-    assert.exists(usageInfo);
-    // SpatialCategory usage
-    assert.isTrue(usageInfo.spatialCategoryIds!.includes(spatialCategoryId));
-    assert.isTrue(usageInfo.usedIds!.includes(spatialCategoryId));
-    assert.throws(() => sourceDb.elements.deleteElement(spatialCategoryId));
-    // DrawingCategory usage
-    assert.isTrue(usageInfo.drawingCategoryIds!.includes(drawingCategoryId));
-    assert.isTrue(usageInfo.usedIds!.includes(drawingCategoryId));
-    assert.throws(() => sourceDb.elements.deleteElement(drawingCategoryId));
-    // SubCategory usage
-    assert.isTrue(usageInfo.subCategoryIds!.includes(subCategoryId));
-    assert.isTrue(usageInfo.usedIds!.includes(subCategoryId));
-    assert.throws(() => sourceDb.elements.deleteElement(subCategoryId));
-    // GeometryPart usage
-    assert.isTrue(usageInfo.geometryPartIds!.includes(geometryPartId));
-    assert.isTrue(usageInfo.usedIds!.includes(geometryPartId));
-    assert.throws(() => sourceDb.elements.deleteElement(geometryPartId));
-    // RenderMaterial usage
-    assert.isTrue(usageInfo.renderMaterialIds!.includes(renderMaterialId));
-    assert.isTrue(usageInfo.usedIds!.includes(renderMaterialId));
-    assert.throws(() => sourceDb.elements.deleteElement(renderMaterialId));
-    // Texture usage
-    assert.isTrue(usageInfo.textureIds!.includes(textureId));
-    assert.isFalse(usageInfo.usedIds!.includes(textureId));
-    assert.throws(() => sourceDb.elements.deleteElement(textureId));
-    // DisplayStyle usage
-    assert.isTrue(usageInfo.displayStyleIds!.includes(displayStyle2dId));
-    assert.isTrue(usageInfo.displayStyleIds!.includes(displayStyle3dId));
-    assert.isTrue(usageInfo.usedIds!.includes(displayStyle2dId));
-    assert.isTrue(usageInfo.usedIds!.includes(displayStyle3dId));
-    assert.throws(() => sourceDb.elements.deleteElement(displayStyle2dId));
-    assert.throws(() => sourceDb.elements.deleteElement(displayStyle3dId));
-    // CategorySelector usage
-    assert.isTrue(usageInfo.categorySelectorIds!.includes(spatialCategorySelectorId));
-    assert.isTrue(usageInfo.categorySelectorIds!.includes(drawingCategorySelectorId));
-    assert.isTrue(usageInfo.usedIds!.includes(spatialCategorySelectorId));
-    assert.isTrue(usageInfo.usedIds!.includes(drawingCategorySelectorId));
-    assert.throws(() => sourceDb.elements.deleteElement(spatialCategorySelectorId));
-    assert.throws(() => sourceDb.elements.deleteElement(drawingCategorySelectorId));
-    // ModelSelector usage
-    assert.isTrue(usageInfo.modelSelectorIds!.includes(modelSelectorId));
-    assert.isTrue(usageInfo.usedIds!.includes(modelSelectorId));
-    assert.throws(() => sourceDb.elements.deleteElement(modelSelectorId));
-    // ViewDefinition usage
-    assert.isTrue(usageInfo.viewDefinitionIds!.includes(viewId));
-    assert.isTrue(usageInfo.viewDefinitionIds!.includes(drawingViewId));
-    assert.isFalse(usageInfo.usedIds!.includes(viewId));
-    assert.isFalse(usageInfo.usedIds!.includes(drawingViewId));
-    assert.throws(() => sourceDb.elements.deleteElement(viewId));
-    assert.throws(() => sourceDb.elements.deleteElement(drawingId));
-    // other and used checks
-    assert.isAtLeast(usageInfo.otherDefinitionElementIds!.length, 1);
-    assert.isAtLeast(usageInfo.usedIds!.length, 10);
-    // specify subCategoryId only to test Category filtering
-    const subCategoryUsageInfo = sourceDb.nativeDb.queryDefinitionElementUsage([subCategoryId])!;
-    assert.exists(subCategoryUsageInfo);
-    assert.isTrue(subCategoryUsageInfo.subCategoryIds!.includes(subCategoryId));
-    assert.equal(subCategoryUsageInfo.subCategoryIds!.length, 1);
-    assert.isTrue(subCategoryUsageInfo.usedIds!.includes(subCategoryId));
-    assert.equal(subCategoryUsageInfo.usedIds!.length, 1);
   }
 
   export function updateSourceDb(sourceDb: IModelDb): void {
@@ -1150,7 +1082,7 @@ export namespace IModelTransformerUtils {
     return geometryStreamBuilder.geometryStream;
   }
 
-  function insertTextureElement(iModelDb: IModelDb, modelId: Id64String, textureName: string): Id64String {
+  export function insertTextureElement(iModelDb: IModelDb, modelId: Id64String, textureName: string): Id64String {
     // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in bottom right pixel. The rest of the square is red.
     const pngData = [137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217, 74, 34, 232, 0, 0, 0, 1, 115, 82, 71, 66, 0, 174, 206, 28, 233, 0, 0, 0, 4, 103, 65, 77, 65, 0, 0, 177, 143, 11, 252, 97, 5, 0, 0, 0, 9, 112, 72, 89, 115, 0, 0, 14, 195, 0, 0, 14, 195, 1, 199, 111, 168, 100, 0, 0, 0, 24, 73, 68, 65, 84, 24, 87, 99, 248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246, 127, 175, 154, 145, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130];
     const textureData = Base64.btoa(String.fromCharCode(...pngData));
@@ -1159,7 +1091,7 @@ export namespace IModelTransformerUtils {
     return Texture.insert(iModelDb, modelId, textureName, ImageSourceFormat.Png, textureData, textureWidth, textureHeight, `Description for ${textureName}`, TextureFlags.None);
   }
 
-  function queryByUserLabel(iModelDb: IModelDb, userLabel: string): Id64String {
+  export function queryByUserLabel(iModelDb: IModelDb, userLabel: string): Id64String {
     return iModelDb.withPreparedStatement(`SELECT ECInstanceId FROM ${Element.classFullName} WHERE UserLabel=:userLabel`, (statement: ECSqlStatement): Id64String => {
       statement.bindString("userLabel", userLabel);
       return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getId() : Id64.invalid;
