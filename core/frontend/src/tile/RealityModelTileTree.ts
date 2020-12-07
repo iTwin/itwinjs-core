@@ -380,7 +380,7 @@ export type RealityModelSource = ViewState | DisplayStyleState;
 
 /** @internal */
 export class RealityModelTileTree extends RealityTileTree {
-  public readonly _isContentUnbounded: boolean;
+  private readonly _isContentUnbounded: boolean;
   public constructor(params: RealityTileTreeParams) {
     super(params);
 
