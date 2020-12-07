@@ -380,18 +380,17 @@ export type RealityModelSource = ViewState | DisplayStyleState;
 
 /** @internal */
 export class RealityModelTileTree extends RealityTileTree {
+  public readonly _isContentUnbounded: boolean;
   public constructor(params: RealityTileTreeParams) {
     super(params);
 
+    this._isContentUnbounded = this.rootTile.contentRange.diagonal().magnitude() > 2 * Constant.earthRadiusWGS84.equator
     if (!this.isContentUnbounded && !this.rootTile.contentRange.isNull) {
       const worldContentRange = this.iModelTransform.multiplyRange(this.rootTile.contentRange);
       this.iModel.expandDisplayedExtents(worldContentRange);
     }
   }
-  public get isContentUnbounded() {
-    return this.rootTile.contentRange.diagonal().magnitude() > 2 * Constant.earthRadiusWGS84.equator;
-  }
-
+  public get isContentUnbounded() { return this._isContentUnbounded; }
 }
 
 /** @internal */
@@ -515,8 +514,7 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
     if (undefined === tree)
       return undefined;
 
-    if (!this._iModel.isGeoLocated ||
-      this.computeWorldContentRange().diagonal().magnitude() < 2 * Constant.earthRadiusWGS84.equator)
+    if (!this._iModel.isGeoLocated || !tree.isContentUnbounded)
       return super.createDrawArgs(context);
 
     const now = BeTimePoint.now();
