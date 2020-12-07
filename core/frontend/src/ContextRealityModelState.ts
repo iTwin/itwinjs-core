@@ -62,6 +62,7 @@ export class ContextRealityModelState {
         url: props.tilesetUrl,
         name: props.name,
         classifiers,
+        planarMask: props.planarModelMask,
       }) :
       createOrbitGtTileTreeReference({
         iModel,
@@ -79,14 +80,8 @@ export class ContextRealityModelState {
   public set appearanceOverrides(overrides: FeatureAppearance | undefined) { this._appearanceOverrides = overrides; }
   public get modelId(): Id64String | undefined { return (this._treeRef instanceof RealityTreeReference) ? this._treeRef.modelId : undefined; }
   /** Return true if the model spans the entire globe ellipsoid in 3D */
-  public get isGlobal(): boolean {
-    if (undefined === this._isGlobal) {
-      const range = this.treeRef.computeWorldContentRange();
-      if (!range.isNull)
-        this._isGlobal = range.diagonal().magnitude() > 2 * Constant.earthRadiusWGS84.equator;
-    }
-    return this._isGlobal === undefined ? false : this._isGlobal;
-  }
+  public get isGlobal(): boolean { return this.treeRef.isGlobal; }
+
 
   public toJSON(): ContextRealityModelProps {
     return {

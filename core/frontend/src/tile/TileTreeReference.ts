@@ -184,4 +184,10 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
 
   /** Return whether the geometry exposed by this tile tree reference should cast shadows on other geometry. */
   public abstract get castsShadows(): boolean;
+
+  /** Return whether this is a primary (BIM) tile tree  */
+  public get isPrimary(): boolean { return false; }
+
+  /** Return whether this reference has global coverage.  Mapping data is global and some non-primary models such as the OSM building layer have global coverage */
+  public get isGlobal(): boolean { return false; }
 }

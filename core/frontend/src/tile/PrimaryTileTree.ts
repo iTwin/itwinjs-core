@@ -144,6 +144,10 @@ class PrimaryTreeReference extends TileTreeReference {
     return true;
   }
 
+  public get isPrimary() {
+    return true;
+  }
+
   protected getClipVolume(_tree: TileTree): RenderClipVolume | undefined {
     // ###TODO: reduce frequency with which getModelClip() is called
     return this._view.is3d() ? this._view.getModelClip(this._model.id) : undefined;

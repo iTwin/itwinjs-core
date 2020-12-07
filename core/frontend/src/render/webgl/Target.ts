@@ -199,7 +199,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public getPlanarClassifier(id: Id64String): RenderPlanarClassifier | undefined {
     return undefined !== this._planarClassifiers ? this._planarClassifiers.get(id) : undefined;
   }
-  public createPlanarClassifier(properties: SpatialClassificationProps.Classifier): PlanarClassifier {
+  public createPlanarClassifier(properties?: SpatialClassificationProps.Classifier): PlanarClassifier {
     return PlanarClassifier.create(properties, this);
   }
   public getTextureDrape(id: Id64String): RenderTextureDrape | undefined {

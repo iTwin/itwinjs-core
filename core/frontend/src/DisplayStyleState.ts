@@ -236,7 +236,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       const tilesetUrl = getCesiumOSMBuildingsUrl();
       const name = IModelApp.i18n.translate("iModelJs:RealityModelNames.OSMBuildings");
       currentIndex = this._contextRealityModels.length;
-      this.attachRealityModel({ tilesetUrl, name });
+      this.attachRealityModel({ tilesetUrl, name, planarModelMask: { maskAllHigherPriorityModels: true } });
     }
     if (options.appearanceOverrides)
       this.overrideRealityModelAppearance(currentIndex, options.appearanceOverrides);

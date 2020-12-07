@@ -7,9 +7,10 @@
  * @module WebGL
  */
 
-import { dispose } from "@bentley/bentleyjs-core";
+import { dispose, Id64String } from "@bentley/bentleyjs-core";
 import { Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Vector3d } from "@bentley/geometry-core";
 import { ColorDef, Frustum, FrustumPlanes, RenderMode, RenderTexture, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
+import { PlanarModelMask } from "../../PlanarModelMask";
 import { GraphicsCollectorDrawArgs, TileTreeReference } from "../../tile/internal";
 import { SceneContext } from "../../ViewContext";
 import { ViewState3d } from "../../ViewState";
@@ -251,7 +252,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   private _anyOpaque = false;
   private _anyTranslucent = false;
   private readonly _plane = Plane3dByOriginAndUnitNormal.create(new Point3d(0, 0, 0), new Vector3d(0, 0, 1))!;    // TBD -- Support other planes - default to X-Y for now.
-  private readonly _classifier: SpatialClassificationProps.Classifier;
+  private readonly _classifier?: SpatialClassificationProps.Classifier;
   private readonly _renderState = new RenderState();
   private readonly _renderCommands: RenderCommands;
   private readonly _branchStack = new BranchStack();
@@ -267,7 +268,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   private _isClassifyingPointCloud?: boolean; // we will detect this the first time we draw
   private readonly _bgColor = ColorDef.from(0, 0, 0, 255);
 
-  private constructor(classifier: SpatialClassificationProps.Classifier, target: Target) {
+  private constructor(classifier: SpatialClassificationProps.Classifier | undefined, target: Target) {
     super();
     this._classifier = classifier;
 
@@ -286,20 +287,20 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   public get hiliteTexture(): Texture | undefined { return undefined !== this._buffers ? this._buffers.textures.hilite : undefined; }
   public get texture(): Texture | undefined { return undefined !== this._buffers ? this._buffers.textures.combined : undefined; }
   public get projectionMatrix(): Matrix4d { return this._projectionMatrix; }
-  public get properties(): SpatialClassificationProps.Classifier { return this._classifier; }
+  // public get properties(): SpatialClassificationProps.Classifier { return this._classifier; }
   public get baseBatchId(): number { return this._baseBatchId; }
   public get anyHilited(): boolean { return this._anyHilited; }
   public get anyOpaque(): boolean { return this._anyOpaque; }
   public get anyTranslucent(): boolean { return this._anyTranslucent; }
-  public get insideDisplay(): SpatialClassificationProps.Display { return this._classifier.flags.inside; }
-  public get outsideDisplay(): SpatialClassificationProps.Display { return this._classifier.flags.outside; }
+  public get insideDisplay(): SpatialClassificationProps.Display { return this._classifier ? this._classifier.flags.inside : SpatialClassificationProps.Display.Off; }
+  public get outsideDisplay(): SpatialClassificationProps.Display { return this._classifier ? this._classifier.flags.outside : SpatialClassificationProps.Display.On }
   public get isClassifyingPointCloud(): boolean { return true === this._isClassifyingPointCloud; }
 
   public addGraphic(graphic: RenderGraphic) {
     this._graphics.push(graphic);
   }
 
-  public static create(properties: SpatialClassificationProps.Classifier, target: Target): PlanarClassifier {
+  public static create(properties: SpatialClassificationProps.Classifier | undefined, target: Target): PlanarClassifier {
     return new PlanarClassifier(properties, target);
   }
 
@@ -331,7 +332,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
       this.pushBatches(batchState, this._graphics);
   }
 
-  public collectGraphics(context: SceneContext, classifiedRef: TileTreeReference, treeRef: TileTreeReference) {
+  public collectGraphics(context: SceneContext, classifiedTreeRef: TileTreeReference, classifierTreeRef?: TileTreeReference, planarModelMask?: PlanarModelMask): void {
     this._graphics.length = 0;
     if (undefined === context.viewingSpace)
       return;
@@ -340,7 +341,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     if (undefined === viewState)
       return;
 
-    const classifiedTree = classifiedRef.treeOwner.load();
+    const classifiedTree = classifiedTreeRef.treeOwner.load();
     if (undefined === classifiedTree)
       return;
 
@@ -353,8 +354,11 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
 
     this._width = requiredWidth;
     this._height = requiredHeight;
+    const trees: TileTreeReference[] = classifierTreeRef ? [classifierTreeRef] : [];
+    if (planarModelMask)
+      planarModelMask?.getTileTrees(trees, context.viewport.view, classifiedTree.modelId);
 
-    const projection = PlanarTextureProjection.computePlanarTextureProjection(this._plane, context.viewingSpace, classifiedRef, treeRef, viewState, this._width, this._height);
+    const projection = PlanarTextureProjection.computePlanarTextureProjection(this._plane, context.viewingSpace, classifiedTreeRef, trees, viewState, this._width, this._height);
     if (!projection.textureFrustum || !projection.projectionMatrix || !projection.worldToViewMap)
       return;
 
@@ -362,9 +366,11 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     this._frustum = projection.textureFrustum;
     this._debugFrustum = projection.debugFrustum;
 
-    const drawArgs = GraphicsCollectorDrawArgs.create(context, this, treeRef, new FrustumPlanes(this._frustum), projection.worldToViewMap);
-    if (undefined !== drawArgs)
-      treeRef.draw(drawArgs);
+    for (const treeRef of trees) {
+      const drawArgs = GraphicsCollectorDrawArgs.create(context, this, treeRef, new FrustumPlanes(this._frustum), projection.worldToViewMap);
+      if (undefined !== drawArgs)
+        treeRef.draw(drawArgs);
+    }
 
     // Shader behaves slightly differently when classifying surfaces vs point clouds.
     this._isClassifyingPointCloud = classifiedTree.isPointCloud;

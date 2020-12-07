@@ -12,6 +12,7 @@ import {
   Ray3d, Transform,
 } from "@bentley/geometry-core";
 import { Frustum, FrustumPlanes, Npc, RenderMode } from "@bentley/imodeljs-common";
+import { LengthDescription } from "../../properties/LengthDescription";
 import { TileTreeReference } from "../../tile/internal";
 import { ViewingSpace } from "../../ViewingSpace";
 import { ViewState3d } from "../../ViewState";
@@ -27,11 +28,18 @@ export class PlanarTextureProjection {
         rangePoints.push(point);
     }, true, true, false);
   }
-  public static computePlanarTextureProjection(texturePlane: Plane3dByOriginAndUnitNormal, viewFrustum: ViewingSpace, drapedRef: TileTreeReference, drapeRef: TileTreeReference, viewState: ViewState3d, textureWidth: number, textureHeight: number, _heightRange?: Range1d): { textureFrustum?: Frustum, worldToViewMap?: Map4d, projectionMatrix?: Matrix4d, debugFrustum?: Frustum, zValue?: number } {
+  public static computePlanarTextureProjection(texturePlane: Plane3dByOriginAndUnitNormal, viewFrustum: ViewingSpace, drapedRef: TileTreeReference, drapeRefs: TileTreeReference[], viewState: ViewState3d, textureWidth: number, textureHeight: number, _heightRange?: Range1d): { textureFrustum?: Frustum, worldToViewMap?: Map4d, projectionMatrix?: Matrix4d, debugFrustum?: Frustum, zValue?: number } {
     const drapedTileTree = drapedRef.treeOwner.tileTree;
-    const drapeTileTree = drapeRef.treeOwner.tileTree;
-    if (undefined === drapedTileTree || undefined === drapeTileTree)
+    let drapeUnbounded = false, drapeNotLoaded;
+
+    if (undefined === drapedTileTree)
       return {};
+    for (const drapeRef of drapeRefs) {
+      const drapeTree = drapeRef.treeOwner.tileTree;
+      if (!drapeTree)
+        return {};
+      drapeUnbounded = drapeUnbounded || drapeTree.isContentUnbounded;
+    }
 
     const textureZ = texturePlane.getNormalRef();
     // const textureDepth = textureZ.dotProduct(texturePlane.getOriginRef());
@@ -72,18 +80,24 @@ export class PlanarTextureProjection {
     for (const rangePoint of rangePoints)
       drapeHeightRange.extendX(rangePoint.x);
 
-    if (drapeTileTree.isContentUnbounded) {
+    if (drapeUnbounded) {
       drapeHeightRange.extendX(texturePlane.getOriginRef().z - epsilon);
       drapeHeightRange.extendX(texturePlane.getOriginRef().z + epsilon);
     } else {
       // In this case (classification) we don't know the drape geometry exists on the texture plane.
       // We expand the depth to include the drape geometry - but limit the area to intersection of drape with draped.
-      const drapeRange = drapeRef.computeWorldContentRange();
-      if (drapeRange.isNull)
-        return {};
+      let drapeRangeNull = true;
+      for (const drapeRef of drapeRefs) {
+        const drapeRange = drapeRef.computeWorldContentRange();
+        if (!drapeRange.isNull) {
+          drapeRangeNull = false;
+          drapeHeightRange.extendX(drapeRange.low.z - epsilon);
+          drapeHeightRange.extendX(drapeRange.high.z + epsilon);
+        }
 
-      drapeHeightRange.extendX(drapeRange.low.z - epsilon);
-      drapeHeightRange.extendX(drapeRange.high.z + epsilon);
+      }
+      if (drapeRangeNull)
+        return {};
     }
 
     const range = Range3d.createArray(rangePoints);

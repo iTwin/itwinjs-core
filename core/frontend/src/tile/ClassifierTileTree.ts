@@ -6,7 +6,7 @@
  * @module Tiles
  */
 import { compareStrings, compareStringsOrUndefined, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { BatchType, ClassifierTileTreeId, compareIModelTileTreeIds, iModelTileTreeIdToString } from "@bentley/imodeljs-common";
+import { BatchType, ClassifierTileTreeId, compareIModelTileTreeIds, iModelTileTreeIdToString, SpatialClassificationProps } from "@bentley/imodeljs-common";
 import { DisplayStyleState } from "../DisplayStyleState";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -73,6 +73,8 @@ const classifierTreeSupplier = new ClassifierTreeSupplier();
 /** @internal */
 export abstract class SpatialClassifierTileTreeReference extends TileTreeReference {
   public abstract get classifiers(): SpatialClassifiers;
+  public abstract get isPlanar(): boolean;
+  public abstract get activeClassifier(): SpatialClassificationProps.Classifier | undefined;
 }
 
 /** @internal */
@@ -95,6 +97,7 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
   }
 
   public get classifiers(): SpatialClassifiers { return this._classifiers; }
+  public get activeClassifier(): SpatialClassificationProps.Classifier | undefined { return this.classifiers.active; }
 
   public get castsShadows() {
     return false;
@@ -114,30 +117,30 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
     // NB: We do NOT call super because we don't use our tree if no classifier is active.
     trees.disclose(this._classifiedTree);
 
-    const classifier = this._classifiers.active;
+    const classifier = this.activeClassifier;
     const classifierTree = undefined !== classifier ? this.treeOwner.tileTree : undefined;
     if (undefined !== classifierTree)
       trees.add(classifierTree);
   }
+  public get isPlanar() { return BatchType.PlanarClassifier === this._id.type; }
 
   public addToScene(context: SceneContext): void {
+    if (this.isPlanar)
+      return;   // Planar classifiers may also have masks and are added seperately.
+
     const classifiedTree = this._classifiedTree.treeOwner.load();
     if (undefined === classifiedTree)
       return;
 
     const classifier = this._classifiers.active;
-    const classifierTree = undefined !== classifier ? this.treeOwner.load() : undefined;
-    if (undefined === classifier || undefined === classifierTree)
+    if (undefined === classifier)
+      return;
+    const classifierTree = this.treeOwner.load();
+    if (undefined === classifierTree)
       return;
 
-    context.modelClassifiers.set(classifiedTree.modelId, classifier.modelId);
-
-    if (BatchType.PlanarClassifier === this._id.type) {
-      context.addPlanarClassifier(classifier, this, this._classifiedTree);
-    } else {
-      context.setVolumeClassifier(classifier, classifiedTree.modelId);
-      super.addToScene(context);
-    }
+    context.setVolumeClassifier(classifier, classifiedTree.modelId);
+    super.addToScene(context);
   }
 
   private createId(classifiers: SpatialClassifiers, source: ViewState | DisplayStyleState): ClassifierTreeId {

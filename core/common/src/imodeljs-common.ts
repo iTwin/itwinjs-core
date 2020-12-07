@@ -48,6 +48,7 @@ export * from "./MaterialProps";
 export * from "./ModelProps";
 export * from "./OctEncodedNormal";
 export * from "./Paging";
+export * from "./PlanarModelMaskProps";
 export * from "./PlanProjectionSettings";
 export * from "./QPoint";
 export * from "./Render";

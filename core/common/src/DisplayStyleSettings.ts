@@ -19,7 +19,7 @@ import { ColorDef, ColorDefProps } from "./ColorDef";
 import { DefinitionElementProps } from "./ElementProps";
 import { GroundPlaneProps } from "./GroundPlane";
 import { HiddenLine } from "./HiddenLine";
-import { FeatureAppearance, FeatureAppearanceProps, SubCategoryOverride } from "./imodeljs-common";
+import { FeatureAppearance, FeatureAppearanceProps, PlanarModelMaskProps, SubCategoryOverride } from "./imodeljs-common";
 import { LightSettings, LightSettingsProps } from "./LightSettings";
 import { MapImageryProps, MapImagerySettings } from "./MapImagerySettings";
 import { PlanProjectionSettings, PlanProjectionSettingsProps } from "./PlanProjectionSettings";
@@ -81,11 +81,13 @@ export interface ContextRealityModelProps {
   description?: string;
   /** @beta */
   classifiers?: SpatialClassificationProps.Properties[];
+  /** @beta */
+  planarModelMask?: PlanarModelMaskProps;
   /** Appearance overrides.  Only the color, transparency, emphasized and nonLocatable properties are applicable.
    * @beta
-   *
    */
   appearanceOverrides?: FeatureAppearanceProps;
+
 }
 
 /** Describes the style in which monochrome color is applied by a [[DisplayStyleSettings]].

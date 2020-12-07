@@ -347,7 +347,7 @@ export function addOverrideClassifierColor(builder: ProgramBuilder, isThematic: 
   builder.frag.addUniform("u_planarClassifierInsideMode", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_planarClassifierInsideMode", (uniform, params) => {
       const classifier = params.target.currentlyDrawingClassifier;
-      const override = undefined !== classifier ? classifier.properties.flags.inside : 0;
+      const override = undefined !== classifier ? classifier.insideDisplay : 0;
       uniform.setUniform1f(override);
     });
   });

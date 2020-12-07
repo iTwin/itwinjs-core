@@ -503,6 +503,7 @@ export class MapTileTreeReference extends TileTreeReference {
       if (undefined !== (tree = IModelApp.mapLayerFormatRegistry.createImageryMapLayerTree(this._layerSettings[i], i + 1, iModel)))
         this._imageryTrees.push(tree);
   }
+  public get isGlobal() { return true; }
   public get baseColor(): ColorDef | undefined { return this._baseColor; }
 
   /** Terrain  tiles do not contribute to the range used by "fit view". */

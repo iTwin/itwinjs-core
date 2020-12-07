@@ -8,7 +8,7 @@
 
 import { assert, BentleyStatus, compareNumbers, compareStrings, compareStringsOrUndefined, Guid, Id64String } from "@bentley/bentleyjs-core";
 import { Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Ray3d, Transform, TransformProps, Vector3d, XYZ } from "@bentley/geometry-core";
-import { Cartographic, IModelError, ViewFlagOverrides, ViewFlagPresence } from "@bentley/imodeljs-common";
+import { Cartographic, IModelError, PlanarModelMaskProps, ViewFlagOverrides, ViewFlagPresence } from "@bentley/imodeljs-common";
 import { AccessToken, request, RequestOptions } from "@bentley/itwin-client";
 import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
 import { DisplayStyleState } from "../DisplayStyleState";
@@ -16,6 +16,7 @@ import { AuthorizedFrontendRequestContext, FrontendRequestContext } from "../Fro
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
+import { PlanarModelMask } from "../PlanarModelMask";
 import { RenderMemory } from "../render/RenderMemory";
 import { SpatialClassifiers } from "../SpatialClassifiers";
 import { SceneContext } from "../ViewContext";
@@ -406,15 +407,25 @@ export namespace RealityModelTileTree {
     name?: string;
     classifiers?: SpatialClassifiers;
     requestAuthorization?: string;
+    planarMask?: PlanarModelMaskProps;
   }
 
   export abstract class Reference extends TileTreeReference {
+    private _isGlobal?: boolean;
     public abstract get classifiers(): SpatialClassifiers | undefined;
 
     public unionFitRange(union: Range3d): void {
       const contentRange = this.computeWorldContentRange();
       if (!contentRange.isNull && contentRange.diagonal().magnitude() < Constant.earthRadiusWGS84.equator)
         union.extendRange(contentRange);
+    }
+    public get isGlobal() {
+      if (undefined === this._isGlobal) {
+        const range = this.computeWorldContentRange();
+        if (!range.isNull)
+          this._isGlobal = range.diagonal().magnitude() > 2 * Constant.earthRadiusWGS84.equator;
+      }
+      return this._isGlobal === undefined ? false : this._isGlobal;
     }
   }
 
@@ -457,6 +468,7 @@ export namespace RealityModelTileTree {
   }
 }
 
+
 /** Supplies a reality data [[TileTree]] from a URL. May be associated with a persistent [[GeometricModelState]], or attached at run-time via a [[ContextRealityModelState]].
  * @internal
  */
@@ -468,6 +480,7 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
   private _transform?: Transform;
   private _modelId: Id64String;
   private _iModel: IModelConnection;
+  private _planarMask?: PlanarModelMask;
   public get modelId() { return this._modelId; }
 
   public constructor(props: RealityModelTileTree.ReferenceProps) {
@@ -484,6 +497,7 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     this._transform = transform;
     this._iModel = props.iModel;
     this._modelId = props.modelId ? props.modelId : this._iModel.transientIds.next;
+    this._planarMask = props.planarMask ? PlanarModelMask.fromJSON(props.planarMask) : undefined;
 
     if (undefined !== props.classifiers)
       this._classifier = createClassifierTileTreeReference(props.classifiers, this, props.iModel, props.source);
@@ -503,10 +517,14 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
 
   public get classifiers(): SpatialClassifiers | undefined { return undefined !== this._classifier ? this._classifier.classifiers : undefined; }
 
+  public get planarClassifierTreeRef() { return this._classifier && this._classifier.activeClassifier && this._classifier.isPlanar ? this._classifier : undefined; }
+
   public addToScene(context: SceneContext): void {
     // NB: The classifier must be added first, so we can find it when adding our own tiles.
-    if (undefined !== this._classifier)
-      this._classifier.addToScene(context);
+    if (this._classifier && this._classifier.activeClassifier && !this._classifier.isPlanar)
+      this._classifier.addToScene(context);     // Add volume classifier seperately from planar classifiers (which may be require masking as well)
+
+    this.addPlanarClassifierToScene(context);
 
     const tree = this.treeOwner.tileTree as RealityTileTree;
     if (undefined !== tree && (tree.loader as RealityModelTileLoader).doDrapeBackgroundMap) {
@@ -516,6 +534,14 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     }
 
     super.addToScene(context);
+  }
+  private addPlanarClassifierToScene(context: SceneContext) {
+    // A planarClassifier is required if there is a classification tree OR planar masking is required.
+    const classifierTree = this.planarClassifierTreeRef;
+    if (!classifierTree && !this._planarMask)
+      return;
+
+    context.addPlanarClassifier(this.modelId, this, classifierTree, this._planarMask);
   }
 
   public discloseTileTrees(trees: TileTreeSet): void {

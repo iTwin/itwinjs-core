@@ -13,6 +13,7 @@ import {
 } from "@bentley/geometry-core";
 import { ColorDef, Frustum, FrustumPlanes, LinePixels, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
+import { PlanarModelMask } from "./PlanarModelMask";
 import { CanvasDecoration } from "./render/CanvasDecoration";
 import { Decorations } from "./render/Decorations";
 import { GraphicBranch, GraphicBranchOptions } from "./render/GraphicBranch";
@@ -22,7 +23,7 @@ import { RenderPlanarClassifier } from "./render/RenderPlanarClassifier";
 import { RenderTextureDrape } from "./render/RenderSystem";
 import { RenderTarget } from "./render/RenderTarget";
 import { Scene } from "./render/Scene";
-import { Tile, TileGraphicType, TileLoadStatus, TileTreeReference } from "./tile/internal";
+import { SpatialClassifierTileTreeReference, Tile, TileGraphicType, TileLoadStatus, TileTreeReference } from "./tile/internal";
 import { ViewingSpace } from "./ViewingSpace";
 import { CachedDecoration, ScreenViewport, Viewport, ViewportDecorator } from "./Viewport";
 
@@ -532,7 +533,6 @@ export class SceneContext extends RenderContext {
   }
 
   /** @internal */
-  public readonly modelClassifiers = new Map<Id64String, Id64String>();    // Model id to classifier model Id.
   private _viewingSpace?: ViewingSpace;
   private _graphicType: TileGraphicType = TileGraphicType.Scene;
 
@@ -579,22 +579,16 @@ export class SceneContext extends RenderContext {
   }
 
   /** @internal */
-  public addPlanarClassifier(props: SpatialClassificationProps.Classifier, tileTree: TileTreeReference, classifiedTree: TileTreeReference): RenderPlanarClassifier | undefined {
-    // Have we already seen this classifier before?
-    const id = props.modelId;
-    let classifier = this.planarClassifiers.get(id);
-    if (undefined !== classifier)
-      return classifier;
-
+  public addPlanarClassifier(classifiedModelId: Id64String, classifiedTree: TileTreeReference, classifierTree?: SpatialClassifierTileTreeReference, planarModelMask?: PlanarModelMask): RenderPlanarClassifier | undefined {
     // Target may have the classifier from a previous frame; if not we must create one.
-    classifier = this.viewport.target.getPlanarClassifier(id);
+    let classifier = this.viewport.target.getPlanarClassifier(classifiedModelId);
     if (undefined === classifier)
-      classifier = this.viewport.target.createPlanarClassifier(props);
+      classifier = this.viewport.target.createPlanarClassifier(classifierTree?.activeClassifier);
 
     // Either way, we need to collect the graphics to draw for this frame, and record that we did so.
     if (undefined !== classifier) {
-      this.planarClassifiers.set(id, classifier);
-      classifier.collectGraphics(this, classifiedTree, tileTree);
+      this.planarClassifiers.set(classifiedModelId, classifier);
+      classifier.collectGraphics(this, classifiedTree, classifierTree, planarModelMask);
     }
 
     return classifier;
@@ -602,8 +596,7 @@ export class SceneContext extends RenderContext {
 
   /** @internal */
   public getPlanarClassifierForModel(modelId: Id64String) {
-    const classifierId = this.modelClassifiers.get(modelId);
-    return undefined === classifierId ? undefined : this.planarClassifiers.get(classifierId);
+    return this.planarClassifiers.get(modelId);
   }
 
   /** @internal */
