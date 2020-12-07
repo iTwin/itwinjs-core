@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { app } from "electron";
+import * as fs from "fs";
 import * as path from "path";
 import { IModelHost, IModelJsFs } from "@bentley/imodeljs-backend";
 import { MobileRpcConfiguration, RpcManager } from "@bentley/imodeljs-common";
@@ -40,6 +41,41 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
       jsonStr = jsonStr.slice(0, firstBraceIndex) + argOutputPath + jsonStr.slice(firstBraceIndex);
     }
     return jsonStr;
+  }
+
+  public async writeExternalFile(outputPath: string, outputName: string, append: boolean, content: string): Promise<void> {
+    const fileName = this.createFullFilePath(outputPath, outputName);
+    if (undefined === fileName)
+      return;
+
+    const filePath = this.getFilePath(fileName);
+    if (!fs.existsSync(filePath))
+      this.createFilePath(filePath);
+
+    if (!append && fs.existsSync(fileName))
+      fs.unlinkSync(fileName);
+
+    if (append)
+      fs.appendFileSync(fileName, content);
+    else
+      fs.writeFileSync(fileName, content);
+  }
+
+  private createFilePath(filePath: string) {
+    const files = filePath.split(/\/|\\/); // /\.[^/.]+$/ // /\/[^\/]+$/
+    let curFile = "";
+    for (const file of files) {
+      if (file === "")
+        break;
+
+      curFile += `${file}\\`;
+      if (!fs.existsSync(curFile))
+        fs.mkdirSync(curFile);
+    }
+  }
+
+  public async consoleLog(content: string): Promise<void> {
+    console.log(content); // eslint-disable-line no-console
   }
 
   public async saveCsv(outputPath: string, outputName: string, rowDataJson: string, csvFormat?: string): Promise<void> {
