@@ -257,8 +257,7 @@ export class ToolWithSettings extends PrimitiveTool {
   }
 
   private _handleToolSettingsPopupCancel = () => {
-    // do not close when clicked outside because controls with embedded <Popup> will cause both parent popup to close.
-    // IModelApp.uiAdmin.closeToolSettingsPopup();
+    IModelApp.uiAdmin.closeToolSettingsPopup();
   };
 
   /** A tool is responsible for providing tool assistance appropriate to the current tool state following significant events.

@@ -12,7 +12,7 @@ import {
 import {
   GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, YawPitchRollAngles,
 } from "@bentley/geometry-core";
-import { Checkpoint } from "@bentley/imodelhub-client";
+import { CheckpointV2 } from "@bentley/imodelhub-client";
 import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyleProps,
   DisplayStyleSettingsProps, DomainOptions, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeometricElement3dProps,
@@ -61,6 +61,14 @@ function exerciseGc() {
     const fmt = obj.value.toString();
     assert.isTrue(i === parseInt(fmt, 10));
   }
+}
+
+function generateChangeSetId(): string {
+  let result = "";
+  for (let i = 0; i < 20; ++i) {
+    result += Math.floor(Math.random() * 256).toString(16).padStart(2, "0");
+  }
+  return result;
 }
 
 describe("iModel", () => {
@@ -1718,24 +1726,24 @@ describe("iModel", () => {
     // Just create an empty snapshot, and we'll use that as our fake "checkpoint" (so it opens)
     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint.bim");
     const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
-    const iModelId = snapshot.getGuid();
+    const imodelId = snapshot.getGuid();
     const contextId = Guid.createValue();
-    const changeSetId = Guid.createValue();
+    const changeSetId = generateChangeSetId();
     snapshot.close();
 
     // Mock iModelHub
-    const mockCheckpoint: Checkpoint = {
+    const mockCheckpointV2: CheckpointV2 = {
       wsgId: "INVALID",
       ecId: "INVALID",
-      mergedChangeSetId: changeSetId,
-      bcvAccessKeyAccount: "testAccount",
-      bcvAccessKeyContainer: `imodelblocks-${iModelId}`,
-      bcvAccessKeySAS: "testSAS",
-      bcvAccessKeyDbName: "testDb",
+      changeSetId,
+      containerAccessKeyAccount: "testAccount",
+      containerAccessKeyContainer: `imodelblocks-${imodelId}`,
+      containerAccessKeySAS: "testSAS",
+      containerAccessKeyDbName: "testDb",
     };
-    const checkpointsHandler = BriefcaseManager.imodelClient.checkpoints;
-    sinon.stub(checkpointsHandler, "get").callsFake(async () => [mockCheckpoint]);
-    sinon.stub(BriefcaseManager.imodelClient, "checkpoints").get(() => checkpointsHandler);
+    const checkpointsV2Handler = BriefcaseManager.imodelClient.checkpointsV2;
+    sinon.stub(checkpointsV2Handler, "get").callsFake(async () => [mockCheckpointV2]);
+    sinon.stub(BriefcaseManager.imodelClient, "checkpointsV2").get(() => checkpointsV2Handler);
 
     // Mock blockcacheVFS daemon
     sinon.stub(BlobDaemon, "getDbFileName").callsFake(() => dbPath);
@@ -1768,22 +1776,22 @@ describe("iModel", () => {
   it("should throw when opening checkpoint without blockcache dir env", async () => {
     process.env.BLOCKCACHE_DIR = "";
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: Guid.createValue() }));
+    const error = await getIModelError(SnapshotDb.openCheckpoint(ctx, Guid.createValue(), Guid.createValue(), Guid.createValue()));
     expectIModelError(IModelStatus.BadRequest, error);
   });
 
   it("should throw for missing/invalid checkpoint in hub", async () => {
     process.env.BLOCKCACHE_DIR = "/foo/";
-    const checkpointsHandler = BriefcaseManager.imodelClient.checkpoints;
-    const hubMock = sinon.stub(checkpointsHandler, "get").callsFake(async () => []);
-    sinon.stub(BriefcaseManager.imodelClient, "checkpoints").get(() => checkpointsHandler);
+    const checkpointsV2Handler = BriefcaseManager.imodelClient.checkpointsV2;
+    const hubMock = sinon.stub(checkpointsV2Handler, "get").callsFake(async () => []);
+    sinon.stub(BriefcaseManager.imodelClient, "checkpointsV2").get(() => checkpointsV2Handler);
 
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
-    let error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: Guid.createValue() }));
+    let error = await getIModelError(SnapshotDb.openCheckpoint(ctx, Guid.createValue(), Guid.createValue(), Guid.createValue()));
     expectIModelError(IModelStatus.NotFound, error);
 
     hubMock.callsFake(async () => [{} as any]);
-    error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: Guid.createValue() }));
+    error = await getIModelError(SnapshotDb.openCheckpoint(ctx, Guid.createValue(), Guid.createValue(), Guid.createValue()));
     expectIModelError(IModelStatus.BadRequest, error);
   });
 
