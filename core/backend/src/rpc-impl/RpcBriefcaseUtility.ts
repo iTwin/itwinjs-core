@@ -75,7 +75,7 @@ export class RpcBriefcaseUtility {
   }
 
   /**
-   * Download and open checkpoint, ensuring the operation completes within a default timeout. If the time to open exceeds the timeout period,
+   * Download and open a checkpoint or briefcase, ensuring the operation completes within a default timeout. If the time to open exceeds the timeout period,
    * a RpcPendingResponse exception is thrown
    * @param requestContext
    * @param tokenProps
@@ -86,7 +86,6 @@ export class RpcBriefcaseUtility {
     Logger.logTrace(loggerCategory, "RpcBriefcaseUtility.open", () => ({ ...tokenProps, syncMode }));
 
     if (syncMode === SyncMode.PullOnly || syncMode === SyncMode.PullAndPush) {
-      // eslint-disable-next-line deprecation/deprecation
       const briefcaseDb = await BeDuration.race(timeout, this.openBriefcase(requestContext, tokenProps, syncMode));
       requestContext.enter();
 

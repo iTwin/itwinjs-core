@@ -130,6 +130,7 @@ export class AutoPush {
    */
   constructor(iModel: BriefcaseDb, params: AutoPushParams, activityMonitor?: AppActivityMonitor) {
     AutoPush.validateAutoPushParams(params);
+    iModel.onBeforeClose.addListener(() => this.cancel());
     this._iModel = iModel;
     this._activityMonitor = activityMonitor || new BackendActivityMonitor();
     this._pushIntervalMillisMin = params.pushIntervalSecondsMin * 1000;

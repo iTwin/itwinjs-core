@@ -196,11 +196,15 @@ export abstract class IModelDb extends IModel {
     (this as any)._nativeDb = undefined; // the underlying nativeDb has been freed by closeIModel
   }
 
+  /** Event called when the iModel is about to be closed */
+  public readonly onBeforeClose = new BeEvent<() => void>();
+
   /**
    * Called by derived classes before closing the connection
    * @internal
    */
   protected beforeClose() {
+    this.onBeforeClose.raiseEvent();
     this.clearSqliteStatementCache();
     this.clearStatementCache();
     this._concurrentQueryStats.dispose();

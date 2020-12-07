@@ -148,7 +148,7 @@ describe("NativeApp (#integration)", () => {
     const downloader = await NativeApp.requestDownloadBriefcase(testProjectId, locTestIModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest());
     await downloader.downloadPromise;
 
-    const briefcases: BriefcaseProps[] = await NativeApp.getBriefcases();
+    const briefcases = await NativeApp.getBriefcases();
     assert.isTrue(briefcases.length > 0);
 
     // Update test iModel in the Hub with a change set
@@ -161,15 +161,15 @@ describe("NativeApp (#integration)", () => {
     const updatedDownloader = await NativeApp.requestDownloadBriefcase(testProjectId, locTestIModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest());
     await updatedDownloader.downloadPromise;
 
-    // // Validate that the change set got updated
+    // Validate that the change set got updated
     // assert.notEqual(updatedDownloader.briefcaseProps.changeSetId, downloader.briefcaseProps.changeSetId);
-    // // NEEDS_WORK: Check that the change set id matches the one that was pushed
+    // NEEDS_WORK: Check that the change set id matches the one that was pushed
 
-    // const updatedBriefcases: BriefcaseProps[] = await NativeApp.getBriefcases();
-    // assert.equal(updatedBriefcases.length, briefcases.length);
+    const updatedBriefcases = await NativeApp.getBriefcases();
+    assert.equal(updatedBriefcases.length, briefcases.length);
 
-    // // Delete the downloaded test iModel in NativeApp
-    // await NativeApp.deleteBriefcase(updatedDownloader.briefcaseProps.key);
+    // Delete the downloaded test iModel in NativeApp
+    await NativeApp.deleteBriefcase(updatedDownloader.fileName);
 
     // Delete test iModel from the Hub and disk
     await testChangeSetUtility.deleteTestIModel();

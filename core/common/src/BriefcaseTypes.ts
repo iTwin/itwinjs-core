@@ -66,6 +66,9 @@ export interface OpenBriefcaseProps extends IModelEncryptionProps {
   key?: string;
 }
 
+/** Properties of a local briefcase file, returned by [BriefcaseManager.getBriefcases]($backend)
+ * @beta
+ */
 export interface LocalBriefcaseProps {
   /** Context (Project or Asset) that the iModel belongs to */
   contextId: GuidString;
@@ -76,8 +79,10 @@ export interface LocalBriefcaseProps {
   /** identity of the newly downloaded briefcase */
   iModelId: GuidString;
 
+  /** the briefcaseId of this briefcase */
   briefcaseId: number;
 
+  /** The current changesetId of the briefcase */
   changesetId: GuidString;
 }
 
