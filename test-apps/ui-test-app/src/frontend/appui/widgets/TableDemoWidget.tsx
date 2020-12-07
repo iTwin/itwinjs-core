@@ -24,7 +24,7 @@ export class TableDemoWidgetControl extends WidgetControl {
   }
 }
 
-const DragDropTable = withTableDragDrop<TableProps, DemoTableDragDropType>(Table); // eslint-disable-line @typescript-eslint/naming-convention
+const DragDropTable = withTableDragDrop<TableProps, DemoTableDragDropType>(Table); // eslint-disable-line deprecation/deprecation
 
 interface Props {
   iModelConnection?: IModelConnection;

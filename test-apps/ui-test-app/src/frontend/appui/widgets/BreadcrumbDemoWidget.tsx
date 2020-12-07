@@ -16,8 +16,8 @@ import {
 import { ChildDragLayer } from "./draglayers/ChildDragLayer";
 import { ParentDragLayer } from "./draglayers/ParentDragLayer";
 
-const DragDropBreadcrumb = withBreadcrumbDragDrop<BreadcrumbProps, DemoTreeDragDropType>(Breadcrumb); // eslint-disable-line @typescript-eslint/naming-convention
-const DragDropBreadcrumbDetails = withBreadcrumbDetailsDragDrop<BreadcrumbDetailsProps, DemoTreeDragDropType>(BreadcrumbDetails); // eslint-disable-line @typescript-eslint/naming-convention
+const DragDropBreadcrumb = withBreadcrumbDragDrop<BreadcrumbProps, DemoTreeDragDropType>(Breadcrumb); // eslint-disable-line deprecation/deprecation
+const DragDropBreadcrumbDetails = withBreadcrumbDetailsDragDrop<BreadcrumbDetailsProps, DemoTreeDragDropType>(BreadcrumbDetails); // eslint-disable-line deprecation/deprecation
 
 export class BreadcrumbDemoWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {

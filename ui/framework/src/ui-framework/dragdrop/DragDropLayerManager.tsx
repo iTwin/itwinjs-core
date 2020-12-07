@@ -33,7 +33,7 @@ export class DragDropLayerChangedEvent extends UiEvent<DragDropLayerChangedEvent
  */
 export class DragDropLayerManager {
   private static _currentType: string | undefined;
-  private static _layers: { [type: string]: React.ComponentType<DragLayerProps> } = {};
+  private static _layers: { [type: string]: React.ComponentType<DragLayerProps> } = {}; // eslint-disable-line deprecation/deprecation
   private static _dragDropLayerChangedEvent = new DragDropLayerChangedEvent(); // eslint-disable-line deprecation/deprecation
 
   // istanbul ignore next
@@ -67,7 +67,7 @@ export class DragDropLayerManager {
 
   /** Registers a new DragLayer for the given type. */
   // istanbul ignore next
-  public static registerTypeLayer(type: string, layer: React.ComponentType<DragLayerProps>) {
+  public static registerTypeLayer(type: string, layer: React.ComponentType<DragLayerProps>) { // eslint-disable-line deprecation/deprecation
     this._layers[type] = layer;
   }
 }
@@ -80,7 +80,7 @@ export interface DragDropLayerRendererProps extends CommonProps {
   dragging?: boolean;
   item?: any;
   itemType?: string;
-  args?: DragSourceArguments;
+  args?: DragSourceArguments; // eslint-disable-line deprecation/deprecation
   /** @internal */
   clientOffset?: { x: number, y: number };
   /** @internal */
@@ -133,7 +133,7 @@ export class DragDropLayerRendererComponent extends React.Component<DragDropLaye
       sourceClientOffset, initialSourceClientOffset,
     } = this.props;
 
-    const dragSourceArgs = item as DragSourceArguments;
+    const dragSourceArgs = item as DragSourceArguments; // eslint-disable-line deprecation/deprecation
 
     // eslint-disable-next-line deprecation/deprecation
     const LayerElement = DragDropLayerManager.getActiveLayer() || (dragSourceArgs && dragSourceArgs.defaultDragLayer); // eslint-disable-line @typescript-eslint/naming-convention
