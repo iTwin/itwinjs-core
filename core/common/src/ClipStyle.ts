@@ -31,22 +31,34 @@ export class CutStyle {
   public readonly hiddenLine?: HiddenLine.Settings;
   public readonly appearance?: FeatureAppearance;
 
-  private constructor(props?: CutStyleProps) {
-    this.viewflags = ViewFlagOverrides.fromJSON(props?.viewflags);
-    if (!props)
-      return;
+  public static readonly defaults = new CutStyle();
 
-    const hiddenLine = props.hiddenLine ? HiddenLine.Settings.fromJSON(props.hiddenLine) : undefined;
+  private constructor(viewflags?: Readonly<ViewFlagOverrides>, hiddenLine?: HiddenLine.Settings, appearance?: FeatureAppearance) {
+    this.viewflags = viewflags ?? ViewFlagOverrides.fromJSON();
     if (hiddenLine && !hiddenLine.matchesDefaults)
       this.hiddenLine = hiddenLine;
 
-    const appearance = props.appearance ? FeatureAppearance.fromJSON(props.appearance) : undefined;
     if (appearance && !appearance.matchesDefaults)
       this.appearance = appearance;
   }
 
+  public static create(viewflags?: Readonly<ViewFlagOverrides>, hiddenLine?: HiddenLine.Settings, appearance?: FeatureAppearance): CutStyle {
+    if (viewflags || hiddenLine || appearance)
+      return new CutStyle(viewflags, hiddenLine, appearance);
+
+    return this.defaults;
+  }
+
   public static fromJSON(props?: CutStyleProps): CutStyle {
-    return new CutStyle(props);
+    if (JsonUtils.isNonEmptyObject(props)) {
+      const viewflags = ViewFlagOverrides.fromJSON(props?.viewflags);
+      const hiddenLine = props?.hiddenLine ? HiddenLine.Settings.fromJSON(props.hiddenLine) : undefined;
+      const appearance = props?.appearance ? FeatureAppearance.fromJSON(props.appearance) : undefined;
+
+      return this.create(viewflags, hiddenLine, appearance);
+    } else {
+      return this.defaults;
+    }
   }
 
   public toJSON(): CutStyleProps | undefined {
@@ -67,6 +79,9 @@ export class CutStyle {
   }
 
   public get matchesDefaults(): boolean {
+    if (this === CutStyle.defaults)
+      return true;
+
     return !this.viewflags.anyOverridden() && (!this.hiddenLine || this.hiddenLine.matchesDefaults) && (!this.appearance || this.appearance.matchesDefaults);
   }
 }
@@ -96,16 +111,28 @@ export class ClipAppearance {
   /** If `true`, the geometry will not be locatable. */
   public readonly nonLocatable: boolean;
 
-  private constructor(json: ClipAppearanceProps) {
-    this.color = json.color ? RgbColor.fromJSON(json.color) : undefined;
-    this.linePixels = json.linePixels ?? undefined;
-    this.nonLocatable = true === json.nonLocatable;
+  public static readonly defaults = new ClipAppearance();
+
+  private constructor(color?: RgbColor, linePixels?: LinePixels, nonLocatable?: boolean) {
+    this.color = color;
+    this.linePixels = linePixels;
+    this.nonLocatable = true === nonLocatable;
   }
 
-  private static _default = new ClipAppearance({});
+  public static create(color?: RgbColor, linePixels?: LinePixels, nonLocatable?: boolean): ClipAppearance {
+    if (undefined === color && undefined === linePixels && true !== nonLocatable)
+      return this.defaults;
+
+    return new ClipAppearance(color, linePixels, nonLocatable);
+  }
 
   public static fromJSON(props?: ClipAppearanceProps): ClipAppearance {
-    return JsonUtils.isNonEmptyObject(props) ? new ClipAppearance(props) : this._default;
+    if (JsonUtils.isNonEmptyObject(props)) {
+      const color = props.color ? RgbColor.fromJSON(props.color) : undefined;
+      return this.create(color, props?.linePixels, props?.nonLocatable);
+    } else {
+      return this.defaults;
+    }
   }
 
   public toJSON(): ClipAppearanceProps | undefined {
@@ -126,7 +153,7 @@ export class ClipAppearance {
     }
 
   public get matchesDefaults(): boolean {
-    return this.equals(ClipAppearance._default);
+    return this.equals(ClipAppearance.defaults);
   }
 
   public equals(other: ClipAppearance): boolean {
@@ -170,17 +197,33 @@ export class ClipStyle {
   /** Overrides aspects of the symbology of geometry that is inside of the clip volume. */
   insideAppearance: ClipAppearance;
 
-  private static readonly _default = new ClipStyle({});
+  public static readonly defaults = new ClipStyle(false, CutStyle.defaults, ClipAppearance.defaults, ClipAppearance.defaults);
 
-  private constructor(json: ClipStyleProps) {
-    this.produceCutGeometry = json.produceCutGeometry ?? false;
-    this.cutStyle = CutStyle.fromJSON(json.cutStyle);
-    this.outsideAppearance = ClipAppearance.fromJSON(json.outsideAppearance);
-    this.insideAppearance = ClipAppearance.fromJSON(json.insideAppearance);
+  private constructor(produceCutGeometry: boolean, cutStyle: CutStyle, insideAppearance: ClipAppearance, outsideAppearance: ClipAppearance) {
+    this.produceCutGeometry = produceCutGeometry;
+    this.cutStyle = cutStyle;
+    this.insideAppearance = insideAppearance;
+    this.outsideAppearance = outsideAppearance;
+  }
+
+  public static create(produceCutGeometry: boolean, cutStyle: CutStyle, insideAppearance: ClipAppearance, outsideAppearance: ClipAppearance): ClipStyle {
+    if (!produceCutGeometry && cutStyle.matchesDefaults && insideAppearance.matchesDefaults && outsideAppearance.matchesDefaults)
+      return this.defaults;
+
+    return new ClipStyle(produceCutGeometry, cutStyle, insideAppearance, outsideAppearance);
   }
 
   public static fromJSON(props?: ClipStyleProps): ClipStyle {
-    return JsonUtils.isNonEmptyObject(props) ? new ClipStyle(props) : this._default;
+    if (JsonUtils.isNonEmptyObject(props)) {
+      const produceCutGeometry = props.produceCutGeometry ?? false;
+      const cutStyle = CutStyle.fromJSON(props.cutStyle);
+      const insideAppearance = ClipAppearance.fromJSON(props.insideAppearance);
+      const outsideAppearance = ClipAppearance.fromJSON(props.outsideAppearance);
+
+      return this.create(produceCutGeometry, cutStyle, insideAppearance, outsideAppearance);
+    } else {
+      return this.defaults;
+    }
   }
 
   public toJSON(): ClipStyleProps | undefined {
@@ -207,7 +250,7 @@ export class ClipStyle {
   }
 
   public get matchesDefaults(): boolean {
-    if (this === ClipStyle._default)
+    if (this === ClipStyle.defaults)
       return true;
 
     return !this.produceCutGeometry && this.cutStyle.matchesDefaults && this.outsideAppearance.matchesDefaults && this.insideAppearance.matchesDefaults;
