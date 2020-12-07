@@ -22,7 +22,7 @@ import { SceneContext } from "../ViewContext";
 import { ViewState } from "../ViewState";
 import {
   BatchedTileIdMap, createClassifierTileTreeReference, getCesiumAccessTokenAndEndpointUrl, RealityTile, RealityTileLoader, RealityTileParams,
-  RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile, TileLoadPriority, TileRequest, TileTree, TileTreeOwner,
+  RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile, TileDrawArgs, TileLoadPriority, TileRequest, TileTree, TileTreeOwner,
   TileTreeReference, TileTreeSet, TileTreeSupplier,
 } from "./internal";
 import { createDefaultViewFlagOverrides } from "./ViewFlagOverrides";
@@ -380,18 +380,17 @@ export type RealityModelSource = ViewState | DisplayStyleState;
 
 /** @internal */
 export class RealityModelTileTree extends RealityTileTree {
+  private readonly _isContentUnbounded: boolean;
   public constructor(params: RealityTileTreeParams) {
     super(params);
 
+    this._isContentUnbounded = this.rootTile.contentRange.diagonal().magnitude() > 2 * Constant.earthRadiusWGS84.equator;
     if (!this.isContentUnbounded && !this.rootTile.contentRange.isNull) {
       const worldContentRange = this.iModelTransform.multiplyRange(this.rootTile.contentRange);
       this.iModel.expandDisplayedExtents(worldContentRange);
     }
   }
-  public get isContentUnbounded() {
-    return this.rootTile.contentRange.diagonal().magnitude() > 2 * Constant.earthRadiusWGS84.equator;
-  }
-
+  public get isContentUnbounded() { return this._isContentUnbounded; }
 }
 
 /** @internal */
@@ -502,6 +501,20 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
   }
 
   public get classifiers(): SpatialClassifiers | undefined { return undefined !== this._classifier ? this._classifier.classifiers : undefined; }
+  public createDrawArgs(context: SceneContext): TileDrawArgs | undefined {
+    // For global reality models (OSM Building layer only) - offset the reality model by the BIM elevation bias.  This would not be necessary
+    // if iModels had their elevation set correctly but unfortunately many GCS erroneously report Sea (Geoid) elevation rather than
+    // Geodetic.
+    const tree = this.treeOwner.load();
+    if (undefined === tree)
+      return undefined;
+
+    const drawArgs = super.createDrawArgs(context);
+    if (drawArgs !== undefined && this._iModel.isGeoLocated && tree.isContentUnbounded)
+      drawArgs.location.origin.z += context.viewport.displayStyle.backgroundMapElevationBias;
+
+    return drawArgs;
+  }
 
   public addToScene(context: SceneContext): void {
     // NB: The classifier must be added first, so we can find it when adding our own tiles.

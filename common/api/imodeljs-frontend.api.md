@@ -2070,6 +2070,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @internal (undocumented)
     get backgroundMapBase(): BaseLayerSettings | undefined;
     // @internal (undocumented)
+    get backgroundMapElevationBias(): number;
+    // @internal (undocumented)
     get backgroundMapLayers(): MapLayerSettings[];
     get backgroundMapSettings(): BackgroundMapSettings;
     set backgroundMapSettings(settings: BackgroundMapSettings);
