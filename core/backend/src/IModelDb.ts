@@ -16,15 +16,15 @@ import {
 import { Range3d } from "@bentley/geometry-core";
 import { ChangesType, Lock, LockLevel, LockType } from "@bentley/imodelhub-client";
 import {
-  AxisAlignedBox3d, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps,
-  CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DisplayStyleProps, DomainOptions, EcefLocation,
-  ElementAspectProps, ElementGeometryRequest, ElementGeometryUpdate, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams,
-  FilePropertyProps, FontMap, FontMapProps, FontProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps,
-  IModel, IModelCoordinatesResponseProps, IModelError, IModelEventSourceProps, IModelNotFoundResponse, IModelProps,
-  IModelRpcProps, IModelStatus, IModelTileTreeProps, IModelVersion, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps,
-  ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryLimit, QueryPriority, QueryQuota, QueryResponse,
-  QueryResponseStatus, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SyncMode, ThumbnailProps,
-  UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
+  AxisAlignedBox3d, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps,
+  CreateSnapshotIModelProps, DisplayStyleProps, DomainOptions, EcefLocation, ElementAspectProps, ElementGeometryRequest, ElementGeometryUpdate,
+  ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps,
+  GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesResponseProps, IModelError,
+  IModelEventSourceProps, IModelNotFoundResponse, IModelProps, IModelRpcProps, IModelStatus, IModelTileTreeProps, IModelVersion,
+  MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions,
+  PropertyCallback, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, SheetProps, SnapRequestProps, SnapResponseProps,
+  SnapshotOpenOptions, SpatialViewDefinitionProps, SyncMode, ThumbnailProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps,
+  ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -48,6 +48,18 @@ import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
+
+// function to hash a filename for key generation
+let shaHash: (str: string) => string;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const crypto = require("crypto"); // throws if crypto not supported.
+  shaHash = (input: string) => {
+    return crypto.createHash("sha256").update(input).digest("hex");
+  };
+} catch (err) {
+  shaHash = (input: string) => input;
+}
 
 /** A string that identifies a Txn.
  * @public
@@ -844,20 +856,21 @@ export abstract class IModelDb extends IModel {
     }
   }
 
-  /** Find an already open IModelDb (considers all subclasses).
-   * @note This method is intended for use by RPC implementations.
-   * @throws [[IModelNotFoundResponse]] if an open IModelDb matching the token is not found.
+  /** Find an open IModelDb by its key.
+   * @note This method is mainly for use by RPC implementations.
+   * @throws [[IModelNotFoundResponse]] if an open IModelDb matching the key is not found.
+   * @see [IModel.key]($common)
    */
   public static findByKey(key: string): IModelDb {
     const iModelDb = IModelDb.tryFindByKey(key);
     if (undefined === iModelDb) {
-      Logger.logError(loggerCategory, "IModelDb not found in the in-memory cache", () => ({ key }));
+      Logger.logError(loggerCategory, "IModelDb not open", () => ({ key }));
       throw new IModelNotFoundResponse(); // a very specific status for the RpcManager
     }
     return iModelDb;
   }
 
-  /** Find an already open IModelDb
+  /** Attempt to find an open IModelDb by key.
    * @returns The matching IModelDb or `undefined`.
    */
   public static tryFindByKey(key: string): IModelDb | undefined {
@@ -866,7 +879,7 @@ export abstract class IModelDb extends IModel {
 
   /** @internal */
   public static openDgnDb(filePath: string, openMode: OpenMode, upgradeOptions?: UpgradeOptions, props?: string) {
-    if (this.tryFindByKey(filePath))
+    if (this.tryFindByKey(shaHash(filePath)))
       throw new IModelError(DbResult.BE_SQLITE_CANTOPEN, `iModel [${filePath}] is already open`, Logger.logError, loggerCategory);
 
     const isUpgradeRequested = upgradeOptions?.domain === DomainOptions.Upgrade || upgradeOptions?.profile === ProfileOptions.Upgrade;
@@ -2160,15 +2173,16 @@ export class TxnManager {
 }
 
 /** A local copy of an iModel from iModelHub that can pull and potentially push changesets.
- *
  * BriefcaseDb raises a set of events to allow apps and subsystems to track its object life cycle, including [[onOpen]] and [[onOpened]].
  * @public
  */
 export class BriefcaseDb extends IModelDb {
   /** Returns `true` if this is a briefcase can be used to make changesets */
   public readonly allowLocalChanges: boolean;
+  /* the BriefcaseId of the briefcase opened with this BriefcaseDb */
   public readonly briefcaseId: number;
 
+  /** @internal */
   public get syncMode() { return this.briefcaseId === 0 ? SyncMode.PullOnly : SyncMode.PullAndPush; }
 
   /** @internal */
@@ -2257,7 +2271,7 @@ export class BriefcaseDb extends IModelDb {
   public static async open(requestContext: AuthorizedClientRequestContext | ClientRequestContext, args: OpenBriefcaseProps) {
     requestContext.enter();
     const filePath = args.fileName;
-    const key = args.key ?? filePath;
+    const key = args.key ?? shaHash(filePath);
 
     const alreadyOpen = this.tryFindByKey(key);
     if (undefined !== alreadyOpen)
@@ -2302,6 +2316,7 @@ export class BriefcaseDb extends IModelDb {
     return briefcaseDb;
   }
 
+  /** @internal */
   public beforeClose() {
     super.beforeClose();
     if (this.allowLocalChanges)
@@ -2416,7 +2431,7 @@ export class SnapshotDb extends IModelDb {
   public get filePath(): string { return this.pathName; }
 
   private constructor(nativeDb: IModelJsNative.DgnDb, openMode: OpenMode, key?: string) {
-    const iModelRpcProps: IModelRpcProps = { key: key ?? nativeDb.getFilePath(), iModelId: nativeDb.getDbGuid(), changeSetId: "", openMode };
+    const iModelRpcProps: IModelRpcProps = { key: key ?? shaHash(nativeDb.getFilePath()), iModelId: nativeDb.getDbGuid(), changeSetId: "", openMode };
     super(nativeDb, iModelRpcProps, openMode);
   }
 
@@ -2570,7 +2585,7 @@ export class SnapshotDb extends IModelDb {
 export class StandaloneDb extends IModelDb {
   /** The full path to the snapshot iModel file.
    * @deprecated use pathName
-  */
+   */
   public get filePath(): string { return this.pathName; }
 
   /** This property is always undefined as a StandaloneDb does not accept nor generate changesets. */
@@ -2578,7 +2593,7 @@ export class StandaloneDb extends IModelDb {
 
   private constructor(nativeDb: IModelJsNative.DgnDb, openMode: OpenMode) {
     const filePath = nativeDb.getFilePath();
-    const iModelRpcProps: IModelRpcProps = { key: filePath, iModelId: nativeDb.getDbGuid(), openMode };
+    const iModelRpcProps: IModelRpcProps = { key: shaHash(filePath), iModelId: nativeDb.getDbGuid(), openMode };
     super(nativeDb, iModelRpcProps, openMode);
   }
 

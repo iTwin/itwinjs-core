@@ -56,16 +56,27 @@ export enum BriefcaseIdValue {
   /** All valid iModelHub issued BriefcaseIds will be equal or lower than this */
   LastValid = BriefcaseIdValue.Max - 11,
 
-  /** a Standalone briefcase */
+  /** A Standalone copy of an iModel. Standalone files may accept changesets, but can never create new changesets.
+   * Checkpoints are Standalone files.
+   */
   Standalone = 0,
 
-  /** @internal */
+  /**
+   * @internal
+   * @deprecated
+   */
   DeprecatedStandalone = 1,
 }
 
+/** The argument for [[BriefcaseManager.downloadBriefcase]] */
 export interface RequestNewBriefcaseArg extends RequestNewBriefcaseProps {
+  /** if present, the supplied method will be called to indicate progress as the briefcase is downloaded. */
   onProgress?: ProgressCallback;
 
+  /** This member is established by [[BriefcaseManager.downloadBriefcase]] during the download process and is valid until the promise returned is fulfilled.
+   * It can be used to cancel (i.e. abort) the download if the download is taking too long.
+   * @note callers *do not* supply this value, it is set by the downloader for the caller's use during the download.
+   */
   cancelRequest?: CancelRequest;
 }
 
@@ -76,7 +87,7 @@ export class ChangeSetToken {
   constructor(public id: string, public parentId: string, public index: number, public pathname: string, public changeType: ChangesType, public pushDate?: string) { }
 }
 
-/** Utility to manage briefcases
+/** Utility to manage downloading Briefcases and applying and uploading changesets.
  * @beta
  */
 export class BriefcaseManager {
@@ -114,6 +125,11 @@ export class BriefcaseManager {
     return changeSetId || this._firstChangeSetDir;
   }
 
+  /** Get the name of the local file that holds, or will hold, a briefcase in the briefcase cache established in the call to [[BriefcaseManager.initialize]], based
+   * on an iModelId and BriefcaseId.
+   * @param briefcase the iModelId and BriefcaseId for the filename
+   * @see getIModelPath
+   */
   public static getFileName(briefcase: BriefcaseProps): string {
     const pathBaseName = this.getBriefcaseBasePath(briefcase.iModelId);
     const id = briefcase.briefcaseId.toString();
@@ -124,9 +140,15 @@ export class BriefcaseManager {
     BriefcaseManager._contextRegistryClient = new ContextRegistryClient();
   }
 
+  private static setupCacheDir(cacheRootDir: string) {
+    this._cacheDir = cacheRootDir;
+    IModelJsFs.recursiveMkDirSync(this._cacheDir);
+  }
+
   private static _initialized?: boolean;
   /** Initialize BriefcaseManager
-   * @internal
+   * @param cacheRootDir The root directory for storing a cache of downloaded briefcase files. Briefcases are stored relative to this path in sub-folders organized by IModelId.
+   * @note It is perfectly valid for applications to store briefcases in locations they manage, outside of `cacheRootDir`.
    */
   public static initialize(cacheRootDir: string) {
     if (this._initialized)
@@ -137,6 +159,7 @@ export class BriefcaseManager {
     this._initialized = true;
   }
 
+  /** @internal */
   public static get imodelClient(): IModelClient { return IModelHost.iModelClient; }
 
   private static finalize() {
@@ -144,6 +167,9 @@ export class BriefcaseManager {
     this._initialized = false;
   }
 
+  /** Get a list of all local briefcase held in the system briefcase cache
+   * @see BriefcaseManager.initialize
+  */
   public static getBriefcases(): LocalBriefcaseProps[] {
     const briefcaseList: LocalBriefcaseProps[] = [];
     const iModelDirs = IModelJsFs.readdirSync(this._cacheDir);
@@ -169,13 +195,8 @@ export class BriefcaseManager {
   }
 
   private static _cacheDir: string;
-  /** @internal */
+  /** Get the root directory for the briefcase cache */
   public static get cacheDir() { return this._cacheDir; }
-
-  private static setupCacheDir(cacheRootDir: string) {
-    this._cacheDir = cacheRootDir;
-    IModelJsFs.recursiveMkDirSync(this._cacheDir);
-  }
 
   /** Get the index of the change set from its id */
   private static async getChangeSetIndexFromId(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSetId: GuidString): Promise<number> {
@@ -188,20 +209,27 @@ export class BriefcaseManager {
 
     return +changeSet.index!;
   }
-  /** @internal */
+
+  /** Determine whether the supplied briefcaseId is a standalone briefcase */
   public static isStandaloneBriefcaseId(id: BriefcaseId) {
+    // eslint-disable-next-line deprecation/deprecation
     return id === BriefcaseIdValue.Standalone || id === BriefcaseIdValue.DeprecatedStandalone;
   }
-  /** @internal */
+
+  /** Determine whether the supplied briefcaseId is in the range of BriefcaseIds issued by iModelHub
+   * @note this does check whether the id was actually acquired by the caller.
+   */
   public static isValidBriefcaseId(id: BriefcaseId) {
     return id >= BriefcaseIdValue.FirstValid && id <= BriefcaseIdValue.LastValid;
   }
 
-  /** Acquire a new briefcaseId  */
+  /** Acquire a new briefcaseId from iModelHub for the supplied iModelId
+   * @throws IModelError if a new briefcaseId could not be acquired.
+   */
   public static async acquireNewBriefcaseId(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<number> {
     requestContext.enter();
 
-    const briefcase: HubBriefcase = await IModelHost.iModelClient.briefcases.create(requestContext, iModelId);
+    const briefcase = await IModelHost.iModelClient.briefcases.create(requestContext, iModelId);
     requestContext.enter();
 
     if (!briefcase) {
@@ -211,7 +239,10 @@ export class BriefcaseManager {
     return briefcase.briefcaseId!;
   }
 
-  public static async downloadBriefcase(requestContext: AuthorizedClientRequestContext, request: RequestNewBriefcaseArg) {
+  /** Download a briefcase from iModelHub for the supplied iModelId. If no BriefcaseId is supplied, a new one is acquired from iModelHub.
+   * @note After the promise is resolved, the fileName and briefcaseId values are returned in `request`, if they were not supplied.
+   */
+  public static async downloadBriefcase(requestContext: AuthorizedClientRequestContext, request: RequestNewBriefcaseArg): Promise<void> {
     if (undefined === request.briefcaseId)
       request.briefcaseId = await this.acquireNewBriefcaseId(requestContext, request.iModelId);
 
@@ -275,7 +306,7 @@ export class BriefcaseManager {
   /**
      * Delete a local briefcase. First releases the BriefcaseId from iModelHub
      * @param requestContext
-     * @param fileName the filename of the Briefcase to delete
+     * @param fileName the full file name of the Briefcase to delete
      * @throws [[IModelError]] If unable to delete the briefcase
      */
   public static async deleteBriefcase(requestContext: ClientRequestContext | AuthorizedClientRequestContext, fileName: string): Promise<void> {
