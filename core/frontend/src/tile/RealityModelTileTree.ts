@@ -6,7 +6,7 @@
  * @module Utils
  */
 
-import { assert, BentleyStatus, BeTimePoint, compareNumbers, compareStrings, compareStringsOrUndefined, Guid, Id64String } from "@bentley/bentleyjs-core";
+import { assert, BentleyStatus, compareNumbers, compareStrings, compareStringsOrUndefined, Guid, Id64String } from "@bentley/bentleyjs-core";
 import { Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Ray3d, Transform, TransformProps, Vector3d, XYZ } from "@bentley/geometry-core";
 import { Cartographic, IModelError, ViewFlagOverrides, ViewFlagPresence } from "@bentley/imodeljs-common";
 import { AccessToken, request, RequestOptions } from "@bentley/itwin-client";
@@ -384,7 +384,7 @@ export class RealityModelTileTree extends RealityTileTree {
   public constructor(params: RealityTileTreeParams) {
     super(params);
 
-    this._isContentUnbounded = this.rootTile.contentRange.diagonal().magnitude() > 2 * Constant.earthRadiusWGS84.equator
+    this._isContentUnbounded = this.rootTile.contentRange.diagonal().magnitude() > 2 * Constant.earthRadiusWGS84.equator;
     if (!this.isContentUnbounded && !this.rootTile.contentRange.isNull) {
       const worldContentRange = this.iModelTransform.multiplyRange(this.rootTile.contentRange);
       this.iModel.expandDisplayedExtents(worldContentRange);
@@ -514,7 +514,7 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
     if (undefined === tree)
       return undefined;
 
-    let drawArgs = super.createDrawArgs(context);
+    const drawArgs = super.createDrawArgs(context);
     if (drawArgs !== undefined && this._iModel.isGeoLocated && tree.isContentUnbounded)
       drawArgs.location.origin.z += context.viewport.displayStyle.backgroundMapElevationBias;
 
