@@ -710,6 +710,10 @@ export enum IModelHubStatus {
     // (undocumented)
     ChangeSetPointsToBadSeed = 102414,
     // (undocumented)
+    CheckpointAlreadyExists = 102450,
+    // (undocumented)
+    CheckpointDoesNotExist = 102451,
+    // (undocumented)
     CodeDoesNotExist = 102431,
     // (undocumented)
     CodeReservedByAnotherBriefcase = 102430,
@@ -1138,12 +1142,12 @@ export class MutableCompressedId64Set implements OrderedId64Iterable {
     equals(other: CompressedId64Set | MutableCompressedId64Set | OrderedId64Iterable): boolean;
     get ids(): CompressedId64Set;
     get isEmpty(): boolean;
+    reset(ids?: CompressedId64Set): void;
     }
 
 // @beta
 export class ObservableSet<T> extends Set<T> {
-    // @internal (undocumented)
-    add(item: T): this;
+    constructor(elements?: Iterable<T> | undefined);
     // @internal (undocumented)
     clear(): void;
     // @internal (undocumented)

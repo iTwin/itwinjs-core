@@ -878,6 +878,7 @@ export interface ColorPickerPopupProps extends React.ButtonHTMLAttributes<HTMLBu
     colorDefs?: ColorDef[];
     disabled?: boolean;
     initialColor: ColorDef;
+    onClose?: ((colorValue: ColorDef) => void) | undefined;
     onColorChange?: ((newColor: ColorDef) => void) | undefined;
     popupPosition?: RelativePosition;
     readonly?: boolean;
