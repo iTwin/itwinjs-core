@@ -377,223 +377,9 @@ describe("Content", () => {
         displayType: DefaultContentDisplayTypes.PropertyPane,
         keys: new KeySet(),
       });
-      const allExpectedGeometricElementProperties = [
-        "<0",
-        "<100",
-        "<Infinity",
-        "0-100",
-        "0-1000",
-        "0-Infinity",
-        "Category",
-        "Code",
-        "Color",
-        "Country",
-        "Model",
-        "Movies",
-        "Negative Numbers",
-        "Special Characters",
-        "Sports Stars",
-        "Star Wars",
-        "True-False",
-        "True-False #2",
-        "User Label",
-        [
-          "Btu/(lbm·Δ°R) [btu per pound mass per delta degree rankine]",
-        ],
-        [
-          "Btu/lb [Btu per pound mass]",
-        ],
-        [
-          "cSt",
-          "ft2 s",
-        ],
-        [
-          "Acres",
-          "cm2",
-          "ft ft",
-          "ft mi",
-          "ft2",
-          "ha",
-          "in ft",
-          "in m",
-          "in mi",
-          "in2",
-          "km2",
-          "m km",
-          "m m",
-          "m2",
-          "mi2",
-          "mm km",
-          "thousand ft2",
-        ],
-        [
-          "ft^(1/3)/s [ft^(1/3)/s]",
-        ],
-        [
-          "$ [dollar]",
-        ],
-        [
-          "KA [kiloampere]",
-        ],
-        [
-          "email",
-          "full URL",
-          "mailto",
-          "without http",
-          "without www",
-        ],
-        [
-          "in/deg [inch per degree]",
-        ],
-        [
-          "ft³/(ft²·min) [Foot cubed per foot squared per minute]",
-        ],
-        [
-          "1/Bar [1/Bar]",
-          "Untitled",
-        ],
-        [
-          "mm⁶ [millimeter to the sixth]",
-        ],
-        [
-          "µin [microinch]",
-        ],
-        [
-          "lb/ft [pound per foot]",
-        ],
-        [
-          "lm/ft² [lumen per foot squared]",
-        ],
-        [
-          "lm [lumen]",
-        ],
-        [
-          "KV [kilovolt]",
-        ],
-        [
-          "N·m/deg [newton meter per degree]",
-        ],
-        [
-          "Btu/(lb-mol·Δ°R) [btu per pound mole per delta degree rankine]",
-        ],
-        [
-          "(in·lbf)/(s·in·°F) [inch pound force per second inch fahrenheit]",
-        ],
-        [
-          "lbf/in [pound force per inch]",
-        ],
-        [
-          "µg/L [micrograms per liter]",
-        ],
-        [
-          "lbf·ft² [pound force foot squared]",
-        ],
-        [
-          "µg [microgram]",
-        ],
-        [
-          "ft³/lb-mol [foot cubed per pound mole]",
-        ],
-        [
-          "kmol/s [kilomole per second]",
-        ],
-        [
-          "lb-mol/ft³ [pound mole per foot cubed]",
-        ],
-        [
-          "cycle/sec [cycle per second]",
-        ],
-        [
-          "quadrants [quadrants]",
-        ],
-        [
-          "ft⁴ [foot to the fourth]",
-        ],
-        [
-          "p/ft² [person per foot squared]",
-        ],
-        [
-          "1/mile [1/mile]",
-        ],
-        [
-          "1/tn(short) [one per short ton]",
-        ],
-        [
-          "1/Δ°R [reciprocal delta degree rankine]",
-        ],
-        [
-          "grf/(h·ft²·inHg) [Grain mass per hour per foot squared per inch Mercury conventional]",
-        ],
-        [
-          "1/ million gal",
-        ],
-        [
-          "ft^(1/2)/s [ft^(1/2)/s]",
-        ],
-        [
-          "Gallon per minute per square root pounds per inch squared",
-        ],
-        [
-          "delta degree Kelvin per meter",
-        ],
-        [
-          "Delta celsius",
-        ],
-        [
-          "one per kilowat",
-        ],
-        [
-          "foot squared hour delta degree Fahrenheit per Btu",
-        ],
-        [
-          "kg/kW h",
-        ],
-        [
-          "1/Btu",
-        ],
-        [
-          "days",
-        ],
-        [
-          "ft3/lm",
-        ],
-        [
-          "acre ft/day",
-          "acre ft/h",
-          "acre ft/min",
-          "acre in/h",
-          "acre in/min",
-          "ft3/day",
-          "ft3/min",
-          "ft3/s",
-          "gal(imp)/day",
-          "gal(imp)/s",
-          "gal/s",
-          "gpd/capita",
-          "L/min",
-          "m3/min",
-          "million gal(impl)/day",
-          "ML/day",
-        ],
-        [
-          "thousand gal",
-        ],
-        [
-          "Angle",
-          "Area",
-          "Distance",
-          "Volume",
-        ],
-        [
-          "$óúrçè Fílê Ñâmé",
-          "$óúrçè Fílê Páth",
-        ],
-      ];
-      expect(getFieldLabels(descriptorGeometricElement!)).to.deep.eq(allExpectedGeometricElementProperties);
-
       // sanity check - ensure filtering the fields by the class we used for request doesn't filter out anything
       const fieldsGeometricElement = filterFieldsByClass(descriptorGeometricElement!.fields, await classHierarchy.getClassInfo("BisCore", "GeometricElement"));
-      expect(getFieldLabels(fieldsGeometricElement)).to.deep.eq(allExpectedGeometricElementProperties);
+      expect(getFieldLabels(fieldsGeometricElement)).to.deep.eq(getFieldLabels(descriptorGeometricElement!));
 
       // request properties of Generic.PhysicalObject and ensure it's matches our filtered result of `descriptorGeometricElement`
       const descriptorPhysicalObject = await Presentation.presentation.getContentDescriptor({
@@ -660,14 +446,14 @@ describe("Content", () => {
 
 });
 
-type FieldLabels = Array<string | FieldLabels>;
+type FieldLabels = Array<string | { label: string, nested: FieldLabels }>;
 function getFieldLabels(fields: Descriptor | Field[]): FieldLabels {
   if (fields instanceof Descriptor)
     fields = fields.fields;
 
   return fields.map((f) => {
     if (f.isNestedContentField())
-      return getFieldLabels(f.nestedFields);
+      return { label: f.label, nested: getFieldLabels(f.nestedFields) };
     return f.label;
   }).sort((lhs, rhs) => {
     if (typeof lhs === "string" && typeof rhs === "string")
@@ -676,7 +462,7 @@ function getFieldLabels(fields: Descriptor | Field[]): FieldLabels {
       return -1;
     if (typeof rhs === "string")
       return 1;
-    return 0;
+    return lhs.label.localeCompare(rhs.label);
   });
 }
 
