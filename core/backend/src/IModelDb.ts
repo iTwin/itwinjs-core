@@ -1623,16 +1623,12 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       } finally {
         this._iModel.nativeDb.endPurgeOperation();
       }
-      let notDeletedIds: Id64Set = new Set<Id64String>();
-      if (usageInfo.usedIds) {
-        notDeletedIds = Id64.toIdSet(usageInfo.usedIds);
-      }
       if (usageInfo.viewDefinitionIds) {
         // take another pass in case a deleted ViewDefinition was the only usage of these view-related DefinitionElements
         let viewRelatedIds: Id64Array = [];
-        if (usageInfo.displayStyleIds) { viewRelatedIds = viewRelatedIds.concat(usageInfo.displayStyleIds.filter((id) => usedIdSet?.has(id))); }
-        if (usageInfo.categorySelectorIds) { viewRelatedIds = viewRelatedIds.concat(usageInfo.categorySelectorIds.filter((id) => usedIdSet?.has(id))); }
-        if (usageInfo.modelSelectorIds) { viewRelatedIds = viewRelatedIds.concat(usageInfo.modelSelectorIds.filter((id) => usedIdSet?.has(id))); }
+        if (usageInfo.displayStyleIds) { viewRelatedIds = viewRelatedIds.concat(usageInfo.displayStyleIds.filter((id) => usedIdSet.has(id))); }
+        if (usageInfo.categorySelectorIds) { viewRelatedIds = viewRelatedIds.concat(usageInfo.categorySelectorIds.filter((id) => usedIdSet.has(id))); }
+        if (usageInfo.modelSelectorIds) { viewRelatedIds = viewRelatedIds.concat(usageInfo.modelSelectorIds.filter((id) => usedIdSet.has(id))); }
         if (viewRelatedIds.length > 0) {
           const viewRelatedUsageInfo = this._iModel.nativeDb.queryDefinitionElementUsage(viewRelatedIds);
           if (viewRelatedUsageInfo) {
@@ -1645,11 +1641,11 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
             } finally {
               this._iModel.nativeDb.endPurgeOperation();
             }
-            viewRelatedIds.forEach((id) => { if (!usedViewRelatedIdSet.has(id)) { notDeletedIds.delete(id); } });
+            viewRelatedIds.forEach((id) => { if (!usedViewRelatedIdSet.has(id)) { usedIdSet.delete(id); } });
           }
         }
       }
-      return notDeletedIds;
+      return usedIdSet;
     }
 
     /** Query for the child elements of the specified element.
