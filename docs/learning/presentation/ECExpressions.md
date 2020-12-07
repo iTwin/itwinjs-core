@@ -284,7 +284,7 @@ Symbol                            | Deprecated Symbol               | Type    | 
 Symbol                                | Type     | Value
 --------------------------------------|----------|----------
 `Set(number1, number2, ..., numberN)` | number[] | Create a [value list](#value-lists) of the supplied numbers.
-`GetFormattedValue(this.MyProp, "Metric|UsCustomary|UsSurvey|BritishImperial")` | any | Returns property value formatted using specified unit system. If unit system is not specified default presentation units are used to format value
+`GetFormattedValue(this.MyProp, "Metric\|UsCustomary\|UsSurvey\|BritishImperial")` | any | Returns property value formatted using specified unit system. If unit system is not specified default presentation units are used to format value
 
 ## Value Lists
 

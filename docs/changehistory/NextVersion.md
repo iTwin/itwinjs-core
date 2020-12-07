@@ -63,7 +63,9 @@ There is now a method called `lookAtGlobalLocationFromGcs` on [ViewState3d]($fro
 * `rootToCartographicFromGcs` behaves like `rootToCartographic` except it is async and uses the GCS to reproject the location.
 * `cartographicToRootFromGcs` behaves like `cartographicToRoot` except it is async and uses the GCS to reproject the location.
 
-## Formatted property values in ECExpressions
+## Presentation
+
+### Formatted property values in ECExpressions
 
 ECExpressions now support formatted property values. `GetFormattedValue` function can be used in ECExpressions to get formatted value of the property. This adds ability to filter instances by some formatted value:
 ```
