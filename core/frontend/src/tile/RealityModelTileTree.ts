@@ -514,18 +514,11 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
     if (undefined === tree)
       return undefined;
 
-    if (!this._iModel.isGeoLocated || !tree.isContentUnbounded)
-      return super.createDrawArgs(context);
+    let drawArgs = super.createDrawArgs(context);
+    if (drawArgs !== undefined && this._iModel.isGeoLocated && tree.isContentUnbounded)
+      drawArgs.location.origin.z += context.viewport.displayStyle.backgroundMapElevationBias;
 
-    const now = BeTimePoint.now();
-    const location = this.computeTransform(tree);
-    const clipVolume = this.getClipVolume(tree);
-    const viewFlagOverrides = this.getViewFlagOverrides(tree);
-
-    location.origin.z += context.viewport.displayStyle.backgroundMapElevationBias;
-
-    return new TileDrawArgs({ context, location, tree, now, viewFlagOverrides, clipVolume, parentsAndChildrenExclusive: tree.parentsAndChildrenExclusive, symbologyOverrides: this.getSymbologyOverrides(tree) });
-
+    return drawArgs;
   }
 
   public addToScene(context: SceneContext): void {
