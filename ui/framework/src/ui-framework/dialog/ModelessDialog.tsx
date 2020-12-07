@@ -17,7 +17,8 @@ export interface ModelessDialogProps extends DialogProps {
   dialogId: string;
 }
 
-/** Modeless Dialog React component
+/** Modeless Dialog React component uses the Dialog component with a modal={false} prop.
+ * It controls the z-index to keep the focused dialog above others.
  * @public
  */
 export class ModelessDialog extends React.Component<ModelessDialogProps> {

@@ -23,7 +23,7 @@ import { SceneContext } from "../ViewContext";
 import { ViewState } from "../ViewState";
 import {
   BatchedTileIdMap, createClassifierTileTreeReference, getCesiumAccessTokenAndEndpointUrl, RealityTile, RealityTileLoader, RealityTileParams,
-  RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile, TileLoadPriority, TileRequest, TileTree, TileTreeOwner,
+  RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile, TileDrawArgs, TileLoadPriority, TileRequest, TileTree, TileTreeOwner,
   TileTreeReference, TileTreeSet, TileTreeSupplier,
 } from "./internal";
 import { createDefaultViewFlagOverrides } from "./ViewFlagOverrides";
@@ -381,18 +381,17 @@ export type RealityModelSource = ViewState | DisplayStyleState;
 
 /** @internal */
 export class RealityModelTileTree extends RealityTileTree {
+  private readonly _isContentUnbounded: boolean;
   public constructor(params: RealityTileTreeParams) {
     super(params);
 
+    this._isContentUnbounded = this.rootTile.contentRange.diagonal().magnitude() > 2 * Constant.earthRadiusWGS84.equator;
     if (!this.isContentUnbounded && !this.rootTile.contentRange.isNull) {
       const worldContentRange = this.iModelTransform.multiplyRange(this.rootTile.contentRange);
       this.iModel.expandDisplayedExtents(worldContentRange);
     }
   }
-  public get isContentUnbounded() {
-    return this.rootTile.contentRange.diagonal().magnitude() > 2 * Constant.earthRadiusWGS84.equator;
-  }
-
+  public get isContentUnbounded() { return this._isContentUnbounded; }
 }
 
 /** @internal */
@@ -411,7 +410,15 @@ export namespace RealityModelTileTree {
   }
 
   export abstract class Reference extends TileTreeReference {
+    private _modelId: Id64String;
     private _isGlobal?: boolean;
+    public get modelId() { return this._modelId; }
+
+    public constructor(modelId: Id64String | undefined, iModel: IModelConnection) {
+      super();
+      this._modelId = modelId ? modelId : iModel.transientIds.next;
+    }
+
     public abstract get classifiers(): SpatialClassifiers | undefined;
 
     public unionFitRange(union: Range3d): void {
@@ -472,19 +479,17 @@ export namespace RealityModelTileTree {
 /** Supplies a reality data [[TileTree]] from a URL. May be associated with a persistent [[GeometricModelState]], or attached at run-time via a [[ContextRealityModelState]].
  * @internal
  */
-export class RealityTreeReference extends RealityModelTileTree.Reference {
+class RealityTreeReference extends RealityModelTileTree.Reference {
   private readonly _name: string;
   private readonly _url: string;
   private readonly _classifier?: SpatialClassifierTileTreeReference;
   private _mapDrapeTree?: TileTreeReference;
   private _transform?: Transform;
-  private _modelId: Id64String;
   private _iModel: IModelConnection;
   private _planarMask?: PlanarModelMask;
-  public get modelId() { return this._modelId; }
 
   public constructor(props: RealityModelTileTree.ReferenceProps) {
-    super();
+    super(props.modelId, props.iModel);
     let transform;
     if (undefined !== props.tilesetToDbTransform) {
       const tf = Transform.fromJSON(props.tilesetToDbTransform);
@@ -496,14 +501,13 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     this._url = props.url;
     this._transform = transform;
     this._iModel = props.iModel;
-    this._modelId = props.modelId ? props.modelId : this._iModel.transientIds.next;
     this._planarMask = props.planarMask ? PlanarModelMask.fromJSON(props.planarMask) : undefined;
 
     if (undefined !== props.classifiers)
       this._classifier = createClassifierTileTreeReference(props.classifiers, this, props.iModel, props.source);
   }
   public get treeOwner(): TileTreeOwner {
-    const treeId = { url: this._url, transform: this._transform, modelId: this._modelId };
+    const treeId = { url: this._url, transform: this._transform, modelId: this.modelId };
     return realityTreeSupplier.getOwner(treeId, this._iModel);
   }
 
@@ -516,8 +520,22 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
   }
 
   public get classifiers(): SpatialClassifiers | undefined { return undefined !== this._classifier ? this._classifier.classifiers : undefined; }
+  public createDrawArgs(context: SceneContext): TileDrawArgs | undefined {
+    // For global reality models (OSM Building layer only) - offset the reality model by the BIM elevation bias.  This would not be necessary
+    // if iModels had their elevation set correctly but unfortunately many GCS erroneously report Sea (Geoid) elevation rather than
+    // Geodetic.
+    const tree = this.treeOwner.load();
+    if (undefined === tree)
+      return undefined;
 
+    const drawArgs = super.createDrawArgs(context);
+    if (drawArgs !== undefined && this._iModel.isGeoLocated && tree.isContentUnbounded)
+      drawArgs.location.origin.z += context.viewport.displayStyle.backgroundMapElevationBias;
+
+    return drawArgs;
+  }
   public get planarClassifierTreeRef() { return this._classifier && this._classifier.activeClassifier && this._classifier.isPlanar ? this._classifier : undefined; }
+
 
   public addToScene(context: SceneContext): void {
     // NB: The classifier must be added first, so we can find it when adding our own tiles.
