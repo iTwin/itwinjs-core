@@ -111,13 +111,33 @@ describe("RpcRequestsHandler", () => {
         await expect(handler.request(func, defaultRpcHandlerOptions)).to.eventually.be.rejectedWith(PresentationError).and.has.property("errorNumber", 65543);
       });
 
-      it("calls request handler 10 times", async () => {
+      it("calls request handler 5 times", async () => {
         const requestHandlerStub = sinon.stub();
         requestHandlerStub.returns(Promise.resolve(errorResponse(PresentationStatus.BackendTimeout)));
         const requestHandlerSpy = sinon.spy(() => requestHandlerStub());
 
         await expect(handler.request(requestHandlerSpy, defaultRpcHandlerOptions)).to.eventually.be.rejectedWith(PresentationError);
-        expect(requestHandlerSpy.callCount).to.be.equal(10);
+        expect(requestHandlerSpy.callCount).to.be.equal(5);
+      });
+
+    });
+
+    describe("when request throws", () => {
+
+      it("returns PresentationError", async () => {
+        const err = new Error();
+        const func = async (): PresentationRpcResponse<number> => { throw err; };
+        await expect(handler.request(func, defaultRpcHandlerOptions)).to.eventually.be.rejectedWith(err);
+      });
+
+      it("calls request handler 5 times", async () => {
+        const err = new Error();
+        const requestHandlerStub = sinon.stub();
+        requestHandlerStub.throws(err);
+        const requestHandlerSpy = sinon.spy(() => requestHandlerStub());
+
+        await expect(handler.request(requestHandlerSpy, defaultRpcHandlerOptions)).to.eventually.be.rejectedWith(err);
+        expect(requestHandlerSpy.callCount).to.be.equal(5);
       });
 
     });
