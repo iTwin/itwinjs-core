@@ -145,9 +145,9 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
 
   /**
    * Deletes a previously downloaded briefcase. The briefcase must be closed.
-   * @param _briefcase either the filename or the BriefcaseProps
+   * @param _fileName the filename of the Briefcase to delete
    */
-  public async deleteBriefcase(_briefcase: string | BriefcaseProps): Promise<void> { return this.forward(arguments); }
+  public async deleteBriefcase(_fileName: string): Promise<void> { return this.forward(arguments); }
 
   /**
    * Gets all briefcases that were previously requested to be downloaded, or were completely downloaded

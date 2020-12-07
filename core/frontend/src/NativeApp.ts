@@ -152,14 +152,17 @@ export class NativeApp {
     return { briefcaseId, fileName, downloadPromise: doDownload(), requestCancel };
   }
 
-  public static async deleteBriefcase(briefcaseKey: string | BriefcaseProps): Promise<void> {
+  /** Delete an existing briefcase
+   * @param fileName the briefcase fileName
+   */
+  public static async deleteBriefcase(fileName: string): Promise<void> {
     if (!IModelApp.initialized)
       throw new IModelError(IModelStatus.BadRequest, "Call NativeApp.requestDownloadBriefcase first");
 
     const requestContext = new FrontendRequestContext();
     requestContext.enter();
     requestContext.useContextForRpc = true;
-    await NativeAppRpcInterface.getClient().deleteBriefcase(briefcaseKey);
+    await NativeAppRpcInterface.getClient().deleteBriefcase(fileName);
   }
 
   public static async openBriefcase(briefcaseProps: OpenBriefcaseProps): Promise<LocalBriefcaseConnection> {

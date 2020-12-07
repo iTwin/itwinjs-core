@@ -31,12 +31,6 @@ export enum DownloadBriefcaseStatus {
 export enum SyncMode { FixedVersion = 1, PullAndPush = 2, PullOnly = 3 }
 
 /**
- * Key to locate an open briefcase
- * @see BriefcaseManager.makeKey
- */
-export type BriefcaseKey = string;
-
-/**
  * Options to open a previously downloaded briefcase
  * @beta
  */

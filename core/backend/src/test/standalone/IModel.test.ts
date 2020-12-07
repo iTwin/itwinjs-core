@@ -1726,7 +1726,7 @@ describe("iModel", () => {
     // Just create an empty snapshot, and we'll use that as our fake "checkpoint" (so it opens)
     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint.bim");
     const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
-    const imodelId = snapshot.getGuid();
+    const iModelId = snapshot.getGuid();
     const contextId = Guid.createValue();
     const changeSetId = generateChangeSetId();
     snapshot.close();
@@ -1737,7 +1737,7 @@ describe("iModel", () => {
       ecId: "INVALID",
       changeSetId,
       containerAccessKeyAccount: "testAccount",
-      containerAccessKeyContainer: `imodelblocks-${imodelId}`,
+      containerAccessKeyContainer: `imodelblocks-${iModelId}`,
       containerAccessKeySAS: "testSAS",
       containerAccessKeyDbName: "testDb",
     };
@@ -1776,22 +1776,22 @@ describe("iModel", () => {
   it("should throw when opening checkpoint without blockcache dir env", async () => {
     process.env.BLOCKCACHE_DIR = "";
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const error = await getIModelError(SnapshotDb.openCheckpoint(ctx, Guid.createValue(), Guid.createValue(), Guid.createValue()));
+    const error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: Guid.createValue() }));
     expectIModelError(IModelStatus.BadRequest, error);
   });
 
-  it("should throw for missing/invalid checkpoint in hub", async () => {
+  it.only("should throw for missing/invalid checkpoint in hub", async () => {
     process.env.BLOCKCACHE_DIR = "/foo/";
     const checkpointsV2Handler = BriefcaseManager.imodelClient.checkpointsV2;
     const hubMock = sinon.stub(checkpointsV2Handler, "get").callsFake(async () => []);
     sinon.stub(BriefcaseManager.imodelClient, "checkpointsV2").get(() => checkpointsV2Handler);
 
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
-    let error = await getIModelError(SnapshotDb.openCheckpoint(ctx, Guid.createValue(), Guid.createValue(), Guid.createValue()));
+    let error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: Guid.createValue() }));
     expectIModelError(IModelStatus.NotFound, error);
 
     hubMock.callsFake(async () => [{} as any]);
-    error = await getIModelError(SnapshotDb.openCheckpoint(ctx, Guid.createValue(), Guid.createValue(), Guid.createValue()));
+    error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: Guid.createValue() }));
     expectIModelError(IModelStatus.BadRequest, error);
   });
 

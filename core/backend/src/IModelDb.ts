@@ -16,7 +16,7 @@ import {
 import { Range3d } from "@bentley/geometry-core";
 import { ChangesType, Lock, LockLevel, LockType } from "@bentley/imodelhub-client";
 import {
-  AxisAlignedBox3d, BriefcaseKey, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps,
+  AxisAlignedBox3d, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps,
   CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DisplayStyleProps, DomainOptions, EcefLocation,
   ElementAspectProps, ElementGeometryRequest, ElementGeometryUpdate, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams,
   FilePropertyProps, FontMap, FontMapProps, FontProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps,
@@ -857,7 +857,7 @@ export abstract class IModelDb extends IModel {
     return iModelDb;
   }
 
-  /** Find an already open IModelDb (considers all subclasses).
+  /** Find an already open IModelDb
    * @returns The matching IModelDb or `undefined`.
    */
   public static tryFindByKey(key: string): IModelDb | undefined {
@@ -866,9 +866,9 @@ export abstract class IModelDb extends IModel {
 
   /** @internal */
   public static openDgnDb(filePath: string, openMode: OpenMode, upgradeOptions?: UpgradeOptions, props?: string) {
-    if (this.tryFindByKey(filePath)) {
+    if (this.tryFindByKey(filePath))
       throw new IModelError(DbResult.BE_SQLITE_CANTOPEN, `iModel [${filePath}] is already open`, Logger.logError, loggerCategory);
-    }
+
     const isUpgradeRequested = upgradeOptions?.domain === DomainOptions.Upgrade || upgradeOptions?.profile === ProfileOptions.Upgrade;
     if (isUpgradeRequested && openMode !== OpenMode.ReadWrite)
       throw new IModelError(IModelStatus.UpgradeFailed, "Cannot upgrade a Readonly Db", Logger.logError, loggerCategory);
@@ -2170,12 +2170,6 @@ export class BriefcaseDb extends IModelDb {
   public readonly briefcaseId: number;
 
   public get syncMode() { return this.briefcaseId === 0 ? SyncMode.PullOnly : SyncMode.PullAndPush; }
-
-  /**
-   * Get the key of this briefcase
-   * @beta
-   */
-  public get briefcaseKey(): BriefcaseKey { return this._fileKey; }
 
   /** @internal */
   public reverseTxns(numOperations: number, allowCrossSessions?: boolean): IModelStatus {

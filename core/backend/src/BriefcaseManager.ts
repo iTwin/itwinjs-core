@@ -167,6 +167,7 @@ export class BriefcaseManager {
     }
     return briefcaseList;
   }
+
   private static _cacheDir: string;
   /** @internal */
   public static get cacheDir() { return this._cacheDir; }
@@ -272,13 +273,12 @@ export class BriefcaseManager {
   }
 
   /**
-     * Delete a previously downloaded briefcase
+     * Delete a local briefcase. First releases the BriefcaseId from iModelHub
      * @param requestContext
-     * @param props either the filename or BriefcaseProps
-     * @throws [[IModelError]] If unable to delete the briefcase - e.g., if it wasn't completely downloaded, OR was left open
+     * @param fileName the filename of the Briefcase to delete
+     * @throws [[IModelError]] If unable to delete the briefcase
      */
-  public static async deleteBriefcase(requestContext: ClientRequestContext | AuthorizedClientRequestContext, props: string | BriefcaseProps): Promise<void> {
-    const fileName = typeof props === "string" ? props : BriefcaseManager.getFileName(props);
+  public static async deleteBriefcase(requestContext: ClientRequestContext | AuthorizedClientRequestContext, fileName: string): Promise<void> {
     const db = IModelDb.openDgnDb(fileName, OpenMode.Readonly);
     const briefcase: BriefcaseProps = {
       iModelId: db.getDbGuid(),
@@ -289,7 +289,7 @@ export class BriefcaseManager {
     requestContext.enter();
     if (this.isValidBriefcaseId(briefcase.briefcaseId)) {
       if (!(requestContext instanceof AuthorizedClientRequestContext))
-        throw new IModelError(BentleyStatus.ERROR, "BriefcaseManager.deleteBriefcase: Deleting a briefcase with SyncMode = PullPush requires authorization - pass AuthorizedClientRequestContext instead of ClientRequestContext");
+        throw new IModelError(BentleyStatus.ERROR, "Deleting a briefcase requires authorization");
       await BriefcaseManager.releaseBriefcaseFromServer(requestContext, briefcase);
       requestContext.enter();
     }
@@ -300,7 +300,7 @@ export class BriefcaseManager {
     requestContext.enter();
     const changeSetsPath: string = BriefcaseManager.getChangeSetsPath(iModelId);
 
-    Logger.logTrace(loggerCategory, "BriefcaseManager.downloadChangeSets: Started downloading change sets", () => ({ iModelId }));
+    Logger.logTrace(loggerCategory, "Started downloading change sets", () => ({ iModelId }));
     const perfLogger = new PerfLogger("Downloading change sets", () => ({ iModelId }));
     let changeSets;
     try {
@@ -308,11 +308,11 @@ export class BriefcaseManager {
       requestContext.enter();
     } catch (error) {
       requestContext.enter();
-      Logger.logError(loggerCategory, "BriefcaseManager.downloadChangeSets: Error downloading changesets", () => ({ iModelId }));
+      Logger.logError(loggerCategory, "Error downloading changesets", () => ({ iModelId }));
       throw error;
     }
     perfLogger.dispose();
-    Logger.logTrace(loggerCategory, "BriefcaseManager.downloadChangeSets: Finished downloading change sets", () => ({ iModelId }));
+    Logger.logTrace(loggerCategory, "Finished downloading change sets", () => ({ iModelId }));
     return changeSets;
   }
 
@@ -458,19 +458,19 @@ export class BriefcaseManager {
       return;
 
     // Reverse, reinstate and merge as necessary
-    const perfLogger = new PerfLogger("BriefcaseManager.processChangeSets: Processing change sets", () => ({ ...db.getRpcProps(), targetChangeSetId, targetChangeSetIndex }));
+    const perfLogger = new PerfLogger("Processing change sets", () => ({ ...db.getRpcProps(), targetChangeSetId, targetChangeSetIndex }));
     try {
       if (typeof reverseToId !== "undefined") {
-        Logger.logTrace(loggerCategory, "BriefcaseManager.processChangeSets: Started reversing changes to the briefcase", () => ({ reverseToId, ...db.getRpcProps() }));
+        Logger.logTrace(loggerCategory, "Started reversing changes to the briefcase", () => ({ reverseToId, ...db.getRpcProps() }));
         await BriefcaseManager.applyChangeSets(requestContext, db, reverseToId, reverseToIndex!, ChangeSetApplyOption.Reverse);
         requestContext.enter();
-        Logger.logTrace(loggerCategory, "BriefcaseManager.processChangeSets: Finished reversing changes to the briefcase", () => ({ reverseToId, ...db.getRpcProps() }));
+        Logger.logTrace(loggerCategory, "Finished reversing changes to the briefcase", () => ({ reverseToId, ...db.getRpcProps() }));
       }
       if (typeof reinstateToId !== "undefined") {
-        Logger.logTrace(loggerCategory, "BriefcaseManager.processChangeSets: Started reinstating changes to the briefcase", () => ({ reinstateToId, ...db.getRpcProps() }));
+        Logger.logTrace(loggerCategory, "Started reinstating changes to the briefcase", () => ({ reinstateToId, ...db.getRpcProps() }));
         await BriefcaseManager.applyChangeSets(requestContext, db, reinstateToId, reinstateToIndex!, ChangeSetApplyOption.Reinstate);
         requestContext.enter();
-        Logger.logTrace(loggerCategory, "BriefcaseManager.processChangeSets: Finished reinstating changes to the briefcase", () => ({ reinstateToId, ...db.getRpcProps() }));
+        Logger.logTrace(loggerCategory, "Finished reinstating changes to the briefcase", () => ({ reinstateToId, ...db.getRpcProps() }));
       }
       if (typeof mergeToId !== "undefined") {
         Logger.logTrace(loggerCategory, "BriefcaseManager.processChangeSets: Started merging changes to the briefcase", () => ({ mergeToId, ...db.getRpcProps() }));
@@ -524,7 +524,7 @@ export class BriefcaseManager {
      * cause the event loop to be blocked. Also if any of the change sets contain schema changes, that will cause
      * the Db to be closed and reopened.
      */
-    const perfLogger = new PerfLogger("BriefcaseManager.applyChangeSets: Applying change sets", () => ({ ...db.getRpcProps() }));
+    const perfLogger = new PerfLogger("Applying change sets", () => ({ ...db.getRpcProps() }));
     let status: ChangeSetStatus;
     if (containsSchemaChanges || maxFileSize > 1024 * 1024) {
       status = await this.applyChangeSetsToNativeDbAsync(requestContext, db, changeSetTokens, processOption);
@@ -535,7 +535,7 @@ export class BriefcaseManager {
     perfLogger.dispose();
 
     if (ChangeSetStatus.Success !== status)
-      throw new IModelError(status, "BriefcaseManager.applyChangeSets: Error applying changesets", Logger.logError, loggerCategory, () => ({ ...db.getRpcProps(), targetChangeSetId, targetChangeSetIndex }));
+      throw new IModelError(status, "Error applying changesets", Logger.logError, loggerCategory, () => ({ ...db.getRpcProps(), targetChangeSetId, targetChangeSetIndex }));
   }
 
   /** Apply change sets synchronously
@@ -830,7 +830,7 @@ export class BriefcaseManager {
     }
   }
 
-  /** Return true if should attempt pushing again. */
+  /** Return true to attempt pushing again. */
   private static shouldRetryPush(error: any): boolean {
     if (error instanceof IModelHubError && error.errorNumber) {
       switch (error.errorNumber) {
@@ -929,6 +929,4 @@ export class BriefcaseManager {
         Logger.logError(loggerCategory, `Could not log user usage`, () => ({ errorStatus: err.status, errorMessage: err.message, ...token }));
       });
   }
-
-
 }

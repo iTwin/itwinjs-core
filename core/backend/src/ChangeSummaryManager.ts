@@ -129,7 +129,7 @@ export class ChangeSummaryManager {
     iModel.clearSqliteStatementCache();
     const res: DbResult = iModel.nativeDb.detachChangeCache();
     if (res !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(res, `Failed to detach Change Cache file from ${iModel.briefcaseKey}.`);
+      throw new IModelError(res, `Failed to detach Change Cache file from ${iModel.key}.`);
   }
 
   /** Extracts change summaries from the specified iModel.

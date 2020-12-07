@@ -13,7 +13,7 @@ import { BriefcaseStatus, ChangeSetStatus, DbResult, Guid, GuidString, IModelSta
 import { AuthorizedClientRequestContext, CancelRequest, ProgressCallback, ProgressInfo, UserCancelledError } from "@bentley/itwin-client";
 import { BriefcaseIdValue, BriefcaseManager } from "./BriefcaseManager";
 import { SnapshotDb } from "./IModelDb";
-import { Checkpoint, CheckpointQuery } from "@bentley/imodelhub-client";
+import { Checkpoint, CheckpointQuery, CheckpointV2, CheckpointV2Query } from "@bentley/imodelhub-client";
 import { IModelHost } from "./IModelHost";
 import { DownloadBriefcaseStatus, IModelError } from "@bentley/imodeljs-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -107,24 +107,26 @@ export class V2CheckpointManager {
       throw new IModelError(IModelStatus.BadRequest, "Invalid config: BLOCKCACHE_DIR is not set");
     }
 
-    const checkpointQuery = new CheckpointQuery().byChangeSetId(changeSetId).selectBCVAccessKey();
-    const checkpoints: Checkpoint[] = await BriefcaseManager.imodelClient.checkpoints.get(requestContext, iModelId, checkpointQuery);
-    requestContext.enter();
-
-    if (checkpoints.length < 1)
+    let checkpointV2: CheckpointV2;
+    try {
+      const checkpointQuery = new CheckpointV2Query().byChangeSetId(changeSetId).selectContainerAccessKey();
+      checkpointV2 = (await BriefcaseManager.imodelClient.checkpointsV2.get(requestContext, iModelId, checkpointQuery))[0];
+      requestContext.enter();
+    } catch (err) {
       throw new IModelError(IModelStatus.NotFound, "Checkpoint not found", Logger.logError, loggerCategory);
+    }
 
-    const { bcvAccessKeyContainer, bcvAccessKeySAS, bcvAccessKeyAccount, bcvAccessKeyDbName } = checkpoints[0];
-    if (!bcvAccessKeyContainer || !bcvAccessKeySAS || !bcvAccessKeyAccount || !bcvAccessKeyDbName)
+    const { containerAccessKeyContainer, containerAccessKeySAS, containerAccessKeyAccount, containerAccessKeyDbName } = checkpointV2;
+    if (!containerAccessKeyContainer || !containerAccessKeySAS || !containerAccessKeyAccount || !containerAccessKeyDbName)
       throw new IModelError(IModelStatus.BadRequest, "Invalid checkpoint in iModelHub", Logger.logError, loggerCategory);
 
     return {
-      container: bcvAccessKeyContainer,
-      auth: bcvAccessKeySAS,
+      container: containerAccessKeyContainer,
+      auth: containerAccessKeySAS,
       daemonDir: bcvDaemonCachePath,
       storageType: "azure",
-      user: bcvAccessKeyAccount,
-      dbAlias: bcvAccessKeyDbName,
+      user: containerAccessKeyAccount,
+      dbAlias: containerAccessKeyDbName,
       writeable: false,
     };
   }
@@ -239,9 +241,6 @@ export class V1CheckpointManager {
       const db = SnapshotDb.openForApplyChangesets(job.pathName);
       const nativeDb = db.nativeDb;
 
-      // Note: A defect in applying change sets caused some checkpoints to be created with Txns - we need to clear these out
-      // at least until these checkpoints aren't being used. The error typically is a worry only
-      // for ReadWrite applications, and can be eventually phased out based on the occurrence of the log warning below.
       if (nativeDb.hasPendingTxns()) {
         Logger.logWarning(loggerCategory, "Checkpoint with Txns found - deleting them", () => traceInfo);
         nativeDb.deleteAllTxns();
@@ -254,10 +253,10 @@ export class V1CheckpointManager {
       try {
         const dbChangeSetId = nativeDb.getParentChangeSetId();
         if (dbChangeSetId !== checkpoint.mergedChangeSetId)
-          throw new IModelError(IModelStatus.ValidationFailed, "BriefcaseManager.finishCreateBriefcase: ParentChangeSetId of the checkpoint was not correctly setup", Logger.logError, loggerCategory, () => ({ ...traceInfo, ...checkpoint, dbChangeSetId }));
+          throw new IModelError(IModelStatus.ValidationFailed, "ParentChangeSetId of the checkpoint was not correctly setup", Logger.logError, loggerCategory, () => ({ ...traceInfo, ...checkpoint, dbChangeSetId }));
         const dbContextGuid = Guid.normalize(nativeDb.queryProjectGuid());
         if (dbContextGuid !== Guid.normalize(requestedCkp.contextId))
-          throw new IModelError(IModelStatus.ValidationFailed, "BriefcaseManager.finishCreateBriefcase: ContextId was not properly setup in the briefcase", Logger.logError, loggerCategory, () => ({ ...traceInfo, dbContextGuid }));
+          throw new IModelError(IModelStatus.ValidationFailed, "ContextId was not properly setup in the briefcase", Logger.logError, loggerCategory, () => ({ ...traceInfo, dbContextGuid }));
 
         // Apply change sets if necessary
         if (dbChangeSetId !== requestedCkp.changeSetId) {
@@ -296,7 +295,7 @@ export class V1CheckpointManager {
       const expiresAt = new Date(se);
       const now = new Date();
       const expiresInSeconds = (expiresAt.getTime() - now.getTime()) / 1000;
-      Logger.logTrace(loggerCategory, "BriefcaseManager.downloadCheckpoint: Downloading checkpoint (started)...", () => ({
+      Logger.logTrace(loggerCategory, "Downloading checkpoint (started)...", () => ({
         expiresInSeconds,
         fileSizeInBytes: checkpoint.fileSize,
         iModelId: checkpoint.fileId,
@@ -315,7 +314,7 @@ export class V1CheckpointManager {
         const currentTime = (new Date()).getTime();
         const elapsedSeconds = (currentTime - startedTime) / 1000;
         const remainingSeconds = (elapsedSeconds * (100.0 - progressInfo.percent)) / progressInfo.percent;
-        Logger.logTrace(loggerCategory, "BriefcaseManager.downloadCheckpoint: Downloading checkpoint (progress)...", () => ({
+        Logger.logTrace(loggerCategory, "Downloading checkpoint (progress)...", () => ({
           downloadedBytes: progressInfo.loaded, totalBytes: progressInfo.total, percentComplete: progressInfo.percent?.toFixed(2),
           elapsedSeconds: elapsedSeconds.toFixed(0), remainingSeconds: remainingSeconds.toFixed(0),
           iModelId: checkpoint.fileId,

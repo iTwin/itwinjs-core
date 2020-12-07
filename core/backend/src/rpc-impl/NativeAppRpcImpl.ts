@@ -94,28 +94,27 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
     requestContext.enter();
     return db.toJSON();
   }
+
   /**
    * Closes the briefcase on disk - this api can be called offline
-   * @param key Key to locate the briefcase in the disk cache
+   * @param key Key returned by BriefcaseDb.open
+   * @throws IModelNotFoundResponse if the BriefcaseDb is not open
    */
   public async closeBriefcase(key: string): Promise<void> {
-    const briefcaseDb = BriefcaseDb.findByKey(key);
-    briefcaseDb.close();
+    BriefcaseDb.findByKey(key).close();
   }
 
   /**
-   * Deletes a previously downloaded briefcase. The briefcase must be closed.
-   * @param key Key to locate the briefcase in the disk cache
+   * Deletes a local briefcase, releasing the BriefcaseId from iModelHub. The briefcase must be closed.
+   * @param fileName - the local filename of the briefcase.
    */
-  public async deleteBriefcase(briefcase: string | BriefcaseProps): Promise<void> {
-    const requestContext = ClientRequestContext.current;
-    await BriefcaseManager.deleteBriefcase(requestContext, briefcase);
+  public async deleteBriefcase(fileName: string): Promise<void> {
+    await BriefcaseManager.deleteBriefcase(ClientRequestContext.current, fileName);
   }
 
   /**
-   * Gets all briefcases that were previously requested to be downloaded, or were completely downloaded
+   * Gets all briefcases that were previously be downloaded
    * @returns list of briefcases.
-   * @deprecated
    */
   public async getBriefcases(): Promise<LocalBriefcaseProps[]> {
     const requestContext: ClientRequestContext = ClientRequestContext.current;
