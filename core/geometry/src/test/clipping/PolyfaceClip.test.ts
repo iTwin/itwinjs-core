@@ -34,7 +34,7 @@ import { LinearSweep } from "../../solid/LinearSweep";
 import { SweepContour } from "../../solid/SweepContour";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { RFunctions } from "../polyface/PolyfaceQuery.test";
+import { RFunctions } from "../polyface/DrapeLinestring.test";
 
 /* eslint-disable no-console */
 describe("PolyfaceClip", () => {
