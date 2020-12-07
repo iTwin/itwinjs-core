@@ -195,6 +195,14 @@ class PrimaryTreeReference extends TileTreeReference {
     return this.view.is3d() && !this._sectionClip ? this.view.getModelClip(this.model.id) : undefined;
   }
 
+  public createDrawArgs(context: SceneContext): TileDrawArgs | undefined {
+    const args = super.createDrawArgs(context);
+    if (args)
+      args.intersectionClip = this._sectionClip;
+
+    return args;
+  }
+
   public get treeOwner(): TileTreeOwner {
     const newId = this.createTreeId(this.view, this._id.modelId, this._id.treeId.animationTransformNodeId);
     if (0 !== compareIModelTileTreeIds(newId, this._id.treeId)) {

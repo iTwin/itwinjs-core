@@ -351,6 +351,10 @@ export abstract class Tile {
     if (undefined !== args.viewClip && ClipPlaneContainment.StronglyOutside === args.viewClip.classifyPointContainment(worldBox.points))
       return true;
 
+    // Test against intersection clip - reject if tile doesn't intersect (used for section-cut graphics).
+    if (undefined !== args.intersectionClip && ClipPlaneContainment.Ambiguous !== args.intersectionClip.classifyPointContainment(worldBox.points))
+      return true;
+
     return false;
   }
 

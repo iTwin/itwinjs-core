@@ -32,11 +32,12 @@ export interface TileDrawArgParams {
   tree: TileTree;
   now: BeTimePoint;
   viewFlagOverrides: ViewFlagOverrides;
-  clipVolume: RenderClipVolume | undefined;
+  clipVolume?: RenderClipVolume;
   parentsAndChildrenExclusive: boolean;
   symbologyOverrides: FeatureSymbology.Overrides | undefined;
   appearanceProvider?: FeatureAppearanceProvider;
   hiddenLineSettings?: HiddenLine.Settings;
+  intersectionClip?: ClipVector;
 }
 /**
  * Arguments used when selecting and drawing [[Tile]]s.
@@ -81,6 +82,8 @@ export class TileDrawArgs {
   public get viewFlagOverrides(): ViewFlagOverrides { return this.graphics.viewFlagOverrides; }
   /**  Symbology overrides */
   public get symbologyOverrides(): FeatureSymbology.Overrides | undefined { return this.graphics.symbologyOverrides; }
+  /** If defined, tiles will be culled if they do not intersect the clip vector. */
+  public intersectionClip?: ClipVector;
 
   /** Compute the size in pixels of the specified tile at the point on its bounding sphere closest to the camera. */
   public getPixelSize(tile: Tile): number {
