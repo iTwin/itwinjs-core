@@ -75,7 +75,7 @@ export class PresentationLabelsProvider implements IPresentationLabelsProvider {
     }
 
     return (await Promise.all(labelPromises)).reduce((displayValues, labels) => {
-      Array.prototype.push.apply(displayValues, labels.map((def) => def.displayValue));
+      displayValues.push(...labels.map((def) => def.displayValue));
       return displayValues;
     }, new Array<string>());
   }
