@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Guid, Id64 } from "@bentley/bentleyjs-core";
+import { Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import {
-  ContentSpecificationTypes, Descriptor, DisplayValueGroup, Field, FieldDescriptor, InstanceKey, KeySet, PresentationError, PresentationStatus,
-  RelationshipDirection, Ruleset, RuleTypes,
+  ContentSpecificationTypes, DefaultContentDisplayTypes, Descriptor, DisplayValueGroup, Field, FieldDescriptor, InstanceKey, KeySet,
+  NestedContentField, PresentationError, PresentationStatus, RelationshipDirection, Ruleset, RuleTypes,
 } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { initialize, terminate } from "../IntegrationTests";
@@ -351,6 +351,59 @@ describe("Content", () => {
 
   });
 
+  describe("Class descriptor", () => {
+
+    it("creates base class descriptor usable for subclasses", async () => {
+      const classHierarchy = await ECClassHierarchy.create(imodel);
+      const createRuleset = (schemaName: string, className: string): Ruleset => ({
+        id: Guid.createValue(),
+        rules: [{
+          ruleType: RuleTypes.Content,
+          specifications: [{
+            specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+            classes: {
+              schemaName,
+              classNames: [className],
+            },
+            handleInstancesPolymorphically: true,
+            handlePropertiesPolymorphically: true,
+          }],
+        }],
+      });
+
+      const descriptorGeometricElement = await Presentation.presentation.getContentDescriptor({
+        imodel,
+        rulesetOrId: createRuleset("BisCore", "GeometricElement"),
+        displayType: DefaultContentDisplayTypes.PropertyPane,
+        keys: new KeySet(),
+      });
+      // sanity check - ensure filtering the fields by the class we used for request doesn't filter out anything
+      const fieldsGeometricElement = filterFieldsByClass(descriptorGeometricElement!.fields, await classHierarchy.getClassInfo("BisCore", "GeometricElement"));
+      expect(getFieldLabels(fieldsGeometricElement)).to.deep.eq(getFieldLabels(descriptorGeometricElement!));
+
+      // request properties of Generic.PhysicalObject and ensure it's matches our filtered result of `descriptorGeometricElement`
+      const descriptorPhysicalObject = await Presentation.presentation.getContentDescriptor({
+        imodel,
+        rulesetOrId: createRuleset("Generic", "PhysicalObject"),
+        displayType: DefaultContentDisplayTypes.PropertyPane,
+        keys: new KeySet(),
+      });
+      const fieldsPhysicalObject = filterFieldsByClass(descriptorGeometricElement!.fields, await classHierarchy.getClassInfo("Generic", "PhysicalObject"));
+      expect(getFieldLabels(fieldsPhysicalObject)).to.deep.eq(getFieldLabels(descriptorPhysicalObject!));
+
+      // request properties of PCJ_TestSchema.TestClass and ensure it's matches our filtered result of `descriptorGeometricElement`
+      const descriptorTestClass = await Presentation.presentation.getContentDescriptor({
+        imodel,
+        rulesetOrId: createRuleset("PCJ_TestSchema", "TestClass"),
+        displayType: DefaultContentDisplayTypes.PropertyPane,
+        keys: new KeySet(),
+      });
+      const fieldsTestClass = filterFieldsByClass(descriptorGeometricElement!.fields, await classHierarchy.getClassInfo("PCJ_TestSchema", "TestClass"));
+      expect(getFieldLabels(fieldsTestClass)).to.deep.eq(getFieldLabels(descriptorTestClass!));
+    });
+
+  });
+
   describe("when request in the backend exceeds the backend timeout time", () => {
 
     let raceStub: sinon.SinonStub<[Iterable<unknown>], Promise<unknown>>;
@@ -392,6 +445,132 @@ describe("Content", () => {
   });
 
 });
+
+type FieldLabels = Array<string | { label: string, nested: FieldLabels }>;
+function getFieldLabels(fields: Descriptor | Field[]): FieldLabels {
+  if (fields instanceof Descriptor)
+    fields = fields.fields;
+
+  return fields.map((f) => {
+    if (f.isNestedContentField())
+      return { label: f.label, nested: getFieldLabels(f.nestedFields) };
+    return f.label;
+  }).sort((lhs, rhs) => {
+    if (typeof lhs === "string" && typeof rhs === "string")
+      return lhs.localeCompare(rhs);
+    if (typeof lhs === "string")
+      return -1;
+    if (typeof rhs === "string")
+      return 1;
+    return lhs.label.localeCompare(rhs.label);
+  });
+}
+
+interface ECClassInfo {
+  id: Id64String;
+  baseClassIds: Id64String[];
+  derivedClassIds: Id64String[];
+}
+
+function cloneFilteredNestedContentField(field: NestedContentField, filterClassInfo: ECClassInfo) {
+  const clone = field.clone();
+  clone.nestedFields = filterNestedContentFieldsByClass(clone.nestedFields, filterClassInfo);
+  return clone;
+}
+function filterNestedContentFieldsByClass(fields: Field[], classInfo: ECClassInfo) {
+  let filteredFields = new Array<Field>();
+  fields.forEach((f) => {
+    if (f.isNestedContentField() && f.actualPrimaryClassIds.some((id) => classInfo.id === id || classInfo.derivedClassIds.includes(id))) {
+      const clone = cloneFilteredNestedContentField(f, classInfo);
+      if (clone.nestedFields.length > 0)
+        filteredFields.push(clone);
+    } else {
+      filteredFields.push(f);
+    }
+  });
+  return filteredFields;
+}
+function filterFieldsByClass(fields: Field[], classInfo: ECClassInfo) {
+  let filteredFields = new Array<Field>();
+  fields.forEach((f) => {
+    if (f.isNestedContentField()) {
+      // always include nested content field if its `actualPrimaryClassIds` contains either id of given class itself or one of its derived class ids
+      // note: nested content fields might have more nested fields inside them and these deeply nested fields might not apply for given class - for
+      // that we need to clone the field and pick only property fields and nested fields that apply.
+      const appliesForGivenClass = f.actualPrimaryClassIds.some((id) => classInfo.id === id || classInfo.derivedClassIds.includes(id));
+      if (appliesForGivenClass) {
+        const clone = cloneFilteredNestedContentField(f, classInfo);
+        if (clone.nestedFields.length > 0)
+          filteredFields.push(clone);
+      }
+    } else if (f.isPropertiesField()) {
+      // always include the field is at least one property in the field belongs to either base or derived class of given class
+      const appliesForGivenClass = f.properties.some((p) => {
+        const propertyClassId = p.property.classInfo.id;
+        return propertyClassId === classInfo.id
+          || classInfo.baseClassIds.includes(propertyClassId)
+          || classInfo.derivedClassIds.includes(propertyClassId);
+      });
+      if (appliesForGivenClass)
+        filteredFields.push(f);
+    } else {
+      filteredFields.push(f);
+    }
+  });
+  return filteredFields;
+}
+
+class ECClassHierarchy {
+  private constructor(private _imodel: IModelConnection, private _baseClasses: Map<Id64String, Id64String[]>, private _derivedClasses: Map<Id64String, Id64String[]>) {
+  }
+  public static async create(imodel: IModelConnection) {
+    const baseClassHierarchy = new Map();
+    const derivedClassHierarchy = new Map();
+
+    const query = "SELECT SourceECInstanceId AS ClassId, TargetECInstanceId AS BaseClassId FROM meta.ClassHasBaseClasses";
+    for await (const row of imodel.query(query)) {
+      const { classId, baseClassId } = row;
+
+      const baseClasses = baseClassHierarchy.get(classId);
+      if (baseClasses)
+        baseClasses.push(baseClassId);
+      else
+        baseClassHierarchy.set(classId, [baseClassId]);
+
+      const derivedClasses = derivedClassHierarchy.get(baseClassId);
+      if (derivedClasses)
+        derivedClasses.push(classId);
+      else
+        derivedClassHierarchy.set(baseClassId, [classId]);
+    }
+
+    return new ECClassHierarchy(imodel, baseClassHierarchy, derivedClassHierarchy);
+  }
+  private getAllBaseClassIds(classId: Id64String) {
+    const baseClassIds = this._baseClasses!.get(classId) ?? [];
+    return baseClassIds.reduce<Id64String[]>((arr, id) => {
+      arr.push(id, ...this.getAllBaseClassIds(id));
+      return arr;
+    }, []);
+  }
+  private getAllDerivedClassIds(baseClassId: Id64String) {
+    const derivedClassIds = this._derivedClasses!.get(baseClassId) ?? [];
+    return derivedClassIds.reduce<Id64String[]>((arr, id) => {
+      arr.push(id, ...this.getAllDerivedClassIds(id));
+      return arr;
+    }, []);
+  }
+  public async getClassInfo(schemaName: string, className: string) {
+    const classQuery = `SELECT c.ECInstanceId FROM meta.ECClassDef c JOIN meta.ECSchemaDef s ON s.ECInstanceId = c.Schema.Id WHERE c.Name = ? AND s.Name = ?`;
+    const result = await this._imodel.queryRows(classQuery, [className, schemaName]);
+    const { id } = result.rows[0];
+    return {
+      id,
+      baseClassIds: this.getAllBaseClassIds(id),
+      derivedClassIds: this.getAllDerivedClassIds(id),
+    };
+  }
+}
 
 function findFieldByLabel(fields: Field[], label: string, allFields?: Field[]): Field | undefined {
   const isTopLevel = (undefined === allFields);
