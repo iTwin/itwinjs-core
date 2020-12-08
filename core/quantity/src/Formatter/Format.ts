@@ -413,11 +413,8 @@ export class Format {
       if (undefined === this.units || this.units.length === 0)
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with no valid 'units'`);
     }
-
-    await this.loadCustomPropsFromJson(unitsProvider, jsonObj);
   }
 
-  protected async loadCustomPropsFromJson(_unitsProvider: UnitsProvider, _jsonObj: FormatProps): Promise<void> { };
   /**
    * Returns a JSON object that contain the specification for this Format.
    */

@@ -6,6 +6,7 @@ export * from "./Constants";
 export * from "./Exception";
 export * from "./Interfaces";
 export * from "./Parser";
+export * from "./ParserSpec";
 export * from "./Quantity";
 export * from "./Unit";
 
