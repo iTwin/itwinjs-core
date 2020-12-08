@@ -56,11 +56,21 @@ export interface ColorPickerProps extends React.ButtonHTMLAttributes<HTMLButtonE
  * @beta
  */
 export const ColorPickerButton = React.forwardRef<HTMLButtonElement, ColorPickerProps>(
-  function ColorPickerButton(props, ref) {
+  function ColorPickerButton({ className, colorDefs, disabled, dropDownTitle, initialColor, numColumns, onColorPick, readonly, round, style }, ref) {
     const target = React.useRef<HTMLButtonElement>(null);
     const refs = useRefs(target, ref);  // combine ref needed for target with the forwardRef needed by the Parent when parent is a Type Editor.
     const [showPopup, setShowPopup] = React.useState(false);
-    const [colorDef, setColorDef] = React.useState(props.initialColor);
+    const [colorDef, setColorDef] = React.useState(initialColor);
+    const initialColorRef = React.useRef(initialColor);
+
+    // See if new initialColor props have changed since component mounted
+    React.useEffect(() => {
+      // istanbul ignore else
+      if (initialColor !== initialColorRef.current) {
+        initialColorRef.current = initialColor;
+      }
+      setColorDef(initialColor);
+    }, [initialColor]);
 
     const defaultColors = React.useRef(
       [
@@ -96,34 +106,31 @@ export const ColorPickerButton = React.forwardRef<HTMLButtonElement, ColorPicker
       // istanbul ignore else
       if (!color.equals(colorDef)) {
         setColorDef(color);
-
-        // istanbul ignore else
-        if (props.onColorPick)
-          props.onColorPick(color);
+        onColorPick && onColorPick(color);
       }
-    }, [closePopup, colorDef, props]);
+    }, [closePopup, colorDef, onColorPick]);
 
     const { b, g, r, t } = colorDef.colors;
     const rgbaString = `rgb(${r},${g},${b},${(255 - t) / 255})`;
 
-    const buttonStyle = { backgroundColor: rgbaString, ...props.style } as React.CSSProperties;
+    const buttonStyle = { backgroundColor: rgbaString, ...style } as React.CSSProperties;
     const buttonClassNames = classnames("components-colorpicker-button",
-      props.round && "round",
-      props.readonly && "readonly",
-      props.className,
+      round && "round",
+      readonly && "readonly",
+      className,
     );
 
-    const colorOptions = props.colorDefs && props.colorDefs.length ? props.colorDefs : defaultColors.current;
+    const colorOptions = colorDefs && colorDefs.length ? colorDefs : defaultColors.current;
     return (
       <>
-        <button data-testid="components-colorpicker-button" onClick={togglePopup} className={buttonClassNames} style={buttonStyle} disabled={props.disabled} ref={refs} />
+        <button data-testid="components-colorpicker-button" data-value={rgbaString} onClick={togglePopup} className={buttonClassNames} style={buttonStyle} disabled={disabled} ref={refs} />
         <Popup
           className="components-colorpicker-popup"
           isOpen={showPopup}
           position={RelativePosition.BottomLeft}
           onClose={closePopup}
           target={target.current} >
-          <ColorOptions handleColorPicked={handleColorPicked} options={colorOptions} numColumns={props.numColumns ? props.numColumns : 4} round={!!props.round} title={props.dropDownTitle} />
+          <ColorOptions handleColorPicked={handleColorPicked} options={colorOptions} numColumns={numColumns ?? 4} round={!!round} title={dropDownTitle} />
         </Popup>
       </>
     );

@@ -31,6 +31,9 @@ Object {
       "label": "Buckinghamshire Ameliorated",
       "name": "array",
       "priority": 94234,
+      "renderer": Object {
+        "name": "custom_renderer",
+      },
       "type": Object {
         "typeName": "enum",
         "valueFormat": "Primitive",
@@ -52,6 +55,9 @@ Object {
       "label": "Engineer fuchsia",
       "name": "interface",
       "priority": 85096,
+      "renderer": Object {
+        "name": "custom_renderer",
+      },
       "type": Object {
         "typeName": "binary",
         "valueFormat": "Primitive",
@@ -73,6 +79,9 @@ Object {
       "label": "Digitized Meadow e-services",
       "name": "SCSI",
       "priority": 507,
+      "renderer": Object {
+        "name": "custom_renderer",
+      },
       "type": Object {
         "typeName": "set",
         "valueFormat": "Primitive",
@@ -114,6 +123,9 @@ Object {
           "label": "Ball networks",
           "name": "Buckinghamshire",
           "priority": 6880,
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "type": Object {
             "typeName": "geometry",
             "valueFormat": "Primitive",
@@ -163,6 +175,9 @@ Object {
         },
       ],
       "priority": 19765,
+      "renderer": Object {
+        "name": "custom_renderer",
+      },
       "type": Object {
         "members": Array [
           Object {
@@ -529,6 +544,9 @@ Object {
       "label": "Future",
       "name": "Cambridgeshire",
       "priority": 1695,
+      "renderer": Object {
+        "name": "custom_renderer",
+      },
       "type": Object {
         "typeName": "smallint",
         "valueFormat": "Primitive",
@@ -548,6 +566,9 @@ Object {
       "label": "SSL tertiary",
       "name": "Open-source",
       "priority": 16130,
+      "renderer": Object {
+        "name": "custom_renderer",
+      },
       "type": Object {
         "typeName": "real",
         "valueFormat": "Primitive",
@@ -567,6 +588,9 @@ Object {
       "label": "Bedfordshire",
       "name": "Home",
       "priority": 98326,
+      "renderer": Object {
+        "name": "custom_renderer",
+      },
       "type": Object {
         "typeName": "datetime",
         "valueFormat": "Primitive",
@@ -606,6 +630,9 @@ Object {
           "label": "Robust Gorgeous synergy",
           "name": "auxiliary",
           "priority": 20037,
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "type": Object {
             "typeName": "mediumint",
             "valueFormat": "Primitive",
@@ -655,6 +682,9 @@ Object {
         },
       ],
       "priority": 75880,
+      "renderer": Object {
+        "name": "custom_renderer",
+      },
       "type": Object {
         "members": Array [
           Object {
@@ -989,6 +1019,9 @@ Object {
       "label": "HTTP",
       "name": "program",
       "priority": 37361,
+      "renderer": Object {
+        "name": "custom_renderer",
+      },
       "type": Object {
         "typeName": "set",
         "valueFormat": "Primitive",
@@ -1010,6 +1043,9 @@ Object {
       "label": "logistical Trail",
       "name": "RAM",
       "priority": 14178,
+      "renderer": Object {
+        "name": "custom_renderer",
+      },
       "type": Object {
         "typeName": "datetime",
         "valueFormat": "Primitive",
@@ -1029,6 +1065,9 @@ Object {
       "label": "functionalities Analyst Rufiyaa",
       "name": "Mountain",
       "priority": 73561,
+      "renderer": Object {
+        "name": "custom_renderer",
+      },
       "type": Object {
         "typeName": "varchar",
         "valueFormat": "Primitive",
@@ -1070,6 +1109,9 @@ Object {
           "label": "robust Licensed",
           "name": "Lodge",
           "priority": 81713,
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "type": Object {
             "typeName": "boolean",
             "valueFormat": "Primitive",
@@ -1119,6 +1161,9 @@ Object {
         },
       ],
       "priority": 82740,
+      "renderer": Object {
+        "name": "custom_renderer",
+      },
       "type": Object {
         "members": Array [
           Object {

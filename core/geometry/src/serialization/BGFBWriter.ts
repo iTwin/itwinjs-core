@@ -32,6 +32,10 @@ import { GeometryQuery } from "../curve/GeometryQuery";
 import { BSplineSurface3d, BSplineSurface3dH, UVSelect } from "../bspline/BSplineSurface";
 import { PointString3d } from "../curve/PointString3d";
 import { Point3d } from "../geometry3d/Point3dVector3d";
+import { AuxChannel, AuxChannelData, PolyfaceAuxData } from "../polyface/AuxData";
+import { TransitionSpiral3d } from "../curve/spiral/TransitionSpiral3d";
+import { IntegratedSpiral3d } from "../curve/spiral/IntegratedSpiral3d";
+import { DgnSpiralTypeQueries } from "./BGFBReader";
 
 
 /**
@@ -176,6 +180,23 @@ export class BGFBWriter {
       return this.writeBsplineCurve3dAsFBVariantGeometry(curvePrimitive);
     } else if (curvePrimitive instanceof BSplineCurve3dH) {
       return this.writeBsplineCurve3dAHsFBVariantGeometry(curvePrimitive);
+    } else if (curvePrimitive instanceof IntegratedSpiral3d) {
+      const placement = curvePrimitive.localToWorld;
+      const typeCode = DgnSpiralTypeQueries.stringToTypeCode(curvePrimitive.spiralType, true)!;
+      const spiralDetailOffset = BGFBAccessors.TransitionSpiralDetail.createTransitionSpiralDetail(this.builder,
+        placement.matrix.coffs[0], placement.matrix.coffs[1], placement.matrix.coffs[2], placement.origin.x,
+        placement.matrix.coffs[3], placement.matrix.coffs[4], placement.matrix.coffs[5], placement.origin.y,
+        placement.matrix.coffs[6], placement.matrix.coffs[5], placement.matrix.coffs[8], placement.origin.z,
+        curvePrimitive.activeFractionInterval.x0, curvePrimitive.activeFractionInterval.x1,
+        curvePrimitive.bearing01.startRadians, curvePrimitive.bearing01.endRadians,
+        TransitionSpiral3d.radiusToCurvature(curvePrimitive.radius01.x0),
+        TransitionSpiral3d.radiusToCurvature(curvePrimitive.radius01.x1),
+        typeCode,
+        0);
+      const transitionTableOffset = BGFBAccessors.TransitionSpiral.createTransitionSpiral(this.builder,
+        spiralDetailOffset, 0, 0);
+      return BGFBAccessors.VariantGeometry.createVariantGeometry(this.builder,
+        BGFBAccessors.VariantGeometryUnion.tagTransitionSpiral, transitionTableOffset, 0);
     }
     return undefined;
   }
@@ -298,7 +319,50 @@ export class BGFBWriter {
     }
     return undefined;
   }
+  public writePolyfaceAuxChannelDataAsFBVariantGeometry(channelData: AuxChannelData): number | undefined {
+    if (channelData instanceof AuxChannelData) {
+      const valuesOffset = BGFBAccessors.PolyfaceAuxChannelData.createValuesVector(this.builder, channelData.values);
+      return BGFBAccessors.PolyfaceAuxChannelData.createPolyfaceAuxChannelData(this.builder,
+        channelData.input,
+        valuesOffset
+      );
+    }
+    return undefined;
+  }
 
+  public writePolyfaceAuxChannelAsFBVariantGeometry(channel: AuxChannel): number | undefined {
+    if (channel instanceof AuxChannel) {
+      const channelDataOffsets: number[] = [];
+      for (const channelData of channel.data) {
+        channelDataOffsets.push(this.writePolyfaceAuxChannelDataAsFBVariantGeometry(channelData)!);
+      }
+      const valuesOffset = BGFBAccessors.PolyfaceAuxChannel.createDataVector(this.builder, channelDataOffsets);
+      const nameOffset = channel.name ? this.builder.createString(channel.name) : 0;
+      const inputNameOffset = channel.inputName ? this.builder.createString(channel.inputName) : 0;
+      return BGFBAccessors.PolyfaceAuxChannel.createPolyfaceAuxChannel(this.builder,
+        channel.dataType,
+        nameOffset,
+        inputNameOffset, valuesOffset
+      );
+    }
+    return undefined;
+  }
+
+  public writePolyfaceAuxDataAsFBVariantGeometry(data: PolyfaceAuxData): number | undefined {
+    if (data instanceof PolyfaceAuxData) {
+      const channelOffsets: number[] = [];
+      for (const channel of data.channels) {
+        channelOffsets.push(this.writePolyfaceAuxChannelAsFBVariantGeometry(channel)!);
+      }
+      const channelOffsetsOffset = BGFBAccessors.PolyfaceAuxChannel.createDataVector(this.builder, channelOffsets);
+      const indicesOffset = BGFBAccessors.PolyfaceAuxData.createIndicesVector(this.builder, data.indices);
+      return BGFBAccessors.PolyfaceAuxData.createPolyfaceAuxData(this.builder,
+        indicesOffset,
+        channelOffsetsOffset
+      );
+    }
+    return undefined;
+  }
   public writePolyfaceAsFBVariantGeometry(mesh: IndexedPolyface): number | undefined {
     if (mesh instanceof IndexedPolyface) {
       // WE KNOW . . . . the polyface has blocks of zero-based indices.
@@ -313,6 +377,7 @@ export class BGFBWriter {
       let intColorOffset = 0;
       let normalOffset = 0;
       let paramOffset = 0;
+      let auxDataOffset = 0;
       const meshStyle = 1;  // That is  . . . MESH_ELM_STYLE_INDEXED_FACE_LOOPS (and specifically, variable size with with 0 terminators)
       const numPerFace = 0;
       this.fillOneBasedIndexArray(mesh, mesh.data.pointIndex, mesh.data.edgeVisible, 0, indexArray);
@@ -353,10 +418,15 @@ export class BGFBWriter {
         copyToPackedNumberArray(numberArray, mesh.data.param.float64Data(), mesh.data.param.float64Length);
         paramOffset = BGFBAccessors.Polyface.createPointVector(this.builder, numberArray);
       }
+
+      if (mesh.data.auxData) {
+        auxDataOffset = this.writePolyfaceAuxDataAsFBVariantGeometry(mesh.data.auxData)!;
+      }
+
       const polyfaceOffset = BGFBAccessors.Polyface.createPolyface(this.builder, pointOffset, paramOffset, normalOffset, 0, intColorOffset,
         pointIndexOffset, paramIndexOffset, normalIndexOffset, colorIndexOffset, 0,
         0, 0, meshStyle, twoSided,
-        numPerFace, 0, 0);
+        numPerFace, 0, auxDataOffset);
       return BGFBAccessors.VariantGeometry.createVariantGeometry(this.builder, BGFBAccessors.VariantGeometryUnion.tagPolyface, polyfaceOffset, 0);
 
     }
