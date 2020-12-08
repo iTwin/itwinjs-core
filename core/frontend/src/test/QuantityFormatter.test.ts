@@ -211,7 +211,7 @@ describe("Quantity formatter", async () => {
     assert.equal(imperialFormattedValue, "1076391.0417 ft²");
   });
 
-  describe("Mimic Native 'UnitConversionTests, UsSurveyLengths'", async () => {
+  describe("Mimic Native unit conversions", async () => {
     async function testUnitConversion(magnitude: number, fromUnitName: string, expectedValue: number, toUnitName: string, tolerance?: number) {
       const fromUnit = await quantityFormatter.findUnitByName(fromUnitName);
       const toUnit = await quantityFormatter.findUnitByName(toUnitName);
@@ -220,7 +220,21 @@ describe("Quantity formatter", async () => {
       assert(withinTolerance(convertedValue, expectedValue, tolerance));
     }
 
-    it("Set and use area overrides format (Survey Feet)", async () => {
+    it("UnitConversionTests, USCustomaryLengths", async () => {
+      // Conversion tests where expected value is taken directly out of  http://www.nist.gov/pml/wmd/pubs/upload/hb44-15-web-final.pdf, Appendix C. Section 4, Page C-8
+      // Directly from exact values in tables
+      await testUnitConversion(1.0, "Units.MILE", 63360, "Units.IN");
+      await testUnitConversion(1.0, "Units.MILE", 5280, "Units.FT");
+      await testUnitConversion(1.0, "Units.MILE", 1760, "Units.YRD");
+      await testUnitConversion(1.0, "Units.MILE", 80, "Units.CHAIN");
+      await testUnitConversion(1.0, "Units.IN", 2.54, "Units.CM");
+      await testUnitConversion(1.0, "Units.FT", 30.48, "Units.CM");
+      await testUnitConversion(1.0, "Units.YRD", 91.44, "Units.CM");
+      await testUnitConversion(1.0, "Units.CHAIN", 66.0 * 30.48, "Units.CM");
+      await testUnitConversion(1.0, "Units.MILE", 160934.4, "Units.CM");
+    });
+
+    it("UnitConversionTests, UsSurveyLengths", async () => {
       // Conversion tests where expected value is taken directly out of  http://www.nist.gov/pml/wmd/pubs/upload/hb44-15-web-final.pdf, Appendix C. Section 4, Page C-8
       // Exact values from document used for these conversions
       await testUnitConversion(1.0, "Units.FT", 0.999998, "Units.US_SURVEY_FT");
