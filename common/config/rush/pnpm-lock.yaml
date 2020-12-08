@@ -298,7 +298,8 @@ dependencies:
   react-dev-utils: 10.2.1
   react-dnd: 11.1.3_react-dom@16.14.0+react@16.14.0
   react-dnd-html5-backend: 11.1.3
-  react-dnd-test-utils: 11.1.3_03f4ebb949a999f1dbfb82bf18067d7a
+  react-dnd-test-backend: 11.1.3
+  react-dnd-test-utils: 11.1.3_08cdc8f9308497b700c9a4ec3eaac5b5
   react-dom: 16.14.0_react@16.14.0
   react-highlight-words: 0.14.0_react@16.14.0
   react-markdown: 4.3.1_react@16.14.0
@@ -6473,15 +6474,6 @@ packages:
     dev: false
     resolution:
       integrity: sha512-QugF55dNW+h+vzxVJ/LSJeTeUw9MCJ2cllhmVThVPEtF16ooBkxj0WBE5RB+AceFxMFo1rO6bJKXtqKl+JNnyA==
-  /dnd-core/4.0.5:
-    dependencies:
-      asap: 2.0.6
-      invariant: 2.2.4
-      lodash: 4.17.20
-      redux: 4.0.5
-    dev: false
-    resolution:
-      integrity: sha1-O4PRONDV4mXHPsl43sXh7UQdxmU=
   /dns-equal/1.0.0:
     dev: false
     resolution:
@@ -14492,17 +14484,17 @@ packages:
     dev: false
     resolution:
       integrity: sha512-/1FjNlJbW/ivkUxlxQd7o3trA5DE33QiRZgxent3zKme8DwF4Nbw3OFVhTRFGaYhHFNL1rZt6Rdj1D78BjnNLw==
-  /react-dnd-test-backend/5.0.1:
+  /react-dnd-test-backend/11.1.3:
     dependencies:
-      dnd-core: 4.0.5
-      lodash: 4.17.20
+      dnd-core: 11.1.3
     dev: false
     resolution:
-      integrity: sha1-ABl5UOYedl75pEvRcenKyFFqc9c=
-  /react-dnd-test-utils/11.1.3_03f4ebb949a999f1dbfb82bf18067d7a:
+      integrity: sha512-5qFm+NI2GdWIUfiYun0A8Gv0xjbq0NGOPS+f6z3x/3nTuliApjmqcM1lfTgePoz1FDG47ZofF58N8y96If62+Q==
+  /react-dnd-test-utils/11.1.3_08cdc8f9308497b700c9a4ec3eaac5b5:
     dependencies:
       react: 16.14.0
       react-dnd: 11.1.3_react-dom@16.14.0+react@16.14.0
+      react-dnd-test-backend: 11.1.3
       react-dom: 16.14.0_react@16.14.0
     dev: false
     peerDependencies:
@@ -20550,8 +20542,8 @@ packages:
       react-data-grid: 6.0.1_react-dom@16.14.0+react@16.14.0
       react-dnd: 11.1.3_react-dom@16.14.0+react@16.14.0
       react-dnd-html5-backend: 11.1.3
-      react-dnd-test-backend: 5.0.1
-      react-dnd-test-utils: 11.1.3_03f4ebb949a999f1dbfb82bf18067d7a
+      react-dnd-test-backend: 11.1.3
+      react-dnd-test-utils: 11.1.3_08cdc8f9308497b700c9a4ec3eaac5b5
       react-dom: 16.14.0_react@16.14.0
       react-highlight-words: 0.14.0_react@16.14.0
       react-resize-detector: 4.2.3_react-dom@16.14.0+react@16.14.0
@@ -20575,7 +20567,7 @@ packages:
     dev: false
     name: '@rush-temp/ui-components'
     resolution:
-      integrity: sha512-Tcw8YcCqRwX96KngA/lkS4gyF1l4BMn1u9SykAQ/2COmQNxfSZc1EBtdVOACFgdQpOOJPvz64o9+zjRFDc8ucA==
+      integrity: sha512-KVIwNbNU/LL6JgCN9XMyB5sHqTOVlKByADcaXRguySakruewdcNwz/OR8Gs485ktS/10Ic7/9odwHY7aO/meyQ==
       tarball: 'file:projects/ui-components.tgz'
     version: 0.0.0
   'file:projects/ui-core.tgz_61fa1f55fd4ae8f7721688649885d554':
@@ -21206,6 +21198,7 @@ specifiers:
   react-dev-utils: ^10.0.0
   react-dnd: ^11.1.3
   react-dnd-html5-backend: ^11.1.3
+  react-dnd-test-backend: ^11.1.3
   react-dnd-test-utils: ^11.1.3
   react-dom: ^16.8.0
   react-highlight-words: ^0.14.0

@@ -763,6 +763,10 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "react-dnd-test-backend",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "react-dnd-test-utils",
       "allowedCategories": [ "frontend" ]
     },
