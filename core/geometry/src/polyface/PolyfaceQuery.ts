@@ -34,6 +34,8 @@ import { XYPointBuckets } from "./multiclip/XYPointBuckets";
 import { IndexedPolyface, Polyface, PolyfaceVisitor } from "./Polyface";
 import { PolyfaceBuilder } from "./PolyfaceBuilder";
 import { RangeLengthData } from "./RangeLengthData";
+/* eslint-disable no-console */
+
 /**
  * Structure to return multiple results from volume between facets and plane
  * @public
@@ -318,13 +320,19 @@ export class PolyfaceQuery {
   public static announceSweepLinestringToConvexPolyfaceXY(linestringPoints: GrowableXYZArray, polyface: Polyface,
     announce: AnnounceDrapePanel): any {
     const context = SweepLineStringToFacetContext.create(linestringPoints);
+    let workCount;
+    const promiseTrigger = 10000.0;
     if (context) {
       const visitor = polyface.createVisitor(0);
       for (visitor.reset(); visitor.moveToNextFacet();) {
         context.projectToPolygon(visitor.point, announce, polyface, visitor.currentReadIndex());
+        workCount = context.workCount();
+        if (workCount > promiseTrigger) {
+          context.clearWorkCount();
+          console.log({ intermediateWorkCount: workCount });
+        }
       }
     }
-    // console.log(`numFacet ${numFacet}  numTest    ${numTest}    ratio  ${numTest / numFacet}`);
   }
 
 

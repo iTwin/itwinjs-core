@@ -40,7 +40,18 @@ export class SweepLineStringToFacetContext {
   private _clipFractions = Segment1d.create(0, 1);
   private _localFrame = Transform.createIdentity();
   private _polygonRange = Range3d.create();
+  private _numPolygon = 0;
+  private _numClip = 0;
+  private static _polygonFactor = 1.0;
+  private static _clipFactor = 1.0 / 64;
+  /** Return an estimate of the work done so far. */
+  public workCount(): number {
+    return SweepLineStringToFacetContext._polygonFactor * this._numPolygon + SweepLineStringToFacetContext._polygonFactor * this._numClip;
+  }
+  /** Clear the counts in the work estimate */
+  public clearWorkCount() { this._numClip = 0; this._numPolygon = 0; }
   public projectToPolygon(polygon: GrowableXYZArray, announce: AnnounceDrapePanel, polyface: Polyface, readIndex: number) {
+    this._numPolygon++;
     polygon.setRange(this._polygonRange);
     if (!this._polygonRange.intersectsRangeXY(this._spacePointsRange))
       return;
@@ -48,6 +59,7 @@ export class SweepLineStringToFacetContext {
     // For each triangle within the facet ...
     // remark: this loop only runs once in triangle mesh, twice in quads ...
     for (let k1 = 1; k1 + 1 < polygon.length; k1++) {
+      this._numClip++;
       const frame = polygon.fillLocalXYTriangleFrame(0, k1, k1 + 1, this._localFrame);
       if (frame) {
         // For each stroke of the linestring ...
