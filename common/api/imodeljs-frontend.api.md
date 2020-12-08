@@ -90,6 +90,7 @@ import { FeatureTable } from '@bentley/imodeljs-common';
 import { FillFlags } from '@bentley/imodeljs-common';
 import { FontMap } from '@bentley/imodeljs-common';
 import { Format } from '@bentley/imodeljs-quantity';
+import { FormatProps } from '@bentley/imodeljs-quantity';
 import { FormatterSpec } from '@bentley/imodeljs-quantity';
 import { FrontendAuthorizationClient } from '@bentley/frontend-authorization-client';
 import { Frustum } from '@bentley/imodeljs-common';
@@ -1849,14 +1850,6 @@ export enum CurrentState {
     NotEnabled = 0
 }
 
-// @beta
-export interface CustomFormatter {
-    // (undocumented)
-    formatQuantity(magnitude: number, spec: FormatterSpec): string;
-    // (undocumented)
-    parseIntoQuantityValue(inString: string, spec: ParserSpec): ParseResult;
-}
-
 // @internal (undocumented)
 export class DebugShaderFile {
     constructor(filename: string, src: string, isVS: boolean, isGL: boolean, isUsed: boolean);
@@ -2958,6 +2951,16 @@ export abstract class FormattedQuantityDescription extends BaseQuantityDescripti
     get parserSpec(): ParserSpec | undefined;
     // (undocumented)
     protected parseString(userInput: string): ParseResults;
+}
+
+// @beta
+export interface FormatterParserSpecsProvider {
+    // (undocumented)
+    createFormatterSpec: (useImperial: boolean) => Promise<FormatterSpec>;
+    // (undocumented)
+    createParserSpec: (useImperial: boolean) => Promise<ParserSpec>;
+    // (undocumented)
+    quantityTypeName: string;
 }
 
 // @internal (undocumented)
@@ -6169,9 +6172,9 @@ export enum OutputMessageType {
 // @beta
 export interface OverrideFormatEntry {
     // (undocumented)
-    imperial: any;
+    imperial: FormatProps;
     // (undocumented)
-    metric: any;
+    metric: FormatProps;
 }
 
 // @internal
@@ -6439,42 +6442,36 @@ export class QuantityFormatter implements UnitsProvider {
     clearAllOverrideFormats(): Promise<void>;
     // (undocumented)
     clearOverrideFormats(type: QuantityType): Promise<void>;
-    // (undocumented)
-    protected _customFormatsByType: Map<import("@bentley/imodeljs-common").SubLayerId, CustomFormatPair>;
-    // (undocumented)
-    protected _customFormattersByType: Map<import("@bentley/imodeljs-common").SubLayerId, CustomFormatterImpl<CustomFormatter>>;
-    findFormatterSpecByQuantityType(type: QuantityType, imperial?: boolean): FormatterSpec | undefined;
+    findFormatterSpecByQuantityType(type: QuantityTypeArg, imperial?: boolean): FormatterSpec | undefined;
     protected findKoqFormatterSpec(koq: string, useImperial: boolean): FormatterSpec | undefined;
-    findParserSpecByQuantityType(type: QuantityType, imperial?: boolean): ParserSpec | undefined;
+    findParserSpecByQuantityType(type: QuantityTypeArg, imperial?: boolean): ParserSpec | undefined;
     findUnit(unitLabel: string, unitFamily?: string): Promise<UnitProps>;
     findUnitByName(unitName: string): Promise<UnitProps>;
     // (undocumented)
     protected findUnitDefinition(name: string): UnitDefinition | undefined;
     formatQuantity(magnitude: number, formatSpec: FormatterSpec): string;
     // (undocumented)
+    protected _formatSpecProviders: FormatterParserSpecsProvider[];
+    // (undocumented)
     protected _formatSpecsByKoq: Map<string, FormatterSpec[]>;
     getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversion>;
     // (undocumented)
-    protected _getCustomFormatterSpec(type: QuantityType, useImperial: boolean): Promise<FormatterSpec>;
-    // (undocumented)
     protected getFormatByQuantityType(type: QuantityType, imperial: boolean): Promise<Format>;
-    getFormatterSpecByQuantityType(type: QuantityType, imperial?: boolean): Promise<FormatterSpec>;
+    getFormatterSpecByQuantityType(type: QuantityTypeArg, imperial?: boolean): Promise<FormatterSpec>;
     protected getKoqFormatterSpec(koq: string, useImperial: boolean): Promise<FormatterSpec | undefined>;
     protected getKoqFormatterSpecsAsync(koq: string, useImperial: boolean): Promise<FormatterSpec[] | undefined>;
     // (undocumented)
-    protected getOverrideFormat(type: QuantityType, imperial: boolean): Promise<any>;
-    getParserSpecByQuantityType(type: QuantityType, imperial?: boolean): Promise<ParserSpec>;
-    // (undocumented)
-    protected _getStandardFormatterSpec(type: QuantityType, useImperial: boolean): Promise<FormatterSpec>;
+    protected getOverrideFormat(type: QuantityType, imperial: boolean): Promise<FormatProps | undefined>;
+    getParserSpecByQuantityType(type: QuantityTypeArg, imperial?: boolean): Promise<ParserSpec>;
     protected getUnitByQuantityType(type: QuantityType): Promise<UnitProps>;
     getUnitsByFamily(unitFamily: string): Promise<UnitProps[]>;
     // (undocumented)
-    protected _imperialFormatsByType: Map<import("@bentley/imodeljs-common").SubLayerId, Format>;
+    protected _imperialFormatsByType: Map<string, Format>;
     // (undocumented)
-    protected _imperialFormatSpecsByType: Map<import("@bentley/imodeljs-common").SubLayerId, FormatterSpec>;
+    protected _imperialFormatSpecsByType: Map<string, FormatterSpec>;
     // (undocumented)
-    protected _imperialParserSpecsByType: Map<import("@bentley/imodeljs-common").SubLayerId, ParserSpec>;
-    loadFormatAndParsingMaps(useImperial: boolean, restartActiveTool?: boolean): Promise<void>;
+    protected _imperialParserSpecsByType: Map<string, ParserSpec>;
+    loadFormatAndParsingMaps(useImperial: boolean, _restartActiveTool?: boolean): Promise<void>;
     protected loadFormatSpecsForQuantityType(quantityType: QuantityType, useImperial: boolean): Promise<void>;
     protected loadFormatSpecsForQuantityTypes(useImperial: boolean): Promise<void>;
     protected loadKoqFormatSpecs(koq: string): Promise<void>;
@@ -6483,20 +6480,22 @@ export class QuantityFormatter implements UnitsProvider {
     // (undocumented)
     protected loadStdFormat(type: QuantityType, imperial: boolean): Promise<Format>;
     // (undocumented)
-    protected _metricFormatsByType: Map<import("@bentley/imodeljs-common").SubLayerId, Format>;
+    protected _metricFormatsByType: Map<string, Format>;
     // (undocumented)
-    protected _metricFormatSpecsByType: Map<import("@bentley/imodeljs-common").SubLayerId, FormatterSpec>;
+    protected _metricFormatSpecsByType: Map<string, FormatterSpec>;
     // (undocumented)
-    protected _metricUnitParserSpecsByType: Map<import("@bentley/imodeljs-common").SubLayerId, ParserSpec>;
+    protected _metricParserSpecsByType: Map<string, ParserSpec>;
     readonly onActiveUnitSystemChanged: BeUiEvent<{
         useImperial: boolean;
     }>;
     // (undocumented)
     onInitialized(): void;
     // (undocumented)
-    protected _overrideFormatDataByType: Map<import("@bentley/imodeljs-common").SubLayerId, OverrideFormatEntry>;
+    protected _overrideFormatDataByType: Map<QuantityType, OverrideFormatEntry>;
     parseIntoQuantityValue(inString: string, parserSpec: ParserSpec): ParseResult;
-    registerCustomQuantityFormatter(customQuantityType: string, formatter: CustomFormatterImpl, suppliedFormat?: CustomFormatImpl, formatProps?: any): Promise<boolean>;
+    protected parseQuantityTypeArg(type: QuantityTypeArg): string;
+    registerFormatterParserSpecsProviders(provider: FormatterParserSpecsProvider): Promise<boolean>;
+    setActiveUnitSystem(useImperial: boolean, restartActiveTool?: boolean): Promise<void>;
     // (undocumented)
     setOverrideFormats(type: QuantityType, entry: OverrideFormatEntry): Promise<void>;
     get useImperialFormats(): boolean;
@@ -6504,20 +6503,29 @@ export class QuantityFormatter implements UnitsProvider {
 }
 
 // @beta
-export const QuantityType: {
-    Length: number;
-    Angle: number;
-    Area: number;
-    Volume: number;
-    LatLong: number;
-    Coordinate: number;
-    Stationing: number;
-    LengthSurvey: number;
-    LengthEngineering: number;
-};
+export enum QuantityType {
+    // (undocumented)
+    Angle = 2,
+    // (undocumented)
+    Area = 3,
+    // (undocumented)
+    Coordinate = 6,
+    // (undocumented)
+    LatLong = 5,
+    // (undocumented)
+    Length = 1,
+    // (undocumented)
+    LengthEngineering = 9,
+    // (undocumented)
+    LengthSurvey = 8,
+    // (undocumented)
+    Stationing = 7,
+    // (undocumented)
+    Volume = 4
+}
 
-// @beta
-export type QuantityType = (typeof QuantityType)[keyof typeof QuantityType] | string;
+// @beta (undocumented)
+export type QuantityTypeArg = QuantityType | string;
 
 // @internal
 export function queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise<number>;
@@ -6547,7 +6555,7 @@ export class RealityModelTileTree extends RealityTileTree {
     constructor(params: RealityTileTreeParams);
     // (undocumented)
     get isContentUnbounded(): boolean;
-}
+    }
 
 // @internal (undocumented)
 export namespace RealityModelTileTree {

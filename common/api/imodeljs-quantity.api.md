@@ -64,7 +64,7 @@ export enum DecimalPrecision {
 }
 
 // @alpha
-export class Format implements FormatProps {
+export class Format {
     constructor(name: string);
     // (undocumented)
     protected addCustomPropsToJson(schemaJson: {
@@ -82,7 +82,7 @@ export class Format implements FormatProps {
     protected _formatTraits: FormatTraits;
     static formatTraitsToArray(currentFormatTrait: FormatTraits): string[];
     static formatTypeToString(type: FormatType): string;
-    fromJson(unitsProvider: UnitsProvider, jsonObj: any): Promise<void>;
+    fromJson(unitsProvider: UnitsProvider, jsonObj: FormatProps): Promise<void>;
     hasFormatTraitSet(formatTrait: FormatTraits): boolean;
     // (undocumented)
     get hasUnits(): boolean;
@@ -140,9 +140,7 @@ export class Format implements FormatProps {
     get thousandSeparator(): string;
     // (undocumented)
     protected _thousandSeparator: string;
-    toJson(): {
-        [value: string]: any;
-    };
+    toJson(): FormatProps;
     // (undocumented)
     get type(): FormatType;
     // (undocumented)
@@ -160,37 +158,38 @@ export class Format implements FormatProps {
 // @alpha
 export interface FormatProps {
     // (undocumented)
-    readonly decimalSeparator: string;
+    readonly composite?: {
+        readonly spacer?: string;
+        readonly includeZero?: boolean;
+        readonly units: Array<{
+            readonly name: string;
+            readonly label?: string;
+        }>;
+    };
     // (undocumented)
-    readonly formatTraits: FormatTraits;
+    readonly decimalSeparator?: string;
     // (undocumented)
-    readonly includeZero?: boolean;
+    readonly formatTraits?: string | string[];
     // (undocumented)
-    readonly minWidth: number | undefined;
+    readonly minWidth?: number;
     // (undocumented)
-    readonly name: string;
+    readonly precision?: number;
     // (undocumented)
-    readonly precision: DecimalPrecision | FractionalPrecision;
+    readonly roundFactor?: number;
     // (undocumented)
-    readonly roundFactor: number;
+    readonly scientificType?: string;
     // (undocumented)
-    readonly scientificType?: ScientificType;
-    // (undocumented)
-    readonly showSignOption: ShowSignOption;
-    // (undocumented)
-    readonly spacer?: string;
+    readonly showSignOption?: string;
     // (undocumented)
     readonly stationOffsetSize?: number;
     // (undocumented)
     readonly stationSeparator?: string;
     // (undocumented)
-    readonly thousandSeparator: string;
+    readonly thousandSeparator?: string;
     // (undocumented)
-    readonly type: FormatType;
+    readonly type: string;
     // (undocumented)
-    readonly units?: Array<[UnitProps, string | undefined]>;
-    // (undocumented)
-    readonly uomSeparator: string;
+    readonly uomSeparator?: string;
 }
 
 // @alpha

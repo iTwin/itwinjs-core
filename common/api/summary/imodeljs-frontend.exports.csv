@@ -90,7 +90,6 @@ internal;createRealityTileTreeReference(props: RealityModelTileTree.ReferencePro
 internal;createRenderPlanFromViewport(vp: Viewport): RenderPlan
 internal;CurrentInputState
 internal;CurrentState
-beta;CustomFormatter
 internal;DebugShaderFile
 public;DecorateContext 
 public;Decorations 
@@ -158,6 +157,7 @@ public;FitViewTool
 internal;Flags
 public;FlyViewTool 
 beta;class FormattedQuantityDescription 
+beta;FormatterParserSpecsProvider
 internal;FrameBeforeRenderData
 internal;FrameCameraFrustumData
 internal;FrameCameraViewData
@@ -345,8 +345,8 @@ public;class PrimitiveTool
 alpha;PrimitiveVisibility
 internal;QuadId
 beta;QuantityFormatter 
-beta;QuantityType:
-beta;QuantityType = (typeof QuantityType)[keyof typeof QuantityType] | string
+beta;QuantityType
+beta;QuantityTypeArg = QuantityType | string
 internal;queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise
 internal;rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined
 internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined
