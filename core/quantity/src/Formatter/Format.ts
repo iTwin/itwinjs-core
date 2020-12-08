@@ -14,9 +14,8 @@ import { FormatProps } from "./Interfaces";
 /** A class used to both define the specifications for formatting a quantity values and the methods to do the formatting.
  * @alpha
  */
-export class Format implements FormatProps {
+export class Format {
   private _name = "";
-
   protected _roundFactor: number = 0.0;
   protected _type: FormatType = FormatType.Decimal; // required; options are decimal, fractional, scientific, station
   protected _precision: number = DecimalPrecision.Six; // required
@@ -281,7 +280,7 @@ export class Format implements FormatProps {
     this.units!.push([newUnit, label]);
   }
 
-  private loadFormatProperties(jsonObj: any) {
+  private loadFormatProperties(jsonObj: FormatProps) {
     if (undefined === jsonObj.type) // type is required
       throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} does not have the required 'type' attribute.`);
     if (typeof (jsonObj.type) !== "string")
@@ -377,7 +376,7 @@ export class Format implements FormatProps {
   /**
    * Populates this Format with the values from the provided.
    */
-  public async fromJson(unitsProvider: UnitsProvider, jsonObj: any): Promise<void> {
+  public async fromJson(unitsProvider: UnitsProvider, jsonObj: FormatProps): Promise<void> {
     this.loadFormatProperties(jsonObj);
 
     if (undefined !== jsonObj.composite) { // optional
@@ -419,39 +418,38 @@ export class Format implements FormatProps {
   /**
    * Returns a JSON object that contain the specification for this Format.
    */
-  public toJson() {
-    const schemaJson: { [value: string]: any } = {};
-    schemaJson.type = Format.formatTypeToString(this.type);
-    schemaJson.precision = this.precision;
-    schemaJson.roundFactor = this.roundFactor;
-    if (undefined !== this.minWidth) schemaJson.minWidth = this.minWidth;
-    schemaJson.showSignOption = Format.showSignOptionToString(this.showSignOption);
-    schemaJson.formatTraits = Format.formatTraitsToArray(this.formatTraits);
-    schemaJson.decimalSeparator = this.decimalSeparator;
-    schemaJson.thousandSeparator = this.thousandSeparator;
-    schemaJson.uomSeparator = this.uomSeparator;
-    if (undefined !== this.scientificType) schemaJson.scientificType = Format.scientificTypeToString(this.scientificType);
-    if (undefined !== this.stationOffsetSize) schemaJson.stationOffsetSize = this.stationOffsetSize;
-    schemaJson.stationSeparator = this.stationSeparator;
-    if (undefined !== this.units) {
-      const composite: { [value: string]: any } = {};
-      composite.spacer = this.spacer;
-      composite.includeZero = this.includeZero;
-      composite.units = [];
-      this.units.forEach((unit: any) => {
-        if (undefined !== unit[1])
-          composite.units.push({
-            name: unit[0].name,
-            label: unit[1],
-          });
+  public toJson(): FormatProps {
+    let composite;
+    if (this.units) {
+      const units = this.units.map((value) => {
+        if (undefined !== value[1])
+          return { name: value[0].name, label: value[1] };
         else
-          composite.units.push({
-            name: unit[0].name,
-          });
+          return { name: value[0].name };
       });
-      schemaJson.composite = composite;
-    } else { }
 
+      composite = {
+        spacer: this.spacer,
+        includeZero: this.includeZero,
+        units,
+      };
+    }
+
+    const schemaJson: FormatProps = {
+      type: Format.formatTypeToString(this.type),
+      precision: this.precision,
+      roundFactor: this.roundFactor,
+      minWidth: this.minWidth,
+      showSignOption: Format.showSignOptionToString(this.showSignOption),
+      formatTraits: Format.formatTraitsToArray(this.formatTraits),
+      decimalSeparator: this.decimalSeparator,
+      thousandSeparator: this.thousandSeparator,
+      uomSeparator: this.uomSeparator,
+      scientificType: this.scientificType ? Format.scientificTypeToString(this.scientificType) : undefined,
+      stationOffsetSize: this.stationOffsetSize,
+      stationSeparator: this.stationSeparator,
+      composite,
+    };
     return schemaJson;
   }
 }
