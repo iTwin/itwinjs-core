@@ -148,7 +148,7 @@ dependencies:
   '@types/react-redux': 7.1.11
   '@types/react-resize-detector': 4.2.0
   '@types/react-router-dom': 5.1.6
-  '@types/react-select': 3.0.27
+  '@types/react-select': 3.0.26
   '@types/react-virtualized': 9.21.10
   '@types/react-virtualized-auto-sizer': 1.0.0
   '@types/react-window': 1.8.2
@@ -305,8 +305,8 @@ dependencies:
   react-redux: 7.2.2_bbabd8c34ea235719dc50e75b43f85a4
   react-resize-detector: 4.2.3_react-dom@16.14.0+react@16.14.0
   react-router-dom: 5.2.0_react@16.14.0
-  react-select: 3.1.1_react-dom@16.14.0+react@16.14.0
-  react-select-event: 5.1.0
+  react-select: 3.1.0_react-dom@16.14.0+react@16.14.0
+  react-select-event: 5.0.0
   react-split-pane: 0.1.92_react-dom@16.14.0+react@16.14.0
   react-test-renderer: 16.14.0_react@16.14.0
   react-virtualized: 9.22.2_react-dom@16.14.0+react@16.14.0
@@ -2979,14 +2979,14 @@ packages:
     dev: false
     resolution:
       integrity: sha512-HzOyJb+wFmyEhyfp4D4NYrumi+LQgQL/68HvJO+q6XtuHSDvw6Aqov7sCAhjbNq3bUPgPqbdvjXC5HeB2oEAPg==
-  /@types/react-select/3.0.27:
+  /@types/react-select/3.0.26:
     dependencies:
       '@types/react': 16.9.43
       '@types/react-dom': 16.9.10
       '@types/react-transition-group': 4.4.0
     dev: false
     resolution:
-      integrity: sha512-UBZgS1O/BaXo27F6a5+OGMpOFmpsFWb5HyZ8DyuJ5EOCT57ZKwWS4ko9Eqxb3CzVsyKLAp5BXoZtHZbqaFN7ww==
+      integrity: sha512-rAaiD0SFkBi3PUwp1DrJV04CobPl2LuZXF+kv6MKw8kaeGo82xTOZzjM8DDi4lrdkqGbInZiE2QO9nIJm3bqgw==
   /@types/react-test-renderer/17.0.0:
     dependencies:
       '@types/react': 16.9.43
@@ -14702,13 +14702,13 @@ packages:
       react: '>=15'
     resolution:
       integrity: sha512-smz1DUuFHRKdcJC0jobGo8cVbhO3x50tCL4icacOlcwDOEQPq4TMqwx3sY1TP+DvtTgz4nm3thuo7A+BK2U0Dw==
-  /react-select-event/5.1.0:
+  /react-select-event/5.0.0:
     dependencies:
       '@testing-library/dom': 7.28.1
     dev: false
     resolution:
-      integrity: sha512-D5DzJlYCdZsGbDVFMQFynrG0OLalJM3ZzDT7KQADNVWE604JCeQF9bIuvPZqVD7IzhnPsFzOUCsilzDA6w6WRQ==
-  /react-select/3.1.1_react-dom@16.14.0+react@16.14.0:
+      integrity: sha512-bESECffhi//x1nlMoRJtwI0nGl5n6OKaVYeIEcPTV8flVPycvUoBGank/1RIoxVc6WtoQ4QbPbU8xMvX0xAiOA==
+  /react-select/3.1.0_react-dom@16.14.0+react@16.14.0:
     dependencies:
       '@babel/runtime': 7.12.5
       '@emotion/cache': 10.0.29
@@ -14725,7 +14725,7 @@ packages:
       react: ^16.8.0
       react-dom: ^16.8.0
     resolution:
-      integrity: sha512-HjC6jT2BhUxbIbxMZWqVcDibrEpdUJCfGicN0MMV+BQyKtCaPTgFekKWiOizSCy4jdsLMGjLqcFGJMhVGWB0Dg==
+      integrity: sha512-wBFVblBH1iuCBprtpyGtd1dGMadsG36W5/t2Aj8OE6WbByDg5jIFyT7X5gT+l0qmT5TqWhxX+VsKJvCEl2uL9g==
   /react-split-pane/0.1.92_react-dom@16.14.0+react@16.14.0:
     dependencies:
       prop-types: 15.7.2
@@ -19913,7 +19913,7 @@ packages:
       '@types/classnames': 2.2.11
       '@types/react': 16.9.43
       '@types/react-beautiful-dnd': 12.1.3
-      '@types/react-select': 3.0.27
+      '@types/react-select': 3.0.26
       classnames: 2.2.6
       cpx: 1.5.0
       eslint: 6.8.0
@@ -19921,13 +19921,13 @@ packages:
       react-beautiful-dnd: 13.0.0_react-dom@16.14.0+react@16.14.0
       react-compound-slider: 2.5.0_react@16.14.0
       react-dom: 16.14.0_react@16.14.0
-      react-select: 3.1.1_react-dom@16.14.0+react@16.14.0
+      react-select: 3.1.0_react-dom@16.14.0+react@16.14.0
       rimraf: 3.0.2
       typescript: 3.7.5
     dev: false
     name: '@rush-temp/map-layers'
     resolution:
-      integrity: sha512-whLpciMQDrJsf/0YEEbvaiS8xfUUhgyn1EJ3HFqrRoKEZ4A740jM+X1GQJESAiekG0p0C+e6kFF7nc9H2fxtEA==
+      integrity: sha512-5siXp85Q6FIGwFcqtWW10JMKpZgzysJjpQzqCbZAnBjSG9JFqqEM9YNFU747lq6YuPuTQyVi8igKASqINLPxZQ==
       tarball: 'file:projects/map-layers.tgz'
     version: 0.0.0
   'file:projects/native-app-full-stack-tests.tgz':
@@ -20282,7 +20282,7 @@ packages:
       '@types/bunyan': 1.8.6
       '@types/react': 16.9.43
       '@types/react-dom': 16.9.10
-      '@types/react-select': 3.0.27
+      '@types/react-select': 3.0.26
       autoprefixer: 8.6.5
       cpx: 1.5.0
       cross-env: 5.2.1
@@ -20293,7 +20293,7 @@ packages:
       postcss-loader: 3.0.0
       react: 16.14.0
       react-dom: 16.14.0_react@16.14.0
-      react-select: 3.1.1_react-dom@16.14.0+react@16.14.0
+      react-select: 3.1.0_react-dom@16.14.0+react@16.14.0
       rimraf: 3.0.2
       semver: 5.7.1
       symlink-dir: 4.0.3
@@ -20305,7 +20305,7 @@ packages:
       node-sass: '*'
       webpack-cli: '*'
     resolution:
-      integrity: sha512-QU2FpuHJwOU2ZYy69pq6JWZR44UhEg645Luq6uTmVjeNcUw5iDBGULrUEn3WTWrGMF3cNziKLnNue1jHf95qpw==
+      integrity: sha512-jhT21g82IwI1a3iR9501h9G/c05qAkNvg1323iXN4gl0emti9UHKMjwHYsE0brom2f9BAxlbZxewCAPpICidyA==
       tarball: 'file:projects/presentation-test-app.tgz'
     version: 0.0.0
   'file:projects/presentation-testing.tgz_jsdom@11.12.0':
@@ -20585,7 +20585,7 @@ packages:
       '@types/react-dom': 16.9.10
       '@types/react-highlight-words': 0.11.1
       '@types/react-resize-detector': 4.2.0
-      '@types/react-select': 3.0.27
+      '@types/react-select': 3.0.26
       '@types/react-virtualized': 9.21.10
       '@types/react-virtualized-auto-sizer': 1.0.0
       '@types/react-window': 1.8.2
@@ -20627,8 +20627,8 @@ packages:
       react-dom: 16.14.0_react@16.14.0
       react-highlight-words: 0.14.0_react@16.14.0
       react-resize-detector: 4.2.3_react-dom@16.14.0+react@16.14.0
-      react-select: 3.1.1_react-dom@16.14.0+react@16.14.0
-      react-select-event: 5.1.0
+      react-select: 3.1.0_react-dom@16.14.0+react@16.14.0
+      react-select-event: 5.0.0
       react-test-renderer: 16.14.0_react@16.14.0
       react-virtualized: 9.22.2_react-dom@16.14.0+react@16.14.0
       react-virtualized-auto-sizer: 1.0.2_react-dom@16.14.0+react@16.14.0
@@ -20647,7 +20647,7 @@ packages:
     dev: false
     name: '@rush-temp/ui-components'
     resolution:
-      integrity: sha512-NBZydVJKImZwJ/FLblqtE/w0EYcATxcblNxK0ZvHAKrQIL1HvN3h5xp/h6J9KqaUW+/p72IZ5hklb4Fi82X3GA==
+      integrity: sha512-uhtsdTYLWfXLJq3pV2SyRqe7uKJWXQFEbKg0sms/SoY04nGswD3ifdb4y54AaS/yaT57k3iwlU5Z6RipHJVHJQ==
       tarball: 'file:projects/ui-components.tgz'
     version: 0.0.0
   'file:projects/ui-core.tgz_61fa1f55fd4ae8f7721688649885d554':
@@ -20669,7 +20669,7 @@ packages:
       '@types/react': 16.9.43
       '@types/react-autosuggest': 10.0.1
       '@types/react-dom': 16.9.10
-      '@types/react-select': 3.0.27
+      '@types/react-select': 3.0.26
       '@types/sinon': 9.0.9
       '@types/sinon-chai': 3.2.5
       '@types/testing-library__react-hooks': 3.4.1
@@ -20695,7 +20695,7 @@ packages:
       react-autosuggest: 10.0.4_react@16.14.0
       react-compound-slider: 2.5.0_react@16.14.0
       react-dom: 16.14.0_react@16.14.0
-      react-select: 3.1.1_react-dom@16.14.0+react@16.14.0
+      react-select: 3.1.0_react-dom@16.14.0+react@16.14.0
       react-test-renderer: 16.14.0_react@16.14.0
       resize-observer-polyfill: 1.5.1
       rimraf: 3.0.2
@@ -20715,7 +20715,7 @@ packages:
       webpack: '*'
       webpack-cli: '*'
     resolution:
-      integrity: sha512-5FH/Pu362Yh7mP5tJsipmqH07m4oTpEHxKNq9Qen09FDDqEkFvrBuckdcq9Q9fi3YnnEzNPY7FEEv2PeCnvbag==
+      integrity: sha512-tzcSSpHjdpd3HSo2ZXUMBpHRGti/ymBDISHh3qCbQFw2Wna3Lp3QyEqo2HFtugUwQ+hJQGG/grQV7eqV1281/A==
       tarball: 'file:projects/ui-core.tgz'
     version: 0.0.0
   'file:projects/ui-framework.tgz_61fa1f55fd4ae8f7721688649885d554':
@@ -20855,7 +20855,7 @@ packages:
       '@types/react-beautiful-dnd': 12.1.3
       '@types/react-dom': 16.9.10
       '@types/react-redux': 7.1.11
-      '@types/react-select': 3.0.27
+      '@types/react-select': 3.0.26
       '@types/semver': 5.5.0
       classnames: 2.2.6
       cpx: 1.5.0
@@ -20875,7 +20875,7 @@ packages:
       react-compound-slider: 2.5.0_react@16.14.0
       react-dom: 16.14.0_react@16.14.0
       react-redux: 7.2.2_bbabd8c34ea235719dc50e75b43f85a4
-      react-select: 3.1.1_react-dom@16.14.0+react@16.14.0
+      react-select: 3.1.0_react-dom@16.14.0+react@16.14.0
       redux: 4.0.5
       rimraf: 3.0.2
       semver: 5.7.1
@@ -20888,21 +20888,21 @@ packages:
       node-sass: '*'
       webpack-cli: '*'
     resolution:
-      integrity: sha512-6hHBPHfRLmjd6TOXLQbQno9ipvcWBXM2xsuKDVa5XtI0XW0Ac/hDDMS9hEJnlr2ZH6iE9IsK7Dp0cT7NPYokVQ==
+      integrity: sha512-nLZIbYe70f3wiBgHNsI0GBFWThuHfuruTjNM6RrFgqz0r3HtJiEPOmX1mBSAs7njWckBGMbQYUMriQADujKMLg==
       tarball: 'file:projects/ui-test-app.tgz'
     version: 0.0.0
   'file:projects/ui-test-extension.tgz_webpack@4.42.0':
     dependencies:
       '@types/classnames': 2.2.11
       '@types/react': 16.9.43
-      '@types/react-select': 3.0.27
+      '@types/react-select': 3.0.26
       classnames: 2.2.6
       cpx: 1.5.0
       eslint: 6.8.0
       react: 16.14.0
       react-compound-slider: 2.5.0_react@16.14.0
       react-dom: 16.14.0_react@16.14.0
-      react-select: 3.1.1_react-dom@16.14.0+react@16.14.0
+      react-select: 3.1.0_react-dom@16.14.0+react@16.14.0
       rimraf: 3.0.2
       svg-sprite-loader: 4.2.1_webpack@4.42.0
       typescript: 3.7.5
@@ -20912,7 +20912,7 @@ packages:
     peerDependencies:
       webpack: '*'
     resolution:
-      integrity: sha512-pPHQRrWs+GxLJwNyIXtRcAK96R/uJxgEUxjVAF+A4pEF8SQzR34FPXm22/uPOZOcI1a4Vza3bgz+C7RulaztmA==
+      integrity: sha512-SC8tEk+zYc84BgQMZNFJDXqPpCxK50Hu6PT5rspZ23vt/7SLYgvRlh/55qKflhFogK/lvqOP3FqMPzSuSZLQVA==
       tarball: 'file:projects/ui-test-extension.tgz'
     version: 0.0.0
   'file:projects/usage-logging-client.tgz':
@@ -20977,6 +20977,7 @@ packages:
       integrity: sha512-2PtHv4D2loe4jVmtNm9FT+0eLCdibgY/JIaMmPDZc3UQBUDHgFBLCXzwp0eFQ0uQl0v9oYjgHkh8dBctvN1Vmg==
       tarball: 'file:projects/webpack-tools-core.tgz'
     version: 0.0.0
+registry: ''
 specifiers:
   '@azure/storage-blob': 10.4.0
   '@babel/core': 7.7.4
@@ -21127,7 +21128,7 @@ specifiers:
   '@types/react-redux': ^7.0.1
   '@types/react-resize-detector': ^4.2.0
   '@types/react-router-dom': ^5.1.5
-  '@types/react-select': ^3.0.4
+  '@types/react-select': 3.0.26
   '@types/react-virtualized': ^9.18.7
   '@types/react-virtualized-auto-sizer': ^1.0.0
   '@types/react-window': ^1.8.0
@@ -21284,8 +21285,8 @@ specifiers:
   react-redux: ^7.2.0
   react-resize-detector: ^4.2.3
   react-router-dom: ^5.2.0
-  react-select: ^3.0.4
-  react-select-event: ^5.0.0
+  react-select: 3.1.0
+  react-select-event: 5.0.0
   react-split-pane: 0.1.92
   react-test-renderer: ^16.13.1
   react-virtualized: ^9.21.0
