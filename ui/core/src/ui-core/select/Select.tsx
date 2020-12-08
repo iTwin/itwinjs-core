@@ -11,10 +11,10 @@ import * as React from "react";
 import { CommonProps } from "../utils/Props";
 
 /** Properties for a Select option
- * @beta
+ * @public
  */
 export interface SelectOption {
-  /** Label of the option. If `value` is not set when using SelectOption[], also serves as value. */
+  /** Label of the option. If `value` is not set when using SelectOption[], also serves as the value. */
   label: string;
   /** Value of the option when using SelectOption[].  */
   value?: string | number | readonly string[];
