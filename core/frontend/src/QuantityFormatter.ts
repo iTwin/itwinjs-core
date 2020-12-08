@@ -13,7 +13,7 @@ import {
 import { IModelApp } from "./IModelApp";
 
 /** Class that implements the minimum UnitConversion interface to provide information needed to convert unit values.
- * @beta
+ * @alpha
  */
 export class ConversionData implements UnitConversion {
   public factor: number = 1.0;
@@ -37,7 +37,7 @@ interface UnitDefinition {
 }
 
 /** Override format entries must define formats for imperial and metric.
- * @beta
+ * @alpha
  */
 export interface OverrideFormatEntry {
   imperial: FormatProps;
@@ -77,11 +77,15 @@ const unitData: UnitDefinition[] = [
   { name: "Units.FT", unitFamily: "Units.LENGTH", conversion: { numerator: 1.0, denominator: 0.3048, offset: 0.0 }, displayLabel: "ft", altDisplayLabels: ["F", "FT", "'"] },
   { name: "Units.YRD", unitFamily: "Units.LENGTH", conversion: { numerator: 1.0, denominator: 0.9144, offset: 0.0 }, displayLabel: "yd", altDisplayLabels: ["YRD", "yrd"] },
   { name: "Units.MILE", unitFamily: "Units.LENGTH", conversion: { numerator: 1.0, denominator: 1609.344, offset: 0.0 }, displayLabel: "mi", altDisplayLabels: ["mile", "Miles", "Mile"] },
-  { name: "Units.SURVEY_FT", unitFamily: "Units.LENGTH", conversion: { numerator: 3937.0, denominator: 1200.0, offset: 0.0 }, displayLabel: "ft (US Survey)", altDisplayLabels: ["ft", "SF", "USF", "ft (US Survey)"] },
+  { name: "Units.US_SURVEY_FT", unitFamily: "Units.LENGTH", conversion: { numerator: 3937.0, denominator: 1200.0, offset: 0.0 }, displayLabel: "ft (US Survey)", altDisplayLabels: ["ft", "SF", "USF", "ft (US Survey)"] },
+  { name: "Units.US_SURVEY_YRD", unitFamily: "Units.LENGTH", conversion: { numerator: 3937.0, denominator: 3.0 * 1200.0, offset: 0.0 }, displayLabel: "yrd (US Survey)", altDisplayLabels: ["USY", "yards (US Survey)"] },
+  { name: "Units.US_SURVEY_IN", unitFamily: "Units.LENGTH", conversion: { numerator: 3937.0, denominator: 100.0, offset: 0.0 }, displayLabel: "in (US Survey)", altDisplayLabels: ["USI", "inches (US Survey)"] },
+  { name: "Units.US_SURVEY_MILE", unitFamily: "Units.LENGTH", conversion: { numerator: 3937.0, denominator: 5280.0 * 1200.0, offset: 0.0 }, displayLabel: "mi (US Survey)", altDisplayLabels: ["miles (US Survey)", "mile (US Survey)", "USM"] },
+  { name: "Units.US_SURVEY_CHAIN", unitFamily: "Units.LENGTH", conversion: { numerator: 1.0, denominator: 20.11684, offset: 0.0 }, displayLabel: "chain (US Survey)", altDisplayLabels: ["chains (US Survey)"] },
   // conversion => specified unit base unit of m²
   { name: "Units.SQ_FT", unitFamily: "Units.AREA", conversion: { numerator: 1.0, denominator: .09290304, offset: 0.0 }, displayLabel: "ft²", altDisplayLabels: ["sf"] },
   // numerator: 1.0, denominator: 0.09290341161327483945290471226104,
-  { name: "Units.SQ_SURVEY_FT", unitFamily: "Units.AREA", conversion: { numerator: 15499969.0, denominator: 1440000, offset: 0.0 }, displayLabel: "ft² (US Survey)", altDisplayLabels: ["sussf"] },
+  { name: "Units.SQ_US_SURVEY_FT", unitFamily: "Units.AREA", conversion: { numerator: 15499969.0, denominator: 1440000, offset: 0.0 }, displayLabel: "ft² (US Survey)", altDisplayLabels: ["sussf"] },
   { name: "Units.SQ_M", unitFamily: "Units.AREA", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "m²", altDisplayLabels: ["sm"] },
   // conversion => specified unit to base unit m³
   { name: "Units.CUB_FT", unitFamily: "Units.VOLUME", conversion: { numerator: 1.0, denominator: 0.028316847, offset: 0.0 }, displayLabel: "ft³", altDisplayLabels: ["cf"] },
@@ -391,7 +395,7 @@ const defaultsFormats: FormatData = {
         units: [
           {
             label: "ft",
-            name: "Units.SURVEY_FT",
+            name: "Units.US_SURVEY_FT",
           },
         ],
       },
@@ -420,7 +424,7 @@ const defaultsFormats: FormatData = {
 };
 
 /** Formats quantity values into strings.
- * @beta
+ * @alpha
  */
 export class QuantityFormatter implements UnitsProvider {
   protected _activeSystemIsImperial = true;

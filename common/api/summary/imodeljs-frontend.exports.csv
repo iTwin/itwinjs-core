@@ -76,7 +76,7 @@ public;Cluster
 internal;CompassMode
 internal;ContextMode
 beta;ContextRealityModelState
-beta;ConversionData 
+alpha;ConversionData 
 public;CoordinateLockOverrides
 public;CoordSource
 public;CoordSystem
@@ -325,7 +325,7 @@ beta;OsmBuildingDisplayOptions
 public;OutputMessageAlert
 public;OutputMessagePriority
 public;OutputMessageType
-beta;OverrideFormatEntry
+alpha;OverrideFormatEntry
 internal;overrideRequestTileTreeProps(func: RequestTileTreePropsFunc | undefined): void
 public;PanViewTool 
 beta;ParseAndRunResult
@@ -343,7 +343,7 @@ internal;PlanarTilePatch
 public;class PrimitiveTool 
 alpha;PrimitiveVisibility
 internal;QuadId
-beta;QuantityFormatter 
+alpha;QuantityFormatter 
 beta;QuantityType
 internal;queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise
 internal;rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined

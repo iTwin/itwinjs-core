@@ -93,7 +93,7 @@ describe("Quantity formatter", async () => {
         composite: {
           includeZero: true,
           spacer: " ",
-          units: [{ label: "ft (US Survey)", name: "Units.SURVEY_FT" }],
+          units: [{ label: "ft (US Survey)", name: "Units.US_SURVEY_FT" }],
         },
         formatTraits: ["keepSingleZero", "showUnitLabel"],
         precision: 4,
@@ -166,7 +166,7 @@ describe("Quantity formatter", async () => {
         composite: {
           includeZero: true,
           spacer: " ",
-          units: [{ label: "ft² (US Survey)", name: "Units.SQ_SURVEY_FT" }],
+          units: [{ label: "ft² (US Survey)", name: "Units.SQ_US_SURVEY_FT" }],
         },
         formatTraits: ["keepSingleZero", "showUnitLabel"],
         precision: 4,
@@ -211,5 +211,42 @@ describe("Quantity formatter", async () => {
     assert.equal(imperialFormattedValue, "1076391.0417 ft²");
   });
 
-});
+  describe("Mimic Native 'UnitConversionTests, UsSurveyLengths'", async () => {
+    async function testUnitConversion(magnitude: number, fromUnitName: string, expectedValue: number, toUnitName: string, tolerance?: number) {
+      const fromUnit = await quantityFormatter.findUnitByName(fromUnitName);
+      const toUnit = await quantityFormatter.findUnitByName(toUnitName);
+      const unitConversion = await quantityFormatter.getConversion(fromUnit, toUnit);
+      const convertedValue = (magnitude * unitConversion.factor) + unitConversion.offset;
+      assert(withinTolerance(convertedValue, expectedValue, tolerance));
+    }
 
+    it("Set and use area overrides format (Survey Feet)", async () => {
+      // Conversion tests where expected value is taken directly out of  http://www.nist.gov/pml/wmd/pubs/upload/hb44-15-web-final.pdf, Appendix C. Section 4, Page C-8
+      // Exact values from document used for these conversions
+      await testUnitConversion(1.0, "Units.FT", 0.999998, "Units.US_SURVEY_FT");
+      await testUnitConversion(1.0, "Units.FT", 0.0254 * 39.37, "Units.US_SURVEY_FT");
+      await testUnitConversion(1.0, "Units.US_SURVEY_FT", 1.0 / 0.999998, "Units.FT");
+      await testUnitConversion(1.0, "Units.US_SURVEY_FT", 1200.0 / 3937.0, "Units.M");
+      await testUnitConversion(1.0, "Units.M", 3937.0 / 1200.0, "Units.US_SURVEY_FT");
+      await testUnitConversion(1.0, "Units.US_SURVEY_MILE", 5280.0 * 1200.0 / 3937.0, "Units.M");
+      await testUnitConversion(1.0, "Units.US_SURVEY_MILE", 1.0 / 0.999998, "Units.MILE");
+      await testUnitConversion(1.0, "Units.MILE", 0.999998, "Units.US_SURVEY_MILE");
+      await testUnitConversion(1.0, "Units.M", 3937.0 / 1200.0 / 5280.0, "Units.US_SURVEY_MILE");
+      await testUnitConversion(1.0, "Units.US_SURVEY_FT", 1.0 / 66.0, "Units.US_SURVEY_CHAIN");
+      await testUnitConversion(1.0, "Units.M", 39.37, "Units.US_SURVEY_IN");
+      await testUnitConversion(12.0, "Units.US_SURVEY_IN", 1200.0 / 3937.0, "Units.M");
+
+      // Directly from exact values in tables
+      await testUnitConversion(1.0, "Units.US_SURVEY_MILE", 63360, "Units.US_SURVEY_IN");
+      await testUnitConversion(1.0, "Units.US_SURVEY_MILE", 5280, "Units.US_SURVEY_FT");
+      await testUnitConversion(1.0, "Units.US_SURVEY_MILE", 1760, "Units.US_SURVEY_YRD");
+      await testUnitConversion(1.0, "Units.US_SURVEY_MILE", 80, "Units.US_SURVEY_CHAIN", 1.0e-6);
+
+      // Exact values do not exist in document
+      await testUnitConversion(1.0, "Units.US_SURVEY_FT", 0.3048006, "Units.M");
+      await testUnitConversion(1.0, "Units.US_SURVEY_CHAIN", 20.11684, "Units.M");
+      await testUnitConversion(1.0, "Units.US_SURVEY_YRD", 3.0 * 0.3048006, "Units.M");
+      await testUnitConversion(1.0, "Units.US_SURVEY_MILE", 1609.347, "Units.M", 1.0e-3);
+    });
+  });
+});

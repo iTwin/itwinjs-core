@@ -1692,7 +1692,7 @@ export class ContextRealityModelState {
     readonly url: string;
 }
 
-// @beta
+// @alpha
 export class ConversionData implements UnitConversion {
     // (undocumented)
     factor: number;
@@ -6159,7 +6159,7 @@ export enum OutputMessageType {
     Toast = 0
 }
 
-// @beta
+// @alpha
 export interface OverrideFormatEntry {
     // (undocumented)
     imperial: FormatProps;
@@ -6423,7 +6423,7 @@ export class QuadId {
     row: number;
 }
 
-// @beta
+// @alpha
 export class QuantityFormatter implements UnitsProvider {
     constructor(showMetricValues?: boolean);
     // (undocumented)
@@ -6539,7 +6539,7 @@ export class RealityModelTileTree extends RealityTileTree {
     constructor(params: RealityTileTreeParams);
     // (undocumented)
     get isContentUnbounded(): boolean;
-}
+    }
 
 // @internal (undocumented)
 export namespace RealityModelTileTree {
