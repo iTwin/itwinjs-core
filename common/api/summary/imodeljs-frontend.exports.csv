@@ -320,6 +320,7 @@ public;OrthographicViewState
 public;OutputMessageAlert
 public;OutputMessagePriority
 public;OutputMessageType
+alpha;OverrideFormatEntry
 internal;overrideRequestTileTreeProps(func: RequestTileTreePropsFunc | undefined): void
 public;PanViewTool 
 beta;ParseAndRunResult
