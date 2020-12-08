@@ -9,6 +9,7 @@
 import { GeoServiceStatus, GuidString, Id64, Id64String, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { Angle, AxisIndex, AxisOrder, Constant, Matrix3d, Point3d, Range3d, Range3dProps, Transform, Vector3d, XYAndZ, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@bentley/geometry-core";
 import { Cartographic, LatLongAndHeight } from "./geometry/Cartographic";
+import { GeographicCRS, GeographicCRSProps } from "./geometry/CoordinateReferenceSystem";
 import { AxisAlignedBox3d } from "./geometry/Placement";
 import { IModelError } from "./IModelError";
 import { ThumbnailProps } from "./Thumbnail";
@@ -63,6 +64,8 @@ export interface IModelProps {
   globalOrigin?: XYZProps;
   /** The location of the iModel in Earth Centered Earth Fixed coordinates. iModel units are always meters */
   ecefLocation?: EcefLocationProps;
+  /** The Geographic Coordinate Reference System indicating the projection and datum used. */
+  geographicCoordinateSystem?: GeographicCRS;
   /** The name of the iModel. */
   name?: string;
 }
@@ -249,6 +252,16 @@ export abstract class IModel implements IModelProps {
     this._ecefTrans = undefined;
   }
 
+  /** The geographic coordinate reference system of the iModel.
+   * @alpha
+  */
+  private _geographicCoordinateSystem?: GeographicCRS;
+  public get geographicCoordinateSystem(): GeographicCRS | undefined { return this._geographicCoordinateSystem; }
+  public set geographicCoordinateSystem(geoCRS: GeographicCRS | undefined) { this._geographicCoordinateSystem = geoCRS; }
+  public setGeographicCoordinateSystem(geoCRS: GeographicCRSProps) {
+    this._geographicCoordinateSystem = new GeographicCRS(geoCRS);
+  }
+
   /** @internal */
   protected abstract getEventSourceProps(): IModelEventSourceProps;
 
@@ -260,6 +273,7 @@ export abstract class IModel implements IModelProps {
       projectExtents: this.projectExtents.toJSON(),
       globalOrigin: this.globalOrigin.toJSON(),
       ecefLocation: this.ecefLocation,
+      geographicCoordinateSystem: this.geographicCoordinateSystem,
       ... this.getRpcProps(),
       ...this.getEventSourceProps(),
     };
@@ -321,6 +335,8 @@ export abstract class IModel implements IModelProps {
     this.globalOrigin = Point3d.fromJSON(props.globalOrigin);
     if (props.ecefLocation)
       this.setEcefLocation(props.ecefLocation);
+    if (props.geographicCoordinateSystem)
+      this.setGeographicCoordinateSystem(props.geographicCoordinateSystem);
   }
 
   /** Get the default subCategoryId for the supplied categoryId */

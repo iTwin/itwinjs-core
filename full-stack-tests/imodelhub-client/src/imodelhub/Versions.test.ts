@@ -127,7 +127,7 @@ describe("iModelHub VersionHandler", () => {
       await utils.deleteIModelByName(requestContext, contextId, imodelName);
       await utils.deleteIModelByName(requestContext, contextId, imodelName2);
       utils.getRequestBehaviorOptionsHandler().resetDefaultBehaviorOptions();
-      iModelClient.requestOptions.setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
+      iModelClient?.requestOptions.setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
     }
     RequestGlobalOptions.timeout = backupTimeout;
   });

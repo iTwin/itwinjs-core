@@ -81,9 +81,7 @@ export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSugge
 
 // @beta
 export interface AutoSuggestData {
-    // (undocumented)
     label: string;
-    // (undocumented)
     value: string;
 }
 
@@ -595,6 +593,7 @@ export const DivWithOutsideClick: {
         isDownOutside: boolean;
         componentDidMount(): void;
         componentWillUnmount(): void;
+        isInCorePopup(element: HTMLElement): boolean;
         onOutsideClick(e: MouseEvent): any;
         handleDocumentClick: (e: MouseEvent) => any;
         handleDocumentPointerDown: (e: PointerEvent) => void;
@@ -626,6 +625,7 @@ export const DivWithOutsideClick: {
         isDownOutside: boolean;
         componentDidMount(): void;
         componentWillUnmount(): void;
+        isInCorePopup(element: HTMLElement): boolean;
         onOutsideClick(e: MouseEvent): any;
         handleDocumentClick: (e: MouseEvent) => any;
         handleDocumentPointerDown: (e: PointerEvent) => void;
@@ -693,6 +693,8 @@ export interface ExpandableBlockProps extends CommonProps {
 // @public
 export class ExpandableList extends React.PureComponent<ExpandableListProps, ExpandableListState> {
     constructor(props: ExpandableListProps);
+    // @internal (undocumented)
+    componentDidUpdate(prevProps: ExpandableListProps): void;
     // (undocumented)
     static defaultProps: Partial<ExpandableListProps>;
     // (undocumented)
@@ -1347,27 +1349,18 @@ export type NodeCheckboxRenderProps = Omit<CheckboxProps, "onChange" | "onClick"
 export const NumberInput: React.ForwardRefExoticComponent<NumberInputProps & React.RefAttributes<HTMLInputElement>>;
 
 // @beta
-export interface NumberInputProps extends Omit<InputProps, "min" | "max" | "step" | "onChange" | "onBlur" | "onKeyDown" | "defaultValue" | "onInvalid"> {
+export interface NumberInputProps extends Omit<InputProps, "min" | "max" | "step" | "onChange" | "onBlur"> {
     containerClassName?: string;
-    // (undocumented)
     format?: (num: number | null | undefined, formattedValue: string) => string;
-    // (undocumented)
     max?: number;
-    // (undocumented)
     min?: number;
-    // (undocumented)
+    onBlur?: React.FocusEventHandler<HTMLInputElement>;
     onChange?: (value: number | undefined, stringValue: string) => void;
-    // (undocumented)
     parse?: ((value: string) => number | null | undefined);
-    // (undocumented)
     precision?: number;
-    // (undocumented)
     showTouchButtons?: boolean;
-    // (undocumented)
     snap?: boolean;
-    // (undocumented)
     step?: StepFunctionProp;
-    // (undocumented)
     value?: number;
 }
 
@@ -1476,10 +1469,10 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     render(): React.ReactPortal | null;
     }
 
-// @alpha
+// @beta
 export function PopupContextMenu(props: PopupContextMenuProps): JSX.Element;
 
-// @alpha
+// @beta
 export interface PopupContextMenuProps extends CommonProps {
     animate?: boolean;
     ariaLabel?: string;
@@ -1508,6 +1501,7 @@ export interface PopupProps extends CommonProps {
     ariaLabel?: string;
     closeOnContextMenu?: boolean;
     closeOnEnter?: boolean;
+    closeOnNestedPopupOutsideClick?: boolean;
     closeOnWheel?: boolean;
     focusTarget?: React.RefObject<HTMLElement> | string;
     isOpen: boolean;
@@ -2537,6 +2531,7 @@ export const withOnOutsideClick: <ComponentProps extends {}>(Component: React.Co
         isDownOutside: boolean;
         componentDidMount(): void;
         componentWillUnmount(): void;
+        isInCorePopup(element: HTMLElement): boolean;
         onOutsideClick(e: MouseEvent): any;
         handleDocumentClick: (e: MouseEvent) => any;
         handleDocumentPointerDown: (e: PointerEvent) => void;
@@ -2568,6 +2563,7 @@ export const withOnOutsideClick: <ComponentProps extends {}>(Component: React.Co
         isDownOutside: boolean;
         componentDidMount(): void;
         componentWillUnmount(): void;
+        isInCorePopup(element: HTMLElement): boolean;
         onOutsideClick(e: MouseEvent): any;
         handleDocumentClick: (e: MouseEvent) => any;
         handleDocumentPointerDown: (e: PointerEvent) => void;
@@ -2599,6 +2595,7 @@ export const withOnOutsideClick: <ComponentProps extends {}>(Component: React.Co
 
 // @public
 export interface WithOnOutsideClickProps {
+    closeOnNestedPopupOutsideClick?: boolean;
     onOutsideClick?: (event: MouseEvent) => any;
 }
 

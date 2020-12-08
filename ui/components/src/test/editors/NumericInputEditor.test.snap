@@ -1,11 +1,10 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`<NumericInputEditor /> renders correctly 1`] = `
-<NumericInput
+<ForwardRef(NewNumericInput)
   className="components-cell-editor components-numeric-input-editor"
   onChange={[Function]}
   readOnly={false}
-  strict={true}
   style={
     Object {
       "minWidth": "6em",

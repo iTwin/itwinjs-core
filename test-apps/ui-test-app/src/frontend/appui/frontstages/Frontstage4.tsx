@@ -9,9 +9,9 @@ import {
 } from "@bentley/ui-abstract";
 import {
   CommandItemDef, ContentGroup, CoreTools, Frontstage, FrontstageProps,
-  FrontstageProvider, GroupButton, ModalDialogManager, NavigationWidget,
-  StagePanel, StagePanelState, ToolButton, ToolWidget,
-  Widget, WidgetState, Zone, ZoneState,
+  FrontstageProvider, GroupButton, ModalDialogManager, ModelessDialogManager,
+  NavigationWidget, StagePanel, StagePanelState, ToolButton,
+  ToolWidget, Widget, WidgetState, Zone, ZoneState,
 } from "@bentley/ui-framework";
 import { Direction, Toolbar } from "@bentley/ui-ninezone";
 import { AppTools } from "../../tools/ToolSpecifications";
@@ -31,7 +31,9 @@ import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
 import { TreeDemoWidgetControl } from "../widgets/TreeDemoWidget";
 import { TreeSelectionDemoWidgetControl } from "../widgets/TreeSelectionDemoWidget";
 import { DialogButtonDef, DialogButtonType } from "@bentley/ui-core";
-import { IModelApp } from "@bentley/imodeljs-frontend";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import { SampleModelessDialog } from "../dialogs/SampleModelessDialog";
+import { SampleModalDialog } from "../dialogs/SampleModalDialog";
 
 /* eslint-disable react/jsx-key */
 
@@ -325,9 +327,52 @@ export class Frontstage4 extends FrontstageProvider {
     });
   }
 
+  private get _sampleModelessDialogItem() {
+    const dialogId = "sample";
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder",
+      labelKey: "SampleApp:buttons.sampleModelessDialog",
+      execute: () => {
+        ModelessDialogManager.openDialog(
+          <SampleModelessDialog
+            opened={true}
+            dialogId={dialogId}
+            onClose={() => this._handleModelessClose(dialogId)}
+          />, dialogId);
+      },
+    });
+  }
+
+  private _handleModelessClose = (dialogId: string) => {
+    ModelessDialogManager.closeDialog(dialogId);
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Closed modeless dialog: ${dialogId}`));
+  };
+
+  private get _sampleModalDialogItem() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder",
+      labelKey: "SampleApp:buttons.sampleModalDialog",
+      // eslint-disable-next-line no-console
+      execute: () => {
+        ModalDialogManager.openDialog(
+          <SampleModalDialog
+            opened={true}
+            onResult={(result) => this._handleModalResult(result)}
+          />);
+      },
+    });
+  }
+
+  private _handleModalResult(result: DialogButtonType) {
+    ModalDialogManager.closeDialog();
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Modal dialog result: ${result}`));
+  }
+
   private handleOpenUiProviderDialogModal = () => {
-    IModelApp.uiAdmin.openDialog(new TestUiProvider(), "Test UiProvider", true, "TestUiProvider", {movable: true,
-      width: "auto"});
+    IModelApp.uiAdmin.openDialog(new TestUiProvider(), "Test UiProvider", true, "TestUiProvider", {
+      movable: true,
+      width: "auto",
+    });
   };
 
   private testReactSelectDialog(): React.ReactNode {
@@ -338,8 +383,9 @@ export class Frontstage4 extends FrontstageProvider {
   }
 
   private handleOpenDynamicModal = () => {
-    IModelApp.uiAdmin.openDialog(new DynamicModalUiDataProvider(), "Dynamic Model", true, "SampleApp:DynamicModal", {movable: true,
-      width: 280, minWidth: 280});
+    IModelApp.uiAdmin.openDialog(new DynamicModalUiDataProvider(), "Dynamic Model", true, "SampleApp:DynamicModal", {
+      movable: true, width: 280, minWidth: 280,
+    });
   };
 
   /** Define a NavigationWidget with Buttons to display in the TopRight zone.
@@ -378,6 +424,8 @@ export class Frontstage4 extends FrontstageProvider {
                 AppTools.successMessageBoxCommand, AppTools.informationMessageBoxCommand, AppTools.questionMessageBoxCommand,
                 AppTools.warningMessageBoxCommand, AppTools.errorMessageBoxCommand, AppTools.openMessageBoxCommand, AppTools.openMessageBoxCommand2,
                 this._spinnerTestDialogItem,
+                this._sampleModelessDialogItem,
+                this._sampleModalDialogItem,
               ]}
               direction={Direction.Left}
               itemsInColumn={7}

@@ -47,7 +47,7 @@ export function addHeader(name: string, valueFactory: () => string): HttpRequest
 export function addSelectApplicationData(query: RequestQueryOptions): void;
 
 // @internal
-export function addSelectBCVAccessKey(query: RequestQueryOptions): void;
+export function addSelectContainerAccessKey(query: RequestQueryOptions): void;
 
 // @internal
 export function addSelectFileAccessKey(query: RequestQueryOptions): void;
@@ -89,10 +89,6 @@ export class Briefcase extends WsgInstance {
     acquiredDate?: string;
     applicationId?: string;
     applicationName?: string;
-    bcvAccessKeyAccount?: string;
-    bcvAccessKeyContainer?: string;
-    bcvAccessKeyDbName?: string;
-    bcvAccessKeySAS?: string;
     briefcaseId?: number;
     changeSetIdOnDevice?: string;
     deviceName?: string;
@@ -148,7 +144,6 @@ export class BriefcaseQuery extends WsgQuery {
     getId(): number | undefined;
     ownedByMe(): this;
     selectApplicationData(): this;
-    selectBCVAccessKey(): this;
     selectDownloadUrl(): this;
 }
 
@@ -244,10 +239,6 @@ export enum ChangesType {
 
 // @alpha
 export class Checkpoint extends WsgInstance {
-    bcvAccessKeyAccount?: string;
-    bcvAccessKeyContainer?: string;
-    bcvAccessKeyDbName?: string;
-    bcvAccessKeySAS?: string;
     createdDate?: string;
     downloadUrl?: string;
     fileDescription?: string;
@@ -279,8 +270,42 @@ export class CheckpointQuery extends WsgQuery {
     byChangeSetId(changeSetId: string): this;
     nearestCheckpoint(targetChangeSetId: string): this;
     precedingCheckpoint(targetChangeSetId: string): this;
-    selectBCVAccessKey(): this;
     selectDownloadUrl(): this;
+}
+
+// @alpha
+export class CheckpointV2 extends WsgInstance {
+    changeSetId?: string;
+    containerAccessKeyAccount?: string;
+    containerAccessKeyContainer?: string;
+    containerAccessKeyDbName?: string;
+    containerAccessKeySAS?: string;
+    state?: CheckpointV2State;
+}
+
+// @alpha
+export class CheckpointV2Handler {
+    constructor(handler: IModelBaseHandler);
+    // @internal
+    create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, checkpoint: CheckpointV2): Promise<CheckpointV2>;
+    get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query?: CheckpointV2Query): Promise<CheckpointV2[]>;
+    // @internal
+    update(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, checkpoint: CheckpointV2): Promise<CheckpointV2>;
+}
+
+// @alpha
+export class CheckpointV2Query extends WsgQuery {
+    byChangeSetId(changeSetId: string): this;
+    byState(state: CheckpointV2State): this;
+    precedingCheckpoint(targetChangeSetId: string): this;
+    selectContainerAccessKey(): this;
+}
+
+// @alpha
+export enum CheckpointV2State {
+    Failed = 2,
+    InProgress = 0,
+    Successful = 1
 }
 
 // @beta
@@ -638,6 +663,8 @@ export abstract class IModelClient {
     get changeSets(): ChangeSetHandler;
     // @alpha
     get checkpoints(): CheckpointHandler;
+    // @alpha
+    get checkpointsV2(): CheckpointV2Handler;
     // @alpha
     get codes(): CodeHandler;
     get events(): EventHandler;

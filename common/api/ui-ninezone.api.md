@@ -3137,19 +3137,8 @@ export interface WidgetOverflowProps {
     onResize?: (w: number) => void;
 }
 
-// @internal
+// @internal (undocumented)
 export const WidgetPanel: React.NamedExoticComponent<WidgetPanelProps>;
-
-// @internal (undocumented)
-export const WidgetPanelComponent: React.NamedExoticComponent<WidgetPanelComponentProps>;
-
-// @internal (undocumented)
-export interface WidgetPanelComponentProps {
-    // (undocumented)
-    spanBottom?: boolean;
-    // (undocumented)
-    spanTop?: boolean;
-}
 
 // @internal (undocumented)
 export const WidgetPanelContext: React.Context<WidgetPanelContextArgs | undefined>;
@@ -3175,14 +3164,21 @@ export function WidgetPanelExpanders(): JSX.Element;
 // @internal
 export const WidgetPanelGrip: React.NamedExoticComponent<CommonProps>;
 
-// @internal
+// @internal (undocumented)
 export interface WidgetPanelProps {
-    // (undocumented)
-    panel: PanelState;
     // (undocumented)
     spanBottom?: boolean;
     // (undocumented)
     spanTop?: boolean;
+}
+
+// @internal
+export const WidgetPanelProvider: React.NamedExoticComponent<WidgetPanelProviderProps>;
+
+// @internal
+export interface WidgetPanelProviderProps {
+    // (undocumented)
+    side: PanelSide;
 }
 
 // @internal
