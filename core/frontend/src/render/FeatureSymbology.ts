@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { Id64, Id64String } from "@bentley/bentleyjs-core";
+import { Id64 } from "@bentley/bentleyjs-core";
 import { FeatureAppearance, FeatureAppearanceProps, FeatureOverrides } from "@bentley/imodeljs-common";
 import { Viewport } from "../Viewport";
 import { ViewState } from "../ViewState";
@@ -95,10 +95,8 @@ export namespace FeatureSymbology {
       this.neverDrawnAnimationNodes.clear();
       this.animationNodeOverrides.clear();
 
-      const excludedElements = view.displayStyle.settings.excludedElements;
-      excludedElements.forEach((element: Id64String) => {
-        this.setNeverDrawn(element);
-      });
+      for (const excluded of view.displayStyle.settings.excludedElementIds)
+        this.setNeverDrawn(excluded);
 
       this._constructions = constructions;
       this._dimensions = dimensions;

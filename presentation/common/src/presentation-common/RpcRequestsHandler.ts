@@ -50,7 +50,7 @@ export interface RpcRequestsHandlerProps {
  * @internal
  */
 export class RpcRequestsHandler implements IDisposable {
-  private _maxRequestRepeatCount: number = 10;
+  private _maxRequestRepeatCount: number = 5;
 
   /** ID that identifies this handler as a client */
   public readonly clientId: string;
@@ -73,17 +73,31 @@ export class RpcRequestsHandler implements IDisposable {
   }
 
   private async requestRepeatedly<TResult, TOptions extends PresentationRpcRequestOptions<unknown>>(func: (opts: TOptions) => PresentationRpcResponse<TResult>, options: TOptions, repeatCount: number = 1): Promise<TResult> {
-    const response = await func(options);
+    let error: Error | undefined;
+    let shouldRepeat = false;
+    try {
+      const response = await func(options);
 
-    if (response.statusCode === PresentationStatus.Success)
-      return response.result!;
+      if (response.statusCode === PresentationStatus.Success)
+        return response.result!;
 
-    if (response.statusCode === PresentationStatus.BackendTimeout && repeatCount < this._maxRequestRepeatCount) {
-      repeatCount++;
+      if (response.statusCode === PresentationStatus.BackendTimeout && repeatCount < this._maxRequestRepeatCount)
+        shouldRepeat = true;
+      else
+        error = new PresentationError(response.statusCode, response.errorMessage);
+
+    } catch (e) {
+      error = e;
+      if (repeatCount < this._maxRequestRepeatCount)
+        shouldRepeat = true;
+    }
+
+    if (shouldRepeat) {
+      ++repeatCount;
       return this.requestRepeatedly(func, options, repeatCount);
     }
 
-    throw new PresentationError(response.statusCode, response.errorMessage);
+    throw error;
   }
 
   /**

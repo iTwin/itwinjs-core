@@ -27,6 +27,8 @@ export interface ColorPickerPopupProps extends React.ButtonHTMLAttributes<HTMLBu
   colorDefs?: ColorDef[];
   /** Function to call when the color value is changed */
   onColorChange?: ((newColor: ColorDef) => void) | undefined;
+  /** Function to call when the popup is closed */
+  onClose?: ((colorValue: ColorDef) => void) | undefined;
   /** Disabled or not */
   disabled?: boolean;
   /** Readonly or not, color displayed on button but button will not trigger pop-up */
@@ -68,8 +70,9 @@ export const ColorPickerPopup = React.forwardRef<HTMLButtonElement, ColorPickerP
 
     // istanbul ignore next
     const closePopup = React.useCallback(() => {
+      props.onClose && props.onClose(colorDef);
       setShowPopup(false);
-    }, []);
+    }, [colorDef, props]);
 
     const togglePopup = React.useCallback(() => {
       setShowPopup(!showPopup);
@@ -81,8 +84,7 @@ export const ColorPickerPopup = React.forwardRef<HTMLButtonElement, ColorPickerP
         setColorDef(newColor);
 
         // istanbul ignore else
-        if (props.onColorChange)
-          props.onColorChange(newColor);
+        props.onColorChange && props.onColorChange(newColor);
       }
     }, [colorDef, props]);
 

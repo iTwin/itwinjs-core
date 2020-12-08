@@ -43,6 +43,8 @@ export interface BaseFieldJSON {
     // (undocumented)
     priority: number;
     // (undocumented)
+    renderer?: RendererDescription;
+    // (undocumented)
     type: TypeDescription;
 }
 
@@ -717,7 +719,7 @@ export type ExtendedHierarchyRpcRequestOptions = PresentationRpcRequestOptions<E
 
 // @public
 export class Field {
-    constructor(category: CategoryDescription, name: string, label: string, type: TypeDescription, isReadonly: boolean, priority: number, editor?: EditorDescription);
+    constructor(category: CategoryDescription, name: string, label: string, type: TypeDescription, isReadonly: boolean, priority: number, editor?: EditorDescription, renderer?: RendererDescription);
     category: CategoryDescription;
     // @alpha (undocumented)
     clone(): Field;
@@ -738,6 +740,7 @@ export class Field {
     priority: number;
     // @internal (undocumented)
     rebuildParentship(parentField?: NestedContentField): void;
+    renderer?: RendererDescription;
     // @internal (undocumented)
     resetParentship(): void;
     // @internal @deprecated
@@ -1209,7 +1212,7 @@ export interface NavigationRuleBase extends RuleBase {
 
 // @public
 export class NestedContentField extends Field {
-    constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription, isReadonly: boolean, priority: number, contentClassInfo: ClassInfo, pathToPrimaryClass: RelationshipPath, nestedFields: Field[], editor?: EditorDescription, autoExpand?: boolean);
+    constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription, isReadonly: boolean, priority: number, contentClassInfo: ClassInfo, pathToPrimaryClass: RelationshipPath, nestedFields: Field[], editor?: EditorDescription, autoExpand?: boolean, renderer?: RendererDescription);
     autoExpand?: boolean;
     // @alpha (undocumented)
     clone(): NestedContentField;
@@ -1654,7 +1657,7 @@ export interface PrimitiveTypeDescription extends BaseTypeDescription {
 
 // @public
 export class PropertiesField extends Field {
-    constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription, isReadonly: boolean, priority: number, properties: Property[], editor?: EditorDescription);
+    constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription, isReadonly: boolean, priority: number, properties: Property[], editor?: EditorDescription, renderer?: RendererDescription);
     // @alpha (undocumented)
     clone(): PropertiesField;
     static fromJSON(json: PropertiesFieldJSON | undefined, categories: CategoryDescription[]): PropertiesField | undefined;
@@ -1833,6 +1836,7 @@ export interface PropertyOverrides {
     isDisplayed?: boolean;
     labelOverride?: string;
     overridesPriority?: number;
+    renderer?: PropertyRendererSpecification;
 }
 
 // @public
@@ -1841,6 +1845,11 @@ export interface PropertyRangeGroupSpecification {
     imageId?: string;
     label?: string;
     toValue: string;
+}
+
+// @public
+export interface PropertyRendererSpecification {
+    rendererName: string;
 }
 
 // @public
@@ -2006,6 +2015,11 @@ export interface RelationshipStepSpecification {
     direction: RelationshipDirection.Forward | RelationshipDirection.Backward;
     relationship: SingleSchemaClassSpecification;
     targetClass?: SingleSchemaClassSpecification;
+}
+
+// @public
+export interface RendererDescription {
+    name: string;
 }
 
 // @public

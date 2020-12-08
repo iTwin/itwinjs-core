@@ -45,6 +45,11 @@ The following is a list of the provided type converters:
 
 **Note**: `TypeConverterManager.registerConverter` is called by the system for these delivered type converters.
 
+## Standard Type Names
+
+The [StandardTypeNames]($ui-abstract) enum can be used when populating a [PropertyDescription]($ui-abstract).
+This enum contains the type names used when registering the converters listed above.
+
 ## API Reference
 
 * [TypeConverters]($ui-components:TypeConverters)
