@@ -4,28 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import { DragDropContext } from "react-dnd";
-import TestBackend from "react-dnd-test-backend";
+import { wrapInTestContext } from "react-dnd-test-utils";
 import ReactTestUtils from "react-dom/test-utils";
 import * as sinon from "sinon";
 import { cleanup, render } from "@testing-library/react";
 import { DragSourceArguments, withDragSource, withDropTarget } from "../../ui-components";
+import { createDnDRenderer } from "../tree/deprecated/hocs/withDragDrop.test";
 
 describe("withDragSource", () => {
-
-  /**
-   * Wraps a component into a DragDropContext that uses the TestBackend.
-   */
-  function wrapInTestContext(DecoratedComponent: React.ComponentType<any>) {// eslint-disable-line @typescript-eslint/naming-convention
-    class TestContextContainer extends React.Component {
-      public render() {
-        return <DecoratedComponent {...this.props} />;
-      }
-    }
-
-    return DragDropContext(TestBackend)(TestContextContainer);
-  }
-
   class TestComponent extends React.Component<any> {
     public render(): React.ReactNode {
       return <div> test </div>;
@@ -34,17 +20,18 @@ describe("withDragSource", () => {
   afterEach(cleanup);
 
   describe("Wrapped component", () => {
-    const testDragSource = withDragSource(TestComponent);
-    const BaseComponent = testDragSource.DecoratedComponent; // eslint-disable-line @typescript-eslint/naming-convention
+    const TestDragSource = withDragSource(TestComponent); // eslint-disable-line deprecation/deprecation
+    const BaseComponent = TestDragSource.DecoratedComponent;
     it("mounts wrapped component", () => {
       render(<BaseComponent dragProps={{}} connectDragSource={(e: any) => e} />);
     });
   });
-  describe("Drop functionality", () => {
-    const testDropTarget = withDropTarget(TestComponent);
-    const TestDragSource = withDragSource(testDropTarget); // eslint-disable-line @typescript-eslint/naming-convention
-    const ContextTestDragSource = wrapInTestContext(TestDragSource) as any; // eslint-disable-line @typescript-eslint/naming-convention
-    const onDragSourceBegin = sinon.spy((args: DragSourceArguments) => {
+  it("Drop functionality", () => {
+    const TestDropTarget = withDropTarget(TestComponent); // eslint-disable-line deprecation/deprecation
+    const TestDragSource = withDragSource(TestDropTarget); // eslint-disable-line deprecation/deprecation
+    const ContextTestDragSource = wrapInTestContext(TestDragSource);
+    const renderIntoDocument = createDnDRenderer();
+    const onDragSourceBegin = sinon.spy((args: DragSourceArguments) => { // eslint-disable-line deprecation/deprecation
       args.dataObject = { test: true };
       return args;
     });
@@ -56,24 +43,31 @@ describe("withDragSource", () => {
     });
     const dragProps = { onDragSourceBegin, onDragSourceEnd, objectType: "test" };
     const dropProps = { onDropTargetDrop, onDropTargetOver, canDropTargetDrop, objectTypes: ["test"] };
-    const root = ReactTestUtils.renderIntoDocument(<ContextTestDragSource dragProps={dragProps} dropProps={dropProps} />);
+    const ref = React.createRef<any>();
+    const root = renderIntoDocument(
+      <ContextTestDragSource
+        dragProps={dragProps}
+        dropProps={dropProps}
+        ref={ref}
+      />
+    );
 
     // Obtain a reference to the backend
-    const backend = (root as any).getManager().getBackend();
+    const backend = ref.current.getManager().getBackend();
     const dragSource = ReactTestUtils.findRenderedComponentWithType(root as any, TestDragSource) as any;
-    const dropTarget = ReactTestUtils.findRenderedComponentWithType(root as any, testDropTarget) as any;
+    const dropTarget = ReactTestUtils.findRenderedComponentWithType(root as any, TestDropTarget) as any;
+
     backend.simulateBeginDrag([dragSource.getHandlerId()]);
     // simulateHover must be called twice
     backend.simulateHover([dropTarget.getHandlerId()]);
     backend.simulateHover([dropTarget.getHandlerId()]);
     backend.simulateDrop();
-    it("calls onDropTargetOver correctly", () => {
-      expect(onDropTargetOver).to.have.been.calledOnce;
-      expect(onDropTargetOver).to.have.been.calledWith(sinon.match({ dataObject: { test: true } }));
-    });
-    it("calls onDropTargetDrop correctly", () => {
-      expect(onDropTargetDrop).to.have.been.calledOnce;
-      expect(onDropTargetDrop).to.have.been.calledWith(sinon.match({ dataObject: { test: true } }));
-    });
+    backend.simulateEndDrag();
+
+    expect(onDropTargetOver).to.have.been.calledOnce;
+    expect(onDropTargetOver).to.have.been.calledWith(sinon.match({ dataObject: { test: true } }));
+
+    expect(onDropTargetDrop).to.have.been.calledOnce;
+    expect(onDropTargetDrop).to.have.been.calledWith(sinon.match({ dataObject: { test: true } }));
   });
 });
