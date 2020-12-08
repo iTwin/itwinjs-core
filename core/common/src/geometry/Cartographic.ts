@@ -324,8 +324,10 @@ export class CartographicRange {
   private _minLatitude = 0;
   private _maxLatitude = 0;
   constructor(spatialRange: Range3d, spatialToEcef: Transform) {
-    const ecefRange = spatialToEcef.multiplyRange(spatialRange);
-    const ecefCorners = ecefRange.corners();
+    // Compute 8 corners in spatial coordinate system before converting to ECEF
+    // We want a box oriented in the spatial coordinate system and not in the ECEF coordinate system
+    const spatialCorners = spatialRange.corners();
+    const ecefCorners = spatialToEcef.multiplyPoint3dArray(spatialCorners);
     let low: Cartographic | undefined, high: Cartographic | undefined;
 
     for (const ecefCorner of ecefCorners) {
