@@ -11,6 +11,9 @@ import { ChangeSet, ChangeSetQuery, IModelClient, VersionQuery } from "@bentley/
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { IModelError } from "./IModelError";
 
+/** Properties for IModelVersion
+ * @public
+ */
 export interface IModelVersionProps {
   first?: boolean;
   latest?: boolean;

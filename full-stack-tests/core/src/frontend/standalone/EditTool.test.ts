@@ -47,7 +47,7 @@ if (ElectronRpcConfiguration.isElectron) {
       await IModelApp.shutdown();
     });
 
-    it.only("should start edit commands", async () => {
+    it("should start edit commands", async () => {
       expect(IModelApp.tools.run("TestEditTool1")).to.be.true;
       const tool = IModelApp.toolAdmin.currentTool as TestEditTool1;
       assert.isTrue(tool instanceof TestEditTool1);

@@ -113,8 +113,8 @@ export class IModelJsFs {
     return files;
   }
 
-  /** accidental spelling error, use recursiveFindSync
-   * @deprecated
+  /** accidental spelling error
+   * @deprecated use recursiveFindSync
    */
   public static recusiveFindSync(rootDir: string, pattern: RegExp): string[] { return this.recursiveFindSync(rootDir, pattern); }
 

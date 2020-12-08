@@ -12,8 +12,10 @@ import { CommandMethodProps, CommandResult, editCommandApi, PingResult, StartCom
 /** @public */
 export type EditCommandType = typeof EditCommand;
 
-/** An EditCommand that performs an editing action. It has a *commandId* that uniquely identifies it, so it can be found via a lookup in the [[EditCommandAdmin]].
- * Every time an EditCommand run, a new instance of (a subclass of) this class is created
+/**
+ * An EditCommand that performs an editing action on the backend. EditCommands are usually paired with and driven by EditTools on the frontend.
+ * EditCommands have a *commandId* that uniquely identifies them, so they can be found via a lookup in the [[EditCommandAdmin]].
+ * Every time an EditCommand runs, a new instance of (a subclass of) this class is created
  * @public
  */
 export class EditCommand {
@@ -35,7 +37,7 @@ export class EditCommand {
 }
 
 /** EditCommandAdmin holds a mapping between commandIds and their corresponding [[EditCommand]] class. This provides the mechanism to
- * run EditCommands by their commandId.
+ * run EditCommands by commandId.
  * It also keeps track of the currently active EditCommand. When a new EditCommand starts, the active EditCommand is terminated.
  * @public
  */
@@ -108,5 +110,4 @@ export class EditCommandAdmin {
       return { error: "Exception", result: e };
     }
   }
-
 };

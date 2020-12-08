@@ -1,0 +1,8 @@
+sep=;
+Release Tag;API Item
+internal;CommandError = "CommandNotFound" | "Exception" | "MethodNotFound" | "NoActiveCommand"
+beta;CommandMethodProps
+internal;CommandResult
+internal;editCommandApi:
+internal;PingResult
+beta;StartCommandProps

@@ -7,8 +7,8 @@ import { Guid } from "@bentley/bentleyjs-core";
 import { ElementProps, IModel } from "@bentley/imodeljs-common";
 import { IModelApp, SnapshotConnection } from "@bentley/imodeljs-frontend";
 
-// ###TODO: snapshotR1 and snapshotF1 have same filekey (and iModelId - shapshotR2 also has same iModelId for some reason)
-// Causese exception in RpcPushChannel when we try to create two EventSources with same id.
+// ###TODO: snapshotR1 and snapshotF1 have same fileKey (and iModelId - snapshotR2 also has same iModelId for some reason)
+// Causes exception in RpcPushChannel when we try to create two EventSources with same id.
 describe("SnapshotConnection", () => {
   before(async () => {
     await IModelApp.startup();

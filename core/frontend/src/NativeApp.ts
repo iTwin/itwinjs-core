@@ -22,6 +22,7 @@ import { NativeAppLogger } from "./NativeAppLogger";
 
 /**
  * Options to download a briefcase
+ * @internal
  */
 export interface DownloadBriefcaseOptions {
   /** This setting defines the operations allowed when synchronizing changes between the briefcase and iModelHub */

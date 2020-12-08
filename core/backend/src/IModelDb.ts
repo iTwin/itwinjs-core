@@ -49,17 +49,6 @@ import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./Vi
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
-// function to hash a filename for key generation
-let shaHash: (str: string) => string;
-try {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const crypto = require("crypto"); // throws if crypto not supported.
-  shaHash = (input: string) => {
-    return crypto.createHash("sha256").update(input).digest("hex");
-  };
-} catch (err) {
-  shaHash = (input: string) => input;
-}
 
 /** A string that identifies a Txn.
  * @public
@@ -116,6 +105,17 @@ export interface ComputedProjectExtents {
   outliers?: Id64Array;
 }
 
+// function to hash a filename for key generation
+let shaHash: (str: string) => string;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const crypto = require("crypto"); // throws if crypto not supported.
+  const key = crypto.randomBytes(64).toString("hex"); // random, but constant per session
+  shaHash = (input: string) => crypto.createHash("sha256").update(key).update(input).digest("hex");
+} catch (err) {
+  shaHash = (input: string) => input; // just use filename if crypto not supported
+}
+
 /** An iModel database file. The database file is either a local copy (briefcase) of an iModel managed by iModelHub or a read-only *snapshot* used for archival and data transfer purposes.
  * @see [Accessing iModels]($docs/learning/backend/AccessingIModels.md)
  * @see [About IModelDb]($docs/learning/backend/IModelDb.md)
@@ -160,13 +160,13 @@ export abstract class IModelDb extends IModel {
   /** The Guid that identifies this iModel. */
   public get iModelId(): GuidString { return super.iModelId!; } // GuidString | undefined for the IModel superclass, but required for all IModelDb subclasses
 
-  private _nativeDb: IModelJsNative.DgnDb;
+  private _nativeDb?: IModelJsNative.DgnDb;
   /** Get the in-memory handle of the native Db
    * @internal
    */
-  public get nativeDb(): IModelJsNative.DgnDb { return this._nativeDb; }
+  public get nativeDb(): IModelJsNative.DgnDb { return this._nativeDb!; }
 
-  /** @internal */
+  /** Get the full path fileName of this iModelDb */
   public get pathName() { return this.nativeDb.getFilePath(); }
 
   /** @internal */
@@ -193,7 +193,7 @@ export abstract class IModelDb extends IModel {
     this.beforeClose();
     IModelDb._openDbs.delete(this._fileKey);
     this.nativeDb.closeIModel();
-    (this as any)._nativeDb = undefined; // the underlying nativeDb has been freed by closeIModel
+    this._nativeDb = undefined; // the underlying nativeDb has been freed by closeIModel
   }
 
   /** Event called when the iModel is about to be closed */
@@ -866,7 +866,7 @@ export abstract class IModelDb extends IModel {
    * @see [IModel.key]($common)
    */
   public static findByKey(key: string): IModelDb {
-    const iModelDb = IModelDb.tryFindByKey(key);
+    const iModelDb = this.tryFindByKey(key);
     if (undefined === iModelDb) {
       Logger.logError(loggerCategory, "IModelDb not open", () => ({ key }));
       throw new IModelNotFoundResponse(); // a very specific status for the RpcManager
@@ -882,18 +882,18 @@ export abstract class IModelDb extends IModel {
   }
 
   /** @internal */
-  public static openDgnDb(filePath: string, openMode: OpenMode, upgradeOptions?: UpgradeOptions, props?: string) {
-    if (this.tryFindByKey(shaHash(filePath)))
-      throw new IModelError(DbResult.BE_SQLITE_CANTOPEN, `iModel [${filePath}] is already open`, Logger.logError, loggerCategory);
+  public static openDgnDb(file: { path: string, key?: string }, openMode: OpenMode, upgradeOptions?: UpgradeOptions, props?: string): IModelJsNative.DgnDb {
+    if (this.tryFindByKey(file.key ?? shaHash(file.path)))
+      throw new IModelError(DbResult.BE_SQLITE_CANTOPEN, `iModel [${file.path}] is already open`, Logger.logError, loggerCategory);
 
     const isUpgradeRequested = upgradeOptions?.domain === DomainOptions.Upgrade || upgradeOptions?.profile === ProfileOptions.Upgrade;
     if (isUpgradeRequested && openMode !== OpenMode.ReadWrite)
       throw new IModelError(IModelStatus.UpgradeFailed, "Cannot upgrade a Readonly Db", Logger.logError, loggerCategory);
 
     const nativeDb = new IModelHost.platform.DgnDb();
-    const status = nativeDb.openIModel(filePath, openMode, upgradeOptions, props);
+    const status = nativeDb.openIModel(file.path, openMode, upgradeOptions, props);
     if (DbResult.BE_SQLITE_OK !== status)
-      throw new IModelError(status, "Could not open iModel", Logger.logError, loggerCategory, () => ({ filePath }));
+      throw new IModelError(status, `Could not open iModel ${file.path}`, Logger.logError, loggerCategory);
 
     return nativeDb;
   }
@@ -2186,6 +2186,15 @@ export class BriefcaseDb extends IModelDb {
   /* the BriefcaseId of the briefcase opened with this BriefcaseDb */
   public readonly briefcaseId: number;
 
+  public static findByKey(key: string): BriefcaseDb {
+    return super.findByKey(key) as BriefcaseDb;
+  }
+
+  public static tryFindByKey(key: string): BriefcaseDb | undefined {
+    const db = super.tryFindByKey(key);
+    return db instanceof BriefcaseDb ? db : undefined;
+  }
+
   /** @internal */
   public get syncMode() { return this.briefcaseId === 0 ? SyncMode.PullOnly : SyncMode.PullAndPush; }
 
@@ -2274,17 +2283,15 @@ export class BriefcaseDb extends IModelDb {
 
   public static async open(requestContext: AuthorizedClientRequestContext | ClientRequestContext, args: OpenBriefcaseProps) {
     requestContext.enter();
-    const filePath = args.fileName;
-    const key = args.key ?? shaHash(filePath);
-
-    const alreadyOpen = this.tryFindByKey(key);
+    const file = { path: args.fileName, key: args.key ?? shaHash(args.fileName) };
+    const alreadyOpen = this.tryFindByKey(file.key);
     if (undefined !== alreadyOpen)
-      return alreadyOpen as BriefcaseDb;
+      return alreadyOpen;
 
     const openMode = args.readonly ? OpenMode.Readonly : OpenMode.ReadWrite;
-    const nativeDb = this.openDgnDb(filePath, openMode, args.upgrade);
+    const nativeDb = this.openDgnDb(file, openMode, args.upgrade);
     const token: IModelRpcProps = {
-      key,
+      key: file.key,
       iModelId: nativeDb.getDbGuid(),
       contextId: nativeDb.queryProjectGuid(),
       changeSetId: nativeDb.getReversedChangeSetId() ?? nativeDb.getParentChangeSetId(),
@@ -2434,9 +2441,19 @@ export class SnapshotDb extends IModelDb {
   */
   public get filePath(): string { return this.pathName; }
 
-  private constructor(nativeDb: IModelJsNative.DgnDb, openMode: OpenMode, key?: string) {
-    const iModelRpcProps: IModelRpcProps = { key: key ?? shaHash(nativeDb.getFilePath()), iModelId: nativeDb.getDbGuid(), changeSetId: "", openMode };
+  private constructor(nativeDb: IModelJsNative.DgnDb, key: string) {
+    const openMode = nativeDb.isReadonly() ? OpenMode.Readonly : OpenMode.ReadWrite;
+    const iModelRpcProps: IModelRpcProps = { key, iModelId: nativeDb.getDbGuid(), changeSetId: nativeDb.getParentChangeSetId(), openMode };
     super(nativeDb, iModelRpcProps, openMode);
+  }
+
+  public static findByKey(key: string): SnapshotDb {
+    return super.findByKey(key) as SnapshotDb;
+  }
+
+  public static tryFindByKey(key: string): SnapshotDb | undefined {
+    const db = super.tryFindByKey(key);
+    return db instanceof SnapshotDb ? db : undefined;
   }
 
   /** Create an *empty* local [Snapshot]($docs/learning/backend/AccessingIModels.md#snapshot-imodels) iModel file.
@@ -2458,7 +2475,7 @@ export class SnapshotDb extends IModelDb {
     if (DbResult.BE_SQLITE_OK !== status)
       throw new IModelError(status, `Could not set briefcaseId for snapshot iModel ${filePath}`, Logger.logError, loggerCategory);
 
-    const snapshotDb = new SnapshotDb(nativeDb, OpenMode.ReadWrite);
+    const snapshotDb = new SnapshotDb(nativeDb, shaHash(filePath));
     if (options.createClassViews)
       snapshotDb._createClassViewsOnClose = true; // save flag that will be checked when close() is called
     return snapshotDb;
@@ -2503,7 +2520,7 @@ export class SnapshotDb extends IModelDb {
     nativeDb.deleteAllTxns();
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Standalone);
 
-    const snapshotDb = new SnapshotDb(nativeDb, OpenMode.ReadWrite); // WIP: clean up copied file on error?
+    const snapshotDb = new SnapshotDb(nativeDb, shaHash(snapshotFile)); // WIP: clean up copied file on error?
     if (options?.createClassViews)
       snapshotDb._createClassViewsOnClose = true; // save flag that will be checked when close() is called
 
@@ -2512,28 +2529,38 @@ export class SnapshotDb extends IModelDb {
 
   /** open this SnapshotDb readwrite, strictly to apply incoming changesets. Used for creating new checkpoints.
    * @internal */
-  public static openForApplyChangesets(filePath: string, props?: SnapshotOpenOptions): SnapshotDb {
-    const nativeDb = this.openDgnDb(filePath, OpenMode.ReadWrite, undefined, props ? JSON.stringify(props) : undefined);
-    return new SnapshotDb(nativeDb, OpenMode.ReadWrite);
+  public static openForApplyChangesets(path: string, props?: SnapshotOpenOptions): SnapshotDb {
+    const file = { path, key: props?.key ?? shaHash(path) };
+    const existing = this.tryFindByKey(file.key);
+    if (existing)
+      return existing;
+
+    const nativeDb = this.openDgnDb(file, OpenMode.ReadWrite, undefined, props ? JSON.stringify(props) : undefined);
+    return new SnapshotDb(nativeDb, file.key);
   }
 
   /** Open a read-only iModel *snapshot*.
-   * @param filePath the full path of the snapshot iModel file to open.
+   * @param path the full path of the snapshot iModel file to open.
+   * @param props options for opening snapshot
    * @see [[close]]
    * @throws [[IModelError]] If the file is not found or is not a valid *snapshot*.
    */
-  public static openFile(filePath: string, props?: SnapshotOpenOptions, key?: string): SnapshotDb {
-    const nativeDb = this.openDgnDb(filePath, OpenMode.Readonly, undefined, props ? JSON.stringify(props) : undefined);
-    return new SnapshotDb(nativeDb, OpenMode.Readonly, key);
+  public static openFile(path: string, props?: SnapshotOpenOptions): SnapshotDb {
+    const file = { path, key: props?.key ?? shaHash(path) };
+    const existing = this.tryFindByKey(file.key);
+    if (existing)
+      return existing;
+
+    const nativeDb = this.openDgnDb(file, OpenMode.Readonly, undefined, props ? JSON.stringify(props) : undefined);
+    return new SnapshotDb(nativeDb, file.key);
   }
 
   /** Open a previously downloaded V1 checkpoint file.
    * @internal
    */
   public static openCheckpointV1(checkpoint: CheckpointProps) {
-    const snapshot = this.openFile(V1CheckpointManager.getFileName(checkpoint), undefined, V1CheckpointManager.getKey(checkpoint));
+    const snapshot = this.openFile(V1CheckpointManager.getFileName(checkpoint), { key: V1CheckpointManager.getKey(checkpoint) });
     snapshot._contextId = checkpoint.contextId;
-    snapshot._changeSetId = checkpoint.changeSetId;
     return snapshot;
   }
 
@@ -2545,9 +2572,8 @@ export class SnapshotDb extends IModelDb {
    */
   public static async openCheckpointV2(checkpoint: CheckpointProps): Promise<SnapshotDb> {
     const filePath = await V2CheckpointManager.attach(checkpoint);
-    const snapshot = SnapshotDb.openFile(filePath, { lazyBlockCache: true }, V2CheckpointManager.getKey(checkpoint));
+    const snapshot = SnapshotDb.openFile(filePath, { lazyBlockCache: true, key: V2CheckpointManager.getKey(checkpoint) });
     snapshot._contextId = checkpoint.contextId;
-    snapshot._changeSetId = checkpoint.changeSetId;
     return snapshot;
   }
 
@@ -2562,6 +2588,7 @@ export class SnapshotDb extends IModelDb {
     await V2CheckpointManager.attach({ requestContext, contextId: this.contextId!, iModelId: this.iModelId, changeSetId: this._changeSetId });
   }
 
+  /** @internal */
   public beforeClose(): void {
     super.beforeClose();
     if (this._createClassViewsOnClose) { // check for flag set during create
@@ -2591,6 +2618,15 @@ export class StandaloneDb extends IModelDb {
    * @deprecated use pathName
    */
   public get filePath(): string { return this.pathName; }
+
+  public static findByKey(key: string): StandaloneDb {
+    return super.findByKey(key) as StandaloneDb;
+  }
+
+  public static tryFindByKey(key: string): StandaloneDb | undefined {
+    const db = super.tryFindByKey(key);
+    return db instanceof StandaloneDb ? db : undefined;
+  }
 
   /** This property is always undefined as a StandaloneDb does not accept nor generate changesets. */
   public get changeSetId() { return undefined; } // string | undefined for the superclass, but always undefined for StandaloneDb
@@ -2625,10 +2661,16 @@ export class StandaloneDb extends IModelDb {
   /** Open a standalone iModel file.
    * @param filePath The path of the standalone iModel file.
    * @param openMode Optional open mode for the standalone iModel. The default is read/write.
+   * @returns a new StandaloneDb if the file is not currently open, and the existing StandaloneDb if it is already
    * @throws [[IModelError]]
    */
   public static openFile(filePath: string, openMode: OpenMode = OpenMode.ReadWrite, upgradeOptions?: UpgradeOptions): StandaloneDb {
-    const nativeDb = this.openDgnDb(filePath, openMode, upgradeOptions);
+    const file = { path: filePath, key: shaHash(filePath) };
+    const existing = this.tryFindByKey(file.key);
+    if (existing)
+      return existing;
+
+    const nativeDb = this.openDgnDb(file, openMode, upgradeOptions);
 
     if (openMode === OpenMode.ReadWrite && (!BriefcaseManager.isStandaloneBriefcaseId(nativeDb.getBriefcaseId()) || undefined === nativeDb.queryLocalValue(IModelDb._edit))) {
       nativeDb.closeIModel();

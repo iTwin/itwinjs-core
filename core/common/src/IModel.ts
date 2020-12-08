@@ -103,6 +103,12 @@ export interface IModelEncryptionProps {
 export interface SnapshotOpenOptions extends IModelEncryptionProps {
   /** @internal */
   lazyBlockCache?: boolean;
+
+  /** A key to identify the opened Snapshot. If undefined, a hash of the fileName is used.
+   * It is only necessary to supply this if you wish to open a snapshot file more than once
+   * or have some other reason to assign a specific key to the SnapshotDb.
+   */
+  key?: string;
 }
 
 /** Options that can be supplied when creating snapshot iModels.
@@ -274,7 +280,7 @@ export abstract class IModel implements IModelProps {
    * @internal
    */
   protected _fileKey: string;
-  /** @internal */
+  /** Get the key that was used to open this iModel */
   public get key() { return this._fileKey; }
 
   /** @internal */

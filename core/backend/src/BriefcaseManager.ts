@@ -68,7 +68,9 @@ export enum BriefcaseIdValue {
   DeprecatedStandalone = 1,
 }
 
-/** The argument for [[BriefcaseManager.downloadBriefcase]] */
+/** The argument for [[BriefcaseManager.downloadBriefcase]]
+ * @beta
+*/
 export interface RequestNewBriefcaseArg extends RequestNewBriefcaseProps {
   /** if present, the supplied method will be called to indicate progress as the briefcase is downloaded. */
   onProgress?: ProgressCallback;
@@ -183,7 +185,7 @@ export class BriefcaseManager {
         if (briefcaseName.endsWith(".bim")) {
           try {
             const fileName = path.join(bcPath, briefcaseName);
-            const db = IModelDb.openDgnDb(fileName, OpenMode.Readonly);
+            const db = IModelDb.openDgnDb({ path: fileName, key: "getBriefcase" }, OpenMode.Readonly);
             briefcaseList.push({ fileName, contextId: db.queryProjectGuid(), iModelId: db.getDbGuid(), briefcaseId: db.getBriefcaseId(), changesetId: db.getParentChangeSetId() });
             db.closeIModel();
           } catch (_err) {
@@ -240,7 +242,8 @@ export class BriefcaseManager {
   }
 
   /** Download a briefcase from iModelHub for the supplied iModelId. If no BriefcaseId is supplied, a new one is acquired from iModelHub.
-   * @note After the promise is resolved, the fileName and briefcaseId values are returned in `request`, if they were not supplied.
+   * @returns a Promise that is resolved after the briefcase is fully downloaded.
+   * @note After the promise is resolved, the fileName and briefcaseId values are returned in `request`.
    */
   public static async downloadBriefcase(requestContext: AuthorizedClientRequestContext, request: RequestNewBriefcaseArg): Promise<void> {
     if (undefined === request.briefcaseId)
@@ -266,9 +269,12 @@ export class BriefcaseManager {
 
     // now open the downloaded checkpoint and reset its BriefcaseId to the one we acquired above
     if (request.briefcaseId !== BriefcaseIdValue.Standalone) {
-      const db = IModelDb.openDgnDb(request.fileName, OpenMode.ReadWrite);
-      db.resetBriefcaseId(request.briefcaseId);
-      db.closeIModel();
+      const nativeDb = new IModelHost.platform.DgnDb();
+      const status = nativeDb.openIModel(request.fileName, OpenMode.ReadWrite);
+      if (DbResult.BE_SQLITE_OK !== status)
+        throw new IModelError(status, `Could not open briefcase to set briefcaseId: ${request.fileName}`, Logger.logError);
+      nativeDb.resetBriefcaseId(request.briefcaseId);
+      nativeDb.closeIModel();
     }
   }
 
@@ -310,7 +316,7 @@ export class BriefcaseManager {
      * @throws [[IModelError]] If unable to delete the briefcase
      */
   public static async deleteBriefcase(requestContext: ClientRequestContext | AuthorizedClientRequestContext, fileName: string): Promise<void> {
-    const db = IModelDb.openDgnDb(fileName, OpenMode.Readonly);
+    const db = IModelDb.openDgnDb({ path: fileName, key: "deleteBriefcase" }, OpenMode.Readonly);
     const briefcase: BriefcaseProps = {
       iModelId: db.getDbGuid(),
       briefcaseId: db.getBriefcaseId(),

@@ -20,7 +20,6 @@ public;BackendLoggerCategory
 public;BackendRequestContext 
 public;BisCoreSchema 
 public;BriefcaseDb 
-internal;BriefcaseEntry
 public;BriefcaseId = number
 public;BriefcaseIdValue
 beta;BriefcaseManager
@@ -235,6 +234,7 @@ public;RenderMaterialElement
 public;RenderMaterialOwnsRenderMaterials 
 public;RepositoryLink 
 public;RepositoryModel 
+beta;RequestNewBriefcaseArg 
 public;class RoleElement 
 public;RoleModel 
 public;Schema

@@ -26,8 +26,6 @@ import { BentleyStatus } from '@bentley/bentleyjs-core';
 import { BeTimePoint } from '@bentley/bentleyjs-core';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
 import { BriefcaseDownloader } from '@bentley/imodeljs-common';
-import { BriefcaseKey } from '@bentley/imodeljs-common';
-import { BriefcaseProps } from '@bentley/imodeljs-common';
 import { ByteStream } from '@bentley/bentleyjs-core';
 import { Camera } from '@bentley/imodeljs-common';
 import { Capabilities } from '@bentley/webgl-compatibility';
@@ -62,7 +60,6 @@ import { DisplayStyle3dSettingsProps } from '@bentley/imodeljs-common';
 import { DisplayStyleProps } from '@bentley/imodeljs-common';
 import { DisplayStyleSettings } from '@bentley/imodeljs-common';
 import { DisplayStyleSettingsProps } from '@bentley/imodeljs-common';
-import { DownloadBriefcaseOptions } from '@bentley/imodeljs-common';
 import { EasingFunction } from '@bentley/imodeljs-common';
 import { EcefLocation } from '@bentley/imodeljs-common';
 import { EcefLocationProps } from '@bentley/imodeljs-common';
@@ -146,6 +143,7 @@ import { LDClient } from 'ldclient-js';
 import { LDFlagValue } from 'ldclient-js';
 import { LightSettings } from '@bentley/imodeljs-common';
 import { LinePixels } from '@bentley/imodeljs-common';
+import { LocalBriefcaseProps } from '@bentley/imodeljs-common';
 import { LockLevel } from '@bentley/imodelhub-client';
 import { LogLevel } from '@bentley/bentleyjs-core';
 import { Loop } from '@bentley/geometry-core';
@@ -171,6 +169,7 @@ import { ModelQueryParams } from '@bentley/imodeljs-common';
 import { ModelSelectorProps } from '@bentley/imodeljs-common';
 import { MonochromeMode } from '@bentley/imodeljs-common';
 import { OctEncodedNormal } from '@bentley/imodeljs-common';
+import { OpenBriefcaseProps } from '@bentley/imodeljs-common';
 import { OpenMode } from '@bentley/bentleyjs-core';
 import { OrbitGtBlobProps } from '@bentley/imodeljs-common';
 import { OrbitGtDataManager } from '@bentley/orbitgt-core';
@@ -237,6 +236,7 @@ import { StrokeOptions } from '@bentley/geometry-core';
 import { SubCategoryAppearance } from '@bentley/imodeljs-common';
 import { SubCategoryOverride } from '@bentley/imodeljs-common';
 import { SubLayerId } from '@bentley/imodeljs-common';
+import { SyncMode } from '@bentley/imodeljs-common';
 import { TelemetryManager } from '@bentley/telemetry-client';
 import { TerrainProviderName } from '@bentley/imodeljs-common';
 import { TextureMapping } from '@bentley/imodeljs-common';
@@ -2187,6 +2187,13 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     viewMapLayerRange(layerIndex: number, isOverlay: boolean, vp: ScreenViewport): Promise<boolean>;
     // @internal (undocumented)
     get wantShadows(): boolean;
+}
+
+// @internal
+export interface DownloadBriefcaseOptions {
+    // (undocumented)
+    fileName?: string;
+    syncMode: SyncMode;
 }
 
 // @alpha
@@ -4425,7 +4432,7 @@ export interface LoadedExtensionProps {
 // @internal
 export class LocalBriefcaseConnection extends BriefcaseConnection {
     close(): Promise<void>;
-    static open(briefcaseProps: BriefcaseProps): Promise<LocalBriefcaseConnection>;
+    static open(briefcaseProps: OpenBriefcaseProps): Promise<LocalBriefcaseConnection>;
 }
 
 // @public
@@ -5797,23 +5804,22 @@ export class NativeApp {
     // (undocumented)
     static checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
     // (undocumented)
-    static closeBriefcase(briefcaseKey: BriefcaseKey): Promise<void>;
+    static closeBriefcase(connection: LocalBriefcaseConnection): Promise<void>;
     static closeStorage(storage: Storage, deleteId: boolean): Promise<void>;
-    // (undocumented)
-    static deleteBriefcase(briefcaseKey: BriefcaseKey): Promise<void>;
-    static getBriefcases(): Promise<BriefcaseProps[]>;
+    static deleteBriefcase(fileName: string): Promise<void>;
+    static getBriefcases(): Promise<LocalBriefcaseProps[]>;
     static getStorageNames(): Promise<string[]>;
     // (undocumented)
     static onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void>;
     // (undocumented)
     static onMemoryWarning: BeEvent<() => void>;
     // (undocumented)
-    static openBriefcase(briefcaseProps: BriefcaseProps): Promise<LocalBriefcaseConnection>;
+    static openBriefcase(briefcaseProps: OpenBriefcaseProps): Promise<LocalBriefcaseConnection>;
     static openStorage(name: string): Promise<Storage>;
     // (undocumented)
     static overrideInternetConnectivity(status: InternetConnectivityStatus): Promise<void>;
     // (undocumented)
-    static requestDownloadBriefcase(contextId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions, version?: IModelVersion, progress?: ProgressCallback): Promise<BriefcaseDownloader>;
+    static requestDownloadBriefcase(contextId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions, asOf?: IModelVersion, progress?: ProgressCallback): Promise<BriefcaseDownloader>;
     // (undocumented)
     static shutdown(): Promise<void>;
     // (undocumented)
@@ -9491,6 +9497,8 @@ export enum TileVisibility {
 // @public
 export class Tool {
     constructor(..._args: any[]);
+    // @internal (undocumented)
+    get ctor(): typeof Tool;
     static get description(): string;
     get description(): string;
     static get englishKeyin(): string;

@@ -174,7 +174,7 @@ export class V1CheckpointManager {
   public static async getCheckpointDb(request: DownloadRequest): Promise<SnapshotDb> {
     const checkpoint = request.checkpoint;
     const db = SnapshotDb.tryFindByKey(this.getKey(checkpoint));
-    return (undefined !== db) ? db as SnapshotDb : Downloads.download(request, async (job: DownloadJob) => this.downloadAndOpen(job));
+    return (undefined !== db) ? db : Downloads.download(request, async (job: DownloadJob) => this.downloadAndOpen(job));
   }
 
   public static verifyCheckpoint(checkpoint: CheckpointProps, fileName: string): boolean {

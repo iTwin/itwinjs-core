@@ -1,0 +1,5 @@
+sep=;
+Release Tag;API Item
+public;EditCommand
+public;EditCommandAdmin
+public;EditCommandType = typeof EditCommand

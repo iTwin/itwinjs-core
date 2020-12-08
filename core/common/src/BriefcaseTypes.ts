@@ -52,7 +52,9 @@ export interface BriefcaseProps {
   briefcaseId: number;
 }
 
-/** Properties for opening a local briefcase file via [BriefcaseId.open]($backend) */
+/** Properties for opening a local briefcase file via [BriefcaseId.open]($backend)
+ * @beta
+*/
 export interface OpenBriefcaseProps extends IModelEncryptionProps {
   /** the full path to the briefcase file  */
   fileName: string;
