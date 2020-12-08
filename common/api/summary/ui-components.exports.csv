@@ -19,8 +19,7 @@ public;class BasePointTypeConverter
 alpha;BaseSolarDataProvider 
 alpha;BaseTimelineDataProvider 
 beta;BasicPropertyEditor 
-beta;BeDragDropContext: typeof BeDragDropContextComponent & ContextComponent
-beta;BeDragDropContextComponent 
+beta;BeDragDropContext(props:
 public;BeInspireTree
 public;BeInspireTreeDataProvider
 public;BeInspireTreeDataProviderInterface

@@ -17,7 +17,6 @@ import { CommonToolbarItem } from '@bentley/ui-abstract';
 import { ConnectDragPreview } from 'react-dnd';
 import { ConnectDragSource } from 'react-dnd';
 import { ConnectDropTarget } from 'react-dnd';
-import { ContextComponent } from 'react-dnd';
 import * as CSS from 'csstype';
 import { CSSProperties } from 'react';
 import { CustomButtonDefinition } from '@bentley/ui-abstract';
@@ -298,14 +297,10 @@ export class BasicPropertyEditor extends PropertyEditorBase {
     get reactNode(): React.ReactNode;
 }
 
-// @beta
-export const BeDragDropContext: typeof BeDragDropContextComponent & ContextComponent<any>;
-
-// @beta
-export class BeDragDropContextComponent extends React.PureComponent {
-    // (undocumented)
-    render(): React.ReactNode;
-}
+// @beta @deprecated
+export function BeDragDropContext(props: {
+    children?: React.ReactNode;
+}): JSX.Element;
 
 // @public @deprecated
 export class BeInspireTree<TNodePayload> {
@@ -577,7 +572,7 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
     readonly state: BreadcrumbDetailsState;
     }
 
-// @beta
+// @beta @deprecated
 export interface BreadcrumbDetailsDragDropProps<DragDropObject = any> {
     // (undocumented)
     dragProps?: DragSourceProps<DragDropObject>;
@@ -585,7 +580,7 @@ export interface BreadcrumbDetailsDragDropProps<DragDropObject = any> {
     dropProps?: DropTargetProps<DragDropObject>;
 }
 
-// @beta
+// @beta @deprecated
 export type BreadcrumbDetailsDragDropType = {} | TreeNodeItem | TableDataProvider;
 
 // @beta
@@ -601,7 +596,7 @@ export interface BreadcrumbDetailsProps extends CommonProps {
     renderTable?: (props: TableProps, node: TreeNodeItem | undefined, children: TreeNodeItem[]) => React.ReactNode;
 }
 
-// @beta
+// @beta @deprecated
 export interface BreadcrumbDragDropProps<DragDropObject = any> {
     // (undocumented)
     dragProps?: DragSourceProps<DragDropObject>;
@@ -1422,7 +1417,7 @@ export class DragAction<Item> {
     };
 }
 
-// @beta
+// @beta @deprecated
 export interface DragDropArguments<DragDropObject = any> {
     clientOffset: {
         x: number;
@@ -1450,20 +1445,20 @@ export interface DragDropArguments<DragDropObject = any> {
     };
 }
 
-// @beta
+// @beta @deprecated
 export interface DragLayerProps<DragDropObject = any> extends CommonProps {
     // (undocumented)
     args?: DragSourceArguments<DragDropObject>;
 }
 
-// @beta
+// @beta @deprecated
 export interface DragSourceArguments<DragDropObject = any> extends DragDropArguments<DragDropObject> {
     // (undocumented)
     defaultDragLayer?: React.ComponentType<DragLayerProps<DragDropObject>>;
     parentObject?: DragDropObject;
 }
 
-// @beta
+// @beta @deprecated
 export interface DragSourceProps<DragDropObject = any> {
     defaultDragLayer?: React.ComponentType<DragLayerProps<DragDropObject>>;
     objectType?: ((data?: DragDropObject) => string | symbol) | string | symbol;
@@ -1564,7 +1559,7 @@ export interface DrawingViewportChangeEventArgs {
     rotation: Matrix3d;
 }
 
-// @beta
+// @beta @deprecated
 export enum DropEffects {
     // (undocumented)
     Copy = 1,
@@ -1576,7 +1571,7 @@ export enum DropEffects {
     None = 0
 }
 
-// @beta
+// @beta @deprecated
 export enum DropStatus {
     // (undocumented)
     Cancel = 3,
@@ -1588,12 +1583,12 @@ export enum DropStatus {
     Ok = 1
 }
 
-// @beta
+// @beta @deprecated
 export interface DropTargetArguments<DragDropObject = any> extends DragSourceArguments<DragDropObject> {
     dropLocation?: DragDropObject;
 }
 
-// @beta
+// @beta @deprecated
 export interface DropTargetProps<DragDropObject = any> {
     canDropTargetDrop?: (args: DropTargetArguments<DragDropObject>) => boolean;
     objectTypes?: Array<string | symbol> | (() => Array<string | symbol>);
@@ -4243,7 +4238,7 @@ export interface TableDistinctValue {
     value: Primitives.Value;
 }
 
-// @beta
+// @beta @deprecated
 export interface TableDragDropProps<DragDropObject = any> {
     // (undocumented)
     dragProps?: DragSourceProps<DragDropObject>;
@@ -4251,10 +4246,10 @@ export interface TableDragDropProps<DragDropObject = any> {
     dropProps?: TableDropTargetProps<DragDropObject>;
 }
 
-// @beta
+// @beta @deprecated
 export type TableDragDropType = {} | RowItem | TableDataProvider;
 
-// @beta
+// @beta @deprecated
 export interface TableDropTargetProps<DragDropObject = any> extends DropTargetProps<DragDropObject> {
     canDropOn?: boolean;
 }
@@ -5576,16 +5571,16 @@ export class WeightPropertyEditor extends PropertyEditorBase {
     get reactNode(): React.ReactNode;
 }
 
-// @beta
+// @beta @deprecated
 export function withBreadcrumbDetailsDragDrop<P extends BreadcrumbDetailsProps, DragDropObject extends BreadcrumbDetailsDragDropType>(BreadcrumbComponent: React.ComponentType<P>): React.ComponentType<P & BreadcrumbDetailsDragDropProps<DragDropObject>>;
 
-// @beta
+// @beta @deprecated
 export function withBreadcrumbDragDrop<P extends BreadcrumbProps, DragDropObject extends TreeDragDropType>(BreadcrumbComponent: React.ComponentType<P>): React.ComponentType<P & BreadcrumbDragDropProps<DragDropObject>>;
 
-// @beta
-export const withDragSource: <ComponentProps extends {}, DragDropObject = any>(Component: React.ComponentType<ComponentProps>) => DndComponentClass<ComponentProps & WithDragSourceProps<DragDropObject>>;
+// @beta @deprecated
+export const withDragSource: <ComponentProps extends {}, DragDropObject = any>(Component: React.ComponentType<ComponentProps>) => DndComponentClass<typeof React.Component, ComponentProps & WithDragSourceProps<DragDropObject>>;
 
-// @beta
+// @beta @deprecated
 export interface WithDragSourceProps<DragDropObject = any> {
     altDropEffect?: DropEffects;
     // @internal (undocumented)
@@ -5606,10 +5601,10 @@ export interface WithDragSourceProps<DragDropObject = any> {
     type?: string | symbol | null;
 }
 
-// @beta
-export const withDropTarget: <ComponentProps extends {}, DragDropObject = any>(Component: React.ComponentType<ComponentProps>) => DndComponentClass<ComponentProps & WithDropTargetProps<DragDropObject>>;
+// @beta @deprecated
+export const withDropTarget: <ComponentProps extends {}, DragDropObject = any>(Component: React.ComponentType<ComponentProps>) => DndComponentClass<typeof React.Component, ComponentProps & WithDropTargetProps<DragDropObject>>;
 
-// @beta
+// @beta @deprecated
 export interface WithDropTargetProps<DragDropObject = any> {
     // @internal (undocumented)
     canDrop?: boolean;
@@ -5626,7 +5621,7 @@ export interface WithDropTargetProps<DragDropObject = any> {
     type?: string | symbol;
 }
 
-// @beta
+// @beta @deprecated
 export function withTableDragDrop<P extends TableProps, DragDropObject extends TableDragDropType>(TableComponent: React.ComponentType<P>): React.ComponentType<P & TableDragDropProps<DragDropObject>>;
 
 

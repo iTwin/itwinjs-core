@@ -7,7 +7,7 @@ import "./DragLayer.scss";
 import * as React from "react";
 import { DragLayerProps } from "@bentley/ui-components";
 
-export class ParentDragLayer extends React.Component<DragLayerProps> {
+export class ParentDragLayer extends React.Component<DragLayerProps> { // eslint-disable-line deprecation/deprecation
   public render(): React.ReactNode {
     const args = this.props.args!;
     const pos = args.clientOffset;
