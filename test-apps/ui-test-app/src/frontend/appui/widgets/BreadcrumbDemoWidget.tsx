@@ -16,8 +16,8 @@ import {
 import { ChildDragLayer } from "./draglayers/ChildDragLayer";
 import { ParentDragLayer } from "./draglayers/ParentDragLayer";
 
-const DragDropBreadcrumb = withBreadcrumbDragDrop<BreadcrumbProps, DemoTreeDragDropType>(Breadcrumb); // eslint-disable-line @typescript-eslint/naming-convention
-const DragDropBreadcrumbDetails = withBreadcrumbDetailsDragDrop<BreadcrumbDetailsProps, DemoTreeDragDropType>(BreadcrumbDetails); // eslint-disable-line @typescript-eslint/naming-convention
+const DragDropBreadcrumb = withBreadcrumbDragDrop<BreadcrumbProps, DemoTreeDragDropType>(Breadcrumb); // eslint-disable-line deprecation/deprecation
+const DragDropBreadcrumbDetails = withBreadcrumbDetailsDragDrop<BreadcrumbDetailsProps, DemoTreeDragDropType>(BreadcrumbDetails); // eslint-disable-line deprecation/deprecation
 
 export class BreadcrumbDemoWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -45,8 +45,8 @@ class BreadcrumbDemoWidget extends React.Component<Props, State> {
   public render() {
     const path = new BreadcrumbPath(demoMutableTreeDataProvider);
 
-    DragDropLayerManager.registerTypeLayer(TreeDragTypes.Parent, ParentDragLayer);
-    DragDropLayerManager.registerTypeLayer(TreeDragTypes.Child, ChildDragLayer);
+    DragDropLayerManager.registerTypeLayer(TreeDragTypes.Parent, ParentDragLayer); // eslint-disable-line deprecation/deprecation
+    DragDropLayerManager.registerTypeLayer(TreeDragTypes.Child, ChildDragLayer); // eslint-disable-line deprecation/deprecation
 
     let objectTypes: Array<string | symbol> = [];
     if (treeDropProps.objectTypes) {
