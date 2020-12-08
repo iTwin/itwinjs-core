@@ -376,7 +376,7 @@ export class Format {
   /**
    * Populates this Format with the values from the provided.
    */
-  public async fromJson(unitsProvider: UnitsProvider, jsonObj: FormatProps): Promise<void> {
+  public async fromJSON(unitsProvider: UnitsProvider, jsonObj: FormatProps): Promise<void> {
     this.loadFormatProperties(jsonObj);
 
     if (undefined !== jsonObj.composite) { // optional
@@ -418,7 +418,7 @@ export class Format {
   /**
    * Returns a JSON object that contain the specification for this Format.
    */
-  public toJson(): FormatProps {
+  public toJSON(): FormatProps {
     let composite;
     if (this.units) {
       const units = this.units.map((value) => {

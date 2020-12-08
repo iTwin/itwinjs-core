@@ -67,12 +67,6 @@ export enum DecimalPrecision {
 export class Format {
     constructor(name: string);
     // (undocumented)
-    protected addCustomPropsToJson(schemaJson: {
-        [value: string]: any;
-    }): {
-        [value: string]: any;
-    };
-    // (undocumented)
     get decimalSeparator(): string;
     // (undocumented)
     protected _decimalSeparator: string;
@@ -82,7 +76,7 @@ export class Format {
     protected _formatTraits: FormatTraits;
     static formatTraitsToArray(currentFormatTrait: FormatTraits): string[];
     static formatTypeToString(type: FormatType): string;
-    fromJson(unitsProvider: UnitsProvider, jsonObj: FormatProps): Promise<void>;
+    fromJSON(unitsProvider: UnitsProvider, jsonObj: FormatProps): Promise<void>;
     hasFormatTraitSet(formatTrait: FormatTraits): boolean;
     // (undocumented)
     get hasUnits(): boolean;
@@ -90,8 +84,6 @@ export class Format {
     get includeZero(): boolean | undefined;
     // (undocumented)
     protected _includeZero: boolean;
-    // (undocumented)
-    protected loadCustomPropsFromJson(_unitsProvider: UnitsProvider, _jsonObj: any): Promise<void>;
     // (undocumented)
     get minWidth(): number | undefined;
     // (undocumented)
@@ -140,7 +132,7 @@ export class Format {
     get thousandSeparator(): string;
     // (undocumented)
     protected _thousandSeparator: string;
-    toJson(): FormatProps;
+    toJSON(): FormatProps;
     // (undocumented)
     get type(): FormatType;
     // (undocumented)
@@ -200,11 +192,18 @@ export class Formatter {
 // @alpha
 export class FormatterSpec {
     constructor(name: string, format: Format, conversions?: UnitConversionSpec[]);
+    applyFormatting(magnitude: number): string;
+    // (undocumented)
+    protected _conversions: UnitConversionSpec[];
     static create(name: string, format: Format, unitsProvider: UnitsProvider, inputUnit?: UnitProps): Promise<FormatterSpec>;
     // (undocumented)
     get format(): Format;
     // (undocumented)
+    protected _format: Format;
+    // (undocumented)
     get name(): string;
+    // (undocumented)
+    protected _name: string;
     get unitConversions(): UnitConversionSpec[];
 }
 
@@ -292,6 +291,7 @@ export class ParserSpec {
     get format(): Format;
     // (undocumented)
     get outUnit(): UnitProps;
+    parseIntoQuantityValue(inString: string): ParseResult;
     get unitConversions(): UnitConversionSpec[];
 }
 
