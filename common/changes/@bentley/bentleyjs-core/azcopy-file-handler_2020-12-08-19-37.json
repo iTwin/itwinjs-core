@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/bentleyjs-core",
+      "comment": "Added new error flags.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/bentleyjs-core",
+  "email": "khanaffan@users.noreply.github.com"
+}
