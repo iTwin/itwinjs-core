@@ -14,7 +14,7 @@ exports[`<LabeledInput /> renders correctly 1`] = `
   <div
     className="input"
   >
-    <ForwardRef(Input) />
+    <ForwardRef(ForwardRefInput) />
   </div>
 </label>
 `;
@@ -33,7 +33,7 @@ exports[`<LabeledInput /> renders disabled correctly 1`] = `
   <div
     className="input"
   >
-    <ForwardRef(Input)
+    <ForwardRef(ForwardRefInput)
       disabled={true}
     />
   </div>
@@ -54,7 +54,7 @@ exports[`<LabeledInput /> renders message correctly 1`] = `
   <div
     className="input"
   >
-    <ForwardRef(Input) />
+    <ForwardRef(ForwardRefInput) />
   </div>
   <div
     className="uicore-message"
@@ -78,7 +78,7 @@ exports[`<LabeledInput /> renders status correctly 1`] = `
   <div
     className="input with-icon"
   >
-    <ForwardRef(Input) />
+    <ForwardRef(ForwardRefInput) />
     <i
       className="icon icon-status-success"
     />
