@@ -54,6 +54,14 @@ async function saveCsv(outputPath: string, outputName: string, rowData: Map<stri
   return DisplayPerfRpcInterface.getClient().saveCsv(outputPath, outputName, JSON.stringify([...rowData]), csvFormat);
 }
 
+async function writeExternalFile(outputPath: string, outputName: string, append: boolean, content: string): Promise<void> {
+  return DisplayPerfRpcInterface.getClient().writeExternalFile(outputPath, outputName, append, content);
+}
+
+async function consoleLog(content: string): Promise<void> {
+  return DisplayPerfRpcInterface.getClient().consoleLog(content);
+}
+
 const wantConsoleOutput: boolean = false;
 function debugPrint(msg: string): void {
   if (wantConsoleOutput)
@@ -1469,7 +1477,7 @@ async function loadViewString(state: SimpleViewState, viewStatePropsString: stri
   }
 }
 
-async function testModel(configs: DefaultConfigs, modelData: any) {
+async function testModel(configs: DefaultConfigs, modelData: any, logFileName: string) {
   // Create DefaultModelConfigs
   const modConfigs = new DefaultConfigs(modelData, configs);
 
@@ -1485,6 +1493,18 @@ async function testModel(configs: DefaultConfigs, modelData: any) {
     // if (!fs.existsSync(testConfig.iModelFile!))
     //   break;
 
+    // write output log file of timestamp, current model, and view
+    const today = new Date();
+    const month = (`0${(today.getMonth() + 1)}`).slice(-2);
+    const day = (`0${today.getDate()}`).slice(-2);
+    const year = today.getFullYear();
+    const hours = (`0${today.getHours()}`).slice(-2);
+    const minutes = (`0${today.getMinutes()}`).slice(-2);
+    const seconds = (`0${today.getSeconds()}`).slice(-2);
+    const outStr = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}  ${testData.iModelName!}  [${testData.viewName}]`;
+    await consoleLog(outStr);
+    await writeExternalFile(testConfig.outputPath!, logFileName, true, `${outStr}\n`);
+
     await runTest(testConfig);
   }
   if (configs.iModelLocation) removeFilesFromDir(configs.iModelLocation, ".Tiles");
@@ -1496,6 +1516,11 @@ async function main() {
   const defaultConfigStr = await getDefaultConfigs();
   const jsonData = JSON.parse(defaultConfigStr);
   const testConfig = new DefaultConfigs(jsonData);
+
+  const logFileName = "_DispPerfTestAppViewLog.txt";
+  const outStr = `View Log,  Model Base Location: ${testConfig.iModelLocation!}\n  format: Time_started  ModelName  [ViewName]`;
+  await consoleLog(outStr);
+  await writeExternalFile(testConfig.outputPath!, logFileName, false, `${outStr}\n`);
 
   // Sign In to iModelHub if needed
   if (jsonData.signIn) {
@@ -1509,7 +1534,7 @@ async function main() {
   for (const i in jsonData.testSet) {
     if (i) {
       const modelData = jsonData.testSet[i];
-      await testModel(testConfig, modelData);
+      await testModel(testConfig, modelData, logFileName);
     }
   }
 
