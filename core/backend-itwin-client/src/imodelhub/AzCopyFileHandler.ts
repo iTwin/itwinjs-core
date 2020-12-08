@@ -9,7 +9,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as urllib from "url";
-import { AzCopyClient, ICopyJobInfo, ILocalLocation, IRemoteSasLocation } from "@azure-tools/azcopy-node";
+import { AzCopyClient, ICopyJobInfo, ILocalLocation, IRemoteSasLocation, TransferStatus } from "@azure-tools/azcopy-node";
 import { BriefcaseStatus, Logger } from "@bentley/bentleyjs-core";
 import { ArgumentCheck } from "@bentley/imodelhub-client";
 import {
@@ -17,6 +17,7 @@ import {
   UserCancelledError,
 } from "@bentley/itwin-client";
 import { BackendITwinClientLoggerCategory } from "../BackendITwinClientLoggerCategory";
+import { ITransferStatus, ProgressJobStatus } from "@azure-tools/azcopy-node/dist/src/Output/TransferStatus";
 
 const loggerCategory: string = BackendITwinClientLoggerCategory.FileHandlers;
 
@@ -46,7 +47,8 @@ export class AzCopyFileHandler implements FileHandler {
 
   private parseBlobUrl(downloadUrl: string): IRemoteSasLocation {
     const url = new URL(downloadUrl);
-    const parts = url.pathname.split("/");
+    const decoded = decodeURIComponent(url.pathname);
+    const parts = decoded.split("/");
     if (parts[0].length === 0) {
       parts.shift();
     }
@@ -120,17 +122,18 @@ export class AzCopyFileHandler implements FileHandler {
 
     AzCopyFileHandler.makeDirectoryRecursive(path.dirname(downloadToPathname));
     try {
-
-      const jobId = await AzCopyFileHandler.client.copy(this.parseBlobUrl(downloadUrl), this.parseLocalPath(downloadToPathname), {overwriteExisting: "true"});
+      const sourceUri: IRemoteSasLocation = this.parseBlobUrl(downloadUrl);
+      const targetUri: ILocalLocation = this.parseLocalPath(downloadToPathname);
+      const jobId = await AzCopyFileHandler.client.copy(sourceUri, targetUri, { overwriteExisting: "true", recursive: false, checkLength: true });
       let signalCancel = false;
 
       if (cancelRequest) {
         cancelRequest.cancel = () => { signalCancel = true; return true; };
       }
-      let progressTriggered = false;
+      let lastProgressStatus: ITransferStatus<"Progress", ProgressJobStatus> | undefined;
       let job: ICopyJobInfo | undefined;
       do {
-        await new Promise((resolve) => setTimeout(resolve, 500));
+        await new Promise((resolve) => setTimeout(resolve, 100));
         job = await AzCopyFileHandler.client.getJobInfo(jobId);
 
         if (!job.canceled && signalCancel) {
@@ -139,7 +142,7 @@ export class AzCopyFileHandler implements FileHandler {
 
         if (progressCallback) {
           if (job.latestStatus && job.latestStatus.StatusType === "Progress") {
-            progressTriggered = true;
+            lastProgressStatus = job.latestStatus;
             progressCallback({ total: job.latestStatus.TotalBytesEnumerated, loaded: job.latestStatus.TotalBytesTransferred, percent: job.latestStatus.PercentComplete });
           }
         }
@@ -153,9 +156,9 @@ export class AzCopyFileHandler implements FileHandler {
         throw new DownloadError(BriefcaseStatus.DownloadError, job.errorMessage, Logger.logError);
       }
 
-      if (progressCallback && !progressTriggered) {
-        progressTriggered = true;
-        progressCallback({ total: job.latestStatus.TotalBytesEnumerated, loaded: job.latestStatus.TotalBytesTransferred, percent: job.latestStatus.PercentComplete });
+      if (progressCallback && lastProgressStatus && lastProgressStatus.TotalBytesTransferred < lastProgressStatus.TotalBytesEnumerated) {
+        // fake this event to complete
+        progressCallback({ total: lastProgressStatus.TotalBytesEnumerated, loaded: lastProgressStatus.TotalBytesEnumerated, percent: 100.0 });
       }
     } catch (err) {
       requestContext.enter();
@@ -197,7 +200,7 @@ export class AzCopyFileHandler implements FileHandler {
     let progressTriggered = false;
     let job: ICopyJobInfo | undefined;
     do {
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 100));
       job = await AzCopyFileHandler.client.getJobInfo(jobId);
       if (progressCallback) {
         if (job.latestStatus && job.latestStatus.StatusType === "Progress") {
