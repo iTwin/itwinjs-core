@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-markup",
-  "version": "2.10.0-dev.23",
+  "version": "2.11.0-dev.6",
   "description": "iModel.js markup package",
   "main": "lib/imodeljs-markup.js",
   "imodeljsSharedLibrary": true,
@@ -38,21 +38,21 @@
     "@svgdotjs/svg.js": "3.0.13"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.10.0-dev.23",
-    "@bentley/geometry-core": "^2.10.0-dev.23",
-    "@bentley/imodeljs-common": "^2.10.0-dev.23",
-    "@bentley/imodeljs-frontend": "^2.10.0-dev.23",
-    "@bentley/imodeljs-i18n": "^2.10.0-dev.23"
+    "@bentley/bentleyjs-core": "^2.11.0-dev.6",
+    "@bentley/geometry-core": "^2.11.0-dev.6",
+    "@bentley/imodeljs-common": "^2.11.0-dev.6",
+    "@bentley/imodeljs-frontend": "^2.11.0-dev.6",
+    "@bentley/imodeljs-i18n": "^2.11.0-dev.6"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.10.0-dev.23",
-    "@bentley/build-tools": "2.10.0-dev.23",
-    "@bentley/certa": "2.10.0-dev.23",
-    "@bentley/eslint-plugin": "2.10.0-dev.23",
-    "@bentley/geometry-core": "2.10.0-dev.23",
-    "@bentley/imodeljs-common": "2.10.0-dev.23",
-    "@bentley/imodeljs-frontend": "2.10.0-dev.23",
-    "@bentley/imodeljs-i18n": "2.10.0-dev.23",
+    "@bentley/bentleyjs-core": "2.11.0-dev.6",
+    "@bentley/build-tools": "2.11.0-dev.6",
+    "@bentley/certa": "2.11.0-dev.6",
+    "@bentley/eslint-plugin": "2.11.0-dev.6",
+    "@bentley/geometry-core": "2.11.0-dev.6",
+    "@bentley/imodeljs-common": "2.11.0-dev.6",
+    "@bentley/imodeljs-frontend": "2.11.0-dev.6",
+    "@bentley/imodeljs-i18n": "2.11.0-dev.6",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",

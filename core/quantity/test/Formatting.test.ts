@@ -14,37 +14,6 @@ process.on("unhandledRejection", (reason, p) => {
 });
 
 describe("Formatting tests:", () => {
-  it("Type is required", async () => {
-    const unitsProvider = new TestUnitsProvider();
-
-    const json = {
-      formatTraits: ["keepSingleZero", "showUnitLabel", "fractionDash"],
-      precision: 8,
-      uomSeparator: " ",
-    };
-    const testFormat = new Format("test");
-
-    await testFormat.fromJson(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `The Format test does not have the required 'type' attribute.`);
-    });
-  });
-
-  it("A 'string' Type is required", async () => {
-    const unitsProvider = new TestUnitsProvider();
-
-    const json = {
-      formatTraits: ["keepSingleZero", "showUnitLabel", "fractionDash"],
-      precision: 8,
-      type: 1,
-      uomSeparator: " ",
-    };
-    const testFormat = new Format("test");
-
-    await testFormat.fromJson(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has an invalid 'type' attribute. It should be of type 'string'.`);
-    });
-  });
-
   it("A valid 'string' Type is required", async () => {
     const unitsProvider = new TestUnitsProvider();
 
@@ -73,22 +42,6 @@ describe("Formatting tests:", () => {
 
     await testFormat.fromJson(unitsProvider, json).catch((err) => {
       assert.isTrue(err instanceof QuantityError && err.message === `The Format test does not have the required 'precision' attribute.`);
-    });
-  });
-
-  it("Precision (number) is required", async () => {
-    const unitsProvider = new TestUnitsProvider();
-
-    const json = {
-      formatTraits: ["keepSingleZero", "showUnitLabel"],
-      precision: "8",
-      type: "Decimal",
-      uomSeparator: " ",
-    };
-    const testFormat = new Format("test");
-
-    await testFormat.fromJson(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has an invalid 'precision' attribute. It should be of type 'number'.`);
     });
   });
 
@@ -173,23 +126,6 @@ describe("Formatting tests:", () => {
     });
   });
 
-  it("Bad round factor", async () => {
-    const unitsProvider = new TestUnitsProvider();
-
-    const json = {
-      formatTraits: [],
-      precision: 12,
-      type: "Decimal",
-      uomSeparator: " ",
-      roundFactor: "0.5",
-    };
-    const testFormat = new Format("test");
-
-    await testFormat.fromJson(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has an invalid 'roundFactor' attribute. It should be of type 'number'.`);
-    });
-  });
-
   it("Good round factor", async () => {
     const unitsProvider = new TestUnitsProvider();
 
@@ -220,23 +156,6 @@ describe("Formatting tests:", () => {
     await testFormat.fromJson(unitsProvider, json).catch(() => { });
   });
 
-  it("Bad minWidth format", async () => {
-    const unitsProvider = new TestUnitsProvider();
-
-    const json = {
-      formatTraits: [],
-      precision: 12,
-      type: "Decimal",
-      uomSeparator: " ",
-      minWidth: "25",
-    };
-    const testFormat = new Format("test");
-
-    await testFormat.fromJson(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has an invalid 'minWidth' attribute. It should be of type 'number'.`);
-    });
-  });
-
   it("Bad minWidth value", async () => {
     const unitsProvider = new TestUnitsProvider();
 
@@ -254,23 +173,6 @@ describe("Formatting tests:", () => {
     });
   });
 
-  it("Bad showSign entry", async () => {
-    const unitsProvider = new TestUnitsProvider();
-
-    const json = {
-      formatTraits: [],
-      precision: 12,
-      type: "Decimal",
-      uomSeparator: " ",
-      showSignOption: 4,
-    };
-    const testFormat = new Format("test");
-
-    await testFormat.fromJson(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has an invalid 'showSignOption' attribute. It should be of type 'string'.`);
-    });
-  });
-
   it("Good showSign entry", async () => {
     const unitsProvider = new TestUnitsProvider();
 
@@ -285,38 +187,6 @@ describe("Formatting tests:", () => {
 
     await testFormat.fromJson(unitsProvider, json).catch(() => {
       assert.isTrue(false);
-    });
-  });
-
-  it("Bad formatTraits entry", async () => {
-    const unitsProvider = new TestUnitsProvider();
-
-    const json = {
-      formatTraits: 1,
-      precision: 12,
-      type: "Decimal",
-      uomSeparator: " ",
-    };
-    const testFormat = new Format("test");
-
-    await testFormat.fromJson(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has an invalid 'formatTraits' attribute. It should be of type 'string' or 'string[]'.`);
-    });
-  });
-
-  it("Bad decimal separator type", async () => {
-    const unitsProvider = new TestUnitsProvider();
-
-    const json = {
-      precision: 12,
-      type: "Decimal",
-      uomSeparator: " ",
-      decimalSeparator: 2,
-    };
-    const testFormat = new Format("test");
-
-    await testFormat.fromJson(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has an invalid 'decimalSeparator' attribute. It should be of type 'string'.`);
     });
   });
 
@@ -352,22 +222,6 @@ describe("Formatting tests:", () => {
     });
   });
 
-  it("Bad thousand separator type", async () => {
-    const unitsProvider = new TestUnitsProvider();
-
-    const json = {
-      precision: 12,
-      type: "Decimal",
-      uomSeparator: " ",
-      thousandSeparator: 2,
-    };
-    const testFormat = new Format("test");
-
-    await testFormat.fromJson(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has an invalid 'thousandSeparator' attribute. It should be of type 'string'.`);
-    });
-  });
-
   it("Bad thousand separator value", async () => {
     const unitsProvider = new TestUnitsProvider();
 
@@ -400,21 +254,6 @@ describe("Formatting tests:", () => {
     });
   });
 
-  it("Bad uom separator type", async () => {
-    const unitsProvider = new TestUnitsProvider();
-
-    const json = {
-      precision: 12,
-      type: "Decimal",
-      uomSeparator: 1,
-    };
-    const testFormat = new Format("test");
-
-    await testFormat.fromJson(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has an invalid 'uomSeparator' attribute. It should be of type 'string'.`);
-    });
-  });
-
   it("Bad uom separator value", async () => {
     const unitsProvider = new TestUnitsProvider();
 
@@ -442,23 +281,6 @@ describe("Formatting tests:", () => {
 
     await testFormat.fromJson(unitsProvider, json).catch(() => {
       assert.isTrue(false);
-    });
-  });
-
-  it("Bad station separator type", async () => {
-    const unitsProvider = new TestUnitsProvider();
-
-    const json = {
-      precision: 12,
-      uomSeparator: " ",
-      stationOffsetSize: 2,
-      type: "Station",
-      stationSeparator: 1,
-    };
-    const testFormat = new Format("test");
-
-    await testFormat.fromJson(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has an invalid 'stationSeparator' attribute. It should be of type 'string'.`);
     });
   });
 
@@ -529,64 +351,6 @@ describe("Formatting tests:", () => {
     });
   });
 
-  it("Scientific type (string) is required", async () => {
-    const unitsProvider = new TestUnitsProvider();
-
-    const json = {
-      formatTraits: ["keepSingleZero", "showUnitLabel"],
-      precision: 8,
-      type: "Scientific",
-      scientificType: 1,
-      uomSeparator: " ",
-    };
-    const testFormat = new Format("test");
-
-    await testFormat.fromJson(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has an invalid 'scientificType' attribute. It should be of type 'string'.`);
-    });
-  });
-
-  it("Bad Composite Units", async () => {
-    const unitsProvider = new TestUnitsProvider();
-
-    const json = {
-      composite: {
-        includeZero: true,
-        spacer: "",
-        units: "bad",
-      },
-      formatTraits: ["keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
-      precision: 8,
-      type: "Fractional",
-      uomSeparator: "",
-    };
-    const testFormat = new Format("test");
-
-    await testFormat.fromJson(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has a Composite with an invalid 'units' attribute. It must be of type 'array'`);
-    });
-  });
-
-  it("Null Composite Units", async () => {
-    const unitsProvider = new TestUnitsProvider();
-
-    const json = {
-      composite: {
-        includeZero: true,
-        spacer: "",
-      },
-      formatTraits: ["keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
-      precision: 8,
-      type: "Fractional",
-      uomSeparator: "",
-    };
-    const testFormat = new Format("test");
-
-    await testFormat.fromJson(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has a Composite with no valid 'units'`);
-    });
-  });
-
   it("No Composite Units", async () => {
     const unitsProvider = new TestUnitsProvider();
 
@@ -605,57 +369,6 @@ describe("Formatting tests:", () => {
 
     await testFormat.fromJson(unitsProvider, json).catch((err) => {
       assert.isTrue(err instanceof QuantityError && err.message === `The Format test has a Composite with no valid 'units'`);
-    });
-  });
-
-  it("Invalid Composite Units (name)", async () => {
-    const unitsProvider = new TestUnitsProvider();
-
-    const json = {
-      composite: {
-        includeZero: true,
-        spacer: "",
-        units: [
-          {
-            label: "'",
-          },
-        ],
-      },
-      formatTraits: ["keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
-      precision: 8,
-      type: "Fractional",
-      uomSeparator: "",
-    };
-    const testFormat = new Format("test");
-
-    await testFormat.fromJson(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `This Composite has a unit with an invalid 'name' or 'label' attribute.`);
-    });
-  });
-
-  it("Invalid Composite Units (label)", async () => {
-    const unitsProvider = new TestUnitsProvider();
-
-    const json = {
-      composite: {
-        includeZero: true,
-        spacer: "",
-        units: [
-          {
-            label: 1,
-            name: "Units.FT",
-          },
-        ],
-      },
-      formatTraits: ["keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
-      precision: 8,
-      type: "Fractional",
-      uomSeparator: "",
-    };
-    const testFormat = new Format("test");
-
-    await testFormat.fromJson(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `This Composite has a unit with an invalid 'name' or 'label' attribute.`);
     });
   });
 
@@ -730,23 +443,6 @@ describe("Formatting tests:", () => {
     });
   });
 
-  it("Bad station offset type", async () => {
-    const unitsProvider = new TestUnitsProvider();
-
-    const json = {
-      formatTraits: ["trailZeroes", "keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
-      minWidth: 2,
-      precision: 2,
-      stationOffsetSize: "2",
-      type: "Station",
-    };
-    const testFormat = new Format("test");
-
-    await testFormat.fromJson(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has an invalid 'stationOffsetSize' attribute. It should be of type 'number'.`);
-    });
-  });
-
   it("Bad station offset value", async () => {
     const unitsProvider = new TestUnitsProvider();
 
@@ -761,66 +457,6 @@ describe("Formatting tests:", () => {
 
     await testFormat.fromJson(unitsProvider, json).catch((err) => {
       assert.isTrue(err instanceof QuantityError && err.message === `The Format test has an invalid 'stationOffsetSize' attribute. It should be a positive integer.`);
-    });
-  });
-
-  it("Bad includeZero in Composite", async () => {
-    const unitsProvider = new TestUnitsProvider();
-
-    const json = {
-      composite: {
-        includeZero: 1,
-        spacer: "-",
-        units: [
-          {
-            label: "'",
-            name: "Units.FT",
-          },
-          {
-            label: "\"",
-            name: "Units.IN",
-          },
-        ],
-      },
-      formatTraits: ["keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
-      precision: 8,
-      type: "Fractional",
-      uomSeparator: "",
-    };
-    const testFormat = new Format("test");
-
-    await testFormat.fromJson(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has a Composite with an invalid 'includeZero' attribute. It should be of type 'boolean'.`);
-    });
-  });
-
-  it("Bad spacer (not a string) in Composite", async () => {
-    const unitsProvider = new TestUnitsProvider();
-
-    const json = {
-      composite: {
-        includeZero: true,
-        spacer: 1,
-        units: [
-          {
-            label: "'",
-            name: "Units.FT",
-          },
-          {
-            label: "\"",
-            name: "Units.IN",
-          },
-        ],
-      },
-      formatTraits: ["keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
-      precision: 8,
-      type: "Fractional",
-      uomSeparator: "",
-    };
-    const testFormat = new Format("test");
-
-    await testFormat.fromJson(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has a Composite with an invalid 'spacer' attribute. It must be of type 'string'.`);
     });
   });
 
@@ -1103,7 +739,7 @@ describe("Formatting tests:", () => {
       const jsonData = format.toJson();
       assert.isTrue(jsonData.type.toUpperCase() === Format.formatTypeToString(format.type).toUpperCase());
       if (formatData.hasOwnProperty("showSignOption")) {
-        assert.isTrue(formatData.showSignOption!.toUpperCase() === jsonData.showSignOption.toUpperCase());
+        assert.isTrue(formatData.showSignOption!.toUpperCase() === jsonData.showSignOption!.toUpperCase());
       }
     }
   });

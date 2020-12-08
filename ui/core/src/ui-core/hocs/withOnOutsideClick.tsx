@@ -14,6 +14,8 @@ import * as React from "react";
 export interface WithOnOutsideClickProps {
   /** Outside click callback function */
   onOutsideClick?: (event: MouseEvent) => any;
+  /** If false outside click processing and closing are skipped if click occurs in another Popup component, default to false. */
+  closeOnNestedPopupOutsideClick?: boolean;
 }
 
 /** withOnOutsideClick is a React higher-order component that adds outside click support.
@@ -51,7 +53,29 @@ export const withOnOutsideClick = <ComponentProps extends {}>(
     }
 
     /** @internal */
+    public isInCorePopup(element: HTMLElement): boolean {
+      if (element.nodeName === "DIV") {
+        if (element.classList && element.classList.contains("core-popup"))
+          return true;
+        if (element.parentElement && this.isInCorePopup(element.parentElement))
+          return true;
+      } else {
+        // istanbul ignore else
+        if (element.parentElement && this.isInCorePopup(element.parentElement))
+          return true;
+      }
+      return false;
+    }
+
+    /** @internal */
     public onOutsideClick(e: MouseEvent) {
+      // istanbul ignore else
+      if (e.target instanceof Node && e.target.nodeType === Node.ELEMENT_NODE) {
+        // istanbul ignore else
+        if (!this.props.closeOnNestedPopupOutsideClick && this.isInCorePopup(e.target as HTMLElement))
+          return;
+      }
+
       if (this.props.onOutsideClick)
         return this.props.onOutsideClick(e);
       else if (defaultOnOutsideClick)
@@ -79,7 +103,7 @@ export const withOnOutsideClick = <ComponentProps extends {}>(
     };
 
     public render() {
-      const { onOutsideClick, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
+      const { onOutsideClick, closeOnNestedPopupOutsideClick, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
       return (
         <div ref={this.ref}>
           <Component {...props as ComponentProps} />

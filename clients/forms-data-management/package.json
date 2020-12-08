@@ -1,6 +1,6 @@
 {
   "name": "@bentley/forms-data-management-client",
-  "version": "2.10.0-dev.23",
+  "version": "2.11.0-dev.6",
   "description": "iModel.js Forms Data Management Client",
   "main": "lib/forms-data-management-client.js",
   "typings": "lib/forms-data-management-client",
@@ -35,19 +35,19 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/itwin-client": "^2.10.0-dev.23"
+    "@bentley/itwin-client": "^2.11.0-dev.6"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "2.10.0-dev.23"
+    "@bentley/bentleyjs-core": "2.11.0-dev.6"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.10.0-dev.23",
-    "@bentley/certa": "2.10.0-dev.23",
-    "@bentley/config-loader": "2.10.0-dev.23",
-    "@bentley/context-registry-client": "2.10.0-dev.23",
-    "@bentley/eslint-plugin": "2.10.0-dev.23",
-    "@bentley/itwin-client": "2.10.0-dev.23",
-    "@bentley/oidc-signin-tool": "2.10.0-dev.23",
+    "@bentley/build-tools": "2.11.0-dev.6",
+    "@bentley/certa": "2.11.0-dev.6",
+    "@bentley/config-loader": "2.11.0-dev.6",
+    "@bentley/context-registry-client": "2.11.0-dev.6",
+    "@bentley/eslint-plugin": "2.11.0-dev.6",
+    "@bentley/itwin-client": "2.11.0-dev.6",
+    "@bentley/oidc-signin-tool": "2.11.0-dev.6",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
