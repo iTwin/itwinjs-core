@@ -998,7 +998,7 @@ export interface CompositeFilterDescriptorCollection {
     logicalOperator: FilterCompositionLogicalOperator;
 }
 
-// @alpha
+// @beta
 export enum CompositeFilterType {
     // (undocumented)
     And = 0,
@@ -1823,7 +1823,7 @@ export abstract class FilterDescriptorCollectionBase<TDescriptor extends FilterD
     remove(item: TDescriptor): boolean;
 }
 
-// @alpha
+// @beta
 export interface FilteredPropertyData extends PropertyData {
     // (undocumented)
     filteredTypes?: FilteredType[];
@@ -2344,7 +2344,7 @@ export class IntTypeConverter extends NumericTypeConverterBase {
     convertToString(value?: Primitives.Int): string;
 }
 
-// @alpha
+// @beta
 export interface IPropertyDataFilterer {
     // (undocumented)
     categoryMatchesFilter: (node: PropertyCategory, parents: PropertyCategory[]) => Promise<PropertyDataFilterResult>;
@@ -3191,7 +3191,7 @@ export interface PropertyCategoryBlockProps extends CommonProps {
     onExpansionToggled?: (categoryName: string) => void;
 }
 
-// @alpha
+// @beta
 export abstract class PropertyCategoryDataFiltererBase extends PropertyDataFiltererBase {
     // (undocumented)
     recordMatchesFilter(): Promise<PropertyDataFilterResult>;
@@ -3242,7 +3242,7 @@ export class PropertyDataChangeEvent extends BeEvent<PropertyDataChangesListener
 // @public
 export type PropertyDataChangesListener = () => void;
 
-// @alpha
+// @beta
 export abstract class PropertyDataFiltererBase implements IPropertyDataFilterer {
     // (undocumented)
     abstract categoryMatchesFilter(node: PropertyCategory, parents: PropertyCategory[]): Promise<PropertyDataFilterResult>;
@@ -3254,7 +3254,7 @@ export abstract class PropertyDataFiltererBase implements IPropertyDataFilterer 
     abstract recordMatchesFilter(node: PropertyRecord, parents: PropertyRecord[]): Promise<PropertyDataFilterResult>;
 }
 
-// @alpha
+// @beta
 export interface PropertyDataFilterResult {
     filteredTypes?: FilteredType[];
     matchesCount?: number;
@@ -3320,11 +3320,11 @@ export interface PropertyEditorProps extends CommonProps {
     setFocus?: boolean;
 }
 
-// @alpha
+// @beta
 export class PropertyFilterChangeEvent extends BeEvent<PropertyFilterChangesListener> {
 }
 
-// @alpha
+// @beta
 export type PropertyFilterChangesListener = () => void;
 
 // @public
@@ -3435,7 +3435,7 @@ export interface PropertyPopupState {
     };
 }
 
-// @alpha
+// @beta
 export abstract class PropertyRecordDataFiltererBase extends PropertyDataFiltererBase {
     // (undocumented)
     categoryMatchesFilter(): Promise<PropertyDataFilterResult>;

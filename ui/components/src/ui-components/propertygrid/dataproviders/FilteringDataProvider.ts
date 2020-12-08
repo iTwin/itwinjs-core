@@ -23,7 +23,7 @@ interface FilteredRecords {
 
 /**
  *  Data returned by [[FilteringPropertyDataProvider]]
- * @alpha
+ * @beta
  */
 export interface FilteredPropertyData extends PropertyData {
   /*

@@ -22,7 +22,7 @@ export enum FilteredType {
 
 /**
  * Data structure for storing IPropertyDataFilterer matching results
- * @alpha
+ * @beta
  */
 export interface PropertyDataFilterResult {
   /** Indicates whether provided item matched filter */
@@ -53,19 +53,19 @@ export interface PropertyDataFilterResult {
 
 /**
  * A signature for property data change listeners
- * @alpha
+ * @beta
  */
 export declare type PropertyFilterChangesListener = () => void;
 
 /**
  * An event broadcasted when property filter changes
- * @alpha
+ * @beta
  */
 export class PropertyFilterChangeEvent extends BeEvent<PropertyFilterChangesListener> { }
 
 /**
  * Interface to be implemented by Property Data Filter classes
- * @alpha
+ * @beta
  */
 export interface IPropertyDataFilterer {
   readonly isActive: boolean;
@@ -76,7 +76,7 @@ export interface IPropertyDataFilterer {
 
 /**
  * PropertyDataFilter base which helps implement common logic between all IPropertyDataFilterer
- * @alpha
+ * @beta
  */
 export abstract class PropertyDataFiltererBase implements IPropertyDataFilterer {
   public onFilterChanged: PropertyFilterChangeEvent = new PropertyFilterChangeEvent();
@@ -86,7 +86,7 @@ export abstract class PropertyDataFiltererBase implements IPropertyDataFilterer 
 }
 /**
  * PropertyDataFilter base which is suited for only Category filtering
- * @alpha
+ * @beta
  */
 export abstract class PropertyCategoryDataFiltererBase extends PropertyDataFiltererBase {
   public async recordMatchesFilter(): Promise<PropertyDataFilterResult> {
@@ -95,7 +95,7 @@ export abstract class PropertyCategoryDataFiltererBase extends PropertyDataFilte
 }
 /**
  * PropertyDataFilter base which is suited for only Record filtering
- * @alpha
+ * @beta
  */
 export abstract class PropertyRecordDataFiltererBase extends PropertyDataFiltererBase {
   public async categoryMatchesFilter(): Promise<PropertyDataFilterResult> {

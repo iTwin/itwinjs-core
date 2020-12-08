@@ -12,7 +12,7 @@ import { FilteredType, IPropertyDataFilterer, PropertyDataFiltererBase, Property
 
 /**
  * Logical operator for composite filterer.
- * @alpha
+ * @beta
  */
 export enum CompositeFilterType {
   And,
