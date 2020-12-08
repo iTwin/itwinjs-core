@@ -31,7 +31,7 @@ describe("IModelTransformer", () => {
       IModelJsFs.mkdirSync(outputDir);
     }
     // initialize logging
-    if (true) {
+    if (false) {
       Logger.initializeToConsole();
       Logger.setLevelDefault(LogLevel.Error);
       Logger.setLevel(BackendLoggerCategory.IModelExporter, LogLevel.Trace);
@@ -648,7 +648,7 @@ describe("IModelTransformer", () => {
     sourceDb.close();
   });
 
-  it.only("Should filter by ViewDefinition", async () => {
+  it("Should filter by ViewDefinition", async () => {
     const sourceDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "FilterByView-Source.bim");
     const sourceDb = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "FilterByView-Source" } });
     const categoryNames: string[] = ["C1", "C2", "C3", "C4", "C5"];
@@ -722,13 +722,13 @@ describe("IModelTransformer", () => {
 
     const targetDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "FilterByView-Target.bim");
     const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "FilterByView-Target" } });
+    targetDb.updateProjectExtents(sourceDb.projectExtents);
 
     const transformer = new FilterByViewTransformer(sourceDb, targetDb, exportViewId);
     await transformer.processSchemas(new BackendRequestContext());
     transformer.processAll();
     transformer.dispose();
 
-    targetDb.updateProjectExtents(sourceDb.projectExtents);
     targetDb.saveChanges();
     targetDb.close();
     sourceDb.close();

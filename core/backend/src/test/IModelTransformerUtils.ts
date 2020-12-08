@@ -1213,6 +1213,7 @@ export class FilterByViewTransformer extends IModelTransformer {
     const exportModelSelector = sourceDb.elements.getElement<ModelSelector>(exportViewDefinition.modelSelectorId, ModelSelector);
     this._exportModelIds = Id64.toIdSet(exportModelSelector.models);
   }
+  /** Excludes categories not referenced by the export view's CategorySelector */
   private excludeCategories(exportCategoryIds: Id64Set): void {
     const sql = `SELECT ECInstanceId FROM ${SpatialCategory.classFullName}`;
     this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
@@ -1224,6 +1225,7 @@ export class FilterByViewTransformer extends IModelTransformer {
       }
     });
   }
+  /** Override of IModelTransformer.shouldExportElement that excludes PhysicalPartitions/Models not referenced by the export view's ModelSelector */
   protected shouldExportElement(sourceElement: Element): boolean {
     if (sourceElement instanceof PhysicalPartition) {
       if (!this._exportModelIds.has(sourceElement.id)) {
