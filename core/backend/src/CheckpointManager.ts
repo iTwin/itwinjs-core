@@ -48,6 +48,8 @@ export interface DownloadRequest {
   /** name of local file to create. */
   localFile: string;
 
+  aliasFiles?: string[];
+
   /** Properties of the checkpoint that's being downloaded */
   checkpoint: CheckpointProps;
 
@@ -58,6 +60,7 @@ export interface DownloadRequest {
   cancelRequest?: CancelRequest;
 }
 
+/** @internal */
 export interface DownloadJob {
   request: DownloadRequest;
   pathName: string;
@@ -65,6 +68,7 @@ export interface DownloadJob {
   promise?: Promise<any>;
 }
 
+/** @internal */
 export class Downloads {
   private static _active = new Map<string, DownloadJob>();
 
@@ -93,6 +97,9 @@ export class Downloads {
   }
 }
 
+/** Utility class for attaching to Daemon, opening V2 checkpoints, and downloading them.
+ * @internal
+*/
 export class V2CheckpointManager {
   public static getKey(checkpoint: CheckpointProps) { return `${checkpoint.iModelId}:${checkpoint.changeSetId}-V2`; }
   private static async getCommandArgs(checkpoint: CheckpointProps): Promise<BlobDaemonCommandArg> {
@@ -153,20 +160,25 @@ export class V2CheckpointManager {
     return BlobDaemon.command("download", { ... await this.getCommandArgs(request.checkpoint), localFile: request.localFile, onProgress });
   }
 
-  // Fully download a V2 checkpoint to a local file that can be used to create a briefcase or to work offline.
-  public static async downloadCheckpoint(request: DownloadRequest) {
+  /** Fully download a V2 checkpoint to a local file that can be used to create a briefcase or to work offline.
+   * @returns a Promise that is resolved when the download completes.
+   */
+  public static async downloadCheckpoint(request: DownloadRequest): Promise<void> {
     return Downloads.download(request, async (job: DownloadJob) => this.performDownload(job));
   }
 }
 
+/** Utility class to deal with downloading V1 checkpoints from iModelHub.
+ * @internal
+ */
 export class V1CheckpointManager {
   public static getKey(checkpoint: CheckpointProps) { return `${checkpoint.iModelId}:${checkpoint.changeSetId}-V1`; }
 
-  public static getFolder(checkpoint: CheckpointProps) {
+  public static getFolder(checkpoint: CheckpointProps): string {
     return path.join(BriefcaseManager.getIModelPath(checkpoint.iModelId), "checkpoints");
   }
 
-  public static getFileName(checkpoint: CheckpointProps) {
+  public static getFileName(checkpoint: CheckpointProps): string {
     const changeSetId = checkpoint.changeSetId || "first";
     return path.join(this.getFolder(checkpoint), `${changeSetId}.bim`);
   }
@@ -177,6 +189,7 @@ export class V1CheckpointManager {
     return (undefined !== db) ? db : Downloads.download(request, async (job: DownloadJob) => this.downloadAndOpen(job));
   }
 
+  /** @returns true if the file is the checkpoint requested */
   public static verifyCheckpoint(checkpoint: CheckpointProps, fileName: string): boolean {
     if (!IModelJsFs.existsSync(fileName))
       return false;
@@ -191,6 +204,7 @@ export class V1CheckpointManager {
     return isValid;
   }
 
+  /** Download a V1 checkpoint */
   public static async downloadCheckpoint(request: DownloadRequest): Promise<void> {
     return Downloads.download(request, async (job: DownloadJob) => this.performDownload(job));
   }
@@ -323,6 +337,7 @@ export class V1CheckpointManager {
   }
 }
 
+/** @internal  */
 export class CheckpointManager {
   public static async downloadCheckpoint(request: DownloadRequest): Promise<void> {
     if (IModelJsFs.existsSync(request.localFile))

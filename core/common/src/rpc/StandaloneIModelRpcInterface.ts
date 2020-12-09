@@ -7,7 +7,7 @@
  */
 
 import { OpenMode } from "@bentley/bentleyjs-core";
-import { IModelConnectionProps, IModelRpcProps } from "../IModel";
+import { IModelConnectionProps, IModelRpcProps, StandaloneOpenOptions } from "../IModel";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
 
@@ -30,6 +30,6 @@ export abstract class StandaloneIModelRpcInterface extends RpcInterface {
     NOTE: Please consult the README in this folder for the semantic versioning rules.
   ===========================================================================================*/
 
-  public async openFile(_filePath: string, _openMode: OpenMode): Promise<IModelConnectionProps> { return this.forward(arguments); }
+  public async openFile(_filePath: string, _openMode: OpenMode, _opts?: StandaloneOpenOptions): Promise<IModelConnectionProps> { return this.forward(arguments); }
   public async close(_iModelRpcProps: IModelRpcProps): Promise<boolean> { return this.forward(arguments); }
 }

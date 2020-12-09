@@ -406,17 +406,23 @@ export class Viewer extends Window {
 
   private async resetIModel(filename: string): Promise<void> {
     let newIModel: IModelConnection;
-    try {
-      newIModel = await openStandaloneIModel(filename, this.surface.openReadWrite);
-    } catch (err) {
-      alert(err.toString());
-      return;
+    const sameFile = filename === this._imodel.key;
+    if (!sameFile) {
+      try {
+        newIModel = await openStandaloneIModel(filename, this.surface.openReadWrite);
+      } catch (err) {
+        alert(err.toString());
+        return;
+      }
     }
 
     Surface.instance.onResetIModel(this);
     IModelApp.viewManager.dropViewport(this.viewport, false);
 
     await this.clearViews();
+
+    if (sameFile)
+      newIModel = await openStandaloneIModel(filename, this.surface.openReadWrite);
 
     this._imodel = newIModel!;
     await this.buildViewList();

@@ -16,7 +16,8 @@ import {
   IModelError, IModelEventSourceProps, IModelReadRpcInterface, IModelRpcProps, IModelStatus, IModelVersion, IModelWriteRpcInterface,
   mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams, NativeAppRpcInterface,
   OpenBriefcaseProps, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager, RpcNotFoundResponse, RpcOperation,
-  RpcRequest, RpcRequestEvent, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, ThumbnailProps,
+  RpcRequest, RpcRequestEvent, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, StandaloneOpenOptions, ThumbnailProps,
+  UpgradeOptions,
   ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, WipRpcInterface,
 } from "@bentley/imodeljs-common";
 import { BackgroundMapLocation } from "./BackgroundMapGeometry";
@@ -1024,8 +1025,8 @@ export class StandaloneConnection extends IModelConnection {
   /** Open an IModelConnection to a standalone iModel.
    * @note This method is intended for desktop or mobile applications and should not be used for web applications.
    */
-  public static async openFile(filePath: string, openMode: OpenMode = OpenMode.ReadWrite): Promise<StandaloneConnection> {
-    const openResponse = await StandaloneIModelRpcInterface.getClient().openFile(filePath, openMode);
+  public static async openFile(filePath: string, openMode: OpenMode = OpenMode.ReadWrite, opts?: StandaloneOpenOptions): Promise<StandaloneConnection> {
+    const openResponse = await StandaloneIModelRpcInterface.getClient().openFile(filePath, openMode, opts);
     Logger.logTrace(loggerCategory, "StandaloneConnection.openFile", () => ({ filePath }));
     const connection = new StandaloneConnection(openResponse);
     IModelConnection.onOpen.raiseEvent(connection);

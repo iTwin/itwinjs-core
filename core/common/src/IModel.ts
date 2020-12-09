@@ -8,6 +8,7 @@
 
 import { GeoServiceStatus, GuidString, Id64, Id64String, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { Angle, AxisIndex, AxisOrder, Constant, Matrix3d, Point3d, Range3d, Range3dProps, Transform, Vector3d, XYAndZ, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@bentley/geometry-core";
+import { UpgradeOptions } from "./BriefcaseTypes";
 import { Cartographic, LatLongAndHeight } from "./geometry/Cartographic";
 import { GeographicCRS, GeographicCRSProps } from "./geometry/CoordinateReferenceSystem";
 import { AxisAlignedBox3d } from "./geometry/Placement";
@@ -103,16 +104,22 @@ export interface IModelEncryptionProps {
 }
 
 /** @public */
-export interface SnapshotOpenOptions extends IModelEncryptionProps {
-  /** @internal */
-  lazyBlockCache?: boolean;
-
-  /** A key to identify the opened Snapshot. If undefined, a hash of the fileName is used.
-   * It is only necessary to supply this if you wish to open a snapshot file more than once
-   * or have some other reason to assign a specific key to the SnapshotDb.
+export interface OpenDbKey {
+  /** A key to identify the opened StandaloneDb. If undefined, a hash of the fileName is used.
+   * It is only necessary to supply this if you wish to open a file more than once
+   * or have some other reason to assign a specific key to the StandaloneDb.
    */
   key?: string;
 }
+
+/** @public */
+export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey {
+  /** @internal */
+  lazyBlockCache?: boolean;
+}
+
+/** @beta */
+export type StandaloneOpenOptions = OpenDbKey & UpgradeOptions;
 
 /** Options that can be supplied when creating snapshot iModels.
  * @public

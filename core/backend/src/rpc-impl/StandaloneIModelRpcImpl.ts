@@ -7,7 +7,7 @@
  */
 
 import { OpenMode } from "@bentley/bentleyjs-core";
-import { IModelConnectionProps, IModelRpcProps, RpcInterface, RpcManager, StandaloneIModelRpcInterface } from "@bentley/imodeljs-common";
+import { IModelConnectionProps, IModelRpcProps, RpcInterface, RpcManager, StandaloneIModelRpcInterface, StandaloneOpenOptions } from "@bentley/imodeljs-common";
 import { StandaloneDb } from "../IModelDb";
 
 /** The backend implementation of StandaloneIModelRpcInterface.
@@ -16,9 +16,9 @@ import { StandaloneDb } from "../IModelDb";
 export class StandaloneIModelRpcImpl extends RpcInterface implements StandaloneIModelRpcInterface {
   public static register() { RpcManager.registerImpl(StandaloneIModelRpcInterface, StandaloneIModelRpcImpl); }
 
-  /** Ask the backend to open a standalone iModel from a file name that is resolved by the backend. */
-  public async openFile(filePath: string, openMode: OpenMode): Promise<IModelConnectionProps> {
-    return StandaloneDb.openFile(filePath, openMode).getConnectionProps();
+  /** Ask the backend to open a standalone iModel from a file name. */
+  public async openFile(filePath: string, openMode: OpenMode, opts?: StandaloneOpenOptions): Promise<IModelConnectionProps> {
+    return StandaloneDb.openFile(filePath, openMode, opts).getConnectionProps();
   }
 
   /** Ask the backend to close a standalone iModel. */

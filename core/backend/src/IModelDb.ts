@@ -23,8 +23,8 @@ import {
   IModelEventSourceProps, IModelNotFoundResponse, IModelProps, IModelRpcProps, IModelStatus, IModelTileTreeProps, IModelVersion,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions,
   PropertyCallback, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, SheetProps, SnapRequestProps, SnapResponseProps,
-  SnapshotOpenOptions, SpatialViewDefinitionProps, SyncMode, ThumbnailProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps,
-  ViewStateProps,
+  SnapshotOpenOptions, SpatialViewDefinitionProps, StandaloneOpenOptions, SyncMode, ThumbnailProps, UpgradeOptions, ViewDefinitionProps,
+  ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -2545,13 +2545,13 @@ export class SnapshotDb extends IModelDb {
    * @see [[close]]
    * @throws [[IModelError]] If the file is not found or is not a valid *snapshot*.
    */
-  public static openFile(path: string, props?: SnapshotOpenOptions): SnapshotDb {
-    const file = { path, key: props?.key ?? shaHash(path) };
+  public static openFile(path: string, opts?: SnapshotOpenOptions): SnapshotDb {
+    const file = { path, key: opts?.key ?? shaHash(path) };
     const existing = this.tryFindByKey(file.key);
     if (existing)
       return existing;
 
-    const nativeDb = this.openDgnDb(file, OpenMode.Readonly, undefined, props ? JSON.stringify(props) : undefined);
+    const nativeDb = this.openDgnDb(file, OpenMode.Readonly, undefined, opts ? JSON.stringify(opts) : undefined);
     return new SnapshotDb(nativeDb, file.key);
   }
 
@@ -2631,9 +2631,9 @@ export class StandaloneDb extends IModelDb {
   /** This property is always undefined as a StandaloneDb does not accept nor generate changesets. */
   public get changeSetId() { return undefined; } // string | undefined for the superclass, but always undefined for StandaloneDb
 
-  private constructor(nativeDb: IModelJsNative.DgnDb, openMode: OpenMode) {
-    const filePath = nativeDb.getFilePath();
-    const iModelRpcProps: IModelRpcProps = { key: shaHash(filePath), iModelId: nativeDb.getDbGuid(), openMode };
+  private constructor(nativeDb: IModelJsNative.DgnDb, key: string) {
+    const openMode = nativeDb.isReadonly() ? OpenMode.Readonly : OpenMode.ReadWrite;
+    const iModelRpcProps: IModelRpcProps = { key, iModelId: nativeDb.getDbGuid(), openMode };
     super(nativeDb, iModelRpcProps, openMode);
   }
 
@@ -2655,7 +2655,7 @@ export class StandaloneDb extends IModelDb {
       throw new IModelError(status, "Could not set briefcaseId", Logger.logError, loggerCategory, () => ({ filePath }));
 
     nativeDb.saveChanges();
-    return new StandaloneDb(nativeDb, OpenMode.ReadWrite);
+    return new StandaloneDb(nativeDb, shaHash(filePath));
   }
 
   /** Open a standalone iModel file.
@@ -2664,19 +2664,19 @@ export class StandaloneDb extends IModelDb {
    * @returns a new StandaloneDb if the file is not currently open, and the existing StandaloneDb if it is already
    * @throws [[IModelError]]
    */
-  public static openFile(filePath: string, openMode: OpenMode = OpenMode.ReadWrite, upgradeOptions?: UpgradeOptions): StandaloneDb {
-    const file = { path: filePath, key: shaHash(filePath) };
+  public static openFile(filePath: string, openMode: OpenMode = OpenMode.ReadWrite, options?: StandaloneOpenOptions): StandaloneDb {
+    const file = { path: filePath, key: options?.key ?? shaHash(filePath) };
     const existing = this.tryFindByKey(file.key);
     if (existing)
       return existing;
 
-    const nativeDb = this.openDgnDb(file, openMode, upgradeOptions);
+    const nativeDb = this.openDgnDb(file, openMode, options);
 
     if (openMode === OpenMode.ReadWrite && (!BriefcaseManager.isStandaloneBriefcaseId(nativeDb.getBriefcaseId()) || undefined === nativeDb.queryLocalValue(IModelDb._edit))) {
       nativeDb.closeIModel();
       throw new IModelError(IModelStatus.ReadOnly, `${filePath} is not an editable Standalone db`, Logger.logError, loggerCategory);
     }
 
-    return new StandaloneDb(nativeDb, openMode);
+    return new StandaloneDb(nativeDb, file.key);
   }
 }
