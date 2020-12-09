@@ -325,6 +325,7 @@ beta;OsmBuildingDisplayOptions
 public;OutputMessageAlert
 public;OutputMessagePriority
 public;OutputMessageType
+alpha;OverrideFormatEntry
 internal;overrideRequestTileTreeProps(func: RequestTileTreePropsFunc | undefined): void
 public;PanViewTool 
 beta;ParseAndRunResult
@@ -358,7 +359,6 @@ internal;class RealityTileLoader
 internal;RealityTileParams 
 internal;RealityTileTree 
 internal;RealityTileTreeParams 
-internal;RealityTreeReference 
 public;RemoteBriefcaseConnection 
 beta;RemoveEventListener = () => void
 beta;class RenderClipVolume 
