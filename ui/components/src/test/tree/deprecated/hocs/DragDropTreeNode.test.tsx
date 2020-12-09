@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
+import { wrapInTestContext } from "react-dnd-test-utils";
 import { cleanup, render } from "@testing-library/react";
 import { DragSourceProps, DropTargetProps } from "../../../../ui-components/dragdrop/DragDropDef";
 import { DragDropTreeNode, DragDropTreeNodeComponent } from "../../../../ui-components/tree/deprecated/hocs/DragDropTreeNode";
@@ -31,7 +32,7 @@ describe("DragDropTreeNode", () => {
     interface DragDropObject {
       test: boolean;
     }
-    const DragDropObjectRow = DragDropTreeNode<DragDropObject>(); // eslint-disable-line @typescript-eslint/naming-convention
+    const DragDropObjectRow = wrapInTestContext(DragDropTreeNode<DragDropObject>()); // eslint-disable-line @typescript-eslint/naming-convention
     it("should render with drag drop props", () => {
       const dragProps: DragSourceProps = {
         onDragSourceBegin: (args: any) => args,
