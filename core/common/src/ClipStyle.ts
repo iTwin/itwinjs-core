@@ -43,7 +43,7 @@ export class CutStyle {
   }
 
   public static create(viewflags?: Readonly<ViewFlagOverrides>, hiddenLine?: HiddenLine.Settings, appearance?: FeatureAppearance): CutStyle {
-    if (viewflags || hiddenLine || appearance)
+    if ((viewflags && viewflags.anyOverridden()) || (hiddenLine && !hiddenLine.matchesDefaults) || (appearance && !appearance.matchesDefaults))
       return new CutStyle(viewflags, hiddenLine, appearance);
 
     return this.defaults;

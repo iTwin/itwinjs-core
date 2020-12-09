@@ -129,15 +129,29 @@ export class FeatureAppearance implements FeatureAppearanceProps {
   }
 
   public toJSON(): FeatureAppearanceProps {
-    return {
-      rgb: this.rgb,
-      weight: this.weight,
-      transparency: this.transparency,
-      linePixels: this.linePixels,
-      ignoresMaterial: this.ignoresMaterial,
-      nonLocatable: this.nonLocatable,
-      emphasized: this.emphasized,
-    };
+    const props: FeatureAppearanceProps = { };
+    if (this.rgb)
+      props.rgb = this.rgb.toJSON();
+
+    if (undefined !== this.weight)
+      props.weight = this.weight;
+
+    if (undefined !== this.transparency)
+      props.transparency = this.transparency;
+
+    if (undefined !== this.linePixels)
+      props.linePixels = this.linePixels;
+
+    if (true === this.ignoresMaterial)
+        props.ignoresMaterial = true;
+
+    if (true === this.nonLocatable)
+        props.nonLocatable = true;
+
+    if (true === this.emphasized)
+        props.emphasized = true;
+
+    return props;
   }
 
   /** Convert this appearance to JSON, and override any properties explicitly specified by `changedProps` in the result.
