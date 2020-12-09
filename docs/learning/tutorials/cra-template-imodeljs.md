@@ -1,5 +1,14 @@
 ## Developing a create-react-app with iModel.js template
 
+This is a [Create React App](https://github.com/facebook/create-react-app) template for an iModel.js sample application.
+
+It demonstrates the minimum setup for opening an iModel and viewing its graphics in a viewport with basic viewing tools.
+
+- _Viewport_: Renders geometric data onto an HTMLCanvasElement.
+- _Toolbar_: Includes basic viewport tools in top-right corner of viewport (select, fit, rotate, pan, zoom).
+
+This app serves as a guide on how you can embed one or more of these components into your own application.
+
 ### Setup
 
 - [Install necessary prerequisites]($docs/getting-started/development-prerequisites)
