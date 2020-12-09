@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/ui-components",
-      "comment": "",
+      "comment": "Update to latest react-dnd version.",
       "type": "none"
     }
   ],

@@ -25,7 +25,8 @@
   }
 
   &.nz-transition {
-    transition: all 0.3s ease-in;
+    transition-duration: 0.3s;
+    transition-timing-function: ease-in;
   }
 
   &.nz-left, &.nz-right {
@@ -33,7 +34,9 @@
     min-height: 0;
 
     > .nz-content {
+      flex-direction: column;
       height: 100%;
+      width: 100%;
     }
 
     > .nz-grip-container {
@@ -43,6 +46,10 @@
       > .nz-grip {
         top: 50%;
       }
+    }
+
+    &.nz-transition {
+      transition-property: width;
     }
 
     &.nz-span-top {
@@ -74,7 +81,7 @@
       }
     }
 
-    &.nz-transition, &.nz-collapsed {
+    &.nz-transition {
       > .nz-content {
         position: absolute;
         right: 0;
@@ -85,6 +92,8 @@
       &.nz-captured {
         &:not(.nz-transition) {
           > .nz-content {
+            position: absolute;
+            width: unset;
             right: -$nz-grip-width / 2;
           }
         }
@@ -112,6 +121,8 @@
       &.nz-captured {
         &:not(.nz-transition) {
           > .nz-content {
+            position: absolute;
+            width: unset;
             left: -$nz-grip-width / 2;
           }
         }
@@ -123,6 +134,10 @@
     max-height: 100%;
     min-width: 0;
 
+    &.nz-transition {
+      transition-property: height;
+    }
+
     > .nz-grip-container {
       left: 0;
       min-height: $nz-grip-width / 2;
@@ -133,7 +148,9 @@
     }
 
     > .nz-content {
+      flex-direction: row;
       width: 100%;
+      height: 100%;
     }
   }
 
@@ -149,6 +166,13 @@
       }
     }
 
+    &.nz-transition {
+      > .nz-content {
+        position: absolute;
+        bottom: 0;
+      }
+    }
+
     &.nz-span {
       grid-column: 1/4;
     }
@@ -157,17 +181,12 @@
       grid-column: 2/3;
     }
 
-    &.nz-transition, &.nz-collapsed {
-      > .nz-content {
-        position: absolute;
-        bottom: 0;
-      }
-    }
-
     &.nz-collapsed {
       &.nz-captured {
         &:not(.nz-transition) {
           > .nz-content {
+            position: absolute;
+            height: unset;
             bottom: -$nz-grip-width / 2;
           }
         }
@@ -199,6 +218,8 @@
       &.nz-captured {
         &:not(.nz-transition) {
           > .nz-content {
+            position: absolute;
+            height: unset;
             top: -$nz-grip-width / 2;
           }
         }
@@ -206,34 +227,16 @@
     }
   }
 
+  &.nz-collapsed {
+    > .nz-content {
+      overflow: hidden;
+    }
+  }
+
   &:not(.nz-collapsed) {
-    &.nz-left, &.nz-right {
-      > .nz-content {
-        max-width: 100%;
-      }
-    }
-
-    &.nz-top, &.nz-bottom {
-      > .nz-content {
-        max-height: 100%;
-      }
-    }
-
     > .nz-content {
       height: 100%;
       width: 100%;
-    }
-  }
-
-  &.nz-horizontal {
-    >.nz-content {
-      flex-direction: row;
-    }
-  }
-
-  &:not(.nz-horizontal) {
-    >.nz-content {
-      flex-direction: column;
     }
   }
 }

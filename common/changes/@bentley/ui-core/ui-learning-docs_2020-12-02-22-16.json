@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/ui-core",
-      "comment": "Added AutoSuggest props - renderInputComponent, renderSuggestionsContainer, onSuggestionsClearRequested",
+      "comment": "Added ui-core learning docs content and added Notification.md, Style.md & Tooltip.md ui-core learning doc files.",
       "type": "none"
     }
   ],

@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/ui-ninezone",
-      "comment": "Improve panel widget transitions.",
+      "comment": "Update panel transition to persist content size when collapsing.",
       "type": "none"
     }
   ],

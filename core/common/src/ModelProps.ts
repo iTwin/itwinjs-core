@@ -8,6 +8,7 @@
 
 import { GuidString, Id64String } from "@bentley/bentleyjs-core";
 import { XYProps } from "@bentley/geometry-core";
+import { CodeProps } from "./Code";
 import { RelatedElementProps } from "./ElementProps";
 import { EntityProps, EntityQueryParams } from "./EntityProps";
 
@@ -21,6 +22,14 @@ export interface ModelProps extends EntityProps {
   isPrivate?: boolean;
   isTemplate?: boolean;
   jsonProperties?: any;
+}
+
+/** Properties that specify what model should be loaded.
+ * @public
+ */
+export interface ModelLoadProps {
+  id?: Id64String;
+  code?: CodeProps;
 }
 
 /** Parameters for performing a query on [Model]($backend) classes.

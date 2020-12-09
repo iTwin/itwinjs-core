@@ -25,12 +25,13 @@ export interface PrimitivePropertyLabelRendererProps extends PropertyLabelRender
  */
 export class PrimitivePropertyLabelRenderer extends React.PureComponent<PrimitivePropertyLabelRendererProps> {
   public render() {
+    const { className, offset, children, ...rest } = this.props;
     return (
       <span
-        className={`components-primitive-property-label-renderer ${this.props.className ? this.props.className : ""}`}
-        style={PropertyLabelRenderer.getStyle(this.props.offset)}
+        className={`components-primitive-property-label-renderer ${className ? className : ""}`}
+        style={PropertyLabelRenderer.getStyle(offset)}
       >
-        <PropertyLabelRenderer renderColon={this.props.renderColon}>{this.props.children}</PropertyLabelRenderer>
+        <PropertyLabelRenderer {...rest}>{children}</PropertyLabelRenderer>
       </span>
     );
   }

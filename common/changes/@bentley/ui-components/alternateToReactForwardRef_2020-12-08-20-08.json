@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/ui-components",
-      "comment": "fix but in ParsedInput control where formatted text was not updating if underlying parsed value did not change.",
+      "comment": "Update components that support providing refs via React.forwardRef to work better with document generation.",
       "type": "none"
     }
   ],

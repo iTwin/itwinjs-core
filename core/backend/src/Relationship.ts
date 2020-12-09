@@ -7,28 +7,15 @@
  */
 
 import { DbOpcode, DbResult, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
-import { EntityProps, IModelError, IModelStatus } from "@bentley/imodeljs-common";
+import { IModelError, IModelStatus, RelationshipProps, SourceAndTarget } from "@bentley/imodeljs-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { BinaryPropertyTypeConverter } from "./BinaryPropertyTypeConverter";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 
+export { SourceAndTarget, RelationshipProps } from "@bentley/imodeljs-common"; // for backwards compatibility
+
 const loggerCategory = BackendLoggerCategory.Relationship;
-
-/** Specifies the source and target elements of a [[Relationship]] instance.
- * @public
- */
-export interface SourceAndTarget {
-  sourceId: Id64String;
-  targetId: Id64String;
-}
-
-/** Properties that are common to all types of link table ECRelationships
- * @public
- */
-export interface RelationshipProps extends EntityProps, SourceAndTarget {
-}
 
 /** Base class for all link table ECRelationships
  * @public
@@ -210,14 +197,22 @@ export class Relationships {
    */
   public createInstance(props: RelationshipProps): Relationship { return this._iModel.constructEntity<Relationship>(props); }
 
-  /** Insert a new relationship instance into the iModel.
+  /** Check classFullName to ensure it is a link table relationship class. */
+  private checkRelationshipClass(classFullName: string) {
+    if (!this._iModel.nativeDb.isLinkTableRelationship(classFullName.replace(".", ":"))) {
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, `Class '${classFullName}' must be a relationship class and it should be subclass of BisCore:ElementRefersToElements or BisCore:ElementDrivesElement.`, Logger.logWarning, loggerCategory);
+    }
+  }
+
+  /** Insert a new relationship instance into the iModel. The relationship provided must be subclass of BisCore:ElementRefersToElements or BisCore:ElementDrivesElement.
    * @param props The properties of the new relationship.
    * @returns The Id of the newly inserted relationship.
    * @note The id property of the props object is set as a side effect of this function.
    * @throws [[IModelError]] if unable to insert the relationship instance.
    */
   public insertInstance(props: RelationshipProps): Id64String {
-    const val = this._iModel.nativeDb.insertLinkTableRelationship(JSON.stringify(props, BinaryPropertyTypeConverter.createReplacerCallback(false)));
+    this.checkRelationshipClass(props.classFullName);
+    const val = this._iModel.nativeDb.insertLinkTableRelationship(props);
     if (val.error)
       throw new IModelError(val.error.status, "Error inserting relationship instance", Logger.logWarning, loggerCategory);
 
@@ -225,22 +220,24 @@ export class Relationships {
     return props.id;
   }
 
-  /** Update the properties of an existing relationship instance in the iModel.
+  /** Update the properties of an existing relationship instance in the iModel.The relationship provided must be subclass of BisCore:ElementRefersToElements or BisCore:ElementDrivesElement.
    * @param props the properties of the relationship instance to update. Any properties that are not present will be left unchanged.
    * @throws [[IModelError]] if unable to update the relationship instance.
    */
   public updateInstance(props: RelationshipProps): void {
-    const error = this._iModel.nativeDb.updateLinkTableRelationship(JSON.stringify(props, BinaryPropertyTypeConverter.createReplacerCallback(false)));
+    this.checkRelationshipClass(props.classFullName);
+    const error = this._iModel.nativeDb.updateLinkTableRelationship(props);
     if (error !== DbResult.BE_SQLITE_OK)
       throw new IModelError(error, "Error updating relationship instance", Logger.logWarning, loggerCategory);
   }
 
-  /** Delete an Relationship instance from this iModel.
+  /** Delete an Relationship instance from this iModel.The relationship provided must be subclass of BisCore:ElementRefersToElements or BisCore:ElementDrivesElement.
    * @param id The Id of the Relationship to be deleted
    * @throws [[IModelError]]
    */
   public deleteInstance(props: RelationshipProps): void {
-    const error = this._iModel.nativeDb.deleteLinkTableRelationship(JSON.stringify(props));
+    this.checkRelationshipClass(props.classFullName);
+    const error = this._iModel.nativeDb.deleteLinkTableRelationship(props);
     if (error !== DbResult.BE_SQLITE_DONE)
       throw new IModelError(error, "", Logger.logWarning, loggerCategory);
   }
@@ -252,7 +249,7 @@ export class Relationships {
    * @see tryGetInstanceProps
    */
   public getInstanceProps<T extends RelationshipProps>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T {
-    const relationshipProps: T | undefined = this.tryGetInstanceProps(relClassFullName, criteria);
+    const relationshipProps = this.tryGetInstanceProps<T>(relClassFullName, criteria);
     if (undefined === relationshipProps) {
       throw new IModelError(IModelStatus.NotFound, "Relationship not found", Logger.logWarning, loggerCategory);
     }
@@ -304,7 +301,7 @@ export class Relationships {
    * @see getInstance
    */
   public tryGetInstance<T extends Relationship>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T | undefined {
-    const relationshipProps: T | undefined = this.tryGetInstanceProps(relClassFullName, criteria);
+    const relationshipProps = this.tryGetInstanceProps<T>(relClassFullName, criteria);
     return undefined !== relationshipProps ? this._iModel.constructEntity<T>(relationshipProps) : undefined;
   }
 }

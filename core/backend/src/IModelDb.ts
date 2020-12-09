@@ -12,24 +12,24 @@
 import * as os from "os";
 import {
   BeEvent, BentleyStatus, ChangeSetStatus, ClientRequestContext, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, JsonUtils,
-  Logger, OpenMode, StatusCodeWithMessage,
+  Logger, OpenMode,
 } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
+import { ChangesType, CheckpointV2, CheckpointV2Query, Lock, LockLevel, LockType } from "@bentley/imodelhub-client";
 import {
-  AxisAlignedBox3d, BriefcaseKey, BriefcaseProps, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps,
+  AxisAlignedBox3d, BRepGeometryCreate, BriefcaseKey, BriefcaseProps, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps,
   CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DisplayStyleProps, DomainOptions,
   DownloadBriefcaseStatus, EcefLocation, ElementAspectProps, ElementGeometryRequest, ElementGeometryUpdate, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams,
   FilePropertyProps, FontMap, FontMapProps, FontProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
   IModelCoordinatesResponseProps, IModelError, IModelEventSourceProps, IModelNotFoundResponse, IModelProps, IModelRpcProps, IModelStatus, IModelTileTreeProps, IModelVersion,
-  MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelSelectorProps, OpenBriefcaseOptions, ProfileOptions, PropertyCallback, QueryLimit, QueryPriority,
+  MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseOptions, ProfileOptions, PropertyCallback, QueryLimit, QueryPriority,
   QueryQuota, QueryResponse, QueryResponseStatus, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps,
-  SyncMode, ThumbnailProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateProps,
+  SyncMode, ThumbnailProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { BlobDaemon, BlobDaemonCommandArg, IModelJsNative } from "@bentley/imodeljs-native";
-import { ChangesType, Checkpoint, CheckpointQuery, Lock, LockLevel, LockType } from "@bentley/imodelhub-client";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { TelemetryEvent } from "@bentley/telemetry-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { BinaryPropertyTypeConverter } from "./BinaryPropertyTypeConverter";
 import { BriefcaseEntry, BriefcaseId, BriefcaseIdValue, BriefcaseManager } from "./BriefcaseManager";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { CodeSpecs } from "./CodeSpecs";
@@ -47,7 +47,6 @@ import { Relationship, RelationshipProps, Relationships } from "./Relationship";
 import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./SqliteStatement";
 import { UsageLoggingUtilities } from "./usage-logging/UsageLoggingUtilities";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
-import { TelemetryEvent } from "@bentley/telemetry-client";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -825,7 +824,7 @@ export abstract class IModelDb extends IModel {
    * @throws [[IModelNotFoundResponse]] if an open IModelDb matching the token is not found.
    */
   public static findByKey(key: string): IModelDb {
-    const iModelDb: IModelDb | undefined = IModelDb.tryFindByKey(key);
+    const iModelDb = IModelDb.tryFindByKey(key);
     if (undefined === iModelDb) {
       Logger.logError(loggerCategory, "IModelDb not found in the in-memory cache", () => ({ key }));
       throw new IModelNotFoundResponse(); // a very specific status for the RpcManager
@@ -837,11 +836,11 @@ export abstract class IModelDb extends IModel {
    * @returns The matching IModelDb or `undefined`.
    */
   public static tryFindByKey(key: string): IModelDb | undefined {
-    const briefcaseDb: BriefcaseDb | undefined = BriefcaseDb.tryFindByKey(key);
+    const briefcaseDb = BriefcaseDb.tryFindByKey(key);
     if (briefcaseDb) {
       return briefcaseDb;
     }
-    const snapshotDb: SnapshotDb | undefined = SnapshotDb.tryFindByKey(key);
+    const snapshotDb = SnapshotDb.tryFindByKey(key);
     return snapshotDb ? snapshotDb : StandaloneDb.tryFindByKey(key);
   }
 
@@ -882,7 +881,7 @@ export abstract class IModelDb extends IModel {
    */
   public tryPrepareStatement(sql: string): ECSqlStatement | undefined {
     const statement = new ECSqlStatement();
-    const result: StatusCodeWithMessage<DbResult> = statement.tryPrepare(this.nativeDb, sql);
+    const result = statement.tryPrepare(this.nativeDb, sql);
     return DbResult.BE_SQLITE_OK === result.status ? statement : undefined;
   }
 
@@ -971,7 +970,7 @@ export abstract class IModelDb extends IModel {
    * @see importSchema
    */
   public containsClass(classFullName: string): boolean {
-    const classNameParts: string[] = classFullName.replace(".", ":").split(":");
+    const classNameParts = classFullName.replace(".", ":").split(":");
     return classNameParts.length === 2 && this.nativeDb.getECClassMetaData(classNameParts[0], classNameParts[1]).error === undefined;
   }
 
@@ -1078,21 +1077,21 @@ export abstract class IModelDb extends IModel {
    */
   public async getMassProperties(requestContext: ClientRequestContext, props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> {
     requestContext.enter();
-    const resultString: string = this.nativeDb.getMassProperties(JSON.stringify(props));
+    const resultString = this.nativeDb.getMassProperties(JSON.stringify(props));
     return JSON.parse(resultString) as MassPropertiesResponseProps;
   }
 
   /** Get the IModel coordinate corresponding to each GeoCoordinate point in the input */
   public async getIModelCoordinatesFromGeoCoordinates(requestContext: ClientRequestContext, props: string): Promise<IModelCoordinatesResponseProps> {
     requestContext.enter();
-    const resultString: string = this.nativeDb.getIModelCoordinatesFromGeoCoordinates(props);
+    const resultString = this.nativeDb.getIModelCoordinatesFromGeoCoordinates(props);
     return JSON.parse(resultString) as IModelCoordinatesResponseProps;
   }
 
   /** Get the GeoCoordinate (longitude, latitude, elevation) corresponding to each IModel Coordinate point in the input */
   public async getGeoCoordinatesFromIModelCoordinates(requestContext: ClientRequestContext, props: string): Promise<GeoCoordinatesResponseProps> {
     requestContext.enter();
-    const resultString: string = this.nativeDb.getGeoCoordinatesFromIModelCoordinates(props);
+    const resultString = this.nativeDb.getGeoCoordinatesFromIModelCoordinates(props);
     return JSON.parse(resultString) as GeoCoordinatesResponseProps;
   }
 
@@ -1161,6 +1160,13 @@ export abstract class IModelDb extends IModel {
   public elementGeometryUpdate(updateProps: ElementGeometryUpdate): DbResult {
     return this.nativeDb.updateGeometryStream(updateProps);
   }
+
+  /** Create brep geometry for inclusion in an element's geometry stream.
+   * @alpha
+   */
+  public createBRepGeometry(createProps: BRepGeometryCreate): DbResult {
+    return this.nativeDb.createBRepGeometry(createProps);
+  }
 }
 
 /** @public */
@@ -1178,9 +1184,8 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @throws [[IModelError]] if the model is not found or cannot be loaded.
      * @see tryGetModelProps
      */
-    public getModelProps<T extends ModelProps>(modelId: Id64String): T {
-      const json = this.getModelJson(JSON.stringify({ id: modelId.toString() }));
-      return JSON.parse(json) as T;
+    public getModelProps<T extends ModelProps>(id: Id64String): T {
+      return this.getModelJson<T>({ id });
     }
 
     /** Get the ModelProps with the specified identifier.
@@ -1190,9 +1195,8 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @note Useful for cases when a model may or may not exist and throwing an `Error` would be overkill.
      * @see getModelProps
      */
-    public tryGetModelProps<T extends ModelProps>(modelId: Id64String): T | undefined {
-      const json: string | undefined = this.tryGetModelJson(JSON.stringify({ id: modelId.toString() }));
-      return undefined !== json ? JSON.parse(json) as T : undefined;
+    public tryGetModelProps<T extends ModelProps>(id: Id64String): T | undefined {
+      return this.tryGetModelJson({ id });
     }
 
     /** Query for the last modified time of the specified Model.
@@ -1232,11 +1236,11 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @see getModel
      */
     public tryGetModel<T extends Model>(modelId: Id64String, modelClass?: EntityClassType<Model>): T | undefined {
-      const modelProps: ModelProps | undefined = this.tryGetModelProps(modelId);
+      const modelProps = this.tryGetModelProps<T>(modelId);
       if (undefined === modelProps) {
         return undefined; // no Model with that modelId found
       }
-      const model: T = this._iModel.constructEntity<T>(modelProps);
+      const model = this._iModel.constructEntity<T>(modelProps);
       if (undefined === modelClass) {
         return model; // modelClass was not specified, cannot call instanceof to validate
       }
@@ -1250,8 +1254,8 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @see tryGetModelJson
      * @internal
      */
-    public getModelJson(modelIdArg: string): string {
-      const modelJson: string | undefined = this.tryGetModelJson(modelIdArg);
+    public getModelJson<T extends ModelProps>(modelIdArg: ModelLoadProps): T {
+      const modelJson = this.tryGetModelJson<T>(modelIdArg);
       if (undefined === modelJson) {
         throw new IModelError(IModelStatus.NotFound, `Model=${modelIdArg}`, Logger.logWarning, loggerCategory);
       }
@@ -1264,15 +1268,15 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @throws [[IModelError]] if the model exists, but cannot be loaded.
      * @see getModelJson
      */
-    private tryGetModelJson(modelIdArg: string): string | undefined {
-      const val: IModelJsNative.ErrorStatusOrResult<any, string> = this._iModel.nativeDb.getModel(modelIdArg);
+    private tryGetModelJson<T extends ModelProps>(modelIdArg: ModelLoadProps): T | undefined {
+      const val = this._iModel.nativeDb.getModel(modelIdArg);
       if (undefined !== val.error) {
         if (IModelStatus.NotFound === val.error.status) {
           return undefined;
         }
         throw new IModelError(val.error.status, `Model=${modelIdArg}`);
       }
-      return val.result!;
+      return val.result as T;
     }
 
     /** Get the sub-model of the specified Element.
@@ -1283,7 +1287,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @see tryGetSubModel
      */
     public getSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code, modelClass?: EntityClassType<Model>): T {
-      const modeledElementProps: ElementProps = this._iModel.elements.getElementProps(modeledElementId);
+      const modeledElementProps = this._iModel.elements.getElementProps<ElementProps>(modeledElementId);
       if (modeledElementProps.id === IModel.rootSubjectId) {
         throw new IModelError(IModelStatus.NotFound, "Root subject does not have a sub-model", Logger.logWarning, loggerCategory);
       }
@@ -1298,7 +1302,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @see getSubModel
      */
     public tryGetSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code, modelClass?: EntityClassType<Model>): T | undefined {
-      const modeledElementProps: ElementProps | undefined = this._iModel.elements.tryGetElementProps(modeledElementId);
+      const modeledElementProps = this._iModel.elements.tryGetElementProps(modeledElementId);
       if ((undefined === modeledElementProps) || (IModel.rootSubjectId === modeledElementProps.id)) {
         return undefined;
       }
@@ -1324,11 +1328,11 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       const jsClass = this._iModel.getJsClass<typeof Model>(props.classFullName) as any; // "as any" so we can call the protected methods
       jsClass.onInsert(props, this._iModel);
 
-      const val = this._iModel.nativeDb.insertModel(JSON.stringify(props));
+      const val = this._iModel.nativeDb.insertModel(props);
       if (val.error)
         throw new IModelError(val.error.status, "inserting model", Logger.logWarning, loggerCategory);
 
-      props.id = Id64.fromJSON(JSON.parse(val.result!).id);
+      props.id = Id64.fromJSON(val.result!.id);
       jsClass.onInserted(props.id, this._iModel);
       return props.id;
     }
@@ -1341,7 +1345,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       const jsClass = this._iModel.getJsClass<typeof Model>(props.classFullName) as any; // "as any" so we can call the protected methods
       jsClass.onUpdate(props, this._iModel);
 
-      const error = this._iModel.nativeDb.updateModel(JSON.stringify(props));
+      const error = this._iModel.nativeDb.updateModel(props);
       if (error !== IModelStatus.Success)
         throw new IModelError(error, `updating model id=${props.id}`, Logger.logWarning, loggerCategory);
 
@@ -1381,10 +1385,10 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @see tryGetElementJson
      * @internal
      */
-    public getElementJson<T extends ElementProps>(elementIdArg: string): T {
-      const elementProps: T | undefined = this.tryGetElementJson(elementIdArg);
+    public getElementJson<T extends ElementProps>(elementId: ElementLoadProps): T {
+      const elementProps: T | undefined = this.tryGetElementJson(elementId);
       if (undefined === elementProps) {
-        throw new IModelError(IModelStatus.NotFound, `reading element=${elementIdArg}`, Logger.logWarning, loggerCategory);
+        throw new IModelError(IModelStatus.NotFound, `reading element=${elementId}`, Logger.logWarning, loggerCategory);
       }
       return elementProps;
     }
@@ -1395,15 +1399,15 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @throws [[IModelError]] if the element exists, but cannot be loaded.
      * @see getElementJson
      */
-    private tryGetElementJson<T extends ElementProps>(elementIdArg: string): T | undefined {
-      const val: IModelJsNative.ErrorStatusOrResult<any, any> = this._iModel.nativeDb.getElement(elementIdArg);
+    private tryGetElementJson<T extends ElementProps>(loadProps: ElementLoadProps): T | undefined {
+      const val: IModelJsNative.ErrorStatusOrResult<any, any> = this._iModel.nativeDb.getElement(loadProps);
       if (undefined !== val.error) {
         if (IModelStatus.NotFound === val.error.status) {
           return undefined;
         }
-        throw new IModelError(val.error.status, `reading element=${elementIdArg}`, Logger.logWarning, loggerCategory);
+        throw new IModelError(IModelStatus.NotFound, `reading element=${loadProps}`, Logger.logWarning, loggerCategory);
       }
-      return BinaryPropertyTypeConverter.decodeBinaryProps(val.result)! as T;
+      return val.result as T;
     }
 
     /** Get properties of an Element by Id, FederationGuid, or Code
@@ -1411,7 +1415,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @see tryGetElementProps
      */
     public getElementProps<T extends ElementProps>(elementId: Id64String | GuidString | Code | ElementLoadProps): T {
-      const elementProps: T | undefined = this.tryGetElementProps(elementId);
+      const elementProps = this.tryGetElementProps<T>(elementId);
       if (undefined === elementProps) {
         throw new IModelError(IModelStatus.NotFound, `reading element=${elementId}`, Logger.logWarning, loggerCategory);
       }
@@ -1430,7 +1434,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       } else if (elementId instanceof Code) {
         elementId = { code: elementId };
       }
-      return this.tryGetElementJson<T>(JSON.stringify(elementId));
+      return this.tryGetElementJson<T>(elementId);
     }
 
     /** Get an element by Id, FederationGuid, or Code
@@ -1440,7 +1444,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @see tryGetElement
      */
     public getElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element>): T {
-      const element: T | undefined = this.tryGetElement(elementId, elementClass);
+      const element = this.tryGetElement<T>(elementId, elementClass);
       if (undefined === element) {
         throw new IModelError(IModelStatus.NotFound, `Element=${elementId}`, Logger.logWarning, loggerCategory);
       }
@@ -1461,11 +1465,11 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       } else if (elementId instanceof Code) {
         elementId = { code: elementId };
       }
-      const elementProps: T | undefined = this.tryGetElementJson(JSON.stringify(elementId));
+      const elementProps = this.tryGetElementJson<T>(elementId);
       if (undefined === elementProps) {
         return undefined; // no Element with that elementId found
       }
-      const element: T = this._iModel.constructEntity<T>(elementProps);
+      const element = this._iModel.constructEntity<T>(elementProps);
       if (undefined === elementClass) {
         return element; // elementClass was not specified, cannot call instanceof to validate
       }
@@ -1530,12 +1534,11 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       const iModel = this._iModel;
       const jsClass = iModel.getJsClass<typeof Element>(elProps.classFullName) as any; // "as any" so we can call the protected methods
       jsClass.onInsert(elProps, iModel);
-      const valJson = JSON.stringify(elProps, BinaryPropertyTypeConverter.createReplacerCallback(false));
-      const val = iModel.nativeDb.insertElement(valJson);
+      const val = iModel.nativeDb.insertElement(elProps);
       if (val.error)
         throw new IModelError(val.error.status, "Error inserting element", Logger.logWarning, loggerCategory, () => ({ classFullName: elProps.classFullName }));
 
-      elProps.id = Id64.fromJSON(JSON.parse(val.result!).id);
+      elProps.id = Id64.fromJSON(val.result!.id);
       jsClass.onInserted(elProps, iModel);
       return elProps.id;
     }
@@ -1549,7 +1552,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       const jsClass = iModel.getJsClass<typeof Element>(elProps.classFullName) as any; // "as any" so we can call the protected methods
       jsClass.onUpdate(elProps, iModel);
 
-      const stat = iModel.nativeDb.updateElement(JSON.stringify(elProps, BinaryPropertyTypeConverter.createReplacerCallback(false)));
+      const stat = iModel.nativeDb.updateElement(elProps);
       if (stat !== IModelStatus.Success)
         throw new IModelError(stat, "Error updating element", Logger.logWarning, loggerCategory, () => ({ elementId: elProps.id }));
 
@@ -1559,6 +1562,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     /** Delete one or more elements from this iModel.
      * @param ids The set of Ids of the element(s) to be deleted
      * @throws [[IModelError]]
+     * @see deleteDefinitionElements
      */
     public deleteElement(ids: Id64Arg): void {
       const iModel = this._iModel;
@@ -1579,6 +1583,69 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
 
         jsClass.onDeleted(props, iModel);
       });
+    }
+
+    /** DefinitionElements can only be deleted if it can be determined that they are not referenced by other Elements.
+     * This *usage query* can be expensive since it may involve scanning the GeometryStreams of all GeometricElements.
+     * Since [[deleteElement]] does not perform these additional checks, it fails in order to prevent potentially referenced DefinitionElements from being deleted.
+     * This method performs those expensive checks and then calls *delete* if not referenced.
+     * @param ids The Ids of the DefinitionElements to attempt to delete. To prevent multiple passes over the same GeometricElements, it is best to pass in the entire array of
+     * DefinitionElements rather than calling this method separately for each one. Ids that are not valid DefinitionElements will be ignored.
+     * @returns An IdSet of the DefinitionElements that are used and were therefore not deleted.
+     * @see deleteElement
+     * @beta
+     */
+    public deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set {
+      const usageInfo = this._iModel.nativeDb.queryDefinitionElementUsage(definitionElementIds);
+      if (!usageInfo) {
+        throw new IModelError(IModelStatus.BadRequest, "Error querying for DefinitionElement usage", Logger.logError, loggerCategory);
+      }
+      const usedIdSet: Id64Set = usageInfo.usedIds ? Id64.toIdSet(usageInfo.usedIds) : new Set<Id64String>();
+      const deleteIfUnused = (ids: Id64Array | undefined, used: Id64Set): void => {
+        if (ids) { ids.forEach((id) => { if (!used.has(id)) { this._iModel.elements.deleteElement(id); } }); }
+      };
+      try {
+        this._iModel.nativeDb.beginPurgeOperation();
+        deleteIfUnused(usageInfo.spatialCategoryIds, usedIdSet);
+        deleteIfUnused(usageInfo.drawingCategoryIds, usedIdSet);
+        deleteIfUnused(usageInfo.viewDefinitionIds, usedIdSet);
+        deleteIfUnused(usageInfo.geometryPartIds, usedIdSet);
+        deleteIfUnused(usageInfo.lineStyleIds, usedIdSet);
+        deleteIfUnused(usageInfo.renderMaterialIds, usedIdSet);
+        deleteIfUnused(usageInfo.subCategoryIds, usedIdSet);
+        deleteIfUnused(usageInfo.textureIds, usedIdSet);
+        deleteIfUnused(usageInfo.displayStyleIds, usedIdSet);
+        deleteIfUnused(usageInfo.categorySelectorIds, usedIdSet);
+        deleteIfUnused(usageInfo.modelSelectorIds, usedIdSet);
+        if (usageInfo.otherDefinitionElementIds) {
+          this._iModel.elements.deleteElement(usageInfo.otherDefinitionElementIds);
+        }
+      } finally {
+        this._iModel.nativeDb.endPurgeOperation();
+      }
+      if (usageInfo.viewDefinitionIds) {
+        // take another pass in case a deleted ViewDefinition was the only usage of these view-related DefinitionElements
+        let viewRelatedIds: Id64Array = [];
+        if (usageInfo.displayStyleIds) { viewRelatedIds = viewRelatedIds.concat(usageInfo.displayStyleIds.filter((id) => usedIdSet.has(id))); }
+        if (usageInfo.categorySelectorIds) { viewRelatedIds = viewRelatedIds.concat(usageInfo.categorySelectorIds.filter((id) => usedIdSet.has(id))); }
+        if (usageInfo.modelSelectorIds) { viewRelatedIds = viewRelatedIds.concat(usageInfo.modelSelectorIds.filter((id) => usedIdSet.has(id))); }
+        if (viewRelatedIds.length > 0) {
+          const viewRelatedUsageInfo = this._iModel.nativeDb.queryDefinitionElementUsage(viewRelatedIds);
+          if (viewRelatedUsageInfo) {
+            const usedViewRelatedIdSet: Id64Set = viewRelatedUsageInfo.usedIds ? Id64.toIdSet(viewRelatedUsageInfo.usedIds) : new Set<Id64String>();
+            try {
+              this._iModel.nativeDb.beginPurgeOperation();
+              deleteIfUnused(viewRelatedUsageInfo.displayStyleIds, usedViewRelatedIdSet);
+              deleteIfUnused(viewRelatedUsageInfo.categorySelectorIds, usedViewRelatedIdSet);
+              deleteIfUnused(viewRelatedUsageInfo.modelSelectorIds, usedViewRelatedIdSet);
+            } finally {
+              this._iModel.nativeDb.endPurgeOperation();
+            }
+            viewRelatedIds.forEach((id) => { if (!usedViewRelatedIdSet.has(id)) { usedIdSet.delete(id); } });
+          }
+        }
+      }
+      return usedIdSet;
     }
 
     /** Query for the child elements of the specified element.
@@ -1696,7 +1763,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       const jsClass = iModel.getJsClass<typeof ElementAspect>(aspectProps.classFullName) as any; // "as any" so we can call the protected methods
       jsClass.onInsert(aspectProps, iModel);
 
-      const status = iModel.nativeDb.insertElementAspect(JSON.stringify(aspectProps, BinaryPropertyTypeConverter.createReplacerCallback(false)));
+      const status = iModel.nativeDb.insertElementAspect(aspectProps);
       if (status !== IModelStatus.Success)
         throw new IModelError(status, "Error inserting ElementAspect", Logger.logWarning, loggerCategory, () => ({ classFullName: aspectProps.classFullName }));
 
@@ -1712,7 +1779,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       const jsClass = iModel.getJsClass<typeof ElementAspect>(aspectProps.classFullName) as any; // "as any" so we can call the protected methods
       jsClass.onUpdate(aspectProps, iModel);
 
-      const status = iModel.nativeDb.updateElementAspect(JSON.stringify(aspectProps, BinaryPropertyTypeConverter.createReplacerCallback(false)));
+      const status = iModel.nativeDb.updateElementAspect(aspectProps as any);
       if (status !== IModelStatus.Success)
         throw new IModelError(status, "Error updating ElementAspect", Logger.logWarning, loggerCategory, () => ({ aspectInstanceId: aspectProps.id }));
 
@@ -1751,7 +1818,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @param wantPrivate If true, include private view definitions.
      */
     public queryViewDefinitionProps(className: string = "BisCore.ViewDefinition", limit = IModelDb.defaultLimit, offset = 0, wantPrivate: boolean = false): ViewDefinitionProps[] {
-      const where: string = (wantPrivate === false) ? "IsPrivate=FALSE" : "";
+      const where = (wantPrivate === false) ? "IsPrivate=FALSE" : "";
       const ids = this._iModel.queryEntityIds({ from: className, limit, offset, where });
 
       const props: ViewDefinitionProps[] = [];
@@ -1795,16 +1862,15 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       return finished;
     }
 
-    public getViewStateData(viewDefinitionId: string): ViewStateProps {
+    public getViewStateData(viewDefinitionId: string, options?: ViewStateLoadProps): ViewStateProps {
       const elements = this._iModel.elements;
       const viewDefinitionElement = elements.getElement<ViewDefinition>(viewDefinitionId);
       const viewDefinitionProps = viewDefinitionElement.toJSON();
       const categorySelectorProps = elements.getElementProps<CategorySelectorProps>(viewDefinitionProps.categorySelectorId);
 
-      // Schedule scripts include huge lists of element Ids that are entirely unneeded for frontend display. Omit them.
       const displayStyleOptions: ElementLoadProps = {
         id: viewDefinitionProps.displayStyleId,
-        displayStyle: { omitScheduleScriptElementIds: true },
+        displayStyle: options?.displayStyle,
       };
       const displayStyleProps = elements.getElementProps<DisplayStyleProps>(displayStyleOptions);
 
@@ -2683,25 +2749,25 @@ export class SnapshotDb extends IModelDb {
     if (!bcvDaemonCachePath)
       throw new IModelError(IModelStatus.BadRequest, "Invalid config: BLOCKCACHE_DIR is not set!", Logger.logError, loggerCategory);
 
-    const checkpointQuery = new CheckpointQuery().byChangeSetId(changeSetId).selectBCVAccessKey();
-    const checkpoints: Checkpoint[] = await BriefcaseManager.imodelClient.checkpoints.get(requestContext, iModelId, checkpointQuery);
+    const checkpointQuery = new CheckpointV2Query().byChangeSetId(changeSetId).selectContainerAccessKey();
+    const checkpoints: CheckpointV2[] = await BriefcaseManager.imodelClient.checkpointsV2.get(requestContext, iModelId, checkpointQuery);
     requestContext.enter();
 
     if (checkpoints.length < 1)
       throw new IModelError(IModelStatus.NotFound, "Checkpoint not found", Logger.logError, loggerCategory);
 
-    const { bcvAccessKeyContainer, bcvAccessKeySAS, bcvAccessKeyAccount, bcvAccessKeyDbName } = checkpoints[0];
-    if (!bcvAccessKeyContainer || !bcvAccessKeySAS || !bcvAccessKeyAccount || !bcvAccessKeyDbName)
+    const { containerAccessKeyContainer, containerAccessKeySAS, containerAccessKeyAccount, containerAccessKeyDbName } = checkpoints[0];
+    if (!containerAccessKeyContainer || !containerAccessKeySAS || !containerAccessKeyAccount || !containerAccessKeyDbName)
       throw new IModelError(IModelStatus.BadRequest, "Invalid checkpoint in iModelHub", Logger.logError, loggerCategory);
 
     // We can assume that a BCVDaemon process is already started if BLOCKCACHE_DIR was set, so we need to just tell the daemon to attach to the Storage Container
     const attachArgs: BlobDaemonCommandArg = {
-      container: bcvAccessKeyContainer,
-      auth: bcvAccessKeySAS,
+      container: containerAccessKeyContainer,
+      auth: containerAccessKeySAS,
       daemonDir: bcvDaemonCachePath,
       storageType: "azure",
-      user: bcvAccessKeyAccount,
-      dbAlias: bcvAccessKeyDbName,
+      user: containerAccessKeyAccount,
+      dbAlias: containerAccessKeyDbName,
       writeable: false,
     };
     const attachResult = await BlobDaemon.command("attach", attachArgs);

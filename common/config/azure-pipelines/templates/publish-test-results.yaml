@@ -10,80 +10,10 @@ steps:
   # Clients Tests
   #-------
   - task: PublishTestResults@2
-    displayName: "Publish Clients - Context Registry Test Results"
-    inputs:
-      testResultsFiles: "clients/context-registry/lib/test/junit_results.xml"
-      testRunTitle: "Clients - Context Registry Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-      searchFolder: ${{ parameters.workingDir }}
-    condition: succeededOrFailed()
-  - task: PublishTestResults@2
-    displayName: "Publish Clients - Extension Test Results"
-    inputs:
-      testResultsFiles: "clients/extension/lib/test/junit_results.xml"
-      testRunTitle: "Clients - Extension Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-      searchFolder: ${{ parameters.workingDir }}
-    condition: succeededOrFailed()
-  - task: PublishTestResults@2
-    displayName: "Publish Clients - Forms Data Management Test Results"
-    inputs:
-      testResultsFiles: "clients/forms-data-management/lib/test/junit_results.xml"
-      testRunTitle: "Clients - Forms Data Management Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-      searchFolder: ${{ parameters.workingDir }}
-    condition: succeededOrFailed()
-  - task: PublishTestResults@2
-    displayName: "Publish Clients - Frontend Authorization Test Results"
-    inputs:
-      testResultsFiles: "clients/frontend-authorization/lib/test/junit_results.xml"
-      testRunTitle: "Clients - Frontend Authorization Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-      searchFolder: ${{ parameters.workingDir }}
-    condition: succeededOrFailed()
-  - task: PublishTestResults@2
-    displayName: "Publish Clients - iModelHub Test Results"
-    inputs:
-      testResultsFiles: "clients/imodelhub/lib/test/junit_results.xml"
-      testRunTitle: "Clients - iModelHub Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-      searchFolder: ${{ parameters.workingDir }}
-    condition: succeededOrFailed()
-  - task: PublishTestResults@2
     displayName: "Publish Clients - iTwin Test Results"
     inputs:
       testResultsFiles: "clients/itwin/lib/test/junit_results.xml"
       testRunTitle: "Clients - iTwin Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-      searchFolder: ${{ parameters.workingDir }}
-    condition: succeededOrFailed()
-  - task: PublishTestResults@2
-    displayName: "Publish Clients - Product Settings Test Results"
-    inputs:
-      testResultsFiles: "clients/product-settings/lib/test/junit_results.xml"
-      testRunTitle: "Clients - Product Settings Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-      searchFolder: ${{ parameters.workingDir }}
-    condition: succeededOrFailed()
-  - task: PublishTestResults@2
-    displayName: "Publish Clients - ProjectShare Test Results"
-    inputs:
-      testResultsFiles: "clients/projectshare/lib/test/junit_results.xml"
-      testRunTitle: "Clients - ProjectShare Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-      searchFolder: ${{ parameters.workingDir }}
-    condition: succeededOrFailed()
-  - task: PublishTestResults@2
-    displayName: "Publish Clients - RBAC Test Results"
-    inputs:
-      testResultsFiles: "clients/rbac/lib/test/junit_results.xml"
-      testRunTitle: "Clients - RBAC Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-      searchFolder: ${{ parameters.workingDir }}
-    condition: succeededOrFailed()
-  - task: PublishTestResults@2
-    displayName: "Publish Clients - Reality Data Test Results"
-    inputs:
-      testResultsFiles: "clients/reality-data/lib/test/junit_results.xml"
-      testRunTitle: "Clients - Reality Data Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-      searchFolder: ${{ parameters.workingDir }}
-    condition: succeededOrFailed()
-  - task: PublishTestResults@2
-    displayName: "Publish Clients - Usage Logging Test Results"
-    inputs:
-      testResultsFiles: "clients/usage-logging/lib/test/junit_results.xml"
-      testRunTitle: "Clients - Usage Logging Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
       searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
 
@@ -104,13 +34,14 @@ steps:
       testRunTitle: "Core - Bentley Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
       searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
-  - task: PublishTestResults@2
-    displayName: "Publish Backend iTwin Client Test Results"
-    inputs:
-      testResultsFiles: "core/backend-itwin-client/lib/test/junit_results.xml"
-      testRunTitle: "Core - Backend iTwin Client Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-      searchFolder: ${{ parameters.workingDir }}
-    condition: succeededOrFailed()
+  # - task: PublishTestResults@2
+  #   displayName: "Publish Backend iTwin Client Test Results"
+  #   inputs:
+  #     testResultsFiles: "core/backend-itwin-client/lib/test/junit_results.xml"
+  #     testRunTitle: "Core - Backend iTwin Client Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
+  #     searchFolder: ${{ parameters.workingDir }}
+  #   condition: succeededOrFailed()
+  #   enabled: false
   - task: PublishTestResults@2
     displayName: "Publish Common Backend Test Results"
     inputs:
@@ -276,7 +207,7 @@ steps:
   - task: PublishTestResults@2
     displayName: "Publish Example Snippets"
     inputs:
-      testResultsFiles: "example-code/Snippets/lib/test/junit_results.xml"
+      testResultsFiles: "example-code/snippets/lib/test/junit_results.xml"
       testRunTitle: "Example Apps - Snippets Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
       searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()

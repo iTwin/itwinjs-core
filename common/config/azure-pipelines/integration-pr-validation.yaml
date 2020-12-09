@@ -11,7 +11,7 @@ pr:
   branches:
     include:
     - master
-    - releases/*
+    - release/*
 
 variables:
 - group: iModel.js non-secret config variables
@@ -22,8 +22,8 @@ jobs:
   condition: succeeded()
   strategy:
     matrix:
-      "Node 10.16.0":
-        Node_Version: 10.16.0
+      "Node 10.17.0":
+        Node_Version: 10.17.0
       "Node 10.x":
         Node_Version: 10.x
       "Node 12.x":

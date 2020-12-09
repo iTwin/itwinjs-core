@@ -52,6 +52,7 @@ alpha;ChannelInfo
 alpha;ChannelRootInfo 
 alpha;RepositoryChannelInfo 
 internal;StateCache
+alpha;ConcurrencyControlChannel = ConcurrencyControl.Channel
 alpha;CrashReportingConfig
 alpha;CrashReportingConfigNameValuePair
 public;DefinitionContainer 
@@ -228,7 +229,6 @@ public;PlanCallout
 public;Platform
 beta;class RecipeDefinitionElement 
 public;Relationship 
-public;RelationshipProps 
 public;Relationships
 public;RenderMaterialElement 
 public;RenderMaterialElement
@@ -252,7 +252,6 @@ public;SheetModel
 public;SheetTemplate 
 public;SheetViewDefinition 
 public;SnapshotDb 
-public;SourceAndTarget
 public;SpatialCategory 
 public;class SpatialElement 
 public;SpatialLocation 

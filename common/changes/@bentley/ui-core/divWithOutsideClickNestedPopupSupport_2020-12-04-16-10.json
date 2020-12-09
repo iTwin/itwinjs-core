@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/ui-core",
-      "comment": "Add new NumberInput control to replace NumericInput which wrapped react-numeric-input.",
+      "comment": "Add nested popup support to components that use HOC withOnOutsideClick.",
       "type": "none"
     }
   ],

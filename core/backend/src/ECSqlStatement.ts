@@ -224,6 +224,8 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    */
   public bindArray(parameter: number | string, val: any[]): void { this.getBinder(parameter).bindArray(val); }
 
+
+  public bindIdSet(parameter: number | string, val: Id64String[]): void { this.getBinder(parameter).bindIdSet(val); }
   /**
    * Gets a binder to bind a value for an ECSQL parameter
    * > This is the most low-level API to bind a value to a specific parameter. Alternatively you can use the ECSqlStatement.bindXX methods
@@ -540,6 +542,15 @@ export class ECSqlBinder {
    * > to just call [ECSqlBinder.bindStruct]($backend).
    */
   public bindMember(memberName: string): ECSqlBinder { return new ECSqlBinder(this._binder.bindMember(memberName)); }
+
+  /** Binds a set of Id strings to the ECSQL parameter.
+   * @param val array of Id values. If passed as string they must be the hexadecimal representation of the Ids.
+   */
+  public bindIdSet(vector: Id64String[]): void {
+    const stat: DbResult = this._binder.bindIdSet(vector);
+    if (stat !== DbResult.BE_SQLITE_OK)
+      throw new IModelError(stat, "Error binding id set", Logger.logWarning, loggerCategory);
+  }
 
   /** Binds an array value to the ECSQL parameter.
    * @param val Array value. The array value is an array of values of the supported types

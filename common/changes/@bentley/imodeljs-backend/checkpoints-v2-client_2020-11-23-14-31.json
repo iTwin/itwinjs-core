@@ -2,10 +2,10 @@
   "changes": [
     {
       "packageName": "@bentley/imodeljs-backend",
-      "comment": "",
+      "comment": "Added CheckpointV2 client",
       "type": "none"
     }
   ],
   "packageName": "@bentley/imodeljs-backend",
-  "email": "10091419+GerardasB@users.noreply.github.com"
+  "email": "196408+amikoliunas@users.noreply.github.com"
 }

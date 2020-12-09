@@ -2,10 +2,10 @@
   "changes": [
     {
       "packageName": "@bentley/ui-core",
-      "comment": "Clear FocusTrap timeout on unmount.",
+      "comment": "Added disabled support to Select component options",
       "type": "none"
     }
   ],
   "packageName": "@bentley/ui-core",
-  "email": "10091419+GerardasB@users.noreply.github.com"
+  "email": "51122937+DanEastBentley@users.noreply.github.com"
 }

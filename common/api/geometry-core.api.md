@@ -318,7 +318,7 @@ export class AuxChannel {
 
 // @public
 export class AuxChannelData {
-    constructor(input: number, values: number[]);
+    constructor(input: number, values: number[] | Float64Array);
     clone(): AuxChannelData;
     copyValues(other: AuxChannelData, thisIndex: number, otherIndex: number, blockSize: number): void;
     input: number;
@@ -3174,7 +3174,7 @@ export class Matrix3d implements BeJSONFunctions {
     setColumns(vectorX: Vector3d | undefined, vectorY: Vector3d | undefined, vectorZ?: Vector3d | undefined): void;
     setColumnsPoint4dXYZ(vectorU: Point4d, vectorV: Point4d, vectorW: Point4d): void;
     setFrom(other: Matrix3d | undefined): void;
-    setFromJSON(json?: Matrix3dProps): void;
+    setFromJSON(json?: Matrix3dProps | Matrix3d): void;
     setIdentity(): void;
     setRow(rowIndex: number, value: Vector3d): void;
     setRowValues(axx: number, axy: number, axz: number, ayx: number, ayy: number, ayz: number, azx: number, azy: number, azz: number): void;
@@ -3201,7 +3201,7 @@ export class Matrix3d implements BeJSONFunctions {
 }
 
 // @public
-export type Matrix3dProps = number[][] | Matrix3d | number[];
+export type Matrix3dProps = number[][] | number[];
 
 // @public
 export class Matrix4d implements BeJSONFunctions {
@@ -4689,6 +4689,7 @@ export class RuledSweep extends SolidPrimitive {
 
 // @alpha
 export class Sample {
+    static addAuxDataScalarChannel(data: PolyfaceData, channelIndex: number, name: string | undefined, inputName: string | undefined, input0: number, inputStep: number, numInput: number, dataType: AuxChannelDataType, scalarFunction: (input: number, xyz: Point3d) => number): void;
     static readonly angle: Angle[];
     static readonly angleSweep: AngleSweep[];
     static appendPhases(linestring: LineString3d, numPhase: number, ...vectors: Vector3d[]): void;
@@ -4914,6 +4915,7 @@ export class Sphere extends SolidPrimitive implements UVSurface {
     get isClosedVolume(): boolean;
     isSameGeometryClass(other: any): boolean;
     get latitudeSweepFraction(): number;
+    maxAxisRadius(): number;
     maxIsoParametricDistance(): Vector2d;
     readonly solidPrimitiveType = "sphere";
     strokeConstantVSection(v: number, fixedStrokeCount: number | undefined, options?: StrokeOptions): LineString3d;
@@ -5142,7 +5144,7 @@ export class Transform implements BeJSONFunctions {
     multiplyXYZWToFloat64Array(x: number, y: number, z: number, w: number, result?: Float64Array): Float64Array;
     get origin(): XYZ;
     setFrom(other: Transform): void;
-    setFromJSON(json?: TransformProps): void;
+    setFromJSON(json?: TransformProps | Transform): void;
     setIdentity(): void;
     setMultiplyTransformTransform(transformA: Transform, transformB: Transform): void;
     setOriginAndMatrixColumns(origin: XYZ | undefined, vectorX: Vector3d | undefined, vectorY: Vector3d | undefined, vectorZ: Vector3d | undefined): void;

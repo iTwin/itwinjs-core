@@ -37,7 +37,7 @@ import { XYPointBuckets } from "./multiclip/XYPointBuckets";
 import { IndexedPolyface, Polyface, PolyfaceVisitor } from "./Polyface";
 import { PolyfaceBuilder } from "./PolyfaceBuilder";
 import { RangeLengthData } from "./RangeLengthData";
-
+/* eslint-disable-NotNow no-console */
 /**
  * Structure to return multiple results from volume between facets and plane
  * @public
@@ -330,7 +330,16 @@ export class PolyfaceQuery {
     const clipFractions = Segment1d.create(0, 1);
     const localFrame = Transform.createIdentity();
     let frame;
+    const linestringRange = linestringPoints.getRange();
+    const facetRange = Range3d.create();
+    // let numTest = 0;
+    // let numFacet = 0;
     for (visitor.reset(); visitor.moveToNextFacet();) {
+      // numFacet++;
+      visitor.point.setRange(facetRange);
+      if (!facetRange.intersectsRangeXY(linestringRange))
+        continue;
+      // numTest++;
       // For each triangle within the facet ...
       for (let k1 = 1; k1 + 1 < visitor.point.length; k1++) {
         frame = visitor.point.fillLocalXYTriangleFrame(0, k1, k1 + 1, localFrame);
@@ -371,6 +380,7 @@ export class PolyfaceQuery {
         }
       }
     }
+    // console.log(`numFacet ${numFacet}  numTest    ${numTest}    ratio  ${numTest / numFacet}`);
   }
 
   /** Search the facets for facet subsets that are connected with at least vertex contact.

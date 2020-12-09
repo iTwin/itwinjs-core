@@ -698,15 +698,21 @@ describe("<ToolbarWithOverflow />", () => {
         ToolbarItemUtilities.createActionButton("Child3", 30, "icon-developer", "Child3", (): void => { }),
       ];
 
+      const enabledChildItems: ReadonlyArray<ActionButton | GroupButton> = [
+        ToolbarItemUtilities.createActionButton("EnabledChild1", 10, "icon-developer", "EnabledChild1", spy),
+        ToolbarItemUtilities.createActionButton("EnabledChild2", 20, "icon-developer", "EnabledChild2", (): void => { }),
+        ToolbarItemUtilities.createActionButton("EnabledChild3", 30, "icon-developer", "EnabledChild3", (): void => { }),
+      ];
+
       const toolbarItems: CommonToolbarItem[] = [
         ToolbarItemUtilities.createGroupButton("Group1", 10, "icon-developer", "Group1", childItems, { badgeType: BadgeType.New, panelLabel: "Group1-Tools" }),
+        ToolbarItemUtilities.createGroupButton("Group2", 10, "icon-developer", "Group2", enabledChildItems, { panelLabel: "Group1-Tools" }),
         ToolbarItemUtilities.createActionButton("Entry1", 10, "icon-developer", "Entry1", (): void => { }),
         ToolbarItemUtilities.createActionButton("Entry2", 20, "icon-developer", "Entry2", (): void => { }),
         ToolbarItemUtilities.createActionButton("Entry3", 30, "icon-developer", "Entry3", (): void => { }),
         ToolbarItemUtilities.createActionButton("Entry4", 10, "icon-developer", "Entry4", (): void => { }),
         ToolbarItemUtilities.createActionButton("Entry5", 20, "icon-developer", "Entry5", (): void => { }),
         ToolbarItemUtilities.createActionButton("Entry6", 30, "icon-developer", "Entry6", (): void => { }),
-        ToolbarItemUtilities.createGroupButton("Group2", 10, "icon-developer", "Group2", childItems, { panelLabel: "Group1-Tools" }),
       ];
 
       // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
@@ -727,7 +733,14 @@ describe("<ToolbarWithOverflow />", () => {
       expect(button).not.to.be.null;
 
       fireEvent.click(button!);
-      spy.calledOnce.should.true;
+      spy.calledOnce.should.false;  // because Child1 is disabled
+
+      // Group2 button should have the title for the first child
+      const button2 = renderedComponent.queryByTitle("EnabledChild1");
+      expect(button2).not.to.be.null;
+
+      fireEvent.click(button2!);
+      spy.calledOnce.should.true;  // because EnabledChild1 is enabled
 
       // click overflow to force other group to render in overflow
       const overflowButton = renderedComponent.container.querySelector(".components-toolbar-button-item.components-ellipsis-icon");
@@ -1008,8 +1021,8 @@ describe("<ToolbarWithOverflow />", () => {
       const spy = sinon.spy();
 
       const childItems: ReadonlyArray<ActionButton | GroupButton> = [
-        ToolbarItemUtilities.createActionButton("Entry1", 10, "icon-developer", "Entry1", spy),
-        ToolbarItemUtilities.createActionButton("Entry2", 20, "icon-developer", "Entry2", (): void => { }),
+        ToolbarItemUtilities.createActionButton("Entry1", 10, "icon-developer", "Entry1", (): void => { }),
+        ToolbarItemUtilities.createActionButton("Entry2", 20, "icon-developer", "Entry2", spy),
         ToolbarItemUtilities.createActionButton("Entry3", 30, "icon-developer", "Entry3", (): void => { }),
       ];
 
@@ -1045,11 +1058,18 @@ describe("<ToolbarWithOverflow />", () => {
       button!.dispatchEvent(createBubbledEvent("pointerdown", { clientX: 30, clientY: 30 }));
       fakeTimers.tick(500);
 
-      // renderedComponent.debug();
       expect(renderedComponent.queryByText("Group1-Tools")).not.to.be.null;
       expect(renderedComponent.queryByText("Entry1")).not.to.be.null;
-      expect(renderedComponent.queryByText("Entry2")).not.to.be.null;
+      const groupEntry2 = renderedComponent.queryByText("Entry2");
+      expect(groupEntry2).not.to.be.null;
       expect(renderedComponent.queryByText("Entry3")).not.to.be.null;
+
+      fireEvent.click(groupEntry2!);
+      spy.calledOnce.should.true;
+
+      // GroupButton should now have the title for the selected child
+      const groupButton = renderedComponent.queryByTitle("Entry2");
+      expect(groupButton).not.to.be.null;
     });
 
     it("should not open on long press if we move pointer more than 10 px", async () => {

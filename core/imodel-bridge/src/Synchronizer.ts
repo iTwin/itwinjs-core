@@ -14,7 +14,7 @@ import { assert } from "console";
 
 const loggerCategory: string = BridgeLoggerCategory.Framework;
 /** The state of the given SourceItem against the iModelDb
- * @alpha
+ * @beta
  */
 export enum ItemState {
   /** The SourceItem is unchanged */
@@ -32,7 +32,7 @@ export interface ChangeResults {
   state: ItemState;
 }
 /** Interface for presenting an item in the source repository
- * @alpha
+ * @beta
  */
 export interface SourceItem {
   /** Unique Identity of the source item (relative to its scope and kind). */
@@ -73,7 +73,7 @@ export interface SynchronizationResults {
   itemState: ItemState;
 }
 /** Helper class for interacting with the iModelDb during synchronization.
- * @alpha
+ * @beta
  */
 export class Synchronizer {
   private _seenElements: Id64String[] = new Array<Id64String>();
@@ -135,7 +135,7 @@ export class Synchronizer {
    * @param kind the kind of source item
    * @param item the source item
    * @returns the results of looking in the iModelDb and comparing the existing source record, if any, with the item's current state.
-   * @alpha
+   * @beta
    */
   public detectChanges(scope: Id64String, sourceKind: string, item: SourceItem): ChangeResults {
     let ids: any;
@@ -187,7 +187,7 @@ export class Synchronizer {
    * @param scope Id of the scoping element
    * @param sourceItem Defines the source item
    * @param kind The kind of the source item
-   * @alpha
+   * @beta
    */
   public updateIModel(results: SynchronizationResults, scope: Id64String, sourceItem: SourceItem, kind: string): IModelStatus {
     let status: IModelStatus = IModelStatus.Success;
@@ -231,7 +231,7 @@ export class Synchronizer {
    * @param scope The id of the scoping element
    * @param sourceItem Defines the source item
    * @param kind The kind of the source item
-   * @alpha
+   * @beta
    */
   public setExternalSourceAspect(element: Element, itemState: ItemState, scope: Id64String, sourceItem: SourceItem, kind: string): IModelStatus {
     const aspectProps: ExternalSourceAspectProps = {
@@ -253,7 +253,7 @@ export class Synchronizer {
 
   /** Given synchronizations results for an element (and possibly its children), insert the new element into the bim
    * @param results The result set to insert
-   * @alpha
+   * @beta
    */
   public insertResultsIntoIModel(results: SynchronizationResults): IModelStatus {
     this.getLocksAndCodes(results.element);
@@ -277,7 +277,7 @@ export class Synchronizer {
 
   /** Given synchronizations results for an element (and possibly its children), updates element in the bim
    * @param results The result set to insert
-   * @alpha
+   * @beta
    */
   public updateResultsInIModel(results: SynchronizationResults): IModelStatus {
     const status = this.updateResultInIModelForOneElement(results);
@@ -289,14 +289,14 @@ export class Synchronizer {
 
   /** Records that this particular element was visited during this synchronization. This information will later be used to determine which
    * previously existing elements no longer exist and should be deleted.
-   * @alpha
+   * @beta
    */
   public onElementSeen(id: Id64String) {
     this._seenElements.push(id);
   }
 
   /** Deletes elements from a BriefcaseDb that were previously converted but not longer exist in the source data.
-   * @alpha
+   * @beta
    */
   public detectDeletedElements() {
     if (this.imodel.isSnapshotDb()) {

@@ -7,18 +7,18 @@
  */
 import { flatbuffers } from "flatbuffers";
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
-import { AngleSweep, Arc3d, BentleyGeometryFlatBuffer, GeometryQuery, LineString3d, Loop, Matrix3d, Point2d, Point3d, PointString3d, Range3d, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Angle, AngleSweep, Arc3d, BentleyGeometryFlatBuffer, GeometryQuery, LineString3d, Loop, Matrix3d, Point2d, Point3d, PointString3d, Range3d, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { EGFBAccessors } from "./ElementGeometryFB";
-import { TextStringProps } from "./TextString";
+import { TextString, TextStringProps } from "./TextString";
 import { ColorDef } from "../ColorDef";
 import { BackgroundFill, FillDisplay, GeometryClass, GeometryParams } from "../GeometryParams";
 import { Gradient } from "../Gradient";
 import { ThematicGradientSettings, ThematicGradientSettingsProps } from "../ThematicDisplay";
 import { AreaPattern } from "./AreaPattern";
 import { BRepEntity } from "./GeometryStream";
-import { ImageGraphicCorners, ImageGraphicProps } from "./ImageGraphic";
+import { ImageGraphic, ImageGraphicCorners, ImageGraphicProps } from "./ImageGraphic";
 import { LineStyle } from "./LineStyle";
-import { ElementAlignedBox3d } from "./Placement";
+import { ElementAlignedBox3d, Placement3d } from "./Placement";
 
 /** Values for [[ElementGeometryDataEntry.opcode]]
  * @alpha
@@ -53,6 +53,7 @@ export enum ElementGeometryOpcode {
   /** Render material */
   Material = 21,
   /** [[TextString]] */
+  // eslint-disable-next-line no-shadow
   TextString = 22,
   /** Specifies line style overrides */
   LineStyleModifiers = 23,
@@ -62,7 +63,7 @@ export enum ElementGeometryOpcode {
   Image = 28,
 }
 
-/** A...
+/** Geometry stream entry data plus opcode to describe what the data represents.
  * See IModelDb.elementGeometryRequest
  * @alpha
  */
@@ -73,7 +74,7 @@ export interface ElementGeometryDataEntry {
   data: Uint8Array;
 }
 
-/** Info provided to...
+/** Info provided to ElementGeometryFunction.
  * @alpha
  */
 export interface ElementGeometryInfo {
@@ -135,10 +136,344 @@ export interface ElementGeometryUpdate {
   viewIndependent?: boolean;
 }
 
+/** Values for [[BRepGeometryCreate.operation]]
+ * @alpha
+ */
+export enum BRepGeometryOperation {
+  /** Unite target (first entry) with one or more tool entities. */
+  Unite = 0,
+  /** Subtract one or more tool entities from target entity (first entry) */
+  Subtract = 1,
+  /** Intersect target (first entry) with one or more tool entities */
+  Intersect = 2,
+  /** Sew the given set of surfaces together by joining those that share edges in common */
+  Sew = 3,
+  /** Create a cut in the target (first entry) using a planar region (second entry) and optional depth */
+  Cut = 4,
+  /** Create a pad or pocket in the target (first entry) using a planar region (second entry) */
+  Emboss = 5,
+  /** Create a solid from a surface by offsetting using the specified forward and backward distances */
+  Thicken = 6,
+  /** Create a shelled solid by offsetting all faces by the supplied distance */
+  Hollow = 7,
+  /** Create a solid or surface by sweeping a planar profile (first entry) along a path (second entry) */
+  Sweep = 8,
+  /** Create a solid or surface by lofting through a set of paths or regions */
+  Loft = 9,
+  /** Create a solid or sheet with all non-smooth/non-laminar edges rounded */
+  Round = 10,
+}
+
+/** Parameters for Cut operation
+ * @alpha
+ */
+export interface BRepCutProps {
+  /** Optional cut depth; through solid if not specified */
+  distance?: number;
+  /** Optional cut direction; in direction of profile normal if not specified */
+  bothDirections?: boolean;
+}
+
+/** Parameters for Thicken operation
+ * @alpha
+ */
+export interface BRepThickenProps {
+  /** Offset to apply in surface normal direction; at least one of frontDistance or backDistance must be specified */
+  frontDistance?: number;
+  /** Offset to apply in reverse surface normal direction */
+  backDistance?: number;
+}
+
+/** Parameters for Hollow operation
+ * @alpha
+ */
+export interface BRepHollowProps {
+  /** Offset to apply to all faces; positive value shells outwards, negative value shells inwards */
+  distance: number;
+}
+
+/** Parameters for Round operation
+ * @alpha
+ */
+export interface BRepRoundProps {
+  /** Radius to apply to all non-laminar/non-smooth edges */
+  radius: number;
+}
+
+/** Parameters for [IModelDb.createBRepGeometry]($imodeljs-backend)
+ * @alpha
+ */
+export interface BRepGeometryCreate {
+  /** The operation to perform on the input geometry */
+  operation: BRepGeometryOperation;
+  /** The input target and tool geometry (curves, surfaces, and solids) to perform the given operation on */
+  entryArray: ElementGeometryDataEntry[];
+  /** A function to call for the result geometry */
+  onResult: BRepGeometryFunction;
+  /** Whether disjoint results should be returned as multiple entries or a single disjoint body */
+  separateDisjoint?: boolean;
+  /** Options and parameters for this operation */
+  parameters?: BRepCutProps | BRepThickenProps | BRepHollowProps | BRepRoundProps;
+}
+
+
+/** Info provided to BRepGeometryFunction.
+ * @alpha
+ */
+export interface BRepGeometryInfo {
+  /** The result geometry if the operation was successful */
+  entryArray: ElementGeometryDataEntry[];
+}
+
+/** A callback function that receives brep operation result geometry.
+ * See IModelDb.createBRepGeometry
+ * @alpha
+ */
+export type BRepGeometryFunction = (info: BRepGeometryInfo) => void;
+
 /** Provides utility functions for working with data generated by IModelDb.elementGeometryRequest
  * @alpha
  */
 export namespace ElementGeometry {
+  /** ElementGeometry.Builder is a helper class for populating a ElementGeometryDataEntry array. */
+  export class Builder {
+    public readonly entries: ElementGeometryDataEntry[] = [];
+
+    /** Store local ranges for all subsequent geometry appended. Can improve performance of range testing for elements with a GeometryStream
+     * containing more than one [[GeometryQuery]] differentiable by range. Not useful for a single [[GeometryQuery]] as its range and that of the [[GeometricElement]] are the same.
+     * Ignored when defining a [[GeometryPart]] and not needed when only appending [[GeometryPart]] instances to a [[GeometricElement]] as these store their own range.
+     */
+    public appendGeometryRanges(): boolean {
+      const entry = fromSubGraphicRange(Range3d.create()); // Computed on backend, just need opcode...
+      if (undefined === entry)
+        return false;
+      this.entries.push(entry);
+      return true;
+    }
+
+    /** Change [[GeometryParams]] for subsequent geometry.
+     *  It is not valid to change the sub-category when defining a [[GeometryPart]]. A [[GeometryPart]] inherits the symbology of their instance for anything not explicitly overridden.
+     */
+    public appendGeometryParamsChange(geomParams: GeometryParams): boolean {
+      return appendGeometryParams(geomParams, this.entries);
+    }
+
+    /** Append a [[GeometryQuery]] supplied in either local or world coordinates to the [[ElementGeometryDataEntry]] array */
+    public appendGeometryQuery(geometry: GeometryQuery): boolean {
+      const entry = ElementGeometry.fromGeometryQuery(geometry);
+      if (undefined === entry)
+        return false;
+      this.entries.push(entry);
+      return true;
+    }
+
+    /** Append a [[TextString]] supplied in either local or world coordinates to the [[ElementGeometryDataEntry]] array */
+    public appendTextString(text: TextString): boolean {
+      const entry = ElementGeometry.fromTextString(text.toJSON());
+      if (undefined === entry)
+        return false;
+      this.entries.push(entry);
+      return true;
+    }
+
+    /** Append a [[ImageGraphic]] supplied in either local or world coordinates to the [[ElementGeometryDataEntry]] array */
+    public appendImageGraphic(image: ImageGraphic): boolean {
+      const entry = ElementGeometry.fromImageGraphic(image.toJSON());
+      if (undefined === entry)
+        return false;
+      this.entries.push(entry);
+      return true;
+    }
+
+    /** Append a [[BRepEntity.DataProps]] supplied in either local or world coordinates to the [[ElementGeometryDataEntry]] array */
+    public appendBRepData(brep: BRepEntity.DataProps): boolean {
+      const entry = ElementGeometry.fromBRep(brep);
+      if (undefined === entry)
+        return false;
+      this.entries.push(entry);
+      return true;
+    }
+
+    /** Append a [[GeometryPart]] instance with relative transform to the [[ElementGeometryDataEntry]] array for creating a [[GeometricElement]].
+     *  Not valid when defining a [[GeometryPart]] as nesting of parts is not supported.
+     */
+    public appendGeometryPart(partId: Id64String, partToElement?: Transform): boolean {
+      const entry = ElementGeometry.fromGeometryPart(partId, partToElement);
+      if (undefined === entry)
+        return false;
+      this.entries.push(entry);
+      return true;
+    }
+
+    /** Append a [[GeometryPart]] instance with relative position, orientation, and scale to the [[ElementGeometryDataEntry]] array for creating a [[GeometricElement3d]].
+     *  Not valid when defining a [[GeometryPart]] as nesting of parts is not supported.
+     */
+    public appendGeometryPart3d(partId: Id64String, instanceOrigin?: Point3d, instanceRotation?: YawPitchRollAngles, instanceScale?: number): boolean {
+      const partToElement = Transform.createOriginAndMatrix(instanceOrigin, instanceRotation ? instanceRotation.toMatrix3d() : Matrix3d.createIdentity());
+      if (undefined !== instanceScale)
+        partToElement.matrix.scaleColumnsInPlace(instanceScale, instanceScale, instanceScale);
+      return this.appendGeometryPart(partId, partToElement);
+    }
+
+    /** Append a [[GeometryPart]] instance with relative position, orientation, and scale to the [[ElementGeometryDataEntry]] array for creating a [[GeometricElement2d]].
+     *  Not valid when defining a [[GeometryPart]] as nesting of parts is not supported.
+     */
+    public appendGeometryPart2d(partId: Id64String, instanceOrigin?: Point2d, instanceRotation?: Angle, instanceScale?: number): boolean {
+      return this.appendGeometryPart3d(partId, instanceOrigin ? Point3d.createFrom(instanceOrigin) : undefined, instanceRotation ? new YawPitchRollAngles(instanceRotation) : undefined, instanceScale);
+    }
+  }
+
+  /** Current state information for [[ElementGeometry.Iterator]] */
+  export interface IteratorData {
+    /** A [[GeometryParams]] representing the appearance of the current geometric entry */
+    readonly geomParams: GeometryParams;
+    /** Placement transform, used for converting placement relative, local coordinate entries to world */
+    readonly localToWorld?: Transform;
+    /** Optional stored local range for the current geometric entry */
+    readonly localRange?: Range3d;
+    /** The current displayable opcode */
+    readonly value: ElementGeometryDataEntry;
+  }
+
+  export class IteratorEntry implements IteratorData {
+    public readonly geomParams: GeometryParams;
+    public readonly localToWorld?: Transform;
+    public localRange?: Range3d;
+    private _value?: ElementGeometryDataEntry;
+
+    public constructor(geomParams: GeometryParams, localToWorld: Transform) {
+      this.geomParams = geomParams;
+      this.localToWorld = localToWorld;
+    }
+
+    public get value() { return this._value!; }
+    public set value(value: ElementGeometryDataEntry) { this._value = value; }
+
+    /** Return the GeometryQuery representation for the current entry */
+    public toGeometryQuery(): GeometryQuery | undefined {
+      return toGeometryQuery(this.value);
+    }
+
+    /** Return the BRep data representation for the current entry */
+    public toBRepData(wantBRepData: boolean = false): BRepEntity.DataProps | undefined {
+      return toBRep(this.value, wantBRepData);
+    }
+
+    /** Return the TextString representation for the current entry */
+    public toTextString(): TextString | undefined {
+      const props = toTextString(this.value);
+      return (undefined !== props ? new TextString(props) : undefined);
+    }
+
+    /** Return the ImageGraphic representation for the current entry */
+    public toImageGraphic(): ImageGraphic | undefined {
+      const props = toImageGraphic(this.value);
+      return (undefined !== props ? ImageGraphic.fromJSON(props) : undefined);
+    }
+
+    /** Return the GeometryPart information for the current entry */
+    public toGeometryPart(partToLocal?: Transform, partToWorld?: Transform): Id64String | undefined {
+      if (undefined === partToLocal && undefined !== partToWorld)
+        partToLocal = Transform.createIdentity();
+
+      const partId = toGeometryPart(this.value, partToLocal);
+      if (undefined === partId || undefined === partToLocal || undefined === partToWorld)
+        return partId;
+
+      if (undefined !== this.localToWorld)
+        this.localToWorld.multiplyTransformTransform(partToLocal, partToWorld);
+
+      return partId;
+    }
+  }
+
+  /** ElementGeometry.Iterator is a helper class for iterating a ElementGeometryDataEntry array */
+  export class Iterator implements IterableIterator<IteratorEntry> {
+    /** GeometryStream entries */
+    public readonly entryArray: ElementGeometryDataEntry[];
+    /** The geometric element's placement or geometry part's local range (placement.bbox) */
+    public readonly placement: Placement3d;
+    /** If true, geometry displays oriented to face the camera */
+    public readonly viewIndependent?: boolean;
+    /** If true, geometry stream contained breps that were omitted or replaced as requested */
+    public readonly brepsPresent?: boolean;
+    /** Current entry position */
+    private _index = 0;
+    /** Allocated on first call to next() and reused thereafter */
+    private _entry?: IteratorEntry;
+    /** Used to initialize this._entry */
+    private readonly _appearance: GeometryParams;
+    private readonly _localToWorld: Transform;
+
+    /** Construct a new Iterator given a ElementGeometryInfo from either a [[GeometricElement3d]], [[GeometricElement2d]], or [[GeometryPart]].
+     * Supply the optional GeometryParams and localToWorld tranform to iterate a GeometryPart in the context of a GeometricElement reference.
+    */
+    public constructor(info: ElementGeometryInfo, categoryOrGeometryParams?: Id64String | GeometryParams, localToWorld?: Transform) {
+      this.entryArray = info.entryArray;
+      this.viewIndependent = info.viewIndependent;
+      this.brepsPresent = info.brepsPresent;
+
+      if (undefined !== info.categoryId)
+        categoryOrGeometryParams = info.categoryId;
+
+      if (undefined !== categoryOrGeometryParams)
+        this._appearance = typeof categoryOrGeometryParams === "string" ? new GeometryParams(categoryOrGeometryParams) : categoryOrGeometryParams;
+      else
+        this._appearance = new GeometryParams(Id64.invalid);
+
+      if (undefined !== info.sourceToWorld)
+        localToWorld = ElementGeometry.toTransform(info.sourceToWorld);
+
+      if (undefined !== localToWorld)
+        this._localToWorld = localToWorld;
+      else
+        this._localToWorld = Transform.createIdentity();
+
+      const orgAng = YawPitchRollAngles.tryFromTransform(this._localToWorld);
+      if (undefined === orgAng.angles)
+        orgAng.angles = YawPitchRollAngles.createDegrees(0, 0, 0);
+
+      let bbox = (undefined !== info.bbox ? ElementGeometry.toElementAlignedBox3d(info.bbox) : undefined);
+      if (undefined === bbox)
+        bbox = Range3d.createNull();
+
+      this.placement = new Placement3d(orgAng.origin, orgAng.angles, bbox);
+    }
+
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    private get entry() {
+      if (undefined === this._entry)
+        this._entry = new IteratorEntry(this._appearance, this._localToWorld);
+
+      return this._entry;
+    }
+
+    /** Advance to next displayable opcode (geometric entry or geometry part) while updating the current [[GeometryParams]] from appearance related opcodes. */
+    public next(): IteratorResult<IteratorEntry> {
+      while (this._index < this.entryArray.length) {
+        const value = this.entryArray[this._index++];
+        if (ElementGeometry.isAppearanceEntry(value)) {
+          ElementGeometry.updateGeometryParams(value, this.entry.geomParams);
+        } else if (ElementGeometryOpcode.SubGraphicRange === value.opcode) {
+          // NOTE: localRange remains valid until the next sub-range entry is encountered...
+          this.entry.localRange = ElementGeometry.toSubGraphicRange(value);
+        } else if (ElementGeometryOpcode.PartReference === value.opcode) {
+          this.entry.value = value;
+          return { value: this.entry, done: false };
+        } else if (ElementGeometry.isGeometricEntry(value)) {
+          this.entry.value = value;
+          return { value: this.entry, done: false };
+        }
+      }
+
+      return { value: this.entry, done: true };
+    }
+
+    public [Symbol.iterator](): IterableIterator<IteratorEntry> {
+      return this;
+    }
+  }
+
   export function isGeometryQueryEntry(entry: ElementGeometryDataEntry): boolean {
     switch (entry.opcode) {
       case ElementGeometryOpcode.PointPrimitive:
@@ -449,7 +784,7 @@ export namespace ElementGeometry {
     if (wantBRepData && null !== entityData)
       data = Base64.fromUint8Array(entityData);
 
-    return { data, type, transform, faceSymbology };
+    return { data, type, transform: transform?.toJSON(), faceSymbology };
   }
 
   export function fromBRep(brep: BRepEntity.DataProps): ElementGeometryDataEntry | undefined {
