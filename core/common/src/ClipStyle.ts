@@ -26,11 +26,19 @@ export interface CutStyleProps {
   appearance?: FeatureAppearanceProps;
 }
 
+/** As part of a [[ClipStyle]], describes how section-cut graphics should be displayed.
+ * @note Section-cut graphics are only produced if [[ClipStyle.produceCutGeometry]] is `true`.
+ * @beta
+ */
 export class CutStyle {
+  /** Selectively overrides some of the view's [[ViewFlags]] when drawing the section-cut graphics. */
   public readonly viewflags: Readonly<ViewFlagOverrides>;
+  /** If defined, overrides the settings the view uses to draw the edges of the section-cut graphics. */
   public readonly hiddenLine?: HiddenLine.Settings;
+  /** If defined, overrides aspects of the symbology of the section-cut graphics. */
   public readonly appearance?: FeatureAppearance;
 
+  /** The default CutStyle, configured to draw the section-cut graphics using the view's settings, with no overrides. */
   public static readonly defaults = new CutStyle();
 
   private constructor(viewflags?: Readonly<ViewFlagOverrides>, hiddenLine?: HiddenLine.Settings, appearance?: FeatureAppearance) {
@@ -42,6 +50,7 @@ export class CutStyle {
       this.appearance = appearance;
   }
 
+  /** Create a CutStyle from its components. */
   public static create(viewflags?: Readonly<ViewFlagOverrides>, hiddenLine?: HiddenLine.Settings, appearance?: FeatureAppearance): CutStyle {
     if ((viewflags && viewflags.anyOverridden()) || (hiddenLine && !hiddenLine.matchesDefaults) || (appearance && !appearance.matchesDefaults))
       return new CutStyle(viewflags, hiddenLine, appearance);
@@ -61,6 +70,7 @@ export class CutStyle {
     }
   }
 
+  /** Return JSON representation. The representation is `undefined` if this style matches the default style. */
   public toJSON(): CutStyleProps | undefined {
     if (this.matchesDefaults)
       return undefined;
@@ -78,6 +88,7 @@ export class CutStyle {
     return props;
   }
 
+  /** Returns true if this style matches the default style - that is, it overrides none of the view's settings. */
   public get matchesDefaults(): boolean {
     if (this === CutStyle.defaults)
       return true;

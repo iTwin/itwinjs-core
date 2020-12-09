@@ -230,7 +230,7 @@ export class FeatureAppearance implements FeatureAppearanceProps {
 /** Interface adopted by an object that can supply a [[FeatureAppearance]] given a low-level description of a [[Feature]].
  * @see [[FeatureOverrides]] for the commonly-used implementation.
  * @see [[FeatureAppearanceProvider]] to supplement the appearance supplied by this interface.
- * @beta
+ * @public
  */
 export interface FeatureAppearanceSource {
   /** Supplies the desired appearance overrides for the specified [[Feature]], or `undefined` if the feature should not be drawn.

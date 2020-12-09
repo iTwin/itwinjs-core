@@ -63,6 +63,10 @@ public;ChangeOpCode
 alpha;ChannelConstraintError 
 public;ChannelRootAspectProps 
 internal;ClassifierTileTreeId
+beta;ClipAppearance
+beta;ClipAppearanceProps
+beta;ClipStyle
+beta;ClipStyleProps
 beta;class CloudStorageCache
 beta;CloudStorageContainerDescriptor
 beta;CloudStorageContainerUrl
@@ -95,6 +99,8 @@ internal;CURRENT_INVOCATION: unique symbol
 internal;CURRENT_REQUEST: unique symbol
 internal;CurrentImdlVersion
 beta;CustomAttribute
+beta;CutStyle
+beta;CutStyleProps
 beta;DecorationGeometryProps
 alpha;defaultDesktopAuthorizationClientExpiryBuffer: number
 alpha;defaultMobileAuthorizationClientExpiryBuffer: number
@@ -164,10 +170,12 @@ public;Feature
 public;FeatureAppearance 
 public;FeatureAppearanceProps
 beta;FeatureAppearanceProvider
+beta;FeatureAppearanceProvider
+public;FeatureAppearanceSource
 internal;FeatureGates
 internal;FeatureIndex
 internal;FeatureIndexType
-public;FeatureOverrides
+public;FeatureOverrides 
 beta;FeatureTable 
 internal;FeatureTableHeader
 public;FilePropertyProps

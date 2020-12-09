@@ -155,7 +155,9 @@ export interface DisplayStyleSettingsProps {
    * @beta
    */
   modelOvr?: DisplayStyleModelAppearanceProps[];
-  /** Style applied by the view's [ClipVector]($geometry-core). */
+  /** Style applied by the view's [ClipVector]($geometry-core).
+   * @beta
+   */
   clipStyle?: ClipStyleProps;
 }
 
