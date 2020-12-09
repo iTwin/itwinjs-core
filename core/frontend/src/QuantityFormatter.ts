@@ -452,6 +452,33 @@ export class QuantityFormatter implements UnitsProvider {
   protected _overrideFormatDataByType = new Map<QuantityType, OverrideFormatEntry>();
   protected _formatSpecProviders = new Array<FormatterParserSpecsProvider>();
 
+  protected _pendingLoadFormatSpecImperial?: Promise<void>;
+  protected _pendingLoadFormatSpecMetric?: Promise<void>;
+  protected _pendingLoadParserSpecImperial?: Promise<void>;
+  protected _pendingLoadParserSpecMetric?: Promise<void>;
+
+  protected getPendingPromise(useImperial: boolean, isFormatSpecPromise: boolean): Promise<void> | undefined {
+    if (isFormatSpecPromise)
+      return useImperial ? this._pendingLoadFormatSpecImperial : this._pendingLoadFormatSpecMetric;
+
+    return useImperial ? this._pendingLoadParserSpecImperial : this._pendingLoadParserSpecMetric;
+  }
+
+  protected setPendingPromise(useImperial: boolean, isFormatSpecPromise: boolean, promise: Promise<void> | undefined): void {
+    if (isFormatSpecPromise) {
+      if (useImperial)
+        this._pendingLoadFormatSpecImperial = promise;
+      else
+        this._pendingLoadFormatSpecMetric = promise;
+
+    } else {
+      if (useImperial)
+        this._pendingLoadParserSpecImperial = promise;
+      else
+        this._pendingLoadParserSpecMetric = promise;
+    }
+  }
+
   /**
    * constructor
    * @param showMetricValues - Pass in `true` to show Metric formatted quantity values. Defaults to Imperial. This setting can be changed at
@@ -702,18 +729,30 @@ export class QuantityFormatter implements UnitsProvider {
 
   /** Asynchronous call to loadParsingSpecsForQuantityTypes. This method caches all the ParserSpecs so they can be quickly accessed. */
   protected async loadParsingSpecsForQuantityTypes(useImperial: boolean): Promise<void> {
-    const activeMap = useImperial ? this._imperialParserSpecsByType : this._metricParserSpecsByType;
-    activeMap.clear();
 
-    const typeArray = Object.values(QuantityType).filter((value) => (typeof value !== "string"));
-    for (const quantityType of typeArray) {
-      await this.loadParsingSpecsForQuantityType(quantityType as QuantityType, useImperial);
-    }
+    let promise = this.getPendingPromise(useImperial, false);
+    if (undefined !== promise)
+      return promise;
 
-    for (const provider of this._formatSpecProviders) {
-      const spec = await provider.createParserSpec(useImperial);
-      activeMap.set(provider.quantityTypeName, spec);
-    }
+    promise = new Promise(async (resolve) => {
+      const activeMap = useImperial ? this._imperialParserSpecsByType : this._metricParserSpecsByType;
+      activeMap.clear();
+
+      const typeArray = Object.values(QuantityType).filter((value) => (typeof value !== "string"));
+      for (const quantityType of typeArray) {
+        await this.loadParsingSpecsForQuantityType(quantityType as QuantityType, useImperial);
+      }
+
+      for (const provider of this._formatSpecProviders) {
+        const spec = await provider.createParserSpec(useImperial);
+        activeMap.set(provider.quantityTypeName, spec);
+      }
+      resolve();
+      this.setPendingPromise(useImperial, false, undefined);
+    });
+
+    this.setPendingPromise(useImperial, false, promise);
+    return promise;
   }
 
   /** Asynchronous call to loadFormatSpecsForQuantityType. This method caches all the FormatSpec so they can be quickly accessed. */
@@ -729,17 +768,29 @@ export class QuantityFormatter implements UnitsProvider {
 
   /** Asynchronous call to loadFormatSpecsForQuantityTypes. This method caches all the FormatSpec so they can be quickly accessed. */
   protected async loadFormatSpecsForQuantityTypes(useImperial: boolean): Promise<void> {
-    const activeMap = useImperial ? this._imperialFormatSpecsByType : this._metricFormatSpecsByType;
-    activeMap.clear();
-    const typeArray = Object.values(QuantityType).filter((value) => (typeof value !== "string"));
-    for (const quantityType of typeArray) {
-      await this.loadFormatSpecsForQuantityType(quantityType as QuantityType, useImperial);
-    }
 
-    for (const provider of this._formatSpecProviders) {
-      const spec = await provider.createFormatterSpec(useImperial);
-      activeMap.set(provider.quantityTypeName, spec);
-    }
+    let promise = this.getPendingPromise(useImperial, true);
+    if (undefined !== promise)
+      return promise;
+
+    promise = new Promise(async (resolve) => {
+      const activeMap = useImperial ? this._imperialFormatSpecsByType : this._metricFormatSpecsByType;
+      activeMap.clear();
+      const typeArray = Object.values(QuantityType).filter((value) => (typeof value !== "string"));
+      for (const quantityType of typeArray) {
+        await this.loadFormatSpecsForQuantityType(quantityType as QuantityType, useImperial);
+      }
+
+      for (const provider of this._formatSpecProviders) {
+        const spec = await provider.createFormatterSpec(useImperial);
+        activeMap.set(provider.quantityTypeName, spec);
+      }
+      resolve();
+      this.setPendingPromise(useImperial, true, undefined);
+    });
+
+    this.setPendingPromise(useImperial, true, promise);
+    return promise;
   }
 
   /** Synchronous call to get a FormatterSpec of a QuantityType. If the FormatterSpec is not yet cached an undefined object is returned. The
