@@ -4,47 +4,49 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
+  ClipAppearance,
   ClipStyle,
   ClipStyleProps,
+  CutStyle,
 } from "../ClipStyle";
 import { DisplayStyleSettings, DisplayStyleSettingsProps } from "../DisplayStyleSettings";
+import { LinePixels } from "../LinePixels";
 
-/*
 describe("ClipStyle", () => {
   it("should round-trip through JSON", () => {
-    const roundTrip = (props: ClipStyleProps | undefined, expected: ClipStyleProps) => {
+    const roundTrip = (props: ClipStyleProps | undefined, expected: ClipStyleProps | undefined | "input") => {
+      if ("input" === expected)
+        expected = props;
+
       const style = ClipStyle.fromJSON(props);
       const actual = style.toJSON();
       expect(actual).to.deep.equal(expected);
+      expect(style.matchesDefaults).to.equal(undefined === actual);
+      expect(style === ClipStyle.defaults).to.equal(style.matchesDefaults);
     };
 
-    roundTrip(undefined, {});
-    roundTrip({}, {});
-    roundTrip({ produceCutGeometry: false }, {});
-    roundTrip({ produceCutGeometry: true }, { produceCutGeometry: true });
-  });
+    roundTrip(undefined, undefined);
+    roundTrip({}, undefined);
+    roundTrip({ produceCutGeometry: false }, undefined);
+    roundTrip({ cutStyle: undefined, produceCutGeometry: false, outsideAppearance: undefined, insideAppearance: undefined }, undefined);
+    roundTrip(ClipStyle.create(false, CutStyle.defaults, ClipAppearance.defaults, ClipAppearance.defaults).toJSON(), undefined);
+    roundTrip({
+      cutStyle: CutStyle.defaults.toJSON(),
+      produceCutGeometry: false,
+      outsideAppearance: ClipAppearance.defaults.toJSON(),
+      insideAppearance: ClipAppearance.defaults.toJSON(),
+    }, undefined);
 
-  it("should compare", () => {
-    const compare = (a: ClipStyle, b: ClipStyle, expectEqual: boolean) => {
-      expect(a === b).to.equal(expectEqual);
-      expect(a.equals(b)).to.equal(expectEqual);
-      expect(b.equals(a)).to.equal(expectEqual);
-    };
-
-    const def1 = ClipStyle.fromJSON();
-    const def2 = ClipStyle.fromJSON({ produceCutGeometry: false });
-    const cut1 = ClipStyle.fromJSON({ produceCutGeometry: true });
-    const cut2 = ClipStyle.fromJSON({ produceCutGeometry: true });
-
-    compare(def1, def2, true);
-    compare(cut1, cut2, true);
-    compare(def1, cut1, false);
-    compare(def2, cut2, false);
-  });
-
-  it("compares to defaults", () => {
-    expect(ClipStyle.fromJSON().matchesDefaults).to.be.true;
-    expect(ClipStyle.fromJSON({ produceCutGeometry: true }).matchesDefaults).to.be.false;
+    roundTrip({ produceCutGeometry: true }, "input");
+    roundTrip({ cutStyle: { appearance: { weight: 5 } } }, "input");
+    roundTrip({ insideAppearance: { nonLocatable: true } }, "input");
+    roundTrip({ outsideAppearance: { linePixels: LinePixels.HiddenLine } }, "input");
+    roundTrip({
+      produceCutGeometry: true,
+      cutStyle: { appearance: { weight: 5 } },
+      insideAppearance: { nonLocatable: true },
+      outsideAppearance: { linePixels: LinePixels.Solid },
+    }, "input");
   });
 
   it("should serialize to DisplayStyleSettings", () => {
@@ -63,4 +65,3 @@ describe("ClipStyle", () => {
     expect(props.clipStyle).to.deep.equal({ produceCutGeometry: true });
   });
 });
-*/
