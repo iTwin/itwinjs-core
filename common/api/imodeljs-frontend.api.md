@@ -6463,6 +6463,8 @@ export class QuantityFormatter implements UnitsProvider {
     // (undocumented)
     protected getOverrideFormat(type: QuantityType, imperial: boolean): Promise<FormatProps | undefined>;
     getParserSpecByQuantityType(type: QuantityTypeArg, imperial?: boolean): Promise<ParserSpec>;
+    // (undocumented)
+    protected getPendingPromise(useImperial: boolean, isFormatSpecPromise: boolean): Promise<void> | undefined;
     protected getUnitByQuantityType(type: QuantityType): Promise<UnitProps>;
     getUnitsByFamily(unitFamily: string): Promise<UnitProps[]>;
     // (undocumented)
@@ -6494,10 +6496,20 @@ export class QuantityFormatter implements UnitsProvider {
     protected _overrideFormatDataByType: Map<QuantityType, OverrideFormatEntry>;
     parseIntoQuantityValue(inString: string, parserSpec: ParserSpec): ParseResult;
     protected parseQuantityTypeArg(type: QuantityTypeArg): string;
+    // (undocumented)
+    protected _pendingLoadFormatSpecImperial?: Promise<void>;
+    // (undocumented)
+    protected _pendingLoadFormatSpecMetric?: Promise<void>;
+    // (undocumented)
+    protected _pendingLoadParserSpecImperial?: Promise<void>;
+    // (undocumented)
+    protected _pendingLoadParserSpecMetric?: Promise<void>;
     registerFormatterParserSpecsProviders(provider: FormatterParserSpecsProvider): Promise<boolean>;
     setActiveUnitSystem(useImperial: boolean, restartActiveTool?: boolean): Promise<void>;
     // (undocumented)
     setOverrideFormats(type: QuantityType, entry: OverrideFormatEntry): Promise<void>;
+    // (undocumented)
+    protected setPendingPromise(useImperial: boolean, isFormatSpecPromise: boolean, promise: Promise<void> | undefined): void;
     get useImperialFormats(): boolean;
     set useImperialFormats(useImperial: boolean);
 }

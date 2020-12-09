@@ -620,6 +620,7 @@ export class QuantityFormatter implements UnitsProvider {
   }
 
   private async reloadCachedData() {
+    this.clearCachedData();
     await this.loadFormatSpecsForQuantityTypes(true);
     await this.loadParsingSpecsForQuantityTypes(true);
     await this.loadFormatSpecsForQuantityTypes(false);
@@ -628,19 +629,16 @@ export class QuantityFormatter implements UnitsProvider {
 
   public async setOverrideFormats(type: QuantityType, entry: OverrideFormatEntry) {
     this._overrideFormatDataByType.set(type, entry);
-    this.clearCachedData();
     await this.reloadCachedData();
   }
 
   public async clearOverrideFormats(type: QuantityType) {
     this._overrideFormatDataByType.delete(type);
-    this.clearCachedData();
     await this.reloadCachedData();
   }
 
   public async clearAllOverrideFormats() {
     this._overrideFormatDataByType.clear();
-    this.clearCachedData();
     await this.reloadCachedData();
   }
 
