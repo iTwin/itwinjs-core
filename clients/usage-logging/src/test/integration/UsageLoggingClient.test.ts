@@ -85,7 +85,7 @@ describe("UlasClient - OIDC Token (#integration)", () => {
     for (const usageType of [UsageType.Beta, UsageType.HomeUse, UsageType.PreActivation, UsageType.Production, UsageType.Trial]) {
       const entry = new FeatureLogEntry(Guid.createValue(), os.hostname(), usageType);
       entry.additionalData.test = "Post feature log (#integration)";
-      entry.additionalData.testUsageType = `UsageType: ${usageType}`;
+      entry.additionalData.testUsageType = `${usageType}`;
 
       const resp: LogPostingResponse = await client.logFeatureUsage(requestContext, entry);
       assert(resp);
@@ -102,7 +102,7 @@ describe("UlasClient - OIDC Token (#integration)", () => {
     for (const usageType of [UsageType.Beta, UsageType.HomeUse, UsageType.PreActivation, UsageType.Production, UsageType.Trial]) {
       const entry = new FeatureLogEntry(Guid.createValue(), os.hostname(), usageType);
       entry.additionalData.test = "Post feature log using iTwin productID and no projectId (#integration)";
-      entry.additionalData.testUsageType = `UsageType: ${usageType}`;
+      entry.additionalData.testUsageType = `${usageType}`;
 
       const resp: LogPostingResponse = await client.logFeatureUsage(requestContext, entry);
       assert(resp);
