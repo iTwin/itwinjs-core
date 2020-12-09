@@ -12,6 +12,7 @@ import { Omit } from '@bentley/ui-core';
 import { OmitChildrenProp } from '@bentley/ui-core';
 import { Point } from '@bentley/ui-core';
 import { PointProps } from '@bentley/ui-core';
+import { PopupProps } from '@bentley/ui-core';
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
 import { Rectangle } from '@bentley/ui-core';
@@ -657,14 +658,8 @@ export enum FooterPopupContentType {
 export type FooterPopupDefaultProps = Pick<FooterPopupProps, "contentType">;
 
 // @beta
-export interface FooterPopupProps extends CommonProps {
-    children?: React.ReactNode;
+export interface FooterPopupProps extends Partial<PopupProps> {
     contentType: FooterPopupContentType;
-    isOpen?: boolean;
-    isPinned?: boolean;
-    onClose?: () => void;
-    onOutsideClick?: (e: MouseEvent) => void;
-    target?: HTMLElement | null;
 }
 
 // @beta

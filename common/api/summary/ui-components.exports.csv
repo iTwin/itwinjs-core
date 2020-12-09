@@ -19,8 +19,7 @@ public;class BasePointTypeConverter
 alpha;BaseSolarDataProvider 
 alpha;BaseTimelineDataProvider 
 beta;BasicPropertyEditor 
-beta;BeDragDropContext: typeof BeDragDropContextComponent & ContextComponent
-beta;BeDragDropContextComponent 
+beta;BeDragDropContext(props:
 public;BeInspireTree
 public;BeInspireTreeDataProvider
 public;BeInspireTreeDataProviderInterface
@@ -65,12 +64,12 @@ public;CellProps
 beta;CheckBoxInfo
 beta;CheckboxStateChange
 beta;ColorEditor 
-beta;ColorPickerButton: React.ForwardRefExoticComponent
+beta;ColorPickerButton: (props: ColorPickerProps) => JSX.Element | null
 beta;ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResult, colorPresets }: ColorPickerDialogProps): JSX.Element
 beta;ColorPickerDialogProps
 beta;ColorPickerPanel({ activeColor, onColorChange, colorPresets }: ColorPickerPanelProps): JSX.Element
 beta;ColorPickerPanelProps
-beta;ColorPickerPopup: React.ForwardRefExoticComponent
+beta;ColorPickerPopup: (props: ColorPickerPopupProps) => JSX.Element | null
 beta;ColorPickerPopupProps 
 beta;ColorPickerProps 
 beta;ColorPropertyEditor 
@@ -297,7 +296,7 @@ alpha;OrthogonalDirection
 internal;OrthogonalDirectionHelpers
 beta;PagedTreeNodeLoader
 public;PageOptions
-beta;ParsedInput: React.ForwardRefExoticComponent
+beta;ParsedInput: (props: ParsedInputProps) => JSX.Element | null
 beta;ParsedInputProps 
 alpha;PlaybackSettings
 alpha;PlaybackSettingsChangeHandler = (settingsChange: PlaybackSettings) => void
@@ -356,7 +355,7 @@ public;PropertyValueRendererContext
 public;PropertyValueRendererManager
 public;PropertyView 
 public;PropertyViewProps 
-beta;QuantityInput: React.ForwardRefExoticComponent
+beta;QuantityInput({ initialValue, quantityType, readonly, className, style, onQuantityChange, ref }: QuantityProps): JSX.Element
 beta;QuantityProps 
 public;ReactDataGridColumn 
 public;ResultSelector 
