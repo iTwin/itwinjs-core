@@ -215,9 +215,12 @@ class PrimaryTreeReference extends TileTreeReference {
       // We do this each time in case the ClipStyle's overrides are modified.
       // ###TODO: can we avoid that? Event listeners maybe?
       this.view.displayStyle.settings.clipStyle.cutStyle.viewflags.clone(this._viewFlagOverrides);
+
+      // Do not clip out the cut geometry intersecting the clip planes.
       this._viewFlagOverrides.setShowClipVolume(false);
-      if (this.isPlanProjection)
-        this._viewFlagOverrides.setForceSurfaceDiscard(true);
+
+      // The cut geometry is planar - it should win a z-fight.
+      this._viewFlagOverrides.setForceSurfaceDiscard(true);
     }
 
     const script = view.scheduleScript;
