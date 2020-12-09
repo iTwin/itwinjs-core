@@ -126,7 +126,7 @@ it("DrapeLinestringAsLines", async () => {
   expect(ck.getNumErrors()).equals(0);
 });
 
-it.only("DrapeLinestringLargeMesh", async () => {
+it("DrapeLinestringLargeMesh", async () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
   const w0 = 4.0;
