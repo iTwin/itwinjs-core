@@ -767,6 +767,10 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "react-dnd-test-utils",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "react-dom",
       "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
