@@ -73,18 +73,27 @@ export enum AccuDrawField {
 }
 
 /** @alpha */
-export interface AccuDrawFocusInFieldEventArgs {
+export interface AccuDrawSetFieldFocusEventArgs {
   field: AccuDrawField;
 }
 
 /** @alpha */
-export class AccuDrawFocusInFieldEvent extends BeUiEvent<AccuDrawFocusInFieldEventArgs> { }
+export class AccuDrawSetFieldFocusEvent extends BeUiEvent<AccuDrawSetFieldFocusEventArgs> { }
 
 /** @alpha */
-export interface AccuDrawFieldColorSetEventArgs {
+export interface AccuDrawSetFieldValueEventArgs {
   field: AccuDrawField;
-  color: ColorDef;
+  value: number;
 }
 
 /** @alpha */
-export class AccuDrawFieldColorSetEvent extends BeUiEvent<AccuDrawFieldColorSetEventArgs> { }
+export class AccuDrawSetFieldValueEvent extends BeUiEvent<AccuDrawSetFieldValueEventArgs> { }
+
+/** @alpha */
+export interface AccuDrawSetFieldLockEventArgs {
+  field: AccuDrawField;
+  lock: boolean;
+}
+
+/** @alpha */
+export class AccuDrawSetFieldLockEvent extends BeUiEvent<AccuDrawSetFieldLockEventArgs> { }
