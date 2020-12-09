@@ -1,6 +1,13 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Mon, 07 Dec 2020 18:40:48 GMT and should not be manually modified.
+This log was last generated on Wed, 09 Dec 2020 20:58:23 GMT and should not be manually modified.
+
+## 2.9.7
+Wed, 09 Dec 2020 20:58:23 GMT
+
+### Updates
+
+- Fixed an issue where WMS GetFeatureInfo would not work correctly on all sublayers.
 
 ## 2.9.6
 Mon, 07 Dec 2020 18:40:48 GMT
