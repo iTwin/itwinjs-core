@@ -35,15 +35,15 @@ export interface ColorPickerPopupProps extends React.ButtonHTMLAttributes<HTMLBu
   readonly?: boolean;
   /** popup position. If not set RelativePosition.BottomLeft is used */
   popupPosition?: RelativePosition;
+  /** Provides ability to return reference to HTMLButtonElement */
+  ref?: React.Ref<HTMLButtonElement>;
 }
 
-/** ColorPickerPopup component
- * @note Using forwardRef so the ColorEditor (Type Editor) can access the ref of the button element inside this component.
- * @beta
- */
-export const ColorPickerPopup = React.forwardRef<HTMLButtonElement, ColorPickerPopupProps>(
-  function ColorPickerPopup(props, ref) {
-    const target = React.useRef<HTMLButtonElement>(null);
+// Defined using following pattern (const ColorPickerPopup at bottom) to ensure useful API documentation is extracted
+
+const ForwardRefColorPickerPopup = React.forwardRef<HTMLButtonElement, ColorPickerPopupProps>(
+  function ForwardRefColorPickerPopup(props, ref) {
+    const target = React.useRef<HTMLButtonElement>();
     const refs = useRefs(target, ref);  // combine ref needed for target with the forwardRef needed by the Parent when parent is a Type Editor.
     const [showPopup, setShowPopup] = React.useState(false);
     const [colorDef, setColorDef] = React.useState(props.initialColor);
@@ -114,4 +114,11 @@ export const ColorPickerPopup = React.forwardRef<HTMLButtonElement, ColorPickerP
         </Popup>
       </>
     );
-  });
+  }
+);
+
+/** ColorPickerButton component
+ * @note Using forwardRef so the ColorEditor (Type Editor) can access the ref of the button element inside this component.
+ * @beta
+ */
+export const ColorPickerPopup: (props: ColorPickerPopupProps) => JSX.Element | null = ForwardRefColorPickerPopup;

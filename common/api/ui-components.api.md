@@ -833,7 +833,7 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
 }
 
 // @beta
-export const ColorPickerButton: React.ForwardRefExoticComponent<ColorPickerProps & React.RefAttributes<HTMLButtonElement>>;
+export const ColorPickerButton: (props: ColorPickerProps) => JSX.Element | null;
 
 // @beta
 export function ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResult, colorPresets }: ColorPickerDialogProps): JSX.Element;
@@ -866,7 +866,7 @@ export interface ColorPickerPanelProps {
 }
 
 // @beta
-export const ColorPickerPopup: React.ForwardRefExoticComponent<ColorPickerPopupProps & React.RefAttributes<HTMLButtonElement>>;
+export const ColorPickerPopup: (props: ColorPickerPopupProps) => JSX.Element | null;
 
 // @beta
 export interface ColorPickerPopupProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
@@ -877,6 +877,7 @@ export interface ColorPickerPopupProps extends React.ButtonHTMLAttributes<HTMLBu
     onColorChange?: ((newColor: ColorDef) => void) | undefined;
     popupPosition?: RelativePosition;
     readonly?: boolean;
+    ref?: React.Ref<HTMLButtonElement>;
 }
 
 // @beta
@@ -888,6 +889,7 @@ export interface ColorPickerProps extends React.ButtonHTMLAttributes<HTMLButtonE
     numColumns?: number;
     onColorPick?: ((color: ColorDef) => void) | undefined;
     readonly?: boolean;
+    ref?: React.Ref<HTMLButtonElement>;
     round?: boolean;
 }
 
@@ -3031,7 +3033,7 @@ export interface PageOptions {
 }
 
 // @beta
-export const ParsedInput: React.ForwardRefExoticComponent<ParsedInputProps & React.RefAttributes<HTMLInputElement>>;
+export const ParsedInput: (props: ParsedInputProps) => JSX.Element | null;
 
 // @beta
 export interface ParsedInputProps extends CommonProps {
@@ -3040,6 +3042,7 @@ export interface ParsedInputProps extends CommonProps {
     onChange?: (newValue: number) => void;
     parseString: (stringValue: string) => ParseResults;
     readonly?: boolean;
+    ref?: React.Ref<HTMLInputElement>;
 }
 
 // @alpha
@@ -3523,7 +3526,7 @@ export interface PropertyViewProps extends SharedRendererProps {
 }
 
 // @beta
-export const QuantityInput: React.ForwardRefExoticComponent<QuantityProps & React.RefAttributes<HTMLInputElement>>;
+export function QuantityInput({ initialValue, quantityType, readonly, className, style, onQuantityChange, ref }: QuantityProps): JSX.Element;
 
 // @beta
 export interface QuantityProps extends CommonProps {
@@ -3531,6 +3534,7 @@ export interface QuantityProps extends CommonProps {
     onQuantityChange: (newQuantityValue: number) => void;
     quantityType: QuantityType;
     readonly?: boolean;
+    ref?: React.Ref<HTMLInputElement>;
 }
 
 // @public
