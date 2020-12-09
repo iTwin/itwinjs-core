@@ -284,13 +284,15 @@ describe("<NumberInput - React Testing Library />", () => {
       spyMethod();
       value = v;
     };
-    const wrapper = render(<NumberInput precision={2} value={value} step={.25} onChange={handleChange} />);
+    const spyBlur = sinon.spy();
+    const wrapper = render(<NumberInput precision={2} value={value} step={.25} onChange={handleChange} onBlur={spyBlur} />);
     const input = wrapper.container.querySelector("input");
     expect(input).not.to.be.null;
     input?.focus();
     fireEvent.change(input!, { target: { value: "22.3" } });
     input?.blur();
     spyMethod.calledOnce.should.true;
+    spyBlur.calledOnce.should.true;
     expect(value).to.eq(22.3);
   });
 

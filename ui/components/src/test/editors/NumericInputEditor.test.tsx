@@ -54,10 +54,9 @@ describe("<NumericInputEditor />", () => {
     const input = component.container.querySelector("input") as HTMLInputElement;
     expect(input.value).to.eq("5");
 
-    const incrementor = component.container.querySelectorAll("i");
+    const incrementor = component.container.querySelectorAll(".core-number-input-button");
     expect(incrementor.length).to.eq(2);
-    fireEvent.mouseDown(incrementor[0]);
-    fireEvent.mouseUp(incrementor[0]);
+    fireEvent.click(incrementor[0]);
     expect(input.value).to.eq("6");
 
     cleanup();

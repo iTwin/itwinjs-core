@@ -106,13 +106,13 @@ public;HorizontalAlignment
 public;HorizontalTabs(props: TabsProps): JSX.Element
 public;Icon(props: IconProps): JSX.Element | null
 public;IconHelper
-public;IconInput: React.ForwardRefExoticComponent
+public;IconInput(props: IconInputProps): JSX.Element
 public;IconInputProps 
 public;IconProps 
 public;IconSpec = string | ConditionalStringValue | React.ReactNode
 public;ImageCheckBox 
 public;ImageCheckBoxProps 
-public;Input: React.ForwardRefExoticComponent
+public;Input: (props: InputProps) => JSX.Element | null
 public;InputLabel 
 public;InputLabelProps 
 public;InputProps 
@@ -123,11 +123,11 @@ internal;isPromiseLike(obj: unknown): obj is PromiseLike
 internal;isReactMessage: (message: MessageType) => message is ReactMessage
 internal;ItemKeyboardNavigator
 public;LabeledComponentProps
-public;LabeledInput: React.ForwardRefExoticComponent
+public;LabeledInput(props: LabeledInputProps): JSX.Element
 public;LabeledInputProps 
 public;LabeledSelect 
 public;LabeledSelectProps 
-public;LabeledTextarea: React.ForwardRefExoticComponent
+public;LabeledTextarea(props: LabeledTextareaProps): JSX.Element
 public;LabeledTextareaProps 
 beta;LabeledThemedSelect(props: LabeledThemedSelectProps): JSX.Element
 beta;LabeledThemedSelectProps 
@@ -170,7 +170,7 @@ public;NoChildrenProps
 beta;NodeCheckboxProps
 beta;NodeCheckboxRenderer = (props: NodeCheckboxRenderProps) => React.ReactNode
 beta;NodeCheckboxRenderProps = Omit
-beta;NumberInput: React.ForwardRefExoticComponent
+beta;NumberInput(props: NumberInputProps): JSX.Element
 beta;NumberInputProps 
 beta;NumericInput 
 internal;NumericInputDefaultProps = Pick
@@ -186,8 +186,8 @@ internal;placementToPosition(placement: TooltipPlacement | undefined): RelativeP
 internal;Point 
 public;PointProps
 public;Popup 
-alpha;PopupContextMenu(props: PopupContextMenuProps): JSX.Element
-alpha;PopupContextMenuProps 
+beta;PopupContextMenu(props: PopupContextMenuProps): JSX.Element
+beta;PopupContextMenuProps 
 public;PopupProps 
 beta;ProgressBar(props: ProgressBarProps): JSX.Element
 beta;ProgressBarProps 
@@ -240,7 +240,7 @@ public;SvgSprite
 public;SvgSpriteProps 
 public;Tabs 
 public;TabsProps 
-public;Textarea: React.ForwardRefExoticComponent
+public;Textarea: (props: TextareaProps) => JSX.Element | null
 public;TextareaProps 
 public;TextProps 
 beta;ThemedSelect(props: ThemedSelectProps): JSX.Element

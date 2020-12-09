@@ -81,9 +81,7 @@ export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSugge
 
 // @beta
 export interface AutoSuggestData {
-    // (undocumented)
     label: string;
-    // (undocumented)
     value: string;
 }
 
@@ -595,6 +593,7 @@ export const DivWithOutsideClick: {
         isDownOutside: boolean;
         componentDidMount(): void;
         componentWillUnmount(): void;
+        isInCorePopup(element: HTMLElement): boolean;
         onOutsideClick(e: MouseEvent): any;
         handleDocumentClick: (e: MouseEvent) => any;
         handleDocumentPointerDown: (e: PointerEvent) => void;
@@ -626,6 +625,7 @@ export const DivWithOutsideClick: {
         isDownOutside: boolean;
         componentDidMount(): void;
         componentWillUnmount(): void;
+        isInCorePopup(element: HTMLElement): boolean;
         onOutsideClick(e: MouseEvent): any;
         handleDocumentClick: (e: MouseEvent) => any;
         handleDocumentPointerDown: (e: PointerEvent) => void;
@@ -693,6 +693,8 @@ export interface ExpandableBlockProps extends CommonProps {
 // @public
 export class ExpandableList extends React.PureComponent<ExpandableListProps, ExpandableListState> {
     constructor(props: ExpandableListProps);
+    // @internal (undocumented)
+    componentDidUpdate(prevProps: ExpandableListProps): void;
     // (undocumented)
     static defaultProps: Partial<ExpandableListProps>;
     // (undocumented)
@@ -934,7 +936,7 @@ export class IconHelper {
 }
 
 // @public
-export const IconInput: React.ForwardRefExoticComponent<IconInputProps & React.RefAttributes<HTMLInputElement>>;
+export function IconInput(props: IconInputProps): JSX.Element;
 
 // @public
 export interface IconInputProps extends InputProps {
@@ -970,7 +972,7 @@ export interface ImageCheckBoxProps extends CommonProps {
 }
 
 // @public
-export const Input: React.ForwardRefExoticComponent<InputProps & React.RefAttributes<HTMLInputElement>>;
+export const Input: (props: InputProps) => JSX.Element | null;
 
 // @public
 export class InputLabel extends React.PureComponent<InputLabelProps> {
@@ -988,6 +990,7 @@ export interface InputLabelProps extends LabeledComponentProps, MessagedComponen
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement>, CommonProps {
     // (undocumented)
     nativeKeyHandler?: (e: KeyboardEvent) => void;
+    ref?: React.Ref<HTMLInputElement>;
     setFocus?: boolean;
 }
 
@@ -1043,7 +1046,7 @@ export interface LabeledComponentProps {
 }
 
 // @public
-export const LabeledInput: React.ForwardRefExoticComponent<LabeledInputProps & React.RefAttributes<HTMLInputElement>>;
+export function LabeledInput(props: LabeledInputProps): JSX.Element;
 
 // @public
 export interface LabeledInputProps extends InputProps, LabeledComponentProps, MessagedComponentProps {
@@ -1060,7 +1063,7 @@ export interface LabeledSelectProps extends SelectProps, LabeledComponentProps, 
 }
 
 // @public
-export const LabeledTextarea: React.ForwardRefExoticComponent<LabeledTextareaProps & React.RefAttributes<HTMLTextAreaElement>>;
+export function LabeledTextarea(props: LabeledTextareaProps): JSX.Element;
 
 // @public
 export interface LabeledTextareaProps extends TextareaProps, LabeledComponentProps, MessagedComponentProps {
@@ -1344,30 +1347,21 @@ export type NodeCheckboxRenderProps = Omit<CheckboxProps, "onChange" | "onClick"
 };
 
 // @beta
-export const NumberInput: React.ForwardRefExoticComponent<NumberInputProps & React.RefAttributes<HTMLInputElement>>;
+export function NumberInput(props: NumberInputProps): JSX.Element;
 
 // @beta
-export interface NumberInputProps extends Omit<InputProps, "min" | "max" | "step" | "onChange" | "onBlur" | "onKeyDown" | "defaultValue" | "onInvalid"> {
+export interface NumberInputProps extends Omit<InputProps, "min" | "max" | "step" | "onChange" | "onBlur"> {
     containerClassName?: string;
-    // (undocumented)
     format?: (num: number | null | undefined, formattedValue: string) => string;
-    // (undocumented)
     max?: number;
-    // (undocumented)
     min?: number;
-    // (undocumented)
+    onBlur?: React.FocusEventHandler<HTMLInputElement>;
     onChange?: (value: number | undefined, stringValue: string) => void;
-    // (undocumented)
     parse?: ((value: string) => number | null | undefined);
-    // (undocumented)
     precision?: number;
-    // (undocumented)
     showTouchButtons?: boolean;
-    // (undocumented)
     snap?: boolean;
-    // (undocumented)
     step?: StepFunctionProp;
-    // (undocumented)
     value?: number;
 }
 
@@ -1476,10 +1470,10 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     render(): React.ReactPortal | null;
     }
 
-// @alpha
+// @beta
 export function PopupContextMenu(props: PopupContextMenuProps): JSX.Element;
 
-// @alpha
+// @beta
 export interface PopupContextMenuProps extends CommonProps {
     animate?: boolean;
     ariaLabel?: string;
@@ -2024,10 +2018,11 @@ export interface TabsProps extends React.AllHTMLAttributes<HTMLUListElement>, Co
 }
 
 // @public
-export const Textarea: React.ForwardRefExoticComponent<TextareaProps & React.RefAttributes<HTMLTextAreaElement>>;
+export const Textarea: (props: TextareaProps) => JSX.Element | null;
 
 // @public
 export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement>, CommonProps {
+    ref?: React.Ref<HTMLTextAreaElement>;
     rows?: number;
     setFocus?: boolean;
 }
@@ -2538,6 +2533,7 @@ export const withOnOutsideClick: <ComponentProps extends {}>(Component: React.Co
         isDownOutside: boolean;
         componentDidMount(): void;
         componentWillUnmount(): void;
+        isInCorePopup(element: HTMLElement): boolean;
         onOutsideClick(e: MouseEvent): any;
         handleDocumentClick: (e: MouseEvent) => any;
         handleDocumentPointerDown: (e: PointerEvent) => void;
@@ -2569,6 +2565,7 @@ export const withOnOutsideClick: <ComponentProps extends {}>(Component: React.Co
         isDownOutside: boolean;
         componentDidMount(): void;
         componentWillUnmount(): void;
+        isInCorePopup(element: HTMLElement): boolean;
         onOutsideClick(e: MouseEvent): any;
         handleDocumentClick: (e: MouseEvent) => any;
         handleDocumentPointerDown: (e: PointerEvent) => void;
@@ -2600,6 +2597,7 @@ export const withOnOutsideClick: <ComponentProps extends {}>(Component: React.Co
 
 // @public
 export interface WithOnOutsideClickProps {
+    closeOnNestedPopupOutsideClick?: boolean;
     onOutsideClick?: (event: MouseEvent) => any;
 }
 
