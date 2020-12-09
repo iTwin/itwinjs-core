@@ -637,7 +637,7 @@ export class QuantityFormatter implements UnitsProvider {
 
     if (formatProps) {
       const format = new Format("stdFormat");
-      await format.fromJson(this, formatProps);
+      await format.fromJSON(this, formatProps);
       return format;
     }
 
