@@ -214,6 +214,7 @@ public;ScrollView(props: CommonDivProps): JSX.Element
 public;SearchBox 
 public;SearchBoxProps 
 public;Select(props: SelectProps): JSX.Element
+public;SelectOption
 public;SelectProps 
 beta;SessionUiSettings 
 internal;shallowDiffers: (a:
