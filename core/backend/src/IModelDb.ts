@@ -145,6 +145,9 @@ export abstract class IModelDb extends IModel {
   private readonly _snaps = new Map<string, IModelJsNative.SnapRequest>();
   private readonly _eventSink: EventSink;
 
+  /** Event called after a changeset is applied to this IModelDb. */
+  public readonly onChangesetApplied = new BeEvent<() => void>();
+
   /** Emits push events to the frontend.
    * @internal
    */
@@ -2186,6 +2189,23 @@ export class BriefcaseDb extends IModelDb {
   /* the BriefcaseId of the briefcase opened with this BriefcaseDb */
   public readonly briefcaseId: number;
 
+  /** Event raised just before a BriefcaseDb is opened.
+   *  * If the open requires authorization [AuthorizedClientRequestContext]($itwin-client) is passed in to the event handler. Otherwise [[ClientRequestContext]] is passed in
+   * **Example:**
+   * ``` ts
+   * [[include:BriefcaseDb.onOpen]]
+   * ```
+   */
+  public static readonly onOpen = new BeEvent<(_requestContext: AuthorizedClientRequestContext | ClientRequestContext, _props: IModelRpcProps) => void>();
+
+  /** Event raised just after a BriefcaseDb is opened.
+   * **Example:**
+   * ``` ts
+   * [[include:BriefcaseDb.onOpened]]
+   * ```
+   */
+  public static readonly onOpened = new BeEvent<(_requestContext: AuthorizedClientRequestContext | ClientRequestContext, _imodelDb: BriefcaseDb) => void>();
+
   public static findByKey(key: string): BriefcaseDb {
     return super.findByKey(key) as BriefcaseDb;
   }
@@ -2278,7 +2298,7 @@ export class BriefcaseDb extends IModelDb {
     Logger.logTrace(loggerCategory, `lockSchema`);
     const res = await BriefcaseManager.imodelClient.locks.update(requestContext, this.iModelId, [lock]);
     if (res.length !== 1 || res[0].lockLevel !== LockLevel.Exclusive)
-      throw new IModelError(IModelStatus.UpgradeFailed, "BriefcaseManager.lockSchema: Could not acquire schema lock", Logger.logError, loggerCategory, () => this.getRpcProps());
+      throw new IModelError(IModelStatus.UpgradeFailed, "Could not acquire schema lock", Logger.logError, loggerCategory, () => this.getRpcProps());
   }
 
   public static async open(requestContext: AuthorizedClientRequestContext | ClientRequestContext, args: OpenBriefcaseProps) {
@@ -2403,32 +2423,8 @@ export class BriefcaseDb extends IModelDb {
     this.initializeIModelDb();
   }
 
-  /** Event raised just before a BriefcaseDb is opened.
-   *  * If the open requires authorization [AuthorizedClientRequestContext]($itwin-client) is passed in to the event handler. Otherwise [[ClientRequestContext]] is passed in
-   * **Example:**
-   * ``` ts
-   * [[include:BriefcaseDb.onOpen]]
-   * ```
-   */
-  public static readonly onOpen = new BeEvent<(_requestContext: AuthorizedClientRequestContext | ClientRequestContext, _props: IModelRpcProps) => void>();
-  /** Event raised just after a BriefcaseDb is opened.
-   *
-   * **Example:**
-   * ``` ts
-   * [[include:BriefcaseDb.onOpened]]
-   * ```
-   */
-  public static readonly onOpened = new BeEvent<(_requestContext: AuthorizedClientRequestContext | ClientRequestContext, _imodelDb: BriefcaseDb) => void>();
-
-  /** Event raised just after a BriefcaseDb is created in iModelHub.
-   * This event is raised only for iModel access initiated by this app only.
-   */
-  // public static readonly onCreated = new BeEvent<(_imodelDb: BriefcaseDb) => void>();
-  /** Event called when the iModel is about to be closed */
-  // public readonly onBeforeClose = new BeEvent<() => void>();
-  /** Event called after a changeset is applied to this IModelDb. */
-  public readonly onChangesetApplied = new BeEvent<() => void>();
 }
+
 /** A *snapshot* iModel database file that is typically used for archival and data transfer purposes.
  * @see [Snapshot iModels]($docs/learning/backend/AccessingIModels.md#snapshot-imodels)
  * @see [About IModelDb]($docs/learning/backend/IModelDb.md)

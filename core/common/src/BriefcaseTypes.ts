@@ -7,7 +7,7 @@
  */
 
 import { GuidString } from "@bentley/bentleyjs-core";
-import { IModelEncryptionProps } from "./IModel";
+import { IModelEncryptionProps, OpenDbKey } from "./IModel";
 import { IModelVersionProps } from "./IModelVersion";
 
 /**
@@ -54,18 +54,14 @@ export interface BriefcaseProps {
 
 /** Properties for opening a local briefcase file via [BriefcaseId.open]($backend)
  * @beta
-*/
-export interface OpenBriefcaseProps extends IModelEncryptionProps {
+ */
+export interface OpenBriefcaseProps extends IModelEncryptionProps, OpenDbKey {
   /** the full path to the briefcase file  */
   fileName: string;
   /** If true, open the briefcase readonly */
   readonly?: boolean;
   /** parameter to control upgrading the briefcase before opening. */
   upgrade?: UpgradeOptions;
-  /** A key used to identify the opened briefcase connection. If no key is supplied, a hash of the fileName is used.
-   * @note You only need supply a key if you intentionally wish to open a briefcase more than once.
-   */
-  key?: string;
 }
 
 /** Properties of a local briefcase file, returned by [BriefcaseManager.getBriefcases]($backend)

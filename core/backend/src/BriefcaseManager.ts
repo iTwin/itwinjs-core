@@ -613,6 +613,9 @@ export class BriefcaseManager {
     status = await doApply;
     requestContext.enter();
 
+    // notify listeners
+    db.onChangesetApplied.raiseEvent();
+
     const result = applyRequest.reopenBriefcase(db.openMode);
     if (result !== DbResult.BE_SQLITE_OK)
       status = ChangeSetStatus.ApplyError;

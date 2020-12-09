@@ -103,22 +103,26 @@ export interface IModelEncryptionProps {
   password?: string;
 }
 
-/** @public */
+/** A key to identify an IModelDb when it is opened. If undefined, a hash of the fileName is used.
+ * It is only necessary to supply this if you wish to open a file more than once,
+ * or have some other reason to assign a specific key to the IModelDb.
+ * @public
+ */
 export interface OpenDbKey {
-  /** A key to identify the opened StandaloneDb. If undefined, a hash of the fileName is used.
-   * It is only necessary to supply this if you wish to open a file more than once
-   * or have some other reason to assign a specific key to the StandaloneDb.
-   */
   key?: string;
 }
 
-/** @public */
+/** Options that can be supplied when opening an existing SnapshotDb.
+ * @public
+ */
 export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey {
   /** @internal */
   lazyBlockCache?: boolean;
 }
 
-/** @beta */
+/** Options that can be supplied when opening an existing StandaloneDb.
+ * @beta
+ */
 export type StandaloneOpenOptions = OpenDbKey & UpgradeOptions;
 
 /** Options that can be supplied when creating snapshot iModels.
