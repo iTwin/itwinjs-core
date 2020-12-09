@@ -231,6 +231,7 @@ import { SolarShadowSettings } from '@bentley/imodeljs-common';
 import { SortedArray } from '@bentley/bentleyjs-core';
 import { SpatialClassificationProps } from '@bentley/imodeljs-common';
 import { SpatialViewDefinitionProps } from '@bentley/imodeljs-common';
+import { StandaloneOpenOptions } from '@bentley/imodeljs-common';
 import { StopWatch } from '@bentley/bentleyjs-core';
 import { StorageValue } from '@bentley/imodeljs-common';
 import { StrokeOptions } from '@bentley/geometry-core';
@@ -8377,7 +8378,7 @@ export class StandaloneConnection extends IModelConnection {
     close(): Promise<void>;
     get iModelId(): GuidString;
     get isClosed(): boolean;
-    static openFile(filePath: string, openMode?: OpenMode): Promise<StandaloneConnection>;
+    static openFile(filePath: string, openMode?: OpenMode, opts?: StandaloneOpenOptions): Promise<StandaloneConnection>;
 }
 
 // @public

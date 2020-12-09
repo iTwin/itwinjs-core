@@ -3720,7 +3720,6 @@ export abstract class IModel implements IModelProps {
     // (undocumented)
     abstract get isOpen(): boolean;
     abstract get isSnapshot(): boolean;
-    // @internal (undocumented)
     get key(): string;
     name: string;
     readonly openMode: OpenMode;
@@ -4896,11 +4895,16 @@ export interface OpenBriefcaseOptions {
 }
 
 // @beta
-export interface OpenBriefcaseProps extends IModelEncryptionProps {
+export interface OpenBriefcaseProps extends IModelEncryptionProps, OpenDbKey {
     fileName: string;
-    key?: string;
     readonly?: boolean;
     upgrade?: UpgradeOptions;
+}
+
+// @public
+export interface OpenDbKey {
+    // (undocumented)
+    key?: string;
 }
 
 // @internal (undocumented)
@@ -6681,10 +6685,8 @@ export abstract class SnapshotIModelRpcInterface extends RpcInterface {
     openRemote(_key: string): Promise<IModelConnectionProps>;
 }
 
-// @public (undocumented)
-export interface SnapshotOpenOptions extends IModelEncryptionProps {
-    // (undocumented)
-    key?: string;
+// @public
+export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey {
     // @internal (undocumented)
     lazyBlockCache?: boolean;
 }
@@ -6800,8 +6802,11 @@ export abstract class StandaloneIModelRpcInterface extends RpcInterface {
     static readonly interfaceName = "StandaloneIModelRpcInterface";
     static interfaceVersion: string;
     // (undocumented)
-    openFile(_filePath: string, _openMode: OpenMode): Promise<IModelConnectionProps>;
+    openFile(_filePath: string, _openMode: OpenMode, _opts?: StandaloneOpenOptions): Promise<IModelConnectionProps>;
 }
+
+// @beta
+export type StandaloneOpenOptions = OpenDbKey & UpgradeOptions;
 
 // @internal
 export type StorageValue = string | number | boolean | null | Uint8Array;

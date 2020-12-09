@@ -16,7 +16,7 @@ import {
 import { Range3d } from "@bentley/geometry-core";
 import { ChangesType, Lock, LockLevel, LockType } from "@bentley/imodelhub-client";
 import {
-  AxisAlignedBox3d, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps,
+  AxisAlignedBox3d, BRepGeometryCreate, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps,
   CreateSnapshotIModelProps, DisplayStyleProps, DomainOptions, EcefLocation, ElementAspectProps, ElementGeometryRequest, ElementGeometryUpdate,
   ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps,
   GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesResponseProps, IModelError,

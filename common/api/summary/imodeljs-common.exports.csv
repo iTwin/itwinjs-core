@@ -39,16 +39,10 @@ alpha;BRepGeometryInfo
 alpha;BRepGeometryOperation
 alpha;BRepHollowProps
 public;BRepPrimitive
-<<<<<<< HEAD
-beta;BriefcaseDownloader
-beta;BriefcaseProps
-=======
 alpha;BRepRoundProps
 alpha;BRepThickenProps
-internal;BriefcaseDownloader
-internal;BriefcaseKey = string
-internal;BriefcaseProps 
->>>>>>> master
+beta;BriefcaseDownloader
+beta;BriefcaseProps
 beta;calculateSolarAngles(date: Date, location: Cartographic):
 beta;calculateSolarDirection(date: Date, location: Cartographic): Vector3d
 beta;calculateSolarDirectionFromAngles(azimuthElevation:
@@ -356,6 +350,7 @@ internal;OpenAPIResponses
 internal;OpenAPISchema
 beta;OpenBriefcaseOptions
 beta;OpenBriefcaseProps 
+public;OpenDbKey
 internal;OPERATION: unique symbol
 alpha;OrbitGtBlobProps
 internal;OverriddenBy
@@ -502,6 +497,7 @@ public;SourceAndTarget
 beta;SpatialClassificationProps
 public;SpatialViewDefinitionProps 
 internal;class StandaloneIModelRpcInterface 
+beta;StandaloneOpenOptions = OpenDbKey & UpgradeOptions
 internal;StorageValue = string | number | boolean | null | Uint8Array
 public;SubCategoryAppearance
 public;SubCategoryAppearance

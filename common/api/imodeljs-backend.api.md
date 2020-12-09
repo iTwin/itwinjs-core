@@ -166,6 +166,7 @@ import { SnapResponseProps } from '@bentley/imodeljs-common';
 import { SnapshotOpenOptions } from '@bentley/imodeljs-common';
 import { SourceAndTarget } from '@bentley/imodeljs-common';
 import { SpatialViewDefinitionProps } from '@bentley/imodeljs-common';
+import { StandaloneOpenOptions } from '@bentley/imodeljs-common';
 import { StandardViewIndex } from '@bentley/geometry-core';
 import { StatusCodeWithMessage } from '@bentley/bentleyjs-core';
 import { SubCategoryAppearance } from '@bentley/imodeljs-common';
@@ -426,7 +427,6 @@ export class BriefcaseDb extends IModelDb {
     get contextId(): GuidString;
     // (undocumented)
     static findByKey(key: string): BriefcaseDb;
-    readonly onChangesetApplied: BeEvent<() => void>;
     static readonly onOpen: BeEvent<(_requestContext: ClientRequestContext | AuthorizedClientRequestContext, _props: IModelRpcProps) => void>;
     static readonly onOpened: BeEvent<(_requestContext: ClientRequestContext | AuthorizedClientRequestContext, _imodelDb: BriefcaseDb) => void>;
     // (undocumented)
@@ -2444,6 +2444,7 @@ export abstract class IModelDb extends IModel {
     // @internal
     get nativeDb(): IModelJsNative.DgnDb;
     readonly onBeforeClose: BeEvent<() => void>;
+    readonly onChangesetApplied: BeEvent<() => void>;
     // @internal (undocumented)
     static openDgnDb(file: {
         path: string;
@@ -3643,7 +3644,7 @@ export class SnapshotDb extends IModelDb {
     static openCheckpointV1(checkpoint: CheckpointProps): SnapshotDb;
     // @internal
     static openCheckpointV2(checkpoint: CheckpointProps): Promise<SnapshotDb>;
-    static openFile(path: string, props?: SnapshotOpenOptions): SnapshotDb;
+    static openFile(path: string, opts?: SnapshotOpenOptions): SnapshotDb;
     // @internal
     static openForApplyChangesets(path: string, props?: SnapshotOpenOptions): SnapshotDb;
     // @internal
@@ -3820,7 +3821,7 @@ export class StandaloneDb extends IModelDb {
     get filePath(): string;
     // (undocumented)
     static findByKey(key: string): StandaloneDb;
-    static openFile(filePath: string, openMode?: OpenMode, upgradeOptions?: UpgradeOptions): StandaloneDb;
+    static openFile(filePath: string, openMode?: OpenMode, options?: StandaloneOpenOptions): StandaloneDb;
     // (undocumented)
     static tryFindByKey(key: string): StandaloneDb | undefined;
 }
