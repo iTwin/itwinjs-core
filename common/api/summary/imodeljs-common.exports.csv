@@ -31,10 +31,24 @@ public;BisCodeSpec
 internal;bisectTileRange2d(range: Range3d, takeUpper: boolean): void
 internal;bisectTileRange3d(range: Range3d, takeUpper: boolean): void
 internal;BoundingSphere
+alpha;BRepCutProps
 beta;BRepEntity
+alpha;BRepGeometryCreate
+alpha;BRepGeometryFunction = (info: BRepGeometryInfo) => void
+alpha;BRepGeometryInfo
+alpha;BRepGeometryOperation
+alpha;BRepHollowProps
 public;BRepPrimitive
+<<<<<<< HEAD
 beta;BriefcaseDownloader
 beta;BriefcaseProps
+=======
+alpha;BRepRoundProps
+alpha;BRepThickenProps
+internal;BriefcaseDownloader
+internal;BriefcaseKey = string
+internal;BriefcaseProps 
+>>>>>>> master
 beta;calculateSolarAngles(date: Date, location: Cartographic):
 beta;calculateSolarDirection(date: Date, location: Cartographic): Vector3d
 beta;calculateSolarDirectionFromAngles(azimuthElevation:
