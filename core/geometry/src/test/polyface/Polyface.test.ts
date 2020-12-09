@@ -550,6 +550,78 @@ describe("Polyface.Facets", () => {
     // writeAllMeshes(all, "SphereNN", [optionsN], 0.0, optionYStep);
     writeAllMeshes(all, "Sphere", true, allOptions, y0Sphere, optionYStep);
   });
+  it("SpheresDensity", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const allCountsA = [];
+    const allCountsB = [];
+    const allCountsC = [];
+    let y0 = 0;
+    for (const a of [10, 22, 45]) {
+      const countsA = [];
+      const countsB = [];
+      const countsC = [];
+      // use a as both angle in degrees and multiplier of chordTol
+      const optionsA = StrokeOptions.createForFacets();
+      const optionsB = StrokeOptions.createForFacets();
+      const optionsC = StrokeOptions.createForFacets();
+      optionsA.angleTol = undefined;
+      optionsB.angleTol = undefined;
+      optionsC.angleTol = undefined;
+      optionsA.angleTol = Angle.createDegrees(a);
+      optionsA.chordTol = undefined;
+      optionsB.chordTol = a * 0.1;
+      optionsB.angleTol = undefined;
+      let xA = 0;
+      let xB = 400;
+      let xC = 800;
+      for (const radius of [1, 64, 4096]) {
+        optionsC.maxEdgeLength = radius / 4.0;
+        xA += 2 * radius;
+        xB += 2 * radius;
+        xC += 2 * radius;
+        const sphere = Sphere.createCenterRadius(Point3d.create(1, 23,), radius);
+        const builderA = PolyfaceBuilder.create(optionsA);
+        builderA.addSphere(sphere);
+        const facetsA = builderA.claimPolyface();
+        ck.testTrue(PolyfaceQuery.isPolyfaceClosedByEdgePairing(facetsA), "closure of sphere mesh with angle tol");
+        if (radius < 80)
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, facetsA, xA, y0);
+        countsA.push(facetsA.facetCount);
+
+        const builderB = PolyfaceBuilder.create(optionsB);
+        builderB.addSphere(sphere);
+        const facetsB = builderB.claimPolyface();
+        ck.testTrue(PolyfaceQuery.isPolyfaceClosedByEdgePairing(facetsB), "closure of sphere mesh with chord tol");
+        countsB.push(facetsB.facetCount);
+        if (radius < 80)
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, facetsB, xB, y0);
+        const builderC = PolyfaceBuilder.create(optionsC);
+        builderC.addSphere(sphere);
+        const facetsC = builderC.claimPolyface();
+        ck.testTrue(PolyfaceQuery.isPolyfaceClosedByEdgePairing(facetsC), "closure of sphere mesh with maxEdgeLength");
+        countsC.push(facetsC.facetCount);
+        if (radius < 80)
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, facetsC, xC, y0);
+
+      }
+      ck.testExactNumber(countsA[0], countsA[1], "angleTol counts not affected by radius");
+      ck.testExactNumber(countsA[1], countsA[2], "angleTol counts not affected by radius");
+      ck.testLT(countsB[0], countsB[1], "radiusTol count increases with radius");
+      ck.testLT(countsB[1], countsB[2], "radiusTol count increases with radius");
+
+      ck.testExactNumber(countsC[0], countsC[1], "fractional maxEdgeLength counts no affected by radius");
+      ck.testExactNumber(countsC[1], countsC[2], "fractional maxEdgeLength counts no affected by radius");
+
+      y0 += 200.0;
+      allCountsA.push(countsA);
+      allCountsB.push(countsB);
+      allCountsC.push(countsC);
+    }
+    console.log({ angleCounts: allCountsA, chordCounts: allCountsB, maxEdgeLengthCounts: allCountsC });
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "SphereDensity");
+    expect(ck.getNumErrors()).equals(0);
+  });
   it("Boxes", () => {
     const allBox = flattenGeometry(Sample.createBoxes(false), Sample.createBoxes(true));
     writeAllMeshes(allBox, "Box", true, allOptions, y0Box, optionYStep);

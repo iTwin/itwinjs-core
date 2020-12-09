@@ -19,13 +19,13 @@ export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextArea
   rows?: number;
   /** Indicates whether to set focus to the textarea element */
   setFocus?: boolean;
+  /** Provides ability to return reference to HTMLInputElement */
+  ref?: React.Ref<HTMLTextAreaElement>;
 }
 
-/** Basic textarea component
- * @public
- */
-export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
-  function Textarea(props, ref) {
+// Defined using following pattern (const Input at bottom) to ensure useful API documentation is extracted
+const ForwardRefTextarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
+  function ForwardRefTextarea(props, ref) {
     const { className, style, rows, setFocus, ...otherProps } = props; // eslint-disable-line @typescript-eslint/no-unused-vars
     const textRows = undefined !== rows ? rows : 3;
     const textAreaElementRef = React.useRef<HTMLTextAreaElement>();
@@ -49,3 +49,8 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
     );
   }
 );
+
+/** Basic textarea component
+ * @public
+ */
+export const Textarea: (props: TextareaProps) => JSX.Element | null = ForwardRefTextarea;

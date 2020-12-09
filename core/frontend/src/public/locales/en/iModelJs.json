@@ -111,5 +111,8 @@
   },
   "RealityModelTypes": {
     "OrbitGTPointCloud": "OrbitGT Point Cloud"
+  },
+  "RealityModelNames": {
+    "OSMBuildings": "OpenStreetMap Buildings"
   }
 }

@@ -13,6 +13,7 @@ import { AuxCoordSystem3dProps } from '@bentley/imodeljs-common';
 import { AuxCoordSystemProps } from '@bentley/imodeljs-common';
 import { AxisAlignedBox3d } from '@bentley/imodeljs-common';
 import { BeEvent } from '@bentley/bentleyjs-core';
+import { BRepGeometryCreate } from '@bentley/imodeljs-common';
 import { BriefcaseDownloader } from '@bentley/imodeljs-common';
 import { BriefcaseKey } from '@bentley/imodeljs-common';
 import { BriefcaseProps } from '@bentley/imodeljs-common';
@@ -1112,6 +1113,9 @@ export namespace ConcurrencyControl {
         saveChanges(): void;
     }
 }
+
+// @alpha
+export type ConcurrencyControlChannel = ConcurrencyControl.Channel;
 
 // @alpha
 export interface CrashReportingConfig {
@@ -2426,6 +2430,8 @@ export abstract class IModelDb extends IModel {
     };
     constructEntity<T extends Entity>(props: EntityProps): T;
     containsClass(classFullName: string): boolean;
+    // @alpha
+    createBRepGeometry(createProps: BRepGeometryCreate): DbResult;
     // (undocumented)
     static readonly defaultLimit = 1000;
     deleteFileProperty(prop: FilePropertyProps): DbResult;
@@ -2529,6 +2535,8 @@ export namespace IModelDb {
         constructor(_iModel: IModelDb);
         createElement<T extends Element>(elProps: ElementProps): T;
         deleteAspect(aspectInstanceIds: Id64Arg): void;
+        // @beta
+        deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set;
         deleteElement(ids: Id64Arg): void;
         getAspect(aspectInstanceId: Id64String): ElementAspect;
         getAspects(elementId: Id64String, aspectClassFullName?: string): ElementAspect[];
@@ -2727,7 +2735,6 @@ export class IModelHostConfiguration {
     // @deprecated
     briefcaseCacheDir?: string;
     cacheDir?: string;
-    // @beta
     compressCachedTiles?: boolean;
     // (undocumented)
     concurrentQuery: Config;

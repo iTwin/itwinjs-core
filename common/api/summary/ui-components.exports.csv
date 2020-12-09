@@ -19,8 +19,7 @@ public;class BasePointTypeConverter
 alpha;BaseSolarDataProvider 
 alpha;BaseTimelineDataProvider 
 beta;BasicPropertyEditor 
-beta;BeDragDropContext: typeof BeDragDropContextComponent & ContextComponent
-beta;BeDragDropContextComponent 
+beta;BeDragDropContext(props:
 public;BeInspireTree
 public;BeInspireTreeDataProvider
 public;BeInspireTreeDataProviderInterface
@@ -65,12 +64,12 @@ public;CellProps
 beta;CheckBoxInfo
 beta;CheckboxStateChange
 beta;ColorEditor 
-beta;ColorPickerButton: React.ForwardRefExoticComponent
+beta;ColorPickerButton: (props: ColorPickerProps) => JSX.Element | null
 beta;ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResult, colorPresets }: ColorPickerDialogProps): JSX.Element
 beta;ColorPickerDialogProps
 beta;ColorPickerPanel({ activeColor, onColorChange, colorPresets }: ColorPickerPanelProps): JSX.Element
 beta;ColorPickerPanelProps
-beta;ColorPickerPopup: React.ForwardRefExoticComponent
+beta;ColorPickerPopup: (props: ColorPickerPopupProps) => JSX.Element | null
 beta;ColorPickerPopupProps 
 beta;ColorPickerProps 
 beta;ColorPropertyEditor 
@@ -116,6 +115,7 @@ internal;DateTimePropertyEditor
 public;DateTimeTypeConverter 
 public;class DateTimeTypeConverterBase 
 public;DelayLoadedTreeNodeItem 
+public;DEPRECATED_FilteringInputProps 
 public;DEPRECATED_Tree 
 beta;DEPRECATED_withTreeDragDrop
 beta;Direction
@@ -163,8 +163,10 @@ beta;FilterCompositionLogicalOperator
 beta;FilterDescriptor
 beta;FilterDescriptorCollection 
 beta;class FilterDescriptorCollectionBase
+alpha;FilteredPropertyData 
 public;FilteringInput 
-public;FilteringInputProps 
+public;FilteringInputProps = DEPRECATED_FilteringInputProps | NEW_FilteringInputProps
+beta;FilteringInputStatus
 alpha;FilteringPropertyDataProvider 
 beta;FilterOperator
 beta;FilterRenderer
@@ -185,6 +187,7 @@ public;hasSelectionModeFlag: (selectionMode: SelectionMode, flag: SelectionModeF
 public;HexadecimalTypeConverter 
 beta;HighlightableTreeNodeProps
 beta;HighlightableTreeProps
+beta;HighlightedRecordProps
 beta;HighlightingEngine
 internal;HitBoxX
 internal;HitBoxY
@@ -209,7 +212,6 @@ alpha;IMutableGridCategoryItem
 alpha;IMutableGridItemFactory
 alpha;IMutablePropertyGridModel
 internal;InlineEdit 
-internal;InputContext
 internal;InputSwitchComponent 
 internal;InputSwitchProps
 alpha;IntlFormatter 
@@ -267,6 +269,7 @@ internal;NavCubeFace
 internal;NavCubeFaceProps 
 public;NavigationPropertyTypeConverter 
 public;NavigationPropertyValueRenderer 
+public;NEW_FilteringInputProps 
 public;NextObserver
 internal;Node
 public;NodeCheckboxProps 
@@ -293,7 +296,7 @@ alpha;OrthogonalDirection
 internal;OrthogonalDirectionHelpers
 beta;PagedTreeNodeLoader
 public;PageOptions
-beta;ParsedInput: React.ForwardRefExoticComponent
+beta;ParsedInput: (props: ParsedInputProps) => JSX.Element | null
 beta;ParsedInputProps 
 alpha;PlaybackSettings
 alpha;PlaybackSettingsChangeHandler = (settingsChange: PlaybackSettings) => void
@@ -344,6 +347,7 @@ public;PropertyGridProps
 internal;PropertyLabelRenderer 
 public;PropertyLabelRendererProps
 public;PropertyPopupState
+beta;PropertyRecordMatchInfo
 public;PropertyRenderer 
 public;PropertyRendererProps 
 beta;PropertyUpdatedArgs
@@ -351,7 +355,7 @@ public;PropertyValueRendererContext
 public;PropertyValueRendererManager
 public;PropertyView 
 public;PropertyViewProps 
-beta;QuantityInput: React.ForwardRefExoticComponent
+beta;QuantityInput({ initialValue, quantityType, readonly, className, style, onQuantityChange, ref }: QuantityProps): JSX.Element
 beta;QuantityProps 
 public;ReactDataGridColumn 
 public;ResultSelector 

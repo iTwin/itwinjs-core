@@ -216,6 +216,9 @@
     "AttachCesiumAssetTool": {
       "keyin": "fdt attach cesium asset"
     },
+    "SetBuildingDisplay": {
+      "keyin": "fdt set building display"
+    },
     "ExtensionService": {
       "keyin": "fdt add extensionService"
     },

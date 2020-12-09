@@ -92,4 +92,37 @@ describe("ExpandableList", () => {
     wrapper.unmount();
   });
 
+  it("should support changing defaultActiveBlock in update", () => {
+    const wrapper = mount(
+      <ExpandableList singleExpandOnly={true} singleIsCollapsible={true} defaultActiveBlock={1}>
+        <ExpandableBlock title="Test0" isExpanded={true} onClick={() => { }}>
+          Hello0
+        </ExpandableBlock>
+        <ExpandableBlock title="Test1" isExpanded={true} onClick={() => { }}>
+          Hello1
+        </ExpandableBlock>
+      </ExpandableList>);
+
+    const blocks = wrapper.find("div.uicore-expandable-blocks-block");
+    let expanded = wrapper.find("div.is-expanded");
+
+    expect(expanded.length).to.eq(1);
+    expect(blocks.length).to.eq(2);
+    expect(expanded.find("div.content").text()).to.eq("Hello1");
+
+    wrapper.setProps({ defaultActiveBlock: 0 });
+    wrapper.update();
+    expanded = wrapper.find("div.is-expanded");
+    expect(expanded.length).to.eq(1);
+    expect(expanded.find("div.content").text()).to.eq("Hello0");
+
+    wrapper.setProps({ defaultActiveBlock: 1 });
+    wrapper.update();
+    expanded = wrapper.find("div.is-expanded");
+    expect(expanded.length).to.eq(1);
+    expect(expanded.find("div.content").text()).to.eq("Hello1");
+
+    wrapper.unmount();
+  });
+
 });

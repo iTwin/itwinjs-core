@@ -121,6 +121,21 @@ export function Slider(props: SliderProps) {
     showMinMax && "core-slider-minMax",
   );
 
+  const internalFormatTooltip = React.useCallback((value: number) => {
+    if (formatTooltip)
+      return formatTooltip(value);
+
+    const actualStep = Math.abs(step ?? 1);
+
+    if (Number.isInteger(actualStep))
+      return value.toFixed(0);
+
+    const stepString = actualStep.toString();
+    const decimalIndex = stepString.indexOf(".");
+    const numDecimals = actualStep.toString().length - (decimalIndex + 1);
+    return value.toFixed(numDecimals);
+  }, [formatTooltip, step]);
+
   return (
     <div className={containerClassNames} style={style}>
       {showMinMax &&
@@ -158,7 +173,7 @@ export function Slider(props: SliderProps) {
                   getTrackProps={getTrackProps}
                   showTooltip={showTooltip ?? true}
                   tooltipBelow={tooltipBelow}
-                  formatTooltip={formatTooltip}
+                  formatTooltip={internalFormatTooltip}
                   multipleValues={multipleValues}
                 />
               ))}
@@ -195,7 +210,7 @@ export function Slider(props: SliderProps) {
                   getHandleProps={getHandleProps}
                   showTooltip={showTooltip}
                   tooltipBelow={tooltipBelow}
-                  formatTooltip={formatTooltip}
+                  formatTooltip={internalFormatTooltip}
                   disabled={disabled}
                 />
               ))}
@@ -255,7 +270,7 @@ interface TooltipTrackProps {
   getEventData: (e: Event) => object;
   showTooltip?: boolean;
   tooltipBelow?: boolean;
-  formatTooltip?: (value: number) => string;
+  formatTooltip: (value: number) => string;
   multipleValues?: boolean;
 }
 
@@ -289,8 +304,8 @@ function TooltipTrack(props: TooltipTrackProps) {
 
   let tooltipText = "";
   if (multipleValues) {
-    const sourceValue = formatTooltip ? formatTooltip(source.value) : source.value.toString();
-    const targetValue = formatTooltip ? formatTooltip(target.value) : target.value.toString();
+    const sourceValue = formatTooltip(source.value);
+    const targetValue = formatTooltip(target.value);
     tooltipText = `${sourceValue} : ${targetValue}`;
   }
 
@@ -400,7 +415,8 @@ function Handle(props: HandleProps) {
     "core-slider-handle",
     disabled && "core-disabled",
   );
-  const tooltip = formatTooltip ? formatTooltip(value) : value.toString();
+
+  const tooltip = formatTooltip ? formatTooltip(value) : /* istanbul ignore next */ value.toString();
 
   // istanbul ignore next
   return (
