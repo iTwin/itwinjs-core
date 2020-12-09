@@ -24,6 +24,8 @@ In the image below, the section-cut graphics are drawn in orange with visible bl
 
 ![Section-cut view with CutStyle overriding symbology](./assets/house-section-cut-style.jpg)
 
+NOTE: If a ClipStyle is associated with a [Viewport]($frontend), it should be modified via [Viewport.clipStyle]($frontend) to ensure the viewport's contents are updated to reflect the change.
+
 ## Tile compression
 
 [IModelHostConfiguration.compressCachedTiles]($backend) specifies whether tiles uploaded to blob storage should be compressed using gzip. Previously, it defaulted to `false` if omitted. The default has now been switched to `true`. Compressing tiles conserves bandwidth; the tiles are transparently and efficiently decompressed by the browser.

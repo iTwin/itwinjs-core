@@ -122,6 +122,7 @@ export class ClipAppearance {
   /** If `true`, the geometry will not be locatable. */
   public readonly nonLocatable: boolean;
 
+  /** Default appearance that overrides no aspects of the symbology. */
   public static readonly defaults = new ClipAppearance();
 
   private constructor(color?: RgbColor, linePixels?: LinePixels, nonLocatable?: boolean) {
@@ -130,6 +131,7 @@ export class ClipAppearance {
     this.nonLocatable = true === nonLocatable;
   }
 
+  /** Create a ClipAppearance from its components. */
   public static create(color?: RgbColor, linePixels?: LinePixels, nonLocatable?: boolean): ClipAppearance {
     if (undefined === color && undefined === linePixels && true !== nonLocatable)
       return this.defaults;
@@ -146,6 +148,7 @@ export class ClipAppearance {
     }
   }
 
+  /** Obtain the JSON representation of this ClipAppearance. The JSON representation is `undefined` if this appearance matches the defaults. */
   public toJSON(): ClipAppearanceProps | undefined {
     if (this.matchesDefaults)
       return undefined;
@@ -163,10 +166,12 @@ export class ClipAppearance {
     return props;
   }
 
+  /** Returns true if this appearance matches [[ClipAppearance.defaults]] - that is, it overrides no aspects of the symbology .*/
   public get matchesDefaults(): boolean {
     return this.equals(ClipAppearance.defaults);
   }
 
+  /** Compare for equality. */
   public equals(other: ClipAppearance): boolean {
     return this.linePixels === other.linePixels && this.nonLocatable === other.nonLocatable
       && areEqualPossiblyUndefined(this.color, other.color, (a, b) => a.equals(b));
@@ -210,6 +215,7 @@ export class ClipStyle {
   /** Overrides aspects of the symbology of geometry that is inside of the clip volume. */
   public readonly insideAppearance: ClipAppearance;
 
+  /** The default style, which overrides none of the view's settings. */
   public static readonly defaults = new ClipStyle(false, CutStyle.defaults, ClipAppearance.defaults, ClipAppearance.defaults);
 
   private constructor(produceCutGeometry: boolean, cutStyle: CutStyle, insideAppearance: ClipAppearance, outsideAppearance: ClipAppearance) {
@@ -219,6 +225,7 @@ export class ClipStyle {
     this.outsideAppearance = outsideAppearance;
   }
 
+  /** Create a style from its components. */
   public static create(produceCutGeometry: boolean, cutStyle: CutStyle, insideAppearance: ClipAppearance, outsideAppearance: ClipAppearance): ClipStyle {
     if (!produceCutGeometry && cutStyle.matchesDefaults && insideAppearance.matchesDefaults && outsideAppearance.matchesDefaults)
       return this.defaults;
@@ -239,6 +246,7 @@ export class ClipStyle {
     }
   }
 
+  /** The JSON representation of this style. It is `undefined` if this style matches the defaults. */
   public toJSON(): ClipStyleProps | undefined {
     if (this.matchesDefaults)
       return undefined;
@@ -262,6 +270,7 @@ export class ClipStyle {
     return props;
   }
 
+  /** Returns true if this style matches the [[ClipStyle.defaults]] - that is, it overrides no settings from the view. */
   public get matchesDefaults(): boolean {
     if (this === ClipStyle.defaults)
       return true;

@@ -220,6 +220,7 @@ class PrimaryTreeReference extends TileTreeReference {
       this._viewFlagOverrides.setShowClipVolume(false);
 
       // The cut geometry is planar - it should win a z-fight.
+      // Also we need to preserve this flag if this is a plan projection tile tree reference.
       this._viewFlagOverrides.setForceSurfaceDiscard(true);
     }
 

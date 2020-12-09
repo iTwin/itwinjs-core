@@ -98,6 +98,7 @@ export class FeatureAppearance implements FeatureAppearanceProps {
     return this.fromJSON({ rgb, transparency, weight, ignoresMaterial });
   }
 
+  /** Returns true if this appearance does not override any aspects of symbology. */
   public get matchesDefaults(): boolean {
     return this.equals(FeatureAppearance.defaults);
   }
@@ -617,6 +618,7 @@ export interface FeatureAppearanceProvider {
 
 /** @beta */
 export namespace FeatureAppearanceProvider {
+  /** Produce a FeatureAppearanceSource for which `getAppearance()` returns the appearance specified in `source`, potentially modified by `provider`. */
   function wrap(source: FeatureAppearanceSource, provider: FeatureAppearanceProvider): FeatureAppearanceSource {
     return {
       getAppearance: (elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number) => {
