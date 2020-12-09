@@ -58,24 +58,10 @@ describe("UlasClient - OIDC Token (#integration)", () => {
           default:
             break;
         }
-
       }
 
-      let tempRequestContext = new AuthorizedClientRequestContext(tempAccessToken, undefined, "43", "3.4.5.101");
-
-      // const uEntry: UsageLogEntry = new UsageLogEntry(os.hostname(), UsageType.Trial);
-
-      // let hasThrown: boolean = false;
-      // try {
-      //   await client.logUsage(tempRequestContext, uEntry);
-      // } catch (e) {
-      //   hasThrown = true;
-      // }
-      // assert.equal(hasThrown, !passingTokenModes.includes(mode), "UlasClient.logUsage is expected to throw if access token does not have required user profile info.");
-
+      const tempRequestContext = new AuthorizedClientRequestContext(tempAccessToken, undefined, "43", "3.4.99");
       const fEntry = new FeatureLogEntry(Guid.createValue(), os.hostname(), UsageType.Trial);
-
-      tempRequestContext = new AuthorizedClientRequestContext(tempAccessToken, undefined, "43", "3.4.99");
 
       let hasThrown = false;
       try {
@@ -83,7 +69,11 @@ describe("UlasClient - OIDC Token (#integration)", () => {
       } catch (e) {
         hasThrown = true;
       }
-      assert.equal(hasThrown, !passingTokenModes.includes(mode), "UlasClient.logFeatureUsage is expected to throw if access token does not have required user profile info.");
+      const shouldPass = passingTokenModes.includes(mode)
+      const errorMessage = shouldPass
+        ? `UlasClient.logFeatureUsage is expected to succeed for TokenMode ${mode}, because access token has all necessary information`
+        : `UlasClient.logFeatureUsage is expected to throw for TokenMode ${mode}, because access token does not have required user profile info.`;
+      assert.equal(hasThrown, !shouldPass, );
     }
   });
 
