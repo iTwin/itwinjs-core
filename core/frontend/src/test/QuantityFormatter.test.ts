@@ -330,7 +330,7 @@ describe("Custom FormatterSpecs", () => {
   });
 
   it("QuantityFormatter should register properly", async () => {
-    assert.isFalse(quantityFormatter.useImperialFormats);
+    assert.isTrue(quantityFormatter.useImperialFormats);
 
     const customFormatterParserSpecsProvider: FormatterParserSpecsProvider = {
       quantityTypeName: "DummyQuantity",
