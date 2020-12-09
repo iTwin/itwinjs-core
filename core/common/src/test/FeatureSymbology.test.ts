@@ -278,17 +278,17 @@ describe("FeatureAppearanceProvider", () => {
   }
 
   it("Chains providers in expected order", () => {
-    const materialProvider = new Provider((app) => {
+    const materialProvider = new Provider((appearance) => {
       return FeatureAppearance.fromJSON({
-        ...app.toJSON(),
+        ...appearance.toJSON(),
         ignoresMaterial: true,
         transparency: 0.25,
       });
     });
 
-    const emphasisProvider = new Provider((app) => {
+    const emphasisProvider = new Provider((appearance) => {
       return FeatureAppearance.fromJSON({
-        ...app.toJSON(),
+        ...appearance.toJSON(),
         emphasized: true,
         transparency: 0.75,
       });

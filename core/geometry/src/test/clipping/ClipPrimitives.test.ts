@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { ClipPlane } from "../../clipping/ClipPlane";
-import { ClipMaskXYZRangePlanes, ClipPrimitive, ClipPrimitiveShapeProps, ClipShape } from "../../clipping/ClipPrimitive";
+import { ClipMaskXYZRangePlanes, ClipPrimitive, ClipShape } from "../../clipping/ClipPrimitive";
 import { ClipUtilities } from "../../clipping/ClipUtils";
 import { ClipVector } from "../../clipping/ClipVector";
 import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
@@ -463,7 +463,7 @@ describe("ClipPrimitive", () => {
     ck.testTrue(clipShapesAreEqual(clipShape0, clipShape1!), "createFrom() method should clone the ClipShape");
 
     // Test JSON parsing
-    const jsonValue = clipShape1!.toJSON() as ClipPrimitiveShapeProps;
+    const jsonValue = clipShape1!.toJSON();
     ck.testTrue(jsonValue.shape !== undefined, "Shape prop created in toJSON");
     const shape = jsonValue.shape!;
     ck.testTrue(shape.points !== undefined && shape.points.length === clipShape1!.polygon.length, "Points prop created in toJSON");

@@ -150,7 +150,7 @@ export class ClipAppearance {
       props.nonLocatable = true;
 
     return props;
-    }
+  }
 
   public get matchesDefaults(): boolean {
     return this.equals(ClipAppearance.defaults);
@@ -158,7 +158,7 @@ export class ClipAppearance {
 
   public equals(other: ClipAppearance): boolean {
     return this.linePixels === other.linePixels && this.nonLocatable === other.nonLocatable
-      && areEqualPossiblyUndefined(this.color, other.color, (a, b) => a.equals(b))
+      && areEqualPossiblyUndefined(this.color, other.color, (a, b) => a.equals(b));
   }
 }
 
@@ -195,9 +195,9 @@ export class ClipStyle {
   /** Controls aspects of how the cut geometry is displayed, if [[produceCutGeometry]] is `true`. */
   public readonly cutStyle: CutStyle;
   /** Overrides aspects of the symbology of geometry that is outside of the clip volume. */
-  outsideAppearance: ClipAppearance;
+  public readonly outsideAppearance: ClipAppearance;
   /** Overrides aspects of the symbology of geometry that is inside of the clip volume. */
-  insideAppearance: ClipAppearance;
+  public readonly insideAppearance: ClipAppearance;
 
   public static readonly defaults = new ClipStyle(false, CutStyle.defaults, ClipAppearance.defaults, ClipAppearance.defaults);
 

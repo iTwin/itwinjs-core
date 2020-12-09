@@ -143,13 +143,13 @@ export class FeatureAppearance implements FeatureAppearanceProps {
       props.linePixels = this.linePixels;
 
     if (true === this.ignoresMaterial)
-        props.ignoresMaterial = true;
+      props.ignoresMaterial = true;
 
     if (true === this.nonLocatable)
-        props.nonLocatable = true;
+      props.nonLocatable = true;
 
     if (true === this.emphasized)
-        props.emphasized = true;
+      props.emphasized = true;
 
     return props;
   }
@@ -632,7 +632,7 @@ export namespace FeatureAppearanceProvider {
   export function supplement(supplementAppearance: (appearance: FeatureAppearance) => FeatureAppearance): FeatureAppearanceProvider {
     return {
       getFeatureAppearance: (source: FeatureAppearanceSource, elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number) => {
-        let app = source.getAppearance(elemLo, elemHi, subcatLo, subcatHi, geomClass, modelLo, modelHi, type, animationNodeId);
+        const app = source.getAppearance(elemLo, elemHi, subcatLo, subcatHi, geomClass, modelLo, modelHi, type, animationNodeId);
         return app ? supplementAppearance(app) : app;
       },
     };

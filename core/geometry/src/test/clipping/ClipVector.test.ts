@@ -324,7 +324,7 @@ describe("ClipVector", () => {
     cv = ClipVector.createCapture([primitive]);
     expect(cv.toCompactString()).to.equal("1___");
 
-    let plane = ClipPlane.createNormalAndDistance(new Vector3d(0, 1, 0), -5, true, false)!;
+    const plane = ClipPlane.createNormalAndDistance(new Vector3d(0, 1, 0), -5, true, false)!;
     expect(plane).not.to.be.undefined;
     convexSet = ConvexClipPlaneSet.createPlanes([plane]);
     primitive = ClipPrimitive.createCapture(convexSet);

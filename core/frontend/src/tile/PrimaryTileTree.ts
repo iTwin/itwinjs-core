@@ -20,7 +20,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { GeometricModelState, GeometricModel3dState } from "../ModelState";
+import { GeometricModel3dState, GeometricModelState } from "../ModelState";
 import { RenderClipVolume } from "../render/RenderClipVolume";
 import { SceneContext } from "../ViewContext";
 import { SpatialViewState, ViewState, ViewState3d } from "../ViewState";
@@ -132,7 +132,7 @@ class PrimaryTreeReference extends TileTreeReference {
   private readonly _sectionClip?: StringifiedClipVector;
   private readonly _sectionCutAppearanceProvider?: FeatureAppearanceProvider;
 
-  public constructor(view: ViewState, model: GeometricModelState, isPlanProjection: boolean, transformNodeId?: number, sectionClip?: StringifiedClipVector) {
+  public constructor(view: ViewState, model: GeometricModelState, planProjection: boolean, transformNodeId?: number, sectionClip?: StringifiedClipVector) {
     super();
     this.view = view;
     this.model = model;
@@ -152,7 +152,7 @@ class PrimaryTreeReference extends TileTreeReference {
       modelId: model.id,
       is3d: model.is3d,
       treeId: this.createTreeId(view, model.id, transformNodeId),
-      isPlanProjection,
+      isPlanProjection: planProjection,
     };
 
     this._owner = primaryTreeSupplier.getOwner(this._id, model.iModel);
@@ -432,7 +432,7 @@ class SpatialModelRefs implements Iterable<TileTreeReference> {
       return undefined;
 
     assert(this._modelRef instanceof PrimaryTreeReference);
-    return this._modelRef as PrimaryTreeReference;
+    return this._modelRef;
   }
 }
 
@@ -504,7 +504,7 @@ class SpatialRefs implements SpatialTileTreeReferences {
         if (model) {
           modelRefs = new SpatialModelRefs(model, this._view);
           modelRefs.updateAnimated(this._scheduleScript);
-          modelRefs.updateSectionCut(this._sectionCut)
+          modelRefs.updateSectionCut(this._sectionCut);
         }
       }
 

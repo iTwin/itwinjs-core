@@ -5,7 +5,6 @@
 import { expect } from "chai";
 import { ClipAppearance, ClipAppearanceProps } from "../ClipStyle";
 import { LinePixels } from "../LinePixels";
-import { RgbColorProps } from "../RgbColor";
 
 describe("ClipAppearance", () => {
   it("should round-trip through JSON", () => {

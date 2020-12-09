@@ -6,9 +6,9 @@
  * @module Views
  */
 
-import { BeEvent, Id64, Id64Array, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { BeEvent, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { ClipVector, ClipVectorProps, Geometry, XAndY } from "@bentley/geometry-core";
-import { ModelClipGroup, ModelClipGroupProps, ModelClipGroups } from "./ModelClipGroup";
+import { ModelClipGroupProps, ModelClipGroups } from "./ModelClipGroup";
 
 /** @internal */
 export interface ViewDetailsProps {

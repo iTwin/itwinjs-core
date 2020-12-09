@@ -14,7 +14,6 @@ import {
   TileMetadata,
   TreeFlags,
 } from "../tile/TileMetadata";
-import { CurrentImdlVersion } from "../tile/IModelTileIO";
 
 describe("TileMetadata", () => {
   it("computes chord tolerance", () => {
@@ -86,12 +85,12 @@ describe("TileMetadata", () => {
 
     interface TestCase {
       // inputs
-      id: IModelTileTreeId,
-      ignoreProjectExtents?: true,
-      maxVersion?: number,
+      id: IModelTileTreeId;
+      ignoreProjectExtents?: true;
+      maxVersion?: number;
       // expected
-      baseId: string,
-      flags: TreeFlags,
+      baseId: string;
+      flags: TreeFlags;
     }
 
     const kNone = TreeFlags.None;
