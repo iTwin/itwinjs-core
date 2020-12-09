@@ -159,15 +159,6 @@ class PrimaryTreeReference extends TileTreeReference {
   }
 
   protected getViewFlagOverrides(_tree: TileTree) {
-    if (this._sectionClip) {
-      // We do this each time in case the ClipStyle's overrides are modified.
-      // ###TODO: can we avoid that? Event listeners maybe?
-      this.view.displayStyle.settings.clipStyle.cutStyle.viewflags.clone(this._viewFlagOverrides);
-      this._viewFlagOverrides.setShowClipVolume(false);
-      if (this.isPlanProjection)
-        this._viewFlagOverrides.setForceSurfaceDiscard(true);
-    }
-
     return this._viewFlagOverrides;
   }
 
@@ -220,6 +211,15 @@ class PrimaryTreeReference extends TileTreeReference {
   }
 
   protected createTreeId(view: ViewState, modelId: Id64String, animationTransformNodeId: number | undefined): PrimaryTileTreeId {
+    if (this._sectionClip) {
+      // We do this each time in case the ClipStyle's overrides are modified.
+      // ###TODO: can we avoid that? Event listeners maybe?
+      this.view.displayStyle.settings.clipStyle.cutStyle.viewflags.clone(this._viewFlagOverrides);
+      this._viewFlagOverrides.setShowClipVolume(false);
+      if (this.isPlanProjection)
+        this._viewFlagOverrides.setForceSurfaceDiscard(true);
+    }
+
     const script = view.scheduleScript;
     const animationId = undefined !== script ? script.getModelAnimationId(modelId) : undefined;
     const edgesRequired = true === IModelApp.tileAdmin.alwaysRequestEdges || this._viewFlagOverrides.edgesRequired(view.viewFlags);
