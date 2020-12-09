@@ -71,11 +71,11 @@ describe("UlasClient - OIDC Token (#integration)", () => {
       } catch (e) {
         hasThrown = true;
       }
-      const shouldPass = passingTokenModes.includes(mode)
+      const shouldPass = passingTokenModes.includes(mode);
       const errorMessage = shouldPass
         ? `UlasClient.logFeatureUsage is expected to succeed for TokenMode ${mode}, because access token has all necessary information`
         : `UlasClient.logFeatureUsage is expected to throw for TokenMode ${mode}, because access token does not have required user profile info.`;
-      assert.equal(hasThrown, !shouldPass, );
+      assert.equal(hasThrown, !shouldPass, errorMessage);
     }
   });
 
