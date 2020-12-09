@@ -44,6 +44,14 @@
     display: none;
   }
 
+  >option {
+    &[disabled],
+    &[readonly] {
+
+      color: $buic-text-color-disabled;
+    }
+  }
+
   &[disabled],
   &[readonly] {
 
