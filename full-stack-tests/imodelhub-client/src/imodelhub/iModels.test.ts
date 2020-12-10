@@ -550,8 +550,6 @@ describe.only("iModelHub iModelsHandler", () => {
 
   it("should update iModel name and description (#iModelBank)", async () => {
     const testIModelName = utils.getUniqueIModelName(createIModelName);
-    await utils.deleteIModelByName(requestContext, projectId, testIModelName);
-
     const description = "Test iModel created by imodeljs-clients tests";
     mockCreateEmptyiModel(projectId, Guid.createValue(), testIModelName, description);
     const progressTracker = new utils.ProgressTracker();
@@ -701,8 +699,6 @@ describe.only("iModelHub iModelsHandler", () => {
 
   it("should create iModel from empty seed file (#iModelBank)", async () => {
     const testIModelName = utils.getUniqueIModelName(createIModelName);
-    await utils.deleteIModelByName(requestContext, projectId, testIModelName);
-
     const description = "Test iModel created by imodeljs-clients tests";
     mockCreateEmptyiModel(projectId, Guid.createValue(), testIModelName, description);
     const progressTracker = new utils.ProgressTracker();
@@ -781,8 +777,6 @@ describe.only("iModelHub iModelsHandler", () => {
 
   it("should create an iModel in the Asset (#iModelBank)", async () => {
     const testIModelName = utils.getUniqueIModelName(createIModelName);
-    await utils.deleteIModelByName(requestContext, assetId, testIModelName);
-
     const description = "Test iModel created by imodeljs-clients tests";
     mockCreateEmptyiModel(assetId, Guid.createValue(), testIModelName, description);
     const progressTracker = new utils.ProgressTracker();
@@ -800,8 +794,6 @@ describe.only("iModelHub iModelsHandler", () => {
 
   it("should create iModel with an extent from empty seed file", async () => {
     const testIModelName = utils.getUniqueIModelName(createIModelName);
-    await utils.deleteIModelByName(requestContext, projectId, testIModelName);
-
     const description = "Test iModel created by imodeljs-clients tests";
     const extent = [1.1, 2.2, -3.3, -4.4];
     mockCreateEmptyiModel(projectId, Guid.createValue(), testIModelName, description, undefined, extent);
