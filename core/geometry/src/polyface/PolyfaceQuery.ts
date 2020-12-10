@@ -15,16 +15,12 @@ import { LineSegment3d } from "../curve/LineSegment3d";
 import { LineString3d } from "../curve/LineString3d";
 import { Loop } from "../curve/Loop";
 import { StrokeOptions } from "../curve/StrokeOptions";
-import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
-// import { Point3d, Vector3d, Point2d } from "./PointVector";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { PolygonOps } from "../geometry3d/PolygonOps";
 import { Range3d } from "../geometry3d/Range";
-import { Segment1d } from "../geometry3d/Segment1d";
-import { Transform } from "../geometry3d/Transform";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { MomentData } from "../geometry4d/MomentData";
 import { UnionFindContext } from "../numerics/UnionFind";
@@ -33,6 +29,7 @@ import { FacetOrientationFixup } from "./FacetOrientation";
 import { IndexedEdgeMatcher, SortableEdge, SortableEdgeCluster } from "./IndexedEdgeMatcher";
 import { IndexedPolyfaceSubsetVisitor } from "./IndexedPolyfaceVisitor";
 import { BuildAverageNormalsContext } from "./multiclip/BuildAverageNormalsContext";
+import { SweepLineStringToFacetContext } from "./multiclip/SweepLineStringToFacetContext";
 import { XYPointBuckets } from "./multiclip/XYPointBuckets";
 import { IndexedPolyface, Polyface, PolyfaceVisitor } from "./Polyface";
 import { PolyfaceBuilder } from "./PolyfaceBuilder";
@@ -321,6 +318,7 @@ export class PolyfaceQuery {
    */
   public static announceSweepLinestringToConvexPolyfaceXY(linestringPoints: GrowableXYZArray, polyface: Polyface,
     announce: AnnounceDrapePanel): any {
+<<<<<<< HEAD
     const visitor = polyface.createVisitor(0);
     const numLinestringPoints = linestringPoints.length;
     const segmentPoint0 = Point3d.create();
@@ -371,6 +369,67 @@ export class PolyfaceQuery {
         }
       }
     }
+=======
+    const context = SweepLineStringToFacetContext.create(linestringPoints);
+    if (context) {
+      const visitor = polyface.createVisitor(0);
+      for (visitor.reset(); visitor.moveToNextFacet();) {
+        context.projectToPolygon(visitor.point, announce, polyface, visitor.currentReadIndex());
+      }
+    }
+  }
+
+
+  /** Execute context.projectToPolygon until its work estimates accumulate to workLimit  */
+  private static async continueAnnouunceSweepLinestringToConvexPolyfaceXY(
+    context: SweepLineStringToFacetContext, visitor: PolyfaceVisitor, announce: AnnounceDrapePanel): Promise<number> {
+    let workCount = 0;
+    while ((workCount < this.asyncWorkLimit) && visitor.moveToNextFacet()) {
+      workCount += context.projectToPolygon(visitor.point, announce, visitor.clientPolyface()!, visitor.currentReadIndex());
+    }
+    return workCount;
+  }
+  // amount of computation to do per step of async methods.
+  private static _asyncWorkLimit = 1.e06;
+  /** Set the limit on work during an async time blocks, and return the old value.
+   * * This should be a large number -- default is 1.0e6
+   * @internal
+   */
+  public static setAsyncWorkLimit(value: number): number { const a = this._asyncWorkLimit; this._asyncWorkLimit = value; return a; }
+  /** Query the current limit on work during an async time block.
+   * @internal
+   */
+  public static get asyncWorkLimit(): number { return this._asyncWorkLimit; }
+  /** Number of "await" steps executed in recent async calls.
+   * @internal
+   */
+  public static awaitBlockCount = 0;
+
+  /** Find segments (within the linestring) which project to facets.
+   * * Announce each pair of linestring segment and on-facet segment through a callback.
+   * * Facets are ASSUMED to be convex and planar.
+   * * REMARK: Although this is public, the usual use is via slightly higher level public methods, viz:
+   *   * asyncSweepLinestringToFacetsXYReturnChains
+   * @internal
+   */
+  public static async asyncAnnounceSweepLinestringToConvexPolyfaceXY(linestringPoints: GrowableXYZArray, polyface: Polyface,
+    announce: AnnounceDrapePanel): Promise<number> {
+    const context = SweepLineStringToFacetContext.create(linestringPoints);
+    this.awaitBlockCount = 0;
+    let workTotal = 0;;
+    if (context) {
+      const visitor = polyface.createVisitor(0);
+      let workCount;
+      while (0 < (workCount = await Promise.resolve(PolyfaceQuery.continueAnnouunceSweepLinestringToConvexPolyfaceXY(context, visitor, announce)))) {
+        workTotal += workCount;
+        this.awaitBlockCount++;
+        // console.log({ myWorkCount: workCount, myBlockCount: this.awaitBlockCount });
+      }
+    }
+    // eslint-disable-next-line no-console
+    // console.log({ myWorkTotal: workTotal, myBlockCount: this.awaitBlockCount });
+    return workTotal;
+>>>>>>> 7458a167fe... New method: async version of sweeping a linestring to a mesh. (#388)
   }
 
   /** Search the facets for facet subsets that are connected with at least vertex contact.
@@ -595,6 +654,24 @@ export class PolyfaceQuery {
       });
     chainContext.clusterAndMergeVerticesXYZ();
     return chainContext.collectMaximalChains();
+  }
+  /** Find segments (within the linestring) which project to facets.
+   * * This is done as a sequence of "await" steps.
+   * * Each "await" step deals with approximately PolyfaceQuery.asyncWorkLimit pairings of (linestring edge) with (facet edge)
+   *  * PolyfaceQuery.setAsyncWorkLimit () to change work blocks from default
+   * * Return chains.
+   */
+  public static async asyncSweepLinestringToFacetsXYReturnChains(linestringPoints: GrowableXYZArray, polyface: Polyface): Promise<LineString3d[]> {
+    const chainContext = ChainMergeContext.create();
+
+    await Promise.resolve(this.asyncAnnounceSweepLinestringToConvexPolyfaceXY(linestringPoints, polyface,
+      (_linestring: GrowableXYZArray, _segmentIndex: number,
+        _polyface: Polyface, _facetIndex: number, points: Point3d[], indexA: number, indexB: number) => {
+        chainContext.addSegment(points[indexA], points[indexB]);
+      }));
+    chainContext.clusterAndMergeVerticesXYZ();
+    const chains = chainContext.collectMaximalChains();
+    return chains;
   }
 
   /**
