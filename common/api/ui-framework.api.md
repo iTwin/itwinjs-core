@@ -1608,16 +1608,16 @@ export interface DialogRendererProps {
 // @internal
 export function DockedStatusBarItem(props: StatusBarItemProps): JSX.Element;
 
-// @beta
+// @beta @deprecated
 export class DragDropLayerChangedEvent extends UiEvent<DragDropLayerChangedEventArgs> {
 }
 
-// @beta
+// @beta @deprecated
 export interface DragDropLayerChangedEventArgs {
     type: string | undefined;
 }
 
-// @beta
+// @beta @deprecated
 export class DragDropLayerManager {
     static getActiveLayer(): React.ComponentClass<DragLayerProps<any>, any> | React.FunctionComponent<DragLayerProps<any>> | undefined;
     static getType(): string | undefined;
@@ -1627,10 +1627,10 @@ export class DragDropLayerManager {
     static setType(type: string | undefined): void;
 }
 
-// @beta
-export const DragDropLayerRenderer: typeof DragDropLayerRendererComponent & DndComponentClass<{}>;
+// @beta @deprecated
+export const DragDropLayerRenderer: typeof DragDropLayerRendererComponent & DndComponentClass<typeof React.Component, {}>;
 
-// @beta
+// @beta @deprecated
 export class DragDropLayerRendererComponent extends React.Component<DragDropLayerRendererProps> {
     constructor(props: DragDropLayerRendererProps);
     // (undocumented)
@@ -1641,7 +1641,7 @@ export class DragDropLayerRendererComponent extends React.Component<DragDropLaye
     render(): React.ReactNode;
 }
 
-// @beta
+// @beta @deprecated
 export interface DragDropLayerRendererProps extends CommonProps {
     // (undocumented)
     args?: DragSourceArguments;

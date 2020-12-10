@@ -9,9 +9,8 @@
 import "./DragDropTreeNode.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { DndComponentClass } from "react-dnd";
 import { withDragSource, WithDragSourceProps } from "../../../dragdrop/withDragSource";
-import { withDropTarget, WithDropTargetProps } from "../../../dragdrop/withDropTarget";
+import { withDropTarget } from "../../../dragdrop/withDropTarget";
 import { TreeDragDropType } from "./withDragDrop";
 
 /* eslint-disable deprecation/deprecation */
@@ -86,7 +85,7 @@ export class DragDropTreeNodeComponent extends React.Component<DragDropNodeProps
 }
 
 /** @internal */
-export function DragDropTreeNode<DragDropObject extends TreeDragDropType>(): DndComponentClass<DragDropNodeProps & WithDropTargetProps<DragDropObject> & WithDragSourceProps<DragDropObject>> {
+export function DragDropTreeNode<DragDropObject extends TreeDragDropType>() {
   return withDropTarget<DragDropNodeProps & WithDragSourceProps<DragDropObject>, DragDropObject>(
     withDragSource<DragDropNodeProps, DragDropObject>(DragDropTreeNodeComponent));
 }

@@ -37,8 +37,20 @@ describe("<Select />", () => {
     shallow(<Select options={["Option 1", "Option 2", "Option 3"]} />).should.matchSnapshot();
   });
 
+  it("renders SelectOption[] array options correctly", () => {
+    shallow(<Select options={[{ label: "Option 1", value: "option1" }, { label: "Option 2", value: "option2" }, { label: "Option 3", value: "option3" }]} />).should.matchSnapshot();
+  });
+
+  it("renders array options with disabled correctly", () => {
+    shallow(<Select options={[{ label: "Option 1", disabled: true }, "Option 2", "Option 3"]} />).should.matchSnapshot();
+  });
+
   it("renders object options correctly", () => {
     shallow(<Select options={{ option1: "Option 1", option2: "Option 2", option3: "Option3" }} />).should.matchSnapshot();
+  });
+
+  it("renders object options with disabled correctly", () => {
+    shallow(<Select options={{ option1: { label: "Option 1", disabled: true }, option2: "Option 2", option3: "Option3" }} />).should.matchSnapshot();
   });
 
   it("renders placeholder correctly when options are provided", () => {

@@ -4,13 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import ReactTestUtils from "react-dom/test-utils";
+import { wrapInTestContext } from "react-dnd-test-utils";
 import * as sinon from "sinon";
 import { cleanup, render } from "@testing-library/react";
 import {
   DragSourceArguments, DragSourceProps, DropEffects, DropStatus, DropTargetArguments, DropTargetProps,
 } from "../../../ui-components/dragdrop/DragDropDef";
 import { DragDropRow, DragDropRowWrapper } from "../../../ui-components/table/hocs/DragDropRow";
+import { createDnDRenderer } from "../../tree/deprecated/hocs/withDragDrop.test";
+
+/* eslint-disable deprecation/deprecation */
 
 describe("DragDropRow", () => {
   interface DragDropObject {
@@ -19,7 +22,10 @@ describe("DragDropRow", () => {
 
   afterEach(cleanup);
 
-  const DragDropObjectRow = DragDropRow<DragDropObject>(); // eslint-disable-line @typescript-eslint/naming-convention
+  const RowWithDragDrop = DragDropRow<DragDropObject>();
+  const DragDropObjectRow = wrapInTestContext(RowWithDragDrop);
+  const renderIntoDocument = createDnDRenderer(RowWithDragDrop);
+
   it("should render", () => {
     render(<DragDropObjectRow />);
   });
@@ -162,12 +168,12 @@ describe("DragDropRow", () => {
   });
   describe("Drag callbacks", () => {
     it("should have no drag callback when no dragProps are provided", async () => {
-      const root = ReactTestUtils.renderIntoDocument(<DragDropObjectRow />) as any;
+      const root = renderIntoDocument(<DragDropObjectRow />) as any;
       expect(root.createDragProps()).to.be.empty;
     });
     it("should pass dataObject through onDragSourceBegin", async () => {
       const onDragSourceBegin = sinon.spy((a: DragSourceArguments) => a);
-      const root = ReactTestUtils.renderIntoDocument(<DragDropObjectRow dragProps={{ onDragSourceBegin, objectType: "test" }} />) as any;
+      const root = renderIntoDocument(<DragDropObjectRow dragProps={{ onDragSourceBegin, objectType: "test" }} />) as any;
       const callbacks = root.createDragProps(0) as DragSourceProps;
       const args = { dataObject: undefined, dropEffect: DropEffects.Move, dropStatus: DropStatus.None, clientOffset: { x: 0, y: 0 }, initialClientOffset: { x: 0, y: 0 } };
       const ret = callbacks.onDragSourceBegin!(args);
@@ -175,21 +181,21 @@ describe("DragDropRow", () => {
       expect(ret).to.deep.equal(args);
     });
     it("should pass dataObject through onDragSourceBegin without onDragSourceBegin input callback", async () => {
-      const root = ReactTestUtils.renderIntoDocument(<DragDropObjectRow dragProps={{ objectType: "test" }} />) as any;
+      const root = renderIntoDocument(<DragDropObjectRow dragProps={{ objectType: "test" }} />) as any;
       const callbacks = root.createDragProps(0) as DragSourceProps;
       const args = { dataObject: undefined, dropEffect: DropEffects.Move, dropStatus: DropStatus.None, clientOffset: { x: 0, y: 0 }, initialClientOffset: { x: 0, y: 0 } };
       const ret = callbacks.onDragSourceBegin!(args);
       expect(ret).to.deep.equal(args);
     });
     it("should pass constant objectType through", async () => {
-      const root = ReactTestUtils.renderIntoDocument(<DragDropObjectRow dragProps={{ objectType: "test" }} />) as any;
+      const root = renderIntoDocument(<DragDropObjectRow dragProps={{ objectType: "test" }} />) as any;
       const callbacks = root.createDragProps(0) as DragSourceProps;
       const ret = (callbacks.objectType as any)();
       expect(ret).to.equal("test");
     });
     it("should pass data through for functional objectType", async () => {
       const objectType = sinon.spy((data: { row: number }) => `${data.row}`);
-      const root = ReactTestUtils.renderIntoDocument(<DragDropObjectRow dragProps={{ objectType }} />) as any;
+      const root = renderIntoDocument(<DragDropObjectRow dragProps={{ objectType }} />) as any;
       const callbacks = root.createDragProps(0) as DragSourceProps;
       const ret = (callbacks.objectType as any)();
       expect(ret).to.equal("0");
@@ -197,14 +203,14 @@ describe("DragDropRow", () => {
   });
   describe("Drop callbacks", () => {
     it("should have no drop callback when no dropProps are provided", async () => {
-      const root = ReactTestUtils.renderIntoDocument(<DragDropObjectRow />) as any;
+      const root = renderIntoDocument(<DragDropObjectRow />) as any;
       expect(root.createDropProps()).to.be.empty;
     });
     it("should pass args through outgoing callbacks when row index is not found", async () => {
       const onDropTargetDrop = sinon.spy();
       const onDropTargetOver = sinon.spy();
       const canDropTargetDrop = sinon.spy((_args: DropTargetArguments) => true);
-      const root = ReactTestUtils.renderIntoDocument(<DragDropObjectRow dropProps={{ onDropTargetDrop, onDropTargetOver, canDropTargetDrop, objectTypes: ["test"] }} />) as any;
+      const root = renderIntoDocument(<DragDropObjectRow dropProps={{ onDropTargetDrop, onDropTargetOver, canDropTargetDrop, objectTypes: ["test"] }} />) as any;
       const callbacks = root.createDropProps() as DropTargetProps;
       const args = { dataObject: undefined, dropEffect: DropEffects.Move, dropStatus: DropStatus.None, clientOffset: { x: 0, y: 0 }, initialClientOffset: { x: 0, y: 0 } };
       callbacks.onDropTargetDrop!(args);
@@ -217,7 +223,7 @@ describe("DragDropRow", () => {
       expect(canDropTargetDrop).to.be.calledWithMatch(args);
     });
     it("should pass args through outgoing callbacks when row index is not found and incoming callbacks are not set", async () => {
-      const root = ReactTestUtils.renderIntoDocument(<DragDropObjectRow dropProps={{ objectTypes: ["test"] }} />) as any;
+      const root = renderIntoDocument(<DragDropObjectRow dropProps={{ objectTypes: ["test"] }} />) as any;
       const callbacks = root.createDropProps() as DropTargetProps;
       const args = { dataObject: undefined, dropEffect: DropEffects.Move, dropStatus: DropStatus.None, clientOffset: { x: 0, y: 0 }, initialClientOffset: { x: 0, y: 0 } };
       const ret1 = callbacks.onDropTargetDrop!(args);
@@ -230,7 +236,7 @@ describe("DragDropRow", () => {
       const onDropTargetDrop = sinon.spy();
       const onDropTargetOver = sinon.spy();
       const canDropTargetDrop = sinon.spy((_args: DropTargetArguments) => true);
-      const root = ReactTestUtils.renderIntoDocument(<DragDropObjectRow dropProps={{ onDropTargetDrop, onDropTargetOver, canDropTargetDrop, canDropOn: false, objectTypes: ["test"] }} />) as any;
+      const root = renderIntoDocument(<DragDropObjectRow dropProps={{ onDropTargetDrop, onDropTargetOver, canDropTargetDrop, canDropOn: false, objectTypes: ["test"] }} />) as any;
       const callbacks = root.createDropProps(0) as DropTargetProps;
       const args = {
         dataObject: undefined, dropEffect: DropEffects.Move, dropStatus: DropStatus.None,
@@ -249,7 +255,7 @@ describe("DragDropRow", () => {
       const onDropTargetDrop = sinon.spy();
       const onDropTargetOver = sinon.spy();
       const canDropTargetDrop = sinon.spy((_args: DropTargetArguments) => true);
-      const root = ReactTestUtils.renderIntoDocument(<DragDropObjectRow dropProps={{ onDropTargetDrop, onDropTargetOver, canDropTargetDrop, canDropOn: false, objectTypes: ["test"] }} />) as any;
+      const root = renderIntoDocument(<DragDropObjectRow dropProps={{ onDropTargetDrop, onDropTargetOver, canDropTargetDrop, canDropOn: false, objectTypes: ["test"] }} />) as any;
       const callbacks = root.createDropProps(0) as DropTargetProps;
       const args = {
         dataObject: undefined, dropEffect: DropEffects.Move, dropStatus: DropStatus.None,
@@ -268,7 +274,7 @@ describe("DragDropRow", () => {
       const onDropTargetDrop = sinon.spy();
       const onDropTargetOver = sinon.spy();
       const canDropTargetDrop = sinon.spy((_args: DropTargetArguments) => true);
-      const root = ReactTestUtils.renderIntoDocument(<DragDropObjectRow dropProps={{ onDropTargetDrop, onDropTargetOver, canDropTargetDrop, canDropOn: false, objectTypes: ["test"] }} />) as any;
+      const root = renderIntoDocument(<DragDropObjectRow dropProps={{ onDropTargetDrop, onDropTargetOver, canDropTargetDrop, canDropOn: false, objectTypes: ["test"] }} />) as any;
       const callbacks = root.createDropProps(0) as DropTargetProps;
       const args = {
         dataObject: undefined, dropEffect: DropEffects.Move, dropStatus: DropStatus.None,
@@ -287,7 +293,7 @@ describe("DragDropRow", () => {
       const onDropTargetDrop = sinon.spy();
       const onDropTargetOver = sinon.spy();
       const canDropTargetDrop = sinon.spy((_args: DropTargetArguments) => true);
-      const root = ReactTestUtils.renderIntoDocument(<DragDropObjectRow dropProps={{ onDropTargetDrop, onDropTargetOver, canDropTargetDrop, canDropOn: false, objectTypes: ["test"] }} />) as any;
+      const root = renderIntoDocument(<DragDropObjectRow dropProps={{ onDropTargetDrop, onDropTargetOver, canDropTargetDrop, canDropOn: false, objectTypes: ["test"] }} />) as any;
       const callbacks = root.createDropProps(0) as DropTargetProps;
       const args = {
         dataObject: undefined, dropEffect: DropEffects.Move, dropStatus: DropStatus.None,
@@ -303,7 +309,7 @@ describe("DragDropRow", () => {
       const onDropTargetDrop = sinon.spy();
       const onDropTargetOver = sinon.spy();
       const canDropTargetDrop = sinon.spy((_args: DropTargetArguments) => true);
-      const root = ReactTestUtils.renderIntoDocument(<DragDropObjectRow dropProps={{ onDropTargetDrop, onDropTargetOver, canDropTargetDrop, canDropOn: true, objectTypes: ["test"] }} />) as any;
+      const root = renderIntoDocument(<DragDropObjectRow dropProps={{ onDropTargetDrop, onDropTargetOver, canDropTargetDrop, canDropOn: true, objectTypes: ["test"] }} />) as any;
       const callbacks = root.createDropProps(0) as DropTargetProps;
       const args = {
         dataObject: undefined, dropEffect: DropEffects.Move, dropStatus: DropStatus.None,
@@ -322,7 +328,7 @@ describe("DragDropRow", () => {
       const onDropTargetDrop = sinon.spy();
       const onDropTargetOver = sinon.spy();
       const canDropTargetDrop = sinon.spy((_args: DropTargetArguments) => true);
-      const root = ReactTestUtils.renderIntoDocument(<DragDropObjectRow dropProps={{ onDropTargetDrop, onDropTargetOver, canDropTargetDrop, canDropOn: true, objectTypes: ["test"] }} />) as any;
+      const root = renderIntoDocument(<DragDropObjectRow dropProps={{ onDropTargetDrop, onDropTargetOver, canDropTargetDrop, canDropOn: true, objectTypes: ["test"] }} />) as any;
       const callbacks = root.createDropProps(0) as DropTargetProps;
       const args = {
         dataObject: undefined, dropEffect: DropEffects.Move, dropStatus: DropStatus.None,
