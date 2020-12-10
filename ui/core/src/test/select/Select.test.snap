@@ -1,10 +1,61 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`<Select /> renders SelectOption[] array options correctly 1`] = `
+<select
+  className="uicore-inputs-select"
+>
+  <option
+    key="0"
+    value="option1"
+  >
+    Option 1
+  </option>
+  <option
+    key="1"
+    value="option2"
+  >
+    Option 2
+  </option>
+  <option
+    key="2"
+    value="option3"
+  >
+    Option 3
+  </option>
+</select>
+`;
+
 exports[`<Select /> renders array options correctly 1`] = `
 <select
   className="uicore-inputs-select"
 >
   <option
+    key="0"
+    value="Option 1"
+  >
+    Option 1
+  </option>
+  <option
+    key="1"
+    value="Option 2"
+  >
+    Option 2
+  </option>
+  <option
+    key="2"
+    value="Option 3"
+  >
+    Option 3
+  </option>
+</select>
+`;
+
+exports[`<Select /> renders array options with disabled correctly 1`] = `
+<select
+  className="uicore-inputs-select"
+>
+  <option
+    disabled={true}
     key="0"
     value="Option 1"
   >
@@ -95,6 +146,32 @@ exports[`<Select /> renders object options correctly 1`] = `
   className="uicore-inputs-select"
 >
   <option
+    key="option1"
+    value="option1"
+  >
+    Option 1
+  </option>
+  <option
+    key="option2"
+    value="option2"
+  >
+    Option 2
+  </option>
+  <option
+    key="option3"
+    value="option3"
+  >
+    Option3
+  </option>
+</select>
+`;
+
+exports[`<Select /> renders object options with disabled correctly 1`] = `
+<select
+  className="uicore-inputs-select"
+>
+  <option
+    disabled={true}
     key="option1"
     value="option1"
   >

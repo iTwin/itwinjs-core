@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { Angle, Arc3d, AxisOrder, ClipPlane, ClipPlaneContainment, Constant, CurvePrimitive, Ellipsoid, GrowableXYZArray, LongitudeLatitudeNumber, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range1d, Range3d, Ray3d, Transform, Vector3d, XYAndZ } from "@bentley/geometry-core";
+import { Angle, Arc3d, ClipPlane, ClipPlaneContainment, Constant, CurvePrimitive, Ellipsoid, GrowableXYZArray, LongitudeLatitudeNumber, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range1d, Range3d, Ray3d, Transform, Vector3d, XYAndZ } from "@bentley/geometry-core";
 import { Cartographic, ColorByName, ColorDef, EcefLocation, Frustum, GeoCoordStatus, GlobeMode } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
 import { GraphicBuilder } from "./render/GraphicBuilder";
@@ -49,12 +49,12 @@ export class BackgroundMapGeometry {
   private static _scratchRayAngles = new Array<LongitudeLatitudeNumber>();
   private static _scratchPoint = Point3d.createZero();
 
-  constructor(private _bimElevationBias: number, globeMode: GlobeMode, iModel: IModelConnection) {
-    this._ecefToDb = iModel.backgroundMapLocation.getMapEcefToDb(_bimElevationBias);
+  constructor(private _bimElevationBias: number, globeMode: GlobeMode, private _iModel: IModelConnection) {
+    this._ecefToDb = _iModel.backgroundMapLocation.getMapEcefToDb(_bimElevationBias);
     this.globeMode = globeMode;
-    this.cartesianRange = BackgroundMapGeometry.getCartesianRange(iModel);
+    this.cartesianRange = BackgroundMapGeometry.getCartesianRange(_iModel);
     this.cartesianTransitionRange = this.cartesianRange.clone();
-    this.cartesianTransitionRange.expandInPlace(BackgroundMapGeometry.getCartesianTransitionDistance(iModel));
+    this.cartesianTransitionRange.expandInPlace(BackgroundMapGeometry.getCartesianTransitionDistance(_iModel));
     this.cartesianDiagonal = this.cartesianRange.diagonal().magnitudeXY();
     const earthRadius = Constant.earthRadiusWGS84.equator;
     this.globeOrigin = this._ecefToDb.origin.cloneAsPoint3d();
@@ -65,7 +65,7 @@ export class BackgroundMapGeometry {
     this.cartesianPlane = this.getPlane();
     this.geometry = (globeMode === GlobeMode.Ellipsoid) ? this.getEarthEllipsoid() : this.cartesianPlane;
     this._mercatorTilingScheme = new WebMercatorTilingScheme();
-    this._mercatorFractionToDb = this._mercatorTilingScheme.computeMercatorFractionToDb(this._ecefToDb, _bimElevationBias, iModel, false);
+    this._mercatorFractionToDb = this._mercatorTilingScheme.computeMercatorFractionToDb(this._ecefToDb, _bimElevationBias, _iModel, false);
   }
   public static getCartesianRange(iModel: IModelConnection, result?: Range3d): Range3d {
     const cartesianRange = Range3d.createFrom(iModel.projectExtents, result);
@@ -74,6 +74,10 @@ export class BackgroundMapGeometry {
   }
   public static getCartesianTransitionDistance(iModel: IModelConnection): number {
     return BackgroundMapGeometry.getCartesianRange(iModel, scratchRange).diagonal().magnitudeXY() * BackgroundMapGeometry._transitionDistanceMultiplier;
+  }
+
+  public async dbToCartographicFromGcs(db: XYAndZ, result?: Cartographic): Promise<Cartographic> {
+    return this.cartesianRange.containsPoint(Point3d.createFrom(db)) ? this._iModel.spatialToCartographic(db, result) : this.dbToCartographic(db, result);
   }
 
   public dbToCartographic(db: XYAndZ, result?: Cartographic): Cartographic {
@@ -89,6 +93,17 @@ export class BackgroundMapGeometry {
     }
   }
 
+  public async cartographicToDbFromGcs(cartographic: Cartographic, result?: Point3d): Promise<Point3d> {
+    let db;
+    if (this.globeMode === GlobeMode.Plane) {
+      const fraction = Point2d.create(0, 0);
+      this._mercatorTilingScheme.cartographicToFraction(cartographic.latitude, cartographic.longitude, fraction);
+      db = this._mercatorFractionToDb.multiplyXYZ(fraction.x, fraction.y, cartographic.height, result);
+    } else {
+      db = this._ecefToDb.multiplyPoint3d(cartographic.toEcef())!;
+    }
+    return this.cartesianRange.containsPoint(db) ? this._iModel.cartographicToSpatialFromGcs(cartographic) : db;
+  }
   public cartographicToDb(cartographic: Cartographic, result?: Point3d): Point3d {
     if (this.globeMode === GlobeMode.Plane) {
       const fraction = Point2d.create(0, 0);
@@ -386,8 +401,8 @@ export class BackgroundMapLocation {
     const origin = projectExtents.localXYZToWorld(.5, .5, .5)!;
 
     origin.z = 0; // always use ground plane
-    const eastPoint = origin.plusXYZ(10, 0, 0);
-    const northPoint = origin.plusXYZ(0, 10, 0);
+    const eastPoint = origin.plusXYZ(1, 0, 0);
+    const northPoint = origin.plusXYZ(0, 1, 0);
 
     const response = await geoConverter.getGeoCoordinatesFromIModelCoordinates([origin, northPoint, eastPoint]);
     if (response.geoCoords[0].s !== GeoCoordStatus.Success || response.geoCoords[1].s !== GeoCoordStatus.Success || response.geoCoords[2].s !== GeoCoordStatus.Success) {
@@ -404,7 +419,24 @@ export class BackgroundMapLocation {
 
     const xVector = Vector3d.createStartEnd(ecefOrigin, ecefEast);
     const yVector = Vector3d.createStartEnd(ecefOrigin, ecefNorth);
-    const matrix = Matrix3d.createRigidFromColumns(xVector, yVector, AxisOrder.XYZ)!;
+    const zVector = xVector.unitCrossProduct(yVector);
+    if (undefined === zVector) {
+      assert(false);            // Should never occur.
+      this._ecefValidated = true;
+      return;
+    }
+    const matrix = Matrix3d.createColumns(xVector, yVector, zVector);
+    if (matrix === undefined) {
+      this._ecefValidated = true;   // This is bad - somehow the reprojection failed.  - Just use the GCS directly.
+      return;
+    }
+    const inverse = matrix.inverse();
+    if (inverse === undefined) {
+      assert(false);               // Should never occur.
+      this._ecefValidated = true;
+      return;
+    }
+
     this._ecefToDb = Transform.createMatrixPickupPutdown(matrix, origin, ecefOrigin).inverse()!;
     this._ecefValidated = true;
   }

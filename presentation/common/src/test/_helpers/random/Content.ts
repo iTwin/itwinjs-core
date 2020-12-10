@@ -57,6 +57,7 @@ export const createRandomPrimitiveFieldJSON = (category?: CategoryDescriptionJSO
   type: createRandomPrimitiveTypeDescription(),
   isReadonly: faker.random.boolean(),
   priority: faker.random.number(),
+  renderer: { name: "custom_renderer" },
   editor: nullable(createRandomEditorDescription),
 });
 
@@ -97,6 +98,7 @@ export const createRandomNestedFieldJSON = (category?: CategoryDescriptionJSON |
   } as StructTypeDescription,
   contentClassInfo: createRandomECClassInfoJSON(),
   pathToPrimaryClass: createRandomRelationshipPathJSON(),
+  actualPrimaryClassIds: faker.random.boolean() ? undefined : [],
   nestedFields: [createRandomPrimitiveFieldJSON(category)],
   autoExpand: faker.random.boolean(),
 });

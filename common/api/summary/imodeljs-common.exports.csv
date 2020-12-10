@@ -31,8 +31,16 @@ public;BisCodeSpec
 internal;bisectTileRange2d(range: Range3d, takeUpper: boolean): void
 internal;bisectTileRange3d(range: Range3d, takeUpper: boolean): void
 internal;BoundingSphere
+alpha;BRepCutProps
 beta;BRepEntity
+alpha;BRepGeometryCreate
+alpha;BRepGeometryFunction = (info: BRepGeometryInfo) => void
+alpha;BRepGeometryInfo
+alpha;BRepGeometryOperation
+alpha;BRepHollowProps
 public;BRepPrimitive
+alpha;BRepRoundProps
+alpha;BRepThickenProps
 internal;BriefcaseDownloader
 internal;BriefcaseKey = string
 internal;BriefcaseProps 
@@ -100,6 +108,7 @@ internal;DevToolsStatsOptions
 public;DisplayStyle3dProps 
 public;DisplayStyle3dSettings 
 public;DisplayStyle3dSettingsProps 
+public;DisplayStyleLoadProps
 beta;DisplayStyleModelAppearanceProps 
 beta;DisplayStyleOverridesOptions
 public;DisplayStyleProps 
@@ -562,6 +571,7 @@ public;ViewFlagPresence
 public;ViewFlagProps
 public;ViewFlags
 public;ViewQueryParams 
+public;ViewStateLoadProps
 public;ViewStateProps
 internal;WEB_RPC_CONSTANTS:
 public;class WebAppRpcProtocol 

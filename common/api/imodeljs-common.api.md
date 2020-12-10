@@ -47,6 +47,7 @@ import { Map4d } from '@bentley/geometry-core';
 import { Matrix3d } from '@bentley/geometry-core';
 import { Matrix4dProps } from '@bentley/geometry-core';
 import { OpenMode } from '@bentley/bentleyjs-core';
+import { OrderedId64Iterable } from '@bentley/bentleyjs-core';
 import { Point2d } from '@bentley/geometry-core';
 import { Point3d } from '@bentley/geometry-core';
 import { PolyfaceVisitor } from '@bentley/geometry-core';
@@ -526,6 +527,12 @@ export class BoundingSphere {
     transformBy(transform: Transform, result: BoundingSphere): BoundingSphere;
 }
 
+// @alpha
+export interface BRepCutProps {
+    bothDirections?: boolean;
+    distance?: number;
+}
+
 // @beta (undocumented)
 export namespace BRepEntity {
     export interface DataProps {
@@ -546,12 +553,60 @@ export namespace BRepEntity {
     }
 }
 
+// @alpha
+export interface BRepGeometryCreate {
+    entryArray: ElementGeometryDataEntry[];
+    onResult: BRepGeometryFunction;
+    operation: BRepGeometryOperation;
+    parameters?: BRepCutProps | BRepThickenProps | BRepHollowProps | BRepRoundProps;
+    separateDisjoint?: boolean;
+}
+
+// @alpha
+export type BRepGeometryFunction = (info: BRepGeometryInfo) => void;
+
+// @alpha
+export interface BRepGeometryInfo {
+    entryArray: ElementGeometryDataEntry[];
+}
+
+// @alpha
+export enum BRepGeometryOperation {
+    Cut = 4,
+    Emboss = 5,
+    Hollow = 7,
+    Intersect = 2,
+    Loft = 9,
+    Round = 10,
+    Sew = 3,
+    Subtract = 1,
+    Sweep = 8,
+    Thicken = 6,
+    Unite = 0
+}
+
+// @alpha
+export interface BRepHollowProps {
+    distance: number;
+}
+
 // @public
 export interface BRepPrimitive {
     // @beta (undocumented)
     readonly brep: BRepEntity.DataProps;
     // (undocumented)
     type: "brep";
+}
+
+// @alpha
+export interface BRepRoundProps {
+    radius: number;
+}
+
+// @alpha
+export interface BRepThickenProps {
+    backDistance?: number;
+    frontDistance?: number;
 }
 
 // @internal
@@ -1461,8 +1516,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 1114112,
-    Major = 17,
+    Combined = 1179648,
+    Major = 18,
     Minor = 0
 }
 
@@ -1619,6 +1674,12 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
     thematic?: ThematicDisplayProps;
 }
 
+// @public
+export interface DisplayStyleLoadProps {
+    compressExcludedElementIds?: boolean;
+    omitScheduleScriptElementIds?: boolean;
+}
+
 // @beta
 export interface DisplayStyleModelAppearanceProps extends FeatureAppearanceProps {
     modelId?: Id64String;
@@ -1645,7 +1706,7 @@ export class DisplayStyleSettings {
     constructor(jsonProperties: {
         styles?: DisplayStyleSettingsProps;
     });
-    addExcludedElements(id: Id64String): void;
+    addExcludedElements(id: Id64String | Iterable<Id64String>): void;
     // @alpha (undocumented)
     get analysisFraction(): number;
     set analysisFraction(fraction: number);
@@ -1660,13 +1721,19 @@ export class DisplayStyleSettings {
     set backgroundColor(color: ColorDef);
     get backgroundMap(): BackgroundMapSettings;
     set backgroundMap(map: BackgroundMapSettings);
+    clearExcludedElements(): void;
+    // @internal (undocumented)
+    get compressedExcludedElementIds(): CompressedId64Set;
     dropExcludedElement(id: Id64String): void;
+    dropExcludedElements(id: Id64String | Iterable<Id64String>): void;
     dropModelAppearanceOverride(id: Id64String): void;
     dropSubCategoryOverride(id: Id64String): void;
     // @internal (undocumented)
     equalModelAppearanceOverrides(other: DisplayStyleSettings): boolean;
     // @internal (undocumented)
     equalSubCategoryOverrides(other: DisplayStyleSettings): boolean;
+    get excludedElementIds(): OrderedId64Iterable;
+    // @deprecated
     get excludedElements(): Set<Id64String>;
     getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined;
     getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
@@ -1712,7 +1779,7 @@ export interface DisplayStyleSettingsProps {
     backgroundColor?: ColorDefProps;
     backgroundMap?: BackgroundMapProps;
     contextRealityModels?: ContextRealityModelProps[];
-    excludedElements?: Id64String[];
+    excludedElements?: Id64Array | CompressedId64Set;
     // @alpha
     mapImagery?: MapImageryProps;
     // @beta
@@ -2216,9 +2283,7 @@ export interface ElementLoadProps {
     // (undocumented)
     code?: CodeProps;
     // @internal
-    displayStyle?: {
-        omitScheduleScriptElementIds?: boolean;
-    };
+    displayStyle?: DisplayStyleLoadProps;
     // (undocumented)
     federationGuid?: GuidString;
     // (undocumented)
@@ -3642,6 +3707,9 @@ export abstract class IModel implements IModelProps {
     ecefToSpatial(ecef: XYAndZ, result?: Point3d): Point3d;
     // @internal
     protected _fileKey: string;
+    // (undocumented)
+    get geographicCoordinateSystem(): GeographicCRS | undefined;
+    set geographicCoordinateSystem(geoCRS: GeographicCRS | undefined);
     // @internal (undocumented)
     getConnectionProps(): IModelConnectionProps;
     static getDefaultSubCategoryId(categoryId: Id64String): Id64String;
@@ -3667,6 +3735,8 @@ export abstract class IModel implements IModelProps {
     rootSubject: RootSubjectProps;
     static readonly rootSubjectId: Id64String;
     setEcefLocation(ecef: EcefLocationProps): void;
+    // (undocumented)
+    setGeographicCoordinateSystem(geoCRS: GeographicCRSProps): void;
     spatialToCartographicFromEcef(spatial: XYAndZ, result?: Cartographic): Cartographic;
     spatialToEcef(spatial: XYAndZ, result?: Point3d): Point3d;
     // @internal (undocumented)
@@ -3737,6 +3807,7 @@ export class IModelNotFoundResponse extends RpcNotFoundResponse {
 // @public
 export interface IModelProps {
     ecefLocation?: EcefLocationProps;
+    geographicCoordinateSystem?: GeographicCRS;
     globalOrigin?: XYZProps;
     name?: string;
     projectExtents?: Range3dProps;
@@ -3774,7 +3845,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     // (undocumented)
     getToolTipMessage(_iModelToken: IModelRpcProps, _elementId: string): Promise<string[]>;
     // (undocumented)
-    getViewStateData(_iModelToken: IModelRpcProps, _viewDefinitionId: string): Promise<ViewStateProps>;
+    getViewStateData(_iModelToken: IModelRpcProps, _viewDefinitionId: string, _options?: ViewStateLoadProps): Promise<ViewStateProps>;
     // (undocumented)
     getViewThumbnail(_iModelToken: IModelRpcProps, _viewId: string): Promise<Uint8Array>;
     static readonly interfaceName = "IModelReadRpcInterface";
@@ -7816,6 +7887,11 @@ export class ViewFlags {
 export interface ViewQueryParams extends EntityQueryParams {
     // (undocumented)
     wantPrivate?: boolean;
+}
+
+// @public
+export interface ViewStateLoadProps {
+    displayStyle?: DisplayStyleLoadProps;
 }
 
 // @public

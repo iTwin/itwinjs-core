@@ -318,7 +318,7 @@ export class AuxChannel {
 
 // @public
 export class AuxChannelData {
-    constructor(input: number, values: number[]);
+    constructor(input: number, values: number[] | Float64Array);
     clone(): AuxChannelData;
     copyValues(other: AuxChannelData, thisIndex: number, otherIndex: number, blockSize: number): void;
     input: number;
@@ -4089,6 +4089,13 @@ export class PolyfaceData {
 export class PolyfaceQuery {
     static announceDuplicateFacetIndices(polyface: Polyface, announceCluster: (clusterFacetIndices: number[]) => void): void;
     static announceSweepLinestringToConvexPolyfaceXY(linestringPoints: GrowableXYZArray, polyface: Polyface, announce: AnnounceDrapePanel): any;
+    // @internal
+    static asyncAnnounceSweepLinestringToConvexPolyfaceXY(linestringPoints: GrowableXYZArray, polyface: Polyface, announce: AnnounceDrapePanel): Promise<number>;
+    static asyncSweepLinestringToFacetsXYReturnChains(linestringPoints: GrowableXYZArray, polyface: Polyface): Promise<LineString3d[]>;
+    // @internal
+    static get asyncWorkLimit(): number;
+    // @internal
+    static awaitBlockCount: number;
     static boundaryEdges(source: Polyface | PolyfaceVisitor | undefined, includeDanglers?: boolean, includeMismatch?: boolean, includeNull?: boolean): CurveCollection | undefined;
     static boundaryOfVisibleSubset(polyface: IndexedPolyface, visibilitySelect: 0 | 1 | 2, vectorToEye: Vector3d, sideAngleTolerance?: Angle): CurveCollection | undefined;
     static buildAverageNormals(polyface: IndexedPolyface, toleranceAngle?: Angle): void;
@@ -4112,6 +4119,8 @@ export class PolyfaceQuery {
     static partitionFacetIndicesByVertexConnectedComponent(polyface: Polyface | PolyfaceVisitor): number[][];
     static partitionFacetIndicesByVisibilityVector(polyface: Polyface | PolyfaceVisitor, vectorToEye: Vector3d, sideAngleTolerance: Angle): number[][];
     static reorientVertexOrderAroundFacetsForConsistentOrientation(mesh: IndexedPolyface): boolean;
+    // @internal
+    static setAsyncWorkLimit(value: number): number;
     static setSingleEdgeVisibility(polyface: IndexedPolyface, facetIndex: number, vertexIndex: number, value: boolean): void;
     static sumFacetAreas(source: Polyface | PolyfaceVisitor | undefined): number;
     static sumFacetSecondAreaMomentProducts(source: Polyface | PolyfaceVisitor, origin: Point3d): Matrix4d;
@@ -4689,6 +4698,7 @@ export class RuledSweep extends SolidPrimitive {
 
 // @alpha
 export class Sample {
+    static addAuxDataScalarChannel(data: PolyfaceData, channelIndex: number, name: string | undefined, inputName: string | undefined, input0: number, inputStep: number, numInput: number, dataType: AuxChannelDataType, scalarFunction: (input: number, xyz: Point3d) => number): void;
     static readonly angle: Angle[];
     static readonly angleSweep: AngleSweep[];
     static appendPhases(linestring: LineString3d, numPhase: number, ...vectors: Vector3d[]): void;

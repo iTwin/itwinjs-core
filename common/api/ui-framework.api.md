@@ -51,6 +51,7 @@ import { DndComponentClass } from 'react-dnd';
 import { DraggedWidgetManagerProps } from '@bentley/ui-ninezone';
 import { DragLayerProps } from '@bentley/ui-components';
 import { DragSourceArguments } from '@bentley/ui-components';
+import { ECClassGroupingNodeKey } from '@bentley/presentation-common';
 import { EmphasizeElementsProps } from '@bentley/imodeljs-frontend';
 import { FunctionKey as FunctionKey_2 } from '@bentley/ui-abstract';
 import { GroupButton as GroupButton_2 } from '@bentley/ui-abstract';
@@ -1522,7 +1523,7 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
     // (undocumented)
     syncToolSettingsProperties(args: SyncToolSettingsPropertiesEventArgs): void;
     // (undocumented)
-    uiDataProvider: ToolSettingsUiDataProvider;
+    get uiDataProvider(): ToolSettingsUiDataProvider;
     // (undocumented)
     updateToolSettingsNodes(): void;
 }
@@ -1607,16 +1608,16 @@ export interface DialogRendererProps {
 // @internal
 export function DockedStatusBarItem(props: StatusBarItemProps): JSX.Element;
 
-// @beta
+// @beta @deprecated
 export class DragDropLayerChangedEvent extends UiEvent<DragDropLayerChangedEventArgs> {
 }
 
-// @beta
+// @beta @deprecated
 export interface DragDropLayerChangedEventArgs {
     type: string | undefined;
 }
 
-// @beta
+// @beta @deprecated
 export class DragDropLayerManager {
     static getActiveLayer(): React.ComponentClass<DragLayerProps<any>, any> | React.FunctionComponent<DragLayerProps<any>> | undefined;
     static getType(): string | undefined;
@@ -1626,10 +1627,10 @@ export class DragDropLayerManager {
     static setType(type: string | undefined): void;
 }
 
-// @beta
-export const DragDropLayerRenderer: typeof DragDropLayerRendererComponent & DndComponentClass<{}>;
+// @beta @deprecated
+export const DragDropLayerRenderer: typeof DragDropLayerRendererComponent & DndComponentClass<typeof React.Component, {}>;
 
-// @beta
+// @beta @deprecated
 export class DragDropLayerRendererComponent extends React.Component<DragDropLayerRendererProps> {
     constructor(props: DragDropLayerRendererProps);
     // (undocumented)
@@ -1640,7 +1641,7 @@ export class DragDropLayerRendererComponent extends React.Component<DragDropLaye
     render(): React.ReactNode;
 }
 
-// @beta
+// @beta @deprecated
 export interface DragDropLayerRendererProps extends CommonProps {
     // (undocumented)
     args?: DragSourceArguments;
@@ -3644,8 +3645,8 @@ export interface ModelsTreeProps {
     // @alpha
     filterInfo?: VisibilityTreeFilterInfo;
     iModel: IModelConnection;
-    // @internal
-    modelsVisibilityHandler?: VisibilityHandler;
+    // @alpha
+    modelsVisibilityHandler?: ModelsVisibilityHandler;
     onFilterApplied?: (filteredDataProvider: IPresentationTreeDataProvider, matchesCount: number) => void;
     rootElementRef?: React.Ref<HTMLDivElement>;
     selectionMode?: SelectionMode;
@@ -3655,6 +3656,53 @@ export interface ModelsTreeProps {
 
 // @beta
 export type ModelsTreeSelectionPredicate = (key: NodeKey, type: ModelsTreeNodeType) => boolean;
+
+// @alpha
+export class ModelsVisibilityHandler implements IVisibilityHandler {
+    constructor(props: ModelsVisibilityHandlerProps);
+    // (undocumented)
+    protected changeCategoryState(categoryId: Id64String, parentModelId: Id64String | undefined, on: boolean): void;
+    // (undocumented)
+    protected changeElementGroupingNodeState(key: ECClassGroupingNodeKey, on: boolean): Promise<void>;
+    // (undocumented)
+    protected changeElementsState(modelId: Id64String | undefined, categoryId: Id64String | undefined, elementIds: Id64String[], on: boolean): void;
+    // (undocumented)
+    protected changeElementState(id: Id64String, modelId: Id64String | undefined, categoryId: Id64String | undefined, on: boolean): Promise<void>;
+    // (undocumented)
+    protected changeModelState(id: Id64String, on: boolean): Promise<void>;
+    // (undocumented)
+    protected changeModelsVisibility(ids: Id64String[], visible: boolean): Promise<void>;
+    // (undocumented)
+    protected changeSubjectNodeState(ids: Id64String[], node: TreeNodeItem, on: boolean): Promise<void | void[]>;
+    changeVisibility(node: TreeNodeItem, nodeKey: NodeKey, on: boolean): Promise<void>;
+    // (undocumented)
+    dispose(): void;
+    // (undocumented)
+    protected getCategoryDisplayStatus(id: Id64String, parentModelId: Id64String | undefined): VisibilityStatus;
+    // (undocumented)
+    protected getElementDisplayStatus(elementId: Id64String, modelId: Id64String | undefined, categoryId: Id64String | undefined): VisibilityStatus;
+    // (undocumented)
+    protected getElementGroupingNodeDisplayStatus(_id: string, key: ECClassGroupingNodeKey): Promise<VisibilityStatus>;
+    // (undocumented)
+    protected getModelDisplayStatus(id: Id64String): VisibilityStatus;
+    // (undocumented)
+    protected getSubjectNodeVisibility(ids: Id64String[], node: TreeNodeItem): Promise<VisibilityStatus>;
+    getVisibilityStatus(node: TreeNodeItem, nodeKey: NodeKey): VisibilityStatus | Promise<VisibilityStatus>;
+    // (undocumented)
+    get onVisibilityChange(): (() => void) | undefined;
+    set onVisibilityChange(callback: (() => void) | undefined);
+    setFilteredDataProvider(provider: IPresentationTreeDataProvider | undefined): void;
+    }
+
+// @alpha
+export interface ModelsVisibilityHandlerProps {
+    // (undocumented)
+    onVisibilityChange?: () => void;
+    // (undocumented)
+    rulesetId: string;
+    // (undocumented)
+    viewport: Viewport;
+}
 
 // @public
 export class MouseDownChangedEvent extends UiEvent<MouseDownChangedEventArgs> {
@@ -5868,7 +5916,7 @@ export interface ToolSettingsGridProps {
     settings?: ToolSettingsEntry[];
 }
 
-// @internal
+// @beta
 export class ToolSettingsManager {
     static get activeToolDescription(): string;
     static get activeToolLabel(): string;
@@ -5927,9 +5975,10 @@ export interface ToolSettingsZoneProps extends CommonProps {
 // @public
 export class ToolUiProvider extends ConfigurableUiControl {
     constructor(info: ConfigurableCreateInfo, options: any);
-    // @deprecated
     get dataProvider(): UiDataProvider | undefined;
-    set dataProvider(_d: UiDataProvider | undefined);
+    set dataProvider(d: UiDataProvider | undefined);
+    // (undocumented)
+    protected _dataProvider: UiDataProvider | undefined;
     getType(): ConfigurableUiControlType;
     // @beta
     get horizontalToolSettingNodes(): ToolSettingsEntry[] | undefined;
@@ -6472,30 +6521,6 @@ export interface VisibilityComponentProps {
     config?: VisibilityComponentConfig;
     enableHierarchiesPreloading?: VisibilityComponentHierarchy[];
     iModelConnection: IModelConnection;
-}
-
-// @internal (undocumented)
-export class VisibilityHandler implements IVisibilityHandler {
-    constructor(props: VisibilityHandlerProps);
-    // (undocumented)
-    changeVisibility(node: TreeNodeItem, nodeKey: NodeKey, on: boolean): Promise<void>;
-    // (undocumented)
-    dispose(): void;
-    // (undocumented)
-    getVisibilityStatus(node: TreeNodeItem, nodeKey: NodeKey): VisibilityStatus | Promise<VisibilityStatus>;
-    // (undocumented)
-    get onVisibilityChange(): (() => void) | undefined;
-    set onVisibilityChange(callback: (() => void) | undefined);
-    }
-
-// @internal (undocumented)
-export interface VisibilityHandlerProps {
-    // (undocumented)
-    onVisibilityChange?: () => void;
-    // (undocumented)
-    rulesetId: string;
-    // (undocumented)
-    viewport: Viewport;
 }
 
 // @alpha

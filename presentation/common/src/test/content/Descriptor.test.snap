@@ -31,6 +31,9 @@ Object {
       "label": "Buckinghamshire Ameliorated",
       "name": "array",
       "priority": 94234,
+      "renderer": Object {
+        "name": "custom_renderer",
+      },
       "type": Object {
         "typeName": "enum",
         "valueFormat": "Primitive",
@@ -52,6 +55,9 @@ Object {
       "label": "Engineer fuchsia",
       "name": "interface",
       "priority": 85096,
+      "renderer": Object {
+        "name": "custom_renderer",
+      },
       "type": Object {
         "typeName": "binary",
         "valueFormat": "Primitive",
@@ -73,13 +79,17 @@ Object {
       "label": "Digitized Meadow e-services",
       "name": "SCSI",
       "priority": 507,
+      "renderer": Object {
+        "name": "custom_renderer",
+      },
       "type": Object {
         "typeName": "set",
         "valueFormat": "Primitive",
       },
     },
     Object {
-      "autoExpand": true,
+      "actualPrimaryClassIds": Array [],
+      "autoExpand": false,
       "category": Object {
         "description": "Deserunt blanditiis rerum.",
         "expand": true,
@@ -108,14 +118,17 @@ Object {
             "priority": 35900,
           },
           "editor": Object {
-            "name": "Response",
+            "name": "Frozen",
           },
           "isReadonly": true,
-          "label": "Ball networks",
-          "name": "Buckinghamshire",
-          "priority": 6880,
+          "label": "Inverse",
+          "name": "sensor",
+          "priority": 81188,
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "type": Object {
-            "typeName": "geometry",
+            "typeName": "binary",
             "valueFormat": "Primitive",
           },
         },
@@ -163,6 +176,9 @@ Object {
         },
       ],
       "priority": 19765,
+      "renderer": Object {
+        "name": "custom_renderer",
+      },
       "type": Object {
         "members": Array [
           Object {
@@ -470,10 +486,10 @@ exports[`Descriptor fromJSON creates valid Descriptor from valid JSON without ca
 Object {
   "categories": Array [
     Object {
-      "description": "Illum voluptas totam repellat rerum iste omnis qui dolores doloremque.",
+      "description": "Voluptas totam repellat rerum iste omnis qui dolores doloremque.",
       "expand": false,
-      "label": "Handmade synergies",
-      "name": "monitor",
+      "label": "scalable index Automotive",
+      "name": "Producer",
       "parent": undefined,
       "priority": 76873,
     },
@@ -517,10 +533,10 @@ Object {
   "fields": Array [
     Object {
       "category": Object {
-        "description": "Illum voluptas totam repellat rerum iste omnis qui dolores doloremque.",
+        "description": "Voluptas totam repellat rerum iste omnis qui dolores doloremque.",
         "expand": false,
-        "label": "Handmade synergies",
-        "name": "monitor",
+        "label": "scalable index Automotive",
+        "name": "Producer",
         "parent": undefined,
         "priority": 76873,
       },
@@ -529,6 +545,9 @@ Object {
       "label": "Future",
       "name": "Cambridgeshire",
       "priority": 1695,
+      "renderer": Object {
+        "name": "custom_renderer",
+      },
       "type": Object {
         "typeName": "smallint",
         "valueFormat": "Primitive",
@@ -548,6 +567,9 @@ Object {
       "label": "SSL tertiary",
       "name": "Open-source",
       "priority": 16130,
+      "renderer": Object {
+        "name": "custom_renderer",
+      },
       "type": Object {
         "typeName": "real",
         "valueFormat": "Primitive",
@@ -567,12 +589,16 @@ Object {
       "label": "Bedfordshire",
       "name": "Home",
       "priority": 98326,
+      "renderer": Object {
+        "name": "custom_renderer",
+      },
       "type": Object {
         "typeName": "datetime",
         "valueFormat": "Primitive",
       },
     },
     Object {
+      "actualPrimaryClassIds": Array [],
       "autoExpand": true,
       "category": Object {
         "description": "Quia et perferendis est distinctio dicta autem aut.",
@@ -601,13 +627,18 @@ Object {
             "parent": undefined,
             "priority": 44488,
           },
-          "editor": undefined,
-          "isReadonly": true,
-          "label": "Robust Gorgeous synergy",
-          "name": "auxiliary",
-          "priority": 20037,
+          "editor": Object {
+            "name": "microchip",
+          },
+          "isReadonly": false,
+          "label": "primary",
+          "name": "Jewelery",
+          "priority": 92023,
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "type": Object {
-            "typeName": "mediumint",
+            "typeName": "time",
             "valueFormat": "Primitive",
           },
         },
@@ -655,6 +686,9 @@ Object {
         },
       ],
       "priority": 75880,
+      "renderer": Object {
+        "name": "custom_renderer",
+      },
       "type": Object {
         "members": Array [
           Object {
@@ -989,6 +1023,9 @@ Object {
       "label": "HTTP",
       "name": "program",
       "priority": 37361,
+      "renderer": Object {
+        "name": "custom_renderer",
+      },
       "type": Object {
         "typeName": "set",
         "valueFormat": "Primitive",
@@ -1010,6 +1047,9 @@ Object {
       "label": "logistical Trail",
       "name": "RAM",
       "priority": 14178,
+      "renderer": Object {
+        "name": "custom_renderer",
+      },
       "type": Object {
         "typeName": "datetime",
         "valueFormat": "Primitive",
@@ -1029,13 +1069,17 @@ Object {
       "label": "functionalities Analyst Rufiyaa",
       "name": "Mountain",
       "priority": 73561,
+      "renderer": Object {
+        "name": "custom_renderer",
+      },
       "type": Object {
         "typeName": "varchar",
         "valueFormat": "Primitive",
       },
     },
     Object {
-      "autoExpand": true,
+      "actualPrimaryClassIds": Array [],
+      "autoExpand": false,
       "category": Object {
         "description": "Aspernatur ex quia.",
         "expand": true,
@@ -1065,13 +1109,18 @@ Object {
             "parent": undefined,
             "priority": 22923,
           },
-          "editor": undefined,
+          "editor": Object {
+            "name": "Digitized",
+          },
           "isReadonly": true,
-          "label": "robust Licensed",
-          "name": "Lodge",
-          "priority": 81713,
+          "label": "Ergonomic Soft Chicken SAS",
+          "name": "Path",
+          "priority": 61491,
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
           "type": Object {
-            "typeName": "boolean",
+            "typeName": "serial",
             "valueFormat": "Primitive",
           },
         },
@@ -1119,6 +1168,9 @@ Object {
         },
       ],
       "priority": 82740,
+      "renderer": Object {
+        "name": "custom_renderer",
+      },
       "type": Object {
         "members": Array [
           Object {
