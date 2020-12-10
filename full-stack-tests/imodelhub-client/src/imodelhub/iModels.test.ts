@@ -834,9 +834,9 @@ describe("iModelHub iModelsHandler", () => {
     imodel = await iModelClient.iModels.update(requestContext, projectId, imodel);
     chai.expect(imodel.iModelType).to.be.equal(IModelType.Library);
 
-    mockGetIModelByType(projectId, testIModelName, imodelId, IModelType.Library, undefined);
+    mockGetIModelByType(projectId, testIModelName, imodelId, IModelType.Library);
     iModelsWithLibraryType = (await iModelClient.iModels.get(requestContext, projectId, new IModelQuery().byiModelType(IModelType.Library)));
-    chai.expect(iModelsWithLibraryType.some((x) => x.id === imodel.id)).to.be.true;
+    chai.expect(iModelsWithLibraryType.some((x) => x.id === imodelId)).to.be.true;
   });
 
   it("should filter iModels by template", async () => {
