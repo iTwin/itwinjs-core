@@ -3,6 +3,27 @@ ignore: true
 ---
 # NextVersion
 
+## Section-cut graphics
+
+A [DisplayStyleState]($frontend) can now be configured to produce section-cut graphics from the view's [ClipVector]($geometry-core). In the image below, a clipping plane has been applied to produce a cross-section view of a house. Note that all of the geometry intersecting the clipping plane appears to be hollow, whereas in the real world we'd expect things like walls, floors, and tables to be solid throughout:
+
+![Clipped view without section-cut graphics](./assets/house-section-clip.jpg)
+
+Now, every [DisplayStyleSettings]($common) has a [ClipStyle]($common) that specifies how the clipping planes should affect the view. [ClipStyle.produceCutGeometry]($common) specifies that additional graphics should be produced for solid geometry intersecting the clipping planes, causing solid objects to continue to appear solid when sliced by a clipping plane, as shown below:
+
+![Clipped view with section-cut graphics](./assets/house-section-cut.jpg)
+
+A [ClipStyle]($common) can also specify a [CutStyle]($common) controlling how the section-cut geometry is displayed by overriding:
+  - Aspects of the [ViewFlags]($common) with which it is drawn;
+  - The edge symbology via [HiddenLine.Settings]($common); and
+  - The color, transparency, etc of the geometry via [FeatureAppearance]($common).
+
+In the image below, the section-cut graphics are drawn in orange with visible blue edges as specified by the [CutStyle]($common).
+
+![Section-cut view with CutStyle overriding symbology](./assets/house-section-cut-style.jpg)
+
+NOTE: If a ClipStyle is associated with a [Viewport]($frontend), it should be modified via [Viewport.clipStyle]($frontend) to ensure the viewport's contents are updated to reflect the change.
+
 ## Tile compression
 
 [IModelHostConfiguration.compressCachedTiles]($backend) specifies whether tiles uploaded to blob storage should be compressed using gzip. Previously, it defaulted to `false` if omitted. The default has now been switched to `true`. Compressing tiles conserves bandwidth; the tiles are transparently and efficiently decompressed by the browser.
