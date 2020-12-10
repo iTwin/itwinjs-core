@@ -63,8 +63,6 @@ public;ChangeOpCode
 alpha;ChannelConstraintError 
 public;ChannelRootAspectProps 
 internal;ClassifierTileTreeId
-beta;ClipAppearance
-beta;ClipAppearanceProps
 beta;ClipStyle
 beta;ClipStyleProps
 beta;class CloudStorageCache

@@ -6,12 +6,10 @@
  * @module Views
  */
 
-import { areEqualPossiblyUndefined, JsonUtils } from "@bentley/bentleyjs-core";
+import { assert, JsonUtils } from "@bentley/bentleyjs-core";
 import { ViewFlagOverrides, ViewFlagOverridesProps } from "./ViewFlags";
 import { HiddenLine } from "./HiddenLine";
 import { FeatureAppearance, FeatureAppearanceProps } from "./FeatureSymbology";
-import { RgbColor, RgbColorProps } from "./RgbColor";
-import { LinePixels } from "./LinePixels";
 
 /** Wire format describing a [[CutStyle]] applied to section-cut geometry produced at intersections with a view's [ClipVector]($geometry-core).
  * @see [[ClipStyleProps.cutStyle]].
@@ -97,87 +95,6 @@ export class CutStyle {
   }
 }
 
-/** Wire format describing a [[ClipAppearance]].
- * @see [[ClipStyleProps.insideAppearance]] and [[ClipStyleProps.outsideAppearance]].
- * @beta
- */
-export interface ClipAppearanceProps {
-  /** If defined, the geometry will be displayed in this color. */
-  color?: RgbColorProps;
-  /** If defined, the geometry will be displayed using this line pattern. */
-  linePixels?: LinePixels;
-  /** If `true`, the geometry will not be locatable. */
-  nonLocatable?: true;
-}
-
-/** Overrides selected aspects of symbology based on whether the geometry is inside or outside of the view's [ClipVector]($geometry-core).
- * @see [[ClipStyle.insideAppearance]] and [[ClipStyle.outsideAppearance]].
- * @beta
- */
-export class ClipAppearance {
-  /** If defined, the geometry will be displayed in this color. */
-  public readonly color?: RgbColor;
-  /** If defined, the geometry will be displayed using this line pattern. */
-  public readonly linePixels?: LinePixels;
-  /** If `true`, the geometry will not be locatable. */
-  public readonly nonLocatable: boolean;
-
-  /** Default appearance that overrides no aspects of the symbology. */
-  public static readonly defaults = new ClipAppearance();
-
-  private constructor(color?: RgbColor, linePixels?: LinePixels, nonLocatable?: boolean) {
-    this.color = color;
-    this.linePixels = linePixels;
-    this.nonLocatable = true === nonLocatable;
-  }
-
-  /** Create a ClipAppearance from its components. */
-  public static create(color?: RgbColor, linePixels?: LinePixels, nonLocatable?: boolean): ClipAppearance {
-    if (undefined === color && undefined === linePixels && true !== nonLocatable)
-      return this.defaults;
-
-    return new ClipAppearance(color, linePixels, nonLocatable);
-  }
-
-  public static fromJSON(props?: ClipAppearanceProps): ClipAppearance {
-    if (JsonUtils.isNonEmptyObject(props)) {
-      const color = props.color ? RgbColor.fromJSON(props.color) : undefined;
-      return this.create(color, props?.linePixels, props?.nonLocatable);
-    } else {
-      return this.defaults;
-    }
-  }
-
-  /** Obtain the JSON representation of this ClipAppearance. The JSON representation is `undefined` if this appearance matches the defaults. */
-  public toJSON(): ClipAppearanceProps | undefined {
-    if (this.matchesDefaults)
-      return undefined;
-
-    const props: ClipAppearanceProps = { };
-    if (undefined !== this.color)
-      props.color = this.color.toJSON();
-
-    if (undefined !== this.linePixels)
-      props.linePixels = this.linePixels;
-
-    if (this.nonLocatable)
-      props.nonLocatable = true;
-
-    return props;
-  }
-
-  /** Returns true if this appearance matches [[ClipAppearance.defaults]] - that is, it overrides no aspects of the symbology .*/
-  public get matchesDefaults(): boolean {
-    return this.equals(ClipAppearance.defaults);
-  }
-
-  /** Compare for equality. */
-  public equals(other: ClipAppearance): boolean {
-    return this.linePixels === other.linePixels && this.nonLocatable === other.nonLocatable
-      && areEqualPossiblyUndefined(this.color, other.color, (a, b) => a.equals(b));
-  }
-}
-
 /** Wire format describing a [[ClipStyle]].
  * @see [[DisplayStyleSettingsProps.clipStyle]].
  * @beta
@@ -191,10 +108,6 @@ export interface ClipStyleProps {
   produceCutGeometry?: boolean;
   /** Controls aspects of how the cut geometry is displayed, if [[produceCutGeometry]] is `true`. */
   cutStyle?: CutStyleProps;
-  /** Overrides aspects of the symbology of geometry that is outside of the clip volume. */
-  outsideAppearance?: ClipAppearanceProps;
-  /** Overrides aspects of the symbology of geometry that is inside of the clip volume. */
-  insideAppearance?: ClipAppearanceProps;
 }
 
 /** Describes symbology and behavior applied to a [ClipVector]($geometry-core) when applied to a [ViewState]($frontend) or [[ModelClipGroup]].
@@ -210,37 +123,28 @@ export class ClipStyle {
   public readonly produceCutGeometry: boolean;
   /** Controls aspects of how the cut geometry is displayed, if [[produceCutGeometry]] is `true`. */
   public readonly cutStyle: CutStyle;
-  /** Overrides aspects of the symbology of geometry that is outside of the clip volume. */
-  public readonly outsideAppearance: ClipAppearance;
-  /** Overrides aspects of the symbology of geometry that is inside of the clip volume. */
-  public readonly insideAppearance: ClipAppearance;
-
   /** The default style, which overrides none of the view's settings. */
-  public static readonly defaults = new ClipStyle(false, CutStyle.defaults, ClipAppearance.defaults, ClipAppearance.defaults);
+  public static readonly defaults = new ClipStyle(false, CutStyle.defaults);
 
-  private constructor(produceCutGeometry: boolean, cutStyle: CutStyle, insideAppearance: ClipAppearance, outsideAppearance: ClipAppearance) {
+  private constructor(produceCutGeometry: boolean, cutStyle: CutStyle) {
     this.produceCutGeometry = produceCutGeometry;
     this.cutStyle = cutStyle;
-    this.insideAppearance = insideAppearance;
-    this.outsideAppearance = outsideAppearance;
   }
 
   /** Create a style from its components. */
-  public static create(produceCutGeometry: boolean, cutStyle: CutStyle, insideAppearance: ClipAppearance, outsideAppearance: ClipAppearance): ClipStyle {
-    if (!produceCutGeometry && cutStyle.matchesDefaults && insideAppearance.matchesDefaults && outsideAppearance.matchesDefaults)
+  public static create(produceCutGeometry: boolean, cutStyle: CutStyle): ClipStyle {
+    if (!produceCutGeometry && cutStyle.matchesDefaults)
       return this.defaults;
 
-    return new ClipStyle(produceCutGeometry, cutStyle, insideAppearance, outsideAppearance);
+    return new ClipStyle(produceCutGeometry, cutStyle);
   }
 
   public static fromJSON(props?: ClipStyleProps): ClipStyle {
     if (JsonUtils.isNonEmptyObject(props)) {
       const produceCutGeometry = props.produceCutGeometry ?? false;
       const cutStyle = CutStyle.fromJSON(props.cutStyle);
-      const insideAppearance = ClipAppearance.fromJSON(props.insideAppearance);
-      const outsideAppearance = ClipAppearance.fromJSON(props.outsideAppearance);
 
-      return this.create(produceCutGeometry, cutStyle, insideAppearance, outsideAppearance);
+      return this.create(produceCutGeometry, cutStyle);
     } else {
       return this.defaults;
     }
@@ -256,16 +160,10 @@ export class ClipStyle {
       props.produceCutGeometry = true;
 
     const cutStyle = this.cutStyle.toJSON();
-    if (cutStyle)
+    if (cutStyle) {
+      assert(!this.cutStyle.matchesDefaults);
       props.cutStyle = cutStyle;
-
-    const outsideAppearance = this.outsideAppearance.toJSON();
-    if (outsideAppearance)
-      props.outsideAppearance = outsideAppearance;
-
-    const insideAppearance = this.insideAppearance.toJSON();
-    if (insideAppearance)
-      props.insideAppearance = insideAppearance;
+    }
 
     return props;
   }
@@ -275,6 +173,6 @@ export class ClipStyle {
     if (this === ClipStyle.defaults)
       return true;
 
-    return !this.produceCutGeometry && this.cutStyle.matchesDefaults && this.outsideAppearance.matchesDefaults && this.insideAppearance.matchesDefaults;
+    return !this.produceCutGeometry && this.cutStyle.matchesDefaults;
   }
 }

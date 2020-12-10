@@ -13,12 +13,10 @@ Now, every [DisplayStyleSettings]($common) has a [ClipStyle]($common) that speci
 
 ![Clipped view with section-cut graphics](./assets/house-section-cut.jpg)
 
-A [ClipStyle]($common) can also specify:
-  - A [CutStyle]($common) controlling how the section-cut geometry is displayed by overriding:
-    - Aspects of the [ViewFlags]($common) with which it is drawn;
-    - The edge symbology via [HiddenLine.Settings]($common); and
-    - The color, transparency, etc of the geometry via [FeatureAppearance]($common).
-  - Overrides for the color, line pattern, and locatability of geometry lying inside and/or outside of the clipping planes, via [ClipAppearance]($common).
+A [ClipStyle]($common) can also specify a [CutStyle]($common) controlling how the section-cut geometry is displayed by overriding:
+  - Aspects of the [ViewFlags]($common) with which it is drawn;
+  - The edge symbology via [HiddenLine.Settings]($common); and
+  - The color, transparency, etc of the geometry via [FeatureAppearance]($common).
 
 In the image below, the section-cut graphics are drawn in orange with visible blue edges as specified by the [CutStyle]($common).
 

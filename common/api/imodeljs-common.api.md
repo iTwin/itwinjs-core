@@ -838,54 +838,20 @@ export interface ClassifierTileTreeId {
 }
 
 // @beta
-export class ClipAppearance {
-    readonly color?: RgbColor;
-    // (undocumented)
-    static create(color?: RgbColor, linePixels?: LinePixels, nonLocatable?: boolean): ClipAppearance;
-    // (undocumented)
-    static readonly defaults: ClipAppearance;
-    // (undocumented)
-    equals(other: ClipAppearance): boolean;
-    // (undocumented)
-    static fromJSON(props?: ClipAppearanceProps): ClipAppearance;
-    readonly linePixels?: LinePixels;
-    // (undocumented)
-    get matchesDefaults(): boolean;
-    readonly nonLocatable: boolean;
-    // (undocumented)
-    toJSON(): ClipAppearanceProps | undefined;
-}
-
-// @beta
-export interface ClipAppearanceProps {
-    color?: RgbColorProps;
-    linePixels?: LinePixels;
-    nonLocatable?: true;
-}
-
-// @beta
 export class ClipStyle {
-    // (undocumented)
-    static create(produceCutGeometry: boolean, cutStyle: CutStyle, insideAppearance: ClipAppearance, outsideAppearance: ClipAppearance): ClipStyle;
+    static create(produceCutGeometry: boolean, cutStyle: CutStyle): ClipStyle;
     readonly cutStyle: CutStyle;
-    // (undocumented)
     static readonly defaults: ClipStyle;
     // (undocumented)
     static fromJSON(props?: ClipStyleProps): ClipStyle;
-    readonly insideAppearance: ClipAppearance;
-    // (undocumented)
     get matchesDefaults(): boolean;
-    readonly outsideAppearance: ClipAppearance;
     readonly produceCutGeometry: boolean;
-    // (undocumented)
     toJSON(): ClipStyleProps | undefined;
 }
 
 // @beta
 export interface ClipStyleProps {
     cutStyle?: CutStyleProps;
-    insideAppearance?: ClipAppearanceProps;
-    outsideAppearance?: ClipAppearanceProps;
     produceCutGeometry?: boolean;
 }
 
@@ -2517,7 +2483,6 @@ export class FeatureAppearance implements FeatureAppearanceProps {
     get isFullyTransparent(): boolean;
     // (undocumented)
     readonly linePixels?: LinePixels;
-    // (undocumented)
     get matchesDefaults(): boolean;
     // (undocumented)
     readonly nonLocatable?: true | undefined;
