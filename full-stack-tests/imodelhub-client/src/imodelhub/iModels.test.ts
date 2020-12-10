@@ -233,7 +233,7 @@ function mockUpdateiModel(contextId: string, imodel: HubIModel) {
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
-describe.only("iModelHub iModelsHandler", () => {
+describe("iModelHub iModelsHandler", () => {
   let projectId: string;
   let assetId: string;
   let imodelId: GuidString;
