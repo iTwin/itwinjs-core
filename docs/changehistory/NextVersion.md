@@ -5,7 +5,7 @@ ignore: true
 
 ## Section-cut graphics
 
-A [DisplayStyleState]($frontend) can now be configured to produce section-cut graphics from the view's [ClipVector]($geometry-core). In the image below, a clipping plane has been applied to produce a cross-section view of a house. Note that all of the geometry intersecting the clipping plane appears to be hoolow, whereas in the real world we'd expect things like walls, floors, and tables to be solid throughout:
+A [DisplayStyleState]($frontend) can now be configured to produce section-cut graphics from the view's [ClipVector]($geometry-core). In the image below, a clipping plane has been applied to produce a cross-section view of a house. Note that all of the geometry intersecting the clipping plane appears to be hollow, whereas in the real world we'd expect things like walls, floors, and tables to be solid throughout:
 
 ![Clipped view without section-cut graphics](./assets/house-section-clip.jpg)
 
