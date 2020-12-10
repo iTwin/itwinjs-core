@@ -35,7 +35,7 @@ describe("Section-cut tile tree", () => {
   });
 
   after(async () => {
-    await Promise.all(testCases.map((x) => x.imodel.close()));
+    await Promise.all(testCases.map(async (x) => x.imodel.close()));
     testCases.length = 0;
     await IModelApp.shutdown();
   });
@@ -55,7 +55,7 @@ describe("Section-cut tile tree", () => {
 
   function enableClip(view: ViewState, produceCutGeometry: boolean, clip: ClipVector | undefined): void {
     view.viewFlags.clipVolume = true;
-    view.details.clipStyle = ClipStyle.fromJSON({ produceCutGeometry });
+    view.displayStyle.settings.clipStyle = ClipStyle.fromJSON({ produceCutGeometry });
     view.setViewClip(clip);
   }
 
@@ -89,10 +89,10 @@ describe("Section-cut tile tree", () => {
     await test((view) => enableClip(view, true, defaultClip), (view) => {
       expectNumTreesPerModel(2, view);
 
-      view.details.clipStyle = ClipStyle.fromJSON({ produceCutGeometry: false });
+      view.displayStyle.settings.clipStyle = ClipStyle.fromJSON({ produceCutGeometry: false });
       expectNumTreesPerModel(1, view);
 
-      view.details.clipStyle = ClipStyle.fromJSON({ produceCutGeometry: true });
+      view.displayStyle.settings.clipStyle = ClipStyle.fromJSON({ produceCutGeometry: true });
       expectNumTreesPerModel(2, view);
     });
   });
