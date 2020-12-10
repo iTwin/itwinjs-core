@@ -62,7 +62,7 @@ export interface KeySetJSON {
 export class KeySet {
   // note: all keys are stored as strings because we need ability to find them by value
   private _instanceKeys: Map<string, Set<string>>; // class name => instance ids
-  private _lowercaseMap: Map<string, string>; // class name => instance ids
+  private _lowercaseMap: Map<string, string>; // lowerCase class name => class name
   private _nodeKeys: Set<string>;
   private _guid!: GuidString;
 
