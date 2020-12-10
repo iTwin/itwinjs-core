@@ -326,15 +326,15 @@ export abstract class Tile {
   /** Returns true if this tile's bounding volume is culled by the frustum or clip volumes specified by `args`. */
   protected isRegionCulled(args: TileDrawArgs): boolean {
     scratchRootSphere.init(this.center, this.radius);
-    return this.isCulled(this.range, args, scratchRootSphere);
+    return this.isCulled(this.range, args, true, scratchRootSphere);
   }
 
   /** Returns true if this tile's content bounding volume is culled by the frustum or clip volumes specified by `args`. */
   protected isContentCulled(args: TileDrawArgs): boolean {
-    return this.isCulled(this.contentRange, args);
+    return this.isCulled(this.contentRange, args, false);
   }
 
-  private isCulled(range: ElementAlignedBox3d, args: TileDrawArgs, sphere?: BoundingSphere) {
+  private isCulled(range: ElementAlignedBox3d, args: TileDrawArgs, testClipIntersection: boolean, sphere?: BoundingSphere) {
     const box = Frustum.fromRange(range, scratchRootFrustum);
     const worldBox = box.transformBy(args.location, scratchWorldFrustum);
     const worldSphere = sphere?.transformBy(args.location, scratchWorldSphere);
@@ -352,7 +352,7 @@ export abstract class Tile {
       return true;
 
     // Test against intersection clip - reject if tile doesn't intersect (used for section-cut graphics).
-    if (undefined !== args.intersectionClip && ClipPlaneContainment.Ambiguous !== args.intersectionClip.classifyPointContainment(worldBox.points))
+    if (testClipIntersection && undefined !== args.intersectionClip && ClipPlaneContainment.Ambiguous !== args.intersectionClip.classifyPointContainment(worldBox.points))
       return true;
 
     return false;
