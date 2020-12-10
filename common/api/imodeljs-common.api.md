@@ -2103,7 +2103,6 @@ export interface ElementAspectProps extends EntityProps {
 
 // @alpha
 export namespace ElementGeometry {
-    // (undocumented)
     export function appendGeometryParams(geomParams: GeometryParams, entries: ElementGeometryDataEntry[]): boolean;
     export class Builder {
         appendBRepData(brep: BRepEntity.DataProps): boolean;
@@ -2118,23 +2117,14 @@ export namespace ElementGeometry {
         // (undocumented)
         readonly entries: ElementGeometryDataEntry[];
     }
-    // (undocumented)
     export function fromBRep(brep: BRepEntity.DataProps): ElementGeometryDataEntry | undefined;
-    // (undocumented)
     export function fromGeometryPart(partId: Id64String, partToElement?: Transform): ElementGeometryDataEntry | undefined;
-    // (undocumented)
     export function fromGeometryQuery(geom: GeometryQuery): ElementGeometryDataEntry | undefined;
-    // (undocumented)
     export function fromImageGraphic(image: ImageGraphicProps): ElementGeometryDataEntry | undefined;
-    // (undocumented)
     export function fromSubGraphicRange(bbox: ElementAlignedBox3d): ElementGeometryDataEntry | undefined;
-    // (undocumented)
     export function fromTextString(text: TextStringProps): ElementGeometryDataEntry | undefined;
-    // (undocumented)
     export function isAppearanceEntry(entry: ElementGeometryDataEntry): boolean;
-    // (undocumented)
     export function isGeometricEntry(entry: ElementGeometryDataEntry): boolean;
-    // (undocumented)
     export function isGeometryQueryEntry(entry: ElementGeometryDataEntry): boolean;
     export class Iterator implements IterableIterator<IteratorEntry> {
         // (undocumented)
@@ -2170,21 +2160,14 @@ export namespace ElementGeometry {
         get value(): ElementGeometryDataEntry;
         set value(value: ElementGeometryDataEntry);
         }
-    // (undocumented)
     export function toBRep(entry: ElementGeometryDataEntry, wantBRepData?: boolean): BRepEntity.DataProps | undefined;
     export function toElementAlignedBox3d(bbox: Float64Array): ElementAlignedBox3d | undefined;
-    // (undocumented)
     export function toGeometryPart(entry: ElementGeometryDataEntry, partToElement?: Transform): Id64String | undefined;
-    // (undocumented)
     export function toGeometryQuery(entry: ElementGeometryDataEntry): GeometryQuery | undefined;
-    // (undocumented)
     export function toImageGraphic(entry: ElementGeometryDataEntry): ImageGraphicProps | undefined;
-    // (undocumented)
     export function toSubGraphicRange(entry: ElementGeometryDataEntry): ElementAlignedBox3d | undefined;
-    // (undocumented)
     export function toTextString(entry: ElementGeometryDataEntry): TextStringProps | undefined;
     export function toTransform(sourceToWorld: Float64Array): Transform | undefined;
-    // (undocumented)
     export function updateGeometryParams(entry: ElementGeometryDataEntry, geomParams: GeometryParams): boolean;
 }
 
