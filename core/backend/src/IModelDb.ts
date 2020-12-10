@@ -1147,14 +1147,16 @@ export abstract class IModelDb extends IModel {
     return this.nativeDb.exportPartGraphics(exportProps);
   }
 
-  /** Request geometry stream information from an element.
+  /** Request geometry stream information from an element in binary format instead of json.
+   * @returns DbResult.BE_SQLITE_OK if successful
    * @alpha
    */
   public elementGeometryRequest(requestProps: ElementGeometryRequest): DbResult {
     return this.nativeDb.processGeometryStream(requestProps);
   }
 
-  /** Update geometry stream for the supplied element.
+  /** Update the geometry stream for the supplied element from binary format data instead of json.
+   * @returns DbResult.BE_SQLITE_OK if successful
    * @alpha
    */
   public elementGeometryUpdate(updateProps: ElementGeometryUpdate): DbResult {
@@ -1162,6 +1164,9 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Create brep geometry for inclusion in an element's geometry stream.
+   * @returns DbResult.BE_SQLITE_OK if successful
+   * @throws [[IModelError]] to report issues with input geometry or parameters
+   * @see [IModelDb.elementGeometryUpdate]($imodeljs-backend)
    * @alpha
    */
   public createBRepGeometry(createProps: BRepGeometryCreate): DbResult {
