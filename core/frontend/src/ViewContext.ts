@@ -11,9 +11,8 @@ import {
   ClipPlane, ClipUtilities, ConvexClipPlaneSet, Geometry, GrowableXYZArray, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d,
   Point3d, Range1d, Range3d, Ray3d, Transform, Vector2d, Vector3d, XAndY,
 } from "@bentley/geometry-core";
-import { ColorDef, Frustum, FrustumPlanes, LinePixels, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
+import { ColorDef, Frustum, FrustumPlanes, LinePixels, PlanarClipMask, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
-import { PlanarModelMask } from "./PlanarModelMask";
 import { CanvasDecoration } from "./render/CanvasDecoration";
 import { Decorations } from "./render/Decorations";
 import { GraphicBranch, GraphicBranchOptions } from "./render/GraphicBranch";
@@ -579,7 +578,7 @@ export class SceneContext extends RenderContext {
   }
 
   /** @internal */
-  public addPlanarClassifier(classifiedModelId: Id64String, classifiedTree: TileTreeReference, classifierTree?: SpatialClassifierTileTreeReference, planarModelMask?: PlanarModelMask): RenderPlanarClassifier | undefined {
+  public addPlanarClassifier(classifiedModelId: Id64String, classifiedTree: TileTreeReference, classifierTree?: SpatialClassifierTileTreeReference, planarClipMask?: PlanarClipMask): RenderPlanarClassifier | undefined {
     // Target may have the classifier from a previous frame; if not we must create one.
     let classifier = this.viewport.target.getPlanarClassifier(classifiedModelId);
     if (undefined === classifier)
@@ -588,7 +587,7 @@ export class SceneContext extends RenderContext {
     // Either way, we need to collect the graphics to draw for this frame, and record that we did so.
     if (undefined !== classifier) {
       this.planarClassifiers.set(classifiedModelId, classifier);
-      classifier.collectGraphics(this, classifiedTree, classifierTree, planarModelMask);
+      classifier.collectGraphics(this, classifiedTree, classifierTree, planarClipMask);
     }
 
     return classifier;

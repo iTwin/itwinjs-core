@@ -25,7 +25,7 @@ import { Frustum2d } from "./Frustum2d";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { ModelSelectorState } from "./ModelSelectorState";
-import { GeometricModel2dState, GeometricModel3dState, GeometricModelState } from "./ModelState";
+import { GeometricModel2dState, GeometricModel3dState, GeometricModelState, SpatialModelState } from "./ModelState";
 import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager";
 import { GraphicType } from "./render/GraphicBuilder";
 import { RenderClipVolume } from "./render/RenderClipVolume";
@@ -2069,6 +2069,13 @@ export class SpatialViewState extends ViewState3d {
       const model = this.iModel.models.getLoaded(modelId);
       if (undefined !== model && undefined !== model.asGeometricModel3d)
         func(model as GeometricModel3dState);
+    }
+  }
+  public forEachAttachedRealityModel(func: (model: SpatialModelState) => void) {
+    for (const modelId of this.modelSelector.models) {
+      const model = this.iModel.models.getLoaded(modelId)?.asSpatialModel;
+      if (undefined !== model && model.isRealityModel)
+        func(model);
     }
   }
 

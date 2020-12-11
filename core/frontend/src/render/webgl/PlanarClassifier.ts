@@ -9,11 +9,10 @@
 
 import { dispose, Id64String } from "@bentley/bentleyjs-core";
 import { Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Vector3d } from "@bentley/geometry-core";
-import { ColorDef, Frustum, FrustumPlanes, RenderMode, RenderTexture, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
-import { PlanarModelMask } from "../../PlanarModelMask";
+import { ColorDef, Frustum, FrustumPlanes, PlanarClipMask, RenderMode, RenderTexture, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
 import { GraphicsCollectorDrawArgs, TileTreeReference } from "../../tile/internal";
 import { SceneContext } from "../../ViewContext";
-import { ViewState3d } from "../../ViewState";
+import { ViewState, ViewState3d } from "../../ViewState";
 import { RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
 import { RenderPlanarClassifier } from "../RenderPlanarClassifier";
@@ -263,7 +262,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     1, 0, 0, 0,
     0, 0, 0, 1);
   private _debugFrustum?: Frustum;
-  private _doDebugFrustum = false;
+  private _doDebugFrustum = true;
   private _debugFrustumGraphic?: RenderGraphic = undefined;
   private _isClassifyingPointCloud?: boolean; // we will detect this the first time we draw
   private readonly _bgColor = ColorDef.from(0, 0, 0, 255);
@@ -332,7 +331,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
       this.pushBatches(batchState, this._graphics);
   }
 
-  public collectGraphics(context: SceneContext, classifiedTreeRef: TileTreeReference, classifierTreeRef?: TileTreeReference, planarModelMask?: PlanarModelMask): void {
+  public collectGraphics(context: SceneContext, classifiedTreeRef: TileTreeReference, classifierTreeRef?: TileTreeReference, planarClipMask?: PlanarClipMask): void {
     this._graphics.length = 0;
     if (undefined === context.viewingSpace)
       return;
@@ -355,8 +354,8 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     this._width = requiredWidth;
     this._height = requiredHeight;
     const trees: TileTreeReference[] = classifierTreeRef ? [classifierTreeRef] : [];
-    if (planarModelMask)
-      planarModelMask?.getTileTrees(trees, context.viewport.view, classifiedTree.modelId);
+    if (planarClipMask)
+      this.getPlanarClipMaskTileTrees(trees, context.viewport.view, classifiedTree.modelId, planarClipMask);
 
     const projection = PlanarTextureProjection.computePlanarTextureProjection(this._plane, context.viewingSpace, classifiedTreeRef, trees, viewState, this._width, this._height);
     if (!projection.textureFrustum || !projection.projectionMatrix || !projection.worldToViewMap)
@@ -464,5 +463,13 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
 
     system.applyRenderState(prevState);
     system.context.viewport(0, 0, target.viewRect.width, target.viewRect.height);
+  }
+  public getPlanarClipMaskTileTrees(trees: TileTreeReference[], view: ViewState, classifiedModelId: Id64String, planarClipMask: PlanarClipMask): void {
+    if (planarClipMask.maskAllHigherPriorityModels)
+      view.forEachTileTreeRef((ref) => {
+        const tree = ref.treeOwner.load();
+        if (tree && tree.modelId !== classifiedModelId && !tree.isContentUnbounded)
+          trees.push(ref);
+      });
   }
 }

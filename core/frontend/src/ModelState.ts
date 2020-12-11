@@ -224,9 +224,13 @@ export class SpatialModelState extends GeometricModel3dState {
 
   public constructor(props: ModelProps, iModel: IModelConnection, state?: SpatialModelState) {
     super(props, iModel, state);
-    if (undefined !== this.jsonProperties.tilesetUrl)
+    if (this.isRealityModel)
       this.classifiers = new SpatialClassifiers(this.jsonProperties);
   }
+  /** Return true if this is a reality model (represented by a 3d tile set)
+   * @beta
+   */
+  public get isRealityModel(): boolean { return undefined !== this.jsonProperties.tilesetUrl; }
 }
 
 /** Represents the front-end state of a [PhysicalModel]($backend).

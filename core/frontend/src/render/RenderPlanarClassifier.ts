@@ -7,7 +7,7 @@
  */
 
 import { Id64String, IDisposable } from "@bentley/bentleyjs-core";
-import { PlanarModelMask } from "../PlanarModelMask";
+import { PlanarClipMask } from "@bentley/imodeljs-common";
 import { TileTreeReference } from "../tile/internal";
 import { SceneContext } from "../ViewContext";
 
@@ -16,7 +16,7 @@ import { SceneContext } from "../ViewContext";
  */
 export abstract class RenderPlanarClassifier implements IDisposable {
   public abstract dispose(): void;
-  public abstract collectGraphics(context: SceneContext, classifiedTree: TileTreeReference, classifierTree?: TileTreeReference, planarModelMask?: PlanarModelMask): void;
+  public abstract collectGraphics(context: SceneContext, classifiedTree: TileTreeReference, classifierTree?: TileTreeReference, planarClipMask?: PlanarClipMask): void;
 }
 
 /** @internal */

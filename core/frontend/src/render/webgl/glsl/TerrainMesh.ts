@@ -20,6 +20,7 @@ import { unquantize2d } from "./Decode";
 import { addSolarShadowMap } from "./SolarShadowMapping";
 import { addModelViewProjectionMatrix } from "./Vertex";
 import { addThematicDisplay, getComputeThematicIndex } from "./Thematic";
+import { addColorPlanarClassifier } from "./PlanarClassification";
 
 const computePosition = "gl_PointSize = 1.0; return MAT_MVP * rawPos;";
 
@@ -116,7 +117,7 @@ function addTextures(builder: ProgramBuilder, maxTexturesPerMesh: number) {
 }
 
 /** @internal */
-export default function createTerrainMeshBuilder(_classified: IsClassified, _featureMode: FeatureMode, shadowable: IsShadowable, thematic: IsThematic): ProgramBuilder {
+export default function createTerrainMeshBuilder(isClassified: IsClassified, _featureMode: FeatureMode, shadowable: IsShadowable, thematic: IsThematic): ProgramBuilder {
   const builder = createBuilder(shadowable);
   const frag = builder.frag;
   const applyTextureStrings = [];
@@ -162,6 +163,8 @@ export default function createTerrainMeshBuilder(_classified: IsClassified, _fea
     });
   });
   addTextures(builder, textureCount);
+  if (isClassified)
+    addColorPlanarClassifier(builder, true /* Transparency? */, thematic);
 
   if (IsThematic.Yes === thematic) {
     addThematicDisplay(builder, false, true);

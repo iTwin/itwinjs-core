@@ -7,8 +7,9 @@
  * @module Tools
  */
 
-import { FeatureAppearance, FeatureAppearanceProps, RgbColorProps } from "@bentley/imodeljs-common";
-import { getCesiumAssetUrl, IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport } from "@bentley/imodeljs-frontend";
+import { Id64String } from "@bentley/bentleyjs-core";
+import { FeatureAppearance, FeatureAppearanceProps, PlanarClipMask, RgbColorProps } from "@bentley/imodeljs-common";
+import { ContextRealityModelState, GeometricModelState, getCesiumAssetUrl, IModelApp, NotifyMessageDetails, OutputMessagePriority, ScreenViewport, Tool, Viewport } from "@bentley/imodeljs-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseBoolean } from "./parseBoolean";
 import { parseToggle } from "./parseToggle";
@@ -272,5 +273,42 @@ export class ToggleOSMBuildingDisplay extends Tool {
     const toggle = parseToggle(args[0]);
     const transparency = args.length > 0 ? parseFloat(args[1]) : undefined;
     return typeof toggle === "string" ? false : this.run(toggle, transparency);
+  }
+}
+function applyToRealityModel(vp: ScreenViewport, index: number, func: (indexOrId: Id64String | number) => boolean): boolean {
+  if (index < 0) {
+    let i = 0;
+    let changed = false;
+    vp.displayStyle.forEachRealityModel((_model: ContextRealityModelState) => changed = changed || func(i++));
+    vp.view.forEachModel((model: GeometricModelState) => { if (model.asSpatialModel && model.asSpatialModel.isRealityModel) changed = changed || func(model.id); });
+    return changed
+  } else {
+    return func(index);
+  }
+}
+
+/** Control reality model masking.
+ * @beta
+ */
+export class SetRealityModelMasking extends Tool {
+  public static toolId = "SetRealityModelMasking";
+  public static get minArgs() { return 0; }
+  public static get maxArgs() { return 2; }
+
+  public run(index: number, onOff?: boolean): boolean {
+    const vp = IModelApp.viewManager.selectedView;
+    if (vp === undefined)
+      return false;
+
+    return applyToRealityModel(vp, index, (indexOrId: Id64String | number) => {
+      const maskOn = (onOff === undefined) ? (vp.getRealityModelPlanarClipMask(indexOrId) === undefined) : onOff;
+      return maskOn ? vp.overrideRealityModelPlanarClipMask(indexOrId, PlanarClipMask.fromJSON({ maskAllHigherPriorityModels: true })) : vp.dropRealityModelPlanarClipMask(indexOrId);
+    });
+  }
+
+  public parseAndRun(...args: string[]): boolean {
+    const toggle = parseToggle(args[0]);
+    const index = args[1] === undefined ? -1 : parseInt(args[1], 10)
+    return this.run(index, typeof toggle === "string" ? undefined : toggle);
   }
 }

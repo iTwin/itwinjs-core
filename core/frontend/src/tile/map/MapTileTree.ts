@@ -8,7 +8,7 @@
 
 import { assert, compareBooleans, compareNumbers, compareStrings, Id64String } from "@bentley/bentleyjs-core";
 import { Angle, AngleSweep, Constant, Ellipsoid, EllipsoidPatch, Point3d, Range1d, Range3d, Ray3d, Transform, Vector3d, XYZProps } from "@bentley/geometry-core";
-import { BackgroundMapSettings, BaseLayerSettings, Cartographic, ColorDef, GeoCoordStatus, GlobeMode, MapLayerSettings, TerrainHeightOriginMode, TerrainProviderName } from "@bentley/imodeljs-common";
+import { BackgroundMapSettings, BaseLayerSettings, Cartographic, ColorDef, GeoCoordStatus, GlobeMode, MapLayerSettings, PlanarClipMask, TerrainHeightOriginMode, TerrainProviderName } from "@bentley/imodeljs-common";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
 import { BackgroundMapGeometry } from "../../BackgroundMapGeometry";
 import { GeoConverter } from "../../GeoServices";
@@ -479,12 +479,14 @@ export class MapTileTreeReference extends TileTreeReference {
   private readonly _imageryTrees: ImageryMapLayerTreeReference[] = new Array<ImageryMapLayerTreeReference>();
   private _baseTransparent = false;
   private _symbologyOverrides = new FeatureSymbology.Overrides(); /** Empty overrides so that maps ignore the view overrides (isolate etc.) */
+  private _planarClipMask?: PlanarClipMask;
 
   public constructor(settings: BackgroundMapSettings, private _baseLayerSettings: BaseLayerSettings | undefined, private _layerSettings: MapLayerSettings[], iModel: IModelConnection, public isOverlay: boolean, private _isDrape: boolean, private _overrideSkirtDisplay?: CheckSkirtDisplayOverride) {
     super();
     this._uniqueId = mapTreeReferenceId++;
     this._settings = settings;
     this._iModel = iModel;
+    this._planarClipMask = settings.planarClipMask ? PlanarClipMask.fromJSON(settings.planarClipMask) : undefined;
     let tree;
     if (!isOverlay && this._baseLayerSettings !== undefined) {
       if (this._baseLayerSettings instanceof MapLayerSettings) {
@@ -638,9 +640,14 @@ export class MapTileTreeReference extends TileTreeReference {
     if (undefined === tree || !this.initializeImagery())
       return;     // Not loaded yet.
 
+
+    if (this._planarClipMask)
+      context.addPlanarClassifier(tree.modelId, this, undefined, this._planarClipMask);
+
     const args = this.createDrawArgs(context);
     if (undefined !== args)
       tree.draw(args);
+
 
     tree.clearImageryLayers();
   }

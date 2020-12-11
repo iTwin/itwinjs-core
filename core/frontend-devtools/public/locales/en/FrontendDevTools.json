@@ -275,6 +275,9 @@
     },
     "SetAASamples": {
       "keyin": "fdt aasamples"
+    },
+    "SetRealityModelMasking": {
+      "keyin": "fdt set reality model mask"
     }
   }
 }

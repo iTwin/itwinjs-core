@@ -6,8 +6,8 @@
  * @module Views
  */
 import { GuidString, Id64String } from "@bentley/bentleyjs-core";
-import { Angle, Constant } from "@bentley/geometry-core";
-import { CartographicRange, ContextRealityModelProps, FeatureAppearance, OrbitGtBlobProps } from "@bentley/imodeljs-common";
+import { Angle } from "@bentley/geometry-core";
+import { CartographicRange, ContextRealityModelProps, FeatureAppearance, OrbitGtBlobProps, PlanarClipMask } from "@bentley/imodeljs-common";
 import { AccessToken } from "@bentley/itwin-client";
 import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
 import { DisplayStyleState } from "./DisplayStyleState";
@@ -53,7 +53,6 @@ export class ContextRealityModelState {
     this.description = undefined !== props.description ? props.description : "";
     this.iModel = iModel;
     this._appearanceOverrides = props.appearanceOverrides ? FeatureAppearance.fromJSON(props.appearanceOverrides) : undefined;
-
     const classifiers = new SpatialClassifiers(props);
     this._treeRef = (undefined === props.orbitGtBlob) ?
       createRealityTileTreeReference({
@@ -62,7 +61,7 @@ export class ContextRealityModelState {
         url: props.tilesetUrl,
         name: props.name,
         classifiers,
-        planarMask: props.planarModelMask,
+        planarMask: props.planarClipMask,
       }) :
       createOrbitGtTileTreeReference({
         iModel,
@@ -81,6 +80,8 @@ export class ContextRealityModelState {
   public get modelId(): Id64String | undefined { return (this._treeRef instanceof RealityModelTileTree.Reference) ? this._treeRef.modelId : undefined; }
   /** Return true if the model spans the entire globe ellipsoid in 3D */
   public get isGlobal(): boolean { return this.treeRef.isGlobal; }
+  public get planarClipMask(): PlanarClipMask | undefined { return this._treeRef.planarClipMask; }
+  public set planarClipMask(planarClipMask: PlanarClipMask | undefined) { this._treeRef.planarClipMask = planarClipMask; }
 
 
   public toJSON(): ContextRealityModelProps {
