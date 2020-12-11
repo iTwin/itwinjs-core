@@ -326,13 +326,11 @@ describe("KeySet", () => {
     it("doesn't add the same instance keys when given className is of different capitalization", () => {
       const instanceKey1: InstanceKey = { className: "BisCore", id: Id64.invalid };
       const instanceKey2: InstanceKey = { className: "BISCORE", id: Id64.invalid };
-      const keys = [instanceKey1, createRandomECInstanceKey()];
-      const keys2 = [instanceKey1, instanceKey2];
-      const set = new KeySet(keys);
-      expect(set.size).to.eq(2);
+      const set = new KeySet([instanceKey1]);
+      expect(set.size).to.eq(1);
       const guidBefore = set.guid;
-      set.add(keys2);
-      expect(set.size).to.eq(2);
+      set.add(instanceKey2);
+      expect(set.size).to.eq(1);
       expect(set.guid).to.eq(guidBefore);
     });
 
@@ -680,12 +678,9 @@ describe("KeySet", () => {
           const instanceKey1: InstanceKey = { className: "BisCore", id: Id64.invalid };
           const instanceKey2: InstanceKey = { className: "biscore", id: Id64.invalid };
           const instanceKey3: InstanceKey = { className: "BISCORE", id: Id64.invalid };
-          const instanceKey4: InstanceKey = { className: "Test", id: Id64.invalid };
-          const instanceKey5: InstanceKey = { className: "teSt", id: Id64.invalid };
-          const instanceKey6: InstanceKey = { className: "TEST", id: Id64.invalid };
-          const set = new KeySet([instanceKey1, instanceKey4]);
-          expect(set.hasAll(createKeys([instanceKey2, instanceKey5]))).to.be.true;
-          expect(set.hasAll(createKeys([instanceKey3, instanceKey6]))).to.be.true;
+          const set = new KeySet([instanceKey1]);
+          expect(set.hasAll(createKeys([instanceKey2]))).to.be.true;
+          expect(set.hasAll(createKeys([instanceKey3]))).to.be.true;
         });
 
         it("returns false when node keys count is smaller", () => {
