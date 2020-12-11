@@ -316,11 +316,12 @@ ${  computeHiliteColor}`;
 
 const computeHiliteOverrides = `
   vec4 value = getFirstFeatureRgba();
-  float flags = value.g * 256.0;
-  v_feature_hilited = kEmphFlag_Hilite * extractNthBit(flags, kOvrBit_Hilited) + kEmphFlag_Emphasize * extractNthBit(flags, kOvrBit_Emphasized);
+  float emphFlags = value.g * 256.0;
+  v_feature_hilited = kEmphFlag_Hilite * extractNthBit(emphFlags, kOvrBit_Hilited) + kEmphFlag_Emphasize * extractNthBit(emphFlags, kOvrBit_Emphasized);
 `;
 
 const computeHiliteOverridesWithWeight = `${computeHiliteOverrides}
+  float flags = value.r * 256.0;
   linear_feature_overrides = vec4(nthFeatureBitSet(flags, kOvrBit_Weight),
   value.a * 256.0,
   nthFeatureBitSet(flags, kOvrBit_LineCode),

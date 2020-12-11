@@ -81,7 +81,7 @@ public;CommonPropertyGridProps
 public;CompletionObserver
 beta;CompositeFilterDescriptor 
 beta;CompositeFilterDescriptorCollection
-alpha;CompositeFilterType
+beta;CompositeFilterType
 alpha;CompositePropertyDataFilterer 
 public;CompositeTypeConverter 
 internal;ContextMenu 
@@ -163,7 +163,8 @@ beta;FilterCompositionLogicalOperator
 beta;FilterDescriptor
 beta;FilterDescriptorCollection 
 beta;class FilterDescriptorCollectionBase
-alpha;FilteredPropertyData 
+beta;FilteredPropertyData 
+beta;FilteredType
 public;FilteringInput 
 public;FilteringInputProps = DEPRECATED_FilteringInputProps | NEW_FilteringInputProps
 beta;FilteringInputStatus
@@ -187,7 +188,6 @@ public;hasSelectionModeFlag: (selectionMode: SelectionMode, flag: SelectionModeF
 public;HexadecimalTypeConverter 
 beta;HighlightableTreeNodeProps
 beta;HighlightableTreeProps
-beta;HighlightedRecordProps
 beta;HighlightingEngine
 internal;HitBoxX
 internal;HitBoxY
@@ -216,7 +216,7 @@ internal;InputSwitchComponent
 internal;InputSwitchProps
 alpha;IntlFormatter 
 public;IntTypeConverter 
-alpha;IPropertyDataFilterer
+beta;IPropertyDataFilterer
 public;IPropertyDataProvider
 alpha;IPropertyGridEventHandler
 alpha;IPropertyGridModel
@@ -319,19 +319,21 @@ public;PrimitiveRendererProps
 public;PropertyCategory
 public;PropertyCategoryBlock 
 public;PropertyCategoryBlockProps 
+beta;class PropertyCategoryDataFiltererBase 
+alpha;PropertyCategoryLabelFilterer 
 public;PropertyContainerType
 public;PropertyData
 public;PropertyDataChangeEvent 
 public;PropertyDataChangesListener = () => void
-alpha;class PropertyDataFiltererBase 
-alpha;PropertyDataFilterResult
+beta;class PropertyDataFiltererBase 
+beta;PropertyDataFilterResult
 public;PropertyDialogState
 public;PropertyEditingArgs
 beta;class PropertyEditorBase 
 beta;PropertyEditorManager
 beta;PropertyEditorProps 
-alpha;PropertyFilterChangeEvent 
-alpha;PropertyFilterChangesListener = () => void
+beta;PropertyFilterChangeEvent 
+beta;PropertyFilterChangesListener = () => void
 public;PropertyGrid 
 public;PropertyGridCategory
 internal;PropertyGridCommons
@@ -347,7 +349,7 @@ public;PropertyGridProps
 internal;PropertyLabelRenderer 
 public;PropertyLabelRendererProps
 public;PropertyPopupState
-beta;PropertyRecordMatchInfo
+beta;class PropertyRecordDataFiltererBase 
 public;PropertyRenderer 
 public;PropertyRendererProps 
 beta;PropertyUpdatedArgs
