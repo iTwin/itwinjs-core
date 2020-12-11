@@ -22,6 +22,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { BlobDaemon } from "@bentley/imodeljs-native";
 import { AccessToken, AuthorizationClient, AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { BriefcaseDb } from "../../IModelDb";
 import {
   AutoPush, AutoPushEventHandler, AutoPushEventType, AutoPushParams, AutoPushState, BackendRequestContext, BisCoreSchema, BriefcaseIdValue,
   BriefcaseManager, Category, ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel,
@@ -2030,6 +2031,9 @@ describe("iModel", () => {
     assert.equal(snapshotDb1, SnapshotDb.tryFindByKey(snapshotDb1.key));
     assert.equal(snapshotDb2, SnapshotDb.tryFindByKey(snapshotDb2.key));
     assert.equal(snapshotDb3, SnapshotDb.tryFindByKey(snapshotDb3.key));
+    assert.equal(snapshotDb3, SnapshotDb.findByKey(snapshotDb3.key));
+    assert.throws(() => { BriefcaseDb.findByKey(snapshotDb1.key); }); // lookup of key for SnapshotDb via BriefcaseDb should throw
+    assert.throws(() => { StandaloneDb.findByKey(snapshotDb1.key); }); // likewise for StandaloneDb
     assert.isTrue(snapshotDb1.isReadonly, "Expect snapshots to be read-only after open");
     assert.isTrue(snapshotDb2.isReadonly, "Expect snapshots to be read-only after open");
     assert.isTrue(snapshotDb3.isReadonly, "Expect snapshots to be read-only after open");
@@ -2039,6 +2043,7 @@ describe("iModel", () => {
     assert.isTrue(hasClassView(snapshotDb1, "bis.ElementRefersToElements"));
     assert.isFalse(hasClassView(snapshotDb2, "bis.Element"));
     assert.isTrue(hasClassView(snapshotDb3, "bis.Element"));
+
     snapshotDb1.close();
     snapshotDb2.close();
     snapshotDb3.close();
