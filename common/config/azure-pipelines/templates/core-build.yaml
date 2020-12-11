@@ -53,22 +53,22 @@ steps:
   - script: node common/scripts/install-run-rush.js install
     displayName: rush install
     workingDirectory: ${{ parameters.workingDir }}
-  - script: node common/scripts/install-run-rush.js audit
-    displayName: rush audit
-    workingDirectory: ${{ parameters.workingDir }}
+  # - script: node common/scripts/install-run-rush.js audit
+  #   displayName: rush audit
+  #   workingDirectory: ${{ parameters.workingDir }}
 
   - script: node common/scripts/install-run-rush.js rebuild -v --to-version-policy prerelease-monorepo-lockStep -p max
     displayName: rush build packages
     workingDirectory: ${{ parameters.workingDir }}
-  - script: node common/scripts/install-run-rush.js build -v -p max
-    displayName: rush build everything else (test-apps and example code)
-    workingDirectory: ${{ parameters.workingDir }}
-  - script: node common/scripts/install-run-rush.js lint
-    displayName: rush lint
-    workingDirectory: ${{ parameters.workingDir }}
-  - script: node common/scripts/install-run-rush.js extract-api
-    displayName: rush extract-api
-    workingDirectory: ${{ parameters.workingDir }}
+  # - script: node common/scripts/install-run-rush.js build -v -p max
+  #   displayName: rush build everything else (test-apps and example code)
+  #   workingDirectory: ${{ parameters.workingDir }}
+  # - script: node common/scripts/install-run-rush.js lint
+  #   displayName: rush lint
+  #   workingDirectory: ${{ parameters.workingDir }}
+  # - script: node common/scripts/install-run-rush.js extract-api
+  #   displayName: rush extract-api
+  #   workingDirectory: ${{ parameters.workingDir }}
 
   # By default linux agents do not have a real display so use the virtual framebuffer
   - ${{ if eq(variables['Agent.OS'], 'Linux') }}:
