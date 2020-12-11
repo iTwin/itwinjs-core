@@ -96,8 +96,11 @@ export class BriefcaseManager {
     return this._contextRegistryClient!;
   }
 
-  /** @internal */
-  public static getCompatibilityPath(iModelId: GuidString): string { return path.join(this._cacheDir, "bc", "v4_0", iModelId, "bc"); }
+  /** @internal
+   * @note temporary, will be removed in 3.0
+   * @deprecated
+   */
+  public static getCompatibilityPath(iModelId: GuidString): string { return path.join(this._compatibilityDir, iModelId, "bc"); }
 
   /** Get the local path of the folder storing files associated with an imodel */
   public static getIModelPath(iModelId: GuidString): string { return path.join(this._cacheDir, iModelId); }
@@ -128,9 +131,17 @@ export class BriefcaseManager {
    * @see getIModelPath
    */
   public static getFileName(briefcase: BriefcaseProps): string {
-    const pathBaseName = this.getBriefcaseBasePath(briefcase.iModelId);
-    const id = briefcase.briefcaseId.toString();
-    return path.join(pathBaseName, id, `${briefcase.briefcaseId}.bim`);
+    return path.join(this.getBriefcaseBasePath(briefcase.iModelId), briefcase.briefcaseId.toString(), `${briefcase.briefcaseId}.bim`);
+  }
+
+  /** get the name for previous version of BriefcaseManager.
+   * @note temporary, will be removed in 3.0
+   * @deprecated
+   * @internal
+   */
+  public static getCompatibilityFileName(briefcase: BriefcaseProps): string {
+    // eslint-disable-next-line deprecation/deprecation
+    return path.join(this.getCompatibilityPath(briefcase.iModelId), briefcase.briefcaseId === 0 ? "PullOnly" : "PullAndPush", briefcase.briefcaseId.toString(), "bc.bim");
   }
 
   private static setupContextRegistryClient() {
@@ -142,14 +153,16 @@ export class BriefcaseManager {
     IModelJsFs.recursiveMkDirSync(this._cacheDir);
   }
 
+  private static _compatibilityDir: string;
   private static _initialized?: boolean;
   /** Initialize BriefcaseManager
    * @param cacheRootDir The root directory for storing a cache of downloaded briefcase files. Briefcases are stored relative to this path in sub-folders organized by IModelId.
    * @note It is perfectly valid for applications to store briefcases in locations they manage, outside of `cacheRootDir`.
    */
-  public static initialize(cacheRootDir: string) {
+  public static initialize(cacheRootDir: string, compatibilityDir: string) {
     if (this._initialized)
       return;
+    this._compatibilityDir = compatibilityDir;
     this.setupCacheDir(cacheRootDir);
     this.setupContextRegistryClient();
     IModelHost.onBeforeShutdown.addOnce(this.finalize, this);

@@ -17,7 +17,6 @@ import { BRepGeometryCreate } from '@bentley/imodeljs-common';
 import { BriefcaseProps } from '@bentley/imodeljs-common';
 import { CalloutProps } from '@bentley/imodeljs-common';
 import { Camera } from '@bentley/imodeljs-common';
-import { CancelRequest } from '@bentley/itwin-client';
 import { CategoryProps } from '@bentley/imodeljs-common';
 import { CategorySelectorProps } from '@bentley/imodeljs-common';
 import { ChangeData } from '@bentley/imodeljs-common';
@@ -96,6 +95,7 @@ import { IModelCoordinatesResponseProps } from '@bentley/imodeljs-common';
 import { IModelError } from '@bentley/imodeljs-common';
 import { IModelEventSourceProps } from '@bentley/imodeljs-common';
 import { IModelJsNative } from '@bentley/imodeljs-native';
+import { IModelRpcOpenProps } from '@bentley/imodeljs-common';
 import { IModelRpcProps } from '@bentley/imodeljs-common';
 import { IModelStatus } from '@bentley/imodeljs-common';
 import { IModelTileTreeProps } from '@bentley/imodeljs-common';
@@ -137,7 +137,6 @@ import { Point3d } from '@bentley/geometry-core';
 import { Polyface } from '@bentley/geometry-core';
 import { PolyfaceData } from '@bentley/geometry-core';
 import { PolyfaceVisitor } from '@bentley/geometry-core';
-import { ProgressCallback } from '@bentley/itwin-client';
 import { PropertyCallback } from '@bentley/imodeljs-common';
 import { QueryLimit } from '@bentley/imodeljs-common';
 import { QueryPriority } from '@bentley/imodeljs-common';
@@ -422,13 +421,15 @@ export class BriefcaseDb extends IModelDb {
     readonly briefcaseId: number;
     get changeSetId(): string;
     set changeSetId(csId: string);
+    // @internal
+    static checkOpened(args: OpenBriefcaseProps): BriefcaseDb | undefined;
     // @beta
     readonly concurrencyControl: ConcurrencyControl;
     get contextId(): GuidString;
     // (undocumented)
     static findByKey(key: string): BriefcaseDb;
-    static readonly onOpen: BeEvent<(_requestContext: ClientRequestContext | AuthorizedClientRequestContext, _props: IModelRpcProps) => void>;
-    static readonly onOpened: BeEvent<(_requestContext: ClientRequestContext | AuthorizedClientRequestContext, _imodelDb: BriefcaseDb) => void>;
+    static readonly onOpen: BeEvent<(_requestContext: AuthorizedClientRequestContext | ClientRequestContext, _props: IModelRpcProps) => void>;
+    static readonly onOpened: BeEvent<(_requestContext: AuthorizedClientRequestContext | ClientRequestContext, _imodelDb: BriefcaseDb) => void>;
     // (undocumented)
     static open(requestContext: AuthorizedClientRequestContext | ClientRequestContext, args: OpenBriefcaseProps): Promise<BriefcaseDb>;
     pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
@@ -475,6 +476,11 @@ export class BriefcaseManager {
     // @internal
     static downloadChangeSets(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, fromChangeSetId: string, toChangeSetId: string): Promise<ChangeSet[]>;
     // @internal (undocumented)
+    static evaluateVersion(requestContext: AuthorizedClientRequestContext, version: IModelVersion, iModelId: string): Promise<{
+        changeSetId: string;
+        changeSetIndex: number;
+    }>;
+    // @internal (undocumented)
     static getBriefcaseBasePath(iModelId: GuidString): string;
     static getBriefcases(): LocalBriefcaseProps[];
     // @internal (undocumented)
@@ -485,15 +491,19 @@ export class BriefcaseManager {
     static getChangeSetFolderNameFromId(changeSetId: GuidString): string;
     // @internal (undocumented)
     static getChangeSetsPath(iModelId: GuidString): string;
+    // @internal @deprecated
+    static getCompatibilityFileName(briefcase: BriefcaseProps): string;
+    // @internal @deprecated
+    static getCompatibilityPath(iModelId: GuidString): string;
     static getFileName(briefcase: BriefcaseProps): string;
     static getIModelPath(iModelId: GuidString): string;
     // @internal (undocumented)
     static get imodelClient(): IModelClient;
-    static initialize(cacheRootDir: string): void;
+    static initialize(cacheRootDir: string, compatibilityDir: string): void;
     static isStandaloneBriefcaseId(id: BriefcaseId): boolean;
     static isValidBriefcaseId(id: BriefcaseId): boolean;
     // (undocumented)
-    static logUsage(requestContext: AuthorizedClientRequestContext | ClientRequestContext, token: IModelRpcProps): void;
+    static logUsage(requestContext: AuthorizedClientRequestContext | ClientRequestContext, token: IModelRpcOpenProps): void;
     static processChangeSets(requestContext: AuthorizedClientRequestContext, db: IModelDb, targetChangeSetId: string, targetChangeSetIndex?: number): Promise<void>;
     // @internal
     static pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, mergeToVersion?: IModelVersion): Promise<void>;
@@ -587,7 +597,7 @@ export class ChangedElementsDb implements IDisposable {
     // (undocumented)
     get nativeDb(): IModelJsNative.ChangedElementsECDb;
     static openDb(pathName: string, openMode?: ECDbOpenMode): ChangedElementsDb;
-    processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseDb, rulesetId: string, startChangesetId: GuidString, endChangesetId: GuidString, filterSpatial?: boolean, rulesetDir?: string, tempDir?: string): Promise<DbResult>;
+    processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, rulesetId: string, startChangesetId: GuidString, endChangesetId: GuidString, filterSpatial?: boolean, rulesetDir?: string, tempDir?: string): Promise<DbResult>;
 }
 
 // @internal
@@ -623,9 +633,9 @@ export interface ChangeSummary {
 
 // @beta (undocumented)
 export class ChangeSummaryExtractContext {
-    constructor(iModel: BriefcaseDb);
+    constructor(iModel: IModelDb);
     // (undocumented)
-    readonly iModel: BriefcaseDb;
+    readonly iModel: IModelDb;
     // (undocumented)
     get iModelId(): GuidString;
 }
@@ -647,7 +657,7 @@ export class ChangeSummaryManager {
             className: string;
         };
     }, changedValueState: ChangedValueState, changedPropertyNames?: string[]): string;
-    static detachChangeCache(iModel: BriefcaseDb): void;
+    static detachChangeCache(iModel: IModelDb): void;
     // (undocumented)
     static downloadChangeSets(requestContext: AuthorizedClientRequestContext, ctx: ChangeSummaryExtractContext, startChangeSetId: GuidString, endChangeSetId: GuidString): Promise<ChangeSet[]>;
     static extractChangeSummaries(requestContext: AuthorizedClientRequestContext, iModel: BriefcaseDb, options?: ChangeSummaryExtractOptions): Promise<Id64String[]>;
@@ -2443,6 +2453,8 @@ export abstract class IModelDb extends IModel {
     readonly models: IModelDb.Models;
     // @internal
     get nativeDb(): IModelJsNative.DgnDb;
+    // @internal (undocumented)
+    notifyChangesetApplied(): void;
     readonly onBeforeClose: BeEvent<() => void>;
     readonly onChangesetApplied: BeEvent<() => void>;
     // @internal (undocumented)
@@ -3486,8 +3498,8 @@ export class RepositoryModel extends DefinitionModel {
 
 // @beta
 export interface RequestNewBriefcaseArg extends RequestNewBriefcaseProps {
-    cancelRequest?: CancelRequest;
-    onProgress?: ProgressCallback;
+    // (undocumented)
+    onProgress?: ProgressFunction;
 }
 
 // @public
@@ -3641,7 +3653,7 @@ export class SnapshotDb extends IModelDb {
     // (undocumented)
     static findByKey(key: string): SnapshotDb;
     // @internal
-    static openCheckpointV1(checkpoint: CheckpointProps): SnapshotDb;
+    static openCheckpointV1(fileName: string, checkpoint: CheckpointProps): SnapshotDb;
     // @internal
     static openCheckpointV2(checkpoint: CheckpointProps): Promise<SnapshotDb>;
     static openFile(path: string, opts?: SnapshotOpenOptions): SnapshotDb;

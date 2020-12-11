@@ -2382,8 +2382,11 @@ export class BriefcaseDb extends IModelDb {
       throw new IModelError(IModelStatus.UpgradeFailed, "Could not acquire schema lock", Logger.logError, loggerCategory, () => this.getRpcProps());
   }
 
-  /** @internal */
-  public static findOpened(args: OpenBriefcaseProps): BriefcaseDb | undefined {
+  /** find an already opened BriefcaseDb from an OpenBriefcaseProps.
+   * @returns the BriefcaseDb if found, or undefined.
+   * @internal
+   */
+  public static checkOpened(args: OpenBriefcaseProps): BriefcaseDb | undefined {
     return this.tryFindByKey(args.key ?? shaHash(args.fileName));
   }
 

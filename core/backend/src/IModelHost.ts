@@ -444,7 +444,7 @@ export class IModelHost {
 
     this.setupCacheDirs(configuration);
     this._imodelClient = configuration.imodelClient;
-    BriefcaseManager.initialize(this._briefcaseCacheDir);
+    BriefcaseManager.initialize(this._briefcaseCacheDir, path.join(this._cacheDir, "bc", "v4_0"));
 
     IModelHost.setupRpcRequestContext();
 

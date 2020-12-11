@@ -54,6 +54,10 @@ export interface DownloadRequest {
   /** name of local file to create. */
   localFile: string;
 
+  /** A list of full fileName paths to test before downloading. If a valid file exists by one of these names, it is
+   * no download is performed and `localFile` is updated to reflect the fact that the file exists with that name.
+   * This can be used, for example, to look for checkpoints from previous versions if the naming strategy changes.
+   */
   aliasFiles?: string[];
 
   /** Properties of the checkpoint that's being downloaded */
@@ -174,9 +178,12 @@ export class V1CheckpointManager {
     return path.join(BriefcaseManager.getIModelPath(checkpoint.iModelId), "checkpoints");
   }
 
-  // for backwards compatibility to find checkpoints downloaded from older versions of BriefcaseManager.
+  /** for backwards compatibility to find checkpoints downloaded from older versions of BriefcaseManager.
+   * @deprecated
+   */
   public static getCompatibilityFileName(checkpoint: CheckpointProps): string {
     const changeSetId = checkpoint.changeSetId || "first";
+    // eslint-disable-next-line deprecation/deprecation
     return path.join(BriefcaseManager.getCompatibilityPath(checkpoint.iModelId), "FixedVersion", changeSetId, "bc.bim");
   }
 
@@ -300,8 +307,17 @@ export class CheckpointManager {
   public static getKey(checkpoint: CheckpointProps) { return `${checkpoint.iModelId}:${checkpoint.changeSetId}`; }
 
   public static async downloadCheckpoint(request: DownloadRequest): Promise<void> {
-    if (IModelJsFs.existsSync(request.localFile))
-      throw new IModelError(IModelStatus.FileAlreadyExists, `Cannot download checkpoint, file ${request.localFile} already exists`);
+    if (this.verifyCheckpoint(request.checkpoint, request.localFile))
+      return;
+
+    if (request.aliasFiles) {
+      for (const alias of request.aliasFiles) {
+        if (this.verifyCheckpoint(request.checkpoint, alias)) {
+          request.localFile = alias;
+          return;
+        }
+      }
+    }
 
     try {
       // first see if there's a V2 checkpoint available.

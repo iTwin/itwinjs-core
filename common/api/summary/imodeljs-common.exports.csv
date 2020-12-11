@@ -260,7 +260,8 @@ internal;IModelEventSourceProps
 public;IModelNotFoundResponse 
 public;IModelProps
 internal;class IModelReadRpcInterface 
-public;IModelRpcProps
+public;IModelRpcOpenProps
+public;IModelRpcProps 
 public;class IModelTileRpcInterface 
 internal;IModelTileTreeId = PrimaryTileTreeId | ClassifierTileTreeId
 internal;iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTileTreeId, options: TileOptions): string

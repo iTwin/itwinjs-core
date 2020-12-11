@@ -8,7 +8,7 @@
 
 import { BeDuration, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { BriefcaseQuery } from "@bentley/imodelhub-client";
-import { IModelConnectionProps, IModelRpcOpenProps, IModelRpcProps, RpcPendingResponse, SyncMode } from "@bentley/imodeljs-common";
+import { BriefcaseProps, IModelConnectionProps, IModelRpcOpenProps, IModelRpcProps, RpcPendingResponse, SyncMode } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { BriefcaseManager, RequestNewBriefcaseArg } from "../BriefcaseManager";
@@ -24,6 +24,7 @@ export interface DownloadAndOpenArgs {
   requestContext: AuthorizedClientRequestContext;
   tokenProps: IModelRpcOpenProps;
   syncMode: SyncMode;
+  fileNameResolvers?: ((arg: BriefcaseProps) => string)[];
   timeout?: number;
   forceDownload?: boolean;
 }
@@ -46,23 +47,26 @@ export class RpcBriefcaseUtility {
         myBriefcaseIds.push(hubBc.briefcaseId!); // save the list of briefcaseIds we already own.
     }
 
+    const resolvers = args.fileNameResolvers ?? [(arg) => BriefcaseManager.getFileName(arg), (arg) => BriefcaseManager.getCompatibilityFileName(arg)]; // eslint-disable-line deprecation/deprecation
     // see if we can open any of the briefcaseIds we already acquired from iModelHub
-    for (const briefcaseId of myBriefcaseIds) {
-      const fileName = BriefcaseManager.getFileName({ briefcaseId, iModelId });
-      if (IModelJsFs.existsSync(fileName)) {
-        try {
-          if (args.forceDownload)
-            throw new Error();
-          let db = BriefcaseDb.findOpened({ fileName });
-          if (db === undefined) {
-            db = await BriefcaseDb.open(requestContext, { fileName });
-            if (db.changeSetId !== tokenProps.changeSetId) // don't do this if it was already opened, ugh...
-              await BriefcaseManager.processChangeSets(requestContext, db, tokenProps.changeSetId!);
+    for (const resolver of resolvers) {
+      for (const briefcaseId of myBriefcaseIds) {
+        const fileName = resolver({ briefcaseId, iModelId });
+        if (IModelJsFs.existsSync(fileName)) {
+          try {
+            if (args.forceDownload)
+              throw new Error();
+            let db = BriefcaseDb.checkOpened({ fileName });
+            if (db === undefined) {
+              db = await BriefcaseDb.open(requestContext, { fileName });
+              if (db.changeSetId !== tokenProps.changeSetId) // don't do this if it was already opened, ugh...
+                await BriefcaseManager.processChangeSets(requestContext, db, tokenProps.changeSetId!);
+            }
+            return db;
+          } catch (error) {
+            // somehow we have this briefcaseId and the file exists, but we can't open it. Delete it.
+            IModelJsFs.removeSync(fileName);
           }
-          return db;
-        } catch (error) {
-          // somehow we have this briefcaseId and the file exists, but we can't open it. Delete it.
-          IModelJsFs.removeSync(fileName);
         }
       }
     }
@@ -132,7 +136,7 @@ export class RpcBriefcaseUtility {
       const request = {
         checkpoint,
         localFile: V1CheckpointManager.getFileName(checkpoint),
-        aliasFiles: [V1CheckpointManager.getCompatibilityFileName(checkpoint)],
+        aliasFiles: [V1CheckpointManager.getCompatibilityFileName(checkpoint)],// eslint-disable-line deprecation/deprecation
       };
       db = await BeDuration.race(timeout, V1CheckpointManager.getCheckpointDb(request));
       requestContext.enter();
