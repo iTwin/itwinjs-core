@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-//resolve.js
+// Adapted from resolve.js, https://github.com/brandonhorst/node-resolve-recurse/blob/master/lib/resolve.js
 var util = require('util');
 var findup = util.promisify(require('findup'));
 var resolve = util.promisify(require('resolve'));
