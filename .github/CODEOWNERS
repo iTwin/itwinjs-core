@@ -35,7 +35,7 @@ rush.json @calebmshafer @scsewall
 /common/api/forms-data-management-client.api.md     @calebmshafer @ramanujam-raman
 /common/api/frontend-application-insights-client.api.md     @calebmshafer @ramanujam-raman
 /common/api/frontend-authorization-client.api.md     @calebmshafer @ramanujam-raman
-/common/api/frontend-devtools.api.md                @pmconne @mgooding
+/common/api/frontend-devtools.api.md                @imodeljs/display
 /common/api/geometry-core.api.md                    @EarlinLutz @mgooding @RBBentley @bbastings
 /common/api/hypermodeling-frontend.api.md           @pmconne @bbastings
 /common/api/imodel-bridge.api.md                    @abeesh @c-macdonald @swwilson-bsi
@@ -44,7 +44,7 @@ rush.json @calebmshafer @scsewall
 /common/api/imodeljs-common.api.md                  @imodeljs/admins
 /common/api/imodeljs-frontend.api.md                @imodeljs/admins
 /common/api/imodeljs-i18n.api.md                    @calebmshafer @wgoehrig
-/common/api/imodeljs-markup.api.md                  @kabentley @pmconne
+/common/api/imodeljs-markup.api.md                  @kabentley @pmconne @bbastings
 /common/api/imodeljs-quantity.api.md                @bsteinbk @calebmshafer
 /common/api/itwin-client.api.md                     @calebmshafer @ramanujam-raman
 /common/api/linear-referencing-backend.api.md       @diegoalexdiaz @scsewall
@@ -62,7 +62,7 @@ rush.json @calebmshafer @scsewall
 /common/api/telemetry-client.api.md                 @calebmshafer @ramanujam-raman
 /common/api/ui-*.api.md                             @imodeljs/ui
 /common/api/usage-logging-client.api.md             @calebmshafer @ramanujam-raman
-/common/api/webgl-compatibility.api.md              @pmconne
+/common/api/webgl-compatibility.api.md              @imodeljs/display
 
 # Specifying both of these with a large number of possible reviewers.
 # All significant changes will be covered by other requirements.
@@ -81,16 +81,18 @@ rush.json @calebmshafer @scsewall
 /core/electron-manager          @wgoehrig @ramanujam-raman
 /core/express-server            @calebmshafer @wgoehrig @ramanujam-raman
 /core/frontend                  @imodeljs/admins
-/core/frontend-devtools         @pmconne @mgooding
+/core/frontend/render           @imodeljs/display
+/core/frontend/tile             @imodeljs/display
+/core/frontend-devtools         @imodeljs/display
 /core/geometry                  @bbastings @EarlinLutz @mgooding @RBBentley
 /core/hypermodeling             @bbastings @pmconne
 /core/i18n                      @wgoehrig @calebmshafer
 /core/imodel-bridge             @abeesh @c-macdonald @swwilson-bsi
 /core/logger-config             @swwilson-bsi @scsewall
-/core/markup                    @kabentley @pmconne
+/core/markup                    @kabentley @pmconne @bbastings
 /core/orbitgt                   @RBBentley @pmconne
 /core/quantity                  @bsteinbk @calebmshafer
-/core/webgl-compatibility       @pmconne @mgooding
+/core/webgl-compatibility       @imodeljs/display
 
 /docs/getting-started @calebmshafer @williamkbentley
 /docs/config @calebmshafer @williamkbentley
@@ -115,8 +117,8 @@ rush.json @calebmshafer @scsewall
 /presentation/common/src/presentation-common/PresentationRpcInterface.ts @grigasp
 
 /test-apps/analysis-importer                @RBBentley
-/test-apps/display-performance-test-app     @hnn0003 @pmconne
-/test-apps/display-test-app                 @kabentley @mgooding @pmconne @RBBentley
+/test-apps/display-performance-test-app     @imodeljs/display
+/test-apps/display-test-app                 @kabentley @imodeljs/display
 /test-apps/export-gltf                      @mgooding
 /test-apps/export-obj                       @mgooding
 /test-apps/imjs-importer                    @EarlinLutz
