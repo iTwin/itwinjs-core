@@ -6,11 +6,13 @@
  * @module Content
  */
 
+import { Id64String } from "@bentley/bentleyjs-core";
 import { ClassInfo, ClassInfoJSON, RelatedClassInfo, RelationshipPath, RelationshipPathJSON, StrippedRelationshipPath } from "../EC";
 import { PresentationError, PresentationStatus } from "../Error";
 import { CategoryDescription, CategoryDescriptionJSON } from "./Category";
 import { EditorDescription } from "./Editor";
 import { Property, PropertyJSON } from "./Property";
+import { RendererDescription } from "./Renderer";
 import { TypeDescription } from "./TypeDescription";
 
 /**
@@ -24,6 +26,7 @@ export interface BaseFieldJSON {
   type: TypeDescription;
   isReadonly: boolean;
   priority: number;
+  renderer?: RendererDescription;
   editor?: EditorDescription;
 }
 
@@ -42,6 +45,8 @@ export interface PropertiesFieldJSON extends BaseFieldJSON {
 export interface NestedContentFieldJSON extends BaseFieldJSON {
   contentClassInfo: ClassInfoJSON;
   pathToPrimaryClass: RelationshipPathJSON;
+  /** @alpha */
+  actualPrimaryClassIds?: Id64String[];
   autoExpand?: boolean;
   nestedFields: FieldJSON[];
 }
@@ -81,6 +86,8 @@ export class Field {
   public isReadonly: boolean;
   /** Priority of the field. Higher priority fields should appear first in the UI */
   public priority: number;
+  /** Property renderer used to render values of this field */
+  public renderer?: RendererDescription;
   /** Property editor used to edit values of this field */
   public editor?: EditorDescription;
   /** Parent field */
@@ -95,9 +102,10 @@ export class Field {
    * @param isReadonly Are values in this field read-only
    * @param priority Priority of the field
    * @param editor Property editor used to edit values of this field
+   * @param renderer Property renderer used to render values of this field
    */
   public constructor(category: CategoryDescription, name: string, label: string, type: TypeDescription,
-    isReadonly: boolean, priority: number, editor?: EditorDescription) {
+    isReadonly: boolean, priority: number, editor?: EditorDescription, renderer?: RendererDescription) {
     this.category = category;
     this.name = name;
     this.label = label;
@@ -105,6 +113,7 @@ export class Field {
     this.isReadonly = isReadonly;
     this.priority = priority;
     this.editor = editor;
+    this.renderer = renderer;
   }
 
   /**
@@ -124,7 +133,16 @@ export class Field {
 
   /** @alpha */
   public clone() {
-    const clone = new Field(this.category, this.name, this.label, this.type, this.isReadonly, this.priority, this.editor);
+    const clone = new Field(
+      this.category,
+      this.name,
+      this.label,
+      this.type,
+      this.isReadonly,
+      this.priority,
+      this.editor,
+      this.renderer,
+    );
     clone.rebuildParentship(this.parent);
     return clone;
   }
@@ -138,6 +156,7 @@ export class Field {
       type: this.type,
       isReadonly: this.isReadonly,
       priority: this.priority,
+      renderer: this.renderer,
       editor: this.editor,
     };
   }
@@ -228,16 +247,36 @@ export class PropertiesField extends Field {
    * @param priority Priority of the field
    * @param properties A list of properties this field is created from
    * @param editor Property editor used to edit values of this field
+   * @param renderer Property renderer used to render values of this field
    */
-  public constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription,
-    isReadonly: boolean, priority: number, properties: Property[], editor?: EditorDescription) {
-    super(category, name, label, description, isReadonly, priority, editor);
+  public constructor(
+    category: CategoryDescription,
+    name: string,
+    label: string,
+    description: TypeDescription,
+    isReadonly: boolean,
+    priority: number,
+    properties: Property[],
+    editor?: EditorDescription,
+    renderer?: RendererDescription,
+  ) {
+    super(category, name, label, description, isReadonly, priority, editor, renderer);
     this.properties = properties;
   }
 
   /** @alpha */
   public clone() {
-    const clone = new PropertiesField(this.category, this.name, this.label, this.type, this.isReadonly, this.priority, this.properties, this.editor);
+    const clone = new PropertiesField(
+      this.category,
+      this.name,
+      this.label,
+      this.type,
+      this.isReadonly,
+      this.priority,
+      this.properties,
+      this.editor,
+      this.renderer,
+    );
     clone.rebuildParentship(this.parent);
     return clone;
   }
@@ -308,6 +347,8 @@ export class NestedContentField extends Field {
   public contentClassInfo: ClassInfo;
   /** Relationship path to [Primary class]($docs/learning/presentation/Content/Terminology#primary-class) */
   public pathToPrimaryClass: RelationshipPath;
+  /** @alpha */
+  public actualPrimaryClassIds: Id64String[];
   /** Contained nested fields */
   public nestedFields: Field[];
   /** Flag specifying whether field should be expanded */
@@ -324,23 +365,49 @@ export class NestedContentField extends Field {
    * @param contentClassInfo Information about an ECClass whose properties are nested inside this field
    * @param pathToPrimaryClass Relationship path to [Primary class]($docs/learning/presentation/Content/Terminology#primary-class)
    * @param nestedFields Contained nested fields
-   * @param autoExpand Flag specifying whether field should be expanded
    * @param editor Property editor used to edit values of this field
+   * @param autoExpand Flag specifying whether field should be expanded
+   * @param renderer Property renderer used to render values of this field
    */
-  public constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription,
-    isReadonly: boolean, priority: number, contentClassInfo: ClassInfo, pathToPrimaryClass: RelationshipPath,
-    nestedFields: Field[], editor?: EditorDescription, autoExpand?: boolean) {
-    super(category, name, label, description, isReadonly, priority, editor);
+  public constructor(
+    category: CategoryDescription,
+    name: string,
+    label: string,
+    description: TypeDescription,
+    isReadonly: boolean,
+    priority: number,
+    contentClassInfo: ClassInfo,
+    pathToPrimaryClass: RelationshipPath,
+    nestedFields: Field[],
+    editor?: EditorDescription,
+    autoExpand?: boolean,
+    renderer?: RendererDescription,
+  ) {
+    super(category, name, label, description, isReadonly, priority, editor, renderer);
     this.contentClassInfo = contentClassInfo;
     this.pathToPrimaryClass = pathToPrimaryClass;
     this.nestedFields = nestedFields;
     this.autoExpand = autoExpand;
+    this.actualPrimaryClassIds = [];
   }
 
   /** @alpha */
   public clone() {
-    const clone = new NestedContentField(this.category, this.name, this.label, this.type, this.isReadonly, this.priority,
-      this.contentClassInfo, this.pathToPrimaryClass, this.nestedFields, this.editor, this.autoExpand);
+    const clone = new NestedContentField(
+      this.category,
+      this.name,
+      this.label,
+      this.type,
+      this.isReadonly,
+      this.priority,
+      this.contentClassInfo,
+      this.pathToPrimaryClass,
+      this.nestedFields,
+      this.editor,
+      this.autoExpand,
+      this.renderer,
+    );
+    clone.actualPrimaryClassIds = this.actualPrimaryClassIds;
     clone.rebuildParentship(this.parent);
     return clone;
   }
@@ -360,6 +427,7 @@ export class NestedContentField extends Field {
       ...super.toJSON(),
       contentClassInfo: this.contentClassInfo,
       pathToPrimaryClass: this.pathToPrimaryClass,
+      actualPrimaryClassIds: this.actualPrimaryClassIds,
       nestedFields: this.nestedFields.map((field: Field) => field.toJSON()),
       autoExpand: this.autoExpand,
     };
@@ -386,6 +454,7 @@ export class NestedContentField extends Field {
         .filter((nestedField): nestedField is Field => !!nestedField),
       contentClassInfo: ClassInfo.fromJSON(json.contentClassInfo),
       pathToPrimaryClass: json.pathToPrimaryClass.map(RelatedClassInfo.fromJSON),
+      actualPrimaryClassIds: json.actualPrimaryClassIds ?? [],
       autoExpand: json.autoExpand,
     });
   }
