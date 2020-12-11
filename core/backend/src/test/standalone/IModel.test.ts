@@ -1722,13 +1722,14 @@ describe("iModel", () => {
     iModel.close();
   });
 
-  it.skip("should be able to open checkpoints", async () => {
+  it("should be able to open checkpoints", async () => {
     // Just create an empty snapshot, and we'll use that as our fake "checkpoint" (so it opens)
     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint.bim");
     const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
     const iModelId = snapshot.getGuid();
     const contextId = Guid.createValue();
-    const changeSetId = generateChangeSetId(); // We need to get the changeSetId from the file we open
+    const changeSetId = generateChangeSetId();
+    snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeSetId); // even fake checkpoints need a changeSetId!
     snapshot.close();
 
     // Mock iModelHub
@@ -1758,11 +1759,11 @@ describe("iModel", () => {
     assert.equal(props.openMode, OpenMode.Readonly);
     assert.equal(props.iModelId, iModelId);
     assert.equal(props.contextId, contextId);
-    assert.equal(props.changeSetId, changeSetId); // this fails because the changeSetId comes from the file
+    assert.equal(props.changeSetId, changeSetId);
     assert.equal(commandStub.callCount, 1);
     assert.equal(commandStub.firstCall.firstArg, "attach");
 
-    await checkpoint.reattachDaemon(ctx); // fails because the file isn't a checkpoint
+    await checkpoint.reattachDaemon(ctx);
     assert.equal(commandStub.callCount, 2);
     assert.equal(commandStub.secondCall.firstArg, "attach");
 
