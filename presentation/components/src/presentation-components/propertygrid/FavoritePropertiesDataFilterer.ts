@@ -62,7 +62,7 @@ export class FavoritePropertiesDataFilterer extends PropertyDataFiltererBase {
     return !!field && this._favoritesCheckCallback(field, this._source.imodel, this._favoritesScope);
   }
 
-  public async matchesFilter(node: PropertyRecord, parents: PropertyRecord[]): Promise<PropertyDataFilterResult> {
+  public async recordMatchesFilter(node: PropertyRecord, parents: PropertyRecord[]): Promise<PropertyDataFilterResult> {
     if (!this.isActive)
       return { matchesFilter: true };
 
@@ -77,6 +77,10 @@ export class FavoritePropertiesDataFilterer extends PropertyDataFiltererBase {
       return { matchesFilter: true, shouldExpandNodeParents: true };
 
     return { matchesFilter: false };
+  }
+
+  public async categoryMatchesFilter(): Promise<PropertyDataFilterResult> {
+    return { matchesFilter: !this.isActive };
   }
 }
 
