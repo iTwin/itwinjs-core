@@ -6441,6 +6441,8 @@ export class QuantityFormatter implements UnitsProvider {
     // (undocumented)
     clearAllOverrideFormats(): Promise<void>;
     // (undocumented)
+    protected clearCachedFormatAndParseDataByType(type: QuantityType): void;
+    // (undocumented)
     clearOverrideFormats(type: QuantityType): Promise<void>;
     findFormatterSpecByQuantityType(type: QuantityTypeArg, imperial?: boolean): FormatterSpec | undefined;
     protected findKoqFormatterSpec(koq: string, useImperial: boolean): FormatterSpec | undefined;
@@ -6505,6 +6507,8 @@ export class QuantityFormatter implements UnitsProvider {
     // (undocumented)
     protected _pendingLoadParserSpecMetric?: Promise<void>;
     registerFormatterParserSpecsProviders(provider: FormatterParserSpecsProvider): Promise<boolean>;
+    // (undocumented)
+    protected reloadCachedData(): Promise<void>;
     setActiveUnitSystem(useImperial: boolean, restartActiveTool?: boolean): Promise<void>;
     // (undocumented)
     setOverrideFormats(type: QuantityType, entry: OverrideFormatEntry): Promise<void>;

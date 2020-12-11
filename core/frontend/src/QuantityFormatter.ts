@@ -609,14 +609,14 @@ export class QuantityFormatter implements UnitsProvider {
     throw new Error("not yet implemented");
   }
 
-  private async reloadCachedData() {
+  protected async reloadCachedData() {
     await this.loadFormatSpecsForQuantityTypes(true);
     await this.loadParsingSpecsForQuantityTypes(true);
     await this.loadFormatSpecsForQuantityTypes(false);
     await this.loadParsingSpecsForQuantityTypes(false);
   }
 
-  public clearCachedFormatAndParseDataByType(type: QuantityType) {
+  protected clearCachedFormatAndParseDataByType(type: QuantityType) {
     const typeKey = this.parseQuantityTypeArg(type);
     if (this._imperialFormatsByType.has(typeKey))
       this._imperialFormatsByType.delete(typeKey);
