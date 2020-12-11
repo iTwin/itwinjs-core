@@ -69,7 +69,7 @@ describe("IModelOpen (#integration)", () => {
     assert.equal(401, error.status);
   });
 
-  it("should be able to handle simultaneous multiple open calls", async () => {
+  it("should be able to handle simultaneous open calls", async () => {
     // Clean folder to re-fetch briefcase
     deleteTestIModelCache();
 
@@ -103,7 +103,7 @@ describe("IModelOpen (#integration)", () => {
     await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
   });
 
-  it("should be able to handle simultaneous multiple open calls of different versions", async () => {
+  it("should be able to handle simultaneous open calls of different versions", async () => {
     // Clean folder to refetch briefcase
     deleteTestIModelCache();
 

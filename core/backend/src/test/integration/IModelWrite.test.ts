@@ -947,7 +947,7 @@ describe("IModelWriteTest (#integration)", () => {
     iModel.close();
   });
 
-  it("should be able to upgrade a briefcase with an older schema", async () => {
+  it.skip("should be able to upgrade a briefcase with an older schema", async () => {
     const projectName = "iModelJsIntegrationTest";
     const projectId = await HubUtility.queryProjectIdByName(managerRequestContext, projectName);
 
