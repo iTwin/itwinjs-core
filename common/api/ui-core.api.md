@@ -687,7 +687,9 @@ export interface ExpandableBlockProps extends CommonProps {
     onClick: React.MouseEventHandler<HTMLDivElement>;
     onKeyDown?: React.KeyboardEventHandler<HTMLDivElement>;
     onKeyPress?: React.KeyboardEventHandler<HTMLDivElement>;
-    title: string;
+    title: string | JSX.Element;
+    // @beta
+    tooltip?: string;
 }
 
 // @public
