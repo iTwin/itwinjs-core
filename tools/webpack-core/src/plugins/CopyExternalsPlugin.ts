@@ -7,12 +7,12 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import { Compiler } from "webpack";
 import { getAppRelativePath, getSourcePosition, paths } from "../utils/paths";
-
+const getAllDependencies = require("../utils/resolve-recurse/resolve");
+import { Dependency } from "../utils/resolve-recurse/resolve";
 /* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
 const { builtinModules } = require("module");
 const WebpackError = require("webpack/lib/WebpackError");
 const ModuleDependencyWarning = require("webpack/lib/ModuleDependencyWarning");
-const getAllDependencies = require("../utils/resolve-recurse/resolve.js");
 /* eslint-enable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
 
 class MissingExternalWarning extends WebpackError {
@@ -25,14 +25,6 @@ class MissingExternalWarning extends WebpackError {
     Error.captureStackTrace(this, this.constructor);
   }
 }
-interface Dependency {
-  name: string;
-  path: string;
-  allowedVersion: string;
-  actualVersion: string;
-  dependencies: Dependency[];
-}
-
 export class CopyExternalsPlugin {
   private _promises: Array<Promise<any>> = [];
   private _copiedPackages: Set<string> = new Set();
@@ -94,7 +86,7 @@ export class CopyExternalsPlugin {
     // Grab external package's dependencies and all of its dependencies and so on recursively
     const depsFromRecursion = await getAllDependencies({
       path: path.dirname(packageJsonPath),
-    }) as Dependency;
+    });
     await this.recurseDependencies(depsFromRecursion.dependencies, outputDir);
   }
   // TODO: Optimize recursion, too many awaits.

@@ -14,7 +14,7 @@
   "main": "lib/plugins/index.js",
   "scripts": {
     "compile": "npm run build",
-    "build": "tsc 1>&2 && cpx \"./src/utils/resolve-recurse/*\" \"./lib/utils/resolve-recurse",
+    "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "",
     "lint": "eslint -f visualstudio --max-warnings 0 ./src/**/*.ts 1>&2",
