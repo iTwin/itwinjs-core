@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/presentation-common",
-      "comment": "Include all properties into properties field descriptor to make descriptor match any field that has at least oe of those properties",
+      "comment": "Include all properties into properties field descriptor to make descriptor match any field that has at least one of those properties",
       "type": "none"
     }
   ],
