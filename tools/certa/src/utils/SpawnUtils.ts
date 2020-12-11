@@ -19,6 +19,7 @@ export function spawnChildProcess(command: string, args: ReadonlyArray<string>, 
   // FIXME: We should be able to remove the useIpc param and just always enable it,
   // but it's not safe to spawn electron with IPC enabled until https://github.com/electron/electron/issues/17044 is fixed.
   const stdio: StdioOptions = (useIpc) ? ["ipc", "pipe", "pipe"] : "pipe";
+  console.log(command);
   const childProcess = spawn(command, args, { stdio, cwd: process.cwd(), env: childEnv });
   // For some reason, spawning using `stdio: "inherit"` results in some garbled output (for example, "✓" is printed as "ΓêÜ").
   // Using `stdio: "pipe"` and manually redirecting the output here seems to work though.
@@ -57,7 +58,7 @@ async function onExitElectronApp(child: ChildProcess): Promise<number> {
  * Returns a promise that will be resolved with the exit code of the child process, once it terminates.
  */
 export async function relaunchInElectron(): Promise<number> {
-  const child = spawnChildProcess(require("electron/index.js"), process.argv.slice(1), undefined, true);
+  const child = spawnChildProcess(require("electron/index.js"), ["--no-sandbox", ...process.argv.slice(1)], { ELECTRON_ENABLE_LOGGING: "true" }, true);
   return onExitElectronApp(child);
 }
 

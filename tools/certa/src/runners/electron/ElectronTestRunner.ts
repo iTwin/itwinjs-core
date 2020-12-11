@@ -15,10 +15,16 @@ export class ElectronTestRunner {
     if (!("electron" in process.versions))
       return process.exit(await relaunchInElectron());
 
+    console.log("tesing")
+
     // If we are running in electron, we need to append any chromium CLI switches ***before*** the 'ready' event of the app module is emitted.
     const { app } = require("electron");
+    // app.commandLine.appendSwitch("append-swtiched");
     if (config.debug)
       app.commandLine.appendSwitch("remote-debugging-port", String(config.ports.frontendDebugging));
+
+    console.log("Test: " + app.commandLine);
+    console.log("Test2: " + app.commandLine.hasSwitch("no-sandbox"));
 
     const timeout = new Promise((_resolve, reject) => setTimeout(() => reject("Timed out after 2 minutes when starting electron"), 2 * 60 * 1000));
     await Promise.race([app.whenReady(), timeout]);
