@@ -179,10 +179,12 @@ export function DEPRECATED_treeWithUnifiedSelection<P extends TreeProps>(TreeCom
 // @alpha
 export class FavoritePropertiesDataFilterer extends PropertyDataFiltererBase {
     constructor(props: FavoritePropertiesDataFiltererProps);
+    // (undocumented)
+    categoryMatchesFilter(): Promise<PropertyDataFilterResult>;
     get isActive(): boolean;
     set isActive(value: boolean);
     // (undocumented)
-    matchesFilter(node: PropertyRecord, parents: PropertyRecord[]): Promise<PropertyDataFilterResult>;
+    recordMatchesFilter(node: PropertyRecord, parents: PropertyRecord[]): Promise<PropertyDataFilterResult>;
     }
 
 // @alpha

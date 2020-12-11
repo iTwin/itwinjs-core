@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { DbResult, Guid, GuidString, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { DbResult, Guid, GuidString, Id64, Id64Set, Id64String, Logger } from "@bentley/bentleyjs-core";
 import { Schema } from "@bentley/ecschema-metadata";
 import {
   Box, Cone, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles,
@@ -17,14 +17,14 @@ import {
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import {
-  AuxCoordSystem, AuxCoordSystem2d, BackendRequestContext, CategorySelector, DefinitionModel, DefinitionPartition, DisplayStyle2d, DisplayStyle3d,
-  DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition, ECSqlStatement, Element,
-  ElementAspect, ElementMultiAspect, ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementRefersToElements,
-  ElementUniqueAspect, ExternalSourceAspect, FunctionalModel, FunctionalSchema, GeometricElement3d, GeometryPart, GroupModel, IModelDb,
-  IModelExporter, IModelExportHandler, IModelImporter, IModelJsFs, IModelTransformer, InformationPartitionElement, InformationRecordModel, Model,
-  ModelSelector, OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, Platform, Relationship,
-  RelationshipProps, RenderMaterialElement, SnapshotDb, SpatialCategory, SpatialLocationModel, SubCategory, Subject, TemplateRecipe3d, Texture,
-  ViewDefinition,
+  AuxCoordSystem, AuxCoordSystem2d, BackendLoggerCategory, BackendRequestContext, CategorySelector, DefinitionModel, DefinitionPartition,
+  DisplayStyle2d, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition,
+  ECSqlStatement, Element, ElementAspect, ElementMultiAspect, ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect,
+  ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, FunctionalModel, FunctionalSchema, GeometricElement3d, GeometryPart, GroupModel,
+  IModelDb, IModelExporter, IModelExportHandler, IModelImporter, IModelJsFs, IModelTransformer, InformationPartitionElement, InformationRecordModel,
+  Model, ModelSelector, OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, Platform, Relationship,
+  RelationshipProps, RenderMaterialElement, SnapshotDb, SpatialCategory, SpatialLocationModel, SpatialViewDefinition, SubCategory, Subject,
+  TemplateRecipe3d, Texture, ViewDefinition,
 } from "../imodeljs-backend";
 import { KnownTestLocations } from "./KnownTestLocations";
 
@@ -1186,7 +1186,7 @@ export class PhysicalModelConsolidator extends IModelTransformer {
   private readonly _targetModelId: Id64String;
   /** Construct a new PhysicalModelConsolidator */
   public constructor(sourceDb: IModelDb, targetDb: IModelDb, targetModelId: Id64String) {
-    super(sourceDb, targetDb, { cloneUsingBinaryGeometry: true });
+    super(sourceDb, targetDb);
     this._targetModelId = targetModelId;
     this.importer.doNotUpdateElementIds.add(targetModelId);
   }
@@ -1196,6 +1196,55 @@ export class PhysicalModelConsolidator extends IModelTransformer {
       this.context.remapElement(sourceElement.id, this._targetModelId);
     }
     return super.shouldExportElement(sourceElement);
+  }
+}
+
+/** Test IModelTransformer that uses a ViewDefinition to filter the iModel contents. */
+export class FilterByViewTransformer extends IModelTransformer {
+  private readonly _exportViewDefinitionId: Id64String;
+  private readonly _exportModelIds: Id64Set;
+  public constructor(sourceDb: IModelDb, targetDb: IModelDb, exportViewDefinitionId: Id64String) {
+    super(sourceDb, targetDb);
+    this._exportViewDefinitionId = exportViewDefinitionId;
+    const exportViewDefinition = sourceDb.elements.getElement<SpatialViewDefinition>(exportViewDefinitionId, SpatialViewDefinition);
+    const exportCategorySelector = sourceDb.elements.getElement<CategorySelector>(exportViewDefinition.categorySelectorId, CategorySelector);
+    this.excludeCategories(Id64.toIdSet(exportCategorySelector.categories));
+    const exportModelSelector = sourceDb.elements.getElement<ModelSelector>(exportViewDefinition.modelSelectorId, ModelSelector);
+    this._exportModelIds = Id64.toIdSet(exportModelSelector.models);
+  }
+  /** Excludes categories not referenced by the export view's CategorySelector */
+  private excludeCategories(exportCategoryIds: Id64Set): void {
+    const sql = `SELECT ECInstanceId FROM ${SpatialCategory.classFullName}`;
+    this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        const categoryId = statement.getValue(0).getId();
+        if (!exportCategoryIds.has(categoryId)) {
+          this.exporter.excludeElementCategory(categoryId);
+        }
+      }
+    });
+  }
+  /** Override of IModelTransformer.shouldExportElement that excludes PhysicalPartitions/Models not referenced by the export view's ModelSelector */
+  protected shouldExportElement(sourceElement: Element): boolean {
+    if (sourceElement instanceof PhysicalPartition) {
+      if (!this._exportModelIds.has(sourceElement.id)) {
+        return false;
+      }
+    } else if (sourceElement instanceof SpatialViewDefinition) {
+      if (sourceElement.id !== this._exportViewDefinitionId) {
+        return false;
+      }
+    }
+    return super.shouldExportElement(sourceElement);
+  }
+  /** Override of IModelTransformer.processAll that does additional logging after completion. */
+  public processAll(): void {
+    super.processAll();
+    Logger.logInfo(BackendLoggerCategory.IModelTransformer, `processAll complete with ${this._deferredElementIds.size} deferred elements remaining`);
+  }
+  /** Override of IModelTransformer.processDeferredElements that catches all exceptions and keeps going. */
+  public processDeferredElements(numRetries: number = 3): void {
+    try { super.processDeferredElements(numRetries); } catch (error) { }
   }
 }
 

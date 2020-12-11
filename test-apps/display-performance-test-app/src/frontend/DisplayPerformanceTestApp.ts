@@ -1501,7 +1501,7 @@ async function testModel(configs: DefaultConfigs, modelData: any, logFileName: s
     const hours = (`0${today.getHours()}`).slice(-2);
     const minutes = (`0${today.getMinutes()}`).slice(-2);
     const seconds = (`0${today.getSeconds()}`).slice(-2);
-    const outStr = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}  ${testData.iModelName!}  [${testData.viewName}]`;
+    const outStr = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}  ${testConfig.iModelName!}  [${testConfig.viewName}]`;
     await consoleLog(outStr);
     await writeExternalFile(testConfig.outputPath!, logFileName, true, `${outStr}\n`);
 
