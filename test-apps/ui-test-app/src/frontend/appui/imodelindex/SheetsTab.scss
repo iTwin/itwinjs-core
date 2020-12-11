@@ -43,9 +43,9 @@
     font-size: 18px;
     color: $uicore-icons-light;
     cursor: pointer;
-    -webkit-transition: all background-color.2s ease;
-    -moz-transition: all background-color.2s ease;
-    -o-transition: all background-color.2s ease;
+    -webkit-transition: all background-color .2s ease;
+    -moz-transition: all background-color .2s ease;
+    -o-transition: all background-color .2s ease;
     transition: all background-color .2s ease;
 
     /* Hover over list/thumbnail button */
