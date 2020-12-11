@@ -25,7 +25,6 @@ import { showStatus } from "./Utils";
 import { Dock } from "./Window";
 import { openStandaloneIModel } from "./openStandaloneIModel";
 
-// A trivial change
 const configuration: DtaConfiguration = {};
 
 // Retrieves the configuration for starting SVT from configuration.json file located in the built public folder
