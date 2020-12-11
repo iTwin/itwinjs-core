@@ -58,32 +58,24 @@ describe("UlasClient - OIDC Token (#integration)", () => {
           default:
             break;
         }
-
       }
 
-      let tempRequestContext = new AuthorizedClientRequestContext(tempAccessToken, undefined, "43", "3.4.5.101");
-
-      // const uEntry: UsageLogEntry = new UsageLogEntry(os.hostname(), UsageType.Trial);
-
-      // let hasThrown: boolean = false;
-      // try {
-      //   await client.logUsage(tempRequestContext, uEntry);
-      // } catch (e) {
-      //   hasThrown = true;
-      // }
-      // assert.equal(hasThrown, !passingTokenModes.includes(mode), "UlasClient.logUsage is expected to throw if access token does not have required user profile info.");
-
-      const fEntry = new FeatureLogEntry(Guid.createValue(), os.hostname(), UsageType.Trial);
-
-      tempRequestContext = new AuthorizedClientRequestContext(tempAccessToken, undefined, "43", "3.4.99");
+      const tempRequestContext = new AuthorizedClientRequestContext(tempAccessToken, undefined, "43", "3.4.99");
+      const entry = new FeatureLogEntry(Guid.createValue(), os.hostname(), UsageType.Trial);
+      entry.additionalData.test = "AccessToken without feature tracking claims (#integration)";
+      entry.additionalData.testMode = `${mode}`;
 
       let hasThrown = false;
       try {
-        await client.logFeatureUsage(tempRequestContext, fEntry);
+        await client.logFeatureUsage(tempRequestContext, entry);
       } catch (e) {
         hasThrown = true;
       }
-      assert.equal(hasThrown, !passingTokenModes.includes(mode), "UlasClient.logFeatureUsage is expected to throw if access token does not have required user profile info.");
+      const shouldPass = passingTokenModes.includes(mode);
+      const errorMessage = shouldPass
+        ? `UlasClient.logFeatureUsage is expected to succeed for TokenMode ${mode}, because access token has all necessary information`
+        : `UlasClient.logFeatureUsage is expected to throw for TokenMode ${mode}, because access token does not have required user profile info.`;
+      assert.equal(hasThrown, !shouldPass, errorMessage);
     }
   });
 
@@ -92,6 +84,8 @@ describe("UlasClient - OIDC Token (#integration)", () => {
 
     for (const usageType of [UsageType.Beta, UsageType.HomeUse, UsageType.PreActivation, UsageType.Production, UsageType.Trial]) {
       const entry = new FeatureLogEntry(Guid.createValue(), os.hostname(), usageType);
+      entry.additionalData.test = "Post feature log (#integration)";
+      entry.additionalData.testUsageType = `${usageType}`;
 
       const resp: LogPostingResponse = await client.logFeatureUsage(requestContext, entry);
       assert(resp);
@@ -107,6 +101,8 @@ describe("UlasClient - OIDC Token (#integration)", () => {
 
     for (const usageType of [UsageType.Beta, UsageType.HomeUse, UsageType.PreActivation, UsageType.Production, UsageType.Trial]) {
       const entry = new FeatureLogEntry(Guid.createValue(), os.hostname(), usageType);
+      entry.additionalData.test = "Post feature log using iTwin productID and no projectId (#integration)";
+      entry.additionalData.testUsageType = `${usageType}`;
 
       const resp: LogPostingResponse = await client.logFeatureUsage(requestContext, entry);
       assert(resp);
@@ -120,8 +116,8 @@ describe("UlasClient - OIDC Token (#integration)", () => {
   it("Post feature log with project id (#integration)", async () => {
     const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43", "3.4.99");
     const entry = new FeatureLogEntry(Guid.createValue(), os.hostname(), UsageType.Trial, Guid.createValue());
-    entry.additionalData.imodelid = Guid.createValue();
-    entry.additionalData.imodelsize = "596622";
+    entry.additionalData.test = "Post feature log with project id (#integration)";
+
     const resp: LogPostingResponse = await client.logFeatureUsage(requestContext, entry);
     assert(resp);
     assert.equal(resp.status, BentleyStatus.SUCCESS);
@@ -133,8 +129,8 @@ describe("UlasClient - OIDC Token (#integration)", () => {
   it("Post feature log without product version (#integration)", async () => {
     const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43");
     const entry = new FeatureLogEntry(Guid.createValue(), os.hostname(), UsageType.Trial, Guid.createValue());
-    entry.additionalData.imodelid = Guid.createValue();
-    entry.additionalData.imodelsize = "596622";
+    entry.additionalData.test = "Post feature log without product version (#integration)";
+
     const resp: LogPostingResponse = await client.logFeatureUsage(requestContext, entry);
     assert(resp);
     assert.equal(resp.status, BentleyStatus.SUCCESS);
@@ -151,8 +147,8 @@ describe("UlasClient - OIDC Token (#integration)", () => {
       "localhost",
     ]) {
       const entry = new FeatureLogEntry(Guid.createValue(), hostName, UsageType.Beta);
-      entry.additionalData.imodelid = Guid.createValue();
-      entry.additionalData.imodelsize = "596622";
+      entry.additionalData.test = "Post feature log - hostName special cases (#integration)";
+
       const resp: LogPostingResponse = await client.logFeatureUsage(requestContext, entry);
       assert(resp);
       assert.equal(resp.status, BentleyStatus.SUCCESS);
@@ -167,14 +163,17 @@ describe("UlasClient - OIDC Token (#integration)", () => {
     const feature1Id: GuidString = Guid.createValue();
     const feature2Id: GuidString = Guid.createValue();
     const entry1 = new FeatureLogEntry(feature1Id, os.hostname(), UsageType.HomeUse);
-    entry1.additionalData.imodelid = Guid.createValue();
-    entry1.additionalData.imodelsize = "596622";
+    entry1.additionalData.test = "Post multiple feature logs (#integration)";
+    entry1.additionalData.testLogNumber = "1";
 
     // omit product version in second entry
     requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43");
     const entry2 = new FeatureLogEntry(feature2Id, os.hostname(), UsageType.Beta);
     entry2.additionalData.imodelid = Guid.createValue();
     entry2.additionalData.imodelsize = "400";
+    entry2.additionalData.test = "Post multiple feature logs (#integration)";
+    entry2.additionalData.testLogNumber = "2";
+
     const resp: LogPostingResponse = await client.logFeatureUsage(requestContext, entry1, entry2);
     assert(resp);
     assert.equal(resp.status, BentleyStatus.SUCCESS);
@@ -196,8 +195,8 @@ describe("UlasClient - OIDC Token (#integration)", () => {
     const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43", "3.4");
     const myFeatureId: GuidString = Guid.createValue();
     const startEntry = new StartFeatureLogEntry(myFeatureId, os.hostname(), UsageType.Beta);
-    startEntry.additionalData.imodelid = Guid.createValue();
-    startEntry.additionalData.user = "123-123";
+    startEntry.additionalData.test = "Post duration feature log (#integration)";
+    startEntry.additionalData.testDurationLogType = "Start";
 
     const startResp: LogPostingResponse = await client.logFeatureUsage(requestContext, startEntry);
     assert(startResp);
@@ -206,6 +205,9 @@ describe("UlasClient - OIDC Token (#integration)", () => {
     assert.isAtLeast(startResp.time, 0);
 
     const endEntry: EndFeatureLogEntry = EndFeatureLogEntry.createFromStartEntry(startEntry);
+    endEntry.additionalData.test = "Post duration feature log (#integration)";
+    endEntry.additionalData.testDurationLogType = "End";
+
     const endResp: LogPostingResponse = await client.logFeatureUsage(requestContext, endEntry);
     assert(endResp);
     assert.equal(endResp.status, BentleyStatus.SUCCESS);
@@ -217,8 +219,8 @@ describe("UlasClient - OIDC Token (#integration)", () => {
     const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43");
     const myFeatureId: GuidString = Guid.createValue();
     const startEntry = new StartFeatureLogEntry(myFeatureId, os.hostname(), UsageType.Beta);
-    startEntry.additionalData.imodelid = Guid.createValue();
-    startEntry.additionalData.user = "123-123";
+    startEntry.additionalData.test = "Post duration feature log (#integration)";
+    startEntry.additionalData.testDurationLogType = "Start";
 
     const startResp: LogPostingResponse = await client.logFeatureUsage(requestContext, startEntry);
     assert(startResp);
@@ -227,6 +229,9 @@ describe("UlasClient - OIDC Token (#integration)", () => {
     assert.isAtLeast(startResp.time, 0);
 
     const endEntry: EndFeatureLogEntry = EndFeatureLogEntry.createFromStartEntry(startEntry);
+    endEntry.additionalData.test = "Post duration feature log (#integration)";
+    endEntry.additionalData.testDurationLogType = "End";
+
     const endResp: LogPostingResponse = await client.logFeatureUsage(requestContext, endEntry);
     assert(endResp);
     assert.equal(endResp.status, BentleyStatus.SUCCESS);
