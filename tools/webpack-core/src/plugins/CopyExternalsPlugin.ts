@@ -12,7 +12,7 @@ import { getAppRelativePath, getSourcePosition, paths } from "../utils/paths";
 const { builtinModules } = require("module");
 const WebpackError = require("webpack/lib/WebpackError");
 const ModuleDependencyWarning = require("webpack/lib/ModuleDependencyWarning");
-const resolveRecursively = require("../utils/resolve-recurse/resolve.js");
+const getAllDependencies = require("../utils/resolve-recurse/resolve.js");
 /* eslint-enable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
 
 class MissingExternalWarning extends WebpackError {
@@ -25,12 +25,12 @@ class MissingExternalWarning extends WebpackError {
     Error.captureStackTrace(this, this.constructor);
   }
 }
-interface DependencyStruct {
+interface Dependency {
   name: string;
   path: string;
   allowedVersion: string;
   actualVersion: string;
-  dependencies: DependencyStruct[];
+  dependencies: Dependency[];
 }
 
 export class CopyExternalsPlugin {
@@ -81,7 +81,7 @@ export class CopyExternalsPlugin {
       return;
     }
     const packageJsonPath = require.resolve(`${pkgName}/package.json`, { paths: [paths.appNodeModules] });
-    await this.copyPackage(pkgName, outputDir, packageJsonPath);
+    await this.copyPackage(pkgName, outputDir, path.dirname(packageJsonPath));
     if (!packageJsonPath)
       return;
 
@@ -92,27 +92,27 @@ export class CopyExternalsPlugin {
       return;
 
     // Grab external package's dependencies and all of its dependencies and so on recursively
-    const depsFromRecursion = await resolveRecursively({
+    const depsFromRecursion = await getAllDependencies({
       path: path.dirname(packageJsonPath),
-    }) as DependencyStruct;
+    }) as Dependency;
     await this.recurseDependencies(depsFromRecursion.dependencies, outputDir);
   }
   // TODO: Optimize recursion, too many awaits.
-  private async recurseDependencies(dependencies: DependencyStruct[], outputDir: string) {
+  private async recurseDependencies(dependencies: Dependency[], outputDir: string) {
     if (dependencies.length === 0)
       return;
     for (const dep of dependencies) {
       if (this._copiedPackages.has(dep.name))
         continue;
-      await this.copyPackage(dep.name, outputDir, `${dep.path}/package.json`); // add package.json to end so that path.dirname in copyPackage gets proper directory instead of the dir above it.
+      await this.copyPackage(dep.name, outputDir, path.dirname(`${dep.path}/package.json`)); // add package.json to end so that path.dirname in copyPackage gets proper directory instead of the dir above it.
       this._copiedPackages.add(dep.name);
       await this.recurseDependencies(dep.dependencies, outputDir);
     }
   }
 
   private async copyPackage(pkgName: string, outDir: string, pathToPackage: string) {
-    this._logger.log(`Copying ${getAppRelativePath(path.dirname(pathToPackage))} to ${getAppRelativePath(path.resolve(outDir, "node_modules"))}`);
-    await fs.copy(path.dirname(pathToPackage), path.resolve(outDir, "node_modules", pkgName), { dereference: true });
+    this._logger.log(`Copying ${getAppRelativePath(pathToPackage)} to ${getAppRelativePath(path.resolve(outDir, "node_modules"))}`);
+    await fs.copy(pathToPackage, path.resolve(outDir, "node_modules", pkgName), { dereference: true });
   }
 
   private pathToPackageName(p: string) {

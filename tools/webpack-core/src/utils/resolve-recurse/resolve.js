@@ -3,14 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 //resolve.js
-
-var Promise = require('promise');
-var findup = Promise.denodeify(require('findup'));
-var resolve = Promise.denodeify(require('resolve'));
-var isCore = require('is-core-module');
+var util = require('util');
+var findup = util.promisify(require('findup'));
+var resolve = util.promisify(require('resolve'));
+var builtIn = require('module').builtinModules;
 var _ = require('lodash');
 var path = require('path');
-
 //promise moduleDirectory
 // given the name of a module, and the directory of the module which referenced
 //  it, resolve to the module base directory
@@ -19,7 +17,6 @@ function moduleDirectory(name, dir) {
     return findup(path.dirname(filePath), 'package.json');
   });
 }
-
 //promise mergeDefaultOptions
 // given use-input options, it will resolve an options object
 //  with the defaults in place, and options.path resolved
@@ -88,9 +85,9 @@ function dependentModules(dir, allowedVersion, options) {
   if (options.filter && !options.filter(pkg)) {
     return Promise.resolve(null);
   }
-  // Filter out core dependencies and ones that we've already found in our search.
+  // Filter out built in dependencies and ones that we've already found in our search.
   deps = deps.filter((value) => {
-    return !(isCore(value.name)) && !usedDeps.has(value.name)
+    return !(builtIn.includes(value.name)) && !usedDeps.has(value.name)
   });
   deps.forEach(element => {
     usedDeps.add(element.name);
@@ -120,17 +117,8 @@ function dependentModules(dir, allowedVersion, options) {
 // entry point
 // resolve to the default options, and then get the
 //  dependent modules (recursively)
-// returns a promise if 'done' is not passed in, otherwise calls the callback
-function resolveRecurse(options, done) {
-
-  //if only one argument was passed, and it's a function, then it's a callback
-  // and the user wants the default options
-  if (!done && typeof options === 'function') {
-    done = options;
-    options = {};
-  }
-
-  if (!options && !done) {
+async function resolveRecurse(options) {
+  if (!options) {
     options = {};
   }
 
@@ -138,7 +126,7 @@ function resolveRecurse(options, done) {
   //nodify it, to conform to a typical node API but still return a promise
   return mergeDefaultOptions(options).then(function (options) {
     return dependentModules(options.path, null, options);
-  }).nodeify(done);
+  });
 }
 
 module.exports = resolveRecurse;

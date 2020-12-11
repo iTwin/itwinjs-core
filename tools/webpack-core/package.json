@@ -30,9 +30,7 @@
     "webpack-filter-warnings-plugin": "^1.2.1",
     "webpack-sources": "^1.4.3",
     "findup": "0.1.5",
-    "promise": "8.1.0",
     "lodash": "^4.17.10",
-    "is-core-module": "2.2.0",
     "resolve": "1.19.0"
   },
   "peerDependencies": {
