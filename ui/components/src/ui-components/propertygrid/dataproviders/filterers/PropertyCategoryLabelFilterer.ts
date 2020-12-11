@@ -6,15 +6,15 @@
  * @module PropertyGrid
  */
 
-import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { countMatchesInString } from "../../../common/countMatchesInString";
-import { FilteredType, PropertyDataFilterResult, PropertyRecordDataFiltererBase } from "./PropertyDataFiltererBase";
+import { PropertyCategory } from "../../PropertyDataProvider";
+import { FilteredType, PropertyCategoryDataFiltererBase, PropertyDataFilterResult } from "./PropertyDataFiltererBase";
 
 /**
- * PropertyData filterer which matches on Primitive Property Record display value text.
+ * PropertyData filterer which matches on PropertyCategory's label.
  * @alpha
  */
-export class DisplayValuePropertyDataFilterer extends PropertyRecordDataFiltererBase {
+export class PropertyCategoryLabelFilterer extends PropertyCategoryDataFiltererBase {
   private _filterText: string = "";
 
   public constructor(filterText: string = "") {
@@ -33,15 +33,12 @@ export class DisplayValuePropertyDataFilterer extends PropertyRecordDataFilterer
 
   public get isActive() { return this.filterText !== ""; }
 
-  public async recordMatchesFilter(node: PropertyRecord): Promise<PropertyDataFilterResult> {
+  public async categoryMatchesFilter(node: PropertyCategory): Promise<PropertyDataFilterResult> {
     if (!this.isActive)
       return { matchesFilter: true };
 
-    if (node.value.valueFormat !== PropertyValueFormat.Primitive)
-      return { matchesFilter: false };
-
-    const displayValue = node.value.displayValue?.toLowerCase() ?? "";
-    const matchesCount = countMatchesInString(displayValue, this.filterText);
+    const displayLabel = node.label.toLowerCase();
+    const matchesCount = countMatchesInString(displayLabel, this.filterText);
 
     if (matchesCount === 0)
       return { matchesFilter: false };
@@ -49,8 +46,9 @@ export class DisplayValuePropertyDataFilterer extends PropertyRecordDataFilterer
     return {
       matchesFilter: true,
       shouldExpandNodeParents: true,
+      shouldForceIncludeDescendants: true,
       matchesCount,
-      filteredTypes: [FilteredType.Value],
+      filteredTypes: [FilteredType.Category],
     };
   }
 }
