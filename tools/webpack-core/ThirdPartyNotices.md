@@ -1,4 +1,10 @@
-  
+
+# Third-Party Code
+
+The iModel.js library potentially incorporates work from the following third-party code:
+
+## [resolve.js](https://github.com/brandonhorst/node-resolve-recurse/blob/master/lib/resolve.js)
+
 The MIT License (MIT)
 
 Copyright (c) 2014 Brandon Horst
@@ -20,3 +26,4 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
