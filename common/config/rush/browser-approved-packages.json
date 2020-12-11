@@ -909,12 +909,6 @@
       ]
     },
     {
-      "name": "fast-sass-loader",
-      "allowedCategories": [
-        "tools"
-      ]
-    },
-    {
       "name": "fast-sha256",
       "allowedCategories": [
         "tools"
@@ -1192,13 +1186,6 @@
         "common",
         "integration-testing",
         "internal"
-      ]
-    },
-    {
-      "name": "node-sass",
-      "allowedCategories": [
-        "internal",
-        "tools"
       ]
     },
     {
@@ -1550,6 +1537,19 @@
       "name": "rxjs",
       "allowedCategories": [
         "frontend"
+      ]
+    },
+    {
+      "name": "sass",
+      "allowedCategories": [
+        "internal",
+        "tools"
+      ]
+    },
+    {
+      "name": "sass-loader",
+      "allowedCategories": [
+        "tools"
       ]
     },
     {
