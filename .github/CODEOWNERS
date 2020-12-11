@@ -81,8 +81,8 @@ rush.json @calebmshafer @scsewall
 /core/electron-manager          @wgoehrig @ramanujam-raman
 /core/express-server            @calebmshafer @wgoehrig @ramanujam-raman
 /core/frontend                  @imodeljs/admins
-/core/frontend/render           @imodeljs/display
-/core/frontend/tile             @imodeljs/display
+/core/frontend/src/render       @imodeljs/display
+/core/frontend/src/tile         @imodeljs/display
 /core/frontend-devtools         @imodeljs/display
 /core/geometry                  @bbastings @EarlinLutz @mgooding @RBBentley
 /core/hypermodeling             @bbastings @pmconne
