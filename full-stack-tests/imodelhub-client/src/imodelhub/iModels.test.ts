@@ -259,28 +259,32 @@ describe("iModelHub iModelsHandler", () => {
     projectId = await utils.getProjectId(requestContext, "iModelJsTest");
     assetId = await utils.getAssetId(requestContext, undefined);
 
+    await utils.createIModel(requestContext, imodelName, projectId);
+    imodelId = await utils.getIModelId(requestContext, imodelName, projectId);
+    iModelClient = utils.getDefaultClient();
+
     if (!fs.existsSync(workDir)) {
       fs.mkdirSync(workDir);
     }
   });
 
   beforeEach(async () => {
-    await utils.createIModel(requestContext, imodelName, projectId);
-    imodelId = await utils.getIModelId(requestContext, imodelName, projectId);
-    iModelClient = utils.getDefaultClient();
-    await utils.deleteIModelByName(requestContext, projectId, createIModelName);
+    if (!TestConfig.enableMocks) {
+      await utils.deleteIModelByName(requestContext, projectId, createIModelName);
+    }
   });
 
   afterEach(async () => {
-    await utils.deleteIModelByName(requestContext, projectId, imodelName);
-    await utils.deleteIModelByName(requestContext, projectId, createIModelName);
     ResponseBuilder.clearMocks();
   });
 
   after(async () => {
     RequestGlobalOptions.timeout = backupTimeout;
-    if (!TestConfig.enableMocks)
+
+    if (!TestConfig.enableMocks) {
+      await utils.deleteIModelByName(requestContext, assetId, imodelName);
       await utils.deleteIModelByName(requestContext, assetId, createIModelName);
+    }
   });
 
   it("should get list of IModels (#iModelBank)", async () => {
@@ -520,8 +524,6 @@ describe("iModelHub iModelsHandler", () => {
 
   it("should create iModel from another iModel", async () => {
     const testIModelName = utils.getUniqueIModelName(createIModelName);
-    await utils.deleteIModelByName(requestContext, projectId, testIModelName);
-
     mockPostiModel(projectId, imodelId, testIModelName, "", `${imodelId}:`);
     mockGetSeedFile(imodelId);
 
@@ -547,7 +549,12 @@ describe("iModelHub iModelsHandler", () => {
   });
 
   it("should update iModel name and description (#iModelBank)", async () => {
-    const testIModelName = utils.getUniqueIModelName(imodelName);
+    const testIModelName = utils.getUniqueIModelName(createIModelName);
+    const description = "Test iModel created by imodeljs-clients tests";
+    mockCreateEmptyiModel(projectId, Guid.createValue(), testIModelName, description);
+    const progressTracker = new utils.ProgressTracker();
+    await imodelClient.iModels.create(requestContext, projectId, testIModelName, { description, progressCallback: progressTracker.track() });
+
     mockGetIModelByName(projectId, testIModelName);
     const imodel: HubIModel = (await iModelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(testIModelName)))[0];
     chai.expect(imodel.name).to.be.equal(testIModelName);
@@ -576,15 +583,14 @@ describe("iModelHub iModelsHandler", () => {
   });
 
   it("should set and update iModel type correctly", async () => {
-    const testIModelName = utils.getUniqueIModelName(createIModelName);
-    const description = "Test iModel created by imodeljs-clients tests";
-    mockCreateEmptyiModel(projectId, Guid.createValue(), testIModelName, description);
-    const initialiModel = await imodelClient.iModels.create(requestContext, projectId, testIModelName, { description });
-    chai.expect(initialiModel.iModelType).to.be.equal(IModelType.Undefined);
+    const testIModelName = utils.getUniqueIModelName(imodelName);
+    mockGetIModelByName(projectId, testIModelName);
+    const imodel: HubIModel = (await iModelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(testIModelName)))[0];
+    chai.expect(imodel.iModelType).to.be.equal(IModelType.Undefined);
 
-    initialiModel.iModelType = IModelType.Library;
-    mockUpdateiModel(projectId, initialiModel);
-    const updatediModel = await iModelClient.iModels.update(requestContext, projectId, initialiModel);
+    imodel.iModelType = IModelType.Library;
+    mockUpdateiModel(projectId, imodel);
+    const updatediModel = await iModelClient.iModels.update(requestContext, projectId, imodel);
     chai.expect(updatediModel.iModelType).to.be.equal(IModelType.Library);
 
     updatediModel.description = "New description for test iModel created by imodeljs-clients tests";
@@ -592,7 +598,7 @@ describe("iModelHub iModelsHandler", () => {
     mockUpdateiModel(projectId, updatediModel);
     await iModelClient.iModels.update(requestContext, projectId, updatediModel);
 
-    mockGetIModelByName(projectId, testIModelName, description, updatediModel.id, true, IModelType.Library);
+    mockGetIModelByName(projectId, testIModelName, updatediModel.description, updatediModel.id, true, IModelType.Library);
     const queriediModel = (await iModelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(testIModelName)))[0];
     chai.expect(queriediModel.iModelType).to.be.equal(IModelType.Library);
   });
@@ -693,8 +699,6 @@ describe("iModelHub iModelsHandler", () => {
 
   it("should create iModel from empty seed file (#iModelBank)", async () => {
     const testIModelName = utils.getUniqueIModelName(createIModelName);
-    await utils.deleteIModelByName(requestContext, projectId, testIModelName);
-
     const description = "Test iModel created by imodeljs-clients tests";
     mockCreateEmptyiModel(projectId, Guid.createValue(), testIModelName, description);
     const progressTracker = new utils.ProgressTracker();
@@ -773,8 +777,6 @@ describe("iModelHub iModelsHandler", () => {
 
   it("should create an iModel in the Asset (#iModelBank)", async () => {
     const testIModelName = utils.getUniqueIModelName(createIModelName);
-    await utils.deleteIModelByName(requestContext, assetId, testIModelName);
-
     const description = "Test iModel created by imodeljs-clients tests";
     mockCreateEmptyiModel(assetId, Guid.createValue(), testIModelName, description);
     const progressTracker = new utils.ProgressTracker();
@@ -792,8 +794,6 @@ describe("iModelHub iModelsHandler", () => {
 
   it("should create iModel with an extent from empty seed file", async () => {
     const testIModelName = utils.getUniqueIModelName(createIModelName);
-    await utils.deleteIModelByName(requestContext, projectId, testIModelName);
-
     const description = "Test iModel created by imodeljs-clients tests";
     const extent = [1.1, 2.2, -3.3, -4.4];
     mockCreateEmptyiModel(projectId, Guid.createValue(), testIModelName, description, undefined, extent);
@@ -812,7 +812,15 @@ describe("iModelHub iModelsHandler", () => {
   });
 
   it("should filter iModels by type", async () => {
-    const testIModelName = utils.getUniqueIModelName(createIModelName);
+    const testIModelName = utils.getUniqueIModelName(imodelName);
+    mockGetIModelByName(projectId, testIModelName);
+    let imodel: HubIModel = (await iModelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(testIModelName)))[0];
+
+    imodel.iModelType = IModelType.Undefined;
+    mockUpdateiModel(projectId, imodel);
+    imodel = await iModelClient.iModels.update(requestContext, projectId, imodel);
+    chai.expect(imodel.iModelType).to.be.equal(IModelType.Undefined);
+
     mockGetIModelByType(projectId, testIModelName, imodelId, IModelType.Undefined);
     const iModelsWithUndefinedType = (await iModelClient.iModels.get(requestContext, projectId, new IModelQuery().byiModelType(IModelType.Undefined)));
     chai.expect(iModelsWithUndefinedType.some((x) => x.id === imodelId)).to.be.true;
@@ -821,13 +829,14 @@ describe("iModelHub iModelsHandler", () => {
     let iModelsWithLibraryType = (await iModelClient.iModels.get(requestContext, projectId, new IModelQuery().byiModelType(IModelType.Library)));
     chai.expect(iModelsWithLibraryType.some((x) => x.id === imodelId)).to.be.false;
 
-    const description = "Test iModel created by imodeljs-clients tests";
-    mockCreateEmptyiModel(projectId, imodelId, testIModelName, description, IModelType.Library);
-    const iModel = await imodelClient.iModels.create(requestContext, projectId, testIModelName, { description, iModelType: IModelType.Library });
+    imodel.iModelType = IModelType.Library;
+    mockUpdateiModel(projectId, imodel);
+    imodel = await iModelClient.iModels.update(requestContext, projectId, imodel);
+    chai.expect(imodel.iModelType).to.be.equal(IModelType.Library);
 
-    mockGetIModelByType(projectId, testIModelName, imodelId, IModelType.Library, undefined);
+    mockGetIModelByType(projectId, testIModelName, imodelId, IModelType.Library);
     iModelsWithLibraryType = (await iModelClient.iModels.get(requestContext, projectId, new IModelQuery().byiModelType(IModelType.Library)));
-    chai.expect(iModelsWithLibraryType.some((x) => x.id === iModel.id)).to.be.true;
+    chai.expect(iModelsWithLibraryType.some((x) => x.id === imodelId)).to.be.true;
   });
 
   it("should filter iModels by template", async () => {
