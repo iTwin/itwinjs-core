@@ -8,9 +8,8 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { DndComponentClass } from "react-dnd";
 import { withDragSource, WithDragSourceProps } from "../../dragdrop/withDragSource";
-import { withDropTarget, WithDropTargetProps } from "../../dragdrop/withDropTarget";
+import { withDropTarget } from "../../dragdrop/withDropTarget";
 import { TreeDragDropType } from "../../tree/deprecated/hocs/withDragDrop";
 
 /* eslint-disable deprecation/deprecation */
@@ -43,7 +42,7 @@ export class DragDropBreadcrumbNodeComponent extends React.Component<DragDropBre
 }
 
 /** @internal */
-export function DragDropBreadcrumbNode<DragDropObject extends TreeDragDropType>(): DndComponentClass<DragDropBreadcrumbNodeProps & WithDragSourceProps<DragDropObject> & WithDropTargetProps<DragDropObject>> {
+export function DragDropBreadcrumbNode<DragDropObject extends TreeDragDropType>() {
   return withDropTarget<DragDropBreadcrumbNodeProps & WithDragSourceProps<DragDropObject>, DragDropObject>(
     withDragSource<DragDropBreadcrumbNodeProps, DragDropObject>(DragDropBreadcrumbNodeComponent));
 }

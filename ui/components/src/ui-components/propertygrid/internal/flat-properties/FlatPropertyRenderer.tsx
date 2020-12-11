@@ -9,12 +9,12 @@
 import * as React from "react";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
+import { HighlightingComponentProps } from "../../../common/HighlightingComponentProps";
 import { EditorContainer, PropertyUpdatedArgs } from "../../../editors/EditorContainer";
 import { CommonPropertyRenderer } from "../../../properties/renderers/CommonPropertyRenderer";
 import { PrimitivePropertyRenderer, PrimitiveRendererProps } from "../../../properties/renderers/PrimitivePropertyRenderer";
 import { SharedRendererProps } from "../../../properties/renderers/PropertyRenderer";
 import { PropertyValueRendererManager } from "../../../properties/ValueRendererManager";
-import { HighlightedRecordProps } from "../../component/VirtualizedPropertyGrid";
 import { PropertyCategory } from "../../PropertyDataProvider";
 import { FlatNonPrimitivePropertyRenderer } from "./FlatNonPrimitivePropertyRenderer";
 
@@ -40,7 +40,7 @@ export interface FlatPropertyRendererProps extends SharedRendererProps {
   /** Reports property height changes. */
   onHeightChanged?: (newHeight: number) => void;
 
-  highlightProps?: HighlightedRecordProps;
+  highlight?: HighlightingComponentProps & { applyOnLabel: boolean, applyOnValue: boolean };
 
   children?: never;
 }
@@ -56,7 +56,7 @@ export const FlatPropertyRenderer: React.FC<FlatPropertyRendererProps> = (props)
     onEditCommit,
     onEditCancel,
     onHeightChanged,
-    highlightProps,
+    highlight,
     ...passthroughProps
   } = props;
 
@@ -74,7 +74,7 @@ export const FlatPropertyRenderer: React.FC<FlatPropertyRendererProps> = (props)
       isExpanded={passthroughProps.isExpanded}
       onExpansionToggled={passthroughProps.onExpansionToggled}
       onHeightChanged={onHeightChanged}
-      highlightProps={highlightProps}
+      highlight={highlight}
     />
   );
 
@@ -85,11 +85,11 @@ export const FlatPropertyRenderer: React.FC<FlatPropertyRendererProps> = (props)
   };
   switch (props.propertyRecord.value.valueFormat) {
     case PropertyValueFormat.Primitive:
-      return (<PrimitivePropertyRenderer highlightProps={highlightProps} {...primitiveRendererProps} />);
+      return (<PrimitivePropertyRenderer highlight={highlight?.applyOnLabel ? highlight : undefined} {...primitiveRendererProps} />);
     case PropertyValueFormat.Array:
       // If array is empty, render it as a primitive property
       if (props.propertyRecord.value.items.length === 0)
-        return (<PrimitivePropertyRenderer highlightProps={highlightProps} {...primitiveRendererProps} />);
+        return (<PrimitivePropertyRenderer highlight={highlight?.applyOnLabel ? highlight : undefined} {...primitiveRendererProps} />);
 
     // eslint-disable-next-line no-fallthrough
     case PropertyValueFormat.Struct:
@@ -121,7 +121,7 @@ interface DisplayValueProps {
   onEditCancel?: () => void;
   onEditCommit?: (args: PropertyUpdatedArgs, category: PropertyCategory) => void;
 
-  highlightProps?: HighlightedRecordProps;
+  highlight?: HighlightingComponentProps & { applyOnLabel: boolean, applyOnValue: boolean };
 }
 
 const DisplayValue: React.FC<DisplayValueProps> = (props) => {
@@ -155,7 +155,7 @@ const DisplayValue: React.FC<DisplayValueProps> = (props) => {
           props.isExpanded,
           props.onExpansionToggled,
           props.onHeightChanged,
-          props.highlightProps
+          props.highlight
         )
       }
     </>

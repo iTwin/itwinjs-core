@@ -175,19 +175,19 @@ export class DemoMutableTableDataProvider implements MutableTableDataProvider {
 
 export const demoMutableTableDataProvider = new DemoMutableTableDataProvider(tableData);
 
-export const tableDragSourceBeginCallback = (args: DragSourceArguments<DemoTableDragDropType>): DragSourceArguments<DemoTableDragDropType> => {
+export const tableDragSourceBeginCallback = (args: DragSourceArguments<DemoTableDragDropType>): DragSourceArguments<DemoTableDragDropType> => { // eslint-disable-line deprecation/deprecation
   if ("id" in args.dataObject) {
     args.dataObject.dataProvider = demoMutableTableDataProvider;
   }
   return args;
 };
-export const onDropTargetDrop = (args: DropTargetArguments<DemoTableDragDropType>) => {
+export const onDropTargetDrop = (args: DropTargetArguments<DemoTableDragDropType>) => { // eslint-disable-line deprecation/deprecation
   if (args.dataObject && "type" in args.dataObject && "label" in args.dataObject && "description" in args.dataObject) {
     const { type, label, description, parentId, dataProvider, children, icon, ...rest } = args.dataObject;
     let id = "";
-    if (args.dropEffect === DropEffects.Copy) {
+    if (args.dropEffect === DropEffects.Copy) { // eslint-disable-line deprecation/deprecation
       id = `${Math.round(Math.random() * 1e14)}`;
-    } else if ((args.dropEffect === DropEffects.Move || args.dropEffect === DropEffects.Link) &&
+    } else if ((args.dropEffect === DropEffects.Move || args.dropEffect === DropEffects.Link) && // eslint-disable-line deprecation/deprecation
       "id" in args.dataObject && args.dataObject.id !== undefined) {
       id = args.dataObject.id;
     }
@@ -239,32 +239,32 @@ export const onDropTargetDrop = (args: DropTargetArguments<DemoTableDragDropType
     };
     // if object has children, ie. is a non-leaf node of a tree, don't allow drop.
     if (children !== undefined && children.length > 0) {
-      args.dropStatus = DropStatus.None;
+      args.dropStatus = DropStatus.None; // eslint-disable-line deprecation/deprecation
       return args;
     }
     const exists = dataProvider === demoMutableTableDataProvider;
     if (args.row !== undefined) {
-      if (exists && args.dropEffect === DropEffects.Move) {
+      if (exists && args.dropEffect === DropEffects.Move) { // eslint-disable-line deprecation/deprecation
         demoMutableTableDataProvider.moveRow(dragRow, args.row);
-        args.dropStatus = DropStatus.Drop;
+        args.dropStatus = DropStatus.Drop; // eslint-disable-line deprecation/deprecation
         args.local = true;
       } else {
         demoMutableTableDataProvider.insertRow(dragRow, args.row);
-        args.dropStatus = DropStatus.Drop;
+        args.dropStatus = DropStatus.Drop; // eslint-disable-line deprecation/deprecation
       }
     } else if (!exists) {
       demoMutableTableDataProvider.addRow(dragRow);
-      args.dropStatus = DropStatus.Drop;
+      args.dropStatus = DropStatus.Drop; // eslint-disable-line deprecation/deprecation
     }
   }
   return args;
 };
-export const onDragSourceEnd = (args: DragSourceArguments<DemoTableDragDropType>) => {
-  if (args.dataObject && "id" in args.dataObject && args.dataObject.id && args.dropStatus === DropStatus.Drop && args.dropEffect === DropEffects.Move && !args.local) {
+export const onDragSourceEnd = (args: DragSourceArguments<DemoTableDragDropType>) => { // eslint-disable-line deprecation/deprecation
+  if (args.dataObject && "id" in args.dataObject && args.dataObject.id && args.dropStatus === DropStatus.Drop && args.dropEffect === DropEffects.Move && !args.local) { // eslint-disable-line deprecation/deprecation
     demoMutableTableDataProvider.deleteRow({ key: args.dataObject.id, cells: [] });
   }
 };
-export const canDropTargetDrop = (args: DropTargetArguments<DemoTableDragDropType>) => {
+export const canDropTargetDrop = (args: DropTargetArguments<DemoTableDragDropType>) => { // eslint-disable-line deprecation/deprecation
   if (args.dataObject && "type" in args.dataObject && "label" in args.dataObject && "description" in args.dataObject) {
     const { children } = args.dataObject;
     // if object has children, ie. is a non-leaf node of a tree, don't allow drop.
@@ -287,5 +287,5 @@ export const objectType = (data: any) => {
 
 export const objectTypes = [TableDragTypes.Row];
 
-export const tableDragProps: DragSourceProps<DemoTableDragDropType> = { onDragSourceEnd, objectType };
-export const tableDropProps: DropTargetProps<DemoTableDragDropType> = { onDropTargetDrop, canDropTargetDrop, objectTypes };
+export const tableDragProps: DragSourceProps<DemoTableDragDropType> = { onDragSourceEnd, objectType }; // eslint-disable-line deprecation/deprecation
+export const tableDropProps: DropTargetProps<DemoTableDragDropType> = { onDropTargetDrop, canDropTargetDrop, objectTypes }; // eslint-disable-line deprecation/deprecation

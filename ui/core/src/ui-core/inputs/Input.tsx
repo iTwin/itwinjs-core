@@ -18,13 +18,13 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement>,
   /** Indicates whether to set focus to the input element */
   setFocus?: boolean;
   nativeKeyHandler?: (e: KeyboardEvent) => void;
+  /** Provides ability to return reference to HTMLInputElement */
+  ref?: React.Ref<HTMLInputElement>;
 }
 
-/** Basic text input, is a wrapper for the `<input type="text">` HTML element.
- * @public
- */
-export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  function Input(props, ref) {
+// Defined using following pattern (const Input at bottom) to ensure useful API documentation is extracted
+const ForwardRefInput = React.forwardRef<HTMLInputElement, InputProps>(
+  function ForwardRefInput(props, ref) {
     const { className, style, setFocus, nativeKeyHandler, ...otherProps } = props; // eslint-disable-line @typescript-eslint/no-unused-vars
     const inputElementRef = React.useRef<HTMLInputElement>();
     const refs = useRefs(inputElementRef, ref);  // combine ref needed for target with the forwardRef needed by the Parent when parent is a Type Editor.
@@ -58,3 +58,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     );
   }
 );
+
+/** Basic text input, is a wrapper for the `<input type="text">` HTML element.
+ * @public
+ */
+export const Input: (props: InputProps) => JSX.Element | null = ForwardRefInput;
