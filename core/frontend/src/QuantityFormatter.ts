@@ -102,7 +102,6 @@ export enum QuantityType { Length = 1, Angle = 2, Area = 3, Volume = 4, LatLong 
  */
 export type QuantityTypeArg = QuantityType | string;
 
-
 /** Interface that defines the functions required to be implemented to provide custom formatting and parsing of a custom quantity type.
  * @beta
  */
@@ -610,34 +609,46 @@ export class QuantityFormatter implements UnitsProvider {
     throw new Error("not yet implemented");
   }
 
-  private clearCachedData() {
-    this._imperialFormatsByType.clear();
-    this._metricFormatsByType.clear();
-    this._imperialFormatSpecsByType.clear();
-    this._metricFormatSpecsByType.clear();
-    this._imperialParserSpecsByType.clear();
-    this._metricParserSpecsByType.clear();
-  }
-
   private async reloadCachedData() {
-    this.clearCachedData();
     await this.loadFormatSpecsForQuantityTypes(true);
     await this.loadParsingSpecsForQuantityTypes(true);
     await this.loadFormatSpecsForQuantityTypes(false);
     await this.loadParsingSpecsForQuantityTypes(false);
   }
 
-  public async setOverrideFormats(type: QuantityType, entry: OverrideFormatEntry) {
-    this._overrideFormatDataByType.set(type, entry);
-    await this.reloadCachedData();
+  public clearCachedFormatAndParseDataByType(type: QuantityType) {
+    const typeKey = this.parseQuantityTypeArg(type);
+    if (this._imperialFormatsByType.has(typeKey))
+      this._imperialFormatsByType.delete(typeKey);
+    if (this._metricFormatsByType.has(typeKey))
+      this._metricFormatsByType.delete(typeKey);
+    if (this._imperialFormatSpecsByType.has(typeKey))
+      this._imperialFormatSpecsByType.delete(typeKey);
+    if (this._metricFormatSpecsByType.has(typeKey))
+      this._metricFormatSpecsByType.delete(typeKey);
+    if (this._imperialParserSpecsByType.has(typeKey))
+      this._imperialParserSpecsByType.delete(typeKey);
+    if (this._metricParserSpecsByType.has(typeKey))
+      this._metricParserSpecsByType.delete(typeKey);
   }
 
   public async clearOverrideFormats(type: QuantityType) {
+    this.clearCachedFormatAndParseDataByType(type);
     this._overrideFormatDataByType.delete(type);
     await this.reloadCachedData();
   }
 
+  public async setOverrideFormats(type: QuantityType, entry: OverrideFormatEntry) {
+    this._overrideFormatDataByType.set(type, entry);
+    this.clearCachedFormatAndParseDataByType(type);
+    await this.reloadCachedData();
+  }
+
   public async clearAllOverrideFormats() {
+    this._overrideFormatDataByType.forEach((_value, type) => {
+      this.clearCachedFormatAndParseDataByType(type);
+    });
+
     this._overrideFormatDataByType.clear();
     await this.reloadCachedData();
   }
@@ -718,11 +729,13 @@ export class QuantityFormatter implements UnitsProvider {
   protected async loadParsingSpecsForQuantityType(quantityType: QuantityType, useImperial: boolean): Promise<void> {
     const quantityTypeKey = this.parseQuantityTypeArg(quantityType);
     const activeMap = useImperial ? this._imperialParserSpecsByType : this._metricParserSpecsByType;
-    const formatPromise = this.getFormatByQuantityType(quantityType, useImperial);
-    const unitPromise = this.getUnitByQuantityType(quantityType);
-    const [format, outUnit] = await Promise.all([formatPromise, unitPromise]);
-    const parserSpec = await ParserSpec.create(format, this, outUnit);
-    activeMap.set(quantityTypeKey, parserSpec);
+    if (!activeMap.has(quantityTypeKey)) {
+      const formatPromise = this.getFormatByQuantityType(quantityType, useImperial);
+      const unitPromise = this.getUnitByQuantityType(quantityType);
+      const [format, outUnit] = await Promise.all([formatPromise, unitPromise]);
+      const parserSpec = await ParserSpec.create(format, this, outUnit);
+      activeMap.set(quantityTypeKey, parserSpec);
+    }
   }
 
   /** Asynchronous call to loadParsingSpecsForQuantityTypes. This method caches all the ParserSpecs so they can be quickly accessed. */
@@ -734,7 +747,6 @@ export class QuantityFormatter implements UnitsProvider {
 
     promise = new Promise(async (resolve) => {
       const activeMap = useImperial ? this._imperialParserSpecsByType : this._metricParserSpecsByType;
-      activeMap.clear();
 
       const typeArray = Object.values(QuantityType).filter((value) => (typeof value !== "string"));
       for (const quantityType of typeArray) {
@@ -757,11 +769,13 @@ export class QuantityFormatter implements UnitsProvider {
   protected async loadFormatSpecsForQuantityType(quantityType: QuantityType, useImperial: boolean): Promise<void> {
     const quantityTypeKey = this.parseQuantityTypeArg(quantityType);
     const activeMap = useImperial ? this._imperialFormatSpecsByType : this._metricFormatSpecsByType;
-    const formatPromise = this.getFormatByQuantityType(quantityType, useImperial);
-    const unitPromise = this.getUnitByQuantityType(quantityType);
-    const [format, unit] = await Promise.all([formatPromise, unitPromise]);
-    const spec = await FormatterSpec.create(format.name, format, this, unit);
-    activeMap.set(quantityTypeKey, spec);
+    if (!activeMap.has(quantityTypeKey)) {
+      const formatPromise = this.getFormatByQuantityType(quantityType, useImperial);
+      const unitPromise = this.getUnitByQuantityType(quantityType);
+      const [format, unit] = await Promise.all([formatPromise, unitPromise]);
+      const spec = await FormatterSpec.create(format.name, format, this, unit);
+      activeMap.set(quantityTypeKey, spec);
+    }
   }
 
   /** Asynchronous call to loadFormatSpecsForQuantityTypes. This method caches all the FormatSpec so they can be quickly accessed. */
@@ -773,7 +787,6 @@ export class QuantityFormatter implements UnitsProvider {
 
     promise = new Promise(async (resolve) => {
       const activeMap = useImperial ? this._imperialFormatSpecsByType : this._metricFormatSpecsByType;
-      activeMap.clear();
       const typeArray = Object.values(QuantityType).filter((value) => (typeof value !== "string"));
       for (const quantityType of typeArray) {
         await this.loadFormatSpecsForQuantityType(quantityType as QuantityType, useImperial);
@@ -817,7 +830,7 @@ export class QuantityFormatter implements UnitsProvider {
     const useImperial = undefined !== imperial ? imperial : this._activeSystemIsImperial;
     const activeMap = useImperial ? this._imperialFormatSpecsByType : this._metricFormatSpecsByType;
     const typeKey = this.parseQuantityTypeArg(type);
-    if (activeMap.size > 0) {
+    if (activeMap.has(typeKey)) {
       const formatSpec = activeMap.get(typeKey) as FormatterSpec;
       if (formatSpec)
         return formatSpec;
@@ -935,14 +948,14 @@ export class QuantityFormatter implements UnitsProvider {
 
     // If the FormatSpec are already loaded for the active unit, add it now.
     const activeFormatMap = this.useImperialFormats ? this._imperialFormatSpecsByType : this._metricFormatSpecsByType;
-    if (0 < activeFormatMap.size) {
+    if (activeFormatMap.size > 0) {
       const spec = await provider.createFormatterSpec(this.useImperialFormats);
       activeFormatMap.set(provider.quantityTypeName, spec);
     }
 
     // If the ParserSpecs are already loaded for the active unit, add it now.
     const activeParserMap = this.useImperialFormats ? this._imperialParserSpecsByType : this._metricParserSpecsByType;
-    if (0 < activeParserMap.size) {
+    if (activeParserMap.size > 0) {
       const spec = await provider.createParserSpec(this.useImperialFormats);
       activeParserMap.set(provider.quantityTypeName, spec);
     }
