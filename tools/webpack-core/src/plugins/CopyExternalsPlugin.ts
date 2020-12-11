@@ -25,12 +25,12 @@ class MissingExternalWarning extends WebpackError {
     Error.captureStackTrace(this, this.constructor);
   }
 }
-interface dependencyStruct {
+interface DependencyStruct {
   name: string;
   path: string;
   allowedVersion: string;
   actualVersion: string;
-  dependencies: dependencyStruct[];
+  dependencies: DependencyStruct[];
 }
 
 export class CopyExternalsPlugin {
@@ -91,20 +91,20 @@ export class CopyExternalsPlugin {
     if (!packageJson.dependencies && !packageJson.optionalDependencies)
       return;
 
-    //Grab external package's dependencies and all of its dependencies and so on recursively
+    // Grab external package's dependencies and all of its dependencies and so on recursively
     const depsFromRecursion = await resolveRecursively({
       path: path.dirname(packageJsonPath),
-    }) as dependencyStruct;
+    }) as DependencyStruct;
     await this.recurseDependencies(depsFromRecursion.dependencies, outputDir);
   }
   // TODO: Optimize recursion, too many awaits.
-  private async recurseDependencies(dependencies: dependencyStruct[], outputDir: string) {
+  private async recurseDependencies(dependencies: DependencyStruct[], outputDir: string) {
     if (dependencies.length === 0)
       return;
     for (const dep of dependencies) {
       if (this._copiedPackages.has(dep.name))
         continue;
-      await this.copyPackage(dep.name, outputDir, dep.path + "/package.json"); // add package.json to end so that path.dirname in copyPackage gets proper directory instead of the dir above it.
+      await this.copyPackage(dep.name, outputDir, `${dep.path}/package.json`); // add package.json to end so that path.dirname in copyPackage gets proper directory instead of the dir above it.
       this._copiedPackages.add(dep.name);
       await this.recurseDependencies(dep.dependencies, outputDir);
     }
