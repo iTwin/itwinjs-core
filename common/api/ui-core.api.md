@@ -687,7 +687,9 @@ export interface ExpandableBlockProps extends CommonProps {
     onClick: React.MouseEventHandler<HTMLDivElement>;
     onKeyDown?: React.KeyboardEventHandler<HTMLDivElement>;
     onKeyPress?: React.KeyboardEventHandler<HTMLDivElement>;
-    title: string;
+    title: string | JSX.Element;
+    // @beta
+    tooltip?: string;
 }
 
 // @public
@@ -1815,9 +1817,16 @@ export interface SearchBoxProps extends CommonProps {
 export function Select(props: SelectProps): JSX.Element;
 
 // @public
+export interface SelectOption {
+    disabled?: boolean;
+    label: string;
+    value?: string | number | readonly string[];
+}
+
+// @public
 export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement>, CommonProps {
-    options: string[] | {
-        [key: string]: string;
+    options: (string | SelectOption)[] | {
+        [key: string]: (string | SelectOption);
     };
     setFocus?: boolean;
 }

@@ -659,9 +659,32 @@ export class ComponentExamplesProvider {
     return {
       title: "Select",
       examples: [
-        createComponentExample("Basic Select", "Basic Select component", <Select options={["Option 1", "Option 2", "Option 3", "Option 4"]} />),
+        createComponentExample("Basic Select", "Basic Select component",
+          <Select
+            onChange={(event) => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, event.target.value))}
+            options={["Option 1", "Option 2", "Option 3", "Option 4"]} />),
+        createComponentExample("Select with values", "Select with values in array",
+          <Select
+            onChange={(event) => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, event.target.value))}
+            options={[
+              { label: "Option 1", value: "option1" },
+              { label: "Option 2", value: "option2" },
+              { label: "Option 3", value: "option3" },
+              { label: "Option 4", value: "option4" },
+            ]} />),
+        createComponentExample("Select with values/labels", "Select with value objects",
+          <Select
+            onChange={(event) => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, event.target.value))}
+            options={{
+              option1: { label: "Option 1", value: "xyz" },
+              option2: "Option 2",
+              option3: "Option 3",
+              option4: "Option 4",
+            }} />),
         createComponentExample("Disabled Select", "Select with disabled prop", <Select options={["Option 1", "Option 2", "Option 3", "Option 4"]} disabled />),
         createComponentExample("Placeholder Select", "Select with placeholder prop", <Select options={["Option 1", "Option 2", "Option 3", "Option 4"]} placeholder="Pick an option" />),
+        createComponentExample("Select with Disabled option", "Select with option with disabled prop",
+          <Select options={["Option 1", "Option 2", { label: "Disabled Option", disabled: true }, "Option 3", "Option 4"]} placeholder="Pick an option" />),
 
         createComponentExample("Labeled Select", "Labeled Select component", <LabeledSelect label="Labeled Select" options={["Option 1", "Option 2", "Option 3", "Option 4"]} />),
 

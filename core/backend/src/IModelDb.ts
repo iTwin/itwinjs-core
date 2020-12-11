@@ -17,7 +17,7 @@ import {
 import { Range3d } from "@bentley/geometry-core";
 import { ChangesType, CheckpointV2, CheckpointV2Query, Lock, LockLevel, LockType } from "@bentley/imodelhub-client";
 import {
-  AxisAlignedBox3d, BriefcaseKey, BriefcaseProps, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps,
+  AxisAlignedBox3d, BRepGeometryCreate, BriefcaseKey, BriefcaseProps, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps,
   CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DisplayStyleProps, DomainOptions,
   DownloadBriefcaseStatus, EcefLocation, ElementAspectProps, ElementGeometryRequest, ElementGeometryUpdate, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams,
   FilePropertyProps, FontMap, FontMapProps, FontProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
@@ -1147,18 +1147,30 @@ export abstract class IModelDb extends IModel {
     return this.nativeDb.exportPartGraphics(exportProps);
   }
 
-  /** Request geometry stream information from an element.
+  /** Request geometry stream information from an element in binary format instead of json.
+   * @returns DbResult.BE_SQLITE_OK if successful
    * @alpha
    */
   public elementGeometryRequest(requestProps: ElementGeometryRequest): DbResult {
     return this.nativeDb.processGeometryStream(requestProps);
   }
 
-  /** Update geometry stream for the supplied element.
+  /** Update the geometry stream for the supplied element from binary format data instead of json.
+   * @returns DbResult.BE_SQLITE_OK if successful
    * @alpha
    */
   public elementGeometryUpdate(updateProps: ElementGeometryUpdate): DbResult {
     return this.nativeDb.updateGeometryStream(updateProps);
+  }
+
+  /** Create brep geometry for inclusion in an element's geometry stream.
+   * @returns DbResult.BE_SQLITE_OK if successful
+   * @throws [[IModelError]] to report issues with input geometry or parameters
+   * @see [IModelDb.elementGeometryUpdate]($imodeljs-backend)
+   * @alpha
+   */
+  public createBRepGeometry(createProps: BRepGeometryCreate): DbResult {
+    return this.nativeDb.createBRepGeometry(createProps);
   }
 }
 
@@ -1555,6 +1567,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     /** Delete one or more elements from this iModel.
      * @param ids The set of Ids of the element(s) to be deleted
      * @throws [[IModelError]]
+     * @see deleteDefinitionElements
      */
     public deleteElement(ids: Id64Arg): void {
       const iModel = this._iModel;
@@ -1575,6 +1588,69 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
 
         jsClass.onDeleted(props, iModel);
       });
+    }
+
+    /** DefinitionElements can only be deleted if it can be determined that they are not referenced by other Elements.
+     * This *usage query* can be expensive since it may involve scanning the GeometryStreams of all GeometricElements.
+     * Since [[deleteElement]] does not perform these additional checks, it fails in order to prevent potentially referenced DefinitionElements from being deleted.
+     * This method performs those expensive checks and then calls *delete* if not referenced.
+     * @param ids The Ids of the DefinitionElements to attempt to delete. To prevent multiple passes over the same GeometricElements, it is best to pass in the entire array of
+     * DefinitionElements rather than calling this method separately for each one. Ids that are not valid DefinitionElements will be ignored.
+     * @returns An IdSet of the DefinitionElements that are used and were therefore not deleted.
+     * @see deleteElement
+     * @beta
+     */
+    public deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set {
+      const usageInfo = this._iModel.nativeDb.queryDefinitionElementUsage(definitionElementIds);
+      if (!usageInfo) {
+        throw new IModelError(IModelStatus.BadRequest, "Error querying for DefinitionElement usage", Logger.logError, loggerCategory);
+      }
+      const usedIdSet: Id64Set = usageInfo.usedIds ? Id64.toIdSet(usageInfo.usedIds) : new Set<Id64String>();
+      const deleteIfUnused = (ids: Id64Array | undefined, used: Id64Set): void => {
+        if (ids) { ids.forEach((id) => { if (!used.has(id)) { this._iModel.elements.deleteElement(id); } }); }
+      };
+      try {
+        this._iModel.nativeDb.beginPurgeOperation();
+        deleteIfUnused(usageInfo.spatialCategoryIds, usedIdSet);
+        deleteIfUnused(usageInfo.drawingCategoryIds, usedIdSet);
+        deleteIfUnused(usageInfo.viewDefinitionIds, usedIdSet);
+        deleteIfUnused(usageInfo.geometryPartIds, usedIdSet);
+        deleteIfUnused(usageInfo.lineStyleIds, usedIdSet);
+        deleteIfUnused(usageInfo.renderMaterialIds, usedIdSet);
+        deleteIfUnused(usageInfo.subCategoryIds, usedIdSet);
+        deleteIfUnused(usageInfo.textureIds, usedIdSet);
+        deleteIfUnused(usageInfo.displayStyleIds, usedIdSet);
+        deleteIfUnused(usageInfo.categorySelectorIds, usedIdSet);
+        deleteIfUnused(usageInfo.modelSelectorIds, usedIdSet);
+        if (usageInfo.otherDefinitionElementIds) {
+          this._iModel.elements.deleteElement(usageInfo.otherDefinitionElementIds);
+        }
+      } finally {
+        this._iModel.nativeDb.endPurgeOperation();
+      }
+      if (usageInfo.viewDefinitionIds) {
+        // take another pass in case a deleted ViewDefinition was the only usage of these view-related DefinitionElements
+        let viewRelatedIds: Id64Array = [];
+        if (usageInfo.displayStyleIds) { viewRelatedIds = viewRelatedIds.concat(usageInfo.displayStyleIds.filter((id) => usedIdSet.has(id))); }
+        if (usageInfo.categorySelectorIds) { viewRelatedIds = viewRelatedIds.concat(usageInfo.categorySelectorIds.filter((id) => usedIdSet.has(id))); }
+        if (usageInfo.modelSelectorIds) { viewRelatedIds = viewRelatedIds.concat(usageInfo.modelSelectorIds.filter((id) => usedIdSet.has(id))); }
+        if (viewRelatedIds.length > 0) {
+          const viewRelatedUsageInfo = this._iModel.nativeDb.queryDefinitionElementUsage(viewRelatedIds);
+          if (viewRelatedUsageInfo) {
+            const usedViewRelatedIdSet: Id64Set = viewRelatedUsageInfo.usedIds ? Id64.toIdSet(viewRelatedUsageInfo.usedIds) : new Set<Id64String>();
+            try {
+              this._iModel.nativeDb.beginPurgeOperation();
+              deleteIfUnused(viewRelatedUsageInfo.displayStyleIds, usedViewRelatedIdSet);
+              deleteIfUnused(viewRelatedUsageInfo.categorySelectorIds, usedViewRelatedIdSet);
+              deleteIfUnused(viewRelatedUsageInfo.modelSelectorIds, usedViewRelatedIdSet);
+            } finally {
+              this._iModel.nativeDb.endPurgeOperation();
+            }
+            viewRelatedIds.forEach((id) => { if (!usedViewRelatedIdSet.has(id)) { usedIdSet.delete(id); } });
+          }
+        }
+      }
+      return usedIdSet;
     }
 
     /** Query for the child elements of the specified element.

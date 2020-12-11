@@ -32,8 +32,9 @@ export class RFunctions {
   }
 }
 
-it("DrapeLinestringAsPanels", () => {
+it("DrapeLinestringAsPanels", async () => {
   const ck = new Checker();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let dy = 0.0;
   const allGeometry: GeometryQuery[] = [];
   const wanderingPoints = [[-1, 1, 1], [1.5, 1, 1], [2, 3, -1], [3.5, 3, -2], [3.5, 6, 1], [4, 8, -2], [6, 3, 5], [8, 3, -2]];
@@ -53,15 +54,16 @@ it("DrapeLinestringAsPanels", () => {
         return 1.0 * RFunctions.cosineOfMappedAngle(x, 0.0, 5.0) * RFunctions.cosineOfMappedAngle(y, 0.0, 8.0);
       });
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const panels = PolyfaceQuery.sweepLinestringToFacetsXYreturnSweptFacets(linestring.packedPoints, mesh);
-    GeometryCoreTestIO.captureGeometry(allGeometry, [mesh, linestring, panels], 0, dy, 0);
+    // GeometryCoreTestIO.captureGeometry(allGeometry, [mesh, linestring, panels], 0, dy, 0);
     dy += 20.0;
   }
   GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "DrapeLinestringAsPanels");
   expect(ck.getNumErrors()).equals(0);
 });
 
-it("DrapeLinestringAsLines", () => {
+it("DrapeLinestringAsLines", async () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
 
@@ -97,34 +99,38 @@ it("DrapeLinestringAsLines", () => {
     LineString3d.create(loopWithHandle),
     LineString3d.create(wanderingPoints),
     strokes]) {
-    numTest++;
-    const mesh = Sample.createTriangularUnitGridPolyface(Point3d.create(0, 0, 0), Vector3d.create(1, 0, 0.1), Vector3d.create(0, 2, 0.5), 8, 4);
-    if (numTest > 3)
-      mesh.data.point.mapComponent(2,
-        (x: number, y: number, _z: number) => {
-          return 1.0 * RFunctions.cosineOfMappedAngle(x, 0.0, 5.0) * RFunctions.cosineOfMappedAngle(y, 0.0, 8.0);
-        });
-    const lines = PolyfaceQuery.sweepLinestringToFacetsXYReturnLines(linestring.packedPoints, mesh);
-    const chains = PolyfaceQuery.sweepLinestringToFacetsXYReturnChains(linestring.packedPoints, mesh);
-    let lineSum = 0;
-    let chainSum = 0;
-    for (const g of lines) lineSum += g.curveLength();
-    for (const g of chains) chainSum += g.curveLength();
-    ck.testCoordinate(lineSum, chainSum, "Line and chain sums match");
-    GeometryCoreTestIO.captureGeometry(allGeometry, [mesh, linestring], dx, 0, 0);
-    GeometryCoreTestIO.captureGeometry(allGeometry, lines, dx, dy, 0);
-    GeometryCoreTestIO.captureGeometry(allGeometry, chains, dx, 2 * dy, 0);
-    dx += 50.0;
+    for (const meshMultiplier of [1, 4]) {
+      numTest++;
+      const mesh = Sample.createTriangularUnitGridPolyface(Point3d.create(0, 0, 0), Vector3d.create(1, 0, 0.1), Vector3d.create(0, 2, 0.5),
+        8 * meshMultiplier, 4 * meshMultiplier);
+      if (numTest > 3)
+        mesh.data.point.mapComponent(2,
+          (x: number, y: number, _z: number) => {
+            return 1.0 * RFunctions.cosineOfMappedAngle(x, 0.0, 5.0) * RFunctions.cosineOfMappedAngle(y, 0.0, 8.0);
+          });
+      const lines = await Promise.resolve(PolyfaceQuery.sweepLinestringToFacetsXYReturnLines(linestring.packedPoints, mesh));
+      // console.log({ awaitBlocks: PolyfaceQuery.awaitBlockCount });
+      const chains = PolyfaceQuery.sweepLinestringToFacetsXYReturnChains(linestring.packedPoints, mesh);
+      let lineSum = 0;
+      let chainSum = 0;
+      for (const g of lines) lineSum += g.curveLength();
+      for (const g of chains) chainSum += g.curveLength();
+      ck.testCoordinate(lineSum, chainSum, "Line and chain sums match");
+      GeometryCoreTestIO.captureGeometry(allGeometry, [mesh, linestring], dx, 0, 0);
+      GeometryCoreTestIO.captureGeometry(allGeometry, lines, dx, dy, 0);
+      GeometryCoreTestIO.captureGeometry(allGeometry, chains, dx, 2 * dy, 0);
+      dx += 50.0;
+    }
   }
   GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "DrapeLinestringAsLines");
   expect(ck.getNumErrors()).equals(0);
 });
 
-it("DrapeLinestringLargeMesh", () => {
+it("DrapeLinestringLargeMesh", async () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
   const w0 = 4.0;
-  const wanderingPoints = [[-1, 1, 1],
+  const wanderingPoints = [[-0.01, 0, 1],
   [1.5, 1, 1],
   [2, 3, -1],
   [3.5, 3, -2],
@@ -153,8 +159,8 @@ it("DrapeLinestringLargeMesh", () => {
   const yShift = 20.0;
   const xShift = 40.0;
   let numTest = 0;
-  const numX0 = 40;
-  const numY0 = 40;
+  const numX0 = 4;
+  const numY0 = 6;
   // DTM side lengths
   const ax = 12.0;
   const ay = 10.0;
@@ -167,7 +173,7 @@ it("DrapeLinestringLargeMesh", () => {
     // LineString3d.create(loopWithHandle),
     LineString3d.create(wanderingPoints),
     strokes]) {
-    for (const densityMultiplier of [1, 2, 4]) {
+    for (const densityMultiplier of /* [1, 2, 4, 8] */[1, 3, 6]) {
       const numX = numX0 * densityMultiplier;
       const numY = numY0 * densityMultiplier;
       numTest++;
@@ -182,26 +188,29 @@ it("DrapeLinestringLargeMesh", () => {
           (x: number, y: number, _z: number) => {
             return 1.0 * RFunctions.cosineOfMappedAngle(x, 0.0, 5.0) * RFunctions.cosineOfMappedAngle(y, 0.0, 8.0);
           });
+      const lines = PolyfaceQuery.sweepLinestringToFacetsXYReturnLines(linestring.packedPoints, mesh);
       const name = `sweptLineString ${numX * numY} ${linestring.packedPoints.length}`;
       console.time(name);
-      const lines = PolyfaceQuery.sweepLinestringToFacetsXYReturnLines(linestring.packedPoints, mesh);
+      const _chains = Promise.resolve(PolyfaceQuery.asyncSweepLinestringToFacetsXYReturnChains(linestring.packedPoints, mesh));
+      ck.testLT(0, (await _chains).length);
       console.timeEnd(name);
-      const chains = PolyfaceQuery.sweepLinestringToFacetsXYReturnChains(linestring.packedPoints, mesh);
-      let lineSum = 0;
-      let chainSum = 0;
-      for (const g of lines) lineSum += g.curveLength();
-      for (const g of chains) chainSum += g.curveLength();
-      ck.testCoordinate(lineSum, chainSum, "Line and chain sums match");
-      if (densityMultiplier < 5) {
+      // console.log({ awaitBlocks: PolyfaceQuery.awaitBlockCount });
+      // let lineSum = 0;
+      // let chainSum = 0;
+      // for (const g of lines) lineSum += g.curveLength();
+      // for (const g of chains) chainSum += g.curveLength();
+      // ck.testCoordinate(lineSum, chainSum, "Line and chain sums match");
+      if (densityMultiplier < 7) {
         y0 = 0.0;
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, [mesh, linestring], x0, y0, 0);
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, chains, x0, y0, zShift);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, (await _chains), x0, y0, zShift);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, lines, x0, y0 += yShift, 0);
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, chains, x0, y0 += yShift, 0);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, (await _chains), x0, y0 += yShift, 0);
       }
       x0 += xShift;
     }
-  } GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "DrapeLinestringLargeMesh");
+  }
+  GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "DrapeLinestringLargeMesh");
   expect(ck.getNumErrors()).equals(0);
 });
 
