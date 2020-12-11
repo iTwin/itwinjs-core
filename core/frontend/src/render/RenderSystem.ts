@@ -6,6 +6,7 @@
  * @module Rendering
  */
 
+// A trivial change
 import { base64StringToUint8Array, Id64String, IDisposable } from "@bentley/bentleyjs-core";
 import { ClipVector, Point2d, Point3d, Range2d, Range3d, Transform, Vector2d } from "@bentley/geometry-core";
 import { ColorDef, ElementAlignedBox3d, FeatureIndexType, Gradient, ImageBuffer, ImageSource, ImageSourceFormat, isValidImageSourceFormat, PackedFeatureTable, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, TextureProps } from "@bentley/imodeljs-common";
