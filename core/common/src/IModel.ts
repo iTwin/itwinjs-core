@@ -15,12 +15,10 @@ import { AxisAlignedBox3d } from "./geometry/Placement";
 import { IModelError } from "./IModelError";
 import { ThumbnailProps } from "./Thumbnail";
 
-/** The properties that identify a specific instance of an iModel for RPC operations.
+/** The properties to open a connection to an iModel for RPC operations.
  * @public
  */
-export interface IModelRpcProps {
-  /** Key used for identifying the iModel on the backend */
-  readonly key: string;
+export interface IModelRpcOpenProps {
   /** The context (Project, Asset, or other infrastructure) in which the iModel exists - must be defined for briefcases that are synchronized with iModelHub. */
   readonly contextId?: GuidString;
   /** Guid of the iModel. */
@@ -29,6 +27,14 @@ export interface IModelRpcProps {
   changeSetId?: GuidString;
   /** Mode used to open the iModel */
   openMode?: OpenMode;
+}
+
+/** The properties that identify an opened iModel for RPC operations.
+ * @public
+ */
+export interface IModelRpcProps extends IModelRpcOpenProps {
+  /** Unique key used for identifying the iModel between the frontend and the backend */
+  readonly key: string;
 }
 
 /** Properties that position an iModel on the earth via [ECEF](https://en.wikipedia.org/wiki/ECEF) (Earth Centered Earth Fixed) coordinates

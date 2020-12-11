@@ -16,17 +16,16 @@ import {
 } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient } from "@bentley/context-registry-client";
 import {
-  BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, ConflictingCodesError, Briefcase as HubBriefcase, HubCode, HubIModel, IModelClient,
-  IModelHubError,
+  Briefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, ConflictingCodesError, HubCode, HubIModel, IModelClient, IModelHubError,
 } from "@bentley/imodelhub-client";
 import {
-  BriefcaseProps, BriefcaseStatus, CreateIModelProps, IModelError, IModelRpcProps, IModelVersion, LocalBriefcaseProps, RequestNewBriefcaseProps,
+  BriefcaseProps, BriefcaseStatus, CreateIModelProps, IModelError, IModelRpcOpenProps, IModelVersion, LocalBriefcaseProps, RequestNewBriefcaseProps,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { AuthorizedClientRequestContext, CancelRequest, ProgressCallback } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TelemetryEvent } from "@bentley/telemetry-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { CheckpointManager } from "./CheckpointManager";
+import { CheckpointManager, ProgressFunction } from "./CheckpointManager";
 import { BriefcaseDb, IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
@@ -72,14 +71,7 @@ export enum BriefcaseIdValue {
  * @beta
 */
 export interface RequestNewBriefcaseArg extends RequestNewBriefcaseProps {
-  /** if present, the supplied method will be called to indicate progress as the briefcase is downloaded. */
-  onProgress?: ProgressCallback;
-
-  /** This member is established by [[BriefcaseManager.downloadBriefcase]] during the download process and is valid until the promise returned is fulfilled.
-   * It can be used to cancel (i.e. abort) the download if the download is taking too long.
-   * @note callers *do not* supply this value, it is set by the downloader for the caller's use during the download.
-   */
-  cancelRequest?: CancelRequest;
+  onProgress?: ProgressFunction;
 }
 
 /** A token that represents a ChangeSet
@@ -103,6 +95,9 @@ export class BriefcaseManager {
   public static get connectClient(): ContextRegistryClient {
     return this._contextRegistryClient!;
   }
+
+  /** @internal */
+  public static getCompatibilityPath(iModelId: GuidString): string { return path.join(this._cacheDir, "bc", "v4_0", iModelId, "bc"); }
 
   /** Get the local path of the folder storing files associated with an imodel */
   public static getIModelPath(iModelId: GuidString): string { return path.join(this._cacheDir, iModelId); }
@@ -264,7 +259,6 @@ export class BriefcaseManager {
         changeSetId: (await this.evaluateVersion(requestContext, IModelVersion.fromJSON(request.asOf), request.iModelId)).changeSetId,
       },
       onProgress: request.onProgress,
-      cancelRequest: request.cancelRequest,
     });
 
     // now open the downloaded checkpoint and reset its BriefcaseId to the one we acquired above
@@ -438,7 +432,8 @@ export class BriefcaseManager {
     return status;
   }
 
-  private static async evaluateVersion(requestContext: AuthorizedClientRequestContext, version: IModelVersion, iModelId: string): Promise<{ changeSetId: string, changeSetIndex: number }> {
+  /** @internal */
+  public static async evaluateVersion(requestContext: AuthorizedClientRequestContext, version: IModelVersion, iModelId: string): Promise<{ changeSetId: string, changeSetIndex: number }> {
     requestContext.enter();
 
     const changeSetId: string = await version.evaluateChangeSet(requestContext, iModelId, IModelHost.iModelClient);
@@ -573,6 +568,9 @@ export class BriefcaseManager {
 
     if (ChangeSetStatus.Success !== status)
       throw new IModelError(status, "Error applying changesets", Logger.logError, loggerCategory, () => ({ ...db.getRpcProps(), targetChangeSetId, targetChangeSetIndex }));
+
+    // notify listeners
+    db.notifyChangesetApplied();
   }
 
   /** Apply change sets synchronously
@@ -612,9 +610,6 @@ export class BriefcaseManager {
     });
     status = await doApply;
     requestContext.enter();
-
-    // notify listeners
-    db.onChangesetApplied.raiseEvent();
 
     const result = applyRequest.reopenBriefcase(db.openMode);
     if (result !== DbResult.BE_SQLITE_OK)
@@ -938,7 +933,7 @@ export class BriefcaseManager {
     const briefcases = await IModelHost.iModelClient.briefcases.get(requestContext, iModelId);
     requestContext.enter();
 
-    briefcases.forEach((briefcase: HubBriefcase) => {
+    briefcases.forEach((briefcase: Briefcase) => {
       promises.push(IModelHost.iModelClient.briefcases.delete(requestContext, iModelId, briefcase.briefcaseId!).then(() => {
         requestContext.enter();
       }));
@@ -946,7 +941,7 @@ export class BriefcaseManager {
     return Promise.all(promises);
   }
 
-  public static logUsage(requestContext: AuthorizedClientRequestContext | ClientRequestContext, token: IModelRpcProps) {
+  public static logUsage(requestContext: AuthorizedClientRequestContext | ClientRequestContext, token: IModelRpcOpenProps) {
     // NEEDS_WORK: Move usage logging to the native layer, and make it happen even if not authorized
     if (!(requestContext instanceof AuthorizedClientRequestContext)) {
       Logger.logTrace(loggerCategory, "BriefcaseDb.logUsage: Cannot log usage without appropriate authorization", () => token);

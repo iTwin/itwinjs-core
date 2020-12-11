@@ -9,15 +9,17 @@
 // cspell:ignore BLOCKCACHE
 
 import * as path from "path";
-import { BriefcaseStatus, ChangeSetStatus, DbResult, Guid, GuidString, IModelStatus, Logger, LogLevel, OpenMode, PerfLogger } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, CancelRequest, ProgressCallback, ProgressInfo, UserCancelledError } from "@bentley/itwin-client";
+import {
+  BeEvent, BriefcaseStatus, ChangeSetStatus, DbResult, Guid, GuidString, IModelStatus, Logger, OpenMode, PerfLogger,
+} from "@bentley/bentleyjs-core";
+import { CheckpointQuery, CheckpointV2Query } from "@bentley/imodelhub-client";
+import { DownloadBriefcaseStatus, IModelError } from "@bentley/imodeljs-common";
+import { BlobDaemon, BlobDaemonCommandArg } from "@bentley/imodeljs-native";
+import { AuthorizedClientRequestContext, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseIdValue, BriefcaseManager } from "./BriefcaseManager";
 import { SnapshotDb } from "./IModelDb";
-import { Checkpoint, CheckpointQuery, CheckpointV2Query } from "@bentley/imodelhub-client";
 import { IModelHost } from "./IModelHost";
-import { DownloadBriefcaseStatus, IModelError } from "@bentley/imodeljs-common";
-import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { BlobDaemon, BlobDaemonCommandArg } from "@bentley/imodeljs-native";
 import { IModelJsFs } from "./IModelJsFs";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
@@ -41,6 +43,10 @@ export interface CheckpointProps {
   requestContext: AuthorizedClientRequestContext;
 }
 
+/** Called to show progress during a download. If this function returns non-zero, the download is aborted.
+ *  @internal */
+export type ProgressFunction = (loaded: number, total: number) => number;
+
 /**
  * @internal
  */
@@ -53,17 +59,13 @@ export interface DownloadRequest {
   /** Properties of the checkpoint that's being downloaded */
   checkpoint: CheckpointProps;
 
-  /** called to indicate progress is being made */
-  onProgress?: ProgressCallback;
-
-  /** While download is pending, call `.cancel` method to cancel the download */
-  cancelRequest?: CancelRequest;
+  /** If present, this function will be called to indicate progress as the briefcase is downloaded. */
+  onProgress?: ProgressFunction;
 }
 
 /** @internal */
 export interface DownloadJob {
   request: DownloadRequest;
-  pathName: string;
   status: DownloadBriefcaseStatus;
   promise?: Promise<any>;
 }
@@ -76,7 +78,7 @@ export class Downloads {
     try {
       return await fn(job);
     } finally {
-      this._active.delete(job.pathName);
+      this._active.delete(job.request.localFile);
     }
   }
 
@@ -91,7 +93,7 @@ export class Downloads {
       return job.promise;
 
     IModelJsFs.recursiveMkDirSync(path.dirname(pathName));
-    job = { request, pathName, status: DownloadBriefcaseStatus.NotStarted };
+    job = { request, status: DownloadBriefcaseStatus.NotStarted };
     this._active.set(pathName, job);
     return job.promise = this.process(job, downloadFn);
   }
@@ -101,7 +103,6 @@ export class Downloads {
  * @internal
 */
 export class V2CheckpointManager {
-  public static getKey(checkpoint: CheckpointProps) { return `${checkpoint.iModelId}:${checkpoint.changeSetId}-V2`; }
   private static async getCommandArgs(checkpoint: CheckpointProps): Promise<BlobDaemonCommandArg> {
     const { requestContext, iModelId, changeSetId } = checkpoint;
 
@@ -152,12 +153,9 @@ export class V2CheckpointManager {
   }
 
   private static async performDownload(job: DownloadJob) {
+    CheckpointManager.onDownload.raiseEvent(job);
     const request = job.request;
-    let aborted = 0;
-    if (request.cancelRequest)
-      request.cancelRequest.cancel = () => { aborted = 1; return true; };
-    const onProgress = (loaded: number, total: number) => { request.onProgress?.({ loaded, total }); return aborted; };
-    return BlobDaemon.command("download", { ... await this.getCommandArgs(request.checkpoint), localFile: request.localFile, onProgress });
+    return BlobDaemon.command("download", { ... await this.getCommandArgs(request.checkpoint), localFile: request.localFile, onProgress: request.onProgress });
   }
 
   /** Fully download a V2 checkpoint to a local file that can be used to create a briefcase or to work offline.
@@ -172,10 +170,14 @@ export class V2CheckpointManager {
  * @internal
  */
 export class V1CheckpointManager {
-  public static getKey(checkpoint: CheckpointProps) { return `${checkpoint.iModelId}:${checkpoint.changeSetId}-V1`; }
-
   public static getFolder(checkpoint: CheckpointProps): string {
     return path.join(BriefcaseManager.getIModelPath(checkpoint.iModelId), "checkpoints");
+  }
+
+  // for backwards compatibility to find checkpoints downloaded from older versions of BriefcaseManager.
+  public static getCompatibilityFileName(checkpoint: CheckpointProps): string {
+    const changeSetId = checkpoint.changeSetId || "first";
+    return path.join(BriefcaseManager.getCompatibilityPath(checkpoint.iModelId), "FixedVersion", changeSetId, "bc.bim");
   }
 
   public static getFileName(checkpoint: CheckpointProps): string {
@@ -185,23 +187,10 @@ export class V1CheckpointManager {
 
   public static async getCheckpointDb(request: DownloadRequest): Promise<SnapshotDb> {
     const checkpoint = request.checkpoint;
-    const db = SnapshotDb.tryFindByKey(this.getKey(checkpoint));
+    const db = SnapshotDb.tryFindByKey(CheckpointManager.getKey(checkpoint)) ?? CheckpointManager.tryOpenLocalFile(request);
+    if (db)
+      return db;
     return (undefined !== db) ? db : Downloads.download(request, async (job: DownloadJob) => this.downloadAndOpen(job));
-  }
-
-  /** @returns true if the file is the checkpoint requested */
-  public static verifyCheckpoint(checkpoint: CheckpointProps, fileName: string): boolean {
-    if (!IModelJsFs.existsSync(fileName))
-      return false;
-
-    const nativeDb = new IModelHost.platform.DgnDb();
-    const status = nativeDb.openIModel(fileName, OpenMode.Readonly);
-    if (DbResult.BE_SQLITE_OK !== status)
-      return false;
-
-    const isValid = checkpoint.iModelId === nativeDb.getDbGuid() && checkpoint.changeSetId === nativeDb.getParentChangeSetId();
-    nativeDb.closeIModel();
-    return isValid;
   }
 
   /** Download a V1 checkpoint */
@@ -210,18 +199,18 @@ export class V1CheckpointManager {
   }
 
   private static async downloadAndOpen(job: DownloadJob) {
-    const checkpoint = job.request.checkpoint;
-    if (!this.verifyCheckpoint(checkpoint, job.pathName)) // if file already exists, just use it
-      await this.performDownload(job);
-
-    return SnapshotDb.openCheckpointV1(checkpoint);
+    await this.performDownload(job);
+    return SnapshotDb.openCheckpointV1(job.request.localFile, job.request.checkpoint);
   }
 
   private static async performDownload(job: DownloadJob): Promise<void> {
+    CheckpointManager.onDownload.raiseEvent(job);
+
     const requestedCkp = job.request.checkpoint;
     const requestContext = requestedCkp.requestContext;
+    const localFile = job.request.localFile;
     requestContext.enter();
-    const traceInfo = { contextId: requestedCkp.contextId, iModelId: requestedCkp.iModelId, changeSetId: requestedCkp.changeSetId, localFile: job.pathName };
+    const traceInfo = { contextId: requestedCkp.contextId, iModelId: requestedCkp.iModelId, changeSetId: requestedCkp.changeSetId, localFile };
     try {
       Logger.logTrace(loggerCategory, "starting checkpoint download", () => traceInfo);
       const perfLogger = new PerfLogger("starting checkpoint download", () => traceInfo);
@@ -238,9 +227,13 @@ export class V1CheckpointManager {
       const checkpoint = checkpoints[0];
 
       job.status = DownloadBriefcaseStatus.DownloadingCheckpoint;
-      const progressCallback = Logger.isEnabled(loggerCategory, LogLevel.Trace) ? this.enableDownloadTrace(checkpoint, job.request.onProgress) : job.request.onProgress;
       try {
-        await IModelHost.iModelClient.checkpoints.download(requestContext, checkpoint, job.pathName, progressCallback, job.request.cancelRequest);
+        const cancelRequest: any = {};
+        const progressCallback: ProgressCallback = (progress) => {
+          if (job.request.onProgress && job.request.onProgress(progress.loaded, progress.total!) !== 0)
+            cancelRequest.cancel?.();
+        };
+        await IModelHost.iModelClient.checkpoints.download(requestContext, checkpoint, localFile, progressCallback, cancelRequest);
       } catch (error) {
         requestContext.enter();
         if (!(error instanceof UserCancelledError))
@@ -250,7 +243,7 @@ export class V1CheckpointManager {
       requestContext.enter();
 
       // Open checkpoint for write
-      const db = SnapshotDb.openForApplyChangesets(job.pathName);
+      const db = SnapshotDb.openForApplyChangesets(localFile);
       const nativeDb = db.nativeDb;
 
       if (nativeDb.hasPendingTxns()) {
@@ -290,7 +283,7 @@ export class V1CheckpointManager {
       Logger.logError(loggerCategory, "Error downloading checkpoint - deleting it", () => traceInfo);
 
       job.status = DownloadBriefcaseStatus.Error;
-      IModelJsFs.removeSync(job.pathName);
+      IModelJsFs.removeSync(localFile);
 
       if (error.errorNumber === ChangeSetStatus.CorruptedChangeStream || error.errorNumber === ChangeSetStatus.InvalidId || error.errorNumber === ChangeSetStatus.InvalidVersion) {
         Logger.logError(loggerCategory, "Detected potential corruption of change sets. Deleting them to enable retries", () => traceInfo);
@@ -299,46 +292,13 @@ export class V1CheckpointManager {
       throw error;
     }
   }
-
-  private static enableDownloadTrace(checkpoint: Checkpoint, progressCallback?: ProgressCallback): ProgressCallback {
-    const sasUrl = new URL(checkpoint.downloadUrl!);
-    const se = sasUrl.searchParams.get("se");
-    if (se) {
-      const expiresAt = new Date(se);
-      const now = new Date();
-      const expiresInSeconds = (expiresAt.getTime() - now.getTime()) / 1000;
-      Logger.logTrace(loggerCategory, "Downloading checkpoint (started)...", () => ({
-        expiresInSeconds,
-        fileSizeInBytes: checkpoint.fileSize,
-        iModelId: checkpoint.fileId,
-      }));
-    }
-
-    let lastReported = 0;
-    const startedTime = (new Date()).getTime();
-    const progressCallbackWrapper = (progressInfo: ProgressInfo) => {
-      if (progressCallback)
-        progressCallback(progressInfo);
-      if (progressInfo.percent === undefined)
-        return;
-      if (progressInfo.percent - lastReported > 5.0) {
-        lastReported = progressInfo.percent;
-        const currentTime = (new Date()).getTime();
-        const elapsedSeconds = (currentTime - startedTime) / 1000;
-        const remainingSeconds = (elapsedSeconds * (100.0 - progressInfo.percent)) / progressInfo.percent;
-        Logger.logTrace(loggerCategory, "Downloading checkpoint (progress)...", () => ({
-          downloadedBytes: progressInfo.loaded, totalBytes: progressInfo.total, percentComplete: progressInfo.percent?.toFixed(2),
-          elapsedSeconds: elapsedSeconds.toFixed(0), remainingSeconds: remainingSeconds.toFixed(0),
-          iModelId: checkpoint.fileId,
-        }));
-      }
-    };
-    return progressCallbackWrapper;
-  }
 }
 
 /** @internal  */
 export class CheckpointManager {
+  public static readonly onDownload = new BeEvent<(job: DownloadJob) => void>();
+  public static getKey(checkpoint: CheckpointProps) { return `${checkpoint.iModelId}:${checkpoint.changeSetId}`; }
+
   public static async downloadCheckpoint(request: DownloadRequest): Promise<void> {
     if (IModelJsFs.existsSync(request.localFile))
       throw new IModelError(IModelStatus.FileAlreadyExists, `Cannot download checkpoint, file ${request.localFile} already exists`);
@@ -352,5 +312,40 @@ export class CheckpointManager {
 
     return V1CheckpointManager.downloadCheckpoint(request);
   }
-}
 
+  /** @returns true if the file is the checkpoint requested */
+  public static verifyCheckpoint(checkpoint: CheckpointProps, fileName: string): boolean {
+    if (!IModelJsFs.existsSync(fileName))
+      return false;
+
+    const nativeDb = new IModelHost.platform.DgnDb();
+    const status = nativeDb.openIModel(fileName, OpenMode.Readonly);
+    if (DbResult.BE_SQLITE_OK !== status)
+      return false;
+
+    const isValid = checkpoint.iModelId === nativeDb.getDbGuid() && checkpoint.changeSetId === nativeDb.getParentChangeSetId();
+    nativeDb.closeIModel();
+    if (!isValid)
+      IModelJsFs.removeSync(fileName);
+
+    return isValid;
+  }
+
+  /** try to open an existing local file to satisfy a download request */
+  public static tryOpenLocalFile(request: DownloadRequest): SnapshotDb | undefined {
+    const checkpoint = request.checkpoint;
+    if (this.verifyCheckpoint(checkpoint, request.localFile))
+      return SnapshotDb.openCheckpointV1(request.localFile, checkpoint);
+
+    // check a list of aliases for finding checkpoints downloaded to non-default locations (e.g. from older versions)
+    if (request.aliasFiles) {
+      for (const alias of request.aliasFiles) {
+        if (this.verifyCheckpoint(checkpoint, alias)) {
+          request.localFile = alias;
+          return SnapshotDb.openCheckpointV1(alias, checkpoint);
+        }
+      }
+    }
+    return undefined;
+  }
+}

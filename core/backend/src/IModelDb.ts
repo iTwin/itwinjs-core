@@ -30,7 +30,7 @@ import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseId, BriefcaseIdValue, BriefcaseManager } from "./BriefcaseManager";
-import { CheckpointProps, V1CheckpointManager, V2CheckpointManager } from "./CheckpointManager";
+import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { CodeSpecs } from "./CodeSpecs";
 import { ConcurrencyControl } from "./ConcurrencyControl";
@@ -147,6 +147,11 @@ export abstract class IModelDb extends IModel {
 
   /** Event called after a changeset is applied to this IModelDb. */
   public readonly onChangesetApplied = new BeEvent<() => void>();
+  /** @internal */
+  public notifyChangesetApplied() {
+    this._changeSetId = this.nativeDb.getReversedChangeSetId() ?? this.nativeDb.getParentChangeSetId();
+    this.onChangesetApplied.raiseEvent();
+  }
 
   /** Emits push events to the frontend.
    * @internal
@@ -2372,7 +2377,12 @@ export class BriefcaseDb extends IModelDb {
       throw new IModelError(IModelStatus.UpgradeFailed, "Could not acquire schema lock", Logger.logError, loggerCategory, () => this.getRpcProps());
   }
 
-  public static async open(requestContext: AuthorizedClientRequestContext | ClientRequestContext, args: OpenBriefcaseProps) {
+  /** @internal */
+  public static findOpened(args: OpenBriefcaseProps): BriefcaseDb | undefined {
+    return this.tryFindByKey(args.key ?? shaHash(args.fileName));
+  }
+
+  public static async open(requestContext: AuthorizedClientRequestContext | ClientRequestContext, args: OpenBriefcaseProps): Promise<BriefcaseDb> {
     requestContext.enter();
     const file = { path: args.fileName, key: args.key ?? shaHash(args.fileName) };
     const alreadyOpen = this.tryFindByKey(file.key);
@@ -2438,6 +2448,7 @@ export class BriefcaseDb extends IModelDb {
     requestContext.enter();
     if (this.allowLocalChanges)
       this.concurrencyControl.onMergedChanges();
+
     this.changeSetId = this.nativeDb.getParentChangeSetId();
     this.initializeIModelDb();
   }
@@ -2493,7 +2504,6 @@ export class BriefcaseDb extends IModelDb {
     requestContext.enter();
     this.initializeIModelDb();
   }
-
 }
 
 /** A *snapshot* iModel database file that is typically used for archival and data transfer purposes.
@@ -2625,8 +2635,8 @@ export class SnapshotDb extends IModelDb {
   /** Open a previously downloaded V1 checkpoint file.
    * @internal
    */
-  public static openCheckpointV1(checkpoint: CheckpointProps) {
-    const snapshot = this.openFile(V1CheckpointManager.getFileName(checkpoint), { key: V1CheckpointManager.getKey(checkpoint) });
+  public static openCheckpointV1(fileName: string, checkpoint: CheckpointProps) {
+    const snapshot = this.openFile(fileName, { key: CheckpointManager.getKey(checkpoint) });
     snapshot._contextId = checkpoint.contextId;
     return snapshot;
   }
@@ -2639,7 +2649,7 @@ export class SnapshotDb extends IModelDb {
    */
   public static async openCheckpointV2(checkpoint: CheckpointProps): Promise<SnapshotDb> {
     const filePath = await V2CheckpointManager.attach(checkpoint);
-    const snapshot = SnapshotDb.openFile(filePath, { lazyBlockCache: true, key: V2CheckpointManager.getKey(checkpoint) });
+    const snapshot = SnapshotDb.openFile(filePath, { lazyBlockCache: true, key: CheckpointManager.getKey(checkpoint) });
     snapshot._contextId = checkpoint.contextId;
     return snapshot;
   }

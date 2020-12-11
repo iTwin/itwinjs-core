@@ -13,12 +13,11 @@ import { Point3d, Range3d, Range3dProps, XYAndZ, XYZProps } from "@bentley/geome
 import {
   AxisAlignedBox3d, BentleyStatus, Cartographic, CodeSpec, DbResult, EcefLocation, EcefLocationProps, ElementProps, EntityQueryParams, FontMap,
   FontMapProps, GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps, ImageSourceFormat, IModel, IModelConnectionProps,
-  IModelError, IModelEventSourceProps, IModelReadRpcInterface, IModelRpcProps, IModelStatus, IModelVersion, IModelWriteRpcInterface,
-  mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams, NativeAppRpcInterface,
-  OpenBriefcaseProps, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager, RpcNotFoundResponse, RpcOperation,
-  RpcRequest, RpcRequestEvent, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, StandaloneOpenOptions, ThumbnailProps,
-  UpgradeOptions,
-  ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, WipRpcInterface,
+  IModelError, IModelEventSourceProps, IModelReadRpcInterface, IModelRpcOpenProps, IModelRpcProps, IModelStatus, IModelVersion,
+  IModelWriteRpcInterface, mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams,
+  NativeAppRpcInterface, OpenBriefcaseProps, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager,
+  RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface,
+  StandaloneIModelRpcInterface, StandaloneOpenOptions, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, WipRpcInterface,
 } from "@bentley/imodeljs-common";
 import { BackgroundMapLocation } from "./BackgroundMapGeometry";
 import { EditingFunctions } from "./EditingFunctions";
@@ -695,13 +694,12 @@ export class RemoteBriefcaseConnection extends BriefcaseConnection {
     const changeSetId: string = await version.evaluateChangeSet(requestContext, iModelId, IModelApp.iModelClient);
     requestContext.enter();
 
-    const iModelRpcProps: IModelRpcProps = { key: "", contextId, iModelId, changeSetId, openMode }; // WIP: what is the right value for key?
-    RpcManager.setIModel(iModelRpcProps);
-
+    const iModelRpcProps: IModelRpcOpenProps = { contextId, iModelId, changeSetId, openMode };
     const openResponse = await RemoteBriefcaseConnection.callOpen(requestContext, iModelRpcProps, openMode, routingContext);
     requestContext.enter();
 
     const connection = new RemoteBriefcaseConnection(openResponse);
+    RpcManager.setIModel(connection);
     connection.routingContext = routingContext;
     RpcRequest.notFoundHandlers.addListener(connection._reopenConnectionHandler);
 
@@ -709,7 +707,7 @@ export class RemoteBriefcaseConnection extends BriefcaseConnection {
     return connection;
   }
 
-  private static async callOpen(requestContext: AuthorizedFrontendRequestContext, iModelToken: IModelRpcProps, openMode: OpenMode, routingContext: IModelRoutingContext): Promise<IModelConnectionProps> {
+  private static async callOpen(requestContext: AuthorizedFrontendRequestContext, iModelToken: IModelRpcOpenProps, openMode: OpenMode, routingContext: IModelRoutingContext): Promise<IModelConnectionProps> {
     requestContext.enter();
 
     // Try opening the iModel repeatedly accommodating any pending responses from the backend.

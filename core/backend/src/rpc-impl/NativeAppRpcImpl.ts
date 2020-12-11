@@ -15,7 +15,7 @@ import {
   RpcInterface, RpcManager, StorageValue, TileTreeContentIds,
 } from "@bentley/imodeljs-common";
 import { EmitStrategy, IModelJsNative } from "@bentley/imodeljs-native";
-import { AuthorizedClientRequestContext, ProgressCallback, ProgressInfo } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BriefcaseManager } from "../BriefcaseManager";
 import { Downloads } from "../CheckpointManager";
 import { EventSink } from "../EventSink";
@@ -70,22 +70,30 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
   public async downloadBriefcase(request: RequestNewBriefcaseProps, reportProgress: boolean): Promise<void> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
 
-    let onProgress: ProgressCallback | undefined;
+    const args = {
+      ...request,
+      abort: 0,
+      onProgress: (_a: number, _b: number) => args.abort,
+    };
+
     if (reportProgress) {
-      onProgress = (progress: ProgressInfo) => {
+      args.onProgress = (loaded, total) => {
         EventSink.global.emit(
           Events.NativeApp.namespace,
           `${Events.NativeApp.onBriefcaseDownloadProgress}-${request.iModelId}`,
-          { progress }, { strategy: EmitStrategy.PurgeOlderEvents });
+          { loaded, total }, { strategy: EmitStrategy.PurgeOlderEvents });
+        return args.abort;
       };
     }
 
-    return BriefcaseManager.downloadBriefcase(requestContext, { ...request, onProgress });
+    return BriefcaseManager.downloadBriefcase(requestContext, args);
   }
 
   public async requestCancelDownloadBriefcase(fileName: string): Promise<boolean> {
     const job = Downloads.isInProgress(fileName);
-    return (job && job.request.cancelRequest) ? job.request.cancelRequest.cancel() : false;
+    if (job)
+      (job.request as any).abort = 1;
+    return job !== undefined;
   }
 
   public async open(args: OpenBriefcaseProps): Promise<IModelConnectionProps> {

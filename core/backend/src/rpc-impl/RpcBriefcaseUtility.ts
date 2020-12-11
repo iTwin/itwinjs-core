@@ -8,7 +8,7 @@
 
 import { BeDuration, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { BriefcaseQuery } from "@bentley/imodelhub-client";
-import { IModelConnectionProps, IModelRpcProps, RpcPendingResponse, SyncMode } from "@bentley/imodeljs-common";
+import { IModelConnectionProps, IModelRpcOpenProps, IModelRpcProps, RpcPendingResponse, SyncMode } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { BriefcaseManager, RequestNewBriefcaseArg } from "../BriefcaseManager";
@@ -19,16 +19,25 @@ import { IModelJsFs } from "../IModelJsFs";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
+/** @internal */
+export interface DownloadAndOpenArgs {
+  requestContext: AuthorizedClientRequestContext;
+  tokenProps: IModelRpcOpenProps;
+  syncMode: SyncMode;
+  timeout?: number;
+  forceDownload?: boolean;
+}
 /**
  * Utility to open the iModel for Read/Write RPC interfaces
  * @internal
  */
 export class RpcBriefcaseUtility {
 
-  private static async downloadAndOpen(requestContext: AuthorizedClientRequestContext, tokenProps: IModelRpcProps, syncMode: SyncMode): Promise<BriefcaseDb> {
+  private static async downloadAndOpen(args: DownloadAndOpenArgs): Promise<BriefcaseDb> {
+    const { requestContext, tokenProps } = args;
     const iModelId = tokenProps.iModelId!;
     const myBriefcaseIds: number[] = [];
-    if (syncMode === SyncMode.PullOnly) {
+    if (args.syncMode === SyncMode.PullOnly) {
       myBriefcaseIds.push(0); // PullOnly means briefcaseId 0
     } else {
       // check with iModelHub and see if we already have acquired any briefcaseIds
@@ -42,7 +51,15 @@ export class RpcBriefcaseUtility {
       const fileName = BriefcaseManager.getFileName({ briefcaseId, iModelId });
       if (IModelJsFs.existsSync(fileName)) {
         try {
-          return await BriefcaseDb.open(requestContext, { fileName, readonly: briefcaseId === 0 });
+          if (args.forceDownload)
+            throw new Error();
+          let db = BriefcaseDb.findOpened({ fileName });
+          if (db === undefined) {
+            db = await BriefcaseDb.open(requestContext, { fileName });
+            if (db.changeSetId !== tokenProps.changeSetId) // don't do this if it was already opened, ugh...
+              await BriefcaseManager.processChangeSets(requestContext, db, tokenProps.changeSetId!);
+          }
+          return db;
         } catch (error) {
           // somehow we have this briefcaseId and the file exists, but we can't open it. Delete it.
           IModelJsFs.removeSync(fileName);
@@ -58,16 +75,16 @@ export class RpcBriefcaseUtility {
     };
 
     await BriefcaseManager.downloadBriefcase(requestContext, request);
-    return BriefcaseDb.open(requestContext, { fileName: request.fileName!, readonly: syncMode === SyncMode.PullOnly });
+    return BriefcaseDb.open(requestContext, { fileName: request.fileName! });
   };
 
   private static _briefcasePromise: Promise<BriefcaseDb> | undefined;
-  private static async openBriefcase(requestContext: AuthorizedClientRequestContext, tokenProps: IModelRpcProps, syncMode: SyncMode): Promise<BriefcaseDb> {
+  private static async openBriefcase(args: DownloadAndOpenArgs): Promise<BriefcaseDb> {
     if (this._briefcasePromise)
       return this._briefcasePromise;
 
     try {
-      this._briefcasePromise = this.downloadAndOpen(requestContext, tokenProps, syncMode); // save the fact that we're working on downloading so if we timeout, we'll reuse this request.
+      this._briefcasePromise = this.downloadAndOpen(args); // save the fact that we're working on downloading so if we timeout, we'll reuse this request.
       return await this._briefcasePromise;
     } finally {
       this._briefcasePromise = undefined;  // the download and open is now done
@@ -77,16 +94,15 @@ export class RpcBriefcaseUtility {
   /**
    * Download and open a checkpoint or briefcase, ensuring the operation completes within a default timeout. If the time to open exceeds the timeout period,
    * a RpcPendingResponse exception is thrown
-   * @param requestContext
-   * @param tokenProps
-   * @param syncMode
    */
-  public static async open(requestContext: AuthorizedClientRequestContext, tokenProps: IModelRpcProps, syncMode: SyncMode, timeout: number = 1000): Promise<IModelDb> {
+  public static async open(args: DownloadAndOpenArgs): Promise<IModelDb> {
+    const { requestContext, tokenProps, syncMode } = args;
     requestContext.enter();
-    Logger.logTrace(loggerCategory, "RpcBriefcaseUtility.open", () => ({ ...tokenProps, syncMode }));
+    Logger.logTrace(loggerCategory, "RpcBriefcaseUtility.open", () => ({ ...tokenProps }));
 
+    const timeout = args.timeout ?? 1000;
     if (syncMode === SyncMode.PullOnly || syncMode === SyncMode.PullAndPush) {
-      const briefcaseDb = await BeDuration.race(timeout, this.openBriefcase(requestContext, tokenProps, syncMode));
+      const briefcaseDb = await BeDuration.race(timeout, this.openBriefcase(args));
       requestContext.enter();
 
       if (briefcaseDb === undefined) {
@@ -113,7 +129,12 @@ export class RpcBriefcaseUtility {
       Logger.logTrace(loggerCategory, "using V2 checkpoint briefcase", () => ({ ...tokenProps }));
     } catch (e) {
       // this isn't a v2 checkpoint. Set up a race between the specified timeout period and the open. Throw an RpcPendingResponse exception if the timeout happens first.
-      db = await BeDuration.race(timeout, V1CheckpointManager.getCheckpointDb({ checkpoint, localFile: V1CheckpointManager.getFileName(checkpoint) }));
+      const request = {
+        checkpoint,
+        localFile: V1CheckpointManager.getFileName(checkpoint),
+        aliasFiles: [V1CheckpointManager.getCompatibilityFileName(checkpoint)],
+      };
+      db = await BeDuration.race(timeout, V1CheckpointManager.getCheckpointDb(request));
       requestContext.enter();
 
       if (db === undefined) {
@@ -127,8 +148,8 @@ export class RpcBriefcaseUtility {
     return db;
   }
 
-  public static async openWithTimeout(requestContext: AuthorizedClientRequestContext, tokenProps: IModelRpcProps, syncMode: SyncMode, timeout: number = 1000): Promise<IModelConnectionProps> {
-    return (await this.open(requestContext, tokenProps, syncMode, timeout)).toJSON();
+  public static async openWithTimeout(requestContext: AuthorizedClientRequestContext, tokenProps: IModelRpcOpenProps, syncMode: SyncMode, timeout: number = 1000): Promise<IModelConnectionProps> {
+    return (await this.open({ requestContext, tokenProps, syncMode, timeout })).toJSON();
   }
 
   /** Close the briefcase if necessary */

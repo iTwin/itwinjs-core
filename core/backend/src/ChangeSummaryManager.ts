@@ -67,7 +67,7 @@ export interface ChangeSummaryExtractOptions {
 
 /** @beta */
 export class ChangeSummaryExtractContext {
-  public constructor(public readonly iModel: BriefcaseDb) { }
+  public constructor(public readonly iModel: IModelDb) { }
 
   public get iModelId(): GuidString { return this.iModel.iModelId; }
 }
@@ -121,7 +121,7 @@ export class ChangeSummaryManager {
    * @param iModel iModel to detach the *Change Cache file* to
    * @throws [IModelError]($common) in case of errors, e.g. if no *Change Cache file* was attached before.
    */
-  public static detachChangeCache(iModel: BriefcaseDb): void {
+  public static detachChangeCache(iModel: IModelDb): void {
     if (!iModel || !iModel.isOpen)
       throw new IModelError(IModelStatus.BadRequest, "Briefcase must be open");
 

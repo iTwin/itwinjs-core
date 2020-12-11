@@ -1,17 +1,19 @@
+import { assert, expect } from "chai";
+import * as semver from "semver";
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { DbOpcode, DbResult, Id64String, IModelHubStatus } from "@bentley/bentleyjs-core";
-import { CodeState, HubCode, HubIModel, IModelHubError, IModelQuery, Lock, LockLevel, LockQuery, LockType, MultiCode } from "@bentley/imodelhub-client";
-import { CodeScopeSpec, CodeSpec, DomainOptions, IModel, IModelError, IModelVersion, SubCategoryAppearance, SyncMode } from "@bentley/imodeljs-common";
+import {
+  CodeState, HubCode, HubIModel, IModelHubError, IModelQuery, Lock, LockLevel, LockQuery, LockType, MultiCode,
+} from "@bentley/imodelhub-client";
+import { CodeScopeSpec, CodeSpec, DomainOptions, IModel, IModelError, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import { assert, expect } from "chai";
-import * as semver from "semver";
 import { RequestNewBriefcaseArg } from "../../BriefcaseManager";
 import {
-  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, ConcurrencyControl, DictionaryModel, Element, IModelJsFs,
-  SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType,
+  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, ConcurrencyControl, DictionaryModel, Element, IModelJsFs, SpatialCategory,
+  SqliteStatement, SqliteValue, SqliteValueType,
 } from "../../imodeljs-backend";
 import { IModelTestUtils, TestIModelInfo, Timer } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
@@ -97,7 +99,7 @@ describe("IModelWriteTest (#integration)", () => {
   });
 
   it("acquire codespec lock", async () => {
-    const iModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(superRequestContext, testProjectId, readWriteTestIModel.id, SyncMode.PullAndPush);
+    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: superRequestContext, contextId: testProjectId, iModelId: readWriteTestIModel.id });
     const codeSpec1 = CodeSpec.create(iModel, "MyCodeSpec1", CodeScopeSpec.Type.Model);
     iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
 
@@ -125,7 +127,7 @@ describe("IModelWriteTest (#integration)", () => {
   });
 
   it("acquire codespec lock - example", async () => {
-    const model = await IModelTestUtils.downloadAndOpenBriefcaseDb(superRequestContext, testProjectId, readWriteTestIModel.id, SyncMode.PullAndPush);
+    const model = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: superRequestContext, contextId: testProjectId, iModelId: readWriteTestIModel.id });
     const codeSpec1 = CodeSpec.create(model, "MyCodeSpec", CodeScopeSpec.Type.Model);
 
     model.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());  // needed for writing to iModels
@@ -185,9 +187,9 @@ describe("IModelWriteTest (#integration)", () => {
     const secondUserRequestContext: AuthorizedBackendRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager);
     const neutralObserverUserRequestContext: AuthorizedBackendRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager);
 
-    const firstIModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(firstUserRequestContext, testProjectId, readWriteTestIModel.id, SyncMode.PullAndPush);
-    const secondIModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(secondUserRequestContext, testProjectId, readWriteTestIModel.id, SyncMode.PullAndPush);
-    const neutralObserverIModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(neutralObserverUserRequestContext, testProjectId, readWriteTestIModel.id, SyncMode.PullAndPush);
+    const firstIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: firstUserRequestContext, contextId: testProjectId, iModelId: readWriteTestIModel.id });
+    const secondIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: secondUserRequestContext, contextId: testProjectId, iModelId: readWriteTestIModel.id });
+    const neutralObserverIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: neutralObserverUserRequestContext, contextId: testProjectId, iModelId: readWriteTestIModel.id });
     assert.notEqual(firstIModel, secondIModel);
     assert.equal(firstIModel.nativeDb.getBriefcaseId(), firstIModel.briefcaseId);
     assert.isAbove(firstIModel.briefcaseId, 0);
@@ -335,7 +337,7 @@ describe("IModelWriteTest (#integration)", () => {
 
   // Does not work with mocks
   it.skip("should build concurrency control request", async () => {
-    const iModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(managerRequestContext, testProjectId, readWriteTestIModel.id, SyncMode.PullAndPush);
+    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: managerRequestContext, contextId: testProjectId, iModelId: readWriteTestIModel.id });
 
     const el: Element = iModel.elements.getRootSubject();
     el.buildConcurrencyControlRequest(DbOpcode.Update);    // make a list of the locks, etc. that will be needed to update this element
@@ -364,7 +366,7 @@ describe("IModelWriteTest (#integration)", () => {
     timer = new Timer("create iModel");
     const rwIModelId = await BriefcaseManager.create(adminRequestContext, writeTestProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
     assert.isNotEmpty(rwIModelId);
-    const rwIModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(adminRequestContext, writeTestProjectId, rwIModelId, SyncMode.PullAndPush);
+    const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: adminRequestContext, contextId: writeTestProjectId, iModelId: rwIModelId });
     timer.end();
 
     timer = new Timer("querying codes");
@@ -424,7 +426,7 @@ describe("IModelWriteTest (#integration)", () => {
     // Create a new empty iModel on the Hub & obtain a briefcase
     const rwIModelId = await BriefcaseManager.create(adminRequestContext, writeTestProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
     assert.isNotEmpty(rwIModelId);
-    const rwIModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(adminRequestContext, writeTestProjectId, rwIModelId, SyncMode.PullAndPush);
+    const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: adminRequestContext, contextId: writeTestProjectId, iModelId: rwIModelId });
 
     const dictionary: DictionaryModel = rwIModel.models.getModel<DictionaryModel>(IModel.dictionaryId);
     const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
@@ -492,7 +494,7 @@ describe("IModelWriteTest (#integration)", () => {
     timer = new Timer("create iModel");
     const rwIModelId = await BriefcaseManager.create(adminRequestContext, writeTestProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
     assert.isNotEmpty(rwIModelId);
-    const rwIModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(adminRequestContext, writeTestProjectId, rwIModelId, SyncMode.PullAndPush);
+    const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: adminRequestContext, contextId: writeTestProjectId, iModelId: rwIModelId });
     timer.end();
 
     // create and insert a new model with code1
@@ -560,7 +562,7 @@ describe("IModelWriteTest (#integration)", () => {
     timer = new Timer("create iModel");
     const rwIModelId = await BriefcaseManager.create(adminRequestContext, writeTestProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
 
-    const rwIModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(adminRequestContext, writeTestProjectId, rwIModelId, SyncMode.PullAndPush);
+    const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: adminRequestContext, contextId: writeTestProjectId, iModelId: rwIModelId });
     adminRequestContext.enter();
     timer.end();
 
@@ -680,7 +682,7 @@ describe("IModelWriteTest (#integration)", () => {
     const rwIModelId = await BriefcaseManager.create(adminRequestContext, writeTestProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
     assert.isNotEmpty(rwIModelId);
 
-    const rwIModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(adminRequestContext, writeTestProjectId, rwIModelId, SyncMode.PullAndPush);
+    const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: adminRequestContext, contextId: writeTestProjectId, iModelId: rwIModelId });
     timer.end();
 
     const code = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel");
@@ -733,7 +735,7 @@ describe("IModelWriteTest (#integration)", () => {
     timer = new Timer("create iModel");
     const rwIModelId = await BriefcaseManager.create(adminRequestContext, writeTestProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
     assert.isNotEmpty(rwIModelId);
-    const rwIModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(adminRequestContext, writeTestProjectId, rwIModelId, SyncMode.PullAndPush);
+    const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: adminRequestContext, contextId: writeTestProjectId, iModelId: rwIModelId });
     timer.end();
 
     timer = new Timer("make local changes");
@@ -828,7 +830,7 @@ describe("IModelWriteTest (#integration)", () => {
     timer.end();
 
     // Open a readonly copy of the iModel
-    const roIModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(adminRequestContext, writeTestProjectId, rwIModelId, SyncMode.FixedVersion, IModelVersion.latest());
+    const roIModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext: adminRequestContext, contextId: writeTestProjectId, iModelId: rwIModelId });
     assert.exists(roIModel);
 
     await IModelTestUtils.closeAndDeleteBriefcaseDb(adminRequestContext, rwIModel);
@@ -836,7 +838,7 @@ describe("IModelWriteTest (#integration)", () => {
   });
 
   it("Run plain SQL against fixed version connection", async () => {
-    const iModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(managerRequestContext, testProjectId, readOnlyTestIModel.id, SyncMode.PullAndPush);
+    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: managerRequestContext, contextId: testProjectId, iModelId: readOnlyTestIModel.id });
     try {
       iModel.withPreparedSqliteStatement("CREATE TABLE Test(Id INTEGER PRIMARY KEY, Name TEXT NOT NULL, Code INTEGER)", (stmt: SqliteStatement) => {
         assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
@@ -908,7 +910,7 @@ describe("IModelWriteTest (#integration)", () => {
   });
 
   it("Run plain SQL against readonly connection", async () => {
-    const iModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(managerRequestContext, testProjectId, readOnlyTestIModel.id, SyncMode.FixedVersion);
+    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext: managerRequestContext, contextId: testProjectId, iModelId: readOnlyTestIModel.id });
 
     iModel.withPreparedSqliteStatement("SELECT Name,StrData FROM be_Prop WHERE Namespace='ec_Db'", (stmt: SqliteStatement) => {
       let rowCount: number = 0;

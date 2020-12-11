@@ -3,21 +3,25 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import * as path from "path";
 import * as fs from "fs-extra";
+import * as path from "path";
 import { ChangeSetApplyOption, ChangeSetStatus, DbResult, Id64, Id64String, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
-import { ChangeSet, ChangeSetQuery, ChangesType, Checkpoint, CheckpointQuery, HubIModel, IModelHubClient, IModelHubError, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
-import { Code, ColorDef, GeometryStreamProps, IModel, IModelError, IModelVersion, SubCategoryAppearance, SyncMode } from "@bentley/imodeljs-common";
+import { Arc3d, IModelJson as GeomJson, Point3d } from "@bentley/geometry-core";
+import {
+  ChangeSet, ChangeSetQuery, ChangesType, Checkpoint, CheckpointQuery, HubIModel, IModelHubClient, IModelHubError, IModelQuery, Version, VersionQuery,
+} from "@bentley/imodelhub-client";
+import { Code, ColorDef, GeometryStreamProps, IModel, IModelError, IModelVersion, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { Reporter } from "@bentley/perf-tools/lib/Reporter";
-import { BriefcaseManager, ChangeSetToken, ConcurrencyControl, DictionaryModel, Element, IModelDb, IModelHost, SpatialCategory, StandaloneDb } from "../imodeljs-backend";
+import {
+  BriefcaseManager, ChangeSetToken, ConcurrencyControl, DictionaryModel, Element, IModelDb, IModelHost, SpatialCategory, StandaloneDb,
+} from "../imodeljs-backend";
 import { IModelTestUtils, TestIModelInfo } from "../test/IModelTestUtils";
 import { HubUtility } from "../test/integration/HubUtility";
 import { KnownTestLocations } from "../test/KnownTestLocations";
 import { RevisionUtility } from "../test/RevisionUtility";
 import { PerfTestUtility } from "./PerfTestUtils";
-import { Arc3d, IModelJson as GeomJson, Point3d } from "@bentley/geometry-core";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -26,29 +30,30 @@ async function getIModelAfterApplyingCS(requestContext: AuthorizedClientRequestC
   const firstChangeSetId = changeSets[0].wsgId;
   const secondChangeSetId = changeSets[1].wsgId;
 
+  const args = { requestContext, contextId: projectId, iModelId: imodelId };
   // open imodel first time from imodel-hub with first revision
   const startTime = new Date().getTime();
-  const iModelDb = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, imodelId, SyncMode.FixedVersion, IModelVersion.asOfChangeSet(firstChangeSetId));
+  const iModelDb = await IModelTestUtils.downloadAndOpenCheckpoint({ ...args, asOf: IModelVersion.asOfChangeSet(firstChangeSetId).toJSON() });
   const endTime = new Date().getTime();
   assert.exists(iModelDb);
   const elapsedTime = (endTime - startTime) / 1000.0;
-  assert.strictEqual<string>(iModelDb.changeSetId, firstChangeSetId);
+  assert.strictEqual<string>(iModelDb.changeSetId!, firstChangeSetId);
   iModelDb.close();
   reporter.addEntry("ImodelChangesetPerformance", "GetImodel", "Execution time(s)", elapsedTime, { Description: "from hub first CS", Operation: "Open" });
 
   // open imodel from local cache with second revision
   const startTime1 = new Date().getTime();
-  const iModelDb1 = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, imodelId, SyncMode.FixedVersion, IModelVersion.asOfChangeSet(secondChangeSetId));
+  const iModelDb1 = await IModelTestUtils.downloadAndOpenCheckpoint({ ...args, asOf: IModelVersion.asOfChangeSet(secondChangeSetId).toJSON() });
   const endTime1 = new Date().getTime();
   assert.exists(iModelDb1);
   const elapsedTime1 = (endTime1 - startTime1) / 1000.0;
-  assert.strictEqual<string>(iModelDb1.changeSetId, secondChangeSetId);
+  assert.strictEqual<string>(iModelDb1.changeSetId!, secondChangeSetId);
   iModelDb1.close();
   reporter.addEntry("ImodelChangesetPerformance", "GetImodel", "Execution time(s)", elapsedTime1, { Description: "from cache second CS", Operation: "Open" });
 
   // open imodel from local cache with first revision
   const startTime2 = new Date().getTime();
-  const iModelDb2 = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, imodelId, SyncMode.FixedVersion, IModelVersion.first());
+  const iModelDb2 = await IModelTestUtils.downloadAndOpenCheckpoint({ ...args, asOf: IModelVersion.first().toJSON() });
   const endTime2 = new Date().getTime();
   assert.exists(iModelDb2);
   const elapsedTime2 = (endTime2 - startTime2) / 1000.0;
@@ -57,7 +62,7 @@ async function getIModelAfterApplyingCS(requestContext: AuthorizedClientRequestC
 
   // open imodel from local cache with latest revision
   const startTime3 = new Date().getTime();
-  const iModelDb3 = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, imodelId, SyncMode.FixedVersion, IModelVersion.named("latest"));
+  const iModelDb3 = await IModelTestUtils.downloadAndOpenCheckpoint({ ...args, asOf: IModelVersion.named("latest").toJSON() });
   const endTime3 = new Date().getTime();
   assert.exists(iModelDb3);
   const elapsedTime3 = (endTime3 - startTime3) / 1000.0;
@@ -66,7 +71,7 @@ async function getIModelAfterApplyingCS(requestContext: AuthorizedClientRequestC
 }
 
 async function pushIModelAfterMetaChanges(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string, imodelPushId: string) {
-  const iModelPullAndPush = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, imodelPushId, SyncMode.PullAndPush, IModelVersion.latest());
+  const iModelPullAndPush = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: imodelPushId });
   assert.exists(iModelPullAndPush);
   iModelPullAndPush.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
 
@@ -127,7 +132,7 @@ async function pushIModelAfterDataChanges(requestContext: AuthorizedClientReques
   // create new imodel with given name
   const rwIModelId = await BriefcaseManager.create(requestContext, projectId, iModelName, { rootSubject: { name: "TestSubject" } });
   assert.isNotEmpty(rwIModelId);
-  const rwIModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, rwIModelId, SyncMode.PullAndPush);
+  const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: rwIModelId });
 
   // create new model, category and physical element, and insert in imodel
   rwIModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
@@ -154,7 +159,7 @@ async function pushIModelAfterSchemaChanges(requestContext: AuthorizedClientRequ
   // create new imodel with given name
   const rwIModelId = await BriefcaseManager.create(requestContext, projectId, iModelName, { rootSubject: { name: "TestSubject" } });
   assert.isNotEmpty(rwIModelId);
-  const rwIModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, rwIModelId, SyncMode.PullAndPush);
+  const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: rwIModelId });
 
   assert.isNotEmpty(rwIModelId);
   // import schema and push change to hub
@@ -180,7 +185,7 @@ const getElementCount = (iModel: IModelDb): number => {
 };
 
 async function executeQueryTime(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string, imodelId: string) {
-  const iModelDb = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, imodelId, SyncMode.FixedVersion, IModelVersion.named("latest"));
+  const iModelDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: imodelId, asOf: IModelVersion.named("latest").toJSON() });
   assert.exists(iModelDb);
   const startTime = new Date().getTime();
   const stat = IModelTestUtils.executeQuery(iModelDb, "SELECT * FROM BisCore.LineStyle");
@@ -201,7 +206,7 @@ async function reverseChanges(requestContext: AuthorizedClientRequestContext, re
   // create new imodel with given name
   const rwIModelId = await BriefcaseManager.create(requestContext, projectId, iModelName, { rootSubject: { name: "TestSubject" } });
   assert.isNotEmpty(rwIModelId);
-  const rwIModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, rwIModelId, SyncMode.PullAndPush);
+  const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: rwIModelId });
 
   // create new model, category and physical element, and insert in imodel, and push these changes
   rwIModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
@@ -246,7 +251,7 @@ async function reinstateChanges(requestContext: AuthorizedClientRequestContext, 
   // create new imodel with given name
   const rwIModelId = await BriefcaseManager.create(requestContext, projectId, iModelName, { rootSubject: { name: "TestSubject" } });
   assert.isNotEmpty(rwIModelId);
-  const rwIModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, rwIModelId, SyncMode.PullAndPush);
+  const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: rwIModelId });
 
   // create new model, category and physical element, and insert in imodel, and push these changes
   rwIModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
@@ -507,7 +512,7 @@ describe("ImodelChangesetPerformance big datasets", () => {
       };
 
       const firstChangeSetId = changeSets[startNum].wsgId;
-      const iModelDb = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, imodelId, SyncMode.PullAndPush, IModelVersion.asOfChangeSet(firstChangeSetId));
+      const iModelDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: imodelId, asOf: IModelVersion.asOfChangeSet(firstChangeSetId).toJSON() });
 
       for (let j = startNum; j < endNum; ++j) {
         const cs: ChangeSet = changeSets[j];
@@ -613,7 +618,7 @@ describe("ImodelChangesetPerformance own data", () => {
 
   async function setupLocalIModel(projId: string, modelId: string, localPath: string) {
     requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
-    const iModelDb = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projId, modelId, SyncMode.FixedVersion, IModelVersion.named(seedVersionName));
+    const iModelDb = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: projId, iModelId: modelId, asOf: IModelVersion.named(seedVersionName).toJSON() });
     const pathName = iModelDb.pathName;
     iModelDb.close();
     if (fs.existsSync(localPath))
@@ -660,7 +665,7 @@ describe("ImodelChangesetPerformance own data", () => {
           // eslint-disable-next-line no-console
           console.log(`iModel ${iModelName} does not exist on iModelHub. Creating with changesets...`);
           const imodelId = await BriefcaseManager.create(requestContext, projectId, iModelName, { rootSubject: { name: "TestSubject" } });
-          const iModelDb = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, imodelId, SyncMode.PullAndPush, IModelVersion.latest());
+          const iModelDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: imodelId });
 
           const schemaPathname = path.join(outDir, `${schemaName}.01.00.00.ecschema.xml`);
           const sxml: string = PerfTestUtility.genSchemaXML(schemaName, baseClassName, hier, true, true, []);

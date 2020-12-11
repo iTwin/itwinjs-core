@@ -11,13 +11,14 @@ import {
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { ChangeSet, IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
 import {
-  Code, CodeProps, ElementProps, IModel, IModelError, IModelReadRpcInterface, IModelVersion, PhysicalElementProps, RelatedElement, RpcConfiguration,
-  RpcManager,
+  Code, CodeProps, ElementProps, IModel, IModelError, IModelReadRpcInterface, IModelVersion, IModelVersionProps, PhysicalElementProps, RelatedElement,
+  RpcConfiguration, RpcManager, RpcPendingResponse, SyncMode,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext, ITwinClientLoggerCategory } from "@bentley/itwin-client";
 import { BackendLoggerCategory as BackendLoggerCategory } from "../BackendLoggerCategory";
 import { RequestNewBriefcaseArg } from "../BriefcaseManager";
+import { CheckpointProps, V1CheckpointManager } from "../CheckpointManager";
 import { ClassRegistry } from "../ClassRegistry";
 import { Drawing, PhysicalElement, Subject } from "../Element";
 import {
@@ -26,6 +27,7 @@ import {
 } from "../imodeljs-backend";
 import { DrawingModel } from "../Model";
 import { ElementDrivesElement, RelationshipProps } from "../Relationship";
+import { DownloadAndOpenArgs, RpcBriefcaseUtility } from "../rpc-impl/RpcBriefcaseUtility";
 import { Schema, Schemas } from "../Schema";
 import { HubUtility } from "./integration/HubUtility";
 import { KnownTestLocations } from "./KnownTestLocations";
@@ -141,10 +143,73 @@ export class TestPhysicalObject extends PhysicalElement implements TestPhysicalO
 
 export class IModelTestUtils {
   /** Helper to open a briefcase db */
-  public static async downloadAndOpenBriefcaseDb(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, briefcaseId?: number, version: IModelVersion = IModelVersion.latest()): Promise<BriefcaseDb> {
-    const args: RequestNewBriefcaseArg = { contextId, iModelId, asOf: version.toJSON(), briefcaseId };
-    await BriefcaseManager.downloadBriefcase(requestContext, { contextId, iModelId, asOf: version.toJSON(), briefcaseId });
-    return BriefcaseDb.open(requestContext, { fileName: args.fileName! });
+  public static async downloadAndOpenBriefcase(args: RequestNewBriefcaseArg & { requestContext: AuthorizedClientRequestContext }): Promise<BriefcaseDb> {
+    await BriefcaseManager.downloadBriefcase(args.requestContext, args);
+    return BriefcaseDb.open(args.requestContext, { fileName: args.fileName! });
+  }
+
+  public static async openBriefcaseUsingRpc(args: RequestNewBriefcaseArg & { requestContext: AuthorizedClientRequestContext, deleteFirst?: boolean }): Promise<BriefcaseDb> {
+    if (undefined === args.asOf)
+      args.asOf = IModelVersion.latest().toJSON();
+
+    const openArgs: DownloadAndOpenArgs = {
+      tokenProps: {
+        contextId: args.contextId,
+        iModelId: args.iModelId,
+        changeSetId: (await BriefcaseManager.evaluateVersion(args.requestContext, IModelVersion.fromJSON(args.asOf), args.iModelId)).changeSetId,
+      },
+      requestContext: args.requestContext,
+      syncMode: args.briefcaseId === 0 ? SyncMode.PullOnly : SyncMode.PullAndPush,
+      forceDownload: args.deleteFirst,
+    };
+
+    while (true) {
+      try {
+        return (await RpcBriefcaseUtility.open(openArgs)) as BriefcaseDb;
+      } catch (error) {
+        if (!(error instanceof RpcPendingResponse))
+          throw error;
+      }
+    }
+  }
+
+  public static async downloadAndOpenCheckpoint(args: { requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, asOf?: IModelVersionProps }): Promise<SnapshotDb> {
+    if (undefined === args.asOf)
+      args.asOf = IModelVersion.latest().toJSON();
+
+    const checkpoint: CheckpointProps = {
+      contextId: args.contextId,
+      iModelId: args.iModelId,
+      requestContext: args.requestContext,
+      changeSetId: (await BriefcaseManager.evaluateVersion(args.requestContext, IModelVersion.fromJSON(args.asOf), args.iModelId)).changeSetId,
+    };
+
+    return V1CheckpointManager.getCheckpointDb({ checkpoint, localFile: V1CheckpointManager.getFileName(checkpoint) });
+  }
+
+  public static async openCheckpointUsingRpc(args: RequestNewBriefcaseArg & { requestContext: AuthorizedClientRequestContext, deleteFirst?: boolean }): Promise<SnapshotDb> {
+    if (undefined === args.asOf)
+      args.asOf = IModelVersion.latest().toJSON();
+
+    const openArgs: DownloadAndOpenArgs = {
+      tokenProps: {
+        contextId: args.contextId,
+        iModelId: args.iModelId,
+        changeSetId: (await BriefcaseManager.evaluateVersion(args.requestContext, IModelVersion.fromJSON(args.asOf), args.iModelId)).changeSetId,
+      },
+      requestContext: args.requestContext,
+      syncMode: SyncMode.FixedVersion,
+      forceDownload: args.deleteFirst,
+    };
+
+    while (true) {
+      try {
+        return (await RpcBriefcaseUtility.open(openArgs)) as SnapshotDb;
+      } catch (error) {
+        if (!(error instanceof RpcPendingResponse))
+          throw error;
+      }
+    }
   }
 
   public static async closeAndDeleteBriefcaseDb(requestContext: AuthorizedClientRequestContext, briefcaseDb: IModelDb) {

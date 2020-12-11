@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import { DbResult } from "@bentley/bentleyjs-core";
 import { ChangeSet } from "@bentley/imodelhub-client";
-import { ChangedElements, IModelVersion, SyncMode } from "@bentley/imodeljs-common";
+import { ChangedElements } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { ChangedElementsManager } from "../../ChangedElementsManager";
 import { AuthorizedBackendRequestContext, BriefcaseManager, ChangedElementsDb, IModelJsFs } from "../../imodeljs-backend";
@@ -37,7 +37,7 @@ describe("ChangedElements (#integration)", () => {
   it("Create ChangedElements Cache and process changesets", async () => {
     setupTest(testIModel.id);
 
-    const iModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, testIModel.id, SyncMode.FixedVersion, IModelVersion.latest());
+    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testProjectId, iModelId: testIModel.id });
     const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.changeSets.get(requestContext, testIModel.id);
     assert.exists(iModel);
 
