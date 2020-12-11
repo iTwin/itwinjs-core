@@ -34,7 +34,7 @@ describe("ChangedElements (#integration)", () => {
     await HubUtility.purgeAcquiredBriefcases(managerRequestContext, "iModelJsIntegrationTest", "ReadOnlyTest");
   });
 
-  it("Create ChangedElements Cache and process changesets", async () => {
+  it.skip("Create ChangedElements Cache and process changesets", async () => {
     setupTest(testIModel.id);
 
     const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testProjectId, iModelId: testIModel.id });
