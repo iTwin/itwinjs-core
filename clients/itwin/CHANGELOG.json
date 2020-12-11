@@ -2,6 +2,12 @@
   "name": "@bentley/itwin-client",
   "entries": [
     {
+      "version": "2.9.8",
+      "tag": "@bentley/itwin-client_v2.9.8",
+      "date": "Fri, 11 Dec 2020 02:57:36 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.9.7",
       "tag": "@bentley/itwin-client_v2.9.7",
       "date": "Wed, 09 Dec 2020 20:58:23 GMT",
