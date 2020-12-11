@@ -57,7 +57,7 @@ steps:
   #   displayName: rush audit
   #   workingDirectory: ${{ parameters.workingDir }}
 
-  - script: node common/scripts/install-run-rush.js rebuild -v --to-version-policy prerelease-monorepo-lockStep -p max
+  - script: node common/scripts/install-run-rush.js rebuild -v --to core-full-stack-tests -p max
     displayName: rush build packages
     workingDirectory: ${{ parameters.workingDir }}
   # - script: node common/scripts/install-run-rush.js build -v -p max
@@ -72,7 +72,7 @@ steps:
 
   # By default linux agents do not have a real display so use the virtual framebuffer
   - ${{ if eq(variables['Agent.OS'], 'Linux') }}:
-    - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' node common/scripts/install-run-rush.js cover --verbose
+    - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' node common/scripts/install-run-rush.js cover --to core-full-stack-tests --verbose
       displayName: rush cover
       workingDirectory: ${{ parameters.workingDir }}
 
@@ -82,6 +82,6 @@ steps:
       displayName: rush cover
       workingDirectory: ${{ parameters.workingDir }}
 
-  - script: node common/scripts/install-run-rush.js docs
-    displayName: rush docs
-    workingDirectory: ${{ parameters.workingDir }}
+  # - script: node common/scripts/install-run-rush.js docs
+  #   displayName: rush docs
+  #   workingDirectory: ${{ parameters.workingDir }}

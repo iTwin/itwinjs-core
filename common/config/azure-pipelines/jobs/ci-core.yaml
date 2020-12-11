@@ -7,15 +7,15 @@ jobs:
 - job:
   strategy:
     matrix:
-      "Windows_${{ parameters.name }}":
-        OS: windows-latest
-        platform: Windows_NT
+      # "Windows_${{ parameters.name }}":
+      #   OS: windows-latest
+      #   platform: Windows_NT
       "Linux_${{ parameters.name }}":
         OS: ubuntu-latest
         platform: Linux
-      "MacOS_${{ parameters.name }}":
-        OS: macOS-latest
-        platform: Darwin
+      # "MacOS_${{ parameters.name }}":
+      #   OS: macOS-latest
+      #   platform: Darwin
 
   timeoutInMinutes: 120
 
