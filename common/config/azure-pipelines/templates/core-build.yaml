@@ -57,9 +57,12 @@ steps:
   #   displayName: rush audit
   #   workingDirectory: ${{ parameters.workingDir }}
 
-  - script: node common/scripts/install-run-rush.js rebuild -v --to core-full-stack-tests -p max
+  - script: npm run test:electron
     displayName: rush build packages
-    workingDirectory: ${{ parameters.workingDir }}
+    workingDirectory: ${{ parameters.workingDir }}/full-stack-tests/core
+  # - script: node common/scripts/install-run-rush.js rebuild -v --to core-full-stack-tests -p max
+  #   displayName: rush build packages
+  #   workingDirectory: ${{ parameters.workingDir }}
   # - script: node common/scripts/install-run-rush.js build -v -p max
   #   displayName: rush build everything else (test-apps and example code)
   #   workingDirectory: ${{ parameters.workingDir }}
