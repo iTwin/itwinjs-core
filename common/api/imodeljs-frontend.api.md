@@ -90,6 +90,7 @@ import { FeatureTable } from '@bentley/imodeljs-common';
 import { FillFlags } from '@bentley/imodeljs-common';
 import { FontMap } from '@bentley/imodeljs-common';
 import { Format } from '@bentley/imodeljs-quantity';
+import { FormatProps } from '@bentley/imodeljs-quantity';
 import { FormatterSpec } from '@bentley/imodeljs-quantity';
 import { FrontendAuthorizationClient } from '@bentley/frontend-authorization-client';
 import { Frustum } from '@bentley/imodeljs-common';
@@ -1083,6 +1084,9 @@ export class ArcGisUtilities {
 // @internal
 export function areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): number;
 
+// @internal
+export function areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise<number>;
+
 // @public
 export class AuthorizedFrontendRequestContext extends AuthorizedClientRequestContext {
     constructor(accessToken: AccessToken, activityId?: string);
@@ -1185,7 +1189,7 @@ export class B3dmReader extends GltfReader {
 
 // @internal
 export class BackgroundMapGeometry {
-    constructor(_bimElevationBias: number, globeMode: GlobeMode, iModel: IModelConnection);
+    constructor(_bimElevationBias: number, globeMode: GlobeMode, _iModel: IModelConnection);
     // (undocumented)
     addFrustumDecorations(builder: GraphicBuilder, frustum: Frustum): void;
     // (undocumented)
@@ -1201,7 +1205,11 @@ export class BackgroundMapGeometry {
     // (undocumented)
     cartographicToDb(cartographic: Cartographic, result?: Point3d): Point3d;
     // (undocumented)
+    cartographicToDbFromGcs(cartographic: Cartographic, result?: Point3d): Promise<Point3d>;
+    // (undocumented)
     dbToCartographic(db: XYAndZ, result?: Cartographic): Cartographic;
+    // (undocumented)
+    dbToCartographicFromGcs(db: XYAndZ, result?: Cartographic): Promise<Cartographic>;
     // (undocumented)
     readonly geometry: Plane3dByOriginAndUnitNormal | Ellipsoid;
     // (undocumented)
@@ -2062,6 +2070,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @internal (undocumented)
     get backgroundMapBase(): BaseLayerSettings | undefined;
     // @internal (undocumented)
+    get backgroundMapElevationBias(): number;
+    // @internal (undocumented)
     get backgroundMapLayers(): MapLayerSettings[];
     get backgroundMapSettings(): BackgroundMapSettings;
     set backgroundMapSettings(settings: BackgroundMapSettings);
@@ -2778,6 +2788,9 @@ export function extractImageSourceDimensions(source: ImageSource): Promise<Point
 
 // @internal
 export function eyeToCartographicOnGlobe(viewport: ScreenViewport, preserveHeight?: boolean): Cartographic | undefined;
+
+// @internal
+export function eyeToCartographicOnGlobeFromGcs(viewport: ScreenViewport, preserveHeight?: boolean): Promise<Cartographic | undefined>;
 
 // @alpha
 export class FeatureLogBatchClient {
@@ -6083,6 +6096,8 @@ export namespace OrbitGtTileTree {
         // (undocumented)
         iModel: IModelConnection;
         // (undocumented)
+        modelId?: Id64String;
+        // (undocumented)
         name?: string;
         // (undocumented)
         orbitGtBlob: OrbitGtBlobProps;
@@ -6142,6 +6157,14 @@ export enum OutputMessageType {
     // (undocumented)
     Sticky = 2,
     Toast = 0
+}
+
+// @alpha
+export interface OverrideFormatEntry {
+    // (undocumented)
+    imperial: FormatProps;
+    // (undocumented)
+    metric: FormatProps;
 }
 
 // @internal
@@ -6405,6 +6428,10 @@ export class QuantityFormatter implements UnitsProvider {
     constructor(showMetricValues?: boolean);
     // (undocumented)
     protected _activeSystemIsImperial: boolean;
+    // (undocumented)
+    clearAllOverrideFormats(): Promise<void>;
+    // (undocumented)
+    clearOverrideFormats(type: QuantityType): Promise<void>;
     findFormatterSpecByQuantityType(type: QuantityType, imperial?: boolean): FormatterSpec | undefined;
     protected findKoqFormatterSpec(koq: string, useImperial: boolean): FormatterSpec | undefined;
     findParserSpecByQuantityType(type: QuantityType, imperial?: boolean): ParserSpec | undefined;
@@ -6421,7 +6448,11 @@ export class QuantityFormatter implements UnitsProvider {
     getFormatterSpecByQuantityType(type: QuantityType, imperial?: boolean): Promise<FormatterSpec>;
     protected getKoqFormatterSpec(koq: string, useImperial: boolean): Promise<FormatterSpec | undefined>;
     protected getKoqFormatterSpecsAsync(koq: string, useImperial: boolean): Promise<FormatterSpec[] | undefined>;
+    // (undocumented)
+    protected getOverrideFormat(type: QuantityType, imperial: boolean): Promise<FormatProps | undefined>;
     getParserSpecByQuantityType(type: QuantityType, imperial?: boolean): Promise<ParserSpec>;
+    // (undocumented)
+    protected _getStandardFormatterSpec(type: QuantityType, useImperial: boolean): Promise<FormatterSpec>;
     protected getUnitByQuantityType(type: QuantityType): Promise<UnitProps>;
     getUnitsByFamily(unitFamily: string): Promise<UnitProps[]>;
     // (undocumented)
@@ -6431,8 +6462,10 @@ export class QuantityFormatter implements UnitsProvider {
     // (undocumented)
     protected _imperialParserSpecsByType: Map<QuantityType, ParserSpec>;
     loadFormatAndParsingMaps(useImperial: boolean, restartActiveTool?: boolean): Promise<void>;
+    protected loadFormatSpecsForQuantityType(quantityType: QuantityType, useImperial: boolean): Promise<void>;
     protected loadFormatSpecsForQuantityTypes(useImperial: boolean): Promise<void>;
     protected loadKoqFormatSpecs(koq: string): Promise<void>;
+    protected loadParsingSpecsForQuantityType(quantityType: QuantityType, useImperial: boolean): Promise<void>;
     protected loadParsingSpecsForQuantityTypes(useImperial: boolean): Promise<void>;
     // (undocumented)
     protected loadStdFormat(type: QuantityType, imperial: boolean): Promise<Format>;
@@ -6447,7 +6480,11 @@ export class QuantityFormatter implements UnitsProvider {
     }>;
     // (undocumented)
     onInitialized(): void;
+    // (undocumented)
+    protected _overrideFormatDataByType: Map<QuantityType, OverrideFormatEntry>;
     parseIntoQuantityValue(inString: string, parserSpec: ParserSpec): ParseResult;
+    // (undocumented)
+    setOverrideFormats(type: QuantityType, entry: OverrideFormatEntry): Promise<void>;
     get useImperialFormats(): boolean;
     set useImperialFormats(useImperial: boolean);
 }
@@ -6502,7 +6539,7 @@ export class RealityModelTileTree extends RealityTileTree {
     constructor(params: RealityTileTreeParams);
     // (undocumented)
     get isContentUnbounded(): boolean;
-}
+    }
 
 // @internal (undocumented)
 export namespace RealityModelTileTree {
@@ -6510,8 +6547,11 @@ export namespace RealityModelTileTree {
     export function createRealityModelTileTree(url: string, iModel: IModelConnection, modelId: Id64String, tilesetToDb?: Transform): Promise<TileTree | undefined>;
     // (undocumented)
     export abstract class Reference extends TileTreeReference {
+        constructor(modelId: Id64String | undefined, iModel: IModelConnection);
         // (undocumented)
         abstract get classifiers(): SpatialClassifiers | undefined;
+        // (undocumented)
+        get modelId(): string;
         // (undocumented)
         unionFitRange(union: Range3d): void;
     }
@@ -6744,29 +6784,6 @@ export interface RealityTileTreeParams extends TileTreeParams {
     // (undocumented)
     readonly yAxisUp?: boolean;
 }
-
-// @internal
-export class RealityTreeReference extends RealityModelTileTree.Reference {
-    constructor(props: RealityModelTileTree.ReferenceProps);
-    // (undocumented)
-    addToScene(context: SceneContext): void;
-    // (undocumented)
-    get castsShadows(): boolean;
-    // (undocumented)
-    get classifiers(): SpatialClassifiers | undefined;
-    // (undocumented)
-    collectStatistics(stats: RenderMemory.Statistics): void;
-    // (undocumented)
-    discloseTileTrees(trees: TileTreeSet): void;
-    // (undocumented)
-    getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined>;
-    // (undocumented)
-    protected get _isLoadingComplete(): boolean;
-    // (undocumented)
-    get modelId(): string;
-    // (undocumented)
-    get treeOwner(): TileTreeOwner;
-    }
 
 // @public
 export class RemoteBriefcaseConnection extends BriefcaseConnection {
@@ -7622,7 +7639,7 @@ export class ScreenViewport extends Viewport {
     // @internal (undocumented)
     addNewDiv(className: string, overflowHidden: boolean, z: number): HTMLDivElement;
     // @internal
-    animateFlyoverToGlobalLocation(destination: GlobalLocation): void;
+    animateFlyoverToGlobalLocation(destination: GlobalLocation): Promise<void>;
     // @internal (undocumented)
     animateFrustumChange(options?: ViewAnimationOptions): void;
     // @internal
@@ -11588,8 +11605,8 @@ export abstract class ViewState3d extends ViewState {
     protected static calculateMaxDepth(delta: Vector3d, zVec: Vector3d): number;
     readonly camera: Camera;
     protected _cameraOn: boolean;
-    // (undocumented)
     cartographicToRoot(cartographic: Cartographic, result?: Point3d): Point3d | undefined;
+    cartographicToRootFromGcs(cartographic: Cartographic, result?: Point3d): Promise<Point3d | undefined>;
     centerEyePoint(backDistance?: number): void;
     centerFocusDistance(): void;
     // @internal
@@ -11651,6 +11668,8 @@ export abstract class ViewState3d extends ViewState {
     lookAt(eyePoint: XYAndZ, targetPoint: XYAndZ, upVector: Vector3d, newExtents?: XAndY, frontDistance?: number, backDistance?: number, opts?: ViewChangeOptions): ViewStatus;
     // @alpha
     lookAtGlobalLocation(eyeHeight: number, pitchAngleRadians?: number, location?: GlobalLocation, eyePoint?: Point3d): number;
+    // @alpha
+    lookAtGlobalLocationFromGcs(eyeHeight: number, pitchAngleRadians?: number, location?: GlobalLocation, eyePoint?: Point3d): Promise<number>;
     lookAtUsingLensAngle(eyePoint: Point3d, targetPoint: Point3d, upVector: Vector3d, fov: Angle, frontDistance?: number, backDistance?: number, opts?: ViewChangeOptions): ViewStatus;
     // (undocumented)
     minimumFrontDistance(): number;
@@ -11659,8 +11678,8 @@ export abstract class ViewState3d extends ViewState {
     // @deprecated
     onRenderFrame(_viewport: Viewport): void;
     readonly origin: Point3d;
-    // (undocumented)
     rootToCartographic(root: XYAndZ, result?: Cartographic): Cartographic | undefined;
+    rootToCartographicFromGcs(root: XYAndZ, result?: Cartographic): Promise<Cartographic | undefined>;
     rotateCameraLocal(angle: Angle, axis: Vector3d, aboutPt?: Point3d): ViewStatus;
     rotateCameraWorld(angle: Angle, axis: Vector3d, aboutPt?: Point3d): ViewStatus;
     readonly rotation: Matrix3d;

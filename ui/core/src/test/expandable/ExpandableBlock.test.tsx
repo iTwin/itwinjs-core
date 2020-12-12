@@ -44,6 +44,25 @@ describe("ExpandableBlock", () => {
       wrapper.unmount();
     });
 
+    it("should render with title given in a tooltip", () => {
+      const wrapper = mount(
+        <ExpandableBlock title="Test" isExpanded={true} onClick={sinon.spy()} tooltip={"hello"}>
+          <div>Hello</div>
+        </ExpandableBlock>);
+      expect(wrapper.find(".title").equals(<div className="title" title="hello">Test</div>)).to.be.true;
+      wrapper.unmount();
+    });
+
+    it("should render title as undefined if tooltip is not given and title is JSX.Element", () => {
+      const title = <div />; // title may be JSX.Element when passing a highlighted text
+      const wrapper = mount(
+        <ExpandableBlock title={title} isExpanded={true} onClick={sinon.spy()}>
+          <div>Hello</div>
+        </ExpandableBlock>);
+      expect(wrapper.find(".title").get(0).props.title).to.be.undefined;
+      wrapper.unmount();
+    });
+
     it("should support click", () => {
       const spyMethod = sinon.fake();
       const wrapper = mount(

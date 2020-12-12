@@ -10,14 +10,17 @@ import {
   CompositeFilterType, CompositePropertyDataFilterer,
 } from "../../../../ui-components/propertygrid/dataproviders/filterers/CompositePropertyDataFilterer";
 import {
-  IPropertyDataFilterer, PropertyFilterChangeEvent,
+  FilteredType, IPropertyDataFilterer, PropertyFilterChangeEvent,
 } from "../../../../ui-components/propertygrid/dataproviders/filterers/PropertyDataFiltererBase";
+import { PropertyCategory } from "../../../../ui-components/propertygrid/PropertyDataProvider";
 import { TestUtils } from "../../../TestUtils";
 
 describe("CompositePropertyDataFilterer", () => {
 
   const testRecord = TestUtils.createPrimitiveStringProperty("Test", "Test");
-  const testArray: PropertyRecord[] = [TestUtils.createPrimitiveStringProperty("TestParent", "TestParent")];
+  const testCategory = { name: "Cat1", label: "Category 1", expand: true, childCategories: [] };
+  const testRecordArray: PropertyRecord[] = [TestUtils.createPrimitiveStringProperty("TestParent", "TestParent")];
+  const testCategoryArray: PropertyCategory[] = [{ name: "Par1", label: "Parent 1", expand: true, childCategories: [] }];
   let leftFilterMock = moq.Mock.ofType<IPropertyDataFilterer>();
   let rightFilterMock = moq.Mock.ofType<IPropertyDataFilterer>();
 
@@ -90,64 +93,144 @@ describe("CompositePropertyDataFilterer", () => {
     });
 
     describe("matchesFilter", () => {
-      it("Should not match if both filters do not match", async () => {
-        leftFilterMock.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
-        rightFilterMock.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
+      it("Should not match PropertyRecord if both filters do not match", async () => {
+        leftFilterMock.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
+        rightFilterMock.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
 
         const compositeFilter = new CompositePropertyDataFilterer(leftFilterMock.object, CompositeFilterType.And, rightFilterMock.object);
 
-        const matchResult = await compositeFilter.matchesFilter(testRecord, testArray);
+        const matchResult = await compositeFilter.recordMatchesFilter(testRecord, testRecordArray);
         expect(matchResult).to.deep.eq({ matchesFilter: false });
       });
 
-      it("Should not match if left filter does not match", async () => {
-        leftFilterMock.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
-        rightFilterMock.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true }));
+      it("Should not match PropertyCategory if both filters do not match", async () => {
+        leftFilterMock.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
+        rightFilterMock.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
 
         const compositeFilter = new CompositePropertyDataFilterer(leftFilterMock.object, CompositeFilterType.And, rightFilterMock.object);
 
-        const matchResult = await compositeFilter.matchesFilter(testRecord, testArray);
+        const matchResult = await compositeFilter.categoryMatchesFilter(testCategory, testCategoryArray);
         expect(matchResult).to.deep.eq({ matchesFilter: false });
       });
 
-      it("Should not match if right filter does not match", async () => {
-        leftFilterMock.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true }));
-        rightFilterMock.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
+      it("Should not match PropertyRecord if left filter does not match", async () => {
+        leftFilterMock.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
+        rightFilterMock.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true }));
 
         const compositeFilter = new CompositePropertyDataFilterer(leftFilterMock.object, CompositeFilterType.And, rightFilterMock.object);
 
-        const matchResult = await compositeFilter.matchesFilter(testRecord, testArray);
+        const matchResult = await compositeFilter.recordMatchesFilter(testRecord, testRecordArray);
         expect(matchResult).to.deep.eq({ matchesFilter: false });
       });
 
-      it("Should match if both filters match", async () => {
-        leftFilterMock.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true }));
-        rightFilterMock.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true }));
+      it("Should not match PropertyCategory if left filter does not match", async () => {
+        leftFilterMock.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
+        rightFilterMock.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true }));
 
         const compositeFilter = new CompositePropertyDataFilterer(leftFilterMock.object, CompositeFilterType.And, rightFilterMock.object);
 
-        const matchResult = await compositeFilter.matchesFilter(testRecord, testArray);
-        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: { label: undefined, value: undefined } });
+        const matchResult = await compositeFilter.categoryMatchesFilter(testCategory, testCategoryArray);
+        expect(matchResult).to.deep.eq({ matchesFilter: false });
       });
 
-      it("Should return true for shouldExpandNodeParents and shouldForceIncludeChildren when either filter returns these as true", async () => {
-        leftFilterMock.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true }));
-        rightFilterMock.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldExpandNodeParents: true }));
+      it("Should not match PropertyRecord if right filter does not match", async () => {
+        leftFilterMock.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true }));
+        rightFilterMock.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
 
         const compositeFilter = new CompositePropertyDataFilterer(leftFilterMock.object, CompositeFilterType.And, rightFilterMock.object);
 
-        const matchResult = await compositeFilter.matchesFilter(testRecord, testArray);
-        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: { label: undefined, value: undefined } });
+        const matchResult = await compositeFilter.recordMatchesFilter(testRecord, testRecordArray);
+        expect(matchResult).to.deep.eq({ matchesFilter: false });
       });
 
-      it("Should return matchesCount equal to the sum of matchesCount of right and left filters if both of them match", async () => {
-        leftFilterMock.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: { label: 2, value: 3 } }));
-        rightFilterMock.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: { label: 4, value: 4 } }));
+      it("Should not match PropertyCategory if right filter does not match", async () => {
+        leftFilterMock.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true }));
+        rightFilterMock.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
 
         const compositeFilter = new CompositePropertyDataFilterer(leftFilterMock.object, CompositeFilterType.And, rightFilterMock.object);
 
-        const matchResult = await compositeFilter.matchesFilter(testRecord, testArray);
-        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: { label: 6, value: 7 } });
+        const matchResult = await compositeFilter.categoryMatchesFilter(testCategory, testCategoryArray);
+        expect(matchResult).to.deep.eq({ matchesFilter: false });
+      });
+
+      it("Should match PropertyRecord if both filters match", async () => {
+        leftFilterMock.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true }));
+        rightFilterMock.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true }));
+
+        const compositeFilter = new CompositePropertyDataFilterer(leftFilterMock.object, CompositeFilterType.And, rightFilterMock.object);
+
+        const matchResult = await compositeFilter.recordMatchesFilter(testRecord, testRecordArray);
+        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: undefined, filteredTypes: undefined });
+      });
+
+      it("Should match PropertyCategory if both filters match", async () => {
+        leftFilterMock.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true }));
+        rightFilterMock.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true }));
+
+        const compositeFilter = new CompositePropertyDataFilterer(leftFilterMock.object, CompositeFilterType.And, rightFilterMock.object);
+
+        const matchResult = await compositeFilter.categoryMatchesFilter(testCategory, testCategoryArray);
+        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: undefined, filteredTypes: undefined });
+      });
+
+      it("Should return true for shouldExpandNodeParents and shouldForceIncludeChildren when either filter returns these as true when filtering PropertyRecord", async () => {
+        leftFilterMock.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true }));
+        rightFilterMock.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldExpandNodeParents: true }));
+
+        const compositeFilter = new CompositePropertyDataFilterer(leftFilterMock.object, CompositeFilterType.And, rightFilterMock.object);
+
+        const matchResult = await compositeFilter.recordMatchesFilter(testRecord, testRecordArray);
+        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: undefined, filteredTypes: undefined });
+      });
+
+      it("Should return true for shouldExpandNodeParents and shouldForceIncludeChildren when either filter returns these as true when filtering PropertyCategory", async () => {
+        leftFilterMock.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true }));
+        rightFilterMock.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldExpandNodeParents: true }));
+
+        const compositeFilter = new CompositePropertyDataFilterer(leftFilterMock.object, CompositeFilterType.And, rightFilterMock.object);
+
+        const matchResult = await compositeFilter.categoryMatchesFilter(testCategory, testCategoryArray);
+        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: undefined, filteredTypes: undefined });
+      });
+
+      it("Should return matchesCount equal to the sum of matchesCount of right and left filters if both of them match when Filtering PropertyRecord", async () => {
+        leftFilterMock.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: 5 }));
+        rightFilterMock.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: 8, filteredTypes: undefined }));
+
+        const compositeFilter = new CompositePropertyDataFilterer(leftFilterMock.object, CompositeFilterType.And, rightFilterMock.object);
+
+        const matchResult = await compositeFilter.recordMatchesFilter(testRecord, testRecordArray);
+        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: 13, filteredTypes: undefined });
+      });
+
+      it("Should return matchesCount equal to the sum of matchesCount of right and left filters if both of them match when Filtering PropertyCategory", async () => {
+        leftFilterMock.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: 5 }));
+        rightFilterMock.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: 8, filteredTypes: undefined }));
+
+        const compositeFilter = new CompositePropertyDataFilterer(leftFilterMock.object, CompositeFilterType.And, rightFilterMock.object);
+
+        const matchResult = await compositeFilter.categoryMatchesFilter(testCategory, testCategoryArray);
+        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: 13, filteredTypes: undefined });
+      });
+
+      it("Should return filteredTypes from both filterers when both of them match filtering Categories", async () => {
+        leftFilterMock.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: undefined, filteredTypes: [FilteredType.Label] }));
+        rightFilterMock.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: undefined, filteredTypes: [FilteredType.Value] }));
+
+        const compositeFilter = new CompositePropertyDataFilterer(leftFilterMock.object, CompositeFilterType.And, rightFilterMock.object);
+
+        const matchResult = await compositeFilter.categoryMatchesFilter(testCategory, testCategoryArray);
+        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: undefined, filteredTypes: [FilteredType.Label, FilteredType.Value] });
+      });
+
+      it("Should return filteredTypes from both filterers when both of them match filtering Records", async () => {
+        leftFilterMock.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: undefined, filteredTypes: [FilteredType.Label] }));
+        rightFilterMock.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: undefined, filteredTypes: [FilteredType.Value] }));
+
+        const compositeFilter = new CompositePropertyDataFilterer(leftFilterMock.object, CompositeFilterType.And, rightFilterMock.object);
+
+        const matchResult = await compositeFilter.recordMatchesFilter(testRecord, testRecordArray);
+        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: undefined, filteredTypes: [FilteredType.Label, FilteredType.Value] });
       });
     });
   });
@@ -207,124 +290,264 @@ describe("CompositePropertyDataFilterer", () => {
     });
 
     describe("matchesFilter", () => {
-      it("Should not match if both filters do not match", async () => {
-        leftFilterMock.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
-        rightFilterMock.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
+      it("Should not match PropertyRecord if both filters do not match", async () => {
+        leftFilterMock.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
+        rightFilterMock.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
 
         const compositeFilter = new CompositePropertyDataFilterer(leftFilterMock.object, CompositeFilterType.Or, rightFilterMock.object);
 
-        const matchResult = await compositeFilter.matchesFilter(testRecord, testArray);
+        const matchResult = await compositeFilter.recordMatchesFilter(testRecord, testRecordArray);
         expect(matchResult).to.deep.eq({ matchesFilter: false });
       });
 
-      it("Should match if left filter matches", async () => {
-        leftFilterMock.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true }));
-        rightFilterMock.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
+      it("Should not match PropertyCategory if both filters do not match", async () => {
+        leftFilterMock.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
+        rightFilterMock.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
 
         const compositeFilter = new CompositePropertyDataFilterer(leftFilterMock.object, CompositeFilterType.Or, rightFilterMock.object);
 
-        const matchResult = await compositeFilter.matchesFilter(testRecord, testArray);
-        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: { label: undefined, value: undefined } });
+        const matchResult = await compositeFilter.categoryMatchesFilter(testCategory, testCategoryArray);
+        expect(matchResult).to.deep.eq({ matchesFilter: false });
       });
 
-      it("Should match if right filter matches", async () => {
-        leftFilterMock.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
-        rightFilterMock.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true }));
+      it("Should match PropertyRecord if left filter matches", async () => {
+        leftFilterMock.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true }));
+        rightFilterMock.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
 
         const compositeFilter = new CompositePropertyDataFilterer(leftFilterMock.object, CompositeFilterType.Or, rightFilterMock.object);
 
-        const matchResult = await compositeFilter.matchesFilter(testRecord, testArray);
-        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: { label: undefined, value: undefined } });
+        const matchResult = await compositeFilter.recordMatchesFilter(testRecord, testRecordArray);
+        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: undefined, filteredTypes: undefined });
       });
 
-      it("Should match if both filters match", async () => {
-        leftFilterMock.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true }));
-        rightFilterMock.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true }));
+      it("Should match PropertyCategory if left filter matches", async () => {
+        leftFilterMock.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true }));
+        rightFilterMock.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
 
         const compositeFilter = new CompositePropertyDataFilterer(leftFilterMock.object, CompositeFilterType.Or, rightFilterMock.object);
 
-        const matchResult = await compositeFilter.matchesFilter(testRecord, testArray);
-        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: { label: undefined, value: undefined } });
+        const matchResult = await compositeFilter.categoryMatchesFilter(testCategory, testCategoryArray);
+        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: undefined, filteredTypes: undefined });
       });
 
-      it("Should return true for shouldExpandNodeParents and shouldForceIncludeChildren when either filter returns these as true", async () => {
-        leftFilterMock.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true }));
-        rightFilterMock.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldExpandNodeParents: true }));
+      it("Should match PropertyRecord if right filter matches", async () => {
+        leftFilterMock.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
+        rightFilterMock.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true }));
 
         const compositeFilter = new CompositePropertyDataFilterer(leftFilterMock.object, CompositeFilterType.Or, rightFilterMock.object);
 
-        const matchResult = await compositeFilter.matchesFilter(testRecord, testArray);
-        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: { label: undefined, value: undefined } });
+        const matchResult = await compositeFilter.recordMatchesFilter(testRecord, testRecordArray);
+        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: undefined, filteredTypes: undefined });
       });
 
-      it("Should return matchesCount equal to the matchesCount of left filter if right filter doesn't match", async () => {
-        leftFilterMock.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: { label: 4, value: 4 } }));
-        rightFilterMock.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
+      it("Should match PropertyCategory if right filter matches", async () => {
+        leftFilterMock.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
+        rightFilterMock.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true }));
 
         const compositeFilter = new CompositePropertyDataFilterer(leftFilterMock.object, CompositeFilterType.Or, rightFilterMock.object);
 
-        const matchResult = await compositeFilter.matchesFilter(testRecord, testArray);
-        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: { label: 4, value: 4 } });
+        const matchResult = await compositeFilter.categoryMatchesFilter(testCategory, testCategoryArray);
+        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: undefined, filteredTypes: undefined });
       });
 
-      it("Should return matchesCount equal to the matchesCount of right filter if left filter doesn't match", async () => {
-        leftFilterMock.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
-        rightFilterMock.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: { label: 4, value: 4 } }));
+      it("Should match PropertyRecord if both filters match", async () => {
+        leftFilterMock.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true }));
+        rightFilterMock.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true }));
 
         const compositeFilter = new CompositePropertyDataFilterer(leftFilterMock.object, CompositeFilterType.Or, rightFilterMock.object);
 
-        const matchResult = await compositeFilter.matchesFilter(testRecord, testArray);
-        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: { label: 4, value: 4 } });
+        const matchResult = await compositeFilter.recordMatchesFilter(testRecord, testRecordArray);
+        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: undefined, filteredTypes: undefined });
       });
 
-      it("Should return matchesCount equal to the sum of matchesCount of right and left filters if both of them match", async () => {
-        leftFilterMock.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: { label: 4, value: 1 } }));
-        rightFilterMock.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: { label: 4, value: 4 } }));
+      it("Should match PropertyCategory if both filters match", async () => {
+        leftFilterMock.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true }));
+        rightFilterMock.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true }));
 
         const compositeFilter = new CompositePropertyDataFilterer(leftFilterMock.object, CompositeFilterType.Or, rightFilterMock.object);
 
-        const matchResult = await compositeFilter.matchesFilter(testRecord, testArray);
-        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: { label: 8, value: 5 } });
+        const matchResult = await compositeFilter.categoryMatchesFilter(testCategory, testCategoryArray);
+        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: undefined, filteredTypes: undefined });
       });
 
-      it("Should return matchesCount with undefined value count if both of the filterers had undefined value count", async () => {
-        leftFilterMock.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: { label: 4, value: undefined } }));
-        rightFilterMock.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: { label: 4, value: undefined } }));
+      it("Should return true for shouldExpandNodeParents and shouldForceIncludeChildren when either filter returns these as true when filtering PropertyRecord", async () => {
+        leftFilterMock.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true }));
+        rightFilterMock.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldExpandNodeParents: true }));
 
         const compositeFilter = new CompositePropertyDataFilterer(leftFilterMock.object, CompositeFilterType.Or, rightFilterMock.object);
 
-        const matchResult = await compositeFilter.matchesFilter(testRecord, testArray);
-        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: { label: 8, value: undefined } });
+        const matchResult = await compositeFilter.recordMatchesFilter(testRecord, testRecordArray);
+        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: undefined, filteredTypes: undefined });
       });
 
-      it("Should return matchesCount with undefined label count if both of the filterers had undefined label count", async () => {
-        leftFilterMock.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: { label: undefined, value: 1 } }));
-        rightFilterMock.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: { label: undefined, value: 4 } }));
+      it("Should return true for shouldExpandNodeParents and shouldForceIncludeChildren when either filter returns these as true when filtering PropertyCategory", async () => {
+        leftFilterMock.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true }));
+        rightFilterMock.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldExpandNodeParents: true }));
 
         const compositeFilter = new CompositePropertyDataFilterer(leftFilterMock.object, CompositeFilterType.Or, rightFilterMock.object);
 
-        const matchResult = await compositeFilter.matchesFilter(testRecord, testArray);
-        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: { label: undefined, value: 5 } });
+        const matchResult = await compositeFilter.categoryMatchesFilter(testCategory, testCategoryArray);
+        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: undefined, filteredTypes: undefined });
       });
 
-      it("Should return matchesCount equal to the defined variables of the filterers if opposing variables were undefined", async () => {
-        leftFilterMock.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: { label: 5, value: undefined } }));
-        rightFilterMock.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: { label: undefined, value: 4 } }));
+      it("Should return matchesCount equal to the matchesCount of left filter if right filter doesn't match when filtering PropertyRecord", async () => {
+        leftFilterMock.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: 8, filteredTypes: undefined }));
+        rightFilterMock.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
 
         const compositeFilter = new CompositePropertyDataFilterer(leftFilterMock.object, CompositeFilterType.Or, rightFilterMock.object);
 
-        const matchResult = await compositeFilter.matchesFilter(testRecord, testArray);
-        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: { label: 5, value: 4 } });
+        const matchResult = await compositeFilter.recordMatchesFilter(testRecord, testRecordArray);
+        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: 8, filteredTypes: undefined });
       });
 
-      it("Should return matchesCount values equal to undefined if both filterers matchesCount values were undefined", async () => {
-        leftFilterMock.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: { label: undefined, value: undefined } }));
-        rightFilterMock.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: { label: undefined, value: undefined } }));
+      it("Should return matchesCount equal to the matchesCount of left filter if right filter doesn't match when filtering PropertyCategory", async () => {
+        leftFilterMock.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: 8, filteredTypes: undefined }));
+        rightFilterMock.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
 
         const compositeFilter = new CompositePropertyDataFilterer(leftFilterMock.object, CompositeFilterType.Or, rightFilterMock.object);
 
-        const matchResult = await compositeFilter.matchesFilter(testRecord, testArray);
-        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: { label: undefined, value: undefined } });
+        const matchResult = await compositeFilter.categoryMatchesFilter(testCategory, testCategoryArray);
+        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: 8, filteredTypes: undefined });
+      });
+
+      it("Should return matchesCount equal to the matchesCount of right filter if left filter doesn't match when filtering PropertyRecord", async () => {
+        leftFilterMock.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
+        rightFilterMock.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: 8, filteredTypes: undefined }));
+
+        const compositeFilter = new CompositePropertyDataFilterer(leftFilterMock.object, CompositeFilterType.Or, rightFilterMock.object);
+
+        const matchResult = await compositeFilter.recordMatchesFilter(testRecord, testRecordArray);
+        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: 8, filteredTypes: undefined });
+      });
+
+      it("Should return matchesCount equal to the matchesCount of right filter if left filter doesn't match when filtering PropertyCategory", async () => {
+        leftFilterMock.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
+        rightFilterMock.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: 8, filteredTypes: undefined }));
+
+        const compositeFilter = new CompositePropertyDataFilterer(leftFilterMock.object, CompositeFilterType.Or, rightFilterMock.object);
+
+        const matchResult = await compositeFilter.categoryMatchesFilter(testCategory, testCategoryArray);
+        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: 8, filteredTypes: undefined });
+      });
+
+      it("Should return matchesCount equal to the sum of matchesCount of right and left filters if both of them match when filtering PropertyRecord", async () => {
+        leftFilterMock.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: 5 }));
+        rightFilterMock.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: 8, filteredTypes: undefined }));
+
+        const compositeFilter = new CompositePropertyDataFilterer(leftFilterMock.object, CompositeFilterType.Or, rightFilterMock.object);
+
+        const matchResult = await compositeFilter.recordMatchesFilter(testRecord, testRecordArray);
+        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: 13, filteredTypes: undefined });
+      });
+
+      it("Should return matchesCount equal to the sum of matchesCount of right and left filters if both of them match when filtering PropertyCategory", async () => {
+        leftFilterMock.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: 5 }));
+        rightFilterMock.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: 8, filteredTypes: undefined }));
+
+        const compositeFilter = new CompositePropertyDataFilterer(leftFilterMock.object, CompositeFilterType.Or, rightFilterMock.object);
+
+        const matchResult = await compositeFilter.categoryMatchesFilter(testCategory, testCategoryArray);
+        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: 13, filteredTypes: undefined });
+      });
+
+      it("Should return matchesCount equal to the defined variables of the filterers if opposing variables were undefined when filtering PropertyRecord", async () => {
+        leftFilterMock.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: 5 }));
+        rightFilterMock.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: 4 }));
+
+        const compositeFilter = new CompositePropertyDataFilterer(leftFilterMock.object, CompositeFilterType.Or, rightFilterMock.object);
+
+        const matchResult = await compositeFilter.recordMatchesFilter(testRecord, testRecordArray);
+        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: 9, filteredTypes: undefined });
+      });
+
+      it("Should return matchesCount equal to the defined variables of the filterers if opposing variables were undefined  when filtering PropertyCategory", async () => {
+        leftFilterMock.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: 5 }));
+        rightFilterMock.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: 4 }));
+
+        const compositeFilter = new CompositePropertyDataFilterer(leftFilterMock.object, CompositeFilterType.Or, rightFilterMock.object);
+
+        const matchResult = await compositeFilter.categoryMatchesFilter(testCategory, testCategoryArray);
+        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: 9, filteredTypes: undefined });
+      });
+
+      it("Should return matchesCount values equal to undefined if both filterers matchesCount values were undefined when filtering PropertyRecord", async () => {
+        leftFilterMock.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: undefined, filteredTypes: undefined }));
+        rightFilterMock.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: undefined, filteredTypes: undefined }));
+
+        const compositeFilter = new CompositePropertyDataFilterer(leftFilterMock.object, CompositeFilterType.Or, rightFilterMock.object);
+
+        const matchResult = await compositeFilter.recordMatchesFilter(testRecord, testRecordArray);
+        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: undefined, filteredTypes: undefined });
+      });
+
+      it("Should return matchesCount values equal to undefined if both filterers matchesCount values were undefined when filtering PropertyCategory", async () => {
+        leftFilterMock.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: undefined, filteredTypes: undefined }));
+        rightFilterMock.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: undefined, filteredTypes: undefined }));
+
+        const compositeFilter = new CompositePropertyDataFilterer(leftFilterMock.object, CompositeFilterType.Or, rightFilterMock.object);
+
+        const matchResult = await compositeFilter.categoryMatchesFilter(testCategory, testCategoryArray);
+        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: undefined, filteredTypes: undefined });
+      });
+
+      it("Should return filteredTypes from both filterers when both of them match filtering Categories", async () => {
+        leftFilterMock.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: undefined, filteredTypes: [FilteredType.Label] }));
+        rightFilterMock.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: undefined, filteredTypes: [FilteredType.Value] }));
+
+        const compositeFilter = new CompositePropertyDataFilterer(leftFilterMock.object, CompositeFilterType.Or, rightFilterMock.object);
+
+        const matchResult = await compositeFilter.categoryMatchesFilter(testCategory, testCategoryArray);
+        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: undefined, filteredTypes: [FilteredType.Label, FilteredType.Value] });
+      });
+
+      it("Should return filteredTypes from both filterers when both of them match filtering Records", async () => {
+        leftFilterMock.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: undefined, filteredTypes: [FilteredType.Label] }));
+        rightFilterMock.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: undefined, filteredTypes: [FilteredType.Value] }));
+
+        const compositeFilter = new CompositePropertyDataFilterer(leftFilterMock.object, CompositeFilterType.Or, rightFilterMock.object);
+
+        const matchResult = await compositeFilter.recordMatchesFilter(testRecord, testRecordArray);
+        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: undefined, filteredTypes: [FilteredType.Label, FilteredType.Value] });
+      });
+
+      it("Should return filteredTypes from only the left filterer if the right one doesn't match when filtering Categories", async () => {
+        leftFilterMock.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: undefined, filteredTypes: [FilteredType.Label, FilteredType.Value] }));
+        rightFilterMock.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
+
+        const compositeFilter = new CompositePropertyDataFilterer(leftFilterMock.object, CompositeFilterType.Or, rightFilterMock.object);
+
+        const matchResult = await compositeFilter.categoryMatchesFilter(testCategory, testCategoryArray);
+        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: undefined, filteredTypes: [FilteredType.Label, FilteredType.Value] });
+      });
+
+      it("Should return filteredTypes from only the left filterer if the right one doesn't match when filtering Records", async () => {
+        leftFilterMock.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: undefined, filteredTypes: [FilteredType.Label, FilteredType.Value] }));
+        rightFilterMock.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
+
+        const compositeFilter = new CompositePropertyDataFilterer(leftFilterMock.object, CompositeFilterType.Or, rightFilterMock.object);
+
+        const matchResult = await compositeFilter.recordMatchesFilter(testRecord, testRecordArray);
+        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: undefined, filteredTypes: [FilteredType.Label, FilteredType.Value] });
+      });
+
+      it("Should return filteredTypes from only the right filterer if the left one doesn't match when filtering Categories", async () => {
+        leftFilterMock.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
+        rightFilterMock.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: undefined, filteredTypes: [FilteredType.Label, FilteredType.Value] }));
+
+        const compositeFilter = new CompositePropertyDataFilterer(leftFilterMock.object, CompositeFilterType.Or, rightFilterMock.object);
+
+        const matchResult = await compositeFilter.categoryMatchesFilter(testCategory, testCategoryArray);
+        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: undefined, filteredTypes: [FilteredType.Label, FilteredType.Value] });
+      });
+
+      it("Should return filteredTypes from only the right filterer if the left one doesn't match when filtering Records", async () => {
+        leftFilterMock.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
+        rightFilterMock.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: undefined, filteredTypes: [FilteredType.Label, FilteredType.Value] }));
+
+        const compositeFilter = new CompositePropertyDataFilterer(leftFilterMock.object, CompositeFilterType.Or, rightFilterMock.object);
+
+        const matchResult = await compositeFilter.recordMatchesFilter(testRecord, testRecordArray);
+        expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: undefined, filteredTypes: [FilteredType.Label, FilteredType.Value] });
       });
     });
   });

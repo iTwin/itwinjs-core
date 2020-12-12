@@ -29,4 +29,13 @@ describe("<Textarea />", () => {
     expect(element && element === textarea).to.be.true;
   });
 
+  it("input element is properly set", () => {
+    const textElementRef = React.createRef<HTMLTextAreaElement>();
+    const component = render(<Textarea setFocus={true} ref={textElementRef} />);
+    const textNode = component.container.querySelector("textarea") as HTMLTextAreaElement;
+    expect(textNode).not.to.be.null;
+    expect(textElementRef.current).not.to.be.null;
+    expect(textNode).to.be.eq(textElementRef.current);
+  });
+
 });
