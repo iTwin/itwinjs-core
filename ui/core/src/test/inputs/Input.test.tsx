@@ -43,4 +43,14 @@ describe("<Input />", () => {
     expect(spyOnSecondKeyboardEvent.calledOnce).to.be.true;
   });
 
+  it("input element is properly set", () => {
+    const inputElementRef = React.createRef<HTMLInputElement>();
+    const component = render(<Input setFocus={true} ref={inputElementRef} />);
+    const inputNode = component.container.querySelector("input") as HTMLInputElement;
+    expect(inputNode).not.to.be.null;
+    fireEvent.keyDown(inputNode, { key: "Enter" });
+    expect(inputElementRef.current).not.to.be.null;
+    expect(inputNode).to.be.eq(inputElementRef.current);
+  });
+
 });

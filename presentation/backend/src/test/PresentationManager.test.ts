@@ -92,6 +92,7 @@ describe("PresentationManager", () => {
             mode: IModelHost.platform.ECPresentationManagerMode.ReadWrite,
             isChangeTrackingEnabled: false,
             cacheConfig: { mode: HierarchyCacheMode.Disk, directory: "" },
+            contentCacheSize: undefined,
           });
         });
       });
@@ -111,6 +112,7 @@ describe("PresentationManager", () => {
           mode: PresentationManagerMode.ReadWrite,
           updatesPollInterval: 1,
           cacheConfig,
+          contentCacheSize: 999,
         };
         const expectedCacheConfig = {
           mode: HierarchyCacheMode.Memory,
@@ -124,6 +126,7 @@ describe("PresentationManager", () => {
             mode: IModelHost.platform.ECPresentationManagerMode.ReadWrite,
             isChangeTrackingEnabled: true,
             cacheConfig: expectedCacheConfig,
+            contentCacheSize: 999,
           });
         });
       });
@@ -139,6 +142,7 @@ describe("PresentationManager", () => {
             mode: IModelHost.platform.ECPresentationManagerMode.ReadWrite,
             isChangeTrackingEnabled: false,
             cacheConfig: { mode: HierarchyCacheMode.Disk, directory: "" },
+            contentCacheSize: undefined,
           });
         });
         constructorSpy.resetHistory();
@@ -156,6 +160,7 @@ describe("PresentationManager", () => {
             mode: IModelHost.platform.ECPresentationManagerMode.ReadWrite,
             isChangeTrackingEnabled: false,
             cacheConfig: expectedConfig,
+            contentCacheSize: undefined,
           });
         });
       });
@@ -171,6 +176,7 @@ describe("PresentationManager", () => {
             mode: IModelHost.platform.ECPresentationManagerMode.ReadWrite,
             isChangeTrackingEnabled: false,
             cacheConfig: { mode: HierarchyCacheMode.Hybrid, disk: undefined },
+            contentCacheSize: undefined,
           });
         });
         constructorSpy.resetHistory();
@@ -193,6 +199,7 @@ describe("PresentationManager", () => {
             mode: IModelHost.platform.ECPresentationManagerMode.ReadWrite,
             isChangeTrackingEnabled: false,
             cacheConfig: expectedConfig,
+            contentCacheSize: undefined,
           });
         });
       });

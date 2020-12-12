@@ -8,6 +8,8 @@ import * as React from "react";
 import { DragSourceArguments, DropEffects, DropStatus } from "../../../ui-components/dragdrop/DragDropDef";
 import { ColumnDragLayer } from "../../../ui-components/table/component/ColumnDragLayer";
 
+/* eslint-disable deprecation/deprecation */
+
 describe("ColumnDragLayer", () => {
 
   it("renders correctly with no props", async () => {
