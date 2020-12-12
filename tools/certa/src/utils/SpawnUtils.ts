@@ -58,7 +58,7 @@ async function onExitElectronApp(child: ChildProcess): Promise<number> {
  * Returns a promise that will be resolved with the exit code of the child process, once it terminates.
  */
 export async function relaunchInElectron(): Promise<number> {
-  const child = spawnChildProcess(require("electron/index.js"), ["--no-sandbox", ...process.argv.slice(1)], { ELECTRON_ENABLE_LOGGING: "true" }, true);
+  const child = spawnChildProcess(require("electron/index.js"), process.argv.slice(1), { ELECTRON_ENABLE_LOGGING: "true" }, true);
   return onExitElectronApp(child);
 }
 
