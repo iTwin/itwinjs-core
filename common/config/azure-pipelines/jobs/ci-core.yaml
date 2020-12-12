@@ -38,16 +38,16 @@ jobs:
         git config --local user.name imodeljs-admin
       displayName: git config
 
-    - ${{ if eq(variables['Agent.OS'], 'Windows_NT') }}:
-      - powershell: |
-          # Get the new version number.
-          $json = Get-Content -Raw -Path common/config/rush/version-policies.json | ConvertFrom-Json
-          $currVersion = $json[0].version
+    - powershell: |
+        # Get the new version number.
+        $json = Get-Content -Raw -Path common/config/rush/version-policies.json | ConvertFrom-Json
+        $currVersion = $json[0].version
 
-          $newBuildNumber = $currVersion + "_$(Build.BuildNumber)"
+        $newBuildNumber = $currVersion + "_$(Build.BuildNumber)"
 
-          Write-Host "##vso[build.updatebuildnumber]$newBuildNumber"
-        displayName: Set build number
+        Write-Host "##vso[build.updatebuildnumber]$newBuildNumber"
+      displayName: Set build number
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
 
     - template: ../templates/core-build.yaml
 
