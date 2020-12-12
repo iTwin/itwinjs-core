@@ -19,7 +19,6 @@ export function spawnChildProcess(command: string, args: ReadonlyArray<string>, 
   // FIXME: We should be able to remove the useIpc param and just always enable it,
   // but it's not safe to spawn electron with IPC enabled until https://github.com/electron/electron/issues/17044 is fixed.
   const stdio: StdioOptions = (useIpc) ? ["ipc", "pipe", "pipe"] : "pipe";
-  console.log(command);
   const childProcess = spawn(command, args, { stdio, cwd: process.cwd(), env: childEnv });
   // For some reason, spawning using `stdio: "inherit"` results in some garbled output (for example, "✓" is printed as "ΓêÜ").
   // Using `stdio: "pipe"` and manually redirecting the output here seems to work though.

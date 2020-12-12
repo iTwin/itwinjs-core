@@ -42,9 +42,6 @@ export async function certa(environment: string, config: CertaConfig): Promise<v
   if (config.cover && runner.supportsCoverage && !alreadyInNyc)
     return process.exit(await relaunchForCoverage());
 
-  console.log("Config:");
-  console.log(config);
-
   if (runner.initialize)
     await runner.initialize(config);
 

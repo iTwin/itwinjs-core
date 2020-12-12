@@ -90,7 +90,6 @@ else
 
 (async () => {
   try {
-    console.log("Testing the start of certa")
     await certa(yargs.argv.runner, config);
   } catch (error) {
     if (error instanceof Error) {
