@@ -8,7 +8,7 @@
 
 import memoize from "micro-memoize";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { InstanceKey } from "@bentley/presentation-common";
+import { DEFAULT_KEYS_BATCH_SIZE, InstanceKey, LabelDefinition } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 
 /**
@@ -66,7 +66,18 @@ export class PresentationLabelsProvider implements IPresentationLabelsProvider {
   }
 
   private async getLabelsInternal(keys: InstanceKey[]) {
-    return (await Presentation.presentation.getDisplayLabelDefinitions({ imodel: this.imodel, keys })).map((def) => def.displayValue); // WIP
+    const labelPromises = new Array<Promise<LabelDefinition[]>>();
+    const tempKeys = [...keys];
+
+    while (tempKeys.length) {
+      const batch = tempKeys.splice(0, DEFAULT_KEYS_BATCH_SIZE);
+      labelPromises.push(Presentation.presentation.getDisplayLabelDefinitions({ imodel: this.imodel, keys: batch }));
+    }
+
+    return (await Promise.all(labelPromises)).reduce((displayValues, labels) => {
+      displayValues.push(...labels.map((def) => def.displayValue));
+      return displayValues;
+    }, new Array<string>());
   }
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
