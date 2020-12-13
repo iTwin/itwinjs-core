@@ -2210,9 +2210,8 @@ export abstract class ViewState2d extends ViewState {
 export class DrawingViewState extends ViewState2d {
   /** @internal */
   public static get className() { return "DrawingViewDefinition"; }
-  // Computed from the tile tree range once the tile tree is available; cached thereafter to avoid recomputing.
-  private _modelLimits: ExtentLimits;
-  private _viewedExtents: AxisAlignedBox3d;
+  private readonly _modelLimits: ExtentLimits;
+  private readonly _viewedExtents: AxisAlignedBox3d;
 
   public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, extents: AxisAlignedBox3d) {
     super(props, iModel, categories, displayStyle);

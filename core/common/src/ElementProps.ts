@@ -194,7 +194,10 @@ export interface SectionDrawingProps extends ElementProps {
      * @alpha
      */
     drawingBoundaryClip?: any;
-    // ###TODO: Excluded spatial elements; flag to say "exclude all spatial elements" (i.e., don't draw the spatial view at all).
+    /** If true, when displaying the section drawing as a [DrawingViewState]($frontend), the [[spatialView]] will also be displayed.
+     * @alpha
+     */
+    displaySpatialView?: true;
   };
 }
 

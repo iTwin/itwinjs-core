@@ -38,7 +38,7 @@ export * from "./NotificationManager";
 export * from "./QuantityFormatter";
 export * from "./RenderScheduleState";
 export * from "./SelectionSet";
-export * from "./Sheet";
+export * from "./SheetViewState";
 export * from "./SpatialClassifiers";
 export * from "./Sprites";
 export * from "./StandardView";

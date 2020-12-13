@@ -18,7 +18,7 @@ import { Range3d } from "@bentley/geometry-core";
 import { DrawingModelState, SectionDrawingModelState, SheetModelState } from "./ModelState";
 import { IModelConnection } from "./IModelConnection";
 import { DrawingViewState, ViewState, ViewState2d } from "./ViewState";
-import { SheetViewState } from "./Sheet";
+import { SheetViewState } from "./SheetViewState";
 import { loggerCategory } from "./imodeljs-frontend";
 
 /** @beta Options for creating a 2d [[ViewState]] via [[ViewCreator2d]] */
