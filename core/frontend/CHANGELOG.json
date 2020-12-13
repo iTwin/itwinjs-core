@@ -2,6 +2,18 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "2.9.9",
+      "tag": "@bentley/imodeljs-frontend_v2.9.9",
+      "date": "Sun, 13 Dec 2020 19:00:03 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add ability for caller to override quantity display format per QuantityType."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.9.8",
       "tag": "@bentley/imodeljs-frontend_v2.9.8",
       "date": "Fri, 11 Dec 2020 02:57:36 GMT",

@@ -1,6 +1,11 @@
 # Change Log - @bentley/webpack-tools-core
 
-This log was last generated on Fri, 11 Dec 2020 02:57:36 GMT and should not be manually modified.
+This log was last generated on Sun, 13 Dec 2020 19:00:03 GMT and should not be manually modified.
+
+## 2.9.9
+Sun, 13 Dec 2020 19:00:03 GMT
+
+_Version update only_
 
 ## 2.9.8
 Fri, 11 Dec 2020 02:57:36 GMT

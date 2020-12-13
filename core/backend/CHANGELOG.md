@@ -1,6 +1,13 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Fri, 11 Dec 2020 02:57:36 GMT and should not be manually modified.
+This log was last generated on Sun, 13 Dec 2020 19:00:03 GMT and should not be manually modified.
+
+## 2.9.9
+Sun, 13 Dec 2020 19:00:03 GMT
+
+### Updates
+
+- Update to @bentley/imodeljs-native@2.9.10
 
 ## 2.9.8
 Fri, 11 Dec 2020 02:57:36 GMT
