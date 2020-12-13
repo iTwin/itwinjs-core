@@ -126,7 +126,7 @@ jobs:
     displayName: 'Run Backend iTwin Client Tests'
     condition: succeededOrFailed()
 
-  - script: 'npm run test:integration'
+  - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration
     workingDirectory: 'full-stack-tests/core'
     displayName: 'Run Core Full Stack Tests'
     condition: succeededOrFailed()
