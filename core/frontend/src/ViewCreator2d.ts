@@ -17,7 +17,8 @@ import { CategorySelectorProps, Code, ColorDef, DisplayStyleProps, IModel, IMode
 import { Range3d } from "@bentley/geometry-core";
 import { DrawingModelState, SectionDrawingModelState, SheetModelState } from "./ModelState";
 import { IModelConnection } from "./IModelConnection";
-import { DrawingViewState, ViewState, ViewState2d } from "./ViewState";
+import { ViewState, ViewState2d } from "./ViewState";
+import { DrawingViewState } from "./DrawingViewState";
 import { SheetViewState } from "./SheetViewState";
 import { loggerCategory } from "./imodeljs-frontend";
 

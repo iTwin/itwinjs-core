@@ -37,6 +37,7 @@ import { DecorateContext, SceneContext } from "./ViewContext";
 import { areaToEyeHeight, areaToEyeHeightFromGcs, GlobalLocation } from "./ViewGlobalLocation";
 import { ViewingSpace } from "./ViewingSpace";
 import { ViewChangeOptions, Viewport } from "./Viewport";
+import { DrawingViewState } from "./DrawingViewState";
 
 /** Describes the result of a viewing operation such as those exposed by [[ViewState]] and [[Viewport]].
  * @public
@@ -372,7 +373,7 @@ export abstract class ViewState extends ElementState {
   /** Returns true if this ViewState is-a [[SpatialViewState]] */
   public isSpatialView(): this is SpatialViewState { return this instanceof SpatialViewState; }
   /** Returns true if this ViewState is-a [[DrawingViewState]] */
-  public isDrawingView(): this is DrawingViewState { return this instanceof DrawingViewState; }
+  public isDrawingView(): this is DrawingViewState { return false; }
   /** Returns true if [[ViewTool]]s are allowed to operate in three dimensions on this view. */
   public abstract allow3dManipulations(): boolean;
   /** @internal */
@@ -2202,42 +2203,4 @@ export abstract class ViewState2d extends ViewState {
   }
 
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystem2dState.createNew(acsName, this.iModel); }
-}
-
-/** A view of a DrawingModel
- * @public
- */
-export class DrawingViewState extends ViewState2d {
-  /** @internal */
-  public static get className() { return "DrawingViewDefinition"; }
-  private readonly _modelLimits: ExtentLimits;
-  private readonly _viewedExtents: AxisAlignedBox3d;
-
-  public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, extents: AxisAlignedBox3d) {
-    super(props, iModel, categories, displayStyle);
-    if (categories instanceof DrawingViewState) {
-      this._viewedExtents = categories._viewedExtents.clone();
-      this._modelLimits = { ...categories._modelLimits };
-    } else {
-      this._viewedExtents = extents;
-      this._modelLimits = { min: Constant.oneMillimeter, max: 10 * extents.maxLength() };
-    }
-  }
-
-  public static createFromProps(props: ViewStateProps, iModel: IModelConnection): DrawingViewState {
-    const cat = new CategorySelectorState(props.categorySelectorProps, iModel);
-    const displayStyleState = new DisplayStyle2dState(props.displayStyleProps, iModel);
-    const extents = props.modelExtents ? Range3d.fromJSON(props.modelExtents) : new Range3d();
-
-    // use "new this" so subclasses are correct
-    return new this(props.viewDefinitionProps as ViewDefinition2dProps, iModel, cat, displayStyleState, extents);
-  }
-
-  public getViewedExtents(): AxisAlignedBox3d {
-    return this._viewedExtents;
-  }
-
-  public get defaultExtentLimits() {
-    return this._modelLimits;
-  }
 }

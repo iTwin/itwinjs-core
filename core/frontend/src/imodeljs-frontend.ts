@@ -9,6 +9,7 @@ export * from "./CategorySelectorState";
 export * from "./ContextRealityModelState";
 export * from "./DevTools";
 export * from "./DisplayStyleState";
+export * from "./DrawingViewState";
 export * from "./EditingFunctions";
 export * from "./ElementLocateManager";
 export * from "./EmphasizeElements";
