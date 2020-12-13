@@ -446,6 +446,8 @@ describe("ContextMenu", () => {
       const item = component.getByTestId("core-context-menu-item");
       item.dispatchEvent(createBubbledEvent("keyup", { key: SpecialKey.Enter /* <Return> */ }));
       handleSelect.should.not.have.been.called;
+      item.dispatchEvent(createBubbledEvent("click"));
+      handleSelect.should.not.have.been.called;
     });
   });
 
