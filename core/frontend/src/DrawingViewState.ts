@@ -21,7 +21,6 @@ import { SectionDrawingModelState } from "./ModelState";
 export interface SectionDrawingInfo {
   readonly spatialView: Id64String;
   readonly drawingToSpatialTransform: Transform;
-  readonly displaySpatialView: boolean;
 }
 
 /** A view of a [DrawingModel]($backend)
@@ -30,6 +29,13 @@ export interface SectionDrawingInfo {
 export class DrawingViewState extends ViewState2d {
   /** @internal */
   public static get className() { return "DrawingViewDefinition"; }
+
+  /** Exposed strictly for testing and debugging. Indicates that when loading the view, the SectionDrawingInfo should be loaded even
+   * if `SectionDrawing.displaySpatialView` is not `true`.
+   * @internal
+   */
+  public static alwaysLoadSectionDrawingInfo = false;
+
   private readonly _modelLimits: ExtentLimits;
   private readonly _viewedExtents: AxisAlignedBox3d;
   private _sectionDrawingInfo?: SectionDrawingInfo;
@@ -58,7 +64,7 @@ export class DrawingViewState extends ViewState2d {
     // Find out if we also need to display the spatial view.
     let spatialView;
     let drawingToSpatialTransform;
-    let displaySpatialView;
+    let displaySpatialView = false;
     const ecsql = `
       SELECT spatialView,
         json_extract(jsonProperties, '$.drawingToSpatialTransform') as drawingToSpatialTransform,
@@ -68,7 +74,7 @@ export class DrawingViewState extends ViewState2d {
 
     for await (const row of this.iModel.query(ecsql)) {
       spatialView = Id64.fromJSON(row.spatialView?.id);
-      displaySpatialView = true === row.displaySpatialView;
+      displaySpatialView = DrawingViewState.alwaysLoadSectionDrawingInfo || !!row.displaySpatialView;
       try {
         drawingToSpatialTransform = Transform.fromJSON(JSON.parse(row.drawingToSpatialTransform));
       } catch (_) {
@@ -78,9 +84,8 @@ export class DrawingViewState extends ViewState2d {
       break;
     }
 
-    // ###TODO: Don't bother if displaySpatialView === false
-    if (spatialView && Id64.isValidId64(spatialView) && drawingToSpatialTransform && undefined !== displaySpatialView)
-      this._sectionDrawingInfo = { spatialView, drawingToSpatialTransform, displaySpatialView };
+    if (displaySpatialView && spatialView && Id64.isValidId64(spatialView) && drawingToSpatialTransform)
+      this._sectionDrawingInfo = { spatialView, drawingToSpatialTransform };
   }
 
   public static createFromProps(props: ViewStateProps, iModel: IModelConnection): DrawingViewState {

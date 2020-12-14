@@ -19,6 +19,8 @@ describe("Section Drawings (#integration)", () => {
   let imodel: IModelConnection;
 
   before(async () => {
+    DrawingViewState.alwaysLoadSectionDrawingInfo = true;
+
     await IModelApp.startup({
       authorizationClient: await TestUtility.initializeTestProject(projectName, TestUsers.regular),
       imodelClient: TestUtility.imodelCloudEnv.imodelClient,
@@ -31,6 +33,8 @@ describe("Section Drawings (#integration)", () => {
   });
 
   after(async () => {
+    DrawingViewState.alwaysLoadSectionDrawingInfo = false;
+
     if (imodel)
       await imodel.close();
 
@@ -63,7 +67,6 @@ describe("Section Drawings (#integration)", () => {
       expect(info).not.to.be.undefined;
 
       expect(info.spatialView).to.equal(spec.spatialView);
-      expect(info.displaySpatialView).to.be.false;
       expect(info.drawingToSpatialTransform.isIdentity).to.be.false;
 
       if (spec.views.length > 1) {
@@ -76,7 +79,6 @@ describe("Section Drawings (#integration)", () => {
 
         expect(secondInfo.spatialView).to.equal(info.spatialView);
         expect(secondInfo.drawingToSpatialTransform.isAlmostEqual(info.drawingToSpatialTransform)).to.be.true;
-        expect(secondInfo.displaySpatialView).to.be.false;
       }
     }
   });
