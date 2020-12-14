@@ -464,12 +464,14 @@ describe("ClipPrimitive", () => {
 
     // Test JSON parsing
     const jsonValue = clipShape1!.toJSON();
-    ck.testTrue(jsonValue.shape.points !== undefined && jsonValue.shape.points.length === clipShape1!.polygon.length, "Points prop created in toJSON");
-    ck.testTrue(jsonValue.shape.invisible !== undefined && jsonValue.shape.invisible === true, "Invisible prop created in toJSON");
-    ck.testUndefined(jsonValue.shape.trans, "Transform is undefined prop in toJSON having not given one to original ClipShape");
-    ck.testTrue(jsonValue.shape.mask !== undefined && jsonValue.shape.mask === true, "Mask prop created in toJSON");
-    ck.testTrue(jsonValue.shape.zlow !== undefined && jsonValue.shape.zlow === clipShape1!.zLow, "ZLow prop created in toJSON");
-    ck.testTrue(jsonValue.shape.zhigh !== undefined && jsonValue.shape.zhigh === clipShape1!.zHigh, "ZHigh prop is set in toJSON");
+    ck.testTrue(jsonValue.shape !== undefined, "Shape prop created in toJSON");
+    const shape = jsonValue.shape!;
+    ck.testTrue(shape.points !== undefined && shape.points.length === clipShape1!.polygon.length, "Points prop created in toJSON");
+    ck.testTrue(shape.invisible !== undefined && shape.invisible === true, "Invisible prop created in toJSON");
+    ck.testUndefined(shape.trans, "Transform is undefined prop in toJSON having not given one to original ClipShape");
+    ck.testTrue(shape.mask !== undefined && shape.mask === true, "Mask prop created in toJSON");
+    ck.testTrue(shape.zlow !== undefined && shape.zlow === clipShape1!.zLow, "ZLow prop created in toJSON");
+    ck.testTrue(shape.zhigh !== undefined && shape.zhigh === clipShape1!.zHigh, "ZHigh prop is set in toJSON");
 
     const clipShape1Copy = ClipShape.fromJSON(jsonValue) as ClipShape;
     ck.testTrue(clipShape1Copy !== undefined);
