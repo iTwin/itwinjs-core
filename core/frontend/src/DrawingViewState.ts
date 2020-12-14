@@ -68,7 +68,7 @@ export class DrawingViewState extends ViewState2d {
     const ecsql = `
       SELECT spatialView,
         json_extract(jsonProperties, '$.drawingToSpatialTransform') as drawingToSpatialTransform,
-        json_extract(jsonProperties, '$.displaySpatialView') as displaySpatialView
+        CAST(json_extract(jsonProperties, '$.displaySpatialView') as BOOLEAN) as displaySpatialView
       FROM bis.SectionDrawing
       WHERE ECInstanceId=${model.modeledElement.id}`;
 
