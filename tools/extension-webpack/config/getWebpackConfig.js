@@ -88,13 +88,7 @@ module.exports = function (srcFile, outDir) {
     return loaders;
   };
 
-  const sassLoaderConfig = {
-    loader: require.resolve("fast-sass-loader"),
-    options: {
-      includePaths: [path.resolve("node_modules")],
-      outputStyle: "compressed",
-    },
-  };
+  const sassLoaderConfig = "sass-loader";
 
   const rawConfig = {
     mode: "production",

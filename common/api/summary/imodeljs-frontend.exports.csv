@@ -26,7 +26,6 @@ public;ACSDisplayOptions
 public;ACSType
 public;ActivityMessageDetails
 public;ActivityMessageEndReason
-internal;addAnimatedTileTreeReferences(refs: TileTreeReference[], view: ViewState, model: GeometricModelState, script: RenderScheduleState.Script): void
 internal;addRangeGraphic(builder: GraphicBuilder, range: Range3d, is2d: boolean): void
 beta;AngleDescription 
 internal;AnimatedTreeReference 
@@ -325,6 +324,7 @@ beta;OsmBuildingDisplayOptions
 public;OutputMessageAlert
 public;OutputMessagePriority
 public;OutputMessageType
+alpha;OverrideFormatEntry
 internal;overrideRequestTileTreeProps(func: RequestTileTreePropsFunc | undefined): void
 public;PanViewTool 
 beta;ParseAndRunResult
@@ -423,6 +423,8 @@ internal;SpatialClassifiersContainer
 internal;class SpatialClassifierTileTreeReference 
 public;SpatialLocationModelState 
 public;SpatialModelState 
+internal;SpatialTileTreeReferences 
+internal;SpatialTileTreeReferences
 public;SpatialViewState 
 public;Sprite
 public;SpriteLocation 

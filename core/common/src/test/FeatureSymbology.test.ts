@@ -6,10 +6,16 @@ import { assert, expect } from "chai";
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
 import { ColorDef } from "../ColorDef";
 import { RgbColor } from "../RgbColor";
-import { Feature } from "../FeatureTable";
+import { BatchType, Feature } from "../FeatureTable";
 import { GeometryClass } from "../GeometryParams";
 import { LinePixels } from "../LinePixels";
-import { FeatureAppearance, FeatureAppearanceProps, FeatureOverrides } from "../FeatureSymbology";
+import {
+  FeatureAppearance,
+  FeatureAppearanceProps,
+  FeatureAppearanceProvider,
+  FeatureAppearanceSource,
+  FeatureOverrides,
+} from "../FeatureSymbology";
 
 describe("FeatureAppearance", () => {
   it("default constructor works as expected", () => {
@@ -246,5 +252,84 @@ describe("FeatureOverrides", () => {
     expect(ovrs.isSubCategoryVisible(2, 0)).to.be.true;
     expect(ovrs.isSubCategoryVisible(3, 0)).to.be.false;
     expect(ovrs.isSubCategoryVisible(4, 0)).to.be.false;
+  });
+});
+
+describe("FeatureAppearanceProvider", () => {
+  class Source implements FeatureAppearanceSource {
+    public constructor(public readonly appearance: FeatureAppearance | undefined) { }
+
+    public getAppearance(_elemLo: number, _elemHi: number, _subcatLo: number, _subcatHi: number, _geomClass: GeometryClass, _modelLo: number, _modelHi: number, _type: BatchType, _animationNodeId: number) {
+      return this.appearance;
+    }
+  }
+
+  class Provider implements FeatureAppearanceProvider {
+    public constructor(public readonly modifyAppearance: (app: FeatureAppearance) => FeatureAppearance) { }
+
+    public getFeatureAppearance(source: FeatureAppearanceSource, elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number) {
+      const app = source.getAppearance(elemLo, elemHi, subcatLo, subcatHi, geomClass, modelLo, modelHi, type, animationNodeId);
+      return app ? this.modifyAppearance(app) : undefined;
+    }
+  }
+
+  function getAppearance(source: FeatureAppearanceSource, provider: FeatureAppearanceProvider): FeatureAppearance | undefined {
+    return provider.getFeatureAppearance(source, 0, 0, 0, 0, GeometryClass.Primary, 0,  0, BatchType.Primary, 0);
+  }
+
+  it("Chains providers in expected order", () => {
+    const materialProvider = new Provider((appearance) => {
+      return FeatureAppearance.fromJSON({
+        ...appearance.toJSON(),
+        ignoresMaterial: true,
+        transparency: 0.25,
+      });
+    });
+
+    const emphasisProvider = new Provider((appearance) => {
+      return FeatureAppearance.fromJSON({
+        ...appearance.toJSON(),
+        emphasized: true,
+        transparency: 0.75,
+      });
+    });
+
+    const source = new Source(FeatureAppearance.fromJSON({ weight: 5 }));
+
+    let chained = FeatureAppearanceProvider.chain(materialProvider, emphasisProvider);
+    let app = getAppearance(source, chained)!;
+    expect(app.weight).to.equal(5);
+    expect(app.transparency).to.equal(0.75);
+    expect(app.emphasized).to.be.true;
+    expect(app.ignoresMaterial).to.be.true;
+
+    chained = FeatureAppearanceProvider.chain(emphasisProvider, materialProvider);
+    app = getAppearance(source, chained)!;
+    expect(app.weight).to.equal(5);
+    expect(app.transparency).to.equal(0.25);
+    expect(app.emphasized).to.be.true;
+    expect(app.ignoresMaterial).to.be.true;
+  });
+
+  it("creates supplemental provider", () => {
+    const provider = FeatureAppearanceProvider.supplement((app: FeatureAppearance) => {
+      return FeatureAppearance.fromJSON({
+        ...app.toJSON(),
+        transparency: 0.5,
+      });
+    });
+
+    let appearance = getAppearance(new Source(FeatureAppearance.fromJSON({ weight: 5 })), provider);
+    expect(appearance!.weight).to.equal(5);
+    expect(appearance!.transparency).to.equal(0.5);
+
+    appearance = getAppearance(new Source(undefined), provider);
+    expect(appearance).to.be.undefined;
+  });
+
+  it("does not introduce infinite recursion", () => {
+    const provider = new Provider((app) => app);
+    const chained = FeatureAppearanceProvider.chain(provider, provider);
+    expect(chained).to.equal(provider);
   });
 });
