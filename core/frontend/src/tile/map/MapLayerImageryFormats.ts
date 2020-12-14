@@ -185,7 +185,7 @@ export abstract class MapLayerImageryProvider {
   }
   public getEPSG3857ExtentString(row: number, column: number, zoomLevel: number) {
     const tileExtent = this.getEPSG3857Extent(row, column, zoomLevel);
-    return `${tileExtent.left.toFixed(2)},${tileExtent.bottom.toFixed(2)},${tileExtent.right.toFixed(2)},${tileExtent.top.toFixed(2)} `;
+    return `${tileExtent.left.toFixed(2)},${tileExtent.bottom.toFixed(2)},${tileExtent.right.toFixed(2)},${tileExtent.top.toFixed(2)}`;
   }
 }
 
@@ -247,7 +247,16 @@ class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
 
   private getQueryableLayers(): string[] {
     const layerNames = new Array<string>();
-    this._capabilities?.layer?.subLayers.forEach((subLayer) => { if (subLayer.queryable) layerNames.push(subLayer.name); });
+    const getQueryableSubLayers = ((subLayer: WmsCapability.SubLayer) => {
+      if (!subLayer)
+        return;
+
+      if (subLayer.queryable)
+        layerNames.push(subLayer.name);
+
+      subLayer.children?.forEach((childSubLayer) => { getQueryableSubLayers(childSubLayer); });
+    });
+    this._capabilities?.layer?.subLayers?.forEach((subLayer) => { getQueryableSubLayers(subLayer); });
     return layerNames;
   }
 

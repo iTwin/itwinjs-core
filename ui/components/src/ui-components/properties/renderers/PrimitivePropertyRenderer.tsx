@@ -9,7 +9,7 @@
 import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
 import { HighlightedText } from "../../common/HighlightedText";
-import { HighlightedRecordProps } from "../../propertygrid/component/VirtualizedPropertyGrid";
+import { HighlightingComponentProps } from "../../common/HighlightingComponentProps";
 import { CommonPropertyRenderer } from "./CommonPropertyRenderer";
 import { PrimitivePropertyLabelRenderer } from "./label/PrimitivePropertyLabelRenderer";
 import { SharedRendererProps } from "./PropertyRenderer";
@@ -25,10 +25,10 @@ export interface PrimitiveRendererProps extends SharedRendererProps {
   valueElementRenderer?: () => React.ReactNode;
   /** Multiplier of how much the property is indented to the right */
   indentation?: number;
-  /** Properties used for record highlighting
+  /** Properties used for highlighting
    * @beta
   */
-  highlightProps?: HighlightedRecordProps;
+  highlight?: HighlightingComponentProps;
 }
 
 /** React Component that renders primitive properties
@@ -41,13 +41,13 @@ export class PrimitivePropertyRenderer extends React.Component<PrimitiveRenderer
 
   /** @internal */
   public render() {
-    const { children, indentation, highlightProps, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
+    const { children, indentation, highlight, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
     const displayLabel = this.props.propertyRecord.property.displayLabel;
     const offset = CommonPropertyRenderer.getLabelOffset(indentation, props.orientation, props.width, props.columnRatio, props.columnInfo?.minLabelWidth);
 
-    const activeMatchIndex = this.props.propertyRecord.property.name === highlightProps?.activeMatch?.propertyName? highlightProps.activeMatch.matchIndex : undefined;
-    const label = highlightProps ?
-      (HighlightedText({ text: displayLabel, searchText: highlightProps.searchText, activeMatchIndex })) :
+    const activeMatchIndex = this.props.propertyRecord.property.name === highlight?.activeHighlight?.highlightedItemIdentifier ? highlight.activeHighlight.highlightIndex : undefined;
+    const label = highlight ?
+      (HighlightedText({ text: displayLabel, searchText: highlight.highlightedText, activeMatchIndex })) :
       displayLabel;
 
     return (

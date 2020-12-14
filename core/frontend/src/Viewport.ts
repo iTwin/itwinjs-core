@@ -2480,17 +2480,8 @@ export abstract class Viewport implements IDisposable {
       flags.setViewedCategories();
 
     if (!flags.neverDrawn) {
-      const oldExclude = oldView.displayStyle.settings.excludedElements;
-      const newExclude = newView.displayStyle.settings.excludedElements;
-      if (oldExclude.size !== newExclude.size) {
+      if (oldView.displayStyle.settings.compressedExcludedElementIds !== newView.displayStyle.settings.compressedExcludedElementIds)
         flags.setNeverDrawn();
-      } else {
-        for (const exclude of oldExclude)
-          if (!newExclude.has(exclude)) {
-            flags.setNeverDrawn();
-            break;
-          }
-      }
     }
 
     if (flags.viewedModels)

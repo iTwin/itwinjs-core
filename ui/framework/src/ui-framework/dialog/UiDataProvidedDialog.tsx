@@ -45,7 +45,7 @@ export interface UiDataProvidedDialogProps {
   maxHeight?: string | number;
 }
 
-/** Component to show dialog populate from properties supplied via uiDataProvider
+/** Component to show dialog populated from properties supplied via uiDataProvider
  * @beta
  */
 export function UiDataProvidedDialog({ uiDataProvider, id, isModal, ...dialogProps }: UiDataProvidedDialogProps) {
