@@ -113,11 +113,11 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
   }
 
   /**
-   * Deletes a local briefcase, releasing the BriefcaseId from iModelHub. The briefcase must be closed.
+   * Deletes a local briefcase and all associated files, releasing the BriefcaseId from iModelHub. The briefcase must be closed.
    * @param fileName - the local filename of the briefcase.
    */
-  public async deleteBriefcase(fileName: string): Promise<void> {
-    await BriefcaseManager.deleteBriefcase(ClientRequestContext.current, fileName);
+  public async deleteBriefcaseFiles(fileName: string): Promise<void> {
+    await BriefcaseManager.deleteBriefcaseFiles(ClientRequestContext.current, fileName);
   }
 
   /**

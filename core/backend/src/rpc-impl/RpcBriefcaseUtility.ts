@@ -65,7 +65,7 @@ export class RpcBriefcaseUtility {
             return db;
           } catch (error) {
             // somehow we have this briefcaseId and the file exists, but we can't open it. Delete it.
-            IModelJsFs.removeSync(fileName);
+            await BriefcaseManager.deleteBriefcaseFiles(args.requestContext, fileName);
           }
         }
       }
@@ -163,10 +163,16 @@ export class RpcBriefcaseUtility {
       return true;
 
     // For read-write connections, close the briefcase and delete local copies of it
-    const briefcaseDb = BriefcaseDb.findByKey(tokenProps.key);
+    const briefcaseDb = BriefcaseDb.tryFindByKey(tokenProps.key);
+    if (!briefcaseDb)
+      return false;
+
     const fileName = briefcaseDb.pathName;
+    if (!briefcaseDb.isOpen)
+      return false;
+
     briefcaseDb.close();
-    await BriefcaseManager.deleteBriefcase(requestContext, fileName);
+    await BriefcaseManager.deleteBriefcaseFiles(requestContext, fileName);
     return true;
   }
 }

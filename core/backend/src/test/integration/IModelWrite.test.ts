@@ -1077,9 +1077,9 @@ describe("IModelWriteTest (#integration)", () => {
     const filename = iModel.pathName;
     const superName = superIModel.pathName;
     iModel.close();
-    await BriefcaseManager.deleteBriefcase(managerRequestContext, filename); // delete from local disk
+    await BriefcaseManager.deleteBriefcaseFiles(managerRequestContext, filename); // delete from local disk
     superIModel.close();
-    await BriefcaseManager.deleteBriefcase(superRequestContext, superName); // delete from local disk
+    await BriefcaseManager.deleteBriefcaseFiles(superRequestContext, superName); // delete from local disk
     managerRequestContext.enter();
     await HubUtility.deleteIModel(managerRequestContext, projectName, hubName); // delete from hub
     managerRequestContext.enter();

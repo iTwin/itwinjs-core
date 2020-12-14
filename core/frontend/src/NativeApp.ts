@@ -8,7 +8,7 @@
 
 import { BeEvent, Config, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseDownloader, Events, IModelError, IModelVersion, InternetConnectivityStatus,
+  BriefcaseDownloader, BriefcaseProps, Events, IModelError, IModelVersion, InternetConnectivityStatus,
   LocalBriefcaseProps,
   NativeAppRpcInterface, OpenBriefcaseProps, OverriddenBy, RequestNewBriefcaseProps, RpcRegistry, StorageValue, SyncMode,
 } from "@bentley/imodeljs-common";
@@ -153,6 +153,10 @@ export class NativeApp {
     return { briefcaseId, fileName, downloadPromise: doDownload(), requestCancel };
   }
 
+  public static async getBriefcaseFileName(props: BriefcaseProps): Promise<string> {
+    return NativeAppRpcInterface.getClient().getBriefcaseFileName(props);
+  }
+
   /** Delete an existing briefcase
    * @param fileName the briefcase fileName
    */
@@ -163,7 +167,7 @@ export class NativeApp {
     const requestContext = new FrontendRequestContext();
     requestContext.enter();
     requestContext.useContextForRpc = true;
-    await NativeAppRpcInterface.getClient().deleteBriefcase(fileName);
+    await NativeAppRpcInterface.getClient().deleteBriefcaseFiles(fileName);
   }
 
   public static async openBriefcase(briefcaseProps: OpenBriefcaseProps): Promise<LocalBriefcaseConnection> {

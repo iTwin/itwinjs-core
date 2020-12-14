@@ -94,7 +94,7 @@ export interface RequestNewBriefcaseProps {
   /** The iModelId to obtain the briefcase. */
   iModelId: GuidString;
 
-  /** Full path of local file to store briefcase. If undefined, it will be filled in from `BriefcaseManager.getFilename(props)`
+  /** Full path of local file to store briefcase. If undefined, it will be filled in when the briefcase is created in the briefcase cache directory.
    * Callers can use this to open the briefcase after the download completes.
    * @note this member is both an input and an output.
    */

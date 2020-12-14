@@ -7,6 +7,7 @@ import { IModelBankClient, IModelQuery } from "@bentley/imodelhub-client";
 import {
   BriefcaseDb, BriefcaseManager, ChangeSummaryExtractOptions, ChangeSummaryManager, EventSink, IModelDb, IModelHost, IModelJsFs,
 } from "@bentley/imodeljs-backend";
+import { V1CheckpointManager } from "@bentley/imodeljs-backend/lib/CheckpointManager";
 import { IModelRpcProps, RpcInterface, RpcManager } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, AuthorizedClientRequestContextProps } from "@bentley/itwin-client";
 import { CloudEnvProps, EventsTestRpcInterface, TestRpcInterface } from "../common/RpcInterfaces";
@@ -81,7 +82,12 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
       throw new BentleyError(BentleyStatus.ERROR);
     return hubIModel.id;
   }
+
+  public async purgeCheckpoints(iModelId: string): Promise<void> {
+    IModelJsFs.removeSync(V1CheckpointManager.getFolder(iModelId));
+  }
 }
+
 /** The backend implementation of WipRpcInterface.
  * @internal
  */

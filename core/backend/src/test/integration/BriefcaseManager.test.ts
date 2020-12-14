@@ -9,7 +9,7 @@ import * as path from "path";
 import * as readline from "readline";
 import { BriefcaseStatus, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { Briefcase, BriefcaseQuery, HubIModel } from "@bentley/imodelhub-client";
-import { BriefcaseProps, IModelError, IModelVersion } from "@bentley/imodeljs-common";
+import { IModelError, IModelVersion } from "@bentley/imodeljs-common";
 import { UserCancelledError } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { CheckpointManager } from "../../CheckpointManager";
@@ -28,12 +28,6 @@ async function createIModelOnHub(requestContext: AuthorizedBackendRequestContext
   assert.isDefined(iModel.wsgId);
   return iModel.wsgId;
 }
-
-const removeBriefcaseFile = (args: BriefcaseProps) => {
-  const fileName = BriefcaseManager.getFileName(args);
-  if (IModelJsFs.existsSync(fileName))
-    IModelJsFs.removeSync(fileName);
-};
 
 describe("BriefcaseManager (#integration)", () => {
   let testProjectId: string;
@@ -397,8 +391,8 @@ describe("BriefcaseManager (#integration)", () => {
     const file2 = iModelPullOnly.pathName;
     iModelPullAndPush.close();
     iModelPullOnly.close();
-    IModelJsFs.removeSync(file1);
-    IModelJsFs.removeSync(file2);
+    IModelJsFs.unlinkSync(file1);
+    IModelJsFs.unlinkSync(file2);
   });
 
   const briefcaseExistsOnHub = async (iModelId: GuidString, briefcaseId: number): Promise<boolean> => {
@@ -713,8 +707,8 @@ describe("BriefcaseManager (#integration)", () => {
       onProgress: downloadProgress,
     };
 
-    removeBriefcaseFile(args);
     const fileName = BriefcaseManager.getFileName(args);
+    await BriefcaseManager.deleteBriefcaseFiles(requestContext, fileName);
 
     await BriefcaseManager.downloadBriefcase(requestContext, args);
     requestContext.enter();
@@ -739,7 +733,7 @@ describe("BriefcaseManager (#integration)", () => {
         return aborted;
       },
     };
-    removeBriefcaseFile(args);
+    await BriefcaseManager.deleteBriefcaseFiles(requestContext, BriefcaseManager.getFileName(args));
 
     const downloadPromise = BriefcaseManager.downloadBriefcase(requestContext, args);
     requestContext.enter();

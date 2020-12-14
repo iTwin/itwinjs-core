@@ -1528,38 +1528,43 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
     private static _cachesOpen = new Set<string>();
 
     private _db: ECDb = new ECDb();
+    private _locksFileName?: string;
 
     public constructor(public concurrencyControl: ConcurrencyControl) { }
 
     public get isOpen(): boolean { return this._db.isOpen; }
 
     private mustHaveBriefcase() {
-      if (this.concurrencyControl.iModel === undefined || !this.concurrencyControl.iModel.isOpen
-        || this.concurrencyControl.iModel.syncMode !== SyncMode.PullAndPush)
-        throw new IModelError(IModelStatus.NotOpenForWrite, "not a briefcase that can be used to push changes to the IModel Hub", Logger.logError, loggerCategory, () => this.concurrencyControl.iModel.getConnectionProps());
+      const iModel = this.concurrencyControl.iModel;
+      if (iModel === undefined || !iModel.isOpen || !BriefcaseManager.isValidBriefcaseId(iModel.briefcaseId))
+        throw new IModelError(IModelStatus.NotOpenForWrite, "not a briefcase that can be used to push changes", Logger.logError, loggerCategory, () => this.concurrencyControl.iModel.getConnectionProps());
     }
 
     private mustBeOpenAndWriteable() {
       if (!this.concurrencyControl.iModel.allowLocalChanges)
-        throw new IModelError(IModelStatus.NotOpenForWrite, "not a briefcase that can be used to push changes to the IModel Hub", Logger.logError, loggerCategory, () => this.concurrencyControl.iModel.getConnectionProps());
+        throw new IModelError(IModelStatus.NotOpenForWrite, "not a briefcase that can be used to push changes", Logger.logError, loggerCategory, () => this.concurrencyControl.iModel.getConnectionProps());
       if (!this.isOpen)
-        throw new IModelError(IModelStatus.NotOpen, "not open", Logger.logError, loggerCategory, () => ({ cacheFileName: this.computeCacheFileName() }));
+        throw new IModelError(IModelStatus.NotOpen, "not open", Logger.logError, loggerCategory, () => ({ locksFileName: this._locksFileName }));
     }
 
-    private static onOpen(fn: string) {
-      if (this._cachesOpen.has(fn))
-        throw new IModelError(IModelStatus.AlreadyOpen, `ConcurrencyControl StateCache is already open ${fn}`, Logger.logError, loggerCategory);
-      this._cachesOpen.add(fn);
+    private static onOpen(fileName: string) {
+      if (this._cachesOpen.has(fileName))
+        throw new IModelError(IModelStatus.AlreadyOpen, `ConcurrencyControl StateCache is already open ${fileName}`, Logger.logError, loggerCategory);
+      this._cachesOpen.add(fileName);
     }
 
-    private static onClose(fn: string) {
-      this._cachesOpen.delete(fn);
+    private static onClose(fileName: string) {
+      this._cachesOpen.delete(fileName);
     }
 
-    private computeCacheFileName(): string {
-      this.mustHaveBriefcase();
-      const fn = this.concurrencyControl.iModel.pathName;
-      return path.join(path.dirname(fn), `${path.basename(fn, ".bim")}.cctl.bim`);
+    private getLocksFileName(): string {
+      return `${this.concurrencyControl.iModel.pathName}-locks`;
+    }
+
+    /** for backwards compatibility only */
+    private getCompatibilityFileName(): string {
+      const fileName = this.concurrencyControl.iModel.pathName;
+      return path.join(path.dirname(fileName), `${path.basename(fileName, ".bim")}.cctl.bim`);
     }
 
     private isCorrupt(): boolean {
@@ -1577,7 +1582,7 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
         this._db.abandonChanges();
       this._db.closeDb();
 
-      StateCache.onClose(this.computeCacheFileName());
+      StateCache.onClose(this._locksFileName!);
     }
 
     private initializeDb() {
@@ -1590,46 +1595,50 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
       initStmts.forEach((sql) => {
         const stmt = this._db.prepareSqliteStatement(sql);
         const rc = stmt.step();
+        stmt.dispose();
         if (DbResult.BE_SQLITE_DONE !== rc)
           throw new IModelError(rc, "", Logger.logError, loggerCategory, () => sql);
-        stmt.dispose();
       });
     }
 
     public open(): boolean {
       this.mustHaveBriefcase();
-      const fn = this.computeCacheFileName();
-
-      if (!IModelJsFs.existsSync(fn))
+      let locksFileName = this.getCompatibilityFileName();
+      if (!IModelJsFs.existsSync(locksFileName))
+        locksFileName = this.getLocksFileName();
+      if (!IModelJsFs.existsSync(locksFileName))
         return false;
 
-      this._db.openDb(fn, ECDbOpenMode.ReadWrite);
+      this._db.openDb(locksFileName, ECDbOpenMode.ReadWrite);
 
       if (this.isCorrupt()) {
         this.close(false);
-        IModelJsFs.unlinkSync(fn);
+        IModelJsFs.unlinkSync(locksFileName);
         return false;
       }
-
-      StateCache.onOpen(fn);
-
+      this._locksFileName = locksFileName;
+      StateCache.onOpen(locksFileName);
       return true;
     }
 
     public create() {
       this.mustHaveBriefcase();
-      const fn = this.computeCacheFileName();
+      const locksFileName = this.getLocksFileName();
 
-      this._db.createDb(fn);
+      this._db.createDb(locksFileName);
       this.initializeDb();
       this._db.saveChanges();
 
-      StateCache.onOpen(fn);
+      this._locksFileName = locksFileName;
+      StateCache.onOpen(locksFileName);
     }
 
     public deleteFile() {
-      this.close(false);
-      IModelJsFs.unlinkSync(this.computeCacheFileName());
+      if (this.isOpen)
+        this.close(false);
+
+      if (this._locksFileName)
+        IModelJsFs.unlinkSync(this._locksFileName);
     }
 
     public clear() {

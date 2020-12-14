@@ -11,7 +11,7 @@
 import * as os from "os";
 import * as path from "path";
 import {
-  assert, BeDuration, BentleyStatus, ChangeSetApplyOption, ChangeSetStatus, ClientRequestContext, DbResult, GuidString, Id64, IModelHubStatus,
+  assert, BeDuration, ChangeSetApplyOption, ChangeSetStatus, ClientRequestContext, DbResult, GuidString, Id64, IModelHubStatus,
   IModelStatus, Logger, OpenMode, PerfLogger,
 } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient } from "@bentley/context-registry-client";
@@ -126,12 +126,12 @@ export class BriefcaseManager {
   }
 
   /** Get the name of the local file that holds, or will hold, a briefcase in the briefcase cache established in the call to [[BriefcaseManager.initialize]], based
-   * on an iModelId and BriefcaseId.
-   * @param briefcase the iModelId and BriefcaseId for the filename
-   * @see getIModelPath
-   */
+ * on an iModelId and BriefcaseId.
+ * @param briefcase the iModelId and BriefcaseId for the filename
+ * @see getIModelPath
+ */
   public static getFileName(briefcase: BriefcaseProps): string {
-    return path.join(this.getBriefcaseBasePath(briefcase.iModelId), briefcase.briefcaseId.toString(), `${briefcase.briefcaseId}.bim`);
+    return path.join(this.getBriefcaseBasePath(briefcase.iModelId), `${briefcase.briefcaseId}.bim`);
   }
 
   /** get the name for previous version of BriefcaseManager.
@@ -292,7 +292,7 @@ export class BriefcaseManager {
       Logger.logTrace(loggerCategory, "Deleted change sets from local disk", () => ({ iModelId, changeSetsPath }));
   }
 
-  private static async releaseBriefcaseFromServer(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseProps): Promise<void> {
+  public static async releaseBriefcase(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseProps): Promise<void> {
     requestContext.enter();
     const { briefcaseId, iModelId } = briefcase;
     if (!this.isValidBriefcaseId(briefcaseId))
@@ -317,27 +317,48 @@ export class BriefcaseManager {
   }
 
   /**
-     * Delete a local briefcase. First releases the BriefcaseId from iModelHub
+     * Delete all files associated with a local briefcase. First releases the BriefcaseId from iModelHub
      * @param requestContext
-     * @param fileName the full file name of the Briefcase to delete
+     * @param filePath the full file name of the Briefcase to delete
      * @throws [[IModelError]] If unable to delete the briefcase
      */
-  public static async deleteBriefcase(requestContext: ClientRequestContext | AuthorizedClientRequestContext, fileName: string): Promise<void> {
-    const db = IModelDb.openDgnDb({ path: fileName, key: "deleteBriefcase" }, OpenMode.Readonly);
-    const briefcase: BriefcaseProps = {
-      iModelId: db.getDbGuid(),
-      briefcaseId: db.getBriefcaseId(),
-    };
-    db.closeIModel();
+  public static async deleteBriefcaseFiles(requestContext: ClientRequestContext | AuthorizedClientRequestContext, filePath: string): Promise<void> {
+    try {
+      const db = IModelDb.openDgnDb({ path: filePath, key: "deleteBriefcase" }, OpenMode.Readonly);
+      const briefcase: BriefcaseProps = {
+        iModelId: db.getDbGuid(),
+        briefcaseId: db.getBriefcaseId(),
+      };
+      db.closeIModel();
 
-    requestContext.enter();
-    if (this.isValidBriefcaseId(briefcase.briefcaseId)) {
-      if (!(requestContext instanceof AuthorizedClientRequestContext))
-        throw new IModelError(BentleyStatus.ERROR, "Deleting a briefcase requires authorization");
-      await BriefcaseManager.releaseBriefcaseFromServer(requestContext, briefcase);
       requestContext.enter();
+      if (this.isValidBriefcaseId(briefcase.briefcaseId)) {
+        if (requestContext instanceof AuthorizedClientRequestContext)
+          await BriefcaseManager.releaseBriefcase(requestContext, briefcase);
+        requestContext.enter();
+      }
+    } catch (error) {
     }
-    IModelJsFs.removeSync(fileName);
+
+    // first try to delete the briefcase file
+    try {
+      if (IModelJsFs.existsSync(filePath))
+        IModelJsFs.unlinkSync(filePath);
+    } catch (err) {
+      throw new IModelError(IModelStatus.BadRequest, `cannot delete briefcase file ${err}`);
+    }
+
+    // next, delete all files that start with the briefcase's filePath (e.g. "a.bim-locks", "a.bim-journal", etc.)
+    try {
+      const dirName = path.dirname(filePath);
+      const fileName = path.basename(filePath);
+      const files = IModelJsFs.readdirSync(dirName);
+      for (const file of files) {
+        if (file.startsWith(fileName))
+          this.deleteFile(path.join(dirName, file)); // don't throw on error
+      }
+    } catch (err) {
+    }
   }
 
   private static async downloadChangeSetsInternal(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query: ChangeSetQuery): Promise<ChangeSet[]> {
@@ -385,7 +406,7 @@ export class BriefcaseManager {
     try {
       IModelJsFs.unlinkSync(pathname);
     } catch (error) {
-      Logger.logError(loggerCategory, `Cannot delete file ${pathname}`);
+      Logger.logError(loggerCategory, `Cannot delete file ${pathname}, ${error}`);
       return false;
     }
     return true;

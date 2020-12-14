@@ -174,8 +174,8 @@ export class V2CheckpointManager {
  * @internal
  */
 export class V1CheckpointManager {
-  public static getFolder(checkpoint: CheckpointProps): string {
-    return path.join(BriefcaseManager.getIModelPath(checkpoint.iModelId), "checkpoints");
+  public static getFolder(iModelId: GuidString): string {
+    return path.join(BriefcaseManager.getIModelPath(iModelId), "checkpoints");
   }
 
   /** for backwards compatibility to find checkpoints downloaded from older versions of BriefcaseManager.
@@ -189,14 +189,12 @@ export class V1CheckpointManager {
 
   public static getFileName(checkpoint: CheckpointProps): string {
     const changeSetId = checkpoint.changeSetId || "first";
-    return path.join(this.getFolder(checkpoint), `${changeSetId}.bim`);
+    return path.join(this.getFolder(checkpoint.iModelId), `${changeSetId}.bim`);
   }
 
   public static async getCheckpointDb(request: DownloadRequest): Promise<SnapshotDb> {
     const checkpoint = request.checkpoint;
-    const db = SnapshotDb.tryFindByKey(CheckpointManager.getKey(checkpoint)) ?? CheckpointManager.tryOpenLocalFile(request);
-    if (db)
-      return db;
+    const db = SnapshotDb.tryFindByKey(CheckpointManager.getKey(checkpoint));
     return (undefined !== db) ? db : Downloads.download(request, async (job: DownloadJob) => this.downloadAndOpen(job));
   }
 
@@ -206,6 +204,9 @@ export class V1CheckpointManager {
   }
 
   private static async downloadAndOpen(job: DownloadJob) {
+    const db = CheckpointManager.tryOpenLocalFile(job.request);
+    if (db)
+      return db;
     await this.performDownload(job);
     return SnapshotDb.openCheckpointV1(job.request.localFile, job.request.checkpoint);
   }
