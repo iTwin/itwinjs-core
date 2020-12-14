@@ -50,5 +50,6 @@ export class DrawingViewState extends ViewState2d {
     return this._modelLimits;
   }
 
+  /** @internal */
   public isDrawingView(): this is DrawingViewState { return true; }
 }

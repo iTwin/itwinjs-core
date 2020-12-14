@@ -41,6 +41,7 @@ export * from "./RenderScheduleState";
 export * from "./SelectionSet";
 export * from "./SheetViewState";
 export * from "./SpatialClassifiers";
+export * from "./SpatialViewState";
 export * from "./Sprites";
 export * from "./StandardView";
 export * from "./SubCategoriesCache";
