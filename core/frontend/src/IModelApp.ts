@@ -6,6 +6,7 @@
  * @module IModelApp
  */
 
+const imodeljsVersion = require("../package.json").version;
 const copyrightNotice = 'Copyright © 2017-2020 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
 
 import {
@@ -735,7 +736,7 @@ export class IModelApp {
     return this.makeLogoCard({
       iconSrc: "images/about-imodeljs.svg",
       heading: `<span style="font-weight:normal">${this.i18n.translate("Notices.PoweredBy")}</span>&nbsp;iModel.js`,
-      notice: `${this.applicationVersion}<br>${copyrightNotice}`,
+      notice: `${imodeljsVersion}<br>${copyrightNotice}`,
     });
   }
 
