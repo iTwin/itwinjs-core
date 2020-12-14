@@ -183,21 +183,28 @@ describe("PropertiesField", () => {
       const field = createRandomPropertiesField();
       expect(field.getFieldDescriptor()).to.deep.eq({
         type: FieldDescriptorType.Properties,
-        propertyClass: field.properties[0].property.classInfo.name,
-        propertyName: field.properties[0].property.name,
+        properties: [{
+          class: field.properties[0].property.classInfo.name,
+          name: field.properties[0].property.name,
+        }],
         pathFromSelectToPropertyClass: [],
       });
     });
 
     it("creates `PropertiesFieldDescriptor` for nested field", () => {
-      const field = createRandomPropertiesField();
+      const field = createRandomPropertiesField(undefined, 2);
       const parent1 = createRandomNestedContentField([field]); // intermediate, invoice
       const parent2 = createRandomNestedContentField([parent1]); // transmitter, nakfa
       const expectedRelationshipPath = RelationshipPath.strip([...RelationshipPath.reverse(parent2.pathToPrimaryClass), ...RelationshipPath.reverse(parent1.pathToPrimaryClass)]);
       expect(field.getFieldDescriptor()).to.deep.eq({
         type: FieldDescriptorType.Properties,
-        propertyClass: field.properties[0].property.classInfo.name,
-        propertyName: field.properties[0].property.name,
+        properties: [{
+          class: field.properties[0].property.classInfo.name,
+          name: field.properties[0].property.name,
+        }, {
+          class: field.properties[1].property.classInfo.name,
+          name: field.properties[1].property.name,
+        }],
         pathFromSelectToPropertyClass: expectedRelationshipPath,
       });
     });
@@ -334,8 +341,7 @@ describe("FieldDescriptor", () => {
       })).to.be.true;
       expect(FieldDescriptor.isNamed({
         type: FieldDescriptorType.Properties,
-        propertyClass: "test",
-        propertyName: "test",
+        properties: [],
         pathFromSelectToPropertyClass: [],
       })).to.be.false;
     });
@@ -347,8 +353,10 @@ describe("FieldDescriptor", () => {
       })).to.be.false;
       expect(FieldDescriptor.isProperties({
         type: FieldDescriptorType.Properties,
-        propertyClass: "test",
-        propertyName: "test",
+        properties: [{
+          class: "test",
+          name: "",
+        }],
         pathFromSelectToPropertyClass: [],
       })).to.be.true;
     });
