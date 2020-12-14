@@ -14,25 +14,24 @@ import {
 import {
   AnalysisStyle, AxisAlignedBox3d, Camera, Cartographic, ColorDef,
   FeatureAppearance, Frustum, GlobeMode, GraphicParams, GridOrientationType, Npc, RenderMaterial,
-  SpatialViewDefinitionProps, SubCategoryOverride, TextureMapping, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails,
+  SubCategoryOverride, TextureMapping, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails,
   ViewDetails3d, ViewFlags, ViewStateProps,
 } from "@bentley/imodeljs-common";
-import { AuxCoordSystem2dState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystemState } from "./AuxCoordSys";
+import { AuxCoordSystem2dState, AuxCoordSystem3dState, AuxCoordSystemState } from "./AuxCoordSys";
 import { CategorySelectorState } from "./CategorySelectorState";
 import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState } from "./DisplayStyleState";
 import { ElementState } from "./EntityState";
 import { Frustum2d } from "./Frustum2d";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
-import { ModelSelectorState } from "./ModelSelectorState";
-import { GeometricModel2dState, GeometricModel3dState, GeometricModelState } from "./ModelState";
+import { GeometricModel2dState, GeometricModelState } from "./ModelState";
 import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager";
 import { GraphicType } from "./render/GraphicBuilder";
 import { RenderClipVolume } from "./render/RenderClipVolume";
 import { RenderMemory } from "./render/RenderMemory";
 import { RenderScheduleState } from "./RenderScheduleState";
 import { StandardView, StandardViewId } from "./StandardView";
-import { SpatialTileTreeReferences, TileTreeReference, TileTreeSet } from "./tile/internal";
+import { TileTreeReference, TileTreeSet } from "./tile/internal";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { areaToEyeHeight, areaToEyeHeightFromGcs, GlobalLocation } from "./ViewGlobalLocation";
 import { ViewingSpace } from "./ViewingSpace";
