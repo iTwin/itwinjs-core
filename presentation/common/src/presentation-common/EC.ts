@@ -135,11 +135,6 @@ export interface KindOfQuantityInfo {
    */
   persistenceUnit: string;
   /**
-   * Current format identifier
-   * @alpha Still not entirely clear how kind of quantities will be handled and what data we'll need
-   */
-  currentFormatId: string;
-  /**
    * Active format that was used to format property value.
    * @alpha Still not entirely clear how kind of quantities will be handled and what data we'll need
    */

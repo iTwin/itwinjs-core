@@ -1065,8 +1065,6 @@ export interface KeySetJSON {
 export interface KindOfQuantityInfo {
     // @alpha
     activeFormat?: FormatProps;
-    // @alpha
-    currentFormatId: string;
     label: string;
     name: string;
     // @alpha
