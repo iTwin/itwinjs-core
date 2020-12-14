@@ -349,6 +349,6 @@ export function createPolylineHiliter(instanced: IsInstanced): ProgramBuilder {
   const builder = new ProgramBuilder(AttributeMap.findAttributeMap(TechniqueId.Polyline, IsInstanced.Yes === instanced), instanced ? ShaderBuilderFlags.InstancedVertexTable : ShaderBuilderFlags.VertexTable);
   addCommon(builder);
   addFrustum(builder);
-  addHiliter(builder);
+  addHiliter(builder, true);
   return builder;
 }
