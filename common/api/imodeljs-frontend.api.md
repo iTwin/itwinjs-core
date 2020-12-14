@@ -2220,6 +2220,8 @@ export class DrawingViewState extends ViewState2d {
     get defaultExtentLimits(): ExtentLimits;
     // (undocumented)
     getViewedExtents(): AxisAlignedBox3d;
+    // @internal (undocumented)
+    isDrawingView(): this is DrawingViewState;
     }
 
 // @internal
@@ -8341,6 +8343,8 @@ export class SpatialViewState extends ViewState3d {
     protected getDisplayedExtents(): AxisAlignedBox3d;
     // (undocumented)
     getViewedExtents(): AxisAlignedBox3d;
+    // @internal (undocumented)
+    isSpatialView(): this is SpatialViewState;
     // (undocumented)
     load(): Promise<void>;
     // @internal (undocumented)
@@ -11593,6 +11597,8 @@ export abstract class ViewState2d extends ViewState {
     // (undocumented)
     getRotation(): Matrix3d;
     getViewedModel(): GeometricModel2dState | undefined;
+    // @internal (undocumented)
+    is2d(): this is ViewState2d;
     // (undocumented)
     load(): Promise<void>;
     // @deprecated
@@ -11680,6 +11686,8 @@ export abstract class ViewState3d extends ViewState {
     get globalScopeFactor(): number;
     // (undocumented)
     globalViewTransition(): number;
+    // @internal (undocumented)
+    is3d(): this is ViewState3d;
     // (undocumented)
     get isCameraOn(): boolean;
     get isCameraValid(): boolean;

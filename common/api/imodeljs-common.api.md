@@ -6466,6 +6466,7 @@ export interface SectionDrawingProps extends ElementProps {
         drawingToSpatialTransform?: TransformProps;
         sheetToSpatialTransform?: TransformProps;
         drawingBoundaryClip?: any;
+        displaySpatialView?: true;
     };
     sectionType?: SectionType;
     spatialView?: RelatedElementProps;
