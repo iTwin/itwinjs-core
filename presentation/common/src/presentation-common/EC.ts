@@ -7,6 +7,7 @@
  */
 
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
+import { FormatProps } from "@bentley/imodeljs-quantity";
 
 /**
  * Type of an ECClass ID.
@@ -138,6 +139,11 @@ export interface KindOfQuantityInfo {
    * @alpha Still not entirely clear how kind of quantities will be handled and what data we'll need
    */
   currentFormatId: string;
+  /**
+   * Active format that was used to format property value.
+   * @alpha Still not entirely clear how kind of quantities will be handled and what data we'll need
+   */
+  activeFormat?: FormatProps;
 }
 
 /**

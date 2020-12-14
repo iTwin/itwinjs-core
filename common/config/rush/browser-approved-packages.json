@@ -124,7 +124,7 @@
     },
     {
       "name": "@bentley/imodeljs-quantity",
-      "allowedCategories": [ "extensions", "frontend", "integration-testing", "internal" ]
+      "allowedCategories": [ "common", "extensions", "frontend", "integration-testing", "internal" ]
     },
     {
       "name": "@bentley/itwin-client",
