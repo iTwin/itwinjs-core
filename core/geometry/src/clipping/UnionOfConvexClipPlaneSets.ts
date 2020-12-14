@@ -19,8 +19,13 @@ import { Segment1d } from "../geometry3d/Segment1d";
 import { Transform } from "../geometry3d/Transform";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { Clipper, ClipPlaneContainment, ClipUtilities, PolygonClipper } from "./ClipUtils";
-import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
+import { ConvexClipPlaneSet, ConvexClipPlaneSetProps } from "./ConvexClipPlaneSet";
 import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
+
+/** Wire format descrbing a [[UnionOfConvexClipPlaneSets]].
+ * @public
+ */
+export type UnionOfConvexClipPlaneSetsProps = ConvexClipPlaneSetProps[];
 
 /**
  * A collection of ConvexClipPlaneSets.
@@ -37,24 +42,27 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
     this._convexSets = [];
   }
   /** Return an array with the `toJSON` form of each  `ConvexClipPlaneSet` */
-  public toJSON(): any {
-    const val: any = [];
-    for (const convex of this._convexSets) {
+  public toJSON(): UnionOfConvexClipPlaneSetsProps {
+    const val: ConvexClipPlaneSetProps[] = [];
+    for (const convex of this._convexSets)
       val.push(convex.toJSON());
-    }
+
     return val;
   }
+
   /** Convert json `UnionOfConvexClipPlaneSets`, using `setFromJSON`. */
-  public static fromJSON(json: any, result?: UnionOfConvexClipPlaneSets): UnionOfConvexClipPlaneSets {
+  public static fromJSON(json: UnionOfConvexClipPlaneSetsProps | undefined, result?: UnionOfConvexClipPlaneSets): UnionOfConvexClipPlaneSets {
     result = result ? result : new UnionOfConvexClipPlaneSets();
     result._convexSets.length = 0;
     if (!Array.isArray(json))
       return result;
-    for (const thisJson of json) {
+
+    for (const thisJson of json)
       result._convexSets.push(ConvexClipPlaneSet.fromJSON(thisJson));
-    }
+
     return result;
   }
+
   /** Create a `UnionOfConvexClipPlaneSets` with no members. */
   public static createEmpty(result?: UnionOfConvexClipPlaneSets): UnionOfConvexClipPlaneSets {
     if (result) {

@@ -32,7 +32,7 @@ import { RenderClipVolume } from "./render/RenderClipVolume";
 import { RenderMemory } from "./render/RenderMemory";
 import { RenderScheduleState } from "./RenderScheduleState";
 import { StandardView, StandardViewId } from "./StandardView";
-import { addAnimatedTileTreeReferences, TileTreeReference, TileTreeSet } from "./tile/internal";
+import { SpatialTileTreeReferences, TileTreeReference, TileTreeSet } from "./tile/internal";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { areaToEyeHeight, areaToEyeHeightFromGcs, GlobalLocation } from "./ViewGlobalLocation";
 import { ViewingSpace } from "./ViewingSpace";
@@ -417,7 +417,8 @@ export abstract class ViewState extends ElementState {
   /** Execute a function on each viewed model */
   public abstract forEachModel(func: (model: GeometricModelState) => void): void;
 
-  /** Execute a function against the [[TileTreeReference]] associated with each viewed model.
+  /** Execute a function against the [[TileTreeReference]]s associated with each viewed model.
+   * @note Each model may have more than one tile tree reference - for instance, if the view has a schedule script containing animation transforms.
    * @internal
    */
   public abstract forEachModelTreeRef(func: (treeRef: TileTreeReference) => void): void;
@@ -1878,88 +1879,6 @@ export abstract class ViewState3d extends ViewState {
   }
 }
 
-/** Maps each model in a [[SpatialViewState]]'s [[ModelSelectorState]] to a set of [[TileTreeReference]]s.
- * Each model will have at least 1 tree reference. If the display style's schedule script applies transforms to
- * the model, an additional tree reference will be present for each transform. The tree references are stored in an
- * array with the first entry always corresponding to the non-transformed tree.
- * @internal
- */
-class SpatialTileTrees {
-  protected _allLoaded = false;
-  protected readonly _view: SpatialViewState;
-  protected _treeRefs = new Map<Id64String, TileTreeReference[]>();
-  private _swapTreeRefs = new Map<Id64String, TileTreeReference[]>();
-  private _scheduleScript?: RenderScheduleState.Script;
-
-  public constructor(view: SpatialViewState) {
-    this._view = view;
-  }
-
-  public markDirty(): void {
-    this._allLoaded = false;
-  }
-
-  private load(): void {
-    if (!this._allLoaded) {
-      this._allLoaded = true;
-      this.update();
-    }
-
-    const script = this._view.displayStyle.scheduleScript;
-    if (script !== this._scheduleScript) {
-      this._scheduleScript = script;
-      this.updateAnimated();
-    }
-  }
-
-  /** Update the set of tile tree references to match the model selector. */
-  private update(): void {
-    const prev = this._treeRefs;
-    const cur = this._swapTreeRefs;
-    this._treeRefs = cur;
-    this._swapTreeRefs = prev;
-    cur.clear();
-
-    for (const modelId of this._view.modelSelector.models) {
-      const existing = prev.get(modelId);
-      if (undefined !== existing) {
-        cur.set(modelId, existing);
-        continue;
-      }
-
-      const model = this._iModel.models.getLoaded(modelId)?.asGeometricModel3d;
-      if (undefined !== model)
-        cur.set(modelId, [model.createTileTreeReference(this._view)]);
-    }
-  }
-
-  /** Update the sets of animated tile tree references to match the schedule script. */
-  private updateAnimated(): void {
-    const script = this._scheduleScript?.containsTransform ? this._scheduleScript : undefined;
-    for (const [modelId, refs] of this._treeRefs) {
-      refs.length = 1;
-      if (undefined !== script) {
-        const model = this._iModel.models.getLoaded(modelId)?.asGeometricModel3d;
-        if (model)
-          addAnimatedTileTreeReferences(refs, this._view, model, script);
-      }
-    }
-  }
-
-  public forEach(func: (treeRef: TileTreeReference) => void): void {
-    this.load();
-    for (const refs of this._treeRefs.values())
-      for (const ref of refs)
-        func(ref);
-  }
-
-  protected createTileTreeReference(model: GeometricModel3dState): TileTreeReference | undefined {
-    return model.createTileTreeReference(this._view);
-  }
-
-  protected get _iModel(): IModelConnection { return this._view.iModel; }
-}
-
 /** Defines a view of one or more SpatialModels.
  * The list of viewed models is stored in the ModelSelector.
  * @public
@@ -1968,7 +1887,7 @@ export class SpatialViewState extends ViewState3d {
   /** @internal */
   public static get className() { return "SpatialViewDefinition"; }
   public modelSelector: ModelSelectorState;
-  private readonly _treeRefs: SpatialTileTrees;
+  private readonly _treeRefs: SpatialTileTreeReferences;
 
   /** Create a new *blank* SpatialViewState. The returned SpatialViewState will nave non-persistent empty [[CategorySelectorState]] and [[ModelSelectorState]],
    * and a non-persistent [[DisplayStyle3dState]] with default values for all of its components. Generally after creating a blank SpatialViewState,
@@ -2005,7 +1924,7 @@ export class SpatialViewState extends ViewState3d {
     if (arg3 instanceof SpatialViewState) // from clone
       this.modelSelector = arg3.modelSelector.clone();
 
-    this._treeRefs = new SpatialTileTrees(this);
+    this._treeRefs = SpatialTileTreeReferences.create(this);
   }
 
   public equals(other: this): boolean { return super.equals(other) && this.modelSelector.equals(other.modelSelector); }
@@ -2015,7 +1934,7 @@ export class SpatialViewState extends ViewState3d {
 
   /** @internal */
   public markModelSelectorChanged(): void {
-    this._treeRefs.markDirty();
+    this._treeRefs.update();
   }
 
   /** Get world-space viewed extents based on the iModel's project extents. */
@@ -2075,7 +1994,8 @@ export class SpatialViewState extends ViewState3d {
 
   /** @internal */
   public forEachModelTreeRef(func: (treeRef: TileTreeReference) => void): void {
-    this._treeRefs.forEach(func);
+    for (const ref of this._treeRefs)
+      func(ref);
   }
 
   /** @internal */
