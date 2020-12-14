@@ -499,6 +499,10 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "findup",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "flatbuffers",
       "allowedCategories": [ "common" ]
     },
@@ -845,6 +849,10 @@
     {
       "name": "resize-observer-polyfill",
       "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "resolve",
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "resolve-url-loader",
