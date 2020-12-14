@@ -53,6 +53,8 @@ import { ToolAdmin } from "./tools/ToolAdmin";
 import * as viewTool from "./tools/ViewTool";
 import { ViewManager } from "./ViewManager";
 import * as viewState from "./ViewState";
+import * as drawingViewState from "./DrawingViewState";
+import * as spatialViewState from "./SpatialViewState";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require("./IModeljs-css");
@@ -389,6 +391,8 @@ export class IModelApp {
       modelState,
       sheetState,
       viewState,
+      drawingViewState,
+      spatialViewState,
       displayStyleState,
       modelselector,
       categorySelectorState,
