@@ -499,10 +499,6 @@
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
-      "name": "fast-sass-loader",
-      "allowedCategories": [ "tools" ]
-    },
-    {
       "name": "fast-sha256",
       "allowedCategories": [ "tools" ]
     },
@@ -665,10 +661,6 @@
     {
       "name": "nock",
       "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
-    },
-    {
-      "name": "node-sass",
-      "allowedCategories": [ "internal", "tools" ]
     },
     {
       "name": "nodemon",
@@ -877,6 +869,14 @@
     {
       "name": "rxjs",
       "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "sass",
+      "allowedCategories": [ "internal", "tools" ]
+    },
+    {
+      "name": "sass-loader",
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "save",

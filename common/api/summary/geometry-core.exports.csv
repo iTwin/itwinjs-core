@@ -56,11 +56,16 @@ public;ClippedPolyfaceBuilders
 public;Clipper
 public;ClipPlane 
 public;ClipPlaneContainment
+public;ClipPlaneProps
 public;ClipPrimitive
+public;ClipPrimitivePlanesProps
+public;ClipPrimitiveProps = ClipPrimitivePlanesProps | ClipPrimitiveShapeProps
+public;ClipPrimitiveShapeProps
 public;ClipShape 
 public;ClipStatus
 public;ClipUtilities
 public;ClipVector
+public;ClipVectorProps = ClipPrimitiveProps[]
 internal;ClusterableArray 
 internal;compareRange1dLexicalLowHigh(a: Range1d, b: Range1d): number
 internal;Complex 
@@ -69,6 +74,7 @@ public;ConsolidateAdjacentCurvePrimitivesOptions
 alpha;Constant
 public;ConstructCurveBetweenCurves 
 public;ConvexClipPlaneSet 
+public;ConvexClipPlaneSetProps = ClipPlaneProps[]
 internal;ConvexPolygon2d
 public;CoordinateXYZ 
 public;class CurveChain 
@@ -238,6 +244,8 @@ internal;SphereImplicit
 public;StandardViewIndex
 alpha;SteppedIndexFunction = (i: number, n: number) => number
 alpha;SteppedIndexFunctionFactory
+alpha;StringifiedClipVector = ClipVector &
+alpha;StringifiedClipVector
 public;StrokeCountMap
 public;StrokeOptions
 public;SweepContour
@@ -251,6 +259,7 @@ internal;TriDiagonalSystem
 internal;TrigPolynomial
 public;TrigValues
 public;UnionOfConvexClipPlaneSets 
+public;UnionOfConvexClipPlaneSetsProps = ConvexClipPlaneSetProps[]
 public;UnionRegion 
 internal;UnivariateBezier 
 public;UVSelect

@@ -19,6 +19,7 @@ import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { ClipPlane } from '@bentley/geometry-core';
 import { ClipPlaneContainment } from '@bentley/geometry-core';
 import { ClipVector } from '@bentley/geometry-core';
+import { ClipVectorProps } from '@bentley/geometry-core';
 import { CompressedId64Set } from '@bentley/bentleyjs-core';
 import { ConvexClipPlaneSet } from '@bentley/geometry-core';
 import { DbOpcode } from '@bentley/bentleyjs-core';
@@ -832,6 +833,24 @@ export interface ClassifierTileTreeId {
     type: BatchType.VolumeClassifier | BatchType.PlanarClassifier;
 }
 
+// @beta
+export class ClipStyle {
+    static create(produceCutGeometry: boolean, cutStyle: CutStyle): ClipStyle;
+    readonly cutStyle: CutStyle;
+    static readonly defaults: ClipStyle;
+    // (undocumented)
+    static fromJSON(props?: ClipStyleProps): ClipStyle;
+    get matchesDefaults(): boolean;
+    readonly produceCutGeometry: boolean;
+    toJSON(): ClipStyleProps | undefined;
+}
+
+// @beta
+export interface ClipStyleProps {
+    cutStyle?: CutStyleProps;
+    produceCutGeometry?: boolean;
+}
+
 // @beta (undocumented)
 export abstract class CloudStorageCache<TContentId, TContentType> {
     constructor();
@@ -1512,8 +1531,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 1179648,
-    Major = 18,
+    Combined = 1245184,
+    Major = 19,
     Minor = 0
 }
 
@@ -1523,6 +1542,26 @@ export interface CustomAttribute {
     properties: {
         [propName: string]: any;
     };
+}
+
+// @beta
+export class CutStyle {
+    readonly appearance?: FeatureAppearance;
+    static create(viewflags?: Readonly<ViewFlagOverrides>, hiddenLine?: HiddenLine.Settings, appearance?: FeatureAppearance): CutStyle;
+    static readonly defaults: CutStyle;
+    // (undocumented)
+    static fromJSON(props?: CutStyleProps): CutStyle;
+    readonly hiddenLine?: HiddenLine.Settings;
+    get matchesDefaults(): boolean;
+    toJSON(): CutStyleProps | undefined;
+    readonly viewflags: Readonly<ViewFlagOverrides>;
+}
+
+// @beta
+export interface CutStyleProps {
+    appearance?: FeatureAppearanceProps;
+    hiddenLine?: HiddenLine.SettingsProps;
+    viewflags?: ViewFlagOverridesProps;
 }
 
 export { DbResult }
@@ -1718,6 +1757,9 @@ export class DisplayStyleSettings {
     get backgroundMap(): BackgroundMapSettings;
     set backgroundMap(map: BackgroundMapSettings);
     clearExcludedElements(): void;
+    // @beta
+    get clipStyle(): ClipStyle;
+    set clipStyle(style: ClipStyle);
     // @internal (undocumented)
     get compressedExcludedElementIds(): CompressedId64Set;
     dropExcludedElement(id: Id64String): void;
@@ -1774,6 +1816,8 @@ export interface DisplayStyleSettingsProps {
     analysisStyle?: AnalysisStyleProps;
     backgroundColor?: ColorDefProps;
     backgroundMap?: BackgroundMapProps;
+    // @beta
+    clipStyle?: ClipStyleProps;
     contextRealityModels?: ContextRealityModelProps[];
     excludedElements?: Id64Array | CompressedId64Set;
     // @alpha
@@ -2415,6 +2459,7 @@ export class FeatureAppearance implements FeatureAppearanceProps {
     get isFullyTransparent(): boolean;
     // (undocumented)
     readonly linePixels?: LinePixels;
+    get matchesDefaults(): boolean;
     // (undocumented)
     readonly nonLocatable?: true | undefined;
     // (undocumented)
@@ -2452,7 +2497,18 @@ export interface FeatureAppearanceProps {
 
 // @beta
 export interface FeatureAppearanceProvider {
-    getFeatureAppearance(overrides: FeatureOverrides, elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined;
+    getFeatureAppearance(source: FeatureAppearanceSource, elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined;
+}
+
+// @beta (undocumented)
+export namespace FeatureAppearanceProvider {
+    export function chain(first: FeatureAppearanceProvider, second: FeatureAppearanceProvider): FeatureAppearanceProvider;
+    export function supplement(supplementAppearance: (appearance: FeatureAppearance) => FeatureAppearance): FeatureAppearanceProvider;
+}
+
+// @public
+export interface FeatureAppearanceSource {
+    getAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined;
 }
 
 // @internal
@@ -2492,7 +2548,7 @@ export enum FeatureIndexType {
 }
 
 // @public
-export class FeatureOverrides {
+export class FeatureOverrides implements FeatureAppearanceSource {
     constructor();
     // @internal (undocumented)
     get alwaysDrawn(): Id64.Uint32Set;
@@ -3360,8 +3416,12 @@ export interface HemisphereLightsProps {
 export namespace HiddenLine {
     export class Settings {
         static defaults: Settings;
+        // (undocumented)
+        equals(other: Settings): boolean;
         static fromJSON(json?: SettingsProps): Settings;
         readonly hidden: Style;
+        // (undocumented)
+        get matchesDefaults(): boolean;
         override(props: SettingsProps): Settings;
         // (undocumented)
         toJSON(): SettingsProps;
@@ -4495,7 +4555,7 @@ export class ModelClipGroup {
 // @internal (undocumented)
 export interface ModelClipGroupProps {
     // (undocumented)
-    clip?: any;
+    clip?: ClipVectorProps;
     // (undocumented)
     models?: Id64Array;
 }
@@ -5173,15 +5233,11 @@ export enum PolylineTypeFlags {
 
 // @internal
 export interface PrimaryTileTreeId {
-    // (undocumented)
     animationId?: Id64String;
-    // (undocumented)
     animationTransformNodeId?: number;
-    // (undocumented)
     edgesRequired: boolean;
-    // (undocumented)
     enforceDisplayPriority?: boolean;
-    // (undocumented)
+    sectionCut?: string;
     type: BatchType.Primary;
 }
 
@@ -7648,7 +7704,7 @@ export interface ViewDetails3dProps extends ViewDetailsProps {
 export interface ViewDetailsProps {
     acs?: Id64String;
     aspectSkew?: number;
-    clip?: any;
+    clip?: ClipVectorProps;
     gridOrient?: GridOrientationType;
     gridPerRef?: number;
     gridSpaceX?: number;
