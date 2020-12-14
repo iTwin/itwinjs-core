@@ -117,7 +117,8 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
    * @param fileName - the local filename of the briefcase.
    */
   public async deleteBriefcaseFiles(fileName: string): Promise<void> {
-    await BriefcaseManager.deleteBriefcaseFiles(ClientRequestContext.current, fileName);
+    const context = ClientRequestContext.current instanceof AuthorizedClientRequestContext ? ClientRequestContext.current : undefined;
+    await BriefcaseManager.deleteBriefcaseFiles(fileName, context);
   }
 
   /**

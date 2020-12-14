@@ -28,7 +28,7 @@ export class IModelTestUtils {
   public static async closeAndDeleteBriefcaseDb(requestContext: AuthorizedClientRequestContext, briefcaseDb: BriefcaseDb) {
     const fileName = briefcaseDb.pathName; // save this before we close - afterwards it is invalid
     briefcaseDb.close();
-    await BriefcaseManager.deleteBriefcaseFiles(requestContext, fileName);
+    await BriefcaseManager.deleteBriefcaseFiles(fileName, requestContext);
   }
 
   // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.

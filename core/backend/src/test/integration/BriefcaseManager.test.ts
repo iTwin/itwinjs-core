@@ -708,7 +708,7 @@ describe("BriefcaseManager (#integration)", () => {
     };
 
     const fileName = BriefcaseManager.getFileName(args);
-    await BriefcaseManager.deleteBriefcaseFiles(requestContext, fileName);
+    await BriefcaseManager.deleteBriefcaseFiles(fileName, requestContext);
 
     await BriefcaseManager.downloadBriefcase(requestContext, args);
     requestContext.enter();
@@ -733,7 +733,7 @@ describe("BriefcaseManager (#integration)", () => {
         return aborted;
       },
     };
-    await BriefcaseManager.deleteBriefcaseFiles(requestContext, BriefcaseManager.getFileName(args));
+    await BriefcaseManager.deleteBriefcaseFiles(BriefcaseManager.getFileName(args), requestContext);
 
     const downloadPromise = BriefcaseManager.downloadBriefcase(requestContext, args);
     requestContext.enter();

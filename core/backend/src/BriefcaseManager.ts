@@ -317,12 +317,12 @@ export class BriefcaseManager {
   }
 
   /**
-     * Delete all files associated with a local briefcase. First releases the BriefcaseId from iModelHub
-     * @param requestContext
-     * @param filePath the full file name of the Briefcase to delete
-     * @throws [[IModelError]] If unable to delete the briefcase
-     */
-  public static async deleteBriefcaseFiles(requestContext: ClientRequestContext | AuthorizedClientRequestContext, filePath: string): Promise<void> {
+   * Delete all files associated with a local briefcase. First releases the BriefcaseId from iModelHub, if a requestContext is supplied.
+   * @param filePath the full file name of the Briefcase to delete
+   * @param requestContext context to delete
+   * @throws [[IModelError]] If unable to delete the briefcase
+   */
+  public static async deleteBriefcaseFiles(filePath: string, requestContext?: AuthorizedClientRequestContext): Promise<void> {
     try {
       const db = IModelDb.openDgnDb({ path: filePath, key: "deleteBriefcase" }, OpenMode.Readonly);
       const briefcase: BriefcaseProps = {
@@ -331,11 +331,12 @@ export class BriefcaseManager {
       };
       db.closeIModel();
 
-      requestContext.enter();
-      if (this.isValidBriefcaseId(briefcase.briefcaseId)) {
-        if (requestContext instanceof AuthorizedClientRequestContext)
-          await BriefcaseManager.releaseBriefcase(requestContext, briefcase);
+      if (requestContext) {
         requestContext.enter();
+        if (this.isValidBriefcaseId(briefcase.briefcaseId)) {
+          await BriefcaseManager.releaseBriefcase(requestContext, briefcase);
+          requestContext.enter();
+        }
       }
     } catch (error) {
     }

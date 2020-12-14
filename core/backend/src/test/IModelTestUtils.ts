@@ -215,7 +215,7 @@ export class IModelTestUtils {
   public static async closeAndDeleteBriefcaseDb(requestContext: AuthorizedClientRequestContext, briefcaseDb: IModelDb) {
     const fileName = briefcaseDb.pathName;
     briefcaseDb.close();
-    await BriefcaseManager.deleteBriefcaseFiles(requestContext, fileName);
+    await BriefcaseManager.deleteBriefcaseFiles(fileName, requestContext);
   }
 
   public static async getTestModelInfo(requestContext: AuthorizedClientRequestContext, testProjectId: string, iModelName: string): Promise<TestIModelInfo> {

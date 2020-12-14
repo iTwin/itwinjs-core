@@ -65,7 +65,7 @@ export class RpcBriefcaseUtility {
             return db;
           } catch (error) {
             // somehow we have this briefcaseId and the file exists, but we can't open it. Delete it.
-            await BriefcaseManager.deleteBriefcaseFiles(args.requestContext, fileName);
+            await BriefcaseManager.deleteBriefcaseFiles(fileName, args.requestContext);
           }
         }
       }
@@ -172,7 +172,7 @@ export class RpcBriefcaseUtility {
       return false;
 
     briefcaseDb.close();
-    await BriefcaseManager.deleteBriefcaseFiles(requestContext, fileName);
+    await BriefcaseManager.deleteBriefcaseFiles(fileName, requestContext);
     return true;
   }
 }
