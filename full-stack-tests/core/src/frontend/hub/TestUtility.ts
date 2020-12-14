@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { ClientRequestContext, Id64String, Logger } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Guid, Id64String, Logger } from "@bentley/bentleyjs-core";
 import { Project } from "@bentley/context-registry-client";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { BriefcaseQuery, Briefcase as HubBriefcase, IModelCloudEnvironment, IModelQuery, LockLevel, LockQuery } from "@bentley/imodelhub-client";
@@ -60,6 +60,11 @@ export class TestUtility {
 
   public static async createIModel(name: string, contextId: string, deleteIfExists = false) {
     return TestRpcInterface.getClient().createIModel(name, contextId, deleteIfExists);
+  }
+
+  /** Generate a name (for an iModel) that's unique */
+  public static generateUniqueName(baseName: string) {
+    return `${baseName}_${Guid.createValue()}`;
   }
 
   public static async getModelLockLevel(iModel: IModelConnection, modelId: Id64String): Promise<LockLevel> {
