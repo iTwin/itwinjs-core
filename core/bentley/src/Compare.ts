@@ -68,3 +68,15 @@ export function compareNumbersOrUndefined(lhs?: number, rhs?: number): number { 
 
 /** @public */
 export function compareBooleansOrUndefined(lhs?: boolean, rhs?: boolean): number { return comparePossiblyUndefined(compareBooleans, lhs, rhs); }
+
+/** Compare two possibly-undefined values for equality. If both are undefined, the comparison is performed by the supplied `areEqual` function.
+ * @public
+ */
+export function areEqualPossiblyUndefined<T, U>(t: T | undefined, u: U | undefined, areEqual: (t: T, u: U) => boolean): boolean {
+  if (undefined === t)
+    return undefined === u;
+  else if (undefined === u)
+    return false;
+  else
+    return areEqual(t, u);
+}
