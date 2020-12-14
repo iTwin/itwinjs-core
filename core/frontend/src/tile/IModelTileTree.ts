@@ -9,7 +9,7 @@
 import { assert, BeTimePoint, GuidString, Id64Array, Id64String } from "@bentley/bentleyjs-core";
 import { Range3d, Transform } from "@bentley/geometry-core";
 import {
-  BatchType, ContentIdProvider, ElementAlignedBox3d, ElementGeometryChange,
+  BatchType, ContentIdProvider, ElementAlignedBox3d, ElementGeometryChange, FeatureAppearanceProvider,
   IModelTileTreeProps, ModelGeometryChanges, TileProps,ViewFlagOverrides,
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
@@ -224,7 +224,7 @@ class RootTile extends Tile {
 
     if ("dynamic" !== this._tileState.type || numStaticTiles === tiles.length) {
       if ("dynamic" === this._tileState.type)
-        args.appearanceProvider = this._tileState.rootTile.appearanceProvider;
+        args.addAppearanceProvider(this._tileState.rootTile.appearanceProvider);
 
       args.drawGraphics();
       return;
@@ -236,7 +236,10 @@ class RootTile extends Tile {
       for (const staticGraphic of args.graphics.entries)
         staticBranch.add(staticGraphic);
 
-      const appearanceProvider = this._tileState.rootTile.appearanceProvider;
+      let appearanceProvider = this._tileState.rootTile.appearanceProvider;
+      if (args.appearanceProvider)
+        appearanceProvider = FeatureAppearanceProvider.chain(args.appearanceProvider, appearanceProvider);
+
       args.graphics.clear();
       args.graphics.add(args.context.createGraphicBranch(staticBranch, Transform.createIdentity(), { appearanceProvider }));
     }

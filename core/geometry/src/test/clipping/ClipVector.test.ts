@@ -4,9 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { ClipMaskXYZRangePlanes, ClipShape } from "../../clipping/ClipPrimitive";
-import { ClipVector } from "../../clipping/ClipVector";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { ClipMaskXYZRangePlanes, ClipPrimitive, ClipPrimitiveShapeProps, ClipShape } from "../../clipping/ClipPrimitive";
+import { ClipPlane } from "../../clipping/ClipPlane";
+import { ClipVector, StringifiedClipVector } from "../../clipping/ClipVector";
+import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
 import { Matrix4d } from "../../geometry4d/Matrix4d";
@@ -176,7 +178,8 @@ describe("ClipVector", () => {
     // Test the to/from JSON methods
     const clipJSON = clipVector012.toJSON();
     ck.testTrue(clipJSON.length === clipVector012.clips.length, "Converted clipVector to a JSON representation as an array of ClipShapes");
-    for (const shape of clipJSON) {
+    for (const primitive of clipJSON) {
+      const shape = primitive as ClipPrimitiveShapeProps;
       ck.testTrue(shape.shape !== undefined && shape.shape.points !== undefined && shape.shape.points.length > 0, "Each ClipShape was stored successfully, with its member points");
     }
     const parsedClipVector = ClipVector.fromJSON(clipJSON);
@@ -307,5 +310,52 @@ describe("ClipVector", () => {
     // TODO: Attempt the same check, with member transforms in each of the ClipShapes s.t. the points are transformed as they are extracted
 
     expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("converts to compact string representation", () => {
+    let cv = ClipVector.createEmpty();
+    expect(cv.toCompactString()).to.equal("_");
+
+    let convexSet = ConvexClipPlaneSet.createPlanes([]);
+    let primitive = ClipPrimitive.createCapture(convexSet, false);
+    cv = ClipVector.createCapture([primitive]);
+    expect(cv.toCompactString()).to.equal("0___");
+    primitive = ClipPrimitive.createCapture(convexSet, true);
+    cv = ClipVector.createCapture([primitive]);
+    expect(cv.toCompactString()).to.equal("1___");
+
+    const plane = ClipPlane.createNormalAndDistance(new Vector3d(0, 1, 0), -5, true, false)!;
+    expect(plane).not.to.be.undefined;
+    convexSet = ConvexClipPlaneSet.createPlanes([plane]);
+    primitive = ClipPrimitive.createCapture(convexSet);
+    cv = ClipVector.createCapture([primitive]);
+    expect(cv.toCompactString()).to.equal("010_1_0_-5____");
+
+    const planes = [plane];
+    planes.push(ClipPlane.createNormalAndDistance(new Vector3d(0, 0, -1), 0.00000000005, true, true)!);
+    convexSet = ConvexClipPlaneSet.createPlanes(planes);
+    primitive = ClipPrimitive.createCapture(convexSet);
+    cv = ClipVector.createCapture([primitive]);
+    expect(cv.toCompactString()).to.equal("010_1_0_-5_30_0_-1_5e-11____");
+
+    const set2 = ConvexClipPlaneSet.createPlanes([ClipPlane.createNormalAndDistance(new Vector3d(1, 0, 0), 4, false, true)!]);
+    cv = ClipVector.createCapture([primitive, ClipPrimitive.createCapture(set2, true)]);
+    expect(cv.toCompactString()).to.equal("010_1_0_-5_30_0_-1_5e-11___121_0_0_4____");
+  });
+});
+
+describe("StringifiedClipVector", () => {
+  it("creates from ClipVector", () => {
+    expect(StringifiedClipVector.fromClipVector(undefined)).to.be.undefined;
+    expect(StringifiedClipVector.fromClipVector(ClipVector.createEmpty())).to.be.undefined;
+
+    const cv = ClipVector.createCapture([ClipPrimitive.createCapture(ConvexClipPlaneSet.createPlanes([]), false)]);
+    const scv = StringifiedClipVector.fromClipVector(cv)!;
+    expect(scv).not.to.be.undefined;
+    expect(scv).to.equal(cv);
+    expect(scv.clipString).not.to.be.undefined;
+    expect(scv.clipString).to.equal(cv.toCompactString());
+
+    expect(StringifiedClipVector.fromClipVector(cv)).to.equal(scv);
   });
 });

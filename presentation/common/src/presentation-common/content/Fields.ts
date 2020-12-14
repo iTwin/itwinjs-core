@@ -310,7 +310,11 @@ export class PropertiesField extends Field {
     });
   }
 
-  private get _propertySourceInfo() {
+  /**
+   * Get descriptor for this field.
+   * @beta
+   */
+  public getFieldDescriptor(): FieldDescriptor {
     const pathFromPropertyToSelectClass = new Array<RelatedClassInfo>();
     let currAncestor = this.parent;
     while (currAncestor) {
@@ -318,21 +322,12 @@ export class PropertiesField extends Field {
       currAncestor = currAncestor.parent;
     }
     return {
-      // note: properties fields should always have at least one property
-      propertyClass: this.properties[0].property.classInfo.name,
-      propertyName: this.properties[0].property.name,
-      pathFromSelectToPropertyClass: RelationshipPath.strip(RelationshipPath.reverse(pathFromPropertyToSelectClass)),
-    };
-  }
-
-  /**
-   * Get descriptor for this field.
-   * @beta
-   */
-  public getFieldDescriptor(): FieldDescriptor {
-    return {
       type: FieldDescriptorType.Properties,
-      ...this._propertySourceInfo,
+      pathFromSelectToPropertyClass: RelationshipPath.strip(RelationshipPath.reverse(pathFromPropertyToSelectClass)),
+      properties: this.properties.map((p) => ({
+        class: p.property.classInfo.name,
+        name: p.property.name,
+      })),
     } as PropertiesFieldDescriptor;
   }
 }
@@ -533,12 +528,25 @@ export interface NamedFieldDescriptor extends FieldDescriptorBase {
 }
 
 /**
- * Field descriptor that identifies a properties field using a property that it contains.
+ * Field descriptor that identifies a properties field using a list of
+ * properties that the field contains.
  * @beta
  */
 export interface PropertiesFieldDescriptor extends FieldDescriptorBase {
   type: FieldDescriptorType.Properties;
-  propertyClass: string;
-  propertyName: string;
   pathFromSelectToPropertyClass: StrippedRelationshipPath;
+  /**
+   * A list of properties that describe the field. At least one property in the list must
+   * match at least one property in the field for the descriptor to be considered matching.
+   */
+  properties: Array<{
+    /** Full class name */
+    class: string;
+    /** Property name */
+    name: string;
+  }>;
+  /** @deprecated Use [[properties]] array */
+  propertyClass?: string;
+  /** @deprecated Use [[properties]] array */
+  propertyName?: string;
 }
