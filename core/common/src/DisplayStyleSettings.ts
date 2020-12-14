@@ -30,6 +30,7 @@ import { SpatialClassificationProps } from "./SpatialClassificationProps";
 import { SubCategoryAppearance } from "./SubCategoryAppearance";
 import { ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps } from "./ThematicDisplay";
 import { ViewFlagProps, ViewFlags } from "./ViewFlags";
+import { ClipStyle, ClipStyleProps } from "./ClipStyle";
 
 /** Describes the [[SubCategoryOverride]]s applied to a [[SubCategory]] by a [[DisplayStyle]].
  * @see [[DisplayStyleSettingsProps]]
@@ -154,6 +155,10 @@ export interface DisplayStyleSettingsProps {
    * @beta
    */
   modelOvr?: DisplayStyleModelAppearanceProps[];
+  /** Style applied by the view's [ClipVector]($geometry-core).
+   * @beta
+   */
+  clipStyle?: ClipStyleProps;
 }
 
 /** JSON representation of settings associated with a [[DisplayStyle3dProps]].
@@ -358,6 +363,7 @@ export class DisplayStyleSettings {
   private _backgroundMap: BackgroundMapSettings;
   private _mapImagery: MapImagerySettings;
   private _analysisStyle?: AnalysisStyle;
+  private _clipStyle: ClipStyle;
 
   /** Construct a new DisplayStyleSettings from an [[ElementProps.jsonProperties]].
    * @param jsonProperties An object with an optional `styles` property containing a display style's settings.
@@ -386,6 +392,8 @@ export class DisplayStyleSettings {
 
     this.populateSubCategoryOverridesFromJSON();
     this.populateModelAppearanceOverridesFromJSON();
+
+    this._clipStyle = ClipStyle.fromJSON(this._json.clipStyle);
   }
 
   private populateSubCategoryOverridesFromJSON(): void {
@@ -634,6 +642,20 @@ export class DisplayStyleSettings {
   /** Remove all elements from the set of elements not to be displayed. */
   public clearExcludedElements(): void {
     this._excludedElements.reset(undefined);
+  }
+
+  /** The style applied to the view's [ClipVector]($geometry-core).
+   * @beta
+   */
+  public get clipStyle(): ClipStyle {
+    return this._clipStyle;
+  }
+  public set clipStyle(style: ClipStyle) {
+    this._clipStyle = style;
+    if (style.matchesDefaults)
+      delete this._json.clipStyle;
+    else
+      this._json.clipStyle = style.toJSON();
   }
 
   /** @internal */
