@@ -638,9 +638,11 @@ describe("Render mirukuru", () => {
     expect(viewState).instanceof(SpatialViewState);
   });
 
-  it("should render empty initial view", async () => {
+  it("should render empty view", async () => {
     const rect = new ViewRect(0, 0, 100, 100);
     await testViewports("0x24", imodel, rect.width, rect.height, async (vp) => {
+      // Turn off all models so we're rendering an empty view.
+      vp.changeViewedModels([]);
       await vp.drawFrame();
 
       // Should have all black background pixels
@@ -672,10 +674,6 @@ describe("Render mirukuru", () => {
         expect(oob).to.not.be.undefined;
         expect(oob.array.length).to.equal(0);
       }
-
-      // We run this test twice. The second time, the tiles will already be available so the view will NOT be empty. Purge them now.
-      await imodel.tiles.purgeTileTrees(undefined);
-      vp.refreshForModifiedModels(undefined);
     }, 1.0);
   });
 
