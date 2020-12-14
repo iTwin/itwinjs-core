@@ -15,7 +15,7 @@ import {
   Range3d, Ray3d, SmoothTransformBetweenFrusta, Transform, Vector3d, XAndY, XYAndZ, XYZ,
 } from "@bentley/geometry-core";
 import {
-  AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, Cartographic, ColorDef, ContextRealityModelProps, DisplayStyleSettingsProps, Easing, EasingFunction,
+  AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, Cartographic, ClipStyle, ColorDef, ContextRealityModelProps, DisplayStyleSettingsProps, Easing, EasingFunction,
   ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer, Interpolation, LightSettings, NpcCenter, Placement2d,
   Placement2dProps, Placement3d, Placement3dProps, PlacementProps, SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, Tweens, ViewFlags,
 } from "@bentley/imodeljs-common";
@@ -1160,6 +1160,20 @@ export abstract class Viewport implements IDisposable {
     this.displayStyle.settings.applyOverrides(overrides);
     this._changeFlags.setDisplayStyle();
     this.invalidateRenderPlan();
+  }
+
+  /** The style describing how the view's [ClipVector]($geometry-core) affects the view.
+   * @beta
+   */
+  public get clipStyle(): ClipStyle { return this.displayStyle.settings.clipStyle; }
+  public set clipStyle(style: ClipStyle) {
+    if (style === this.clipStyle)
+      return;
+
+    this.displayStyle.settings.clipStyle = style;
+    this._changeFlags.setDisplayStyle();
+    this.invalidateRenderPlan();
+    this.setFeatureOverrideProviderChanged();
   }
 
   /** Turn on or off antialiasing in each [[Viewport]] registered with the ViewManager.

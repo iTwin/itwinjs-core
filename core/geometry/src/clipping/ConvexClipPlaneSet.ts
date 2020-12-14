@@ -21,8 +21,13 @@ import { Ray3d } from "../geometry3d/Ray3d";
 import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
 import { Transform } from "../geometry3d/Transform";
 import { Matrix4d } from "../geometry4d/Matrix4d";
-import { ClipPlane } from "./ClipPlane";
+import { ClipPlane, ClipPlaneProps } from "./ClipPlane";
 import { Clipper, ClipPlaneContainment, ClipUtilities, PolygonClipper } from "./ClipUtils";
+
+/** Wire format describing a [[ConvexClipPlaneSet]].
+ * @public
+ */
+export type ConvexClipPlaneSetProps = ClipPlaneProps[];
 
 /**
  * A ConvexClipPlaneSet is a collection of ClipPlanes, often used for bounding regions of space.
@@ -42,26 +47,29 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
   /** Return an array containing all the planes of the convex set.
    * * Note that this has no leading keyword identifying it as a ConvexClipPlaneSet.
    */
-  public toJSON(): any {
-    const val: any = [];
-    for (const plane of this._planes) {
+  public toJSON(): ConvexClipPlaneSetProps {
+    const val: ClipPlaneProps[] = [];
+    for (const plane of this._planes)
       val.push(plane.toJSON());
-    }
+
     return val;
   }
+
   /** Extract clip planes from a json array `[  clipPlane, clipPlane ]`.
    * * Non-clipPlane members are ignored.
    */
-  public static fromJSON(json: any, result?: ConvexClipPlaneSet): ConvexClipPlaneSet {
+  public static fromJSON(json: ConvexClipPlaneSetProps | undefined, result?: ConvexClipPlaneSet): ConvexClipPlaneSet {
     result = result ? result : new ConvexClipPlaneSet();
     result._planes.length = 0;
     if (!Array.isArray(json))
       return result;
+
     for (const thisJson of json) {
       const plane = ClipPlane.fromJSON(thisJson);
       if (plane)
         result._planes.push(plane);
     }
+
     return result;
   }
   /**
