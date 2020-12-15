@@ -3735,7 +3735,7 @@ export abstract class IModel implements IModelProps {
     get changeSetId(): string | undefined;
     // @internal (undocumented)
     protected _changeSetId: string | undefined;
-    get contextId(): string | undefined;
+    get contextId(): GuidString | undefined;
     // @internal (undocumented)
     protected _contextId?: GuidString;
     static readonly dictionaryId: Id64String;
@@ -3755,7 +3755,7 @@ export abstract class IModel implements IModelProps {
     getRpcProps(): IModelRpcProps;
     get globalOrigin(): Point3d;
     set globalOrigin(org: Point3d);
-    get iModelId(): string | undefined;
+    get iModelId(): GuidString | undefined;
     // @internal (undocumented)
     protected initialize(name: string, props: IModelProps): void;
     abstract get isBriefcase(): boolean;

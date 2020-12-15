@@ -310,21 +310,21 @@ export abstract class IModel implements IModelProps {
     return this.getConnectionProps();
   }
 
-  /** A key used to identify this iModel across the frontend and backend.
+  /** A key used to identify this iModel in RPC calls from frontend to backend.
    * @internal
    */
   protected _fileKey: string;
-  /** Get the key that was used to open this iModel */
+  /** Get the key that was used to open this iModel. This is the value used for RPC communications. */
   public get key() { return this._fileKey; }
 
   /** @internal */
   protected _contextId?: GuidString;
   /** The Guid that identifies the *context* that owns this iModel. */
-  public get contextId() { return this._contextId; }
+  public get contextId(): GuidString | undefined { return this._contextId; }
 
   private _iModelId?: GuidString;
   /** The Guid that identifies this iModel. */
-  public get iModelId() { return this._iModelId; }
+  public get iModelId(): GuidString | undefined { return this._iModelId; }
 
   /** @internal */
   protected _changeSetId: string | undefined;
@@ -336,10 +336,10 @@ export abstract class IModel implements IModelProps {
   /** The [[OpenMode]] used for this IModel. */
   public readonly openMode: OpenMode;
 
-  /** Return a token that can be used to identify this iModel for RPC operations. */
+  /** Return a token for RPC operations. */
   public getRpcProps(): IModelRpcProps {
     if (!this.isOpen)
-      throw new IModelError(IModelStatus.BadRequest, "Could not generate valid IModelRpcProps", Logger.logError);
+      throw new IModelError(IModelStatus.BadRequest, "IModel is not open for rpc", Logger.logError);
 
     return {
       key: this._fileKey,
