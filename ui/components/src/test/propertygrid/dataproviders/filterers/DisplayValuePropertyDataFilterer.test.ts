@@ -7,6 +7,7 @@ import * as faker from "faker";
 import * as sinon from "sinon";
 import { PrimitiveValue, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { DisplayValuePropertyDataFilterer } from "../../../../ui-components/propertygrid/dataproviders/filterers/DisplayValuePropertyDataFilterer";
+import { FilteredType } from "../../../../ui-components/propertygrid/dataproviders/filterers/PropertyDataFiltererBase";
 import { TestUtils } from "../../../TestUtils";
 
 describe("DisplayValuePropertyDataFilterer", () => {
@@ -20,14 +21,16 @@ describe("DisplayValuePropertyDataFilterer", () => {
       TestUtils.createStructProperty("Struct"),
     ];
 
-    it(`Should return empty string`, () => {
-      const filterer = new DisplayValuePropertyDataFilterer();
-      expect(filterer.filterText).to.be.equal("");
-    });
+    describe("[get] filterText", () => {
+      it(`Should return empty string`, () => {
+        const filterer = new DisplayValuePropertyDataFilterer();
+        expect(filterer.filterText).to.be.equal("");
+      });
 
-    it(`Should return string which was set in the constructor`, () => {
-      const filterer = new DisplayValuePropertyDataFilterer("test");
-      expect(filterer.filterText).to.be.equal("test");
+      it(`Should return string which was set in the constructor`, () => {
+        const filterer = new DisplayValuePropertyDataFilterer("test");
+        expect(filterer.filterText).to.be.equal("test");
+      });
     });
 
     it(`Should return filtering as disabled`, () => {
@@ -42,10 +45,17 @@ describe("DisplayValuePropertyDataFilterer", () => {
       it(`Should always match propertyRecord (type: ${recordType}, displayValue: ${displayValue})`, async () => {
         const filterer = new DisplayValuePropertyDataFilterer();
 
-        const matchResult = await filterer.matchesFilter(record);
+        const matchResult = await filterer.recordMatchesFilter(record);
         expect(matchResult).to.deep.eq({ matchesFilter: true });
       });
     }
+
+    it(`Should return 'matchesFilter: true' when calling categoryMatchesFilter`, async () => {
+      const filterer = new DisplayValuePropertyDataFilterer();
+
+      const matchResult = await filterer.categoryMatchesFilter();
+      expect(matchResult).to.deep.eq({ matchesFilter: true });
+    });
   });
 
   describe("When filter text set", () => {
@@ -71,7 +81,15 @@ describe("DisplayValuePropertyDataFilterer", () => {
       const record = TestUtils.createStructProperty("Struct");
 
       filterer.filterText = "Struct";
-      const matchResult = await filterer.matchesFilter(record);
+      const matchResult = await filterer.recordMatchesFilter(record);
+      expect(matchResult).to.deep.eq({ matchesFilter: false });
+    });
+
+    it("Should return false when calling `categoryMatchesFilter`", async () => {
+      const filterer = new DisplayValuePropertyDataFilterer();
+
+      filterer.filterText = "test";
+      const matchResult = await filterer.categoryMatchesFilter();
       expect(matchResult).to.deep.eq({ matchesFilter: false });
     });
 
@@ -80,7 +98,7 @@ describe("DisplayValuePropertyDataFilterer", () => {
       const record = TestUtils.createArrayProperty("Array");
 
       filterer.filterText = "ArRAy";
-      const matchResult = await filterer.matchesFilter(record);
+      const matchResult = await filterer.recordMatchesFilter(record);
       expect(matchResult).to.deep.eq({ matchesFilter: false });
     });
 
@@ -90,7 +108,7 @@ describe("DisplayValuePropertyDataFilterer", () => {
       (record.value as PrimitiveValue).displayValue = undefined;
 
       filterer.filterText = "SomeFilter";
-      const matchResult = await filterer.matchesFilter(record);
+      const matchResult = await filterer.recordMatchesFilter(record);
       expect(matchResult).to.deep.eq({ matchesFilter: false });
     });
 
@@ -99,7 +117,7 @@ describe("DisplayValuePropertyDataFilterer", () => {
       const record = TestUtils.createPrimitiveStringProperty("Property", "Value", "");
 
       filterer.filterText = "SomeFilter";
-      const matchResult = await filterer.matchesFilter(record);
+      const matchResult = await filterer.recordMatchesFilter(record);
       expect(matchResult).to.deep.eq({ matchesFilter: false });
     });
 
@@ -108,7 +126,7 @@ describe("DisplayValuePropertyDataFilterer", () => {
       const record = TestUtils.createPrimitiveStringProperty("Property", "Value", "SomeDisplayLabel");
 
       filterer.filterText = "SomeFilter";
-      const matchResult = await filterer.matchesFilter(record);
+      const matchResult = await filterer.recordMatchesFilter(record);
       expect(matchResult).to.deep.eq({ matchesFilter: false });
     });
 
@@ -117,8 +135,8 @@ describe("DisplayValuePropertyDataFilterer", () => {
       const record = TestUtils.createPrimitiveStringProperty("Property", "Value", "DisplaySomeFilteredValue");
 
       filterer.filterText = "someFilter";
-      const matchResult = await filterer.matchesFilter(record);
-      expect(matchResult).to.deep.eq({ matchesFilter: true, shouldExpandNodeParents: true, matchesCount: { value: 1 } });
+      const matchResult = await filterer.recordMatchesFilter(record);
+      expect(matchResult).to.deep.eq({ matchesFilter: true, shouldExpandNodeParents: true, matchesCount: 1, filteredTypes: [FilteredType.Value] });
     });
 
     it("Should match when given fully matching property record", async () => {
@@ -126,8 +144,8 @@ describe("DisplayValuePropertyDataFilterer", () => {
       const record = TestUtils.createPrimitiveStringProperty("Property", "Value", "DisplaySomeFilteredValue");
 
       filterer.filterText = "displaySomefilteredValue";
-      const matchResult = await filterer.matchesFilter(record);
-      expect(matchResult).to.deep.eq({ matchesFilter: true, shouldExpandNodeParents: true, matchesCount: { value: 1 } });
+      const matchResult = await filterer.recordMatchesFilter(record);
+      expect(matchResult).to.deep.eq({ matchesFilter: true, shouldExpandNodeParents: true, matchesCount: 1, filteredTypes: [FilteredType.Value] });
     });
 
     it("Should match several times when given property record with repeated filter pattern", async () => {
@@ -135,8 +153,8 @@ describe("DisplayValuePropertyDataFilterer", () => {
       const record = TestUtils.createPrimitiveStringProperty("Property", "Value", "DisplaySomeFilteredName");
 
       filterer.filterText = "mE";
-      const matchResult = await filterer.matchesFilter(record);
-      expect(matchResult).to.deep.eq({ matchesFilter: true, shouldExpandNodeParents: true, matchesCount: { value: 2 } });
+      const matchResult = await filterer.recordMatchesFilter(record);
+      expect(matchResult).to.deep.eq({ matchesFilter: true, shouldExpandNodeParents: true, matchesCount: 2, filteredTypes: [FilteredType.Value] });
     });
   });
 
