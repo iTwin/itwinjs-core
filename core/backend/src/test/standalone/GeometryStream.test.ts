@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { BentleyStatus, DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Angle, Arc3d, Box, ClipMaskXYZRangePlanes, ClipPlane, ClipPlaneContainment, ClipPrimitive, ClipShape, ClipVector, ConvexClipPlaneSet, CurveCollection, CurvePrimitive, Geometry, GeometryQueryCategory, IndexedPolyface, LineSegment3d, LineString3d, Loop, Plane3dByOriginAndUnitNormal, Point2d, Point3d, PointString3d, PolyfaceBuilder, Range3d, SolidPrimitive, Sphere, StrokeOptions, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { AreaPattern, BackgroundFill, BRepEntity, Code, ColorByName, ColorDef, ElementGeometry, ElementGeometryDataEntry, ElementGeometryFunction, ElementGeometryInfo, ElementGeometryOpcode, ElementGeometryRequest, ElementGeometryUpdate, FillDisplay, FontProps, FontType, GeometricElement3dProps, GeometricElementProps, GeometryClass, GeometryContainmentRequestProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamFlags, GeometryStreamIterator, GeometryStreamProps, Gradient, ImageGraphicCorners, ImageGraphicProps, IModel, LinePixels, LineStyle, MassPropertiesOperation, MassPropertiesRequestProps, PhysicalElementProps, Placement3d, Placement3dProps, TextString, TextStringProps, ThematicGradientMode, ThematicGradientSettings, ViewFlags } from "@bentley/imodeljs-common";
+import { Angle, AngleSweep, Arc3d, Box, ClipMaskXYZRangePlanes, ClipPlane, ClipPlaneContainment, ClipPrimitive, ClipShape, ClipVector, ConvexClipPlaneSet, CurveCollection, CurvePrimitive, Geometry, GeometryQueryCategory, IndexedPolyface, LineSegment3d, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, PointString3d, PolyfaceBuilder, Range3d, SolidPrimitive, Sphere, StrokeOptions, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { AreaPattern, BackgroundFill, BRepEntity, BRepGeometryCreate, BRepGeometryFunction, BRepGeometryInfo, BRepGeometryOperation, Code, ColorByName, ColorDef, ElementGeometry, ElementGeometryDataEntry, ElementGeometryFunction, ElementGeometryInfo, ElementGeometryOpcode, ElementGeometryRequest, ElementGeometryUpdate, FillDisplay, FontProps, FontType, GeometricElement3dProps, GeometricElementProps, GeometryClass, GeometryContainmentRequestProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamFlags, GeometryStreamIterator, GeometryStreamProps, Gradient, ImageGraphicCorners, ImageGraphicProps, IModel, LinePixels, LineStyle, MassPropertiesOperation, MassPropertiesRequestProps, PhysicalElementProps, Placement3d, Placement3dProps, TextString, TextStringProps, ThematicGradientMode, ThematicGradientSettings, ViewFlags } from "@bentley/imodeljs-common";
 import { assert, expect } from "chai";
 import { BackendRequestContext, ExportGraphics, ExportGraphicsInfo, ExportGraphicsMeshVisitor, ExportGraphicsOptions, GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, Platform, SnapshotDb } from "../../imodeljs-backend";
 import { IModelTestUtils, Timer } from "../IModelTestUtils";
@@ -277,6 +277,20 @@ function doElementGeometryUpdate(imodel: SnapshotDb, elementId: Id64String, entr
   return status;
 }
 
+function createGeometricElemFromSeed(imodel: SnapshotDb, seedId: Id64String, entryArray: ElementGeometryDataEntry[], placement?: Placement3dProps, isWorld: boolean = false): DbResult {
+  const seedElement = imodel.elements.getElement<GeometricElement>(seedId);
+  assert.exists(seedElement);
+
+  const elementProps = createPhysicalElementProps(seedElement, placement);
+  const testElem = imodel.elements.createElement(elementProps);
+  const newId = imodel.elements.insertElement(testElem);
+
+  const status = imodel.elementGeometryUpdate({ elementId: newId, entryArray, isWorld });
+  if (DbResult.BE_SQLITE_OK === status)
+    imodel.saveChanges();
+  return status;
+}
+
 describe("GeometryStream", () => {
   let imodel: SnapshotDb;
 
@@ -481,6 +495,12 @@ describe("GeometryStream", () => {
     const newId = imodel.elements.insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
+
+    const usageInfo = imodel.nativeDb.queryDefinitionElementUsage([partId, styleId])!;
+    assert.isTrue(usageInfo.geometryPartIds!.includes(partId));
+    assert.isTrue(usageInfo.lineStyleIds!.includes(styleId));
+    assert.isTrue(usageInfo.usedIds!.includes(partId));
+    assert.isTrue(usageInfo.usedIds!.includes(styleId));
   });
 
   it("create GeometricElement3d using compound style with dash widths and symbol", async () => {
@@ -538,6 +558,14 @@ describe("GeometryStream", () => {
     const newId = imodel.elements.insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
+
+    const usageInfo = imodel.nativeDb.queryDefinitionElementUsage([partId, styleId, seedElement.category])!;
+    assert.isTrue(usageInfo.geometryPartIds!.includes(partId));
+    assert.isTrue(usageInfo.lineStyleIds!.includes(styleId));
+    assert.isTrue(usageInfo.spatialCategoryIds!.includes(seedElement.category));
+    assert.isTrue(usageInfo.usedIds!.includes(partId));
+    assert.isTrue(usageInfo.usedIds!.includes(styleId));
+    assert.isTrue(usageInfo.usedIds!.includes(seedElement.category));
   });
 
   it("create GeometricElement3d using shapes with fill/gradient", async () => {
@@ -786,6 +814,10 @@ describe("GeometryStream", () => {
       }
     }
     assert.isTrue(6 === iShape);
+
+    const usageInfo = imodel.nativeDb.queryDefinitionElementUsage([partId])!;
+    assert.isTrue(usageInfo.geometryPartIds!.includes(partId));
+    assert.isTrue(usageInfo.usedIds!.includes(partId));
   });
 
   it("create GeometricElement3d from world coordinate text using a newly embedded font", async () => {
@@ -907,6 +939,10 @@ describe("GeometryStream", () => {
     for (let i = 0; i < geomArrayOut.length; i++) {
       assert.isTrue(geomArrayOut[i].isAlmostEqual(geomArray[i]));
     }
+
+    const usageInfo = imodel.nativeDb.queryDefinitionElementUsage([partId])!;
+    assert.isTrue(usageInfo.geometryPartIds!.includes(partId));
+    assert.isUndefined(usageInfo.usedIds, "GeometryPart should not to be used by any GeometricElement");
   });
 
   it("create GeometricElement3d from arcs", async () => {
@@ -1385,7 +1421,7 @@ describe("ElementGeometry", () => {
     assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expectedSkip, false, undefined, 2));
   });
 
-  it("create GeometricElement3d from local coordinate textstring flatbuffer data", async () => {
+  it("create GeometricElement3d from local coordinate text string flatbuffer data", async () => {
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
@@ -1611,7 +1647,7 @@ describe("ElementGeometry", () => {
     newEntries.push(entrySH!);
     expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curveCollection", geometrySubCategory: "loop" });
 
-    // Shape with themaic gradient fill...
+    // Shape with thematic gradient fill...
     geomParams.gradient.mode = Gradient.Mode.Thematic;
     geomParams.gradient.thematicSettings = ThematicGradientSettings.fromJSON({ mode: ThematicGradientMode.Stepped, stepCount: 5 });
     added = ElementGeometry.appendGeometryParams(geomParams, newEntries);
@@ -1797,6 +1833,478 @@ describe("ElementGeometry", () => {
 
     assert(DbResult.BE_SQLITE_OK === doElementGeometryUpdate(imodel, newId, newEntries, false));
     assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
+  });
+});
+
+describe("BRepGeometry", () => {
+  let imodel: SnapshotDb;
+
+  before(() => {
+    const seedFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
+    const testFileName = IModelTestUtils.prepareOutputFile("GeometryStream", "GeometryStreamTest.bim");
+    imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
+  });
+
+  after(() => {
+    imodel.close();
+  });
+
+  it("create GeometricElement3d from a sequence of BRep operations test", async () => {
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+    const builder = new ElementGeometry.Builder();
+
+    const onResult: BRepGeometryFunction = (info: BRepGeometryInfo): void => {
+      assert.isTrue(undefined !== info.entryArray && 1 === info.entryArray.length && ElementGeometryOpcode.BRep === info.entryArray[0].opcode);
+      builder.entries.length = 0; // Always replace builder.entries with result for subsequent operations/creating element
+      builder.entries.push(info.entryArray[0]);
+    };
+
+    // Step 1: Create solid by subtracting the 2 small spheres from the large sphere
+    builder.appendGeometryQuery(Sphere.createEllipsoid(Transform.createOriginAndMatrix(Point3d.create(0, 0, 0), Matrix3d.createUniformScale(5)), AngleSweep.createFullLatitude(), true)!);
+    builder.appendGeometryQuery(Sphere.createEllipsoid(Transform.createOriginAndMatrix(Point3d.create(0, 0, 5), Matrix3d.createUniformScale(3)), AngleSweep.createFullLatitude(), true)!);
+    builder.appendGeometryQuery(Sphere.createEllipsoid(Transform.createOriginAndMatrix(Point3d.create(0, 0, -5), Matrix3d.createUniformScale(3)), AngleSweep.createFullLatitude(), true)!);
+
+    const createProps: BRepGeometryCreate = {
+      operation: BRepGeometryOperation.Subtract,
+      entryArray: builder.entries,
+      onResult,
+    };
+
+    try {
+      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+    } catch (error) {
+      assert(false, error.message);
+    }
+
+    // Step 2: Create flat spots on sides by intersecting with a cube (i.e. something more complex that a simple revolved solid)
+    builder.appendGeometryQuery(Box.createRange(Range3d.create(Point3d.create(-4, -4, -5), Point3d.create(4, 4, 5)), true)!);
+
+    createProps.operation = BRepGeometryOperation.Intersect;
+
+    try {
+      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+    } catch (error) {
+      assert(false, error.message);
+    }
+
+    // Step 3: Create a hollow shell
+    createProps.operation = BRepGeometryOperation.Hollow;
+    createProps.parameters = { distance: -0.5 };
+
+    try {
+      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+    } catch (error) {
+      assert(false, error.message);
+    }
+
+    // Step 4: Cut a small hole through the middle of the solid
+    builder.appendGeometryQuery(Loop.create(Arc3d.createXY(Point3d.createZero(), 1)));
+
+    createProps.operation = BRepGeometryOperation.Cut;
+    createProps.parameters = { bothDirections: true };
+
+    try {
+      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+    } catch (error) {
+      assert(false, error.message);
+    }
+
+    // Step 5: Create a geometric element from the result solid
+    const testOrigin = Point3d.create(5, 10, 0);
+    const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
+    const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
+    const testElem = imodel.elements.createElement(elementProps);
+    const newId = imodel.elements.insertElement(testElem);
+
+    assert.isTrue(DbResult.BE_SQLITE_OK === imodel.elementGeometryUpdate({ elementId: newId, entryArray: builder.entries, isWorld: false }));
+    imodel.saveChanges();
+  });
+
+  it("create GeometricElement3d using half-space boolean test", async () => {
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+    const builder = new ElementGeometry.Builder();
+
+    const onResult: BRepGeometryFunction = (info: BRepGeometryInfo): void => {
+      assert.isTrue(undefined !== info.entryArray && 1 === info.entryArray.length && ElementGeometryOpcode.BRep === info.entryArray[0].opcode);
+      builder.entries.length = 0; // Always replace builder.entries with result for subsequent operations/creating element
+      builder.entries.push(info.entryArray[0]);
+    };
+
+    // Step 1: Create solid cube with all edges rounded
+    builder.appendGeometryQuery(Box.createRange(Range3d.create(Point3d.create(-5, -5, -5), Point3d.create(5, 5, 5)), true)!);
+
+    const createProps: BRepGeometryCreate = {
+      operation: BRepGeometryOperation.Round,
+      entryArray: builder.entries,
+      onResult,
+      parameters: { radius: 2.0 },
+    };
+
+    try {
+      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+    } catch (error) {
+      assert(false, error.message);
+    }
+
+    // Step 2: Create a hollow shell
+    createProps.operation = BRepGeometryOperation.Hollow;
+    createProps.parameters = { distance: -0.5 };
+
+    try {
+      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+    } catch (error) {
+      assert(false, error.message);
+    }
+
+    // Step 3: Use solid/sheet subtract to remove bottom half of solid (keep material in direction of surface normal)
+    builder.appendGeometryQuery(Loop.create(Arc3d.createXY(Point3d.createZero(), 10)));
+
+    createProps.operation = BRepGeometryOperation.Subtract;
+    createProps.parameters = undefined;
+
+    try {
+      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+    } catch (error) {
+      assert(false, error.message);
+    }
+
+    // Step 4: Create a geometric element from the result solid
+    const testOrigin = Point3d.create(5, 10, 0);
+    const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
+    const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
+    const testElem = imodel.elements.createElement(elementProps);
+    const newId = imodel.elements.insertElement(testElem);
+
+    assert.isTrue(DbResult.BE_SQLITE_OK === imodel.elementGeometryUpdate({ elementId: newId, entryArray: builder.entries, isWorld: false }));
+    imodel.saveChanges();
+  });
+
+  it("create multiple GeometricElement3d from world coordinate disjoint body result test", async () => {
+    const builder = new ElementGeometry.Builder();
+    let results: ElementGeometryDataEntry[];
+
+    const onResult: BRepGeometryFunction = (info: BRepGeometryInfo): void => {
+      assert.isTrue(undefined !== info.entryArray && 2 === info.entryArray.length);
+      results = info.entryArray;
+    };
+
+    // Step 1: Create two solids by intersecting the 2 small spheres with the large sphere
+    builder.appendGeometryQuery(Sphere.createEllipsoid(Transform.createOriginAndMatrix(Point3d.create(2, 2, 0), Matrix3d.createUniformScale(5)), AngleSweep.createFullLatitude(), true)!);
+    builder.appendGeometryQuery(Sphere.createEllipsoid(Transform.createOriginAndMatrix(Point3d.create(2, 2, 5), Matrix3d.createUniformScale(3)), AngleSweep.createFullLatitude(), true)!);
+    builder.appendGeometryQuery(Sphere.createEllipsoid(Transform.createOriginAndMatrix(Point3d.create(2, 2, -5), Matrix3d.createUniformScale(3)), AngleSweep.createFullLatitude(), true)!);
+
+    const createProps: BRepGeometryCreate = {
+      operation: BRepGeometryOperation.Intersect,
+      entryArray: builder.entries,
+      onResult,
+      separateDisjoint: true, // Request result as 2 solids instead of a single solid with disjoint regions...
+    };
+
+    try {
+      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+    } catch (error) {
+      assert(false, error.message);
+    }
+
+    // Step 2: Create a geometric element from each result solid
+    results!.forEach((entry) => {
+      // NOTE: Since entity transform reflects local to world of target (the large sphere) it's a reasonable placement...
+      const brepData = ElementGeometry.toBRep(entry);
+      assert.isDefined(brepData);
+      const placement = YawPitchRollAngles.tryFromTransform(Transform.fromJSON(brepData!.transform));
+      assert.isDefined(placement.angles);
+      assert.isTrue(DbResult.BE_SQLITE_OK === createGeometricElemFromSeed(imodel, "0x1d", [entry], { origin: placement.origin, angles: placement.angles! }, true));
+    });
+  });
+
+  it("unite/subtract/intersect solids test", async () => {
+    const builder = new ElementGeometry.Builder();
+    builder.appendGeometryQuery(Sphere.createEllipsoid(Transform.createOriginAndMatrix(Point3d.create(0, 0, 0), Matrix3d.createUniformScale(5)), AngleSweep.createFullLatitude(), true)!);
+    builder.appendGeometryQuery(Sphere.createEllipsoid(Transform.createOriginAndMatrix(Point3d.create(5, 0, 0), Matrix3d.createUniformScale(3)), AngleSweep.createFullLatitude(), true)!);
+
+    const onResult: BRepGeometryFunction = (info: BRepGeometryInfo): void => {
+      assert.isTrue(undefined !== info.entryArray && 1 === info.entryArray.length && ElementGeometryOpcode.BRep === info.entryArray[0].opcode);
+      // assert.isTrue(DbResult.BE_SQLITE_OK === createGeometricElemFromSeed(imodel, "0x1d", info.entryArray));
+    };
+
+    const createProps: BRepGeometryCreate = {
+      operation: BRepGeometryOperation.Unite,
+      entryArray: builder.entries,
+      onResult,
+    };
+    try {
+      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+    } catch (error) {
+      assert(false, error.message);
+    }
+
+    createProps.operation = BRepGeometryOperation.Subtract;
+    try {
+      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+    } catch (error) {
+      assert(false, error.message);
+    }
+
+    createProps.operation = BRepGeometryOperation.Intersect;
+    try {
+      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+    } catch (error) {
+      assert(false, error.message);
+    }
+  });
+
+  it("sew sheets test", async () => {
+    const builder = new ElementGeometry.Builder();
+    builder.appendGeometryQuery(Loop.createPolygon([Point3d.create(0, 0, 0), Point3d.create(0, 2, 0), Point3d.create(1, 2, 0), Point3d.create(1, 0, 0), Point3d.create(0, 0, 0)]));
+    builder.appendGeometryQuery(Loop.createPolygon([Point3d.create(0, 0, 3), Point3d.create(1, 0, 3), Point3d.create(1, 2, 3), Point3d.create(0, 2, 3), Point3d.create(0, 0, 3)]));
+    builder.appendGeometryQuery(Loop.createPolygon([Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(1, 0, 3), Point3d.create(0, 0, 3), Point3d.create(0, 0, 0)]));
+    builder.appendGeometryQuery(Loop.createPolygon([Point3d.create(1, 2, 0), Point3d.create(0, 2, 0), Point3d.create(0, 2, 3), Point3d.create(1, 2, 3), Point3d.create(1, 2, 0)]));
+    builder.appendGeometryQuery(Loop.createPolygon([Point3d.create(0, 2, 0), Point3d.create(0, 0, 0), Point3d.create(0, 0, 3), Point3d.create(0, 2, 3), Point3d.create(0, 2, 0)]));
+    builder.appendGeometryQuery(Loop.createPolygon([Point3d.create(1, 0, 0), Point3d.create(1, 2, 0), Point3d.create(1, 2, 3), Point3d.create(1, 0, 3), Point3d.create(1, 0, 0)]));
+
+    const onResult: BRepGeometryFunction = (info: BRepGeometryInfo): void => {
+      assert.isTrue(undefined !== info.entryArray && 1 === info.entryArray.length && ElementGeometryOpcode.BRep === info.entryArray[0].opcode);
+      // assert.isTrue(DbResult.BE_SQLITE_OK === createGeometricElemFromSeed(imodel, "0x1d", info.entryArray));
+    };
+
+    const createProps: BRepGeometryCreate = {
+      operation: BRepGeometryOperation.Sew,
+      entryArray: builder.entries,
+      onResult,
+    };
+    try {
+      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+    } catch (error) {
+      assert(false, error.message);
+    }
+  });
+
+  it("cut solids test", async () => {
+    const builder = new ElementGeometry.Builder();
+
+    const onResult: BRepGeometryFunction = (info: BRepGeometryInfo): void => {
+      assert.isTrue(undefined !== info.entryArray && 1 === info.entryArray.length && ElementGeometryOpcode.BRep === info.entryArray[0].opcode);
+      // assert.isTrue(DbResult.BE_SQLITE_OK === createGeometricElemFromSeed(imodel, "0x1d", info.entryArray));
+    };
+
+    // Test creating cut through solid in forward direction (default)
+    builder.appendGeometryQuery(Box.createRange(Range3d.create(Point3d.create(0, 0, 0), Point3d.create(5, 5, 5)), true)!);
+    builder.appendGeometryQuery(Loop.create(Arc3d.createXY(Point3d.create(2.5, 2.5, 2.5), 2)));
+
+    const createProps: BRepGeometryCreate = {
+      operation: BRepGeometryOperation.Cut,
+      entryArray: builder.entries,
+      onResult,
+    };
+    try {
+      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+    } catch (error) {
+      assert(false, error.message);
+    }
+
+    // Test creating cut through solid in both directions
+    createProps.parameters = { bothDirections: true };
+
+    try {
+      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+    } catch (error) {
+      assert(false, error.message);
+    }
+
+    // Test creating depth cut in solid in forward direction
+    createProps.parameters = { distance: 1 };
+
+    try {
+      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+    } catch (error) {
+      assert(false, error.message);
+    }
+
+    // Test creating depth cut in solid in both directions
+    createProps.parameters = { distance: 1, bothDirections: true };
+
+    try {
+      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+    } catch (error) {
+      assert(false, error.message);
+    }
+  });
+
+  it("emboss profile test", async () => {
+    const builder = new ElementGeometry.Builder();
+
+    const onResult: BRepGeometryFunction = (info: BRepGeometryInfo): void => {
+      assert.isTrue(undefined !== info.entryArray && 1 === info.entryArray.length && ElementGeometryOpcode.BRep === info.entryArray[0].opcode);
+      // assert.isTrue(DbResult.BE_SQLITE_OK === createGeometricElemFromSeed(imodel, "0x1d", info.entryArray));
+    };
+
+    // Test creating a pocket in a solid
+    builder.appendGeometryQuery(Box.createRange(Range3d.create(Point3d.create(0, 0, 1), Point3d.create(5, 5, 2)), true)!);
+    builder.appendGeometryQuery(Loop.create(Arc3d.createXY(Point3d.create(2.5, 2.5, 1.5), 2)));
+
+    const createProps: BRepGeometryCreate = {
+      operation: BRepGeometryOperation.Emboss,
+      entryArray: builder.entries,
+      onResult,
+    };
+    try {
+      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+    } catch (error) {
+      assert(false, error.message);
+    }
+
+    // Test creating a pad on a solid
+    builder.entries.length = 0;
+    builder.appendGeometryQuery(Box.createRange(Range3d.create(Point3d.create(0, 0, -3), Point3d.create(5, 5, -2)), true)!);
+    builder.appendGeometryQuery(Loop.create(Arc3d.createXY(Point3d.create(2.5, 2.5, -1.5), 2)));
+
+    try {
+      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+    } catch (error) {
+      assert(false, error.message);
+    }
+
+    // Test embossing a surface
+    builder.entries.length = 0;
+    builder.appendGeometryQuery(Loop.createPolygon([Point3d.create(0, 0, 0), Point3d.create(0, 5, 0), Point3d.create(5, 5, 0), Point3d.create(5, 0, 0), Point3d.create(0, 0, 0)]));
+    builder.appendGeometryQuery(Loop.create(Arc3d.createXY(Point3d.create(2.5, 2.5, -0.5), 2, AngleSweep.createStartSweepDegrees(0, -360))));
+
+    try {
+      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+    } catch (error) {
+      assert(false, error.message);
+    }
+  });
+
+  it("thicken surfaces test", async () => {
+    const builder = new ElementGeometry.Builder();
+    builder.appendGeometryQuery(Loop.createPolygon([Point3d.create(0, 0, 0), Point3d.create(0, 5, 0), Point3d.create(5, 5, 0), Point3d.create(5, 0, 0), Point3d.create(0, 0, 0)]));
+
+    const onResult: BRepGeometryFunction = (info: BRepGeometryInfo): void => {
+      assert.isTrue(undefined !== info.entryArray && 1 === info.entryArray.length && ElementGeometryOpcode.BRep === info.entryArray[0].opcode);
+      // assert.isTrue(DbResult.BE_SQLITE_OK === createGeometricElemFromSeed(imodel, "0x1d", info.entryArray));
+    };
+
+    const createProps: BRepGeometryCreate = {
+      operation: BRepGeometryOperation.Thicken,
+      entryArray: builder.entries,
+      onResult,
+      parameters: { frontDistance: 0.25 },
+    };
+    try {
+      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+    } catch (error) {
+      assert(false, error.message);
+    }
+
+    createProps.parameters = { backDistance: 0.25 };
+    try {
+      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+    } catch (error) {
+      assert(false, error.message);
+    }
+
+    createProps.parameters = { frontDistance: 0.1, backDistance: 0.1 };
+    try {
+      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+    } catch (error) {
+      assert(false, error.message);
+    }
+  });
+
+  it("hollow solids test", async () => {
+    const builder = new ElementGeometry.Builder();
+    builder.appendGeometryQuery(Box.createRange(Range3d.create(Point3d.createZero(), Point3d.create(5, 5, 2)), true)!);
+
+    const onResult: BRepGeometryFunction = (info: BRepGeometryInfo): void => {
+      assert.isTrue(undefined !== info.entryArray && 1 === info.entryArray.length && ElementGeometryOpcode.BRep === info.entryArray[0].opcode);
+      // assert.isTrue(DbResult.BE_SQLITE_OK === createGeometricElemFromSeed(imodel, "0x1d", info.entryArray));
+    };
+
+    const createProps: BRepGeometryCreate = {
+      operation: BRepGeometryOperation.Hollow,
+      entryArray: builder.entries,
+      onResult,
+      parameters: { distance: 0.25 },
+    };
+    try {
+      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+    } catch (error) {
+      assert(false, error.message);
+    }
+  });
+
+  it("sweep profile along path test", async () => {
+    const builder = new ElementGeometry.Builder();
+    builder.appendGeometryQuery(Loop.create(Arc3d.createXY(Point3d.create(0, 0, 0), 1)));
+    builder.appendGeometryQuery(LineString3d.create(Point3d.create(0, 0, 0), Point3d.create(0, 0, 3), Point3d.create(5, 0, 3), Point3d.create(8, 10, 10)));
+
+    const onResult: BRepGeometryFunction = (info: BRepGeometryInfo): void => {
+      assert.isTrue(undefined !== info.entryArray && 1 === info.entryArray.length && ElementGeometryOpcode.BRep === info.entryArray[0].opcode);
+      // assert.isTrue(DbResult.BE_SQLITE_OK === createGeometricElemFromSeed(imodel, "0x1d", info.entryArray));
+    };
+
+    const createProps: BRepGeometryCreate = {
+      operation: BRepGeometryOperation.Sweep,
+      entryArray: builder.entries,
+      onResult,
+    };
+    try {
+      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+    } catch (error) {
+      assert(false, error.message);
+    }
+  });
+
+  it("loft profiles test", async () => {
+    const builder = new ElementGeometry.Builder();
+    builder.appendGeometryQuery(Loop.create(Arc3d.createXY(Point3d.create(0.5, 0, 5), 1.25)));
+    builder.appendGeometryQuery(Loop.create(Arc3d.createXY(Point3d.create(0, 0, 3), 1)));
+    builder.appendGeometryQuery(Loop.create(Arc3d.createXY(Point3d.create(0, 0, 2), 2)));
+    builder.appendGeometryQuery(Loop.create(Arc3d.createXY(Point3d.create(0, 0, 0), 1.5)));
+    builder.appendGeometryQuery(Loop.create(Arc3d.createXY(Point3d.create(-0.5, 0, -2), 3)));
+
+    const onResult: BRepGeometryFunction = (info: BRepGeometryInfo): void => {
+      assert.isTrue(undefined !== info.entryArray && 1 === info.entryArray.length && ElementGeometryOpcode.BRep === info.entryArray[0].opcode);
+      // assert.isTrue(DbResult.BE_SQLITE_OK === createGeometricElemFromSeed(imodel, "0x1d", info.entryArray));
+    };
+
+    const createProps: BRepGeometryCreate = {
+      operation: BRepGeometryOperation.Loft,
+      entryArray: builder.entries,
+      onResult,
+    };
+    try {
+      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+    } catch (error) {
+      assert(false, error.message);
+    }
+  });
+
+  it("round edges test", async () => {
+    const builder = new ElementGeometry.Builder();
+    builder.appendGeometryQuery(Box.createRange(Range3d.create(Point3d.createZero(), Point3d.create(5, 5, 2)), true)!);
+
+    const onResult: BRepGeometryFunction = (info: BRepGeometryInfo): void => {
+      assert.isTrue(undefined !== info.entryArray && 1 === info.entryArray.length && ElementGeometryOpcode.BRep === info.entryArray[0].opcode);
+      // assert.isTrue(DbResult.BE_SQLITE_OK === createGeometricElemFromSeed(imodel, "0x1d", info.entryArray));
+    };
+
+    const createProps: BRepGeometryCreate = {
+      operation: BRepGeometryOperation.Round,
+      entryArray: builder.entries,
+      onResult,
+      parameters: { radius: 1 },
+    };
+    try {
+      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+    } catch (error) {
+      assert(false, error.message);
+    }
   });
 });
 

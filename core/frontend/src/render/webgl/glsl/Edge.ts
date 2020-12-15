@@ -59,18 +59,19 @@ const checkForSilhouetteDiscard = `
 
 const computePosition = `
   v_lnInfo = vec4(0.0, 0.0, 0.0, 0.0);  // init and set flag to false
-  vec4  pos = MAT_MVP * rawPos;
   vec4  other = g_otherPos;
-  vec3  modelDir = other.xyz - pos.xyz;
   float miterAdjust = 0.0;
   float weight = computeLineWeight();
+  float clipDist;
 
-  g_windowPos = modelToWindowCoordinates(rawPos, other);
-
+  g_windowPos = modelToWindowCoordinates(rawPos, other, clipDist);
   if (g_windowPos.w == 0.0) // Clipped out.
     return g_windowPos;
 
-  vec4 projOther = modelToWindowCoordinates(other, rawPos);
+  vec4 clipPos = rawPos + clipDist * (other - rawPos);
+  vec4 pos = MAT_MVP * clipPos;
+
+  vec4 projOther = modelToWindowCoordinates(other, rawPos, clipDist);
 
   g_windowDir = projOther.xy - g_windowPos.xy;
 
