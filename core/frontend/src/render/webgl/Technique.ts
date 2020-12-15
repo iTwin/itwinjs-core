@@ -95,6 +95,12 @@ export abstract class VariedTechnique implements Technique {
   private readonly _basicPrograms: ShaderProgram[] = [];
   private readonly _clippingPrograms: ClippingProgram[] = [];
 
+  /** TechniqueFlags identifying shader programs for which the fragment shader writes depth but does not contain any discards.
+   * Buggy Intel HD 620/630 drivers incorrectly apply early-Z optimization in this case; we must insert a never-executed
+   * conditional discard to prevent that.
+   */
+  protected _earlyZFlags: TechniqueFlags[] = [];
+
   public compileShaders(): boolean {
     let allCompiled = true;
     for (const program of this._basicPrograms) {
@@ -109,7 +115,10 @@ export abstract class VariedTechnique implements Technique {
     return allCompiled;
   }
 
-  protected verifyShadersContiguous(): void {
+  protected finishConstruction(): void {
+    this._earlyZFlags.length = 0;
+
+    // Confirm no empty entries in our array.
     let emptyShaderIndex = -1;
     assert(-1 === (emptyShaderIndex = this._basicPrograms.findIndex((prog) => undefined === prog)), `Shader index ${emptyShaderIndex} is undefined in ${this.constructor.name}`);
   }
@@ -147,11 +156,18 @@ export abstract class VariedTechnique implements Technique {
     const descr = `${this._debugDescription}: ${flags.buildDescription()}`;
     builder.setDebugDescription(descr);
 
-    if (System.instance.supportsLogZBuffer)
+    if (System.instance.supportsLogZBuffer) {
       addLogDepth(builder);
+
+      assert(!builder.frag.requiresEarlyZWorkaround);
+      if (System.instance.capabilities.driverBugs.fragDepthDoesNotDisableEarlyZ)
+        builder.frag.requiresEarlyZWorkaround = -1 !== this._earlyZFlags.findIndex((x) => x.equals(flags));
+    }
 
     const index = this.getShaderIndex(flags);
     this.addProgram(builder, index, gl);
+
+    builder.frag.requiresEarlyZWorkaround = false;
   }
 
   private addProgram(builder: ProgramBuilder, index: number, gl: WebGLContext): void {
@@ -245,8 +261,46 @@ class SurfaceTechnique extends VariedTechnique {
     // Plus translucent variant of each of those = 18
     // Plus 1 hilite shader = 19
     super(SurfaceTechnique._kClassified + 19);
-    const flags = scratchTechniqueFlags;
 
+    this._earlyZFlags = [
+      TechniqueFlags.fromDescription("Opaque"),
+      TechniqueFlags.fromDescription("Opaque-Animated"),
+      TechniqueFlags.fromDescription("Opaque-Animated-Shadowable"),
+      TechniqueFlags.fromDescription("Opaque-Hilite-Classified"),
+      TechniqueFlags.fromDescription("Opaque-Hilite-Overrides"),
+      TechniqueFlags.fromDescription("Opaque-Instanced"),
+      TechniqueFlags.fromDescription("Opaque-Instanced-Animated"),
+      TechniqueFlags.fromDescription("Opaque-Instanced-Animated-Shadowable"),
+      TechniqueFlags.fromDescription("Opaque-Instanced-Hilite-Overrides"),
+      TechniqueFlags.fromDescription("Opaque-Instanced-Shadowable"),
+      TechniqueFlags.fromDescription("Opaque-Shadowable"),
+      TechniqueFlags.fromDescription("Translucent"),
+      TechniqueFlags.fromDescription("Translucent-Animated"),
+      TechniqueFlags.fromDescription("Translucent-Animated-Overrides"),
+      TechniqueFlags.fromDescription("Translucent-Animated-Pick"),
+      TechniqueFlags.fromDescription("Translucent-Animated-Shadowable"),
+      TechniqueFlags.fromDescription("Translucent-Animated-Shadowable-Overrides"),
+      TechniqueFlags.fromDescription("Translucent-Animated-Shadowable-Pick"),
+      TechniqueFlags.fromDescription("Translucent-Instanced"),
+      TechniqueFlags.fromDescription("Translucent-Instanced-Animated"),
+      TechniqueFlags.fromDescription("Translucent-Instanced-Animated-Overrides"),
+      TechniqueFlags.fromDescription("Translucent-Instanced-Animated-Pick"),
+      TechniqueFlags.fromDescription("Translucent-Instanced-Animated-Shadowable"),
+      TechniqueFlags.fromDescription("Translucent-Instanced-Animated-Shadowable-Overrides"),
+      TechniqueFlags.fromDescription("Translucent-Instanced-Animated-Shadowable-Pick"),
+      TechniqueFlags.fromDescription("Translucent-Instanced-Overrides"),
+      TechniqueFlags.fromDescription("Translucent-Instanced-Pick"),
+      TechniqueFlags.fromDescription("Translucent-Instanced-Shadowable"),
+      TechniqueFlags.fromDescription("Translucent-Instanced-Shadowable-Overrides"),
+      TechniqueFlags.fromDescription("Translucent-Instanced-Shadowable-Pick"),
+      TechniqueFlags.fromDescription("Translucent-Overrides"),
+      TechniqueFlags.fromDescription("Translucent-Pick"),
+      TechniqueFlags.fromDescription("Translucent-Shadowable"),
+      TechniqueFlags.fromDescription("Translucent-Shadowable-Overrides"),
+      TechniqueFlags.fromDescription("Translucent-Shadowable-Pick"),
+    ];
+
+    const flags = scratchTechniqueFlags;
     for (let instanced = IsInstanced.No; instanced <= IsInstanced.Yes; instanced++) {
       this.addHiliteShader(gl, instanced, IsClassified.No, createSurfaceHiliter);
       for (let iAnimate = IsAnimated.No; iAnimate <= IsAnimated.Yes; iAnimate++) {
@@ -297,7 +351,7 @@ class SurfaceTechnique extends VariedTechnique {
       }
     }
 
-    this.verifyShadersContiguous();
+    this.finishConstruction();
   }
 
   protected get _debugDescription() { return "Surface"; }
@@ -357,6 +411,11 @@ class PolylineTechnique extends VariedTechnique {
   public constructor(gl: WebGLContext) {
     super(PolylineTechnique._kHilite + numHiliteVariants);
 
+    this._earlyZFlags = [
+      TechniqueFlags.fromDescription("Opaque-Hilite-Overrides"),
+      TechniqueFlags.fromDescription("Opaque-Instanced-Hilite-Overrides"),
+    ];
+
     const flags = scratchTechniqueFlags;
     for (let instanced = IsInstanced.No; instanced <= IsInstanced.Yes; instanced++) {
       this.addHiliteShader(gl, instanced, IsClassified.No, createPolylineHiliter);
@@ -382,7 +441,8 @@ class PolylineTechnique extends VariedTechnique {
         this.addShader(builder, flags, gl);
       }
     }
-    this.verifyShadersContiguous();
+
+    this.finishConstruction();
   }
 
   protected get _debugDescription() { return "Polyline"; }
@@ -440,7 +500,8 @@ class EdgeTechnique extends VariedTechnique {
         }
       }
     }
-    this.verifyShadersContiguous();
+
+    this.finishConstruction();
   }
 
   protected get _debugDescription() { return this._isSilhouette ? "Silhouette" : "Edge"; }
@@ -492,7 +553,8 @@ class PointStringTechnique extends VariedTechnique {
         this.addShader(builder, flags, gl);
       }
     }
-    this.verifyShadersContiguous();
+
+    this.finishConstruction();
   }
 
   protected get _debugDescription() { return "PointString"; }
@@ -515,6 +577,12 @@ class PointCloudTechnique extends VariedTechnique {
 
   public constructor(gl: WebGLContext) {
     super(PointCloudTechnique._kHilite + 2);
+
+    this._earlyZFlags = [
+      TechniqueFlags.fromDescription("Opaque-Hilite-Overrides"),
+      TechniqueFlags.fromDescription("Opaque-Hilite-Classified"),
+    ];
+
     for (let iClassified = IsClassified.No; iClassified <= IsClassified.Yes; iClassified++) {
       this.addHiliteShader(gl, IsInstanced.No, iClassified, () => createPointCloudHiliter(iClassified));
       const flags = scratchTechniqueFlags;
@@ -532,7 +600,8 @@ class PointCloudTechnique extends VariedTechnique {
         }
       }
     }
-    this.verifyShadersContiguous();
+
+    this.finishConstruction();
   }
 
   protected get _debugDescription() { return "PointCloud"; }
@@ -582,7 +651,8 @@ class TerrainMeshTechnique extends VariedTechnique {
         }
       }
     }
-    this.verifyShadersContiguous();
+
+    this.finishConstruction();
   }
 
   protected get _debugDescription() { return "TerrainMesh"; }
