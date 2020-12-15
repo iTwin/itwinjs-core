@@ -6,6 +6,7 @@ import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment
 import { expect } from "chai";
 import * as faker from "faker";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { DEFAULT_KEYS_BATCH_SIZE } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { createRandomECInstanceKey } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
@@ -115,6 +116,42 @@ describe("PresentationLabelsProvider", () => {
         .verifiable(moq.Times.exactly(1));
       expect(await provider.getLabels(keys1)).to.deep.eq(result1);
       expect(await provider.getLabels(keys2)).to.deep.eq(result2);
+      presentationManagerMock.verifyAll();
+    });
+
+    it("requests labels in batches when keys count exceeds max and returns expected results", async () => {
+      const inputKeys = [];
+      const results = [];
+      // create a key set of such size that we need 3 content requests
+      for (let i = 0; i < (2 * DEFAULT_KEYS_BATCH_SIZE + 1); ++i) {
+        inputKeys.push(createRandomECInstanceKey());
+        results.push(faker.random.word());
+      }
+
+      const keys1 = inputKeys.slice(0, DEFAULT_KEYS_BATCH_SIZE);
+      const keys2 = inputKeys.slice(DEFAULT_KEYS_BATCH_SIZE, 2 * DEFAULT_KEYS_BATCH_SIZE);
+      const keys3 = inputKeys.slice(2 * DEFAULT_KEYS_BATCH_SIZE, 2 * DEFAULT_KEYS_BATCH_SIZE + 1);
+      const result1 = results.slice(0, DEFAULT_KEYS_BATCH_SIZE);
+      const result2 = results.slice(DEFAULT_KEYS_BATCH_SIZE, 2 * DEFAULT_KEYS_BATCH_SIZE);
+      const result3 = results.slice(2 * DEFAULT_KEYS_BATCH_SIZE, 2 * DEFAULT_KEYS_BATCH_SIZE + 1);
+
+      presentationManagerMock
+        .setup(async (x) => x.getDisplayLabelDefinitions(moq.It.isObjectWith({ imodel: imodelMock.object, keys: keys1 })))
+        .returns(async () => result1.map((value) => ({ rawValue: value, displayValue: value, typeName: "string" })))
+        .verifiable(moq.Times.exactly(1));
+
+      presentationManagerMock
+        .setup(async (x) => x.getDisplayLabelDefinitions(moq.It.isObjectWith({ imodel: imodelMock.object, keys: keys2 })))
+        .returns(async () => result2.map((value) => ({ rawValue: value, displayValue: value, typeName: "string" })))
+        .verifiable(moq.Times.exactly(1));
+
+      presentationManagerMock
+        .setup(async (x) => x.getDisplayLabelDefinitions(moq.It.isObjectWith({ imodel: imodelMock.object, keys: keys3 })))
+        .returns(async () => result3.map((value) => ({ rawValue: value, displayValue: value, typeName: "string" })))
+        .verifiable(moq.Times.exactly(1));
+
+      const result = await provider.getLabels(inputKeys);
+      expect(result).to.deep.eq(results);
       presentationManagerMock.verifyAll();
     });
 

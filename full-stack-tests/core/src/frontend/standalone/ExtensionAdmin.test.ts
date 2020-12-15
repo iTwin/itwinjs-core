@@ -7,7 +7,7 @@ import { assert } from "chai";
 import { ExternalServerExtensionLoader, IModelApp } from "@bentley/imodeljs-frontend";
 import { isElectronRenderer } from "@bentley/bentleyjs-core";
 
-describe.skip("ExtensionAdmin tests", () => {
+describe("ExtensionAdmin tests", () => {
   before(async () => IModelApp.startup());
   after(async () => IModelApp.shutdown());
 
