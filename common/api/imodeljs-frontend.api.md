@@ -272,6 +272,7 @@ import { ViewFlagOverrides } from '@bentley/imodeljs-common';
 import { ViewFlags } from '@bentley/imodeljs-common';
 import { ViewQueryParams } from '@bentley/imodeljs-common';
 import { ViewStateProps } from '@bentley/imodeljs-common';
+import { WebGLContext } from '@bentley/webgl-compatibility';
 import { WebGLExtensionName } from '@bentley/webgl-compatibility';
 import { WebGLRenderCompatibilityInfo } from '@bentley/webgl-compatibility';
 import { XAndY } from '@bentley/geometry-core';

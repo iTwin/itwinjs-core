@@ -8,6 +8,7 @@
 
 import { Angle, Point3d, Vector3d } from "@bentley/geometry-core";
 import { Npc } from "@bentley/imodeljs-common";
+import { WebGLContext } from "@bentley/webgl-compatibility";
 import { AttributeMap } from "../AttributeMap";
 import { SkySphereViewportQuadGeometry } from "../CachedGeometry";
 import { fromSumOf, FrustumUniformType } from "../FrustumUniforms";
@@ -74,7 +75,7 @@ function modulateColor(colorIn: Float32Array, t: number, colorOut: Float32Array)
 }
 
 /** @internal */
-export function createSkySphereProgram(context: WebGLRenderingContext | WebGL2RenderingContext, isGradient: boolean): ShaderProgram {
+export function createSkySphereProgram(context: WebGLContext, isGradient: boolean): ShaderProgram {
   const attrMap = AttributeMap.findAttributeMap(isGradient ? TechniqueId.SkySphereGradient : TechniqueId.SkySphereTexture, false);
   const builder = createViewportQuadBuilder(false, attrMap);
   if (isGradient) {
