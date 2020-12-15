@@ -24,9 +24,9 @@
     "@bentley/react-scripts": "3.4.6",
     "@types/classnames": "^2.2.3",
     "@types/highlight.js": "^9.12.3",
-    "@types/react": "16.9.43",
-    "@types/react-dom": "^16.8.0",
-    "@types/react-router-dom": "^5.1.5",
+    "@types/react": "^17.0.0",
+    "@types/react-dom": "^17.0.0",
+    "@types/react-router-dom": "^5.1.6",
     "typescript": "~3.7.4"
   },
   "dependencies": {

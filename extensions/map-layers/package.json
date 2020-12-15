@@ -49,7 +49,7 @@
     "@bentley/ui-framework": "2.11.0-dev.12",
     "@bentley/ui-ninezone": "2.11.0-dev.12",
     "@types/classnames": "^2.2.3",
-    "@types/react": "16.9.43",
+    "@types/react": "^17.0.0",
     "@types/react-beautiful-dnd": "^12.1.2",
     "@types/react-select": "3.0.26",
     "cpx": "^1.5.0",
@@ -76,8 +76,8 @@
     "@bentley/ui-core": "2.11.0-dev.12",
     "@bentley/ui-framework": "2.11.0-dev.12",
     "@bentley/ui-ninezone": "2.11.0-dev.12",
-    "react": "^16.8.0",
-    "react-dom": "^16.8.0"
+    "react": "^17.0.0",
+    "react-dom": "^17.0.0"
   },
   "eslintConfig": {
     "plugins": [
