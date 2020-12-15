@@ -1065,7 +1065,7 @@ export class FragmentShaderBuilder extends ShaderBuilder {
 
     if (this.requiresEarlyZWorkaround) {
       // Add a conditional discard that never executes to force buggy Intel driver to skip early Z despite our fragment shader writing depth.
-      main.addline("if (v_color.r < -999.0) discard;");
+      main.addline("if (v_eyeSpace.z == 9999999.0) discard;");
     }
 
     prelude.addMain(main.source);

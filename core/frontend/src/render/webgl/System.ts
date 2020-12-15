@@ -390,7 +390,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
       options.filterMapTextures = false;
       options.filterMapDrapeTextures = false;
     }
-    return new System(canvas, context, capabilities, options);
+    return new this(canvas, context, capabilities, options);
   }
 
   public get isDisposed(): boolean {
@@ -587,7 +587,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return BackgroundMapDrape.create(drapedTree, mapTree);
   }
 
-  private constructor(canvas: HTMLCanvasElement, context: WebGLContext, capabilities: Capabilities, options: RenderSystem.Options) {
+  protected constructor(canvas: HTMLCanvasElement, context: WebGLContext, capabilities: Capabilities, options: RenderSystem.Options) {
     super(options);
     this.canvas = canvas;
     this.context = context;

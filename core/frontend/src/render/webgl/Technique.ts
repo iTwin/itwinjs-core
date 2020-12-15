@@ -167,13 +167,16 @@ export abstract class VariedTechnique implements Technique {
     const index = this.getShaderIndex(flags);
     this.addProgram(builder, index, gl);
 
-    builder.frag.requiresEarlyZWorkaround = false;
+    assert(!builder.frag.requiresEarlyZWorkaround);
   }
 
   private addProgram(builder: ProgramBuilder, index: number, gl: WebGLContext): void {
     assert(this._basicPrograms[index] === undefined);
     this._basicPrograms[index] = builder.buildProgram(gl);
     assert(this._basicPrograms[index] !== undefined);
+
+    // Clipping programs always include a discard, so never require workaround.
+    builder.frag.requiresEarlyZWorkaround = false;
 
     assert(this._clippingPrograms[index] === undefined);
     this._clippingPrograms[index] = createClippingProgram(builder);
@@ -238,6 +241,18 @@ export abstract class VariedTechnique implements Technique {
   // NB: Will ignore clipping shaders.
   public getShaderCount(): number {
     return this._basicPrograms.length;
+  }
+
+  /** For tests. */
+  public forEachProgram(func: (program: ShaderProgram) => void): void {
+    for (const basic of this._basicPrograms)
+      func(basic);
+
+    for (const clip of this._clippingPrograms) {
+      const prog = clip.getProgram(1);
+      assert(undefined !== prog);
+      func(prog);
+    }
   }
 }
 
@@ -860,6 +875,13 @@ export class Techniques implements WebGLDisposable {
     } while (wasPreviouslyCompiled);
 
     return compileStatus === CompileStatus.Success;
+  }
+
+  /** For tests. */
+  public forEachVariedProgram(func: (program: ShaderProgram) => void): void {
+    for (const technique of this._list)
+      if (technique instanceof VariedTechnique)
+        technique.forEachProgram(func);
   }
 
   private constructor() { }
