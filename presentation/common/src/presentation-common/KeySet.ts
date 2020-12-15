@@ -165,13 +165,14 @@ export class KeySet {
     }
     for (const entry of (keyset as any)._instanceKeys) {
       let set = this._instanceKeys.get(entry["0"]);
+      const className = (keyset as KeySet)._lowerCaseMap.get(entry["0"])!;
       if (!set) {
         set = new Set();
         this._instanceKeys.set(entry["0"], set);
-        this._lowerCaseMap.set(entry["0"], (keyset as KeySet)._lowerCaseMap.get(entry["0"])!);
+        this._lowerCaseMap.set(entry["0"], className);
       }
       entry["1"].forEach((id: Id64String) => {
-        if (!pred || pred({ className: (keyset as KeySet)._lowerCaseMap.get(entry["0"])!, id }))
+        if (!pred || pred({ className, id }))
           set!.add(id);
       });
     }
@@ -181,8 +182,9 @@ export class KeySet {
     for (const key of keyset.nodeKeys)
       this._nodeKeys.add(JSON.stringify(key));
     for (const entry of keyset.instanceKeys) {
-      this._instanceKeys.set(entry["0"].toLowerCase(), new Set(entry["1"]));
-      this._lowerCaseMap.set(entry["0"].toLowerCase(), entry["0"]);
+      const lcClassName = entry["0"].toLowerCase();
+      this._instanceKeys.set(lcClassName, new Set(entry["1"]));
+      this._lowerCaseMap.set(lcClassName, entry["0"]);
     }
 
   }
@@ -205,12 +207,13 @@ export class KeySet {
       if (Key.isEntityProps(value)) {
         this.add({ className: value.classFullName, id: Id64.fromJSON(value.id) } as InstanceKey);
       } else if (Key.isInstanceKey(value)) {
-        if (!this._instanceKeys.has(value.className.toLowerCase())) {
-          this._instanceKeys.set(value.className.toLowerCase(), new Set());
-          this._lowerCaseMap.set(value.className.toLowerCase(), value.className);
+        const lcClassName = value.className.toLowerCase();
+        if (!this._instanceKeys.has(lcClassName)) {
+          this._instanceKeys.set(lcClassName, new Set());
+          this._lowerCaseMap.set(lcClassName, value.className);
         }
-        this._lowerCaseMap.set(value.className.toLowerCase(), value.className);
-        this._instanceKeys.get(value.className.toLowerCase())!.add(value.id);
+        this._lowerCaseMap.set(lcClassName, value.className);
+        this._instanceKeys.get(lcClassName)!.add(value.id);
       } else if (Key.isNodeKey(value)) {
         this._nodeKeys.add(JSON.stringify(value));
       } else {
