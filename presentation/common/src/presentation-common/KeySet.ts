@@ -209,6 +209,7 @@ export class KeySet {
           this._instanceKeys.set(value.className.toLowerCase(), new Set());
           this._lowerCaseMap.set(value.className.toLowerCase(), value.className);
         }
+        this._lowerCaseMap.set(value.className.toLowerCase(), value.className);
         this._instanceKeys.get(value.className.toLowerCase())!.add(value.id);
       } else if (Key.isNodeKey(value)) {
         this._nodeKeys.add(JSON.stringify(value));

@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/presentation-common",
-      "comment": "Updated KeySet's className to be case-insensitive",
+      "comment": "Updated class names in `KeySet` to be case-insensitive",
       "type": "none"
     }
   ],

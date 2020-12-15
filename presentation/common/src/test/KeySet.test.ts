@@ -800,6 +800,17 @@ describe("KeySet", () => {
       expect(callback).to.be.calledWith(instanceKey);
     });
 
+    it("calls callback with the most recent className if the only difference in classnames is capitalization", () => {
+      const instanceKey1: InstanceKey = { className: "BisCore", id: Id64.invalid };
+      const instanceKey2: InstanceKey = { className: "BISCORE", id: Id64.invalid };
+      const set = new KeySet([instanceKey1, instanceKey2]);
+      const callback = sinon.stub();
+      callback.returns(true);
+      expect(set.some(callback)).to.be.true;
+      expect(callback.callCount).to.eq(1);
+      expect(callback).to.be.calledWith(instanceKey2);
+    });
+
     it("returns true if callback returns true for node key", () => {
       const nodeKey = createRandomECInstancesNodeKey();
       const set = new KeySet([nodeKey]);
@@ -839,6 +850,17 @@ describe("KeySet", () => {
       expect(callback).to.be.calledWith(instanceKeys[1]);
       expect(callback).to.be.calledWith(nodeKeys[0]);
       expect(callback).to.be.calledWith(nodeKeys[1]);
+    });
+
+    it("calls callback for every key in set with the most recent className if the only difference in classnames is capitalization", () => {
+      const instanceKey1: InstanceKey = { className: "BisCore", id: Id64.invalid };
+      const instanceKey2: InstanceKey = { className: "BISCORE", id: Id64.invalid };
+      const instanceKeys = [instanceKey1, instanceKey2];
+      const set = new KeySet([...instanceKeys]);
+      const callback = sinon.spy();
+      set.forEach(callback);
+      expect(callback.callCount).to.eq(1);
+      expect(callback).to.be.calledWith(instanceKeys[1]);
     });
 
   });
