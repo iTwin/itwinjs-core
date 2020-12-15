@@ -8,6 +8,8 @@ export * from "./ui-abstract/UiAdmin";
 export * from "./ui-abstract/UiItemsManager";
 export * from "./ui-abstract/UiItemsArbiter";
 
+export * from "./ui-abstract/accudraw/AccuDrawUiAdmin";
+
 export * from "./ui-abstract/backstage/BackstageItem";
 export * from "./ui-abstract/backstage/BackstageItemsManager";
 

@@ -3,63 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module AccuDraw
+ * @module UiAdmin
  */
 
 import { BeUiEvent } from "@bentley/bentleyjs-core";
-import { ColorDef } from "@bentley/imodeljs-common";
-
-/** AccuDraw Settings
- * @alpha
- */
-/** X field color, background */
-/** Y field color */
-/** Z field color */
-/** Distance field color, Icon */
-/** Angle field color, Icon */
-
-/** X field label */
-/** Y field label */
-/** Z field label */
-/** Distance field label */
-/** Angle field label */
-
-/** Field size */
-/** Field size adjustment */
-/** Animating locks in/out */
-
-/** Size of dialog / widget */
-/** Font size */
-/** Dialog transparency */
-/** Pointer events - none */
-
-/** AccuDraw Commands
- * @alpha
- */
-/** Set field color */
-/** Set field label */
-/** Set dialog transparency */
-/** Focus into UI field (based on mouse direction, etc.) */
-
-/** Smart Lock - A, S  */
-/** Reposition - A, R (Set AccuDraw Origin) */
-/** Toggle mode - A, T  (Rectangular / Polar) */
-/** Lock X, Y, Z */
-/** Rotate Top, Side, Front - R, T/S/F View, ACS  */
-
-/** Context Menu Behavior
- * @alpha
- */
-/** Grays out (disables) current value */
-/** Rotate Top, Side, Front - R, T/S/F */
-/** Typing active key dismisses menu */
-/** Invalid key results in doing nothing (does not dismiss menu) */
-
-/** AccuDraw Dialog Features
- * @alpha
- */
-/** Movable */
-/** Dockable */
 
 /** AccuDraw UI Field enum
  * @alpha
@@ -72,6 +19,14 @@ export enum AccuDrawField {
   Angle,
 }
 
+/** AccuDraw Mode
+ * @alpha
+ */
+export enum AccuDrawMode {
+  Rectangular,
+  Polar,
+}
+
 /** @alpha */
 export interface AccuDrawSetFieldFocusEventArgs {
   field: AccuDrawField;
@@ -81,13 +36,23 @@ export interface AccuDrawSetFieldFocusEventArgs {
 export class AccuDrawSetFieldFocusEvent extends BeUiEvent<AccuDrawSetFieldFocusEventArgs> { }
 
 /** @alpha */
-export interface AccuDrawSetFieldValueEventArgs {
+export interface AccuDrawSetFieldValueToUiEventArgs {
   field: AccuDrawField;
   value: number;
 }
 
 /** @alpha */
-export class AccuDrawSetFieldValueEvent extends BeUiEvent<AccuDrawSetFieldValueEventArgs> { }
+export class AccuDrawSetFieldValueToUiEvent extends BeUiEvent<AccuDrawSetFieldValueToUiEventArgs> { }
+
+/** @alpha */
+export interface AccuDrawSetFieldValueFromUiEventArgs {
+  field: AccuDrawField;
+  value: number;
+  stringValue: string;
+}
+
+/** @alpha */
+export class AccuDrawSetFieldValueFromUiEvent extends BeUiEvent<AccuDrawSetFieldValueFromUiEventArgs> { }
 
 /** @alpha */
 export interface AccuDrawSetFieldLockEventArgs {
@@ -97,3 +62,52 @@ export interface AccuDrawSetFieldLockEventArgs {
 
 /** @alpha */
 export class AccuDrawSetFieldLockEvent extends BeUiEvent<AccuDrawSetFieldLockEventArgs> { }
+
+/** @alpha */
+export interface AccuDrawSetModeEventArgs {
+  mode: AccuDrawMode;
+}
+
+/** @alpha */
+export class AccuDrawSetModeEvent extends BeUiEvent<AccuDrawSetModeEventArgs> { }
+
+/** @alpha */
+export class AccuDrawUiAdmin {
+  /** AccuDraw Set Field Focus event. */
+  public static readonly onAccuDrawSetFieldFocusEvent = new AccuDrawSetFieldFocusEvent();
+
+  /** AccuDraw Set Field Value to Ui event. */
+  public static readonly onAccuDrawSetFieldValueToUiEvent = new AccuDrawSetFieldValueToUiEvent();
+
+  /** AccuDraw Set Field Value from Ui event. */
+  public static readonly onAccuDrawSetFieldValueFromUiEvent = new AccuDrawSetFieldValueFromUiEvent();
+
+  /** AccuDraw Set Field Lock event. */
+  public static readonly onAccuDrawSetFieldLockEvent = new AccuDrawSetFieldLockEvent();
+
+  /** AccuDraw Set Mode event. */
+  public static readonly onAccuDrawSetModeEvent = new AccuDrawSetModeEvent();
+
+  /** AccuDraw Set Field Value to Ui. */
+  public setFieldValueToUi(field: AccuDrawField, value: number): void {
+    AccuDrawUiAdmin.onAccuDrawSetFieldValueToUiEvent.emit({ field, value });
+  }
+
+  /** AccuDraw Set Field Value from Ui. */
+  public setFieldValueFromUi(field: AccuDrawField, value: number, stringValue: string): void {
+    AccuDrawUiAdmin.onAccuDrawSetFieldValueFromUiEvent.emit({ field, value, stringValue });
+  }
+
+  /** AccuDraw Set Field Focus. */
+  public setFieldFocus(field: AccuDrawField): void {
+    AccuDrawUiAdmin.onAccuDrawSetFieldFocusEvent.emit({ field });
+  }
+
+  public setFieldLock(field: AccuDrawField, lock: boolean): void {
+    AccuDrawUiAdmin.onAccuDrawSetFieldLockEvent.emit({ field, lock });
+  }
+
+  public setMode(mode: AccuDrawMode): void {
+    AccuDrawUiAdmin.onAccuDrawSetModeEvent.emit({ mode });
+  }
+}

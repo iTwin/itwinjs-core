@@ -95,6 +95,102 @@ export interface AbstractWidgetProps extends ProvidedItem {
     readonly tooltip?: string | ConditionalStringValue;
 }
 
+// @alpha
+export enum AccuDrawField {
+    // (undocumented)
+    Angle = 4,
+    // (undocumented)
+    Distance = 3,
+    // (undocumented)
+    X = 0,
+    // (undocumented)
+    Y = 1,
+    // (undocumented)
+    Z = 2
+}
+
+// @alpha
+export enum AccuDrawMode {
+    // (undocumented)
+    Polar = 1,
+    // (undocumented)
+    Rectangular = 0
+}
+
+// @alpha (undocumented)
+export class AccuDrawSetFieldFocusEvent extends BeUiEvent<AccuDrawSetFieldFocusEventArgs> {
+}
+
+// @alpha (undocumented)
+export interface AccuDrawSetFieldFocusEventArgs {
+    // (undocumented)
+    field: AccuDrawField;
+}
+
+// @alpha (undocumented)
+export class AccuDrawSetFieldLockEvent extends BeUiEvent<AccuDrawSetFieldLockEventArgs> {
+}
+
+// @alpha (undocumented)
+export interface AccuDrawSetFieldLockEventArgs {
+    // (undocumented)
+    field: AccuDrawField;
+    // (undocumented)
+    lock: boolean;
+}
+
+// @alpha (undocumented)
+export class AccuDrawSetFieldValueFromUiEvent extends BeUiEvent<AccuDrawSetFieldValueFromUiEventArgs> {
+}
+
+// @alpha (undocumented)
+export interface AccuDrawSetFieldValueFromUiEventArgs {
+    // (undocumented)
+    field: AccuDrawField;
+    // (undocumented)
+    stringValue: string;
+    // (undocumented)
+    value: number;
+}
+
+// @alpha (undocumented)
+export class AccuDrawSetFieldValueToUiEvent extends BeUiEvent<AccuDrawSetFieldValueToUiEventArgs> {
+}
+
+// @alpha (undocumented)
+export interface AccuDrawSetFieldValueToUiEventArgs {
+    // (undocumented)
+    field: AccuDrawField;
+    // (undocumented)
+    value: number;
+}
+
+// @alpha (undocumented)
+export class AccuDrawSetModeEvent extends BeUiEvent<AccuDrawSetModeEventArgs> {
+}
+
+// @alpha (undocumented)
+export interface AccuDrawSetModeEventArgs {
+    // (undocumented)
+    mode: AccuDrawMode;
+}
+
+// @alpha (undocumented)
+export class AccuDrawUiAdmin {
+    static readonly onAccuDrawSetFieldFocusEvent: AccuDrawSetFieldFocusEvent;
+    static readonly onAccuDrawSetFieldLockEvent: AccuDrawSetFieldLockEvent;
+    static readonly onAccuDrawSetFieldValueFromUiEvent: AccuDrawSetFieldValueFromUiEvent;
+    static readonly onAccuDrawSetFieldValueToUiEvent: AccuDrawSetFieldValueToUiEvent;
+    static readonly onAccuDrawSetModeEvent: AccuDrawSetModeEvent;
+    setFieldFocus(field: AccuDrawField): void;
+    // (undocumented)
+    setFieldLock(field: AccuDrawField, lock: boolean): void;
+    setFieldValueFromUi(field: AccuDrawField, value: number, stringValue: string): void;
+    setFieldValueToUi(field: AccuDrawField, value: number): void;
+    // (undocumented)
+    setMode(mode: AccuDrawMode): void;
+}
+
 // @beta
 export interface ActionButton extends ToolbarItem {
     readonly execute: () => void;
@@ -1861,6 +1957,9 @@ export class UiAbstract {
 
 // @beta
 export class UiAdmin {
+    // @alpha
+    get accuDrawUi(): AccuDrawUiAdmin;
+    set accuDrawUi(v: AccuDrawUiAdmin);
     closeDialog(_dialogId: string): boolean;
     closeToolSettingsPopup(): boolean;
     createXAndY(x: number, y: number): XAndY;

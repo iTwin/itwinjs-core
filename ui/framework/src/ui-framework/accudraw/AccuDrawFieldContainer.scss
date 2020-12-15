@@ -1,0 +1,35 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@bentley/ui-core/lib/ui-core/style/themecolors";
+
+.uifw-accudraw-field-container {
+  display: grid;
+  grid-template-columns: auto 25px;
+  row-gap: 8px;
+
+  .uifw-accudraw-x-value {
+    background-color: $buic-foreground-primary;
+    color: $buic-foreground-accessory;
+  }
+
+  .uifw-accudraw-y-value {
+    background-color: $buic-foreground-success;
+    color: $buic-foreground-accessory;
+  }
+
+  .uifw-accudraw-z-value {
+    background-color: $buic-foreground-error;
+    color: $buic-foreground-accessory;
+  }
+
+  .uifw-accudraw-angle-value {
+
+  }
+
+  .uifw-accudraw-distance-value {
+
+  }
+
+}
