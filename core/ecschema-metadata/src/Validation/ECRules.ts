@@ -64,6 +64,7 @@ export const DiagnosticCodes = {
   // Class Rule Codes (100-199)
   BaseClassIsSealed: getCode(100),
   BaseClassOfDifferentType: getCode(101),
+  AbstractClassWithNonAbstractBase: getCode(102),
 
   // CA Container Rule Codes (500-599)
   CustomAttributeNotOfConcreteClass: getCode(500),
@@ -115,6 +116,10 @@ export const Diagnostics = {
   /** EC-101: Required message parameters: childClass.FullName, baseClass.FullName, baseClass.schemaItemType */
   BaseClassIsOfDifferentType: createClassDiagnosticClass<[string, string, string]>(DiagnosticCodes.BaseClassOfDifferentType,
     "Class '{0}' cannot derive from base class '{1}' of type '{2}'."),
+
+  /** EC-102: Required message parameters: childClass.FullName, baseClass.FullName */
+  AbstractClassWithNonAbstractBase: createClassDiagnosticClass<[string, string]>(DiagnosticCodes.AbstractClassWithNonAbstractBase,
+    "Abstract Class '{0}' cannot derive from base class '{1}' because it is not an abstract class."),
 
   /** EC-500: Required message parameters: CustomAttribute container name and CustomAttributeClass name. */
   CustomAttributeNotOfConcreteClass: createCustomAttributeContainerDiagnosticClass<[string, string]>(DiagnosticCodes.CustomAttributeNotOfConcreteClass,
@@ -198,6 +203,7 @@ export const ECRuleSet: IRuleSet = {
   classRules: [
     baseClassIsSealed,
     baseClassIsOfDifferentType,
+    abstractClassWithNonAbstractBase,
   ],
   propertyRules: [
     incompatibleValueTypePropertyOverride,
@@ -290,6 +296,22 @@ export async function* baseClassIsOfDifferentType(ecClass: AnyClass): AsyncItera
 
   const itemType = schemaItemTypeToString(baseClass.schemaItemType);
   yield new Diagnostics.BaseClassIsOfDifferentType(ecClass, [ecClass.fullName, baseClass.fullName, itemType]);
+}
+
+/**
+ * EC Rule: Abstract class cannot derive from a non-abstract base class.
+ * @internal Should we make all of these methods internal??
+ */
+export async function* abstractClassWithNonAbstractBase(ecClass: AnyClass): AsyncIterable<ClassDiagnostic<any[]>> {
+  if (ecClass.modifier !== ECClassModifier.Abstract || !ecClass.baseClass)
+    return;
+
+  const baseClass = await ecClass.baseClass;
+  // return if rule passed
+  if (baseClass.modifier === ECClassModifier.Abstract)
+    return;
+
+  yield new Diagnostics.AbstractClassWithNonAbstractBase(ecClass, [ecClass.fullName, baseClass.fullName]);
 }
 
 /** EC Rule: When overriding a class primitive property, the child and base property must be of the same type (string, number, etc...). */
@@ -424,7 +446,7 @@ export async function* validateNavigationProperty(property: AnyProperty): AsyncI
   }
 
   const thatAbstractConstraint = await thatConstraint.abstractConstraint;
-  if (thatAbstractConstraint && thatAbstractConstraint instanceof RelationshipClass) {
+  if (thatAbstractConstraint && thatAbstractConstraint.schemaItemType === SchemaItemType.RelationshipClass) {
     yield new Diagnostics.NavigationRelationshipAbstractConstraintEntityOrMixin(property, [property.fullName, relationship.fullName]);
   }
 
