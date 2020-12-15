@@ -68,5 +68,5 @@ describe("Early Z driver bug workaround", () => {
 
       index++;
     });
-  });
+  }).timeout(95000);
 });
