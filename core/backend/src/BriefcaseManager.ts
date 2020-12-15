@@ -202,7 +202,7 @@ export class BriefcaseManager {
         if (briefcaseName.endsWith(".bim")) {
           try {
             const fileName = path.join(bcPath, briefcaseName);
-            const db = IModelDb.openDgnDb({ path: fileName, key: "getBriefcaseId" }, OpenMode.Readonly);
+            const db = IModelDb.openDgnDb({ path: fileName }, OpenMode.Readonly);
             briefcaseList.push({ fileName, contextId: db.queryProjectGuid(), iModelId: db.getDbGuid(), briefcaseId: db.getBriefcaseId(), changesetId: db.getParentChangeSetId() });
             db.closeIModel();
           } catch (_err) {
@@ -333,7 +333,7 @@ export class BriefcaseManager {
    */
   public static async deleteBriefcaseFiles(filePath: string, requestContext?: AuthorizedClientRequestContext): Promise<void> {
     try {
-      const db = IModelDb.openDgnDb({ path: filePath, key: "deleteBriefcase" }, OpenMode.Readonly);
+      const db = IModelDb.openDgnDb({ path: filePath }, OpenMode.Readonly);
       const briefcase: BriefcaseProps = {
         iModelId: db.getDbGuid(),
         briefcaseId: db.getBriefcaseId(),
