@@ -4,16 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import {
-  FeatureMode,
-  IsAnimated,
-  IsEdgeTestNeeded,
-  IsInstanced,
-  IsClassified,
-  IsShadowable,
-  IsThematic,
-  TechniqueFlags,
-} from "../../../render/webgl/TechniqueFlags";
+import { TechniqueFlags } from "../../../render/webgl/TechniqueFlags";
 
 const descriptions = [
   "Opaque",
