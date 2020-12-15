@@ -44,7 +44,7 @@ export interface CheckpointProps {
 }
 
 /** Called to show progress during a download. If this function returns non-zero, the download is aborted.
- *  @internal */
+ *  @beta */
 export type ProgressFunction = (loaded: number, total: number) => number;
 
 /**

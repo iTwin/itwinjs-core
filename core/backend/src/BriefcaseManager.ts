@@ -62,7 +62,7 @@ export enum BriefcaseIdValue {
 
   /**
    * @internal
-   * @deprecated
+   * @deprecated use Standalone
    */
   DeprecatedStandalone = 1,
 }
@@ -71,6 +71,9 @@ export enum BriefcaseIdValue {
  * @beta
 */
 export interface RequestNewBriefcaseArg extends RequestNewBriefcaseProps {
+  /** If present, a function called periodically during the download to indicate progress.
+   * @note return non-zero from this function to abort the download.
+   */
   onProgress?: ProgressFunction;
 }
 

@@ -176,10 +176,11 @@ Updated version of electron used from 8.2.1 to 10.1.3. Note that Electron is spe
 
 ## BriefcaseManager changes
 
-This version changes the approach to storing Briefcase and Checkpoint files in the local cache. Now, BriefcaseManager will create a subdirectory from the root directory supplied in [BriefcaseManager.initialize]($backend) for each iModelId, and then folders called "Briefcases" and "Checkpoints" from there. For backwards compatibility, the previous locations are checked for Briefcase and Checkpoint files created by older versions. This check will be removed in a future version.
+This version changes the approach to storing Briefcase and Checkpoint files in the local disk cache. Now, [BriefcaseManager]($backend) will create a subdirectory from the root directory supplied in [BriefcaseManager.initialize]($backend) for each iModelId, and then folders called `briefcases` and `checkpoints` within that folder. The Briefcase and Checkpoint files themselves are named with the `BriefcaseId` and `ChangeSetId` respectively. For backwards compatibility, when searching for local files, the previous locations are checked for briefcase and checkpoint files created by older versions. This check will be removed in a future version.
 
-Several methods on the @beta class [BriefcaseManager]($backend) have been changed to simplify how local Briefcase files are acquired and managed. Previously the location and name of the local files holding Briefcases was hidden behind a local in-memory cache. Now, the [BriefcaseDb.open]($backend) method takes an argument that specifies the fileName. This makes working with local Briefcases much simpler.
-Note that the frontend APIs have not changed, so the impact of beta change to the beta apis should be limited. Also, the @internal class NativeApp has several changed methods, so some refactoring may be necessary to react to those changes for anyone implementing native applications using this internal api.
+Several methods on the @beta class [BriefcaseManager]($backend) have been changed to simplify how local Briefcase files are acquired and managed. Previously the location and name of the local files holding Briefcases was hidden behind a local in-memory cache that complicated the API. Now, the [BriefcaseDb.open]($backend) method takes an argument that specifies the file name. This makes working with local Briefcases much simpler. BriefcaseManager's role is limited to acquiring and releasing briefcases, and for dowloading, uploading, and applying changesets. Note that the frontend APIs have not changed, so the impact of this change to the beta APIs should be limited.
+
+Also, the `@internal` class [NativeApp]($frontend) has several changed methods, so some refactoring may be necessary to react to those changes for anyone implementing native applications using this internal API.
 
 
 ## Globe location tool fixes
