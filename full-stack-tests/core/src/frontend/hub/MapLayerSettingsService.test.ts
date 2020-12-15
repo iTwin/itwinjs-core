@@ -20,7 +20,7 @@ describe("MapLayerSettingsService (#integration)", () => {
   let projectId: GuidString;
   let iModelId: GuidString;
   let requestContext: AuthorizedClientRequestContext;
-  let testName: string = `test${Guid.createValue()}`;
+  const testName: string = `test${Guid.createValue()}`;
 
   before(async () => {
     const authorizationClient = await TestUtility.initializeTestProject(testProjectName, TestUsers.regular);
