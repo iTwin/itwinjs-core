@@ -136,6 +136,8 @@ export class ShaderProgram implements WebGLDisposable {
   private _vertHNdx: number = -1;
   private _fragHNdx: number = -1;
 
+  public get fragDescription() { return this._fragDescription; }
+
   public constructor(gl: WebGLRenderingContext | WebGL2RenderingContext, vertSource: string, fragSource: string, attrMap: Map<string, AttributeDetails> | undefined, description: string, fragDescription: string) {
     this._description = description;
     this._fragDescription = fragDescription;
