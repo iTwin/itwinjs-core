@@ -11,7 +11,7 @@
       },
       "type": "pwa-node",
       "request": "attach",
-      "processId": "${command:PickProcess}"
+      "processId": "58696"
     },
     // CORE TESTS
     {
@@ -1118,12 +1118,15 @@
       "cwd": "${workspaceFolder}/full-stack-tests/core/",
       "type": "pwa-node",
       "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "test:${input:integrationTestEnvironment}",
-        "--",
-        "--debug"
+      "program": "${workspaceFolder}/tools/certa/bin/certa.js",
+      "runtimeExecutable": "/Users/calebshafer/.nvm/versions/node/v12.17.0/bin/node",
+      "args": [
+        "-r",
+        "electron",
+        "--grep",
+        "\"#integration\"",
+        "--invert",
+        "--cover"
       ],
       "outFiles": [
         "${workspaceFolder}/full-stack-tests/core/lib/**/*.js",

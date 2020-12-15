@@ -25,7 +25,7 @@
     "@bentley/itwin-client": "2.11.0-dev.12",
     "@bentley/imodeljs-common": "2.11.0-dev.12",
     "chai": "^4.1.2",
-    "electron": "^10.1.3",
+    "electron": "^11.1.0",
     "express": "^4.16.3",
     "semver": "^5.5.0",
     "spdy": "^4.0.1"

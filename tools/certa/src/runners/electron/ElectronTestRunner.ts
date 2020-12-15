@@ -35,17 +35,9 @@ export class ElectronTestRunner {
       },
     });
 
-    const exitElectronApp = (exitCode: number) => {
-      // Passing exit code to parent process doesn't seem to work anymore with electron 10 - sending message with status instead
-      // See note in SpawnUtils.onExitElectronApp
-      if (process.send)
-        process.send({ exitCode });
-      app.exit(exitCode);
-    };
-
     ipcMain.on("certa-done", (_e: any, count: number) => {
       rendererWindow.webContents.once("destroyed", () => {
-        exitElectronApp(count);
+        app.exit(count);
       });
       setImmediate(() => rendererWindow.close());
     });
@@ -54,7 +46,7 @@ export class ElectronTestRunner {
       console.error("Uncaught Error in Tests: ", message);
       console.error(stack);
       rendererWindow.webContents.once("destroyed", () => {
-        exitElectronApp(1);
+        app.exit(1);
       });
       rendererWindow.close();
     });

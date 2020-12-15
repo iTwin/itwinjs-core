@@ -209,7 +209,7 @@ dependencies:
   dompurify: 2.2.3
   dotenv: 8.2.0
   dotenv-expand: 5.1.0
-  electron: 10.2.0
+  electron: 11.1.0
   enzyme: 3.11.0
   enzyme-adapter-react-16: 1.15.5_4f82faf5e8cab057bc46d4d95079ec42
   enzyme-to-json: 3.6.1_enzyme@3.11.0
@@ -2105,7 +2105,7 @@ packages:
     dependencies:
       '@types/istanbul-lib-coverage': 2.0.3
       '@types/istanbul-reports': 3.0.0
-      '@types/node': 12.19.9
+      '@types/node': 10.14.1
       '@types/yargs': 15.0.11
       chalk: 4.1.0
     dev: false
@@ -2743,7 +2743,7 @@ packages:
       integrity: sha512-SEYeGAIQIQX8NN6LDKprLjbrd5dARM5EXsd8GI/A5l0apYI1fGMWgPHSe4ZKL4eozlAyI+doUE9XbYS4xCkQ1w==
   /@types/got/9.6.11:
     dependencies:
-      '@types/node': 10.14.1
+      '@types/node': 12.19.9
       '@types/tough-cookie': 4.0.0
       form-data: 2.5.1
     dev: false
@@ -6641,7 +6641,7 @@ packages:
     dev: false
     resolution:
       integrity: sha512-7CanEvJx74EnvjHu1X8gf93KieyxvFLnqOXAH/ddjWD4RrUZYqdg3pykrQ/7t6SLI7DTsp4tfQXEfzeK5t6oAw==
-  /electron/10.2.0:
+  /electron/11.1.0:
     dependencies:
       '@electron/get': 1.12.2
       '@types/node': 12.19.9
@@ -6652,7 +6652,7 @@ packages:
     hasBin: true
     requiresBuild: true
     resolution:
-      integrity: sha512-GBUyq8dwUqXPkCTkoID+eZ5Pm9GFlLUd2eSoGe8UOaHeW68SgCf5t75/uGHraQ1OIz/0qniyH5M4ebWEHGppyQ==
+      integrity: sha512-RFAhR/852VMaRd9NSe7jprwSoG9dLc6u1GwnqRWg+/3cy/8Zrwt1Betw1lXiZH7hGuB9K2cqju83Xv5Pq5ZSGA==
   /elliptic/6.5.3:
     dependencies:
       bn.js: 4.11.9
@@ -8179,7 +8179,7 @@ packages:
       call-bind: 1.0.0
       define-properties: 1.1.3
       es-abstract: 1.18.0-next.1
-      functions-have-names: 1.2.1
+      functions-have-names: 1.2.2
     dev: false
     engines:
       node: '>= 0.4'
@@ -8189,10 +8189,10 @@ packages:
     dev: false
     resolution:
       integrity: sha1-GwqzvVU7Kg1jmdKcDj6gslIHgyc=
-  /functions-have-names/1.2.1:
+  /functions-have-names/1.2.2:
     dev: false
     resolution:
-      integrity: sha512-j48B/ZI7VKs3sgeI2cZp7WXWmZXu7Iq5pl5/vptV5N2mq+DGFuS/ulaDjtaoLpYzuD6u8UgrUKHfgo7fDTSiBA==
+      integrity: sha512-bLgc3asbWdwPbx2mNk2S49kmJCuQeu0nfmaOgbs8WIyzzkw3r4htszdIi9Q9EMezDPTYuJx2wvjZ/EwgAthpnA==
   /fuse.js/3.6.1:
     dev: false
     engines:
@@ -18451,7 +18451,7 @@ packages:
       '@types/uuid': 7.0.4
       '@types/yargs': 12.0.19
       detect-port: 1.3.0
-      electron: 10.2.0
+      electron: 11.1.0
       eslint: 6.8.0
       express: 4.17.1
       jsonc-parser: 2.0.3
@@ -18467,7 +18467,7 @@ packages:
     dev: false
     name: '@rush-temp/certa'
     resolution:
-      integrity: sha512-p7FGo1FmNzjC1HE9JKDKDUUylN3lrfJtnoaE94HiXSsDdtmySuE33KlMRcpNdI8AusmcOR3l+vR1WOvLXi3eNA==
+      integrity: sha512-s06tkcgvTDLIl7GOJeeZqOXGlp/6Vl0V29sQL6tNDx/J9CDVvnTSJtlPHwz5wdD/83mSNb7QYsYFTpk4Z76UyQ==
       tarball: 'file:projects/certa.tgz'
     version: 0.0.0
   'file:projects/config-loader.tgz':
@@ -18518,7 +18518,7 @@ packages:
       '@types/serve-handler': 6.1.0
       chai: 4.2.0
       chai-as-promised: 7.1.1_chai@4.2.0
-      electron: 10.2.0
+      electron: 11.1.0
       eslint: 6.8.0
       fs-extra: 8.1.0
       glob: 7.1.6
@@ -18534,7 +18534,7 @@ packages:
     dev: false
     name: '@rush-temp/core-full-stack-tests'
     resolution:
-      integrity: sha512-Wx4h7gw9zEWVaSCg+0zzmEPeROiWpfWEmtLsJcLlGhQ6eOPzmvSydo6N9tb19OunPj4D8yViIKlue8mqjjmqYw==
+      integrity: sha512-Fc0GdxVJ47Iu3tjtr8W/ilP3p5Dc01LBbQUYZcIRGT95+IfobDuPaxE3PlMphGwb6SsdZW38DxZWu/Mv69R1mw==
       tarball: 'file:projects/core-full-stack-tests.tgz'
     version: 0.0.0
   'file:projects/display-performance-test-app.tgz_sass@1.30.0+webpack-cli@3.3.12':
@@ -18548,7 +18548,7 @@ packages:
       chrome-launcher: 0.10.7
       cpx: 1.5.0
       cross-env: 5.2.1
-      electron: 10.2.0
+      electron: 11.1.0
       eslint: 6.8.0
       express: 4.17.1
       npm-run-all: 4.1.5
@@ -18564,7 +18564,7 @@ packages:
       sass: '*'
       webpack-cli: '*'
     resolution:
-      integrity: sha512-v5ElqY83x5k8Ci4EK8Qly9L+Pp77tIx0he/JRzX9DA07ZoQ7VlkLisbx516WrOVFfx327t9ADxvVx5+z6xp/eA==
+      integrity: sha512-UWuNrzKkEqICaD0C2zLNeS3Q2XVevC1aFS7qPz5jvuNFmqfiOUL7L3e1+kmdblfzugzPj+DflEb/RY3TblIIDQ==
       tarball: 'file:projects/display-performance-test-app.tgz'
     version: 0.0.0
   'file:projects/display-test-app.tgz_webpack-cli@3.3.12':
@@ -18580,7 +18580,7 @@ packages:
       child_process: 1.0.2
       cpx: 1.5.0
       cross-env: 5.2.1
-      electron: 10.2.0
+      electron: 11.1.0
       eslint: 6.8.0
       express: 4.17.1
       fs-extra: 8.1.0
@@ -18598,7 +18598,7 @@ packages:
     peerDependencies:
       webpack-cli: '*'
     resolution:
-      integrity: sha512-Z10X2DVYmdFd63mtwJfn+c8iB++CNSDSKH+TQw0Q5ckFnq51sid5PMrHHtR/oJ85WAJ4yx+AlurVzyr6GH8Ozw==
+      integrity: sha512-FVqo5WT2PZvwjPVYGxTswxK8WgiKPlhu3+lveDV5YnRRJGb115rchMMG0V97JKsI5ZfhE85lcJANo5PoAvCdwA==
       tarball: 'file:projects/display-test-app.tgz'
     version: 0.0.0
   'file:projects/ecschema-locaters.tgz':
@@ -18682,14 +18682,14 @@ packages:
   'file:projects/electron-manager.tgz':
     dependencies:
       '@types/node': 10.14.1
-      electron: 10.2.0
+      electron: 11.1.0
       eslint: 6.8.0
       rimraf: 3.0.2
       typescript: 3.7.5
     dev: false
     name: '@rush-temp/electron-manager'
     resolution:
-      integrity: sha512-TUGUPEoPu/cbon3S1RY6bLIbJJDh3mcafRHrllE5pjMkohi7ITIeBV2ifU0G470LlrkzLtas10xRJLwHLj5eHA==
+      integrity: sha512-6vgnHejQ/cbie28NeY5KKYMqwbSfSAUMYUnGPZ6SUPxTjwTVzDrI4vZjiI287XZEHaG7s4Bp8BiG67PkbTThlg==
       tarball: 'file:projects/electron-manager.tgz'
     version: 0.0.0
   'file:projects/eslint-plugin.tgz':
@@ -18729,7 +18729,7 @@ packages:
       body-parser: 1.19.0
       chai: 4.2.0
       cpx: 1.5.0
-      electron: 10.2.0
+      electron: 11.1.0
       eslint: 6.8.0
       express: 4.17.1
       fs-extra: 8.1.0
@@ -18747,7 +18747,7 @@ packages:
     dev: false
     name: '@rush-temp/example-code-app'
     resolution:
-      integrity: sha512-gyFregv4KqQdtZqVuBXcHKnhh1G0hE/k06uK3RKa6OBiqxTYKwiO7BKAr5NYDGpokXbnQlNg3xV+qWuDJR2zNQ==
+      integrity: sha512-0JUjah7v3ILf3d3W0x8hriIYgx1OEvDeHEXssCHQaK5uouXUf5Y9xXCeFKePfXRC3b2/Wvsq0VXgS2cLMjAopQ==
       tarball: 'file:projects/example-code-app.tgz'
     version: 0.0.0
   'file:projects/example-code-snippets.tgz':
@@ -18764,7 +18764,7 @@ packages:
       body-parser: 1.19.0
       chai: 4.2.0
       cpx: 1.5.0
-      electron: 10.2.0
+      electron: 11.1.0
       eslint: 6.8.0
       express: 4.17.1
       fs-extra: 8.1.0
@@ -18781,7 +18781,7 @@ packages:
     dev: false
     name: '@rush-temp/example-code-snippets'
     resolution:
-      integrity: sha512-llTWZd22unDM3oOw/OhGegQ9O2Vb2BRufyiazEs6MUnY1z3MHs3Z3jjqbKi/re+DiNhQ1rZi1+VSHWQsaAnjQQ==
+      integrity: sha512-45ZtDCDK3m46BT1nBohqztk4MRLIviib/yBvewSEADsQ33Oh05/sp5ITz0YslTQyVaBhku+y/ab5gk6SE+SnWg==
       tarball: 'file:projects/example-code-snippets.tgz'
     version: 0.0.0
   'file:projects/export-gltf.tgz':
@@ -18847,7 +18847,7 @@ packages:
       '@types/tar': 4.0.4
       '@types/yargs': 12.0.19
       chai: 4.2.0
-      electron: 10.2.0
+      electron: 11.1.0
       eslint: 6.8.0
       fast-sha256: 1.3.0
       mocha: 5.2.0
@@ -18859,7 +18859,7 @@ packages:
     dev: false
     name: '@rush-temp/extension-cli'
     resolution:
-      integrity: sha512-FtyoDLcYvdXPUIRLiwf1BhDJYwxmzr6VUFCw9NLpKhJZMJeQqjw0BnTSyrTYe5KBVStoD5u3xfpRD0Eorgh/BA==
+      integrity: sha512-2kGkib6rMvfQjjhIM4AGXJckDNKw51dFh9mh0Ym5dYcGjf5ewe5mJ8ZNqHuf8ijPjN04lprPo6M3Y+w7DX8H7Q==
       tarball: 'file:projects/extension-cli.tgz'
     version: 0.0.0
   'file:projects/extension-client.tgz':
@@ -19512,7 +19512,7 @@ packages:
       '@types/nock': 9.3.1
       '@types/node': 10.14.1
       chai: 4.2.0
-      electron: 10.2.0
+      electron: 11.1.0
       eslint: 6.8.0
       fs-extra: 8.1.0
       glob: 7.1.6
@@ -19527,7 +19527,7 @@ packages:
     dev: false
     name: '@rush-temp/native-app-full-stack-tests'
     resolution:
-      integrity: sha512-hqv+AYEe3tbHa/S1psLwWd0a6KPDwhTVh+a3vKVAdxQ8DD4vlR+zloQdchLl4QTTBWmu55oh2b6pdtrig3LbMg==
+      integrity: sha512-yjMh6NsAq57mpfMIzkLIMrDCQR2DdqWxyaeWLSTGEEhbU+aNFeio/rptxPOcPZv9+aYUdAreC0Gwpn3lbSgsUA==
       tarball: 'file:projects/native-app-full-stack-tests.tgz'
     version: 0.0.0
   'file:projects/ninezone-test-app.tgz_sass@1.30.0+webpack-cli@3.3.12':
@@ -19860,7 +19860,7 @@ packages:
       autoprefixer: 8.6.5
       cpx: 1.5.0
       cross-env: 5.2.1
-      electron: 10.2.0
+      electron: 11.1.0
       eslint: 6.8.0
       npm-run-all: 4.1.5
       postcss-flexbugs-fixes: 4.1.0
@@ -19879,7 +19879,7 @@ packages:
     peerDependencies:
       webpack-cli: '*'
     resolution:
-      integrity: sha512-zUGd8tN0lCYFccXpqZ52myY1lxV/i3Uoe204AmoyE9RvpaeVKHkUW9B2va/HrfuLcQ52NsAn9AEitG/gYWzEmQ==
+      integrity: sha512-+lreTgTp9Q9x91qXzYdC/hUqwqxGTPH7Au6H76BFbcROCSAH6dsbC4WPknhr58hgu34nIJXiXpx6eNldnqMEAA==
       tarball: 'file:projects/presentation-test-app.tgz'
     version: 0.0.0
   'file:projects/presentation-testing.tgz_jsdom@11.12.0':
@@ -20000,7 +20000,7 @@ packages:
       '@types/semver': 5.5.0
       '@types/spdy': 3.4.4
       chai: 4.2.0
-      electron: 10.2.0
+      electron: 11.1.0
       eslint: 6.8.0
       express: 4.17.1
       glob: 7.1.6
@@ -20014,7 +20014,7 @@ packages:
     dev: false
     name: '@rush-temp/rpc-full-stack-tests'
     resolution:
-      integrity: sha512-8aqI4hMfZq1Eu5kpKuNU4zlGjx7c/ojklp8o1dOGUEAVwXa8yeF5VwiKe1XC+CG9ybGH/3L9K0QVT62vatUdDA==
+      integrity: sha512-kHu6y7IKObWwlli1Ee4dTfNkyTRewXAHKYr8yyureC5yv6qI3qt2npmvyTFMmOfgl7Y/5Zkt6FzQWEkiuQHM7w==
       tarball: 'file:projects/rpc-full-stack-tests.tgz'
     version: 0.0.0
   'file:projects/rpcinterface-full-stack-tests.tgz':
@@ -20437,7 +20437,7 @@ packages:
       cross-env: 5.2.1
       dotenv: 8.2.0
       dotenv-expand: 5.1.0
-      electron: 10.2.0
+      electron: 11.1.0
       eslint: 6.8.0
       fs-extra: 8.1.0
       lorem-ipsum: 2.0.3
@@ -20463,7 +20463,7 @@ packages:
       sass: '*'
       webpack-cli: '*'
     resolution:
-      integrity: sha512-/V+CXSsvtwb/DT6sl3cmjMEZtNfo31L8GREZK7xnC52+8SSfbOT9os5BMhD4XSODrh7QFk/i2tRXz27VfQ5xcg==
+      integrity: sha512-PALl8fSX401YKWLTEIGWhYcl8dNw8nOJjuMXyFlZowo+8VuueWklYzQ2OE6LcSLPjo3W79zvMRxbHrZsP5jocA==
       tarball: 'file:projects/ui-test-app.tgz'
     version: 0.0.0
   'file:projects/ui-test-extension.tgz_webpack@4.42.0':
@@ -20767,7 +20767,7 @@ specifiers:
   dompurify: ^2.0.12
   dotenv: ^8.2.0
   dotenv-expand: ^5.1.0
-  electron: ^10.1.3
+  electron: ^11.1.0
   enzyme: ^3.4.0
   enzyme-adapter-react-16: ^1.15.5
   enzyme-to-json: ^3.3.4
