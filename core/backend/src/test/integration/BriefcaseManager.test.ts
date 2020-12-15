@@ -190,6 +190,7 @@ describe("BriefcaseManager (#integration)", () => {
       assert.equal(elementCount, readOnlyTestElementCounts[arrayIndex], `Count isn't what's expected for ${iModelFromVersion.pathName}, version ${versionName}`);
 
       iModelFromVersion.close();
+      iModelFromChangeSet.close();
     }
 
     const iModelLatestVersion = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testProjectId, iModelId: readOnlyTestIModel.id });
@@ -340,7 +341,7 @@ describe("BriefcaseManager (#integration)", () => {
 
   });
 
-  it.skip("should be able to reverse and reinstate changes", async () => {
+  it("should be able to reverse and reinstate changes", async () => {
     const args = { requestContext, contextId: testProjectId, iModelId: readOnlyTestIModel.id };
     const iModelPullAndPush = await IModelTestUtils.openBriefcaseUsingRpc(args);
     const iModelPullOnly = await IModelTestUtils.openBriefcaseUsingRpc({ ...args, briefcaseId: 0 });
