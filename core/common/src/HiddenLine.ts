@@ -219,6 +219,17 @@ export namespace HiddenLine {
       });
     }
 
+    public equals(other: Settings): boolean {
+      if (this === other)
+        return true;
+
+      return this.visible.equals(other.visible) && this.hidden.equals(other.hidden) && this.transparencyThreshold === other.transparencyThreshold;
+    }
+
+    public get matchesDefaults(): boolean {
+      return this.equals(Settings.defaults);
+    }
+
     private constructor(json: SettingsProps) {
       this.visible = Style.fromJSON(json.visible);
       this.hidden = Style.fromJSON(json.hidden, true);

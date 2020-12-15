@@ -15,7 +15,8 @@ import { areEqual, ListChildComponentProps, VariableSizeList } from "react-windo
 import { assert } from "@bentley/bentleyjs-core";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { Orientation, RatioChangeResult } from "@bentley/ui-core";
-import { MutableCategorizedPrimitiveProperty } from "../../../ui-components";
+import { FilteredType, MutableCategorizedPrimitiveProperty, MutableGridCategory } from "../../../ui-components";
+import { HighlightingComponentProps } from "../../common/HighlightingComponentProps";
 import { createContextWithMandatoryProvider } from "../../common/UseContextWithMandatoryProvider";
 import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
 import { ActionButtonRenderer } from "../../properties/renderers/ActionButtonRenderer";
@@ -39,7 +40,7 @@ import { PropertyGridEventsRelatedPropsSupplier } from "./PropertyGridEventsRela
 export interface VirtualizedPropertyGridProps extends CommonPropertyGridProps {
   model: IPropertyGridModel;
   eventHandler: IPropertyGridEventHandler;
-  highlightedRecordProps?: HighlightedRecordProps;
+  highlight?: HighlightingComponentProps & { filteredTypes?: FilteredType[] };
 }
 
 /** State of [[VirtualizedPropertyGrid]] React component
@@ -91,35 +92,8 @@ export interface VirtualizedPropertyGridContext {
     onResizeHandleDragChanged?: (isDragStarted: boolean) => void;
     columnInfo?: PropertyGridColumnInfo;
 
-    highlightedRecordProps?: HighlightedRecordProps;
+    highlight?: HighlightingComponentProps & { filteredTypes?: FilteredType[] };
   };
-}
-
-/**
- * Record match info used for identification of a specific match in a record
- * while also giving enough information about label and value matches counts
- * to know exactly where the match is located
- * @beta
- */
-export interface PropertyRecordMatchInfo {
-  /* Name of the record's property, used for identification of the record */
-  propertyName: string;
-  /* Index of actively highlighted part in a record */
-  matchIndex: number;
-  /* Number of label matches found in a record, used for distinguishing label matches and value matches */
-  matchCounts: { label: number, value: number };
-}
-
-/**
- * Properties used for [[VirtualizedPropertyGrid]]
- * Used for highlighting matching parts in records and actively highlighting one match in a specific record
- * @beta
- */
-export interface HighlightedRecordProps {
-  /* Filter text which we want to highlight */
-  searchText: string;
-  /* Information about the record which we want to actively highlight */
-  activeMatch?: PropertyRecordMatchInfo;
 }
 
 /**
@@ -175,12 +149,13 @@ export class VirtualizedPropertyGrid extends React.Component<VirtualizedProperty
       this._listRef.current?.resetAfterIndex(0);
     }
 
-    if (this.props.highlightedRecordProps !== prevProps.highlightedRecordProps && this.props.highlightedRecordProps?.activeMatch && this.state.gridItems.length !== 0) {
+    if (this.props.highlight !== prevProps.highlight && this.props.highlight?.activeHighlight && this.state.gridItems.length !== 0) {
 
       let index = 0;
       let foundMatchingItem = false;
       for (const item of this.state.gridItems) {
-        if (item instanceof MutableCategorizedPrimitiveProperty && this.props.highlightedRecordProps?.activeMatch?.propertyName === item.derivedRecord.property.name) {
+        if (item instanceof MutableCategorizedPrimitiveProperty && this.props.highlight?.activeHighlight?.highlightedItemIdentifier === item.derivedRecord.property.name
+          || item instanceof MutableGridCategory && this.props.highlight?.activeHighlight?.highlightedItemIdentifier === item.name) {
           foundMatchingItem = true;
           break;
         }
@@ -335,7 +310,7 @@ export class VirtualizedPropertyGrid extends React.Component<VirtualizedProperty
                     actionButtonRenderers: this.props.actionButtonRenderers,
 
                     onNodeHeightChanged: this._handleNodeHeightChange,
-                    highlightedRecordProps: this.props.highlightedRecordProps,
+                    highlight: this.props.highlight,
                   },
                 };
 
@@ -396,6 +371,10 @@ const FlatGridItemNode = React.memo(
                 style={gridContext.style}
                 category={node.derivedCategory}
                 onExpansionToggled={onExpansionToggled}
+                highlight={gridContext.highlight?.filteredTypes?.includes(FilteredType.Category)?
+                  gridContext.highlight :
+                  undefined
+                }
               />
             </FlatItemNestedBorderWrapper>
           );
@@ -447,7 +426,10 @@ const FlatGridItemNode = React.memo(
                 onResizeHandleDragChanged={gridContext.onResizeHandleDragChanged}
                 onResizeHandleHoverChanged={gridContext.onResizeHandleHoverChanged}
 
-                highlightProps={gridContext.highlightedRecordProps}
+                highlight={gridContext.highlight ?
+                  { applyOnLabel: (gridContext.highlight.filteredTypes?.includes(FilteredType.Label)) ?? false, applyOnValue: (gridContext.highlight.filteredTypes?.includes(FilteredType.Value)) ?? false, ...gridContext.highlight } :
+                  undefined
+                }
               />
             </FlatItemNestedBorderWrapper>
           );

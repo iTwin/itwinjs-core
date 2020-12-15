@@ -60,7 +60,7 @@ function getOptionLabel(option: string | SelectOption): string {
 }
 
 function getOptionValue(option: string | SelectOption): string | number | readonly string[] {
-  return (typeof option === "string") ? option : (option.value ? option.value : option.label);
+  return (typeof option === "string") ? option : (undefined !== option.value ? option.value : option.label);
 }
 
 function getOptionDisabled(option: string | SelectOption): boolean | undefined {
@@ -86,7 +86,7 @@ export function Select(props: SelectProps) {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { value: selectValue, required, options, setFocus, className, defaultValue, ...otherProps } = props; // pluck off values that will be explicitly set below
-  const showPlaceholder = React.useMemo(() => props.placeholder && (!selectValue || selectValue === placeholderValue.current) && !defaultValue, [defaultValue, selectValue, props.placeholder]);
+  const showPlaceholder = React.useMemo(() => props.placeholder && (undefined === selectValue || selectValue === placeholderValue.current) && !defaultValue, [defaultValue, selectValue, props.placeholder]);
   const isRequired = React.useMemo(() => showPlaceholder || required, [required, showPlaceholder]);
   const currentDefaultValue = React.useMemo(() => getCurrentDefaultValue(defaultValue, showPlaceholder ? placeholderValue.current : undefined), [defaultValue, showPlaceholder]);
 
@@ -94,7 +94,7 @@ export function Select(props: SelectProps) {
     <select ref={selectElement} {...otherProps}
       required={isRequired}
       className={classnames("uicore-inputs-select", className)}
-      value={(!isInitialMount.current && !selectValue) ? currentDefaultValue : selectValue}
+      value={(!isInitialMount.current && undefined === selectValue) ? currentDefaultValue : selectValue}
       defaultValue={currentDefaultValue}>
       {showPlaceholder &&
         <option className="placeholder" disabled key="" value={placeholderValue.current}>{props.placeholder}</option>
