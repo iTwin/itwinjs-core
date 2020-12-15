@@ -122,7 +122,9 @@ return (
 
 - The type of [Texture.data]($backend) has been corrected from `string` to `Uint8Array` to match the type in the BIS schema. If you get compilation errors, simply remove calls to `Buffer.from(texture.data, "base64")` for read, and `texture.data.toString("base64")` if you create texture objects.
 
-- Change
+- Several interfaces in the `@bentley/ui-components` package have been renamed:
+
+ Previous
 
   ```ts
   interface HighlightedRecordProps {
@@ -131,7 +133,7 @@ return (
   }
   ```
 
-  to
+  New
 
   ```ts
   interface HighlightInfo {
@@ -142,10 +144,10 @@ return (
 
   This is just a terminology change, so reacting to the change is as simple as renaming `searchText` -> `highlightedText` and `activeMatch` -> `highlightedText`.
 
-- Change
+Previous
 
  ```ts
-  interface PropertyRecordMatchInfo {
+ interface PropertyRecordMatchInfo {
     matchCounts: {
         label: number;
         value: number;
@@ -155,7 +157,7 @@ return (
   }
   ```
 
-  to
+New
 
   ```ts
   interface HighlightInfo {
