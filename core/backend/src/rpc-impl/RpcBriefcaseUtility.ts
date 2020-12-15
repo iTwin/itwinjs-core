@@ -6,9 +6,9 @@
  * @module RpcInterface
  */
 
-import { BeDuration, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { BeDuration, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { BriefcaseQuery } from "@bentley/imodelhub-client";
-import { BriefcaseProps, IModelConnectionProps, IModelRpcOpenProps, IModelRpcProps, RpcPendingResponse, SyncMode } from "@bentley/imodeljs-common";
+import { BriefcaseProps, IModelConnectionProps, IModelError, IModelRpcOpenProps, IModelRpcProps, RpcPendingResponse, SyncMode } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { BriefcaseManager, RequestNewBriefcaseArg } from "../BriefcaseManager";
@@ -56,16 +56,14 @@ export class RpcBriefcaseUtility {
           try {
             if (args.forceDownload)
               throw new Error();
-            let db = BriefcaseDb.checkOpened({ fileName });
-            if (db === undefined) {
-              db = await BriefcaseDb.open(requestContext, { fileName });
-              if (db.changeSetId !== tokenProps.changeSetId) // don't do this if it was already opened, ugh...
-                await BriefcaseManager.processChangeSets(requestContext, db, tokenProps.changeSetId!);
-            }
+            const db = await BriefcaseDb.open(requestContext, { fileName });
+            if (db.changeSetId !== tokenProps.changeSetId)
+              await BriefcaseManager.processChangeSets(requestContext, db, tokenProps.changeSetId!);
             return db;
           } catch (error) {
-            // somehow we have this briefcaseId and the file exists, but we can't open it. Delete it.
-            await BriefcaseManager.deleteBriefcaseFiles(fileName, args.requestContext);
+            if (!(error instanceof IModelError && error.errorNumber === IModelStatus.AlreadyOpen))
+              // somehow we have this briefcaseId and the file exists, but we can't open it. Delete it.
+              await BriefcaseManager.deleteBriefcaseFiles(fileName, args.requestContext);
           }
         }
       }

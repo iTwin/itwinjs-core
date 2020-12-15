@@ -98,9 +98,8 @@ describe("Element editor tests (#integration)", async () => {
   });
 
   after(async () => {
-    if (iModel) {
+    if (iModel)
       await iModel.close();
-    }
     await IModelApp.shutdown();
   });
 

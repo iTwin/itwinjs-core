@@ -191,33 +191,6 @@ describe("IModelConnection (#integration)", () => {
     await Promise.all(promises);
   });
 
-  it("should reuse open briefcases for exclusive access", async () => {
-    // Repeatedly opening a Readonly or ReadWrite connection should result in the same briefcase
-    // Note that the IModelDb is opened with SyncMode = FixedVersion in the case of ReadOnly connections, and
-    // SyncMode = PullAndPush in the case of ReadWrite connections.
-    const testProjectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
-    const testIModelId = await TestUtility.getTestIModelId(testProjectId, "ConnectionReadTest");
-    const openModes: OpenMode[] = [OpenMode.Readonly, OpenMode.ReadWrite];
-    for (const openMode of openModes) {
-      const iModel1 = await RemoteBriefcaseConnection.open(testProjectId, testIModelId, openMode, IModelVersion.latest());
-      assert.isNotNull(iModel1);
-      assert.isTrue(iModel1.isOpen);
-      assert.isFalse(iModel1.isClosed);
-      assert.equal(iModel1.contextId, testProjectId);
-      assert.equal(iModel1.iModelId, testIModelId);
-      assert.equal(iModel1.openMode, openMode);
-      let n = 0;
-      while (++n < 5) {
-        const iModel2 = await RemoteBriefcaseConnection.open(testProjectId, testIModelId, openMode, IModelVersion.latest());
-        assert.isNotNull(iModel2);
-        assert.equal(iModel2.key, iModel1.key);
-      }
-      await iModel1.close();
-      assert.isFalse(iModel1.isOpen);
-      assert.isTrue(iModel1.isClosed);
-    }
-  });
-
   it("should be able to request tiles from an IModelConnection", async () => {
     const testProjectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
     const testIModelId = await TestUtility.getTestIModelId(testProjectId, "ConnectionReadTest");

@@ -78,8 +78,4 @@ describe("Opening IModelConnection (#integration)", () => {
     await doTest(OpenMode.Readonly);
   });
 
-  it("should be able to open multiple read-write connections to an iModel that requires a large number of change sets to be applied", async () => {
-    await doTest(OpenMode.ReadWrite);
-  });
-
 });
