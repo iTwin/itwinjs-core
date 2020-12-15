@@ -6,6 +6,7 @@
  * @module WebGL
  */
 
+import { WebGLContext } from "@bentley/webgl-compatibility";
 import { CopyPickBufferGeometry } from "../CachedGeometry";
 import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderComponent, VariablePrecision, VariableType } from "../ShaderBuilder";
@@ -22,7 +23,7 @@ const assignFragData = `
 `;
 
 /** @internal */
-export function createCopyPickBuffersProgram(context: WebGLRenderingContext | WebGL2RenderingContext): ShaderProgram {
+export function createCopyPickBuffersProgram(context: WebGLContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;
 

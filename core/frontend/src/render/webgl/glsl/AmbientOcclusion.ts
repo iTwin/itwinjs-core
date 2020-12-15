@@ -8,6 +8,7 @@
 
 // portions adapted from Cesium.js Copyright 2011 - 2017 Cesium Contributors
 
+import { WebGLContext } from "@bentley/webgl-compatibility";
 import { AmbientOcclusionGeometry } from "../CachedGeometry";
 import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderComponent, VariablePrecision, VariableType } from "../ShaderBuilder";
@@ -152,7 +153,7 @@ vec3 computeNormalFromDepth(vec3 viewPos, vec2 tc, vec2 pixelSize) {
 `;
 
 /** @internal */
-export function createAmbientOcclusionProgram(context: WebGLRenderingContext | WebGL2RenderingContext): ShaderProgram {
+export function createAmbientOcclusionProgram(context: WebGLContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;
 

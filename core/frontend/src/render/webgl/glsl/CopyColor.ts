@@ -6,6 +6,7 @@
  * @module WebGL
  */
 
+import { WebGLContext } from "@bentley/webgl-compatibility";
 import { SingleTexturedViewportQuadGeometry } from "../CachedGeometry";
 import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderComponent, VariableType } from "../ShaderBuilder";
@@ -19,7 +20,7 @@ const computeColor = "return TEXTURE(u_color, v_texCoord);";
 const computeColorNoAlpha = "return vec4(TEXTURE(u_color, v_texCoord).rgb, 1.0);";
 
 /** @internal */
-export function createCopyColorProgram(context: WebGLRenderingContext | WebGL2RenderingContext, copyAlpha: boolean = true): ShaderProgram {
+export function createCopyColorProgram(context: WebGLContext, copyAlpha: boolean = true): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;
 
