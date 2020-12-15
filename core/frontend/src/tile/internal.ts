@@ -64,6 +64,7 @@ export * from "./ClassifierTileTree";
 export * from "./OrbitGtTileTree";
 export * from "./map/ImageryTileTree";
 export * from "./map/ArcGisUtilities";
+export * from "./map/ArcGisTokenGenerator";
 export * from "./map/WmsUtilities";
 export * from "./map/WmsCapabilities";
 export * from "./map/MapLayerSources";

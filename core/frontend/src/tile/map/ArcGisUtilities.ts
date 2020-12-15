@@ -9,11 +9,12 @@ import { FrontendRequestContext } from "../../imodeljs-frontend";
 import { MapLayerSourceValidation } from "../internal";
 import { MapCartoRectangle } from "./MapCartoRectangle";
 import { MapLayerSource, MapLayerSourceStatus } from "./MapLayerSources";
+import { ArcGisTokenClientType } from "./ArcGisTokenGenerator";
+import { ArcGisTokenManager } from "./ArcGisTokenManager";
 
 /** @packageDocumentation
  * @module Tiles
  */
-/** @internal */
 export class ArcGisUtilities {
   private static getBBoxString(range?: MapCartoRectangle) {
     if (!range)
@@ -124,10 +125,16 @@ export class ArcGisUtilities {
     try {
       const options: RequestOptions = {
         method: "GET",
-        responseType: "json",
-        auth: credentials,
+        responseType: "json"
       };
-      const data = await request(new FrontendRequestContext(""), `${url}?f=json`, options);
+      let tokenParam = "";
+      if (credentials) {
+        const token = await ArcGisTokenManager.getToken(url, { userName: credentials.user, password: credentials.password, client: ArcGisTokenClientType.referer });
+        if (token)
+          tokenParam = `&token=${token.token}`
+      }
+      const finalUrl = `${url}?f=json${tokenParam}`;
+      const data = await request(new FrontendRequestContext(""), finalUrl, options);
       const json = data.body ? data.body : undefined;
       ArcGisUtilities._serviceCache.set(url, json);
       return json;
@@ -137,14 +144,22 @@ export class ArcGisUtilities {
     }
   }
 
+
+
   private static _footprintCache = new Map<string, any>();
-  public static async getFootprintJson(url: string): Promise<any> {
+  public static async getFootprintJson(url: string, credentials?: RequestBasicCredentials): Promise<any> {
     const cached = ArcGisUtilities._footprintCache.get(url);
     if (cached !== undefined)
       return cached;
 
     try {
-      const json = await getJson(new FrontendRequestContext(""), `${url}?f=json&option=footprints&outSR=4326`);
+      let tokenParam = "";
+      if (credentials) {
+        const token = await ArcGisTokenManager.getToken(url, { userName: credentials.user, password: credentials.password, client: ArcGisTokenClientType.referer });
+        if (token)
+          tokenParam = `&token=${token.token}`
+      }
+      const json = await getJson(new FrontendRequestContext(""), `${url}?f=json&option=footprints&outSR=4326${tokenParam}`);
       ArcGisUtilities._footprintCache.set(url, json);
       return json;
     } catch (_error) {

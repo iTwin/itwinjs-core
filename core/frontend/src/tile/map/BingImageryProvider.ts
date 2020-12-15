@@ -112,7 +112,7 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
   }
 
   // construct the Url from the desired Tile
-  public constructUrl(row: number, column: number, zoomLevel: number): string {
+  public async constructUrl(row: number, column: number, zoomLevel: number): Promise<string> {
     // From the tile, get a "quadKey" the Microsoft way.
     const quadKey: string = this.tileXYToQuadKey(column, row, zoomLevel);
     const subdomain: string = this._urlSubdomains![(row + column) % this._urlSubdomains!.length];
