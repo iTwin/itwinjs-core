@@ -63,7 +63,7 @@ describe("IModelBridgeFwk (#integration)", () => {
     const runner = new BridgeRunner(bridgeJobDef, serverArgs);
     const status = await runner.synchronize();
     expect(status === BentleyStatus.SUCCESS);
-    const briefcases = BriefcaseManager.getBriefcases();
+    const briefcases = BriefcaseManager.getCachedBriefcases(serverArgs.iModelId);
     const briefcaseEntry = briefcases[0];
     expect(briefcaseEntry !== undefined);
 

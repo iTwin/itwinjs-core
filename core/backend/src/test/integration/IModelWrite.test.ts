@@ -123,7 +123,24 @@ describe("IModelWriteTest (#integration)", () => {
 
     assert.isFalse(iModel.concurrencyControl.locks.hasCodeSpecsLock, "pushChanges should automatically release all locks");
 
+    let found = false;
+    let briefcases = BriefcaseManager.getCachedBriefcases(readWriteTestIModel.id);
+    for (const briefcase of briefcases) {
+      if (briefcase.briefcaseId === iModel.briefcaseId && briefcase.contextId === testProjectId && briefcase.iModelId === readWriteTestIModel.id) {
+        assert.equal(briefcase.fileName, iModel.pathName);
+        found = true;
+      }
+    }
+    assert.isTrue(found);
     await IModelTestUtils.closeAndDeleteBriefcaseDb(superRequestContext, iModel);
+
+    found = false;
+    briefcases = BriefcaseManager.getCachedBriefcases(); // test getCachedBriefcases without iModelId
+    for (const briefcase of briefcases) {
+      if (briefcase.briefcaseId === iModel.briefcaseId && briefcase.contextId === testProjectId && briefcase.iModelId === readWriteTestIModel.id)
+        found = true;
+    }
+    assert.isFalse(found);
   });
 
   it("acquire codespec lock - example", async () => {
@@ -176,6 +193,7 @@ describe("IModelWriteTest (#integration)", () => {
     await BriefcaseManager.imodelClient.locks.update(managerRequestContext, readWriteTestIModel.id, [bcBLockReq]);
     bcALockReq.lockLevel = LockLevel.None;
     await BriefcaseManager.imodelClient.locks.update(managerRequestContext, readWriteTestIModel.id, [bcALockReq]);
+
 
     await BriefcaseManager.imodelClient.briefcases.delete(managerRequestContext, readWriteTestIModel.id, bcA.briefcaseId!);
     await BriefcaseManager.imodelClient.briefcases.delete(managerRequestContext, readWriteTestIModel.id, bcB.briefcaseId!);

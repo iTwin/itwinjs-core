@@ -340,25 +340,6 @@ describe("BriefcaseManager (#integration)", () => {
 
   });
 
-  // TODO: This test succeeds on Linux when it's expected to fail
-  it.skip("should be able to gracefully error out if a bad cache dir is specified", async () => {
-    const config = new IModelHostConfiguration();
-    config.cacheDir = "\\\\blah\\blah\\blah";
-    await IModelTestUtils.shutdownBackend();
-
-    let exceptionThrown = false;
-    try {
-      await IModelHost.startup(config);
-    } catch (error) {
-      exceptionThrown = true;
-    }
-    assert.isTrue(exceptionThrown);
-
-    // Restart the backend to the default configuration
-    await IModelHost.shutdown();
-    await IModelTestUtils.startBackend();
-  });
-
   it.skip("should be able to reverse and reinstate changes", async () => {
     const args = { requestContext, contextId: testProjectId, iModelId: readOnlyTestIModel.id };
     const iModelPullAndPush = await IModelTestUtils.openBriefcaseUsingRpc(args);

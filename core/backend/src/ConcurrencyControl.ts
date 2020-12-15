@@ -10,17 +10,19 @@ import * as deepAssign from "deep-assign";
 import * as path from "path";
 import { assert, DbOpcode, DbResult, Id64, Id64String, Logger, RepositoryStatus } from "@bentley/bentleyjs-core";
 import { CodeQuery, CodeState, HubCode, Lock, LockLevel, LockQuery, LockType } from "@bentley/imodelhub-client";
-import { ChannelConstraintError, CodeProps, ElementProps, IModelError, IModelStatus, IModelWriteRpcInterface, ModelProps, SyncMode } from "@bentley/imodeljs-common";
+import {
+  ChannelConstraintError, CodeProps, ElementProps, IModelError, IModelStatus, IModelWriteRpcInterface, ModelProps,
+} from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { ECDb, ECDbOpenMode } from "./ECDb";
 import { Element, Subject } from "./Element";
+import { ChannelRootAspect } from "./ElementAspect";
 import { BriefcaseDb } from "./IModelDb";
 import { IModelJsFs } from "./IModelJsFs";
 import { Model } from "./Model";
 import { RelationshipProps } from "./Relationship";
-import { ChannelRootAspect } from "./ElementAspect";
 
 // cspell:ignore rqctx req's cpid cctl stmts specid
 

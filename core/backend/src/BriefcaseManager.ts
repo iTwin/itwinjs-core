@@ -177,23 +177,29 @@ export class BriefcaseManager {
     this._initialized = false;
   }
 
-  /** Get a list of all local briefcase held in the system briefcase cache
-   * @see BriefcaseManager.initialize
+  /** Get a list of all local briefcase held in the system briefcase cache, optionally for a single iModelId
+   * @param iModelId if present, only briefcases for this iModelId are returned
   */
-  public static getBriefcases(): LocalBriefcaseProps[] {
+  public static getCachedBriefcases(iModelId?: GuidString): LocalBriefcaseProps[] {
     const briefcaseList: LocalBriefcaseProps[] = [];
     const iModelDirs = IModelJsFs.readdirSync(this._cacheDir);
     for (const iModelDir of iModelDirs) {
-      const bcPath = path.join(this._cacheDir, iModelDir, this._bcSubDir);
-      if (!IModelJsFs.lstatSync(bcPath)?.isDirectory)
+      if (iModelId && iModelId !== iModelDir)
         continue;
+      const bcPath = path.join(this._cacheDir, iModelDir, this._bcSubDir);
+      try {
+        if (!IModelJsFs.lstatSync(bcPath)?.isDirectory)
+          continue;
+      } catch (err) {
+        continue;
+      }
 
       const briefcases = IModelJsFs.readdirSync(bcPath);
       for (const briefcaseName of briefcases) {
         if (briefcaseName.endsWith(".bim")) {
           try {
             const fileName = path.join(bcPath, briefcaseName);
-            const db = IModelDb.openDgnDb({ path: fileName, key: "getBriefcase" }, OpenMode.Readonly);
+            const db = IModelDb.openDgnDb({ path: fileName, key: "getBriefcaseId" }, OpenMode.Readonly);
             briefcaseList.push({ fileName, contextId: db.queryProjectGuid(), iModelId: db.getDbGuid(), briefcaseId: db.getBriefcaseId(), changesetId: db.getParentChangeSetId() });
             db.closeIModel();
           } catch (_err) {

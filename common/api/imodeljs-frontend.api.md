@@ -26,6 +26,7 @@ import { BentleyStatus } from '@bentley/bentleyjs-core';
 import { BeTimePoint } from '@bentley/bentleyjs-core';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
 import { BriefcaseDownloader } from '@bentley/imodeljs-common';
+import { BriefcaseProps } from '@bentley/imodeljs-common';
 import { ByteStream } from '@bentley/bentleyjs-core';
 import { Camera } from '@bentley/imodeljs-common';
 import { Capabilities } from '@bentley/webgl-compatibility';
@@ -5810,7 +5811,9 @@ export class NativeApp {
     static closeBriefcase(connection: LocalBriefcaseConnection): Promise<void>;
     static closeStorage(storage: Storage, deleteId: boolean): Promise<void>;
     static deleteBriefcase(fileName: string): Promise<void>;
-    static getBriefcases(): Promise<LocalBriefcaseProps[]>;
+    // (undocumented)
+    static getBriefcaseFileName(props: BriefcaseProps): Promise<string>;
+    static getCachedBriefcases(iModelId?: GuidString): Promise<LocalBriefcaseProps[]>;
     static getStorageNames(): Promise<string[]>;
     // (undocumented)
     static onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void>;

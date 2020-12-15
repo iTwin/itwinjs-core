@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Config, GuidString } from "@bentley/bentleyjs-core";
-import { BriefcaseDownloader, IModelVersion, LocalBriefcaseProps, SyncMode } from "@bentley/imodeljs-common";
+import { BriefcaseDownloader, IModelVersion, SyncMode } from "@bentley/imodeljs-common";
 import { IModelApp, NativeApp, NativeAppLogger } from "@bentley/imodeljs-frontend";
 import { ProgressInfo } from "@bentley/itwin-client";
 import { TestFrontendAuthorizationClient, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
@@ -51,8 +51,7 @@ describe("NativeApp (#integration)", () => {
     await downloader.downloadPromise;
 
     await usingOfflineScope(async () => {
-      const briefcases = await NativeApp.getBriefcases();
-      const rs = briefcases.filter((_: LocalBriefcaseProps) => _.iModelId === testIModelId);
+      const rs = await NativeApp.getCachedBriefcases(testIModelId);
       assert(rs.length > 0);
       const conn = await NativeApp.openBriefcase({ fileName: downloader.fileName });
       const rowCount = await conn.queryRowCount("SELECT ECInstanceId FROM bis.Element");
@@ -148,7 +147,7 @@ describe("NativeApp (#integration)", () => {
     const downloader = await NativeApp.requestDownloadBriefcase(testProjectId, locTestIModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest());
     await downloader.downloadPromise;
 
-    const briefcases = await NativeApp.getBriefcases();
+    const briefcases = await NativeApp.getCachedBriefcases(locTestIModelId);
     assert.isTrue(briefcases.length > 0);
 
     // Update test iModel in the Hub with a change set
@@ -165,7 +164,7 @@ describe("NativeApp (#integration)", () => {
     // assert.notEqual(updatedDownloader.briefcaseProps.changeSetId, downloader.briefcaseProps.changeSetId);
     // NEEDS_WORK: Check that the change set id matches the one that was pushed
 
-    const updatedBriefcases = await NativeApp.getBriefcases();
+    const updatedBriefcases = await NativeApp.getCachedBriefcases(locTestIModelId);
     assert.equal(updatedBriefcases.length, briefcases.length);
 
     // Delete the downloaded test iModel in NativeApp

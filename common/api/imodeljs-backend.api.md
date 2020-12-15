@@ -171,7 +171,6 @@ import { StatusCodeWithMessage } from '@bentley/bentleyjs-core';
 import { SubCategoryAppearance } from '@bentley/imodeljs-common';
 import { SubCategoryProps } from '@bentley/imodeljs-common';
 import { SubjectProps } from '@bentley/imodeljs-common';
-import { SyncMode } from '@bentley/imodeljs-common';
 import { TelemetryEvent } from '@bentley/telemetry-client';
 import { TelemetryManager } from '@bentley/telemetry-client';
 import { TextureFlags } from '@bentley/imodeljs-common';
@@ -428,8 +427,8 @@ export class BriefcaseDb extends IModelDb {
     get contextId(): GuidString;
     // (undocumented)
     static findByKey(key: string): BriefcaseDb;
-    static readonly onOpen: BeEvent<(_requestContext: AuthorizedClientRequestContext | ClientRequestContext, _props: IModelRpcProps) => void>;
-    static readonly onOpened: BeEvent<(_requestContext: AuthorizedClientRequestContext | ClientRequestContext, _imodelDb: BriefcaseDb) => void>;
+    static readonly onOpen: BeEvent<(_requestContext: ClientRequestContext | AuthorizedClientRequestContext, _props: IModelRpcProps) => void>;
+    static readonly onOpened: BeEvent<(_requestContext: ClientRequestContext | AuthorizedClientRequestContext, _imodelDb: BriefcaseDb) => void>;
     // (undocumented)
     static open(requestContext: AuthorizedClientRequestContext | ClientRequestContext, args: OpenBriefcaseProps): Promise<BriefcaseDb>;
     pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
@@ -441,8 +440,6 @@ export class BriefcaseDb extends IModelDb {
     // @internal (undocumented)
     reverseTxns(numOperations: number, allowCrossSessions?: boolean): IModelStatus;
     saveChanges(description?: string): void;
-    // @internal (undocumented)
-    get syncMode(): SyncMode.PullAndPush | SyncMode.PullOnly;
     // (undocumented)
     static tryFindByKey(key: string): BriefcaseDb | undefined;
 }
@@ -470,7 +467,7 @@ export class BriefcaseManager {
     static create(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelName: GuidString, args: CreateIModelProps): Promise<GuidString>;
     // @internal (undocumented)
     static deleteAllBriefcases(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<void[] | undefined>;
-    static deleteBriefcase(requestContext: ClientRequestContext | AuthorizedClientRequestContext, fileName: string): Promise<void>;
+    static deleteBriefcaseFiles(filePath: string, requestContext?: AuthorizedClientRequestContext): Promise<void>;
     static deleteChangeSetsFromLocalDisk(iModelId: string): void;
     static downloadBriefcase(requestContext: AuthorizedClientRequestContext, request: RequestNewBriefcaseArg): Promise<void>;
     // @internal
@@ -482,7 +479,7 @@ export class BriefcaseManager {
     }>;
     // @internal (undocumented)
     static getBriefcaseBasePath(iModelId: GuidString): string;
-    static getBriefcases(): LocalBriefcaseProps[];
+    static getCachedBriefcases(iModelId?: GuidString): LocalBriefcaseProps[];
     // @internal (undocumented)
     static getChangeCachePathName(iModelId: GuidString): string;
     // @internal (undocumented)
@@ -511,6 +508,8 @@ export class BriefcaseManager {
     static pushChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, description: string, changeType?: ChangesType, relinquishCodesLocks?: boolean): Promise<void>;
     // @internal (undocumented)
     static reinstateChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, reinstateToVersion?: IModelVersion): Promise<void>;
+    // (undocumented)
+    static releaseBriefcase(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseProps): Promise<void>;
     // @internal (undocumented)
     static reverseChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, reverseToVersion: IModelVersion): Promise<void>;
     }
@@ -3260,15 +3259,6 @@ export class NativeAppBackend {
 }
 
 export { NativeLoggerCategory }
-
-// @public @deprecated
-export class OpenParams {
-    constructor(
-    openMode: OpenMode,
-    syncMode?: SyncMode | undefined);
-    readonly openMode: OpenMode;
-    readonly syncMode?: SyncMode | undefined;
-}
 
 // @public
 export class OrthographicViewDefinition extends SpatialViewDefinition {

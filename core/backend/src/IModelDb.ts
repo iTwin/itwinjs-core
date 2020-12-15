@@ -23,7 +23,7 @@ import {
   IModelEventSourceProps, IModelNotFoundResponse, IModelProps, IModelRpcProps, IModelStatus, IModelTileTreeProps, IModelVersion,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions,
   PropertyCallback, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, SheetProps, SnapRequestProps, SnapResponseProps,
-  SnapshotOpenOptions, SpatialViewDefinitionProps, StandaloneOpenOptions, SyncMode, ThumbnailProps, UpgradeOptions, ViewDefinitionProps,
+  SnapshotOpenOptions, SpatialViewDefinitionProps, StandaloneOpenOptions, ThumbnailProps, UpgradeOptions, ViewDefinitionProps,
   ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
@@ -63,22 +63,6 @@ export interface UpdateModelOptions extends ModelProps {
   updateLastMod?: boolean;
   /** If defined, update the GeometryGuid of the Model */
   geometryChanged?: boolean;
-}
-
-/** Parameters to open an IModelDb or a Briefcase
- * @public
- * @deprecated
- */
-export class OpenParams {
-  // Constructor
-  public constructor(
-    /** Mode to Open the IModelDb */
-    public readonly openMode: OpenMode,
-
-    /** Operations allowed when synchronizing changes between the IModelDb and IModelHub */
-    public readonly syncMode?: SyncMode,
-  ) {
-  }
 }
 
 /** Options supplied to [[IModelDb.computeProjectExtents]].
@@ -2295,9 +2279,6 @@ export class BriefcaseDb extends IModelDb {
     const db = super.tryFindByKey(key);
     return db instanceof BriefcaseDb ? db : undefined;
   }
-
-  /** @internal */
-  public get syncMode() { return this.briefcaseId === 0 ? SyncMode.PullOnly : SyncMode.PullAndPush; }
 
   /** @internal */
   public reverseTxns(numOperations: number, allowCrossSessions?: boolean): IModelStatus {

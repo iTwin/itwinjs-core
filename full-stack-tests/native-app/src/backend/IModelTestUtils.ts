@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import { GuidString, Id64, Id64String } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseDb, BriefcaseManager, Element, IModelDb, InformationPartitionElement, PhysicalModel, PhysicalPartition, RequestNewBriefcaseArg,
+  BriefcaseDb, BriefcaseManager, Element, IModelDb, IModelJsFs, InformationPartitionElement, PhysicalModel, PhysicalPartition, RequestNewBriefcaseArg,
   SubjectOwnsPartitionElements,
 } from "@bentley/imodeljs-backend";
 import { Code, CodeProps, ElementProps, IModel, IModelVersion, PhysicalElementProps, RelatedElement } from "@bentley/imodeljs-common";
@@ -27,8 +27,17 @@ export class IModelTestUtils {
 
   public static async closeAndDeleteBriefcaseDb(requestContext: AuthorizedClientRequestContext, briefcaseDb: BriefcaseDb) {
     const fileName = briefcaseDb.pathName; // save this before we close - afterwards it is invalid
+    const iModelId = briefcaseDb.iModelId;
     briefcaseDb.close();
     await BriefcaseManager.deleteBriefcaseFiles(fileName, requestContext);
+    // try to clean up empty briefcase directories, and empty iModel directories.
+    if (0 === BriefcaseManager.getCachedBriefcases(iModelId).length) {
+      IModelJsFs.removeSync(BriefcaseManager.getBriefcaseBasePath(iModelId));
+      const imodelPath = BriefcaseManager.getIModelPath(iModelId);
+      if (0 === IModelJsFs.readdirSync(imodelPath).length) {
+        IModelJsFs.removeSync(imodelPath);
+      }
+    }
   }
 
   // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.

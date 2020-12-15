@@ -118,28 +118,33 @@ return (
 
 ## Breaking API changes
 
-* The union type [Matrix3dProps]($geometry-core) inadvertently included [Matrix3d]($geometry-core). "Props" types are wire formats and so must be pure JavaScript primitives. To fix compilation errors where you are using `Matrix3d` where a `Matrix3dProps` is expected, simply call [Matrix3d.toJSON]($geometry-core) on your Matrix3d object. Also, since [TransformProps]($geometry-core) includes Matrix3dProps, you may need to call [Transform.toJSON]($geometry-core) on your Transform objects some places too.
+- The union type [Matrix3dProps]($geometry-core) inadvertently included [Matrix3d]($geometry-core). "Props" types are wire formats and so must be pure JavaScript primitives. To fix compilation errors where you are using `Matrix3d` where a `Matrix3dProps` is expected, simply call [Matrix3d.toJSON]($geometry-core) on your Matrix3d object. Also, since [TransformProps]($geometry-core) includes Matrix3dProps, you may need to call [Transform.toJSON]($geometry-core) on your Transform objects some places too.
 
-* The type of [Texture.data]($backend) has been corrected from `string` to `Uint8Array` to match the type in the BIS schema. If you get compilation errors, simply remove calls to `Buffer.from(texture.data, "base64")` for read, and `texture.data.toString("base64")` if you create texture objects.
+- The type of [Texture.data]($backend) has been corrected from `string` to `Uint8Array` to match the type in the BIS schema. If you get compilation errors, simply remove calls to `Buffer.from(texture.data, "base64")` for read, and `texture.data.toString("base64")` if you create texture objects.
 
-* Changed
+- Change
+
   ```ts
   interface HighlightedRecordProps {
     activeMatch?: PropertyRecordMatchInfo;
     searchText: string;
   }
   ```
+
   to
+
   ```ts
   interface HighlightInfo {
     highlightedText: string;
     activeHighlight?: HighlightInfo;
   }
   ```
+
   This is just a terminology change, so reacting to the change is as simple as renaming `searchText` -> `highlightedText` and `activeMatch` -> `highlightedText`.
 
-* Changed
-  ```ts
+- Change
+
+ ```ts
   interface PropertyRecordMatchInfo {
     matchCounts: {
         label: number;
@@ -149,22 +154,33 @@ return (
     propertyName: string;
   }
   ```
+
   to
+
   ```ts
   interface HighlightInfo {
     highlightedItemIdentifier: string;
     highlightIndex: number;
   }
   ```
+
   This is just a terminology change, so reacting to the change is as simple as renaming `matchIndex` -> `highlightedItemIdentifier` and `propertyName` -> `highlightedItemIdentifier`.
 
-* Changed `highlightProps?: HighlightedRecordProps` property to `highlight?: HighlightingComponentProps` on [PrimitiveRendererProps]($ui-components) interface. To react to this change, simply rename `highlightProps` -> `highlight`.
+- Changed `highlightProps?: HighlightedRecordProps` property to `highlight?: HighlightingComponentProps` on [PrimitiveRendererProps]($ui-components) interface. To react to this change, simply rename `highlightProps` -> `highlight`.
 
-* Changed `highlightProps?: HighlightedRecordProps` property to `highlight?: HighlightingComponentProps` on [PropertyRendererProps]($ui-components) interface. To react to this change, simply rename `highlightProps` -> `highlight`.
+- Changed `highlightProps?: HighlightedRecordProps` property to `highlight?: HighlightingComponentProps` on [PropertyRendererProps]($ui-components) interface. To react to this change, simply rename `highlightProps` -> `highlight`.
 
 ## Updated version of Electron
 
 Updated version of electron used from 8.2.1 to 10.1.3. Note that Electron is specified as a peer dependency in the iModel.js stack - so it's recommended but not mandatory that applications migrate to this electron version.
+
+## BriefcaseManager changes
+
+This version changes the approach to storing Briefcase and Checkpoint files in the local cache. Now, BriefcaseManager will create a subdirectory from the root directory supplied in [BriefcaseManager.initialize]($backend) for each iModelId, and then folders called "Briefcases" and "Checkpoints" from there. For backwards compatibility, the previous locations are checked for Briefcase and Checkpoint files created by older versions. This check will be removed in a future version.
+
+Several methods on the @beta class [BriefcaseManager]($backend) have been changed to simplify how local Briefcase files are acquired and managed. Previously the location and name of the local files holding Briefcases was hidden behind a local in-memory cache. Now, the [BriefcaseDb.open]($backend) method takes an argument that specifies the fileName. This makes working with local Briefcases much simpler.
+Note that the frontend APIs have not changed, so the impact of beta change to the beta apis should be limited. Also, the @internal class NativeApp has several changed methods, so some refactoring may be necessary to react to those changes for anyone implementing native applications using this internal api.
+
 
 ## Globe location tool fixes
 
@@ -172,10 +188,10 @@ The globe location tools now will properly use GCS reprojection when navigating.
 
 The tools affected are:
 
-* [ViewGlobeSatelliteTool]($frontend)
-* [ViewGlobeBirdTool]($frontend)
-* [ViewGlobeLocationTool]($frontend)
-* [ViewGlobeIModelTool]($frontend)
+- [ViewGlobeSatelliteTool]($frontend)
+- [ViewGlobeBirdTool]($frontend)
+- [ViewGlobeLocationTool]($frontend)
+- [ViewGlobeIModelTool]($frontend)
 
 The [ViewGlobeLocationTool]($frontend) has been further improved to navigate better across long distances when using plane mode.
 
@@ -191,6 +207,7 @@ There is now a method called `lookAtGlobalLocationFromGcs` on [ViewState3d]($fro
 ### Formatted property values in ECExpressions
 
 ECExpressions now support formatted property values. `GetFormattedValue` function can be used in ECExpressions to get formatted value of the property. This adds ability to filter instances by some formatted value:
-```
+
+```ts
 GetFormattedValue(this.Length, "Metric") = "10.0 m"
 ```

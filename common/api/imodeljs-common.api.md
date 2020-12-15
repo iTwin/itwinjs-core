@@ -4656,12 +4656,12 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
     cancelTileContentRequests(_iModelToken: IModelRpcProps, _contentIds: TileTreeContentIds[]): Promise<void>;
     checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
     closeBriefcase(_key: string): Promise<void>;
-    deleteBriefcase(_fileName: string): Promise<void>;
+    deleteBriefcaseFiles(_fileName: string): Promise<void>;
     // (undocumented)
     downloadBriefcase(_requestProps: RequestNewBriefcaseProps, _reportProgress: boolean): Promise<void>;
     // (undocumented)
     getBriefcaseFileName(_props: BriefcaseProps): Promise<string>;
-    getBriefcases(): Promise<LocalBriefcaseProps[]>;
+    getCachedBriefcases(_iModelId?: GuidString): Promise<LocalBriefcaseProps[]>;
     static getClient(): NativeAppRpcInterface;
     getConfig(): Promise<any>;
     static readonly interfaceName = "NativeAppRpcInterface";

@@ -6,7 +6,7 @@
  * @module NativeApp
  */
 
-import { BeEvent, Config, IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { BeEvent, Config, GuidString, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import {
   BriefcaseDownloader, BriefcaseProps, Events, IModelError, IModelVersion, InternetConnectivityStatus,
   LocalBriefcaseProps,
@@ -191,11 +191,11 @@ export class NativeApp {
    * Gets briefcases
    * @returns list of BriefcaseProps in cache
    */
-  public static async getBriefcases(): Promise<LocalBriefcaseProps[]> {
+  public static async getCachedBriefcases(iModelId?: GuidString): Promise<LocalBriefcaseProps[]> {
     if (!IModelApp.initialized)
       throw new IModelError(IModelStatus.BadRequest, "Call NativeApp.startup() before calling downloadBriefcase");
 
-    return NativeAppRpcInterface.getClient().getBriefcases();
+    return NativeAppRpcInterface.getClient().getCachedBriefcases(iModelId);
   }
 
   /**

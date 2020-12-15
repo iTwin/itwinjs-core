@@ -214,8 +214,19 @@ export class IModelTestUtils {
 
   public static async closeAndDeleteBriefcaseDb(requestContext: AuthorizedClientRequestContext, briefcaseDb: IModelDb) {
     const fileName = briefcaseDb.pathName;
+    const iModelId = briefcaseDb.iModelId;
     briefcaseDb.close();
+
     await BriefcaseManager.deleteBriefcaseFiles(fileName, requestContext);
+
+    // try to clean up empty briefcase directories, and empty iModel directories.
+    if (0 === BriefcaseManager.getCachedBriefcases(iModelId).length) {
+      IModelJsFs.removeSync(BriefcaseManager.getBriefcaseBasePath(iModelId));
+      const imodelPath = BriefcaseManager.getIModelPath(iModelId);
+      if (0 === IModelJsFs.readdirSync(imodelPath).length) {
+        IModelJsFs.removeSync(imodelPath);
+      }
+    }
   }
 
   public static async getTestModelInfo(requestContext: AuthorizedClientRequestContext, testProjectId: string, iModelName: string): Promise<TestIModelInfo> {

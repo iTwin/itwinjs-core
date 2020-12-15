@@ -122,8 +122,15 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
     return this.forward(arguments);
   }
 
+  /** Acquire a new BriefcaseId for the supplied iModelId from iModelHub */
   public async acquireNewBriefcaseId(_iModelId: GuidString): Promise<number> { return this.forward(arguments); }
+
+  /** Get the filename in the briefcase cache for the supplied BriefcaseId and iModelId.
+   * @note this merely returns the full path fileName. It does not test for the existence of the file.
+    */
   public async getBriefcaseFileName(_props: BriefcaseProps): Promise<string> { return this.forward(arguments); }
+
+  /** Download a briefcase file for the supplied briefcase properties. */
   public async downloadBriefcase(_requestProps: RequestNewBriefcaseProps, _reportProgress: boolean): Promise<void> { return this.forward(arguments); }
 
   /**
@@ -150,10 +157,10 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
   public async deleteBriefcaseFiles(_fileName: string): Promise<void> { return this.forward(arguments); }
 
   /**
-   * Gets all briefcases that were previously requested to be downloaded, or were completely downloaded
+   * Gets a list of all briefcases that were previously downloaded to the briefcase cache.
    * @returns list of briefcases.
    */
-  public async getBriefcases(): Promise<LocalBriefcaseProps[]> { return this.forward(arguments); }
+  public async getCachedBriefcases(_iModelId?: GuidString): Promise<LocalBriefcaseProps[]> { return this.forward(arguments); }
 
   /**
    * Open key/value pair base storage
