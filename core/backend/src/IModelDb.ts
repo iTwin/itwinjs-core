@@ -175,9 +175,7 @@ export abstract class IModelDb extends IModel {
     IModelDb._openDbs.set(this._fileKey, this);
   }
 
-  /** Close this IModel, if it is currently open.
-   * @throws IModelError if the iModel is not open
-   */
+  /** Close this IModel, if it is currently open. */
   public close(): void {
     if (!this.isOpen)
       return; // don't continue if already closed
@@ -758,7 +756,7 @@ export abstract class IModelDb extends IModel {
    * @note Changes are saved if importSchemas is successful and abandoned if not successful.
    * @see querySchemaVersion
    */
-  public async importSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext, schemaFileNames: string[]): Promise<void> {
+  public async importSchemas(requestContext: ClientRequestContext, schemaFileNames: string[]): Promise<void> {
     requestContext.enter();
     if (this.isSnapshot || this.isStandalone) {
       const status = this.nativeDb.importSchemas(schemaFileNames);
@@ -810,7 +808,7 @@ export abstract class IModelDb extends IModel {
    * @see querySchemaVersion
    * @alpha
    */
-  public async importSchemaStrings(requestContext: ClientRequestContext | AuthorizedClientRequestContext, serializedXmlSchemas: string[]): Promise<void> {
+  public async importSchemaStrings(requestContext: ClientRequestContext, serializedXmlSchemas: string[]): Promise<void> {
     requestContext.enter();
     if (this.isSnapshot || this.isStandalone) {
       const status = this.nativeDb.importXmlSchemas(serializedXmlSchemas);
@@ -2261,7 +2259,7 @@ export class BriefcaseDb extends IModelDb {
    * [[include:BriefcaseDb.onOpen]]
    * ```
    */
-  public static readonly onOpen = new BeEvent<(_requestContext: AuthorizedClientRequestContext | ClientRequestContext, _props: IModelRpcProps) => void>();
+  public static readonly onOpen = new BeEvent<(_requestContext: ClientRequestContext, _props: IModelRpcProps) => void>();
 
   /** Event raised just after a BriefcaseDb is opened.
    * **Example:**
@@ -2269,7 +2267,7 @@ export class BriefcaseDb extends IModelDb {
    * [[include:BriefcaseDb.onOpened]]
    * ```
    */
-  public static readonly onOpened = new BeEvent<(_requestContext: AuthorizedClientRequestContext | ClientRequestContext, _imodelDb: BriefcaseDb) => void>();
+  public static readonly onOpened = new BeEvent<(_requestContext: ClientRequestContext, _imodelDb: BriefcaseDb) => void>();
 
   public static findByKey(key: string): BriefcaseDb {
     return super.findByKey(key) as BriefcaseDb;
@@ -2371,12 +2369,16 @@ export class BriefcaseDb extends IModelDb {
     return this.tryFindByKey(args.key ?? shaHash(args.fileName));
   }
 
-  public static async open(requestContext: AuthorizedClientRequestContext | ClientRequestContext, args: OpenBriefcaseProps): Promise<BriefcaseDb> {
+  /** Open a briefcase file and return a new BriefcaseDb to interact with it.
+   * @param requestContext the ClientRequestContext for authorization for acquiring locks
+   * @param args parameters that specify the file name, key, and options for opening the briefcase file
+   */
+  public static async open(requestContext: ClientRequestContext, args: OpenBriefcaseProps): Promise<BriefcaseDb> {
     requestContext.enter();
     const file = { path: args.fileName, key: args.key ?? shaHash(args.fileName) };
     const alreadyOpen = this.tryFindByKey(file.key);
     if (undefined !== alreadyOpen)
-      return alreadyOpen;
+      throw new IModelError(IModelStatus.AlreadyOpen, `A BriefcaseDb with key "${file.key}" is already opened`);
 
     const openMode = args.readonly ? OpenMode.Readonly : OpenMode.ReadWrite;
     const nativeDb = this.openDgnDb(file, openMode, args.upgrade);
@@ -2615,7 +2617,7 @@ export class SnapshotDb extends IModelDb {
     const file = { path, key: opts?.key ?? shaHash(path) };
     const existing = this.tryFindByKey(file.key);
     if (existing)
-      return existing;
+      throw new IModelError(IModelStatus.AlreadyOpen, `A SnapshotDb with key "${file.key}" is already opened`);
 
     const nativeDb = this.openDgnDb(file, OpenMode.Readonly, undefined, opts ? JSON.stringify(opts) : undefined);
     return new SnapshotDb(nativeDb, file.key);
@@ -2734,7 +2736,7 @@ export class StandaloneDb extends IModelDb {
     const file = { path: filePath, key: options?.key ?? shaHash(filePath) };
     const existing = this.tryFindByKey(file.key);
     if (existing)
-      return existing;
+      throw new IModelError(IModelStatus.AlreadyOpen, `A StandaloneDb with key "${file.key}" is already opened`);
 
     const nativeDb = this.openDgnDb(file, openMode, options);
 

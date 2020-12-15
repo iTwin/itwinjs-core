@@ -109,9 +109,18 @@ export interface IModelEncryptionProps {
   password?: string;
 }
 
-/** A key to identify an IModelDb when it is opened. If undefined, a hash of the fileName is used.
- * It is only necessary to supply this if you wish to open a file more than once,
- * or have some other reason to assign a specific key to the IModelDb.
+/**
+ * A key used to identify an opened IModelDb between the frontend and backend for RPC communications.
+ * Keys must be unique - that is there can never be two IModelDbs opened with the same key at any given time.
+ * If no key is supplied in a call to open an IModelDb, one is generated and returned, based
+ * on the type of IModelDb being created. For SnapshotDbs, the key is predictable and is formed from the
+ * IModelId and ChangeSetId. This is so every backend working on the same Snapshot file will use the same key, to permit
+ * multiple backends servicing the same checkpoint. For BriefcaseDb and StandaloneDb a non-predictable
+ * hash of the fileName is used (that is, the hash is randomized to be different every session, but will be consistent
+ * when opening, closing, and then reopening the same file in the same session.)
+ * It is only necessary to supply a key if you wish to open a file more than once,
+ * or have some other reason to assign a specific key to the IModelDb. But, if you don't supply the key, you
+ * will need to use the returned value for RPC communications.
  * @public
  */
 export interface OpenDbKey {

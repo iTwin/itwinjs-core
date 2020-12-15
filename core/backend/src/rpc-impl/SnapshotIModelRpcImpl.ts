@@ -35,7 +35,7 @@ export class SnapshotIModelRpcImpl extends RpcInterface implements SnapshotIMode
     if (undefined === resolvedFileName)
       throw new IModelNotFoundResponse();
 
-    return SnapshotDb.openFile(resolvedFileName, opts).getConnectionProps();
+    return SnapshotDb.openFile(resolvedFileName, { key: fileKey, ...opts }).getConnectionProps();
   }
 
   /** Ask the backend to close a snapshot iModel. */

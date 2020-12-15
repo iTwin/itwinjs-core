@@ -275,7 +275,7 @@ export abstract class IModelConnection extends IModel {
   }
 
   /** Close this IModelConnection. */
-  public abstract async close(): Promise<void>;
+  public abstract close(): Promise<void>;
 
   /** Compute number of rows that would be returned by the ECSQL.
    *

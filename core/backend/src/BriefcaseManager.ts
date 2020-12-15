@@ -985,7 +985,7 @@ export class BriefcaseManager {
     return Promise.all(promises);
   }
 
-  public static logUsage(requestContext: AuthorizedClientRequestContext | ClientRequestContext, token: IModelRpcOpenProps) {
+  public static logUsage(requestContext: ClientRequestContext, token: IModelRpcOpenProps) {
     // NEEDS_WORK: Move usage logging to the native layer, and make it happen even if not authorized
     if (!(requestContext instanceof AuthorizedClientRequestContext)) {
       Logger.logTrace(loggerCategory, "Cannot log usage without appropriate authorization", () => token);
