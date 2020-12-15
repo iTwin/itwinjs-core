@@ -4646,7 +4646,6 @@ export enum MonochromeMode {
 
 // @internal
 export abstract class NativeAppRpcInterface extends RpcInterface {
-    // (undocumented)
     acquireNewBriefcaseId(_iModelId: GuidString): Promise<number>;
     authGetAccessToken(): Promise<string>;
     authInitialize(_issuer: string, _config: any): Promise<void>;
@@ -4657,9 +4656,7 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
     checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
     closeBriefcase(_key: string): Promise<void>;
     deleteBriefcaseFiles(_fileName: string): Promise<void>;
-    // (undocumented)
     downloadBriefcase(_requestProps: RequestNewBriefcaseProps, _reportProgress: boolean): Promise<void>;
-    // (undocumented)
     getBriefcaseFileName(_props: BriefcaseProps): Promise<string>;
     getCachedBriefcases(_iModelId?: GuidString): Promise<LocalBriefcaseProps[]>;
     static getClient(): NativeAppRpcInterface;
@@ -6723,9 +6720,9 @@ export abstract class SnapshotIModelRpcInterface extends RpcInterface {
     static readonly interfaceName = "SnapshotIModelRpcInterface";
     static interfaceVersion: string;
     // (undocumented)
-    openFile(_filePath: string): Promise<IModelConnectionProps>;
+    openFile(_filePath: string, _opts?: SnapshotOpenOptions): Promise<IModelConnectionProps>;
     // (undocumented)
-    openRemote(_key: string): Promise<IModelConnectionProps>;
+    openRemote(_key: string, _opts?: SnapshotOpenOptions): Promise<IModelConnectionProps>;
 }
 
 // @public

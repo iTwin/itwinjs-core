@@ -6,39 +6,39 @@
  * @module Editing
  */
 
-/** @internal */
+/** @alpha */
 export const editCommandApi = {
   start: "imodeljs.editcmd.start",
   call: "imodeljs.editcmd.call",
 };
 
-/** @internal */
+/** @alpha */
 export type CommandError =
   "CommandNotFound" |
   "Exception" |
   "MethodNotFound" |
   "NoActiveCommand";
 
-/** @internal */
+/** @alpha */
 export interface CommandResult<T> {
   error?: CommandError;
   result?: T;
 }
 
-/** @internal */
+/** @alpha */
 export interface PingResult {
   commandId?: string;
   version?: string;
   [propName: string]: any;
 }
 
-/** @beta */
+/** @alpha */
 export interface CommandMethodProps<T> {
   name: string;
   args?: T;
 }
 
-/** @beta */
+/** @alpha */
 export interface StartCommandProps<T> {
   commandId: string;
   args?: T;

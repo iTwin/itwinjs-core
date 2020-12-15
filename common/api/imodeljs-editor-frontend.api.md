@@ -7,7 +7,7 @@
 import { CommandResult } from '@bentley/imodeljs-editor-common';
 import { PrimitiveTool } from '@bentley/imodeljs-frontend';
 
-// @beta (undocumented)
+// @alpha (undocumented)
 export class EditTool extends PrimitiveTool {
     // (undocumented)
     static callCommand<Arg, Result>(name: string, args?: Arg): Promise<CommandResult<Result>>;

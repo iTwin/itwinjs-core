@@ -1,8 +1,8 @@
 sep=;
 Release Tag;API Item
-internal;CommandError = "CommandNotFound" | "Exception" | "MethodNotFound" | "NoActiveCommand"
-beta;CommandMethodProps
-internal;CommandResult
-internal;editCommandApi:
-internal;PingResult
-beta;StartCommandProps
+alpha;CommandError = "CommandNotFound" | "Exception" | "MethodNotFound" | "NoActiveCommand"
+alpha;CommandMethodProps
+alpha;CommandResult
+alpha;editCommandApi:
+alpha;PingResult
+alpha;StartCommandProps

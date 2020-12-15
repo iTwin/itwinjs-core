@@ -420,17 +420,14 @@ export class BriefcaseDb extends IModelDb {
     readonly briefcaseId: number;
     get changeSetId(): string;
     set changeSetId(csId: string);
-    // @internal
-    static checkOpened(args: OpenBriefcaseProps): BriefcaseDb | undefined;
     // @beta
     readonly concurrencyControl: ConcurrencyControl;
     get contextId(): GuidString;
     // (undocumented)
     static findByKey(key: string): BriefcaseDb;
-    static readonly onOpen: BeEvent<(_requestContext: ClientRequestContext | AuthorizedClientRequestContext, _props: IModelRpcProps) => void>;
-    static readonly onOpened: BeEvent<(_requestContext: ClientRequestContext | AuthorizedClientRequestContext, _imodelDb: BriefcaseDb) => void>;
-    // (undocumented)
-    static open(requestContext: AuthorizedClientRequestContext | ClientRequestContext, args: OpenBriefcaseProps): Promise<BriefcaseDb>;
+    static readonly onOpen: BeEvent<(_requestContext: ClientRequestContext, _props: IModelRpcProps) => void>;
+    static readonly onOpened: BeEvent<(_requestContext: ClientRequestContext, _imodelDb: BriefcaseDb) => void>;
+    static open(requestContext: ClientRequestContext, args: OpenBriefcaseProps): Promise<BriefcaseDb>;
     pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
     pushChanges(requestContext: AuthorizedClientRequestContext, description: string, changeType?: ChangesType): Promise<void>;
     reinstateChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
@@ -500,7 +497,7 @@ export class BriefcaseManager {
     static isStandaloneBriefcaseId(id: BriefcaseId): boolean;
     static isValidBriefcaseId(id: BriefcaseId): boolean;
     // (undocumented)
-    static logUsage(requestContext: AuthorizedClientRequestContext | ClientRequestContext, token: IModelRpcOpenProps): void;
+    static logUsage(requestContext: ClientRequestContext, token: IModelRpcOpenProps): void;
     static processChangeSets(requestContext: AuthorizedClientRequestContext, db: IModelDb, targetChangeSetId: string, targetChangeSetIndex?: number): Promise<void>;
     // @internal
     static pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, mergeToVersion?: IModelVersion): Promise<void>;
@@ -2428,9 +2425,9 @@ export abstract class IModelDb extends IModel {
     getMassProperties(requestContext: ClientRequestContext, props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     getMetaData(classFullName: string): EntityMetaData;
     get iModelId(): GuidString;
-    importSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext, schemaFileNames: string[]): Promise<void>;
+    importSchemas(requestContext: ClientRequestContext, schemaFileNames: string[]): Promise<void>;
     // @alpha
-    importSchemaStrings(requestContext: ClientRequestContext | AuthorizedClientRequestContext, serializedXmlSchemas: string[]): Promise<void>;
+    importSchemaStrings(requestContext: ClientRequestContext, serializedXmlSchemas: string[]): Promise<void>;
     // @internal (undocumented)
     protected initializeIModelDb(): void;
     // @internal (undocumented)
@@ -3488,7 +3485,6 @@ export class RepositoryModel extends DefinitionModel {
 
 // @beta
 export interface RequestNewBriefcaseArg extends RequestNewBriefcaseProps {
-    // (undocumented)
     onProgress?: ProgressFunction;
 }
 

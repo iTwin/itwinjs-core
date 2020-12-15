@@ -11,7 +11,7 @@ import { getIModelElectronApi } from "@bentley/imodeljs-common";
 import { CommandResult, editCommandApi } from "@bentley/imodeljs-editor-common";
 import { PrimitiveTool } from "@bentley/imodeljs-frontend";
 
-/** @beta */
+/** @alpha */
 export class EditTool extends PrimitiveTool {
 
   private static _ipc: (api: string, ...args: any[]) => Promise<any>;

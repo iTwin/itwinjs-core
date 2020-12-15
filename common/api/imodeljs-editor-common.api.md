@@ -4,10 +4,10 @@
 
 ```ts
 
-// @internal (undocumented)
+// @alpha (undocumented)
 export type CommandError = "CommandNotFound" | "Exception" | "MethodNotFound" | "NoActiveCommand";
 
-// @beta (undocumented)
+// @alpha (undocumented)
 export interface CommandMethodProps<T> {
     // (undocumented)
     args?: T;
@@ -15,7 +15,7 @@ export interface CommandMethodProps<T> {
     name: string;
 }
 
-// @internal (undocumented)
+// @alpha (undocumented)
 export interface CommandResult<T> {
     // (undocumented)
     error?: CommandError;
@@ -23,13 +23,13 @@ export interface CommandResult<T> {
     result?: T;
 }
 
-// @internal (undocumented)
+// @alpha (undocumented)
 export const editCommandApi: {
     start: string;
     call: string;
 };
 
-// @internal (undocumented)
+// @alpha (undocumented)
 export interface PingResult {
     // (undocumented)
     [propName: string]: any;
@@ -39,7 +39,7 @@ export interface PingResult {
     version?: string;
 }
 
-// @beta (undocumented)
+// @alpha (undocumented)
 export interface StartCommandProps<T> {
     // (undocumented)
     args?: T;

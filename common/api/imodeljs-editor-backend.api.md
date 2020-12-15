@@ -9,7 +9,7 @@ import { CommandResult } from '@bentley/imodeljs-editor-common';
 import { PingResult } from '@bentley/imodeljs-editor-common';
 import { StartCommandProps } from '@bentley/imodeljs-editor-common';
 
-// @public
+// @alpha
 export class EditCommand {
     constructor(_arg?: any);
     static commandId: string;
@@ -27,7 +27,7 @@ export class EditCommand {
     static version: string;
 }
 
-// @public
+// @alpha
 export class EditCommandAdmin {
     // (undocumented)
     static callMethod(method: CommandMethodProps<any>): CommandResult<any>;
@@ -42,7 +42,7 @@ export class EditCommandAdmin {
     static unRegister(commandId: string): void;
 }
 
-// @public (undocumented)
+// @alpha (undocumented)
 export type EditCommandType = typeof EditCommand;
 
 
