@@ -960,7 +960,7 @@ export class BriefcaseManager {
   public static async create(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelName: GuidString, args: CreateIModelProps): Promise<GuidString> {
     requestContext.enter();
     if (IModelHost.isUsingIModelBankClient) {
-      throw new IModelError(IModelStatus.BadRequest, "Cannot create an iModel in iModelBank. This is a iModelHub only operation", Logger.logError, loggerCategory, () => ({ contextId, iModelName }));
+      throw new IModelError(IModelStatus.BadRequest, "This is a iModelHub only operation", Logger.logError, loggerCategory, () => ({ contextId, iModelName }));
     }
     const hubIModel: HubIModel = await IModelHost.iModelClient.iModels.create(requestContext, contextId, iModelName, { description: args.rootSubject.description });
     return hubIModel.wsgId;
@@ -988,7 +988,7 @@ export class BriefcaseManager {
   public static logUsage(requestContext: AuthorizedClientRequestContext | ClientRequestContext, token: IModelRpcOpenProps) {
     // NEEDS_WORK: Move usage logging to the native layer, and make it happen even if not authorized
     if (!(requestContext instanceof AuthorizedClientRequestContext)) {
-      Logger.logTrace(loggerCategory, "BriefcaseDb.logUsage: Cannot log usage without appropriate authorization", () => token);
+      Logger.logTrace(loggerCategory, "Cannot log usage without appropriate authorization", () => token);
       return;
     }
 

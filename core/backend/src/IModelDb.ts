@@ -2412,7 +2412,7 @@ export class BriefcaseDb extends IModelDb {
       }
     }
 
-    BriefcaseManager.logUsage(requestContext, token); // eslint-disable-line @typescript-eslint/no-floating-promises
+    BriefcaseManager.logUsage(requestContext, token);
     this.onOpened.raiseEvent(requestContext, briefcaseDb);
     return briefcaseDb;
   }

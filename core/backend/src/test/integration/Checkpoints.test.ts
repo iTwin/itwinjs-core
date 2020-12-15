@@ -14,7 +14,7 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { HubUtility } from "./HubUtility";
 
-// FIXME: Disabled because blockcache checkpoints are not in QA yet...
+// FIXME: Disabled because V2 checkpoints are not in QA yet...
 describe.skip("Checkpoints (#integration)", () => {
 
   let requestContext: AuthorizedBackendRequestContext;
@@ -66,7 +66,7 @@ describe.skip("Checkpoints (#integration)", () => {
     (BriefcaseManager as any).deleteFolderAndContents(blockcacheDir);
   });
 
-  it("should be able to open and read blockcache checkpoint", async () => {
+  it("should be able to open and read V2 checkpoint", async () => {
     const iModel = await SnapshotDb.openCheckpointV2({
       requestContext,
       contextId: testProjectId,
