@@ -94,8 +94,6 @@ export abstract class VariedTechnique implements Technique {
   private readonly _basicPrograms: ShaderProgram[] = [];
   private readonly _clippingPrograms: ClippingProgram[] = [];
 
-  public get basicPrograms() { return this._basicPrograms; }
-
   public compileShaders(): boolean {
     let allCompiled = true;
     for (const program of this._basicPrograms) {
@@ -829,25 +827,5 @@ export class Techniques implements WebGLDisposable {
     }
 
     assert(this._list.length === TechniqueId.NumBuiltIn, "unexpected number of built-in techniques");
-
-    const shaders: string[] = [];
-    const okShaders: string[] = [];
-    for (const entry of this._list) {
-      if (!(entry instanceof VariedTechnique))
-        continue;
-
-      for (const program of entry.basicPrograms) {
-        assert(0 < program.fragSource.length);
-        if (-1 === program.fragSource.indexOf("discard;"))
-          shaders.push(program.fragDescription);
-        else if (entry instanceof SurfaceTechnique)
-          okShaders.push(program.fragDescription);
-      }
-    }
-
-    // for (const shader of shaders)
-    //   console.log(shader);
-    for (const shader of okShaders)
-      console.log(shader);
   }
 }
