@@ -20,7 +20,9 @@ rush.json @calebmshafer @scsewall
 /clients              @calebmshafer @ramanujam-raman
 # /clients/imodelhub    @amikoliunas @Animagne
 
-/common/api/analytical-backend.api.md               @diegoalexdiaz @scsewall
+/common/api/**/analytical-backend.* @diegoalexdiaz @scsewall
+
+# /common/api/analytical-backend.api.md               @diegoalexdiaz @scsewall
 /common/api/backend-application-insights-client.api.md @calebmshafer @ramanujam-raman
 /common/api/backend-itwin-client.api.md             @calebmshafer @ramanujam-raman
 /common/api/bentleyjs-core.api.md                   @imodeljs/admins
@@ -66,7 +68,6 @@ rush.json @calebmshafer @scsewall
 
 # Specifying both of these with a large number of possible reviewers.
 # All significant changes will be covered by other requirements.
-/common/api/summary @imodeljs/core
 /common/changes @imodeljs/core
 
 /common/config/azure-pipelines  @calebmshafer @wgoehrig @ColinKerr
