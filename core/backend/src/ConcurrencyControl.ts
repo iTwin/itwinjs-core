@@ -1605,9 +1605,13 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
 
     public open(): boolean {
       this.mustHaveBriefcase();
-      let locksFileName = this.getCompatibilityFileName();
-      if (!IModelJsFs.existsSync(locksFileName))
-        locksFileName = this.getLocksFileName();
+
+      // previous version used to use a different strategy for the lock file name. Since it's just a cache, delete it if it exists.
+      const oldLocksFile = this.getCompatibilityFileName();
+      if (IModelJsFs.existsSync(oldLocksFile))
+        IModelJsFs.unlinkSync(oldLocksFile);
+
+      const locksFileName = this.getLocksFileName();
       if (!IModelJsFs.existsSync(locksFileName))
         return false;
 

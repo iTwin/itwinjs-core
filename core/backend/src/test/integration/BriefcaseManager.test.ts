@@ -271,17 +271,20 @@ describe("BriefcaseManager (#integration)", () => {
     let briefcase = await IModelTestUtils.openBriefcaseUsingRpc(arg);
     // eslint-disable-next-line deprecation/deprecation
     const compatName = BriefcaseManager.getCompatibilityFileName({ ...arg, briefcaseId: briefcase.briefcaseId });
+    const compatLocksFile = path.join(path.dirname(compatName), `${path.basename(compatName, ".bim")}.cctl.bim`);
     let briefcaseName = briefcase.pathName;
     briefcase.close();
 
     if (compatName !== briefcaseName) {
       IModelJsFs.recursiveMkDirSync(path.dirname(compatName)); // make sure the old path exists
       IModelJsFs.copySync(briefcaseName, compatName); // move the file from where we put it in the new location to the old location
+      IModelJsFs.copySync(`${briefcaseName}-locks`, compatLocksFile); // copy the locks file to its old name too
       IModelJsFs.removeSync(briefcaseName); // make sure we don't find this file
       briefcase = await IModelTestUtils.openBriefcaseUsingRpc(arg); // now try opening it, and we should find the old file
       briefcaseName = briefcase.pathName;
       briefcase.close();
       assert.equal(briefcaseName, compatName, "briefcase should be found in old location");
+      assert.isFalse(IModelJsFs.existsSync(compatLocksFile)); // we should have deleted it
     }
 
     IModelJsFs.removeSync(compatName); // now delete old file and make sure we don't use it
