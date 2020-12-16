@@ -73,7 +73,7 @@ describe("iModelHub CheckpointHandler", () => {
   });
 
   after(async () => {
-    if (!TestConfig.enableMocks && TestConfig.enableIModelBank)
+    if (TestConfig.enableIModelBank)
       await utils.deleteIModelByName(requestContext, contextId, imodelName);
   });
 

@@ -109,7 +109,7 @@ describe("iModelHub ChangeSetHandler", () => {
   });
 
   after(async () => {
-    if (!TestConfig.enableMocks && TestConfig.enableIModelBank)
+    if (TestConfig.enableIModelBank)
       await utils.deleteIModelByName(requestContext, contextId, imodelName);
   });
 

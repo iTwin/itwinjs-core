@@ -280,11 +280,10 @@ describe("iModelHub iModelsHandler", () => {
 
   after(async () => {
     RequestGlobalOptions.timeout = backupTimeout;
+    if (TestConfig.enableIModelBank)
+      await utils.deleteIModelByName(requestContext, projectId, imodelName);
 
-    if (!TestConfig.enableMocks) {
-      await utils.deleteIModelByName(requestContext, assetId, imodelName);
-      await utils.deleteIModelByName(requestContext, assetId, createIModelName);
-    }
+    await utils.deleteIModelByName(requestContext, assetId, createIModelName);
   });
 
   it("should get list of IModels (#iModelBank)", async () => {

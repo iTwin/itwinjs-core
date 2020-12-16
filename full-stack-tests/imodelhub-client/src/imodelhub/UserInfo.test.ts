@@ -65,7 +65,7 @@ describe("iModelHubClient UserInfoHandler", () => {
   });
 
   after(async () => {
-    if (!TestConfig.enableMocks)
+    if (TestConfig.enableIModelBank)
       await utils.deleteIModelByName(requestContexts[0], projectId, imodelName);
   });
 
