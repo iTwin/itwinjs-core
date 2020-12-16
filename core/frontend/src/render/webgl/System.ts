@@ -254,32 +254,33 @@ export class IdMap implements WebGLDisposable {
       return texture;
 
     // Are we already in the process of creating this texture?
-    const key = params.key;
-    let promise = key ? this._texturesFromImageSources.get(key) : undefined;
-    if (promise)
+    let promise = params.key ? this._texturesFromImageSources.get(params.key) : undefined;
+    if (promise) {
+      (promise as any).cached = true;
       return promise;
+    }
 
-    // Create the texture.
     promise = this.createTextureFromImageSource(source, params);
-    if (!key) {
-      // This texture is unique - no point in caching the request.
-      return promise;
+    if (params.key) {
+      // Ensure subsequent requests for this texture that arrive before we finish creating it receive the same promise,
+      // instead of redundantly decoding the same image.
+      this._texturesFromImageSources.set(params.key, promise);
     }
 
-    // Ensure subsequent requests for this texture that arrive before we finish creating it receive the same promise,
-    // instead of redundantly decoding the same image.
-    this._texturesFromImageSources.set(key, promise);
-    try {
-      texture = await promise;
-      return texture;
-    } finally {
-      this._texturesFromImageSources.delete(key);
-    }
+    (promise as any).created = true;
+    return promise;
   }
 
   private async createTextureFromImageSource(source: ImageSource, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
-    const image = await imageElementFromImageSource(source);
-    return IModelApp.hasRenderSystem ? this.getTextureFromImage(image, ImageSourceFormat.Png === source.format, params) : undefined;
+    try {
+      const image = await imageElementFromImageSource(source);
+      return IModelApp.hasRenderSystem ? this.getTextureFromImage(image, ImageSourceFormat.Png === source.format, params) : undefined;
+    } finally {
+      if (params.key) {
+        // The promise has resolved or rejected - remove from pending set.
+        this._texturesFromImageSources.delete(params.key);
+      }
+    }
   }
 
   public getTextureFromCubeImages(posX: HTMLImageElement, negX: HTMLImageElement, posY: HTMLImageElement, negY: HTMLImageElement, posZ: HTMLImageElement, negZ: HTMLImageElement, params: RenderTexture.Params): RenderTexture | undefined {

@@ -146,7 +146,7 @@ describe("RenderSystem", () => {
     });
 
     async function requestTexture(key: string | undefined, source?: ImageSource): Promise<RenderTexture | undefined> {
-      const params = { key, type: RenderTexture.Type.Normal };
+      const params = new RenderTexture.Params(key, RenderTexture.Type.Normal);
       return IModelApp.renderSystem.createTextureFromImageSource(source ?? imageSource, imodel, params);
     }
 
@@ -200,15 +200,22 @@ describe("RenderSystem", () => {
       const p2 = requestTexture("d");
       expect(p2).not.to.equal(p1);
 
+      const p3 = requestTexture("d");
+      expect(p3).not.to.equal(p2);
+      expect(p3).not.to.equal(p1);
+
       const t2 = await p2;
-      expect(t2).to.equal(p1);
+      expect(t2).to.equal(t1);
+
+      const t3 = await p3;
+      expect(t3).to.equal(t1);
 
       t1!.dispose();
     });
 
     it("should throw and remove pending Promise from cache on error", async () => {
       const source = new ImageSource(new Uint8Array([0, 1, 2, 3, 4]), ImageSourceFormat.Png);
-      await expect(requestTexture("e", source)).to.be.rejected();
+      await expect(requestTexture("e", source)).to.be.rejectedWith(Error);
     });
 
     it("should return undefined after render system is disposed", async () => {
