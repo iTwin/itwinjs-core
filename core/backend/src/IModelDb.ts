@@ -98,7 +98,6 @@ export abstract class IModelDb extends IModel {
   protected static readonly _edit = "StandaloneEdit";
   /** Keep track of open imodels to support `tryFind` for RPC purposes */
   private static readonly _openDbs = new Map<string, IModelDb>();
-  private static _nextEventSinkId = 0;
   public static readonly defaultLimit = 1000; // default limit for batching queries
   public static readonly maxLimit = 10000; // maximum limit for batching queries
   public readonly models = new IModelDb.Models(this);
@@ -157,9 +156,7 @@ export abstract class IModelDb extends IModel {
     this.nativeDb.setIModelDb(this);
     this.initializeIModelDb();
 
-    // The same file can be opened by multiple IModelDbs - make sure each gets a unique EventSink name.
-    const eventSinkId = `${this._fileKey}-${(IModelDb._nextEventSinkId++).toString()}`;
-    this._eventSink = new EventSink(eventSinkId);
+    this._eventSink = new EventSink(this._fileKey);
     this.nativeDb.setEventSink(this._eventSink);
     IModelDb._openDbs.set(this._fileKey, this);
   }
