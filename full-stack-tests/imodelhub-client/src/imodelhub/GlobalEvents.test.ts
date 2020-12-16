@@ -139,10 +139,6 @@ describe("iModelHub GlobalEventHandler (#unit)", () => {
     await utils.deleteIModelByName(requestContext, projectId, imodelName);
   });
 
-  after(async () => {
-    await utils.createIModel(requestContext, imodelName, projectId);
-  });
-
   afterEach(() => {
     ResponseBuilder.clearMocks();
   });
