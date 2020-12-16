@@ -67,9 +67,7 @@ describe("iModelHub VersionHandler", () => {
   let iModelClient: IModelClient;
   let briefcase: Briefcase;
   const imodelName = "imodeljs-clients Versions test";
-  const imodelName2 = "imodeljs-clients Versions test 2";
-  const baselineiModelName = "imodeljs-clients baseline versions iModel";
-  const firstVersionName = "Version 1";
+
   let requestContext: AuthorizedClientRequestContext;
   let backupTimeout: RequestTimeoutOptions;
 
@@ -92,9 +90,7 @@ describe("iModelHub VersionHandler", () => {
 
     contextId = await utils.getProjectId(requestContext);
     await utils.createIModel(requestContext, imodelName, contextId, true, false, true);
-    await utils.createIModel(requestContext, imodelName2, contextId, true, false, true);
     imodelId = await utils.getIModelId(requestContext, imodelName, contextId);
-    imodelId2 = await utils.getIModelId(requestContext, imodelName2, contextId);
     iModelClient = utils.getDefaultClient();
     briefcase = (await utils.getBriefcases(requestContext, imodelId, 1))[0];
     if (!TestConfig.enableMocks) {
@@ -107,28 +103,19 @@ describe("iModelHub VersionHandler", () => {
         imodelId = await utils.getIModelId(requestContext, imodelName, contextId);
         briefcase = (await utils.getBriefcases(requestContext, imodelId, 1))[0];
       }
-      // Prepared second iModel
-      const versionsCount = (await iModelClient.versions.get(requestContext, imodelId2)).length;
-      if (versionsCount === 0) {
-        // Create at least 1 named version
-        await createNamedVersionWithThumbnail(requestContext, iModelClient, imodelId2, firstVersionName);
-      }
-      // Cleanup baseline version's iModels if they left undeleted
-      if (!TestConfig.enableIModelBank) {
-        await utils.deleteIModelByName(requestContext, contextId, baselineiModelName);
-      }
     }
   });
 
   after(async () => {
     if (!TestConfig.enableMocks) {
-      if (baselineiModelName)
-        await utils.deleteIModelByName(requestContext, contextId, baselineiModelName);
-      await utils.deleteIModelByName(requestContext, contextId, imodelName);
-      await utils.deleteIModelByName(requestContext, contextId, imodelName2);
       utils.getRequestBehaviorOptionsHandler().resetDefaultBehaviorOptions();
       iModelClient?.requestOptions.setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
     }
+
+    if (TestConfig.enableIModelBank) {
+      await utils.deleteIModelByName(requestContext, contextId, imodelName);
+    }
+
     RequestGlobalOptions.timeout = backupTimeout;
   });
 
@@ -155,6 +142,11 @@ describe("iModelHub VersionHandler", () => {
   });
 
   it("should create and get baseline named version", async () => {
+    const baselineiModelName = "imodeljs-clients baseline versions iModel";
+
+    // Cleanup baseline version's iModels if they left undeleted
+    await utils.deleteIModelByName(requestContext, contextId, baselineiModelName);
+
     // Create new iModel
     let baselineiModelId = Guid.createValue();
     if (!TestConfig.enableMocks) {
@@ -180,6 +172,8 @@ describe("iModelHub VersionHandler", () => {
     chai.assert(existingBaselineVersion);
     chai.expect(existingBaselineVersion.length).to.be.equal(1);
     chai.expect(existingBaselineVersion[0].changeSetId).to.be.empty;
+
+    await utils.deleteIModelByName(requestContext, contextId, baselineiModelName);
   });
 
   it("should get named versions (#iModelBank)", async () => {
@@ -212,6 +206,13 @@ describe("iModelHub VersionHandler", () => {
   });
 
   it("should get named versions with thumbnail id", async () => {
+    const imodelName2 = "imodeljs-clients Versions test 2";
+    const firstVersionName = "Version 1";
+
+    await utils.createIModel(requestContext, imodelName2, contextId, true, false, true);
+    imodelId2 = await utils.getIModelId(requestContext, imodelName2, contextId);
+    await createNamedVersionWithThumbnail(requestContext, iModelClient, imodelId2, firstVersionName);
+
     let mockedVersions = Array(1).fill(0).map(() => utils.generateVersion());
     utils.mockGetVersions(imodelId2, `?$filter=Name+eq+%27Version%201%27`, ...mockedVersions);
     let versions: Version[] = await iModelClient.versions.get(requestContext, imodelId2, new VersionQuery().byName(firstVersionName));
@@ -246,6 +247,8 @@ describe("iModelHub VersionHandler", () => {
     chai.expect(versions[0].largeThumbnailId!.toString()).to.be.equal(largeThumbnail.id!.toString());
 
     chai.expect(smallThumbnail.id!.toString()).to.be.not.equal(largeThumbnail.id!.toString());
+
+    await utils.deleteIModelByName(requestContext, contextId, imodelName2);
   });
 
   it("should update named version (#iModelBank)", async () => {
