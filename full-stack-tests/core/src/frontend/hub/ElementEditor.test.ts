@@ -100,6 +100,7 @@ describe("Element editor tests (#integration)", async () => {
   after(async () => {
     if (iModel) {
       await iModel.close();
+      await TestUtility.deleteIModel(iModel.iModelId, iModel.contextId);
     }
     await IModelApp.shutdown();
   });
