@@ -53,9 +53,11 @@ export class RpcBriefcaseUtility {
       for (const briefcaseId of myBriefcaseIds) {
         const fileName = resolver({ briefcaseId, iModelId });
         if (IModelJsFs.existsSync(fileName)) {
+          if (BriefcaseDb.findByFilename(fileName))
+            throw new IModelError(IModelStatus.AlreadyOpen, `briefcase is already open: ${fileName}`);
           try {
             if (args.forceDownload)
-              throw new Error();
+              throw new Error(); // causes delete below
             const db = await BriefcaseDb.open(requestContext, { fileName });
             if (db.changeSetId !== tokenProps.changeSetId)
               await BriefcaseManager.processChangeSets(requestContext, db, tokenProps.changeSetId!);

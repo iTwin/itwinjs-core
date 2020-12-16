@@ -2372,7 +2372,10 @@ export abstract class IModelDb extends IModel {
     cancelSnap(sessionId: string): void;
     // @internal
     get classMetaDataRegistry(): MetaDataRegistry;
+    clearCaches(): void;
+    // @deprecated
     clearSqliteStatementCache(): void;
+    // @deprecated
     clearStatementCache(): void;
     close(): void;
     get codeSpecs(): CodeSpecs;
@@ -2406,6 +2409,7 @@ export abstract class IModelDb extends IModel {
     get eventSink(): EventSink;
     exportGraphics(exportProps: ExportGraphicsOptions): DbResult;
     exportPartGraphics(exportProps: ExportPartGraphicsOptions): DbResult;
+    static findByFilename(fileName: string): IModelDb | undefined;
     static findByKey(key: string): IModelDb;
     // (undocumented)
     get fontMap(): FontMap;

@@ -79,10 +79,12 @@ export class Downloads {
   private static _active = new Map<string, DownloadJob>();
 
   private static async process<T>(job: DownloadJob, fn: (job: DownloadJob) => Promise<T>) {
+    const jobName = job.request.localFile; // save this, it can change inside call to `fn`!
+    this._active.set(jobName, job);
     try {
       return await fn(job);
     } finally {
-      this._active.delete(job.request.localFile);
+      this._active.delete(jobName);
     }
   }
 
@@ -98,7 +100,6 @@ export class Downloads {
 
     IModelJsFs.recursiveMkDirSync(path.dirname(pathName));
     job = { request, status: DownloadBriefcaseStatus.NotStarted };
-    this._active.set(pathName, job);
     return job.promise = this.process(job, downloadFn);
   }
 }

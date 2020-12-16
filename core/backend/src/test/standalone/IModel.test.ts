@@ -2032,6 +2032,7 @@ describe("iModel", () => {
     assert.equal(snapshotDb2, SnapshotDb.tryFindByKey(snapshotDb2.key));
     assert.equal(snapshotDb3, SnapshotDb.tryFindByKey(snapshotDb3.key));
     assert.equal(snapshotDb3, SnapshotDb.findByKey(snapshotDb3.key));
+    assert.equal(snapshotDb3, IModelDb.findByKey(snapshotDb3.key));
     assert.throws(() => { BriefcaseDb.findByKey(snapshotDb1.key); }); // lookup of key for SnapshotDb via BriefcaseDb should throw
     assert.throws(() => { StandaloneDb.findByKey(snapshotDb1.key); }); // likewise for StandaloneDb
     assert.isTrue(snapshotDb1.isReadonly, "Expect snapshots to be read-only after open");

@@ -125,8 +125,7 @@ export class ChangeSummaryManager {
     if (!iModel || !iModel.isOpen)
       throw new IModelError(IModelStatus.BadRequest, "Briefcase must be open");
 
-    iModel.clearStatementCache();
-    iModel.clearSqliteStatementCache();
+    iModel.clearCaches();
     const res: DbResult = iModel.nativeDb.detachChangeCache();
     if (res !== DbResult.BE_SQLITE_OK)
       throw new IModelError(res, `Failed to detach Change Cache file from ${iModel.pathName}.`);

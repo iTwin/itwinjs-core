@@ -63,7 +63,7 @@ describe.skip("Checkpoints (#integration)", () => {
       daemonProc.kill();
       await onDaemonExit;
     }
-    (BriefcaseManager as any).deleteFolderAndContents(blockcacheDir);
+    // BriefcaseManager.deleteFolderAndContents(blockcacheDir);
   });
 
   it("should be able to open and read V2 checkpoint", async () => {

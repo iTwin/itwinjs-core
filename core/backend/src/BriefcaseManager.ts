@@ -647,8 +647,7 @@ export class BriefcaseManager {
     if (status !== ChangeSetStatus.Success)
       return status;
 
-    db.clearSqliteStatementCache();
-    db.clearStatementCache();
+    db.clearCaches();
     applyRequest.closeBriefcase();
 
     const doApply = new Promise<ChangeSetStatus>((resolve, _reject) => {

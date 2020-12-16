@@ -12,7 +12,7 @@ import { Briefcase, BriefcaseQuery, HubIModel } from "@bentley/imodelhub-client"
 import { IModelError, IModelVersion } from "@bentley/imodeljs-common";
 import { UserCancelledError } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import { CheckpointManager } from "../../CheckpointManager";
+import { CheckpointManager, V1CheckpointManager } from "../../CheckpointManager";
 import {
   AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseIdValue, BriefcaseManager, Element, IModelDb, IModelHost, IModelHostConfiguration,
   IModelJsFs, KnownLocations,
@@ -100,7 +100,7 @@ describe("BriefcaseManager (#integration)", () => {
     }
   });
 
-  it("should reuse fixed version briefcases", async () => {
+  it("should reuse checkpoints", async () => {
     const iModel1 = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testProjectId, iModelId: readOnlyTestIModel.id, asOf: IModelVersion.named("FirstVersion").toJSON() });
     assert.exists(iModel1, "No iModel returned from call to BriefcaseManager.open");
 
@@ -133,42 +133,6 @@ describe("BriefcaseManager (#integration)", () => {
 
     await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel5);
     assert.isFalse(IModelJsFs.existsSync(pathname3));
-  });
-
-  it("should reuse open or closed PullAndPush briefcases", async () => {
-    const iModel1 = await IModelTestUtils.openBriefcaseUsingRpc({ requestContext, contextId: testProjectId, iModelId: readOnlyTestIModel.id });
-    assert.exists(iModel1, "No iModel returned from call to openBriefcaseUsingRpc");
-
-    const iModel2 = await IModelTestUtils.openBriefcaseUsingRpc({ requestContext, contextId: testProjectId, iModelId: readOnlyTestIModel.id });
-    assert.exists(iModel2, "No iModel returned from call to openBriefcaseUsingRpc");
-
-    assert.equal(iModel1, iModel2);
-    const pathname = iModel1.pathName;
-    iModel1.close();
-
-    const iModel3 = await IModelTestUtils.openBriefcaseUsingRpc({ requestContext, contextId: testProjectId, iModelId: readOnlyTestIModel.id });
-    assert.exists(iModel3, "No iModel returned from call to openBriefcaseUsingRpc");
-    assert.equal(iModel3.pathName, pathname, "previously closed briefcase was expected to be shared");
-
-    await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel3);
-  });
-
-  it("should reuse open or closed PullOnly briefcases", async () => {
-    const iModel1 = await IModelTestUtils.openBriefcaseUsingRpc({ requestContext, contextId: testProjectId, iModelId: readOnlyTestIModel.id, briefcaseId: 0 });
-    assert.exists(iModel1, "No iModel returned from call to BriefcaseManager.open");
-
-    const iModel2 = await IModelTestUtils.openBriefcaseUsingRpc({ requestContext, contextId: testProjectId, iModelId: readOnlyTestIModel.id, briefcaseId: 0 });
-    assert.exists(iModel2, "No iModel returned from call to BriefcaseManager.open");
-
-    assert.equal(iModel1, iModel2);
-    const pathname = iModel1.pathName;
-    iModel1.close();
-
-    const iModel3 = await IModelTestUtils.openBriefcaseUsingRpc({ requestContext, contextId: testProjectId, iModelId: readOnlyTestIModel.id, briefcaseId: 0 });
-    assert.exists(iModel3, "No iModel returned from call to BriefcaseManager.open");
-    assert.equal(iModel3.pathName, pathname, "previously closed briefcase was expected to be shared");
-
-    await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel3);
   });
 
   it("should open iModels of specific versions from the Hub", async () => {
@@ -277,14 +241,64 @@ describe("BriefcaseManager (#integration)", () => {
     await IModelHost.startup(config);
   });
 
+  it("should find checkpoints from previous versions", async () => {
+    const arg = { requestContext, contextId: testProjectId, iModelId: readOnlyTestIModel.id };
+    let checkpoint = await IModelTestUtils.openCheckpointUsingRpc(arg);
+    // eslint-disable-next-line deprecation/deprecation
+    const compatName = V1CheckpointManager.getCompatibilityFileName({ ...arg, changeSetId: checkpoint.changeSetId! });
+    let checkpointName = checkpoint.pathName;
+    checkpoint.close();
+
+    if (compatName !== checkpointName) {
+      IModelJsFs.recursiveMkDirSync(path.dirname(compatName)); // make sure the old path exists
+      IModelJsFs.copySync(checkpointName, compatName); // move the file from where we put it in the new location to the old location
+      IModelJsFs.removeSync(checkpointName); // make sure we don't find this file
+      checkpoint = await IModelTestUtils.openCheckpointUsingRpc(arg); // now try opening it, and we should find the old file
+      checkpointName = checkpoint.pathName;
+      checkpoint.close();
+      assert.equal(checkpointName, compatName, "checkpoint should be found in old location");
+    }
+
+    IModelJsFs.removeSync(compatName); // now delete old file and make sure we don't use it
+    checkpoint = await IModelTestUtils.openCheckpointUsingRpc(arg);
+    checkpointName = checkpoint.pathName;
+    checkpoint.close();
+    assert.notEqual(checkpointName, compatName, "checkpoint should be found in new location");
+  });
+
+  it("should find briefcases from previous versions", async () => {
+    const arg = { requestContext, contextId: testProjectId, iModelId: readOnlyTestIModel.id };
+    let briefcase = await IModelTestUtils.openBriefcaseUsingRpc(arg);
+    // eslint-disable-next-line deprecation/deprecation
+    const compatName = BriefcaseManager.getCompatibilityFileName({ ...arg, briefcaseId: briefcase.briefcaseId });
+    let briefcaseName = briefcase.pathName;
+    briefcase.close();
+
+    if (compatName !== briefcaseName) {
+      IModelJsFs.recursiveMkDirSync(path.dirname(compatName)); // make sure the old path exists
+      IModelJsFs.copySync(briefcaseName, compatName); // move the file from where we put it in the new location to the old location
+      IModelJsFs.removeSync(briefcaseName); // make sure we don't find this file
+      briefcase = await IModelTestUtils.openBriefcaseUsingRpc(arg); // now try opening it, and we should find the old file
+      briefcaseName = briefcase.pathName;
+      briefcase.close();
+      assert.equal(briefcaseName, compatName, "briefcase should be found in old location");
+    }
+
+    IModelJsFs.removeSync(compatName); // now delete old file and make sure we don't use it
+    briefcase = await IModelTestUtils.openBriefcaseUsingRpc(arg);
+    briefcaseName = briefcase.pathName;
+    briefcase.close();
+    assert.notEqual(briefcaseName, compatName, "briefcase should be found in new location");
+  });
+
   it("should be able to reuse existing briefcases from a previous session", async () => {
-    let iModelShared = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testProjectId, iModelId: readOnlyTestIModel.id });
+    let checkpoint = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testProjectId, iModelId: readOnlyTestIModel.id });
     let numDownloads = 0;
 
     CheckpointManager.onDownload.addListener((_job) => numDownloads++);
-    assert.exists(iModelShared);
-    assert.equal(iModelShared.openMode, OpenMode.Readonly);
-    const sharedPathname = iModelShared.pathName;
+    assert.exists(checkpoint);
+    assert.equal(checkpoint.openMode, OpenMode.Readonly);
+    const checkpointName = checkpoint.pathName;
 
     let iModelPullAndPush = await IModelTestUtils.openBriefcaseUsingRpc({ requestContext, contextId: testProjectId, iModelId: readOnlyTestIModel.id });
     assert.exists(iModelPullAndPush);
@@ -296,7 +310,7 @@ describe("BriefcaseManager (#integration)", () => {
     assert.equal(iModelPullOnly.openMode, OpenMode.ReadWrite); // Note: PullOnly briefcases must be set to ReadWrite to accept change sets
     const pullOnlyPathname = iModelPullOnly.pathName;
 
-    iModelShared.close();
+    checkpoint.close();
     iModelPullAndPush.close();
     iModelPullOnly.close();
 
@@ -304,15 +318,15 @@ describe("BriefcaseManager (#integration)", () => {
 
     // note: we can't tell what files were local before we ran this test. All we can test is that now that we know they're local that it does not cause a download.
     const wasNumDownloads = numDownloads;
-    assert.isTrue(IModelJsFs.existsSync(sharedPathname));
+    assert.isTrue(IModelJsFs.existsSync(checkpointName));
     assert.isTrue(IModelJsFs.existsSync(pullAndPushPathname));
     assert.isTrue(IModelJsFs.existsSync(pullOnlyPathname));
 
     await IModelHost.startup();
 
-    iModelShared = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testProjectId, iModelId: readOnlyTestIModel.id });
-    assert.exists(iModelShared);
-    assert.equal(iModelShared.pathName, sharedPathname);
+    checkpoint = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testProjectId, iModelId: readOnlyTestIModel.id });
+    assert.exists(checkpoint);
+    assert.equal(checkpoint.pathName, checkpointName);
     assert.equal(numDownloads, wasNumDownloads, "should not need download");
 
     iModelPullAndPush = await IModelTestUtils.openBriefcaseUsingRpc({ requestContext, contextId: testProjectId, iModelId: readOnlyTestIModel.id });
@@ -325,19 +339,19 @@ describe("BriefcaseManager (#integration)", () => {
     assert.equal(iModelPullOnly.pathName, pullOnlyPathname);
     assert.equal(numDownloads, wasNumDownloads, "should not need download");
 
-    await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModelShared);
+    await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, checkpoint);
     await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModelPullAndPush);
     await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModelPullOnly);
 
-    assert.isFalse(IModelJsFs.existsSync(sharedPathname));
+    assert.isFalse(IModelJsFs.existsSync(checkpointName));
     assert.isFalse(IModelJsFs.existsSync(pullAndPushPathname));
     assert.isFalse(IModelJsFs.existsSync(pullOnlyPathname));
 
     // now we know that the checkpoint doesn't exist, download it again to test the "onDownload" listener works.
     numDownloads = 0;
-    iModelShared = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testProjectId, iModelId: readOnlyTestIModel.id });
+    checkpoint = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testProjectId, iModelId: readOnlyTestIModel.id });
     assert.equal(numDownloads, 1, "should need download");
-    await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModelShared);
+    await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, checkpoint);
 
   });
 
@@ -505,8 +519,10 @@ describe("BriefcaseManager (#integration)", () => {
     const testUtility = new TestChangeSetUtility(userContext1, "PullOnlyTest");
     await testUtility.createTestIModel();
 
+    const args = { requestContext: userContext2, contextId: testUtility.projectId, iModelId: testUtility.iModelId, briefcaseId: 0 };
+
     // User2 opens the iModel pullOnly and is not able to edit (even if the db is opened read-write!)
-    let iModelPullOnly = await IModelTestUtils.openBriefcaseUsingRpc({ requestContext: userContext2, contextId: testUtility.projectId, iModelId: testUtility.iModelId, briefcaseId: 0 });
+    let iModelPullOnly = await IModelTestUtils.openBriefcaseUsingRpc(args);
     assert.exists(iModelPullOnly);
     assert.isTrue(!iModelPullOnly.isReadonly);
     assert.isTrue(iModelPullOnly.isOpen);
@@ -536,7 +552,7 @@ describe("BriefcaseManager (#integration)", () => {
     iModelPullOnly.close();
 
     // User2 should be able to re-open the iModel pullOnly again
-    iModelPullOnly = await IModelTestUtils.openBriefcaseUsingRpc({ requestContext: userContext2, contextId: testUtility.projectId, iModelId: testUtility.iModelId, briefcaseId: 0 });
+    iModelPullOnly = await IModelTestUtils.openBriefcaseUsingRpc(args);
     const changeSetIdPullAndPush = iModelPullOnly.changeSetId;
     assert.strictEqual(iModelPullOnly.briefcaseId, briefcaseId);
     assert.strictEqual(iModelPullOnly.pathName, pathname);
@@ -546,20 +562,19 @@ describe("BriefcaseManager (#integration)", () => {
     // User1 pushes a change set
     await testUtility.pushTestChangeSet();
 
-    // User2 should be able to re-open the iModel pullOnly again as of a newer version
-    // - the briefcase will NOT be upgraded to the newer version since it was left open.
-    iModelPullOnly = await IModelTestUtils.openBriefcaseUsingRpc({ requestContext: userContext2, contextId: testUtility.projectId, iModelId: testUtility.iModelId, briefcaseId: 0 });
-    const changeSetIdPullAndPush2 = iModelPullOnly.changeSetId;
-    assert.strictEqual(changeSetIdPullAndPush2, changeSetIdPullAndPush); // Briefcase remains at the same version
-    assert.strictEqual(iModelPullOnly.briefcaseId, briefcaseId);
-    assert.strictEqual(iModelPullOnly.pathName, pathname);
-    assert.isFalse(iModelPullOnly.nativeDb.hasUnsavedChanges());
-    assert.isFalse(iModelPullOnly.nativeDb.hasPendingTxns());
+    // User2 should not be able to re-open the iModel since it's still open
+    try {
+      await IModelTestUtils.openBriefcaseUsingRpc(args);
+    } catch (error) {
+      assert.isTrue(error instanceof IModelError && error.errorNumber === IModelStatus.AlreadyOpen);
+      errorThrown2 = true;
+    }
+    assert.isTrue(errorThrown2);
 
     // User2 closes and reopens the iModel pullOnly as of the newer version
     // - the briefcase will be upgraded to the newer version since it was closed and re-opened.
     iModelPullOnly.close();
-    iModelPullOnly = await IModelTestUtils.openBriefcaseUsingRpc({ requestContext: userContext2, contextId: testUtility.projectId, iModelId: testUtility.iModelId, briefcaseId: 0 });
+    iModelPullOnly = await IModelTestUtils.openBriefcaseUsingRpc(args);
     const changeSetIdPullAndPush3 = iModelPullOnly.changeSetId;
     assert.notStrictEqual(changeSetIdPullAndPush3, changeSetIdPullAndPush);
     assert.strictEqual(iModelPullOnly.briefcaseId, briefcaseId);
@@ -598,7 +613,8 @@ describe("BriefcaseManager (#integration)", () => {
     await testUtility.createTestIModel();
 
     // User2 opens the iModel pullAndPush and is able to edit and save changes
-    let iModelPullAndPush = await IModelTestUtils.openBriefcaseUsingRpc({ requestContext: userContext2, contextId: testUtility.projectId, iModelId: testUtility.iModelId });
+    const args = { requestContext: userContext2, contextId: testUtility.projectId, iModelId: testUtility.iModelId };
+    let iModelPullAndPush = await IModelTestUtils.openBriefcaseUsingRpc(args);
     assert.exists(iModelPullAndPush);
     const briefcaseId = iModelPullAndPush.briefcaseId;
     const pathname = iModelPullAndPush.pathName;
@@ -619,7 +635,7 @@ describe("BriefcaseManager (#integration)", () => {
 
     // User2 should be able to re-open the iModel pullAndPush again
     // - the changes will still be there
-    iModelPullAndPush = await IModelTestUtils.openBriefcaseUsingRpc({ requestContext: userContext2, contextId: testUtility.projectId, iModelId: testUtility.iModelId });
+    iModelPullAndPush = await IModelTestUtils.openBriefcaseUsingRpc(args);
     const changeSetIdPullAndPush = iModelPullAndPush.changeSetId;
     assert.strictEqual(iModelPullAndPush.briefcaseId, briefcaseId);
     assert.strictEqual(iModelPullAndPush.pathName, pathname);
@@ -629,22 +645,21 @@ describe("BriefcaseManager (#integration)", () => {
     // User1 pushes a change set
     await testUtility.pushTestChangeSet();
 
-    // User2 should be able to re-open the iModel pullAndPush again as of a newer version
-    // - the changes will still be there, but
-    // - the briefcase will NOT be upgraded to the newer version since it was left open.
-    iModelPullAndPush = await IModelTestUtils.openBriefcaseUsingRpc({ requestContext: userContext2, contextId: testUtility.projectId, iModelId: testUtility.iModelId });
-    const changeSetIdPullAndPush2 = iModelPullAndPush.changeSetId;
-    assert.strictEqual(changeSetIdPullAndPush2, changeSetIdPullAndPush); // Briefcase remains at the same version
-    assert.strictEqual(iModelPullAndPush.briefcaseId, briefcaseId);
-    assert.strictEqual(iModelPullAndPush.pathName, pathname);
-    assert.isFalse(iModelPullAndPush.nativeDb.hasUnsavedChanges());
-    assert.isTrue(iModelPullAndPush.nativeDb.hasPendingTxns());
+    // User2 should not be able to re-open the iModel since it's still open
+    let errorThrown2 = false;
+    try {
+      await IModelTestUtils.openBriefcaseUsingRpc(args);
+    } catch (error) {
+      assert.isTrue(error instanceof IModelError && error.errorNumber === IModelStatus.AlreadyOpen);
+      errorThrown2 = true;
+    }
+    assert.isTrue(errorThrown2);
 
     // User2 closes and reopens the iModel pullAndPush as of the newer version
     // - the changes will still be there, AND
     // - the briefcase will be upgraded to the newer version since it was closed and re-opened.
     iModelPullAndPush.close();
-    iModelPullAndPush = await IModelTestUtils.openBriefcaseUsingRpc({ requestContext: userContext2, contextId: testUtility.projectId, iModelId: testUtility.iModelId });
+    iModelPullAndPush = await IModelTestUtils.openBriefcaseUsingRpc(args);
     const changeSetIdPullAndPush3 = iModelPullAndPush.changeSetId;
     assert.notStrictEqual(changeSetIdPullAndPush3, changeSetIdPullAndPush);
     assert.strictEqual(iModelPullAndPush.briefcaseId, briefcaseId);

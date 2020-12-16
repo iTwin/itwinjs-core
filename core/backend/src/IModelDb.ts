@@ -7,7 +7,6 @@
  */
 
 // cspell:ignore ulas postrc pollrc CANTOPEN
-/* eslint-disable @typescript-eslint/unbound-method */
 
 import {
   BeEvent, BentleyStatus, ChangeSetStatus, ClientRequestContext, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, JsonUtils,
@@ -48,7 +47,6 @@ import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
-
 
 /** A string that identifies a Txn.
  * @public
@@ -175,14 +173,14 @@ export abstract class IModelDb extends IModel {
   /** Event called when the iModel is about to be closed */
   public readonly onBeforeClose = new BeEvent<() => void>();
 
+
   /**
    * Called by derived classes before closing the connection
    * @internal
    */
   protected beforeClose() {
     this.onBeforeClose.raiseEvent();
-    this.clearSqliteStatementCache();
-    this.clearStatementCache();
+    this.clearCaches();
     this._concurrentQueryStats.dispose();
     this._eventSink.dispose();
   }
@@ -651,11 +649,24 @@ export abstract class IModelDb extends IModel {
     return ids;
   }
 
-  /** Empty the [ECSqlStatementCache]($backend) for this iModel. */
+  /** Empty the [ECSqlStatementCache]($backend) for this iModel.
+   * @deprecated use clearCaches
+   */
   public clearStatementCache(): void { this._statementCache.clear(); }
 
-  /** Empty the [SqliteStatementCache]($backend) for this iModel. */
+  /** Empty the [SqliteStatementCache]($backend) for this iModel.
+   * @deprecated use clearCaches
+   */
   public clearSqliteStatementCache(): void { this._sqliteStatementCache.clear(); }
+
+  /** Clear all in-memory caches held in this IModelDb.
+   * @see [ECSqlStatementCache]($backend)
+   * @see [SqliteStatementCache]($backend)
+   */
+  public clearCaches() {
+    this._statementCache.clear();
+    this._sqliteStatementCache.clear();
+  }
 
   /** Get the GUID of this iModel.  */
   public getGuid(): GuidString { return this.nativeDb.getDbGuid(); }
@@ -749,8 +760,7 @@ export abstract class IModelDb extends IModel {
       if (DbResult.BE_SQLITE_OK !== status) {
         throw new IModelError(status, "Error importing schema", Logger.logError, loggerCategory, () => ({ schemaFileNames }));
       }
-      this.clearStatementCache();
-      this.clearSqliteStatementCache();
+      this.clearCaches();
       return;
     }
 
@@ -767,9 +777,7 @@ export abstract class IModelDb extends IModel {
       throw new IModelError(stat, "Error importing schema", Logger.logError, loggerCategory, () => ({ schemaFileNames }));
     }
 
-    this.clearStatementCache();
-    this.clearSqliteStatementCache();
-
+    this.clearCaches();
     try {
       // The schema import logic and/or imported Domains may have created new elements and models.
       // Make sure we have the supporting locks and codes.
@@ -801,8 +809,7 @@ export abstract class IModelDb extends IModel {
       if (DbResult.BE_SQLITE_OK !== status) {
         throw new IModelError(status, "Error importing schema", Logger.logError, loggerCategory, () => ({ serializedXmlSchemas }));
       }
-      this.clearStatementCache();
-      this.clearSqliteStatementCache();
+      this.clearCaches();
       return;
     }
 
@@ -819,9 +826,7 @@ export abstract class IModelDb extends IModel {
       throw new IModelError(stat, "Error importing schema", Logger.logError, loggerCategory, () => ({ serializedXmlSchemas }));
     }
 
-    this.clearStatementCache();
-    this.clearSqliteStatementCache();
-
+    this.clearCaches();
     try {
       // The schema import logic and/or imported Domains may have created new elements and models.
       // Make sure we have the supporting locks and codes.
@@ -834,6 +839,17 @@ export abstract class IModelDb extends IModel {
       this.abandonChanges();
       throw err;
     }
+  }
+
+  /** Find an opened instance of any subclass of IModelDb, by filename
+   * @note this method returns an IModelDb if the filename is open for *any* subclass of IModelDb
+  */
+  public static findByFilename(fileName: string): IModelDb | undefined {
+    for (const entry of this._openDbs) {
+      if (entry[1].pathName === fileName)
+        return entry[1];
+    }
+    return undefined;
   }
 
   /** Find an open IModelDb by its key.
@@ -2326,14 +2342,8 @@ export class BriefcaseDb extends IModelDb {
       this.concurrencyControl.onSavedChanges();
   }
 
-  /**
-   * Acquires a schema lock
-   * @param requestContext Locks
-   * @param briefcase
-   */
   private async lockSchema(requestContext: AuthorizedClientRequestContext): Promise<void> {
     requestContext.enter();
-
     const lock = new Lock();
     lock.briefcaseId = this.briefcaseId;
     lock.lockLevel = LockLevel.Exclusive;
