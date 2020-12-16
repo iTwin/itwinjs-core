@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { Guid } from "@bentley/bentleyjs-core";
+import { Guid, Id64 } from "@bentley/bentleyjs-core";
 import { InstanceKey, Key, KeySet, PresentationError } from "../presentation-common";
 import {
   createRandomECInstanceId, createRandomECInstanceKey, createRandomECInstancesNodeKey, createRandomEntityProps, createRandomId,
@@ -323,6 +323,17 @@ describe("KeySet", () => {
       expect(set.guid).to.eq(guidBefore);
     });
 
+    it("doesn't add the same instance keys when given className is of different capitalization", () => {
+      const instanceKey1: InstanceKey = { className: "BisCore", id: Id64.invalid };
+      const instanceKey2: InstanceKey = { className: "BISCORE", id: Id64.invalid };
+      const set = new KeySet([instanceKey1]);
+      expect(set.size).to.eq(1);
+      const guidBefore = set.guid;
+      set.add(instanceKey2);
+      expect(set.size).to.eq(1);
+      expect(set.guid).to.eq(guidBefore);
+    });
+
     it("adds an entity prop", () => {
       const set = new KeySet([createRandomEntityProps()]);
       expect(set.size).to.eq(1);
@@ -491,6 +502,20 @@ describe("KeySet", () => {
       expect(set.guid).to.not.eq(guidBefore);
     });
 
+    it("deletes an instance key when given className is of different capitalization", () => {
+      const instanceKey1: InstanceKey = { className: "BisCore", id: Id64.invalid };
+      const instanceKey2: InstanceKey = { className: "BISCORE", id: Id64.invalid };
+      const keys = [createRandomECInstanceKey(), instanceKey1, createRandomECInstanceKey()];
+      const set = new KeySet(keys);
+      expect(set.size).to.eq(3);
+      const guidBefore = set.guid;
+      set.delete(instanceKey2);
+      expect(set.size).to.eq(2);
+      expect(set.instanceKeysCount).to.eq(2);
+      expect(set.has(keys[1])).to.be.false;
+      expect(set.guid).to.not.eq(guidBefore);
+    });
+
     it("deletes an array of instance keys", () => {
       const keys = [createRandomECInstanceKey(), createRandomECInstanceKey(), createRandomECInstanceKey()];
       const set = new KeySet(keys);
@@ -649,6 +674,15 @@ describe("KeySet", () => {
           expect(set.hasAll(createKeys([instanceKey1, nodeKey1]))).to.be.true;
         });
 
+        it("returns true when KeySet has all values with different capitalization", () => {
+          const instanceKey1: InstanceKey = { className: "BisCore", id: Id64.invalid };
+          const instanceKey2: InstanceKey = { className: "biscore", id: Id64.invalid };
+          const instanceKey3: InstanceKey = { className: "BISCORE", id: Id64.invalid };
+          const set = new KeySet([instanceKey1]);
+          expect(set.hasAll(createKeys([instanceKey2]))).to.be.true;
+          expect(set.hasAll(createKeys([instanceKey3]))).to.be.true;
+        });
+
         it("returns false when node keys count is smaller", () => {
           const nodeKey1 = createRandomECInstancesNodeKey();
           const nodeKey2 = createRandomECInstancesNodeKey();
@@ -726,6 +760,16 @@ describe("KeySet", () => {
           expect(set.hasAny(createKeys([instanceKey2, instanceKey3]))).to.be.true;
         });
 
+        it("returns true when KeySet has any instance key with different capitalization", () => {
+          const instanceKey1: InstanceKey = { className: "BisCore", id: Id64.invalid };
+          const instanceKey2: InstanceKey = { className: "biscore", id: Id64.invalid };
+          const instanceKey3: InstanceKey = { className: "BISCORE", id: Id64.invalid };
+          const instanceKey4: InstanceKey = { className: "Testing", id: Id64.invalid };
+          const set = new KeySet([instanceKey1, instanceKey4]);
+          expect(set.hasAny(createKeys([instanceKey2]))).to.be.true;
+          expect(set.hasAny(createKeys([instanceKey3]))).to.be.true;
+        });
+
         it("returns false when KeySet doesn't have any key", () => {
           const set = new KeySet([createRandomECInstanceKey(), createRandomECInstancesNodeKey()]);
           expect(set.hasAny(createKeys([createRandomECInstanceKey(), createRandomECInstancesNodeKey()]))).to.be.false;
@@ -754,6 +798,17 @@ describe("KeySet", () => {
       expect(set.some(callback)).to.be.true;
       expect(callback.callCount).to.eq(1);
       expect(callback).to.be.calledWith(instanceKey);
+    });
+
+    it("calls callback with the most recent className if the only difference in classnames is capitalization", () => {
+      const instanceKey1: InstanceKey = { className: "BisCore", id: Id64.invalid };
+      const instanceKey2: InstanceKey = { className: "BISCORE", id: Id64.invalid };
+      const set = new KeySet([instanceKey1, instanceKey2]);
+      const callback = sinon.stub();
+      callback.returns(true);
+      expect(set.some(callback)).to.be.true;
+      expect(callback.callCount).to.eq(1);
+      expect(callback).to.be.calledWith(instanceKey2);
     });
 
     it("returns true if callback returns true for node key", () => {
@@ -795,6 +850,17 @@ describe("KeySet", () => {
       expect(callback).to.be.calledWith(instanceKeys[1]);
       expect(callback).to.be.calledWith(nodeKeys[0]);
       expect(callback).to.be.calledWith(nodeKeys[1]);
+    });
+
+    it("calls callback for every key in set with the most recent className if the only difference in classnames is capitalization", () => {
+      const instanceKey1: InstanceKey = { className: "BisCore", id: Id64.invalid };
+      const instanceKey2: InstanceKey = { className: "BISCORE", id: Id64.invalid };
+      const instanceKeys = [instanceKey1, instanceKey2];
+      const set = new KeySet([...instanceKeys]);
+      const callback = sinon.spy();
+      set.forEach(callback);
+      expect(callback.callCount).to.eq(1);
+      expect(callback).to.be.calledWith(instanceKeys[1]);
     });
 
   });

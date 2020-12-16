@@ -1691,7 +1691,9 @@ export class AccuDraw {
     const rMatrix = (!this.flags.animateRotation || 0.0 === this._percentChanged) ? this.axes.toMatrix3d() : this.lastAxes.toMatrix3d();
     const origin = new Point3d(); // Compass origin is adjusted by active z-lock...
     this.getCompassPlanePoint(origin, vp);
-    const scale = vp.pixelsFromInches(this._compassSizeInches) * vp.getPixelSizeAtPoint(origin);
+    // NOTE: AccuDraw should probably be disabled for exaggerated views, for now put a limit on compass y scale...
+    const scale = vp.pixelsFromInches(this._compassSizeInches / vp.view.getAspectRatioSkew()) * vp.getPixelSizeAtPoint(origin);
+
     rMatrix.transposeInPlace();
     rMatrix.scaleColumns(scale, scale, scale, rMatrix);
     return Transform.createRefs(origin, rMatrix);
