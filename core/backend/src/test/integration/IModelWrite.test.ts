@@ -54,7 +54,7 @@ function toHubLock(props: ConcurrencyControl.LockProps, briefcaseId: number): Lo
   return lock;
 }
 
-describe.only("IModelWriteTest (#integration)", () => {
+describe("IModelWriteTest (#integration)", () => {
   let managerRequestContext: AuthorizedBackendRequestContext;
   let superRequestContext: AuthorizedBackendRequestContext;
   let testProjectId: string;
@@ -677,7 +677,7 @@ describe.only("IModelWriteTest (#integration)", () => {
     await IModelTestUtils.closeAndDeleteBriefcaseDb(adminRequestContext, rwIModel);
   });
 
-  it.only("Locks conflict test II (#integration)", async () => {
+  it("Locks conflict test II (#integration)", async () => {
     const adminRequestContext: AuthorizedBackendRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager);
     let timer = new Timer("delete iModels");
     const iModelName = "LocksConflictTestII";
