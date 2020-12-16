@@ -692,7 +692,7 @@ function cloneFilteredNestedContentField(field: NestedContentField, filterClassI
   return clone;
 }
 function filterNestedContentFieldsByClass(fields: Field[], classInfo: ECClassInfo) {
-  let filteredFields = new Array<Field>();
+  const filteredFields = new Array<Field>();
   fields.forEach((f) => {
     if (f.isNestedContentField() && f.actualPrimaryClassIds.some((id) => classInfo.id === id || classInfo.derivedClassIds.includes(id))) {
       const clone = cloneFilteredNestedContentField(f, classInfo);
@@ -705,7 +705,7 @@ function filterNestedContentFieldsByClass(fields: Field[], classInfo: ECClassInf
   return filteredFields;
 }
 function filterFieldsByClass(fields: Field[], classInfo: ECClassInfo) {
-  let filteredFields = new Array<Field>();
+  const filteredFields = new Array<Field>();
   fields.forEach((f) => {
     if (f.isNestedContentField()) {
       // always include nested content field if its `actualPrimaryClassIds` contains either id of given class itself or one of its derived class ids
@@ -761,14 +761,14 @@ class ECClassHierarchy {
     return new ECClassHierarchy(imodel, baseClassHierarchy, derivedClassHierarchy);
   }
   private getAllBaseClassIds(classId: Id64String) {
-    const baseClassIds = this._baseClasses!.get(classId) ?? [];
+    const baseClassIds = this._baseClasses.get(classId) ?? [];
     return baseClassIds.reduce<Id64String[]>((arr, id) => {
       arr.push(id, ...this.getAllBaseClassIds(id));
       return arr;
     }, []);
   }
   private getAllDerivedClassIds(baseClassId: Id64String) {
-    const derivedClassIds = this._derivedClasses!.get(baseClassId) ?? [];
+    const derivedClassIds = this._derivedClasses.get(baseClassId) ?? [];
     return derivedClassIds.reduce<Id64String[]>((arr, id) => {
       arr.push(id, ...this.getAllDerivedClassIds(id));
       return arr;
