@@ -19,7 +19,7 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
   let contextId: string;
   let imodelId: GuidString;
   let iModelClient: IModelClient;
-  const imodelName = "imodeljs-clients Locks test";
+  const imodelName = "imodeljs-clients Shared iModel";
   let briefcases: Briefcase[];
   let changeSet: ChangeSet;
   let lastObjectId: Id64String;

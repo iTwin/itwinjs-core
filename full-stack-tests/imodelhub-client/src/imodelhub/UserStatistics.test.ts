@@ -59,7 +59,7 @@ describe("iModelHubClient UserStatisticsHandler", () => {
   let contextId: string;
   let imodelId: GuidString;
 
-  const imodelName = "imodeljs-clients Statistics test";
+  const imodelName = "imodeljs-clients Shared iModel";
   const imodelHubClient: IModelClient = utils.getDefaultClient();
 
   const user1BriefcasesCount = 2;

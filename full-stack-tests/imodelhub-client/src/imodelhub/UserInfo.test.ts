@@ -44,7 +44,7 @@ describe("iModelHubClient UserInfoHandler", () => {
   let projectId: GuidString;
   let imodelId: GuidString;
 
-  const imodelName = "imodeljs-clients UserInfo test";
+  const imodelName = "imodeljs-clients Shared iModel";
   const imodelHubClient: IModelClient = utils.getDefaultClient();
 
   before(async () => {

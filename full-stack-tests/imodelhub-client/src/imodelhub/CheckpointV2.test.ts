@@ -99,7 +99,7 @@ describe("iModelHub CheckpointV2Handler", () => {
   let iModelClient: IModelClient;
   let briefcase: Briefcase;
   let changeSets: ChangeSet[];
-  const imodelName = "imodeljs-clients CheckpointsV2 test";
+  const imodelName = "imodeljs-clients Shared iModel";
   let requestContext: AuthorizedClientRequestContext;
 
   before(async function () {

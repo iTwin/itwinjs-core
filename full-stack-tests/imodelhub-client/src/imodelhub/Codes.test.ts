@@ -385,7 +385,7 @@ describe("iModelHub CodeSequenceHandler (#iModelBank|#integration)", () => {
   let imodelId: GuidString;
   let iModelClient: IModelClient;
   let briefcaseId: number;
-  const imodelName = "imodeljs-clients Codes test";
+  const imodelName = "imodeljs-clients Shared iModel";
   let requestContext: AuthorizedClientRequestContext;
 
   before(async () => {

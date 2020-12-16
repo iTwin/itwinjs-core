@@ -13,6 +13,7 @@ import { RequestType, ResponseBuilder, ScopeType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
 import * as utils from "./TestUtils";
 import { workDir } from "./TestConstants";
+import { Test } from "mocha";
 
 chai.should();
 
@@ -42,7 +43,7 @@ describe("iModelHub CheckpointHandler", () => {
   let iModelClient: IModelClient;
   let briefcase: Briefcase;
   let changeSets: ChangeSet[];
-  const imodelName = "imodeljs-clients Checkpoints test";
+  const imodelName = "imodeljs-clients Shared iModel";
   let requestContext: AuthorizedClientRequestContext;
 
   before(async function () {
@@ -72,7 +73,7 @@ describe("iModelHub CheckpointHandler", () => {
   });
 
   after(async () => {
-    if (!TestConfig.enableMocks)
+    if (!TestConfig.enableMocks && TestConfig.enableIModelBank)
       await utils.deleteIModelByName(requestContext, contextId, imodelName);
   });
 

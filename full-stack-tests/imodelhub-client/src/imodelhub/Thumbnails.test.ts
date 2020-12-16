@@ -49,7 +49,7 @@ describe("iModelHub ThumbnailHandler (#unit)", () => {
   let projectId: string;
   let imodelId: GuidString;
   let versions: Version[];
-  const imodelName = "imodeljs-clients Thumbnails test";
+  const imodelName = "imodeljs-clients Shared iModel";
   const imodelHubClient: IModelClient = utils.getDefaultClient();
   let requestContext: AuthorizedClientRequestContext;
 

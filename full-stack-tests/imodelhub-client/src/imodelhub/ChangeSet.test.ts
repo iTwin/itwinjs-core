@@ -60,7 +60,7 @@ describe("iModelHub ChangeSetHandler", () => {
   let imodelId: GuidString;
   let iModelClient: IModelClient;
   let briefcase: Briefcase;
-  const imodelName = "imodeljs-clients ChangeSets test";
+  const imodelName = "imodeljs-clients Shared iModel";
   let requestContext: AuthorizedClientRequestContext;
   const maxChangeSetCount = 17;
   const newChangeSetsPerTestSuit = 2; // update this value when adding new tests which create changesets
@@ -109,7 +109,7 @@ describe("iModelHub ChangeSetHandler", () => {
   });
 
   after(async () => {
-    if (!TestConfig.enableMocks)
+    if (!TestConfig.enableMocks && TestConfig.enableIModelBank)
       await utils.deleteIModelByName(requestContext, contextId, imodelName);
   });
 

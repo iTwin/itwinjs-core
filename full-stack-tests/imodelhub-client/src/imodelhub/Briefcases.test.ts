@@ -88,7 +88,7 @@ describe("iModelHub BriefcaseHandler", () => {
   let contextId: string;
   let imodelId: GuidString;
   let iModelClient: IModelClient;
-  const imodelName = "imodeljs-clients Briefcases test";
+  const imodelName = "imodeljs-clients Shared iModel";
   let briefcaseId: number;
 
   before(async function () {
@@ -129,7 +129,7 @@ describe("iModelHub BriefcaseHandler", () => {
   });
 
   after(async () => {
-    if (!TestConfig.enableMocks)
+    if (!TestConfig.enableMocks && TestConfig.enableIModelBank)
       await utils.deleteIModelByName(requestContext, contextId, imodelName);
   });
 
