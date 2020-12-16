@@ -8,7 +8,9 @@
 
 import { assert, BentleyStatus, Dictionary, dispose, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { ClipVector, Point3d, Transform } from "@bentley/geometry-core";
-import { ColorDef, ElementAlignedBox3d, Gradient, ImageBuffer, IModelError, PackedFeatureTable, RenderMaterial, RenderTexture } from "@bentley/imodeljs-common";
+import {
+  ColorDef, ElementAlignedBox3d, Gradient, ImageBuffer, ImageSource, ImageSourceFormat, IModelError, PackedFeatureTable, RenderMaterial, RenderTexture,
+} from "@bentley/imodeljs-common";
 import { Capabilities, DepthType, WebGLContext } from "@bentley/webgl-compatibility";
 import { SkyBox } from "../../DisplayStyleState";
 import { IModelApp } from "../../IModelApp";
@@ -29,6 +31,7 @@ import { RenderGraphic, RenderGraphicOwner } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
 import { DebugShaderFile, GLTimerResultCallback, RenderDiagnostics, RenderSystem, RenderSystemDebugControl, RenderTerrainMeshGeometry, TerrainTexture } from "../RenderSystem";
 import { RenderTarget } from "../RenderTarget";
+import { imageElementFromImageSource } from "../../ImageUtil";
 import { BackgroundMapDrape } from "./BackgroundMapDrape";
 import { CachedGeometry, SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
 import { ClipVolume } from "./ClipVolume";
@@ -142,19 +145,17 @@ class WebGL2Extensions extends WebGLExtensions {
  */
 export class IdMap implements WebGLDisposable {
   /** Mapping of materials by their key values. */
-  public readonly materials: Map<string, RenderMaterial>;
+  public readonly materials = new Map<string, RenderMaterial>();
   /** Mapping of textures by their key values. */
-  public readonly textures: Map<string, RenderTexture>;
+  public readonly textures = new Map<string, RenderTexture>();
   /** Mapping of textures using gradient symbology. */
-  public readonly gradients: Dictionary<Gradient.Symb, RenderTexture>;
-  /** Solar shadow map (one for IModel) */
-  public constructor() {
-    this.materials = new Map<string, RenderMaterial>();
-    this.textures = new Map<string, RenderTexture>();
-    this.gradients = new Dictionary<Gradient.Symb, RenderTexture>(Gradient.Symb.compareSymb);
-  }
+  public readonly gradients = new Dictionary<Gradient.Symb, RenderTexture>(Gradient.Symb.compareSymb);
+  /** Pending promises to create a texture from an ImageSource. This prevents us from decoding the same ImageSource multiple times */
+  private readonly _texturesFromImageSources = new Map<string, Promise<RenderTexture | undefined>>();
 
-  public get isDisposed(): boolean { return 0 === this.textures.size && 0 === this.gradients.size; }
+  public get isDisposed(): boolean {
+    return 0 === this.textures.size && 0 === this.gradients.size;
+  }
 
   public dispose() {
     const textureArr = Array.from(this.textures.values());
@@ -244,6 +245,41 @@ export class IdMap implements WebGLDisposable {
   public getTextureFromImage(image: HTMLImageElement, hasAlpha: boolean, params: RenderTexture.Params): RenderTexture | undefined {
     const tex = this.findTexture(params.key);
     return undefined !== tex ? tex : this.createTextureFromImage(image, hasAlpha, params);
+  }
+
+  public async getTextureFromImageSource(source: ImageSource, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
+    // Do we already have this texture?
+    let texture = this.findTexture(params.key);
+    if (texture)
+      return texture;
+
+    // Are we already in the process of creating this texture?
+    const key = params.key;
+    let promise = key ? this._texturesFromImageSources.get(key) : undefined;
+    if (promise)
+      return promise;
+
+    // Create the texture.
+    promise = this.createTextureFromImageSource(source, params);
+    if (!key) {
+      // This texture is unique - no point in caching the request.
+      return promise;
+    }
+
+    // Ensure subsequent requests for this texture that arrive before we finish creating it receive the same promise,
+    // instead of redundantly decoding the same image.
+    this._texturesFromImageSources.set(key, promise);
+    try {
+      texture = await promise;
+      return texture;
+    } finally {
+      this._texturesFromImageSources.delete(key);
+    }
+  }
+
+  private async createTextureFromImageSource(source: ImageSource, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
+    const image = await imageElementFromImageSource(source);
+    return IModelApp.hasRenderSystem ? this.getTextureFromImage(image, ImageSourceFormat.Png === source.format, params) : undefined;
   }
 
   public getTextureFromCubeImages(posX: HTMLImageElement, negX: HTMLImageElement, posY: HTMLImageElement, negY: HTMLImageElement, posZ: HTMLImageElement, negZ: HTMLImageElement, params: RenderTexture.Params): RenderTexture | undefined {
@@ -547,6 +583,13 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   /** Attempt to create a texture for the given iModel using an ImageBuffer. */
   public createTextureFromImageBuffer(image: ImageBuffer, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
     return this.getIdMap(imodel).getTexture(image, params);
+  }
+
+  public async createTextureFromImageSource(source: ImageSource, imodel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
+    if (!imodel)
+      return super.createTextureFromImageSource(source, imodel, params);
+
+    return this.getIdMap(imodel).getTextureFromImageSource(source, params);
   }
 
   /** Attempt to create a texture for the given iModel using an HTML image element. */
