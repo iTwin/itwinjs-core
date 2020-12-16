@@ -6,6 +6,7 @@ import { DbOpcode, DbResult, Id64String, IModelHubStatus } from "@bentley/bentle
 import { CodeState, HubCode, HubIModel, IModelHubError, IModelQuery, Lock, LockLevel, LockQuery, LockType, MultiCode } from "@bentley/imodelhub-client";
 import { CodeScopeSpec, CodeSpec, DomainOptions, IModel, IModelError, IModelVersion, SubCategoryAppearance, SyncMode } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
+import { WsgError } from "@bentley/itwin-client";
 import { assert, expect } from "chai";
 import * as semver from "semver";
 import {
@@ -726,10 +727,10 @@ describe.only("IModelWriteTest (#integration)", () => {
     superRequestContext.enter();
 
     // --- Briefcase 1
-    // Now let the first briefcase try to delete this element. That should fail with a lock error.
+    // Now let the first briefcase try to delete element #1. That should fail with a lock error.
     const el1bc1 = rwIModel.elements.getElement(elid1);
     assert.throws(() => rwIModel.elements.deleteElement(elid1)); // this should throw, because we haven't requested a lock yet
-    await expect(rwIModel.concurrencyControl.requestResourcesForDelete(adminRequestContext, [el1bc1])).to.be.rejectedWith(IModelError, ""); // this should be rejected, because the other briefcase holds the lock.
+    await expect(rwIModel.concurrencyControl.requestResourcesForDelete(adminRequestContext, [el1bc1])).to.be.rejectedWith(WsgError, "Lock(s) is owned by another briefcase.");
 
     briefcase2.close();
     await IModelTestUtils.closeAndDeleteBriefcaseDb(adminRequestContext, rwIModel);
