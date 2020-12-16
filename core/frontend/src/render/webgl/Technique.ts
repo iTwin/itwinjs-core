@@ -567,7 +567,7 @@ class TerrainMeshTechnique extends VariedTechnique {
               flags.reset(featureMode, IsInstanced.No, shadowable, thematic);
               flags.isClassified = iClassified;
               flags.isTranslucent = 1 === iTranslucent;
-              const builder = createTerrainMeshBuilder(flags.isClassified, featureMode, flags.isShadowable, thematic);
+              const builder = createTerrainMeshBuilder(flags, featureMode, thematic);
               if (FeatureMode.Pick === featureMode)
                 addUniformFeatureSymbology(builder, false);
               if (flags.isTranslucent) {

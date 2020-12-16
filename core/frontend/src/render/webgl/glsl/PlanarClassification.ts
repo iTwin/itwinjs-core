@@ -40,22 +40,29 @@ const applyPlanarClassificationColor = `
   const float dimScale = .7;
   float colorMix = u_pClassPointCloud ? .65 : .35;
   vec2 classPos = v_pClassPos / v_pClassPosW;
+  bool isOutside = classPos.x < 0.0 || classPos.x > 1.0 || classPos.y < 0.0 || classPos.y > 1.0;
   if (u_pClassColorParams.x > kClassifierDisplay_Element) { // texture/terrain drape.
     if (u_pClassColorParams.x > kTextureDrape) {
       return volClassColor(baseColor, depth);
     }
-    if (classPos.x < 0.0 || classPos.x > 1.0 || classPos.y < 0.0 || classPos.y > 1.0)
+    if (isOutside)
       discard;
 
     vec3 rgb = TEXTURE(s_pClassSampler, classPos.xy).rgb;
     return vec4(rgb, baseColor.a);
   }
 
+  if (classPos.x < 0.0 || classPos.x > 1.0 || classPos.y < 0.0 || classPos.y > 1.0)
+    return baseColor;
+
   vec4 colorTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, classPos.y / 2.0));
-  bool isClassified = colorTexel.r + colorTexel.g + colorTexel.b + colorTexel.a > 0.0;
+  bool isClassified = !isOutside && (colorTexel.r + colorTexel.g + colorTexel.b + colorTexel.a > 0.0);
   float param = isClassified ? u_pClassColorParams.x : u_pClassColorParams.y;
-  if (kClassifierDisplay_Off == param)
-    return vec4(0.0);
+  if (kClassifierDisplay_Off == param) {
+    discard;
+    return vec4(0);
+  }
+
 
   vec4 classColor;
   if (kClassifierDisplay_On == param)

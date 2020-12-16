@@ -21,7 +21,7 @@ let instance: ApproximateTerrainHeights | undefined;
  */
 export class ApproximateTerrainHeights {
   public static readonly maxLevel = 6;
-  public readonly globalHeightRange = Range1d.createXX(-400, 90000); // Dead Sea to Mount Everest.
+  public readonly globalHeightRange = Range1d.createXX(-400, 9000); // Dead Sea to Mount Everest.
   private _terrainHeights: any;
   private readonly _scratchCorners = [new Cartographic(), new Cartographic(), new Cartographic(), new Cartographic()];
   private readonly _tilingScheme = new GeographicTilingScheme(2, 1, true); // Y at top... ?

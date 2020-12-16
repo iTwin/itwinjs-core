@@ -125,9 +125,6 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
   public get isPlanar() { return BatchType.PlanarClassifier === this._id.type; }
 
   public addToScene(context: SceneContext): void {
-    if (this.isPlanar)
-      return;   // Planar classifiers may also have masks and are added seperately.
-
     const classifiedTree = this._classifiedTree.treeOwner.load();
     if (undefined === classifiedTree)
       return;
@@ -139,7 +136,9 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
     if (undefined === classifierTree)
       return;
 
-    context.setVolumeClassifier(classifier, classifiedTree.modelId);
+    if (!this.isPlanar)
+      context.setVolumeClassifier(classifier, classifiedTree.modelId);
+
     super.addToScene(context);
   }
 

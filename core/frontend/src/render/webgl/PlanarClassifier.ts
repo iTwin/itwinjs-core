@@ -357,7 +357,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     if (planarClipMask)
       this.getPlanarClipMaskTileTrees(trees, context.viewport.view, classifiedTree.modelId, planarClipMask);
 
-    const projection = PlanarTextureProjection.computePlanarTextureProjection(this._plane, context.viewingSpace, classifiedTreeRef, trees, viewState, this._width, this._height);
+    const projection = PlanarTextureProjection.computePlanarTextureProjection(this._plane, context, classifiedTreeRef, trees, viewState, this._width, this._height);
     if (!projection.textureFrustum || !projection.projectionMatrix || !projection.worldToViewMap)
       return;
 
@@ -464,6 +464,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     system.applyRenderState(prevState);
     system.context.viewport(0, 0, target.viewRect.width, target.viewRect.height);
   }
+
   public getPlanarClipMaskTileTrees(trees: TileTreeReference[], view: ViewState, classifiedModelId: Id64String, planarClipMask: PlanarClipMask): void {
     if (planarClipMask.maskAllHigherPriorityModels)
       view.forEachTileTreeRef((ref) => {

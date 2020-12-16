@@ -12,7 +12,7 @@ import { AttributeMap } from "../AttributeMap";
 import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
 import { System } from "../System";
-import { FeatureMode, IsClassified, IsShadowable, IsThematic } from "../TechniqueFlags";
+import { FeatureMode, IsClassified, IsShadowable, IsThematic, TechniqueFlags } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
 import { Texture } from "../Texture";
 import { addUInt32s } from "./Common";
@@ -117,8 +117,8 @@ function addTextures(builder: ProgramBuilder, maxTexturesPerMesh: number) {
 }
 
 /** @internal */
-export default function createTerrainMeshBuilder(isClassified: IsClassified, _featureMode: FeatureMode, shadowable: IsShadowable, thematic: IsThematic): ProgramBuilder {
-  const builder = createBuilder(shadowable);
+export default function createTerrainMeshBuilder(flags: TechniqueFlags, _featureMode: FeatureMode, thematic: IsThematic): ProgramBuilder {
+  const builder = createBuilder(flags.isShadowable);
   const frag = builder.frag;
   const applyTextureStrings = [];
   let textureCount = System.instance.maxTerrainImageryLayers;
@@ -163,7 +163,7 @@ export default function createTerrainMeshBuilder(isClassified: IsClassified, _fe
     });
   });
   addTextures(builder, textureCount);
-  if (isClassified)
+  if (flags.isClassified)
     addColorPlanarClassifier(builder, true /* Transparency? */, thematic);
 
   if (IsThematic.Yes === thematic) {

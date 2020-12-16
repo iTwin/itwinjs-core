@@ -90,7 +90,7 @@ export class BackgroundMapDrape extends TextureDrape {
     this._width = requiredWidth;
     this._height = requiredHeight;
 
-    const projection = PlanarTextureProjection.computePlanarTextureProjection(this._plane, context.viewingSpace, this._drapedTree, [this._mapTree], viewState, this._width, this._height);
+    const projection = PlanarTextureProjection.computePlanarTextureProjection(this._plane, context, this._drapedTree, [this._mapTree], viewState, this._width, this._height);
     if (!projection.textureFrustum || !projection.projectionMatrix || !projection.worldToViewMap)
       return;
 

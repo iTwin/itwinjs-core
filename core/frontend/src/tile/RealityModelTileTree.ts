@@ -541,8 +541,8 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
 
   public addToScene(context: SceneContext): void {
     // NB: The classifier must be added first, so we can find it when adding our own tiles.
-    if (this._classifier && this._classifier.activeClassifier && !this._classifier.isPlanar)
-      this._classifier.addToScene(context);     // Add volume classifier seperately from planar classifiers (which may be require masking as well)
+    if (this._classifier && this._classifier.activeClassifier)
+      this._classifier.addToScene(context);
 
     this.addPlanarClassifierToScene(context);
 
