@@ -13,7 +13,6 @@ import { RequestType, ResponseBuilder, ScopeType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
 import * as utils from "./TestUtils";
 import { workDir } from "./TestConstants";
-import { Test } from "mocha";
 
 chai.should();
 
