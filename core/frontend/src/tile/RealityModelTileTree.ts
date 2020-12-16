@@ -7,8 +7,8 @@
  */
 
 import { assert, BentleyStatus, compareNumbers, compareStrings, compareStringsOrUndefined, Guid, Id64String } from "@bentley/bentleyjs-core";
-import { Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Ray3d, Transform, TransformProps, Vector3d, XYZ } from "@bentley/geometry-core";
-import { Cartographic, IModelError, ViewFlagOverrides, ViewFlagPresence } from "@bentley/imodeljs-common";
+import { Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Ray3d, Transform, TransformProps, Vector3d, XYZ, AxisOrder } from "@bentley/geometry-core";
+import { Cartographic, IModelError, GeoCoordStatus, ViewFlagOverrides, ViewFlagPresence } from "@bentley/imodeljs-common";
 import { AccessToken, request, RequestOptions } from "@bentley/itwin-client";
 import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
 import { DisplayStyleState } from "../DisplayStyleState";
@@ -452,6 +452,41 @@ export namespace RealityModelTileTree {
     const tileClient = new RealityModelTileClient(url, accessToken, iModel.contextId);
     const json = await tileClient.getRootDocument(url);
     let rootTransform = iModel.ecefLocation ? iModel.backgroundMapLocation.getMapEcefToDb(0) : Transform.createIdentity();
+    const geoConverter = iModel.noGcsDefined ? undefined : iModel.geoServices.getConverter("WGS84");
+    if (geoConverter !== undefined) {
+      let realityTileRange = RealityModelTileUtils.rangeFromBoundingVolume(json.root.boundingVolume)!.range;
+      if (json.root.transform) {
+        const realityToEcef = RealityModelTileUtils.transformFromJson(json.root.transform);
+        realityTileRange = realityToEcef.multiplyRange(realityTileRange);
+      }
+
+      const ecefOrigin = realityTileRange.localXYZToWorld(.5, .5, .5)!;
+
+      const ecefEastPoint = ecefOrigin.plusXYZ(10, 0, 0);
+      const ecefNorthPoint = ecefOrigin.plusXYZ(0, 10, 0);
+
+      const cartographicOrigin = Cartographic.fromEcef(ecefOrigin)!;
+      const cartographicNorth = Cartographic.fromEcef(ecefNorthPoint)!;
+      const cartographicEast = Cartographic.fromEcef(ecefEastPoint)!;
+
+      const geoOrigin = Point3d.create(cartographicOrigin.longitudeDegrees, cartographicOrigin.latitudeDegrees, cartographicOrigin.height);
+      const geoNorth = Point3d.create(cartographicNorth.longitudeDegrees, cartographicNorth.latitudeDegrees, cartographicNorth.height);
+      const geoEast = Point3d.create(cartographicEast.longitudeDegrees, cartographicEast.latitudeDegrees, cartographicEast.height);
+
+      const response = await geoConverter.getIModelCoordinatesFromGeoCoordinates([geoOrigin, geoNorth, geoEast]);
+      if (response.iModelCoords[0].s === GeoCoordStatus.Success && response.iModelCoords[1].s === GeoCoordStatus.Success && response.iModelCoords[2].s === GeoCoordStatus.Success) {
+        const iModelOrigin = Point3d.fromJSON(response.iModelCoords[0].p);
+        const iModelNorth = Point3d.fromJSON(response.iModelCoords[1].p);
+        const iModelEast = Point3d.fromJSON(response.iModelCoords[2].p);
+
+        const xVector = Vector3d.createStartEnd(iModelOrigin, iModelEast);
+        const yVector = Vector3d.createStartEnd(iModelOrigin, iModelNorth);
+        const matrix = Matrix3d.createRigidFromColumns(xVector, yVector, AxisOrder.XYZ)!;
+        rootTransform = Transform.createMatrixPickupPutdown(matrix, ecefOrigin, iModelOrigin)!;
+      }
+
+    }
+
     if (json.root.transform) {
       const realityToEcef = RealityModelTileUtils.transformFromJson(json.root.transform);
       rootTransform = rootTransform.multiplyTransformTransform(realityToEcef);
