@@ -6,47 +6,31 @@
  * @module Utils
  */
 
-import { BentleyError, BentleyStatus, BeUiEvent } from "@bentley/bentleyjs-core";
+import { BeUiEvent } from "@bentley/bentleyjs-core";
 import {
-  BadUnit, BasicUnit, Format, FormatProps, FormatterSpec, ParseResult, ParserSpec, UnitConversion, UnitProps, UnitsProvider,
+  BadUnit, BasicUnit, Format, FormatProps, FormatterSpec, ParseResult, ParserSpec, QuantityStatus, UnitConversion, UnitProps, UnitsProvider,
 } from "@bentley/imodeljs-quantity";
 import { IModelApp } from "./IModelApp";
 
-/** Class that implements the minimum UnitConversion interface to provide information needed to convert unit values.
+/** Defines standard format types for tools that need to display measurements to user.
  * @beta
  */
-export class ConversionData implements UnitConversion {
-  public factor: number = 1.0;
-  public offset: number = 0.0;
-}
+export enum QuantityType { Length = 1, Angle = 2, Area = 3, Volume = 4, LatLong = 5, Coordinate = 6, Stationing = 7, LengthSurvey = 8, LengthEngineering = 9 }
 
-// interface use to define unit conversions to a base used for a unitFamily
-interface ConversionDef {
-  numerator: number;
-  denominator: number;
-  offset: number;
-}
-
-// Temporary interface use to define structure of the unit definitions in this example.
-interface UnitDefinition {
-  readonly name: string;
-  readonly unitFamily: string;
-  readonly displayLabel: string;
-  readonly altDisplayLabels: string[];
-  readonly conversion: ConversionDef;
-}
-
-/** Override format entries must define formats for imperial and metric.
- * @beta
+/** String used to uniquely identify a Quantity. See `QuantityFormatter.getQuantityTypeKey`.
+ * @internal
  */
-export interface OverrideFormatEntry {
-  imperial: FormatProps;
-  metric: FormatProps;
-}
+export type QuantityTypeKey = string;
+
+// cSpell:ignore FORMATPROPS FORMATKEY
+
+// ========================================================================================================================================
+// Default Data
+// ========================================================================================================================================
 
 // cSpell:ignore MILLIINCH, MICROINCH, MILLIFOOT
 // Set of supported units - this information will come from Schema-based units once the EC package is ready to provide this information.
-const unitData: UnitDefinition[] = [
+const UNIT_DATA: UnitDefinition[] = [
   // Angles ( base unit radian )
   { name: "Units.RAD", unitFamily: "Units.ANGLE", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "rad", altDisplayLabels: ["radian"] },
   // 1 rad = 180.0/PI °
@@ -88,193 +72,148 @@ const unitData: UnitDefinition[] = [
   { name: "Units.SQ_M", unitFamily: "Units.AREA", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "m²", altDisplayLabels: ["sm"] },
   // conversion => specified unit to base unit m³
   { name: "Units.CUB_FT", unitFamily: "Units.VOLUME", conversion: { numerator: 1.0, denominator: 0.028316847, offset: 0.0 }, displayLabel: "ft³", altDisplayLabels: ["cf"] },
+  { name: "Units.CUB_US_SURVEY_FT", unitFamily: "Units.VOLUME", conversion: { numerator: 1, denominator: 0.0283170164937591, offset: 0.0 }, displayLabel: "ft³", altDisplayLabels: ["cf"] },
   { name: "Units.CUB_YD", unitFamily: "Units.VOLUME", conversion: { numerator: 1.0, denominator: 0.76455486, offset: 0.0 }, displayLabel: "yd³", altDisplayLabels: ["cy"] },
   { name: "Units.CUB_M", unitFamily: "Units.VOLUME", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "m³", altDisplayLabels: ["cm"] },
 ];
 
-/** Defines standard format types for tools that need to display measurements to user.
- * @beta
+/** Used to uniquely identify a unit system. There should be an entry for each entry in `PresentationUnitSystem` @presentation-common package
+ * "metric" -> PresentationUnitSystem.Metric
+ * "imperial" -> PresentationUnitSystem.BritishImperial
+ * "usCustomary" -> PresentationUnitSystem.UsCustomary
+ * "usSurvey" -> PresentationUnitSystem.UsSurvey
+ * @internal
  */
-export enum QuantityType { Length = 1, Angle = 2, Area = 3, Volume = 4, LatLong = 5, Coordinate = 6, Stationing = 7, LengthSurvey = 8, LengthEngineering = 9 }
+export type UnitSystemKey = "metric" | "imperial" | "usCustomary" | "usSurvey";
 
-/**
- * @beta
- */
-export type QuantityTypeArg = QuantityType | string;
+const DEFAULT_FORMATKEY_BY_UNIT_SYSTEM = [
+  {
+    system: "metric",  // PresentationUnitSystem.Metric,
+    entries: [
+      { type: `QuantityTypeEnumValue-${QuantityType.Length}`, formatKey: "[units:length]meter4" },
+      { type: `QuantityTypeEnumValue-${QuantityType.Angle}`, formatKey: "[units:angle]degree2" },
+      { type: `QuantityTypeEnumValue-${QuantityType.Area}`, formatKey: "[units:area]mSquared4" },
+      { type: `QuantityTypeEnumValue-${QuantityType.Volume}`, formatKey: "[units:volume]mCubed4" },
+      { type: `QuantityTypeEnumValue-${QuantityType.LatLong}`, formatKey: "[units:angle]dms" },
+      { type: `QuantityTypeEnumValue-${QuantityType.Coordinate}`, formatKey: "[units:length]meter2" },
+      { type: `QuantityTypeEnumValue-${QuantityType.Stationing}`, formatKey: "[units:length]m-sta2" },
+      { type: `QuantityTypeEnumValue-${QuantityType.LengthSurvey}`, formatKey: "[units:length]meter4" },
+      { type: `QuantityTypeEnumValue-${QuantityType.LengthEngineering}`, formatKey: "[units:length]meter4" },
+    ],
+  },
+  {
+    system: "imperial", // PresentationUnitSystem.BritishImperial,
+    entries: [
+      { type: `QuantityTypeEnumValue-${QuantityType.Length}`, formatKey: "[units:length]fi8" },
+      { type: `QuantityTypeEnumValue-${QuantityType.Angle}`, formatKey: "[units:angle]dms2" },
+      { type: `QuantityTypeEnumValue-${QuantityType.Area}`, formatKey: "[units:area]fSquared4" },
+      { type: `QuantityTypeEnumValue-${QuantityType.Volume}`, formatKey: "[units:volume]fCubed4" },
+      { type: `QuantityTypeEnumValue-${QuantityType.LatLong}`, formatKey: "[units:angle]dms" },
+      { type: `QuantityTypeEnumValue-${QuantityType.Coordinate}`, formatKey: "[units:length]feet2" },
+      { type: `QuantityTypeEnumValue-${QuantityType.Stationing}`, formatKey: "[units:length]f-sta2" },
+      { type: `QuantityTypeEnumValue-${QuantityType.LengthSurvey}`, formatKey: "[units:length]f-survey-4-labeled" },
+      { type: `QuantityTypeEnumValue-${QuantityType.LengthEngineering}`, formatKey: "[units:length]feet4" },
+    ],
+  },
+  {
+    system: "usCustomary",  // PresentationUnitSystem.UsCustomary
+    entries: [
+      { type: `QuantityTypeEnumValue-${QuantityType.Length}`, formatKey: "[units:length]fi8" },
+      { type: `QuantityTypeEnumValue-${QuantityType.Angle}`, formatKey: "[units:angle]dms2" },
+      { type: `QuantityTypeEnumValue-${QuantityType.Area}`, formatKey: "[units:area]fSquared4" },
+      { type: `QuantityTypeEnumValue-${QuantityType.Volume}`, formatKey: "[units:volume]fCubed4" },
+      { type: `QuantityTypeEnumValue-${QuantityType.LatLong}`, formatKey: "[units:angle]dms" },
+      { type: `QuantityTypeEnumValue-${QuantityType.Coordinate}`, formatKey: "[units:length]feet2" },
+      { type: `QuantityTypeEnumValue-${QuantityType.Stationing}`, formatKey: "[units:length]f-sta2" },
+      { type: `QuantityTypeEnumValue-${QuantityType.LengthSurvey}`, formatKey: "[units:length]f-survey-4" },
+      { type: `QuantityTypeEnumValue-${QuantityType.LengthEngineering}`, formatKey: "[units:length]feet4" },
+    ],
+  },
+  {
+    system: "usSurvey",  // PresentationUnitSystem.UsSurvey
+    entries: [
+      { type: `QuantityTypeEnumValue-${QuantityType.Length}`, formatKey: "[units:length]f-survey-4" },
+      { type: `QuantityTypeEnumValue-${QuantityType.Angle}`, formatKey: "[units:angle]dms2" },
+      { type: `QuantityTypeEnumValue-${QuantityType.Area}`, formatKey: "[units:area]usSurveyFtSquared4" },
+      { type: `QuantityTypeEnumValue-${QuantityType.Volume}`, formatKey: "[units:volume]usSurveyFtCubed4" },
+      { type: `QuantityTypeEnumValue-${QuantityType.LatLong}`, formatKey: "[units:angle]dms" },
+      { type: `QuantityTypeEnumValue-${QuantityType.Coordinate}`, formatKey: "[units:length]f-survey-2" },
+      { type: `QuantityTypeEnumValue-${QuantityType.Stationing}`, formatKey: "[units:length]f-survey-sta2" },
+      { type: `QuantityTypeEnumValue-${QuantityType.LengthSurvey}`, formatKey: "[units:length]f-survey-4" },
+      { type: `QuantityTypeEnumValue-${QuantityType.LengthEngineering}`, formatKey: "[units:length]f-survey-4" },
+    ],
+  },
+];
 
-/** Interface that defines the functions required to be implemented to provide custom formatting and parsing of a custom quantity type.
- * @beta
- */
-export interface FormatterParserSpecsProvider {
-  quantityTypeName: string;
-  createFormatterSpec: (useImperial: boolean) => Promise<FormatterSpec>;
-  createParserSpec: (useImperial: boolean) => Promise<ParserSpec>;
+// Temporary interface use to define structure of the unit definitions in this example.
+interface UniqueFormatsProps {
+  readonly key: string;
+  readonly description?: string;
+  readonly format: FormatProps;
 }
 
-interface FormatDataEntry {
-  type: number;
-  format: FormatProps;
-}
-
-interface FormatData {
-  metric: FormatDataEntry[];
-  imperial: FormatDataEntry[];
-}
-
-// The following provide default formats for different the QuantityTypes. It is important to note that these default should reference
-// units that are available from the registered units provider.
-const defaultsFormats: FormatData = {
-  metric: [{
-    type: 1 /* Length */, format: {
+const DEFAULT_FORMATPROPS: UniqueFormatsProps[] = [
+  {
+    key: "[units:length]meter4",
+    description: "meters (labeled) 4 decimal places",
+    format: {
       composite: {
         includeZero: true,
         spacer: " ",
-        units: [
-          {
-            label: "m",
-            name: "Units.M",
-          },
-        ],
-      },
-      formatTraits: ["keepSingleZero", "showUnitLabel"],
-      precision: 4,
-      type: "Decimal",
-    },
-  }, {
-    type: 2 /* Angle */, format: {
-      composite: {
-        includeZero: true,
-        spacer: "",
-        units: [
-          {
-            label: "°",
-            name: "Units.ARC_DEG",
-          },
-        ],
-      },
-      formatTraits: ["keepSingleZero", "showUnitLabel"],
-      precision: 2,
-      type: "Decimal",
-      uomSeparator: "",
-    },
-  }, {
-    type: 3 /* Area */, format: {
-      composite: {
-        includeZero: true,
-        spacer: " ",
-        units: [
-          {
-            label: "m²",
-            name: "Units.SQ_M",
-          },
-        ],
-      },
-      formatTraits: ["keepSingleZero", "showUnitLabel"],
-      precision: 4,
-      type: "Decimal",
-    },
-  }, {
-    type: 4 /* Volume */, format: {
-      composite: {
-        includeZero: true,
-        spacer: " ",
-        units: [
-          {
-            label: "m³",
-            name: "Units.CUB_M",
-          },
-        ],
-      },
-      formatTraits: ["keepSingleZero", "showUnitLabel"],
-      precision: 4,
-      type: "Decimal",
-    },
-  }, {
-    type: 5 /* LatLong */, format: {
-      composite: {
-        includeZero: true,
-        spacer: "",
-        units: [
-          {
-            label: "°",
-            name: "Units.ARC_DEG",
-          },
-        ],
-      },
-      formatTraits: ["keepSingleZero", "showUnitLabel"],
-      precision: 6,
-      type: "Decimal",
-      uomSeparator: "",
-    },
-  }, {
-    type: 6 /* Coordinate */, format: {
-      composite: {
-        includeZero: true,
-        spacer: " ",
-        units: [
-          {
-            label: "m",
-            name: "Units.M",
-          },
-        ],
-      },
-      formatTraits: ["keepSingleZero", "showUnitLabel"],
-      precision: 2,
-      type: "Decimal",
-    },
-  }, {
-    type: 7 /* Stationing */, format: {
-      composite: {
-        includeZero: true,
-        spacer: " ",
-        units: [
-          {
-            label: "m",
-            name: "Units.M",
-          },
-        ],
-      },
-      formatTraits: ["trailZeroes", "keepSingleZero"],
-      stationOffsetSize: 3,
-      precision: 2,
-      type: "Station",
-    },
-  }, {
-    type: 8 /* LengthSurvey */, format: {
-      composite: {
-        includeZero: true,
-        spacer: " ",
-        units: [
-          {
-            label: "m",
-            name: "Units.M",
-          },
-        ],
-      },
-      formatTraits: ["keepSingleZero", "showUnitLabel"],
-      precision: 4,
-      type: "Decimal",
-    },
-  }, {
-    type: 9 /* LengthEngineering */, format: {
-      composite: {
-        includeZero: true,
-        spacer: " ",
-        units: [
-          {
-            label: "m",
-            name: "Units.M",
-          },
-        ],
+        units: [{ label: "m", name: "Units.M" }],
       },
       formatTraits: ["keepSingleZero", "showUnitLabel"],
       precision: 4,
       type: "Decimal",
     },
   },
-  ],
-  imperial: [{
-    type: 1 /* Length */, format: {
+  {
+    key: "[units:length]meter2",
+    description: "meters (labeled) 2 decimal places",
+    format: {
+      composite: {
+        includeZero: true,
+        spacer: " ",
+        units: [{ label: "m", name: "Units.M" }],
+      },
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      precision: 2,
+      type: "Decimal",
+    },
+  },
+
+  {
+    key: "[units:length]feet4",
+    description: "feet (labeled) 4 decimal places",
+    format: {
+      composite: {
+        includeZero: true,
+        spacer: " ",
+        units: [{ label: "ft", name: "Units.FT" }],
+      },
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      precision: 4,
+      type: "Decimal",
+    },
+  },
+  {
+    key: "[units:length]feet2",
+    description: "feet (labeled) 2 decimal places",
+    format: {
+      composite: {
+        includeZero: true,
+        spacer: " ",
+        units: [{ label: "ft", name: "Units.FT" }],
+      },
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      precision: 2,
+      type: "Decimal",
+    },
+  },
+  {
+    key: "[units:length]fi8",
+    description: "feet-inch 1/8 (labeled)",
+    format: {
       composite: {
         includeZero: true,
         spacer: "-",
@@ -285,220 +224,415 @@ const defaultsFormats: FormatData = {
       type: "Fractional",
       uomSeparator: "",
     },
-  }, {
-    type: 2 /* Angle */, format: {
-      composite: {
-        includeZero: true,
-        spacer: "",
-        units: [
-          {
-            label: "°",
-            name: "Units.ARC_DEG",
-          },
-          {
-            label: "'",
-            name: "Units.ARC_MINUTE",
-          },
-          {
-            label: "\"",
-            name: "Units.ARC_SECOND",
-          },
-        ],
-      },
-      formatTraits: ["keepSingleZero", "showUnitLabel"],
-      precision: 2,
-      type: "Decimal",
-      uomSeparator: "",
-    },
-  }, {
-    type: 3 /* Area */, format: {
+  },
+  {
+    key: "[units:length]f-sta2",
+    description: "stationing feet-2 decimal places ",
+    format: {
       composite: {
         includeZero: true,
         spacer: " ",
-        units: [
-          {
-            label: "ft²",
-            name: "Units.SQ_FT",
-          },
-        ],
-      },
-      formatTraits: ["keepSingleZero", "showUnitLabel"],
-      precision: 4,
-      type: "Decimal",
-    },
-  }, {
-    type: 4 /* Volume */, format: {
-      composite: {
-        includeZero: true,
-        spacer: " ",
-        units: [
-          {
-            label: "ft³",
-            name: "Units.CUB_FT",
-          },
-        ],
-      },
-      formatTraits: ["keepSingleZero", "showUnitLabel"],
-      precision: 4,
-      type: "Decimal",
-    },
-  }, {
-    type: 5 /* LatLong */, format: {
-      composite: {
-        includeZero: true,
-        spacer: "",
-        units: [
-          {
-            label: "°",
-            name: "Units.ARC_DEG",
-          },
-          {
-            label: "'",
-            name: "Units.ARC_MINUTE",
-          },
-          {
-            label: "\"",
-            name: "Units.ARC_SECOND",
-          },
-        ],
-      },
-      formatTraits: ["keepSingleZero", "showUnitLabel"],
-      precision: 0,
-      type: "Decimal",
-      uomSeparator: "",
-    },
-  }, {
-    type: 6 /* Coordinate */, format: {
-      composite: {
-        includeZero: true,
-        spacer: " ",
-        units: [
-          {
-            label: "ft",
-            name: "Units.FT",
-          },
-        ],
-      },
-      formatTraits: ["keepSingleZero", "showUnitLabel"],
-      precision: 2,
-      type: "Decimal",
-    },
-  }, {
-    type: 7 /* Stationing */, format: {
-      composite: {
-        includeZero: true,
-        spacer: " ",
-        units: [
-          {
-            label: "ft",
-            name: "Units.FT",
-          },
-        ],
+        units: [{ label: "ft", name: "Units.FT" }],
       },
       formatTraits: ["trailZeroes", "keepSingleZero"],
       stationOffsetSize: 2,
       precision: 2,
       type: "Station",
     },
-  }, {
-    type: 8 /* LengthSurvey */, format: {
+  },
+  {
+    key: "[units:length]f-survey-sta2",
+    description: "stationing feet-2 decimal places ",
+    format: {
       composite: {
         includeZero: true,
         spacer: " ",
-        units: [
-          {
-            label: "ft",
-            name: "Units.US_SURVEY_FT",
-          },
-        ],
+        units: [{ label: "ft", name: "Units.US_SURVEY_FT" }],
+      },
+      formatTraits: ["trailZeroes", "keepSingleZero"],
+      stationOffsetSize: 2,
+      precision: 2,
+      type: "Station",
+    },
+  },
+
+  {
+    key: "[units:length]m-sta2",
+    description: "stationing meters-2 decimal places ",
+    format: {
+      composite: {
+        includeZero: true,
+        spacer: " ",
+        units: [{ label: "m", name: "Units.M" }],
+      },
+      formatTraits: ["trailZeroes", "keepSingleZero"],
+      stationOffsetSize: 3,
+      precision: 2,
+      type: "Station",
+    },
+  },
+  {
+    key: "[units:length]f-survey-2",
+    description: "survey feet (labeled)-2 decimal places ",
+    format: {
+      composite: {
+        includeZero: true,
+        spacer: " ",
+        units: [{ label: "ft", name: "Units.US_SURVEY_FT" }],
       },
       formatTraits: ["keepSingleZero", "showUnitLabel"],
-      precision: 4,
+      precision: 2,
       type: "Decimal",
     },
-  }, {
-    type: 9 /* LengthEngineering */, format: {
+  },
+  {
+    key: "[units:length]f-survey-4-labeled",
+    description: "survey feet (labeled)-4 decimal places ",
+    format: {
       composite: {
         includeZero: true,
         spacer: " ",
-        units: [
-          {
-            label: "ft",
-            name: "Units.FT",
-          },
-        ],
+        units: [{ label: "ft (US Survey)", name: "Units.US_SURVEY_FT" }],
       },
       formatTraits: ["keepSingleZero", "showUnitLabel"],
       precision: 4,
       type: "Decimal",
     },
   },
-  ],
-};
+
+  {
+    key: "[units:length]f-survey-4",
+    description: "survey feet (labeled)-4 decimal places ",
+    format: {
+      composite: {
+        includeZero: true,
+        spacer: " ",
+        units: [{ label: "ft", name: "Units.US_SURVEY_FT" }],
+      },
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      precision: 4,
+      type: "Decimal",
+    },
+  },
+  {
+    key: "[units:angle]degree2",
+    description: "degrees (labeled) 2 decimal places",
+    format: {
+      composite: {
+        includeZero: true,
+        spacer: "",
+        units: [{ label: "°", name: "Units.ARC_DEG" }],
+      },
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      precision: 2,
+      type: "Decimal",
+      uomSeparator: "",
+    },
+  },
+  {
+    key: "[units:angle]dms",
+    description: "degrees minutes seconds (labeled) 0 decimal places",
+    format: {
+      composite: {
+        includeZero: true,
+        spacer: "",
+        units: [{ label: "°", name: "Units.ARC_DEG" }, { label: "'", name: "Units.ARC_MINUTE" }, { label: "\"", name: "Units.ARC_SECOND" }],
+      },
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      precision: 0,
+      type: "Decimal",
+      uomSeparator: "",
+    },
+  },
+  {
+    key: "[units:angle]dms2",
+    description: "degrees minutes seconds (labeled) 2 decimal places",
+    format: {
+      composite: {
+        includeZero: true,
+        spacer: "",
+        units: [{ label: "°", name: "Units.ARC_DEG" }, { label: "'", name: "Units.ARC_MINUTE" }, { label: "\"", name: "Units.ARC_SECOND" }],
+      },
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      precision: 2,
+      type: "Decimal",
+      uomSeparator: "",
+    },
+  },
+  {
+    key: "[units:area]mSquared4",
+    description: "square meters (labeled) 4 decimal places",
+    format: {
+      composite: {
+        includeZero: true,
+        spacer: " ",
+        units: [{ label: "m²", name: "Units.SQ_M" }],
+      },
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      precision: 4,
+      type: "Decimal",
+    },
+  },
+  {
+    key: "[units:area]fSquared4",
+    description: "square feet (labeled) 4 decimal places",
+    format: {
+      composite: {
+        includeZero: true,
+        spacer: " ",
+        units: [{ label: "ft²", name: "Units.SQ_FT" }],
+      },
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      precision: 4,
+      type: "Decimal",
+    },
+  },
+  {
+    key: "[units:area]usSurveyFtSquared4",
+    description: "square survey feet (labeled) 4 decimal places",
+    format: {
+      composite: {
+        includeZero: true,
+        spacer: " ",
+        units: [{ label: "ft²", name: "Units.SQ_US_SURVEY_FT" }],
+      },
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      precision: 4,
+      type: "Decimal",
+    },
+  },
+  {
+    key: "[units:volume]mCubed4",
+    description: "cubic meters (labeled) 4 decimal places",
+    format: {
+      composite: {
+        includeZero: true,
+        spacer: " ",
+        units: [{ label: "m³", name: "Units.CUB_M" }],
+      },
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      precision: 4,
+      type: "Decimal",
+    },
+  },
+  {
+    key: "[units:volume]fCubed4",
+    description: "cubic feet (labeled) 4 decimal places",
+    format: {
+      composite: {
+        includeZero: true,
+        spacer: " ",
+        units: [{ label: "ft³", name: "Units.CUB_FT" }],
+      },
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      precision: 4,
+      type: "Decimal",
+    },
+  },
+  {
+    key: "[units:volume]usSurveyFtCubed4",
+    description: "cubic survey feet (labeled) 4 decimal places",
+    format: {
+      composite: {
+        includeZero: true,
+        spacer: " ",
+        units: [{ label: "ft³", name: "Units.CUB_US_SURVEY_FT" }],
+      },
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      precision: 4,
+      type: "Decimal",
+    },
+  },
+];
+
+/** Class that implements the minimum UnitConversion interface to provide information needed to convert unit values.
+ * @beta
+ */
+export class ConversionData implements UnitConversion {
+  public factor: number = 1.0;
+  public offset: number = 0.0;
+}
+
+// interface use to define unit conversions to a base used for a unitFamily
+interface ConversionDef {
+  numerator: number;
+  denominator: number;
+  offset: number;
+}
+
+// Temporary interface use to define structure of the unit definitions in this example.
+interface UnitDefinition {
+  readonly name: string;
+  readonly unitFamily: string;
+  readonly displayLabel: string;
+  readonly altDisplayLabels: string[];
+  readonly conversion: ConversionDef;
+}
+
+/** Override format entries must define formats for imperial and metric.
+ * @beta
+ */
+export interface OverrideFormatEntry {
+  imperial?: FormatProps;
+  metric?: FormatProps;
+  usCustomary?: FormatProps;
+  usSurvey?: FormatProps;
+}
+
+/**
+ * @beta
+ */
+export type QuantityTypeArg = QuantityType | string;
+
+/** Interface that defines the functions required to be implemented to provide custom formatting and parsing of a custom quantity type.
+ * @beta
+ */
+export interface FormatterParserSpecsProvider {
+  quantityTypeKey: QuantityTypeKey;
+  createFormatterSpec: (unitSystem: UnitSystemKey) => Promise<FormatterSpec>;
+  createParserSpec: (unitSystem: UnitSystemKey) => Promise<ParserSpec>;
+}
+
+// ====================================== END OF DEFAULT DATA ======================================
+
+/** Mapping of FormatterSpecs by QuantityType. A FormatterSpec contains unit conversion factors for all composite units to go from the "persistence unit" to the
+ * display format without requiring an async unit look up. See method `getPersistenceUnitByQuantityType` for default persistence units.
+ * @internal
+ */
+export type FormatterSpecByQuantityType = Map<QuantityTypeKey, FormatterSpec>;
+
+/** Mapping of FormatterSpecs by QuantityType. A FormatterSpec contains unit conversion factors for all composite units to go from the "persistence unit" to the
+ * display format without requiring an async unit look up. See method `getPersistenceUnitByQuantityType` for default persistence units.
+ * @internal
+ */
+export type FormatPropsByUnitSystem = Map<UnitSystemKey, FormatProps>;
 
 /** Formats quantity values into strings.
  * @beta
  */
 export class QuantityFormatter implements UnitsProvider {
-  protected _activeSystemIsImperial = true;
+  protected _activeUnitSystem: UnitSystemKey = "imperial";
   protected _formatSpecsByKoq = new Map<string, FormatterSpec[]>();
-  protected _imperialFormatsByType = new Map<string, Format>();
-  protected _metricFormatsByType = new Map<string, Format>();
-  protected _imperialFormatSpecsByType = new Map<string, FormatterSpec>();
-  protected _metricFormatSpecsByType = new Map<string, FormatterSpec>();
-  protected _imperialParserSpecsByType = new Map<string, ParserSpec>();
-  protected _metricParserSpecsByType = new Map<string, ParserSpec>();
-  protected _overrideFormatDataByType = new Map<QuantityType, OverrideFormatEntry>();
+  protected _activeFormatSpecsByType = new Map<QuantityTypeKey, FormatterSpec>();
+  protected _activeParserSpecsByType = new Map<QuantityTypeKey, ParserSpec>();
+  protected _overrideFormatPropsByQuantityType = new Map<QuantityTypeKey, OverrideFormatEntry>();
   protected _formatSpecProviders = new Array<FormatterParserSpecsProvider>();
 
-  protected _pendingLoadFormatSpecImperial?: Promise<void>;
-  protected _pendingLoadFormatSpecMetric?: Promise<void>;
-  protected _pendingLoadParserSpecImperial?: Promise<void>;
-  protected _pendingLoadParserSpecMetric?: Promise<void>;
-
-  protected getPendingPromise(useImperial: boolean, isFormatSpecPromise: boolean): Promise<void> | undefined {
-    if (isFormatSpecPromise)
-      return useImperial ? this._pendingLoadFormatSpecImperial : this._pendingLoadFormatSpecMetric;
-
-    return useImperial ? this._pendingLoadParserSpecImperial : this._pendingLoadParserSpecMetric;
-  }
-
-  protected setPendingPromise(useImperial: boolean, isFormatSpecPromise: boolean, promise: Promise<void> | undefined): void {
-    if (isFormatSpecPromise) {
-      if (useImperial)
-        this._pendingLoadFormatSpecImperial = promise;
-      else
-        this._pendingLoadFormatSpecMetric = promise;
-
-    } else {
-      if (useImperial)
-        this._pendingLoadParserSpecImperial = promise;
-      else
-        this._pendingLoadParserSpecMetric = promise;
-    }
-  }
+  /** Called after the active unit system is changed.  */
+  public readonly onActiveUnitSystemChanged = new BeUiEvent<{ useImperial?: boolean, system?: string }>();
 
   /**
    * constructor
-   * @param showMetricValues - Pass in `true` to show Metric formatted quantity values. Defaults to Imperial. This setting can be changed at
-   *                           runtime using `IModelApp.quantityFormatter.useImperialFormats`.
+   * @param showMetricOrUnitSystem - Pass in `true` to show Metric formatted quantity values. Defaults to Imperial. To explicitly
+   * set it to a specific unit system pass a UnitSystemKey.
    */
-  constructor(showMetricValues?: boolean) {
-    this._activeSystemIsImperial = !showMetricValues;
+  constructor(showMetricOrUnitSystem?: boolean | UnitSystemKey) {
+    if (undefined !== showMetricOrUnitSystem) {
+      if (typeof showMetricOrUnitSystem === "boolean")
+        this._activeUnitSystem = showMetricOrUnitSystem ? "metric" : "imperial";
+      else
+        this._activeUnitSystem = showMetricOrUnitSystem;
+    }
   }
 
-  /** Called after the active unit system is changed.
-   */
-  public readonly onActiveUnitSystemChanged = new BeUiEvent<{ useImperial: boolean }>();
+  private getOverrideFormatPropsByQuantityType(quantityType: QuantityTypeKey, systemType: UnitSystemKey): FormatProps | undefined {
+    const overrideEntry = this._overrideFormatPropsByQuantityType.get(quantityType);
+    if (overrideEntry) {
+      const entryForActiveUnitSystem = Object.entries(overrideEntry).find((entry) => entry[0] === systemType);
+      if (entryForActiveUnitSystem)
+        return entryForActiveUnitSystem[1];
+    }
+    return undefined;
+  }
 
-  public onInitialized() {
+  private async loadSpecs(systemKey: UnitSystemKey, provider: FormatterParserSpecsProvider) {
+    const formatterSpec = await provider.createFormatterSpec(systemKey);
+    const parserSpec = await provider.createParserSpec(systemKey);
+    this._activeFormatSpecsByType.set(provider.quantityTypeKey, formatterSpec);
+    this._activeParserSpecsByType.set(provider.quantityTypeKey, parserSpec);
+  }
+
+  /** Asynchronous call to load Formatting and ParsingSpecs for a unit system. This method ends up caching FormatterSpecs and ParserSpecs
+   *  so they can be quickly accessed.
+   * @internal public for unit test usage
+   */
+  protected async loadFormatAndParsingMapsForSystem(systemType?: UnitSystemKey): Promise<void> {
+    const systemKey = (undefined !== systemType) ? systemType : this._activeUnitSystem;
+    const formatPropsByType = new Map<QuantityTypeKey, FormatProps>();
+
+    // First get default formats
+    const defaultUnitSystemData = DEFAULT_FORMATKEY_BY_UNIT_SYSTEM.find((value) => value.system === systemKey);
+    if (defaultUnitSystemData) {
+      defaultUnitSystemData.entries.forEach((entry) => {
+        const defaultFormatEntry = DEFAULT_FORMATPROPS.find((props) => props.key === entry.formatKey);
+        if (defaultFormatEntry) {
+          formatPropsByType.set(entry.type, defaultFormatEntry.format);
+        } else {
+          throw new Error(`Default quantity format named ${entry.formatKey} is not found`);
+        }
+      });
+    } else {
+      throw new Error(`Default formatting data for unit system '${systemKey}' was not found`);
+    }
+
+    // Override with any registered overrides
+    for (const [typeKey, overrideEntry] of this._overrideFormatPropsByQuantityType) {
+      const entryForActiveUnitSystem = Object.entries(overrideEntry).find((entry) => entry[0] === systemType);
+      if (entryForActiveUnitSystem)
+        formatPropsByType.set(typeKey, entryForActiveUnitSystem[1]);
+    }
+
+    const formatPropPromises = new Array<Promise<void>>();
+    for (const [typeKey, formatProps] of formatPropsByType) {
+      formatPropPromises.push(this.loadFormatAndParserSpec(typeKey, formatProps));
+    }
+    await Promise.all(formatPropPromises);
+
+    const specPromises = new Array<Promise<void>>();
+    for (const provider of this._formatSpecProviders) {
+      specPromises.push(this.loadSpecs(systemKey, provider));
+    }
+    await Promise.all(specPromises);
+  }
+
+  public async onInitialized() {
     // initialize default format and parsing specs
-    this.loadFormatAndParsingMaps(this._activeSystemIsImperial); // eslint-disable-line @typescript-eslint/no-floating-promises
+    await this.loadFormatAndParsingMapsForSystem();
   }
 
+  /** Set the Active unit system to one of the supported types. This will asynchronously load the formatter and parser specs for the activated system. */
+  public async setActiveUnitSystem(isImperialOrUnitSystem: UnitSystemKey | boolean, restartActiveTool?: boolean): Promise<void> {
+    let systemType: UnitSystemKey;
+    if (typeof isImperialOrUnitSystem === "boolean")
+      systemType = isImperialOrUnitSystem ? "imperial" : "metric";
+    else
+      systemType = isImperialOrUnitSystem;
+
+    if (this._activeUnitSystem === systemType)
+      return;
+
+    this._activeUnitSystem = systemType;
+    await this.loadFormatAndParsingMapsForSystem(systemType);
+    this.onActiveUnitSystemChanged.emit({ useImperial: systemType === "imperial", system: systemType });
+    if (IModelApp.toolAdmin && restartActiveTool)
+      IModelApp.toolAdmin.startDefaultTool();
+  }
+
+  /** True if tool quantity values should be displayed in imperial units; false for metric. Changing this flag triggers an asynchronous request to refresh the cached formats. */
+  public get activeUnitSystem(): UnitSystemKey { return this._activeUnitSystem; }
+
+  /** @deprecated use setActiveUnitSystem method and activeUnitSystem property */
+  public get useImperialFormats(): boolean { return this._activeUnitSystem === "imperial"; }
+  public set useImperialFormats(useImperial: boolean) {
+    this.setActiveUnitSystem(useImperial ? "imperial" : "metric", true); // eslint-disable-line @typescript-eslint/no-floating-promises
+  }
+
+  // ===============================================================================================================
+  // Internal Unit Provider implementation
+  // ===============================================================================================================
   /** Find a unit given the unitLabel. */
   public async findUnit(unitLabel: string, unitFamily?: string): Promise<UnitProps> {
-    for (const entry of unitData) {
+    for (const entry of UNIT_DATA) {
       if (unitFamily) {
         if (entry.unitFamily !== unitFamily)
           continue;
@@ -522,7 +656,7 @@ export class QuantityFormatter implements UnitsProvider {
   /** find all units given unitFamily */
   public async getUnitsByFamily(unitFamily: string): Promise<UnitProps[]> {
     const units: UnitProps[] = [];
-    for (const entry of unitData) {
+    for (const entry of UNIT_DATA) {
       if (entry.unitFamily !== unitFamily)
         continue;
       units.push(new BasicUnit(entry.name, entry.displayLabel, entry.unitFamily, entry.altDisplayLabels));
@@ -531,7 +665,7 @@ export class QuantityFormatter implements UnitsProvider {
   }
 
   protected findUnitDefinition(name: string): UnitDefinition | undefined {
-    for (const entry of unitData) {
+    for (const entry of UNIT_DATA) {
       if (entry.name === name)
         return entry;
     }
@@ -566,6 +700,10 @@ export class QuantityFormatter implements UnitsProvider {
 
     return new ConversionData();
   }
+
+  // ===============================================================================================================
+  // End of Internal Unit Provider implementation
+  // ===============================================================================================================
 
   /** method used to load format for KOQ into cache */
   protected async loadKoqFormatSpecs(koq: string): Promise<void> {
@@ -609,79 +747,68 @@ export class QuantityFormatter implements UnitsProvider {
     throw new Error("not yet implemented");
   }
 
-  protected async reloadCachedData() {
-    await this.loadFormatSpecsForQuantityTypes(true);
-    await this.loadParsingSpecsForQuantityTypes(true);
-    await this.loadFormatSpecsForQuantityTypes(false);
-    await this.loadParsingSpecsForQuantityTypes(false);
+  private async loadFormatAndParserSpec(typeKey: QuantityTypeKey, formatProps: FormatProps) {
+    const format = new Format("stdFormat");
+    await format.fromJSON(this, formatProps);
+    const unit = await this.getPersistenceUnitByQuantityType(typeKey);
+    const formatterSpec = await FormatterSpec.create(format.name, format, this, unit);
+    const parserSpec = await ParserSpec.create(format, this, unit);
+    this._activeFormatSpecsByType.set(typeKey, formatterSpec);
+    this._activeParserSpecsByType.set(typeKey, parserSpec);
   }
 
-  protected clearCachedFormatAndParseDataByType(type: QuantityType) {
-    const typeKey = this.parseQuantityTypeArg(type);
-    if (this._imperialFormatsByType.has(typeKey))
-      this._imperialFormatsByType.delete(typeKey);
-    if (this._metricFormatsByType.has(typeKey))
-      this._metricFormatsByType.delete(typeKey);
-    if (this._imperialFormatSpecsByType.has(typeKey))
-      this._imperialFormatSpecsByType.delete(typeKey);
-    if (this._metricFormatSpecsByType.has(typeKey))
-      this._metricFormatSpecsByType.delete(typeKey);
-    if (this._imperialParserSpecsByType.has(typeKey))
-      this._imperialParserSpecsByType.delete(typeKey);
-    if (this._metricParserSpecsByType.has(typeKey))
-      this._metricParserSpecsByType.delete(typeKey);
+  private async loadDefaultFormatAndParserSpecForQuantity(typeKey: QuantityTypeKey) {
+    // repopulate formatSpec and parserSpec entries
+    const defaultFormatsForSystem = DEFAULT_FORMATKEY_BY_UNIT_SYSTEM.find((value) => value.system === this.activeUnitSystem);
+    if (defaultFormatsForSystem?.entries) {
+      const defaultFormatByType = defaultFormatsForSystem?.entries.find((props) => props.type === typeKey);
+      if (defaultFormatByType) {
+        const defaultFormatEntry = DEFAULT_FORMATPROPS.find((props) => props.key === defaultFormatByType.formatKey);
+        if (defaultFormatEntry?.format) {
+          await this.loadFormatAndParserSpec(typeKey, defaultFormatEntry.format);
+        }
+      }
+    }
+
+    // trigger a message to let callers know the cached specs are loaded.
+    this.onActiveUnitSystemChanged.emit({ useImperial: this.activeUnitSystem === "imperial", system: this.activeUnitSystem });
+  }
+
+  /** Method called to clear override and restore defaults formatter and parser spec */
+  public async clearOverrideFormatsByQuantityTypeKey(type: QuantityTypeKey) {
+    if (this.getOverrideFormatPropsByQuantityType(type, this.activeUnitSystem)) {
+      this._overrideFormatPropsByQuantityType.delete(type);
+      await this.loadDefaultFormatAndParserSpecForQuantity(type);
+    }
   }
 
   public async clearOverrideFormats(type: QuantityType) {
-    this.clearCachedFormatAndParseDataByType(type);
-    this._overrideFormatDataByType.delete(type);
-    await this.reloadCachedData();
+    await this.clearOverrideFormatsByQuantityTypeKey(this.getQuantityTypeKey(type));
   }
 
-  public async setOverrideFormats(type: QuantityType, entry: OverrideFormatEntry) {
-    this._overrideFormatDataByType.set(type, entry);
-    this.clearCachedFormatAndParseDataByType(type);
-    await this.reloadCachedData();
+  public async setOverrideFormatsByQuantityTypeKey(typeKey: QuantityTypeKey, overrideEntry: OverrideFormatEntry) {
+    this._overrideFormatPropsByQuantityType.set(typeKey, overrideEntry);
+    if (this.getOverrideFormatPropsByQuantityType(typeKey, this.activeUnitSystem)) {
+      await this.loadDefaultFormatAndParserSpecForQuantity(typeKey);
+    }
+  }
+
+  public async setOverrideFormats(type: QuantityType, overrideEntry: OverrideFormatEntry) {
+    await this.setOverrideFormatsByQuantityTypeKey(this.getQuantityTypeKey(type), overrideEntry);
   }
 
   public async clearAllOverrideFormats() {
-    this._overrideFormatDataByType.forEach((_value, type) => {
-      this.clearCachedFormatAndParseDataByType(type);
+    const promises = new Array<Promise<void>>();
+    this._overrideFormatPropsByQuantityType.forEach(async (_value, type) => {
+      promises.push(this.clearOverrideFormatsByQuantityTypeKey(type));
     });
 
-    this._overrideFormatDataByType.clear();
-    await this.reloadCachedData();
-  }
-
-  protected async getOverrideFormat(type: QuantityType, imperial: boolean): Promise<FormatProps | undefined> {
-    const formatEntry = this._overrideFormatDataByType.get(type);
-    if (formatEntry) {
-      if (imperial)
-        return formatEntry.imperial;
-      return formatEntry.metric;
-    }
-
-    return undefined;
-  }
-
-  protected async loadStdFormat(type: QuantityType, imperial: boolean): Promise<Format> {
-    let formatProps = await this.getOverrideFormat(type, imperial);
-    if (undefined === formatProps) {
-      const formatArray = imperial ? defaultsFormats.imperial : defaultsFormats.metric;
-      formatProps = (formatArray.find((entry) => entry.type === type))?.format;
-    }
-
-    if (formatProps) {
-      const format = new Format("stdFormat");
-      await format.fromJSON(this, formatProps);
-      return format;
-    }
-
-    throw new BentleyError(BentleyStatus.ERROR, "IModelApp must define a formatsProvider class to provide formats for tools");
+    if (promises.length)
+      await Promise.all(promises);
   }
 
   /** Converts a QuantityTypeArg into a string value. */
-  protected parseQuantityTypeArg(type: QuantityTypeArg): string {
+  protected getQuantityTypeKey(type: QuantityTypeArg): string {
     // For QuantityType enum values, build a string that shouldn't collide with anything a user may come up with
     if (typeof type === "number")
       return `QuantityTypeEnumValue-${type.toString()}`;
@@ -689,198 +816,74 @@ export class QuantityFormatter implements UnitsProvider {
     return type;
   }
 
-  protected async getFormatByQuantityType(type: QuantityType, imperial: boolean): Promise<Format> {
-    const activeMap = imperial ? this._imperialFormatsByType : this._metricFormatsByType;
-    const typeKey = this.parseQuantityTypeArg(type);
-    let format = activeMap.get(typeKey);
-    if (format)
-      return format;
+  /** Async request to get the 'persistence' unit from the UnitsProvider. For a tool this 'persistence' unit is the unit being used by the tool internally. */
+  protected async getPersistenceUnitByQuantityType(type: QuantityTypeKey): Promise<UnitProps> {
+    if ((this.getQuantityTypeKey(QuantityType.Angle) === type) || (this.getQuantityTypeKey(QuantityType.LatLong) === type))
+      return this.findUnitByName("Units.RAD");
 
-    format = await this.loadStdFormat(type, imperial);
-    if (format) {
-      activeMap.set(typeKey, format);
-      return format;
-    }
+    if (this.getQuantityTypeKey(QuantityType.Area) === type)
+      return this.findUnitByName("Units.SQ_M");
 
-    throw new BentleyError(BentleyStatus.ERROR, "IModelApp must define a formatsProvider class to provide formats for tools");
+    if (this.getQuantityTypeKey(QuantityType.Volume) === type)
+      return this.findUnitByName("Units.CUB_M");
+
+    // all other default quantity types are persisted/processed in meters
+    // QuantityType.Coordinate, QuantityType.Length, QuantityType.Stationing, QuantityType.LengthSurvey, QuantityType.LengthEngineering:
+    return this.findUnitByName("Units.M");
   }
 
   /** Async request to get the 'persistence' unit from the UnitsProvider. For a tool this 'persistence' unit is the unit being used by the tool internally. */
   protected async getUnitByQuantityType(type: QuantityType): Promise<UnitProps> {
-    switch (type) {
-      case QuantityType.Angle:
-      case QuantityType.LatLong:
-        return this.findUnitByName("Units.RAD");
-      case QuantityType.Area:
-        return this.findUnitByName("Units.SQ_M");
-      case QuantityType.Volume:
-        return this.findUnitByName("Units.CUB_M");
-      case QuantityType.Coordinate:
-      case QuantityType.Length:
-      case QuantityType.Stationing:
-      case QuantityType.LengthSurvey:
-      case QuantityType.LengthEngineering:
-      default:
-        return this.findUnitByName("Units.M");
-    }
-  }
-
-  /** Asynchronous call to loadParsingSpecsForQuantityType. This method caches the ParserSpecs so they can be quickly accessed. */
-  protected async loadParsingSpecsForQuantityType(quantityType: QuantityType, useImperial: boolean): Promise<void> {
-    const quantityTypeKey = this.parseQuantityTypeArg(quantityType);
-    const activeMap = useImperial ? this._imperialParserSpecsByType : this._metricParserSpecsByType;
-    if (!activeMap.has(quantityTypeKey)) {
-      const formatPromise = this.getFormatByQuantityType(quantityType, useImperial);
-      const unitPromise = this.getUnitByQuantityType(quantityType);
-      const [format, outUnit] = await Promise.all([formatPromise, unitPromise]);
-      const parserSpec = await ParserSpec.create(format, this, outUnit);
-      activeMap.set(quantityTypeKey, parserSpec);
-    }
-  }
-
-  /** Asynchronous call to loadParsingSpecsForQuantityTypes. This method caches all the ParserSpecs so they can be quickly accessed. */
-  protected async loadParsingSpecsForQuantityTypes(useImperial: boolean): Promise<void> {
-
-    let promise = this.getPendingPromise(useImperial, false);
-    if (undefined !== promise)
-      return promise;
-
-    promise = new Promise(async (resolve) => {
-      const activeMap = useImperial ? this._imperialParserSpecsByType : this._metricParserSpecsByType;
-
-      const typeArray = Object.values(QuantityType).filter((value) => (typeof value !== "string"));
-      for (const quantityType of typeArray) {
-        await this.loadParsingSpecsForQuantityType(quantityType as QuantityType, useImperial);
-      }
-
-      for (const provider of this._formatSpecProviders) {
-        const spec = await provider.createParserSpec(useImperial);
-        activeMap.set(provider.quantityTypeName, spec);
-      }
-      resolve();
-      this.setPendingPromise(useImperial, false, undefined);
-    });
-
-    this.setPendingPromise(useImperial, false, promise);
-    return promise;
-  }
-
-  /** Asynchronous call to loadFormatSpecsForQuantityType. This method caches all the FormatSpec so they can be quickly accessed. */
-  protected async loadFormatSpecsForQuantityType(quantityType: QuantityType, useImperial: boolean): Promise<void> {
-    const quantityTypeKey = this.parseQuantityTypeArg(quantityType);
-    const activeMap = useImperial ? this._imperialFormatSpecsByType : this._metricFormatSpecsByType;
-    if (!activeMap.has(quantityTypeKey)) {
-      const formatPromise = this.getFormatByQuantityType(quantityType, useImperial);
-      const unitPromise = this.getUnitByQuantityType(quantityType);
-      const [format, unit] = await Promise.all([formatPromise, unitPromise]);
-      const spec = await FormatterSpec.create(format.name, format, this, unit);
-      activeMap.set(quantityTypeKey, spec);
-    }
-  }
-
-  /** Asynchronous call to loadFormatSpecsForQuantityTypes. This method caches all the FormatSpec so they can be quickly accessed. */
-  protected async loadFormatSpecsForQuantityTypes(useImperial: boolean): Promise<void> {
-
-    let promise = this.getPendingPromise(useImperial, true);
-    if (undefined !== promise)
-      return promise;
-
-    promise = new Promise(async (resolve) => {
-      const activeMap = useImperial ? this._imperialFormatSpecsByType : this._metricFormatSpecsByType;
-      const typeArray = Object.values(QuantityType).filter((value) => (typeof value !== "string"));
-      for (const quantityType of typeArray) {
-        await this.loadFormatSpecsForQuantityType(quantityType as QuantityType, useImperial);
-      }
-
-      for (const provider of this._formatSpecProviders) {
-        const spec = await provider.createFormatterSpec(useImperial);
-        activeMap.set(provider.quantityTypeName, spec);
-      }
-      resolve();
-      this.setPendingPromise(useImperial, true, undefined);
-    });
-
-    this.setPendingPromise(useImperial, true, promise);
-    return promise;
+    return this.getPersistenceUnitByQuantityType(this.getQuantityTypeKey(type));
   }
 
   /** Synchronous call to get a FormatterSpec of a QuantityType. If the FormatterSpec is not yet cached an undefined object is returned. The
    * cache is populated by the async call loadFormatSpecsForQuantityTypes.
    */
-  public findFormatterSpecByQuantityType(type: QuantityTypeArg, imperial?: boolean): FormatterSpec | undefined {
-    const typeKey = this.parseQuantityTypeArg(type);
-    const useImperial = undefined !== imperial ? imperial : this._activeSystemIsImperial;
-    const activeMap = useImperial ? this._imperialFormatSpecsByType : this._metricFormatSpecsByType;
-    const spec = activeMap.get(typeKey);
-    if (spec) {
-      return spec;
-    } else {
-      // trigger a load so it will become available
-      this.loadFormatSpecsForQuantityTypes(useImperial); // eslint-disable-line @typescript-eslint/no-floating-promises
-      return undefined;
-    }
+  public findFormatterSpecByQuantityType(type: QuantityTypeArg, _unused?: boolean): FormatterSpec | undefined {
+    return this._activeFormatSpecsByType.get(this.getQuantityTypeKey(type));
   }
 
   /** Asynchronous Call to get a FormatterSpec of a QuantityType.
    * @param type        One of the built-in quantity types supported.
-   * @param imperial    Optional parameter to determine if the imperial or metric format should be returned. If undefined then the setting is taken from the formatter.
-   * @return A promise to return a FormatterSpec.
+   * @param isImperial  deprecated argument that should not be used - use setActiveUnitSystem to set unit system.
+   * @return A FormatterSpec Promise.
    */
-  public async getFormatterSpecByQuantityType(type: QuantityTypeArg, imperial?: boolean): Promise<FormatterSpec> {
-    const useImperial = undefined !== imperial ? imperial : this._activeSystemIsImperial;
-    const activeMap = useImperial ? this._imperialFormatSpecsByType : this._metricFormatSpecsByType;
-    const typeKey = this.parseQuantityTypeArg(type);
-    if (activeMap.has(typeKey)) {
-      const formatSpec = activeMap.get(typeKey) as FormatterSpec;
-      if (formatSpec)
-        return formatSpec;
-    } else {
-      await this.loadFormatSpecsForQuantityTypes(useImperial);
-      const formatSpec = activeMap.get(typeKey) as FormatterSpec;
-      if (formatSpec)
-        return formatSpec;
-    }
+  public async getFormatterSpecByQuantityType(type: QuantityTypeArg, isImperial?: boolean): Promise<FormatterSpec | undefined> {
+    let requestedSystem = this.activeUnitSystem;
+    if (undefined !== isImperial)
+      requestedSystem = isImperial ? "imperial" : "metric";
 
-    throw new BentleyError(BentleyStatus.ERROR, "Unable to get FormatSpec");
+    if (requestedSystem !== this.activeUnitSystem)
+      await this.setActiveUnitSystem(requestedSystem);
+
+    const typeKey = this.getQuantityTypeKey(type);
+    return this._activeFormatSpecsByType.get(typeKey);
   }
 
   /** Synchronous call to get a ParserSpec for a QuantityType. If the ParserSpec is not yet cached an undefined object is returned. The
    * cache is populated by the async call loadFormatSpecsForQuantityTypes.
    */
-  public findParserSpecByQuantityType(type: QuantityTypeArg, imperial?: boolean): ParserSpec | undefined {
-    const useImperial = undefined !== imperial ? imperial : this._activeSystemIsImperial;
-    const typeKey = this.parseQuantityTypeArg(type);
-    const activeMap = useImperial ? this._imperialParserSpecsByType : this._metricParserSpecsByType;
-    const spec = activeMap.get(typeKey);
-    if (spec) {
-      return spec;
-    } else {
-      // trigger a load so it will become available
-      this.loadParsingSpecsForQuantityTypes(useImperial); // eslint-disable-line @typescript-eslint/no-floating-promises
-      return undefined;
-    }
+  public findParserSpecByQuantityType(type: QuantityTypeArg, _unused?: boolean): ParserSpec | undefined {
+    return this._activeParserSpecsByType.get(this.getQuantityTypeKey(type));
   }
 
   /** Asynchronous Call to get a ParserSpec for a QuantityType.
-   * @param type        One of the built-in quantity types supported.
-   * @param imperial    Optional parameter to determine if the imperial or metric format should be returned. If undefined then the setting is taken from the formatter.
+   * @param type        either a default quantity type or one from a registered provider.
+   * @param isImperial  deprecated argument that should not be used - use setActiveUnitSystem to set unit system.
+
    * @return A promise to return a ParserSpec.
    */
-  public async getParserSpecByQuantityType(type: QuantityTypeArg, imperial?: boolean): Promise<ParserSpec> {
-    const useImperial = undefined !== imperial ? imperial : this._activeSystemIsImperial;
-    const typeKey = this.parseQuantityTypeArg(type);
+  public async getParserSpecByQuantityType(type: QuantityTypeArg, isImperial?: boolean): Promise<ParserSpec | undefined> {
+    let requestedSystem = this.activeUnitSystem;
+    if (undefined !== isImperial)
+      requestedSystem = isImperial ? "imperial" : "metric";
 
-    const activeMap = useImperial ? this._imperialParserSpecsByType : this._metricParserSpecsByType;
-    let spec = activeMap.get(typeKey);
-    if (spec)
-      return spec;
+    if (requestedSystem !== this.activeUnitSystem)
+      await this.setActiveUnitSystem(requestedSystem);
 
-    await this.loadParsingSpecsForQuantityTypes(useImperial);
-    spec = activeMap.get(typeKey);
-    if (spec)
-      return spec;
-
-    throw new BentleyError(BentleyStatus.ERROR, "Unable to load ParserSpec");
+    const typeKey = this.getQuantityTypeKey(type);
+    return this._activeParserSpecsByType.get(typeKey);
   }
 
   /** Generates a formatted string for a quantity given its format spec.
@@ -888,9 +891,11 @@ export class QuantityFormatter implements UnitsProvider {
    * @param formatSpec      The format specification. See methods getFormatterSpecByQuantityType and findFormatterSpecByQuantityType.
    * @return the formatted string.
    */
-  public formatQuantity(magnitude: number, formatSpec: FormatterSpec): string {
+  public formatQuantity(magnitude: number, formatSpec: FormatterSpec | undefined): string {
     /** Format a quantity value. Default FormatterSpec implementation uses Formatter.formatQuantity. */
-    return formatSpec.applyFormatting(magnitude);
+    if (formatSpec)
+      return formatSpec.applyFormatting(magnitude);
+    return magnitude.toString();
   }
 
   /** Parse input string into quantity given the ParserSpec
@@ -898,66 +903,36 @@ export class QuantityFormatter implements UnitsProvider {
    * @param parserSpec     The parse specification the defines the expected format of the string and the conversion to the output unit.
    * @return ParseResult object containing either the parsed value or an error value if unsuccessful.
    */
-  public parseIntoQuantityValue(inString: string, parserSpec: ParserSpec): ParseResult {
-    return parserSpec.parseIntoQuantityValue(inString);
-  }
-
-  /** Set the flag to return either metric or imperial formats. This call also makes an async request to refresh the cached formats. */
-  public async loadFormatAndParsingMaps(useImperial: boolean, _restartActiveTool?: boolean): Promise<void> {
-    const activeMap = this.useImperialFormats ? this._imperialFormatSpecsByType : this._metricFormatSpecsByType;
-    if (0 === activeMap.size) {
-      const formatPromise = this.loadFormatSpecsForQuantityTypes(useImperial);
-      const parsePromise = this.loadParsingSpecsForQuantityTypes(useImperial);
-      await Promise.all([formatPromise, parsePromise]);
-    }
+  public parseIntoQuantityValue(inString: string, parserSpec: ParserSpec | undefined): ParseResult {
+    if (parserSpec)
+      return parserSpec.parseIntoQuantityValue(inString);
+    return { status: QuantityStatus.UnknownUnit };
   }
 
   /** Set the flag to return either metric or imperial formats. This call also makes an async request to refresh the cached formats.
-   * This async method is the preferred to set the active unit system.
+   * @deprecated use setActiveUnitSystem;
    */
-  public async setActiveUnitSystem(useImperial: boolean, restartActiveTool?: boolean): Promise<void> {
-    if (this._activeSystemIsImperial === useImperial)
-      return;
-
-    this._activeSystemIsImperial = useImperial;
-    await this.loadFormatAndParsingMaps(useImperial);
-    this.onActiveUnitSystemChanged.emit({ useImperial });
-    if (IModelApp.toolAdmin && restartActiveTool)
-      IModelApp.toolAdmin.startDefaultTool();
+  public async loadFormatAndParsingMaps(useImperial: boolean, _restartActiveTool?: boolean): Promise<void> {
+    await this.loadFormatAndParsingMapsForSystem(useImperial ? "imperial" : "metric");
   }
 
-  /** True if tool quantity values should be displayed in imperial units; false for metric. Changing this flag triggers an asynchronous request to refresh the cached formats. */
-  public get useImperialFormats(): boolean { return this._activeSystemIsImperial; }
-  public set useImperialFormats(useImperial: boolean) {
-    if (this._activeSystemIsImperial === useImperial)
-      return;
-
-    this.setActiveUnitSystem(useImperial, true); // eslint-disable-line @typescript-eslint/no-floating-promises
-  }
-
-  /** Register a FormatterSpec provider.
-   * Since we clear format caches when override formats are added/removed we need to keep FormatterParserSpecsProviders around
-   * so they can be queried when the formats cache is reloaded.  TODO: We could look at not clearing cached format
-   * specs generated by FormatterParserSpecsProviders.
-   */
+  /** Register a FormatterSpec provider. */
   public async registerFormatterParserSpecsProviders(provider: FormatterParserSpecsProvider): Promise<boolean> {
-    if (undefined !== this._formatSpecProviders.find((p) => p.quantityTypeName === provider.quantityTypeName))
+    if (undefined !== this._formatSpecProviders.find((p) => p.quantityTypeKey === provider.quantityTypeKey))
       return false;
 
     this._formatSpecProviders.push(provider);
 
     // If the FormatSpec are already loaded for the active unit, add it now.
-    const activeFormatMap = this.useImperialFormats ? this._imperialFormatSpecsByType : this._metricFormatSpecsByType;
-    if (activeFormatMap.size > 0) {
-      const spec = await provider.createFormatterSpec(this.useImperialFormats);
-      activeFormatMap.set(provider.quantityTypeName, spec);
+    if (this._activeFormatSpecsByType.size > 0) {
+      const spec = await provider.createFormatterSpec(this.activeUnitSystem);
+      this._activeFormatSpecsByType.set(provider.quantityTypeKey, spec);
     }
 
     // If the ParserSpecs are already loaded for the active unit, add it now.
-    const activeParserMap = this.useImperialFormats ? this._imperialParserSpecsByType : this._metricParserSpecsByType;
-    if (activeParserMap.size > 0) {
-      const spec = await provider.createParserSpec(this.useImperialFormats);
-      activeParserMap.set(provider.quantityTypeName, spec);
+    if (this._activeParserSpecsByType.size > 0) {
+      const spec = await provider.createParserSpec(this.activeUnitSystem);
+      this._activeParserSpecsByType.set(provider.quantityTypeKey, spec);
     }
 
     return true;

@@ -187,7 +187,6 @@ describe("Parsing tests:", () => {
     const format = new Format("test");
     await format.fromJSON(unitsProvider, formatData).catch(() => { });
     assert.isTrue(format.hasUnits);
-    debugger;
 
     for (const testEntry of testData) {
       const quantityProps = await Parser.parseIntoQuantity(testEntry.value, format, unitsProvider);

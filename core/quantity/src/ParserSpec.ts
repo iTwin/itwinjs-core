@@ -33,9 +33,9 @@ export class ParserSpec {
   /** Static async method to create a ParserSpec given the format and unit of the quantity that will be passed to the Parser. The input unit will
    * be used to generate conversion information for each unit specified in the Format. This method is async due to the fact that the units provider must make
    * async calls to lookup unit definitions.
-   *  @param name     The name of a format specification.
+   *  @param format     The format specification.
    *  @param unitsProvider The units provider is used to look up unit definitions and provide conversion information for converting between units.
-   *  @param inputUnit The unit the value to be formatted. This unit is often referred to as persistence unit.
+   *  @param outUnit The unit the value to be formatted. This unit is often referred to as persistence unit.
    */
   public static async create(format: Format, unitsProvider: UnitsProvider, outUnit: UnitProps): Promise<ParserSpec> {
     const conversions = await Parser.createUnitConversionSpecsForUnit(unitsProvider, outUnit);

@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import { QuantityError } from "../src/Exception";
 import { Format } from "../src/Formatter/Format";
-import { FormatTraits } from "../src/Formatter/FormatEnums";
+import { DecimalPrecision, FormatTraits } from "../src/Formatter/FormatEnums";
 import { TestUnitsProvider } from "./TestUtils/TestHelper";
 
 process.on("unhandledRejection", (reason, p) => {
@@ -515,6 +515,14 @@ describe("Formatting tests:", () => {
 
     const outJson = testFormat.toJSON();
     assert.isTrue(outJson.formatTraits!.length === 10);
+
+    //ensure we can modify
+    const modifiedFormatProps = { ...outJson, formatTraits: ["keepSingleZero"], precision: 3 };
+    const modifiedFormat = new Format("modified");
+    await modifiedFormat.fromJSON(unitsProvider, modifiedFormatProps);
+    assert.isTrue(modifiedFormat.hasFormatTraitSet(FormatTraits.KeepSingleZero));
+    assert.isFalse(modifiedFormat.hasFormatTraitSet(FormatTraits.ShowUnitLabel));
+    assert.isTrue(modifiedFormat.precision === DecimalPrecision.Three);
   });
 
   it("Read/Write Empty Format Traits", async () => {
