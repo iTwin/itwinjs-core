@@ -62,9 +62,14 @@ export class TestUtility {
     return TestRpcInterface.getClient().createIModel(name, contextId, deleteIfExists);
   }
 
+  public static async deleteIModel(id: string, contextId: string) {
+    const requestContext = await AuthorizedFrontendRequestContext.create();
+    await this.imodelCloudEnv.imodelClient.iModels.delete(requestContext, contextId, id);
+  }
+
   /** Generate a name (for an iModel) that's unique */
   public static generateUniqueName(baseName: string) {
-    return `${baseName}_${Guid.createValue()}`;
+    return `${baseName} - ${Guid.createValue()}`;
   }
 
   public static async getModelLockLevel(iModel: IModelConnection, modelId: Id64String): Promise<LockLevel> {
