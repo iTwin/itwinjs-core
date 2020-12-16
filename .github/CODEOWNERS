@@ -21,50 +21,48 @@ rush.json @calebmshafer @scsewall
 # /clients/imodelhub    @amikoliunas @Animagne
 
 /common/api/**/analytical-backend.* @diegoalexdiaz @scsewall
-
-# /common/api/analytical-backend.api.md               @diegoalexdiaz @scsewall
-/common/api/backend-application-insights-client.api.md @calebmshafer @ramanujam-raman
-/common/api/backend-itwin-client.api.md             @calebmshafer @ramanujam-raman
-/common/api/bentleyjs-core.api.md                   @imodeljs/admins
-/common/api/config-loader.api.md                    @calebmshafer @wgoehrig
-/common/api/context-registry-client.api.md          @calebmshafer @ramanujam-raman
-/common/api/ecschema-locaters.api.md                @calebmshafer @ColinKerr @wgoehrig
-/common/api/ecschema-metadata.api.md                @calebmshafer @ColinKerr @wgoehrig
-/common/api/ecschema2ts.api.md                      @calebmshafer @ColinKerr @wgoehrig
-/common/api/electron-manager.api.md                 @wgoehrig @ramanujam-raman
-/common/api/express-server.api.md                   @wgoehrig @calebmshafer
-/common/api/extension-client.api.md                 @calebmshafer @paulius-valiunas
-/common/api/forms-data-management-client.api.md     @calebmshafer @ramanujam-raman
-/common/api/frontend-application-insights-client.api.md     @calebmshafer @ramanujam-raman
-/common/api/frontend-authorization-client.api.md     @calebmshafer @ramanujam-raman
-/common/api/frontend-devtools.api.md                @imodeljs/display
-/common/api/geometry-core.api.md                    @EarlinLutz @mgooding @RBBentley @bbastings
-/common/api/hypermodeling-frontend.api.md           @pmconne @bbastings
-/common/api/imodel-bridge.api.md                    @abeesh @c-macdonald @swwilson-bsi
-# /common/api/imodelhub-client.api.md                 @amikoliunas @Animagne
-/common/api/imodeljs-backend.api.md                 @imodeljs/admins
-/common/api/imodeljs-common.api.md                  @imodeljs/admins
-/common/api/imodeljs-frontend.api.md                @imodeljs/admins
-/common/api/imodeljs-i18n.api.md                    @calebmshafer @wgoehrig
-/common/api/imodeljs-markup.api.md                  @kabentley @pmconne @bbastings
-/common/api/imodeljs-quantity.api.md                @bsteinbk @calebmshafer
-/common/api/itwin-client.api.md                     @calebmshafer @ramanujam-raman
-/common/api/linear-referencing-backend.api.md       @diegoalexdiaz @scsewall
-/common/api/linear-referencing-common.api.md        @diegoalexdiaz @scsewall
-/common/api/logger-config.api.md                    @swwilson-bsi @scsewall
-/common/api/oauth-introspection-client.api.md       @calebmshafer @ramanujam-raman
-/common/api/orbitgt-core.api.md                     @pmconne @RBBentley
-/common/api/perf-tools.api.md                       @calebmshafer @wgoehrig
-/common/api/physical-material-backend.api.md        @scsewall
-/common/api/presentation-*.api.md                   @imodeljs/presentation
-/common/api/product-settings-client.api.md          @calebmshafer @ramanujam-raman
-/common/api/projectshare-client.api.md              @calebmshafer @ramanujam-raman
-/common/api/rbac-client.api.md                      @calebmshafer @ramanujam-raman
-/common/api/reality-data-client.api.md              @calebmshafer @ramanujam-raman
-/common/api/telemetry-client.api.md                 @calebmshafer @ramanujam-raman
-/common/api/ui-*.api.md                             @imodeljs/ui
-/common/api/usage-logging-client.api.md             @calebmshafer @ramanujam-raman
-/common/api/webgl-compatibility.api.md              @imodeljs/display
+/common/api/**/backend-application-insights-client.* @calebmshafer @ramanujam-raman
+/common/api/**/backend-itwin-client.*             @calebmshafer @ramanujam-raman
+/common/api/**/bentleyjs-core.*                   @imodeljs/admins
+/common/api/**/config-loader.*                    @calebmshafer @wgoehrig
+/common/api/**/context-registry-client.*          @calebmshafer @ramanujam-raman
+/common/api/**/ecschema-locaters.*                @calebmshafer @ColinKerr @wgoehrig
+/common/api/**/ecschema-metadata.*                @calebmshafer @ColinKerr @wgoehrig
+/common/api/**/ecschema2ts.*                      @calebmshafer @ColinKerr @wgoehrig
+/common/api/**/electron-manager.*                 @wgoehrig @ramanujam-raman
+/common/api/**/express-server.*                   @wgoehrig @calebmshafer
+/common/api/**/extension-client.*                 @calebmshafer @paulius-valiunas
+/common/api/**/forms-data-management-client.*     @calebmshafer @ramanujam-raman
+/common/api/**/frontend-application-insights-client.*     @calebmshafer @ramanujam-raman
+/common/api/**/frontend-authorization-client.*     @calebmshafer @ramanujam-raman
+/common/api/**/frontend-devtools.*                @imodeljs/display
+/common/api/**/geometry-core.*                    @EarlinLutz @mgooding @RBBentley @bbastings
+/common/api/**/hypermodeling-frontend.*           @pmconne @bbastings
+/common/api/**/imodel-bridge.*                    @abeesh @c-macdonald @swwilson-bsi
+# /common/api/**/imodelhub-client.*                 @amikoliunas @Animagne
+/common/api/**/imodeljs-backend.*                 @imodeljs/admins
+/common/api/**/imodeljs-common.*                  @imodeljs/admins
+/common/api/**/imodeljs-frontend.*                @imodeljs/admins
+/common/api/**/imodeljs-i18n.*                    @calebmshafer @wgoehrig
+/common/api/**/imodeljs-markup.*                  @kabentley @pmconne @bbastings
+/common/api/**/imodeljs-quantity.*                @bsteinbk @calebmshafer
+/common/api/**/itwin-client.*                     @calebmshafer @ramanujam-raman
+/common/api/**/linear-referencing-backend.*       @diegoalexdiaz @scsewall
+/common/api/**/linear-referencing-common.*        @diegoalexdiaz @scsewall
+/common/api/**/logger-config.*                    @swwilson-bsi @scsewall
+/common/api/**/oauth-introspection-client.*       @calebmshafer @ramanujam-raman
+/common/api/**/orbitgt-core.*                     @pmconne @RBBentley
+/common/api/**/perf-tools.*                       @calebmshafer @wgoehrig
+/common/api/**/physical-material-backend.*        @scsewall
+/common/api/**/presentation-*.*                   @imodeljs/presentation
+/common/api/**/product-settings-client.*          @calebmshafer @ramanujam-raman
+/common/api/**/projectshare-client.*              @calebmshafer @ramanujam-raman
+/common/api/**/rbac-client.*                      @calebmshafer @ramanujam-raman
+/common/api/**/reality-data-client.*              @calebmshafer @ramanujam-raman
+/common/api/**/telemetry-client.*                 @calebmshafer @ramanujam-raman
+/common/api/**/ui-*.*                             @imodeljs/ui
+/common/api/**/usage-logging-client.*             @calebmshafer @ramanujam-raman
+/common/api/**/webgl-compatibility.*              @imodeljs/display
 
 # Specifying both of these with a large number of possible reviewers.
 # All significant changes will be covered by other requirements.
