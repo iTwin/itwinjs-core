@@ -53,7 +53,7 @@ function toHubLock(props: ConcurrencyControl.LockProps, briefcaseId: number): Lo
   return lock;
 }
 
-describe("IModelWriteTest (#integration)", () => {
+describe.only("IModelWriteTest (#integration)", () => {
   let managerRequestContext: AuthorizedBackendRequestContext;
   let superRequestContext: AuthorizedBackendRequestContext;
   let testProjectId: string;
@@ -673,6 +673,65 @@ describe("IModelWriteTest (#integration)", () => {
       await rwIModel.pushChanges(adminRequestContext, "this briefcase change to el2");
     }
 
+    await IModelTestUtils.closeAndDeleteBriefcaseDb(adminRequestContext, rwIModel);
+  });
+
+  it.only("Locks conflict test II (#integration)", async () => {
+    const adminRequestContext: AuthorizedBackendRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager);
+    let timer = new Timer("delete iModels");
+    const iModelName = "LocksConflictTestII";
+    const iModels: HubIModel[] = await BriefcaseManager.imodelClient.iModels.get(adminRequestContext, writeTestProjectId, new IModelQuery().byName(iModelName));
+    for (const iModelTemp of iModels) {
+      await BriefcaseManager.imodelClient.iModels.delete(adminRequestContext, writeTestProjectId, iModelTemp.id!);
+      adminRequestContext.enter();
+    }
+    timer.end();
+
+    timer = new Timer("create iModel");
+    const rwIModelId = await BriefcaseManager.create(adminRequestContext, writeTestProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
+
+    const rwIModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(adminRequestContext, writeTestProjectId, rwIModelId, SyncMode.PullAndPush);
+    adminRequestContext.enter();
+    timer.end();
+
+    rwIModel.concurrencyControl.startBulkMode();  // in bulk mode, we don't have to get locks before we make local changes. They are tracked and deferred until saveChanges requests them all at once.
+
+    //  Create a new model and put an element in it (elid1)
+    const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true);
+    const dictionary: DictionaryModel = rwIModel.models.getModel<DictionaryModel>(IModel.dictionaryId);
+    const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
+    assert.isTrue(await rwIModel.concurrencyControl.codes.areAvailable(adminRequestContext, [newCategoryCode]));
+    const spatialCategoryId: Id64String = SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value!, new SubCategoryAppearance({ color: 0xff0000 }));
+    const elid1 = rwIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(rwIModel, newModelId, spatialCategoryId));
+
+    await rwIModel.concurrencyControl.request(adminRequestContext);
+    adminRequestContext.enter();
+    rwIModel.saveChanges("created newPhysicalModel");
+    timer = new Timer("pullmergepush");
+    await rwIModel.pushChanges(adminRequestContext, "newPhysicalModel");
+    adminRequestContext.enter();
+
+    await rwIModel.concurrencyControl.endBulkMode(adminRequestContext);
+    adminRequestContext.enter();
+
+    //  --- Briefcase 2
+    //  Have another briefcase take out an exclusive lock on element #1
+    const briefcase2 = await IModelTestUtils.downloadAndOpenBriefcaseDb(superRequestContext, writeTestProjectId, rwIModelId, SyncMode.PullAndPush);
+    superRequestContext.enter();
+
+    assert.notEqual(briefcase2.briefcase.briefcaseId, rwIModel.briefcase.briefcaseId);
+
+    const el1bc2 = briefcase2.elements.getElement(elid1);
+    await briefcase2.concurrencyControl.requestResourcesForUpdate(superRequestContext, [el1bc2]);
+    superRequestContext.enter();
+
+    // --- Briefcase 1
+    // Now let the first briefcase try to delete this element. That should fail with a lock error.
+    const el1bc1 = rwIModel.elements.getElement(elid1);
+    assert.throws(() => rwIModel.elements.deleteElement(elid1)); // this should throw, because we haven't requested a lock yet
+    await expect(rwIModel.concurrencyControl.requestResourcesForDelete(adminRequestContext, [el1bc1])).to.be.rejectedWith(IModelError, ""); // this should be rejected, because the other briefcase holds the lock.
+
+    briefcase2.close();
     await IModelTestUtils.closeAndDeleteBriefcaseDb(adminRequestContext, rwIModel);
   });
 
