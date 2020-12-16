@@ -66,7 +66,6 @@ describe("iModelHub VersionHandler", () => {
   let imodelId2: GuidString;
   let iModelClient: IModelClient;
   let briefcase: Briefcase;
-  const imodelName = "imodeljs-clients Versions test";
 
   let requestContext: AuthorizedClientRequestContext;
   let backupTimeout: RequestTimeoutOptions;
@@ -89,8 +88,8 @@ describe("iModelHub VersionHandler", () => {
     (requestContext as any).activityId = "iModelHub VersionHandler";
 
     contextId = await utils.getProjectId(requestContext);
-    await utils.createIModel(requestContext, imodelName, contextId, true, false, true);
-    imodelId = await utils.getIModelId(requestContext, imodelName, contextId);
+    await utils.createIModel(requestContext, utils.sharedimodelName, contextId, true, false, true);
+    imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, contextId);
     iModelClient = utils.getDefaultClient();
     briefcase = (await utils.getBriefcases(requestContext, imodelId, 1))[0];
     if (!TestConfig.enableMocks) {
@@ -99,8 +98,8 @@ describe("iModelHub VersionHandler", () => {
       const changeSetCount = (await iModelClient.changeSets.get(requestContext, imodelId)).length;
       if (changeSetCount > 9) {
         // Recreate iModel if can't create any new changesets
-        await utils.createIModel(requestContext, imodelName, contextId, true, true, true);
-        imodelId = await utils.getIModelId(requestContext, imodelName, contextId);
+        await utils.createIModel(requestContext, utils.sharedimodelName, contextId, true, true, true);
+        imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, contextId);
         briefcase = (await utils.getBriefcases(requestContext, imodelId, 1))[0];
       }
     }
@@ -113,7 +112,7 @@ describe("iModelHub VersionHandler", () => {
     }
 
     if (TestConfig.enableIModelBank) {
-      await utils.deleteIModelByName(requestContext, contextId, imodelName);
+      await utils.deleteIModelByName(requestContext, contextId, utils.sharedimodelName);
     }
 
     RequestGlobalOptions.timeout = backupTimeout;

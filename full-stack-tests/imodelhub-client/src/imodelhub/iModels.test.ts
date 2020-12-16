@@ -269,9 +269,7 @@ describe("iModelHub iModelsHandler", () => {
   });
 
   beforeEach(async () => {
-    if (!TestConfig.enableMocks) {
-      await utils.deleteIModelByName(requestContext, projectId, createIModelName);
-    }
+    await utils.deleteIModelByName(requestContext, projectId, createIModelName);
   });
 
   afterEach(async () => {
@@ -548,15 +546,11 @@ describe("iModelHub iModelsHandler", () => {
   });
 
   it("should update iModel name and description (#iModelBank)", async () => {
-    const testIModelName = utils.getUniqueIModelName(createIModelName);
-    const description = "Test iModel created by imodeljs-clients tests";
-    mockCreateEmptyiModel(projectId, Guid.createValue(), testIModelName, description);
-    const progressTracker = new utils.ProgressTracker();
-    await imodelClient.iModels.create(requestContext, projectId, testIModelName, { description, progressCallback: progressTracker.track() });
-
-    mockGetIModelByName(projectId, testIModelName);
-    const imodel: HubIModel = (await iModelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(testIModelName)))[0];
-    chai.expect(imodel.name).to.be.equal(testIModelName);
+    mockGetIModelByName(projectId, imodelName);
+    const imodel: HubIModel = (await iModelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(imodelName)))[0];
+    chai.expect(imodel.name).to.be.equal(imodelName);
+    const oldName = imodel.name;
+    const oldDescription = imodel.description;
 
     const newName = utils.getUniqueIModelName(`${imodelName}_updated`);
     const newDescription = "Description_updated";
@@ -573,12 +567,15 @@ describe("iModelHub iModelsHandler", () => {
     mockGetIModelByName(projectId, newName, newDescription, imodel.id);
     updatediModel = (await iModelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(newName)))[0];
 
-    await utils.deleteIModelByName(requestContext, projectId, newName, false);
-
     chai.assert(!!updatediModel);
     chai.expect(updatediModel.wsgId).to.be.equal(imodel.wsgId);
     chai.expect(updatediModel.name).to.be.equal(newName);
     chai.expect(updatediModel.description).to.be.equal(newDescription);
+
+    imodel.name = oldName;
+    imodel.description = oldDescription;
+    mockUpdateiModel(projectId, imodel);
+    await iModelClient.iModels.update(requestContext, projectId, imodel);
   });
 
   it("should set and update iModel type correctly", async () => {
@@ -855,15 +852,21 @@ describe("iModelHub iModelsHandler", () => {
   });
 
   it("should handle special characters in get by name query", async () => {
-    const name = `Д - ${Guid.createValue()}`;
-    const description = "Test iModel created by imodeljs-clients tests";
-    mockCreateEmptyiModel(projectId, Guid.createValue(), name, description);
-    await imodelClient.iModels.create(requestContext, projectId, name, { description });
+    mockGetIModelByName(projectId, imodelName);
+    let imodel: HubIModel = (await iModelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(imodelName)))[0];
+    const oldimodelName = imodel.name;
 
-    mockGetIModelByName(projectId, name);
-    const iModels = await imodelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(name));
+    const newName = `Д - ${Guid.createValue()}`;
+    imodel.name = newName
+    mockUpdateiModel(projectId, imodel);
+    imodel = await iModelClient.iModels.update(requestContext, projectId, imodel);
+
+    mockGetIModelByName(projectId, newName);
+    const iModels = await imodelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(newName));
     chai.expect(iModels.length).to.be.equal(1);
 
-    await utils.deleteIModelByName(requestContext, projectId, name);
+    imodel.name = oldimodelName;
+    mockUpdateiModel(projectId, imodel);
+    await iModelClient.iModels.update(requestContext, projectId, imodel);
   });
 });

@@ -53,7 +53,7 @@ describe("iModelHub CodeHandler", () => {
   });
 
   after(async () => {
-    if (!TestConfig.enableMocks)
+    if (TestConfig.enableIModelBank)
       await utils.deleteIModelByName(requestContext, contextId, utils.sharedimodelName);
   });
 
