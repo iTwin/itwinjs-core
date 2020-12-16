@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/style/themecolors";
+.uifw-accudraw-dialog {
+  opacity: 0.90;
 
-.uifw-accudraw-field-container {
-  display: grid;
-  grid-template-columns: 22px auto 22px;
-  row-gap: 8px;
+  &:hover {
+    opacity: 1.00;
+  }
 }

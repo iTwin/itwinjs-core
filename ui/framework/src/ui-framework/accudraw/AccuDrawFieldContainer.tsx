@@ -13,11 +13,14 @@ import {
   AccuDrawField, AccuDrawMode, AccuDrawSetFieldFocusEventArgs,
   AccuDrawSetFieldLockEventArgs, AccuDrawSetFieldValueToUiEventArgs, AccuDrawSetModeEventArgs,
   AccuDrawUiAdmin,
+  IconSpecUtilities,
 } from "@bentley/ui-abstract";
 import { CommonProps, Orientation, UiSettings } from "@bentley/ui-core";
 import { AccuDrawInputField } from "./AccuDrawInputField";
-import { IModelApp } from "@bentley/imodeljs-frontend";
+import { CompassMode, IModelApp, ItemField } from "@bentley/imodeljs-frontend";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
+import angleIcon from "./angle.svg?sprite";
+import distanceIcon from "./distance.svg?sprite";
 
 /** @alpha */
 export interface AccuDrawFieldContainerProps extends CommonProps {
@@ -46,6 +49,12 @@ export function AccuDrawFieldContainer(props: AccuDrawFieldContainerProps) {
   const [distanceLock, setDistanceLock] = React.useState(false);
 
   React.useEffect(() => {
+    setXValue(IModelApp.accuDraw.getValueByIndex(ItemField.X_Item));
+    setYValue(IModelApp.accuDraw.getValueByIndex(ItemField.Y_Item));
+    setZValue(IModelApp.accuDraw.getValueByIndex(ItemField.Z_Item));
+    setAngleValue(IModelApp.accuDraw.getValueByIndex(ItemField.ANGLE_Item));
+    setDistanceValue(IModelApp.accuDraw.getValueByIndex(ItemField.DIST_Item));
+
     const handleSetFieldValueToUi = (args: AccuDrawSetFieldValueToUiEventArgs) => {
       switch (args.field) {
         case AccuDrawField.X:
@@ -69,6 +78,12 @@ export function AccuDrawFieldContainer(props: AccuDrawFieldContainerProps) {
   }, []);
 
   React.useEffect(() => {
+    setXLock(IModelApp.accuDraw.getFieldLock(ItemField.X_Item));
+    setYLock(IModelApp.accuDraw.getFieldLock(ItemField.Y_Item));
+    setZLock(IModelApp.accuDraw.getFieldLock(ItemField.Z_Item));
+    setAngleLock(IModelApp.accuDraw.getFieldLock(ItemField.ANGLE_Item));
+    setDistanceLock(IModelApp.accuDraw.getFieldLock(ItemField.DIST_Item));
+
     const handleSetFieldLock = (args: AccuDrawSetFieldLockEventArgs) => {
       switch (args.field) {
         case AccuDrawField.X:
@@ -99,9 +114,14 @@ export function AccuDrawFieldContainer(props: AccuDrawFieldContainerProps) {
   }, []);
 
   React.useEffect(() => {
+    const compassMode = IModelApp.accuDraw.compassMode;
+    const accuDrawMode = compassMode === CompassMode.Rectangular ? AccuDrawMode.Rectangular : AccuDrawMode.Polar;
+    setMode(accuDrawMode);
+
     const handleSetMode = (args: AccuDrawSetModeEventArgs) => {
       setMode(args.mode);
     };
+
     return AccuDrawUiAdmin.onAccuDrawSetModeEvent.addListener(handleSetMode);
   }, []);
 
@@ -125,14 +145,17 @@ export function AccuDrawFieldContainer(props: AccuDrawFieldContainerProps) {
       {mode === AccuDrawMode.Rectangular &&
         <>
           <AccuDrawInputField initialValue={xValue} lock={xLock} className="uifw-accudraw-x-value" valueChangedDelay={delay}
+            id="uifw-accudraw-x" label="X"
             setFocus={lockField === AccuDrawField.X}
             onValueChanged={(value, stringValue) => handleValueChanged(AccuDrawField.X, value, stringValue)}
             onEscPressed={handleEscPressed} />
           <AccuDrawInputField initialValue={yValue} lock={yLock} className="uifw-accudraw-y-value" valueChangedDelay={delay}
+            id="uifw-accudraw-y" label="Y"
             setFocus={lockField === AccuDrawField.Y}
             onValueChanged={(value, stringValue) => handleValueChanged(AccuDrawField.Y, value, stringValue)}
             onEscPressed={handleEscPressed} />
           <AccuDrawInputField initialValue={zValue} lock={zLock} className="uifw-accudraw-z-value" valueChangedDelay={delay}
+            id="uifw-accudraw-z" label="Z"
             setFocus={lockField === AccuDrawField.Z}
             onValueChanged={(value, stringValue) => handleValueChanged(AccuDrawField.Z, value, stringValue)}
             onEscPressed={handleEscPressed} />
@@ -141,10 +164,12 @@ export function AccuDrawFieldContainer(props: AccuDrawFieldContainerProps) {
       {mode === AccuDrawMode.Polar &&
         <>
           <AccuDrawInputField initialValue={angleValue} lock={angleLock} className="uifw-accudraw-angle-value" valueChangedDelay={delay}
+            id="uifw-accudraw-angle" iconSpec={IconSpecUtilities.createSvgIconSpec(angleIcon)}
             setFocus={lockField === AccuDrawField.Angle}
             onValueChanged={(value, stringValue) => handleValueChanged(AccuDrawField.Angle, value, stringValue)}
             onEscPressed={handleEscPressed} />
           <AccuDrawInputField initialValue={distanceValue} lock={distanceLock} className="uifw-accudraw-distance-value" valueChangedDelay={delay}
+            id="uifw-accudraw-distance" iconSpec={IconSpecUtilities.createSvgIconSpec(distanceIcon)}
             setFocus={lockField === AccuDrawField.Distance}
             onValueChanged={(value, stringValue) => handleValueChanged(AccuDrawField.Distance, value, stringValue)}
             onEscPressed={handleEscPressed} />

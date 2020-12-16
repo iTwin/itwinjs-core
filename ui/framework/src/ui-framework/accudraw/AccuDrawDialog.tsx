@@ -6,65 +6,64 @@
  * @module AccuDraw
  */
 
+import "./AccuDrawDialog.scss";
+import classnames from "classnames";
 import * as React from "react";
+import { AccuDrawSetFieldValueFromUiEventArgs, AccuDrawUiAdmin } from "@bentley/ui-abstract";
+import { CommonProps, Orientation } from "@bentley/ui-core";
 import { UiFramework } from "../UiFramework";
 import { ModelessDialog } from "../dialog/ModelessDialog";
 import { AccuDrawFieldContainer } from "./AccuDrawFieldContainer";
-import { Orientation } from "@bentley/ui-core";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 
 /** @alpha */
-export interface AccuDrawDialogProps {
+export interface AccuDrawDialogProps extends CommonProps {
   opened: boolean;
   dialogId: string;
   onClose?: () => void;
 }
 
-/** @internal */
-interface AccuDrawDialogState {
-  opened: boolean;
-}
-
 /** @alpha */
-export class AccuDrawDialog extends React.Component<AccuDrawDialogProps, AccuDrawDialogState> {
-  public readonly state: Readonly<AccuDrawDialogState>;
-  private _title = UiFramework.translate("accuDraw.dialogTitle");
+export function AccuDrawDialog(props: AccuDrawDialogProps) {
+  const title = React.useRef(UiFramework.translate("accuDraw.dialogTitle"));
+  const [opened, setOpened] = React.useState(props.opened);
 
-  constructor(props: AccuDrawDialogProps) {
-    super(props);
-    this.state = {
-      opened: this.props.opened,
-    };
-  }
+  const closeDialog = React.useCallback(() => {
+    setOpened(false);
+    props.onClose && props.onClose();
+  }, [props]);
 
-  public render(): JSX.Element {
-    return (
-      <ModelessDialog
-        title={this._title}
-        opened={this.state.opened}
-        dialogId={this.props.dialogId}
-        width={250}
-        movable={true}
-        onClose={this._handleCancel}
-        onEscape={this._handleEscape}
-      >
-        <AccuDrawFieldContainer orientation={Orientation.Vertical} />
-      </ModelessDialog >
-    );
-  }
+  const handleCancel = React.useCallback(() => {
+    closeDialog();
+  }, [closeDialog]);
 
-  private _handleCancel = () => {
-    this._closeDialog();
-  };
-
-  private _handleEscape = () => {
+  const handleEscape = React.useCallback(() => {
     KeyboardShortcutManager.setFocusToHome();
-  };
+  }, []);
 
-  private _closeDialog = () => {
-    this.setState(
-      { opened: false },
-      () => this.props.onClose && this.props.onClose()
-    );
-  };
-}
+  // DEBUG - remove
+  React.useEffect(() => {
+    const handleValueFromUi = (args: AccuDrawSetFieldValueFromUiEventArgs) => {
+      // eslint-disable-next-line no-console
+      console.log(`handleValueFromUi: ${args.field} ${args.value} ${args.stringValue}`);
+    };
+    return AccuDrawUiAdmin.onAccuDrawSetFieldValueFromUiEvent.addListener(handleValueFromUi);
+  });
+
+  const classNames = classnames("uifw-accudraw-dialog", props.className);
+
+  return (
+    <ModelessDialog
+      className={classNames} style={props.style}
+      title={title.current}
+      opened={opened}
+      dialogId={props.dialogId}
+      width={250}
+      movable={true}
+      onClose={handleCancel}
+      onEscape={handleEscape}
+    >
+      <AccuDrawFieldContainer orientation={Orientation.Vertical} />
+    </ModelessDialog >
+  );
+};
