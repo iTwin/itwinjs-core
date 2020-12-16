@@ -63,8 +63,9 @@ export class PlanarTextureProjection {
 
     let textureRange = Range3d.createNull();
     const tileToTexture = textureTransform.multiplyTransformTransform(args.location)
-    for (const tile of selectedTargetTiles)
+    for (const tile of selectedTargetTiles) {
       textureRange.extendRange(tileToTexture.multiplyRange(tile.range, scratchRange));
+    }
 
     if (textureRange.isNull)
       return {};
@@ -133,17 +134,26 @@ export class PlanarTextureProjection {
         nearRange.high.x = textureRange.high.x
         farRange.low.x = eyePoint.x + far / near * (textureRange.low.x - eyePoint.x);
         farRange.high.x = eyePoint.x + far / near * (textureRange.high.x - eyePoint.x);
-        const expandCamera = ((rangePoint: Point3d): void => {
-          const farScale = far / (eyePoint.z - rangePoint.z);
-          const nearScale = near / (eyePoint.z - rangePoint.z);
-          const nearY = eyePoint.y + nearScale * (rangePoint.y - eyePoint.y);
-          const farY = eyePoint.y + farScale * (rangePoint.y - eyePoint.y);
-          nearRange.low.y = Math.min(nearRange.low.y, nearY);
-          nearRange.high.y = Math.max(nearRange.high.y, nearY);
-          farRange.low.y = Math.min(farRange.low.y, farY);
-          farRange.high.y = Math.max(farRange.high.y, farY);
+        ClipUtilities.announceLoopsOfConvexClipPlaneSetIntersectRange(viewClipPlanes, textureRange, (points: GrowableXYZArray) => {
+          points.getPoint3dArray().forEach((rangePoint) => {
+            const farScale = far / (eyePoint.z - rangePoint.z);
+            const nearScale = near / (eyePoint.z - rangePoint.z);
+            const nearY = eyePoint.y + nearScale * (rangePoint.y - eyePoint.y);
+            const farY = eyePoint.y + farScale * (rangePoint.y - eyePoint.y);
+            nearRange.low.y = Math.min(nearRange.low.y, nearY);
+            nearRange.high.y = Math.max(nearRange.high.y, nearY);
+            farRange.low.y = Math.min(farRange.low.y, farY);
+            farRange.high.y = Math.max(farRange.high.y, farY);
+          });
         });
-        textureRange.corners().forEach((point) => expandCamera(point));
+        textureFrustum.points[Npc._000].set(farRange.low.x, farRange.low.y, eyePoint.z - far);
+        textureFrustum.points[Npc._100].set(farRange.high.x, farRange.low.y, eyePoint.z - far);
+        textureFrustum.points[Npc._010].set(farRange.low.x, farRange.high.y, eyePoint.z - far);
+        textureFrustum.points[Npc._110].set(farRange.high.x, farRange.high.y, eyePoint.z - far);
+        textureFrustum.points[Npc._001].set(nearRange.low.x, nearRange.low.y, eyePoint.z - near);
+        textureFrustum.points[Npc._101].set(nearRange.high.x, nearRange.low.y, eyePoint.z - near);
+        textureFrustum.points[Npc._011].set(nearRange.low.x, nearRange.high.y, eyePoint.z - near);
+        textureFrustum.points[Npc._111].set(nearRange.high.x, nearRange.high.y, eyePoint.z - near);
       }
     }
     textureMatrix.transposeInPlace();
