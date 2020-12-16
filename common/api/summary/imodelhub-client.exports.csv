@@ -28,6 +28,7 @@ beta;CheckpointCreatedEvent
 alpha;CheckpointHandler
 alpha;CheckpointQuery 
 alpha;CheckpointV2 
+alpha;CheckpointV2ErrorId
 alpha;CheckpointV2Handler
 alpha;CheckpointV2Query 
 alpha;CheckpointV2State

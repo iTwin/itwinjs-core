@@ -5,7 +5,7 @@
 import * as chai from "chai";
 import * as fs from "fs";
 import { GuidString } from "@bentley/bentleyjs-core";
-import { Briefcase, ChangeSet, CheckpointV2, CheckpointV2Query, CheckpointV2State, IModelClient } from "@bentley/imodelhub-client";
+import { Briefcase, ChangeSet, CheckpointV2, CheckpointV2ErrorId, CheckpointV2Query, CheckpointV2State, IModelClient } from "@bentley/imodelhub-client";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool";
 import { RequestType, ResponseBuilder, ScopeType } from "../ResponseBuilder";
@@ -62,13 +62,20 @@ function mockUpdateCheckpointV2(imodelId: GuidString, checkpoint: CheckpointV2) 
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse);
 }
 
-function mockCheckpointV2(changeSetId: string, state: CheckpointV2State, id?: string, mockAccessKey: boolean = false): CheckpointV2 {
+function mockCheckpointV2(changeSetId: string, state: CheckpointV2State, id?: string, mockAccessKey: boolean = false, errorId?: CheckpointV2ErrorId,
+  failedChangeSetId?: string, jobId?: string, jobRunDurationMS?: string): CheckpointV2 {
   const result = new CheckpointV2();
   result.changeSetId = changeSetId;
   result.state = state;
   if (!!id) {
     result.wsgId = id;
   }
+
+  result.failureInfoErrorId = errorId;
+  result.failureInfoFailedChangeSetId = failedChangeSetId;
+  result.failureInfoJobId = jobId;
+  result.failureInfoJobRunDurationMS = jobRunDurationMS;
+
   if (mockAccessKey) {
     mockContainerAccessKey(result);
   }
@@ -199,6 +206,10 @@ describe("iModelHub CheckpointV2Handler", () => {
     const checkpointToUpdate = new CheckpointV2();
     checkpointToUpdate.wsgId = createdCheckpoint.wsgId;
     checkpointToUpdate.state = CheckpointV2State.Failed;
+    checkpointToUpdate.failureInfoErrorId = CheckpointV2ErrorId.ApplyChangeSetError;
+    checkpointToUpdate.failureInfoFailedChangeSetId = changeSetId;
+    checkpointToUpdate.failureInfoJobId = "jobId";
+    checkpointToUpdate.failureInfoJobRunDurationMS = "1500";
     mockUpdateCheckpointV2(imodelId, checkpointToUpdate);
     const updatedCheckpoint = await iModelClient.checkpointsV2.update(requestContext, imodelId, checkpointToUpdate);
     chai.assert(updatedCheckpoint);
@@ -206,11 +217,20 @@ describe("iModelHub CheckpointV2Handler", () => {
     chai.expect(updatedCheckpoint.state).to.be.eq(CheckpointV2State.Failed);
 
     // Verify CheckpointV2 was created
-    mockGetCheckpointV2(imodelId, `?$filter=ChangeSetId+eq+%27${changeSetId}%27`, mockCheckpointV2(changeSetId, CheckpointV2State.Failed, createdCheckpoint.wsgId));
-    const checkpoints = await iModelClient.checkpointsV2.get(requestContext, imodelId, new CheckpointV2Query().byChangeSetId(changeSetId));
+    const queryResultCheckpoint = mockCheckpointV2(changeSetId, CheckpointV2State.Failed, createdCheckpoint.wsgId, false, CheckpointV2ErrorId.ApplyChangeSetError,
+      changeSetId, "jobId", "1500");
+    mockGetCheckpointV2(imodelId, `?$filter=ChangeSetId+eq+%27${changeSetId}%27&$select=*,HasCheckpointV2FailureInfo-forward-CheckpointV2FailureInfo.*`,
+      queryResultCheckpoint);
+
+    const checkpoints = await iModelClient.checkpointsV2.get(requestContext, imodelId, new CheckpointV2Query().byChangeSetId(changeSetId).selectFailureInfo());
     chai.assert(checkpoints);
     chai.expect(checkpoints.length).to.be.equal(1);
-    chai.expect(checkpoints[0].wsgId).to.be.equal(createdCheckpoint.wsgId);
-    chai.expect(checkpoints[0].state).to.be.equal(CheckpointV2State.Failed);
+    const queriedCheckpoint = checkpoints[0];
+    chai.expect(queriedCheckpoint.wsgId).to.be.equal(createdCheckpoint.wsgId);
+    chai.expect(queriedCheckpoint.state).to.be.equal(CheckpointV2State.Failed);
+    chai.expect(queriedCheckpoint.failureInfoErrorId).to.be.equal(CheckpointV2ErrorId.ApplyChangeSetError);
+    chai.expect(queriedCheckpoint.failureInfoFailedChangeSetId).to.be.equal(changeSetId);
+    chai.expect(queriedCheckpoint.failureInfoJobId).to.be.equal("jobId");
+    chai.expect(queriedCheckpoint.failureInfoJobRunDurationMS).to.be.equal("1500");
   });
 });
