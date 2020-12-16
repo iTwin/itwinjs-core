@@ -125,7 +125,7 @@ describe("RenderSystem", () => {
     expectAttributes(sys2, { ...sys2Attrs, powerPreference: "high-performance", premultipliedAlpha: true });
   });
 
-  describe.only("createTextureFromImageSource", () => {
+  describe("createTextureFromImageSource", () => {
     const imodel = {} as unknown as IModelConnection;
 
     // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in
@@ -145,7 +145,7 @@ describe("RenderSystem", () => {
       await IModelApp.shutdown();
     });
 
-    async function requestTexture(key: string | undefined, source?: ImageSource): Promise<RenderTexture | undefined> {
+    function requestTexture(key: string | undefined, source?: ImageSource): Promise<RenderTexture | undefined> { // eslint:disable-line @typescript-eslint/promise-function-async
       const params = new RenderTexture.Params(key, RenderTexture.Type.Normal);
       return IModelApp.renderSystem.createTextureFromImageSource(source ?? imageSource, imodel, params);
     }
@@ -215,7 +215,10 @@ describe("RenderSystem", () => {
 
     it("should throw and remove pending Promise from cache on error", async () => {
       const source = new ImageSource(new Uint8Array([0, 1, 2, 3, 4]), ImageSourceFormat.Png);
-      await expect(requestTexture("e", source)).to.be.rejectedWith(Error);
+      const p1 = requestTexture("e", source);
+      await expect(p1).to.be.rejectedWith(Error);
+      const p2 = requestTexture("e");
+      expect(p2).not.to.equal(p1);
     });
 
     it("should return undefined after render system is disposed", async () => {

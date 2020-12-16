@@ -424,9 +424,11 @@ export abstract class RenderSystem implements IDisposable {
   public createTextureFromImage(_image: HTMLImageElement, _hasAlpha: boolean, _imodel: IModelConnection | undefined, _params: RenderTexture.Params): RenderTexture | undefined { return undefined; }
 
   /** Create a new texture from an [[ImageSource]]. */
-  public async createTextureFromImageSource(source: ImageSource, imodel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
-    const image = await imageElementFromImageSource(source);
-    return IModelApp.hasRenderSystem ? this.createTextureFromImage(image, ImageSourceFormat.Png === source.format, imodel, params) : undefined;
+  public createTextureFromImageSource(source: ImageSource, imodel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined> { // eslint:disable-line @typescript-eslint/promise-function-async
+    const promise = imageElementFromImageSource(source);
+    return promise.then((image: HTMLImageElement) => {
+      return IModelApp.hasRenderSystem ? this.createTextureFromImage(image, ImageSourceFormat.Png === source.format, imodel, params) : undefined;
+    });
   }
 
   /** Create a new texture from a cube of HTML images.

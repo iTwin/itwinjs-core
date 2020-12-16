@@ -9,11 +9,10 @@
 import { assert, ByteStream, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Point3d, Range2d, Range3d, Transform } from "@bentley/geometry-core";
 import {
-  BatchType, ColorDef, ElementAlignedBox3d, FeatureTableHeader, FillFlags, Gradient, ImageSource, ImageSourceFormat, ImdlHeader, LinePixels,
+  BatchType, ColorDef, ElementAlignedBox3d, FeatureTableHeader, FillFlags, Gradient, ImageSource, ImdlHeader, LinePixels,
   PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d, readTileContentDescription, RenderMaterial, RenderTexture, TextureMapping,
   TileReadError, TileReadStatus,
 } from "@bentley/imodeljs-common";
-import { imageElementFromImageSource } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { GraphicBranch } from "../render/GraphicBranch";
