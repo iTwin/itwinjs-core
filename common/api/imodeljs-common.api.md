@@ -19,6 +19,7 @@ import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { ClipPlane } from '@bentley/geometry-core';
 import { ClipPlaneContainment } from '@bentley/geometry-core';
 import { ClipVector } from '@bentley/geometry-core';
+import { ClipVectorProps } from '@bentley/geometry-core';
 import { CompressedId64Set } from '@bentley/bentleyjs-core';
 import { ConvexClipPlaneSet } from '@bentley/geometry-core';
 import { DbOpcode } from '@bentley/bentleyjs-core';
@@ -47,6 +48,7 @@ import { Map4d } from '@bentley/geometry-core';
 import { Matrix3d } from '@bentley/geometry-core';
 import { Matrix4dProps } from '@bentley/geometry-core';
 import { OpenMode } from '@bentley/bentleyjs-core';
+import { OrderedId64Iterable } from '@bentley/bentleyjs-core';
 import { Point2d } from '@bentley/geometry-core';
 import { Point3d } from '@bentley/geometry-core';
 import { PolyfaceVisitor } from '@bentley/geometry-core';
@@ -526,6 +528,12 @@ export class BoundingSphere {
     transformBy(transform: Transform, result: BoundingSphere): BoundingSphere;
 }
 
+// @alpha
+export interface BRepCutProps {
+    bothDirections?: boolean;
+    distance?: number;
+}
+
 // @beta (undocumented)
 export namespace BRepEntity {
     export interface DataProps {
@@ -546,12 +554,60 @@ export namespace BRepEntity {
     }
 }
 
+// @alpha
+export interface BRepGeometryCreate {
+    entryArray: ElementGeometryDataEntry[];
+    onResult: BRepGeometryFunction;
+    operation: BRepGeometryOperation;
+    parameters?: BRepCutProps | BRepThickenProps | BRepHollowProps | BRepRoundProps;
+    separateDisjoint?: boolean;
+}
+
+// @alpha
+export type BRepGeometryFunction = (info: BRepGeometryInfo) => void;
+
+// @alpha
+export interface BRepGeometryInfo {
+    entryArray: ElementGeometryDataEntry[];
+}
+
+// @alpha
+export enum BRepGeometryOperation {
+    Cut = 4,
+    Emboss = 5,
+    Hollow = 7,
+    Intersect = 2,
+    Loft = 9,
+    Round = 10,
+    Sew = 3,
+    Subtract = 1,
+    Sweep = 8,
+    Thicken = 6,
+    Unite = 0
+}
+
+// @alpha
+export interface BRepHollowProps {
+    distance: number;
+}
+
 // @public
 export interface BRepPrimitive {
     // @beta (undocumented)
     readonly brep: BRepEntity.DataProps;
     // (undocumented)
     type: "brep";
+}
+
+// @alpha
+export interface BRepRoundProps {
+    radius: number;
+}
+
+// @alpha
+export interface BRepThickenProps {
+    backDistance?: number;
+    frontDistance?: number;
 }
 
 // @internal
@@ -779,6 +835,24 @@ export interface ClassifierTileTreeId {
     expansion: number;
     // (undocumented)
     type: BatchType.VolumeClassifier | BatchType.PlanarClassifier;
+}
+
+// @beta
+export class ClipStyle {
+    static create(produceCutGeometry: boolean, cutStyle: CutStyle): ClipStyle;
+    readonly cutStyle: CutStyle;
+    static readonly defaults: ClipStyle;
+    // (undocumented)
+    static fromJSON(props?: ClipStyleProps): ClipStyle;
+    get matchesDefaults(): boolean;
+    readonly produceCutGeometry: boolean;
+    toJSON(): ClipStyleProps | undefined;
+}
+
+// @beta
+export interface ClipStyleProps {
+    cutStyle?: CutStyleProps;
+    produceCutGeometry?: boolean;
 }
 
 // @beta (undocumented)
@@ -1461,8 +1535,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 1114112,
-    Major = 17,
+    Combined = 1245184,
+    Major = 19,
     Minor = 0
 }
 
@@ -1472,6 +1546,26 @@ export interface CustomAttribute {
     properties: {
         [propName: string]: any;
     };
+}
+
+// @beta
+export class CutStyle {
+    readonly appearance?: FeatureAppearance;
+    static create(viewflags?: Readonly<ViewFlagOverrides>, hiddenLine?: HiddenLine.Settings, appearance?: FeatureAppearance): CutStyle;
+    static readonly defaults: CutStyle;
+    // (undocumented)
+    static fromJSON(props?: CutStyleProps): CutStyle;
+    readonly hiddenLine?: HiddenLine.Settings;
+    get matchesDefaults(): boolean;
+    toJSON(): CutStyleProps | undefined;
+    readonly viewflags: Readonly<ViewFlagOverrides>;
+}
+
+// @beta
+export interface CutStyleProps {
+    appearance?: FeatureAppearanceProps;
+    hiddenLine?: HiddenLine.SettingsProps;
+    viewflags?: ViewFlagOverridesProps;
 }
 
 export { DbResult }
@@ -1619,6 +1713,12 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
     thematic?: ThematicDisplayProps;
 }
 
+// @public
+export interface DisplayStyleLoadProps {
+    compressExcludedElementIds?: boolean;
+    omitScheduleScriptElementIds?: boolean;
+}
+
 // @beta
 export interface DisplayStyleModelAppearanceProps extends FeatureAppearanceProps {
     modelId?: Id64String;
@@ -1645,7 +1745,7 @@ export class DisplayStyleSettings {
     constructor(jsonProperties: {
         styles?: DisplayStyleSettingsProps;
     });
-    addExcludedElements(id: Id64String): void;
+    addExcludedElements(id: Id64String | Iterable<Id64String>): void;
     // @alpha (undocumented)
     get analysisFraction(): number;
     set analysisFraction(fraction: number);
@@ -1660,13 +1760,22 @@ export class DisplayStyleSettings {
     set backgroundColor(color: ColorDef);
     get backgroundMap(): BackgroundMapSettings;
     set backgroundMap(map: BackgroundMapSettings);
+    clearExcludedElements(): void;
+    // @beta
+    get clipStyle(): ClipStyle;
+    set clipStyle(style: ClipStyle);
+    // @internal (undocumented)
+    get compressedExcludedElementIds(): CompressedId64Set;
     dropExcludedElement(id: Id64String): void;
+    dropExcludedElements(id: Id64String | Iterable<Id64String>): void;
     dropModelAppearanceOverride(id: Id64String): void;
     dropSubCategoryOverride(id: Id64String): void;
     // @internal (undocumented)
     equalModelAppearanceOverrides(other: DisplayStyleSettings): boolean;
     // @internal (undocumented)
     equalSubCategoryOverrides(other: DisplayStyleSettings): boolean;
+    get excludedElementIds(): OrderedId64Iterable;
+    // @deprecated
     get excludedElements(): Set<Id64String>;
     getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined;
     getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
@@ -1711,8 +1820,10 @@ export interface DisplayStyleSettingsProps {
     analysisStyle?: AnalysisStyleProps;
     backgroundColor?: ColorDefProps;
     backgroundMap?: BackgroundMapProps;
+    // @beta
+    clipStyle?: ClipStyleProps;
     contextRealityModels?: ContextRealityModelProps[];
-    excludedElements?: Id64String[];
+    excludedElements?: Id64Array | CompressedId64Set;
     // @alpha
     mapImagery?: MapImageryProps;
     // @beta
@@ -2036,7 +2147,6 @@ export interface ElementAspectProps extends EntityProps {
 
 // @alpha
 export namespace ElementGeometry {
-    // (undocumented)
     export function appendGeometryParams(geomParams: GeometryParams, entries: ElementGeometryDataEntry[]): boolean;
     export class Builder {
         appendBRepData(brep: BRepEntity.DataProps): boolean;
@@ -2051,23 +2161,14 @@ export namespace ElementGeometry {
         // (undocumented)
         readonly entries: ElementGeometryDataEntry[];
     }
-    // (undocumented)
     export function fromBRep(brep: BRepEntity.DataProps): ElementGeometryDataEntry | undefined;
-    // (undocumented)
     export function fromGeometryPart(partId: Id64String, partToElement?: Transform): ElementGeometryDataEntry | undefined;
-    // (undocumented)
     export function fromGeometryQuery(geom: GeometryQuery): ElementGeometryDataEntry | undefined;
-    // (undocumented)
     export function fromImageGraphic(image: ImageGraphicProps): ElementGeometryDataEntry | undefined;
-    // (undocumented)
     export function fromSubGraphicRange(bbox: ElementAlignedBox3d): ElementGeometryDataEntry | undefined;
-    // (undocumented)
     export function fromTextString(text: TextStringProps): ElementGeometryDataEntry | undefined;
-    // (undocumented)
     export function isAppearanceEntry(entry: ElementGeometryDataEntry): boolean;
-    // (undocumented)
     export function isGeometricEntry(entry: ElementGeometryDataEntry): boolean;
-    // (undocumented)
     export function isGeometryQueryEntry(entry: ElementGeometryDataEntry): boolean;
     export class Iterator implements IterableIterator<IteratorEntry> {
         // (undocumented)
@@ -2103,21 +2204,14 @@ export namespace ElementGeometry {
         get value(): ElementGeometryDataEntry;
         set value(value: ElementGeometryDataEntry);
         }
-    // (undocumented)
     export function toBRep(entry: ElementGeometryDataEntry, wantBRepData?: boolean): BRepEntity.DataProps | undefined;
     export function toElementAlignedBox3d(bbox: Float64Array): ElementAlignedBox3d | undefined;
-    // (undocumented)
     export function toGeometryPart(entry: ElementGeometryDataEntry, partToElement?: Transform): Id64String | undefined;
-    // (undocumented)
     export function toGeometryQuery(entry: ElementGeometryDataEntry): GeometryQuery | undefined;
-    // (undocumented)
     export function toImageGraphic(entry: ElementGeometryDataEntry): ImageGraphicProps | undefined;
-    // (undocumented)
     export function toSubGraphicRange(entry: ElementGeometryDataEntry): ElementAlignedBox3d | undefined;
-    // (undocumented)
     export function toTextString(entry: ElementGeometryDataEntry): TextStringProps | undefined;
     export function toTransform(sourceToWorld: Float64Array): Transform | undefined;
-    // (undocumented)
     export function updateGeometryParams(entry: ElementGeometryDataEntry, geomParams: GeometryParams): boolean;
 }
 
@@ -2216,9 +2310,7 @@ export interface ElementLoadProps {
     // (undocumented)
     code?: CodeProps;
     // @internal
-    displayStyle?: {
-        omitScheduleScriptElementIds?: boolean;
-    };
+    displayStyle?: DisplayStyleLoadProps;
     // (undocumented)
     federationGuid?: GuidString;
     // (undocumented)
@@ -2374,6 +2466,7 @@ export class FeatureAppearance implements FeatureAppearanceProps {
     get isFullyTransparent(): boolean;
     // (undocumented)
     readonly linePixels?: LinePixels;
+    get matchesDefaults(): boolean;
     // (undocumented)
     readonly nonLocatable?: true | undefined;
     // (undocumented)
@@ -2411,7 +2504,18 @@ export interface FeatureAppearanceProps {
 
 // @beta
 export interface FeatureAppearanceProvider {
-    getFeatureAppearance(overrides: FeatureOverrides, elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined;
+    getFeatureAppearance(source: FeatureAppearanceSource, elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined;
+}
+
+// @beta (undocumented)
+export namespace FeatureAppearanceProvider {
+    export function chain(first: FeatureAppearanceProvider, second: FeatureAppearanceProvider): FeatureAppearanceProvider;
+    export function supplement(supplementAppearance: (appearance: FeatureAppearance) => FeatureAppearance): FeatureAppearanceProvider;
+}
+
+// @public
+export interface FeatureAppearanceSource {
+    getAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined;
 }
 
 // @internal
@@ -2451,7 +2555,7 @@ export enum FeatureIndexType {
 }
 
 // @public
-export class FeatureOverrides {
+export class FeatureOverrides implements FeatureAppearanceSource {
     constructor();
     // @internal (undocumented)
     get alwaysDrawn(): Id64.Uint32Set;
@@ -3319,8 +3423,12 @@ export interface HemisphereLightsProps {
 export namespace HiddenLine {
     export class Settings {
         static defaults: Settings;
+        // (undocumented)
+        equals(other: Settings): boolean;
         static fromJSON(json?: SettingsProps): Settings;
         readonly hidden: Style;
+        // (undocumented)
+        get matchesDefaults(): boolean;
         override(props: SettingsProps): Settings;
         // (undocumented)
         toJSON(): SettingsProps;
@@ -3642,6 +3750,9 @@ export abstract class IModel implements IModelProps {
     ecefToSpatial(ecef: XYAndZ, result?: Point3d): Point3d;
     // @internal
     protected _fileKey: string;
+    // (undocumented)
+    get geographicCoordinateSystem(): GeographicCRS | undefined;
+    set geographicCoordinateSystem(geoCRS: GeographicCRS | undefined);
     // @internal (undocumented)
     getConnectionProps(): IModelConnectionProps;
     static getDefaultSubCategoryId(categoryId: Id64String): Id64String;
@@ -3667,6 +3778,8 @@ export abstract class IModel implements IModelProps {
     rootSubject: RootSubjectProps;
     static readonly rootSubjectId: Id64String;
     setEcefLocation(ecef: EcefLocationProps): void;
+    // (undocumented)
+    setGeographicCoordinateSystem(geoCRS: GeographicCRSProps): void;
     spatialToCartographicFromEcef(spatial: XYAndZ, result?: Cartographic): Cartographic;
     spatialToEcef(spatial: XYAndZ, result?: Point3d): Point3d;
     // @internal (undocumented)
@@ -3737,6 +3850,7 @@ export class IModelNotFoundResponse extends RpcNotFoundResponse {
 // @public
 export interface IModelProps {
     ecefLocation?: EcefLocationProps;
+    geographicCoordinateSystem?: GeographicCRS;
     globalOrigin?: XYZProps;
     name?: string;
     projectExtents?: Range3dProps;
@@ -3774,7 +3888,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     // (undocumented)
     getToolTipMessage(_iModelToken: IModelRpcProps, _elementId: string): Promise<string[]>;
     // (undocumented)
-    getViewStateData(_iModelToken: IModelRpcProps, _viewDefinitionId: string): Promise<ViewStateProps>;
+    getViewStateData(_iModelToken: IModelRpcProps, _viewDefinitionId: string, _options?: ViewStateLoadProps): Promise<ViewStateProps>;
     // (undocumented)
     getViewThumbnail(_iModelToken: IModelRpcProps, _viewId: string): Promise<Uint8Array>;
     static readonly interfaceName = "IModelReadRpcInterface";
@@ -4418,7 +4532,7 @@ export class ModelClipGroup {
 // @internal (undocumented)
 export interface ModelClipGroupProps {
     // (undocumented)
-    clip?: any;
+    clip?: ClipVectorProps;
     // (undocumented)
     models?: Id64Array;
 }
@@ -5079,15 +5193,11 @@ export enum PolylineTypeFlags {
 
 // @internal
 export interface PrimaryTileTreeId {
-    // (undocumented)
     animationId?: Id64String;
-    // (undocumented)
     animationTransformNodeId?: number;
-    // (undocumented)
     edgesRequired: boolean;
-    // (undocumented)
     enforceDisplayPriority?: boolean;
-    // (undocumented)
+    sectionCut?: string;
     type: BatchType.Primary;
 }
 
@@ -7549,7 +7659,7 @@ export interface ViewDetails3dProps extends ViewDetailsProps {
 export interface ViewDetailsProps {
     acs?: Id64String;
     aspectSkew?: number;
-    clip?: any;
+    clip?: ClipVectorProps;
     gridOrient?: GridOrientationType;
     gridPerRef?: number;
     gridSpaceX?: number;
@@ -7816,6 +7926,11 @@ export class ViewFlags {
 export interface ViewQueryParams extends EntityQueryParams {
     // (undocumented)
     wantPrivate?: boolean;
+}
+
+// @public
+export interface ViewStateLoadProps {
+    displayStyle?: DisplayStyleLoadProps;
 }
 
 // @public

@@ -14,7 +14,7 @@ import {
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck, IModelHubClientError } from "./Errors";
-import { addSelectBCVAccessKey, addSelectFileAccessKey } from "./HubQuery";
+import { addSelectFileAccessKey } from "./HubQuery";
 import { InitializationState } from "./iModels";
 
 const loggerCategory: string = IModelHubClientLoggerCategory.IModelHub;
@@ -58,22 +58,6 @@ export class Checkpoint extends WsgInstance {
   /** URL that can be used to download the checkpoint file from iModelHub. See [[CheckpointQuery.selectDownloadUrl]]. */
   @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[FileAccessKey].relatedInstance[AccessKey].properties.DownloadUrl")
   public downloadUrl?: string;
-
-  /** BCV AccessKey account name of the storage that can be used to download the checkpoint blocks from iModelHub. See [[CheckpointQuery.selectBCVAccessKey]]. */
-  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[FileAccessKey].relatedInstance[BCVAccessKey].properties.Account")
-  public bcvAccessKeyAccount?: string;
-
-  /** BCV AccessKey container name of the storage that can be used to download the checkpoint blocks from iModelHub. See [[CheckpointQuery.selectBCVAccessKey]]. */
-  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[FileAccessKey].relatedInstance[BCVAccessKey].properties.Container")
-  public bcvAccessKeyContainer?: string;
-
-  /** BCV AccessKey SAS token of the storage that can be used to download the checkpoint blocks from iModelHub. See [[CheckpointQuery.selectBCVAccessKey]]. */
-  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[FileAccessKey].relatedInstance[BCVAccessKey].properties.SAS")
-  public bcvAccessKeySAS?: string;
-
-  /** BCV AccessKey database name of the storage that can be used to download the checkpoint blocks from iModelHub. See [[CheckpointQuery.selectBCVAccessKey]]. */
-  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[FileAccessKey].relatedInstance[BCVAccessKey].properties.DbName")
-  public bcvAccessKeyDbName?: string;
 }
 
 /**
@@ -112,14 +96,6 @@ export class CheckpointQuery extends WsgQuery {
    */
   public selectDownloadUrl(): this {
     addSelectFileAccessKey(this._query);
-    return this;
-  }
-
-  /** Query will additionally select [[Checkpoint]] container read BCVAccessKey to download [[Checkpoint]] blocks.
-   * @returns This query.
-   */
-  public selectBCVAccessKey(): this {
-    addSelectBCVAccessKey(this._query);
     return this;
   }
 }

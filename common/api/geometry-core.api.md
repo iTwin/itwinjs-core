@@ -318,7 +318,7 @@ export class AuxChannel {
 
 // @public
 export class AuxChannelData {
-    constructor(input: number, values: number[]);
+    constructor(input: number, values: number[] | Float64Array);
     clone(): AuxChannelData;
     copyValues(other: AuxChannelData, thisIndex: number, otherIndex: number, blockSize: number): void;
     input: number;
@@ -953,7 +953,7 @@ export class ClipPlane implements Clipper, PlaneAltitudeEvaluator, PolygonClippe
     static createPlane(plane: Plane3dByOriginAndUnitNormal, invisible?: boolean, interior?: boolean, result?: ClipPlane): ClipPlane;
     get distance(): number;
     dotProductPlaneNormalPoint(point: Point3d): number;
-    static fromJSON(json: any, result?: ClipPlane): ClipPlane | undefined;
+    static fromJSON(json: ClipPlaneProps, result?: ClipPlane): ClipPlane | undefined;
     getBoundedSegmentSimpleIntersection(pointA: Point3d, pointB: Point3d): number | undefined;
     getFrame(): Transform;
     getPlane3d(): Plane3dByOriginAndUnitNormal;
@@ -972,7 +972,7 @@ export class ClipPlane implements Clipper, PlaneAltitudeEvaluator, PolygonClippe
     setFlags(invisible: boolean, interior: boolean): void;
     setInvisible(invisible: boolean): void;
     setPlane4d(plane: Point4d): void;
-    toJSON(): any;
+    toJSON(): ClipPlaneProps;
     transformInPlace(transform: Transform): boolean;
     velocity(vector: Vector3d): number;
     velocityXYZ(x: number, y: number, z: number): number;
@@ -987,6 +987,14 @@ export enum ClipPlaneContainment {
 }
 
 // @public
+export interface ClipPlaneProps {
+    dist?: number;
+    interior?: boolean;
+    invisible?: boolean;
+    normal?: XYZProps;
+}
+
+// @public
 export class ClipPrimitive {
     protected constructor(planeSet?: UnionOfConvexClipPlaneSets | undefined, isInvisible?: boolean);
     arePlanesDefined(): boolean;
@@ -997,15 +1005,39 @@ export class ClipPrimitive {
     static createCapture(planes: UnionOfConvexClipPlaneSets | ConvexClipPlaneSet | undefined, isInvisible?: boolean): ClipPrimitive;
     ensurePlaneSets(): void;
     fetchClipPlanesRef(): UnionOfConvexClipPlaneSets | undefined;
-    static fromJSON(json: any): ClipPrimitive | undefined;
-    static fromJSONClipPrimitive(json: any): ClipPrimitive | undefined;
+    static fromJSON(json: ClipPrimitiveProps | undefined): ClipPrimitive | undefined;
+    static fromJSONClipPrimitive(json: ClipPrimitivePlanesProps | undefined): ClipPrimitive | undefined;
     get invisible(): boolean;
     protected _invisible: boolean;
     multiplyPlanesByMatrix4d(matrix: Matrix4d, invert?: boolean, transpose?: boolean): boolean;
     pointInside(point: Point3d, onTolerance?: number): boolean;
     setInvisible(invisible: boolean): void;
-    toJSON(): any;
+    toJSON(): ClipPrimitiveProps;
     transformInPlace(transform: Transform): boolean;
+}
+
+// @public
+export interface ClipPrimitivePlanesProps {
+    // (undocumented)
+    planes?: {
+        clips?: UnionOfConvexClipPlaneSetsProps;
+        invisible?: boolean;
+    };
+}
+
+// @public
+export type ClipPrimitiveProps = ClipPrimitivePlanesProps | ClipPrimitiveShapeProps;
+
+// @public
+export interface ClipPrimitiveShapeProps {
+    shape?: {
+        points?: XYZProps[];
+        trans?: TransformProps;
+        zlow?: number;
+        zhigh?: number;
+        mask?: boolean;
+        invisible?: boolean;
+    };
 }
 
 // @public
@@ -1017,7 +1049,7 @@ export class ClipShape extends ClipPrimitive {
     static createFrom(other: ClipShape, result?: ClipShape): ClipShape;
     static createShape(polygon?: Point3d[], zLow?: number, zHigh?: number, transform?: Transform, isMask?: boolean, invisible?: boolean, result?: ClipShape): ClipShape | undefined;
     ensurePlaneSets(): void;
-    static fromClipShapeJSON(json: any, result?: ClipShape): ClipShape | undefined;
+    static fromClipShapeJSON(json: ClipPrimitiveShapeProps | undefined, result?: ClipShape): ClipShape | undefined;
     initSecondaryProps(isMask: boolean, zLow?: number, zHigh?: number, transform?: Transform): void;
     get invisible(): boolean;
     get isMask(): boolean;
@@ -1030,7 +1062,7 @@ export class ClipShape extends ClipPrimitive {
     get polygon(): Point3d[];
     protected _polygon: Point3d[];
     setPolygon(polygon: Point3d[]): void;
-    toJSON(): any;
+    toJSON(): ClipPrimitiveShapeProps;
     get transformFromClip(): Transform | undefined;
     protected _transformFromClip?: Transform;
     transformInPlace(transform: Transform): boolean;
@@ -1089,7 +1121,7 @@ export class ClipVector {
     static createCapture(clips: ClipPrimitive[], result?: ClipVector): ClipVector;
     static createEmpty(result?: ClipVector): ClipVector;
     extractBoundaryLoops(loopPoints: Point3d[][], transform?: Transform): number[];
-    static fromJSON(json: any, result?: ClipVector): ClipVector;
+    static fromJSON(json: ClipVectorProps | undefined, result?: ClipVector): ClipVector;
     isAnyLineStringPointInside(points: Point3d[]): boolean;
     isLineStringCompletelyContained(points: Point3d[]): boolean;
     get isValid(): boolean;
@@ -1098,9 +1130,14 @@ export class ClipVector {
     pointInside(point: Point3d, onTolerance?: number): boolean;
     setInvisible(invisible: boolean): void;
     sumSizes(intervals: Segment1d[], begin: number, end: number): number;
-    toJSON(): any;
+    // @alpha
+    toCompactString(): string;
+    toJSON(): ClipVectorProps;
     transformInPlace(transform: Transform): boolean;
 }
+
+// @public
+export type ClipVectorProps = ClipPrimitiveProps[];
 
 // @internal
 export class ClusterableArray extends GrowableBlockedArray {
@@ -1241,7 +1278,7 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
     static createXYBox(x0: number, y0: number, x1: number, y1: number, result?: ConvexClipPlaneSet): ConvexClipPlaneSet;
     static createXYPolyLine(points: Point3d[], interior: boolean[], leftIsInside: boolean, result?: ConvexClipPlaneSet): ConvexClipPlaneSet;
     static createXYPolyLineInsideLeft(points: Point3d[], result?: ConvexClipPlaneSet): ConvexClipPlaneSet;
-    static fromJSON(json: any, result?: ConvexClipPlaneSet): ConvexClipPlaneSet;
+    static fromJSON(json: ConvexClipPlaneSetProps | undefined, result?: ConvexClipPlaneSet): ConvexClipPlaneSet;
     hasIntersectionWithRay(ray: Ray3d, result?: Range1d): boolean;
     static readonly hugeVal = 1e+37;
     isAlmostEqual(other: ConvexClipPlaneSet): boolean;
@@ -1255,9 +1292,12 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
     reloadSweptPolygon(points: Point3d[], sweepDirection: Vector3d, sideSelect: number): number;
     setInvisible(invisible: boolean): void;
     static setPlaneAndXYLoopCCW(points: GrowableXYZArray, planeOfPolygon: ClipPlane, frustum: ConvexClipPlaneSet): void;
-    toJSON(): any;
+    toJSON(): ConvexClipPlaneSetProps;
     transformInPlace(transform: Transform): void;
 }
+
+// @public
+export type ConvexClipPlaneSetProps = ClipPlaneProps[];
 
 // @internal
 export class ConvexPolygon2d {
@@ -4089,6 +4129,13 @@ export class PolyfaceData {
 export class PolyfaceQuery {
     static announceDuplicateFacetIndices(polyface: Polyface, announceCluster: (clusterFacetIndices: number[]) => void): void;
     static announceSweepLinestringToConvexPolyfaceXY(linestringPoints: GrowableXYZArray, polyface: Polyface, announce: AnnounceDrapePanel): any;
+    // @internal
+    static asyncAnnounceSweepLinestringToConvexPolyfaceXY(linestringPoints: GrowableXYZArray, polyface: Polyface, announce: AnnounceDrapePanel): Promise<number>;
+    static asyncSweepLinestringToFacetsXYReturnChains(linestringPoints: GrowableXYZArray, polyface: Polyface): Promise<LineString3d[]>;
+    // @internal
+    static get asyncWorkLimit(): number;
+    // @internal
+    static awaitBlockCount: number;
     static boundaryEdges(source: Polyface | PolyfaceVisitor | undefined, includeDanglers?: boolean, includeMismatch?: boolean, includeNull?: boolean): CurveCollection | undefined;
     static boundaryOfVisibleSubset(polyface: IndexedPolyface, visibilitySelect: 0 | 1 | 2, vectorToEye: Vector3d, sideAngleTolerance?: Angle): CurveCollection | undefined;
     static buildAverageNormals(polyface: IndexedPolyface, toleranceAngle?: Angle): void;
@@ -4112,6 +4159,8 @@ export class PolyfaceQuery {
     static partitionFacetIndicesByVertexConnectedComponent(polyface: Polyface | PolyfaceVisitor): number[][];
     static partitionFacetIndicesByVisibilityVector(polyface: Polyface | PolyfaceVisitor, vectorToEye: Vector3d, sideAngleTolerance: Angle): number[][];
     static reorientVertexOrderAroundFacetsForConsistentOrientation(mesh: IndexedPolyface): boolean;
+    // @internal
+    static setAsyncWorkLimit(value: number): number;
     static setSingleEdgeVisibility(polyface: IndexedPolyface, facetIndex: number, vertexIndex: number, value: boolean): void;
     static sumFacetAreas(source: Polyface | PolyfaceVisitor | undefined): number;
     static sumFacetSecondAreaMomentProducts(source: Polyface | PolyfaceVisitor, origin: Point3d): Matrix4d;
@@ -4689,6 +4738,7 @@ export class RuledSweep extends SolidPrimitive {
 
 // @alpha
 export class Sample {
+    static addAuxDataScalarChannel(data: PolyfaceData, channelIndex: number, name: string | undefined, inputName: string | undefined, input0: number, inputStep: number, numInput: number, dataType: AuxChannelDataType, scalarFunction: (input: number, xyz: Point3d) => number): void;
     static readonly angle: Angle[];
     static readonly angleSweep: AngleSweep[];
     static appendPhases(linestring: LineString3d, numPhase: number, ...vectors: Vector3d[]): void;
@@ -4966,6 +5016,16 @@ export class SteppedIndexFunctionFactory {
     static createCosine(amplitude: number, sweep?: AngleSweep, f0?: number): SteppedIndexFunction;
     static createLinear(a: number, f0?: number): SteppedIndexFunction;
     static createSine(amplitude: number, sweep?: AngleSweep, f0?: number): SteppedIndexFunction;
+}
+
+// @alpha
+export type StringifiedClipVector = ClipVector & {
+    readonly clipString: string;
+};
+
+// @alpha
+export namespace StringifiedClipVector {
+    export function fromClipVector(clip?: ClipVector): StringifiedClipVector | undefined;
 }
 
 // @public
@@ -5263,7 +5323,7 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
     get convexSets(): ConvexClipPlaneSet[];
     static createConvexSets(convexSets: ConvexClipPlaneSet[], result?: UnionOfConvexClipPlaneSets): UnionOfConvexClipPlaneSets;
     static createEmpty(result?: UnionOfConvexClipPlaneSets): UnionOfConvexClipPlaneSets;
-    static fromJSON(json: any, result?: UnionOfConvexClipPlaneSets): UnionOfConvexClipPlaneSets;
+    static fromJSON(json: UnionOfConvexClipPlaneSetsProps | undefined, result?: UnionOfConvexClipPlaneSets): UnionOfConvexClipPlaneSets;
     hasIntersectionWithRay(ray: Ray3d, maximalRange?: Range1d): boolean;
     isAlmostEqual(other: UnionOfConvexClipPlaneSets): boolean;
     isAnyPointInOrOnFromSegment(segment: LineSegment3d): boolean;
@@ -5273,9 +5333,12 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
     multiplyPlanesByMatrix4d(matrix: Matrix4d, invert?: boolean, transpose?: boolean): boolean;
     polygonClip(input: GrowableXYZArray | Point3d[], output: GrowableXYZArray[]): void;
     setInvisible(invisible: boolean): void;
-    toJSON(): any;
+    toJSON(): UnionOfConvexClipPlaneSetsProps;
     transformInPlace(transform: Transform): void;
 }
+
+// @public
+export type UnionOfConvexClipPlaneSetsProps = ConvexClipPlaneSetProps[];
 
 // @public
 export class UnionRegion extends CurveCollection {

@@ -6,6 +6,7 @@
  * @module WebGL
  */
 
+import { WebGLContext } from "@bentley/webgl-compatibility";
 import { AttributeMap } from "../AttributeMap";
 import { EVSMGeometry } from "../CachedGeometry";
 import { TextureUnit } from "../RenderFlags";
@@ -49,7 +50,7 @@ const computeEVSM = `
 `;
 
 /** @internal */
-export function createEVSMProgram(context: WebGLRenderingContext | WebGL2RenderingContext): ShaderProgram {
+export function createEVSMProgram(context: WebGLContext): ShaderProgram {
   const builder = new ProgramBuilder(AttributeMap.findAttributeMap(undefined, false));
   const vert = builder.vert;
   const frag = builder.frag;

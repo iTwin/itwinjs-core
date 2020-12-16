@@ -7,11 +7,11 @@ import "./DragLayer.scss";
 import * as React from "react";
 import { DragLayerProps } from "@bentley/ui-components";
 
-export class RowDragLayer extends React.Component<DragLayerProps> {
+export class RowDragLayer extends React.Component<DragLayerProps> { // eslint-disable-line deprecation/deprecation
   public render(): React.ReactNode {
     const args = this.props.args!;
     const pos = args.clientOffset;
-    const spos = args.sourceClientOffset || {x: -1000, y: -1000};
+    const spos = args.sourceClientOffset || { x: -1000, y: -1000 };
     const width = 150;
     const x = pos.x > spos.x + width ? pos.x - width / 2 : spos.x;
     const y = spos.y;

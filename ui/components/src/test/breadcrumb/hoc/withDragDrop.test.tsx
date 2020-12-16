@@ -14,6 +14,8 @@ import {
   DragSourceArguments, DragSourceProps, DropEffects, DropStatus, DropTargetArguments, DropTargetProps,
 } from "../../../ui-components/dragdrop/DragDropDef";
 
+/* eslint-disable deprecation/deprecation */
+
 describe("Breadcrumb withDragDrop HOC", () => {
 
   afterEach(cleanup);

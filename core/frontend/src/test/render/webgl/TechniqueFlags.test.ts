@@ -2,102 +2,168 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import { expect } from "chai";
-import { IsEdgeTestNeeded, TechniqueFlags } from "../../../render/webgl/TechniqueFlags";
-import { System } from "../../../render/webgl/System";
+import { TechniqueFlags } from "../../../render/webgl/TechniqueFlags";
 
-/** Overrides the WebGL context's "unmasked renderer" string. */
-class TestSystem extends System {
-  private static _renderer: string;
-
-  public static createContext(canvas: HTMLCanvasElement, useWebGL2: boolean, inputContextAttributes?: WebGLContextAttributes): WebGLRenderingContext | WebGL2RenderingContext | undefined {
-    const ctx = System.createContext(canvas, useWebGL2, inputContextAttributes);
-    if (ctx) {
-      const ext = ctx.getExtension("WEBGL_debug_renderer_info")!;
-      if (ext) {
-        const getParameter = ctx.getParameter.bind(ctx);
-        ctx.getParameter = (name: number) => { // eslint-disable-line @typescript-eslint/unbound-method
-          return (name === ext.UNMASKED_RENDERER_WEBGL) ? this._renderer : getParameter(name);
-        };
-      }
-    }
-
-    return ctx;
-  }
-
-  public static createSystem(unmaskedRenderer: string): System {
-    this._renderer = unmaskedRenderer;
-    return this.create();
-  }
-
-  protected async handleContextLoss(): Promise<void> {
-    // Base class wants to translate a localized string, which requires us to call IModelApp.startup().
-    // We're going to trigger context loss because we're creating a large number of contexts. We don't care.
-  }
-}
+const descriptions = [
+  "Opaque",
+  "Opaque-Animated",
+  "Opaque-Animated-Shadowable",
+  "Opaque-Hilite-Classified",
+  "Opaque-Hilite-Overrides",
+  "Opaque-Instanced",
+  "Opaque-Instanced-Animated",
+  "Opaque-Instanced-Animated-Shadowable",
+  "Opaque-Instanced-Hilite-Overrides",
+  "Opaque-Instanced-Shadowable",
+  "Opaque-Shadowable",
+  "Translucent",
+  "Translucent-Animated",
+  "Translucent-Animated-Overrides",
+  "Translucent-Animated-Pick",
+  "Translucent-Animated-Shadowable",
+  "Translucent-Animated-Shadowable-Overrides",
+  "Translucent-Animated-Shadowable-Pick",
+  "Translucent-Instanced",
+  "Translucent-Instanced-Animated",
+  "Translucent-Instanced-Animated-Overrides",
+  "Translucent-Instanced-Animated-Pick",
+  "Translucent-Instanced-Animated-Shadowable",
+  "Translucent-Instanced-Animated-Shadowable-Overrides",
+  "Translucent-Instanced-Animated-Shadowable-Pick",
+  "Translucent-Instanced-Overrides",
+  "Translucent-Instanced-Pick",
+  "Translucent-Instanced-Shadowable",
+  "Translucent-Instanced-Shadowable-Overrides",
+  "Translucent-Instanced-Shadowable-Pick",
+  "Translucent-Overrides",
+  "Translucent-Pick",
+  "Translucent-Shadowable",
+  "Translucent-Shadowable-Overrides",
+  "Translucent-Shadowable-Pick",
+  "Opaque-Animated-Overrides",
+  "Opaque-Animated-Pick",
+  "Opaque-Animated-Shadowable-Overrides",
+  "Opaque-Animated-Shadowable-Pick",
+  "Opaque-Animated-Thematic",
+  "Opaque-Animated-Thematic-Overrides",
+  "Opaque-Animated-Thematic-Pick",
+  "Opaque-Classified",
+  "Opaque-Classified-Overrides",
+  "Opaque-Classified-Pick",
+  "Opaque-Classified-Shadowable",
+  "Opaque-Classified-Shadowable-Overrides",
+  "Opaque-Classified-Shadowable-Pick",
+  "Opaque-Classified-Thematic",
+  "Opaque-Classified-Thematic-Overrides",
+  "Opaque-Classified-Thematic-Pick",
+  "Opaque-EdgeTestNeeded-Animated-Overrides",
+  "Opaque-EdgeTestNeeded-Animated-Pick",
+  "Opaque-EdgeTestNeeded-Animated-Shadowable-Overrides",
+  "Opaque-EdgeTestNeeded-Animated-Shadowable-Pick",
+  "Opaque-EdgeTestNeeded-Animated-Thematic-Overrides",
+  "Opaque-EdgeTestNeeded-Animated-Thematic-Pick",
+  "Opaque-EdgeTestNeeded-Overrides",
+  "Opaque-EdgeTestNeeded-Pick",
+  "Opaque-EdgeTestNeeded-Shadowable-Overrides",
+  "Opaque-EdgeTestNeeded-Shadowable-Pick",
+  "Opaque-EdgeTestNeeded-Thematic-Overrides",
+  "Opaque-EdgeTestNeeded-Thematic-Pick",
+  "Opaque-Instanced-Animated-Overrides",
+  "Opaque-Instanced-Animated-Pick",
+  "Opaque-Instanced-Animated-Shadowable-Overrides",
+  "Opaque-Instanced-Animated-Shadowable-Pick",
+  "Opaque-Instanced-Animated-Thematic",
+  "Opaque-Instanced-Animated-Thematic-Overrides",
+  "Opaque-Instanced-Animated-Thematic-Pick",
+  "Opaque-Instanced-EdgeTestNeeded-Animated-Overrides",
+  "Opaque-Instanced-EdgeTestNeeded-Animated-Pick",
+  "Opaque-Instanced-EdgeTestNeeded-Animated-Shadowable-Overrides",
+  "Opaque-Instanced-EdgeTestNeeded-Animated-Shadowable-Pick",
+  "Opaque-Instanced-EdgeTestNeeded-Animated-Thematic-Overrides",
+  "Opaque-Instanced-EdgeTestNeeded-Animated-Thematic-Pick",
+  "Opaque-Instanced-EdgeTestNeeded-Overrides",
+  "Opaque-Instanced-EdgeTestNeeded-Pick",
+  "Opaque-Instanced-EdgeTestNeeded-Shadowable-Overrides",
+  "Opaque-Instanced-EdgeTestNeeded-Shadowable-Pick",
+  "Opaque-Instanced-EdgeTestNeeded-Thematic-Overrides",
+  "Opaque-Instanced-EdgeTestNeeded-Thematic-Pick",
+  "Opaque-Instanced-Overrides",
+  "Opaque-Instanced-Pick",
+  "Opaque-Instanced-Shadowable-Overrides",
+  "Opaque-Instanced-Shadowable-Pick",
+  "Opaque-Instanced-Thematic",
+  "Opaque-Instanced-Thematic-Overrides",
+  "Opaque-Instanced-Thematic-Pick",
+  "Opaque-Overrides",
+  "Opaque-Pick",
+  "Opaque-Shadowable-Overrides",
+  "Opaque-Shadowable-Pick",
+  "Opaque-Thematic-Overrides",
+  "Opaque-Thematic-Pick",
+  "Translucent-Animated-Thematic",
+  "Translucent-Animated-Thematic-Overrides",
+  "Translucent-Animated-Thematic-Pick",
+  "Translucent-Classified",
+  "Translucent-Classified-Overrides",
+  "Translucent-Classified-Pick",
+  "Translucent-Classified-Shadowable",
+  "Translucent-Classified-Shadowable-Overrides",
+  "Translucent-Classified-Shadowable-Pick",
+  "Translucent-Classified-Thematic",
+  "Translucent-Classified-Thematic-Overrides",
+  "Translucent-Classified-Thematic-Pick",
+  "Translucent-EdgeTestNeeded-Animated-Overrides",
+  "Translucent-EdgeTestNeeded-Animated-Pick",
+  "Translucent-EdgeTestNeeded-Animated-Shadowable-Overrides",
+  "Translucent-EdgeTestNeeded-Animated-Shadowable-Pick",
+  "Translucent-EdgeTestNeeded-Animated-Thematic-Overrides",
+  "Translucent-EdgeTestNeeded-Animated-Thematic-Pick",
+  "Translucent-EdgeTestNeeded-Overrides",
+  "Translucent-EdgeTestNeeded-Pick",
+  "Translucent-EdgeTestNeeded-Shadowable-Overrides",
+  "Translucent-EdgeTestNeeded-Shadowable-Pick",
+  "Translucent-EdgeTestNeeded-Thematic-Overrides",
+  "Translucent-EdgeTestNeeded-Thematic-Pick",
+  "Translucent-Instanced-Animated-Thematic",
+  "Translucent-Instanced-Animated-Thematic-Overrides",
+  "Translucent-Instanced-Animated-Thematic-Pick",
+  "Translucent-Instanced-EdgeTestNeeded-Animated-Overrides",
+  "Translucent-Instanced-EdgeTestNeeded-Animated-Pick",
+  "Translucent-Instanced-EdgeTestNeeded-Animated-Shadowable-Overrides",
+  "Translucent-Instanced-EdgeTestNeeded-Animated-Shadowable-Pick",
+  "Translucent-Instanced-EdgeTestNeeded-Animated-Thematic-Overrides",
+  "Translucent-Instanced-EdgeTestNeeded-Animated-Thematic-Pick",
+  "Translucent-Instanced-EdgeTestNeeded-Overrides",
+  "Translucent-Instanced-EdgeTestNeeded-Pick",
+  "Translucent-Instanced-EdgeTestNeeded-Shadowable-Overrides",
+  "Translucent-Instanced-EdgeTestNeeded-Shadowable-Pick",
+  "Translucent-Instanced-EdgeTestNeeded-Thematic-Overrides",
+  "Translucent-Instanced-EdgeTestNeeded-Thematic-Pick",
+  "Translucent-Instanced-Thematic",
+  "Translucent-Instanced-Thematic-Overrides",
+  "Translucent-Instanced-Thematic-Pick",
+  "Translucent-Thematic",
+  "Translucent-Thematic-Overrides",
+  "Translucent-Thematic-Pick",
+];
 
 describe("TechniqueFlags", () => {
-  afterEach(() => {
-    TechniqueFlags.requireEdgeTest = false;
+  it("initializes from description", () => {
+    for (const description of descriptions) {
+      const flags = TechniqueFlags.fromDescription(description);
+      expect(flags.buildDescription()).to.equal(description);
+    }
   });
 
-  it("should force surface discard for buggy drivers", () => {
-    const test = (expectSurfaceDiscardRequired: boolean) => {
-      expect(TechniqueFlags.requireEdgeTest).to.equal(expectSurfaceDiscardRequired);
-
-      const flags = new TechniqueFlags();
-      expect(flags.isEdgeTestNeeded === IsEdgeTestNeeded.Yes).to.equal(expectSurfaceDiscardRequired);
-
-      flags.isEdgeTestNeeded = IsEdgeTestNeeded.Yes;
-      expect(flags.isEdgeTestNeeded === IsEdgeTestNeeded.Yes).to.be.true;
-
-      flags.isEdgeTestNeeded = IsEdgeTestNeeded.No;
-      expect((flags as any).isEdgeTestNeeded === IsEdgeTestNeeded.Yes).to.equal(expectSurfaceDiscardRequired);
-    };
-
-    const renderers: Array<[string, boolean]> = [
-      [ "ANGLE (Intel(R) HD Graphics 630 Direct3D11 vs_5_0 ps_5_0)", true ],
-      [ "ANGLE (Intel(R) UHD Graphics 630 Direct3D11 vs_5_0 ps_5_0)", true ],
-      [ "ANGLE (Intel(R) HD Graphics 620 Direct3D11 vs_5_0 ps_5_0)", true ],
-      [ "ANGLE (Intel(R) UHD Graphics 620 Direct3D11 vs_5_0 ps_5_0)", true ],
-      [ "ANGLE (Intel HD Graphics 620 Direct3D11 vs_5_0 ps_5_0)", false ],
-
-      // Bug only confirmed on 620 and 630
-      [ "ANGLE (Intel(R) HD Graphics 610 Direct3D11 vs_5_0 ps_5_0)", false ],
-      [ "ANGLE (Intel(R) HD Graphics 610 Direct3D11 vs_5_0 ps_5_0)", false ],
-      [ "ANGLE (Intel(R) HD Graphics 615 Direct3D11 vs_5_0 ps_5_0)", false ],
-      [ "ANGLE (Intel(R) HD Graphics 500 Direct3D11 vs_5_0 ps_5_0)", false ],
-      [ "ANGLE (Intel(R) UHD Graphics 520 Direct3D11 vs_5_0 ps_5_0)", false ],
-      [ "ANGLE (Intel(R) UHD Graphics 615 Direct3D11 vs_5_0 ps_5_0)", false ],
-      [ "ANGLE (Intel(R) UHD Graphics 500 Direct3D11 vs_5_0 ps_5_0)", false ],
-      [ "ANGLE (Intel(R) UHD Graphics 520 Direct3D11 vs_5_0 ps_5_0)", false ],
-
-      // Bug only confirmed for Direct3D11; if Direct3D11 not present, we're not on Windows or using a different renderer.
-      [ "ANGLE (Intel(R) HD Graphics 630)", false ],
-      [ "ANGLE (Intel(R) UHD Graphics 630)", false ],
-      [ "ANGLE (Intel(R) HD Graphics 620)", false ],
-      [ "ANGLE (Intel(R) UHD Graphics 620)", false ],
-      [ "ANGLE (Intel HD Graphics 620)", false ],
-      [ "ANGLE (Intel(R) UHD Graphics 610)", false ],
-
-      // Bug only confirmed on Windows; if ANGLE not present, we're not running on Windows.
-      [ "Intel(R) HD Graphics 630", false ],
-      [ "Intel(R) UHD Graphics 630", false ],
-      [ "Intel(R) HD Graphics 620", false ],
-      [ "Intel(R) UHD Graphics 620", false ],
-      [ "Intel HD Graphics 620", false ],
-      [ "Intel(R) UHD Graphics 610", false ],
-
-      [ "ANGLE (NVIDIA GeForce GTX 970 Direct3D11 vs_5_0 ps_5_0)", false ],
-    ];
-
-    test(false);
-
-    for (const renderer of renderers) {
-      // The System constructor overrides TechniqueFlags.requireEdgeTest. In real usage, System is a singleton accessed via IModelApp.renderSystem.
-      const system = TestSystem.createSystem(renderer[0]);
-      test(renderer[1]);
-      system.dispose();
+  it("compares for equality", () => {
+    for (const descA of descriptions) {
+      for (const descB of descriptions) {
+        const flagsA = TechniqueFlags.fromDescription(descA);
+        const flagsB = TechniqueFlags.fromDescription(descB);
+        expect(flagsA.equals(flagsB)).to.equal(descA === descB);
+      }
     }
   });
 });

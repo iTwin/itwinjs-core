@@ -11,7 +11,7 @@ import {
 } from "@bentley/bentleyjs-core";
 import { Range3d, Transform } from "@bentley/geometry-core";
 import {
-  BatchType, ElementGeometryChange, FeatureAppearance, FeatureAppearanceProvider, FeatureOverrides, GeometryClass, TileFormat,
+  BatchType, ElementGeometryChange, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass, TileFormat,
 } from "@bentley/imodeljs-common";
 import { RenderSystem } from "../render/RenderSystem";
 import { Viewport } from "../Viewport";
@@ -108,11 +108,11 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
     return this;
   }
 
-  public getFeatureAppearance(overrides: FeatureOverrides, elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined {
+  public getFeatureAppearance(source: FeatureAppearanceSource, elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined {
     if (this._hiddenElements.has(elemLo, elemHi))
       return undefined;
 
-    return overrides.getAppearance(elemLo, elemHi, subcatLo, subcatHi, geomClass, modelLo, modelHi, type, animationNodeId);
+    return source.getAppearance(elemLo, elemHi, subcatLo, subcatHi, geomClass, modelLo, modelHi, type, animationNodeId);
   }
 
   public handleGeometryChanges(changes: Iterable<ElementGeometryChange>): void {

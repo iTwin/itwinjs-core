@@ -6,6 +6,7 @@
  * @module WebGL
  */
 
+import { WebGLContext } from "@bentley/webgl-compatibility";
 import { AttributeMap } from "../AttributeMap";
 import { SkyBoxQuadsGeometry } from "../CachedGeometry";
 import { Matrix3 } from "../Matrix";
@@ -22,7 +23,7 @@ const computeTexDir = `v_texDir = rawPosition.xyz;`;
 const scratchRotMatrix = new Matrix3();
 
 /** @internal */
-export function createSkyBoxProgram(context: WebGLRenderingContext | WebGL2RenderingContext): ShaderProgram {
+export function createSkyBoxProgram(context: WebGLContext): ShaderProgram {
   const prog = new ProgramBuilder(AttributeMap.findAttributeMap(undefined, false));
 
   prog.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);

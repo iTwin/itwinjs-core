@@ -130,6 +130,8 @@ export enum PresentationBackendNativeLoggerCategory {
     // (undocumented)
     ECPresentation_Connections = "ECPresentation.Connections",
     // (undocumented)
+    ECPresentation_Localization = "ECPresentation.Localization",
+    // (undocumented)
     ECPresentation_RulesEngine = "ECPresentation.RulesEngine",
     // (undocumented)
     ECPresentation_RulesEngine_Content = "ECPresentation.RulesEngine.Content",
@@ -250,6 +252,8 @@ export interface PresentationManagerProps {
     addon?: NativePlatformDefinition;
     // @beta
     cacheConfig?: HierarchyCacheConfig;
+    // @alpha (undocumented)
+    contentCacheSize?: number;
     enableSchemasPreload?: boolean;
     // @internal (undocumented)
     eventSink?: EventSink;

@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Capabilities } from "../Capabilities";
-import { queryRenderCompatibility, WebGLFeature, WebGLRenderCompatibilityStatus } from "../RenderCompatibility";
-
-type WebGLContext = WebGLRenderingContext | WebGL2RenderingContext;
+import {
+  queryRenderCompatibility, WebGLContext, WebGLFeature, WebGLRenderCompatibilityStatus,
+} from "../RenderCompatibility";
 
 let createContext = (canvas: HTMLCanvasElement, useWebGL2: boolean, contextAttributes?: WebGLContextAttributes): WebGLContext | undefined => {
   let context = useWebGL2 ? canvas.getContext("webgl2", contextAttributes) : canvas.getContext("webgl", contextAttributes);
@@ -205,11 +205,9 @@ describe("Render Compatibility", () => {
 
       expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.AllOkay);
 
-      const workarounds = compatibility.workarounds;
-      expect(workarounds !== undefined).to.equal(renderer[1]);
-      expect(workarounds?.forceSurfaceDiscard === true).to.equal(renderer[1]);
-
-      expect(caps.requiresSurfaceDiscard).to.equal(renderer[1]);
+      const expected = renderer[1] ? true : undefined;
+      expect(compatibility.driverBugs.fragDepthDoesNotDisableEarlyZ).to.equal(expected);
+      expect(caps.driverBugs.fragDepthDoesNotDisableEarlyZ).to.equal(expected);
     }
   });
 });
