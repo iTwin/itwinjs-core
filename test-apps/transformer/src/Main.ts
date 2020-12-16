@@ -11,9 +11,11 @@ import { PhysicalModelCombiner } from "./PhysicalModelCombiner";
 
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   await IModelHost.startup();
-  const sourceDirectoryName = "D:/data/bim/snapshots";
+  // const sourceDirectoryName = "D:/data/bim/snapshots";
+  const sourceDirectoryName = "D:/data/bim/bechtel";
+  const sourceBaseName = "bechtel-source";
   // const sourceBaseName = "fmg";
-  const sourceBaseName = "shell4";
+  // const sourceBaseName = "shell4";
   // const sourceBaseName = "shell-full-1015";
   // const sourceBaseName = "shell-full-1018";
   // const sourceBaseName = "cassia-05";
