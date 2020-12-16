@@ -53,6 +53,7 @@ if (ElectronRpcConfiguration.isElectron) {
 
     after(async () => {
       await closeIModel();
+      await TestUtility.deleteIModel(imodelId, projectId);
       await IModelApp.shutdown();
     });
 
