@@ -44,7 +44,6 @@ describe("iModelHubClient UserInfoHandler", () => {
   let projectId: GuidString;
   let imodelId: GuidString;
 
-  const imodelName = "imodeljs-clients Shared iModel";
   const imodelHubClient: IModelClient = utils.getDefaultClient();
 
   before(async () => {
@@ -55,8 +54,8 @@ describe("iModelHubClient UserInfoHandler", () => {
 
     requestContexts.sort((a: AuthorizedClientRequestContext, b: AuthorizedClientRequestContext) => a.accessToken.getUserInfo()!.id.localeCompare(b.accessToken.getUserInfo()!.id));
     projectId = projectId = await utils.getProjectId(requestContexts[0]);
-    await utils.createIModel(requestContexts[0], imodelName);
-    imodelId = await utils.getIModelId(requestContexts[0], imodelName);
+    await utils.createIModel(requestContexts[0], utils.sharedimodelName);
+    imodelId = await utils.getIModelId(requestContexts[0], utils.sharedimodelName);
 
     if (!TestConfig.enableMocks) {
       await utils.getBriefcases(requestContexts[0], imodelId, 1);
@@ -66,7 +65,7 @@ describe("iModelHubClient UserInfoHandler", () => {
 
   after(async () => {
     if (TestConfig.enableIModelBank)
-      await utils.deleteIModelByName(requestContexts[0], projectId, imodelName);
+      await utils.deleteIModelByName(requestContexts[0], projectId, utils.sharedimodelName);
   });
 
   afterEach(() => {

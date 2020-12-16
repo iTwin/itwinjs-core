@@ -79,7 +79,6 @@ function mockGetIModel(contextId: string, imodelId: GuidString, secured: boolean
 describe("iModelHub PermissionsManager", () => {
   let projectId: string;
   let imodelId: GuidString;
-  const imodelName = "imodeljs-clients PermissionHandler test";
   const imodelClient: IModelClient = utils.getIModelHubClient();
   let requestContext: AuthorizedClientRequestContext;
 
@@ -91,8 +90,8 @@ describe("iModelHub PermissionsManager", () => {
     (requestContext as any).activityId = "iModelHub PermissionHandler";
     projectId = await utils.getProjectId(requestContext, "iModelJsTest");
 
-    await utils.createIModel(requestContext, imodelName, projectId);
-    imodelId = await utils.getIModelId(requestContext, imodelName, projectId);
+    await utils.createIModel(requestContext, utils.sharedimodelName, projectId);
+    imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, projectId);
 
     if (!fs.existsSync(workDir)) {
       fs.mkdirSync(workDir);
@@ -110,7 +109,7 @@ describe("iModelHub PermissionsManager", () => {
 
   after(async () => {
     if (TestConfig.enableIModelBank)
-      await utils.deleteIModelByName(requestContext, projectId, imodelName);
+      await utils.deleteIModelByName(requestContext, projectId, utils.sharedimodelName);
   });
 
   it("should get Context permissions (#unit)", async () => {

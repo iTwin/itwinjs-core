@@ -49,7 +49,6 @@ describe("iModelHub ThumbnailHandler (#unit)", () => {
   let projectId: string;
   let imodelId: GuidString;
   let versions: Version[];
-  const imodelName = "imodeljs-clients Shared iModel";
   const imodelHubClient: IModelClient = utils.getDefaultClient();
   let requestContext: AuthorizedClientRequestContext;
 
@@ -60,8 +59,8 @@ describe("iModelHub ThumbnailHandler (#unit)", () => {
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
     projectId = await utils.getProjectId(requestContext);
-    await utils.createIModel(requestContext, imodelName, projectId);
-    imodelId = await getIModelId(requestContext, imodelName, projectId);
+    await utils.createIModel(requestContext, utils.sharedimodelName, projectId);
+    imodelId = await getIModelId(requestContext, utils.sharedimodelName, projectId);
 
     if (TestConfig.enableMocks) {
       versions = Array(3).fill(0).map(() => utils.generateVersion());
@@ -71,8 +70,8 @@ describe("iModelHub ThumbnailHandler (#unit)", () => {
     // // Delete and create a new iModel if we have not expected number of versions.
     // versions = (await imodelHubClient.versions.get(requestContext, imodelId));
     // if (versions.length !== 0 && versions.length !== 3) {
-    //   await utils.createIModel(requestContext, imodelName, _projectId, true);
-    //   imodelId = await getIModelId(requestContext, imodelName);
+    //   await utils.createIModel(requestContext, utils.sharedimodelName, _projectId, true);
+    //   imodelId = await getIModelId(requestContext, utils.sharedimodelName);
     //   versions = new Array<Version>();
     // }
 
@@ -101,7 +100,7 @@ describe("iModelHub ThumbnailHandler (#unit)", () => {
     }
 
     if (TestConfig.enableIModelBank) {
-      await utils.deleteIModelByName(requestContext, projectId, imodelName);
+      await utils.deleteIModelByName(requestContext, projectId, utils.sharedimodelName);
     }
   });
 
@@ -117,7 +116,7 @@ describe("iModelHub ThumbnailHandler (#unit)", () => {
       params.thumbnails = await imodelHubClient.thumbnails.get(requestContext, imodelId, params.size);
 
       if (params.thumbnails.length < 3) {
-        await utils.deleteIModelByName(requestContext, projectId, imodelName);
+        await utils.deleteIModelByName(requestContext, projectId, utils.sharedimodelName);
         chai.expect(params.thumbnails.length).to.be.gte(3);
       }
     });

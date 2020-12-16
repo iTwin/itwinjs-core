@@ -88,7 +88,6 @@ describe("iModelHub BriefcaseHandler", () => {
   let contextId: string;
   let imodelId: GuidString;
   let iModelClient: IModelClient;
-  const imodelName = "imodeljs-clients Shared iModel";
   let briefcaseId: number;
 
   before(async function () {
@@ -98,8 +97,8 @@ describe("iModelHub BriefcaseHandler", () => {
     (requestContext as any).activityId = "iModelHub BriefcaseHandler";
 
     contextId = await utils.getProjectId(requestContext);
-    await utils.createIModel(requestContext, imodelName, contextId);
-    imodelId = await utils.getIModelId(requestContext, imodelName, contextId);
+    await utils.createIModel(requestContext, utils.sharedimodelName, contextId);
+    imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, contextId);
     iModelClient = utils.getDefaultClient();
     if (!TestConfig.enableMocks) {
       const briefcases = await iModelClient.briefcases.get(requestContext, imodelId, new BriefcaseQuery().ownedByMe());
@@ -130,7 +129,7 @@ describe("iModelHub BriefcaseHandler", () => {
 
   after(async () => {
     if (TestConfig.enableIModelBank)
-      await utils.deleteIModelByName(requestContext, contextId, imodelName);
+      await utils.deleteIModelByName(requestContext, contextId, utils.sharedimodelName);
   });
 
   afterEach(() => {

@@ -11,7 +11,6 @@ import { TestConfig } from "../TestConfig";
 describe.skip("iModelHub Performance tests", () => {
   let contextId: string;
   let imodelId: GuidString;
-  const imodelName = "imodeljs-clients Performance test";
   let briefcase1: Briefcase;
   let briefcase2: Briefcase;
   const imodelHubClient: IModelClient = utils.getDefaultClient();
@@ -22,8 +21,8 @@ describe.skip("iModelHub Performance tests", () => {
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
     contextId = await utils.getProjectId(requestContext);
-    await utils.createIModel(requestContext, imodelName, contextId, true, recreate);
-    imodelId = await utils.getIModelId(requestContext, imodelName, contextId);
+    await utils.createIModel(requestContext, utils.sharedimodelName, contextId, true, recreate);
+    imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, contextId);
     const briefcases = await utils.getBriefcases(requestContext, imodelId, 2);
     briefcase1 = briefcases[0];
     briefcase2 = briefcases[1];
@@ -35,7 +34,7 @@ describe.skip("iModelHub Performance tests", () => {
 
   after(async () => {
     if (TestConfig.enableIModelBank)
-      await utils.deleteIModelByName(requestContext, contextId, imodelName);
+      await utils.deleteIModelByName(requestContext, contextId, utils.sharedimodelName);
   });
 
   async function reserveCodes(statingCount: number, count: number, perRequest: number, briefcase: Briefcase, codeScope: string) {

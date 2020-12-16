@@ -59,7 +59,6 @@ describe("iModelHubClient UserStatisticsHandler", () => {
   let contextId: string;
   let imodelId: GuidString;
 
-  const imodelName = "imodeljs-clients Shared iModel";
   const imodelHubClient: IModelClient = utils.getDefaultClient();
 
   const user1BriefcasesCount = 2;
@@ -77,8 +76,8 @@ describe("iModelHubClient UserStatisticsHandler", () => {
     requestContexts.push(new AuthorizedClientRequestContext(managerAccessToken));
 
     contextId = await utils.getProjectId(requestContexts[0]);
-    await utils.createIModel(requestContexts[0], imodelName, contextId, true, true);
-    imodelId = await utils.getIModelId(requestContexts[0], imodelName, contextId);
+    await utils.createIModel(requestContexts[0], utils.sharedimodelName, contextId, true, true);
+    imodelId = await utils.getIModelId(requestContexts[0], utils.sharedimodelName, contextId);
 
     if (!TestConfig.enableMocks) {
       // generate data for user statistics
@@ -99,7 +98,7 @@ describe("iModelHubClient UserStatisticsHandler", () => {
 
   after(async () => {
     if (TestConfig.enableIModelBank)
-      await utils.deleteIModelByName(requestContexts[0], contextId, imodelName);
+      await utils.deleteIModelByName(requestContexts[0], contextId, utils.sharedimodelName);
   });
 
   afterEach(() => {
