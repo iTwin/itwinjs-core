@@ -280,7 +280,29 @@ export class CheckpointV2 extends WsgInstance {
     containerAccessKeyContainer?: string;
     containerAccessKeyDbName?: string;
     containerAccessKeySAS?: string;
+    failureInfoErrorId?: CheckpointV2ErrorId;
+    failureInfoFailedChangeSetId?: string;
+    failureInfoFailureDate?: string;
+    failureInfoJobId?: string;
+    failureInfoJobRunDurationMS?: string;
+    failureInfoStartDate?: string;
     state?: CheckpointV2State;
+}
+
+// @alpha
+export enum CheckpointV2ErrorId {
+    // (undocumented)
+    ApplyChangeSetError = 4,
+    // (undocumented)
+    FileDownloadError = 1,
+    // (undocumented)
+    FileOpenError = 3,
+    // (undocumented)
+    FileUploadError = 2,
+    // (undocumented)
+    TimeOut = 5,
+    // (undocumented)
+    UnknownError = 0
 }
 
 // @alpha
@@ -299,6 +321,7 @@ export class CheckpointV2Query extends WsgQuery {
     byState(state: CheckpointV2State): this;
     precedingCheckpoint(targetChangeSetId: string): this;
     selectContainerAccessKey(): this;
+    selectFailureInfo(): this;
 }
 
 // @alpha
