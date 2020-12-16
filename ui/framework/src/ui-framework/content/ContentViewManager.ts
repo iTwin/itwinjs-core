@@ -12,6 +12,7 @@ import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { ViewUtilities } from "../utils/ViewUtilities";
 import { ContentControl } from "./ContentControl";
 import { ContentLayoutManager } from "./ContentLayoutManager";
+import { IModelApp } from "@bentley/imodeljs-frontend";
 
 /** [[MouseDownChangedEvent]] Args interface.
  * @public
@@ -114,8 +115,12 @@ export class ContentViewManager {
 
             // istanbul ignore else
             if (doSetActiveView) {
-              this.onActiveContentChangedEvent.emit({ activeContent, oldContent });
               activeFrontstageDef.setActiveView(activeContentControl, oldContentControl);
+              this.onActiveContentChangedEvent.emit({ activeContent, oldContent });
+            } else {
+              if (activeContentControl.viewport && activeContentControl.viewport !== IModelApp.viewManager.selectedView) {
+                IModelApp.viewManager.setSelectedView(activeContentControl.viewport);
+              }
             }
           }
         }

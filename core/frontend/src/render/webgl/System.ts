@@ -9,7 +9,7 @@
 import { assert, BentleyStatus, Dictionary, dispose, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { ClipVector, Point3d, Transform } from "@bentley/geometry-core";
 import { ColorDef, ElementAlignedBox3d, Gradient, ImageBuffer, IModelError, PackedFeatureTable, RenderMaterial, RenderTexture } from "@bentley/imodeljs-common";
-import { Capabilities, DepthType } from "@bentley/webgl-compatibility";
+import { Capabilities, DepthType, WebGLContext } from "@bentley/webgl-compatibility";
 import { SkyBox } from "../../DisplayStyleState";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
@@ -298,7 +298,7 @@ function createPrimitive(createGeom: (viOrigin: Point3d | undefined) => CachedGe
 export class System extends RenderSystem implements RenderSystemDebugControl, RenderMemory.Consumer, WebGLDisposable {
   public readonly canvas: HTMLCanvasElement;
   public readonly currentRenderState = new RenderState();
-  public readonly context: WebGLRenderingContext | WebGL2RenderingContext;
+  public readonly context: WebGLContext;
   public readonly frameBufferStack = new FrameBufferStack();  // frame buffers are not owned by the system
   public readonly capabilities: Capabilities;
   public readonly resourceCache: Map<IModelConnection, IdMap>;
@@ -344,26 +344,23 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   }
 
   /** Attempt to create a WebGLRenderingContext, returning undefined if unsuccessful. */
-  public static createContext(canvas: HTMLCanvasElement, useWebGL2: boolean, inputContextAttributes?: WebGLContextAttributes): WebGLRenderingContext | WebGL2RenderingContext | undefined {
+  public static createContext(canvas: HTMLCanvasElement, useWebGL2: boolean, inputContextAttributes?: WebGLContextAttributes): WebGLContext | undefined {
     let contextAttributes: WebGLContextAttributes = { powerPreference: "high-performance" };
     if (undefined !== inputContextAttributes) {
       // NOTE: Order matters with spread operator - if caller wants to override powerPreference, he should be able to.
       contextAttributes = { ...contextAttributes, ...inputContextAttributes };
     }
 
+    // If requested, first try obtaining a WebGL2 context.
     let context = null;
-    if (useWebGL2) // optionally first try using a WebGL2 context
+    if (useWebGL2)
       context = canvas.getContext("webgl2", contextAttributes);
+
+    // Fall back to WebGL1 if necessary.
     if (null === context)
       context = canvas.getContext("webgl", contextAttributes);
-    if (null === context) {
-      const context2 = canvas.getContext("experimental-webgl", contextAttributes) as WebGLRenderingContext | null; // IE, Edge...
-      if (null === context2) {
-        return undefined;
-      }
-      return context2;
-    }
-    return context;
+
+    return context ?? undefined;
   }
 
   public static create(optionsIn?: RenderSystem.Options): System {
@@ -373,7 +370,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
       throw new IModelError(BentleyStatus.ERROR, "Failed to obtain HTMLCanvasElement");
 
     const useWebGL2 = (undefined === options.useWebGL2 ? true : options.useWebGL2);
-    const context = System.createContext(canvas, useWebGL2, optionsIn?.contextAttributes);
+    const context = this.createContext(canvas, useWebGL2, optionsIn?.contextAttributes);
     if (undefined === context) {
       throw new IModelError(BentleyStatus.ERROR, "Failed to obtain WebGL context");
     }
@@ -393,7 +390,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
       options.filterMapTextures = false;
       options.filterMapDrapeTextures = false;
     }
-    return new System(canvas, context, capabilities, options);
+    return new this(canvas, context, capabilities, options);
   }
 
   public get isDisposed(): boolean {
@@ -590,7 +587,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return BackgroundMapDrape.create(drapedTree, mapTree);
   }
 
-  private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext | WebGL2RenderingContext, capabilities: Capabilities, options: RenderSystem.Options) {
+  protected constructor(canvas: HTMLCanvasElement, context: WebGLContext, capabilities: Capabilities, options: RenderSystem.Options) {
     super(options);
     this.canvas = canvas;
     this.context = context;
@@ -611,7 +608,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     canvas.addEventListener("webglcontextlost", async () => this.handleContextLoss(), false);
   }
 
-  private async handleContextLoss(): Promise<void> {
+  protected async handleContextLoss(): Promise<void> {
     const msg = IModelApp.i18n.translate("iModelJs:Errors.WebGLContextLost");
     return ToolAdmin.exceptionHandler(msg);
   }
