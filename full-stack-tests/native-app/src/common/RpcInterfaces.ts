@@ -61,10 +61,6 @@ export abstract class TestRpcInterface extends RpcInterface {
     return this.forward(arguments);
   }
 
-  public async purgeBriefcaseCache(): Promise<void> {
-    return this.forward(arguments);
-  }
-
   public async beginOfflineScope(): Promise<void> {
     return this.forward(arguments);
   }

@@ -11,13 +11,13 @@ import {
 } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, Range3dProps, XYAndZ, XYZProps } from "@bentley/geometry-core";
 import {
-  AxisAlignedBox3d, BentleyStatus, BriefcaseProps, Cartographic, CodeSpec, DbResult, EcefLocation, EcefLocationProps, ElementProps, EntityQueryParams,
-  FontMap, FontMapProps, GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps, ImageSourceFormat, IModel,
-  IModelConnectionProps, IModelError, IModelEventSourceProps, IModelReadRpcInterface, IModelRpcProps, IModelStatus, IModelVersion, IModelWriteRpcInterface,
-  mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams, NativeAppRpcInterface, QueryLimit,
-  QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager, RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent,
-  SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, ThumbnailProps, ViewDefinitionProps, ViewQueryParams,
-  ViewStateLoadProps, WipRpcInterface,
+  AxisAlignedBox3d, BentleyStatus, Cartographic, CodeSpec, DbResult, EcefLocation, EcefLocationProps, ElementProps, EntityQueryParams, FontMap,
+  FontMapProps, GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps, ImageSourceFormat, IModel, IModelConnectionProps,
+  IModelError, IModelEventSourceProps, IModelReadRpcInterface, IModelRpcOpenProps, IModelRpcProps, IModelStatus, IModelVersion,
+  IModelWriteRpcInterface, mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams,
+  NativeAppRpcInterface, OpenBriefcaseProps, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager,
+  RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface,
+  StandaloneIModelRpcInterface, StandaloneOpenOptions, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, WipRpcInterface,
 } from "@bentley/imodeljs-common";
 import { BackgroundMapLocation } from "./BackgroundMapGeometry";
 import { EditingFunctions } from "./EditingFunctions";
@@ -275,7 +275,7 @@ export abstract class IModelConnection extends IModel {
   }
 
   /** Close this IModelConnection. */
-  public abstract async close(): Promise<void>;
+  public abstract close(): Promise<void>;
 
   /** Compute number of rows that would be returned by the ECSQL.
    *
@@ -694,13 +694,12 @@ export class RemoteBriefcaseConnection extends BriefcaseConnection {
     const changeSetId: string = await version.evaluateChangeSet(requestContext, iModelId, IModelApp.iModelClient);
     requestContext.enter();
 
-    const iModelRpcProps: IModelRpcProps = { key: "", contextId, iModelId, changeSetId, openMode }; // WIP: what is the right value for key?
-    RpcManager.setIModel(iModelRpcProps);
-
+    const iModelRpcProps: IModelRpcOpenProps = { contextId, iModelId, changeSetId, openMode };
     const openResponse = await RemoteBriefcaseConnection.callOpen(requestContext, iModelRpcProps, openMode, routingContext);
     requestContext.enter();
 
     const connection = new RemoteBriefcaseConnection(openResponse);
+    RpcManager.setIModel(connection);
     connection.routingContext = routingContext;
     RpcRequest.notFoundHandlers.addListener(connection._reopenConnectionHandler);
 
@@ -708,7 +707,7 @@ export class RemoteBriefcaseConnection extends BriefcaseConnection {
     return connection;
   }
 
-  private static async callOpen(requestContext: AuthorizedFrontendRequestContext, iModelToken: IModelRpcProps, openMode: OpenMode, routingContext: IModelRoutingContext): Promise<IModelConnectionProps> {
+  private static async callOpen(requestContext: AuthorizedFrontendRequestContext, iModelToken: IModelRpcOpenProps, openMode: OpenMode, routingContext: IModelRoutingContext): Promise<IModelConnectionProps> {
     requestContext.enter();
 
     // Try opening the iModel repeatedly accommodating any pending responses from the backend.
@@ -849,7 +848,7 @@ export class LocalBriefcaseConnection extends BriefcaseConnection {
   /** Open an IModelConnection to a locally downloaded briefcase of an iModel. Only applicable for Native applications
    * @internal
    */
-  public static async open(briefcaseProps: BriefcaseProps): Promise<LocalBriefcaseConnection> {
+  public static async open(briefcaseProps: OpenBriefcaseProps): Promise<LocalBriefcaseConnection> {
     if (!IModelApp.initialized)
       throw new IModelError(IModelStatus.BadRequest, "Call NativeApp.startup() before calling openBriefcase");
 
@@ -857,7 +856,7 @@ export class LocalBriefcaseConnection extends BriefcaseConnection {
     requestContext.enter();
 
     requestContext.useContextForRpc = true;
-    const iModelProps = await NativeAppRpcInterface.getClient().openBriefcase(briefcaseProps.key);
+    const iModelProps = await NativeAppRpcInterface.getClient().open(briefcaseProps);
     const connection = new this({ ...briefcaseProps, ...iModelProps });
 
     IModelConnection.onOpen.raiseEvent(connection);
@@ -1024,8 +1023,8 @@ export class StandaloneConnection extends IModelConnection {
   /** Open an IModelConnection to a standalone iModel.
    * @note This method is intended for desktop or mobile applications and should not be used for web applications.
    */
-  public static async openFile(filePath: string, openMode: OpenMode = OpenMode.ReadWrite): Promise<StandaloneConnection> {
-    const openResponse = await StandaloneIModelRpcInterface.getClient().openFile(filePath, openMode);
+  public static async openFile(filePath: string, openMode: OpenMode = OpenMode.ReadWrite, opts?: StandaloneOpenOptions): Promise<StandaloneConnection> {
+    const openResponse = await StandaloneIModelRpcInterface.getClient().openFile(filePath, openMode, opts);
     Logger.logTrace(loggerCategory, "StandaloneConnection.openFile", () => ({ filePath }));
     const connection = new StandaloneConnection(openResponse);
     IModelConnection.onOpen.raiseEvent(connection);

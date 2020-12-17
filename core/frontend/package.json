@@ -13,7 +13,7 @@
     "copy:assets": "cpx ./src/loader/checkbrowser.js ./lib/loader && cpx \"./src/public/**/*\" ./lib/public",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-frontend/file.json --tsIndexFile=./imodeljs-frontend.ts --onlyJson --excludes=webgl/**/*,**/primitives --excludeGlob=**/*-css.ts",
     "extract-api": "betools extract-api --entry=imodeljs-frontend",
-    "lint": "eslint -f visualstudio --max-warnings 0 ./src/**/*.ts 1>&2",
+    "lint": "eslint -f visualstudio ./src/**/*.ts 1>&2",
     "pseudolocalize": "betools pseudolocalize --englishDir ./src/public/locales/en --out ./lib/public/locales/en-PSEUDO",
     "test": "npm run webpackTests && certa -r chrome",
     "cover": "npm test -- --cover",
@@ -27,7 +27,9 @@
   "keywords": [
     "Bentley",
     "BIM",
-    "iModel"
+    "iModel",
+    "digital-twin",
+    "iTwin"
   ],
   "author": {
     "name": "Bentley Systems, Inc.",
