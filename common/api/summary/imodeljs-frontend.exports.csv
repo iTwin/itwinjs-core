@@ -75,7 +75,7 @@ public;Cluster
 internal;CompassMode
 internal;ContextMode
 beta;ContextRealityModelState
-beta;ConversionData 
+alpha;ConversionData 
 public;CoordinateLockOverrides
 public;CoordSource
 public;CoordSystem
@@ -156,8 +156,10 @@ alpha;findAvailableUnattachedRealityModels(contextId: GuidString, iModel?: IMode
 public;FitViewTool 
 internal;Flags
 public;FlyViewTool 
+internal;FormatPropsByUnitSystem = Map
 beta;class FormattedQuantityDescription 
-beta;FormatterParserSpecsProvider
+alpha;FormatterParserSpecsProvider
+internal;FormatterSpecByQuantityType = Map
 internal;FrameBeforeRenderData
 internal;FrameCameraFrustumData
 internal;FrameCameraViewData
@@ -344,9 +346,9 @@ internal;PlanarTilePatch
 public;class PrimitiveTool 
 alpha;PrimitiveVisibility
 internal;QuadId
-beta;QuantityFormatter 
+alpha;QuantityFormatter 
 beta;QuantityType
-beta;QuantityTypeArg = QuantityType | string
+alpha;QuantityTypeArg = QuantityType | string
 internal;queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise
 internal;rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined
 internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined
@@ -504,6 +506,7 @@ internal;TraversalDetails
 internal;TraversalSelectionContext
 public;tryImageElementFromUrl(url: string): Promise
 beta;TwoWayViewportSync
+alpha;UnitSystemKey = "metric" | "imperial" | "usCustomary" | "usSurvey"
 internal;UpsampledMapTile 
 internal;UsesDragSelect
 internal;UsesFence

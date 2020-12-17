@@ -20,7 +20,7 @@ export enum QuantityType { Length = 1, Angle = 2, Area = 3, Volume = 4, LatLong 
 /** String used to uniquely identify a Quantity. See `QuantityFormatter.getQuantityTypeKey`.
  * @internal
  */
-export type QuantityTypeKey = string;
+type QuantityTypeKey = string;
 
 // cSpell:ignore FORMATPROPS FORMATKEY ussurvey uscustomary
 
@@ -82,7 +82,7 @@ const UNIT_DATA: UnitDefinition[] = [
  * "imperial" -> PresentationUnitSystem.BritishImperial
  * "usCustomary" -> PresentationUnitSystem.UsCustomary
  * "usSurvey" -> PresentationUnitSystem.UsSurvey
- * @internal
+ * @alpha
  */
 export type UnitSystemKey = "metric" | "imperial" | "usCustomary" | "usSurvey";
 
@@ -446,7 +446,7 @@ const DEFAULT_FORMATPROPS: UniqueFormatsProps[] = [
 ];
 
 /** Class that implements the minimum UnitConversion interface to provide information needed to convert unit values.
- * @beta
+ * @alpha
  */
 export class ConversionData implements UnitConversion {
   public factor: number = 1.0;
@@ -479,16 +479,16 @@ export interface OverrideFormatEntry {
   usSurvey?: FormatProps;
 }
 
-/**
- * @beta
+/** Represents both standard and custom quantity types
+ * @alpha
  */
 export type QuantityTypeArg = QuantityType | string;
 
 /** Interface that defines the functions required to be implemented to provide custom formatting and parsing of a custom quantity type.
- * @beta
+ * @alpha
  */
 export interface FormatterParserSpecsProvider {
-  quantityTypeKey: QuantityTypeKey;
+  quantityType: QuantityTypeArg;
   createFormatterSpec: (unitSystem: UnitSystemKey) => Promise<FormatterSpec>;
   createParserSpec: (unitSystem: UnitSystemKey) => Promise<ParserSpec>;
 }
@@ -508,7 +508,7 @@ export type FormatterSpecByQuantityType = Map<QuantityTypeKey, FormatterSpec>;
 export type FormatPropsByUnitSystem = Map<UnitSystemKey, FormatProps>;
 
 /** Formats quantity values into strings.
- * @beta
+ * @alpha
  */
 export class QuantityFormatter implements UnitsProvider {
   protected _activeUnitSystem: UnitSystemKey = "imperial";
@@ -551,8 +551,8 @@ export class QuantityFormatter implements UnitsProvider {
   private async loadSpecs(systemKey: UnitSystemKey, provider: FormatterParserSpecsProvider) {
     const formatterSpec = await provider.createFormatterSpec(systemKey);
     const parserSpec = await provider.createParserSpec(systemKey);
-    this._activeFormatSpecsByType.set(provider.quantityTypeKey, formatterSpec);
-    this._activeParserSpecsByType.set(provider.quantityTypeKey, parserSpec);
+    this._activeFormatSpecsByType.set(this.getQuantityTypeKey(provider.quantityType), formatterSpec);
+    this._activeParserSpecsByType.set(this.getQuantityTypeKey(provider.quantityType), parserSpec);
   }
 
   /** Asynchronous call to load Formatting and ParsingSpecs for a unit system. This method ends up caching FormatterSpecs and ParserSpecs
@@ -944,21 +944,22 @@ export class QuantityFormatter implements UnitsProvider {
 
   /** Register a FormatterSpec provider. */
   public async registerFormatterParserSpecsProviders(provider: FormatterParserSpecsProvider): Promise<boolean> {
-    if (undefined !== this._formatSpecProviders.find((p) => p.quantityTypeKey === provider.quantityTypeKey))
+    if (undefined !== this._formatSpecProviders.find((p) => p.quantityType === provider.quantityType))
       return false;
 
     this._formatSpecProviders.push(provider);
+    const providerQuantityType = this.getQuantityTypeKey(provider.quantityType);
 
     // If the FormatSpec are already loaded for the active unit, add it now.
     if (this._activeFormatSpecsByType.size > 0) {
       const spec = await provider.createFormatterSpec(this.activeUnitSystem);
-      this._activeFormatSpecsByType.set(provider.quantityTypeKey, spec);
+      this._activeFormatSpecsByType.set(providerQuantityType, spec);
     }
 
     // If the ParserSpecs are already loaded for the active unit, add it now.
     if (this._activeParserSpecsByType.size > 0) {
       const spec = await provider.createParserSpec(this.activeUnitSystem);
-      this._activeParserSpecsByType.set(provider.quantityTypeKey, spec);
+      this._activeParserSpecsByType.set(providerQuantityType, spec);
     }
 
     return true;

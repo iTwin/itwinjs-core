@@ -406,7 +406,7 @@ describe("Custom FormatterSpecs", async () => {
     assert.isTrue(quantityFormatter.activeUnitSystem === "imperial");
 
     const customFormatterParserSpecsProvider: FormatterParserSpecsProvider = {
-      quantityTypeKey: "DummyQuantity",
+      quantityType: "DummyQuantity",
       createFormatterSpec: DummyFormatterSpec.createSpec,
       createParserSpec: DummyParserSpec.createParserSpec,
     };

@@ -88,7 +88,6 @@ import { FeatureOverrides } from '@bentley/imodeljs-common';
 import { FeatureTable } from '@bentley/imodeljs-common';
 import { FillFlags } from '@bentley/imodeljs-common';
 import { FontMap } from '@bentley/imodeljs-common';
-import { Format } from '@bentley/imodeljs-quantity';
 import { FormatProps } from '@bentley/imodeljs-quantity';
 import { FormatterSpec } from '@bentley/imodeljs-quantity';
 import { FrontendAuthorizationClient } from '@bentley/frontend-authorization-client';
@@ -1694,7 +1693,7 @@ export class ContextRealityModelState {
     readonly url: string;
 }
 
-// @beta
+// @alpha
 export class ConversionData implements UnitConversion {
     // (undocumented)
     factor: number;
@@ -2945,6 +2944,9 @@ export class FlyViewTool extends ViewManip {
     static toolId: string;
 }
 
+// @internal
+export type FormatPropsByUnitSystem = Map<UnitSystemKey, FormatProps>;
+
 // @beta
 export abstract class FormattedQuantityDescription extends BaseQuantityDescription {
     constructor(name: string, displayLabel: string, iconSpec?: string);
@@ -2962,15 +2964,18 @@ export abstract class FormattedQuantityDescription extends BaseQuantityDescripti
     protected parseString(userInput: string): ParseResults;
 }
 
-// @beta
+// @alpha
 export interface FormatterParserSpecsProvider {
     // (undocumented)
-    createFormatterSpec: (useImperial: boolean) => Promise<FormatterSpec>;
+    createFormatterSpec: (unitSystem: UnitSystemKey) => Promise<FormatterSpec>;
     // (undocumented)
-    createParserSpec: (useImperial: boolean) => Promise<ParserSpec>;
+    createParserSpec: (unitSystem: UnitSystemKey) => Promise<ParserSpec>;
     // (undocumented)
-    quantityTypeName: string;
+    quantityType: QuantityTypeArg;
 }
+
+// @internal
+export type FormatterSpecByQuantityType = Map<QuantityTypeKey, FormatterSpec>;
 
 // @internal (undocumented)
 export interface FrameBeforeRenderData {
@@ -6182,9 +6187,13 @@ export enum OutputMessageType {
 // @beta
 export interface OverrideFormatEntry {
     // (undocumented)
-    imperial: FormatProps;
+    imperial?: FormatProps;
     // (undocumented)
-    metric: FormatProps;
+    metric?: FormatProps;
+    // (undocumented)
+    usCustomary?: FormatProps;
+    // (undocumented)
+    usSurvey?: FormatProps;
 }
 
 // @internal
@@ -6443,87 +6452,67 @@ export class QuadId {
     row: number;
 }
 
-// @beta
+// @alpha
 export class QuantityFormatter implements UnitsProvider {
-    constructor(showMetricValues?: boolean);
+    constructor(showMetricOrUnitSystem?: boolean | UnitSystemKey);
     // (undocumented)
-    protected _activeSystemIsImperial: boolean;
+    protected _activeFormatSpecsByType: Map<string, FormatterSpec>;
+    // (undocumented)
+    protected _activeParserSpecsByType: Map<string, ParserSpec>;
+    get activeUnitSystem(): UnitSystemKey;
+    // (undocumented)
+    protected _activeUnitSystem: UnitSystemKey;
     // (undocumented)
     clearAllOverrideFormats(): Promise<void>;
     // (undocumented)
-    protected clearCachedFormatAndParseDataByType(type: QuantityType): void;
-    // (undocumented)
     clearOverrideFormats(type: QuantityType): Promise<void>;
-    findFormatterSpecByQuantityType(type: QuantityTypeArg, imperial?: boolean): FormatterSpec | undefined;
+    findFormatterSpecByQuantityType(type: QuantityTypeArg, _unused?: boolean): FormatterSpec | undefined;
     protected findKoqFormatterSpec(koq: string, useImperial: boolean): FormatterSpec | undefined;
-    findParserSpecByQuantityType(type: QuantityTypeArg, imperial?: boolean): ParserSpec | undefined;
+    findParserSpecByQuantityType(type: QuantityTypeArg, _unused?: boolean): ParserSpec | undefined;
     findUnit(unitLabel: string, unitFamily?: string): Promise<UnitProps>;
     findUnitByName(unitName: string): Promise<UnitProps>;
     // (undocumented)
     protected findUnitDefinition(name: string): UnitDefinition | undefined;
-    formatQuantity(magnitude: number, formatSpec: FormatterSpec): string;
+    formatQuantity(magnitude: number, formatSpec: FormatterSpec | undefined): string;
     // (undocumented)
     protected _formatSpecProviders: FormatterParserSpecsProvider[];
     // (undocumented)
     protected _formatSpecsByKoq: Map<string, FormatterSpec[]>;
     getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversion>;
-    // (undocumented)
-    protected getFormatByQuantityType(type: QuantityType, imperial: boolean): Promise<Format>;
-    getFormatterSpecByQuantityType(type: QuantityTypeArg, imperial?: boolean): Promise<FormatterSpec>;
+    getFormatterSpecByQuantityType(type: QuantityTypeArg, isImperial?: boolean): Promise<FormatterSpec | undefined>;
     protected getKoqFormatterSpec(koq: string, useImperial: boolean): Promise<FormatterSpec | undefined>;
     protected getKoqFormatterSpecsAsync(koq: string, useImperial: boolean): Promise<FormatterSpec[] | undefined>;
-    // (undocumented)
-    protected getOverrideFormat(type: QuantityType, imperial: boolean): Promise<FormatProps | undefined>;
-    getParserSpecByQuantityType(type: QuantityTypeArg, imperial?: boolean): Promise<ParserSpec>;
-    // (undocumented)
-    protected getPendingPromise(useImperial: boolean, isFormatSpecPromise: boolean): Promise<void> | undefined;
+    getParserSpecByQuantityType(type: QuantityTypeArg, isImperial?: boolean): Promise<ParserSpec | undefined>;
+    protected getPersistenceUnitByQuantityType(type: QuantityTypeKey): Promise<UnitProps>;
+    protected getQuantityTypeKey(type: QuantityTypeArg): string;
     protected getUnitByQuantityType(type: QuantityType): Promise<UnitProps>;
     getUnitsByFamily(unitFamily: string): Promise<UnitProps[]>;
     // (undocumented)
-    protected _imperialFormatsByType: Map<string, Format>;
+    getUnitSystemFromString(inputSystem: string, fallback?: UnitSystemKey): UnitSystemKey;
     // (undocumented)
-    protected _imperialFormatSpecsByType: Map<string, FormatterSpec>;
-    // (undocumented)
-    protected _imperialParserSpecsByType: Map<string, ParserSpec>;
+    hasActiveOverride(type: QuantityTypeArg, checkOnlyActiveUnitSystem?: boolean): boolean;
+    // @deprecated
     loadFormatAndParsingMaps(useImperial: boolean, _restartActiveTool?: boolean): Promise<void>;
-    protected loadFormatSpecsForQuantityType(quantityType: QuantityType, useImperial: boolean): Promise<void>;
-    protected loadFormatSpecsForQuantityTypes(useImperial: boolean): Promise<void>;
+    // @internal
+    protected loadFormatAndParsingMapsForSystem(systemType?: UnitSystemKey): Promise<void>;
     protected loadKoqFormatSpecs(koq: string): Promise<void>;
-    protected loadParsingSpecsForQuantityType(quantityType: QuantityType, useImperial: boolean): Promise<void>;
-    protected loadParsingSpecsForQuantityTypes(useImperial: boolean): Promise<void>;
-    // (undocumented)
-    protected loadStdFormat(type: QuantityType, imperial: boolean): Promise<Format>;
-    // (undocumented)
-    protected _metricFormatsByType: Map<string, Format>;
-    // (undocumented)
-    protected _metricFormatSpecsByType: Map<string, FormatterSpec>;
-    // (undocumented)
-    protected _metricParserSpecsByType: Map<string, ParserSpec>;
     readonly onActiveUnitSystemChanged: BeUiEvent<{
-        useImperial: boolean;
+        useImperial?: boolean | undefined;
+        system?: string | undefined;
     }>;
     // (undocumented)
-    onInitialized(): void;
+    onInitialized(): Promise<void>;
+    readonly onQuantityFormatsChanged: BeUiEvent<{
+        quantityType?: string | undefined;
+    }>;
     // (undocumented)
-    protected _overrideFormatDataByType: Map<QuantityType, OverrideFormatEntry>;
-    parseIntoQuantityValue(inString: string, parserSpec: ParserSpec): ParseResult;
-    protected parseQuantityTypeArg(type: QuantityTypeArg): string;
-    // (undocumented)
-    protected _pendingLoadFormatSpecImperial?: Promise<void>;
-    // (undocumented)
-    protected _pendingLoadFormatSpecMetric?: Promise<void>;
-    // (undocumented)
-    protected _pendingLoadParserSpecImperial?: Promise<void>;
-    // (undocumented)
-    protected _pendingLoadParserSpecMetric?: Promise<void>;
+    protected _overrideFormatPropsByQuantityType: Map<string, OverrideFormatEntry>;
+    parseIntoQuantityValue(inString: string, parserSpec: ParserSpec | undefined): ParseResult;
     registerFormatterParserSpecsProviders(provider: FormatterParserSpecsProvider): Promise<boolean>;
+    setActiveUnitSystem(isImperialOrUnitSystem: UnitSystemKey | boolean, restartActiveTool?: boolean): Promise<void>;
     // (undocumented)
-    protected reloadCachedData(): Promise<void>;
-    setActiveUnitSystem(useImperial: boolean, restartActiveTool?: boolean): Promise<void>;
-    // (undocumented)
-    setOverrideFormats(type: QuantityType, entry: OverrideFormatEntry): Promise<void>;
-    // (undocumented)
-    protected setPendingPromise(useImperial: boolean, isFormatSpecPromise: boolean, promise: Promise<void> | undefined): void;
+    setOverrideFormats(type: QuantityType, overrideEntry: OverrideFormatEntry): Promise<void>;
+    // @deprecated (undocumented)
     get useImperialFormats(): boolean;
     set useImperialFormats(useImperial: boolean);
 }
@@ -6550,7 +6539,7 @@ export enum QuantityType {
     Volume = 4
 }
 
-// @beta (undocumented)
+// @alpha
 export type QuantityTypeArg = QuantityType | string;
 
 // @internal
@@ -10039,6 +10028,9 @@ export class TwoWayViewportSync {
     connect(view1: Viewport, view2: Viewport): void;
     disconnect(): void;
     }
+
+// @alpha
+export type UnitSystemKey = "metric" | "imperial" | "usCustomary" | "usSurvey";
 
 // @internal (undocumented)
 export class UpsampledMapTile extends MapTile {
