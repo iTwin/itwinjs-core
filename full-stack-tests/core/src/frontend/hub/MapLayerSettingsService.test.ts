@@ -15,7 +15,8 @@ const testProjectName = "iModelJsIntegrationTest";
 const testIModelName = "ReadOnlyTest";
 
 chai.should();
-
+// Skipping this set of tests for now as there appears to be a race condition when multiple instances of this test are
+// being run at the same time causing the tests to fail.
 describe.skip("MapLayerSettingsService (#integration)", () => {
   let projectId: GuidString;
   let iModelId: GuidString;
