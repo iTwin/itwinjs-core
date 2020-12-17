@@ -14,7 +14,7 @@
     "copy:assets": "cpx \"./src/**/*.{*css,json,svg}\" \"./lib\" && cpx \"./src/public/locales/**/*\" ./lib/extension/locales/",
     "cover": "",
     "docs": "",
-    "lint": "eslint -f visualstudio --max-warnings 0 ./src/**/*.{ts,tsx} 1>&2",
+    "lint": "eslint -f visualstudio ./src/**/*.{ts,tsx} 1>&2",
     "pseudolocalize": "betools pseudolocalize --englishDir=./src/public/locales/en --out=./lib/extension/locales/en-PSEUDO",
     "test": ""
   },

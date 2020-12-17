@@ -18,7 +18,7 @@
     "cover": "nyc npm test",
     "cover:integration": "nyc npm run test:integration",
     "extract-api": "betools extract-api --entry=imodeljs-backend",
-    "lint": "eslint -f visualstudio --max-warnings 0 ./src/**/*.ts 1>&2",
+    "lint": "eslint -f visualstudio ./src/**/*.ts 1>&2",
     "pretest": "cpx ./src/test/logging.config.json ./lib/test",
     "test": "betools test --offline=\"mock\" --grep=\"#integration|#WebGLPerformance\" --invert",
     "test:integration": "npm run pretest && betools test --testDir=\"./lib/test/integration\"",
@@ -114,7 +114,7 @@
     "webpack": "4.42.0"
   },
   "dependencies": {
-    "@bentley/imodeljs-native": "2.11.1",
+    "@bentley/imodeljs-native": "2.11.2",
     "@azure/storage-blob": "10.4.0",
     "@bentley/context-registry-client": "2.11.0-dev.15",
     "@bentley/usage-logging-client": "2.11.0-dev.15",
