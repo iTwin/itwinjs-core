@@ -46,7 +46,7 @@ export function MyCustomViewOverlay() {
         justifyContent: "center",
         alignItems: "center",
         height: "100%",
-        backgroundColor: "white",
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
       }}>
         <div>Hello World</div>
         <div>(turn off using Hide/Show items tool in horizontal toolbar at top-left)</div>
