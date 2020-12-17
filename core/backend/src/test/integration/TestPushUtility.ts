@@ -6,7 +6,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { GuidString, Id64String } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { Code, CodeScopeSpec, ColorDef, IModel, IModelVersion, PhysicalElementProps, SyncMode } from "@bentley/imodeljs-common";
+import { Code, CodeScopeSpec, ColorDef, IModel, IModelVersion, PhysicalElementProps } from "@bentley/imodeljs-common";
 import { TestUserCredentials, TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import {
   AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, CategorySelector, ConcurrencyControl, DisplayStyle3d, GeometricElement, IModelDb,
@@ -48,7 +48,7 @@ export class TestPushUtility {
 
   /** Pushes new change sets to the Hub periodically and sets up named versions */
   public async pushTestChangeSetsAndVersions(count: number) {
-    this._iModelDb = await IModelTestUtils.downloadAndOpenBriefcaseDb(this._requestContext!, this._projectId!, this._iModelId!.toString(), SyncMode.PullAndPush, IModelVersion.latest());
+    this._iModelDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: this._requestContext!, contextId: this._projectId!, iModelId: this._iModelId!.toString() });
     if (this._iModelDb.isBriefcaseDb()) {
       this._iModelDb.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy); // don't want to bother with locks.
     }
