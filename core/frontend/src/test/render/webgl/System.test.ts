@@ -145,7 +145,8 @@ describe("RenderSystem", () => {
       await IModelApp.shutdown();
     });
 
-    function requestTexture(key: string | undefined, source?: ImageSource): Promise<RenderTexture | undefined> { // eslint:disable-line @typescript-eslint/promise-function-async
+    // eslint-disable-next-line @typescript-eslint/promise-function-async
+    function requestTexture(key: string | undefined, source?: ImageSource): Promise<RenderTexture | undefined> {
       const params = new RenderTexture.Params(key, RenderTexture.Type.Normal);
       return IModelApp.renderSystem.createTextureFromImageSource(source ?? imageSource, imodel, params);
     }

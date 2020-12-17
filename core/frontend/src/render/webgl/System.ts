@@ -247,7 +247,8 @@ export class IdMap implements WebGLDisposable {
     return undefined !== tex ? tex : this.createTextureFromImage(image, hasAlpha, params);
   }
 
-  public getTextureFromImageSource(source: ImageSource, params: RenderTexture.Params): Promise<RenderTexture | undefined> { // eslint:disable-line @typescript-eslint/promise-function-async
+  // eslint-disable-next-line @typescript-eslint/promise-function-async
+  public getTextureFromImageSource(source: ImageSource, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
     // Do we already have this texture?
     const texture = this.findTexture(params.key);
     if (texture)
@@ -583,7 +584,8 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return this.getIdMap(imodel).getTexture(image, params);
   }
 
-  public createTextureFromImageSource(source: ImageSource, imodel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined> { // eslint:disable-line @typescript-eslint/promise-function-async
+  // eslint-disable-next-line @typescript-eslint/promise-function-async
+  public createTextureFromImageSource(source: ImageSource, imodel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
     if (!imodel)
       return super.createTextureFromImageSource(source, imodel, params);
 
