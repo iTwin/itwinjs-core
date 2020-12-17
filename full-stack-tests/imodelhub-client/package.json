@@ -18,7 +18,7 @@
     "cover:backend-itwin-client": "nyc --nycrc-path=backend-itwin-client.nycrc npm test",
     "cover:itwin-client": "nyc --nycrc-path=itwin-client.nycrc npm test",
     "docs": "",
-    "lint": "eslint -f visualstudio --max-warnings 0 ./src/**/*.ts 1>&2",
+    "lint": "eslint -f visualstudio ./src/**/*.ts 1>&2",
     "pretest": "npm run copy:test-assets",
     "test": "npm run pretest && betools test --offline=\"mock\" --grep=\"#integration\" --invert --testDir ./lib",
     "test:integration": "npm run pretest && betools test --grep=\"#unit\" --invert --testDir ./lib",

@@ -54,8 +54,8 @@ describe("withDragSource", () => {
 
     // Obtain a reference to the backend
     const backend = ref.current.getManager().getBackend();
-    const dragSource = ReactTestUtils.findRenderedComponentWithType(root as any, TestDragSource) as any;
-    const dropTarget = ReactTestUtils.findRenderedComponentWithType(root as any, TestDropTarget) as any;
+    const dragSource = ReactTestUtils.findRenderedComponentWithType<any, any>(root as any, TestDragSource);
+    const dropTarget = ReactTestUtils.findRenderedComponentWithType<any, any>(root as any, TestDropTarget);
 
     backend.simulateBeginDrag([dragSource.getHandlerId()]);
     // simulateHover must be called twice

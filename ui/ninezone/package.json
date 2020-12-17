@@ -19,7 +19,7 @@
     "docs": "npm run docs:typedoc",
     "docs:typedoc": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/ui/ui-ninezone/file.json --tsIndexFile=./ui-ninezone.ts --onlyJson",
     "extract-api": "betools extract-api --entry=ui-ninezone",
-    "lint": "eslint -f visualstudio --max-warnings 0 ./src/**/*.{ts,tsx} 1>&2",
+    "lint": "eslint -f visualstudio ./src/**/*.{ts,tsx} 1>&2",
     "test": "mocha --opts ../mocha.opts \"./lib/test/**/*.test.js\"",
     "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
   },
