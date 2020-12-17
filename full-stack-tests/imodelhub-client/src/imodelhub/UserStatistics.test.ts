@@ -97,8 +97,9 @@ describe("iModelHubClient UserStatisticsHandler", () => {
   });
 
   after(async () => {
-    if (TestConfig.enableIModelBank)
+    if (TestConfig.enableIModelBank) {
       await utils.deleteIModelByName(requestContexts[0], contextId, utils.sharedimodelName);
+    }
   });
 
   afterEach(() => {

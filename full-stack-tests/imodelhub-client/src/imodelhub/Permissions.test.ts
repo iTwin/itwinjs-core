@@ -108,8 +108,9 @@ describe("iModelHub PermissionsManager", () => {
   });
 
   after(async () => {
-    if (TestConfig.enableIModelBank)
+    if (TestConfig.enableIModelBank) {
       await utils.deleteIModelByName(requestContext, projectId, utils.sharedimodelName);
+    }
   });
 
   it("should get Context permissions (#unit)", async () => {

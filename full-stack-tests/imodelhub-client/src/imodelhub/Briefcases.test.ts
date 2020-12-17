@@ -128,8 +128,9 @@ describe("iModelHub BriefcaseHandler", () => {
   });
 
   after(async () => {
-    if (TestConfig.enableIModelBank)
+    if (TestConfig.enableIModelBank) {
       await utils.deleteIModelByName(requestContext, contextId, utils.sharedimodelName);
+    }
   });
 
   afterEach(() => {

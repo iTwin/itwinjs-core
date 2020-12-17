@@ -33,8 +33,9 @@ describe.skip("iModelHub Performance tests", () => {
   });
 
   after(async () => {
-    if (TestConfig.enableIModelBank)
+    if (TestConfig.enableIModelBank) {
       await utils.deleteIModelByName(requestContext, contextId, utils.sharedimodelName);
+    }
   });
 
   async function reserveCodes(statingCount: number, count: number, perRequest: number, briefcase: Briefcase, codeScope: string) {
