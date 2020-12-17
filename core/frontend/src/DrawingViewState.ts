@@ -15,31 +15,12 @@ import { CategorySelectorState } from "./CategorySelectorState";
 import { DisplayStyle2dState } from "./DisplayStyleState";
 import { SectionDrawingModelState } from "./ModelState";
 
-/** Exported strictly for testing purposes.
+/** Temporary, for testing.
  * @internal
  */
 export interface SectionDrawingInfo {
   readonly spatialView: Id64String;
   readonly drawingToSpatialTransform: Transform;
-}
-
-/** Renders a [[DrawingViewState]]'s [[SpatialViewState]] into the drawing view, if the associated [SectionDrawing]($backend) specifies we should do so.
- * @internal
- */
-class SectionDrawingAttachment {
-  public readonly view: ViewState3d;
-  public readonly spatialToDrawing: Transform;
-  private readonly _viewFlagOverrides: ViewFlagOverrides;
-  private readonly _symbologyOverrides: FeatureSymbology.Overrides;
-  private readonly _hiddenLineSettings: HiddenLine.Settings;
-
-  public constructor(view: ViewState3d, toDrawing: Transform) {
-    this.view = view;
-    this.spatialToDrawing = toDrawing;
-    this._viewFlagOverrides = new ViewFlagOverrides(view.viewFlags);
-    this._symbologyOverrides = new FeatureSymbology.Overrides(view);
-    this._hiddenLineSettings = view.displayStyle.settings.hiddenLineSettings;
-  }
 }
 
 /** A view of a [DrawingModel]($backend)
@@ -49,24 +30,24 @@ export class DrawingViewState extends ViewState2d {
   /** @internal */
   public static get className() { return "DrawingViewDefinition"; }
 
-  /** Indicates that when loading the view, the SectionDrawingAttachment should be loaded even if `SectionDrawing.displaySpatialView` is not `true`.
-   * Exposed strictly for testing and debugging.
+  /** Exposed strictly for testing and debugging. Indicates that when loading the view, the SectionDrawingInfo should be loaded even
+   * if `SectionDrawing.displaySpatialView` is not `true`.
    * @internal
    */
-  public static alwaysLoadSectionDrawing = false;
+  public static alwaysLoadSectionDrawingInfo = false;
 
   private readonly _modelLimits: ExtentLimits;
   private readonly _viewedExtents: AxisAlignedBox3d;
-  private _sectionDrawingAttachment?: SectionDrawingAttachment;
+  private _sectionDrawingInfo?: SectionDrawingInfo;
+  /** Temporary, for testing. @internal */
+  public get sectionDrawingInfo() { return this._sectionDrawingInfo; }
 
   public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, extents: AxisAlignedBox3d) {
     super(props, iModel, categories, displayStyle);
     if (categories instanceof DrawingViewState) {
       this._viewedExtents = categories._viewedExtents.clone();
       this._modelLimits = { ...categories._modelLimits };
-
-      // ###TODO: I don't think there is any need to clone this object.
-      this._sectionDrawingAttachment = categories._sectionDrawingAttachment;
+      this._sectionDrawingInfo = categories._sectionDrawingInfo;
     } else {
       this._viewedExtents = extents;
       this._modelLimits = { min: Constant.oneMillimeter, max: 10 * extents.maxLength() };
@@ -74,7 +55,7 @@ export class DrawingViewState extends ViewState2d {
   }
 
   public async load(): Promise<void> {
-    this._sectionDrawingAttachment = undefined;
+    this._sectionDrawingInfo = undefined;
     await super.load();
     const model = this.iModel.models.getLoaded(this.baseModelId);
     if (!model || !(model instanceof SectionDrawingModelState))
@@ -82,7 +63,7 @@ export class DrawingViewState extends ViewState2d {
 
     // Find out if we also need to display the spatial view.
     let spatialView;
-    let spatialToDrawingTransform;
+    let drawingToSpatialTransform;
     let displaySpatialView = false;
     const ecsql = `
       SELECT spatialView,
@@ -93,9 +74,9 @@ export class DrawingViewState extends ViewState2d {
 
     for await (const row of this.iModel.query(ecsql)) {
       spatialView = Id64.fromJSON(row.spatialView?.id);
-      displaySpatialView = DrawingViewState.alwaysLoadSectionDrawing || !!row.displaySpatialView;
+      displaySpatialView = DrawingViewState.alwaysLoadSectionDrawingInfo || !!row.displaySpatialView;
       try {
-        spatialToDrawingTransform = Transform.fromJSON(JSON.parse(row.drawingToSpatialTransform)).inverse();
+        drawingToSpatialTransform = Transform.fromJSON(JSON.parse(row.drawingToSpatialTransform));
       } catch (_) {
         //
       }
@@ -103,8 +84,8 @@ export class DrawingViewState extends ViewState2d {
       break;
     }
 
-    if (displaySpatialView && spatialView && Id64.isValidId64(spatialView) && spatialToDrawingTransform)
-      this._sectionDrawingAttachment = new SectionDrawingAttachment(spatialView, spatialToDrawingTransform);
+    if (displaySpatialView && spatialView && Id64.isValidId64(spatialView) && drawingToSpatialTransform)
+      this._sectionDrawingInfo = { spatialView, drawingToSpatialTransform };
   }
 
   public static createFromProps(props: ViewStateProps, iModel: IModelConnection): DrawingViewState {
@@ -126,15 +107,4 @@ export class DrawingViewState extends ViewState2d {
 
   /** @internal */
   public isDrawingView(): this is DrawingViewState { return true; }
-
-  /** Exposed strictly for testing. */
-  public get sectionDrawingInfo() {
-    if (!this._sectionDrawingAttachment)
-      return undefined;
-
-    const drawingToSpatialTransform = this._sectionDrawingAttachment.spatialToDrawing.inverse();
-    assert(undefined !== drawingToSpatialTransform);
-    return { spatialView:
-  }
-
 }
