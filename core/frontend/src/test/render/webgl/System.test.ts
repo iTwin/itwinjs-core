@@ -2,11 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as chai from "chai";
-import * as chaiAsPromised from "chai-as-promised";
-chai.use(chaiAsPromised);
-const expect = chai.expect;
-
+import { expect } from "chai";
 import { ImageSource, ImageSourceFormat, RenderTexture } from "@bentley/imodeljs-common";
 import { IModelApp } from "../../../IModelApp";
 import { IModelConnection } from "../../../IModelConnection";
@@ -214,12 +210,18 @@ describe("RenderSystem", () => {
       t1!.dispose();
     });
 
-    it("should throw and remove pending Promise from cache on error", async () => {
+    it("should return undefined and remove pending Promise from cache on error", async () => {
       const source = new ImageSource(new Uint8Array([0, 1, 2, 3, 4]), ImageSourceFormat.Png);
       const p1 = requestTexture("e", source);
-      await expect(p1).to.be.rejectedWith(Error);
+      const t1 = await p1;
+      expect(t1).to.be.undefined;
+
       const p2 = requestTexture("e");
       expect(p2).not.to.equal(p1);
+      const t2 = await p2;
+      expect(t2).not.to.be.undefined;
+
+      t2!.dispose();
     });
 
     it("should return undefined after render system is disposed", async () => {

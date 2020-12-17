@@ -273,6 +273,9 @@ export class IdMap implements WebGLDisposable {
     try {
       const image = await imageElementFromImageSource(source);
       return IModelApp.hasRenderSystem ? this.getTextureFromImage(image, ImageSourceFormat.Png === source.format, params) : undefined;
+    } catch (_) {
+      // Caller is uninterested in the details of the exception.
+      return undefined;
     } finally {
       if (params.key) {
         // The promise has resolved or rejected - remove from pending set.
