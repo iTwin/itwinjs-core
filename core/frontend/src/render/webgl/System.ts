@@ -247,8 +247,7 @@ export class IdMap implements WebGLDisposable {
     return undefined !== tex ? tex : this.createTextureFromImage(image, hasAlpha, params);
   }
 
-  // eslint-disable-next-line @typescript-eslint/promise-function-async
-  public getTextureFromImageSource(source: ImageSource, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
+  public async getTextureFromImageSource(source: ImageSource, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
     // Do we already have this texture?
     const texture = this.findTexture(params.key);
     if (texture)
@@ -269,7 +268,7 @@ export class IdMap implements WebGLDisposable {
     return promise;
   }
 
-  private async createTextureFromImageSource(source: ImageSource, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
+  public async createTextureFromImageSource(source: ImageSource, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
     try {
       const image = await imageElementFromImageSource(source);
       return IModelApp.hasRenderSystem ? this.getTextureFromImage(image, ImageSourceFormat.Png === source.format, params) : undefined;
@@ -587,8 +586,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return this.getIdMap(imodel).getTexture(image, params);
   }
 
-  // eslint-disable-next-line @typescript-eslint/promise-function-async
-  public createTextureFromImageSource(source: ImageSource, imodel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
+  public async createTextureFromImageSource(source: ImageSource, imodel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
     if (!imodel)
       return super.createTextureFromImageSource(source, imodel, params);
 

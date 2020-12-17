@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { ImageSource, ImageSourceFormat, RenderTexture } from "@bentley/imodeljs-common";
+import { Capabilities, WebGLContext } from "@bentley/webgl-compatibility";
 import { IModelApp } from "../../../IModelApp";
 import { IModelConnection } from "../../../IModelConnection";
 import { MockRender } from "../../../render/MockRender";
@@ -124,6 +125,25 @@ describe("RenderSystem", () => {
   describe("createTextureFromImageSource", () => {
     const imodel = {} as unknown as IModelConnection;
 
+    class TestSystem extends System {
+      public static readonly requestedIds = new Array<string | undefined>();
+
+      public static reset(): void {
+        this.requestedIds.length = 0;
+      }
+
+      public constructor(canvas: HTMLCanvasElement, context: WebGLContext, capabilities: Capabilities, options: RenderSystem.Options) {
+        super(canvas, context, capabilities, options);
+
+        const map = this.getIdMap(imodel);
+        const createTextureFromImageSource = map.createTextureFromImageSource.bind(map);
+        map.createTextureFromImageSource = (source: ImageSource, params: RenderTexture.Params) => {
+          TestSystem.requestedIds.push(params.key);
+          return createTextureFromImageSource(source, params);
+        };
+      }
+    }
+
     // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in
     // bottom right pixel.  The rest of the square is red.
     const imageSource = new ImageSource(new Uint8Array([
@@ -134,15 +154,20 @@ describe("RenderSystem", () => {
     ]), ImageSourceFormat.Png);
 
     before(async () => {
-      await IModelApp.startup();
+      await IModelApp.startup({
+        renderSys: TestSystem.create(),
+      });
+    });
+
+    afterEach(() => {
+      TestSystem.reset();
     });
 
     after(async () => {
       await IModelApp.shutdown();
     });
 
-    // eslint-disable-next-line @typescript-eslint/promise-function-async
-    function requestTexture(key: string | undefined, source?: ImageSource): Promise<RenderTexture | undefined> {
+    async function requestTexture(key: string | undefined, source?: ImageSource): Promise<RenderTexture | undefined> {
       const params = new RenderTexture.Params(key, RenderTexture.Type.Normal);
       return IModelApp.renderSystem.createTextureFromImageSource(source ?? imageSource, imodel, params);
     }
@@ -152,12 +177,17 @@ describe("RenderSystem", () => {
       expect(map.texturesFromImageSources.size).to.equal(expectedCount);
     }
 
-    it("should return the same Promise for the same texture", async () => {
+    function expectRequestedIds(expected: Array<string | undefined>): void {
+      expect(TestSystem.requestedIds).to.deep.equal(expected);
+    }
+
+    it("should decode image only once for multiple requests for same texture", async () => {
       const p1 = requestTexture("a");
       expectPendingRequests(1);
+      expectRequestedIds(["a"]);
       const p2 = requestTexture("a");
       expectPendingRequests(1);
-      expect(p1).to.equal(p2);
+      expectRequestedIds(["a"]);
 
       const t1 = await p1;
       expectPendingRequests(0);
@@ -168,12 +198,13 @@ describe("RenderSystem", () => {
       t1!.dispose();
     });
 
-    it("should return different Promise for different textures", async () => {
+    it("should decode each different image once", async () => {
       const p1 = requestTexture("b");
       expectPendingRequests(1);
+      expectRequestedIds(["b"]);
       const p2 = requestTexture("c");
       expectPendingRequests(2);
-      expect(p1).not.to.equal(p2);
+      expectRequestedIds(["b", "c"]);
 
       const t1 = await p1;
       const t2 = await p2;
@@ -187,12 +218,11 @@ describe("RenderSystem", () => {
       t2!.dispose();
     });
 
-    it("should return a different Promise for unnamed textures", async () => {
+    it("should not record pending requests for unnamed textures", async () => {
       const p1 = requestTexture(undefined);
       const p2 = requestTexture(undefined);
       expectPendingRequests(0);
-
-      expect(p1).not.to.equal(p2);
+      expectRequestedIds([undefined, undefined]);
 
       const t1 = await p1;
       const t2 = await p2;
@@ -202,20 +232,20 @@ describe("RenderSystem", () => {
       t2!.dispose();
     });
 
-    it("should return a different Promise for existing textures", async () => {
+    it("should not record requests for previously-created textures", async () => {
       const p1 = requestTexture("d");
       expectPendingRequests(1);
       const t1 = await p1;
       expectPendingRequests(0);
+      expectRequestedIds(["d"]);
 
       const p2 = requestTexture("d");
-      expect(p2).not.to.equal(p1);
       expectPendingRequests(0);
+      expectRequestedIds(["d"]);
 
       const p3 = requestTexture("d");
-      expect(p3).not.to.equal(p2);
-      expect(p3).not.to.equal(p1);
       expectPendingRequests(0);
+      expectRequestedIds(["d"]);
 
       const t2 = await p2;
       expect(t2).to.equal(t1);
@@ -226,17 +256,20 @@ describe("RenderSystem", () => {
       t1!.dispose();
     });
 
-    it("should return undefined and remove pending Promise from cache on error", async () => {
+    it("should return undefined and delete pending request on error", async () => {
       const source = new ImageSource(new Uint8Array([0, 1, 2, 3, 4]), ImageSourceFormat.Png);
       const p1 = requestTexture("e", source);
       expectPendingRequests(1);
+      expectRequestedIds(["e"]);
+
       const t1 = await p1;
       expect(t1).to.be.undefined;
       expectPendingRequests(0);
 
       const p2 = requestTexture("e");
       expectPendingRequests(1);
-      expect(p2).not.to.equal(p1);
+      expectRequestedIds(["e", "e"]);
+
       const t2 = await p2;
       expect(t2).not.to.be.undefined;
       expectPendingRequests(0);
@@ -248,6 +281,7 @@ describe("RenderSystem", () => {
       const idmap = System.instance.getIdMap(imodel);
       const promise = requestTexture("f");
       expect(idmap.texturesFromImageSources.size).to.equal(1);
+
       await IModelApp.shutdown();
       const texture = await promise;
       expect(texture).to.be.undefined;
