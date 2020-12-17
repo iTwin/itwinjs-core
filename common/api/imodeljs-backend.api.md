@@ -52,6 +52,7 @@ import { DisplayStyle3dSettings } from '@bentley/imodeljs-common';
 import { DisplayStyle3dSettingsProps } from '@bentley/imodeljs-common';
 import { DisplayStyleProps } from '@bentley/imodeljs-common';
 import { DisplayStyleSettings } from '@bentley/imodeljs-common';
+import { DownloadBriefcaseStatus } from '@bentley/imodeljs-common';
 import { EcefLocation } from '@bentley/imodeljs-common';
 import { ECSqlValueType } from '@bentley/imodeljs-common';
 import { ElementAlignedBox3d } from '@bentley/imodeljs-common';
@@ -673,6 +674,29 @@ export class ChannelRootAspect extends ElementUniqueAspect {
     owner: string;
     // @internal (undocumented)
     toJSON(): ChannelRootAspectProps;
+}
+
+// @internal (undocumented)
+export class CheckpointManager {
+    static downloadCheckpoint(request: DownloadRequest): Promise<void>;
+    // (undocumented)
+    static getKey(checkpoint: CheckpointProps): string;
+    // (undocumented)
+    static readonly onDownload: BeEvent<(job: DownloadJob) => void>;
+    static tryOpenLocalFile(request: DownloadRequest): SnapshotDb | undefined;
+    // (undocumented)
+    static verifyCheckpoint(checkpoint: CheckpointProps, fileName: string): boolean;
+}
+
+// @beta
+export interface CheckpointProps {
+    changeSetId: GuidString;
+    contextId: GuidString;
+    // (undocumented)
+    expectV2?: boolean;
+    iModelId: GuidString;
+    // (undocumented)
+    requestContext: AuthorizedClientRequestContext;
 }
 
 // @public
@@ -1311,6 +1335,32 @@ export class DocumentPartition extends InformationPartitionElement {
     // @internal (undocumented)
     static get className(): string;
 }
+
+// @internal (undocumented)
+export interface DownloadJob {
+    // (undocumented)
+    promise?: Promise<any>;
+    // (undocumented)
+    request: DownloadRequest;
+    // (undocumented)
+    status: DownloadBriefcaseStatus;
+}
+
+// @beta
+export interface DownloadRequest {
+    aliasFiles?: string[];
+    checkpoint: CheckpointProps;
+    localFile: string;
+    onProgress?: ProgressFunction;
+}
+
+// @internal (undocumented)
+export class Downloads {
+    // (undocumented)
+    static download<T>(request: DownloadRequest, downloadFn: (job: DownloadJob) => Promise<T>): Promise<any>;
+    // (undocumented)
+    static isInProgress(pathName: string): DownloadJob | undefined;
+    }
 
 // @public
 export class Drawing extends Document {
@@ -3378,6 +3428,9 @@ export class Platform {
 }
 
 // @beta
+export type ProgressFunction = (loaded: number, total: number) => number;
+
+// @beta
 export abstract class RecipeDefinitionElement extends DefinitionElement {
     // @internal
     constructor(props: ElementProps, iModel: IModelDb);
@@ -4094,6 +4147,26 @@ export interface UsageLoggingUtilitiesOptions {
     // (undocumented)
     iModelJsNative?: typeof IModelJsNative;
 }
+
+// @internal
+export class V1CheckpointManager {
+    static downloadCheckpoint(request: DownloadRequest): Promise<void>;
+    // (undocumented)
+    static getCheckpointDb(request: DownloadRequest): Promise<SnapshotDb>;
+    // @deprecated
+    static getCompatibilityFileName(checkpoint: CheckpointProps): string;
+    // (undocumented)
+    static getFileName(checkpoint: CheckpointProps): string;
+    // (undocumented)
+    static getFolder(iModelId: GuidString): string;
+    }
+
+// @internal
+export class V2CheckpointManager {
+    // (undocumented)
+    static attach(checkpoint: CheckpointProps): Promise<string>;
+    static downloadCheckpoint(request: DownloadRequest): Promise<void>;
+    }
 
 // @beta
 export interface ValidationError {

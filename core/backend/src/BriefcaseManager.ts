@@ -258,9 +258,28 @@ export class BriefcaseManager {
     return briefcase.briefcaseId!;
   }
 
-  /** Download a briefcase from iModelHub for the supplied iModelId. If no BriefcaseId is supplied, a new one is acquired from iModelHub.
-   * @returns a Promise that is resolved after the briefcase is fully downloaded.
-   * @note After the promise is resolved, the fileName and briefcaseId values are returned in `request`.
+  /** Download a new briefcase from iModelHub for the supplied iModelId.
+   *
+   * The process of downloading a briefcase file involves first obtaining a valid BriefcaseId from IModelHub. For each IModelId, IModelHub maintains
+   * a list of BriefcaseIds assigned to users, to ensure that no two users have the same BriefcaseId. Typically a given user will have only
+   * one briefcase on their machine for a given iModelId. Rarely, it may be necessary to use more than one briefcase to make isolated independent sets of changes,
+   * but that is exceedingly complicated and rare. If no BriefcaseId is supplied, a new one is acquired from iModelHub.
+   *
+   * Then, a Checkpoint file (as of a ChangesetId, typically "Latest") is downloaded from IModelHub. After the download completes,
+   * the briefcaseId in the local file is changed to acquired briefcaseId, changing the checkpoint file into a briefcase file.
+   *
+   * Each of these steps requires an valid `AuthorizedClientRequestContext` to provide the user's authorization for the requests.
+   *
+   * @param request The properties that specify the briefcase file to be created.
+   * @returns a Promise that is resolved after the briefcase is fully downloaded and the briefcase file is ready for use via [BriefcaseDb.open]($backend).
+   * @note The location of the local file to hold the briefcase is arbitrary and may be any valid *local* path on your machine. If you don't supply
+   * a filename, the local briefcase cache is used by creating a file with the briefcaseId as its name in the `briefcases` folder below the folder named
+   * for the IModelId. After the promise is resolved, the fileName and briefcaseId values are returned in `request`.
+   * @note *It is invalid to edit briefcases on a shared network drive* and that is a sure way to corrupt your briefcase (see https://www.sqlite.org/howtocorrupt.html)
+   * @note The special briefcaseId [[BriefcaseIdValue.Standalone]] is used for backwards compatibility for the SyncMode.PullOnly. It creates local
+   * file that can accept changesets but may not be used for editing. It is really incorrect to refer to this file as a "briefcase."
+   * @see CheckpointManager.downloadCheckpoint
+   * @see BriefcaseManager.getFileName
    */
   public static async downloadBriefcase(requestContext: AuthorizedClientRequestContext, request: RequestNewBriefcaseArg): Promise<void> {
     if (undefined === request.briefcaseId)

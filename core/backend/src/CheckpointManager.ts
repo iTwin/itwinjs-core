@@ -26,7 +26,7 @@ const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
 /**
  * Properties of a checkpoint
- * @internal
+ * @beta
  */
 export interface CheckpointProps {
   expectV2?: boolean;
@@ -47,11 +47,11 @@ export interface CheckpointProps {
  *  @beta */
 export type ProgressFunction = (loaded: number, total: number) => number;
 
-/**
- * @internal
+/** The parameters that specify a request to download a checkpoint file from iModelHub.
+ * @beta
  */
 export interface DownloadRequest {
-  /** name of local file to create. */
+  /** name of local file to hold the downloaded data. */
   localFile: string;
 
   /** A list of full fileName paths to test before downloading. If a valid file exists by one of these names, it is
@@ -60,10 +60,12 @@ export interface DownloadRequest {
    */
   aliasFiles?: string[];
 
-  /** Properties of the checkpoint that's being downloaded */
+  /** Properties of the checkpoint to be being downloaded */
   checkpoint: CheckpointProps;
 
-  /** If present, this function will be called to indicate progress as the briefcase is downloaded. */
+  /** If present, this function will be called to indicate progress as the briefcase is downloaded. If this
+   * function returns a non-zero value, the download is aborted.
+   */
   onProgress?: ProgressFunction;
 }
 
@@ -308,6 +310,7 @@ export class CheckpointManager {
   public static readonly onDownload = new BeEvent<(job: DownloadJob) => void>();
   public static getKey(checkpoint: CheckpointProps) { return `${checkpoint.iModelId}:${checkpoint.changeSetId}`; }
 
+  /** Download a checkpoint file from iModelHub into a local file specified in the request parameters. */
   public static async downloadCheckpoint(request: DownloadRequest): Promise<void> {
     if (this.verifyCheckpoint(request.checkpoint, request.localFile))
       return;

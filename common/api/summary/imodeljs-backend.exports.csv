@@ -36,6 +36,8 @@ beta;ChangeSummaryExtractContext
 beta;ChangeSummaryExtractOptions
 beta;ChangeSummaryManager
 public;ChannelRootAspect 
+internal;CheckpointManager
+beta;CheckpointProps
 public;ClassRegistry
 beta;class CloudStorageService
 beta;CloudStorageServiceCredentials
@@ -78,6 +80,9 @@ public;class Document
 internal;class DocumentCarrier 
 public;DocumentListModel 
 public;DocumentPartition 
+internal;DownloadJob
+beta;DownloadRequest
+internal;Downloads
 public;Drawing 
 public;DrawingCategory 
 public;DrawingGraphic 
@@ -225,6 +230,7 @@ public;class PhysicalType
 public;PhysicalTypeIsOfPhysicalMaterial 
 public;PlanCallout 
 public;Platform
+beta;ProgressFunction = (loaded: number, total: number) => number
 beta;class RecipeDefinitionElement 
 public;Relationship 
 public;Relationships
@@ -288,6 +294,8 @@ public;UpdateModelOptions
 public;UrlLink 
 internal;UsageLoggingUtilities
 internal;UsageLoggingUtilitiesOptions
+internal;V1CheckpointManager
+internal;V2CheckpointManager
 beta;ValidationError
 public;ViewAttachment 
 public;ViewAttachmentLabel 
