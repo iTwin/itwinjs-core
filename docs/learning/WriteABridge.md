@@ -9,11 +9,11 @@ There are three main steps that a connector needs to undertake to bring data int
 
 - Extract data from the input source
 - Transform and align the data to the digital twin.
-- Generate [changesets](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/IModelHub/index.md#the-timeline-of-changes-to-an-imodel) and load data into an iModel.
+- Generate [changesets](./IModelHub/index.md#the-timeline-of-changes-to-an-imodel) and load data into an iModel.
 
 ### Extract
 
-Extraction of data from the input depends on the source format and the availablity of a library capable of understanding it.  There are two strategies typically employed for data extraction.
+Extraction of data from the input depends on the source format and the availability of a library capable of understanding it.  There are two strategies typically employed for data extraction.
 
 1. If the extraction library is compatible with TypeScript, write an extraction module and use that to connect the input data with the alignment phase.
 2. If a TypeScript binding is not available, extract the data into an intermediary format that can be then ingested by the alignment phase.
