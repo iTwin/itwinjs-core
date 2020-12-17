@@ -176,7 +176,6 @@ describe("RenderSystem", () => {
       expect(p1).not.to.equal(p2);
 
       const t1 = await p1;
-      expectPendingRequests(1);
       const t2 = await p2;
       expectPendingRequests(0);
       expect(t1).not.to.equal(t2);
