@@ -49,7 +49,7 @@ module.exports = {
       }
     ],
     "@typescript-eslint/indent": [
-      "warn",
+      "error",
       2
     ],
     "@typescript-eslint/interface-name-prefix": "off",
@@ -68,7 +68,7 @@ module.exports = {
     ],
     "@typescript-eslint/member-ordering": "off",
     "@typescript-eslint/naming-convention": [
-      "warn",
+      "error",
       {
         "selector": "default",
         "format": ["camelCase"],
@@ -146,10 +146,10 @@ module.exports = {
     "@typescript-eslint/no-namespace": "off",
     "@typescript-eslint/no-non-null-assertion": "off",
     "@typescript-eslint/no-parameter-properties": "off",
-    "@typescript-eslint/no-this-alias": "warn",
+    "@typescript-eslint/no-this-alias": "error",
     "@typescript-eslint/no-use-before-define": "off",
     "@typescript-eslint/no-var-requires": "error",
-    "@typescript-eslint/no-unnecessary-type-assertion": "warn",
+    "@typescript-eslint/no-unnecessary-type-assertion": "error",
     "@typescript-eslint/no-unused-vars": [
       "error",
       {
@@ -191,7 +191,7 @@ module.exports = {
     "@typescript-eslint/typedef": "off",
     // TODO: We have assignments of unbound methods all over the place.  There's a github issue open to fix this: https://github.com/typescript-eslint/typescript-eslint/issues/1256
     "@typescript-eslint/unbound-method": [
-      "warn",
+      "error",
       {
         "ignoreStatic": true
       }
@@ -303,7 +303,7 @@ module.exports = {
     "prefer-const": "error",
     "prefer-rest-params": "off",
     "prefer-spread": "off",
-    "prefer-template": "warn",
+    "prefer-template": "error",
     "quote-props": [
       "error",
       "consistent-as-needed"
@@ -312,7 +312,7 @@ module.exports = {
     "radix": "error",
     "react/prop-types": "off",
     "sort-imports": [
-      "warn",
+      "error",
       {
         "ignoreDeclarationSort": true,
         "ignoreCase": true,
@@ -351,7 +351,7 @@ module.exports = {
     }],
     "@bentley/import-within-package": "error",
     "@bentley/prefer-get": "error",
-    "@bentley/react-set-state-usage": ["warn", { "updater-only": false, "allow-object": true }],
+    "@bentley/react-set-state-usage": ["error", { "updater-only": false, "allow-object": true }],
     "@bentley/require-basic-rpc-values": "off",
   },
   settings: {
