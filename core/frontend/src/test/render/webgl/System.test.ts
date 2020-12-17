@@ -137,7 +137,9 @@ describe("RenderSystem", () => {
 
         const map = this.getIdMap(imodel);
         const createTextureFromImageSource = map.createTextureFromImageSource.bind(map);
-        map.createTextureFromImageSource = (source: ImageSource, params: RenderTexture.Params) => {
+
+        // eslint-disable-next-line @typescript-eslint/unbound-method
+        map.createTextureFromImageSource = async (source: ImageSource, params: RenderTexture.Params) => {
           TestSystem.requestedIds.push(params.key);
           return createTextureFromImageSource(source, params);
         };
