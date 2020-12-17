@@ -45,7 +45,7 @@ export function UnitsFormatDialog() {
         return;
       }
       const formatSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length, true);
-      if (formatSpec.unitConversions[0].name === "Units.US_SURVEY_FT") {
+      if (formatSpec?.unitConversions[0].name === "Units.US_SURVEY_FT") {
         if (unitFormat !== "us-survey")
           setUnitFormat("us-survey");
       } else {
