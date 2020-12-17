@@ -9,7 +9,6 @@ steps:
   workingDirectory: ${{ parameters.workingDir }}
   condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'))
 
-
 - task: PythonScript@0
   displayName: Gather packages for release
   inputs:
@@ -116,7 +115,6 @@ steps:
 
     arguments: '$(Build.ArtifactStagingDirectory) $(Build.SourcesDirectory) $(Build.SourceBranch)'
     condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'))
-
 
 - task: PublishBuildArtifacts@1
   displayName: 'Publish Artifact: packages'

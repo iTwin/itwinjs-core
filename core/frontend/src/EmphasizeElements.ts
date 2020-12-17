@@ -133,7 +133,10 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     return { overrideType, color };
   }
 
-  /** The current default appearance for use with overrideElements when not using emphasizeElements. */
+  /** Establish a default appearance to apply to elements without overrides. If changing the default appearance
+   * without also calling overrideElements, an explicit refresh must be requested for the change to take affect.
+   * @see [[Viewport.setFeatureOverrideProviderChanged]]
+   */
   public get defaultAppearance(): FeatureAppearance | undefined { return this._defaultAppearance; }
   public set defaultAppearance(appearance: FeatureAppearance | undefined) { this._defaultAppearance = appearance; }
 

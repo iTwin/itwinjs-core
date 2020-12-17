@@ -5,17 +5,17 @@
 import { assert } from "chai";
 import * as path from "path";
 import { DbResult, Id64, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { Point3d, Range3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Point3d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
 import { AxisAlignedBox3d, Code, ColorDef, CreateIModelProps, IModel, PhysicalElementProps, Placement3d } from "@bentley/imodeljs-common";
 import {
-  BackendLoggerCategory, BackendRequestContext, DefinitionPartition, ECSqlStatement, Element, ElementMultiAspect, ElementRefersToElements,
-  ElementUniqueAspect, ExternalSourceAspect, IModelCloneContext, IModelDb, IModelExporter, IModelExportHandler, IModelJsFs, IModelTransformer,
-  InformationRecordModel, InformationRecordPartition, Model, PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, SnapshotDb,
-  SpatialCategory, Subject, TemplateModelCloner, TemplateRecipe3d,
+  BackendLoggerCategory, BackendRequestContext, CategorySelector, DefinitionPartition, DisplayStyle3d, ECSqlStatement, Element, ElementMultiAspect,
+  ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, IModelCloneContext, IModelDb, IModelExporter, IModelExportHandler, IModelJsFs,
+  IModelTransformer, InformationRecordModel, InformationRecordPartition, Model, ModelSelector, OrthographicViewDefinition, PhysicalModel,
+  PhysicalObject, PhysicalPartition, PhysicalType, Relationship, SnapshotDb, SpatialCategory, Subject, TemplateModelCloner, TemplateRecipe3d,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import {
-  ClassCounter, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerUtils, PhysicalModelConsolidator, RecordingIModelImporter,
+  ClassCounter, FilterByViewTransformer, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerUtils, PhysicalModelConsolidator, RecordingIModelImporter,
   TestIModelTransformer,
 } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -645,6 +645,92 @@ describe("IModelTransformer", () => {
     exporter.iModelExporter.exportRelationships(ElementRefersToElements.classFullName);
     // make sure the exporter actually visited something
     assert.isAtLeast(exporter.modelCount, 4);
+    sourceDb.close();
+  });
+
+  it("Should filter by ViewDefinition", async () => {
+    const sourceDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "FilterByView-Source.bim");
+    const sourceDb = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "FilterByView-Source" } });
+    const categoryNames: string[] = ["C1", "C2", "C3", "C4", "C5"];
+    categoryNames.forEach((categoryName) => {
+      const categoryId = SpatialCategory.insert(sourceDb, IModel.dictionaryId, categoryName, {});
+      CategorySelector.insert(sourceDb, IModel.dictionaryId, categoryName, [categoryId]);
+    });
+    const modelNames: string[] = ["MA", "MB", "MC", "MD"];
+    modelNames.forEach((modelName) => {
+      const modelId = PhysicalModel.insert(sourceDb, IModel.rootSubjectId, modelName);
+      ModelSelector.insert(sourceDb, IModel.dictionaryId, modelName, [modelId]);
+
+    });
+    const projectExtents = new Range3d();
+    const displayStyleId = DisplayStyle3d.insert(sourceDb, IModel.dictionaryId, "DisplayStyle");
+    for (let x = 0; x < categoryNames.length; x++) { // eslint-disable-line @typescript-eslint/prefer-for-of
+      const categoryId = sourceDb.elements.queryElementIdByCode(SpatialCategory.createCode(sourceDb, IModel.dictionaryId, categoryNames[x]))!;
+      const categorySelectorId = sourceDb.elements.queryElementIdByCode(CategorySelector.createCode(sourceDb, IModel.dictionaryId, categoryNames[x]))!;
+      for (let y = 0; y < modelNames.length; y++) { // eslint-disable-line @typescript-eslint/prefer-for-of
+        const modelId = sourceDb.elements.queryElementIdByCode(PhysicalPartition.createCode(sourceDb, IModel.rootSubjectId, modelNames[y]))!;
+        const modelSelectorId = sourceDb.elements.queryElementIdByCode(ModelSelector.createCode(sourceDb, IModel.dictionaryId, modelNames[y]))!;
+        const physicalObjectProps: PhysicalElementProps = {
+          classFullName: PhysicalObject.classFullName,
+          model: modelId,
+          category: categoryId,
+          code: Code.createEmpty(),
+          userLabel: `${PhysicalObject.className}-${categoryNames[x]}-${modelNames[y]}`,
+          geom: IModelTransformerUtils.createBox(Point3d.create(1, 1, 1), categoryId),
+          placement: {
+            origin: Point3d.create(x * 2, y * 2, 0),
+            angles: YawPitchRollAngles.createDegrees(0, 0, 0),
+          },
+        };
+        const physicalObjectId = sourceDb.elements.insertElement(physicalObjectProps);
+        const physicalObject = sourceDb.elements.getElement<PhysicalObject>(physicalObjectId, PhysicalObject);
+        const viewExtents = physicalObject.placement.calculateRange();
+        OrthographicViewDefinition.insert(
+          sourceDb,
+          IModel.dictionaryId,
+          `View-${categoryNames[x]}-${modelNames[y]}`,
+          modelSelectorId,
+          categorySelectorId,
+          displayStyleId,
+          viewExtents,
+          StandardViewIndex.Iso
+        );
+        projectExtents.extendRange(viewExtents);
+      }
+    }
+    sourceDb.updateProjectExtents(projectExtents);
+    const exportCategorySelectorId = CategorySelector.insert(sourceDb, IModel.dictionaryId, "Export", [
+      sourceDb.elements.queryElementIdByCode(SpatialCategory.createCode(sourceDb, IModel.dictionaryId, categoryNames[0]))!,
+      sourceDb.elements.queryElementIdByCode(SpatialCategory.createCode(sourceDb, IModel.dictionaryId, categoryNames[2]))!,
+      sourceDb.elements.queryElementIdByCode(SpatialCategory.createCode(sourceDb, IModel.dictionaryId, categoryNames[4]))!,
+    ]);
+    const exportModelSelectorId = ModelSelector.insert(sourceDb, IModel.dictionaryId, "Export", [
+      sourceDb.elements.queryElementIdByCode(PhysicalPartition.createCode(sourceDb, IModel.rootSubjectId, modelNames[1]))!,
+      sourceDb.elements.queryElementIdByCode(PhysicalPartition.createCode(sourceDb, IModel.rootSubjectId, modelNames[3]))!,
+    ]);
+    const exportViewId = OrthographicViewDefinition.insert(
+      sourceDb,
+      IModel.dictionaryId,
+      "Export",
+      exportModelSelectorId,
+      exportCategorySelectorId,
+      displayStyleId,
+      projectExtents,
+      StandardViewIndex.Iso
+    );
+    sourceDb.saveChanges();
+
+    const targetDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "FilterByView-Target.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "FilterByView-Target" } });
+    targetDb.updateProjectExtents(sourceDb.projectExtents);
+
+    const transformer = new FilterByViewTransformer(sourceDb, targetDb, exportViewId);
+    await transformer.processSchemas(new BackendRequestContext());
+    transformer.processAll();
+    transformer.dispose();
+
+    targetDb.saveChanges();
+    targetDb.close();
     sourceDb.close();
   });
 
