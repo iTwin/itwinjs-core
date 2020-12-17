@@ -39,9 +39,11 @@ export class SampleModelessDialog extends React.Component<SampleModelessDialogPr
         onEscape={this._handleCancel}
         onOutsideClick={this._handleCancel}
       >
+        {/*  cSpell:disable */}
         Lorem ipsum dolor sit amet, posse imperdiet ius in, mundi cotidieque ei per.
         Vel scripta ornatus assentior cu. Duo nonumy equidem te, per ad malis deserunt consetetur.
         In per invidunt conceptam. Ea pri aeque corrumpit. Eum ea ipsum perfecto vulputate, an cum oblique ornatus.
+        {/*  cSpell:enable */}
       </ModelessDialog >
     );
   }
