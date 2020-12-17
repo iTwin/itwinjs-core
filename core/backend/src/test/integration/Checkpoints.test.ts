@@ -14,7 +14,7 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { HubUtility } from "./HubUtility";
 
-// FIXME: Disabled because blockcache checkpoints are not in QA yet...
+// FIXME: Disabled because V2 checkpoints are not in QA yet...
 describe.skip("Checkpoints (#integration)", () => {
 
   let requestContext: AuthorizedBackendRequestContext;
@@ -63,11 +63,16 @@ describe.skip("Checkpoints (#integration)", () => {
       daemonProc.kill();
       await onDaemonExit;
     }
-    (BriefcaseManager as any).deleteFolderAndContents(blockcacheDir);
+    // BriefcaseManager.deleteFolderAndContents(blockcacheDir);
   });
 
-  it("should be able to open and read blockcache checkpoint", async () => {
-    const iModel = await SnapshotDb.openCheckpoint(requestContext, testProjectId, testIModelId, testChangeSetId);
+  it("should be able to open and read V2 checkpoint", async () => {
+    const iModel = await SnapshotDb.openCheckpointV2({
+      requestContext,
+      contextId: testProjectId,
+      iModelId: testIModelId,
+      changeSetId: testChangeSetId,
+    });
     assert.equal(iModel.getGuid(), testIModelId);
     assert.equal(iModel.changeSetId, testChangeSetId);
     assert.equal(iModel.contextId, testProjectId);
