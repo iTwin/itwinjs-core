@@ -3,7 +3,7 @@ dependencies:
   '@babel/core': 7.7.4
   '@bentley/icons-generic': 1.0.31
   '@bentley/icons-generic-webfont': 1.0.31
-  '@bentley/imodeljs-native': 2.11.1
+  '@bentley/imodeljs-native': 2.11.2
   '@bentley/react-scripts': 3.4.6_01ca6d2f0cc02126054f079f738f0f7b
   '@microsoft/api-extractor': 7.7.3
   '@microsoft/applicationinsights-web': 2.5.10
@@ -1683,11 +1683,11 @@ packages:
     dev: false
     resolution:
       integrity: sha512-tJGY7VCAuG8ipssBCwm00F5mPYPxgauJLUFpf4UTD4aOxEKC2zP5FwnWov4D73DZL8xH4GyLx1+5Olt9pxlJ3A==
-  /@bentley/imodeljs-native/2.11.1:
+  /@bentley/imodeljs-native/2.11.2:
     dev: false
     requiresBuild: true
     resolution:
-      integrity: sha512-4lo8G9S+e48Uhukv12tPVLkMaatL6FAfX8X+JT/FPsYyRFsvIrBqrsSt4Gr0CYRV8MsXbuD59on3kG8UEIoWng==
+      integrity: sha512-8L1Z6EebidRzbJuH7FROcQ3qHKJ1QYB5Hpn6/v+3GLQ9F8gMp0lFPqO6ht7MYK0G7yMGy82Aok0Mslh5YpK0pw==
   /@bentley/react-scripts/3.4.6_01ca6d2f0cc02126054f079f738f0f7b:
     dependencies:
       '@babel/core': 7.9.0
@@ -4615,7 +4615,7 @@ packages:
   /browserslist/3.2.8:
     dependencies:
       caniuse-lite: 1.0.30001168
-      electron-to-chromium: 1.3.628
+      electron-to-chromium: 1.3.629
     dev: false
     hasBin: true
     resolution:
@@ -4623,7 +4623,7 @@ packages:
   /browserslist/4.10.0:
     dependencies:
       caniuse-lite: 1.0.30001168
-      electron-to-chromium: 1.3.628
+      electron-to-chromium: 1.3.629
       node-releases: 1.1.67
       pkg-up: 3.1.0
     dev: false
@@ -4633,7 +4633,7 @@ packages:
   /browserslist/4.11.1:
     dependencies:
       caniuse-lite: 1.0.30001168
-      electron-to-chromium: 1.3.628
+      electron-to-chromium: 1.3.629
       node-releases: 1.1.67
       pkg-up: 2.0.0
     dev: false
@@ -4644,7 +4644,7 @@ packages:
     dependencies:
       caniuse-lite: 1.0.30001168
       colorette: 1.2.1
-      electron-to-chromium: 1.3.628
+      electron-to-chromium: 1.3.629
       escalade: 3.1.1
       node-releases: 1.1.67
     dev: false
@@ -6641,10 +6641,10 @@ packages:
     dev: false
     resolution:
       integrity: sha1-WQxhFWsK4vTwJVcyoViyZrxWsh0=
-  /electron-to-chromium/1.3.628:
+  /electron-to-chromium/1.3.629:
     dev: false
     resolution:
-      integrity: sha512-fmhO4YGo/kapy+xL9Eq/cZwDASaTHZu3psIFYo4yc+RY1LzbZr84xjKlDImDrlrmWhOxsrDi98nX097U/xK/cQ==
+      integrity: sha512-iSPPJtPvHrMAvYOt+9cdbDmTasPqwnwz4lkP8Dn200gDNUBQOLQ96xUsWXBwXslAo5XxdoXAoQQ3RAy4uao9IQ==
   /electron/10.2.0:
     dependencies:
       '@electron/get': 1.12.2
@@ -19201,7 +19201,7 @@ packages:
   'file:projects/imodeljs-backend.tgz_debug@2.6.9':
     dependencies:
       '@azure/storage-blob': 10.4.0
-      '@bentley/imodeljs-native': 2.11.1
+      '@bentley/imodeljs-native': 2.11.2
       '@openid/appauth': 1.3.0_debug@2.6.9
       '@types/chai': 4.2.14
       '@types/chai-as-promised': 7.1.3
@@ -19249,7 +19249,7 @@ packages:
     peerDependencies:
       debug: '*'
     resolution:
-      integrity: sha512-laTLLBBbQSJgCuOeiu/m2ekmZg9RkBCIjkfWQcZKPXg3OwyXGLHObPVq8Mjw/Rj/TcYVgglZB5mh62oxPB5M9A==
+      integrity: sha512-V/yvqF7guj4ua07v+yv74fCU+JaA04OhdlIQXz0jziu0yEMXGX+Dzmswt8OMypICijAcoDDdQEbfpGibSS2/6Q==
       tarball: 'file:projects/imodeljs-backend.tgz'
     version: 0.0.0
   'file:projects/imodeljs-common.tgz':
@@ -19781,7 +19781,7 @@ packages:
     dev: false
     name: '@rush-temp/presentation-common'
     resolution:
-      integrity: sha512-+RXlNaW435ArQFIHSbIuh+IqBQ1F58jLtDAToxIJj/mzJxJb9FaFxudfrhVaNv4QhP1aWEEdeAH4HNzczLVjCQ==
+      integrity: sha512-63Gk5h0Savsw/SmbuzGwhkr2zsRAxhvvwudd4hhtIfQeO1Y1H0HSia2NdTDG+wL2Y1IfYcY91leIYoUzOfp5Lw==
       tarball: 'file:projects/presentation-common.tgz'
     version: 0.0.0
   'file:projects/presentation-components.tgz_jsdom@11.12.0':
@@ -20661,7 +20661,7 @@ specifiers:
   '@babel/core': 7.7.4
   '@bentley/icons-generic': ^1.0.15
   '@bentley/icons-generic-webfont': ^1.0.15
-  '@bentley/imodeljs-native': 2.11.1
+  '@bentley/imodeljs-native': 2.11.2
   '@bentley/react-scripts': 3.4.6
   '@microsoft/api-extractor': 7.7.3
   '@microsoft/applicationinsights-web': ^2.5.5
