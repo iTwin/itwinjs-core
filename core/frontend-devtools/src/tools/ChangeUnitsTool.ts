@@ -7,8 +7,10 @@
  * @module Tools
  */
 
-import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
+import { IModelApp, Tool, UnitSystemKey } from "@bentley/imodeljs-frontend";
 import { parseToggle } from "./parseToggle";
+
+// CSpell: ignore fmtr
 
 /** Controls whether quantities are formatted using imperial or metric units.
  * Such formatting is used in many places; one example is the output of the MeasureTool.
@@ -19,12 +21,21 @@ export class ChangeUnitsTool extends Tool {
   public static get minArgs() { return 0; }
   public static get maxArgs() { return 1; }
 
-  public run(useMetric?: boolean): boolean {
+  // support boolean for backwards compatibility - string allows options to four unit systems
+  public run(useMetric?: boolean | string): boolean {
     const fmtr = IModelApp.quantityFormatter;
-    const useImperial = undefined !== useMetric ? !useMetric : !fmtr.useImperialFormats;
-    if (useImperial !== fmtr.useImperialFormats) {
-      fmtr.useImperialFormats = useImperial;
-      IModelApp.toolAdmin.startDefaultTool();
+
+    let unitSystem: UnitSystemKey = "imperial";
+    if (undefined !== useMetric) {
+      if (typeof useMetric === "boolean") {
+        unitSystem = useMetric ? "metric" : "imperial";
+      } else {
+        unitSystem = fmtr.getUnitSystemFromString(useMetric, "imperial");
+      }
+    }
+
+    if (unitSystem !== fmtr.activeUnitSystem) {
+      fmtr.setActiveUnitSystem(unitSystem);// eslint-disable-line @typescript-eslint/no-floating-promises
     }
 
     return true;

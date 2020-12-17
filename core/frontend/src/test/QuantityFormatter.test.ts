@@ -402,7 +402,7 @@ describe("Custom FormatterSpecs", async () => {
   });
 
   it("QuantityFormatter should register properly", async () => {
-    assert.isTrue(quantityFormatter.useImperialFormats);
+    assert.isTrue(quantityFormatter.useImperialFormats); // eslint-disable-line deprecation/deprecation
     assert.isTrue(quantityFormatter.activeUnitSystem === "imperial");
 
     const customFormatterParserSpecsProvider: FormatterParserSpecsProvider = {

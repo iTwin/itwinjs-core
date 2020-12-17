@@ -265,7 +265,7 @@ export class SampleAppIModelApp {
     SampleAppIModelApp._selectionSetListener.initialize();
 
     // default to showing imperial formatted units
-    IModelApp.quantityFormatter.useImperialFormats = true;
+    await IModelApp.quantityFormatter.setActiveUnitSystem("imperial");
     Presentation.presentation.activeUnitSystem = PresentationUnitSystem.BritishImperial;
 
     await FrontendDevTools.initialize();

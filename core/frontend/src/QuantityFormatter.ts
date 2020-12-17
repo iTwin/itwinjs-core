@@ -22,7 +22,7 @@ export enum QuantityType { Length = 1, Angle = 2, Area = 3, Volume = 4, LatLong 
  */
 export type QuantityTypeKey = string;
 
-// cSpell:ignore FORMATPROPS FORMATKEY
+// cSpell:ignore FORMATPROPS FORMATKEY ussurvey uscustomary
 
 // ========================================================================================================================================
 // Default Data
@@ -521,6 +521,9 @@ export class QuantityFormatter implements UnitsProvider {
   /** Called after the active unit system is changed.  */
   public readonly onActiveUnitSystemChanged = new BeUiEvent<{ useImperial?: boolean, system?: string }>();
 
+  /** Called after the active unit system is changed.  */
+  public readonly onQuantityFormatsChanged = new BeUiEvent<{ quantityType?: string }>();
+
   /**
    * constructor
    * @param showMetricOrUnitSystem - Pass in `true` to show Metric formatted quantity values. Defaults to Imperial. To explicitly
@@ -769,16 +772,15 @@ export class QuantityFormatter implements UnitsProvider {
         }
       }
     }
-
-    // trigger a message to let callers know the cached specs are loaded.
-    this.onActiveUnitSystemChanged.emit({ useImperial: this.activeUnitSystem === "imperial", system: this.activeUnitSystem });
   }
 
   /** Method called to clear override and restore defaults formatter and parser spec */
-  public async clearOverrideFormatsByQuantityTypeKey(type: QuantityTypeKey) {
+  private async clearOverrideFormatsByQuantityTypeKey(type: QuantityTypeKey) {
     if (this.getOverrideFormatPropsByQuantityType(type, this.activeUnitSystem)) {
       this._overrideFormatPropsByQuantityType.delete(type);
       await this.loadDefaultFormatAndParserSpecForQuantity(type);
+      // trigger a message to let callers know the format has changed.
+      this.onQuantityFormatsChanged.emit({ quantityType: type });
     }
   }
 
@@ -786,10 +788,13 @@ export class QuantityFormatter implements UnitsProvider {
     await this.clearOverrideFormatsByQuantityTypeKey(this.getQuantityTypeKey(type));
   }
 
-  public async setOverrideFormatsByQuantityTypeKey(typeKey: QuantityTypeKey, overrideEntry: OverrideFormatEntry) {
+  private async setOverrideFormatsByQuantityTypeKey(typeKey: QuantityTypeKey, overrideEntry: OverrideFormatEntry) {
     this._overrideFormatPropsByQuantityType.set(typeKey, overrideEntry);
-    if (this.getOverrideFormatPropsByQuantityType(typeKey, this.activeUnitSystem)) {
-      await this.loadDefaultFormatAndParserSpecForQuantity(typeKey);
+    const formatProps = this.getOverrideFormatPropsByQuantityType(typeKey, this.activeUnitSystem);
+    if (formatProps) {
+      await this.loadFormatAndParserSpec(typeKey, formatProps);
+      // trigger a message to let callers know the format has changed.
+      this.onQuantityFormatsChanged.emit({ quantityType: typeKey });
     }
   }
 
@@ -914,6 +919,27 @@ export class QuantityFormatter implements UnitsProvider {
    */
   public async loadFormatAndParsingMaps(useImperial: boolean, _restartActiveTool?: boolean): Promise<void> {
     await this.loadFormatAndParsingMapsForSystem(useImperial ? "imperial" : "metric");
+  }
+
+  public getUnitSystemFromString(inputSystem: string, fallback?: UnitSystemKey) {
+    switch (inputSystem.toLowerCase()) {
+      case "metric":
+      case "si":
+        return "metric";
+      case "imperial":
+        return "imperial";
+      case "uscustomary":
+      case "us":
+        return "usCustomary";
+      case "ussurvey":
+      case "survey":
+        return "usSurvey";
+      default:
+        if (fallback)
+          return fallback;
+        else
+          return "imperial";
+    }
   }
 
   /** Register a FormatterSpec provider. */
