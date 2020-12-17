@@ -8,15 +8,19 @@ import { TestConfig } from "../TestConfig";
 import * as utils from "./TestUtils";
 
 before(async () => {
-  const accessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
-  const requestContext = new AuthorizedClientRequestContext(accessToken);
+  const requestContext = await getRequestContext();
   const contextId = await utils.getProjectId(requestContext);
   await utils.createIModel(requestContext, utils.sharedimodelName, contextId);
 });
 
 after(async () => {
-  const accessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
-  const requestContext = new AuthorizedClientRequestContext(accessToken);
+  const requestContext = await getRequestContext();
   const contextId = await utils.getProjectId(requestContext);
   await utils.deleteIModelByName(requestContext, contextId, utils.sharedimodelName);
 })
+
+async function getRequestContext(): Promise<AuthorizedClientRequestContext> {
+  const accessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
+  const requestContext = new AuthorizedClientRequestContext(accessToken);
+  return requestContext;
+}
