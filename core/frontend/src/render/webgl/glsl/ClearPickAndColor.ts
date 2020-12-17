@@ -6,6 +6,7 @@
  * @module WebGL
  */
 
+import { WebGLContext } from "@bentley/webgl-compatibility";
 import { FragmentShaderComponent, VariableType } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
 import { System } from "../System";
@@ -20,7 +21,7 @@ const assignFragData = `
 `;
 
 /** @internal */
-export function createClearPickAndColorProgram(context: WebGLRenderingContext | WebGL2RenderingContext): ShaderProgram {
+export function createClearPickAndColorProgram(context: WebGLContext): ShaderProgram {
   const builder = createViewportQuadBuilder(false);
   const frag = builder.frag;
   frag.addUniform("u_bgColor", VariableType.Vec4, (prog) => {

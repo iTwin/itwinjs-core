@@ -14,9 +14,10 @@ import { FavoritePropertiesScope, Presentation } from "@bentley/presentation-fro
 import { PropertyRecord } from "@bentley/ui-abstract";
 import {
   ActionButtonRendererProps, CompositeFilterType, CompositePropertyDataFilterer, DisplayValuePropertyDataFilterer, FilteringInput,
-  FilteringInputStatus, FilteringPropertyDataProvider, LabelPropertyDataFilterer, PropertyCategory, PropertyData, PropertyGridContextMenuArgs,
-  PropertyRecordMatchInfo, useAsyncValue, useDebouncedAsyncValue, VirtualizedPropertyGridWithDataProvider,
+  FilteringInputStatus, FilteringPropertyDataProvider, LabelPropertyDataFilterer, PropertyCategory, PropertyCategoryLabelFilterer, PropertyData,
+  PropertyGridContextMenuArgs, useAsyncValue, useDebouncedAsyncValue, VirtualizedPropertyGridWithDataProvider,
 } from "@bentley/ui-components";
+import { HighlightInfo } from "@bentley/ui-components/lib/ui-components/common/HighlightingComponentProps";
 import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Orientation, Toggle, useDisposable } from "@bentley/ui-core";
 
 const FAVORITES_SCOPE = FavoritePropertiesScope.IModel;
@@ -32,7 +33,7 @@ export function PropertiesWidget(props: Props) {
 
   const [activeMatchIndex, setActiveMatchIndex] = React.useState(0);
   const [filteringProvDataChanged, setFilteringProvDataChanged] = React.useState({});
-  const [activeMatch, setActiveMatch] = React.useState<PropertyRecordMatchInfo>();
+  const [activeHighlight, setActiveHighlight] = React.useState<HighlightInfo>();
   const { isOverLimit } = usePropertyDataProviderWithUnifiedSelection({ dataProvider });
 
   const renderFavoritesActionButton = React.useCallback((buttonProps: ActionButtonRendererProps) => (<FavoritePropertyActionButton {...buttonProps} dataProvider={dataProvider} />), [dataProvider]);
@@ -60,9 +61,11 @@ export function PropertiesWidget(props: Props) {
   const filteringDataProvider = useDisposable(React.useCallback(() => {
     const valueFilterer = new DisplayValuePropertyDataFilterer(filterText);
     const labelFilterer = new LabelPropertyDataFilterer(filterText);
+    const categoryFilterer = new PropertyCategoryLabelFilterer(filterText);
     const favoriteFilterer = new FavoritePropertiesDataFilterer({ source: dataProvider, favoritesScope: FAVORITES_SCOPE, isActive: isFavoritesFilterActive });
 
-    const textFilterer = new CompositePropertyDataFilterer(labelFilterer, CompositeFilterType.Or, valueFilterer);
+    const recordFilterer = new CompositePropertyDataFilterer(labelFilterer, CompositeFilterType.Or, valueFilterer);
+    const textFilterer = new CompositePropertyDataFilterer(recordFilterer, CompositeFilterType.Or, categoryFilterer);
     const favoriteTextFilterer = new CompositePropertyDataFilterer(textFilterer, CompositeFilterType.And, favoriteFilterer);
     const filteringDataProv = new FilteringPropertyDataProvider(dataProvider, favoriteTextFilterer);
     filteringDataProv.onDataChanged.addListener(() => {
@@ -83,12 +86,11 @@ export function PropertiesWidget(props: Props) {
       onSelectedChanged: (index: React.SetStateAction<number>) => setActiveMatchIndex(index),
       resultCount: filteringResult.matchesCount,
     } : undefined;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filteringResult, filteringProvDataChanged]);
+  }, [filteringResult]);
 
   React.useEffect(() => {
     if (filteringResult?.getMatchByIndex)
-      setActiveMatch(filteringResult.getMatchByIndex(activeMatchIndex));
+      setActiveHighlight(filteringResult.getMatchByIndex(activeMatchIndex));
   }, [activeMatchIndex, filteringDataProvider, filteringResult]);
 
   const setFilter = React.useCallback((filter) => {
@@ -108,8 +110,8 @@ export function PropertiesWidget(props: Props) {
       actionButtonRenderers={[renderFavoritesActionButton, renderCopyActionButton]}
       orientation={Orientation.Horizontal}
       horizontalOrientationMinWidth={500}
-      highlightedRecordProps={filterText && filterText.length !== 0 ?
-        { searchText: filterText, activeMatch } :
+      highlight={filterText && filterText.length !== 0 ?
+        { highlightedText: filterText, activeHighlight, filteredTypes: filteringResult?.filteredTypes }:
         undefined
       }
     />);

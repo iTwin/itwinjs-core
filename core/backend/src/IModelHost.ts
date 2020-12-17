@@ -444,7 +444,7 @@ export class IModelHost {
 
     this.setupCacheDirs(configuration);
     this._imodelClient = configuration.imodelClient;
-    BriefcaseManager.initialize(this._briefcaseCacheDir);
+    BriefcaseManager.initialize(this._briefcaseCacheDir, path.join(this._cacheDir, "bc", "v4_0"));
 
     IModelHost.setupRpcRequestContext();
 
@@ -518,11 +518,11 @@ export class IModelHost {
   private static setupCacheDirs(configuration: IModelHostConfiguration) {
     this._cacheDir = configuration.cacheDir ? path.normalize(configuration.cacheDir) : NativeLibrary.defaultCacheDir;
 
-    // Setup the briefcaseCacheDir, defaulting to the the legacy/deprecated value
+    // Set up the briefcaseCacheDir, defaulting to the the legacy/deprecated value
     if (configuration.briefcaseCacheDir) // eslint-disable-line deprecation/deprecation
       this._briefcaseCacheDir = path.normalize(configuration.briefcaseCacheDir); // eslint-disable-line deprecation/deprecation
     else
-      this._briefcaseCacheDir = path.join(this._cacheDir, "bc");
+      this._briefcaseCacheDir = path.join(this._cacheDir, "imodels");
   }
 
   /** This method must be called when an iModel.js services is shut down. Raises [[onBeforeShutdown]] */
