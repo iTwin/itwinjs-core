@@ -9,7 +9,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { NumberInput } from "../../../ui-core/inputs/numberinput/NumberInput";
 
-// cSpell:ignore decrementor
+// cSpell:ignore decrementor numberinput
 
 function parseDollar(stringValue: string) {
   const noDollarSign = stringValue.replace(/^\$/, "");
@@ -248,7 +248,8 @@ describe("<NumberInput - React Testing Library />", () => {
       spyMethod();
       value = v;
     };
-    const wrapper = render(<NumberInput precision={2} value={value} step={.25} onChange={handleChange} />);
+    const spyKeyDown = sinon.spy();
+    const wrapper = render(<NumberInput precision={2} value={value} step={.25} onChange={handleChange} onKeyDown={spyKeyDown} />);
     const input = wrapper.container.querySelector("input");
     expect(input).not.to.be.null;
     fireEvent.keyDown(input!, { key: SpecialKey.ArrowUp });
@@ -259,6 +260,7 @@ describe("<NumberInput - React Testing Library />", () => {
     fireEvent.keyDown(input!, { key: SpecialKey.ArrowDown });
     spyMethod.calledOnce.should.true;
     expect(value).to.eq(1.23);
+    spyKeyDown.calledTwice.should.true;
   });
 
   it("should update value on enter", () => {
