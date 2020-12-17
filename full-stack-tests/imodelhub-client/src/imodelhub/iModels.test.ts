@@ -857,7 +857,7 @@ describe("iModelHub iModelsHandler", () => {
     const oldimodelName = imodel.name;
 
     const newName = `Д - ${Guid.createValue()}`;
-    imodel.name = newName
+    imodel.name = newName;
     mockUpdateiModel(projectId, imodel);
     imodel = await iModelClient.iModels.update(requestContext, projectId, imodel);
 
