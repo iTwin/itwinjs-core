@@ -70,6 +70,9 @@ describe("iModelHub VersionHandler", () => {
   let requestContext: AuthorizedClientRequestContext;
   let backupTimeout: RequestTimeoutOptions;
 
+  const imodelName2 = "imodeljs-clients Versions test 2";
+  const baselineiModelName = "imodeljs-clients baseline versions iModel";
+
   before(async function () {
     backupTimeout = RequestGlobalOptions.timeout;
     RequestGlobalOptions.timeout = {
@@ -111,6 +114,9 @@ describe("iModelHub VersionHandler", () => {
       iModelClient?.requestOptions.setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
     }
 
+    await utils.deleteIModelByName(requestContext, contextId, imodelName2);
+    await utils.deleteIModelByName(requestContext, contextId, baselineiModelName);
+
     if (TestConfig.enableIModelBank) {
       await utils.deleteIModelByName(requestContext, contextId, utils.sharedimodelName);
     }
@@ -141,8 +147,6 @@ describe("iModelHub VersionHandler", () => {
   });
 
   it("should create and get baseline named version", async () => {
-    const baselineiModelName = "imodeljs-clients baseline versions iModel";
-
     // Cleanup baseline version's iModels if they left undeleted
     await utils.deleteIModelByName(requestContext, contextId, baselineiModelName);
 
@@ -171,8 +175,6 @@ describe("iModelHub VersionHandler", () => {
     chai.assert(existingBaselineVersion);
     chai.expect(existingBaselineVersion.length).to.be.equal(1);
     chai.expect(existingBaselineVersion[0].changeSetId).to.be.empty;
-
-    await utils.deleteIModelByName(requestContext, contextId, baselineiModelName);
   });
 
   it("should get named versions (#iModelBank)", async () => {
@@ -205,7 +207,6 @@ describe("iModelHub VersionHandler", () => {
   });
 
   it("should get named versions with thumbnail id", async () => {
-    const imodelName2 = "imodeljs-clients Versions test 2";
     const firstVersionName = "Version 1";
 
     await utils.createIModel(requestContext, imodelName2, contextId, true, false, true);
@@ -246,8 +247,6 @@ describe("iModelHub VersionHandler", () => {
     chai.expect(versions[0].largeThumbnailId!.toString()).to.be.equal(largeThumbnail.id!.toString());
 
     chai.expect(smallThumbnail.id!.toString()).to.be.not.equal(largeThumbnail.id!.toString());
-
-    await utils.deleteIModelByName(requestContext, contextId, imodelName2);
   });
 
   it("should update named version (#iModelBank)", async () => {
