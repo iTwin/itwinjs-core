@@ -29,6 +29,18 @@ export enum CheckpointV2State {
   Failed = 2
 }
 
+/** [[CheckpointV2]] generation error id.
+ * @alpha
+ */
+export enum CheckpointV2ErrorId {
+  UnknownError = 0,
+  FileDownloadError = 1,
+  FileUploadError = 2,
+  FileOpenError = 3,
+  ApplyChangeSetError = 4,
+  TimeOut = 5
+}
+
 /**
  * Checkpoint is a copy of the master file, that is intended to be read-only and reduces amount of merging required to get an iModel to a specific previous state.
  * [[CheckpointV2]] is stored as a set of binary blocks, while [[Checkpoint]] is a single binary file.
@@ -59,6 +71,30 @@ export class CheckpointV2 extends WsgInstance {
   /** Container AccessKey database name of the storage that can be used to download the checkpoint blocks from iModelHub. See [[CheckpointV2Query.selectContainerAccessKey]]. */
   @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[HasContainer].relatedInstance[ContainerAccessKey].properties.DbName")
   public containerAccessKeyDbName?: string;
+
+  /** Error type that occurred while generating [[CheckpointV2]]. See [[CheckpointV2Query.selectCheckpointV2FailureInfo]] to query failure info. */
+  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[HasCheckpointV2FailureInfo](direction:forward).relatedInstance[CheckpointV2FailureInfo].properties.ErrorId")
+  public failureInfoErrorId?: CheckpointV2ErrorId;
+
+  /** Id of the [[ChangeSet]] which failed to apply when [[CheckpointV2]] was generated. See [[CheckpointV2Query.selectCheckpointV2FailureInfo]] to query failure info. */
+  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[HasCheckpointV2FailureInfo](direction:forward).relatedInstance[CheckpointV2FailureInfo].properties.FailedChangeSetId")
+  public failureInfoFailedChangeSetId?: string;
+
+  /** [[CheckpointV2]] generation job start date. This property can not be set by the user. See [[CheckpointV2Query.selectCheckpointV2FailureInfo]] to query failure info. */
+  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[HasCheckpointV2FailureInfo](direction:forward).relatedInstance[CheckpointV2FailureInfo].properties.StartDate")
+  public failureInfoStartDate?: string;
+
+  /** [[CheckpointV2]] generation job failure date. This property can not be set by the user. See [[CheckpointV2Query.selectCheckpointV2FailureInfo]] to query failure info. */
+  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[HasCheckpointV2FailureInfo](direction:forward).relatedInstance[CheckpointV2FailureInfo].properties.FailureDate")
+  public failureInfoFailureDate?: string;
+
+  /** [[CheckpointV2]] generation job id. It should be unique for every job. See [[CheckpointV2Query.selectCheckpointV2FailureInfo]] to query failure info. */
+  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[HasCheckpointV2FailureInfo](direction:forward).relatedInstance[CheckpointV2FailureInfo].properties.JobId")
+  public failureInfoJobId?: string;
+
+  /** [[CheckpointV2]] generation job duration in milliseconds. See [[CheckpointV2Query.selectCheckpointV2FailureInfo]] to query failure info. */
+  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[HasCheckpointV2FailureInfo](direction:forward).relatedInstance[CheckpointV2FailureInfo].properties.JobRunDurationMS")
+  public failureInfoJobRunDurationMS?: string;
 }
 
 /**
@@ -97,6 +133,17 @@ export class CheckpointV2Query extends WsgQuery {
    */
   public selectContainerAccessKey(): this {
     addSelectContainerAccessKey(this._query);
+    return this;
+  }
+
+  /** Query will additionally select failure info for failed [[CheckpointV2]].
+   * @returns This query.
+   */
+  public selectFailureInfo(): this {
+    if (!this._query.$select)
+      this._query.$select = "*";
+
+    this._query.$select += ",HasCheckpointV2FailureInfo-forward-CheckpointV2FailureInfo.*";
     return this;
   }
 }

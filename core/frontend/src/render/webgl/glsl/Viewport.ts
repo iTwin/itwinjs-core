@@ -29,7 +29,8 @@ export function addViewportTransformation(shader: ShaderBuilder) {
 }
 
 const modelToWindowCoordinates = `
-vec4 modelToWindowCoordinates(vec4 position, vec4 next) {
+vec4 modelToWindowCoordinates(vec4 position, vec4 next, out float clipDist) {
+  clipDist = 0.0;
   if (kRenderPass_ViewOverlay == u_renderPass || kRenderPass_Background == u_renderPass) {
     vec4 q = MAT_MVP * position;
     q.xyz /= q.w;
@@ -46,10 +47,10 @@ vec4 modelToWindowCoordinates(vec4 position, vec4 next) {
     if (n.z > s_maxZ)
       return vec4(0.0, 0.0,  1.0, 0.0);   // Entire segment behind eye.
 
-    float t = (s_maxZ - q.z) / (n.z - q.z);
+    clipDist = (s_maxZ - q.z) / (n.z - q.z);
 
-    q.x += t * (n.x - q.x);
-    q.y += t * (n.y - q.y);
+    q.x += clipDist * (n.x - q.x);
+    q.y += clipDist * (n.y - q.y);
     q.z = s_maxZ;                       // q.z + (s_maxZ - q.z) * (s_maxZ - q.z) / n.z - q.z
   }
 

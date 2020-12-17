@@ -37,6 +37,7 @@ import { CategorySelectorProps } from '@bentley/imodeljs-common';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { ClipPlane } from '@bentley/geometry-core';
 import { ClipShape } from '@bentley/geometry-core';
+import { ClipStyle } from '@bentley/imodeljs-common';
 import { ClipVector } from '@bentley/geometry-core';
 import { Code } from '@bentley/imodeljs-common';
 import { CodeProps } from '@bentley/imodeljs-common';
@@ -234,6 +235,7 @@ import { SpatialClassificationProps } from '@bentley/imodeljs-common';
 import { SpatialViewDefinitionProps } from '@bentley/imodeljs-common';
 import { StopWatch } from '@bentley/bentleyjs-core';
 import { StorageValue } from '@bentley/imodeljs-common';
+import { StringifiedClipVector } from '@bentley/geometry-core';
 import { StrokeOptions } from '@bentley/geometry-core';
 import { SubCategoryAppearance } from '@bentley/imodeljs-common';
 import { SubCategoryOverride } from '@bentley/imodeljs-common';
@@ -270,6 +272,7 @@ import { ViewFlagOverrides } from '@bentley/imodeljs-common';
 import { ViewFlags } from '@bentley/imodeljs-common';
 import { ViewQueryParams } from '@bentley/imodeljs-common';
 import { ViewStateProps } from '@bentley/imodeljs-common';
+import { WebGLContext } from '@bentley/webgl-compatibility';
 import { WebGLExtensionName } from '@bentley/webgl-compatibility';
 import { WebGLRenderCompatibilityInfo } from '@bentley/webgl-compatibility';
 import { XAndY } from '@bentley/geometry-core';
@@ -1007,9 +1010,6 @@ export enum ActivityMessageEndReason {
     // (undocumented)
     Completed = 0
 }
-
-// @internal
-export function addAnimatedTileTreeReferences(refs: TileTreeReference[], view: ViewState, model: GeometricModelState, script: RenderScheduleState.Script): void;
 
 // @internal (undocumented)
 export function addRangeGraphic(builder: GraphicBuilder, range: Range3d, is2d: boolean): void;
@@ -8299,6 +8299,17 @@ export class SpatialModelState extends GeometricModel3dState {
     static get className(): string;
 }
 
+// @internal
+export interface SpatialTileTreeReferences extends Iterable<TileTreeReference> {
+    readonly [Symbol.iterator]: () => Iterator<TileTreeReference>;
+    readonly update: () => void;
+}
+
+// @internal
+export namespace SpatialTileTreeReferences {
+    export function create(view: SpatialViewState): SpatialTileTreeReferences;
+}
+
 // @public
 export class SpatialViewState extends ViewState3d {
     constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, arg3: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState);
@@ -9199,9 +9210,15 @@ export interface TiledGraphicsProvider {
 // @beta
 export interface TileDrawArgParams {
     // (undocumented)
-    clipVolume: RenderClipVolume | undefined;
+    appearanceProvider?: FeatureAppearanceProvider;
+    // (undocumented)
+    clipVolume?: RenderClipVolume;
     // (undocumented)
     context: SceneContext;
+    // (undocumented)
+    hiddenLineSettings?: HiddenLine.Settings;
+    // (undocumented)
+    intersectionClip?: ClipVector;
     // (undocumented)
     location: Transform;
     // (undocumented)
@@ -9219,8 +9236,9 @@ export interface TileDrawArgParams {
 // @beta
 export class TileDrawArgs {
     constructor(params: TileDrawArgParams);
+    addAppearanceProvider(provider: FeatureAppearanceProvider): void;
     // @internal (undocumented)
-    appearanceProvider?: FeatureAppearanceProvider;
+    get appearanceProvider(): FeatureAppearanceProvider | undefined;
     // @internal (undocumented)
     get clip(): ClipVector | undefined;
     clipVolume: RenderClipVolume | undefined;
@@ -9244,7 +9262,9 @@ export class TileDrawArgs {
     // @internal (undocumented)
     getTileRadius(tile: Tile): number;
     readonly graphics: GraphicBranch;
+    hiddenLineSettings?: HiddenLine.Settings;
     insertMissing(tile: Tile): void;
+    intersectionClip?: ClipVector;
     readonly location: Transform;
     // @internal (undocumented)
     markChildrenLoading(): void;
@@ -9469,7 +9489,9 @@ export abstract class TileTreeReference {
     decorate(_context: DecorateContext): void;
     discloseTileTrees(trees: TileTreeSet): void;
     draw(args: TileDrawArgs): void;
+    protected getAppearanceProvider(_tree: TileTree): FeatureAppearanceProvider | undefined;
     protected getClipVolume(tree: TileTree): RenderClipVolume | undefined;
+    protected getHiddenLineSettings(_tree: TileTree): HiddenLine.Settings | undefined;
     getLocation(): Transform | undefined;
     protected getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides | undefined;
     // @internal (undocumented)
@@ -11000,6 +11022,9 @@ export abstract class Viewport implements IDisposable {
     changeViewedModels(modelIds: Id64Arg): boolean;
     clearAlwaysDrawn(): void;
     clearNeverDrawn(): void;
+    // @beta
+    get clipStyle(): ClipStyle;
+    set clipStyle(style: ClipStyle);
     // @internal (undocumented)
     collectStatistics(stats: RenderMemory.Statistics): void;
     // @internal (undocumented)
