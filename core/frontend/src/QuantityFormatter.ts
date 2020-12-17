@@ -470,7 +470,7 @@ interface UnitDefinition {
 }
 
 /** Override format entries must define formats for imperial and metric.
- * @beta
+ * @alpha
  */
 export interface OverrideFormatEntry {
   imperial?: FormatProps;

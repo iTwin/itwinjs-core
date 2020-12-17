@@ -172,6 +172,8 @@ New
 
 - Changed `highlightProps?: HighlightedRecordProps` property to `highlight?: HighlightingComponentProps` on [PropertyRendererProps]($ui-components) interface. To react to this change, simply rename `highlightProps` -> `highlight`.
 
+- The methods fromJson and toJson from [Format]($quantity) have been renamed to fromJSON and toJSON respectively.
+
 ## Updated version of Electron
 
 Updated version of electron used from 8.2.1 to 10.1.3. Note that Electron is specified as a peer dependency in the iModel.js stack - so it's recommended but not mandatory that applications migrate to this electron version.
@@ -213,4 +215,62 @@ ECExpressions now support formatted property values. `GetFormattedValue` functio
 
 ```ts
 GetFormattedValue(this.Length, "Metric") = "10.0 m"
+```
+
+## QuantityFormatter updates
+
+The [QuantityFormatter]($frontend) now support four unit systems: Metric, Imperial, US Survey, and US Customary. This allows it to align with the four unit systems supported in the `Presentation` package. The method `setActiveUnitSystem` and property `activeUnitSystem` can be used to set and query the active unit system. See [UnitSystemKey]($frontend).
+
+```ts
+export type UnitSystemKey = "metric" | "imperial" | "usCustomary" | "usSurvey";
+```
+
+There are also new methods to set and
+clear override formats for a particular [QuantityType]($frontend). The example below show how to set an override format for QuantityType.Length used be the measure tool.
+
+```ts
+    const overrideLengthFormats = {
+      metric: {
+        composite: {
+          includeZero: true,
+          spacer: " ",
+          units: [{ label: "cm", name: "Units.CM" }],
+        },
+        formatTraits: ["keepSingleZero", "showUnitLabel"],
+        precision: 4,
+        type: "Decimal",
+      },
+      imperial: {
+        composite: {
+          includeZero: true,
+          spacer: " ",
+          units: [{ label: "in", name: "Units.IN" }],
+        },
+        formatTraits: ["keepSingleZero", "showUnitLabel"],
+        precision: 4,
+        type: "Decimal",
+      },
+      usCustomary: {
+        composite: {
+          includeZero: true,
+          spacer: " ",
+          units: [{ label: "in", name: "Units.IN" }],
+        },
+        formatTraits: ["keepSingleZero", "showUnitLabel"],
+        precision: 4,
+        type: "Decimal",
+      },
+      usSurvey: {
+        composite: {
+          includeZero: true,
+          spacer: " ",
+          units: [{ label: "in", name: "Units.US_SURVEY_IN" }],
+        },
+        formatTraits: ["keepSingleZero", "showUnitLabel"],
+        precision: 4,
+        type: "Decimal",
+      },
+    };
+
+await IModelApp.quantityFormatter.setOverrideFormats(QuantityType.Length, overrideLengthFormats);
 ```
