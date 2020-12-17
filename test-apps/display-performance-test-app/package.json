@@ -18,7 +18,7 @@
     "build:frontend": "cross-env EXTEND_ESLINT=true react-scripts build",
     "clean": "rimraf lib build .rush/temp/package-deps*.json",
     "docs": "",
-    "lint": "eslint -f visualstudio --max-warnings 0 --config package.json --no-eslintrc ./src/**/*.ts 1>&2",
+    "lint": "eslint -f visualstudio --config package.json --no-eslintrc ./src/**/*.ts 1>&2",
     "mobile": "tsc 1>&2 && webpack --config mobile.backend.webpack.config.js 1>&2 && webpack --config mobile.frontend.webpack.config.js 1>&2 && cpx \"public/**/*\" ./lib/mobile/public && cpx \"assets/**/*\" ./lib/mobile/assets ",
     "start": "npm run start:electron",
     "start:webserver": "cross-env BROWSER=none EXTEND_ESLINT=true react-scripts start",
