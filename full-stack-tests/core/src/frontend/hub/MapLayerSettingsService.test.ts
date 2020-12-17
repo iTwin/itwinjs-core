@@ -16,7 +16,7 @@ const testIModelName = "ReadOnlyTest";
 
 chai.should();
 
-describe("MapLayerSettingsService (#integration)", () => {
+describe.skip("MapLayerSettingsService (#integration)", () => {
   let projectId: GuidString;
   let iModelId: GuidString;
   let requestContext: AuthorizedClientRequestContext;
