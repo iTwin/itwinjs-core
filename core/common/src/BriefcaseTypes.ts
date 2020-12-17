@@ -6,7 +6,9 @@
  * @module iModels
  */
 
-import { GuidString, OpenMode } from "@bentley/bentleyjs-core";
+import { GuidString } from "@bentley/bentleyjs-core";
+import { IModelEncryptionProps, OpenDbKey } from "./IModel";
+import { IModelVersionProps } from "./IModelVersion";
 
 /**
  * Status of downloading a briefcase
@@ -15,6 +17,7 @@ import { GuidString, OpenMode } from "@bentley/bentleyjs-core";
 export enum DownloadBriefcaseStatus {
   NotStarted,
   Initializing,
+  QueryCheckpointService,
   DownloadingCheckpoint,
   DownloadingChangeSets,
   ApplyingChangeSets,
@@ -28,69 +31,95 @@ export enum DownloadBriefcaseStatus {
 export enum SyncMode { FixedVersion = 1, PullAndPush = 2, PullOnly = 3 }
 
 /**
- * Key to locate a briefcase
- * @internal
- */
-export type BriefcaseKey = string;
-
-/**
- * Options to download the briefcase
- * @beta
- */
-export interface DownloadBriefcaseOptions {
-  /** This setting defines the operations allowed when synchronizing changes between the briefcase and iModelHub */
-  syncMode: SyncMode;
-}
-
-/**
- * Options to open the briefcase
+ * Options to open a previously downloaded briefcase
  * @beta
  */
 export interface OpenBriefcaseOptions {
-  /** Limit the opened briefcase for Readonly operations by establishing a Readonly connection with the Db */
+  /** open briefcase Readonly */
   openAsReadOnly?: boolean;
 }
 
 /**
- * Properties required to request download of a briefcase
- * @internal
+ * Properties that specify a briefcase within the local briefcase cache.
+ * @see BriefcaseManager.getFileName
+ * @beta
  */
-export interface RequestBriefcaseProps {
-  /** Context (Project or Asset) that the iModel belongs to */
-  readonly contextId: GuidString;
-
+export interface BriefcaseProps {
   /** Id of the iModel */
-  readonly iModelId: GuidString;
+  iModelId: GuidString;
 
-  /** Id of the change set */
-  readonly changeSetId: GuidString;
+  /** BriefcaseId of the briefcase */
+  briefcaseId: number;
 }
 
-/**
- * Properties of a briefcase
- * @internal
+/** Properties for opening a local briefcase file via [BriefcaseDb.open]($backend)
+ * @beta
  */
-export interface BriefcaseProps extends RequestBriefcaseProps, DownloadBriefcaseOptions {
-  /** Key to locate the briefcase in the disk cache */
-  readonly key: BriefcaseKey;
+export interface OpenBriefcaseProps extends IModelEncryptionProps, OpenDbKey {
+  /** the full path to the briefcase file  */
+  fileName: string;
+  /** If true, open the briefcase readonly */
+  readonly?: boolean;
+  /** parameter to control upgrading the briefcase before opening. */
+  upgrade?: UpgradeOptions;
+}
 
-  /** Mode used to open the briefcase */
-  openMode: OpenMode;
+/** Properties of a local briefcase file, returned by [BriefcaseManager.getCachedBriefcases]($backend)
+ * @beta
+ */
+export interface LocalBriefcaseProps {
+  /** full path of local file to store briefcase. If undefined, it will be inferred via `BriefcaseManager.getFilename(props)` */
+  fileName: string;
 
-  /** Status of downloading a briefcase */
-  downloadStatus: DownloadBriefcaseStatus;
+  /** Context (Project or Asset) that the iModel belongs to */
+  contextId: GuidString;
 
-  /** File size of the briefcase on disk - only set for briefcases that are completely downloaded */
-  fileSize?: number;
+  /** The iModelId for the briefcase. */
+  iModelId: GuidString;
+
+  /** The briefcaseId of the briefcase */
+  briefcaseId: number;
+
+  /** The changesetId of the briefcase */
+  changesetId: GuidString;
+}
+
+/** Properties for downloading a briefcase to a local file, from iModelHub.
+ * @beta
+ */
+export interface RequestNewBriefcaseProps {
+  /** Context (Project or Asset) that the iModel belongs to. */
+  contextId: GuidString;
+
+  /** The iModelId for the new briefcase. */
+  iModelId: GuidString;
+
+  /** Full path of local file to store the briefcase. If undefined, a file will be created in the briefcase cache, and this member will be filled with the full path to the file.
+   * Callers can use this to open the briefcase after the download completes.
+   * @note this member is both an input and an output.
+   */
+  fileName?: string;
+
+  /** The BriefcaseId of the newly downloaded briefcase. If undefined, a new BriefcaseId will be acquired from iModelHub before the download, and is returned in this member.
+   * @note this member is both an input and an output.
+   *
+   */
+  briefcaseId?: number;
+
+  /** Id of the change set of the new briefcase. If undefined, use latest. */
+  asOf?: IModelVersionProps;
 }
 
 /**
  * Manages the download of a briefcase
- * @internal
+ * @beta
  */
 export interface BriefcaseDownloader {
-  /** Properties of the briefcase that's being downloaded */
-  briefcaseProps: BriefcaseProps;
+  /** Id of the briefcase being downloaded */
+  briefcaseId: number;
+
+  /** the name of the local file for the briefcase */
+  fileName: string;
 
   /** Promise that resolves when the download completes. await this to complete the download */
   downloadPromise: Promise<void>;

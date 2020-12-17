@@ -12,6 +12,7 @@
       "backend",
       "common",
       "tools",
+      "edit",
       "internal",
       "extensions",
       "integration-testing"
@@ -185,6 +186,27 @@
       "packageName": "@bentley/imodeljs-backend",
       "projectFolder": "core/backend",
       "reviewCategory": "backend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/imodeljs-editor-common",
+      "projectFolder": "editor/common",
+      "reviewCategory": "edit",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/imodeljs-editor-backend",
+      "projectFolder": "editor/backend",
+      "reviewCategory": "edit",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/imodeljs-editor-frontend",
+      "projectFolder": "editor/frontend",
+      "reviewCategory": "edit",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
