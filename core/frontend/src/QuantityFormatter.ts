@@ -541,7 +541,7 @@ export class QuantityFormatter implements UnitsProvider {
   private getOverrideFormatPropsByQuantityType(quantityType: QuantityTypeKey, systemType: UnitSystemKey): FormatProps | undefined {
     const overrideEntry = this._overrideFormatPropsByQuantityType.get(quantityType);
     if (overrideEntry) {
-      const entryForActiveUnitSystem = Object.entries(overrideEntry).find((entry) => entry[0] === systemType);
+      const entryForActiveUnitSystem = Object.entries(overrideEntry).find((entry) => this.getUnitSystemFromString(entry[0]) === systemType);
       if (entryForActiveUnitSystem)
         return entryForActiveUnitSystem[1];
     }
@@ -921,7 +921,7 @@ export class QuantityFormatter implements UnitsProvider {
     await this.loadFormatAndParsingMapsForSystem(useImperial ? "imperial" : "metric");
   }
 
-  public getUnitSystemFromString(inputSystem: string, fallback?: UnitSystemKey) {
+  public getUnitSystemFromString(inputSystem: string, fallback?: UnitSystemKey): UnitSystemKey {
     switch (inputSystem.toLowerCase()) {
       case "metric":
       case "si":
@@ -935,11 +935,11 @@ export class QuantityFormatter implements UnitsProvider {
       case "survey":
         return "usSurvey";
       default:
-        if (fallback)
+        if (undefined !== fallback)
           return fallback;
-        else
-          return "imperial";
+        break;
     }
+    return "imperial";
   }
 
   /** Register a FormatterSpec provider. */
@@ -963,4 +963,20 @@ export class QuantityFormatter implements UnitsProvider {
 
     return true;
   }
+
+  public hasActiveOverride(type: QuantityTypeArg, checkOnlyActiveUnitSystem?: boolean): boolean {
+    const quantityTypeKey = this.getQuantityTypeKey(type);
+    const override = this._overrideFormatPropsByQuantityType.get(quantityTypeKey);
+    if (override) {
+      if (!checkOnlyActiveUnitSystem)
+        return true;
+
+      if (this.getOverrideFormatPropsByQuantityType(quantityTypeKey, this.activeUnitSystem))
+        return true;
+    }
+
+    return false;
+  }
+
+
 }

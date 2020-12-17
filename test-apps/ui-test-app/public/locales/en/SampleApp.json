@@ -134,7 +134,7 @@
     "openSeveralMessages": "Open Several Messages",
     "setLengthFormatMetric": "Set Format Metric",
     "setLengthFormatImperial": "Set Format Imperial",
-    "toggleLengthFormat": "Toggle Length Format (Imperial/Metric)",
+    "toggleLengthFormatOverride": "Toggle Length Overrides",
     "toggleItemDisplay": "Toggle Hide/Show Test",
     "openRadial": "Open Radial Menu",
     "openCalculator": "Open Calculator",

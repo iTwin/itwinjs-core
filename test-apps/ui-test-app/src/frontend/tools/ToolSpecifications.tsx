@@ -4,8 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import imperialIconSvg from "@bentley/icons-generic/icons/app-2.svg?sprite";
+import automationIconSvg from "@bentley/icons-generic/icons/automation.svg?sprite";
 import {
   IModelApp, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType,
+  QuantityType,
   SelectionTool, SnapMode,
 } from "@bentley/imodeljs-frontend";
 import {
@@ -330,6 +332,66 @@ export class AppTools {
         IModelApp.quantityFormatter.useImperialFormats = true; // eslint-disable-line deprecation/deprecation
         Presentation.presentation.activeUnitSystem = PresentationUnitSystem.BritishImperial;
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Set Length Format to Imperial"));
+      },
+    });
+  }
+
+  public static get toggleLengthFormatOverrideCommand() {
+    const overrideLengthFormats = {
+      metric: {
+        composite: {
+          includeZero: true,
+          spacer: " ",
+          units: [{ label: "cm", name: "Units.CM" }],
+        },
+        formatTraits: ["keepSingleZero", "showUnitLabel"],
+        precision: 4,
+        type: "Decimal",
+      },
+      imperial: {
+        composite: {
+          includeZero: true,
+          spacer: " ",
+          units: [{ label: "in", name: "Units.IN" }],
+        },
+        formatTraits: ["keepSingleZero", "showUnitLabel"],
+        precision: 4,
+        type: "Decimal",
+      },
+      usCustomary: {
+        composite: {
+          includeZero: true,
+          spacer: " ",
+          units: [{ label: "in", name: "Units.IN" }],
+        },
+        formatTraits: ["keepSingleZero", "showUnitLabel"],
+        precision: 4,
+        type: "Decimal",
+      },
+      usSurvey: {
+        composite: {
+          includeZero: true,
+          spacer: " ",
+          units: [{ label: "in", name: "Units.US_SURVEY_IN" }],
+        },
+        formatTraits: ["keepSingleZero", "showUnitLabel"],
+        precision: 4,
+        type: "Decimal",
+      },
+    };
+
+    return new CommandItemDef({
+      commandId: "toggleLengthFormatOverride",
+      iconSpec: `svg:${automationIconSvg}`,
+      labelKey: "SampleApp:buttons.toggleLengthFormatOverride",
+      execute: async () => {
+        if (IModelApp.quantityFormatter.hasActiveOverride(QuantityType.Length)) {
+          await IModelApp.quantityFormatter.clearOverrideFormats(QuantityType.Length);
+          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Length Overrides cleared"));
+        } else {
+          await IModelApp.quantityFormatter.setOverrideFormats(QuantityType.Length, overrideLengthFormats);
+          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Length Overrides set"));
+        }
       },
     });
   }
