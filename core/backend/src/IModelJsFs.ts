@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-// this is the nodejs-specific implementation of the IModelJsFs pseudo-interface.
-// On mobile platforms, this file is not included. Instead, the iModel.js host app implements IModelJsFs in native code and projects it into JavaScript.
 
 /** @packageDocumentation
  * @module Portability
  */
+
+// cspell: ignore wflag
 
 import * as fs from "fs-extra";
 import * as path from "path";
@@ -99,7 +99,7 @@ export class IModelJsFs {
    * @param pattern A Regex that would be match to basename of files including extension
    * @returns list of file that match the pattern.
    */
-  public static recusiveFindSync(rootDir: string, pattern: RegExp): string[] {
+  public static recursiveFindSync(rootDir: string, pattern: RegExp): string[] {
     const files: string[] = [];
     IModelJsFs.walkDirSync(rootDir, (pathname: string, isDir: boolean) => {
       if (!isDir) {
@@ -112,6 +112,11 @@ export class IModelJsFs {
     });
     return files;
   }
+
+  /** accidental spelling error
+   * @deprecated use recursiveFindSync
+   */
+  public static recusiveFindSync(rootDir: string, pattern: RegExp): string[] { return this.recursiveFindSync(rootDir, pattern); }
 
   /**
    * Walks a directory in breadth first fashion
