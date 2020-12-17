@@ -103,7 +103,7 @@
     "oidc-client": "^1.9.1",
     "semver": "^5.5.0",
     "wms-capabilities": "0.4.0",
-    "xml-js": "~1.6.11"
+    "fast-xml-parser": "~3.17.5"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"

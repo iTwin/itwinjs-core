@@ -5,9 +5,9 @@
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { Point2d, Range2d } from "@bentley/geometry-core";
 import { request, RequestBasicCredentials, RequestOptions } from "@bentley/itwin-client";
-import { xml2json } from "xml-js";
 import { MapCartoRectangle } from "../../imodeljs-frontend";
 import { WmsUtilities } from "./WmsUtilities"; // needed for getBaseUrl
+import * as FastXmlParser from "fast-xml-parser";
 
 /** @packageDocumentation
  * @module Views
@@ -38,17 +38,22 @@ export namespace WmtsCapability {
   export abstract class OwsConstants {
     // OWS xml tag names
     public static readonly ABSTRACT_XMLTAG = "ows:Abstract";
+    public static readonly ACCESSCONSTRAINTS_XMLTAG = "ows:AccessConstraints";
     public static readonly ALLOWEDVALUES_XMLTAG = "ows:AllowedValues";
     public static readonly BOUNDINGBOX_XMLTAG = "ows:BoundingBox";
     public static readonly CONSTRAINT_XMLTAG = "ows:Constraint";
     public static readonly DCP_XMLTAG = "ows:DCP";
+    public static readonly FEES_XMLTAG = "ows:Fees";
     public static readonly GET_XMLTAG = "ows:Get";
     public static readonly HTTP_XMLTAG = "ows:HTTP";
     public static readonly IDENTIFIER_XMLTAG = "ows:Identifier";
+    public static readonly KEYWORDS_XMLTAG = "ows:Keywords";
+    public static readonly KEYWORD_XMLTAG = "ows:Keyword";
     public static readonly LOWERCORNER_XMLTAG = "ows:LowerCorner";
     public static readonly OPERATION_XMLTAG = "ows:Operation";
     public static readonly OPERATIONSMETADATA_XMLTAG = "ows:OperationsMetadata";
     public static readonly POST_XMLTAG = "ows:Post";
+    public static readonly SERVICEIDENTIFICATION_XMLTAG = "ows:ServiceIdentification";
     public static readonly SERVICETYPE_XMLTAG = "ows:ServiceType";
     public static readonly SERVICETYPEVERSION_XMLTAG = "ows:ServiceTypeVersion";
     public static readonly SUPPORTEDCRS_XMLTAG = "ows:SupportedCRS";
@@ -87,16 +92,34 @@ export namespace WmtsCapability {
 
   export class ServiceIdentification {
     public readonly abstract?: string;
-    public readonly operationMetadata?: OperationMetadata;
+    public readonly accessConstraints?: string;
+    public readonly fees?: string;
     public readonly serviceType?: string;
     public readonly serviceTypeVersion?: string;
     public readonly title?: string;
+    public readonly keywords?: string[];;
 
     constructor(json: any) {
-      this.abstract = json[OwsConstants.ABSTRACT_XMLTAG]?._text;
-      this.serviceType = json[OwsConstants.SERVICETYPE_XMLTAG]?._text;
-      this.serviceTypeVersion = json[OwsConstants.SERVICETYPEVERSION_XMLTAG]?._text;
-      this.title = json[OwsConstants.TITLE_XMLTAG]?._text;
+      this.abstract = json[OwsConstants.ABSTRACT_XMLTAG];
+      this.serviceType = json[OwsConstants.SERVICETYPE_XMLTAG];
+      this.serviceTypeVersion = json[OwsConstants.SERVICETYPEVERSION_XMLTAG];
+      this.title = json[OwsConstants.TITLE_XMLTAG];
+
+      const keywords = json[OwsConstants.KEYWORDS_XMLTAG]?.[OwsConstants.KEYWORD_XMLTAG];
+      if (keywords !== undefined) {
+        this.keywords = [];
+
+        if (Array.isArray(keywords)) {
+          keywords.forEach((keyword: any) => {
+            this.keywords?.push(keyword);
+          });
+        } else {
+          this.keywords?.push(keywords);
+        }
+      }
+
+      this.accessConstraints = json[OwsConstants.ACCESSCONSTRAINTS_XMLTAG];
+      this.fees = json[OwsConstants.FEES_XMLTAG];
     }
   }
 
@@ -146,7 +169,7 @@ export namespace WmtsCapability {
       this.url = json?._attributes[XmlConstants.XLINK_HREF];
       this.constraintName = (json ? json[OwsConstants.CONSTRAINT_XMLTAG]?._attributes?.name : undefined);
       if (this.constraintName?.endsWith(XmlConstants.CONSTRAINT_NAME_FILTER))
-        this.encoding = json[OwsConstants.CONSTRAINT_XMLTAG]?.[OwsConstants.ALLOWEDVALUES_XMLTAG]?.[OwsConstants.VALUE_XMLTAG]?._text;
+        this.encoding = json[OwsConstants.CONSTRAINT_XMLTAG]?.[OwsConstants.ALLOWEDVALUES_XMLTAG]?.[OwsConstants.VALUE_XMLTAG];
     }
   }
 
@@ -253,8 +276,8 @@ export namespace WmtsCapability {
       if (_json._attributes?.isDefault)
         this.isDefault = _json._attributes.isDefault.toLowerCase() === "true";
 
-      this.title = _json[OwsConstants.TITLE_XMLTAG]?._text;
-      this.identifier = _json[OwsConstants.IDENTIFIER_XMLTAG]?._text;
+      this.title = _json[OwsConstants.TITLE_XMLTAG];
+      this.identifier = _json[OwsConstants.IDENTIFIER_XMLTAG];
     }
   }
   export class BoundingBox {
@@ -263,8 +286,8 @@ export namespace WmtsCapability {
 
     constructor(_json: any) {
       this.crs = _json._attributes?.crs;
-      const lowerCorner = _json[OwsConstants.LOWERCORNER_XMLTAG]?._text?.split(" ").map((x: string) => +x);
-      const upperCorner = _json[OwsConstants.UPPERCORNER_XMLTAG]?._text?.split(" ").map((x: string) => +x);
+      const lowerCorner = _json[OwsConstants.LOWERCORNER_XMLTAG]?.split(" ").map((x: string) => +x);
+      const upperCorner = _json[OwsConstants.UPPERCORNER_XMLTAG]?.split(" ").map((x: string) => +x);
       if (lowerCorner.length === 2 && upperCorner.length === 2)
         this.range = Range2d.createXYXY(lowerCorner[0], lowerCorner[1], upperCorner[0], upperCorner[1]);
     }
@@ -275,7 +298,7 @@ export namespace WmtsCapability {
     // TODO: TileMatrixSetLimits
 
     constructor(_json: any) {
-      this.tileMatrixSet = (_json?.TileMatrixSet?._text ? _json.TileMatrixSet._text : "");
+      this.tileMatrixSet = (_json?.TileMatrixSet ?? "");
     }
   }
 
@@ -288,17 +311,17 @@ export namespace WmtsCapability {
     public readonly tileMatrix: TileMatrix[] = [];
 
     constructor(_json: any) {
-      this.identifier = _json[OwsConstants.IDENTIFIER_XMLTAG]?._text;
+      this.identifier = _json[OwsConstants.IDENTIFIER_XMLTAG];
       if (!this.identifier)
         throw new Error("No Identifier found.");
 
-      this.title = _json[OwsConstants.TITLE_XMLTAG]?._text;
-      this.abstract = _json[OwsConstants.ABSTRACT_XMLTAG]?._text;
-      this.supportedCrs = _json[OwsConstants.SUPPORTEDCRS_XMLTAG]?._text;
+      this.title = _json[OwsConstants.TITLE_XMLTAG];
+      this.abstract = _json[OwsConstants.ABSTRACT_XMLTAG];
+      this.supportedCrs = _json[OwsConstants.SUPPORTEDCRS_XMLTAG];
       if (!this.supportedCrs)
         throw new Error("No supported CRS found.");
 
-      this.wellKnownScaleSet = _json[XmlConstants.WELLKNOWNSCALESET_XMLTAG]?._text;
+      this.wellKnownScaleSet = _json[XmlConstants.WELLKNOWNSCALESET_XMLTAG];
 
       // TileMatrix:
       // TileMatrix is mandatory on TileMatrixSet, if it doesn't exists, something is OFF with the capability.
@@ -331,45 +354,45 @@ export namespace WmtsCapability {
       if (!_json)
         throw new Error("Invalid json data provided");
 
-      this.identifier = _json[OwsConstants.IDENTIFIER_XMLTAG]?._text;
+      this.identifier = _json[OwsConstants.IDENTIFIER_XMLTAG];
       if (!this.identifier)
         throw new Error("No Identifier found.");
 
-      this.title = _json[OwsConstants.TITLE_XMLTAG]?._text;
-      this.abstract = _json[OwsConstants.ABSTRACT_XMLTAG]?._text;
+      this.title = _json[OwsConstants.TITLE_XMLTAG];
+      this.abstract = _json[OwsConstants.ABSTRACT_XMLTAG];
 
       // Scale denominator
-      const scaleDenomStr = _json[XmlConstants.SCALEDENOMINATOR_XMLTAG]?._text;
+      const scaleDenomStr = _json[XmlConstants.SCALEDENOMINATOR_XMLTAG];
       if (!scaleDenomStr)
         throw new Error("No scale denominator found on TileMatrix.");
       this.scaleDenominator = +scaleDenomStr;
 
       // Top left corner
-      const topLeftCorner = _json[XmlConstants.TOPLEFTCORNER_XMLTAG]?._text?.split(" ").map((x: string) => +x);
+      const topLeftCorner = _json[XmlConstants.TOPLEFTCORNER_XMLTAG]?.split(" ").map((x: string) => +x);
       if (topLeftCorner?.length !== 2)
         throw new Error("No TopLeftCorner found on TileMatrix.");
       this.topLeftCorner = Point2d.create(topLeftCorner[0], topLeftCorner[1]);
 
       // Tile Width
-      const tileWidthStr = _json[XmlConstants.TILEWIDTH_XMLTAG]?._text;
+      const tileWidthStr = _json[XmlConstants.TILEWIDTH_XMLTAG];
       if (!tileWidthStr)
         throw new Error("No tile width found on TileMatrix.");
       this.tileWidth = +tileWidthStr;
 
       // Tile Height
-      const tileHeightStr = _json[XmlConstants.TILEHEIGHT_XMLTAG]?._text;
+      const tileHeightStr = _json[XmlConstants.TILEHEIGHT_XMLTAG];
       if (!tileHeightStr)
         throw new Error("No tile eight found on TileMatrix.");
       this.tileHeight = +tileHeightStr;
 
       // Matrix Width
-      const matrixWidthStr = _json[XmlConstants.MATRIXWIDTH_XMLTAG]?._text;
+      const matrixWidthStr = _json[XmlConstants.MATRIXWIDTH_XMLTAG];
       if (!matrixWidthStr)
         throw new Error("No tile width found on TileMatrix.");
       this.matrixWidth = +matrixWidthStr;
 
       // Matrix Height
-      const matrixHeightStr = _json[XmlConstants.MATRIXHEIGHT_XMLTAG]?._text;
+      const matrixHeightStr = _json[XmlConstants.MATRIXHEIGHT_XMLTAG];
       if (!matrixHeightStr)
         throw new Error("No tile eight found on TileMatrix.");
       this.matrixHeight = +matrixHeightStr;
@@ -391,16 +414,16 @@ export namespace WmtsCapability {
       if (!_json)
         throw new Error("Invalid json data provided");
 
-      this.identifier = _json[OwsConstants.IDENTIFIER_XMLTAG]?._text;
-      this.title = _json[OwsConstants.TITLE_XMLTAG]?._text;
-      this.format = _json.Format?._text;
+      this.identifier = _json[OwsConstants.IDENTIFIER_XMLTAG];
+      this.title = _json[OwsConstants.TITLE_XMLTAG];
+      this.format = _json.Format;
 
       // BoundingBox
       this.boundingBox = (_json[OwsConstants.BOUNDINGBOX_XMLTAG] ? new BoundingBox(_json[OwsConstants.BOUNDINGBOX_XMLTAG]) : undefined);
 
       // WSG84 BoundingBox
-      const lowerCorner = _json[OwsConstants.WGS84BOUNDINGBOX_XMLTAG]?.[OwsConstants.LOWERCORNER_XMLTAG]?._text?.split(" ").map((x: string) => +x);
-      const upperCorner = _json[OwsConstants.WGS84BOUNDINGBOX_XMLTAG]?.[OwsConstants.UPPERCORNER_XMLTAG]?._text?.split(" ").map((x: string) => +x);
+      const lowerCorner = _json[OwsConstants.WGS84BOUNDINGBOX_XMLTAG]?.[OwsConstants.LOWERCORNER_XMLTAG]?.split(" ").map((x: string) => +x);
+      const upperCorner = _json[OwsConstants.WGS84BOUNDINGBOX_XMLTAG]?.[OwsConstants.UPPERCORNER_XMLTAG]?.split(" ").map((x: string) => +x);
       if (lowerCorner?.length === 2 && upperCorner?.length === 2)
         this.wsg84BoundingBox = MapCartoRectangle.createFromDegrees(lowerCorner[0], lowerCorner[1], upperCorner[0], upperCorner[1]);
 
@@ -452,6 +475,10 @@ export class WmtsCapabilities {
     // Capabilities version
     this.version = _json?.Capabilities?._attributes.version;
 
+    // Service Identification
+    if (_json?.Capabilities?.[WmtsCapability.OwsConstants.SERVICEIDENTIFICATION_XMLTAG])
+      this.serviceIdentification = new WmtsCapability.ServiceIdentification(_json?.Capabilities?.[WmtsCapability.OwsConstants.SERVICEIDENTIFICATION_XMLTAG]);
+
     // Operations metadata
     if (_json?.Capabilities?.[WmtsCapability.OwsConstants.OPERATIONSMETADATA_XMLTAG])
       this.operationsMetadata = new WmtsCapability.OperationMetadata(_json?.Capabilities?.[WmtsCapability.OwsConstants.OPERATIONSMETADATA_XMLTAG]);
@@ -462,8 +489,12 @@ export class WmtsCapabilities {
   }
 
   public static createFromXml(xmlCapabilities: string): WmtsCapabilities | undefined {
-    const jsonCapabilities = xml2json(xmlCapabilities, { compact: true, nativeType: false, ignoreComment: true });
-    const capabilities = JSON.parse(jsonCapabilities);
+    const capabilities = FastXmlParser.parse(xmlCapabilities, {
+      attrNodeName: "_attributes", // avoid clashes with tag names
+      ignoreAttributes: false,
+      attributeNamePrefix: "",    // I don't see the need for prefixing attributes names.
+      parseNodeValue: false,      // Identifier (strings) are sometimes "0", I don't want to get a integer.
+    });
     return new WmtsCapabilities(capabilities);
   }
 

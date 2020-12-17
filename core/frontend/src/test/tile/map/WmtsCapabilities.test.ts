@@ -126,6 +126,19 @@ describe("WmtsCapabilities", () => {
   it("should parse sample OGC WMTS capabilities", async () => {
     const capabilities = await WmtsCapabilities.create("assets/wmts_capabilities/OGCSample_capabilities.xml");
 
+    // Test ServiceIdentification metadata
+    expect(capabilities?.serviceIdentification).to.not.undefined;
+    expect(capabilities?.serviceIdentification?.abstract).to.includes("Example service that constrains");
+    expect(capabilities?.serviceIdentification?.title).to.equals("World example Web Map Tile Service");
+    expect(capabilities?.serviceIdentification?.serviceType).to.equals("OGC WMTS");
+    expect(capabilities?.serviceIdentification?.serviceTypeVersion).to.equals("1.0.0");
+    expect(capabilities?.serviceIdentification?.keywords?.length).to.equals(4);
+    if (capabilities?.serviceIdentification?.keywords)
+      expect(capabilities?.serviceIdentification?.keywords[0]).to.equals("World");
+    expect(capabilities?.serviceIdentification?.fees).to.equals("none");
+    expect(capabilities?.serviceIdentification?.accessConstraints).to.equals("none");
+
+
     // Test GetCapabilities operation metadata
     expect(capabilities?.operationsMetadata?.getCapabilities).to.not.undefined;
     expect(capabilities?.operationsMetadata?.getCapabilities?.name).to.equals("GetCapabilities");
@@ -201,8 +214,8 @@ describe("WmtsCapabilities", () => {
     expect(capabilities?.contents?.tileMatrixSets[0].tileMatrix[0].matrixHeight).to.equals(1);
   });
 
-  it("should parse sample OGC WMTS capabilities", async () => {
-    const capabilities = await WmtsCapabilities.create("assets/wmts_capabilities/great-arttesian-basin.xml");
+  it("should parse Great artesian basin sample", async () => {
+    const capabilities = await WmtsCapabilities.create("assets/wmts_capabilities/great-artesian-basin.xml");
     // I check only things that are different from other datasets
 
 
