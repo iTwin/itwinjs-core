@@ -9,7 +9,6 @@
 import "./AccuDrawDialog.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { AccuDrawSetFieldValueFromUiEventArgs, AccuDrawUiAdmin } from "@bentley/ui-abstract";
 import { CommonProps, Orientation } from "@bentley/ui-core";
 import { UiFramework } from "../UiFramework";
 import { ModelessDialog } from "../dialog/ModelessDialog";
@@ -33,22 +32,13 @@ export function AccuDrawDialog(props: AccuDrawDialogProps) {
     props.onClose && props.onClose();
   }, [props]);
 
-  const handleCancel = React.useCallback(() => {
+  const handleClose = React.useCallback(() => {
     closeDialog();
   }, [closeDialog]);
 
   const handleEscape = React.useCallback(() => {
     KeyboardShortcutManager.setFocusToHome();
   }, []);
-
-  // DEBUG - remove
-  React.useEffect(() => {
-    const handleValueFromUi = (args: AccuDrawSetFieldValueFromUiEventArgs) => {
-      // eslint-disable-next-line no-console
-      console.log(`handleValueFromUi: ${args.field} ${args.value} ${args.stringValue}`);
-    };
-    return AccuDrawUiAdmin.onAccuDrawSetFieldValueFromUiEvent.addListener(handleValueFromUi);
-  });
 
   const classNames = classnames("uifw-accudraw-dialog", props.className);
 
@@ -60,7 +50,7 @@ export function AccuDrawDialog(props: AccuDrawDialogProps) {
       dialogId={props.dialogId}
       width={250}
       movable={true}
-      onClose={handleCancel}
+      onClose={handleClose}
       onEscape={handleEscape}
     >
       <AccuDrawFieldContainer orientation={Orientation.Vertical} />

@@ -220,16 +220,10 @@ export class AccuDrawCommandItems {
 }
 
 // @alpha (undocumented)
-export class AccuDrawDialog extends React.Component<AccuDrawDialogProps, AccuDrawDialogState> {
-    constructor(props: AccuDrawDialogProps);
-    // (undocumented)
-    render(): JSX.Element;
-    // (undocumented)
-    readonly state: Readonly<AccuDrawDialogState>;
-    }
+export function AccuDrawDialog(props: AccuDrawDialogProps): JSX.Element;
 
 // @alpha (undocumented)
-export interface AccuDrawDialogProps {
+export interface AccuDrawDialogProps extends CommonProps {
     // (undocumented)
     dialogId: string;
     // (undocumented)

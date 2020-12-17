@@ -57,6 +57,7 @@ export function AccuDrawInputField(props: AccuDrawInputFieldProps) {
   }, [initialValue]);
 
   const trackChange = React.useCallback((value: number | undefined, stringValue: string): void => {
+    // istanbul ignore next
     if (value === undefined)
       return;
 
@@ -72,6 +73,7 @@ export function AccuDrawInputField(props: AccuDrawInputFieldProps) {
   }, [onValueChanged, numberValue, valueChangedDelay]);
 
   const unsetTimeout = (): void => {
+    // istanbul ignore else
     if (timeoutId) {
       window.clearTimeout(timeoutId.current);
       timeoutId.current = 0;
@@ -85,14 +87,10 @@ export function AccuDrawInputField(props: AccuDrawInputFieldProps) {
   const handleKeyDown = React.useCallback((e: React.KeyboardEvent) => {
     switch (e.key) {
       case SpecialKey.Escape:
-        // istanbul ignore else
-        if (onEscPressed)
-          onEscPressed();
+        onEscPressed && onEscPressed();
         return;
       case SpecialKey.Enter:
-        // istanbul ignore else
-        if (onEnterPressed)
-          onEnterPressed();
+        onEnterPressed && onEnterPressed();
         return;
     }
 

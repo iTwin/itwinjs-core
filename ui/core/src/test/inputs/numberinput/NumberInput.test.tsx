@@ -9,7 +9,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { NumberInput } from "../../../ui-core/inputs/numberinput/NumberInput";
 
-// cSpell:ignore decrementor
+// cSpell:ignore decrementor numberinput
 
 function parseDollar(stringValue: string) {
   const noDollarSign = stringValue.replace(/^\$/, "");
