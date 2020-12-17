@@ -19,7 +19,7 @@
     "clean": "rimraf build lib .rush/temp/package-deps*.json",
     "copy:assets": "cpx \"./node_modules/@bentley/icons-generic-webfont/dist/**/*\" ./build",
     "docs": "",
-    "lint": "eslint -f visualstudio --max-warnings 0 --config package.json --no-eslintrc ./src/**/*.ts 1>&2",
+    "lint": "eslint -f visualstudio --config package.json --no-eslintrc ./src/**/*.ts 1>&2",
     "start": "run-p start:webserver start:electron",
     "start:electron": "electron ./lib/backend/DtaElectronMain.js",
     "start:webserver": "cross-env BROWSER=none USE_FULL_SOURCEMAP=true EXTEND_ESLINT=true react-scripts start",

@@ -30,7 +30,7 @@
     "docs:reference": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/presentation/presentation-testing/json/file.json --tsIndexFile=presentation-testing.ts --onlyJson",
     "extract": "betools extract --fileExt=ts --extractFrom=./src/test --recursive --out=../../generated-docs/extract",
     "extract-api": "betools extract-api --entry=presentation-testing",
-    "lint": "eslint -f visualstudio --max-warnings 0 ./src/**/*.ts 1>&2",
+    "lint": "eslint -f visualstudio ./src/**/*.ts 1>&2",
     "test": "mocha -r ignore-styles -r jsdom-global/register --opts ../mocha.opts \"./lib/test/**/*.test.js\""
   },
   "devDependencies": {
