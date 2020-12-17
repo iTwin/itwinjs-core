@@ -10,7 +10,7 @@
 import { dispose, Id64String } from "@bentley/bentleyjs-core";
 import { Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Vector3d } from "@bentley/geometry-core";
 import { ColorDef, Frustum, FrustumPlanes, PlanarClipMask, RenderMode, RenderTexture, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
-import { GraphicsCollectorDrawArgs, TileTreeReference } from "../../tile/internal";
+import { GraphicsCollectorDrawArgs, SpatialClassifierTileTreeReference, TileTreeReference } from "../../tile/internal";
 import { SceneContext } from "../../ViewContext";
 import { ViewState, ViewState3d } from "../../ViewState";
 import { RenderGraphic } from "../RenderGraphic";
@@ -250,8 +250,8 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   private _anyHilited = false;
   private _anyOpaque = false;
   private _anyTranslucent = false;
+  private _classifier?: SpatialClassificationProps.Classifier;
   private readonly _plane = Plane3dByOriginAndUnitNormal.create(new Point3d(0, 0, 0), new Vector3d(0, 0, 1))!;    // TBD -- Support other planes - default to X-Y for now.
-  private readonly _classifier?: SpatialClassificationProps.Classifier;
   private readonly _renderState = new RenderState();
   private readonly _renderCommands: RenderCommands;
   private readonly _branchStack = new BranchStack();
@@ -265,7 +265,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     1, 0, 0, 0,
     0, 0, 0, 1);
   private _debugFrustum?: Frustum;
-  private _doDebugFrustum = true;
+  private _doDebugFrustum = false;
   private _debugFrustumGraphic?: RenderGraphic = undefined;
   private _isClassifyingPointCloud?: boolean; // we will detect this the first time we draw
   private readonly _bgColor = ColorDef.from(0, 0, 0, 255);
@@ -334,8 +334,9 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
       this.pushBatches(batchState, this._graphics);
   }
 
-  public setSource(classifierTreeRef?: TileTreeReference, planarClipMask?: PlanarClipMask) {
+  public setSource(classifierTreeRef?: SpatialClassifierTileTreeReference, planarClipMask?: PlanarClipMask) {
     this._classifierTreeRef = classifierTreeRef;
+    this._classifier = classifierTreeRef?.activeClassifier;
     this._planarClipMask = planarClipMask;
   }
 

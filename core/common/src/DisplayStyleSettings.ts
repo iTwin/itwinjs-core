@@ -49,6 +49,12 @@ export interface DisplayStyleModelAppearanceProps extends FeatureAppearanceProps
   modelId?: Id64String;
 }
 
+
+export interface DisplayStylePlanarClipMaskProps extends PlanarClipMaskProps {
+  /** The Id of the model to mask. */
+  modelId?: Id64String;
+}
+
 /** JSON representation of the environment setup of a [[DisplayStyle3d]].
  * @public
  */
@@ -159,7 +165,7 @@ export interface DisplayStyleSettingsProps {
   /** Overrides to the planar clip masks.  Currently only supported for reality models
    * @beta
    */
-  planarClipOvr?: PlanarClipMaskProps[];
+  planarClipOvr?: DisplayStylePlanarClipMaskProps[];
 
 }
 
@@ -965,6 +971,7 @@ export class DisplayStyleSettings {
         if (index < 0)
           return false;
         this._json.planarClipOvr![index] = ovr.toJSON();
+        this._json.planarClipOvr![index].modelId = id;
       }
     }
     return true;
