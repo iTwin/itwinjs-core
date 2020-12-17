@@ -34,7 +34,11 @@ export default class DisplayPerfRpcInterface extends RpcInterface {
 
   public async saveCsv(_outputPath: string, _outputName: string, _rowDataJson: string, _csvFormat?: string): Promise<void> { return this.forward(arguments); }
   public async savePng(_fileName: string, _png: string): Promise<void> { return this.forward(arguments); }
+
+  @RpcOperation.setRoutingProps(localDeploymentOnly)
   public async writeExternalFile(_outputPath: string, _outputName: string, _append: boolean, _content: string): Promise<void> { return this.forward(arguments); }
+
+  @RpcOperation.setRoutingProps(localDeploymentOnly)
   public async consoleLog(_content: string): Promise<void> { return this.forward(arguments); }
 
   public async finishCsv(_output: string, _outputPath?: string, _outputName?: string, _csvFormat?: string): Promise<void> { return this.forward(arguments); }
