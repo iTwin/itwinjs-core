@@ -77,22 +77,13 @@ async function resolveAfterXMilSeconds(ms: number) { // must call await before t
 }
 
 /**
- * create a RegExp given a query in the simple search language
- * currently simple search is just a caseless text search with a wildcard character, '*'
- * the wildcard character matches any non-space text
+ * See https://stackoverflow.com/questions/26246601/wildcard-string-comparison-in-javascript
+ * Compare strToTest with a given rule containing a wildcard, and will return true if strToTest matches the given wildcard
  */
-export const regexFromSearchQuery = (query: string): RegExp => {
-  const escapeChar = (char: string, str: string) =>
-    str.replace(new RegExp(`\\${char}`, "g"), `\\${char}`);
-  return new RegExp(
-    ["\\", "$", "^", "(", ")", "[", "]", "{", "}", "|", "?", ".", "+", ":"]
-      // escape regexp metachars
-      .reduce((prev, char) => escapeChar(char, prev), query)
-      // convert wildcard definition
-      .replace(/\*/g, "\\S*"),
-    "i"
-  );
-};
+function matchRule(strToTest: string, rule: string) {
+  const escapeRegex = (str: string) => str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+  return new RegExp(`^${rule.split("*").map(escapeRegex).join(".*")}$`).test(strToTest);
+}
 
 function removeFilesFromDir(_startPath: string, _filter: string) {
   // if (!fs.existsSync(startPath))
@@ -1001,9 +992,7 @@ async function getAllMatchingSavedViews(testConfig: DefaultConfigs): Promise<str
   }
 
   const allViews = intViews.concat(extViews);
-  allViews.forEach((view) => debugPrint(view));
-  const regexp = regexFromSearchQuery(testConfig.viewName ?? "");
-  return allViews.filter((view) => regexp.test(view)).sort(); // Filter & alphabatize all view names
+  return allViews.filter((view) => matchRule(view, testConfig.viewName ?? "*")).sort(); // Filter & alphabatize all view names
 }
 
 async function reopenImodel(testConfig: DefaultConfigs): Promise<void> {
