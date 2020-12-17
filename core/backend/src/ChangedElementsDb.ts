@@ -15,7 +15,7 @@ import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BriefcaseManager, ChangeSetToken } from "./BriefcaseManager";
 import { ChangeSummaryExtractContext, ChangeSummaryManager } from "./ChangeSummaryManager";
 import { ECDbOpenMode } from "./ECDb";
-import { BriefcaseDb, IModelDb } from "./IModelDb";
+import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 
 /** An ChangedElementsDb file
@@ -100,7 +100,7 @@ export class ChangedElementsDb implements IDisposable {
    * @param rulesetDir [optional] Directories string for ruleset directory locater
    * @param tempDir [optional] Directory to use to store temporary Db used to do processing. This Db is cleaned up automatically unless the process crashes.
    */
-  public async processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseDb, rulesetId: string, startChangesetId: GuidString, endChangesetId: GuidString, filterSpatial?: boolean, rulesetDir?: string, tempDir?: string): Promise<DbResult> {
+  public async processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, rulesetId: string, startChangesetId: GuidString, endChangesetId: GuidString, filterSpatial?: boolean, rulesetDir?: string, tempDir?: string): Promise<DbResult> {
     requestContext.enter();
     const changeSummaryContext = new ChangeSummaryExtractContext(briefcase);
     const changesets = await ChangeSummaryManager.downloadChangeSets(requestContext, changeSummaryContext, startChangesetId, endChangesetId);

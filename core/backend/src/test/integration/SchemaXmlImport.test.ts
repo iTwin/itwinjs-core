@@ -5,13 +5,12 @@
 import { assert } from "chai";
 import * as fs from "fs";
 import * as path from "path";
-import { AuthorizedBackendRequestContext, BriefcaseManager,  PhysicalElement } from "../../imodeljs-backend";
-import { IModelTestUtils, TestIModelInfo } from "../IModelTestUtils";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { KnownTestLocations } from "../KnownTestLocations";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
+import { AuthorizedBackendRequestContext, BriefcaseManager, PhysicalElement } from "../../imodeljs-backend";
+import { IModelTestUtils, TestIModelInfo } from "../IModelTestUtils";
+import { KnownTestLocations } from "../KnownTestLocations";
 import { HubUtility } from "./HubUtility";
-import { SyncMode } from "@bentley/imodeljs-common";
 
 describe("Schema XML Import Tests (#integration)", () => {
   let managerRequestContext: AuthorizedBackendRequestContext;
@@ -55,7 +54,7 @@ describe("Schema XML Import Tests (#integration)", () => {
     const schemaFilePath = path.join(KnownTestLocations.assetsDir, "Test3.ecschema.xml");
     const schemaString = fs.readFileSync(schemaFilePath, "utf8");
 
-    const iModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(superRequestContext, testProjectId, readWriteTestIModel.id, SyncMode.PullAndPush);
+    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: superRequestContext, contextId: testProjectId, iModelId: readWriteTestIModel.id });
     await iModel.importSchemaStrings(superRequestContext, [schemaString]); // will throw an exception if import fails
 
     const testDomainClass = iModel.getMetaData("Test3:Test3Element"); // will throw on failure

@@ -5,6 +5,7 @@
 export * from "./BriefcaseManager";
 export * from "./Category";
 export * from "./ChangeSummaryManager";
+export * from "./CheckpointManager";
 export * from "./ClassRegistry";
 export * from "./CodeSpecs";
 export * from "./ConcurrencyControl";

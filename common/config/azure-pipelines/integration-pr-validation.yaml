@@ -72,6 +72,8 @@ jobs:
 
       node ./common/scripts/install-run-rush build -v --to @bentley/imodelhub-client-tests
 
+      node ./common/scripts/install-run-rush build -v --to core-full-stack-tests
+
       node ./common/scripts/install-run-rush build -v --to rpcinterface-full-stack-tests
 
       node ./common/scripts/install-run-rush build -v --to presentation-full-stack-tests
@@ -124,10 +126,9 @@ jobs:
     displayName: 'Run Backend iTwin Client Tests'
     condition: succeededOrFailed()
 
-  - script: 'npm run test:integration'
+  - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration
     workingDirectory: 'full-stack-tests/core'
     displayName: 'Run Core Full Stack Tests'
-    enabled: false
     condition: succeededOrFailed()
 
   - script: 'npm run test:integration'
@@ -236,7 +237,6 @@ jobs:
     inputs:
       testResultsFiles: 'full-stack-tests/core/lib/test/junit_results.xml'
       testRunTitle: 'Core - Integration Tests - $(Node_Version)'
-    enabled: false
     condition: succeededOrFailed()
 
   - task: PublishTestResults@2

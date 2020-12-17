@@ -610,22 +610,18 @@ export interface BRepThickenProps {
     frontDistance?: number;
 }
 
-// @internal
+// @beta
 export interface BriefcaseDownloader {
-    briefcaseProps: BriefcaseProps;
+    briefcaseId: number;
     downloadPromise: Promise<void>;
+    fileName: string;
     requestCancel: () => Promise<boolean>;
 }
 
-// @internal
-export type BriefcaseKey = string;
-
-// @internal
-export interface BriefcaseProps extends RequestBriefcaseProps, DownloadBriefcaseOptions {
-    downloadStatus: DownloadBriefcaseStatus;
-    fileSize?: number;
-    readonly key: BriefcaseKey;
-    openMode: OpenMode;
+// @beta
+export interface BriefcaseProps {
+    briefcaseId: number;
+    iModelId: GuidString;
 }
 
 export { BriefcaseStatus }
@@ -1535,8 +1531,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 1245184,
-    Major = 19,
+    Combined = 1310720,
+    Major = 20,
     Minor = 0
 }
 
@@ -1852,27 +1848,24 @@ export enum DomainOptions {
     Upgrade = 2
 }
 
-// @beta
-export interface DownloadBriefcaseOptions {
-    syncMode: SyncMode;
-}
-
 // @internal
 export enum DownloadBriefcaseStatus {
     // (undocumented)
-    ApplyingChangeSets = 4,
+    ApplyingChangeSets = 5,
     // (undocumented)
-    Complete = 5,
+    Complete = 6,
     // (undocumented)
-    DownloadingChangeSets = 3,
+    DownloadingChangeSets = 4,
     // (undocumented)
-    DownloadingCheckpoint = 2,
+    DownloadingCheckpoint = 3,
     // (undocumented)
-    Error = 6,
+    Error = 7,
     // (undocumented)
     Initializing = 1,
     // (undocumented)
-    NotStarted = 0
+    NotStarted = 0,
+    // (undocumented)
+    QueryCheckpointService = 2
 }
 
 // @beta
@@ -2147,7 +2140,6 @@ export interface ElementAspectProps extends EntityProps {
 
 // @alpha
 export namespace ElementGeometry {
-    // (undocumented)
     export function appendGeometryParams(geomParams: GeometryParams, entries: ElementGeometryDataEntry[]): boolean;
     export class Builder {
         appendBRepData(brep: BRepEntity.DataProps): boolean;
@@ -2162,23 +2154,14 @@ export namespace ElementGeometry {
         // (undocumented)
         readonly entries: ElementGeometryDataEntry[];
     }
-    // (undocumented)
     export function fromBRep(brep: BRepEntity.DataProps): ElementGeometryDataEntry | undefined;
-    // (undocumented)
     export function fromGeometryPart(partId: Id64String, partToElement?: Transform): ElementGeometryDataEntry | undefined;
-    // (undocumented)
     export function fromGeometryQuery(geom: GeometryQuery): ElementGeometryDataEntry | undefined;
-    // (undocumented)
     export function fromImageGraphic(image: ImageGraphicProps): ElementGeometryDataEntry | undefined;
-    // (undocumented)
     export function fromSubGraphicRange(bbox: ElementAlignedBox3d): ElementGeometryDataEntry | undefined;
-    // (undocumented)
     export function fromTextString(text: TextStringProps): ElementGeometryDataEntry | undefined;
-    // (undocumented)
     export function isAppearanceEntry(entry: ElementGeometryDataEntry): boolean;
-    // (undocumented)
     export function isGeometricEntry(entry: ElementGeometryDataEntry): boolean;
-    // (undocumented)
     export function isGeometryQueryEntry(entry: ElementGeometryDataEntry): boolean;
     export class Iterator implements IterableIterator<IteratorEntry> {
         // (undocumented)
@@ -2214,21 +2197,14 @@ export namespace ElementGeometry {
         get value(): ElementGeometryDataEntry;
         set value(value: ElementGeometryDataEntry);
         }
-    // (undocumented)
     export function toBRep(entry: ElementGeometryDataEntry, wantBRepData?: boolean): BRepEntity.DataProps | undefined;
     export function toElementAlignedBox3d(bbox: Float64Array): ElementAlignedBox3d | undefined;
-    // (undocumented)
     export function toGeometryPart(entry: ElementGeometryDataEntry, partToElement?: Transform): Id64String | undefined;
-    // (undocumented)
     export function toGeometryQuery(entry: ElementGeometryDataEntry): GeometryQuery | undefined;
-    // (undocumented)
     export function toImageGraphic(entry: ElementGeometryDataEntry): ImageGraphicProps | undefined;
-    // (undocumented)
     export function toSubGraphicRange(entry: ElementGeometryDataEntry): ElementAlignedBox3d | undefined;
-    // (undocumented)
     export function toTextString(entry: ElementGeometryDataEntry): TextStringProps | undefined;
     export function toTransform(sourceToWorld: Float64Array): Transform | undefined;
-    // (undocumented)
     export function updateGeometryParams(entry: ElementGeometryDataEntry, geomParams: GeometryParams): boolean;
 }
 
@@ -3787,6 +3763,7 @@ export abstract class IModel implements IModelProps {
     // (undocumented)
     abstract get isOpen(): boolean;
     abstract get isSnapshot(): boolean;
+    get key(): string;
     name: string;
     readonly openMode: OpenMode;
     get projectExtents(): AxisAlignedBox3d;
@@ -3911,7 +3888,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     static readonly interfaceName = "IModelReadRpcInterface";
     static interfaceVersion: string;
     // (undocumented)
-    openForRead(_iModelToken: IModelRpcProps): Promise<IModelConnectionProps>;
+    openForRead(_iModelToken: IModelRpcOpenProps): Promise<IModelConnectionProps>;
     // (undocumented)
     queryElementProps(_iModelToken: IModelRpcProps, _params: EntityQueryParams): Promise<ElementProps[]>;
     // (undocumented)
@@ -3929,12 +3906,16 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
 }
 
 // @public
-export interface IModelRpcProps {
+export interface IModelRpcOpenProps {
     changeSetId?: GuidString;
     readonly contextId?: GuidString;
     readonly iModelId?: GuidString;
-    readonly key: string;
     openMode?: OpenMode;
+}
+
+// @public
+export interface IModelRpcProps extends IModelRpcOpenProps {
+    readonly key: string;
 }
 
 export { IModelStatus }
@@ -3978,6 +3959,8 @@ export class IModelVersion {
     static asOfChangeSet(changeSetId: GuidString): IModelVersion;
     evaluateChangeSet(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, imodelClient: IModelClient): Promise<GuidString>;
     static first(): IModelVersion;
+    static fromJSON(json: IModelVersionProps): IModelVersion;
+    // @deprecated
     static fromJson(jsonObj: any): IModelVersion;
     getAsOfChangeSet(): GuidString | undefined;
     getName(): string | undefined;
@@ -3985,7 +3968,21 @@ export class IModelVersion {
     get isLatest(): boolean;
     static latest(): IModelVersion;
     static named(versionName: string): IModelVersion;
+    // (undocumented)
+    toJSON(): IModelVersionProps;
     }
+
+// @public
+export interface IModelVersionProps {
+    // (undocumented)
+    afterChangeSetId?: GuidString;
+    // (undocumented)
+    first?: boolean;
+    // (undocumented)
+    latest?: boolean;
+    // (undocumented)
+    versionName?: string;
+}
 
 // @internal
 export abstract class IModelWriteRpcInterface extends RpcInterface {
@@ -4012,7 +4009,7 @@ export abstract class IModelWriteRpcInterface extends RpcInterface {
     // (undocumented)
     lockModel(_tokenProps: IModelRpcProps, _modelId: Id64String, _level: LockLevel): Promise<void>;
     // (undocumented)
-    openForWrite(_iModelToken: IModelRpcProps): Promise<IModelConnectionProps>;
+    openForWrite(_iModelToken: IModelRpcOpenProps): Promise<IModelConnectionProps>;
     // (undocumented)
     pullAndMergeChanges(_tokenProps: IModelRpcProps): Promise<IModelConnectionProps>;
     // @deprecated (undocumented)
@@ -4218,6 +4215,15 @@ export interface LineStyleProps extends DefinitionElementProps {
 
 // @public
 export type LocalAlignedBox3d = Range3d;
+
+// @beta
+export interface LocalBriefcaseProps {
+    briefcaseId: number;
+    changesetId: GuidString;
+    contextId: GuidString;
+    fileName: string;
+    iModelId: GuidString;
+}
 
 export { LogFunction }
 
@@ -4640,6 +4646,7 @@ export enum MonochromeMode {
 
 // @internal
 export abstract class NativeAppRpcInterface extends RpcInterface {
+    acquireNewBriefcaseId(_iModelId: GuidString): Promise<number>;
     authGetAccessToken(): Promise<string>;
     authInitialize(_issuer: string, _config: any): Promise<void>;
     authSignIn(): Promise<void>;
@@ -4647,10 +4654,11 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
     cancelElementGraphicsRequests(_rpcProps: IModelRpcProps, _requestIds: string[]): Promise<void>;
     cancelTileContentRequests(_iModelToken: IModelRpcProps, _contentIds: TileTreeContentIds[]): Promise<void>;
     checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
-    closeBriefcase(_key: BriefcaseKey): Promise<void>;
-    deleteBriefcase(_key: BriefcaseKey): Promise<void>;
-    downloadRequestCompleted(_key: BriefcaseKey): Promise<void>;
-    getBriefcases(): Promise<BriefcaseProps[]>;
+    closeBriefcase(_key: string): Promise<void>;
+    deleteBriefcaseFiles(_fileName: string): Promise<void>;
+    downloadBriefcase(_requestProps: RequestNewBriefcaseProps, _reportProgress: boolean): Promise<void>;
+    getBriefcaseFileName(_props: BriefcaseProps): Promise<string>;
+    getCachedBriefcases(_iModelId?: GuidString): Promise<LocalBriefcaseProps[]>;
     static getClient(): NativeAppRpcInterface;
     getConfig(): Promise<any>;
     static readonly interfaceName = "NativeAppRpcInterface";
@@ -4658,10 +4666,9 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
     // (undocumented)
     isInteractiveEditingSupported(_tokenProps: IModelRpcProps): Promise<boolean>;
     log(_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any): Promise<void>;
-    openBriefcase(_key: BriefcaseKey, _openOptions?: OpenBriefcaseOptions): Promise<IModelConnectionProps>;
+    open(_args: OpenBriefcaseProps): Promise<IModelConnectionProps>;
     overrideInternetConnectivity(_overriddenBy: OverriddenBy, _status?: InternetConnectivityStatus): Promise<void>;
-    requestCancelDownloadBriefcase(_key: BriefcaseKey): Promise<boolean>;
-    requestDownloadBriefcase(_requestProps: RequestBriefcaseProps, _downloadOptions: DownloadBriefcaseOptions, _reportProgress: boolean): Promise<BriefcaseProps>;
+    requestCancelDownloadBriefcase(_fileName: string): Promise<boolean>;
     storageGet(_storageId: string, _key: string): Promise<StorageValue | undefined>;
     storageKeys(_storageId: string): Promise<string[]>;
     storageMgrClose(_storageId: string, _deleteIt: boolean): Promise<void>;
@@ -4929,6 +4936,19 @@ export interface OpenAPISchema {
 // @beta
 export interface OpenBriefcaseOptions {
     openAsReadOnly?: boolean;
+}
+
+// @beta
+export interface OpenBriefcaseProps extends IModelEncryptionProps, OpenDbKey {
+    fileName: string;
+    readonly?: boolean;
+    upgrade?: UpgradeOptions;
+}
+
+// @public
+export interface OpenDbKey {
+    // (undocumented)
+    key?: string;
 }
 
 // @internal (undocumented)
@@ -5767,11 +5787,13 @@ export interface RepositoryLinkProps extends UrlLinkProps {
 
 export { RepositoryStatus }
 
-// @internal
-export interface RequestBriefcaseProps {
-    readonly changeSetId: GuidString;
-    readonly contextId: GuidString;
-    readonly iModelId: GuidString;
+// @beta
+export interface RequestNewBriefcaseProps {
+    asOf?: IModelVersionProps;
+    briefcaseId?: number;
+    contextId: GuidString;
+    fileName?: string;
+    iModelId: GuidString;
 }
 
 // @public (undocumented)
@@ -6698,13 +6720,13 @@ export abstract class SnapshotIModelRpcInterface extends RpcInterface {
     static readonly interfaceName = "SnapshotIModelRpcInterface";
     static interfaceVersion: string;
     // (undocumented)
-    openFile(_filePath: string): Promise<IModelConnectionProps>;
+    openFile(_filePath: string, _opts?: SnapshotOpenOptions): Promise<IModelConnectionProps>;
     // (undocumented)
-    openRemote(_key: string): Promise<IModelConnectionProps>;
+    openRemote(_key: string, _opts?: SnapshotOpenOptions): Promise<IModelConnectionProps>;
 }
 
-// @public (undocumented)
-export interface SnapshotOpenOptions extends IModelEncryptionProps {
+// @public
+export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey {
     // @internal (undocumented)
     lazyBlockCache?: boolean;
 }
@@ -6820,8 +6842,11 @@ export abstract class StandaloneIModelRpcInterface extends RpcInterface {
     static readonly interfaceName = "StandaloneIModelRpcInterface";
     static interfaceVersion: string;
     // (undocumented)
-    openFile(_filePath: string, _openMode: OpenMode): Promise<IModelConnectionProps>;
+    openFile(_filePath: string, _openMode: OpenMode, _opts?: StandaloneOpenOptions): Promise<IModelConnectionProps>;
 }
+
+// @beta
+export type StandaloneOpenOptions = OpenDbKey & UpgradeOptions;
 
 // @internal
 export type StorageValue = string | number | boolean | null | Uint8Array;

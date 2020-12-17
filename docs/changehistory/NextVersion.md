@@ -54,15 +54,136 @@ To adjust code that uses [DisplayStyleSettings.excludedElements]($common), given
 
 Note that [DisplayStyleSettings.addExcludedElements]($common) and [DisplayStyleSettings.dropExcludedElements]($common) can accept any number of Ids. If you have multiple Ids, prefer to pass them all at once rather than one at a time - it is more efficient.
 
+## Filtering in Property Grid
+
+Now it is possible to filter property grid items (Records or Categories) using `FilteringPropertyDataProvider`. In addition, support for highlighting parts of items that matched the search criteria has also been added.
+
+![Property Filtering](./assets/property-filtering.png "Property Filtering")
+
+
+Filtering is done by `FilteringPropertyDataProvider` and `IPropertyDataFilterer` that is passed to the provider. We provide a number of read-to-use filterers:
+- `CompositePropertyDataFilterer` combines two other filterers
+- `PropertyCategoryLabelFilterer` filters `PropertyCategories` by label
+- `DisplayValuePropertyDataFilterer` filters `PropertyRecords` by display value
+- `LabelPropertyDataFilterer` filters `PropertyRecords` by property label
+- `FavoritePropertiesDataFilterer` (in `@bentley/presentation-components`) filters `PropertyRecords` by whether the property is favorite or not.
+
+**Example:**
+
+```ts
+const searchString = "Test";
+
+const filteringDataProvider = useDisposable(React.useCallback(() => {
+  // Combine a filterer that filters out favorite properties having `searchString` in their category label,
+  // property label or display value
+  const valueFilterer = new DisplayValuePropertyDataFilterer(searchString);
+  const labelFilterer = new LabelPropertyDataFilterer(searchString);
+  const categoryFilterer = new PropertyCategoryLabelFilterer(searchString);
+  const recordFilterer = new CompositePropertyDataFilterer(labelFilterer, CompositeFilterType.Or, valueFilterer);
+  const recordAndCategoryFilterer = new CompositePropertyDataFilterer(recordFilterer, CompositeFilterType.Or, categoryFilterer);
+  const favoritesFilterer = new FavoritePropertiesDataFilterer({ source: dataProvider, favoritesScope: FAVORITES_SCOPE, isActive: true });
+  const combinedFilterer = new CompositePropertyDataFilterer(recordAndCategoryFilterer, CompositeFilterType.And, favoritesFilterer);
+  // Create the provider
+  return new FilteringPropertyDataProvider(dataProvider, combinedFilterer);
+}, [dataProvider]));
+
+// Getting results from FilteringDataProvider
+const { value: filteringResult } = useDebouncedAsyncValue(React.useCallback(async () => {
+  return await filteringDataProvider.getData();
+}, [filteringDataProvider]));
+
+// Getting a match at index 10, which we want to actively highlight
+const [activeHighlight, setActiveHighlight] = React.useState<HighlightInfo>();
+React.useEffect(() => {
+    if (filteringResult?.getMatchByIndex)
+      setActiveHighlight(filteringResult.getMatchByIndex(10));
+}, [filteringDataProvider, filteringResult]);
+
+// Set up props for highlighting matches
+const highlightProps: HighlightingComponentProps = {
+  highlightedText: searchString,
+  activeHighlight,
+  filteredTypes: filteringResult?.filteredTypes,
+};
+
+// Render the component with filtering data provider and highlight props
+return (
+  <VirtualizedPropertyGridWithDataProvider
+    dataProvider={filteringDataProvider}
+    highlight={highlightProps}
+    ...
+  />
+);
+```
+
 ## Breaking API changes
 
-* The union type [Matrix3dProps]($geometry-core) inadvertently included [Matrix3d]($geometry-core). "Props" types are wire formats and so must be pure JavaScript primitives. To fix compilation errors where you are using `Matrix3d` where a `Matrix3dProps` is expected, simply call [Matrix3d.toJSON]($geometry-core) on your Matrix3d object. Also, since [TransformProps]($geometry-core) includes Matrix3dProps, you may need to call [Transform.toJSON]($geometry-core) on your Transform objects some places too.
+- The union type [Matrix3dProps]($geometry-core) inadvertently included [Matrix3d]($geometry-core). "Props" types are wire formats and so must be pure JavaScript primitives. To fix compilation errors where you are using `Matrix3d` where a `Matrix3dProps` is expected, simply call [Matrix3d.toJSON]($geometry-core) on your Matrix3d object. Also, since [TransformProps]($geometry-core) includes Matrix3dProps, you may need to call [Transform.toJSON]($geometry-core) on your Transform objects some places too.
 
-* The type of [Texture.data]($backend) has been corrected from `string` to `Uint8Array` to match the type in the BIS schema. If you get compilation errors, simply remove calls to `Buffer.from(texture.data, "base64")` for read, and `texture.data.toString("base64")` if you create texture objects.
+- The type of [Texture.data]($backend) has been corrected from `string` to `Uint8Array` to match the type in the BIS schema. If you get compilation errors, simply remove calls to `Buffer.from(texture.data, "base64")` for read, and `texture.data.toString("base64")` if you create texture objects.
+
+- Several interfaces in the `@bentley/ui-components` package have been renamed:
+
+ Previous
+
+  ```ts
+  interface HighlightedRecordProps {
+    activeMatch?: PropertyRecordMatchInfo;
+    searchText: string;
+  }
+  ```
+
+  New
+
+  ```ts
+  interface HighlightInfo {
+    highlightedText: string;
+    activeHighlight?: HighlightInfo;
+  }
+  ```
+
+  This is just a terminology change, so reacting to the change is as simple as renaming `searchText` -> `highlightedText` and `activeMatch` -> `highlightedText`.
+
+Previous
+
+ ```ts
+ interface PropertyRecordMatchInfo {
+    matchCounts: {
+        label: number;
+        value: number;
+    };
+    matchIndex: number;
+    propertyName: string;
+  }
+  ```
+
+New
+
+  ```ts
+  interface HighlightInfo {
+    highlightedItemIdentifier: string;
+    highlightIndex: number;
+  }
+  ```
+
+  This is just a terminology change, so reacting to the change is as simple as renaming `matchIndex` -> `highlightedItemIdentifier` and `propertyName` -> `highlightedItemIdentifier`.
+
+- Changed `highlightProps?: HighlightedRecordProps` property to `highlight?: HighlightingComponentProps` on [PrimitiveRendererProps]($ui-components) interface. To react to this change, simply rename `highlightProps` -> `highlight`.
+
+- Changed `highlightProps?: HighlightedRecordProps` property to `highlight?: HighlightingComponentProps` on [PropertyRendererProps]($ui-components) interface. To react to this change, simply rename `highlightProps` -> `highlight`.
 
 ## Updated version of Electron
 
 Updated version of electron used from 8.2.1 to 10.1.3. Note that Electron is specified as a peer dependency in the iModel.js stack - so it's recommended but not mandatory that applications migrate to this electron version.
+
+## BriefcaseManager breaking changes
+
+This version changes the approach to storing Briefcase and Checkpoint files in the local disk cache. Now, [BriefcaseManager]($backend) will create a subdirectory from the root directory supplied in [BriefcaseManager.initialize]($backend) for each iModelId, and then folders called `briefcases` and `checkpoints` within that folder. The Briefcase and Checkpoint files themselves are named with the `BriefcaseId` and `ChangeSetId` respectively. For backwards compatibility, when searching for local files the previous locations are checked for briefcase and checkpoint files created by older versions. This check will be removed in a future version.
+
+Several methods on the @beta class `BriefcaseManager` have been changed to simplify how local Briefcase files are acquired and managed. Previously the location and name of the local files holding Briefcases was hidden behind a local in-memory cache that complicated the API. Now, the [BriefcaseDb.open]($backend) method takes an argument that specifies the file name. This makes working with local Briefcases much simpler. BriefcaseManager's role is limited to acquiring and releasing briefcases, and for downloading, uploading, and applying changesets. Note that the frontend APIs have not changed, so the impact of this change to the beta APIs should be limited. In particular, the method `BriefcaseManager.download` was removed and replaced with [BriefcaseManager.downloadBriefcase]$(backend), since backwards compatibility could not be maintained. See the documentation on that method to understand what you may need to change in your code.
+
+Also, the `@internal` class `NativeApp` has several changed methods, so some refactoring may be necessary to react to those changes for anyone implementing native applications using this internal API.
+
 
 ## Globe location tool fixes
 
@@ -70,10 +191,10 @@ The globe location tools now will properly use GCS reprojection when navigating.
 
 The tools affected are:
 
-* [ViewGlobeSatelliteTool]($frontend)
-* [ViewGlobeBirdTool]($frontend)
-* [ViewGlobeLocationTool]($frontend)
-* [ViewGlobeIModelTool]($frontend)
+- [ViewGlobeSatelliteTool]($frontend)
+- [ViewGlobeBirdTool]($frontend)
+- [ViewGlobeLocationTool]($frontend)
+- [ViewGlobeIModelTool]($frontend)
 
 The [ViewGlobeLocationTool]($frontend) has been further improved to navigate better across long distances when using plane mode.
 
@@ -89,6 +210,7 @@ There is now a method called `lookAtGlobalLocationFromGcs` on [ViewState3d]($fro
 ### Formatted property values in ECExpressions
 
 ECExpressions now support formatted property values. `GetFormattedValue` function can be used in ECExpressions to get formatted value of the property. This adds ability to filter instances by some formatted value:
-```
+
+```ts
 GetFormattedValue(this.Length, "Metric") = "10.0 m"
 ```

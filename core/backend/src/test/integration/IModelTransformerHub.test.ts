@@ -7,7 +7,7 @@ import * as path from "path";
 import * as semver from "semver";
 import { DbResult, Guid, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
-import { ColorDef, IModel, IModelVersion, SyncMode } from "@bentley/imodeljs-common";
+import { ColorDef, IModel } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import {
   AuthorizedBackendRequestContext, BackendLoggerCategory, BisCoreSchema, BriefcaseManager, ConcurrencyControl, ECSqlStatement, Element,
@@ -68,8 +68,8 @@ describe("IModelTransformerHub (#integration)", () => {
     assert.isTrue(Guid.isGuid(targetIModelId));
 
     try {
-      const sourceDb = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, sourceIModelId, SyncMode.PullAndPush, IModelVersion.latest());
-      const targetDb = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, targetIModelId, SyncMode.PullAndPush, IModelVersion.latest());
+      const sourceDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: sourceIModelId });
+      const targetDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: targetIModelId });
       assert.isTrue(sourceDb.isBriefcaseDb());
       assert.exists(targetDb.isBriefcaseDb());
       assert.isFalse(sourceDb.isSnapshot);
@@ -168,7 +168,7 @@ describe("IModelTransformerHub (#integration)", () => {
         transformer.dispose();
         await targetDb.concurrencyControl.request(requestContext);
         targetDb.saveChanges();
-        assert.isFalse(targetDb.briefcase.nativeDb.hasPendingTxns());
+        assert.isFalse(targetDb.nativeDb.hasPendingTxns());
         await targetDb.pushChanges(requestContext, "Should not actually push because there are no changes");
       }
 
@@ -264,7 +264,7 @@ describe("IModelTransformerHub (#integration)", () => {
 
     try {
       // open/upgrade sourceDb
-      const sourceDb = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, sourceIModelId, SyncMode.PullAndPush, IModelVersion.latest());
+      const sourceDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: sourceIModelId });
       const seedBisCoreVersion = sourceDb.querySchemaVersion(BisCoreSchema.schemaName)!;
       assert.isTrue(semver.satisfies(seedBisCoreVersion, ">= 1.0.1"));
       sourceDb.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
@@ -302,7 +302,7 @@ describe("IModelTransformerHub (#integration)", () => {
       assert.isFalse(sourceDb.concurrencyControl.locks.hasSchemaLock);
 
       // open/upgrade targetDb
-      const targetDb = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, targetIModelId, SyncMode.PullAndPush, IModelVersion.latest());
+      const targetDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: targetIModelId });
       targetDb.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
       await targetDb.importSchemas(requestContext, [BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
       assert.isTrue(targetDb.containsClass(ExternalSourceAspect.classFullName), "Expect BisCore to be updated and contain ExternalSourceAspect");
