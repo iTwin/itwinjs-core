@@ -1299,6 +1299,9 @@ export const isIconListEditorParams: (item: BasePropertyEditorParams) => item is
 // @beta
 export const isInputEditorSizeParams: (item: BasePropertyEditorParams) => item is InputEditorSizeParams;
 
+// @alpha
+export function isLetter(char: string): boolean;
+
 // @internal (undocumented)
 export function isLowerAsciiLetter(code: number): boolean;
 

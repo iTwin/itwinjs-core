@@ -96,6 +96,7 @@ beta;isColorEditorParams: (item: BasePropertyEditorParams) => item is ColorEdito
 beta;isCustomFormattedNumberParams: (item: BasePropertyEditorParams) => item is CustomFormattedNumberParams
 beta;isIconListEditorParams: (item: BasePropertyEditorParams) => item is IconListEditorParams
 beta;isInputEditorSizeParams: (item: BasePropertyEditorParams) => item is InputEditorSizeParams
+alpha;isLetter(char: string): boolean
 internal;isLowerAsciiLetter(code: number): boolean
 internal;isPatternInWord(patternLow: string, patternPos: number, patternLen: number, wordLow: string, wordPos: number, wordLen: number): boolean
 beta;isStageLauncher: (item: BackstageItem) => item is BackstageStageLauncher
