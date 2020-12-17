@@ -240,7 +240,9 @@ describe("iModelHub iModelsHandler", () => {
   let iModelClient: IModelClient;
   const imodelName = utils.getUniqueIModelName(utils.sharedimodelName);
   const createIModelName = "imodeljs-client iModels Create test";
-  const imodelNameWithSpecialChars = `Д - ${Guid.createValue()}`;
+  const imodelNameWithSpecialChars = utils.getUniqueIModelName("Д");
+  const updatedimodelName = utils.getUniqueIModelName(`${imodelName}_updated`);
+
   const imodelClient: IModelClient = utils.getDefaultClient();
   let requestContext: AuthorizedClientRequestContext;
   let backupTimeout: RequestTimeoutOptions;
@@ -285,6 +287,7 @@ describe("iModelHub iModelsHandler", () => {
 
     await utils.deleteIModelByName(requestContext, assetId, createIModelName);
     await utils.deleteIModelByName(requestContext, assetId, imodelNameWithSpecialChars, false);
+    await utils.deleteIModelByName(requestContext, assetId, updatedimodelName, false);
   });
 
   it("should get list of IModels (#iModelBank)", async () => {
@@ -554,24 +557,23 @@ describe("iModelHub iModelsHandler", () => {
     const oldName = imodel.name;
     const oldDescription = imodel.description;
 
-    const newName = utils.getUniqueIModelName(`${imodelName}_updated`);
     const newDescription = "Description_updated";
-    await utils.deleteIModelByName(requestContext, projectId, newName);
-    imodel.name = newName;
+    await utils.deleteIModelByName(requestContext, projectId, updatedimodelName);
+    imodel.name = updatedimodelName;
     imodel.description = newDescription;
     mockUpdateiModel(projectId, imodel);
     let updatediModel = await iModelClient.iModels.update(requestContext, projectId, imodel);
 
     chai.expect(updatediModel.wsgId).to.be.equal(imodel.wsgId);
-    chai.expect(updatediModel.name).to.be.equal(newName);
+    chai.expect(updatediModel.name).to.be.equal(updatedimodelName);
     chai.expect(updatediModel.description).to.be.equal(newDescription);
 
-    mockGetIModelByName(projectId, newName, newDescription, imodel.id);
-    updatediModel = (await iModelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(newName)))[0];
+    mockGetIModelByName(projectId, updatedimodelName, newDescription, imodel.id);
+    updatediModel = (await iModelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(updatedimodelName)))[0];
 
     chai.assert(!!updatediModel);
     chai.expect(updatediModel.wsgId).to.be.equal(imodel.wsgId);
-    chai.expect(updatediModel.name).to.be.equal(newName);
+    chai.expect(updatediModel.name).to.be.equal(updatedimodelName);
     chai.expect(updatediModel.description).to.be.equal(newDescription);
 
     imodel.name = oldName;
