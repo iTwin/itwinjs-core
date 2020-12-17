@@ -6184,7 +6184,7 @@ export enum OutputMessageType {
     Toast = 0
 }
 
-// @beta
+// @alpha
 export interface OverrideFormatEntry {
     // (undocumented)
     imperial?: FormatProps;
