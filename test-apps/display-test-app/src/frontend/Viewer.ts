@@ -406,7 +406,7 @@ export class Viewer extends Window {
 
   private async resetIModel(filename: string): Promise<void> {
     let newIModel: IModelConnection;
-    const sameFile = filename === this._imodel.getRpcProps().key;
+    const sameFile = filename === this._imodel.key;
     if (!sameFile) {
       try {
         newIModel = await openStandaloneIModel(filename, this.surface.openReadWrite);
