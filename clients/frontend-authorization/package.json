@@ -16,7 +16,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "extract-api": "betools extract-api --entry=frontend-authorization-client",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/clients/frontend-authorization-client/file.json --tsIndexFile=frontend-authorization-client.ts --onlyJson",
-    "lint": "eslint -f visualstudio --max-warnings 0 ./src/**/*.ts 1>&2",
+    "lint": "eslint -f visualstudio ./src/**/*.ts 1>&2",
     "test": "",
     "cover": ""
   },
