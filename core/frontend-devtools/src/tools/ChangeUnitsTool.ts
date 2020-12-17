@@ -7,7 +7,7 @@
  * @module Tools
  */
 
-import { IModelApp, Tool, UnitSystemKey } from "@bentley/imodeljs-frontend";
+import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
 import { parseToggle } from "./parseToggle";
 
 // CSpell: ignore fmtr
@@ -21,21 +21,17 @@ export class ChangeUnitsTool extends Tool {
   public static get minArgs() { return 0; }
   public static get maxArgs() { return 1; }
 
-  // support boolean for backwards compatibility - string allows options to four unit systems
-  public run(useMetric?: boolean | string): boolean {
+  // support boolean for backwards compatibility
+  public run(useMetric?: boolean): boolean {
     const fmtr = IModelApp.quantityFormatter;
 
-    let unitSystem: UnitSystemKey = "imperial";
-    if (undefined !== useMetric) {
-      if (typeof useMetric === "boolean") {
-        unitSystem = useMetric ? "metric" : "imperial";
-      } else {
-        unitSystem = fmtr.getUnitSystemFromString(useMetric, "imperial");
-      }
-    }
+    // if no arg then toggle to metric from any non-metric unit system
+    const useImperial = undefined !== useMetric ? !useMetric : fmtr.activeUnitSystem === "metric";
+    const unitSystem = useImperial ? "imperial" : "metric";
 
     if (unitSystem !== fmtr.activeUnitSystem) {
       fmtr.setActiveUnitSystem(unitSystem);// eslint-disable-line @typescript-eslint/no-floating-promises
+      IModelApp.toolAdmin.startDefaultTool();
     }
 
     return true;

@@ -518,7 +518,10 @@ export class QuantityFormatter implements UnitsProvider {
   protected _overrideFormatPropsByQuantityType = new Map<QuantityTypeKey, OverrideFormatEntry>();
   protected _formatSpecProviders = new Array<FormatterParserSpecsProvider>();
 
-  /** Called after the active unit system is changed.  */
+  /** Called after the active unit system is changed.
+   * The useImperial argument should not be relied on now that multiple systems are supported. The system parameter
+   * will contain the system name being activated.
+   */
   public readonly onActiveUnitSystemChanged = new BeUiEvent<{ useImperial?: boolean, system?: string }>();
 
   /** Called after the active unit system is changed.  */
@@ -812,7 +815,7 @@ export class QuantityFormatter implements UnitsProvider {
       await Promise.all(promises);
   }
 
-  /** Converts a QuantityTypeArg into a string value. */
+  /** Converts a QuantityTypeArg into a QuantityTypeKey/string value. */
   protected getQuantityTypeKey(type: QuantityTypeArg): string {
     // For QuantityType enum values, build a string that shouldn't collide with anything a user may come up with
     if (typeof type === "number")
