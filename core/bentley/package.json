@@ -1,6 +1,6 @@
 {
   "name": "@bentley/bentleyjs-core",
-  "version": "2.11.0-dev.12",
+  "version": "2.11.0-dev.15",
   "description": "Bentley JavaScript core components",
   "main": "lib/bentleyjs-core.js",
   "typings": "lib/bentleyjs-core",
@@ -23,15 +23,17 @@
   },
   "keywords": [
     "Bentley",
-    "iModel"
+    "iModel",
+    "digital-twin",
+    "iTwin"
   ],
   "author": {
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.11.0-dev.12",
-    "@bentley/eslint-plugin": "2.11.0-dev.12",
+    "@bentley/build-tools": "2.11.0-dev.15",
+    "@bentley/eslint-plugin": "2.11.0-dev.15",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^5.2.5",

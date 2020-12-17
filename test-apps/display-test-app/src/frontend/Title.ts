@@ -11,5 +11,5 @@ export function setTitle(imodel: IModelConnection) {
   if (OpenMode.ReadWrite === imodel.openMode)
     prefix = undefined !== InteractiveEditingSession.get(imodel) ? "[ EDIT ] " : "[ R/W ] ";
 
-  document.title = `${prefix}${imodel.getRpcProps().key} - Display Test App`;
+  document.title = `${prefix}${imodel.key} - Display Test App`;
 }
