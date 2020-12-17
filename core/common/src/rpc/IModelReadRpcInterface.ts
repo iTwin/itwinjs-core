@@ -84,4 +84,6 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   public async getGeoCoordinatesFromIModelCoordinates(_iModelToken: IModelRpcProps, _props: string): Promise<GeoCoordinatesResponseProps> { return this.forward(arguments); }
   /** @beta */
   public async getGeometrySummary(_iModelToken: IModelRpcProps, _props: GeometrySummaryRequestProps): Promise<string> { return this.forward(arguments); }
+  /** @alpha */
+  public async getTextureImage(_iModelToken: IModelRpcProps, _textureName: string): Promise<Uint8Array | undefined> { return this.forward(arguments); }
 }

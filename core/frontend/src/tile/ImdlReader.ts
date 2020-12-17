@@ -224,19 +224,12 @@ export class ImdlReader extends GltfReader {
   }
 
   private async readNamedTexture(namedTex: any, name: string): Promise<RenderTexture | undefined> {
-    const bufferViewId = JsonUtils.asString(namedTex.bufferView);
-    const bufferViewJson = 0 !== bufferViewId.length ? this._bufferViews[bufferViewId] : undefined;
-    if (undefined === bufferViewJson)
+    const texBytes = await this._iModel.getTextureImage(name);
+    if (undefined === texBytes)
       return undefined;
 
-    const byteOffset = JsonUtils.asInt(bufferViewJson.byteOffset);
-    const byteLength = JsonUtils.asInt(bufferViewJson.byteLength);
-    if (0 === byteLength)
-      return undefined;
-
-    const bytes = this._binaryData.subarray(byteOffset, byteOffset + byteLength);
     const format = namedTex.format;
-    const imageSource = new ImageSource(bytes, format);
+    const imageSource = new ImageSource(texBytes, format);
 
     const image = await imageElementFromImageSource(imageSource);
     if (this._isCanceled)

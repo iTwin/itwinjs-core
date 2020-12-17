@@ -991,6 +991,13 @@ export abstract class IModelDb extends IModel {
     });
   }
 
+  /** Retrieve a named texture image from this iModel, as a Uint8Array.
+   * @param name the identifier of the texture
+   * @returns the Uint8Array or undefined if the texture image is not present.
+   * @alpha
+   */
+  public getTextureImage(name: string): Uint8Array | undefined { return this.nativeDb.getTextureImage(name) as Uint8Array | undefined; }
+
   /** Query a "file property" from this iModel, as a string.
    * @returns the property string or undefined if the property is not present.
    */
