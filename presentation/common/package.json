@@ -44,7 +44,7 @@
   },
   "peerDependencies": {
     "@bentley/bentleyjs-core": "^2.11.0-dev.15",
-    "@bentley/imodeljs-common": "^2.11.0-dev.15"
+    "@bentley/imodeljs-common": "^2.11.0-dev.15",
     "@bentley/imodeljs-quantity": "^2.11.0-dev.15"
   },
   "devDependencies": {
