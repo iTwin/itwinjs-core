@@ -151,7 +151,7 @@ export class IdMap implements WebGLDisposable {
   /** Mapping of textures using gradient symbology. */
   public readonly gradients = new Dictionary<Gradient.Symb, RenderTexture>(Gradient.Symb.compareSymb);
   /** Pending promises to create a texture from an ImageSource. This prevents us from decoding the same ImageSource multiple times */
-  private readonly _texturesFromImageSources = new Map<string, Promise<RenderTexture | undefined>>();
+  public readonly texturesFromImageSources = new Map<string, Promise<RenderTexture | undefined>>();
 
   public get isDisposed(): boolean {
     return 0 === this.textures.size && 0 === this.gradients.size;
@@ -255,7 +255,7 @@ export class IdMap implements WebGLDisposable {
       return Promise.resolve(texture);
 
     // Are we already in the process of creating this texture?
-    let promise = params.key ? this._texturesFromImageSources.get(params.key) : undefined;
+    let promise = params.key ? this.texturesFromImageSources.get(params.key) : undefined;
     if (promise)
       return promise;
 
@@ -263,7 +263,7 @@ export class IdMap implements WebGLDisposable {
     if (params.key) {
       // Ensure subsequent requests for this texture that arrive before we finish creating it receive the same promise,
       // instead of redundantly decoding the same image.
-      this._texturesFromImageSources.set(params.key, promise);
+      this.texturesFromImageSources.set(params.key, promise);
     }
 
     return promise;
@@ -279,7 +279,7 @@ export class IdMap implements WebGLDisposable {
     } finally {
       if (params.key) {
         // The promise has resolved or rejected - remove from pending set.
-        this._texturesFromImageSources.delete(params.key);
+        this.texturesFromImageSources.delete(params.key);
       }
     }
   }
@@ -659,7 +659,8 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return ToolAdmin.exceptionHandler(msg);
   }
 
-  private getIdMap(imodel: IModelConnection): IdMap {
+  /** Exposed strictly for tests. */
+  public getIdMap(imodel: IModelConnection): IdMap {
     const map = this.resourceCache.get(imodel);
     return undefined !== map ? map : this.createIModelMap(imodel);
   }

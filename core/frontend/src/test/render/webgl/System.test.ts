@@ -147,12 +147,20 @@ describe("RenderSystem", () => {
       return IModelApp.renderSystem.createTextureFromImageSource(source ?? imageSource, imodel, params);
     }
 
+    function expectPendingRequests(expectedCount: number): void {
+      const map = System.instance.getIdMap(imodel);
+      expect(map.texturesFromImageSources.size).to.equal(expectedCount);
+    }
+
     it("should return the same Promise for the same texture", async () => {
       const p1 = requestTexture("a");
+      expectPendingRequests(1);
       const p2 = requestTexture("a");
+      expectPendingRequests(1);
       expect(p1).to.equal(p2);
 
       const t1 = await p1;
+      expectPendingRequests(0);
       const t2 = await p2;
       expect(t1).to.equal(t2);
       expect(t1).not.to.be.undefined;
@@ -162,11 +170,15 @@ describe("RenderSystem", () => {
 
     it("should return different Promise for different textures", async () => {
       const p1 = requestTexture("b");
+      expectPendingRequests(1);
       const p2 = requestTexture("c");
+      expectPendingRequests(2);
       expect(p1).not.to.equal(p2);
 
       const t1 = await p1;
+      expectPendingRequests(1);
       const t2 = await p2;
+      expectPendingRequests(0);
       expect(t1).not.to.equal(t2);
 
       expect(t1).not.to.be.undefined;
@@ -179,6 +191,7 @@ describe("RenderSystem", () => {
     it("should return a different Promise for unnamed textures", async () => {
       const p1 = requestTexture(undefined);
       const p2 = requestTexture(undefined);
+      expectPendingRequests(0);
 
       expect(p1).not.to.equal(p2);
 
@@ -192,14 +205,18 @@ describe("RenderSystem", () => {
 
     it("should return a different Promise for existing textures", async () => {
       const p1 = requestTexture("d");
+      expectPendingRequests(1);
       const t1 = await p1;
+      expectPendingRequests(0);
 
       const p2 = requestTexture("d");
       expect(p2).not.to.equal(p1);
+      expectPendingRequests(0);
 
       const p3 = requestTexture("d");
       expect(p3).not.to.equal(p2);
       expect(p3).not.to.equal(p1);
+      expectPendingRequests(0);
 
       const t2 = await p2;
       expect(t2).to.equal(t1);
@@ -213,22 +230,29 @@ describe("RenderSystem", () => {
     it("should return undefined and remove pending Promise from cache on error", async () => {
       const source = new ImageSource(new Uint8Array([0, 1, 2, 3, 4]), ImageSourceFormat.Png);
       const p1 = requestTexture("e", source);
+      expectPendingRequests(1);
       const t1 = await p1;
       expect(t1).to.be.undefined;
+      expectPendingRequests(0);
 
       const p2 = requestTexture("e");
+      expectPendingRequests(1);
       expect(p2).not.to.equal(p1);
       const t2 = await p2;
       expect(t2).not.to.be.undefined;
+      expectPendingRequests(0);
 
       t2!.dispose();
     });
 
     it("should return undefined after render system is disposed", async () => {
+      const idmap = System.instance.getIdMap(imodel);
       const promise = requestTexture("f");
+      expect(idmap.texturesFromImageSources.size).to.equal(1);
       await IModelApp.shutdown();
       const texture = await promise;
       expect(texture).to.be.undefined;
+      expect(idmap.texturesFromImageSources.size).to.equal(0);
     });
   });
 });
