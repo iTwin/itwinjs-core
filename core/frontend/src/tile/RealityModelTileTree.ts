@@ -494,9 +494,6 @@ export namespace RealityModelTileTree {
         const modelZVector = Vector3d.createStartEnd(iModelOrigin, iModelElevation);
         const frameB = Transform.createOriginAndMatrixColumns(iModelOrigin, modelXVector, modelYVector, modelZVector);
 
-        // const xVector = Vector3d.createStartEnd(iModelOrigin, iModelEast);
-        // const yVector = Vector3d.createStartEnd(iModelOrigin, iModelNorth);
-        // const matrix = Matrix3d.createRigidFromColumns(xVector, yVector, AxisOrder.XYZ)!;
         rootTransform = frameB.multiplyTransformTransform(frameAInverse)!;
       }
 
