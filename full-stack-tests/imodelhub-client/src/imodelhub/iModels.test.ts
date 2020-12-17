@@ -240,6 +240,7 @@ describe("iModelHub iModelsHandler", () => {
   let iModelClient: IModelClient;
   const imodelName = utils.getUniqueIModelName(utils.sharedimodelName);
   const createIModelName = "imodeljs-client iModels Create test";
+  const imodelNameWithSpecialChars = `Д - ${Guid.createValue()}`;
   const imodelClient: IModelClient = utils.getDefaultClient();
   let requestContext: AuthorizedClientRequestContext;
   let backupTimeout: RequestTimeoutOptions;
@@ -283,6 +284,7 @@ describe("iModelHub iModelsHandler", () => {
     }
 
     await utils.deleteIModelByName(requestContext, assetId, createIModelName);
+    await utils.deleteIModelByName(requestContext, assetId, imodelNameWithSpecialChars, false);
   });
 
   it("should get list of IModels (#iModelBank)", async () => {
@@ -856,13 +858,12 @@ describe("iModelHub iModelsHandler", () => {
     let imodel: HubIModel = (await iModelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(imodelName)))[0];
     const oldimodelName = imodel.name;
 
-    const newName = `Д - ${Guid.createValue()}`;
-    imodel.name = newName;
+    imodel.name = imodelNameWithSpecialChars;
     mockUpdateiModel(projectId, imodel);
     imodel = await iModelClient.iModels.update(requestContext, projectId, imodel);
 
-    mockGetIModelByName(projectId, newName);
-    const iModels = await imodelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(newName));
+    mockGetIModelByName(projectId, imodelNameWithSpecialChars);
+    const iModels = await imodelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(imodelNameWithSpecialChars));
     chai.expect(iModels.length).to.be.equal(1);
 
     imodel.name = oldimodelName;
