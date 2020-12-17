@@ -1,3 +1,5 @@
+import { assert } from "chai";
+import * as path from "path";
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
@@ -5,11 +7,9 @@
 import { RequestHost } from "@bentley/backend-itwin-client";
 import { ChangeSetApplyOption, ChangeSetStatus, GuidString, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 import { HubUserInfo, UserInfoQuery, Version } from "@bentley/imodelhub-client";
-import { IModel, IModelVersion, SyncMode } from "@bentley/imodeljs-common";
+import { IModel, IModelVersion } from "@bentley/imodeljs-common";
 import { RequestGlobalOptions } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import { assert } from "chai";
-import * as path from "path";
 import { AuthorizedBackendRequestContext, BriefcaseManager, ChangeSetToken, PhysicalModel, StandaloneDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
@@ -46,7 +46,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     const myProjectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
     const myIModelId = await HubUtility.queryIModelIdByName(requestContext, myProjectId, iModelName);
 
-    const iModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, myProjectId, myIModelId.toString(), SyncMode.FixedVersion, version);
+    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: myProjectId, iModelId: myIModelId.toString(), asOf: version.toJSON() });
     assert.exists(iModel);
     assert(iModel.openMode === OpenMode.Readonly);
 
@@ -237,7 +237,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     const projectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
     const iModelId: GuidString = await HubUtility.pushIModel(requestContext, projectId, pathname);
 
-    const iModelDb = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, iModelId.toString(), SyncMode.PullAndPush, IModelVersion.latest());
+    const iModelDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: iModelId.toString() });
     assert(!!iModelDb);
 
     // Create and upload a dummy change set to the Hub
@@ -256,7 +256,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
   });
 
   it.skip("should purge the briefcase cache", async () => {
-    await BriefcaseManager.purgeCache(requestContext);
+    // await BriefcaseManager.purgeCache(requestContext);
   });
 
   it.skip("display info of all test users that accessed a specific iModel", async () => {

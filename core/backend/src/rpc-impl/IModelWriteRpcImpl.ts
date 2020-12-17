@@ -92,7 +92,7 @@ export class IModelWriteRpcImpl extends RpcInterface implements IModelWriteRpcIn
   }
 
   public async getParentChangeset(tokenProps: IModelRpcProps): Promise<string> {
-    return BriefcaseDb.findByKey(tokenProps.key).briefcase.parentChangeSetId;
+    return BriefcaseDb.findByKey(tokenProps.key).changeSetId;
   }
 
   public async updateProjectExtents(tokenProps: IModelRpcProps, newExtents: AxisAlignedBox3dProps): Promise<void> {
@@ -129,7 +129,7 @@ export class IModelWriteRpcImpl extends RpcInterface implements IModelWriteRpcIn
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     await iModelDb.pullAndMergeChanges(requestContext);
     requestContext.enter();
-    const parentChangeSetId = iModelDb.briefcase.parentChangeSetId;
+    const parentChangeSetId = iModelDb.changeSetId;
     if (doPush)
       await iModelDb.pushChanges(requestContext, comment);
     return parentChangeSetId;

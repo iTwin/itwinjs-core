@@ -20,7 +20,8 @@ describe("Content", () => {
 
   let imodel: IModelConnection;
   const openIModel = async () => {
-    imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
+    if (!imodel || !imodel.isOpen)
+      imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
     expect(imodel).is.not.null;
   };
 
@@ -30,6 +31,7 @@ describe("Content", () => {
   });
 
   after(async () => {
+    await imodel.close();
     await terminate();
   });
 
@@ -423,7 +425,8 @@ describe("Content", () => {
       });
     });
 
-    afterEach(() => {
+    afterEach(async () => {
+      await imodel.close();
       raceStub.restore();
     });
 
