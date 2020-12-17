@@ -157,6 +157,10 @@ export class RealityTileTree extends TileTree {
     if (!this.loader.parentsAndChildrenExclusive)
       selectedTiles.sort((a, b) => a.depth - b.depth);                    // If parent and child are not exclusive then display parents (low resolution) first.
 
+    const classifier = args.context.planarClassifiers.get(this.modelId);
+    if (classifier)
+      classifier.collectGraphics(args.context, { modelId: this.modelId, tiles: selectedTiles, location: args.location, isPointCloud: this.isPointCloud });
+
     assert(selectedTiles.length === displayedTileDescendants.length);
     for (let i = 0; i < selectedTiles.length; i++) {
       const selectedTile = selectedTiles[i];

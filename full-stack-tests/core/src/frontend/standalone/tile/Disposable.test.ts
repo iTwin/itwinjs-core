@@ -5,9 +5,9 @@
 import { assert, expect } from "chai";
 import { ByteStream, IDisposable } from "@bentley/bentleyjs-core";
 import { Arc3d, Point3d, Range3d } from "@bentley/geometry-core";
-import { ColorByName, ColorDef, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderTexture } from "@bentley/imodeljs-common";
+import { ColorByName, ColorDef, ImageBuffer, ImageBufferFormat, PlanarClipMask, QParams3d, QPoint3dList, RenderTexture } from "@bentley/imodeljs-common";
 import {
-  Decorations, GraphicList, GraphicType, ImdlReader, IModelApp, IModelConnection, OffScreenViewport, PlanarClassifierMap, RenderMemory, RenderPlanarClassifier,
+  Decorations, GraphicList, GraphicType, ImdlReader, IModelApp, IModelConnection, OffScreenViewport, PlanarClassifierMap, PlanarClassifierTarget, RenderMemory, RenderPlanarClassifier,
   RenderTextureDrape, SceneContext, ScreenViewport, SnapshotConnection, TextureDrapeMap, TileTreeReference,
 } from "@bentley/imodeljs-frontend";
 import { MeshArgs } from "@bentley/imodeljs-frontend/lib/render-primitives";
@@ -271,7 +271,8 @@ describe("Disposal of WebGL Resources", () => {
   class Classifier extends RenderPlanarClassifier {
     public disposed = false;
     public constructor() { super(); }
-    public collectGraphics(_context: SceneContext, _classified: TileTreeReference, _classifier: TileTreeReference): void { }
+    public collectGraphics(_context: SceneContext, _target: PlanarClassifierTarget): void { }
+    public setSource(_classifierTreeRef?: TileTreeReference, _planarClipMask?: PlanarClipMask): void { }
     public dispose(): void {
       expect(this.disposed).to.be.false;
       this.disposed = true;

@@ -395,3 +395,31 @@ export class MapBaseTransparencyTool extends Tool {
     return (isNaN(transparency) || transparency < 0 || transparency > 1) ? false : this.run(transparency);
   }
 }
+
+
+/** Set Map Masking.
+ * @alpha
+ */
+export class SetMapMasking extends Tool {
+  public static toolId = "SetMapMask";
+  public static get minArgs() { return 0; }
+  public static get maxArgs() { return 1; }
+
+  public run(onOff?: boolean): boolean {
+    const vp = IModelApp.viewManager.selectedView;
+    if (undefined === vp || !vp.view.isSpatialView())
+      return false;
+
+    const maskOn = (onOff === undefined) ? !vp.displayStyle.backgroundMapSettings.planarClipMask.anyDefined : onOff;
+
+    vp.changeBackgroundMapProps({ planarClipMask: maskOn ? { maskAllHigherPriorityModels: true } : {} });
+    vp.invalidateRenderPlan();
+
+    return true;
+  }
+
+  public parseAndRun(...args: string[]): boolean {
+    const toggle = parseToggle(args[0]);
+    return this.run(typeof toggle === "string" ? undefined : toggle);
+  }
+}

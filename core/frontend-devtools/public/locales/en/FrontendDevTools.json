@@ -278,6 +278,9 @@
     },
     "SetRealityModelMasking": {
       "keyin": "fdt set reality model mask"
+    },
+    "SetMapMask": {
+      "keyin": "fdt set map mask"
     }
   }
 }

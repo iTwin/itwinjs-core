@@ -14,7 +14,7 @@ import {
 import { Frustum, FrustumPlanes, Npc, RenderMode } from "@bentley/imodeljs-common";
 import { assert } from "console";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
-import { SceneContext } from "../../imodeljs-frontend";
+import { SceneContext, Tile } from "../../imodeljs-frontend";
 import { TileTreeReference } from "../../tile/internal";
 import { ViewingSpace } from "../../ViewingSpace";
 import { ViewState3d } from "../../ViewState";
@@ -27,7 +27,7 @@ const scratchRange = Range3d.createNull();
 export class PlanarTextureProjection {
   private static _postProjectionMatrixNpc = Matrix4d.createRowValues(/* Row 1 */ 0, 1, 0, 0, /* Row 1 */ 0, 0, 1, 0, /* Row 3 */ 1, 0, 0, 0, /* Row 4 */ 0, 0, 0, 1);
 
-  public static computePlanarTextureProjection(texturePlane: Plane3dByOriginAndUnitNormal, sceneContext: SceneContext, targetRef: TileTreeReference, drapeRefs: TileTreeReference[], viewState: ViewState3d, textureWidth: number, textureHeight: number, _heightRange?: Range1d): { textureFrustum?: Frustum, worldToViewMap?: Map4d, projectionMatrix?: Matrix4d, debugFrustum?: Frustum, zValue?: number } {
+  public static computePlanarTextureProjection(texturePlane: Plane3dByOriginAndUnitNormal, sceneContext: SceneContext, target: { tiles: Tile[], location: Transform }, drapeRefs: TileTreeReference[], viewState: ViewState3d, textureWidth: number, textureHeight: number, _heightRange?: Range1d): { textureFrustum?: Frustum, worldToViewMap?: Map4d, projectionMatrix?: Matrix4d, debugFrustum?: Frustum, zValue?: number } {
     const textureZ = texturePlane.getNormalRef();
     const viewingSpace = sceneContext.viewingSpace;
     const viewX = viewingSpace.rotation.rowX();
@@ -54,16 +54,9 @@ export class PlanarTextureProjection {
     const viewPlanes = new FrustumPlanes(viewFrustum);
     const viewClipPlanes = ConvexClipPlaneSet.createPlanes(viewPlanes.planes!);
 
-    const targetTree = targetRef.treeOwner.tileTree
-    const args = targetRef.createDrawArgs(sceneContext);;
-    if (!targetTree || !args)
-      return {};
-
-    const selectedTargetTiles = targetTree.selectTiles(args);
-
     let textureRange = Range3d.createNull();
-    const tileToTexture = textureTransform.multiplyTransformTransform(args.location)
-    for (const tile of selectedTargetTiles) {
+    const tileToTexture = textureTransform.multiplyTransformTransform(target.location)
+    for (const tile of target.tiles) {
       textureRange.extendRange(tileToTexture.multiplyRange(tile.range, scratchRange));
     }
 
@@ -114,9 +107,10 @@ export class PlanarTextureProjection {
       const eyeHeight = (textureRange.low.x + textureRange.high.x) / 2.0;
       const eyePlane = Plane3dByOriginAndUnitNormal.create(Point3d.createScale(textureZ, eyeHeight), textureZ);    // Centered in range - parallel to texture.
       const projectionRay = Ray3d.create(viewState.getEyePoint(), viewZ.crossProduct(textureX).normalize()!);
-      const projectionDistance = projectionRay.intersectionWithPlane(eyePlane!);
+      let projectionDistance = projectionRay.intersectionWithPlane(eyePlane!);
       const minNearToFarRatio = .01;  // Smaller value allows texture projection to conform tightly to view frustum.
       if (undefined !== projectionDistance) {
+        projectionDistance = Math.max(.1, projectionDistance);
         const eyePoint = textureTransform.multiplyPoint3d(projectionRay.fractionToPoint(projectionDistance));
         let near = eyePoint.z - textureRange.high.z;
         let far = eyePoint.z - textureRange.low.z;

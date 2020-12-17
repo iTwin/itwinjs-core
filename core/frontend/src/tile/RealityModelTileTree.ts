@@ -562,7 +562,7 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
     if (!classifierTree && !planarClipMask)
       return;
 
-    context.addPlanarClassifier(this.modelId, this, classifierTree, planarClipMask);
+    context.addPlanarClassifier(this.modelId, classifierTree, planarClipMask);
   }
 
   public discloseTileTrees(trees: TileTreeSet): void {

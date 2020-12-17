@@ -15,7 +15,7 @@ import { SceneContext } from "../../ViewContext";
 import { ViewState, ViewState3d } from "../../ViewState";
 import { RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
-import { RenderPlanarClassifier } from "../RenderPlanarClassifier";
+import { PlanarClassifierTarget, RenderPlanarClassifier } from "../RenderPlanarClassifier";
 import { BatchState } from "./BatchState";
 import { BranchStack } from "./BranchStack";
 import { CombineTexturesGeometry, ViewportQuadGeometry } from "./CachedGeometry";
@@ -256,6 +256,9 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   private readonly _renderCommands: RenderCommands;
   private readonly _branchStack = new BranchStack();
   private readonly _batchState: BatchState;
+  private _planarClipMask?: PlanarClipMask;
+  private _classifierTreeRef?: TileTreeReference;
+
   private static _postProjectionMatrix = Matrix4d.createRowValues(
     0, 1, 0, 0,
     0, 0, -1, 0,
@@ -331,17 +334,18 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
       this.pushBatches(batchState, this._graphics);
   }
 
-  public collectGraphics(context: SceneContext, classifiedTreeRef: TileTreeReference, classifierTreeRef?: TileTreeReference, planarClipMask?: PlanarClipMask): void {
+  public setSource(classifierTreeRef?: TileTreeReference, planarClipMask?: PlanarClipMask) {
+    this._classifierTreeRef = classifierTreeRef;
+    this._planarClipMask = planarClipMask;
+  }
+
+  public collectGraphics(context: SceneContext, target: PlanarClassifierTarget): void {
     this._graphics.length = 0;
     if (undefined === context.viewingSpace)
       return;
 
     const viewState = context.viewingSpace.view as ViewState3d;
     if (undefined === viewState)
-      return;
-
-    const classifiedTree = classifiedTreeRef.treeOwner.load();
-    if (undefined === classifiedTree)
       return;
 
     // TBD - Refine resolution calculation -- increase height based on viewing angle.
@@ -353,11 +357,11 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
 
     this._width = requiredWidth;
     this._height = requiredHeight;
-    const trees: TileTreeReference[] = classifierTreeRef ? [classifierTreeRef] : [];
-    if (planarClipMask)
-      this.getPlanarClipMaskTileTrees(trees, context.viewport.view, classifiedTree.modelId, planarClipMask);
+    const sourceTrees: TileTreeReference[] = this._classifierTreeRef ? [this._classifierTreeRef] : [];
+    if (this._planarClipMask)
+      this.getPlanarClipMaskTileTrees(sourceTrees, context.viewport.view, target.modelId, this._planarClipMask);
 
-    const projection = PlanarTextureProjection.computePlanarTextureProjection(this._plane, context, classifiedTreeRef, trees, viewState, this._width, this._height);
+    const projection = PlanarTextureProjection.computePlanarTextureProjection(this._plane, context, target, sourceTrees, viewState, this._width, this._height);
     if (!projection.textureFrustum || !projection.projectionMatrix || !projection.worldToViewMap)
       return;
 
@@ -365,14 +369,14 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     this._frustum = projection.textureFrustum;
     this._debugFrustum = projection.debugFrustum;
 
-    for (const treeRef of trees) {
+    for (const treeRef of sourceTrees) {
       const drawArgs = GraphicsCollectorDrawArgs.create(context, this, treeRef, new FrustumPlanes(this._frustum), projection.worldToViewMap);
       if (undefined !== drawArgs)
         treeRef.draw(drawArgs);
     }
 
     // Shader behaves slightly differently when classifying surfaces vs point clouds.
-    this._isClassifyingPointCloud = classifiedTree.isPointCloud;
+    this._isClassifyingPointCloud = target.isPointCloud;
 
     if (this._doDebugFrustum) {
       this._debugFrustumGraphic = dispose(this._debugFrustumGraphic);

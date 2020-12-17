@@ -6,7 +6,7 @@
  * @module DisplayStyles
  */
 
-import { PlanarClipMaskProps } from "./PlanarClipMask";
+import { PlanarClipMask, PlanarClipMaskProps } from "./PlanarClipMask";
 import { TerrainProps, TerrainSettings } from "./TerrainSettings";
 
 /** Describes the type of background map displayed by a [[DisplayStyle]]
@@ -117,8 +117,8 @@ export class BackgroundMapSettings {
   public readonly terrainSettings: TerrainSettings;
   /** Globe display mode. */
   public readonly globeMode: GlobeMode;
-  /** Planar Mask - used to mask the background map  */
-  public readonly planarClipMask?: PlanarClipMaskProps;
+  /** Planar Mask - used to mask the background map to avoid overlapping with other geometry */
+  public readonly planarClipMask: PlanarClipMask;
   private readonly _locatable: boolean;
   /** If false, the map will be treated as non-locatable - i.e., tools will not interact with it. This is particularly useful when the map is transparent - it
    * allows the user to select elements that are behind the map.
@@ -147,7 +147,7 @@ export class BackgroundMapSettings {
     this.terrainSettings = TerrainSettings.fromJSON(props.terrainSettings);
     this.globeMode = normalizeGlobeMode(props.globeMode);
     this._locatable = true !== props.nonLocatable;
-    this.planarClipMask = { maskAllHigherPriorityModels: true }; // props.planarClipMask;
+    this.planarClipMask = PlanarClipMask.fromJSON(props.planarClipMask);
   }
 
   /** Construct from JSON, performing validation and applying default values for undefined fields. */
@@ -181,6 +181,7 @@ export class BackgroundMapSettings {
         break;
       }
     }
+    props.planarClipMask = this.planarClipMask.anyDefined ? this.planarClipMask.toJSON() : undefined;
 
     return props;
   }
@@ -193,7 +194,7 @@ export class BackgroundMapSettings {
   public equals(other: BackgroundMapSettings): boolean {
     return this.groundBias === other.groundBias && this.providerName === other.providerName && this.mapType === other.mapType
       && this.useDepthBuffer === other.useDepthBuffer && this.transparency === other.transparency && this.globeMode === other.globeMode
-      && this._locatable === other._locatable && this.applyTerrain === other.applyTerrain && this.terrainSettings.equals(other.terrainSettings);
+      && this._locatable === other._locatable && this.applyTerrain === other.applyTerrain && this.terrainSettings.equals(other.terrainSettings) && this.planarClipMask.equals(other.planarClipMask);
   }
 
   /** Create a copy of this BackgroundMapSettings, optionally modifying some of its properties.
@@ -216,6 +217,7 @@ export class BackgroundMapSettings {
       providerData: {
         mapType: changedProps.providerData?.mapType ?? this.mapType,
       },
+      planarClipMask: changedProps.planarClipMask ?? this.planarClipMask
     };
 
     return BackgroundMapSettings.fromJSON(props);
