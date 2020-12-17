@@ -70,8 +70,8 @@ describe("iModelHub ThumbnailHandler (#unit)", () => {
     // // Delete and create a new iModel if we have not expected number of versions.
     // versions = (await imodelHubClient.versions.get(requestContext, imodelId));
     // if (versions.length !== 0 && versions.length !== 3) {
-    //   await utils.createIModel(requestContext, utils.sharedimodelName, _projectId, true);
-    //   imodelId = await getIModelId(requestContext, utils.sharedimodelName);
+    //   await utils.createIModel(requestContext, imodelName, _projectId, true);
+    //   imodelId = await getIModelId(requestContext, imodelName);
     //   versions = new Array<Version>();
     // }
 
