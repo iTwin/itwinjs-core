@@ -3,15 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import * as path from "path";
 import * as fs from "fs-extra";
+import * as path from "path";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { IModelHubError } from "@bentley/imodelhub-client";
-import { ElementAspectProps, IModel, IModelVersion, SubCategoryAppearance, SyncMode } from "@bentley/imodeljs-common";
+import { ElementAspectProps, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { Reporter } from "@bentley/perf-tools/lib/Reporter";
-import { BriefcaseDb, DictionaryModel, ElementAspect, IModelDb, SnapshotDb, SpatialCategory } from "../imodeljs-backend";
+import { DictionaryModel, ElementAspect, IModelDb, SnapshotDb, SpatialCategory } from "../imodeljs-backend";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { KnownTestLocations } from "../test/KnownTestLocations";
 
@@ -41,7 +41,7 @@ async function createNewModelAndCategory(requestContext: AuthorizedClientRequest
 describe("ElementAspectPerformance", () => {
   const reporter = new Reporter();
   let requestContext: AuthorizedClientRequestContext;
-  let iModelDbHub: BriefcaseDb;
+  let iModelDbHub: SnapshotDb;
 
   before(async () => {
     if (!fs.existsSync(KnownTestLocations.outputDir))
@@ -51,7 +51,7 @@ describe("ElementAspectPerformance", () => {
     const imodelId = configData.basicTest.aspectIModelId;
 
     requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
-    iModelDbHub = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, imodelId, SyncMode.FixedVersion, IModelVersion.latest());
+    iModelDbHub = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: projectId, iModelId: imodelId });
     assert.exists(iModelDbHub);
   });
 
