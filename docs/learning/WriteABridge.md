@@ -1,5 +1,5 @@
 ## How to write an iTwin Connector
-Note: iTwin Connectors were also known as iModel Bridges.  Though the term "iModel Bridge" has been deprecated in fovor of "iTwin Connector", for legacy and backward compatibility reasons, you may find the older terminology usedin this documentation.  You can consider them the same.
+Note: iTwin Connectors were also known as iModel Bridges.  Though the term "iModel Bridge" has been deprecated in favor of "iTwin Connector", for legacy and backward compatibility reasons, you may find the older terminology used in this documentation.  You can consider them the same.
 
 ### Connecting data to an iTwin
 
@@ -67,17 +67,17 @@ If the source application data has a property that conceptually matches the BIS 
 
 Rather than starting over when the source data changes, a connector should be able to detect and convert only the changes. That makes for compact, meaningful changesets, which are added to the iModel's [timeline](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/IModelHub/index.md#the-timeline-of-changes-to-an-imodel).
 
-To do incremental updates, a connector must do Id mapping and change-detection. An iTwin Connector uses the ExternalSourceAspect class defined in the BIS schema to acheive both. The following sections describe how this is acheived. 
+To do incremental updates, a connector must do Id mapping and change-detection. An iTwin Connector uses the ExternalSourceAspect class defined in the BIS schema to acheive both. The following sections describe how this is acheived.
 
 **Provenance**
 
-Id mapping is a way of looking up the data in the iModel that corresponds to a given piece of source data. If the source data has stable, unique IDs, then Id mapping could be straightforward. 
+Id mapping is a way of looking up the data in the iModel that corresponds to a given piece of source data. If the source data has stable, unique IDs, then Id mapping could be straightforward.
 
 Note: If the source data does not have stable, unique IDs, then the connector will have to use some other means of identifying pieces of source data in a stable way. A cryptographic hash of the source data itself can work as a stable Id -- that is, it can be used to identify data that has not changed.
 
 **Change-detection**
 
-Change-detection is a way of detecting changes in the source data. 
+Change-detection is a way of detecting changes in the source data.
 
 If the source data is timestamped in some way, then the change-detection logic should be easy. The connector just has to save the highest timestamp at the end of the conversion and then look for source data with later timestamps the next time it runs.
 
