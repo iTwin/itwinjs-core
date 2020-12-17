@@ -248,12 +248,12 @@ export class IModelExporter {
     if (!this.sourceDb.isBriefcaseDb()) {
       throw new IModelError(IModelStatus.BadRequest, "Must be a briefcase to export changes", Logger.logError, loggerCategory);
     }
-    if ((undefined === this.sourceDb.briefcase.parentChangeSetId) || ("" === this.sourceDb.briefcase.parentChangeSetId)) {
+    if ((undefined === this.sourceDb.changeSetId) || ("" === this.sourceDb.changeSetId)) {
       this.exportAll(); // no changesets, so revert to exportAll
       return;
     }
     if (undefined === startChangeSetId) {
-      startChangeSetId = this.sourceDb.briefcase.currentChangeSetId;
+      startChangeSetId = this.sourceDb.changeSetId;
     }
     this._sourceDbChanges = await ChangedInstanceIds.initialize(requestContext, this.sourceDb, startChangeSetId);
     requestContext.enter();
@@ -687,7 +687,7 @@ class ChangedInstanceIds {
     requestContext.enter();
     const extractContext = new ChangeSummaryExtractContext(iModelDb); // NOTE: ChangeSummaryExtractContext is nothing more than a wrapper around IModelDb that has a method to get the iModelId
     // NOTE: ChangeSummaryManager.downloadChangeSets has nothing really to do with change summaries but has the desired behavior of including the start changeSet (unlike BriefcaseManager.downloadChangeSets)
-    const changeSets: ChangeSet[] = await ChangeSummaryManager.downloadChangeSets(requestContext, extractContext, startChangeSetId, iModelDb.briefcase.currentChangeSetId);
+    const changeSets: ChangeSet[] = await ChangeSummaryManager.downloadChangeSets(requestContext, extractContext, startChangeSetId, iModelDb.changeSetId);
     requestContext.enter();
     const changedInstanceIds = new ChangedInstanceIds();
     changeSets.forEach((changeSet: ChangeSet): void => {

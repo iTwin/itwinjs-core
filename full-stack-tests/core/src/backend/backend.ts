@@ -15,6 +15,8 @@ import { FileNameResolver, IModelHost, IModelHostConfiguration } from "@bentley/
 import { BentleyCloudRpcManager, ElectronRpcConfiguration, ElectronRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
+import { EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
+import * as testCommands from "./EditCommand.test";
 
 /* eslint-disable no-console */
 
@@ -41,6 +43,7 @@ async function init() {
 
   if (ElectronRpcConfiguration.isElectron) {
     ElectronRpcManager.initializeImpl({}, rpcInterfaces);
+    EditCommandAdmin.registerModule(testCommands);
   } else {
     const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "full-stack-test", version: "v1.0" } }, rpcInterfaces);
 
