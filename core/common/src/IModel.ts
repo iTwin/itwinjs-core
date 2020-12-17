@@ -8,18 +8,17 @@
 
 import { GeoServiceStatus, GuidString, Id64, Id64String, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { Angle, AxisIndex, AxisOrder, Constant, Matrix3d, Point3d, Range3d, Range3dProps, Transform, Vector3d, XYAndZ, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@bentley/geometry-core";
+import { UpgradeOptions } from "./BriefcaseTypes";
 import { Cartographic, LatLongAndHeight } from "./geometry/Cartographic";
 import { GeographicCRS, GeographicCRSProps } from "./geometry/CoordinateReferenceSystem";
 import { AxisAlignedBox3d } from "./geometry/Placement";
 import { IModelError } from "./IModelError";
 import { ThumbnailProps } from "./Thumbnail";
 
-/** The properties that identify a specific instance of an iModel for RPC operations.
+/** The properties to open a connection to an iModel for RPC operations.
  * @public
  */
-export interface IModelRpcProps {
-  /** Key used for identifying the iModel on the backend */
-  readonly key: string;
+export interface IModelRpcOpenProps {
   /** The context (Project, Asset, or other infrastructure) in which the iModel exists - must be defined for briefcases that are synchronized with iModelHub. */
   readonly contextId?: GuidString;
   /** Guid of the iModel. */
@@ -28,6 +27,14 @@ export interface IModelRpcProps {
   changeSetId?: GuidString;
   /** Mode used to open the iModel */
   openMode?: OpenMode;
+}
+
+/** The properties that identify an opened iModel for RPC operations.
+ * @public
+ */
+export interface IModelRpcProps extends IModelRpcOpenProps {
+  /** Unique key used for identifying the iModel between the frontend and the backend */
+  readonly key: string;
 }
 
 /** Properties that position an iModel on the earth via [ECEF](https://en.wikipedia.org/wiki/ECEF) (Earth Centered Earth Fixed) coordinates
@@ -102,11 +109,30 @@ export interface IModelEncryptionProps {
   password?: string;
 }
 
-/** @public */
-export interface SnapshotOpenOptions extends IModelEncryptionProps {
+/**
+ * A key used to identify an opened IModelDb between the frontend and backend for RPC communications.
+ * Keys must be unique - that is there can never be two IModelDbs opened with the same key at any given time.
+ * If no key is supplied in a call to open an IModelDb, one is generated and returned.
+ * It is only necessary to supply a key if you have some reason to assign a specific value to identify an IModelDb.
+ * If you don't supply the key, you must use the returned value for RPC communications.
+ * @public
+ */
+export interface OpenDbKey {
+  key?: string;
+}
+
+/** Options that can be supplied when opening an existing SnapshotDb.
+ * @public
+ */
+export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey {
   /** @internal */
   lazyBlockCache?: boolean;
 }
+
+/** Options that can be supplied when opening an existing StandaloneDb.
+ * @beta
+ */
+export type StandaloneOpenOptions = OpenDbKey & UpgradeOptions;
 
 /** Options that can be supplied when creating snapshot iModels.
  * @public
@@ -284,31 +310,37 @@ export abstract class IModel implements IModelProps {
     return this.getConnectionProps();
   }
 
-  /** A key used to identify this iModel across the frontend and backend.
+  /** A key used to identify this iModel in RPC calls from frontend to backend.
    * @internal
    */
   protected _fileKey: string;
-  /** The Guid that identifies the *context* that owns this iModel. */
-  public get contextId(): GuidString | undefined { return this._contextId; }
+  /** Get the key that was used to open this iModel. This is the value used for RPC communications. */
+  public get key() { return this._fileKey; }
+
   /** @internal */
   protected _contextId?: GuidString;
+  /** The Guid that identifies the *context* that owns this iModel. */
+  public get contextId(): GuidString | undefined { return this._contextId; }
+
+  private _iModelId?: GuidString;
   /** The Guid that identifies this iModel. */
   public get iModelId(): GuidString | undefined { return this._iModelId; }
-  private _iModelId?: GuidString;
+
+  /** @internal */
+  protected _changeSetId: string | undefined;
   /** The Id of the last changeset that was applied to this iModel.
    * @note An empty string indicates the first version while `undefined` mean no changeset information is available.
    */
-  public get changeSetId(): string | undefined { return this._changeSetId; }
-  /** @internal */
-  protected _changeSetId: string | undefined;
+  public get changeSetId() { return this._changeSetId; }
+
   /** The [[OpenMode]] used for this IModel. */
   public readonly openMode: OpenMode;
 
-  /** Return a token that can be used to identify this iModel for RPC operations. */
+  /** Return a token for RPC operations. */
   public getRpcProps(): IModelRpcProps {
-    if (!this.isOpen) {
-      throw new IModelError(IModelStatus.BadRequest, "Could not generate valid IModelRpcProps", Logger.logError);
-    }
+    if (!this.isOpen)
+      throw new IModelError(IModelStatus.BadRequest, "IModel is not open for rpc", Logger.logError);
+
     return {
       key: this._fileKey,
       contextId: this.contextId,
