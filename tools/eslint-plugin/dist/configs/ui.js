@@ -14,7 +14,7 @@ module.exports = {
   "rules": {
     "jam3/no-sanitizer-with-danger": 2,
     "@typescript-eslint/naming-convention": [
-      "warn",
+      "error",
       {
         "selector": "function",
         "format": [

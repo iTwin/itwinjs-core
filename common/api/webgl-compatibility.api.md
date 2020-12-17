@@ -9,8 +9,10 @@ export class Capabilities {
     // (undocumented)
     get canRenderDepthWithoutColor(): boolean;
     // (undocumented)
-    static create(gl: WebGLRenderingContext | WebGL2RenderingContext, disabledExtensions?: WebGLExtensionName[]): Capabilities | undefined;
-    init(gl: WebGLRenderingContext | WebGL2RenderingContext, disabledExtensions?: WebGLExtensionName[]): WebGLRenderCompatibilityInfo;
+    static create(gl: WebGLContext, disabledExtensions?: WebGLExtensionName[]): Capabilities | undefined;
+    // (undocumented)
+    get driverBugs(): GraphicsDriverBugs;
+    init(gl: WebGLContext, disabledExtensions?: WebGLExtensionName[]): WebGLRenderCompatibilityInfo;
     // (undocumented)
     get isMobile(): boolean;
     // (undocumented)
@@ -45,7 +47,7 @@ export class Capabilities {
     // (undocumented)
     static readonly requiredFeatures: WebGLFeature[];
     // (undocumented)
-    setMaxAnisotropy(desiredMax: number | undefined, gl: WebGLRenderingContext | WebGL2RenderingContext): void;
+    setMaxAnisotropy(desiredMax: number | undefined, gl: WebGLContext): void;
     // (undocumented)
     get supports32BitElementIndex(): boolean;
     // (undocumented)
@@ -84,7 +86,7 @@ export class Capabilities {
 }
 
 // @beta
-export type ContextCreator = (canvas: HTMLCanvasElement, useWebGL2: boolean, inputContextAttributes?: WebGLContextAttributes) => WebGLRenderingContext | WebGL2RenderingContext | undefined;
+export type ContextCreator = (canvas: HTMLCanvasElement, useWebGL2: boolean, inputContextAttributes?: WebGLContextAttributes) => WebGLContext | undefined;
 
 // @internal
 export enum DepthType {
@@ -94,6 +96,11 @@ export enum DepthType {
     TextureUnsignedInt24Stencil8 = 1,
     // (undocumented)
     TextureUnsignedInt32 = 2
+}
+
+// @beta
+export interface GraphicsDriverBugs {
+    fragDepthDoesNotDisableEarlyZ?: true;
 }
 
 // @beta
@@ -108,6 +115,9 @@ export enum RenderType {
     // (undocumented)
     TextureUnsignedByte = 0
 }
+
+// @public
+export type WebGLContext = WebGLRenderingContext | WebGL2RenderingContext;
 
 // @internal (undocumented)
 export type WebGLExtensionName = "WEBGL_draw_buffers" | "OES_element_index_uint" | "OES_texture_float" | "OES_texture_float_linear" | "OES_texture_half_float" | "OES_texture_half_float_linear" | "EXT_texture_filter_anisotropic" | "WEBGL_depth_texture" | "EXT_color_buffer_float" | "EXT_shader_texture_lod" | "ANGLE_instanced_arrays" | "OES_vertex_array_object" | "WEBGL_lose_context" | "EXT_frag_depth" | "EXT_disjoint_timer_query" | "EXT_disjoint_timer_query_webgl2" | "OES_standard_derivatives" | "EXT_float_blend";
@@ -130,7 +140,8 @@ export enum WebGLFeature {
 // @beta
 export interface WebGLRenderCompatibilityInfo {
     contextErrorMessage?: string;
-    createdContext?: WebGLRenderingContext | WebGL2RenderingContext | undefined;
+    createdContext?: WebGLContext;
+    driverBugs: GraphicsDriverBugs;
     missingOptionalFeatures: WebGLFeature[];
     missingRequiredFeatures: WebGLFeature[];
     status: WebGLRenderCompatibilityStatus;

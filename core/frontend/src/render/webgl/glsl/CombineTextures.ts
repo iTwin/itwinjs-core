@@ -6,6 +6,7 @@
  * @module WebGL
  */
 
+import { WebGLContext } from "@bentley/webgl-compatibility";
 import { CombineTexturesGeometry } from "../CachedGeometry";
 import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderComponent, VariablePrecision, VariableType } from "../ShaderBuilder";
@@ -23,7 +24,7 @@ const assignFragData = `
 `;
 
 /** @internal */
-export function createCombineTexturesProgram(context: WebGLRenderingContext | WebGL2RenderingContext): ShaderProgram {
+export function createCombineTexturesProgram(context: WebGLContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;
 
