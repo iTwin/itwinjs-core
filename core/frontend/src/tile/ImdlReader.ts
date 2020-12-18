@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, ByteStream, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { assert, ByteStream, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Point3d, Range2d, Range3d, Transform } from "@bentley/geometry-core";
 import {
   BatchType, ColorDef, ElementAlignedBox3d, FeatureTableHeader, FillFlags, Gradient, ImageSource, ImageSourceFormat, ImdlHeader, LinePixels,
@@ -224,9 +224,28 @@ export class ImdlReader extends GltfReader {
   }
 
   private async readNamedTexture(namedTex: any, name: string): Promise<RenderTexture | undefined> {
-    const texBytes = await this._iModel.getTextureImage(name);
-    if (undefined === texBytes)
-      return undefined;
+    let texBytes: Uint8Array | undefined;
+
+    if (Id64.isValidId64(name)) {
+      // This texture has a valid Id64 name. It is valid to request it directly from the backend.
+      texBytes = await this._iModel.getTextureImage(name);
+      if (undefined === texBytes)
+        return undefined;
+    } else {
+      // This texture does not have a valid Id64 name. It is not valid to request it directly from the backend.
+      // Instead, we retrieve the texture directly from the tile.
+      const bufferViewId = JsonUtils.asString(namedTex.bufferView);
+      const bufferViewJson = 0 !== bufferViewId.length ? this._bufferViews[bufferViewId] : undefined;
+      if (undefined === bufferViewJson)
+        return undefined;
+
+      const byteOffset = JsonUtils.asInt(bufferViewJson.byteOffset);
+      const byteLength = JsonUtils.asInt(bufferViewJson.byteLength);
+      if (0 === byteLength)
+        return undefined;
+
+      texBytes = this._binaryData.subarray(byteOffset, byteOffset + byteLength);
+    }
 
     const format = namedTex.format;
     const imageSource = new ImageSource(texBytes, format);
