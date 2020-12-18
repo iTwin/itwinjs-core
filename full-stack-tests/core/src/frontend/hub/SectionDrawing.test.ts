@@ -19,7 +19,7 @@ describe("Section Drawings (#integration)", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    DrawingViewState.alwaysLoadSectionDrawingInfo = true;
+    DrawingViewState.alwaysDisplaySpatialView = true;
 
     await IModelApp.startup({
       authorizationClient: await TestUtility.initializeTestProject(projectName, TestUsers.regular),
@@ -33,7 +33,7 @@ describe("Section Drawings (#integration)", () => {
   });
 
   after(async () => {
-    DrawingViewState.alwaysLoadSectionDrawingInfo = false;
+    DrawingViewState.alwaysDisplaySpatialView = false;
 
     if (imodel)
       await imodel.close();
