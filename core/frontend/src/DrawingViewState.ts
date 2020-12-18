@@ -14,20 +14,22 @@ import {
   AxisAlignedBox3d, Frustum, ViewDefinition2dProps, ViewFlagOverrides, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { ViewRect } from "./ViewRect";
+import { Frustum2d } from "./Frustum2d";
 import { ExtentLimits, ViewState2d, ViewState3d } from "./ViewState";
 import { IModelConnection } from "./IModelConnection";
 import { IModelApp } from "./IModelApp";
 import { CategorySelectorState } from "./CategorySelectorState";
 import { DisplayStyle2dState } from "./DisplayStyleState";
 import { SectionDrawingModelState } from "./ModelState";
-import { CoordSystem, OffScreenViewport } from "./Viewport";
+import { CoordSystem, OffScreenViewport, Viewport } from "./Viewport";
 import { SceneContext } from "./ViewContext";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { Scene } from "./render/Scene";
 import { MockRender } from "./render/MockRender";
 import { GraphicBranch, GraphicBranchOptions } from "./render/GraphicBranch";
 import { RenderGraphic } from "./render/RenderGraphic";
-import { TileGraphicType } from "./tile/internal";
+import { RenderMemory } from "./render/RenderMemory";
+import { TileGraphicType, TileTreeSet } from "./tile/internal";
 
 /** Strictly for testing.
  * @internal
@@ -214,11 +216,12 @@ export class DrawingViewState extends ViewState2d {
   /** Exposed strictly for testing and debugging. Indicates that the 2d graphics should not be displayed.
    * @internal
    */
-  public static hide2dGraphics = false;
+  public static hideDrawingGraphics = false;
 
   private readonly _modelLimits: ExtentLimits;
   private readonly _viewedExtents: AxisAlignedBox3d;
   private _attachment?: SectionAttachment;
+  private _removeTileLoadListener?: () => void;
 
   /** Strictly for testing. @internal */
   public get sectionDrawingInfo() {
@@ -293,4 +296,68 @@ export class DrawingViewState extends ViewState2d {
 
   /** @internal */
   public isDrawingView(): this is DrawingViewState { return true; }
+
+  /** @internal */
+  public getOrigin() {
+    const origin = super.getOrigin();
+    if (this._attachment)
+      origin.z = -this._attachment.zDepth;
+
+    return origin;
+  }
+
+  /** @internal */
+  public getExtents() {
+    const extents = super.getExtents();
+    if (this._attachment)
+      extents.z = this._attachment.zDepth + Frustum2d.minimumZDistance;
+
+    return extents;
+  }
+
+  /** @internal */
+  public discloseTileTrees(trees: TileTreeSet): void {
+    super.discloseTileTrees(trees);
+    if (this._attachment)
+      trees.disclose(this._attachment.viewport);
+  }
+
+  /** @internal */
+  public createScene(context: SceneContext): void {
+    if (!DrawingViewState.hideDrawingGraphics)
+      super.createScene(context);
+
+    if (this._attachment) {
+      // ###TODO: better way to do this...
+      this.updateTileLoadListener(context.viewport);
+      this._attachment.addToScene(context);
+    }
+  }
+
+  private updateTileLoadListener(vp: Viewport): void {
+    if (this._removeTileLoadListener || !this._attachment)
+      return;
+
+    // This view just became associated with a Viewport. Make sure we update the attachment graphics when new tiles become loaded.
+    // Once the view is no longer associated with the Viewport, we'll stop listening for those events.
+    // ###TODO: cleaner way to do this?
+    this._removeTileLoadListener = IModelApp.tileAdmin.addLoadListener(() => this.onTileLoad(vp));
+  }
+
+  private onTileLoad(vp: Viewport): void {
+    if (!this._removeTileLoadListener)
+      return;
+
+    if (vp.isDisposed || vp.view !== this || !this._attachment) {
+      this._removeTileLoadListener();
+      this._removeTileLoadListener = undefined;
+    } else {
+      this._attachment.viewport.invalidateScene();
+    }
+  }
+
+  /** @internal */
+  public get areAllTileTreesLoaded(): boolean {
+    return super.areAllTileTreesLoaded && (!this._attachment || this._attachment.view.areAllTileTreesLoaded);
+  }
 }
