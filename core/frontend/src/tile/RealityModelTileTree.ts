@@ -466,37 +466,40 @@ export namespace RealityModelTileTree {
       const ecefNorthPoint = ecefOrigin.plusXYZ(0, 10, 0);
       const ecefElevationPoint = ecefOrigin.plusXYZ(0, 0, 10);
 
-      const cartographicOrigin = Cartographic.fromEcef(ecefOrigin)!;
-      const cartographicNorth = Cartographic.fromEcef(ecefNorthPoint)!;
-      const cartographicEast = Cartographic.fromEcef(ecefEastPoint)!;
+      const cartographicOrigin = Cartographic.fromEcef(ecefOrigin);
+      const cartographicNorth = Cartographic.fromEcef(ecefNorthPoint);
+      const cartographicEast = Cartographic.fromEcef(ecefEastPoint);
       const cartographicElevation = Cartographic.fromEcef(ecefElevationPoint);
 
-      const geoOrigin = Point3d.create(cartographicOrigin.longitudeDegrees, cartographicOrigin.latitudeDegrees, cartographicOrigin.height);
-      const geoNorth = Point3d.create(cartographicNorth.longitudeDegrees, cartographicNorth.latitudeDegrees, cartographicNorth.height);
-      const geoEast = Point3d.create(cartographicEast.longitudeDegrees, cartographicEast.latitudeDegrees, cartographicEast.height);
-      const geoElevation = Point3d.create(cartographicElevation?.longitudeDegrees, cartographicElevation?.latitudeDegrees, cartographicElevation?.height);
+      if (cartographicOrigin !== undefined && cartographicNorth !== undefined && cartographicEast !== undefined && cartographicElevation !== undefined) {
+        const geoOrigin = Point3d.create(cartographicOrigin.longitudeDegrees, cartographicOrigin.latitudeDegrees, cartographicOrigin.height);
+        const geoNorth = Point3d.create(cartographicNorth.longitudeDegrees, cartographicNorth.latitudeDegrees, cartographicNorth.height);
+        const geoEast = Point3d.create(cartographicEast.longitudeDegrees, cartographicEast.latitudeDegrees, cartographicEast.height);
+        const geoElevation = Point3d.create(cartographicElevation.longitudeDegrees, cartographicElevation.latitudeDegrees, cartographicElevation.height);
 
-      const response = await geoConverter.getIModelCoordinatesFromGeoCoordinates([geoOrigin, geoNorth, geoEast, geoElevation]);
-      if (response.iModelCoords[0].s === GeoCoordStatus.Success && response.iModelCoords[1].s === GeoCoordStatus.Success && response.iModelCoords[2].s === GeoCoordStatus.Success && response.iModelCoords[3].s === GeoCoordStatus.Success) {
-        const iModelOrigin = Point3d.fromJSON(response.iModelCoords[0].p);
-        const iModelNorth = Point3d.fromJSON(response.iModelCoords[1].p);
-        const iModelEast = Point3d.fromJSON(response.iModelCoords[2].p);
-        const iModelElevation = Point3d.fromJSON(response.iModelCoords[3].p);
+        const response = await geoConverter.getIModelCoordinatesFromGeoCoordinates([geoOrigin, geoNorth, geoEast, geoElevation]);
+        if (response.iModelCoords[0].s === GeoCoordStatus.Success && response.iModelCoords[1].s === GeoCoordStatus.Success && response.iModelCoords[2].s === GeoCoordStatus.Success && response.iModelCoords[3].s === GeoCoordStatus.Success) {
+          const iModelOrigin = Point3d.fromJSON(response.iModelCoords[0].p);
+          const iModelNorth = Point3d.fromJSON(response.iModelCoords[1].p);
+          const iModelEast = Point3d.fromJSON(response.iModelCoords[2].p);
+          const iModelElevation = Point3d.fromJSON(response.iModelCoords[3].p);
 
-        const ecefXVector = Vector3d.createStartEnd(ecefOrigin, ecefEastPoint);
-        const ecefYVector = Vector3d.createStartEnd(ecefOrigin, ecefNorthPoint);
-        const ecefZVector = Vector3d.createStartEnd(ecefOrigin, ecefElevationPoint);
-        const frameA = Transform.createOriginAndMatrixColumns(ecefOrigin, ecefXVector, ecefYVector, ecefZVector);
-        const frameAInverse = frameA.inverse()!;
+          const ecefXVector = Vector3d.createStartEnd(ecefOrigin, ecefEastPoint);
+          const ecefYVector = Vector3d.createStartEnd(ecefOrigin, ecefNorthPoint);
+          const ecefZVector = Vector3d.createStartEnd(ecefOrigin, ecefElevationPoint);
+          const frameA = Transform.createOriginAndMatrixColumns(ecefOrigin, ecefXVector, ecefYVector, ecefZVector);
+          const frameAInverse = frameA.inverse();
+          if (frameAInverse !== undefined) {
 
-        const modelXVector = Vector3d.createStartEnd(iModelOrigin, iModelEast);
-        const modelYVector = Vector3d.createStartEnd(iModelOrigin, iModelNorth);
-        const modelZVector = Vector3d.createStartEnd(iModelOrigin, iModelElevation);
-        const frameB = Transform.createOriginAndMatrixColumns(iModelOrigin, modelXVector, modelYVector, modelZVector);
+            const modelXVector = Vector3d.createStartEnd(iModelOrigin, iModelEast);
+            const modelYVector = Vector3d.createStartEnd(iModelOrigin, iModelNorth);
+            const modelZVector = Vector3d.createStartEnd(iModelOrigin, iModelElevation);
+            const frameB = Transform.createOriginAndMatrixColumns(iModelOrigin, modelXVector, modelYVector, modelZVector);
 
-        rootTransform = frameB.multiplyTransformTransform(frameAInverse)!;
+            rootTransform = frameB.multiplyTransformTransform(frameAInverse);
+          }
+        }
       }
-
     }
 
     if (json.root.transform) {
