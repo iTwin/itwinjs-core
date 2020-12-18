@@ -67,13 +67,13 @@ If the source application data has a property that conceptually matches the BIS 
 
 Rather than starting over when the source data changes, a connector should be able to detect and convert only the changes. That makes for compact, meaningful changesets, which are added to the iModel's [timeline](./IModelHub/index.md#the-timeline-of-changes-to-an-imodel).
 
-To do incremental updates, a connector must do Id mapping and change-detection. An iTwin Connector uses the ExternalSourceAspect class defined in the BIS schema to achieve both. The following sections describe how this is achieved.
+To do incremental updates, a connector must do ID mapping and change-detection. An iTwin Connector uses the ExternalSourceAspect class defined in the BIS schema to achieve both. The following sections describe how this is achieved.
 
 **Provenance**
 
-Id mapping is a way of looking up the data in the iModel that corresponds to a given piece of source data. If the source data has stable, unique IDs, then Id mapping could be straightforward.
+ID mapping is a way of looking up the data in the iModel that corresponds to a given piece of source data. If the source data has stable, unique IDs, then ID mapping could be straightforward.
 
-Note: If the source data does not have stable, unique IDs, then the connector will have to use some other means of identifying pieces of source data in a stable way. A cryptographic hash of the source data itself can work as a stable Id -- that is, it can be used to identify data that has not changed.
+Note: If the source data does not have stable, unique IDs, then the connector will have to use some other means of identifying pieces of source data in a stable way. A cryptographic hash of the source data itself can work as a stable ID -- that is, it can be used to identify data that has not changed.
 
 **Change-detection**
 
@@ -84,7 +84,7 @@ If the source data is timestamped in some way, then the change-detection logic s
 The change-detection algorithm implemented is
 
 - For each source data item:
-  - add source item's Id to the *source_items_seen* set
+  - add source item's ID to the *source_items_seen* set
   - Look in the mappings for the corresponding data in the iModel (element, aspect, model)
   - If found,
     - Detect if the source item's current data has changed. If so,
@@ -93,15 +93,15 @@ The change-detection algorithm implemented is
   - Else,
     - Convert the source data to BIS data
     - Insert the new data into the iModel
-    - Add the source data item's Id to the mappings
+    - Add the source data item's ID to the mappings
 
 Infer deletions:
 
-- For each source data item Id previously converted
-  - if item Id is not in *source_items_seen*
+- For each source data item ID previously converted
+  - if item ID is not in *source_items_seen*
     - Find the the corresponding data in the iModel
       - Delete the data in the iModel
-      - Remove the the source data item's Id from the mappings
+      - Remove the the source data item's ID from the mappings
 
 
 
