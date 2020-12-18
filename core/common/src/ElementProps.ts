@@ -13,14 +13,7 @@ import {
   Logger,
 } from "@bentley/bentleyjs-core";
 import {
-  AngleProps,
-  ClipVectorProps,
-  LowAndHighXY,
-  LowAndHighXYZ,
-  TransformProps,
-  XYProps,
-  XYZProps,
-  YawPitchRollProps,
+  AngleProps, ClipVectorProps, LowAndHighXY, LowAndHighXYZ, TransformProps, XYProps, XYZProps, YawPitchRollProps,
 } from "@bentley/geometry-core";
 import { CodeProps } from "./Code";
 import { CommonLoggerCategory } from "./CommonLoggerCategory";
