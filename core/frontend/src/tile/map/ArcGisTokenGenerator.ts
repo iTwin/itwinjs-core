@@ -63,7 +63,7 @@ export interface ArcGisGenerateTokenOptions {
 
 /** @internal */
 export class ArcGisTokenGenerator {
-  private static readonly restApiPath = "arcgis/rest/";
+  private static readonly restApiPath = "/rest/";
   private static readonly restApiInfoPath = "info?f=pjson";
 
   // Cache info url to avoid fetching/parsing twice for the same base url.
@@ -101,7 +101,7 @@ export class ArcGisTokenGenerator {
     return tokenServiceUrl;
   }
 
-  // base url:  ArcGis REST service base URL (can be anything but must contains "arcgis/rest/")
+  // base url:  ArcGis REST service base URL (format must be "https://<host>/<instance>/rest/")
   public async generate(esriRestServiceUrl: string, options: ArcGisGenerateTokenOptions): Promise<ArcGisToken | undefined> {
 
     const tokenServiceUrl = await this.getTokenServiceUrl(esriRestServiceUrl);
