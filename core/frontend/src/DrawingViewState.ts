@@ -183,7 +183,6 @@ class SectionAttachment {
       if (0 === source.length)
         return;
 
-      // ###TODO clip volume.
       const graphics = new GraphicBranch();
       graphics.setViewFlagOverrides(this._viewFlagOverrides);
       graphics.symbologyOverrides = this.symbologyOverrides;
@@ -339,7 +338,6 @@ export class DrawingViewState extends ViewState2d {
       super.createScene(context);
 
     if (this._attachment) {
-      // ###TODO: better way to do this...
       this.updateTileLoadListener(context.viewport);
       this._attachment.addToScene(context);
     }
