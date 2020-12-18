@@ -3510,24 +3510,26 @@ export class ScreenViewport extends Viewport {
 
     builder.setSymbology(color, colorFill, 1);
 
+    const skew = context.viewport.view.getAspectRatioSkew();
     const radius = (2.5 * aperture) * context.viewport.getPixelSizeAtPoint(hit.snapPoint);
     const rMatrix = Matrix3d.createRigidHeadsUp(hit.normal);
-    const ellipse = Arc3d.createScaledXYColumns(hit.snapPoint, rMatrix, radius, radius, AngleSweep.create360());
+    const ellipse = Arc3d.createScaledXYColumns(hit.snapPoint, rMatrix, radius, radius / skew, AngleSweep.create360());
 
     builder.addArc(ellipse, true, true);
     builder.addArc(ellipse, false, false);
 
-    const length = (0.6 * radius);
+    const lengthX = (0.6 * radius);
+    const lengthY = lengthX / skew;
     const normal = Vector3d.create();
 
     ellipse.vector0.normalize(normal);
-    const pt1 = hit.snapPoint.plusScaled(normal, length);
-    const pt2 = hit.snapPoint.plusScaled(normal, -length);
+    const pt1 = hit.snapPoint.plusScaled(normal, lengthX);
+    const pt2 = hit.snapPoint.plusScaled(normal, -lengthX);
     builder.addLineString([pt1, pt2]);
 
     ellipse.vector90.normalize(normal);
-    const pt3 = hit.snapPoint.plusScaled(normal, length);
-    const pt4 = hit.snapPoint.plusScaled(normal, -length);
+    const pt3 = hit.snapPoint.plusScaled(normal, lengthY);
+    const pt4 = hit.snapPoint.plusScaled(normal, -lengthY);
     builder.addLineString([pt3, pt4]);
 
     context.addDecorationFromBuilder(builder);

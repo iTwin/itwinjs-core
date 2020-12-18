@@ -1,6 +1,6 @@
 {
   "name": "@bentley/backend-itwin-client",
-  "version": "2.11.0-dev.12",
+  "version": "2.11.0-dev.16",
   "description": "Clients for various Bentley Services used by iModel.js at the backend",
   "main": "lib/backend-itwin-client.js",
   "browser": {
@@ -20,7 +20,7 @@
     "cover:integration": "nyc --report-dir ./lib/test/coverage/integration npm run test:integration",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/backend-itwin-client/file.json --tsIndexFile=backend-itwin-client.ts --onlyJson",
     "extract-api": "betools extract-api --entry=backend-itwin-client",
-    "lint": "eslint -f visualstudio --max-warnings 0 ./src/**/*.ts 1>&2",
+    "lint": "eslint -f visualstudio ./src/**/*.ts 1>&2",
     "pretest": "npm run copy:test-assets",
     "test": "",
     "test:integration": "npm run pretest && betools test --grep=\"#integration\""
@@ -37,33 +37,33 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.11.0-dev.12",
-    "@bentley/frontend-authorization-client": "^2.11.0-dev.12",
-    "@bentley/geometry-core": "^2.11.0-dev.12",
-    "@bentley/imodelhub-client": "^2.11.0-dev.12",
-    "@bentley/imodeljs-common": "^2.11.0-dev.12",
-    "@bentley/itwin-client": "^2.11.0-dev.12",
-    "@bentley/rbac-client": "^2.11.0-dev.12",
-    "@bentley/telemetry-client": "^2.11.0-dev.12"
+    "@bentley/bentleyjs-core": "^2.11.0-dev.16",
+    "@bentley/frontend-authorization-client": "^2.11.0-dev.16",
+    "@bentley/geometry-core": "^2.11.0-dev.16",
+    "@bentley/imodelhub-client": "^2.11.0-dev.16",
+    "@bentley/imodeljs-common": "^2.11.0-dev.16",
+    "@bentley/itwin-client": "^2.11.0-dev.16",
+    "@bentley/rbac-client": "^2.11.0-dev.16",
+    "@bentley/telemetry-client": "^2.11.0-dev.16"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.11.0-dev.12",
-    "@bentley/build-tools": "2.11.0-dev.12",
-    "@bentley/config-loader": "2.11.0-dev.12",
-    "@bentley/context-registry-client": "2.11.0-dev.12",
-    "@bentley/eslint-plugin": "2.11.0-dev.12",
-    "@bentley/frontend-authorization-client": "2.11.0-dev.12",
-    "@bentley/geometry-core": "2.11.0-dev.12",
-    "@bentley/imodelhub-client": "2.11.0-dev.12",
-    "@bentley/imodeljs-common": "2.11.0-dev.12",
-    "@bentley/itwin-client": "2.11.0-dev.12",
-    "@bentley/oidc-signin-tool": "2.11.0-dev.12",
-    "@bentley/rbac-client": "2.11.0-dev.12",
-    "@bentley/telemetry-client": "2.11.0-dev.12",
+    "@bentley/bentleyjs-core": "2.11.0-dev.16",
+    "@bentley/build-tools": "2.11.0-dev.16",
+    "@bentley/config-loader": "2.11.0-dev.16",
+    "@bentley/context-registry-client": "2.11.0-dev.16",
+    "@bentley/eslint-plugin": "2.11.0-dev.16",
+    "@bentley/frontend-authorization-client": "2.11.0-dev.16",
+    "@bentley/geometry-core": "2.11.0-dev.16",
+    "@bentley/imodelhub-client": "2.11.0-dev.16",
+    "@bentley/imodeljs-common": "2.11.0-dev.16",
+    "@bentley/itwin-client": "2.11.0-dev.16",
+    "@bentley/oidc-signin-tool": "2.11.0-dev.16",
+    "@bentley/rbac-client": "2.11.0-dev.16",
+    "@bentley/telemetry-client": "2.11.0-dev.16",
     "@types/chai": "^4.1.4",
     "@types/deep-assign": "^0.1.0",
     "@types/fs-extra": "^4.0.7",
@@ -85,7 +85,7 @@
     "typescript": "~3.7.4"
   },
   "dependencies": {
-    "@bentley/usage-logging-client": "2.11.0-dev.12",
+    "@bentley/usage-logging-client": "2.11.0-dev.16",
     "applicationinsights": "^1.7.5",
     "deep-assign": "^2.0.0",
     "fs-extra": "^8.1.0",

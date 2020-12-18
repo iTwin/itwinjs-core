@@ -40,7 +40,7 @@ if (ElectronRpcConfiguration.isElectron) {
       });
 
       projectId = await TestUtility.getTestProjectId(projectName);
-      imodelId = await TestUtility.createIModel("interactiveEditingSessionTest", projectId, true);
+      imodelId = await TestUtility.createIModel(TestUtility.generateUniqueName("interactiveEditingSessionTest"), projectId, true);
     });
 
     beforeEach(async () => {
@@ -53,6 +53,7 @@ if (ElectronRpcConfiguration.isElectron) {
 
     after(async () => {
       await closeIModel();
+      await TestUtility.deleteIModel(imodelId, projectId);
       await IModelApp.shutdown();
     });
 

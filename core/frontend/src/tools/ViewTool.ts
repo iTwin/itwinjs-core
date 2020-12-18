@@ -338,9 +338,10 @@ export abstract class ViewManip extends ViewTool {
     }
 
     const pixelSize = context.viewport.getPixelSizeAtPoint(origin);
+    const skew = context.viewport.view.getAspectRatioSkew();
     const radius = this._depthPreview.pickRadius * pixelSize;
     const rMatrix = Matrix3d.createRigidHeadsUp(normal);
-    const ellipse = Arc3d.createScaledXYColumns(origin, rMatrix, radius, radius, AngleSweep.create360());
+    const ellipse = Arc3d.createScaledXYColumns(origin, rMatrix, radius, radius / skew, AngleSweep.create360());
     const colorBase = (this._depthPreview.isDefaultDepth ? ColorDef.red : (DepthPointSource.Geometry === this._depthPreview.source ? ColorDef.green : context.viewport.hilite.color));
     const colorLine = EditManipulator.HandleUtils.adjustForBackgroundColor(colorBase, cursorVp).withTransparency(50);
     const colorFill = colorLine.withTransparency(200);

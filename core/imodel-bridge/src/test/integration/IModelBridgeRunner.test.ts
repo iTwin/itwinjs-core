@@ -10,7 +10,7 @@ import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { BridgeTestUtils, TestIModelInfo } from "../BridgeTestUtils";
 import { BriefcaseDb, BriefcaseManager, IModelJsFs } from "@bentley/imodeljs-backend";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { BentleyStatus, ClientRequestContext, Guid, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { BentleyStatus, ClientRequestContext, Guid, Logger } from "@bentley/bentleyjs-core";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { BridgeJobDefArgs, BridgeRunner } from "../../BridgeRunner";
 import { HubUtility } from "./HubUtility";
@@ -63,13 +63,12 @@ describe("IModelBridgeFwk (#integration)", () => {
     const runner = new BridgeRunner(bridgeJobDef, serverArgs);
     const status = await runner.synchronize();
     expect(status === BentleyStatus.SUCCESS);
-    const briefcases = BriefcaseManager.getBriefcases();
-    const briefcaseEntry = BriefcaseManager.findBriefcaseByKey(briefcases[0].key);
+    const briefcases = BriefcaseManager.getCachedBriefcases(serverArgs.iModelId);
+    const briefcaseEntry = briefcases[0];
     expect(briefcaseEntry !== undefined);
 
-    const imodel: BriefcaseDb = await BriefcaseDb.open(new ClientRequestContext(), briefcases[0].key, { openAsReadOnly: true });
+    const imodel = await BriefcaseDb.open(new ClientRequestContext(), { fileName: briefcases[0].fileName, readonly: true });
     BridgeTestUtils.verifyIModel(imodel, bridgeJobDef, isUpdate);
-    briefcaseEntry!.openMode = OpenMode.ReadWrite;
     imodel.close();
   }
 

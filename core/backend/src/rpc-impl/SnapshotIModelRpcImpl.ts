@@ -6,15 +6,11 @@
  * @module RpcInterface
  */
 
-import { Logger } from "@bentley/bentleyjs-core";
 import {
-  IModelConnectionProps, IModelNotFoundResponse, IModelRpcProps, RpcInterface, RpcManager, SnapshotIModelRpcInterface,
+  IModelConnectionProps, IModelNotFoundResponse, IModelRpcProps, RpcInterface, RpcManager, SnapshotIModelRpcInterface, SnapshotOpenOptions,
 } from "@bentley/imodeljs-common";
-import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { SnapshotDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
-
-const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
 /** The backend implementation of SnapshotIModelRpcInterface.
  * @internal
@@ -23,46 +19,28 @@ export class SnapshotIModelRpcImpl extends RpcInterface implements SnapshotIMode
   public static register() { RpcManager.registerImpl(SnapshotIModelRpcInterface, SnapshotIModelRpcImpl); }
 
   /** Ask the backend to open a snapshot iModel from a file name that is resolved by the backend. */
-  public async openFile(filePath: string): Promise<IModelConnectionProps> {
+  public async openFile(filePath: string, opts?: SnapshotOpenOptions): Promise<IModelConnectionProps> {
     let resolvedFileName: string | undefined = filePath;
     if (IModelHost.snapshotFileNameResolver) {
       resolvedFileName = IModelHost.snapshotFileNameResolver.tryResolveFileName(filePath);
-      if (undefined === resolvedFileName) {
+      if (undefined === resolvedFileName)
         throw new IModelNotFoundResponse();
-      }
     }
-    let snapshotDb: SnapshotDb | undefined = SnapshotDb.tryFindByKey(resolvedFileName);
-    if (undefined === snapshotDb) {
-      snapshotDb = SnapshotDb.openFile(resolvedFileName);
-    }
-    return snapshotDb.getConnectionProps();
+    return SnapshotDb.openFile(resolvedFileName, opts).getConnectionProps();
   }
 
   /** Ask the backend to open a snapshot iModel from a key that is resolved by the backend. */
-  public async openRemote(fileKey: string): Promise<IModelConnectionProps> {
-    let resolvedFileName: string | undefined;
-    if (IModelHost.snapshotFileNameResolver) {
-      resolvedFileName = IModelHost.snapshotFileNameResolver.resolveKey(fileKey);
-    }
-    if (undefined === resolvedFileName) {
+  public async openRemote(fileKey: string, opts?: SnapshotOpenOptions): Promise<IModelConnectionProps> {
+    const resolvedFileName = IModelHost.snapshotFileNameResolver?.resolveKey(fileKey);
+    if (undefined === resolvedFileName)
       throw new IModelNotFoundResponse();
-    }
-    let snapshotDb: SnapshotDb | undefined = SnapshotDb.tryFindByKey(resolvedFileName);
-    if (undefined === snapshotDb) {
-      snapshotDb = SnapshotDb.openFile(resolvedFileName);
-    }
-    return snapshotDb.getConnectionProps();
+
+    return SnapshotDb.openFile(resolvedFileName, { key: fileKey, ...opts }).getConnectionProps();
   }
 
   /** Ask the backend to close a snapshot iModel. */
   public async close(tokenProps: IModelRpcProps): Promise<boolean> {
-    const snapshotFilePath = tokenProps.key;
-    const snapshotDb = SnapshotDb.tryFindByKey(snapshotFilePath);
-    if (undefined === snapshotDb) {
-      Logger.logError(loggerCategory, "SnapshotDb not found in the in-memory cache", () => snapshotFilePath);
-      throw new IModelNotFoundResponse();
-    }
-    snapshotDb.close();
+    SnapshotDb.findByKey(tokenProps.key).close();
     return true;
   }
 }

@@ -4,17 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import * as path from "path";
-import { ChangeSetStatus, DbResult, Id64, Id64String, Logger, LogLevel, OpenMode, PerfLogger, using } from "@bentley/bentleyjs-core";
+import { DbResult, Id64, Id64String, Logger, LogLevel, OpenMode, PerfLogger } from "@bentley/bentleyjs-core";
 import { ChangeSet } from "@bentley/imodelhub-client";
 import {
-  ChangedValueState, ChangeOpCode, ColorDef, IModel, IModelStatus, IModelVersion, SubCategoryAppearance, SyncMode,
+  ChangedValueState, ChangeOpCode, ColorDef, IModel, IModelVersion, SubCategoryAppearance,
 } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import {
   AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, ChangeSummary, ChangeSummaryManager, ConcurrencyControl, ECSqlStatement,
   ElementOwnsChildElements, IModelJsFs, SpatialCategory,
 } from "../../imodeljs-backend";
-import { DisableNativeAssertions, IModelTestUtils, TestIModelInfo } from "../IModelTestUtils";
+import { IModelTestUtils, TestIModelInfo } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { HubUtility } from "./HubUtility";
 import { TestChangeSetUtility } from "./TestChangeSetUtility";
@@ -96,7 +96,7 @@ describe("ChangeSummary (#integration)", () => {
   it("Attach / Detach ChangeCache file to PullAndPush briefcase", async () => {
     setupTest(readWriteTestIModel.id);
 
-    const iModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, readWriteTestIModel.id, SyncMode.PullAndPush, IModelVersion.latest());
+    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: testProjectId, iModelId: readWriteTestIModel.id });
     try {
       assert.exists(iModel);
       assert(iModel.openMode === OpenMode.ReadWrite);
@@ -144,7 +144,7 @@ describe("ChangeSummary (#integration)", () => {
   it("Attach / Detach ChangeCache file to readonly briefcase", async () => {
     setupTest(readOnlyTestIModel.id);
 
-    const iModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, readOnlyTestIModel.id, SyncMode.FixedVersion, IModelVersion.latest());
+    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testProjectId, iModelId: readOnlyTestIModel.id });
     assert.exists(iModel);
     assert(iModel.openMode === OpenMode.Readonly);
     try {
@@ -191,7 +191,7 @@ describe("ChangeSummary (#integration)", () => {
   it("ECSqlStatementCache after detaching Changes Cache", async () => {
     setupTest(readOnlyTestIModel.id);
 
-    const iModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, readOnlyTestIModel.id, SyncMode.FixedVersion, IModelVersion.latest());
+    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testProjectId, iModelId: readOnlyTestIModel.id });
     assert.exists(iModel);
     assert(iModel.openMode === OpenMode.Readonly);
     try {
@@ -218,7 +218,7 @@ describe("ChangeSummary (#integration)", () => {
   it("Attach / Detach ChangeCache file to closed imodel", async () => {
     setupTest(readOnlyTestIModel.id);
 
-    const iModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, readOnlyTestIModel.id, SyncMode.FixedVersion, IModelVersion.latest());
+    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testProjectId, iModelId: readOnlyTestIModel.id });
     iModel.close();
     assert.exists(iModel);
     assert.throw(() => ChangeSummaryManager.isChangeCacheAttached(iModel));
@@ -229,7 +229,7 @@ describe("ChangeSummary (#integration)", () => {
   it("Extract ChangeSummaries", async () => {
     setupTest(readOnlyTestIModel.id);
 
-    const iModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, readOnlyTestIModel.id, SyncMode.PullAndPush, IModelVersion.latest());
+    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: testProjectId, iModelId: readOnlyTestIModel.id });
     assert.exists(iModel);
     try {
       const summaryIds: Id64String[] = await ChangeSummaryManager.extractChangeSummaries(requestContext, iModel);
@@ -275,7 +275,7 @@ describe("ChangeSummary (#integration)", () => {
     // extract summary for second changeset
     const changesetId: string = changeSets[1].wsgId;
 
-    const iModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, readOnlyTestIModel.id, SyncMode.PullAndPush, IModelVersion.latest());
+    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: testProjectId, iModelId: readOnlyTestIModel.id });
     try {
       assert.exists(iModel);
       await iModel.reverseChanges(requestContext, IModelVersion.asOfChangeSet(changesetId));
@@ -316,7 +316,7 @@ describe("ChangeSummary (#integration)", () => {
     const startVersion: IModelVersion = IModelVersion.asOfChangeSet(startChangeSetId);
     const endVersion: IModelVersion = IModelVersion.asOfChangeSet(endChangeSetId);
 
-    const iModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, readOnlyTestIModel.id, SyncMode.PullAndPush, endVersion);
+    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: testProjectId, iModelId: readOnlyTestIModel.id, asOf: endVersion.toJSON() });
     try {
       assert.exists(iModel);
       const summaryIds: Id64String[] = await ChangeSummaryManager.extractChangeSummaries(requestContext, iModel, { startVersion });
@@ -360,7 +360,7 @@ describe("ChangeSummary (#integration)", () => {
     // first extraction: just first changeset
     const firstChangesetId: string = changeSets[0].id!;
 
-    let iModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, readOnlyTestIModel.id, SyncMode.PullAndPush, IModelVersion.latest());
+    let iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: testProjectId, iModelId: readOnlyTestIModel.id });
     try {
       assert.exists(iModel);
       await iModel.reverseChanges(requestContext, IModelVersion.asOfChangeSet(firstChangesetId));
@@ -390,7 +390,7 @@ describe("ChangeSummary (#integration)", () => {
       // now do second extraction for last changeset
       const lastChangesetId: string = changeSets[changeSets.length - 1].id!;
       await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
-      iModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, readOnlyTestIModel.id, SyncMode.FixedVersion, IModelVersion.asOfChangeSet(lastChangesetId));
+      iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: testProjectId, iModelId: readOnlyTestIModel.id, asOf: IModelVersion.asOfChangeSet(lastChangesetId).toJSON() });
       // WIP not working yet until cache can be detached.
       // await iModel.pullAndMergeChanges(accessToken, IModelVersion.asOfChangeSet(lastChangesetId));
 
@@ -418,57 +418,12 @@ describe("ChangeSummary (#integration)", () => {
     }
   });
 
-  it("Extract ChangeSummaries with invalid input", async () => {
-    setupTest(readOnlyTestIModel.id);
-
-    // extract on fixedVersion(exclusive access) iModel should fail
-    let iModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, readOnlyTestIModel.id, SyncMode.FixedVersion);
-    try {
-      assert.exists(iModel);
-      await using(new DisableNativeAssertions(), async (_r) => {
-        await ChangeSummaryManager.extractChangeSummaries(requestContext, iModel);
-      });
-    } catch (e) {
-      assert.isDefined(e.errorNumber);
-      assert.equal(e.errorNumber, ChangeSetStatus.ApplyError);
-    } finally {
-      iModel.close();
-    }
-
-    // extract on fixedVersion(shared access) iModel should fail
-    iModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, readOnlyTestIModel.id, SyncMode.FixedVersion);
-    try {
-      assert.exists(iModel);
-      await using(new DisableNativeAssertions(), async (_r) => {
-        await ChangeSummaryManager.extractChangeSummaries(requestContext, iModel);
-      });
-    } catch (e) {
-      assert.isDefined(e.errorNumber);
-      assert.equal(e.errorNumber, ChangeSetStatus.ApplyError);
-    } finally {
-      iModel.close();
-    }
-
-    // extract on closed iModel should fail
-    iModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, readOnlyTestIModel.id, SyncMode.FixedVersion);
-    try {
-      assert.exists(iModel);
-      iModel.close();
-      await using(new DisableNativeAssertions(), async (_r) => {
-        await ChangeSummaryManager.extractChangeSummaries(requestContext, iModel);
-      });
-    } catch (e) {
-      assert.isDefined(e.errorNumber);
-      assert.equal(e.errorNumber, IModelStatus.NotOpen);
-    }
-  });
-
   it("Query ChangeSummary content", async () => {
     const testIModelId: string = readOnlyTestIModel.id;
     setupTest(testIModelId);
 
     let perfLogger = new PerfLogger("IModelDb.open");
-    const iModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, readOnlyTestIModel.id, SyncMode.PullAndPush, IModelVersion.latest());
+    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: testProjectId, iModelId: readOnlyTestIModel.id });
     perfLogger.dispose();
     try {
       await ChangeSummaryManager.extractChangeSummaries(requestContext, iModel);
@@ -555,7 +510,7 @@ describe("ChangeSummary (#integration)", () => {
     setupTest(iModelId);
 
     // Populate the iModel with 3 elements
-    const iModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(managerRequestContext, projectId, iModelId, SyncMode.PullAndPush, IModelVersion.latest());
+    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: managerRequestContext, contextId: projectId, iModelId });
     iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
     const [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(iModel, IModelTestUtils.getUniqueModelCode(iModel, "TestPhysicalModel"), true);
     await iModel.concurrencyControl.request(managerRequestContext);
@@ -633,7 +588,7 @@ describe("ChangeSummary (#integration)", () => {
     await testUtility.createTestIModel();
 
     // User2 opens the iModel
-    const iModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(userContext2, testUtility.projectId, testUtility.iModelId, SyncMode.PullAndPush, IModelVersion.latest());
+    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: userContext2, contextId: testUtility.projectId, iModelId: testUtility.iModelId });
 
     // Attach change cache
     ChangeSummaryManager.attachChangeCache(iModel);
