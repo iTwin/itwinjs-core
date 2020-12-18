@@ -519,10 +519,16 @@ export class QuantityFormatter implements UnitsProvider {
   protected _formatSpecProviders = new Array<FormatterParserSpecsProvider>();
 
   /** Called after the active unit system is changed.
-   * The useImperial argument should not be relied on now that multiple systems are supported. The system parameter
-   * will contain the system name being activated.
+   * The useImperial argument should not be relied on now that multiple systems are supported. It will
+   * only return true if unit system is explicitly set to "imperial"
+   * @deprecated use onActiveFormattingUnitSystemChanged event for multiple unit system support.
    */
-  public readonly onActiveUnitSystemChanged = new BeUiEvent<{ useImperial?: boolean, system?: string }>();
+  public readonly onActiveUnitSystemChanged = new BeUiEvent<{ useImperial: boolean }>();
+
+  /** Called after the active unit system is changed.
+  * The system will report the UnitSystemKey/name of the the system that was activated.
+  */
+  public readonly onActiveFormattingUnitSystemChanged = new BeUiEvent<{ system?: UnitSystemKey }>();
 
   /** Called after the active unit system is changed.  */
   public readonly onQuantityFormatsChanged = new BeUiEvent<{ quantityType?: string }>();
@@ -619,7 +625,10 @@ export class QuantityFormatter implements UnitsProvider {
 
     this._activeUnitSystem = systemType;
     await this.loadFormatAndParsingMapsForSystem(systemType);
-    this.onActiveUnitSystemChanged.emit({ useImperial: systemType === "imperial", system: systemType });
+    // fire deprecated event
+    this.onActiveUnitSystemChanged.emit({ useImperial: systemType === "imperial" }); // eslint-disable-line deprecation/deprecation
+    // fire current event
+    this.onActiveFormattingUnitSystemChanged.emit({ system: systemType });
     if (IModelApp.toolAdmin && restartActiveTool)
       IModelApp.toolAdmin.startDefaultTool();
   }

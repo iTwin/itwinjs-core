@@ -70,9 +70,9 @@ export function QuantityInput({ initialValue, quantityType, readonly, className,
       setParserSpec(IModelApp.quantityFormatter.findParserSpecByQuantityType(quantityType));
     });
 
-    IModelApp.quantityFormatter.onActiveUnitSystemChanged.addListener(handleUnitSystemChanged);
+    IModelApp.quantityFormatter.onActiveFormattingUnitSystemChanged.addListener(handleUnitSystemChanged);
     return () => {
-      IModelApp.quantityFormatter.onActiveUnitSystemChanged.removeListener(handleUnitSystemChanged);
+      IModelApp.quantityFormatter.onActiveFormattingUnitSystemChanged.removeListener(handleUnitSystemChanged);
     };
   }, [quantityType]);
 

@@ -6496,9 +6496,12 @@ export class QuantityFormatter implements UnitsProvider {
     // @internal
     protected loadFormatAndParsingMapsForSystem(systemType?: UnitSystemKey): Promise<void>;
     protected loadKoqFormatSpecs(koq: string): Promise<void>;
+    readonly onActiveFormattingUnitSystemChanged: BeUiEvent<{
+        system?: "metric" | "imperial" | "usCustomary" | "usSurvey" | undefined;
+    }>;
+    // @deprecated
     readonly onActiveUnitSystemChanged: BeUiEvent<{
-        useImperial?: boolean | undefined;
-        system?: string | undefined;
+        useImperial: boolean;
     }>;
     // (undocumented)
     onInitialized(): Promise<void>;
