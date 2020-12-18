@@ -11,7 +11,7 @@ import {
   Constant, Range3d, Transform, Vector3d,
 } from "@bentley/geometry-core";
 import {
-  AxisAlignedBox3d, Frustum, ViewDefinition2dProps, ViewFlagOverrides, ViewStateProps,
+  AxisAlignedBox3d, Frustum, SectionDrawingViewProps, ViewDefinition2dProps, ViewFlagOverrides, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { ViewRect } from "./ViewRect";
 import { Frustum2d } from "./Frustum2d";
@@ -232,59 +232,36 @@ export class DrawingViewState extends ViewState2d {
   private readonly _viewedExtents: AxisAlignedBox3d;
   private _attachment?: SectionAttachment;
   private _removeTileLoadListener?: () => void;
+  private readonly _sectionDrawingProps?: SectionDrawingViewProps;
 
   /** Strictly for testing. @internal */
   public get sectionDrawingInfo() {
     return this._attachment?.sectionDrawingInfo;
   }
 
-  public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, extents: AxisAlignedBox3d) {
+  public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, extents: AxisAlignedBox3d, sectionDrawing?: SectionDrawingViewProps) {
     super(props, iModel, categories, displayStyle);
     if (categories instanceof DrawingViewState) {
       this._viewedExtents = categories._viewedExtents.clone();
       this._modelLimits = { ...categories._modelLimits };
       this._attachment = categories._attachment?.clone();
+      this._sectionDrawingProps = categories._sectionDrawingProps;
     } else {
       this._viewedExtents = extents;
       this._modelLimits = { min: Constant.oneMillimeter, max: 10 * extents.maxLength() };
+      this._sectionDrawingProps = sectionDrawing;
     }
   }
 
   public async load(): Promise<void> {
     this._attachment = undefined;
     await super.load();
-    const model = this.iModel.models.getLoaded(this.baseModelId);
-    if (!model || !(model instanceof SectionDrawingModelState))
+    if (!this._sectionDrawingProps || (!this._sectionDrawingProps.displaySpatialView && !DrawingViewState.alwaysDisplaySpatialView))
       return;
 
-    // Find out if we also need to display the spatial view.
-    let spatialViewId;
-    let drawingToSpatialTransform;
-    let displaySpatialView = false;
-    const ecsql = `
-      SELECT spatialView,
-        json_extract(jsonProperties, '$.drawingToSpatialTransform') as drawingToSpatialTransform,
-        CAST(json_extract(jsonProperties, '$.displaySpatialView') as BOOLEAN) as displaySpatialView
-      FROM bis.SectionDrawing
-      WHERE ECInstanceId=${model.modeledElement.id}`;
-
-    for await (const row of this.iModel.query(ecsql)) {
-      spatialViewId = Id64.fromJSON(row.spatialView?.id);
-      displaySpatialView = DrawingViewState.alwaysDisplaySpatialView || !!row.displaySpatialView;
-      try {
-        drawingToSpatialTransform = Transform.fromJSON(JSON.parse(row.drawingToSpatialTransform));
-      } catch (_) {
-        drawingToSpatialTransform = Transform.createIdentity();
-      }
-
-      break;
-    }
-
-    if (displaySpatialView && drawingToSpatialTransform && spatialViewId && Id64.isValidId64(spatialViewId)) {
-      const spatialView = await this.iModel.views.load(spatialViewId);
-      if (spatialView instanceof ViewState3d)
-        this._attachment = SectionAttachment.create(spatialView, drawingToSpatialTransform);
-    }
+    const spatialView = await this.iModel.views.load(this._sectionDrawingProps.spatialView);
+    if (spatialView instanceof ViewState3d)
+      this._attachment = SectionAttachment.create(spatialView, Transform.fromJSON(this._sectionDrawingProps.drawingToSpatialTransform));
   }
 
   public static createFromProps(props: ViewStateProps, iModel: IModelConnection): DrawingViewState {
@@ -293,7 +270,7 @@ export class DrawingViewState extends ViewState2d {
     const extents = props.modelExtents ? Range3d.fromJSON(props.modelExtents) : new Range3d();
 
     // use "new this" so subclasses are correct
-    return new this(props.viewDefinitionProps as ViewDefinition2dProps, iModel, cat, displayStyleState, extents);
+    return new this(props.viewDefinitionProps as ViewDefinition2dProps, iModel, cat, displayStyleState, extents, props.sectionDrawing);
   }
 
   public getViewedExtents(): AxisAlignedBox3d {
