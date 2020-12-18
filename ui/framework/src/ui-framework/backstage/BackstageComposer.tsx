@@ -117,7 +117,7 @@ export function BackstageComposer(props: BackstageComposerProps) {
   React.useEffect(() => {
     if (initialItems.current !== props.items) {
       initialItems.current = props.items;
-      setDefaultItemsManager(new BackstageItemsManager(props.items))
+      setDefaultItemsManager(new BackstageItemsManager(props.items));
     }
   }, [props.items]);
 
