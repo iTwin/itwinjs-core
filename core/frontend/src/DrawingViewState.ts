@@ -275,7 +275,7 @@ export class DrawingViewState extends ViewState2d {
       try {
         drawingToSpatialTransform = Transform.fromJSON(JSON.parse(row.drawingToSpatialTransform));
       } catch (_) {
-        //
+        drawingToSpatialTransform = Transform.createIdentity();
       }
 
       break;
