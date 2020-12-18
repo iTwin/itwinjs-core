@@ -79,8 +79,11 @@ async function resolveAfterXMilSeconds(ms: number) { // must call await before t
 /**
  * See https://stackoverflow.com/questions/26246601/wildcard-string-comparison-in-javascript
  * Compare strToTest with a given rule containing a wildcard, and will return true if strToTest matches the given wildcard
+ * Make sure it is case-insensitive
  */
 function matchRule(strToTest: string, rule: string) {
+  strToTest = strToTest.toLowerCase();
+  rule = rule.toLowerCase();
   const escapeRegex = (str: string) => str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
   return new RegExp(`^${rule.split("*").map(escapeRegex).join(".*")}$`).test(strToTest);
 }
@@ -1100,10 +1103,11 @@ async function openImodelAndLoadExtViews(testConfig: DefaultConfigs): Promise<vo
 }
 
 async function loadIModel(testConfig: DefaultConfigs, iModelAlreadyOpened = false): Promise<boolean> {
-  if (!iModelAlreadyOpened)
+  if (iModelAlreadyOpened) {
     await reopenImodel(testConfig); // Open iModel
-  else
+  } else {
     await openImodelAndLoadExtViews(testConfig); // Open iModel & load all external saved views into activeViewState
+  }
 
   // open the specified view
   if (undefined !== testConfig.viewStatePropsString)
