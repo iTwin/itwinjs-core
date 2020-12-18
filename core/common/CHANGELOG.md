@@ -1,5 +1,6 @@
 # Change Log - @bentley/imodeljs-common
 
+<<<<<<< HEAD
 This log was last generated on Fri, 18 Dec 2020 18:24:01 GMT and should not be manually modified.
 
 ## 2.10.0
@@ -14,6 +15,43 @@ Fri, 18 Dec 2020 18:24:01 GMT
 - export ModelLoadProps
 - Support display of OSM Buildings.
 - Version compare top parents ChangedElements update
+=======
+This log was last generated on Sun, 13 Dec 2020 19:00:03 GMT and should not be manually modified.
+
+## 2.9.9
+Sun, 13 Dec 2020 19:00:03 GMT
+
+_Version update only_
+
+## 2.9.8
+Fri, 11 Dec 2020 02:57:36 GMT
+
+_Version update only_
+
+## 2.9.7
+Wed, 09 Dec 2020 20:58:23 GMT
+
+### Updates
+
+- Fix cartographicRange computation. The 8 corners are calculated in the ECEF coordinate system but I think they should be calculated in the spatial coordinate system and then converted to ECEF.
+
+## 2.9.6
+Mon, 07 Dec 2020 18:40:48 GMT
+
+_Version update only_
+
+## 2.9.5
+Sat, 05 Dec 2020 01:55:56 GMT
+
+### Updates
+
+- Bump Tile Version to 18
+
+## 2.9.4
+Wed, 02 Dec 2020 20:55:40 GMT
+
+_Version update only_
+>>>>>>> b50f9e93a0... Update 2.9.x changelogs (#470)
 
 ## 2.9.3
 Mon, 23 Nov 2020 20:57:56 GMT

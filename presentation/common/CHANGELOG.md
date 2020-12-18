@@ -1,14 +1,51 @@
 # Change Log - @bentley/presentation-common
 
+<<<<<<< HEAD
 This log was last generated on Fri, 18 Dec 2020 18:24:01 GMT and should not be manually modified.
 
 ## 2.10.0
 Fri, 18 Dec 2020 18:24:01 GMT
+=======
+This log was last generated on Sun, 13 Dec 2020 19:00:03 GMT and should not be manually modified.
+
+## 2.9.9
+Sun, 13 Dec 2020 19:00:03 GMT
+
+_Version update only_
+
+## 2.9.8
+Fri, 11 Dec 2020 02:57:36 GMT
+
+_Version update only_
+
+## 2.9.7
+Wed, 09 Dec 2020 20:58:23 GMT
+
+_Version update only_
+
+## 2.9.6
+Mon, 07 Dec 2020 18:40:48 GMT
+
+_Version update only_
+
+## 2.9.5
+Sat, 05 Dec 2020 01:55:56 GMT
+
+### Updates
+
+- Repeat RPC requests when unknown failures happen
+
+## 2.9.4
+Wed, 02 Dec 2020 20:55:40 GMT
+>>>>>>> b50f9e93a0... Update 2.9.x changelogs (#470)
 
 ### Updates
 
 - Include actual primary class ids for nested content fields
+<<<<<<< HEAD
 - Add support for custom property value renderers
+=======
+>>>>>>> b50f9e93a0... Update 2.9.x changelogs (#470)
 
 ## 2.9.3
 Mon, 23 Nov 2020 20:57:56 GMT

@@ -2,9 +2,45 @@
   "name": "@bentley/frontend-application-insights-client",
   "entries": [
     {
+<<<<<<< HEAD
       "version": "2.10.0",
       "tag": "@bentley/frontend-application-insights-client_v2.10.0",
       "date": "Fri, 18 Dec 2020 18:24:01 GMT",
+=======
+      "version": "2.9.9",
+      "tag": "@bentley/frontend-application-insights-client_v2.9.9",
+      "date": "Sun, 13 Dec 2020 19:00:03 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.8",
+      "tag": "@bentley/frontend-application-insights-client_v2.9.8",
+      "date": "Fri, 11 Dec 2020 02:57:36 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.7",
+      "tag": "@bentley/frontend-application-insights-client_v2.9.7",
+      "date": "Wed, 09 Dec 2020 20:58:23 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.6",
+      "tag": "@bentley/frontend-application-insights-client_v2.9.6",
+      "date": "Mon, 07 Dec 2020 18:40:48 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.5",
+      "tag": "@bentley/frontend-application-insights-client_v2.9.5",
+      "date": "Sat, 05 Dec 2020 01:55:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.4",
+      "tag": "@bentley/frontend-application-insights-client_v2.9.4",
+      "date": "Wed, 02 Dec 2020 20:55:40 GMT",
+>>>>>>> b50f9e93a0... Update 2.9.x changelogs (#470)
       "comments": {}
     },
     {
