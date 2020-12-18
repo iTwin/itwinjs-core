@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { assert, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { assert, Id64String } from "@bentley/bentleyjs-core";
 import {
   Constant, Range3d, Transform, Vector3d,
 } from "@bentley/geometry-core";
@@ -20,7 +20,6 @@ import { IModelConnection } from "./IModelConnection";
 import { IModelApp } from "./IModelApp";
 import { CategorySelectorState } from "./CategorySelectorState";
 import { DisplayStyle2dState } from "./DisplayStyleState";
-import { SectionDrawingModelState } from "./ModelState";
 import { CoordSystem, OffScreenViewport, Viewport } from "./Viewport";
 import { SceneContext } from "./ViewContext";
 import { FeatureSymbology } from "./render/FeatureSymbology";
@@ -28,8 +27,6 @@ import { Scene } from "./render/Scene";
 import { MockRender } from "./render/MockRender";
 import { GraphicBranch, GraphicBranchOptions } from "./render/GraphicBranch";
 import { RenderGraphic } from "./render/RenderGraphic";
-import { RenderMemory } from "./render/RenderMemory";
-import { RenderClipVolume } from "./render/RenderClipVolume";
 import { TileGraphicType, TileTreeSet } from "./tile/internal";
 
 /** Strictly for testing.

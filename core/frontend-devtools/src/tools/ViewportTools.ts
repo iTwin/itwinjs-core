@@ -383,7 +383,7 @@ export class ToggleSectionDrawingSpatialViewTool extends ViewportToggleTool {
       DrawingViewState.alwaysDisplaySpatialView = !DrawingViewState.alwaysDisplaySpatialView;
       if (vp.view instanceof DrawingViewState) {
         const view = vp.view.clone();
-        view.load().then(() => vp.changeView(view));
+        view.load().then(() => vp.changeView(view)); // eslint-disable-line @typescript-eslint/no-floating-promises
       }
     }
   }
