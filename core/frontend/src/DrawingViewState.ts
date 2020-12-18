@@ -251,6 +251,7 @@ export class DrawingViewState extends ViewState2d {
     }
   }
 
+  /** @internal */
   public async load(): Promise<void> {
     this._attachment = undefined;
     await super.load();

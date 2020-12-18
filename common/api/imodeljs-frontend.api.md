@@ -222,6 +222,7 @@ import { RequestBasicCredentials } from '@bentley/itwin-client';
 import { RequestOptions } from '@bentley/itwin-client';
 import { RgbColor } from '@bentley/imodeljs-common';
 import { RpcRoutingToken } from '@bentley/imodeljs-common';
+import { SectionDrawingViewProps } from '@bentley/imodeljs-common';
 import { SettingsAdmin } from '@bentley/product-settings-client';
 import { SheetProps } from '@bentley/imodeljs-common';
 import { SilhouetteEdgeArgs } from '@bentley/imodeljs-common';
@@ -2221,17 +2222,35 @@ export class DrawingModelState extends GeometricModel2dState {
 
 // @public
 export class DrawingViewState extends ViewState2d {
-    constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, extents: AxisAlignedBox3d);
+    constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, extents: AxisAlignedBox3d, sectionDrawing?: SectionDrawingViewProps);
+    // @internal
+    static alwaysDisplaySpatialView: boolean;
+    // @internal (undocumented)
+    get areAllTileTreesLoaded(): boolean;
     // @internal (undocumented)
     static get className(): string;
     // (undocumented)
     static createFromProps(props: ViewStateProps, iModel: IModelConnection): DrawingViewState;
+    // @internal (undocumented)
+    createScene(context: SceneContext): void;
     // (undocumented)
     get defaultExtentLimits(): ExtentLimits;
+    // @internal (undocumented)
+    discloseTileTrees(trees: TileTreeSet): void;
+    // @internal (undocumented)
+    getExtents(): Vector3d;
+    // @internal (undocumented)
+    getOrigin(): import("@bentley/geometry-core").Point3d;
     // (undocumented)
     getViewedExtents(): AxisAlignedBox3d;
+    // @internal
+    static hideDrawingGraphics: boolean;
     // @internal (undocumented)
     isDrawingView(): this is DrawingViewState;
+    // (undocumented)
+    load(): Promise<void>;
+    // @internal
+    get sectionDrawingInfo(): SectionDrawingInfo | undefined;
     }
 
 // @internal
@@ -7736,6 +7755,14 @@ export class ScrollViewTool extends ViewManip {
     onReinitialize(): void;
     // (undocumented)
     static toolId: string;
+}
+
+// @internal
+export interface SectionDrawingInfo {
+    // (undocumented)
+    readonly drawingToSpatialTransform: Transform;
+    // (undocumented)
+    readonly spatialView: Id64String;
 }
 
 // @public
