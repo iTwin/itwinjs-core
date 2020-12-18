@@ -1,5 +1,8 @@
 sep=;
 Release Tag;API Item
+alpha;AccuDrawCommandItems
+alpha;AccuDrawDialog(props: AccuDrawDialogProps): JSX.Element
+alpha;AccuDrawDialogProps 
 alpha;AccuDrawPopupManager
 public;Action
 internal;ActionButtonItem(props: ActionButtonProps): JSX.Element
@@ -180,6 +183,7 @@ internal;expandWidget:
 beta;ExtensibleToolbarProps
 public;FooterModeField 
 public;FooterModeFieldProps 
+alpha;FrameworkAccuDraw 
 beta;FrameworkRootState
 internal;FrameworkStagePanel 
 internal;FrameworkStagePanelProps

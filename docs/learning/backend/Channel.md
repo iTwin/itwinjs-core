@@ -80,10 +80,16 @@ The first example is how to create a channel and then get into it and write to i
 
 ```ts
 // Get a briefcase
-const briefcaseProps: BriefcaseProps = await BriefcaseManager.download(requestContext, testProjectId, readWriteTestIModel.id, { syncMode: SyncMode.PullAndPush });
+const args: RequestNewBriefcaseArg = {
+  contextId: testProjectId,
+  iModelId: readWriteTestIModel.id,
+};
+
+await BriefcaseManager.downloadBriefcase(requestContext, args);
 requestContext.enter();
-const imodel1 = await BriefcaseDb.open(requestContext, briefcaseProps.key);
+const imodel1 = await BriefcaseDb.open(requestContext, { fileName: args.fileName! });
 requestContext.enter();
+
 // To make things simple, set optimistic concurrency and go into bulk mode.
 // That way, we don't have to worry about locks or code-reservations.
 imodel1.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);

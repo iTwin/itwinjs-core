@@ -1,0 +1,50 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@bentley/ui-core/lib/ui-core/base/base";
+@import "~@bentley/ui-core/lib/ui-core/text/mixins";
+
+.uifw-accudraw-input-label {
+  margin-right: 4px;
+
+  @include uicore-text( leading-2 );
+
+  justify-self: center;
+  align-self: center;
+
+  .icon {
+    width:  16px;
+    height: 16px;
+
+    margin-top: 2px;
+    @include uicore-centered;
+  }
+}
+
+.uifw-accudraw-input-field {
+  color: $buic-foreground-body;
+}
+
+.uifw-accudraw-lock {
+  justify-self: center;
+  align-self: center;
+}
+
+.uifw-accudraw-x-value {
+  background-color: $buic-foreground-primary;
+}
+
+.uifw-accudraw-y-value {
+  background-color: $buic-foreground-success;
+}
+
+.uifw-accudraw-z-value {
+  background-color: $buic-foreground-error;
+}
+
+.uifw-accudraw-angle-value {
+}
+
+.uifw-accudraw-distance-value {
+}

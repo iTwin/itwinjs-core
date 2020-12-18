@@ -11,6 +11,16 @@ import { ChangeSet, ChangeSetQuery, IModelClient, VersionQuery } from "@bentley/
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { IModelError } from "./IModelError";
 
+/** Properties for IModelVersion
+ * @public
+ */
+export interface IModelVersionProps {
+  first?: boolean;
+  latest?: boolean;
+  afterChangeSetId?: GuidString;
+  versionName?: string;
+}
+
 /** Option to specify the version of the iModel to be acquired and used
  * @public
  */
@@ -62,7 +72,23 @@ export class IModelVersion {
     return version;
   }
 
-  /** Creates a version from an untyped JSON object */
+  public toJSON(): IModelVersionProps {
+    return { first: this._first, latest: this._latest, afterChangeSetId: this._afterChangeSetId, versionName: this._versionName };
+  }
+
+  /** Creates a version from an IModelVersionProps */
+  public static fromJSON(json: IModelVersionProps): IModelVersion {
+    const version = new IModelVersion();
+    version._first = json.first;
+    version._afterChangeSetId = json.afterChangeSetId;
+    version._latest = json.latest;
+    version._versionName = json.versionName;
+    return version;
+  }
+
+  /** Creates a version from an untyped JSON object
+   * @deprecated use fromJSON
+  */
   public static fromJson(jsonObj: any): IModelVersion {
     const version = new IModelVersion();
     Object.assign(version, jsonObj);
