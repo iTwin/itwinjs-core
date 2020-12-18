@@ -21,7 +21,7 @@ Extraction of data from the input depends on the source format and the availabil
 
 ### Align
 
-An iModel Connector must carefully transform the source data to BIS-based data in the iModel, and hence each connector is written for a specific data source.
+An iTwin Connector must carefully transform the source data to BIS-based data in the iModel, and hence each connector is written for a specific data source.
 
 - Mappings of data are *from* source *into* an iModel.
 - Typically, a connector stores enough information about source data to detect the differences in it between job-runs. In this manner the connector generates *changesets* that are sent to iModelHub. This is the key difference between a connector and a one-time converter.
@@ -38,13 +38,13 @@ The appropriate balancing of these two conflicting goals is not an easy task. Ho
 
 Sometimes BIS domain schemas are not adequate to capture all the data in the authoring application. To avoid losing data, an iTwin Connector may dynamically create application-specific schemas whose classes descend from the most appropriate BIS domain classes.
 
-As an iModel Connector always runs multiple times to keep an iModel synchronized, the schemas created by previous executions limit the schemas that can be used by subsequent executions. To provide consistency and enable concise changesets, the Connector adds to the previously-defined schemas (creating new schema versions). This follows the general schema update strategy defined in [Schema Versioning and Generations](../bis/intro/schema-versioning-and-generations.md)
+As an iTwin Connector always runs multiple times to keep an iModel synchronized, the schemas created by previous executions limit the schemas that can be used by subsequent executions. To provide consistency and enable concise changesets, the Connector adds to the previously-defined schemas (creating new schema versions). This follows the general schema update strategy defined in [Schema Versioning and Generations](../bis/intro/schema-versioning-and-generations.md)
 
 The `DynamicSchema` custom attribute should be set on customer-specific application schemas. This custom attribute can be found in the standard schema `CoreCustomAttributes` and it enables iModelHub to programmatically detect dynamic schemas. Dynamic schemas require special handling since their name and version are typically duplicated between iModels from different work sets.
 
 **Display Labels**
 
-Wherever practical, the Elements generated from an iModel Connector should be identifiable through an optimal "Display Label".
+Wherever practical, the Elements generated from an iTwin Connector should be identifiable through an optimal "Display Label".
 
 As discussed in [Element Fundamentals](../bis/intro/element-fundamentals.md), the Display Labels are created through the following logic:
 
@@ -56,7 +56,7 @@ As discussed in [Element Fundamentals](../bis/intro/element-fundamentals.md), th
 
 iTwin Connector data transformations should be written considering the Display Label logic; UserLabel is the appropriate property for a connector to set to control the Display Label (CodeValue should never be set for anything other than coding purposes).
 
-*But what value should an iModel connector set UserLabel to?* There are two goals to consider in the generation of UserLabels. Those goals, in priority order, are:
+*But what value should an iTwin Connector set UserLabel to?* There are two goals to consider in the generation of UserLabels. Those goals, in priority order, are:
 
 1. Consistency with source application label usage.
 2. Consistency with BIS domain default labeling strategy.
