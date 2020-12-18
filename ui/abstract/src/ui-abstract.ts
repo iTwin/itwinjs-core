@@ -8,6 +8,8 @@ export * from "./ui-abstract/UiAdmin";
 export * from "./ui-abstract/UiItemsManager";
 export * from "./ui-abstract/UiItemsArbiter";
 
+export * from "./ui-abstract/accudraw/AccuDrawUiAdmin";
+
 export * from "./ui-abstract/backstage/BackstageItem";
 export * from "./ui-abstract/backstage/BackstageItemsManager";
 
@@ -49,6 +51,7 @@ export * from "./ui-abstract/statusbar/StatusBarItem";
 export * from "./ui-abstract/statusbar/StatusBarItemsManager";
 
 export * from "./ui-abstract/utils/getClassName";
+export * from "./ui-abstract/utils/isLetter";
 export * from "./ui-abstract/utils/IconSpecUtilities";
 export * from "./ui-abstract/utils/callbacks";
 export * from "./ui-abstract/utils/UiError";

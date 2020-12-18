@@ -1,6 +1,6 @@
 {
   "name": "@bentley/frontend-devtools",
-  "version": "2.11.0-dev.14",
+  "version": "2.11.0-dev.16",
   "description": "Debug menu and supporting UI widgets",
   "main": "lib/frontend-devtools.js",
   "imodeljsSharedLibrary": true,
@@ -13,7 +13,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/frontend-devtools/file.json --tsIndexFile=./frontend-devtools.ts --onlyJson",
     "extract-api": "betools extract-api --entry=frontend-devtools",
-    "lint": "eslint -f visualstudio --max-warnings 0 ./src/**/*.ts 1>&2",
+    "lint": "eslint -f visualstudio ./src/**/*.ts 1>&2",
     "test": "",
     "cover": ""
   },
@@ -33,19 +33,19 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "2.11.0-dev.14",
-    "@bentley/context-registry-client": "2.11.0-dev.14",
-    "@bentley/geometry-core": "2.11.0-dev.14",
-    "@bentley/imodeljs-common": "2.11.0-dev.14",
-    "@bentley/imodeljs-frontend": "2.11.0-dev.14",
-    "@bentley/imodeljs-i18n": "2.11.0-dev.14",
-    "@bentley/itwin-client": "2.11.0-dev.14",
+    "@bentley/bentleyjs-core": "2.11.0-dev.16",
+    "@bentley/context-registry-client": "2.11.0-dev.16",
+    "@bentley/geometry-core": "2.11.0-dev.16",
+    "@bentley/imodeljs-common": "2.11.0-dev.16",
+    "@bentley/imodeljs-frontend": "2.11.0-dev.16",
+    "@bentley/imodeljs-i18n": "2.11.0-dev.16",
+    "@bentley/itwin-client": "2.11.0-dev.16",
     "file-saver": "^2.0.2"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.11.0-dev.14",
-    "@bentley/eslint-plugin": "2.11.0-dev.14",
-    "@bentley/extension-webpack-tools": "2.11.0-dev.14",
+    "@bentley/build-tools": "2.11.0-dev.16",
+    "@bentley/eslint-plugin": "2.11.0-dev.16",
+    "@bentley/extension-webpack-tools": "2.11.0-dev.16",
     "@types/file-saver": "^2.0.1",
     "@types/node": "10.14.1",
     "cpx": "^1.5.0",
