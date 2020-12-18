@@ -1032,6 +1032,9 @@ async function reopenImodel(testConfig: DefaultConfigs): Promise<void> {
 async function openImodelAndLoadExtViews(testConfig: DefaultConfigs, extViews?: any[]): Promise<void> {
   activeViewState = new SimpleViewState();
 
+  // Do this to prevent view size from changing
+  activeViewState.viewState; // eslint-disable-line @typescript-eslint/no-unused-expressions
+
   // Open an iModel from a local file
   let openLocalIModel = (testConfig.iModelLocation !== undefined) || MobileRpcConfiguration.isMobileFrontend;
   if (openLocalIModel) {
