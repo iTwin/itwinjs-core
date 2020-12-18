@@ -29,6 +29,7 @@ import { MockRender } from "./render/MockRender";
 import { GraphicBranch, GraphicBranchOptions } from "./render/GraphicBranch";
 import { RenderGraphic } from "./render/RenderGraphic";
 import { RenderMemory } from "./render/RenderMemory";
+import { RenderClipVolume } from "./render/RenderClipVolume";
 import { TileGraphicType, TileTreeSet } from "./tile/internal";
 
 /** Strictly for testing.
@@ -99,8 +100,18 @@ class SectionAttachment {
     this._fromDrawing = fromDrawing;
 
     this.viewport = OffScreenViewport.create(view, this._viewRect, true, new SectionTarget(this));
+
     this.symbologyOverrides = new FeatureSymbology.Overrides(view);
+    let clipVolume;
+    let clip = this.view.getViewClip();
+    if (clip) {
+      clip = clip.clone();
+      clip.transformInPlace(this._toDrawing);
+      clipVolume = IModelApp.renderSystem.createClipVolume(clip);
+    }
+
     this._branchOptions = {
+      clipVolume,
       hline: view.getDisplayStyle3d().settings.hiddenLineSettings,
       frustum: {
         is3d: true,
