@@ -2977,6 +2977,12 @@ export interface FormatterParserSpecsProvider {
 // @internal
 export type FormatterSpecByQuantityType = Map<QuantityTypeKey, FormatterSpec>;
 
+// @alpha
+export interface FormattingUnitSystemChangedArgs {
+    // (undocumented)
+    readonly system: UnitSystemKey;
+}
+
 // @internal (undocumented)
 export interface FrameBeforeRenderData {
     // (undocumented)
@@ -6453,6 +6459,12 @@ export class QuadId {
 }
 
 // @alpha
+export interface QuantityFormatsChangedArgs {
+    // (undocumented)
+    readonly quantityType: string;
+}
+
+// @alpha
 export class QuantityFormatter implements UnitsProvider {
     constructor(showMetricOrUnitSystem?: boolean | UnitSystemKey);
     // (undocumented)
@@ -6484,7 +6496,7 @@ export class QuantityFormatter implements UnitsProvider {
     protected getKoqFormatterSpecsAsync(koq: string, useImperial: boolean): Promise<FormatterSpec[] | undefined>;
     getParserSpecByQuantityType(type: QuantityTypeArg, isImperial?: boolean): Promise<ParserSpec | undefined>;
     protected getPersistenceUnitByQuantityType(type: QuantityTypeKey): Promise<UnitProps>;
-    protected getQuantityTypeKey(type: QuantityTypeArg): string;
+    getQuantityTypeKey(type: QuantityTypeArg): string;
     protected getUnitByQuantityType(type: QuantityType): Promise<UnitProps>;
     getUnitsByFamily(unitFamily: string): Promise<UnitProps[]>;
     // (undocumented)
@@ -6496,18 +6508,14 @@ export class QuantityFormatter implements UnitsProvider {
     // @internal
     protected loadFormatAndParsingMapsForSystem(systemType?: UnitSystemKey): Promise<void>;
     protected loadKoqFormatSpecs(koq: string): Promise<void>;
-    readonly onActiveFormattingUnitSystemChanged: BeUiEvent<{
-        system?: "metric" | "imperial" | "usCustomary" | "usSurvey" | undefined;
-    }>;
+    readonly onActiveFormattingUnitSystemChanged: BeUiEvent<FormattingUnitSystemChangedArgs>;
     // @deprecated
     readonly onActiveUnitSystemChanged: BeUiEvent<{
         useImperial: boolean;
     }>;
     // (undocumented)
     onInitialized(): Promise<void>;
-    readonly onQuantityFormatsChanged: BeUiEvent<{
-        quantityType?: string | undefined;
-    }>;
+    readonly onQuantityFormatsChanged: BeUiEvent<QuantityFormatsChangedArgs>;
     // (undocumented)
     protected _overrideFormatPropsByQuantityType: Map<string, OverrideFormatEntry>;
     parseIntoQuantityValue(inString: string, parserSpec: ParserSpec | undefined): ParseResult;

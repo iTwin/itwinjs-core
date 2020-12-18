@@ -86,61 +86,73 @@ const UNIT_DATA: UnitDefinition[] = [
  */
 export type UnitSystemKey = "metric" | "imperial" | "usCustomary" | "usSurvey";
 
+/** Represents both standard and custom quantity types
+ * @alpha
+ */
+export type QuantityTypeArg = QuantityType | string;
+
+function getQuantityTypeKey(type: QuantityTypeArg): string {
+  // For QuantityType enum values, build a string that shouldn't collide with anything a user may come up with
+  if (typeof type === "number")
+    return `QuantityTypeEnumValue-${type.toString()}`;
+  return type;
+}
+
 const DEFAULT_FORMATKEY_BY_UNIT_SYSTEM = [
   {
     system: "metric",  // PresentationUnitSystem.Metric,
     entries: [
-      { type: `QuantityTypeEnumValue-${QuantityType.Length}`, formatKey: "[units:length]meter4" },
-      { type: `QuantityTypeEnumValue-${QuantityType.Angle}`, formatKey: "[units:angle]degree2" },
-      { type: `QuantityTypeEnumValue-${QuantityType.Area}`, formatKey: "[units:area]mSquared4" },
-      { type: `QuantityTypeEnumValue-${QuantityType.Volume}`, formatKey: "[units:volume]mCubed4" },
-      { type: `QuantityTypeEnumValue-${QuantityType.LatLong}`, formatKey: "[units:angle]dms" },
-      { type: `QuantityTypeEnumValue-${QuantityType.Coordinate}`, formatKey: "[units:length]meter2" },
-      { type: `QuantityTypeEnumValue-${QuantityType.Stationing}`, formatKey: "[units:length]m-sta2" },
-      { type: `QuantityTypeEnumValue-${QuantityType.LengthSurvey}`, formatKey: "[units:length]meter4" },
-      { type: `QuantityTypeEnumValue-${QuantityType.LengthEngineering}`, formatKey: "[units:length]meter4" },
+      { type: getQuantityTypeKey(QuantityType.Length), formatKey: "[units:length]meter4" },
+      { type: getQuantityTypeKey(QuantityType.Angle), formatKey: "[units:angle]degree2" },
+      { type: getQuantityTypeKey(QuantityType.Area), formatKey: "[units:area]mSquared4" },
+      { type: getQuantityTypeKey(QuantityType.Volume), formatKey: "[units:volume]mCubed4" },
+      { type: getQuantityTypeKey(QuantityType.LatLong), formatKey: "[units:angle]dms" },
+      { type: getQuantityTypeKey(QuantityType.Coordinate), formatKey: "[units:length]meter2" },
+      { type: getQuantityTypeKey(QuantityType.Stationing), formatKey: "[units:length]m-sta2" },
+      { type: getQuantityTypeKey(QuantityType.LengthSurvey), formatKey: "[units:length]meter4" },
+      { type: getQuantityTypeKey(QuantityType.LengthEngineering), formatKey: "[units:length]meter4" },
     ],
   },
   {
     system: "imperial", // PresentationUnitSystem.BritishImperial,
     entries: [
-      { type: `QuantityTypeEnumValue-${QuantityType.Length}`, formatKey: "[units:length]fi8" },
-      { type: `QuantityTypeEnumValue-${QuantityType.Angle}`, formatKey: "[units:angle]dms2" },
-      { type: `QuantityTypeEnumValue-${QuantityType.Area}`, formatKey: "[units:area]fSquared4" },
-      { type: `QuantityTypeEnumValue-${QuantityType.Volume}`, formatKey: "[units:volume]fCubed4" },
-      { type: `QuantityTypeEnumValue-${QuantityType.LatLong}`, formatKey: "[units:angle]dms" },
-      { type: `QuantityTypeEnumValue-${QuantityType.Coordinate}`, formatKey: "[units:length]feet2" },
-      { type: `QuantityTypeEnumValue-${QuantityType.Stationing}`, formatKey: "[units:length]f-sta2" },
-      { type: `QuantityTypeEnumValue-${QuantityType.LengthSurvey}`, formatKey: "[units:length]f-survey-4-labeled" },
-      { type: `QuantityTypeEnumValue-${QuantityType.LengthEngineering}`, formatKey: "[units:length]feet4" },
+      { type: getQuantityTypeKey(QuantityType.Length), formatKey: "[units:length]fi8" },
+      { type: getQuantityTypeKey(QuantityType.Angle), formatKey: "[units:angle]dms2" },
+      { type: getQuantityTypeKey(QuantityType.Area), formatKey: "[units:area]fSquared4" },
+      { type: getQuantityTypeKey(QuantityType.Volume), formatKey: "[units:volume]fCubed4" },
+      { type: getQuantityTypeKey(QuantityType.LatLong), formatKey: "[units:angle]dms" },
+      { type: getQuantityTypeKey(QuantityType.Coordinate), formatKey: "[units:length]feet2" },
+      { type: getQuantityTypeKey(QuantityType.Stationing), formatKey: "[units:length]f-sta2" },
+      { type: getQuantityTypeKey(QuantityType.LengthSurvey), formatKey: "[units:length]f-survey-4-labeled" },
+      { type: getQuantityTypeKey(QuantityType.LengthEngineering), formatKey: "[units:length]feet4" },
     ],
   },
   {
     system: "usCustomary",  // PresentationUnitSystem.UsCustomary
     entries: [
-      { type: `QuantityTypeEnumValue-${QuantityType.Length}`, formatKey: "[units:length]fi8" },
-      { type: `QuantityTypeEnumValue-${QuantityType.Angle}`, formatKey: "[units:angle]dms2" },
-      { type: `QuantityTypeEnumValue-${QuantityType.Area}`, formatKey: "[units:area]fSquared4" },
-      { type: `QuantityTypeEnumValue-${QuantityType.Volume}`, formatKey: "[units:volume]fCubed4" },
-      { type: `QuantityTypeEnumValue-${QuantityType.LatLong}`, formatKey: "[units:angle]dms" },
-      { type: `QuantityTypeEnumValue-${QuantityType.Coordinate}`, formatKey: "[units:length]feet2" },
-      { type: `QuantityTypeEnumValue-${QuantityType.Stationing}`, formatKey: "[units:length]f-sta2" },
-      { type: `QuantityTypeEnumValue-${QuantityType.LengthSurvey}`, formatKey: "[units:length]f-survey-4" },
-      { type: `QuantityTypeEnumValue-${QuantityType.LengthEngineering}`, formatKey: "[units:length]feet4" },
+      { type: getQuantityTypeKey(QuantityType.Length), formatKey: "[units:length]fi8" },
+      { type: getQuantityTypeKey(QuantityType.Angle), formatKey: "[units:angle]dms2" },
+      { type: getQuantityTypeKey(QuantityType.Area), formatKey: "[units:area]fSquared4" },
+      { type: getQuantityTypeKey(QuantityType.Volume), formatKey: "[units:volume]fCubed4" },
+      { type: getQuantityTypeKey(QuantityType.LatLong), formatKey: "[units:angle]dms" },
+      { type: getQuantityTypeKey(QuantityType.Coordinate), formatKey: "[units:length]feet2" },
+      { type: getQuantityTypeKey(QuantityType.Stationing), formatKey: "[units:length]f-sta2" },
+      { type: getQuantityTypeKey(QuantityType.LengthSurvey), formatKey: "[units:length]f-survey-4" },
+      { type: getQuantityTypeKey(QuantityType.LengthEngineering), formatKey: "[units:length]feet4" },
     ],
   },
   {
     system: "usSurvey",  // PresentationUnitSystem.UsSurvey
     entries: [
-      { type: `QuantityTypeEnumValue-${QuantityType.Length}`, formatKey: "[units:length]f-survey-4" },
-      { type: `QuantityTypeEnumValue-${QuantityType.Angle}`, formatKey: "[units:angle]dms2" },
-      { type: `QuantityTypeEnumValue-${QuantityType.Area}`, formatKey: "[units:area]usSurveyFtSquared4" },
-      { type: `QuantityTypeEnumValue-${QuantityType.Volume}`, formatKey: "[units:volume]usSurveyFtCubed4" },
-      { type: `QuantityTypeEnumValue-${QuantityType.LatLong}`, formatKey: "[units:angle]dms" },
-      { type: `QuantityTypeEnumValue-${QuantityType.Coordinate}`, formatKey: "[units:length]f-survey-2" },
-      { type: `QuantityTypeEnumValue-${QuantityType.Stationing}`, formatKey: "[units:length]f-survey-sta2" },
-      { type: `QuantityTypeEnumValue-${QuantityType.LengthSurvey}`, formatKey: "[units:length]f-survey-4" },
-      { type: `QuantityTypeEnumValue-${QuantityType.LengthEngineering}`, formatKey: "[units:length]f-survey-4" },
+      { type: getQuantityTypeKey(QuantityType.Length), formatKey: "[units:length]f-survey-4" },
+      { type: getQuantityTypeKey(QuantityType.Angle), formatKey: "[units:angle]dms2" },
+      { type: getQuantityTypeKey(QuantityType.Area), formatKey: "[units:area]usSurveyFtSquared4" },
+      { type: getQuantityTypeKey(QuantityType.Volume), formatKey: "[units:volume]usSurveyFtCubed4" },
+      { type: getQuantityTypeKey(QuantityType.LatLong), formatKey: "[units:angle]dms" },
+      { type: getQuantityTypeKey(QuantityType.Coordinate), formatKey: "[units:length]f-survey-2" },
+      { type: getQuantityTypeKey(QuantityType.Stationing), formatKey: "[units:length]f-survey-sta2" },
+      { type: getQuantityTypeKey(QuantityType.LengthSurvey), formatKey: "[units:length]f-survey-4" },
+      { type: getQuantityTypeKey(QuantityType.LengthEngineering), formatKey: "[units:length]f-survey-4" },
     ],
   },
 ];
@@ -479,11 +491,6 @@ export interface OverrideFormatEntry {
   usSurvey?: FormatProps;
 }
 
-/** Represents both standard and custom quantity types
- * @alpha
- */
-export type QuantityTypeArg = QuantityType | string;
-
 /** Interface that defines the functions required to be implemented to provide custom formatting and parsing of a custom quantity type.
  * @alpha
  */
@@ -507,6 +514,22 @@ export type FormatterSpecByQuantityType = Map<QuantityTypeKey, FormatterSpec>;
  */
 export type FormatPropsByUnitSystem = Map<UnitSystemKey, FormatProps>;
 
+/** Arguments sent to FormattingUnitSystemChanged event listeners.
+ * @alpha
+ */
+export interface FormattingUnitSystemChangedArgs {
+  // string that defines unit system activated.
+  readonly system: UnitSystemKey;
+}
+
+/** Arguments sent to QuantityFormatsChanged event listeners.
+ * @alpha
+ */
+export interface QuantityFormatsChangedArgs {
+  // string that represents the QuantityType that has been overriden or the overrides cleared.
+  readonly quantityType: string;
+}
+
 /** Formats quantity values into strings.
  * @alpha
  */
@@ -528,10 +551,12 @@ export class QuantityFormatter implements UnitsProvider {
   /** Called after the active unit system is changed.
   * The system will report the UnitSystemKey/name of the the system that was activated.
   */
-  public readonly onActiveFormattingUnitSystemChanged = new BeUiEvent<{ system?: UnitSystemKey }>();
+  public readonly onActiveFormattingUnitSystemChanged = new BeUiEvent<FormattingUnitSystemChangedArgs>();
 
-  /** Called after the active unit system is changed.  */
-  public readonly onQuantityFormatsChanged = new BeUiEvent<{ quantityType?: string }>();
+  /** Called when the format of a QuantityType is overriden or the override is cleared. The string returned will
+   * be a QuantityTypeKey generated by method `getQuantityTypeKey`.
+   */
+  public readonly onQuantityFormatsChanged = new BeUiEvent<QuantityFormatsChangedArgs>();
 
   /**
    * constructor
@@ -825,12 +850,8 @@ export class QuantityFormatter implements UnitsProvider {
   }
 
   /** Converts a QuantityTypeArg into a QuantityTypeKey/string value. */
-  protected getQuantityTypeKey(type: QuantityTypeArg): string {
-    // For QuantityType enum values, build a string that shouldn't collide with anything a user may come up with
-    if (typeof type === "number")
-      return `QuantityTypeEnumValue-${type.toString()}`;
-
-    return type;
+  public getQuantityTypeKey(type: QuantityTypeArg): string {
+    return getQuantityTypeKey(type);
   }
 
   /** Async request to get the 'persistence' unit from the UnitsProvider. For a tool this 'persistence' unit is the unit being used by the tool internally. */

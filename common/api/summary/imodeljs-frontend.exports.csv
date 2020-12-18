@@ -160,6 +160,7 @@ internal;FormatPropsByUnitSystem = Map
 beta;class FormattedQuantityDescription 
 alpha;FormatterParserSpecsProvider
 internal;FormatterSpecByQuantityType = Map
+alpha;FormattingUnitSystemChangedArgs
 internal;FrameBeforeRenderData
 internal;FrameCameraFrustumData
 internal;FrameCameraViewData
@@ -346,6 +347,7 @@ internal;PlanarTilePatch
 public;class PrimitiveTool 
 alpha;PrimitiveVisibility
 internal;QuadId
+alpha;QuantityFormatsChangedArgs
 alpha;QuantityFormatter 
 beta;QuantityType
 alpha;QuantityTypeArg = QuantityType | string
