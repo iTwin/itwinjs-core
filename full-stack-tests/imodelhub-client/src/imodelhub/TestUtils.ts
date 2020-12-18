@@ -26,6 +26,8 @@ const loggingCategory = "backend-itwin-client.TestUtils";
 
 const bankProjects: string[] = [];
 
+export const sharedimodelName = "imodeljs-clients Shared iModel";
+
 let testInstanceId: GuidString;
 function getTestInstanceId(): GuidString {
   if (!testInstanceId)
