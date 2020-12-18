@@ -94,7 +94,6 @@ describe("iModelHub EventHandler", () => {
   let subscription: EventSubscription;
   let briefcaseId: number;
   let sasToken: EventSAS;
-  const imodelName = "imodeljs-clients Events test";
   const imodelHubClient: IModelClient = utils.getDefaultClient();
   let requestContext: AuthorizedClientRequestContext;
 
@@ -104,13 +103,15 @@ describe("iModelHub EventHandler", () => {
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
     contextId = await utils.getProjectId(requestContext);
-    await utils.createIModel(requestContext, imodelName, contextId);
-    imodelId = await utils.getIModelId(requestContext, imodelName, contextId);
+    await utils.createIModel(requestContext, utils.sharedimodelName, contextId);
+    imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, contextId);
     briefcaseId = (await utils.getBriefcases(requestContext, imodelId, 1))[0].briefcaseId!;
   });
 
   after(async () => {
-    await utils.deleteIModelByName(requestContext, contextId, imodelName);
+    if (TestConfig.enableIModelBank) {
+      await utils.deleteIModelByName(requestContext, contextId, utils.sharedimodelName);
+    }
   });
 
   afterEach(() => {

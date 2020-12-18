@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ClientRequestContext, Config, EnvMacroSubst, OpenMode } from "@bentley/bentleyjs-core";
 import { BriefcaseDb, ConcurrencyControl } from "@bentley/imodeljs-backend";
-import { BriefcaseProps, IModelError, IModelStatus } from "@bentley/imodeljs-common";
+import { IModelError, IModelRpcProps, IModelStatus } from "@bentley/imodeljs-common";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUserCredentials, TestUtility } from "@bentley/oidc-signin-tool";
 
@@ -33,7 +33,7 @@ export function readConfigParams(): any {
 
 function configureIModel() {
   // __PUBLISH_EXTRACT_START__ BriefcaseDb.onOpen
-  BriefcaseDb.onOpen.addListener((_requestContext: AuthorizedClientRequestContext | ClientRequestContext, briefcaseProps: BriefcaseProps) => {
+  BriefcaseDb.onOpen.addListener((_requestContext: AuthorizedClientRequestContext | ClientRequestContext, briefcaseProps: IModelRpcProps) => {
     // A read-only service might want to reject all requests to open an iModel for writing. It can do this in the onOpen event.
     if (briefcaseProps.openMode !== OpenMode.Readonly)
       throw new IModelError(IModelStatus.BadRequest, "Navigator is readonly");

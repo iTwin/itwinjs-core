@@ -7,6 +7,7 @@ import { IModelBankClient, IModelQuery } from "@bentley/imodelhub-client";
 import {
   BriefcaseDb, BriefcaseManager, ChangeSummaryExtractOptions, ChangeSummaryManager, EventSink, IModelDb, IModelHost, IModelJsFs,
 } from "@bentley/imodeljs-backend";
+import { V1CheckpointManager } from "@bentley/imodeljs-backend/lib/CheckpointManager";
 import { IModelRpcProps, RpcInterface, RpcManager } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, AuthorizedClientRequestContextProps } from "@bentley/itwin-client";
 import { CloudEnvProps, EventsTestRpcInterface, TestRpcInterface } from "../common/RpcInterfaces";
@@ -24,7 +25,8 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
 
   public async extractChangeSummaries(tokenProps: IModelRpcProps, options: any): Promise<void> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    await ChangeSummaryManager.extractChangeSummaries(requestContext, BriefcaseDb.findByKey(tokenProps.key), options as ChangeSummaryExtractOptions);
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    await ChangeSummaryManager.extractChangeSummaries(requestContext, BriefcaseDb.findByKey(tokenProps.key) as BriefcaseDb, options as ChangeSummaryExtractOptions);
   }
 
   public async deleteChangeCache(tokenProps: IModelRpcProps): Promise<void> {
@@ -80,7 +82,12 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
       throw new BentleyError(BentleyStatus.ERROR);
     return hubIModel.id;
   }
+
+  public async purgeCheckpoints(iModelId: string): Promise<void> {
+    IModelJsFs.removeSync(V1CheckpointManager.getFolder(iModelId));
+  }
 }
+
 /** The backend implementation of WipRpcInterface.
  * @internal
  */
