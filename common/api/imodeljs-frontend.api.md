@@ -12087,6 +12087,8 @@ export namespace WmtsCapability {
         // (undocumented)
         static readonly ABSTRACT_XMLTAG = "ows:Abstract";
         // (undocumented)
+        static readonly ACCESSCONSTRAINTS_XMLTAG = "ows:AccessConstraints";
+        // (undocumented)
         static readonly ALLOWEDVALUES_XMLTAG = "ows:AllowedValues";
         // (undocumented)
         static readonly BOUNDINGBOX_XMLTAG = "ows:BoundingBox";
@@ -12095,11 +12097,17 @@ export namespace WmtsCapability {
         // (undocumented)
         static readonly DCP_XMLTAG = "ows:DCP";
         // (undocumented)
+        static readonly FEES_XMLTAG = "ows:Fees";
+        // (undocumented)
         static readonly GET_XMLTAG = "ows:Get";
         // (undocumented)
         static readonly HTTP_XMLTAG = "ows:HTTP";
         // (undocumented)
         static readonly IDENTIFIER_XMLTAG = "ows:Identifier";
+        // (undocumented)
+        static readonly KEYWORD_XMLTAG = "ows:Keyword";
+        // (undocumented)
+        static readonly KEYWORDS_XMLTAG = "ows:Keywords";
         // (undocumented)
         static readonly LOWERCORNER_XMLTAG = "ows:LowerCorner";
         // (undocumented)
@@ -12108,6 +12116,8 @@ export namespace WmtsCapability {
         static readonly OPERATIONSMETADATA_XMLTAG = "ows:OperationsMetadata";
         // (undocumented)
         static readonly POST_XMLTAG = "ows:Post";
+        // (undocumented)
+        static readonly SERVICEIDENTIFICATION_XMLTAG = "ows:ServiceIdentification";
         // (undocumented)
         static readonly SERVICETYPE_XMLTAG = "ows:ServiceType";
         // (undocumented)
@@ -12129,7 +12139,11 @@ export namespace WmtsCapability {
         // (undocumented)
         readonly abstract?: string;
         // (undocumented)
-        readonly operationMetadata?: OperationMetadata;
+        readonly accessConstraints?: string;
+        // (undocumented)
+        readonly fees?: string;
+        // (undocumented)
+        readonly keywords?: string[];
         // (undocumented)
         readonly serviceType?: string;
         // (undocumented)
