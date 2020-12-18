@@ -1029,7 +1029,7 @@ async function reopenImodel(testConfig: DefaultConfigs): Promise<void> {
   }
 }
 
-async function openImodelAndLoadExtViews(testConfig: DefaultConfigs): Promise<void> {
+async function openImodelAndLoadExtViews(testConfig: DefaultConfigs, extViews?: any[]): Promise<void> {
   activeViewState = new SimpleViewState();
 
   // Open an iModel from a local file
@@ -1041,9 +1041,13 @@ async function openImodelAndLoadExtViews(testConfig: DefaultConfigs): Promise<vo
       alert(`openSnapshot failed: ${err.toString()}`);
       openLocalIModel = false;
     }
-    const esvString = await DisplayPerfRpcInterface.getClient().readExternalSavedViews(testConfig.iModelFile!);
-    if (undefined !== esvString && "" !== esvString) {
-      activeViewState.externalSavedViews = JSON.parse(esvString) as any[];
+    if (extViews) {
+      activeViewState.externalSavedViews = extViews;
+    } else {
+      const esvString = await DisplayPerfRpcInterface.getClient().readExternalSavedViews(testConfig.iModelFile!);
+      if (undefined !== esvString && "" !== esvString) {
+        activeViewState.externalSavedViews = JSON.parse(esvString) as any[];
+      }
     }
   }
 
@@ -1064,7 +1068,9 @@ async function openImodelAndLoadExtViews(testConfig: DefaultConfigs): Promise<vo
       throw new Error(`${activeViewState.projectConfig.iModelName} - IModel not found in project ${activeViewState.project!.name}`);
     activeViewState.iModelConnection = await IModelApi.openIModel(activeViewState.project!.wsgId, activeViewState.iModel.wsgId, undefined, OpenMode.Readonly);
 
-    if (activeViewState.project) { // Get any external saved views from iModelHub if they exist
+    if (extViews) {
+      activeViewState.externalSavedViews = extViews;
+    } else if (activeViewState.project) { // Get any external saved views from iModelHub if they exist
       try {
         const projectShareClient: ProjectShareClient = new ProjectShareClient();
         const projectId = activeViewState.project.wsgId;
@@ -1102,12 +1108,8 @@ async function openImodelAndLoadExtViews(testConfig: DefaultConfigs): Promise<vo
 
 }
 
-async function loadIModel(testConfig: DefaultConfigs, iModelAlreadyOpened = false): Promise<boolean> {
-  if (iModelAlreadyOpened) {
-    await reopenImodel(testConfig); // Open iModel
-  } else {
-    await openImodelAndLoadExtViews(testConfig); // Open iModel & load all external saved views into activeViewState
-  }
+async function loadIModel(testConfig: DefaultConfigs, extViews?: any[]): Promise<boolean> {
+  await openImodelAndLoadExtViews(testConfig, extViews); // Open iModel & load all external saved views into activeViewState
 
   // open the specified view
   if (undefined !== testConfig.viewStatePropsString)
@@ -1385,12 +1387,12 @@ async function renderAsync(vp: ScreenViewport, numFrames: number, timings: Array
   });
 }
 
-async function runTest(testConfig: DefaultConfigs, iModelAlreadyOpened = false) {
+async function runTest(testConfig: DefaultConfigs, extViews?: any[]) {
   // Restart the IModelApp if needed
   await restartIModelApp(testConfig);
 
   // Open and finish loading model
-  const loaded = await loadIModel(testConfig, iModelAlreadyOpened);
+  const loaded = await loadIModel(testConfig, extViews);
   if (!loaded) {
     await closeIModel();
     return; // could not properly open the given model or saved view so skip test
@@ -1571,10 +1573,10 @@ async function testModel(configs: DefaultConfigs, modelData: any, logFileName: s
     // If a viewName contains an asterisk *,
     // treat it as a wildcard and run tests for each saved view that matches the given wildcard
     let allSavedViews = [testConfig.viewName];
-    let iModelAlreadyOpened = false;
+    let extViews: any[] | undefined;
     if (testConfig.viewName?.includes("*")) {
       allSavedViews = await getAllMatchingSavedViews(testConfig);
-      iModelAlreadyOpened = true;
+      extViews = activeViewState.externalSavedViews;
     }
     for (const viewName of allSavedViews) {
       testConfig.viewName = viewName;
@@ -1591,7 +1593,7 @@ async function testModel(configs: DefaultConfigs, modelData: any, logFileName: s
       await consoleLog(outStr);
       await writeExternalFile(testConfig.outputPath!, logFileName, true, `${outStr}\n`);
 
-      await runTest(testConfig, iModelAlreadyOpened);
+      await runTest(testConfig, extViews);
     }
   }
   if (configs.iModelLocation) removeFilesFromDir(configs.iModelLocation, ".Tiles");
