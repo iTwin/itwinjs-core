@@ -11,17 +11,19 @@ import { PhysicalModelCombiner } from "./PhysicalModelCombiner";
 
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   await IModelHost.startup();
-  // const sourceDirectoryName = "D:/data/bim/snapshots";
-  const sourceDirectoryName = "D:/data/bim/bechtel";
-  const sourceBaseName = "bechtel-source";
+  const sourceDirectoryName = "D:/data/bim/snapshots";
+  // const sourceDirectoryName = "D:/data/bim/bechtel";
+  // const sourceBaseName = "bechtel-source";
   // const sourceBaseName = "fmg";
   // const sourceBaseName = "shell4";
   // const sourceBaseName = "shell-full-1015";
-  // const sourceBaseName = "shell-full-1018";
+  const sourceBaseName = "shell-full-1018";
   // const sourceBaseName = "cassia-05";
   const sourceFileName = path.join(sourceDirectoryName, `${sourceBaseName}.bim`);
   const targetFileName = path.join(__dirname, `${sourceBaseName}-optimized.bim`);
   initializeLogging(); // path.join(__dirname, `${sourceBaseName}-log.txt`));
+  Logger.logInfo("Progress", `sourceFileName=${sourceFileName}`);
+  Logger.logInfo("Progress", `targetFileName=${targetFileName}`);
   await PhysicalModelCombiner.combine(sourceFileName, targetFileName);
   await IModelHost.shutdown();
 })();

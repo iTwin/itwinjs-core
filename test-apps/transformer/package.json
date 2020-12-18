@@ -10,7 +10,7 @@
     "cover": "",
     "docs": "",
     "lint": "eslint --max-warnings 0 ./src/**/*.ts 1>&2",
-    "start": "node --max-old-space-size=8192 ./lib/Main.js",
+    "start": "node ./lib/Main.js",
     "test": ""
   },
   "repository": {},

@@ -24,11 +24,9 @@ export class PhysicalModelCombiner extends IModelTransformer {
     const combiner = new PhysicalModelCombiner(sourceDb, targetDb);
     combiner.logMemoryUsage("Before processSchemas");
     await combiner.processSchemas(new BackendRequestContext());
+    targetDb.saveChanges(`processSchemas`);
     combiner.logMemoryUsage("After processSchemas");
     if (sourceFileName.includes("fmg")) {
-      // exclude problem elements
-      combiner.exporter.excludeElement("0x40000009395");
-      combiner.exporter.excludeElement("0x400000093a0");
       combiner.importer.simplifyElementGeometry = false;
     } else {
       combiner.importer.simplifyElementGeometry = true;
@@ -43,7 +41,7 @@ export class PhysicalModelCombiner extends IModelTransformer {
   private _numSourceRelationships = 0;
   private _numSourceRelationshipsProcessed = 0;
   private readonly _reportingInterval = 1000;
-  private readonly _saveChangesInterval = 10000; // must be a multiple of reportingInterval
+  // private readonly _saveChangesInterval = 10000; // must be a multiple of reportingInterval
   private _targetComponentsModelId: Id64String = Id64.invalid;
   private _targetPhysicalTagsModelId: Id64String = Id64.invalid;
   private _startTime = new Date();
@@ -75,10 +73,10 @@ export class PhysicalModelCombiner extends IModelTransformer {
       Logger.logInfo("Progress", progressMessage);
       this.logElapsedTime();
       this.logMemoryUsage();
-      if (0 === this._numSourceElementsProcessed % this._saveChangesInterval) {
-        Logger.logInfo("Progress", "Saving changes");
-        this.targetDb.saveChanges();
-      }
+      // if (0 === this._numSourceElementsProcessed % this._saveChangesInterval) {
+      //   Logger.logInfo("Progress", "Saving changes");
+      //   this.targetDb.saveChanges();
+      // }
     }
     if (sourceElement instanceof Subject) {
       if (sourceElement.code.getValue() === "Physical") { // FMG, BP case
@@ -141,10 +139,10 @@ export class PhysicalModelCombiner extends IModelTransformer {
       Logger.logInfo("Progress", progressMessage);
       this.logElapsedTime();
       this.logMemoryUsage();
-      if (0 === this._numSourceRelationshipsProcessed % this._saveChangesInterval) {
-        Logger.logInfo("Progress", "Saving changes");
-        this.targetDb.saveChanges(progressMessage);
-      }
+      // if (0 === this._numSourceRelationshipsProcessed % this._saveChangesInterval) {
+      //   Logger.logInfo("Progress", "Saving changes");
+      //   this.targetDb.saveChanges(progressMessage);
+      // }
     }
     return super.shouldExportRelationship(relationship);
   }
