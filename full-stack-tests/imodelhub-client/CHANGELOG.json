@@ -2,6 +2,21 @@
   "name": "@bentley/imodelhub-client-tests",
   "entries": [
     {
+      "version": "2.10.0",
+      "tag": "@bentley/imodelhub-client-tests_v2.10.0",
+      "date": "Fri, 18 Dec 2020 18:24:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added CheckpointV2 client tests"
+          },
+          {
+            "comment": "Increased timeout for some iModelHub tests"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.9.3",
       "tag": "@bentley/imodelhub-client-tests_v2.9.3",
       "date": "Mon, 23 Nov 2020 20:57:56 GMT",

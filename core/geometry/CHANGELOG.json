@@ -2,6 +2,30 @@
   "name": "@bentley/geometry-core",
   "entries": [
     {
+      "version": "2.10.0",
+      "tag": "@bentley/geometry-core_v2.10.0",
+      "date": "Fri, 18 Dec 2020 18:24:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update minimum Node version to 10.17.0"
+          },
+          {
+            "comment": "Flatbuffer i/o for TransitionSpiral and PolyfaceAuxData"
+          },
+          {
+            "comment": "improve performance of announceSweepLinestringToConvexPolyfaceXY"
+          },
+          {
+            "comment": "When faceting a sphere primitive, apply stroke options (instead of ignoring them and using fixed count)"
+          },
+          {
+            "comment": "removed Matrix3d from Matrix3dProps. ***breaking change***"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.9.3",
       "tag": "@bentley/geometry-core_v2.9.3",
       "date": "Mon, 23 Nov 2020 20:57:56 GMT",

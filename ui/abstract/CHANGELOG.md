@@ -1,6 +1,13 @@
 # Change Log - @bentley/ui-abstract
 
-This log was last generated on Mon, 23 Nov 2020 22:19:30 GMT and should not be manually modified.
+This log was last generated on Fri, 18 Dec 2020 18:24:01 GMT and should not be manually modified.
+
+## 2.10.0
+Fri, 18 Dec 2020 18:24:01 GMT
+
+### Updates
+
+- Refactor DialogItem and Property interfaces to make them easier to use.
 
 ## 2.9.3
 Mon, 23 Nov 2020 20:57:56 GMT

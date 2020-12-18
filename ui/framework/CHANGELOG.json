@@ -2,6 +2,33 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "2.10.0",
+      "tag": "@bentley/ui-framework_v2.10.0",
+      "date": "Fri, 18 Dec 2020 18:24:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Rename 'VisibilityHandler' to 'ModelsVisibilityHandler' and allow subclasses to acces more methods."
+          },
+          {
+            "comment": "Avoid throwing exception in ModelsTree VisibilityHandler if RulesetDrivenIdsProvider got undefined content"
+          },
+          {
+            "comment": "Correctly handler visibility changes in ModelsTree when filter is applied"
+          },
+          {
+            "comment": "Refactor DialogItem and Property interfaces to make them easier to use."
+          },
+          {
+            "comment": "Add a 'hasChildren' hint for categories in ModelsTree. We know that categories always have nodes under them. Tell that with a `hasChildren: \"Always\"` hint to improve categories' loading performance"
+          },
+          {
+            "comment": "Disable pointer events in overlay of default view overlay."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.9.3",
       "tag": "@bentley/ui-framework_v2.9.3",
       "date": "Mon, 23 Nov 2020 20:57:56 GMT",

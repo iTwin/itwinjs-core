@@ -2,6 +2,27 @@
   "name": "@bentley/imodel-bridge",
   "entries": [
     {
+      "version": "2.10.0",
+      "tag": "@bentley/imodel-bridge_v2.10.0",
+      "date": "Fri, 18 Dec 2020 18:24:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update minimum Node version to 10.17.0"
+          },
+          {
+            "comment": "getDataChangesDescription method for BridgeRunner"
+          },
+          {
+            "comment": "Add try/finally block around synchronization in order to do cleanup."
+          },
+          {
+            "comment": "channel documentation"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.9.3",
       "tag": "@bentley/imodel-bridge_v2.9.3",
       "date": "Mon, 23 Nov 2020 20:57:56 GMT",

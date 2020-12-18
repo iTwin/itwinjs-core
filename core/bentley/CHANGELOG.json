@@ -2,6 +2,21 @@
   "name": "@bentley/bentleyjs-core",
   "entries": [
     {
+      "version": "2.10.0",
+      "tag": "@bentley/bentleyjs-core_v2.10.0",
+      "date": "Fri, 18 Dec 2020 18:24:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added CheckpointV2 errors"
+          },
+          {
+            "comment": "Fix exception when constructing ObservableSet from an Iterable; add CompressedId64Set.reset()."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.9.3",
       "tag": "@bentley/bentleyjs-core_v2.9.3",
       "date": "Mon, 23 Nov 2020 20:57:56 GMT",

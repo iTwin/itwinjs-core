@@ -2,6 +2,48 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "2.10.0",
+      "tag": "@bentley/imodeljs-frontend_v2.10.0",
+      "date": "Fri, 18 Dec 2020 18:24:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update minimum Node version to 10.17.0"
+          },
+          {
+            "comment": "Support compact representation of DisplayStyleSettings.excludedElements."
+          },
+          {
+            "comment": "Handle missing 'window' object when run in Node for support of Server-Side Rendering"
+          },
+          {
+            "comment": "Ensure proper disposal of WebGL resources owned by Target."
+          },
+          {
+            "comment": "Add tests for undefined values in script."
+          },
+          {
+            "comment": "Fixed an issue where WMS GetFeatureInfo would not work correctly on all sublayers."
+          },
+          {
+            "comment": "Correct reprojection to allow non-rigid linear transform."
+          },
+          {
+            "comment": "Fix tap on measure distance marker showing information for wrong segment."
+          },
+          {
+            "comment": "Add ability for caller to override quantity display format per QuantityType."
+          },
+          {
+            "comment": "Make view globe tools use GCS reprojection as necessary to improve precision when navigating within the iModel extents."
+          },
+          {
+            "comment": "Support display of OSM Buildings."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.9.3",
       "tag": "@bentley/imodeljs-frontend_v2.9.3",
       "date": "Mon, 23 Nov 2020 20:57:56 GMT",

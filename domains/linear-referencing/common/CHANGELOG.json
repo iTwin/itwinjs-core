@@ -2,6 +2,18 @@
   "name": "@bentley/linear-referencing-common",
   "entries": [
     {
+      "version": "2.10.0",
+      "tag": "@bentley/linear-referencing-common_v2.10.0",
+      "date": "Fri, 18 Dec 2020 18:24:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update minimum Node version to 10.17.0"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.9.3",
       "tag": "@bentley/linear-referencing-common_v2.9.3",
       "date": "Mon, 23 Nov 2020 20:57:56 GMT",

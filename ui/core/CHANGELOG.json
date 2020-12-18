@@ -2,6 +2,39 @@
   "name": "@bentley/ui-core",
   "entries": [
     {
+      "version": "2.10.0",
+      "tag": "@bentley/ui-core_v2.10.0",
+      "date": "Fri, 18 Dec 2020 18:24:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "By default format slider tooltip with same number of decimal places as step specification."
+          },
+          {
+            "comment": "Change warning/success/error colors for labeledInput to themed variables ."
+          },
+          {
+            "comment": "Add ability for Popup to avoid outside click processing when clicking on element in nested Popup."
+          },
+          {
+            "comment": "Add new NumberInput control to replace NumericInput which wrapped react-numeric-input."
+          },
+          {
+            "comment": "Clear FocusTrap timeout on unmount."
+          },
+          {
+            "comment": "Popup - added onContextMenu & closeOnContextMenu props"
+          },
+          {
+            "comment": "Added 'closeOnWheel' and 'onWheel' Popup props"
+          },
+          {
+            "comment": "Unified UI typography systems"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.9.3",
       "tag": "@bentley/ui-core_v2.9.3",
       "date": "Mon, 23 Nov 2020 20:57:56 GMT",

@@ -1,6 +1,19 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Mon, 23 Nov 2020 22:19:30 GMT and should not be manually modified.
+This log was last generated on Fri, 18 Dec 2020 18:24:01 GMT and should not be manually modified.
+
+## 2.10.0
+Fri, 18 Dec 2020 18:24:01 GMT
+
+### Updates
+
+- Update minimum Node version to 10.17.0
+- Fix cartographicRange computation. The 8 corners are calculated in the ECEF coordinate system but I think they should be calculated in the spatial coordinate system and then converted to ECEF.
+- Support compact representation of DisplayStyleSettings.excludedElements.
+- Added ElementGeometry.Builder and ElementGeometry.Iterator.
+- export ModelLoadProps
+- Support display of OSM Buildings.
+- Version compare top parents ChangedElements update
 
 ## 2.9.3
 Mon, 23 Nov 2020 20:57:56 GMT

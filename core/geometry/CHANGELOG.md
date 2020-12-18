@@ -1,6 +1,17 @@
 # Change Log - @bentley/geometry-core
 
-This log was last generated on Mon, 23 Nov 2020 22:19:30 GMT and should not be manually modified.
+This log was last generated on Fri, 18 Dec 2020 18:24:01 GMT and should not be manually modified.
+
+## 2.10.0
+Fri, 18 Dec 2020 18:24:01 GMT
+
+### Updates
+
+- Update minimum Node version to 10.17.0
+- Flatbuffer i/o for TransitionSpiral and PolyfaceAuxData
+- improve performance of announceSweepLinestringToConvexPolyfaceXY
+- When faceting a sphere primitive, apply stroke options (instead of ignoring them and using fixed count)
+- removed Matrix3d from Matrix3dProps. ***breaking change***
 
 ## 2.9.3
 Mon, 23 Nov 2020 20:57:56 GMT

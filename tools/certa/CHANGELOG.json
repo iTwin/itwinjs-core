@@ -2,6 +2,21 @@
   "name": "@bentley/certa",
   "entries": [
     {
+      "version": "2.10.0",
+      "tag": "@bentley/certa_v2.10.0",
+      "date": "Fri, 18 Dec 2020 18:24:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix occasional hang in Electron when a timeout occurs loading the app"
+          },
+          {
+            "comment": "Upgraded electron version. "
+          }
+        ]
+      }
+    },
+    {
       "version": "2.9.3",
       "tag": "@bentley/certa_v2.9.3",
       "date": "Mon, 23 Nov 2020 20:57:56 GMT",
