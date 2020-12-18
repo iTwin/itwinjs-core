@@ -70,6 +70,13 @@ export class ExpandableList extends React.PureComponent<ExpandableListProps, Exp
     });
   }
 
+  /** @internal */
+  public componentDidUpdate(prevProps: ExpandableListProps) {
+    if (this.props.defaultActiveBlock !== prevProps.defaultActiveBlock && this.props.defaultActiveBlock !== this.state.activeBlock) {
+      this.setState((_, props) => ({ activeBlock: props.defaultActiveBlock! }));
+    }
+  }
+
   public render(): JSX.Element {
     return (
       <div className={classnames("uicore-expandable-blocks-list", this.props.className)} style={this.props.style}>

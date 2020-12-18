@@ -332,6 +332,9 @@ export class Tool {
   /** The internationalization services instance used to translate strings from the namespace. */
   public static i18n: I18N;
 
+  /** @internal */
+  public get ctor() { return this.constructor as ToolType; }
+
   public constructor(..._args: any[]) { }
 
   /** The minimum number of arguments allowed by [[parseAndRun]]. If subclasses override [[parseAndRun]], they should also
@@ -402,27 +405,27 @@ export class Tool {
    * Get the toolId string for this Tool class. This string is used to identify the Tool in the ToolRegistry and is used to localize
    * the keyin, description, etc. from the current locale.
    */
-  public get toolId(): string { return (this.constructor as ToolType).toolId; }
+  public get toolId(): string { return this.ctor.toolId; }
 
   /** Get the localized keyin string from this Tool's class
    * @see `static get keyin()`
    */
-  public get keyin(): string { return (this.constructor as ToolType).keyin; }
+  public get keyin(): string { return this.ctor.keyin; }
 
   /** Get the localized flyover string from this Tool's class
    * @see `static get flyover()`
    */
-  public get flyover(): string { return (this.constructor as ToolType).flyover; }
+  public get flyover(): string { return this.ctor.flyover; }
 
   /** Get the localized description string from this Tool's class
    * @see `static get description()`
    */
-  public get description(): string { return (this.constructor as ToolType).description; }
+  public get description(): string { return this.ctor.description; }
 
   /** Get the iconSpec from this Tool's class.
    * @see `static iconSpec`
    */
-  public get iconSpec(): string { return (this.constructor as ToolType).iconSpec; }
+  public get iconSpec(): string { return this.ctor.iconSpec; }
 
   /**
    * Run this instance of a Tool. Subclasses should override to perform some action.

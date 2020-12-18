@@ -26,7 +26,6 @@ import { BentleyStatus } from '@bentley/bentleyjs-core';
 import { BeTimePoint } from '@bentley/bentleyjs-core';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
 import { BriefcaseDownloader } from '@bentley/imodeljs-common';
-import { BriefcaseKey } from '@bentley/imodeljs-common';
 import { BriefcaseProps } from '@bentley/imodeljs-common';
 import { ByteStream } from '@bentley/bentleyjs-core';
 import { Camera } from '@bentley/imodeljs-common';
@@ -37,6 +36,7 @@ import { CategorySelectorProps } from '@bentley/imodeljs-common';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { ClipPlane } from '@bentley/geometry-core';
 import { ClipShape } from '@bentley/geometry-core';
+import { ClipStyle } from '@bentley/imodeljs-common';
 import { ClipVector } from '@bentley/geometry-core';
 import { Code } from '@bentley/imodeljs-common';
 import { CodeProps } from '@bentley/imodeljs-common';
@@ -62,7 +62,6 @@ import { DisplayStyle3dSettingsProps } from '@bentley/imodeljs-common';
 import { DisplayStyleProps } from '@bentley/imodeljs-common';
 import { DisplayStyleSettings } from '@bentley/imodeljs-common';
 import { DisplayStyleSettingsProps } from '@bentley/imodeljs-common';
-import { DownloadBriefcaseOptions } from '@bentley/imodeljs-common';
 import { EasingFunction } from '@bentley/imodeljs-common';
 import { EcefLocation } from '@bentley/imodeljs-common';
 import { EcefLocationProps } from '@bentley/imodeljs-common';
@@ -90,6 +89,7 @@ import { FeatureTable } from '@bentley/imodeljs-common';
 import { FillFlags } from '@bentley/imodeljs-common';
 import { FontMap } from '@bentley/imodeljs-common';
 import { Format } from '@bentley/imodeljs-quantity';
+import { FormatProps } from '@bentley/imodeljs-quantity';
 import { FormatterSpec } from '@bentley/imodeljs-quantity';
 import { FrontendAuthorizationClient } from '@bentley/frontend-authorization-client';
 import { Frustum } from '@bentley/imodeljs-common';
@@ -146,6 +146,7 @@ import { LDClient } from 'ldclient-js';
 import { LDFlagValue } from 'ldclient-js';
 import { LightSettings } from '@bentley/imodeljs-common';
 import { LinePixels } from '@bentley/imodeljs-common';
+import { LocalBriefcaseProps } from '@bentley/imodeljs-common';
 import { LockLevel } from '@bentley/imodelhub-client';
 import { LogLevel } from '@bentley/bentleyjs-core';
 import { Loop } from '@bentley/geometry-core';
@@ -171,6 +172,7 @@ import { ModelQueryParams } from '@bentley/imodeljs-common';
 import { ModelSelectorProps } from '@bentley/imodeljs-common';
 import { MonochromeMode } from '@bentley/imodeljs-common';
 import { OctEncodedNormal } from '@bentley/imodeljs-common';
+import { OpenBriefcaseProps } from '@bentley/imodeljs-common';
 import { OpenMode } from '@bentley/bentleyjs-core';
 import { OrbitGtBlobProps } from '@bentley/imodeljs-common';
 import { OrbitGtDataManager } from '@bentley/orbitgt-core';
@@ -231,12 +233,15 @@ import { SolarShadowSettings } from '@bentley/imodeljs-common';
 import { SortedArray } from '@bentley/bentleyjs-core';
 import { SpatialClassificationProps } from '@bentley/imodeljs-common';
 import { SpatialViewDefinitionProps } from '@bentley/imodeljs-common';
+import { StandaloneOpenOptions } from '@bentley/imodeljs-common';
 import { StopWatch } from '@bentley/bentleyjs-core';
 import { StorageValue } from '@bentley/imodeljs-common';
+import { StringifiedClipVector } from '@bentley/geometry-core';
 import { StrokeOptions } from '@bentley/geometry-core';
 import { SubCategoryAppearance } from '@bentley/imodeljs-common';
 import { SubCategoryOverride } from '@bentley/imodeljs-common';
 import { SubLayerId } from '@bentley/imodeljs-common';
+import { SyncMode } from '@bentley/imodeljs-common';
 import { TelemetryManager } from '@bentley/telemetry-client';
 import { TerrainProviderName } from '@bentley/imodeljs-common';
 import { TextureMapping } from '@bentley/imodeljs-common';
@@ -269,6 +274,7 @@ import { ViewFlagOverrides } from '@bentley/imodeljs-common';
 import { ViewFlags } from '@bentley/imodeljs-common';
 import { ViewQueryParams } from '@bentley/imodeljs-common';
 import { ViewStateProps } from '@bentley/imodeljs-common';
+import { WebGLContext } from '@bentley/webgl-compatibility';
 import { WebGLExtensionName } from '@bentley/webgl-compatibility';
 import { WebGLRenderCompatibilityInfo } from '@bentley/webgl-compatibility';
 import { XAndY } from '@bentley/geometry-core';
@@ -1006,9 +1012,6 @@ export enum ActivityMessageEndReason {
     // (undocumented)
     Completed = 0
 }
-
-// @internal
-export function addAnimatedTileTreeReferences(refs: TileTreeReference[], view: ViewState, model: GeometricModelState, script: RenderScheduleState.Script): void;
 
 // @internal (undocumented)
 export function addRangeGraphic(builder: GraphicBuilder, range: Range3d, is2d: boolean): void;
@@ -2069,6 +2072,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @internal (undocumented)
     get backgroundMapBase(): BaseLayerSettings | undefined;
     // @internal (undocumented)
+    get backgroundMapElevationBias(): number;
+    // @internal (undocumented)
     get backgroundMapLayers(): MapLayerSettings[];
     get backgroundMapSettings(): BackgroundMapSettings;
     set backgroundMapSettings(settings: BackgroundMapSettings);
@@ -2187,6 +2192,13 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     viewMapLayerRange(layerIndex: number, isOverlay: boolean, vp: ScreenViewport): Promise<boolean>;
     // @internal (undocumented)
     get wantShadows(): boolean;
+}
+
+// @internal
+export interface DownloadBriefcaseOptions {
+    // (undocumented)
+    fileName?: string;
+    syncMode: SyncMode;
 }
 
 // @alpha
@@ -4425,7 +4437,7 @@ export interface LoadedExtensionProps {
 // @internal
 export class LocalBriefcaseConnection extends BriefcaseConnection {
     close(): Promise<void>;
-    static open(briefcaseProps: BriefcaseProps): Promise<LocalBriefcaseConnection>;
+    static open(briefcaseProps: OpenBriefcaseProps): Promise<LocalBriefcaseConnection>;
 }
 
 // @public
@@ -5801,23 +5813,24 @@ export class NativeApp {
     // (undocumented)
     static checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
     // (undocumented)
-    static closeBriefcase(briefcaseKey: BriefcaseKey): Promise<void>;
+    static closeBriefcase(connection: LocalBriefcaseConnection): Promise<void>;
     static closeStorage(storage: Storage, deleteId: boolean): Promise<void>;
+    static deleteBriefcase(fileName: string): Promise<void>;
     // (undocumented)
-    static deleteBriefcase(briefcaseKey: BriefcaseKey): Promise<void>;
-    static getBriefcases(): Promise<BriefcaseProps[]>;
+    static getBriefcaseFileName(props: BriefcaseProps): Promise<string>;
+    static getCachedBriefcases(iModelId?: GuidString): Promise<LocalBriefcaseProps[]>;
     static getStorageNames(): Promise<string[]>;
     // (undocumented)
     static onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void>;
     // (undocumented)
     static onMemoryWarning: BeEvent<() => void>;
     // (undocumented)
-    static openBriefcase(briefcaseProps: BriefcaseProps): Promise<LocalBriefcaseConnection>;
+    static openBriefcase(briefcaseProps: OpenBriefcaseProps): Promise<LocalBriefcaseConnection>;
     static openStorage(name: string): Promise<Storage>;
     // (undocumented)
     static overrideInternetConnectivity(status: InternetConnectivityStatus): Promise<void>;
     // (undocumented)
-    static requestDownloadBriefcase(contextId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions, version?: IModelVersion, progress?: ProgressCallback): Promise<BriefcaseDownloader>;
+    static requestDownloadBriefcase(contextId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions, asOf?: IModelVersion, progress?: ProgressCallback): Promise<BriefcaseDownloader>;
     // (undocumented)
     static shutdown(): Promise<void>;
     // (undocumented)
@@ -6160,6 +6173,14 @@ export enum OutputMessageType {
     Toast = 0
 }
 
+// @alpha
+export interface OverrideFormatEntry {
+    // (undocumented)
+    imperial: FormatProps;
+    // (undocumented)
+    metric: FormatProps;
+}
+
 // @internal
 export function overrideRequestTileTreeProps(func: RequestTileTreePropsFunc | undefined): void;
 
@@ -6421,6 +6442,10 @@ export class QuantityFormatter implements UnitsProvider {
     constructor(showMetricValues?: boolean);
     // (undocumented)
     protected _activeSystemIsImperial: boolean;
+    // (undocumented)
+    clearAllOverrideFormats(): Promise<void>;
+    // (undocumented)
+    clearOverrideFormats(type: QuantityType): Promise<void>;
     findFormatterSpecByQuantityType(type: QuantityType, imperial?: boolean): FormatterSpec | undefined;
     protected findKoqFormatterSpec(koq: string, useImperial: boolean): FormatterSpec | undefined;
     findParserSpecByQuantityType(type: QuantityType, imperial?: boolean): ParserSpec | undefined;
@@ -6437,7 +6462,11 @@ export class QuantityFormatter implements UnitsProvider {
     getFormatterSpecByQuantityType(type: QuantityType, imperial?: boolean): Promise<FormatterSpec>;
     protected getKoqFormatterSpec(koq: string, useImperial: boolean): Promise<FormatterSpec | undefined>;
     protected getKoqFormatterSpecsAsync(koq: string, useImperial: boolean): Promise<FormatterSpec[] | undefined>;
+    // (undocumented)
+    protected getOverrideFormat(type: QuantityType, imperial: boolean): Promise<FormatProps | undefined>;
     getParserSpecByQuantityType(type: QuantityType, imperial?: boolean): Promise<ParserSpec>;
+    // (undocumented)
+    protected _getStandardFormatterSpec(type: QuantityType, useImperial: boolean): Promise<FormatterSpec>;
     protected getUnitByQuantityType(type: QuantityType): Promise<UnitProps>;
     getUnitsByFamily(unitFamily: string): Promise<UnitProps[]>;
     // (undocumented)
@@ -6447,8 +6476,10 @@ export class QuantityFormatter implements UnitsProvider {
     // (undocumented)
     protected _imperialParserSpecsByType: Map<QuantityType, ParserSpec>;
     loadFormatAndParsingMaps(useImperial: boolean, restartActiveTool?: boolean): Promise<void>;
+    protected loadFormatSpecsForQuantityType(quantityType: QuantityType, useImperial: boolean): Promise<void>;
     protected loadFormatSpecsForQuantityTypes(useImperial: boolean): Promise<void>;
     protected loadKoqFormatSpecs(koq: string): Promise<void>;
+    protected loadParsingSpecsForQuantityType(quantityType: QuantityType, useImperial: boolean): Promise<void>;
     protected loadParsingSpecsForQuantityTypes(useImperial: boolean): Promise<void>;
     // (undocumented)
     protected loadStdFormat(type: QuantityType, imperial: boolean): Promise<Format>;
@@ -6463,7 +6494,11 @@ export class QuantityFormatter implements UnitsProvider {
     }>;
     // (undocumented)
     onInitialized(): void;
+    // (undocumented)
+    protected _overrideFormatDataByType: Map<QuantityType, OverrideFormatEntry>;
     parseIntoQuantityValue(inString: string, parserSpec: ParserSpec): ParseResult;
+    // (undocumented)
+    setOverrideFormats(type: QuantityType, entry: OverrideFormatEntry): Promise<void>;
     get useImperialFormats(): boolean;
     set useImperialFormats(useImperial: boolean);
 }
@@ -6518,7 +6553,7 @@ export class RealityModelTileTree extends RealityTileTree {
     constructor(params: RealityTileTreeParams);
     // (undocumented)
     get isContentUnbounded(): boolean;
-}
+    }
 
 // @internal (undocumented)
 export namespace RealityModelTileTree {
@@ -8278,6 +8313,17 @@ export class SpatialModelState extends GeometricModel3dState {
     static get className(): string;
 }
 
+// @internal
+export interface SpatialTileTreeReferences extends Iterable<TileTreeReference> {
+    readonly [Symbol.iterator]: () => Iterator<TileTreeReference>;
+    readonly update: () => void;
+}
+
+// @internal
+export namespace SpatialTileTreeReferences {
+    export function create(view: SpatialViewState): SpatialTileTreeReferences;
+}
+
 // @public
 export class SpatialViewState extends ViewState3d {
     constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, arg3: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState);
@@ -8350,7 +8396,7 @@ export class StandaloneConnection extends IModelConnection {
     close(): Promise<void>;
     get iModelId(): GuidString;
     get isClosed(): boolean;
-    static openFile(filePath: string, openMode?: OpenMode): Promise<StandaloneConnection>;
+    static openFile(filePath: string, openMode?: OpenMode, opts?: StandaloneOpenOptions): Promise<StandaloneConnection>;
 }
 
 // @public
@@ -9178,9 +9224,15 @@ export interface TiledGraphicsProvider {
 // @beta
 export interface TileDrawArgParams {
     // (undocumented)
-    clipVolume: RenderClipVolume | undefined;
+    appearanceProvider?: FeatureAppearanceProvider;
+    // (undocumented)
+    clipVolume?: RenderClipVolume;
     // (undocumented)
     context: SceneContext;
+    // (undocumented)
+    hiddenLineSettings?: HiddenLine.Settings;
+    // (undocumented)
+    intersectionClip?: ClipVector;
     // (undocumented)
     location: Transform;
     // (undocumented)
@@ -9198,8 +9250,9 @@ export interface TileDrawArgParams {
 // @beta
 export class TileDrawArgs {
     constructor(params: TileDrawArgParams);
+    addAppearanceProvider(provider: FeatureAppearanceProvider): void;
     // @internal (undocumented)
-    appearanceProvider?: FeatureAppearanceProvider;
+    get appearanceProvider(): FeatureAppearanceProvider | undefined;
     // @internal (undocumented)
     get clip(): ClipVector | undefined;
     clipVolume: RenderClipVolume | undefined;
@@ -9223,7 +9276,9 @@ export class TileDrawArgs {
     // @internal (undocumented)
     getTileRadius(tile: Tile): number;
     readonly graphics: GraphicBranch;
+    hiddenLineSettings?: HiddenLine.Settings;
     insertMissing(tile: Tile): void;
+    intersectionClip?: ClipVector;
     readonly location: Transform;
     // @internal (undocumented)
     markChildrenLoading(): void;
@@ -9448,7 +9503,9 @@ export abstract class TileTreeReference {
     decorate(_context: DecorateContext): void;
     discloseTileTrees(trees: TileTreeSet): void;
     draw(args: TileDrawArgs): void;
+    protected getAppearanceProvider(_tree: TileTree): FeatureAppearanceProvider | undefined;
     protected getClipVolume(tree: TileTree): RenderClipVolume | undefined;
+    protected getHiddenLineSettings(_tree: TileTree): HiddenLine.Settings | undefined;
     getLocation(): Transform | undefined;
     protected getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides | undefined;
     // @internal (undocumented)
@@ -9495,6 +9552,8 @@ export enum TileVisibility {
 // @public
 export class Tool {
     constructor(..._args: any[]);
+    // @internal (undocumented)
+    get ctor(): typeof Tool;
     static get description(): string;
     get description(): string;
     static get englishKeyin(): string;
@@ -10979,6 +11038,9 @@ export abstract class Viewport implements IDisposable {
     changeViewedModels(modelIds: Id64Arg): boolean;
     clearAlwaysDrawn(): void;
     clearNeverDrawn(): void;
+    // @beta
+    get clipStyle(): ClipStyle;
+    set clipStyle(style: ClipStyle);
     // @internal (undocumented)
     collectStatistics(stats: RenderMemory.Statistics): void;
     // @internal (undocumented)

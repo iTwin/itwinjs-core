@@ -20,7 +20,14 @@ import { Presentation } from "@bentley/presentation-frontend";
 import { getClassName } from "@bentley/ui-abstract";
 import { BeDragDropContext } from "@bentley/ui-components";
 import { LocalUiSettings, UiSettings } from "@bentley/ui-core";
-import { ActionsUnion, AppNotificationManager, ConfigurableUiContent, createAction, DeepReadonly, DragDropLayerRenderer, FrameworkReducer, FrameworkRootState, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageDef, FrontstageManager, IModelAppUiSettings, IModelInfo, ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, ThemeManager, ToolbarDragInteractionContext, UiFramework, UiSettingsProvider } from "@bentley/ui-framework";
+import {
+  ActionsUnion, AppNotificationManager, ConfigurableUiContent, createAction, DeepReadonly, DragDropLayerRenderer,
+  FrameworkAccuDraw, FrameworkReducer, FrameworkRootState, FrameworkUiAdmin, FrameworkVersion,
+  FrontstageDeactivatedEventArgs, FrontstageDef, FrontstageManager,
+  IModelAppUiSettings, IModelInfo,
+  ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, ThemeManager,
+  ToolbarDragInteractionContext, UiFramework, UiSettingsProvider,
+} from "@bentley/ui-framework";
 import { SafeAreaInsets } from "@bentley/ui-ninezone";
 // To test map-layer extension comment out the following and ensure ui-test-app\build\imjs_extensions contains map-layers, if not see Readme.md in map-layers package.
 import { MapLayersUI } from "@bentley/map-layers";
@@ -194,6 +201,7 @@ export class SampleAppIModelApp {
     opts.accuSnap = new SampleAppAccuSnap();
     opts.notifications = new AppNotificationManager();
     opts.uiAdmin = new FrameworkUiAdmin();
+    opts.accuDraw = new FrameworkAccuDraw();
     opts.viewManager = new AppViewManager(true);  // Favorite Properties Support
     if (MobileRpcConfiguration.isMobileFrontend) {
       await NativeApp.startup(opts);
@@ -297,7 +305,7 @@ export class SampleAppIModelApp {
         console.log(`Progress (${progress.loaded}/${progress.total}) -> ${progress.percent}%`);
       });
       await req.downloadPromise;
-      iModelConnection = await NativeApp.openBriefcase(req.briefcaseProps);
+      iModelConnection = await NativeApp.openBriefcase({ fileName: req.fileName });
     } else {
       iModelConnection = await UiFramework.iModelServices.openIModel(projectId, iModelId, this.allowWrite ? OpenMode.ReadWrite : OpenMode.Readonly);
     }
@@ -405,7 +413,7 @@ export class SampleAppIModelApp {
           console.log(`Progress (${progress.loaded}/${progress.total}) -> ${progress.percent}%`);
         });
         await req.downloadPromise;
-        iModelConnection = await NativeApp.openBriefcase(req.briefcaseProps);
+        iModelConnection = await NativeApp.openBriefcase({ fileName: req.fileName });
       } else {
         iModelConnection = await UiFramework.iModelServices.openIModel(contextId, iModelId, this.allowWrite ? OpenMode.ReadWrite : OpenMode.Readonly);
       }

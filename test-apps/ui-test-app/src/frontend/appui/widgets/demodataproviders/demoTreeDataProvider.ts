@@ -232,7 +232,7 @@ export class DemoMutableTreeDataProvider implements MutableTreeDataProvider {
 
 export const demoMutableTreeDataProvider = new DemoMutableTreeDataProvider(dataProviderRaw);
 
-export const treeDragSourceBeginCallback = (args: DragSourceArguments<DemoTreeDragDropType>): DragSourceArguments<DemoTreeDragDropType> => {
+export const treeDragSourceBeginCallback = (args: DragSourceArguments<DemoTreeDragDropType>): DragSourceArguments<DemoTreeDragDropType> => { // eslint-disable-line deprecation/deprecation
   if ("id" in args.dataObject && "extendedData" in args.dataObject) {
     const { id, label, description, icon, hasChildren, parentId, extendedData } = args.dataObject;
     args.dataObject = {
@@ -245,12 +245,12 @@ export const treeDragSourceBeginCallback = (args: DragSourceArguments<DemoTreeDr
   return args;
 };
 
-export const treeDropTargetDropCallback = (args: DropTargetArguments<DemoTreeDragDropType>): DropTargetArguments<DemoTreeDragDropType> => {
+export const treeDropTargetDropCallback = (args: DropTargetArguments<DemoTreeDragDropType>): DropTargetArguments<DemoTreeDragDropType> => { // eslint-disable-line deprecation/deprecation
   // Ensure all important properties exist on dataObject
   if (args.dataObject && "id" in args.dataObject && "type" in args.dataObject) {
     const { id: originalId, label, description, icon, children, type, parentId, dataProvider } = args.dataObject;
     let id = "";
-    if (args.dropEffect === DropEffects.Copy) {
+    if (args.dropEffect === DropEffects.Copy) { // eslint-disable-line deprecation/deprecation
       id = `${Math.round(Math.random() * 1e14)}`; // Copy means new ID, don't delete old.
     } else {
       id = originalId; // Link means keep ID and old node, Move means keep ID and delete old node.
@@ -266,23 +266,23 @@ export const treeDropTargetDropCallback = (args: DropTargetArguments<DemoTreeDra
         dropNode = args.dropLocation;
       const exists = dataProvider === demoMutableTreeDataProvider;
       if (!dropNode || ("id" in dropNode && !demoMutableTreeDataProvider.isDescendent(dragNode, dropNode))) {
-        if (exists && args.dropEffect === DropEffects.Move) {
+        if (exists && args.dropEffect === DropEffects.Move) { // eslint-disable-line deprecation/deprecation
           let parentObject: DelayLoadedTreeNodeItem | undefined;
           if (args.parentObject && "id" in args.parentObject && "extendedData" in args.parentObject)
             parentObject = args.parentObject;
           demoMutableTreeDataProvider.moveNode(parentObject, dropNode, dragNode, args.row);
-          args.dropStatus = DropStatus.Drop;
+          args.dropStatus = DropStatus.Drop; // eslint-disable-line deprecation/deprecation
           args.local = true;
         } else if (!exists) {
           demoMutableTreeDataProvider.insertNode(dropNode, dragNode, args.row);
-          args.dropStatus = DropStatus.Drop;
+          args.dropStatus = DropStatus.Drop; // eslint-disable-line deprecation/deprecation
         }
       }
     }
   }
   return args;
 };
-export const treeDragSourceEndCallback = (args: DragSourceArguments<DemoTreeDragDropType>) => {
+export const treeDragSourceEndCallback = (args: DragSourceArguments<DemoTreeDragDropType>) => { // eslint-disable-line deprecation/deprecation
   if (args.dataObject && "id" in args.dataObject && "type" in args.dataObject) {
     const { id, label, description, icon, children, type, parentId } = args.dataObject;
     const dragNode: DelayLoadedTreeNodeItem = {
@@ -290,7 +290,7 @@ export const treeDragSourceEndCallback = (args: DragSourceArguments<DemoTreeDrag
       parentId: typeof parentId === "string" ? parentId : undefined,
       extendedData: { id, label, description, icon, parentId: typeof parentId === "string" ? parentId : undefined, type, children },
     };
-    if (args.dropStatus === DropStatus.Drop && (args.dropEffect === DropEffects.Move || args.dropEffect === DropEffects.Link) && !args.local) {
+    if (args.dropStatus === DropStatus.Drop && (args.dropEffect === DropEffects.Move || args.dropEffect === DropEffects.Link) && !args.local) { // eslint-disable-line deprecation/deprecation
       let parentNode: DelayLoadedTreeNodeItem | undefined;
       if (args.parentObject && "id" in args.parentObject && "extendedData" in args.parentObject)
         parentNode = args.parentObject;
@@ -299,12 +299,12 @@ export const treeDragSourceEndCallback = (args: DragSourceArguments<DemoTreeDrag
   }
 };
 
-export const treeCanDropTargetDropCallback = (args: DropTargetArguments<DemoTreeDragDropType>) => {
+export const treeCanDropTargetDropCallback = (args: DropTargetArguments<DemoTreeDragDropType>) => { // eslint-disable-line deprecation/deprecation
   // Ensure all important properties exist on dataObject
   if ("id" in args.dataObject && "type" in args.dataObject) {
     let id = ""; // keeps empty string if copying so it doesn't do ID checks for canDrop since the ID will change.
     const { id: originalId, label, description, icon, children, type, parentId } = args.dataObject;
-    if (args.dropEffect !== DropEffects.Copy) {
+    if (args.dropEffect !== DropEffects.Copy) { // eslint-disable-line deprecation/deprecation
       id = originalId; // Link means keep ID and old node, Move means keep ID and delete old node.
     }
     const dragNode: DelayLoadedTreeNodeItem = {
@@ -318,7 +318,7 @@ export const treeCanDropTargetDropCallback = (args: DropTargetArguments<DemoTree
         const exists = demoMutableTreeDataProvider.getNodeIndex(dropNode, dragNode) !== -1;
         if (!demoMutableTreeDataProvider.isDescendent(dragNode, dropNode)) {
           if (args.row !== undefined) {
-            if (exists && parentId === args.dropLocation.id && args.dropEffect === DropEffects.Move) {
+            if (exists && parentId === args.dropLocation.id && args.dropEffect === DropEffects.Move) { // eslint-disable-line deprecation/deprecation
               return true;
             } else if (!exists) {
               return true;
@@ -330,7 +330,7 @@ export const treeCanDropTargetDropCallback = (args: DropTargetArguments<DemoTree
       } else { // "id" field not in dropLocation, must be root/dataProvider
         const exists = demoMutableTreeDataProvider.getNodeIndex(undefined, dragNode) !== -1;
         if (args.row !== undefined) {
-          if (exists && args.dropEffect === DropEffects.Move) {
+          if (exists && args.dropEffect === DropEffects.Move) { // eslint-disable-line deprecation/deprecation
             return true;
           } else if (!exists) {
             return true;
@@ -353,12 +353,12 @@ export const treeObjectType = (data?: DemoTreeDragDropType): string | symbol => 
 
 export const treeObjectTypes = [TreeDragTypes.Parent, TreeDragTypes.Child];
 
-export const treeDragProps: DragSourceProps<DemoTreeDragDropType> = {
+export const treeDragProps: DragSourceProps<DemoTreeDragDropType> = { // eslint-disable-line deprecation/deprecation
   onDragSourceBegin: treeDragSourceBeginCallback,
   onDragSourceEnd: treeDragSourceEndCallback,
   objectType: treeObjectType,
 };
-export const treeDropProps: DropTargetProps<DemoTreeDragDropType> = {
+export const treeDropProps: DropTargetProps<DemoTreeDragDropType> = { // eslint-disable-line deprecation/deprecation
   onDropTargetDrop: treeDropTargetDropCallback,
   canDropTargetDrop: treeCanDropTargetDropCallback,
   objectTypes: treeObjectTypes,

@@ -8,8 +8,10 @@
 
 import { assert, BentleyStatus, Dictionary, dispose, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { ClipVector, Point3d, Transform } from "@bentley/geometry-core";
-import { ColorDef, ElementAlignedBox3d, Gradient, ImageBuffer, IModelError, PackedFeatureTable, RenderMaterial, RenderTexture } from "@bentley/imodeljs-common";
-import { Capabilities, DepthType } from "@bentley/webgl-compatibility";
+import {
+  ColorDef, ElementAlignedBox3d, Gradient, ImageBuffer, ImageSource, ImageSourceFormat, IModelError, PackedFeatureTable, RenderMaterial, RenderTexture,
+} from "@bentley/imodeljs-common";
+import { Capabilities, DepthType, WebGLContext } from "@bentley/webgl-compatibility";
 import { SkyBox } from "../../DisplayStyleState";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
@@ -29,6 +31,7 @@ import { RenderGraphic, RenderGraphicOwner } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
 import { DebugShaderFile, GLTimerResultCallback, RenderDiagnostics, RenderSystem, RenderSystemDebugControl, RenderTerrainMeshGeometry, TerrainTexture } from "../RenderSystem";
 import { RenderTarget } from "../RenderTarget";
+import { imageElementFromImageSource } from "../../ImageUtil";
 import { BackgroundMapDrape } from "./BackgroundMapDrape";
 import { CachedGeometry, SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
 import { ClipVolume } from "./ClipVolume";
@@ -142,19 +145,17 @@ class WebGL2Extensions extends WebGLExtensions {
  */
 export class IdMap implements WebGLDisposable {
   /** Mapping of materials by their key values. */
-  public readonly materials: Map<string, RenderMaterial>;
+  public readonly materials = new Map<string, RenderMaterial>();
   /** Mapping of textures by their key values. */
-  public readonly textures: Map<string, RenderTexture>;
+  public readonly textures = new Map<string, RenderTexture>();
   /** Mapping of textures using gradient symbology. */
-  public readonly gradients: Dictionary<Gradient.Symb, RenderTexture>;
-  /** Solar shadow map (one for IModel) */
-  public constructor() {
-    this.materials = new Map<string, RenderMaterial>();
-    this.textures = new Map<string, RenderTexture>();
-    this.gradients = new Dictionary<Gradient.Symb, RenderTexture>(Gradient.Symb.compareSymb);
-  }
+  public readonly gradients = new Dictionary<Gradient.Symb, RenderTexture>(Gradient.Symb.compareSymb);
+  /** Pending promises to create a texture from an ImageSource. This prevents us from decoding the same ImageSource multiple times */
+  public readonly texturesFromImageSources = new Map<string, Promise<RenderTexture | undefined>>();
 
-  public get isDisposed(): boolean { return 0 === this.textures.size && 0 === this.gradients.size; }
+  public get isDisposed(): boolean {
+    return 0 === this.textures.size && 0 === this.gradients.size;
+  }
 
   public dispose() {
     const textureArr = Array.from(this.textures.values());
@@ -246,6 +247,42 @@ export class IdMap implements WebGLDisposable {
     return undefined !== tex ? tex : this.createTextureFromImage(image, hasAlpha, params);
   }
 
+  public async getTextureFromImageSource(source: ImageSource, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
+    // Do we already have this texture?
+    const texture = this.findTexture(params.key);
+    if (texture)
+      return Promise.resolve(texture);
+
+    // Are we already in the process of creating this texture?
+    let promise = params.key ? this.texturesFromImageSources.get(params.key) : undefined;
+    if (promise)
+      return promise;
+
+    promise = this.createTextureFromImageSource(source, params);
+    if (params.key) {
+      // Ensure subsequent requests for this texture that arrive before we finish creating it receive the same promise,
+      // instead of redundantly decoding the same image.
+      this.texturesFromImageSources.set(params.key, promise);
+    }
+
+    return promise;
+  }
+
+  public async createTextureFromImageSource(source: ImageSource, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
+    try {
+      const image = await imageElementFromImageSource(source);
+      return IModelApp.hasRenderSystem ? this.getTextureFromImage(image, ImageSourceFormat.Png === source.format, params) : undefined;
+    } catch (_) {
+      // Caller is uninterested in the details of the exception.
+      return undefined;
+    } finally {
+      if (params.key) {
+        // The promise has resolved or rejected - remove from pending set.
+        this.texturesFromImageSources.delete(params.key);
+      }
+    }
+  }
+
   public getTextureFromCubeImages(posX: HTMLImageElement, negX: HTMLImageElement, posY: HTMLImageElement, negY: HTMLImageElement, posZ: HTMLImageElement, negZ: HTMLImageElement, params: RenderTexture.Params): RenderTexture | undefined {
     return this.createTextureFromCubeImages(posX, negX, posY, negY, posZ, negZ, params);
   }
@@ -298,7 +335,7 @@ function createPrimitive(createGeom: (viOrigin: Point3d | undefined) => CachedGe
 export class System extends RenderSystem implements RenderSystemDebugControl, RenderMemory.Consumer, WebGLDisposable {
   public readonly canvas: HTMLCanvasElement;
   public readonly currentRenderState = new RenderState();
-  public readonly context: WebGLRenderingContext | WebGL2RenderingContext;
+  public readonly context: WebGLContext;
   public readonly frameBufferStack = new FrameBufferStack();  // frame buffers are not owned by the system
   public readonly capabilities: Capabilities;
   public readonly resourceCache: Map<IModelConnection, IdMap>;
@@ -344,26 +381,23 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   }
 
   /** Attempt to create a WebGLRenderingContext, returning undefined if unsuccessful. */
-  public static createContext(canvas: HTMLCanvasElement, useWebGL2: boolean, inputContextAttributes?: WebGLContextAttributes): WebGLRenderingContext | WebGL2RenderingContext | undefined {
+  public static createContext(canvas: HTMLCanvasElement, useWebGL2: boolean, inputContextAttributes?: WebGLContextAttributes): WebGLContext | undefined {
     let contextAttributes: WebGLContextAttributes = { powerPreference: "high-performance" };
     if (undefined !== inputContextAttributes) {
       // NOTE: Order matters with spread operator - if caller wants to override powerPreference, he should be able to.
       contextAttributes = { ...contextAttributes, ...inputContextAttributes };
     }
 
+    // If requested, first try obtaining a WebGL2 context.
     let context = null;
-    if (useWebGL2) // optionally first try using a WebGL2 context
+    if (useWebGL2)
       context = canvas.getContext("webgl2", contextAttributes);
+
+    // Fall back to WebGL1 if necessary.
     if (null === context)
       context = canvas.getContext("webgl", contextAttributes);
-    if (null === context) {
-      const context2 = canvas.getContext("experimental-webgl", contextAttributes) as WebGLRenderingContext | null; // IE, Edge...
-      if (null === context2) {
-        return undefined;
-      }
-      return context2;
-    }
-    return context;
+
+    return context ?? undefined;
   }
 
   public static create(optionsIn?: RenderSystem.Options): System {
@@ -373,7 +407,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
       throw new IModelError(BentleyStatus.ERROR, "Failed to obtain HTMLCanvasElement");
 
     const useWebGL2 = (undefined === options.useWebGL2 ? true : options.useWebGL2);
-    const context = System.createContext(canvas, useWebGL2, optionsIn?.contextAttributes);
+    const context = this.createContext(canvas, useWebGL2, optionsIn?.contextAttributes);
     if (undefined === context) {
       throw new IModelError(BentleyStatus.ERROR, "Failed to obtain WebGL context");
     }
@@ -393,7 +427,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
       options.filterMapTextures = false;
       options.filterMapDrapeTextures = false;
     }
-    return new System(canvas, context, capabilities, options);
+    return new this(canvas, context, capabilities, options);
   }
 
   public get isDisposed(): boolean {
@@ -552,6 +586,13 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return this.getIdMap(imodel).getTexture(image, params);
   }
 
+  public async createTextureFromImageSource(source: ImageSource, imodel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
+    if (!imodel)
+      return super.createTextureFromImageSource(source, imodel, params);
+
+    return this.getIdMap(imodel).getTextureFromImageSource(source, params);
+  }
+
   /** Attempt to create a texture for the given iModel using an HTML image element. */
   public createTextureFromImage(image: HTMLImageElement, hasAlpha: boolean, imodel: IModelConnection | undefined, params: RenderTexture.Params): RenderTexture | undefined {
     // if imodel is undefined, caller is responsible for disposing texture. It will not be associated with an IModelConnection
@@ -590,7 +631,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return BackgroundMapDrape.create(drapedTree, mapTree);
   }
 
-  private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext | WebGL2RenderingContext, capabilities: Capabilities, options: RenderSystem.Options) {
+  protected constructor(canvas: HTMLCanvasElement, context: WebGLContext, capabilities: Capabilities, options: RenderSystem.Options) {
     super(options);
     this.canvas = canvas;
     this.context = context;
@@ -611,12 +652,13 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     canvas.addEventListener("webglcontextlost", async () => this.handleContextLoss(), false);
   }
 
-  private async handleContextLoss(): Promise<void> {
+  protected async handleContextLoss(): Promise<void> {
     const msg = IModelApp.i18n.translate("iModelJs:Errors.WebGLContextLost");
     return ToolAdmin.exceptionHandler(msg);
   }
 
-  private getIdMap(imodel: IModelConnection): IdMap {
+  /** Exposed strictly for tests. */
+  public getIdMap(imodel: IModelConnection): IdMap {
     const map = this.resourceCache.get(imodel);
     return undefined !== map ? map : this.createIModelMap(imodel);
   }
