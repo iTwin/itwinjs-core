@@ -24,7 +24,7 @@ Extraction of data from the input depends on the source format and the availabil
 An iModel Connector must carefully transform the source data to BIS-based data in the iModel, and hence each connector is written for a specific data source.
 
 - Mappings of data are *from* source *into* an iModel.
-- Typically, a connector stores enough information about source data to detect the differences in it between job-runs. In this manner tge connector generates *changesets* that are sent to iModelHub. This is the key difference between a connector and a one-time converter.
+- Typically, a connector stores enough information about source data to detect the differences in it between job-runs. In this manner the connector generates *changesets* that are sent to iModelHub. This is the key difference between a connector and a one-time converter.
 - Each job generates data in the iModel that is isolated from all other jobs' data. The resulting combined iModel is partitioned at the Subject level of the iModel; each connector job has its own Subject.
 
 For each iTwin Connector author, there will always be two conflicting goals:
@@ -36,9 +36,9 @@ The appropriate balancing of these two conflicting goals is not an easy task. Ho
 
 **Dynamic Schemas**
 
-Sometimes BIS domain schemas are not adequate to capture all the data in the authoring application. To avoid losing data, iTwin Connector may dynamically create application-specific schemas whose classes descend from the most appropriate BIS domain classes.
+Sometimes BIS domain schemas are not adequate to capture all the data in the authoring application. To avoid losing data, an iTwin Connector may dynamically create application-specific schemas whose classes descend from the most appropriate BIS domain classes.
 
-As an iModel Connector always runs multiple times to keep an iModel synchronized, the schemas created by previous executions limit the schemas that can be used by subsequent executions. To provide consistency and enable concise changesets, the Connector adds to the previously-defined schemas (creating new schema versions). This follows the general schema update strategy defined in [Schema Versioning and Generations](https://github.com/imodeljs/imodeljs/blob/master/docs/bis/intro/schema-versioning-and-generations.md)
+As an iModel Connector always runs multiple times to keep an iModel synchronized, the schemas created by previous executions limit the schemas that can be used by subsequent executions. To provide consistency and enable concise changesets, the Connector adds to the previously-defined schemas (creating new schema versions). This follows the general schema update strategy defined in [Schema Versioning and Generations](../bis/intro/schema-versioning-and-generations.md)
 
 The `DynamicSchema` custom attribute should be set on customer-specific application schemas. This custom attribute can be found in the standard schema `CoreCustomAttributes` and it enables iModelHub to programmatically detect dynamic schemas. Dynamic schemas require special handling since their name and version are typically duplicated between iModels from different work sets.
 
@@ -46,7 +46,7 @@ The `DynamicSchema` custom attribute should be set on customer-specific applicat
 
 Wherever practical, the Elements generated from an iModel Connector should be identifiable through an optimal "Display Label".
 
-As discussed in [Element Fundamentals](https://github.com/imodeljs/imodeljs/tree/master/docs/bis/intro/element-fundamentals.md), the Display Labels are created through the following logic:
+As discussed in [Element Fundamentals](../bis/intro/element-fundamentals.md), the Display Labels are created through the following logic:
 
 1. If the UserLabel property is set, it is taken as the Display Label.
 2. If the CodeValue is set (and the UserLabel is not set), the CodeValue becomes the Display Label.
@@ -65,9 +65,9 @@ If the source application data has a property that conceptually matches the BIS 
 
 ## Sync
 
-Rather than starting over when the source data changes, a connector should be able to detect and convert only the changes. That makes for compact, meaningful changesets, which are added to the iModel's [timeline](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/IModelHub/index.md#the-timeline-of-changes-to-an-imodel).
+Rather than starting over when the source data changes, a connector should be able to detect and convert only the changes. That makes for compact, meaningful changesets, which are added to the iModel's [timeline](./IModelHub/index.md#the-timeline-of-changes-to-an-imodel).
 
-To do incremental updates, a connector must do Id mapping and change-detection. An iTwin Connector uses the ExternalSourceAspect class defined in the BIS schema to acheive both. The following sections describe how this is acheived.
+To do incremental updates, a connector must do Id mapping and change-detection. An iTwin Connector uses the ExternalSourceAspect class defined in the BIS schema to achieve both. The following sections describe how this is achieved.
 
 **Provenance**
 
@@ -108,10 +108,10 @@ Infer deletions:
 ## Execution Sequence
 The ultimate purpose of a connector is to synchronize an iModel with the data in one or more source documents. That involves not only converting data but also authorization, communicating with an iModel server, and concurrency control. iModel.js defines a framework in which the connector itself can focus on the tasks of extraction, alignment, and change-detection. The other tasks are handled by classes provided by iModel.js. The framework is implemented by the BridgeRunner class. A BridgeRunner conducts the overall synchronization process. It loads and calls functions on a connector at the appropriate points in the sequence. The process may be summarized as follows:
 
-- BridgeRunner: [Opens a local briefcase copy](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/IModelDb.md) of the iModel that is to be updated.
+- BridgeRunner: [Opens a local briefcase copy](./backend/IModelDb.md) of the iModel that is to be updated.
 - Import or Update Schema
-  - Connector: Possibly [import an appropriate BIS schema into the briefcase](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/SchemasAndElementsInTypeScript.md#importing-the-schema)  or upgrade an existing schema.
-  - BridgeRunner: [Push](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/IModelDbReadwrite.md#pushing-changes-to-imodelhub) the results to the iModelServer.
+  - Connector: Possibly [import an appropriate BIS schema into the briefcase](./backend/SchemasAndElementsInTypeScript.md#importing-the-schema)  or upgrade an existing schema.
+  - BridgeRunner: [Push](./backend/IModelDbReadwrite.md#pushing-changes-to-imodelhub) the results to the iModelServer.
 - Convert Changed Data
   - Connector:
     - Opens to the data source.
@@ -119,8 +119,8 @@ The ultimate purpose of a connector is to synchronize an iModel with the data in
     - [Transform](#data-alignment) the new or changed source data into the target BIS schema.
     - Write the resulting BIS data to the local briefcase.
     - Remove BIS data corresponding to deleted source data.
-  - BridgeRunner: Obtain required [Locks and Codes](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/ConcurrencyControl.md) from the iModel server and/or code server.
-- BridgeRunner: [Push](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/IModelDbReadwrite.md#pushing-changes-to-imodelhub) changes to the iModel server.
+  - BridgeRunner: Obtain required [Locks and Codes](./backend/ConcurrencyControl.md) from the iModel server and/or code server.
+- BridgeRunner: [Push](./backend/IModelDbReadwrite.md#pushing-changes-to-imodelhub) changes to the iModel server.
 
 
 ## Ways to sync data to an iTwin
@@ -134,21 +134,21 @@ More on synchronization using connectors could be found [here](https://communiti
 
 ## More information
 
-For more indepth information please see:
+For more in depth information please see:
 
-- [Importing a schema and bootstrapping definitions](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/SchemasAndElementsInTypeScript.md#importing-the-schema)
-- [AccessToken](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/common/AccessToken.md)
+- [Importing a schema and bootstrapping definitions](./backend/SchemasAndElementsInTypeScript.md#importing-the-schema)
+- [AccessToken](./common/AccessToken.md)
 - [BriefcaseManager.create]($backend)
 - [BriefcaseDb.open]($backend)
 - [IModelDb.saveChanges]($backend)
 - [BriefcaseDb.pullAndMergeChanges]($backend)
 - [BriefcaseDb.pushChanges]($backend)
-- [ConcurrencyControl](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/ConcurrencyControl.md)
+- [ConcurrencyControl](./backend/ConcurrencyControl.md)
 - [DefinitionModel.insert]($backend)
 - [PhysicalModel.insert]($backend)
 - [Insert a Subject element](./backend/CreateElements.md#Subject)
-- [Insert a ModelSelector element](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/CreateElements.md#ModelSelector)
-- [Insert a CategorySelector element](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/CreateElements.md#CategorySelector)
-- [Insert a DisplayStyle3d element](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/CreateElements.md#DisplayStyle3d)
-- [Insert a OrthographicViewDefinition element](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/CreateElements.md#OrthographicViewDefinition)
-- [Logging](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/common/Logging.md)
+- [Insert a ModelSelector element](./backend/CreateElements.md#ModelSelector)
+- [Insert a CategorySelector element](./backend/CreateElements.md#CategorySelector)
+- [Insert a DisplayStyle3d element](./backend/CreateElements.md#DisplayStyle3d)
+- [Insert a OrthographicViewDefinition element](./backend/CreateElements.md#OrthographicViewDefinition)
+- [Logging](./common/Logging.md)
