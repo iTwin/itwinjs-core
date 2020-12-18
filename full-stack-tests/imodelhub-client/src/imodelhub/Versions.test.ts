@@ -211,7 +211,13 @@ describe("iModelHub VersionHandler", () => {
 
     await utils.createIModel(requestContext, imodelName2, contextId, true, false, true);
     imodelId2 = await utils.getIModelId(requestContext, imodelName2, contextId);
-    await createNamedVersionWithThumbnail(requestContext, iModelClient, imodelId2, firstVersionName);
+    if (!TestConfig.enableMocks) {
+      const versionsCount = (await iModelClient.versions.get(requestContext, imodelId2)).length;
+      if (versionsCount === 0) {
+        // Create at least 1 named version
+        await createNamedVersionWithThumbnail(requestContext, iModelClient, imodelId2, firstVersionName);
+      }
+    }
 
     let mockedVersions = Array(1).fill(0).map(() => utils.generateVersion());
     utils.mockGetVersions(imodelId2, `?$filter=Name+eq+%27Version%201%27`, ...mockedVersions);
