@@ -335,6 +335,7 @@ export class DrawingViewState extends ViewState2d {
 
   public toProps(): ViewStateProps {
     const props = super.toProps();
+    props.modelExtents = this._viewedExtents.toJSON();
 
     if (this._sectionDrawingProps && Id64.isValidId64(this._sectionDrawingProps.spatialView))
       props.sectionDrawing = { ...this._sectionDrawingProps };
