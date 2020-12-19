@@ -1892,7 +1892,8 @@ export abstract class ViewState2d extends ViewState {
   public readonly origin: Point2d;
   public readonly delta: Point2d;
   public readonly angle: Angle;
-  public readonly baseModelId: Id64String;
+  protected _baseModelId: Id64String;
+  public get baseModelId(): Id64String { return this._baseModelId; }
   /** @internal */
   protected _treeRef?: TileTreeReference;
 
@@ -1912,7 +1913,7 @@ export abstract class ViewState2d extends ViewState {
     this.origin = Point2d.fromJSON(props.origin);
     this.delta = Point2d.fromJSON(props.delta);
     this.angle = Angle.fromJSON(props.angle);
-    this.baseModelId = Id64.fromJSON(props.baseModelId);
+    this._baseModelId = Id64.fromJSON(props.baseModelId);
     this._details = new ViewDetails(this.jsonProperties);
   }
 
@@ -1946,6 +1947,17 @@ export abstract class ViewState2d extends ViewState {
       return undefined;
 
     return model;
+  }
+
+  /** Change the model viewed by this view.
+   * @note The new model should be of the same type (drawing or sheet) as the current viewed model.
+   * @see [[Viewport.changeViewedModel2d]].
+   * @alpha
+   */
+  public async changeViewedModel(newViewedModelId: Id64String): Promise<void> {
+    this._baseModelId = newViewedModelId;
+    this._treeRef = undefined;
+    await this.load();
   }
 
   public computeFitRange(): Range3d {

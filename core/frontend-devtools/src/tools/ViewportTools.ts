@@ -382,8 +382,11 @@ export class ToggleSectionDrawingSpatialViewTool extends ViewportToggleTool {
     if (undefined === enable || enable !== DrawingViewState.alwaysDisplaySpatialView) {
       DrawingViewState.alwaysDisplaySpatialView = !DrawingViewState.alwaysDisplaySpatialView;
       if (vp.view instanceof DrawingViewState) {
+        // Force the view to update its section drawing attachment.
         const view = vp.view.clone();
-        view.load().then(() => vp.changeView(view)); // eslint-disable-line @typescript-eslint/no-floating-promises
+        view.changeViewedModel(view.baseModelId).then(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
+          view.load().then(() => vp.changeView(view)); // eslint-disable-line @typescript-eslint/no-floating-promises
+        });
       }
     }
   }

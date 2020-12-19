@@ -6,9 +6,9 @@
  * @module Views
  */
 
-import { assert, Id64String } from "@bentley/bentleyjs-core";
+import { assert, dispose, Id64, Id64String } from "@bentley/bentleyjs-core";
 import {
-  Constant, Range3d, Transform, Vector3d,
+  Constant, Range3d, Transform, TransformProps, Vector3d,
 } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, Frustum, SectionDrawingViewProps, ViewDefinition2dProps, ViewFlagOverrides, ViewStateProps,
@@ -134,6 +134,10 @@ class SectionAttachment {
     return spatialToDrawing ? new SectionAttachment(view, spatialToDrawing, drawingToSpatial) : undefined;
   }
 
+  public dispose(): void {
+    this.viewport.dispose();
+  }
+
   public clone(): SectionAttachment {
     return new SectionAttachment(this._originalView, this._toDrawing, this._fromDrawing);
   }
@@ -208,6 +212,11 @@ class SectionAttachment {
   }
 }
 
+const defaultSectionDrawingProps = {
+  spatialView: Id64.invalid,
+  displaySpatialView: false,
+};
+
 /** A view of a [DrawingModel]($backend)
  * @public
  */
@@ -230,7 +239,7 @@ export class DrawingViewState extends ViewState2d {
   private readonly _viewedExtents: AxisAlignedBox3d;
   private _attachment?: SectionAttachment;
   private _removeTileLoadListener?: () => void;
-  private readonly _sectionDrawingProps?: SectionDrawingViewProps;
+  private _sectionDrawingProps?: SectionDrawingViewProps;
 
   /** Strictly for testing. @internal */
   public get sectionDrawingInfo() {
@@ -247,15 +256,62 @@ export class DrawingViewState extends ViewState2d {
     } else {
       this._viewedExtents = extents;
       this._modelLimits = { min: Constant.oneMillimeter, max: 10 * extents.maxLength() };
-      this._sectionDrawingProps = sectionDrawing;
+      this._sectionDrawingProps = sectionDrawing ?? defaultSectionDrawingProps;
     }
+  }
+
+  /** @internal */
+  public async changeViewedModel(modelId: Id64String): Promise<void> {
+    this._sectionDrawingProps = undefined;
+    this._attachment = dispose(this._attachment);
+    return super.changeViewedModel(modelId);
+  }
+
+  private async querySectionDrawingProps(): Promise<SectionDrawingViewProps> {
+    let spatialView = Id64.invalid;;
+    let drawingToSpatialTransform: TransformProps | undefined;
+    let displaySpatialView = false;
+    try {
+      const ecsql = `
+        SELECT spatialView,
+          json_extract(jsonProperties, '$.drawingToSpatialTransform') as drawingToSpatialTransform,
+          CAST(json_extract(jsonProperties, '$.displaySpatialView') as BOOLEAN) as displaySpatialView
+        FROM bis.SectionDrawing
+        WHERE ECInstanceId=${this.baseModelId}`;
+
+      for await (const row of this.iModel.query(ecsql)) {
+        spatialView = Id64.fromJSON(row.spatialView?.id);
+        displaySpatialView = !!row.displaySpatialView;
+        try {
+          drawingToSpatialTransform = JSON.parse(row.drawingToSpatialTransform);
+        } catch (_) {
+          // We'll use identity transform.
+        }
+
+        break;
+      }
+    } catch (_ex) {
+      // The version of BisCore ECSchema in the iModel is probably too old to contain the SectionDrawing ECClass.
+    }
+
+    return { spatialView, displaySpatialView, drawingToSpatialTransform };
   }
 
   /** @internal */
   public async load(): Promise<void> {
     this._attachment = undefined;
     await super.load();
-    if (!this._sectionDrawingProps || (!this._sectionDrawingProps.displaySpatialView && !DrawingViewState.alwaysDisplaySpatialView))
+    if (!this._sectionDrawingProps) {
+      // The viewed model was changed - we need to query backend for info about the new viewed model's section drawing.
+      this._sectionDrawingProps = await this.querySectionDrawingProps();
+    }
+
+    // Do we have an associated spatial view?
+    if (!this._sectionDrawingProps || !Id64.isValidId64(this._sectionDrawingProps.spatialView))
+      return;
+
+    // Do we want to display the spatial view?
+    if (!this._sectionDrawingProps.displaySpatialView && !DrawingViewState.alwaysDisplaySpatialView)
       return;
 
     const spatialView = await this.iModel.views.load(this._sectionDrawingProps.spatialView);
