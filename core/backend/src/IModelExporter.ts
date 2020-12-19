@@ -160,7 +160,7 @@ export class IModelExporter {
    * @note This flag is available as an optimization when the exporter doesn't need to visit relationships, so can skip loading them.
    */
   public visitRelationships: boolean = true;
-  /** The number of entities exported before incremental progress should be reported via the [[onExporterProgress]] callback. */
+  /** The number of entities exported before incremental progress should be reported via the [[onProgress]] callback. */
   public progressInterval: number = 1000;
   /** Tracks the current total number of entities exported. */
   private _progressCounter: number = 0;

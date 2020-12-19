@@ -46,7 +46,7 @@ export class IModelImporter {
    * @note Adding an element to this set is typically necessary when remapping a source element to one that already exists in the target and already has the desired properties.
    */
   public readonly doNotUpdateElementIds = new Set<Id64String>();
-  /** The number of entity changes before incremental progress should be reported via the [[onImporterProgress]] callback. */
+  /** The number of entity changes before incremental progress should be reported via the [[onProgress]] callback. */
   public progressInterval: number = 1000;
   /** Tracks the current total number of entity changes. */
   private _progressCounter: number = 0;
@@ -433,7 +433,7 @@ export class IModelImporter {
   }
 
   /** This method is called when IModelImporter has made incremental progress based on the [[progressInterval]] setting.
-   * @note A subclass may override this method to report custom progress but should call `super.onImporterProgress`.
+   * @note A subclass may override this method to report custom progress but should call `super.onProgress`.
    */
   protected onProgress(): void { }
 
