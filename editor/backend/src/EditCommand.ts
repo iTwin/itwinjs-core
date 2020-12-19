@@ -7,10 +7,12 @@
  */
 
 import { isElectronMain } from "@bentley/bentleyjs-core";
+import { IModelDb } from "@bentley/imodeljs-backend";
 import { CommandMethodProps, CommandResult, editCommandApi, PingResult, StartCommandProps } from "@bentley/imodeljs-editor-common";
 
 /** @alpha */
 export type EditCommandType = typeof EditCommand;
+
 
 /**
  * An EditCommand that performs an editing action on the backend. EditCommands are usually paired with and driven by EditTools on the frontend.
@@ -23,7 +25,11 @@ export class EditCommand {
   public static commandId = "";
   public static version = "1.0.0";
 
-  public constructor(_arg?: any) { }
+  public iModel: IModelDb;
+
+  public constructor(iModel: IModelDb, _arg?: any) {
+    this.iModel = iModel;
+  }
   public get ctor() { return this.constructor as EditCommandType; }
 
   public onStart(): CommandResult<any> { return {}; }
@@ -93,7 +99,7 @@ export class EditCommandAdmin {
 
   public static startCommand(props: StartCommandProps<any>): CommandResult<any> {
     const commandClass = this.commands.get(props.commandId);
-    return commandClass ? this.runCommand(new commandClass(props.args)) : { error: "CommandNotFound" };
+    return commandClass ? this.runCommand(new commandClass(IModelDb.findByKey(props.iModelKey), props.args)) : { error: "CommandNotFound" };
   }
 
   public static callMethod(method: CommandMethodProps<any>): CommandResult<any> {
