@@ -89,22 +89,20 @@ describe("Section Drawings (#integration)", () => {
   });
 
   it("updates section drawing info when viewed model changes", async () => {
-    await testOnScreenViewport(specs[0].views[0], imodel, 40, 30, async (vp) => {
-      for (let i = 1; i < specs.length; i++) {
-        const view = vp.view as DrawingViewState;
-        const oldInfo = view.sectionDrawingInfo!;
-        expect(oldInfo).not.to.be.undefined;
+    let view = await imodel.views.load(specs[0].views[0]) as DrawingViewState;
+    for (let i = 1; i < specs.length; i++) {
+      const oldInfo = view.sectionDrawingInfo!;
+      expect(oldInfo).not.to.be.undefined;
 
-        const spec = specs[i];
-        await vp.changeViewedModel2d(spec.model);
-        expect(vp.view).not.to.equal(view);
+      const spec = specs[i];
+      view = view.clone() as DrawingViewState;
+      await view.changeViewedModel(spec.model);
 
-        const newInfo = (vp.view as DrawingViewState).sectionDrawingInfo!;
-        expect(newInfo).not.to.be.undefined;
-        expect(newInfo).not.to.equal(oldInfo);
-        expect(newInfo.spatialView).to.equal(spec.spatialView);
-      }
-    });
+      const newInfo = view.sectionDrawingInfo!;
+      expect(newInfo).not.to.be.undefined;
+      expect(newInfo).not.to.equal(oldInfo);
+      expect(newInfo.spatialView).to.equal(spec.spatialView);
+    }
   });
 
   it("clones section drawing info", async () => {
