@@ -43,7 +43,7 @@ describe("Section Drawings (#integration)", () => {
 
   afterEach(() => {
     DrawingViewState.alwaysDisplaySpatialView = false;
-    DrawingViewState.hideDrawingGraphics = true;
+    DrawingViewState.hideDrawingGraphics = false;
   });
 
   const specs = [
