@@ -1352,12 +1352,11 @@ export type NodeCheckboxRenderProps = Omit<CheckboxProps, "onChange" | "onClick"
 export function NumberInput(props: NumberInputProps): JSX.Element;
 
 // @beta
-export interface NumberInputProps extends Omit<InputProps, "min" | "max" | "step" | "onChange" | "onBlur"> {
+export interface NumberInputProps extends Omit<InputProps, "min" | "max" | "step" | "onChange"> {
     containerClassName?: string;
     format?: (num: number | null | undefined, formattedValue: string) => string;
     max?: number;
     min?: number;
-    onBlur?: React.FocusEventHandler<HTMLInputElement>;
     onChange?: (value: number | undefined, stringValue: string) => void;
     parse?: ((value: string) => number | null | undefined);
     precision?: number;
