@@ -12,15 +12,13 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "./TestUtility";
-import { testOffScreenViewport } from "../TestViewport";
+import { testOnScreenViewport, TestViewport } from "../TestViewport";
 
 describe("Section Drawings (#integration)", () => {
   const projectName = "iModelJsIntegrationTest";
   let imodel: IModelConnection;
 
   before(async () => {
-    DrawingViewState.alwaysDisplaySpatialView = true;
-
     await IModelApp.startup({
       authorizationClient: await TestUtility.initializeTestProject(projectName, TestUsers.regular),
       imodelClient: TestUtility.imodelCloudEnv.imodelClient,
@@ -32,13 +30,20 @@ describe("Section Drawings (#integration)", () => {
     imodel = await RemoteBriefcaseConnection.open(projectId, iModelId);
   });
 
-  after(async () => {
-    DrawingViewState.alwaysDisplaySpatialView = false;
+  beforeEach(() => {
+    DrawingViewState.alwaysDisplaySpatialView = true;
+  });
 
+  after(async () => {
     if (imodel)
       await imodel.close();
 
     await IModelApp.shutdown();
+  });
+
+  afterEach(() => {
+    DrawingViewState.alwaysDisplaySpatialView = false;
+    DrawingViewState.hideDrawingGraphics = true;
   });
 
   const specs = [
@@ -84,7 +89,7 @@ describe("Section Drawings (#integration)", () => {
   });
 
   it("updates section drawing info when viewed model changes", async () => {
-    await testOffScreenViewport(specs[0].views[0], imodel, 40, 30, async (vp) => {
+    await testOnScreenViewport(specs[0].views[0], imodel, 40, 30, async (vp) => {
       for (let i = 1; i < specs.length; i++) {
         const view = vp.view as DrawingViewState;
         const oldInfo = view.sectionDrawingInfo!;
@@ -110,5 +115,34 @@ describe("Section Drawings (#integration)", () => {
     expect(second).not.to.equal(first);
     const secondInfo = second.sectionDrawingInfo!;
     expect(secondInfo).to.deep.equal(info);
+  });
+
+  it("displays the 3d tiles in the 2d view if so specified", async () => {
+    async function test(func: (vp: TestViewport) => void): Promise<void> {
+      await testOnScreenViewport(specs[0].views[0], imodel, 40, 30, async (vp) => {
+        await vp.waitForAllTilesToRender();
+        func(vp);
+      });
+    }
+
+    DrawingViewState.alwaysDisplaySpatialView = false;
+    let num2dTiles = 0;
+    await test((vp) => {
+      num2dTiles = vp.numSelectedTiles;
+      expect(num2dTiles).least(1);
+    });
+
+    DrawingViewState.alwaysDisplaySpatialView = true;
+    DrawingViewState.hideDrawingGraphics = true;
+    let num3dTiles = 0;
+    await test((vp) => {
+      num3dTiles = vp.numSelectedTiles;
+      expect(num3dTiles).least(1);
+    });
+
+    DrawingViewState.hideDrawingGraphics = false;
+    await test((vp) => {
+      expect(vp.numSelectedTiles).to.equal(num2dTiles + num3dTiles);
+    });
   });
 });
