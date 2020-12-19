@@ -998,37 +998,6 @@ async function getAllMatchingSavedViews(testConfig: DefaultConfigs): Promise<str
   return allViews.filter((view) => matchRule(view, testConfig.viewName ?? "*")).sort(); // Filter & alphabatize all view names
 }
 
-async function reopenImodel(testConfig: DefaultConfigs): Promise<void> {
-  // Open an iModel from a local file
-  let openLocalIModel = (testConfig.iModelLocation !== undefined) || MobileRpcConfiguration.isMobileFrontend;
-  if (openLocalIModel) {
-    try {
-      activeViewState.iModelConnection = await SnapshotConnection.openFile(testConfig.iModelFile!);
-    } catch (err) {
-      alert(`openSnapshot failed: ${err.toString()}`);
-      openLocalIModel = false;
-    }
-  }
-
-  // Open an iModel from iModelHub
-  if (!openLocalIModel && testConfig.iModelHubProject !== undefined && !MobileRpcConfiguration.isMobileFrontend) {
-    const signedIn: boolean = await signIn();
-    if (!signedIn)
-      return;
-
-    const requestContext = await AuthorizedFrontendRequestContext.create();
-    requestContext.enter();
-
-    const iModelName = testConfig.iModelName!.replace(".ibim", "").replace(".bim", "");
-    activeViewState.projectConfig = { projectName: testConfig.iModelHubProject, iModelName } as ConnectProjectConfiguration;
-    activeViewState.project = await initializeIModelHub(activeViewState.projectConfig.projectName);
-    activeViewState.iModel = await IModelApi.getIModelByName(requestContext, activeViewState.project!.wsgId, activeViewState.projectConfig.iModelName);
-    if (activeViewState.iModel === undefined)
-      throw new Error(`${activeViewState.projectConfig.iModelName} - IModel not found in project ${activeViewState.project!.name}`);
-    activeViewState.iModelConnection = await IModelApi.openIModel(activeViewState.project!.wsgId, activeViewState.iModel.wsgId, undefined, OpenMode.Readonly);
-  }
-}
-
 async function openImodelAndLoadExtViews(testConfig: DefaultConfigs, extViews?: any[]): Promise<void> {
   activeViewState = new SimpleViewState();
 
