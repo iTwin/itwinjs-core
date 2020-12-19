@@ -1564,6 +1564,8 @@ async function main() {
 window.onload = async () => {
   // Choose RpcConfiguration based on whether we are in electron or browser
   RpcConfiguration.developmentMode = true;
+  RpcConfiguration.disableRoutingValidation = true;
+
   if (ElectronRpcConfiguration.isElectron) {
     ElectronRpcManager.initializeClient({}, [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]);
   } else if (MobileRpcConfiguration.isMobileFrontend) {
