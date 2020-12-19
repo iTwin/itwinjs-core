@@ -8,7 +8,7 @@ import { DbOpcode, Id64String } from "@bentley/bentleyjs-core";
 import { HubIModel } from "@bentley/imodelhub-client";
 import { IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import { BriefcaseManager, RequestNewBriefcaseArg } from "../../BriefcaseManager";
+import { BriefcaseManager } from "../../BriefcaseManager";
 import { SpatialCategory } from "../../Category";
 import { ConcurrencyControl } from "../../ConcurrencyControl";
 import { InformationPartitionElement, Subject } from "../../Element";
@@ -61,13 +61,9 @@ describe("Channel Control (#integration)", () => {
   });
 
   it("should create channels (#integration)", async () => {
-    const args: RequestNewBriefcaseArg = {
-      contextId: testProjectId,
-      iModelId: readWriteTestIModel.id,
-    };
-    await BriefcaseManager.downloadBriefcase(managerRequestContext, args);
+    const props = await BriefcaseManager.downloadBriefcase(managerRequestContext, { contextId: testProjectId, iModelId: readWriteTestIModel.id });
     managerRequestContext.enter();
-    const imodel1 = await BriefcaseDb.open(managerRequestContext, { fileName: args.fileName! });
+    const imodel1 = await BriefcaseDb.open(managerRequestContext, { fileName: props.fileName });
     managerRequestContext.enter();
     imodel1.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
     imodel1.concurrencyControl.startBulkMode();

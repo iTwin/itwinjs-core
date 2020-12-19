@@ -15,14 +15,9 @@ export class IModelTestUtils {
   // Helper to open a briefcase db
   public static async downloadAndOpenBriefcaseDb(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, briefcaseId?: number, version: IModelVersion = IModelVersion.latest()): Promise<BriefcaseDb> {
     requestContext.enter();
-    const args: RequestNewBriefcaseArg = {
-      contextId, iModelId,
-      briefcaseId,
-      asOf: version.toJSON(),
-    };
-    await BriefcaseManager.downloadBriefcase(requestContext, args);
+    const props = await BriefcaseManager.downloadBriefcase(requestContext, { contextId, iModelId, briefcaseId, asOf: version.toJSON() });
     requestContext.enter();
-    return BriefcaseDb.open(requestContext, { fileName: args.fileName! });
+    return BriefcaseDb.open(requestContext, { fileName: props.fileName });
   }
 
   public static async closeAndDeleteBriefcaseDb(requestContext: AuthorizedClientRequestContext, briefcaseDb: BriefcaseDb) {

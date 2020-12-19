@@ -64,7 +64,7 @@ export interface OpenBriefcaseProps extends IModelEncryptionProps, OpenDbKey {
   upgrade?: UpgradeOptions;
 }
 
-/** Properties of a local briefcase file, returned by [BriefcaseManager.getCachedBriefcases]($backend)
+/** Properties of a local briefcase file, returned by [BriefcaseManager.getCachedBriefcases]($backend) and [BriefcaseManager.downloadBriefcase]($backend)
  * @beta
  */
 export interface LocalBriefcaseProps {
@@ -80,8 +80,8 @@ export interface LocalBriefcaseProps {
   /** The briefcaseId of the briefcase */
   briefcaseId: number;
 
-  /** The changesetId of the briefcase */
-  changesetId: GuidString;
+  /** The changeSetId of the briefcase */
+  changeSetId: GuidString;
 }
 
 /** Properties for downloading a briefcase to a local file, from iModelHub.
