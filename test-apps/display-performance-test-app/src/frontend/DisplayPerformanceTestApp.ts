@@ -916,16 +916,16 @@ async function openView(state: SimpleViewState, viewSize: ViewSize) {
   if (vpDiv) {
     // We must make sure we test the exact same number of pixels regardless of the device pixel ratio
     const pixelRatio = queryDevicePixelRatio();
-    viewSize.width /= pixelRatio;
-    viewSize.height /= pixelRatio;
+    const width = viewSize.width / pixelRatio;
+    const height = viewSize.height / pixelRatio;
 
-    vpDiv.style.width = `${String(viewSize.width)}px`;
-    vpDiv.style.height = `${String(viewSize.height)}px`;
+    vpDiv.style.width = `${String(width)}px`;
+    vpDiv.style.height = `${String(height)}px`;
     theViewport = ScreenViewport.create(vpDiv, state.viewState!);
     theViewport.rendersToScreen = true;
     const canvas = theViewport.canvas;
-    canvas.style.width = `${String(viewSize.width)}px`;
-    canvas.style.height = `${String(viewSize.height)}px`;
+    canvas.style.width = `${String(width)}px`;
+    canvas.style.height = `${String(height)}px`;
     theViewport.continuousRendering = false;
     theViewport.setRedrawPending();
     (theViewport.target as Target).performanceMetrics = undefined;
