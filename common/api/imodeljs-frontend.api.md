@@ -2228,6 +2228,8 @@ export class DrawingViewState extends ViewState2d {
     // @internal (undocumented)
     get areAllTileTreesLoaded(): boolean;
     // @internal (undocumented)
+    changeViewedModel(modelId: Id64String): Promise<void>;
+    // @internal (undocumented)
     static get className(): string;
     // (undocumented)
     static createFromProps(props: ViewStateProps, iModel: IModelConnection): DrawingViewState;
@@ -2247,10 +2249,14 @@ export class DrawingViewState extends ViewState2d {
     static hideDrawingGraphics: boolean;
     // @internal (undocumented)
     isDrawingView(): this is DrawingViewState;
-    // (undocumented)
+    // @internal (undocumented)
     load(): Promise<void>;
     // @internal
     get sectionDrawingInfo(): SectionDrawingInfo | undefined;
+    // @internal
+    get sectionDrawingProps(): Readonly<SectionDrawingViewProps> | undefined;
+    // (undocumented)
+    toProps(): ViewStateProps;
     }
 
 // @internal
@@ -8124,6 +8130,8 @@ export class SheetViewState extends ViewState2d {
     // @internal
     load(): Promise<void>;
     readonly sheetSize: Point2d;
+    // (undocumented)
+    toProps(): ViewStateProps;
     }
 
 // @internal
@@ -8393,6 +8401,8 @@ export class SpatialViewState extends ViewState3d {
     removeViewedModel(id: Id64String): void;
     // (undocumented)
     toJSON(): SpatialViewDefinitionProps;
+    // (undocumented)
+    toProps(): ViewStateProps;
     // (undocumented)
     viewsModel(modelId: Id64String): boolean;
 }
@@ -11598,6 +11608,7 @@ export abstract class ViewState extends ElementState {
     setViewClip(clip?: ClipVector): void;
     // (undocumented)
     toJSON(): ViewDefinitionProps;
+    toProps(): ViewStateProps;
     // (undocumented)
     protected _updateMaxGlobalScopeFactor(): void;
     get viewFlags(): ViewFlags;
@@ -11615,7 +11626,11 @@ export abstract class ViewState2d extends ViewState {
     // @internal (undocumented)
     applyPose(val: ViewPose2d): this;
     // (undocumented)
-    readonly baseModelId: Id64String;
+    get baseModelId(): Id64String;
+    // (undocumented)
+    protected _baseModelId: Id64String;
+    // @alpha
+    changeViewedModel(newViewedModelId: Id64String): Promise<void>;
     // @internal (undocumented)
     static get className(): string;
     // (undocumented)

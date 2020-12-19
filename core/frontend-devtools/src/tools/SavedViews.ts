@@ -7,9 +7,9 @@
  * @module Tools
  */
 
-import { CodeProps, ViewStateProps } from "@bentley/imodeljs-common";
+import { ViewStateProps } from "@bentley/imodeljs-common";
 import {
-  EntityState, IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, SheetViewState, SpatialViewState, Tool, ViewState,
+  EntityState, IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, Tool, ViewState,
 } from "@bentley/imodeljs-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 

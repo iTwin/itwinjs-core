@@ -95,7 +95,7 @@ describe("Section Drawings (#integration)", () => {
       expect(oldInfo).not.to.be.undefined;
 
       const spec = specs[i];
-      view = view.clone() as DrawingViewState;
+      view = view.clone();
       await view.changeViewedModel(spec.model);
 
       const newInfo = view.sectionDrawingInfo!;
@@ -109,7 +109,7 @@ describe("Section Drawings (#integration)", () => {
     const first = await imodel.views.load(specs[0].views[0]) as DrawingViewState;
     const info = first.sectionDrawingInfo!;
 
-    const second = first.clone() as DrawingViewState;
+    const second = first.clone();
     expect(second).not.to.equal(first);
     const secondInfo = second.sectionDrawingInfo!;
     expect(secondInfo).to.deep.equal(info);
