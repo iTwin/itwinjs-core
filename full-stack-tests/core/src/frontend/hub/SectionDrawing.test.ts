@@ -117,6 +117,22 @@ describe("Section Drawings (#integration)", () => {
     expect(secondInfo).to.deep.equal(info);
   });
 
+  it("preserves section drawing info when round-tripped through JSON", async () => {
+    const view = await imodel.views.load(specs[0].views[0]) as DrawingViewState;
+    const info = view.sectionDrawingInfo!;
+
+    const props = view.toProps();
+    expect(props.sectionDrawing).not.to.be.undefined;
+
+    const clone = DrawingViewState.createFromProps(props, view.iModel);
+    expect(clone.sectionDrawingProps).not.to.be.undefined;
+    expect(clone.sectionDrawingProps).to.deep.equal(view.sectionDrawingProps);
+
+    await clone.load();
+    expect(clone.sectionDrawingInfo).not.to.be.undefined;
+    expect(clone.sectionDrawingInfo).to.deep.equal(info);
+  });
+
   it("displays the 3d tiles in the 2d view if so specified", async () => {
     async function test(func: (vp: TestViewport) => void): Promise<void> {
       await testOnScreenViewport(specs[0].views[0], imodel, 40, 30, async (vp) => {

@@ -58,6 +58,12 @@ export class SpatialViewState extends ViewState3d {
     return new this(props.viewDefinitionProps as SpatialViewDefinitionProps, iModel, cat, displayStyleState, modelSelectorState);
   }
 
+  public toProps(): ViewStateProps {
+    const props = super.toProps();
+    props.modelSelectorProps = this.modelSelector.toJSON();
+    return props;
+  }
+
   constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, arg3: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState) {
     super(props, iModel, arg3, displayStyle);
     this.modelSelector = modelSelector;

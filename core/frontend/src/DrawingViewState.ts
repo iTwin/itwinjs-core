@@ -246,6 +246,11 @@ export class DrawingViewState extends ViewState2d {
     return this._attachment?.sectionDrawingInfo;
   }
 
+  /** Strictly for testing. @internal */
+  public get sectionDrawingProps(): Readonly<SectionDrawingViewProps> | undefined {
+    return this._sectionDrawingProps;
+  }
+
   public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, extents: AxisAlignedBox3d, sectionDrawing?: SectionDrawingViewProps) {
     super(props, iModel, categories, displayStyle);
     if (categories instanceof DrawingViewState) {
@@ -326,6 +331,15 @@ export class DrawingViewState extends ViewState2d {
 
     // use "new this" so subclasses are correct
     return new this(props.viewDefinitionProps as ViewDefinition2dProps, iModel, cat, displayStyleState, extents, props.sectionDrawing);
+  }
+
+  public toProps(): ViewStateProps {
+    const props = super.toProps();
+
+    if (this._sectionDrawingProps && Id64.isValidId64(this._sectionDrawingProps.spatialView))
+      props.sectionDrawing = { ...this._sectionDrawingProps };
+
+    return props;
   }
 
   public getViewedExtents(): AxisAlignedBox3d {

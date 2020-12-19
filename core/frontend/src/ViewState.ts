@@ -257,6 +257,15 @@ export abstract class ViewState extends ElementState {
    */
   public static createFromProps(_props: ViewStateProps, _iModel: IModelConnection): ViewState | undefined { return undefined; }
 
+  /** Serialize this ViewState as a set of properties that can be used to recreate it via [[ViewState.createFromProps]]. */
+  public toProps(): ViewStateProps {
+    return {
+      viewDefinitionProps: this.toJSON(),
+      categorySelectorProps: this.categorySelector.toJSON(),
+      displayStyleProps: this.displayStyle.toJSON(),
+    };
+  }
+
   /** Get the ViewFlags from the [[DisplayStyleState]] of this ViewState.
    * @note Do not modify this object directly. Instead, use the setter as follows:
    *

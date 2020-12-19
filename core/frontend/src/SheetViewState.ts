@@ -130,12 +130,31 @@ export class SheetViewState extends ViewState2d {
 
   /** @internal */
   public static get className() { return "SheetViewDefinition"; }
+
   public static createFromProps(viewStateData: ViewStateProps, iModel: IModelConnection): SheetViewState {
     const cat = new CategorySelectorState(viewStateData.categorySelectorProps, iModel);
     const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, iModel);
 
     // use "new this" so subclasses are correct
     return new this(viewStateData.viewDefinitionProps as ViewDefinition2dProps, iModel, cat, displayStyleState, viewStateData.sheetProps!, viewStateData.sheetAttachments!);
+  }
+
+  public toProps(): ViewStateProps {
+    const props = super.toProps();
+
+    // For sheetProps all that is actually used is the size, so just null out everything else.
+    const codeProps = { spec: "", scope: "", value: "" };
+    props.sheetProps = {
+      model: "",
+      code: codeProps,
+      classFullName: "",
+      width: this.sheetSize.x,
+      height: this.sheetSize.y,
+      scale: 1,
+    };
+
+    props.sheetAttachments = [...this.attachmentIds];
+    return props;
   }
 
   public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps: SheetProps, attachments: Id64Array) {
