@@ -66,6 +66,8 @@ rush.json       @calebmshafer @scsewall
 /common/**/imodeljs-backend/                      @imodeljs/admins
 /common/**/imodeljs-common.*                      @imodeljs/admins
 /common/**/imodeljs-common/                       @imodeljs/admins
+/common/**/imodeljs-editor-*.*                    @kabentley @pmconne
+/common/**/imodeljs-editor-*/                     @kabentley @pmconne
 /common/**/imodeljs-frontend.*                    @imodeljs/admins
 /common/**/imodeljs-frontend/                     @imodeljs/admins
 /common/**/imodeljs-i18n.*                        @calebmshafer @wgoehrig
@@ -84,14 +86,14 @@ rush.json       @calebmshafer @scsewall
 /common/**/orbitgt-core/                          @pmconne @RBBentley
 /common/**/perf-tools.*                           @calebmshafer @wgoehrig
 /common/**/perf-tools/                            @calebmshafer @wgoehrig
-/common/api/**/physical-material-backend.*        @scsewall
-/common/api/**/physical-material-backend/         @scsewall
+/common/**/physical-material-backend.*        @scsewall
+/common/**/physical-material-backend/         @scsewall
 /common/**/presentation-*.*                       @imodeljs/presentation
 /common/**/presentation-*/                        @imodeljs/presentation
 /common/**/ui-*.*                                 @imodeljs/ui
 /common/**/ui-*/                                  @imodeljs/ui
-/common/api/**/webgl-compatibility.*              @imodeljs/display
-/common/api/**/webgl-compatibility/               @imodeljs/display
+/common/**/webgl-compatibility.*              @imodeljs/display
+/common/**/webgl-compatibility/               @imodeljs/display
 
 /common/config/azure-pipelines  @calebmshafer @wgoehrig @ColinKerr
 
