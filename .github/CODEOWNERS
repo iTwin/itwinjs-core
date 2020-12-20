@@ -46,8 +46,9 @@ rush.json       @calebmshafer @scsewall
 /common/**/extension-client/                      @calebmshafer @paulius-valiunas
 # /common/**/imodelhub-client.*                   @amikoliunas @Animagne
 # /common/**/imodelhub-client/                    @amikoliunas @Animagne
+# /common/**/imodelhub-client-tests/              @amikoliunas @Animagne
 
-/common/**/*-extensions/                          @bsteinbk @calebmshafer
+/common/**/*-extension/                          @bsteinbk @calebmshafer
 
 /common/**/ecschema-locaters.*                    @calebmshafer @ColinKerr @wgoehrig
 /common/**/ecschema-locaters/                     @calebmshafer @ColinKerr @wgoehrig
