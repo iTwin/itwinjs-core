@@ -7,7 +7,7 @@
  */
 
 import { URL } from "url";
-import { assert, BentleyStatus, Logger, OpenMode, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
+import { BentleyStatus, Logger, OpenMode, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
 import { CommonLoggerCategory } from "../../CommonLoggerCategory";
 import { IModelRpcProps } from "../../IModel";
 import { IModelError } from "../../IModelError";
@@ -107,9 +107,9 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
       iModelId = encodeURIComponent(token.iModelId!);
 
       if (token.openMode === OpenMode.Readonly) {
+        // Use "0" if changeSetId omitted or empty string.
+        routeChangeSetId = token.changeSetId || "0";
         appMode = AppMode.MilestoneReview;
-        assert(token.changeSetId !== undefined, "ChangeSetId needs to be setup in IModelRpcProps before open");
-        routeChangeSetId = token.changeSetId === "" ? "0" : token.changeSetId;
       } else {
         appMode = AppMode.WorkGroupEdit;
       }
