@@ -24,6 +24,7 @@ rush.json @calebmshafer @scsewall
 /common/api/**/backend-application-insights-client.* @calebmshafer @ramanujam-raman
 /common/api/**/backend-itwin-client.*             @calebmshafer @ramanujam-raman
 /common/api/**/bentleyjs-core.*                   @imodeljs/admins
+/common/changes/**/bentleyjs-core                   @imodeljs/admins
 /common/api/**/config-loader.*                    @calebmshafer @wgoehrig
 /common/api/**/context-registry-client.*          @calebmshafer @ramanujam-raman
 /common/api/**/ecschema-locaters.*                @calebmshafer @ColinKerr @wgoehrig
@@ -61,6 +62,7 @@ rush.json @calebmshafer @scsewall
 /common/api/**/reality-data-client.*              @calebmshafer @ramanujam-raman
 /common/api/**/telemetry-client.*                 @calebmshafer @ramanujam-raman
 /common/api/**/ui-*.*                             @imodeljs/ui
+/common/changes/**/ui-*                           @imodeljs/ui
 /common/api/**/usage-logging-client.*             @calebmshafer @ramanujam-raman
 /common/api/**/webgl-compatibility.*              @imodeljs/display
 
