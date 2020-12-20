@@ -88,7 +88,8 @@ rush.json       @calebmshafer @scsewall
 /common/**/linear-referencing-common/             @diegoalexdiaz @scsewall
 /common/**/logger-config.*                        @swwilson-bsi @scsewall
 /common/**/logger-config/                         @swwilson-bsi @scsewall
-/common/**/may-layers-extension/                  @bsteinbk @mdastous-bentley
+/common/**/may-layers/                            @bsteinbk @mdastous-bentley
+/common/**/oidc-signin-tool/                      @calebmshafer @wgoehrig
 /common/**/orbitgt-core.*                         @pmconne @RBBentley
 /common/**/orbitgt-core/                          @pmconne @RBBentley
 /common/**/perf-tools.*                           @calebmshafer @wgoehrig
