@@ -41,9 +41,8 @@ alpha;BRepHollowProps
 public;BRepPrimitive
 alpha;BRepRoundProps
 alpha;BRepThickenProps
-internal;BriefcaseDownloader
-internal;BriefcaseKey = string
-internal;BriefcaseProps 
+beta;BriefcaseDownloader
+beta;BriefcaseProps
 beta;calculateSolarAngles(date: Date, location: Cartographic):
 beta;calculateSolarDirection(date: Date, location: Cartographic): Vector3d
 beta;calculateSolarDirectionFromAngles(azimuthElevation:
@@ -120,7 +119,6 @@ public;DisplayStyleSettings
 public;DisplayStyleSettingsProps
 public;DisplayStyleSubCategoryProps 
 beta;DomainOptions
-beta;DownloadBriefcaseOptions
 internal;DownloadBriefcaseStatus
 beta;DPoint2dProps = number[]
 beta;Easing:
@@ -268,12 +266,14 @@ internal;IModelEventSourceProps
 public;IModelNotFoundResponse 
 public;IModelProps
 internal;class IModelReadRpcInterface 
-public;IModelRpcProps
+public;IModelRpcOpenProps
+public;IModelRpcProps 
 public;class IModelTileRpcInterface 
 internal;IModelTileTreeId = PrimaryTileTreeId | ClassifierTileTreeId
 internal;iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTileTreeId, options: TileOptions): string
 internal;IModelTileTreeProps 
 public;IModelVersion
+public;IModelVersionProps
 internal;class IModelWriteRpcInterface 
 public;InformationPartitionElementProps 
 internal;initializeRpcRequest: () => void
@@ -293,6 +293,7 @@ public;LinePixels
 public;LineStyle
 beta;LineStyleProps 
 public;LocalAlignedBox3d = Range3d
+beta;LocalBriefcaseProps
 alpha;MapImageryProps
 alpha;MapImagerySettings
 beta;MapLayerKey
@@ -355,6 +356,8 @@ internal;OpenAPIResponse
 internal;OpenAPIResponses
 internal;OpenAPISchema
 beta;OpenBriefcaseOptions
+beta;OpenBriefcaseProps 
+public;OpenDbKey
 internal;OPERATION: unique symbol
 alpha;OrbitGtBlobProps
 internal;OverriddenBy
@@ -411,7 +414,7 @@ beta;RenderSchedule
 beta;class RenderTexture 
 beta;RenderTexture
 public;RepositoryLinkProps 
-internal;RequestBriefcaseProps
+beta;RequestNewBriefcaseProps
 public;ResponseLike 
 public;RgbColor
 public;RgbColorProps
@@ -501,6 +504,7 @@ public;SourceAndTarget
 beta;SpatialClassificationProps
 public;SpatialViewDefinitionProps 
 internal;class StandaloneIModelRpcInterface 
+beta;StandaloneOpenOptions = OpenDbKey & UpgradeOptions
 internal;StorageValue = string | number | boolean | null | Uint8Array
 public;SubCategoryAppearance
 public;SubCategoryAppearance
