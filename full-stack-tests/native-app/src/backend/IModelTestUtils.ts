@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import { GuidString, Id64, Id64String } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseDb, BriefcaseManager, Element, IModelDb, IModelJsFs, InformationPartitionElement, PhysicalModel, PhysicalPartition, RequestNewBriefcaseArg,
+  BriefcaseDb, BriefcaseManager, Element, IModelDb, IModelJsFs, InformationPartitionElement, PhysicalModel, PhysicalPartition,
   SubjectOwnsPartitionElements,
 } from "@bentley/imodeljs-backend";
 import { Code, CodeProps, ElementProps, IModel, IModelVersion, PhysicalElementProps, RelatedElement } from "@bentley/imodeljs-common";

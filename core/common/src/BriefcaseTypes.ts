@@ -68,19 +68,19 @@ export interface OpenBriefcaseProps extends IModelEncryptionProps, OpenDbKey {
  * @beta
  */
 export interface LocalBriefcaseProps {
-  /** Full path of local file of the briefcase. */
+  /** Full path of local file. */
   fileName: string;
 
-  /** Context (Project or Asset) of the iModel */
+  /** Context (Project or Asset) of the iModel. */
   contextId: GuidString;
 
-  /** The iModelId for the briefcase. */
+  /** The iModelId. */
   iModelId: GuidString;
 
-  /** The briefcaseId of the briefcase */
+  /** The briefcaseId. */
   briefcaseId: number;
 
-  /** The current changeSetId of the briefcase */
+  /** The current changeSetId. */
   changeSetId: GuidString;
 }
 
