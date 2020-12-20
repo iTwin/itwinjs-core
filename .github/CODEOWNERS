@@ -47,6 +47,8 @@ rush.json       @calebmshafer @scsewall
 # /common/**/imodelhub-client.*                   @amikoliunas @Animagne
 # /common/**/imodelhub-client/                    @amikoliunas @Animagne
 
+/common/**/*-extensions/                          @bsteinbk @calebmshafer
+
 /common/**/ecschema-locaters.*                    @calebmshafer @ColinKerr @wgoehrig
 /common/**/ecschema-locaters/                     @calebmshafer @ColinKerr @wgoehrig
 /common/**/ecschema-metadata.*                    @calebmshafer @ColinKerr @wgoehrig
@@ -88,21 +90,22 @@ rush.json       @calebmshafer @scsewall
 /common/**/linear-referencing-common/             @diegoalexdiaz @scsewall
 /common/**/logger-config.*                        @swwilson-bsi @scsewall
 /common/**/logger-config/                         @swwilson-bsi @scsewall
-/common/**/may-layers/                            @bsteinbk @mdastous-bentley
+/common/**/map-layers/                            @bsteinbk @mdastous-bentley
 /common/**/oidc-signin-tool/                      @calebmshafer @wgoehrig
 /common/**/orbitgt-core.*                         @pmconne @RBBentley
 /common/**/orbitgt-core/                          @pmconne @RBBentley
 /common/**/perf-tools.*                           @calebmshafer @wgoehrig
 /common/**/perf-tools/                            @calebmshafer @wgoehrig
-/common/**/physical-material-backend.*        @scsewall
-/common/**/physical-material-backend/         @scsewall
+/common/**/physical-material-backend.*            @scsewall
+/common/**/physical-material-backend/             @scsewall
 /common/**/presentation-*.*                       @imodeljs/presentation
 /common/**/presentation-*/                        @imodeljs/presentation
+/common/**/rpcinterface-full-stack-tests/         @calebmshafer @wgoehrig
 /common/**/ui-*.*                                 @imodeljs/ui
 /common/**/ui-*/                                  @imodeljs/ui
-/common/**/webgl-compatibility.*              @imodeljs/display
-/common/**/webgl-compatibility/               @imodeljs/display
-/common/**/webpack-tools-core/               @calebmshafer @wgoehrig
+/common/**/webgl-compatibility.*                  @imodeljs/display
+/common/**/webgl-compatibility/                   @imodeljs/display
+/common/**/webpack-tools-core/                    @calebmshafer @wgoehrig
 
 /common/config/azure-pipelines  @calebmshafer @wgoehrig @ColinKerr
 
