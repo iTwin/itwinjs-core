@@ -111,6 +111,16 @@ export interface BackstageComposerProps extends CommonProps {
  * @beta
  */
 export function BackstageComposer(props: BackstageComposerProps) {
+  const [defaultItemsManager, setDefaultItemsManager] = React.useState(new BackstageItemsManager(props.items));
+  const initialItems = React.useRef(props.items);
+
+  React.useEffect(() => {
+    if (initialItems.current !== props.items) {
+      initialItems.current = props.items;
+      setDefaultItemsManager(new BackstageItemsManager(props.items));
+    }
+  }, [props.items]);
+
   const manager = useBackstageManager();
   const isOpen = useIsBackstageOpen(manager);
   const safeAreaInsets = React.useContext(SafeAreaContext);
@@ -118,7 +128,6 @@ export function BackstageComposer(props: BackstageComposerProps) {
     manager.close();
   }, [manager]);
 
-  const [defaultItemsManager] = React.useState(new BackstageItemsManager(props.items));
   const defaultItems = useDefaultBackstageItems(defaultItemsManager);
   const syncIdsOfInterest = React.useMemo(() => BackstageItemsManager.getSyncIdsOfInterest(defaultItems), [defaultItems]);
   useBackstageItemSyncEffect(defaultItemsManager, syncIdsOfInterest);
