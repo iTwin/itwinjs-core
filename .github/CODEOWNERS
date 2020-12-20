@@ -9,66 +9,89 @@
 # @global-owner1 and @global-owner2 will be requested for
 # review when someone opens a pull request.
 
-* @imodeljs/admins
+# * @imodeljs/admins
 
 .github/workflows @calebmshafer @wgoehrig @ColinKerr
 
-.gitattributes @calebmshafer @scsewall
-.gitignore @calebmshafer @scsewall
-rush.json @calebmshafer @scsewall
+.gitattributes  @calebmshafer @scsewall
+.gitignore      @calebmshafer @scsewall
+rush.json       @calebmshafer @scsewall
 
-/clients              @calebmshafer @ramanujam-raman
-# /clients/imodelhub    @amikoliunas @Animagne
+/clients                        @calebmshafer @ramanujam-raman
+/clients/extension              @calebmshafer @paulius-valiunas
+# /clients/imodelhub            @amikoliunas @Animagne
 
-/common/api/**/analytical-backend.*               @diegoalexdiaz @scsewall
-/common/api/**/backend-application-insights-client.* @calebmshafer @ramanujam-raman
-/common/api/**/backend-itwin-client.*             @calebmshafer @ramanujam-raman
-/common/api/**/bentleyjs-core.*                   @imodeljs/admins
-/common/changes/**/bentleyjs-core                   @imodeljs/admins
-/common/api/**/config-loader.*                    @calebmshafer @wgoehrig
-/common/api/**/context-registry-client.*          @calebmshafer @ramanujam-raman
-/common/api/**/ecschema-locaters.*                @calebmshafer @ColinKerr @wgoehrig
-/common/api/**/ecschema-metadata.*                @calebmshafer @ColinKerr @wgoehrig
-/common/api/**/ecschema2ts.*                      @calebmshafer @ColinKerr @wgoehrig
-/common/api/**/electron-manager.*                 @wgoehrig @ramanujam-raman
-/common/api/**/express-server.*                   @wgoehrig @calebmshafer
-/common/api/**/extension-client.*                 @calebmshafer @paulius-valiunas
-/common/api/**/forms-data-management-client.*     @calebmshafer @ramanujam-raman
-/common/api/**/frontend-application-insights-client.*     @calebmshafer @ramanujam-raman
-/common/api/**/frontend-authorization-client.*     @calebmshafer @ramanujam-raman
-/common/api/**/frontend-devtools.*                @imodeljs/display
-/common/api/**/geometry-core.*                    @EarlinLutz @mgooding @RBBentley @bbastings
-/common/api/**/hypermodeling-frontend.*           @pmconne @bbastings
-/common/api/**/imodel-bridge.*                    @abeesh @c-macdonald @swwilson-bsi
-# /common/api/**/imodelhub-client.*                 @amikoliunas @Animagne
-/common/api/**/imodeljs-backend.*                 @imodeljs/admins
-/common/api/**/imodeljs-common.*                  @imodeljs/admins
-/common/api/**/imodeljs-frontend.*                @imodeljs/admins
-/common/api/**/imodeljs-i18n.*                    @calebmshafer @wgoehrig
-/common/api/**/imodeljs-markup.*                  @kabentley @pmconne @bbastings
-/common/api/**/imodeljs-quantity.*                @bsteinbk @calebmshafer
-/common/api/**/itwin-client.*                     @calebmshafer @ramanujam-raman
-/common/api/**/linear-referencing-backend.*       @diegoalexdiaz @scsewall
-/common/api/**/linear-referencing-common.*        @diegoalexdiaz @scsewall
-/common/api/**/logger-config.*                    @swwilson-bsi @scsewall
-/common/api/**/oauth-introspection-client.*       @calebmshafer @ramanujam-raman
-/common/api/**/orbitgt-core.*                     @pmconne @RBBentley
-/common/api/**/perf-tools.*                       @calebmshafer @wgoehrig
+# The syntax used below tries to cover both files and folders in the common folder that operate per=package
+# Due to syntax requirements, both can't be covered in a single line
+#
+# The three main folder patterns that covered are:
+#   1. /common/api/{packageName}.api.md
+#   1. /common/api/summary/{packageName}.exports.csv
+#   1. /common/changes/@bentley/{packageName}/*.json
+
+/common/**/analytical-backend.*                   @diegoalexdiaz @scsewall
+/common/**/analytical-backend/                    @diegoalexdiaz @scsewall
+/common/**/bentleyjs-core.*                       @imodeljs/admins
+/common/**/bentleyjs-core/                        @imodeljs/admins
+/common/**/config-loader.*                        @calebmshafer @wgoehrig
+/common/**/config-loader/                         @calebmshafer @wgoehrig
+
+# Covers most client libraries, all others with more specific reviewers should be after these two lines
+/common/**/*-client.*                             @calebmshafer @ramanujam-raman
+/common/**/*-client/                              @calebmshafer @ramanujam-raman
+/common/**/extension-client.*                     @calebmshafer @paulius-valiunas
+/common/**/extension-client/                      @calebmshafer @paulius-valiunas
+# /common/**/imodelhub-client.*                   @amikoliunas @Animagne
+# /common/**/imodelhub-client/                    @amikoliunas @Animagne
+
+/common/**/ecschema-locaters.*                    @calebmshafer @ColinKerr @wgoehrig
+/common/**/ecschema-locaters/                     @calebmshafer @ColinKerr @wgoehrig
+/common/**/ecschema-metadata.*                    @calebmshafer @ColinKerr @wgoehrig
+/common/**/ecschema-metadata/                     @calebmshafer @ColinKerr @wgoehrig
+/common/**/ecschema2ts.*                          @calebmshafer @ColinKerr @wgoehrig
+/common/**/ecschema2ts/                           @calebmshafer @ColinKerr @wgoehrig
+/common/**/electron-manager.*                     @wgoehrig @ramanujam-raman
+/common/**/electron-manager/                      @wgoehrig @ramanujam-raman
+/common/**/express-server.*                       @wgoehrig @calebmshafer
+/common/**/express-server/                        @wgoehrig @calebmshafer
+/common/**/frontend-devtools.*                    @imodeljs/display
+/common/**/frontend-devtools/                     @imodeljs/display
+/common/**/geometry-core.*                        @EarlinLutz @mgooding @RBBentley @bbastings
+/common/**/geometry-core/                         @EarlinLutz @mgooding @RBBentley @bbastings
+/common/**/hypermodeling-frontend.*               @pmconne @bbastings
+/common/**/hypermodeling-frontend/                @pmconne @bbastings
+/common/**/imodel-bridge.*                        @abeesh @c-macdonald @swwilson-bsi
+/common/**/imodel-bridge/                         @abeesh @c-macdonald @swwilson-bsi
+/common/**/imodeljs-backend.*                     @imodeljs/admins
+/common/**/imodeljs-backend/                      @imodeljs/admins
+/common/**/imodeljs-common.*                      @imodeljs/admins
+/common/**/imodeljs-common/                       @imodeljs/admins
+/common/**/imodeljs-frontend.*                    @imodeljs/admins
+/common/**/imodeljs-frontend/                     @imodeljs/admins
+/common/**/imodeljs-i18n.*                        @calebmshafer @wgoehrig
+/common/**/imodeljs-i18n/                         @calebmshafer @wgoehrig
+/common/**/imodeljs-markup.*                      @kabentley @pmconne @bbastings
+/common/**/imodeljs-markup/                       @kabentley @pmconne @bbastings
+/common/**/imodeljs-quantity.*                    @bsteinbk @calebmshafer
+/common/**/imodeljs-quantity/                     @bsteinbk @calebmshafer
+/common/**/linear-referencing-backend.*           @diegoalexdiaz @scsewall
+/common/**/linear-referencing-backend/            @diegoalexdiaz @scsewall
+/common/**/linear-referencing-common.*            @diegoalexdiaz @scsewall
+/common/**/linear-referencing-common/             @diegoalexdiaz @scsewall
+/common/**/logger-config.*                        @swwilson-bsi @scsewall
+/common/**/logger-config/                         @swwilson-bsi @scsewall
+/common/**/orbitgt-core.*                         @pmconne @RBBentley
+/common/**/orbitgt-core/                          @pmconne @RBBentley
+/common/**/perf-tools.*                           @calebmshafer @wgoehrig
+/common/**/perf-tools/                            @calebmshafer @wgoehrig
 /common/api/**/physical-material-backend.*        @scsewall
-/common/api/**/presentation-*.*                   @imodeljs/presentation
-/common/api/**/product-settings-client.*          @calebmshafer @ramanujam-raman
-/common/api/**/projectshare-client.*              @calebmshafer @ramanujam-raman
-/common/api/**/rbac-client.*                      @calebmshafer @ramanujam-raman
-/common/api/**/reality-data-client.*              @calebmshafer @ramanujam-raman
-/common/api/**/telemetry-client.*                 @calebmshafer @ramanujam-raman
-/common/api/**/ui-*.*                             @imodeljs/ui
-/common/changes/**/ui-*                           @imodeljs/ui
-/common/api/**/usage-logging-client.*             @calebmshafer @ramanujam-raman
+/common/api/**/physical-material-backend/         @scsewall
+/common/**/presentation-*.*                       @imodeljs/presentation
+/common/**/presentation-*/                        @imodeljs/presentation
+/common/**/ui-*.*                                 @imodeljs/ui
+/common/**/ui-*/                                  @imodeljs/ui
 /common/api/**/webgl-compatibility.*              @imodeljs/display
-
-# Specifying both of these with a large number of possible reviewers.
-# All significant changes will be covered by other requirements.
-/common/changes @imodeljs/core
+/common/api/**/webgl-compatibility/               @imodeljs/display
 
 /common/config/azure-pipelines  @calebmshafer @wgoehrig @ColinKerr
 
