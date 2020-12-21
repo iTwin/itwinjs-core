@@ -7,12 +7,25 @@
  */
 
 import { Id64Array, Id64String } from "@bentley/bentleyjs-core";
-import { AngleProps, Range3dProps, XYProps, XYZProps, YawPitchRollProps } from "@bentley/geometry-core";
+import { AngleProps, Range3dProps, TransformProps, XYProps, XYZProps, YawPitchRollProps } from "@bentley/geometry-core";
 import { CameraProps } from "./Camera";
 import { DisplayStyleProps } from "./DisplayStyleSettings";
 import { DefinitionElementProps, DisplayStyleLoadProps, ElementProps, SheetProps } from "./ElementProps";
 import { EntityQueryParams } from "./EntityProps";
 import { ViewDetails3dProps, ViewDetailsProps } from "./ViewDetails";
+
+/** As part of a [[ViewStateProps]], describes the [[SpatialViewDefinition]] from which a [SectionDrawing]($backend) was generated.
+ * @see [[SectionDrawingProps]]
+ * @beta
+ */
+export interface SectionDrawingViewProps {
+  /** The Id of the spatial view from which the SectionDrawing was generated. */
+  spatialView: Id64String;
+  /** If true, the spatial view should be displayed in the context of the drawing view. */
+  displaySpatialView: boolean;
+  /** Transform from drawing coordinates to spatial coordinates. If undefined, use identity transform. */
+  drawingToSpatialTransform?: TransformProps;
+}
 
 /** Returned from [IModelDb.Views.getViewStateData]($backend).
  * @public
@@ -30,6 +43,10 @@ export interface ViewStateProps {
    * @alpha
    */
   modelExtents?: Range3dProps;
+  /** Information about the [SectionDrawing]($backend) relevant to displaying a drawing view.
+   * @beta
+   */
+  sectionDrawing?: SectionDrawingViewProps;
 }
 
 /** Options for loading a [[ViewStateProps]] via [IModelConnection.Views.load]($frontend) or [IModelDb.Views.getViewStateData]($backend).

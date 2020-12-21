@@ -131,7 +131,7 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
   public async getBriefcaseFileName(_props: BriefcaseProps): Promise<string> { return this.forward(arguments); }
 
   /** Download a briefcase file for the supplied briefcase properties. */
-  public async downloadBriefcase(_requestProps: RequestNewBriefcaseProps, _reportProgress: boolean): Promise<void> { return this.forward(arguments); }
+  public async downloadBriefcase(_requestProps: RequestNewBriefcaseProps, _reportProgress: boolean): Promise<LocalBriefcaseProps> { return this.forward(arguments); }
 
   /**
    * Cancels the previously requested download of a briefcase

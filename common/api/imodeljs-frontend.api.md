@@ -222,6 +222,7 @@ import { RequestBasicCredentials } from '@bentley/itwin-client';
 import { RequestOptions } from '@bentley/itwin-client';
 import { RgbColor } from '@bentley/imodeljs-common';
 import { RpcRoutingToken } from '@bentley/imodeljs-common';
+import { SectionDrawingViewProps } from '@bentley/imodeljs-common';
 import { SettingsAdmin } from '@bentley/product-settings-client';
 import { SheetProps } from '@bentley/imodeljs-common';
 import { SilhouetteEdgeArgs } from '@bentley/imodeljs-common';
@@ -2221,15 +2222,41 @@ export class DrawingModelState extends GeometricModel2dState {
 
 // @public
 export class DrawingViewState extends ViewState2d {
-    constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, extents: AxisAlignedBox3d);
+    constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, extents: AxisAlignedBox3d, sectionDrawing?: SectionDrawingViewProps);
+    // @internal
+    static alwaysDisplaySpatialView: boolean;
+    // @internal (undocumented)
+    get areAllTileTreesLoaded(): boolean;
+    // @internal (undocumented)
+    changeViewedModel(modelId: Id64String): Promise<void>;
     // @internal (undocumented)
     static get className(): string;
     // (undocumented)
     static createFromProps(props: ViewStateProps, iModel: IModelConnection): DrawingViewState;
+    // @internal (undocumented)
+    createScene(context: SceneContext): void;
     // (undocumented)
     get defaultExtentLimits(): ExtentLimits;
+    // @internal (undocumented)
+    discloseTileTrees(trees: TileTreeSet): void;
+    // @internal (undocumented)
+    getExtents(): Vector3d;
+    // @internal (undocumented)
+    getOrigin(): import("@bentley/geometry-core").Point3d;
     // (undocumented)
     getViewedExtents(): AxisAlignedBox3d;
+    // @internal
+    static hideDrawingGraphics: boolean;
+    // @internal (undocumented)
+    isDrawingView(): this is DrawingViewState;
+    // @internal (undocumented)
+    load(): Promise<void>;
+    // @internal
+    get sectionDrawingInfo(): SectionDrawingInfo | undefined;
+    // @internal
+    get sectionDrawingProps(): Readonly<SectionDrawingViewProps> | undefined;
+    // (undocumented)
+    toProps(): ViewStateProps;
     }
 
 // @internal
@@ -4656,6 +4683,8 @@ export abstract class MapLayerImageryProvider {
     // (undocumented)
     protected _missingTileData?: Uint8Array;
     // (undocumented)
+    get mutualExclusiveSubLayer(): boolean;
+    // (undocumented)
     protected _requestContext: ClientRequestContext;
     // (undocumented)
     protected readonly _settings: MapLayerSettings;
@@ -4770,7 +4799,9 @@ export enum MapLayerSourceStatus {
     // (undocumented)
     InvalidFormat = 1,
     // (undocumented)
-    InvalidUrl = 2,
+    InvalidTileTree = 2,
+    // (undocumented)
+    InvalidUrl = 3,
     // (undocumented)
     Valid = 0
 }
@@ -7736,6 +7767,14 @@ export class ScrollViewTool extends ViewManip {
     static toolId: string;
 }
 
+// @internal
+export interface SectionDrawingInfo {
+    // (undocumented)
+    readonly drawingToSpatialTransform: Transform;
+    // (undocumented)
+    readonly spatialView: Id64String;
+}
+
 // @public
 export class SectionDrawingModelState extends DrawingModelState {
     // @internal (undocumented)
@@ -8092,9 +8131,13 @@ export class SheetViewState extends ViewState2d {
     getOrigin(): Point3d;
     // @internal (undocumented)
     getViewedExtents(): AxisAlignedBox3d;
+    // @internal (undocumented)
+    isDrawingView(): this is DrawingViewState;
     // @internal
     load(): Promise<void>;
     readonly sheetSize: Point2d;
+    // (undocumented)
+    toProps(): ViewStateProps;
     }
 
 // @internal
@@ -8352,6 +8395,8 @@ export class SpatialViewState extends ViewState3d {
     protected getDisplayedExtents(): AxisAlignedBox3d;
     // (undocumented)
     getViewedExtents(): AxisAlignedBox3d;
+    // @internal (undocumented)
+    isSpatialView(): this is SpatialViewState;
     // (undocumented)
     load(): Promise<void>;
     // @internal (undocumented)
@@ -8362,6 +8407,8 @@ export class SpatialViewState extends ViewState3d {
     removeViewedModel(id: Id64String): void;
     // (undocumented)
     toJSON(): SpatialViewDefinitionProps;
+    // (undocumented)
+    toProps(): ViewStateProps;
     // (undocumented)
     viewsModel(modelId: Id64String): boolean;
 }
@@ -11525,12 +11572,12 @@ export abstract class ViewState extends ElementState {
     // @internal
     hasSameCoordinates(other: ViewState): boolean;
     is2d(): this is ViewState2d;
-    is3d(): this is ViewState3d;
+    abstract is3d(): this is ViewState3d;
     isCameraEnabled(): this is ViewState3d;
-    isDrawingView(): this is DrawingViewState;
+    abstract isDrawingView(): this is DrawingViewState;
     // (undocumented)
     isPrivate?: boolean;
-    isSpatialView(): this is SpatialViewState;
+    abstract isSpatialView(): this is SpatialViewState;
     // @internal (undocumented)
     isSubCategoryVisible(id: Id64String): boolean;
     load(): Promise<void>;
@@ -11567,6 +11614,7 @@ export abstract class ViewState extends ElementState {
     setViewClip(clip?: ClipVector): void;
     // (undocumented)
     toJSON(): ViewDefinitionProps;
+    toProps(): ViewStateProps;
     // (undocumented)
     protected _updateMaxGlobalScopeFactor(): void;
     get viewFlags(): ViewFlags;
@@ -11584,7 +11632,11 @@ export abstract class ViewState2d extends ViewState {
     // @internal (undocumented)
     applyPose(val: ViewPose2d): this;
     // (undocumented)
-    readonly baseModelId: Id64String;
+    get baseModelId(): Id64String;
+    // (undocumented)
+    protected _baseModelId: Id64String;
+    // @alpha
+    changeViewedModel(newViewedModelId: Id64String): Promise<void>;
     // @internal (undocumented)
     static get className(): string;
     // (undocumented)
@@ -11606,6 +11658,10 @@ export abstract class ViewState2d extends ViewState {
     // (undocumented)
     getRotation(): Matrix3d;
     getViewedModel(): GeometricModel2dState | undefined;
+    // @internal (undocumented)
+    is3d(): this is ViewState3d;
+    // @internal (undocumented)
+    isSpatialView(): this is SpatialViewState;
     // (undocumented)
     load(): Promise<void>;
     // @deprecated
@@ -11693,9 +11749,13 @@ export abstract class ViewState3d extends ViewState {
     get globalScopeFactor(): number;
     // (undocumented)
     globalViewTransition(): number;
+    // @internal (undocumented)
+    is3d(): this is ViewState3d;
     // (undocumented)
     get isCameraOn(): boolean;
     get isCameraValid(): boolean;
+    // @internal (undocumented)
+    isDrawingView(): this is DrawingViewState;
     // (undocumented)
     isEyePointAbove(elevation: number): boolean;
     // (undocumented)
@@ -11980,6 +12040,260 @@ export namespace WmsCapability {
 export class WmsUtilities {
     // (undocumented)
     static getBaseUrl(url: string): string;
+}
+
+// @internal (undocumented)
+export class WmtsCapabilities {
+    constructor(_json: any);
+    // (undocumented)
+    readonly contents?: WmtsCapability.Contents;
+    // (undocumented)
+    static create(url: string, credentials?: RequestBasicCredentials): Promise<WmtsCapabilities | undefined>;
+    // (undocumented)
+    static createFromXml(xmlCapabilities: string): WmtsCapabilities | undefined;
+    // (undocumented)
+    get json(): any;
+    // (undocumented)
+    readonly operationsMetadata?: WmtsCapability.OperationMetadata;
+    // (undocumented)
+    readonly serviceIdentification?: WmtsCapability.ServiceIdentification;
+    // (undocumented)
+    readonly version?: string;
+}
+
+// @internal
+export namespace WmtsCapability {
+    // (undocumented)
+    export class BoundingBox {
+        constructor(_json: any);
+        // (undocumented)
+        readonly crs?: string;
+        // (undocumented)
+        readonly range?: Range2d;
+    }
+    // (undocumented)
+    export abstract class Constants {
+        // (undocumented)
+        static readonly GOOGLEMAPS_COMPATIBLE_WELLKNOWNNAME = "googlemapscompatible";
+        // (undocumented)
+        static readonly GOOGLEMAPS_LEVEL0_SCALE_DENOM = 559082264.0287178;
+    }
+    // (undocumented)
+    export class Contents {
+        constructor(_json: any);
+        // (undocumented)
+        getGoogleMapsCompatibleTileMatrixSet(): WmtsCapability.TileMatrixSet[];
+        // (undocumented)
+        readonly layers: WmtsCapability.Layer[];
+        // (undocumented)
+        readonly tileMatrixSets: WmtsCapability.TileMatrixSet[];
+    }
+    // (undocumented)
+    export class HttpDcp {
+        constructor(json: any);
+        // (undocumented)
+        readonly constraintName?: string;
+        // (undocumented)
+        readonly encoding?: string;
+        // (undocumented)
+        readonly url?: string;
+    }
+    // (undocumented)
+    export class Layer {
+        constructor(_json: any);
+        // (undocumented)
+        readonly abstract?: string;
+        // (undocumented)
+        readonly boundingBox?: BoundingBox;
+        // (undocumented)
+        readonly format?: string;
+        // (undocumented)
+        readonly identifier: string;
+        // (undocumented)
+        readonly styles: Style[];
+        // (undocumented)
+        readonly tileMatrixSetLinks: TileMatrixSetLink[];
+        // (undocumented)
+        readonly title?: string;
+        // (undocumented)
+        readonly wsg84BoundingBox?: MapCartoRectangle;
+    }
+    // (undocumented)
+    export class Operation {
+        constructor(json: any);
+        // (undocumented)
+        get getDcpHttp(): HttpDcp[] | undefined;
+        // (undocumented)
+        readonly name?: string;
+        // (undocumented)
+        get postDcpHttp(): HttpDcp[] | undefined;
+        }
+    // (undocumented)
+    export class OperationMetadata {
+        constructor(json: any);
+        // (undocumented)
+        get getCapabilities(): Operation | undefined;
+        // (undocumented)
+        get getFeatureInfo(): Operation | undefined;
+        // (undocumented)
+        get getTile(): Operation | undefined;
+        }
+    // (undocumented)
+    export abstract class OwsConstants {
+        // (undocumented)
+        static readonly ABSTRACT_XMLTAG = "ows:Abstract";
+        // (undocumented)
+        static readonly ACCESSCONSTRAINTS_XMLTAG = "ows:AccessConstraints";
+        // (undocumented)
+        static readonly ALLOWEDVALUES_XMLTAG = "ows:AllowedValues";
+        // (undocumented)
+        static readonly BOUNDINGBOX_XMLTAG = "ows:BoundingBox";
+        // (undocumented)
+        static readonly CONSTRAINT_XMLTAG = "ows:Constraint";
+        // (undocumented)
+        static readonly DCP_XMLTAG = "ows:DCP";
+        // (undocumented)
+        static readonly FEES_XMLTAG = "ows:Fees";
+        // (undocumented)
+        static readonly GET_XMLTAG = "ows:Get";
+        // (undocumented)
+        static readonly HTTP_XMLTAG = "ows:HTTP";
+        // (undocumented)
+        static readonly IDENTIFIER_XMLTAG = "ows:Identifier";
+        // (undocumented)
+        static readonly KEYWORD_XMLTAG = "ows:Keyword";
+        // (undocumented)
+        static readonly KEYWORDS_XMLTAG = "ows:Keywords";
+        // (undocumented)
+        static readonly LOWERCORNER_XMLTAG = "ows:LowerCorner";
+        // (undocumented)
+        static readonly OPERATION_XMLTAG = "ows:Operation";
+        // (undocumented)
+        static readonly OPERATIONSMETADATA_XMLTAG = "ows:OperationsMetadata";
+        // (undocumented)
+        static readonly POST_XMLTAG = "ows:Post";
+        // (undocumented)
+        static readonly SERVICEIDENTIFICATION_XMLTAG = "ows:ServiceIdentification";
+        // (undocumented)
+        static readonly SERVICETYPE_XMLTAG = "ows:ServiceType";
+        // (undocumented)
+        static readonly SERVICETYPEVERSION_XMLTAG = "ows:ServiceTypeVersion";
+        // (undocumented)
+        static readonly SUPPORTEDCRS_XMLTAG = "ows:SupportedCRS";
+        // (undocumented)
+        static readonly TITLE_XMLTAG = "ows:Title";
+        // (undocumented)
+        static readonly UPPERCORNER_XMLTAG = "ows:UpperCorner";
+        // (undocumented)
+        static readonly VALUE_XMLTAG = "ows:Value";
+        // (undocumented)
+        static readonly WGS84BOUNDINGBOX_XMLTAG = "ows:WGS84BoundingBox";
+    }
+    // (undocumented)
+    export class ServiceIdentification {
+        constructor(json: any);
+        // (undocumented)
+        readonly abstract?: string;
+        // (undocumented)
+        readonly accessConstraints?: string;
+        // (undocumented)
+        readonly fees?: string;
+        // (undocumented)
+        readonly keywords?: string[];
+        // (undocumented)
+        readonly serviceType?: string;
+        // (undocumented)
+        readonly serviceTypeVersion?: string;
+        // (undocumented)
+        readonly title?: string;
+    }
+    // (undocumented)
+    export class Style {
+        constructor(_json: any);
+        // (undocumented)
+        readonly identifier?: string;
+        // (undocumented)
+        readonly isDefault: boolean;
+        // (undocumented)
+        readonly title?: string;
+    }
+    // (undocumented)
+    export class TileMatrix {
+        constructor(_json: any);
+        // (undocumented)
+        readonly abstract?: string;
+        // (undocumented)
+        readonly identifier: string;
+        // (undocumented)
+        readonly matrixHeight: number;
+        // (undocumented)
+        readonly matrixWidth: number;
+        // (undocumented)
+        readonly scaleDenominator: number;
+        // (undocumented)
+        readonly tileHeight: number;
+        // (undocumented)
+        readonly tileWidth: number;
+        // (undocumented)
+        readonly title?: string;
+        // (undocumented)
+        readonly topLeftCorner: Point2d;
+    }
+    // (undocumented)
+    export class TileMatrixSet {
+        constructor(_json: any);
+        // (undocumented)
+        readonly abstract?: string;
+        // (undocumented)
+        readonly identifier: string;
+        // (undocumented)
+        readonly supportedCrs: string;
+        // (undocumented)
+        readonly tileMatrix: TileMatrix[];
+        // (undocumented)
+        readonly title?: string;
+        // (undocumented)
+        readonly wellKnownScaleSet: string;
+    }
+    // (undocumented)
+    export class TileMatrixSetLink {
+        constructor(_json: any);
+        // (undocumented)
+        readonly tileMatrixSet: string;
+    }
+    // (undocumented)
+    export abstract class XmlConstants {
+        // (undocumented)
+        static readonly CONSTRAINT_NAME_FILTER = "Encoding";
+        // (undocumented)
+        static readonly GETCAPABILITIES = "GetCapabilities";
+        // (undocumented)
+        static readonly GETFEATUREINFO = "GetFeatureInfo";
+        // (undocumented)
+        static readonly GETTILE = "GetTile";
+        // (undocumented)
+        static readonly MATRIXHEIGHT_XMLTAG = "MatrixHeight";
+        // (undocumented)
+        static readonly MATRIXWIDTH_XMLTAG = "MatrixWidth";
+        // (undocumented)
+        static readonly SCALEDENOMINATOR_XMLTAG = "ScaleDenominator";
+        // (undocumented)
+        static readonly STYLE_ISDEFAULT = "IsDefault";
+        // (undocumented)
+        static readonly TILEHEIGHT_XMLTAG = "TileHeight";
+        // (undocumented)
+        static readonly TILEMATRIX_XMLTAG = "TileMatrix";
+        // (undocumented)
+        static readonly TILEMATRIXSETLINK_XMLTAG = "TileMatrixSetLink";
+        // (undocumented)
+        static readonly TILEWIDTH_XMLTAG = "TileWidth";
+        // (undocumented)
+        static readonly TOPLEFTCORNER_XMLTAG = "TopLeftCorner";
+        // (undocumented)
+        static readonly WELLKNOWNSCALESET_XMLTAG = "WellKnownScaleSet";
+        // (undocumented)
+        static readonly XLINK_HREF = "xlink:href";
+    }
 }
 
 // @public
