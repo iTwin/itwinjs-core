@@ -1,6 +1,7 @@
-# Change Log - @bentley/ui-ninezone
 
-<<<<<<< HEAD
+
+ Change Log - @bentley/ui-ninezone
+
 This log was last generated on Fri, 18 Dec 2020 18:24:01 GMT and should not be manually modified.
 
 ## 2.10.0
@@ -11,8 +12,6 @@ Fri, 18 Dec 2020 18:24:01 GMT
 - Cancel requested animation frame in Panel component.
 - Improve panel widget transitions.
 - Render single border between panel widgets.
-=======
-This log was last generated on Sun, 13 Dec 2020 19:00:03 GMT and should not be manually modified.
 
 ## 2.9.9
 Sun, 13 Dec 2020 19:00:03 GMT
@@ -43,7 +42,6 @@ _Version update only_
 Wed, 02 Dec 2020 20:55:40 GMT
 
 _Version update only_
->>>>>>> b50f9e93a0... Update 2.9.x changelogs (#470)
 
 ## 2.9.3
 Mon, 23 Nov 2020 20:57:56 GMT
@@ -201,7 +199,7 @@ Thu, 20 Aug 2020 20:57:10 GMT
 - lock down @types/react version at 16.9.43 to prevent build error from csstype dependency
 - Added Table component keyboard row selection. Miscellaneous a11y fixes.
 - Switch to ESLint
-- Add drop shadow to toolsettings overflow popup.  
+- Add drop shadow to toolsettings overflow popup.
 - Close widget overflow popup when tab is clicked.
 - Add corner resize handles to floating widgets.
 - Add preferredPanelWidgetSize to TabState.
@@ -308,7 +306,7 @@ Wed, 06 May 2020 13:17:49 GMT
 - TOC for UI 2.0 Docs, @alpha to @beta, Components Examples
 - Ability to drag docked tool settings to widget mode.
 - Support for floating widget targets.
-- Fix safe area insets for bottom zones w/o footer. 
+- Fix safe area insets for bottom zones w/o footer.
 - Keep active tab visible.
 - Reparent widget content when dragging widget around.
 - Floating widget stacking order.

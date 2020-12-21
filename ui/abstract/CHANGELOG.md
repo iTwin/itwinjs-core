@@ -1,6 +1,7 @@
-# Change Log - @bentley/ui-abstract
 
-<<<<<<< HEAD
+
+ Change Log - @bentley/ui-abstract
+
 This log was last generated on Fri, 18 Dec 2020 18:24:01 GMT and should not be manually modified.
 
 ## 2.10.0
@@ -9,8 +10,6 @@ Fri, 18 Dec 2020 18:24:01 GMT
 ### Updates
 
 - Refactor DialogItem and Property interfaces to make them easier to use.
-=======
-This log was last generated on Sun, 13 Dec 2020 19:00:03 GMT and should not be manually modified.
 
 ## 2.9.9
 Sun, 13 Dec 2020 19:00:03 GMT
@@ -41,7 +40,6 @@ _Version update only_
 Wed, 02 Dec 2020 20:55:40 GMT
 
 _Version update only_
->>>>>>> b50f9e93a0... Update 2.9.x changelogs (#470)
 
 ## 2.9.3
 Mon, 23 Nov 2020 20:57:56 GMT
@@ -276,7 +274,7 @@ Wed, 06 May 2020 13:17:49 GMT
 - In source documentation. Some learning docs & API changes.
 - TOC for UI 2.0 Docs, @alpha to @beta, Components Examples
 - Started ui-components Learning doc section
-- Update doc tags for automatic UI creation 
+- Update doc tags for automatic UI creation
 - Refactor to remove duplicate ComponentGenerator instantiation. Rename files and components to remove React reference.
 - Update auto-generated dialog items to work with the Tool Settings Bar.
 - Add ConditionalBoolean support for isHidden and isDisabled properties.

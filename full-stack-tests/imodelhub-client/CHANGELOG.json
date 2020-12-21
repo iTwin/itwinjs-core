@@ -2,7 +2,6 @@
   "name": "@bentley/imodelhub-client-tests",
   "entries": [
     {
-<<<<<<< HEAD
       "version": "2.10.0",
       "tag": "@bentley/imodelhub-client-tests_v2.10.0",
       "date": "Fri, 18 Dec 2020 18:24:01 GMT",
@@ -16,7 +15,8 @@
           }
         ]
       }
-=======
+    },
+    {
       "version": "2.9.9",
       "tag": "@bentley/imodelhub-client-tests_v2.9.9",
       "date": "Sun, 13 Dec 2020 19:00:03 GMT",
@@ -51,7 +51,6 @@
       "tag": "@bentley/imodelhub-client-tests_v2.9.4",
       "date": "Wed, 02 Dec 2020 20:55:40 GMT",
       "comments": {}
->>>>>>> b50f9e93a0... Update 2.9.x changelogs (#470)
     },
     {
       "version": "2.9.3",

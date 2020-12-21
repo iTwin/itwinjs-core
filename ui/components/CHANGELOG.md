@@ -1,6 +1,7 @@
-# Change Log - @bentley/ui-components
 
-<<<<<<< HEAD
+
+ Change Log - @bentley/ui-components
+
 This log was last generated on Fri, 18 Dec 2020 18:24:01 GMT and should not be manually modified.
 
 ## 2.10.0
@@ -18,8 +19,6 @@ Fri, 18 Dec 2020 18:24:01 GMT
 - Added support for decimal point in Table numeric filter
 - Enable pointer events in Toolbar items container."
 - Fix issue where entries in ButtonGroup would not properly disable/enable.
-=======
-This log was last generated on Sun, 13 Dec 2020 19:00:03 GMT and should not be manually modified.
 
 ## 2.9.9
 Sun, 13 Dec 2020 19:00:03 GMT
@@ -50,7 +49,6 @@ _Version update only_
 Wed, 02 Dec 2020 20:55:40 GMT
 
 _Version update only_
->>>>>>> b50f9e93a0... Update 2.9.x changelogs (#470)
 
 ## 2.9.3
 Mon, 23 Nov 2020 20:57:56 GMT
@@ -300,7 +298,7 @@ Thu, 28 May 2020 22:48:59 GMT
 ### Updates
 
 - Fix toolbar overflow panel display.
-- Update to only show group separators if toolbar is not transparent. 
+- Update to only show group separators if toolbar is not transparent.
 - Fix toolbar error when scaling up UI.
 - Property grid horizontal layout updated according to UX requirements.
 - Fixed Table filter renderers after react-select version upgrade
@@ -772,7 +770,7 @@ Wed, 19 Dec 2018 18:26:14 GMT
 - Added DragDrop tests, added component withDragDrop HOC tests
 - Synchronizing navigation aids with view definition changes
 - Simplified property pane tooltips and improved Property Pane performance.
-- Simplified struct and array tooltips in Table component. 
+- Simplified struct and array tooltips in Table component.
 - Fix BeInspireTree's event listening functions to handle array inputs
 - Fix BeInspireTree's muting events with allowed number of triggers
 - Cache BeInspireTree.visible() result for better performance
@@ -902,7 +900,7 @@ Thu, 08 Nov 2018 17:59:21 GMT
 
 ### Updates
 
-- Deprecated dev-cors-proxy-server and use of it. 
+- Deprecated dev-cors-proxy-server and use of it.
 - Fix: Do not start search if input field is empty
 - Use strongly typed enums for identifying keyboard keys
 - PropertyGrid property editing and unit tests

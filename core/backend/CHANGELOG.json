@@ -2,7 +2,6 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
-<<<<<<< HEAD
       "version": "2.10.0",
       "tag": "@bentley/imodeljs-backend_v2.10.0",
       "date": "Fri, 18 Dec 2020 18:24:01 GMT",
@@ -46,7 +45,11 @@
           },
           {
             "comment": "Version compare top parents test update"
-=======
+          }
+        ]
+      }
+    },
+    {
       "version": "2.9.9",
       "tag": "@bentley/imodeljs-backend_v2.9.9",
       "date": "Sun, 13 Dec 2020 19:00:03 GMT",
@@ -108,7 +111,6 @@
         "none": [
           {
             "comment": "Update to @bentley/imodeljs-native@2.9.5"
->>>>>>> b50f9e93a0... Update 2.9.x changelogs (#470)
           }
         ]
       }

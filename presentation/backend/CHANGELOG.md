@@ -1,6 +1,7 @@
-# Change Log - @bentley/presentation-backend
 
-<<<<<<< HEAD
+
+ Change Log - @bentley/presentation-backend
+
 This log was last generated on Fri, 18 Dec 2020 18:24:01 GMT and should not be manually modified.
 
 ## 2.10.0
@@ -10,8 +11,6 @@ Fri, 18 Dec 2020 18:24:01 GMT
 
 - Add `PresentationBackendNativeLoggerCategory.ECPresentation_Localization` for localization-related logs
 - Allow specifying asset path overrides separately for 'presentation-common' and 'presentation-backend' packages
-=======
-This log was last generated on Sun, 13 Dec 2020 19:00:03 GMT and should not be manually modified.
 
 ## 2.9.9
 Sun, 13 Dec 2020 19:00:03 GMT
@@ -44,7 +43,6 @@ Sat, 05 Dec 2020 01:55:56 GMT
 Wed, 02 Dec 2020 20:55:40 GMT
 
 _Version update only_
->>>>>>> b50f9e93a0... Update 2.9.x changelogs (#470)
 
 ## 2.9.3
 Mon, 23 Nov 2020 20:57:56 GMT
@@ -405,7 +403,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Fixed `PresentationRpcImpl.computeSelection` for "model", "category" and "element" scope to return specific class names instead of "BisCore:Model", "BisCore:Category" or "BisCore:Element"
 - Allow requesting content with descriptor overrides instead of descriptor. This allows to competely avoid a descriptor request when content customization requirements are the same for all kinds of content
 - Do not attempt to handle transient element ids when computing selection based on scope
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
 - Upgrade TypeDoc dependency to 0.14.2
 
 ## 0.190.0

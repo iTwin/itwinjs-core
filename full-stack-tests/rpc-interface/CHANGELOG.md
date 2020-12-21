@@ -1,12 +1,13 @@
-# Change Log - @bentley/rpcinterface-full-stack-tests
 
-<<<<<<< HEAD
+
+ Change Log - @bentley/rpcinterface-full-stack-tests
+
 This log was last generated on Fri, 18 Dec 2020 18:24:01 GMT and should not be manually modified.
 
 ## 2.10.0
 Fri, 18 Dec 2020 18:24:01 GMT
-=======
-This log was last generated on Sun, 13 Dec 2020 19:00:03 GMT and should not be manually modified.
+
+_Version update only_
 
 ## 2.9.9
 Sun, 13 Dec 2020 19:00:03 GMT
@@ -35,7 +36,6 @@ _Version update only_
 
 ## 2.9.4
 Wed, 02 Dec 2020 20:55:40 GMT
->>>>>>> b50f9e93a0... Update 2.9.x changelogs (#470)
 
 _Version update only_
 
@@ -235,9 +235,9 @@ Wed, 06 May 2020 13:17:49 GMT
 - Fix issue with detecting whether or not to run a test suite.
 - react to renaming of imodeljs-clients
 - update tests to utilize FrontendAuthorizationClient
-- Renamed the folder and name of tests that run both the frontend and backend to "fullstack" instead of "integration". 
-- Renamed the folder and name of tests that run both the frontend and backend to "fullstack" instead of "integration". 
-- Options to download/open briefcase. Differentiated RemoteBriefcaseConnection and LocalBriefcaseConnection. 
+- Renamed the folder and name of tests that run both the frontend and backend to "fullstack" instead of "integration".
+- Renamed the folder and name of tests that run both the frontend and backend to "fullstack" instead of "integration".
+- Options to download/open briefcase. Differentiated RemoteBriefcaseConnection and LocalBriefcaseConnection.
 - React to changes in presentation APIs
 - react to new clients packages from imodeljs-clients
 - Upgrade to Rush 5.23.2

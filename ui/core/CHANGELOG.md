@@ -1,6 +1,7 @@
-# Change Log - @bentley/ui-core
 
-<<<<<<< HEAD
+
+ Change Log - @bentley/ui-core
+
 This log was last generated on Fri, 18 Dec 2020 18:24:01 GMT and should not be manually modified.
 
 ## 2.10.0
@@ -16,8 +17,6 @@ Fri, 18 Dec 2020 18:24:01 GMT
 - Popup - added onContextMenu & closeOnContextMenu props
 - Added 'closeOnWheel' and 'onWheel' Popup props
 - Unified UI typography systems
-=======
-This log was last generated on Sun, 13 Dec 2020 19:00:03 GMT and should not be manually modified.
 
 ## 2.9.9
 Sun, 13 Dec 2020 19:00:03 GMT
@@ -50,7 +49,6 @@ Wed, 02 Dec 2020 20:55:40 GMT
 ### Updates
 
 - Clear FocusTrap timeout on unmount.
->>>>>>> b50f9e93a0... Update 2.9.x changelogs (#470)
 
 ## 2.9.3
 Mon, 23 Nov 2020 20:57:56 GMT
@@ -247,7 +245,7 @@ Tue, 28 Jul 2020 16:26:24 GMT
 - Add support for a basic single selection aria compliant listbox.
 - Checkboxes in lists & trees are out of place
 - Disabled component styling. Fixed Dialog focus problems.
-- Map Layer UX 
+- Map Layer UX
 - Allowing Input component user to override the type
 - Fix ThemeSelect formatOptionLabel prop to return React.ReactNode.
 - Added Arrow key navigation in Tabs components. Added ItemKeyboardNavigator.
@@ -570,7 +568,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Put sourcemap in npm package.
 - Added SignIn presentational component to ui-components. Removed --ignoreMissingTags extract-api option.
 - Require React & React-dom 16.8
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
 - Added ViewportDialog in ui-test-app, ui-core/ContributeGuidelines.md. TSLint rules in ui-core for no-default-export & completed-docs. @beta release tags.
 - Update icons-generic-webfont version to latest available.
 - Added TableProp to hide header and supporting style changes

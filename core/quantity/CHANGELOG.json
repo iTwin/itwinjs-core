@@ -2,15 +2,15 @@
   "name": "@bentley/imodeljs-quantity",
   "entries": [
     {
-<<<<<<< HEAD
       "version": "2.10.0",
       "tag": "@bentley/imodeljs-quantity_v2.10.0",
       "date": "Fri, 18 Dec 2020 18:24:01 GMT",
-=======
+      "comments": {}
+    },
+    {
       "version": "2.9.9",
       "tag": "@bentley/imodeljs-quantity_v2.9.9",
       "date": "Sun, 13 Dec 2020 19:00:03 GMT",
->>>>>>> b50f9e93a0... Update 2.9.x changelogs (#470)
       "comments": {
         "none": [
           {
@@ -20,8 +20,6 @@
       }
     },
     {
-<<<<<<< HEAD
-=======
       "version": "2.9.8",
       "tag": "@bentley/imodeljs-quantity_v2.9.8",
       "date": "Fri, 11 Dec 2020 02:57:36 GMT",
@@ -52,7 +50,6 @@
       "comments": {}
     },
     {
->>>>>>> b50f9e93a0... Update 2.9.x changelogs (#470)
       "version": "2.9.3",
       "tag": "@bentley/imodeljs-quantity_v2.9.3",
       "date": "Mon, 23 Nov 2020 20:57:56 GMT",

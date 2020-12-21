@@ -1,6 +1,7 @@
-# Change Log - @bentley/geonames-extension
 
-<<<<<<< HEAD
+
+ Change Log - @bentley/geonames-extension
+
 This log was last generated on Fri, 18 Dec 2020 18:24:01 GMT and should not be manually modified.
 
 ## 2.10.0
@@ -9,8 +10,6 @@ Fri, 18 Dec 2020 18:24:01 GMT
 ### Updates
 
 - React to animateFlyoverToGlobalLocation API async change.
-=======
-This log was last generated on Sun, 13 Dec 2020 19:00:03 GMT and should not be manually modified.
 
 ## 2.9.9
 Sun, 13 Dec 2020 19:00:03 GMT
@@ -41,7 +40,6 @@ _Version update only_
 Wed, 02 Dec 2020 20:55:40 GMT
 
 _Version update only_
->>>>>>> b50f9e93a0... Update 2.9.x changelogs (#470)
 
 ## 2.9.3
 Mon, 23 Nov 2020 20:57:56 GMT
