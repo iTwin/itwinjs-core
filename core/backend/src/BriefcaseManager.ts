@@ -11,7 +11,7 @@
 import * as os from "os";
 import * as path from "path";
 import {
-  assert, BeDuration, ChangeSetApplyOption, ChangeSetStatus, ClientRequestContext, DbResult, GuidString, Id64, IModelHubStatus,
+  assert, BeDuration, BentleyError, ChangeSetApplyOption, ChangeSetStatus, ClientRequestContext, DbResult, GuidString, Id64, IModelHubStatus,
   IModelStatus, Logger, OpenMode, PerfLogger,
 } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient } from "@bentley/context-registry-client";
@@ -56,7 +56,7 @@ export enum BriefcaseIdValue {
   LastValid = BriefcaseIdValue.Max - 11,
 
   /** A Standalone copy of an iModel. Standalone files may accept changesets, but can never create new changesets.
-   * Checkpoints are Standalone files.
+   * Checkpoints are Standalone files that may not accept any new changesets after they are created.
    */
   Standalone = 0,
 
@@ -203,7 +203,7 @@ export class BriefcaseManager {
           try {
             const fileName = path.join(bcPath, briefcaseName);
             const db = IModelDb.openDgnDb({ path: fileName }, OpenMode.Readonly);
-            briefcaseList.push({ fileName, contextId: db.queryProjectGuid(), iModelId: db.getDbGuid(), briefcaseId: db.getBriefcaseId(), changesetId: db.getParentChangeSetId() });
+            briefcaseList.push({ fileName, contextId: db.queryProjectGuid(), iModelId: db.getDbGuid(), briefcaseId: db.getBriefcaseId(), changeSetId: db.getParentChangeSetId() });
             db.closeIModel();
           } catch (_err) {
           }
@@ -270,47 +270,54 @@ export class BriefcaseManager {
    *
    * Each of these steps requires an valid `AuthorizedClientRequestContext` to provide the user's authorization for the requests.
    *
-   * @param request The properties that specify the briefcase file to be created.
-   * @returns a Promise that is resolved after the briefcase is fully downloaded and the briefcase file is ready for use via [BriefcaseDb.open]($backend).
+   * @param request The properties that specify the briefcase file to be downloaded.
+   * @returns The properties of the local briefcase in a Promise that is resolved after the briefcase is fully downloaded and the briefcase file is ready for use via [BriefcaseDb.open]($backend).
    * @note The location of the local file to hold the briefcase is arbitrary and may be any valid *local* path on your machine. If you don't supply
    * a filename, the local briefcase cache is used by creating a file with the briefcaseId as its name in the `briefcases` folder below the folder named
-   * for the IModelId. After the promise is resolved, the fileName and briefcaseId values are returned in `request`.
+   * for the IModelId.
    * @note *It is invalid to edit briefcases on a shared network drive* and that is a sure way to corrupt your briefcase (see https://www.sqlite.org/howtocorrupt.html)
    * @note The special briefcaseId [[BriefcaseIdValue.Standalone]] is used for backwards compatibility for the SyncMode.PullOnly. It creates local
    * file that can accept changesets but may not be used for editing. It is really incorrect to refer to this file as a "briefcase."
    * @see CheckpointManager.downloadCheckpoint
-   * @see BriefcaseManager.getFileName
    */
-  public static async downloadBriefcase(requestContext: AuthorizedClientRequestContext, request: RequestNewBriefcaseArg): Promise<void> {
-    if (undefined === request.briefcaseId)
-      request.briefcaseId = await this.acquireNewBriefcaseId(requestContext, request.iModelId);
+  public static async downloadBriefcase(requestContext: AuthorizedClientRequestContext, request: RequestNewBriefcaseArg): Promise<LocalBriefcaseProps> {
+    const briefcaseId = request.briefcaseId ?? await this.acquireNewBriefcaseId(requestContext, request.iModelId);
+    const fileName = request.fileName ?? this.getFileName({ briefcaseId, iModelId: request.iModelId });
+    const asOf = request.asOf ?? IModelVersion.latest().toJSON();
 
-    if (undefined === request.fileName)
-      request.fileName = this.getFileName({ briefcaseId: request.briefcaseId, iModelId: request.iModelId });
-
-    if (undefined === request.asOf)
-      request.asOf = IModelVersion.latest().toJSON();
-
-    await CheckpointManager.downloadCheckpoint({
-      localFile: request.fileName,
+    const args = {
+      localFile: fileName,
       checkpoint: {
         requestContext,
         contextId: request.contextId,
         iModelId: request.iModelId,
-        changeSetId: (await this.evaluateVersion(requestContext, IModelVersion.fromJSON(request.asOf), request.iModelId)).changeSetId,
+        changeSetId: (await this.evaluateVersion(requestContext, IModelVersion.fromJSON(asOf), request.iModelId)).changeSetId,
       },
       onProgress: request.onProgress,
-    });
+    };
 
-    // now open the downloaded checkpoint and reset its BriefcaseId to the one we acquired above
-    if (request.briefcaseId !== BriefcaseIdValue.Standalone) {
-      const nativeDb = new IModelHost.platform.DgnDb();
-      const status = nativeDb.openIModel(request.fileName, OpenMode.ReadWrite);
-      if (DbResult.BE_SQLITE_OK !== status)
-        throw new IModelError(status, `Could not open briefcase to set briefcaseId: ${request.fileName}`, Logger.logError);
-      nativeDb.resetBriefcaseId(request.briefcaseId);
+    await CheckpointManager.downloadCheckpoint(args);
+    const response: LocalBriefcaseProps = {
+      fileName,
+      briefcaseId,
+      iModelId: request.iModelId,
+      contextId: request.contextId,
+      changeSetId: args.checkpoint.changeSetId,
+    };
+
+    // now open the downloaded checkpoint and reset its BriefcaseId
+    const nativeDb = new IModelHost.platform.DgnDb();
+    const status = nativeDb.openIModel(fileName, OpenMode.ReadWrite);
+    if (DbResult.BE_SQLITE_OK !== status)
+      throw new IModelError(status, `Could not open downloaded briefcase for write access: ${fileName}, err=${new BentleyError(status).name}`, Logger.logError);
+    try {
+      nativeDb.resetBriefcaseId(briefcaseId);
+      if (nativeDb.getParentChangeSetId() !== args.checkpoint.changeSetId)
+        throw new IModelError(IModelStatus.WrongIModel, `Downloaded briefcase has wrong changesetId: ${fileName}`, Logger.logError);
+    } finally {
       nativeDb.closeIModel();
     }
+    return response;
   }
 
   /** Deletes change sets of an iModel from local disk */

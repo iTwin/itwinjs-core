@@ -78,8 +78,8 @@ export class RpcBriefcaseUtility {
       briefcaseId: myBriefcaseIds.length > 0 ? myBriefcaseIds[0] : undefined, // if briefcaseId is undefined, we'll acquire a new one.
     };
 
-    await BriefcaseManager.downloadBriefcase(requestContext, request);
-    return BriefcaseDb.open(requestContext, { fileName: request.fileName! });
+    const props = await BriefcaseManager.downloadBriefcase(requestContext, request);
+    return BriefcaseDb.open(requestContext, { fileName: props.fileName });
   };
 
   private static _briefcasePromise: Promise<BriefcaseDb> | undefined;
