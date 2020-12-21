@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-common",
+      "comment": "Add option to SectionDrawingProps specifying the spatial view should be drawn in the context of the drawing view.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "22944042+pmconne@users.noreply.github.com"
+}

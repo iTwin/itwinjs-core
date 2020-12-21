@@ -7,7 +7,11 @@
  */
 
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { ChangeEmphasisSettingsTool, ChangeHiliteSettingsTool, DefaultTileSizeModifierTool, FadeOutTool, FreezeSceneTool, SetAspectRatioSkewTool, ShowTileVolumesTool, Toggle3dManipulationsTool, ToggleViewAttachmentBoundariesTool, ToggleViewAttachmentClipShapesTool, ToggleViewAttachmentsTool, ViewportAddRealityModel, ViewportTileSizeModifierTool } from "./frontend-devtools";
+import {
+  ChangeEmphasisSettingsTool, ChangeHiliteSettingsTool, DefaultTileSizeModifierTool, FadeOutTool, FreezeSceneTool, SetAspectRatioSkewTool, ShowTileVolumesTool,
+  Toggle3dManipulationsTool, ToggleDrawingGraphicsTool, ToggleSectionDrawingSpatialViewTool, ToggleViewAttachmentBoundariesTool, ToggleViewAttachmentClipShapesTool,
+  ToggleViewAttachmentsTool, ViewportAddRealityModel, ViewportTileSizeModifierTool,
+} from "./frontend-devtools";
 import { AnimationIntervalTool } from "./tools/AnimationIntervalTool";
 import { ChangeUnitsTool } from "./tools/ChangeUnitsTool";
 import { ClipColorTool, TestClipStyleTool, ToggleSectionCutTool } from "./tools/ClipTools";
@@ -106,12 +110,14 @@ export class FrontendDevTools {
       SourceAspectIdFromElementIdTool,
       TestClipStyleTool,
       Toggle3dManipulationsTool,
+      ToggleDrawingGraphicsTool,
       ToggleDPIForLODTool,
       ToggleDrapeFrustumTool,
       ToggleFrustumSnapshotTool,
       TogglePrimitiveVisibilityTool,
       ToggleProjectExtentsTool,
       ToggleReadPixelsTool,
+      ToggleSectionDrawingSpatialViewTool,
       ToggleSelectedViewFrustumTool,
       ToggleShadowFrustumTool,
       ToggleSkyboxTool,
