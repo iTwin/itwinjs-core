@@ -1,8 +1,6 @@
+# Change Log - @bentley/presentation-frontend
 
-
- Change Log - @bentley/presentation-frontend
-
-This log was last generated on Fri, 18 Dec 2020 18:24:01 GMT and should not be manually modified.
+This log was last generated on Mon, 21 Dec 2020 20:05:03 GMT and should not be manually modified.
 
 ## 2.10.0
 Fri, 18 Dec 2020 18:24:01 GMT
@@ -390,7 +388,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Do not include transient element IDs when syncing with logical selection
 - Always compute selection when syncing tool selection with logical selection - that's necessary to determine concrete element class names. Without that, we're adding keys with "BisCore:Element" class to selection and then our keys compare fails (presentation components like the table always have concrete class names). This can cause rows / nodes not to be highlighted in components.
 - Remove IModelApp subclasses
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
 - Upgrade TypeDoc dependency to 0.14.2
 
 ## 0.190.0

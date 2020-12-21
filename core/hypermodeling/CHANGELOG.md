@@ -1,8 +1,6 @@
+# Change Log - @bentley/hypermodeling-frontend
 
-
- Change Log - @bentley/hypermodeling-frontend
-
-This log was last generated on Fri, 18 Dec 2020 18:24:01 GMT and should not be manually modified.
+This log was last generated on Mon, 21 Dec 2020 20:05:03 GMT and should not be manually modified.
 
 ## 2.10.0
 Fri, 18 Dec 2020 18:24:01 GMT

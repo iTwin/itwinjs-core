@@ -1,6 +1,6 @@
 # Change Log - @bentley/frontend-authorization-client
 
-This log was last generated on Fri, 18 Dec 2020 18:24:01 GMT and should not be manually modified.
+This log was last generated on Mon, 21 Dec 2020 20:05:03 GMT and should not be manually modified.
 
 ## 2.10.0
 Fri, 18 Dec 2020 18:24:01 GMT
@@ -227,11 +227,11 @@ Wed, 06 May 2020 13:17:49 GMT
 
 ### Updates
 
-- Fixed setup of UserInfo from browser clients, and more cleanups to AccessToken API.
-- Removed/moved some properties from AuthorizationClient interface.
+- Fixed setup of UserInfo from browser clients, and more cleanups to AccessToken API. 
+- Removed/moved some properties from AuthorizationClient interface. 
 - react to changes in imodeljs-clients
 - FrontendAuthorizationClient does not extend IDisposable.
-- Fixed FrontendAuthorizationClient type guard.
+- Fixed FrontendAuthorizationClient type guard. 
 - Renamed OIDC constructs for consistency; Removed SAML support.
 - create new package from imodeljs-clients
 - Upgrade to Rush 5.23.2
