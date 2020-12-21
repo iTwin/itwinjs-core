@@ -144,8 +144,8 @@ export class TestPhysicalObject extends PhysicalElement implements TestPhysicalO
 export class IModelTestUtils {
   /** Helper to open a briefcase db */
   public static async downloadAndOpenBriefcase(args: RequestNewBriefcaseArg & { requestContext: AuthorizedClientRequestContext }): Promise<BriefcaseDb> {
-    await BriefcaseManager.downloadBriefcase(args.requestContext, args);
-    return BriefcaseDb.open(args.requestContext, { fileName: args.fileName! });
+    const props = await BriefcaseManager.downloadBriefcase(args.requestContext, args);
+    return BriefcaseDb.open(args.requestContext, { fileName: props.fileName });
   }
 
   public static async openBriefcaseUsingRpc(args: RequestNewBriefcaseArg & { requestContext: AuthorizedClientRequestContext, deleteFirst?: boolean }): Promise<BriefcaseDb> {

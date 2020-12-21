@@ -700,20 +700,20 @@ describe("BriefcaseManager (#integration)", () => {
       return 0;
     };
 
+
     const args = {
       contextId: testProjectId,
       iModelId: testIModelId,
       briefcaseId: 0,
       onProgress: downloadProgress,
     };
-
     const fileName = BriefcaseManager.getFileName(args);
     await BriefcaseManager.deleteBriefcaseFiles(fileName, requestContext);
 
-    await BriefcaseManager.downloadBriefcase(requestContext, args);
+    const props = await BriefcaseManager.downloadBriefcase(requestContext, args);
     requestContext.enter();
 
-    const iModel = await BriefcaseDb.open(requestContext, { fileName });
+    const iModel = await BriefcaseDb.open(requestContext, { fileName: props.fileName });
     requestContext.enter();
 
     await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
