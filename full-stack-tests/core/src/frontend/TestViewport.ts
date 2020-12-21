@@ -176,7 +176,7 @@ function areAllTilesLoaded(vp: Viewport): boolean {
   // In addition to ViewState.areAllTileTreesLoaded, ensure all child tiles are loaded (for map tiles).
   let allLoaded = true;
   vp.view.forEachTileTreeRef((ref) => {
-    allLoaded = areAllChildTilesLoaded(ref.treeOwner.tileTree?.rootTile);
+    allLoaded = allLoaded && ref.isLoadingComplete && areAllChildTilesLoaded(ref.treeOwner.tileTree?.rootTile);
   });
 
   return allLoaded;
