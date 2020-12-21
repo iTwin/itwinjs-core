@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import { GuidString, Id64, Id64String } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseDb, BriefcaseManager, Element, IModelDb, IModelJsFs, InformationPartitionElement, PhysicalModel, PhysicalPartition, RequestNewBriefcaseArg,
+  BriefcaseDb, BriefcaseManager, Element, IModelDb, IModelJsFs, InformationPartitionElement, PhysicalModel, PhysicalPartition,
   SubjectOwnsPartitionElements,
 } from "@bentley/imodeljs-backend";
 import { Code, CodeProps, ElementProps, IModel, IModelVersion, PhysicalElementProps, RelatedElement } from "@bentley/imodeljs-common";
@@ -15,14 +15,9 @@ export class IModelTestUtils {
   // Helper to open a briefcase db
   public static async downloadAndOpenBriefcaseDb(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, briefcaseId?: number, version: IModelVersion = IModelVersion.latest()): Promise<BriefcaseDb> {
     requestContext.enter();
-    const args: RequestNewBriefcaseArg = {
-      contextId, iModelId,
-      briefcaseId,
-      asOf: version.toJSON(),
-    };
-    await BriefcaseManager.downloadBriefcase(requestContext, args);
+    const props = await BriefcaseManager.downloadBriefcase(requestContext, { contextId, iModelId, briefcaseId, asOf: version.toJSON() });
     requestContext.enter();
-    return BriefcaseDb.open(requestContext, { fileName: args.fileName! });
+    return BriefcaseDb.open(requestContext, { fileName: props.fileName });
   }
 
   public static async closeAndDeleteBriefcaseDb(requestContext: AuthorizedClientRequestContext, briefcaseDb: BriefcaseDb) {
