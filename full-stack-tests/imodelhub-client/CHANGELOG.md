@@ -1,4 +1,6 @@
-# Change Log - @bentley/imodelhub-client-tests
+
+
+ Change Log - @bentley/imodelhub-client-tests
 
 This log was last generated on Fri, 18 Dec 2020 18:24:01 GMT and should not be manually modified.
 
@@ -9,6 +11,36 @@ Fri, 18 Dec 2020 18:24:01 GMT
 
 - Added CheckpointV2 client tests
 - Increased timeout for some iModelHub tests
+
+## 2.9.9
+Sun, 13 Dec 2020 19:00:03 GMT
+
+_Version update only_
+
+## 2.9.8
+Fri, 11 Dec 2020 02:57:36 GMT
+
+_Version update only_
+
+## 2.9.7
+Wed, 09 Dec 2020 20:58:23 GMT
+
+_Version update only_
+
+## 2.9.6
+Mon, 07 Dec 2020 18:40:48 GMT
+
+_Version update only_
+
+## 2.9.5
+Sat, 05 Dec 2020 01:55:56 GMT
+
+_Version update only_
+
+## 2.9.4
+Wed, 02 Dec 2020 20:55:40 GMT
+
+_Version update only_
 
 ## 2.9.3
 Mon, 23 Nov 2020 20:57:56 GMT
@@ -196,7 +228,7 @@ Fri, 10 Jul 2020 17:23:14 GMT
 
 ### Updates
 
-- Switched projects for some iModelHub tests. 
+- Switched projects for some iModelHub tests.
 
 ## 2.2.1
 Tue, 07 Jul 2020 14:44:52 GMT

@@ -1,4 +1,6 @@
-# Change Log - @bentley/electron-manager
+
+
+ Change Log - @bentley/electron-manager
 
 This log was last generated on Fri, 18 Dec 2020 18:24:01 GMT and should not be manually modified.
 
@@ -9,6 +11,36 @@ Fri, 18 Dec 2020 18:24:01 GMT
 
 - Update minimum Node version to 10.17.0
 - Upgraded electron version.
+
+## 2.9.9
+Sun, 13 Dec 2020 19:00:03 GMT
+
+_Version update only_
+
+## 2.9.8
+Fri, 11 Dec 2020 02:57:36 GMT
+
+_Version update only_
+
+## 2.9.7
+Wed, 09 Dec 2020 20:58:23 GMT
+
+_Version update only_
+
+## 2.9.6
+Mon, 07 Dec 2020 18:40:48 GMT
+
+_Version update only_
+
+## 2.9.5
+Sat, 05 Dec 2020 01:55:56 GMT
+
+_Version update only_
+
+## 2.9.4
+Wed, 02 Dec 2020 20:55:40 GMT
+
+_Version update only_
 
 ## 2.9.3
 Mon, 23 Nov 2020 20:57:56 GMT
@@ -79,7 +111,7 @@ Fri, 02 Oct 2020 18:03:32 GMT
 
 ### Updates
 
-- Fixed desktop authorization after recent changes. 
+- Fixed desktop authorization after recent changes.
 
 ## 2.6.5
 Sat, 26 Sep 2020 16:06:34 GMT
@@ -203,9 +235,9 @@ Wed, 06 May 2020 13:17:49 GMT
 
 - Update to Electron 8
 - react to changes in imodeljs-clients
-- FrontendAuthorizationClient does not extend IDisposable. 
+- FrontendAuthorizationClient does not extend IDisposable.
 - Update minimum Node version to 10.16.0
-- Renamed OIDC constructs for consistency; Removed SAML support. 
+- Renamed OIDC constructs for consistency; Removed SAML support.
 - order imports.
 - Upgrade to Rush 5.23.2
 - Update electron version to ^8.2.1
@@ -231,7 +263,7 @@ Wed, 12 Feb 2020 17:45:50 GMT
 
 ### Updates
 
-- Setup oidc client for backend use in electron applications. 
+- Setup oidc client for backend use in electron applications.
 
 ## 1.11.0
 Wed, 22 Jan 2020 19:24:12 GMT
@@ -313,7 +345,7 @@ Mon, 13 May 2019 15:52:05 GMT
 
 - Adds parameter for api-extractor to validate missing release tags
 - Fix broken links
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
 - Upgrade TypeDoc dependency to 0.14.2
 
 ## 0.190.0

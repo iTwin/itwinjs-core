@@ -7,6 +7,36 @@ Fri, 18 Dec 2020 18:24:01 GMT
 
 _Version update only_
 
+## 2.9.9
+Sun, 13 Dec 2020 19:00:03 GMT
+
+_Version update only_
+
+## 2.9.8
+Fri, 11 Dec 2020 02:57:36 GMT
+
+_Version update only_
+
+## 2.9.7
+Wed, 09 Dec 2020 20:58:23 GMT
+
+_Version update only_
+
+## 2.9.6
+Mon, 07 Dec 2020 18:40:48 GMT
+
+_Version update only_
+
+## 2.9.5
+Sat, 05 Dec 2020 01:55:56 GMT
+
+_Version update only_
+
+## 2.9.4
+Wed, 02 Dec 2020 20:55:40 GMT
+
+_Version update only_
+
 ## 2.9.3
 Mon, 23 Nov 2020 20:57:56 GMT
 
@@ -197,11 +227,11 @@ Wed, 06 May 2020 13:17:49 GMT
 
 ### Updates
 
-- Fixed setup of UserInfo from browser clients, and more cleanups to AccessToken API. 
-- Removed/moved some properties from AuthorizationClient interface. 
+- Fixed setup of UserInfo from browser clients, and more cleanups to AccessToken API.
+- Removed/moved some properties from AuthorizationClient interface.
 - react to changes in imodeljs-clients
 - FrontendAuthorizationClient does not extend IDisposable.
-- Fixed FrontendAuthorizationClient type guard. 
+- Fixed FrontendAuthorizationClient type guard.
 - Renamed OIDC constructs for consistency; Removed SAML support.
 - create new package from imodeljs-clients
 - Upgrade to Rush 5.23.2
