@@ -67,7 +67,7 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
     return BriefcaseManager.getFileName(props);
   }
 
-  public async downloadBriefcase(request: RequestNewBriefcaseProps, reportProgress: boolean): Promise<void> {
+  public async downloadBriefcase(request: RequestNewBriefcaseProps, reportProgress: boolean): Promise<LocalBriefcaseProps> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
 
     const args = {
