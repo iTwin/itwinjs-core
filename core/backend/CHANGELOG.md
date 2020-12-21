@@ -1,6 +1,46 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Mon, 23 Nov 2020 22:19:30 GMT and should not be manually modified.
+This log was last generated on Sun, 13 Dec 2020 19:00:03 GMT and should not be manually modified.
+
+## 2.9.9
+Sun, 13 Dec 2020 19:00:03 GMT
+
+### Updates
+
+- Update to @bentley/imodeljs-native@2.9.10
+
+## 2.9.8
+Fri, 11 Dec 2020 02:57:36 GMT
+
+### Updates
+
+- Update to @bentley/imodeljs-native@2.9.9
+
+## 2.9.7
+Wed, 09 Dec 2020 20:58:23 GMT
+
+_Version update only_
+
+## 2.9.6
+Mon, 07 Dec 2020 18:40:48 GMT
+
+### Updates
+
+- Update to @bentley/imodeljs-native@2.9.8 to consume a performance enhancement to Presentation Rules
+
+## 2.9.5
+Sat, 05 Dec 2020 01:55:56 GMT
+
+### Updates
+
+- Update to @bentley/imodeljs-native@2.9.7
+
+## 2.9.4
+Wed, 02 Dec 2020 20:55:40 GMT
+
+### Updates
+
+- Update to @bentley/imodeljs-native@2.9.5
 
 ## 2.9.3
 Mon, 23 Nov 2020 20:57:56 GMT
