@@ -2595,8 +2595,9 @@ export class SnapshotDb extends IModelDb {
     return snapshotDb;
   }
 
-  /** open this SnapshotDb readwrite, strictly to apply incoming changesets. Used for creating new checkpoints.
-   * @internal */
+  /** open this SnapshotDb read/write, strictly to apply incoming changesets. Used for creating new checkpoints.
+   * @internal
+   */
   public static openForApplyChangesets(path: string, props?: SnapshotOpenOptions): SnapshotDb {
     const file = { path, key: props?.key };
     const nativeDb = this.openDgnDb(file, OpenMode.ReadWrite, undefined, props ? JSON.stringify(props) : undefined);
