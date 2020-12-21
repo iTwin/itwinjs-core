@@ -32,6 +32,7 @@ import { ElementIdFromSourceAspectIdTool, SourceAspectIdFromElementIdTool } from
 import { ToggleTileRequestDecorationTool } from "./tools/TileRequestDecoration";
 import { ToggleTileTreeBoundsDecorationTool } from "./tools/TileTreeBoundsDecoration";
 import { ToggleToolTipsTool } from "./tools/ToolTipProvider";
+import { ChangeCameraTool } from "./tools/ViewportTools";
 
 /** Entry-point for the package. Before using the package you *must* call [[FrontendDevTools.initialize]].
  * @beta
@@ -65,6 +66,7 @@ export class FrontendDevTools {
       ApplyRenderingStyleTool,
       ApplyViewByIdTool,
       ApplyViewTool,
+      ChangeCameraTool,
       ChangeEmphasisSettingsTool,
       ChangeHiliteSettingsTool,
       ChangePlanProjectionSettingsTool,

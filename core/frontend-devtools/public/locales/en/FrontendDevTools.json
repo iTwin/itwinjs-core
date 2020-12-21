@@ -281,6 +281,9 @@
     },
     "SetAASamples": {
       "keyin": "fdt aasamples"
+    },
+    "ChangeCamera": {
+      "keyin": "fdt camera"
     }
   }
 }
