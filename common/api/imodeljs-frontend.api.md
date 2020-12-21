@@ -222,6 +222,7 @@ import { RequestBasicCredentials } from '@bentley/itwin-client';
 import { RequestOptions } from '@bentley/itwin-client';
 import { RgbColor } from '@bentley/imodeljs-common';
 import { RpcRoutingToken } from '@bentley/imodeljs-common';
+import { SectionDrawingViewProps } from '@bentley/imodeljs-common';
 import { SettingsAdmin } from '@bentley/product-settings-client';
 import { SheetProps } from '@bentley/imodeljs-common';
 import { SilhouetteEdgeArgs } from '@bentley/imodeljs-common';
@@ -2221,15 +2222,41 @@ export class DrawingModelState extends GeometricModel2dState {
 
 // @public
 export class DrawingViewState extends ViewState2d {
-    constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, extents: AxisAlignedBox3d);
+    constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, extents: AxisAlignedBox3d, sectionDrawing?: SectionDrawingViewProps);
+    // @internal
+    static alwaysDisplaySpatialView: boolean;
+    // @internal (undocumented)
+    get areAllTileTreesLoaded(): boolean;
+    // @internal (undocumented)
+    changeViewedModel(modelId: Id64String): Promise<void>;
     // @internal (undocumented)
     static get className(): string;
     // (undocumented)
     static createFromProps(props: ViewStateProps, iModel: IModelConnection): DrawingViewState;
+    // @internal (undocumented)
+    createScene(context: SceneContext): void;
     // (undocumented)
     get defaultExtentLimits(): ExtentLimits;
+    // @internal (undocumented)
+    discloseTileTrees(trees: TileTreeSet): void;
+    // @internal (undocumented)
+    getExtents(): Vector3d;
+    // @internal (undocumented)
+    getOrigin(): import("@bentley/geometry-core").Point3d;
     // (undocumented)
     getViewedExtents(): AxisAlignedBox3d;
+    // @internal
+    static hideDrawingGraphics: boolean;
+    // @internal (undocumented)
+    isDrawingView(): this is DrawingViewState;
+    // @internal (undocumented)
+    load(): Promise<void>;
+    // @internal
+    get sectionDrawingInfo(): SectionDrawingInfo | undefined;
+    // @internal
+    get sectionDrawingProps(): Readonly<SectionDrawingViewProps> | undefined;
+    // (undocumented)
+    toProps(): ViewStateProps;
     }
 
 // @internal
@@ -7740,6 +7767,14 @@ export class ScrollViewTool extends ViewManip {
     static toolId: string;
 }
 
+// @internal
+export interface SectionDrawingInfo {
+    // (undocumented)
+    readonly drawingToSpatialTransform: Transform;
+    // (undocumented)
+    readonly spatialView: Id64String;
+}
+
 // @public
 export class SectionDrawingModelState extends DrawingModelState {
     // @internal (undocumented)
@@ -8096,9 +8131,13 @@ export class SheetViewState extends ViewState2d {
     getOrigin(): Point3d;
     // @internal (undocumented)
     getViewedExtents(): AxisAlignedBox3d;
+    // @internal (undocumented)
+    isDrawingView(): this is DrawingViewState;
     // @internal
     load(): Promise<void>;
     readonly sheetSize: Point2d;
+    // (undocumented)
+    toProps(): ViewStateProps;
     }
 
 // @internal
@@ -8356,6 +8395,8 @@ export class SpatialViewState extends ViewState3d {
     protected getDisplayedExtents(): AxisAlignedBox3d;
     // (undocumented)
     getViewedExtents(): AxisAlignedBox3d;
+    // @internal (undocumented)
+    isSpatialView(): this is SpatialViewState;
     // (undocumented)
     load(): Promise<void>;
     // @internal (undocumented)
@@ -8366,6 +8407,8 @@ export class SpatialViewState extends ViewState3d {
     removeViewedModel(id: Id64String): void;
     // (undocumented)
     toJSON(): SpatialViewDefinitionProps;
+    // (undocumented)
+    toProps(): ViewStateProps;
     // (undocumented)
     viewsModel(modelId: Id64String): boolean;
 }
@@ -11529,12 +11572,12 @@ export abstract class ViewState extends ElementState {
     // @internal
     hasSameCoordinates(other: ViewState): boolean;
     is2d(): this is ViewState2d;
-    is3d(): this is ViewState3d;
+    abstract is3d(): this is ViewState3d;
     isCameraEnabled(): this is ViewState3d;
-    isDrawingView(): this is DrawingViewState;
+    abstract isDrawingView(): this is DrawingViewState;
     // (undocumented)
     isPrivate?: boolean;
-    isSpatialView(): this is SpatialViewState;
+    abstract isSpatialView(): this is SpatialViewState;
     // @internal (undocumented)
     isSubCategoryVisible(id: Id64String): boolean;
     load(): Promise<void>;
@@ -11571,6 +11614,7 @@ export abstract class ViewState extends ElementState {
     setViewClip(clip?: ClipVector): void;
     // (undocumented)
     toJSON(): ViewDefinitionProps;
+    toProps(): ViewStateProps;
     // (undocumented)
     protected _updateMaxGlobalScopeFactor(): void;
     get viewFlags(): ViewFlags;
@@ -11588,7 +11632,11 @@ export abstract class ViewState2d extends ViewState {
     // @internal (undocumented)
     applyPose(val: ViewPose2d): this;
     // (undocumented)
-    readonly baseModelId: Id64String;
+    get baseModelId(): Id64String;
+    // (undocumented)
+    protected _baseModelId: Id64String;
+    // @alpha
+    changeViewedModel(newViewedModelId: Id64String): Promise<void>;
     // @internal (undocumented)
     static get className(): string;
     // (undocumented)
@@ -11610,6 +11658,10 @@ export abstract class ViewState2d extends ViewState {
     // (undocumented)
     getRotation(): Matrix3d;
     getViewedModel(): GeometricModel2dState | undefined;
+    // @internal (undocumented)
+    is3d(): this is ViewState3d;
+    // @internal (undocumented)
+    isSpatialView(): this is SpatialViewState;
     // (undocumented)
     load(): Promise<void>;
     // @deprecated
@@ -11697,9 +11749,13 @@ export abstract class ViewState3d extends ViewState {
     get globalScopeFactor(): number;
     // (undocumented)
     globalViewTransition(): number;
+    // @internal (undocumented)
+    is3d(): this is ViewState3d;
     // (undocumented)
     get isCameraOn(): boolean;
     get isCameraValid(): boolean;
+    // @internal (undocumented)
+    isDrawingView(): this is DrawingViewState;
     // (undocumented)
     isEyePointAbove(elevation: number): boolean;
     // (undocumented)

@@ -6504,10 +6504,18 @@ export interface SectionDrawingProps extends ElementProps {
     jsonProperties?: {
         drawingToSpatialTransform?: TransformProps;
         sheetToSpatialTransform?: TransformProps;
-        drawingBoundaryClip?: any;
+        drawingBoundaryClip?: ClipVectorProps;
+        displaySpatialView?: true;
     };
     sectionType?: SectionType;
     spatialView?: RelatedElementProps;
+}
+
+// @beta
+export interface SectionDrawingViewProps {
+    displaySpatialView: boolean;
+    drawingToSpatialTransform?: TransformProps;
+    spatialView: Id64String;
 }
 
 // @alpha @deprecated
@@ -7599,7 +7607,7 @@ export interface ViewAttachmentProps extends GeometricElement2dProps {
     // (undocumented)
     jsonProperties?: {
         displayPriority?: number;
-        clip?: any;
+        clip?: ClipVectorProps;
         displayOptions?: {
             drawAsRaster?: boolean;
             preserveBackground?: boolean;
@@ -7985,6 +7993,8 @@ export interface ViewStateProps {
     modelExtents?: Range3dProps;
     // (undocumented)
     modelSelectorProps?: ModelSelectorProps;
+    // @beta
+    sectionDrawing?: SectionDrawingViewProps;
     // @beta (undocumented)
     sheetAttachments?: Id64Array;
     // @beta (undocumented)
