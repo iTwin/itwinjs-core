@@ -467,7 +467,7 @@ export class BriefcaseManager {
     static deleteAllBriefcases(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<void[] | undefined>;
     static deleteBriefcaseFiles(filePath: string, requestContext?: AuthorizedClientRequestContext): Promise<void>;
     static deleteChangeSetsFromLocalDisk(iModelId: string): void;
-    static downloadBriefcase(requestContext: AuthorizedClientRequestContext, request: RequestNewBriefcaseArg): Promise<void>;
+    static downloadBriefcase(requestContext: AuthorizedClientRequestContext, request: RequestNewBriefcaseArg): Promise<LocalBriefcaseProps>;
     // @internal
     static downloadChangeSets(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, fromChangeSetId: string, toChangeSetId: string): Promise<ChangeSet[]>;
     // @internal (undocumented)
