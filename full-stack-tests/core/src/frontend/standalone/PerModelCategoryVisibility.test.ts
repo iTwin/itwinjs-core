@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
 import { ColorDef, Feature, FeatureAppearance, SubCategoryOverride } from "@bentley/imodeljs-common";
 import {
-  FeatureSymbology, IModelApp, MockRender, PerModelCategoryVisibility, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId,
+  FeatureSymbology, MockRender, PerModelCategoryVisibility, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId,
   Viewport,
 } from "@bentley/imodeljs-frontend";
 
