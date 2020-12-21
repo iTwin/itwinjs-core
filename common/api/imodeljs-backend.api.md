@@ -2660,6 +2660,7 @@ export class IModelExporter {
     exportSchemas(): void;
     exportSubModels(parentModelId: Id64String): void;
     protected get handler(): IModelExportHandler;
+    progressInterval: number;
     registerHandler(handler: IModelExportHandler): void;
     readonly sourceDb: IModelDb;
     visitElements: boolean;
@@ -2684,6 +2685,7 @@ export abstract class IModelExportHandler {
     protected onExportModel(_model: Model, _isUpdate: boolean | undefined): void;
     protected onExportRelationship(_relationship: Relationship, _isUpdate: boolean | undefined): void;
     protected onExportSchema(_schema: Schema_2): void;
+    protected onProgress(): void;
     protected shouldExportCodeSpec(_codeSpec: CodeSpec): boolean;
     protected shouldExportElement(_element: Element): boolean;
     protected shouldExportElementAspect(_aspect: ElementAspect): boolean;
@@ -2809,10 +2811,12 @@ export class IModelImporter {
     protected onInsertElementAspect(aspectProps: ElementAspectProps): void;
     protected onInsertModel(modelProps: ModelProps): Id64String;
     protected onInsertRelationship(relationshipProps: RelationshipProps): Id64String;
+    protected onProgress(): void;
     protected onUpdateElement(elementProps: ElementProps): void;
     protected onUpdateElementAspect(aspectProps: ElementAspectProps): void;
     protected onUpdateModel(modelProps: ModelProps): void;
     protected onUpdateRelationship(relationshipProps: RelationshipProps): void;
+    progressInterval: number;
     simplifyElementGeometry: boolean;
     readonly targetDb: IModelDb;
 }
