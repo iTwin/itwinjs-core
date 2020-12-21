@@ -8,6 +8,15 @@ import {
   ChangeFlag, ChangeFlags, Viewport,
 } from "@bentley/imodeljs-frontend";
 
+/** Aspects of a Viewport that can become invalidated when its state changes. */
+export enum ViewportState {
+  Scene = 1 << 0,
+  RenderPlan = (1 << 1) | ViewportState.Scene, // implies Scene
+  Controller = (1 << 2) | ViewportState.RenderPlan, // implies RenderPlan
+  TimePoint = 1 << 3,
+  AnalysisFraction = 1 << 4,
+}
+
 /** Accumulates changed events emitted by a Viewport. */
 export class ViewportChangedHandler {
   protected readonly _vp: Viewport;
@@ -64,7 +73,7 @@ export class ViewportChangedHandler {
     }));
 
     // Initial change events are sent the first time the new ViewState is rendered.
-    this.expect(ChangeFlag.Initial, () => undefined);
+    this.expect(ChangeFlag.Initial, undefined, () => undefined);
   }
 
   public dispose() {
@@ -82,7 +91,7 @@ export class ViewportChangedHandler {
   }
 
   /** Assert that executing the supplied function causes events to be omitted resulting in the specified flags. */
-  public expect(flags: ChangeFlag, func: () => void): void {
+  public expect(flags: ChangeFlag, state: ViewportState | undefined, func: () => void): void {
     func();
     this._vp.renderFrame();
 
@@ -101,9 +110,18 @@ export class ViewportChangedHandler {
     // No dedicated deferred event for ViewState changed...just the immediate one.
     expect(this._eventFlags.value).to.equal(flags & ~ChangeFlag.ViewState);
 
+    if (undefined !== state) {
+      expect(this._vp.sceneValid).to.equal(0 === (state & ViewportState.Scene));
+      expect(this._vp.renderPlanValid).to.equal(0 === (state & ViewportState.Scene));
+      expect(this._vp.controllerValid).to.equal(0 === (state & ViewportState.Controller));
+      expect(this._vp.timePointValid).to.equal(0 === (state & ViewportState.TimePoint));
+      expect(this._vp.analysisFractionValid).to.equal(0 === (state & ViewportState.AnalysisFraction));
+    }
+
     // Reset for next frame.
     this._eventFlags.clear();
     this._changeFlags = undefined;
     this._featureOverridesDirty = false;
+    this._vp.resetValidFlags();
   }
 }

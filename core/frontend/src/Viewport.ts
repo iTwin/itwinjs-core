@@ -886,6 +886,8 @@ export abstract class Viewport implements IDisposable {
   /** @internal */
   protected _sceneValid = false;
   /** @internal */
+  public get sceneValid() { return this._sceneValid; }
+  /** @internal */
   protected _renderPlanValid = false;
   /** @internal */
   public get renderPlanValid() { return this._renderPlanValid; }
@@ -897,9 +899,19 @@ export abstract class Viewport implements IDisposable {
   public get controllerValid() { return this._controllerValid; }
   private _redrawPending = false;
   private _analysisFractionValid = false;
+  /** @internal */
+  public get analysisFractionValid() { return this._analysisFractionValid; }
   private _timePointValid = false;
   /** @internal */
+  public get timePointValid() { return this._timePointValid; }
+  /** @internal */
   private readonly _decorationCache: Map<ViewportDecorator, CachedDecoration[]> = new Map<ViewportDecorator, CachedDecoration[]>();
+
+  /** Strictly for tests. @internal */
+  public resetValidFlags(): void {
+    this._sceneValid = this._decorationsValid = this._renderPlanValid = this._controllerValid = this._redrawPending
+      = this._analysisFractionValid = this._timePointValid = false;
+  }
 
   /** Mark the current set of decorations invalid, so that they will be recreated on the next render frame.
    * This can be useful, for example, if an external event causes one or more current decorations to become invalid and you wish to force

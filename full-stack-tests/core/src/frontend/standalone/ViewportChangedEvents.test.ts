@@ -73,39 +73,39 @@ describe("Viewport changed events", async () => {
     // Viewport-changed events are not dispatched immediately - they are accumulated between frames and dispatched from inside Viewport.renderFrame().
     ViewportChangedHandler.test(vp, (mon) => {
       // No event if the set is already empty when we clear it.
-      mon.expect(ChangeFlag.None, () => vp.clearNeverDrawn());
-      mon.expect(ChangeFlag.None, () => vp.clearAlwaysDrawn());
+      mon.expect(ChangeFlag.None,undefined, () => vp.clearNeverDrawn());
+      mon.expect(ChangeFlag.None, undefined, () => vp.clearAlwaysDrawn());
 
       // Assigning the set always raises an event.
       const idSet = new Set<string>();
       idSet.add("0x123");
-      mon.expect(ChangeFlag.AlwaysDrawn, () => vp.setAlwaysDrawn(idSet, false));
-      mon.expect(ChangeFlag.AlwaysDrawn, () => vp.setAlwaysDrawn(idSet, true));
-      mon.expect(ChangeFlag.NeverDrawn, () => vp.setNeverDrawn(idSet));
+      mon.expect(ChangeFlag.AlwaysDrawn, undefined, () => vp.setAlwaysDrawn(idSet, false));
+      mon.expect(ChangeFlag.AlwaysDrawn, undefined, () => vp.setAlwaysDrawn(idSet, true));
+      mon.expect(ChangeFlag.NeverDrawn, undefined, () => vp.setNeverDrawn(idSet));
 
       // Clearing raises event if set was assigned.
-      mon.expect(ChangeFlag.NeverDrawn, () => vp.clearNeverDrawn());
-      mon.expect(ChangeFlag.AlwaysDrawn, () => vp.clearAlwaysDrawn());
+      mon.expect(ChangeFlag.NeverDrawn, undefined, () => vp.clearNeverDrawn());
+      mon.expect(ChangeFlag.AlwaysDrawn, undefined, () => vp.clearAlwaysDrawn());
 
       // Clearing again will not re-raise because already cleared.
-      mon.expect(ChangeFlag.None, () => vp.clearNeverDrawn());
-      mon.expect(ChangeFlag.None, () => vp.clearAlwaysDrawn());
+      mon.expect(ChangeFlag.None, undefined, () => vp.clearNeverDrawn());
+      mon.expect(ChangeFlag.None, undefined, () => vp.clearAlwaysDrawn());
 
       // Setting repeatedly to same set raises each time, because we're not going to compare to previous set every time it changes.
-      mon.expect(ChangeFlag.AlwaysDrawn, () => vp.setAlwaysDrawn(idSet, true));
-      mon.expect(ChangeFlag.AlwaysDrawn, () => vp.setAlwaysDrawn(idSet, true));
+      mon.expect(ChangeFlag.AlwaysDrawn, undefined, () => vp.setAlwaysDrawn(idSet, true));
+      mon.expect(ChangeFlag.AlwaysDrawn, undefined, () => vp.setAlwaysDrawn(idSet, true));
 
       // Setting to an empty set, and also setting the 'exclusive' flags - effectively means no elements should draw.
       idSet.clear();
-      mon.expect(ChangeFlag.AlwaysDrawn, () => vp.setAlwaysDrawn(idSet, true));
+      mon.expect(ChangeFlag.AlwaysDrawn, undefined, () => vp.setAlwaysDrawn(idSet, true));
       // Raises even though set was already empty, because this resets the 'exclusive' flag.
-      mon.expect(ChangeFlag.AlwaysDrawn, () => vp.clearAlwaysDrawn());
+      mon.expect(ChangeFlag.AlwaysDrawn, undefined, () => vp.clearAlwaysDrawn());
       // Exclusive flag no longer set and set is empty, so no event.
-      mon.expect(ChangeFlag.None, () => vp.clearAlwaysDrawn());
+      mon.expect(ChangeFlag.None, undefined, () => vp.clearAlwaysDrawn());
 
       // Multiple changes in between frames produce a single event.
       idSet.add("0x123");
-      mon.expect(ChangeFlag.AlwaysDrawn | ChangeFlag.NeverDrawn, () => {
+      mon.expect(ChangeFlag.AlwaysDrawn | ChangeFlag.NeverDrawn, undefined, () => {
         for (let i = 0; i < 5; i++) {
           vp.setAlwaysDrawn(idSet);
           vp.clearAlwaysDrawn();
@@ -117,9 +117,9 @@ describe("Viewport changed events", async () => {
       // Always/never-drawn unaffected by undo/redo
       vp.saveViewUndo();
       vp.doUndo();
-      mon.expect(ChangeFlag.None, () => undefined);
+      mon.expect(ChangeFlag.None, undefined, () => undefined);
       vp.doRedo();
-      mon.expect(ChangeFlag.None, () => undefined);
+      mon.expect(ChangeFlag.None, undefined, () => undefined);
     });
   });
 
@@ -131,25 +131,25 @@ describe("Viewport changed events", async () => {
     ViewportChangedHandler.test(vp, (mon) => {
       // No event if equivalent flags
       const newFlags = vp.viewFlags.clone();
-      mon.expect(ChangeFlag.None, () => vp.viewFlags = newFlags);
+      mon.expect(ChangeFlag.None, undefined, () => vp.viewFlags = newFlags);
 
       // ViewFlags which do not affect symbology overrides
       newFlags.solarLight = !newFlags.solarLight;
-      mon.expect(ChangeFlag.DisplayStyle, () => vp.viewFlags = newFlags);
+      mon.expect(ChangeFlag.DisplayStyle, undefined, () => vp.viewFlags = newFlags);
 
       // ViewFlags which affect symbology overrides
       newFlags.constructions = !newFlags.constructions;
-      mon.expect(ChangeFlag.DisplayStyle, () => vp.viewFlags = newFlags);
+      mon.expect(ChangeFlag.DisplayStyle, undefined, () => vp.viewFlags = newFlags);
 
       // No event if modify display style directly.
-      mon.expect(ChangeFlag.None, () => {
+      mon.expect(ChangeFlag.None, undefined, () => {
         vp.displayStyle.backgroundColor = ColorDef.red;
         vp.displayStyle.viewFlags = new ViewFlags();
       });
 
       // Modify display style through Viewport API.
       vp.saveViewUndo();
-      mon.expect(ChangeFlag.DisplayStyle, () => {
+      mon.expect(ChangeFlag.DisplayStyle, undefined, () => {
         const newStyle = vp.displayStyle.clone();
         newStyle.backgroundColor = ColorDef.red;
         vp.displayStyle = newStyle;
@@ -157,7 +157,7 @@ describe("Viewport changed events", async () => {
 
       // Modify view flags through Viewport's displayStyle property.
       vp.saveViewUndo();
-      mon.expect(ChangeFlag.DisplayStyle, () => {
+      mon.expect(ChangeFlag.DisplayStyle, undefined, () => {
         const newStyle = vp.displayStyle.clone();
         newStyle.viewFlags.constructions = !newStyle.viewFlags.constructions;
         vp.displayStyle = newStyle;
@@ -167,11 +167,11 @@ describe("Viewport changed events", async () => {
 
       // Override subcategories directly on display style => no event
       const ovr = SubCategoryOverride.fromJSON({ color: ColorDef.green.tbgr });
-      mon.expect(ChangeFlag.None, () => vp.displayStyle.overrideSubCategory("0x123", ovr));
+      mon.expect(ChangeFlag.None, undefined, () => vp.displayStyle.overrideSubCategory("0x123", ovr));
 
       // Override by replacing display style on Viewport
       vp.saveViewUndo();
-      mon.expect(ChangeFlag.DisplayStyle, () => {
+      mon.expect(ChangeFlag.DisplayStyle, undefined, () => {
         const style = vp.displayStyle.clone();
         style.overrideSubCategory("0x123", ovr);
         vp.displayStyle = style;
@@ -179,7 +179,7 @@ describe("Viewport changed events", async () => {
 
       // Apply same override via Viewport method. Does not check if override actually differs.
       vp.saveViewUndo();
-      mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.ViewedModels, () => {
+      mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.ViewedModels, undefined, () => {
         // Because this is same override as already set, saveViewUndo will not save in undo buffer unless we make some other actual change to the ViewState
         vp.overrideSubCategory("0x123", ovr);
         vp.changeViewedModels(new Set<string>());
@@ -187,7 +187,7 @@ describe("Viewport changed events", async () => {
 
       // Apply different override to same subcategory
       vp.saveViewUndo();
-      mon.expect(ChangeFlag.DisplayStyle, () => vp.overrideSubCategory("0x123", SubCategoryOverride.fromJSON({ color: ColorDef.red.tbgr })));
+      mon.expect(ChangeFlag.DisplayStyle, undefined, () => vp.overrideSubCategory("0x123", SubCategoryOverride.fromJSON({ color: ColorDef.red.tbgr })));
     });
   });
 
@@ -196,24 +196,24 @@ describe("Viewport changed events", async () => {
 
     ViewportChangedHandler.test(vp, async (mon) => {
       // changeModelDisplay is no-op for 2d views
-      mon.expect(ChangeFlag.None, () => expect(vp.changeModelDisplay(id64(0x19), false)).to.be.false);
-      mon.expect(ChangeFlag.None, () => expect(vp.changeModelDisplay(id64(0x27), true)).to.be.false);
+      mon.expect(ChangeFlag.None, undefined, () => expect(vp.changeModelDisplay(id64(0x19), false)).to.be.false);
+      mon.expect(ChangeFlag.None, undefined, () => expect(vp.changeModelDisplay(id64(0x27), true)).to.be.false);
       const viewedModels = new Set<string>();
       viewedModels.add(id64(0x27));
-      mon.expect(ChangeFlag.ViewState, () => expect(vp.changeViewedModels(viewedModels)).to.be.false);
+      mon.expect(ChangeFlag.ViewState, undefined, () => expect(vp.changeViewedModels(viewedModels)).to.be.false);
 
       // Switching to a different 2d view of the same model should not produce model-changed event
       const view20 = await testImodel.views.load(id64(0x20)); // views model 0x1e
-      mon.expect(ChangeFlag.ViewState, () => vp.changeView(view20));
+      mon.expect(ChangeFlag.ViewState, undefined, () => vp.changeView(view20));
 
       // Switching to a different 2d view of a different model should produce model-changed event
       // Note: new view also has different categories enabled.
       const view35 = await testImodel.views.load(id64(0x35)); // views model 0x1e
-      mon.expect(ChangeFlag.ViewedModels | ChangeFlag.ViewedCategories, () => vp.changeView(view35));
+      mon.expect(ChangeFlag.ViewedModels | ChangeFlag.ViewedCategories, undefined, () => vp.changeView(view35));
 
       // Switch back to previous view.
       // Note: changeView() clears undo stack so cannot/needn't test undo/redo here.
-      mon.expect(ChangeFlag.ViewedModels | ChangeFlag.ViewedCategories | ChangeFlag.ViewState, () => vp.changeView(view20.clone()));
+      mon.expect(ChangeFlag.ViewedModels | ChangeFlag.ViewedCategories | ChangeFlag.ViewState, undefined, () => vp.changeView(view20.clone()));
     });
   });
 
@@ -222,17 +222,17 @@ describe("Viewport changed events", async () => {
 
     ViewportChangedHandler.test(vp, async (mon) => {
       // adding a model which is already present produces no event
-      mon.expect(ChangeFlag.None, () => vp.changeModelDisplay("0x1c", true));
+      mon.expect(ChangeFlag.None, undefined, () => vp.changeModelDisplay("0x1c", true));
 
       // removing a model not present produces no event
-      mon.expect(ChangeFlag.None, () => vp.changeModelDisplay("0x9876543", false));
+      mon.expect(ChangeFlag.None, undefined, () => vp.changeModelDisplay("0x9876543", false));
 
       // setting viewed models directly always produces event - we don't check if contents of set exactly match current set
       let selectedModels = (vp.view as SpatialViewState).modelSelector.models;
-      mon.expect(ChangeFlag.ViewedModels, () => vp.changeViewedModels(selectedModels));
+      mon.expect(ChangeFlag.ViewedModels, undefined, () => vp.changeViewedModels(selectedModels));
       selectedModels = new Set<string>();
       selectedModels.add("0x1c");
-      mon.expect(ChangeFlag.ViewedModels, () => vp.changeViewedModels(selectedModels));
+      mon.expect(ChangeFlag.ViewedModels, undefined, () => vp.changeViewedModels(selectedModels));
 
       // Save baseline: viewedModels = [ 0x1c ]
       vp.saveViewUndo();
@@ -240,32 +240,32 @@ describe("Viewport changed events", async () => {
       expect(vp.viewsModel("0x1f")).to.be.false;
 
       // changeModelDisplay has no net effect - but must make some other change for saveViewUndo() to actually save the view state.
-      mon.expect(ChangeFlag.DisplayStyle, () => { const vf = vp.viewFlags.clone(); vf.solarLight = !vf.solarLight; vp.viewFlags = vf; });
-      mon.expect(ChangeFlag.None, () => vp.changeModelDisplay("0x1c", true));
+      mon.expect(ChangeFlag.DisplayStyle, undefined, () => { const vf = vp.viewFlags.clone(); vf.solarLight = !vf.solarLight; vp.viewFlags = vf; });
+      mon.expect(ChangeFlag.None, undefined, () => vp.changeModelDisplay("0x1c", true));
       vp.saveViewUndo();
-      mon.expect(ChangeFlag.DisplayStyle, () => vp.doUndo());
-      mon.expect(ChangeFlag.DisplayStyle, () => vp.doRedo());
+      mon.expect(ChangeFlag.DisplayStyle, undefined, () => vp.doUndo());
+      mon.expect(ChangeFlag.DisplayStyle, undefined, () => vp.doRedo());
 
-      mon.expect(ChangeFlag.ViewedModels, () => {
+      mon.expect(ChangeFlag.ViewedModels, undefined, () => {
         vp.changeModelDisplay("0x1c", false);
         vp.changeModelDisplay("0x1f", true);
       });
       vp.saveViewUndo();
-      mon.expect(ChangeFlag.ViewedModels, () => vp.doUndo());
-      mon.expect(ChangeFlag.None, () => vp.doUndo());
-      mon.expect(ChangeFlag.None, () => vp.doRedo());
-      mon.expect(ChangeFlag.ViewedModels, () => vp.doRedo());
+      mon.expect(ChangeFlag.ViewedModels, undefined, () => vp.doUndo());
+      mon.expect(ChangeFlag.None, undefined, () => vp.doUndo());
+      mon.expect(ChangeFlag.None, undefined, () => vp.doRedo());
+      mon.expect(ChangeFlag.ViewedModels, undefined, () => vp.doRedo());
 
       // Viewport is now viewing model 0x1f.
       // Replacing viewed models with same set [ 0x1f ] produces event
       selectedModels.clear();
       selectedModels.add("0x1f");
-      mon.expect(ChangeFlag.ViewedModels, () => vp.changeViewedModels(selectedModels));
+      mon.expect(ChangeFlag.ViewedModels, undefined, () => vp.changeViewedModels(selectedModels));
 
       // Undo produces view looking at same set of models => no event
       vp.saveViewUndo();
-      mon.expect(ChangeFlag.None, () => vp.doUndo());
-      mon.expect(ChangeFlag.None, () => vp.doRedo());
+      mon.expect(ChangeFlag.None, undefined, () => vp.doUndo());
+      mon.expect(ChangeFlag.None, undefined, () => vp.doRedo());
     });
   });
 
@@ -274,36 +274,36 @@ describe("Viewport changed events", async () => {
 
     ViewportChangedHandler.test(vp, async (mon) => {
       // Adding an already-enabled category or removing a disabled one has no effect
-      mon.expect(ChangeFlag.None, () => vp.changeCategoryDisplay(id64(0x01), true));
-      mon.expect(ChangeFlag.None, () => vp.changeCategoryDisplay(id64(0x1a), false));
+      mon.expect(ChangeFlag.None, undefined, () => vp.changeCategoryDisplay(id64(0x01), true));
+      mon.expect(ChangeFlag.None, undefined, () => vp.changeCategoryDisplay(id64(0x1a), false));
 
       // Two changes which produce no net change still produce event - we do not track net changes
       vp.saveViewUndo();
-      mon.expect(ChangeFlag.ViewedCategories, () => {
+      mon.expect(ChangeFlag.ViewedCategories, undefined, () => {
         vp.changeCategoryDisplay(id64(0x01), false);
         vp.changeCategoryDisplay(id64(0x01), true);
       });
 
       // Undo/redo with no net change produces no event
       vp.saveViewUndo();
-      mon.expect(ChangeFlag.None, () => vp.doUndo());
-      mon.expect(ChangeFlag.None, () => vp.doRedo());
+      mon.expect(ChangeFlag.None, undefined, () => vp.doUndo());
+      mon.expect(ChangeFlag.None, undefined, () => vp.doRedo());
 
       // Switching to a different view with same category selector produces no category-changed event
       const view13 = await testImodel.views.load(id64(0x13));
-      mon.expect(ChangeFlag.ViewState, () => vp.changeView(view13));
+      mon.expect(ChangeFlag.ViewState, undefined, () => vp.changeView(view13));
 
       // Switching to a different view with different category selector produces event
       const view17 = await testImodel.views.load(id64(0x17));
-      mon.expect(ChangeFlag.ViewState, () => vp.changeView(view17));
+      mon.expect(ChangeFlag.ViewState, undefined, () => vp.changeView(view17));
 
       // Changing category selector, then switching to a view with same categories enabled produces no event.
-      mon.expect(ChangeFlag.ViewedCategories, () => {
+      mon.expect(ChangeFlag.ViewedCategories, undefined, () => {
         vp.changeCategoryDisplay(vp.view.categorySelector.categories, false);
         vp.changeCategoryDisplay(view13.categorySelector.categories, true);
       });
 
-      mon.expect(ChangeFlag.ViewState, () => vp.changeView(view13));
+      mon.expect(ChangeFlag.ViewState, undefined, () => vp.changeView(view13));
     });
   });
 
@@ -315,46 +315,46 @@ describe("Viewport changed events", async () => {
       expect(vis.getOverride("0x1c", "0x1234")).to.equal(PerModelCategoryVisibility.Override.None);
 
       // No net change => no event
-      mon.expect(ChangeFlag.None, () => vis.setOverride("0x1c", "0x1234", PerModelCategoryVisibility.Override.None));
+      mon.expect(ChangeFlag.None, undefined, () => vis.setOverride("0x1c", "0x1234", PerModelCategoryVisibility.Override.None));
       expect(vis.getOverride("0x1c", "0x1234")).to.equal(PerModelCategoryVisibility.Override.None);
 
-      mon.expect(ChangeFlag.ViewedCategoriesPerModel, () => vis.setOverride("0x1c", "0x1234", PerModelCategoryVisibility.Override.Show));
+      mon.expect(ChangeFlag.ViewedCategoriesPerModel, undefined, () => vis.setOverride("0x1c", "0x1234", PerModelCategoryVisibility.Override.Show));
       expect(vis.getOverride("0x1c", "0x1234")).to.equal(PerModelCategoryVisibility.Override.Show);
 
-      mon.expect(ChangeFlag.ViewedCategoriesPerModel, () => vis.setOverride("0x1c", "0x1234", PerModelCategoryVisibility.Override.Hide));
+      mon.expect(ChangeFlag.ViewedCategoriesPerModel, undefined, () => vis.setOverride("0x1c", "0x1234", PerModelCategoryVisibility.Override.Hide));
       expect(vis.getOverride("0x1c", "0x1234")).to.equal(PerModelCategoryVisibility.Override.Hide);
 
-      mon.expect(ChangeFlag.None, () => vis.clearOverrides("0x9876"));
+      mon.expect(ChangeFlag.None, undefined, () => vis.clearOverrides("0x9876"));
 
-      mon.expect(ChangeFlag.ViewedCategoriesPerModel, () => vis.clearOverrides());
+      mon.expect(ChangeFlag.ViewedCategoriesPerModel, undefined, () => vis.clearOverrides());
       expect(vis.getOverride("0x1c", "0x1234")).to.equal(PerModelCategoryVisibility.Override.None);
 
-      mon.expect(ChangeFlag.None, () => vis.clearOverrides());
+      mon.expect(ChangeFlag.None, undefined, () => vis.clearOverrides());
 
       const idSet = new Set<string>();
       idSet.add("0x1234567");
-      mon.expect(ChangeFlag.None, () => vis.setOverride(new Set<string>(), new Set<string>(), PerModelCategoryVisibility.Override.Show));
-      mon.expect(ChangeFlag.None, () => vis.setOverride(idSet, new Set<string>(), PerModelCategoryVisibility.Override.Show));
-      mon.expect(ChangeFlag.None, () => vis.setOverride(new Set<string>(), idSet, PerModelCategoryVisibility.Override.Show));
+      mon.expect(ChangeFlag.None, undefined, () => vis.setOverride(new Set<string>(), new Set<string>(), PerModelCategoryVisibility.Override.Show));
+      mon.expect(ChangeFlag.None, undefined, () => vis.setOverride(idSet, new Set<string>(), PerModelCategoryVisibility.Override.Show));
+      mon.expect(ChangeFlag.None, undefined, () => vis.setOverride(new Set<string>(), idSet, PerModelCategoryVisibility.Override.Show));
 
       const idList = ["0x1234567"];
-      mon.expect(ChangeFlag.None, () => vis.setOverride([], [], PerModelCategoryVisibility.Override.Show));
-      mon.expect(ChangeFlag.None, () => vis.setOverride(idList, [], PerModelCategoryVisibility.Override.Show));
-      mon.expect(ChangeFlag.None, () => vis.setOverride([], idList, PerModelCategoryVisibility.Override.Show));
+      mon.expect(ChangeFlag.None, undefined, () => vis.setOverride([], [], PerModelCategoryVisibility.Override.Show));
+      mon.expect(ChangeFlag.None, undefined, () => vis.setOverride(idList, [], PerModelCategoryVisibility.Override.Show));
+      mon.expect(ChangeFlag.None, undefined, () => vis.setOverride([], idList, PerModelCategoryVisibility.Override.Show));
 
       const modelIdList = ["0x1", "0x2", "0x3"];
       const catIdList = ["0xa", "0xb"];
-      mon.expect(ChangeFlag.ViewedCategoriesPerModel, () => vis.setOverride(modelIdList, catIdList, PerModelCategoryVisibility.Override.Show));
+      mon.expect(ChangeFlag.ViewedCategoriesPerModel, undefined, () => vis.setOverride(modelIdList, catIdList, PerModelCategoryVisibility.Override.Show));
       for (const modelId of modelIdList)
         for (const catId of catIdList)
           expect(vis.getOverride(modelId, catId)).to.equal(PerModelCategoryVisibility.Override.Show);
 
       // No net change
-      mon.expect(ChangeFlag.None, () => vis.setOverride(modelIdList, catIdList, PerModelCategoryVisibility.Override.Show));
+      mon.expect(ChangeFlag.None, undefined, () => vis.setOverride(modelIdList, catIdList, PerModelCategoryVisibility.Override.Show));
 
       modelIdList.shift(); // remove "0x1"
       catIdList.shift(); // remove "0xa"
-      mon.expect(ChangeFlag.ViewedCategoriesPerModel, () => vis.setOverride(modelIdList, catIdList, PerModelCategoryVisibility.Override.Hide));
+      mon.expect(ChangeFlag.ViewedCategoriesPerModel, undefined, () => vis.setOverride(modelIdList, catIdList, PerModelCategoryVisibility.Override.Hide));
       expect(vis.getOverride("0x1", "0xa")).to.equal(PerModelCategoryVisibility.Override.Show);
       expect(vis.getOverride("0x1", "0xb")).to.equal(PerModelCategoryVisibility.Override.Show);
       expect(vis.getOverride("0x2", "0xa")).to.equal(PerModelCategoryVisibility.Override.Show);
@@ -362,7 +362,7 @@ describe("Viewport changed events", async () => {
       expect(vis.getOverride("0x3", "0xa")).to.equal(PerModelCategoryVisibility.Override.Show);
       expect(vis.getOverride("0x3", "0xb")).to.equal(PerModelCategoryVisibility.Override.Hide);
 
-      mon.expect(ChangeFlag.ViewedCategoriesPerModel, () => vis.clearOverrides(["0x1"]));
+      mon.expect(ChangeFlag.ViewedCategoriesPerModel, undefined, () => vis.clearOverrides(["0x1"]));
       expect(vis.getOverride("0x1", "0xa")).to.equal(PerModelCategoryVisibility.Override.None);
       expect(vis.getOverride("0x1", "0xb")).to.equal(PerModelCategoryVisibility.Override.None);
     });
@@ -380,21 +380,21 @@ describe("Viewport changed events", async () => {
 
     ViewportChangedHandler.test(vp, (mon) => {
       // Changing the provider => event
-      mon.expect(ChangeFlag.FeatureOverrideProvider, () => vp.addFeatureOverrideProvider(provider));
+      mon.expect(ChangeFlag.FeatureOverrideProvider, undefined, () => vp.addFeatureOverrideProvider(provider));
       expect(overridesAdded).to.be.true;
       overridesAdded = false;
 
       // Explicitly notifying provider's state has changed => event
-      mon.expect(ChangeFlag.FeatureOverrideProvider, () => vp.setFeatureOverrideProviderChanged());
+      mon.expect(ChangeFlag.FeatureOverrideProvider, undefined, () => vp.setFeatureOverrideProviderChanged());
       expect(overridesAdded).to.be.true;
       overridesAdded = false;
 
       // Setting provider to same value => no event
-      mon.expect(ChangeFlag.None, () => vp.addFeatureOverrideProvider(provider));
+      mon.expect(ChangeFlag.None, undefined, () => vp.addFeatureOverrideProvider(provider));
       expect(overridesAdded).to.be.false;
 
       // Actually changing the provider => event
-      mon.expect(ChangeFlag.FeatureOverrideProvider, () => {
+      mon.expect(ChangeFlag.FeatureOverrideProvider, undefined, () => {
         const prov = vp.findFeatureOverrideProvider((_) => true);
         expect(prov).not.to.be.undefined;
         if (prov)
@@ -413,25 +413,25 @@ describe("Viewport changed events", async () => {
     vp = ScreenViewport.create(viewDiv, view2d20.clone());
     ViewportChangedHandler.test(vp, (mon) => {
       // No effective change to view
-      mon.expect(ChangeFlag.ViewState, () => vp.changeView(view2d20.clone()));
+      mon.expect(ChangeFlag.ViewState, undefined, () => vp.changeView(view2d20.clone()));
 
       // 2d => 2d
-      mon.expect(ChangeFlag.ViewState | ChangeFlag.ViewedCategories | ChangeFlag.ViewedModels | ChangeFlag.DisplayStyle, () => vp.changeView(view2d2e.clone()));
+      mon.expect(ChangeFlag.ViewState | ChangeFlag.ViewedCategories | ChangeFlag.ViewedModels | ChangeFlag.DisplayStyle, undefined, () => vp.changeView(view2d2e.clone()));
 
       // 2d => 3d
-      mon.expect(ChangeFlag.ViewState | ChangeFlag.ViewedCategories | ChangeFlag.ViewedModels | ChangeFlag.DisplayStyle, () => vp.changeView(view3d15.clone()));
+      mon.expect(ChangeFlag.ViewState | ChangeFlag.ViewedCategories | ChangeFlag.ViewedModels | ChangeFlag.DisplayStyle, undefined, () => vp.changeView(view3d15.clone()));
 
       // No effective change
-      mon.expect(ChangeFlag.ViewState, () => vp.changeView(view3d15.clone()));
+      mon.expect(ChangeFlag.ViewState, undefined, () => vp.changeView(view3d15.clone()));
 
       // 3d => 3d - same model selector, same display style, different category selector
-      mon.expect(ChangeFlag.ViewState | ChangeFlag.ViewedCategories, () => vp.changeView(view3d17.clone()));
+      mon.expect(ChangeFlag.ViewState | ChangeFlag.ViewedCategories, undefined, () => vp.changeView(view3d17.clone()));
 
       // 3d => 2d
-      mon.expect(ChangeFlag.ViewState | ChangeFlag.ViewedCategories | ChangeFlag.ViewedModels | ChangeFlag.DisplayStyle, () => vp.changeView(view2d20.clone()));
+      mon.expect(ChangeFlag.ViewState | ChangeFlag.ViewedCategories | ChangeFlag.ViewedModels | ChangeFlag.DisplayStyle, undefined, () => vp.changeView(view2d20.clone()));
 
       // Pass the exact same ViewState reference => no "ViewState changed" event.
-      mon.expect(ChangeFlag.None, () => vp.changeView(vp.view));
+      mon.expect(ChangeFlag.None, undefined, () => vp.changeView(vp.view));
     });
 
     // Test the immediately-fire onChangeView event.
