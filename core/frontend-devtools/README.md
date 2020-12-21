@@ -66,12 +66,15 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
 * `fdt dpi lod` - Toggles whether device pixel ratio should be taken into account when computing LOD for tiles and decoration graphics.
 * `fdt attachments` - Toggles display of view attachments in the sheet view associated with the active viewport.
 * `fdt attachment bounds` - Toggles display of bounding boxes around each view attachment in the active viewport.
+* `fdt drawing graphics` - When enabled, 2d graphics in any drawing view will not be displayed. Useful for inspecting 3d graphics of attached section view, if any.
+* `fdt sectiondrawing spatial view` - When enabled, 3d graphics for a section drawing will be displayed in the drawing view, even if they otherwise wouldn't be.
 * `fdt toggle drapefrustum` - Toggles display of frustum that is used to drape classifiers and background map.
 * `fdt toggle reality preload` - Toggles the display of preloaded reality tile bounding boxes.
 * `fdt toggle reality freeze`  - Toggles the freezing of reality tile loading, when the reality tiles are frozen new reality tiles are not downloaded or purged.
 * `fdt toggle reality logging` - Toggle the logging of reality tile loading and selection diagnostics to the console.
 * `fdt toggle reality bounds` - Toggle the display of bounding boxes for reality tiles.
 * `fdt set building display` Toggle the display of the worldwide OpenStreetMap worldwide buildingslayer by attaching or displaying as a reality model in the current viewport.  The OSM buildings are aggregated and supplied from Cesium Ion <https://cesium.com/content/cesium-osm-buildings/>. The first argument is required on|off - the second optional argument is a value for transparency between 0 and 1.
+
 ### Other key-ins
 
 * `fdt save view` - Copies to the clipboard a JSON representation of the view currently displayed in the active viewport.

@@ -34,7 +34,7 @@ import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { CodeSpecs } from "./CodeSpecs";
 import { ConcurrencyControl } from "./ConcurrencyControl";
 import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
-import { Element, Subject } from "./Element";
+import { Element, SectionDrawing, Subject } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
 import { Entity, EntityClassType } from "./Entity";
 import { EventSink } from "./EventSink";
@@ -1943,6 +1943,21 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
           const rangeVal = this._iModel.nativeDb.queryModelExtents(JSON.stringify({ id: viewDefinitionElement.baseModelId }));
           if (rangeVal.result)
             viewStateData.modelExtents = Range3d.fromJSON(JSON.parse(rangeVal.result).modelExtents);
+        } catch (_) {
+          //
+        }
+
+        // Include information about the associated [[SectionDrawing]], if any.
+        // NB: The SectionDrawing ECClass may not exist in the iModel's version of the BisCore ECSchema.
+        try {
+          const sectionDrawing = this._iModel.elements.tryGetElement<SectionDrawing>(viewDefinitionElement.baseModelId);
+          if (sectionDrawing && sectionDrawing.spatialView && Id64.isValidId64(sectionDrawing.spatialView.id)) {
+            viewStateData.sectionDrawing = {
+              spatialView: sectionDrawing.spatialView.id,
+              displaySpatialView: true === sectionDrawing.jsonProperties.displaySpatialView,
+              drawingToSpatialTransform: sectionDrawing.jsonProperties.drawingToSpatialTransform,
+            };
+          }
         } catch (_) {
           //
         }

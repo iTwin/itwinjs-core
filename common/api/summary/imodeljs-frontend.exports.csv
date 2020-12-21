@@ -389,6 +389,7 @@ beta;SceneContext
 internal;SceneVolumeClassifier
 public;ScreenViewport 
 public;ScrollViewTool 
+internal;SectionDrawingInfo
 public;SectionDrawingModelState 
 public;SelectAddEvent
 internal;SelectedAndReadyTiles
