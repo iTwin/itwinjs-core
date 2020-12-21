@@ -786,6 +786,58 @@ export interface OsmBuildingDisplayOptions {
   appearanceOverrides?: FeatureAppearance;
 }
 
+/** Maintains the current [[ViewState]] viewed by a [[Viewport]], synchronizing their states. The Viewport can register disposal routines to be exceuted
+ * when the Viewport becomes detached from the current ViewState. These primarily consist of event listeners registered with the ViewState and its DisplayStyleState.
+ * When the viewed ViewState changes:
+ *  - The current view is notified via [[ViewState.detachFromViewport]] so that it can dispose of any Viewport-specific state;
+ *  - All disposal routines are executed; and
+ *  - The new view is notified via [[ViewState.attachToViewport]] so that it can allocate any Viewport-specific state.
+ * When the Viewport is disposed via [[Viewport.dispose]], all disposal routines are executed and the current view is notified via [[ViewState.detachFromViewport]].
+ * When initially constructed, the ViewState is notified via [[ViewState.attachToViewport]].
+ */
+class AttachedView {
+  private _view: ViewState;
+  private _dispose?: () => void;
+  private readonly _viewport: Viewport;
+
+  public constructor(view: ViewState, vp: Viewport) {
+    this._view = view;
+    this._viewport = vp;
+    this._dispose = vp.onDisposed.addListener(() => this.dispose());
+    view.attachToViewport(vp);
+  }
+
+  /** Add a function to be invoked when the current [[ViewState]] is detached from the [[Viewport]]. */
+  public add(func: () => void): void {
+    assert(undefined !== this._dispose, "Attempting to use a disposed AttachedViewState");
+    this._dispose = () => { func(); dispose(); };
+  }
+
+  /** The ViewState currently attached to the [[Viewport]]. */
+  public get view(): ViewState {
+    return this._view;
+  }
+
+  public set view(view: ViewState) {
+    if (view === this.view)
+      return;
+
+    this.dispose();
+    this.view.detachFromViewport(this._viewport);
+
+    this._view = view;
+    this._dispose = this._viewport.onDisposed.addListener(() => this.dispose());
+    this.view.attachToViewport(this._viewport);
+  }
+
+  private dispose(): void {
+    if (this._dispose) {
+      this._dispose();
+      this._dispose = undefined;
+    }
+  }
+}
+
 /** A Viewport renders the contents of one or more Models onto an `HTMLCanvasElement`.
  *
  * It holds a [[ViewState]] object that defines its viewing parameters. [[ViewTool]]s may

@@ -226,6 +226,7 @@ export abstract class ViewState extends ElementState {
   public description?: string;
   public isPrivate?: boolean;
   private readonly _gridDecorator: GridDecorator;
+  private _isAttachedToViewport = false;
 
   /** Selects the categories that are display by this ViewState. */
   public categorySelector: CategorySelectorState;
@@ -1090,6 +1091,31 @@ export abstract class ViewState extends ElementState {
   /** @internal */
   public getModelDisplayTransform(modelId: Id64String, baseTransform: Transform): Transform {
     return this.modelDisplayTransformProvider ? this.modelDisplayTransformProvider.getModelDisplayTransform(modelId, baseTransform) : baseTransform;
+  }
+
+  /** Invoked when this view becomes the view displayed by the specified [[Viewport]].
+   * A ViewState can be attached to at most **one** Viewport.
+   * @see [[detachFromViewport]] from the inverse operation.
+   * @internal
+   */
+  public attachToViewport(_vp: Viewport): void {
+    assert(!this._isAttachedToViewport);
+    this._isAttachedToViewport = true;
+  }
+
+  /** Invoked when this view, previously attached to the specified [[Viewport]] via [[attachToViewport]], is no longer the view displayed by that Viewport.
+   * @internal
+   */
+  public detachFromViewport(_vp: Viewport): void {
+    assert(this._isAttachedToViewport);
+    this._isAttachedToViewport = false;
+  }
+
+  /** Returns whether this view is currently being displayed by a [[Viewport]].
+   * @internal
+   */
+  public get isAttachedToViewport(): boolean {
+    return this._isAttachedToViewport;
   }
 }
 
