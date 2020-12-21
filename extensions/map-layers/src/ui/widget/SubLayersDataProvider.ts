@@ -14,8 +14,10 @@ import { StyleMapLayerSettings } from "./MapLayerManager";
  */
 export class SubLayersDataProvider implements ITreeDataProvider {
   private readonly _nodeMap = new Map<string, TreeNodeItem[]>();
+  private readonly _mapLayer: StyleMapLayerSettings;
 
   constructor(mapLayer: StyleMapLayerSettings) {
+    this._mapLayer = mapLayer;
     this.loadNodes(mapLayer.subLayers);
   }
 
