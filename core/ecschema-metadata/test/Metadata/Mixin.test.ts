@@ -354,7 +354,7 @@ describe("Mixin", () => {
       expect(mixin).to.exist;
       const serialized = await mixin!.toXml(newDom);
       expect(serialized.nodeName).to.eql("ECEntityClass");
-      expect(serialized.hasAttribute("modifier")).to.eql(false);
+      expect(serialized.hasAttribute("modifier")).to.eql(true);
 
       const customAttributesResult = getElementChildrenByTagName(serialized, "ECCustomAttributes");
       assert.strictEqual(customAttributesResult.length, 1);

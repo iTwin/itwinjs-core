@@ -9,6 +9,19 @@ beta;AbstractStatusBarItemUtilities
 beta;AbstractStatusBarLabelItem 
 beta;AbstractToolbarProps
 beta;AbstractWidgetProps 
+alpha;AccuDrawField
+alpha;AccuDrawMode
+alpha;AccuDrawSetFieldFocusEvent 
+alpha;AccuDrawSetFieldFocusEventArgs
+alpha;AccuDrawSetFieldLockEvent 
+alpha;AccuDrawSetFieldLockEventArgs
+alpha;AccuDrawSetFieldValueFromUiEvent 
+alpha;AccuDrawSetFieldValueFromUiEventArgs
+alpha;AccuDrawSetFieldValueToUiEvent 
+alpha;AccuDrawSetFieldValueToUiEventArgs
+alpha;AccuDrawSetModeEvent 
+alpha;AccuDrawSetModeEventArgs
+alpha;AccuDrawUiAdmin
 beta;ActionButton 
 beta;AlternateDateFormats
 beta;ArrayValue 
@@ -45,6 +58,7 @@ public;DialogButtonType
 beta;DialogItem 
 beta;DialogItemValue
 beta;class DialogLayoutDataProvider 
+beta;DialogProperty
 beta;DialogPropertyItem
 beta;DialogPropertySyncItem 
 beta;DialogProps
@@ -82,6 +96,7 @@ beta;isColorEditorParams: (item: BasePropertyEditorParams) => item is ColorEdito
 beta;isCustomFormattedNumberParams: (item: BasePropertyEditorParams) => item is CustomFormattedNumberParams
 beta;isIconListEditorParams: (item: BasePropertyEditorParams) => item is IconListEditorParams
 beta;isInputEditorSizeParams: (item: BasePropertyEditorParams) => item is InputEditorSizeParams
+alpha;isLetter(char: string): boolean
 internal;isLowerAsciiLetter(code: number): boolean
 internal;isPatternInWord(patternLow: string, patternPos: number, patternLen: number, wordLow: string, wordPos: number, wordLen: number): boolean
 beta;isStageLauncher: (item: BackstageItem) => item is BackstageStageLauncher
@@ -109,6 +124,7 @@ beta;PropertyChangeResult
 beta;PropertyChangeStatus
 beta;PropertyConverterInfo
 beta;PropertyDescription
+alpha;PropertyDescriptionHelper
 beta;PropertyEditorInfo
 beta;PropertyEditorParams = BasePropertyEditorParams
 beta;PropertyEditorParamTypes

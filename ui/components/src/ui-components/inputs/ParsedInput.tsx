@@ -26,13 +26,12 @@ export interface ParsedInputProps extends CommonProps {
   onChange?: (newValue: number) => void;
   /** if readonly then only the formatValue function is used. */
   readonly?: boolean;
+  /** Provides ability to return reference to HTMLInputElement */
+  ref?: React.Ref<HTMLInputElement>;
 }
 
-/** Generic Input component that requires formatting and parsing functions to be passed in as props.
- * @beta
- */
-export const ParsedInput = React.forwardRef<HTMLInputElement, ParsedInputProps>(
-  function ParsedInput({ initialValue, formatValue, parseString, readonly, className, style, onChange }, ref) {
+const ForwardRefParsedInput = React.forwardRef<HTMLInputElement, ParsedInputProps>(
+  function ForwardRefParsedInput({ initialValue, formatValue, parseString, readonly, className, style, onChange }, ref) {
     const currentValueRef = React.useRef(initialValue);
     const isMountedRef = React.useRef(false);
     const lastFormattedValueRef = React.useRef(formatValue(initialValue));
@@ -111,3 +110,9 @@ export const ParsedInput = React.forwardRef<HTMLInputElement, ParsedInputProps>(
       onChange={handleChange} value={formattedValue} disabled={readonly} />;
   }
 );
+
+/** Generic Input component that requires formatting and parsing functions to be passed in as props.
+ * @beta
+ */
+export const ParsedInput: (props: ParsedInputProps) => JSX.Element | null = ForwardRefParsedInput;
+

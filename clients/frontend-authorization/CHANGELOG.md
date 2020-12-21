@@ -1,9 +1,71 @@
 # Change Log - @bentley/frontend-authorization-client
 
-This log was last generated on Mon, 26 Oct 2020 21:21:01 GMT and should not be manually modified.
+This log was last generated on Sun, 13 Dec 2020 19:00:03 GMT and should not be manually modified.
+
+## 2.9.9
+Sun, 13 Dec 2020 19:00:03 GMT
+
+_Version update only_
+
+## 2.9.8
+Fri, 11 Dec 2020 02:57:36 GMT
+
+_Version update only_
+
+## 2.9.7
+Wed, 09 Dec 2020 20:58:23 GMT
+
+_Version update only_
+
+## 2.9.6
+Mon, 07 Dec 2020 18:40:48 GMT
+
+_Version update only_
+
+## 2.9.5
+Sat, 05 Dec 2020 01:55:56 GMT
+
+_Version update only_
+
+## 2.9.4
+Wed, 02 Dec 2020 20:55:40 GMT
+
+_Version update only_
+
+## 2.9.3
+Mon, 23 Nov 2020 20:57:56 GMT
+
+_Version update only_
+
+## 2.9.2
+Mon, 23 Nov 2020 15:33:50 GMT
+
+_Version update only_
+
+## 2.9.1
+Thu, 19 Nov 2020 17:03:42 GMT
+
+_Version update only_
+
+## 2.9.0
+Wed, 18 Nov 2020 16:01:50 GMT
+
+### Updates
+
+- avoid closing popup window when authorization callback attempt fails
+
+## 2.8.1
+Tue, 03 Nov 2020 00:33:56 GMT
+
+_Version update only_
 
 ## 2.8.0
 Fri, 23 Oct 2020 17:04:02 GMT
+
+_Version update only_
+
+## 2.7.6
+Wed, 11 Nov 2020 16:28:23 GMT
 
 _Version update only_
 

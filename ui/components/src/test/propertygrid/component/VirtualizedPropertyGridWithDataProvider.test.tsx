@@ -5,14 +5,15 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import * as React from "react";
-// eslint-disable-next-line no-duplicate-imports
-import { useEffect } from "react";
+import { VariableSizeList } from "react-window";
 import sinon from "sinon";
 import * as moq from "typemoq";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
-import { act, fireEvent, render, waitForDomChange } from "@testing-library/react";
+import { act, fireEvent, getByTitle, render, waitForDomChange, waitForElement } from "@testing-library/react";
+import { HighlightingComponentProps } from "../../../ui-components/common/HighlightingComponentProps";
 import { VirtualizedPropertyGridWithDataProvider } from "../../../ui-components/propertygrid/component/VirtualizedPropertyGridWithDataProvider";
+import { FilteredType } from "../../../ui-components/propertygrid/dataproviders/filterers/PropertyDataFiltererBase";
 import * as FlatPropertyRendererExports from "../../../ui-components/propertygrid/internal/flat-properties/FlatPropertyRenderer";
 import {
   IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent,
@@ -41,6 +42,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
   });
 
   beforeEach(() => {
+    sinon.restore();
     // note: this is needed for AutoSizer used by the Tree to
     // have non-zero size and render the virtualized list
     sinon.stub(HTMLElement.prototype, "offsetHeight").get(() => 1200);
@@ -59,10 +61,6 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
         },
       }),
     };
-  });
-
-  afterEach(() => {
-    sinon.restore();
   });
 
   describe("rendering", () => {
@@ -560,7 +558,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
 
   describe("dynamic node heights", () => {
     const StubComponent: React.FC<FlatPropertyRendererExports.FlatPropertyRendererProps> = (props) => {
-      useEffect(() => props.onHeightChanged!(15));
+      React.useEffect(() => props.onHeightChanged!(15));
       return <>Stub Component</>;
     };
 
@@ -1034,5 +1032,243 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
 
     unmount();
     expect(evt2.numberOfListeners).to.eq(0, "listener should be removed when component is unmounted");
+  });
+
+  describe("Should handle scrolling to item", () => {
+    const parentCategory: PropertyCategory = {
+      name: "ParentCategory",
+      label: "Parent",
+      expand: true,
+    };
+    const highlightValue: HighlightingComponentProps & { filteredTypes: FilteredType[] } = {
+      highlightedText: "test",
+      activeHighlight: {
+        highlightedItemIdentifier: "test2",
+        highlightIndex: 0,
+      },
+      filteredTypes: [FilteredType.Value],
+    };
+    const highlightCategory: HighlightingComponentProps & { filteredTypes: FilteredType[] } = {
+      highlightedText: "PARENT",
+      activeHighlight: {
+        highlightedItemIdentifier: "ParentCategory",
+        highlightIndex: 0,
+      },
+      filteredTypes: [FilteredType.Category],
+    };
+    const highlightLabel: HighlightingComponentProps & { filteredTypes: FilteredType[] } = {
+      highlightedText: "test",
+      activeHighlight: {
+        highlightedItemIdentifier: "test2",
+        highlightIndex: 0,
+      },
+      filteredTypes: [FilteredType.Label],
+    };
+    const highlight1: HighlightingComponentProps & { filteredTypes?: FilteredType[] } = {
+      highlightedText: "Test",
+      activeHighlight: {
+        highlightedItemIdentifier: "testtest",
+        highlightIndex: 0,
+      },
+    };
+
+    it("scrolls to highlighted value when highlight is updated", async () => {
+      const providerMock = moq.Mock.ofType<IPropertyDataProvider>();
+      providerMock.setup(async (x) => x.getData()).returns(async () => ({
+        label: PropertyRecord.fromString(""), categories: [parentCategory],
+        records: {
+          [parentCategory.name]: Array.from({ length: 10 }).map((_, index) => TestUtils.createPrimitiveStringProperty(`test${index}`, "Test", "Test")),
+        },
+      }));
+      const evt = new PropertyDataChangeEvent();
+      providerMock.setup((x) => x.onDataChanged).returns(() => evt);
+
+      const scrollToItemFake = sinon.fake();
+      sinon.replace(VariableSizeList.prototype, "scrollToItem", scrollToItemFake);
+
+      const { container, rerender } = render(
+        <VirtualizedPropertyGridWithDataProvider
+          orientation={Orientation.Horizontal}
+          dataProvider={providerMock.object}
+          highlight={highlight1}
+        />
+      );
+      await waitForElement(() => getByTitle(container, "test9"), { container });
+
+      rerender(<VirtualizedPropertyGridWithDataProvider
+        orientation={Orientation.Horizontal}
+        dataProvider={providerMock.object}
+        highlight={highlightValue}
+      />);
+      await waitForElement(() => getByTitle(container, "test9"), { container });
+
+      expect(scrollToItemFake).to.have.been.calledOnceWithExactly(3);
+    });
+    it("scrolls to highlighted category when highlight is updated", async () => {
+      const providerMock = moq.Mock.ofType<IPropertyDataProvider>();
+      providerMock.setup(async (x) => x.getData()).returns(async () => ({
+        label: PropertyRecord.fromString(""), categories: [parentCategory],
+        records: {
+          [parentCategory.name]: Array.from({ length: 10 }).map((_, index) => TestUtils.createPrimitiveStringProperty(`test${index}`, "Test", "Test")),
+        },
+      }));
+      const evt = new PropertyDataChangeEvent();
+      providerMock.setup((x) => x.onDataChanged).returns(() => evt);
+
+      const scrollToItemFake = sinon.fake();
+      sinon.replace(VariableSizeList.prototype, "scrollToItem", scrollToItemFake);
+
+      const { container, rerender } = render(
+        <VirtualizedPropertyGridWithDataProvider
+          orientation={Orientation.Horizontal}
+          dataProvider={providerMock.object}
+          highlight={highlight1}
+        />
+      );
+      await waitForElement(() => getByTitle(container, "test9"), { container });
+
+      rerender(<VirtualizedPropertyGridWithDataProvider
+        orientation={Orientation.Horizontal}
+        dataProvider={providerMock.object}
+        highlight={highlightCategory}
+      />);
+      await waitForElement(() => getByTitle(container, "test9"), { container });
+
+      expect(scrollToItemFake).to.have.been.calledOnceWithExactly(0);
+    });
+
+    it("scrolls to highlighted label when highlight is updated", async () => {
+      const providerMock = moq.Mock.ofType<IPropertyDataProvider>();
+      providerMock.setup(async (x) => x.getData()).returns(async () => ({
+        label: PropertyRecord.fromString(""), categories: [parentCategory],
+        records: {
+          [parentCategory.name]: Array.from({ length: 10 }).map((_, index) => TestUtils.createPrimitiveStringProperty(`test${index}`, "Test", "Test")),
+        },
+      }));
+      const evt = new PropertyDataChangeEvent();
+      providerMock.setup((x) => x.onDataChanged).returns(() => evt);
+
+      const scrollToItemFake = sinon.fake();
+      sinon.replace(VariableSizeList.prototype, "scrollToItem", scrollToItemFake);
+
+      const { container, rerender } = render(
+        <VirtualizedPropertyGridWithDataProvider
+          orientation={Orientation.Horizontal}
+          dataProvider={providerMock.object}
+          highlight={highlight1}
+        />
+      );
+      await waitForElement(() => getByTitle(container, "test9"), { container });
+
+      rerender(<VirtualizedPropertyGridWithDataProvider
+        orientation={Orientation.Horizontal}
+        dataProvider={providerMock.object}
+        highlight={highlightLabel}
+      />);
+      await waitForElement(() => getByTitle(container, "test9"), { container });
+
+      expect(scrollToItemFake).to.have.been.calledOnceWithExactly(3);
+    });
+
+    it("doesn't scroll to item when activeMatch is not provided", async () => {
+      const providerMock = moq.Mock.ofType<IPropertyDataProvider>();
+      providerMock.setup(async (x) => x.getData()).returns(async () => ({
+        label: PropertyRecord.fromString(""), categories: [parentCategory],
+        records: {
+          [parentCategory.name]: Array.from({ length: 10 }).map((_, index) => TestUtils.createPrimitiveStringProperty(`test${index}`, "Test", "Test")),
+        },
+      }));
+      const evt = new PropertyDataChangeEvent();
+      providerMock.setup((x) => x.onDataChanged).returns(() => evt);
+
+      const scrollToItemFake = sinon.fake();
+      sinon.replace(VariableSizeList.prototype, "scrollToItem", scrollToItemFake);
+
+      const { container, rerender } = render(
+        <VirtualizedPropertyGridWithDataProvider
+          orientation={Orientation.Horizontal}
+          dataProvider={providerMock.object}
+          highlight={highlight1}
+        />
+      );
+      await waitForElement(() => getByTitle(container, "test9"), { container });
+
+      rerender(<VirtualizedPropertyGridWithDataProvider
+        orientation={Orientation.Horizontal}
+        dataProvider={providerMock.object}
+      />);
+      await waitForElement(() => getByTitle(container, "test9"), { container });
+
+      expect(scrollToItemFake).to.not.have.been.called;
+    });
+
+    it("doesn't scroll to item when there are no items in the grid", async () => {
+      const providerMock = moq.Mock.ofType<IPropertyDataProvider>();
+      providerMock.setup(async (x) => x.getData()).returns(async () => ({ label: PropertyRecord.fromString(""), categories: [], records: {} }));
+      const evt = new PropertyDataChangeEvent();
+      providerMock.setup((x) => x.onDataChanged).returns(() => evt);
+
+      const scrollToItemFake = sinon.fake();
+      sinon.replace(VariableSizeList.prototype, "scrollToItem", scrollToItemFake);
+
+      const { container, rerender } = render(
+        <VirtualizedPropertyGridWithDataProvider
+          orientation={Orientation.Horizontal}
+          dataProvider={providerMock.object}
+          highlight={highlightValue}
+        />
+      );
+      await waitForElement(() => container.querySelector('[class="components-property-grid"]'));
+
+      rerender(<VirtualizedPropertyGridWithDataProvider
+        orientation={Orientation.Horizontal}
+        dataProvider={providerMock.object}
+      />);
+      await waitForElement(() => container.querySelector('[class="components-property-grid"]'));
+
+      expect(scrollToItemFake).to.not.have.been.called;
+    });
+
+    it("doesn't scroll to item if there is no matching item in the grid", async () => {
+      const highlight3 = {
+        highlightedText: "test",
+        activeMatch: {
+          highlightedItemIdentifier: "falseTest2",
+          highlightIndex: 0,
+        },
+        filteredTypes: [FilteredType.Value],
+      };
+
+      const providerMock = moq.Mock.ofType<IPropertyDataProvider>();
+      providerMock.setup(async (x) => x.getData()).returns(async () => ({
+        label: PropertyRecord.fromString(""), categories: [parentCategory],
+        records: {
+          [parentCategory.name]: Array.from({ length: 10 }).map((_, index) => TestUtils.createPrimitiveStringProperty(`test${index}`, "Test", "Test")),
+        },
+      }));
+      const evt = new PropertyDataChangeEvent();
+      providerMock.setup((x) => x.onDataChanged).returns(() => evt);
+
+      const scrollToItemFake = sinon.fake();
+      sinon.replace(VariableSizeList.prototype, "scrollToItem", scrollToItemFake);
+
+      const { container, rerender } = render(
+        <VirtualizedPropertyGridWithDataProvider
+          orientation={Orientation.Horizontal}
+          dataProvider={providerMock.object}
+          highlight={highlight1}
+        />
+      );
+      await waitForElement(() => getByTitle(container, "test9"), { container });
+
+      rerender(<VirtualizedPropertyGridWithDataProvider
+        orientation={Orientation.Horizontal}
+        dataProvider={providerMock.object}
+        highlight={highlight3}
+      />);
+      await waitForElement(() => getByTitle(container, "test9"), { container });
+
+      expect(scrollToItemFake).to.not.have.been.called;
+    });
   });
 });

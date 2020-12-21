@@ -81,6 +81,9 @@
     "ToggleRealityTileLogging": {
       "keyin": "fdt toggle reality logging"
     },
+    "ToggleSectionCut": {
+      "keyin": "fdt section cut"
+    },
     "SetAspectRatioSkew": {
       "keyin": "fdt aspect skew"
     },
@@ -150,6 +153,9 @@
     "ClipColorTool": {
       "keyin": "fdt clip color"
     },
+    "TestClipStyle": {
+      "keyin": "fdt test clip style"
+    },
     "SourceAspectIdFromElementId": {
       "keyin": "fdt sourceId from elemId"
     },
@@ -209,6 +215,9 @@
     },
     "AttachCesiumAssetTool": {
       "keyin": "fdt attach cesium asset"
+    },
+    "SetBuildingDisplay": {
+      "keyin": "fdt set building display"
     },
     "ExtensionService": {
       "keyin": "fdt add extensionService"

@@ -35,9 +35,13 @@ export class AuxChannelData {
   /** The vertex values for this data.  A single value per vertex for scalar types and 3 values (x,y,z) for normal or vector channels. */
   public values: number[];
   /** Construct a new [[AuxChannelData]] from input value and vertex values. */
-  constructor(input: number, values: number[]) {
+  constructor(input: number, values: number[] | Float64Array) {
     this.input = input;
-    this.values = values;
+    if (values instanceof Float64Array) {
+      this.values = [];
+      for (const v of values) this.values.push(v);
+    } else
+      this.values = values;
   }
   /** Copy blocks of size `blockSize` from (blocked index) `thisIndex` in this AuxChannelData to (blockIndex) `otherIndex` of `other` */
   public copyValues(other: AuxChannelData, thisIndex: number, otherIndex: number, blockSize: number) {
@@ -49,7 +53,7 @@ export class AuxChannelData {
     return new AuxChannelData(this.input, this.values.slice());
   }
   /** toleranced comparison of the `input` and `value` fields.
-   * * Default tolernace is 1.0e-8
+   * * Default tolerance is 1.0e-8
    */
   public isAlmostEqual(other: AuxChannelData, tol?: number) {
     const tolerance = tol ? tol : 1.0E-8;
@@ -114,12 +118,12 @@ export class AuxChannel {
 /**  The `PolyfaceAuxData` structure contains one or more analytical data channels for each vertex of a `Polyface`.
  * Typically a `Polyface` will contain only vertex data required for its basic display,the vertex position, normal
  * and possibly texture parameter.  The `PolyfaceAuxData` structure contains supplemental data that is generally computed
- *  in an analysis program or other external data source.  This can be scalar data used to either overide the vertex colors through *Thematic Colorization* or
- *  XYZ data used to deform the mesh by adjusting the vertex postions or normals.
+ *  in an analysis program or other external data source.  This can be scalar data used to either override the vertex colors through *Thematic Colorization* or
+ *  XYZ data used to deform the mesh by adjusting the vertex positions or normals.
  * @public
  */
 export class PolyfaceAuxData {
-  /** Array with one or more channels of auxilliary data for the associated polyface. */
+  /** Array with one or more channels of auxiliary data for the associated polyface. */
   public channels: AuxChannel[];
   /** indices The indices (shared by all data in all channels) mapping the data to the mesh facets. */
   public indices: number[];

@@ -3,10 +3,142 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import React from "react";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
+import { render } from "@testing-library/react";
+import { HighlightingComponentProps } from "../../../ui-components/common/HighlightingComponentProps";
 import { CommonPropertyRenderer } from "../../../ui-components/properties/renderers/CommonPropertyRenderer";
 
 describe("CommonPropertyRenderer", () => {
+  describe("createNewDisplayValue", () => {
+    it("should create a value which is highlighted if highlighProps are provided, applyOnLabel is set to true and highlightedText matches part of propertyRecord", () => {
+      const propertyRecord = PropertyRecord.fromString("asdtestasd");
+      const highlight: HighlightingComponentProps & { applyOnLabel: boolean, applyOnValue: boolean } = {
+        highlightedText: "test",
+        applyOnLabel: false,
+        applyOnValue: true,
+      };
+      const displayValue = CommonPropertyRenderer.createNewDisplayValue(Orientation.Vertical, propertyRecord, 10, undefined, undefined, undefined, undefined, highlight);
+      const { container } = render(<div>{displayValue}</div>);
+      const element = container.querySelector("mark");
+      expect(element?.textContent).to.equal("test");
+    });
+
+    it("should create a value which is not highlighted if highlighProps are provided, applyOnLabel is set to true but highlightedText does not match any part of propertyRecord", () => {
+      const propertyRecord = PropertyRecord.fromString("asdtestasd");
+      const highlight: HighlightingComponentProps & { applyOnLabel: boolean, applyOnValue: boolean } = {
+        highlightedText: "gav",
+        applyOnLabel: false,
+        applyOnValue: true,
+      };
+      const displayValue = CommonPropertyRenderer.createNewDisplayValue(Orientation.Vertical, propertyRecord, 10, undefined, undefined, undefined, undefined, highlight);
+      const { container } = render(<div>{displayValue}</div>);
+      const element = container.querySelector("mark");
+      expect(element?.textContent).to.be.undefined;
+    });
+
+    it("should create a value which is not highlighted if highlighProps are not provided", () => {
+      const propertyRecord = PropertyRecord.fromString("asdtestasd");
+
+      const displayValue = CommonPropertyRenderer.createNewDisplayValue(Orientation.Vertical, propertyRecord, 10, undefined);
+      const { container } = render(<div>{displayValue}</div>);
+      const element = container.querySelector("mark");
+      expect(element?.textContent).to.be.undefined;
+    });
+
+    it("should create a value which is actively highlighted if highlighProps are provided, highlightedText matches part of propertyRecord and property name matches highlight activeMatch propertyName", () => {
+      const propertyRecord = PropertyRecord.fromString("asdtestasd");
+      propertyRecord.property.name = "testName";
+      const highlight: HighlightingComponentProps & { applyOnLabel: boolean, applyOnValue: boolean } = {
+        highlightedText: "test",
+        activeHighlight: {
+          highlightedItemIdentifier: "testName",
+          highlightIndex: 0,
+        },
+        applyOnLabel: false,
+        applyOnValue: true,
+      };
+      const displayValue = CommonPropertyRenderer.createNewDisplayValue(Orientation.Vertical, propertyRecord, 10, undefined, undefined, undefined, undefined, highlight);
+      const { container } = render(<div>{displayValue}</div>);
+      const element = container.querySelector("mark");
+      expect(element?.textContent).to.equal("test");
+      expect(element?.classList.contains("components-activehighlight")).to.be.true;
+    });
+
+    it("should not create a value which is actively highlighted if highlighProps are provided, highlightedText matches part of propertyRecord but property name does not match highlight activeMatch propertyName", () => {
+      const propertyRecord = PropertyRecord.fromString("asdtestasd");
+      propertyRecord.property.name = "testName2";
+      const highlight: HighlightingComponentProps & { applyOnLabel: boolean, applyOnValue: boolean } = {
+        highlightedText: "test",
+        activeHighlight: {
+          highlightedItemIdentifier: "testName",
+          highlightIndex: 0,
+        },
+        applyOnLabel: false,
+        applyOnValue: true,
+      };
+      const displayValue = CommonPropertyRenderer.createNewDisplayValue(Orientation.Vertical, propertyRecord, 10, undefined, undefined, undefined, undefined, highlight);
+      const { container } = render(<div>{displayValue}</div>);
+      const element = container.querySelector("mark");
+      expect(element?.textContent).to.equal("test");
+      expect(element?.classList.contains("components-activehighlight")).to.be.false;
+    });
+
+    it("should not create a value which is actively highlighted if highlighProps are provided, highlightedText matches part of propertyRecord, property name matches highlight activeMatch propertyName but applyOnLabel is true and matchIndex is in the label scope", () => {
+      const propertyRecord = PropertyRecord.fromString("asdtestasd");
+      propertyRecord.property.name = "testName";
+      propertyRecord.property.displayLabel = "tesTtest";
+      const highlight: HighlightingComponentProps & { applyOnLabel: boolean, applyOnValue: boolean } = {
+        highlightedText: "test",
+        activeHighlight: {
+          highlightedItemIdentifier: "testName",
+          highlightIndex: 1,
+        },
+        applyOnLabel: true,
+        applyOnValue: true,
+      };
+      const displayValue = CommonPropertyRenderer.createNewDisplayValue(Orientation.Vertical, propertyRecord, 10, undefined, undefined, undefined, undefined, highlight);
+      const { container } = render(<div>{displayValue}</div>);
+      const element = container.querySelector("mark");
+      expect(element?.textContent).to.equal("test");
+      expect(element?.classList.contains("components-activehighlight")).to.be.false;
+    });
+
+    it("should create a value which is actively highlighted if highlighProps are provided, highlightedText matches part of propertyRecord, property name matches highlight activeMatch propertyName, applyOnLabel is true and matchIndex is bigger than label matchCount and is in the value scope", () => {
+      const propertyRecord = PropertyRecord.fromString("asdtestasd");
+      propertyRecord.property.name = "testName";
+      propertyRecord.property.displayLabel = "tesTtest";
+      const highlight: HighlightingComponentProps & { applyOnLabel: boolean, applyOnValue: boolean } = {
+        highlightedText: "test",
+        activeHighlight: {
+          highlightedItemIdentifier: "testName",
+          highlightIndex: 2,
+        },
+        applyOnLabel: true,
+        applyOnValue: true,
+      };
+      const displayValue = CommonPropertyRenderer.createNewDisplayValue(Orientation.Vertical, propertyRecord, 10, undefined, undefined, undefined, undefined, highlight);
+      const { container } = render(<div>{displayValue}</div>);
+      const element = container.querySelector("mark");
+      expect(element?.textContent).to.equal("test");
+      expect(element?.classList.contains("components-activehighlight")).to.be.true;
+    });
+
+    it("should not create a value which is highlighted if applyOnValue is false", () => {
+      const propertyRecord = PropertyRecord.fromString("asdtestasd");
+      const highlight: HighlightingComponentProps & { applyOnLabel: boolean, applyOnValue: boolean } = {
+        highlightedText: "gav",
+        applyOnLabel: false,
+        applyOnValue: true,
+      };
+      const displayValue = CommonPropertyRenderer.createNewDisplayValue(Orientation.Vertical, propertyRecord, 10, undefined, undefined, undefined, undefined, highlight);
+      const { container } = render(<div>{displayValue}</div>);
+      const element = container.querySelector("mark");
+      expect(element?.textContent).to.be.undefined;
+    });
+  });
+
   describe("getLabelOffset", () => {
     const maxIndent = 17;
     const minIndent = 6;

@@ -1,6 +1,68 @@
 # Change Log - @bentley/presentation-common
 
-This log was last generated on Mon, 26 Oct 2020 21:21:01 GMT and should not be manually modified.
+This log was last generated on Sun, 13 Dec 2020 19:00:03 GMT and should not be manually modified.
+
+## 2.9.9
+Sun, 13 Dec 2020 19:00:03 GMT
+
+_Version update only_
+
+## 2.9.8
+Fri, 11 Dec 2020 02:57:36 GMT
+
+_Version update only_
+
+## 2.9.7
+Wed, 09 Dec 2020 20:58:23 GMT
+
+_Version update only_
+
+## 2.9.6
+Mon, 07 Dec 2020 18:40:48 GMT
+
+_Version update only_
+
+## 2.9.5
+Sat, 05 Dec 2020 01:55:56 GMT
+
+### Updates
+
+- Repeat RPC requests when unknown failures happen
+
+## 2.9.4
+Wed, 02 Dec 2020 20:55:40 GMT
+
+### Updates
+
+- Include actual primary class ids for nested content fields
+
+## 2.9.3
+Mon, 23 Nov 2020 20:57:56 GMT
+
+_Version update only_
+
+## 2.9.2
+Mon, 23 Nov 2020 15:33:50 GMT
+
+_Version update only_
+
+## 2.9.1
+Thu, 19 Nov 2020 17:03:42 GMT
+
+_Version update only_
+
+## 2.9.0
+Wed, 18 Nov 2020 16:01:50 GMT
+
+### Updates
+
+- Add `handlePropertiesPolymorphically` attribute to `ContentInstancesOfSpecificClasses` specification.
+- Support getting distinct values for x-to-many related properties
+
+## 2.8.1
+Tue, 03 Nov 2020 00:33:56 GMT
+
+_Version update only_
 
 ## 2.8.0
 Fri, 23 Oct 2020 17:04:02 GMT
@@ -13,6 +75,11 @@ Fri, 23 Oct 2020 17:04:02 GMT
 - Do not duplicate nodes when traversing from node that merges multiple instances from the 'many' side of relationship
 - Add support for specifying "*" and property overrides in `RelatedPropertiesSpecification.properties`
 - Ruleset creation fails for (0, 0) 2D point
+
+## 2.7.6
+Wed, 11 Nov 2020 16:28:23 GMT
+
+_Version update only_
 
 ## 2.7.5
 Fri, 23 Oct 2020 16:23:50 GMT

@@ -2,6 +2,147 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "2.9.9",
+      "tag": "@bentley/imodeljs-frontend_v2.9.9",
+      "date": "Sun, 13 Dec 2020 19:00:03 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add ability for caller to override quantity display format per QuantityType."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.9.8",
+      "tag": "@bentley/imodeljs-frontend_v2.9.8",
+      "date": "Fri, 11 Dec 2020 02:57:36 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.7",
+      "tag": "@bentley/imodeljs-frontend_v2.9.7",
+      "date": "Wed, 09 Dec 2020 20:58:23 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed an issue where WMS GetFeatureInfo would not work correctly on all sublayers."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.9.6",
+      "tag": "@bentley/imodeljs-frontend_v2.9.6",
+      "date": "Mon, 07 Dec 2020 18:40:48 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.5",
+      "tag": "@bentley/imodeljs-frontend_v2.9.5",
+      "date": "Sat, 05 Dec 2020 01:55:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.4",
+      "tag": "@bentley/imodeljs-frontend_v2.9.4",
+      "date": "Wed, 02 Dec 2020 20:55:40 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.3",
+      "tag": "@bentley/imodeljs-frontend_v2.9.3",
+      "date": "Mon, 23 Nov 2020 20:57:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.2",
+      "tag": "@bentley/imodeljs-frontend_v2.9.2",
+      "date": "Mon, 23 Nov 2020 15:33:50 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Apply workaround for transparency anomalies caused by buggy Intel drivers."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.9.1",
+      "tag": "@bentley/imodeljs-frontend_v2.9.1",
+      "date": "Thu, 19 Nov 2020 17:03:42 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.0",
+      "tag": "@bentley/imodeljs-frontend_v2.9.0",
+      "date": "Wed, 18 Nov 2020 16:01:50 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "pass map layer accessKeys through configOptions instead of hardcoded"
+          },
+          {
+            "comment": "Preliminary support for interactive editing sessions."
+          },
+          {
+            "comment": "Clean up EventSource API for push events."
+          },
+          {
+            "comment": "Fix ECEF for reality models"
+          },
+          {
+            "comment": "Change key name for MapboxLayers"
+          },
+          {
+            "comment": "Create animation tile trees if only transform present."
+          },
+          {
+            "comment": "disable frontend Bentley telemetry in iModelBank use case"
+          },
+          {
+            "comment": "Thematic surface isolines are now pickable. Previously, trying to select an area in between isolines for a surface would select the surface. Now the empty space in between does not count."
+          },
+          {
+            "comment": "Added ability to override the color of a point cloud."
+          },
+          {
+            "comment": "Work around memory issues on iPads when rendering reality tile trees by introducing a mobile-only memory threshold which triggers a prune on tile trees."
+          },
+          {
+            "comment": "Fix issue where some apps would exception when quantityFormatter.onIntialize was called before redux state was set up."
+          },
+          {
+            "comment": "Fix QuantityFormatter volume definitions."
+          },
+          {
+            "comment": "Support for push events"
+          },
+          {
+            "comment": "Set reality tile and terrain branches to own their own children."
+          },
+          {
+            "comment": "Add call to reload tool settings UI."
+          },
+          {
+            "comment": "Added ViewCreator APIs"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.8.1",
+      "tag": "@bentley/imodeljs-frontend_v2.8.1",
+      "date": "Tue, 03 Nov 2020 00:33:56 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "disable frontend Bentley telemetry in iModelBank use case"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.8.0",
       "tag": "@bentley/imodeljs-frontend_v2.8.0",
       "date": "Fri, 23 Oct 2020 17:04:02 GMT",
@@ -63,6 +204,12 @@
           }
         ]
       }
+    },
+    {
+      "version": "2.7.6",
+      "tag": "@bentley/imodeljs-frontend_v2.7.6",
+      "date": "Wed, 11 Nov 2020 16:28:23 GMT",
+      "comments": {}
     },
     {
       "version": "2.7.5",

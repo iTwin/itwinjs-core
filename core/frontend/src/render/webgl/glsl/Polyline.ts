@@ -231,13 +231,14 @@ const computePosition = `
 
   v_lnInfo = vec4(0.0, 0.0, 0.0, 0.0);  // init and set flag to false
 
-  vec4 pos = MAT_MVP * rawPos;
-
   vec4 next = g_nextPos;
-  g_windowPos = modelToWindowCoordinates(rawPos, next);
-
+  float clipDist;
+  g_windowPos = modelToWindowCoordinates(rawPos, next, clipDist);
   if (g_windowPos.w == 0.0)
     return g_windowPos;
+
+  vec4 clipPos = rawPos + clipDist * (next - rawPos);
+  vec4 pos = MAT_MVP * clipPos;
 
   float param = a_param;
   float weight = computeLineWeight();
@@ -256,7 +257,7 @@ const computePosition = `
     param -= kNegatePerp;
   }
 
-  vec4 projNext = modelToWindowCoordinates(next, rawPos);
+  vec4 projNext = modelToWindowCoordinates(next, rawPos, clipDist);
   g_windowDir = projNext.xy - g_windowPos.xy;
 
   if (param < kJointBase) {
@@ -268,7 +269,7 @@ const computePosition = `
   if (kNone != param) {
     vec2 delta = vec2(0.0);
     vec4 prev   = g_prevPos;
-    vec4 projPrev = modelToWindowCoordinates(prev, rawPos);
+    vec4 projPrev = modelToWindowCoordinates(prev, rawPos, clipDist);
     vec2 prevDir   = g_windowPos.xy - projPrev.xy;
     float thisLength = sqrt(g_windowDir.x * g_windowDir.x + g_windowDir.y * g_windowDir.y);
     const float s_minNormalizeLength = 1.0E-5;  // avoid normalizing zero length vectors.
@@ -349,6 +350,6 @@ export function createPolylineHiliter(instanced: IsInstanced): ProgramBuilder {
   const builder = new ProgramBuilder(AttributeMap.findAttributeMap(TechniqueId.Polyline, IsInstanced.Yes === instanced), instanced ? ShaderBuilderFlags.InstancedVertexTable : ShaderBuilderFlags.VertexTable);
   addCommon(builder);
   addFrustum(builder);
-  addHiliter(builder);
+  addHiliter(builder, true);
   return builder;
 }

@@ -15,6 +15,8 @@ import { areEqual, ListChildComponentProps, VariableSizeList } from "react-windo
 import { assert } from "@bentley/bentleyjs-core";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { Orientation, RatioChangeResult } from "@bentley/ui-core";
+import { FilteredType, MutableCategorizedPrimitiveProperty, MutableGridCategory } from "../../../ui-components";
+import { HighlightingComponentProps } from "../../common/HighlightingComponentProps";
 import { createContextWithMandatoryProvider } from "../../common/UseContextWithMandatoryProvider";
 import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
 import { ActionButtonRenderer } from "../../properties/renderers/ActionButtonRenderer";
@@ -38,6 +40,7 @@ import { PropertyGridEventsRelatedPropsSupplier } from "./PropertyGridEventsRela
 export interface VirtualizedPropertyGridProps extends CommonPropertyGridProps {
   model: IPropertyGridModel;
   eventHandler: IPropertyGridEventHandler;
+  highlight?: HighlightingComponentProps & { filteredTypes?: FilteredType[] };
 }
 
 /** State of [[VirtualizedPropertyGrid]] React component
@@ -88,6 +91,8 @@ export interface VirtualizedPropertyGridContext {
     isResizeHandleBeingDragged?: boolean;
     onResizeHandleDragChanged?: (isDragStarted: boolean) => void;
     columnInfo?: PropertyGridColumnInfo;
+
+    highlight?: HighlightingComponentProps & { filteredTypes?: FilteredType[] };
   };
 }
 
@@ -142,6 +147,23 @@ export class VirtualizedPropertyGrid extends React.Component<VirtualizedProperty
 
     if (this.props.model !== prevProps.model) {
       this._listRef.current?.resetAfterIndex(0);
+    }
+
+    if (this.props.highlight !== prevProps.highlight && this.props.highlight?.activeHighlight && this.state.gridItems.length !== 0) {
+
+      let index = 0;
+      let foundMatchingItem = false;
+      for (const item of this.state.gridItems) {
+        if (item instanceof MutableCategorizedPrimitiveProperty && this.props.highlight?.activeHighlight?.highlightedItemIdentifier === item.derivedRecord.property.name
+          || item instanceof MutableGridCategory && this.props.highlight?.activeHighlight?.highlightedItemIdentifier === item.name) {
+          foundMatchingItem = true;
+          break;
+        }
+        index++;
+      }
+
+      if (foundMatchingItem)
+        this._listRef.current?.scrollToItem(index);
     }
   }
 
@@ -288,6 +310,7 @@ export class VirtualizedPropertyGrid extends React.Component<VirtualizedProperty
                     actionButtonRenderers: this.props.actionButtonRenderers,
 
                     onNodeHeightChanged: this._handleNodeHeightChange,
+                    highlight: this.props.highlight,
                   },
                 };
 
@@ -348,6 +371,10 @@ const FlatGridItemNode = React.memo(
                 style={gridContext.style}
                 category={node.derivedCategory}
                 onExpansionToggled={onExpansionToggled}
+                highlight={gridContext.highlight?.filteredTypes?.includes(FilteredType.Category)?
+                  gridContext.highlight :
+                  undefined
+                }
               />
             </FlatItemNestedBorderWrapper>
           );
@@ -398,6 +425,11 @@ const FlatGridItemNode = React.memo(
                 onColumnRatioChanged={gridContext.onColumnChanged}
                 onResizeHandleDragChanged={gridContext.onResizeHandleDragChanged}
                 onResizeHandleHoverChanged={gridContext.onResizeHandleHoverChanged}
+
+                highlight={gridContext.highlight ?
+                  { applyOnLabel: (gridContext.highlight.filteredTypes?.includes(FilteredType.Label)) ?? false, applyOnValue: (gridContext.highlight.filteredTypes?.includes(FilteredType.Value)) ?? false, ...gridContext.highlight } :
+                  undefined
+                }
               />
             </FlatItemNestedBorderWrapper>
           );

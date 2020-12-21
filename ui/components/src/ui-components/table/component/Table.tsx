@@ -1439,8 +1439,17 @@ export class Table extends React.Component<TableProps, TableState> {
       this.props.onScrollToRow(scrollData.rowVisibleStartIdx);
   };
 
+  /** Determines if focus is in an input element - for filter checking */
+  private isFocusOnInputElement(): boolean {
+    const element: HTMLElement = document.activeElement as HTMLElement;
+    return element &&
+      (element instanceof HTMLInputElement ||
+        element instanceof HTMLSelectElement ||
+        element instanceof HTMLTextAreaElement);
+  }
+
   private _onKeyboardEvent = (e: React.KeyboardEvent, keyDown: boolean) => {
-    if (isNavigationKey(e.key) && !this.state.cellEditorState.active) {
+    if (isNavigationKey(e.key) && !this.state.cellEditorState.active && !this.isFocusOnInputElement()) {
       if (this._tableSelectionTarget === TableSelectionTarget.Row) {
         const handleKeyboardSelectItem = (index: number) => {
           const selectionFunction = this._rowSelectionHandler.createSelectionFunction(this._rowComponentSelectionHandler, this.createRowItemSelectionHandler(index));

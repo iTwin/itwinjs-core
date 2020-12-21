@@ -104,7 +104,7 @@ async function doExport(iModelName: string, objName: string, mtlName: string): P
     fs.appendFileSync(mtlFile, `newmtl ${materialName}\n`);
     fs.appendFileSync(mtlFile, `map_Kd ${texturePath}\n`);
 
-    fs.writeFile(texturePath, Buffer.from(texture.data, "base64"), () => { }); // async is fine
+    fs.writeFile(texturePath, texture.data, () => { }); // async is fine
   });
 
   fs.closeSync(mtlFile);

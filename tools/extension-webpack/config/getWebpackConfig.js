@@ -88,13 +88,7 @@ module.exports = function (srcFile, outDir) {
     return loaders;
   };
 
-  const sassLoaderConfig = {
-    loader: require.resolve("fast-sass-loader"),
-    options: {
-      includePaths: [path.resolve("node_modules")],
-      outputStyle: "compressed",
-    },
-  };
+  const sassLoaderConfig = "sass-loader";
 
   const rawConfig = {
     mode: "production",
@@ -208,6 +202,19 @@ module.exports = function (srcFile, outDir) {
           // match the requirements. When no loader matches it will fall
           // back to the "file" loader at the end of the loader list.
           oneOf: [
+            // iModel.js Change: Add support for SVG Sprites.
+            {
+              test: /\.svg$/,
+              resourceQuery: /sprite/,
+              use: {
+                loader: require.resolve('svg-sprite-loader'),
+                options: {
+                  symbolId: '[name]-[hash:6]',
+                  runtimeCompat: true,
+                  spriteFilename: 'sprite-[hash:6].svg',
+                },
+              },
+            },
             // "url" loader works like "file" loader except that it embeds assets
             // smaller than specified limit in bytes as data URLs to avoid requests.
             // A missing `test` is equivalent to a match.
@@ -302,19 +309,6 @@ module.exports = function (srcFile, outDir) {
                 },
                 sassLoaderConfig
               ),
-            },
-            // iModel.js Change: Add support for SVG Sprites.
-            {
-              test: /\.svg$/,
-              resourceQuery: /sprite/,
-              use: {
-                loader: require.resolve('svg-sprite-loader'),
-                options: {
-                  symbolId: '[name]-[hash:6]',
-                  runtimeCompat: true,
-                  spriteFilename: 'sprite-[hash:6].svg',
-                },
-              },
             },
             // "file" loader makes sure those assets get served by WebpackDevServer.
             // When you `import` an asset, you get its (virtual) filename.

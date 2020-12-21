@@ -19,6 +19,7 @@ import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { ClipPlane } from '@bentley/geometry-core';
 import { ClipPlaneContainment } from '@bentley/geometry-core';
 import { ClipVector } from '@bentley/geometry-core';
+import { ClipVectorProps } from '@bentley/geometry-core';
 import { CompressedId64Set } from '@bentley/bentleyjs-core';
 import { ConvexClipPlaneSet } from '@bentley/geometry-core';
 import { DbOpcode } from '@bentley/bentleyjs-core';
@@ -47,6 +48,7 @@ import { Map4d } from '@bentley/geometry-core';
 import { Matrix3d } from '@bentley/geometry-core';
 import { Matrix4dProps } from '@bentley/geometry-core';
 import { OpenMode } from '@bentley/bentleyjs-core';
+import { OrderedId64Iterable } from '@bentley/bentleyjs-core';
 import { Point2d } from '@bentley/geometry-core';
 import { Point3d } from '@bentley/geometry-core';
 import { PolyfaceVisitor } from '@bentley/geometry-core';
@@ -61,6 +63,7 @@ import { RpcInterfaceStatus } from '@bentley/bentleyjs-core';
 import { SerializedClientRequestContext } from '@bentley/bentleyjs-core';
 import { Transform } from '@bentley/geometry-core';
 import { TransformProps } from '@bentley/geometry-core';
+import { Vector2d } from '@bentley/geometry-core';
 import { Vector3d } from '@bentley/geometry-core';
 import { Writable } from 'stream';
 import { XAndY } from '@bentley/geometry-core';
@@ -525,6 +528,12 @@ export class BoundingSphere {
     transformBy(transform: Transform, result: BoundingSphere): BoundingSphere;
 }
 
+// @alpha
+export interface BRepCutProps {
+    bothDirections?: boolean;
+    distance?: number;
+}
+
 // @beta (undocumented)
 export namespace BRepEntity {
     export interface DataProps {
@@ -545,6 +554,43 @@ export namespace BRepEntity {
     }
 }
 
+// @alpha
+export interface BRepGeometryCreate {
+    entryArray: ElementGeometryDataEntry[];
+    onResult: BRepGeometryFunction;
+    operation: BRepGeometryOperation;
+    parameters?: BRepCutProps | BRepThickenProps | BRepHollowProps | BRepRoundProps;
+    separateDisjoint?: boolean;
+}
+
+// @alpha
+export type BRepGeometryFunction = (info: BRepGeometryInfo) => void;
+
+// @alpha
+export interface BRepGeometryInfo {
+    entryArray: ElementGeometryDataEntry[];
+}
+
+// @alpha
+export enum BRepGeometryOperation {
+    Cut = 4,
+    Emboss = 5,
+    Hollow = 7,
+    Intersect = 2,
+    Loft = 9,
+    Round = 10,
+    Sew = 3,
+    Subtract = 1,
+    Sweep = 8,
+    Thicken = 6,
+    Unite = 0
+}
+
+// @alpha
+export interface BRepHollowProps {
+    distance: number;
+}
+
 // @public
 export interface BRepPrimitive {
     // @beta (undocumented)
@@ -553,22 +599,29 @@ export interface BRepPrimitive {
     type: "brep";
 }
 
-// @internal
+// @alpha
+export interface BRepRoundProps {
+    radius: number;
+}
+
+// @alpha
+export interface BRepThickenProps {
+    backDistance?: number;
+    frontDistance?: number;
+}
+
+// @beta
 export interface BriefcaseDownloader {
-    briefcaseProps: BriefcaseProps;
+    briefcaseId: number;
     downloadPromise: Promise<void>;
+    fileName: string;
     requestCancel: () => Promise<boolean>;
 }
 
-// @internal
-export type BriefcaseKey = string;
-
-// @internal
-export interface BriefcaseProps extends RequestBriefcaseProps, DownloadBriefcaseOptions {
-    downloadStatus: DownloadBriefcaseStatus;
-    fileSize?: number;
-    readonly key: BriefcaseKey;
-    openMode: OpenMode;
+// @beta
+export interface BriefcaseProps {
+    briefcaseId: number;
+    iModelId: GuidString;
 }
 
 export { BriefcaseStatus }
@@ -717,6 +770,10 @@ export interface ChangedElements {
     // (undocumented)
     opcodes: number[];
     // (undocumented)
+    parentClassIds?: Id64String[];
+    // (undocumented)
+    parentIds?: Id64String[];
+    // (undocumented)
     properties?: Id64String[][];
     // (undocumented)
     type: number[];
@@ -774,6 +831,24 @@ export interface ClassifierTileTreeId {
     expansion: number;
     // (undocumented)
     type: BatchType.VolumeClassifier | BatchType.PlanarClassifier;
+}
+
+// @beta
+export class ClipStyle {
+    static create(produceCutGeometry: boolean, cutStyle: CutStyle): ClipStyle;
+    readonly cutStyle: CutStyle;
+    static readonly defaults: ClipStyle;
+    // (undocumented)
+    static fromJSON(props?: ClipStyleProps): ClipStyle;
+    get matchesDefaults(): boolean;
+    readonly produceCutGeometry: boolean;
+    toJSON(): ClipStyleProps | undefined;
+}
+
+// @beta
+export interface ClipStyleProps {
+    cutStyle?: CutStyleProps;
+    produceCutGeometry?: boolean;
 }
 
 // @beta (undocumented)
@@ -1456,8 +1531,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 1048576,
-    Major = 16,
+    Combined = 1310720,
+    Major = 20,
     Minor = 0
 }
 
@@ -1467,6 +1542,26 @@ export interface CustomAttribute {
     properties: {
         [propName: string]: any;
     };
+}
+
+// @beta
+export class CutStyle {
+    readonly appearance?: FeatureAppearance;
+    static create(viewflags?: Readonly<ViewFlagOverrides>, hiddenLine?: HiddenLine.Settings, appearance?: FeatureAppearance): CutStyle;
+    static readonly defaults: CutStyle;
+    // (undocumented)
+    static fromJSON(props?: CutStyleProps): CutStyle;
+    readonly hiddenLine?: HiddenLine.Settings;
+    get matchesDefaults(): boolean;
+    toJSON(): CutStyleProps | undefined;
+    readonly viewflags: Readonly<ViewFlagOverrides>;
+}
+
+// @beta
+export interface CutStyleProps {
+    appearance?: FeatureAppearanceProps;
+    hiddenLine?: HiddenLine.SettingsProps;
+    viewflags?: ViewFlagOverridesProps;
 }
 
 export { DbResult }
@@ -1614,6 +1709,12 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
     thematic?: ThematicDisplayProps;
 }
 
+// @public
+export interface DisplayStyleLoadProps {
+    compressExcludedElementIds?: boolean;
+    omitScheduleScriptElementIds?: boolean;
+}
+
 // @beta
 export interface DisplayStyleModelAppearanceProps extends FeatureAppearanceProps {
     modelId?: Id64String;
@@ -1640,7 +1741,7 @@ export class DisplayStyleSettings {
     constructor(jsonProperties: {
         styles?: DisplayStyleSettingsProps;
     });
-    addExcludedElements(id: Id64String): void;
+    addExcludedElements(id: Id64String | Iterable<Id64String>): void;
     // @alpha (undocumented)
     get analysisFraction(): number;
     set analysisFraction(fraction: number);
@@ -1655,13 +1756,22 @@ export class DisplayStyleSettings {
     set backgroundColor(color: ColorDef);
     get backgroundMap(): BackgroundMapSettings;
     set backgroundMap(map: BackgroundMapSettings);
+    clearExcludedElements(): void;
+    // @beta
+    get clipStyle(): ClipStyle;
+    set clipStyle(style: ClipStyle);
+    // @internal (undocumented)
+    get compressedExcludedElementIds(): CompressedId64Set;
     dropExcludedElement(id: Id64String): void;
+    dropExcludedElements(id: Id64String | Iterable<Id64String>): void;
     dropModelAppearanceOverride(id: Id64String): void;
     dropSubCategoryOverride(id: Id64String): void;
     // @internal (undocumented)
     equalModelAppearanceOverrides(other: DisplayStyleSettings): boolean;
     // @internal (undocumented)
     equalSubCategoryOverrides(other: DisplayStyleSettings): boolean;
+    get excludedElementIds(): OrderedId64Iterable;
+    // @deprecated
     get excludedElements(): Set<Id64String>;
     getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined;
     getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
@@ -1706,8 +1816,10 @@ export interface DisplayStyleSettingsProps {
     analysisStyle?: AnalysisStyleProps;
     backgroundColor?: ColorDefProps;
     backgroundMap?: BackgroundMapProps;
+    // @beta
+    clipStyle?: ClipStyleProps;
     contextRealityModels?: ContextRealityModelProps[];
-    excludedElements?: Id64String[];
+    excludedElements?: Id64Array | CompressedId64Set;
     // @alpha
     mapImagery?: MapImageryProps;
     // @beta
@@ -1736,27 +1848,24 @@ export enum DomainOptions {
     Upgrade = 2
 }
 
-// @beta
-export interface DownloadBriefcaseOptions {
-    syncMode: SyncMode;
-}
-
 // @internal
 export enum DownloadBriefcaseStatus {
     // (undocumented)
-    ApplyingChangeSets = 4,
+    ApplyingChangeSets = 5,
     // (undocumented)
-    Complete = 5,
+    Complete = 6,
     // (undocumented)
-    DownloadingChangeSets = 3,
+    DownloadingChangeSets = 4,
     // (undocumented)
-    DownloadingCheckpoint = 2,
+    DownloadingCheckpoint = 3,
     // (undocumented)
-    Error = 6,
+    Error = 7,
     // (undocumented)
     Initializing = 1,
     // (undocumented)
-    NotStarted = 0
+    NotStarted = 0,
+    // (undocumented)
+    QueryCheckpointService = 2
 }
 
 // @beta
@@ -2031,41 +2140,71 @@ export interface ElementAspectProps extends EntityProps {
 
 // @alpha
 export namespace ElementGeometry {
-    // (undocumented)
     export function appendGeometryParams(geomParams: GeometryParams, entries: ElementGeometryDataEntry[]): boolean;
-    // (undocumented)
+    export class Builder {
+        appendBRepData(brep: BRepEntity.DataProps): boolean;
+        appendGeometryParamsChange(geomParams: GeometryParams): boolean;
+        appendGeometryPart(partId: Id64String, partToElement?: Transform): boolean;
+        appendGeometryPart2d(partId: Id64String, instanceOrigin?: Point2d, instanceRotation?: Angle, instanceScale?: number): boolean;
+        appendGeometryPart3d(partId: Id64String, instanceOrigin?: Point3d, instanceRotation?: YawPitchRollAngles, instanceScale?: number): boolean;
+        appendGeometryQuery(geometry: GeometryQuery): boolean;
+        appendGeometryRanges(): boolean;
+        appendImageGraphic(image: ImageGraphic): boolean;
+        appendTextString(text: TextString): boolean;
+        // (undocumented)
+        readonly entries: ElementGeometryDataEntry[];
+    }
     export function fromBRep(brep: BRepEntity.DataProps): ElementGeometryDataEntry | undefined;
-    // (undocumented)
     export function fromGeometryPart(partId: Id64String, partToElement?: Transform): ElementGeometryDataEntry | undefined;
-    // (undocumented)
     export function fromGeometryQuery(geom: GeometryQuery): ElementGeometryDataEntry | undefined;
-    // (undocumented)
     export function fromImageGraphic(image: ImageGraphicProps): ElementGeometryDataEntry | undefined;
-    // (undocumented)
     export function fromSubGraphicRange(bbox: ElementAlignedBox3d): ElementGeometryDataEntry | undefined;
-    // (undocumented)
     export function fromTextString(text: TextStringProps): ElementGeometryDataEntry | undefined;
-    // (undocumented)
     export function isAppearanceEntry(entry: ElementGeometryDataEntry): boolean;
-    // (undocumented)
     export function isGeometricEntry(entry: ElementGeometryDataEntry): boolean;
-    // (undocumented)
     export function isGeometryQueryEntry(entry: ElementGeometryDataEntry): boolean;
+    export class Iterator implements IterableIterator<IteratorEntry> {
+        // (undocumented)
+        [Symbol.iterator](): IterableIterator<IteratorEntry>;
+        constructor(info: ElementGeometryInfo, categoryOrGeometryParams?: Id64String | GeometryParams, localToWorld?: Transform);
+        readonly brepsPresent?: boolean;
+        readonly entryArray: ElementGeometryDataEntry[];
+        next(): IteratorResult<IteratorEntry>;
+        readonly placement: Placement3d;
+        readonly viewIndependent?: boolean;
+    }
+    export interface IteratorData {
+        readonly geomParams: GeometryParams;
+        readonly localRange?: Range3d;
+        readonly localToWorld?: Transform;
+        readonly value: ElementGeometryDataEntry;
+    }
     // (undocumented)
+    export class IteratorEntry implements IteratorData {
+        constructor(geomParams: GeometryParams, localToWorld: Transform);
+        // (undocumented)
+        readonly geomParams: GeometryParams;
+        // (undocumented)
+        localRange?: Range3d;
+        // (undocumented)
+        readonly localToWorld?: Transform;
+        toBRepData(wantBRepData?: boolean): BRepEntity.DataProps | undefined;
+        toGeometryPart(partToLocal?: Transform, partToWorld?: Transform): Id64String | undefined;
+        toGeometryQuery(): GeometryQuery | undefined;
+        toImageGraphic(): ImageGraphic | undefined;
+        toTextString(): TextString | undefined;
+        // (undocumented)
+        get value(): ElementGeometryDataEntry;
+        set value(value: ElementGeometryDataEntry);
+        }
     export function toBRep(entry: ElementGeometryDataEntry, wantBRepData?: boolean): BRepEntity.DataProps | undefined;
     export function toElementAlignedBox3d(bbox: Float64Array): ElementAlignedBox3d | undefined;
-    // (undocumented)
     export function toGeometryPart(entry: ElementGeometryDataEntry, partToElement?: Transform): Id64String | undefined;
-    // (undocumented)
     export function toGeometryQuery(entry: ElementGeometryDataEntry): GeometryQuery | undefined;
-    // (undocumented)
     export function toImageGraphic(entry: ElementGeometryDataEntry): ImageGraphicProps | undefined;
-    // (undocumented)
     export function toSubGraphicRange(entry: ElementGeometryDataEntry): ElementAlignedBox3d | undefined;
-    // (undocumented)
     export function toTextString(entry: ElementGeometryDataEntry): TextStringProps | undefined;
     export function toTransform(sourceToWorld: Float64Array): Transform | undefined;
-    // (undocumented)
     export function updateGeometryParams(entry: ElementGeometryDataEntry, geomParams: GeometryParams): boolean;
 }
 
@@ -2164,9 +2303,7 @@ export interface ElementLoadProps {
     // (undocumented)
     code?: CodeProps;
     // @internal
-    displayStyle?: {
-        omitScheduleScriptElementIds?: boolean;
-    };
+    displayStyle?: DisplayStyleLoadProps;
     // (undocumented)
     federationGuid?: GuidString;
     // (undocumented)
@@ -2322,6 +2459,7 @@ export class FeatureAppearance implements FeatureAppearanceProps {
     get isFullyTransparent(): boolean;
     // (undocumented)
     readonly linePixels?: LinePixels;
+    get matchesDefaults(): boolean;
     // (undocumented)
     readonly nonLocatable?: true | undefined;
     // (undocumented)
@@ -2359,7 +2497,18 @@ export interface FeatureAppearanceProps {
 
 // @beta
 export interface FeatureAppearanceProvider {
-    getFeatureAppearance(overrides: FeatureOverrides, elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined;
+    getFeatureAppearance(source: FeatureAppearanceSource, elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined;
+}
+
+// @beta (undocumented)
+export namespace FeatureAppearanceProvider {
+    export function chain(first: FeatureAppearanceProvider, second: FeatureAppearanceProvider): FeatureAppearanceProvider;
+    export function supplement(supplementAppearance: (appearance: FeatureAppearance) => FeatureAppearance): FeatureAppearanceProvider;
+}
+
+// @public
+export interface FeatureAppearanceSource {
+    getAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined;
 }
 
 // @internal
@@ -2399,7 +2548,7 @@ export enum FeatureIndexType {
 }
 
 // @public
-export class FeatureOverrides {
+export class FeatureOverrides implements FeatureAppearanceSource {
     constructor();
     // @internal (undocumented)
     get alwaysDrawn(): Id64.Uint32Set;
@@ -2982,7 +3131,7 @@ export class GltfBufferData {
 
 // @internal
 export class GltfBufferView {
-    constructor(data: Uint8Array, count: number, type: GltfDataType, accessor: any);
+    constructor(data: Uint8Array, count: number, type: GltfDataType, accessor: any, stride: number);
     // (undocumented)
     readonly accessor: any;
     // (undocumented)
@@ -2991,6 +3140,8 @@ export class GltfBufferView {
     readonly count: number;
     // (undocumented)
     readonly data: Uint8Array;
+    // (undocumented)
+    readonly stride: number;
     // (undocumented)
     toBufferData(desiredType: GltfDataType): GltfBufferData | undefined;
     // (undocumented)
@@ -3081,6 +3232,8 @@ export enum GltfMeshMode {
     Lines = 1,
     // (undocumented)
     LineStrip = 3,
+    // (undocumented)
+    Points = 0,
     // (undocumented)
     Triangles = 4
 }
@@ -3263,8 +3416,12 @@ export interface HemisphereLightsProps {
 export namespace HiddenLine {
     export class Settings {
         static defaults: Settings;
+        // (undocumented)
+        equals(other: Settings): boolean;
         static fromJSON(json?: SettingsProps): Settings;
         readonly hidden: Style;
+        // (undocumented)
+        get matchesDefaults(): boolean;
         override(props: SettingsProps): Settings;
         // (undocumented)
         toJSON(): SettingsProps;
@@ -3586,6 +3743,9 @@ export abstract class IModel implements IModelProps {
     ecefToSpatial(ecef: XYAndZ, result?: Point3d): Point3d;
     // @internal
     protected _fileKey: string;
+    // (undocumented)
+    get geographicCoordinateSystem(): GeographicCRS | undefined;
+    set geographicCoordinateSystem(geoCRS: GeographicCRS | undefined);
     // @internal (undocumented)
     getConnectionProps(): IModelConnectionProps;
     static getDefaultSubCategoryId(categoryId: Id64String): Id64String;
@@ -3603,6 +3763,7 @@ export abstract class IModel implements IModelProps {
     // (undocumented)
     abstract get isOpen(): boolean;
     abstract get isSnapshot(): boolean;
+    get key(): string;
     name: string;
     readonly openMode: OpenMode;
     get projectExtents(): AxisAlignedBox3d;
@@ -3611,6 +3772,8 @@ export abstract class IModel implements IModelProps {
     rootSubject: RootSubjectProps;
     static readonly rootSubjectId: Id64String;
     setEcefLocation(ecef: EcefLocationProps): void;
+    // (undocumented)
+    setGeographicCoordinateSystem(geoCRS: GeographicCRSProps): void;
     spatialToCartographicFromEcef(spatial: XYAndZ, result?: Cartographic): Cartographic;
     spatialToEcef(spatial: XYAndZ, result?: Point3d): Point3d;
     // @internal (undocumented)
@@ -3681,6 +3844,7 @@ export class IModelNotFoundResponse extends RpcNotFoundResponse {
 // @public
 export interface IModelProps {
     ecefLocation?: EcefLocationProps;
+    geographicCoordinateSystem?: GeographicCRS;
     globalOrigin?: XYZProps;
     name?: string;
     projectExtents?: Range3dProps;
@@ -3718,13 +3882,13 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     // (undocumented)
     getToolTipMessage(_iModelToken: IModelRpcProps, _elementId: string): Promise<string[]>;
     // (undocumented)
-    getViewStateData(_iModelToken: IModelRpcProps, _viewDefinitionId: string): Promise<ViewStateProps>;
+    getViewStateData(_iModelToken: IModelRpcProps, _viewDefinitionId: string, _options?: ViewStateLoadProps): Promise<ViewStateProps>;
     // (undocumented)
     getViewThumbnail(_iModelToken: IModelRpcProps, _viewId: string): Promise<Uint8Array>;
     static readonly interfaceName = "IModelReadRpcInterface";
     static interfaceVersion: string;
     // (undocumented)
-    openForRead(_iModelToken: IModelRpcProps): Promise<IModelConnectionProps>;
+    openForRead(_iModelToken: IModelRpcOpenProps): Promise<IModelConnectionProps>;
     // (undocumented)
     queryElementProps(_iModelToken: IModelRpcProps, _params: EntityQueryParams): Promise<ElementProps[]>;
     // (undocumented)
@@ -3742,12 +3906,16 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
 }
 
 // @public
-export interface IModelRpcProps {
+export interface IModelRpcOpenProps {
     changeSetId?: GuidString;
     readonly contextId?: GuidString;
     readonly iModelId?: GuidString;
-    readonly key: string;
     openMode?: OpenMode;
+}
+
+// @public
+export interface IModelRpcProps extends IModelRpcOpenProps {
+    readonly key: string;
 }
 
 export { IModelStatus }
@@ -3791,6 +3959,8 @@ export class IModelVersion {
     static asOfChangeSet(changeSetId: GuidString): IModelVersion;
     evaluateChangeSet(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, imodelClient: IModelClient): Promise<GuidString>;
     static first(): IModelVersion;
+    static fromJSON(json: IModelVersionProps): IModelVersion;
+    // @deprecated
     static fromJson(jsonObj: any): IModelVersion;
     getAsOfChangeSet(): GuidString | undefined;
     getName(): string | undefined;
@@ -3798,7 +3968,21 @@ export class IModelVersion {
     get isLatest(): boolean;
     static latest(): IModelVersion;
     static named(versionName: string): IModelVersion;
+    // (undocumented)
+    toJSON(): IModelVersionProps;
     }
+
+// @public
+export interface IModelVersionProps {
+    // (undocumented)
+    afterChangeSetId?: GuidString;
+    // (undocumented)
+    first?: boolean;
+    // (undocumented)
+    latest?: boolean;
+    // (undocumented)
+    versionName?: string;
+}
 
 // @internal
 export abstract class IModelWriteRpcInterface extends RpcInterface {
@@ -3825,7 +4009,7 @@ export abstract class IModelWriteRpcInterface extends RpcInterface {
     // (undocumented)
     lockModel(_tokenProps: IModelRpcProps, _modelId: Id64String, _level: LockLevel): Promise<void>;
     // (undocumented)
-    openForWrite(_iModelToken: IModelRpcProps): Promise<IModelConnectionProps>;
+    openForWrite(_iModelToken: IModelRpcOpenProps): Promise<IModelConnectionProps>;
     // (undocumented)
     pullAndMergeChanges(_tokenProps: IModelRpcProps): Promise<IModelConnectionProps>;
     // @deprecated (undocumented)
@@ -4031,6 +4215,15 @@ export interface LineStyleProps extends DefinitionElementProps {
 
 // @public
 export type LocalAlignedBox3d = Range3d;
+
+// @beta
+export interface LocalBriefcaseProps {
+    briefcaseId: number;
+    changeSetId: GuidString;
+    contextId: GuidString;
+    fileName: string;
+    iModelId: GuidString;
+}
 
 export { LogFunction }
 
@@ -4362,7 +4555,7 @@ export class ModelClipGroup {
 // @internal (undocumented)
 export interface ModelClipGroupProps {
     // (undocumented)
-    clip?: any;
+    clip?: ClipVectorProps;
     // (undocumented)
     models?: Id64Array;
 }
@@ -4408,6 +4601,14 @@ export interface ModelGeometryChangesProps {
 }
 
 // @public
+export interface ModelLoadProps {
+    // (undocumented)
+    code?: CodeProps;
+    // (undocumented)
+    id?: Id64String;
+}
+
+// @public
 export interface ModelProps extends EntityProps {
     // (undocumented)
     isPrivate?: boolean;
@@ -4445,6 +4646,7 @@ export enum MonochromeMode {
 
 // @internal
 export abstract class NativeAppRpcInterface extends RpcInterface {
+    acquireNewBriefcaseId(_iModelId: GuidString): Promise<number>;
     authGetAccessToken(): Promise<string>;
     authInitialize(_issuer: string, _config: any): Promise<void>;
     authSignIn(): Promise<void>;
@@ -4452,10 +4654,11 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
     cancelElementGraphicsRequests(_rpcProps: IModelRpcProps, _requestIds: string[]): Promise<void>;
     cancelTileContentRequests(_iModelToken: IModelRpcProps, _contentIds: TileTreeContentIds[]): Promise<void>;
     checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
-    closeBriefcase(_key: BriefcaseKey): Promise<void>;
-    deleteBriefcase(_key: BriefcaseKey): Promise<void>;
-    downloadRequestCompleted(_key: BriefcaseKey): Promise<void>;
-    getBriefcases(): Promise<BriefcaseProps[]>;
+    closeBriefcase(_key: string): Promise<void>;
+    deleteBriefcaseFiles(_fileName: string): Promise<void>;
+    downloadBriefcase(_requestProps: RequestNewBriefcaseProps, _reportProgress: boolean): Promise<LocalBriefcaseProps>;
+    getBriefcaseFileName(_props: BriefcaseProps): Promise<string>;
+    getCachedBriefcases(_iModelId?: GuidString): Promise<LocalBriefcaseProps[]>;
     static getClient(): NativeAppRpcInterface;
     getConfig(): Promise<any>;
     static readonly interfaceName = "NativeAppRpcInterface";
@@ -4463,10 +4666,9 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
     // (undocumented)
     isInteractiveEditingSupported(_tokenProps: IModelRpcProps): Promise<boolean>;
     log(_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any): Promise<void>;
-    openBriefcase(_key: BriefcaseKey, _openOptions?: OpenBriefcaseOptions): Promise<IModelConnectionProps>;
+    open(_args: OpenBriefcaseProps): Promise<IModelConnectionProps>;
     overrideInternetConnectivity(_overriddenBy: OverriddenBy, _status?: InternetConnectivityStatus): Promise<void>;
-    requestCancelDownloadBriefcase(_key: BriefcaseKey): Promise<boolean>;
-    requestDownloadBriefcase(_requestProps: RequestBriefcaseProps, _downloadOptions: DownloadBriefcaseOptions, _reportProgress: boolean): Promise<BriefcaseProps>;
+    requestCancelDownloadBriefcase(_fileName: string): Promise<boolean>;
     storageGet(_storageId: string, _key: string): Promise<StorageValue | undefined>;
     storageKeys(_storageId: string): Promise<string[]>;
     storageMgrClose(_storageId: string, _deleteIt: boolean): Promise<void>;
@@ -4734,6 +4936,19 @@ export interface OpenAPISchema {
 // @beta
 export interface OpenBriefcaseOptions {
     openAsReadOnly?: boolean;
+}
+
+// @beta
+export interface OpenBriefcaseProps extends IModelEncryptionProps, OpenDbKey {
+    fileName: string;
+    readonly?: boolean;
+    upgrade?: UpgradeOptions;
+}
+
+// @public
+export interface OpenDbKey {
+    // (undocumented)
+    key?: string;
 }
 
 // @internal (undocumented)
@@ -5015,15 +5230,11 @@ export enum PolylineTypeFlags {
 
 // @internal
 export interface PrimaryTileTreeId {
-    // (undocumented)
     animationId?: Id64String;
-    // (undocumented)
     animationTransformNodeId?: number;
-    // (undocumented)
     edgesRequired: boolean;
-    // (undocumented)
     enforceDisplayPriority?: boolean;
-    // (undocumented)
+    sectionCut?: string;
     type: BatchType.Primary;
 }
 
@@ -5155,6 +5366,8 @@ export class QParams2d {
     // (undocumented)
     readonly origin: Point2d;
     // (undocumented)
+    get rangeDiagonal(): Vector2d;
+    // (undocumented)
     readonly scale: Point2d;
     setFromRange(range: Range2d, rangeScale?: number): void;
 }
@@ -5171,6 +5384,8 @@ export class QParams3d {
     static fromZeroToOne(rangeScale?: number): QParams3d;
     // (undocumented)
     readonly origin: Point3d;
+    // (undocumented)
+    get rangeDiagonal(): Vector3d;
     // (undocumented)
     readonly scale: Point3d;
     setFromOriginAndScale(origin: Point3d, scale: Point3d): void;
@@ -5203,6 +5418,7 @@ export class QPoint2dList {
     add(pt: Point2d): void;
     clear(): void;
     static fromPoints(points: Point2d[], out?: QPoint2dList): QPoint2dList;
+    fromTypedArray(range: Range2d, array: Uint16Array): void;
     get length(): number;
     // (undocumented)
     get list(): QPoint2d[];
@@ -5251,6 +5467,8 @@ export class QPoint3dList {
     // (undocumented)
     static createFrom(points: Point3d[], params: QParams3d): QPoint3dList;
     static fromPoints(points: Point3d[], out?: QPoint3dList): QPoint3dList;
+    // (undocumented)
+    fromTypedArray(range: Range3d, array: Uint16Array): void;
     get length(): number;
     // (undocumented)
     get list(): QPoint3d[];
@@ -5376,6 +5594,10 @@ export class RelatedElement implements RelatedElementProps {
 export interface RelatedElementProps {
     id: Id64String;
     relClassName?: string;
+}
+
+// @public
+export interface RelationshipProps extends EntityProps, SourceAndTarget {
 }
 
 // @beta
@@ -5565,11 +5787,13 @@ export interface RepositoryLinkProps extends UrlLinkProps {
 
 export { RepositoryStatus }
 
-// @internal
-export interface RequestBriefcaseProps {
-    readonly changeSetId: GuidString;
-    readonly contextId: GuidString;
-    readonly iModelId: GuidString;
+// @beta
+export interface RequestNewBriefcaseProps {
+    asOf?: IModelVersionProps;
+    briefcaseId?: number;
+    contextId: GuidString;
+    fileName?: string;
+    iModelId: GuidString;
 }
 
 // @public (undocumented)
@@ -6496,13 +6720,13 @@ export abstract class SnapshotIModelRpcInterface extends RpcInterface {
     static readonly interfaceName = "SnapshotIModelRpcInterface";
     static interfaceVersion: string;
     // (undocumented)
-    openFile(_filePath: string): Promise<IModelConnectionProps>;
+    openFile(_filePath: string, _opts?: SnapshotOpenOptions): Promise<IModelConnectionProps>;
     // (undocumented)
-    openRemote(_key: string): Promise<IModelConnectionProps>;
+    openRemote(_key: string, _opts?: SnapshotOpenOptions): Promise<IModelConnectionProps>;
 }
 
-// @public (undocumented)
-export interface SnapshotOpenOptions extends IModelEncryptionProps {
+// @public
+export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey {
     // @internal (undocumented)
     lazyBlockCache?: boolean;
 }
@@ -6551,6 +6775,14 @@ export interface SolarShadowSettingsProps {
     // @internal (undocumented)
     bias?: number;
     color?: ColorDefProps;
+}
+
+// @public
+export interface SourceAndTarget {
+    // (undocumented)
+    sourceId: Id64String;
+    // (undocumented)
+    targetId: Id64String;
 }
 
 // @beta
@@ -6610,8 +6842,11 @@ export abstract class StandaloneIModelRpcInterface extends RpcInterface {
     static readonly interfaceName = "StandaloneIModelRpcInterface";
     static interfaceVersion: string;
     // (undocumented)
-    openFile(_filePath: string, _openMode: OpenMode): Promise<IModelConnectionProps>;
+    openFile(_filePath: string, _openMode: OpenMode, _opts?: StandaloneOpenOptions): Promise<IModelConnectionProps>;
 }
+
+// @beta
+export type StandaloneOpenOptions = OpenDbKey & UpgradeOptions;
 
 // @internal
 export type StorageValue = string | number | boolean | null | Uint8Array;
@@ -7466,7 +7701,7 @@ export interface ViewDetails3dProps extends ViewDetailsProps {
 export interface ViewDetailsProps {
     acs?: Id64String;
     aspectSkew?: number;
-    clip?: any;
+    clip?: ClipVectorProps;
     gridOrient?: GridOrientationType;
     gridPerRef?: number;
     gridSpaceX?: number;
@@ -7733,6 +7968,11 @@ export class ViewFlags {
 export interface ViewQueryParams extends EntityQueryParams {
     // (undocumented)
     wantPrivate?: boolean;
+}
+
+// @public
+export interface ViewStateLoadProps {
+    displayStyle?: DisplayStyleLoadProps;
 }
 
 // @public

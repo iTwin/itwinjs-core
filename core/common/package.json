@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-common",
-  "version": "2.10.0-dev.1",
+  "version": "2.11.0-dev.19",
   "description": "iModel.js components common to frontend and backend",
   "main": "lib/imodeljs-common.js",
   "typings": "lib/imodeljs-common",
@@ -12,7 +12,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-common/file.json --tsIndexFile=./imodeljs-common.ts --onlyJson",
     "extract-api": "betools extract-api --entry=imodeljs-common",
-    "lint": "eslint -f visualstudio --max-warnings 0 ./src/**/*.ts 1>&2",
+    "lint": "eslint -f visualstudio ./src/**/*.ts 1>&2",
     "test": "betools test",
     "cover": "nyc npm test"
   },
@@ -23,7 +23,9 @@
   "keywords": [
     "Bentley",
     "BIM",
-    "iModel"
+    "iModel",
+    "digital-twin",
+    "iTwin"
   ],
   "author": {
     "name": "Bentley Systems, Inc.",
@@ -36,20 +38,20 @@
     "semver": "^5.5.0"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.10.0-dev.1",
-    "@bentley/geometry-core": "^2.10.0-dev.1",
-    "@bentley/imodelhub-client": "^2.10.0-dev.1",
-    "@bentley/itwin-client": "^2.10.0-dev.1",
-    "@bentley/rbac-client": "^2.10.0-dev.1"
+    "@bentley/bentleyjs-core": "^2.11.0-dev.19",
+    "@bentley/geometry-core": "^2.11.0-dev.19",
+    "@bentley/imodelhub-client": "^2.11.0-dev.19",
+    "@bentley/itwin-client": "^2.11.0-dev.19",
+    "@bentley/rbac-client": "^2.11.0-dev.19"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.10.0-dev.1",
-    "@bentley/build-tools": "2.10.0-dev.1",
-    "@bentley/eslint-plugin": "2.10.0-dev.1",
-    "@bentley/geometry-core": "2.10.0-dev.1",
-    "@bentley/imodelhub-client": "2.10.0-dev.1",
-    "@bentley/itwin-client": "2.10.0-dev.1",
-    "@bentley/rbac-client": "2.10.0-dev.1",
+    "@bentley/bentleyjs-core": "2.11.0-dev.19",
+    "@bentley/build-tools": "2.11.0-dev.19",
+    "@bentley/eslint-plugin": "2.11.0-dev.19",
+    "@bentley/geometry-core": "2.11.0-dev.19",
+    "@bentley/imodelhub-client": "2.11.0-dev.19",
+    "@bentley/itwin-client": "2.11.0-dev.19",
+    "@bentley/rbac-client": "2.11.0-dev.19",
     "@types/chai": "^4.1.4",
     "@types/flatbuffers": "~1.10.0",
     "@types/mocha": "^5.2.5",

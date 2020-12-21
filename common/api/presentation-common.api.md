@@ -6,6 +6,7 @@
 
 import { BentleyError } from '@bentley/bentleyjs-core';
 import { EntityProps } from '@bentley/imodeljs-common';
+import { FormatProps } from '@bentley/imodeljs-quantity';
 import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
 import { GuidString } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
@@ -42,6 +43,8 @@ export interface BaseFieldJSON {
     name: string;
     // (undocumented)
     priority: number;
+    // (undocumented)
+    renderer?: RendererDescription;
     // (undocumented)
     type: TypeDescription;
 }
@@ -717,7 +720,7 @@ export type ExtendedHierarchyRpcRequestOptions = PresentationRpcRequestOptions<E
 
 // @public
 export class Field {
-    constructor(category: CategoryDescription, name: string, label: string, type: TypeDescription, isReadonly: boolean, priority: number, editor?: EditorDescription);
+    constructor(category: CategoryDescription, name: string, label: string, type: TypeDescription, isReadonly: boolean, priority: number, editor?: EditorDescription, renderer?: RendererDescription);
     category: CategoryDescription;
     // @alpha (undocumented)
     clone(): Field;
@@ -738,6 +741,7 @@ export class Field {
     priority: number;
     // @internal (undocumented)
     rebuildParentship(parentField?: NestedContentField): void;
+    renderer?: RendererDescription;
     // @internal (undocumented)
     resetParentship(): void;
     // @internal @deprecated
@@ -1060,7 +1064,7 @@ export interface KeySetJSON {
 // @public
 export interface KindOfQuantityInfo {
     // @alpha
-    currentFormatId: string;
+    activeFormat?: FormatProps;
     label: string;
     name: string;
     // @alpha
@@ -1209,7 +1213,9 @@ export interface NavigationRuleBase extends RuleBase {
 
 // @public
 export class NestedContentField extends Field {
-    constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription, isReadonly: boolean, priority: number, contentClassInfo: ClassInfo, pathToPrimaryClass: RelationshipPath, nestedFields: Field[], editor?: EditorDescription, autoExpand?: boolean);
+    constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription, isReadonly: boolean, priority: number, contentClassInfo: ClassInfo, pathToPrimaryClass: RelationshipPath, nestedFields: Field[], editor?: EditorDescription, autoExpand?: boolean, renderer?: RendererDescription);
+    // @alpha (undocumented)
+    actualPrimaryClassIds: Id64String[];
     autoExpand?: boolean;
     // @alpha (undocumented)
     clone(): NestedContentField;
@@ -1229,6 +1235,8 @@ export class NestedContentField extends Field {
 
 // @public
 export interface NestedContentFieldJSON extends BaseFieldJSON {
+    // @alpha (undocumented)
+    actualPrimaryClassIds?: Id64String[];
     // (undocumented)
     autoExpand?: boolean;
     // (undocumented)
@@ -1654,7 +1662,7 @@ export interface PrimitiveTypeDescription extends BaseTypeDescription {
 
 // @public
 export class PropertiesField extends Field {
-    constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription, isReadonly: boolean, priority: number, properties: Property[], editor?: EditorDescription);
+    constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription, isReadonly: boolean, priority: number, properties: Property[], editor?: EditorDescription, renderer?: RendererDescription);
     // @alpha (undocumented)
     clone(): PropertiesField;
     static fromJSON(json: PropertiesFieldJSON | undefined, categories: CategoryDescription[]): PropertiesField | undefined;
@@ -1670,10 +1678,14 @@ export class PropertiesField extends Field {
 export interface PropertiesFieldDescriptor extends FieldDescriptorBase {
     // (undocumented)
     pathFromSelectToPropertyClass: StrippedRelationshipPath;
-    // (undocumented)
-    propertyClass: string;
-    // (undocumented)
-    propertyName: string;
+    properties: Array<{
+        class: string;
+        name: string;
+    }>;
+    // @deprecated (undocumented)
+    propertyClass?: string;
+    // @deprecated (undocumented)
+    propertyName?: string;
     // (undocumented)
     type: FieldDescriptorType.Properties;
 }
@@ -1833,6 +1845,7 @@ export interface PropertyOverrides {
     isDisplayed?: boolean;
     labelOverride?: string;
     overridesPriority?: number;
+    renderer?: PropertyRendererSpecification;
 }
 
 // @public
@@ -1841,6 +1854,11 @@ export interface PropertyRangeGroupSpecification {
     imageId?: string;
     label?: string;
     toValue: string;
+}
+
+// @public
+export interface PropertyRendererSpecification {
+    rendererName: string;
 }
 
 // @public
@@ -2006,6 +2024,11 @@ export interface RelationshipStepSpecification {
     direction: RelationshipDirection.Forward | RelationshipDirection.Backward;
     relationship: SingleSchemaClassSpecification;
     targetClass?: SingleSchemaClassSpecification;
+}
+
+// @public
+export interface RendererDescription {
+    name: string;
 }
 
 // @public

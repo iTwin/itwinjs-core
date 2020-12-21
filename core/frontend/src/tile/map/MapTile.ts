@@ -131,6 +131,12 @@ export class MapTile extends RealityTile {
     super(params, mapTree);
     this._heightRange = heightRange ? heightRange.clone() : undefined;
   }
+  public getSizeProjectionCorners(): Point3d[] | undefined {
+    // Use only the first 4 corners -- On terrain tiles the height is initially exagerated to world height range which can cause excessive tile loading.
+    const rangeCorners = this.getRangeCorners(scratchCorners);
+    return rangeCorners.slice(0, 4);
+  }
+
   public markUsed(args: TileDrawArgs) {
     super.markUsed(args);
     if (this._imageryTiles)

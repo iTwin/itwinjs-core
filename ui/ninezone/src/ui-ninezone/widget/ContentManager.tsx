@@ -6,6 +6,7 @@
  * @module Widget
  */
 
+import produce, { castDraft } from "immer";
 import * as React from "react";
 import { EventEmitter } from "../base/Event";
 import { TabState } from "../base/NineZoneState";
@@ -20,23 +21,17 @@ export const WidgetContentManager = React.memo<WidgetContentManagerProps>(functi
   const [containers, setContainers] = React.useState<WidgetContentContainers>({});
   const saveTransientStateRef = React.useRef(new EventEmitter<(tabId: TabState["id"]) => void>());
   const restoreTransientStateRef = React.useRef(new EventEmitter<(tabId: TabState["id"]) => void>());
-  const getWidgetContentContainerRef = React.useCallback<WidgetContentManagerContextArgs["getWidgetContentContainerRef"]>((tabId) => {
-    return (container: Element | null) => {
-      container === null && saveTransientStateRef.current.emit(tabId);
-      setContainers((prev) => {
-        const newContainers = {
-          ...prev,
-        };
-        newContainers[tabId] = container;
-        return newContainers;
-      });
-    };
+  const setContainer = React.useCallback<WidgetContentManagerContextArgs["setContainer"]>((tabId, container) => {
+    container === null && saveTransientStateRef.current.emit(tabId);
+    setContainers((prev) => produce(prev, (draft) => {
+      draft[tabId] = castDraft(container);
+    }));
   }, []);
   const widgetContentManagerContextValue = React.useMemo<WidgetContentManagerContextArgs>(() => ({
-    getWidgetContentContainerRef,
+    setContainer,
     onSaveTransientState: saveTransientStateRef.current,
     onRestoreTransientState: restoreTransientStateRef.current,
-  }), [getWidgetContentContainerRef]);
+  }), [setContainer]);
   return (
     <WidgetContentContainersContext.Provider value={containers}>
       <WidgetContentManagerContext.Provider value={widgetContentManagerContextValue}>
@@ -54,7 +49,7 @@ WidgetContentContainersContext.displayName = "nz:WidgetContentContainersContext"
 
 /** @internal */
 export interface WidgetContentManagerContextArgs {
-  getWidgetContentContainerRef: (tabId: TabState["id"]) => React.Ref<Element>;
+  setContainer(tabId: TabState["id"], container: Element | null): void;
   onSaveTransientState: EventEmitter<(tabId: TabState["id"]) => void>;
   onRestoreTransientState: EventEmitter<(tabId: TabState["id"]) => void>;
 }

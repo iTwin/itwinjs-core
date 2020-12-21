@@ -400,7 +400,7 @@ export class LockHandler {
 
   /** Augment update options with defaults returned by the DefaultLockUpdateOptionsProvider.
    * The options passed in by clients override any defaults where necessary.
-   * @param options Options the caller wants to eaugment with the defaults.
+   * @param options Options the caller wants to augment with the defaults.
    */
   private async setupOptionDefaults(options: LockUpdateOptions): Promise<void> {
     if (!LockHandler._defaultUpdateOptionsProvider)
@@ -442,8 +442,8 @@ export class LockHandler {
    * @param updateOptions Options for the update request. You can set this to change
    * how conflicts are handled or to handle different amount of Locks per request.
    * @returns Updated Lock values.
-   * @throws [[ConflictingLocksError]] when [[LockUpdateOptions.deniedLocks]] is set and conflicts occured. See [Handling Conflicts]($docs/learning/iModelHub/CodesAndLocksConflicts.md) for more information.
-   * @throws [[AggregateResponseError]] when multiple requests where sent and more than 1 of the following errors occured.
+   * @throws [[ConflictingLocksError]] when [[LockUpdateOptions.deniedLocks]] is set and conflicts occurred. See [Handling Conflicts]($docs/learning/iModelHub/CodesAndLocksConflicts.md) for more information.
+   * @throws [[AggregateResponseError]] when multiple requests where sent and more than 1 of the following errors occurred.
    * @throws [[IModelHubError]] with status indicating a conflict. See [Handling Conflicts]($docs/learning/iModelHub/CodesAndLocksConflicts.md) section for more information.
    * @throws [[IModelHubError]] with [IModelHubStatus.InvalidBriefcase]($bentley) when including locks with different briefcaseId values in the request.
    * @throws [[IModelHubError]] with [IModelHubStatus.OperationFailed]($bentley) when including multiple identical locks in the request.
@@ -541,7 +541,7 @@ export class LockHandler {
   /** Delete all [[Lock]]s owned by the specified [[Briefcase]].
    * @param requestContext The client request context.
    * @param iModelId Id of the iModel. See [[HubIModel]].
-   * @param briefcaseId Id of the Briefcacase.
+   * @param briefcaseId Id of the Briefcase.
    * @throws [[IModelHubError]] with [IModelHubStatus.BriefcaseDoesNotExist]($bentley) if [[Briefcase]] with specified briefcaseId does not exist. This can happen if number was not given as a Briefcase id yet, or Briefcase with that id was already deleted.
    * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if [[Briefcase]] belongs to another user and user sending the request does not have ManageResources permission.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
@@ -560,7 +560,7 @@ export class LockHandler {
   /** Helper method to iteratively delete chunks of [[Lock]]s for the specified [[Briefcase]] until there are no more left.
    * @param requestContext The client request context.
    * @param iModelId Id of the iModel. See [[HubIModel]].
-   * @param briefcaseId Id of the Briefcacase.
+   * @param briefcaseId Id of the Briefcase.
    */
   private async deleteAllLocksInChunks(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, briefcaseId: number): Promise<void> {
     const relativeUrl = this.getRelativeUrl(iModelId, false, `DeleteChunk-${briefcaseId}`);

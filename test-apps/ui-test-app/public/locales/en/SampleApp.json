@@ -165,7 +165,9 @@
     "stopCursorPopup": "Stop Cursor Popup",
     "cmdKeyinDialog": "Command Key-in",
     "opencmdKeyinDialog": "Open command key-in dialog",
-    "accudrawSubMenu": "Accudraw Demos",
+    "accuDrawSubMenu": "AccuDraw",
+    "accuDrawLocks": "AccuDraw Locks",
+    "accuDrawRotate": "AccuDraw Rotate",
     "addMenuButton": "Add Menu Button",
     "hideMenuButton": "Hide Menu Button",
     "showCalculator": "Show Calculator",
@@ -177,7 +179,9 @@
     "showToolbar": "Show Toolbar",
     "showHTMLElement": "Show HTML Element",
     "clearMessages": "Clear Messages",
-    "toggleTimelinePlay": "Toggle Timeline Pause/Play"
+    "toggleTimelinePlay": "Toggle Timeline Pause/Play",
+    "sampleModelessDialog": "Sample Modeless Dialog",
+    "sampleModalDialog": "Sample Modal Dialog"
   },
   "tools": {
     "ToolWithSettings": {

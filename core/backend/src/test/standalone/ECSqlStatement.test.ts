@@ -1740,6 +1740,64 @@ describe("ECSqlStatement", () => {
     });
   });
 
+  it("Binds IdSets", async () => {
+    await using(ECDbTestHelper.createECDb(outDir, "bindids.ecdb"), async (ecdb: ECDb) => {
+      assert.isTrue(ecdb.isOpen);
+
+      const idNumbers: number[] = [4444, 4545, 1234, 6758, 1312];
+      ecdb.withPreparedStatement("INSERT INTO ecdbf.ExternalFileInfo(ECInstanceId,Name) VALUES(?,?)", (stmt: ECSqlStatement) => {
+        idNumbers.forEach((idNum: number) => {
+          const expectedId = Id64.fromLocalAndBriefcaseIds(idNum, 0);
+          stmt.bindId(1, expectedId);
+          stmt.bindString(2, `${idNum}.txt`);
+          const r: ECSqlInsertResult = stmt.stepForInsert();
+          assert.equal(r.status, DbResult.BE_SQLITE_DONE);
+          assert.isDefined(r.id);
+          assert.equal(r.id!, expectedId);
+
+          ecdb.withPreparedStatement(`SELECT ECInstanceId, ECClassId, Name FROM ecdbf.ExternalFileInfo WHERE ECInstanceId=${expectedId}`, (confstmt: ECSqlStatement) => {
+            assert.equal(confstmt.step(), DbResult.BE_SQLITE_ROW);
+            const row = confstmt.getRow();
+            assert.equal(row.id, expectedId);
+            assert.equal(row.className, "ECDbFileInfo.ExternalFileInfo");
+            assert.equal(row.name, `${Id64.getLocalId(expectedId).toString()}.txt`);
+          });
+          stmt.reset();
+          stmt.clearBindings();
+        });
+      });
+
+      ecdb.withPreparedStatement("SELECT ECInstanceId, ECClassId, Name from ecdbf.ExternalFileInfo WHERE InVirtualSet(?, ECInstanceId)", (stmt: ECSqlStatement) => {
+        let idSet: Id64String[] = [];
+        stmt.bindIdSet(1, idSet);
+        let result = stmt.step();
+        assert.equal(result, DbResult.BE_SQLITE_DONE);
+        stmt.reset();
+        stmt.clearBindings();
+
+        idSet = [Id64.fromLocalAndBriefcaseIds(idNumbers[2], 0)];
+        stmt.bindIdSet(1, idSet);
+        result = stmt.step();
+        assert.equal(result, DbResult.BE_SQLITE_ROW);
+        let row = stmt.getRow();
+        assert.equal(row.name, `${idNumbers[2]}.txt`);
+        stmt.reset();
+        stmt.clearBindings();
+
+        idSet.push(idNumbers[0].toString());
+        stmt.bindIdSet(1, idSet);
+        result = stmt.step();
+        assert.equal(result, DbResult.BE_SQLITE_ROW);
+        row = stmt.getRow();
+        assert.equal(row.name, `${idNumbers[2]}.txt`);
+        result = stmt.step();
+        assert.equal(result, DbResult.BE_SQLITE_ROW);
+        row = stmt.getRow();
+        assert.equal(row.name, `${idNumbers[0]}.txt`);
+      });
+    });
+  });
+
   /* This test doesn't do anything specific with the binder life time but just runs a few scenarios
      with and without statement cache to test that stuff works fine */
   it("ECSqlBinder life time", async () => {

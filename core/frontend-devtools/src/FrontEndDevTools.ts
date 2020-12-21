@@ -10,7 +10,7 @@ import { IModelApp } from "@bentley/imodeljs-frontend";
 import { ChangeEmphasisSettingsTool, ChangeHiliteSettingsTool, DefaultTileSizeModifierTool, FadeOutTool, FreezeSceneTool, SetAspectRatioSkewTool, ShowTileVolumesTool, Toggle3dManipulationsTool, ToggleViewAttachmentBoundariesTool, ToggleViewAttachmentClipShapesTool, ToggleViewAttachmentsTool, ViewportAddRealityModel, ViewportTileSizeModifierTool } from "./frontend-devtools";
 import { AnimationIntervalTool } from "./tools/AnimationIntervalTool";
 import { ChangeUnitsTool } from "./tools/ChangeUnitsTool";
-import { ClipColorTool } from "./tools/ClipColorTool";
+import { ClipColorTool, TestClipStyleTool, ToggleSectionCutTool } from "./tools/ClipTools";
 import { ApplyRenderingStyleTool, ChangeViewFlagsTool, SaveRenderingStyleTool, ToggleSkyboxTool } from "./tools/DisplayStyleTools";
 import { ClearIsolatedElementsTool, EmphasizeSelectedElementsTool, IsolateSelectedElementsTool } from "./tools/EmphasizeElementsTool";
 import { ExtensionServiceTool } from "./tools/ExtensionServiceTool";
@@ -21,7 +21,7 @@ import { MeasureTileLoadTimeTool } from "./tools/MeasureTileLoadTime";
 import { ClearModelAppearanceOverrides, SetModelColorTool, SetModelEmphasizedTool, SetModelIgnoresMaterialsTool, SetModelLineCodeTool, SetModelLineWeightTool, SetModelLocateTool, SetModelTransparencyTool } from "./tools/ModelAppearanceTools";
 import { ChangePlanProjectionSettingsTool, DumpPlanProjectionSettingsTool, OverrideSubCategoryPriorityTool } from "./tools/PlanProjectionTools";
 import { ToggleProjectExtentsTool } from "./tools/ProjectExtents";
-import { AttachCesiumAssetTool, AttachRealityModelTool, ClearRealityModelAppearanceOverrides, DetachRealityModelTool, SaveRealityModelTool, SetRealityModelColorTool, SetRealityModelEmphasizedTool, SetRealityModelLocateTool, SetRealityModelTransparencyTool } from "./tools/RealityModelTools";
+import { AttachCesiumAssetTool, AttachRealityModelTool, ClearRealityModelAppearanceOverrides, DetachRealityModelTool, SaveRealityModelTool, SetRealityModelColorTool, SetRealityModelEmphasizedTool, SetRealityModelLocateTool, SetRealityModelTransparencyTool, ToggleOSMBuildingDisplay } from "./tools/RealityModelTools";
 import { RealityTransitionTool } from "./tools/RealityTransitionTool";
 import { CompileShadersTool, LoseWebGLContextTool, ToggleDPIForLODTool, ToggleWiremeshTool } from "./tools/RenderSystemTools";
 import { SetAASamplesTool, ToggleDrapeFrustumTool, TogglePrimitiveVisibilityTool, ToggleReadPixelsTool, ToggleRealityTileBounds, ToggleRealityTileFreeze, ToggleRealityTileLogging, ToggleRealityTilePreload, ToggleVolClassIntersect } from "./tools/RenderTargetTools";
@@ -104,6 +104,7 @@ export class FrontendDevTools {
       SetMapBaseTool,
       ShowTileVolumesTool,
       SourceAspectIdFromElementIdTool,
+      TestClipStyleTool,
       Toggle3dManipulationsTool,
       ToggleDPIForLODTool,
       ToggleDrapeFrustumTool,
@@ -125,6 +126,7 @@ export class FrontendDevTools {
       ToggleRealityTilePreload,
       ToggleRealityTileLogging,
       ToggleRealityTileFreeze,
+      ToggleSectionCutTool,
       ToggleTerrainTool,
       ViewportAddRealityModel,
       ViewportTileSizeModifierTool,
@@ -145,6 +147,7 @@ export class FrontendDevTools {
       ClearRealityModelAppearanceOverrides,
       ClearModelAppearanceOverrides,
       AttachCesiumAssetTool,
+      ToggleOSMBuildingDisplay,
     ];
 
     for (const tool of tools)
