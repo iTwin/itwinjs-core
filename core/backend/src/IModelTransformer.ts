@@ -601,7 +601,10 @@ export class IModelTransformer extends IModelExportHandler {
     return targetElementAspectProps;
   }
 
-  /** Cause all schemas to be exported from the source iModel and imported into the target iModel. */
+  /** Cause all schemas to be exported from the source iModel and imported into the target iModel.
+   * @note For performance reasons, it is recommended that [IModelDb.saveChanges]($backend) be called after `processSchemas` is complete.
+   * It is more efficient to process *data* changes after the schema changes have been saved.
+   */
   public async processSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext): Promise<void> {
     requestContext.enter();
     const schemasDir: string = path.join(KnownLocations.tmpdir, Guid.createValue());

@@ -35,7 +35,8 @@ The [IModelImporter]($backend) base class is used when the **target** in an ETL 
 While it is possible to import data into an iModel using the standard [IModelDb]($backend) API, the [IModelImporter]($backend) class offers the following capabilities:
 
 - Callbacks whenever IModelImporter is used to insert, update, or delete entities. Simply override one of the protected `onInsert*`, `onUpdate*`, or `onDelete*` methods.
-- Optionally auto-extend [IModel.projectExtents]($common) during import
+- Automatically compute the [IModel.projectExtents]($common) during import via the [IModelImporter.autoExtendProjectExtents]($backend) setting.
+- The ability to optionally simplify element geometry to optimize visualization workflows via the [IModelImporter.simplifyElementGeometry]($backend) setting.
 - Integration with [IModelTransformer]($backend)
 
 ## IModelCloneContext
