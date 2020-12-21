@@ -1099,7 +1099,9 @@ export abstract class ViewState extends ElementState {
    * @internal
    */
   public attachToViewport(_vp: Viewport): void {
-    assert(!this._isAttachedToViewport);
+    if (this._isAttachedToViewport)
+      throw new Error("A ViewState can only be attached to one Viewport at a time");
+
     this._isAttachedToViewport = true;
   }
 
@@ -1107,7 +1109,9 @@ export abstract class ViewState extends ElementState {
    * @internal
    */
   public detachFromViewport(_vp: Viewport): void {
-    assert(this._isAttachedToViewport);
+    if (!this._isAttachedToViewport)
+      throw new Error("Attempting to detach a ViewState from a Viewport to which it is not attached.");
+
     this._isAttachedToViewport = false;
   }
 
