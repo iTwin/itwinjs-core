@@ -36,7 +36,7 @@ import { GraphicList, RenderGraphicOwner } from "./render/RenderGraphic";
 import { RenderMemory } from "./render/RenderMemory";
 import { createRenderPlanFromViewport } from "./render/RenderPlan";
 import { RenderTarget } from "./render/RenderTarget";
-import { SheetViewState } from "./Sheet";
+import { SheetViewState } from "./SheetViewState";
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import { TileBoundingBoxes, TileTreeReference, TileTreeSet } from "./tile/internal";
@@ -1500,13 +1500,10 @@ export abstract class Viewport implements IDisposable {
     if (!this.view.is2d)
       return;
 
+    // Clone the current ViewState, change its baseModelId, and ensure the new model is loaded.
     const newView = this.view.clone() as ViewState2d; // start by cloning the current ViewState
-    // NOTE: the cast below is necessary since baseModelId is marked as readonly after construction.
-    //  We know this is a special case where it is safe to change it.
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-    (newView.baseModelId as Id64String) = baseModelId; // change its baseModelId.
+    await newView.changeViewedModel(baseModelId);
 
-    await newView.load(); // make sure new model is loaded.
     this.changeView(newView, options); // switch this viewport to use new ViewState2d
 
     if (options && options.doFit) { // optionally fit view to the extents of the new model
