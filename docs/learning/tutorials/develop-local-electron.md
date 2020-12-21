@@ -1,5 +1,0 @@
-- Download source for electron viewer
-- Configure
-- `npm i`
-- `npm build`
-- `npm start`
