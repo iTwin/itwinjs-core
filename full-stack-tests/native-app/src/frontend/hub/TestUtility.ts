@@ -66,14 +66,6 @@ export class TestUtility {
     return TestRpcInterface.getClient().createIModel(name, contextId, deleteIfExists);
   }
 
-  public static async purgeBriefcaseCache() {
-    const requestContext = await AuthorizedFrontendRequestContext.create();
-    requestContext.enter();
-
-    requestContext.useContextForRpc = true;
-    return TestRpcInterface.getClient().purgeBriefcaseCache();
-  }
-
   public static async restartIModelHost() {
     return TestRpcInterface.getClient().restartIModelHost();
   }

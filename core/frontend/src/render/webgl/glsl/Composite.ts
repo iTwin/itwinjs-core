@@ -7,6 +7,7 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
+import { WebGLContext } from "@bentley/webgl-compatibility";
 import { CompositeGeometry } from "../CachedGeometry";
 import { CompositeFlags, TextureUnit } from "../RenderFlags";
 import { FragmentShaderBuilder, FragmentShaderComponent, VariableType } from "../ShaderBuilder";
@@ -119,7 +120,7 @@ const computeTranslucentBaseColor = "return computeColor();";
 const computeAmbientOcclusionBaseColor = "return computeOpaqueColor();";
 
 /** @internal */
-export function createCompositeProgram(flags: CompositeFlags, context: WebGLRenderingContext | WebGL2RenderingContext): ShaderProgram {
+export function createCompositeProgram(flags: CompositeFlags, context: WebGLContext): ShaderProgram {
   assert(CompositeFlags.None !== flags);
 
   const wantHilite = CompositeFlags.None !== (flags & CompositeFlags.Hilite);

@@ -10,6 +10,7 @@ import { AbstractStatusBarCustomItem } from '@bentley/ui-abstract';
 import { AbstractToolbarProps } from '@bentley/ui-abstract';
 import { AbstractTreeNodeLoaderWithProvider } from '@bentley/ui-components';
 import { AbstractWidgetProps } from '@bentley/ui-abstract';
+import { AccuDraw } from '@bentley/imodeljs-frontend';
 import { ActionButton } from '@bentley/ui-abstract';
 import { ActivityMessageDetails } from '@bentley/imodeljs-frontend';
 import { ActivityMessageEndReason } from '@bentley/imodeljs-frontend';
@@ -67,6 +68,7 @@ import { IMatch } from '@bentley/ui-abstract';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
 import { InteractiveTool } from '@bentley/imodeljs-frontend';
 import { IPresentationTreeDataProvider } from '@bentley/presentation-components';
+import { ItemField } from '@bentley/imodeljs-frontend';
 import { MessageBoxIconType } from '@bentley/imodeljs-frontend';
 import { MessageBoxType } from '@bentley/imodeljs-frontend';
 import { MessageBoxValue } from '@bentley/imodeljs-frontend';
@@ -180,6 +182,55 @@ import { ZoneManagerProps } from '@bentley/ui-ninezone';
 import { ZonesManagerProps } from '@bentley/ui-ninezone';
 import { ZonesManagerWidgetsProps } from '@bentley/ui-ninezone';
 import { ZoneTargetType } from '@bentley/ui-ninezone';
+
+// @alpha
+export class AccuDrawCommandItems {
+    // (undocumented)
+    static get changeCompassMode(): CommandItemDef;
+    // (undocumented)
+    static get defineACSByPoints(): CommandItemDef;
+    // (undocumented)
+    static get lockAngle(): CommandItemDef;
+    // (undocumented)
+    static get lockDistance(): CommandItemDef;
+    // (undocumented)
+    static get lockSmart(): CommandItemDef;
+    // (undocumented)
+    static get lockX(): CommandItemDef;
+    // (undocumented)
+    static get lockY(): CommandItemDef;
+    // (undocumented)
+    static get lockZ(): CommandItemDef;
+    // (undocumented)
+    static get rotateAxes(): CommandItemDef;
+    // (undocumented)
+    static get rotateCycle(): CommandItemDef;
+    // (undocumented)
+    static get rotateFront(): CommandItemDef;
+    // (undocumented)
+    static get rotateSide(): CommandItemDef;
+    // (undocumented)
+    static get rotateToElement(): CommandItemDef;
+    // (undocumented)
+    static get rotateTop(): CommandItemDef;
+    // (undocumented)
+    static get rotateView(): CommandItemDef;
+    // (undocumented)
+    static get setOrigin(): CommandItemDef;
+}
+
+// @alpha (undocumented)
+export function AccuDrawDialog(props: AccuDrawDialogProps): JSX.Element;
+
+// @alpha (undocumented)
+export interface AccuDrawDialogProps extends CommonProps {
+    // (undocumented)
+    dialogId: string;
+    // (undocumented)
+    onClose?: () => void;
+    // (undocumented)
+    opened: boolean;
+}
 
 // @alpha
 export class AccuDrawPopupManager {
@@ -1608,16 +1659,16 @@ export interface DialogRendererProps {
 // @internal
 export function DockedStatusBarItem(props: StatusBarItemProps): JSX.Element;
 
-// @beta
+// @beta @deprecated
 export class DragDropLayerChangedEvent extends UiEvent<DragDropLayerChangedEventArgs> {
 }
 
-// @beta
+// @beta @deprecated
 export interface DragDropLayerChangedEventArgs {
     type: string | undefined;
 }
 
-// @beta
+// @beta @deprecated
 export class DragDropLayerManager {
     static getActiveLayer(): React.ComponentClass<DragLayerProps<any>, any> | React.FunctionComponent<DragLayerProps<any>> | undefined;
     static getType(): string | undefined;
@@ -1627,10 +1678,10 @@ export class DragDropLayerManager {
     static setType(type: string | undefined): void;
 }
 
-// @beta
-export const DragDropLayerRenderer: typeof DragDropLayerRendererComponent & DndComponentClass<{}>;
+// @beta @deprecated
+export const DragDropLayerRenderer: typeof DragDropLayerRendererComponent & DndComponentClass<typeof React.Component, {}>;
 
-// @beta
+// @beta @deprecated
 export class DragDropLayerRendererComponent extends React.Component<DragDropLayerRendererProps> {
     constructor(props: DragDropLayerRendererProps);
     // (undocumented)
@@ -1641,7 +1692,7 @@ export class DragDropLayerRendererComponent extends React.Component<DragDropLaye
     render(): React.ReactNode;
 }
 
-// @beta
+// @beta @deprecated
 export interface DragDropLayerRendererProps extends CommonProps {
     // (undocumented)
     args?: DragSourceArguments;
@@ -1879,6 +1930,18 @@ export class FooterModeField extends React.PureComponent<FooterModeFieldProps> {
 export interface FooterModeFieldProps extends StatusFieldProps {
     children?: React.ReactNode;
 }
+
+// @alpha (undocumented)
+export class FrameworkAccuDraw extends AccuDraw {
+    // @internal (undocumented)
+    onCompassModeChange(): void;
+    // @internal (undocumented)
+    onFieldLockChange(index: ItemField): void;
+    // @internal (undocumented)
+    onFieldValueChange(index: ItemField): void;
+    // @internal (undocumented)
+    setFocusItem(index: ItemField): void;
+    }
 
 // @beta
 export const FrameworkReducer: (state: import("./redux-ts").CombinedReducerState<{

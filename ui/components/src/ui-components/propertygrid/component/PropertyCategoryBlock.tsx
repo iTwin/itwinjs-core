@@ -9,6 +9,8 @@
 import * as React from "react";
 import { SpecialKey } from "@bentley/ui-abstract";
 import { CommonProps, ExpandableBlock } from "@bentley/ui-core";
+import { HighlightedText } from "../../common/HighlightedText";
+import { HighlightingComponentProps } from "../../common/HighlightingComponentProps";
 import { PropertyCategory } from "../PropertyDataProvider";
 
 /**
@@ -20,6 +22,10 @@ export interface PropertyCategoryBlockProps extends CommonProps {
   category: PropertyCategory;
   /** Callback to when PropertyCategoryBlock gets expended or collapsed */
   onExpansionToggled?: (categoryName: string) => void;
+  /** Properties used for highlighting
+  * @beta
+  */
+  highlight?: HighlightingComponentProps;
 }
 
 /**
@@ -53,16 +59,21 @@ export class PropertyCategoryBlock extends React.Component<PropertyCategoryBlock
 
   /** @internal */
   public render() {
+    const { highlight, category, children, ...props} = this.props;
+    const activeMatchIndex = this.props.category.name === highlight?.activeHighlight?.highlightedItemIdentifier ? highlight.activeHighlight.highlightIndex : undefined;
+    const label = highlight?
+      (<HighlightedText text={category.label} activeMatchIndex={activeMatchIndex} searchText={highlight.highlightedText} />) :
+      category.label;
     return (
       <ExpandableBlock
-        isExpanded={this.props.category.expand}
+        isExpanded={category.expand}
         onClick={this._onClick}
         onKeyPress={this._onKeyPress}
-        title={this.props.category.label}
-        className={this.props.className}
-        style={this.props.style}
+        title={label}
+        tooltip = {category.label}
+        {...props}
       >
-        {this.props.children}
+        {children}
       </ExpandableBlock>
     );
   }

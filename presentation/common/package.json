@@ -1,6 +1,6 @@
 {
   "name": "@bentley/presentation-common",
-  "version": "2.11.0-dev.6",
+  "version": "2.11.0-dev.19",
   "description": "Common pieces for iModel.js presentation packages",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
@@ -36,21 +36,23 @@
     "ruleset-json-schema": "npm run ruleset-json-schema:generate && npm run ruleset-json-schema:post-process",
     "ruleset-json-schema:generate": "typescript-json-schema ./tsconfig.json Ruleset --noExtraProps --required --strictNullChecks --include ./src/presentation-common/rules/**/*.ts --include ./src/presentation-common/rules/*.ts > ./Ruleset.schema.json",
     "ruleset-json-schema:post-process": "node ./scripts/post-process-json-schema.js --path ./Ruleset.schema.json",
-    "lint": "eslint -f visualstudio --max-warnings 0 ./src/**/*.ts 1>&2",
+    "lint": "eslint -f visualstudio ./src/**/*.ts 1>&2",
     "pseudolocalize:assets": "betools pseudolocalize --englishDir ./assets/locales/en --out ./lib/assets/locales/en-PSEUDO",
     "pseudolocalize:public": "betools pseudolocalize --englishDir ./assets/locales/en --out ./lib/public/locales/en-PSEUDO",
     "test": "mocha --opts ../mocha.opts \"./lib/test/**/*.test.js\"",
     "test:watch": "npm test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.11.0-dev.6",
-    "@bentley/imodeljs-common": "^2.11.0-dev.6"
+    "@bentley/bentleyjs-core": "^2.11.0-dev.19",
+    "@bentley/imodeljs-common": "^2.11.0-dev.19",
+    "@bentley/imodeljs-quantity": "^2.11.0-dev.19"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.11.0-dev.6",
-    "@bentley/build-tools": "2.11.0-dev.6",
-    "@bentley/eslint-plugin": "2.11.0-dev.6",
-    "@bentley/imodeljs-common": "2.11.0-dev.6",
+    "@bentley/bentleyjs-core": "2.11.0-dev.19",
+    "@bentley/build-tools": "2.11.0-dev.19",
+    "@bentley/eslint-plugin": "2.11.0-dev.19",
+    "@bentley/imodeljs-common": "2.11.0-dev.19",
+    "@bentley/imodeljs-quantity": "2.11.0-dev.19",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/chai-jest-snapshot": "^1.3.0",

@@ -19,11 +19,11 @@ describe("DragDropLayerManager", () => {
   });
 
   it("getType returns undefined when no type set", () => {
-    expect(DragDropLayerManager.getType()).to.be.undefined;
+    expect(DragDropLayerManager.getType()).to.be.undefined; // eslint-disable-line deprecation/deprecation
   });
 
   it("getActiveLayer returns undefined when no type set", () => {
-    expect(DragDropLayerManager.getActiveLayer()).to.be.undefined;
+    expect(DragDropLayerManager.getActiveLayer()).to.be.undefined; // eslint-disable-line deprecation/deprecation
   });
 
   it("DragDropLayerRenderer should mount", () => {

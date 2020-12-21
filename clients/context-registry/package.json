@@ -1,6 +1,6 @@
 {
   "name": "@bentley/context-registry-client",
-  "version": "2.11.0-dev.6",
+  "version": "2.11.0-dev.19",
   "description": "iModel.js Context Registry Client",
   "main": "lib/context-registry-client.js",
   "typings": "lib/context-registry-client",
@@ -16,7 +16,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "extract-api": "betools extract-api --entry=context-registry-client",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/clients/context-registry-client/file.json --tsIndexFile=context-registry-client.ts --onlyJson",
-    "lint": "eslint -f visualstudio --max-warnings 0 ./src/**/*.ts 1>&2",
+    "lint": "eslint -f visualstudio ./src/**/*.ts 1>&2",
     "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2",
     "test": "",
     "test:integration": "npm run webpackTests && npm run test:integration:chrome",
@@ -38,16 +38,16 @@
     "deep-assign": "^2.0.0"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.11.0-dev.6",
-    "@bentley/itwin-client": "^2.11.0-dev.6"
+    "@bentley/bentleyjs-core": "^2.11.0-dev.19",
+    "@bentley/itwin-client": "^2.11.0-dev.19"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.11.0-dev.6",
-    "@bentley/certa": "2.11.0-dev.6",
-    "@bentley/config-loader": "2.11.0-dev.6",
-    "@bentley/eslint-plugin": "2.11.0-dev.6",
-    "@bentley/itwin-client": "2.11.0-dev.6",
-    "@bentley/oidc-signin-tool": "2.11.0-dev.6",
+    "@bentley/build-tools": "2.11.0-dev.19",
+    "@bentley/certa": "2.11.0-dev.19",
+    "@bentley/config-loader": "2.11.0-dev.19",
+    "@bentley/eslint-plugin": "2.11.0-dev.19",
+    "@bentley/itwin-client": "2.11.0-dev.19",
+    "@bentley/oidc-signin-tool": "2.11.0-dev.19",
     "@types/chai": "^4.1.4",
     "@types/deep-assign": "^0.1.0",
     "@types/mocha": "^5.2.5",

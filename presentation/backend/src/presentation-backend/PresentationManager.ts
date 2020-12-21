@@ -243,6 +243,9 @@ export interface PresentationManagerProps {
    */
   cacheConfig?: HierarchyCacheConfig;
 
+  /** @alpha */
+  contentCacheSize?: number;
+
   /**
    * An identifier which helps separate multiple presentation managers. It's
    * mostly useful in tests where multiple presentation managers can co-exist
@@ -303,6 +306,7 @@ export class PresentationManager {
         mode,
         isChangeTrackingEnabled,
         cacheConfig: createCacheConfig(this._props.cacheConfig),
+        contentCacheSize: this._props.contentCacheSize,
       });
       this._nativePlatform = new nativePlatformImpl();
     }

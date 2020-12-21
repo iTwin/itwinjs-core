@@ -1,6 +1,6 @@
 {
   "name": "@bentley/webpack-tools-core",
-  "version": "2.11.0-dev.6",
+  "version": "2.11.0-dev.19",
   "description": "Set of Webpack Plugins and Loaders used for building iModel.js applications",
   "license": "MIT",
   "repository": {
@@ -17,7 +17,7 @@
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "",
-    "lint": "eslint -f visualstudio --max-warnings 0 ./src/**/*.ts 1>&2",
+    "lint": "eslint -f visualstudio ./src/**/*.ts 1>&2",
     "test": "",
     "cover": ""
   },
@@ -28,14 +28,17 @@
     "glob": "^7.1.2",
     "source-map-loader": "^1.0.0",
     "webpack-filter-warnings-plugin": "^1.2.1",
-    "webpack-sources": "^1.4.3"
+    "webpack-sources": "^1.4.3",
+    "findup": "0.1.5",
+    "lodash": "^4.17.10",
+    "resolve": "1.19.0"
   },
   "peerDependencies": {
     "webpack": "4.42.0"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.11.0-dev.6",
-    "@bentley/eslint-plugin": "2.11.0-dev.6",
+    "@bentley/build-tools": "2.11.0-dev.19",
+    "@bentley/eslint-plugin": "2.11.0-dev.19",
     "@types/fs-extra": "^4.0.7",
     "@types/glob": "^5.0.35",
     "@types/node": "10.14.1",
@@ -44,7 +47,8 @@
     "eslint": "^6.8.0",
     "rimraf": "^3.0.2",
     "typescript": "~3.7.4",
-    "webpack": "4.42.0"
+    "webpack": "4.42.0",
+    "cpx": "^1.5.0"
   },
   "eslintConfig": {
     "plugins": [
