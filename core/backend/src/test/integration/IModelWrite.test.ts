@@ -8,9 +8,8 @@ import { DbOpcode, DbResult, Id64String, IModelHubStatus } from "@bentley/bentle
 import {
   CodeState, HubCode, HubIModel, IModelHubError, IModelQuery, Lock, LockLevel, LockQuery, LockType, MultiCode,
 } from "@bentley/imodelhub-client";
-import { CodeScopeSpec, CodeSpec, DomainOptions, IModel, IModelError, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { CodeScopeSpec, CodeSpec, DomainOptions, IModel, IModelError, RequestNewBriefcaseProps, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import { RequestNewBriefcaseArg } from "../../BriefcaseManager";
 import {
   AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, ConcurrencyControl, DictionaryModel, Element, IModelJsFs, SpatialCategory,
   SqliteStatement, SqliteValue, SqliteValueType,
@@ -983,7 +982,7 @@ describe("IModelWriteTest (#integration)", () => {
     const iModelId = await HubUtility.pushIModel(managerRequestContext, projectId, pathname, hubName);
 
     /* User "manager" upgrades the briefcase */
-    const args: RequestNewBriefcaseArg = {
+    const args: RequestNewBriefcaseProps = {
       contextId: projectId,
       iModelId,
     };
@@ -1025,7 +1024,7 @@ describe("IModelWriteTest (#integration)", () => {
     assert.isTrue(iModel.nativeDb.hasPendingTxns());
 
     /* User "super" fails to upgrade while the above upgrade in process, and the "manager" holds the schema lock */
-    const superArg: RequestNewBriefcaseArg = {
+    const superArg: RequestNewBriefcaseProps = {
       contextId: projectId,
       iModelId,
     };

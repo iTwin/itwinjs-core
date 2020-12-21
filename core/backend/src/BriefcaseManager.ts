@@ -70,12 +70,12 @@ export enum BriefcaseIdValue {
 /** The argument for [[BriefcaseManager.downloadBriefcase]]
  * @beta
 */
-export interface RequestNewBriefcaseArg extends RequestNewBriefcaseProps {
+export type RequestNewBriefcaseArg = RequestNewBriefcaseProps & {
   /** If present, a function called periodically during the download to indicate progress.
    * @note return non-zero from this function to abort the download.
    */
   onProgress?: ProgressFunction;
-}
+};
 
 /** A token that represents a ChangeSet
  * @internal
@@ -268,7 +268,7 @@ export class BriefcaseManager {
    * Then, a Checkpoint file (as of a ChangesetId, typically "Latest") is downloaded from IModelHub. After the download completes,
    * the briefcaseId in the local file is changed to acquired briefcaseId, changing the checkpoint file into a briefcase file.
    *
-   * Each of these steps requires an valid `AuthorizedClientRequestContext` to provide the user's authorization for the requests.
+   * Each of these steps requires a valid `AuthorizedClientRequestContext` to provide the user's credentials for the requests.
    *
    * @param request The properties that specify the briefcase file to be downloaded.
    * @returns The properties of the local briefcase in a Promise that is resolved after the briefcase is fully downloaded and the briefcase file is ready for use via [BriefcaseDb.open]($backend).
