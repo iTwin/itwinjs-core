@@ -174,8 +174,9 @@ export class SweepContour {
                 strokes.push(c.packedPoints);
             }
           }
+          const numLoops = strokes.length;
           const graph = Triangulator.createTriangulatedGraphFromLoops(strokes);
-          if (graph && HalfEdgeGraphSearch.isTriangulatedCCW(graph)) {
+          if (graph && HalfEdgeGraphSearch.isTriangulatedCCW(graph, true, numLoops - 1)) {
             Triangulator.flipTriangles(graph);
             const unflippedPoly = PolyfaceBuilder.graphToPolyface(graph, options);
             this._facets = unflippedPoly;
