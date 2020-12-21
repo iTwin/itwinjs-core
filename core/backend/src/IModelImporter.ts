@@ -46,6 +46,10 @@ export class IModelImporter {
    * @note Adding an element to this set is typically necessary when remapping a source element to one that already exists in the target and already has the desired properties.
    */
   public readonly doNotUpdateElementIds = new Set<Id64String>();
+  /** The number of entity changes before incremental progress should be reported via the [[onProgress]] callback. */
+  public progressInterval: number = 1000;
+  /** Tracks the current total number of entity changes. */
+  private _progressCounter: number = 0;
 
   /** Construct a new IModelImporter
    * @param targetDb The target IModelDb
@@ -112,6 +116,7 @@ export class IModelImporter {
     try {
       const modelId: Id64String = this.targetDb.models.insertModel(modelProps);
       Logger.logInfo(loggerCategory, `Inserted ${this.formatModelForLogger(modelProps)}`);
+      this.trackProgress();
       return modelId;
     } catch (error) {
       if (!this.targetDb.containsClass(modelProps.classFullName)) {
@@ -129,6 +134,7 @@ export class IModelImporter {
   protected onUpdateModel(modelProps: ModelProps): void {
     this.targetDb.models.updateModel(modelProps);
     Logger.logInfo(loggerCategory, `Updated ${this.formatModelForLogger(modelProps)}`);
+    this.trackProgress();
   }
 
   /** Format a Model for the Logger. */
@@ -158,6 +164,7 @@ export class IModelImporter {
     try {
       const elementId: Id64String = this.targetDb.elements.insertElement(elementProps);
       Logger.logInfo(loggerCategory, `Inserted ${this.formatElementForLogger(elementProps)}`);
+      this.trackProgress();
       if (this.simplifyElementGeometry) {
         this.targetDb.nativeDb.simplifyElementGeometry({ id: elementId, convertBReps: true });
         Logger.logInfo(loggerCategory, `Simplified element geometry for ${this.formatElementForLogger(elementProps)}`);
@@ -182,6 +189,7 @@ export class IModelImporter {
     }
     this.targetDb.elements.updateElement(elementProps);
     Logger.logInfo(loggerCategory, `Updated ${this.formatElementForLogger(elementProps)}`);
+    this.trackProgress();
     if (this.simplifyElementGeometry) {
       this.targetDb.nativeDb.simplifyElementGeometry({ id: elementProps.id, convertBReps: true });
       Logger.logInfo(loggerCategory, `Simplified element geometry for ${this.formatElementForLogger(elementProps)}`);
@@ -194,6 +202,7 @@ export class IModelImporter {
   protected onDeleteElement(elementId: Id64String): void {
     this.targetDb.elements.deleteElement(elementId);
     Logger.logInfo(loggerCategory, `Deleted element ${elementId}`);
+    this.trackProgress();
   }
 
   /** Delete the specified Element from the target iModel. */
@@ -291,6 +300,7 @@ export class IModelImporter {
     try {
       this.targetDb.elements.insertAspect(aspectProps);
       Logger.logInfo(loggerCategory, `Inserted ${this.formatElementAspectForLogger(aspectProps)}`);
+      this.trackProgress();
     } catch (error) {
       if (!this.targetDb.containsClass(aspectProps.classFullName)) {
         // replace standard insert error with something more helpful
@@ -307,6 +317,7 @@ export class IModelImporter {
   protected onUpdateElementAspect(aspectProps: ElementAspectProps): void {
     this.targetDb.elements.updateAspect(aspectProps);
     Logger.logInfo(loggerCategory, `Updated ${this.formatElementAspectForLogger(aspectProps)}`);
+    this.trackProgress();
   }
 
   /** Delete the specified ElementAspect from the target iModel.
@@ -315,6 +326,7 @@ export class IModelImporter {
   protected onDeleteElementAspect(targetElementAspect: ElementAspect): void {
     this.targetDb.elements.deleteAspect(targetElementAspect.id);
     Logger.logInfo(loggerCategory, `Deleted ${this.formatElementAspectForLogger(targetElementAspect)}`);
+    this.trackProgress();
   }
 
   /** Format an ElementAspect for the Logger. */
@@ -371,6 +383,7 @@ export class IModelImporter {
     try {
       const targetRelInstanceId: Id64String = this.targetDb.relationships.insertInstance(relationshipProps);
       Logger.logInfo(loggerCategory, `Inserted ${this.formatRelationshipForLogger(relationshipProps)}`);
+      this.trackProgress();
       return targetRelInstanceId;
     } catch (error) {
       if (!this.targetDb.containsClass(relationshipProps.classFullName)) {
@@ -391,12 +404,14 @@ export class IModelImporter {
     }
     this.targetDb.relationships.updateInstance(relationshipProps);
     Logger.logInfo(loggerCategory, `Updated ${this.formatRelationshipForLogger(relationshipProps)}`);
+    this.trackProgress();
   }
 
   /** Delete the specified Relationship from the target iModel. */
   protected onDeleteRelationship(relationshipProps: RelationshipProps): void {
     this.targetDb.relationships.deleteInstance(relationshipProps);
     Logger.logInfo(loggerCategory, `Deleted relationship ${this.formatRelationshipForLogger(relationshipProps)}`);
+    this.trackProgress();
   }
 
   /** Delete the specified Relationship from the target iModel. */
@@ -408,6 +423,19 @@ export class IModelImporter {
   private formatRelationshipForLogger(relProps: RelationshipProps): string {
     return `${relProps.classFullName} sourceId=[${relProps.sourceId}] targetId=[${relProps.targetId}]`;
   }
+
+  /** Tracks incremental progress */
+  private trackProgress(): void {
+    this._progressCounter++;
+    if (0 === (this._progressCounter % this.progressInterval)) {
+      this.onProgress();
+    }
+  }
+
+  /** This method is called when IModelImporter has made incremental progress based on the [[progressInterval]] setting.
+   * @note A subclass may override this method to report custom progress but should call `super.onProgress`.
+   */
+  protected onProgress(): void { }
 
   /** Optionally compute the projectExtents for the target iModel depending on the options for this IModelImporter.
    * @note This method is automatically called from [IModelTransformer.processChanges]($backend) and [IModelTransformer.processAll]($backend).
