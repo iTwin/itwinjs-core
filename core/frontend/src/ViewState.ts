@@ -374,15 +374,15 @@ export abstract class ViewState extends ElementState {
   public abstract get details(): ViewDetails;
 
   /** Returns true if this ViewState is-a [[ViewState3d]] */
-  public is3d(): this is ViewState3d { return false; }
+  public abstract is3d(): this is ViewState3d;
   /** Returns true if this ViewState is-a [[ViewState2d]] */
-  public is2d(): this is ViewState2d { return false; }
+  public is2d(): this is ViewState2d { return !this.is3d(); }
   /** Returns true if this ViewState is-a [[ViewState3d]] with the camera currently on. */
   public isCameraEnabled(): this is ViewState3d { return this.is3d() && this.isCameraOn; }
   /** Returns true if this ViewState is-a [[SpatialViewState]] */
-  public isSpatialView(): this is SpatialViewState { return false; }
+  public abstract isSpatialView(): this is SpatialViewState;
   /** Returns true if this ViewState is-a [[DrawingViewState]] */
-  public isDrawingView(): this is DrawingViewState { return false; }
+  public abstract isDrawingView(): this is DrawingViewState;
   /** Returns true if [[ViewTool]]s are allowed to operate in three dimensions on this view. */
   public abstract allow3dManipulations(): boolean;
   /** @internal */
@@ -1203,6 +1203,9 @@ export abstract class ViewState3d extends ViewState {
   /** @internal */
   public is3d(): this is ViewState3d { return true; }
 
+  /** @internal */
+  public isDrawingView(): this is DrawingViewState { return false; }
+
   public get isCameraOn(): boolean { return this._cameraOn; }
 
   private static _minGlobeEyeHeight = Constant.earthRadiusWGS84.equator / 4;  // View as globe if more than a quarter of earth radius from surface.
@@ -1936,7 +1939,10 @@ export abstract class ViewState2d extends ViewState {
   }
 
   /** @internal */
-  public is2d(): this is ViewState2d { return true; }
+  public is3d(): this is ViewState3d { return false; }
+
+  /** @internal */
+  public isSpatialView(): this is SpatialViewState { return false; }
 
   /** @internal */
   public savePose(): ViewPose { return new ViewPose2d(this); }

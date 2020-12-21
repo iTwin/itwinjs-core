@@ -29,6 +29,7 @@ import { ViewRect } from "./ViewRect";
 import { IModelApp } from "./IModelApp";
 import { CoordSystem, OffScreenViewport, Viewport } from "./Viewport";
 import { ViewState, ViewState2d } from "./ViewState";
+import { DrawingViewState } from "./DrawingViewState";
 import { createDefaultViewFlagOverrides, TileGraphicType, TileTreeSet } from "./tile/internal";
 import { imageBufferToPngDataUrl, openImageDataUrlInNewWindow } from "./ImageUtil";
 
@@ -156,6 +157,9 @@ export class SheetViewState extends ViewState2d {
     props.sheetAttachments = [...this.attachmentIds];
     return props;
   }
+
+  /** @internal */
+  public isDrawingView(): this is DrawingViewState { return false; }
 
   public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps: SheetProps, attachments: Id64Array) {
     super(props, iModel, categories, displayStyle);

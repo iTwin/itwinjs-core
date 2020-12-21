@@ -304,7 +304,7 @@ export class DrawingViewState extends ViewState2d {
 
   /** @internal */
   public async load(): Promise<void> {
-    this._attachment = undefined;
+    this._attachment = dispose(this._attachment);
     await super.load();
     if (!this._sectionDrawingProps) {
       // The viewed model was changed - we need to query backend for info about the new viewed model's section drawing.
