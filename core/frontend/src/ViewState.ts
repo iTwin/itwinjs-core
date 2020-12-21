@@ -14,29 +14,30 @@ import {
 import {
   AnalysisStyle, AxisAlignedBox3d, Camera, Cartographic, ColorDef,
   FeatureAppearance, Frustum, GlobeMode, GraphicParams, GridOrientationType, Npc, RenderMaterial,
-  SpatialViewDefinitionProps, SubCategoryOverride, TextureMapping, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails,
+  SubCategoryOverride, TextureMapping, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails,
   ViewDetails3d, ViewFlags, ViewStateProps,
 } from "@bentley/imodeljs-common";
-import { AuxCoordSystem2dState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystemState } from "./AuxCoordSys";
+import { AuxCoordSystem2dState, AuxCoordSystem3dState, AuxCoordSystemState } from "./AuxCoordSys";
 import { CategorySelectorState } from "./CategorySelectorState";
 import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState } from "./DisplayStyleState";
 import { ElementState } from "./EntityState";
 import { Frustum2d } from "./Frustum2d";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
-import { ModelSelectorState } from "./ModelSelectorState";
-import { GeometricModel2dState, GeometricModel3dState, GeometricModelState } from "./ModelState";
+import { GeometricModel2dState, GeometricModelState } from "./ModelState";
 import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager";
 import { GraphicType } from "./render/GraphicBuilder";
 import { RenderClipVolume } from "./render/RenderClipVolume";
 import { RenderMemory } from "./render/RenderMemory";
 import { RenderScheduleState } from "./RenderScheduleState";
 import { StandardView, StandardViewId } from "./StandardView";
-import { SpatialTileTreeReferences, TileTreeReference, TileTreeSet } from "./tile/internal";
+import { TileTreeReference, TileTreeSet } from "./tile/internal";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { areaToEyeHeight, areaToEyeHeightFromGcs, GlobalLocation } from "./ViewGlobalLocation";
 import { ViewingSpace } from "./ViewingSpace";
 import { ViewChangeOptions, Viewport } from "./Viewport";
+import { DrawingViewState } from "./DrawingViewState";
+import { SpatialViewState } from "./SpatialViewState";
 
 /** Describes the result of a viewing operation such as those exposed by [[ViewState]] and [[Viewport]].
  * @public
@@ -256,6 +257,15 @@ export abstract class ViewState extends ElementState {
    */
   public static createFromProps(_props: ViewStateProps, _iModel: IModelConnection): ViewState | undefined { return undefined; }
 
+  /** Serialize this ViewState as a set of properties that can be used to recreate it via [[ViewState.createFromProps]]. */
+  public toProps(): ViewStateProps {
+    return {
+      viewDefinitionProps: this.toJSON(),
+      categorySelectorProps: this.categorySelector.toJSON(),
+      displayStyleProps: this.displayStyle.toJSON(),
+    };
+  }
+
   /** Get the ViewFlags from the [[DisplayStyleState]] of this ViewState.
    * @note Do not modify this object directly. Instead, use the setter as follows:
    *
@@ -364,15 +374,15 @@ export abstract class ViewState extends ElementState {
   public abstract get details(): ViewDetails;
 
   /** Returns true if this ViewState is-a [[ViewState3d]] */
-  public is3d(): this is ViewState3d { return this instanceof ViewState3d; }
+  public abstract is3d(): this is ViewState3d;
   /** Returns true if this ViewState is-a [[ViewState2d]] */
-  public is2d(): this is ViewState2d { return this instanceof ViewState2d; }
+  public is2d(): this is ViewState2d { return !this.is3d(); }
   /** Returns true if this ViewState is-a [[ViewState3d]] with the camera currently on. */
   public isCameraEnabled(): this is ViewState3d { return this.is3d() && this.isCameraOn; }
   /** Returns true if this ViewState is-a [[SpatialViewState]] */
-  public isSpatialView(): this is SpatialViewState { return this instanceof SpatialViewState; }
+  public abstract isSpatialView(): this is SpatialViewState;
   /** Returns true if this ViewState is-a [[DrawingViewState]] */
-  public isDrawingView(): this is DrawingViewState { return this instanceof DrawingViewState; }
+  public abstract isDrawingView(): this is DrawingViewState;
   /** Returns true if [[ViewTool]]s are allowed to operate in three dimensions on this view. */
   public abstract allow3dManipulations(): boolean;
   /** @internal */
@@ -1190,6 +1200,12 @@ export abstract class ViewState3d extends ViewState {
     return val;
   }
 
+  /** @internal */
+  public is3d(): this is ViewState3d { return true; }
+
+  /** @internal */
+  public isDrawingView(): this is DrawingViewState { return false; }
+
   public get isCameraOn(): boolean { return this._cameraOn; }
 
   private static _minGlobeEyeHeight = Constant.earthRadiusWGS84.equator / 4;  // View as globe if more than a quarter of earth radius from surface.
@@ -1878,145 +1894,6 @@ export abstract class ViewState3d extends ViewState {
   }
 }
 
-/** Defines a view of one or more SpatialModels.
- * The list of viewed models is stored in the ModelSelector.
- * @public
- */
-export class SpatialViewState extends ViewState3d {
-  /** @internal */
-  public static get className() { return "SpatialViewDefinition"; }
-  public modelSelector: ModelSelectorState;
-  private readonly _treeRefs: SpatialTileTreeReferences;
-
-  /** Create a new *blank* SpatialViewState. The returned SpatialViewState will nave non-persistent empty [[CategorySelectorState]] and [[ModelSelectorState]],
-   * and a non-persistent [[DisplayStyle3dState]] with default values for all of its components. Generally after creating a blank SpatialViewState,
-   * callers will modify the state to suit specific needs.
-   * @param iModel The IModelConnection for the new SpatialViewState
-   * @param origin The origin for the new SpatialViewState
-   * @param extents The extents for the new SpatialViewState
-   * @param rotation The rotation of the new SpatialViewState. If undefined, use top view.
-   * @beta
-   */
-  public static createBlank(iModel: IModelConnection, origin: XYAndZ, extents: XYAndZ, rotation?: Matrix3d): SpatialViewState {
-    const blank = {} as any;
-    const cat = new CategorySelectorState(blank, iModel);
-    const modelSelectorState = new ModelSelectorState(blank, iModel);
-    const displayStyleState = new DisplayStyle3dState(blank, iModel);
-    const view = new this(blank, iModel, cat, displayStyleState, modelSelectorState);
-    view.setOrigin(origin);
-    view.setExtents(extents);
-    if (undefined !== rotation)
-      view.setRotation(rotation);
-    return view;
-  }
-
-  public static createFromProps(props: ViewStateProps, iModel: IModelConnection): SpatialViewState {
-    const cat = new CategorySelectorState(props.categorySelectorProps, iModel);
-    const displayStyleState = new DisplayStyle3dState(props.displayStyleProps, iModel);
-    const modelSelectorState = new ModelSelectorState(props.modelSelectorProps!, iModel);
-    return new this(props.viewDefinitionProps as SpatialViewDefinitionProps, iModel, cat, displayStyleState, modelSelectorState);
-  }
-
-  constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, arg3: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState) {
-    super(props, iModel, arg3, displayStyle);
-    this.modelSelector = modelSelector;
-    if (arg3 instanceof SpatialViewState) // from clone
-      this.modelSelector = arg3.modelSelector.clone();
-
-    this._treeRefs = SpatialTileTreeReferences.create(this);
-  }
-
-  public equals(other: this): boolean { return super.equals(other) && this.modelSelector.equals(other.modelSelector); }
-
-  public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystemSpatialState.createNew(acsName, this.iModel); }
-  public get defaultExtentLimits() { return { min: Constant.oneMillimeter, max: 3 * Constant.diameterOfEarth }; } // Increased max by 3X to support globe mode.
-
-  /** @internal */
-  public markModelSelectorChanged(): void {
-    this._treeRefs.update();
-  }
-
-  /** Get world-space viewed extents based on the iModel's project extents. */
-  protected getDisplayedExtents(): AxisAlignedBox3d {
-    const extents = Range3d.fromJSON<AxisAlignedBox3d>(this.iModel.displayedExtents);
-    extents.scaleAboutCenterInPlace(1.0001); // projectExtents. lying smack up against the extents is not excluded by frustum...
-    extents.extendRange(this.getGroundExtents());
-    return extents;
-  }
-
-  /** Compute world-space range appropriate for fitting the view. If that range is null, use the displayed extents. */
-  public computeFitRange(): AxisAlignedBox3d {
-    // Loop over the current models in the model selector with loaded tile trees and union their ranges
-    const range = new Range3d();
-    this.forEachTileTreeRef((ref) => {
-      ref.unionFitRange(range);
-    });
-
-    if (range.isNull)
-      range.setFrom(this.getDisplayedExtents());
-
-    range.ensureMinLengths(1.0);
-
-    return range;
-  }
-
-  public getViewedExtents(): AxisAlignedBox3d {
-    const extents = this.getDisplayedExtents();
-
-    // Some displayed tile trees may have a transform applied that takes them outside of the displayed extents.
-    extents.extendRange(this.computeFitRange());
-
-    return extents;
-  }
-
-  public toJSON(): SpatialViewDefinitionProps {
-    const val = super.toJSON() as SpatialViewDefinitionProps;
-    val.modelSelectorId = this.modelSelector.id;
-    return val;
-  }
-  public async load(): Promise<void> {
-    await super.load();
-    return this.modelSelector.load();
-  }
-  public viewsModel(modelId: Id64String): boolean { return this.modelSelector.containsModel(modelId); }
-  public clearViewedModels() { this.modelSelector.models.clear(); }
-  public addViewedModel(id: Id64String) { this.modelSelector.addModels(id); }
-  public removeViewedModel(id: Id64String) { this.modelSelector.dropModels(id); }
-
-  public forEachModel(func: (model: GeometricModelState) => void) {
-    for (const modelId of this.modelSelector.models) {
-      const model = this.iModel.models.getLoaded(modelId);
-      if (undefined !== model && undefined !== model.asGeometricModel3d)
-        func(model as GeometricModel3dState);
-    }
-  }
-
-  /** @internal */
-  public forEachModelTreeRef(func: (treeRef: TileTreeReference) => void): void {
-    for (const ref of this._treeRefs)
-      func(ref);
-  }
-
-  /** @internal */
-  public createScene(context: SceneContext): void {
-    super.createScene(context);
-    context.textureDrapes.forEach((drape) => drape.collectGraphics(context));
-    context.viewport.target.updateSolarShadows(this.getDisplayStyle3d().wantShadows ? context : undefined);
-  }
-}
-
-/** Defines a spatial view that displays geometry on the image plane using a parallel orthographic projection.
- * @public
- */
-export class OrthographicViewState extends SpatialViewState {
-  /** @internal */
-  public static get className() { return "OrthographicViewDefinition"; }
-
-  constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState) { super(props, iModel, categories, displayStyle, modelSelector); }
-
-  public supportsCamera(): boolean { return false; }
-}
-
 /** Defines the state of a view of a single 2d model.
  * @public
  */
@@ -2027,7 +1904,8 @@ export abstract class ViewState2d extends ViewState {
   public readonly origin: Point2d;
   public readonly delta: Point2d;
   public readonly angle: Angle;
-  public readonly baseModelId: Id64String;
+  protected _baseModelId: Id64String;
+  public get baseModelId(): Id64String { return this._baseModelId; }
   /** @internal */
   protected _treeRef?: TileTreeReference;
 
@@ -2047,7 +1925,7 @@ export abstract class ViewState2d extends ViewState {
     this.origin = Point2d.fromJSON(props.origin);
     this.delta = Point2d.fromJSON(props.delta);
     this.angle = Angle.fromJSON(props.angle);
-    this.baseModelId = Id64.fromJSON(props.baseModelId);
+    this._baseModelId = Id64.fromJSON(props.baseModelId);
     this._details = new ViewDetails(this.jsonProperties);
   }
 
@@ -2059,6 +1937,12 @@ export abstract class ViewState2d extends ViewState {
     val.baseModelId = this.baseModelId;
     return val;
   }
+
+  /** @internal */
+  public is3d(): this is ViewState3d { return false; }
+
+  /** @internal */
+  public isSpatialView(): this is SpatialViewState { return false; }
 
   /** @internal */
   public savePose(): ViewPose { return new ViewPose2d(this); }
@@ -2078,6 +1962,17 @@ export abstract class ViewState2d extends ViewState {
       return undefined;
 
     return model;
+  }
+
+  /** Change the model viewed by this view.
+   * @note The new model should be of the same type (drawing or sheet) as the current viewed model.
+   * @see [[Viewport.changeViewedModel2d]].
+   * @alpha
+   */
+  public async changeViewedModel(newViewedModelId: Id64String): Promise<void> {
+    this._baseModelId = newViewedModelId;
+    this._treeRef = undefined;
+    await this.load();
   }
 
   public computeFitRange(): Range3d {
@@ -2122,43 +2017,4 @@ export abstract class ViewState2d extends ViewState {
   }
 
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystem2dState.createNew(acsName, this.iModel); }
-}
-
-/** A view of a DrawingModel
- * @public
- */
-export class DrawingViewState extends ViewState2d {
-  /** @internal */
-  public static get className() { return "DrawingViewDefinition"; }
-  // Computed from the tile tree range once the tile tree is available; cached thereafter to avoid recomputing.
-  private _modelLimits: ExtentLimits;
-  private _viewedExtents: AxisAlignedBox3d;
-
-  public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, extents: AxisAlignedBox3d) {
-    super(props, iModel, categories, displayStyle);
-    if (categories instanceof DrawingViewState) {
-      this._viewedExtents = categories._viewedExtents.clone();
-      this._modelLimits = { ...categories._modelLimits };
-    } else {
-      this._viewedExtents = extents;
-      this._modelLimits = { min: Constant.oneMillimeter, max: 10 * extents.maxLength() };
-    }
-  }
-
-  public static createFromProps(props: ViewStateProps, iModel: IModelConnection): DrawingViewState {
-    const cat = new CategorySelectorState(props.categorySelectorProps, iModel);
-    const displayStyleState = new DisplayStyle2dState(props.displayStyleProps, iModel);
-    const extents = props.modelExtents ? Range3d.fromJSON(props.modelExtents) : new Range3d();
-
-    // use "new this" so subclasses are correct
-    return new this(props.viewDefinitionProps as ViewDefinition2dProps, iModel, cat, displayStyleState, extents);
-  }
-
-  public getViewedExtents(): AxisAlignedBox3d {
-    return this._viewedExtents;
-  }
-
-  public get defaultExtentLimits() {
-    return this._modelLimits;
-  }
 }
