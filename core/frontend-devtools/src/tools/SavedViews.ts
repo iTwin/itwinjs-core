@@ -7,9 +7,9 @@
  * @module Tools
  */
 
-import { CodeProps, ViewStateProps } from "@bentley/imodeljs-common";
+import { ViewStateProps } from "@bentley/imodeljs-common";
 import {
-  EntityState, IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, SheetViewState, SpatialViewState, Tool, ViewState,
+  EntityState, IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, Tool, ViewState,
 } from "@bentley/imodeljs-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 
@@ -17,30 +17,7 @@ import { copyStringToClipboard } from "../ClipboardUtilities";
  * @beta
  */
 export function serializeViewState(view: ViewState): ViewStateProps {
-  const modelSelectorProps = view instanceof SpatialViewState ? view.modelSelector.toJSON() : undefined;
-  const props: ViewStateProps = {
-    viewDefinitionProps: view.toJSON(),
-    categorySelectorProps: view.categorySelector.toJSON(),
-    displayStyleProps: view.displayStyle.toJSON(),
-    modelSelectorProps,
-  };
-
-  if (view instanceof SheetViewState) {
-    // For sheetProps all that is actually used is the size, so just null out everything else.
-    const codeProps: CodeProps = { spec: "", scope: "", value: "" };
-    props.sheetProps = {
-      model: "",
-      code: codeProps,
-      classFullName: "",
-      width: view.sheetSize.x,
-      height: view.sheetSize.y,
-      scale: 1,
-    };
-
-    props.sheetAttachments = [...view.attachmentIds];
-  }
-
-  return props;
+  return view.toProps();
 }
 
 /** Instantiate a ViewState serialized by [serializeViewState].

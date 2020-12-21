@@ -1509,6 +1509,14 @@ export class ToggleDrapeFrustumTool extends RenderTargetDebugControlToggleTool {
 }
 
 // @beta
+export class ToggleDrawingGraphicsTool extends ViewportToggleTool {
+    // (undocumented)
+    protected toggle(vp: Viewport, enable?: boolean): void;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
 export class ToggleFrustumSnapshotTool extends Tool {
     // (undocumented)
     static get maxArgs(): number;
@@ -1617,6 +1625,14 @@ export class ToggleSectionCutTool extends Tool {
     parseAndRun(...args: string[]): boolean;
     // (undocumented)
     run(produceCutGeometry?: boolean): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class ToggleSectionDrawingSpatialViewTool extends ViewportToggleTool {
+    // (undocumented)
+    protected toggle(vp: Viewport, enable?: boolean): void;
     // (undocumented)
     static toolId: string;
 }

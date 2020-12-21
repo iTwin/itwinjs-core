@@ -281,6 +281,12 @@
     },
     "SetAASamples": {
       "keyin": "fdt aasamples"
+    },
+    "ToggleDrawingGraphics": {
+      "keyin": "fdt drawing graphics"
+    },
+    "ToggleSectionDrawingSpatialView": {
+      "keyin": "fdt sectiondrawing display spatial"
     }
   }
 }
