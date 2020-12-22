@@ -165,6 +165,7 @@ public;FrontendLoggerCategory
 public;FrontendRequestContext 
 public;FrontendSecurityOptions
 public;Frustum2d
+internal;FrustumAnimator 
 public;FuzzySearch
 public;FuzzySearchResult
 public;FuzzySearchResults
@@ -184,6 +185,7 @@ public;getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | un
 public;getImageSourceMimeType(format: ImageSourceFormat): string
 alpha;GlobalLocation
 alpha;GlobalLocationArea
+internal;GlobeAnimator 
 internal;class GltfReader
 internal;GltfReaderProps
 internal;GltfReaderResult 

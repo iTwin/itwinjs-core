@@ -58,7 +58,6 @@ import { DialogPropertyItem } from '@bentley/ui-abstract';
 import { DialogPropertySyncItem } from '@bentley/ui-abstract';
 import { Dictionary } from '@bentley/bentleyjs-core';
 import { DisplayStyle3dSettings } from '@bentley/imodeljs-common';
-import { DisplayStyle3dSettingsProps } from '@bentley/imodeljs-common';
 import { DisplayStyleProps } from '@bentley/imodeljs-common';
 import { DisplayStyleSettings } from '@bentley/imodeljs-common';
 import { DisplayStyleSettingsProps } from '@bentley/imodeljs-common';
@@ -2044,9 +2043,9 @@ export class DisplayStyle3dState extends DisplayStyleState {
     // @internal
     loadSkyBoxParams(system: RenderSystem, vp?: Viewport): SkyBox.CreateParams | undefined;
     // @internal (undocumented)
-    protected onOverridesApplied(overrides: DisplayStyle3dSettingsProps): void;
-    // @internal (undocumented)
     overrideTerrainSkirtDisplay(): boolean | undefined;
+    // @internal (undocumented)
+    protected registerSettingsEventListeners(): void;
     setSunTime(time: number): void;
     // (undocumented)
     get settings(): DisplayStyle3dSettings;
@@ -2169,8 +2168,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     moveMapLayerToTop(index: number, isOverlay: boolean): void;
     get name(): string;
     // @internal (undocumented)
-    protected onOverridesApplied(overrides: DisplayStyleSettingsProps): void;
-    // @internal (undocumented)
     get overlayMap(): MapTileTreeReference;
     // @internal (undocumented)
     get overlayMapLayers(): MapLayerSettings[];
@@ -2181,6 +2178,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     // @internal (undocumented)
     abstract overrideTerrainSkirtDisplay(): boolean | undefined;
+    // @internal (undocumented)
+    protected registerSettingsEventListeners(): void;
     // @internal (undocumented)
     get scheduleScript(): RenderScheduleState.Script | undefined;
     set scheduleScript(script: RenderScheduleState.Script | undefined);
@@ -3081,6 +3080,17 @@ export namespace Frustum2d {
     export function depthFromDisplayPriority(priority: number): number;
 }
 
+// @internal
+export class FrustumAnimator implements Animator {
+    constructor(options: ViewAnimationOptions, viewport: ScreenViewport, begin: ViewPose, end: ViewPose);
+    // (undocumented)
+    animate(): boolean;
+    // (undocumented)
+    interrupt(): void;
+    // (undocumented)
+    options: ViewAnimationOptions;
+    }
+
 // @public (undocumented)
 export class FuzzySearch<T> {
     onGetMultiWordSearchOptions(): Fuse.FuseOptions<T>;
@@ -3235,6 +3245,16 @@ export interface GlobalLocationArea {
     // (undocumented)
     southwest: Cartographic;
 }
+
+// @internal
+export class GlobeAnimator implements Animator {
+    // (undocumented)
+    animate(): boolean;
+    // (undocumented)
+    static create(viewport: ScreenViewport, destination: GlobalLocation): Promise<GlobeAnimator | undefined>;
+    // (undocumented)
+    interrupt(): void;
+    }
 
 // @internal
 export abstract class GltfReader {
@@ -6297,12 +6317,15 @@ export class PerformanceMetrics {
 
 // @beta
 export namespace PerModelCategoryVisibility {
+    // (undocumented)
+    export function createOverrides(viewport: Viewport): PerModelCategoryVisibility.Overrides;
     export enum Override {
         Hide = 2,
         None = 0,
         Show = 1
     }
     export interface Overrides {
+        addOverrides(fs: FeatureSymbology.Overrides, ovrs: Id64.Uint32Map<Id64.Uint32Set>): void;
         clearOverrides(modelIds?: Id64Arg): void;
         forEachOverride(func: (modelId: Id64String, categoryId: Id64String, visible: boolean) => boolean): boolean;
         getOverride(modelId: Id64String, categoryId: Id64String): Override;
@@ -7217,7 +7240,7 @@ export namespace RenderScheduleState {
         // (undocumented)
         displayStyleId: Id64String;
         // (undocumented)
-        static fromJSON(displayStyleId: Id64String, modelTimelines: RenderSchedule.ModelTimelineProps[]): Script | undefined;
+        static fromJSON(displayStyleId: Id64String, modelTimelines: Readonly<RenderSchedule.ModelTimelineProps[]>): Script | undefined;
         // (undocumented)
         getAnimationBranches(scheduleTime: number): AnimationBranchStates | undefined;
         getCachedDuration(): Range1d;
@@ -11054,6 +11077,8 @@ export abstract class Viewport implements IDisposable {
     get analysisFraction(): number;
     set analysisFraction(fraction: number);
     // @internal (undocumented)
+    get analysisFractionValid(): boolean;
+    // @internal (undocumented)
     get analysisStyle(): AnalysisStyle | undefined;
     // @beta
     get antialiasSamples(): number;
@@ -11270,8 +11295,12 @@ export abstract class Viewport implements IDisposable {
     replaceViewedModels(modelIds: Id64Arg): Promise<void>;
     get rotation(): Matrix3d;
     // @internal (undocumented)
+    get sceneValid(): boolean;
+    // @internal (undocumented)
     protected _sceneValid: boolean;
     scroll(screenDist: XAndY, options?: ViewChangeOptions): void;
+    // @internal
+    setAllValid(): void;
     setAlwaysDrawn(ids: Id64Set, exclusive?: boolean): void;
     // @beta
     setAnimator(animator?: Animator): void;
@@ -11311,6 +11340,8 @@ export abstract class Viewport implements IDisposable {
     // @beta
     get timePoint(): number | undefined;
     set timePoint(time: number | undefined);
+    // @internal (undocumented)
+    get timePointValid(): boolean;
     // @internal (undocumented)
     toViewOrientation(from: XYZ, to?: XYZ): void;
     turnCameraOn(lensAngle?: Angle): ViewStatus;
@@ -11492,6 +11523,8 @@ export abstract class ViewState extends ElementState {
     abstract applyPose(props: ViewPose): this;
     // @internal (undocumented)
     get areAllTileTreesLoaded(): boolean;
+    // @internal
+    attachToViewport(_vp: Viewport): void;
     get auxiliaryCoordinateSystem(): AuxCoordSystemState;
     get backgroundColor(): ColorDef;
     // (undocumented)
@@ -11520,6 +11553,8 @@ export abstract class ViewState extends ElementState {
     abstract get defaultExtentLimits(): ExtentLimits;
     // (undocumented)
     description?: string;
+    // @internal
+    detachFromViewport(_vp: Viewport): void;
     // @beta
     abstract get details(): ViewDetails;
     // @internal
@@ -11573,6 +11608,8 @@ export abstract class ViewState extends ElementState {
     hasSameCoordinates(other: ViewState): boolean;
     is2d(): this is ViewState2d;
     abstract is3d(): this is ViewState3d;
+    // @internal
+    get isAttachedToViewport(): boolean;
     isCameraEnabled(): this is ViewState3d;
     abstract isDrawingView(): this is DrawingViewState;
     // (undocumented)

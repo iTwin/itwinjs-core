@@ -1673,6 +1673,8 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     get hiddenLineSettings(): HiddenLine.Settings;
     set hiddenLineSettings(hline: HiddenLine.Settings);
     // (undocumented)
+    is3d(): this is DisplayStyle3dSettings;
+    // (undocumented)
     get lights(): LightSettings;
     set lights(lights: LightSettings);
     // @beta
@@ -1750,7 +1752,7 @@ export class DisplayStyleSettings {
     set analysisStyle(style: AnalysisStyle | undefined);
     // @beta
     applyOverrides(overrides: DisplayStyleSettingsProps): void;
-    // @internal (undocumented)
+    // (undocumented)
     protected _applyOverrides(overrides: DisplayStyleSettingsProps): void;
     get backgroundColor(): ColorDef;
     set backgroundColor(color: ColorDef);
@@ -1778,6 +1780,8 @@ export class DisplayStyleSettings {
     get hasModelAppearanceOverride(): boolean;
     get hasSubCategoryOverride(): boolean;
     // (undocumented)
+    is3d(): this is DisplayStyle3dSettings;
+    // (undocumented)
     protected readonly _json: DisplayStyleSettingsProps;
     // @alpha
     get mapImagery(): MapImagerySettings;
@@ -1792,6 +1796,8 @@ export class DisplayStyleSettings {
     readonly onAnalysisFractionChanged: BeEvent<(newFraction: number) => void>;
     // @alpha
     readonly onAnalysisStyleChanged: BeEvent<(newStyle: Readonly<AnalysisStyle> | undefined) => void>;
+    // @beta
+    readonly onApplyOverrides: BeEvent<(overrides: Readonly<DisplayStyleSettingsProps>) => void>;
     readonly onBackgroundColorChanged: BeEvent<(newColor: ColorDef) => void>;
     readonly onBackgroundMapChanged: BeEvent<(newMap: BackgroundMapSettings) => void>;
     // @beta
@@ -1806,8 +1812,8 @@ export class DisplayStyleSettings {
     readonly onModelAppearanceOverrideChanged: BeEvent<(modelId: string, newAppearance: FeatureAppearance | undefined) => void>;
     readonly onMonochromeColorChanged: BeEvent<(newColor: ColorDef) => void>;
     readonly onMonochromeModeChanged: BeEvent<(newMode: MonochromeMode) => void>;
-    // @internal (undocumented)
-    readonly onOverridesApplied: BeEvent<(settings: DisplayStyleSettings, overrides: DisplayStyleSettingsProps) => void>;
+    // @beta
+    readonly onOverridesApplied: BeEvent<(overrides: Readonly<DisplayStyleSettingsProps>) => void>;
     // @beta
     readonly onPlanProjectionSettingsChanged: BeEvent<(modelId: string, newSettings: PlanProjectionSettings | undefined) => void>;
     // @internal
