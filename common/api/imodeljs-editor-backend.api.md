@@ -6,17 +6,15 @@
 
 import { CommandMethodProps } from '@bentley/imodeljs-editor-common';
 import { CommandResult } from '@bentley/imodeljs-editor-common';
-import { IModelDb } from '@bentley/imodeljs-backend';
 import { PingResult } from '@bentley/imodeljs-editor-common';
 import { StartCommandProps } from '@bentley/imodeljs-editor-common';
 
 // @alpha
 export class EditCommand {
-    constructor(iModel: IModelDb, _arg?: any);
+    constructor(_arg?: any);
     static commandId: string;
     // (undocumented)
-    get ctor(): EditCommandType;
-    readonly iModel: IModelDb;
+    get ctor(): typeof EditCommand;
     // (undocumented)
     onCleanup(): void;
     // (undocumented)
