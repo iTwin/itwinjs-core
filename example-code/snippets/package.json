@@ -10,7 +10,7 @@
     "copy:assets": "cpx \"./src/backend/assets/**/*\" ./lib/backend/assets",
     "extract": "betools extract --fileExt=ts --extractFrom=./src --recursive --out=../../generated-docs/extract",
     "docs": "npm run copy:assets && npm run extract",
-    "lint": "eslint -f visualstudio ./src/**/*.ts 1>&2",
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "npm run test:backend",
     "test:backend": "npm run copy:assets && betools test --testDir=\"./lib\"",
     "cover": "npm test"
