@@ -3,18 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { BeDuration, using } from "@bentley/bentleyjs-core";
+import { BeDuration } from "@bentley/bentleyjs-core";
 import {
   ChangeFlag, ChangeFlags, Viewport,
 } from "@bentley/imodeljs-frontend";
 
 /** Aspects of a Viewport that can become invalidated when its state changes. */
 export enum ViewportState {
-  Scene = 1 << 0,
-  RenderPlan = (1 << 1) | ViewportState.Scene, // implies Scene
-  Controller = (1 << 2) | ViewportState.RenderPlan, // implies RenderPlan
-  TimePoint = 1 << 3,
-  AnalysisFraction = 1 << 4,
+  TimePoint = 1 << 0,
+  SceneBit = 1 << 1,
+  Scene = ViewportState.SceneBit | ViewportState.TimePoint,
+  RenderPlanBit = 1 << 2,
+  RenderPlan = ViewportState.RenderPlanBit | ViewportState.Scene,
+  AnalysisFraction = 1 << 3,
+  ControllerBit = 1 << 4,
+  Controller = ViewportState.ControllerBit | ViewportState.RenderPlan | ViewportState.AnalysisFraction,
 }
 
 /** Accumulates changed events emitted by a Viewport. */
@@ -87,13 +90,39 @@ export class ViewportChangedHandler {
 
   /** Install a ViewportChangedHandler, execute the specified function, and uninstall the handler. */
   public static test(vp: Viewport, func: (mon: ViewportChangedHandler) => void): void {
-    using(new ViewportChangedHandler(vp), (mon) => func(mon));
+    const mon = new ViewportChangedHandler(vp);
+    func(mon);
+    mon.dispose();
+  }
+
+  /** Async version of test(). */
+  public static async testAsync(vp: Viewport, func: (mon: ViewportChangedHandler) => Promise<void>): Promise<void> {
+    const mon = new ViewportChangedHandler(vp);
+    await func(mon);
+    mon.dispose();
   }
 
   /** Assert that executing the supplied function causes events to be omitted resulting in the specified flags. */
   public expect(flags: ChangeFlag, state: ViewportState | undefined, func: () => void): void {
+    if (undefined === state)
+      state = 0;
+
+    this._vp.setAllValid();
     func();
+
+    expect(this._vp.sceneValid).to.equal(0 === (state & ViewportState.SceneBit));
+    expect(this._vp.renderPlanValid).to.equal(0 === (state & ViewportState.RenderPlanBit));
+    expect(this._vp.controllerValid).to.equal(0 === (state & ViewportState.ControllerBit));
+    expect(this._vp.timePointValid).to.equal(0 === (state & ViewportState.TimePoint));
+    expect(this._vp.analysisFractionValid).to.equal(0 === (state & ViewportState.AnalysisFraction));
+
     this._vp.renderFrame();
+
+    expect(this._vp.sceneValid).to.be.true;
+    expect(this._vp.renderPlanValid).to.be.true;
+    expect(this._vp.controllerValid).to.be.true;
+    expect(this._vp.timePointValid).to.be.true;
+    expect(this._vp.analysisFractionValid).to.be.true;
 
     // Expect exactly the same ChangeFlags to be received by onViewportChanged handler.
     if (undefined === this._changeFlags)
@@ -110,18 +139,10 @@ export class ViewportChangedHandler {
     // No dedicated deferred event for ViewState changed...just the immediate one.
     expect(this._eventFlags.value).to.equal(flags & ~ChangeFlag.ViewState);
 
-    if (undefined !== state) {
-      expect(this._vp.sceneValid).to.equal(0 === (state & ViewportState.Scene));
-      expect(this._vp.renderPlanValid).to.equal(0 === (state & ViewportState.Scene));
-      expect(this._vp.controllerValid).to.equal(0 === (state & ViewportState.Controller));
-      expect(this._vp.timePointValid).to.equal(0 === (state & ViewportState.TimePoint));
-      expect(this._vp.analysisFractionValid).to.equal(0 === (state & ViewportState.AnalysisFraction));
-    }
-
     // Reset for next frame.
     this._eventFlags.clear();
     this._changeFlags = undefined;
     this._featureOverridesDirty = false;
-    this._vp.resetValidFlags();
+    this._vp.setAllValid();
   }
 }

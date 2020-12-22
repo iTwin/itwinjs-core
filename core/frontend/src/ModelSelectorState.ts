@@ -47,12 +47,9 @@ export class ModelSelectorState extends ElementState {
     if (this.models.size !== other.models.size || this.id !== other.id || this.name !== other.name)
       return false;
 
-    const otherIter = other.models.keys();
-    let otherRes = otherIter.next();
-    for (let thisIter = this.models.keys(), thisRes = thisIter.next(); !thisRes.done; thisRes = thisIter.next(), otherRes = otherIter.next()) {
-      if (thisRes.value !== otherRes.value)
+    for (const model of this.models)
+      if (!other.models.has(model))
         return false;
-    }
 
     return true;
   }

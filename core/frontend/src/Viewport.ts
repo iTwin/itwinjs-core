@@ -908,9 +908,9 @@ export abstract class Viewport implements IDisposable {
   private readonly _decorationCache: Map<ViewportDecorator, CachedDecoration[]> = new Map<ViewportDecorator, CachedDecoration[]>();
 
   /** Strictly for tests. @internal */
-  public resetValidFlags(): void {
+  public setAllValid(): void {
     this._sceneValid = this._decorationsValid = this._renderPlanValid = this._controllerValid = this._redrawPending
-      = this._analysisFractionValid = this._timePointValid = false;
+      = this._analysisFractionValid = this._timePointValid = true;
   }
 
   /** Mark the current set of decorations invalid, so that they will be recreated on the next render frame.
@@ -937,7 +937,7 @@ export abstract class Viewport implements IDisposable {
   }
   /** @internal */
   public invalidateController(): void {
-    this._controllerValid = this._analysisFractionValid = this._timePointValid = false;
+    this._controllerValid = this._analysisFractionValid = false;
     this.invalidateRenderPlan();
   }
 
@@ -2725,6 +2725,9 @@ export abstract class Viewport implements IDisposable {
       this.invalidateController();
     }
 
+    if (!this._controllerValid)
+      this.setupFromView();
+
     if (this._selectionSetDirty) {
       target.setHiliteSet(view.iModel.hilited);
       this._selectionSetDirty = false;
@@ -2757,9 +2760,6 @@ export abstract class Viewport implements IDisposable {
       target.overrideFeatureSymbology(ovr);
       isRedrawNeeded = true;
     }
-
-    if (!this._controllerValid)
-      this.setupFromView();
 
     if (!this._sceneValid) {
       if (!this._freezeScene) {

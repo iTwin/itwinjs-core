@@ -8,7 +8,7 @@ import { ColorDef, SubCategoryOverride, ViewFlags } from "@bentley/imodeljs-comm
 import {
   ChangeFlag, FeatureSymbology, MockRender, PerModelCategoryVisibility, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId, Viewport,
 } from "@bentley/imodeljs-frontend";
-import { ViewportChangedHandler } from "../ViewportChangedHandler";
+import { ViewportChangedHandler, ViewportState } from "../ViewportChangedHandler";
 
 describe("Viewport changed events", async () => {
   // test.bim:
@@ -135,11 +135,11 @@ describe("Viewport changed events", async () => {
 
       // ViewFlags which do not affect symbology overrides
       newFlags.solarLight = !newFlags.solarLight;
-      mon.expect(ChangeFlag.DisplayStyle, undefined, () => vp.viewFlags = newFlags);
+      mon.expect(ChangeFlag.DisplayStyle, ViewportState.RenderPlan, () => vp.viewFlags = newFlags);
 
       // ViewFlags which affect symbology overrides
       newFlags.constructions = !newFlags.constructions;
-      mon.expect(ChangeFlag.DisplayStyle, undefined, () => vp.viewFlags = newFlags);
+      mon.expect(ChangeFlag.DisplayStyle, ViewportState.RenderPlan, () => vp.viewFlags = newFlags);
 
       // No event if modify display style directly.
       mon.expect(ChangeFlag.None, undefined, () => {
@@ -149,7 +149,7 @@ describe("Viewport changed events", async () => {
 
       // Modify display style through Viewport API.
       vp.saveViewUndo();
-      mon.expect(ChangeFlag.DisplayStyle, undefined, () => {
+      mon.expect(ChangeFlag.DisplayStyle, ViewportState.RenderPlan, () => {
         const newStyle = vp.displayStyle.clone();
         newStyle.backgroundColor = ColorDef.red;
         vp.displayStyle = newStyle;
@@ -157,7 +157,7 @@ describe("Viewport changed events", async () => {
 
       // Modify view flags through Viewport's displayStyle property.
       vp.saveViewUndo();
-      mon.expect(ChangeFlag.DisplayStyle, undefined, () => {
+      mon.expect(ChangeFlag.DisplayStyle, ViewportState.RenderPlan, () => {
         const newStyle = vp.displayStyle.clone();
         newStyle.viewFlags.constructions = !newStyle.viewFlags.constructions;
         vp.displayStyle = newStyle;
@@ -171,7 +171,7 @@ describe("Viewport changed events", async () => {
 
       // Override by replacing display style on Viewport
       vp.saveViewUndo();
-      mon.expect(ChangeFlag.DisplayStyle, undefined, () => {
+      mon.expect(ChangeFlag.DisplayStyle, ViewportState.RenderPlan, () => {
         const style = vp.displayStyle.clone();
         style.overrideSubCategory("0x123", ovr);
         vp.displayStyle = style;
@@ -179,7 +179,7 @@ describe("Viewport changed events", async () => {
 
       // Apply same override via Viewport method. Does not check if override actually differs.
       vp.saveViewUndo();
-      mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.ViewedModels, undefined, () => {
+      mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.ViewedModels, ViewportState.RenderPlan, () => {
         // Because this is same override as already set, saveViewUndo will not save in undo buffer unless we make some other actual change to the ViewState
         vp.overrideSubCategory("0x123", ovr);
         vp.changeViewedModels(new Set<string>());
@@ -187,37 +187,37 @@ describe("Viewport changed events", async () => {
 
       // Apply different override to same subcategory
       vp.saveViewUndo();
-      mon.expect(ChangeFlag.DisplayStyle, undefined, () => vp.overrideSubCategory("0x123", SubCategoryOverride.fromJSON({ color: ColorDef.red.tbgr })));
+      mon.expect(ChangeFlag.DisplayStyle, ViewportState.RenderPlan, () => vp.overrideSubCategory("0x123", SubCategoryOverride.fromJSON({ color: ColorDef.red.tbgr })));
     });
   });
 
   it("should be dispatched when displayed 2d models change", async () => {
     vp = ScreenViewport.create(viewDiv, await testImodel.views.load(id64(0x20))); // views model 0x19
 
-    ViewportChangedHandler.test(vp, async (mon) => {
+    await ViewportChangedHandler.testAsync(vp, async (mon) => {
       // changeModelDisplay is no-op for 2d views
       mon.expect(ChangeFlag.None, undefined, () => expect(vp.changeModelDisplay(id64(0x19), false)).to.be.false);
       mon.expect(ChangeFlag.None, undefined, () => expect(vp.changeModelDisplay(id64(0x27), true)).to.be.false);
       const viewedModels = new Set<string>();
       viewedModels.add(id64(0x27));
-      mon.expect(ChangeFlag.ViewState, undefined, () => expect(vp.changeViewedModels(viewedModels)).to.be.false);
+      mon.expect(ChangeFlag.None, undefined, () => expect(vp.changeViewedModels(viewedModels)).to.be.false);
 
       // Switching to a different 2d view of the same model should not produce model-changed event
       const view20 = await testImodel.views.load(id64(0x20)); // views model 0x1e
-      mon.expect(ChangeFlag.ViewState, undefined, () => vp.changeView(view20));
+      mon.expect(ChangeFlag.ViewState, ViewportState.Controller, () => vp.changeView(view20));
 
       // Switching to a different 2d view of a different model should produce model-changed event
       // Note: new view also has different categories enabled.
       const view35 = await testImodel.views.load(id64(0x35)); // views model 0x1e
-      mon.expect(ChangeFlag.ViewedModels | ChangeFlag.ViewedCategories, undefined, () => vp.changeView(view35));
+      mon.expect(ChangeFlag.ViewedModels | ChangeFlag.ViewedCategories | ChangeFlag.DisplayStyle | ChangeFlag.ViewState, ViewportState.Controller, () => vp.changeView(view35));
 
       // Switch back to previous view.
       // Note: changeView() clears undo stack so cannot/needn't test undo/redo here.
-      mon.expect(ChangeFlag.ViewedModels | ChangeFlag.ViewedCategories | ChangeFlag.ViewState, undefined, () => vp.changeView(view20.clone()));
+      mon.expect(ChangeFlag.ViewedModels | ChangeFlag.ViewedCategories | ChangeFlag.DisplayStyle | ChangeFlag.ViewState, ViewportState.Controller, () => vp.changeView(view20.clone()));
     });
   });
 
-  it("should be dispatched when displayed 3d models change", async () => {
+  it.skip("should be dispatched when displayed 3d models change", async () => {
     vp = ScreenViewport.create(viewDiv, await testBim.views.load("0x34"));
 
     ViewportChangedHandler.test(vp, async (mon) => {
@@ -229,10 +229,10 @@ describe("Viewport changed events", async () => {
 
       // setting viewed models directly always produces event - we don't check if contents of set exactly match current set
       let selectedModels = (vp.view as SpatialViewState).modelSelector.models;
-      mon.expect(ChangeFlag.ViewedModels, undefined, () => vp.changeViewedModels(selectedModels));
+      mon.expect(ChangeFlag.ViewedModels, ViewportState.Scene, () => vp.changeViewedModels(selectedModels));
       selectedModels = new Set<string>();
       selectedModels.add("0x1c");
-      mon.expect(ChangeFlag.ViewedModels, undefined, () => vp.changeViewedModels(selectedModels));
+      mon.expect(ChangeFlag.ViewedModels, ViewportState.Scene, () => vp.changeViewedModels(selectedModels));
 
       // Save baseline: viewedModels = [ 0x1c ]
       vp.saveViewUndo();
@@ -240,27 +240,27 @@ describe("Viewport changed events", async () => {
       expect(vp.viewsModel("0x1f")).to.be.false;
 
       // changeModelDisplay has no net effect - but must make some other change for saveViewUndo() to actually save the view state.
-      mon.expect(ChangeFlag.DisplayStyle, undefined, () => { const vf = vp.viewFlags.clone(); vf.solarLight = !vf.solarLight; vp.viewFlags = vf; });
+      mon.expect(ChangeFlag.DisplayStyle, ViewportState.RenderPlan, () => { const vf = vp.viewFlags.clone(); vf.solarLight = !vf.solarLight; vp.viewFlags = vf; });
       mon.expect(ChangeFlag.None, undefined, () => vp.changeModelDisplay("0x1c", true));
       vp.saveViewUndo();
-      mon.expect(ChangeFlag.DisplayStyle, undefined, () => vp.doUndo());
-      mon.expect(ChangeFlag.DisplayStyle, undefined, () => vp.doRedo());
+      mon.expect(ChangeFlag.DisplayStyle, ViewportState.RenderPlan, () => vp.doUndo());
+      mon.expect(ChangeFlag.DisplayStyle, ViewportState.RenderPlan, () => vp.doRedo());
 
-      mon.expect(ChangeFlag.ViewedModels, undefined, () => {
+      mon.expect(ChangeFlag.ViewedModels, ViewportState.Scene, () => {
         vp.changeModelDisplay("0x1c", false);
         vp.changeModelDisplay("0x1f", true);
       });
       vp.saveViewUndo();
-      mon.expect(ChangeFlag.ViewedModels, undefined, () => vp.doUndo());
+      mon.expect(ChangeFlag.ViewedModels, ViewportState.Scene, () => vp.doUndo());
       mon.expect(ChangeFlag.None, undefined, () => vp.doUndo());
       mon.expect(ChangeFlag.None, undefined, () => vp.doRedo());
-      mon.expect(ChangeFlag.ViewedModels, undefined, () => vp.doRedo());
+      mon.expect(ChangeFlag.ViewedModels, ViewportState.Scene, () => vp.doRedo());
 
       // Viewport is now viewing model 0x1f.
       // Replacing viewed models with same set [ 0x1f ] produces event
       selectedModels.clear();
       selectedModels.add("0x1f");
-      mon.expect(ChangeFlag.ViewedModels, undefined, () => vp.changeViewedModels(selectedModels));
+      mon.expect(ChangeFlag.ViewedModels, ViewportState.Scene, () => vp.changeViewedModels(selectedModels));
 
       // Undo produces view looking at same set of models => no event
       vp.saveViewUndo();
@@ -272,10 +272,10 @@ describe("Viewport changed events", async () => {
   it("should be dispatched when displayed categories change", async () => {
     vp = ScreenViewport.create(viewDiv, await testImodel.views.load(id64(0x15))); // view category selector 0x0f
 
-    ViewportChangedHandler.test(vp, async (mon) => {
-      // Adding an already-enabled category or removing a disabled one has no effect
-      mon.expect(ChangeFlag.None, undefined, () => vp.changeCategoryDisplay(id64(0x01), true));
-      mon.expect(ChangeFlag.None, undefined, () => vp.changeCategoryDisplay(id64(0x1a), false));
+    await ViewportChangedHandler.testAsync(vp, async (mon) => {
+      // We don't check if the specified category is already enabled/disabled.
+      mon.expect(ChangeFlag.ViewedCategories, undefined, () => vp.changeCategoryDisplay(id64(0x01), true));
+      mon.expect(ChangeFlag.ViewedCategories, undefined, () => vp.changeCategoryDisplay(id64(0x1a), false));
 
       // Two changes which produce no net change still produce event - we do not track net changes
       vp.saveViewUndo();
@@ -291,11 +291,11 @@ describe("Viewport changed events", async () => {
 
       // Switching to a different view with same category selector produces no category-changed event
       const view13 = await testImodel.views.load(id64(0x13));
-      mon.expect(ChangeFlag.ViewState, undefined, () => vp.changeView(view13));
+      mon.expect(ChangeFlag.ViewState | ChangeFlag.DisplayStyle, ViewportState.Controller, () => vp.changeView(view13));
 
       // Switching to a different view with different category selector produces event
       const view17 = await testImodel.views.load(id64(0x17));
-      mon.expect(ChangeFlag.ViewState, undefined, () => vp.changeView(view17));
+      mon.expect(ChangeFlag.ViewState | ChangeFlag.DisplayStyle | ChangeFlag.ViewedCategories, ViewportState.Controller, () => vp.changeView(view17));
 
       // Changing category selector, then switching to a view with same categories enabled produces no event.
       mon.expect(ChangeFlag.ViewedCategories, undefined, () => {
@@ -303,7 +303,7 @@ describe("Viewport changed events", async () => {
         vp.changeCategoryDisplay(view13.categorySelector.categories, true);
       });
 
-      mon.expect(ChangeFlag.ViewState, undefined, () => vp.changeView(view13));
+      mon.expect(ChangeFlag.ViewState | ChangeFlag.ViewedCategories | ChangeFlag.DisplayStyle, ViewportState.Controller, () => vp.changeView(view13));
     });
   });
 
@@ -413,22 +413,22 @@ describe("Viewport changed events", async () => {
     vp = ScreenViewport.create(viewDiv, view2d20.clone());
     ViewportChangedHandler.test(vp, (mon) => {
       // No effective change to view
-      mon.expect(ChangeFlag.ViewState, undefined, () => vp.changeView(view2d20.clone()));
+      mon.expect(ChangeFlag.ViewState, ViewportState.Controller, () => vp.changeView(view2d20.clone()));
 
       // 2d => 2d
-      mon.expect(ChangeFlag.ViewState | ChangeFlag.ViewedCategories | ChangeFlag.ViewedModels | ChangeFlag.DisplayStyle, undefined, () => vp.changeView(view2d2e.clone()));
+      mon.expect(ChangeFlag.ViewState | ChangeFlag.ViewedCategories | ChangeFlag.ViewedModels | ChangeFlag.DisplayStyle, ViewportState.Controller, () => vp.changeView(view2d2e.clone()));
 
       // 2d => 3d
-      mon.expect(ChangeFlag.ViewState | ChangeFlag.ViewedCategories | ChangeFlag.ViewedModels | ChangeFlag.DisplayStyle, undefined, () => vp.changeView(view3d15.clone()));
+      mon.expect(ChangeFlag.ViewState | ChangeFlag.ViewedCategories | ChangeFlag.ViewedModels | ChangeFlag.DisplayStyle, ViewportState.Controller, () => vp.changeView(view3d15.clone()));
 
       // No effective change
-      mon.expect(ChangeFlag.ViewState, undefined, () => vp.changeView(view3d15.clone()));
+      mon.expect(ChangeFlag.ViewState, ViewportState.Controller, () => vp.changeView(view3d15.clone()));
 
       // 3d => 3d - same model selector, same display style, different category selector
-      mon.expect(ChangeFlag.ViewState | ChangeFlag.ViewedCategories, undefined, () => vp.changeView(view3d17.clone()));
+      mon.expect(ChangeFlag.ViewState | ChangeFlag.ViewedCategories, ViewportState.Controller, () => vp.changeView(view3d17.clone()));
 
       // 3d => 2d
-      mon.expect(ChangeFlag.ViewState | ChangeFlag.ViewedCategories | ChangeFlag.ViewedModels | ChangeFlag.DisplayStyle, undefined, () => vp.changeView(view2d20.clone()));
+      mon.expect(ChangeFlag.ViewState | ChangeFlag.ViewedCategories | ChangeFlag.ViewedModels | ChangeFlag.DisplayStyle, ViewportState.Controller, () => vp.changeView(view2d20.clone()));
 
       // Pass the exact same ViewState reference => no "ViewState changed" event.
       mon.expect(ChangeFlag.None, undefined, () => vp.changeView(vp.view));

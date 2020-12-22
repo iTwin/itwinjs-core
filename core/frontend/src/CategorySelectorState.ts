@@ -43,12 +43,9 @@ export class CategorySelectorState extends ElementState {
     if (this.categories.size !== other.categories.size || this.name !== other.name || this.id !== other.id)
       return false;
 
-    const otherIter = other.categories.keys();
-    let otherRes = otherIter.next();
-    for (let thisIter = this.categories.keys(), thisRes = thisIter.next(); !thisRes.done; thisRes = thisIter.next(), otherRes = otherIter.next()) {
-      if (thisRes.value !== otherRes.value)
+    for (const cat of this.categories)
+      if (!other.categories.has(cat))
         return false;
-    }
 
     return true;
   }
