@@ -10,7 +10,7 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { ViewportChangedHandler, ViewportState } from "../ViewportChangedHandler";
 
-describe("Viewport changed events", async () => {
+describe.only("Viewport changed events", async () => {
   // test.bim:
   //  3d views:
   //    view:           34

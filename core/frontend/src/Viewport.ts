@@ -417,11 +417,8 @@ export abstract class Viewport implements IDisposable {
   }
 
   public setLightSettings(settings: LightSettings) {
-    if (this.displayStyle.is3d()) {
+    if (this.displayStyle.is3d())
       this.displayStyle.settings.lights = settings;
-      this.invalidateRenderPlan();
-      this._changeFlags.setDisplayStyle();
-    }
   }
 
   /** Settings controlling shadow display for this viewport. Only applicable to 3d views. */
@@ -429,11 +426,8 @@ export abstract class Viewport implements IDisposable {
     return this.view.displayStyle.is3d() ? this.view.displayStyle.settings.solarShadows : undefined;
   }
   public setSolarShadowSettings(settings: SolarShadowSettings) {
-    if (this.view.displayStyle.is3d()) {
+    if (this.view.displayStyle.is3d())
       this.view.displayStyle.solarShadows = settings;
-      this.invalidateRenderPlan();
-      this._changeFlags.setDisplayStyle();
-    }
   }
 
   /** @internal */
@@ -454,8 +448,6 @@ export abstract class Viewport implements IDisposable {
   }
   public set analysisFraction(fraction: number) {
     this.displayStyle.settings.analysisFraction = fraction;
-    this._analysisFractionValid = false;
-    IModelApp.requestNextAnimation();
   }
 
   /** The point in time reflected by the view, in UNIX seconds.
@@ -466,12 +458,7 @@ export abstract class Viewport implements IDisposable {
     return this.displayStyle.settings.timePoint;
   }
   public set timePoint(time: number | undefined) {
-    if (time === this.timePoint)
-      return;
-
     this.displayStyle.settings.timePoint = time;
-    this._timePointValid = false;
-    IModelApp.requestNextAnimation();
   }
 
   /** @internal */
@@ -526,16 +513,6 @@ export abstract class Viewport implements IDisposable {
    */
   public get viewFlags(): ViewFlags { return this.view.viewFlags; }
   public set viewFlags(viewFlags: ViewFlags) {
-    if (this.viewFlags.equals(viewFlags))
-      return;
-
-    // Toggling the map requires z-plane adjustment.
-    if (viewFlags.backgroundMap !== this.viewFlags.backgroundMap)
-      this.invalidateController();
-    else
-      this.invalidateRenderPlan();
-
-    this._changeFlags.setDisplayStyle();
     this.view.displayStyle.viewFlags = viewFlags;
   }
 
@@ -545,6 +522,7 @@ export abstract class Viewport implements IDisposable {
   public get displayStyle(): DisplayStyleState { return this.view.displayStyle; }
   public set displayStyle(style: DisplayStyleState) {
     this.view.displayStyle = style;
+    // ###TODO remove - add event to ViewState
     this._changeFlags.setDisplayStyle();
     this.invalidateRenderPlan();
   }
@@ -555,8 +533,6 @@ export abstract class Viewport implements IDisposable {
    */
   public overrideDisplayStyle(overrides: DisplayStyleSettingsProps): void {
     this.displayStyle.settings.applyOverrides(overrides);
-    this._changeFlags.setDisplayStyle();
-    this.invalidateRenderPlan();
   }
 
   /** The style describing how the view's [ClipVector]($geometry-core) affects the view.
@@ -564,13 +540,7 @@ export abstract class Viewport implements IDisposable {
    */
   public get clipStyle(): ClipStyle { return this.displayStyle.settings.clipStyle; }
   public set clipStyle(style: ClipStyle) {
-    if (style === this.clipStyle)
-      return;
-
     this.displayStyle.settings.clipStyle = style;
-    this._changeFlags.setDisplayStyle();
-    this.invalidateRenderPlan();
-    this.setFeatureOverrideProviderChanged();
   }
 
   /** Turn on or off antialiasing in each [[Viewport]] registered with the ViewManager.
@@ -626,8 +596,6 @@ export abstract class Viewport implements IDisposable {
    */
   public dropSubCategoryOverride(id: Id64String): void {
     this.view.displayStyle.dropSubCategoryOverride(id);
-    this._changeFlags.setDisplayStyle();
-    this.invalidateRenderPlan();
   }
 
   /** Override the symbology of geometry belonging to a specific subcategory when rendered within this viewport.
@@ -637,8 +605,6 @@ export abstract class Viewport implements IDisposable {
    */
   public overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void {
     this.view.displayStyle.overrideSubCategory(id, ovr);
-    this._changeFlags.setDisplayStyle();
-    this.invalidateRenderPlan();
   }
 
   /** Query the symbology overrides applied to geometry belonging to a specific subcategory when rendered within this viewport.
@@ -680,8 +646,6 @@ export abstract class Viewport implements IDisposable {
    */
   public overrideModelAppearance(id: Id64String, ovr: FeatureAppearance): void {
     this.view.displayStyle.overrideModelAppearance(id, ovr);
-    this._changeFlags.setDisplayStyle();
-    this.invalidateRenderPlan();
   }
 
   /** Remove any model appearance override for the specified model.
@@ -690,8 +654,6 @@ export abstract class Viewport implements IDisposable {
    */
   public dropModelAppearanceOverride(id: Id64String): void {
     this.view.displayStyle.dropModelAppearanceOverride(id);
-    this._changeFlags.setDisplayStyle();
-    this.invalidateRenderPlan();
   }
 
   /**
@@ -701,6 +663,7 @@ export abstract class Viewport implements IDisposable {
    * @beta
    */
   public detachRealityModelByIndex(index: number): void {
+    // ###TODO events from DisplayStyle
     this.view.displayStyle.detachRealityModelByIndex(index);
     this.invalidateRenderPlan();
   }
@@ -711,6 +674,7 @@ export abstract class Viewport implements IDisposable {
   * @beta
   */
   public attachRealityModel(props: ContextRealityModelProps): void {
+    // ###TODO events from DisplayStyle
     this.view.displayStyle.attachRealityModel(props);
     this.invalidateRenderPlan();
   }
@@ -732,6 +696,7 @@ export abstract class Viewport implements IDisposable {
    * @beta
    */
   public overrideRealityModelAppearance(index: number, overrides: FeatureAppearance): boolean {
+    // ###TODO events from DisplayStyle
     const changed = this.displayStyle.overrideRealityModelAppearance(index, overrides);
     if (changed) {
       this._changeFlags.setDisplayStyle();
@@ -746,6 +711,7 @@ export abstract class Viewport implements IDisposable {
    * @beta
    */
   public dropRealityModelAppearanceOverride(index: number) {
+    // ###TODO events from DisplayStyle
     this.displayStyle.dropRealityModelAppearanceOverride(index);
     this._changeFlags.setDisplayStyle();
     this.invalidateRenderPlan();
@@ -767,6 +733,7 @@ export abstract class Viewport implements IDisposable {
    * The options [[OsmBuildingDisplayOptions]] control the display and appearance overrides.
    */
   public setOSMBuildingDisplay(options: OsmBuildingDisplayOptions) {
+    // ###TODO events from DisplayStyle
     const originalOn = this.displayStyle.getOSMBuildingDisplayIndex() >= 0;
     if (this.displayStyle.setOSMBuildingDisplay(options)) {
       const newOn = this.displayStyle.getOSMBuildingDisplayIndex() >= 0;
@@ -802,9 +769,6 @@ export abstract class Viewport implements IDisposable {
    * @param enableAllSubCategories Specifies that when enabling display for a category, all of its subcategories should also be displayed even if they are overridden to be invisible.
    */
   public changeCategoryDisplay(categories: Id64Arg, display: boolean, enableAllSubCategories: boolean = false): void {
-    this._changeFlags.setViewedCategories();
-    this.maybeInvalidateScene();
-
     if (!display) {
       this.view.categorySelector.dropCategories(categories);
       return;
@@ -865,8 +829,6 @@ export abstract class Viewport implements IDisposable {
   public get backgroundMapSettings(): BackgroundMapSettings { return this.displayStyle.backgroundMapSettings; }
   public set backgroundMapSettings(settings: BackgroundMapSettings) {
     this.displayStyle.backgroundMapSettings = settings;
-    this.invalidateController();
-    this._changeFlags.setDisplayStyle();
   }
 
   /** Modify a subset of the background map display settings.
@@ -880,8 +842,6 @@ export abstract class Viewport implements IDisposable {
    */
   public changeBackgroundMapProps(props: BackgroundMapProps): void {
     this.displayStyle.changeBackgroundMapProps(props);
-    this.invalidateController();
-    this._changeFlags.setDisplayStyle();
   }
 
   /** Returns true if this Viewport is currently displaying the model with the specified Id. */
@@ -924,6 +884,7 @@ export abstract class Viewport implements IDisposable {
 
     this.view.modelSelector.models.clear();
     this.view.modelSelector.addModels(modelIds);
+    // ###TODO ViewState listens for ModelSelectorState events
     this.view.markModelSelectorChanged();
 
     this._changeFlags.setViewedModels();
@@ -939,6 +900,7 @@ export abstract class Viewport implements IDisposable {
    */
   public async replaceViewedModels(modelIds: Id64Arg): Promise<void> {
     if (this.view.isSpatialView()) {
+      // ###TODO ViewState listens for ModelSelectorState events
       this.view.modelSelector.models.clear();
       this.view.markModelSelectorChanged();
       return this.addViewedModels(modelIds);
@@ -957,6 +919,7 @@ export abstract class Viewport implements IDisposable {
     if (!this.view.isSpatialView())
       return false;
 
+    // ###TODO ViewState listens for ModelSelectorState events
     const prevSize = this.view.modelSelector.models.size;
     if (display)
       this.view.modelSelector.addModels(models);
@@ -991,6 +954,7 @@ export abstract class Viewport implements IDisposable {
     // Need to redraw once models are available. Don't want to trigger events again.
     await this.iModel.models.load(models);
     this.invalidateScene();
+    // ###TODO ViewState listens for ModelSelectorState events
     if (this.view.isSpatialView())
       this.view.markModelSelectorChanged();
   }
@@ -1161,7 +1125,10 @@ export abstract class Viewport implements IDisposable {
     // ###TODO detach/attach reality model
     // ###TODO reality model appearance overrides
     // ###TODO OSM Building display
-    chain.append(style.onBackgroundMapChanged.addListener(renderPlanChanged));
+    chain.append(style.onBackgroundMapChanged.addListener(() => {
+      this.invalidateController();
+      this._changeFlags.setDisplayStyle();
+    }));
     // ###TODO model selector
     // ###TODO category selector
     // ###TODO view.modelDisplayTransformProvider
@@ -1958,8 +1925,7 @@ export abstract class Viewport implements IDisposable {
    * @beta
    */
   public setAnimator(animator?: Animator) {
-    if (this._animator)
-      this._animator.interrupt();
+    this._animator?.interrupt();
     this._animator = animator;
   }
 
@@ -2478,6 +2444,7 @@ export abstract class Viewport implements IDisposable {
   public setModelDisplayTransformProvider(provider: ModelDisplayTransformProvider): void {
     if (provider !== this.view.modelDisplayTransformProvider) {
       this.view.modelDisplayTransformProvider = provider;
+      // ###TODO ViewState listens for ModelSelectorState events
       this.invalidateScene();
     }
   }

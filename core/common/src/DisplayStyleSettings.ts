@@ -503,6 +503,9 @@ export class DisplayStyleSettings {
    */
   public get viewFlags(): ViewFlags { return this._viewFlags; }
   public set viewFlags(flags: ViewFlags) {
+    if (this.viewFlags.equals(flags))
+      return;
+
     this.onViewFlagsChanged.raiseEvent(flags);
     flags.clone(this._viewFlags);
     this._json.viewflags = flags.toJSON();
@@ -587,8 +590,10 @@ export class DisplayStyleSettings {
     return this._json.timePoint;
   }
   public set timePoint(timePoint: number | undefined) {
-    this.onTimePointChanged.raiseEvent(timePoint);
-    this._json.timePoint = timePoint;
+    if (timePoint !== this.timePoint) {
+      this.onTimePointChanged.raiseEvent(timePoint);
+      this._json.timePoint = timePoint;
+    }
   }
 
   /** Settings controlling the display of analytical models.
