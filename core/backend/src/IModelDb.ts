@@ -173,7 +173,6 @@ export abstract class IModelDb extends IModel {
   /** Event called when the iModel is about to be closed */
   public readonly onBeforeClose = new BeEvent<() => void>();
 
-
   /**
    * Called by derived classes before closing the connection
    * @internal
