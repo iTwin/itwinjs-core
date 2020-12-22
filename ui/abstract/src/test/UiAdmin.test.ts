@@ -213,7 +213,6 @@ describe("UiAdmin", () => {
     expect(uiAdmin.closeDialog("test-modal")).to.be.false;
   });
 
-
   it("get set AccuDraw Ui Admin", () => {
     const v = new AccuDrawUiAdmin();
     uiAdmin.accuDrawUi = v;
