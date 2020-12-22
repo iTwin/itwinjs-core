@@ -218,7 +218,6 @@ describe("Render mirukuru with single clip plane", () => {
   });
 });
 
-
 describe("Render mirukuru with model appearance override applied", () => {
   let imodel: IModelConnection;
   before(async () => {
