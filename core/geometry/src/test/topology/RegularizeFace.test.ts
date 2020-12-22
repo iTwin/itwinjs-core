@@ -12,12 +12,11 @@ import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
 import { ParityRegion } from "../../curve/ParityRegion";
 import { StrokeOptions } from "../../curve/StrokeOptions";
-import { AxisIndex, Geometry } from "../../Geometry";
+import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Point3dArray } from "../../geometry3d/PointHelpers";
-import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
 import { IndexedPolyface } from "../../polyface/Polyface";
@@ -30,7 +29,6 @@ import { RegularizationContext } from "../../topology/RegularizeFace";
 import { Triangulator } from "../../topology/Triangulation";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { GraphChecker } from "./Graph.test";
 
 /** Treat each xy as (r, radians) */
 function mapThetaR(points: Point3d[], scaleX: number, scaleY: number): Point3d[] {
