@@ -70,12 +70,12 @@ export enum BriefcaseIdValue {
 /** The argument for [[BriefcaseManager.downloadBriefcase]]
  * @beta
 */
-export interface RequestNewBriefcaseArg extends RequestNewBriefcaseProps {
+export type RequestNewBriefcaseArg = RequestNewBriefcaseProps & {
   /** If present, a function called periodically during the download to indicate progress.
    * @note return non-zero from this function to abort the download.
    */
   onProgress?: ProgressFunction;
-}
+};
 
 /** A token that represents a ChangeSet
  * @internal
@@ -260,7 +260,7 @@ export class BriefcaseManager {
 
   /** Download a new briefcase from iModelHub for the supplied iModelId.
    *
-   * The process of downloading a briefcase file involves first obtaining a valid BriefcaseId from IModelHub. For each IModelId, IModelHub maintains
+   * The process of downloading a briefcase file involves first obtaining a valid BriefcaseId from IModelHub. For each IModel, IModelHub maintains
    * a list of BriefcaseIds assigned to users, to ensure that no two users have the same BriefcaseId. Typically a given user will have only
    * one briefcase on their machine for a given iModelId. Rarely, it may be necessary to use more than one briefcase to make isolated independent sets of changes,
    * but that is exceedingly complicated and rare. If no BriefcaseId is supplied, a new one is acquired from iModelHub.
@@ -268,7 +268,7 @@ export class BriefcaseManager {
    * Then, a Checkpoint file (as of a ChangesetId, typically "Latest") is downloaded from IModelHub. After the download completes,
    * the briefcaseId in the local file is changed to acquired briefcaseId, changing the checkpoint file into a briefcase file.
    *
-   * Each of these steps requires an valid `AuthorizedClientRequestContext` to provide the user's authorization for the requests.
+   * Each of these steps requires a valid `AuthorizedClientRequestContext` to provide the user's credentials for the requests.
    *
    * @param request The properties that specify the briefcase file to be downloaded.
    * @returns The properties of the local briefcase in a Promise that is resolved after the briefcase is fully downloaded and the briefcase file is ready for use via [BriefcaseDb.open]($backend).

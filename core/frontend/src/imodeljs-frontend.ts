@@ -9,6 +9,7 @@ export * from "./CategorySelectorState";
 export * from "./ContextRealityModelState";
 export * from "./DevTools";
 export * from "./DisplayStyleState";
+export * from "./DrawingViewState";
 export * from "./EditingFunctions";
 export * from "./ElementLocateManager";
 export * from "./EmphasizeElements";
@@ -38,8 +39,9 @@ export * from "./NotificationManager";
 export * from "./QuantityFormatter";
 export * from "./RenderScheduleState";
 export * from "./SelectionSet";
-export * from "./Sheet";
+export * from "./SheetViewState";
 export * from "./SpatialClassifiers";
+export * from "./SpatialViewState";
 export * from "./Sprites";
 export * from "./StandardView";
 export * from "./SubCategoriesCache";
@@ -199,5 +201,3 @@ export * from "./ViewCreator3d";
  * @docs-group-description MapLayerFormatRegistry
  * Class for working with supported map layer formats.
  */
-
-

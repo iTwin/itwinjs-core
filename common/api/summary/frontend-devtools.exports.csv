@@ -142,6 +142,7 @@ beta;TileStatisticsTracker
 alpha;Toggle3dManipulationsTool 
 beta;ToggleDPIForLODTool 
 alpha;ToggleDrapeFrustumTool 
+beta;ToggleDrawingGraphicsTool 
 beta;ToggleFrustumSnapshotTool 
 beta;ToggleOSMBuildingDisplay 
 beta;TogglePrimitiveVisibilityTool 
@@ -153,6 +154,7 @@ alpha;ToggleRealityTileFreeze
 alpha;ToggleRealityTileLogging 
 alpha;ToggleRealityTilePreload 
 alpha;ToggleSectionCutTool 
+beta;ToggleSectionDrawingSpatialViewTool 
 beta;ToggleSelectedViewFrustumTool 
 beta;ToggleShadowFrustumTool 
 beta;ToggleSkyboxTool 
