@@ -257,6 +257,7 @@ export abstract class Viewport implements IDisposable {
   private _view!: ViewState;
   /** A function executed by `setView()` when `this._view` changes. */
   private readonly _detachFromView = new FunctionChain();
+  private readonly _detachDisplayStyle = new FunctionChain();
 
   private readonly _viewportId: number;
   private _doContinuousRendering = false;
@@ -524,9 +525,6 @@ export abstract class Viewport implements IDisposable {
   public get displayStyle(): DisplayStyleState { return this.view.displayStyle; }
   public set displayStyle(style: DisplayStyleState) {
     this.view.displayStyle = style;
-    // ###TODO remove - add event to ViewState
-    this._changeFlags.setDisplayStyle();
-    this.invalidateRenderPlan();
   }
 
   /** Selectively override aspects of this viewport's display style.
@@ -886,12 +884,6 @@ export abstract class Viewport implements IDisposable {
 
     this.view.modelSelector.models.clear();
     this.view.modelSelector.addModels(modelIds);
-    // ###TODO ViewState listens for ModelSelectorState events
-    this.view.markModelSelectorChanged();
-
-    this._changeFlags.setViewedModels();
-    this.invalidateScene();
-
     return true;
   }
 
@@ -902,9 +894,7 @@ export abstract class Viewport implements IDisposable {
    */
   public async replaceViewedModels(modelIds: Id64Arg): Promise<void> {
     if (this.view.isSpatialView()) {
-      // ###TODO ViewState listens for ModelSelectorState events
       this.view.modelSelector.models.clear();
-      this.view.markModelSelectorChanged();
       return this.addViewedModels(modelIds);
     }
   }
@@ -921,18 +911,10 @@ export abstract class Viewport implements IDisposable {
     if (!this.view.isSpatialView())
       return false;
 
-    // ###TODO ViewState listens for ModelSelectorState events
-    const prevSize = this.view.modelSelector.models.size;
     if (display)
       this.view.modelSelector.addModels(models);
     else
       this.view.modelSelector.dropModels(models);
-
-    if (this.view.modelSelector.models.size !== prevSize) {
-      this._changeFlags.setViewedModels();
-      this.view.markModelSelectorChanged();
-      this.invalidateScene();
-    }
 
     return true;
   }
@@ -956,9 +938,8 @@ export abstract class Viewport implements IDisposable {
     // Need to redraw once models are available. Don't want to trigger events again.
     await this.iModel.models.load(models);
     this.invalidateScene();
-    // ###TODO ViewState listens for ModelSelectorState events
-    if (this.view.isSpatialView())
-      this.view.markModelSelectorChanged();
+    assert(this.view.isSpatialView());
+    this.view.markModelSelectorChanged();
   }
 
   /** Determines what type (if any) of debug graphics will be displayed to visualize [[Tile]] volumes.
@@ -1081,9 +1062,47 @@ export abstract class Viewport implements IDisposable {
   }
 
   private attachToView(): void {
+    this.registerDisplayStyleListeners();
+    this.registerViewListeners();
+    this.view.attachToViewport(this);
+  }
+
+  private registerViewListeners(): void {
+    const view = this.view;
+    const chain = this._detachFromView;
+
+    // When we detach from the view, also unregister display style listeners.
+    chain.append(() => this._detachDisplayStyle.callAndClear());
+
+    chain.append(view.onViewedCategoriesChanged.addListener(() => {
+      this._changeFlags.setViewedCategories();
+      this.maybeInvalidateScene();
+    }));
+
+    chain.append(view.onDisplayStyleChanged.addListener(() => {
+      this._changeFlags.setDisplayStyle();
+      this.invalidateRenderPlan();
+
+      this._detachDisplayStyle.callAndClear();
+      this.registerDisplayStyleListeners();
+    }));
+
+    // ###TODO view.modelDisplayTransformProvider
+    // ###TODO view.clipVector
+    // ###TODO view.modelClipGroups
+
+    if (view.isSpatialView()) {
+      chain.append(view.onViewedModelsChanged.addListener(() => {
+        this._changeFlags.setViewedModels();
+        this.invalidateScene();
+      }));
+    }
+  }
+
+  private registerDisplayStyleListeners(): void {
     const view = this.view;
 
-    const style = view.displayStyle.settings;
+    const settings = view.displayStyle.settings;
     const chain = this._detachFromView;
 
     const displayStyleChanged = () => {
@@ -1104,16 +1123,16 @@ export abstract class Viewport implements IDisposable {
       this.maybeInvalidateScene();
     };
 
-    chain.append(style.onApplyOverrides.addListener(displayStyleChanged));
-    chain.append(style.onAnalysisFractionChanged.addListener(() => {
+    chain.append(settings.onApplyOverrides.addListener(displayStyleChanged));
+    chain.append(settings.onAnalysisFractionChanged.addListener(() => {
       this._analysisFractionValid = false;
       IModelApp.requestNextAnimation();
     }));
-    chain.append(style.onTimePointChanged.addListener(() => {
+    chain.append(settings.onTimePointChanged.addListener(() => {
       this._timePointValid = false;
       IModelApp.requestNextAnimation();
     }));
-    chain.append(style.onViewFlagsChanged.addListener((vf) => {
+    chain.append(settings.onViewFlagsChanged.addListener((vf) => {
       if (vf.backgroundMap !== this.viewFlags.backgroundMap)
         this.invalidateController();
       else
@@ -1121,48 +1140,40 @@ export abstract class Viewport implements IDisposable {
 
       this._changeFlags.setDisplayStyle();
     }));
-    // ###TODO displayStyle
-    chain.append(style.onSubCategoryOverridesChanged.addListener(styleAndOverridesChanged));
-    chain.append(style.onModelAppearanceOverrideChanged.addListener(styleAndOverridesChanged));
+    chain.append(settings.onSubCategoryOverridesChanged.addListener(styleAndOverridesChanged));
+    chain.append(settings.onModelAppearanceOverrideChanged.addListener(styleAndOverridesChanged));
     // ###TODO detach/attach reality model
     // ###TODO reality model appearance overrides
     // ###TODO OSM Building display
-    chain.append(style.onBackgroundMapChanged.addListener(() => {
+    chain.append(settings.onBackgroundMapChanged.addListener(() => {
       this.invalidateController();
       this._changeFlags.setDisplayStyle();
     }));
-    // ###TODO model selector
-    // ###TODO category selector
-    // ###TODO view.modelDisplayTransformProvider
-    chain.append(style.onBackgroundColorChanged.addListener(displayStyleChanged));
-    chain.append(style.onMonochromeColorChanged.addListener(displayStyleChanged));
-    chain.append(style.onMonochromeModeChanged.addListener(displayStyleChanged));
-    chain.append(style.onClipStyleChanged.addListener(styleAndOverridesChanged));
+    chain.append(settings.onBackgroundColorChanged.addListener(displayStyleChanged));
+    chain.append(settings.onMonochromeColorChanged.addListener(displayStyleChanged));
+    chain.append(settings.onMonochromeModeChanged.addListener(displayStyleChanged));
+    chain.append(settings.onClipStyleChanged.addListener(styleAndOverridesChanged));
     // ###TODO map imagery?
-    chain.append(style.onAnalysisStyleChanged.addListener(() => {
+    chain.append(settings.onAnalysisStyleChanged.addListener(() => {
       this._analysisFractionValid = false;
       this._changeFlags.setDisplayStyle();
       IModelApp.requestNextAnimation();
     }));
-    chain.append(style.onExcludedElementsChanged.addListener(() => {
+    chain.append(settings.onExcludedElementsChanged.addListener(() => {
       this._changeFlags.setDisplayStyle();
       this.maybeInvalidateScene();
       this.setFeatureOverrideProviderChanged();
     }));
-    // ###TODO view ClipVector
-    // ###TODO view ModelClipGroups
 
-    if (style.is3d()) {
-      chain.append(style.onLightsChanged.addListener(displayStyleChanged));
-      chain.append(style.onSolarShadowsChanged.addListener(displayStyleChanged));
-      chain.append(style.onThematicChanged.addListener(displayStyleChanged));
-      chain.append(style.onHiddenLineSettingsChanged.addListener(displayStyleChanged));
-      chain.append(style.onAmbientOcclusionSettingsChanged.addListener(displayStyleChanged));
-      chain.append(style.onEnvironmentChanged.addListener(displayStyleChanged));
-      chain.append(style.onPlanProjectionSettingsChanged.addListener(displayStyleChanged));
+    if (settings.is3d()) {
+      chain.append(settings.onLightsChanged.addListener(displayStyleChanged));
+      chain.append(settings.onSolarShadowsChanged.addListener(displayStyleChanged));
+      chain.append(settings.onThematicChanged.addListener(displayStyleChanged));
+      chain.append(settings.onHiddenLineSettingsChanged.addListener(displayStyleChanged));
+      chain.append(settings.onAmbientOcclusionSettingsChanged.addListener(displayStyleChanged));
+      chain.append(settings.onEnvironmentChanged.addListener(displayStyleChanged));
+      chain.append(settings.onPlanProjectionSettingsChanged.addListener(displayStyleChanged));
     }
-
-    view.attachToViewport(this);
   }
 
   private detachFromView(): void {
@@ -2446,7 +2457,7 @@ export abstract class Viewport implements IDisposable {
   public setModelDisplayTransformProvider(provider: ModelDisplayTransformProvider): void {
     if (provider !== this.view.modelDisplayTransformProvider) {
       this.view.modelDisplayTransformProvider = provider;
-      // ###TODO ViewState listens for ModelSelectorState events
+      // ###TODO ViewState event
       this.invalidateScene();
     }
   }

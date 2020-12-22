@@ -10,7 +10,7 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { ViewportChangedHandler, ViewportState } from "../ViewportChangedHandler";
 
-describe.only("Viewport changed events", async () => {
+describe("Viewport changed events", async () => {
   // test.bim:
   //  3d views:
   //    view:           34
@@ -168,9 +168,9 @@ describe.only("Viewport changed events", async () => {
 
       vp.saveViewUndo();
 
-      // Override subcategories directly on display style => no event
+      // Override subcategories directly on display style without going through Viewport API => produces event
       const ovr = SubCategoryOverride.fromJSON({ color: ColorDef.green.tbgr });
-      mon.expect(ChangeFlag.None, undefined, () => vp.displayStyle.overrideSubCategory("0x123", ovr));
+      mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.RenderPlan, () => vp.displayStyle.overrideSubCategory("0x123", ovr));
 
       // Override by replacing display style on Viewport
       vp.saveViewUndo();
@@ -182,7 +182,7 @@ describe.only("Viewport changed events", async () => {
 
       // Apply same override via Viewport method. Does not check if override actually differs.
       vp.saveViewUndo();
-      mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.ViewedModels, ViewportState.RenderPlan, () => {
+      mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.ViewedModels | ChangeFlag.FeatureOverrideProvider, ViewportState.RenderPlan, () => {
         // Because this is same override as already set, saveViewUndo will not save in undo buffer unless we make some other actual change to the ViewState
         vp.overrideSubCategory("0x123", ovr);
         vp.changeViewedModels(new Set<string>());
@@ -190,7 +190,7 @@ describe.only("Viewport changed events", async () => {
 
       // Apply different override to same subcategory
       vp.saveViewUndo();
-      mon.expect(ChangeFlag.DisplayStyle, ViewportState.RenderPlan, () => vp.overrideSubCategory("0x123", SubCategoryOverride.fromJSON({ color: ColorDef.red.tbgr })));
+      mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.RenderPlan, () => vp.overrideSubCategory("0x123", SubCategoryOverride.fromJSON({ color: ColorDef.red.tbgr })));
     });
   });
 
@@ -301,9 +301,10 @@ describe.only("Viewport changed events", async () => {
     vp = ScreenViewport.create(viewDiv, await testImodel.views.load(id64(0x15))); // view category selector 0x0f
 
     await ViewportChangedHandler.testAsync(vp, async (mon) => {
-      // We don't check if the specified category is already enabled/disabled.
       mon.expect(ChangeFlag.ViewedCategories, undefined, () => vp.changeCategoryDisplay(id64(0x01), true));
-      mon.expect(ChangeFlag.ViewedCategories, undefined, () => vp.changeCategoryDisplay(id64(0x1a), false));
+
+      // We're not viewing 0x1a, so this will not produce an event.
+      mon.expect(ChangeFlag.None, undefined, () => vp.changeCategoryDisplay(id64(0x1a), false));
 
       // Two changes which produce no net change still produce event - we do not track net changes
       vp.saveViewUndo();

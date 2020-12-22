@@ -195,10 +195,14 @@ export class SpatialViewState extends ViewState3d {
 
   private registerModelSelectorListeners(): void {
     const models = this.modelSelector.observableModels;
-    const event = () => this.onViewedModelsChanged.raiseEvent();
-    this._detachModelSelector.append(models.onAdded.addListener(event));
-    this._detachModelSelector.append(models.onDeleted.addListener(event));
-    this._detachModelSelector.append(models.onCleared.addListener(event));
+    const func = () => {
+      this.markModelSelectorChanged();
+      this.onViewedModelsChanged.raiseEvent();
+    };
+
+    this._detachModelSelector.append(models.onAdded.addListener(func));
+    this._detachModelSelector.append(models.onDeleted.addListener(func));
+    this._detachModelSelector.append(models.onCleared.addListener(func));
   }
 }
 /** Defines a spatial view that displays geometry on the image plane using a parallel orthographic projection.
