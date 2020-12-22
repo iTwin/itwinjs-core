@@ -365,6 +365,10 @@ export class DisplayStyleSettings {
   private _analysisStyle?: AnalysisStyle;
   private _clipStyle: ClipStyle;
 
+  public is3d(): this is DisplayStyle3dSettings {
+    return false;
+  }
+
   /** Event raised by [[applyOverrides]] just before the overrides are applied.
    * @beta
    */
@@ -1013,6 +1017,10 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
   private _planProjections?: Map<string, PlanProjectionSettings>;
 
   private get _json3d(): DisplayStyle3dSettingsProps { return this._json as DisplayStyle3dSettingsProps; }
+
+  public is3d(): this is DisplayStyle3dSettings {
+    return true;
+  }
 
   public constructor(jsonProperties: { styles?: DisplayStyle3dSettingsProps }) {
     super(jsonProperties);

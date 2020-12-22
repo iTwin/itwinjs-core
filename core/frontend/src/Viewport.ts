@@ -7,8 +7,8 @@
  */
 
 import {
-  asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, compareStrings, Constructor, dispose, Id64, Id64Arg, Id64Set, Id64String, IDisposable,
-  isInstanceOf, SortedArray, StopWatch,
+  asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, compareStrings, Constructor, dispose, FunctionChain, Id64, Id64Arg, Id64Set,
+  Id64String, IDisposable, isInstanceOf, SortedArray, StopWatch,
 } from "@bentley/bentleyjs-core";
 import {
   Angle, AngleSweep, Arc3d, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range1d,
@@ -875,7 +875,7 @@ export abstract class Viewport implements IDisposable {
    */
   private _view!: ViewState;
   /** A function executed by `setView()` when `this._view` changes. */
-  private _detachFromView?: () => void;
+  private readonly _detachFromView = new FunctionChain();
 
   private readonly _viewportId: number;
   private _doContinuousRendering = false;
@@ -1731,16 +1731,95 @@ export abstract class Viewport implements IDisposable {
 
     this.detachFromView();
     this._view = view;
-    view.attachToViewport(this);
+    this.attachToView();
+  }
 
-    // ###TODO: register event handlers
+  private attachToView(): void {
+    const view = this.view;
+
+    /* ###TODO WIP
+    const style = view.displayStyle.settings;
+    const chain = this._detachFromView;
+
+    const displayStyleChanged = () => {
+      this.invalidateRenderPlan();
+      this._changeFlags.setDisplayStyle();
+    };
+
+    const styleAndOverridesChanged = () => {
+      displayStyleChanged();
+      this.setFeatureOverrideProviderChanged();
+    };
+
+    const renderPlanChanged = () => {
+      this.invalidateRenderPlan();
+    });
+
+    const maybeInvalidateScene = () => {
+      this.maybeInvalidateScene();
+    };
+
+    chain.append(style.onApplyOverrides.addListener(displayStyleChanged));
+    chain.append(style.onAnalysisFractionChanged.addListener(() => {
+      this._analysisFractionValid = false;
+      IModelApp.requestNextAnimation();
+    });
+    chain.append(style.onTimePointChanged.addListener(() => {
+      this._timePointValid = false;
+      IModelApp.requestNextAnimation();
+    });
+    chain.append(style.onViewFlagsChanged.addListener((vf) => {
+      if (vf.backgroundMap !== this.viewFlags.backgroundMap)
+        this.invalidateController();
+      else
+        this.invalidateRenderPlan();
+
+      this._changeFlags.setDisplayStyle();
+    });
+    // ###TODO displayStyle
+    chain.append(style.onSubCategoryOverridesChanged.addListener(styleAndOverridesChanged));
+    chain.append(style.onModelAppearanceOverrideChanged.addListener(styleAndOverridesChanged));
+    // ###TODO detach/attach reality model
+    // ###TODO reality model appearance overrides
+    // ###TODO OSM Building display
+    chain.append(style.onBackgroundMapChanged.addListener(renderPlanChanged));
+    // ###TODO model selector
+    // ###TODO category selector
+    // ###TODO view.modelDisplayTransformProvider
+    chain.append(style.onBackgroundColorChanged.addListener(displayStyleChanged));
+    chain.append(style.onMonochromeColorChanged.addListener(displayStyleChanged));
+    chain.append(style.onMonochromeModeChanged.addListener(displayStyleChanged));
+    chain.append(style.onClipStyleChanged.addListener(styleAndOverridesChanged));
+    // ###TODO map imagery?
+    chain.append(style.onAnalysisStyleChanged.addListener(() => {
+      this._analysisFractionValid = false;
+      this._changeFlags.setDisplayStyle();
+      IModelApp.requestNextAnimation();
+    });
+    chain.append(style.onExcludedElementsChanged.addListener(() => {
+      this._changeFlags.setDisplayStyle();
+      this.maybeInvalidateScene();
+      this.setFeatureOverrideProviderChanged();
+    });
+    // ###TODO view ClipVector
+    // ###TODO view ModelClipGroups
+
+    if (style.is3d()) {
+      chain.append(style.onLightsChanged.addListener(displayStyleChanged));
+      chain.append(style.onSolarShadowsChanged.addListener(displayStyleChanged));
+      chain.append(style.onThematicChanged.addListener(displayStyleChanged));
+      chain.append(style.onHiddenLineSettingsChanged.addListener(displayStyleChanged));
+      chain.append(style.onAmbientOcclusionSettingsChanged.addListener(displayStyleChanged));
+      chain.append(style.onEnvironmentChanged.addListener(displayStyleChanged));
+      chain.append(style.onPlanProjectionSettingsChanged.addListener(displayStyleChanged));
+    }
+    */
+
+    view.attachToViewport(this);
   }
 
   private detachFromView(): void {
-    if (this._detachFromView) {
-      this._detachFromView
-      this._detachFromView = undefined;
-    }
+    this._detachFromView.callAndClear();
 
     if (this._view)
       this._view.detachFromViewport(this);
