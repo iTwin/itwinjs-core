@@ -41,6 +41,11 @@ export class CategorySelectorState extends ElementState {
       this._categories.add(category);
   }
 
+  /** @internal */
+  public get observableCategories(): ObservableSet<string> {
+    return this._categories;
+  }
+
   public toJSON(): CategorySelectorProps {
     const val = super.toJSON() as CategorySelectorProps;
     val.categories = [];

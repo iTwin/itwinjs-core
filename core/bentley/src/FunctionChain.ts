@@ -80,4 +80,9 @@ export class FunctionChain {
     this.call();
     this.clear();
   }
+
+  /** True if this chain contains no functions. */
+  public get isEmpty(): boolean {
+    return undefined === this._func;
+  }
 }

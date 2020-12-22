@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
+import { BeEvent, FunctionChain, Id64String } from "@bentley/bentleyjs-core";
 import { Constant, Matrix3d, Range3d, XYAndZ } from "@bentley/geometry-core";
 import { AxisAlignedBox3d, SpatialViewDefinitionProps, ViewStateProps } from "@bentley/imodeljs-common";
 import { AuxCoordSystemSpatialState, AuxCoordSystemState } from "./AuxCoordSys";
@@ -18,6 +18,7 @@ import { SceneContext } from "./ViewContext";
 import { IModelConnection } from "./IModelConnection";
 import { ViewState3d } from "./ViewState";
 import { SpatialTileTreeReferences, TileTreeReference } from "./tile/internal";
+import { Viewport } from "./Viewport";
 
 /** Defines a view of one or more SpatialModels.
  * The list of viewed models is stored in the ModelSelector.
@@ -26,8 +27,34 @@ import { SpatialTileTreeReferences, TileTreeReference } from "./tile/internal";
 export class SpatialViewState extends ViewState3d {
   /** @internal */
   public static get className() { return "SpatialViewDefinition"; }
-  public modelSelector: ModelSelectorState;
+
   private readonly _treeRefs: SpatialTileTreeReferences;
+  private _modelSelector: ModelSelectorState;
+  private readonly _detachModelSelector = new FunctionChain();
+
+  /** An event raised when the set of models viewed by this view changes, *only* if the view is attached to a [[Viewport]].
+   * @beta
+   */
+  public readonly onViewedModelsChanged = new BeEvent<() => void>();
+
+  public get modelSelector(): ModelSelectorState {
+    return this._modelSelector;
+  }
+
+  public set modelSelector(selector: ModelSelectorState) {
+    if (selector === this.modelSelector)
+      return;
+
+    const isAttached = this.isAttachedToViewport;
+    this._detachModelSelector.callAndClear();
+
+    this._modelSelector = selector;
+
+    if (isAttached) {
+      this.registerModelSelectorListeners();
+      this.onViewedModelsChanged.raiseEvent();
+    }
+  }
 
   /** Create a new *blank* SpatialViewState. The returned SpatialViewState will nave non-persistent empty [[CategorySelectorState]] and [[ModelSelectorState]],
    * and a non-persistent [[DisplayStyle3dState]] with default values for all of its components. Generally after creating a blank SpatialViewState,
@@ -66,9 +93,9 @@ export class SpatialViewState extends ViewState3d {
 
   constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, arg3: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState) {
     super(props, iModel, arg3, displayStyle);
-    this.modelSelector = modelSelector;
+    this._modelSelector = modelSelector;
     if (arg3 instanceof SpatialViewState) // from clone
-      this.modelSelector = arg3.modelSelector.clone();
+      this._modelSelector = arg3.modelSelector.clone();
 
     this._treeRefs = SpatialTileTreeReferences.create(this);
   }
@@ -152,6 +179,26 @@ export class SpatialViewState extends ViewState3d {
     super.createScene(context);
     context.textureDrapes.forEach((drape) => drape.collectGraphics(context));
     context.viewport.target.updateSolarShadows(this.getDisplayStyle3d().wantShadows ? context : undefined);
+  }
+
+  /** @internal */
+  public attachToViewport(vp: Viewport): void {
+    super.attachToViewport(vp);
+    this.registerModelSelectorListeners();
+  }
+
+  /** @internal */
+  public detachFromViewport(vp: Viewport): void {
+    super.detachFromViewport(vp);
+    this._detachModelSelector.callAndClear();
+  }
+
+  private registerModelSelectorListeners(): void {
+    const models = this.modelSelector.observableModels;
+    const event = () => this.onViewedModelsChanged.raiseEvent();
+    this._detachModelSelector.append(models.onAdded.addListener(event));
+    this._detachModelSelector.append(models.onDeleted.addListener(event));
+    this._detachModelSelector.append(models.onCleared.addListener(event));
   }
 }
 /** Defines a spatial view that displays geometry on the image plane using a parallel orthographic projection.

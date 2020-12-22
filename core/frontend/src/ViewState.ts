@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { assert, BeTimePoint, Id64, Id64Arg, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { assert, BeEvent, BeTimePoint, FunctionChain, Id64, Id64Arg, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import {
   Angle, AxisOrder, ClipVector, Constant, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d,
   PolyfaceBuilder, Range3d, Ray3d, StrokeOptions, Transform, Vector2d, Vector3d, XAndY, XYAndZ, XYZ, YawPitchRollAngles,
@@ -110,28 +110,72 @@ export abstract class ViewState extends ElementState {
   public description?: string;
   public isPrivate?: boolean;
   private readonly _gridDecorator: GridDecorator;
-  private _isAttachedToViewport = false;
+  private _categorySelector: CategorySelectorState;
+  private _displayStyle: DisplayStyleState;
+  protected readonly _detachCategorySelector = new FunctionChain();
+
+  /** An event raised when the set of categories viewed by this view changes, *only* if the view is attached to a [[Viewport]].
+   * @beta
+   */
+  public readonly onViewedCategoriesChanged = new BeEvent<() => void>();
+
+  /** An event raised when the [[DisplayStyleState]] associated with this view changes, *only* if the view is attached to a [[Viewport]].
+   * @note This event is only raised if the [[displayStyle]] property itself is modified.
+   * @see [[DisplayStyleSettings]] for events raised when properties of the display style change.
+   * @beta
+   */
+  public readonly onDisplayStyleChanged = new BeEvent<() => void>();
 
   /** Selects the categories that are display by this ViewState. */
-  public categorySelector: CategorySelectorState;
+  public get categorySelector(): CategorySelectorState {
+    return this._categorySelector;
+  }
+
+  public set categorySelector(selector: CategorySelectorState) {
+    if (selector === this._categorySelector)
+      return;
+
+    const isAttached = this.isAttachedToViewport;
+    this._detachCategorySelector.callAndClear();
+
+    this._categorySelector = selector;
+
+    if (isAttached) {
+      this.registerCategorySelectorListeners();
+      this.onViewedCategoriesChanged.raiseEvent();
+    }
+  }
+
   /** Selects the styling parameters for this this ViewState. */
-  public displayStyle: DisplayStyleState;
+  public get displayStyle(): DisplayStyleState {
+    return this._displayStyle;
+  }
+
+  public set displayStyle(style: DisplayStyleState) {
+    if (style === this.displayStyle)
+        return;
+
+    this._displayStyle = style;
+
+    if (this.isAttachedToViewport)
+      this.onDisplayStyleChanged.raiseEvent();
+  }
 
   /** @internal */
   protected constructor(props: ViewDefinitionProps, iModel: IModelConnection, categoryOrClone: CategorySelectorState, displayStyle: DisplayStyleState) {
     super(props, iModel);
     this.description = props.description;
     this.isPrivate = props.isPrivate;
-    this.displayStyle = displayStyle;
-    this.categorySelector = categoryOrClone;
+    this._displayStyle = displayStyle;
+    this._categorySelector = categoryOrClone;
     this._gridDecorator = new GridDecorator(this);
     if (!(categoryOrClone instanceof ViewState))  // is this from the clone method?
       return; // not from clone
 
     // from clone, 3rd argument is source ViewState
     const source = categoryOrClone as ViewState;
-    this.categorySelector = source.categorySelector.clone();
-    this.displayStyle = source.displayStyle.clone();
+    this._categorySelector = source.categorySelector.clone();
+    this._displayStyle = source.displayStyle.clone();
     this._extentLimits = source._extentLimits;
     this._auxCoordSystem = source._auxCoordSystem;
     this._modelDisplayTransformProvider = source._modelDisplayTransformProvider;
@@ -983,27 +1027,35 @@ export abstract class ViewState extends ElementState {
    * @internal
    */
   public attachToViewport(_vp: Viewport): void {
-    if (this._isAttachedToViewport)
+    if (this.isAttachedToViewport)
       throw new Error("A ViewState can only be attached to one Viewport at a time");
 
-    this._isAttachedToViewport = true;
+    this.registerCategorySelectorListeners();
+  }
+
+  private registerCategorySelectorListeners(): void {
+    const cats = this.categorySelector.observableCategories;
+    const event = () => this.onViewedCategoriesChanged.raiseEvent();
+    this._detachCategorySelector.append(cats.onAdded.addListener(event));
+    this._detachCategorySelector.append(cats.onDeleted.addListener(event));
+    this._detachCategorySelector.append(cats.onCleared.addListener(event));
   }
 
   /** Invoked when this view, previously attached to the specified [[Viewport]] via [[attachToViewport]], is no longer the view displayed by that Viewport.
    * @internal
    */
   public detachFromViewport(_vp: Viewport): void {
-    if (!this._isAttachedToViewport)
+    if (!this.isAttachedToViewport)
       throw new Error("Attempting to detach a ViewState from a Viewport to which it is not attached.");
 
-    this._isAttachedToViewport = false;
+    this._detachCategorySelector.callAndClear();
   }
 
   /** Returns whether this view is currently being displayed by a [[Viewport]].
    * @internal
    */
   public get isAttachedToViewport(): boolean {
-    return this._isAttachedToViewport;
+    return !this._detachCategorySelector.isEmpty;
   }
 }
 
