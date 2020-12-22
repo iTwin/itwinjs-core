@@ -7,8 +7,8 @@
  */
 
 import { assert, BentleyStatus, compareNumbers, compareStrings, compareStringsOrUndefined, Guid, Id64String } from "@bentley/bentleyjs-core";
-import { Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Ray3d, Transform, TransformProps, Vector3d, XYZ, AxisOrder } from "@bentley/geometry-core";
-import { Cartographic, IModelError, GeoCoordStatus, ViewFlagOverrides, ViewFlagPresence } from "@bentley/imodeljs-common";
+import { Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Ray3d, Transform, TransformProps, Vector3d, XYZ } from "@bentley/geometry-core";
+import { Cartographic, GeoCoordStatus, IModelError, ViewFlagOverrides, ViewFlagPresence } from "@bentley/imodeljs-common";
 import { AccessToken, request, RequestOptions } from "@bentley/itwin-client";
 import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
 import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
