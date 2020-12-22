@@ -26,7 +26,7 @@ export class EditTool extends PrimitiveTool {
   public onRestartTool() { }
 
   public static async startCommand<Arg, Result>(commandId: string, connection: IModelConnection, args?: Arg) {
-    return await this.ipc(editCommandApi.start, connection.key, { commandId, args }) as CommandResult<Result>;
+    return await this.ipc(editCommandApi.start, { iModelKey: connection.key, commandId, args }) as CommandResult<Result>;
   }
 
   public static async callCommand<Arg, Result>(name: string, args?: Arg) {

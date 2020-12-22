@@ -24,7 +24,7 @@ export type CommandError =
  * There can either be a result member or an error value, but never both.
  * @alpha
  */
-export type CommandResult<T> = { result?: T, error?: never } | { error: CommandError, result?: never };
+export type CommandResult<T> = { result?: T, error?: never } | { error: CommandError, details?: any, result?: never };
 
 /** @alpha */
 export interface PingResult {

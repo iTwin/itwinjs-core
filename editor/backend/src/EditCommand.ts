@@ -99,7 +99,11 @@ export class EditCommandAdmin {
 
   public static startCommand(props: StartCommandProps<any>): CommandResult<any> {
     const commandClass = this.commands.get(props.commandId);
-    return commandClass ? this.runCommand(new commandClass(IModelDb.findByKey(props.iModelKey), props.args)) : { error: "CommandNotFound" };
+    try {
+      return commandClass ? this.runCommand(new commandClass(IModelDb.findByKey(props.iModelKey), props.args)) : { error: "CommandNotFound", details: props.commandId };
+    } catch (e) {
+      return { error: "Exception", details: e };
+    }
   }
 
   public static callMethod(method: CommandMethodProps<any>): CommandResult<any> {
@@ -113,7 +117,7 @@ export class EditCommandAdmin {
     try {
       return func.call(this._activeCommand, method.args);
     } catch (e) {
-      return { error: "Exception", result: e };
+      return { error: "Exception", details: e };
     }
   }
 };
