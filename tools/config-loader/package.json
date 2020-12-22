@@ -1,6 +1,6 @@
 {
   "name": "@bentley/config-loader",
-  "version": "2.11.0-dev.19",
+  "version": "2.11.0-dev.20",
   "description": "Configuration loader",
   "license": "MIT",
   "repository": {
@@ -13,7 +13,7 @@
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "",
-    "lint": "eslint -f visualstudio ./src/**/*.ts 1>&2",
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "extract-api": "betools extract-api --entry=index",
     "test": "",
     "cover": ""
@@ -34,8 +34,8 @@
     "json5": "^2.1.0"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.11.0-dev.19",
-    "@bentley/eslint-plugin": "2.11.0-dev.19",
+    "@bentley/build-tools": "2.11.0-dev.20",
+    "@bentley/eslint-plugin": "2.11.0-dev.20",
     "@types/json5": "0.0.30",
     "@types/node": "10.14.1",
     "eslint": "^6.8.0",
