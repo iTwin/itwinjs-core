@@ -461,16 +461,25 @@ export namespace RealityModelTileTree {
         realityTileRange = realityToEcef.multiplyRange(realityTileRange);
       }
 
-      const ecefOrigin = realityTileRange.localXYZToWorld(.5, .5, .5)!;
-      const cartographicOrigin = Cartographic.fromEcef(ecefOrigin);
+      // In initial publishing version the iModel ecef Transform was used to locate the reality model.
+      // This would work well only for tilesets published from that iModel but for iModels the ecef transform is calculated
+      // at the center of the project extents and the reality model location may differ greatly, and the curvature of the earth
+      // could introduce significant errors.
+      // The publishing was modified to calculate the ecef transform at the reality model range center and at the same time the "iModelVersion"
+      // member was added to the root object.  In order to continue to locate reality models published from older versions at the
+      // project extents center we look for Tileset version 0.0 and no root.iModelVersion.
+      if (json.asset?.version !== "0.0" || undefined !== json.root?.iModelPublishVersion) {
+        const ecefOrigin = realityTileRange.localXYZToWorld(.5, .5, .5)!;
+        const cartographicOrigin = Cartographic.fromEcef(ecefOrigin);
 
-      if (cartographicOrigin !== undefined) {
-        const geoOrigin = Point3d.create(cartographicOrigin.longitudeDegrees, cartographicOrigin.latitudeDegrees, cartographicOrigin.height);
-        const response = await geoConverter.getIModelCoordinatesFromGeoCoordinates([geoOrigin]);
-        if (response.iModelCoords[0].s === GeoCoordStatus.Success) {
-          const ecefToDb = await calculateEcefToDbTransformAtLocation(Point3d.fromJSON(response.iModelCoords[0].p), iModel);
-          if (ecefToDb)
-            rootTransform = ecefToDb;
+        if (cartographicOrigin !== undefined) {
+          const geoOrigin = Point3d.create(cartographicOrigin.longitudeDegrees, cartographicOrigin.latitudeDegrees, cartographicOrigin.height);
+          const response = await geoConverter.getIModelCoordinatesFromGeoCoordinates([geoOrigin]);
+          if (response.iModelCoords[0].s === GeoCoordStatus.Success) {
+            const ecefToDb = await calculateEcefToDbTransformAtLocation(Point3d.fromJSON(response.iModelCoords[0].p), iModel);
+            if (ecefToDb)
+              rootTransform = ecefToDb;
+          }
         }
       }
     }
