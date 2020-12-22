@@ -15,7 +15,8 @@ export class EditCommand {
     constructor(iModel: IModelDb, _arg?: any);
     static commandId: string;
     // (undocumented)
-    get ctor(): typeof EditCommand;
+    get ctor(): EditCommandType;
+    readonly iModel: IModelDb;
     // (undocumented)
     iModel: IModelDb;
     // (undocumented)
