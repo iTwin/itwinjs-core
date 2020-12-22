@@ -78,10 +78,12 @@ const UNIT_DATA: UnitDefinition[] = [
 ];
 
 /** Used to uniquely identify a unit system. There should be an entry for each entry in `PresentationUnitSystem` @presentation-common package
- * "metric" -> PresentationUnitSystem.Metric
- * "imperial" -> PresentationUnitSystem.BritishImperial
- * "usCustomary" -> PresentationUnitSystem.UsCustomary
- * "usSurvey" -> PresentationUnitSystem.UsSurvey
+ * Note: The exact string values from PresentationUnitSystem are not used because hyphenated names, used in PresentationUnitSystem,
+ * cannot be used as object keys.
+ * "metric" -> PresentationUnitSystem.Metric ("metric")
+ * "imperial" -> PresentationUnitSystem.BritishImperial ("british-imperial")
+ * "usCustomary" -> PresentationUnitSystem.UsCustomary ("us-customary")
+ * "usSurvey" -> PresentationUnitSystem.UsSurvey ("us-survey")
  * @alpha
  */
 export type UnitSystemKey = "metric" | "imperial" | "usCustomary" | "usSurvey";
@@ -952,23 +954,6 @@ export class QuantityFormatter implements UnitsProvider {
    */
   public async loadFormatAndParsingMaps(useImperial: boolean, _restartActiveTool?: boolean): Promise<void> {
     await this.loadFormatAndParsingMapsForSystem(useImperial ? "imperial" : "metric");
-  }
-
-  /** Get string that matches PresentationUnitSystem enum.
-   * Note: The enum is not used in this package to avoid dependency on Presentation package. The exact
-   * strings are not used between packages because hyphenated names cannot be used as object keys.
-   */
-  public getPresentationUnitSystemString(unitSystemKey: UnitSystemKey): string {
-    switch (unitSystemKey) {
-      case "metric":
-        return "metric";
-      case "imperial":
-        return "british-imperial";
-      case "usCustomary":
-        return "us-customary";
-      case "usSurvey":
-        return "us-survey";
-    }
   }
 
   /** Get a UnitSystemKey from a string that may have been entered via a key-in. Support different variation of unit system names.
