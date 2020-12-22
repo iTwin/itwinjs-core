@@ -37,7 +37,6 @@ import { TransitionSpiral3d } from "../curve/spiral/TransitionSpiral3d";
 import { IntegratedSpiral3d } from "../curve/spiral/IntegratedSpiral3d";
 import { DgnSpiralTypeQueries } from "./BGFBReader";
 
-
 /**
  * Context to write to a flatbuffer blob.
  *  * This class is internal.

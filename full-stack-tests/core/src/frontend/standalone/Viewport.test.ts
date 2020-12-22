@@ -303,7 +303,6 @@ describe("Cartographic range tests", () => {
   });
 });
 
-
 class ViewportChangedHandler {
   private readonly _vp: Viewport;
   private readonly _removals: Array<() => void> = [];

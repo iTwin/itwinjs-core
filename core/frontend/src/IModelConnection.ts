@@ -836,7 +836,6 @@ export class RemoteBriefcaseConnection extends BriefcaseConnection {
 }
 
 /** A connection to a [BriefcaseDb]($backend) hosted on the same machine in a different process, and is typically used in native (desktop and mobile) applications.
- * A briefcase is a copy of an iModel that is synchronized with iModelHub.
  * @internal
  */
 export class LocalBriefcaseConnection extends BriefcaseConnection {

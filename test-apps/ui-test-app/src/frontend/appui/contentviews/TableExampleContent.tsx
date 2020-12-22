@@ -70,43 +70,43 @@ const createDatePropertyRecord = (value: any, column: ColumnDescription, option:
       break;
     case 2:
       typename = StandardTypeNames.DateTime;
-      converter = {options: {timeDisplay: TimeDisplay.H24M }}; // DateTime with 24hr time
+      converter = { options: { timeDisplay: TimeDisplay.H24M } }; // DateTime with 24hr time
       break;
     case 3:
       typename = StandardTypeNames.DateTime;
-      converter = {options: {timeDisplay: TimeDisplay.H24MS }}; // DateTime with 24hr time
+      converter = { options: { timeDisplay: TimeDisplay.H24MS } }; // DateTime with 24hr time
       break;
     case 4:
       typename = StandardTypeNames.DateTime;
-      converter = {options: {timeDisplay: TimeDisplay.H12MSC }}; // DateTime with 12hr time
+      converter = { options: { timeDisplay: TimeDisplay.H12MSC } }; // DateTime with 12hr time
       break;
     case 5:
       typename = StandardTypeNames.ShortDate;
-      converter = {name: "mm-dd-yyyy"};
+      converter = { name: "mm-dd-yyyy" };
       break;
     case 6:
       typename = StandardTypeNames.DateTime;
-      converter = {options: {alternateDateFormat: AlternateDateFormats.IsoDateTime }};
+      converter = { options: { alternateDateFormat: AlternateDateFormats.IsoDateTime } };
       break;
     case 7:
       typename = StandardTypeNames.ShortDate;
-      converter = {options: {alternateDateFormat: AlternateDateFormats.IsoShort }};
+      converter = { options: { alternateDateFormat: AlternateDateFormats.IsoShort } };
       break;
     case 8:
       typename = StandardTypeNames.ShortDate;
-      converter = {options: {alternateDateFormat: AlternateDateFormats.UtcShort}};
+      converter = { options: { alternateDateFormat: AlternateDateFormats.UtcShort } };
       break;
     case 9:
       typename = StandardTypeNames.ShortDate;
-      converter = {options: {alternateDateFormat: AlternateDateFormats.UtcShortWithDay }};
+      converter = { options: { alternateDateFormat: AlternateDateFormats.UtcShortWithDay } };
       break;
     case 10:
       typename = StandardTypeNames.DateTime;
-      converter = {options: {alternateDateFormat: AlternateDateFormats.UtcDateTime }};
+      converter = { options: { alternateDateFormat: AlternateDateFormats.UtcDateTime } };
       break;
     case 11:
       typename = StandardTypeNames.DateTime;
-      converter = {options: {alternateDateFormat: AlternateDateFormats.UtcDateTimeWithDay }};
+      converter = { options: { alternateDateFormat: AlternateDateFormats.UtcDateTimeWithDay } };
       break;
   }
 
@@ -262,19 +262,19 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
         key: this._columns[0].key,
         record: createPropertyRecord(i, this._columns[0], StandardTypeNames.Int, { name: StandardEditorNames.Slider, params: editorParams }),
       });
-      const monthValue = i%12;
-      const dayValue = i%28;
-      const day = new Date ();
+      const monthValue = i % 12;
+      const dayValue = i % 28;
+      const day = new Date();
       if (useUtc) {
-        day.setUTCFullYear (2019, monthValue, dayValue);
-        day.setUTCHours (0,0,0,0);
+        day.setUTCFullYear(2019, monthValue, dayValue);
+        day.setUTCHours(0, 0, 0, 0);
       } else {
-        day.setFullYear (2019, monthValue, dayValue);
-        day.setHours (0,0,0,0);
+        day.setFullYear(2019, monthValue, dayValue);
+        day.setHours(0, 0, 0, 0);
       }
       row.cells.push({
         key: this._columns[1].key,
-        record: createDatePropertyRecord(day, this._columns[1], (i-1)%12), // 12 different options (0-11)
+        record: createDatePropertyRecord(day, this._columns[1], (i - 1) % 12), // 12 different options (0-11)
       });
       row.cells.push({
         key: this._columns[2].key,
@@ -293,7 +293,7 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
 
     const dataProvider = new SimpleTableDataProvider(this._columns);
     dataProvider.setItems(rows);
-    this.setState ({dataProvider});
+    this.setState({ dataProvider });
   }
 
   public componentDidMount() {
@@ -371,7 +371,7 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
   };
 
   private _onUtcChange = (checked: boolean) => {
-    this.setState({useUtc: checked});
+    this.setState({ useUtc: checked });
     this.loadData(checked);
   };
 
@@ -422,16 +422,16 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
         </div>
         <div style={{ flex: "1", height: "calc(100% - 22px)" }}>
           {this.state.dataProvider &&
-          <Table
-            dataProvider={this.state.dataProvider}
-            tableSelectionTarget={this.state.tableSelectionTarget}
-            selectionMode={this.state.selectionMode}
-            onPropertyUpdated={this._handlePropertyUpdated}
-            scrollToRow={this.state.requestedTopRow}
-            onScrollToRow={this._onScrollToRow}
-            onCellContextMenu={this._handleCellContextMenu}
-            stripedRows={true}
-          />}
+            <Table
+              dataProvider={this.state.dataProvider}
+              tableSelectionTarget={this.state.tableSelectionTarget}
+              selectionMode={this.state.selectionMode}
+              onPropertyUpdated={this._handlePropertyUpdated}
+              scrollToRow={this.state.requestedTopRow}
+              onScrollToRow={this._onScrollToRow}
+              onCellContextMenu={this._handleCellContextMenu}
+              stripedRows={true}
+            />}
         </div>
       </div>
     );
@@ -456,26 +456,26 @@ class MdyFormatter implements DateFormatter {
     });
 
   public formateDate(date: Date) {
-    const formatParts = this._formatter.formatToParts (date);
-    const month = formatParts.find((part)=>part.type==="month")!.value;
-    const day = formatParts.find((part)=>part.type==="day")!.value;
-    const year = formatParts.find((part)=>part.type==="year")!.value;
+    const formatParts = this._formatter.formatToParts(date);
+    const month = formatParts.find((part) => part.type === "month")!.value;
+    const day = formatParts.find((part) => part.type === "day")!.value;
+    const year = formatParts.find((part) => part.type === "year")!.value;
     return `${month}-${day}-${year}`;
   }
 
-  public parseDate(dateString: string){
-    const mdy=dateString.split("-").filter((value) => !!value);
+  public parseDate(dateString: string) {
+    const mdy = dateString.split("-").filter((value) => !!value);
     if (mdy.length !== 3) return undefined;
     const month = parseInt(mdy[0], 10);
     const day = parseInt(mdy[1], 10);
     const year = parseInt(mdy[2], 10);
 
     // validate
-    if (isNaN(month) || month<0 || month>12)return undefined;
-    if (isNaN(day) || day<0 || day>31)return undefined;
-    if (isNaN(year) || year<1800 || year>2300)return undefined;
+    if (isNaN(month) || month < 0 || month > 12) return undefined;
+    if (isNaN(day) || day < 0 || day > 31) return undefined;
+    if (isNaN(year) || year < 1800 || year > 2300) return undefined;
 
-    return new Date(year,month-1,day);
+    return new Date(year, month - 1, day);
   }
 }
 
@@ -499,12 +499,11 @@ class MmDdYyyDateTypeConverter extends TypeConverter implements LessGreaterOpera
     return value.toString();
   }
 
-
   public convertFromString(value: string) {
     if (!value)
       return undefined;
 
-    return this._formatter.parseDate (value);
+    return this._formatter.parseDate(value);
   }
 
   public get isLessGreaterType(): boolean { return true; }

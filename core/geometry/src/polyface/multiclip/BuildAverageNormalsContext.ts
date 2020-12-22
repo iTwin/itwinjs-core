@@ -13,7 +13,6 @@ import { Geometry } from "../../Geometry";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Angle } from "../../geometry3d/Angle";
 
-
 /**
  * Normal vector with area (or other numeric) and source index
  * @internal
