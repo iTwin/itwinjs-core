@@ -7,17 +7,17 @@
  */
 
 import {
-  asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, compareStrings, Constructor, dispose, FunctionChain, Id64, Id64Arg, Id64Set,
-  Id64String, IDisposable, isInstanceOf, SortedArray, StopWatch,
+  asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, Constructor, dispose, FunctionChain, Id64, Id64Arg, Id64Set,
+  Id64String, IDisposable, isInstanceOf, StopWatch,
 } from "@bentley/bentleyjs-core";
 import {
   Angle, AngleSweep, Arc3d, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range1d,
-  Range3d, Ray3d, SmoothTransformBetweenFrusta, Transform, Vector3d, XAndY, XYAndZ, XYZ,
+  Range3d, Ray3d, Transform, Vector3d, XAndY, XYAndZ, XYZ,
 } from "@bentley/geometry-core";
 import {
-  AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, Cartographic, ClipStyle, ColorDef, ContextRealityModelProps, DisplayStyleSettingsProps, Easing, EasingFunction,
+  AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, ClipStyle, ColorDef, ContextRealityModelProps, DisplayStyleSettingsProps, Easing,
   ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer, Interpolation, LightSettings, NpcCenter, Placement2d,
-  Placement2dProps, Placement3d, Placement3dProps, PlacementProps, SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, Tweens, ViewFlags,
+  Placement2dProps, Placement3d, Placement3dProps, PlacementProps, SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
@@ -43,10 +43,10 @@ import { TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference, TileTreeSe
 import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolSettings";
 import { DecorateContext, SceneContext } from "./ViewContext";
-import { areaToEyeHeight, areaToEyeHeightFromGcs, eyeToCartographicOnGlobe, GlobalLocation, metersToRange, ViewGlobalLocationConstants } from "./ViewGlobalLocation";
+import { GlobalLocation } from "./ViewGlobalLocation";
 import { ViewingSpace } from "./ViewingSpace";
 import { ViewRect } from "./ViewRect";
-import { MarginPercent, ModelDisplayTransformProvider, ViewPose, ViewPose3d, ViewState, ViewState2d, ViewState3d, ViewStatus } from "./ViewState";
+import { ModelDisplayTransformProvider, ViewPose, ViewState, ViewState2d, ViewStatus } from "./ViewState";
 import { FeatureOverrideProvider } from "./FeatureOverrideProvider";
 import { ChangeFlag, ChangeFlags } from "./ChangeFlags";
 import { CoordSystem } from "./CoordSystem";
