@@ -13,7 +13,6 @@ import { CommandMethodProps, CommandResult, editCommandApi, PingResult, StartCom
 /** @alpha */
 export type EditCommandType = typeof EditCommand;
 
-
 /**
  * An EditCommand that performs an editing action on the backend. EditCommands are usually paired with and driven by EditTools on the frontend.
  * EditCommands have a *commandId* that uniquely identifies them, so they can be found via a lookup in the [[EditCommandAdmin]].

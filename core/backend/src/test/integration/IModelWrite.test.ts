@@ -193,7 +193,6 @@ describe("IModelWriteTest (#integration)", () => {
     bcALockReq.lockLevel = LockLevel.None;
     await BriefcaseManager.imodelClient.locks.update(managerRequestContext, readWriteTestIModel.id, [bcALockReq]);
 
-
     await BriefcaseManager.imodelClient.briefcases.delete(managerRequestContext, readWriteTestIModel.id, bcA.briefcaseId!);
     await BriefcaseManager.imodelClient.briefcases.delete(managerRequestContext, readWriteTestIModel.id, bcB.briefcaseId!);
   });

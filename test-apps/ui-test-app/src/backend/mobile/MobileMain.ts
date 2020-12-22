@@ -12,7 +12,6 @@ import * as path from "path";
 import { Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { PresentationRpcInterface } from "@bentley/presentation-common";
 
-
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   try {
     // Load .env file first so it's added to `Config.App` below when it parses the environment variables.

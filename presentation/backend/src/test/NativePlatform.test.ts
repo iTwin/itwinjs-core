@@ -144,7 +144,6 @@ describe("default NativePlatform", () => {
 
   });
 
-
   it("puts diagnostics into result", async () => {
     const diagnostics: DiagnosticsScopeLogs = {
       scope: "test",
