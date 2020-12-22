@@ -25,12 +25,13 @@ export class EditCommand {
   public static commandId = "";
   public static version = "1.0.0";
 
-  public iModel: IModelDb;
+  /** The iModel this EditCommand may modify. */
+  public readonly iModel: IModelDb;
 
   public constructor(iModel: IModelDb, _arg?: any) {
     this.iModel = iModel;
   }
-  public get ctor() { return this.constructor as EditCommandType; }
+  public get ctor(): EditCommandType { return this.constructor as EditCommandType; }
 
   public onStart(): CommandResult<any> { return {}; }
 
