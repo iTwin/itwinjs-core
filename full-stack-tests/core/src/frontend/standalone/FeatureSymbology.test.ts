@@ -281,7 +281,6 @@ describe("FeatureSymbology.Overrides", () => {
     assert(displayStyle.getModelAppearanceOverride(modelId2)!.equals(modelOverride2));
     expect(displayStyle.getModelAppearanceOverride(modelId3)).to.be.undefined;
 
-
     const overrides = new Overrides(viewStateClone);
     overrides.setAlwaysDrawn(elementId);
     const appearance1 = overrides.getFeatureAppearance(feature, modelId1);

@@ -548,7 +548,6 @@ describe("ElementSeparator", () => {
     elementSeparator.simulate("pointerdown", { clientX: 50 });
     expect(onResizeHandleDragChangedSpy.callCount).to.be.equal(1);
 
-
     moveElement({ clientX: 70 });
     expect(onRatioChanged.callCount, "First ratio change should always be called").to.be.equal(1);
 

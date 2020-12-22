@@ -36,8 +36,7 @@
   "peerDependencies": {
     "@bentley/bentleyjs-core": "^2.11.0-dev.20",
     "@bentley/imodeljs-backend": "2.11.0-dev.20",
-    "@bentley/imodeljs-common": "^2.11.0-dev.20",
-    "@bentley/imodeljs-editor-common": "^2.11.0-dev.20"
+    "@bentley/imodeljs-common": "^2.11.0-dev.20"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -49,7 +48,6 @@
     "@bentley/eslint-plugin": "2.11.0-dev.20",
     "@bentley/imodeljs-backend": "2.11.0-dev.20",
     "@bentley/imodeljs-common": "2.11.0-dev.20",
-    "@bentley/imodeljs-editor-common": "2.11.0-dev.20",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/deep-assign": "^0.1.0",
@@ -70,7 +68,9 @@
     "ts-node": "^7.0.1",
     "typescript": "~3.7.4"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@bentley/imodeljs-editor-common": "2.11.0-dev.20"
+  },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
   },
