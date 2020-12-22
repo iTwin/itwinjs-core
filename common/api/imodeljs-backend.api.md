@@ -3545,9 +3545,9 @@ export class RepositoryModel extends DefinitionModel {
 }
 
 // @beta
-export interface RequestNewBriefcaseArg extends RequestNewBriefcaseProps {
+export type RequestNewBriefcaseArg = RequestNewBriefcaseProps & {
     onProgress?: ProgressFunction;
-}
+};
 
 // @public
 export abstract class RoleElement extends Element {
