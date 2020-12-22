@@ -327,7 +327,6 @@ export class PolyfaceQuery {
     }
   }
 
-
   /** Execute context.projectToPolygon until its work estimates accumulate to workLimit  */
   private static async continueAnnouunceSweepLinestringToConvexPolyfaceXY(
     context: SweepLineStringToFacetContext, visitor: PolyfaceVisitor, announce: AnnounceDrapePanel): Promise<number> {

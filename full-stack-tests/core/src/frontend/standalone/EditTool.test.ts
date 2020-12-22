@@ -6,7 +6,7 @@ import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { ElectronRpcConfiguration } from "@bentley/imodeljs-common";
 import { EditTool } from "@bentley/imodeljs-editor-frontend";
-import { IModelApp, Viewport } from "@bentley/imodeljs-frontend";
+import { IModelApp, SnapshotConnection, Viewport } from "@bentley/imodeljs-frontend";
 import { cmdIds, Test1Args, Test1Response } from "../../common/TestEditCommandProps";
 
 const expect = chai.expect;
@@ -14,6 +14,7 @@ const assert = chai.assert;
 
 chai.use(chaiAsPromised);
 
+let iModel: SnapshotConnection;
 let testNum: number;
 let testStr: string;
 const cmdArg = "test command arg";
@@ -24,7 +25,7 @@ class TestEditTool1 extends EditTool {
   public isCompatibleViewport(_vp: Viewport | undefined, _isSelectedViewChange: boolean): boolean { return true; }
 
   public async go(cmd: string, args: Test1Args) {
-    const ret = await EditTool.startCommand<string, string>(cmd, cmdArg);
+    const ret = await EditTool.startCommand<string, string>(cmd, iModel, cmdArg);
     cmdStr = ret.result!;
     const ret2 = await EditTool.callCommand<Test1Args, Test1Response>("testMethod1", args);
     if (ret2.result) {
@@ -41,9 +42,12 @@ if (ElectronRpcConfiguration.isElectron) {
       await IModelApp.startup();
       const testNamespace = IModelApp.i18n.registerNamespace("TestApp");
       IModelApp.tools.register(TestEditTool1, testNamespace);
+      iModel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
+
     });
 
     after(async () => {
+      await iModel.close();
       await IModelApp.shutdown();
     });
 

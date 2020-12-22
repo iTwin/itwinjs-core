@@ -409,7 +409,6 @@ export namespace WmtsCapability {
     public readonly styles: Style[] = [];
     public readonly tileMatrixSetLinks: TileMatrixSetLink[] = [];
 
-
     constructor(_json: any) {
       if (!_json)
         throw new Error("Invalid json data provided");

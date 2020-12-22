@@ -10,7 +10,6 @@ import {
 } from "../../ui-ninezone";
 import { NineZoneProvider } from "../Providers";
 
-
 describe("WidgetPanelExpanders", () => {
   it("should render", () => {
     const nineZone = createNineZoneState({

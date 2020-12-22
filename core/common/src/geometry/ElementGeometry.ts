@@ -215,7 +215,6 @@ export interface BRepGeometryCreate {
   parameters?: BRepCutProps | BRepThickenProps | BRepHollowProps | BRepRoundProps;
 }
 
-
 /** Information provided to [[BRepGeometryFunction]].
  * @alpha
  */

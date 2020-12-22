@@ -68,7 +68,7 @@ function debugPrint(msg: string): void {
     console.log(msg); // eslint-disable-line no-console
 }
 
-async function resolveAfterXMilSeconds(ms: number) { // must call await before this function!!!
+async function resolveAfterXMilSeconds(ms: number) {
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve();
@@ -1000,7 +1000,6 @@ async function getAllMatchingSavedViews(testConfig: DefaultConfigs): Promise<str
 
 async function openImodelAndLoadExtViews(testConfig: DefaultConfigs, extViews?: any[]): Promise<void> {
   activeViewState = new SimpleViewState();
-
 
   // Open an iModel from a local file
   let openLocalIModel = (testConfig.iModelLocation !== undefined) || MobileRpcConfiguration.isMobileFrontend;
