@@ -466,6 +466,9 @@ export class AccuDraw {
     if (0.0 !== pointActive.z && !vp.isPointAdjustmentRequired)
       pointActive.z = 0.0;
 
+    if (1.0 !== vp.view.getAspectRatioSkew())
+      this.downgradeInactiveState(); // Disable AccuDraw if skew is applied with AccuDraw already active...
+
     if (this.isInactive) {
       this.point.setFrom(pointActive);
       this.currentView = vp;
@@ -1692,6 +1695,7 @@ export class AccuDraw {
     const origin = new Point3d(); // Compass origin is adjusted by active z-lock...
     this.getCompassPlanePoint(origin, vp);
     const scale = vp.pixelsFromInches(this._compassSizeInches) * vp.getPixelSizeAtPoint(origin);
+
     rMatrix.transposeInPlace();
     rMatrix.scaleColumns(scale, scale, scale, rMatrix);
     return Transform.createRefs(origin, rMatrix);
@@ -2652,8 +2656,8 @@ export class AccuDraw {
       return false;
 
     const vp = this.currentView;
-    if (!vp)
-      return false;
+    if (!vp || 1.0 !== vp.view.getAspectRatioSkew())
+      return false; // Disallow AccuDraw being enabled for exaggerated views...
 
     // NOTE: If ACS Plane lock setup initial and base rotation to ACS...
     if (vp && AccuDraw.useACSContextRotation(vp, false)) {

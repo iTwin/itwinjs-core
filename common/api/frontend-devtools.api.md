@@ -351,6 +351,18 @@ export class ClearRealityModelAppearanceOverrides extends Tool {
     static toolId: string;
 }
 
+// @alpha
+export class ClipColorTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
 // @alpha (undocumented)
 export interface ColorInput {
     // (undocumented)
@@ -1408,6 +1420,22 @@ export abstract class SourceAspectIdTool extends Tool {
     run(idToQuery?: string, copyToClipboard?: boolean): boolean;
 }
 
+// @alpha
+export class TestClipStyleTool extends DisplayStyleTool {
+    // (undocumented)
+    protected execute(vp: Viewport): boolean;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    protected parse(args: string[]): boolean;
+    // (undocumented)
+    protected get require3d(): boolean;
+    // (undocumented)
+    static toolId: string;
+    }
+
 // @beta
 export interface TextBox {
     div: HTMLDivElement;
@@ -1476,6 +1504,14 @@ export class ToggleDPIForLODTool extends RenderSystemDebugControlTool {
 export class ToggleDrapeFrustumTool extends RenderTargetDebugControlToggleTool {
     // (undocumented)
     get aspect(): DebugControlBoolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class ToggleDrawingGraphicsTool extends ViewportToggleTool {
+    // (undocumented)
+    protected toggle(vp: Viewport, enable?: boolean): void;
     // (undocumented)
     static toolId: string;
 }
@@ -1575,6 +1611,28 @@ export class ToggleRealityTileLogging extends RenderTargetDebugControlToggleTool
 export class ToggleRealityTilePreload extends RenderTargetDebugControlToggleTool {
     // (undocumented)
     get aspect(): DebugControlBoolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
+export class ToggleSectionCutTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(produceCutGeometry?: boolean): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class ToggleSectionDrawingSpatialViewTool extends ViewportToggleTool {
+    // (undocumented)
+    protected toggle(vp: Viewport, enable?: boolean): void;
     // (undocumented)
     static toolId: string;
 }

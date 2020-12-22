@@ -1,6 +1,6 @@
 {
   "name": "@bentley/reality-data-client",
-  "version": "2.11.0-dev.4",
+  "version": "2.11.0-dev.20",
   "description": "iModel.js Reality Data Client",
   "main": "lib/reality-data-client.js",
   "typings": "lib/reality-data-client",
@@ -16,7 +16,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "extract-api": "betools extract-api --entry=reality-data-client",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/clients/reality-data-client/file.json --tsIndexFile=reality-data-client.ts --onlyJson",
-    "lint": "eslint -f visualstudio --max-warnings 0 ./src/**/*.ts 1>&2",
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2",
     "test": "",
     "test:integration": "npm run webpackTests && npm run test:integration:chrome",
@@ -35,20 +35,20 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "2.11.0-dev.4"
+    "@bentley/bentleyjs-core": "2.11.0-dev.20"
   },
   "peerDependencies": {
-    "@bentley/itwin-client": "^2.11.0-dev.4"
+    "@bentley/itwin-client": "^2.11.0-dev.20"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.11.0-dev.4",
-    "@bentley/certa": "2.11.0-dev.4",
-    "@bentley/config-loader": "2.11.0-dev.4",
-    "@bentley/context-registry-client": "2.11.0-dev.4",
-    "@bentley/eslint-plugin": "2.11.0-dev.4",
-    "@bentley/geometry-core": "2.11.0-dev.4",
-    "@bentley/itwin-client": "2.11.0-dev.4",
-    "@bentley/oidc-signin-tool": "2.11.0-dev.4",
+    "@bentley/build-tools": "2.11.0-dev.20",
+    "@bentley/certa": "2.11.0-dev.20",
+    "@bentley/config-loader": "2.11.0-dev.20",
+    "@bentley/context-registry-client": "2.11.0-dev.20",
+    "@bentley/eslint-plugin": "2.11.0-dev.20",
+    "@bentley/geometry-core": "2.11.0-dev.20",
+    "@bentley/itwin-client": "2.11.0-dev.20",
+    "@bentley/oidc-signin-tool": "2.11.0-dev.20",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",

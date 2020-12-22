@@ -7,10 +7,14 @@
  */
 
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { ChangeEmphasisSettingsTool, ChangeHiliteSettingsTool, DefaultTileSizeModifierTool, FadeOutTool, FreezeSceneTool, SetAspectRatioSkewTool, ShowTileVolumesTool, Toggle3dManipulationsTool, ToggleViewAttachmentBoundariesTool, ToggleViewAttachmentClipShapesTool, ToggleViewAttachmentsTool, ViewportAddRealityModel, ViewportTileSizeModifierTool } from "./frontend-devtools";
+import {
+  ChangeEmphasisSettingsTool, ChangeHiliteSettingsTool, DefaultTileSizeModifierTool, FadeOutTool, FreezeSceneTool, SetAspectRatioSkewTool, ShowTileVolumesTool,
+  Toggle3dManipulationsTool, ToggleDrawingGraphicsTool, ToggleSectionDrawingSpatialViewTool, ToggleViewAttachmentBoundariesTool, ToggleViewAttachmentClipShapesTool,
+  ToggleViewAttachmentsTool, ViewportAddRealityModel, ViewportTileSizeModifierTool,
+} from "./frontend-devtools";
 import { AnimationIntervalTool } from "./tools/AnimationIntervalTool";
 import { ChangeUnitsTool } from "./tools/ChangeUnitsTool";
-import { ClipColorTool } from "./tools/ClipColorTool";
+import { ClipColorTool, TestClipStyleTool, ToggleSectionCutTool } from "./tools/ClipTools";
 import { ApplyRenderingStyleTool, ChangeViewFlagsTool, SaveRenderingStyleTool, ToggleSkyboxTool } from "./tools/DisplayStyleTools";
 import { ClearIsolatedElementsTool, EmphasizeSelectedElementsTool, IsolateSelectedElementsTool } from "./tools/EmphasizeElementsTool";
 import { ExtensionServiceTool } from "./tools/ExtensionServiceTool";
@@ -104,13 +108,16 @@ export class FrontendDevTools {
       SetMapBaseTool,
       ShowTileVolumesTool,
       SourceAspectIdFromElementIdTool,
+      TestClipStyleTool,
       Toggle3dManipulationsTool,
+      ToggleDrawingGraphicsTool,
       ToggleDPIForLODTool,
       ToggleDrapeFrustumTool,
       ToggleFrustumSnapshotTool,
       TogglePrimitiveVisibilityTool,
       ToggleProjectExtentsTool,
       ToggleReadPixelsTool,
+      ToggleSectionDrawingSpatialViewTool,
       ToggleSelectedViewFrustumTool,
       ToggleShadowFrustumTool,
       ToggleSkyboxTool,
@@ -125,6 +132,7 @@ export class FrontendDevTools {
       ToggleRealityTilePreload,
       ToggleRealityTileLogging,
       ToggleRealityTileFreeze,
+      ToggleSectionCutTool,
       ToggleTerrainTool,
       ViewportAddRealityModel,
       ViewportTileSizeModifierTool,

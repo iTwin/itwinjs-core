@@ -37,8 +37,20 @@ describe("<Select />", () => {
     shallow(<Select options={["Option 1", "Option 2", "Option 3"]} />).should.matchSnapshot();
   });
 
+  it("renders SelectOption[] array options correctly", () => {
+    shallow(<Select options={[{ label: "Option 1", value: "option1" }, { label: "Option 2", value: "option2" }, { label: "Option 3", value: "option3" }]} />).should.matchSnapshot();
+  });
+
+  it("renders array options with disabled correctly", () => {
+    shallow(<Select options={[{ label: "Option 1", disabled: true }, "Option 2", "Option 3"]} />).should.matchSnapshot();
+  });
+
   it("renders object options correctly", () => {
     shallow(<Select options={{ option1: "Option 1", option2: "Option 2", option3: "Option3" }} />).should.matchSnapshot();
+  });
+
+  it("renders object options with disabled correctly", () => {
+    shallow(<Select options={{ option1: { label: "Option 1", disabled: true }, option2: "Option 2", option3: "Option3" }} />).should.matchSnapshot();
   });
 
   it("renders placeholder correctly when options are provided", () => {
@@ -95,6 +107,23 @@ describe("<Select - React Testing Library />", () => {
     const select2 = component.container.querySelector("select") as HTMLSelectElement;
     expect(select2).not.to.be.null;
     expect(select2.value).to.be.eq("option3");
+  });
+
+  it("renders initial value correctly (controlled)", () => {
+    const options = [
+      { label: "Option 0", value: 0 },
+      { label: "Option 1", value: 1 },
+      { label: "Option 2", value: 2 },
+      { label: "Option 3", value: 3 },
+    ];
+    const component = render(<Select options={options} value={2} onChange={() => { }} />);
+    const select = component.container.querySelector("select") as HTMLSelectElement;
+    expect(select).not.to.be.null;
+    expect(select.value).to.be.eq("2");
+    component.rerender(<Select options={options} value={0} onChange={() => { }} />);
+    const select2 = component.container.querySelector("select") as HTMLSelectElement;
+    expect(select2).not.to.be.null;
+    expect(select2.value).to.be.eq("0");
   });
 
   it("renders value correctly overrides placeholder value when not null (controlled)", () => {

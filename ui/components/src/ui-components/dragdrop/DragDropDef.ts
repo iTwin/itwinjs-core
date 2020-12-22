@@ -11,6 +11,7 @@ import { CommonProps } from "@bentley/ui-core";
 
 /** Enum for different DropEffects.
  * @beta
+ * @deprecated
  */
 export enum DropEffects {
   None = 0,
@@ -21,6 +22,7 @@ export enum DropEffects {
 
 /** Enum for status of current drag/drop item
  * @beta
+ * @deprecated
  */
 export enum DropStatus {
   None = 0,
@@ -31,32 +33,34 @@ export enum DropStatus {
 
 /** Properties and callbacks for the withDragSource Higher-Order Component.
  * @beta
+ * @deprecated
  */
 export interface DropTargetProps<DragDropObject = any> {
   /**
    * Triggered when item is dropped on wrapped component.
    * Return value is passed to the DragSource's onDragSourceEnd callback.
    */
-  onDropTargetDrop?: (args: DropTargetArguments<DragDropObject>) => DropTargetArguments<DragDropObject>;
+  onDropTargetDrop?: (args: DropTargetArguments<DragDropObject>) => DropTargetArguments<DragDropObject>; // eslint-disable-line deprecation/deprecation
   /** Triggered when item is dragged over wrapped component. */
-  onDropTargetOver?: (args: DropTargetArguments<DragDropObject>) => void;
+  onDropTargetOver?: (args: DropTargetArguments<DragDropObject>) => void; // eslint-disable-line deprecation/deprecation
   /** Determines whether item may be dropped on DropTarget. */
-  canDropTargetDrop?: (args: DropTargetArguments<DragDropObject>) => boolean;
+  canDropTargetDrop?: (args: DropTargetArguments<DragDropObject>) => boolean; // eslint-disable-line deprecation/deprecation
   /** List of allowed object types */
   objectTypes?: Array<string | symbol> | (() => Array<string | symbol>);
 }
 
 /** Properties and callbacks for the withDragSource Higher-Order Component.
  * @beta
+ * @deprecated
  */
 export interface DragSourceProps<DragDropObject = any> {
   /** Triggered when DragSource has begun a drag. */
-  onDragSourceBegin?: (data: DragSourceArguments<DragDropObject>) => DragSourceArguments<DragDropObject>;
+  onDragSourceBegin?: (data: DragSourceArguments<DragDropObject>) => DragSourceArguments<DragDropObject>; // eslint-disable-line deprecation/deprecation
   /**
    * Triggered when a DragSource drag has ended.
    * Callback is always called after an onDragSourceBegin callback, regardless of whether the drag was successful.
    */
-  onDragSourceEnd?: (data: DragSourceArguments<DragDropObject>) => void;
+  onDragSourceEnd?: (data: DragSourceArguments<DragDropObject>) => void; // eslint-disable-line deprecation/deprecation
   /**
    * Specifies the DragSource type.
    * data parameter is non-null when data is trickled down from dragged component.
@@ -67,19 +71,20 @@ export interface DragSourceProps<DragDropObject = any> {
    * This property is dependent on the DragDropLayerManager in ui-framework. The DragLayer is ultimately rendered using the DragDropLayerRendererComponent, which must exist within the app that is used.
    * Component may be overridden if another DragLayer is registered for the given type using the DragDropLayerManager in ui-framework.
    */
-  defaultDragLayer?: React.ComponentType<DragLayerProps<DragDropObject>>;
+  defaultDragLayer?: React.ComponentType<DragLayerProps<DragDropObject>>; // eslint-disable-line deprecation/deprecation
 }
 
 /** Base DragDropArguments interface, used by both DragSourceArguments and DragTargetArguments.
  * @beta
+ * @deprecated
  */
 export interface DragDropArguments<DragDropObject = any> {
   /** Arbitrary data being transferred. Actual data structure determined by the return value of the onDragSourceBegin callback. */
   dataObject: DragDropObject;
   /** Drop Effect of current drag */
-  dropEffect: DropEffects;
+  dropEffect: DropEffects; // eslint-disable-line deprecation/deprecation
   /** Status of current drop */
-  dropStatus: DropStatus;
+  dropStatus: DropStatus; // eslint-disable-line deprecation/deprecation
   /** Current mouse position. */
   clientOffset: { x: number, y: number };
   /** Mouse position at beginning of drag. */
@@ -118,27 +123,30 @@ export interface DragDropArguments<DragDropObject = any> {
 
 /** Properties for DragLayer components
  * @beta
+ * @deprecated
  */
 export interface DragLayerProps<DragDropObject = any> extends CommonProps {
-  args?: DragSourceArguments<DragDropObject>;
+  args?: DragSourceArguments<DragDropObject>; // eslint-disable-line deprecation/deprecation
 }
 
 /** Interface for arguments supplied to DragSource callbacks, including onDragSourceBegin, and onDragSourceEnd, as well as to the DragLayers as a prop.
  * @beta
+ * @deprecated
  */
-export interface DragSourceArguments<DragDropObject = any> extends DragDropArguments<DragDropObject> {
+export interface DragSourceArguments<DragDropObject = any> extends DragDropArguments<DragDropObject> { // eslint-disable-line deprecation/deprecation
   /** Parent object, using the data structure relevant to object being used.
    * Object populated by consumer for use as trickle down arguments.
    * Specifically used where further information is needed within a given dataProvider structure. Ie. dataProvider.removeChild(parentObject, child) type methods.
    */
   parentObject?: DragDropObject;
-  defaultDragLayer?: React.ComponentType<DragLayerProps<DragDropObject>>;
+  defaultDragLayer?: React.ComponentType<DragLayerProps<DragDropObject>>; // eslint-disable-line deprecation/deprecation
 }
 
 /** Interface for arguments supplied to DropTarget callbacks, including onDropTargetOver, onDropTargetDrop, and canDropTargetDrop.
  * @beta
+ * @deprecated
  */
-export interface DropTargetArguments<DragDropObject = any> extends DragSourceArguments<DragDropObject> {
+export interface DropTargetArguments<DragDropObject = any> extends DragSourceArguments<DragDropObject> { // eslint-disable-line deprecation/deprecation
   /** Object that is being dropped onto, using the data structure relevant to object being used.
    * Object populated by consumer for use as trickle down arguments.
    * Specifically used where further information is needed within a given dataProvider structure. Ie. dataProvider.addChild(dropLocation, child) type methods.

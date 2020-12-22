@@ -17,8 +17,8 @@ import { TableDropTargetProps } from "./withDragDrop";
 
 /** @internal */
 export interface DragDropRowProps<DragDropObject = any> {
-  dragProps: DragSourceProps<DragDropObject>;
-  dropProps: TableDropTargetProps<DragDropObject>;
+  dragProps: DragSourceProps<DragDropObject>; // eslint-disable-line deprecation/deprecation
+  dropProps: TableDropTargetProps<DragDropObject>; // eslint-disable-line deprecation/deprecation
 }
 
 interface RowWrapperProps extends React.AllHTMLAttributes<HTMLDivElement> {
@@ -112,7 +112,7 @@ export class DragDropRowWrapper extends React.Component<RowWrapperProps, RowWrap
 }
 
 /** @internal */
-export function DragDropRow<DragDropObject extends BreadcrumbDetailsDragDropType>() {
+export function DragDropRow<DragDropObject extends BreadcrumbDetailsDragDropType>() { // eslint-disable-line deprecation/deprecation
   // Used only internally in ./Table.tsx
   return class DragDropRowComponent extends React.Component<DragDropRowProps<DragDropObject> & any> {
     public createDragProps(index?: number) {
@@ -120,7 +120,7 @@ export function DragDropRow<DragDropObject extends BreadcrumbDetailsDragDropType
         return {};
       const { onDragSourceBegin, onDragSourceEnd, objectType } = this.props.dragProps;
       const dragProps = {
-        onDragSourceBegin: (args: DragSourceArguments) => {
+        onDragSourceBegin: (args: DragSourceArguments) => { // eslint-disable-line deprecation/deprecation
           return onDragSourceBegin ? onDragSourceBegin(args) : args; // Must return something for drag data.
         },
         onDragSourceEnd,
@@ -136,12 +136,13 @@ export function DragDropRow<DragDropObject extends BreadcrumbDetailsDragDropType
       };
       return dragProps;
     }
-    public createDropProps(index?: number): DropTargetProps<DragDropObject> {
+    public createDropProps(index?: number): DropTargetProps<DragDropObject> { // eslint-disable-line deprecation/deprecation
       if (!this.props.dropProps)
         return {};
+      // eslint-disable-next-line deprecation/deprecation
       const { onDropTargetDrop, onDropTargetOver, canDropTargetDrop, objectTypes, canDropOn } = this.props.dropProps as TableDropTargetProps;
       const dropProps = {
-        onDropTargetDrop: (args: DropTargetArguments): DropTargetArguments => {
+        onDropTargetDrop: (args: DropTargetArguments): DropTargetArguments => { // eslint-disable-line deprecation/deprecation
           if (index !== undefined) {
             args.row = index;
             if (args.dropRect) {
@@ -151,7 +152,7 @@ export function DragDropRow<DragDropObject extends BreadcrumbDetailsDragDropType
             }
           }
           return onDropTargetDrop ? onDropTargetDrop(args) : args; // Must return something for pass-through to OnDragSourceEnd.
-        }, onDropTargetOver: (args: DropTargetArguments) => {
+        }, onDropTargetOver: (args: DropTargetArguments) => { // eslint-disable-line deprecation/deprecation
           // istanbul ignore else
           if (onDropTargetOver) {
             if (index !== undefined) {
@@ -164,7 +165,7 @@ export function DragDropRow<DragDropObject extends BreadcrumbDetailsDragDropType
             }
             onDropTargetOver(args);
           }
-        }, canDropTargetDrop: (args: DropTargetArguments) => {
+        }, canDropTargetDrop: (args: DropTargetArguments) => { // eslint-disable-line deprecation/deprecation
           if (index !== undefined) {
             args.row = index;
           }
@@ -175,8 +176,8 @@ export function DragDropRow<DragDropObject extends BreadcrumbDetailsDragDropType
     }
     public render(): React.ReactElement<any> {
       // eslint-disable-next-line @typescript-eslint/naming-convention
-      const DDRow = withDropTarget<RowWrapperProps & WithDragSourceProps<DragDropObject>, DragDropObject>(
-        withDragSource<RowWrapperProps, DragDropObject>(DragDropRowWrapper));
+      const DDRow = withDropTarget<RowWrapperProps & WithDragSourceProps<DragDropObject>, DragDropObject>( // eslint-disable-line deprecation/deprecation
+        withDragSource<RowWrapperProps, DragDropObject>(DragDropRowWrapper)); // eslint-disable-line deprecation/deprecation
       const { dragProps, dropProps, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
       return (
         <DDRow

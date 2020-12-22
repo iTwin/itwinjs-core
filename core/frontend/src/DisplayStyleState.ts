@@ -398,7 +398,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     return index >= 0 && index < this._contextRealityModels.length ? this._contextRealityModels[index]?.appearanceOverrides : undefined;
   }
 
-
   /** @internal */
   public getMapLayers(isOverlay: boolean) { return isOverlay ? this.overlayMapLayers : this.backgroundMapLayers; }
 
@@ -653,15 +652,22 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** @internal */
-  public getBackgroundMapGeometry(): BackgroundMapGeometry | undefined {
-    if (undefined === this.iModel.ecefLocation)
-      return undefined;
-
+  public get backgroundMapElevationBias(): number {
     let bimElevationBias = this.backgroundMapSettings.groundBias;
     const mapTree = this.backgroundMap.treeOwner.load() as MapTileTree;
 
     if (mapTree !== undefined)
       bimElevationBias = mapTree.bimElevationBias;    // Terrain trees calculate their bias when loaded (sea level or ground offset).
+
+    return bimElevationBias;
+  }
+
+  /** @internal */
+  public getBackgroundMapGeometry(): BackgroundMapGeometry | undefined {
+    if (undefined === this.iModel.ecefLocation)
+      return undefined;
+
+    const bimElevationBias = this.backgroundMapElevationBias;
 
     const globeMode = this.globeMode;
     if (undefined === this._backgroundMapGeometry || this._backgroundMapGeometry.globeMode !== globeMode || this._backgroundMapGeometry.bimElevationBias !== bimElevationBias) {

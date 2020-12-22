@@ -52,6 +52,7 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
 
 * `fdt project extents` - Toggles display of a decoration illustrating the iModel's project extents.
 * `fdt freeze scene` - Toggles scene freeze for the active viewport. While scene freeze is enabled, the same set of tiles will continue to be displayed until the scene is unfrozen - no new tiles will be loaded. Useful for zooming in or out to inspect geometry inside specific tiles.
+* `fdt section cut` - Specify whether a clip volume applied to the view should produce cut geometry at intersections with the design models. This controls `ViewState.details.clipStyle.produceCutGeometry`.
 * `fdt frustum selected` - Toggles a decoration representing the current frustum of the selected viewport. The decoration is displayed in any *other* open viewports - so if no other viewports are open, this key-in has no effect.
 * `fdt shadow frustum` - Like `fdt frustum selected`, but visualizes the frustum used to select tiles for the shadow map (when shadows are enabled).
 * `fdt frustum snapshot` - Toggles a decoration representing the current frustum of the active viewport. The decoration remains displayed until it is toggled back off. `fdt frustum selected` is much more useful, but requires at least two open viewports.  Including `fdt snapshot preload` will also display the preload frustum decoration.
@@ -65,12 +66,15 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
 * `fdt dpi lod` - Toggles whether device pixel ratio should be taken into account when computing LOD for tiles and decoration graphics.
 * `fdt attachments` - Toggles display of view attachments in the sheet view associated with the active viewport.
 * `fdt attachment bounds` - Toggles display of bounding boxes around each view attachment in the active viewport.
+* `fdt drawing graphics` - When enabled, 2d graphics in any drawing view will not be displayed. Useful for inspecting 3d graphics of attached section view, if any.
+* `fdt sectiondrawing spatial view` - When enabled, 3d graphics for a section drawing will be displayed in the drawing view, even if they otherwise wouldn't be.
 * `fdt toggle drapefrustum` - Toggles display of frustum that is used to drape classifiers and background map.
 * `fdt toggle reality preload` - Toggles the display of preloaded reality tile bounding boxes.
 * `fdt toggle reality freeze`  - Toggles the freezing of reality tile loading, when the reality tiles are frozen new reality tiles are not downloaded or purged.
 * `fdt toggle reality logging` - Toggle the logging of reality tile loading and selection diagnostics to the console.
 * `fdt toggle reality bounds` - Toggle the display of bounding boxes for reality tiles.
 * `fdt set building display` Toggle the display of the worldwide OpenStreetMap worldwide buildingslayer by attaching or displaying as a reality model in the current viewport.  The OSM buildings are aggregated and supplied from Cesium Ion <https://cesium.com/content/cesium-osm-buildings/>. The first argument is required on|off - the second optional argument is a value for transparency between 0 and 1.
+
 ### Other key-ins
 
 * `fdt save view` - Copies to the clipboard a JSON representation of the view currently displayed in the active viewport.
@@ -106,6 +110,7 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
 * `fdt isolate selection` - Causes all elements except those currently in the selection set to stop drawing.
 * `fdt clear isolate` - Reverse the effects of `fdt isolate selection`.
 * `fdt toggle wiremesh` - Toggles "pseudo-wiremesh" display. This causes surfaces to be rendered using `GL_LINES` instead of `GL_TRIANGLES`. Useful for visualizing the triangles of a mesh - but not suitable for "real" wiremesh display.
+* `fdt test clip style ON|OFF` - Toggles a ClipStyle for the active viewport with hard-coded symbology overrides.
 * `fdt tile bounds` - Sets the type of bounding volume decorations that will be displayed for each tile displayed in the view. Accepts at most one argument; if none is specified, it defaults to "volume", unless tile bounds are already displayed, in which it toggles them back off.
   * "none": Don't display bounding volumes.
   * "volume": Bounding box representing the full range of each tile.

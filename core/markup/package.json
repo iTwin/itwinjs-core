@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-markup",
-  "version": "2.11.0-dev.4",
+  "version": "2.11.0-dev.20",
   "description": "iModel.js markup package",
   "main": "lib/imodeljs-markup.js",
   "imodeljsSharedLibrary": true,
@@ -13,7 +13,7 @@
     "cover": "npm test -- --cover",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-markup/file.json --tsIndexFile=./imodeljs-markup.ts --onlyJson",
     "extract-api": "betools extract-api --entry=imodeljs-markup",
-    "lint": "eslint -f visualstudio --max-warnings 0 ./src/**/*.ts 1>&2",
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "pseudolocalize": "betools pseudolocalize --englishDir ./src/public/locales/en --out ./lib/public/locales/en-PSEUDO",
     "test": "npm run webpackTests && certa -r chrome",
     "test:debug": "certa -r chrome --debug",
@@ -26,7 +26,8 @@
   "keywords": [
     "Bentley",
     "iModel",
-    "BIM",
+    "digital-twin",
+    "iTwin",
     "SVG",
     "Markup"
   ],
@@ -38,21 +39,21 @@
     "@svgdotjs/svg.js": "3.0.13"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.11.0-dev.4",
-    "@bentley/geometry-core": "^2.11.0-dev.4",
-    "@bentley/imodeljs-common": "^2.11.0-dev.4",
-    "@bentley/imodeljs-frontend": "^2.11.0-dev.4",
-    "@bentley/imodeljs-i18n": "^2.11.0-dev.4"
+    "@bentley/bentleyjs-core": "^2.11.0-dev.20",
+    "@bentley/geometry-core": "^2.11.0-dev.20",
+    "@bentley/imodeljs-common": "^2.11.0-dev.20",
+    "@bentley/imodeljs-frontend": "^2.11.0-dev.20",
+    "@bentley/imodeljs-i18n": "^2.11.0-dev.20"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.11.0-dev.4",
-    "@bentley/build-tools": "2.11.0-dev.4",
-    "@bentley/certa": "2.11.0-dev.4",
-    "@bentley/eslint-plugin": "2.11.0-dev.4",
-    "@bentley/geometry-core": "2.11.0-dev.4",
-    "@bentley/imodeljs-common": "2.11.0-dev.4",
-    "@bentley/imodeljs-frontend": "2.11.0-dev.4",
-    "@bentley/imodeljs-i18n": "2.11.0-dev.4",
+    "@bentley/bentleyjs-core": "2.11.0-dev.20",
+    "@bentley/build-tools": "2.11.0-dev.20",
+    "@bentley/certa": "2.11.0-dev.20",
+    "@bentley/eslint-plugin": "2.11.0-dev.20",
+    "@bentley/geometry-core": "2.11.0-dev.20",
+    "@bentley/imodeljs-common": "2.11.0-dev.20",
+    "@bentley/imodeljs-frontend": "2.11.0-dev.20",
+    "@bentley/imodeljs-i18n": "2.11.0-dev.20",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",

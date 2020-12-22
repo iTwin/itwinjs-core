@@ -599,7 +599,7 @@ export class ReopenIModelTool extends Tool {
   public run(): boolean {
     const viewer = Surface.instance.firstViewer;
     if (undefined !== viewer)
-      viewer.openFile(viewer.viewport.iModel.getRpcProps().key); // eslint-disable-line @typescript-eslint/no-floating-promises
+      viewer.openFile(viewer.viewport.iModel.key); // eslint-disable-line @typescript-eslint/no-floating-promises
 
     return true;
   }

@@ -210,6 +210,10 @@ export class InspectElementTool extends PrimitiveTool {
     if (undefined !== modal)
       this._modal = modal;
 
+    const doCopy = args.getBoolean("c");
+    if (undefined !== doCopy)
+      this._doCopy = doCopy;
+
     return this.run();
   }
 }

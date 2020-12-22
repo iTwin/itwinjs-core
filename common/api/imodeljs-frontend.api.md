@@ -26,7 +26,6 @@ import { BentleyStatus } from '@bentley/bentleyjs-core';
 import { BeTimePoint } from '@bentley/bentleyjs-core';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
 import { BriefcaseDownloader } from '@bentley/imodeljs-common';
-import { BriefcaseKey } from '@bentley/imodeljs-common';
 import { BriefcaseProps } from '@bentley/imodeljs-common';
 import { ByteStream } from '@bentley/bentleyjs-core';
 import { Camera } from '@bentley/imodeljs-common';
@@ -37,6 +36,7 @@ import { CategorySelectorProps } from '@bentley/imodeljs-common';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { ClipPlane } from '@bentley/geometry-core';
 import { ClipShape } from '@bentley/geometry-core';
+import { ClipStyle } from '@bentley/imodeljs-common';
 import { ClipVector } from '@bentley/geometry-core';
 import { Code } from '@bentley/imodeljs-common';
 import { CodeProps } from '@bentley/imodeljs-common';
@@ -62,7 +62,6 @@ import { DisplayStyle3dSettingsProps } from '@bentley/imodeljs-common';
 import { DisplayStyleProps } from '@bentley/imodeljs-common';
 import { DisplayStyleSettings } from '@bentley/imodeljs-common';
 import { DisplayStyleSettingsProps } from '@bentley/imodeljs-common';
-import { DownloadBriefcaseOptions } from '@bentley/imodeljs-common';
 import { EasingFunction } from '@bentley/imodeljs-common';
 import { EcefLocation } from '@bentley/imodeljs-common';
 import { EcefLocationProps } from '@bentley/imodeljs-common';
@@ -90,6 +89,7 @@ import { FeatureTable } from '@bentley/imodeljs-common';
 import { FillFlags } from '@bentley/imodeljs-common';
 import { FontMap } from '@bentley/imodeljs-common';
 import { Format } from '@bentley/imodeljs-quantity';
+import { FormatProps } from '@bentley/imodeljs-quantity';
 import { FormatterSpec } from '@bentley/imodeljs-quantity';
 import { FrontendAuthorizationClient } from '@bentley/frontend-authorization-client';
 import { Frustum } from '@bentley/imodeljs-common';
@@ -146,6 +146,7 @@ import { LDClient } from 'ldclient-js';
 import { LDFlagValue } from 'ldclient-js';
 import { LightSettings } from '@bentley/imodeljs-common';
 import { LinePixels } from '@bentley/imodeljs-common';
+import { LocalBriefcaseProps } from '@bentley/imodeljs-common';
 import { LockLevel } from '@bentley/imodelhub-client';
 import { LogLevel } from '@bentley/bentleyjs-core';
 import { Loop } from '@bentley/geometry-core';
@@ -171,6 +172,7 @@ import { ModelQueryParams } from '@bentley/imodeljs-common';
 import { ModelSelectorProps } from '@bentley/imodeljs-common';
 import { MonochromeMode } from '@bentley/imodeljs-common';
 import { OctEncodedNormal } from '@bentley/imodeljs-common';
+import { OpenBriefcaseProps } from '@bentley/imodeljs-common';
 import { OpenMode } from '@bentley/bentleyjs-core';
 import { OrbitGtBlobProps } from '@bentley/imodeljs-common';
 import { OrbitGtDataManager } from '@bentley/orbitgt-core';
@@ -220,6 +222,7 @@ import { RequestBasicCredentials } from '@bentley/itwin-client';
 import { RequestOptions } from '@bentley/itwin-client';
 import { RgbColor } from '@bentley/imodeljs-common';
 import { RpcRoutingToken } from '@bentley/imodeljs-common';
+import { SectionDrawingViewProps } from '@bentley/imodeljs-common';
 import { SettingsAdmin } from '@bentley/product-settings-client';
 import { SheetProps } from '@bentley/imodeljs-common';
 import { SilhouetteEdgeArgs } from '@bentley/imodeljs-common';
@@ -231,12 +234,15 @@ import { SolarShadowSettings } from '@bentley/imodeljs-common';
 import { SortedArray } from '@bentley/bentleyjs-core';
 import { SpatialClassificationProps } from '@bentley/imodeljs-common';
 import { SpatialViewDefinitionProps } from '@bentley/imodeljs-common';
+import { StandaloneOpenOptions } from '@bentley/imodeljs-common';
 import { StopWatch } from '@bentley/bentleyjs-core';
 import { StorageValue } from '@bentley/imodeljs-common';
+import { StringifiedClipVector } from '@bentley/geometry-core';
 import { StrokeOptions } from '@bentley/geometry-core';
 import { SubCategoryAppearance } from '@bentley/imodeljs-common';
 import { SubCategoryOverride } from '@bentley/imodeljs-common';
 import { SubLayerId } from '@bentley/imodeljs-common';
+import { SyncMode } from '@bentley/imodeljs-common';
 import { TelemetryManager } from '@bentley/telemetry-client';
 import { TerrainProviderName } from '@bentley/imodeljs-common';
 import { TextureMapping } from '@bentley/imodeljs-common';
@@ -269,6 +275,7 @@ import { ViewFlagOverrides } from '@bentley/imodeljs-common';
 import { ViewFlags } from '@bentley/imodeljs-common';
 import { ViewQueryParams } from '@bentley/imodeljs-common';
 import { ViewStateProps } from '@bentley/imodeljs-common';
+import { WebGLContext } from '@bentley/webgl-compatibility';
 import { WebGLExtensionName } from '@bentley/webgl-compatibility';
 import { WebGLRenderCompatibilityInfo } from '@bentley/webgl-compatibility';
 import { XAndY } from '@bentley/geometry-core';
@@ -1006,9 +1013,6 @@ export enum ActivityMessageEndReason {
     // (undocumented)
     Completed = 0
 }
-
-// @internal
-export function addAnimatedTileTreeReferences(refs: TileTreeReference[], view: ViewState, model: GeometricModelState, script: RenderScheduleState.Script): void;
 
 // @internal (undocumented)
 export function addRangeGraphic(builder: GraphicBuilder, range: Range3d, is2d: boolean): void;
@@ -2069,6 +2073,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @internal (undocumented)
     get backgroundMapBase(): BaseLayerSettings | undefined;
     // @internal (undocumented)
+    get backgroundMapElevationBias(): number;
+    // @internal (undocumented)
     get backgroundMapLayers(): MapLayerSettings[];
     get backgroundMapSettings(): BackgroundMapSettings;
     set backgroundMapSettings(settings: BackgroundMapSettings);
@@ -2189,6 +2195,13 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     get wantShadows(): boolean;
 }
 
+// @internal
+export interface DownloadBriefcaseOptions {
+    // (undocumented)
+    fileName?: string;
+    syncMode: SyncMode;
+}
+
 // @alpha
 export interface DrawClipOptions {
     color?: ColorDef;
@@ -2209,15 +2222,41 @@ export class DrawingModelState extends GeometricModel2dState {
 
 // @public
 export class DrawingViewState extends ViewState2d {
-    constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, extents: AxisAlignedBox3d);
+    constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, extents: AxisAlignedBox3d, sectionDrawing?: SectionDrawingViewProps);
+    // @internal
+    static alwaysDisplaySpatialView: boolean;
+    // @internal (undocumented)
+    get areAllTileTreesLoaded(): boolean;
+    // @internal (undocumented)
+    changeViewedModel(modelId: Id64String): Promise<void>;
     // @internal (undocumented)
     static get className(): string;
     // (undocumented)
     static createFromProps(props: ViewStateProps, iModel: IModelConnection): DrawingViewState;
+    // @internal (undocumented)
+    createScene(context: SceneContext): void;
     // (undocumented)
     get defaultExtentLimits(): ExtentLimits;
+    // @internal (undocumented)
+    discloseTileTrees(trees: TileTreeSet): void;
+    // @internal (undocumented)
+    getExtents(): Vector3d;
+    // @internal (undocumented)
+    getOrigin(): import("@bentley/geometry-core").Point3d;
     // (undocumented)
     getViewedExtents(): AxisAlignedBox3d;
+    // @internal
+    static hideDrawingGraphics: boolean;
+    // @internal (undocumented)
+    isDrawingView(): this is DrawingViewState;
+    // @internal (undocumented)
+    load(): Promise<void>;
+    // @internal
+    get sectionDrawingInfo(): SectionDrawingInfo | undefined;
+    // @internal
+    get sectionDrawingProps(): Readonly<SectionDrawingViewProps> | undefined;
+    // (undocumented)
+    toProps(): ViewStateProps;
     }
 
 // @internal
@@ -4425,7 +4464,7 @@ export interface LoadedExtensionProps {
 // @internal
 export class LocalBriefcaseConnection extends BriefcaseConnection {
     close(): Promise<void>;
-    static open(briefcaseProps: BriefcaseProps): Promise<LocalBriefcaseConnection>;
+    static open(briefcaseProps: OpenBriefcaseProps): Promise<LocalBriefcaseConnection>;
 }
 
 // @public
@@ -4644,6 +4683,8 @@ export abstract class MapLayerImageryProvider {
     // (undocumented)
     protected _missingTileData?: Uint8Array;
     // (undocumented)
+    get mutualExclusiveSubLayer(): boolean;
+    // (undocumented)
     protected _requestContext: ClientRequestContext;
     // (undocumented)
     protected readonly _settings: MapLayerSettings;
@@ -4758,7 +4799,9 @@ export enum MapLayerSourceStatus {
     // (undocumented)
     InvalidFormat = 1,
     // (undocumented)
-    InvalidUrl = 2,
+    InvalidTileTree = 2,
+    // (undocumented)
+    InvalidUrl = 3,
     // (undocumented)
     Valid = 0
 }
@@ -5797,23 +5840,24 @@ export class NativeApp {
     // (undocumented)
     static checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
     // (undocumented)
-    static closeBriefcase(briefcaseKey: BriefcaseKey): Promise<void>;
+    static closeBriefcase(connection: LocalBriefcaseConnection): Promise<void>;
     static closeStorage(storage: Storage, deleteId: boolean): Promise<void>;
+    static deleteBriefcase(fileName: string): Promise<void>;
     // (undocumented)
-    static deleteBriefcase(briefcaseKey: BriefcaseKey): Promise<void>;
-    static getBriefcases(): Promise<BriefcaseProps[]>;
+    static getBriefcaseFileName(props: BriefcaseProps): Promise<string>;
+    static getCachedBriefcases(iModelId?: GuidString): Promise<LocalBriefcaseProps[]>;
     static getStorageNames(): Promise<string[]>;
     // (undocumented)
     static onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void>;
     // (undocumented)
     static onMemoryWarning: BeEvent<() => void>;
     // (undocumented)
-    static openBriefcase(briefcaseProps: BriefcaseProps): Promise<LocalBriefcaseConnection>;
+    static openBriefcase(briefcaseProps: OpenBriefcaseProps): Promise<LocalBriefcaseConnection>;
     static openStorage(name: string): Promise<Storage>;
     // (undocumented)
     static overrideInternetConnectivity(status: InternetConnectivityStatus): Promise<void>;
     // (undocumented)
-    static requestDownloadBriefcase(contextId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions, version?: IModelVersion, progress?: ProgressCallback): Promise<BriefcaseDownloader>;
+    static requestDownloadBriefcase(contextId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions, asOf?: IModelVersion, progress?: ProgressCallback): Promise<BriefcaseDownloader>;
     // (undocumented)
     static shutdown(): Promise<void>;
     // (undocumented)
@@ -6156,6 +6200,14 @@ export enum OutputMessageType {
     Toast = 0
 }
 
+// @alpha
+export interface OverrideFormatEntry {
+    // (undocumented)
+    imperial: FormatProps;
+    // (undocumented)
+    metric: FormatProps;
+}
+
 // @internal
 export function overrideRequestTileTreeProps(func: RequestTileTreePropsFunc | undefined): void;
 
@@ -6417,6 +6469,10 @@ export class QuantityFormatter implements UnitsProvider {
     constructor(showMetricValues?: boolean);
     // (undocumented)
     protected _activeSystemIsImperial: boolean;
+    // (undocumented)
+    clearAllOverrideFormats(): Promise<void>;
+    // (undocumented)
+    clearOverrideFormats(type: QuantityType): Promise<void>;
     findFormatterSpecByQuantityType(type: QuantityType, imperial?: boolean): FormatterSpec | undefined;
     protected findKoqFormatterSpec(koq: string, useImperial: boolean): FormatterSpec | undefined;
     findParserSpecByQuantityType(type: QuantityType, imperial?: boolean): ParserSpec | undefined;
@@ -6433,7 +6489,11 @@ export class QuantityFormatter implements UnitsProvider {
     getFormatterSpecByQuantityType(type: QuantityType, imperial?: boolean): Promise<FormatterSpec>;
     protected getKoqFormatterSpec(koq: string, useImperial: boolean): Promise<FormatterSpec | undefined>;
     protected getKoqFormatterSpecsAsync(koq: string, useImperial: boolean): Promise<FormatterSpec[] | undefined>;
+    // (undocumented)
+    protected getOverrideFormat(type: QuantityType, imperial: boolean): Promise<FormatProps | undefined>;
     getParserSpecByQuantityType(type: QuantityType, imperial?: boolean): Promise<ParserSpec>;
+    // (undocumented)
+    protected _getStandardFormatterSpec(type: QuantityType, useImperial: boolean): Promise<FormatterSpec>;
     protected getUnitByQuantityType(type: QuantityType): Promise<UnitProps>;
     getUnitsByFamily(unitFamily: string): Promise<UnitProps[]>;
     // (undocumented)
@@ -6443,8 +6503,10 @@ export class QuantityFormatter implements UnitsProvider {
     // (undocumented)
     protected _imperialParserSpecsByType: Map<QuantityType, ParserSpec>;
     loadFormatAndParsingMaps(useImperial: boolean, restartActiveTool?: boolean): Promise<void>;
+    protected loadFormatSpecsForQuantityType(quantityType: QuantityType, useImperial: boolean): Promise<void>;
     protected loadFormatSpecsForQuantityTypes(useImperial: boolean): Promise<void>;
     protected loadKoqFormatSpecs(koq: string): Promise<void>;
+    protected loadParsingSpecsForQuantityType(quantityType: QuantityType, useImperial: boolean): Promise<void>;
     protected loadParsingSpecsForQuantityTypes(useImperial: boolean): Promise<void>;
     // (undocumented)
     protected loadStdFormat(type: QuantityType, imperial: boolean): Promise<Format>;
@@ -6459,7 +6521,11 @@ export class QuantityFormatter implements UnitsProvider {
     }>;
     // (undocumented)
     onInitialized(): void;
+    // (undocumented)
+    protected _overrideFormatDataByType: Map<QuantityType, OverrideFormatEntry>;
     parseIntoQuantityValue(inString: string, parserSpec: ParserSpec): ParseResult;
+    // (undocumented)
+    setOverrideFormats(type: QuantityType, entry: OverrideFormatEntry): Promise<void>;
     get useImperialFormats(): boolean;
     set useImperialFormats(useImperial: boolean);
 }
@@ -6514,7 +6580,7 @@ export class RealityModelTileTree extends RealityTileTree {
     constructor(params: RealityTileTreeParams);
     // (undocumented)
     get isContentUnbounded(): boolean;
-}
+    }
 
 // @internal (undocumented)
 export namespace RealityModelTileTree {
@@ -7701,6 +7767,14 @@ export class ScrollViewTool extends ViewManip {
     static toolId: string;
 }
 
+// @internal
+export interface SectionDrawingInfo {
+    // (undocumented)
+    readonly drawingToSpatialTransform: Transform;
+    // (undocumented)
+    readonly spatialView: Id64String;
+}
+
 // @public
 export class SectionDrawingModelState extends DrawingModelState {
     // @internal (undocumented)
@@ -8057,9 +8131,13 @@ export class SheetViewState extends ViewState2d {
     getOrigin(): Point3d;
     // @internal (undocumented)
     getViewedExtents(): AxisAlignedBox3d;
+    // @internal (undocumented)
+    isDrawingView(): this is DrawingViewState;
     // @internal
     load(): Promise<void>;
     readonly sheetSize: Point2d;
+    // (undocumented)
+    toProps(): ViewStateProps;
     }
 
 // @internal
@@ -8274,6 +8352,17 @@ export class SpatialModelState extends GeometricModel3dState {
     static get className(): string;
 }
 
+// @internal
+export interface SpatialTileTreeReferences extends Iterable<TileTreeReference> {
+    readonly [Symbol.iterator]: () => Iterator<TileTreeReference>;
+    readonly update: () => void;
+}
+
+// @internal
+export namespace SpatialTileTreeReferences {
+    export function create(view: SpatialViewState): SpatialTileTreeReferences;
+}
+
 // @public
 export class SpatialViewState extends ViewState3d {
     constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, arg3: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState);
@@ -8306,6 +8395,8 @@ export class SpatialViewState extends ViewState3d {
     protected getDisplayedExtents(): AxisAlignedBox3d;
     // (undocumented)
     getViewedExtents(): AxisAlignedBox3d;
+    // @internal (undocumented)
+    isSpatialView(): this is SpatialViewState;
     // (undocumented)
     load(): Promise<void>;
     // @internal (undocumented)
@@ -8316,6 +8407,8 @@ export class SpatialViewState extends ViewState3d {
     removeViewedModel(id: Id64String): void;
     // (undocumented)
     toJSON(): SpatialViewDefinitionProps;
+    // (undocumented)
+    toProps(): ViewStateProps;
     // (undocumented)
     viewsModel(modelId: Id64String): boolean;
 }
@@ -8346,7 +8439,7 @@ export class StandaloneConnection extends IModelConnection {
     close(): Promise<void>;
     get iModelId(): GuidString;
     get isClosed(): boolean;
-    static openFile(filePath: string, openMode?: OpenMode): Promise<StandaloneConnection>;
+    static openFile(filePath: string, openMode?: OpenMode, opts?: StandaloneOpenOptions): Promise<StandaloneConnection>;
 }
 
 // @public
@@ -9174,9 +9267,15 @@ export interface TiledGraphicsProvider {
 // @beta
 export interface TileDrawArgParams {
     // (undocumented)
-    clipVolume: RenderClipVolume | undefined;
+    appearanceProvider?: FeatureAppearanceProvider;
+    // (undocumented)
+    clipVolume?: RenderClipVolume;
     // (undocumented)
     context: SceneContext;
+    // (undocumented)
+    hiddenLineSettings?: HiddenLine.Settings;
+    // (undocumented)
+    intersectionClip?: ClipVector;
     // (undocumented)
     location: Transform;
     // (undocumented)
@@ -9194,8 +9293,9 @@ export interface TileDrawArgParams {
 // @beta
 export class TileDrawArgs {
     constructor(params: TileDrawArgParams);
+    addAppearanceProvider(provider: FeatureAppearanceProvider): void;
     // @internal (undocumented)
-    appearanceProvider?: FeatureAppearanceProvider;
+    get appearanceProvider(): FeatureAppearanceProvider | undefined;
     // @internal (undocumented)
     get clip(): ClipVector | undefined;
     clipVolume: RenderClipVolume | undefined;
@@ -9219,7 +9319,9 @@ export class TileDrawArgs {
     // @internal (undocumented)
     getTileRadius(tile: Tile): number;
     readonly graphics: GraphicBranch;
+    hiddenLineSettings?: HiddenLine.Settings;
     insertMissing(tile: Tile): void;
+    intersectionClip?: ClipVector;
     readonly location: Transform;
     // @internal (undocumented)
     markChildrenLoading(): void;
@@ -9444,7 +9546,9 @@ export abstract class TileTreeReference {
     decorate(_context: DecorateContext): void;
     discloseTileTrees(trees: TileTreeSet): void;
     draw(args: TileDrawArgs): void;
+    protected getAppearanceProvider(_tree: TileTree): FeatureAppearanceProvider | undefined;
     protected getClipVolume(tree: TileTree): RenderClipVolume | undefined;
+    protected getHiddenLineSettings(_tree: TileTree): HiddenLine.Settings | undefined;
     getLocation(): Transform | undefined;
     protected getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides | undefined;
     // @internal (undocumented)
@@ -9491,6 +9595,8 @@ export enum TileVisibility {
 // @public
 export class Tool {
     constructor(..._args: any[]);
+    // @internal (undocumented)
+    get ctor(): typeof Tool;
     static get description(): string;
     get description(): string;
     static get englishKeyin(): string;
@@ -10975,6 +11081,9 @@ export abstract class Viewport implements IDisposable {
     changeViewedModels(modelIds: Id64Arg): boolean;
     clearAlwaysDrawn(): void;
     clearNeverDrawn(): void;
+    // @beta
+    get clipStyle(): ClipStyle;
+    set clipStyle(style: ClipStyle);
     // @internal (undocumented)
     collectStatistics(stats: RenderMemory.Statistics): void;
     // @internal (undocumented)
@@ -11463,12 +11572,12 @@ export abstract class ViewState extends ElementState {
     // @internal
     hasSameCoordinates(other: ViewState): boolean;
     is2d(): this is ViewState2d;
-    is3d(): this is ViewState3d;
+    abstract is3d(): this is ViewState3d;
     isCameraEnabled(): this is ViewState3d;
-    isDrawingView(): this is DrawingViewState;
+    abstract isDrawingView(): this is DrawingViewState;
     // (undocumented)
     isPrivate?: boolean;
-    isSpatialView(): this is SpatialViewState;
+    abstract isSpatialView(): this is SpatialViewState;
     // @internal (undocumented)
     isSubCategoryVisible(id: Id64String): boolean;
     load(): Promise<void>;
@@ -11505,6 +11614,7 @@ export abstract class ViewState extends ElementState {
     setViewClip(clip?: ClipVector): void;
     // (undocumented)
     toJSON(): ViewDefinitionProps;
+    toProps(): ViewStateProps;
     // (undocumented)
     protected _updateMaxGlobalScopeFactor(): void;
     get viewFlags(): ViewFlags;
@@ -11522,7 +11632,11 @@ export abstract class ViewState2d extends ViewState {
     // @internal (undocumented)
     applyPose(val: ViewPose2d): this;
     // (undocumented)
-    readonly baseModelId: Id64String;
+    get baseModelId(): Id64String;
+    // (undocumented)
+    protected _baseModelId: Id64String;
+    // @alpha
+    changeViewedModel(newViewedModelId: Id64String): Promise<void>;
     // @internal (undocumented)
     static get className(): string;
     // (undocumented)
@@ -11544,6 +11658,10 @@ export abstract class ViewState2d extends ViewState {
     // (undocumented)
     getRotation(): Matrix3d;
     getViewedModel(): GeometricModel2dState | undefined;
+    // @internal (undocumented)
+    is3d(): this is ViewState3d;
+    // @internal (undocumented)
+    isSpatialView(): this is SpatialViewState;
     // (undocumented)
     load(): Promise<void>;
     // @deprecated
@@ -11631,9 +11749,13 @@ export abstract class ViewState3d extends ViewState {
     get globalScopeFactor(): number;
     // (undocumented)
     globalViewTransition(): number;
+    // @internal (undocumented)
+    is3d(): this is ViewState3d;
     // (undocumented)
     get isCameraOn(): boolean;
     get isCameraValid(): boolean;
+    // @internal (undocumented)
+    isDrawingView(): this is DrawingViewState;
     // (undocumented)
     isEyePointAbove(elevation: number): boolean;
     // (undocumented)
@@ -11918,6 +12040,260 @@ export namespace WmsCapability {
 export class WmsUtilities {
     // (undocumented)
     static getBaseUrl(url: string): string;
+}
+
+// @internal (undocumented)
+export class WmtsCapabilities {
+    constructor(_json: any);
+    // (undocumented)
+    readonly contents?: WmtsCapability.Contents;
+    // (undocumented)
+    static create(url: string, credentials?: RequestBasicCredentials): Promise<WmtsCapabilities | undefined>;
+    // (undocumented)
+    static createFromXml(xmlCapabilities: string): WmtsCapabilities | undefined;
+    // (undocumented)
+    get json(): any;
+    // (undocumented)
+    readonly operationsMetadata?: WmtsCapability.OperationMetadata;
+    // (undocumented)
+    readonly serviceIdentification?: WmtsCapability.ServiceIdentification;
+    // (undocumented)
+    readonly version?: string;
+}
+
+// @internal
+export namespace WmtsCapability {
+    // (undocumented)
+    export class BoundingBox {
+        constructor(_json: any);
+        // (undocumented)
+        readonly crs?: string;
+        // (undocumented)
+        readonly range?: Range2d;
+    }
+    // (undocumented)
+    export abstract class Constants {
+        // (undocumented)
+        static readonly GOOGLEMAPS_COMPATIBLE_WELLKNOWNNAME = "googlemapscompatible";
+        // (undocumented)
+        static readonly GOOGLEMAPS_LEVEL0_SCALE_DENOM = 559082264.0287178;
+    }
+    // (undocumented)
+    export class Contents {
+        constructor(_json: any);
+        // (undocumented)
+        getGoogleMapsCompatibleTileMatrixSet(): WmtsCapability.TileMatrixSet[];
+        // (undocumented)
+        readonly layers: WmtsCapability.Layer[];
+        // (undocumented)
+        readonly tileMatrixSets: WmtsCapability.TileMatrixSet[];
+    }
+    // (undocumented)
+    export class HttpDcp {
+        constructor(json: any);
+        // (undocumented)
+        readonly constraintName?: string;
+        // (undocumented)
+        readonly encoding?: string;
+        // (undocumented)
+        readonly url?: string;
+    }
+    // (undocumented)
+    export class Layer {
+        constructor(_json: any);
+        // (undocumented)
+        readonly abstract?: string;
+        // (undocumented)
+        readonly boundingBox?: BoundingBox;
+        // (undocumented)
+        readonly format?: string;
+        // (undocumented)
+        readonly identifier: string;
+        // (undocumented)
+        readonly styles: Style[];
+        // (undocumented)
+        readonly tileMatrixSetLinks: TileMatrixSetLink[];
+        // (undocumented)
+        readonly title?: string;
+        // (undocumented)
+        readonly wsg84BoundingBox?: MapCartoRectangle;
+    }
+    // (undocumented)
+    export class Operation {
+        constructor(json: any);
+        // (undocumented)
+        get getDcpHttp(): HttpDcp[] | undefined;
+        // (undocumented)
+        readonly name?: string;
+        // (undocumented)
+        get postDcpHttp(): HttpDcp[] | undefined;
+        }
+    // (undocumented)
+    export class OperationMetadata {
+        constructor(json: any);
+        // (undocumented)
+        get getCapabilities(): Operation | undefined;
+        // (undocumented)
+        get getFeatureInfo(): Operation | undefined;
+        // (undocumented)
+        get getTile(): Operation | undefined;
+        }
+    // (undocumented)
+    export abstract class OwsConstants {
+        // (undocumented)
+        static readonly ABSTRACT_XMLTAG = "ows:Abstract";
+        // (undocumented)
+        static readonly ACCESSCONSTRAINTS_XMLTAG = "ows:AccessConstraints";
+        // (undocumented)
+        static readonly ALLOWEDVALUES_XMLTAG = "ows:AllowedValues";
+        // (undocumented)
+        static readonly BOUNDINGBOX_XMLTAG = "ows:BoundingBox";
+        // (undocumented)
+        static readonly CONSTRAINT_XMLTAG = "ows:Constraint";
+        // (undocumented)
+        static readonly DCP_XMLTAG = "ows:DCP";
+        // (undocumented)
+        static readonly FEES_XMLTAG = "ows:Fees";
+        // (undocumented)
+        static readonly GET_XMLTAG = "ows:Get";
+        // (undocumented)
+        static readonly HTTP_XMLTAG = "ows:HTTP";
+        // (undocumented)
+        static readonly IDENTIFIER_XMLTAG = "ows:Identifier";
+        // (undocumented)
+        static readonly KEYWORD_XMLTAG = "ows:Keyword";
+        // (undocumented)
+        static readonly KEYWORDS_XMLTAG = "ows:Keywords";
+        // (undocumented)
+        static readonly LOWERCORNER_XMLTAG = "ows:LowerCorner";
+        // (undocumented)
+        static readonly OPERATION_XMLTAG = "ows:Operation";
+        // (undocumented)
+        static readonly OPERATIONSMETADATA_XMLTAG = "ows:OperationsMetadata";
+        // (undocumented)
+        static readonly POST_XMLTAG = "ows:Post";
+        // (undocumented)
+        static readonly SERVICEIDENTIFICATION_XMLTAG = "ows:ServiceIdentification";
+        // (undocumented)
+        static readonly SERVICETYPE_XMLTAG = "ows:ServiceType";
+        // (undocumented)
+        static readonly SERVICETYPEVERSION_XMLTAG = "ows:ServiceTypeVersion";
+        // (undocumented)
+        static readonly SUPPORTEDCRS_XMLTAG = "ows:SupportedCRS";
+        // (undocumented)
+        static readonly TITLE_XMLTAG = "ows:Title";
+        // (undocumented)
+        static readonly UPPERCORNER_XMLTAG = "ows:UpperCorner";
+        // (undocumented)
+        static readonly VALUE_XMLTAG = "ows:Value";
+        // (undocumented)
+        static readonly WGS84BOUNDINGBOX_XMLTAG = "ows:WGS84BoundingBox";
+    }
+    // (undocumented)
+    export class ServiceIdentification {
+        constructor(json: any);
+        // (undocumented)
+        readonly abstract?: string;
+        // (undocumented)
+        readonly accessConstraints?: string;
+        // (undocumented)
+        readonly fees?: string;
+        // (undocumented)
+        readonly keywords?: string[];
+        // (undocumented)
+        readonly serviceType?: string;
+        // (undocumented)
+        readonly serviceTypeVersion?: string;
+        // (undocumented)
+        readonly title?: string;
+    }
+    // (undocumented)
+    export class Style {
+        constructor(_json: any);
+        // (undocumented)
+        readonly identifier?: string;
+        // (undocumented)
+        readonly isDefault: boolean;
+        // (undocumented)
+        readonly title?: string;
+    }
+    // (undocumented)
+    export class TileMatrix {
+        constructor(_json: any);
+        // (undocumented)
+        readonly abstract?: string;
+        // (undocumented)
+        readonly identifier: string;
+        // (undocumented)
+        readonly matrixHeight: number;
+        // (undocumented)
+        readonly matrixWidth: number;
+        // (undocumented)
+        readonly scaleDenominator: number;
+        // (undocumented)
+        readonly tileHeight: number;
+        // (undocumented)
+        readonly tileWidth: number;
+        // (undocumented)
+        readonly title?: string;
+        // (undocumented)
+        readonly topLeftCorner: Point2d;
+    }
+    // (undocumented)
+    export class TileMatrixSet {
+        constructor(_json: any);
+        // (undocumented)
+        readonly abstract?: string;
+        // (undocumented)
+        readonly identifier: string;
+        // (undocumented)
+        readonly supportedCrs: string;
+        // (undocumented)
+        readonly tileMatrix: TileMatrix[];
+        // (undocumented)
+        readonly title?: string;
+        // (undocumented)
+        readonly wellKnownScaleSet: string;
+    }
+    // (undocumented)
+    export class TileMatrixSetLink {
+        constructor(_json: any);
+        // (undocumented)
+        readonly tileMatrixSet: string;
+    }
+    // (undocumented)
+    export abstract class XmlConstants {
+        // (undocumented)
+        static readonly CONSTRAINT_NAME_FILTER = "Encoding";
+        // (undocumented)
+        static readonly GETCAPABILITIES = "GetCapabilities";
+        // (undocumented)
+        static readonly GETFEATUREINFO = "GetFeatureInfo";
+        // (undocumented)
+        static readonly GETTILE = "GetTile";
+        // (undocumented)
+        static readonly MATRIXHEIGHT_XMLTAG = "MatrixHeight";
+        // (undocumented)
+        static readonly MATRIXWIDTH_XMLTAG = "MatrixWidth";
+        // (undocumented)
+        static readonly SCALEDENOMINATOR_XMLTAG = "ScaleDenominator";
+        // (undocumented)
+        static readonly STYLE_ISDEFAULT = "IsDefault";
+        // (undocumented)
+        static readonly TILEHEIGHT_XMLTAG = "TileHeight";
+        // (undocumented)
+        static readonly TILEMATRIX_XMLTAG = "TileMatrix";
+        // (undocumented)
+        static readonly TILEMATRIXSETLINK_XMLTAG = "TileMatrixSetLink";
+        // (undocumented)
+        static readonly TILEWIDTH_XMLTAG = "TileWidth";
+        // (undocumented)
+        static readonly TOPLEFTCORNER_XMLTAG = "TopLeftCorner";
+        // (undocumented)
+        static readonly WELLKNOWNSCALESET_XMLTAG = "WellKnownScaleSet";
+        // (undocumented)
+        static readonly XLINK_HREF = "xlink:href";
+    }
 }
 
 // @public

@@ -28,6 +28,7 @@ alpha;CheckBoxProps
 beta;ClearIsolatedElementsTool 
 beta;ClearModelAppearanceOverrides 
 beta;ClearRealityModelAppearanceOverrides 
+alpha;ClipColorTool 
 alpha;ColorInput
 alpha;ColorInputHandler = (value: string) => void
 alpha;ColorInputProps
@@ -132,6 +133,7 @@ alpha;SliderHandler = (slider: HTMLInputElement) => void
 alpha;SliderProps
 beta;SourceAspectIdFromElementIdTool 
 beta;class SourceAspectIdTool 
+alpha;TestClipStyleTool 
 beta;TextBox
 alpha;TextBoxHandler = (textbox: HTMLInputElement) => void
 alpha;TextBoxKeyPressHandler = (textbox: HTMLInputElement, ev: KeyboardEvent) => void
@@ -140,6 +142,7 @@ beta;TileStatisticsTracker
 alpha;Toggle3dManipulationsTool 
 beta;ToggleDPIForLODTool 
 alpha;ToggleDrapeFrustumTool 
+beta;ToggleDrawingGraphicsTool 
 beta;ToggleFrustumSnapshotTool 
 beta;ToggleOSMBuildingDisplay 
 beta;TogglePrimitiveVisibilityTool 
@@ -150,6 +153,8 @@ alpha;ToggleRealityTileBounds
 alpha;ToggleRealityTileFreeze 
 alpha;ToggleRealityTileLogging 
 alpha;ToggleRealityTilePreload 
+alpha;ToggleSectionCutTool 
+beta;ToggleSectionDrawingSpatialViewTool 
 beta;ToggleSelectedViewFrustumTool 
 beta;ToggleShadowFrustumTool 
 beta;ToggleSkyboxTool 

@@ -15,7 +15,7 @@ import {
   Range3d, Ray3d, SmoothTransformBetweenFrusta, Transform, Vector3d, XAndY, XYAndZ, XYZ,
 } from "@bentley/geometry-core";
 import {
-  AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, Cartographic, ColorDef, ContextRealityModelProps, DisplayStyleSettingsProps, Easing, EasingFunction,
+  AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, Cartographic, ClipStyle, ColorDef, ContextRealityModelProps, DisplayStyleSettingsProps, Easing, EasingFunction,
   ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer, Interpolation, LightSettings, NpcCenter, Placement2d,
   Placement2dProps, Placement3d, Placement3dProps, PlacementProps, SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, Tweens, ViewFlags,
 } from "@bentley/imodeljs-common";
@@ -36,7 +36,7 @@ import { GraphicList, RenderGraphicOwner } from "./render/RenderGraphic";
 import { RenderMemory } from "./render/RenderMemory";
 import { createRenderPlanFromViewport } from "./render/RenderPlan";
 import { RenderTarget } from "./render/RenderTarget";
-import { SheetViewState } from "./Sheet";
+import { SheetViewState } from "./SheetViewState";
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import { TileBoundingBoxes, TileTreeReference, TileTreeSet } from "./tile/internal";
@@ -1162,6 +1162,20 @@ export abstract class Viewport implements IDisposable {
     this.invalidateRenderPlan();
   }
 
+  /** The style describing how the view's [ClipVector]($geometry-core) affects the view.
+   * @beta
+   */
+  public get clipStyle(): ClipStyle { return this.displayStyle.settings.clipStyle; }
+  public set clipStyle(style: ClipStyle) {
+    if (style === this.clipStyle)
+      return;
+
+    this.displayStyle.settings.clipStyle = style;
+    this._changeFlags.setDisplayStyle();
+    this.invalidateRenderPlan();
+    this.setFeatureOverrideProviderChanged();
+  }
+
   /** Turn on or off antialiasing in each [[Viewport]] registered with the ViewManager.
    * Setting numSamples to 1 turns it off, setting numSamples > 1 turns it on with that many samples.
    * @beta
@@ -1486,13 +1500,10 @@ export abstract class Viewport implements IDisposable {
     if (!this.view.is2d)
       return;
 
+    // Clone the current ViewState, change its baseModelId, and ensure the new model is loaded.
     const newView = this.view.clone() as ViewState2d; // start by cloning the current ViewState
-    // NOTE: the cast below is necessary since baseModelId is marked as readonly after construction.
-    //  We know this is a special case where it is safe to change it.
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-    (newView.baseModelId as Id64String) = baseModelId; // change its baseModelId.
+    await newView.changeViewedModel(baseModelId);
 
-    await newView.load(); // make sure new model is loaded.
     this.changeView(newView, options); // switch this viewport to use new ViewState2d
 
     if (options && options.doFit) { // optionally fit view to the extents of the new model
@@ -3496,24 +3507,26 @@ export class ScreenViewport extends Viewport {
 
     builder.setSymbology(color, colorFill, 1);
 
+    const skew = context.viewport.view.getAspectRatioSkew();
     const radius = (2.5 * aperture) * context.viewport.getPixelSizeAtPoint(hit.snapPoint);
     const rMatrix = Matrix3d.createRigidHeadsUp(hit.normal);
-    const ellipse = Arc3d.createScaledXYColumns(hit.snapPoint, rMatrix, radius, radius, AngleSweep.create360());
+    const ellipse = Arc3d.createScaledXYColumns(hit.snapPoint, rMatrix, radius, radius / skew, AngleSweep.create360());
 
     builder.addArc(ellipse, true, true);
     builder.addArc(ellipse, false, false);
 
-    const length = (0.6 * radius);
+    const lengthX = (0.6 * radius);
+    const lengthY = lengthX / skew;
     const normal = Vector3d.create();
 
     ellipse.vector0.normalize(normal);
-    const pt1 = hit.snapPoint.plusScaled(normal, length);
-    const pt2 = hit.snapPoint.plusScaled(normal, -length);
+    const pt1 = hit.snapPoint.plusScaled(normal, lengthX);
+    const pt2 = hit.snapPoint.plusScaled(normal, -lengthX);
     builder.addLineString([pt1, pt2]);
 
     ellipse.vector90.normalize(normal);
-    const pt3 = hit.snapPoint.plusScaled(normal, length);
-    const pt4 = hit.snapPoint.plusScaled(normal, -length);
+    const pt3 = hit.snapPoint.plusScaled(normal, lengthY);
+    const pt4 = hit.snapPoint.plusScaled(normal, -lengthY);
     builder.addLineString([pt3, pt4]);
 
     context.addDecorationFromBuilder(builder);

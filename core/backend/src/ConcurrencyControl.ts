@@ -10,17 +10,19 @@ import * as deepAssign from "deep-assign";
 import * as path from "path";
 import { assert, DbOpcode, DbResult, Id64, Id64String, Logger, RepositoryStatus } from "@bentley/bentleyjs-core";
 import { CodeQuery, CodeState, HubCode, Lock, LockLevel, LockQuery, LockType } from "@bentley/imodelhub-client";
-import { ChannelConstraintError, CodeProps, ElementProps, IModelError, IModelStatus, IModelWriteRpcInterface, ModelProps, SyncMode } from "@bentley/imodeljs-common";
+import {
+  ChannelConstraintError, CodeProps, ElementProps, IModelError, IModelStatus, IModelWriteRpcInterface, ModelProps,
+} from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { ECDb, ECDbOpenMode } from "./ECDb";
 import { Element, Subject } from "./Element";
+import { ChannelRootAspect } from "./ElementAspect";
 import { BriefcaseDb } from "./IModelDb";
 import { IModelJsFs } from "./IModelJsFs";
 import { Model } from "./Model";
 import { RelationshipProps } from "./Relationship";
-import { ChannelRootAspect } from "./ElementAspect";
 
 // cspell:ignore rqctx req's cpid cctl stmts specid
 
@@ -134,7 +136,7 @@ export class ConcurrencyControl {
   public onMergedChanges() {
     this.applyTransactionOptions();
     this._iModel.nativeDb.purgeTileTrees(undefined); // TODO: Remove this when we get tile healing
-    const data = { parentChangeSetId: this.iModel.briefcase.parentChangeSetId };
+    const data = { parentChangeSetId: this.iModel.changeSetId };
     this._iModel.eventSink.emit(IModelWriteRpcInterface.name, "onPulledChanges", data);
   }
 
@@ -145,7 +147,7 @@ export class ConcurrencyControl {
 
   /** You must call this if you use classes other than ConcurrencyControl to manage locks and codes.
    * For example, if you call IModelHost.imodelClient to call IModelClient functions directly to
-   * acquire or release locks or to reserve or reliquish codes, you must follow up by calling
+   * acquire or release locks or to reserve or relinquish codes, you must follow up by calling
    * this function to allow ConcurrencyControl to synchronize its local resources cache with the
    * actual state of locks and codes on the server.
    * @beta
@@ -255,8 +257,8 @@ export class ConcurrencyControl {
    * @internal
    */
   public onElementWrite(elementClass: typeof Element, element: ElementProps, opcode: DbOpcode): void {
-    if (!this._iModel.isPushEnabled) {
-      throw new IModelError(IModelStatus.ReadOnly, "iModel is read-only - changes cannot be pushed to iModelHub", Logger.logError, loggerCategory);
+    if (!this._iModel.allowLocalChanges) {
+      throw new IModelError(IModelStatus.ReadOnly, "iModel cannot create local changes", Logger.logError, loggerCategory);
     }
     const resourcesNeeded = new ConcurrencyControl.Request();
     this.buildRequestForElementTo(resourcesNeeded, element, opcode, elementClass);
@@ -401,7 +403,7 @@ export class ConcurrencyControl {
 
   /** Are there pending, unprocessed requests for locks or codes? */
   public get hasPendingRequests(): boolean {
-    if (!this._iModel.briefcase)
+    if (!this._iModel.isOpen)
       return false;
     return (this.pendingRequest.codes.length !== 0) || (this.pendingRequest.locks.length !== 0);
   }
@@ -479,8 +481,8 @@ export class ConcurrencyControl {
     this.abandonRequest();
     this._cache.deleteFile();
     await Promise.all([
-      BriefcaseManager.imodelClient.locks.deleteAll(requestContext, this.iModel.iModelId, this.iModel.briefcase.briefcaseId),
-      BriefcaseManager.imodelClient.codes.deleteAll(requestContext, this.iModel.iModelId, this.iModel.briefcase.briefcaseId),
+      BriefcaseManager.imodelClient.locks.deleteAll(requestContext, this.iModel.iModelId, this.iModel.briefcaseId),
+      BriefcaseManager.imodelClient.codes.deleteAll(requestContext, this.iModel.iModelId, this.iModel.briefcaseId),
     ]);
     requestContext.enter();
     return this.openOrCreateCache(requestContext); // re-create after we know that locks and codes were deleted.
@@ -506,7 +508,7 @@ export class ConcurrencyControl {
   public async onPushedChanges(requestContext: AuthorizedClientRequestContext): Promise<void> {
     requestContext.enter();
 
-    const data = { parentChangeSetId: this.iModel.briefcase.parentChangeSetId };
+    const data = { parentChangeSetId: this.iModel.changeSetId };
     this._iModel.eventSink.emit(IModelWriteRpcInterface.name, "onPushedChanges", data);
 
     return this.openOrCreateCache(requestContext); // re-create after we know that push has succeeded
@@ -520,7 +522,7 @@ export class ConcurrencyControl {
 
   /** @internal */
   public async onOpened(requestContext: AuthorizedClientRequestContext): Promise<void> {
-    if (!this._iModel.isPushEnabled)
+    if (!this._iModel.allowLocalChanges)
       return;
 
     assert(!this._iModel.concurrencyControl._cache.isOpen, "BriefcaseDb.onOpened should be raised only once");
@@ -596,7 +598,6 @@ export class ConcurrencyControl {
   public hasReservedCode0(code: CodeProps): boolean {
     return this._cache.isCodeReserved(code);
   }
-
 
   /** @internal @deprecated Use concurrencyControl.locks.lockCodeSpecs */
   public async lockCodeSpecs(requestContext: AuthorizedClientRequestContext): Promise<Lock[]> {
@@ -691,13 +692,12 @@ export class ConcurrencyControl {
       throw new Error("not open");
 
     Logger.logTrace(loggerCategory, `reserveCodes ${JSON.stringify(hubCodes)}`);
-    const codeStates = await BriefcaseManager.imodelClient.codes.update(requestContext, this._iModel.briefcase.iModelId, hubCodes);
+    const codeStates = await BriefcaseManager.imodelClient.codes.update(requestContext, this._iModel.iModelId, hubCodes);
     requestContext.enter();
     Logger.logTrace(loggerCategory, `result = ${JSON.stringify(codeStates)}`);
 
     return codeStates;
   }
-
 
   /** @internal @deprecated Use ConcurrencyControl.codes.query or ConcurrencyControl.codes.isReserved */
   public async queryCodeStates(requestContext: AuthorizedClientRequestContext, specId: Id64String, scopeId: string, value?: string): Promise<HubCode[]> {
@@ -742,7 +742,7 @@ export class ConcurrencyControl {
     const chunkSize = 100;
     for (let i = 0; i < hubCodes.length; i += chunkSize) {
       const query = new CodeQuery().byCodes(hubCodes.slice(i, i + chunkSize));
-      const result = await codesHandler.get(requestContext, this._iModel.briefcase.iModelId, query);
+      const result = await codesHandler.get(requestContext, this._iModel.iModelId, query);
       for (const code of result) {
         if (code.state !== CodeState.Available)
           return false;
@@ -780,7 +780,7 @@ export class ConcurrencyControl {
     const chunkSize = 100;
     for (let i = 0; i < hubLocks.length; i += chunkSize) {
       const query = new LockQuery().byLocks(hubLocks.slice(i, i + chunkSize));
-      const result = await locksHandler.get(requestContext, this._iModel.briefcase.iModelId, query);
+      const result = await locksHandler.get(requestContext, this._iModel.iModelId, query);
       for (const lock of result) {
         // If the lock is not held at all, then it's available.
         if (lock.lockLevel === LockLevel.None || lock.lockLevel === undefined || lock.briefcaseId === undefined)
@@ -843,14 +843,14 @@ export class ConcurrencyControl {
    */
   public setPolicy(policy: ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy): void {
     this._policy = policy;
-    if (!this._iModel.briefcase)
+    if (!this._iModel.isOpen)
       throw new IModelError(IModelStatus.BadRequest, "Invalid briefcase", Logger.logError, loggerCategory);
     let rc: RepositoryStatus;
     if (policy instanceof ConcurrencyControl.OptimisticPolicy) {
       const oc: ConcurrencyControl.OptimisticPolicy = policy;
-      rc = this._iModel.briefcase.nativeDb.setBriefcaseManagerOptimisticConcurrencyControlPolicy(oc.conflictResolution);
+      rc = this._iModel.nativeDb.setBriefcaseManagerOptimisticConcurrencyControlPolicy(oc.conflictResolution);
     } else {
-      rc = this._iModel.briefcase.nativeDb.setBriefcaseManagerPessimisticConcurrencyControlPolicy();
+      rc = this._iModel.nativeDb.setBriefcaseManagerPessimisticConcurrencyControlPolicy();
     }
     if (RepositoryStatus.Success !== rc) {
       throw new IModelError(rc, "Error setting concurrency control policy", Logger.logError, loggerCategory);
@@ -865,7 +865,7 @@ export class ConcurrencyControl {
     return this._codes;
   }
 
-  /** API to acquire locks preemtively and to query the status of locks */
+  /** API to acquire locks preemptively and to query the status of locks */
   public get locks(): ConcurrencyControl.LocksManager {
     if (this._locks === undefined)
       this._locks = new ConcurrencyControl.LocksManager(this._iModel);
@@ -1272,7 +1272,7 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
 
     public static toHubCode(concurrencyControl: ConcurrencyControl, code: CodeProps): HubCode {
       const requestCode = new HubCode();
-      requestCode.briefcaseId = concurrencyControl.iModel.briefcase.briefcaseId;
+      requestCode.briefcaseId = concurrencyControl.iModel.briefcaseId;
       requestCode.state = CodeState.Reserved;
       requestCode.codeSpecId = code.spec;
       requestCode.codeScope = code.scope;
@@ -1286,12 +1286,12 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
 
     public static toHubLock(concurrencyControl: ConcurrencyControl, reqLock: LockProps): Lock {
       const lock = new Lock();
-      lock.briefcaseId = concurrencyControl.iModel.briefcase.briefcaseId;
+      lock.briefcaseId = concurrencyControl.iModel.briefcaseId;
       lock.lockLevel = reqLock.level;
       lock.lockType = reqLock.type;
       lock.objectId = reqLock.objectId;
-      lock.releasedWithChangeSet = concurrencyControl.iModel.briefcase.currentChangeSetId;
-      lock.seedFileId = concurrencyControl.iModel.briefcase.fileId!;
+      lock.releasedWithChangeSet = concurrencyControl.iModel.changeSetId;
+      lock.seedFileId = concurrencyControl.iModel.iModelId;
       return lock;
     }
 
@@ -1422,7 +1422,7 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
         query.byCodeSpecId(specId).byCodeScope(scopeId);
       }
 
-      return BriefcaseManager.imodelClient.codes.get(requestContext, this._iModel.briefcase.iModelId, query);
+      return BriefcaseManager.imodelClient.codes.get(requestContext, this._iModel.iModelId, query);
     }
 
     /** Returns `true` if the specified code has been reserved by this briefcase.
@@ -1528,38 +1528,43 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
     private static _cachesOpen = new Set<string>();
 
     private _db: ECDb = new ECDb();
+    private _locksFileName?: string;
 
     public constructor(public concurrencyControl: ConcurrencyControl) { }
 
     public get isOpen(): boolean { return this._db.isOpen; }
 
     private mustHaveBriefcase() {
-      if (this.concurrencyControl.iModel === undefined || this.concurrencyControl.iModel.briefcase === undefined
-        || this.concurrencyControl.iModel.syncMode !== SyncMode.PullAndPush)
-        throw new IModelError(IModelStatus.NotOpenForWrite, "not a briefcase that can be used to push changes to the IModel Hub", Logger.logError, loggerCategory, () => this.concurrencyControl.iModel.briefcase.getDebugInfo());
+      const iModel = this.concurrencyControl.iModel;
+      if (iModel === undefined || !iModel.isOpen || !BriefcaseManager.isValidBriefcaseId(iModel.briefcaseId))
+        throw new IModelError(IModelStatus.NotOpenForWrite, "not a briefcase that can be used to push changes", Logger.logError, loggerCategory, () => this.concurrencyControl.iModel.getConnectionProps());
     }
 
     private mustBeOpenAndWriteable() {
-      if (!this.concurrencyControl.iModel.isPushEnabled)
-        throw new IModelError(IModelStatus.NotOpenForWrite, "not a briefcase that can be used to push changes to the IModel Hub", Logger.logError, loggerCategory, () => this.concurrencyControl.iModel.briefcase.getDebugInfo());
+      if (!this.concurrencyControl.iModel.allowLocalChanges)
+        throw new IModelError(IModelStatus.NotOpenForWrite, "not a briefcase that can be used to push changes", Logger.logError, loggerCategory, () => this.concurrencyControl.iModel.getConnectionProps());
       if (!this.isOpen)
-        throw new IModelError(IModelStatus.NotOpen, "not open", Logger.logError, loggerCategory, () => ({ cacheFileName: this.computeCacheFileName() }));
+        throw new IModelError(IModelStatus.NotOpen, "not open", Logger.logError, loggerCategory, () => ({ locksFileName: this._locksFileName }));
     }
 
-    private static onOpen(fn: string) {
-      if (this._cachesOpen.has(fn))
-        throw new IModelError(IModelStatus.AlreadyOpen, `ConcurrencyControl StateCache is already open ${fn}`, Logger.logError, loggerCategory);
-      this._cachesOpen.add(fn);
+    private static onOpen(fileName: string) {
+      if (this._cachesOpen.has(fileName))
+        throw new IModelError(IModelStatus.AlreadyOpen, `ConcurrencyControl StateCache is already open ${fileName}`, Logger.logError, loggerCategory);
+      this._cachesOpen.add(fileName);
     }
 
-    private static onClose(fn: string) {
-      this._cachesOpen.delete(fn);
+    private static onClose(fileName: string) {
+      this._cachesOpen.delete(fileName);
     }
 
-    private computeCacheFileName(): string {
-      this.mustHaveBriefcase();
-      const fn = this.concurrencyControl.iModel.briefcase.pathname;
-      return path.join(path.dirname(fn), `${path.basename(fn, ".bim")}.cctl.bim`);
+    private getLocksFileName(): string {
+      return `${this.concurrencyControl.iModel.pathName}-locks`;
+    }
+
+    /** for backwards compatibility only */
+    private getCompatibilityFileName(): string {
+      const fileName = this.concurrencyControl.iModel.pathName;
+      return path.join(path.dirname(fileName), `${path.basename(fileName, ".bim")}.cctl.bim`);
     }
 
     private isCorrupt(): boolean {
@@ -1577,7 +1582,7 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
         this._db.abandonChanges();
       this._db.closeDb();
 
-      StateCache.onClose(this.computeCacheFileName());
+      StateCache.onClose(this._locksFileName!);
     }
 
     private initializeDb() {
@@ -1590,46 +1595,54 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
       initStmts.forEach((sql) => {
         const stmt = this._db.prepareSqliteStatement(sql);
         const rc = stmt.step();
+        stmt.dispose();
         if (DbResult.BE_SQLITE_DONE !== rc)
           throw new IModelError(rc, "", Logger.logError, loggerCategory, () => sql);
-        stmt.dispose();
       });
     }
 
     public open(): boolean {
       this.mustHaveBriefcase();
-      const fn = this.computeCacheFileName();
 
-      if (!IModelJsFs.existsSync(fn))
+      // previous version used to use a different strategy for the lock file name. Since it's just a cache, delete it if it exists.
+      const oldLocksFile = this.getCompatibilityFileName();
+      if (IModelJsFs.existsSync(oldLocksFile))
+        IModelJsFs.unlinkSync(oldLocksFile);
+
+      const locksFileName = this.getLocksFileName();
+      if (!IModelJsFs.existsSync(locksFileName))
         return false;
 
-      this._db.openDb(fn, ECDbOpenMode.ReadWrite);
+      this._db.openDb(locksFileName, ECDbOpenMode.ReadWrite);
 
       if (this.isCorrupt()) {
         this.close(false);
-        IModelJsFs.unlinkSync(fn);
+        IModelJsFs.unlinkSync(locksFileName);
         return false;
       }
-
-      StateCache.onOpen(fn);
-
+      this._locksFileName = locksFileName;
+      StateCache.onOpen(locksFileName);
       return true;
     }
 
     public create() {
       this.mustHaveBriefcase();
-      const fn = this.computeCacheFileName();
+      const locksFileName = this.getLocksFileName();
 
-      this._db.createDb(fn);
+      this._db.createDb(locksFileName);
       this.initializeDb();
       this._db.saveChanges();
 
-      StateCache.onOpen(fn);
+      this._locksFileName = locksFileName;
+      StateCache.onOpen(locksFileName);
     }
 
     public deleteFile() {
-      this.close(false);
-      IModelJsFs.unlinkSync(this.computeCacheFileName());
+      if (this.isOpen)
+        this.close(false);
+
+      if (this._locksFileName)
+        IModelJsFs.unlinkSync(this._locksFileName);
     }
 
     public clear() {
@@ -1718,7 +1731,7 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
 
       this.clear();
 
-      const bcId = this.concurrencyControl.iModel.briefcase.briefcaseId;
+      const bcId = this.concurrencyControl.iModel.briefcaseId;
       const iModelId = this.concurrencyControl.iModel.iModelId;
 
       const heldLocks = await BriefcaseManager.imodelClient.locks.get(requestContext, iModelId, new LockQuery().byBriefcaseId(bcId));

@@ -31,11 +31,18 @@ public;BisCodeSpec
 internal;bisectTileRange2d(range: Range3d, takeUpper: boolean): void
 internal;bisectTileRange3d(range: Range3d, takeUpper: boolean): void
 internal;BoundingSphere
+alpha;BRepCutProps
 beta;BRepEntity
+alpha;BRepGeometryCreate
+alpha;BRepGeometryFunction = (info: BRepGeometryInfo) => void
+alpha;BRepGeometryInfo
+alpha;BRepGeometryOperation
+alpha;BRepHollowProps
 public;BRepPrimitive
-internal;BriefcaseDownloader
-internal;BriefcaseKey = string
-internal;BriefcaseProps 
+alpha;BRepRoundProps
+alpha;BRepThickenProps
+beta;BriefcaseDownloader
+beta;BriefcaseProps
 beta;calculateSolarAngles(date: Date, location: Cartographic):
 beta;calculateSolarDirection(date: Date, location: Cartographic): Vector3d
 beta;calculateSolarDirectionFromAngles(azimuthElevation:
@@ -55,6 +62,8 @@ public;ChangeOpCode
 alpha;ChannelConstraintError 
 public;ChannelRootAspectProps 
 internal;ClassifierTileTreeId
+beta;ClipStyle
+beta;ClipStyleProps
 beta;class CloudStorageCache
 beta;CloudStorageContainerDescriptor
 beta;CloudStorageContainerUrl
@@ -87,6 +96,8 @@ internal;CURRENT_INVOCATION: unique symbol
 internal;CURRENT_REQUEST: unique symbol
 internal;CurrentImdlVersion
 beta;CustomAttribute
+beta;CutStyle
+beta;CutStyleProps
 beta;DecorationGeometryProps
 alpha;defaultDesktopAuthorizationClientExpiryBuffer: number
 alpha;defaultMobileAuthorizationClientExpiryBuffer: number
@@ -108,7 +119,6 @@ public;DisplayStyleSettings
 public;DisplayStyleSettingsProps
 public;DisplayStyleSubCategoryProps 
 beta;DomainOptions
-beta;DownloadBriefcaseOptions
 internal;DownloadBriefcaseStatus
 beta;DPoint2dProps = number[]
 beta;Easing:
@@ -156,10 +166,12 @@ public;Feature
 public;FeatureAppearance 
 public;FeatureAppearanceProps
 beta;FeatureAppearanceProvider
+beta;FeatureAppearanceProvider
+public;FeatureAppearanceSource
 internal;FeatureGates
 internal;FeatureIndex
 internal;FeatureIndexType
-public;FeatureOverrides
+public;FeatureOverrides 
 beta;FeatureTable 
 internal;FeatureTableHeader
 public;FilePropertyProps
@@ -254,12 +266,14 @@ internal;IModelEventSourceProps
 public;IModelNotFoundResponse 
 public;IModelProps
 internal;class IModelReadRpcInterface 
-public;IModelRpcProps
+public;IModelRpcOpenProps
+public;IModelRpcProps 
 public;class IModelTileRpcInterface 
 internal;IModelTileTreeId = PrimaryTileTreeId | ClassifierTileTreeId
 internal;iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTileTreeId, options: TileOptions): string
 internal;IModelTileTreeProps 
 public;IModelVersion
+public;IModelVersionProps
 internal;class IModelWriteRpcInterface 
 public;InformationPartitionElementProps 
 internal;initializeRpcRequest: () => void
@@ -279,6 +293,7 @@ public;LinePixels
 public;LineStyle
 beta;LineStyleProps 
 public;LocalAlignedBox3d = Range3d
+beta;LocalBriefcaseProps
 alpha;MapImageryProps
 alpha;MapImagerySettings
 beta;MapLayerKey
@@ -341,6 +356,8 @@ internal;OpenAPIResponse
 internal;OpenAPIResponses
 internal;OpenAPISchema
 beta;OpenBriefcaseOptions
+beta;OpenBriefcaseProps 
+public;OpenDbKey
 internal;OPERATION: unique symbol
 alpha;OrbitGtBlobProps
 internal;OverriddenBy
@@ -397,7 +414,7 @@ beta;RenderSchedule
 beta;class RenderTexture 
 beta;RenderTexture
 public;RepositoryLinkProps 
-internal;RequestBriefcaseProps
+beta;RequestNewBriefcaseProps
 public;ResponseLike 
 public;RgbColor
 public;RgbColorProps
@@ -461,6 +478,7 @@ public;RpcSerializedValue
 public;RpcSerializedValue
 beta;SectionDrawingLocationProps 
 beta;SectionDrawingProps 
+beta;SectionDrawingViewProps
 alpha;SectionLocationProps 
 public;SectionType
 public;SerializedRpcOperation
@@ -487,6 +505,7 @@ public;SourceAndTarget
 beta;SpatialClassificationProps
 public;SpatialViewDefinitionProps 
 internal;class StandaloneIModelRpcInterface 
+beta;StandaloneOpenOptions = OpenDbKey & UpgradeOptions
 internal;StorageValue = string | number | boolean | null | Uint8Array
 public;SubCategoryAppearance
 public;SubCategoryAppearance

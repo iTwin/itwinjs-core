@@ -105,7 +105,7 @@ describe("FavoritePropertiesDataFilterer", () => {
       favoritesScope: FavoritePropertiesScope.Global,
       isActive: true,
     });
-    const matchResult = await filterer.matchesFilter(record, []);
+    const matchResult = await filterer.recordMatchesFilter(record, []);
     managerMock.verifyAll();
     expect(matchResult).to.deep.eq({ matchesFilter: true, shouldExpandNodeParents: true });
   });
@@ -153,11 +153,15 @@ describe("FavoritePropertiesDataFilterer", () => {
     for (const record of recordsToTest) {
       const recordType = PropertyValueFormat[record.value.valueFormat];
       it(`Should always match propertyRecord (type: ${recordType})`, async () => {
-        const matchResult = await filterer.matchesFilter(record, []);
+        const matchResult = await filterer.recordMatchesFilter(record, []);
         expect(matchResult).to.deep.eq({ matchesFilter: true });
       });
     }
 
+    it(`Should always return 'matchesFilter: true' when calling categoryMatchesFilter`, async () => {
+      const matchResult = await filterer.categoryMatchesFilter();
+      expect(matchResult).to.deep.eq({ matchesFilter: true });
+    });
   });
 
   describe("when filtering is enabled", () => {
@@ -184,28 +188,28 @@ describe("FavoritePropertiesDataFilterer", () => {
 
       it(`Should not match propertyRecord when getFieldByPropertyRecord cannot find record field (type: ${recordType})`, async () => {
         matchingField = undefined;
-        const matchResult = await filterer.matchesFilter(record, []);
+        const matchResult = await filterer.recordMatchesFilter(record, []);
         expect(matchResult).to.deep.eq({ matchesFilter: false });
       });
 
       it(`Should not match propertyRecord when record is not favorite and has no parents (type: ${recordType})`, async () => {
         isFavoriteStub.returns(false);
         matchingField = createRandomPrimitiveField();
-        const matchResult = await filterer.matchesFilter(record, []);
+        const matchResult = await filterer.recordMatchesFilter(record, []);
         expect(matchResult).to.deep.eq({ matchesFilter: false });
       });
 
       it(`Should not match propertyRecord when record is not favorite and has non favorite parents (type: ${recordType})`, async () => {
         isFavoriteStub.returns(false);
         matchingField = createRandomPrimitiveField();
-        const matchResult = await filterer.matchesFilter(record, [createStructProperty("Struct"), createArrayProperty("Array")]);
+        const matchResult = await filterer.recordMatchesFilter(record, [createStructProperty("Struct"), createArrayProperty("Array")]);
         expect(matchResult).to.deep.eq({ matchesFilter: false });
       });
 
       it(`Should match propertyRecord when record is favorite and has no parents (type: ${recordType})`, async () => {
         isFavoriteStub.returns(true);
         matchingField = createRandomPrimitiveField();
-        const matchResult = await filterer.matchesFilter(record, []);
+        const matchResult = await filterer.recordMatchesFilter(record, []);
         expect(matchResult).to.deep.eq({ matchesFilter: true, shouldExpandNodeParents: true });
       });
 
@@ -222,9 +226,15 @@ describe("FavoritePropertiesDataFilterer", () => {
         isFavoriteStub.returns(false);
         isFavoriteStub.withArgs(favoriteParentField, sinon.match.any, sinon.match.any).returns(true);
 
-        const matchResult = await filterer.matchesFilter(record, [favoriteParentRecord]);
+        const matchResult = await filterer.recordMatchesFilter(record, [favoriteParentRecord]);
         expect(matchResult).to.deep.eq({ matchesFilter: true });
       });
     }
+
+    it("Should not match when calling `categoryMatchesFilter`", async () => {
+      const matchResult = await filterer.categoryMatchesFilter();
+      expect(matchResult).to.deep.eq({ matchesFilter: false });
+    });
+
   });
 });
