@@ -2819,7 +2819,7 @@ export class IModelImporter {
     progressInterval: number;
     simplifyElementGeometry: boolean;
     readonly targetDb: IModelDb;
-    }
+}
 
 // @beta
 export interface IModelImportOptions {
@@ -3545,9 +3545,9 @@ export class RepositoryModel extends DefinitionModel {
 }
 
 // @beta
-export type RequestNewBriefcaseArg = RequestNewBriefcaseProps & {
+export interface RequestNewBriefcaseArg extends RequestNewBriefcaseProps {
     onProgress?: ProgressFunction;
-};
+}
 
 // @public
 export abstract class RoleElement extends Element {
