@@ -15,15 +15,13 @@ export interface CommandMethodProps<T> {
     name: string;
 }
 
-// @alpha
-export type CommandResult<T> = {
+// @alpha (undocumented)
+export interface CommandResult<T> {
+    // (undocumented)
+    error?: CommandError;
+    // (undocumented)
     result?: T;
-    error?: never;
-} | {
-    error: CommandError;
-    details?: any;
-    result?: never;
-};
+}
 
 // @alpha (undocumented)
 export const editCommandApi: {
@@ -47,8 +45,6 @@ export interface StartCommandProps<T> {
     args?: T;
     // (undocumented)
     commandId: string;
-    // (undocumented)
-    iModelKey: string;
 }
 
 
