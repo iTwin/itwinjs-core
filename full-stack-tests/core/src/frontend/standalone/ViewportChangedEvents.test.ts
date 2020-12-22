@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { BeDuration, Id64, Id64Arg, Id64String } from "@bentley/bentleyjs-core";
-import { ColorDef, SubCategoryOverride, ViewFlags } from "@bentley/imodeljs-common";
+import { ClipStyle, ColorDef, SubCategoryOverride, ViewFlags } from "@bentley/imodeljs-common";
 import {
   ChangeFlag, FeatureSymbology, MockRender, PerModelCategoryVisibility, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId, Viewport,
 } from "@bentley/imodeljs-frontend";
@@ -154,6 +154,9 @@ describe("Viewport changed events", async () => {
         newStyle.backgroundColor = ColorDef.red;
         vp.displayStyle = newStyle;
       });
+
+      // Change ClipStyle
+      mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.RenderPlan, () => vp.clipStyle = ClipStyle.fromJSON({ cutStyle: { appearance: { weight: 12 } } }));
 
       // Modify view flags through Viewport's displayStyle property.
       vp.saveViewUndo();
