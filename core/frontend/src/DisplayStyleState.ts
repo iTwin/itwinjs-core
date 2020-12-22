@@ -773,7 +773,7 @@ export class DisplayStyle2dState extends DisplayStyleState {
   constructor(props: DisplayStyleProps, iModel: IModelConnection) {
     super(props, iModel);
     this._settings = new DisplayStyleSettings(this.jsonProperties);
-    this._settings.onOverridesApplied.addListener((_, overrides) => this.onOverridesApplied(overrides));
+    this._settings.onApplyOverrides.addListener((overrides) => this.onOverridesApplied(overrides));
   }
 }
 
@@ -1126,7 +1126,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
   public constructor(props: DisplayStyleProps, iModel: IModelConnection) {
     super(props, iModel);
     this._settings = new DisplayStyle3dSettings(this.jsonProperties);
-    this._settings.onOverridesApplied.addListener((_, overrides) => this.onOverridesApplied(overrides));
+    this._settings.onApplyOverrides.addListener((overrides) => this.onOverridesApplied(overrides));
   }
 
   /** The [[SkyBox]] and [[GroundPlane]] settings for this style. */

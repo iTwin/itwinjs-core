@@ -365,8 +365,10 @@ export class DisplayStyleSettings {
   private _analysisStyle?: AnalysisStyle;
   private _clipStyle: ClipStyle;
 
-  /** @internal */
-  public readonly onOverridesApplied = new BeEvent<(settings: DisplayStyleSettings, overrides: DisplayStyleSettingsProps) => void>();
+  /** Event raised by [[applyOverrides]] just before the overrides are applied.
+   * @beta
+   */
+  public readonly onApplyOverrides = new BeEvent<(overrides: Readonly<DisplayStyleSettingsProps>) => void>();
   /** Event raised just prior to assignment to the [[viewFlags]] property. */
   public readonly onViewFlagsChanged = new BeEvent<(newFlags: Readonly<ViewFlags>) => void>();
   /** Event raised just prior to assignment to the [[backgroundColor]] property. */
@@ -489,8 +491,6 @@ export class DisplayStyleSettings {
     }
   }
   /** The ViewFlags associated with the display style.
-   * @note If the style is associated with a [[ViewState]] attached to a [[Viewport]], use [[ViewState.viewFlags]] to modify the ViewFlags to ensure
-   * the changes are promptly visible on the screen.
    * @note Do not modify the ViewFlags in place. Clone them and pass the clone to the setter.
    */
   public get viewFlags(): ViewFlags { return this._viewFlags; }
@@ -613,8 +613,6 @@ export class DisplayStyleSettings {
   /** Customize the way geometry belonging to a [[SubCategory]] is drawn by this display style.
    * @param id The ID of the SubCategory whose appearance is to be overridden.
    * @param ovr The overrides to apply to the [[SubCategoryAppearance]].
-   * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[Viewport.overrideSubCategory]] to ensure
-   * the changes are promptly visible on the screen.
    * @see [[dropSubCategoryOverride]]
    */
   public overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void {
@@ -623,8 +621,6 @@ export class DisplayStyleSettings {
 
   /** Remove any [[SubCategoryOverride]] applied to a [[SubCategoryAppearance]] by this style.
    * @param id The ID of the [[SubCategory]].
-   * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[Viewport.dropSubCategoryOverride]] to ensure
-   * the changes are promptly visible on the screen.
    * @see [[overrideSubCategory]]
    */
   public dropSubCategoryOverride(id: Id64String): void {
@@ -653,8 +649,6 @@ export class DisplayStyleSettings {
   /** Customize the way a [[Model]]  is drawn by this display style.
    * @param modelId The ID of the [[model]] whose appearance is to be overridden.
    * @param ovr The overrides to apply to the [[Model]].
-   * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[Viewport.overrideModelAppearance]] to ensure
-   * the changes are promptly visible on the screen.
    * @see [[dropModelAppearanceOverride]]
    */
   public overrideModelAppearance(modelId: Id64String, ovr: FeatureAppearance): void {
@@ -664,8 +658,6 @@ export class DisplayStyleSettings {
   /** Remove any appearance overrides applied to a [[Model]] by this style.
    * @param modelId The ID of the [[Model]].
    * @param ovr The overrides to apply to the [[Model]].
-   * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[Viewport.dropModelAppearanceOverride]] to ensure
-   * the changes are promptly visible on the screen.
    * @see [[overrideModelAppearance]]
    */
   public dropModelAppearanceOverride(id: Id64String): void {
@@ -833,16 +825,11 @@ export class DisplayStyleSettings {
    *  }
    * ```
    * @see [[toOverrides]] to produce overrides from an existing DisplayStyleSettings.
-   * @note If these settings are associated with a [Viewport]($frontend), prefer to use [Viewport.overrideDisplayStyle]($frontend) to ensure the viewport's contents are automatically updated.
    * @beta
    */
   public applyOverrides(overrides: DisplayStyleSettingsProps): void {
-    this._applyOverrides(overrides);
-    this.onOverridesApplied.raiseEvent(this, overrides);
-  }
+    this.onApplyOverrides.raiseEvent(overrides);
 
-  /** @internal */
-  protected _applyOverrides(overrides: DisplayStyleSettingsProps): void {
     if (overrides.viewflags) {
       this.viewFlags = ViewFlags.fromJSON({
         ...this.viewFlags.toJSON(),
@@ -1120,7 +1107,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
    * @beta
    */
   public applyOverrides(overrides: DisplayStyle3dSettingsProps): void {
-    super._applyOverrides(overrides);
+    super.applyOverrides(overrides);
 
     if (overrides.environment)
       this.environment = { ...overrides.environment };
@@ -1144,8 +1131,6 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
 
     if (overrides.thematic)
       this.thematic = ThematicDisplay.fromJSON(overrides.thematic);
-
-    this.onOverridesApplied.raiseEvent(this, overrides);
   }
 
   /** The settings that control thematic display.
