@@ -260,7 +260,7 @@ export class BriefcaseManager {
 
   /** Download a new briefcase from iModelHub for the supplied iModelId.
    *
-   * The process of downloading a briefcase file involves first obtaining a valid BriefcaseId from IModelHub. For each IModelId, IModelHub maintains
+   * The process of downloading a briefcase file involves first obtaining a valid BriefcaseId from IModelHub. For each IModel, IModelHub maintains
    * a list of BriefcaseIds assigned to users, to ensure that no two users have the same BriefcaseId. Typically a given user will have only
    * one briefcase on their machine for a given iModelId. Rarely, it may be necessary to use more than one briefcase to make isolated independent sets of changes,
    * but that is exceedingly complicated and rare. If no BriefcaseId is supplied, a new one is acquired from iModelHub.
