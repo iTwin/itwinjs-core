@@ -954,17 +954,39 @@ export class QuantityFormatter implements UnitsProvider {
     await this.loadFormatAndParsingMapsForSystem(useImperial ? "imperial" : "metric");
   }
 
+  /** Get string that matches PresentationUnitSystem enum.
+   * Note: The enum is not used in this package to avoid dependency on Presentation package. The exact
+   * strings are not used between packages because hyphenated names cannot be used as object keys.
+   */
+  public getPresentationUnitSystemString(unitSystemKey: UnitSystemKey): string {
+    switch (unitSystemKey) {
+      case "metric":
+        return "metric";
+      case "imperial":
+        return "british-imperial";
+      case "usCustomary":
+        return "us-customary";
+      case "usSurvey":
+        return "us-survey";
+    }
+  }
+
+  /** Get a UnitSystemKey from a string that may have been entered via a key-in. Support different variation of unit system names.
+   */
   public getUnitSystemFromString(inputSystem: string, fallback?: UnitSystemKey): UnitSystemKey {
     switch (inputSystem.toLowerCase()) {
       case "metric":
       case "si":
         return "metric";
       case "imperial":
+      case "british-imperial":
         return "imperial";
       case "uscustomary":
+      case "us-customary":
       case "us":
         return "usCustomary";
       case "ussurvey":
+      case "us-survey":
       case "survey":
         return "usSurvey";
       default:
