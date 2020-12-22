@@ -2819,7 +2819,7 @@ export class IModelImporter {
     progressInterval: number;
     simplifyElementGeometry: boolean;
     readonly targetDb: IModelDb;
-}
+    }
 
 // @beta
 export interface IModelImportOptions {
