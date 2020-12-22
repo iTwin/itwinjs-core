@@ -6530,7 +6530,6 @@ export class QuantityFormatter implements UnitsProvider {
     getQuantityTypeKey(type: QuantityTypeArg): string;
     protected getUnitByQuantityType(type: QuantityType): Promise<UnitProps>;
     getUnitsByFamily(unitFamily: string): Promise<UnitProps[]>;
-    // (undocumented)
     getUnitSystemFromString(inputSystem: string, fallback?: UnitSystemKey): UnitSystemKey;
     // (undocumented)
     hasActiveOverride(type: QuantityTypeArg, checkOnlyActiveUnitSystem?: boolean): boolean;
