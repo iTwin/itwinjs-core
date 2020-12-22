@@ -17,7 +17,7 @@
     "cover": "",
     "extract-api": "betools extract-api --entry=projectshare-client",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/clients/projectshare-client/file.json --tsIndexFile=projectshare-client.ts --onlyJson",
-    "lint": "eslint -f visualstudio ./src/**/*.ts 1>&2",
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "",
     "test:integration": "npm run webpackTests && npm run test:integration:chrome",
     "test:integration:chrome": "certa -r chrome --grep \"#integration\"",

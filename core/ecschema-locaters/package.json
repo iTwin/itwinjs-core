@@ -14,7 +14,7 @@
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "extract-api": "betools extract-api --entry=ecschema-locaters",
-    "lint": "eslint -f visualstudio ./src/**/*.ts 1>&2",
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "betools test-tsnode --testDir=./test/",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/ecschema-locaters/file.json --tsIndexFile=./ecschema-locaters.ts --onlyJson",
     "cover": "nyc npm test",
