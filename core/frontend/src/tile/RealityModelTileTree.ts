@@ -465,7 +465,7 @@ export namespace RealityModelTileTree {
       // This would work well only for tilesets published from that iModel but for iModels the ecef transform is calculated
       // at the center of the project extents and the reality model location may differ greatly, and the curvature of the earth
       // could introduce significant errors.
-      // The publishing was modified to calculate the ecef transform at the reality model range center and at the same time the "iModelVersion"
+      // The publishing was modified to calculate the ecef transform at the reality model range center and at the same time the "iModelPublishVersion"
       // member was added to the root object.  In order to continue to locate reality models published from older versions at the
       // project extents center we look for Tileset version 0.0 and no root.iModelVersion.
       if (json.asset?.version !== "0.0" || undefined !== json.root?.iModelPublishVersion) {
