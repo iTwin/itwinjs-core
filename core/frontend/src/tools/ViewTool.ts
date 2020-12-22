@@ -30,7 +30,9 @@ import { Animator, ViewChangeOptions } from "../ViewAnimation";
 import { CoordSystem } from "../CoordSystem";
 import { DepthPointSource, ScreenViewport, Viewport } from "../Viewport";
 import { ViewRect } from "../ViewRect";
-import { ViewPose, ViewState3d, ViewStatus } from "../ViewState";
+import { ViewPose } from "../ViewPose";
+import { ViewStatus } from "../ViewStatus";
+import { ViewState3d } from "../ViewState";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
 import { PrimitiveTool } from "./PrimitiveTool";
 import {

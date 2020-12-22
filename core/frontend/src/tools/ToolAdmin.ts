@@ -22,7 +22,7 @@ import { DecorateContext, DynamicsContext } from "../ViewContext";
 import { linePlaneIntersect } from "../LinePlaneIntersect";
 import { ViewChangeOptions } from "../ViewAnimation";
 import { ScreenViewport, Viewport } from "../Viewport";
-import { ViewStatus } from "../ViewState";
+import { ViewStatus } from "../ViewStatus";
 import { IdleTool } from "./IdleTool";
 import { PrimitiveTool } from "./PrimitiveTool";
 import {

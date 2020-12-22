@@ -10,7 +10,8 @@ import { Angle, Geometry, Matrix3d, Range3d, Transform, Vector3d } from "@bentle
 import { Tweens } from "@bentley/imodeljs-common";
 import { Animator, ViewAnimationOptions } from "./ViewAnimation";
 import { ScreenViewport } from "./Viewport";
-import { ViewPose, ViewPose3d, ViewState3d } from "./ViewState";
+import { ViewPose, ViewPose3d } from "./ViewPose";
+import { ViewState3d } from "./ViewState";
 
 /** Object to animate a Frustum transition of a viewport. The [[Viewport]] will show as many frames as necessary during the supplied duration.
  * @internal

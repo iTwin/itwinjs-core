@@ -7,7 +7,8 @@
  */
 
 import { EasingFunction } from "@bentley/imodeljs-common";
-import { MarginPercent, ViewStatus } from "./ViewState";
+import { ViewStatus } from "./ViewStatus";
+import { MarginPercent } from "./MarginPercent";
 
 /** An object to animate a transition of a [[Viewport]].
  * Only one animator may be associated with a viewport at a time. Registering a new
