@@ -141,8 +141,8 @@ describe("Viewport changed events", async () => {
       newFlags.constructions = !newFlags.constructions;
       mon.expect(ChangeFlag.DisplayStyle, ViewportState.RenderPlan, () => vp.viewFlags = newFlags);
 
-      // No event if modify display style directly.
-      mon.expect(ChangeFlag.None, undefined, () => {
+      // Modifying the style's properties directly also produces an event.
+      mon.expect(ChangeFlag.DisplayStyle, ViewportState.RenderPlan, () => {
         vp.displayStyle.backgroundColor = ColorDef.red;
         vp.displayStyle.viewFlags = new ViewFlags();
       });

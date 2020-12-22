@@ -1117,7 +1117,6 @@ export abstract class Viewport implements IDisposable {
   private attachToView(): void {
     const view = this.view;
 
-    /* ###TODO WIP
     const style = view.displayStyle.settings;
     const chain = this._detachFromView;
 
@@ -1133,7 +1132,7 @@ export abstract class Viewport implements IDisposable {
 
     const renderPlanChanged = () => {
       this.invalidateRenderPlan();
-    });
+    };
 
     const maybeInvalidateScene = () => {
       this.maybeInvalidateScene();
@@ -1143,11 +1142,11 @@ export abstract class Viewport implements IDisposable {
     chain.append(style.onAnalysisFractionChanged.addListener(() => {
       this._analysisFractionValid = false;
       IModelApp.requestNextAnimation();
-    });
+    }));
     chain.append(style.onTimePointChanged.addListener(() => {
       this._timePointValid = false;
       IModelApp.requestNextAnimation();
-    });
+    }));
     chain.append(style.onViewFlagsChanged.addListener((vf) => {
       if (vf.backgroundMap !== this.viewFlags.backgroundMap)
         this.invalidateController();
@@ -1155,7 +1154,7 @@ export abstract class Viewport implements IDisposable {
         this.invalidateRenderPlan();
 
       this._changeFlags.setDisplayStyle();
-    });
+    }));
     // ###TODO displayStyle
     chain.append(style.onSubCategoryOverridesChanged.addListener(styleAndOverridesChanged));
     chain.append(style.onModelAppearanceOverrideChanged.addListener(styleAndOverridesChanged));
@@ -1175,12 +1174,12 @@ export abstract class Viewport implements IDisposable {
       this._analysisFractionValid = false;
       this._changeFlags.setDisplayStyle();
       IModelApp.requestNextAnimation();
-    });
+    }));
     chain.append(style.onExcludedElementsChanged.addListener(() => {
       this._changeFlags.setDisplayStyle();
       this.maybeInvalidateScene();
       this.setFeatureOverrideProviderChanged();
-    });
+    }));
     // ###TODO view ClipVector
     // ###TODO view ModelClipGroups
 
@@ -1193,7 +1192,6 @@ export abstract class Viewport implements IDisposable {
       chain.append(style.onEnvironmentChanged.addListener(displayStyleChanged));
       chain.append(style.onPlanProjectionSettingsChanged.addListener(displayStyleChanged));
     }
-    */
 
     view.attachToViewport(this);
   }
