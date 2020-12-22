@@ -9,7 +9,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json coverage",
     "cover": "npm test",
     "docs": "",
-    "lint": "eslint -f visualstudio ./src/**/*.ts 1>&2",
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "npm run test:chrome && npm run test:electron",
     "test:chrome": "certa -r chrome -b ./lib/backend/http.js",
     "test:electron": "certa -r electron -b ./lib/backend/electron.js",
