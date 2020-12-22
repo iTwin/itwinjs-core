@@ -35,7 +35,8 @@ import { TileTreeReference, TileTreeSet } from "./tile/internal";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { areaToEyeHeight, areaToEyeHeightFromGcs, GlobalLocation } from "./ViewGlobalLocation";
 import { ViewingSpace } from "./ViewingSpace";
-import { ViewChangeOptions, Viewport } from "./Viewport";
+import { ViewChangeOptions } from "./ViewAnimation";
+import { Viewport } from "./Viewport";
 import { DrawingViewState } from "./DrawingViewState";
 import { SpatialViewState } from "./SpatialViewState";
 

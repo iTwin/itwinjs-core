@@ -21,7 +21,8 @@ import { StandardViewId } from "./StandardView";
 import { BeButton, BeButtonEvent, CoordinateLockOverrides, InputCollector, InputSource } from "./tools/Tool";
 import { ViewTool } from "./tools/ViewTool";
 import { DecorateContext } from "./ViewContext";
-import { linePlaneIntersect, ScreenViewport, Viewport } from "./Viewport";
+import { linePlaneIntersect } from "./LinePlaneIntersect";
+import { ScreenViewport, Viewport } from "./Viewport";
 import { ViewState } from "./ViewState";
 
 // cspell:ignore dont primitivetools

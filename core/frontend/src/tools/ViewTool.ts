@@ -26,7 +26,9 @@ import { DecorateContext } from "../ViewContext";
 import {
   eyeToCartographicOnGlobeFromGcs, GlobalLocation, queryTerrainElevationOffset, rangeToCartographicArea, viewGlobalLocation, ViewGlobalLocationConstants,
 } from "../ViewGlobalLocation";
-import { Animator, CoordSystem, DepthPointSource, ScreenViewport, ViewChangeOptions, Viewport } from "../Viewport";
+import { Animator, ViewChangeOptions } from "../ViewAnimation";
+import { CoordSystem } from "../CoordSystem";
+import { DepthPointSource, ScreenViewport, Viewport } from "../Viewport";
 import { ViewRect } from "../ViewRect";
 import { ViewPose, ViewState3d, ViewStatus } from "../ViewState";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
