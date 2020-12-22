@@ -685,7 +685,7 @@ it("SingleFaceTriangulation", () => {
 /**
  *
  */
-it.only("SingleFaceTriangulation", () => {
+it("SingleFaceTriangulation", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
   const outerCurvePts = [
