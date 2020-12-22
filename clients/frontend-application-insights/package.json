@@ -18,7 +18,7 @@
     "test": "",
     "extract-api": "betools extract-api --entry=frontend-application-insights-client",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/clients/frontend-application-insights-client/file.json --tsIndexFile=frontend-application-insights-client.ts --onlyJson",
-    "lint": "eslint -f visualstudio ./src/**/*.ts 1>&2"
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2"
   },
   "keywords": [
     "Bentley",

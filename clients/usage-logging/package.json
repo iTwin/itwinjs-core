@@ -17,7 +17,7 @@
     "cover": "",
     "extract-api": "betools extract-api --entry=usage-logging-client",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/clients/usage-logging-client/file.json --tsIndexFile=usage-logging-client.ts --onlyJson",
-    "lint": "eslint -f visualstudio ./src/**/*.ts 1>&2",
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "",
     "test:integration": "npm run webpackTests && npm run test:integration:chrome",
     "test:integration:chrome": "certa -r chrome --grep \"#integration\"",

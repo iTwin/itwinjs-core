@@ -15,7 +15,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "npm run extract",
     "extract": "betools extract --fileExt=ts --extractFrom=./src --recursive --out=../../generated-docs/extract",
-    "lint": "eslint -f visualstudio ./src/**/*.ts 1>&2",
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "cross-env NODE_ENV=development mocha --opts ./mocha.opts \"./lib/**/*.js\" --grep \"#with-services\" --invert",
     "test:integration": "mocha --opts ./mocha.opts \"./lib/**/*.js\" --grep \"#with-services\"",
     "cover": "npm run test"
