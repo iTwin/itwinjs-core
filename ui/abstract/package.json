@@ -18,7 +18,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "nyc npm test",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/ui/ui-abstract/file.json --tsIndexFile=./ui-abstract.ts --onlyJson",
-    "lint": "eslint -f visualstudio ./src/**/*.{ts,tsx} 1>&2",
+    "lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",
     "extract-api": "betools extract-api --entry=ui-abstract",
     "test": "mocha --opts ../mocha.opts \"./lib/test/**/*.test.js\"",
     "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"

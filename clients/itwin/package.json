@@ -12,7 +12,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "extract-api": "betools extract-api --entry=itwin-client",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/itwin-client/file.json --tsIndexFile=itwin-client.ts --onlyJson",
-    "lint": "eslint -f visualstudio ./src/**/*.ts 1>&2",
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "betools test --offline=\"mock\"",
     "cover": "nyc npm test"
   },

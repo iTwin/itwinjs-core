@@ -16,7 +16,7 @@
     "cover": "",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/clients/extension-client/file.json --tsIndexFile=./extension-client.ts --onlyJson",
     "extract-api": "betools extract-api --entry=extension-client",
-    "lint": "eslint -f visualstudio ./src/**/*.ts 1>&2",
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "",
     "test:integration": "npm run webpackTests && npm run test:integration:chrome",
     "test:integration:chrome": "certa -r chrome",

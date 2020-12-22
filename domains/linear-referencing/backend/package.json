@@ -15,7 +15,7 @@
     "cover": "nyc npm test",
     "docs": "betools docs --includes=../../../generated-docs/extract --json=../../../generated-docs/domains/linear-referencing-backend/file.json --tsIndexFile=./linear-referencing-backend.ts --onlyJson",
     "extract-api": "betools extract-api --entry=linear-referencing-backend",
-    "lint": "eslint -f visualstudio ./src/**/*.ts 1>&2",
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "betools test"
   },
   "repository": {

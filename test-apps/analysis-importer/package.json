@@ -6,7 +6,7 @@
   "scripts": {
     "compile": "npm run build",
     "build": "tsc 1>&2 && npm run extract-assets",
-    "lint": "eslint -f visualstudio ./src/**/*.ts 1>&2",
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json ../../generated-docs",
     "extract-assets": "cpx assets/**/*  lib/assets/",
     "test": "",
