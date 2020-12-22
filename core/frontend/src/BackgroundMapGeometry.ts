@@ -363,6 +363,8 @@ export class BackgroundMapGeometry {
     }
   }
 }
+
+/** @internal */
 export async function calculateEcefToDbTransformAtLocation(originIn: Point3d, iModel: IModelConnection): Promise<Transform | undefined> {
   const geoConverter = iModel.noGcsDefined ? undefined : iModel.geoServices.getConverter("WGS84");
   if (geoConverter === undefined)
