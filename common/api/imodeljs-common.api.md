@@ -1787,8 +1787,38 @@ export class DisplayStyleSettings {
     set monochromeColor(color: ColorDef);
     get monochromeMode(): MonochromeMode;
     set monochromeMode(mode: MonochromeMode);
+    readonly onAmbientOcclusionSettingsChanged: BeEvent<(newSettings: AmbientOcclusion.Settings) => void>;
+    // @alpha
+    readonly onAnalysisFractionChanged: BeEvent<(newFraction: number) => void>;
+    // @alpha
+    readonly onAnalysisStyleChanged: BeEvent<(newStyle: Readonly<AnalysisStyle> | undefined) => void>;
+    readonly onBackgroundColorChanged: BeEvent<(newColor: ColorDef) => void>;
+    readonly onBackgroundMapChanged: BeEvent<(newMap: BackgroundMapSettings) => void>;
+    // @beta
+    readonly onClipStyleChanged: BeEvent<(newStyle: ClipStyle) => void>;
+    // @internal
+    readonly onEnvironmentChanged: BeEvent<(newProps: Readonly<EnvironmentProps>) => void>;
+    readonly onExcludedElementsChanged: BeEvent<() => void>;
+    readonly onHiddenLineSettingsChanged: BeEvent<(newSettings: HiddenLine.Settings) => void>;
+    readonly onLightsChanged: BeEvent<(newLights: LightSettings) => void>;
+    // @alpha
+    readonly onMapImageryChanged: BeEvent<(newImagery: Readonly<MapImagerySettings>) => void>;
+    readonly onModelAppearanceOverrideChanged: BeEvent<(modelId: string, newAppearance: FeatureAppearance | undefined) => void>;
+    readonly onMonochromeColorChanged: BeEvent<(newColor: ColorDef) => void>;
+    readonly onMonochromeModeChanged: BeEvent<(newMode: MonochromeMode) => void>;
     // @internal (undocumented)
     readonly onOverridesApplied: BeEvent<(settings: DisplayStyleSettings, overrides: DisplayStyleSettingsProps) => void>;
+    // @beta
+    readonly onPlanProjectionSettingsChanged: BeEvent<(modelId: string, newSettings: PlanProjectionSettings | undefined) => void>;
+    // @internal
+    readonly onScheduleScriptPropsChanged: BeEvent<(newProps: readonly RenderSchedule.ModelTimelineProps[] | undefined) => void>;
+    readonly onSolarShadowsChanged: BeEvent<(newSettings: SolarShadowSettings) => void>;
+    readonly onSubCategoryOverridesChanged: BeEvent<() => void>;
+    // @beta
+    readonly onThematicChanged: BeEvent<(newThematic: ThematicDisplay) => void>;
+    // @beta
+    readonly onTimePointChanged: BeEvent<(newTimePoint: number | undefined) => void>;
+    readonly onViewFlagsChanged: BeEvent<(newFlags: Readonly<ViewFlags>) => void>;
     overrideModelAppearance(modelId: Id64String, ovr: FeatureAppearance): void;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     // @internal (undocumented)
