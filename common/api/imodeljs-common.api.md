@@ -4219,7 +4219,7 @@ export type LocalAlignedBox3d = Range3d;
 // @beta
 export interface LocalBriefcaseProps {
     briefcaseId: number;
-    changesetId: GuidString;
+    changeSetId: GuidString;
     contextId: GuidString;
     fileName: string;
     iModelId: GuidString;
@@ -4656,7 +4656,7 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
     checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
     closeBriefcase(_key: string): Promise<void>;
     deleteBriefcaseFiles(_fileName: string): Promise<void>;
-    downloadBriefcase(_requestProps: RequestNewBriefcaseProps, _reportProgress: boolean): Promise<void>;
+    downloadBriefcase(_requestProps: RequestNewBriefcaseProps, _reportProgress: boolean): Promise<LocalBriefcaseProps>;
     getBriefcaseFileName(_props: BriefcaseProps): Promise<string>;
     getCachedBriefcases(_iModelId?: GuidString): Promise<LocalBriefcaseProps[]>;
     static getClient(): NativeAppRpcInterface;
@@ -6504,10 +6504,18 @@ export interface SectionDrawingProps extends ElementProps {
     jsonProperties?: {
         drawingToSpatialTransform?: TransformProps;
         sheetToSpatialTransform?: TransformProps;
-        drawingBoundaryClip?: any;
+        drawingBoundaryClip?: ClipVectorProps;
+        displaySpatialView?: true;
     };
     sectionType?: SectionType;
     spatialView?: RelatedElementProps;
+}
+
+// @beta
+export interface SectionDrawingViewProps {
+    displaySpatialView: boolean;
+    drawingToSpatialTransform?: TransformProps;
+    spatialView: Id64String;
 }
 
 // @alpha @deprecated
@@ -7599,7 +7607,7 @@ export interface ViewAttachmentProps extends GeometricElement2dProps {
     // (undocumented)
     jsonProperties?: {
         displayPriority?: number;
-        clip?: any;
+        clip?: ClipVectorProps;
         displayOptions?: {
             drawAsRaster?: boolean;
             preserveBackground?: boolean;
@@ -7985,6 +7993,8 @@ export interface ViewStateProps {
     modelExtents?: Range3dProps;
     // (undocumented)
     modelSelectorProps?: ModelSelectorProps;
+    // @beta
+    sectionDrawing?: SectionDrawingViewProps;
     // @beta (undocumented)
     sheetAttachments?: Id64Array;
     // @beta (undocumented)

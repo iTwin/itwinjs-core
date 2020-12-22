@@ -389,6 +389,7 @@ beta;SceneContext
 internal;SceneVolumeClassifier
 public;ScreenViewport 
 public;ScrollViewTool 
+internal;SectionDrawingInfo
 public;SectionDrawingModelState 
 public;SelectAddEvent
 internal;SelectedAndReadyTiles
@@ -560,5 +561,7 @@ public;WindowAreaTool
 internal;WmsCapabilities
 internal;WmsCapability
 internal;WmsUtilities
+internal;WmtsCapabilities
+internal;WmtsCapability
 public;ZoomToOptions
 public;ZoomViewTool 
