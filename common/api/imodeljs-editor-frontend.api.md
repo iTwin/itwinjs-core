@@ -5,6 +5,7 @@
 ```ts
 
 import { CommandResult } from '@bentley/imodeljs-editor-common';
+import { IModelConnection } from '@bentley/imodeljs-frontend';
 import { PrimitiveTool } from '@bentley/imodeljs-frontend';
 
 // @alpha (undocumented)
@@ -14,7 +15,7 @@ export class EditTool extends PrimitiveTool {
     // (undocumented)
     onRestartTool(): void;
     // (undocumented)
-    static startCommand<Arg, Result>(commandId: string, args?: Arg): Promise<CommandResult<Result>>;
+    static startCommand<Arg, Result>(commandId: string, connection: IModelConnection, args?: Arg): Promise<CommandResult<Result>>;
 }
 
 
