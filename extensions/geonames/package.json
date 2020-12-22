@@ -11,7 +11,7 @@
     "copy:assets": "cpx \"./src/public/**/*\" ./lib/extension/",
     "cover": "",
     "docs": "",
-    "lint": "eslint -f visualstudio ./src/**/*.ts 1>&2",
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": ""
   },
   "keywords": [
