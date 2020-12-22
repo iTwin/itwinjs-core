@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-framework",
+      "comment": "Upgrade react-resize-detector to avoid lodash security vulnerability",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "6283674+kckst8@users.noreply.github.com"
+}
