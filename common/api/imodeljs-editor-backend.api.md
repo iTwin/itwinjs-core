@@ -18,8 +18,6 @@ export class EditCommand {
     get ctor(): EditCommandType;
     readonly iModel: IModelDb;
     // (undocumented)
-    iModel: IModelDb;
-    // (undocumented)
     onCleanup(): void;
     // (undocumented)
     onFinish(): void;
