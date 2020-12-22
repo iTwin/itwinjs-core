@@ -217,10 +217,10 @@ describe("Viewport changed events", async () => {
     });
   });
 
-  it.skip("should be dispatched when displayed 3d models change", async () => {
+  it("should be dispatched when displayed 3d models change", async () => {
     vp = ScreenViewport.create(viewDiv, await testBim.views.load("0x34"));
 
-    ViewportChangedHandler.test(vp, async (mon) => {
+    ViewportChangedHandler.testAsync(vp, async (mon) => {
       // adding a model which is already present produces no event
       mon.expect(ChangeFlag.None, undefined, () => vp.changeModelDisplay("0x1c", true));
 
@@ -234,38 +234,16 @@ describe("Viewport changed events", async () => {
       selectedModels.add("0x1c");
       mon.expect(ChangeFlag.ViewedModels, ViewportState.Scene, () => vp.changeViewedModels(selectedModels));
 
-      // Save baseline: viewedModels = [ 0x1c ]
-      vp.saveViewUndo();
-      expect(vp.viewsModel("0x1c")).to.be.true;
-      expect(vp.viewsModel("0x1f")).to.be.false;
-
-      // changeModelDisplay has no net effect - but must make some other change for saveViewUndo() to actually save the view state.
-      mon.expect(ChangeFlag.DisplayStyle, ViewportState.RenderPlan, () => { const vf = vp.viewFlags.clone(); vf.solarLight = !vf.solarLight; vp.viewFlags = vf; });
-      mon.expect(ChangeFlag.None, undefined, () => vp.changeModelDisplay("0x1c", true));
-      vp.saveViewUndo();
-      mon.expect(ChangeFlag.DisplayStyle, ViewportState.RenderPlan, () => vp.doUndo());
-      mon.expect(ChangeFlag.DisplayStyle, ViewportState.RenderPlan, () => vp.doRedo());
-
       mon.expect(ChangeFlag.ViewedModels, ViewportState.Scene, () => {
         vp.changeModelDisplay("0x1c", false);
         vp.changeModelDisplay("0x1f", true);
       });
-      vp.saveViewUndo();
-      mon.expect(ChangeFlag.ViewedModels, ViewportState.Scene, () => vp.doUndo());
-      mon.expect(ChangeFlag.None, undefined, () => vp.doUndo());
-      mon.expect(ChangeFlag.None, undefined, () => vp.doRedo());
-      mon.expect(ChangeFlag.ViewedModels, ViewportState.Scene, () => vp.doRedo());
 
       // Viewport is now viewing model 0x1f.
       // Replacing viewed models with same set [ 0x1f ] produces event
       selectedModels.clear();
       selectedModels.add("0x1f");
       mon.expect(ChangeFlag.ViewedModels, ViewportState.Scene, () => vp.changeViewedModels(selectedModels));
-
-      // Undo produces view looking at same set of models => no event
-      vp.saveViewUndo();
-      mon.expect(ChangeFlag.None, undefined, () => vp.doUndo());
-      mon.expect(ChangeFlag.None, undefined, () => vp.doRedo());
     });
   });
 
