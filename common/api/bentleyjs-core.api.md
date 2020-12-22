@@ -571,6 +571,18 @@ export enum ExtensionStatus {
     UploadError = 143366
 }
 
+// @beta
+export class FunctionChain {
+    constructor(func?: () => void);
+    append(func: () => void): void;
+    call(): void;
+    callAndClear(): void;
+    clear(): void;
+    // (undocumented)
+    protected _func?: () => void;
+    prepend(func: () => void): void;
+}
+
 // @public
 export enum GeoServiceStatus {
     // (undocumented)
