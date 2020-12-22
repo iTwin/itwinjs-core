@@ -191,6 +191,53 @@ describe("Viewport changed events", async () => {
     });
   });
 
+  it("should invalidate controller when background map changes", async () => {
+    const view = await testBim.views.load("0x34") as SpatialViewState;
+    view.setStandardRotation(StandardViewId.RightIso);
+    vp = ScreenViewport.create(viewDiv, view);
+
+    ViewportChangedHandler.test(vp, (mon) => {
+      const vf = vp.viewFlags.clone();
+      vf.backgroundMap = !vf.backgroundMap;
+      mon.expect(ChangeFlag.DisplayStyle, ViewportState.Controller, () => vp.viewFlags = vf);
+
+      vf.backgroundMap = !vf.backgroundMap;
+      mon.expect(ChangeFlag.DisplayStyle, ViewportState.Controller, () => vp.viewFlags = vf);
+
+      mon.expect(ChangeFlag.DisplayStyle, ViewportState.Controller, () => vp.backgroundMapSettings = vp.backgroundMapSettings.clone({ groundBias: 123 }));
+      mon.expect(ChangeFlag.DisplayStyle, ViewportState.Controller, () => vp.changeBackgroundMapProps({ groundBias: 456 }));
+    });
+  });
+
+  it("should invalidate scene when shadows are on", async () => {
+    const view = await testBim.views.load("0x34") as SpatialViewState;
+    view.setStandardRotation(StandardViewId.RightIso);
+    vp = ScreenViewport.create(viewDiv, view);
+
+    ViewportChangedHandler.test(vp, (mon) => {
+      mon.expect(ChangeFlag.DisplayStyle, ViewportState.RenderPlan, () => {
+        const vf = vp.viewFlags.clone();
+        vf.shadows = true;
+        vp.viewFlags = vf;
+      });
+
+      const idSet = new Set<string>();
+      idSet.add("0x321");
+      mon.expect(ChangeFlag.AlwaysDrawn, ViewportState.Scene, () => vp.setAlwaysDrawn(idSet));
+      mon.expect(ChangeFlag.AlwaysDrawn, ViewportState.Scene, () => vp.clearAlwaysDrawn());
+      mon.expect(ChangeFlag.None, undefined, () => vp.clearAlwaysDrawn());
+
+      idSet.add("0x123");
+      mon.expect(ChangeFlag.NeverDrawn, ViewportState.Scene, () => vp.setNeverDrawn(idSet));
+      mon.expect(ChangeFlag.NeverDrawn, ViewportState.Scene, () => vp.clearNeverDrawn());
+      mon.expect(ChangeFlag.None, undefined, () => vp.clearNeverDrawn());
+
+      mon.expect(ChangeFlag.FeatureOverrideProvider, ViewportState.Scene, () => vp.setFeatureOverrideProviderChanged());
+
+      mon.expect(ChangeFlag.ViewedCategories, ViewportState.Scene, () => vp.changeCategoryDisplay(["0xa", "0xb"], true));
+    });
+  });
+
   it("should be dispatched when displayed 2d models change", async () => {
     vp = ScreenViewport.create(viewDiv, await testImodel.views.load(id64(0x20))); // views model 0x19
 

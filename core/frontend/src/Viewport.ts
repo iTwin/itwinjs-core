@@ -1486,7 +1486,8 @@ export abstract class Viewport implements IDisposable {
   public get backgroundMapSettings(): BackgroundMapSettings { return this.displayStyle.backgroundMapSettings; }
   public set backgroundMapSettings(settings: BackgroundMapSettings) {
     this.displayStyle.backgroundMapSettings = settings;
-    this.invalidateScene();
+    this.invalidateController();
+    this._changeFlags.setDisplayStyle();
   }
 
   /** Modify a subset of the background map display settings.
@@ -1500,7 +1501,8 @@ export abstract class Viewport implements IDisposable {
    */
   public changeBackgroundMapProps(props: BackgroundMapProps): void {
     this.displayStyle.changeBackgroundMapProps(props);
-    this.invalidateRenderPlan();
+    this.invalidateController();
+    this._changeFlags.setDisplayStyle();
   }
 
   /** Returns true if this Viewport is currently displaying the model with the specified Id. */
