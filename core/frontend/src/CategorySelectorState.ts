@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Views
  */
-import { Id64, Id64Arg, Id64String } from "@bentley/bentleyjs-core";
+import { Id64, Id64Arg, Id64String, ObservableSet } from "@bentley/bentleyjs-core";
 import { CategorySelectorProps } from "@bentley/imodeljs-common";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
@@ -22,11 +22,23 @@ import { IModelConnection } from "./IModelConnection";
 export class CategorySelectorState extends ElementState {
   /** @internal */
   public static get className() { return "CategorySelector"; }
-  public categories: Set<string> = new Set<string>();
+
+  private readonly _categories = new ObservableSet<string>();
+
   constructor(props: CategorySelectorProps, iModel: IModelConnection) {
     super(props, iModel);
     if (props.categories)
       props.categories.forEach((cat) => this.categories.add(cat));
+  }
+
+  public get categories(): Set<string> {
+    return this._categories;
+  }
+
+  public set categories(categories: Set<string>) {
+    this._categories.clear();
+    for (const category of categories)
+      this._categories.add(category);
   }
 
   public toJSON(): CategorySelectorProps {

@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { Id64, Id64Arg, Id64String } from "@bentley/bentleyjs-core";
+import { Id64, Id64Arg, Id64String, ObservableSet } from "@bentley/bentleyjs-core";
 import { ModelSelectorProps } from "@bentley/imodeljs-common";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
@@ -19,8 +19,24 @@ export class ModelSelectorState extends ElementState {
   /** @internal */
   public static get className() { return "ModelSelector"; }
 
+  private readonly _models = new ObservableSet<string>();
+
   /** The set of ModelIds of this ModelSelectorState */
-  public readonly models = new Set<string>();
+  public get models(): Set<string> {
+    return this._models;
+  }
+
+  public set models(models: Set<string>) {
+    this.models.clear();
+    for (const model of models)
+      this.models.add(model);
+  }
+
+  /** @internal */
+  public get observableModels(): ObservableSet<string> {
+    return this._models;
+  }
+
   constructor(props: ModelSelectorProps, iModel: IModelConnection) {
     super(props, iModel);
     if (props.models)
