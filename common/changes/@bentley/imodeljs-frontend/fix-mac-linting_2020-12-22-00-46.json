@@ -2,10 +2,10 @@
   "changes": [
     {
       "packageName": "@bentley/imodeljs-frontend",
-      "comment": "Add ability for caller to override quantity display format per QuantityType.",
+      "comment": "",
       "type": "none"
     }
   ],
   "packageName": "@bentley/imodeljs-frontend",
-  "email": "65047615+bsteinbk@users.noreply.github.com"
+  "email": "31107829+calebmshafer@users.noreply.github.com"
 }

@@ -153,6 +153,7 @@ class FakeTileCache extends CloudStorageTileCache {
 // main entry point.
 const dtaFrontendMain = async () => {
   RpcConfiguration.developmentMode = true; // needed for snapshots in web apps
+  RpcConfiguration.disableRoutingValidation = true;
 
   // retrieve, set, and output the global configuration variable
   await retrieveConfiguration(); // (does a fetch)

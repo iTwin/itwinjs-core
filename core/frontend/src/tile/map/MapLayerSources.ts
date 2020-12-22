@@ -19,6 +19,7 @@ import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationM
 export enum MapLayerSourceStatus {
   Valid,
   InvalidFormat,
+  InvalidTileTree,
   InvalidUrl,
 }
 

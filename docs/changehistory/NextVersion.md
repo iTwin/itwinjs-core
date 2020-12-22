@@ -14,9 +14,10 @@ Now, every [DisplayStyleSettings]($common) has a [ClipStyle]($common) that speci
 ![Clipped view with section-cut graphics](./assets/house-section-cut.jpg)
 
 A [ClipStyle]($common) can also specify a [CutStyle]($common) controlling how the section-cut geometry is displayed by overriding:
-  - Aspects of the [ViewFlags]($common) with which it is drawn;
-  - The edge symbology via [HiddenLine.Settings]($common); and
-  - The color, transparency, etc of the geometry via [FeatureAppearance]($common).
+
+- Aspects of the [ViewFlags]($common) with which it is drawn;
+- The edge symbology via [HiddenLine.Settings]($common); and
+- The color, transparency, etc of the geometry via [FeatureAppearance]($common).
 
 In the image below, the section-cut graphics are drawn in orange with visible blue edges as specified by the [CutStyle]($common).
 
@@ -31,13 +32,15 @@ NOTE: If a ClipStyle is associated with a [Viewport]($frontend), it should be mo
 ## Changes to display style excluded elements
 
 [DisplayStyleSettings.excludedElements]($common) allows a display style to specify a set of elements that should not be drawn. Previously, this set was always persisted to the database as an array of element Ids, and represented in JSON and in memory as a `Set<string>`. However, element Ids tend to be long strings (at least 13 characters), and sets of excluded elements can occasionally grow quite large. To reduce the amount of data associated with these sets:
-  * They are now always persisted to the database as a [CompressedId64Set]($bentleyjs-core).
-  * The type of [DisplayStyleSettingsProps.excludedElements]($common) has changed from `Id64Array` to `Id64Array | CompressedId64Set`.
-  * [DisplayStyleSettings.excludedElements]($common) - a `Set<string>` - has been deprecated in favor of [DisplayStyleSettings.excludedElementsIds]($common) - an [OrderedId64Iterable]($bentleyjs-core).
-  * [IModelDb.views.getViewStateData]($backend) and [ElementLoadProps]($backend) allow the caller to specify whether the Ids should be returned in compressed (string) form or as an uncompressed array; by default, they are uncompressed.
-  * [IModelConnection.views.load]($frontend) will always use the compressed representation of the Ids.
+
+- They are now always persisted to the database as a [CompressedId64Set]($bentleyjs-core).
+- The type of [DisplayStyleSettingsProps.excludedElements]($common) has changed from `Id64Array` to `Id64Array | CompressedId64Set`.
+- [DisplayStyleSettings.excludedElements]($common) - a `Set<string>` - has been deprecated in favor of [DisplayStyleSettings.excludedElementsIds]($common) - an [OrderedId64Iterable]($bentleyjs-core).
+- [IModelDb.views.getViewStateData]($backend) and [ElementLoadProps]($backend) allow the caller to specify whether the Ids should be returned in compressed (string) form or as an uncompressed array; by default, they are uncompressed.
+- [IModelConnection.views.load]($frontend) will always use the compressed representation of the Ids.
 
 To adjust code that uses [DisplayStyleSettings.excludedElements]($common), given `settings: DisplayStyleSettings`:
+
 ```ts
   settings.excludedElements.add(id); // Replace this...
   settings.addExcludedElements(id); // ...with this.
@@ -60,8 +63,8 @@ Now it is possible to filter property grid items (Records or Categories) using `
 
 ![Property Filtering](./assets/property-filtering.png "Property Filtering")
 
-
 Filtering is done by `FilteringPropertyDataProvider` and `IPropertyDataFilterer` that is passed to the provider. We provide a number of read-to-use filterers:
+
 - `CompositePropertyDataFilterer` combines two other filterers
 - `PropertyCategoryLabelFilterer` filters `PropertyCategories` by label
 - `DisplayValuePropertyDataFilterer` filters `PropertyRecords` by display value
@@ -142,7 +145,7 @@ return (
   }
   ```
 
-  This is just a terminology change, so reacting to the change is as simple as renaming `searchText` -> `highlightedText` and `activeMatch` -> `highlightedText`.
+ > This is just a terminology change, so reacting to the change is as simple as renaming `searchText` -> `highlightedText` and `activeMatch` -> `highlightedText`.
 
 Previous
 
@@ -166,24 +169,29 @@ New
   }
   ```
 
-  This is just a terminology change, so reacting to the change is as simple as renaming `matchIndex` -> `highlightedItemIdentifier` and `propertyName` -> `highlightedItemIdentifier`.
+> This is just a terminology change, so reacting to the change is as simple as renaming `matchIndex` -> `highlightedItemIdentifier` and `propertyName` -> `highlightedItemIdentifier`.
 
 - Changed `highlightProps?: HighlightedRecordProps` property to `highlight?: HighlightingComponentProps` on [PrimitiveRendererProps]($ui-components) interface. To react to this change, simply rename `highlightProps` -> `highlight`.
 
 - Changed `highlightProps?: HighlightedRecordProps` property to `highlight?: HighlightingComponentProps` on [PropertyRendererProps]($ui-components) interface. To react to this change, simply rename `highlightProps` -> `highlight`.
 
-## Updated version of Electron
-
-Updated version of electron used from 8.2.1 to 10.1.3. Note that Electron is specified as a peer dependency in the iModel.js stack - so it's recommended but not mandatory that applications migrate to this electron version.
-
 ## BriefcaseManager breaking changes
 
-This version changes the approach to storing Briefcase and Checkpoint files in the local disk cache. Now, [BriefcaseManager]($backend) will create a subdirectory from the root directory supplied in [BriefcaseManager.initialize]($backend) for each iModelId, and then folders called `briefcases` and `checkpoints` within that folder. The Briefcase and Checkpoint files themselves are named with the `BriefcaseId` and `ChangeSetId` respectively. For backwards compatibility, when searching for local files the previous locations are checked for briefcase and checkpoint files created by older versions. This check will be removed in a future version.
+This version changes the approach to storing Briefcase and Checkpoint files in the local disk cache. Now, [BriefcaseManager]($backend) will create a subdirectory from the root directory supplied in [BriefcaseManager.initialize]($backend) for each iModelId, and then folders called `briefcases` and `checkpoints` within that folder. The Briefcase and Checkpoint files themselves are named with the `BriefcaseId` and `ChangeSetId` respectively.
 
-Several methods on the @beta class `BriefcaseManager` have been changed to simplify how local Briefcase files are acquired and managed. Previously the location and name of the local files holding Briefcases was hidden behind a local in-memory cache that complicated the API. Now, the [BriefcaseDb.open]($backend) method takes an argument that specifies the file name. This makes working with local Briefcases much simpler. BriefcaseManager's role is limited to acquiring and releasing briefcases, and for downloading, uploading, and applying changesets. Note that the frontend APIs have not changed, so the impact of this change to the beta APIs should be limited. In particular, the method `BriefcaseManager.download` was removed and replaced with [BriefcaseManager.downloadBriefcase]$(backend), since backwards compatibility could not be maintained. See the documentation on that method to understand what you may need to change in your code.
+> For backwards compatibility: When searching for local files from RPC calls, the previous locations and naming rules are checked for briefcase and checkpoint files. This check will be removed in a future version.
+
+Several methods on the @beta class `BriefcaseManager` have been changed to simplify how local Briefcase files are acquired and managed. Previously the location and name of the local files holding Briefcases was hidden behind a local in-memory cache that complicated the API. Now, the [BriefcaseDb.open]($backend) method takes an argument that specifies the file name. This makes working with local Briefcases much simpler. BriefcaseManager's role is limited to acquiring and releasing briefcases, and for downloading, uploading, and applying changesets.
+
+In particular, the method `BriefcaseManager.download` was removed and replaced with [BriefcaseManager.downloadBriefcase]($backend), since backwards compatibility could not be maintained. See the documentation on that method to understand what you may need to change in your code.
+
+> Note that the frontend APIs have not changed, so the impact of this change to the beta APIs should be limited.
 
 Also, the `@internal` class `NativeApp` has several changed methods, so some refactoring may be necessary to react to those changes for anyone implementing native applications using this internal API.
 
+## Updated version of Electron
+
+Updated version of electron used from 8.2.1 to 10.1.3. Note that Electron is specified as a peer dependency in the iModel.js stack - so it's recommended but not mandatory that applications migrate to this electron version.
 
 ## Globe location tool fixes
 
@@ -202,8 +210,8 @@ There is now a method called `lookAtGlobalLocationFromGcs` on [ViewState3d]($fro
 
 [ViewState3d]($frontend) also has GCS versions of these methods:
 
-* `rootToCartographicFromGcs` behaves like `rootToCartographic` except it is async and uses the GCS to reproject the location.
-* `cartographicToRootFromGcs` behaves like `cartographicToRoot` except it is async and uses the GCS to reproject the location.
+- `rootToCartographicFromGcs` behaves like `rootToCartographic` except it is async and uses the GCS to reproject the location.
+- `cartographicToRootFromGcs` behaves like `cartographicToRoot` except it is async and uses the GCS to reproject the location.
 
 ## Presentation
 

@@ -1,6 +1,6 @@
 {
   "name": "@bentley/physical-material-backend",
-  "version": "2.11.0-dev.15",
+  "version": "2.11.0-dev.20",
   "main": "lib/physical-material-backend.js",
   "typings": "lib/physical-material-backend",
   "license": "MIT",
@@ -14,7 +14,7 @@
     "cover": "nyc npm test",
     "docs": "betools docs --includes=../../../generated-docs/extract --json=../../../generated-docs/domains/physical-material-backend/file.json --tsIndexFile=./physical-material-backend.ts --onlyJson",
     "extract-api": "betools extract-api --entry=physical-material-backend",
-    "lint": "eslint -f visualstudio ./src/**/*.ts 1>&2",
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "betools test"
   },
   "repository": {
@@ -31,20 +31,20 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.11.0-dev.15",
-    "@bentley/imodeljs-backend": "^2.11.0-dev.15",
-    "@bentley/imodeljs-common": "^2.11.0-dev.15"
+    "@bentley/bentleyjs-core": "^2.11.0-dev.20",
+    "@bentley/imodeljs-backend": "^2.11.0-dev.20",
+    "@bentley/imodeljs-common": "^2.11.0-dev.20"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.11.0-dev.15",
-    "@bentley/build-tools": "2.11.0-dev.15",
-    "@bentley/eslint-plugin": "2.11.0-dev.15",
-    "@bentley/imodeljs-backend": "2.11.0-dev.15",
-    "@bentley/imodeljs-common": "2.11.0-dev.15",
+    "@bentley/bentleyjs-core": "2.11.0-dev.20",
+    "@bentley/build-tools": "2.11.0-dev.20",
+    "@bentley/eslint-plugin": "2.11.0-dev.20",
+    "@bentley/imodeljs-backend": "2.11.0-dev.20",
+    "@bentley/imodeljs-common": "2.11.0-dev.20",
     "@types/chai": "^4.1.4",
     "@types/fs-extra": "^4.0.7",
     "@types/mocha": "^5.2.5",
