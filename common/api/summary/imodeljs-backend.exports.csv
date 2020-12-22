@@ -239,7 +239,7 @@ public;RenderMaterialElement
 public;RenderMaterialOwnsRenderMaterials 
 public;RepositoryLink 
 public;RepositoryModel 
-beta;RequestNewBriefcaseArg = RequestNewBriefcaseProps &
+beta;RequestNewBriefcaseArg 
 public;class RoleElement 
 public;RoleModel 
 public;Schema
