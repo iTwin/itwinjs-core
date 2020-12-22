@@ -369,6 +369,10 @@ export class DisplayStyleSettings {
    * @beta
    */
   public readonly onApplyOverrides = new BeEvent<(overrides: Readonly<DisplayStyleSettingsProps>) => void>();
+  /** Event raised by [[applyOverrides]] after the overrides are applied.
+   * @beta
+   */
+  public readonly onOverridesApplied = new BeEvent<(overrides: Readonly<DisplayStyleSettingsProps>) => void>();
   /** Event raised just prior to assignment to the [[viewFlags]] property. */
   public readonly onViewFlagsChanged = new BeEvent<(newFlags: Readonly<ViewFlags>) => void>();
   /** Event raised just prior to assignment to the [[backgroundColor]] property. */
@@ -828,6 +832,11 @@ export class DisplayStyleSettings {
    * @beta
    */
   public applyOverrides(overrides: DisplayStyleSettingsProps): void {
+    this._applyOverrides(overrides);
+    this.onOverridesApplied.raiseEvent(overrides);
+  }
+
+  protected _applyOverrides(overrides: DisplayStyleSettingsProps): void {
     this.onApplyOverrides.raiseEvent(overrides);
 
     if (overrides.viewflags) {
@@ -876,7 +885,10 @@ export class DisplayStyleSettings {
 
     if (overrides.excludedElements)
       this._excludedElements.reset("string" === typeof overrides.excludedElements ? overrides.excludedElements : [...overrides.excludedElements]);
+
+    this.onOverridesApplied.raiseEvent(overrides);
   }
+
 
   private findIndexOfSubCategoryOverrideInJSON(id: Id64String, allowAppend: boolean): number {
     const ovrsArray = JsonUtils.asArray(this._json.subCategoryOvr);
@@ -1107,7 +1119,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
    * @beta
    */
   public applyOverrides(overrides: DisplayStyle3dSettingsProps): void {
-    super.applyOverrides(overrides);
+    super._applyOverrides(overrides);
 
     if (overrides.environment)
       this.environment = { ...overrides.environment };
@@ -1131,6 +1143,8 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
 
     if (overrides.thematic)
       this.thematic = ThematicDisplay.fromJSON(overrides.thematic);
+
+    this.onOverridesApplied.raiseEvent(overrides);
   }
 
   /** The settings that control thematic display.

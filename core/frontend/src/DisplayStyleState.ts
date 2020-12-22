@@ -232,12 +232,14 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       this.detachRealityModelByIndex(currentIndex);
       return true;
     }
+
     if (options.onOff === true && currentIndex < 0) {
       const tilesetUrl = getCesiumOSMBuildingsUrl();
       const name = IModelApp.i18n.translate("iModelJs:RealityModelNames.OSMBuildings");
       currentIndex = this._contextRealityModels.length;
       this.attachRealityModel({ tilesetUrl, name });
     }
+
     if (options.appearanceOverrides)
       this.overrideRealityModelAppearance(currentIndex, options.appearanceOverrides);
 
@@ -742,18 +744,19 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** @internal */
-  protected onOverridesApplied(overrides: DisplayStyleSettingsProps): void {
-    if (overrides.backgroundMap)
-      this.backgroundMapSettings = BackgroundMapSettings.fromJSON(overrides.backgroundMap);
+  protected registerSettingsEventListeners(): void {
+    this.settings.onScheduleScriptPropsChanged.addListener((timeline) => {
+      this._scheduleScript = timeline ? RenderScheduleState.Script.fromJSON(this.id, timeline) : undefined;
+    });
 
-    if (overrides.scheduleScript)
-      this._scheduleScript = RenderScheduleState.Script.fromJSON(this.id, overrides.scheduleScript);
-
-    if (overrides.contextRealityModels) {
-      this._contextRealityModels.length = 0;
-      for (const contextRealityModel of overrides.contextRealityModels)
-        this._contextRealityModels.push(new ContextRealityModelState(contextRealityModel, this.iModel, this));
-    }
+    // ###TODO contextRealityModels are a bit of a mess.
+    this.settings.onApplyOverrides.addListener((overrides) => {
+      if (overrides.contextRealityModels) {
+        this._contextRealityModels.length = 0;
+        for (const contextRealityModel of overrides.contextRealityModels)
+          this._contextRealityModels.push(new ContextRealityModelState(contextRealityModel, this.iModel, this));
+      }
+    });
   }
 }
 
@@ -773,7 +776,7 @@ export class DisplayStyle2dState extends DisplayStyleState {
   constructor(props: DisplayStyleProps, iModel: IModelConnection) {
     super(props, iModel);
     this._settings = new DisplayStyleSettings(this.jsonProperties);
-    this._settings.onApplyOverrides.addListener((overrides) => this.onOverridesApplied(overrides));
+    this.registerSettingsEventListeners();
   }
 }
 
@@ -1126,7 +1129,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
   public constructor(props: DisplayStyleProps, iModel: IModelConnection) {
     super(props, iModel);
     this._settings = new DisplayStyle3dSettings(this.jsonProperties);
-    this._settings.onApplyOverrides.addListener((overrides) => this.onOverridesApplied(overrides));
+    this.registerSettingsEventListeners();
   }
 
   /** The [[SkyBox]] and [[GroundPlane]] settings for this style. */
@@ -1207,20 +1210,23 @@ export class DisplayStyle3dState extends DisplayStyleState {
   }
 
   /** @internal */
-  protected onOverridesApplied(overrides: DisplayStyle3dSettingsProps): void {
-    super.onOverridesApplied(overrides);
+  protected registerSettingsEventListeners(): void {
+    super.registerSettingsEventListeners();
 
-    if (overrides.environment)
-      this.changeEnvironment(new Environment(overrides.environment));
+    this.settings.onEnvironmentChanged.addListener((env) => {
+      this.changeEnvironment(new Environment(env));
+    });
 
-    if (overrides.thematic && this.settings.thematic.displayMode === ThematicDisplayMode.Height && undefined === overrides.thematic.range) {
-      // Use the project extents as reasonable default height range.
-      // NB: assumes using Z axis...
-      const extents = this.iModel.projectExtents;
-      const props = { ...overrides.thematic };
-      props.range = { low: extents.zLow, high: extents.zHigh };
-      this.settings.thematic = ThematicDisplay.fromJSON(props);
-    }
+    this.settings.onOverridesApplied.addListener((overrides: DisplayStyle3dSettingsProps) => {
+      if (overrides.thematic && this.settings.thematic.displayMode === ThematicDisplayMode.Height && undefined === overrides.thematic.range) {
+        // Use the project extents as reasonable default height range.
+        // NB: assumes using Z axis...
+        const extents = this.iModel.projectExtents;
+        const props = { ...overrides.thematic };
+        props.range = { low: extents.zLow, high: extents.zHigh };
+        this.settings.thematic = ThematicDisplay.fromJSON(props);
+      }
+    });
   }
 
   /** @internal */
