@@ -416,7 +416,6 @@ export class IModelApp {
       opts.mapLayerOptions = defaultMapLayerOptions;
     }
 
-
     this._renderSystem = (opts.renderSys instanceof RenderSystem) ? opts.renderSys : this.createRenderSys(opts.renderSys);
 
     this._settings = (opts.settings !== undefined) ? opts.settings : new ConnectSettingsClient(this.applicationId);
