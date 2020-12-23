@@ -26,10 +26,7 @@ import { getCesiumOSMBuildingsUrl, MapCartoRectangle, MapTileTree, MapTileTreeRe
 import { viewGlobalLocation, ViewGlobalLocationConstants } from "./ViewGlobalLocation";
 import { OsmBuildingDisplayOptions, ScreenViewport, Viewport } from "./Viewport";
 
-/** A DisplayStyle defines the parameters for 'styling' the contents of a [[ViewState]]
- * @note If the DisplayStyle is associated with a [[ViewState]] which is being rendered inside a [[Viewport]], modifying
- * the DisplayStyle directly will generally not result in immediately visible changes on the screen.
- * [[ViewState]] provides APIs which forward to the DisplayStyle API and also ensure the screen is updated promptly.
+/** A DisplayStyle defines the parameters for 'styling' the contents of a [[ViewState]].
  * @public
  */
 export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps {
@@ -99,13 +96,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /** The settings controlling how a background map is displayed within a view.
    * @see [[ViewFlags.backgroundMap]] for toggling display of the map on or off.
-   * @note If this display style is associated with a [[Viewport]], prefer to use [[Viewport.backgroundMapSettings]] to change the settings to ensure the Viewport's display updates immediately.
    */
   public get backgroundMapSettings(): BackgroundMapSettings { return this._backgroundMap.settings; }
   public set backgroundMapSettings(settings: BackgroundMapSettings) {
-    this._backgroundMap.settings = settings;
-    this._overlayMap.settings = settings;
-    this._backgroundDrapeMap.settings = settings;
     this.settings.backgroundMap = settings;
   }
 
@@ -302,8 +295,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** Customize the way a [[Model]]  is drawn by this display style.
    * @param modelId The ID of the [[model]] whose appearance is to be overridden.
    * @param ovr The overrides to apply to the [[Model]].
-   * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[Viewport.overrideModelAppearance]] to ensure
-   * the changes are promptly visible on the screen.
    * @see [[dropModelAppearanceOverride]]
    * @beta
    */
@@ -314,8 +305,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** Remove any appearance overrides applied to a [[Model]] by this style.
    * @param modelId The ID of the [[Model]].
    * @param ovr The overrides to apply to the [[Model]].
-   * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[Viewport.dropModelAppearanceOverride]] to ensure
-   * the changes are promptly visible on the screen.
    * @see [[overrideModelAppearance]]
    * @beta
    */
@@ -641,8 +630,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** The ViewFlags associated with this style.
-   * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[ViewState.viewFlags]] to modify the ViewFlags to ensure
-   * the changes are promptly visible on the screen.
+   * @see [DisplayStyleSettings.viewFlags]($common)
    */
   public get viewFlags(): ViewFlags { return this.settings.viewFlags; }
   public set viewFlags(flags: ViewFlags) { this.settings.viewFlags = flags; }
@@ -731,16 +719,12 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** Customize the way geometry belonging to a [[SubCategory]] is drawn by this display style.
    * @param id The ID of the SubCategory whose appearance is to be overridden.
    * @param ovr The overrides to apply to the [[SubCategoryAppearance]].
-   * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[Viewport.overrideSubCategory]] to ensure
-   * the changes are promptly visible on the screen.
    * @see [[dropSubCategoryOverride]]
    */
   public overrideSubCategory(id: Id64String, ovr: SubCategoryOverride) { this.settings.overrideSubCategory(id, ovr); }
 
   /** Remove any [[SubCategoryOverride]] applied to a [[SubCategoryAppearance]] by this style.
    * @param id The ID of the [[SubCategory]].
-   * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[Viewport.dropSubCategoryOverride]] to ensure
-   * the changes are promptly visible on the screen.
    * @see [[overrideSubCategory]]
    */
   public dropSubCategoryOverride(id: Id64String) { this.settings.dropSubCategoryOverride(id); }
@@ -772,6 +756,10 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   protected registerSettingsEventListeners(): void {
     this.settings.onScheduleScriptPropsChanged.addListener((timeline) => {
       this._scheduleScript = timeline ? RenderScheduleState.Script.fromJSON(this.id, timeline) : undefined;
+    });
+
+    this.settings.onBackgroundMapChanged.addListener((mapSettings: BackgroundMapSettings) => {
+      this._backgroundMap.settings = this._overlayMap.settings = this._backgroundDrapeMap.settings = mapSettings;
     });
 
     // ###TODO contextRealityModels are a bit of a mess.

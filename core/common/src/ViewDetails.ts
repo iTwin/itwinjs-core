@@ -28,7 +28,7 @@ export interface ViewDetailsProps {
   clip?: ClipVectorProps;
 }
 
-/** Describes the orientation of the grid displayed within a viewport.
+/** Describes the orientation of the grid displayed within a [Viewport]($frontend).
  * @public
  */
 export enum GridOrientationType {

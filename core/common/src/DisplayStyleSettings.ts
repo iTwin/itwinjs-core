@@ -1139,7 +1139,6 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
    *  }
    * ```
    * @see [[toOverrides]] to produce overrides from an existing DisplayStyleSettings.
-   * @note If these settings are associated with a [Viewport]($frontend), prefer to use [Viewport.overrideDisplayStyle]($frontend) to ensure the viewport's contents are automatically updated.
    * @beta
    */
   public applyOverrides(overrides: DisplayStyle3dSettingsProps): void {

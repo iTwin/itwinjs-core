@@ -96,7 +96,9 @@ class GridDecorator {
 }
 
 /** The front-end state of a [[ViewDefinition]] element.
- * A ViewState is typically associated with a [[Viewport]] to display the contents of the view on the screen.
+ * A ViewState is typically associated with a [[Viewport]] to display the contents of the view on the screen. A ViewState being displayed by a Viewport is considered to be
+ * "attached" to that viewport; a "detached" viewport is not being displayed by any viewport. Because the Viewport modifies the state of its attached ViewState, a ViewState
+ * can only be attached to one Viewport at a time.
  * * @see [Views]($docs/learning/frontend/Views.md)
  * @public
  */
@@ -120,7 +122,6 @@ export abstract class ViewState extends ElementState {
   public readonly onViewedCategoriesChanged = new BeEvent<() => void>();
 
   /** An event raised just before assignment to the [[displayStyle]] property, *only* if the view is attached to a [[Viewport]].
-   * @note This event is only raised if the [[displayStyle]] property itself is modified.
    * @see [[DisplayStyleSettings]] for events raised when properties of the display style change.
    * @beta
    */
@@ -1011,7 +1012,6 @@ export abstract class ViewState extends ElementState {
 
   /** Specify a provider of per-model display transforms. Intended chiefly for use by model alignment tools.
    * @note The transform supplied is used for display purposes **only**. Do not expect operations like snapping to account for the display transform.
-   * @see [[Viewport.setModelDisplayTransformProvider]].
    * @alpha
    */
   public get modelDisplayTransformProvider(): ModelDisplayTransformProvider | undefined {
@@ -1073,7 +1073,7 @@ export abstract class ViewState extends ElementState {
   }
 
   /** Returns whether this view is currently being displayed by a [[Viewport]].
-   * @internal
+   * @alpha
    */
   public get isAttachedToViewport(): boolean {
     // In attachToViewport, we register event listeners on the category selector. We remove them in detachFromViewport.

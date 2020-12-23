@@ -415,16 +415,16 @@ export abstract class Viewport implements IDisposable {
   private _outsideClipColor?: ColorDef;
   private _insideClipColor?: ColorDef;
 
+  /** @see [DisplayStyle3dSettings.lightSettings]($common) */
   public get lightSettings(): LightSettings | undefined {
     return this.displayStyle.is3d() ? this.displayStyle.settings.lights : undefined;
   }
-
   public setLightSettings(settings: LightSettings) {
     if (this.displayStyle.is3d())
       this.displayStyle.settings.lights = settings;
   }
 
-  /** Settings controlling shadow display for this viewport. Only applicable to 3d views. */
+  /** @see [DisplayStyle3dSettings.solarShadows]($common) */
   public get solarShadowSettings(): SolarShadowSettings | undefined {
     return this.view.displayStyle.is3d() ? this.view.displayStyle.settings.solarShadows : undefined;
   }
@@ -453,8 +453,7 @@ export abstract class Viewport implements IDisposable {
     this.displayStyle.settings.analysisFraction = fraction;
   }
 
-  /** The point in time reflected by the view, in UNIX seconds.
-   * This identifies a point on the timeline of the [[scheduleScript]], if any; it may also affect display of four-dimensional point clouds and reality meshes.
+  /** @see [DisplayStyleSettings.timePoint]($common)
    * @beta
    */
   public get timePoint(): number | undefined {
@@ -506,22 +505,21 @@ export abstract class Viewport implements IDisposable {
    * @return true if the grid display is on.
    */
   public get isGridOn(): boolean { return this.viewFlags.grid; }
+
   /** The [ViewFlags]($common) that determine how the contents of this Viewport are rendered.
    * @note Do **not** modify the ViewFlags directly. Instead do something like:
    * ```ts
    *   const vf = viewport.viewFlags.clone();
    *   vf.backgroundMap = true; // Or any other modifications
    *   viewport.viewFlags = vf;
-   * ```
+   * @see [DisplayStyleSettings.viewFlags]($common)
    */
   public get viewFlags(): ViewFlags { return this.view.viewFlags; }
   public set viewFlags(viewFlags: ViewFlags) {
     this.view.displayStyle.viewFlags = viewFlags;
   }
 
-  /** The display style controller how the contents of this viewport are rendered.
-   * @note To ensure proper synchronization, do not directly modify the [[DisplayStyleState]] returned by the getter. Instead, create a new one (possibly by cloning this display style) and pass it to the setter.
-   */
+  /** @see [[ViewState.displayStyle]] */
   public get displayStyle(): DisplayStyleState { return this.view.displayStyle; }
   public set displayStyle(style: DisplayStyleState) {
     this.view.displayStyle = style;
@@ -535,7 +533,7 @@ export abstract class Viewport implements IDisposable {
     this.displayStyle.settings.applyOverrides(overrides);
   }
 
-  /** The style describing how the view's [ClipVector]($geometry-core) affects the view.
+  /** @see [DisplayStyleSettings.clipStyle]($common) */
    * @beta
    */
   public get clipStyle(): ClipStyle { return this.displayStyle.settings.clipStyle; }
@@ -825,21 +823,14 @@ export abstract class Viewport implements IDisposable {
 
   /** The settings controlling how a background map is displayed within a view.
    * @see [[ViewFlags.backgroundMap]] for toggling display of the map on or off.
+   * @see [DisplayStyleSettings.backgroundMap]($common)
    */
   public get backgroundMapSettings(): BackgroundMapSettings { return this.displayStyle.backgroundMapSettings; }
   public set backgroundMapSettings(settings: BackgroundMapSettings) {
     this.displayStyle.backgroundMapSettings = settings;
   }
 
-  /** Modify a subset of the background map display settings.
-   * @param name props JSON representation of the properties to change. Any properties not present will retain their current values in `this.backgroundMapSettings`.
-   * @see [[ViewFlags.backgroundMap]] for toggling display of the map.
-   *
-   * Example that changes only the elevation, leaving the provider and type unchanged:
-   * ``` ts
-   *  viewport.changeBackgroundMapProps({ groundBias: 16.2 });
-   * ```
-   */
+  /** @see [[DisplayStyleState.changeBackgroundMapProps]] */
   public changeBackgroundMapProps(props: BackgroundMapProps): void {
     this.displayStyle.changeBackgroundMapProps(props);
   }
