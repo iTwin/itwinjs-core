@@ -1106,7 +1106,7 @@ export abstract class Viewport implements IDisposable {
 
   private registerDisplayStyleListeners(style: DisplayStyleState): void {
     const settings = style.settings;
-    const chain = this._detachFromView;
+    const chain = this._detachDisplayStyle;
 
     const displayStyleChanged = () => {
       this.invalidateRenderPlan();
