@@ -432,11 +432,12 @@ export class BackgroundMapLocation {
       return;
     }
     const projectExtents = iModel.projectExtents;
-    if (!projectExtents || projectExtents.isNull) {   // Test workaround.
+    const origin = projectExtents.localXYZToWorld(.5, .5, .5);
+    if (!origin) {
       this._ecefToDb = Transform.createIdentity();
       return;
     }
-    const origin = projectExtents.localXYZToWorld(.5, .5, .5)!;
+
 
     origin.z = 0; // always use ground plane
     const ecefToDb = await calculateEcefToDbTransformAtLocation(origin, iModel);
