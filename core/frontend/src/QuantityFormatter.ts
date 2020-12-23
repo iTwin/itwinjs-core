@@ -1018,6 +1018,4 @@ export class QuantityFormatter implements UnitsProvider {
 
     return false;
   }
-
-
 }
