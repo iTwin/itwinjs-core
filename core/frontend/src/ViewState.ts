@@ -1040,7 +1040,7 @@ export abstract class ViewState extends ElementState {
    */
   public attachToViewport(_vp: Viewport): void {
     if (this.isAttachedToViewport)
-      throw new Error("A ViewState can only be attached to one Viewport at a time");
+      throw new Error("Attempting to attach a ViewState that is already attached to a Viewport");
 
     this.registerCategorySelectorListeners();
   }
