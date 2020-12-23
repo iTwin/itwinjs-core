@@ -128,7 +128,6 @@ export class SheetViewState extends ViewState2d {
   public readonly attachmentIds: Id64Array;
   private _attachments?: Attachments;
   private readonly _viewedExtents: AxisAlignedBox3d;
-  private _removeTileLoadListener?: () => void;
 
   /** @internal */
   public static get className() { return "SheetViewDefinition"; }
@@ -235,32 +234,8 @@ export class SheetViewState extends ViewState2d {
   /** @internal */
   public createScene(context: SceneContext): void {
     super.createScene(context);
-    if (this._attachments) {
-      this.updateTileLoadListener(context.viewport);
+    if (this._attachments)
       this._attachments.addToScene(context);
-    }
-  }
-
-  private updateTileLoadListener(vp: Viewport): void {
-    if (undefined !== this._removeTileLoadListener || undefined === this._attachments || this._attachments.isEmpty)
-      return;
-
-    // This view has just become associated with a Viewport. Make sure we update the attachment graphics when new tiles become loaded.
-    // Once the view is no longer associated with the Viewport, we want to stop listening for those events.
-    this._removeTileLoadListener = IModelApp.tileAdmin.addLoadListener(() => this.onTileLoad(vp));
-  }
-
-  private onTileLoad(vp: Viewport): void {
-    if (undefined === this._removeTileLoadListener)
-      return;
-
-    if (vp.isDisposed || vp.view !== this || !this._attachments) {
-      // We're no longer associated with the Viewport - stop listening for tile load events
-      this._removeTileLoadListener();
-      this._removeTileLoadListener = undefined;
-    } else {
-      this._attachments.invalidateScene();
-    }
   }
 
   /** @internal */
@@ -334,7 +309,6 @@ class AttachmentTarget extends MockRender.OffScreenTarget {
 
 /** Draws the contents of a view attachment into a sheet view. */
 interface Attachment {
-  invalidateScene: () => void;
   readonly areAllTileTreesLoaded: boolean;
   addToScene: (context: SceneContext) => void;
   discloseTileTrees: (trees: TileTreeSet) => void;
@@ -599,10 +573,6 @@ class OrthographicAttachment {
     return this._debugFeatureTable;
   }
 
-  public invalidateScene(): void {
-    this._viewport.invalidateScene();
-  }
-
   public get areAllTileTreesLoaded(): boolean {
     return this.view.areAllTileTreesLoaded;
   }
@@ -687,10 +657,6 @@ class RasterAttachment {
     this._placement = Placement2d.fromJSON(props.placement);
     this._transform = this._placement.transform;
     this.zDepth = Frustum2d.depthFromDisplayPriority(props.jsonProperties?.displayPriority ?? 0);
-  }
-
-  public invalidateScene() {
-    this._viewport?.invalidateScene();
   }
 
   public get areAllTileTreesLoaded() {
@@ -861,11 +827,6 @@ class Attachments {
   public maxDepth = Frustum2d.minimumZDistance;
 
   public get isEmpty() { return 0 === this._attachments.length; }
-
-  public invalidateScene(): void {
-    for (const attachment of this._attachments)
-      attachment.invalidateScene();
-  }
 
   public get areAllTileTreesLoaded(): boolean {
     for (const attachment of this._attachments)

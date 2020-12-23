@@ -239,7 +239,6 @@ export class DrawingViewState extends ViewState2d {
   private readonly _modelLimits: ExtentLimits;
   private readonly _viewedExtents: AxisAlignedBox3d;
   private _attachment?: SectionAttachment;
-  private _removeTileLoadListener?: () => void;
   private _sectionDrawingProps?: SectionDrawingViewProps;
 
   /** Strictly for testing. @internal */
@@ -385,32 +384,8 @@ export class DrawingViewState extends ViewState2d {
     if (!DrawingViewState.hideDrawingGraphics)
       super.createScene(context);
 
-    if (this._attachment) {
-      this.updateTileLoadListener(context.viewport);
+    if (this._attachment)
       this._attachment.addToScene(context);
-    }
-  }
-
-  private updateTileLoadListener(vp: Viewport): void {
-    if (this._removeTileLoadListener || !this._attachment)
-      return;
-
-    // This view just became associated with a Viewport. Make sure we update the attachment graphics when new tiles become loaded.
-    // Once the view is no longer associated with the Viewport, we'll stop listening for those events.
-    // ###TODO: cleaner way to do this?
-    this._removeTileLoadListener = IModelApp.tileAdmin.addLoadListener(() => this.onTileLoad(vp));
-  }
-
-  private onTileLoad(vp: Viewport): void {
-    if (!this._removeTileLoadListener)
-      return;
-
-    if (vp.isDisposed || vp.view !== this || !this._attachment) {
-      this._removeTileLoadListener();
-      this._removeTileLoadListener = undefined;
-    } else {
-      this._attachment.viewport.invalidateScene();
-    }
   }
 
   /** @internal */
