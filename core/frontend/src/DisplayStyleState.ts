@@ -184,7 +184,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** @internal */
-  public getAnimationBranches(scheduleTime: number): AnimationBranchStates | undefined { return this._scheduleScript === undefined ? undefined : this._scheduleScript.getAnimationBranches(scheduleTime); }
+  public getAnimationBranches(scheduleTime: number): AnimationBranchStates | undefined {
+    return this._scheduleScript === undefined ? undefined : this._scheduleScript.getAnimationBranches(scheduleTime);
+  }
 
   /**
    * Attach a context reality model
@@ -293,7 +295,10 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** The overrides applied by this style.
    * @beta
    */
-  public get modelAppearanceOverrides(): Map<Id64String, FeatureAppearance> { return this.settings.modelAppearanceOverrides; }
+  public get modelAppearanceOverrides(): Map<Id64String, FeatureAppearance> {
+    return this.settings.modelAppearanceOverrides;
+  }
+
   /** Customize the way a [[Model]]  is drawn by this display style.
    * @param modelId The ID of the [[model]] whose appearance is to be overridden.
    * @param ovr The overrides to apply to the [[Model]].
@@ -302,7 +307,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * @see [[dropModelAppearanceOverride]]
    * @beta
    */
-  public overrideModelAppearance(modelId: Id64String, ovr: FeatureAppearance) { this.settings.overrideModelAppearance(modelId, ovr); }
+  public overrideModelAppearance(modelId: Id64String, ovr: FeatureAppearance) {
+    this.settings.overrideModelAppearance(modelId, ovr);
+  }
 
   /** Remove any appearance overrides applied to a [[Model]] by this style.
    * @param modelId The ID of the [[Model]].
@@ -312,13 +319,17 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * @see [[overrideModelAppearance]]
    * @beta
    */
-  public dropModelAppearanceOverride(modelId: Id64String) { this.settings.dropModelAppearanceOverride(modelId); }
+  public dropModelAppearanceOverride(modelId: Id64String) {
+    this.settings.dropModelAppearanceOverride(modelId);
+  }
 
   /** Returns true if model appearance overridess are defined by this style.
    * @beta
    */
 
-  public get hasModelAppearanceOverride() { return this.settings.hasModelAppearanceOverride; }
+  public get hasModelAppearanceOverride() {
+    return this.settings.hasModelAppearanceOverride;
+  }
 
   /** Obtain the override applied to a [[Model]] by this style.
    * @param id The ID of the [[Model]].
@@ -326,7 +337,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * @see [[overrideModelAppearance]]
    * @beta
    */
-  public getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined { return this.settings.getModelAppearanceOverride(id); }
+  public getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined {
+    return this.settings.getModelAppearanceOverride(id);
+  }
 
   /** Change the appearance overrides for a context reality model displayed by this style.
    * @param overrides The overrides, only transparency, color, nonLocatable and emphasized are applicable.
@@ -429,12 +442,14 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public hasAttachedMapLayer(name: string, url: string, isOverlay: boolean): boolean {
     return -1 !== this.findMapLayerIndexByNameAndUrl(name, url, isOverlay);
   }
+
   /** @internal */
   public detachMapLayerByNameAndUrl(name: string, url: string, isOverlay: boolean): void {
     const index = this.findMapLayerIndexByNameAndUrl(name, url, isOverlay);
     if (- 1 !== index)
       this.detachMapLayerByIndex(index, isOverlay);
   }
+
   /** Detach map layer at index (-1 to remove all layers)
    * @internal
    */
@@ -447,15 +462,18 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
     this._synchBackgroundMapImagery();
   }
+
   /** @internal */
   public findMapLayerIndexByNameAndUrl(name: string, url: string, isOverlay: boolean) {
     return this.getMapLayers(isOverlay).findIndex((x) => x.matchesNameAndUrl(name, url));
   }
+
   /** @internal */
   public mapLayerAtIndex(index: number, isOverlay: boolean): MapLayerSettings | undefined {
     const layers = this.getMapLayers(isOverlay);
     return (index < 0 || index >= layers.length) ? undefined : layers[index];
   }
+
   /** @internal */
   public changeBaseMapProps(props: MapLayerProps | ColorDef) {
     if (props instanceof ColorDef) {
@@ -472,13 +490,14 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     }
     this._synchBackgroundMapImagery();
   }
+
   /** Return map base transparency as a number between 0 and 1.
    * @internal
    */
   public get baseMapTransparency(): number {
     return this.settings.mapImagery.baseTransparency;
-
   }
+
   /** @internal  */
   public changeBaseMapTransparency(transparency: number) {
     if (this.settings.mapImagery.backgroundBase instanceof ColorDef) {
@@ -587,10 +606,12 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       this._synchBackgroundMapImagery();
     }
   }
+
   /** @internal */
   public mapLayerFromHit(hit: HitDetail): MapLayerSettings | undefined {
     return undefined === hit.modelId ? undefined : this.mapLayerFromIds(hit.modelId, hit.sourceId);
   }
+
   /** @internal */
   public mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings | undefined {
     let mapLayer;
@@ -1240,5 +1261,4 @@ export class DisplayStyle3dState extends DisplayStyleState {
     }
     return undefined;
   }
-
 }

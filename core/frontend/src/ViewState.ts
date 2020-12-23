@@ -13,7 +13,7 @@ import {
 } from "@bentley/geometry-core";
 import {
   AnalysisStyle, AxisAlignedBox3d, Camera, Cartographic, ColorDef,
-  FeatureAppearance, Frustum, GlobeMode, GraphicParams, GridOrientationType, Npc, RenderMaterial,
+  FeatureAppearance, Frustum, GlobeMode, GraphicParams, GridOrientationType, ModelClipGroups, Npc, RenderMaterial,
   SubCategoryOverride, TextureMapping, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails,
   ViewDetails3d, ViewFlags, ViewStateProps,
 } from "@bentley/imodeljs-common";
@@ -57,7 +57,7 @@ export interface ExtentLimits {
 /** Interface adopted by an object that wants to apply a per-model display transform.
  * This is intended chiefly for use by model alignment tools.
  * @see [[ViewState.modelDisplayTransformProvider]].
- * @internal
+ * @alpha
  */
 export interface ModelDisplayTransformProvider {
   getModelDisplayTransform(modelId: Id64String, baseTransform: Transform): Transform;
@@ -119,12 +119,17 @@ export abstract class ViewState extends ElementState {
    */
   public readonly onViewedCategoriesChanged = new BeEvent<() => void>();
 
-  /** An event raised when the [[DisplayStyleState]] associated with this view changes, *only* if the view is attached to a [[Viewport]].
+  /** An event raised just before assignment to the [[displayStyle]] property, *only* if the view is attached to a [[Viewport]].
    * @note This event is only raised if the [[displayStyle]] property itself is modified.
    * @see [[DisplayStyleSettings]] for events raised when properties of the display style change.
    * @beta
    */
-  public readonly onDisplayStyleChanged = new BeEvent<() => void>();
+  public readonly onDisplayStyleChanged = new BeEvent<(newStyle: DisplayStyleState) => void>();
+
+  /** Event raised just before assignment to the [[modelDisplayTransformProvider]] property, *only* if the view is attached to a [[Viewport]].
+   * @alpha
+   */
+  public readonly onModelDisplayTransformProviderChanged = new BeEvent<(newProvider: ModelDisplayTransformProvider) => void>();
 
   /** Selects the categories that are display by this ViewState. */
   public get categorySelector(): CategorySelectorState {
@@ -155,10 +160,10 @@ export abstract class ViewState extends ElementState {
     if (style === this.displayStyle)
         return;
 
-    this._displayStyle = style;
-
     if (this.isAttachedToViewport)
       this.onDisplayStyleChanged.raiseEvent();
+
+    this._displayStyle = style;
   }
 
   /** @internal */
@@ -1007,12 +1012,19 @@ export abstract class ViewState extends ElementState {
   /** Specify a provider of per-model display transforms. Intended chiefly for use by model alignment tools.
    * @note The transform supplied is used for display purposes **only**. Do not expect operations like snapping to account for the display transform.
    * @see [[Viewport.setModelDisplayTransformProvider]].
-   * @internal
+   * @alpha
    */
   public get modelDisplayTransformProvider(): ModelDisplayTransformProvider | undefined {
     return this._modelDisplayTransformProvider;
   }
+
   public set modelDisplayTransformProvider(provider: ModelDisplayTransformProvider | undefined) {
+    if (provider === this.modelDisplayTransformProvider)
+      return;
+
+    if (this.isAttachedToViewport)
+      this.onModelDisplayTransformProviderChanged.raiseEvent(provider);
+
     this._modelDisplayTransformProvider = provider;
   }
 
@@ -1115,18 +1127,18 @@ export abstract class ViewState3d extends ViewState {
       this.centerEyePoint();
 
     this._details = new ViewDetails3d(this.jsonProperties);
-    this._details.onModelClipGroupsChanged.addListener((_) => this.updateModelClips());
-    this.updateModelClips();
+    this._details.onModelClipGroupsChanged.addListener((newGroups) => this.updateModelClips(newGroups));
+    this.updateModelClips(this._details.modelClipGroups);
 
     this._updateMaxGlobalScopeFactor();
   }
 
-  private updateModelClips(): void {
+  private updateModelClips(groups: ModelClipGroups): void {
     for (const clip of this._modelClips)
       clip?.dispose();
 
     this._modelClips.length = 0;
-    for (const group of this.details.modelClipGroups.groups) {
+    for (const group of groups.groups) {
       const clip = group.clip ? IModelApp.renderSystem.createClipVolume(group.clip) : undefined;
       this._modelClips.push(clip);
     }
