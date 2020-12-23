@@ -213,5 +213,3 @@ export * from "./ViewCreator3d";
  * @docs-group-description MapLayerFormatRegistry
  * Class for working with supported map layer formats.
  */
-
-

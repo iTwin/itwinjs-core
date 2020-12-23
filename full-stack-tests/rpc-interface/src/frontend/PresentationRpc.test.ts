@@ -178,7 +178,6 @@ describe("PresentationRpcInterface tests", () => {
       });
     });
 
-
     it("getContentAndSize works as expected", async () => {
       await using(await Presentation.presentation.rulesets().add(ruleset), async (_r) => {
         const contentAndSize = await Presentation.presentation.getContentAndSize(props, descriptor!, keys);

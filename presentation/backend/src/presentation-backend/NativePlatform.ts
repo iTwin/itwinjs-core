@@ -115,11 +115,11 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
       const requestContext = ClientRequestContext.current;
       return new Promise((resolve: (result: NativePlatformResponse<void>) => void, reject: () => void) => {
         requestContext.enter();
-        this._nativeAddon.forceLoadSchemas(db, (result: IModelJsNative.ECPresentationManagerResponse<void>) => {
-          if (result === IModelJsNative.ECPresentationStatus.Success)
-            resolve({ result: undefined, diagnostics: result.diagnostics });
-          else
+        this._nativeAddon.forceLoadSchemas(db, (response: IModelJsNative.ECPresentationManagerResponse<void>) => {
+          if (response.error)
             reject();
+          else
+            resolve(this.createSuccessResponse(response));
         });
       });
     }

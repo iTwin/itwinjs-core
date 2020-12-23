@@ -588,7 +588,6 @@ interface RDSClientProps {
   tilesId: string;
 }
 
-
 // TBD - Allow an object to override the URL and provide its own authentication.
 function parseCesiumUrl(url: string): { id: number, key: string } | undefined {
   const cesiumSuffix = "$CesiumIonAsset=";
@@ -694,7 +693,6 @@ export class RealityModelTileClient {
     const data = await request(requestContext, url, options);
     return data.body;
   }
-
 
   // ### TODO. Technically the url should not be required. If the reality data encapsulated is stored on PW Context Share then
   // the relative path to root document is extracted from the reality data. Otherwise the full url to root document should have been provided at

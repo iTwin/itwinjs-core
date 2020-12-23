@@ -408,7 +408,6 @@ export function matchesFuzzy2(pattern: string, word: string): IMatch[] | null {
   return score ? createMatches(score) : null;
 }
 
-
 // #region --- fuzzyScore ---
 /**
  * @internal
@@ -693,10 +692,10 @@ function _findAllMatches2(row: number, column: number, total: number, matches: n
       lastMatched = false;
       simpleMatchCount = 0;
     } else {
-    /* istanbul ignore else */
+      /* istanbul ignore else */
       if (arrow & Arrow.Diag) {
         if (arrow & Arrow.Left) {
-        // left
+          // left
           _findAllMatches2(
             row,
             column - 1,
@@ -722,19 +721,19 @@ function _findAllMatches2(row: number, column: number, total: number, matches: n
           simpleMatchCount += 1;
 
           if (row === 0 && !_firstMatchCanBeWeak) {
-          // when the first match is a weak
-          // match we discard it
+            // when the first match is a weak
+            // match we discard it
             return undefined;
           }
 
         } else {
-        // boost
+          // boost
           total += 1 + (simpleMatchCount * (score - 1));
           simpleMatchCount = 0;
         }
 
       } else {
-      // istanbul ignore next
+        // istanbul ignore next
         return undefined;
       }
     }
@@ -752,7 +751,6 @@ function _findAllMatches2(row: number, column: number, total: number, matches: n
 }
 
 // #endregion
-
 
 // #region --- graceful ---
 /** @internal */

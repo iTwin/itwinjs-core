@@ -5,7 +5,6 @@
 import { expect } from "chai";
 import { DialogItem, DialogItemValue, DialogProperty, DialogPropertySyncItem, EditorPosition, PropertyDescriptionHelper } from "../../ui-abstract";
 
-
 describe("DialogProperty", () => {
   const colorProperty = new DialogProperty<string>(PropertyDescriptionHelper.buildTextEditorDescription("color", "Color"), "blue", undefined);
   const diValue: DialogItemValue = { value: "yellow", displayValue: "Yellow" };
@@ -44,20 +43,20 @@ describe("DialogProperty", () => {
   describe("Non-string types", () => {
     it("Number property test", () => {
       const numberProperty = new DialogProperty<number>(PropertyDescriptionHelper.buildTextEditorDescription("number", "Number"), 1, undefined);
-      expect (numberProperty.dialogItemValue.value).to.eq(1);
+      expect(numberProperty.dialogItemValue.value).to.eq(1);
     });
     it("Boolean property test", () => {
       const booleanProperty = new DialogProperty<boolean>(PropertyDescriptionHelper.buildTextEditorDescription("boolean", "Boolean"), true, undefined);
-      expect (booleanProperty.dialogItemValue.value).to.eq(true);
+      expect(booleanProperty.dialogItemValue.value).to.eq(true);
     });
     it("Undefined property test", () => {
       const undefinedProperty = new DialogProperty<undefined>(PropertyDescriptionHelper.buildTextEditorDescription("undefined", "Undefined"), undefined, undefined);
-      expect (undefinedProperty.dialogItemValue.value).to.be.undefined;
+      expect(undefinedProperty.dialogItemValue.value).to.be.undefined;
     });
     it("Date property test", () => {
       const date = new Date();
       const dateProperty = new DialogProperty<Date>(PropertyDescriptionHelper.buildTextEditorDescription("date", "Date"), date, undefined);
-      expect (dateProperty.dialogItemValue.value).to.eq(date);
+      expect(dateProperty.dialogItemValue.value).to.eq(date);
     });
   });
 });
