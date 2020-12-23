@@ -515,6 +515,9 @@ export class DisplayStyleSettings {
    */
   public get backgroundColor(): ColorDef { return this._background; }
   public set backgroundColor(color: ColorDef) {
+    if (this.backgroundColor.equals(color))
+      return;
+
     this.onBackgroundColorChanged.raiseEvent(color);
     this._background = color;
     this._json.backgroundColor = color.toJSON();
@@ -526,6 +529,9 @@ export class DisplayStyleSettings {
    */
   public get monochromeColor(): ColorDef { return this._monochrome; }
   public set monochromeColor(color: ColorDef) {
+    if (this.monochromeColor.equals(color))
+      return;
+
     this.onMonochromeColorChanged.raiseEvent(color);
     this._monochrome = color;
     this._json.monochromeColor = color.toJSON();
@@ -534,6 +540,9 @@ export class DisplayStyleSettings {
   /** The style in which [[monochromeColor]] is applied. */
   public get monochromeMode(): MonochromeMode { return this._monochromeMode; }
   public set monochromeMode(mode: MonochromeMode) {
+    if (this.monochromeMode === mode)
+        return;
+
     this.onMonochromeModeChanged.raiseEvent(mode);
     this._monochromeMode = mode;
     this._json.monochromeMode = mode;
@@ -618,6 +627,9 @@ export class DisplayStyleSettings {
     return Math.max(0, Math.min(1, fraction));
   }
   public set analysisFraction(fraction: number) {
+    if (this.analysisFraction === fraction)
+      return;
+
     this.onAnalysisFractionChanged.raiseEvent(fraction);
     this._json.analysisFraction = Math.max(0, Math.min(1, fraction));
   }
@@ -1164,6 +1176,9 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
    */
   public get thematic(): ThematicDisplay { return this._thematic; }
   public set thematic(thematic: ThematicDisplay) {
+    if (thematic.equals(this.thematic))
+      return;
+
     this.onThematicChanged.raiseEvent(thematic);
     this._thematic = thematic;
     this._json3d.thematic = thematic.toJSON();
@@ -1172,6 +1187,9 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
   /** The settings that control how visible and hidden edges are displayed.  */
   public get hiddenLineSettings(): HiddenLine.Settings { return this._hline; }
   public set hiddenLineSettings(hline: HiddenLine.Settings) {
+    if (hline.equals(this.hiddenLineSettings))
+      return;
+
     this.onHiddenLineSettingsChanged.raiseEvent(hline);
     this._hline = hline;
     this._json3d.hline = hline.toJSON();
@@ -1190,6 +1208,9 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     return this._solarShadows;
   }
   public set solarShadows(solarShadows: SolarShadowSettings) {
+    if (solarShadows.equals(this.solarShadows))
+      return;
+
     this.onSolarShadowsChanged.raiseEvent(solarShadows);
     this._solarShadows = solarShadows;
     const json = solarShadows.toJSON();
@@ -1213,6 +1234,9 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     return this._lights;
   }
   public set lights(lights: LightSettings) {
+    if (this.lights.equals(lights))
+      return;
+
     this.onLightsChanged.raiseEvent(lights);
     this._lights = lights;
     this._json3d.lights = lights.toJSON();
@@ -1229,6 +1253,8 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
    * @beta
    */
   public setPlanProjectionSettings(modelId: Id64String, settings: PlanProjectionSettings | undefined): void {
+    this.onPlanProjectionSettingsChanged.raiseEvent(modelId, settings);
+
     if (undefined === settings) {
       if (undefined !== this._planProjections) {
         assert(undefined !== this._json3d.planProjections);

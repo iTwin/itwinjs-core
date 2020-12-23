@@ -1084,6 +1084,7 @@ export abstract class Viewport implements IDisposable {
 
     removals.push(view.onDisplayStyleChanged.addListener((newStyle) => {
       this._changeFlags.setDisplayStyle();
+      this.setFeatureOverrideProviderChanged();
       this.invalidateRenderPlan();
 
       this.detachFromDisplayStyle();
@@ -1120,23 +1121,25 @@ export abstract class Viewport implements IDisposable {
 
     removals.push(settings.onSubCategoryOverridesChanged.addListener(styleAndOverridesChanged));
     removals.push(settings.onModelAppearanceOverrideChanged.addListener(styleAndOverridesChanged));
-    removals.push(settings.onApplyOverrides.addListener(displayStyleChanged));
     removals.push(settings.onBackgroundColorChanged.addListener(displayStyleChanged));
     removals.push(settings.onMonochromeColorChanged.addListener(displayStyleChanged));
     removals.push(settings.onMonochromeModeChanged.addListener(displayStyleChanged));
     removals.push(settings.onClipStyleChanged.addListener(styleAndOverridesChanged));
 
-    removals.push(settings.onAnalysisFractionChanged.addListener(() => {
+    const analysisChanged = () => {
+      this._changeFlags.setDisplayStyle();
       this._analysisFractionValid = false;
       IModelApp.requestNextAnimation();
-    }));
+    };
+    removals.push(settings.onAnalysisFractionChanged.addListener(analysisChanged));
+    removals.push(settings.onAnalysisStyleChanged.addListener(analysisChanged));
 
     const scheduleChanged = () => {
-      this._changeFlags.setDisplayStyle();
       this._timePointValid = false;
+      this._changeFlags.setDisplayStyle();
+      this.setFeatureOverrideProviderChanged();
       IModelApp.requestNextAnimation();
     };
-
     removals.push(settings.onScheduleScriptPropsChanged.addListener(scheduleChanged));
     removals.push(settings.onTimePointChanged.addListener(scheduleChanged));
 
@@ -1157,12 +1160,6 @@ export abstract class Viewport implements IDisposable {
     removals.push(settings.onBackgroundMapChanged.addListener(() => {
       this.invalidateController();
       this._changeFlags.setDisplayStyle();
-    }));
-
-    removals.push(settings.onAnalysisStyleChanged.addListener(() => {
-      this._analysisFractionValid = false;
-      this._changeFlags.setDisplayStyle();
-      IModelApp.requestNextAnimation();
     }));
 
     removals.push(settings.onExcludedElementsChanged.addListener(() => {
