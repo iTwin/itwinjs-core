@@ -182,14 +182,14 @@ export class SpatialViewState extends ViewState3d {
   }
 
   /** @internal */
-  public attachToViewport(vp: Viewport): void {
-    super.attachToViewport(vp);
+  public attachToViewport(): void {
+    super.attachToViewport();
     this.registerModelSelectorListeners();
   }
 
   /** @internal */
-  public detachFromViewport(vp: Viewport): void {
-    super.detachFromViewport(vp);
+  public detachFromViewport(): void {
+    super.detachFromViewport();
     this.unregisterModelSelectorListeners();
   }
 

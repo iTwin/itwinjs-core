@@ -1064,7 +1064,7 @@ export abstract class Viewport implements IDisposable {
   private attachToView(): void {
     this.registerDisplayStyleListeners(this.view.displayStyle);
     this.registerViewListeners();
-    this.view.attachToViewport(this);
+    this.view.attachToViewport();
   }
 
   private registerViewListeners(): void {
@@ -1184,7 +1184,7 @@ export abstract class Viewport implements IDisposable {
     this._detachFromView.length = 0;
 
     if (this._view)
-      this._view.detachFromViewport(this);
+      this._view.detachFromViewport();
   }
 
   private detachFromDisplayStyle(): void {

@@ -81,14 +81,14 @@ describe("ViewState attached to Viewport", async () => {
     const view = await loadView();
     vp = ScreenViewport.create(div, view.clone());
     expect(view.isAttachedToViewport).to.be.false;
-    expect(() => view.detachFromViewport(vp)).to.throw("Attempting to detach a ViewState from a Viewport to which it is not attached.");
+    expect(() => view.detachFromViewport()).to.throw("Attempting to detach a ViewState from a Viewport to which it is not attached.");
   });
 
   it("should throw when attempting to attach while already attached", async () => {
     const view = await loadView();
     vp = ScreenViewport.create(div, view);
     expect(view.isAttachedToViewport).to.be.true;
-    expect(() => view.attachToViewport(vp)).to.throw("Attempting to attach a ViewState that is already attached to a Viewport");
+    expect(() => view.attachToViewport()).to.throw("Attempting to attach a ViewState that is already attached to a Viewport");
   });
 
   it("should only emit events while attached to a Viewport", async () => {
