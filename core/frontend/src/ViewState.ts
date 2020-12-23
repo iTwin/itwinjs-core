@@ -161,7 +161,7 @@ export abstract class ViewState extends ElementState {
         return;
 
     if (this.isAttachedToViewport)
-      this.onDisplayStyleChanged.raiseEvent();
+      this.onDisplayStyleChanged.raiseEvent(style);
 
     this._displayStyle = style;
   }

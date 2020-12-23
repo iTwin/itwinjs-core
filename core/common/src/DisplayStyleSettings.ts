@@ -84,7 +84,6 @@ export interface ContextRealityModelProps {
   classifiers?: SpatialClassificationProps.Properties[];
   /** Appearance overrides.  Only the color, transparency, emphasized and nonLocatable properties are applicable.
    * @beta
-   *
    */
   appearanceOverrides?: FeatureAppearanceProps;
 }
