@@ -170,6 +170,7 @@ import { ModelProps } from '@bentley/imodeljs-common';
 import { ModelQueryParams } from '@bentley/imodeljs-common';
 import { ModelSelectorProps } from '@bentley/imodeljs-common';
 import { MonochromeMode } from '@bentley/imodeljs-common';
+import { ObservableSet } from '@bentley/bentleyjs-core';
 import { OctEncodedNormal } from '@bentley/imodeljs-common';
 import { OpenBriefcaseProps } from '@bentley/imodeljs-common';
 import { OpenMode } from '@bentley/bentleyjs-core';
@@ -1524,7 +1525,8 @@ export class CategorySelectorState extends ElementState {
     constructor(props: CategorySelectorProps, iModel: IModelConnection);
     addCategories(arg: Id64Arg): void;
     // (undocumented)
-    categories: Set<string>;
+    get categories(): Set<string>;
+    set categories(categories: Set<string>);
     changeCategoryDisplay(arg: Id64Arg, add: boolean): void;
     // @internal (undocumented)
     static get className(): string;
@@ -1533,6 +1535,8 @@ export class CategorySelectorState extends ElementState {
     has(id: Id64String): boolean;
     isCategoryViewed(categoryId: Id64String): boolean;
     get name(): string;
+    // @internal (undocumented)
+    get observableCategories(): ObservableSet<string>;
     // (undocumented)
     toJSON(): CategorySelectorProps;
 }
@@ -5797,7 +5801,7 @@ export interface ModalReturn {
     stop: (_ev: Event) => void;
 }
 
-// @internal
+// @alpha
 export interface ModelDisplayTransformProvider {
     // (undocumented)
     getModelDisplayTransform(modelId: Id64String, baseTransform: Transform): Transform;
@@ -5814,8 +5818,11 @@ export class ModelSelectorState extends ElementState {
     equalState(other: ModelSelectorState): boolean;
     has(id: string): boolean;
     load(): Promise<void>;
-    readonly models: Set<string>;
+    get models(): Set<string>;
+    set models(models: Set<string>);
     get name(): string;
+    // @internal (undocumented)
+    get observableModels(): ObservableSet<string>;
     // (undocumented)
     toJSON(): ModelSelectorProps;
 }
@@ -8392,6 +8399,8 @@ export class SpatialViewState extends ViewState3d {
     // (undocumented)
     addViewedModel(id: Id64String): void;
     // @internal (undocumented)
+    attachToViewport(): void;
+    // @internal (undocumented)
     static get className(): string;
     // (undocumented)
     clearViewedModels(): void;
@@ -8409,6 +8418,8 @@ export class SpatialViewState extends ViewState3d {
         min: number;
         max: number;
     };
+    // @internal (undocumented)
+    detachFromViewport(): void;
     // (undocumented)
     equals(other: this): boolean;
     // (undocumented)
@@ -8425,7 +8436,10 @@ export class SpatialViewState extends ViewState3d {
     // @internal (undocumented)
     markModelSelectorChanged(): void;
     // (undocumented)
-    modelSelector: ModelSelectorState;
+    get modelSelector(): ModelSelectorState;
+    set modelSelector(selector: ModelSelectorState);
+    // @beta
+    readonly onViewedModelsChanged: BeEvent<() => void>;
     // (undocumented)
     removeViewedModel(id: Id64String): void;
     // (undocumented)
@@ -11234,7 +11248,6 @@ export abstract class Viewport implements IDisposable {
     isSubCategoryVisible(id: Id64String): boolean;
     // @internal
     lastFlashedElem?: string;
-    // (undocumented)
     get lightSettings(): LightSettings | undefined;
     // @internal (undocumented)
     markSelectionSetDirty(): void;
@@ -11524,13 +11537,14 @@ export abstract class ViewState extends ElementState {
     // @internal (undocumented)
     get areAllTileTreesLoaded(): boolean;
     // @internal
-    attachToViewport(_vp: Viewport): void;
+    attachToViewport(): void;
     get auxiliaryCoordinateSystem(): AuxCoordSystemState;
     get backgroundColor(): ColorDef;
     // (undocumented)
     calculateFocusCorners(): Point3d[];
     calculateFrustum(result?: Frustum): Frustum | undefined;
-    categorySelector: CategorySelectorState;
+    get categorySelector(): CategorySelectorState;
+    set categorySelector(selector: CategorySelectorState);
     // @internal (undocumented)
     static get className(): string;
     // @internal
@@ -11554,12 +11568,13 @@ export abstract class ViewState extends ElementState {
     // (undocumented)
     description?: string;
     // @internal
-    detachFromViewport(_vp: Viewport): void;
+    detachFromViewport(): void;
     // @beta
     abstract get details(): ViewDetails;
     // @internal
     discloseTileTrees(trees: TileTreeSet): void;
-    displayStyle: DisplayStyleState;
+    get displayStyle(): DisplayStyleState;
+    set displayStyle(style: DisplayStyleState);
     // @internal (undocumented)
     drawGrid(context: DecorateContext): void;
     equals(other: this): boolean;
@@ -11608,7 +11623,7 @@ export abstract class ViewState extends ElementState {
     hasSameCoordinates(other: ViewState): boolean;
     is2d(): this is ViewState2d;
     abstract is3d(): this is ViewState3d;
-    // @internal
+    // @alpha
     get isAttachedToViewport(): boolean;
     isCameraEnabled(): this is ViewState3d;
     abstract isDrawingView(): this is DrawingViewState;
@@ -11622,10 +11637,16 @@ export abstract class ViewState extends ElementState {
     lookAtVolume(volume: LowAndHighXYZ | LowAndHighXY, aspect?: number, options?: ViewChangeOptions): void;
     // @alpha
     get maxGlobalScopeFactor(): number;
-    // @internal
+    // @alpha
     get modelDisplayTransformProvider(): ModelDisplayTransformProvider | undefined;
     set modelDisplayTransformProvider(provider: ModelDisplayTransformProvider | undefined);
     get name(): string;
+    // @beta
+    readonly onDisplayStyleChanged: BeEvent<(newStyle: DisplayStyleState) => void>;
+    // @alpha
+    readonly onModelDisplayTransformProviderChanged: BeEvent<(newProvider: ModelDisplayTransformProvider) => void>;
+    // @beta
+    readonly onViewedCategoriesChanged: BeEvent<() => void>;
     // @internal (undocumented)
     outputStatusMessage(status: ViewStatus): ViewStatus;
     // @internal

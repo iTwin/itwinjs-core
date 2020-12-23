@@ -52,7 +52,6 @@ public;Entry
 public;EntryContainer
 alpha;EnvMacroSubst
 beta;ExtensionStatus
-beta;FunctionChain
 public;GeoServiceStatus
 public;GetMetaDataFunction = () => any
 public;Guid

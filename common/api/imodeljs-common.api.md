@@ -7705,7 +7705,7 @@ export class ViewDetails {
     get clipVector(): ClipVector | undefined;
     set clipVector(clip: ClipVector | undefined);
     // @internal
-    getJSON(): ViewDetailsProps;
+    getJSON(): Readonly<ViewDetailsProps>;
     get gridOrientation(): GridOrientationType;
     set gridOrientation(orientation: GridOrientationType);
     get gridSpacing(): XAndY;
@@ -7716,6 +7716,7 @@ export class ViewDetails {
     protected readonly _json: ViewDetailsProps;
     // @internal
     static maxSkew: number;
+    readonly onClipVectorChanged: BeEvent<(newClip: ClipVector | undefined) => void>;
 }
 
 // @beta
@@ -7727,12 +7728,12 @@ export class ViewDetails3d extends ViewDetails {
     get allow3dManipulations(): boolean;
     set allow3dManipulations(allow: boolean);
     // @internal
-    getJSON(): ViewDetails3dProps;
+    getJSON(): Readonly<ViewDetails3dProps>;
     // @alpha
     get modelClipGroups(): ModelClipGroups;
     set modelClipGroups(groups: ModelClipGroups);
-    // @internal (undocumented)
-    readonly onModelClipGroupsChanged: BeEvent<(details: ViewDetails3d) => void>;
+    // @alpha
+    readonly onModelClipGroupsChanged: BeEvent<(newGroups: ModelClipGroups) => void>;
 }
 
 // @internal (undocumented)
