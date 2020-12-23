@@ -7,7 +7,7 @@ import {
   MockRender, ScreenViewport, SnapshotConnection, SpatialViewState,
 } from "@bentley/imodeljs-frontend";
 
-describe.only("ViewState attached to Viewport", async () => {
+describe("ViewState attached to Viewport", async () => {
   let imodel: SnapshotConnection;
   let vp: ScreenViewport;
 
