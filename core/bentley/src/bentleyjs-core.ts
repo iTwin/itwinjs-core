@@ -16,7 +16,6 @@ export * from "./Config";
 export * from "./Dictionary";
 export * from "./Disposable";
 export * from "./ElectronUtils";
-export * from "./FunctionChain";
 export * from "./Id";
 export * from "./IndexMap";
 export * from "./InstanceOf";

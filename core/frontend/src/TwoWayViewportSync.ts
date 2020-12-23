@@ -6,7 +6,6 @@
  * @module Views
  */
 
-import { FunctionChain } from "@bentley/bentleyjs-core";
 import { Viewport } from "./Viewport";
 
 /** Forms a 2-way connection between 2 Viewports of the same iModel, such that any change of the parameters in one will be reflected in the other.
@@ -15,8 +14,9 @@ import { Viewport } from "./Viewport";
  * @beta
  */
 export class TwoWayViewportSync {
-  private _disconnect = new FunctionChain();
+  private readonly _disconnect: VoidFunction[] = [];
   private _isEcho = false;
+
   private syncView(source: Viewport, target: Viewport) {
     if (this._isEcho) return;
     this._isEcho = true; // so we don't react to the echo of this sync
@@ -32,12 +32,13 @@ export class TwoWayViewportSync {
     view2.applyViewState(viewState2);
 
     // listen to the onViewChanged events from both views
-    this._disconnect.append(view1.onViewChanged.addListener(() => this.syncView(view1, view2)));
-    this._disconnect.append(view2.onViewChanged.addListener(() => this.syncView(view2, view1)));
+    this._disconnect.push(view1.onViewChanged.addListener(() => this.syncView(view1, view2)));
+    this._disconnect.push(view2.onViewChanged.addListener(() => this.syncView(view2, view1)));
   }
 
   /** Remove the connection between the two views. */
   public disconnect() {
-    this._disconnect.callAndClear();
+    this._disconnect.forEach((f) => f());
+    this._disconnect.length = 0;
   }
 }

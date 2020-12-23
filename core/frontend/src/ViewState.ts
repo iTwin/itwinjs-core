@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { assert, BeEvent, BeTimePoint, FunctionChain, Id64, Id64Arg, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { assert, BeEvent, BeTimePoint, Id64, Id64Arg, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import {
   Angle, AxisOrder, ClipVector, Constant, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d,
   PolyfaceBuilder, Range3d, Ray3d, StrokeOptions, Transform, Vector2d, Vector3d, XAndY, XYAndZ, XYZ, YawPitchRollAngles,
@@ -112,7 +112,7 @@ export abstract class ViewState extends ElementState {
   private readonly _gridDecorator: GridDecorator;
   private _categorySelector: CategorySelectorState;
   private _displayStyle: DisplayStyleState;
-  protected readonly _detachCategorySelector = new FunctionChain();
+  private readonly _unregisterCategorySelectorListeners: VoidFunction[] = [];
 
   /** An event raised when the set of categories viewed by this view changes, *only* if the view is attached to a [[Viewport]].
    * @beta
@@ -141,7 +141,7 @@ export abstract class ViewState extends ElementState {
       return;
 
     const isAttached = this.isAttachedToViewport;
-    this._detachCategorySelector.callAndClear();
+    this.unregisterCategorySelectorListeners();
 
     this._categorySelector = selector;
 
@@ -1035,6 +1035,8 @@ export abstract class ViewState extends ElementState {
 
   /** Invoked when this view becomes the view displayed by the specified [[Viewport]].
    * A ViewState can be attached to at most **one** Viewport.
+   * @note If you override this method you **must** call `super.attachToViewport`.
+   * @throws Error if the view is already attached to any Viewport.
    * @see [[detachFromViewport]] from the inverse operation.
    * @internal
    */
@@ -1048,26 +1050,35 @@ export abstract class ViewState extends ElementState {
   private registerCategorySelectorListeners(): void {
     const cats = this.categorySelector.observableCategories;
     const event = () => this.onViewedCategoriesChanged.raiseEvent();
-    this._detachCategorySelector.append(cats.onAdded.addListener(event));
-    this._detachCategorySelector.append(cats.onDeleted.addListener(event));
-    this._detachCategorySelector.append(cats.onCleared.addListener(event));
+    this._unregisterCategorySelectorListeners.push(cats.onAdded.addListener(event));
+    this._unregisterCategorySelectorListeners.push(cats.onDeleted.addListener(event));
+    this._unregisterCategorySelectorListeners.push(cats.onCleared.addListener(event));
   }
 
   /** Invoked when this view, previously attached to the specified [[Viewport]] via [[attachToViewport]], is no longer the view displayed by that Viewport.
+   * @note If you override this method you **must** call `super.detachFromViewport`.
+   * @throws Error if the view is not attached to any Viewport.
    * @internal
    */
   public detachFromViewport(_vp: Viewport): void {
     if (!this.isAttachedToViewport)
       throw new Error("Attempting to detach a ViewState from a Viewport to which it is not attached.");
 
-    this._detachCategorySelector.callAndClear();
+    this.unregisterCategorySelectorListeners();
+  }
+
+  private unregisterCategorySelectorListeners(): void {
+    this._unregisterCategorySelectorListeners.forEach((f) => f());
+    this._unregisterCategorySelectorListeners.length = 0;
   }
 
   /** Returns whether this view is currently being displayed by a [[Viewport]].
    * @internal
    */
   public get isAttachedToViewport(): boolean {
-    return !this._detachCategorySelector.isEmpty;
+    // In attachToViewport, we register event listeners on the category selector. We remove them in detachFromViewport.
+    // So a non-empty list of event listener removal functions indicates we are currently attached to a viewport.
+    return this._unregisterCategorySelectorListeners.length > 0;
   }
 }
 

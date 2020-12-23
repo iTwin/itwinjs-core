@@ -7,7 +7,7 @@
  */
 
 import {
-  asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, Constructor, dispose, FunctionChain, Id64, Id64Arg, Id64Set,
+  asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, Constructor, dispose, Id64, Id64Arg, Id64Set,
   Id64String, IDisposable, isInstanceOf, StopWatch,
 } from "@bentley/bentleyjs-core";
 import {
@@ -256,8 +256,8 @@ export abstract class Viewport implements IDisposable {
    */
   private _view!: ViewState;
   /** A function executed by `setView()` when `this._view` changes. */
-  private readonly _detachFromView = new FunctionChain();
-  private readonly _detachDisplayStyle = new FunctionChain();
+  private readonly _detachFromView: VoidFunction[] = [];
+  private readonly _detachFromDisplayStyle: VoidFunction[] = [];
 
   private readonly _viewportId: number;
   private _doContinuousRendering = false;
@@ -1069,36 +1069,36 @@ export abstract class Viewport implements IDisposable {
 
   private registerViewListeners(): void {
     const view = this.view;
-    const chain = this._detachFromView;
+    const removals = this._detachFromView;
 
     // When we detach from the view, also unregister display style listeners.
-    chain.append(() => this._detachDisplayStyle.callAndClear());
+    removals.push(() => this.detachFromDisplayStyle());
 
-    chain.append(view.onModelDisplayTransformProviderChanged.addListener(() => this.invalidateScene()));
+    removals.push(view.onModelDisplayTransformProviderChanged.addListener(() => this.invalidateScene()));
 
-    chain.append(view.onViewedCategoriesChanged.addListener(() => {
+    removals.push(view.onViewedCategoriesChanged.addListener(() => {
       this._changeFlags.setViewedCategories();
       this.maybeInvalidateScene();
     }));
 
-    chain.append(view.onDisplayStyleChanged.addListener((newStyle) => {
+    removals.push(view.onDisplayStyleChanged.addListener((newStyle) => {
       this._changeFlags.setDisplayStyle();
       this.invalidateRenderPlan();
 
-      this._detachDisplayStyle.callAndClear();
+      this.detachFromDisplayStyle();
       this.registerDisplayStyleListeners(newStyle);
     }));
 
     const details = view.details;
-    chain.append(details.onClipVectorChanged.addListener(() => this.invalidateRenderPlan()));
+    removals.push(details.onClipVectorChanged.addListener(() => this.invalidateRenderPlan()));
 
     if (view.isSpatialView()) {
-      chain.append(view.onViewedModelsChanged.addListener(() => {
+      removals.push(view.onViewedModelsChanged.addListener(() => {
         this._changeFlags.setViewedModels();
         this.invalidateScene();
       }));
 
-      chain.append(view.details.onModelClipGroupsChanged.addListener(() => {
+      removals.push(view.details.onModelClipGroupsChanged.addListener(() => {
         this.invalidateScene();
       }));
     }
@@ -1106,7 +1106,7 @@ export abstract class Viewport implements IDisposable {
 
   private registerDisplayStyleListeners(style: DisplayStyleState): void {
     const settings = style.settings;
-    const chain = this._detachDisplayStyle;
+    const removals = this._detachFromDisplayStyle;
 
     const displayStyleChanged = () => {
       this.invalidateRenderPlan();
@@ -1120,25 +1120,25 @@ export abstract class Viewport implements IDisposable {
       this.setFeatureOverrideProviderChanged();
     };
 
-    chain.append(settings.onSubCategoryOverridesChanged.addListener(styleAndOverridesChanged));
-    chain.append(settings.onModelAppearanceOverrideChanged.addListener(styleAndOverridesChanged));
-    chain.append(settings.onApplyOverrides.addListener(displayStyleChanged));
-    chain.append(settings.onBackgroundColorChanged.addListener(displayStyleChanged));
-    chain.append(settings.onMonochromeColorChanged.addListener(displayStyleChanged));
-    chain.append(settings.onMonochromeModeChanged.addListener(displayStyleChanged));
-    chain.append(settings.onClipStyleChanged.addListener(styleAndOverridesChanged));
+    removals.push(settings.onSubCategoryOverridesChanged.addListener(styleAndOverridesChanged));
+    removals.push(settings.onModelAppearanceOverrideChanged.addListener(styleAndOverridesChanged));
+    removals.push(settings.onApplyOverrides.addListener(displayStyleChanged));
+    removals.push(settings.onBackgroundColorChanged.addListener(displayStyleChanged));
+    removals.push(settings.onMonochromeColorChanged.addListener(displayStyleChanged));
+    removals.push(settings.onMonochromeModeChanged.addListener(displayStyleChanged));
+    removals.push(settings.onClipStyleChanged.addListener(styleAndOverridesChanged));
 
-    chain.append(settings.onAnalysisFractionChanged.addListener(() => {
+    removals.push(settings.onAnalysisFractionChanged.addListener(() => {
       this._analysisFractionValid = false;
       IModelApp.requestNextAnimation();
     }));
 
-    chain.append(settings.onTimePointChanged.addListener(() => {
+    removals.push(settings.onTimePointChanged.addListener(() => {
       this._timePointValid = false;
       IModelApp.requestNextAnimation();
     }));
 
-    chain.append(settings.onViewFlagsChanged.addListener((vf) => {
+    removals.push(settings.onViewFlagsChanged.addListener((vf) => {
       if (vf.backgroundMap !== this.viewFlags.backgroundMap)
         this.invalidateController();
       else
@@ -1152,39 +1152,45 @@ export abstract class Viewport implements IDisposable {
     // ###TODO OSM Building display
     // ###TODO map imagery?
 
-    chain.append(settings.onBackgroundMapChanged.addListener(() => {
+    removals.push(settings.onBackgroundMapChanged.addListener(() => {
       this.invalidateController();
       this._changeFlags.setDisplayStyle();
     }));
 
-    chain.append(settings.onAnalysisStyleChanged.addListener(() => {
+    removals.push(settings.onAnalysisStyleChanged.addListener(() => {
       this._analysisFractionValid = false;
       this._changeFlags.setDisplayStyle();
       IModelApp.requestNextAnimation();
     }));
 
-    chain.append(settings.onExcludedElementsChanged.addListener(() => {
+    removals.push(settings.onExcludedElementsChanged.addListener(() => {
       this._changeFlags.setDisplayStyle();
       this.maybeInvalidateScene();
       this.setFeatureOverrideProviderChanged();
     }));
 
     if (settings.is3d()) {
-      chain.append(settings.onLightsChanged.addListener(displayStyleChanged));
-      chain.append(settings.onSolarShadowsChanged.addListener(displayStyleChanged));
-      chain.append(settings.onThematicChanged.addListener(displayStyleChanged));
-      chain.append(settings.onHiddenLineSettingsChanged.addListener(displayStyleChanged));
-      chain.append(settings.onAmbientOcclusionSettingsChanged.addListener(displayStyleChanged));
-      chain.append(settings.onEnvironmentChanged.addListener(displayStyleChanged));
-      chain.append(settings.onPlanProjectionSettingsChanged.addListener(displayStyleChanged));
+      removals.push(settings.onLightsChanged.addListener(displayStyleChanged));
+      removals.push(settings.onSolarShadowsChanged.addListener(displayStyleChanged));
+      removals.push(settings.onThematicChanged.addListener(displayStyleChanged));
+      removals.push(settings.onHiddenLineSettingsChanged.addListener(displayStyleChanged));
+      removals.push(settings.onAmbientOcclusionSettingsChanged.addListener(displayStyleChanged));
+      removals.push(settings.onEnvironmentChanged.addListener(displayStyleChanged));
+      removals.push(settings.onPlanProjectionSettingsChanged.addListener(displayStyleChanged));
     }
   }
 
   private detachFromView(): void {
-    this._detachFromView.callAndClear();
+    this._detachFromView.forEach((f) => f());
+    this._detachFromView.length = 0;
 
     if (this._view)
       this._view.detachFromViewport(this);
+  }
+
+  private detachFromDisplayStyle(): void {
+    this._detachFromDisplayStyle.forEach((f) => f());
+    this._detachFromDisplayStyle.length = 0;
   }
 
   /** Enables or disables continuous rendering. Ideally, during each render frame a Viewport will do as little work as possible.

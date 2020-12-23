@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { BeEvent, FunctionChain, Id64String } from "@bentley/bentleyjs-core";
+import { BeEvent, Id64String } from "@bentley/bentleyjs-core";
 import { Constant, Matrix3d, Range3d, XYAndZ } from "@bentley/geometry-core";
 import { AxisAlignedBox3d, SpatialViewDefinitionProps, ViewStateProps } from "@bentley/imodeljs-common";
 import { AuxCoordSystemSpatialState, AuxCoordSystemState } from "./AuxCoordSys";
@@ -30,7 +30,7 @@ export class SpatialViewState extends ViewState3d {
 
   private readonly _treeRefs: SpatialTileTreeReferences;
   private _modelSelector: ModelSelectorState;
-  private readonly _detachModelSelector = new FunctionChain();
+  private readonly _unregisterModelSelectorListeners: VoidFunction[] = [];
 
   /** An event raised when the set of models viewed by this view changes, *only* if the view is attached to a [[Viewport]].
    * @beta
@@ -46,7 +46,7 @@ export class SpatialViewState extends ViewState3d {
       return;
 
     const isAttached = this.isAttachedToViewport;
-    this._detachModelSelector.callAndClear();
+    this.unregisterModelSelectorListeners();
 
     this._modelSelector = selector;
 
@@ -190,7 +190,7 @@ export class SpatialViewState extends ViewState3d {
   /** @internal */
   public detachFromViewport(vp: Viewport): void {
     super.detachFromViewport(vp);
-    this._detachModelSelector.callAndClear();
+    this.unregisterModelSelectorListeners();
   }
 
   private registerModelSelectorListeners(): void {
@@ -200,9 +200,14 @@ export class SpatialViewState extends ViewState3d {
       this.onViewedModelsChanged.raiseEvent();
     };
 
-    this._detachModelSelector.append(models.onAdded.addListener(func));
-    this._detachModelSelector.append(models.onDeleted.addListener(func));
-    this._detachModelSelector.append(models.onCleared.addListener(func));
+    this._unregisterModelSelectorListeners.push(models.onAdded.addListener(func));
+    this._unregisterModelSelectorListeners.push(models.onDeleted.addListener(func));
+    this._unregisterModelSelectorListeners.push(models.onCleared.addListener(func));
+  }
+
+  private unregisterModelSelectorListeners(): void {
+    this._unregisterModelSelectorListeners.forEach((f) => f());
+    this._unregisterModelSelectorListeners.length = 0;
   }
 }
 /** Defines a spatial view that displays geometry on the image plane using a parallel orthographic projection.
