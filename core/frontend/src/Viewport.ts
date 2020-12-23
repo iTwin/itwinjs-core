@@ -1075,6 +1075,7 @@ export abstract class Viewport implements IDisposable {
     removals.push(() => this.detachFromDisplayStyle());
 
     removals.push(view.onModelDisplayTransformProviderChanged.addListener(() => this.invalidateScene()));
+    removals.push(view.details.onClipVectorChanged.addListener(() => this.invalidateRenderPlan()));
 
     removals.push(view.onViewedCategoriesChanged.addListener(() => {
       this._changeFlags.setViewedCategories();
@@ -1088,9 +1089,6 @@ export abstract class Viewport implements IDisposable {
       this.detachFromDisplayStyle();
       this.registerDisplayStyleListeners(newStyle);
     }));
-
-    const details = view.details;
-    removals.push(details.onClipVectorChanged.addListener(() => this.invalidateRenderPlan()));
 
     if (view.isSpatialView()) {
       removals.push(view.onViewedModelsChanged.addListener(() => {
@@ -1133,10 +1131,14 @@ export abstract class Viewport implements IDisposable {
       IModelApp.requestNextAnimation();
     }));
 
-    removals.push(settings.onTimePointChanged.addListener(() => {
+    const scheduleChanged = () => {
+      this._changeFlags.setDisplayStyle();
       this._timePointValid = false;
       IModelApp.requestNextAnimation();
-    }));
+    };
+
+    removals.push(settings.onScheduleScriptPropsChanged.addListener(scheduleChanged));
+    removals.push(settings.onTimePointChanged.addListener(scheduleChanged));
 
     removals.push(settings.onViewFlagsChanged.addListener((vf) => {
       if (vf.backgroundMap !== this.viewFlags.backgroundMap)
