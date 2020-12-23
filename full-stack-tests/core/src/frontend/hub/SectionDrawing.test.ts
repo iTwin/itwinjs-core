@@ -30,10 +30,6 @@ describe("Section Drawings (#integration)", () => {
     imodel = await RemoteBriefcaseConnection.open(projectId, iModelId);
   });
 
-  beforeEach(() => {
-    DrawingViewState.alwaysDisplaySpatialView = true;
-  });
-
   after(async () => {
     if (imodel)
       await imodel.close();
@@ -139,7 +135,7 @@ describe("Section Drawings (#integration)", () => {
       });
     }
 
-    DrawingViewState.alwaysDisplaySpatialView = false;
+    expect(DrawingViewState.alwaysDisplaySpatialView).to.be.false;
     let num2dTiles = 0;
     await test((vp) => {
       num2dTiles = vp.numSelectedTiles;

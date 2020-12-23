@@ -1955,10 +1955,14 @@ export abstract class ViewState2d extends ViewState {
 
   /** Change the model viewed by this view.
    * @note The new model should be of the same type (drawing or sheet) as the current viewed model.
+   * @throws Error if attempting to change the viewed model while the view is attached to a viewport.
    * @see [[Viewport.changeViewedModel2d]].
    * @alpha
    */
   public async changeViewedModel(newViewedModelId: Id64String): Promise<void> {
+    if (this.isAttachedToViewport)
+      throw new Error("Cannot change the viewed model of a view that is attached to a viewport.");
+
     this._baseModelId = newViewedModelId;
     this._treeRef = undefined;
     await this.load();

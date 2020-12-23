@@ -38,6 +38,80 @@ export interface SectionDrawingInfo {
   readonly drawingToSpatialTransform: Transform;
 }
 
+/** The information required to instantiate a [[SectionAttachment]]. This information is supplied to DrawingViewState constructor via ViewStateProps.
+ * The spatial view is obtained asynchronously in DrawingViewState.load(). The SectionAttachment is created in DrawingViewState.attachToViewport and
+ * disposed of in DrawingViewState.detachFromViewport.
+ * @internal
+ */
+class SectionAttachmentInfo {
+  private _spatialView: Id64String | ViewState3d;
+  private readonly _drawingToSpatialTransform: Transform;
+  private readonly _displaySpatialView: boolean;
+
+  public get spatialView(): Id64String | ViewState3d { return this._spatialView; }
+  public get wantDisplayed(): boolean {
+    return this._displaySpatialView || DrawingViewState.alwaysDisplaySpatialView;
+  }
+
+  private constructor(spatialView: Id64String | ViewState3d, drawingToSpatialTransform: Transform, displaySpatialView: boolean) {
+    this._spatialView = spatialView;
+    this._drawingToSpatialTransform = drawingToSpatialTransform;
+    this._displaySpatialView = displaySpatialView;
+  }
+
+  public static fromJSON(props?: SectionDrawingViewProps): SectionAttachmentInfo {
+    if (!props)
+      return new SectionAttachmentInfo(Id64.invalid, Transform.createIdentity(), false);
+
+    return new SectionAttachmentInfo(props.spatialView, Transform.fromJSON(props.drawingToSpatialTransform), true === props.displaySpatialView);
+  }
+
+  public toJSON(): SectionDrawingViewProps | undefined {
+    if ("string" === typeof this._spatialView && !Id64.isValidId64(this._spatialView))
+      return undefined;
+
+    return {
+      spatialView: (this._spatialView instanceof ViewState3d) ? this._spatialView.id : this._spatialView,
+      drawingToSpatialTransform: this._drawingToSpatialTransform.isIdentity ? undefined : this._drawingToSpatialTransform.toJSON(),
+      displaySpatialView: this._displaySpatialView,
+    };
+  }
+
+  public clone(): SectionAttachmentInfo {
+    return new SectionAttachmentInfo(this._spatialView, this._drawingToSpatialTransform, this._displaySpatialView);
+  }
+
+  public async load(iModel: IModelConnection): Promise<void> {
+    if (!this.wantDisplayed)
+      return;
+
+    if (this._spatialView instanceof ViewState3d)
+      return;
+
+    if (!Id64.isValidId64(this._spatialView))
+      return;
+
+    const spatialView = await iModel.views.load(this._spatialView);
+    if (spatialView instanceof ViewState3d)
+      this._spatialView = spatialView;
+  }
+
+  public createAttachment(): SectionAttachment | undefined {
+    if (!this.wantDisplayed || !(this._spatialView instanceof ViewState3d))
+      return undefined;
+
+    const spatialToDrawing = this._drawingToSpatialTransform.inverse();
+    return spatialToDrawing ? new SectionAttachment(this._spatialView, spatialToDrawing, this._drawingToSpatialTransform) : undefined;
+  }
+
+  public get sectionDrawingInfo(): SectionDrawingInfo {
+    return {
+      drawingToSpatialTransform: this._drawingToSpatialTransform,
+      spatialView: this._spatialView instanceof ViewState3d ? this._spatialView.id : this._spatialView,
+    };
+  }
+}
+
 /** A mostly no-op [[RenderTarget]] for a [[SectionAttachment]]. It allocates no webgl resources. */
 class SectionTarget extends MockRender.OffScreenTarget {
   private readonly _attachment: SectionAttachment;
@@ -58,7 +132,8 @@ class SectionTarget extends MockRender.OffScreenTarget {
 
 /** Draws the contents of an orthographic [[ViewState3d]] directly into a [[DrawingViewState]], if the associated [SectionDrawing]($backend)
  * specifies it should be. We select tiles for the view in the context of a lightweight offscreen viewport with a no-op [[RenderTarget]], then
- * add the resultant graphics to the drawing view's scene.
+ * add the resultant graphics to the drawing view's scene. The attachment is created in DrawingViewState.attachToViewport and disposed of in
+ * DrawingViewState.detachFromViewport.
  */
 class SectionAttachment {
   private readonly _viewFlagOverrides: ViewFlagOverrides;
@@ -82,14 +157,7 @@ class SectionAttachment {
     return this._drawingExtents.z;
   }
 
-  public get sectionDrawingInfo(): SectionDrawingInfo {
-    return {
-      spatialView: this.view.id,
-      drawingToSpatialTransform: this._fromDrawing,
-    };
-  }
-
-  private constructor(view: ViewState3d, toDrawing: Transform, fromDrawing: Transform) {
+  public constructor(view: ViewState3d, toDrawing: Transform, fromDrawing: Transform) {
     // Save the input for clone(). Attach a copy to the viewport.
     this._originalView = view;
     view = view.clone();
@@ -128,11 +196,6 @@ class SectionAttachment {
     // Save off the original frustum (potentially adjusted by viewport).
     this.viewport.setupFromView();
     this.viewport.viewingSpace.getFrustum(CoordSystem.World, true, this._originalFrustum);
-  }
-
-  public static create(view: ViewState3d, drawingToSpatial: Transform): SectionAttachment | undefined {
-    const spatialToDrawing = drawingToSpatial.inverse();
-    return spatialToDrawing ? new SectionAttachment(view, spatialToDrawing, drawingToSpatial) : undefined;
   }
 
   public dispose(): void {
@@ -213,11 +276,6 @@ class SectionAttachment {
   }
 }
 
-const defaultSectionDrawingProps = {
-  spatialView: Id64.invalid,
-  displaySpatialView: false,
-};
-
 /** A view of a [DrawingModel]($backend)
  * @public
  */
@@ -238,17 +296,17 @@ export class DrawingViewState extends ViewState2d {
 
   private readonly _modelLimits: ExtentLimits;
   private readonly _viewedExtents: AxisAlignedBox3d;
+  private _attachmentInfo: SectionAttachmentInfo;
   private _attachment?: SectionAttachment;
-  private _sectionDrawingProps?: SectionDrawingViewProps;
 
   /** Strictly for testing. @internal */
-  public get sectionDrawingInfo() {
-    return this._attachment?.sectionDrawingInfo;
+  public get sectionDrawingProps(): SectionDrawingViewProps | undefined {
+    return this._attachmentInfo.toJSON();
   }
 
   /** Strictly for testing. @internal */
-  public get sectionDrawingProps(): Readonly<SectionDrawingViewProps> | undefined {
-    return this._sectionDrawingProps;
+  public get sectionDrawingInfo() {
+    return this._attachmentInfo.sectionDrawingInfo;
   }
 
   public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, extents: AxisAlignedBox3d, sectionDrawing?: SectionDrawingViewProps) {
@@ -256,24 +314,39 @@ export class DrawingViewState extends ViewState2d {
     if (categories instanceof DrawingViewState) {
       this._viewedExtents = categories._viewedExtents.clone();
       this._modelLimits = { ...categories._modelLimits };
-      this._attachment = categories._attachment?.clone();
-      this._sectionDrawingProps = categories._sectionDrawingProps;
+      this._attachmentInfo = categories._attachmentInfo.clone();
     } else {
       this._viewedExtents = extents;
       this._modelLimits = { min: Constant.oneMillimeter, max: 10 * extents.maxLength() };
-      this._sectionDrawingProps = sectionDrawing ?? defaultSectionDrawingProps;
+      this._attachmentInfo = SectionAttachmentInfo.fromJSON(sectionDrawing);
     }
   }
 
   /** @internal */
-  public async changeViewedModel(modelId: Id64String): Promise<void> {
-    this._sectionDrawingProps = undefined;
+  public attachToViewport(): void {
+    super.attachToViewport();
+    assert(undefined === this._attachment);
+    this._attachment = this._attachmentInfo.createAttachment();
+  }
+
+  /** @internal */
+  public detachFromViewport(): void {
+    super.detachFromViewport();
     this._attachment = dispose(this._attachment);
-    return super.changeViewedModel(modelId);
+  }
+
+  /** @internal */
+  public async changeViewedModel(modelId: Id64String): Promise<void> {
+    await super.changeViewedModel(modelId);
+    const props = await this.querySectionDrawingProps();
+    this._attachmentInfo = SectionAttachmentInfo.fromJSON(props);
+
+    // super.changeViewedModel() throws if attached to viewport, and attachment only allocated while attached to viewport
+    assert(undefined === this._attachment);
   }
 
   private async querySectionDrawingProps(): Promise<SectionDrawingViewProps> {
-    let spatialView = Id64.invalid;;
+    let spatialView = Id64.invalid;
     let drawingToSpatialTransform: TransformProps | undefined;
     let displaySpatialView = false;
     try {
@@ -304,24 +377,10 @@ export class DrawingViewState extends ViewState2d {
 
   /** @internal */
   public async load(): Promise<void> {
-    this._attachment = dispose(this._attachment);
+    assert(!this.isAttachedToViewport);
+
     await super.load();
-    if (!this._sectionDrawingProps) {
-      // The viewed model was changed - we need to query backend for info about the new viewed model's section drawing.
-      this._sectionDrawingProps = await this.querySectionDrawingProps();
-    }
-
-    // Do we have an associated spatial view?
-    if (!this._sectionDrawingProps || !Id64.isValidId64(this._sectionDrawingProps.spatialView))
-      return;
-
-    // Do we want to display the spatial view?
-    if (!this._sectionDrawingProps.displaySpatialView && !DrawingViewState.alwaysDisplaySpatialView)
-      return;
-
-    const spatialView = await this.iModel.views.load(this._sectionDrawingProps.spatialView);
-    if (spatialView instanceof ViewState3d)
-      this._attachment = SectionAttachment.create(spatialView, Transform.fromJSON(this._sectionDrawingProps.drawingToSpatialTransform));
+    await this._attachmentInfo.load(this.iModel);
   }
 
   public static createFromProps(props: ViewStateProps, iModel: IModelConnection): DrawingViewState {
@@ -336,10 +395,7 @@ export class DrawingViewState extends ViewState2d {
   public toProps(): ViewStateProps {
     const props = super.toProps();
     props.modelExtents = this._viewedExtents.toJSON();
-
-    if (this._sectionDrawingProps && Id64.isValidId64(this._sectionDrawingProps.spatialView))
-      props.sectionDrawing = { ...this._sectionDrawingProps };
-
+    props.sectionDrawing = this._attachmentInfo.toJSON();
     return props;
   }
 
