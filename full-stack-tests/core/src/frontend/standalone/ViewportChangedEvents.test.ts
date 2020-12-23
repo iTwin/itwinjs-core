@@ -4,8 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { BeDuration, Id64, Id64Arg, Id64String } from "@bentley/bentleyjs-core";
+import { ClipVector, Transform } from "@bentley/geometry-core";
 import {
-  AmbientOcclusion, AnalysisStyle, ClipStyle, ColorDef, FeatureAppearance, MonochromeMode, PlanProjectionSettings, SubCategoryOverride, ThematicDisplay, ViewFlags,
+  AmbientOcclusion, AnalysisStyle, ClipStyle, ColorDef, FeatureAppearance, ModelClipGroup, ModelClipGroups, MonochromeMode, PlanProjectionSettings, SubCategoryOverride, ThematicDisplay, ViewFlags,
 } from "@bentley/imodeljs-common";
 import {
   ChangeFlag, FeatureSymbology, MockRender, PerModelCategoryVisibility, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId, Viewport,
@@ -631,6 +632,19 @@ describe("Viewport changed events", async () => {
     expect(numEvents).to.equal(2);
 
     removeListener();
+  });
+
+  it("should be dispatched when modifying ViewState directly", async () => {
+    const view = await testBim.views.load("0x34") as SpatialViewState;
+    vp = ScreenViewport.create(viewDiv, view);
+
+    ViewportChangedHandler.test(vp, (mon) => {
+      const expectChange = (state: ViewportState, func: () => void) => mon.expect(ChangeFlag.None, state, func);
+
+      expectChange(ViewportState.RenderPlan, () => view.details.clipVector = ClipVector.createEmpty());
+      expectChange(ViewportState.Scene, () => view.details.modelClipGroups = new ModelClipGroups([ ModelClipGroup.fromJSON({ models: [ "0x123" ] }) ]));
+      expectChange(ViewportState.Scene, () => view.modelDisplayTransformProvider = { getModelDisplayTransform: (_id, _tf) => Transform.createIdentity() });
+    });
   });
 
   it("should load subcategories for all displayed categories", async () => {
