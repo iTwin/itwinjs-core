@@ -98,7 +98,8 @@ class GridDecorator {
 /** The front-end state of a [[ViewDefinition]] element.
  * A ViewState is typically associated with a [[Viewport]] to display the contents of the view on the screen. A ViewState being displayed by a Viewport is considered to be
  * "attached" to that viewport; a "detached" viewport is not being displayed by any viewport. Because the Viewport modifies the state of its attached ViewState, a ViewState
- * can only be attached to one Viewport at a time.
+ * can only be attached to one Viewport at a time. Technically, two Viewports can display two different ViewStates that both use the same [[DisplayStyleState]], but this is
+ * discouraged - changes made to the style by one Viewport will affect the contents of the other Viewport.
  * * @see [Views]($docs/learning/frontend/Views.md)
  * @public
  */

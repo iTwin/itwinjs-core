@@ -647,6 +647,38 @@ describe("Viewport changed events", async () => {
     });
   });
 
+  it("should be dispatched to two views sharing the same display style", async () => {
+    const v1 = await testBim.views.load("0x34") as SpatialViewState;
+    const v2 = v1.clone();
+    v2.displayStyle = v1.displayStyle;
+
+    const div2 = document.createElement("div");
+    div2.style.width = div2.style.height = "50px";
+    document.body.appendChild(div2);
+
+    vp = ScreenViewport.create(viewDiv, v1);
+    const vp2 = ScreenViewport.create(div2, v2);
+
+    vp.renderFrame();
+    vp2.renderFrame();
+    expect(vp.renderPlanValid).to.be.true;
+    expect(vp2.renderPlanValid).to.be.true;
+
+    const vf = vp.viewFlags.clone();
+    vf.transparency = !vf.transparency;
+    vp.viewFlags = vf;
+    expect(vp.renderPlanValid).to.be.false;
+    expect(vp2.renderPlanValid).to.be.false;
+
+    vp.renderFrame();
+    vp2.renderFrame();
+    expect(vp.renderPlanValid).to.be.true;
+    expect(vp2.renderPlanValid).to.be.true;
+
+    vp2.dispose();
+    document.body.removeChild(div2);
+  });
+
   it("should load subcategories for all displayed categories", async () => {
     // NB: Because subcategories are cached, and previous tests probably loaded some, we must clear the cache.
     const subcats = testImodel.subcategories;

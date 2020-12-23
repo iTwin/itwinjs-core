@@ -533,7 +533,7 @@ export abstract class Viewport implements IDisposable {
     this.displayStyle.settings.applyOverrides(overrides);
   }
 
-  /** @see [DisplayStyleSettings.clipStyle]($common) */
+  /** @see [DisplayStyleSettings.clipStyle]($common)
    * @beta
    */
   public get clipStyle(): ClipStyle { return this.displayStyle.settings.clipStyle; }
