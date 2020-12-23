@@ -63,7 +63,6 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
   private _repeatLabel: string = "Repeat";
   private _removeListener?: () => void;
 
-
   constructor(props: TimelineComponentProps) {
     super(props);
 
