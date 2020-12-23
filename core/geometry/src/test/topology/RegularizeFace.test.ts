@@ -681,7 +681,6 @@ it("SingleFaceTriangulation", () => {
   expect(ck.getNumErrors()).equals(0);
 });
 
-
 /**
  *
  */
