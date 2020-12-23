@@ -309,6 +309,16 @@ export class DrawingViewState extends ViewState2d {
     return this._attachmentInfo.sectionDrawingInfo;
   }
 
+  /** Strictly for testing. @internal */
+  public get attachment(): Object | undefined {
+    return this._attachment;
+  }
+
+  /** Strictly for testing. @internal */
+  public get attachmentInfo(): Object {
+    return this._attachmentInfo;
+  }
+
   public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, extents: AxisAlignedBox3d, sectionDrawing?: SectionDrawingViewProps) {
     super(props, iModel, categories, displayStyle);
     if (categories instanceof DrawingViewState) {
