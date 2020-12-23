@@ -21,7 +21,7 @@ import { IModelApp } from "./IModelApp";
 import { CategorySelectorState } from "./CategorySelectorState";
 import { DisplayStyle2dState } from "./DisplayStyleState";
 import { CoordSystem } from "./CoordSystem";
-import { OffScreenViewport, Viewport } from "./Viewport";
+import { OffScreenViewport } from "./Viewport";
 import { SceneContext } from "./ViewContext";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { Scene } from "./render/Scene";

@@ -541,7 +541,7 @@ export class DisplayStyleSettings {
   public get monochromeMode(): MonochromeMode { return this._monochromeMode; }
   public set monochromeMode(mode: MonochromeMode) {
     if (this.monochromeMode === mode)
-        return;
+      return;
 
     this.onMonochromeModeChanged.raiseEvent(mode);
     this._monochromeMode = mode;

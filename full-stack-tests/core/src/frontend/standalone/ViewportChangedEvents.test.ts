@@ -367,7 +367,7 @@ describe("Viewport changed events", async () => {
   it("should be dispatched when model selector is modified using Viewport APIs", async () => {
     vp = ScreenViewport.create(viewDiv, await testBim.views.load("0x34"));
 
-    ViewportChangedHandler.testAsync(vp, async (mon) => {
+    await ViewportChangedHandler.testAsync(vp, async (mon) => {
       // adding a model which is already present produces no event
       mon.expect(ChangeFlag.None, undefined, () => vp.changeModelDisplay("0x1c", true));
 
@@ -464,7 +464,7 @@ describe("Viewport changed events", async () => {
   it("should be dispatched when category selector is modified directly", async () => {
     vp = ScreenViewport.create(viewDiv, await testImodel.views.load(id64(0x15)));
 
-    await ViewportChangedHandler.test(vp, (mon) => {
+    ViewportChangedHandler.test(vp, (mon) => {
       const expectChange = (func: () => void) => mon.expect(ChangeFlag.ViewedCategories, undefined, func);
       const expectNoChange = (func: () => void) => mon.expect(ChangeFlag.None, undefined, func);
 

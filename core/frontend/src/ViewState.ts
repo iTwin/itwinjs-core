@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { assert, BeEvent, BeTimePoint, Id64, Id64Arg, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { assert, BeEvent, Id64, Id64Arg, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import {
   Angle, AxisOrder, ClipVector, Constant, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d,
   PolyfaceBuilder, Range3d, Ray3d, StrokeOptions, Transform, Vector2d, Vector3d, XAndY, XYAndZ, XYZ, YawPitchRollAngles,
@@ -41,7 +41,6 @@ import { DrawingViewState } from "./DrawingViewState";
 import { SpatialViewState } from "./SpatialViewState";
 import { ViewStatus } from "./ViewStatus";
 import { ViewPose, ViewPose2d, ViewPose3d } from "./ViewPose";
-import { MarginPercent } from "./MarginPercent";
 
 /** Describes the largest and smallest values allowed for the extents of a [[ViewState]].
  * Attempts to exceed these limits in any dimension will fail, preserving the previous extents.
@@ -160,7 +159,7 @@ export abstract class ViewState extends ElementState {
 
   public set displayStyle(style: DisplayStyleState) {
     if (style === this.displayStyle)
-        return;
+      return;
 
     if (this.isAttachedToViewport)
       this.onDisplayStyleChanged.raiseEvent(style);

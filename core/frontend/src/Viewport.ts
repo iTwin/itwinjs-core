@@ -1103,8 +1103,6 @@ export abstract class Viewport implements IDisposable {
       this._changeFlags.setDisplayStyle();
     };
 
-    const renderPlanChanged = () => this.invalidateRenderPlan();
-    const maybeInvalidateScene = () => this.maybeInvalidateScene();
     const styleAndOverridesChanged = () => {
       displayStyleChanged();
       this.setFeatureOverrideProviderChanged();

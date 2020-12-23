@@ -18,7 +18,6 @@ import { SceneContext } from "./ViewContext";
 import { IModelConnection } from "./IModelConnection";
 import { ViewState3d } from "./ViewState";
 import { SpatialTileTreeReferences, TileTreeReference } from "./tile/internal";
-import { Viewport } from "./Viewport";
 
 /** Defines a view of one or more SpatialModels.
  * The list of viewed models is stored in the ModelSelector.
