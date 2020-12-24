@@ -305,7 +305,6 @@ describe("FilteringDataProvider", () => {
       mockFilterer.setup(async (x) => x.categoryMatchesFilter(findCategoryFromPropertyData("Cat1-1", originalPropertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: 2, filteredTypes: [FilteredType.Category] }));
       mockFilterer.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
 
-
       const filteringProvider = new FilteringPropertyDataProvider(dataProvider, mockFilterer.object);
 
       const filteredData = await filteringProvider.getData();

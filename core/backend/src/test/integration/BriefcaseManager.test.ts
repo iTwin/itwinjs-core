@@ -680,7 +680,6 @@ describe("BriefcaseManager (#integration)", () => {
     await testUtility.deleteTestIModel();
   });
 
-
   it("should be able to show progress when downloading a briefcase (#integration)", async () => {
     const testIModelName = "Stadium Dataset 1";
     const testIModelId = await HubUtility.queryIModelIdByName(requestContext, testProjectId, testIModelName);
@@ -699,7 +698,6 @@ describe("BriefcaseManager (#integration)", () => {
       numProgressCalls++;
       return 0;
     };
-
 
     const args = {
       contextId: testProjectId,

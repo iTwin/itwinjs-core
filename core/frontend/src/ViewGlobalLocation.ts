@@ -12,7 +12,6 @@ import { BingElevationProvider } from "./tile/internal";
 import { ScreenViewport } from "./Viewport";
 import { ViewState3d } from "./ViewState";
 
-
 /** Describes a rectangular area of the earth using cartographic data structures.
  * @alpha
  */
@@ -99,7 +98,6 @@ export async function areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLo
   const sw = await view3d.cartographicToRootFromGcs(area.southwest);
   return _areaToEyeHeight(view3d, ne, sw, offset);
 }
-
 
 /** Converts a root range (often project extents) to a cartographic area.
  * @internal

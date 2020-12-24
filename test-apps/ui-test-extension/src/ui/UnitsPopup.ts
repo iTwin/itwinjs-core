@@ -32,7 +32,6 @@ export class UnitsPopupUiDataProvider extends DialogLayoutDataProvider {
     IModelApp.quantityFormatter.useImperialFormats = (this.option === UnitsOptions.Metric ? false : true);
   };
 
-
   public supplyButtonData(): DialogButtonDef[] | undefined {
     const buttons: DialogButtonDef[] = [];
     buttons.push({ type: DialogButtonType.OK, onClick: this._handleOK });
