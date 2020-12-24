@@ -13,10 +13,10 @@ import { ECDbTestHelper } from "./ECDbTestHelper";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
-async function query(ecdb: ECDb, ecsql: string, args: any[] | object, limit?: number, callback?: (row: any) => void) {
+async function query(ecdb: ECDb, ecsql: string, args: any[] | object, limit?: number, callback?: (row: any) => void, abbreviateBlobs?: boolean) {
   ecdb.saveChanges();
   let rowCount: number = 0;
-  for await (const row of ecdb.query(ecsql, args, limit)) {
+  for await (const row of ecdb.query(ecsql, args, limit, undefined, undefined, abbreviateBlobs)) {
     rowCount++;
     if (callback)
       callback(row);
@@ -1941,6 +1941,18 @@ describe("ECSqlStatement", () => {
         assert.equal(row.p3d.z, p3dVal.z);
         assert.equal(row.s, strVal);
       });
+
+      assert.equal(await query(ecdb, "SELECT ECInstanceId, ECClassId, Bl FROM test.Foo WHERE ECInstanceId=?", [id], 1, (row: any) => {
+        assert.equal(row.id, id);
+        assert.equal(row.className, "Test.Foo");
+        assert.deepEqual(row.bl, blobVal.slice(0, 10));
+      }, true), 1);
+
+        assert.equal(await query(ecdb, "SELECT ECInstanceId, ECClassId, Bl FROM test.Foo WHERE ECInstanceId=?", [id], 1, (row: any) => {
+          assert.equal(row.id, id);
+          assert.equal(row.className, "Test.Foo");
+          assert.deepEqual(row.bl, blobVal);
+        }, false), 1);
 
       // assert.equal(await query(ecdb, "SELECT ECInstanceId, ECClassId, Bl,Bo,D,Dt,I,P2d,P3d,S FROM test.Foo WHERE ECInstanceId=?", [id], 1, (row: any) => {
       //   assert.equal(row.id, id);
