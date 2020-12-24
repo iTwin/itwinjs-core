@@ -6,13 +6,13 @@
  * @module SocketApi
  */
 
-export type Listener = (...arg: any[]) => void;
+export type Listener<T extends any[]> = (...arg: T) => void;
 export type RemoveFunction = () => void;
 
 export abstract class IModelIPc {
   public abstract addListener(channel: string, listener: Listener): RemoveFunction;
-  public abstract addOnce: (channel: string, listener: Listener) => RemoveFunction;
-  public abstract removeListener: (channel: string, listener: Listener) => void;
+  public abstract addOnce(channel: string, listener: Listener): RemoveFunction;
+  public abstract removeListener(channel: string, listener: Listener): void;
   public abstract send: (channel: string, ...data: any[]) => void;
 };
 
