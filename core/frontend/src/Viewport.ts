@@ -405,7 +405,7 @@ export abstract class Viewport implements IDisposable {
   private _outsideClipColor?: ColorDef;
   private _insideClipColor?: ColorDef;
 
-  /** @see [DisplayStyle3dSettings.lightSettings]($common) */
+  /** @see [DisplayStyle3dSettings.lights]($common) */
   public get lightSettings(): LightSettings | undefined {
     return this.displayStyle.is3d() ? this.displayStyle.settings.lights : undefined;
   }
