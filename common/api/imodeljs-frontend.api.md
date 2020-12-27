@@ -2230,6 +2230,12 @@ export class DrawingViewState extends ViewState2d {
     static alwaysDisplaySpatialView: boolean;
     // @internal (undocumented)
     get areAllTileTreesLoaded(): boolean;
+    // @internal
+    get attachment(): Object | undefined;
+    // @internal
+    get attachmentInfo(): Object;
+    // @internal (undocumented)
+    attachToViewport(): void;
     // @internal (undocumented)
     changeViewedModel(modelId: Id64String): Promise<void>;
     // @internal (undocumented)
@@ -2240,6 +2246,8 @@ export class DrawingViewState extends ViewState2d {
     createScene(context: SceneContext): void;
     // (undocumented)
     get defaultExtentLimits(): ExtentLimits;
+    // @internal (undocumented)
+    detachFromViewport(): void;
     // @internal (undocumented)
     discloseTileTrees(trees: TileTreeSet): void;
     // @internal (undocumented)
@@ -2255,9 +2263,9 @@ export class DrawingViewState extends ViewState2d {
     // @internal (undocumented)
     load(): Promise<void>;
     // @internal
-    get sectionDrawingInfo(): SectionDrawingInfo | undefined;
+    get sectionDrawingInfo(): SectionDrawingInfo;
     // @internal
-    get sectionDrawingProps(): Readonly<SectionDrawingViewProps> | undefined;
+    get sectionDrawingProps(): SectionDrawingViewProps | undefined;
     // (undocumented)
     toProps(): ViewStateProps;
     }
@@ -8130,10 +8138,12 @@ export class SheetViewState extends ViewState2d {
     constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps: SheetProps, attachments: Id64Array);
     // @internal (undocumented)
     get areAllTileTreesLoaded(): boolean;
-    // (undocumented)
-    readonly attachmentIds: Id64Array;
     // @internal
-    attachViews(attachments: ViewAttachmentProps[]): Promise<void>;
+    get attachments(): Object[] | undefined;
+    // @internal (undocumented)
+    attachToViewport(): void;
+    // @internal (undocumented)
+    changeViewedModel(modelId: Id64String): Promise<void>;
     // @internal (undocumented)
     static get className(): string;
     // @internal (undocumented)
@@ -8151,8 +8161,8 @@ export class SheetViewState extends ViewState2d {
         min: number;
         max: number;
     };
-    // @internal
-    detachViews(): void;
+    // @internal (undocumented)
+    detachFromViewport(): void;
     // @internal
     discloseTileTrees(trees: TileTreeSet): void;
     // (undocumented)
@@ -8168,6 +8178,8 @@ export class SheetViewState extends ViewState2d {
     readonly sheetSize: Point2d;
     // (undocumented)
     toProps(): ViewStateProps;
+    // @internal
+    get viewAttachmentProps(): Array<Readonly<ViewAttachmentProps>>;
     }
 
 // @internal
