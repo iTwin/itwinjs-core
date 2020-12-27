@@ -8138,6 +8138,8 @@ export class SheetViewState extends ViewState2d {
     constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps: SheetProps, attachments: Id64Array);
     // @internal (undocumented)
     get areAllTileTreesLoaded(): boolean;
+    // (undocumented)
+    get attachmentIds(): Id64Array;
     // @internal
     get attachments(): Object[] | undefined;
     // @internal (undocumented)
