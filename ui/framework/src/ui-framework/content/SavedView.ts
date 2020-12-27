@@ -6,10 +6,7 @@
  * @module ContentView
  */
 
-import { Id64Array } from "@bentley/bentleyjs-core";
-import {
-  CategorySelectorProps, DisplayStyleProps, ModelSelectorProps, SheetProps, ViewDefinitionProps, ViewStateProps,
-} from "@bentley/imodeljs-common";
+import { ViewStateProps } from "@bentley/imodeljs-common";
 import {
   DrawingViewState, EmphasizeElements, EmphasizeElementsProps, IModelConnection, ScreenViewport, SheetViewState, SpatialViewState, ViewState,
 } from "@bentley/imodeljs-frontend";
