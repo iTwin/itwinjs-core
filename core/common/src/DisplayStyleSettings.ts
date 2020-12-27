@@ -909,7 +909,6 @@ export class DisplayStyleSettings {
     this.onOverridesApplied.raiseEvent(overrides);
   }
 
-
   private findIndexOfSubCategoryOverrideInJSON(id: Id64String, allowAppend: boolean): number {
     const ovrsArray = JsonUtils.asArray(this._json.subCategoryOvr);
     if (undefined === ovrsArray) {
