@@ -426,9 +426,7 @@ export class DisplayStyleSettings {
   public readonly onAmbientOcclusionSettingsChanged = new BeEvent<(newSettings: AmbientOcclusion.Settings) => void>();
   /** Event raised just prior to assignment to the [[solarShadows]] property. */
   public readonly onSolarShadowsChanged = new BeEvent<(newSettings: SolarShadowSettings) => void>();
-  /** Event raised just prior to assignment to the [[environment]] property.
-   * @internal
-   */
+  /** Event raised just prior to assignment to the [[environment]] property. */
   public readonly onEnvironmentChanged = new BeEvent<(newProps: Readonly<EnvironmentProps>) => void>();
   /** Event raised just prior to assignment to the [[lights]] property. */
   public readonly onLightsChanged = new BeEvent<(newLights: LightSettings) => void>();
@@ -856,6 +854,7 @@ export class DisplayStyleSettings {
     this.onOverridesApplied.raiseEvent(overrides);
   }
 
+  /** @internal */
   protected _applyOverrides(overrides: DisplayStyleSettingsProps): void {
     this.onApplyOverrides.raiseEvent(overrides);
 

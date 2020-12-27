@@ -1752,7 +1752,7 @@ export class DisplayStyleSettings {
     set analysisStyle(style: AnalysisStyle | undefined);
     // @beta
     applyOverrides(overrides: DisplayStyleSettingsProps): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected _applyOverrides(overrides: DisplayStyleSettingsProps): void;
     get backgroundColor(): ColorDef;
     set backgroundColor(color: ColorDef);
@@ -1802,7 +1802,6 @@ export class DisplayStyleSettings {
     readonly onBackgroundMapChanged: BeEvent<(newMap: BackgroundMapSettings) => void>;
     // @beta
     readonly onClipStyleChanged: BeEvent<(newStyle: ClipStyle) => void>;
-    // @internal
     readonly onEnvironmentChanged: BeEvent<(newProps: Readonly<EnvironmentProps>) => void>;
     readonly onExcludedElementsChanged: BeEvent<() => void>;
     readonly onHiddenLineSettingsChanged: BeEvent<(newSettings: HiddenLine.Settings) => void>;
