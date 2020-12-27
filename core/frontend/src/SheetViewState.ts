@@ -158,6 +158,11 @@ export class SheetViewState extends ViewState2d {
     return props;
   }
 
+  /** Strictly for testing. @internal */
+  public get viewAttachmentProps(): Array<Readonly<ViewAttachmentProps>> {
+    return this._attachments ? this._attachments.viewAttachmentProps : [];
+  }
+
   /** @internal */
   public isDrawingView(): this is DrawingViewState { return false; }
 
@@ -315,6 +320,7 @@ interface Attachment {
   readonly zDepth: number;
   clone: (sheetView: SheetViewState) => Attachment;
   collectStatistics: (stats: RenderMemory.Statistics) => void;
+  viewAttachmentProps: ViewAttachmentProps;
 }
 
 /** Draws the contents a 2d or orthographic 3d view directly into a sheet view.
@@ -343,6 +349,10 @@ class OrthographicAttachment {
 
   public get view(): ViewState {
     return this._viewport.view;
+  }
+
+  public get viewAttachmentProps() {
+    return this._props;
   }
 
   public constructor(view: ViewState, props: ViewAttachmentProps, sheetView: SheetViewState) {
@@ -659,6 +669,10 @@ class RasterAttachment {
     this.zDepth = Frustum2d.depthFromDisplayPriority(props.jsonProperties?.displayPriority ?? 0);
   }
 
+  public get viewAttachmentProps() {
+    return this._props;
+  }
+
   public get areAllTileTreesLoaded() {
     return this._viewport?.view.areAllTileTreesLoaded ?? true;
   }
@@ -854,6 +868,10 @@ class Attachments {
   public clone(sheetView: SheetViewState): Attachments {
     const attachments = this._attachments.map((x) => x.clone(sheetView));
     return new Attachments(attachments);
+  }
+
+  public get viewAttachmentProps(): Array<Readonly<ViewAttachmentProps>> {
+    return this._attachments.map((attachment) => attachment.viewAttachmentProps);
   }
 
   public static async create(attachmentIds: Id64Array, sheetView: SheetViewState): Promise<Attachments> {
