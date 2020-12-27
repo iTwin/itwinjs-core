@@ -167,23 +167,13 @@ export interface OsmBuildingDisplayOptions {
   appearanceOverrides?: FeatureAppearance;
 }
 
-/** A Viewport renders the contents of one or more Models onto an `HTMLCanvasElement`.
+/** A Viewport renders the contents of one or more [GeometricModel]($backend)s onto an `HTMLCanvasElement`.
  *
- * It holds a [[ViewState]] object that defines its viewing parameters. [[ViewTool]]s may
- * modify the ViewState object. Changes to the ViewState are only reflected in a Viewport after the
- * [[synchWithView]] method is called.
- *
- * In general, because the Viewport essentially takes control of its attached ViewState, changes to the ViewState should be made
- * indirectly through the Viewport's own API. Doing so ensures that synchronization between the Viewport and its ViewState is reliable and automatic. For example:
- *
- *   * To change the set of categories or models displayed in the Viewport, use [[Viewport.changeCategoryDisplay]] and [[Viewport.changeModelDisplay]] rather than modifying the ViewState's [[CategorySelectorState]] or [[ModelSelectorState]] directly.
- *   * To change the [ViewFlags]($common), set [[Viewport.viewFlags]] rather than modifying the ViewState's [[DisplayStyleState]] directly.
- *   * To modify the [[DisplayStyleState]]:
- *    ```ts
- *    const style = viewport.displayStyle.clone();
- *    style.backgroundColor = ColorDef.red.clone(); // or any other desired modifications
- *    viewport.displayStyle = style;
- *    ```
+ * It holds a [[ViewState]] object that defines its viewing parameters; the ViewState in turn defines the [[DisplayStyleState]],
+ * [[CategorySelectorState]], and - for [[SpatialViewState]]s - the [[ModelSelectorState]]. While a ViewState is being displayed by a Viewport,
+ * it is considered to be "attached" to that viewport; it remains attached until the Viewport is disposed of or becomes attached to a different ViewState.
+ * While the ViewState is attached to a Viewport, any changes made to the ViewState or its display style or category/model selectors will be automatically
+ * reflected in the Viewport. A ViewState can be attached to no more than one Viewport at a time.
  *
  * As changes to ViewState are made, Viewports also hold a stack of *previous copies* of it, to allow
  * for undo/redo (i.e. *View Previous* and *View Next*) of viewing tools.
