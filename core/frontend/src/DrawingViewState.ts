@@ -41,7 +41,6 @@ export interface SectionDrawingInfo {
 /** The information required to instantiate a [[SectionAttachment]]. This information is supplied to DrawingViewState constructor via ViewStateProps.
  * The spatial view is obtained asynchronously in DrawingViewState.load(). The SectionAttachment is created in DrawingViewState.attachToViewport and
  * disposed of in DrawingViewState.detachFromViewport.
- * @internal
  */
 class SectionAttachmentInfo {
   private _spatialView: Id64String | ViewState3d;

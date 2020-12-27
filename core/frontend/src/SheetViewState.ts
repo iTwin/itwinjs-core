@@ -119,6 +119,131 @@ class SheetBorder {
   }
 }
 
+/** The information required to instantiate an Attachment object. See ViewAttachmentsInfo */
+interface ViewAttachmentInfo extends ViewAttachmentProps {
+  attachedView: ViewState;
+}
+
+/** The information required to instantiate an ViewAttachments object to draw ViewAttachments into a sheet. The list of view attachment Ids is
+ * supplied to SheetViewState via the constructor. The corresponding ViewAttachmentProps for each attachment are obtained asynchronously in
+ * SheetViewState.load(). The Attachments object is created in SheetViewState.attachToViewport and disposed of in SheetViewState.detachFromViewport.
+ */
+class ViewAttachmentsInfo {
+  private _attachments: Id64Array | ViewAttachmentInfo[];
+
+  private constructor(attachments: Id64Array | ViewAttachmentInfo[]) {
+    this._attachments = attachments;
+  }
+
+  public get isLoaded(): boolean {
+    return 0 === this._attachments.length || "string" !== typeof this._attachments[0];
+  }
+
+  private get viewAttachmentProps(): Array<Readonly<ViewAttachmentProps>> {
+    return this.isLoaded ? this._props : [];
+  }
+
+  private get _props(): ViewAttachmentInfo[] {
+    assert(this.isLoaded);
+    return this._attachments as ViewAttachmentInfo[];
+  }
+
+  private get _ids(): Id64Array {
+    assert(!this.isLoaded);
+    return this._attachments as Id64Array;
+  }
+
+  public static fromJSON(ids: Id64Array = []): ViewAttachmentsInfo {
+    return new ViewAttachmentsInfo(ids);
+  }
+
+  public toJSON(): Id64Array {
+    return this.isLoaded ? this._props.map((x) => x.id!) : this._ids;
+  }
+
+  public clone(): ViewAttachmentsInfo {
+    return new ViewAttachmentsInfo(this._attachments);
+  }
+
+  public async load(iModel: IModelConnection): Promise<void> {
+    if (this.isLoaded)
+      return;
+
+    const attachmentProps = await iModel.elements.getProps(this._ids) as ViewAttachmentInfo[];
+    const promises = [];
+    for (const attachment of attachmentProps) {
+      const loadView = async () => {
+        try {
+          const view = await iModel.views.load(attachment.view.id);
+          return view;
+        } catch (_) {
+          return undefined;
+        }
+      };
+
+      promises.push(loadView());
+    }
+
+    const views = await Promise.all(promises);
+    assert(views.length === attachmentProps.length);
+
+    const attachments = [];
+    for (let i = 0; i < views.length; i++) {
+      const view = views[i];
+      if (view && !(view instanceof SheetViewState)) {
+        const props = attachmentProps[i];
+        props.attachedView = view;
+        attachments.push(props);
+      }
+    }
+
+    this._attachments = attachments;
+  }
+
+  public createAttachments(sheetView: SheetViewState): ViewAttachments | undefined {
+    return this.isLoaded ? new ViewAttachments(this._props, sheetView) : undefined;
+  }
+}
+
+/** The set of view attachments to be displayed in a Viewport via a SheetViewState. Allocated when the view becomes attached to a Viewport;
+ * disposed of when it becomes detached from the viewport.
+ */
+class ViewAttachments {
+  private readonly _attachments: Attachment[] = [];
+  public maxDepth = Frustum2d.minimumZDistance;
+
+  public constructor(infos: ViewAttachmentInfo[], sheetView: SheetViewState) {
+    for (const info of infos) {
+      const drawAsRaster = info.jsonProperties?.displayOptions?.drawAsRaster || info.attachedView.isCameraEnabled();
+      const ctor = drawAsRaster ? RasterAttachment : OrthographicAttachment;
+      this._attachments.push(new ctor(info.attachedView, info, sheetView));
+    }
+  }
+
+  public get isEmpty(): boolean {
+    return 0 === this._attachments.length;
+  }
+
+  public get areAllTileTreesLoaded(): boolean {
+    return this._attachments.every((x) => x.areAllTileTreesLoaded);
+  }
+
+  public discloseTileTrees(trees: TileTreeSet): void {
+    for (const attachment of this._attachments)
+      trees.disclose(attachment);
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    for (const attachment of this._attachments)
+      attachment.collectStatistics(stats);
+  }
+
+  public addToScene(context: SceneContext): void {
+    for (const attachment of this._attachments)
+      attachment.addToScene(context);
+  }
+}
+
 /** A view of a [SheetModel]($backend).
  * @public
  */
@@ -271,22 +396,6 @@ export class SheetViewState extends ViewState2d {
     if (0 >= size.x || 0 >= size.y)
       return super.computeFitRange();
     return new Range3d(0, 0, -1, size.x, size.y, 1);
-  }
-
-  /** Strictly for debugging/testing - add additional view attachments to this sheet view.
-   * @internal
-   */
-  public async attachViews(attachments: ViewAttachmentProps[]): Promise<void> {
-    if (this._attachments)
-      await this._attachments.add(attachments, this);
-  }
-
-  /** Strictly for debugging/testing - remove all view attachments.
-   * @internal
-   */
-  public detachViews(): void {
-    if (this._attachments)
-      this._attachments.clear();
   }
 }
 
@@ -883,25 +992,8 @@ class Attachments {
     return new Attachments(attachments);
   }
 
-  public async add(attachmentProps: ViewAttachmentProps[], sheetView: SheetViewState): Promise<void> {
-    const attachments = await createAttachments(attachmentProps, sheetView);
-    for (const attachment of attachments)
-      this._attachments.push(attachment);
-
-    this.updateMaxDepth(attachments);
-  }
-
-  public clear(): void {
-    this._attachments.length = 0;
-    this.maxDepth = Frustum2d.minimumZDistance;
-  }
-
   private constructor(attachments: Attachment[]) {
     this._attachments = attachments;
-    this.updateMaxDepth(attachments);
-  }
-
-  private updateMaxDepth(attachments: Attachment[]): void {
     for (const attachment of attachments)
       this.maxDepth = Math.max(attachment.zDepth, this.maxDepth);
   }

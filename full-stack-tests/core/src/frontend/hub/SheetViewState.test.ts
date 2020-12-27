@@ -75,4 +75,13 @@ describe("Sheet views (#integration)", () => {
 
   it("allocates attachments when attached to viewport and deallocates when detached", async () => {
   });
+
+  it("updates view attachment info when viewed model changes", async () => {
+  });
+
+  it("preserves view attachment info when round-tripped through JSON", async () => {
+  });
+
+  it("clones view attachment props", asnyc () => {
+  });
 });
