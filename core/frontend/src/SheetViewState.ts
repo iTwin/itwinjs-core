@@ -158,7 +158,7 @@ class ViewAttachmentsInfo {
   }
 
   public toJSON(): Id64Array {
-    return this.isLoaded ? this._props.map((x) => x.id!) : this._ids;
+    return this.isLoaded ? this._props.map((x) => x.id!) : [...this._ids];
   }
 
   public clone(): ViewAttachmentsInfo {
@@ -266,6 +266,10 @@ export class SheetViewState extends ViewState2d {
   private _attachmentsInfo: ViewAttachmentsInfo;
   private _attachments?: ViewAttachments;
   private readonly _viewedExtents: AxisAlignedBox3d;
+
+  public get attachmentIds(): Id64Array {
+    return this._attachmentsInfo.toJSON();
+  }
 
   /** @internal */
   public static get className() { return "SheetViewDefinition"; }
