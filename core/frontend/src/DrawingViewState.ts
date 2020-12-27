@@ -141,7 +141,6 @@ class SectionAttachment {
   private readonly _viewRect = new ViewRect(0, 0, 1, 1);
   private readonly _originalFrustum = new Frustum();
   private readonly _drawingExtents: Vector3d;
-  private readonly _originalView: ViewState3d;
   public readonly viewport: OffScreenViewport;
   private readonly _branchOptions: GraphicBranchOptions;
   public scene?: Scene;
@@ -158,9 +157,6 @@ class SectionAttachment {
 
   public constructor(view: ViewState3d, toDrawing: Transform, fromDrawing: Transform) {
     // Save the input for clone(). Attach a copy to the viewport.
-    this._originalView = view;
-    view = view.clone();
-
     this._toDrawing = toDrawing;
     this._fromDrawing = fromDrawing;
 
@@ -199,10 +195,6 @@ class SectionAttachment {
 
   public dispose(): void {
     this.viewport.dispose();
-  }
-
-  public clone(): SectionAttachment {
-    return new SectionAttachment(this._originalView, this._toDrawing, this._fromDrawing);
   }
 
   public addToScene(context: SceneContext): void {

@@ -139,7 +139,7 @@ class ViewAttachmentsInfo {
     return 0 === this._attachments.length || "string" !== typeof this._attachments[0];
   }
 
-  private get viewAttachmentProps(): Array<Readonly<ViewAttachmentProps>> {
+  public get viewAttachmentProps(): Array<Readonly<ViewAttachmentProps>> {
     return this.isLoaded ? this._props : [];
   }
 
@@ -162,6 +162,7 @@ class ViewAttachmentsInfo {
   }
 
   public clone(): ViewAttachmentsInfo {
+    // No reason to clone the array.
     return new ViewAttachmentsInfo(this._attachments);
   }
 
@@ -242,6 +243,13 @@ class ViewAttachments {
     for (const attachment of this._attachments)
       attachment.addToScene(context);
   }
+
+  public dispose(): void {
+    for (const attachment of this._attachments)
+      attachment.dispose();
+
+    this._attachments.length = 0;
+  }
 }
 
 /** A view of a [SheetModel]($backend).
@@ -250,8 +258,8 @@ class ViewAttachments {
 export class SheetViewState extends ViewState2d {
   /** The width and height of the sheet in world coordinates. */
   public readonly sheetSize: Point2d;
-  public readonly attachmentIds: Id64Array;
-  private _attachments?: Attachments;
+  private _attachmentsInfo: ViewAttachmentsInfo;
+  private _attachments?: ViewAttachments;
   private readonly _viewedExtents: AxisAlignedBox3d;
 
   /** @internal */
@@ -268,6 +276,8 @@ export class SheetViewState extends ViewState2d {
   public toProps(): ViewStateProps {
     const props = super.toProps();
 
+    props.sheetAttachments = this._attachmentsInfo.toJSON();
+
     // For sheetProps all that is actually used is the size, so just null out everything else.
     const codeProps = { spec: "", scope: "", value: "" };
     props.sheetProps = {
@@ -279,13 +289,12 @@ export class SheetViewState extends ViewState2d {
       scale: 1,
     };
 
-    props.sheetAttachments = [...this.attachmentIds];
     return props;
   }
 
   /** Strictly for testing. @internal */
   public get viewAttachmentProps(): Array<Readonly<ViewAttachmentProps>> {
-    return this._attachments ? this._attachments.viewAttachmentProps : [];
+    return this._attachmentsInfo.viewAttachmentProps;
   }
 
   /** @internal */
@@ -296,13 +305,11 @@ export class SheetViewState extends ViewState2d {
     if (categories instanceof SheetViewState) {
       // we are coming from clone...
       this.sheetSize = categories.sheetSize.clone();
-      this.attachmentIds = [...categories.attachmentIds];
-      this._attachments = categories._attachments?.clone(this);
+      this._attachmentsInfo = categories._attachmentsInfo.clone();
       this._viewedExtents = categories._viewedExtents.clone();
     } else {
       this.sheetSize = Point2d.create(sheetProps.width, sheetProps.height);
-      this.attachmentIds = [...attachments];
-      this._attachments = undefined;
+      this._attachmentsInfo = ViewAttachmentsInfo.fromJSON(attachments);
 
       const extents = new Range3d(0, 0, 0, this.sheetSize.x, this.sheetSize.y, 0);
       const margin = 1.1;
@@ -358,7 +365,7 @@ export class SheetViewState extends ViewState2d {
    */
   public async load(): Promise<void> {
     await super.load();
-    this._attachments = await Attachments.create(this.attachmentIds, this);
+    await this._attachmentsInfo.load(this.iModel);
   }
 
   /** @internal */
@@ -366,6 +373,38 @@ export class SheetViewState extends ViewState2d {
     super.createScene(context);
     if (this._attachments)
       this._attachments.addToScene(context);
+  }
+
+  /** @internal */
+  private async queryAttachmentIds(): Promise<Id64Array> {
+    const ecsql = `SELECT ECInstanceId as attachmentId FROM bis.ViewAttachment WHERE model.Id=${this.baseModelId}`;
+    const ids: string[] = [];
+    for await (const row of this.iModel.query(ecsql))
+      ids.push(row.attachmentId);
+
+    return ids;
+  }
+
+  /** @internal */
+  public async changeViewedModel(modelId: Id64String): Promise<void> {
+    await super.changeViewedModel(modelId);
+    const attachmentIds = await this.queryAttachmentIds();
+    this._attachmentsInfo = ViewAttachmentsInfo.fromJSON(attachmentIds);
+
+    assert(undefined === this._attachments);
+  }
+
+  /** @internal */
+  public attachToViewport(): void {
+    super.attachToViewport();
+    assert(undefined === this._attachments);
+    this._attachments = this._attachmentsInfo.createAttachments(this);
+  }
+
+  /** @internal */
+  public detachFromViewport(): void {
+    super.detachFromViewport();
+    this._attachments = dispose(this._attachments);
   }
 
   /** @internal */
@@ -427,9 +466,9 @@ interface Attachment {
   addToScene: (context: SceneContext) => void;
   discloseTileTrees: (trees: TileTreeSet) => void;
   readonly zDepth: number;
-  clone: (sheetView: SheetViewState) => Attachment;
   collectStatistics: (stats: RenderMemory.Statistics) => void;
   viewAttachmentProps: ViewAttachmentProps;
+  dispose(): void;
 }
 
 /** Draws the contents a 2d or orthographic 3d view directly into a sheet view.
@@ -449,7 +488,6 @@ class OrthographicAttachment {
   private readonly _originalFrustum = new Frustum();
   private readonly _clipVolume?: RenderClipVolume;
   private readonly _hiddenLineSettings?: HiddenLine.Settings;
-  private readonly _originalView: ViewState;
   private readonly _scale: { x: number, y: number };
   private _debugFeatureTable?: PackedFeatureTable;
   public scene?: Scene;
@@ -465,10 +503,6 @@ class OrthographicAttachment {
   }
 
   public constructor(view: ViewState, props: ViewAttachmentProps, sheetView: SheetViewState) {
-    // Save the input view for clone(). Attach a modifiable copy of it to the viewport.
-    this._originalView = view;
-    view = view.clone();
-
     this.symbologyOverrides = new FeatureSymbology.Overrides(view);
     const target = new AttachmentTarget(this);
     this._viewport = OffScreenViewport.create(view, this._viewRect, true, target);
@@ -557,8 +591,8 @@ class OrthographicAttachment {
       this._hiddenLineSettings = style.settings.hiddenLineSettings;
   }
 
-  public clone(sheetView: SheetViewState): OrthographicAttachment {
-    return new OrthographicAttachment(this._originalView, this._props, sheetView);
+  public dispose(): void {
+    this._viewport.dispose();
   }
 
   public discloseTileTrees(trees: TileTreeSet): void {
@@ -778,6 +812,10 @@ class RasterAttachment {
     this.zDepth = Frustum2d.depthFromDisplayPriority(props.jsonProperties?.displayPriority ?? 0);
   }
 
+  public dispose(): void {
+    this._viewport?.dispose();
+  }
+
   public get viewAttachmentProps() {
     return this._props;
   }
@@ -818,10 +856,6 @@ class RasterAttachment {
   public discloseTileTrees(trees: TileTreeSet) {
     if (this._viewport)
       trees.disclose(this._viewport);
-  }
-
-  public clone(_sheetView: SheetViewState): RasterAttachment {
-    return this;
   }
 
   public produceGraphics(context: SceneContext): void {
@@ -908,93 +942,5 @@ class RasterAttachment {
   public collectStatistics(stats: RenderMemory.Statistics): void {
     if (this._graphics)
       this._graphics.collectStatistics(stats);
-  }
-}
-
-async function createAttachments(attachmentProps: ViewAttachmentProps[], sheetView: SheetViewState): Promise<Attachment[]> {
-  const promises = [];
-  for (const attachment of attachmentProps) {
-    const loadView = async () => {
-      try {
-        const view = await sheetView.iModel.views.load(attachment.view.id);
-        return view;
-      } catch (_) {
-        return undefined;
-      }
-    };
-
-    promises.push(loadView());
-  }
-
-  const views = await Promise.all(promises);
-  assert(views.length === attachmentProps.length);
-
-  const attachments = [];
-  const alwaysUseRaster = false; // set true for testing.
-  for (let i = 0; i < views.length; i++) {
-    const view = views[i];
-    if (view && !(view instanceof SheetViewState)) {
-      const props = attachmentProps[i];
-      const drawAsRaster = true === props.jsonProperties?.displayOptions?.drawAsRaster || view.isCameraEnabled() || alwaysUseRaster;
-      const ctor = drawAsRaster ? RasterAttachment : OrthographicAttachment;
-      const attach = new ctor(view, props, sheetView);
-      attachments.push(attach);
-    }
-  }
-
-  return attachments;
-}
-
-class Attachments {
-  private readonly _attachments: Attachment[];
-  public maxDepth = Frustum2d.minimumZDistance;
-
-  public get isEmpty() { return 0 === this._attachments.length; }
-
-  public get areAllTileTreesLoaded(): boolean {
-    for (const attachment of this._attachments)
-      if (!attachment.areAllTileTreesLoaded)
-        return false;
-
-    return true;
-  }
-
-  public discloseTileTrees(trees: TileTreeSet): void {
-    for (const attachment of this._attachments)
-      trees.disclose(attachment);
-  }
-
-  public collectStatistics(stats: RenderMemory.Statistics): void {
-    for (const attachment of this._attachments)
-      attachment.collectStatistics(stats);
-  }
-
-  public addToScene(context: SceneContext): void {
-    for (const attachment of this._attachments)
-      attachment.addToScene(context);
-  }
-
-  public clone(sheetView: SheetViewState): Attachments {
-    const attachments = this._attachments.map((x) => x.clone(sheetView));
-    return new Attachments(attachments);
-  }
-
-  public get viewAttachmentProps(): Array<Readonly<ViewAttachmentProps>> {
-    return this._attachments.map((attachment) => attachment.viewAttachmentProps);
-  }
-
-  public static async create(attachmentIds: Id64Array, sheetView: SheetViewState): Promise<Attachments> {
-    let attachmentProps: ViewAttachmentProps[] = [];
-    if (attachmentIds.length > 0)
-      attachmentProps = await sheetView.iModel.elements.getProps(attachmentIds) as ViewAttachmentProps[];
-
-    const attachments = await createAttachments(attachmentProps, sheetView);
-    return new Attachments(attachments);
-  }
-
-  private constructor(attachments: Attachment[]) {
-    this._attachments = attachments;
-    for (const attachment of attachments)
-      this.maxDepth = Math.max(attachment.zDepth, this.maxDepth);
   }
 }

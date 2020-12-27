@@ -82,6 +82,6 @@ describe("Sheet views (#integration)", () => {
   it("preserves view attachment info when round-tripped through JSON", async () => {
   });
 
-  it("clones view attachment props", asnyc () => {
+  it("clones view attachment props", async () => {
   });
 });
