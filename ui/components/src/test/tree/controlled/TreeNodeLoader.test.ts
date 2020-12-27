@@ -306,7 +306,7 @@ describe("TreeDataSource", () => {
 
       const treeDataSource = new TreeDataSource(dataProviderMock.object);
       const spy = sinon.spy(treeDataSource.onItemsChanged, "raiseEvent");
-      onTreeNodeChangedEvent.raiseEvent();
+      onTreeNodeChangedEvent.raiseEvent([]);
       expect(spy).to.be.called;
     });
 
