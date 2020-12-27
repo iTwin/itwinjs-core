@@ -221,6 +221,18 @@ class ViewAttachments {
     }
   }
 
+  public dispose(): void {
+    for (const attachment of this._attachments)
+      attachment.dispose();
+
+    this._attachments.length = 0;
+  }
+
+  /** For tests. */
+  public get attachments(): Object[] {
+    return this._attachments;
+  }
+
   public get isEmpty(): boolean {
     return 0 === this._attachments.length;
   }
@@ -242,13 +254,6 @@ class ViewAttachments {
   public addToScene(context: SceneContext): void {
     for (const attachment of this._attachments)
       attachment.addToScene(context);
-  }
-
-  public dispose(): void {
-    for (const attachment of this._attachments)
-      attachment.dispose();
-
-    this._attachments.length = 0;
   }
 }
 
@@ -295,6 +300,11 @@ export class SheetViewState extends ViewState2d {
   /** Strictly for testing. @internal */
   public get viewAttachmentProps(): Array<Readonly<ViewAttachmentProps>> {
     return this._attachmentsInfo.viewAttachmentProps;
+  }
+
+  /** Strictly for testing. @internal */
+  public get attachments(): Object[] | undefined {
+    return this._attachments?.attachments;
   }
 
   /** @internal */
