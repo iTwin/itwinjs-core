@@ -14,18 +14,18 @@ import { Viewport } from "../Viewport";
  * @beta
  */
 export enum UniformType {
+  /** GLSL `bool`. */
+  Bool,
+  /** GLSL `int`. */
+  Int,
   /** GLSL `float`. */
   Float,
-  /** GLSL `float[]`. */
-  FloatArray,
   /** GLSL `vec2`. */
   Vec2,
   /** GLSL `vec3`. */
   Vec3,
   /** GLSL `vec4`. */
   Vec4,
-  /** GLSL `int`. */
-  Int,
 }
 
 /** Represents a uniform variable in a shader program used by a custom screen-space effect, providing methods for setting the current value of the uniform.
@@ -113,7 +113,6 @@ export interface ScreenSpaceEffectContext {
  */
 export interface ScreenSpaceEffectBuilder {
   /** Add a uniform variable to the shader program.
-   * @throws Error if a uniform with the same name already exists.
    */
   addUniform: (params: UniformParams) => void;
   /** If defined, a function invoked each frame before the effect is applied. If it returns false, the effect will be skipped for that frame. */

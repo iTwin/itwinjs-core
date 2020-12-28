@@ -25,6 +25,7 @@ import { createEmptyRenderPlan, RenderPlan } from "../RenderPlan";
 import { PlanarClassifierMap, RenderPlanarClassifier } from "../RenderPlanarClassifier";
 import { RenderTextureDrape, TextureDrapeMap } from "../RenderSystem";
 import { PrimitiveVisibility, RenderTarget, RenderTargetDebugControl } from "../RenderTarget";
+import { ScreenSpaceEffectContext } from "../ScreenSpaceEffectBuilder";
 import { Scene } from "../Scene";
 import { BranchState } from "./BranchState";
 import { CachedGeometry, SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
@@ -114,6 +115,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _currentlyDrawingClassifier?: PlanarClassifier;
   private _analysisFraction: number = 0;
   private _antialiasSamples = 1;
+  // This exists strictly to be forwarded to ScreenSpaceEffects. Do not use it for anything else.
+  private _viewport?: Viewport;
   public isFadeOutActive = false;
   public activeVolumeClassifierTexture?: WebGLTexture;
   public activeVolumeClassifierProps?: SpatialClassificationProps.Classifier;
@@ -427,6 +430,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   }
 
   public onBeforeRender(viewport: Viewport, setSceneNeedRedraw: (redraw: boolean) => void) {
+    this._viewport = viewport;
     IModelFrameLifecycle.onBeforeRender.raiseEvent({
       renderSystem: this.renderSystem,
       viewport,
@@ -1032,6 +1036,11 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public drawTextureDrapes() {
     if (this._textureDrapes)
       this._textureDrapes.forEach((drape) => (drape as TextureDrape).draw(this));
+  }
+
+  public get screenSpaceEffectContext(): ScreenSpaceEffectContext {
+    assert(undefined !== this._viewport);
+    return { viewport: this._viewport };
   }
 
   // ---- Methods expected to be overridden by subclasses ---- //
