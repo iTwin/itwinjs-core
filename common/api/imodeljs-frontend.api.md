@@ -11659,7 +11659,7 @@ export abstract class ViewState extends ElementState {
     // @beta
     readonly onDisplayStyleChanged: BeEvent<(newStyle: DisplayStyleState) => void>;
     // @alpha
-    readonly onModelDisplayTransformProviderChanged: BeEvent<(newProvider: ModelDisplayTransformProvider) => void>;
+    readonly onModelDisplayTransformProviderChanged: BeEvent<(newProvider: ModelDisplayTransformProvider | undefined) => void>;
     // @beta
     readonly onViewedCategoriesChanged: BeEvent<() => void>;
     // @internal (undocumented)
