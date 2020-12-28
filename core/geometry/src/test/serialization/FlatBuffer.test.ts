@@ -72,7 +72,6 @@ it("HelloVariantGeometry", () => {
   expect(ck.getNumErrors()).equals(0);
 });
 
-
 it("HelloCurveVector", () => {
   const ck = new Checker();
   const cvs = [Sample.createCappedArcPath(3.0, 10, 90),
@@ -83,7 +82,6 @@ it("HelloCurveVector", () => {
   }
   expect(ck.getNumErrors()).equals(0);
 });
-
 
 it("HelloMesh", () => {
   const ck = new Checker();

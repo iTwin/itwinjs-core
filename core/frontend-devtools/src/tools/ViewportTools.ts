@@ -8,7 +8,7 @@
  */
 
 import { Camera, ColorDef, Hilite } from "@bentley/imodeljs-common";
-import { IModelApp, TileBoundingBoxes, Tool, Viewport } from "@bentley/imodeljs-frontend";
+import { DrawingViewState, IModelApp, TileBoundingBoxes, Tool, Viewport } from "@bentley/imodeljs-frontend";
 import { parseArgs } from "./parseArgs";
 import { parseToggle } from "./parseToggle";
 
@@ -354,6 +354,41 @@ export class ToggleViewAttachmentClipShapesTool extends ViewportToggleTool {
   protected toggle(vp: Viewport, enable?: boolean): void {
     if (undefined === enable || enable !== vp.wantViewAttachmentClipShapes)
       vp.wantViewAttachmentClipShapes = !vp.wantViewAttachmentClipShapes;
+  }
+}
+
+/** Toggles display of 2d graphics in a [DrawingViewState]($frontend). This setting affects all drawing views until it is reset.
+ * @beta
+ */
+export class ToggleDrawingGraphicsTool extends ViewportToggleTool {
+  public static toolId = "ToggleDrawingGraphics";
+
+  protected toggle(vp: Viewport, enable?: boolean): void {
+    if (undefined === enable || enable !== DrawingViewState.hideDrawingGraphics) {
+      DrawingViewState.hideDrawingGraphics = !DrawingViewState.hideDrawingGraphics;
+      vp.invalidateScene();
+    }
+  }
+}
+
+/** Toggles whether a [SectionDrawing]($backend)'s spatial view is always displayed along with the 2d graphics by a [DrawingViewState]($frontend), even
+ * if it otherwise would not be. This setting affects all section drawing views until it is reset.
+ * @beta
+ */
+export class ToggleSectionDrawingSpatialViewTool extends ViewportToggleTool {
+  public static toolId = "ToggleSectionDrawingSpatialView";
+
+  protected toggle(vp: Viewport, enable?: boolean): void {
+    if (undefined === enable || enable !== DrawingViewState.alwaysDisplaySpatialView) {
+      DrawingViewState.alwaysDisplaySpatialView = !DrawingViewState.alwaysDisplaySpatialView;
+      if (vp.view instanceof DrawingViewState) {
+        // Force the view to update its section drawing attachment.
+        const view = vp.view.clone();
+        view.changeViewedModel(view.baseModelId).then(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
+          view.load().then(() => vp.changeView(view)); // eslint-disable-line @typescript-eslint/no-floating-promises
+        });
+      }
+    }
   }
 }
 
