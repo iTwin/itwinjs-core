@@ -7,8 +7,10 @@
  */
 
 import { ScreenSpaceEffectBuilderParams } from "../../ScreenSpaceEffectBuilder";
+import { TextureUnit } from "../RenderFlags";
 import { AttributeMap } from "../AttributeMap";
-import { ProgramBuilder, VertexShaderComponent } from "../ShaderBuilder";
+import { ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
+import { System } from "../System";
 
 const computePosition = `
   effectMain(rawPos);
@@ -17,9 +19,17 @@ const computePosition = `
 
 /** @internal */
 export function createScreenSpaceEffectProgramBuilder(params: ScreenSpaceEffectBuilderParams): ProgramBuilder {
-  const prog = new ProgramBuilder(AttributeMap.findAttributeMap(undefined, false));
-  prog.frag.addFunction(params.fragmentShader);
-  prog.vert.addFunction(params.vertexShader);
-  prog.vert.set(VertexShaderComponent.ComputePosition, computePosition);
-  return prog;
+  const builder = new ProgramBuilder(AttributeMap.findAttributeMap(undefined, false));
+  builder.vert.addFunction(params.vertexShader);
+  builder.vert.set(VertexShaderComponent.ComputePosition, computePosition);
+
+  builder.frag.addFunction(params.fragmentShader);
+  builder.frag.addUniform("u_diffuse", VariableType.Sampler2D, (prog) => {
+    prog.addProgramUniform("u_diffuse", (uniform, params) => {
+      const texture = params.target.compositor.screenSpaceEffectFbo.getColor(0);
+      texture.bindSampler(uniform, TextureUnit.Zero);
+    });
+  });
+
+  return builder;
 }

@@ -300,6 +300,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this.reset();
     this.disposeFbo();
     dispose(this._compositor);
+    this._viewport = undefined;
 
     this._isDisposed = true;
   }

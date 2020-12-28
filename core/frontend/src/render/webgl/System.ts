@@ -58,7 +58,7 @@ import { OffScreenTarget, OnScreenTarget } from "./Target";
 import { Techniques } from "./Technique";
 import { TerrainMeshGeometry } from "./TerrainMesh";
 import { Texture, TextureHandle } from "./Texture";
-import { createScreenSpaceEffectBuilder } from "./ScreenSpaceEffect";
+import { createScreenSpaceEffectBuilder, ScreenSpaceEffects } from "./ScreenSpaceEffect";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -362,6 +362,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   private _lineCodeTexture?: TextureHandle;
   private _noiseTexture?: TextureHandle;
   private _techniques?: Techniques;
+  private _screenSpaceEffects?: ScreenSpaceEffects;
   public readonly debugShaderFiles: DebugShaderFile[] = [];
 
   public static get instance() { return IModelApp.renderSystem as System; }
@@ -369,7 +370,16 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   public get isValid(): boolean { return this.canvas !== undefined; }
   public get lineCodeTexture() { return this._lineCodeTexture; }
   public get noiseTexture() { return this._noiseTexture; }
-  public get techniques() { return this._techniques!; }
+
+  public get techniques() {
+    assert(undefined !== this._techniques);
+    return this._techniques;
+  }
+
+  public get screenSpaceEffects() {
+    assert(undefined !== this._screenSpaceEffects);
+    return this._screenSpaceEffects;
+  }
 
   public get maxTextureSize(): number { return this.capabilities.maxTextureSize; }
   public get supportsInstancing(): boolean { return this.capabilities.supportsInstancing; }
@@ -435,12 +445,14 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   public get isDisposed(): boolean {
     return undefined === this._techniques
       && undefined === this._lineCodeTexture
-      && undefined === this._noiseTexture;
+      && undefined === this._noiseTexture
+      && undefined === this._screenSpaceEffects;
   }
 
   // Note: FrameBuffers inside of the FrameBufferStack are not owned by the System, and are only used as a central storage device
   public dispose() {
     this._techniques = dispose(this._techniques);
+    this._screenSpaceEffects = dispose(this._screenSpaceEffects);
     this._lineCodeTexture = dispose(this._lineCodeTexture);
     this._noiseTexture = dispose(this._noiseTexture);
 
@@ -458,6 +470,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
   public onInitialized(): void {
     this._techniques = Techniques.create(this.context);
+    this._screenSpaceEffects = new ScreenSpaceEffects();
 
     const noiseDim = 4;
     const noiseArr = new Uint8Array([152, 235, 94, 173, 219, 215, 115, 176, 73, 205, 43, 201, 10, 81, 205, 198]);
