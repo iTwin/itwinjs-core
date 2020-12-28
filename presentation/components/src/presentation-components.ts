@@ -88,4 +88,12 @@ export { viewWithUnifiedSelection, ViewWithUnifiedSelectionProps } from "./prese
  */
 export { IPresentationLabelsProvider, PresentationLabelsProvider, PresentationLabelsProviderProps } from "./presentation-components/labels/LabelsProvider";
 
+/**
+ * @module UnifiedSelection
+ *
+ * @docs-group-description UnifiedSelection
+ * Utilities for working with [Unified Selection]($docs/learning/presentation/Unified-Selection/index.md) in [React](https://reactjs.org/) components.
+ */
+export { UnifiedSelectionContextProvider, UnifiedSelectionContextProviderProps as UnifiedSelectionContextProps, useUnifiedSelectionContext } from "./presentation-components/unified-selection/UnifiedSelectionContext";
+
 Presentation.registerInitializationHandler(initializeLocalization);
