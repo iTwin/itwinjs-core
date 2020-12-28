@@ -6211,7 +6211,7 @@ export enum RpcProtocolEvent {
 }
 
 // @public
-export type RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcRequest | RpcInvocation) => void;
+export type RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcRequest | RpcInvocation, err?: any) => void;
 
 // @alpha
 export class RpcPushChannel<T> {

@@ -5625,7 +5625,7 @@ export class MobileAuthorizationClient extends ImsAuthorizationClient implements
     initialize(requestContext: ClientRequestContext): Promise<void>;
     get isAuthorized(): boolean;
     // (undocumented)
-    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined, message: string) => void>;
+    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined, message?: string | undefined) => void>;
     signIn(requestContext: ClientRequestContext): Promise<void>;
     signOut(requestContext: ClientRequestContext): Promise<void>;
 }
@@ -9154,7 +9154,7 @@ export abstract class TileAdmin {
     // @internal (undocumented)
     abstract onTileTimedOut(tile: Tile): void;
     // @internal
-    readonly onTileTreeLoad: BeEvent<(tileTree: TileTree) => void>;
+    readonly onTileTreeLoad: BeEvent<(tileTree: TileTreeOwner) => void>;
     // @internal
     abstract process(): void;
     // @internal
@@ -9514,6 +9514,7 @@ export enum TileTreeLoadStatus {
 export interface TileTreeOwner {
     // @internal
     dispose(): void;
+    readonly iModel: IModelConnection;
     load(): TileTree | undefined;
     readonly loadStatus: TileTreeLoadStatus;
     loadTree(): Promise<TileTree | undefined>;
