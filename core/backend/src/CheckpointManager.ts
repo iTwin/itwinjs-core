@@ -137,7 +137,7 @@ export class V2CheckpointManager {
       container: containerAccessKeyContainer,
       auth: containerAccessKeySAS,
       daemonDir: bcvDaemonCachePath,
-      storageType: "azure",
+      storageType: "azure?sas=1",
       user: containerAccessKeyAccount,
       dbAlias: containerAccessKeyDbName,
       writeable: false,
