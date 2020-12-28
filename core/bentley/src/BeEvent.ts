@@ -104,9 +104,8 @@ export class BeEvent<T extends Listener> {
     }
 
     // if we had dropped listeners, remove them now
-    if (dropped) {
+    if (dropped)
       this._listeners = this._listeners.filter((ctx) => ctx.listener !== undefined);
-    }
 
     this._insideRaiseEvent = false;
   }

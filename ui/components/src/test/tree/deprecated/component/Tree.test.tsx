@@ -19,7 +19,7 @@ import { LoadedImage } from "../../../../ui-components/common/IImageLoader";
 import { BeInspireTreeNode, BeInspireTreeNodeConfig } from "../../../../ui-components/tree/deprecated/component/BeInspireTree";
 import { TreeNodeProps } from "../../../../ui-components/tree/deprecated/component/Node";
 import {
-  DEPRECATED_Tree as Tree, NodesDeselectedCallback, NodesSelectedCallback, TreeProps,
+  NodesDeselectedCallback, NodesSelectedCallback, DEPRECATED_Tree as Tree, TreeProps,
 } from "../../../../ui-components/tree/deprecated/component/Tree";
 import { HighlightableTreeProps, HighlightingEngine } from "../../../../ui-components/tree/HighlightingEngine";
 import { ITreeImageLoader } from "../../../../ui-components/tree/ImageLoader";
