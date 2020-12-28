@@ -1307,7 +1307,7 @@ export namespace Primitives {
         // (undocumented)
         className: string;
         // (undocumented)
-        id: Hexadecimal;
+        id: Id64String;
     }
     export type Int = number | string;
     export type Numeric = Float | Int;
