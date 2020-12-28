@@ -464,7 +464,7 @@ export namespace RenderScheduleState {
       this.displayStyleId = displayStyleId;
     }
 
-    public static fromJSON(displayStyleId: Id64String, modelTimelines: RenderSchedule.ModelTimelineProps[]): Script | undefined {
+    public static fromJSON(displayStyleId: Id64String, modelTimelines: Readonly<RenderSchedule.ModelTimelineProps[]>): Script | undefined {
       const value = new Script(displayStyleId);
       modelTimelines.forEach((entry) => value.modelTimelines.push(ModelTimeline.fromJSON(entry)));
 
