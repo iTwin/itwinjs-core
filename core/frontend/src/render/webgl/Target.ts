@@ -1218,7 +1218,11 @@ export class OnScreenTarget extends Target {
     if (undefined === this._blitGeom)
       return;
 
+    // Apply any screen-space effects to the rendered image.
     const system = this.renderSystem;
+    system.screenSpaceEffects.apply(this);
+
+    // Blit the final image to the canvas.
     const drawParams = this.getDrawParams(this, this._blitGeom);
 
     system.frameBufferStack.pop();

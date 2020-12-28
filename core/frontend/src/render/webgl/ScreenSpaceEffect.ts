@@ -9,7 +9,7 @@
 import { assert, dispose } from "@bentley/bentleyjs-core";
 import { Viewport } from "../../Viewport";
 import {
-  ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams, ScreenSpaceEffectContext, Uniform, UniformContext, UniformParams, UniformType,
+  ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams, ScreenSpaceEffectContext, Uniform, UniformContext, UniformParams, UniformType, VaryingType,
 } from "../ScreenSpaceEffectBuilder";
 import { TechniqueId } from "./TechniqueId";
 import { ProgramBuilder, VariableType } from "./ShaderBuilder";
@@ -25,7 +25,7 @@ import { createScreenSpaceEffectProgramBuilder } from "./glsl/ScreenSpaceEffect"
 
 type ShouldApply = (context: ScreenSpaceEffectContext) => boolean;
 
-function getVariableType(type: UniformType): VariableType {
+function getUniformVariableType(type: UniformType): VariableType {
   switch (type) {
     case UniformType.Bool: return VariableType.Boolean;
     case UniformType.Int: return VariableType.Int;
@@ -33,6 +33,15 @@ function getVariableType(type: UniformType): VariableType {
     case UniformType.Vec2: return VariableType.Vec2;
     case UniformType.Vec3: return VariableType.Vec3;
     case UniformType.Vec4: return VariableType.Vec4;
+  }
+}
+
+function getVaryingVariableType(type: VaryingType): VariableType {
+  switch (type) {
+    case VaryingType.Float: return VariableType.Float;
+    case VaryingType.Vec2: return VariableType.Vec2;
+    case VaryingType.Vec3: return VariableType.Vec3;
+    case VaryingType.Vec4: return VariableType.Vec4;
   }
 }
 
@@ -47,9 +56,13 @@ class Builder {
     this._builder.setDebugDescription(`Screen-space: ${this._name}`);
   }
 
+  public get isWebGL2(): boolean {
+    return System.instance.isWebGL2;
+  }
+
   public addUniform(params: UniformParams): void {
     const name = params.name;
-    const type = getVariableType(params.type);
+    const type = getUniformVariableType(params.type);
     const bind = params.bind;
 
     this._builder.addUniform(name, type, (prog: ShaderProgram) => {
@@ -57,6 +70,10 @@ class Builder {
         bind(uniform, progParams.target.screenSpaceEffectContext);
       });
     });
+  }
+
+  public addVarying(name: string, type: VaryingType): void {
+    this._builder.addVarying(name, getVaryingVariableType(type));
   }
 
   public finish(): void {

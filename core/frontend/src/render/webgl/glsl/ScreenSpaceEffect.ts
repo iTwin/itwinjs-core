@@ -27,7 +27,7 @@ export function createScreenSpaceEffectProgramBuilder(params: ScreenSpaceEffectB
   builder.vert.set(VertexShaderComponent.ComputePosition, computePosition);
 
   builder.frag.addFunction(params.fragmentShader);
-  builder.frag.addUniform("u_diffuse", VariableType.Sampler2D, (prog) => {
+  builder.addUniform("u_diffuse", VariableType.Sampler2D, (prog) => {
     prog.addProgramUniform("u_diffuse", (uniform, params) => {
       const texture = params.target.compositor.screenSpaceEffectFbo.getColor(0);
       texture.bindSampler(uniform, TextureUnit.Zero);

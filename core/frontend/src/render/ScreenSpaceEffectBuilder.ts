@@ -28,6 +28,21 @@ export enum UniformType {
   Vec4,
 }
 
+/** The underlying data types that can be used for varying variables in screen-space effect shaders.
+ * @see [[ScreenSpaceEffectBuilder.addVarying]] to define a varying variable.
+ * @beta
+ */
+export enum VaryingType {
+  /** GLSL `float`. */
+  Float,
+  /** GLSL `vec2`. */
+  Vec2,
+  /** GLSL `vec3`. */
+  Vec3,
+  /** GLSL `vec4`. */
+  Vec4,
+}
+
 /** Represents a uniform variable in a shader program used by a custom screen-space effect, providing methods for setting the current value of the uniform.
  * @see [[UniformParams.bind]].
  * @see [[ScreenSpaceEffectBuilder.addUniform]].
@@ -80,13 +95,16 @@ export interface ScreenSpaceEffectBuilderParams {
    *  - The code does not need to assign to `gl_Position` - this will be handled automatically.
    *  - Instead of `main()`, the code should implement `void effectMain(vec4 position)` to compute whatever varyings need to be sent to the fragment shader.
    *    - ###TODO define what `position` is and clarify that the shader does not need to manually compute gl_Position.
-   *  - The code should omit uniform variable declarations - these will be generated from the uniforms supplied to [[ScreenSpaceEffectBuilder.addUniform]].
+   *  - The code should omit uniform and varying variable declarations - these will be generated from the variables supplied to [[ScreenSpaceEffectBuilder.addUniform]] and [[ScreenSpaceEffectBuilder.addVarying]].
    */
   vertexShader: string;
-  /** The partial GLSL source code for the fragment shader. The code will differ slightly from that of an ordinary fragment shader:
-   *  - The code should not assign to `gl_FragColor`.
+  /** The partial GLSL source code for the fragment shader. The fragment shader receives a pre-defined `uniform sampler2D u_diffuse` allowing it to
+   * sample the viewport's rendered image. If it fails to use this uniform in a way that affects the output, the shader may fail to compile.
+   * The code will differ slightly from that of an ordinary fragment shader:
+   *  - The code should not assign to `gl_FragColor` - this will be handled automatically.
    *  - Instead of `main()`, the code should implement `vec4 effectMain()` returning the color to be output.
-   *  - The code should omit uniform variable declarations - these will be generated from the uniforms supplied to [[ScreenSpaceEffectBuilder.addUniform]].
+   *  - The code should omit uniform and varying variable declarations - these will be generated from the variables supplied to [[ScreenSpaceEffectBuilder.addUniform]] and [[ScreenSpaceEffectBuilder.addVarying]].
+   *  - The code should use `TEXTURE()` instead of `texture2D()` or `texture()` to sample the texture.
    */
   fragmentShader: string;
 }
@@ -112,11 +130,18 @@ export interface ScreenSpaceEffectContext {
  * @beta
  */
 export interface ScreenSpaceEffectBuilder {
-  /** Add a uniform variable to the shader program.
-   */
+  /** True if the shader will be used with a WebGL 2 rendering context. */
+  readonly isWebGL2: boolean;
+
+  /** Add a uniform variable to the shader program. */
   addUniform: (params: UniformParams) => void;
+
+  /** Add a varying variable to the shader program. */
+  addVarying: (name: string, type: VaryingType) => void;
+
   /** If defined, a function invoked each frame before the effect is applied. If it returns false, the effect will be skipped for that frame. */
   shouldApply?: (context: ScreenSpaceEffectContext) => boolean;
+
   /** Finishes construction of the effect and, if successful, registers it with [[IModelApp.renderSystem]].
    * @throws Error if the shader failed to compile, `finish` has already been called, or an effect with the same name has already been registered.
    * @note After `finish` is called, no other properties or methods of the builder will have any effect.

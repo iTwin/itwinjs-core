@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import { IModelApp } from "../../../IModelApp";
 import {
-  ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams, UniformType,
+  ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams, UniformType, VaryingType,
 } from "../../../render/ScreenSpaceEffectBuilder";
 
 describe("ScreenSpaceEffectBuilder", () => {
@@ -20,17 +20,16 @@ describe("ScreenSpaceEffectBuilder", () => {
 
   function makeBuilderParams(name: string): ScreenSpaceEffectBuilderParams {
     const vertexShader = `
-      varying vec4 v_color;
       void effectMain(vec4 pos)
         {
         v_color = mix(pos, u_color, 0.5);
         }`;
 
     const fragmentShader = `
-      varying vec4 v_color;
       vec4 effectMain()
         {
-        return v_color;
+        vec4 color = TEXTURE(u_diffuse, vec2(0.5, 0.5));
+        return mix(v_color, color, 0.5);
         }`;
 
     return {
@@ -50,10 +49,15 @@ describe("ScreenSpaceEffectBuilder", () => {
     });
   }
 
+  function addVarying(builder: ScreenSpaceEffectBuilder) {
+    builder.addVarying("v_color", VaryingType.Vec4);
+  }
+
   function makeBuilder(name: string): ScreenSpaceEffectBuilder {
     const builder = IModelApp.renderSystem.createScreenSpaceEffectBuilder(makeBuilderParams(name))!;
     expect(builder).not.to.be.undefined;
     addUniform(builder);
+    addVarying(builder);
     return builder;
   }
 
@@ -65,14 +69,10 @@ describe("ScreenSpaceEffectBuilder", () => {
   });
 
   it("throws if shader fails to compile", () => {
-    let params = makeBuilderParams("Test 2");
-    let builder = IModelApp.renderSystem.createScreenSpaceEffectBuilder(params)!;
+    const params = makeBuilderParams("Test 2");
+    const builder = IModelApp.renderSystem.createScreenSpaceEffectBuilder(params)!;
+    addVarying(builder);
     expect(() => builder.finish()).to.throw(/u_color/);
-
-    params = makeBuilderParams("Test 3");
-    params.fragmentShader = "if (u_discard) discard; return v_color;";
-    addUniform(builder);
-    expect(() => builder.finish()).to.throw(/u_discard/);
   });
 
   it("throws if an effect already exists by the same name", () => {
