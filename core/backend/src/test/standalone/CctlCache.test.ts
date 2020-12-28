@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import * as path from "path";
 import { LockLevel, LockType } from "@bentley/imodelhub-client";
-import { CodeProps, SyncMode } from "@bentley/imodeljs-common";
+import { CodeProps } from "@bentley/imodeljs-common";
 import { ConcurrencyControl, IModelJsFs } from "../../imodeljs-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 
@@ -21,11 +21,10 @@ describe("ConcurrencyControl.StateCache", () => {
     const concurrencyControlMock = {
       iModel: {
         needsConcurrencyControl: true,
-        briefcase: {
-          pathname: mockBriefcasePathname,
-        },
-        syncMode: SyncMode.PullAndPush,
-        isPushEnabled: true,
+        pathName: mockBriefcasePathname,
+        isOpen: true,
+        briefcaseId: 3,
+        allowLocalChanges: true,
       },
     };
 

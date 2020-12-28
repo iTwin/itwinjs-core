@@ -7,6 +7,7 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
+import { WebGLContext } from "@bentley/webgl-compatibility";
 import { DebugShaderFile } from "../RenderSystem";
 import { AttributeDetails } from "./AttributeMap";
 import { WebGLDisposable } from "./Disposable";
@@ -136,7 +137,7 @@ export class ShaderProgram implements WebGLDisposable {
   private _vertHNdx: number = -1;
   private _fragHNdx: number = -1;
 
-  public constructor(gl: WebGLRenderingContext | WebGL2RenderingContext, vertSource: string, fragSource: string, attrMap: Map<string, AttributeDetails> | undefined, description: string, fragDescription: string) {
+  public constructor(gl: WebGLContext, vertSource: string, fragSource: string, attrMap: Map<string, AttributeDetails> | undefined, description: string, fragDescription: string) {
     this._description = description;
     this._fragDescription = fragDescription;
     this.vertSource = vertSource;
