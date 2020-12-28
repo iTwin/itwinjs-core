@@ -9,13 +9,16 @@
 import { ScreenSpaceEffectBuilderParams } from "../../ScreenSpaceEffectBuilder";
 import { TextureUnit } from "../RenderFlags";
 import { AttributeMap } from "../AttributeMap";
-import { ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
+import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
 import { System } from "../System";
+import { assignFragColor } from "./Fragment";
 
 const computePosition = `
   effectMain(rawPos);
   return rawPos;
 `;
+
+const computeBaseColor = "  return effectMain();";
 
 /** @internal */
 export function createScreenSpaceEffectProgramBuilder(params: ScreenSpaceEffectBuilderParams): ProgramBuilder {
@@ -30,6 +33,9 @@ export function createScreenSpaceEffectProgramBuilder(params: ScreenSpaceEffectB
       texture.bindSampler(uniform, TextureUnit.Zero);
     });
   });
+
+  builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
+  builder.frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
 
   return builder;
 }

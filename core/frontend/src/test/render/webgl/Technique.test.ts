@@ -48,8 +48,8 @@ function createTarget(): Target | undefined {
 }
 
 describe("Techniques", () => {
-  before(async () => IModelApp.startup());
-  after(async () => IModelApp.shutdown());
+  before(async () => await IModelApp.startup());
+  after(async () => await IModelApp.shutdown());
 
   it("should produce a simple dynamic rendering technique", () => {
     const target = createTarget();

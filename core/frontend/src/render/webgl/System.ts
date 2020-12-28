@@ -470,7 +470,6 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
   public onInitialized(): void {
     this._techniques = Techniques.create(this.context);
-    this._screenSpaceEffects = new ScreenSpaceEffects();
 
     const noiseDim = 4;
     const noiseArr = new Uint8Array([152, 235, 94, 173, 219, 215, 115, 176, 73, 205, 43, 201, 10, 81, 205, 198]);
@@ -479,6 +478,8 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
     this._lineCodeTexture = TextureHandle.createForData(LineCode.size, LineCode.count, new Uint8Array(LineCode.lineCodeData), false, GL.Texture.WrapMode.Repeat, GL.Texture.Format.Luminance);
     assert(undefined !== this._lineCodeTexture, "System.lineCodeTexture not created.");
+
+    this._screenSpaceEffects = new ScreenSpaceEffects();
   }
 
   public createTarget(canvas: HTMLCanvasElement): RenderTarget {
