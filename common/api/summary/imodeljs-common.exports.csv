@@ -450,7 +450,7 @@ internal;RpcPendingQueue
 public;RpcPendingResponse 
 public;class RpcProtocol
 public;RpcProtocolEvent
-public;RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcRequest | RpcInvocation) => void
+public;RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcRequest | RpcInvocation, err?: any) => void
 alpha;RpcPushChannel
 alpha;class RpcPushConnection
 alpha;RpcPushMessageListener
