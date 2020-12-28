@@ -19,7 +19,7 @@ import { LoadedImage } from "../../../../ui-components/common/IImageLoader";
 import { BeInspireTreeNode, BeInspireTreeNodeConfig } from "../../../../ui-components/tree/deprecated/component/BeInspireTree";
 import { TreeNodeProps } from "../../../../ui-components/tree/deprecated/component/Node";
 import {
-  NodesDeselectedCallback, NodesSelectedCallback, DEPRECATED_Tree as Tree, TreeProps,
+  DEPRECATED_Tree as Tree, NodesDeselectedCallback, NodesSelectedCallback, TreeProps,
 } from "../../../../ui-components/tree/deprecated/component/Tree";
 import { HighlightableTreeProps, HighlightingEngine } from "../../../../ui-components/tree/HighlightingEngine";
 import { ITreeImageLoader } from "../../../../ui-components/tree/ImageLoader";
@@ -1661,20 +1661,6 @@ describe("Tree", () => {
       }, renderSpy, 1);
       expect(renderedTree.getAllByTestId(TreeComponentTestId.Node as any).length).to.eq(4);
       expect(getFlatList()).to.deep.eq(["1", "0", "0-b", "0-a"]);
-    });
-
-    it("handles case when `onTreeNodeChanged` is broadcasted with invalid node", async () => {
-      await waitForUpdate(() => {
-        renderedTree = render(<Tree {...defaultProps} dataProvider={interfaceProvider} />);
-      }, renderSpy, 2);
-      expect(renderedTree.getAllByTestId(TreeComponentTestId.Node as any).length).to.eq(4);
-
-      const node: TreeNodeItem = {
-        id: "test",
-        label: PropertyRecord.fromString("test"),
-      };
-      interfaceProvider.onTreeNodeChanged?.raiseEvent(node);
-      expect(renderedTree.getAllByTestId(TreeComponentTestId.Node as any).length).to.eq(4);
     });
 
     it("subscribes to `onTreeNodeChanged` on mount", () => {
