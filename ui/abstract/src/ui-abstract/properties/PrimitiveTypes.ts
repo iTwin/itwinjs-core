@@ -56,7 +56,7 @@ export namespace Primitives {
   /** Instance key type. */
   export interface InstanceKey {
     className: string;
-    id: Hexadecimal;
+    id: Id64String;
   }
 
   export type Value = Text | String | ShortDate | Boolean | Numeric | Enum | Point | Composite | InstanceKey;
