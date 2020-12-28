@@ -33,6 +33,7 @@ export * from "./RealityTileTree";
 export * from "./TileTreeSupplier";
 export * from "./TileTreeOwner";
 export * from "./TileTreeReference";
+export * from "./TiledGraphicsProvider";
 export * from "./TileAdmin";
 export * from "./TileRequest";
 export * from "./TileUsageMarker";
