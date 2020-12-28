@@ -650,15 +650,15 @@ describe("ContentDataProvider", () => {
       expect(invalidateCacheSpy).to.be.calledOnceWith(CacheInvalidationProps.full());
     });
 
-    it("doesn't react to unrelated ruleset modifications", () => {
-      const ruleset = new RegisteredRuleset({ id: "unrelated", rules: [] }, "", () => { });
-      rulesetsManagerMock.object.onRulesetModified.raiseEvent(ruleset);
+    it("doesn't react to unrelated ruleset modifications", async () => {
+      const ruleset = new RegisteredRuleset(await createRandomRuleset(), "", () => { });
+      rulesetsManagerMock.object.onRulesetModified.raiseEvent(ruleset, { ...ruleset.toJSON() });
       expect(invalidateCacheSpy).to.not.be.called;
     });
 
-    it("invalidates cache when related ruleset is modified", () => {
-      const ruleset = new RegisteredRuleset({ id: rulesetId, rules: [] }, "", () => { });
-      rulesetsManagerMock.object.onRulesetModified.raiseEvent(ruleset);
+    it("invalidates cache when related ruleset is modified", async () => {
+      const ruleset = new RegisteredRuleset({ ...(await createRandomRuleset()), id: rulesetId }, "", () => { });
+      rulesetsManagerMock.object.onRulesetModified.raiseEvent(ruleset, { ...ruleset.toJSON() });
       expect(invalidateCacheSpy).to.be.calledOnceWith(CacheInvalidationProps.full());
     });
 

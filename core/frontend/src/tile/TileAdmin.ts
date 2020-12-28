@@ -18,7 +18,7 @@ import { Viewport } from "../Viewport";
 import { ReadonlyViewportSet, UniqueViewportSets } from "../ViewportSet";
 import { InteractiveEditingSession } from "../InteractiveEditingSession";
 import { GeometricModelState } from "../ModelState";
-import { Tile, TileLoadStatus, TileRequest, TileTree, TileTreeSet, TileUsageMarker } from "./internal";
+import { Tile, TileLoadStatus, TileRequest, TileTree, TileTreeOwner, TileTreeSet, TileUsageMarker } from "./internal";
 
 /** Details about any tiles not handled by [[TileAdmin]]. At this time, that means OrbitGT point cloud tiles.
  * Used for bookkeeping by SelectedAndReadyTiles
@@ -267,7 +267,7 @@ export abstract class TileAdmin {
   /** Event raised when a request to load a tile tree completes.
    * @internal
    */
-  public readonly onTileTreeLoad = new BeEvent<(tileTree: TileTree) => void>();
+  public readonly onTileTreeLoad = new BeEvent<(tileTree: TileTreeOwner) => void>();
 
   /** Event raised when a request to load a tile's child tiles completes.
    * @internal
