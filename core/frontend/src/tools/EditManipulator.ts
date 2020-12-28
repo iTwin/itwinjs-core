@@ -16,7 +16,8 @@ import { IModelConnection } from "../IModelConnection";
 import { SelectionSetEvent } from "../SelectionSet";
 import { StandardViewId } from "../StandardView";
 import { DecorateContext } from "../ViewContext";
-import { CoordSystem, Viewport } from "../Viewport";
+import { CoordSystem } from "../CoordSystem";
+import { Viewport } from "../Viewport";
 import { BeButton, BeButtonEvent, BeTouchEvent, CoordinateLockOverrides, EventHandled, InputCollector, InputSource, Tool } from "./Tool";
 import { ManipulatorToolEvent } from "./ToolAdmin";
 

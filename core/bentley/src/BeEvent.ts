@@ -132,7 +132,6 @@ export class BeEvent<T extends Listener> {
  * @beta Right name? Right package?
  */
 export class BeUiEvent<TEventArgs> extends BeEvent<(args: TEventArgs) => void> {
-
   /** Raises event with single strongly typed argument. */
   public emit(args: TEventArgs): void { this.raiseEvent(args); }
 }

@@ -761,7 +761,7 @@ class Admin extends TileAdmin {
     // If unspecified skip one level before preloading  of parents of context tiles.
     this._contextPreloadParentSkip = Math.max(0, Math.min((options.contextPreloadParentSkip === undefined ? 1 : options.contextPreloadParentSkip), 5));
 
-    this._cleanup = InteractiveEditingSession.onBegin.addListener((session) => {
+    const removeEditingListener = InteractiveEditingSession.onBegin.addListener((session) => {
       const removeGeomListener = session.onGeometryChanges.addListener((changes: Iterable<ModelGeometryChanges>) => this.onModelGeometryChanged(changes));
       session.onEnded.addOnce((sesh: InteractiveEditingSession) => {
         assert(sesh === session);
@@ -769,6 +769,15 @@ class Admin extends TileAdmin {
         this.onSessionEnd(session);
       });
     });
+
+    const removeLoadListener = this.addLoadListener(() => {
+      this._viewports.forEach((vp) => vp.invalidateScene());
+    });
+
+    this._cleanup = () => {
+      removeEditingListener();
+      removeLoadListener();
+    };
   }
 
   public get enableInstancing() { return this._enableInstancing && IModelApp.renderSystem.supportsInstancing; }
