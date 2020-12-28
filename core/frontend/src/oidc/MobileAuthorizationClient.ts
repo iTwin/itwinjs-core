@@ -95,5 +95,5 @@ export class MobileAuthorizationClient extends ImsAuthorizationClient implements
     return !!this._accessToken; // Always silently refreshed
   }
 
-  public readonly onUserStateChanged = new BeEvent<(token: AccessToken | undefined, message: string) => void>();
+  public readonly onUserStateChanged = new BeEvent<(token: AccessToken | undefined, message?: string) => void>();
 }

@@ -122,7 +122,10 @@ export class FrameBuilder {
     if (!this._vector0) { this._vector0 = vector.clone(this._vector0); return 1; }
 
     if (!this._vector1) {
-      if (this.areStronglyIndependentVectors(vector, this._vector0, 1.0e-5)) { this._vector1 = vector.clone(this._vector1); return 2; }
+      if (this.areStronglyIndependentVectors(vector, this._vector0, 1.0e-5)) {
+        this._vector1 = vector.clone(this._vector1);
+        return 2;
+      }
       return 1;
     }
 
