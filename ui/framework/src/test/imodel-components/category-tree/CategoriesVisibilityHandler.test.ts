@@ -268,32 +268,35 @@ describe("CategoryVisibilityHandler", () => {
   describe("visibility change callback", () => {
 
     it("calls the callback on `onDisplayStyleChanged` event", async () => {
+      const vpMock = mockViewport();
       const onDisplayStyleChanged = new BeEvent<(vp: Viewport) => void>();
       const spy = sinon.spy();
       await using(createHandler({ onVisibilityChange: spy, activeView: mockViewport({ onDisplayStyleChanged }).object }), async (_) => {
-        onDisplayStyleChanged.raiseEvent();
+        onDisplayStyleChanged.raiseEvent(vpMock.object);
         await new Promise((resolve) => setTimeout(resolve));
         expect(spy).to.be.calledOnce;
       });
     });
 
     it("calls the callback on `onViewedCategoriesChanged` event", async () => {
+      const vpMock = mockViewport();
       const onViewedCategoriesChanged = new BeEvent<(vp: Viewport) => void>();
       const spy = sinon.spy();
       await using(createHandler({ onVisibilityChange: spy, activeView: mockViewport({ onViewedCategoriesChanged }).object }), async (_) => {
-        onViewedCategoriesChanged.raiseEvent();
+        onViewedCategoriesChanged.raiseEvent(vpMock.object);
         await new Promise((resolve) => setTimeout(resolve));
         expect(spy).to.be.calledOnce;
       });
     });
 
     it("calls the callback only once when multiple events are raised", async () => {
+      const vpMock = mockViewport();
       const onDisplayStyleChanged = new BeEvent<(vp: Viewport) => void>();
       const onViewedCategoriesChanged = new BeEvent<(vp: Viewport) => void>();
       const spy = sinon.spy();
       await using(createHandler({ onVisibilityChange: spy, activeView: mockViewport({ onDisplayStyleChanged, onViewedCategoriesChanged }).object }), async (_) => {
-        onViewedCategoriesChanged.raiseEvent();
-        onDisplayStyleChanged.raiseEvent();
+        onViewedCategoriesChanged.raiseEvent(vpMock.object);
+        onDisplayStyleChanged.raiseEvent(vpMock.object);
         await new Promise((resolve) => setTimeout(resolve));
         expect(spy).to.be.calledOnce;
       });

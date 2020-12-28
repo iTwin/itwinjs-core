@@ -130,7 +130,7 @@ export abstract class ViewState extends ElementState {
   /** Event raised just before assignment to the [[modelDisplayTransformProvider]] property, *only* if the view is attached to a [[Viewport]].
    * @alpha
    */
-  public readonly onModelDisplayTransformProviderChanged = new BeEvent<(newProvider: ModelDisplayTransformProvider) => void>();
+  public readonly onModelDisplayTransformProviderChanged = new BeEvent<(newProvider: ModelDisplayTransformProvider | undefined) => void>();
 
   /** Selects the categories that are display by this ViewState. */
   public get categorySelector(): CategorySelectorState {
