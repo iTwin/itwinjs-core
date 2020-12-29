@@ -296,6 +296,15 @@
     },
     "LensDistortionEffect": {
       "keyin": "fdt effect lens distortion"
+    },
+    "EmbossEffect": {
+      "keyin": "fdt effect emboss"
+    },
+    "GaussianBlurEffect": {
+      "keyin": "fdt effect blur"
+    },
+    "UnsharpenEffect": {
+      "keyin": "fdt effect unsharpen"
     }
   }
 }
