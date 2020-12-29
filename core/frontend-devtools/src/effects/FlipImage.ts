@@ -7,9 +7,7 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import {
-  IModelApp, Tool, UniformType, VaryingType,
-} from "@bentley/imodeljs-frontend";
+import { IModelApp, Tool, UniformType, VaryingType } from "@bentley/imodeljs-frontend";
 import { parseArgs } from "../tools/parseArgs";
 
 let effectRegistered = false;
@@ -90,6 +88,9 @@ export class FlipImageEffect extends Tool {
     flipHorizontal = true === args.getBoolean("h");
     flipVertical = true === args.getBoolean("v");
     registerEffect();
+
+    // Ensure all viewports are re-rendered to reflect the changed effect parameters.
+    IModelApp.viewManager.invalidateViewportScenes();
     return true;
   }
 }

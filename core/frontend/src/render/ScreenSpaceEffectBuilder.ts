@@ -98,7 +98,7 @@ export interface ScreenSpaceEffectBuilderParams {
    * The program receives one pre-defined `uniform sampler2D u_diffuse` representing the viewport's rendered image.
    * Because the [[RenderSystem]] uses either WebGL1 or WebGL2 based on the capabilities of the client, the effect shader should be written to compile with either; or, [[ScreenSpaceEffectBuilder.isWebGL2]] should be tested.
    * The [[RenderSystem]] takes care of adjusting the source code for some of these differences, e.g., `varying` (WebGL1) vs `in` and `out` (WebGL2);
-   * a `TEXTURE` macro to replace `texture2d` (WebGL1) and `texture` (WebGL2); etc.
+   * and `TEXTURE`, `TEXTURE_CUBE`, and `TEXTURE_PROJ` macros to replace `texture2D`, `textureCube`, and `texture2DProj` with their WebGL2 equivalents when applicable.
    */
   source: {
     /** The GLSL implementation of the vertex shader. Instead of `main`, it implements `void effectMain(vec4 position)` where `position` is the vertex position in normalized device coordinates ([-1..1]).
@@ -107,8 +107,9 @@ export interface ScreenSpaceEffectBuilderParams {
     vertex: string;
 
     /** The GLSL implementation of the fragment shader. Instead of `main`, it implements `vec4 effectMain()` returning the color to be output.
-     * `effectMain` should sample `u_diffuse` using `TEXTURE()` instead of `texture2D()` or `texture()`. It should not assign to `gl_FragColor`.
-     * The alpha component of the output color is ignored as there is nothing to blend with.
+     * `effectMain` should sample `u_diffuse` using `TEXTURE()` or `TEXTURE_PROJ()` instead of `texture2D()`, `texture2DProj()`, or `texture()`.
+     * It should not assign to `gl_FragColor`.
+     * The alpha component of the output color is ignored as there is nothing with which to blend.
      */
     fragment: string;
   };

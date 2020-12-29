@@ -7,6 +7,8 @@ export * from "./ClipboardUtilities";
 export * from "./FrontEndDevTools";
 
 export * from "./effects/FlipImage";
+export * from "./effects/LensDistortion";
+
 export * from "./tools/AnimationIntervalTool";
 export * from "./tools/ChangeUnitsTool";
 export * from "./tools/ClipTools";

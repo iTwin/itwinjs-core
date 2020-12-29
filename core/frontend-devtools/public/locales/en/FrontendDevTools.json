@@ -293,6 +293,9 @@
     },
     "FlipImageEffect": {
       "keyin": "fdt effect flip"
+    },
+    "LensDistortionEffect": {
+      "keyin": "fdt effect lens distortion"
     }
   }
 }

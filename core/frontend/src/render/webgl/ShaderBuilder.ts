@@ -503,10 +503,12 @@ export class ShaderBuilder extends ShaderVariables {
       this._version = "#version 300 es";
       this.addDefine("TEXTURE", "texture");
       this.addDefine("TEXTURE_CUBE", "texture");
+      this.addDefine("TEXTURE_PROJ", "textureProj");
     } else {
       this._version = "#version 100";
       this.addDefine("TEXTURE", "texture2D");
       this.addDefine("TEXTURE_CUBE", "textureCube");
+      this.addDefine("TEXTURE_PROJ", "texture2DProj");
     }
   }
 

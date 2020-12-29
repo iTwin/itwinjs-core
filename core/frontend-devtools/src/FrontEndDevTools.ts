@@ -38,6 +38,7 @@ import { ToggleTileTreeBoundsDecorationTool } from "./tools/TileTreeBoundsDecora
 import { ToggleToolTipsTool } from "./tools/ToolTipProvider";
 import { ChangeCameraTool } from "./tools/ViewportTools";
 import { FlipImageEffect } from "./effects/FlipImage";
+import { LensDistortionEffect } from "./effects/LensDistortion";
 
 /** Entry-point for the package. Before using the package you *must* call [[FrontendDevTools.initialize]].
  * @beta
@@ -91,6 +92,7 @@ export class FrontendDevTools {
       FreezeSceneTool,
       InspectElementTool,
       IsolateSelectedElementsTool,
+      LensDistortionEffect,
       LoseWebGLContextTool,
       MapLayerTransparencyTool,
       MapLayerVisibilityTool,
