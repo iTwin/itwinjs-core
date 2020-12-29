@@ -39,7 +39,7 @@ import { ToggleToolTipsTool } from "./tools/ToolTipProvider";
 import { ChangeCameraTool } from "./tools/ViewportTools";
 import { FlipImageEffect } from "./effects/FlipImage";
 import { LensDistortionEffect } from "./effects/LensDistortion";
-import { EmbossEffect, GaussianBlurEffect, UnsharpenEffect } from "./effects/Convolution";
+import { EdgeDetectionEffect, EmbossEffect, GaussianBlurEffect, SharpenEffect, SharpnessEffect, UnsharpenEffect } from "./effects/Convolution";
 
 /** Entry-point for the package. Before using the package you *must* call [[FrontendDevTools.initialize]].
  * @beta
@@ -85,6 +85,7 @@ export class FrontendDevTools {
       DefaultTileSizeModifierTool,
       DetachMapLayersTool,
       DumpPlanProjectionSettingsTool,
+      EdgeDetectionEffect,
       EmbossEffect,
       ElementIdFromSourceAspectIdTool,
       EmphasizeSelectedElementsTool,
@@ -115,6 +116,8 @@ export class FrontendDevTools {
       SetAspectRatioSkewTool,
       ToggleVolClassIntersect,
       SetMapBaseTool,
+      SharpenEffect,
+      SharpnessEffect,
       ShowTileVolumesTool,
       SourceAspectIdFromElementIdTool,
       TestClipStyleTool,

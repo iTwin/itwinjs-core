@@ -83,6 +83,10 @@ These key-ins configure screen-space effects that modify the image presented by 
   * "horizontal=0|1" - 1 to flip on X axis.
   * "vertical=0|1" - 1 to flip on Y axis.
   * "color=0|1" - 1 to invert colors.
+* `fdt effect lens distortion` - simulates the "fish-eye" distortion produced by real-world cameras with very wide fields of view. Arguments:
+  * "strength=[0..1]" - the magnitude of the distortion. 0 = perspective; 1 = stereographic.
+  * "ratio=[0..1]" - the cylindrical ratio of the distortion. 1 = spherical.
+* `fdt effect emboss|blur|sharpen|unsharpen|sharpness|edge detect on|off|toggle" - toggles the specified convolution effect. If the second argument is omitted, the default is to invert the current state.
 
 ### Other key-ins
 

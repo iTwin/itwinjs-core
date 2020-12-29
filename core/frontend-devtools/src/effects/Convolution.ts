@@ -20,6 +20,9 @@ interface Kernels {
   gaussianBlur: Kernel,
   unsharpen: Kernel,
   emboss: Kernel,
+  sharpness: Kernel,
+  sharpen: Kernel,
+  edgeDetect: Kernel,
 }
 
 const kernels: Kernels = {
@@ -42,6 +45,27 @@ const kernels: Kernels = {
       -2, -1,  0,
       -1,  1,  1,
       0,  1,  2
+    ],
+  },
+  sharpness: {
+    matrix: [
+      0,-1, 0,
+      -1, 5,-1,
+      0,-1, 0
+    ],
+  },
+  sharpen: {
+    matrix: [
+      0,-1, 0,
+      -1, 5,-1,
+      0,-1, 0
+    ],
+  },
+  edgeDetect: {
+    matrix: [
+      -5, 0, 0,
+      0, 0, 0,
+      0, 0, 5
     ],
   },
 };
@@ -178,4 +202,28 @@ export class UnsharpenEffect extends ConvolutionEffect {
 export class EmbossEffect extends ConvolutionEffect {
   public static toolId = "EmbossEffect";
   protected get kernelName(): KernelName { return "emboss"; }
+}
+
+/** Toggles a screen-space sharpen effect.
+ * @beta
+ */
+export class SharpenEffect extends ConvolutionEffect {
+  public static toolId = "SharpenEffect";
+  protected get kernelName(): KernelName { return "sharpen"; }
+}
+
+/** Toggles a screen-space sharpness effect.
+ * @beta
+ */
+export class SharpnessEffect extends ConvolutionEffect {
+  public static toolId = "SharpnessEffect";
+  protected get kernelName(): KernelName { return "sharpness"; }
+}
+
+/** Toggles a screen-space edge-detection effect.
+ * @beta
+ */
+export class EdgeDetectionEffect extends ConvolutionEffect {
+  public static toolId = "EdgeDetectionEffect";
+  protected get kernelName(): KernelName { return "edgeDetect"; }
 }

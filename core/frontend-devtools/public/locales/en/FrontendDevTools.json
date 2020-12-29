@@ -305,6 +305,15 @@
     },
     "UnsharpenEffect": {
       "keyin": "fdt effect unsharpen"
+    },
+    "SharpenEffect": {
+      "keyin": "fdt effect sharpen"
+    },
+    "SharpnessEffect": {
+      "keyin": "fdt effect sharpness"
+    },
+    "EdgeDetectionEffect": {
+      "keyin": "fdt effect edge detect"
     }
   }
 }
