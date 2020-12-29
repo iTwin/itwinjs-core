@@ -44,12 +44,15 @@ public;tableWithUnifiedSelection
 public;TableWithUnifiedSelectionProps
 public;TreeWithFilteringSupportProps
 public;TreeWithUnifiedSelectionProps
+public;UnifiedSelectionContextProps
+public;UnifiedSelectionContextProvider: React.FC
 beta;UnifiedSelectionTreeEventHandler 
 beta;UnifiedSelectionTreeEventHandlerParams
 beta;useControlledTreeFiltering(props: ControlledTreeFilteringProps):
 beta;usePresentationTreeNodeLoader(props: PresentationTreeNodeLoaderProps): PagedTreeNodeLoader
 beta;usePropertyDataProviderWithUnifiedSelection(props: PropertyDataProviderWithUnifiedSelectionProps):
 public;useRulesetRegistration(ruleset: Ruleset): void
+public;useUnifiedSelectionContext(): UnifiedSelectionContext | undefined
 beta;useUnifiedSelectionTreeEventHandler(props: UnifiedSelectionTreeEventHandlerParams): UnifiedSelectionTreeEventHandler
 public;viewWithUnifiedSelection
 public;ViewWithUnifiedSelectionProps

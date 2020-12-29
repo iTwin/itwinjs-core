@@ -446,6 +446,17 @@ export interface TreeWithUnifiedSelectionProps {
     selectionHandler?: SelectionHandler;
 }
 
+// @public
+export interface UnifiedSelectionContextProps {
+    // (undocumented)
+    children?: React.ReactNode;
+    imodel: IModelConnection;
+    selectionLevel?: number;
+}
+
+// @public
+export const UnifiedSelectionContextProvider: React.FC<UnifiedSelectionContextProps>;
+
 // @beta
 export class UnifiedSelectionTreeEventHandler extends TreeEventHandler implements IDisposable {
     constructor(params: UnifiedSelectionTreeEventHandlerParams);
@@ -496,6 +507,9 @@ export function usePropertyDataProviderWithUnifiedSelection(props: PropertyDataP
 
 // @public
 export function useRulesetRegistration(ruleset: Ruleset): void;
+
+// @public
+export function useUnifiedSelectionContext(): UnifiedSelectionContext | undefined;
 
 // @beta
 export function useUnifiedSelectionTreeEventHandler(props: UnifiedSelectionTreeEventHandlerParams): UnifiedSelectionTreeEventHandler;
