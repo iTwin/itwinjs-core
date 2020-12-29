@@ -297,7 +297,7 @@ export class SampleAppIModelApp {
         console.log(`Progress (${progress.loaded}/${progress.total}) -> ${progress.percent}%`);
       });
       await req.downloadPromise;
-      iModelConnection = await NativeApp.openBriefcase(req.briefcaseProps);
+      iModelConnection = await NativeApp.openBriefcase({ fileName: req.fileName });
     } else {
       iModelConnection = await UiFramework.iModelServices.openIModel(projectId, iModelId, this.allowWrite ? OpenMode.ReadWrite : OpenMode.Readonly);
     }
@@ -405,7 +405,7 @@ export class SampleAppIModelApp {
           console.log(`Progress (${progress.loaded}/${progress.total}) -> ${progress.percent}%`);
         });
         await req.downloadPromise;
-        iModelConnection = await NativeApp.openBriefcase(req.briefcaseProps);
+        iModelConnection = await NativeApp.openBriefcase({ fileName: req.fileName });
       } else {
         iModelConnection = await UiFramework.iModelServices.openIModel(contextId, iModelId, this.allowWrite ? OpenMode.ReadWrite : OpenMode.Readonly);
       }

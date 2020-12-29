@@ -136,6 +136,19 @@ export class TechniqueFlags {
     this.numClipPlanes = numClipPlanes;
   }
 
+  public equals(other: TechniqueFlags): boolean {
+    return this.numClipPlanes === other.numClipPlanes
+      && this.featureMode === other.featureMode
+      && this.isTranslucent === other.isTranslucent
+      && this.isEdgeTestNeeded === other.isEdgeTestNeeded
+      && this.isAnimated === other.isAnimated
+      && this.isInstanced === other.isInstanced
+      && this.isClassified === other.isClassified
+      && this.isShadowable === other.isShadowable
+      && this.isThematic === other.isThematic
+      && this.isHilite === other.isHilite;
+  }
+
   public buildDescription(): string {
     const parts = [this.isTranslucent ? "Translucent" : "Opaque"];
     if (this.isInstanced) parts.push("Instanced");
@@ -148,6 +161,50 @@ export class TechniqueFlags {
     if (this.isThematic) parts.push("Thematic");
     if (this.hasFeatures) parts.push(FeatureMode.Pick === this.featureMode ? "Pick" : "Overrides");
     return parts.join("-");
+  }
+
+  public static fromDescription(description: string): TechniqueFlags {
+    const flags = new TechniqueFlags(false);
+    const parts = description.split("-");
+    for (const part of parts) {
+      switch (part) {
+        case "Translucent":
+          flags.isTranslucent = true;
+          break;
+        case "Instanced":
+          flags.isInstanced = IsInstanced.Yes;
+          break;
+        case "EdgeTestNeeded":
+          flags.isEdgeTestNeeded = IsEdgeTestNeeded.Yes;
+          break;
+        case "Animated":
+          flags.isAnimated = IsAnimated.Yes;
+          break;
+        case "Hilite":
+          flags._isHilite = true;
+          break;
+        case "Classified":
+          flags.isClassified = IsClassified.Yes;
+          break;
+        case "Clip":
+          flags.numClipPlanes = 1;
+          break;
+        case "Shadowable":
+          flags.isShadowable = IsShadowable.Yes;
+          break;
+        case "Thematic":
+          flags.isThematic = IsThematic.Yes;
+          break;
+        case "Pick":
+          flags.featureMode = FeatureMode.Pick;
+          break;
+        case "Overrides":
+          flags.featureMode = FeatureMode.Overrides;
+          break;
+      }
+    }
+
+    return flags;
   }
 
   public static readonly defaults = new TechniqueFlags();

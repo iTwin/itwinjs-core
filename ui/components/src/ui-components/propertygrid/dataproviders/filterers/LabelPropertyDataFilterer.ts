@@ -8,13 +8,13 @@
 
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { countMatchesInString } from "../../../common/countMatchesInString";
-import { PropertyDataFiltererBase, PropertyDataFilterResult } from "./PropertyDataFiltererBase";
+import { FilteredType, PropertyDataFilterResult, PropertyRecordDataFiltererBase } from "./PropertyDataFiltererBase";
 
 /**
  * PropertyData filter which matches on any record type label and includes descendant nodes on match
  * @alpha
  */
-export class LabelPropertyDataFilterer extends PropertyDataFiltererBase {
+export class LabelPropertyDataFilterer extends PropertyRecordDataFiltererBase {
   private _filterText: string = "";
 
   public constructor(filterText: string = "") {
@@ -33,7 +33,7 @@ export class LabelPropertyDataFilterer extends PropertyDataFiltererBase {
 
   public get isActive() { return this.filterText !== ""; }
 
-  public async matchesFilter(node: PropertyRecord): Promise<PropertyDataFilterResult> {
+  public async recordMatchesFilter(node: PropertyRecord): Promise<PropertyDataFilterResult> {
     if (!this.isActive)
       return { matchesFilter: true };
 
@@ -46,7 +46,8 @@ export class LabelPropertyDataFilterer extends PropertyDataFiltererBase {
       matchesFilter: true,
       shouldExpandNodeParents: true,
       shouldForceIncludeDescendants: true,
-      matchesCount: { label: matchesCount },
+      matchesCount,
+      filteredTypes: [FilteredType.Label],
     };
   }
 }

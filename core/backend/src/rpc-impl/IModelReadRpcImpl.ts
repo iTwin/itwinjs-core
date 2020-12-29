@@ -11,6 +11,7 @@ import { Range3d, Range3dProps } from "@bentley/geometry-core";
 import {
   ElementProps, EntityMetaData, EntityQueryParams, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps,
   ImageSourceFormat, IModel, IModelConnectionProps, IModelCoordinatesResponseProps, IModelReadRpcInterface,
+  IModelRpcOpenProps,
   IModelRpcProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, NoContentError, QueryLimit, QueryPriority, QueryQuota, QueryResponse, RpcInterface,
   RpcManager, SnapRequestProps, SnapResponseProps, SyncMode, ViewStateLoadProps, ViewStateProps,
 } from "@bentley/imodeljs-common";
@@ -31,7 +32,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
 
   public static register() { RpcManager.registerImpl(IModelReadRpcInterface, IModelReadRpcImpl); }
 
-  public async openForRead(tokenProps: IModelRpcProps): Promise<IModelConnectionProps> {
+  public async openForRead(tokenProps: IModelRpcOpenProps): Promise<IModelConnectionProps> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     return RpcBriefcaseUtility.openWithTimeout(requestContext, tokenProps, SyncMode.FixedVersion);
   }
