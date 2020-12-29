@@ -427,7 +427,7 @@ describe("iModelHub iModelsHandler", () => {
 
   it("should download a Seed File (#iModelBank)", async () => {
     mockGetSeedFile(imodelId, true);
-    const downloadToPathname: string = path.join(workDir, imodelId.toString());
+    const downloadToPathname: string = path.join(workDir, `${imodelId}.bim`);
     utils.mockFileResponse();
 
     const progressTracker = new utils.ProgressTracker();
@@ -439,7 +439,7 @@ describe("iModelHub iModelsHandler", () => {
   it("should download a Seed File with Buffering (#iModelBank)", async () => {
     imodelClient.setFileHandler(createFileHandler(true));
     mockGetSeedFile(imodelId, true);
-    const downloadToPathname: string = path.join(workDir, imodelId.toString());
+    const downloadToPathname: string = path.join(workDir, `${imodelId}.bim`);
     utils.mockFileResponse();
 
     const progressTracker = new utils.ProgressTracker();
