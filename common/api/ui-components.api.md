@@ -2834,9 +2834,9 @@ export interface NavCubeFaceProps extends React.AllHTMLAttributes<HTMLDivElement
 // @public
 export class NavigationPropertyTypeConverter extends TypeConverter {
     // (undocumented)
-    convertPropertyToString(propertyDescription: PropertyDescription, value?: Primitives.Hexadecimal): string;
+    convertPropertyToString(propertyDescription: PropertyDescription, value?: Primitives.Value): string;
     // (undocumented)
-    sortCompare(a: Primitives.Hexadecimal, b: Primitives.Hexadecimal, ignoreCase?: boolean): number;
+    sortCompare(a: Primitives.Value, b: Primitives.Value, ignoreCase?: boolean): number;
 }
 
 // @public
