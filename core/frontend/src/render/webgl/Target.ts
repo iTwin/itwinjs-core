@@ -669,6 +669,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
       this.compositor.drawForReadPixels(this._renderCommands, this.graphics.overlays, this.graphics.decorations?.worldOverlay);
       this.uniforms.branch.pop();
+      this.renderSystem.screenSpaceEffects.apply(this);
 
       this._isReadPixelsInProgress = false;
     } else {
@@ -884,6 +885,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     // Restore the state
     this.uniforms.branch.pop();
+    this.renderSystem.screenSpaceEffects.apply(this);
 
     this.beginPerfMetricRecord("Read Pixels", true);
     const result = this.compositor.readPixels(rect, selector);
@@ -1046,6 +1048,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   protected abstract _assignDC(): boolean;
   protected abstract _beginPaint(fbo: FrameBuffer): void;
   protected abstract _endPaint(): void;
+  public isOnScreen(): this is OnScreenTarget { return false; }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
     this._compositor.collectStatistics(stats);
@@ -1295,6 +1298,8 @@ export class OnScreenTarget extends Target {
   public readImageToCanvas(): HTMLCanvasElement {
     return this._usingWebGLCanvas ? this.copyImageToCanvas() : this._2dCanvas.canvas;
   }
+
+  public isOnScreen(): this is OnScreenTarget { return true; }
 }
 
 /** @internal */

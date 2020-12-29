@@ -18,6 +18,7 @@ import { CompileStatus, ShaderProgram } from "./ShaderProgram";
 import { RenderState } from "./RenderState";
 import { SingleTexturedViewportQuadGeometry, ViewportQuadGeometry } from "./CachedGeometry";
 import { TextureHandle } from "./Texture";
+import { FrameBuffer } from "./FrameBuffer";
 import { getDrawParams } from "./ScratchDrawParams";
 import { SingularTechnique } from "./Technique";
 import { Target } from "./Target";
@@ -111,9 +112,13 @@ class ScreenSpaceEffect {
   }
 
   public shouldApply(target: Target): boolean {
-    if (!this._shiftsPixels && target.isReadPixelsInProgress)
-      return false;
+    if (target.isReadPixelsInProgress) {
+      // Screen-space effects do not apply to off-screen targets.
+      // They only apply during readPixels() if they move pixels around (we need to move pixels in the pick buffers correspondingly).
+      return target.isOnScreen() && this._shiftsPixels;
+    }
 
+    assert(target.isOnScreen());
     return undefined === this._shouldApply || this._shouldApply(target.screenSpaceEffectContext);
   }
 }
@@ -167,6 +172,11 @@ export class ScreenSpaceEffects {
     if (0 === effects.length)
       return;
 
+    if (target.isReadPixelsInProgress) {
+      this.applyForReadPixels(effects, target);
+      return;
+    }
+
     const system = System.instance;
     system.applyRenderState(RenderState.defaults);
 
@@ -176,13 +186,44 @@ export class ScreenSpaceEffects {
       this._copyGeometry.texture = system.frameBufferStack.currentColorBuffer!.getHandle()!;
       system.frameBufferStack.execute(copyFbo, true, false, () => {
         const copyParams = getDrawParams(target, this._copyGeometry);
-        target.techniques.draw(copyParams);
+        system.techniques.draw(copyParams);
       });
 
       // Run the effect shader with a copy of the current image as input.
       this._effectGeometry.setTechniqueId(effect.techniqueId);
       const params = getDrawParams(target, this._effectGeometry);
-      target.techniques.draw(params);
+      system.techniques.draw(params);
+    }
+  }
+
+  private applyForReadPixels(effects: ScreenSpaceEffect[], target: Target): void {
+    const system = System.instance;
+    system.applyRenderState(RenderState.defaults);
+
+    // ###TODO: We could use MRT if available here rather than two passes.
+    const copyFbo = target.compositor.screenSpaceEffectFbo;
+    for (const effect of effects) {
+      this._effectGeometry.setTechniqueId(effect.techniqueId);
+      for (let i = 0; i <= 1; i++) {
+        // Copy the pick buffer as input to the effect shader.
+        const buffer = 0 === i ? target.compositor.featureIds : target.compositor.depthAndOrder;
+        this._copyGeometry.texture = buffer.getHandle()!;
+        system.frameBufferStack.execute(copyFbo, true, false, () => {
+          const copyParams = getDrawParams(target, this._copyGeometry);
+          system.techniques.draw(copyParams);
+        });
+
+        // Run the effect shader with a copy of the current pick buffer to output to pick buffer.
+        // ###TODO: Avoid frequent framebuffer allocation.
+        const effectFbo = FrameBuffer.create([buffer]);
+        assert(undefined !== effectFbo);
+        system.frameBufferStack.execute(effectFbo, true, false, () => {
+          const effectParams = getDrawParams(target, this._effectGeometry);
+          system.techniques.draw(effectParams);
+        });
+
+        effectFbo.dispose();
+      }
     }
   }
 }

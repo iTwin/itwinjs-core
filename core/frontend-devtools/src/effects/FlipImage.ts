@@ -42,8 +42,11 @@ function registerEffect(): void {
       // Sample the original image to flip on x and/or y axis.
       fragment: `
         vec4 effectMain() {
-          return TEXTURE(u_diffuse, v_uv);
+          return TEXTURE(u_diffuse, computeSourcePixel());
         }`,
+      // Because we're moving pixels around, we must tell the render system where the source pixel was originally located - otherwise
+      // element locate will not work correctly.
+      computeSourcePixel: "return v_uv;",
     },
   });
 
