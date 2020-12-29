@@ -89,8 +89,9 @@ describe("ScreenSpaceEffectBuilder", () => {
           }`,
         fragment: `
           vec4 effectMain() {
-            return TEXTURE(u_diffuse, v_uv);
+            return TEXTURE(u_diffuse, computeSourcePixel());
           }`,
+        computeSourcePixel: "return v_uv;",
       },
     })!;
 

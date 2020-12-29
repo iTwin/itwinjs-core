@@ -49,12 +49,14 @@ function getVaryingVariableType(type: VaryingType): VariableType {
 class Builder {
   private readonly _name: string;
   private readonly _builder: ProgramBuilder;
+  private readonly _shiftsPixels: boolean;
   public shouldApply?: ShouldApply;
 
   public constructor(params: ScreenSpaceEffectBuilderParams) {
     this._name = params.name;
     this._builder = createScreenSpaceEffectProgramBuilder(params);
     this._builder.setDebugDescription(`Screen-space: ${this._name}`);
+    this._shiftsPixels = undefined !== params.source.computeSourcePixel;
   }
 
   public get isWebGL2(): boolean {
@@ -87,7 +89,7 @@ class Builder {
     const technique = new SingularTechnique(program);
     const techniqueId = System.instance.techniques.addDynamicTechnique(technique, this._name);
 
-    const effect = new ScreenSpaceEffect(techniqueId, this._name, this.shouldApply);
+    const effect = new ScreenSpaceEffect(techniqueId, this._name, this._shiftsPixels, this.shouldApply);
     System.instance.screenSpaceEffects.add(effect);
 
     // Make sure the new effect has a chance to apply to all viewports immediately.
@@ -98,12 +100,21 @@ class Builder {
 class ScreenSpaceEffect {
   public readonly techniqueId: TechniqueId;
   public readonly name: string;
-  public readonly shouldApply: ShouldApply;
+  private readonly _shouldApply?: ShouldApply;
+  private readonly _shiftsPixels: boolean;
 
-  public constructor(techniqueId: TechniqueId, name: string, shouldApply?: ShouldApply) {
+  public constructor(techniqueId: TechniqueId, name: string, shiftsPixels: boolean, shouldApply?: ShouldApply) {
     this.techniqueId = techniqueId;
     this.name = name;
-    this.shouldApply = shouldApply ? shouldApply : (_) => true;
+    this._shouldApply = shouldApply;
+    this._shiftsPixels = shiftsPixels;
+  }
+
+  public shouldApply(target: Target): boolean {
+    if (!this._shiftsPixels && target.isReadPixelsInProgress)
+      return false;
+
+    return undefined === this._shouldApply || this._shouldApply(target.screenSpaceEffectContext);
   }
 }
 
@@ -148,10 +159,9 @@ export class ScreenSpaceEffects {
     if (0 === this._effects.length)
       return;
 
-    const context = target.screenSpaceEffectContext;
     const effects = [];
     for (const effect of this._effects)
-      if (effect.shouldApply(context))
+      if (effect.shouldApply(target))
         effects.push(effect);
 
     if (0 === effects.length)

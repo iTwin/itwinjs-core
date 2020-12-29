@@ -914,9 +914,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
         didSucceed = false;
       }
     });
-    if (!didSucceed)
-      return false;
-    return true;
+
+    return didSucceed;
   }
 
   /** Returns a new size scaled up to a maximum size while maintaining proper aspect ratio.  The new size will be
@@ -1043,8 +1042,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     assert(undefined !== this._viewport);
     return { viewport: this._viewport };
   }
-
-  // ---- Methods expected to be overridden by subclasses ---- //
 
   protected abstract _assignDC(): boolean;
   protected abstract _beginPaint(fbo: FrameBuffer): void;

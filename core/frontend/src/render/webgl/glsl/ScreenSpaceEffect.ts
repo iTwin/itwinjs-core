@@ -26,6 +26,13 @@ const textureCoordFromPosition = `
 
 const computeBaseColor = "  return effectMain();";
 
+const computeBaseColorWithShift = `
+  if (u_readingPixels)
+    return TEXTURE(u_diffuse, computeSourcePixel());
+  else
+    return effectMain();
+`;
+
 /** @internal */
 export function createScreenSpaceEffectProgramBuilder(params: ScreenSpaceEffectBuilderParams): ProgramBuilder {
   const builder = new ProgramBuilder(AttributeMap.findAttributeMap(undefined, false));
@@ -36,6 +43,9 @@ export function createScreenSpaceEffectProgramBuilder(params: ScreenSpaceEffectB
   builder.vert.addFunction(params.source.vertex);
   builder.vert.set(VertexShaderComponent.ComputePosition, computePosition);
 
+  if (params.source.computeSourcePixel)
+    builder.frag.addFunction("vec2 computeSourcePixel()", params.source.computeSourcePixel);
+
   builder.frag.addFunction(params.source.fragment);
   builder.addUniform("u_diffuse", VariableType.Sampler2D, (prog) => {
     prog.addProgramUniform("u_diffuse", (uniform, params) => {
@@ -44,8 +54,18 @@ export function createScreenSpaceEffectProgramBuilder(params: ScreenSpaceEffectB
     });
   });
 
-  builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
   builder.frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
+
+  if (!params.source.computeSourcePixel) {
+    builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
+  } else {
+    builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColorWithShift);
+    builder.frag.addUniform("u_readingPixels", VariableType.Boolean, (prog) => {
+      prog.addProgramUniform("u_readingPixels", (uniform, params) => {
+        uniform.setUniform1i(params.target.isReadPixelsInProgress ? 1 : 0);
+      });
+    });
+  }
 
   return builder;
 }

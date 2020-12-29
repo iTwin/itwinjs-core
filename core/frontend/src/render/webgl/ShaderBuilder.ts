@@ -530,13 +530,11 @@ export class ShaderBuilder extends ShaderVariables {
 
   public addFunction(declarationOrFull: string, implementation?: string): void {
     let def = declarationOrFull;
-    if (undefined !== implementation) {
+    if (undefined !== implementation)
       def = SourceBuilder.buildFunctionDefinition(`\n${declarationOrFull}`, implementation);
-    }
 
-    if (undefined === this.findFunction(def)) {
+    if (undefined === this.findFunction(def))
       this._functions.push(def);
-    }
   }
 
   public replaceFunction(existing: string, replacement: string): boolean {
