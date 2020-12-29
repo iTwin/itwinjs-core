@@ -55,6 +55,8 @@ export interface Uniform {
   setUniform1f: (value: number) => void;
   /** Sets the value to an array of floats - equivalent to `WebGLRenderingContext.uniform1fv`. */
   setUniform1fv: (value: Float32Array | number[]) => void;
+  /** Sets the value to an array of integers - equivalent to `WebGLRenderingContext.uniform1iv`. */
+  setUniform1iv: (value: Int32Array | number[]) => void;
   /** Sets the value as a vec2, equivalent to `WebGLRenderingContext.uniform2fv`. */
   setUniform2fv: (value: Float32Array | number[]) => void;
   /** Sets the value as a vec3 - equivalent to `WebGLRenderingContext.uniform3fv`. */
@@ -73,7 +75,7 @@ export interface UniformContext {
 
 /** Parameters used to define a uniform variable for a [[ScreenSpaceEffectBuilder]]'s shader program.
  * @see [[ScreenSpaceEffectBuilder.addUniform]].
- * @beta.
+ * @beta
  */
 export interface UniformParams {
   /** The data type of the uniform variable. */
@@ -82,6 +84,15 @@ export interface UniformParams {
   name: string;
   /** A function that computes the value of the variable and binds it to the shader program. */
   bind: (uniform: Uniform, context: UniformContext) => void;
+}
+
+/** Parameters used to define an array of uniform variables for a [[ScreenSpaceEffectBuilder]]'s shader program.
+ * @see [[ScreenSpaceEffectBuilder.addUniformArray]].
+ * @beta
+ */
+export interface UniformArrayParams extends UniformParams {
+  /** The number of elements in the array. */
+  length: number;
 }
 
 /** Parameters used to create a [[ScreenSpaceEffectBuilder]].
@@ -155,6 +166,9 @@ export interface ScreenSpaceEffectBuilder {
 
   /** Add a uniform variable to the shader program. */
   addUniform: (params: UniformParams) => void;
+
+  /** Add an array of uniform variables to the shader program. */
+  addUniformArray: (params: UniformArrayParams) => void;
 
   /** Add a varying variable to the shader program. */
   addVarying: (name: string, type: VaryingType) => void;

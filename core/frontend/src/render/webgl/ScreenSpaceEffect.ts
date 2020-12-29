@@ -10,7 +10,7 @@ import { assert, dispose } from "@bentley/bentleyjs-core";
 import { Viewport } from "../../Viewport";
 import { IModelApp } from "../../IModelApp";
 import {
-  ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams, ScreenSpaceEffectContext, Uniform, UniformContext, UniformParams, UniformType, VaryingType,
+  ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams, ScreenSpaceEffectContext, Uniform, UniformArrayParams, UniformContext, UniformParams, UniformType, VaryingType,
 } from "../ScreenSpaceEffectBuilder";
 import { TechniqueId } from "./TechniqueId";
 import { ProgramBuilder, VariableType } from "./ShaderBuilder";
@@ -70,6 +70,16 @@ class Builder {
     const bind = params.bind;
 
     this._builder.addUniform(name, type, (prog: ShaderProgram) => {
+      prog.addProgramUniform(name, (uniform, progParams) => {
+        bind(uniform, progParams.target.screenSpaceEffectContext);
+      });
+    });
+  }
+
+  public addUniformArray(params: UniformArrayParams): void {
+    const { name, bind, length } = { ...params };
+    const type = getUniformVariableType(params.type);
+    this._builder.addUniformArray(name, type, length, (prog) => {
       prog.addProgramUniform(name, (uniform, progParams) => {
         bind(uniform, progParams.target.screenSpaceEffectContext);
       });
