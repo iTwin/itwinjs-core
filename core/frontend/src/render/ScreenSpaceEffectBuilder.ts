@@ -114,12 +114,14 @@ export interface ScreenSpaceEffectBuilderParams {
     fragment: string;
 
     /** If the fragment shader shifts pixels from their original locations, then by default element locate will not work, because it expects the pixels produced by an element
-     * to remain at their original locations. This can be fixed by supplying the body of a GLSL function `vec2 computeSourcePixel()` that, as part of the fragment shader,
-     * returns the coordinate of the pixel in the source image corresponding to the pixel that will be output by the shader.
+     * to remain at their original locations. This can be fixed by supplying the body of a GLSL function `vec4 sampleSourcePixel()` that, as part of the fragment shader,
+     * obtains the pixel in the source image corresponding to the pixel that will be output by the shader.
+     * For example, if the source pixel is simply specified by a `varying vec2 v_texCoord` computed by the vertex shader, then this property should be defined as `return TEXTURE(u_diffuse, v_texCoord);`.
      * This function will automatically be included in the fragment shader, so it can also be used by `effectMain` when computing the output color.
-     * For example, if the source pixel is simply specified by a `varying vec2 v_texCoord` computed by the vertex shader, then this property should be defined as `return v_texCoord;`.
+     * @note `sampleSourcePixel` should not modify the sample in any way - that should be done only in `effectMain`.
+     * @note `sampleSourcePixel` should **not** be supplied if the effect does **not** shift pixels as it can negatively impact performance of element locate.
      */
-    computeSourcePixel?: string;
+    sampleSourcePixel?: string;
   };
 
   /** If true, adds a `vec2 textureCoordFromPosition(vec4 position)` function to the vertex shader that computes a UV coordinate based on the vertex's position. */

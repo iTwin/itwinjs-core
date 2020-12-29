@@ -27,10 +27,7 @@ const textureCoordFromPosition = `
 const computeBaseColor = "  return effectMain();";
 
 const computeBaseColorWithShift = `
-  if (u_readingPixels)
-    return TEXTURE(u_diffuse, computeSourcePixel());
-  else
-    return effectMain();
+  return u_readingPixels ? sampleSourcePixel() : effectMain();
 `;
 
 /** @internal */
@@ -43,8 +40,8 @@ export function createScreenSpaceEffectProgramBuilder(params: ScreenSpaceEffectB
   builder.vert.addFunction(params.source.vertex);
   builder.vert.set(VertexShaderComponent.ComputePosition, computePosition);
 
-  if (params.source.computeSourcePixel)
-    builder.frag.addFunction("vec2 computeSourcePixel()", params.source.computeSourcePixel);
+  if (params.source.sampleSourcePixel)
+    builder.frag.addFunction("vec4 sampleSourcePixel()", params.source.sampleSourcePixel);
 
   builder.frag.addFunction(params.source.fragment);
   builder.addUniform("u_diffuse", VariableType.Sampler2D, (prog) => {
@@ -56,7 +53,7 @@ export function createScreenSpaceEffectProgramBuilder(params: ScreenSpaceEffectB
 
   builder.frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
 
-  if (!params.source.computeSourcePixel) {
+  if (!params.source.sampleSourcePixel) {
     builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
   } else {
     builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColorWithShift);

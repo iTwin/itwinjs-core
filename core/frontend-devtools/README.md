@@ -79,9 +79,10 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
 
 These key-ins configure screen-space effects that modify the image presented by the selected Viewport.
 
-* `fdt effect flip` - a mostly-useless effect that flips the viewport's image horizontally and/or vertically, for demonstration purposes. Arguments:
+* `fdt effect flip` - a mostly-useless effect that flips the viewport's image horizontally and/or vertically, and/or inverts its colors, for demonstration purposes. Arguments:
   * "horizontal=0|1" - 1 to flip on X axis.
   * "vertical=0|1" - 1 to flip on Y axis.
+  * "color=0|1" - 1 to invert colors.
 
 ### Other key-ins
 

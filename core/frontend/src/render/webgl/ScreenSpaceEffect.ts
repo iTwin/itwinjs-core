@@ -57,7 +57,7 @@ class Builder {
     this._name = params.name;
     this._builder = createScreenSpaceEffectProgramBuilder(params);
     this._builder.setDebugDescription(`Screen-space: ${this._name}`);
-    this._shiftsPixels = undefined !== params.source.computeSourcePixel;
+    this._shiftsPixels = undefined !== params.source.sampleSourcePixel;
   }
 
   public get isWebGL2(): boolean {

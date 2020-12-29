@@ -75,11 +75,18 @@ export class LensDistortionEffect extends Tool {
         vUV.xy += uv;
       }`;
 
+    // We simply shift pixels, we don't alter their colors.
     const fragment = `
       vec4 effectMain() {
-        vec3 uv = dot(vUVDot, vUVDot) * vec3(-0.5, -0.5, -1.0) + vUV;
-        return TEXTURE_PROJ(u_diffuse, uv);
+        return sampleSourcePixel();
       }`;
+
+    // Because we're moving pixels around, we must tell the render system where the source pixel was originally located - otherwise
+    // element locate will not work correctly.
+    const sampleSourcePixel = `
+      vec3 uv = dot(vUVDot, vUVDot) * vec3(-0.5, -0.5, -1.0) + vUV;
+      return TEXTURE_PROJ(u_diffuse, uv);
+    `;
 
     const builder = IModelApp.renderSystem.createScreenSpaceEffectBuilder({
       name: "fdt lens distortion",
@@ -87,6 +94,7 @@ export class LensDistortionEffect extends Tool {
       source: {
         vertex,
         fragment,
+        sampleSourcePixel,
       },
     });
 
