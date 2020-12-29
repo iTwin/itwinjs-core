@@ -75,6 +75,14 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
 * `fdt toggle reality bounds` - Toggle the display of bounding boxes for reality tiles.
 * `fdt set building display` Toggle the display of the worldwide OpenStreetMap worldwide buildingslayer by attaching or displaying as a reality model in the current viewport.  The OSM buildings are aggregated and supplied from Cesium Ion <https://cesium.com/content/cesium-osm-buildings/>. The first argument is required on|off - the second optional argument is a value for transparency between 0 and 1.
 
+### Screen-space effect key-ins
+
+These key-ins configure screen-space effects that modify the image presented by the selected Viewport.
+
+* `fdt effect flip` - a mostly-useless effect that flips the viewport's image horizontally and/or vertically, for demonstration purposes. Arguments:
+  * "horizontal=0|1" - 1 to flip on X axis.
+  * "vertical=0|1" - 1 to flip on Y axis.
+
 ### Other key-ins
 
 * `fdt save view` - Copies to the clipboard a JSON representation of the view currently displayed in the active viewport.

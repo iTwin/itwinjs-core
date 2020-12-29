@@ -37,6 +37,7 @@ import { ToggleTileRequestDecorationTool } from "./tools/TileRequestDecoration";
 import { ToggleTileTreeBoundsDecorationTool } from "./tools/TileTreeBoundsDecoration";
 import { ToggleToolTipsTool } from "./tools/ToolTipProvider";
 import { ChangeCameraTool } from "./tools/ViewportTools";
+import { FlipImageEffect } from "./effects/FlipImage";
 
 /** Entry-point for the package. Before using the package you *must* call [[FrontendDevTools.initialize]].
  * @beta
@@ -86,6 +87,7 @@ export class FrontendDevTools {
       EmphasizeSelectedElementsTool,
       ExtensionServiceTool,
       FadeOutTool,
+      FlipImageEffect,
       FreezeSceneTool,
       InspectElementTool,
       IsolateSelectedElementsTool,

@@ -8,6 +8,7 @@
 
 import { assert, dispose } from "@bentley/bentleyjs-core";
 import { Viewport } from "../../Viewport";
+import { IModelApp } from "../../IModelApp";
 import {
   ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams, ScreenSpaceEffectContext, Uniform, UniformContext, UniformParams, UniformType, VaryingType,
 } from "../ScreenSpaceEffectBuilder";
@@ -88,6 +89,9 @@ class Builder {
 
     const effect = new ScreenSpaceEffect(techniqueId, this._name, this.shouldApply);
     System.instance.screenSpaceEffects.add(effect);
+
+    // Make sure the new effect has a chance to apply to all viewports immediately.
+    IModelApp.viewManager.invalidateViewportScenes();
   }
 }
 
@@ -104,7 +108,7 @@ class ScreenSpaceEffect {
 }
 
 class ScreenSpaceGeometry extends ViewportQuadGeometry {
-  public set techniqueId(id: TechniqueId) {
+  public setTechniqueId(id: TechniqueId) {
     this._techniqueId = id;
   }
 }
@@ -118,7 +122,7 @@ export class ScreenSpaceEffects {
   public constructor() {
     // We will change the geometry's TechniqueId before applying each technique.
     const effectGeometry = ScreenSpaceGeometry.create(TechniqueId.Invalid);
-    assert(undefined !== effectGeometry);
+    assert(effectGeometry instanceof ScreenSpaceGeometry);
     this._effectGeometry = effectGeometry;
 
     // NB: We'll replace the texture each time we draw.
@@ -166,7 +170,7 @@ export class ScreenSpaceEffects {
       });
 
       // Run the effect shader with a copy of the current image as input.
-      this._effectGeometry.techniqueId = effect.techniqueId;
+      this._effectGeometry.setTechniqueId(effect.techniqueId);
       const params = getDrawParams(target, this._effectGeometry);
       target.techniques.draw(params);
     }

@@ -290,6 +290,9 @@
     },
     "ToggleSectionDrawingSpatialView": {
       "keyin": "fdt sectiondrawing display spatial"
+    },
+    "FlipImageEffect": {
+      "keyin": "fdt effect flip"
     }
   }
 }
