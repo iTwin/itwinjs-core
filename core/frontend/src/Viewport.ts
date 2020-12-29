@@ -2247,7 +2247,7 @@ export abstract class Viewport implements IDisposable {
         this.onDisplayStyleChanged.raiseEvent(this);
 
       if (changeFlags.viewedModels)
-        this.onViewedModelsChanged.raiseEvent(this, changeFlags);
+        this.onViewedModelsChanged.raiseEvent(this);
 
       if (changeFlags.areFeatureOverridesDirty) {
         this.onFeatureOverridesChanged.raiseEvent(this);
