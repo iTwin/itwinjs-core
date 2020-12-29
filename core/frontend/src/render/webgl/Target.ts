@@ -824,43 +824,47 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     this.pushState(state);
 
-    // Create a culling frustum based on the input rect.
-    const viewRect = this.viewRect;
-    const leftScale = (rect.left - viewRect.left) / (viewRect.right - viewRect.left);
-    const rightScale = (viewRect.right - rect.right) / (viewRect.right - viewRect.left);
-    const topScale = (rect.top - viewRect.top) / (viewRect.bottom - viewRect.top);
-    const bottomScale = (viewRect.bottom - rect.bottom) / (viewRect.bottom - viewRect.top);
 
-    const tmpFrust = this._scratchTmpFrustum;
-    const planFrust = this.planFrustum;
-    interpolateFrustumPoint(tmpFrust, planFrust, Npc._000, leftScale, Npc._100);
-    interpolateFrustumPoint(tmpFrust, planFrust, Npc._100, rightScale, Npc._000);
-    interpolateFrustumPoint(tmpFrust, planFrust, Npc._010, leftScale, Npc._110);
-    interpolateFrustumPoint(tmpFrust, planFrust, Npc._110, rightScale, Npc._010);
-    interpolateFrustumPoint(tmpFrust, planFrust, Npc._001, leftScale, Npc._101);
-    interpolateFrustumPoint(tmpFrust, planFrust, Npc._101, rightScale, Npc._001);
-    interpolateFrustumPoint(tmpFrust, planFrust, Npc._011, leftScale, Npc._111);
-    interpolateFrustumPoint(tmpFrust, planFrust, Npc._111, rightScale, Npc._011);
+    // Create a culling frustum based on the input rect. We can't do this if a screen-space effect is going to move pixels around.
+    if (!this.renderSystem.screenSpaceEffects.shouldApply(this)) {
+      const viewRect = this.viewRect;
+      const leftScale = (rect.left - viewRect.left) / (viewRect.right - viewRect.left);
+      const rightScale = (viewRect.right - rect.right) / (viewRect.right - viewRect.left);
+      const topScale = (rect.top - viewRect.top) / (viewRect.bottom - viewRect.top);
+      const bottomScale = (viewRect.bottom - rect.bottom) / (viewRect.bottom - viewRect.top);
 
-    const rectFrust = this._scratchRectFrustum;
-    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._000, bottomScale, Npc._010);
-    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._100, bottomScale, Npc._110);
-    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._010, topScale, Npc._000);
-    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._110, topScale, Npc._100);
-    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._001, bottomScale, Npc._011);
-    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._101, bottomScale, Npc._111);
-    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._011, topScale, Npc._001);
-    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._111, topScale, Npc._101);
+      const tmpFrust = this._scratchTmpFrustum;
+      const planFrust = this.planFrustum;
+      interpolateFrustumPoint(tmpFrust, planFrust, Npc._000, leftScale, Npc._100);
+      interpolateFrustumPoint(tmpFrust, planFrust, Npc._100, rightScale, Npc._000);
+      interpolateFrustumPoint(tmpFrust, planFrust, Npc._010, leftScale, Npc._110);
+      interpolateFrustumPoint(tmpFrust, planFrust, Npc._110, rightScale, Npc._010);
+      interpolateFrustumPoint(tmpFrust, planFrust, Npc._001, leftScale, Npc._101);
+      interpolateFrustumPoint(tmpFrust, planFrust, Npc._101, rightScale, Npc._001);
+      interpolateFrustumPoint(tmpFrust, planFrust, Npc._011, leftScale, Npc._111);
+      interpolateFrustumPoint(tmpFrust, planFrust, Npc._111, rightScale, Npc._011);
 
-    // If a clip has been applied to the view, trivially do nothing if aperture does not intersect
-    // ###TODO: This was never right, was it? Some branches in the scene ignore the clip volume...
-    // if (undefined !== this._activeClipVolume && this.currentBranch.showClipVolume && this.clips.isValid)
-    //   if (ClipPlaneContainment.StronglyOutside === this._activeClipVolume.clipVector.classifyPointContainment(rectFrust.points))
-    //     return undefined;
+      const rectFrust = this._scratchRectFrustum;
+      interpolateFrustumPoint(rectFrust, tmpFrust, Npc._000, bottomScale, Npc._010);
+      interpolateFrustumPoint(rectFrust, tmpFrust, Npc._100, bottomScale, Npc._110);
+      interpolateFrustumPoint(rectFrust, tmpFrust, Npc._010, topScale, Npc._000);
+      interpolateFrustumPoint(rectFrust, tmpFrust, Npc._110, topScale, Npc._100);
+      interpolateFrustumPoint(rectFrust, tmpFrust, Npc._001, bottomScale, Npc._011);
+      interpolateFrustumPoint(rectFrust, tmpFrust, Npc._101, bottomScale, Npc._111);
+      interpolateFrustumPoint(rectFrust, tmpFrust, Npc._011, topScale, Npc._001);
+      interpolateFrustumPoint(rectFrust, tmpFrust, Npc._111, topScale, Npc._101);
+
+      this._renderCommands.setCheckRange(rectFrust);
+
+      // If a clip has been applied to the view, trivially do nothing if aperture does not intersect
+      // ###TODO: This was never right, was it? Some branches in the scene ignore the clip volume...
+      // if (undefined !== this._activeClipVolume && this.currentBranch.showClipVolume && this.clips.isValid)
+      //   if (ClipPlaneContainment.StronglyOutside === this._activeClipVolume.clipVector.classifyPointContainment(rectFrust.points))
+      //     return undefined;
+    }
 
     // Repopulate the command list, omitting non-pickable decorations and putting transparent stuff into the opaque passes.
     this._renderCommands.clear();
-    this._renderCommands.setCheckRange(rectFrust);
     this._renderCommands.initForReadPixels(this.graphics);
     this._renderCommands.clearCheckRange();
 

@@ -159,16 +159,21 @@ export class ScreenSpaceEffects {
     this._effects.push(effect);
   }
 
+  /** Return true if any effects should be applied to this Target. */
+  public shouldApply(target: Target): boolean {
+    return 0 < this.getApplicableEffects(target).length;
+  }
+
+  private getApplicableEffects(target: Target): ScreenSpaceEffect[] {
+    return this._effects.filter((effect) => effect.shouldApply(target));
+  }
+
   /** Apply screen-space effects to the Target's rendered image. */
   public apply(target: Target): void {
     if (0 === this._effects.length)
       return;
 
-    const effects = [];
-    for (const effect of this._effects)
-      if (effect.shouldApply(target))
-        effects.push(effect);
-
+    const effects = this.getApplicableEffects(target);
     if (0 === effects.length)
       return;
 
