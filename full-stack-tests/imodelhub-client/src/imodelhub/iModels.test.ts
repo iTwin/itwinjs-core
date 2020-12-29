@@ -743,7 +743,7 @@ describe("iModelHub iModelsHandler", () => {
     chai.expect(updatediModel.description).to.be.equal(newDescription);
     chai.expect(updatediModel.extent).to.be.eql(newExtent);
 
-    mockGetIModelByName(projectId, newName, newDescription, imodel.id!, true, undefined, newExtent);
+    mockGetIModelByName(projectId, newName, newDescription, imodel.id, true, undefined, newExtent);
     updatediModel = (await iModelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(newName)))[0];
 
     chai.assert(!!updatediModel);
