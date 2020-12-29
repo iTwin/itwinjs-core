@@ -96,6 +96,9 @@ export interface ScreenSpaceEffectBuilderParams {
    *  - Instead of `main`, it should implement `effectMain`.
    *  - It should omit declarations of uniform and varying variables - these will be generated from those supplied to [[ScreenSpaceEffectBuilder.addUniform]] and [[ScreenSpaceEffectBuilder.addVarying]].
    * The program receives one pre-defined `uniform sampler2D u_diffuse` representing the viewport's rendered image.
+   * Because the [[RenderSystem]] uses either WebGL1 or WebGL2 based on the capabilities of the client, the effect shader should be written to compile with either; or, [[ScreenSpaceEffectBuilder.isWebGL2]] should be tested.
+   * The [[RenderSystem]] takes care of adjusting the source code for some of these differences, e.g., `varying` (WebGL1) vs `in` and `out` (WebGL2);
+   * a `TEXTURE` macro to replace `texture2d` (WebGL1) and `texture` (WebGL2); etc.
    */
   source: {
     /** The GLSL implementation of the vertex shader. Instead of `main`, it implements `void effectMain(vec4 position)` where `position` is the vertex position in normalized device coordinates ([-1..1]).
