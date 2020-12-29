@@ -91,22 +91,27 @@ export interface UniformParams {
 export interface ScreenSpaceEffectBuilderParams {
   /** The name of the effect. Must be unique among all registered screen-space effects. */
   name: string;
-  /** The partial GLSL source code for the vertex shader. The code will differ slightly from that of an ordinary vertex shader:
-   *  - The code does not need to assign to `gl_Position` - this will be handled automatically.
-   *  - Instead of `main()`, the code should implement `void effectMain(vec4 position)` to compute whatever varyings need to be sent to the fragment shader.
-   *    - ###TODO define what `position` is and clarify that the shader does not need to manually compute gl_Position.
-   *  - The code should omit uniform and varying variable declarations - these will be generated from the variables supplied to [[ScreenSpaceEffectBuilder.addUniform]] and [[ScreenSpaceEffectBuilder.addVarying]].
+
+  /** The GLSL implementation of the effect, to be integrated into a complete shader program. The effect shader code differs slightly from that of an ordinary shader:
+   *  - Instead of `main`, it should implement `effectMain`.
+   *  - It should omit declarations of uniform and varying variables - these will be generated from those supplied to [[ScreenSpaceEffectBuilder.addUniform]] and [[ScreenSpaceEffectBuilder.addVarying]].
+   * The program receives one pre-defined `uniform sampler2D u_diffuse` representing the viewport's rendered image.
    */
-  vertexShader: string;
-  /** The partial GLSL source code for the fragment shader. The fragment shader receives a pre-defined `uniform sampler2D u_diffuse` allowing it to
-   * sample the viewport's rendered image. If it fails to use this uniform in a way that affects the output, the shader may fail to compile.
-   * The code will differ slightly from that of an ordinary fragment shader:
-   *  - The code should not assign to `gl_FragColor` - this will be handled automatically.
-   *  - Instead of `main()`, the code should implement `vec4 effectMain()` returning the color to be output.
-   *  - The code should omit uniform and varying variable declarations - these will be generated from the variables supplied to [[ScreenSpaceEffectBuilder.addUniform]] and [[ScreenSpaceEffectBuilder.addVarying]].
-   *  - The code should use `TEXTURE()` instead of `texture2D()` or `texture()` to sample the texture.
-   */
-  fragmentShader: string;
+  source: {
+    /** The GLSL implementation of the vertex shader. Instead of `main`, it implements `void effectMain(vec4 position)` where `position` is the vertex position in normalized device coordinates ([-1..1]).
+     * `effectMain` should compute whatever information is required by the fragment shader. It should not assign to `gl_Position`.
+     */
+    vertex: string;
+
+    /** The GLSL implementation of the fragment shader. Instead of `main`, it implements `vec4 effectMain()` returning the color to be output.
+     * `effectMain` should sample `u_diffuse` using `TEXTURE()` instead of `texture2D()` or `texture()`. It should not assign to `gl_FragColor`.
+     * The alpha component of the output color is ignored as there is nothing to blend with.
+     */
+    fragment: string;
+  };
+
+  /** If true, adds a `vec2 textureCoordFromPosition(vec4 position)` function to the vertex shader that computes a UV coordinate based on the vertex's position. */
+  textureCoordFromPosition?: boolean;
 }
 
 /** Context passed to [[ScreenSpaceEffectBuilder.shouldApply]].
@@ -118,15 +123,14 @@ export interface ScreenSpaceEffectContext {
 }
 
 /** An interface used to construct and register with the [[IModelApp.renderSystem]] a custom screen-space effect.
- * Screen-space effects take as input the image rendered by a Viewport, as a WebGL texture.
- * They execute a shader program to modify the image.
+ * Screen-space effects take as input the image rendered by a Viewport, as a WebGL texture, and execute a shader program to modify the image.
  * Any number of screen-space effects can be registered; they are processed in the order in which they were registered.
  * Each frame, the [[RenderSystem]] does the following:
  *  - Render the scene to a texture.
  *  - For each registered screen-space effect, in the order in which they were registered:
  *    - If `shouldApply` is undefined, or returns true, apply the effect
- * @note Screen-space effects are typically registered after [[IModelApp.startup]] has completed.
  * @see [[RenderSystem.createScreenSpaceEffectBuilder]].
+ * @see [[ScreenSpaceEffectBuilderParams]] to define the initial state of the builder.
  * @beta
  */
 export interface ScreenSpaceEffectBuilder {
@@ -143,7 +147,7 @@ export interface ScreenSpaceEffectBuilder {
   shouldApply?: (context: ScreenSpaceEffectContext) => boolean;
 
   /** Finishes construction of the effect and, if successful, registers it with [[IModelApp.renderSystem]].
-   * @throws Error if the shader failed to compile, `finish` has already been called, or an effect with the same name has already been registered.
+   * @throws Error if the shader fails to compile and link, or an effect with the same name has already been registered.
    * @note After `finish` is called, no other properties or methods of the builder will have any effect.
    */
   finish: () => void;

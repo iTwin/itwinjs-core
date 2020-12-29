@@ -18,15 +18,25 @@ const computePosition = `
   return rawPos;
 `;
 
+const textureCoordFromPosition = `
+  vec2 textureCoordFromPosition(vec4 pos) {
+    return (pos.xy + 1.0) * 0.5;
+  }
+`;
+
 const computeBaseColor = "  return effectMain();";
 
 /** @internal */
 export function createScreenSpaceEffectProgramBuilder(params: ScreenSpaceEffectBuilderParams): ProgramBuilder {
   const builder = new ProgramBuilder(AttributeMap.findAttributeMap(undefined, false));
-  builder.vert.addFunction(params.vertexShader);
+
+  if (params.textureCoordFromPosition)
+    builder.vert.addFunction(textureCoordFromPosition);
+
+  builder.vert.addFunction(params.source.vertex);
   builder.vert.set(VertexShaderComponent.ComputePosition, computePosition);
 
-  builder.frag.addFunction(params.fragmentShader);
+  builder.frag.addFunction(params.source.fragment);
   builder.addUniform("u_diffuse", VariableType.Sampler2D, (prog) => {
     prog.addProgramUniform("u_diffuse", (uniform, params) => {
       const texture = params.target.compositor.screenSpaceEffectFbo.getColor(0);
