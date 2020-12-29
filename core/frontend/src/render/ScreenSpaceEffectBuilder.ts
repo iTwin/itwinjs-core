@@ -129,6 +129,8 @@ export interface ScreenSpaceEffectContext {
  *  - Render the scene to a texture.
  *  - For each registered screen-space effect, in the order in which they were registered:
  *    - If `shouldApply` is undefined, or returns true, apply the effect
+ * @note A screen-space effect that **moves** pixels (e.g., lens distortion) rather than simply recoloring them may cause element locate to behave unexpectedly -
+ * elements will be located based on their original locations, unaffected by the screen-space effect.
  * @see [[RenderSystem.createScreenSpaceEffectBuilder]].
  * @see [[ScreenSpaceEffectBuilderParams]] to define the initial state of the builder.
  * @beta
