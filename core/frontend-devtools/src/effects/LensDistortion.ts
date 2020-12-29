@@ -14,6 +14,7 @@ import { parseArgs } from "../tools/parseArgs";
  * Based on https://www.decarpentier.nl/lens-distortion
  * Key-in: `fdt effect lens distortion strength=[0..1] ratio=[0..1]`
  * The effect is improved considerably by enabling anti-aliasing (e.g., via [RenderSystem.Options.antialiasSamples]($frontend) at startup, or using the `fdt aasamples` key-in`).
+ * @note Because this effect applies a non-linear transform to each pixel, operations like snapping to geometry will not work properly. Element locate will work however - @see [ScreenSpaceEffectBuilderParams.sampleSourcePixel]($frontend).
  * @beta
  */
 export class LensDistortionEffect extends Tool {
@@ -98,7 +99,7 @@ export class LensDistortionEffect extends Tool {
       },
     });
 
-    // Lens distortion only applicable to views with camera enabled.
+    // Lens distortion is only applicable to views with the camera enabled.
     assert(undefined !== builder);
     builder.shouldApply = (context) => context.viewport.isCameraOn;
 

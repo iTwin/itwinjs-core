@@ -154,10 +154,14 @@ export interface ScreenSpaceEffectContext {
  *  - Render the scene to a texture.
  *  - For each registered screen-space effect, in the order in which they were registered:
  *    - If `shouldApply` is undefined, or returns true, apply the effect
- * @note A screen-space effect that **moves** pixels (e.g., lens distortion) rather than simply recoloring them may cause element locate to behave unexpectedly -
- * elements will be located based on their original locations, unaffected by the screen-space effect.
+ * A screen-space effect that **moves** pixels from their original locations rather than simply recoloring them may cause some tools to behave unexpectedly:
+ *  - Element locate will only work correctly if [[ScreenSpaceEffectBuilderParams.sampleSourcePixel]] is properly defined.
+ *  - Tools like the measurement tool that require snapping to element geometry will not snap correctly since the element geometry has been distorted by the shader.
  * @see [[RenderSystem.createScreenSpaceEffectBuilder]].
  * @see [[ScreenSpaceEffectBuilderParams]] to define the initial state of the builder.
+ * @see [ConvolutionEffect]($frontend-devtools) for examples of effects like blur, sharpen, and emboss.
+ * @see [LensDistortionEffect]($frontend-devtools) for an simulation of the fish-eye distortion produced by real-world cameras with very wide fields of view.
+ * @see [FlipImageEffect]($frontend-devtools) for a very simple example of an effect that shifts pixels from their original locations.
  * @beta
  */
 export interface ScreenSpaceEffectBuilder {

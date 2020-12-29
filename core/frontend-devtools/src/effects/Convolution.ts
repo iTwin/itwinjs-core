@@ -152,6 +152,7 @@ function toggleEffect(name: KernelName, enable: boolean | undefined): void {
 
   kernel.enabled = enable ? true : undefined;
 
+  // Make sure the effect is registered, and ensure all viewports will redraw immediately to reflect the changes.
   registerEffect(name);
   IModelApp.viewManager.invalidateViewportScenes();
 }
