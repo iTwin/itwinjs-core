@@ -14,7 +14,7 @@ import { parseArgs } from "../tools/parseArgs";
 /** Adds a screen-space effect to the selected [[Viewport]] to simulate the lens distortion produced by real-world cameras with very wide fields of view.
  * Based on https://www.decarpentier.nl/lens-distortion
  * The effect is improved considerably by enabling anti-aliasing (e.g., via [RenderSystem.Options.antialiasSamples]($frontend) at startup, or using the `fdt aasamples` key-in`).
- * @note Because this effect applies a non-linear transform to each pixel, operations like snapping to geometry will not work properly. Element locate will work however - @see [ScreenSpaceEffectBuilderParams.sampleSourcePixel]($frontend).
+ * @note Because this effect applies a non-linear transform to each pixel, operations like snapping to geometry will not work properly. Element locate will work however - @see [ScreenSpaceEffectSource.sampleSourcePixel]($frontend).
  * @beta
  */
 export class LensDistortionEffect extends AddEffectTool {
