@@ -2,12 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { app, dialog, ipcMain } from "electron";
+import { app, dialog } from "electron";
 import * as path from "path";
 import { assert } from "@bentley/bentleyjs-core";
 import { ElectronManagerOptions, IModelJsElectronManager, WebpackDevServerElectronManager } from "@bentley/electron-manager";
 import { ElectronRpcManager } from "@bentley/imodeljs-common";
 import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
+import { BackendIpc } from "@bentley/imodeljs-backend";
 
 const getWindowSize = () => {
   let width = 1280;
@@ -37,8 +38,6 @@ const dtaElectronMain = async () => {
   // first initialize display-test-app backend
   await initializeDtaBackend();
 
-  // Initialize rpcs for the backend
-  ElectronRpcManager.initializeImpl({}, getRpcInterfaces("native"));
 
   const opts: ElectronManagerOptions = {
     webResourcesPath: path.join(__dirname, "..", "..", "build"),
@@ -87,8 +86,13 @@ const dtaElectronMain = async () => {
     });
   }
 
+  BackendIpc.initialize(manager);
+
+  // Initialize rpcs for the backend
+  ElectronRpcManager.initializeImpl({}, getRpcInterfaces(), manager);
+
   // handler for the "openFile" ipc request from the frontend
-  ipcMain.handle("imodeljs.dta.openFile", async (_event, options) => dialog.showOpenDialog(options));
+  manager.handle("dta.openFile", async (_event, options) => dialog.showOpenDialog(options));
 };
 
 // execute this immediately when we load

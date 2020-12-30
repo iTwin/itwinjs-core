@@ -33,7 +33,6 @@ import { Editor3dRpcImpl } from "./rpc-impl/EditorRpcImpl";
 import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
 import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";
 import { IModelWriteRpcImpl } from "./rpc-impl/IModelWriteRpcImpl";
-import { NativeAppRpcImpl } from "./rpc-impl/NativeAppRpcImpl";
 import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
 import { StandaloneIModelRpcImpl } from "./rpc-impl/StandaloneIModelRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
@@ -42,6 +41,8 @@ import { UsageLoggingUtilities } from "./usage-logging/UsageLoggingUtilities";
 import { AzureFileHandler, BackendFeatureUsageTelemetryClient, ClientAuthIntrospectionManager, ImsClientAuthIntrospectionManager, IntrospectionClient, RequestHost } from "@bentley/backend-itwin-client";
 import { MobileFileHandler } from "./MobileFileHandler";
 import { EventSink } from "./EventSink";
+import { BackendIpc } from "./ipc/BackendIpc";
+import { NativeAppIpcImpl } from "./ipc/NativeAppIpcImpl";
 
 const loggerCategory: string = BackendLoggerCategory.IModelHost;
 
@@ -457,8 +458,13 @@ export class IModelHost {
       WipRpcImpl,
       DevToolsRpcImpl,
       Editor3dRpcImpl,
-      NativeAppRpcImpl,
     ].forEach((rpc) => rpc.register()); // register all of the RPC implementations
+
+    if (BackendIpc.isValid) {
+      [
+        NativeAppIpcImpl,
+      ].forEach((ipcHandler) => ipcHandler.register());
+    }
 
     [
       BisCoreSchema,

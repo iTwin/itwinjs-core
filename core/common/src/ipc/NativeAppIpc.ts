@@ -3,15 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module RpcInterface
+ * @module NativeApp
  */
 
 import { GuidString, LogLevel } from "@bentley/bentleyjs-core";
 import { BriefcaseProps, LocalBriefcaseProps, OpenBriefcaseProps, RequestNewBriefcaseProps } from "../BriefcaseTypes";
 import { IModelConnectionProps, IModelRpcProps } from "../IModel";
-import { RpcInterface } from "../RpcInterface";
-import { RpcManager } from "../RpcManager";
+import { IpcInterface } from "./IpcSocket";
 
+export const nativeAppChannel = "nativeApp";
+export const nativeAppIpcVersion = "1.0.0";
 /**
  * Type of value for storage values
  * @internal
@@ -70,116 +71,101 @@ export enum OverriddenBy {
   User,
 }
 
-/** NativeAppRpcInterface supplies Rpc functionality specific to native apps.
+/**
  * A "native app" is an iModel.js application in which a one-to-one relationship exists between the frontend and backend process. Both processes execute on the same device, which can
- * enable offline workflows. Such an app can target a specific platform - e.g., Electron, iOS, Android.
- * By contrast, browser-based iModel.js applications are platform-agnostic, support multiple simultaneous frontend connections, and require a network connection.
- * @internal
- */
-export abstract class NativeAppRpcInterface extends RpcInterface {
-  /** Returns the client instance for the frontend. */
-  public static getClient(): NativeAppRpcInterface { return RpcManager.getClientForInterface(NativeAppRpcInterface); }
-
-  /** The immutable name of the interface. */
-  public static readonly interfaceName = "NativeAppRpcInterface";
-
-  /** The version of the interface. */
-  public static interfaceVersion = "0.5.0";
-
-  /*===========================================================================================
-    NOTE: Any add/remove/change to the methods below requires an update of the interface version.
-    NOTE: Please consult the README in this folder for the semantic versioning rules.
-  ===========================================================================================*/
+* enable offline workflows. Such an app can target a specific platform - e.g., Electron, iOS, Android.
+* By contrast, browser-based iModel.js applications are platform-agnostic, support multiple simultaneous frontend connections, and require a network connection.
+* @internal
+*/
+export interface NativeAppIpc extends IpcInterface {
   /** Send frontend log to backend.
    * @param _level Specify log level.
    * @param _category Specify log category.
    * @param _message Specify log message.
    * @param _metaData metaData if any.
    */
-  public async log(_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any): Promise<void> { return this.forward(arguments); }
+  log: (_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any) => Promise<void>;
 
   /** Check if internet is reachable and how its reachable. */
-  public async checkInternetConnectivity(): Promise<InternetConnectivityStatus> { return this.forward(arguments); }
+  checkInternetConnectivity: () => Promise<InternetConnectivityStatus>;
 
   /** Manually override internet reachability for testing purpose.
    * @param _status New status to set on backend.
    */
-  public async overrideInternetConnectivity(_overriddenBy: OverriddenBy, _status?: InternetConnectivityStatus): Promise<void> { return this.forward(arguments); }
+  overrideInternetConnectivity: (_overriddenBy: OverriddenBy, _status: InternetConnectivityStatus) => Promise<void>;
 
   /** Return config from backend */
-  public async getConfig(): Promise<any> { return this.forward(arguments); }
+  getConfig: () => Promise<any>;
 
   /** Cancels currently pending or active generation of tile content.
    * @param _iModelToken Identifies the iModel
    * @param _contentIds A list of content requests to be canceled, grouped by tile tree Id.
    */
-  public async cancelTileContentRequests(_iModelToken: IModelRpcProps, _contentIds: TileTreeContentIds[]): Promise<void> { return this.forward(arguments); }
+  cancelTileContentRequests: (_iModelToken: IModelRpcProps, _contentIds: TileTreeContentIds[]) => Promise<void>;
 
   /** Cancel element graphics requests.
    * @see [[IModelTileRpcInterface.requestElementGraphics]].
    */
-  public async cancelElementGraphicsRequests(_rpcProps: IModelRpcProps, _requestIds: string[]): Promise<void> {
-    return this.forward(arguments);
-  }
+  cancelElementGraphicsRequests: (_rpcProps: IModelRpcProps, _requestIds: string[]) => Promise<void>;
 
   /** Acquire a new BriefcaseId for the supplied iModelId from iModelHub */
-  public async acquireNewBriefcaseId(_iModelId: GuidString): Promise<number> { return this.forward(arguments); }
+  acquireNewBriefcaseId: (_iModelId: GuidString) => Promise<number>;
 
   /** Get the filename in the briefcase cache for the supplied BriefcaseId and iModelId.
    * @note this merely returns the full path fileName. It does not test for the existence of the file.
     */
-  public async getBriefcaseFileName(_props: BriefcaseProps): Promise<string> { return this.forward(arguments); }
+  getBriefcaseFileName: (_props: BriefcaseProps) => Promise<string>;
 
   /** Download a briefcase file for the supplied briefcase properties. */
-  public async downloadBriefcase(_requestProps: RequestNewBriefcaseProps, _reportProgress: boolean): Promise<LocalBriefcaseProps> { return this.forward(arguments); }
+  downloadBriefcase: (_requestProps: RequestNewBriefcaseProps, _reportProgress: boolean) => Promise<LocalBriefcaseProps>;
 
   /**
    * Cancels the previously requested download of a briefcase
    * @param _key Key to locate the briefcase in the disk cache
    * @returns true if the cancel request was acknowledged. false otherwise
    */
-  public async requestCancelDownloadBriefcase(_fileName: string): Promise<boolean> { return this.forward(arguments); }
+  requestCancelDownloadBriefcase: (_fileName: string) => Promise<boolean>;
 
   /**
    * Opens the briefcase on disk - this api can be called offline
    */
-  public async open(_args: OpenBriefcaseProps): Promise<IModelConnectionProps> { return this.forward(arguments); }
+  open: (_args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
 
   /**
    * Closes the briefcase on disk - this api can be called offline
    */
-  public async closeBriefcase(_key: string): Promise<void> { return this.forward(arguments); }
+  closeBriefcase: (_key: string) => Promise<void>;
 
   /**
    * Deletes a previously downloaded briefcase. The briefcase must be closed.
    * @param _fileName the Briefcase to delete
    */
-  public async deleteBriefcaseFiles(_fileName: string): Promise<void> { return this.forward(arguments); }
+  deleteBriefcaseFiles: (_fileName: string) => Promise<void>;
 
   /**
    * Gets a list of all briefcases that were previously downloaded to the briefcase cache.
    * @returns list of briefcases.
    */
-  public async getCachedBriefcases(_iModelId?: GuidString): Promise<LocalBriefcaseProps[]> { return this.forward(arguments); }
+  getCachedBriefcases: (_iModelId?: GuidString) => Promise<LocalBriefcaseProps[]>;
 
   /**
    * Open key/value pair base storage
    * @param _storageId string identifier of storage
    */
-  public async storageMgrOpen(_storageId: string): Promise<string> { return this.forward(arguments); }
+  storageMgrOpen: (_storageId: string) => Promise<string>;
 
   /**
    * Close key/value pair base storage
    * @param _storageId string identifier of storage
    * @param _deleteIt delete the storage on close
    */
-  public async storageMgrClose(_storageId: string, _deleteIt: boolean): Promise<void> { return this.forward(arguments); }
+  storageMgrClose: (_storageId: string, _deleteIt: boolean) => Promise<void>;
 
   /**
    * Get names of available storages
    * @returns list of name of storage
    */
-  public async storageMgrNames(): Promise<string[]> { return this.forward(arguments); }
+  storageMgrNames: () => Promise<string[]>;
 
   /**
    * Get a value against a key.
@@ -187,7 +173,7 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
    * @param _key key identifier for value
    * @returns key value or undefined
    */
-  public async storageGet(_storageId: string, _key: string): Promise<StorageValue | undefined> { return this.forward(arguments); }
+  storageGet: (_storageId: string, _key: string) => Promise<StorageValue | undefined>;
 
   /**
    * Set a value against a key.
@@ -195,51 +181,51 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
    * @param _key key identifier for value
    * @param _value value to be set
    */
-  public async storageSet(_storageId: string, _key: string, _value: StorageValue): Promise<void> { return this.forward(arguments); }
+  storageSet: (_storageId: string, _key: string, _value: StorageValue) => Promise<void>;
 
   /**
    * Remove a key/value pair.
    * @param _storageId string identifier of storage
    * @param _key key identifier for value
    */
-  public async storageRemove(_storageId: string, _key: string): Promise<void> { return this.forward(arguments); }
+  storageRemove: (_storageId: string, _key: string) => Promise<void>;
 
   /**
    * Get list of keys in storage.
    * @param _storageId string identifier of storage
    * @returns list of storage ids
    */
-  public async storageKeys(_storageId: string): Promise<string[]> { return this.forward(arguments); }
+  storageKeys: (_storageId: string) => Promise<string[]>;
 
   /**
    * Delete all key/value pairs.
    * @param _storageId string identifier of storage
    */
-  public async storageRemoveAll(_storageId: string): Promise<void> { return this.forward(arguments); }
+  storageRemoveAll: (_storageId: string) => Promise<void>;
 
   /**
    * Trigger sigIn on backend. This will cause onUserStateChange() event.
    */
-  public async authSignIn(): Promise<void> { return this.forward(arguments); }
+  authSignIn: () => Promise<void>;
 
   /**
    * SignOut user on backend. This will cause onUserStateChange() event.
    */
-  public async authSignOut(): Promise<void> { return this.forward(arguments); }
+  authSignOut: () => Promise<void>;
 
   /**
    * Get access token and perform silent refresh as needed
    * @returns OIDC token
    */
-  public async authGetAccessToken(): Promise<string> { return this.forward(arguments); }
+  authGetAccessToken: () => Promise<string>;
 
   /**
    * Initialize OIDC client
    * @param _issuer URL for issuer.
    * @param _config configuration for oidc client
    */
-  public async authInitialize(_issuer: string, _config: any): Promise<void> { return this.forward(arguments); }
+  authInitialize: (_issuer: string, _config: any) => Promise<void>;
 
-  public async toggleInteractiveEditingSession(_tokenProps: IModelRpcProps, _startSession: boolean): Promise<boolean> { return this.forward(arguments); }
-  public async isInteractiveEditingSupported(_tokenProps: IModelRpcProps): Promise<boolean> { return this.forward(arguments); }
+  toggleInteractiveEditingSession: (_tokenProps: IModelRpcProps, _startSession: boolean) => Promise<boolean>;
+  isInteractiveEditingSupported: (_tokenProps: IModelRpcProps) => Promise<boolean>;
 }

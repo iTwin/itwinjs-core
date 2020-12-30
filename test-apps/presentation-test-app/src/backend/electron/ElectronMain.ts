@@ -5,15 +5,15 @@
 import * as path from "path";
 import { ElectronManagerOptions, IModelJsElectronManager, WebpackDevServerElectronManager } from "@bentley/electron-manager";
 import { ElectronRpcManager, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
+import { BackendIpc } from "@bentley/imodeljs-backend/lib/ipc/BackendIpc";
 
 /**
  * Initializes Electron backend
  */
 export default async function initialize(rpcs: RpcInterfaceDefinition[]) {
   // tell ElectronRpcManager which RPC interfaces to handle
+
   // __PUBLISH_EXTRACT_START__ Presentation.Backend.RpcInterface
-  ElectronRpcManager.initializeImpl({}, rpcs);
-  // __PUBLISH_EXTRACT_END__
 
   const opts: ElectronManagerOptions = {
     webResourcesPath: path.join(__dirname, "..", "..", "..", "build"),
@@ -23,5 +23,9 @@ export default async function initialize(rpcs: RpcInterfaceDefinition[]) {
     new WebpackDevServerElectronManager(opts) :
     new IModelJsElectronManager(opts);
 
-  return manager.initialize();
+  await manager.initialize();
+
+  ElectronRpcManager.initializeImpl({}, rpcs, manager);
+  BackendIpc.initialize(manager);
+  // __PUBLISH_EXTRACT_END__
 }

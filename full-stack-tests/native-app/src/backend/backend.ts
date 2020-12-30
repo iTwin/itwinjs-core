@@ -10,6 +10,7 @@ import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { IModelJsExpressServer } from "@bentley/express-server";
 import { IModelHostConfiguration, NativeAppBackend } from "@bentley/imodeljs-backend";
 import { BentleyCloudRpcManager, ElectronRpcConfiguration, ElectronRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
+import { ElectronManager } from "@bentley/electron-manager";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
 import * as path from "path";
@@ -38,7 +39,7 @@ async function init() {
   Logger.setLevel("imodeljs-backend.ConcurrencyControl", LogLevel.Trace);
 
   if (ElectronRpcConfiguration.isElectron) {
-    ElectronRpcManager.initializeImpl({}, rpcInterfaces);
+    ElectronRpcManager.initializeImpl({}, rpcInterfaces, new ElectronManager());
   } else {
     const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "full-stack-test", version: "v1.0" } }, rpcInterfaces);
 

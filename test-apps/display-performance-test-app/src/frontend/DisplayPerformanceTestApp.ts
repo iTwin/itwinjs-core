@@ -26,6 +26,7 @@ import { ProjectShareClient, ProjectShareFile, ProjectShareFileQuery, ProjectSha
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { initializeIModelHub } from "./ConnectEnv";
 import { IModelApi } from "./IModelApi";
+import { electronFrontendIpc } from "@bentley/electron-manager/lib/ElectronFrontendIpc";
 
 let curRenderOpts: RenderSystem.Options = {}; // Keep track of the current render options (disabled webgl extensions and enableOptimizedSurfaceShaders flag)
 let curTileProps: TileAdmin.Props = {}; // Keep track of whether or not instancing has been enabled
@@ -1625,7 +1626,7 @@ window.onload = async () => {
   RpcConfiguration.disableRoutingValidation = true;
 
   if (ElectronRpcConfiguration.isElectron) {
-    ElectronRpcManager.initializeClient({}, [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]);
+    ElectronRpcManager.initializeClient({}, [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface], electronFrontendIpc);
   } else if (MobileRpcConfiguration.isMobileFrontend) {
     MobileRpcManager.initializeClient([DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]);
   } else {

@@ -13,7 +13,7 @@ import {
 } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { addCsrfHeader, IModelClient, IModelHubClient } from "@bentley/imodelhub-client";
-import { IModelError, IModelStatus, NativeAppRpcInterface, RpcConfiguration, RpcRequest } from "@bentley/imodeljs-common";
+import { IModelError, IModelStatus, RpcConfiguration, RpcRequest } from "@bentley/imodeljs-common";
 import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
 import { AccessToken, IncludePrefix } from "@bentley/itwin-client";
 import { ConnectSettingsClient, SettingsAdmin } from "@bentley/product-settings-client";
@@ -26,6 +26,7 @@ import { AccuSnap } from "./AccuSnap";
 import * as auxCoordState from "./AuxCoordSys";
 import * as categorySelectorState from "./CategorySelectorState";
 import * as displayStyleState from "./DisplayStyleState";
+import * as drawingViewState from "./DrawingViewState";
 import { ElementLocateManager } from "./ElementLocateManager";
 import { EntityState } from "./EntityState";
 import { EventSource } from "./EventSource";
@@ -40,6 +41,7 @@ import { QuantityFormatter } from "./QuantityFormatter";
 import { RenderSystem } from "./render/RenderSystem";
 import { System } from "./render/webgl/System";
 import * as sheetState from "./SheetViewState";
+import * as spatialViewState from "./SpatialViewState";
 import { TentativePoint } from "./TentativePoint";
 import { MapLayerFormatRegistry, MapLayerOptions, TileAdmin } from "./tile/internal";
 import * as accudrawTool from "./tools/AccuDrawTool";
@@ -53,8 +55,6 @@ import { ToolAdmin } from "./tools/ToolAdmin";
 import * as viewTool from "./tools/ViewTool";
 import { ViewManager } from "./ViewManager";
 import * as viewState from "./ViewState";
-import * as drawingViewState from "./DrawingViewState";
-import * as spatialViewState from "./SpatialViewState";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require("./IModeljs-css");
@@ -199,7 +199,6 @@ export class IModelApp {
   private static _animationRequested = false;
   private static _animationInterval: BeDuration | undefined = BeDuration.fromSeconds(1);
   private static _animationIntervalId?: number;
-  private static _nativeApp: boolean = false;
   private static _featureToggles: FeatureToggleClient;
   private static _securityOptions: FrontendSecurityOptions;
   private static _mapLayerFormatRegistry: MapLayerFormatRegistry;
@@ -221,10 +220,7 @@ export class IModelApp {
   public static get renderSystem(): RenderSystem { return this._renderSystem!; }
   /** The [[ViewManager]] for this session. */
   public static get viewManager(): ViewManager { return this._viewManager; }
-  /** Check if native app or not
-   * @internal
-   */
-  public static get isNativeApp(): boolean { return this._nativeApp; }
+
   /** The [[NotificationManager]] for this session. */
   public static get notifications(): NotificationManager { return this._notifications; }
   /** The [[TileAdmin]] for this session.
@@ -554,29 +550,9 @@ export class IModelApp {
 
     RpcConfiguration.requestContext.serialize = async (_request: RpcRequest): Promise<SerializedClientRequestContext> => {
       const id = _request.id;
-      /* todo: Following is required so to skip call to IModelApp.authorizationClient.getAccessToken() as it causes indirect recursion
-               in case when MobileAuthorizationClient is used which uses NativeAppRpcInterface to get token which by itself end up in this function.
-               We need Rpc operation policy that can be set for methods that does not expect any authorization.
-      **/
-      const authRequired = (request: RpcRequest) => {
-        const authOps = [{
-          interfaceName: NativeAppRpcInterface.interfaceName, operationNames: [
-            "authSignIn", "authSignOut", "authGetAccessToken", "authInitialize", "fetchEvents", "log", "checkInternetConnectivity", "overrideInternetConnectivity", "getConfig", "cancelTileContentRequests"],
-        }];
-        for (const authOp of authOps) {
-          if (authOp.interfaceName === request.operation.interfaceDefinition.interfaceName) {
-            for (const operationName of authOp.operationNames) {
-              if (request.operation.operationName === operationName) {
-                return false;
-              }
-            }
-          }
-        }
-        return true;
-      };
       let authorization: string | undefined;
       let userId: string | undefined;
-      if (IModelApp.authorizationClient?.hasSignedIn && authRequired(_request)) {
+      if (IModelApp.authorizationClient?.hasSignedIn) {
         // todo: need to subscribe to token change events to avoid getting the string equivalent and compute length
         try {
           const accessToken: AccessToken = await IModelApp.authorizationClient.getAccessToken();

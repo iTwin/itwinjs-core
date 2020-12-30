@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { BentleyCloudRpcManager, ElectronRpcConfiguration, ElectronRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
+import { electronFrontendIpc } from "@bentley/electron-manager/lib/ElectronFrontendIpc";
 // Testing order of initialization for imodeljs-frontend and imodeljs-common
 import * as frontend from "@bentley/imodeljs-frontend";
 import { rpcInterfaces } from "../common/RpcInterfaces";
@@ -14,7 +15,7 @@ RpcConfiguration.developmentMode = true;
 RpcConfiguration.disableRoutingValidation = true;
 
 if (ElectronRpcConfiguration.isElectron) {
-  ElectronRpcManager.initializeClient({}, rpcInterfaces);
+  ElectronRpcManager.initializeClient({}, rpcInterfaces, electronFrontendIpc);
 } else {
   const config = BentleyCloudRpcManager.initializeClient({ info: { title: "full-stack-test", version: "v1.0" } }, rpcInterfaces);
   config.protocol.pathPrefix = `http://${window.location.hostname}:${Number(window.location.port) + 2000}`;

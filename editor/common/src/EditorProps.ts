@@ -8,8 +8,8 @@
 
 /** @alpha */
 export const editCommandApi = {
-  start: "imodeljs.editcmd.start",
-  call: "imodeljs.editcmd.call",
+  start: "editcmd.start",
+  call: "editcmd.call",
 };
 
 /** @alpha */

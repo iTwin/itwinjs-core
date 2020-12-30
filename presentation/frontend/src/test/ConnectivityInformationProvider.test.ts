@@ -27,12 +27,10 @@ describe("ConnectivityInformationProvider", () => {
   describe("native app", () => {
 
     beforeEach(() => {
-      (IModelApp as any)._nativeApp = true;
       NativeApp.onInternetConnectivityChanged.clear();
     });
 
     afterEach(() => {
-      (IModelApp as any)._nativeApp = false;
     });
 
     describe("constructor", () => {

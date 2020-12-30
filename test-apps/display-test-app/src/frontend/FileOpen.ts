@@ -5,7 +5,7 @@
 
 import { OpenDialogReturnValue } from "electron";
 import { assert, isElectronRenderer } from "@bentley/bentleyjs-core";
-import { getIModelElectronApi } from "@bentley/imodeljs-common";
+import { FrontendIpc } from "@bentley/imodeljs-frontend";
 
 export interface BrowserFileSelector {
   input: HTMLInputElement;
@@ -18,9 +18,8 @@ const selectForElectron = async () => {
     filters: [{ name: "iModels", extensions: ["ibim", "bim"] }],
   };
 
-  const api = getIModelElectronApi();
-  assert(api !== undefined);
-  const val = (await api.invoke("imodeljs.dta.openFile", options)) as OpenDialogReturnValue; // eslint-disable-line @typescript-eslint/await-thenable
+  assert(FrontendIpc.isValid);
+  const val = (await FrontendIpc.ipc.invoke("dta.openFile", options)) as OpenDialogReturnValue; // eslint-disable-line @typescript-eslint/await-thenable
   return val.canceled ? undefined : val.filePaths[0];
 };
 

@@ -37,6 +37,7 @@
     "@bentley/imodeljs-frontend": "2.11.0-dev.26",
     "@bentley/imodeljs-i18n": "2.11.0-dev.26",
     "@bentley/imodeljs-markup": "2.11.0-dev.26",
+    "@bentley/electron-manager": "2.11.0-dev.26",
     "@bentley/rbac-client": "2.11.0-dev.26",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",

@@ -7,6 +7,7 @@ import * as path from "path";
 import { ElectronManagerOptions, IModelJsElectronManager, WebpackDevServerElectronManager } from "@bentley/electron-manager";
 import { ElectronRpcManager, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import { assert } from "@bentley/bentleyjs-core";
+import { BackendIpc } from "@bentley/imodeljs-backend/lib/ipc/BackendIpc";
 
 /**
  * Initializes Electron backend
@@ -40,7 +41,8 @@ export default async function initialize(rpcs: RpcInterfaceDefinition[]) {
   assert(manager.mainWindow !== undefined);
 
   // tell ElectronRpcManager which RPC interfaces to handle
-  ElectronRpcManager.initializeImpl({}, rpcs);
+  ElectronRpcManager.initializeImpl({}, rpcs, manager);
+  BackendIpc.initialize(manager);
 
   if (maximizeWindow) {
     manager.mainWindow.maximize(); // maximize before showing to avoid resize event on startup

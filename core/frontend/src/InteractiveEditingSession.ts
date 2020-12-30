@@ -9,10 +9,11 @@
 import { assert, BeEvent, compareStrings, DbOpcode, DuplicatePolicy, GuidString, Id64String, SortedArray } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
 import {
-  ElementGeometryChange, Events, ModelGeometryChanges, ModelGeometryChangesProps, NativeAppRpcInterface,
+  ElementGeometryChange, Events, ModelGeometryChanges, ModelGeometryChangesProps,
 } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
 import { RemoveEventListener } from "./EventSource";
+import { NativeApp } from "./NativeApp";
 
 let initialized = false;
 const sessions: InteractiveEditingSession[] = [];
@@ -57,7 +58,7 @@ export class InteractiveEditingSession {
    */
   public readonly onEnding = new BeEvent<(session: InteractiveEditingSession) => void>();
 
-  /** Event raised when this session has neded.
+  /** Event raised when this session has ended.
    * @see [[onBegin]] for the complementary event.
    * @see [[onEnding]] for an event raised just before the session ends.
    */
@@ -70,7 +71,7 @@ export class InteractiveEditingSession {
    * the BisCore ECSchema older than v0.1.11.
    */
   public static async isSupported(imodel: IModelConnection): Promise<boolean> {
-    return NativeAppRpcInterface.getClient().isInteractiveEditingSupported(imodel.getRpcProps());
+    return NativeApp.invokeIpc("isInteractiveEditingSupported", imodel.getRpcProps());
   }
 
   /** Get the active editing session for the specified iModel, if any.
@@ -93,7 +94,7 @@ export class InteractiveEditingSession {
     const session = new InteractiveEditingSession(imodel);
     sessions.push(session);
     try {
-      const sessionStarted = await NativeAppRpcInterface.getClient().toggleInteractiveEditingSession(imodel.getRpcProps(), true);
+      const sessionStarted = await NativeApp.invokeIpc("toggleInteractiveEditingSession", imodel.getRpcProps(), true);
       assert(sessionStarted); // If it didn't, the rpc interface threw an error.
     } catch (e) {
       session.dispose();
@@ -125,7 +126,7 @@ export class InteractiveEditingSession {
     try {
       this.onEnding.raiseEvent(this);
     } finally {
-      const sessionEnded = await NativeAppRpcInterface.getClient().toggleInteractiveEditingSession(this.iModel.getRpcProps(), false);
+      const sessionEnded = await NativeApp.invokeIpc("toggleInteractiveEditingSession", this.iModel.getRpcProps(), false);
       assert(!sessionEnded);
       try {
         this.onEnded.raiseEvent(this);

@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { app, BrowserWindow, BrowserWindowConstructorOptions, protocol } from "electron";
+import { app, BrowserWindow, BrowserWindowConstructorOptions, ipcMain, protocol } from "electron";
 import * as fs from "fs";
 import * as path from "path";
 import { BeDuration } from "@bentley/bentleyjs-core";
+import { ElectronRpcConfiguration, IpcListener, IpcSocketBackend, RemoveFunction } from "@bentley/imodeljs-common";
 import { DesktopAuthorizationClientIpc } from "./DesktopAuthorizationClientIpc";
-import { ElectronRpcConfiguration } from "@bentley/imodeljs-common";
 
 // cSpell:ignore signin devserver webcontents
 
@@ -18,12 +18,14 @@ export interface ElectronManagerOptions {
   frontendURL?: string;
 }
 
+const iTwinChannel = (channel: string) => `itwin.${channel}`;
+
 /**
  * A helper class that simplifies the creation of basic single-window desktop applications
  * that follow platform-standard window behavior on all platforms.
  * @beta
  */
-class ElectronManager {
+export class ElectronManager implements IpcSocketBackend {
   private _mainWindow?: BrowserWindow;
   protected readonly _electronFrontend = "electron://frontend/";
   public readonly webResourcesPath: string;
@@ -57,10 +59,10 @@ class ElectronManager {
   /** The "main" BrowserWindow for this application. */
   public get mainWindow() { return this._mainWindow; }
 
-  constructor(opts: ElectronManagerOptions) {
-    this.webResourcesPath = opts.webResourcesPath;
-    this.frontendURL = opts.frontendURL ?? `${this._electronFrontend}index.html`;
-    this.appIconPath = path.join(this.webResourcesPath, opts.iconName ?? "appicon.ico");
+  constructor(opts?: ElectronManagerOptions) {
+    this.webResourcesPath = opts?.webResourcesPath ?? "";
+    this.frontendURL = opts?.frontendURL ?? `${this._electronFrontend}index.html`;
+    this.appIconPath = path.join(this.webResourcesPath, opts?.iconName ?? "appicon.ico");
   }
 
   /**
@@ -88,6 +90,20 @@ class ElectronManager {
       await new Promise((resolve) => app.on("ready", resolve));
 
     this.openMainWindow(windowOptions);
+  }
+
+  public receive(channel: string, listener: IpcListener): RemoveFunction {
+    const channelName = iTwinChannel(channel);
+    ipcMain.addListener(channelName, listener);
+    return () => ipcMain.removeListener(channelName, listener);
+  }
+  public send(message: string, ...args: any[]): void {
+    this.mainWindow!.webContents.send(message, ...args);
+  }
+  public handle(channel: string, listener: (...args: any[]) => Promise<any>): RemoveFunction {
+    const channelName = iTwinChannel(channel);
+    ipcMain.handle(channelName, async (_evt: any, ...args: any[]) => listener(args));
+    return () => ipcMain.removeHandler(channelName);
   }
 }
 
@@ -165,7 +181,9 @@ export class WebpackDevServerElectronManager extends ElectronManager {
 // this initialization should always happen before the app starts.
 function staticElectronInitialize() {
   app.allowRendererProcessReuse = true; // see https://www.electronjs.org/docs/api/app#appallowrendererprocessreuse
-  protocol.registerSchemesAsPrivileged([{ scheme: "electron", privileges: { standard: true, secure: true } }]);
+  // eslint-disable-next-line @typescript-eslint/unbound-method
+  if (!app.isReady)
+    protocol.registerSchemesAsPrivileged([{ scheme: "electron", privileges: { standard: true, secure: true } }]);
 }
 
 staticElectronInitialize(); // executed when this file is loaded.

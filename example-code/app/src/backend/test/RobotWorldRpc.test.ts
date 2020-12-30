@@ -14,6 +14,7 @@ import { KnownTestLocations } from "./KnownTestLocations";
 import { ClientRequestContext, Id64, Id64String, OpenMode } from "@bentley/bentleyjs-core";
 import { IModelTestUtils } from "./Utils";
 import { Angle, Point3d } from "@bentley/geometry-core";
+import { electronFrontendIpc } from "@bentley/electron-manager/lib/ElectronFrontendIpc";
 import { RobotWorld } from "../RobotWorldSchema";
 
 const requestContext = new ClientRequestContext();
@@ -140,6 +141,6 @@ export function initializeRpcClientBentleyCloud(interfaces: RpcInterfaceDefiniti
 import { ElectronRpcManager } from "@bentley/imodeljs-common";
 
 export function initializeRpcClientDesktop(interfaces: RpcInterfaceDefinition[]) {
-  ElectronRpcManager.initializeClient({}, interfaces);
+  ElectronRpcManager.initializeClient({}, interfaces, electronFrontendIpc);
 }
 // __PUBLISH_EXTRACT_END__

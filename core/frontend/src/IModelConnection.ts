@@ -15,7 +15,7 @@ import {
   FontMapProps, GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps, ImageSourceFormat, IModel, IModelConnectionProps,
   IModelError, IModelEventSourceProps, IModelReadRpcInterface, IModelRpcOpenProps, IModelRpcProps, IModelStatus, IModelVersion,
   IModelWriteRpcInterface, mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams,
-  NativeAppRpcInterface, OpenBriefcaseProps, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager,
+  OpenBriefcaseProps, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager,
   RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface,
   StandaloneIModelRpcInterface, StandaloneOpenOptions, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, WipRpcInterface,
 } from "@bentley/imodeljs-common";
@@ -29,6 +29,7 @@ import { GeoServices } from "./GeoServices";
 import { IModelApp } from "./IModelApp";
 import { IModelRoutingContext } from "./IModelRoutingContext";
 import { ModelState } from "./ModelState";
+import { NativeApp } from "./NativeApp";
 import { HiliteSet, SelectionSet } from "./SelectionSet";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import { Tiles } from "./Tiles";
@@ -855,7 +856,7 @@ export class LocalBriefcaseConnection extends BriefcaseConnection {
     requestContext.enter();
 
     requestContext.useContextForRpc = true;
-    const iModelProps = await NativeAppRpcInterface.getClient().open(briefcaseProps);
+    const iModelProps = await NativeApp.invokeIpc("open", briefcaseProps);
     const connection = new this({ ...briefcaseProps, ...iModelProps });
 
     IModelConnection.onOpen.raiseEvent(connection);
@@ -876,7 +877,7 @@ export class LocalBriefcaseConnection extends BriefcaseConnection {
     requestContext.enter();
 
     requestContext.useContextForRpc = true;
-    const closePromise: Promise<void> = NativeAppRpcInterface.getClient().closeBriefcase(this._fileKey); // Ensure the method isn't awaited right away.
+    const closePromise: Promise<void> = NativeApp.invokeIpc("closeBriefcase", this._fileKey); // Ensure the method isn't awaited right away.
 
     try {
       this.eventSource.dispose();

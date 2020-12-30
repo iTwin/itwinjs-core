@@ -4,15 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 /** @packageDocumentation
- * @module RpcInterface
+ * @module IpcSocket
  */
 
 import { ClientRequestContext, Config, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseProps, Events, IModelConnectionProps, IModelError, IModelRpcProps, InternetConnectivityStatus,
-  LocalBriefcaseProps,
-  MobileAuthorizationClientConfiguration, NativeAppRpcInterface, OpenBriefcaseProps, OverriddenBy, RequestNewBriefcaseProps,
-  RpcInterface, RpcManager, StorageValue, TileTreeContentIds,
+  BriefcaseProps, Events, IModelConnectionProps, IModelError, IModelRpcProps, InternetConnectivityStatus, LocalBriefcaseProps,
+  MobileAuthorizationClientConfiguration, nativeAppChannel, NativeAppIpc, nativeAppIpcVersion, OpenBriefcaseProps, OverriddenBy,
+  RequestNewBriefcaseProps, StorageValue, TileTreeContentIds,
 } from "@bentley/imodeljs-common";
 import { EmitStrategy, IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -23,24 +22,19 @@ import { BriefcaseDb, IModelDb } from "../IModelDb";
 import { MobileDevice } from "../MobileDevice";
 import { NativeAppBackend } from "../NativeAppBackend";
 import { NativeAppStorage } from "../NativeAppStorage";
-import { cancelTileContentRequests } from "./IModelTileRpcImpl";
+import { cancelTileContentRequests } from "../rpc-impl/IModelTileRpcImpl";
+import { IpcHandler } from "./BackendIpc";
 
-/** The backend implementation of NativeAppRpcInterface.
- * @internal
- */
-export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterface {
-  public static register() {
-    RpcManager.registerImpl(NativeAppRpcInterface, NativeAppRpcImpl);
-  }
+export class NativeAppIpcImpl extends IpcHandler implements NativeAppIpc {
 
-  public async log(_timestamp: number, level: LogLevel, category: string, message: string, metaData?: any) {
+  public get channelName() { return nativeAppChannel; }
+  public async getVersion() { return nativeAppIpcVersion; }
+  public async log(_timestamp: number, level: LogLevel, category: string, message: string, metaData?: any): Promise<void> {
     Logger.logRaw(level, category, message, () => metaData);
   }
-
   public async checkInternetConnectivity(): Promise<InternetConnectivityStatus> {
     return NativeAppBackend.checkInternetConnectivity();
   }
-
   public async overrideInternetConnectivity(by: OverriddenBy, status: InternetConnectivityStatus): Promise<void> {
     NativeAppBackend.overrideInternetConnectivity(by, status);
   }

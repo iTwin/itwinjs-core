@@ -9,7 +9,7 @@
 import { assert, BeDuration, BeEvent, BeTimePoint, Id64Array, Id64String, PriorityQueue } from "@bentley/bentleyjs-core";
 import {
   defaultTileOptions, ElementGraphicsRequestProps, getMaximumMajorTileFormatVersion, IModelTileRpcInterface, IModelTileTreeProps, ModelGeometryChanges,
-  NativeAppRpcInterface, RpcOperation, RpcRegistry, RpcResponseCacheControl, ServerTimeoutError, TileTreeContentIds,
+  RpcOperation, RpcResponseCacheControl, ServerTimeoutError, TileTreeContentIds,
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -19,6 +19,8 @@ import { ReadonlyViewportSet, UniqueViewportSets } from "../ViewportSet";
 import { InteractiveEditingSession } from "../InteractiveEditingSession";
 import { GeometricModelState } from "../ModelState";
 import { Tile, TileLoadStatus, TileRequest, TileTree, TileTreeOwner, TileTreeSet, TileUsageMarker } from "./internal";
+import { NativeApp } from "../NativeApp";
+import { FrontendIpc } from "../FrontendIpc";
 
 /** Details about any tiles not handled by [[TileAdmin]]. At this time, that means OrbitGT point cloud tiles.
  * Used for bookkeeping by SelectedAndReadyTiles
@@ -216,13 +218,13 @@ export abstract class TileAdmin {
   public abstract onShutDown(): void;
 
   /** @internal */
-  public abstract async requestTileTreeProps(iModel: IModelConnection, treeId: string): Promise<IModelTileTreeProps>;
+  public abstract requestTileTreeProps(iModel: IModelConnection, treeId: string): Promise<IModelTileTreeProps>;
 
   /** @internal */
-  public abstract async requestTileContent(iModel: IModelConnection, treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined, qualifier: string | undefined): Promise<Uint8Array>;
+  public abstract requestTileContent(iModel: IModelConnection, treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined, qualifier: string | undefined): Promise<Uint8Array>;
 
   /** @internal */
-  public abstract async requestElementGraphics(iModel: IModelConnection, props: ElementGraphicsRequestProps): Promise<Uint8Array | undefined>;
+  public abstract requestElementGraphics(iModel: IModelConnection, props: ElementGraphicsRequestProps): Promise<Uint8Array | undefined>;
 
   /** Create a TileAdmin. Chiefly intended for use by subclasses of [[IModelApp]] to customize the behavior of the TileAdmin.
    * @param props Options for customizing the behavior of the TileAdmin.
@@ -242,7 +244,7 @@ export abstract class TileAdmin {
    * ```
    * @internal
    */
-  public abstract async purgeTileTrees(iModel: IModelConnection, modelIds: Id64Array | undefined): Promise<void>;
+  public abstract purgeTileTrees(iModel: IModelConnection, modelIds: Id64Array | undefined): Promise<void>;
 
   /** @internal */
   public abstract onTileCompleted(tile: Tile): void;
@@ -864,7 +866,7 @@ class Admin extends TileAdmin {
         }
 
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        NativeAppRpcInterface.getClient().cancelTileContentRequests(iModelConnection.getRpcProps(), treeContentIds);
+        NativeApp.invokeIpc("cancelTileContentRequests", iModelConnection.getRpcProps(), treeContentIds);
       }
 
       this._canceledIModelTileRequests.clear();
@@ -873,7 +875,7 @@ class Admin extends TileAdmin {
     if (this._canceledElementGraphicsRequests && this._canceledElementGraphicsRequests.size > 0) {
       for (const [connection, requestIds] of this._canceledElementGraphicsRequests) {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        NativeAppRpcInterface.getClient().cancelElementGraphicsRequests(connection.getRpcProps(), requestIds);
+        NativeApp.invokeIpc("cancelElementGraphicsRequests", connection.getRpcProps(), requestIds);
         this._totalAbortedRequests += requestIds.length;
       }
 
@@ -1224,7 +1226,7 @@ class Admin extends TileAdmin {
     policy.retryInterval = () => retryInterval;
     policy.allowResponseCaching = () => RpcResponseCacheControl.Immutable;
 
-    if (RpcRegistry.instance.isRpcInterfaceInitialized(NativeAppRpcInterface)) {
+    if (FrontendIpc.isValid) {
       this._canceledElementGraphicsRequests = new Map<IModelConnection, string[]>();
       if (this._cancelBackendTileRequests)
         this._canceledIModelTileRequests = new Map<IModelConnection, Map<string, Set<string>>>();

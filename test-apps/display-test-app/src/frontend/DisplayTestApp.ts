@@ -8,13 +8,14 @@ import {
 } from "@bentley/frontend-authorization-client";
 import {
   BentleyCloudRpcManager, CloudStorageContainerUrl, CloudStorageTileCache, DesktopAuthorizationClientConfiguration, Editor3dRpcInterface, ElectronRpcConfiguration,
-  ElectronRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, MobileAuthorizationClientConfiguration, MobileRpcConfiguration, MobileRpcManager, NativeAppRpcInterface,
+  ElectronRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, MobileAuthorizationClientConfiguration, MobileRpcConfiguration, MobileRpcManager,
   RpcConfiguration, RpcInterfaceDefinition, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, TileContentIdentifier,
 } from "@bentley/imodeljs-common";
 import {
   DesktopAuthorizationClient, FrontendRequestContext, IModelApp, IModelConnection, MobileAuthorizationClient, RenderDiagnostics, RenderSystem,
 } from "@bentley/imodeljs-frontend";
 import { AccessToken } from "@bentley/itwin-client";
+import { electronFrontendIpc } from "@bentley/electron-manager/lib/ElectronFrontendIpc";
 import { WebGLExtensionName } from "@bentley/webgl-compatibility";
 import { DtaConfiguration } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
@@ -215,10 +216,8 @@ const dtaFrontendMain = async () => {
   ];
 
   if (ElectronRpcConfiguration.isElectron) {
-    rpcInterfaces.push(NativeAppRpcInterface);
-    ElectronRpcManager.initializeClient({}, rpcInterfaces);
+    ElectronRpcManager.initializeClient({}, rpcInterfaces, electronFrontendIpc);
   } else if (MobileRpcConfiguration.isMobileFrontend) {
-    rpcInterfaces.push(NativeAppRpcInterface);
     MobileRpcManager.initializeClient(rpcInterfaces);
   } else {
     const uriPrefix = configuration.customOrchestratorUri || "http://localhost:3001";
