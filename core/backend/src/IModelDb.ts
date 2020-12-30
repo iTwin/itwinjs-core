@@ -2454,13 +2454,13 @@ export class BriefcaseDb extends IModelDb {
       throw new IModelError(BentleyStatus.ERROR, "Local briefcase does not match the briefcase properties passed in to upgrade", Logger.logError, loggerCategory, () => ({ briefcaseProps, localBriefcase: token }));
 
     const briefcaseDb = new BriefcaseDb(nativeDb, token, openMode);
-    await BriefcaseManager.pushChanges(requestContext, briefcaseDb, changeSetDescription, ChangesType.Schema);
-    requestContext.enter();
-
-    const newChangeSetId = nativeDb.getParentChangeSetId();
-    briefcaseDb.close();
-
-    return newChangeSetId;
+    try {
+      await BriefcaseManager.pushChanges(requestContext, briefcaseDb, changeSetDescription, ChangesType.Schema);
+      requestContext.enter();
+      return nativeDb.getParentChangeSetId();
+    } finally {
+      briefcaseDb.close();
+    }
   }
 
   /** Upgrades the schemas in the iModel based on the current version of the software. Follows a sequence of operations -
