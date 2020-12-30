@@ -5,7 +5,7 @@
 import * as path from "path";
 // __PUBLISH_EXTRACT_START__ Bridge.imports.example-code
 import { Id64String } from "@bentley/bentleyjs-core";
-import { Project } from "@bentley/context-registry-client";
+import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
 import { Angle, AngleProps, Point3d, Range3d, XYZProps } from "@bentley/geometry-core";
 import { HubIModel, IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import {
@@ -50,10 +50,11 @@ function convertToBis(briefcase: IModelDb, modelId: Id64String, data: RobotWorld
     RobotWorldEngine.insertRobot(briefcase, modelId, robot.name, Point3d.fromJSON(robot.location));
   }
 }
+
 // __PUBLISH_EXTRACT_END__
 
 async function queryProjectIdByName(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<Project> {
-  return BriefcaseManager.connectClient.getProject(requestContext, {
+  return (new ContextRegistryClient()).getProject(requestContext, {
     $select: "*",
     $filter: `Name+eq+'${projectName}'`,
   });

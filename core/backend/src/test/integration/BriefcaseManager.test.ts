@@ -8,7 +8,7 @@ import * as os from "os";
 import * as path from "path";
 import * as readline from "readline";
 import { BriefcaseStatus, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
-import { Briefcase, BriefcaseQuery, HubIModel } from "@bentley/imodelhub-client";
+import { HubIModel } from "@bentley/imodelhub-client";
 import { IModelError, IModelVersion } from "@bentley/imodeljs-common";
 import { UserCancelledError } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
@@ -392,28 +392,6 @@ describe("BriefcaseManager (#integration)", () => {
     iModelPullOnly.close();
     IModelJsFs.unlinkSync(file1);
     IModelJsFs.unlinkSync(file2);
-  });
-
-  const briefcaseExistsOnHub = async (iModelId: GuidString, briefcaseId: number): Promise<boolean> => {
-    try {
-      const hubBriefcases: Briefcase[] = await BriefcaseManager.imodelClient.briefcases.get(requestContext, iModelId, new BriefcaseQuery().byId(briefcaseId));
-      return (hubBriefcases.length > 0) ? true : false;
-    } catch (e) {
-      return false;
-    }
-  };
-
-  it.skip("should allow purging the cache and delete any acquired briefcases from the hub", async () => {
-    const args = { requestContext, contextId: testProjectId, iModelId: readOnlyTestIModel.id };
-    const iModel1 = await IModelTestUtils.openBriefcaseUsingRpc(args);
-    const briefcaseId1: number = iModel1.briefcaseId;
-    let exists = await briefcaseExistsOnHub(readOnlyTestIModel.id, briefcaseId1);
-    assert.isTrue(exists);
-
-    //    await BriefcaseManager.purgeCache(managerRequestContext);
-
-    exists = await briefcaseExistsOnHub(readOnlyTestIModel.id, briefcaseId1);
-    assert.isFalse(exists);
   });
 
   it("Open iModels with various names causing potential issues on Windows/Unix", async () => {

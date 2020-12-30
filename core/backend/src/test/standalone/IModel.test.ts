@@ -15,9 +15,9 @@ import {
 import { CheckpointV2 } from "@bentley/imodelhub-client";
 import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyleProps,
-  DisplayStyleSettingsProps, DomainOptions, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeometricElement3dProps,
+  DisplayStyleSettingsProps, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeometricElement3dProps,
   GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat, IModel, IModelError, IModelStatus, MapImageryProps, ModelProps,
-  PhysicalElementProps, Placement3d, PrimitiveTypeCode, RelatedElement, RenderMode, SpatialViewDefinitionProps, SubCategoryAppearance, TextureFlags,
+  PhysicalElementProps, Placement3d, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, TextureFlags,
   TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { BlobDaemon } from "@bentley/imodeljs-native";
@@ -2122,16 +2122,12 @@ describe("iModel", () => {
     assert.isTrue(semver.satisfies(beforeVersion!, "= 1.0.0"));
     iModel.close();
 
-    let result: DbResult = DbResult.BE_SQLITE_OK;
-    try {
-      iModel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite, { domain: DomainOptions.CheckRecommendedUpgrades });
-    } catch (err) {
-      assert(err instanceof IModelError);
-      result = err.errorNumber;
-    }
-    assert.strictEqual(result, DbResult.BE_SQLITE_ERROR_SchemaUpgradeRecommended);
+    const schemaState: SchemaState = StandaloneDb.validateSchemas(testFileName, true);
+    assert.strictEqual(schemaState, SchemaState.UpgradeRecommended);
 
-    iModel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite, { domain: DomainOptions.Upgrade });
+    StandaloneDb.upgradeSchemas(testFileName);
+
+    iModel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
     const afterVersion = iModel.querySchemaVersion("BisCore");
     assert.isTrue(semver.satisfies(afterVersion!, ">= 1.0.10"));
     iModel.close();

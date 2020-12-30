@@ -1548,9 +1548,8 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
     }
 
     private static onOpen(fileName: string) {
-      if (this._cachesOpen.has(fileName))
-        throw new IModelError(IModelStatus.AlreadyOpen, `ConcurrencyControl StateCache is already open ${fileName}`, Logger.logError, loggerCategory);
-      this._cachesOpen.add(fileName);
+      if (!this._cachesOpen.has(fileName))
+        this._cachesOpen.add(fileName);
     }
 
     private static onClose(fileName: string) {

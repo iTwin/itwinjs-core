@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as os from "os";
-import * as path from "path";
 import { GuidString } from "@bentley/bentleyjs-core";
-import { Project } from "@bentley/context-registry-client";
+import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
 import { ChangeSet, ChangeSetQuery, HubIModel, IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import { BriefcaseManager, IModelJsFs } from "@bentley/imodeljs-backend";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import * as os from "os";
+import * as path from "path";
 
 /** Utility to work with iModelHub */
 export class HubUtility {
@@ -123,12 +123,20 @@ class TestIModelHubProject {
   public get isIModelHub(): boolean { return true; }
   public terminate(): void { }
 
+  private static _contextRegistryClient?: ContextRegistryClient;
+
+  private static get connectClient(): ContextRegistryClient {
+    if (this._contextRegistryClient === undefined)
+      this._contextRegistryClient = new ContextRegistryClient();
+    return this._contextRegistryClient;
+  }
+
   public get iModelHubClient(): IModelHubClient {
     return BriefcaseManager.imodelClient as IModelHubClient;
   }
 
   public async queryProject(requestContext: AuthorizedClientRequestContext, query: any | undefined): Promise<Project> {
-    const client = BriefcaseManager.connectClient;
+    const client = TestIModelHubProject.connectClient;
     return client.getProject(requestContext, query);
   }
   public async createIModel(requestContext: AuthorizedClientRequestContext, projectId: string, params: any): Promise<HubIModel> {

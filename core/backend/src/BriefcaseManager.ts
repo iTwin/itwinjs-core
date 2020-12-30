@@ -14,7 +14,6 @@ import {
   assert, BeDuration, BentleyError, ChangeSetApplyOption, ChangeSetStatus, ClientRequestContext, DbResult, GuidString, Id64, IModelHubStatus,
   IModelStatus, Logger, OpenMode, PerfLogger,
 } from "@bentley/bentleyjs-core";
-import { ContextRegistryClient } from "@bentley/context-registry-client";
 import {
   Briefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, ConflictingCodesError, HubCode, HubIModel, IModelClient, IModelHubError,
 } from "@bentley/imodelhub-client";
@@ -89,15 +88,6 @@ export class ChangeSetToken {
  */
 export class BriefcaseManager {
   private static _firstChangeSetDir: string = "first";
-  private static _contextRegistryClient?: ContextRegistryClient;
-
-  /**
-   * Client to be used for all briefcase operations
-   * @internal
-   */
-  public static get connectClient(): ContextRegistryClient {
-    return this._contextRegistryClient!;
-  }
 
   /** @internal
    * @note temporary, will be removed in 3.0
@@ -147,10 +137,6 @@ export class BriefcaseManager {
     return path.join(this.getCompatibilityPath(briefcase.iModelId), briefcase.briefcaseId === 0 ? "PullOnly" : "PullAndPush", briefcase.briefcaseId.toString(), "bc.bim");
   }
 
-  private static setupContextRegistryClient() {
-    BriefcaseManager._contextRegistryClient = new ContextRegistryClient();
-  }
-
   private static setupCacheDir(cacheRootDir: string) {
     this._cacheDir = cacheRootDir;
     IModelJsFs.recursiveMkDirSync(this._cacheDir);
@@ -167,7 +153,6 @@ export class BriefcaseManager {
       return;
     this._compatibilityDir = compatibilityDir;
     this.setupCacheDir(cacheRootDir);
-    this.setupContextRegistryClient();
     IModelHost.onBeforeShutdown.addOnce(this.finalize, this);
     this._initialized = true;
   }
@@ -176,7 +161,6 @@ export class BriefcaseManager {
   public static get imodelClient(): IModelClient { return IModelHost.iModelClient; }
 
   private static finalize() {
-    this._contextRegistryClient = undefined;
     this._initialized = false;
   }
 
