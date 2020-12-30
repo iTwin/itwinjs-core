@@ -117,6 +117,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _antialiasSamples = 1;
   // This exists strictly to be forwarded to ScreenSpaceEffects. Do not use it for anything else.
   private _viewport?: Viewport;
+  private _screenSpaceEffects: string[] = [];
   public isFadeOutActive = false;
   public activeVolumeClassifierTexture?: WebGLTexture;
   public activeVolumeClassifierProps?: SpatialClassificationProps.Classifier;
@@ -669,9 +670,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
       this.compositor.drawForReadPixels(this._renderCommands, this.graphics.overlays, this.graphics.decorations?.worldOverlay);
       this.uniforms.branch.pop();
-      this.renderSystem.screenSpaceEffects.apply(this);
-
-      this._isReadPixelsInProgress = false;
     } else {
       // After the Target is first created or any time its dimensions change, SceneCompositor.preDraw() must update
       // the compositor's textures, framebuffers, etc. This *must* occur before any drawing occurs.
@@ -709,6 +707,13 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
       this.endPerfMetricRecord(); // End "Overlay Draws"
     }
+
+    // Apply screen-space effects. Note we do not reset this._isReadPixelsInProgress until *after* doing so, as screen-space effects only apply
+    // during readPixels() if the effect shifts pixels from their original locations.
+    this.beginPerfMetricRecord("Screenspace Effects", this.drawForReadPixels);
+    this.renderSystem.screenSpaceEffects.apply(this);
+    this._isReadPixelsInProgress = false;
+    this.endPerfMetricRecord(this.drawForReadPixels);
 
     // Reset the batch IDs in all batches drawn for this call.
     this.uniforms.batch.resetBatchState();
@@ -886,9 +891,13 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       }
     }
 
+    // Apply any screen-space effects that shift pixels from their original locations.
+    this.beginPerfMetricRecord("Screenspace Effects", this.drawForReadPixels);
+    this.renderSystem.screenSpaceEffects.apply(this);
+    this.endPerfMetricRecord(true); // Screenspace Effects
+
     // Restore the state
     this.uniforms.branch.pop();
-    this.renderSystem.screenSpaceEffects.apply(this);
 
     this.beginPerfMetricRecord("Read Pixels", true);
     const result = this.compositor.readPixels(rect, selector);
@@ -1043,6 +1052,14 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       this._textureDrapes.forEach((drape) => (drape as TextureDrape).draw(this));
   }
 
+  public get screenSpaceEffects(): Iterable<string> {
+    return this._screenSpaceEffects;
+  }
+
+  public set screenSpaceEffects(effects: Iterable<string>) {
+    this._screenSpaceEffects = [...effects];
+  }
+
   public get screenSpaceEffectContext(): ScreenSpaceEffectContext {
     assert(undefined !== this._viewport);
     return { viewport: this._viewport };
@@ -1117,7 +1134,6 @@ export class OnScreenTarget extends Target {
   private _scratchProgParams?: ShaderProgramParams;
   private _scratchDrawParams?: DrawParams;
   private _devicePixelRatioOverride?: number;
-  private _screenSpaceEffects: string[] = [];
 
   private get _curCanvas() { return this._usingWebGLCanvas ? this._webglCanvas : this._2dCanvas; }
 
@@ -1221,13 +1237,10 @@ export class OnScreenTarget extends Target {
     if (undefined === this._blitGeom)
       return;
 
-    // Apply any screen-space effects to the rendered image.
-    const system = this.renderSystem;
-    system.screenSpaceEffects.apply(this);
-
     // Blit the final image to the canvas.
     const drawParams = this.getDrawParams(this, this._blitGeom);
 
+    const system = this.renderSystem;
     system.frameBufferStack.pop();
     system.applyRenderState(RenderState.defaults);
     system.techniques.draw(drawParams);
@@ -1300,16 +1313,6 @@ export class OnScreenTarget extends Target {
 
   public readImageToCanvas(): HTMLCanvasElement {
     return this._usingWebGLCanvas ? this.copyImageToCanvas() : this._2dCanvas.canvas;
-  }
-
-  public get screenSpaceEffects(): Iterable<string> {
-    return this._screenSpaceEffects;
-  }
-
-  public set screenSpaceEffects(effects: Iterable<string>) {
-    this._screenSpaceEffects.length = 0;
-    for (const effect of effects)
-      this._screenSpaceEffects.push(effect);
   }
 }
 

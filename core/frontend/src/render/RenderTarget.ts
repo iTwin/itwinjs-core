@@ -148,6 +148,6 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
    * @see [[RenderSystem.createScreenSpaceEffectBuilder]] to create and register new effects.
    * @internal
    */
-  public get screenSpaceEffects(): Iterable<string> { return []; }
-  public set screenSpaceEffects(_effectNames: Iterable<string>) { }
+  public abstract get screenSpaceEffects(): Iterable<string>;
+  public abstract set screenSpaceEffects(_effectNames: Iterable<string>);
 }

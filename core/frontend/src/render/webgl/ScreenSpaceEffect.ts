@@ -164,7 +164,7 @@ export class ScreenSpaceEffects {
 
   /** Return true if any effects should be applied to this Target. */
   public shouldApply(target: Target): boolean {
-    return 0 < this.getApplicableEffects(target).length;
+    return this.getApplicableEffects(target).length > 0;
   }
 
   private getApplicableEffects(target: Target): ScreenSpaceEffect[] {

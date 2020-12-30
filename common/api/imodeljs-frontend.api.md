@@ -5789,6 +5789,9 @@ export namespace MockRender {
         // (undocumented)
         get renderSystem(): RenderSystem;
         // (undocumented)
+        get screenSpaceEffects(): Iterable<string>;
+        set screenSpaceEffects(_effects: Iterable<string>);
+        // (undocumented)
         updateViewRect(): boolean;
         // (undocumented)
         get wantInvertBlackBackground(): boolean;
@@ -6028,6 +6031,9 @@ export class NullTarget extends RenderTarget {
     // (undocumented)
     reset(): void;
     // (undocumented)
+    get screenSpaceEffects(): Iterable<string>;
+    set screenSpaceEffects(_effects: Iterable<string>);
+    // (undocumented)
     setFlashed(): void;
     // (undocumented)
     setHiliteSet(): void;
@@ -6121,9 +6127,6 @@ export class OnScreenTarget extends Target {
     pickOverlayDecoration(pt: XAndY): CanvasDecoration | undefined;
     // (undocumented)
     readImageToCanvas(): HTMLCanvasElement;
-    // (undocumented)
-    get screenSpaceEffects(): Iterable<string>;
-    set screenSpaceEffects(effects: Iterable<string>);
     // (undocumented)
     setRenderToScreen(toScreen: boolean): HTMLCanvasElement | undefined;
     // (undocumented)
@@ -7523,8 +7526,8 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
     abstract get renderSystem(): RenderSystem;
     // (undocumented)
     reset(): void;
-    get screenSpaceEffects(): Iterable<string>;
-    set screenSpaceEffects(_effectNames: Iterable<string>);
+    abstract get screenSpaceEffects(): Iterable<string>;
+    abstract set screenSpaceEffects(_effectNames: Iterable<string>);
     // (undocumented)
     setFlashed(_elementId: Id64String, _intensity: number): void;
     // (undocumented)
@@ -8904,6 +8907,9 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     reset(): void;
     // (undocumented)
     get screenSpaceEffectContext(): ScreenSpaceEffectContext;
+    // (undocumented)
+    get screenSpaceEffects(): Iterable<string>;
+    set screenSpaceEffects(effects: Iterable<string>);
     // (undocumented)
     setFlashed(id: Id64String, intensity: number): void;
     // (undocumented)
