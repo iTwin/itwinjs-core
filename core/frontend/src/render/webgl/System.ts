@@ -30,6 +30,7 @@ import { RenderClipVolume } from "../RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
 import { DebugShaderFile, GLTimerResultCallback, RenderDiagnostics, RenderSystem, RenderSystemDebugControl, RenderTerrainMeshGeometry, TerrainTexture } from "../RenderSystem";
+import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "../ScreenSpaceEffectBuilder";
 import { RenderTarget } from "../RenderTarget";
 import { imageElementFromImageSource } from "../../ImageUtil";
 import { BackgroundMapDrape } from "./BackgroundMapDrape";
@@ -57,6 +58,7 @@ import { OffScreenTarget, OnScreenTarget } from "./Target";
 import { Techniques } from "./Technique";
 import { TerrainMeshGeometry } from "./TerrainMesh";
 import { Texture, TextureHandle } from "./Texture";
+import { createScreenSpaceEffectBuilder, ScreenSpaceEffects } from "./ScreenSpaceEffect";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -360,6 +362,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   private _lineCodeTexture?: TextureHandle;
   private _noiseTexture?: TextureHandle;
   private _techniques?: Techniques;
+  private _screenSpaceEffects?: ScreenSpaceEffects;
   public readonly debugShaderFiles: DebugShaderFile[] = [];
 
   public static get instance() { return IModelApp.renderSystem as System; }
@@ -367,7 +370,16 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   public get isValid(): boolean { return this.canvas !== undefined; }
   public get lineCodeTexture() { return this._lineCodeTexture; }
   public get noiseTexture() { return this._noiseTexture; }
-  public get techniques() { return this._techniques!; }
+
+  public get techniques() {
+    assert(undefined !== this._techniques);
+    return this._techniques;
+  }
+
+  public get screenSpaceEffects() {
+    assert(undefined !== this._screenSpaceEffects);
+    return this._screenSpaceEffects;
+  }
 
   public get maxTextureSize(): number { return this.capabilities.maxTextureSize; }
   public get supportsInstancing(): boolean { return this.capabilities.supportsInstancing; }
@@ -433,12 +445,14 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   public get isDisposed(): boolean {
     return undefined === this._techniques
       && undefined === this._lineCodeTexture
-      && undefined === this._noiseTexture;
+      && undefined === this._noiseTexture
+      && undefined === this._screenSpaceEffects;
   }
 
   // Note: FrameBuffers inside of the FrameBufferStack are not owned by the System, and are only used as a central storage device
   public dispose() {
     this._techniques = dispose(this._techniques);
+    this._screenSpaceEffects = dispose(this._screenSpaceEffects);
     this._lineCodeTexture = dispose(this._lineCodeTexture);
     this._noiseTexture = dispose(this._noiseTexture);
 
@@ -464,16 +478,30 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
     this._lineCodeTexture = TextureHandle.createForData(LineCode.size, LineCode.count, new Uint8Array(LineCode.lineCodeData), false, GL.Texture.WrapMode.Repeat, GL.Texture.Format.Luminance);
     assert(undefined !== this._lineCodeTexture, "System.lineCodeTexture not created.");
+
+    this._screenSpaceEffects = new ScreenSpaceEffects();
   }
 
-  public createTarget(canvas: HTMLCanvasElement): RenderTarget { return new OnScreenTarget(canvas); }
-  public createOffscreenTarget(rect: ViewRect): RenderTarget { return new OffScreenTarget(rect); }
-  public createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder { return new PrimitiveBuilder(this, type, viewport, placement, pickableId); }
+  public createTarget(canvas: HTMLCanvasElement): RenderTarget {
+    return new OnScreenTarget(canvas);
+  }
 
-  public createMesh(params: MeshParams, instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined { return MeshGraphic.create(params, instances); }
+  public createOffscreenTarget(rect: ViewRect): RenderTarget {
+    return new OffScreenTarget(rect);
+  }
+
+  public createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder {
+    return new PrimitiveBuilder(this, type, viewport, placement, pickableId);
+  }
+
+  public createMesh(params: MeshParams, instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined {
+    return MeshGraphic.create(params, instances);
+  }
+
   public createTerrainMeshGeometry(terrainMesh: TerrainMeshPrimitive, transform: Transform): RenderTerrainMeshGeometry | undefined {
     return TerrainMeshGeometry.createGeometry(terrainMesh, transform);
   }
+
   public createTerrainMeshGraphic(terrainGeometry: RenderTerrainMeshGeometry, featureTable: PackedFeatureTable, tileId: string, baseColor: ColorDef | undefined, baseTransparent: boolean, textures?: TerrainTexture[]): RenderGraphic | undefined {
     return TerrainMeshGeometry.createGraphic(this, terrainGeometry as TerrainMeshGeometry, featureTable, tileId, baseColor, baseTransparent, textures);
   }
@@ -481,17 +509,26 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   public createPolyline(params: PolylineParams, instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined {
     return createPrimitive((viOrigin) => PolylineGeometry.create(params, viOrigin), instances);
   }
+
   public createPointString(params: PointStringParams, instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined {
     return createPrimitive((viOrigin) => PointStringGeometry.create(params, viOrigin), instances);
   }
-  public createPointCloud(args: PointCloudArgs): RenderGraphic | undefined { return Primitive.create(() => new PointCloudGeometry(args)); }
 
-  public createGraphicList(primitives: RenderGraphic[]): RenderGraphic { return new GraphicsArray(primitives); }
+  public createPointCloud(args: PointCloudArgs): RenderGraphic | undefined {
+    return Primitive.create(() => new PointCloudGeometry(args));
+  }
+
+  public createGraphicList(primitives: RenderGraphic[]): RenderGraphic {
+    return new GraphicsArray(primitives);
+  }
+
   public createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): RenderGraphic {
     return new Branch(branch, transform, undefined, options);
   }
 
-  public createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, tileId?: string): RenderGraphic { return new Batch(graphic, features, range, tileId); }
+  public createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, tileId?: string): RenderGraphic {
+    return new Batch(graphic, features, range, tileId);
+  }
 
   public createGraphicOwner(owned: RenderGraphic): RenderGraphicOwner {
     return new GraphicOwner(owned as Graphic);
@@ -500,6 +537,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   public createGraphicLayer(graphic: RenderGraphic, layerId: string) {
     return new Layer(graphic as Graphic, layerId);
   }
+
   public createGraphicLayerContainer(graphic: RenderGraphic, drawAsOverlay: boolean, transparency: number, elevation: number) {
     return new LayerContainer(graphic as Graphic, drawAsOverlay, transparency, elevation);
   }
@@ -511,6 +549,10 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
       assert(undefined !== params.sphere || undefined !== params.gradient);
       return SkySpherePrimitive.create(() => SkySphereViewportQuadGeometry.createGeometry(params));
     }
+  }
+
+  public createScreenSpaceEffectBuilder(params: ScreenSpaceEffectBuilderParams): ScreenSpaceEffectBuilder {
+    return createScreenSpaceEffectBuilder(params);
   }
 
   public applyRenderState(newState: RenderState) {

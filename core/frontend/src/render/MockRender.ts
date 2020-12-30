@@ -51,6 +51,8 @@ export namespace MockRender {
     public drawFrame(_sceneTime?: number) { }
     public updateViewRect() { return false; }
     public readPixels(_rect: ViewRect, _selector: Pixel.Selector, receiver: Pixel.Receiver, _excludeNonLocatable: boolean) { receiver(undefined); }
+    public get screenSpaceEffects(): Iterable<string> { return []; }
+    public set screenSpaceEffects(_effects: Iterable<string>) { }
   }
 
   /** @internal */
