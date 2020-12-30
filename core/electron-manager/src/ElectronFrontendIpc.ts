@@ -28,8 +28,11 @@ const electronIpc: ITwinElectronApi = (typeof window === "undefined" ? undefined
 export const electronFrontendIpc: IpcSocketFrontend = {
   receive: (channel: string, listener: IpcListener) => {
     const channelName = iTwinChannel(channel);
-    const stripEvent = (...args: any[]) => listener(...args[1]);
-    electronIpc.on(iTwinChannel(channel), stripEvent);
+    const stripEvent = (...args: any[]) => {
+      const stripped = { ...args[1] };
+      listener(stripped);
+    };
+    electronIpc.on(channelName, stripEvent);
     return () => electronIpc.removeListener(channelName, stripEvent);
   },
   send: (channel: string, ...data: any[]) => {
