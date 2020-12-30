@@ -6,28 +6,26 @@
  * @module Effects
  */
 
-import { assert } from "@bentley/bentleyjs-core";
-import { IModelApp, Tool, UniformType, VaryingType } from "@bentley/imodeljs-frontend";
+import { ScreenSpaceEffectBuilder, Tool, UniformType, VaryingType } from "@bentley/imodeljs-frontend";
 import { parseArgs } from "../tools/parseArgs";
+import { AddEffectTool, redrawSelectedView } from "./EffectTools";
 
-let effectRegistered = false;
 let flipHorizontal = false;
 let flipVertical = false;
 let flipColor = false;
 
-function shouldApplyEffect(): boolean {
-  return flipHorizontal || flipVertical || flipColor;
-}
+/** An extremely simple and mostly useless effect intended to demonstrate the basics of creating a screen-space effect.
+ * It flips the Viewport's image on the x and/or y axis, and/or inverts the color of each pixel.
+ * @beta
+ */
+export class FlipImageEffect extends AddEffectTool {
+  public static toolId = "FlipImageEffect";
 
-function registerEffect(): void {
-  if (effectRegistered || !shouldApplyEffect())
-    return;
+  protected get effectName() { return "flip"; }
+  protected get textureCoordFromPosition() { return true; }
 
-  effectRegistered = true;
-  const builder = IModelApp.renderSystem.createScreenSpaceEffectBuilder({
-    name: "fdt flip image",
-    textureCoordFromPosition: true,
-    source: {
+  protected get source() {
+    return {
       // Compute texture coordinate for use in fragment shader.
       vertex: `
         void effectMain(vec4 pos) {
@@ -55,60 +53,53 @@ function registerEffect(): void {
       // Because we're moving pixels around, we must tell the render system where the source pixel was originally located - otherwise
       // element locate will not work correctly.
       sampleSourcePixel: "return TEXTURE(u_diffuse, v_uv);",
-    },
-  });
+    };
+  }
 
-  // Don't bother applying the effect if we're not flipping on either axis - resultant image would be unchanged.
-  assert(undefined !== builder);
-  builder.shouldApply = (_context) => shouldApplyEffect();
+  protected defineEffect(builder: ScreenSpaceEffectBuilder): void {
+    // Don't bother applying the effect if nothing is to be flipped.
+    builder.shouldApply = (_context) => flipHorizontal || flipVertical || flipColor;
 
-  // Hook up the uniforms.
-  builder.addUniform({
-    name: "u_flipHorizontal",
-    type: UniformType.Bool,
-    bind: (uniform, _context) => uniform.setUniform1i(flipHorizontal ? 1 : 0),
-  });
-  builder.addUniform({
-    name: "u_flipVertical",
-    type: UniformType.Bool,
-    bind: (uniform, _context) => uniform.setUniform1i(flipVertical ? 1 : 0),
-  });
-  builder.addUniform({
-    name: "u_flipColor",
-    type: UniformType.Bool,
-    bind: (uniform, _context) => uniform.setUniform1i(flipColor ? 1 : 0),
-  });
+    // Define the varying for the texture coordinate.
+    builder.addVarying("v_uv", VaryingType.Vec2);
 
-  // Define the varying for the texture coordinate.
-  builder.addVarying("v_uv", VaryingType.Vec2);
-
-  // Compile and register the effect shader.
-  builder.finish();
+    // Hook up the uniforms.
+    builder.addUniform({
+      name: "u_flipHorizontal",
+      type: UniformType.Bool,
+      bind: (uniform, _context) => uniform.setUniform1i(flipHorizontal ? 1 : 0),
+    });
+    builder.addUniform({
+      name: "u_flipVertical",
+      type: UniformType.Bool,
+      bind: (uniform, _context) => uniform.setUniform1i(flipVertical ? 1 : 0),
+    });
+    builder.addUniform({
+      name: "u_flipColor",
+      type: UniformType.Bool,
+      bind: (uniform, _context) => uniform.setUniform1i(flipColor ? 1 : 0),
+    });
+  }
 }
 
-/** An extremely simple and mostly useless effect intended to demonstrate the basics of creating a screen-space effect.
- * It flips the Viewport's image on the x and/or y axis, and/or inverts the color of each pixel.
- * Key-in: `fdt effect flip horizontal=0|1 vertical=0|1 color=0|1`
+/** Configure the [[FlipImageEffect]].
  * @beta
  */
-export class FlipImageEffect extends Tool {
-  public static toolId = "FlipImageEffect";
+export class FlipImageConfig extends Tool {
+  public static toolId = "FlipImageConfig";
   public static get minArgs() { return 0; }
   public static get maxArgs() { return 3; }
 
-  public run(): boolean {
+  public run(horizontal?: boolean, vertical?: boolean, color?: boolean): boolean {
+    flipHorizontal = !!horizontal;
+    flipVertical = !!vertical;
+    flipColor = !!color;
+    redrawSelectedView();
     return true;
   }
 
   public parseAndRun(...input: string[]): boolean {
     const args = parseArgs(input);
-    flipHorizontal = true === args.getBoolean("h");
-    flipVertical = true === args.getBoolean("v");
-    flipColor = true === args.getBoolean("c");
-    registerEffect();
-
-    // Ensure all viewports are re-rendered to reflect the changed effect parameters.
-    IModelApp.viewManager.invalidateViewportScenes();
-    return true;
+    return this.run(args.getBoolean("h"), args.getBoolean("v"), args.getBoolean("c"));
   }
 }

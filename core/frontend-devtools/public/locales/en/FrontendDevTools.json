@@ -292,28 +292,37 @@
       "keyin": "fdt sectiondrawing display spatial"
     },
     "FlipImageEffect": {
-      "keyin": "fdt effect flip"
+      "keyin": "fdt effect add flip"
+    },
+    "FlipImageConfig": {
+      "keyin" :"fdt effect config flip"
     },
     "LensDistortionEffect": {
-      "keyin": "fdt effect lens distortion"
+      "keyin": "fdt effect add lensdistortion"
+    },
+    "LensDistortionConfig": {
+      "keyin": "fdt effect config lensdistortion"
     },
     "EmbossEffect": {
-      "keyin": "fdt effect emboss"
+      "keyin": "fdt effect add emboss"
     },
     "GaussianBlurEffect": {
-      "keyin": "fdt effect blur"
+      "keyin": "fdt effect add blur"
     },
     "UnsharpenEffect": {
-      "keyin": "fdt effect unsharpen"
+      "keyin": "fdt effect add unsharpen"
     },
     "SharpenEffect": {
-      "keyin": "fdt effect sharpen"
+      "keyin": "fdt effect add sharpen"
     },
     "SharpnessEffect": {
-      "keyin": "fdt effect sharpness"
+      "keyin": "fdt effect add sharpness"
     },
     "EdgeDetectionEffect": {
-      "keyin": "fdt effect edge detect"
+      "keyin": "fdt effect add edgedetect"
+    },
+    "ClearEffects": {
+      "keyin": "fdt effect clear"
     }
   }
 }

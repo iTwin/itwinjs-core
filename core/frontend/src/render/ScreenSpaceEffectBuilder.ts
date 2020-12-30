@@ -95,6 +95,40 @@ export interface UniformArrayParams extends UniformParams {
   length: number;
 }
 
+/** The GLSL implementation of the effect, to be integrated into a complete shader program. The effect shader code differs slightly from that of an ordinary shader:
+ *  - Instead of `main`, it should implement `effectMain`.
+ *  - It should omit declarations of uniform and varying variables - these will be generated from those supplied to [[ScreenSpaceEffectBuilder.addUniform]] and [[ScreenSpaceEffectBuilder.addVarying]].
+ *  - It can include other functions, variables, etc outside of `effectMain`.
+ * The program receives one pre-defined `uniform sampler2D u_diffuse` representing the viewport's rendered image.
+ * Because the [[RenderSystem]] uses either WebGL1 or WebGL2 based on the capabilities of the client, the effect shader should be written to compile with either; or, [[ScreenSpaceEffectBuilder.isWebGL2]] should be tested.
+ * The [[RenderSystem]] takes care of adjusting the source code for some of these differences, e.g., `varying` (WebGL1) vs `in` and `out` (WebGL2);
+ * and `TEXTURE`, `TEXTURE_CUBE`, and `TEXTURE_PROJ` macros to replace `texture2D`, `textureCube`, and `texture2DProj` with their WebGL2 equivalents when applicable.
+ * @beta
+ */
+export interface ScreenSpaceEffectSource {
+  /** The GLSL implementation of the vertex shader. Instead of `main`, it implements `void effectMain(vec4 position)` where `position` is the vertex position in normalized device coordinates ([-1..1]).
+   * `effectMain` should compute whatever information is required by the fragment shader. It should not assign to `gl_Position`.
+   */
+  vertex: string;
+
+  /** The GLSL implementation of the fragment shader. Instead of `main`, it implements `vec4 effectMain()` returning the color to be output.
+   * `effectMain` should sample `u_diffuse` using `TEXTURE()` or `TEXTURE_PROJ()` instead of `texture2D()`, `texture2DProj()`, or `texture()`.
+   * It should not assign to `gl_FragColor`.
+   * The alpha component of the output color is ignored as there is nothing with which to blend.
+   */
+  fragment: string;
+
+  /** If the fragment shader shifts pixels from their original locations, then by default element locate will not work, because it expects the pixels produced by an element
+   * to remain at their original locations. This can be fixed by supplying the body of a GLSL function `vec4 sampleSourcePixel()` that, as part of the fragment shader,
+   * obtains the pixel in the source image corresponding to the pixel that will be output by the shader.
+   * For example, if the source pixel is simply specified by a `varying vec2 v_texCoord` computed by the vertex shader, then this property should be defined as `return TEXTURE(u_diffuse, v_texCoord);`.
+   * This function will automatically be included in the fragment shader, so it can also be used by `effectMain` when computing the output color.
+   * @note `sampleSourcePixel` should not modify the sample in any way - that should be done only in `effectMain`.
+   * @note `sampleSourcePixel` should **not** be supplied if the effect does **not** shift pixels as it can negatively impact performance of element locate.
+   */
+  sampleSourcePixel?: string;
+}
+
 /** Parameters used to create a [[ScreenSpaceEffectBuilder]].
  * @see [[RenderSystem.createScreenSpaceEffectBuilder]].
  * @beta
@@ -102,41 +136,13 @@ export interface UniformArrayParams extends UniformParams {
 export interface ScreenSpaceEffectBuilderParams {
   /** The name of the effect. Must be unique among all registered screen-space effects. */
   name: string;
-
-  /** The GLSL implementation of the effect, to be integrated into a complete shader program. The effect shader code differs slightly from that of an ordinary shader:
-   *  - Instead of `main`, it should implement `effectMain`.
-   *  - It should omit declarations of uniform and varying variables - these will be generated from those supplied to [[ScreenSpaceEffectBuilder.addUniform]] and [[ScreenSpaceEffectBuilder.addVarying]].
-   * The program receives one pre-defined `uniform sampler2D u_diffuse` representing the viewport's rendered image.
-   * Because the [[RenderSystem]] uses either WebGL1 or WebGL2 based on the capabilities of the client, the effect shader should be written to compile with either; or, [[ScreenSpaceEffectBuilder.isWebGL2]] should be tested.
-   * The [[RenderSystem]] takes care of adjusting the source code for some of these differences, e.g., `varying` (WebGL1) vs `in` and `out` (WebGL2);
-   * and `TEXTURE`, `TEXTURE_CUBE`, and `TEXTURE_PROJ` macros to replace `texture2D`, `textureCube`, and `texture2DProj` with their WebGL2 equivalents when applicable.
-   */
-  source: {
-    /** The GLSL implementation of the vertex shader. Instead of `main`, it implements `void effectMain(vec4 position)` where `position` is the vertex position in normalized device coordinates ([-1..1]).
-     * `effectMain` should compute whatever information is required by the fragment shader. It should not assign to `gl_Position`.
-     */
-    vertex: string;
-
-    /** The GLSL implementation of the fragment shader. Instead of `main`, it implements `vec4 effectMain()` returning the color to be output.
-     * `effectMain` should sample `u_diffuse` using `TEXTURE()` or `TEXTURE_PROJ()` instead of `texture2D()`, `texture2DProj()`, or `texture()`.
-     * It should not assign to `gl_FragColor`.
-     * The alpha component of the output color is ignored as there is nothing with which to blend.
-     */
-    fragment: string;
-
-    /** If the fragment shader shifts pixels from their original locations, then by default element locate will not work, because it expects the pixels produced by an element
-     * to remain at their original locations. This can be fixed by supplying the body of a GLSL function `vec4 sampleSourcePixel()` that, as part of the fragment shader,
-     * obtains the pixel in the source image corresponding to the pixel that will be output by the shader.
-     * For example, if the source pixel is simply specified by a `varying vec2 v_texCoord` computed by the vertex shader, then this property should be defined as `return TEXTURE(u_diffuse, v_texCoord);`.
-     * This function will automatically be included in the fragment shader, so it can also be used by `effectMain` when computing the output color.
-     * @note `sampleSourcePixel` should not modify the sample in any way - that should be done only in `effectMain`.
-     * @note `sampleSourcePixel` should **not** be supplied if the effect does **not** shift pixels as it can negatively impact performance of element locate.
-     */
-    sampleSourcePixel?: string;
-  };
-
   /** If true, adds a `vec2 textureCoordFromPosition(vec4 position)` function to the vertex shader that computes a UV coordinate based on the vertex's position. */
   textureCoordFromPosition?: boolean;
+
+  /** The GLSL implementation of the effect.
+   * @see [[ScreenSpaceEffectSource]] for details.
+   */
+  source: ScreenSpaceEffectSource;
 }
 
 /** Context passed to [[ScreenSpaceEffectBuilder.shouldApply]].

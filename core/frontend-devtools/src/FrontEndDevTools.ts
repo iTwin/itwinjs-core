@@ -37,8 +37,9 @@ import { ToggleTileRequestDecorationTool } from "./tools/TileRequestDecoration";
 import { ToggleTileTreeBoundsDecorationTool } from "./tools/TileTreeBoundsDecoration";
 import { ToggleToolTipsTool } from "./tools/ToolTipProvider";
 import { ChangeCameraTool } from "./tools/ViewportTools";
-import { FlipImageEffect } from "./effects/FlipImage";
-import { LensDistortionEffect } from "./effects/LensDistortion";
+import { ClearEffectsTool } from "./effects/EffectTools";
+import { FlipImageConfig, FlipImageEffect } from "./effects/FlipImage";
+import { LensDistortionConfig, LensDistortionEffect } from "./effects/LensDistortion";
 import { EdgeDetectionEffect, EmbossEffect, GaussianBlurEffect, SharpenEffect, SharpnessEffect, UnsharpenEffect } from "./effects/Convolution";
 
 /** Entry-point for the package. Before using the package you *must* call [[FrontendDevTools.initialize]].
@@ -79,6 +80,7 @@ export class FrontendDevTools {
       ChangePlanProjectionSettingsTool,
       ChangeUnitsTool,
       ChangeViewFlagsTool,
+      ClearEffectsTool,
       ClearIsolatedElementsTool,
       ClipColorTool,
       CompileShadersTool,
@@ -91,11 +93,13 @@ export class FrontendDevTools {
       EmphasizeSelectedElementsTool,
       ExtensionServiceTool,
       FadeOutTool,
+      FlipImageConfig,
       FlipImageEffect,
       FreezeSceneTool,
       GaussianBlurEffect,
       InspectElementTool,
       IsolateSelectedElementsTool,
+      LensDistortionConfig,
       LensDistortionEffect,
       LoseWebGLContextTool,
       MapLayerTransparencyTool,

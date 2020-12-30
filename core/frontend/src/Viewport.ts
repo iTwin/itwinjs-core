@@ -316,8 +316,18 @@ export abstract class Viewport implements IDisposable {
   public setValidScene() {
     this._sceneValid = true;
   }
-  /** @internal */
+  /** @deprecated Use requestRedraw.
+   * @internal
+   */
   public setRedrawPending() {
+    this.requestRedraw();
+  }
+
+  /** Request that the Viewport redraw its contents on the next frame. This is useful when some state outside of the Viewport's control but affecting its display has changed.
+   * For example, if the parameters affecting a screen-space effect applied to this Viewport are modified, the Viewport's contents should be redrawn to reflect the change.
+   * @note This does not necessarily cause the viewport to recreate its scene, decorations, or anything else - it only guarantees that the contents will be repainted.
+   */
+  public requestRedraw(): void {
     this._redrawPending = true;
   }
 
