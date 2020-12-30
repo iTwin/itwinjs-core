@@ -2444,7 +2444,7 @@ export class BriefcaseDb extends IModelDb {
     assert(reversedChangeSetId === undefined, "Expected schema upgrade to have failed if there were reversed changes in the briefcase");
 
     const token: IModelRpcProps = {
-      key: "",
+      key: Guid.createValue(),
       iModelId: nativeDb.getDbGuid(),
       contextId: nativeDb.queryProjectGuid(),
       changeSetId,
@@ -2500,7 +2500,7 @@ export class BriefcaseDb extends IModelDb {
     const openMode = args.readonly ? OpenMode.Readonly : OpenMode.ReadWrite;
     const nativeDb = this.openDgnDb(file, openMode);
     const token: IModelRpcProps = {
-      key: file.key!,
+      key: file.key ?? Guid.createValue(),
       iModelId: nativeDb.getDbGuid(),
       contextId: nativeDb.queryProjectGuid(),
       changeSetId: nativeDb.getReversedChangeSetId() ?? nativeDb.getParentChangeSetId(),
