@@ -276,7 +276,6 @@ export abstract class Viewport implements IDisposable {
   private _timePointValid = false;
   /** @internal */
   public get timePointValid() { return this._timePointValid; }
-  /** @internal */
   private readonly _decorationCache: Map<ViewportDecorator, CachedDecoration[]> = new Map<ViewportDecorator, CachedDecoration[]>();
 
   /** Strictly for tests. @internal */
@@ -2444,6 +2443,36 @@ export abstract class Viewport implements IDisposable {
    */
   public setModelDisplayTransformProvider(provider: ModelDisplayTransformProvider): void {
     this.view.modelDisplayTransformProvider = provider;
+  }
+
+  /** An ordered list of names of screen-space post-processing effects to be applied to the image rendered by the Viewport.
+   * The effects are applied to the image in the order in which they appear in the list. Any names not corresponding to a registered effect are ignored.
+   * This may have no effect if the Viewport's [[RenderTarget]] does not support screen-space effects.
+   * @see [[RenderSystem.createScreenSpaceEffectBuilder]] to create and register new effects.
+   * @beta
+   */
+  public get screenSpaceEffects(): Iterable<string> {
+    return this.target.screenSpaceEffects;
+  }
+  public set screenSpaceEffects(effects: Iterable<string>) {
+    this.target.screenSpaceEffects = effects;
+    this.setRedrawPending();
+  }
+
+  /** Append a screen-space effect to the list of effects applied to this Viewport.
+   * @see [[Viewport.screenSpaceEffects]].
+   * @beta
+   */
+  public addScreenSpaceEffect(effectName: string): void {
+    this.screenSpaceEffects = [ ...this.screenSpaceEffects, effectName ];
+  }
+
+  /** Remove all screen-space effects from this Viewport.
+   * @see [[Viewport.screenSpaceEffects]].
+   * @beta
+   */
+  public removeScreenSpaceEffects(): void {
+    this.screenSpaceEffects = [];
   }
 }
 

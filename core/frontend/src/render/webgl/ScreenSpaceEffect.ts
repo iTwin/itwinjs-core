@@ -8,7 +8,6 @@
 
 import { assert, dispose } from "@bentley/bentleyjs-core";
 import { Viewport } from "../../Viewport";
-import { IModelApp } from "../../IModelApp";
 import {
   ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams, ScreenSpaceEffectContext, Uniform, UniformArrayParams, UniformContext, UniformParams, UniformType, VaryingType,
 } from "../ScreenSpaceEffectBuilder";
@@ -102,9 +101,6 @@ class Builder {
 
     const effect = new ScreenSpaceEffect(techniqueId, this._name, this._shiftsPixels, this.shouldApply);
     System.instance.screenSpaceEffects.add(effect);
-
-    // Make sure the new effect has a chance to apply to all viewports immediately.
-    IModelApp.viewManager.invalidateViewportScenes();
   }
 }
 
@@ -123,12 +119,10 @@ class ScreenSpaceEffect {
 
   public shouldApply(target: Target): boolean {
     if (target.isReadPixelsInProgress) {
-      // Screen-space effects do not apply to off-screen targets.
-      // They only apply during readPixels() if they move pixels around (we need to move pixels in the pick buffers correspondingly).
-      return target.isOnScreen() && this._shiftsPixels;
+      // Effects only apply during readPixels() if they move pixels around (we need to move pixels in the pick buffers correspondingly).
+      return this._shiftsPixels;
     }
 
-    assert(target.isOnScreen());
     return undefined === this._shouldApply || this._shouldApply(target.screenSpaceEffectContext);
   }
 }
@@ -141,9 +135,10 @@ class ScreenSpaceGeometry extends ViewportQuadGeometry {
 
 /** @internal */
 export class ScreenSpaceEffects {
-  private readonly _effects: ScreenSpaceEffect[] = [];
+  private readonly _effects = new Map<string, ScreenSpaceEffect>();
   private readonly _effectGeometry: ScreenSpaceGeometry;
   private readonly _copyGeometry: SingleTexturedViewportQuadGeometry;
+  private readonly _workingArray: ScreenSpaceEffect[] = [];
 
   public constructor() {
     // We will change the geometry's TechniqueId before applying each technique.
@@ -163,10 +158,10 @@ export class ScreenSpaceEffects {
   }
 
   public add(effect: ScreenSpaceEffect): void {
-    if (-1 !== this._effects.findIndex((x) => x.name === effect.name))
+    if (undefined !== this._effects.get(effect.name))
       throw new Error(`Screen-space effect "${effect.name}" is already registered.`);
 
-    this._effects.push(effect);
+    this._effects.set(effect.name, effect);
   }
 
   /** Return true if any effects should be applied to this Target. */
@@ -175,12 +170,22 @@ export class ScreenSpaceEffects {
   }
 
   private getApplicableEffects(target: Target): ScreenSpaceEffect[] {
-    return this._effects.filter((effect) => effect.shouldApply(target));
+    const effects = this._workingArray;
+    effects.length = 0;
+
+    const names = target.screenSpaceEffects;
+    for (const name of names) {
+      const effect = this._effects.get(name);
+      if (effect && effect.shouldApply(target))
+        effects.push(effect);
+    }
+
+    return effects;
   }
 
   /** Apply screen-space effects to the Target's rendered image. */
   public apply(target: Target): void {
-    if (0 === this._effects.length)
+    if (0 === this._effects.size)
       return;
 
     const effects = this.getApplicableEffects(target);

@@ -1052,7 +1052,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   protected abstract _assignDC(): boolean;
   protected abstract _beginPaint(fbo: FrameBuffer): void;
   protected abstract _endPaint(): void;
-  public isOnScreen(): this is OnScreenTarget { return false; }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
     this._compositor.collectStatistics(stats);
@@ -1119,6 +1118,7 @@ export class OnScreenTarget extends Target {
   private _scratchProgParams?: ShaderProgramParams;
   private _scratchDrawParams?: DrawParams;
   private _devicePixelRatioOverride?: number;
+  private _screenSpaceEffects: string[] = [];
 
   private get _curCanvas() { return this._usingWebGLCanvas ? this._webglCanvas : this._2dCanvas; }
 
@@ -1303,7 +1303,15 @@ export class OnScreenTarget extends Target {
     return this._usingWebGLCanvas ? this.copyImageToCanvas() : this._2dCanvas.canvas;
   }
 
-  public isOnScreen(): this is OnScreenTarget { return true; }
+  public get screenSpaceEffects(): Iterable<string> {
+    return this._screenSpaceEffects;
+  }
+
+  public set screenSpaceEffects(effects: Iterable<string>) {
+    this._screenSpaceEffects.length = 0;
+    for (const effect of effects)
+      this._screenSpaceEffects.push(effect);
+  }
 }
 
 /** @internal */

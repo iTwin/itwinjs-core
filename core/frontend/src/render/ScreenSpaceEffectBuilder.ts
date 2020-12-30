@@ -157,8 +157,9 @@ export interface ScreenSpaceEffectContext {
  * A screen-space effect that **moves** pixels from their original locations rather than simply recoloring them may cause some tools to behave unexpectedly:
  *  - Element locate will only work correctly if [[ScreenSpaceEffectBuilderParams.sampleSourcePixel]] is properly defined.
  *  - Tools like the measurement tool that require snapping to element geometry will not snap correctly since the element geometry has been distorted by the shader.
- * @see [[RenderSystem.createScreenSpaceEffectBuilder]].
+ * @see [[RenderSystem.createScreenSpaceEffectBuilder]] to create and register a new effect.
  * @see [[ScreenSpaceEffectBuilderParams]] to define the initial state of the builder.
+ * @see [[Viewport.screenSpaceEffects]] to apply effects to a Viewport.
  * @see [ConvolutionEffect]($frontend-devtools) for examples of effects like blur, sharpen, and emboss.
  * @see [LensDistortionEffect]($frontend-devtools) for an simulation of the fish-eye distortion produced by real-world cameras with very wide fields of view.
  * @see [FlipImageEffect]($frontend-devtools) for a very simple example of an effect that shifts pixels from their original locations.
