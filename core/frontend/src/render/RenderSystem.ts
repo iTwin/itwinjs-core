@@ -29,6 +29,7 @@ import { RenderClipVolume } from "./RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";
 import { RenderTarget } from "./RenderTarget";
+import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "./ScreenSpaceEffectBuilder";
 
 /* eslint-disable no-restricted-syntax */
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
@@ -232,6 +233,14 @@ export abstract class RenderSystem implements IDisposable {
    * @see [[Decorator]]
    */
   public abstract createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder;
+
+  /** Obtain an object capable of producing a custom screen-space effect to be applied to the image rendered by a [[Viewport]].
+   * @returns undefined if screen-space effects are not supported by this RenderSystem.
+   * @beta
+   */
+  public createScreenSpaceEffectBuilder(_params: ScreenSpaceEffectBuilderParams): ScreenSpaceEffectBuilder | undefined {
+    return undefined;
+  }
 
   /** @internal */
   public createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined {

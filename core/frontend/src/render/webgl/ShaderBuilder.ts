@@ -503,10 +503,12 @@ export class ShaderBuilder extends ShaderVariables {
       this._version = "#version 300 es";
       this.addDefine("TEXTURE", "texture");
       this.addDefine("TEXTURE_CUBE", "texture");
+      this.addDefine("TEXTURE_PROJ", "textureProj");
     } else {
       this._version = "#version 100";
       this.addDefine("TEXTURE", "texture2D");
       this.addDefine("TEXTURE_CUBE", "textureCube");
+      this.addDefine("TEXTURE_PROJ", "texture2DProj");
     }
   }
 
@@ -528,13 +530,11 @@ export class ShaderBuilder extends ShaderVariables {
 
   public addFunction(declarationOrFull: string, implementation?: string): void {
     let def = declarationOrFull;
-    if (undefined !== implementation) {
+    if (undefined !== implementation)
       def = SourceBuilder.buildFunctionDefinition(`\n${declarationOrFull}`, implementation);
-    }
 
-    if (undefined === this.findFunction(def)) {
+    if (undefined === this.findFunction(def))
       this._functions.push(def);
-    }
   }
 
   public replaceFunction(existing: string, replacement: string): boolean {
