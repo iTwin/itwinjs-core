@@ -2466,7 +2466,7 @@ export abstract class Viewport implements IDisposable {
   }
   public set screenSpaceEffects(effects: Iterable<string>) {
     this.target.screenSpaceEffects = effects;
-    this.setRedrawPending();
+    this.requestRedraw();
   }
 
   /** Append a screen-space effect to the list of effects applied to this Viewport.

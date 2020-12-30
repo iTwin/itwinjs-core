@@ -15,7 +15,7 @@ import {
  * @beta
  */
 export function redrawSelectedView(): void {
-  IModelApp.viewManager.selectedView?.setRedrawPending();
+  IModelApp.viewManager.selectedView?.requestRedraw();
 }
 
 /** Adds a screen-space effect to the selected viewport.
