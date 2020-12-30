@@ -771,16 +771,23 @@ export class Techniques implements WebGLDisposable {
     return this._list[id];
   }
 
+  public get numTechniques(): number {
+    return this._list.length;
+  }
+
   public addDynamicTechnique(technique: Technique, name: string): TechniqueId {
-    for (let i = 0; i < this._dynamicTechniqueIds.length; i++) {
-      if (this._dynamicTechniqueIds[i] === name) {
-        return TechniqueId.NumBuiltIn + i;
-      }
-    }
+    const id = this.getDynamicTechniqueId(name);
+    if (undefined !== id)
+      return id;
 
     this._dynamicTechniqueIds.push(name);
     this._list.push(technique);
     return TechniqueId.NumBuiltIn + this._dynamicTechniqueIds.length - 1;
+  }
+
+  public getDynamicTechniqueId(name: string): TechniqueId | undefined {
+    const index = this._dynamicTechniqueIds.indexOf(name);
+    return -1 !== index ? index + TechniqueId.NumBuiltIn + index : undefined;
   }
 
   /** Execute each command in the list */

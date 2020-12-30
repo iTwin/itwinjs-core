@@ -13,6 +13,7 @@ Because this is a developer-only package, its functionality is not expected to e
 * /src/FrontendDevTools.ts - entry point for initializing the package.
 * /src/ui/ - rudimentary basic html controls used to build the widgets.
 * /src/tools/ - a collection of immediate-mode and interactive-mode tools. All of the tools' key-in strings begin with "fdt" (as in, "Front-end Dev Tools").
+* /src/effects/ - a collection of screen-space post-processing effects that alter the image produced by a Viewport.
 * /src/widgets/ - widgets that wrap some of the package's functionality into embeddable UI controls, including:
   * `KeyinField` - allows any tool to be executed by typing in its keyin string (with autocompletion).
   * `FpsTracker` - displays the average frames-per-second.
@@ -74,6 +75,23 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
 * `fdt toggle reality logging` - Toggle the logging of reality tile loading and selection diagnostics to the console.
 * `fdt toggle reality bounds` - Toggle the display of bounding boxes for reality tiles.
 * `fdt set building display` Toggle the display of the worldwide OpenStreetMap worldwide buildingslayer by attaching or displaying as a reality model in the current viewport.  The OSM buildings are aggregated and supplied from Cesium Ion <https://cesium.com/content/cesium-osm-buildings/>. The first argument is required on|off - the second optional argument is a value for transparency between 0 and 1.
+
+### Screen-space effect key-ins
+
+This package supplies several examples of screen-space post-processing effects that alter the image presented by a Viewport, exposed via the following key-ins:
+
+* `fdt effect add` - append the specified effect to the selected viewport's list of effects. Effects are applied in the order in which they appear in that list. Available effect names are:
+  * "lensdistortion" - simulates the "fish-eye" distortion produced by real-world cameras with very wide fields of view.
+  * "flip" - mostly useless except for demonstration purposes: flips the image horizontally and/or vertically, and/or inverts the color of each pixel.
+  * Six "convolution kernel" effects that alter the image by blending neighboring pixels in different ways: "blur", "sharpen", "unsharpen", "emboss", "edgedetect", and "sharpness".
+* `fdt effect clear` - remove all effects from the selected viewport.
+* `fdt effect config flip` - configure the "flip" effect. Accepts any combination of the following arguments; any argument omitted defaults to 0.
+  * "horizontal=0|1" - 1 to flip horizontally.
+  * "vertical=0|1" - 1  to flip vertically.
+  * "color=0|1" - 1 to invert each pixel's color.
+* `fdt effect config lensdistortion` - configure the lens distortion effect. Accepts any combination of the following arguments, any argument omitted defaults to 0.5.
+  * "strength=[0..1]" - the magnitude of the distortion. 0 = perspective; 1 = stereographic.
+  * "ratio=[0..1]" - the cylindrical ratio of the distortion. 1 = spherical.
 
 ### Other key-ins
 
