@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import { ColorDef } from "@bentley/imodeljs-common";
 import {
-  IModelApp, Pixel, ScreenSpaceEffectBuilder, SnapshotConnection, VaryingType,
+  IModelApp, Pixel, SnapshotConnection, VaryingType,
 } from "@bentley/imodeljs-frontend";
 import { Color, TestViewport, testViewports } from "../TestViewport";
 
@@ -57,7 +57,6 @@ describe("Screen-space effects", () => {
     builder.finish();
   }
 
-  const red = ColorDef.from(0xff, 0, 0);
   const green = ColorDef.from(0, 0xff, 0);
   const blue = ColorDef.from(0, 0, 0xff);
   const yellow = ColorDef.from(0xff, 0xff, 0);
@@ -85,7 +84,7 @@ describe("Screen-space effects", () => {
         sampleSourcePixel: `
           vec2 tc = v_texCoord.x >= 0.5 ? vec2(0.5, 0.5) : vec2(0.0, 0.0);
           return TEXTURE(u_diffuse, tc); `,
-      }
+      },
     })!;
 
     builder.addVarying("v_texCoord", VaryingType.Vec2);
