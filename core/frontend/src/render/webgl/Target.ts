@@ -824,7 +824,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     this.pushState(state);
 
-
     // Create a culling frustum based on the input rect. We can't do this if a screen-space effect is going to move pixels around.
     if (!this.renderSystem.screenSpaceEffects.shouldApply(this)) {
       const viewRect = this.viewRect;

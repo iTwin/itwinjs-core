@@ -7,16 +7,14 @@
  */
 
 import { assert, dispose } from "@bentley/bentleyjs-core";
-import { Viewport } from "../../Viewport";
 import {
-  ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams, ScreenSpaceEffectContext, Uniform, UniformArrayParams, UniformContext, UniformParams, UniformType, VaryingType,
+  ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams, ScreenSpaceEffectContext, UniformArrayParams, UniformParams, UniformType, VaryingType,
 } from "../ScreenSpaceEffectBuilder";
 import { TechniqueId } from "./TechniqueId";
 import { ProgramBuilder, VariableType } from "./ShaderBuilder";
 import { CompileStatus, ShaderProgram } from "./ShaderProgram";
 import { RenderState } from "./RenderState";
 import { SingleTexturedViewportQuadGeometry, ViewportQuadGeometry } from "./CachedGeometry";
-import { TextureHandle } from "./Texture";
 import { FrameBuffer } from "./FrameBuffer";
 import { getDrawParams } from "./ScratchDrawParams";
 import { SingularTechnique } from "./Technique";

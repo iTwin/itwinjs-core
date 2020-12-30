@@ -6,8 +6,7 @@
  * @module Effects
  */
 
-import { assert } from "@bentley/bentleyjs-core";
-import { IModelApp, ScreenSpaceEffectBuilder, UniformType, VaryingType } from "@bentley/imodeljs-frontend";
+import { ScreenSpaceEffectBuilder, UniformType, VaryingType } from "@bentley/imodeljs-frontend";
 import { AddEffectTool } from "./EffectTools";
 
 /** Adds one of a collection of "convolution kernels" that alter a [Viewport]($frontend)'s image by blending neighboring pixels.
@@ -45,7 +44,7 @@ export abstract class ConvolutionEffect extends AddEffectTool {
             TEXTURE(u_diffuse, v_texCoord + onePixel * vec2( 1,  1)) * u_kernel[8] ;
           return vec4((colorSum / u_kernelWeight).rgb, 1);
         }`,
-      };
+    };
   }
 
   protected defineEffect(builder: ScreenSpaceEffectBuilder): void {
@@ -91,7 +90,7 @@ export class GaussianBlurEffect extends ConvolutionEffect {
     return [
       0.045, 0.122, 0.045,
       0.122, 0.332, 0.122,
-      0.045, 0.122, 0.045
+      0.045, 0.122, 0.045,
     ];
   }
 }
@@ -106,7 +105,7 @@ export class UnsharpenEffect extends ConvolutionEffect {
     return [
       -1, -1, -1,
       -1, 9, -1,
-      -1, -1, -1
+      -1, -1, -1,
     ];
   }
 }
@@ -121,7 +120,7 @@ export class EmbossEffect extends ConvolutionEffect {
     return [
       -2, -1, 0,
       -1, 1, 1,
-      0, 1, 2
+      0, 1, 2,
     ];
   }
 }
@@ -136,7 +135,7 @@ export class SharpenEffect extends ConvolutionEffect {
     return [
       0,-1, 0,
       -1, 5,-1,
-      0,-1, 0
+      0,-1, 0,
     ];
   }
 }
@@ -151,7 +150,7 @@ export class SharpnessEffect extends ConvolutionEffect {
     return [
       0,-1, 0,
       -1, 5,-1,
-      0,-1, 0
+      0,-1, 0,
     ];
   }
 }
@@ -166,7 +165,7 @@ export class EdgeDetectionEffect extends ConvolutionEffect {
     return [
       -5, 0, 0,
       0, 0, 0,
-      0, 0, 5
+      0, 0, 5,
     ];
   }
 }

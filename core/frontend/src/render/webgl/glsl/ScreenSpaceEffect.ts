@@ -10,7 +10,6 @@ import { ScreenSpaceEffectBuilderParams } from "../../ScreenSpaceEffectBuilder";
 import { TextureUnit } from "../RenderFlags";
 import { AttributeMap } from "../AttributeMap";
 import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
-import { System } from "../System";
 import { assignFragColor } from "./Fragment";
 
 const computePosition = `
@@ -45,8 +44,8 @@ export function createScreenSpaceEffectProgramBuilder(params: ScreenSpaceEffectB
 
   builder.frag.addFunction(params.source.fragment);
   builder.addUniform("u_diffuse", VariableType.Sampler2D, (prog) => {
-    prog.addProgramUniform("u_diffuse", (uniform, params) => {
-      const texture = params.target.compositor.screenSpaceEffectFbo.getColor(0);
+    prog.addProgramUniform("u_diffuse", (uniform, progParams) => {
+      const texture = progParams.target.compositor.screenSpaceEffectFbo.getColor(0);
       texture.bindSampler(uniform, TextureUnit.Zero);
     });
   });
@@ -58,8 +57,8 @@ export function createScreenSpaceEffectProgramBuilder(params: ScreenSpaceEffectB
   } else {
     builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColorWithShift);
     builder.frag.addUniform("u_readingPixels", VariableType.Boolean, (prog) => {
-      prog.addProgramUniform("u_readingPixels", (uniform, params) => {
-        uniform.setUniform1i(params.target.isReadPixelsInProgress ? 1 : 0);
+      prog.addProgramUniform("u_readingPixels", (uniform, progParams) => {
+        uniform.setUniform1i(progParams.target.isReadPixelsInProgress ? 1 : 0);
       });
     });
   }
