@@ -1,6 +1,6 @@
 # Opening an iModel via the IModelDb class
 
-## Opening a local *briefcase* of an iModel managed my iModelHub
+## Opening a local *briefcase* of an iModel managed by iModelHub
 
 The [BriefcaseManager]($backend) class provides a method to download a [briefcase](../Glossary.md#briefcase) (i.e. a local copy of an iModel.).
 Once downloaded, the [BriefcaseDb]($backend) class provides methods for opening, closing, and accessing the briefcase. An instance of BriefcaseDb in memory holds a briefcase file open.
