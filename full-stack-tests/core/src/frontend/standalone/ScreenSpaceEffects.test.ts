@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import { ColorDef } from "@bentley/imodeljs-common";
 import {
-  IModelApp, ScreenSpaceEffectBuilder, SnapshotConnection, VaryingType,
+  IModelApp, Pixel, ScreenSpaceEffectBuilder, SnapshotConnection, VaryingType,
 } from "@bentley/imodeljs-frontend";
 import { Color, TestViewport, testViewports } from "../TestViewport";
 
@@ -31,7 +31,7 @@ describe("Screen-space effects", () => {
     disabledEffectName = undefined;
   });
 
-  type EffectName = "RYB" | "BGC";
+  type EffectName = "RYB" | "BGC" | "Split";
 
   function registerEffect(name: EffectName, alterColor: string): void {
     const fragment = `
@@ -68,15 +68,35 @@ describe("Screen-space effects", () => {
   function registerEffects(): void {
     // If red > 0, yellow; else blue.
     registerEffect("RYB", "color.rgb = color.r > 0.0 ? vec3(1, 1, 0) : vec3(0, 0, 1);");
+
     // If blue > 0, green; else cyan.
     registerEffect("BGC", "color.rgb = color.b > 0.0 ? vec3(0, 1, 0) : vec3(0, 1, 1);");
+
+    // Shift pixels such that the left-hand side of the viewport is all background pixels and the right-hand side is all element pixels.
+    const builder = IModelApp.renderSystem.createScreenSpaceEffectBuilder({
+      name: "Split",
+      textureCoordFromPosition: true,
+      source: {
+        vertex: "void effectMain(vec4 pos) { v_texCoord = textureCoordFromPosition(pos); }",
+        fragment: `
+          vec4 effectMain() {
+            return sampleSourcePixel();
+          }`,
+        sampleSourcePixel: `
+          vec2 tc = v_texCoord.x >= 0.5 ? vec2(0.5, 0.5) : vec2(0.0, 0.0);
+          return TEXTURE(u_diffuse, tc); `,
+      }
+    })!;
+
+    builder.addVarying("v_texCoord", VaryingType.Vec2);
+    builder.finish();
   }
 
   async function test(bgColor: ColorDef, func: (vp: TestViewport) => Promise<void>) {
     await testViewports("0x24", imodel, 50, 50, async (vp) => {
-      // Turn off lighting so we get pure colors.
+      // Turn off lighting so we get pure colors and edges so we get only surfaces.
       const vf = vp.viewFlags.clone();
-      vf.lighting = false;
+      vf.lighting = vf.visibleEdges = false;
       vp.viewFlags = vf;
 
       vp.displayStyle.backgroundColor = bgColor;
@@ -95,6 +115,22 @@ describe("Screen-space effects", () => {
     expect(actual.length).to.equal(expected.length);
     for (const color of expected)
       expect(actual.contains(Color.fromColorDef(color))).to.be.true;
+  }
+
+  function expectElement(vp: TestViewport, x: number, y: number): void {
+    const pixel = vp.readPixel(x, y);
+    expect(pixel.feature).not.to.be.undefined;
+    expect(pixel.feature!.elementId).to.equal("0x29");
+    expect(pixel.feature!.subCategoryId).to.equal("0x18");
+    expect(pixel.type).to.equal(Pixel.GeometryType.Surface);
+    expect(pixel.planarity).to.equal(Pixel.Planarity.Planar);
+  }
+
+  function expectBackground(vp: TestViewport, x: number, y: number): void {
+    const pixel = vp.readPixel(x, y);
+    expect(pixel.feature).to.be.undefined;
+    expect(pixel.type).to.equal(Pixel.GeometryType.None);
+    expect(pixel.planarity).to.equal(Pixel.Planarity.None);
   }
 
   it("apply to Viewport images", async () => {
@@ -147,11 +183,38 @@ describe("Screen-space effects", () => {
   });
 
   it("can shift pixels", async () => {
+    await test(ColorDef.black, async (vp) => {
+      vp.screenSpaceEffects = ["Split"];
+      await vp.waitForAllTilesToRender();
+
+      // Black background on left half of viewport; white element on right half.
+      expectColors(vp, [black, white]);
+      expectColor(vp, 0, 10, black);
+      expectColor(vp, 20, 40, black);
+      expectColor(vp, 30, 10, white);
+      expectColor(vp, 40, 40, white);
+    });
   });
 
   it("works with element locate", async () => {
+    await test(ColorDef.black, async (vp) => {
+      vp.screenSpaceEffects = ["RYB"];
+      await vp.waitForAllTilesToRender();
+
+      expectBackground(vp, 0, 0);
+      expectElement(vp, 25, 25);
+    });
   });
 
   it("works with element locate after shifting pixels", async () => {
+    await test(ColorDef.black, async (vp) => {
+      vp.screenSpaceEffects = ["Split"];
+      await vp.waitForAllTilesToRender();
+
+      expectBackground(vp, 0, 10);
+      expectBackground(vp, 20, 40);
+      expectElement(vp, 30, 10);
+      expectElement(vp, 40, 40);
+    });
   });
 });
