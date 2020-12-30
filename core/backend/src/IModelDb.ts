@@ -2458,7 +2458,7 @@ export class BriefcaseDb extends IModelDb {
     requestContext.enter();
 
     const newChangeSetId = nativeDb.getParentChangeSetId();
-    nativeDb.closeIModel();
+    briefcaseDb.close();
 
     return newChangeSetId;
   }
