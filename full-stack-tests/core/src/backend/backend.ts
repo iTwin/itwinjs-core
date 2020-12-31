@@ -11,9 +11,8 @@ import serveHandler = require("serve-handler");
 import { Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { IModelJsExpressServer } from "@bentley/express-server";
-import { FileNameResolver, IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
+import { BackendIpc, FileNameResolver, IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
 import { BentleyCloudRpcManager, ElectronRpcConfiguration, ElectronRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
-import { ElectronManager } from "@bentley/electron-manager";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
 import { EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
@@ -28,22 +27,11 @@ async function init() {
   // Bootstrap the cloud environment
   await CloudEnv.initialize();
 
-  // Start the backend
-  const hostConfig = new IModelHostConfiguration();
-  hostConfig.imodelClient = CloudEnv.cloudEnv.imodelClient;
-  hostConfig.concurrentQuery.concurrent = 2;
-  hostConfig.concurrentQuery.pollInterval = 5;
-  await IModelHost.startup(hostConfig);
-  IModelHost.snapshotFileNameResolver = new BackendTestAssetResolver();
-
-  Logger.initializeToConsole();
-  Logger.setLevel("imodeljs-backend.IModelReadRpcImpl", LogLevel.Error);  // Change to trace to debug
-  Logger.setLevel("imodeljs-backend.IModelDb", LogLevel.Error);  // Change to trace to debug
-  Logger.setLevel("Performance", LogLevel.Error);  // Change to Info to capture
-  Logger.setLevel("imodeljs-backend.ConcurrencyControl", LogLevel.Error);
-
   if (ElectronRpcConfiguration.isElectron) {
-    ElectronRpcManager.initializeImpl({}, rpcInterfaces, new ElectronManager());
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const electronManager = new (require("@bentley/electron-manager").ElectronManager)();
+    BackendIpc.initialize(electronManager);
+    ElectronRpcManager.initializeImpl({}, rpcInterfaces, electronManager);
     EditCommandAdmin.registerModule(testCommands);
   } else {
     const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "full-stack-test", version: "v1.0" } }, rpcInterfaces);
@@ -64,6 +52,21 @@ async function init() {
       }).listen(Number(process.env.CERTA_PORT ?? 3011) + 3000, undefined, undefined, resolve);
     });
   }
+
+  // Start the backend
+  const hostConfig = new IModelHostConfiguration();
+  hostConfig.imodelClient = CloudEnv.cloudEnv.imodelClient;
+  hostConfig.concurrentQuery.concurrent = 2;
+  hostConfig.concurrentQuery.pollInterval = 5;
+  await IModelHost.startup(hostConfig);
+  IModelHost.snapshotFileNameResolver = new BackendTestAssetResolver();
+
+  Logger.initializeToConsole();
+  Logger.setLevel("imodeljs-backend.IModelReadRpcImpl", LogLevel.Error);  // Change to trace to debug
+  Logger.setLevel("imodeljs-backend.IModelDb", LogLevel.Error);  // Change to trace to debug
+  Logger.setLevel("Performance", LogLevel.Error);  // Change to Info to capture
+  Logger.setLevel("imodeljs-backend.ConcurrencyControl", LogLevel.Error);
+
 }
 
 /** A FileNameResolver for resolving test iModel files from core/backend */

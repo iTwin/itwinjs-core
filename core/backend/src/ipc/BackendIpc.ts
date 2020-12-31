@@ -6,7 +6,7 @@
  * @module IpcSocket
  */
 
-import { IpcInterface, IpcSocketBackend, RemoveFunction } from "@bentley/imodeljs-common";
+import { IpcInterface, IpcInvokeReturn, IpcSocketBackend, RemoveFunction } from "@bentley/imodeljs-common";
 
 export class BackendIpc {
   private static _ipc: IpcSocketBackend | undefined;
@@ -21,12 +21,16 @@ export abstract class IpcHandler implements IpcInterface {
 
   public static register(): RemoveFunction {
     const impl = new (this as any)();
-    return BackendIpc.ipc.handle(impl.channelName, async (funcName: string, ...args: any[]) => {
+    return BackendIpc.ipc.handle(impl.channelName, async (_evt: any, funcName: string, ...args: any[]): Promise<IpcInvokeReturn> => {
       const func = impl[funcName];
       if (typeof func !== "function")
-        throw new Error(`Method Not Found ${funcName}`);
+        return { error: `Method Not Found ${funcName}` };
 
-      return func.call(impl, ...args);
+      try {
+        return { result: await func.call(impl, ...args) };
+      } catch (err) {
+        return { error: { name: err.name, message: err.message, errorNumber: err.errorNumber } };
+      }
     });
   }
 }

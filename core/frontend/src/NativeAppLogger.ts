@@ -39,7 +39,7 @@ export class NativeAppLogger {
     try {
       while (messages.length > 0) {
         const msg: LogMessage = messages.shift()!;
-        await NativeApp.invokeIpc("log", msg.timestamp, msg.level, msg.category, msg.message, { ...msg.metaData });
+        await NativeApp.backendCall("log", msg.timestamp, msg.level, msg.category, msg.message, { ...msg.metaData });
       }
     } finally {
       // Put back unsent messages.

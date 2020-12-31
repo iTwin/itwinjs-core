@@ -43,18 +43,18 @@ export class MobileAuthorizationClient extends ImsAuthorizationClient implements
   public async initialize(requestContext: ClientRequestContext): Promise<void> {
     requestContext.enter();
     const issuer = await this.getUrl(requestContext);
-    await NativeApp.invokeIpc("authInitialize", issuer, this._clientConfiguration);
+    await NativeApp.backendCall("authInitialize", issuer, this._clientConfiguration);
   }
   /** Start the sign-in process */
   public async signIn(requestContext: ClientRequestContext): Promise<void> {
     requestContext.enter();
-    await NativeApp.invokeIpc("authSignIn");
+    await NativeApp.backendCall("authSignIn");
   }
 
   /** Start the sign-out process */
   public async signOut(requestContext: ClientRequestContext): Promise<void> {
     requestContext.enter();
-    return NativeApp.invokeIpc("authSignOut");
+    return NativeApp.backendCall("authSignOut");
   }
 
   /** return accessToken */
@@ -63,7 +63,7 @@ export class MobileAuthorizationClient extends ImsAuthorizationClient implements
     if (this.isAuthorized) {
       return this._accessToken!;
     }
-    const tokenString = await NativeApp.invokeIpc("authGetAccessToken");
+    const tokenString = await NativeApp.backendCall("authGetAccessToken");
     this._accessToken = AccessToken.fromJson(tokenString);
     return this._accessToken;
   }

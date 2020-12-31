@@ -15,9 +15,10 @@ import { ElectronRpcRequest } from "./ElectronRpcRequest";
 import { ElectronRpcConfiguration } from "./ElectronRpcManager";
 import { RpcPushChannel, RpcPushConnection } from "../core/RpcPush";
 import { ElectronPushConnection, ElectronPushTransport } from "./ElectronPush";
+import { iTwinChannel } from "../../ipc/IpcSocket";
 
-const OBJECTS_CHANNEL = "rpc.objects";
-const DATA_CHANNEL = "rpc.data";
+const OBJECTS_CHANNEL = iTwinChannel("rpc.objects");
+const DATA_CHANNEL = iTwinChannel("rpc.data");
 
 interface PartialPayload { id: string, index: number, data: Uint8Array }
 

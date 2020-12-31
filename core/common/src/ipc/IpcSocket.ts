@@ -6,8 +6,11 @@
  * @module IpcSocket
  */
 
-export type IpcListener = (...arg: any[]) => void;
+export const iTwinChannel = (channel: string) => `itwin.${channel}`;
+
+export type IpcListener = (evt: any, ...arg: any[]) => void;
 export type RemoveFunction = () => void;
+export type IpcInvokeReturn = { result: any, error?: never } | { error: any, result?: never };
 
 export interface IpcSocket {
   send: (channel: string, ...data: any[]) => void;

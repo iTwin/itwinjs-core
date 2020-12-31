@@ -856,7 +856,7 @@ export class LocalBriefcaseConnection extends BriefcaseConnection {
     requestContext.enter();
 
     requestContext.useContextForRpc = true;
-    const iModelProps = await NativeApp.invokeIpc("open", briefcaseProps);
+    const iModelProps = await NativeApp.backendCall("open", briefcaseProps);
     const connection = new this({ ...briefcaseProps, ...iModelProps });
 
     IModelConnection.onOpen.raiseEvent(connection);
@@ -877,7 +877,7 @@ export class LocalBriefcaseConnection extends BriefcaseConnection {
     requestContext.enter();
 
     requestContext.useContextForRpc = true;
-    const closePromise: Promise<void> = NativeApp.invokeIpc("closeBriefcase", this._fileKey); // Ensure the method isn't awaited right away.
+    const closePromise: Promise<void> = NativeApp.backendCall("closeBriefcase", this._fileKey); // Ensure the method isn't awaited right away.
 
     try {
       this.eventSource.dispose();

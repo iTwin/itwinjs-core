@@ -6,6 +6,7 @@
 import { OpenDialogReturnValue } from "electron";
 import { assert, isElectronRenderer } from "@bentley/bentleyjs-core";
 import { FrontendIpc } from "@bentley/imodeljs-frontend";
+import { iTwinChannel } from "@bentley/imodeljs-common";
 
 export interface BrowserFileSelector {
   input: HTMLInputElement;
@@ -19,7 +20,7 @@ const selectForElectron = async () => {
   };
 
   assert(FrontendIpc.isValid);
-  const val = (await FrontendIpc.ipc.invoke("dta.openFile", options)) as OpenDialogReturnValue; // eslint-disable-line @typescript-eslint/await-thenable
+  const val = (await FrontendIpc.ipc.invoke(iTwinChannel("dta.openFile"), options)) as OpenDialogReturnValue; // eslint-disable-line @typescript-eslint/await-thenable
   return val.canceled ? undefined : val.filePaths[0];
 };
 

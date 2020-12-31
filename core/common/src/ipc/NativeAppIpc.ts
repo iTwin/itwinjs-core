@@ -9,9 +9,9 @@
 import { GuidString, LogLevel } from "@bentley/bentleyjs-core";
 import { BriefcaseProps, LocalBriefcaseProps, OpenBriefcaseProps, RequestNewBriefcaseProps } from "../BriefcaseTypes";
 import { IModelConnectionProps, IModelRpcProps } from "../IModel";
-import { IpcInterface } from "./IpcSocket";
+import { IpcInterface, iTwinChannel } from "./IpcSocket";
 
-export const nativeAppChannel = "nativeApp";
+export const nativeAppChannel = iTwinChannel("nativeApp");
 export const nativeAppIpcVersion = "1.0.0";
 /**
  * Type of value for storage values

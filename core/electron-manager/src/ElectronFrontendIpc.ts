@@ -19,26 +19,19 @@ interface ITwinElectronApi {
   invoke(channel: string, ...args: any[]): Promise<any>;
 }
 
-const iTwinChannel = (channel: string) => `itwin.${channel}`;
-
 // use the methods on window.itwinjs, or ipcRenderer directly if running with electronIntegration=true (for tests)
 const electronIpc: ITwinElectronApi = (typeof window === "undefined" ? undefined : (window as any).itwinjs as ITwinElectronApi | undefined) ?? ipcRenderer;
 
 /** @alpha */
 export const electronFrontendIpc: IpcSocketFrontend = {
-  receive: (channel: string, listener: IpcListener) => {
-    const channelName = iTwinChannel(channel);
-    const stripEvent = (...args: any[]) => {
-      const stripped = { ...args[1] };
-      listener(stripped);
-    };
-    electronIpc.on(channelName, stripEvent);
-    return () => electronIpc.removeListener(channelName, stripEvent);
+  receive: (channelName: string, listener: IpcListener) => {
+    electronIpc.on(channelName, listener);
+    return () => electronIpc.removeListener(channelName, listener);
   },
   send: (channel: string, ...data: any[]) => {
-    electronIpc.send(iTwinChannel(channel), data);
+    electronIpc.send(channel, ...data);
   },
   invoke: async (channel: string, ...args: any[]) => {
-    return electronIpc.invoke(iTwinChannel(channel), args);
+    return electronIpc.invoke(channel, ...args);
   },
 };

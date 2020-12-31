@@ -18,8 +18,6 @@ export interface ElectronManagerOptions {
   frontendURL?: string;
 }
 
-const iTwinChannel = (channel: string) => `itwin.${channel}`;
-
 /**
  * A helper class that simplifies the creation of basic single-window desktop applications
  * that follow platform-standard window behavior on all platforms.
@@ -93,17 +91,15 @@ export class ElectronManager implements IpcSocketBackend {
   }
 
   public receive(channel: string, listener: IpcListener): RemoveFunction {
-    const channelName = iTwinChannel(channel);
-    ipcMain.addListener(channelName, listener);
-    return () => ipcMain.removeListener(channelName, listener);
+    ipcMain.addListener(channel, listener);
+    return () => ipcMain.removeListener(channel, listener);
   }
   public send(message: string, ...args: any[]): void {
     this.mainWindow!.webContents.send(message, ...args);
   }
-  public handle(channel: string, listener: (...args: any[]) => Promise<any>): RemoveFunction {
-    const channelName = iTwinChannel(channel);
-    ipcMain.handle(channelName, async (_evt: any, ...args: any[]) => listener(args));
-    return () => ipcMain.removeHandler(channelName);
+  public handle(channel: string, listener: (evt: any, ...args: any[]) => Promise<any>): RemoveFunction {
+    ipcMain.handle(channel, listener);
+    return () => ipcMain.removeHandler(channel);
   }
 }
 

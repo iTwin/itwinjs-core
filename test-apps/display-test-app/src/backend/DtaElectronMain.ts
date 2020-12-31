@@ -92,7 +92,7 @@ const dtaElectronMain = async () => {
   ElectronRpcManager.initializeImpl({}, getRpcInterfaces(), manager);
 
   // handler for the "openFile" ipc request from the frontend
-  manager.handle("dta.openFile", async (_event, options) => dialog.showOpenDialog(options));
+  manager.handle(iTwinChannel("dta.openFile"), async (_event, options) => dialog.showOpenDialog(options));
 };
 
 // execute this immediately when we load

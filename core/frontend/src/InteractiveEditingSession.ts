@@ -71,7 +71,7 @@ export class InteractiveEditingSession {
    * the BisCore ECSchema older than v0.1.11.
    */
   public static async isSupported(imodel: IModelConnection): Promise<boolean> {
-    return NativeApp.invokeIpc("isInteractiveEditingSupported", imodel.getRpcProps());
+    return NativeApp.backendCall("isInteractiveEditingSupported", imodel.getRpcProps());
   }
 
   /** Get the active editing session for the specified iModel, if any.
@@ -94,7 +94,7 @@ export class InteractiveEditingSession {
     const session = new InteractiveEditingSession(imodel);
     sessions.push(session);
     try {
-      const sessionStarted = await NativeApp.invokeIpc("toggleInteractiveEditingSession", imodel.getRpcProps(), true);
+      const sessionStarted = await NativeApp.backendCall("toggleInteractiveEditingSession", imodel.getRpcProps(), true);
       assert(sessionStarted); // If it didn't, the rpc interface threw an error.
     } catch (e) {
       session.dispose();
@@ -126,7 +126,7 @@ export class InteractiveEditingSession {
     try {
       this.onEnding.raiseEvent(this);
     } finally {
-      const sessionEnded = await NativeApp.invokeIpc("toggleInteractiveEditingSession", this.iModel.getRpcProps(), false);
+      const sessionEnded = await NativeApp.backendCall("toggleInteractiveEditingSession", this.iModel.getRpcProps(), false);
       assert(!sessionEnded);
       try {
         this.onEnded.raiseEvent(this);
