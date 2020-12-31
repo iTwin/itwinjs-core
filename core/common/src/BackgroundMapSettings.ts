@@ -217,7 +217,7 @@ export class BackgroundMapSettings {
       providerData: {
         mapType: changedProps.providerData?.mapType ?? this.mapType,
       },
-      planarClipMask: changedProps.planarClipMask ?? this.planarClipMask
+      planarClipMask: changedProps.planarClipMask ?? this.planarClipMask.toJSON()
     };
 
     return BackgroundMapSettings.fromJSON(props);

@@ -8,8 +8,8 @@
  */
 
 import { Id64String } from "@bentley/bentleyjs-core";
-import { FeatureAppearance, FeatureAppearanceProps, PlanarClipMask, RgbColorProps } from "@bentley/imodeljs-common";
-import { ContextRealityModelState, GeometricModelState, getCesiumAssetUrl, IModelApp, NotifyMessageDetails, OutputMessagePriority, ScreenViewport, Tool, Viewport } from "@bentley/imodeljs-frontend";
+import { FeatureAppearance, FeatureAppearanceProps, PlanarClipMask, PlanarClipMaskMode, PlanarClipMaskProps, RgbColorProps } from "@bentley/imodeljs-common";
+import { ContextRealityModelState, GeometricModelState, getCesiumAssetUrl, IModelApp, NotifyMessageDetails, OutputMessagePriority, ScreenViewport, Tool, Viewport, ViewPose } from "@bentley/imodeljs-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseBoolean } from "./parseBoolean";
 import { parseToggle } from "./parseToggle";
@@ -287,23 +287,27 @@ function applyToRealityModel(vp: ScreenViewport, index: number, func: (indexOrId
   }
 }
 
+function applyMaskToRealityModel(index: number, onOff: boolean | undefined, mask: PlanarClipMask): boolean {
+  const vp = IModelApp.viewManager.selectedView;
+  if (vp === undefined)
+    return false;
+
+  return applyToRealityModel(vp, index, (indexOrId: Id64String | number) => {
+    const currentMask = vp.getRealityModelPlanarClipMask(indexOrId);
+    const maskOn = (onOff === undefined) ? currentMask === undefined || !currentMask.anyDefined : onOff;
+    return maskOn ? vp.overrideRealityModelPlanarClipMask(indexOrId, mask) : vp.dropRealityModelPlanarClipMask(indexOrId);
+  });
+}
 /** Control reality model masking.
  * @beta
  */
-export class SetRealityModelMasking extends Tool {
-  public static toolId = "SetRealityModelMasking";
+export class SetHigherPriorityRealityModelMasking extends Tool {
+  public static toolId = "SetHigherPriorityRealityModelMasking";
   public static get minArgs() { return 0; }
   public static get maxArgs() { return 2; }
 
   public run(index: number, onOff?: boolean): boolean {
-    const vp = IModelApp.viewManager.selectedView;
-    if (vp === undefined)
-      return false;
-
-    return applyToRealityModel(vp, index, (indexOrId: Id64String | number) => {
-      const maskOn = (onOff === undefined) ? (vp.getRealityModelPlanarClipMask(indexOrId) === undefined) : onOff;
-      return maskOn ? vp.overrideRealityModelPlanarClipMask(indexOrId, PlanarClipMask.fromJSON({ maskAllHigherPriorityModels: true })) : vp.dropRealityModelPlanarClipMask(indexOrId);
-    });
+    return applyMaskToRealityModel(index, onOff, PlanarClipMask.fromJSON({ mode: PlanarClipMaskMode.HigherPriorityModels }));
   }
 
   public parseAndRun(...args: string[]): boolean {

@@ -9,8 +9,9 @@
 
 import { dispose, Id64String } from "@bentley/bentleyjs-core";
 import { Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Vector3d } from "@bentley/geometry-core";
-import { ColorDef, Frustum, FrustumPlanes, PlanarClipMask, RenderMode, RenderTexture, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
-import { GraphicsCollectorDrawArgs, SpatialClassifierTileTreeReference, TileTreeReference } from "../../tile/internal";
+import { IModelsHandler } from "@bentley/imodelhub-client";
+import { ColorDef, Frustum, FrustumPlanes, PlanarClipMask, PlanarClipMaskMode, RenderMode, RenderTexture, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
+import { GraphicsCollectorDrawArgs, SpatialClassifierTileTreeReference, TileTree, TileTreeReference } from "../../tile/internal";
 import { SceneContext } from "../../ViewContext";
 import { ViewState, ViewState3d } from "../../ViewState";
 import { RenderGraphic } from "../RenderGraphic";
@@ -471,11 +472,26 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   }
 
   public getPlanarClipMaskTileTrees(trees: TileTreeReference[], view: ViewState, classifiedModelId: Id64String, planarClipMask: PlanarClipMask): void {
-    if (planarClipMask.maskAllHigherPriorityModels)
-      view.forEachTileTreeRef((ref) => {
-        const tree = ref.treeOwner.load();
-        if (tree && tree.modelId !== classifiedModelId && !tree.isContentUnbounded)
-          trees.push(ref);
-      });
+    const viewTrees = new Map<Id64String, TileTreeReference>();
+    view.forEachTileTreeRef((ref) => {
+      const tree = ref.treeOwner.load();
+      if (tree && tree.modelId !== classifiedModelId && !tree.isContentUnbounded)
+        viewTrees.set(tree.modelId, ref);
+    });
+    switch (planarClipMask.mode) {
+      case PlanarClipMaskMode.HigherPriorityModels:
+        viewTrees.forEach((tree) => trees.push(tree));
+        break;
+      case PlanarClipMaskMode.Models:
+        if (planarClipMask.ids) planarClipMask.ids.forEach((modelId) => {
+          const viewedTree = viewTrees.get(modelId);
+          if (viewedTree)
+            trees.push(viewedTree);
+          else {
+            // TBD - Mask with undisplayed or unloaded trees.
+          }
+        });
+        break;
+    }
   }
 }

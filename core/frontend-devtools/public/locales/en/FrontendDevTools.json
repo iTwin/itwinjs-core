@@ -276,11 +276,11 @@
     "SetAASamples": {
       "keyin": "fdt aasamples"
     },
-    "SetRealityModelMasking": {
-      "keyin": "fdt set reality model mask"
+    "SetHigherPriorityRealityModelMasking": {
+      "keyin": "fdt set higher priority reality model mask"
     },
-    "SetMapMask": {
-      "keyin": "fdt set map mask"
+    "SetMapHigherPriorityMask": {
+      "keyin": "fdt set higher prioity map mask"
     }
   }
 }

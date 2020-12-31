@@ -7,8 +7,9 @@
  * @module Tools
  */
 
-import { ColorDef } from "@bentley/imodeljs-common";
-import { IModelApp, MapLayerSource, MapLayerSources, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority, Tool, WmsUtilities } from "@bentley/imodeljs-frontend";
+import { Id64String } from "@bentley/bentleyjs-core";
+import { ColorDef, PlanarClipMask, PlanarClipMaskMode, PlanarClipMaskProps } from "@bentley/imodeljs-common";
+import { IModelApp, MapLayerSource, MapLayerSources, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority, ScreenViewport, Tool, WmsUtilities } from "@bentley/imodeljs-frontend";
 import { parseToggle } from "./parseToggle";
 
 /** Base class for attaching map layer tool.
@@ -396,25 +397,65 @@ export class MapBaseTransparencyTool extends Tool {
   }
 }
 
+function applyMapMasking(onOff: boolean | undefined, maskProps: PlanarClipMaskProps) {
+  const vp = IModelApp.viewManager.selectedView;
+  if (undefined === vp || !vp.view.isSpatialView())
+    if (undefined === vp || !vp.view.isSpatialView())
+      return false;
 
-/** Set Map Masking.
+  const maskOn = (onOff === undefined) ? !vp.displayStyle.backgroundMapSettings.planarClipMask.anyDefined : onOff;
+
+  vp.changeBackgroundMapProps({ planarClipMask: maskOn ? maskProps : { mode: PlanarClipMaskMode.None } });
+  vp.invalidateRenderPlan();
+
+  return true;
+
+}
+
+/** Set Map Masking by all higher priority models.
  * @alpha
  */
-export class SetMapMasking extends Tool {
-  public static toolId = "SetMapMask";
+export class SetMapHigherPriorityMasking extends Tool {
+  public static toolId = "SetMapHigherPriorityMask";
+  public static get minArgs() { return 0; }
+  public static get maxArgs() { return 1; }
+
+  public run(onOff?: boolean): boolean {
+    return applyMapMasking(onOff, { mode: PlanarClipMaskMode.HigherPriorityModels });
+  }
+
+  public parseAndRun(...args: string[]): boolean {
+    const toggle = parseToggle(args[0]);
+    return this.run(typeof toggle === "string" ? undefined : toggle);
+  }
+}
+
+/** Set Map Masking by selected models.
+ * @alpha
+ */
+export class SetMapSelectedModelMasking extends Tool {
+  public static toolId = "SetMapHigherPriorityMask";
   public static get minArgs() { return 0; }
   public static get maxArgs() { return 1; }
 
   public run(onOff?: boolean): boolean {
     const vp = IModelApp.viewManager.selectedView;
-    if (undefined === vp || !vp.view.isSpatialView())
+    if (undefined === vp)
       return false;
 
-    const maskOn = (onOff === undefined) ? !vp.displayStyle.backgroundMapSettings.planarClipMask.anyDefined : onOff;
+    const selection = IModelApp.viewManager.selectedView?.view.iModel.selectionSet;
 
-    vp.changeBackgroundMapProps({ planarClipMask: maskOn ? { maskAllHigherPriorityModels: true } : {} });
-    vp.invalidateRenderPlan();
+    if (!selection || !selection.isActive)
+      return false;
 
+
+    vp.iModel.elements.getProps(selection.elements).then((elementProps) => {
+      const modelIds = new Set<Id64String>();
+      for (const elementProp of elementProps)
+        modelIds.add(elementProp.model)
+
+      applyMapMasking(onOff, PlanarClipMask.create(PlanarClipMaskMode.Models, modelIds)!.toJSON());
+    });
     return true;
   }
 
