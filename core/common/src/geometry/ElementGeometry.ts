@@ -794,10 +794,8 @@ export namespace ElementGeometry {
 
     let data;
     const entityData = ppfb.entityDataArray();
-    if (wantBRepData && null !== entityData) {
-      const base64Header = "encoding=base64;";
-      data = base64Header + Base64.fromUint8Array(entityData);
-    }
+    if (wantBRepData && null !== entityData)
+      data = `encoding=base64;${Base64.fromUint8Array(entityData)}`;
 
     return { data, type, transform: transform?.toJSON(), faceSymbology };
   }
