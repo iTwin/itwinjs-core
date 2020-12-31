@@ -399,7 +399,7 @@ async function waitForTilesToLoad(modelLocation?: string) {
   const timer = new StopWatch(undefined, true);
   let haveNewTiles = true;
   while (haveNewTiles) {
-    theViewport!.setRedrawPending();
+    theViewport!.requestRedraw();
     theViewport!.invalidateScene();
     theViewport!.renderFrame();
 
@@ -927,7 +927,7 @@ async function openView(state: SimpleViewState, viewSize: ViewSize) {
     canvas.style.width = `${String(width)}px`;
     canvas.style.height = `${String(height)}px`;
     theViewport.continuousRendering = false;
-    theViewport.setRedrawPending();
+    theViewport.requestRedraw();
     (theViewport.target as Target).performanceMetrics = undefined;
     await _changeView(state.viewState!);
   }
@@ -1349,7 +1349,7 @@ async function renderAsync(vp: ScreenViewport, numFrames: number, timings: Array
         debugControl.resultsCallback = undefined; // Turn off glTimer metrics
         resolve();
       } else {
-        vp.setRedrawPending();
+        vp.requestRedraw();
         timer.start();
       }
     });
@@ -1383,7 +1383,7 @@ async function runTest(testConfig: DefaultConfigs, extViews?: any[]) {
 
   // Throw away the first n renderFrame times, until it's more consistent
   for (let i = 0; i < (testConfig.numRendersToSkip ? testConfig.numRendersToSkip : 50); ++i) {
-    theViewport!.setRedrawPending();
+    theViewport!.requestRedraw();
     theViewport!.renderFrame();
   }
   testConfig.numRendersToTime = testConfig.numRendersToTime ? testConfig.numRendersToTime : 100;
