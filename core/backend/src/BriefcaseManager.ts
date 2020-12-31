@@ -8,14 +8,12 @@
 
 // cspell:ignore cset csets ecchanges
 
-import * as os from "os";
-import * as path from "path";
 import {
   assert, BeDuration, BentleyError, ChangeSetApplyOption, ChangeSetStatus, ClientRequestContext, DbResult, GuidString, Id64, IModelHubStatus,
   IModelStatus, Logger, OpenMode, PerfLogger,
 } from "@bentley/bentleyjs-core";
 import {
-  Briefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, ConflictingCodesError, HubCode, HubIModel, IModelClient, IModelHubError,
+  Briefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, ConflictingCodesError, HubCode, IModelHubError,
 } from "@bentley/imodelhub-client";
 import {
   BriefcaseProps, BriefcaseStatus, CreateIModelProps, IModelError, IModelRpcOpenProps, IModelVersion, LocalBriefcaseProps, RequestNewBriefcaseProps,
@@ -23,6 +21,8 @@ import {
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TelemetryEvent } from "@bentley/telemetry-client";
+import * as os from "os";
+import * as path from "path";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { CheckpointManager, ProgressFunction } from "./CheckpointManager";
 import { BriefcaseDb, IModelDb } from "./IModelDb";
@@ -156,9 +156,6 @@ export class BriefcaseManager {
     IModelHost.onBeforeShutdown.addOnce(this.finalize, this);
     this._initialized = true;
   }
-
-  /** @internal */
-  public static get imodelClient(): IModelClient { return IModelHost.iModelClient; }
 
   private static finalize() {
     this._initialized = false;
@@ -490,10 +487,10 @@ export class BriefcaseManager {
   public static async evaluateVersion(requestContext: AuthorizedClientRequestContext, version: IModelVersion, iModelId: string): Promise<{ changeSetId: string, changeSetIndex: number }> {
     requestContext.enter();
 
-    const changeSetId: string = await version.evaluateChangeSet(requestContext, iModelId, IModelHost.iModelClient);
+    const changeSetId = await version.evaluateChangeSet(requestContext, iModelId, IModelHost.iModelClient);
     requestContext.enter();
 
-    const changeSetIndex: number = await BriefcaseManager.getChangeSetIndexFromId(requestContext, iModelId, changeSetId);
+    const changeSetIndex = await BriefcaseManager.getChangeSetIndexFromId(requestContext, iModelId, changeSetId);
     return { changeSetId, changeSetIndex };
   }
 
@@ -579,7 +576,7 @@ export class BriefcaseManager {
 
     // Download change sets
     const reverse = (targetChangeSetIndex < currentChangeSetIndex);
-    const changeSets: ChangeSet[] = await BriefcaseManager.downloadChangeSets(requestContext, db.iModelId, reverse ? targetChangeSetId : currentChangeSetId, reverse ? currentChangeSetId : targetChangeSetId);
+    const changeSets = await BriefcaseManager.downloadChangeSets(requestContext, db.iModelId, reverse ? targetChangeSetId : currentChangeSetId, reverse ? currentChangeSetId : targetChangeSetId);
     requestContext.enter();
     assert(changeSets.length <= Math.abs(targetChangeSetIndex - currentChangeSetIndex));
     if (reverse)
@@ -973,7 +970,7 @@ export class BriefcaseManager {
     if (IModelHost.isUsingIModelBankClient) {
       throw new IModelError(IModelStatus.BadRequest, "This is a iModelHub only operation", Logger.logError, loggerCategory, () => ({ contextId, iModelName }));
     }
-    const hubIModel: HubIModel = await IModelHost.iModelClient.iModels.create(requestContext, contextId, iModelName, { description: args.rootSubject.description });
+    const hubIModel = await IModelHost.iModelClient.iModels.create(requestContext, contextId, iModelName, { description: args.rootSubject.description });
     return hubIModel.wsgId;
   }
 

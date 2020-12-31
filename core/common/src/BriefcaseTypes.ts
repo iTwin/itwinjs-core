@@ -167,21 +167,23 @@ export interface UpgradeOptions {
 
 /**
  * The state of the schemas in the Db compared with what the current version of the software expects
- * Note: The state may vary depending on whether the Db is to be opened ReadOnly or ReadWrite. Generally the
- * requirements for opening a Db ReadOnly are less stringent than opening it ReadWrite.
+ * Note: The state may vary depending on whether the Db is to be opened ReadOnly or ReadWrite.
  * @beta
  */
 export enum SchemaState {
   /** The schemas in the Db are up-to-date, and do not need to be upgraded before opening it with the current version of the software */
   UpToDate,
 
-  /** It's required that the schemas in the Db be upgraded before it can be opened with the current version of the software */
+  /** It's required that the schemas in the Db be upgraded before it can be opened with the current version of the software.
+   * This may happen in read-write scenarios where the application requires a newer version of the schemas to be in place before
+   * it can write data based on that new schema.
+   */
   UpgradeRequired,
 
-  /** It's recommended (but necessary) that the schemas in the Db be upgraded before opening it with the current version of the software */
+  /** It's recommended, but not necessary that the schemas in the Db be upgraded before opening it with the current version of the software */
   UpgradeRecommended,
 
-  /** The schemas in the Db are too old to be opened by the current version of the software */
+  /** The schemas in the Db are too old to be opened by the current version of the software. Upgrade using the API is not possible. */
   TooOld,
 
   /** The schemas in the Db are too new to be opened by the current version of the software */

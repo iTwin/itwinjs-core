@@ -2,13 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
 import { DbResult } from "@bentley/bentleyjs-core";
-import { ChangeSet } from "@bentley/imodelhub-client";
 import { ChangedElements } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
+import { assert } from "chai";
 import { ChangedElementsManager } from "../../ChangedElementsManager";
-import { AuthorizedBackendRequestContext, BriefcaseManager, ChangedElementsDb, IModelJsFs } from "../../imodeljs-backend";
+import { AuthorizedBackendRequestContext, BriefcaseManager, ChangedElementsDb, IModelHost, IModelJsFs } from "../../imodeljs-backend";
 import { IModelTestUtils, TestIModelInfo } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 
@@ -38,7 +37,7 @@ describe("ChangedElements (#integration)", () => {
     setupTest(testIModel.id);
 
     const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testProjectId, iModelId: testIModel.id });
-    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.changeSets.get(requestContext, testIModel.id);
+    const changeSets = await IModelHost.iModelClient.changeSets.get(requestContext, testIModel.id);
     assert.exists(iModel);
 
     const filePath = ChangedElementsManager.getChangedElementsPathName(iModel.iModelId);
@@ -61,7 +60,7 @@ describe("ChangedElements (#integration)", () => {
     }
     assert.isTrue(changes === undefined);
     // Process changesets with "Items" presentation rules
-    const result: DbResult = await cache.processChangesets(requestContext, iModel, "Items", startChangesetId, endChangesetId);
+    const result = await cache.processChangesets(requestContext, iModel, "Items", startChangesetId, endChangesetId);
     assert.equal(result, DbResult.BE_SQLITE_OK);
     // Check that the changesets should have been processed now
     assert.isTrue(cache.isProcessed(startChangesetId));

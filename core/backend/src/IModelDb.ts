@@ -893,16 +893,16 @@ export abstract class IModelDb extends IModel {
   /**
    * Determines if the schemas in the Db must or can be upgraded by comparing them with those included in the
    * current version of the software.
-   * @param pathName Path of the DgnDb file
+   * @param filePath Full name of the briefcase including it's path
    * @param forReadWrite Pass true if validating for read-write scenarios - note that the schema version requirements
    * for opening the DgnDb read-write is more stringent than when opening the database read-only
    * @throws [[IModelError]] If the Db was in an invalid state and that causes a problem with validating schemas
    * @see [BriefcaseDb.upgradeSchemas]($imodeljs-backend) or [StandaloneDb.upgradeSchemas]($imodeljs-backend)
    * @see ($docs/learning/backend/IModelDb.md#upgrading-schemas-in-an-imodel)
    */
-  public static validateSchemas(pathName: string, forReadWrite: boolean): SchemaState {
+  public static validateSchemas(filePath: string, forReadWrite: boolean): SchemaState {
     const openMode = forReadWrite ? OpenMode.ReadWrite : OpenMode.Readonly;
-    const file = { path: pathName };
+    const file = { path: filePath };
     let result: DbResult = DbResult.BE_SQLITE_OK;
     try {
       const upgradeOptions: UpgradeOptions = {
@@ -2420,7 +2420,7 @@ export class BriefcaseDb extends IModelDb {
     lock.seedFileId = iModelId;
 
     Logger.logTrace(loggerCategory, `lockSchema`);
-    const res = await BriefcaseManager.imodelClient.locks.update(requestContext, iModelId, [lock]);
+    const res = await IModelHost.iModelClient.locks.update(requestContext, iModelId, [lock]);
     if (res.length !== 1 || res[0].lockLevel !== LockLevel.Exclusive)
       throw new IModelError(IModelStatus.UpgradeFailed, "Could not acquire schema lock", Logger.logError, loggerCategory, () => ({ iModelId, changeSetId, briefcaseId }));
   }
@@ -2830,33 +2830,33 @@ export class StandaloneDb extends IModelDb {
   /**
    * Upgrades the schemas in the standalone iModel file.
    * Note that the upgrade requires that the file be closed, and will leave it back in the closed state.
-   * @param pathName The path of the standalone iModel file.
+   * @param filePath Full path name of the standalone iModel file.
    * @see ($docs/learning/backend/IModelDb.md#upgrading-schemas-in-an-imodel)
    * @see [[StandaloneDb.validateSchemas]]
    */
-  public static upgradeSchemas(pathName: string) {
-    let nativeDb = this.openDgnDb({ path: pathName }, OpenMode.ReadWrite, { profile: ProfileOptions.Upgrade });
+  public static upgradeSchemas(filePath: string) {
+    let nativeDb = this.openDgnDb({ path: filePath }, OpenMode.ReadWrite, { profile: ProfileOptions.Upgrade });
     assert(!nativeDb.hasUnsavedChanges(), "Expected schema upgrade to have saved any changes made");
     nativeDb.closeIModel();
 
-    nativeDb = this.openDgnDb({ path: pathName }, OpenMode.ReadWrite, { domain: DomainOptions.Upgrade });
+    nativeDb = this.openDgnDb({ path: filePath }, OpenMode.ReadWrite, { domain: DomainOptions.Upgrade });
     assert(!nativeDb.hasUnsavedChanges(), "Expected schema upgrade to have saved any changes made");
     nativeDb.closeIModel();
   }
 
   /** Open a standalone iModel file.
-   * @param pathName The path of the standalone iModel file.
+   * @param filePath The path of the standalone iModel file.
    * @param openMode Optional open mode for the standalone iModel. The default is read/write.
    * @returns a new StandaloneDb if the file is not currently open, and the existing StandaloneDb if it is already
    * @throws [[IModelError]]
    */
-  public static openFile(pathName: string, openMode: OpenMode = OpenMode.ReadWrite, options?: StandaloneOpenOptions): StandaloneDb {
-    const file = { path: pathName, key: options?.key };
+  public static openFile(filePath: string, openMode: OpenMode = OpenMode.ReadWrite, options?: StandaloneOpenOptions): StandaloneDb {
+    const file = { path: filePath, key: options?.key };
     const nativeDb = this.openDgnDb(file, openMode);
 
     if (openMode === OpenMode.ReadWrite && (!BriefcaseManager.isStandaloneBriefcaseId(nativeDb.getBriefcaseId()) || undefined === nativeDb.queryLocalValue(IModelDb._edit))) {
       nativeDb.closeIModel();
-      throw new IModelError(IModelStatus.ReadOnly, `${pathName} is not an editable Standalone db`, Logger.logError, loggerCategory);
+      throw new IModelError(IModelStatus.ReadOnly, `${filePath} is not an editable Standalone db`, Logger.logError, loggerCategory);
     }
 
     return new StandaloneDb(nativeDb, file.key!);
