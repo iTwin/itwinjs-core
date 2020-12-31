@@ -40,9 +40,9 @@ export default async function initialize(rpcs: RpcInterfaceDefinition[]) {
   await manager.initialize({ width: 800, height: 650, show: !maximizeWindow, title: "Ui Test App" });
   assert(manager.mainWindow !== undefined);
 
+  BackendIpc.initialize(manager);
   // tell ElectronRpcManager which RPC interfaces to handle
   ElectronRpcManager.initializeImpl({}, rpcs, manager);
-  BackendIpc.initialize(manager);
 
   if (maximizeWindow) {
     manager.mainWindow.maximize(); // maximize before showing to avoid resize event on startup

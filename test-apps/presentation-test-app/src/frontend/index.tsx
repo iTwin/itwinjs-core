@@ -10,9 +10,8 @@ import { Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import {
   BentleyCloudRpcManager, BentleyCloudRpcParams, ElectronRpcConfiguration, ElectronRpcManager, RpcConfiguration,
 } from "@bentley/imodeljs-common";
-import { IModelApp } from "@bentley/imodeljs-frontend";
+import { FrontendIpc, IModelApp } from "@bentley/imodeljs-frontend";
 import { PresentationUnitSystem } from "@bentley/presentation-common";
-import { electronFrontendIpc } from "@bentley/electron-manager/lib/ElectronFrontendIpc";
 // __PUBLISH_EXTRACT_START__ Presentation.Frontend.Imports
 import { Presentation } from "@bentley/presentation-frontend";
 // __PUBLISH_EXTRACT_END__
@@ -29,7 +28,9 @@ Logger.setLevelDefault(LogLevel.Warning);
 (function initRpc() {
   RpcConfiguration.developmentMode = true;
   if (ElectronRpcConfiguration.isElectron) {
-    ElectronRpcManager.initializeClient({}, rpcs, electronFrontendIpc);
+    const ipc = require("@bentley/electron-manager/lib/ElectronFrontendIpc").electronFrontendIpc;
+    FrontendIpc.initialize(ipc);
+    ElectronRpcManager.initializeClient({}, rpcs, ipc);
   } else {
     const rpcParams: BentleyCloudRpcParams = { info: { title: "presentation-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
     // __PUBLISH_EXTRACT_START__ Presentation.Frontend.RpcInterface

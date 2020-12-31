@@ -8,9 +8,8 @@ import { BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, Browse
 import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import { BentleyCloudRpcManager, DesktopAuthorizationClientConfiguration, ElectronRpcManager, IModelVersion, MobileAuthorizationClientConfiguration, MobileRpcConfiguration, MobileRpcManager, RpcConfiguration, SyncMode } from "@bentley/imodeljs-common";
-import { electronFrontendIpc } from "@bentley/electron-manager/lib/ElectronFrontendIpc";
 import {
-  AccuSnap, AuthorizedFrontendRequestContext, DesktopAuthorizationClient, ExternalServerExtensionLoader, IModelApp,
+  AccuSnap, AuthorizedFrontendRequestContext, DesktopAuthorizationClient, ExternalServerExtensionLoader, FrontendIpc, IModelApp,
   IModelAppOptions, IModelConnection, MobileAuthorizationClient, NativeApp, NativeAppLogger, RenderSystem, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool, ViewState,
 } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
@@ -733,7 +732,9 @@ async function main() {
 
   const rpcInterfaces = getSupportedRpcs();
   if (isElectronRenderer) {
-    ElectronRpcManager.initializeClient({}, rpcInterfaces, electronFrontendIpc);
+    const ipc = require("@bentley/electron-manager/lib/ElectronFrontendIpc").electronFrontendIpc;
+    FrontendIpc.initialize(ipc);
+    ElectronRpcManager.initializeClient({}, rpcInterfaces, ipc);
   } else if (MobileRpcConfiguration.isMobileFrontend) {
     MobileRpcManager.initializeClient(rpcInterfaces);
   } else if (process.env.imjs_gp_backend) {

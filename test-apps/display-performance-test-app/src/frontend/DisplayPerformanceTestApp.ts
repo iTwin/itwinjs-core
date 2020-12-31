@@ -16,7 +16,7 @@ import {
 } from "@bentley/imodeljs-common";
 import {
   AuthorizedFrontendRequestContext, DesktopAuthorizationClient, DisplayStyle3dState, DisplayStyleState, EntityState, FeatureOverrideProvider,
-  FeatureSymbology, FrontendRequestContext, GLTimerResult, IModelApp, IModelAppOptions, IModelConnection, PerformanceMetrics, Pixel, RenderSystem,
+  FeatureSymbology, FrontendIpc, FrontendRequestContext, GLTimerResult, IModelApp, IModelAppOptions, IModelConnection, PerformanceMetrics, Pixel, RenderSystem,
   ScreenViewport, SnapshotConnection, Target, TileAdmin, Viewport, ViewRect, ViewState,
 } from "@bentley/imodeljs-frontend";
 import { System } from "@bentley/imodeljs-frontend/lib/webgl";
@@ -26,7 +26,6 @@ import { ProjectShareClient, ProjectShareFile, ProjectShareFileQuery, ProjectSha
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { initializeIModelHub } from "./ConnectEnv";
 import { IModelApi } from "./IModelApi";
-import { electronFrontendIpc } from "@bentley/electron-manager/lib/ElectronFrontendIpc";
 
 let curRenderOpts: RenderSystem.Options = {}; // Keep track of the current render options (disabled webgl extensions and enableOptimizedSurfaceShaders flag)
 let curTileProps: TileAdmin.Props = {}; // Keep track of whether or not instancing has been enabled
@@ -1626,7 +1625,9 @@ window.onload = async () => {
   RpcConfiguration.disableRoutingValidation = true;
 
   if (ElectronRpcConfiguration.isElectron) {
-    ElectronRpcManager.initializeClient({}, [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface], electronFrontendIpc);
+    const ipc = require("@bentley/electron-manager/lib/ElectronFrontendIpc").electronFrontendIpc;
+    FrontendIpc.initialize(ipc);
+    ElectronRpcManager.initializeClient({}, [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface], ipc);
   } else if (MobileRpcConfiguration.isMobileFrontend) {
     MobileRpcManager.initializeClient([DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]);
   } else {

@@ -14,7 +14,7 @@ export class FrontendIpc {
   public static initialize(ipc: IpcSocketFrontend) { this._ipc = ipc; }
   public static get isValid(): boolean { return undefined !== this._ipc; }
 
-  public static async backendCall(channelName: string, methodName: string, ...args: any[]): Promise<any> {
+  public static async callBackend(channelName: string, methodName: string, ...args: any[]): Promise<any> {
     const retVal = (await FrontendIpc.ipc.invoke(channelName, methodName, ...args)) as IpcInvokeReturn;
     if (undefined !== retVal.error)
       throw new BackendError(retVal.error.errorNumber, retVal.error.name, retVal.error.message);

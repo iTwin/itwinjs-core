@@ -8,7 +8,7 @@
 
 import { BeEvent, Config, GuidString, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseDownloader, BriefcaseProps, Events, IModelError, IModelVersion, InternetConnectivityStatus, LocalBriefcaseProps, nativeAppChannel,
+  BriefcaseDownloader, BriefcaseProps, Events, IModelError, IModelVersion, InternetConnectivityStatus, iTwinChannel, LocalBriefcaseProps, nativeAppChannel,
   NativeAppIpc, nativeAppIpcVersion, OpenBriefcaseProps, OverriddenBy, RequestNewBriefcaseProps, RpcRegistry, StorageValue, SyncMode,
 } from "@bentley/imodeljs-common";
 import { ProgressCallback, ProgressInfo, RequestGlobalOptions } from "@bentley/itwin-client";
@@ -34,8 +34,8 @@ export interface DownloadBriefcaseOptions {
  * @internal
  */
 export class NativeApp {
-  public static backendCall<T extends keyof NativeAppIpc>(name: T, ...args: Parameters<NativeAppIpc[T]>): ReturnType<NativeAppIpc[T]> {
-    return FrontendIpc.backendCall(nativeAppChannel, name, ...args) as ReturnType<NativeAppIpc[T]>;
+  public static callBackend<T extends keyof NativeAppIpc>(name: T, ...args: Parameters<NativeAppIpc[T]>): ReturnType<NativeAppIpc[T]> {
+    return FrontendIpc.callBackend(nativeAppChannel, name, ...args) as ReturnType<NativeAppIpc[T]>;
   }
 
   private static _storages = new Map<string, Storage>();
@@ -47,7 +47,7 @@ export class NativeApp {
   };
   private static async setConnectivity(by: OverriddenBy, status: InternetConnectivityStatus) {
     RequestGlobalOptions.online = (status === InternetConnectivityStatus.Online);
-    await this.backendCall("overrideInternetConnectivity", by, status);
+    await this.callBackend("overrideInternetConnectivity", by, status);
   }
   private constructor() { }
   private static hookBrowserConnectivityEvents() {
@@ -65,10 +65,10 @@ export class NativeApp {
   public static onInternetConnectivityChanged = new BeEvent<(status: InternetConnectivityStatus) => void>();
   public static onMemoryWarning = new BeEvent<() => void>();
   public static async checkInternetConnectivity(): Promise<InternetConnectivityStatus> {
-    return this.backendCall("checkInternetConnectivity");
+    return this.callBackend("checkInternetConnectivity");
   }
   public static async overrideInternetConnectivity(status: InternetConnectivityStatus): Promise<void> {
-    return this.backendCall("overrideInternetConnectivity", OverriddenBy.User, status);
+    return this.callBackend("overrideInternetConnectivity", OverriddenBy.User, status);
   }
   private static _isValid = false;
   public static get isValid(): boolean { return this._isValid; }
@@ -78,12 +78,12 @@ export class NativeApp {
    */
   public static async startup(opts?: IModelAppOptions) {
     Logger.logInfo(FrontendLoggerCategory.NativeApp, "Startup");
-    const ipcVersion = await NativeApp.backendCall("getVersion");
+    const ipcVersion = await NativeApp.callBackend("getVersion");
     if (ipcVersion !== nativeAppIpcVersion) {
       throw new IModelError(IModelStatus.BadArg, `NativeAppIpc version wrong: backend(${ipcVersion}) vs. frontend(${nativeAppIpcVersion})`);
     }
     await IModelApp.startup(opts);
-    const backendConfig = await this.backendCall("getConfig");
+    const backendConfig = await this.callBackend("getConfig");
     Config.App.merge(backendConfig);
     NativeApp.hookBrowserConnectivityEvents();
     // initialize current state.
@@ -121,19 +121,16 @@ export class NativeApp {
     requestContext.enter();
 
     let stopProgressEvents = () => { };
-    const reportProgress = progress !== undefined;
-    if (reportProgress) {
-      stopProgressEvents = EventSource.global.on(
-        Events.NativeApp.namespace,
-        `${Events.NativeApp.onBriefcaseDownloadProgress}-${iModelId}`, (data: any) => {
-          progress!(data.progress as ProgressInfo);
-        });
+    if (progress !== undefined) {
+      stopProgressEvents = FrontendIpc.ipc.receive(iTwinChannel(`nativeApp.progress-${iModelId}`), (_evt, data: { loaded: number, total: number }) => {
+        progress(data);
+      });
     }
 
-    const briefcaseId = downloadOptions.syncMode === SyncMode.PullOnly ? 0 : await this.backendCall("acquireNewBriefcaseId", iModelId);
+    const briefcaseId = downloadOptions.syncMode === SyncMode.PullOnly ? 0 : await this.callBackend("acquireNewBriefcaseId", iModelId);
     requestContext.enter();
 
-    const fileName = downloadOptions.fileName ?? await this.backendCall("getBriefcaseFileName", { briefcaseId, iModelId });
+    const fileName = downloadOptions.fileName ?? await this.callBackend("getBriefcaseFileName", { briefcaseId, iModelId });
     requestContext.enter();
 
     const requestProps: RequestNewBriefcaseProps = { iModelId, briefcaseId, contextId, asOf: asOf.toJSON(), fileName };
@@ -143,20 +140,16 @@ export class NativeApp {
       locRequestContext.enter();
       try {
         locRequestContext.useContextForRpc = true;
-        await this.backendCall("downloadBriefcase", requestProps, reportProgress);
+        await this.callBackend("downloadBriefcase", requestProps, progress !== undefined);
       } finally {
         stopProgressEvents();
       }
     };
 
     const requestCancel = async (): Promise<boolean> => {
-      const locRequestContext = new FrontendRequestContext();
-      locRequestContext.enter();
-      let status = false;
-      status = await this.backendCall("requestCancelDownloadBriefcase", fileName);
-      if (status) {
+      const status = await this.callBackend("requestCancelDownloadBriefcase", fileName);
+      if (status)
         stopProgressEvents();
-      }
       return status;
     };
 
@@ -164,7 +157,7 @@ export class NativeApp {
   }
 
   public static async getBriefcaseFileName(props: BriefcaseProps): Promise<string> {
-    return this.backendCall("getBriefcaseFileName", props);
+    return this.callBackend("getBriefcaseFileName", props);
   }
 
   /** Delete an existing briefcase
@@ -177,7 +170,7 @@ export class NativeApp {
     const requestContext = new FrontendRequestContext();
     requestContext.enter();
     requestContext.useContextForRpc = true;
-    await this.backendCall("deleteBriefcaseFiles", fileName);
+    await this.callBackend("deleteBriefcaseFiles", fileName);
   }
 
   public static async openBriefcase(briefcaseProps: OpenBriefcaseProps): Promise<LocalBriefcaseConnection> {
@@ -194,7 +187,7 @@ export class NativeApp {
     if (!IModelApp.initialized)
       throw new IModelError(IModelStatus.BadRequest, "Call NativeApp.startup() before calling downloadBriefcase");
     requestContext.useContextForRpc = true;
-    await this.backendCall("closeBriefcase", connection.key);
+    await this.callBackend("closeBriefcase", connection.key);
   }
 
   /**
@@ -205,7 +198,7 @@ export class NativeApp {
     if (!IModelApp.initialized)
       throw new IModelError(IModelStatus.BadRequest, "Call NativeApp.startup() before calling downloadBriefcase");
 
-    return this.backendCall("getCachedBriefcases", iModelId);
+    return this.callBackend("getCachedBriefcases", iModelId);
   }
 
   /**
@@ -217,7 +210,7 @@ export class NativeApp {
     if (this._storages.has(name)) {
       return this._storages.get(name)!;
     }
-    const storage = new Storage(await this.backendCall("storageMgrOpen", name));
+    const storage = new Storage(await this.callBackend("storageMgrOpen", name));
     this._storages.set(storage.id, storage);
     return storage;
   }
@@ -231,7 +224,7 @@ export class NativeApp {
     if (!this._storages.has(storage.id)) {
       throw new Error(`Storage [Id=${storage.id}] not found`);
     }
-    await this.backendCall("storageMgrClose", storage.id, deleteId);
+    await this.callBackend("storageMgrClose", storage.id, deleteId);
     (storage as any)._isOpen = false;
     this._storages.delete(storage.id);
   }
@@ -241,7 +234,7 @@ export class NativeApp {
    * @returns return list of storage available on disk.
    */
   public static async getStorageNames(): Promise<string[]> {
-    return NativeApp.backendCall("storageMgrNames");
+    return NativeApp.callBackend("storageMgrNames");
   }
 }
 
@@ -262,7 +255,7 @@ export class Storage {
     if (!this._isOpen) {
       throw new Error(`Storage [Id=${this.id}] is not open`);
     }
-    return NativeApp.backendCall("storageGet", this.id, key);
+    return NativeApp.callBackend("storageGet", this.id, key);
   }
 
   /**
@@ -275,7 +268,7 @@ export class Storage {
     if (!this._isOpen) {
       throw new Error(`Storage [Id=${this.id}] is not open`);
     }
-    return NativeApp.backendCall("storageSet", this.id, key, value);
+    return NativeApp.callBackend("storageSet", this.id, key, value);
   }
 
   /**
@@ -287,7 +280,7 @@ export class Storage {
     if (!this._isOpen) {
       throw new Error(`Storage [Id=${this.id}] is not open`);
     }
-    return NativeApp.backendCall("storageKeys", this.id);
+    return NativeApp.callBackend("storageKeys", this.id);
   }
 
   /**
@@ -298,7 +291,7 @@ export class Storage {
     if (!this._isOpen) {
       throw new Error(`Storage [Id=${this.id}] is not open`);
     }
-    return NativeApp.backendCall("storageRemove", this.id, key);
+    return NativeApp.callBackend("storageRemove", this.id, key);
   }
 
   /**
@@ -309,7 +302,7 @@ export class Storage {
     if (!this._isOpen) {
       throw new Error(`Storage [Id=${this.id}] is not open`);
     }
-    return NativeApp.backendCall("storageRemoveAll", this.id);
+    return NativeApp.callBackend("storageRemoveAll", this.id);
   }
 
   /**

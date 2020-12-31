@@ -5,8 +5,7 @@
 // __PUBLISH_EXTRACT_START__ RpcInterface.implementation
 import { IModelRpcProps, RpcInterface, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import { Id64String } from "@bentley/bentleyjs-core";
-import { IModelDb } from "@bentley/imodeljs-backend";
-import { ElectronManager } from "@bentley/electron-manager";
+import { BackendIpc, IModelDb } from "@bentley/imodeljs-backend";
 import { RobotWorldEngine } from "./RobotWorldEngine";
 import { RobotWorldReadRpcInterface } from "../common/RobotWorldRpcInterface";
 
@@ -61,6 +60,8 @@ export function initializeRpcImplBentleyCloud(interfaces: RpcInterfaceDefinition
 import { ElectronRpcManager } from "@bentley/imodeljs-common";
 
 export function initializeRpcImplDesktop(interfaces: RpcInterfaceDefinition[]) {
-  ElectronRpcManager.initializeImpl({}, interfaces, new ElectronManager());
+  const electronManager = new (require("@bentley/electron-manager").ElectronManager)();
+  BackendIpc.initialize(electronManager);
+  ElectronRpcManager.initializeImpl({}, interfaces, electronManager);
 }
 // __PUBLISH_EXTRACT_END__

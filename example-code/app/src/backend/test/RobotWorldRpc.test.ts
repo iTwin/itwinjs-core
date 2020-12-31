@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { IModelApp, IModelConnection, NoRenderApp, SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { FrontendIpc, IModelApp, IModelConnection, NoRenderApp, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { IModelJsFs, PhysicalModel, StandaloneDb } from "@bentley/imodeljs-backend";
 import {
   GeometricElement3dProps, IModel, IModelReadRpcInterface, IModelRpcProps, IModelWriteRpcInterface, SnapshotIModelRpcInterface, TestRpcManager,
@@ -14,7 +14,6 @@ import { KnownTestLocations } from "./KnownTestLocations";
 import { ClientRequestContext, Id64, Id64String, OpenMode } from "@bentley/bentleyjs-core";
 import { IModelTestUtils } from "./Utils";
 import { Angle, Point3d } from "@bentley/geometry-core";
-import { electronFrontendIpc } from "@bentley/electron-manager/lib/ElectronFrontendIpc";
 import { RobotWorld } from "../RobotWorldSchema";
 
 const requestContext = new ClientRequestContext();
@@ -141,6 +140,8 @@ export function initializeRpcClientBentleyCloud(interfaces: RpcInterfaceDefiniti
 import { ElectronRpcManager } from "@bentley/imodeljs-common";
 
 export function initializeRpcClientDesktop(interfaces: RpcInterfaceDefinition[]) {
-  ElectronRpcManager.initializeClient({}, interfaces, electronFrontendIpc);
+  const ipc = require("@bentley/electron-manager/lib/ElectronFrontendIpc").electronFrontendIpc;
+  FrontendIpc.initialize(ipc);
+  ElectronRpcManager.initializeClient({}, interfaces, ipc);
 }
 // __PUBLISH_EXTRACT_END__

@@ -94,10 +94,13 @@ export class ElectronManager implements IpcSocketBackend {
     ipcMain.addListener(channel, listener);
     return () => ipcMain.removeListener(channel, listener);
   }
-  public send(message: string, ...args: any[]): void {
-    this.mainWindow!.webContents.send(message, ...args);
+  public send(channel: string, ...args: any[]): void {
+    const windows = BrowserWindow.getAllWindows();
+    const window = this.mainWindow ?? windows[0];
+    window?.webContents.send(channel, ...args);
   }
   public handle(channel: string, listener: (evt: any, ...args: any[]) => Promise<any>): RemoveFunction {
+    ipcMain.removeHandler(channel); // make sure there's not already a handler registered
     ipcMain.handle(channel, listener);
     return () => ipcMain.removeHandler(channel);
   }

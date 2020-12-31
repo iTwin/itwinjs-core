@@ -25,7 +25,7 @@ export default async function initialize(rpcs: RpcInterfaceDefinition[]) {
 
   await manager.initialize();
 
-  ElectronRpcManager.initializeImpl({}, rpcs, manager);
   BackendIpc.initialize(manager);
+  ElectronRpcManager.initializeImpl({}, rpcs, manager);
   // __PUBLISH_EXTRACT_END__
 }

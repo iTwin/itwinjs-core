@@ -20,6 +20,7 @@ export abstract class IpcHandler implements IpcInterface {
   public abstract getVersion(): Promise<string>;
 
   public static register(): RemoveFunction {
+
     const impl = new (this as any)();
     return BackendIpc.ipc.handle(impl.channelName, async (_evt: any, funcName: string, ...args: any[]): Promise<IpcInvokeReturn> => {
       const func = impl[funcName];

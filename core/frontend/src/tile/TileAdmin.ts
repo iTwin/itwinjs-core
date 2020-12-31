@@ -866,7 +866,7 @@ class Admin extends TileAdmin {
         }
 
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        NativeApp.backendCall("cancelTileContentRequests", iModelConnection.getRpcProps(), treeContentIds);
+        NativeApp.callBackend("cancelTileContentRequests", iModelConnection.getRpcProps(), treeContentIds);
       }
 
       this._canceledIModelTileRequests.clear();
@@ -875,7 +875,7 @@ class Admin extends TileAdmin {
     if (this._canceledElementGraphicsRequests && this._canceledElementGraphicsRequests.size > 0) {
       for (const [connection, requestIds] of this._canceledElementGraphicsRequests) {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        NativeApp.backendCall("cancelElementGraphicsRequests", connection.getRpcProps(), requestIds);
+        NativeApp.callBackend("cancelElementGraphicsRequests", connection.getRpcProps(), requestIds);
         this._totalAbortedRequests += requestIds.length;
       }
 

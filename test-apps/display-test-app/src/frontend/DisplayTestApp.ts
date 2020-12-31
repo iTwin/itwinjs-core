@@ -12,10 +12,9 @@ import {
   RpcConfiguration, RpcInterfaceDefinition, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, TileContentIdentifier,
 } from "@bentley/imodeljs-common";
 import {
-  DesktopAuthorizationClient, FrontendRequestContext, IModelApp, IModelConnection, MobileAuthorizationClient, RenderDiagnostics, RenderSystem,
+  DesktopAuthorizationClient, FrontendIpc, FrontendRequestContext, IModelApp, IModelConnection, MobileAuthorizationClient, RenderDiagnostics, RenderSystem,
 } from "@bentley/imodeljs-frontend";
 import { AccessToken } from "@bentley/itwin-client";
-import { electronFrontendIpc } from "@bentley/electron-manager/lib/ElectronFrontendIpc";
 import { WebGLExtensionName } from "@bentley/webgl-compatibility";
 import { DtaConfiguration } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
@@ -216,7 +215,9 @@ const dtaFrontendMain = async () => {
   ];
 
   if (ElectronRpcConfiguration.isElectron) {
-    ElectronRpcManager.initializeClient({}, rpcInterfaces, electronFrontendIpc);
+    const ipc = require("@bentley/electron-manager/lib/ElectronFrontendIpc").electronFrontendIpc;
+    FrontendIpc.initialize(ipc);
+    ElectronRpcManager.initializeClient({}, rpcInterfaces, ipc);
   } else if (MobileRpcConfiguration.isMobileFrontend) {
     MobileRpcManager.initializeClient(rpcInterfaces);
   } else {

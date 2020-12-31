@@ -42,7 +42,7 @@ import { AzureFileHandler, BackendFeatureUsageTelemetryClient, ClientAuthIntrosp
 import { MobileFileHandler } from "./MobileFileHandler";
 import { EventSink } from "./EventSink";
 import { BackendIpc } from "./ipc/BackendIpc";
-import { NativeAppIpcImpl } from "./ipc/NativeAppIpcImpl";
+import { NativeAppImpl } from "./ipc/NativeAppImpl";
 
 const loggerCategory: string = BackendLoggerCategory.IModelHost;
 
@@ -462,7 +462,7 @@ export class IModelHost {
 
     if (BackendIpc.isValid) {
       [
-        NativeAppIpcImpl,
+        NativeAppImpl,
       ].forEach((ipcHandler) => ipcHandler.register());
     }
 
@@ -642,6 +642,7 @@ export class Platform {
 
   /** The Electron info object, if this is running in Electron.
    * @beta
+   * @deprecated
    */
   public static get electron(): any {
     if ((typeof (process) !== "undefined") && ("electron" in process.versions)) {

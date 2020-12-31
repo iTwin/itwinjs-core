@@ -8,9 +8,8 @@ import "@bentley/oidc-signin-tool/lib/certa/certaBackend";
 import { Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { IModelJsExpressServer } from "@bentley/express-server";
-import { IModelHostConfiguration, NativeAppBackend } from "@bentley/imodeljs-backend";
+import { BackendIpc, IModelHostConfiguration, NativeAppBackend } from "@bentley/imodeljs-backend";
 import { BentleyCloudRpcManager, ElectronRpcConfiguration, ElectronRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
-import { ElectronManager } from "@bentley/electron-manager";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
 import * as path from "path";
@@ -23,6 +22,20 @@ async function init() {
 
   // Bootstrap the cloud environment
   await CloudEnv.initialize();
+
+  if (ElectronRpcConfiguration.isElectron) {
+    const electronManager = new (require("@bentley/electron-manager").ElectronManager)();
+    BackendIpc.initialize(electronManager);
+    ElectronRpcManager.initializeImpl({}, rpcInterfaces, electronManager);
+  } else {
+    const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "full-stack-test", version: "v1.0" } }, rpcInterfaces);
+
+    // create a basic express web server
+    const port = Number(process.env.CERTA_PORT || 3011) + 2000;
+    const server = new IModelJsExpressServer(rpcConfig.protocol);
+    await server.initialize(port);
+    console.log(`Web backend for full-stack-tests listening on port ${port}`);
+  }
 
   // Start the backend
   const hostConfig = new IModelHostConfiguration();
@@ -37,18 +50,6 @@ async function init() {
   Logger.setLevel("imodeljs-backend.IModelDb", LogLevel.Error);  // Change to trace to debug
   Logger.setLevel("Performance", LogLevel.Error);  // Change to Info to capture
   Logger.setLevel("imodeljs-backend.ConcurrencyControl", LogLevel.Trace);
-
-  if (ElectronRpcConfiguration.isElectron) {
-    ElectronRpcManager.initializeImpl({}, rpcInterfaces, new ElectronManager());
-  } else {
-    const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "full-stack-test", version: "v1.0" } }, rpcInterfaces);
-
-    // create a basic express web server
-    const port = Number(process.env.CERTA_PORT || 3011) + 2000;
-    const server = new IModelJsExpressServer(rpcConfig.protocol);
-    await server.initialize(port);
-    console.log(`Web backend for full-stack-tests listening on port ${port}`);
-  }
 }
 
 module.exports = init();

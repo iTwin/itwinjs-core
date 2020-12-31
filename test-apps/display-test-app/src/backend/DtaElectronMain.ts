@@ -6,7 +6,7 @@ import { app, dialog } from "electron";
 import * as path from "path";
 import { assert } from "@bentley/bentleyjs-core";
 import { ElectronManagerOptions, IModelJsElectronManager, WebpackDevServerElectronManager } from "@bentley/electron-manager";
-import { ElectronRpcManager } from "@bentley/imodeljs-common";
+import { ElectronRpcManager, iTwinChannel } from "@bentley/imodeljs-common";
 import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
 import { BackendIpc } from "@bentley/imodeljs-backend";
 
@@ -35,10 +35,6 @@ const getWindowSize = () => {
  * that starts from the file "index.ts". That launches the iModel.js frontend (IModelApp).
  */
 const dtaElectronMain = async () => {
-  // first initialize display-test-app backend
-  await initializeDtaBackend();
-
-
   const opts: ElectronManagerOptions = {
     webResourcesPath: path.join(__dirname, "..", "..", "build"),
     iconName: "display-test-app.ico",
@@ -47,6 +43,16 @@ const dtaElectronMain = async () => {
   const manager = (process.env.NODE_ENV === "development") ?
     new WebpackDevServerElectronManager(opts) : // port should match the port of the local dev server
     new IModelJsElectronManager(opts);
+
+  BackendIpc.initialize(manager);
+
+  // Initialize rpcs for the backend
+  ElectronRpcManager.initializeImpl({}, getRpcInterfaces(), manager);
+
+  // handler for the "openFile" ipc request from the frontend
+  manager.handle(iTwinChannel("dta.openFile"), async (_event, options) => dialog.showOpenDialog(options));
+
+  await initializeDtaBackend();
 
   const autoOpenDevTools = (undefined === process.env.SVT_NO_DEV_TOOLS);
   const maximizeWindow = (undefined === process.env.SVT_NO_MAXIMIZE_WINDOW);
@@ -86,13 +92,6 @@ const dtaElectronMain = async () => {
     });
   }
 
-  BackendIpc.initialize(manager);
-
-  // Initialize rpcs for the backend
-  ElectronRpcManager.initializeImpl({}, getRpcInterfaces(), manager);
-
-  // handler for the "openFile" ipc request from the frontend
-  manager.handle(iTwinChannel("dta.openFile"), async (_event, options) => dialog.showOpenDialog(options));
 };
 
 // execute this immediately when we load

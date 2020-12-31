@@ -9,23 +9,22 @@
 
 import { ClientRequestContext, Config, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseProps, Events, IModelConnectionProps, IModelError, IModelRpcProps, InternetConnectivityStatus, LocalBriefcaseProps,
+  BriefcaseProps, IModelConnectionProps, IModelError, IModelRpcProps, InternetConnectivityStatus, iTwinChannel, LocalBriefcaseProps,
   MobileAuthorizationClientConfiguration, nativeAppChannel, NativeAppIpc, nativeAppIpcVersion, OpenBriefcaseProps, OverriddenBy,
   RequestNewBriefcaseProps, StorageValue, TileTreeContentIds,
 } from "@bentley/imodeljs-common";
-import { EmitStrategy, IModelJsNative } from "@bentley/imodeljs-native";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BriefcaseManager } from "../BriefcaseManager";
 import { Downloads } from "../CheckpointManager";
-import { EventSink } from "../EventSink";
 import { BriefcaseDb, IModelDb } from "../IModelDb";
 import { MobileDevice } from "../MobileDevice";
 import { NativeAppBackend } from "../NativeAppBackend";
 import { NativeAppStorage } from "../NativeAppStorage";
 import { cancelTileContentRequests } from "../rpc-impl/IModelTileRpcImpl";
-import { IpcHandler } from "./BackendIpc";
+import { BackendIpc, IpcHandler } from "./BackendIpc";
 
-export class NativeAppIpcImpl extends IpcHandler implements NativeAppIpc {
+export class NativeAppImpl extends IpcHandler implements NativeAppIpc {
 
   public get channelName() { return nativeAppChannel; }
   public async getVersion() { return nativeAppIpcVersion; }
@@ -66,21 +65,22 @@ export class NativeAppIpcImpl extends IpcHandler implements NativeAppIpc {
 
     const args = {
       ...request,
-      abort: 0,
-      onProgress: (_a: number, _b: number) => args.abort,
+      onProgress: (_a: number, _b: number) => checkAbort(),
     };
 
     if (reportProgress) {
       args.onProgress = (loaded, total) => {
-        EventSink.global.emit(
-          Events.NativeApp.namespace,
-          `${Events.NativeApp.onBriefcaseDownloadProgress}-${request.iModelId}`,
-          { loaded, total }, { strategy: EmitStrategy.PurgeOlderEvents });
-        return args.abort;
+        BackendIpc.ipc.send(iTwinChannel(`nativeApp.progress-${request.iModelId}`), { loaded, total });
+        return checkAbort();
       };
     }
 
-    return BriefcaseManager.downloadBriefcase(requestContext, args);
+    const downloadPromise = BriefcaseManager.downloadBriefcase(requestContext, args);
+    const checkAbort = () => {
+      const job = Downloads.isInProgress(args.fileName!);
+      return (job && (job.request as any).abort === 1) ? 1 : 0;
+    };
+    return downloadPromise;
   }
 
   public async requestCancelDownloadBriefcase(fileName: string): Promise<boolean> {
