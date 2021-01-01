@@ -438,7 +438,6 @@ export class BackgroundMapLocation {
       return;
     }
 
-
     origin.z = 0; // always use ground plane
     const ecefToDb = await calculateEcefToDbTransformAtLocation(origin, iModel);
     if (undefined !== ecefToDb)
