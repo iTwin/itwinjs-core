@@ -491,8 +491,6 @@ export class BriefcaseManager {
     static getCompatibilityPath(iModelId: GuidString): string;
     static getFileName(briefcase: BriefcaseProps): string;
     static getIModelPath(iModelId: GuidString): string;
-    // @internal (undocumented)
-    static get imodelClient(): IModelClient;
     static initialize(cacheRootDir: string, compatibilityDir: string): void;
     static isStandaloneBriefcaseId(id: BriefcaseId): boolean;
     static isValidBriefcaseId(id: BriefcaseId): boolean;
@@ -2545,7 +2543,7 @@ export abstract class IModelDb extends IModel {
     updateEcefLocation(ecef: EcefLocation): void;
     updateIModelProps(): void;
     updateProjectExtents(newExtents: AxisAlignedBox3d): void;
-    static validateSchemas(pathName: string, forReadWrite: boolean): SchemaState;
+    static validateSchemas(filePath: string, forReadWrite: boolean): SchemaState;
     // (undocumented)
     readonly views: IModelDb.Views;
     // @internal
@@ -3880,10 +3878,10 @@ export class StandaloneDb extends IModelDb {
     get filePath(): string;
     // (undocumented)
     static findByKey(key: string): StandaloneDb;
-    static openFile(pathName: string, openMode?: OpenMode, options?: StandaloneOpenOptions): StandaloneDb;
+    static openFile(filePath: string, openMode?: OpenMode, options?: StandaloneOpenOptions): StandaloneDb;
     // (undocumented)
     static tryFindByKey(key: string): StandaloneDb | undefined;
-    static upgradeSchemas(pathName: string): void;
+    static upgradeSchemas(filePath: string): void;
 }
 
 // @internal
