@@ -893,7 +893,7 @@ export abstract class IModelDb extends IModel {
   /**
    * Determines if the schemas in the Db must or can be upgraded by comparing them with those included in the
    * current version of the software.
-   * @param filePath Full name of the briefcase including it's path
+   * @param filePath Full name of the briefcase including path
    * @param forReadWrite Pass true if validating for read-write scenarios - note that the schema version requirements
    * for opening the DgnDb read-write is more stringent than when opening the database read-only
    * @throws [[IModelError]] If the Db was in an invalid state and that causes a problem with validating schemas
@@ -2438,8 +2438,10 @@ export class BriefcaseDb extends IModelDb {
     const nativeDb = this.openDgnDb({ path: briefcaseProps.fileName }, openMode, upgradeOptions);
     assert(!nativeDb.hasUnsavedChanges(), "Expected schema upgrade to have saved any changes made");
     const changeSetId = nativeDb.getParentChangeSetId();
-    if (!nativeDb.hasPendingTxns())
+    if (!nativeDb.hasPendingTxns()) {
+      nativeDb.closeIModel();
       return changeSetId;
+    }
     const reversedChangeSetId = nativeDb.getReversedChangeSetId();
     assert(reversedChangeSetId === undefined, "Expected schema upgrade to have failed if there were reversed changes in the briefcase");
 
@@ -2450,11 +2452,11 @@ export class BriefcaseDb extends IModelDb {
       changeSetId,
       openMode,
     };
-    if (token.iModelId !== briefcaseProps.iModelId || token.contextId !== briefcaseProps.contextId || nativeDb.getParentChangeSetId() !== briefcaseProps.changeSetId)
-      throw new IModelError(BentleyStatus.ERROR, "Local briefcase does not match the briefcase properties passed in to upgrade", Logger.logError, loggerCategory, () => ({ briefcaseProps, localBriefcase: token }));
-
     const briefcaseDb = new BriefcaseDb(nativeDb, token, openMode);
     try {
+      if (token.iModelId !== briefcaseProps.iModelId || token.contextId !== briefcaseProps.contextId || nativeDb.getParentChangeSetId() !== briefcaseProps.changeSetId)
+        throw new IModelError(BentleyStatus.ERROR, "Local briefcase does not match the briefcase properties passed in to upgrade", Logger.logError, loggerCategory, () => ({ briefcaseProps, localBriefcase: token }));
+
       await BriefcaseManager.pushChanges(requestContext, briefcaseDb, changeSetDescription, ChangesType.Schema);
       requestContext.enter();
       return nativeDb.getParentChangeSetId();
