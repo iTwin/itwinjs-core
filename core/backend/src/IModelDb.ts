@@ -897,7 +897,7 @@ export abstract class IModelDb extends IModel {
    * @param forReadWrite Pass true if validating for read-write scenarios - note that the schema version requirements
    * for opening the DgnDb read-write is more stringent than when opening the database read-only
    * @throws [[IModelError]] If the Db was in an invalid state and that causes a problem with validating schemas
-   * @see [BriefcaseDb.upgradeSchemas]($imodeljs-backend) or [StandaloneDb.upgradeSchemas]($imodeljs-backend)
+   * @see [[BriefcaseDb.upgradeSchemas]] or [[StandaloneDb.upgradeSchemas]]
    * @see ($docs/learning/backend/IModelDb.md#upgrading-schemas-in-an-imodel)
    */
   public static validateSchemas(filePath: string, forReadWrite: boolean): SchemaState {
