@@ -33,12 +33,10 @@ There are two kinds of schemas that typically get upgraded:
 The iModel.js API provides for a way to validate (check compatibility) and upgrade all the schemas in the iModel. To upgrade -
 * Download a local copy of the iModel as a briefcase with [BriefcaseManager.downloadBriefcase]($backend)
 * Call [BriefcaseDb.validateSchemas]($backend) to validate the schemas in the iModel.
-* Call [BriefcaseDb.upgradeSchemas]($backend) to upgrade schemas - the upgrade process involves:
+* Call [BriefcaseDb.upgradeSchemas]($backend) to upgrade schemas - the upgrade process involves the following steps first for the profile upgrade, and then for the domain schema upgrade:
   - acquiring a schema lock to avoid concurrent schema changes by different users
   - opening the local briefcase
-  - making the necessary profile schema changes to the briefcase (if the profile version has been upgraded in the current version of the software)
-  - capturing these profile changes as a ChangeSet and pushing it to iModel Hub
-  - importing the latest copies of the domain ECSchemas to the briefcase (if there is a newer version included in the current version of the software)
+  - making the necessary schema changes to the briefcase
   - capturing these schema changes (if any) as a ChangeSet and pushing it to iModel Hub
   - releasing the schema lock
   - closing the local briefcase
