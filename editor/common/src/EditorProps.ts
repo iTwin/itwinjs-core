@@ -6,11 +6,10 @@
  * @module Editing
  */
 
-/** @alpha */
-export const editCommandApi = {
-  start: "editcmd.start",
-  call: "editcmd.call",
-};
+import { IpcInterface, iTwinChannel } from "@bentley/imodeljs-common";
+
+export const editorAppChannel = iTwinChannel("editor");
+export const editorAppIpcVersion = "1.0.0";
 
 /** @alpha */
 export type CommandError =
@@ -19,29 +18,13 @@ export type CommandError =
   "MethodNotFound" |
   "NoActiveCommand";
 
-/**
- * The result from an EditCommand passed from the backend to the frontend, where exceptions can't be used.
- * There can either be a result member or an error value, but never both.
- * @alpha
- */
-export type CommandResult<T> = { result?: T, error?: never } | { error: CommandError, details?: any, result?: never };
-
 /** @alpha */
-export interface PingResult {
-  commandId?: string;
-  version?: string;
-  [propName: string]: any;
+export interface EditorAppIpc extends IpcInterface {
+  startCommand: (commandId: string, iModelKey: string, ...args: any[]) => Promise<any>;
+  call: (name: string, ...args: any[]) => Promise<any>;
 }
 
 /** @alpha */
-export interface CommandMethodProps<T> {
-  name: string;
-  args?: T;
-}
-
-/** @alpha */
-export interface StartCommandProps<T> {
-  commandId: string;
-  iModelKey: string;
-  args?: T;
+export interface EditCommandIpc {
+  ping: () => Promise<{ commandId: string, version: string, [propName: string]: any }>;
 }
