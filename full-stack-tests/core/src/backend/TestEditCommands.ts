@@ -5,41 +5,32 @@
 
 import { IModelDb } from "@bentley/imodeljs-backend";
 import { EditCommand } from "@bentley/imodeljs-editor-backend";
-import { CommandResult } from "@bentley/imodeljs-editor-common";
-import { cmdIds, Test1Args, Test1Response } from "../common/TestEditCommandProps";
+import { testCmdIds, TestCmdOjb1, TestCmdResult, TestCommandIpc } from "../common/TestEditCommandIpc";
 
-export class TestEditCommand1 extends EditCommand {
-  public static commandId = cmdIds.cmd1;
+export abstract class TestCommand extends EditCommand implements TestCommandIpc {
+  public constructor(iModel: IModelDb, protected _str: string) { super(iModel); }
+  public abstract testMethod1(str1: string, str2: string, obj1: TestCmdOjb1): Promise<TestCmdResult>;
+}
 
-  public constructor(iModel: IModelDb, private _str: string) { super(iModel); }
+export class TestEditCommand1 extends TestCommand {
+  public static commandId = testCmdIds.cmd1;
 
-  public onStart(): CommandResult<string> {
-    return { result: `${this._str}:1` };
+  public async onStart() {
+    return `${this._str}:1`;
   }
-  public testMethod1(args: Test1Args): CommandResult<Test1Response> {
-    return {
-      result: {
-        outStr: args.str1 + args.str2,
-        outNum: args.obj1.i1 + args.obj1.i2,
-      },
-    };
+  public async testMethod1(str1: string, str2: string, obj1: TestCmdOjb1) {
+    return { str: str1 + str2, num: obj1.i1 + obj1.i2 };
   }
 };
 
-export class TestEditCommand2 extends EditCommand {
-  public static commandId = cmdIds.cmd2;
+export class TestEditCommand2 extends TestCommand {
+  public static commandId = testCmdIds.cmd2;
 
-  public constructor(iModel: IModelDb, private _str: string) { super(iModel); }
-
-  public onStart(): CommandResult<string> {
-    return { result: `${this._str}:2` };
+  public async onStart() {
+    return `${this._str}:2`;
   }
-  public testMethod1(args: Test1Args): CommandResult<Test1Response> {
-    return {
-      result: {
-        outStr: args.str2 + args.str1,
-        outNum: args.obj1.i1 - args.obj1.i2,
-      },
-    };
+
+  public async testMethod1(str1: string, str2: string, obj1: TestCmdOjb1) {
+    return { str: str2 + str1, num: obj1.i1 - obj1.i2 };
   }
 };

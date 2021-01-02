@@ -21,7 +21,7 @@ export type CommandError =
 /** @alpha */
 export interface EditorAppIpc extends IpcInterface {
   startCommand: (commandId: string, iModelKey: string, ...args: any[]) => Promise<any>;
-  call: (name: string, ...args: any[]) => Promise<any>;
+  callMethod: (name: string, ...args: any[]) => Promise<any>;
 }
 
 /** @alpha */

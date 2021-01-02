@@ -7,10 +7,9 @@
  */
 
 import { IModelStatus } from "@bentley/bentleyjs-core";
-import { IModelDb, IpcHandler } from "@bentley/imodeljs-backend";
-import { BackendIpc } from "@bentley/imodeljs-backend/src/ipc/BackendIpc";
-import { EditCommandIpc, editorAppChannel, EditorAppIpc, editorAppIpcVersion } from "@bentley/imodeljs-editor-common";
+import { BackendIpc, IModelDb, IpcHandler } from "@bentley/imodeljs-backend";
 import { IModelError } from "@bentley/imodeljs-common/lib/IModelError";
+import { EditCommandIpc, editorAppChannel, EditorAppIpc, editorAppIpcVersion } from "@bentley/imodeljs-editor-common";
 
 /** @alpha */
 export type EditCommandType = typeof EditCommand;
@@ -34,9 +33,9 @@ export class EditCommand implements EditCommandIpc {
   }
   public get ctor(): EditCommandType { return this.constructor as EditCommandType; }
 
-  public onStart(): void { }
+  public async onStart(): Promise<any> { }
 
-  public async ping() {
+  public async ping(): Promise<{ commandId: string, version: string, [propName: string]: any }> {
     return { version: this.ctor.version, commandId: this.ctor.commandId };
   };
 
@@ -57,7 +56,7 @@ class EditorAppImpl extends IpcHandler implements EditorAppIpc {
     return EditCommandAdmin.runCommand(new commandClass(IModelDb.findByKey(iModelKey), ...args));
   }
 
-  public async call(methodName: string, ...args: any[]) {
+  public async callMethod(methodName: string, ...args: any[]) {
     const cmd = EditCommandAdmin.activeCommand;
     if (!cmd)
       throw new IModelError(IModelStatus.BadArg, `No active command`);
@@ -93,7 +92,9 @@ export class EditCommandAdmin {
    * Un-register a previously registered EditCommand class.
    * @param commandId the commandId of a previously registered EditCommand to unRegister.
    */
-  public static unRegister(commandId: string) { this.commands.delete(commandId); }
+  public static unRegister(commandId: string) {
+    this.commands.delete(commandId);
+  }
 
   /**
    * Register an EditCommand class. This establishes a connection between the commandId of the class and the class itself.
@@ -103,7 +104,7 @@ export class EditCommandAdmin {
     if (!this._isInitialized) {
       this._isInitialized = true;
       if (!BackendIpc.isValid)
-        throw new Error("Edit Commands only allowed in with Ipc");
+        throw new Error("Edit Commands require Ipc");
       EditorAppImpl.register();
     }
     if (commandType.commandId.length !== 0)
