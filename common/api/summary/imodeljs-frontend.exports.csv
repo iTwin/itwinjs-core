@@ -61,6 +61,7 @@ beta;BlankConnectionProps
 public;class BriefcaseConnection 
 internal;CachedDecoration =
 internal;CachedIModelCoordinatesResponseProps
+internal;calculateEcefToDbTransformAtLocation(originIn: Point3d, iModel: IModelConnection): Promise
 public;CanvasDecoration
 public;CanvasDecorationList = CanvasDecoration[]
 public;canvasToImageBuffer(canvas: HTMLCanvasElement, format?: ImageBufferFormat): ImageBuffer | undefined
