@@ -784,7 +784,7 @@ export namespace ElementGeometry {
           if (1 === faceSymbFb.useColor())
             faceSymbProps.color = faceSymbFb.color();
           if (1 === faceSymbFb.useMaterial())
-            faceSymbProps.materialId = Id64.fromUint32Pair(faceSymbFb.materialId().low, faceSymbFb.materialId().high);;
+            faceSymbProps.materialId = Id64.fromUint32Pair(faceSymbFb.materialId().low, faceSymbFb.materialId().high);
           faceSymbProps.transparency = faceSymbFb.transparency();
         }
         faceSymbPropsArray.push(faceSymbProps);
