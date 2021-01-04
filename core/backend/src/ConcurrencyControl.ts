@@ -599,7 +599,6 @@ export class ConcurrencyControl {
     return this._cache.isCodeReserved(code);
   }
 
-
   /** @internal @deprecated Use concurrencyControl.locks.lockCodeSpecs */
   public async lockCodeSpecs(requestContext: AuthorizedClientRequestContext): Promise<Lock[]> {
     return this.lockCodeSpecs0(requestContext);
@@ -699,7 +698,6 @@ export class ConcurrencyControl {
 
     return codeStates;
   }
-
 
   /** @internal @deprecated Use ConcurrencyControl.codes.query or ConcurrencyControl.codes.isReserved */
   public async queryCodeStates(requestContext: AuthorizedClientRequestContext, specId: Id64String, scopeId: string, value?: string): Promise<HubCode[]> {

@@ -6,6 +6,11 @@
 export * from "./ClipboardUtilities";
 export * from "./FrontEndDevTools";
 
+export * from "./effects/Convolution";
+export * from "./effects/EffectTools";
+export * from "./effects/FlipImage";
+export * from "./effects/LensDistortion";
+
 export * from "./tools/AnimationIntervalTool";
 export * from "./tools/ChangeUnitsTool";
 export * from "./tools/ClipTools";
@@ -70,6 +75,11 @@ export * from "./widgets/ToolSettingsTracker";
 /**
  * @docs-group-description Controls
  * Rudimentary HTML components used to build the widgets.
+ */
+
+/**
+ * @docs-group-description Effects
+ * Examples of screen-space effects produced by [RenderSystem.createScreenSpaceEffectBuilder]($frontend).
  */
 
 /**

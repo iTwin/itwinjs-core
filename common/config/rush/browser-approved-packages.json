@@ -509,6 +509,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "fast-xml-parser",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "file-loader",
       "allowedCategories": [ "tools" ]
     },
