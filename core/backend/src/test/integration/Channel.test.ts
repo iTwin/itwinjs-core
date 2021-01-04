@@ -65,7 +65,7 @@ describe("Channel Control (#integration)", () => {
     managerRequestContext.enter();
     const imodel1 = await BriefcaseDb.open(managerRequestContext, { fileName: props.fileName });
     managerRequestContext.enter();
-    imodel1.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
+    imodel1.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
     imodel1.concurrencyControl.startBulkMode();
 
     // We are currently in NO channel
