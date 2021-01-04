@@ -5810,6 +5810,9 @@ export namespace MockRender {
         // (undocumented)
         get renderSystem(): RenderSystem;
         // (undocumented)
+        get screenSpaceEffects(): Iterable<string>;
+        set screenSpaceEffects(_effects: Iterable<string>);
+        // (undocumented)
         updateViewRect(): boolean;
         // (undocumented)
         get wantInvertBlackBackground(): boolean;
@@ -6048,6 +6051,9 @@ export class NullTarget extends RenderTarget {
     get renderSystem(): any;
     // (undocumented)
     reset(): void;
+    // (undocumented)
+    get screenSpaceEffects(): Iterable<string>;
+    set screenSpaceEffects(_effects: Iterable<string>);
     // (undocumented)
     setFlashed(): void;
     // (undocumented)
@@ -7396,6 +7402,8 @@ export abstract class RenderSystem implements IDisposable {
     createPointString(_params: PointStringParams, _instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined;
     // @internal (undocumented)
     createPolyline(_params: PolylineParams, _instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined;
+    // @beta
+    createScreenSpaceEffectBuilder(_params: ScreenSpaceEffectBuilderParams): ScreenSpaceEffectBuilder | undefined;
     createSkyBox(_params: SkyBox.CreateParams): RenderGraphic | undefined;
     // @internal (undocumented)
     abstract createTarget(canvas: HTMLCanvasElement): RenderTarget;
@@ -7549,6 +7557,8 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
     abstract get renderSystem(): RenderSystem;
     // (undocumented)
     reset(): void;
+    abstract get screenSpaceEffects(): Iterable<string>;
+    abstract set screenSpaceEffects(_effectNames: Iterable<string>);
     // (undocumented)
     setFlashed(_elementId: Id64String, _intensity: number): void;
     // (undocumented)
@@ -7736,6 +7746,35 @@ export interface SceneVolumeClassifier {
     classifier: SpatialClassificationProps.Classifier;
     // (undocumented)
     modelId: Id64String;
+}
+
+// @beta
+export interface ScreenSpaceEffectBuilder {
+    addUniform: (params: UniformParams) => void;
+    addUniformArray: (params: UniformArrayParams) => void;
+    addVarying: (name: string, type: VaryingType) => void;
+    finish: () => void;
+    readonly isWebGL2: boolean;
+    shouldApply?: (context: ScreenSpaceEffectContext) => boolean;
+}
+
+// @beta
+export interface ScreenSpaceEffectBuilderParams {
+    name: string;
+    source: ScreenSpaceEffectSource;
+    textureCoordFromPosition?: boolean;
+}
+
+// @beta
+export interface ScreenSpaceEffectContext {
+    viewport: Viewport;
+}
+
+// @beta
+export interface ScreenSpaceEffectSource {
+    fragment: string;
+    sampleSourcePixel?: string;
+    vertex: string;
 }
 
 // @public
@@ -8897,6 +8936,11 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     get renderSystem(): System;
     // (undocumented)
     reset(): void;
+    // (undocumented)
+    get screenSpaceEffectContext(): ScreenSpaceEffectContext;
+    // (undocumented)
+    get screenSpaceEffects(): Iterable<string>;
+    set screenSpaceEffects(effects: Iterable<string>);
     // (undocumented)
     setFlashed(id: Id64String, intensity: number): void;
     // (undocumented)
@@ -10138,6 +10182,44 @@ export class TwoWayViewportSync {
     disconnect(): void;
     }
 
+// @beta
+export interface Uniform {
+    setUniform1f: (value: number) => void;
+    setUniform1fv: (value: Float32Array | number[]) => void;
+    setUniform1i: (value: number) => void;
+    setUniform1iv: (value: Int32Array | number[]) => void;
+    setUniform2fv: (value: Float32Array | number[]) => void;
+    setUniform3fv: (value: Float32Array | number[]) => void;
+    setUniform4fv: (value: Float32Array | number[]) => void;
+}
+
+// @beta
+export interface UniformArrayParams extends UniformParams {
+    length: number;
+}
+
+// @beta
+export interface UniformContext {
+    viewport: Viewport;
+}
+
+// @beta
+export interface UniformParams {
+    bind: (uniform: Uniform, context: UniformContext) => void;
+    name: string;
+    type: UniformType;
+}
+
+// @beta
+export enum UniformType {
+    Bool = 0,
+    Float = 2,
+    Int = 1,
+    Vec2 = 3,
+    Vec3 = 4,
+    Vec4 = 5
+}
+
 // @alpha
 export type UnitSystemKey = "metric" | "imperial" | "usCustomary" | "usSurvey";
 
@@ -10182,6 +10264,14 @@ export enum UsesSelection {
     Check = 0,
     None = 2,
     Required = 1
+}
+
+// @beta
+export enum VaryingType {
+    Float = 0,
+    Vec2 = 1,
+    Vec3 = 2,
+    Vec4 = 3
 }
 
 // @public
@@ -11133,6 +11223,8 @@ export abstract class Viewport implements IDisposable {
     // @internal
     addModelSubCategoryVisibilityOverrides(fs: FeatureSymbology.Overrides, ovrs: Id64.Uint32Map<Id64.Uint32Set>): void;
     // @beta
+    addScreenSpaceEffect(effectName: string): void;
+    // @beta
     addTiledGraphicsProvider(provider: TiledGraphicsProvider): void;
     addViewedModels(models: Id64Arg): Promise<void>;
     get alwaysDrawn(): Id64Set | undefined;
@@ -11348,6 +11440,8 @@ export abstract class Viewport implements IDisposable {
     readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable?: boolean): void;
     // @internal
     refreshForModifiedModels(modelIds: Id64Arg | undefined): void;
+    // @beta
+    removeScreenSpaceEffects(): void;
     // @internal (undocumented)
     renderFrame(): void;
     // @internal (undocumented)
@@ -11355,11 +11449,15 @@ export abstract class Viewport implements IDisposable {
     // @internal (undocumented)
     protected _renderPlanValid: boolean;
     replaceViewedModels(modelIds: Id64Arg): Promise<void>;
+    requestRedraw(): void;
     get rotation(): Matrix3d;
     // @internal (undocumented)
     get sceneValid(): boolean;
     // @internal (undocumented)
     protected _sceneValid: boolean;
+    // @beta
+    get screenSpaceEffects(): Iterable<string>;
+    set screenSpaceEffects(effects: Iterable<string>);
     scroll(screenDist: XAndY, options?: ViewChangeOptions): void;
     // @internal
     setAllValid(): void;
@@ -11376,7 +11474,7 @@ export abstract class Viewport implements IDisposable {
     setNeverDrawn(ids: Id64Set): void;
     // @beta
     setOSMBuildingDisplay(options: OsmBuildingDisplayOptions): void;
-    // @internal (undocumented)
+    // @internal @deprecated (undocumented)
     setRedrawPending(): void;
     // @internal (undocumented)
     setRenderPlanValid(): void;

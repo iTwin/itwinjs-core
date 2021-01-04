@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-editor-frontend",
-  "version": "2.11.0-dev.26",
+  "version": "2.11.0-dev.33",
   "description": "iModel.js frontend components",
   "main": "lib/imodeljs-editor-frontend.js",
   "typings": "lib/imodeljs-editor-frontend",
@@ -32,21 +32,21 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.11.0-dev.26",
-    "@bentley/imodeljs-common": "^2.11.0-dev.26",
-    "@bentley/imodeljs-i18n": "^2.11.0-dev.26"
+    "@bentley/bentleyjs-core": "^2.11.0-dev.33",
+    "@bentley/imodeljs-common": "^2.11.0-dev.33",
+    "@bentley/imodeljs-i18n": "^2.11.0-dev.33"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.11.0-dev.26",
-    "@bentley/build-tools": "2.11.0-dev.26",
-    "@bentley/certa": "2.11.0-dev.26",
-    "@bentley/eslint-plugin": "2.11.0-dev.26",
-    "@bentley/imodeljs-common": "2.11.0-dev.26",
-    "@bentley/imodeljs-i18n": "2.11.0-dev.26",
+    "@bentley/bentleyjs-core": "2.11.0-dev.33",
+    "@bentley/build-tools": "2.11.0-dev.33",
+    "@bentley/certa": "2.11.0-dev.33",
+    "@bentley/eslint-plugin": "2.11.0-dev.33",
+    "@bentley/imodeljs-common": "2.11.0-dev.33",
+    "@bentley/imodeljs-i18n": "2.11.0-dev.33",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
@@ -67,8 +67,8 @@
     "NOTE: imodeljs-editor-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
-    "@bentley/imodeljs-frontend": "2.11.0-dev.26",
-    "@bentley/imodeljs-editor-common": "2.11.0-dev.26"
+    "@bentley/imodeljs-frontend": "2.11.0-dev.33",
+    "@bentley/imodeljs-editor-common": "2.11.0-dev.33"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"

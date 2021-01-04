@@ -38,6 +38,7 @@ export * from "./render/webgl/RenderBuffer";
 export * from "./render/webgl/RenderCommands";
 export * from "./render/webgl/RenderFlags";
 export * from "./render/webgl/RenderState";
+export * from "./render/webgl/ScreenSpaceEffect";
 export * from "./render/webgl/ShaderBuilder";
 export * from "./render/webgl/ShaderProgram";
 export * from "./render/webgl/ShadowUniforms";

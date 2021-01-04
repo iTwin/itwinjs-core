@@ -395,6 +395,10 @@ internal;SavedState
 beta;Scene
 beta;SceneContext 
 internal;SceneVolumeClassifier
+beta;ScreenSpaceEffectBuilder
+beta;ScreenSpaceEffectBuilderParams
+beta;ScreenSpaceEffectContext
+beta;ScreenSpaceEffectSource
 public;ScreenViewport 
 public;ScrollViewTool 
 internal;SectionDrawingInfo
@@ -511,11 +515,17 @@ internal;TraversalDetails
 internal;TraversalSelectionContext
 public;tryImageElementFromUrl(url: string): Promise
 beta;TwoWayViewportSync
+beta;Uniform
+beta;UniformArrayParams 
+beta;UniformContext
+beta;UniformParams
+beta;UniformType
 alpha;UnitSystemKey = "metric" | "imperial" | "usCustomary" | "usSurvey"
 internal;UpsampledMapTile 
 internal;UsesDragSelect
 internal;UsesFence
 internal;UsesSelection
+beta;VaryingType
 public;ViewAnimationOptions
 public;ViewChangeOptions 
 alpha;ViewClipByElementTool 
