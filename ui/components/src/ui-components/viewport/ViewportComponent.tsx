@@ -11,8 +11,11 @@ import { Id64String, Logger } from "@bentley/bentleyjs-core";
 import { Point3d, Transform } from "@bentley/geometry-core";
 import { NpcCenter } from "@bentley/imodeljs-common";
 import {
-  IModelApp, IModelConnection, ScreenViewport, TentativePoint, ToolSettings, ViewManager, Viewport, ViewState,
+  IModelApp, IModelConnection, ScreenViewport, TentativePoint, ToolSettings,
+  ViewManager, Viewport, ViewState, DrawingViewState, OrthographicViewState,
+  SheetViewState, SpatialViewState
 } from "@bentley/imodeljs-frontend";
+
 import { CommonProps } from "@bentley/ui-core";
 import { UiComponents } from "../UiComponents";
 import {
@@ -150,6 +153,26 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
     }
   }
 
+  private static async cloneViewState(imodelConnection: IModelConnection, viewState: ViewState): Promise<ViewState | undefined> {
+    const className = viewState.classFullName.substring(viewState.classFullName.indexOf(":") + 1);
+    let clonedViewState: ViewState | undefined;
+
+    if (className === SpatialViewState.className || className === OrthographicViewState.className)
+      clonedViewState = SpatialViewState.createFromProps(viewState.toProps(), imodelConnection);
+    else if (className === OrthographicViewState.className)
+      clonedViewState = OrthographicViewState.createFromProps(viewState.toProps(), imodelConnection);
+    else if (className === DrawingViewState.className)
+      clonedViewState = DrawingViewState.createFromProps(viewState.toProps(), imodelConnection);
+    else if (className === SheetViewState.className)
+      clonedViewState = SheetViewState.createFromProps(viewState.toProps(), imodelConnection);
+    else
+      clonedViewState = undefined;
+    if (clonedViewState)
+      await clonedViewState.load();
+    else
+      Logger.logError(UiComponents.loggerCategory(this), `View state failed to load`);
+    return clonedViewState;
+  }
   private async getViewState(): Promise<ViewState | undefined> {
     let viewState: ViewState;
 
@@ -169,6 +192,9 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
       return undefined;
     }
 
+    if (viewState.isAttachedToViewport) {
+      return ViewportComponent.cloneViewState(this.props.imodel, viewState);
+    }
     return viewState;
   }
 
