@@ -26,9 +26,13 @@ import { DecorateContext } from "../ViewContext";
 import {
   eyeToCartographicOnGlobeFromGcs, GlobalLocation, queryTerrainElevationOffset, rangeToCartographicArea, viewGlobalLocation, ViewGlobalLocationConstants,
 } from "../ViewGlobalLocation";
-import { Animator, CoordSystem, DepthPointSource, ScreenViewport, ViewChangeOptions, Viewport } from "../Viewport";
+import { Animator, ViewChangeOptions } from "../ViewAnimation";
+import { CoordSystem } from "../CoordSystem";
+import { DepthPointSource, ScreenViewport, Viewport } from "../Viewport";
 import { ViewRect } from "../ViewRect";
-import { ViewPose, ViewState3d, ViewStatus } from "../ViewState";
+import { ViewPose } from "../ViewPose";
+import { ViewStatus } from "../ViewStatus";
+import { ViewState3d } from "../ViewState";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
 import { PrimitiveTool } from "./PrimitiveTool";
 import {
@@ -338,9 +342,10 @@ export abstract class ViewManip extends ViewTool {
     }
 
     const pixelSize = context.viewport.getPixelSizeAtPoint(origin);
+    const skew = context.viewport.view.getAspectRatioSkew();
     const radius = this._depthPreview.pickRadius * pixelSize;
     const rMatrix = Matrix3d.createRigidHeadsUp(normal);
-    const ellipse = Arc3d.createScaledXYColumns(origin, rMatrix, radius, radius, AngleSweep.create360());
+    const ellipse = Arc3d.createScaledXYColumns(origin, rMatrix, radius, radius / skew, AngleSweep.create360());
     const colorBase = (this._depthPreview.isDefaultDepth ? ColorDef.red : (DepthPointSource.Geometry === this._depthPreview.source ? ColorDef.green : context.viewport.hilite.color));
     const colorLine = EditManipulator.HandleUtils.adjustForBackgroundColor(colorBase, cursorVp).withTransparency(50);
     const colorFill = colorLine.withTransparency(200);

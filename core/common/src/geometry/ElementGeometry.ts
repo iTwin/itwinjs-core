@@ -215,7 +215,6 @@ export interface BRepGeometryCreate {
   parameters?: BRepCutProps | BRepThickenProps | BRepHollowProps | BRepRoundProps;
 }
 
-
 /** Information provided to [[BRepGeometryFunction]].
  * @alpha
  */
@@ -284,7 +283,10 @@ export namespace ElementGeometry {
       return true;
     }
 
-    /** Append a [[BRepEntity.DataProps]] supplied in either local or world coordinates to the [[ElementGeometryDataEntry]] array */
+    /** Append a [[BRepEntity.DataProps]] supplied in either local or world coordinates to the [[ElementGeometryDataEntry]] array.
+     * Provided for compatibility with GeometryStreamBuilder only.
+     * Backend code should use IModelDb.createBRepGeometry to create a brep [[ElementGeometryDataEntry]] directly.
+     */
     public appendBRepData(brep: BRepEntity.DataProps): boolean {
       const entry = ElementGeometry.fromBRep(brep);
       if (undefined === entry)
@@ -353,7 +355,7 @@ export namespace ElementGeometry {
       return toGeometryQuery(this.value);
     }
 
-    /** Return the [[BRepEntity.DataProps]] representation for the current entry */
+    /** Return the [[BRepEntity.DataProps]] representation for the current entry for checking brep type and face attachments. */
     public toBRepData(wantBRepData: boolean = false): BRepEntity.DataProps | undefined {
       return toBRep(this.value, wantBRepData);
     }
@@ -745,7 +747,7 @@ export namespace ElementGeometry {
     return { opcode: ElementGeometryOpcode.Image, data };
   }
 
-  /** Return entry as a [[BRepEntity.DataProps]] */
+  /** Return entry as a [[BRepEntity.DataProps]] for checking brep type and face attachments. */
   export function toBRep(entry: ElementGeometryDataEntry, wantBRepData: boolean = false): BRepEntity.DataProps | undefined {
     if (ElementGeometryOpcode.BRep !== entry.opcode)
       return undefined;
@@ -793,12 +795,12 @@ export namespace ElementGeometry {
     let data;
     const entityData = ppfb.entityDataArray();
     if (wantBRepData && null !== entityData)
-      data = Base64.fromUint8Array(entityData);
+      data = `encoding=base64;${Base64.fromUint8Array(entityData)}`;
 
     return { data, type, transform: transform?.toJSON(), faceSymbology };
   }
 
-  /** Create entry from a [[BRepEntity.DataProps]] */
+  /** Create entry from a [[BRepEntity.DataProps]]. Provided for compatibility with GeometryStreamBuilder only. */
   export function fromBRep(brep: BRepEntity.DataProps): ElementGeometryDataEntry | undefined {
     const fbb = new flatbuffers.Builder();
     const builder = EGFBAccessors.BRepData;
@@ -806,7 +808,10 @@ export namespace ElementGeometry {
     let faceSymbOffset;
 
     if (undefined !== brep.data) {
-      const entityData = Base64.toUint8Array(brep.data);
+      const base64Header = "encoding=base64;";
+      if (brep.data.length < base64Header.length || !brep.data.startsWith(base64Header))
+        return undefined;
+      const entityData = Base64.toUint8Array(brep.data.substr(base64Header.length));
       dataOffset = builder.createEntityDataVector(fbb, entityData);
     }
 

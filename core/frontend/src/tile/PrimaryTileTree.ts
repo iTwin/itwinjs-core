@@ -23,7 +23,8 @@ import { IModelConnection } from "../IModelConnection";
 import { GeometricModel3dState, GeometricModelState } from "../ModelState";
 import { RenderClipVolume } from "../render/RenderClipVolume";
 import { SceneContext } from "../ViewContext";
-import { SpatialViewState, ViewState, ViewState3d } from "../ViewState";
+import { ViewState, ViewState3d } from "../ViewState";
+import { SpatialViewState } from "../SpatialViewState";
 import { RenderScheduleState } from "../RenderScheduleState";
 import { InteractiveEditingSession } from "../InteractiveEditingSession";
 import {

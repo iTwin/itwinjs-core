@@ -11,7 +11,7 @@ import { Field, PropertiesField } from "./content/Fields";
 import { Item } from "./content/Item";
 import { PrimitiveTypeDescription, PropertyValueFormat } from "./content/TypeDescription";
 import { DisplayValue, Value } from "./content/Value";
-import { ClassInfo, RelationshipPath } from "./EC";
+import { ClassInfo, InstanceKey, RelationshipPath } from "./EC";
 import { MultiSchemaClassesSpecification, SingleSchemaClassSpecification } from "./rules/ClassSpecifications";
 import { ContentSpecificationTypes } from "./rules/content/ContentSpecification";
 import { RelatedInstanceSpecification } from "./rules/RelatedInstanceSpecification";
@@ -78,12 +78,21 @@ export class RulesetsFactory {
  * Definition of a function for calculating a display value.
  * @public
  */
-export type ComputeDisplayValueCallback = (type: string, value: string | number | boolean | { x: number, y: number, z?: number } | undefined, displayValue: string) => Promise<string>;
+export type ComputeDisplayValueCallback = (type: string, value: PrimitivePropertyValue, displayValue: string) => Promise<string>;
 
 interface PrimitiveValueDef {
-  raw: string | number | boolean | { x: number, y: number, z?: number } | undefined;
+  raw: PrimitivePropertyValue;
   display: string;
 }
+
+/**
+ * Value of a primitive property.
+ * @public
+ */
+export type PrimitivePropertyValue = string | number | boolean | Point | InstanceKey | undefined;
+
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+type Point = { x: number, y: number, z?: number };
 
 const toString = (displayValue: Value | DisplayValue): string => {
   if (!displayValue)
@@ -113,15 +122,23 @@ const getPropertyName = (field: PropertiesField) => {
   return name;
 };
 
-const isPrimitivePropertyValue = (value: Value): value is string | number | boolean | { x: number, y: number, z?: number } | undefined => {
-  if (Value.isPrimitive(value))
-    return true;
-  if (Value.isMap(value)
-    && value.x !== undefined && typeof value.x === "number"
-    && value.y !== undefined && typeof value.y === "number"
-    && (value.z === undefined || typeof value.z === "number")) {
+const isPrimitivePropertyValue = (value: Value): value is PrimitivePropertyValue => {
+  if (Value.isPrimitive(value)) {
     return true;
   }
+
+  if (Value.isMap(value)) {
+    if (typeof value.x === "number"
+      && typeof value.y === "number"
+      && (value.z === undefined || typeof value.z === "number")) {
+      return true;
+    }
+
+    if (typeof value.className === "string" && typeof value.id === "string") {
+      return true;
+    }
+  }
+
   return false;
 };
 
@@ -152,7 +169,12 @@ const getPropertyValue = (record: Item, field: Field): PrimitiveValueDef => {
   return { raw: value, display: toString(displayValue) };
 };
 
-const createInstanceFilter = (relatedInstances: Array<Readonly<RelatedInstanceSpecification>>, propertyType: PrimitiveTypeDescription, propertyName: string, propertyValue: string | number | boolean | { x: number, y: number, z?: number } | undefined): string => {
+const createInstanceFilter = (
+  relatedInstances: Array<Readonly<RelatedInstanceSpecification>>,
+  propertyType: PrimitiveTypeDescription,
+  propertyName: string,
+  propertyValue: PrimitivePropertyValue,
+): string => {
   const aliases = relatedInstances.map((relatedInstanceSpec) => relatedInstanceSpec.alias);
   if (aliases.length === 0)
     aliases.push("this");
@@ -165,7 +187,7 @@ const createInstanceFilter = (relatedInstances: Array<Readonly<RelatedInstanceSp
 };
 
 type Operator = "=" | "!=" | ">" | ">=" | "<" | "<=";
-const createComparison = (type: PrimitiveTypeDescription, name: string, operator: Operator, value: string | number | boolean | { x: number, y: number, z?: number } | undefined): string => {
+const createComparison = (type: PrimitiveTypeDescription, name: string, operator: Operator, value: PrimitivePropertyValue): string => {
   let compareValue = "";
   switch (typeof value) {
     case "undefined": compareValue = "NULL"; break;
@@ -173,9 +195,9 @@ const createComparison = (type: PrimitiveTypeDescription, name: string, operator
     case "boolean": compareValue = value ? "TRUE" : "FALSE"; break;
     case "number": compareValue = value.toString(); break;
   }
-  if (type.typeName === "navigation" && typeof value === "string" && Id64.isId64(value)) {
+  if (type.typeName === "navigation" && typeof value === "object" && Id64.isId64((value as InstanceKey).id)) {
     // note: this is temporary until we support hex ids in instance filters
-    compareValue = hexToDec(value);
+    compareValue = hexToDec((value as InstanceKey).id);
   }
   if (type.typeName === "point2d" || type.typeName === "point3d") {
     if (typeof value !== "object")
@@ -184,10 +206,11 @@ const createComparison = (type: PrimitiveTypeDescription, name: string, operator
       valueFormat: PropertyValueFormat.Primitive,
       typeName: "double",
     };
-    let comparison = `${createComparison(dimensionType, `${name}.x`, operator, value.x)}`;
-    comparison += ` AND ${createComparison(dimensionType, `${name}.y`, operator, value.y)}`;
-    if (type.typeName === "point3d" && value.z !== undefined)
-      comparison += ` AND ${createComparison(dimensionType, `${name}.z`, operator, value.z)}`;
+    const pointValue = value as Point;
+    let comparison = `${createComparison(dimensionType, `${name}.x`, operator, pointValue.x)}`;
+    comparison += ` AND ${createComparison(dimensionType, `${name}.y`, operator, pointValue.y)}`;
+    if (type.typeName === "point3d" && pointValue.z !== undefined)
+      comparison += ` AND ${createComparison(dimensionType, `${name}.z`, operator, pointValue.z)}`;
     return comparison;
   }
   if (type.typeName === "double") {

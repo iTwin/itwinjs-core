@@ -12,7 +12,7 @@ import {
   BriefcaseDb, BriefcaseManager, CategorySelector, ConcurrencyControl, DefinitionModel, DisplayStyle3d, IModelDb, IModelHost, ModelSelector,
   OrthographicViewDefinition, PhysicalModel, SpatialCategory, Subject,
 } from "@bentley/imodeljs-backend";
-import { BriefcaseProps, ColorByName, IModel, SyncMode } from "@bentley/imodeljs-common";
+import { ColorByName, IModel } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { Barrier } from "../BarrierElement";
@@ -86,12 +86,11 @@ async function createIModel(requestContext: AuthorizedClientRequestContext, proj
 async function runBridgeFirstTime(requestContext: AuthorizedClientRequestContext, iModelId: string, projectId: string, assetsDir: string) {
   // Start the IModelHost
   await IModelHost.startup();
-
   requestContext.enter();
 
-  const briefcaseProps: BriefcaseProps = await BriefcaseManager.download(requestContext, projectId, iModelId, { syncMode: SyncMode.PullAndPush });
+  const props = await BriefcaseManager.downloadBriefcase(requestContext, { contextId: projectId, iModelId });
   requestContext.enter();
-  const briefcase: BriefcaseDb = await BriefcaseDb.open(requestContext, briefcaseProps.key);
+  const briefcase = await BriefcaseDb.open(requestContext, { fileName: props.fileName });
   requestContext.enter();
 
   briefcase.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());

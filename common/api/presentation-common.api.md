@@ -6,6 +6,7 @@
 
 import { BentleyError } from '@bentley/bentleyjs-core';
 import { EntityProps } from '@bentley/imodeljs-common';
+import { FormatProps } from '@bentley/imodeljs-quantity';
 import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
 import { GuidString } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
@@ -186,11 +187,7 @@ export interface ClassInfoJSON {
 }
 
 // @public
-export type ComputeDisplayValueCallback = (type: string, value: string | number | boolean | {
-    x: number;
-    y: number;
-    z?: number;
-} | undefined, displayValue: string) => Promise<string>;
+export type ComputeDisplayValueCallback = (type: string, value: PrimitivePropertyValue, displayValue: string) => Promise<string>;
 
 // @public
 export interface ConditionContainer {
@@ -1063,7 +1060,7 @@ export interface KeySetJSON {
 // @public
 export interface KindOfQuantityInfo {
     // @alpha
-    currentFormatId: string;
+    activeFormat?: FormatProps;
     label: string;
     name: string;
     // @alpha
@@ -1653,6 +1650,9 @@ export enum PresentationUnitSystem {
     // (undocumented)
     UsSurvey = "us-survey"
 }
+
+// @public
+export type PrimitivePropertyValue = string | number | boolean | Point | InstanceKey | undefined;
 
 // @public
 export interface PrimitiveTypeDescription extends BaseTypeDescription {

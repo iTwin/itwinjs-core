@@ -31,12 +31,13 @@ function compareIds(lhs: ClassifierTreeId, rhs: ClassifierTreeId): number {
 }
 
 class ClassifierTreeSupplier implements TileTreeSupplier {
-  private readonly _nonexistentTreeOwner: TileTreeOwner = {
+  private readonly _nonexistentTreeOwner = {
     tileTree: undefined,
     loadStatus: TileTreeLoadStatus.NotFound,
     load: () => undefined,
     dispose: () => undefined,
     loadTree: async () => undefined,
+    iModel: undefined as unknown as IModelConnection,
   };
 
   public compareTileTreeIds(lhs: ClassifierTreeId, rhs: ClassifierTreeId): number {
