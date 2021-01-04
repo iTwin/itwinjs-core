@@ -93,127 +93,8 @@ describe("ChangeSummary (#integration)", () => {
     await HubUtility.purgeAcquiredBriefcases(managerRequestContext, "iModelJsIntegrationTest", "ReadWriteTest");
   });
 
-  it("Attach / Detach ChangeCache file to PullAndPush briefcase", async () => {
-    setupTest(readWriteTestIModel.id);
 
-    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: testProjectId, iModelId: readWriteTestIModel.id });
-    try {
-      assert.exists(iModel);
-      assert(iModel.openMode === OpenMode.ReadWrite);
 
-      assert.isFalse(ChangeSummaryManager.isChangeCacheAttached(iModel));
-
-      assert.throw(() => iModel.withPreparedStatement("SELECT count(*) as csumcount FROM change.ChangeSummary", () => { }));
-
-      ChangeSummaryManager.attachChangeCache(iModel);
-      assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
-      iModel.withPreparedStatement("SELECT count(*) as csumcount FROM change.ChangeSummary", (myStmt) => {
-        assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
-        const row: any = myStmt.getRow();
-        assert.equal(row.csumcount, 0);
-      });
-
-      // verify the extended schema was imported into the changes file
-      iModel.withPreparedStatement("SELECT count(*) as csumcount FROM imodelchange.ChangeSet", (myStmt) => {
-        assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
-        const row: any = myStmt.getRow();
-        assert.equal(row.csumcount, 0);
-      });
-
-      expect(IModelJsFs.existsSync(BriefcaseManager.getChangeCachePathName(readWriteTestIModel.id)));
-
-      ChangeSummaryManager.detachChangeCache(iModel);
-      assert.isFalse(ChangeSummaryManager.isChangeCacheAttached(iModel));
-      assert.throw(() => iModel.withPreparedStatement("SELECT count(*) as sumcount FROM change.ChangeSummary", () => { }));
-
-      // calling detach if nothing was attached should fail
-      assert.throw(() => ChangeSummaryManager.detachChangeCache(iModel));
-
-      ChangeSummaryManager.attachChangeCache(iModel);
-      assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
-      iModel.withPreparedStatement("SELECT count(*) as sumcount FROM change.ChangeSummary", (myStmt) => {
-        assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
-        const row: any = myStmt.getRow();
-        assert.equal(row.sumcount, 0);
-      });
-    } finally {
-      await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
-    }
-  });
-
-  it("Attach / Detach ChangeCache file to readonly briefcase", async () => {
-    setupTest(readOnlyTestIModel.id);
-
-    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testProjectId, iModelId: readOnlyTestIModel.id });
-    assert.exists(iModel);
-    assert(iModel.openMode === OpenMode.Readonly);
-    try {
-      assert.isFalse(ChangeSummaryManager.isChangeCacheAttached(iModel));
-      assert.throw(() => iModel.withPreparedStatement("SELECT count(*) as csumcount FROM change.ChangeSummary", () => { }));
-
-      ChangeSummaryManager.attachChangeCache(iModel);
-      assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
-      iModel.withPreparedStatement("SELECT count(*) as csumcount FROM change.ChangeSummary", (myStmt) => {
-        assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
-        const row: any = myStmt.getRow();
-        assert.equal(row.csumcount, 0);
-      });
-
-      // verify the extended schema was imported into the changes file
-      iModel.withPreparedStatement("SELECT count(*) as csumcount FROM imodelchange.ChangeSet", (myStmt) => {
-        assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
-        const row: any = myStmt.getRow();
-        assert.equal(row.csumcount, 0);
-      });
-
-      expect(IModelJsFs.existsSync(BriefcaseManager.getChangeCachePathName(readOnlyTestIModel.id)));
-
-      ChangeSummaryManager.detachChangeCache(iModel);
-      assert.isFalse(ChangeSummaryManager.isChangeCacheAttached(iModel));
-      assert.throw(() => iModel.withPreparedStatement("SELECT count(*) as sumcount FROM change.ChangeSummary", () => { }));
-
-      // calling detach if nothing was attached should fail
-      assert.throw(() => ChangeSummaryManager.detachChangeCache(iModel));
-
-      ChangeSummaryManager.attachChangeCache(iModel);
-      assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
-      iModel.withPreparedStatement("SELECT count(*) as sumcount FROM change.ChangeSummary", (myStmt) => {
-        assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
-        const row: any = myStmt.getRow();
-        assert.equal(row.sumcount, 0);
-      });
-
-    } finally {
-      iModel.close();
-    }
-  });
-
-  it("ECSqlStatementCache after detaching Changes Cache", async () => {
-    setupTest(readOnlyTestIModel.id);
-
-    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testProjectId, iModelId: readOnlyTestIModel.id });
-    assert.exists(iModel);
-    assert(iModel.openMode === OpenMode.Readonly);
-    try {
-      assert.isFalse(ChangeSummaryManager.isChangeCacheAttached(iModel));
-      assert.throw(() => iModel.withPreparedStatement("SELECT count(*) as csumcount FROM change.ChangeSummary", () => { }));
-
-      ChangeSummaryManager.attachChangeCache(iModel);
-      assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
-      iModel.withPreparedStatement("SELECT count(*) as csumcount FROM change.ChangeSummary", (myStmt) => {
-        assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
-        const row: any = myStmt.getRow();
-        assert.equal(row.csumcount, 0);
-      });
-
-      ChangeSummaryManager.detachChangeCache(iModel);
-      assert.isFalse(ChangeSummaryManager.isChangeCacheAttached(iModel));
-      assert.throw(() => iModel.withPreparedStatement("SELECT count(*) as csumcount FROM change.ChangeSummary", () => { }));
-
-    } finally {
-      iModel.close();
-    }
-  });
 
   it("Attach / Detach ChangeCache file to closed imodel", async () => {
     setupTest(readOnlyTestIModel.id);
@@ -223,7 +104,6 @@ describe("ChangeSummary (#integration)", () => {
     assert.exists(iModel);
     assert.throw(() => ChangeSummaryManager.isChangeCacheAttached(iModel));
     assert.throw(() => ChangeSummaryManager.attachChangeCache(iModel));
-    assert.throw(() => ChangeSummaryManager.detachChangeCache(iModel));
   });
 
   it("Extract ChangeSummaries", async () => {
