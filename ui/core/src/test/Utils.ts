@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
 
-
 /** @internal */
 export const createRect = (left: number, top: number, right: number, bottom: number): ClientRect => ({
   left,

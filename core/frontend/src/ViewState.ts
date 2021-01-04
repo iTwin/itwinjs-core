@@ -6,14 +6,14 @@
  * @module Views
  */
 
-import { assert, BeTimePoint, Id64, Id64Arg, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { assert, BeEvent, Id64, Id64Arg, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import {
   Angle, AxisOrder, ClipVector, Constant, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d,
   PolyfaceBuilder, Range3d, Ray3d, StrokeOptions, Transform, Vector2d, Vector3d, XAndY, XYAndZ, XYZ, YawPitchRollAngles,
 } from "@bentley/geometry-core";
 import {
   AnalysisStyle, AxisAlignedBox3d, Camera, Cartographic, ColorDef,
-  FeatureAppearance, Frustum, GlobeMode, GraphicParams, GridOrientationType, Npc, RenderMaterial,
+  FeatureAppearance, Frustum, GlobeMode, GraphicParams, GridOrientationType, ModelClipGroups, Npc, RenderMaterial,
   SubCategoryOverride, TextureMapping, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails,
   ViewDetails3d, ViewFlags, ViewStateProps,
 } from "@bentley/imodeljs-common";
@@ -35,45 +35,12 @@ import { TileTreeReference, TileTreeSet } from "./tile/internal";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { areaToEyeHeight, areaToEyeHeightFromGcs, GlobalLocation } from "./ViewGlobalLocation";
 import { ViewingSpace } from "./ViewingSpace";
-import { ViewChangeOptions, Viewport } from "./Viewport";
+import { ViewChangeOptions } from "./ViewAnimation";
+import { Viewport } from "./Viewport";
 import { DrawingViewState } from "./DrawingViewState";
 import { SpatialViewState } from "./SpatialViewState";
-
-/** Describes the result of a viewing operation such as those exposed by [[ViewState]] and [[Viewport]].
- * @public
- */
-export enum ViewStatus {
-  Success = 0,
-  ViewNotInitialized,
-  AlreadyAttached,
-  NotAttached,
-  DrawFailure,
-  NotResized,
-  ModelNotFound,
-  InvalidWindow,
-  MinWindow,
-  MaxWindow,
-  MaxZoom,
-  MaxDisplayDepth,
-  InvalidUpVector,
-  InvalidTargetPoint,
-  InvalidLens,
-  InvalidViewport,
-}
-
-/** Margins for white space to be left around view volumes for [[ViewState.lookAtVolume]].
- * Values mean "fraction of view size" and must be between 0 and .25.
- * @public
- */
-export class MarginPercent {
-  constructor(public left: number, public top: number, public right: number, public bottom: number) {
-    const limitMargin = (val: number) => Geometry.clamp(val, 0.0, 0.25);
-    this.left = limitMargin(left);
-    this.top = limitMargin(top);
-    this.right = limitMargin(right);
-    this.bottom = limitMargin(bottom);
-  }
-}
+import { ViewStatus } from "./ViewStatus";
+import { ViewPose, ViewPose2d, ViewPose3d } from "./ViewPose";
 
 /** Describes the largest and smallest values allowed for the extents of a [[ViewState]].
  * Attempts to exceed these limits in any dimension will fail, preserving the previous extents.
@@ -86,94 +53,10 @@ export interface ExtentLimits {
   max: number;
 }
 
-/** The "pose" for a view. This is either the volume or area, depending on whether the view is 3d or 2d,
- * plus the camera position/angle, if it is enabled.
- * @note a ViewPose is immutable.
- * @public
- */
-export abstract class ViewPose {
-  public undoTime?: BeTimePoint; // the time this pose was created, if it is saved in the view undo stack.
-  public abstract equalState(view: ViewState): boolean;
-  public abstract equal(other: ViewPose): boolean;
-  public abstract origin: Point3d;
-  public abstract extents: Vector3d;
-  public abstract rotation: Matrix3d;
-  public get center() {
-    const delta = this.rotation.multiplyTransposeVector(this.extents);
-    return this.origin.plusScaled(delta, 0.5);
-  }
-  public get target() { return this.center; }
-  public get zVec() { return this.rotation.getRow(2); }
-  public constructor(public cameraOn: boolean) { }
-}
-
-/** @internal */
-export class ViewPose3d extends ViewPose {
-  public readonly origin: Point3d;
-  public readonly extents: Vector3d;
-  public readonly rotation: Matrix3d;
-  public readonly camera: Camera;
-
-  public constructor(view: ViewState3d) {
-    super(view.isCameraOn);
-    this.origin = view.origin.clone();
-    this.extents = view.extents.clone();
-    this.rotation = view.rotation.clone();
-    this.camera = view.camera.clone();
-  }
-
-  public get target() {
-    return this.cameraOn ? this.camera.eye.plusScaled(this.rotation.getRow(2), -1.0 * this.camera.focusDist) : this.center;
-  }
-
-  public equal(other: ViewPose3d) {
-    return this.cameraOn === other.cameraOn &&
-      this.origin.isAlmostEqual(other.origin) &&
-      this.extents.isAlmostEqual(other.extents) &&
-      this.rotation.isAlmostEqual(other.rotation) &&
-      (!this.cameraOn || this.camera.equals(other.camera));
-  }
-
-  public equalState(view: ViewState3d): boolean {
-    return this.cameraOn === view.isCameraOn &&
-      this.origin.isAlmostEqual(view.origin) &&
-      this.extents.isAlmostEqual(view.extents) &&
-      this.rotation.isAlmostEqual(view.rotation) &&
-      (!this.cameraOn || this.camera.equals(view.camera));
-  }
-}
-
-/** @internal */
-export class ViewPose2d extends ViewPose {
-  public readonly origin2: Point2d;
-  public readonly delta: Point2d;
-  public readonly angle: Angle;
-  public constructor(view: ViewState2d) {
-    super(false);
-    this.origin2 = view.origin.clone();
-    this.delta = view.delta.clone();
-    this.angle = view.angle.clone();
-  }
-  public equal(other: ViewPose2d) {
-    return this.origin2.isAlmostEqual(other.origin) &&
-      this.delta.isAlmostEqual(other.delta) &&
-      this.angle.isAlmostEqualNoPeriodShift(other.angle);
-  }
-
-  public equalState(view: ViewState2d): boolean {
-    return this.origin2.isAlmostEqual(view.origin) &&
-      this.delta.isAlmostEqual(view.delta) &&
-      this.angle.isAlmostEqualNoPeriodShift(view.angle);
-  }
-  public get origin() { return new Point3d(this.origin2.x, this.origin2.y); }
-  public get extents() { return new Vector3d(this.delta.x, this.delta.y); }
-  public get rotation() { return Matrix3d.createRotationAroundVector(Vector3d.unitZ(), this.angle)!; }
-}
-
 /** Interface adopted by an object that wants to apply a per-model display transform.
  * This is intended chiefly for use by model alignment tools.
  * @see [[ViewState.modelDisplayTransformProvider]].
- * @internal
+ * @alpha
  */
 export interface ModelDisplayTransformProvider {
   getModelDisplayTransform(modelId: Id64String, baseTransform: Transform): Transform;
@@ -212,7 +95,10 @@ class GridDecorator {
 }
 
 /** The front-end state of a [[ViewDefinition]] element.
- * A ViewState is typically associated with a [[Viewport]] to display the contents of the view on the screen.
+ * A ViewState is typically associated with a [[Viewport]] to display the contents of the view on the screen. A ViewState being displayed by a Viewport is considered to be
+ * "attached" to that viewport; a "detached" viewport is not being displayed by any viewport. Because the Viewport modifies the state of its attached ViewState, a ViewState
+ * can only be attached to one Viewport at a time. Technically, two Viewports can display two different ViewStates that both use the same [[DisplayStyleState]], but this is
+ * discouraged - changes made to the style by one Viewport will affect the contents of the other Viewport.
  * * @see [Views]($docs/learning/frontend/Views.md)
  * @public
  */
@@ -226,27 +112,76 @@ export abstract class ViewState extends ElementState {
   public description?: string;
   public isPrivate?: boolean;
   private readonly _gridDecorator: GridDecorator;
+  private _categorySelector: CategorySelectorState;
+  private _displayStyle: DisplayStyleState;
+  private readonly _unregisterCategorySelectorListeners: VoidFunction[] = [];
+
+  /** An event raised when the set of categories viewed by this view changes, *only* if the view is attached to a [[Viewport]].
+   * @beta
+   */
+  public readonly onViewedCategoriesChanged = new BeEvent<() => void>();
+
+  /** An event raised just before assignment to the [[displayStyle]] property, *only* if the view is attached to a [[Viewport]].
+   * @see [[DisplayStyleSettings]] for events raised when properties of the display style change.
+   * @beta
+   */
+  public readonly onDisplayStyleChanged = new BeEvent<(newStyle: DisplayStyleState) => void>();
+
+  /** Event raised just before assignment to the [[modelDisplayTransformProvider]] property, *only* if the view is attached to a [[Viewport]].
+   * @alpha
+   */
+  public readonly onModelDisplayTransformProviderChanged = new BeEvent<(newProvider: ModelDisplayTransformProvider | undefined) => void>();
 
   /** Selects the categories that are display by this ViewState. */
-  public categorySelector: CategorySelectorState;
+  public get categorySelector(): CategorySelectorState {
+    return this._categorySelector;
+  }
+
+  public set categorySelector(selector: CategorySelectorState) {
+    if (selector === this._categorySelector)
+      return;
+
+    const isAttached = this.isAttachedToViewport;
+    this.unregisterCategorySelectorListeners();
+
+    this._categorySelector = selector;
+
+    if (isAttached) {
+      this.registerCategorySelectorListeners();
+      this.onViewedCategoriesChanged.raiseEvent();
+    }
+  }
+
   /** Selects the styling parameters for this this ViewState. */
-  public displayStyle: DisplayStyleState;
+  public get displayStyle(): DisplayStyleState {
+    return this._displayStyle;
+  }
+
+  public set displayStyle(style: DisplayStyleState) {
+    if (style === this.displayStyle)
+      return;
+
+    if (this.isAttachedToViewport)
+      this.onDisplayStyleChanged.raiseEvent(style);
+
+    this._displayStyle = style;
+  }
 
   /** @internal */
   protected constructor(props: ViewDefinitionProps, iModel: IModelConnection, categoryOrClone: CategorySelectorState, displayStyle: DisplayStyleState) {
     super(props, iModel);
     this.description = props.description;
     this.isPrivate = props.isPrivate;
-    this.displayStyle = displayStyle;
-    this.categorySelector = categoryOrClone;
+    this._displayStyle = displayStyle;
+    this._categorySelector = categoryOrClone;
     this._gridDecorator = new GridDecorator(this);
     if (!(categoryOrClone instanceof ViewState))  // is this from the clone method?
       return; // not from clone
 
     // from clone, 3rd argument is source ViewState
     const source = categoryOrClone as ViewState;
-    this.categorySelector = source.categorySelector.clone();
-    this.displayStyle = source.displayStyle.clone();
+    this._categorySelector = source.categorySelector.clone();
+    this._displayStyle = source.displayStyle.clone();
     this._extentLimits = source._extentLimits;
     this._auxCoordSystem = source._auxCoordSystem;
     this._modelDisplayTransformProvider = source._modelDisplayTransformProvider;
@@ -1077,19 +1012,73 @@ export abstract class ViewState extends ElementState {
 
   /** Specify a provider of per-model display transforms. Intended chiefly for use by model alignment tools.
    * @note The transform supplied is used for display purposes **only**. Do not expect operations like snapping to account for the display transform.
-   * @see [[Viewport.setModelDisplayTransformProvider]].
-   * @internal
+   * @alpha
    */
   public get modelDisplayTransformProvider(): ModelDisplayTransformProvider | undefined {
     return this._modelDisplayTransformProvider;
   }
+
   public set modelDisplayTransformProvider(provider: ModelDisplayTransformProvider | undefined) {
+    if (provider === this.modelDisplayTransformProvider)
+      return;
+
+    if (this.isAttachedToViewport)
+      this.onModelDisplayTransformProviderChanged.raiseEvent(provider);
+
     this._modelDisplayTransformProvider = provider;
   }
 
   /** @internal */
   public getModelDisplayTransform(modelId: Id64String, baseTransform: Transform): Transform {
     return this.modelDisplayTransformProvider ? this.modelDisplayTransformProvider.getModelDisplayTransform(modelId, baseTransform) : baseTransform;
+  }
+
+  /** Invoked when this view becomes the view displayed by the specified [[Viewport]].
+   * A ViewState can be attached to at most **one** Viewport.
+   * @note If you override this method you **must** call `super.attachToViewport`.
+   * @throws Error if the view is already attached to any Viewport.
+   * @see [[detachFromViewport]] from the inverse operation.
+   * @internal
+   */
+  public attachToViewport(): void {
+    if (this.isAttachedToViewport)
+      throw new Error("Attempting to attach a ViewState that is already attached to a Viewport");
+
+    this.registerCategorySelectorListeners();
+  }
+
+  private registerCategorySelectorListeners(): void {
+    const cats = this.categorySelector.observableCategories;
+    const event = () => this.onViewedCategoriesChanged.raiseEvent();
+    this._unregisterCategorySelectorListeners.push(cats.onAdded.addListener(event));
+    this._unregisterCategorySelectorListeners.push(cats.onDeleted.addListener(event));
+    this._unregisterCategorySelectorListeners.push(cats.onCleared.addListener(event));
+  }
+
+  /** Invoked when this view, previously attached to the specified [[Viewport]] via [[attachToViewport]], is no longer the view displayed by that Viewport.
+   * @note If you override this method you **must** call `super.detachFromViewport`.
+   * @throws Error if the view is not attached to any Viewport.
+   * @internal
+   */
+  public detachFromViewport(): void {
+    if (!this.isAttachedToViewport)
+      throw new Error("Attempting to detach a ViewState from a Viewport to which it is not attached.");
+
+    this.unregisterCategorySelectorListeners();
+  }
+
+  private unregisterCategorySelectorListeners(): void {
+    this._unregisterCategorySelectorListeners.forEach((f) => f());
+    this._unregisterCategorySelectorListeners.length = 0;
+  }
+
+  /** Returns whether this view is currently being displayed by a [[Viewport]].
+   * @alpha
+   */
+  public get isAttachedToViewport(): boolean {
+    // In attachToViewport, we register event listeners on the category selector. We remove them in detachFromViewport.
+    // So a non-empty list of event listener removal functions indicates we are currently attached to a viewport.
+    return this._unregisterCategorySelectorListeners.length > 0;
   }
 }
 
@@ -1149,18 +1138,18 @@ export abstract class ViewState3d extends ViewState {
       this.centerEyePoint();
 
     this._details = new ViewDetails3d(this.jsonProperties);
-    this._details.onModelClipGroupsChanged.addListener((_) => this.updateModelClips());
-    this.updateModelClips();
+    this._details.onModelClipGroupsChanged.addListener((newGroups) => this.updateModelClips(newGroups));
+    this.updateModelClips(this._details.modelClipGroups);
 
     this._updateMaxGlobalScopeFactor();
   }
 
-  private updateModelClips(): void {
+  private updateModelClips(groups: ModelClipGroups): void {
     for (const clip of this._modelClips)
       clip?.dispose();
 
     this._modelClips.length = 0;
-    for (const group of this.details.modelClipGroups.groups) {
+    for (const group of groups.groups) {
       const clip = group.clip ? IModelApp.renderSystem.createClipVolume(group.clip) : undefined;
       this._modelClips.push(clip);
     }
@@ -1966,10 +1955,14 @@ export abstract class ViewState2d extends ViewState {
 
   /** Change the model viewed by this view.
    * @note The new model should be of the same type (drawing or sheet) as the current viewed model.
+   * @throws Error if attempting to change the viewed model while the view is attached to a viewport.
    * @see [[Viewport.changeViewedModel2d]].
    * @alpha
    */
   public async changeViewedModel(newViewedModelId: Id64String): Promise<void> {
+    if (this.isAttachedToViewport)
+      throw new Error("Cannot change the viewed model of a view that is attached to a viewport.");
+
     this._baseModelId = newViewedModelId;
     this._treeRef = undefined;
     await this.load();

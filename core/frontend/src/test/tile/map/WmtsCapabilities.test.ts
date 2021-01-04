@@ -14,7 +14,6 @@ describe("WmtsCapabilities", () => {
     const capabilities = await WmtsCapabilities.create("assets/wmts_capabilities/USGSHydroCached_capabilities.xml");
     expect(capabilities?.version).to.equal("1.0.0");
 
-
     // Test GetCapabilities operation metadata
     expect(capabilities?.operationsMetadata?.getCapabilities).to.not.undefined;
     expect(capabilities?.operationsMetadata?.getCapabilities?.name).to.equals("GetCapabilities");
@@ -31,7 +30,6 @@ describe("WmtsCapabilities", () => {
       expect(capabilities.operationsMetadata.getCapabilities.getDcpHttp[1].url).to.equals("https://basemap.nationalmap.gov/arcgis/rest/services/USGSHydroCached/MapServer/WMTS?");
     }
 
-
     // Test GetTile operation metadata
     expect(capabilities?.operationsMetadata?.getTile).to.not.undefined;
     expect(capabilities?.operationsMetadata?.getTile?.name).to.equals("GetTile");
@@ -47,7 +45,6 @@ describe("WmtsCapabilities", () => {
       expect(capabilities.operationsMetadata.getTile.getDcpHttp[1].encoding).to.equals("KVP");
       expect(capabilities.operationsMetadata.getTile.getDcpHttp[1].url).to.equals("https://basemap.nationalmap.gov/arcgis/rest/services/USGSHydroCached/MapServer/WMTS?");
     }
-
 
     // Check that no GetFeatureInfo has been configured
     expect(capabilities?.operationsMetadata?.getFeatureInfo).to.undefined;
@@ -103,7 +100,6 @@ describe("WmtsCapabilities", () => {
     expect(capabilities?.contents?.tileMatrixSets[0].abstract).to.contains("dpi assumes 0.28mm");
     expect(capabilities?.contents?.tileMatrixSets[0].supportedCrs).to.contains("urn:ogc:def:crs:EPSG::3857");
 
-
     // Validate first tile matrix definition.
     expect(capabilities?.contents?.tileMatrixSets[0].tileMatrix.length).to.equals(24);
     expect(capabilities?.contents?.tileMatrixSets[0].tileMatrix[0].identifier).to.equals("0");
@@ -138,7 +134,6 @@ describe("WmtsCapabilities", () => {
     expect(capabilities?.serviceIdentification?.fees).to.equals("none");
     expect(capabilities?.serviceIdentification?.accessConstraints).to.equals("none");
 
-
     // Test GetCapabilities operation metadata
     expect(capabilities?.operationsMetadata?.getCapabilities).to.not.undefined;
     expect(capabilities?.operationsMetadata?.getCapabilities?.name).to.equals("GetCapabilities");
@@ -158,7 +153,6 @@ describe("WmtsCapabilities", () => {
       expect(capabilities.operationsMetadata.getCapabilities.postDcpHttp[0].encoding).to.equals("SOAP");
       expect(capabilities.operationsMetadata.getCapabilities.postDcpHttp[0].url).to.equals("http://www.maps.bob/maps.cgi?");
     }
-
 
     // Test GetTile operation metadata
     expect(capabilities?.operationsMetadata?.getTile).to.not.undefined;
@@ -201,12 +195,10 @@ describe("WmtsCapabilities", () => {
     expect(capabilities?.contents?.layers[1].tileMatrixSetLinks.length).to.equal(1);
     expect(capabilities?.contents?.layers[1].tileMatrixSetLinks[0].tileMatrixSet).to.equal("WholeWorld_CRS_84");
 
-
     // Validate first tile matrix definition.
     expect(capabilities?.contents?.tileMatrixSets.length).to.equals(1);
     expect(capabilities?.contents?.tileMatrixSets[0].tileMatrix.length).to.equals(7);
     expect(capabilities?.contents?.tileMatrixSets[0].tileMatrix[0].identifier).to.equals("2g");
-
 
     expect(capabilities?.contents?.tileMatrixSets[0].tileMatrix[0].tileWidth).to.equals(320);
     expect(capabilities?.contents?.tileMatrixSets[0].tileMatrix[0].tileHeight).to.equals(200);
@@ -217,7 +209,6 @@ describe("WmtsCapabilities", () => {
   it("should parse Great artesian basin sample", async () => {
     const capabilities = await WmtsCapabilities.create("assets/wmts_capabilities/great-artesian-basin.xml");
     // I check only things that are different from other datasets
-
 
     //  Check the layer styles
     expect(capabilities?.contents?.layers).to.not.undefined;

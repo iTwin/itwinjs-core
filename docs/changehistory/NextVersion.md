@@ -25,6 +25,22 @@ In the image below, the section-cut graphics are drawn in orange with visible bl
 
 NOTE: If a ClipStyle is associated with a [Viewport]($frontend), it should be modified via [Viewport.clipStyle]($frontend) to ensure the viewport's contents are updated to reflect the change.
 
+## Custom screen-space effects
+
+The display system now allows applications to apply their own post-processing effects to the image rendered by a [Viewport]($frontend) using [RenderSystem.createScreenSpaceEffectBuilder]($frontend). A couple of example effects can be found in the [frontend-devtools package](https://github.com/imodeljs/imodeljs/tree/master/core/frontend-devtools), including [LensDistortionEffect]($frontend-devtools) (illustrated below) for simulating the distortion produced by real-world cameras with wide fields of view; and various [ConvolutionEffect]($frontend-devtools)s for producing a blurred, sharpened, or embossed image.
+
+Wide-angle camera with no lens distortion:
+![Wide-angle camera with no lens distortion](./assets/wide-fov-no-distortion.jpg)
+
+Wide-angle camera with lens distortion:
+![Wide-angle camera with lens distortion](./assets/wide-fov-distortion.jpg)
+
+## Automatic viewport synchronization
+
+A [Viewport]($frontend) holds a reference to a [ViewState]($frontend) defining its viewing parameters, which in turn holds references to objects like a [DisplayStyleState]($frontend) and [CategorySelectorState]($frontend) controlling the styling and contents of the Viewport. Previously, directly modifying the ViewState or its components would not cause the Viewport to update immediately on-screen - instead, callers would either need to manually invoke methods like `Viewport.invalidateScene` to notify the Viewport that something had changed; or use special Viewport APIs like [Viewport.changeCategoryDisplay]($frontend) that would forward to the appropriate object and also invalidate the Viewport's internal state. This was error-prone and tedious.
+
+New events have been added to ViewState and its related classes to notify listeners when aspects of their states change. For example, changing the background color via [DisplayStyleSettings.backgroundColor]($common) raises the [DisplayStyleSettings.onBackgroundColorChanged]($common) event. A Viewport now listens for such events and updates its own state automatically. This eliminates the need for most manual synchronization. However, [Viewport.synchWithView]($frontend) should still be used when modifying the ViewState's [Frustum]($common)
+
 ## Tile compression
 
 [IModelHostConfiguration.compressCachedTiles]($backend) specifies whether tiles uploaded to blob storage should be compressed using gzip. Previously, it defaulted to `false` if omitted. The default has now been switched to `true`. Compressing tiles conserves bandwidth; the tiles are transparently and efficiently decompressed by the browser.

@@ -8,10 +8,10 @@
 
 import { BeDuration, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { BriefcaseQuery } from "@bentley/imodelhub-client";
-import { BriefcaseProps, IModelConnectionProps, IModelError, IModelRpcOpenProps, IModelRpcProps, RpcPendingResponse, SyncMode } from "@bentley/imodeljs-common";
+import { BriefcaseProps, IModelConnectionProps, IModelError, IModelRpcOpenProps, IModelRpcProps, RequestNewBriefcaseProps, RpcPendingResponse, SyncMode } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
-import { BriefcaseManager, RequestNewBriefcaseArg } from "../BriefcaseManager";
+import { BriefcaseManager } from "../BriefcaseManager";
 import { CheckpointProps, V1CheckpointManager } from "../CheckpointManager";
 import { BriefcaseDb, IModelDb, SnapshotDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
@@ -72,7 +72,7 @@ export class RpcBriefcaseUtility {
     }
 
     // no local briefcase available. Download one and open it.
-    const request: RequestNewBriefcaseArg = {
+    const request: RequestNewBriefcaseProps = {
       contextId: tokenProps.contextId!,
       iModelId,
       briefcaseId: myBriefcaseIds.length > 0 ? myBriefcaseIds[0] : undefined, // if briefcaseId is undefined, we'll acquire a new one.

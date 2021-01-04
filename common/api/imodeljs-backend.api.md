@@ -2819,7 +2819,7 @@ export class IModelImporter {
     progressInterval: number;
     simplifyElementGeometry: boolean;
     readonly targetDb: IModelDb;
-}
+    }
 
 // @beta
 export interface IModelImportOptions {
@@ -3230,7 +3230,7 @@ export class MobileAuthorizationClient extends ImsAuthorizationClient implements
     initialize(requestContext: ClientRequestContext): Promise<void>;
     get isAuthorized(): boolean;
     // (undocumented)
-    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined, message: string) => void>;
+    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined, message?: string | undefined) => void>;
     signIn(requestContext: ClientRequestContext): Promise<void>;
     signOut(requestContext: ClientRequestContext): Promise<void>;
 }
@@ -3308,7 +3308,7 @@ export class NativeAppBackend {
     static checkInternetConnectivity(): InternetConnectivityStatus;
     // (undocumented)
     static onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void>;
-    static overrideInternetConnectivity(_overridenBy: OverriddenBy, status?: InternetConnectivityStatus): void;
+    static overrideInternetConnectivity(_overridenBy: OverriddenBy, status: InternetConnectivityStatus): void;
     static shutdown(): Promise<void>;
     static startup(configuration?: IModelHostConfiguration): Promise<void>;
 }
@@ -3545,9 +3545,9 @@ export class RepositoryModel extends DefinitionModel {
 }
 
 // @beta
-export interface RequestNewBriefcaseArg extends RequestNewBriefcaseProps {
+export type RequestNewBriefcaseArg = RequestNewBriefcaseProps & {
     onProgress?: ProgressFunction;
-}
+};
 
 // @public
 export abstract class RoleElement extends Element {
