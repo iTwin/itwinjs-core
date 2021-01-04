@@ -2436,7 +2436,7 @@ export class BriefcaseDb extends IModelDb {
     requestContext.enter();
 
     // Upgrade and validate
-    let nativeDb: IModelJsNative.DgnDb | undefined = undefined;
+    let nativeDb: IModelJsNative.DgnDb | undefined;
     try {
       // Upgrade at open
       const openMode = OpenMode.ReadWrite;
@@ -2459,7 +2459,7 @@ export class BriefcaseDb extends IModelDb {
         nativeDb.closeIModel();
       }
     } catch (err) {
-      IModelHost.iModelClient.locks.deleteAll(requestContext, briefcaseProps.iModelId, briefcaseProps.briefcaseId);
+      await IModelHost.iModelClient.locks.deleteAll(requestContext, briefcaseProps.iModelId, briefcaseProps.briefcaseId);
       throw err;
     }
 
