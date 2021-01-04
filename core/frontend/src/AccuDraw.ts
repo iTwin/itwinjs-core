@@ -21,7 +21,8 @@ import { StandardViewId } from "./StandardView";
 import { BeButton, BeButtonEvent, CoordinateLockOverrides, InputCollector, InputSource } from "./tools/Tool";
 import { ViewTool } from "./tools/ViewTool";
 import { DecorateContext } from "./ViewContext";
-import { linePlaneIntersect, ScreenViewport, Viewport } from "./Viewport";
+import { linePlaneIntersect } from "./LinePlaneIntersect";
+import { ScreenViewport, Viewport } from "./Viewport";
 import { ViewState } from "./ViewState";
 
 // cspell:ignore dont primitivetools
@@ -465,6 +466,9 @@ export class AccuDraw {
 
     if (0.0 !== pointActive.z && !vp.isPointAdjustmentRequired)
       pointActive.z = 0.0;
+
+    if (1.0 !== vp.view.getAspectRatioSkew())
+      this.downgradeInactiveState(); // Disable AccuDraw if skew is applied with AccuDraw already active...
 
     if (this.isInactive) {
       this.point.setFrom(pointActive);
@@ -1691,8 +1695,7 @@ export class AccuDraw {
     const rMatrix = (!this.flags.animateRotation || 0.0 === this._percentChanged) ? this.axes.toMatrix3d() : this.lastAxes.toMatrix3d();
     const origin = new Point3d(); // Compass origin is adjusted by active z-lock...
     this.getCompassPlanePoint(origin, vp);
-    // NOTE: AccuDraw should probably be disabled for exaggerated views, for now put a limit on compass y scale...
-    const scale = vp.pixelsFromInches(this._compassSizeInches / vp.view.getAspectRatioSkew()) * vp.getPixelSizeAtPoint(origin);
+    const scale = vp.pixelsFromInches(this._compassSizeInches) * vp.getPixelSizeAtPoint(origin);
 
     rMatrix.transposeInPlace();
     rMatrix.scaleColumns(scale, scale, scale, rMatrix);
@@ -2654,8 +2657,8 @@ export class AccuDraw {
       return false;
 
     const vp = this.currentView;
-    if (!vp)
-      return false;
+    if (!vp || 1.0 !== vp.view.getAspectRatioSkew())
+      return false; // Disallow AccuDraw being enabled for exaggerated views...
 
     // NOTE: If ACS Plane lock setup initial and base rotation to ACS...
     if (vp && AccuDraw.useACSContextRotation(vp, false)) {

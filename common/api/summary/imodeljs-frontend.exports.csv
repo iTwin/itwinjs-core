@@ -165,6 +165,7 @@ public;FrontendLoggerCategory
 public;FrontendRequestContext 
 public;FrontendSecurityOptions
 public;Frustum2d
+internal;FrustumAnimator 
 public;FuzzySearch
 public;FuzzySearchResult
 public;FuzzySearchResults
@@ -184,6 +185,7 @@ public;getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | un
 public;getImageSourceMimeType(format: ImageSourceFormat): string
 alpha;GlobalLocation
 alpha;GlobalLocationArea
+internal;GlobeAnimator 
 internal;class GltfReader
 internal;GltfReaderProps
 internal;GltfReaderResult 
@@ -302,7 +304,7 @@ alpha;MobileAuthorizationClient
 internal;MockRender
 internal;ModalOptions
 internal;ModalReturn
-internal;ModelDisplayTransformProvider
+alpha;ModelDisplayTransformProvider
 public;ModelSelectorState 
 public;ModelState 
 internal;ModifyElementSource
@@ -387,6 +389,10 @@ internal;SavedState
 beta;Scene
 beta;SceneContext 
 internal;SceneVolumeClassifier
+beta;ScreenSpaceEffectBuilder
+beta;ScreenSpaceEffectBuilderParams
+beta;ScreenSpaceEffectContext
+beta;ScreenSpaceEffectSource
 public;ScreenViewport 
 public;ScrollViewTool 
 internal;SectionDrawingInfo
@@ -503,10 +509,16 @@ internal;TraversalDetails
 internal;TraversalSelectionContext
 public;tryImageElementFromUrl(url: string): Promise
 beta;TwoWayViewportSync
+beta;Uniform
+beta;UniformArrayParams 
+beta;UniformContext
+beta;UniformParams
+beta;UniformType
 internal;UpsampledMapTile 
 internal;UsesDragSelect
 internal;UsesFence
 internal;UsesSelection
+beta;VaryingType
 public;ViewAnimationOptions
 public;ViewChangeOptions 
 alpha;ViewClipByElementTool 

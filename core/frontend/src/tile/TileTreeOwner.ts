@@ -6,6 +6,7 @@
  * @module Tiles
  */
 
+import { IModelConnection } from "../IModelConnection";
 import { TileTree, TileTreeLoadStatus } from "./internal";
 
 /** Owns and manages the lifecycle of a [[TileTree]]. It is in turn owned by an IModelConnection.Tiles object.
@@ -14,6 +15,9 @@ import { TileTree, TileTreeLoadStatus } from "./internal";
  * @beta
  */
 export interface TileTreeOwner {
+  /** The iModel for this TileTree */
+  readonly iModel: IModelConnection;
+
   /** The owned [[TileTree]]. Do not store a direct reference to it, because it may become disposed by its owner.
    * @see [[TileTreeOwner.load]] to ensure the tree is enqueued for loading if necessary.
    */

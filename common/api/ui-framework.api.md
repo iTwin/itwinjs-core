@@ -26,7 +26,6 @@ import { BeDuration } from '@bentley/bentleyjs-core';
 import { BeEvent } from '@bentley/bentleyjs-core';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
 import { ButtonProps } from '@bentley/ui-core';
-import { CategorySelectorProps } from '@bentley/imodeljs-common';
 import { ColorDef } from '@bentley/imodeljs-common';
 import { CommandHandler } from '@bentley/ui-abstract';
 import { CommonDivProps } from '@bentley/ui-core';
@@ -47,7 +46,6 @@ import { DialogProps as DialogProps_2 } from '@bentley/ui-abstract';
 import { DialogRow } from '@bentley/ui-abstract';
 import { Direction } from '@bentley/ui-ninezone';
 import { DisabledResizeHandles } from '@bentley/ui-ninezone';
-import { DisplayStyleProps } from '@bentley/imodeljs-common';
 import { DndComponentClass } from 'react-dnd';
 import { DraggedWidgetManagerProps } from '@bentley/ui-ninezone';
 import { DragLayerProps } from '@bentley/ui-components';
@@ -61,7 +59,6 @@ import { HorizontalAnchor } from '@bentley/ui-ninezone';
 import { I18N } from '@bentley/imodeljs-i18n';
 import { IconProps } from '@bentley/ui-core';
 import { IconSpec } from '@bentley/ui-core';
-import { Id64Array } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
 import { IMatch } from '@bentley/ui-abstract';
@@ -74,7 +71,6 @@ import { MessageBoxType } from '@bentley/imodeljs-frontend';
 import { MessageBoxValue } from '@bentley/imodeljs-frontend';
 import { MessageSeverity } from '@bentley/ui-core';
 import { MessageType } from '@bentley/ui-core';
-import { ModelSelectorProps } from '@bentley/imodeljs-common';
 import { NestedStagePanelKey } from '@bentley/ui-ninezone';
 import { NestedStagePanelsManagerProps } from '@bentley/ui-ninezone';
 import { NineZoneDispatch } from '@bentley/ui-ninezone';
@@ -121,7 +117,6 @@ import { SafeAreaInsets } from '@bentley/ui-ninezone';
 import { ScreenViewport } from '@bentley/imodeljs-frontend';
 import { SelectionMode } from '@bentley/ui-components';
 import { SettingsStatus } from '@bentley/product-settings-client';
-import { SheetProps } from '@bentley/imodeljs-common';
 import { Size } from '@bentley/ui-core';
 import { SizeProps } from '@bentley/ui-core';
 import { SnapMode } from '@bentley/imodeljs-frontend';
@@ -168,12 +163,12 @@ import { UnifiedSelectionTreeEventHandler } from '@bentley/presentation-componen
 import { UnifiedSelectionTreeEventHandlerParams } from '@bentley/presentation-components';
 import { UserInfo } from '@bentley/itwin-client';
 import { VerticalAnchor } from '@bentley/ui-ninezone';
-import { ViewDefinitionProps } from '@bentley/imodeljs-common';
 import { ViewFlagProps } from '@bentley/imodeljs-common';
 import { ViewManager } from '@bentley/imodeljs-frontend';
 import { Viewport } from '@bentley/imodeljs-frontend';
 import { ViewState } from '@bentley/imodeljs-frontend';
 import { ViewStateProp } from '@bentley/ui-components';
+import { ViewStateProps } from '@bentley/imodeljs-common';
 import { WidgetManagerProps } from '@bentley/ui-ninezone';
 import { WidgetState as WidgetState_2 } from '@bentley/ui-abstract';
 import { WidgetZoneId } from '@bentley/ui-ninezone';
@@ -4312,23 +4307,11 @@ export interface SavedViewLayoutProps {
 }
 
 // @public
-export interface SavedViewProps {
+export interface SavedViewProps extends ViewStateProps {
     // (undocumented)
     bisBaseClass: string;
     // (undocumented)
-    categorySelectorProps: CategorySelectorProps;
-    // (undocumented)
-    displayStyleProps: DisplayStyleProps;
-    // (undocumented)
     emphasizeElementsProps?: EmphasizeElementsProps;
-    // (undocumented)
-    modelSelectorProps?: ModelSelectorProps;
-    // (undocumented)
-    sheetAttachments?: Id64Array;
-    // (undocumented)
-    sheetProps?: SheetProps;
-    // (undocumented)
-    viewDefinitionProps: ViewDefinitionProps;
 }
 
 // @alpha
