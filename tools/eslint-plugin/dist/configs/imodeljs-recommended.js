@@ -158,7 +158,7 @@ module.exports = {
       "error",
       {
         "hoist": "all",
-        "allow": ["T"]
+        "allow": ["T", "args"]
       }
     ],
     "@typescript-eslint/no-this-alias": "error",
