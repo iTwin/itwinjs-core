@@ -14,7 +14,7 @@ Test iModels can be used for local development. There are a few different ways t
 
 ### Exploring iModels
 [!bwc tile heading="ECSQL tutorial" linkTo="index path=learning/ecsqltutorial/index subPath=/ecsqltutorial" contents="Familiarize yourself with the basics of ECSQL" icon="database.svg" step="13" width="28%"]
-[!bwc tile heading="View in iTwinHub" linkTo="use-existing-imodel" contents="How to view your iModel in iTwinHub" icon="visibility.svg" step="13" width="28%"]
+[!bwc tile heading="View in iModelHub" linkTo="use-existing-imodel" contents="How to view your iModel in iModelHub" icon="visibility.svg" step="13" width="28%"]
 [!bwc tile heading="Explore iModel content" linkTo="explore-imodel-console" contents="How to query the data in your iModel" icon="developer.svg" step="13" width="28%"]
 [!bwc tile heading="Explore schemas in the iModel" linkTo="explore-schema-browser" contents="How to browse the schemas in your iModel" icon="ec-schema.svg" step="13" width="28%"]
 
