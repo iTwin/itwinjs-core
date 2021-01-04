@@ -16,7 +16,7 @@
 - Open integrated terminal
 - `npm install`
 - Create a `.env` file at the project root with the following:
-``` ps
+    ``` ps
     ###############################################################################
     # This file contains secrets - don't commit or share it!
     ###############################################################################
@@ -26,14 +26,14 @@
     IMODEL_ID=
 
     # OIDC configuration
-    #   Don't forget to add <CLIENT_ID>@apps.imsoidc.bentley.com to your CONNECT project too!
+    #   Don't forget to add <CLIENT_ID>@apps.imsoidc.bentley.com to your CONNECT project     too!
     CLIENT_ID=
     CLIENT_SECRET=
-```
+    ```
 
-> The values for `CONTEXT_ID` and `IMODEL_ID` can be obtained from the IDs column of the [iModel registration dashboard](../../../getting-started/registration-dashboard/?tab=1)
+    > The values for `CONTEXT_ID` and `IMODEL_ID` can be obtained from the IDs column of the [iModel registration dashboard](../../../getting-started/registration-dashboard/?tab=1)
 
-> The values for `CLIENT_ID` and `CLIENT_SECRET` come from the Agent Application you registered during the Setup step
+    > The values for `CLIENT_ID` and `CLIENT_SECRET` come from the Agent Application you registered during the Setup step
 
 - `npm run build`
 
