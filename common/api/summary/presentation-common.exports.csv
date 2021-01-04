@@ -18,7 +18,7 @@ public;ClassId = Id64String
 public;ClassInfo
 public;ClassInfo
 public;ClassInfoJSON
-public;ComputeDisplayValueCallback = (type: string, value: string | number | boolean |
+public;ComputeDisplayValueCallback = (type: string, value: PrimitivePropertyValue, displayValue: string) => Promise
 public;ConditionContainer
 public;Content
 beta;ContentDescriptorRequestOptions
@@ -206,6 +206,7 @@ public;PresentationRpcInterface
 public;PresentationRpcRequestOptions
 public;PresentationStatus
 alpha;PresentationUnitSystem
+public;PrimitivePropertyValue = string | number | boolean | Point | InstanceKey | undefined
 public;PrimitiveTypeDescription 
 public;PropertiesField 
 beta;PropertiesFieldDescriptor 
