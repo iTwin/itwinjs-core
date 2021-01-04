@@ -85,6 +85,7 @@
     "typescript": "~3.7.4"
   },
   "dependencies": {
+    "@azure-tools/azcopy-node": "^1.0.0",
     "@bentley/usage-logging-client": "2.11.0-dev.19",
     "applicationinsights": "^1.7.5",
     "deep-assign": "^2.0.0",
@@ -94,8 +95,7 @@
     "js-base64": "^2.4.5",
     "jsonwebtoken": "^8.5.0",
     "openid-client": "^3.15.3",
-    "semver": "^5.5.0",
-    "@azure-tools/azcopy-node" :"^1.0.0"
+    "semver": "^5.5.0"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"

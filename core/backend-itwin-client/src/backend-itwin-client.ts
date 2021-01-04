@@ -10,7 +10,6 @@ export * from "./imodelhub/LocalhostFileHandler";
 export * from "./imodelhub/AzureFileHandler";
 export * from "./UrlFileHandler";
 export * from "./StorageServiceFileHandler";
-export * from "./imodelhub/AzCopyFileHandler";
 /** @docs-package-description
  *
  */
