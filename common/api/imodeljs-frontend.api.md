@@ -1497,6 +1497,9 @@ export interface CachedIModelCoordinatesResponseProps {
     result: Array<PointWithStatus | undefined>;
 }
 
+// @internal (undocumented)
+export function calculateEcefToDbTransformAtLocation(originIn: Point3d, iModel: IModelConnection): Promise<Transform | undefined>;
+
 // @public
 export interface CanvasDecoration {
     decorationCursor?: string;
