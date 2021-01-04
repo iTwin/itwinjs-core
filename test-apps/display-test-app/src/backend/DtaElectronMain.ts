@@ -2,13 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { app, dialog } from "electron";
+import { app, dialog, OpenDialogOptions } from "electron";
 import * as path from "path";
 import { assert } from "@bentley/bentleyjs-core";
 import { ElectronManagerOptions, IModelJsElectronManager, WebpackDevServerElectronManager } from "@bentley/electron-manager";
-import { ElectronRpcManager, iTwinChannel } from "@bentley/imodeljs-common";
+import { BackendIpc, IpcHandler } from "@bentley/imodeljs-backend";
+import { ElectronRpcManager } from "@bentley/imodeljs-common";
+import { dtaChannel, DtaIpcInterface, dtaIpcVersion } from "../common/DtaIpcInterface";
 import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
-import { BackendIpc } from "@bentley/imodeljs-backend";
 
 const getWindowSize = () => {
   let width = 1280;
@@ -30,6 +31,14 @@ const getWindowSize = () => {
   return { width, height };
 };
 
+export class DtaIpcImpl extends IpcHandler implements DtaIpcInterface {
+  public get channelName() { return dtaChannel; }
+  public async getVersion() { return dtaIpcVersion; }
+  public async openFile(options: OpenDialogOptions) {
+    return dialog.showOpenDialog(options);
+  }
+}
+
 /** This is the function that gets called when we start display-test-app via `electron DtaElectronMain.js` from the command line.
  * It runs in the Electron main process and hosts the iModeljs backend (IModelHost) code. It starts the render (frontend) process
  * that starts from the file "index.ts". That launches the iModel.js frontend (IModelApp).
@@ -49,8 +58,8 @@ const dtaElectronMain = async () => {
   // Initialize rpcs for the backend
   ElectronRpcManager.initializeImpl({}, getRpcInterfaces(), manager);
 
-  // handler for the "openFile" ipc request from the frontend
-  manager.handle(iTwinChannel("dta.openFile"), async (_event, options) => dialog.showOpenDialog(options));
+  // handler for the "openFile" from the frontend
+  DtaIpcImpl.register();
 
   await initializeDtaBackend();
 

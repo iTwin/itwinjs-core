@@ -6,7 +6,7 @@
  * @module Editing
  */
 
-import { EditCommandIpc, editorAppChannel } from "@bentley/imodeljs-editor-common";
+import { editorAppChannel } from "@bentley/imodeljs-editor-common";
 import { FrontendIpc, PrimitiveTool } from "@bentley/imodeljs-frontend";
 
 /** @alpha */

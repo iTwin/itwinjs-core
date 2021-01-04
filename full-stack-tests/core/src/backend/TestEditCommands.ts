@@ -19,7 +19,9 @@ export class TestEditCommand1 extends TestCommand {
     return `${this._str}:1`;
   }
   public async testMethod1(str1: string, str2: string, obj1: TestCmdOjb1) {
-    return { str: str1 + str2, num: obj1.i1 + obj1.i2 };
+    const arr = Array.from(obj1.buf);
+    arr.push(-22);
+    return { str: str1 + str2, num: obj1.i1 + obj1.i2, buf: Int32Array.from(arr) };
   }
 };
 
@@ -31,6 +33,8 @@ export class TestEditCommand2 extends TestCommand {
   }
 
   public async testMethod1(str1: string, str2: string, obj1: TestCmdOjb1) {
-    return { str: str2 + str1, num: obj1.i1 - obj1.i2 };
+    const arr = Array.from(obj1.buf);
+    arr.push(-32);
+    return { str: str2 + str1, num: obj1.i1 - obj1.i2, buf: Int32Array.from(arr) };
   }
 };

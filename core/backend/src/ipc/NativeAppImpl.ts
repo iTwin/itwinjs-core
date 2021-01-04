@@ -9,7 +9,7 @@
 
 import { ClientRequestContext, Config, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseProps, IModelConnectionProps, IModelError, IModelRpcProps, InternetConnectivityStatus, iTwinChannel, LocalBriefcaseProps,
+  BriefcaseProps, IModelConnectionProps, IModelError, IModelRpcProps, InternetConnectivityStatus, LocalBriefcaseProps,
   MobileAuthorizationClientConfiguration, nativeAppChannel, NativeAppIpc, nativeAppIpcVersion, OpenBriefcaseProps, OverriddenBy,
   RequestNewBriefcaseProps, StorageValue, TileTreeContentIds,
 } from "@bentley/imodeljs-common";
@@ -70,7 +70,7 @@ export class NativeAppImpl extends IpcHandler implements NativeAppIpc {
 
     if (reportProgress) {
       args.onProgress = (loaded, total) => {
-        BackendIpc.ipc.send(iTwinChannel(`nativeApp.progress-${request.iModelId}`), { loaded, total });
+        BackendIpc.sendMessage(`nativeApp.progress-${request.iModelId}`, { loaded, total });
         return checkAbort();
       };
     }

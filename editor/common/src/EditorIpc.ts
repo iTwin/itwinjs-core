@@ -6,17 +6,10 @@
  * @module Editing
  */
 
-import { IpcInterface, iTwinChannel } from "@bentley/imodeljs-common";
+import { IpcInterface } from "@bentley/imodeljs-common";
 
-export const editorAppChannel = iTwinChannel("editor");
+export const editorAppChannel = "editor";
 export const editorAppIpcVersion = "1.0.0";
-
-/** @alpha */
-export type CommandError =
-  "CommandNotFound" |
-  "Exception" |
-  "MethodNotFound" |
-  "NoActiveCommand";
 
 /** @alpha */
 export interface EditorAppIpc extends IpcInterface {

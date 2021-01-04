@@ -10,7 +10,7 @@ export const iTwinChannel = (channel: string) => `itwin.${channel}`;
 
 export type IpcListener = (evt: any, ...arg: any[]) => void;
 export type RemoveFunction = () => void;
-export type IpcInvokeReturn = { result: any, error?: never } | { error: any, result?: never };
+export type IpcInvokeReturn = { result: any, error?: never } | { result?: never, error: { name: string, message: string, errorNumber: number } };
 
 export interface IpcSocket {
   send: (channel: string, ...data: any[]) => void;

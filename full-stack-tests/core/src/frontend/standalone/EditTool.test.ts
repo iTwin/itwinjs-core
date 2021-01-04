@@ -57,17 +57,20 @@ if (ElectronRpcConfiguration.isElectron) {
       const obj1 = {
         i1: 10,
         i2: 20,
+        buf: Int8Array.from([1, 2, 3, 4, 6]),
       };
 
       await tool.go(testCmdIds.cmd1, str1, str2, obj1);
       assert.equal(cmdStr, `${cmdArg}:1`);
       assert.equal(testOut.num, 30);
       assert.equal(testOut.str, "abcdef");
+      assert.deepEqual(Array.from(testOut.buf), [1, 2, 3, 4, 6, -22]);
 
       await tool.go(testCmdIds.cmd2, str1, str2, obj1);
       assert.equal(cmdStr, `${cmdArg}:2`);
       assert.equal(testOut.num, -10);
       assert.equal(testOut.str, "defabc");
+      assert.deepEqual(Array.from(testOut.buf), [1, 2, 3, 4, 6, -32]);
     });
 
   });

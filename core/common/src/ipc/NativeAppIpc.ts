@@ -9,9 +9,9 @@
 import { GuidString, LogLevel } from "@bentley/bentleyjs-core";
 import { BriefcaseProps, LocalBriefcaseProps, OpenBriefcaseProps, RequestNewBriefcaseProps } from "../BriefcaseTypes";
 import { IModelConnectionProps, IModelRpcProps } from "../IModel";
-import { IpcInterface, iTwinChannel } from "./IpcSocket";
+import { IpcInterface } from "./IpcSocket";
 
-export const nativeAppChannel = iTwinChannel("nativeApp");
+export const nativeAppChannel = "nativeApp";
 export const nativeAppIpcVersion = "1.0.0";
 /**
  * Type of value for storage values
@@ -74,7 +74,7 @@ export enum OverriddenBy {
 /**
  * A "native app" is an iModel.js application in which a one-to-one relationship exists between the frontend and backend process. Both processes execute on the same device, which can
 * enable offline workflows. Such an app can target a specific platform - e.g., Electron, iOS, Android.
-* By contrast, browser-based iModel.js applications are platform-agnostic, support multiple simultaneous frontend connections, and require a network connection.
+* By contrast, browser-based iModel.js applications are platform-agnostic, may support multiple frontend connections, and require a network connection.
 * @internal
 */
 export interface NativeAppIpc extends IpcInterface {

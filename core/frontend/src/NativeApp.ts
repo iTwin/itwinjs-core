@@ -8,8 +8,8 @@
 
 import { BeEvent, Config, GuidString, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseDownloader, BriefcaseProps, Events, IModelError, IModelVersion, InternetConnectivityStatus, iTwinChannel, LocalBriefcaseProps,
-  nativeAppChannel, NativeAppIpc, nativeAppIpcVersion, OpenBriefcaseProps, OverriddenBy, RequestNewBriefcaseProps, StorageValue, SyncMode,
+  BriefcaseDownloader, BriefcaseProps, Events, IModelError, IModelVersion, InternetConnectivityStatus, LocalBriefcaseProps, nativeAppChannel,
+  NativeAppIpc, nativeAppIpcVersion, OpenBriefcaseProps, OverriddenBy, RequestNewBriefcaseProps, StorageValue, SyncMode,
 } from "@bentley/imodeljs-common";
 import { ProgressCallback, RequestGlobalOptions } from "@bentley/itwin-client";
 import { EventSource } from "./EventSource";
@@ -122,7 +122,7 @@ export class NativeApp {
 
     let stopProgressEvents = () => { };
     if (progress !== undefined) {
-      stopProgressEvents = FrontendIpc.ipc.receive(iTwinChannel(`nativeApp.progress-${iModelId}`), (_evt, data: { loaded: number, total: number }) => {
+      stopProgressEvents = FrontendIpc.handleMessage(`nativeApp.progress-${iModelId}`, (data: { loaded: number, total: number }) => {
         progress(data);
       });
     }

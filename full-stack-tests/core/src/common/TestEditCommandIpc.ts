@@ -6,18 +6,20 @@
 import { EditCommandIpc } from "@bentley/imodeljs-editor-common";
 
 export const testCmdIds = {
-  cmd1: "test.command.1",
-  cmd2: "test.command.2",
+  cmd1: "testcommand.1",
+  cmd2: "testcommand.2",
 };
 
 export interface TestCmdOjb1 {
   i1: number;
   i2: number;
+  buf: Int8Array;
 }
 
 export interface TestCmdResult {
   str: string;
   num: number;
+  buf: Int32Array;
 }
 
 export interface TestCommandIpc extends EditCommandIpc {

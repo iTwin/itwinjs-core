@@ -15,9 +15,9 @@ import { EditCommandIpc, editorAppChannel, EditorAppIpc, editorAppIpcVersion } f
 export type EditCommandType = typeof EditCommand;
 
 /**
- * An EditCommand that performs an editing action on the backend. EditCommands are usually paired with and driven by EditTools on the frontend.
+ * An EditCommand performs an editing action on the backend. EditCommands are usually paired with and driven by EditTools on the frontend.
  * EditCommands have a *commandId* that uniquely identifies them, so they can be found via a lookup in the [[EditCommandAdmin]].
- * Every time an EditCommand runs, a new instance of (a subclass of) this class is created
+ * Every time an EditCommand runs, a new instance of (a subclass of) this class is created.
  * @alpha
  */
 export class EditCommand implements EditCommandIpc {
@@ -51,7 +51,7 @@ class EditorAppImpl extends IpcHandler implements EditorAppIpc {
   public async startCommand(commandId: string, iModelKey: string, ...args: any[]) {
     const commandClass = EditCommandAdmin.commands.get(commandId);
     if (undefined === commandClass)
-      throw new IModelError(IModelStatus.BadArg, `Command Not Found: ${commandId}`);
+      throw new IModelError(IModelStatus.NotRegistered, `Command not registered [${commandId}]`);
 
     return EditCommandAdmin.runCommand(new commandClass(IModelDb.findByKey(iModelKey), ...args));
   }
@@ -59,11 +59,11 @@ class EditorAppImpl extends IpcHandler implements EditorAppIpc {
   public async callMethod(methodName: string, ...args: any[]) {
     const cmd = EditCommandAdmin.activeCommand;
     if (!cmd)
-      throw new IModelError(IModelStatus.BadArg, `No active command`);
+      throw new IModelError(IModelStatus.NoActiveCommand, `No active command`);
 
     const func = (cmd as any)[methodName];
     if (typeof func !== "function")
-      throw new IModelError(IModelStatus.BadArg, `Method ${methodName} not found on ${cmd.ctor.commandId}`);
+      throw new IModelError(IModelStatus.FunctionNotFound, `Method ${methodName} not found on ${cmd.ctor.commandId}`);
 
     return func.call(cmd, ...args);
   }

@@ -95,6 +95,9 @@ export enum IModelStatus {
   NoGeoLocation = IMODEL_ERROR_BASE + 66,
   ServerTimeout = IMODEL_ERROR_BASE + 67,
   NoContent = IMODEL_ERROR_BASE + 68,
+  NotRegistered = IMODEL_ERROR_BASE + 69,
+  FunctionNotFound = IMODEL_ERROR_BASE + 70,
+  NoActiveCommand = IMODEL_ERROR_BASE + 71,
 }
 
 /** Error status from various briefcase operations
@@ -120,6 +123,15 @@ export enum RpcInterfaceStatus {
   RPC_INTERFACE_ERROR_BASE = 0x21000,
   /** The RpcInterface implemented by the server is incompatible with the interface requested by the client. */
   IncompatibleVersion = RPC_INTERFACE_ERROR_BASE,
+}
+
+/** IpcInterface status codes
+ * @beta Should these be internal?
+ */
+export enum IpcInterfaceStatus {
+  IPC_INTERFACE_ERROR_BASE = 0x22000,
+  /** Could not find the requested function */
+  FunctionNotFound = IPC_INTERFACE_ERROR_BASE,
 }
 
 /** Error status from various ChangeSet operations
