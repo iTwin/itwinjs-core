@@ -10,7 +10,7 @@ import { Angle, AngleProps, Point3d, Range3d, XYZProps } from "@bentley/geometry
 import { HubIModel, IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import {
   BriefcaseDb, BriefcaseManager, CategorySelector, ConcurrencyControl, DefinitionModel, DisplayStyle3d, IModelDb, IModelHost, ModelSelector,
-  OrthographicViewDefinition, PhysicalModel, RequestNewBriefcaseArg, SpatialCategory, Subject,
+  OrthographicViewDefinition, PhysicalModel, SpatialCategory, Subject,
 } from "@bentley/imodeljs-backend";
 import { ColorByName, IModel } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -86,16 +86,11 @@ async function createIModel(requestContext: AuthorizedClientRequestContext, proj
 async function runBridgeFirstTime(requestContext: AuthorizedClientRequestContext, iModelId: string, projectId: string, assetsDir: string) {
   // Start the IModelHost
   await IModelHost.startup();
-
   requestContext.enter();
 
-  const args: RequestNewBriefcaseArg = {
-    contextId: projectId,
-    iModelId,
-  };
-  await BriefcaseManager.downloadBriefcase(requestContext, args);
+  const props = await BriefcaseManager.downloadBriefcase(requestContext, { contextId: projectId, iModelId });
   requestContext.enter();
-  const briefcase = await BriefcaseDb.open(requestContext, { fileName: args.fileName! });
+  const briefcase = await BriefcaseDb.open(requestContext, { fileName: props.fileName });
   requestContext.enter();
 
   briefcase.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());

@@ -7,6 +7,7 @@
  */
 
 import { isElectronMain } from "@bentley/bentleyjs-core";
+import { IModelDb } from "@bentley/imodeljs-backend";
 import { CommandMethodProps, CommandResult, editCommandApi, PingResult, StartCommandProps } from "@bentley/imodeljs-editor-common";
 
 /** @alpha */
@@ -23,8 +24,13 @@ export class EditCommand {
   public static commandId = "";
   public static version = "1.0.0";
 
-  public constructor(_arg?: any) { }
-  public get ctor() { return this.constructor as EditCommandType; }
+  /** The iModel this EditCommand may modify. */
+  public readonly iModel: IModelDb;
+
+  public constructor(iModel: IModelDb, _arg?: any) {
+    this.iModel = iModel;
+  }
+  public get ctor(): EditCommandType { return this.constructor as EditCommandType; }
 
   public onStart(): CommandResult<any> { return {}; }
 
@@ -93,7 +99,11 @@ export class EditCommandAdmin {
 
   public static startCommand(props: StartCommandProps<any>): CommandResult<any> {
     const commandClass = this.commands.get(props.commandId);
-    return commandClass ? this.runCommand(new commandClass(props.args)) : { error: "CommandNotFound" };
+    try {
+      return commandClass ? this.runCommand(new commandClass(IModelDb.findByKey(props.iModelKey), props.args)) : { error: "CommandNotFound", details: props.commandId };
+    } catch (e) {
+      return { error: "Exception", details: e };
+    }
   }
 
   public static callMethod(method: CommandMethodProps<any>): CommandResult<any> {
@@ -107,7 +117,7 @@ export class EditCommandAdmin {
     try {
       return func.call(this._activeCommand, method.args);
     } catch (e) {
-      return { error: "Exception", result: e };
+      return { error: "Exception", details: e };
     }
   }
 };

@@ -17,6 +17,7 @@ import { PropertyRecord } from "./properties/Record";
 import { UiDataProvider } from "./dialogs/UiDataProvider";
 import { DialogLayoutDataProvider } from "./dialogs/UiLayoutDataProvider";
 import { BeUiEvent } from "@bentley/bentleyjs-core";
+import { AccuDrawUiAdmin } from "./accudraw/AccuDrawUiAdmin";
 
 /** The Generic UI Event args contains information useful for any UI message
  * @beta
@@ -65,6 +66,7 @@ export interface UiFlags {
  */
 export class UiAdmin {
   private _featureFlags: UiFlags = {};
+  private _accuDrawUiAdmin: AccuDrawUiAdmin = new AccuDrawUiAdmin();
 
   public get featureFlags(): UiFlags {
     return { ...this._featureFlags }; // return copy so no direct access to modify value
@@ -73,6 +75,12 @@ export class UiAdmin {
   public updateFeatureFlags(uiFlags: UiFlags) {
     this._featureFlags = { ...this._featureFlags, ...uiFlags };
   }
+
+  /** Get/Set the AccuDrawUi Admin
+   * @alpha
+   */
+  public get accuDrawUi(): AccuDrawUiAdmin { return this._accuDrawUiAdmin; };
+  public set accuDrawUi(v: AccuDrawUiAdmin) { this._accuDrawUiAdmin = v; };
 
   /** @internal */
   public onInitialized() { }

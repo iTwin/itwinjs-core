@@ -99,7 +99,6 @@ describe("iModelHub CheckpointV2Handler", () => {
   let iModelClient: IModelClient;
   let briefcase: Briefcase;
   let changeSets: ChangeSet[];
-  const imodelName = "imodeljs-clients CheckpointsV2 test";
   let requestContext: AuthorizedClientRequestContext;
 
   before(async function () {
@@ -108,8 +107,8 @@ describe("iModelHub CheckpointV2Handler", () => {
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
     contextId = await utils.getProjectId(requestContext);
-    await utils.createIModel(requestContext, imodelName, contextId, true, true);
-    imodelId = await utils.getIModelId(requestContext, imodelName, contextId);
+    await utils.createIModel(requestContext, utils.sharedimodelName, contextId, true, true);
+    imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, contextId);
     iModelClient = utils.getDefaultClient();
     briefcase = (await utils.getBriefcases(requestContext, imodelId, 1))[0];
 
@@ -122,8 +121,9 @@ describe("iModelHub CheckpointV2Handler", () => {
   });
 
   after(async () => {
-    if (!TestConfig.enableMocks)
-      await utils.deleteIModelByName(requestContext, contextId, imodelName);
+    if (TestConfig.enableIModelBank) {
+      await utils.deleteIModelByName(requestContext, contextId, utils.sharedimodelName);
+    }
   });
 
   afterEach(() => {

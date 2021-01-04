@@ -6,73 +6,41 @@
  * @module Views
  */
 
-import { assert, BeTimePoint, Id64, Id64Arg, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { assert, BeEvent, Id64, Id64Arg, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import {
   Angle, AxisOrder, ClipVector, Constant, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d,
   PolyfaceBuilder, Range3d, Ray3d, StrokeOptions, Transform, Vector2d, Vector3d, XAndY, XYAndZ, XYZ, YawPitchRollAngles,
 } from "@bentley/geometry-core";
 import {
   AnalysisStyle, AxisAlignedBox3d, Camera, Cartographic, ColorDef,
-  FeatureAppearance, Frustum, GlobeMode, GraphicParams, GridOrientationType, Npc, RenderMaterial,
-  SpatialViewDefinitionProps, SubCategoryOverride, TextureMapping, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails,
+  FeatureAppearance, Frustum, GlobeMode, GraphicParams, GridOrientationType, ModelClipGroups, Npc, RenderMaterial,
+  SubCategoryOverride, TextureMapping, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails,
   ViewDetails3d, ViewFlags, ViewStateProps,
 } from "@bentley/imodeljs-common";
-import { AuxCoordSystem2dState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystemState } from "./AuxCoordSys";
+import { AuxCoordSystem2dState, AuxCoordSystem3dState, AuxCoordSystemState } from "./AuxCoordSys";
 import { CategorySelectorState } from "./CategorySelectorState";
 import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState } from "./DisplayStyleState";
 import { ElementState } from "./EntityState";
 import { Frustum2d } from "./Frustum2d";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
-import { ModelSelectorState } from "./ModelSelectorState";
-import { GeometricModel2dState, GeometricModel3dState, GeometricModelState } from "./ModelState";
+import { GeometricModel2dState, GeometricModelState } from "./ModelState";
 import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager";
 import { GraphicType } from "./render/GraphicBuilder";
 import { RenderClipVolume } from "./render/RenderClipVolume";
 import { RenderMemory } from "./render/RenderMemory";
 import { RenderScheduleState } from "./RenderScheduleState";
 import { StandardView, StandardViewId } from "./StandardView";
-import { SpatialTileTreeReferences, TileTreeReference, TileTreeSet } from "./tile/internal";
+import { TileTreeReference, TileTreeSet } from "./tile/internal";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { areaToEyeHeight, areaToEyeHeightFromGcs, GlobalLocation } from "./ViewGlobalLocation";
 import { ViewingSpace } from "./ViewingSpace";
-import { ViewChangeOptions, Viewport } from "./Viewport";
-
-/** Describes the result of a viewing operation such as those exposed by [[ViewState]] and [[Viewport]].
- * @public
- */
-export enum ViewStatus {
-  Success = 0,
-  ViewNotInitialized,
-  AlreadyAttached,
-  NotAttached,
-  DrawFailure,
-  NotResized,
-  ModelNotFound,
-  InvalidWindow,
-  MinWindow,
-  MaxWindow,
-  MaxZoom,
-  MaxDisplayDepth,
-  InvalidUpVector,
-  InvalidTargetPoint,
-  InvalidLens,
-  InvalidViewport,
-}
-
-/** Margins for white space to be left around view volumes for [[ViewState.lookAtVolume]].
- * Values mean "fraction of view size" and must be between 0 and .25.
- * @public
- */
-export class MarginPercent {
-  constructor(public left: number, public top: number, public right: number, public bottom: number) {
-    const limitMargin = (val: number) => Geometry.clamp(val, 0.0, 0.25);
-    this.left = limitMargin(left);
-    this.top = limitMargin(top);
-    this.right = limitMargin(right);
-    this.bottom = limitMargin(bottom);
-  }
-}
+import { ViewChangeOptions } from "./ViewAnimation";
+import { Viewport } from "./Viewport";
+import { DrawingViewState } from "./DrawingViewState";
+import { SpatialViewState } from "./SpatialViewState";
+import { ViewStatus } from "./ViewStatus";
+import { ViewPose, ViewPose2d, ViewPose3d } from "./ViewPose";
 
 /** Describes the largest and smallest values allowed for the extents of a [[ViewState]].
  * Attempts to exceed these limits in any dimension will fail, preserving the previous extents.
@@ -85,94 +53,10 @@ export interface ExtentLimits {
   max: number;
 }
 
-/** The "pose" for a view. This is either the volume or area, depending on whether the view is 3d or 2d,
- * plus the camera position/angle, if it is enabled.
- * @note a ViewPose is immutable.
- * @public
- */
-export abstract class ViewPose {
-  public undoTime?: BeTimePoint; // the time this pose was created, if it is saved in the view undo stack.
-  public abstract equalState(view: ViewState): boolean;
-  public abstract equal(other: ViewPose): boolean;
-  public abstract origin: Point3d;
-  public abstract extents: Vector3d;
-  public abstract rotation: Matrix3d;
-  public get center() {
-    const delta = this.rotation.multiplyTransposeVector(this.extents);
-    return this.origin.plusScaled(delta, 0.5);
-  }
-  public get target() { return this.center; }
-  public get zVec() { return this.rotation.getRow(2); }
-  public constructor(public cameraOn: boolean) { }
-}
-
-/** @internal */
-export class ViewPose3d extends ViewPose {
-  public readonly origin: Point3d;
-  public readonly extents: Vector3d;
-  public readonly rotation: Matrix3d;
-  public readonly camera: Camera;
-
-  public constructor(view: ViewState3d) {
-    super(view.isCameraOn);
-    this.origin = view.origin.clone();
-    this.extents = view.extents.clone();
-    this.rotation = view.rotation.clone();
-    this.camera = view.camera.clone();
-  }
-
-  public get target() {
-    return this.cameraOn ? this.camera.eye.plusScaled(this.rotation.getRow(2), -1.0 * this.camera.focusDist) : this.center;
-  }
-
-  public equal(other: ViewPose3d) {
-    return this.cameraOn === other.cameraOn &&
-      this.origin.isAlmostEqual(other.origin) &&
-      this.extents.isAlmostEqual(other.extents) &&
-      this.rotation.isAlmostEqual(other.rotation) &&
-      (!this.cameraOn || this.camera.equals(other.camera));
-  }
-
-  public equalState(view: ViewState3d): boolean {
-    return this.cameraOn === view.isCameraOn &&
-      this.origin.isAlmostEqual(view.origin) &&
-      this.extents.isAlmostEqual(view.extents) &&
-      this.rotation.isAlmostEqual(view.rotation) &&
-      (!this.cameraOn || this.camera.equals(view.camera));
-  }
-}
-
-/** @internal */
-export class ViewPose2d extends ViewPose {
-  public readonly origin2: Point2d;
-  public readonly delta: Point2d;
-  public readonly angle: Angle;
-  public constructor(view: ViewState2d) {
-    super(false);
-    this.origin2 = view.origin.clone();
-    this.delta = view.delta.clone();
-    this.angle = view.angle.clone();
-  }
-  public equal(other: ViewPose2d) {
-    return this.origin2.isAlmostEqual(other.origin) &&
-      this.delta.isAlmostEqual(other.delta) &&
-      this.angle.isAlmostEqualNoPeriodShift(other.angle);
-  }
-
-  public equalState(view: ViewState2d): boolean {
-    return this.origin2.isAlmostEqual(view.origin) &&
-      this.delta.isAlmostEqual(view.delta) &&
-      this.angle.isAlmostEqualNoPeriodShift(view.angle);
-  }
-  public get origin() { return new Point3d(this.origin2.x, this.origin2.y); }
-  public get extents() { return new Vector3d(this.delta.x, this.delta.y); }
-  public get rotation() { return Matrix3d.createRotationAroundVector(Vector3d.unitZ(), this.angle)!; }
-}
-
 /** Interface adopted by an object that wants to apply a per-model display transform.
  * This is intended chiefly for use by model alignment tools.
  * @see [[ViewState.modelDisplayTransformProvider]].
- * @internal
+ * @alpha
  */
 export interface ModelDisplayTransformProvider {
   getModelDisplayTransform(modelId: Id64String, baseTransform: Transform): Transform;
@@ -211,7 +95,10 @@ class GridDecorator {
 }
 
 /** The front-end state of a [[ViewDefinition]] element.
- * A ViewState is typically associated with a [[Viewport]] to display the contents of the view on the screen.
+ * A ViewState is typically associated with a [[Viewport]] to display the contents of the view on the screen. A ViewState being displayed by a Viewport is considered to be
+ * "attached" to that viewport; a "detached" viewport is not being displayed by any viewport. Because the Viewport modifies the state of its attached ViewState, a ViewState
+ * can only be attached to one Viewport at a time. Technically, two Viewports can display two different ViewStates that both use the same [[DisplayStyleState]], but this is
+ * discouraged - changes made to the style by one Viewport will affect the contents of the other Viewport.
  * * @see [Views]($docs/learning/frontend/Views.md)
  * @public
  */
@@ -225,27 +112,76 @@ export abstract class ViewState extends ElementState {
   public description?: string;
   public isPrivate?: boolean;
   private readonly _gridDecorator: GridDecorator;
+  private _categorySelector: CategorySelectorState;
+  private _displayStyle: DisplayStyleState;
+  private readonly _unregisterCategorySelectorListeners: VoidFunction[] = [];
+
+  /** An event raised when the set of categories viewed by this view changes, *only* if the view is attached to a [[Viewport]].
+   * @beta
+   */
+  public readonly onViewedCategoriesChanged = new BeEvent<() => void>();
+
+  /** An event raised just before assignment to the [[displayStyle]] property, *only* if the view is attached to a [[Viewport]].
+   * @see [[DisplayStyleSettings]] for events raised when properties of the display style change.
+   * @beta
+   */
+  public readonly onDisplayStyleChanged = new BeEvent<(newStyle: DisplayStyleState) => void>();
+
+  /** Event raised just before assignment to the [[modelDisplayTransformProvider]] property, *only* if the view is attached to a [[Viewport]].
+   * @alpha
+   */
+  public readonly onModelDisplayTransformProviderChanged = new BeEvent<(newProvider: ModelDisplayTransformProvider | undefined) => void>();
 
   /** Selects the categories that are display by this ViewState. */
-  public categorySelector: CategorySelectorState;
+  public get categorySelector(): CategorySelectorState {
+    return this._categorySelector;
+  }
+
+  public set categorySelector(selector: CategorySelectorState) {
+    if (selector === this._categorySelector)
+      return;
+
+    const isAttached = this.isAttachedToViewport;
+    this.unregisterCategorySelectorListeners();
+
+    this._categorySelector = selector;
+
+    if (isAttached) {
+      this.registerCategorySelectorListeners();
+      this.onViewedCategoriesChanged.raiseEvent();
+    }
+  }
+
   /** Selects the styling parameters for this this ViewState. */
-  public displayStyle: DisplayStyleState;
+  public get displayStyle(): DisplayStyleState {
+    return this._displayStyle;
+  }
+
+  public set displayStyle(style: DisplayStyleState) {
+    if (style === this.displayStyle)
+      return;
+
+    if (this.isAttachedToViewport)
+      this.onDisplayStyleChanged.raiseEvent(style);
+
+    this._displayStyle = style;
+  }
 
   /** @internal */
   protected constructor(props: ViewDefinitionProps, iModel: IModelConnection, categoryOrClone: CategorySelectorState, displayStyle: DisplayStyleState) {
     super(props, iModel);
     this.description = props.description;
     this.isPrivate = props.isPrivate;
-    this.displayStyle = displayStyle;
-    this.categorySelector = categoryOrClone;
+    this._displayStyle = displayStyle;
+    this._categorySelector = categoryOrClone;
     this._gridDecorator = new GridDecorator(this);
     if (!(categoryOrClone instanceof ViewState))  // is this from the clone method?
       return; // not from clone
 
     // from clone, 3rd argument is source ViewState
     const source = categoryOrClone as ViewState;
-    this.categorySelector = source.categorySelector.clone();
-    this.displayStyle = source.displayStyle.clone();
+    this._categorySelector = source.categorySelector.clone();
+    this._displayStyle = source.displayStyle.clone();
     this._extentLimits = source._extentLimits;
     this._auxCoordSystem = source._auxCoordSystem;
     this._modelDisplayTransformProvider = source._modelDisplayTransformProvider;
@@ -255,6 +191,15 @@ export abstract class ViewState extends ElementState {
    * have been read from an iModel. But, it can also be used to create a ViewState in memory, from scratch or from properties stored elsewhere.
    */
   public static createFromProps(_props: ViewStateProps, _iModel: IModelConnection): ViewState | undefined { return undefined; }
+
+  /** Serialize this ViewState as a set of properties that can be used to recreate it via [[ViewState.createFromProps]]. */
+  public toProps(): ViewStateProps {
+    return {
+      viewDefinitionProps: this.toJSON(),
+      categorySelectorProps: this.categorySelector.toJSON(),
+      displayStyleProps: this.displayStyle.toJSON(),
+    };
+  }
 
   /** Get the ViewFlags from the [[DisplayStyleState]] of this ViewState.
    * @note Do not modify this object directly. Instead, use the setter as follows:
@@ -364,15 +309,15 @@ export abstract class ViewState extends ElementState {
   public abstract get details(): ViewDetails;
 
   /** Returns true if this ViewState is-a [[ViewState3d]] */
-  public is3d(): this is ViewState3d { return this instanceof ViewState3d; }
+  public abstract is3d(): this is ViewState3d;
   /** Returns true if this ViewState is-a [[ViewState2d]] */
-  public is2d(): this is ViewState2d { return this instanceof ViewState2d; }
+  public is2d(): this is ViewState2d { return !this.is3d(); }
   /** Returns true if this ViewState is-a [[ViewState3d]] with the camera currently on. */
   public isCameraEnabled(): this is ViewState3d { return this.is3d() && this.isCameraOn; }
   /** Returns true if this ViewState is-a [[SpatialViewState]] */
-  public isSpatialView(): this is SpatialViewState { return this instanceof SpatialViewState; }
+  public abstract isSpatialView(): this is SpatialViewState;
   /** Returns true if this ViewState is-a [[DrawingViewState]] */
-  public isDrawingView(): this is DrawingViewState { return this instanceof DrawingViewState; }
+  public abstract isDrawingView(): this is DrawingViewState;
   /** Returns true if [[ViewTool]]s are allowed to operate in three dimensions on this view. */
   public abstract allow3dManipulations(): boolean;
   /** @internal */
@@ -1067,19 +1012,73 @@ export abstract class ViewState extends ElementState {
 
   /** Specify a provider of per-model display transforms. Intended chiefly for use by model alignment tools.
    * @note The transform supplied is used for display purposes **only**. Do not expect operations like snapping to account for the display transform.
-   * @see [[Viewport.setModelDisplayTransformProvider]].
-   * @internal
+   * @alpha
    */
   public get modelDisplayTransformProvider(): ModelDisplayTransformProvider | undefined {
     return this._modelDisplayTransformProvider;
   }
+
   public set modelDisplayTransformProvider(provider: ModelDisplayTransformProvider | undefined) {
+    if (provider === this.modelDisplayTransformProvider)
+      return;
+
+    if (this.isAttachedToViewport)
+      this.onModelDisplayTransformProviderChanged.raiseEvent(provider);
+
     this._modelDisplayTransformProvider = provider;
   }
 
   /** @internal */
   public getModelDisplayTransform(modelId: Id64String, baseTransform: Transform): Transform {
     return this.modelDisplayTransformProvider ? this.modelDisplayTransformProvider.getModelDisplayTransform(modelId, baseTransform) : baseTransform;
+  }
+
+  /** Invoked when this view becomes the view displayed by the specified [[Viewport]].
+   * A ViewState can be attached to at most **one** Viewport.
+   * @note If you override this method you **must** call `super.attachToViewport`.
+   * @throws Error if the view is already attached to any Viewport.
+   * @see [[detachFromViewport]] from the inverse operation.
+   * @internal
+   */
+  public attachToViewport(): void {
+    if (this.isAttachedToViewport)
+      throw new Error("Attempting to attach a ViewState that is already attached to a Viewport");
+
+    this.registerCategorySelectorListeners();
+  }
+
+  private registerCategorySelectorListeners(): void {
+    const cats = this.categorySelector.observableCategories;
+    const event = () => this.onViewedCategoriesChanged.raiseEvent();
+    this._unregisterCategorySelectorListeners.push(cats.onAdded.addListener(event));
+    this._unregisterCategorySelectorListeners.push(cats.onDeleted.addListener(event));
+    this._unregisterCategorySelectorListeners.push(cats.onCleared.addListener(event));
+  }
+
+  /** Invoked when this view, previously attached to the specified [[Viewport]] via [[attachToViewport]], is no longer the view displayed by that Viewport.
+   * @note If you override this method you **must** call `super.detachFromViewport`.
+   * @throws Error if the view is not attached to any Viewport.
+   * @internal
+   */
+  public detachFromViewport(): void {
+    if (!this.isAttachedToViewport)
+      throw new Error("Attempting to detach a ViewState from a Viewport to which it is not attached.");
+
+    this.unregisterCategorySelectorListeners();
+  }
+
+  private unregisterCategorySelectorListeners(): void {
+    this._unregisterCategorySelectorListeners.forEach((f) => f());
+    this._unregisterCategorySelectorListeners.length = 0;
+  }
+
+  /** Returns whether this view is currently being displayed by a [[Viewport]].
+   * @alpha
+   */
+  public get isAttachedToViewport(): boolean {
+    // In attachToViewport, we register event listeners on the category selector. We remove them in detachFromViewport.
+    // So a non-empty list of event listener removal functions indicates we are currently attached to a viewport.
+    return this._unregisterCategorySelectorListeners.length > 0;
   }
 }
 
@@ -1139,18 +1138,18 @@ export abstract class ViewState3d extends ViewState {
       this.centerEyePoint();
 
     this._details = new ViewDetails3d(this.jsonProperties);
-    this._details.onModelClipGroupsChanged.addListener((_) => this.updateModelClips());
-    this.updateModelClips();
+    this._details.onModelClipGroupsChanged.addListener((newGroups) => this.updateModelClips(newGroups));
+    this.updateModelClips(this._details.modelClipGroups);
 
     this._updateMaxGlobalScopeFactor();
   }
 
-  private updateModelClips(): void {
+  private updateModelClips(groups: ModelClipGroups): void {
     for (const clip of this._modelClips)
       clip?.dispose();
 
     this._modelClips.length = 0;
-    for (const group of this.details.modelClipGroups.groups) {
+    for (const group of groups.groups) {
       const clip = group.clip ? IModelApp.renderSystem.createClipVolume(group.clip) : undefined;
       this._modelClips.push(clip);
     }
@@ -1189,6 +1188,12 @@ export abstract class ViewState3d extends ViewState {
     val.camera = this.camera;
     return val;
   }
+
+  /** @internal */
+  public is3d(): this is ViewState3d { return true; }
+
+  /** @internal */
+  public isDrawingView(): this is DrawingViewState { return false; }
 
   public get isCameraOn(): boolean { return this._cameraOn; }
 
@@ -1878,145 +1883,6 @@ export abstract class ViewState3d extends ViewState {
   }
 }
 
-/** Defines a view of one or more SpatialModels.
- * The list of viewed models is stored in the ModelSelector.
- * @public
- */
-export class SpatialViewState extends ViewState3d {
-  /** @internal */
-  public static get className() { return "SpatialViewDefinition"; }
-  public modelSelector: ModelSelectorState;
-  private readonly _treeRefs: SpatialTileTreeReferences;
-
-  /** Create a new *blank* SpatialViewState. The returned SpatialViewState will nave non-persistent empty [[CategorySelectorState]] and [[ModelSelectorState]],
-   * and a non-persistent [[DisplayStyle3dState]] with default values for all of its components. Generally after creating a blank SpatialViewState,
-   * callers will modify the state to suit specific needs.
-   * @param iModel The IModelConnection for the new SpatialViewState
-   * @param origin The origin for the new SpatialViewState
-   * @param extents The extents for the new SpatialViewState
-   * @param rotation The rotation of the new SpatialViewState. If undefined, use top view.
-   * @beta
-   */
-  public static createBlank(iModel: IModelConnection, origin: XYAndZ, extents: XYAndZ, rotation?: Matrix3d): SpatialViewState {
-    const blank = {} as any;
-    const cat = new CategorySelectorState(blank, iModel);
-    const modelSelectorState = new ModelSelectorState(blank, iModel);
-    const displayStyleState = new DisplayStyle3dState(blank, iModel);
-    const view = new this(blank, iModel, cat, displayStyleState, modelSelectorState);
-    view.setOrigin(origin);
-    view.setExtents(extents);
-    if (undefined !== rotation)
-      view.setRotation(rotation);
-    return view;
-  }
-
-  public static createFromProps(props: ViewStateProps, iModel: IModelConnection): SpatialViewState {
-    const cat = new CategorySelectorState(props.categorySelectorProps, iModel);
-    const displayStyleState = new DisplayStyle3dState(props.displayStyleProps, iModel);
-    const modelSelectorState = new ModelSelectorState(props.modelSelectorProps!, iModel);
-    return new this(props.viewDefinitionProps as SpatialViewDefinitionProps, iModel, cat, displayStyleState, modelSelectorState);
-  }
-
-  constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, arg3: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState) {
-    super(props, iModel, arg3, displayStyle);
-    this.modelSelector = modelSelector;
-    if (arg3 instanceof SpatialViewState) // from clone
-      this.modelSelector = arg3.modelSelector.clone();
-
-    this._treeRefs = SpatialTileTreeReferences.create(this);
-  }
-
-  public equals(other: this): boolean { return super.equals(other) && this.modelSelector.equals(other.modelSelector); }
-
-  public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystemSpatialState.createNew(acsName, this.iModel); }
-  public get defaultExtentLimits() { return { min: Constant.oneMillimeter, max: 3 * Constant.diameterOfEarth }; } // Increased max by 3X to support globe mode.
-
-  /** @internal */
-  public markModelSelectorChanged(): void {
-    this._treeRefs.update();
-  }
-
-  /** Get world-space viewed extents based on the iModel's project extents. */
-  protected getDisplayedExtents(): AxisAlignedBox3d {
-    const extents = Range3d.fromJSON<AxisAlignedBox3d>(this.iModel.displayedExtents);
-    extents.scaleAboutCenterInPlace(1.0001); // projectExtents. lying smack up against the extents is not excluded by frustum...
-    extents.extendRange(this.getGroundExtents());
-    return extents;
-  }
-
-  /** Compute world-space range appropriate for fitting the view. If that range is null, use the displayed extents. */
-  public computeFitRange(): AxisAlignedBox3d {
-    // Loop over the current models in the model selector with loaded tile trees and union their ranges
-    const range = new Range3d();
-    this.forEachTileTreeRef((ref) => {
-      ref.unionFitRange(range);
-    });
-
-    if (range.isNull)
-      range.setFrom(this.getDisplayedExtents());
-
-    range.ensureMinLengths(1.0);
-
-    return range;
-  }
-
-  public getViewedExtents(): AxisAlignedBox3d {
-    const extents = this.getDisplayedExtents();
-
-    // Some displayed tile trees may have a transform applied that takes them outside of the displayed extents.
-    extents.extendRange(this.computeFitRange());
-
-    return extents;
-  }
-
-  public toJSON(): SpatialViewDefinitionProps {
-    const val = super.toJSON() as SpatialViewDefinitionProps;
-    val.modelSelectorId = this.modelSelector.id;
-    return val;
-  }
-  public async load(): Promise<void> {
-    await super.load();
-    return this.modelSelector.load();
-  }
-  public viewsModel(modelId: Id64String): boolean { return this.modelSelector.containsModel(modelId); }
-  public clearViewedModels() { this.modelSelector.models.clear(); }
-  public addViewedModel(id: Id64String) { this.modelSelector.addModels(id); }
-  public removeViewedModel(id: Id64String) { this.modelSelector.dropModels(id); }
-
-  public forEachModel(func: (model: GeometricModelState) => void) {
-    for (const modelId of this.modelSelector.models) {
-      const model = this.iModel.models.getLoaded(modelId);
-      if (undefined !== model && undefined !== model.asGeometricModel3d)
-        func(model as GeometricModel3dState);
-    }
-  }
-
-  /** @internal */
-  public forEachModelTreeRef(func: (treeRef: TileTreeReference) => void): void {
-    for (const ref of this._treeRefs)
-      func(ref);
-  }
-
-  /** @internal */
-  public createScene(context: SceneContext): void {
-    super.createScene(context);
-    context.textureDrapes.forEach((drape) => drape.collectGraphics(context));
-    context.viewport.target.updateSolarShadows(this.getDisplayStyle3d().wantShadows ? context : undefined);
-  }
-}
-
-/** Defines a spatial view that displays geometry on the image plane using a parallel orthographic projection.
- * @public
- */
-export class OrthographicViewState extends SpatialViewState {
-  /** @internal */
-  public static get className() { return "OrthographicViewDefinition"; }
-
-  constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState) { super(props, iModel, categories, displayStyle, modelSelector); }
-
-  public supportsCamera(): boolean { return false; }
-}
-
 /** Defines the state of a view of a single 2d model.
  * @public
  */
@@ -2027,7 +1893,8 @@ export abstract class ViewState2d extends ViewState {
   public readonly origin: Point2d;
   public readonly delta: Point2d;
   public readonly angle: Angle;
-  public readonly baseModelId: Id64String;
+  protected _baseModelId: Id64String;
+  public get baseModelId(): Id64String { return this._baseModelId; }
   /** @internal */
   protected _treeRef?: TileTreeReference;
 
@@ -2047,7 +1914,7 @@ export abstract class ViewState2d extends ViewState {
     this.origin = Point2d.fromJSON(props.origin);
     this.delta = Point2d.fromJSON(props.delta);
     this.angle = Angle.fromJSON(props.angle);
-    this.baseModelId = Id64.fromJSON(props.baseModelId);
+    this._baseModelId = Id64.fromJSON(props.baseModelId);
     this._details = new ViewDetails(this.jsonProperties);
   }
 
@@ -2059,6 +1926,12 @@ export abstract class ViewState2d extends ViewState {
     val.baseModelId = this.baseModelId;
     return val;
   }
+
+  /** @internal */
+  public is3d(): this is ViewState3d { return false; }
+
+  /** @internal */
+  public isSpatialView(): this is SpatialViewState { return false; }
 
   /** @internal */
   public savePose(): ViewPose { return new ViewPose2d(this); }
@@ -2078,6 +1951,21 @@ export abstract class ViewState2d extends ViewState {
       return undefined;
 
     return model;
+  }
+
+  /** Change the model viewed by this view.
+   * @note The new model should be of the same type (drawing or sheet) as the current viewed model.
+   * @throws Error if attempting to change the viewed model while the view is attached to a viewport.
+   * @see [[Viewport.changeViewedModel2d]].
+   * @alpha
+   */
+  public async changeViewedModel(newViewedModelId: Id64String): Promise<void> {
+    if (this.isAttachedToViewport)
+      throw new Error("Cannot change the viewed model of a view that is attached to a viewport.");
+
+    this._baseModelId = newViewedModelId;
+    this._treeRef = undefined;
+    await this.load();
   }
 
   public computeFitRange(): Range3d {
@@ -2122,43 +2010,4 @@ export abstract class ViewState2d extends ViewState {
   }
 
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystem2dState.createNew(acsName, this.iModel); }
-}
-
-/** A view of a DrawingModel
- * @public
- */
-export class DrawingViewState extends ViewState2d {
-  /** @internal */
-  public static get className() { return "DrawingViewDefinition"; }
-  // Computed from the tile tree range once the tile tree is available; cached thereafter to avoid recomputing.
-  private _modelLimits: ExtentLimits;
-  private _viewedExtents: AxisAlignedBox3d;
-
-  public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, extents: AxisAlignedBox3d) {
-    super(props, iModel, categories, displayStyle);
-    if (categories instanceof DrawingViewState) {
-      this._viewedExtents = categories._viewedExtents.clone();
-      this._modelLimits = { ...categories._modelLimits };
-    } else {
-      this._viewedExtents = extents;
-      this._modelLimits = { min: Constant.oneMillimeter, max: 10 * extents.maxLength() };
-    }
-  }
-
-  public static createFromProps(props: ViewStateProps, iModel: IModelConnection): DrawingViewState {
-    const cat = new CategorySelectorState(props.categorySelectorProps, iModel);
-    const displayStyleState = new DisplayStyle2dState(props.displayStyleProps, iModel);
-    const extents = props.modelExtents ? Range3d.fromJSON(props.modelExtents) : new Range3d();
-
-    // use "new this" so subclasses are correct
-    return new this(props.viewDefinitionProps as ViewDefinition2dProps, iModel, cat, displayStyleState, extents);
-  }
-
-  public getViewedExtents(): AxisAlignedBox3d {
-    return this._viewedExtents;
-  }
-
-  public get defaultExtentLimits() {
-    return this._modelLimits;
-  }
 }

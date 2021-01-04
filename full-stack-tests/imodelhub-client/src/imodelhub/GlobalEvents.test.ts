@@ -139,18 +139,6 @@ describe("iModelHub GlobalEventHandler (#unit)", () => {
     await utils.deleteIModelByName(requestContext, projectId, imodelName);
   });
 
-  after(async () => {
-    if (!TestConfig.enableMocks)
-      return;
-
-    await utils.deleteIModelByName(requestContext, projectId, imodelName);
-
-    if (!TestConfig.enableMocks) {
-      utils.getRequestBehaviorOptionsHandler().resetDefaultBehaviorOptions();
-      imodelHubClient.requestOptions.setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
-    }
-  });
-
   afterEach(() => {
     ResponseBuilder.clearMocks();
   });

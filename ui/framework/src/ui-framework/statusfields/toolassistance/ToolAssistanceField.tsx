@@ -45,6 +45,8 @@ import mouseWheelClickIcon from "./mouse-click-wheel.svg?sprite";
 import touchCursorDragIcon from "./touch-cursor-pan.svg?sprite";
 import touchCursorTapIcon from "./touch-cursor-point.svg?sprite";
 
+// cSpell:ignore cursorprompt
+
 /** Properties of [[ToolAssistanceField]] component.
  * @public
  */

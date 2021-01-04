@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-
 /** @packageDocumentation
  * @module Tools
  */
@@ -11,7 +10,6 @@
 import { FeatureAppearance, FeatureAppearanceProps, LinePixels, RgbColorProps } from "@bentley/imodeljs-common";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, SpatialViewState, Tool, Viewport } from "@bentley/imodeljs-frontend";
 import { parseBoolean } from "./parseBoolean";
-
 
 function changeModelAppearanceOverrides(vp: Viewport | undefined, overrides: FeatureAppearanceProps, name: string): boolean {
   let changed = false;
@@ -97,7 +95,6 @@ export class SetModelLineCodeTool extends Tool {
   }
 }
 
-
 /** Set model appearance override for nonLocatable in display style.
  * @beta
  */
@@ -121,7 +118,6 @@ export class SetModelLocateTool extends Tool {
     return locate === undefined ? false : this.run(locate, args[1]);
   }
 }
-
 
 /** Set model appearance override for emphasized in display style.
  * @beta
@@ -168,7 +164,6 @@ export class SetModelIgnoresMaterialsTool extends Tool {
     return ignoresMaterial === undefined ? false : this.run(ignoresMaterial ? true : undefined, args[1]);
   }
 }
-
 
 /** Set model appearance override for color in display style.
  * @beta
