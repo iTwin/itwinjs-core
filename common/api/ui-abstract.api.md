@@ -1303,6 +1303,12 @@ export namespace Primitives {
     export type Enum = number | string;
     export type Float = number | string;
     export type Hexadecimal = Id64String;
+    export interface InstanceKey {
+        // (undocumented)
+        className: string;
+        // (undocumented)
+        id: Id64String;
+    }
     export type Int = number | string;
     export type Numeric = Float | Int;
     export type Point = Point2d | Point3d;
@@ -1319,7 +1325,7 @@ export namespace Primitives {
     export type String = string;
     export type Text = string;
     // (undocumented)
-    export type Value = Text | String | ShortDate | Boolean | Numeric | Enum | Point | Composite;
+    export type Value = Text | String | ShortDate | Boolean | Numeric | Enum | Point | Composite | InstanceKey;
 }
 
 // @beta
