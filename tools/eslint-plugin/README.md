@@ -17,10 +17,8 @@ Add `@bentley` to the plugins section of your eslint configuration and (optional
 
 ```json
 {
-    "plugins": [
-        "@bentley"
-    ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+  "plugins": ["@bentley"],
+  "extends": "plugin:@bentley/imodeljs-recommended"
 }
 ```
 
@@ -28,9 +26,9 @@ Then configure the rules you want to override under the rules section.
 
 ```json
 {
-    "rules": {
-        "@bentley/rule-name": "off"
-    }
+  "rules": {
+    "@bentley/rule-name": "off"
+  }
 }
 ```
 
@@ -49,3 +47,26 @@ As a side effect, any additional plugins added in consumer packages won't be loa
 
 1. Submit a PR to add the ESLint plugin (and an accompanying optional configuration) to this package.
 2. Add all the plugins used in this package along with the new one to your package's devDependencies and remove the above configuration from settings.json.
+
+## Rules not in recommended configs
+
+- `no-internal` - prevents use of internal/alpha APIs. Example configurations:
+
+```json
+// custom config
+"@bentley/no-internal": [
+"error",
+  {
+    "tag": ["internal", "alpha", "beta"]
+  }
+]
+```
+
+```json
+// default config
+"@bentley/no-internal": "error"
+// tag is set to ["internal", "alpha"] by default
+```
+
+The rule will report an error whenever you use anything marked with one of the tags configured in the `tag` option.
+Allowed tags: `internal`, `alpha`, `beta`, `public`.
