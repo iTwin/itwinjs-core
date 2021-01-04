@@ -53,7 +53,7 @@ export enum ElementGeometryOpcode {
   /** Render material */
   Material = 21,
   /** [[TextString]] */
-  // eslint-disable-next-line no-shadow
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   TextString = 22,
   /** Specifies line style overrides [[LineStyle.Modifier]] */
   LineStyleModifiers = 23,

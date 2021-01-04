@@ -13,7 +13,7 @@ import { RelationshipConstraint } from "../Metadata/RelationshipClass";
 import { Schema } from "../Metadata/Schema";
 import { SchemaItem } from "../Metadata/SchemaItem";
 
-/* eslint-disable no-shadow */
+/* eslint-disable @typescript-eslint/no-shadow */
 
 const formatString = (format: string, ...args: string[]) => {
   return format.replace(/{(\d+)}/g, (match, theNumber) => {
