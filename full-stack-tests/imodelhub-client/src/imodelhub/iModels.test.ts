@@ -736,7 +736,7 @@ describe("iModelHub iModelsHandler", () => {
     imodel.description = newDescription;
     imodel.extent = newExtent;
     mockUpdateiModel(projectId, imodel);
-    let updatediModel = await iModelClient.iModel.update(requestContext, projectId, imodel);
+    let updatediModel = await iModelClient.iModels.update(requestContext, projectId, imodel);
 
     chai.expect(updatediModel.wsgId).to.be.equal(imodel.wsgId);
     chai.expect(updatediModel.name).to.be.equal(newName);
