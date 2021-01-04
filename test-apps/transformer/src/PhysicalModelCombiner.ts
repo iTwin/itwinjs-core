@@ -21,6 +21,7 @@ export class PhysicalModelCombiner extends IModelTransformer {
       ecefLocation: sourceDb.ecefLocation,
     };
     const targetDb = SnapshotDb.createEmpty(targetFileName, targetDbProps);
+    targetDb.nativeDb.enableTxnTesting();
     const combiner = new PhysicalModelCombiner(sourceDb, targetDb);
     combiner.logMemoryUsage("Before processSchemas");
     await combiner.processSchemas(new BackendRequestContext());
@@ -41,7 +42,7 @@ export class PhysicalModelCombiner extends IModelTransformer {
   private _numSourceRelationships = 0;
   private _numSourceRelationshipsProcessed = 0;
   private readonly _reportingInterval = 1000;
-  // private readonly _saveChangesInterval = 10000; // must be a multiple of reportingInterval
+  // private readonly _autoSaveThreshold = 64 * 1024 * 1024;
   private _targetComponentsModelId: Id64String = Id64.invalid;
   private _targetPhysicalTagsModelId: Id64String = Id64.invalid;
   private _startTime = new Date();
@@ -67,16 +68,8 @@ export class PhysicalModelCombiner extends IModelTransformer {
     this.logElapsedTime();
   }
   protected shouldExportElement(sourceElement: Element): boolean {
-    ++this._numSourceElementsProcessed;
-    if (0 === this._numSourceElementsProcessed % this._reportingInterval) {
-      const progressMessage = `Processed ${this._numSourceElementsProcessed} of ${this._numSourceElements} elements`;
-      Logger.logInfo("Progress", progressMessage);
-      this.logElapsedTime();
-      this.logMemoryUsage();
-      // if (0 === this._numSourceElementsProcessed % this._saveChangesInterval) {
-      //   Logger.logInfo("Progress", "Saving changes");
-      //   this.targetDb.saveChanges();
-      // }
+    if (this._numSourceElementsProcessed < this._numSourceElements) {
+      ++this._numSourceElementsProcessed;
     }
     if (sourceElement instanceof Subject) {
       if (sourceElement.code.getValue() === "Physical") { // FMG, BP case
@@ -133,27 +126,37 @@ export class PhysicalModelCombiner extends IModelTransformer {
     });
   }
   protected shouldExportRelationship(relationship: Relationship): boolean {
-    ++this._numSourceRelationshipsProcessed;
-    if (0 === this._numSourceRelationshipsProcessed % this._reportingInterval) {
-      const progressMessage = `Processed ${this._numSourceRelationshipsProcessed} of ${this._numSourceRelationships} relationships`;
-      Logger.logInfo("Progress", progressMessage);
-      this.logElapsedTime();
-      this.logMemoryUsage();
-      // if (0 === this._numSourceRelationshipsProcessed % this._saveChangesInterval) {
-      //   Logger.logInfo("Progress", "Saving changes");
-      //   this.targetDb.saveChanges(progressMessage);
-      // }
+    if (this._numSourceRelationshipsProcessed < this._numSourceRelationships) {
+      ++this._numSourceRelationshipsProcessed;
     }
     return super.shouldExportRelationship(relationship);
+  }
+  protected onProgress(): void {
+    Logger.logInfo("Progress", `Processed ${this._numSourceElementsProcessed} of ${this._numSourceElements} elements`);
+    Logger.logInfo("Progress", `Processed ${this._numSourceRelationshipsProcessed} of ${this._numSourceRelationships} relationships`);
+    this.logElapsedTime();
+    this.logMemoryUsage();
+    // if (IModelHost.platform.DgnDb.getSQLiteMemoryUsed() > this._autoSaveThreshold) {
+    //   Logger.logInfo("Progress", "Saving changes");
+    //   this.targetDb.saveChanges("Auto-save");
+    //   IModelHost.platform.DgnDb.getSQLiteMemoryUsed(true); // reset memory used
+    //   this.logMemoryUsage();
+    // }
+    super.onProgress();
   }
   private logMemoryUsage(suffix?: string): void {
     const used: any = process.memoryUsage();
     const values: string[] = [];
     // eslint-disable-next-line guard-for-in
     for (const key in used) {
-      values.push(`${key}=${Math.round(used[key] / 1024 / 1024 * 100) / 100}MB `);
+      values.push(`${key}=${this.toMB(used[key])}MB `);
     }
     Logger.logInfo("Memory", `Memory: ${values.join()}${suffix ?? ""}`);
+    // Logger.logInfo("Memory", `SQLite Pager Cache: ${this.toMB(this.targetDb.nativeDb.getPagerCacheUsed())}MB`);
+    // Logger.logInfo("Memory", `SQLite Memory Used: ${this.toMB(IModelHost.platform.DgnDb.getSQLiteMemoryUsed())}MB`);
+  }
+  private toMB(numBytes: number): number {
+    return Math.round(numBytes / 1024 / 1024 * 100) / 100;
   }
   private logElapsedTime(): void {
     const elapsedTimeMinutes: number = (new Date().valueOf() - this._startTime.valueOf()) / 60000.0;
