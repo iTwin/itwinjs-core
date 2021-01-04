@@ -97,7 +97,7 @@ export namespace WmtsCapability {
     public readonly serviceType?: string;
     public readonly serviceTypeVersion?: string;
     public readonly title?: string;
-    public readonly keywords?: string[];;
+    public readonly keywords?: string[];
 
     constructor(json: any) {
       this.abstract = json[OwsConstants.ABSTRACT_XMLTAG];

@@ -69,7 +69,7 @@ export class EditCommandAdmin {
       if (!isElectronMain)
         throw new Error("Edit Commands only allowed in Electron");
 
-      const ipcMain = require("electron").ipcMain;
+      const ipcMain = require("electron").ipcMain; // eslint-disable-line @typescript-eslint/no-var-requires
       ipcMain.handle(editCommandApi.start, async (_event: any, arg: any) => EditCommandAdmin.startCommand(arg));
       ipcMain.handle(editCommandApi.call, async (_event: any, arg: any) => EditCommandAdmin.callMethod(arg));
     }
@@ -120,4 +120,4 @@ export class EditCommandAdmin {
       return { error: "Exception", details: e };
     }
   }
-};
+}

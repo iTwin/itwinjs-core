@@ -24,7 +24,7 @@ export class TestEditCommand1 extends EditCommand {
       },
     };
   }
-};
+}
 
 export class TestEditCommand2 extends EditCommand {
   public static commandId = cmdIds.cmd2;
@@ -42,4 +42,4 @@ export class TestEditCommand2 extends EditCommand {
       },
     };
   }
-};
+}

@@ -80,7 +80,7 @@ const FloatingWidgetComponent = React.memo<CommonProps>(function FloatingWidgetC
   assert(floatingWidgetId);
   const item = React.useMemo(() => ({
     id: floatingWidgetId,
-    type: "widget" as "widget",
+    type: "widget" as const,
   }), [floatingWidgetId]);
   const dragged = useIsDraggedItem(item);
   const className = classnames(

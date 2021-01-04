@@ -15,9 +15,9 @@ export interface Test1Args {
     i1: number;
     i2: number;
   };
-};
+}
 
 export interface Test1Response {
   outStr: string;
   outNum: number;
-};
+}

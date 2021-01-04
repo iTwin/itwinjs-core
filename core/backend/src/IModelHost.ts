@@ -308,7 +308,7 @@ export class IModelHost {
   }
 
   private static validateNativePlatformVersion(): void {
-    const requiredVersion = require("../package.json").dependencies["@bentley/imodeljs-native"];
+    const requiredVersion = require("../package.json").dependencies["@bentley/imodeljs-native"]; // eslint-disable-line @typescript-eslint/no-var-requires
     const thisVersion = this.platform.version;
     if (semver.satisfies(thisVersion, requiredVersion))
       return;
@@ -321,7 +321,7 @@ export class IModelHost {
   }
 
   private static validateNodeJsVersion(): void {
-    const requiredVersion = require("../package.json").engines.node;
+    const requiredVersion = require("../package.json").engines.node; // eslint-disable-line @typescript-eslint/no-var-requires
     if (!semver.satisfies(process.version, requiredVersion))
       throw new IModelError(IModelStatus.BadRequest, `Node.js version ${process.version} is not within the range acceptable to imodeljs-backend: (${requiredVersion})`);
   }
@@ -400,7 +400,7 @@ export class IModelHost {
     if (!MobileRpcConfiguration.isMobileBackend) {
       this.validateNodeJsVersion();
     }
-    this.backendVersion = require("../package.json").version;
+    this.backendVersion = require("../package.json").version; // eslint-disable-line @typescript-eslint/no-var-requires
     initializeRpcBackend();
 
     const region: number = Config.App.getNumber(UrlDiscoveryClient.configResolveUrlUsingRegion, 0);

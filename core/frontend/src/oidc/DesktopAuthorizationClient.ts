@@ -20,7 +20,7 @@ import { FrontendRequestContext } from "../FrontendRequestContext";
 let ipc = getIModelElectronApi();
 if (ipc === undefined) {
   try {
-    ipc = require("electron").ipcRenderer;
+    ipc = require("electron").ipcRenderer; // eslint-disable-line @typescript-eslint/no-var-requires
   } catch (_e) {
     // to tell webpack this is optional
   }
