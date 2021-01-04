@@ -1,6 +1,6 @@
 {
   "name": "@bentley/projectshare-client",
-  "version": "2.11.0-dev.16",
+  "version": "2.11.0-dev.33",
   "description": "iModel.js ProjectShare Client",
   "main": "lib/projectshare-client.js",
   "typings": "lib/projectshare-client",
@@ -17,7 +17,7 @@
     "cover": "",
     "extract-api": "betools extract-api --entry=projectshare-client",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/clients/projectshare-client/file.json --tsIndexFile=projectshare-client.ts --onlyJson",
-    "lint": "eslint -f visualstudio ./src/**/*.ts 1>&2",
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "",
     "test:integration": "npm run webpackTests && npm run test:integration:chrome",
     "test:integration:chrome": "certa -r chrome --grep \"#integration\"",
@@ -35,18 +35,18 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.11.0-dev.16",
-    "@bentley/itwin-client": "^2.11.0-dev.16"
+    "@bentley/bentleyjs-core": "^2.11.0-dev.33",
+    "@bentley/itwin-client": "^2.11.0-dev.33"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.11.0-dev.16",
-    "@bentley/build-tools": "2.11.0-dev.16",
-    "@bentley/certa": "2.11.0-dev.16",
-    "@bentley/config-loader": "2.11.0-dev.16",
-    "@bentley/context-registry-client": "2.11.0-dev.16",
-    "@bentley/eslint-plugin": "2.11.0-dev.16",
-    "@bentley/itwin-client": "2.11.0-dev.16",
-    "@bentley/oidc-signin-tool": "2.11.0-dev.16",
+    "@bentley/bentleyjs-core": "2.11.0-dev.33",
+    "@bentley/build-tools": "2.11.0-dev.33",
+    "@bentley/certa": "2.11.0-dev.33",
+    "@bentley/config-loader": "2.11.0-dev.33",
+    "@bentley/context-registry-client": "2.11.0-dev.33",
+    "@bentley/eslint-plugin": "2.11.0-dev.33",
+    "@bentley/itwin-client": "2.11.0-dev.33",
+    "@bentley/oidc-signin-tool": "2.11.0-dev.33",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",

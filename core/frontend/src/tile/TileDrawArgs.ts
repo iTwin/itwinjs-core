@@ -17,7 +17,7 @@ import { RenderPlanarClassifier } from "../render/RenderPlanarClassifier";
 import { RenderTextureDrape } from "../render/RenderSystem";
 import { SceneContext } from "../ViewContext";
 import { ViewingSpace } from "../ViewingSpace";
-import { CoordSystem } from "../Viewport";
+import { CoordSystem } from "../CoordSystem";
 import { Tile, TileGraphicType, TileTree } from "./internal";
 
 const scratchRange = new Range3d();

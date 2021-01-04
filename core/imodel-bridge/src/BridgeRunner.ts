@@ -12,7 +12,7 @@ import { assert, BentleyStatus, Guid, GuidString, Id64String, IModelStatus, Logg
 import { ChangesType, LockLevel } from "@bentley/imodelhub-client";
 import {
   BackendRequestContext, BriefcaseDb, BriefcaseManager, ComputeProjectExtentsOptions, ConcurrencyControl, IModelDb, IModelJsFs, IModelJsNative,
-  RequestNewBriefcaseArg, SnapshotDb, Subject, SubjectOwnsSubjects, UsageLoggingUtilities,
+  SnapshotDb, Subject, SubjectOwnsSubjects, UsageLoggingUtilities,
 } from "@bentley/imodeljs-backend";
 import { DomainOptions, IModel, IModelError, OpenBriefcaseProps, ProfileOptions, SubjectProps } from "@bentley/imodeljs-common";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -481,14 +481,10 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
       throw new Error("Must initialize IModelId before using");
 
     // First, download the briefcase
-    const args: RequestNewBriefcaseArg = {
-      contextId: this._serverArgs.contextId,
-      iModelId: this._serverArgs.iModelId,
-    };
-    await BriefcaseManager.downloadBriefcase(this._requestContext, args);
+    const props = await BriefcaseManager.downloadBriefcase(this._requestContext, { contextId: this._serverArgs.contextId, iModelId: this._serverArgs.iModelId });
     let briefcaseDb: BriefcaseDb | undefined;
     const openArgs: OpenBriefcaseProps = {
-      fileName: args.fileName!,
+      fileName: props.fileName,
     };
     if (this._bridgeArgs.updateDbProfile) {
       openArgs.upgrade = { profile: ProfileOptions.Upgrade };

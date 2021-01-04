@@ -17,7 +17,8 @@ import { Camera, CategorySelectorProps, Code, DisplayStyle3dProps, IModel, IMode
 import { Range3d } from "@bentley/geometry-core";
 import { StandardViewId } from "./StandardView";
 import { IModelConnection } from "./IModelConnection";
-import { SpatialViewState, ViewState } from "./ViewState";
+import { ViewState } from "./ViewState";
+import { SpatialViewState } from "./SpatialViewState";
 import { Environment, loggerCategory } from "./imodeljs-frontend";
 
 /** @beta Options for creating a 3d [[ViewState]] via [[ViewCreator3d]] */

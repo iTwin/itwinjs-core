@@ -18,7 +18,7 @@ import { Viewport } from "../Viewport";
 import { ReadonlyViewportSet, UniqueViewportSets } from "../ViewportSet";
 import { InteractiveEditingSession } from "../InteractiveEditingSession";
 import { GeometricModelState } from "../ModelState";
-import { Tile, TileLoadStatus, TileRequest, TileTree, TileTreeSet, TileUsageMarker } from "./internal";
+import { Tile, TileLoadStatus, TileRequest, TileTree, TileTreeOwner, TileTreeSet, TileUsageMarker } from "./internal";
 
 /** Details about any tiles not handled by [[TileAdmin]]. At this time, that means OrbitGT point cloud tiles.
  * Used for bookkeeping by SelectedAndReadyTiles
@@ -267,7 +267,7 @@ export abstract class TileAdmin {
   /** Event raised when a request to load a tile tree completes.
    * @internal
    */
-  public readonly onTileTreeLoad = new BeEvent<(tileTree: TileTree) => void>();
+  public readonly onTileTreeLoad = new BeEvent<(tileTree: TileTreeOwner) => void>();
 
   /** Event raised when a request to load a tile's child tiles completes.
    * @internal
@@ -761,7 +761,7 @@ class Admin extends TileAdmin {
     // If unspecified skip one level before preloading  of parents of context tiles.
     this._contextPreloadParentSkip = Math.max(0, Math.min((options.contextPreloadParentSkip === undefined ? 1 : options.contextPreloadParentSkip), 5));
 
-    this._cleanup = InteractiveEditingSession.onBegin.addListener((session) => {
+    const removeEditingListener = InteractiveEditingSession.onBegin.addListener((session) => {
       const removeGeomListener = session.onGeometryChanges.addListener((changes: Iterable<ModelGeometryChanges>) => this.onModelGeometryChanged(changes));
       session.onEnded.addOnce((sesh: InteractiveEditingSession) => {
         assert(sesh === session);
@@ -769,6 +769,15 @@ class Admin extends TileAdmin {
         this.onSessionEnd(session);
       });
     });
+
+    const removeLoadListener = this.addLoadListener(() => {
+      this._viewports.forEach((vp) => vp.invalidateScene());
+    });
+
+    this._cleanup = () => {
+      removeEditingListener();
+      removeLoadListener();
+    };
   }
 
   public get enableInstancing() { return this._enableInstancing && IModelApp.renderSystem.supportsInstancing; }
