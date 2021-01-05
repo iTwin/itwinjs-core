@@ -6,8 +6,8 @@ import { expect } from "chai";
 import { CompressedId64Set, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  Code, ColorByName, DomainOptions, Events, GeometricElement3dProps, GeometryStreamBuilder, IModel, ModelGeometryChangesProps, QueuedEvent,
-  RpcPushChannel, RpcPushConnection, SubCategoryAppearance,
+  Code, ColorByName, Events, GeometricElement3dProps, GeometryStreamBuilder, IModel, ModelGeometryChangesProps, NativeAppRpcInterface,
+  QueuedEvent, RpcManager, RpcPushChannel, RpcPushConnection, SubCategoryAppearance,
 } from "@bentley/imodeljs-common";
 import {
   EventSink, IModelHost, IModelJsFs, NativeAppBackend, PhysicalModel, SpatialCategory, StandaloneDb, VolumeElement,
@@ -38,7 +38,8 @@ describe("Model geometry changes", () => {
     IModelJsFs.copySync(seedFileName, testFileName);
 
     // Upgrade the schema to include the GeometryGuid and LastMod model properties.
-    imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite, { domain: DomainOptions.Upgrade });
+    StandaloneDb.upgradeSchemas(testFileName);
+    imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
     modelId = PhysicalModel.insert(imodel, IModel.rootSubjectId, "TestModel");
     categoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));
     imodel.saveChanges("set up");
