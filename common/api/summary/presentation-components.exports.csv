@@ -44,8 +44,9 @@ public;tableWithUnifiedSelection
 public;TableWithUnifiedSelectionProps
 public;TreeWithFilteringSupportProps
 public;TreeWithUnifiedSelectionProps
-public;UnifiedSelectionContextProps
+public;UnifiedSelectionContext
 public;UnifiedSelectionContextProvider: React.FC
+public;UnifiedSelectionContextProviderProps
 beta;UnifiedSelectionTreeEventHandler 
 beta;UnifiedSelectionTreeEventHandlerParams
 beta;useControlledTreeFiltering(props: ControlledTreeFilteringProps):

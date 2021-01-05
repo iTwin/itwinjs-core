@@ -447,15 +447,26 @@ export interface TreeWithUnifiedSelectionProps {
 }
 
 // @public
-export interface UnifiedSelectionContextProps {
+export interface UnifiedSelectionContext {
+    addToSelection(keys: Keys, level?: number): void;
+    clearSelection(level?: number): void;
+    getSelection(level?: number): Readonly<KeySet>;
+    imodel: IModelConnection;
+    removeFromSelection(keys: Keys, level?: number): void;
+    replaceSelection(keys: Keys, level?: number): void;
+    selectionLevel: number;
+}
+
+// @public
+export const UnifiedSelectionContextProvider: React.FC<UnifiedSelectionContextProviderProps>;
+
+// @public
+export interface UnifiedSelectionContextProviderProps {
     // (undocumented)
     children?: React.ReactNode;
     imodel: IModelConnection;
     selectionLevel?: number;
 }
-
-// @public
-export const UnifiedSelectionContextProvider: React.FC<UnifiedSelectionContextProps>;
 
 // @beta
 export class UnifiedSelectionTreeEventHandler extends TreeEventHandler implements IDisposable {
