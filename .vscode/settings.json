@@ -109,4 +109,13 @@
   ],
   "importSorter.sortConfiguration.customOrderingRules.defaultNumberOfEmptyLinesAfterGroup": 0,
   "debug.internalConsoleOptions": "openOnSessionStart",
+  "eslint.codeAction.disableRuleComment": {
+    "location": "sameLine"
+  },
+  "eslint.format.enable": true,
+  "eslint.lintTask.enable": true,
+  "editor.codeActionsOnSave": {
+    "editor.action.fixAll": true, // first run the default formatter, it handles whitespace better
+    "source.fixAll.eslint": true // then run ESLint auto-fix
+  }
 }
