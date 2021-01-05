@@ -295,7 +295,7 @@
       "keyin": "fdt effect add flip"
     },
     "FlipImageConfig": {
-      "keyin" :"fdt effect config flip"
+      "keyin": "fdt effect config flip"
     },
     "LensDistortionEffect": {
       "keyin": "fdt effect add lensdistortion"
@@ -326,5 +326,11 @@
     },
     "MaskRealityModelByElement": {
       "keyin": "fdt set reality model mask elements"
+    },
+    "SetRealityModelMasking": {
+      "keyin": "fdt set reality model mask"
+    },
+    "SetMapMask": {
+      "keyin": "fdt set map mask"
+    }
   }
-}

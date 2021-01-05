@@ -320,11 +320,11 @@ export class SetHigherPriorityRealityModelMasking extends Tool {
 
 export class MaskRealityModelByElementTool extends PrimitiveTool {
   public static toolId = "MaskRealityModelByElement";
-  public static get minArgs() { return 0; }
-  public static get maxArgs() { return 0; }
   private readonly _acceptedIds: Id64Array = [];
   private _useSelection: boolean = false;
   private _targetModel?: Id64String | number;
+
+
   public requireWriteableTarget(): boolean { return false; }
   public onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
   public onCleanup(): void { if (0 !== this._acceptedIds.length) this.iModel.hilited.setHilite(this._acceptedIds, false); }

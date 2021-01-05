@@ -17,7 +17,7 @@ import {
 import {
   AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, ClipStyle, ColorDef, ContextRealityModelProps, DisplayStyleSettingsProps, Easing,
   ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer, Interpolation, LightSettings, NpcCenter, Placement2d,
-  Placement2dProps, Placement3d, Placement3dProps, PlacementProps, SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, Tweens, ViewFlags,
+  Placement2dProps, Placement3d, Placement3dProps, PlacementProps, PlanarClipMask, SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, Tweens, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
@@ -2512,7 +2512,7 @@ export abstract class Viewport implements IDisposable {
    * @beta
    */
   public addScreenSpaceEffect(effectName: string): void {
-    this.screenSpaceEffects = [ ...this.screenSpaceEffects, effectName ];
+    this.screenSpaceEffects = [...this.screenSpaceEffects, effectName];
   }
 
   /** Remove all screen-space effects from this Viewport.

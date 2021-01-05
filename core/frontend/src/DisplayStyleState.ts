@@ -7,11 +7,7 @@
  */
 import { assert, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Angle, Point3d, Range1d, Vector3d } from "@bentley/geometry-core";
-import { BackgroundMapProps, BackgroundMapSettings, BaseLayerSettings, calculateSolarDirection, Cartographic, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps, DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EnvironmentProps, FeatureAppearance, GlobeMode, GroundPlane, LightSettings, MapImagerySettings, MapLayerProps, MapLayerSettings, MapSubLayerProps, RenderTexture, SkyBoxImageType, SkyBoxProps, SkyCubeProps, SolarShadowSettings, SubCategoryOverride, SubLayerId, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ViewFlags } from "@bentley/imodeljs-common";
-  BackgroundMapProps, BackgroundMapSettings, BaseLayerSettings, calculateSolarDirection, Cartographic, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
-  DisplayStyleProps, DisplayStyleSettings, EnvironmentProps, FeatureAppearance, GlobeMode, GroundPlane, LightSettings, MapImagerySettings, MapLayerProps, MapLayerSettings,
-  MapSubLayerProps, RenderTexture, SkyBoxImageType, SkyBoxProps, SkyCubeProps, SolarShadowSettings, SubCategoryOverride, SubLayerId, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ViewFlags,
-} from "@bentley/imodeljs-common";
+import { DisplayStyleProps, DisplayStyleSettings, BackgroundMapSettings, MapImagerySettings, GlobeMode, MapLayerSettings, BaseLayerSettings, BackgroundMapProps, ContextRealityModelProps, PlanarClipMaskMode, FeatureAppearance, PlanarClipMask, MapLayerProps, ColorDef, MapSubLayerProps, SubLayerId, ViewFlags, SubCategoryOverride, SkyBoxProps, SkyBoxImageType, RenderTexture, SkyCubeProps, GroundPlane, EnvironmentProps, DisplayStyle3dSettings, LightSettings, Cartographic, calculateSolarDirection, SolarShadowSettings, DisplayStyle3dSettingsProps, ThematicDisplayMode, ThematicDisplay, ThematicGradientMode } from "@bentley/imodeljs-common";
 import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
 import { ContextRealityModelState } from "./ContextRealityModelState";
@@ -326,8 +322,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * @see [[overrideModelAppearance]]
    * @beta
    */
-  public getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined { 
-  return this.settings.getModelAppearanceOverride(id); 
+  public getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined {
+    return this.settings.getModelAppearanceOverride(id);
   }
 
   private applyToRealityModel(index: number, func: (index: number, jsonContextRealityModels: any[]) => boolean): boolean {

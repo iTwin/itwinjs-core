@@ -8,7 +8,7 @@
 
 import { assert, BentleyStatus, compareNumbers, compareStrings, compareStringsOrUndefined, Guid, Id64String } from "@bentley/bentleyjs-core";
 import { Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Ray3d, Transform, TransformProps, Vector3d, XYZ } from "@bentley/geometry-core";
-import { Cartographic, IModelError, ViewFlagOverrides, ViewFlagPresence } from "@bentley/imodeljs-common";
+import { Cartographic, GeoCoordStatus, IModelError, PlanarClipMask, PlanarClipMaskProps, ViewFlagOverrides, ViewFlagPresence } from "@bentley/imodeljs-common";
 import { AccessToken, request, RequestOptions } from "@bentley/itwin-client";
 import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
 import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
@@ -569,7 +569,7 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
     return drawArgs;
   }
 
-
+  public get planarClassifierTreeRef() { return this._classifier && this._classifier.activeClassifier && this._classifier.isPlanar ? this._classifier : undefined; }
 
   public addToScene(context: SceneContext): void {
     // NB: The classifier must be added first, so we can find it when adding our own tiles.

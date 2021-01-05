@@ -173,7 +173,7 @@ export class FrontendDevTools {
       ToggleOSMBuildingDisplay,
       SetHigherPriorityRealityModelMasking,
       SetMapHigherPriorityMasking,
-      MaskRealityModelByElementTool
+      // MaskRealityModelByElementTool
     ];
 
     for (const tool of tools)
