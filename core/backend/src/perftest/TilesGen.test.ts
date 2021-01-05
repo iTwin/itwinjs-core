@@ -6,18 +6,16 @@ import { assert } from "chai";
 import * as fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
-
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { IModelVersion, SyncMode } from "@bentley/imodeljs-common";
-import { Reporter } from "@bentley/perf-tools/lib/Reporter";
-import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { Config, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
-
-import { BackendTileGenerator, TileGenParams, TileStats } from "./TilesGenUtils";
-import { IModelTestUtils } from "../test/IModelTestUtils";
-import { HubUtility } from "../test/integration/HubUtility";
+import { IModelVersion } from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
+import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 import { StandaloneDb } from "../IModelDb";
 import { IModelJsFs } from "../IModelJsFs";
+import { IModelTestUtils } from "../test/IModelTestUtils";
+import { HubUtility } from "../test/integration/HubUtility";
+import { BackendTileGenerator, TileGenParams, TileStats } from "./TilesGenUtils";
 
 interface TileResult {
   nModels: number;
@@ -69,13 +67,13 @@ async function writeTileStats(outputDir: string, fileName: string, tileStats: Ti
 }
 
 async function writeTileMetadata(outputDir: string, fileName: string, tileStats: TileStats[]) {
-  const tileMatadataPath = path.join(outputDir, `${fileName}_Tiles`);
-  if (fs.existsSync(tileMatadataPath))
-    fs.removeSync(tileMatadataPath);
+  const tileMetadataPath = path.join(outputDir, `${fileName}_Tiles`);
+  if (fs.existsSync(tileMetadataPath))
+    fs.removeSync(tileMetadataPath);
 
-  fs.mkdirSync(tileMatadataPath);
+  fs.mkdirSync(tileMetadataPath);
   for (const stat of tileStats) {
-    const treePath = path.join(tileMatadataPath, stat.treeId.replace(":", "_"));
+    const treePath = path.join(tileMetadataPath, stat.treeId.replace(":", "_"));
     if (!fs.existsSync(treePath))
       fs.mkdirSync(treePath);
     const tilePath = path.join(treePath, `${stat.contentId}.json`);
@@ -131,7 +129,7 @@ async function generateIModelDbTiles(requestContext: AuthorizedClientRequestCont
     const iModelId = await HubUtility.queryIModelIdByName(requestContext, config.contextId, config.iModelName);
     const version: IModelVersion = config.changesetId ? IModelVersion.asOfChangeSet(config.changesetId) : IModelVersion.latest();
 
-    iModelDb = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, config.contextId, iModelId, SyncMode.FixedVersion, version);
+    iModelDb = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: config.contextId, iModelId, asOf: version.toJSON() });
   }
   assert.exists(iModelDb.isOpen, `iModel "${config.iModelName}" not opened`);
 

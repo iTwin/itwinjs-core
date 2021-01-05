@@ -90,7 +90,7 @@ export interface RulesetVariablesManager {
 export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
 
   private _clientValues = new Map<string, [VariableValueTypes, VariableValue]>();
-  public onVariableChanged = new BeEvent<(variableId: string, prevValue: VariableValue, currValue: VariableValue) => void>();
+  public onVariableChanged = new BeEvent<(variableId: string, prevValue: VariableValue | undefined, currValue: VariableValue) => void>();
 
   public constructor() {
   }

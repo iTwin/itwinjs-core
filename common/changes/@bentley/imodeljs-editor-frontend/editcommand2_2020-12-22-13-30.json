@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-editor-frontend",
+      "comment": "EditCommands now require an iModel",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-editor-frontend",
+  "email": "33296803+kabentley@users.noreply.github.com"
+}

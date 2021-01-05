@@ -23,7 +23,6 @@ import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
 import { StrokeOptions } from "../../curve/StrokeOptions";
 
-
 it("ChainMergeVariants", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];

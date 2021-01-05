@@ -1,6 +1,6 @@
 {
   "name": "@bentley/bentleyjs-core",
-  "version": "2.11.0-dev.15",
+  "version": "2.11.0-dev.34",
   "description": "Bentley JavaScript core components",
   "main": "lib/bentleyjs-core.js",
   "typings": "lib/bentleyjs-core",
@@ -19,19 +19,21 @@
     "docs": "betools docs --json=../../generated-docs/core/bentleyjs-core/file.json --tsIndexFile=bentleyjs-core.ts --onlyJson",
     "cover": "nyc npm test",
     "cover:docs": "node ./node_modules/@bentley/build-tools/scripts/docscoverage.js",
-    "lint": "eslint -f visualstudio --max-warnings 0 ./src/**/*.ts 1>&2"
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2"
   },
   "keywords": [
     "Bentley",
-    "iModel"
+    "iModel",
+    "digital-twin",
+    "iTwin"
   ],
   "author": {
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.11.0-dev.15",
-    "@bentley/eslint-plugin": "2.11.0-dev.15",
+    "@bentley/build-tools": "2.11.0-dev.34",
+    "@bentley/eslint-plugin": "2.11.0-dev.34",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^5.2.5",

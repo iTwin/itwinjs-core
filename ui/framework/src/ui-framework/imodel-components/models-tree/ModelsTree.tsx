@@ -460,7 +460,6 @@ export class ModelsVisibilityHandler implements IVisibilityHandler {
     return this.changeModelsVisibility([id], on);
   }
 
-
   protected async changeModelsVisibility(ids: Id64String[], visible: boolean) {
     if (visible)
       return this._props.viewport.addViewedModels(ids);

@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { IModelConnectionProps, IModelRpcProps } from "../IModel";
+import { IModelConnectionProps, IModelRpcProps, SnapshotOpenOptions } from "../IModel";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
 import { RpcOperation } from "./core/RpcOperation";
@@ -38,10 +38,10 @@ export abstract class SnapshotIModelRpcInterface extends RpcInterface {
   ===========================================================================================*/
 
   @RpcOperation.setRoutingProps(unknownIModelId)
-  public async openFile(_filePath: string): Promise<IModelConnectionProps> { return this.forward(arguments); }
+  public async openFile(_filePath: string, _opts?: SnapshotOpenOptions): Promise<IModelConnectionProps> { return this.forward(arguments); }
 
   @RpcOperation.setRoutingProps(unknownIModelId)
-  public async openRemote(_key: string): Promise<IModelConnectionProps> { return this.forward(arguments); }
+  public async openRemote(_key: string, _opts?: SnapshotOpenOptions): Promise<IModelConnectionProps> { return this.forward(arguments); }
 
   public async close(_iModelRpcProps: IModelRpcProps): Promise<boolean> { return this.forward(arguments); }
 }

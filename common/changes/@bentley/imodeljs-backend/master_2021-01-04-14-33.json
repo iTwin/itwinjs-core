@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-backend",
+      "comment": "ConcurrencyControl.setPolicy was allowing incorrectly typed arguments",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "69692709+swwilson-bsi@users.noreply.github.com"
+}

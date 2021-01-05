@@ -33,7 +33,6 @@ describe("iModelHub CodeHandler", () => {
   let iModelClient: IModelClient;
   let briefcaseId: number;
   let briefcaseId2: number;
-  const imodelName = "imodeljs-clients Codes test";
   // eslint-disable-next-line @typescript-eslint/naming-convention
   const continueOptions = { CustomOptions: { ConflictStrategy: "Continue" } };
   let requestContext: AuthorizedClientRequestContext;
@@ -45,8 +44,8 @@ describe("iModelHub CodeHandler", () => {
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
     contextId = await utils.getProjectId(requestContext);
-    await utils.createIModel(requestContext, imodelName, contextId);
-    imodelId = await utils.getIModelId(requestContext, imodelName, contextId);
+    await utils.createIModel(requestContext, utils.sharedimodelName, contextId);
+    imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, contextId);
     iModelClient = utils.getDefaultClient();
     const briefcases = await utils.getBriefcases(requestContext, imodelId, 2);
     briefcaseId = briefcases[0].briefcaseId!;
@@ -54,8 +53,8 @@ describe("iModelHub CodeHandler", () => {
   });
 
   after(async () => {
-    if (!TestConfig.enableMocks)
-      await utils.deleteIModelByName(requestContext, contextId, imodelName);
+    if (TestConfig.enableIModelBank)
+      await utils.deleteIModelByName(requestContext, contextId, utils.sharedimodelName);
   });
 
   afterEach(() => {
@@ -385,7 +384,6 @@ describe("iModelHub CodeSequenceHandler (#iModelBank|#integration)", () => {
   let imodelId: GuidString;
   let iModelClient: IModelClient;
   let briefcaseId: number;
-  const imodelName = "imodeljs-clients Codes test";
   let requestContext: AuthorizedClientRequestContext;
 
   before(async () => {
@@ -393,16 +391,17 @@ describe("iModelHub CodeSequenceHandler (#iModelBank|#integration)", () => {
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
     contextId = await utils.getProjectId(requestContext);
-    await utils.createIModel(requestContext, imodelName, contextId);
-    imodelId = await utils.getIModelId(requestContext, imodelName, contextId);
+    await utils.createIModel(requestContext, utils.sharedimodelName, contextId);
+    imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, contextId);
     iModelClient = utils.getDefaultClient();
     const briefcases = await utils.getBriefcases(requestContext, imodelId, 1);
     briefcaseId = briefcases[0].briefcaseId!;
   });
 
   after(async () => {
-    if (!TestConfig.enableMocks)
-      await utils.deleteIModelByName(requestContext, contextId, imodelName);
+    if (TestConfig.enableIModelBank) {
+      await utils.deleteIModelByName(requestContext, contextId, utils.sharedimodelName);
+    }
   });
 
   it("should acquire code with next available index value", async () => {
