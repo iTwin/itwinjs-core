@@ -50,7 +50,7 @@ export class TestPushUtility {
   public async pushTestChangeSetsAndVersions(count: number) {
     this._iModelDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: this._requestContext!, contextId: this._projectId!, iModelId: this._iModelId!.toString() });
     if (this._iModelDb.isBriefcaseDb()) {
-      this._iModelDb.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy); // don't want to bother with locks.
+      this._iModelDb.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy()); // don't want to bother with locks.
     }
     const lastLevel = this._currentLevel + count;
     while (this._currentLevel < lastLevel) {

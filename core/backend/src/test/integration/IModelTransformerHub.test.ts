@@ -74,8 +74,8 @@ describe("IModelTransformerHub (#integration)", () => {
       assert.exists(targetDb.isBriefcaseDb());
       assert.isFalse(sourceDb.isSnapshot);
       assert.isFalse(targetDb.isSnapshot);
-      sourceDb.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
-      targetDb.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
+      sourceDb.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
+      targetDb.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
 
       if (true) { // initial import
         IModelTransformerUtils.populateSourceDb(sourceDb);
@@ -267,7 +267,7 @@ describe("IModelTransformerHub (#integration)", () => {
       const sourceDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: sourceIModelId });
       const seedBisCoreVersion = sourceDb.querySchemaVersion(BisCoreSchema.schemaName)!;
       assert.isTrue(semver.satisfies(seedBisCoreVersion, ">= 1.0.1"));
-      sourceDb.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
+      sourceDb.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
       assert.isFalse(sourceDb.concurrencyControl.locks.hasSchemaLock);
       await sourceDb.importSchemas(requestContext, [BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
       assert.isTrue(sourceDb.concurrencyControl.locks.hasSchemaLock);
@@ -303,7 +303,7 @@ describe("IModelTransformerHub (#integration)", () => {
 
       // open/upgrade targetDb
       const targetDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: targetIModelId });
-      targetDb.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
+      targetDb.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
       await targetDb.importSchemas(requestContext, [BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
       assert.isTrue(targetDb.containsClass(ExternalSourceAspect.classFullName), "Expect BisCore to be updated and contain ExternalSourceAspect");
 

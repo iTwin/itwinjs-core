@@ -2389,7 +2389,7 @@ export class BriefcaseDb extends IModelDb {
   private constructor(nativeDb: IModelJsNative.DgnDb, token: IModelRpcProps, openMode: OpenMode) {
     super(nativeDb, token, openMode);
     this.concurrencyControl = new ConcurrencyControl(this);
-    this.concurrencyControl.setPolicy(ConcurrencyControl.PessimisticPolicy);
+    this.concurrencyControl.setPolicy(new ConcurrencyControl.PessimisticPolicy());
     this.briefcaseId = this.nativeDb.getBriefcaseId();
     this.allowLocalChanges = this.openMode === OpenMode.ReadWrite && this.briefcaseId !== 0;
   }

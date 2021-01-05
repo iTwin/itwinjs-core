@@ -997,7 +997,8 @@ export namespace ConcurrencyControl {
         conflictResolution: ConflictResolutionPolicy;
     }
     export class PessimisticPolicy {
-    }
+        constructor();
+        }
     // (undocumented)
     export interface RelationshipAndOpcode {
         // (undocumented)
