@@ -87,7 +87,7 @@ requestContext.enter();
 
 // To make things simple, set optimistic concurrency and go into bulk mode.
 // That way, we don't have to worry about locks or code-reservations.
-imodel1.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
+imodel1.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
 imodel1.concurrencyControl.startBulkMode();
 
 // Create the channel root. Note that, initially, we are in the repository channel.
