@@ -10,8 +10,6 @@ import { EMPTY } from "rxjs/internal/observable/empty";
 import { from } from "rxjs/internal/observable/from";
 import { map } from "rxjs/internal/operators/map";
 import { mergeMap } from "rxjs/internal/operators/mergeMap";
-import { takeUntil } from "rxjs/internal/operators/takeUntil";
-import { Subject } from "rxjs/internal/Subject";
 import { IDisposable } from "@bentley/bentleyjs-core";
 import { NodeKey } from "@bentley/presentation-common";
 import { UnifiedSelectionTreeEventHandler, UnifiedSelectionTreeEventHandlerParams } from "@bentley/presentation-components";
@@ -73,7 +71,6 @@ export interface VisibilityTreeEventHandlerParams extends UnifiedSelectionTreeEv
 export class VisibilityTreeEventHandler extends UnifiedSelectionTreeEventHandler {
   private _visibilityHandler: IVisibilityHandler | undefined;
   private _selectionPredicate?: VisibilityTreeSelectionPredicate;
-  private _cancelCheckboxEvent = new Subject<void>();
   private _removeListener: () => void;
 
   constructor(params: VisibilityTreeEventHandlerParams) {
@@ -132,15 +129,9 @@ export class VisibilityTreeEventHandler extends UnifiedSelectionTreeEventHandler
 
     from(event.stateChanges)
       .pipe(
-        takeUntil(this._cancelCheckboxEvent),
         mergeMap((changes) => this.changeVisibility(changes)),
       )
-      .subscribe({
-        complete: () => {
-          // needed for categories tree as it currently does no emit event when visibility changes
-          this.updateCheckboxes(); // eslint-disable-line @typescript-eslint/no-floating-promises
-        },
-      });
+      .subscribe();
     return undefined;
   }
 
