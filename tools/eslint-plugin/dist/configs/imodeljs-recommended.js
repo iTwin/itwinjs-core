@@ -149,7 +149,7 @@ module.exports = {
     "@typescript-eslint/no-non-null-assertion": "off",
     "@typescript-eslint/no-parameter-properties": "off",
     "@typescript-eslint/no-redeclare": [
-      "warn", // lowering severity because of type+namespace combos
+      "error",
       {
         "ignoreDeclarationMerge": true,
       }

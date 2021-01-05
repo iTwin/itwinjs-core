@@ -131,4 +131,4 @@ export const DelayedPromiseWithProps = (class <TProps extends NoDelayedPromiseMe
 /** Define the type of a DelayedPromiseWithProps instance
  * @beta
  */
-export type DelayedPromiseWithProps<TProps, TPayload> = Readonly<TProps> & DelayedPromise<TPayload>;
+export type DelayedPromiseWithProps<TProps, TPayload> = Readonly<TProps> & DelayedPromise<TPayload>; // eslint-disable-line @typescript-eslint/no-redeclare
