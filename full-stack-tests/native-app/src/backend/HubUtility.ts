@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { GuidString } from "@bentley/bentleyjs-core";
+import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
+import { ChangeSet, ChangeSetQuery, HubIModel, IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
+import { IModelHost, IModelJsFs } from "@bentley/imodeljs-backend";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import * as os from "os";
 import * as path from "path";
-import { GuidString } from "@bentley/bentleyjs-core";
-import { Project } from "@bentley/context-registry-client";
-import { ChangeSet, ChangeSetQuery, HubIModel, IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
-import { BriefcaseManager, IModelJsFs } from "@bentley/imodeljs-backend";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
 /** Utility to work with iModelHub */
 export class HubUtility {
@@ -87,7 +87,7 @@ export class HubUtility {
 
   /** Query the latest change set (id) of the specified iModel */
   public static async queryLatestChangeSetId(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<GuidString> {
-    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.changeSets.get(requestContext, iModelId, new ChangeSetQuery().top(1).latest());
+    const changeSets: ChangeSet[] = await IModelHost.iModelClient.changeSets.get(requestContext, iModelId, new ChangeSetQuery().top(1).latest());
     return (changeSets.length === 0) ? "" : changeSets[changeSets.length - 1].wsgId;
   }
 
@@ -108,12 +108,12 @@ export class HubUtility {
     // Delete any existing iModel
     try {
       const deleteIModelId: GuidString = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
-      await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, deleteIModelId);
+      await IModelHost.iModelClient.iModels.delete(requestContext, projectId, deleteIModelId);
     } catch (err) {
     }
 
     // Create a new iModel
-    const iModel: HubIModel = await BriefcaseManager.imodelClient.iModels.create(requestContext, projectId, iModelName, { description: `Description for ${iModelName}` });
+    const iModel: HubIModel = await IModelHost.iModelClient.iModels.create(requestContext, projectId, iModelName, { description: `Description for ${iModelName}` });
     return iModel.wsgId;
   }
 }
@@ -123,12 +123,20 @@ class TestIModelHubProject {
   public get isIModelHub(): boolean { return true; }
   public terminate(): void { }
 
+  private static _contextRegistryClient?: ContextRegistryClient;
+
+  private static get connectClient(): ContextRegistryClient {
+    if (this._contextRegistryClient === undefined)
+      this._contextRegistryClient = new ContextRegistryClient();
+    return this._contextRegistryClient;
+  }
+
   public get iModelHubClient(): IModelHubClient {
-    return BriefcaseManager.imodelClient as IModelHubClient;
+    return IModelHost.iModelClient as IModelHubClient;
   }
 
   public async queryProject(requestContext: AuthorizedClientRequestContext, query: any | undefined): Promise<Project> {
-    const client = BriefcaseManager.connectClient;
+    const client = TestIModelHubProject.connectClient;
     return client.getProject(requestContext, query);
   }
   public async createIModel(requestContext: AuthorizedClientRequestContext, projectId: string, params: any): Promise<HubIModel> {
