@@ -11,12 +11,11 @@ import { BeEvent, Logger } from "@bentley/bentleyjs-core";
 import { AxisIndex, Matrix3d, Point3d, Vector3d, WritableXAndY } from "@bentley/geometry-core";
 import { Frustum, SpatialViewDefinitionProps } from "@bentley/imodeljs-common";
 import {
-  CategorySelectorState, ChangeFlags, DisplayStyle3dState, IModelConnection, MockRender, ModelSelectorState, OrthographicViewState, ScreenViewport,
+  CategorySelectorState, DisplayStyle3dState, IModelConnection, MockRender, ModelSelectorState, OrthographicViewState, ScreenViewport,
   SpatialViewState, StandardViewId, TentativePoint, ViewManager, Viewport, ViewRect, ViewState,
 } from "@bentley/imodeljs-frontend";
 import { Face } from "@bentley/ui-core";
 import { cleanup, fireEvent, render } from "@testing-library/react";
-
 import { ViewportComponent } from "../../ui-components";
 import { ViewportComponentEvents } from "../../ui-components/viewport/ViewportComponentEvents";
 import TestUtils from "../TestUtils";
@@ -78,7 +77,7 @@ describe("ViewportComponent", () => {
   let nearestVisibleGeometryPoint: Point3d | undefined = Point3d.create(30, 30);
   let viewRect = new ViewRect(0, 0, 100, 100);
 
-  const onViewChanged = new BeEvent<(vp: Viewport, changed: ChangeFlags) => void>();
+  const onViewChanged = new BeEvent<(vp: Viewport) => void>();
   const viewportMock = moq.Mock.ofType<ScreenViewport>();
   viewportMock.setup((x) => x.view).returns(() => viewState);
   viewportMock.setup((x) => x.onViewChanged).returns(() => onViewChanged);

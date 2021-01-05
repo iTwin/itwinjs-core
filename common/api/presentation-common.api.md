@@ -6,6 +6,7 @@
 
 import { BentleyError } from '@bentley/bentleyjs-core';
 import { EntityProps } from '@bentley/imodeljs-common';
+import { FormatProps } from '@bentley/imodeljs-quantity';
 import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
 import { GuidString } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
@@ -186,11 +187,7 @@ export interface ClassInfoJSON {
 }
 
 // @public
-export type ComputeDisplayValueCallback = (type: string, value: string | number | boolean | {
-    x: number;
-    y: number;
-    z?: number;
-} | undefined, displayValue: string) => Promise<string>;
+export type ComputeDisplayValueCallback = (type: string, value: PrimitivePropertyValue, displayValue: string) => Promise<string>;
 
 // @public
 export interface ConditionContainer {
@@ -1063,7 +1060,7 @@ export interface KeySetJSON {
 // @public
 export interface KindOfQuantityInfo {
     // @alpha
-    currentFormatId: string;
+    activeFormat?: FormatProps;
     label: string;
     name: string;
     // @alpha
@@ -1213,6 +1210,8 @@ export interface NavigationRuleBase extends RuleBase {
 // @public
 export class NestedContentField extends Field {
     constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription, isReadonly: boolean, priority: number, contentClassInfo: ClassInfo, pathToPrimaryClass: RelationshipPath, nestedFields: Field[], editor?: EditorDescription, autoExpand?: boolean, renderer?: RendererDescription);
+    // @alpha (undocumented)
+    actualPrimaryClassIds: Id64String[];
     autoExpand?: boolean;
     // @alpha (undocumented)
     clone(): NestedContentField;
@@ -1232,6 +1231,8 @@ export class NestedContentField extends Field {
 
 // @public
 export interface NestedContentFieldJSON extends BaseFieldJSON {
+    // @alpha (undocumented)
+    actualPrimaryClassIds?: Id64String[];
     // (undocumented)
     autoExpand?: boolean;
     // (undocumented)
@@ -1651,6 +1652,9 @@ export enum PresentationUnitSystem {
 }
 
 // @public
+export type PrimitivePropertyValue = string | number | boolean | Point | InstanceKey | undefined;
+
+// @public
 export interface PrimitiveTypeDescription extends BaseTypeDescription {
     valueFormat: PropertyValueFormat.Primitive;
 }
@@ -1673,10 +1677,14 @@ export class PropertiesField extends Field {
 export interface PropertiesFieldDescriptor extends FieldDescriptorBase {
     // (undocumented)
     pathFromSelectToPropertyClass: StrippedRelationshipPath;
-    // (undocumented)
-    propertyClass: string;
-    // (undocumented)
-    propertyName: string;
+    properties: Array<{
+        class: string;
+        name: string;
+    }>;
+    // @deprecated (undocumented)
+    propertyClass?: string;
+    // @deprecated (undocumented)
+    propertyName?: string;
     // (undocumented)
     type: FieldDescriptorType.Properties;
 }

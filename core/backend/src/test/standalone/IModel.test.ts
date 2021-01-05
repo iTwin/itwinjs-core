@@ -15,16 +15,17 @@ import {
 import { CheckpointV2 } from "@bentley/imodelhub-client";
 import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyleProps,
-  DisplayStyleSettingsProps, DomainOptions, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeometricElement3dProps,
+  DisplayStyleSettingsProps, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeometricElement3dProps,
   GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat, IModel, IModelError, IModelStatus, MapImageryProps, ModelProps,
-  PhysicalElementProps, Placement3d, PrimitiveTypeCode, RelatedElement, RenderMode, SpatialViewDefinitionProps, SubCategoryAppearance, TextureFlags,
+  PhysicalElementProps, Placement3d, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, TextureFlags,
   TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { BlobDaemon } from "@bentley/imodeljs-native";
 import { AccessToken, AuthorizationClient, AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { BriefcaseDb } from "../../IModelDb";
 import {
   AutoPush, AutoPushEventHandler, AutoPushEventType, AutoPushParams, AutoPushState, BackendRequestContext, BisCoreSchema, BriefcaseIdValue,
-  BriefcaseManager, Category, ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel,
+  Category, ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel,
   DefinitionPartition, DictionaryModel, DisplayStyle3d, DisplayStyleCreationOptions, DocumentPartition, DrawingGraphic, ECSqlStatement, Element,
   ElementDrivesElement, ElementGroupsMembers, ElementOwnsChildElements, Entity, GeometricElement2d, GeometricElement3d, GeometricModel,
   GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, LightLocation, LinkPartition, Model, PhysicalElement,
@@ -1726,9 +1727,10 @@ describe("iModel", () => {
     // Just create an empty snapshot, and we'll use that as our fake "checkpoint" (so it opens)
     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint.bim");
     const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
-    const imodelId = snapshot.getGuid();
+    const iModelId = snapshot.getGuid();
     const contextId = Guid.createValue();
     const changeSetId = generateChangeSetId();
+    snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeSetId); // even fake checkpoints need a changeSetId!
     snapshot.close();
 
     // Mock iModelHub
@@ -1737,13 +1739,13 @@ describe("iModel", () => {
       ecId: "INVALID",
       changeSetId,
       containerAccessKeyAccount: "testAccount",
-      containerAccessKeyContainer: `imodelblocks-${imodelId}`,
+      containerAccessKeyContainer: `imodelblocks-${iModelId}`,
       containerAccessKeySAS: "testSAS",
       containerAccessKeyDbName: "testDb",
     };
-    const checkpointsV2Handler = BriefcaseManager.imodelClient.checkpointsV2;
+    const checkpointsV2Handler = IModelHost.iModelClient.checkpointsV2;
     sinon.stub(checkpointsV2Handler, "get").callsFake(async () => [mockCheckpointV2]);
-    sinon.stub(BriefcaseManager.imodelClient, "checkpointsV2").get(() => checkpointsV2Handler);
+    sinon.stub(IModelHost.iModelClient, "checkpointsV2").get(() => checkpointsV2Handler);
 
     // Mock blockcacheVFS daemon
     sinon.stub(BlobDaemon, "getDbFileName").callsFake(() => dbPath);
@@ -1753,10 +1755,10 @@ describe("iModel", () => {
 
     process.env.BLOCKCACHE_DIR = "/foo/";
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const checkpoint = await SnapshotDb.openCheckpoint(ctx, contextId, imodelId, changeSetId);
+    const checkpoint = await SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId, iModelId, changeSetId });
     const props = checkpoint.getRpcProps();
     assert.equal(props.openMode, OpenMode.Readonly);
-    assert.equal(props.iModelId, imodelId);
+    assert.equal(props.iModelId, iModelId);
     assert.equal(props.contextId, contextId);
     assert.equal(props.changeSetId, changeSetId);
     assert.equal(commandStub.callCount, 1);
@@ -1776,22 +1778,22 @@ describe("iModel", () => {
   it("should throw when opening checkpoint without blockcache dir env", async () => {
     process.env.BLOCKCACHE_DIR = "";
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const error = await getIModelError(SnapshotDb.openCheckpoint(ctx, Guid.createValue(), Guid.createValue(), generateChangeSetId()));
+    const error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: generateChangeSetId() }));
     expectIModelError(IModelStatus.BadRequest, error);
   });
 
   it("should throw for missing/invalid checkpoint in hub", async () => {
     process.env.BLOCKCACHE_DIR = "/foo/";
-    const checkpointsV2Handler = BriefcaseManager.imodelClient.checkpointsV2;
+    const checkpointsV2Handler = IModelHost.iModelClient.checkpointsV2;
     const hubMock = sinon.stub(checkpointsV2Handler, "get").callsFake(async () => []);
-    sinon.stub(BriefcaseManager.imodelClient, "checkpointsV2").get(() => checkpointsV2Handler);
+    sinon.stub(IModelHost.iModelClient, "checkpointsV2").get(() => checkpointsV2Handler);
 
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
-    let error = await getIModelError(SnapshotDb.openCheckpoint(ctx, Guid.createValue(), Guid.createValue(), generateChangeSetId()));
+    let error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: generateChangeSetId() }));
     expectIModelError(IModelStatus.NotFound, error);
 
     hubMock.callsFake(async () => [{} as any]);
-    error = await getIModelError(SnapshotDb.openCheckpoint(ctx, Guid.createValue(), Guid.createValue(), generateChangeSetId()));
+    error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: generateChangeSetId() }));
     expectIModelError(IModelStatus.BadRequest, error);
   });
 
@@ -1800,24 +1802,6 @@ describe("iModel", () => {
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
     const error = await getIModelError(imodel1.reattachDaemon(ctx));
     expectIModelError(IModelStatus.WrongIModel, error);
-  });
-
-  it("The same promise can have two subscribers, and it will notify both.", async () => {
-    const testPromise = new Promise((resolve, _reject) => {
-      setTimeout(() => resolve("Success!"), 250);
-    });
-
-    let callbackcount = 0;
-    testPromise.then(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
-      ++callbackcount;
-    });
-    testPromise.then(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
-      ++callbackcount;
-    });
-
-    await testPromise;
-
-    assert.equal(callbackcount, 2);
   });
 
   // This is skipped because it fails unpredictably - the timeouts don't seem to happen as expected
@@ -1960,9 +1944,8 @@ describe("iModel", () => {
     assert.isTrue(standaloneDb1.isStandalone);
     assert.isFalse(standaloneDb1.isReadonly, "Expect standalone iModels to be read-write during create");
     assert.equal(standaloneDb1.getBriefcaseId(), BriefcaseIdValue.Standalone);
-    assert.equal(standaloneDb1.filePath, standaloneFile1);
-    assert.equal(standaloneDb1, StandaloneDb.tryFindByKey(standaloneFile1), "Should be in the list of open StandaloneDbs");
-    assert.isUndefined(SnapshotDb.tryFindByKey(standaloneFile1), "Should not be in the list of open SnapshotDbs");
+    assert.equal(standaloneDb1.pathName, standaloneFile1);
+    assert.equal(standaloneDb1, StandaloneDb.tryFindByKey(standaloneDb1.key), "Should be in the list of open StandaloneDbs");
     assert.isFalse(standaloneDb1.nativeDb.isEncrypted());
     assert.equal(standaloneDb1.elements.getRootSubject().code.getValue(), standaloneRootSubjectName);
     assert.isTrue(standaloneDb1.isOpen);
@@ -1973,12 +1956,12 @@ describe("iModel", () => {
     standaloneDb1.close();
     assert.isFalse(standaloneDb1.isOpen);
     standaloneDb1.close(); // calling `close()` a second time is a no-op
-    assert.isUndefined(StandaloneDb.tryFindByKey(standaloneFile1));
+    assert.isUndefined(StandaloneDb.tryFindByKey(standaloneDb1.key));
     standaloneDb1 = StandaloneDb.openFile(standaloneFile1);
-    assert.equal(standaloneDb1, StandaloneDb.tryFindByKey(standaloneFile1));
+    assert.equal(standaloneDb1, StandaloneDb.tryFindByKey(standaloneDb1.key));
     assert.isFalse(standaloneDb1.isReadonly, "By default, StandaloneDbs are opened read/write");
     standaloneDb1.close();
-    assert.isUndefined(StandaloneDb.tryFindByKey(standaloneFile1));
+    assert.isUndefined(StandaloneDb.tryFindByKey(standaloneDb1.key));
   });
 
   it("Snapshot iModel properties", () => {
@@ -2005,13 +1988,12 @@ describe("iModel", () => {
     assert.equal(snapshotDb2.getBriefcaseId(), BriefcaseIdValue.Standalone);
     assert.equal(snapshotDb3.getBriefcaseId(), BriefcaseIdValue.Standalone);
     assert.equal(imodel1.getBriefcaseId(), BriefcaseIdValue.Standalone);
-    assert.equal(snapshotDb1.filePath, snapshotFile1);
-    assert.equal(snapshotDb2.filePath, snapshotFile2);
-    assert.equal(snapshotDb3.filePath, snapshotFile3);
-    assert.equal(snapshotDb1, SnapshotDb.tryFindByKey(snapshotFile1));
-    assert.equal(snapshotDb2, SnapshotDb.tryFindByKey(snapshotFile2));
-    assert.equal(snapshotDb3, SnapshotDb.tryFindByKey(snapshotFile3));
-    assert.isUndefined(StandaloneDb.tryFindByKey(snapshotFile1), "Should not be in the list of open StandaloneDbs");
+    assert.equal(snapshotDb1.pathName, snapshotFile1);
+    assert.equal(snapshotDb2.pathName, snapshotFile2);
+    assert.equal(snapshotDb3.pathName, snapshotFile3);
+    assert.equal(snapshotDb1, SnapshotDb.tryFindByKey(snapshotDb1.key));
+    assert.equal(snapshotDb2, SnapshotDb.tryFindByKey(snapshotDb2.key));
+    assert.equal(snapshotDb3, SnapshotDb.tryFindByKey(snapshotDb3.key));
     assert.isFalse(snapshotDb1.nativeDb.isEncrypted());
     assert.isFalse(snapshotDb2.nativeDb.isEncrypted());
     assert.isFalse(snapshotDb3.nativeDb.isEncrypted());
@@ -2040,15 +2022,19 @@ describe("iModel", () => {
     snapshotDb1.close(); // calling `close()` a second time is a no-op
     snapshotDb2.close(); // calling `close()` a second time is a no-op
     snapshotDb3.close(); // calling `close()` a second time is a no-op
-    assert.isUndefined(SnapshotDb.tryFindByKey(snapshotFile1));
-    assert.isUndefined(SnapshotDb.tryFindByKey(snapshotFile2));
-    assert.isUndefined(SnapshotDb.tryFindByKey(snapshotFile3));
+    assert.isUndefined(SnapshotDb.tryFindByKey(snapshotDb1.key));
+    assert.isUndefined(SnapshotDb.tryFindByKey(snapshotDb2.key));
+    assert.isUndefined(SnapshotDb.tryFindByKey(snapshotDb3.key));
     snapshotDb1 = SnapshotDb.openFile(snapshotFile1);
     snapshotDb2 = SnapshotDb.openFile(snapshotFile2);
     snapshotDb3 = SnapshotDb.openFile(snapshotFile3);
-    assert.equal(snapshotDb1, SnapshotDb.tryFindByKey(snapshotFile1));
-    assert.equal(snapshotDb2, SnapshotDb.tryFindByKey(snapshotFile2));
-    assert.equal(snapshotDb3, SnapshotDb.tryFindByKey(snapshotFile3));
+    assert.equal(snapshotDb1, SnapshotDb.tryFindByKey(snapshotDb1.key));
+    assert.equal(snapshotDb2, SnapshotDb.tryFindByKey(snapshotDb2.key));
+    assert.equal(snapshotDb3, SnapshotDb.tryFindByKey(snapshotDb3.key));
+    assert.equal(snapshotDb3, SnapshotDb.findByKey(snapshotDb3.key));
+    assert.equal(snapshotDb3, IModelDb.findByKey(snapshotDb3.key));
+    assert.throws(() => { BriefcaseDb.findByKey(snapshotDb1.key); }); // lookup of key for SnapshotDb via BriefcaseDb should throw
+    assert.throws(() => { StandaloneDb.findByKey(snapshotDb1.key); }); // likewise for StandaloneDb
     assert.isTrue(snapshotDb1.isReadonly, "Expect snapshots to be read-only after open");
     assert.isTrue(snapshotDb2.isReadonly, "Expect snapshots to be read-only after open");
     assert.isTrue(snapshotDb3.isReadonly, "Expect snapshots to be read-only after open");
@@ -2058,6 +2044,7 @@ describe("iModel", () => {
     assert.isTrue(hasClassView(snapshotDb1, "bis.ElementRefersToElements"));
     assert.isFalse(hasClassView(snapshotDb2, "bis.Element"));
     assert.isTrue(hasClassView(snapshotDb3, "bis.Element"));
+
     snapshotDb1.close();
     snapshotDb2.close();
     snapshotDb3.close();
@@ -2067,9 +2054,9 @@ describe("iModel", () => {
     assert.isDefined(snapshotDb1, "should open readonly");
     snapshotDb1.close();
 
-    assert.isUndefined(SnapshotDb.tryFindByKey(snapshotFile1));
-    assert.isUndefined(SnapshotDb.tryFindByKey(snapshotFile2));
-    assert.isUndefined(SnapshotDb.tryFindByKey(snapshotFile3));
+    assert.isUndefined(SnapshotDb.tryFindByKey(snapshotDb1.key));
+    assert.isUndefined(SnapshotDb.tryFindByKey(snapshotDb2.key));
+    assert.isUndefined(SnapshotDb.tryFindByKey(snapshotDb3.key));
   });
 
   it("Password-protected Snapshot iModels", () => {
@@ -2135,16 +2122,12 @@ describe("iModel", () => {
     assert.isTrue(semver.satisfies(beforeVersion!, "= 1.0.0"));
     iModel.close();
 
-    let result: DbResult = DbResult.BE_SQLITE_OK;
-    try {
-      iModel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite, { domain: DomainOptions.CheckRecommendedUpgrades });
-    } catch (err) {
-      assert(err instanceof IModelError);
-      result = err.errorNumber;
-    }
-    assert.strictEqual(result, DbResult.BE_SQLITE_ERROR_SchemaUpgradeRecommended);
+    const schemaState: SchemaState = StandaloneDb.validateSchemas(testFileName, true);
+    assert.strictEqual(schemaState, SchemaState.UpgradeRecommended);
 
-    iModel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite, { domain: DomainOptions.Upgrade });
+    StandaloneDb.upgradeSchemas(testFileName);
+
+    iModel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
     const afterVersion = iModel.querySchemaVersion("BisCore");
     assert.isTrue(semver.satisfies(afterVersion!, ">= 1.0.10"));
     iModel.close();
@@ -2217,7 +2200,7 @@ describe("iModel", () => {
 
   it("Run plain SQL against readonly connection", () => {
     let iModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IModel", "sqlitesqlreadonlyconnection.bim"), { rootSubject: { name: "test" } });
-    const iModelPath: string = iModel.filePath;
+    const iModelPath = iModel.pathName;
     iModel.close();
     iModel = SnapshotDb.openFile(iModelPath);
 

@@ -141,4 +141,13 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
   public setRenderToScreen(_toScreen: boolean): HTMLCanvasElement | undefined { return undefined; }
 
   public get debugControl(): RenderTargetDebugControl | undefined { return undefined; }
+
+  /** An ordered list of names of screen-space post-processing effects to be applied to the image produced by this target.
+   * The effects are applied in the order in which they appear in the list. Any names not corresponding to a registered effect are ignored.
+   * This may have no effect if this target does not support screen-space effects.
+   * @see [[RenderSystem.createScreenSpaceEffectBuilder]] to create and register new effects.
+   * @internal
+   */
+  public abstract get screenSpaceEffects(): Iterable<string>;
+  public abstract set screenSpaceEffects(_effectNames: Iterable<string>);
 }

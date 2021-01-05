@@ -1,6 +1,6 @@
 {
   "name": "@bentley/logger-config",
-  "version": "2.11.0-dev.5",
+  "version": "2.11.0-dev.34",
   "description": "Logger configuration",
   "main": "lib/logger-config.js",
   "typings": "lib/logger-config",
@@ -13,7 +13,7 @@
     "cover": "",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/logger-config/file.json --tsIndexFile=./logger-config.ts --onlyJson",
     "extract-api": "betools extract-api --entry=logger-config",
-    "lint": "eslint -f visualstudio --max-warnings 0 ./src/**/*.ts 1>&2",
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": ""
   },
   "author": {
@@ -30,16 +30,16 @@
     "iModel"
   ],
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.11.0-dev.5",
+    "@bentley/bentleyjs-core": "^2.11.0-dev.34",
     "bunyan": "^1.8.12",
     "bunyan-seq": "^0.2.0",
     "request": "^2.88.0",
     "request-promise": "^4.2.0"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.11.0-dev.5",
-    "@bentley/build-tools": "2.11.0-dev.5",
-    "@bentley/eslint-plugin": "2.11.0-dev.5",
+    "@bentley/bentleyjs-core": "2.11.0-dev.34",
+    "@bentley/build-tools": "2.11.0-dev.34",
+    "@bentley/eslint-plugin": "2.11.0-dev.34",
     "@types/bunyan": "^1.8.4",
     "@types/bunyan-seq": "^0.2.0",
     "@types/node": "10.14.1",

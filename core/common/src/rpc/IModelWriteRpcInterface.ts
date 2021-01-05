@@ -10,7 +10,7 @@ import { DbOpcode, GuidString, Id64Array, Id64String, IModelStatus } from "@bent
 import { LockLevel } from "@bentley/imodelhub-client";
 import { CodeProps } from "../Code";
 import { AxisAlignedBox3dProps } from "../geometry/Placement";
-import { IModelConnectionProps, IModelRpcProps } from "../IModel";
+import { IModelConnectionProps, IModelRpcOpenProps, IModelRpcProps } from "../IModel";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
 import { SubCategoryAppearance } from "../SubCategoryAppearance";
@@ -38,7 +38,7 @@ export abstract class IModelWriteRpcInterface extends RpcInterface {
       NOTE: Any add/remove/change to the methods below requires an update of the interface version.
       NOTE: Please consult the README in this folder for the semantic versioning rules.
   ===========================================================================================*/
-  public async openForWrite(_iModelToken: IModelRpcProps): Promise<IModelConnectionProps> { return this.forward(arguments); }
+  public async openForWrite(_iModelToken: IModelRpcOpenProps): Promise<IModelConnectionProps> { return this.forward(arguments); }
   public async saveChanges(_iModelToken: IModelRpcProps, _description?: string): Promise<void> { return this.forward(arguments); }
   public async hasUnsavedChanges(_iModelToken: IModelRpcProps): Promise<boolean> { return this.forward(arguments); }
   public async hasPendingTxns(_iModelToken: IModelRpcProps): Promise<boolean> { return this.forward(arguments); }

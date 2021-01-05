@@ -8,7 +8,7 @@ import * as moq from "typemoq";
 import { IModelApp, MockRender, ScreenViewport, Viewport } from "@bentley/imodeljs-frontend";
 import { render } from "@testing-library/react";
 import { ClearEmphasisStatusField } from "../../ui-framework/selection/ClearEmphasisStatusField";
-import { HideIsolateEmphasizeActionHandler, HideIsolateEmphasizeManager } from "../../ui-framework/selection/HideIsolateEmphasizeManager";
+import { HideIsolateEmphasizeAction, HideIsolateEmphasizeActionHandler, HideIsolateEmphasizeManager } from "../../ui-framework/selection/HideIsolateEmphasizeManager";
 import { StatusBarFieldId } from "../../ui-framework/statusbar/StatusBarWidgetControl";
 import TestUtils from "../TestUtils";
 
@@ -39,7 +39,7 @@ describe("ClearEmphasisStatusField", () => {
     // expect(component.container.querySelector("div.uifw-indicator-fade-in")).not.to.be.null;
 
     HideIsolateEmphasizeManager.prototype.areFeatureOverridesActive = featureOverridesNotActive;
-    HideIsolateEmphasizeActionHandler.emphasizeElementsChanged.raiseEvent();
+    HideIsolateEmphasizeActionHandler.emphasizeElementsChanged.raiseEvent({ viewport: viewportMock.object, action: HideIsolateEmphasizeAction.ClearHiddenIsolatedEmphasized });
     expect(component.container.querySelector("div.uifw-indicator-fade-out")).not.to.be.null;
   });
 

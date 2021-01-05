@@ -25,6 +25,7 @@ import { createEmptyRenderPlan, RenderPlan } from "../RenderPlan";
 import { PlanarClassifierMap, RenderPlanarClassifier } from "../RenderPlanarClassifier";
 import { RenderTextureDrape, TextureDrapeMap } from "../RenderSystem";
 import { PrimitiveVisibility, RenderTarget, RenderTargetDebugControl } from "../RenderTarget";
+import { ScreenSpaceEffectContext } from "../ScreenSpaceEffectBuilder";
 import { Scene } from "../Scene";
 import { BranchState } from "./BranchState";
 import { CachedGeometry, SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
@@ -114,6 +115,9 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _currentlyDrawingClassifier?: PlanarClassifier;
   private _analysisFraction: number = 0;
   private _antialiasSamples = 1;
+  // This exists strictly to be forwarded to ScreenSpaceEffects. Do not use it for anything else.
+  private _viewport?: Viewport;
+  private _screenSpaceEffects: string[] = [];
   public isFadeOutActive = false;
   public activeVolumeClassifierTexture?: WebGLTexture;
   public activeVolumeClassifierProps?: SpatialClassificationProps.Classifier;
@@ -297,6 +301,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this.reset();
     this.disposeFbo();
     dispose(this._compositor);
+    this._viewport = undefined;
 
     this._isDisposed = true;
   }
@@ -427,6 +432,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   }
 
   public onBeforeRender(viewport: Viewport, setSceneNeedRedraw: (redraw: boolean) => void) {
+    this._viewport = viewport;
     IModelFrameLifecycle.onBeforeRender.raiseEvent({
       renderSystem: this.renderSystem,
       viewport,
@@ -664,8 +670,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
       this.compositor.drawForReadPixels(this._renderCommands, this.graphics.overlays, this.graphics.decorations?.worldOverlay);
       this.uniforms.branch.pop();
-
-      this._isReadPixelsInProgress = false;
     } else {
       // After the Target is first created or any time its dimensions change, SceneCompositor.preDraw() must update
       // the compositor's textures, framebuffers, etc. This *must* occur before any drawing occurs.
@@ -703,6 +707,13 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
       this.endPerfMetricRecord(); // End "Overlay Draws"
     }
+
+    // Apply screen-space effects. Note we do not reset this._isReadPixelsInProgress until *after* doing so, as screen-space effects only apply
+    // during readPixels() if the effect shifts pixels from their original locations.
+    this.beginPerfMetricRecord("Screenspace Effects", this.drawForReadPixels);
+    this.renderSystem.screenSpaceEffects.apply(this);
+    this._isReadPixelsInProgress = false;
+    this.endPerfMetricRecord(this.drawForReadPixels);
 
     // Reset the batch IDs in all batches drawn for this call.
     this.uniforms.batch.resetBatchState();
@@ -818,43 +829,46 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     this.pushState(state);
 
-    // Create a culling frustum based on the input rect.
-    const viewRect = this.viewRect;
-    const leftScale = (rect.left - viewRect.left) / (viewRect.right - viewRect.left);
-    const rightScale = (viewRect.right - rect.right) / (viewRect.right - viewRect.left);
-    const topScale = (rect.top - viewRect.top) / (viewRect.bottom - viewRect.top);
-    const bottomScale = (viewRect.bottom - rect.bottom) / (viewRect.bottom - viewRect.top);
+    // Create a culling frustum based on the input rect. We can't do this if a screen-space effect is going to move pixels around.
+    if (!this.renderSystem.screenSpaceEffects.shouldApply(this)) {
+      const viewRect = this.viewRect;
+      const leftScale = (rect.left - viewRect.left) / (viewRect.right - viewRect.left);
+      const rightScale = (viewRect.right - rect.right) / (viewRect.right - viewRect.left);
+      const topScale = (rect.top - viewRect.top) / (viewRect.bottom - viewRect.top);
+      const bottomScale = (viewRect.bottom - rect.bottom) / (viewRect.bottom - viewRect.top);
 
-    const tmpFrust = this._scratchTmpFrustum;
-    const planFrust = this.planFrustum;
-    interpolateFrustumPoint(tmpFrust, planFrust, Npc._000, leftScale, Npc._100);
-    interpolateFrustumPoint(tmpFrust, planFrust, Npc._100, rightScale, Npc._000);
-    interpolateFrustumPoint(tmpFrust, planFrust, Npc._010, leftScale, Npc._110);
-    interpolateFrustumPoint(tmpFrust, planFrust, Npc._110, rightScale, Npc._010);
-    interpolateFrustumPoint(tmpFrust, planFrust, Npc._001, leftScale, Npc._101);
-    interpolateFrustumPoint(tmpFrust, planFrust, Npc._101, rightScale, Npc._001);
-    interpolateFrustumPoint(tmpFrust, planFrust, Npc._011, leftScale, Npc._111);
-    interpolateFrustumPoint(tmpFrust, planFrust, Npc._111, rightScale, Npc._011);
+      const tmpFrust = this._scratchTmpFrustum;
+      const planFrust = this.planFrustum;
+      interpolateFrustumPoint(tmpFrust, planFrust, Npc._000, leftScale, Npc._100);
+      interpolateFrustumPoint(tmpFrust, planFrust, Npc._100, rightScale, Npc._000);
+      interpolateFrustumPoint(tmpFrust, planFrust, Npc._010, leftScale, Npc._110);
+      interpolateFrustumPoint(tmpFrust, planFrust, Npc._110, rightScale, Npc._010);
+      interpolateFrustumPoint(tmpFrust, planFrust, Npc._001, leftScale, Npc._101);
+      interpolateFrustumPoint(tmpFrust, planFrust, Npc._101, rightScale, Npc._001);
+      interpolateFrustumPoint(tmpFrust, planFrust, Npc._011, leftScale, Npc._111);
+      interpolateFrustumPoint(tmpFrust, planFrust, Npc._111, rightScale, Npc._011);
 
-    const rectFrust = this._scratchRectFrustum;
-    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._000, bottomScale, Npc._010);
-    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._100, bottomScale, Npc._110);
-    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._010, topScale, Npc._000);
-    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._110, topScale, Npc._100);
-    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._001, bottomScale, Npc._011);
-    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._101, bottomScale, Npc._111);
-    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._011, topScale, Npc._001);
-    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._111, topScale, Npc._101);
+      const rectFrust = this._scratchRectFrustum;
+      interpolateFrustumPoint(rectFrust, tmpFrust, Npc._000, bottomScale, Npc._010);
+      interpolateFrustumPoint(rectFrust, tmpFrust, Npc._100, bottomScale, Npc._110);
+      interpolateFrustumPoint(rectFrust, tmpFrust, Npc._010, topScale, Npc._000);
+      interpolateFrustumPoint(rectFrust, tmpFrust, Npc._110, topScale, Npc._100);
+      interpolateFrustumPoint(rectFrust, tmpFrust, Npc._001, bottomScale, Npc._011);
+      interpolateFrustumPoint(rectFrust, tmpFrust, Npc._101, bottomScale, Npc._111);
+      interpolateFrustumPoint(rectFrust, tmpFrust, Npc._011, topScale, Npc._001);
+      interpolateFrustumPoint(rectFrust, tmpFrust, Npc._111, topScale, Npc._101);
 
-    // If a clip has been applied to the view, trivially do nothing if aperture does not intersect
-    // ###TODO: This was never right, was it? Some branches in the scene ignore the clip volume...
-    // if (undefined !== this._activeClipVolume && this.currentBranch.showClipVolume && this.clips.isValid)
-    //   if (ClipPlaneContainment.StronglyOutside === this._activeClipVolume.clipVector.classifyPointContainment(rectFrust.points))
-    //     return undefined;
+      this._renderCommands.setCheckRange(rectFrust);
+
+      // If a clip has been applied to the view, trivially do nothing if aperture does not intersect
+      // ###TODO: This was never right, was it? Some branches in the scene ignore the clip volume...
+      // if (undefined !== this._activeClipVolume && this.currentBranch.showClipVolume && this.clips.isValid)
+      //   if (ClipPlaneContainment.StronglyOutside === this._activeClipVolume.clipVector.classifyPointContainment(rectFrust.points))
+      //     return undefined;
+    }
 
     // Repopulate the command list, omitting non-pickable decorations and putting transparent stuff into the opaque passes.
     this._renderCommands.clear();
-    this._renderCommands.setCheckRange(rectFrust);
     this._renderCommands.initForReadPixels(this.graphics);
     this._renderCommands.clearCheckRange();
 
@@ -876,6 +890,11 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
         this.performanceMetrics.endOperation();
       }
     }
+
+    // Apply any screen-space effects that shift pixels from their original locations.
+    this.beginPerfMetricRecord("Screenspace Effects", this.drawForReadPixels);
+    this.renderSystem.screenSpaceEffects.apply(this);
+    this.endPerfMetricRecord(true); // Screenspace Effects
 
     // Restore the state
     this.uniforms.branch.pop();
@@ -909,9 +928,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
         didSucceed = false;
       }
     });
-    if (!didSucceed)
-      return false;
-    return true;
+
+    return didSucceed;
   }
 
   /** Returns a new size scaled up to a maximum size while maintaining proper aspect ratio.  The new size will be
@@ -1034,7 +1052,18 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       this._textureDrapes.forEach((drape) => (drape as TextureDrape).draw(this));
   }
 
-  // ---- Methods expected to be overridden by subclasses ---- //
+  public get screenSpaceEffects(): Iterable<string> {
+    return this._screenSpaceEffects;
+  }
+
+  public set screenSpaceEffects(effects: Iterable<string>) {
+    this._screenSpaceEffects = [...effects];
+  }
+
+  public get screenSpaceEffectContext(): ScreenSpaceEffectContext {
+    assert(undefined !== this._viewport);
+    return { viewport: this._viewport };
+  }
 
   protected abstract _assignDC(): boolean;
   protected abstract _beginPaint(fbo: FrameBuffer): void;
@@ -1208,9 +1237,10 @@ export class OnScreenTarget extends Target {
     if (undefined === this._blitGeom)
       return;
 
-    const system = this.renderSystem;
+    // Blit the final image to the canvas.
     const drawParams = this.getDrawParams(this, this._blitGeom);
 
+    const system = this.renderSystem;
     system.frameBufferStack.pop();
     system.applyRenderState(RenderState.defaults);
     system.techniques.draw(drawParams);

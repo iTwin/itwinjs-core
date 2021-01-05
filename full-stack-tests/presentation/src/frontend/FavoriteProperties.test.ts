@@ -26,6 +26,7 @@ describe("Favorite properties", () => {
   });
 
   after(async () => {
+    await imodel.close();
     await terminate();
   });
 

@@ -58,7 +58,7 @@ describe("default NativePlatform", () => {
   it("calls addon's forceLoadSchemas", async () => {
     addonMock
       .setup((x) => x.forceLoadSchemas(moq.It.isAny(), moq.It.isAny()))
-      .callback((_db, cb) => { cb(IModelJsNative.ECPresentationStatus.Success); })
+      .callback((_db, cb) => { cb({ result: undefined }); })
       .verifiable();
     await nativePlatform.forceLoadSchemas(undefined);
     addonMock.verifyAll();
@@ -66,7 +66,7 @@ describe("default NativePlatform", () => {
     addonMock.reset();
     addonMock
       .setup((x) => x.forceLoadSchemas(moq.It.isAny(), moq.It.isAny()))
-      .callback((_db, cb) => { cb(IModelJsNative.ECPresentationStatus.Error); })
+      .callback((_db, cb) => { cb({ error: { status: IModelJsNative.ECPresentationStatus.Error, message: "rejected" } }); })
       .verifiable();
     await expect(nativePlatform.forceLoadSchemas(undefined)).to.be.rejected;
     addonMock.verifyAll();
@@ -143,7 +143,6 @@ describe("default NativePlatform", () => {
     });
 
   });
-
 
   it("puts diagnostics into result", async () => {
     const diagnostics: DiagnosticsScopeLogs = {

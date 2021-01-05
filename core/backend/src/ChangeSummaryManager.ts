@@ -19,6 +19,7 @@ import { ECSqlStatement } from "./ECSqlStatement";
 import { BriefcaseDb, IModelDb } from "./IModelDb";
 import { KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
+import { IModelHost } from "./imodeljs-backend";
 
 const loggerCategory: string = BackendLoggerCategory.ECDb;
 
@@ -67,9 +68,9 @@ export interface ChangeSummaryExtractOptions {
 
 /** @beta */
 export class ChangeSummaryExtractContext {
-  public constructor(public readonly iModel: BriefcaseDb) { }
+  public constructor(public readonly iModel: IModelDb) { }
 
-  public get iModelId(): GuidString { assert(!!this.iModel.briefcase); return this.iModel.briefcase.iModelId; }
+  public get iModelId(): GuidString { return this.iModel.iModelId; }
 }
 
 /** Class to extract Change Summaries for a briefcase.
@@ -85,8 +86,8 @@ export class ChangeSummaryManager {
    * @param iModel iModel to check whether a *Change Cache file* is attached
    * @returns Returns true if the *Change Cache file* is attached to the iModel. false otherwise
    */
-  public static isChangeCacheAttached(iModel: BriefcaseDb): boolean {
-    if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen)
+  public static isChangeCacheAttached(iModel: IModelDb): boolean {
+    if (!iModel || !iModel.isOpen)
       throw new IModelError(IModelStatus.BadRequest, "Briefcase must be open");
 
     return iModel.nativeDb.isChangeCacheAttached();
@@ -97,14 +98,14 @@ export class ChangeSummaryManager {
    * @param iModel iModel to attach the *Change Cache file* file to
    * @throws [IModelError]($common)
    */
-  public static attachChangeCache(iModel: BriefcaseDb): void {
-    if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen)
+  public static attachChangeCache(iModel: IModelDb): void {
+    if (!iModel || !iModel.isOpen)
       throw new IModelError(IModelStatus.BadRequest, "Briefcase must be open");
 
     if (ChangeSummaryManager.isChangeCacheAttached(iModel))
       return;
 
-    const changesCacheFilePath: string = BriefcaseManager.getChangeCachePathName(iModel.briefcase.iModelId);
+    const changesCacheFilePath: string = BriefcaseManager.getChangeCachePathName(iModel.iModelId);
     if (!IModelJsFs.existsSync(changesCacheFilePath)) {
       using(new ECDb(), (changeCacheFile: ECDb) => {
         ChangeSummaryManager.createChangeCacheFile(iModel, changeCacheFile, changesCacheFilePath);
@@ -114,22 +115,21 @@ export class ChangeSummaryManager {
     assert(IModelJsFs.existsSync(changesCacheFilePath));
     const res: DbResult = iModel.nativeDb.attachChangeCache(changesCacheFilePath);
     if (res !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(res, `Failed to attach Change Cache file to ${iModel.briefcase.pathname}.`);
+      throw new IModelError(res, `Failed to attach Change Cache file to ${iModel.pathName}.`);
   }
 
   /** Detaches the *Change Cache file* from the specified iModel.
    * @param iModel iModel to detach the *Change Cache file* to
    * @throws [IModelError]($common) in case of errors, e.g. if no *Change Cache file* was attached before.
    */
-  public static detachChangeCache(iModel: BriefcaseDb): void {
-    if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen)
+  public static detachChangeCache(iModel: IModelDb): void {
+    if (!iModel || !iModel.isOpen)
       throw new IModelError(IModelStatus.BadRequest, "Briefcase must be open");
 
-    iModel.clearStatementCache();
-    iModel.clearSqliteStatementCache();
+    iModel.clearCaches();
     const res: DbResult = iModel.nativeDb.detachChangeCache();
     if (res !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(res, `Failed to detach Change Cache file from ${iModel.briefcase.pathname}.`);
+      throw new IModelError(res, `Failed to detach Change Cache file from ${iModel.pathName}.`);
   }
 
   /** Extracts change summaries from the specified iModel.
@@ -145,18 +145,18 @@ export class ChangeSummaryManager {
    */
   public static async extractChangeSummaries(requestContext: AuthorizedClientRequestContext, iModel: BriefcaseDb, options?: ChangeSummaryExtractOptions): Promise<Id64String[]> {
     requestContext.enter();
-    if (!iModel?.briefcase?.isOpen)
+    if (!iModel?.isOpen)
       throw new IModelError(IModelStatus.BadRequest, "Briefcase must be open");
 
     const ctx = new ChangeSummaryExtractContext(iModel);
 
-    const endChangeSetId: GuidString = iModel.briefcase.currentChangeSetId;
+    const endChangeSetId: GuidString = iModel.changeSetId;
     assert(endChangeSetId.length !== 0);
 
     let startChangeSetId: GuidString = "";
     if (options) {
       if (options.startVersion) {
-        startChangeSetId = await options.startVersion.evaluateChangeSet(requestContext, ctx.iModelId, BriefcaseManager.imodelClient);
+        startChangeSetId = await options.startVersion.evaluateChangeSet(requestContext, ctx.iModelId, IModelHost.iModelClient);
         requestContext.enter();
       } else if (options.currentVersionOnly) {
         startChangeSetId = endChangeSetId;
@@ -168,7 +168,7 @@ export class ChangeSummaryManager {
 
     // download necessary changesets if they were not downloaded before and retrieve infos about those changesets
     let perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Retrieve ChangeSetInfos and download ChangeSets from Hub");
-    const changeSetInfos: ChangeSet[] = await ChangeSummaryManager.downloadChangeSets(requestContext, ctx, startChangeSetId, endChangeSetId);
+    const changeSetInfos = await ChangeSummaryManager.downloadChangeSets(requestContext, ctx, startChangeSetId, endChangeSetId);
     requestContext.enter();
     perfLogger.dispose();
     Logger.logTrace(loggerCategory, "Retrieved changesets to extract from from cache or from hub.", () => ({ iModelId: ctx.iModelId, startChangeSetId, endChangeSetId, changeSets: changeSetInfos }));
@@ -248,7 +248,7 @@ export class ChangeSummaryManager {
         ChangeSummaryManager.attachChangeCache(iModel);
 
       perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Move iModel to original changeset");
-      if (iModel.briefcase.currentChangeSetId !== endChangeSetId)
+      if (iModel.changeSetId !== endChangeSetId)
         await iModel.reinstateChanges(requestContext, IModelVersion.asOfChangeSet(endChangeSetId));
       requestContext.enter();
       perfLogger.dispose();
@@ -269,7 +269,7 @@ export class ChangeSummaryManager {
       const query = new ChangeSetQuery();
       query.byId(startChangeSetId);
 
-      const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.changeSets.get(requestContext, ctx.iModelId, query);
+      const changeSets = await IModelHost.iModelClient.changeSets.get(requestContext, ctx.iModelId, query);
       requestContext.enter();
       if (changeSets.length === 0)
         throw new Error(`Unable to find change set ${startChangeSetId} for iModel ${ctx.iModelId}`);
@@ -279,7 +279,7 @@ export class ChangeSummaryManager {
       beforeStartChangeSetId = !changeSetInfo.parentId ? "" : changeSetInfo.parentId;
     }
 
-    const changeSetInfos: ChangeSet[] = await BriefcaseManager.downloadChangeSets(requestContext, ctx.iModelId, beforeStartChangeSetId, endChangeSetId);
+    const changeSetInfos = await BriefcaseManager.downloadChangeSets(requestContext, ctx.iModelId, beforeStartChangeSetId, endChangeSetId);
     requestContext.enter();
     assert(startChangeSetId.length === 0 || startChangeSetId === changeSetInfos[0].wsgId);
     assert(endChangeSetId === changeSetInfos[changeSetInfos.length - 1].wsgId);
@@ -287,11 +287,11 @@ export class ChangeSummaryManager {
   }
 
   private static openOrCreateChangesFile(iModel: BriefcaseDb): ECDb {
-    if (!iModel?.briefcase?.isOpen)
+    if (!iModel?.isOpen)
       throw new IModelError(IModelStatus.BadArg, "Invalid iModel handle. iModel must be open.");
 
     const changesFile = new ECDb();
-    const changeCacheFilePath: string = BriefcaseManager.getChangeCachePathName(iModel.briefcase.iModelId);
+    const changeCacheFilePath: string = BriefcaseManager.getChangeCachePathName(iModel.iModelId);
     if (IModelJsFs.existsSync(changeCacheFilePath)) {
       ChangeSummaryManager.openChangeCacheFile(changesFile, changeCacheFilePath);
       return changesFile;
@@ -309,8 +309,8 @@ export class ChangeSummaryManager {
     }
   }
 
-  private static createChangeCacheFile(iModel: BriefcaseDb, changesFile: ECDb, changeCacheFilePath: string): void {
-    if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen)
+  private static createChangeCacheFile(iModel: IModelDb, changesFile: ECDb, changeCacheFilePath: string): void {
+    if (!iModel?.isOpen)
       throw new IModelError(IModelStatus.BadArg, "Invalid iModel object. iModel must be open.");
 
     const stat: DbResult = iModel.nativeDb.createChangeCache(changesFile.nativeDb, changeCacheFilePath);

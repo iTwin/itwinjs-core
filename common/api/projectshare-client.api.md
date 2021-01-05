@@ -20,7 +20,9 @@ export class ProjectShareClient extends WsgClient {
     // (undocumented)
     static readonly configURL = "imjs_project_share_client_url";
     createFile(requestContext: AuthorizedClientRequestContext, contextId: GuidString, folderId: GuidString, file: ProjectShareFile): Promise<ProjectShareFile>;
+    createFolder(requestContext: AuthorizedClientRequestContext, contextId: GuidString, parentFolderId: GuidString, folder: ProjectShareFolder): Promise<ProjectShareFolder>;
     deleteFile(requestContext: AuthorizedClientRequestContext, contextId: GuidString, fileId: GuidString, deleteOption?: RecycleOption): Promise<ProjectShareFile | void>;
+    deleteFolder(requestContext: AuthorizedClientRequestContext, contextId: GuidString, folderId: GuidString, deleteOption?: RecycleOption): Promise<ProjectShareFile | void>;
     protected getDefaultUrl(): string;
     getFiles(requestContext: AuthorizedClientRequestContext, contextId: GuidString, query: ProjectShareQuery): Promise<ProjectShareFile[]>;
     getFolders(requestContext: AuthorizedClientRequestContext, contextId: GuidString, query: ProjectShareQuery): Promise<ProjectShareFolder[]>;
@@ -88,11 +90,15 @@ export class ProjectShareFolder extends WsgInstance {
     // (undocumented)
     createdTimeStamp?: string;
     // (undocumented)
+    instanceId?: string;
+    // (undocumented)
     modifiedBy?: string;
     // (undocumented)
     modifiedTimeStamp?: string;
     // (undocumented)
     name?: string;
+    // (undocumented)
+    parentFolder?: ProjectShareFolder;
     // (undocumented)
     parentFolderId?: string;
     // (undocumented)
@@ -109,6 +115,7 @@ export class ProjectShareFolderQuery extends ProjectShareQuery {
 // @internal
 export class ProjectShareQuery extends WsgQuery {
     byWsgIds(...ids: GuidString[]): this;
+    protected correctPath(path: string): string;
     inFolder(folderId: GuidString): this;
     inFolderWithNameLike(folderId: GuidString, searchName: string): this;
     inRootFolder(contextId: GuidString): this;

@@ -440,6 +440,15 @@ describe("ContextMenu", () => {
       item.dispatchEvent(createBubbledEvent("keyup", { key: SpecialKey.Escape /* <Esc> */ }));
       handleSelect.should.not.have.been.called;
     });
+    it("onSelect not called when disabled", () => {
+      const handleSelect = sinon.fake();
+      const component = render(<ContextMenuItem onSelect={handleSelect} disabled={true}>Test</ContextMenuItem>);
+      const item = component.getByTestId("core-context-menu-item");
+      item.dispatchEvent(createBubbledEvent("keyup", { key: SpecialKey.Enter /* <Return> */ }));
+      handleSelect.should.not.have.been.called;
+      item.dispatchEvent(createBubbledEvent("click"));
+      handleSelect.should.not.have.been.called;
+    });
   });
 
   describe("<ContextSubMenu />", () => {

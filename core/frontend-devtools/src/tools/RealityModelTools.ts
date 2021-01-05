@@ -71,7 +71,6 @@ function changeRealityModelAppearanceOverrides(vp: Viewport, overrides: FeatureA
   return vp.overrideRealityModelAppearance(index, existingOverrides ? existingOverrides.clone(overrides) : FeatureAppearance.fromJSON(overrides));
 }
 
-
 /** Set reality model appearance override for transparency in display style.
  * @beta
  */
@@ -221,7 +220,6 @@ export class ClearRealityModelAppearanceOverrides extends Tool {
   }
 }
 
-
 /** Attach a cesium asset from the Ion ID and key.
  * @beta
  */
@@ -245,7 +243,6 @@ export class AttachCesiumAssetTool extends Tool {
     return Number.isNaN(assetId) ? false : this.run(assetId, args[1]);
   }
 }
-
 
 /** Turn on/off display of OpenStreetMap buildings
  * @beta

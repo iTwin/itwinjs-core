@@ -28,6 +28,33 @@ import { SampleAppIModelApp } from "../../..";
 import { BeDuration, Logger } from "@bentley/bentleyjs-core";
 import { SamplePopupContextMenu } from "./SamplePopupContextMenu";
 
+function WrappedSelect() {
+  const [currentValue, setCurrentValue] = React.useState(3);
+  const handleValueChange = React.useCallback((value: number) => {
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Set select value to ${value.toString()}`));
+    setCurrentValue(value);
+  }, []);
+
+  return (
+    <div style={{ display: "flex", alignItems: "center" }}>
+      <Select
+        value={currentValue}
+        onChange={(event) => handleValueChange(Number.parseInt(event.target.value, 10))}
+        options={[
+          { label: "Option 0", value: 0 },
+          { label: "Option 1", value: 1 },
+          { label: "Option 2", value: 2 },
+          { label: "Option 3", value: 3 },
+        ]} />
+      <button onClick={() => handleValueChange(0)}>0</button>
+      <button onClick={() => handleValueChange(1)}>1</button>
+      <button onClick={() => handleValueChange(2)}>2</button>
+      <button onClick={() => handleValueChange(3)}>3</button>
+    </div>
+  );
+
+}
+
 function NestedPopup({ closeOnNestedPopupOutsideClick }: { closeOnNestedPopupOutsideClick?: boolean }) {
   const [showPopup, setShowPopup] = React.useState(false);
   const [currentDate, setCurrentDate] = React.useState(new Date());
@@ -659,9 +686,33 @@ export class ComponentExamplesProvider {
     return {
       title: "Select",
       examples: [
-        createComponentExample("Basic Select", "Basic Select component", <Select options={["Option 1", "Option 2", "Option 3", "Option 4"]} />),
+        createComponentExample("Basic Select", "Basic Select component",
+          <Select
+            onChange={(event) => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, event.target.value))}
+            options={["Option 1", "Option 2", "Option 3", "Option 4"]} />),
+        createComponentExample("Select with values", "Select with values in array",
+          <Select
+            onChange={(event) => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, event.target.value))}
+            options={[
+              { label: "Option 1", value: "option1" },
+              { label: "Option 2", value: "option2" },
+              { label: "Option 3", value: "option3" },
+              { label: "Option 4", value: "option4" },
+            ]} />),
+        createComponentExample("Select with values/labels", "Select with value objects",
+          <Select
+            onChange={(event) => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, event.target.value))}
+            options={{
+              option1: { label: "Option 1", value: "xyz" },
+              option2: "Option 2",
+              option3: "Option 3",
+              option4: "Option 4",
+            }} />),
+        createComponentExample("Select with Number values", "Sync Select with button values", <WrappedSelect />),
         createComponentExample("Disabled Select", "Select with disabled prop", <Select options={["Option 1", "Option 2", "Option 3", "Option 4"]} disabled />),
         createComponentExample("Placeholder Select", "Select with placeholder prop", <Select options={["Option 1", "Option 2", "Option 3", "Option 4"]} placeholder="Pick an option" />),
+        createComponentExample("Select with Disabled option", "Select with option with disabled prop",
+          <Select options={["Option 1", "Option 2", { label: "Disabled Option", disabled: true }, "Option 3", "Option 4"]} placeholder="Pick an option" />),
 
         createComponentExample("Labeled Select", "Labeled Select component", <LabeledSelect label="Labeled Select" options={["Option 1", "Option 2", "Option 3", "Option 4"]} />),
 

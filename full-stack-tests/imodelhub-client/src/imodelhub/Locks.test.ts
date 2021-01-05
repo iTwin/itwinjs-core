@@ -19,7 +19,6 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
   let contextId: string;
   let imodelId: GuidString;
   let iModelClient: IModelClient;
-  const imodelName = "imodeljs-clients Locks test";
   let briefcases: Briefcase[];
   let changeSet: ChangeSet;
   let lastObjectId: Id64String;
@@ -33,8 +32,8 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
 
     contextId = await utils.getProjectId(requestContext);
     // Does not create an imodel right now, but should in the future
-    await utils.createIModel(requestContext, imodelName, contextId, true, true);
-    imodelId = await utils.getIModelId(requestContext, imodelName, contextId);
+    await utils.createIModel(requestContext, utils.sharedimodelName, contextId, true, true);
+    imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, contextId);
     iModelClient = utils.getDefaultClient();
     briefcases = (await utils.getBriefcases(requestContext, imodelId, 2));
     lastObjectId = await utils.getLastLockObjectId(requestContext, imodelId);
@@ -57,8 +56,9 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
   });
 
   after(async () => {
-    if (!TestConfig.enableMocks)
-      await utils.deleteIModelByName(requestContext, contextId, imodelName);
+    if (TestConfig.enableIModelBank) {
+      await utils.deleteIModelByName(requestContext, contextId, utils.sharedimodelName);
+    }
   });
 
   afterEach(() => {

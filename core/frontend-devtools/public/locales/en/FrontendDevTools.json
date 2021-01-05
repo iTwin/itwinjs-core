@@ -81,6 +81,9 @@
     "ToggleRealityTileLogging": {
       "keyin": "fdt toggle reality logging"
     },
+    "ToggleSectionCut": {
+      "keyin": "fdt section cut"
+    },
     "SetAspectRatioSkew": {
       "keyin": "fdt aspect skew"
     },
@@ -149,6 +152,9 @@
     },
     "ClipColorTool": {
       "keyin": "fdt clip color"
+    },
+    "TestClipStyle": {
+      "keyin": "fdt test clip style"
     },
     "SourceAspectIdFromElementId": {
       "keyin": "fdt sourceId from elemId"
@@ -276,14 +282,49 @@
     "SetAASamples": {
       "keyin": "fdt aasamples"
     },
-    "SetHigherPriorityRealityModelMasking": {
-      "keyin": "fdt set higher priority reality model mask"
+    "ChangeCamera": {
+      "keyin": "fdt camera"
     },
-    "SetMapHigherPriorityMask": {
-      "keyin": "fdt set higher prioity map mask"
+    "ToggleDrawingGraphics": {
+      "keyin": "fdt drawing graphics"
+    },
+    "ToggleSectionDrawingSpatialView": {
+      "keyin": "fdt sectiondrawing display spatial"
+    },
+    "FlipImageEffect": {
+      "keyin": "fdt effect add flip"
+    },
+    "FlipImageConfig": {
+      "keyin" :"fdt effect config flip"
+    },
+    "LensDistortionEffect": {
+      "keyin": "fdt effect add lensdistortion"
+    },
+    "LensDistortionConfig": {
+      "keyin": "fdt effect config lensdistortion"
+    },
+    "EmbossEffect": {
+      "keyin": "fdt effect add emboss"
+    },
+    "GaussianBlurEffect": {
+      "keyin": "fdt effect add blur"
+    },
+    "UnsharpenEffect": {
+      "keyin": "fdt effect add unsharpen"
+    },
+    "SharpenEffect": {
+      "keyin": "fdt effect add sharpen"
+    },
+    "SharpnessEffect": {
+      "keyin": "fdt effect add sharpness"
+    },
+    "EdgeDetectionEffect": {
+      "keyin": "fdt effect add edgedetect"
+    },
+    "ClearEffects": {
+      "keyin": "fdt effect clear"
     },
     "MaskRealityModelByElement": {
       "keyin": "fdt set reality model mask elements"
-    }
   }
 }

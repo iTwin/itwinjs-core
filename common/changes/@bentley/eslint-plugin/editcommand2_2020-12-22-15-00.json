@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/eslint-plugin",
+      "comment": "only allow 1 blank line",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/eslint-plugin",
+  "email": "33296803+kabentley@users.noreply.github.com"
+}

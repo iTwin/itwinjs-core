@@ -146,5 +146,4 @@ describe("<DatePicker />", () => {
     expect(renderSpy).to.be.called;
   });
 
-
 });
