@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import * as path from "path";
 import { GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import { AuthorizedBackendRequestContext, KnownLocations, NativeLoggerCategory } from "../../imodeljs-backend";
+import { assert } from "chai";
+import * as path from "path";
+import { KnownLocations, NativeLoggerCategory } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 
@@ -40,7 +40,7 @@ describe("ApplyChangeSets (#integration)", () => {
   it("should test all change set operations after downloading iModel from the hub  (#integration)", async () => {
     console.log(`Downloading/Uploading iModels to/from ${iModelRootDir}`); // eslint-disable-line no-console
 
-    const requestContext: AuthorizedBackendRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
+    const requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
 
     let projectName = "iModelJsIntegrationTest";
     let iModelName = "ReadOnlyTest";

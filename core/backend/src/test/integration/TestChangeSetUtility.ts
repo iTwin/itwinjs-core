@@ -8,7 +8,7 @@ import { ColorDef, IModel, SubCategoryAppearance } from "@bentley/imodeljs-commo
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { SpatialCategory } from "../../Category";
 import { ConcurrencyControl } from "../../ConcurrencyControl";
-import { BriefcaseDb, BriefcaseManager } from "../../imodeljs-backend";
+import { BriefcaseDb, IModelHost } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 
@@ -85,6 +85,6 @@ export class TestChangeSetUtility {
     if (!this._iModel)
       throw new Error("Must first call createTestIModel");
     await IModelTestUtils.closeAndDeleteBriefcaseDb(this._requestContext, this._iModel);
-    await BriefcaseManager.imodelClient.iModels.delete(this._requestContext, this.projectId, this.iModelId);
+    await IModelHost.iModelClient.iModels.delete(this._requestContext, this.projectId, this.iModelId);
   }
 }
