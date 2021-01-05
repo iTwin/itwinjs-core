@@ -192,10 +192,7 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
       return undefined;
     }
 
-    if (viewState.isAttachedToViewport) {
-      return ViewportComponent.cloneViewState(this.props.imodel, viewState);
-    }
-    return viewState;
+    return ViewportComponent.cloneViewState(this.props.imodel, viewState);
   }
 
   private _handleDrawingViewportChangeEvent = (args: DrawingViewportChangeEventArgs) => {
