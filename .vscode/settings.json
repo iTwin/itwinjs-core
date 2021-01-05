@@ -72,8 +72,7 @@
   ],
   "eslint.workingDirectories": [
     {
-      "pattern": "./**/*",
-      "changeProcessCWD": true
+      "mode": "auto"
     }
   ],
   "eslint.options": {
