@@ -713,7 +713,7 @@ class ChangedInstanceIds {
     requestContext.enter();
     const extractContext = new ChangeSummaryExtractContext(iModelDb); // NOTE: ChangeSummaryExtractContext is nothing more than a wrapper around IModelDb that has a method to get the iModelId
     // NOTE: ChangeSummaryManager.downloadChangeSets has nothing really to do with change summaries but has the desired behavior of including the start changeSet (unlike BriefcaseManager.downloadChangeSets)
-    const changeSets: ChangeSet[] = await ChangeSummaryManager.downloadChangeSets(requestContext, extractContext, startChangeSetId, iModelDb.changeSetId);
+    const changeSets = await ChangeSummaryManager.downloadChangeSets(requestContext, extractContext, startChangeSetId, iModelDb.changeSetId);
     requestContext.enter();
     const changedInstanceIds = new ChangedInstanceIds();
     changeSets.forEach((changeSet: ChangeSet): void => {

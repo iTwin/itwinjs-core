@@ -8,7 +8,6 @@
 
 import { GeoServiceStatus, GuidString, Id64, Id64String, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { Angle, AxisIndex, AxisOrder, Constant, Matrix3d, Point3d, Range3d, Range3dProps, Transform, Vector3d, XYAndZ, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@bentley/geometry-core";
-import { UpgradeOptions } from "./BriefcaseTypes";
 import { Cartographic, LatLongAndHeight } from "./geometry/Cartographic";
 import { GeographicCRS, GeographicCRSProps } from "./geometry/CoordinateReferenceSystem";
 import { AxisAlignedBox3d } from "./geometry/Placement";
@@ -132,7 +131,7 @@ export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey {
 /** Options that can be supplied when opening an existing StandaloneDb.
  * @beta
  */
-export type StandaloneOpenOptions = OpenDbKey & UpgradeOptions;
+export type StandaloneOpenOptions = OpenDbKey;
 
 /** Options that can be supplied when creating snapshot iModels.
  * @public
