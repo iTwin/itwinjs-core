@@ -441,7 +441,7 @@ describe("RulesetsFactory", () => {
       const field = new PropertiesField(createRandomCategory(), "MyProperty",
         "My Property", createNavigationPropertyTypeDescription(), true, 1, [property]);
       const record = new Item([], faker.random.word(), "", recordClass,
-        { ["MyProperty"]: "0x16" }, { ["MyProperty"]: "test display value" }, []);
+        { ["MyProperty"]: { className: "MySchema:MyClass", id: "0x16"} }, { ["MyProperty"]: "test display value" }, []);
       const result = await factory.createSimilarInstancesRuleset(field, record);
       const expectedRules: Rule[] = [{
         ruleType: RuleTypes.Content,
@@ -1135,27 +1135,28 @@ describe("RulesetsFactory", () => {
     });
 
     describe("invalid conditions", () => {
-
-      it("throws when record contains invalid value", async () => {
-        const recordClass: ClassInfo = {
-          id: createRandomId(),
-          name: "MySchema:MyClass",
-          label: "My Class",
-        };
-        const property: Property = {
-          property: {
-            classInfo: recordClass,
-            type: "boolean",
-            name: "MyProperty",
-          },
-          relatedClassPath: [],
-        };
-        const field = new PropertiesField(createRandomCategory(), "MyProperty",
-          faker.random.word(), createBooleanTypeDescription(), true, 1, [property]);
-        const record = new Item([], faker.random.word(), "", recordClass,
-          { ["MyProperty"]: [] }, { ["MyProperty"]: "" }, []);
-        await expect(factory.createSimilarInstancesRuleset(field, record)).to.eventually.be.rejectedWith("Can only create 'similar instances' ruleset for primitive values");
-      });
+      for (const invalidValue of [[], {}]) {
+        it(`throws when record value is '${invalidValue}'`, async () => {
+          const recordClass: ClassInfo = {
+            id: createRandomId(),
+            name: "MySchema:MyClass",
+            label: "My Class",
+          };
+          const property: Property = {
+            property: {
+              classInfo: recordClass,
+              type: "boolean",
+              name: "MyProperty",
+            },
+            relatedClassPath: [],
+          };
+          const field = new PropertiesField(createRandomCategory(), "MyProperty",
+            faker.random.word(), createBooleanTypeDescription(), true, 1, [property]);
+          const record = new Item([], faker.random.word(), "", recordClass,
+            { ["MyProperty"]: invalidValue }, { ["MyProperty"]: "" }, []);
+          await expect(factory.createSimilarInstancesRuleset(field, record)).to.eventually.be.rejectedWith("Can only create 'similar instances' ruleset for primitive values");
+        });
+      }
 
       it("throws when properties field contains no properties", async () => {
         const recordClass: ClassInfo = {

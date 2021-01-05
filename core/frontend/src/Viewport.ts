@@ -276,7 +276,6 @@ export abstract class Viewport implements IDisposable {
   private _timePointValid = false;
   /** @internal */
   public get timePointValid() { return this._timePointValid; }
-  /** @internal */
   private readonly _decorationCache: Map<ViewportDecorator, CachedDecoration[]> = new Map<ViewportDecorator, CachedDecoration[]>();
 
   /** Strictly for tests. @internal */
@@ -317,8 +316,18 @@ export abstract class Viewport implements IDisposable {
   public setValidScene() {
     this._sceneValid = true;
   }
-  /** @internal */
+  /** @deprecated Use requestRedraw.
+   * @internal
+   */
   public setRedrawPending() {
+    this.requestRedraw();
+  }
+
+  /** Request that the Viewport redraw its contents on the next frame. This is useful when some state outside of the Viewport's control but affecting its display has changed.
+   * For example, if the parameters affecting a screen-space effect applied to this Viewport are modified, the Viewport's contents should be redrawn to reflect the change.
+   * @note This does not necessarily cause the viewport to recreate its scene, decorations, or anything else - it only guarantees that the contents will be repainted.
+   */
+  public requestRedraw(): void {
     this._redrawPending = true;
   }
 
@@ -2444,6 +2453,36 @@ export abstract class Viewport implements IDisposable {
    */
   public setModelDisplayTransformProvider(provider: ModelDisplayTransformProvider): void {
     this.view.modelDisplayTransformProvider = provider;
+  }
+
+  /** An ordered list of names of screen-space post-processing effects to be applied to the image rendered by the Viewport.
+   * The effects are applied to the image in the order in which they appear in the list. Any names not corresponding to a registered effect are ignored.
+   * This may have no effect if the Viewport's [[RenderTarget]] does not support screen-space effects.
+   * @see [[RenderSystem.createScreenSpaceEffectBuilder]] to create and register new effects.
+   * @beta
+   */
+  public get screenSpaceEffects(): Iterable<string> {
+    return this.target.screenSpaceEffects;
+  }
+  public set screenSpaceEffects(effects: Iterable<string>) {
+    this.target.screenSpaceEffects = effects;
+    this.requestRedraw();
+  }
+
+  /** Append a screen-space effect to the list of effects applied to this Viewport.
+   * @see [[Viewport.screenSpaceEffects]].
+   * @beta
+   */
+  public addScreenSpaceEffect(effectName: string): void {
+    this.screenSpaceEffects = [ ...this.screenSpaceEffects, effectName ];
+  }
+
+  /** Remove all screen-space effects from this Viewport.
+   * @see [[Viewport.screenSpaceEffects]].
+   * @beta
+   */
+  public removeScreenSpaceEffects(): void {
+    this.screenSpaceEffects = [];
   }
 }
 

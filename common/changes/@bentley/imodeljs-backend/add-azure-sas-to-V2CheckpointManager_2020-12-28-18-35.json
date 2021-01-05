@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-backend",
+      "comment": "Changed storageType from azure to azure?sas=1 for getCommandArgs function",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "22119573+nick4598@users.noreply.github.com"
+}
