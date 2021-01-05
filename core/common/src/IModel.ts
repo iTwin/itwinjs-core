@@ -127,6 +127,8 @@ export interface OpenDbKey {
 export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey {
   /** @internal */
   lazyBlockCache?: boolean;
+  /** @internal */
+  autoUploadBlocks?: boolean;
 }
 
 /** Options that can be supplied when opening an existing StandaloneDb.
