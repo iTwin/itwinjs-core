@@ -54,7 +54,7 @@ describe("ECSqlStatement", () => {
       </ECSchema>`), async (ecdb: ECDb) => {
       assert.isTrue(ecdb.isOpen);
 
-      const r: ECSqlInsertResult = await ecdb.withPreparedStatement("INSERT INTO ts.Foo(n,dt,fooId) VALUES(20,TIMESTAMP '2018-10-18T12:00:00Z',20)", async (stmt: ECSqlStatement) => {
+      const r = await ecdb.withPreparedStatement("INSERT INTO ts.Foo(n,dt,fooId) VALUES(20,TIMESTAMP '2018-10-18T12:00:00Z',20)", async (stmt: ECSqlStatement) => {
         return stmt.stepForInsert();
       });
       assert.equal(r.status, DbResult.BE_SQLITE_DONE);
@@ -71,7 +71,7 @@ describe("ECSqlStatement", () => {
       assert.isTrue(ecdb.isOpen);
       const rowIds = ["0x1000000004c", "0x100000000ea", "0x200000000ff", "0x31", "0xffffffffffffff01"];
       for (const rowId of rowIds) {
-        const r: ECSqlInsertResult = await ecdb.withPreparedStatement(`insert into ts.Foo(ECInstanceId) values(?)`, async (stmt: ECSqlStatement) => {
+        const r = await ecdb.withPreparedStatement(`insert into ts.Foo(ECInstanceId) values(?)`, async (stmt: ECSqlStatement) => {
           stmt.bindId(1, rowId);
           return stmt.stepForInsert();
         });
@@ -117,7 +117,7 @@ describe("ECSqlStatement", () => {
       const ROW_COUNT = 27;
       // insert test rows
       for (let i = 1; i <= ROW_COUNT; i++) {
-        const r: ECSqlInsertResult = await ecdb.withPreparedStatement(`insert into ts.Foo(n) values(${i})`, async (stmt: ECSqlStatement) => {
+        const r = await ecdb.withPreparedStatement(`insert into ts.Foo(n) values(${i})`, async (stmt: ECSqlStatement) => {
           return stmt.stepForInsert();
         });
         assert.equal(r.status, DbResult.BE_SQLITE_DONE);
@@ -157,7 +157,7 @@ describe("ECSqlStatement", () => {
       const ROW_COUNT = 100;
       // insert test rows
       for (let i = 1; i <= ROW_COUNT; i++) {
-        const r: ECSqlInsertResult = await ecdb.withPreparedStatement(`insert into ts.Foo(n) values(${i})`, async (stmt: ECSqlStatement) => {
+        const r = await ecdb.withPreparedStatement(`insert into ts.Foo(n) values(${i})`, async (stmt: ECSqlStatement) => {
           return stmt.stepForInsert();
         });
         assert.equal(r.status, DbResult.BE_SQLITE_DONE);
@@ -188,7 +188,7 @@ describe("ECSqlStatement", () => {
       const ROW_COUNT = 100;
       // insert test rows
       for (let i = 1; i <= ROW_COUNT; i++) {
-        const r: ECSqlInsertResult = await ecdb.withPreparedStatement(`insert into ts.Foo(n) values(${i})`, async (stmt: ECSqlStatement) => {
+        const r = await ecdb.withPreparedStatement(`insert into ts.Foo(n) values(${i})`, async (stmt: ECSqlStatement) => {
           return stmt.stepForInsert();
         });
         assert.equal(r.status, DbResult.BE_SQLITE_DONE);
@@ -239,7 +239,7 @@ describe("ECSqlStatement", () => {
       const ROW_COUNT = 27;
       // insert test rows
       for (let i = 1; i <= ROW_COUNT; i++) {
-        const r: ECSqlInsertResult = await ecdb.withPreparedStatement(`insert into ts.Foo(n) values(${i})`, async (stmt: ECSqlStatement) => {
+        const r = await ecdb.withPreparedStatement(`insert into ts.Foo(n) values(${i})`, async (stmt: ECSqlStatement) => {
           return stmt.stepForInsert();
         });
         assert.equal(r.status, DbResult.BE_SQLITE_DONE);
@@ -267,7 +267,7 @@ describe("ECSqlStatement", () => {
       </ECSchema>`), async (ecdb: ECDb) => {
       assert.isTrue(ecdb.isOpen);
       for (let i = 1; i <= 5; i++) {
-        const r: ECSqlInsertResult = await ecdb.withPreparedStatement(`insert into ts.Foo(n) values(${i})`, async (stmt: ECSqlStatement) => {
+        const r = await ecdb.withPreparedStatement(`insert into ts.Foo(n) values(${i})`, async (stmt: ECSqlStatement) => {
           return stmt.stepForInsert();
         });
         assert.equal(r.status, DbResult.BE_SQLITE_DONE);
@@ -296,7 +296,7 @@ describe("ECSqlStatement", () => {
       </ECSchema>`), async (ecdb: ECDb) => {
       assert.isTrue(ecdb.isOpen);
       for (let i = 1; i <= 2; i++) {
-        const r: ECSqlInsertResult = await ecdb.withPreparedStatement(`insert into ts.Foo(n) values(${i})`, async (stmt: ECSqlStatement) => {
+        const r = await ecdb.withPreparedStatement(`insert into ts.Foo(n) values(${i})`, async (stmt: ECSqlStatement) => {
           return stmt.stepForInsert();
         });
         assert.equal(r.status, DbResult.BE_SQLITE_DONE);
@@ -319,7 +319,7 @@ describe("ECSqlStatement", () => {
       const maxRows = 10;
       const guids: GuidString[] = [];
       for (let i = 0; i < maxRows; i++) {
-        const r: ECSqlInsertResult = await ecdb.withPreparedStatement(`insert into ts.Foo(guid) values(?)`, async (stmt: ECSqlStatement) => {
+        const r = await ecdb.withPreparedStatement(`insert into ts.Foo(guid) values(?)`, async (stmt: ECSqlStatement) => {
           guids.push(Guid.createValue());
           stmt.bindGuid(1, guids[i]);
           return stmt.stepForInsert();
@@ -770,7 +770,7 @@ describe("ECSqlStatement", () => {
       assert.isTrue(ecdb.isOpen);
 
       const doubleVal: number = 3.5;
-      let id: Id64String = await ecdb.withPreparedStatement("INSERT INTO Test.Foo(D,I,L,S,Description) VALUES(?,?,?,?,'bindDouble')", async (stmt: ECSqlStatement) => {
+      let id = await ecdb.withPreparedStatement("INSERT INTO Test.Foo(D,I,L,S,Description) VALUES(?,?,?,?,'bindDouble')", async (stmt: ECSqlStatement) => {
         stmt.bindDouble(1, doubleVal);
         stmt.bindDouble(2, doubleVal);
         stmt.bindDouble(3, doubleVal);
@@ -2656,7 +2656,7 @@ describe("ECSqlStatement", () => {
       </ECSchema>`), async (ecdb: ECDb) => {
       assert.isTrue(ecdb.isOpen);
 
-      const r: ECSqlInsertResult = await ecdb.withPreparedStatement("INSERT INTO ts.Foo(n,dt,fooId) VALUES(20,TIMESTAMP '2018-10-18T12:00:00Z',20)", async (stmt: ECSqlStatement) => {
+      const r = await ecdb.withPreparedStatement("INSERT INTO ts.Foo(n,dt,fooId) VALUES(20,TIMESTAMP '2018-10-18T12:00:00Z',20)", async (stmt: ECSqlStatement) => {
         const nativesql: string = stmt.getNativeSql();
         assert.isTrue(nativesql.startsWith("INSERT INTO [ts_Foo]"));
         return stmt.stepForInsert();
