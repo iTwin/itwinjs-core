@@ -6,7 +6,7 @@
     - Accept all defaults
     - Be sure to save the secret somewhere safe - it is only shown once
 - [Clone agent-starter repo](https://github.com/imodeljs/agent-starter)
-- Have access to a cloud hosted iModel. If you do not have access to one, follow one of our tutorials to [create an online iModel]($docs/learning/tutorials/index.md)
+- If you do not have access to an iModel, follow one of our tutorials to [create an iModel]($docs/learning/tutorials/index.md)
 - Add {client_id}@apps.imsoidc.bentley.com as a project participant of your test iModel using the [iModel Registration Dashboard](../../../getting-started/registration-dashboard/?tab=1)
  > Allow some time after registering the agent application. The identity profile of the agent is being created in the background and can take between 5 and 10 minutes
 
@@ -26,7 +26,7 @@
     IMODEL_ID=
 
     # OIDC configuration
-    #   Don't forget to add <CLIENT_ID>@apps.imsoidc.bentley.com to your CONNECT project     too!
+    # Don't forget to add <CLIENT_ID>@apps.imsoidc.bentley.com to your CONNECT project. This can be done in the iModel Registration Dashboard.
     CLIENT_ID=
     CLIENT_SECRET=
     ```
