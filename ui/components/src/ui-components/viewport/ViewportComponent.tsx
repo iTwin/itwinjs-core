@@ -11,7 +11,7 @@ import { Id64String, Logger } from "@bentley/bentleyjs-core";
 import { Point3d, Transform } from "@bentley/geometry-core";
 import { NpcCenter } from "@bentley/imodeljs-common";
 import {
-  DrawingViewState, IModelApp, IModelConnection, OrthographicViewState, ScreenViewport,
+  DrawingViewState, EntityState, IModelApp, IModelConnection, OrthographicViewState, ScreenViewport,
   SheetViewState, SpatialViewState, TentativePoint, ToolSettings, ViewManager,
   Viewport, ViewState,
 } from "@bentley/imodeljs-frontend";
@@ -154,19 +154,15 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
   }
 
   private static async cloneViewState(imodelConnection: IModelConnection, viewState: ViewState): Promise<ViewState | undefined> {
-    const className = viewState.classFullName.substring(viewState.classFullName.indexOf(":") + 1);
-    let clonedViewState: ViewState | undefined;
+    const className = viewState.classFullName;
 
-    if (className === SpatialViewState.className || className === OrthographicViewState.className)
-      clonedViewState = SpatialViewState.createFromProps(viewState.toProps(), imodelConnection);
-    else if (className === OrthographicViewState.className)
-      clonedViewState = OrthographicViewState.createFromProps(viewState.toProps(), imodelConnection);
-    else if (className === DrawingViewState.className)
-      clonedViewState = DrawingViewState.createFromProps(viewState.toProps(), imodelConnection);
-    else if (className === SheetViewState.className)
-      clonedViewState = SheetViewState.createFromProps(viewState.toProps(), imodelConnection);
-    else
-      clonedViewState = undefined;
+    const ctor = await imodelConnection.findClassFor<typeof EntityState>(className, undefined) as typeof ViewState | undefined;
+
+    if (undefined === ctor)
+      return undefined;
+
+    const clonedViewState = ctor.createFromProps (viewState.toProps(), imodelConnection);
+
     if (clonedViewState)
       await clonedViewState.load();
     else
