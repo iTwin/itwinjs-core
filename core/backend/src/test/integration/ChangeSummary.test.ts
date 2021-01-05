@@ -2,17 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
-import * as path from "path";
 import { DbResult, Id64, Id64String, Logger, LogLevel, OpenMode, PerfLogger } from "@bentley/bentleyjs-core";
-import { ChangeSet } from "@bentley/imodelhub-client";
 import {
   ChangedValueState, ChangeOpCode, ColorDef, IModel, IModelVersion, SubCategoryAppearance,
 } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
+import { assert, expect } from "chai";
+import * as path from "path";
 import {
   AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, ChangeSummary, ChangeSummaryManager, ConcurrencyControl, ECSqlStatement,
-  ElementOwnsChildElements, IModelJsFs, SpatialCategory,
+  ElementOwnsChildElements, IModelHost, IModelJsFs, SpatialCategory,
 } from "../../imodeljs-backend";
 import { IModelTestUtils, TestIModelInfo } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -232,7 +231,7 @@ describe("ChangeSummary (#integration)", () => {
     const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: testProjectId, iModelId: readOnlyTestIModel.id });
     assert.exists(iModel);
     try {
-      const summaryIds: Id64String[] = await ChangeSummaryManager.extractChangeSummaries(requestContext, iModel);
+      const summaryIds = await ChangeSummaryManager.extractChangeSummaries(requestContext, iModel);
       ChangeSummaryManager.attachChangeCache(iModel);
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
@@ -270,7 +269,7 @@ describe("ChangeSummary (#integration)", () => {
   it("Extract ChangeSummary for single changeset", async () => {
     setupTest(readOnlyTestIModel.id);
 
-    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.changeSets.get(requestContext, readOnlyTestIModel.id);
+    const changeSets = await IModelHost.iModelClient.changeSets.get(requestContext, readOnlyTestIModel.id);
     assert.isAtLeast(changeSets.length, 3);
     // extract summary for second changeset
     const changesetId: string = changeSets[1].wsgId;
@@ -281,7 +280,7 @@ describe("ChangeSummary (#integration)", () => {
       await iModel.reverseChanges(requestContext, IModelVersion.asOfChangeSet(changesetId));
 
       // now extract change summary for that one changeset
-      const summaryIds: Id64String[] = await ChangeSummaryManager.extractChangeSummaries(requestContext, iModel, { currentVersionOnly: true });
+      const summaryIds = await ChangeSummaryManager.extractChangeSummaries(requestContext, iModel, { currentVersionOnly: true });
       assert.equal(summaryIds.length, 1);
       assert.isTrue(Id64.isValidId64(summaryIds[0]));
       assert.isTrue(IModelJsFs.existsSync(BriefcaseManager.getChangeCachePathName(readOnlyTestIModel.id)));
@@ -309,7 +308,7 @@ describe("ChangeSummary (#integration)", () => {
   it("Extracting ChangeSummaries for a range of changesets", async () => {
     setupTest(readOnlyTestIModel.id);
 
-    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.changeSets.get(requestContext, readOnlyTestIModel.id);
+    const changeSets = await IModelHost.iModelClient.changeSets.get(requestContext, readOnlyTestIModel.id);
     assert.isAtLeast(changeSets.length, 3);
     const startChangeSetId: string = changeSets[0].id!;
     const endChangeSetId: string = changeSets[1].id!;
@@ -319,7 +318,7 @@ describe("ChangeSummary (#integration)", () => {
     const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: testProjectId, iModelId: readOnlyTestIModel.id, asOf: endVersion.toJSON() });
     try {
       assert.exists(iModel);
-      const summaryIds: Id64String[] = await ChangeSummaryManager.extractChangeSummaries(requestContext, iModel, { startVersion });
+      const summaryIds = await ChangeSummaryManager.extractChangeSummaries(requestContext, iModel, { startVersion });
       assert.equal(summaryIds.length, 2);
       assert.isTrue(IModelJsFs.existsSync(BriefcaseManager.getChangeCachePathName(readOnlyTestIModel.id)));
 
@@ -355,7 +354,7 @@ describe("ChangeSummary (#integration)", () => {
   it("Subsequent ChangeSummary extractions", async () => {
     setupTest(readOnlyTestIModel.id);
 
-    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.changeSets.get(requestContext, readOnlyTestIModel.id);
+    const changeSets = await IModelHost.iModelClient.changeSets.get(requestContext, readOnlyTestIModel.id);
     assert.isAtLeast(changeSets.length, 3);
     // first extraction: just first changeset
     const firstChangesetId: string = changeSets[0].id!;
@@ -366,7 +365,7 @@ describe("ChangeSummary (#integration)", () => {
       await iModel.reverseChanges(requestContext, IModelVersion.asOfChangeSet(firstChangesetId));
 
       // now extract change summary for that one changeset
-      const summaryIds: Id64String[] = await ChangeSummaryManager.extractChangeSummaries(requestContext, iModel, { currentVersionOnly: true });
+      const summaryIds = await ChangeSummaryManager.extractChangeSummaries(requestContext, iModel, { currentVersionOnly: true });
       assert.equal(summaryIds.length, 1);
       assert.isTrue(IModelJsFs.existsSync(BriefcaseManager.getChangeCachePathName(readOnlyTestIModel.id)));
 
@@ -503,7 +502,7 @@ describe("ChangeSummary (#integration)", () => {
 
     // Recreate iModel
     const managerRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager);
-    const projectId: string = await HubUtility.queryProjectIdByName(managerRequestContext, "iModelJsIntegrationTest");
+    const projectId = await HubUtility.queryProjectIdByName(managerRequestContext, "iModelJsIntegrationTest");
     const iModelId = await HubUtility.recreateIModel(managerRequestContext, projectId, iModelName);
 
     // Cleanup local cache
@@ -543,7 +542,7 @@ describe("ChangeSummary (#integration)", () => {
 
     // Validate that the second change summary captures the change to the parent correctly
     try {
-      const changeSummaryIds: string[] = await ChangeSummaryManager.extractChangeSummaries(requestContext, iModel);
+      const changeSummaryIds = await ChangeSummaryManager.extractChangeSummaries(requestContext, iModel);
       assert.strictEqual(2, changeSummaryIds.length);
 
       ChangeSummaryManager.attachChangeCache(iModel);
@@ -576,7 +575,7 @@ describe("ChangeSummary (#integration)", () => {
       await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
     }
 
-    await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, iModelId);
+    await IModelHost.iModelClient.iModels.delete(requestContext, projectId, iModelId);
   });
 
   it("should be able to extract the last change summary right after applying a change set", async () => {
