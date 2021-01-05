@@ -43,7 +43,7 @@ export class ConcurrencyControl {
 
   constructor(private _iModel: BriefcaseDb) {
     this._cache = new ConcurrencyControl.StateCache(this);
-    this._policy = ConcurrencyControl.PessimisticPolicy;
+    this._policy = new ConcurrencyControl.PessimisticPolicy();
     this._channel = new ConcurrencyControl.Channel(_iModel);
   }
 
@@ -66,7 +66,7 @@ export class ConcurrencyControl {
 
   /** @internal */
   public get needLocks(): boolean {
-    return this._policy === ConcurrencyControl.PessimisticPolicy;
+    return this._policy instanceof ConcurrencyControl.PessimisticPolicy;
   }
 
   /** Start "bulk update mode". This mode is designed for bulk-loading or bulk-updating apps. It avoids the expense
@@ -1364,8 +1364,10 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
     constructor(policy?: ConflictResolutionPolicy) { this.conflictResolution = policy ? policy : new ConflictResolutionPolicy(); }
   }
 
-  /** Specifies a pessimistic concurrency policy. */
+  /** Specifies the pessimistic concurrency policy. */
   export class PessimisticPolicy {
+    private _placeHolder: number;
+    constructor() { this._placeHolder = 0; }
   }
 
   /** Code manager. This class can be used to reserve Codes ahead of time and to query the status of Codes.
