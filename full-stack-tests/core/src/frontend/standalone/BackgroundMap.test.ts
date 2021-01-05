@@ -48,25 +48,25 @@ describe("Background map", () => {
       return newTree === prevTree;
     }
 
-    type Test = [BackgroundMapProps, boolean]; // true if expect same tile tree after changing background map props
+    type Test = [ BackgroundMapProps, boolean ]; // true if expect same tile tree after changing background map props
     const tests: Test[] = [
-      [{}, true],
-      [BackgroundMapSettings.fromJSON().toJSON(), true],
-      [{ useDepthBuffer: true }, false],
-      [{ groundBias: 100 }, false],
-      [{ groundBias: 0 }, false],
-      [{ transparency: 0.5 }, false],
-      [{ providerName: "NotAValidProvider" }, true],
+      [ {}, true ],
+      [ BackgroundMapSettings.fromJSON().toJSON(), true ],
+      [ { useDepthBuffer: true }, false ],
+      [ { groundBias: 100 }, false ],
+      [ { groundBias: 0 }, false ],
+      [ { transparency: 0.5 }, false ],
+      [ { providerName: "NotAValidProvider" }, true ],
 
       // The same tile tree can draw different types of imagery from different providers.
-      [{ providerName: "MapBoxProvider" }, true],
-      [{ providerData: { mapType: BackgroundMapType.Street } }, true],
-      [{ globeMode: GlobeMode.Plane }, false],
+      [ { providerName: "MapBoxProvider" }, true ],
+      [ { providerData: { mapType: BackgroundMapType.Street } }, true ],
+      [ { globeMode: GlobeMode.Plane }, false ],
 
       // Terrain-specific settings don't affect tile tree if terrain is disabled.
-      [{ terrainSettings: { exaggeration: 42 } }, true],
-      [{ terrainSettings: { heightOrigin: 21 } }, true],
-      [{ terrainSettings: { heightOriginMode: TerrainHeightOriginMode.Ground } }, true],
+      [ { terrainSettings: { exaggeration: 42 } }, true ],
+      [ { terrainSettings: { heightOrigin: 21 } }, true ],
+      [ { terrainSettings: { heightOriginMode: TerrainHeightOriginMode.Ground } }, true ],
 
       // Terrain enabled.
       /* ###TODO ApproximateTerrainHeights.json supplied by imodeljs-frontend is not found...
@@ -142,22 +142,22 @@ describe("Background map", () => {
       expectPixel(1, 1, expectedCornerFeature);
     }
 
-    type Test = [BackgroundMapProps | undefined, PixelType, PixelType, PixelType, PixelType];
+    type Test = [ BackgroundMapProps | undefined, PixelType, PixelType, PixelType, PixelType ];
     const tests: Test[] = [
-      [undefined, "model", "bg", "model", "bg"],
+      [ undefined, "model", "bg", "model", "bg" ],
 
-      [{ groundBias: 10, nonLocatable: true }, "model", "map", "model", "bg"],
-      [{ groundBias: -10, nonLocatable: true }, "model", "map", "model", "bg"],
-      [{ useDepthBuffer: true, groundBias: 10, nonLocatable: true }, "map", "map", "model", "bg"],
-      [{ useDepthBuffer: true, groundBias: -10, nonLocatable: true }, "model", "map", "model", "bg"],
+      [ { groundBias: 10, nonLocatable: true }, "model", "map", "model", "bg" ],
+      [ { groundBias: -10, nonLocatable: true }, "model", "map", "model", "bg" ],
+      [ { useDepthBuffer: true, groundBias: 10, nonLocatable: true }, "map", "map", "model", "bg" ],
+      [ { useDepthBuffer: true, groundBias: -10, nonLocatable: true }, "model", "map", "model", "bg" ],
 
-      [{ nonLocatable: true }, "model", "map", "model", "bg"],
-      [{}, "model", "map", "model", "map"],
+      [ { nonLocatable: true }, "model", "map", "model", "bg" ],
+      [ { }, "model", "map", "model", "map" ],
 
-      [{ groundBias: 10 }, "model", "map", "model", "map"],
-      [{ groundBias: -10 }, "model", "map", "model", "map"],
-      [{ useDepthBuffer: true, groundBias: 10 }, "map", "map", "map", "map"],
-      [{ useDepthBuffer: true, groundBias: -10 }, "model", "map", "model", "map"],
+      [ { groundBias: 10 }, "model", "map", "model", "map" ],
+      [ { groundBias: -10 }, "model", "map", "model", "map" ],
+      [ { useDepthBuffer: true, groundBias: 10 }, "map", "map", "map", "map" ],
+      [ { useDepthBuffer: true, groundBias: -10 }, "model", "map", "model", "map" ],
 
       // ###TODO: Can't test with applyTerrain=true because ApproximateTerrainHeights.json not found...
     ];
