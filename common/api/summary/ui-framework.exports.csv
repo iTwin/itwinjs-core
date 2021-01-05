@@ -637,6 +637,7 @@ beta;VisibilityComponent
 beta;VisibilityComponentConfig
 public;VisibilityComponentHierarchy
 beta;VisibilityComponentProps
+alpha;VisibilityState
 alpha;VisibilityStatus
 alpha;VisibilityTreeEventHandler 
 alpha;VisibilityTreeEventHandlerParams 

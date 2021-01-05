@@ -22,11 +22,21 @@ import {
 import { CheckBoxState, isPromiseLike } from "@bentley/ui-core";
 
 /**
+ * Describes instance visibility state.
+ * @alpha
+ */
+export enum VisibilityState {
+  Visible,
+  PartiallyVisible,
+  Hidden
+}
+
+/**
  * Data structure that describes instance visibility status.
  * @alpha
  */
 export interface VisibilityStatus {
-  isDisplayed: boolean;
+  state: VisibilityState;
   isDisabled?: boolean;
   tooltip?: string;
 }
@@ -204,10 +214,23 @@ export class VisibilityTreeEventHandler extends UnifiedSelectionTreeEventHandler
 
   private createCheckboxInfo(status: VisibilityStatus): CheckBoxInfo {
     return {
-      state: status.isDisplayed ? CheckBoxState.On : CheckBoxState.Off,
+      state: visibilityStateToCheckboxState(status.state),
       isDisabled: status.isDisabled || false,
       isVisible: true,
       tooltip: status.tooltip,
     };
   }
 }
+
+// istanbul ignore next
+const visibilityStateToCheckboxState = (state: VisibilityState) => {
+  switch (state) {
+    case VisibilityState.Visible:
+      return CheckBoxState.On;
+    case VisibilityState.PartiallyVisible:
+      return CheckBoxState.Partial;
+    case VisibilityState.Hidden:
+    default:
+      return CheckBoxState.Off;
+  }
+};

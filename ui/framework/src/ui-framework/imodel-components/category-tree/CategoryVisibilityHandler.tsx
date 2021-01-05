@@ -10,7 +10,7 @@ import * as React from "react";
 import { IModelConnection, PerModelCategoryVisibility, ViewManager, Viewport } from "@bentley/imodeljs-frontend";
 import { NodeKey } from "@bentley/presentation-common";
 import { TreeNodeItem, useAsyncValue } from "@bentley/ui-components";
-import { IVisibilityHandler, VisibilityStatus } from "../VisibilityTreeEventHandler";
+import { IVisibilityHandler, VisibilityState, VisibilityStatus } from "../VisibilityTreeEventHandler";
 
 /**
  * Loads categories from viewport or uses provided list of categories.
@@ -107,7 +107,7 @@ export class CategoryVisibilityHandler implements IVisibilityHandler {
 
   public getVisibilityStatus(node: TreeNodeItem, nodeKey: NodeKey): VisibilityStatus {
     const instanceId = CategoryVisibilityHandler.getInstanceIdFromTreeNodeKey(nodeKey);
-    return { isDisplayed: node.parentId ? this.isSubCategoryVisible(instanceId) : this.isCategoryVisible(instanceId) };
+    return { state: node.parentId ? this.getSubCategoryVisibility(instanceId) : this.getCategoryVisibility(instanceId) };
   }
 
   public async changeVisibility(node: TreeNodeItem, nodeKey: NodeKey, shouldDisplay: boolean): Promise<void> {
@@ -129,15 +129,19 @@ export class CategoryVisibilityHandler implements IVisibilityHandler {
     CategoryVisibilityHandler.enableCategory(this._viewManager, this._imodel, [instanceId], shouldDisplay, true);
   }
 
-  public isSubCategoryVisible(id: string): boolean {
+  public getSubCategoryVisibility(id: string): VisibilityState {
     const parentItem = this.getParent(id);
     if (!parentItem || !this._activeView)
-      return false;
-    return this._activeView.view.viewsCategory(parentItem.key) && this._activeView.isSubCategoryVisible(id);
+      return VisibilityState.Hidden;
+
+    const isVisible = this._activeView.view.viewsCategory(parentItem.key) && this._activeView.isSubCategoryVisible(id);
+    return isVisible ? VisibilityState.Visible : VisibilityState.Hidden;
   }
 
-  public isCategoryVisible(id: string): boolean {
-    return (this._activeView) ? this._activeView.view.viewsCategory(id) : false;
+  public getCategoryVisibility(id: string): VisibilityState {
+    if (!this._activeView)
+      return VisibilityState.Hidden;
+    return this._activeView.view.viewsCategory(id) ? VisibilityState.Visible : VisibilityState.Hidden;
   }
 
   public getParent(key: string): Category | undefined {

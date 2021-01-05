@@ -15,6 +15,7 @@ import { TreeNodeItem } from "@bentley/ui-components";
 import {
   Category, CategoryVisibilityHandler, CategoryVisibilityHandlerParams,
 } from "../../../ui-framework/imodel-components/category-tree/CategoryVisibilityHandler";
+import { VisibilityState } from "../../../ui-framework/imodel-components/VisibilityTreeEventHandler";
 
 const createKey = (id: Id64String): ECInstancesNodeKey => {
   return {
@@ -171,17 +172,17 @@ describe("CategoryVisibilityHandler", () => {
 
   describe("getVisibilityStatus", () => {
 
-    it("calls isCategoryVisible", () => {
+    it("calls getCategoryVisibility", () => {
       using(createHandler({}), (handler) => {
-        const spy = sinon.stub(handler, "isCategoryVisible");
+        const spy = sinon.stub(handler, "getCategoryVisibility");
         handler.getVisibilityStatus(categoryNode, categoryKey);
         expect(spy).to.be.calledWith(categoryNode.id);
       });
     });
 
-    it("calls isSubCategoryVisible", () => {
+    it("calls getSubCategoryVisibility", () => {
       using(createHandler({ categories }), (handler) => {
-        const spy = sinon.stub(handler, "isSubCategoryVisible");
+        const spy = sinon.stub(handler, "getSubCategoryVisibility");
         handler.getVisibilityStatus(subcategoryNode, subcategoryKey);
         expect(spy).to.be.calledWith(subcategoryNode.id);
       });
@@ -189,77 +190,77 @@ describe("CategoryVisibilityHandler", () => {
 
   });
 
-  describe("isCategoryVisible", () => {
+  describe("getCategoryVisibility", () => {
 
     beforeEach(() => {
       viewStateMock.reset();
     });
 
-    it("returns false if active viewport is not supplied", () => {
+    it("returns 'VisibilityState.Hidden' if active viewport is not supplied", () => {
       using(createHandler({}), (handler) => {
-        expect(handler.isCategoryVisible("CategoryId")).to.be.false;
+        expect(handler.getCategoryVisibility("CategoryId")).to.be.eq(VisibilityState.Hidden);
       });
     });
 
-    it("returns false if category is not visible", () => {
+    it("returns 'VisibilityState.Hidden' if category is not visible", () => {
       viewStateMock.setup((x) => x.viewsCategory("CategoryId")).returns(() => false);
       const viewMock = mockViewport({ viewState: viewStateMock.object });
       using(createHandler({ activeView: viewMock.object }), (handler) => {
-        expect(handler.isCategoryVisible("CategoryId")).to.be.false;
+        expect(handler.getCategoryVisibility("CategoryId")).to.be.eq(VisibilityState.Hidden);
       });
     });
 
-    it("returns true if category is visible", () => {
+    it("returns 'VisibilityState.Visible' if category is visible", () => {
       viewStateMock.setup((x) => x.viewsCategory("CategoryId")).returns(() => true);
       const viewMock = mockViewport({ viewState: viewStateMock.object });
       using(createHandler({ activeView: viewMock.object }), (handler) => {
-        expect(handler.isCategoryVisible("CategoryId")).to.be.true;
+        expect(handler.getCategoryVisibility("CategoryId")).to.be.eq(VisibilityState.Visible);
       });
     });
 
   });
 
-  describe("isSubCategoryVisible", () => {
+  describe("getSubCategoryVisibility", () => {
 
     beforeEach(() => {
       viewStateMock.reset();
     });
 
-    it("returns false if active viewport is not supplied", () => {
+    it("returns 'VisibilityState.Hidden' if active viewport is not supplied", () => {
       using(createHandler({ categories }), (handler) => {
-        expect(handler.isSubCategoryVisible("SubCategoryId")).to.be.false;
+        expect(handler.getSubCategoryVisibility("SubCategoryId")).to.be.eq(VisibilityState.Hidden);
       });
     });
 
-    it("returns false if parent category is not found", () => {
+    it("returns 'VisibilityState.Hidden' if parent category is not found", () => {
       using(createHandler({ activeView: mockViewport().object, categories }), (handler) => {
-        expect(handler.isSubCategoryVisible("SubCategoryWithoutParent")).to.be.false;
+        expect(handler.getSubCategoryVisibility("SubCategoryWithoutParent")).to.be.eq(VisibilityState.Hidden);
       });
     });
 
-    it("returns false if parent category is not visible in view", () => {
+    it("returns 'VisibilityState.Hidden' if parent category is not visible in view", () => {
       const viewMock = mockViewport({ viewState: viewStateMock.object });
       viewStateMock.setup((x) => x.viewsCategory("CategoryId")).returns(() => false);
       using(createHandler({ activeView: viewMock.object, categories }), (handler) => {
-        expect(handler.isSubCategoryVisible("SubCategoryId")).to.be.false;
+        expect(handler.getSubCategoryVisibility("SubCategoryId")).to.be.eq(VisibilityState.Hidden);
       });
     });
 
-    it("returns false if subCategory is not visible in view", () => {
+    it("returns 'VisibilityState.Hidden' if subCategory is not visible in view", () => {
       const viewMock = mockViewport({ viewState: viewStateMock.object });
       viewStateMock.setup((x) => x.viewsCategory("CategoryId")).returns(() => true);
       viewMock.setup((x) => x.isSubCategoryVisible("SubCategoryId")).returns(() => false);
       using(createHandler({ activeView: viewMock.object, categories }), (handler) => {
-        expect(handler.isSubCategoryVisible("SubCategoryId")).to.be.false;
+        expect(handler.getSubCategoryVisibility("SubCategoryId")).to.be.eq(VisibilityState.Hidden);
       });
     });
 
-    it("returns true if subCategory and parent are visible in view", () => {
+    it("returns 'VisibilityState.Visible' if subCategory and parent are visible in view", () => {
       const viewMock = mockViewport({ viewState: viewStateMock.object });
       viewStateMock.setup((x) => x.viewsCategory("CategoryId")).returns(() => true);
       viewMock.setup((x) => x.isSubCategoryVisible("SubCategoryId")).returns(() => true);
       using(createHandler({ activeView: viewMock.object, categories }), (handler) => {
-        expect(handler.isSubCategoryVisible("SubCategoryId")).to.be.true;
+        expect(handler.getSubCategoryVisibility("SubCategoryId")).to.be.eq(VisibilityState.Visible);
       });
     });
 

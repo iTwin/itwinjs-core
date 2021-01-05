@@ -18,6 +18,7 @@ import { fireEvent, render, waitForElement } from "@testing-library/react";
 import { CategoryTreeWithSearchBox } from "../../../ui-framework/imodel-components/category-tree/CategoriesTreeWithSearchBox";
 import { CategoryVisibilityHandler } from "../../../ui-framework/imodel-components/category-tree/CategoryVisibilityHandler";
 import TestUtils from "../../TestUtils";
+import { VisibilityState } from "../../../ui-framework/imodel-components/VisibilityTreeEventHandler";
 
 describe("CategoryTreeWithSearchBox", () => {
 
@@ -103,7 +104,7 @@ describe("CategoryTreeWithSearchBox", () => {
         loadHierarchy: async () => { },
       };
 
-      visibilityHandler.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ isDisplayed: true, isDisabled: false }));
+      visibilityHandler.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: VisibilityState.Visible, isDisabled: false }));
     });
 
     const setupDataProvider = (nodes: TreeNodeItem[]) => {
