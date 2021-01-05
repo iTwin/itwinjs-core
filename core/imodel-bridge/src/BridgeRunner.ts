@@ -52,6 +52,8 @@ export class BridgeJobDefArgs {
   public argsJson: any;
   /** Synchronizes a snapshot imodel, outside of iModelHub */
   public isSnapshot: boolean = false;
+  /** The synchronizer will automatically delete any element that wasn't visited. Some bridges do not visit each element on every run. Set this to false to disable automatic deletion */
+  public doDetectDeletedElements: boolean = true;
 }
 
 class StaticTokenStore {
@@ -283,7 +285,9 @@ abstract class IModelDbBuilder {
 
   public async updateExistingData(): Promise<void> {
     await this._updateExistingData();
-    this._bridge.synchronizer.detectDeletedElements();
+    if (this._bridgeArgs.doDetectDeletedElements) {
+      this._bridge.synchronizer.detectDeletedElements();
+    }
 
     const options: ComputeProjectExtentsOptions = {
       reportExtentsWithOutliers: false,
