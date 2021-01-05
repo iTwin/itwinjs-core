@@ -7,9 +7,9 @@
  * @module Tools
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64, Id64Array, Id64String } from "@bentley/bentleyjs-core";
 import { FeatureAppearance, FeatureAppearanceProps, PlanarClipMask, PlanarClipMaskMode, PlanarClipMaskProps, RgbColorProps } from "@bentley/imodeljs-common";
-import { ContextRealityModelState, GeometricModelState, getCesiumAssetUrl, IModelApp, NotifyMessageDetails, OutputMessagePriority, ScreenViewport, Tool, Viewport, ViewPose } from "@bentley/imodeljs-frontend";
+import { BeButtonEvent, ContextRealityModelState, EventHandled, GeometricModelState, getCesiumAssetUrl, HitDetail, IModelApp, LocateFilterStatus, LocateResponse, NotifyMessageDetails, OutputMessagePriority, PrimitiveTool, ScreenViewport, Tool, Viewport, ViewPose } from "@bentley/imodeljs-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseBoolean } from "./parseBoolean";
 import { parseToggle } from "./parseToggle";
@@ -314,5 +314,58 @@ export class SetHigherPriorityRealityModelMasking extends Tool {
     const toggle = parseToggle(args[0]);
     const index = args[1] === undefined ? -1 : parseInt(args[1], 10)
     return this.run(index, typeof toggle === "string" ? undefined : toggle);
+  }
+}
+
+/** Mask  reality model by element
+ * @beta
+ */
+
+export class MaskRealityModelByElementTool extends PrimitiveTool {
+  public static toolId = "MaskRealityModelByElement";
+  public static get minArgs() { return 0; }
+  public static get maxArgs() { return 0; }
+  private readonly _acceptedIds: Id64Array = [];
+  private _useSelection: boolean = false;
+  private _targetModel?: Id64String | number;
+  public requireWriteableTarget(): boolean { return false; }
+  public onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
+  public onCleanup(): void { if (0 !== this._acceptedIds.length) this.iModel.hilited.setHilite(this._acceptedIds, false); }
+  public onUnsuspend(): void { this.showPrompt(); }
+  private setupAndPromptForNextAction(): void {
+    this._useSelection = (undefined !== this.targetView && this.targetView.iModel.selectionSet.isActive);
+    this.initLocateElements();
+    this.showPrompt();
+  }
+  private showPrompt(): void {
+  }
+
+  public onRestartTool(): void {
+    const tool = new MaskRealityModelByElementTool();
+    if (!tool.run())
+      this.exitTool();
+  }
+
+  public async filterHit(hit: HitDetail, _out?: LocateResponse): Promise<LocateFilterStatus> {
+    if (!hit.modelId)
+      return LocateFilterStatus.Reject;
+
+    const model = this.iModel.models.getLoaded(hit.modelId)?.asSpatialModel;
+    if (!model)
+      return LocateFilterStatus.Reject;
+
+    if (undefined === this._targetModel)
+      return model.isRealityModel ? LocateFilterStatus.Accept : LocateFilterStatus.Reject;
+    else
+      return Id64.isTransient(hit.sourceId) ? LocateFilterStatus.Reject : LocateFilterStatus.Accept;
+  }
+
+  public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
+
+    const hit = await IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, ev.inputSource);
+    if (undefined === hit || !hit.isElementHit)
+      return EventHandled.No;
+
+    return EventHandled.No;
   }
 }

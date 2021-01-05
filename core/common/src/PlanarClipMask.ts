@@ -44,7 +44,7 @@ export class PlanarClipMask {
   }
 
   public toJSON(): PlanarClipMaskProps {
-    return { mode: this.mode, ids: this.ids ? Array.from(this.ids) : undefined }
+    return { mode: this.mode, ids: this.ids }
   }
 
   public get anyDefined(): boolean { return this.mode !== PlanarClipMaskMode.None; }
@@ -71,6 +71,6 @@ export class PlanarClipMask {
 
 export interface PlanarClipMaskProps {
   mode: PlanarClipMaskMode;
-  ids?: Id64String[];
+  ids?: Id64Set;
 }
 

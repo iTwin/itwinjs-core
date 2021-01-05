@@ -281,6 +281,9 @@
     },
     "SetMapHigherPriorityMask": {
       "keyin": "fdt set higher prioity map mask"
+    },
+    "MaskRealityModelByElement": {
+      "keyin": "fdt set reality model mask elements"
     }
   }
 }
