@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { CompressedId64Set, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  Code, ColorByName, DomainOptions, Events, GeometricElement3dProps, GeometryStreamBuilder, IModel, ModelGeometryChangesProps, NativeAppRpcInterface,
+  Code, ColorByName, Events, GeometricElement3dProps, GeometryStreamBuilder, IModel, ModelGeometryChangesProps, NativeAppRpcInterface,
   QueuedEvent, RpcManager, RpcPushChannel, RpcPushConnection, SubCategoryAppearance,
 } from "@bentley/imodeljs-common";
 import {
@@ -39,7 +39,8 @@ describe("Model geometry changes", () => {
     IModelJsFs.copySync(seedFileName, testFileName);
 
     // Upgrade the schema to include the GeometryGuid and LastMod model properties.
-    imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite, { domain: DomainOptions.Upgrade });
+    StandaloneDb.upgradeSchemas(testFileName);
+    imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
     modelId = PhysicalModel.insert(imodel, IModel.rootSubjectId, "TestModel");
     categoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));
     imodel.saveChanges("set up");
@@ -129,7 +130,7 @@ describe("Model geometry changes", () => {
     const txnBeforeInsert = imodel.txns.getCurrentTxnId();
     const elemId0 = imodel.elements.insertElement(props);
     imodel.saveChanges("insert elem 0");
-    expectChanges(sink, { modelId, inserted: [ elemId0 ] });
+    expectChanges(sink, { modelId, inserted: [elemId0] });
 
     // Modify the element without touching its geometry.
     props.userLabel = "new label";
@@ -142,18 +143,18 @@ describe("Model geometry changes", () => {
     props.placement = { origin: new Point3d(2, 1, 0), angles: new YawPitchRollAngles() };
     imodel.elements.updateElement(props);
     imodel.saveChanges("change placement");
-    expectChanges(sink, { modelId, updated: [ elemId0 ] });
+    expectChanges(sink, { modelId, updated: [elemId0] });
 
     // Insert another element.
     props.id = undefined;
     const elemId1 = imodel.elements.insertElement(props);
     imodel.saveChanges("insert elem 1");
-    expectChanges(sink, { modelId, inserted: [ elemId1 ] });
+    expectChanges(sink, { modelId, inserted: [elemId1] });
 
     // Delete an element.
     imodel.elements.deleteElement(elemId0);
     imodel.saveChanges("delete elem 0");
-    expectChanges(sink, { modelId, deleted: [ elemId0 ] });
+    expectChanges(sink, { modelId, deleted: [elemId0] });
 
     // Stop tracking geometry changes
     expect(imodel.nativeDb.setGeometricModelTrackingEnabled(false).result).to.be.false;
@@ -169,11 +170,11 @@ describe("Model geometry changes", () => {
     // Restart tracking and undo everything.
     expect(imodel.nativeDb.setGeometricModelTrackingEnabled(true).result).to.be.true;
     expect(imodel.txns.reverseTo(txnBeforeInsert)).to.equal(IModelStatus.Success);
-    expectChanges(sink, { modelId, deleted: [ elemId0, elemId1 ] });
+    expectChanges(sink, { modelId, deleted: [elemId0, elemId1] });
 
     // Redo everything.
     expect(imodel.txns.reinstateTxn()).to.equal(IModelStatus.Success);
-    expectChanges(sink, { modelId, updated: [ elemId1 ], deleted: [ elemId0 ] });
+    expectChanges(sink, { modelId, updated: [elemId1], deleted: [elemId0] });
 
     expect(imodel.nativeDb.setGeometricModelTrackingEnabled(false).result).to.be.false;
   });

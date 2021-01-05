@@ -1531,8 +1531,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 1310720,
-    Major = 20,
+    Combined = 1376256,
+    Major = 21,
     Minor = 0
 }
 
@@ -4977,7 +4977,6 @@ export interface OpenBriefcaseOptions {
 export interface OpenBriefcaseProps extends IModelEncryptionProps, OpenDbKey {
     fileName: string;
     readonly?: boolean;
-    upgrade?: UpgradeOptions;
 }
 
 // @public
@@ -6529,6 +6528,15 @@ export namespace RpcSerializedValue {
 }
 
 // @beta
+export enum SchemaState {
+    TooNew = 4,
+    TooOld = 3,
+    UpgradeRecommended = 2,
+    UpgradeRequired = 1,
+    UpToDate = 0
+}
+
+// @beta
 export interface SectionDrawingLocationProps extends GeometricElement3dProps {
     sectionView?: RelatedElementProps;
 }
@@ -6889,7 +6897,7 @@ export abstract class StandaloneIModelRpcInterface extends RpcInterface {
 }
 
 // @beta
-export type StandaloneOpenOptions = OpenDbKey & UpgradeOptions;
+export type StandaloneOpenOptions = OpenDbKey;
 
 // @internal
 export type StorageValue = string | number | boolean | null | Uint8Array;
