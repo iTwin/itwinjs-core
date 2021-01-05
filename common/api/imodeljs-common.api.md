@@ -6771,6 +6771,8 @@ export abstract class SnapshotIModelRpcInterface extends RpcInterface {
 // @public
 export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey {
     // @internal (undocumented)
+    autoUploadBlocks?: boolean;
+    // @internal (undocumented)
     lazyBlockCache?: boolean;
 }
 
