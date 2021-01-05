@@ -7,6 +7,7 @@
  * @module UnifiedSelection
  */
 
+import memoize from "micro-memoize";
 import * as React from "react";
 import { assert } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
@@ -131,7 +132,10 @@ function createContext(imodel: IModelConnection, selectionLevel: number): Unifie
 }
 
 function createGetSelection(imodel: IModelConnection, selectionLevel: number): UnifiedSelectionContext["getSelection"] {
-  return (level) => Presentation.selection.getSelection(imodel, level ?? selectionLevel);
+  return memoize(
+    (level) => new Proxy(Presentation.selection.getSelection(imodel, level ?? selectionLevel), {}),
+    { maxSize: Number.MAX_SAFE_INTEGER },
+  );
 }
 
 const unifiedSelectionContext = React.createContext<UnifiedSelectionContext | undefined>(undefined);

@@ -103,7 +103,7 @@ describe("UnifiedSelectionContext", () => {
     expect(firstResult.removeFromSelection).to.be.equal(secondResult.removeFromSelection);
   });
 
-  it("does not update context when selection changes on one level below", () => {
+  it("does not update context when selection changes one level deeper", () => {
     const { result } = renderUnifiedSelectionContextHook(testIModel);
     const firstResult = result.current;
 
@@ -117,11 +117,61 @@ describe("UnifiedSelectionContext", () => {
   describe("context", () => {
     const keys = new KeySet();
 
-    it("gets current selection", () => {
-      const { result } = renderUnifiedSelectionContextHook(testIModel);
-      const stub = sinon.stub(Presentation.selection, "getSelection").returns(keys);
-      result.current.getSelection(10);
-      expect(stub).to.have.been.calledOnceWithExactly(testIModel, 10);
+    describe("getSelection", () => {
+      let stubGetSelection: sinon.SinonStub<[IModelConnection, number?], Readonly<KeySet>>;
+
+      beforeEach(() => {
+        stubGetSelection = sinon.stub(Presentation.selection, "getSelection").returns(keys);
+      });
+
+      it("gets current selection", () => {
+        const { result } = renderUnifiedSelectionContextHook(testIModel);
+        result.current.getSelection(10);
+        expect(stubGetSelection).to.have.been.calledOnceWithExactly(testIModel, 10);
+      });
+
+      it("makes KeySet reference be different from global KeySet", () => {
+        const { result } = renderUnifiedSelectionContextHook(testIModel);
+        const returnedKeySet = result.current.getSelection();
+        expect(returnedKeySet).not.to.be.equal(keys);
+      });
+
+      it("returns same KeySet reference for same selection level", () => {
+        const { result } = renderUnifiedSelectionContextHook(testIModel);
+        const firstKeySet = result.current.getSelection(10);
+        const secondKeySet = result.current.getSelection(10);
+        expect(firstKeySet).to.be.equal(secondKeySet);
+      });
+
+      it("returns different KeySet reference for different selection level", () => {
+        const { result } = renderUnifiedSelectionContextHook(testIModel);
+        const firstKeySet = result.current.getSelection(10);
+        const secondKeySet = result.current.getSelection(9);
+        expect(firstKeySet).not.to.be.equal(secondKeySet);
+      });
+
+      it("returns different KeySet reference after selection changes", () => {
+        const { result } = renderUnifiedSelectionContextHook(testIModel);
+        const firstKeySet = result.current.getSelection();
+
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        act(() => result.current.addToSelection([{ className: "test", id: "1" }]));
+        const secondKeySet = result.current.getSelection();
+
+        expect(firstKeySet).not.to.be.equal(secondKeySet);
+      });
+
+      it("returns a working KeySet", () => {
+        stubGetSelection.restore();
+        const { result } = renderUnifiedSelectionContextHook(testIModel);
+
+        const key = { className: "test", id: "1" };
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        act(() => result.current.addToSelection([key]));
+
+        const returnedKeySet = result.current.getSelection();
+        expect(returnedKeySet.has(key)).to.be.true;
+      });
     });
 
     it("replaces current selection", () => {
