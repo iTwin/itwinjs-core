@@ -468,6 +468,9 @@ export interface UnifiedSelectionContextProviderProps {
 }
 
 // @beta
+export type UnifiedSelectionState = (selectionLevel?: number) => Readonly<KeySet>;
+
+// @beta
 export class UnifiedSelectionTreeEventHandler extends TreeEventHandler implements IDisposable {
     constructor(params: UnifiedSelectionTreeEventHandlerParams);
     protected createKeysForSelection(nodes: TreeNodeItem[], _selectionType: SelectionChangeType): Keys;

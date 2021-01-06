@@ -47,6 +47,7 @@ public;TreeWithUnifiedSelectionProps
 beta;UnifiedSelectionContext
 beta;UnifiedSelectionContextProvider(props: UnifiedSelectionContextProviderProps): React.ReactElement
 beta;UnifiedSelectionContextProviderProps
+beta;UnifiedSelectionState = (selectionLevel?: number) => Readonly
 beta;UnifiedSelectionTreeEventHandler 
 beta;UnifiedSelectionTreeEventHandlerParams
 beta;useControlledTreeFiltering(props: ControlledTreeFilteringProps):
