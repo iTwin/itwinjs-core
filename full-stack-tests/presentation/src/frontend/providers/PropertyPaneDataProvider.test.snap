@@ -310,7 +310,10 @@ Object {
         },
         "value": Object {
           "displayValue": "Properties_60InstancesWithUrl2",
-          "value": "0x1c",
+          "value": Object {
+            "className": "BisCore:PhysicalModel",
+            "id": "0x1c",
+          },
           "valueFormat": 0,
         },
       },
@@ -336,7 +339,10 @@ Object {
         },
         "value": Object {
           "displayValue": "Uncategorized",
-          "value": "0x17",
+          "value": Object {
+            "className": "BisCore:SpatialCategory",
+            "id": "0x17",
+          },
           "valueFormat": 0,
         },
       },
@@ -1595,7 +1601,10 @@ Object {
         },
         "value": Object {
           "displayValue": "Properties_60InstancesWithUrl2",
-          "value": "0x1c",
+          "value": Object {
+            "className": "BisCore:PhysicalPartition",
+            "id": "0x1c",
+          },
           "valueFormat": 0,
         },
       },
@@ -1644,7 +1653,10 @@ Object {
         },
         "value": Object {
           "displayValue": "Properties_60InstancesWithUrl2",
-          "value": "0x1c",
+          "value": Object {
+            "className": "BisCore:PhysicalPartition",
+            "id": "0x1c",
+          },
           "valueFormat": 0,
         },
       },
@@ -1660,7 +1672,10 @@ Object {
         },
         "value": Object {
           "displayValue": "Properties_60InstancesWithUrl2",
-          "value": "0x1c",
+          "value": Object {
+            "className": "BisCore:PhysicalPartition",
+            "id": "0x1c",
+          },
           "valueFormat": 0,
         },
       },
@@ -2123,7 +2138,10 @@ Object {
         },
         "value": Object {
           "displayValue": "Properties_60InstancesWithUrl2",
-          "value": "0x1c",
+          "value": Object {
+            "className": "BisCore:PhysicalModel",
+            "id": "0x1c",
+          },
           "valueFormat": 0,
         },
       },
@@ -2149,7 +2167,10 @@ Object {
         },
         "value": Object {
           "displayValue": "Uncategorized",
-          "value": "0x17",
+          "value": Object {
+            "className": "BisCore:SpatialCategory",
+            "id": "0x17",
+          },
           "valueFormat": 0,
         },
       },
@@ -3410,7 +3431,10 @@ Object {
         },
         "value": Object {
           "displayValue": "Properties_60InstancesWithUrl2",
-          "value": "0x1c",
+          "value": Object {
+            "className": "BisCore:PhysicalPartition",
+            "id": "0x1c",
+          },
           "valueFormat": 0,
         },
       },
@@ -3471,7 +3495,10 @@ Object {
         },
         "value": Object {
           "displayValue": "Properties_60InstancesWithUrl2",
-          "value": "0x1c",
+          "value": Object {
+            "className": "BisCore:PhysicalPartition",
+            "id": "0x1c",
+          },
           "valueFormat": 0,
         },
       },
@@ -3487,7 +3514,10 @@ Object {
         },
         "value": Object {
           "displayValue": "Properties_60InstancesWithUrl2",
-          "value": "0x1c",
+          "value": Object {
+            "className": "BisCore:PhysicalPartition",
+            "id": "0x1c",
+          },
           "valueFormat": 0,
         },
       },

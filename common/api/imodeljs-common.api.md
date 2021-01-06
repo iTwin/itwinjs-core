@@ -1531,8 +1531,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 1310720,
-    Major = 20,
+    Combined = 1376256,
+    Major = 21,
     Minor = 0
 }
 
@@ -1673,6 +1673,8 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     get hiddenLineSettings(): HiddenLine.Settings;
     set hiddenLineSettings(hline: HiddenLine.Settings);
     // (undocumented)
+    is3d(): this is DisplayStyle3dSettings;
+    // (undocumented)
     get lights(): LightSettings;
     set lights(lights: LightSettings);
     // @beta
@@ -1778,6 +1780,8 @@ export class DisplayStyleSettings {
     get hasModelAppearanceOverride(): boolean;
     get hasSubCategoryOverride(): boolean;
     // (undocumented)
+    is3d(): this is DisplayStyle3dSettings;
+    // (undocumented)
     protected readonly _json: DisplayStyleSettingsProps;
     // @alpha
     get mapImagery(): MapImagerySettings;
@@ -1787,8 +1791,39 @@ export class DisplayStyleSettings {
     set monochromeColor(color: ColorDef);
     get monochromeMode(): MonochromeMode;
     set monochromeMode(mode: MonochromeMode);
-    // @internal (undocumented)
-    readonly onOverridesApplied: BeEvent<(settings: DisplayStyleSettings, overrides: DisplayStyleSettingsProps) => void>;
+    readonly onAmbientOcclusionSettingsChanged: BeEvent<(newSettings: AmbientOcclusion.Settings) => void>;
+    // @alpha
+    readonly onAnalysisFractionChanged: BeEvent<(newFraction: number) => void>;
+    // @alpha
+    readonly onAnalysisStyleChanged: BeEvent<(newStyle: Readonly<AnalysisStyle> | undefined) => void>;
+    // @beta
+    readonly onApplyOverrides: BeEvent<(overrides: Readonly<DisplayStyleSettingsProps>) => void>;
+    readonly onBackgroundColorChanged: BeEvent<(newColor: ColorDef) => void>;
+    readonly onBackgroundMapChanged: BeEvent<(newMap: BackgroundMapSettings) => void>;
+    // @beta
+    readonly onClipStyleChanged: BeEvent<(newStyle: ClipStyle) => void>;
+    readonly onEnvironmentChanged: BeEvent<(newProps: Readonly<EnvironmentProps>) => void>;
+    readonly onExcludedElementsChanged: BeEvent<() => void>;
+    readonly onHiddenLineSettingsChanged: BeEvent<(newSettings: HiddenLine.Settings) => void>;
+    readonly onLightsChanged: BeEvent<(newLights: LightSettings) => void>;
+    // @alpha
+    readonly onMapImageryChanged: BeEvent<(newImagery: Readonly<MapImagerySettings>) => void>;
+    readonly onModelAppearanceOverrideChanged: BeEvent<(modelId: string, newAppearance: FeatureAppearance | undefined) => void>;
+    readonly onMonochromeColorChanged: BeEvent<(newColor: ColorDef) => void>;
+    readonly onMonochromeModeChanged: BeEvent<(newMode: MonochromeMode) => void>;
+    // @beta
+    readonly onOverridesApplied: BeEvent<(overrides: Readonly<DisplayStyleSettingsProps>) => void>;
+    // @beta
+    readonly onPlanProjectionSettingsChanged: BeEvent<(modelId: string, newSettings: PlanProjectionSettings | undefined) => void>;
+    // @internal
+    readonly onScheduleScriptPropsChanged: BeEvent<(newProps: readonly RenderSchedule.ModelTimelineProps[] | undefined) => void>;
+    readonly onSolarShadowsChanged: BeEvent<(newSettings: SolarShadowSettings) => void>;
+    readonly onSubCategoryOverridesChanged: BeEvent<() => void>;
+    // @beta
+    readonly onThematicChanged: BeEvent<(newThematic: ThematicDisplay) => void>;
+    // @beta
+    readonly onTimePointChanged: BeEvent<(newTimePoint: number | undefined) => void>;
+    readonly onViewFlagsChanged: BeEvent<(newFlags: Readonly<ViewFlags>) => void>;
     overrideModelAppearance(modelId: Id64String, ovr: FeatureAppearance): void;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     // @internal (undocumented)
@@ -4942,7 +4977,6 @@ export interface OpenBriefcaseOptions {
 export interface OpenBriefcaseProps extends IModelEncryptionProps, OpenDbKey {
     fileName: string;
     readonly?: boolean;
-    upgrade?: UpgradeOptions;
 }
 
 // @public
@@ -6211,7 +6245,7 @@ export enum RpcProtocolEvent {
 }
 
 // @public
-export type RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcRequest | RpcInvocation) => void;
+export type RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcRequest | RpcInvocation, err?: any) => void;
 
 // @alpha
 export class RpcPushChannel<T> {
@@ -6491,6 +6525,15 @@ export interface RpcSerializedValue {
 export namespace RpcSerializedValue {
     // (undocumented)
     export function create(objects?: string, data?: Uint8Array[]): RpcSerializedValue;
+}
+
+// @beta
+export enum SchemaState {
+    TooNew = 4,
+    TooOld = 3,
+    UpgradeRecommended = 2,
+    UpgradeRequired = 1,
+    UpToDate = 0
 }
 
 // @beta
@@ -6854,7 +6897,7 @@ export abstract class StandaloneIModelRpcInterface extends RpcInterface {
 }
 
 // @beta
-export type StandaloneOpenOptions = OpenDbKey & UpgradeOptions;
+export type StandaloneOpenOptions = OpenDbKey;
 
 // @internal
 export type StorageValue = string | number | boolean | null | Uint8Array;
@@ -7669,7 +7712,7 @@ export class ViewDetails {
     get clipVector(): ClipVector | undefined;
     set clipVector(clip: ClipVector | undefined);
     // @internal
-    getJSON(): ViewDetailsProps;
+    getJSON(): Readonly<ViewDetailsProps>;
     get gridOrientation(): GridOrientationType;
     set gridOrientation(orientation: GridOrientationType);
     get gridSpacing(): XAndY;
@@ -7680,6 +7723,7 @@ export class ViewDetails {
     protected readonly _json: ViewDetailsProps;
     // @internal
     static maxSkew: number;
+    readonly onClipVectorChanged: BeEvent<(newClip: ClipVector | undefined) => void>;
 }
 
 // @beta
@@ -7691,12 +7735,12 @@ export class ViewDetails3d extends ViewDetails {
     get allow3dManipulations(): boolean;
     set allow3dManipulations(allow: boolean);
     // @internal
-    getJSON(): ViewDetails3dProps;
+    getJSON(): Readonly<ViewDetails3dProps>;
     // @alpha
     get modelClipGroups(): ModelClipGroups;
     set modelClipGroups(groups: ModelClipGroups);
-    // @internal (undocumented)
-    readonly onModelClipGroupsChanged: BeEvent<(details: ViewDetails3d) => void>;
+    // @alpha
+    readonly onModelClipGroupsChanged: BeEvent<(newGroups: ModelClipGroups) => void>;
 }
 
 // @internal (undocumented)

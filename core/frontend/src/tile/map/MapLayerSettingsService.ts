@@ -43,7 +43,7 @@ export class MapLayerSettingsService {
     if (result) {
       await IModelApp.settings.saveSharedSetting(requestContext, mapLayerSetting, MapLayerSettingsService.SourceNamespace, sourceJSON.name, true,
         projectId, storeOnIModel ? iModelId : undefined);
-      MapLayerSettingsService.onNewCustomLayerSource.raiseEvent(MapLayerSource.fromJSON(mapLayerSetting));
+      MapLayerSettingsService.onNewCustomLayerSource.raiseEvent(MapLayerSource.fromJSON(mapLayerSetting)!);
       return true;
     } else {
       return false;

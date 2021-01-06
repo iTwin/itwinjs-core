@@ -251,7 +251,7 @@ module.exports = {
     "no-eval": "error",
     "no-fallthrough": "error",
     "no-invalid-this": "off",
-    "no-multiple-empty-lines": "error",
+    "no-multiple-empty-lines": ["error", { max: 1 }],
     "no-new-wrappers": "error",
     "no-redeclare": "error",
     "no-restricted-properties": ["error", {
@@ -272,7 +272,7 @@ module.exports = {
     "no-throw-literal": "error",
     "no-trailing-spaces": "error",
     "no-undef-init": "error",
-    // TODO: The current implementation does not support the confirgurations we want to allow.  Need to have it extended...
+    // TODO: The current implementation does not support the configurations we want to allow.  Need to have it extended...
     "no-underscore-dangle": [
       "off",
       {

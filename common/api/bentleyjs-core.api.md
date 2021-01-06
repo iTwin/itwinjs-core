@@ -66,7 +66,7 @@ export class BeEvent<T extends Listener> {
     clear(): void;
     has(listener: T, scope?: any): boolean;
     get numberOfListeners(): number;
-    raiseEvent(...args: any[]): void;
+    raiseEvent(...args: Parameters<T>): void;
     removeListener(listener: T, scope?: any): boolean;
 }
 

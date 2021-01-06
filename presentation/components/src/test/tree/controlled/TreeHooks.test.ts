@@ -145,7 +145,7 @@ describe("usePresentationNodeLoader", () => {
       const oldNodeLoader = result.current;
 
       const currRuleset = new RegisteredRuleset({ id: "unrelated", rules: [] }, "", () => { });
-      onRulesetModified.raiseEvent(currRuleset, { ...currRuleset });
+      onRulesetModified.raiseEvent(currRuleset, { ...currRuleset.toJSON() });
 
       expect(result.current).to.eq(oldNodeLoader);
     });

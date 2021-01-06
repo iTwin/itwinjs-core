@@ -6,20 +6,21 @@
  * @module iModels
  */
 
-import * as deepAssign from "deep-assign";
-import * as path from "path";
 import { assert, DbOpcode, DbResult, Id64, Id64String, Logger, RepositoryStatus } from "@bentley/bentleyjs-core";
 import { CodeQuery, CodeState, HubCode, Lock, LockLevel, LockQuery, LockType } from "@bentley/imodelhub-client";
 import {
   ChannelConstraintError, CodeProps, ElementProps, IModelError, IModelStatus, IModelWriteRpcInterface, ModelProps,
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import * as deepAssign from "deep-assign";
+import * as path from "path";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { ECDb, ECDbOpenMode } from "./ECDb";
 import { Element, Subject } from "./Element";
 import { ChannelRootAspect } from "./ElementAspect";
 import { BriefcaseDb } from "./IModelDb";
+import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { Model } from "./Model";
 import { RelationshipProps } from "./Relationship";
@@ -43,7 +44,7 @@ export class ConcurrencyControl {
 
   constructor(private _iModel: BriefcaseDb) {
     this._cache = new ConcurrencyControl.StateCache(this);
-    this._policy = ConcurrencyControl.PessimisticPolicy;
+    this._policy = new ConcurrencyControl.PessimisticPolicy();
     this._channel = new ConcurrencyControl.Channel(_iModel);
   }
 
@@ -66,7 +67,7 @@ export class ConcurrencyControl {
 
   /** @internal */
   public get needLocks(): boolean {
-    return this._policy === ConcurrencyControl.PessimisticPolicy;
+    return this._policy instanceof ConcurrencyControl.PessimisticPolicy;
   }
 
   /** Start "bulk update mode". This mode is designed for bulk-loading or bulk-updating apps. It avoids the expense
@@ -481,8 +482,8 @@ export class ConcurrencyControl {
     this.abandonRequest();
     this._cache.deleteFile();
     await Promise.all([
-      BriefcaseManager.imodelClient.locks.deleteAll(requestContext, this.iModel.iModelId, this.iModel.briefcaseId),
-      BriefcaseManager.imodelClient.codes.deleteAll(requestContext, this.iModel.iModelId, this.iModel.briefcaseId),
+      IModelHost.iModelClient.locks.deleteAll(requestContext, this.iModel.iModelId, this.iModel.briefcaseId),
+      IModelHost.iModelClient.codes.deleteAll(requestContext, this.iModel.iModelId, this.iModel.briefcaseId),
     ]);
     requestContext.enter();
     return this.openOrCreateCache(requestContext); // re-create after we know that locks and codes were deleted.
@@ -560,7 +561,7 @@ export class ConcurrencyControl {
     requestContext.enter();
 
     Logger.logTrace(loggerCategory, `lockSchema`);
-    const res = await BriefcaseManager.imodelClient.locks.update(requestContext, this._iModel.iModelId, locks);
+    const res = await IModelHost.iModelClient.locks.update(requestContext, this._iModel.iModelId, locks);
     if (res.length !== 1 || res[0].lockLevel !== LockLevel.Exclusive) {
       Logger.logError(loggerCategory, `lockSchema failed`);
       assert(false, "update should have thrown if it could not satisfy the request.");
@@ -599,7 +600,6 @@ export class ConcurrencyControl {
     return this._cache.isCodeReserved(code);
   }
 
-
   /** @internal @deprecated Use concurrencyControl.locks.lockCodeSpecs */
   public async lockCodeSpecs(requestContext: AuthorizedClientRequestContext): Promise<Lock[]> {
     return this.lockCodeSpecs0(requestContext);
@@ -615,7 +615,7 @@ export class ConcurrencyControl {
 
     requestContext.enter();
     Logger.logTrace(loggerCategory, `lockCodeSpecs`);
-    const res = await BriefcaseManager.imodelClient.locks.update(requestContext, this._iModel.iModelId, locks);
+    const res = await IModelHost.iModelClient.locks.update(requestContext, this._iModel.iModelId, locks);
     if (res.length !== 1 || res[0].lockLevel !== LockLevel.Exclusive) {
       Logger.logError(loggerCategory, `lockCodeSpecs failed`);
       assert(false, "update should have thrown if it could not satisfy the request.");
@@ -669,7 +669,7 @@ export class ConcurrencyControl {
     const hubLocks = ConcurrencyControl.Request.toHubLocks(this, locks);
 
     Logger.logTrace(loggerCategory, `acquireLocksFromRequest ${JSON.stringify(locks)}`);
-    const lockStates = await BriefcaseManager.imodelClient.locks.update(requestContext, this._iModel.iModelId, hubLocks);
+    const lockStates = await IModelHost.iModelClient.locks.update(requestContext, this._iModel.iModelId, hubLocks);
     requestContext.enter();
     Logger.logTrace(loggerCategory, `result = ${JSON.stringify(lockStates)}`);
 
@@ -693,13 +693,12 @@ export class ConcurrencyControl {
       throw new Error("not open");
 
     Logger.logTrace(loggerCategory, `reserveCodes ${JSON.stringify(hubCodes)}`);
-    const codeStates = await BriefcaseManager.imodelClient.codes.update(requestContext, this._iModel.iModelId, hubCodes);
+    const codeStates = await IModelHost.iModelClient.codes.update(requestContext, this._iModel.iModelId, hubCodes);
     requestContext.enter();
     Logger.logTrace(loggerCategory, `result = ${JSON.stringify(codeStates)}`);
 
     return codeStates;
   }
-
 
   /** @internal @deprecated Use ConcurrencyControl.codes.query or ConcurrencyControl.codes.isReserved */
   public async queryCodeStates(requestContext: AuthorizedClientRequestContext, specId: Id64String, scopeId: string, value?: string): Promise<HubCode[]> {
@@ -740,7 +739,7 @@ export class ConcurrencyControl {
 
     const hubCodes = ConcurrencyControl.Request.toHubCodes(this, req.codes);
 
-    const codesHandler = BriefcaseManager.imodelClient.codes;
+    const codesHandler = IModelHost.iModelClient.codes;
     const chunkSize = 100;
     for (let i = 0; i < hubCodes.length; i += chunkSize) {
       const query = new CodeQuery().byCodes(hubCodes.slice(i, i + chunkSize));
@@ -778,7 +777,7 @@ export class ConcurrencyControl {
 
     const briefcaseId = this.iModel.getBriefcaseId();
 
-    const locksHandler = BriefcaseManager.imodelClient.locks;
+    const locksHandler = IModelHost.iModelClient.locks;
     const chunkSize = 100;
     for (let i = 0; i < hubLocks.length; i += chunkSize) {
       const query = new LockQuery().byLocks(hubLocks.slice(i, i + chunkSize));
@@ -1366,8 +1365,10 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
     constructor(policy?: ConflictResolutionPolicy) { this.conflictResolution = policy ? policy : new ConflictResolutionPolicy(); }
   }
 
-  /** Specifies a pessimistic concurrency policy. */
+  /** Specifies the pessimistic concurrency policy. */
   export class PessimisticPolicy {
+    private _placeHolder: number;
+    constructor() { this._placeHolder = 0; }
   }
 
   /** Code manager. This class can be used to reserve Codes ahead of time and to query the status of Codes.
@@ -1424,7 +1425,7 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
         query.byCodeSpecId(specId).byCodeScope(scopeId);
       }
 
-      return BriefcaseManager.imodelClient.codes.get(requestContext, this._iModel.iModelId, query);
+      return IModelHost.iModelClient.codes.get(requestContext, this._iModel.iModelId, query);
     }
 
     /** Returns `true` if the specified code has been reserved by this briefcase.
@@ -1550,9 +1551,8 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
     }
 
     private static onOpen(fileName: string) {
-      if (this._cachesOpen.has(fileName))
-        throw new IModelError(IModelStatus.AlreadyOpen, `ConcurrencyControl StateCache is already open ${fileName}`, Logger.logError, loggerCategory);
-      this._cachesOpen.add(fileName);
+      if (!this._cachesOpen.has(fileName))
+        this._cachesOpen.add(fileName);
     }
 
     private static onClose(fileName: string) {
@@ -1736,12 +1736,12 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
       const bcId = this.concurrencyControl.iModel.briefcaseId;
       const iModelId = this.concurrencyControl.iModel.iModelId;
 
-      const heldLocks = await BriefcaseManager.imodelClient.locks.get(requestContext, iModelId, new LockQuery().byBriefcaseId(bcId));
+      const heldLocks = await IModelHost.iModelClient.locks.get(requestContext, iModelId, new LockQuery().byBriefcaseId(bcId));
       const lockProps: LockProps[] = heldLocks.map((lock) => ({ type: lock.lockType!, objectId: lock.objectId!, level: lock.lockLevel! }));
       assert(undefined === lockProps.find((lp) => (lp.level === LockLevel.None)));
       this.insertLocks(lockProps);
 
-      const reservedCodes: HubCode[] = await BriefcaseManager.imodelClient.codes.get(requestContext, iModelId, new CodeQuery().byBriefcaseId(bcId));
+      const reservedCodes = await IModelHost.iModelClient.codes.get(requestContext, iModelId, new CodeQuery().byBriefcaseId(bcId));
       const codeProps: CodeProps[] = reservedCodes.map((code) => ({ spec: code.codeSpecId!, scope: code.codeScope!, value: code.value! }));
       assert(undefined === codeProps.find((cp) => (cp.value === undefined || cp.value === "")));
       this.insertCodes(codeProps);

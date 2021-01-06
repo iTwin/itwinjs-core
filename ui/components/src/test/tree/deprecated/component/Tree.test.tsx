@@ -1663,20 +1663,6 @@ describe("Tree", () => {
       expect(getFlatList()).to.deep.eq(["1", "0", "0-b", "0-a"]);
     });
 
-    it("handles case when `onTreeNodeChanged` is broadcasted with invalid node", async () => {
-      await waitForUpdate(() => {
-        renderedTree = render(<Tree {...defaultProps} dataProvider={interfaceProvider} />);
-      }, renderSpy, 2);
-      expect(renderedTree.getAllByTestId(TreeComponentTestId.Node as any).length).to.eq(4);
-
-      const node: TreeNodeItem = {
-        id: "test",
-        label: PropertyRecord.fromString("test"),
-      };
-      interfaceProvider.onTreeNodeChanged?.raiseEvent(node);
-      expect(renderedTree.getAllByTestId(TreeComponentTestId.Node as any).length).to.eq(4);
-    });
-
     it("subscribes to `onTreeNodeChanged` on mount", () => {
       renderedTree = render(<Tree {...defaultProps} dataProvider={interfaceProvider} />);
       expect(interfaceProvider.onTreeNodeChanged?.numberOfListeners).to.eq(1);

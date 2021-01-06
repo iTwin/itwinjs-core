@@ -9,6 +9,7 @@
 "use strict";
 
 const ts = require("typescript");
+const { getParserServices } = require("./utils/parser");
 
 const Rules = {
   ADD_SPACE_AFTER_IMPORT: "AddSpaceAfterImport",
@@ -67,24 +68,6 @@ module.exports = {
     const parserServices = getParserServices(context);
     const allowLineBreaksInside = context.options[0][OPTION_ALLOW_LINE_BREAKS_INSIDE_BRACKETS];
     const allowLineBreaks = context.options[0][OPTION_ALLOW_LINE_BREAKS];
-
-    function getParserServices(context) {
-      const errorMessage = "Could not find type information";
-      if (
-        !context.parserServices ||
-        !context.parserServices.program ||
-        !context.parserServices.esTreeNodeToTSNodeMap ||
-        !context.parserServices.tsNodeToESTreeNodeMap
-      ) {
-        throw new Error(errorMessage);
-      }
-      const hasFullTypeInformation = context.parserServices.hasFullTypeInformation; // ?? true; // true for backwards compatibility
-      if (hasFullTypeInformation === false) {
-        throw new Error(errorMessage);
-      }
-
-      return context.parserServices;
-    }
 
     function isNamespaceImport(tsNode) {
       return tsNode.kind === ts.SyntaxKind.NamespaceImport;

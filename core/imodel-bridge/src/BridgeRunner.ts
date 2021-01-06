@@ -14,7 +14,7 @@ import {
   BackendRequestContext, BriefcaseDb, BriefcaseManager, ComputeProjectExtentsOptions, ConcurrencyControl, IModelDb, IModelJsFs, IModelJsNative,
   SnapshotDb, Subject, SubjectOwnsSubjects, UsageLoggingUtilities,
 } from "@bentley/imodeljs-backend";
-import { DomainOptions, IModel, IModelError, OpenBriefcaseProps, ProfileOptions, SubjectProps } from "@bentley/imodeljs-common";
+import { IModel, IModelError, OpenBriefcaseProps, SubjectProps } from "@bentley/imodeljs-common";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BridgeLoggerCategory } from "./BridgeLoggerCategory";
 import { IModelBankArgs, IModelBankUtils } from "./IModelBankUtils";
@@ -52,6 +52,8 @@ export class BridgeJobDefArgs {
   public argsJson: any;
   /** Synchronizes a snapshot imodel, outside of iModelHub */
   public isSnapshot: boolean = false;
+  /** The synchronizer will automatically delete any element that wasn't visited. Some bridges do not visit each element on every run. Set this to false to disable automatic deletion */
+  public doDetectDeletedElements: boolean = true;
 }
 
 class StaticTokenStore {
@@ -283,7 +285,9 @@ abstract class IModelDbBuilder {
 
   public async updateExistingData(): Promise<void> {
     await this._updateExistingData();
-    this._bridge.synchronizer.detectDeletedElements();
+    if (this._bridgeArgs.doDetectDeletedElements) {
+      this._bridge.synchronizer.detectDeletedElements();
+    }
 
     const options: ComputeProjectExtentsOptions = {
       reportExtentsWithOutliers: false,
@@ -486,23 +490,10 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
     const openArgs: OpenBriefcaseProps = {
       fileName: props.fileName,
     };
-    if (this._bridgeArgs.updateDbProfile) {
-      openArgs.upgrade = { profile: ProfileOptions.Upgrade };
+    if (this._bridgeArgs.updateDbProfile || this._bridgeArgs.updateDomainSchemas)
+      await BriefcaseDb.upgradeSchemas(this._requestContext, props);
+    if (briefcaseDb === undefined || !briefcaseDb.isOpen)
       briefcaseDb = await BriefcaseDb.open(this._requestContext, openArgs);
-      await briefcaseDb.pushChanges(this._requestContext, "Open with Db Profile update");
-      if (this._bridgeArgs.updateDomainSchemas)
-        briefcaseDb.close();
-    }
-
-    if (this._bridgeArgs.updateDomainSchemas) {
-      openArgs.upgrade = { domain: DomainOptions.Upgrade };
-      briefcaseDb = await BriefcaseDb.open(this._requestContext, openArgs);
-      await briefcaseDb.pushChanges(this._requestContext, "Open with Domain Schema update");
-    }
-
-    if (briefcaseDb === undefined || !briefcaseDb.isOpen) {
-      briefcaseDb = await BriefcaseDb.open(this._requestContext, openArgs);
-    }
 
     this._imodel = briefcaseDb;
     const synchronizer = new Synchronizer(briefcaseDb, this._bridge.supportsMultipleFilesPerChannel(), this._requestContext);

@@ -123,7 +123,7 @@ export class V2CheckpointManager {
     }
 
     const checkpointQuery = new CheckpointV2Query().byChangeSetId(changeSetId).selectContainerAccessKey();
-    const checkpoints = await BriefcaseManager.imodelClient.checkpointsV2.get(requestContext, iModelId, checkpointQuery);
+    const checkpoints = await IModelHost.iModelClient.checkpointsV2.get(requestContext, iModelId, checkpointQuery);
     requestContext.enter();
 
     if (checkpoints.length < 1)
@@ -137,7 +137,7 @@ export class V2CheckpointManager {
       container: containerAccessKeyContainer,
       auth: containerAccessKeySAS,
       daemonDir: bcvDaemonCachePath,
-      storageType: "azure",
+      storageType: "azure?sas=1",
       user: containerAccessKeyAccount,
       dbAlias: containerAccessKeyDbName,
       writeable: false,

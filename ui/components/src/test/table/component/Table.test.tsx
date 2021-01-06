@@ -1279,7 +1279,6 @@ describe("Table", () => {
       TestUtils.terminateUiComponents();
     });
 
-
     it("clicking on an editor cell after selection should start editing", async () => {
       const renderedTable = render(<Table
         dataProvider={dataProviderMock.object}
