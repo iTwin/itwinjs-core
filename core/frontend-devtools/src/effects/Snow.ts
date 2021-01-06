@@ -66,6 +66,14 @@ class SnowDecorator {
 
     // Tell the viewport to re-render the decorations every frame so that the snow particles animate smoothly.
     const removeOnRender = viewport.onRender.addListener(() => viewport.invalidateDecorations());
+
+    // When the viewport is resized, replace this decorator with a new one to match the new dimensions.
+    const removeOnResized = viewport.onResized.addListener(() => {
+      this.dispose();
+      new SnowDecorator(viewport);
+    });
+
+    // When the viewport is destroyed, dispose of this decorator too.
     const removeOnDispose = viewport.onDisposed.addListener(() => this.dispose());
     const removeDecorator = IModelApp.viewManager.addDecorator(this);
 
@@ -73,6 +81,7 @@ class SnowDecorator {
       removeDecorator();
       removeOnRender();
       removeOnDispose();
+      removeOnResized();
       SnowDecorator._decorators.delete(viewport);
     };
 
