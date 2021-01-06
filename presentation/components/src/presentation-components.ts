@@ -94,6 +94,6 @@ export { IPresentationLabelsProvider, PresentationLabelsProvider, PresentationLa
  * @docs-group-description UnifiedSelection
  * Utilities for working with [Unified Selection]($docs/learning/presentation/Unified-Selection/index.md) in [React](https://reactjs.org/) components.
  */
-export { UnifiedSelectionContext, UnifiedSelectionContextProvider, UnifiedSelectionContextProviderProps, useUnifiedSelectionContext } from "./presentation-components/unified-selection/UnifiedSelectionContext";
+export { UnifiedSelectionContext, UnifiedSelectionContextProvider, UnifiedSelectionContextProviderProps, UnifiedSelectionState, useUnifiedSelectionContext } from "./presentation-components/unified-selection/UnifiedSelectionContext";
 
 Presentation.registerInitializationHandler(initializeLocalization);
