@@ -21,6 +21,7 @@ function randomNumber(min: number, max: number): number {
   return Math.random() * (max - min) + min;
 }
 
+/** If the input value exceeds one of the bounds, wrap it around to the opposite bound. */
 function wrapAround(value: number, min: number, max: number): number {
   if (value < min)
     return max;
@@ -28,13 +29,18 @@ function wrapAround(value: number, min: number, max: number): number {
   return value > max ? min : value;
 }
 
+/** Represents one particle displayed by SnowDecorator. */
 interface SnowParticle {
+  /** Current position, in pixels. */
   position: Point2d;
+  /** Current velocity, in pixels per second. */
   velocity: Vector2d;
+  /** Diameter, in pixels. */
   size: number;
   transparency: number;
 }
 
+/** Simulates snowfall in a Viewport. */
 class SnowDecorator {
   /** The viewport being decorated. */
   public readonly viewport: Viewport;
