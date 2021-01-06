@@ -29,7 +29,7 @@ import {
   ModelsTree, ModelsTreeNodeType, ModelsVisibilityHandler, ModelsVisibilityHandlerProps, RULESET_MODELS, RULESET_MODELS_GROUPED_BY_CLASS,
 } from "../../../ui-framework";
 import TestUtils from "../../TestUtils";
-import { VisibilityState } from "../../../ui-framework/imodel-components/VisibilityTreeEventHandler";
+import { VisibilityChangeListener, VisibilityState } from "../../../ui-framework/imodel-components/VisibilityTreeEventHandler";
 
 describe("ModelsTree", () => {
 
@@ -170,11 +170,13 @@ describe("ModelsTree", () => {
     };
 
     describe("<ModelsTree />", () => {
-
+      const visibilityChangeEvent = new BeEvent<VisibilityChangeListener>();
       const visibilityHandlerMock = moq.Mock.ofType<ModelsVisibilityHandler>();
 
       beforeEach(() => {
+        visibilityChangeEvent.clear();
         visibilityHandlerMock.reset();
+        visibilityHandlerMock.setup((x) => x.onVisibilityChange).returns(() => visibilityChangeEvent);
       });
 
       const isNodeChecked = (node: HTMLElement): boolean => {
@@ -219,12 +221,10 @@ describe("ModelsTree", () => {
         nodes.forEach((node) => expect(isNodeChecked(node)).to.be.true);
       });
 
-      it("re-renders nodes on `onVisibilityChange` callback", async () => {
+      it("re-renders nodes on `onVisibilityChange` event", async () => {
         const node = createModelNode();
         setupDataProvider([node]);
 
-        let cb: undefined | (() => void);
-        visibilityHandlerMock.setup((x) => x.onVisibilityChange = moq.It.isAny()).callback((value) => cb = value).verifiable();
         visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: VisibilityState.Hidden, isDisabled: false })).verifiable(moq.Times.exactly(3));
         const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />);
         await waitForElement(() => {
@@ -237,7 +237,7 @@ describe("ModelsTree", () => {
 
         visibilityHandlerMock.reset();
         visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: VisibilityState.Visible, isDisabled: false })).verifiable(moq.Times.exactly(2));
-        cb!();
+        visibilityChangeEvent.raiseEvent();
         await waitForElement(() => {
           const renderedNode = result.getByTestId("tree-node");
           if (!isNodeChecked(renderedNode))
@@ -500,7 +500,6 @@ describe("ModelsTree", () => {
         const props: ModelsVisibilityHandlerProps = {
           rulesetId: "test",
           viewport: partialProps.viewport || mockViewport().object,
-          onVisibilityChange: partialProps.onVisibilityChange || sinon.stub(),
         };
         return new ModelsVisibilityHandler(props);
       };
@@ -553,18 +552,6 @@ describe("ModelsTree", () => {
           expect(vpMock.object.onViewedModelsChanged.numberOfListeners).to.eq(0);
           expect(vpMock.object.onAlwaysDrawnChanged.numberOfListeners).to.eq(0);
           expect(vpMock.object.onNeverDrawnChanged.numberOfListeners).to.eq(0);
-        });
-
-      });
-
-      describe("onVisibilityChange", () => {
-
-        it("sets onVisibilityChange callback", async () => {
-          const callback = () => { };
-          await using(createHandler({}), async (handler) => {
-            handler.onVisibilityChange = callback;
-            expect(callback).to.be.eq(handler.onVisibilityChange);
-          });
         });
 
       });
@@ -1874,64 +1861,69 @@ describe("ModelsTree", () => {
 
       });
 
-      describe("visibility change callback", () => {
+      describe("visibility change event", () => {
 
-        it("calls the callback on `onAlwaysDrawnChanged` event", async () => {
+        it("raises event on `onAlwaysDrawnChanged` event", async () => {
           const evt = new BeEvent();
           const vpMock = mockViewport({ onAlwaysDrawnChanged: evt });
-          const spy = sinon.spy();
-          await using(createHandler({ viewport: vpMock.object, onVisibilityChange: spy }), async (_) => {
+          await using(createHandler({ viewport: vpMock.object }), async (handler) => {
+            const spy = sinon.spy();
+            handler.onVisibilityChange.addListener(spy);
             evt.raiseEvent(vpMock.object);
             await new Promise((resolve) => setTimeout(resolve));
             expect(spy).to.be.calledOnce;
           });
         });
 
-        it("calls the callback on `onNeverDrawnChanged` event", async () => {
+        it("raises event on `onNeverDrawnChanged` event", async () => {
           const evt = new BeEvent();
           const vpMock = mockViewport({ onNeverDrawnChanged: evt });
-          const spy = sinon.spy();
-          await using(createHandler({ viewport: vpMock.object, onVisibilityChange: spy }), async (_) => {
+          await using(createHandler({ viewport: vpMock.object }), async (handler) => {
+            const spy = sinon.spy();
+            handler.onVisibilityChange.addListener(spy);
             evt.raiseEvent(vpMock.object);
             await new Promise((resolve) => setTimeout(resolve));
             expect(spy).to.be.calledOnce;
           });
         });
 
-        it("calls the callback on `onViewedCategoriesChanged` event", async () => {
+        it("raises event on `onViewedCategoriesChanged` event", async () => {
           const evt = new BeEvent();
           const vpMock = mockViewport({ onViewedCategoriesChanged: evt });
-          const spy = sinon.spy();
-          await using(createHandler({ viewport: vpMock.object, onVisibilityChange: spy }), async (_) => {
+          await using(createHandler({ viewport: vpMock.object }), async (handler) => {
+            const spy = sinon.spy();
+            handler.onVisibilityChange.addListener(spy);
             evt.raiseEvent(vpMock.object);
             await new Promise((resolve) => setTimeout(resolve));
             expect(spy).to.be.calledOnce;
           });
         });
 
-        it("calls the callback on `onViewedModelsChanged` event", async () => {
+        it("raises event on `onViewedModelsChanged` event", async () => {
           const evt = new BeEvent();
           const vpMock = mockViewport({ onViewedModelsChanged: evt });
-          const spy = sinon.spy();
-          await using(createHandler({ viewport: vpMock.object, onVisibilityChange: spy }), async (_) => {
+          await using(createHandler({ viewport: vpMock.object }), async (handler) => {
+            const spy = sinon.spy();
+            handler.onVisibilityChange.addListener(spy);
             evt.raiseEvent(vpMock.object);
             await new Promise((resolve) => setTimeout(resolve));
             expect(spy).to.be.calledOnce;
           });
         });
 
-        it("calls the callback on `onViewedCategoriesPerModelChanged` event", async () => {
+        it("raises event on `onViewedCategoriesPerModelChanged` event", async () => {
           const evt = new BeEvent();
           const vpMock = mockViewport({ onViewedCategoriesPerModelChanged: evt });
-          const spy = sinon.spy();
-          await using(createHandler({ viewport: vpMock.object, onVisibilityChange: spy }), async (_) => {
+          await using(createHandler({ viewport: vpMock.object }), async (handler) => {
+            const spy = sinon.spy();
+            handler.onVisibilityChange.addListener(spy);
             evt.raiseEvent(vpMock.object);
             await new Promise((resolve) => setTimeout(resolve));
             expect(spy).to.be.calledOnce;
           });
         });
 
-        it("calls the callback once when multiple affecting events are fired", async () => {
+        it("raises event once when multiple affecting events are fired", async () => {
           const evts = {
             onViewedCategoriesPerModelChanged: new BeEvent<(vp: Viewport) => void>(),
             onViewedCategoriesChanged: new BeEvent<(vp: Viewport) => void>(),
@@ -1940,8 +1932,9 @@ describe("ModelsTree", () => {
             onNeverDrawnChanged: new BeEvent<() => void>(),
           };
           const vpMock = mockViewport({ ...evts });
-          const spy = sinon.spy();
-          await using(createHandler({ viewport: vpMock.object, onVisibilityChange: spy }), async (_) => {
+          await using(createHandler({ viewport: vpMock.object }), async (handler) => {
+            const spy = sinon.spy();
+            handler.onVisibilityChange.addListener(spy);
             evts.onViewedCategoriesPerModelChanged.raiseEvent(vpMock.object);
             evts.onViewedCategoriesChanged.raiseEvent(vpMock.object);
             evts.onViewedModelsChanged.raiseEvent(vpMock.object);

@@ -8,7 +8,7 @@
 
 import "./ModelsTree.scss";
 import * as React from "react";
-import { Id64String } from "@bentley/bentleyjs-core";
+import { BeEvent, Id64String } from "@bentley/bentleyjs-core";
 import { IModelConnection, PerModelCategoryVisibility, Viewport } from "@bentley/imodeljs-frontend";
 import {
   ContentFlags, DescriptorOverrides, ECClassGroupingNodeKey, GroupingNodeKey, Keys, KeySet, NodeKey, Ruleset,
@@ -19,7 +19,7 @@ import { useDisposable, useOptionalDisposable } from "@bentley/ui-core";
 import { connectIModelConnection } from "../../../ui-framework/redux/connectIModel";
 import { UiFramework } from "../../../ui-framework/UiFramework";
 import { ClassGroupingOption, VisibilityTreeFilterInfo } from "../Common";
-import { IVisibilityHandler, VisibilityState, VisibilityStatus, VisibilityTreeEventHandler } from "../VisibilityTreeEventHandler";
+import { IVisibilityHandler, VisibilityChangeListener, VisibilityState, VisibilityStatus, VisibilityTreeEventHandler } from "../VisibilityTreeEventHandler";
 import { useVisibilityTreeFiltering, useVisibilityTreeRenderer, VisibilityTreeNoFilteredData } from "../VisibilityTreeRenderer";
 
 const PAGING_SIZE = 20;
@@ -245,7 +245,6 @@ const isCategoryNode = (node: TreeNodeItem) => (node.extendedData && node.extend
 export interface ModelsVisibilityHandlerProps {
   rulesetId: string;
   viewport: Viewport;
-  onVisibilityChange?: () => void;
 }
 
 /**
@@ -256,12 +255,10 @@ export class ModelsVisibilityHandler implements IVisibilityHandler {
   private _props: ModelsVisibilityHandlerProps;
   private _pendingVisibilityChange: any | undefined;
   private _subjectModelIdsCache: SubjectModelIdsCache;
-  private _onVisibilityChange?: () => void;
   private _filteredDataProvider?: IPresentationTreeDataProvider;
 
   constructor(props: ModelsVisibilityHandlerProps) {
     this._props = props;
-    this._onVisibilityChange = props.onVisibilityChange;
     this._subjectModelIdsCache = new SubjectModelIdsCache(this._props.viewport.iModel);
     this._props.viewport.onViewedCategoriesPerModelChanged.addListener(this.onViewChanged);
     this._props.viewport.onViewedCategoriesChanged.addListener(this.onViewChanged);
@@ -279,8 +276,7 @@ export class ModelsVisibilityHandler implements IVisibilityHandler {
     clearTimeout(this._pendingVisibilityChange);
   }
 
-  public get onVisibilityChange() { return this._onVisibilityChange; }
-  public set onVisibilityChange(callback: (() => void) | undefined) { this._onVisibilityChange = callback; }
+  public onVisibilityChange = new BeEvent<VisibilityChangeListener>();
 
   /** Sets data provider that is used to get filtered tree hierarchy. */
   public setFilteredDataProvider(provider: IPresentationTreeDataProvider | undefined) { this._filteredDataProvider = provider; }
@@ -520,7 +516,7 @@ export class ModelsVisibilityHandler implements IVisibilityHandler {
       return;
 
     this._pendingVisibilityChange = setTimeout(() => {
-      this._onVisibilityChange && this._onVisibilityChange();
+      this.onVisibilityChange.raiseEvent();
       this._pendingVisibilityChange = undefined;
     }, 0);
   }

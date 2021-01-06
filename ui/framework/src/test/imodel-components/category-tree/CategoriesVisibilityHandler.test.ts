@@ -98,7 +98,6 @@ describe("CategoryVisibilityHandler", () => {
       viewManager: partialProps.viewManager || viewManagerMock.object,
       imodel: partialProps.imodel || imodelMock.object,
       activeView: partialProps.activeView,
-      onVisibilityChange: partialProps.onVisibilityChange || sinon.stub(),
       categories: partialProps.categories || [],
       allViewports: partialProps.allViewports,
     };
@@ -123,18 +122,6 @@ describe("CategoryVisibilityHandler", () => {
       using(createHandler({ activeView: viewport.object }), (_) => { });
       expect(onDisplayStyleChanged.numberOfListeners).to.be.eq(0);
       expect(onViewedCategoriesChanged.numberOfListeners).to.be.eq(0);
-    });
-
-  });
-
-  describe("onVisibilityChange", () => {
-
-    it("sets onVisibilityChange callback", async () => {
-      const callback = () => { };
-      using(createHandler({}), (handler) => {
-        handler.onVisibilityChange = callback;
-        expect(callback).to.be.eq(handler.onVisibilityChange);
-      });
     });
 
   });
@@ -271,8 +258,9 @@ describe("CategoryVisibilityHandler", () => {
     it("calls the callback on `onDisplayStyleChanged` event", async () => {
       const vpMock = mockViewport();
       const onDisplayStyleChanged = new BeEvent<(vp: Viewport) => void>();
-      const spy = sinon.spy();
-      await using(createHandler({ onVisibilityChange: spy, activeView: mockViewport({ onDisplayStyleChanged }).object }), async (_) => {
+      await using(createHandler({ activeView: mockViewport({ onDisplayStyleChanged }).object }), async (handler) => {
+        const spy = sinon.spy();
+        handler.onVisibilityChange.addListener(spy);
         onDisplayStyleChanged.raiseEvent(vpMock.object);
         await new Promise((resolve) => setTimeout(resolve));
         expect(spy).to.be.calledOnce;
@@ -282,8 +270,9 @@ describe("CategoryVisibilityHandler", () => {
     it("calls the callback on `onViewedCategoriesChanged` event", async () => {
       const vpMock = mockViewport();
       const onViewedCategoriesChanged = new BeEvent<(vp: Viewport) => void>();
-      const spy = sinon.spy();
-      await using(createHandler({ onVisibilityChange: spy, activeView: mockViewport({ onViewedCategoriesChanged }).object }), async (_) => {
+      await using(createHandler({ activeView: mockViewport({ onViewedCategoriesChanged }).object }), async (handler) => {
+        const spy = sinon.spy();
+        handler.onVisibilityChange.addListener(spy);
         onViewedCategoriesChanged.raiseEvent(vpMock.object);
         await new Promise((resolve) => setTimeout(resolve));
         expect(spy).to.be.calledOnce;
@@ -294,8 +283,9 @@ describe("CategoryVisibilityHandler", () => {
       const vpMock = mockViewport();
       const onDisplayStyleChanged = new BeEvent<(vp: Viewport) => void>();
       const onViewedCategoriesChanged = new BeEvent<(vp: Viewport) => void>();
-      const spy = sinon.spy();
-      await using(createHandler({ onVisibilityChange: spy, activeView: mockViewport({ onDisplayStyleChanged, onViewedCategoriesChanged }).object }), async (_) => {
+      await using(createHandler({ activeView: mockViewport({ onDisplayStyleChanged, onViewedCategoriesChanged }).object }), async (handler) => {
+        const spy = sinon.spy();
+        handler.onVisibilityChange.addListener(spy);
         onViewedCategoriesChanged.raiseEvent(vpMock.object);
         onDisplayStyleChanged.raiseEvent(vpMock.object);
         await new Promise((resolve) => setTimeout(resolve));
