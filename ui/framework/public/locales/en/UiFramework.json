@@ -275,5 +275,24 @@
   },
   "standardRotationNavigationAid": {
     "title": "Standard Rotations"
+  },
+  "accuDraw": {
+    "dialogTitle": "AccuDraw",
+    "lockSmart": "Smart Lock",
+    "lockX": "Lock X",
+    "lockY": "Lock Y",
+    "lockZ": "Lock Z",
+    "lockAngle": "Lock Angle",
+    "lockDistance": "Lock Distance",
+    "changeCompassMode": "Change Compass Mode",
+    "rotateTop": "Rotate Top",
+    "rotateFront": "Rotate Front",
+    "rotateSide": "Rotate Side",
+    "rotateView": "Rotate View",
+    "setOrigin": "Set Origin",
+    "rotateCycle": "Rotate Cycle",
+    "rotateAxes": "Rotate Axes",
+    "rotateToElement": "Rotate To Element",
+    "defineACSByPoints": "Define ACS By Points"
   }
 }

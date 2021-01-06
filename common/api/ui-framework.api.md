@@ -10,6 +10,7 @@ import { AbstractStatusBarCustomItem } from '@bentley/ui-abstract';
 import { AbstractToolbarProps } from '@bentley/ui-abstract';
 import { AbstractTreeNodeLoaderWithProvider } from '@bentley/ui-components';
 import { AbstractWidgetProps } from '@bentley/ui-abstract';
+import { AccuDraw } from '@bentley/imodeljs-frontend';
 import { ActionButton } from '@bentley/ui-abstract';
 import { ActivityMessageDetails } from '@bentley/imodeljs-frontend';
 import { ActivityMessageEndReason } from '@bentley/imodeljs-frontend';
@@ -25,7 +26,6 @@ import { BeDuration } from '@bentley/bentleyjs-core';
 import { BeEvent } from '@bentley/bentleyjs-core';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
 import { ButtonProps } from '@bentley/ui-core';
-import { CategorySelectorProps } from '@bentley/imodeljs-common';
 import { ColorDef } from '@bentley/imodeljs-common';
 import { CommandHandler } from '@bentley/ui-abstract';
 import { CommonDivProps } from '@bentley/ui-core';
@@ -46,7 +46,6 @@ import { DialogProps as DialogProps_2 } from '@bentley/ui-abstract';
 import { DialogRow } from '@bentley/ui-abstract';
 import { Direction } from '@bentley/ui-ninezone';
 import { DisabledResizeHandles } from '@bentley/ui-ninezone';
-import { DisplayStyleProps } from '@bentley/imodeljs-common';
 import { DndComponentClass } from 'react-dnd';
 import { DraggedWidgetManagerProps } from '@bentley/ui-ninezone';
 import { DragLayerProps } from '@bentley/ui-components';
@@ -60,19 +59,18 @@ import { HorizontalAnchor } from '@bentley/ui-ninezone';
 import { I18N } from '@bentley/imodeljs-i18n';
 import { IconProps } from '@bentley/ui-core';
 import { IconSpec } from '@bentley/ui-core';
-import { Id64Array } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
 import { IMatch } from '@bentley/ui-abstract';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
 import { InteractiveTool } from '@bentley/imodeljs-frontend';
 import { IPresentationTreeDataProvider } from '@bentley/presentation-components';
+import { ItemField } from '@bentley/imodeljs-frontend';
 import { MessageBoxIconType } from '@bentley/imodeljs-frontend';
 import { MessageBoxType } from '@bentley/imodeljs-frontend';
 import { MessageBoxValue } from '@bentley/imodeljs-frontend';
 import { MessageSeverity } from '@bentley/ui-core';
 import { MessageType } from '@bentley/ui-core';
-import { ModelSelectorProps } from '@bentley/imodeljs-common';
 import { NestedStagePanelKey } from '@bentley/ui-ninezone';
 import { NestedStagePanelsManagerProps } from '@bentley/ui-ninezone';
 import { NineZoneDispatch } from '@bentley/ui-ninezone';
@@ -119,7 +117,6 @@ import { SafeAreaInsets } from '@bentley/ui-ninezone';
 import { ScreenViewport } from '@bentley/imodeljs-frontend';
 import { SelectionMode } from '@bentley/ui-components';
 import { SettingsStatus } from '@bentley/product-settings-client';
-import { SheetProps } from '@bentley/imodeljs-common';
 import { Size } from '@bentley/ui-core';
 import { SizeProps } from '@bentley/ui-core';
 import { SnapMode } from '@bentley/imodeljs-frontend';
@@ -166,12 +163,12 @@ import { UnifiedSelectionTreeEventHandler } from '@bentley/presentation-componen
 import { UnifiedSelectionTreeEventHandlerParams } from '@bentley/presentation-components';
 import { UserInfo } from '@bentley/itwin-client';
 import { VerticalAnchor } from '@bentley/ui-ninezone';
-import { ViewDefinitionProps } from '@bentley/imodeljs-common';
 import { ViewFlagProps } from '@bentley/imodeljs-common';
 import { ViewManager } from '@bentley/imodeljs-frontend';
 import { Viewport } from '@bentley/imodeljs-frontend';
 import { ViewState } from '@bentley/imodeljs-frontend';
 import { ViewStateProp } from '@bentley/ui-components';
+import { ViewStateProps } from '@bentley/imodeljs-common';
 import { WidgetManagerProps } from '@bentley/ui-ninezone';
 import { WidgetState as WidgetState_2 } from '@bentley/ui-abstract';
 import { WidgetZoneId } from '@bentley/ui-ninezone';
@@ -180,6 +177,55 @@ import { ZoneManagerProps } from '@bentley/ui-ninezone';
 import { ZonesManagerProps } from '@bentley/ui-ninezone';
 import { ZonesManagerWidgetsProps } from '@bentley/ui-ninezone';
 import { ZoneTargetType } from '@bentley/ui-ninezone';
+
+// @alpha
+export class AccuDrawCommandItems {
+    // (undocumented)
+    static get changeCompassMode(): CommandItemDef;
+    // (undocumented)
+    static get defineACSByPoints(): CommandItemDef;
+    // (undocumented)
+    static get lockAngle(): CommandItemDef;
+    // (undocumented)
+    static get lockDistance(): CommandItemDef;
+    // (undocumented)
+    static get lockSmart(): CommandItemDef;
+    // (undocumented)
+    static get lockX(): CommandItemDef;
+    // (undocumented)
+    static get lockY(): CommandItemDef;
+    // (undocumented)
+    static get lockZ(): CommandItemDef;
+    // (undocumented)
+    static get rotateAxes(): CommandItemDef;
+    // (undocumented)
+    static get rotateCycle(): CommandItemDef;
+    // (undocumented)
+    static get rotateFront(): CommandItemDef;
+    // (undocumented)
+    static get rotateSide(): CommandItemDef;
+    // (undocumented)
+    static get rotateToElement(): CommandItemDef;
+    // (undocumented)
+    static get rotateTop(): CommandItemDef;
+    // (undocumented)
+    static get rotateView(): CommandItemDef;
+    // (undocumented)
+    static get setOrigin(): CommandItemDef;
+}
+
+// @alpha (undocumented)
+export function AccuDrawDialog(props: AccuDrawDialogProps): JSX.Element;
+
+// @alpha (undocumented)
+export interface AccuDrawDialogProps extends CommonProps {
+    // (undocumented)
+    dialogId: string;
+    // (undocumented)
+    onClose?: () => void;
+    // (undocumented)
+    opened: boolean;
+}
 
 // @alpha
 export class AccuDrawPopupManager {
@@ -1879,6 +1925,18 @@ export class FooterModeField extends React.PureComponent<FooterModeFieldProps> {
 export interface FooterModeFieldProps extends StatusFieldProps {
     children?: React.ReactNode;
 }
+
+// @alpha (undocumented)
+export class FrameworkAccuDraw extends AccuDraw {
+    // @internal (undocumented)
+    onCompassModeChange(): void;
+    // @internal (undocumented)
+    onFieldLockChange(index: ItemField): void;
+    // @internal (undocumented)
+    onFieldValueChange(index: ItemField): void;
+    // @internal (undocumented)
+    setFocusItem(index: ItemField): void;
+    }
 
 // @beta
 export const FrameworkReducer: (state: import("./redux-ts").CombinedReducerState<{
@@ -4249,23 +4307,11 @@ export interface SavedViewLayoutProps {
 }
 
 // @public
-export interface SavedViewProps {
+export interface SavedViewProps extends ViewStateProps {
     // (undocumented)
     bisBaseClass: string;
     // (undocumented)
-    categorySelectorProps: CategorySelectorProps;
-    // (undocumented)
-    displayStyleProps: DisplayStyleProps;
-    // (undocumented)
     emphasizeElementsProps?: EmphasizeElementsProps;
-    // (undocumented)
-    modelSelectorProps?: ModelSelectorProps;
-    // (undocumented)
-    sheetAttachments?: Id64Array;
-    // (undocumented)
-    sheetProps?: SheetProps;
-    // (undocumented)
-    viewDefinitionProps: ViewDefinitionProps;
 }
 
 // @alpha

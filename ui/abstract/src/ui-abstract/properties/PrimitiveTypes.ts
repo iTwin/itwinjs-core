@@ -32,13 +32,13 @@ export namespace Primitives {
   export type Enum = number | string;
   /** Numeric type (can be float or int) */
   export type Numeric = Float | Int;
-  /** Point2d type (contains an x and a y coordinate) */
 
+  /** Point2d type (contains an x and a y coordinate) */
   export type Point2d = string[] | number[] | { x: number, y: number };
   /** Point3d type (contains x,y,and z coordinates) */
   export type Point3d = string[] | number[] | { x: number, y: number, z: number };
-  /** Point type (can be a 2d or 3d point) */
 
+  /** Point type (can be a 2d or 3d point) */
   export type Point = Point2d | Point3d;
 
   /** CompositePart (ties a raw value of a specific type to a display string) */
@@ -53,6 +53,11 @@ export namespace Primitives {
     parts: CompositePart[];
   }
 
-  // eslint-disable-next-line
-  export type Value = Text | String | ShortDate | Boolean | Numeric | Enum | Point | Composite;
+  /** Instance key type. */
+  export interface InstanceKey {
+    className: string;
+    id: Id64String;
+  }
+
+  export type Value = Text | String | ShortDate | Boolean | Numeric | Enum | Point | Composite | InstanceKey;
 }

@@ -28,7 +28,7 @@ export interface ViewDetailsProps {
   clip?: ClipVectorProps;
 }
 
-/** Describes the orientation of the grid displayed within a viewport.
+/** Describes the orientation of the grid displayed within a [Viewport]($frontend).
  * @public
  */
 export enum GridOrientationType {
@@ -59,6 +59,9 @@ export class ViewDetails {
   /** @internal */
   protected readonly _json: ViewDetailsProps;
   private _clipVector?: ClipVector;
+
+  /** Event raised just before assignment to the [[clipVector]] property. */
+  public readonly onClipVectorChanged = new BeEvent<(newClip: ClipVector | undefined) => void>();
 
   /** @internal */
   public constructor(jsonProperties: { viewDetails?: ViewDetailsProps }) {
@@ -130,17 +133,21 @@ export class ViewDetails {
     return this._clipVector.isValid ? this._clipVector : undefined;
   }
   public set clipVector(clip: ClipVector | undefined) {
+    if (!clip)
+      clip = ClipVector.createEmpty();
+
+    this.onClipVectorChanged.raiseEvent(clip.isValid ? clip : undefined);
     this._clipVector = clip;
-    if (undefined !== clip && clip.isValid)
+    if (clip.isValid)
       this._json.clip = clip.toJSON();
     else
-      this._json.clip = undefined;
+      delete this._json.clip;
   }
 
   /** Returns the internal JSON representation. This is *not* a copy.
    * @internal
    */
-  public getJSON(): ViewDetailsProps {
+  public getJSON(): Readonly<ViewDetailsProps> {
     return this._json;
   }
 }
@@ -154,6 +161,11 @@ export class ViewDetails3d extends ViewDetails {
   private get _json3d(): ViewDetails3dProps {
     return this._json as ViewDetails3dProps;
   }
+
+  /** Event raised when just before assignment to the [[modelClipGroups]] property.
+   * @alpha
+   */
+  public readonly onModelClipGroupsChanged = new BeEvent<(newGroups: ModelClipGroups) => void>();
 
   /** @internal */
   public constructor(jsonProperties: { viewDetails?: ViewDetails3dProps }) {
@@ -183,18 +195,15 @@ export class ViewDetails3d extends ViewDetails {
     return this._modelClipGroups;
   }
   public set modelClipGroups(groups: ModelClipGroups) {
+    this.onModelClipGroupsChanged.raiseEvent(groups);
     this._modelClipGroups = groups;
     this._json3d.modelClipGroups = groups.toJSON();
-    this.onModelClipGroupsChanged.raiseEvent(this);
   }
-
-  /** @internal */
-  public readonly onModelClipGroupsChanged = new BeEvent<(details: ViewDetails3d) => void>();
 
   /** Returns the internal JSON representation. This is *not* a copy.
    * @internal
    */
-  public getJSON(): ViewDetails3dProps {
+  public getJSON(): Readonly<ViewDetails3dProps> {
     return this._json3d;
   }
 }

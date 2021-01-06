@@ -13,6 +13,7 @@ import { UiDataProvider } from "../ui-abstract/dialogs/UiDataProvider";
 import { StandardTypeNames } from "../ui-abstract/properties/StandardTypeNames";
 import { DialogLayoutDataProvider } from "../ui-abstract/dialogs/UiLayoutDataProvider";
 import { DialogItem, DialogPropertySyncItem } from "../ui-abstract/dialogs/DialogItem";
+import { AccuDrawUiAdmin } from "../ui-abstract/accudraw/AccuDrawUiAdmin";
 
 describe("UiAdmin", () => {
 
@@ -211,4 +212,11 @@ describe("UiAdmin", () => {
     expect(uiAdmin.openDialog(new TestDialogDynamicUiDataProvider(), "test-title", true, "test-modal")).to.be.false;
     expect(uiAdmin.closeDialog("test-modal")).to.be.false;
   });
+
+  it("get set AccuDraw Ui Admin", () => {
+    const v = new AccuDrawUiAdmin();
+    uiAdmin.accuDrawUi = v;
+    expect(uiAdmin.accuDrawUi === v);
+  });
+
 });

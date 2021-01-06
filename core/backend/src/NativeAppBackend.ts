@@ -89,11 +89,11 @@ export class NativeAppBackend {
    * Overrides internet connectivity value at backend.
    * @param _overridenBy Meta information about who intent to override the value.
    */
-  public static overrideInternetConnectivity(_overridenBy: OverriddenBy, status?: InternetConnectivityStatus): void {
+  public static overrideInternetConnectivity(_overridenBy: OverriddenBy, status: InternetConnectivityStatus): void {
     if (this._reachability !== status) {
       this._reachability = status;
       RequestGlobalOptions.online = this._reachability === InternetConnectivityStatus.Online;
-      this.onInternetConnectivityChanged.raiseEvent();
+      this.onInternetConnectivityChanged.raiseEvent(status);
     }
   }
 }

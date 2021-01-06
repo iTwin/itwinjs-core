@@ -16,7 +16,7 @@ import { BentleyCloudRpcManager, ElectronRpcConfiguration, ElectronRpcManager, R
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
 import { EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
-import * as testCommands from "./EditCommand.test";
+import * as testCommands from "./TestEditCommands";
 
 /* eslint-disable no-console */
 

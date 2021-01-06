@@ -1,6 +1,6 @@
 {
   "name": "@bentley/linear-referencing-backend",
-  "version": "2.11.0-dev.15",
+  "version": "2.11.0-dev.33",
   "main": "lib/linear-referencing-backend.js",
   "typings": "lib/linear-referencing-backend",
   "license": "MIT",
@@ -15,7 +15,7 @@
     "cover": "nyc npm test",
     "docs": "betools docs --includes=../../../generated-docs/extract --json=../../../generated-docs/domains/linear-referencing-backend/file.json --tsIndexFile=./linear-referencing-backend.ts --onlyJson",
     "extract-api": "betools extract-api --entry=linear-referencing-backend",
-    "lint": "eslint -f visualstudio --max-warnings 0 ./src/**/*.ts 1>&2",
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "betools test"
   },
   "repository": {
@@ -32,22 +32,22 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.11.0-dev.15",
-    "@bentley/imodeljs-backend": "^2.11.0-dev.15",
-    "@bentley/imodeljs-common": "^2.11.0-dev.15",
-    "@bentley/linear-referencing-common": "^2.11.0-dev.15"
+    "@bentley/bentleyjs-core": "^2.11.0-dev.33",
+    "@bentley/imodeljs-backend": "^2.11.0-dev.33",
+    "@bentley/imodeljs-common": "^2.11.0-dev.33",
+    "@bentley/linear-referencing-common": "^2.11.0-dev.33"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.11.0-dev.15",
-    "@bentley/build-tools": "2.11.0-dev.15",
-    "@bentley/eslint-plugin": "2.11.0-dev.15",
-    "@bentley/imodeljs-backend": "2.11.0-dev.15",
-    "@bentley/imodeljs-common": "2.11.0-dev.15",
-    "@bentley/linear-referencing-common": "2.11.0-dev.15",
+    "@bentley/bentleyjs-core": "2.11.0-dev.33",
+    "@bentley/build-tools": "2.11.0-dev.33",
+    "@bentley/eslint-plugin": "2.11.0-dev.33",
+    "@bentley/imodeljs-backend": "2.11.0-dev.33",
+    "@bentley/imodeljs-common": "2.11.0-dev.33",
+    "@bentley/linear-referencing-common": "2.11.0-dev.33",
     "@types/chai": "^4.1.4",
     "@types/fs-extra": "^4.0.7",
     "@types/mocha": "^5.2.5",

@@ -11,8 +11,10 @@
  */
 export type Listener = (...arg: any[]) => void;
 
-class EventContext {
-  constructor(public listener: Listener | undefined, public scope: any, public once: boolean) { }
+interface EventContext {
+  listener: Listener | undefined;
+  scope: any;
+  once: boolean;
 }
 
 /**
@@ -36,7 +38,7 @@ export class BeEvent<T extends Listener> {
    * @see [[BeEvent.raiseEvent]], [[BeEvent.removeListener]]
    */
   public addListener(listener: T, scope?: any): () => void {
-    this._listeners.push(new EventContext(listener, scope, false));
+    this._listeners.push({ listener, scope, once: false });
     return () => this.removeListener(listener, scope);
   }
 
@@ -48,7 +50,7 @@ export class BeEvent<T extends Listener> {
    * @see [[BeEvent.raiseEvent]], [[BeEvent.removeListener]]
    */
   public addOnce(listener: T, scope?: any): () => void {
-    this._listeners.push(new EventContext(listener, scope, true));
+    this._listeners.push({ listener, scope, once: true });
     return () => this.removeListener(listener, scope);
   }
 
@@ -81,7 +83,7 @@ export class BeEvent<T extends Listener> {
    * @param args This method takes any number of parameters and passes them through to the listeners.
    * @see [[BeEvent.removeListener]], [[BeEvent.addListener]]
    */
-  public raiseEvent(...args: any[]) {
+  public raiseEvent(...args: Parameters<T>) {
     this._insideRaiseEvent = true;
 
     const listeners = this._listeners;
@@ -102,9 +104,8 @@ export class BeEvent<T extends Listener> {
     }
 
     // if we had dropped listeners, remove them now
-    if (dropped) {
+    if (dropped)
       this._listeners = this._listeners.filter((ctx) => ctx.listener !== undefined);
-    }
 
     this._insideRaiseEvent = false;
   }
@@ -130,7 +131,6 @@ export class BeEvent<T extends Listener> {
  * @beta Right name? Right package?
  */
 export class BeUiEvent<TEventArgs> extends BeEvent<(args: TEventArgs) => void> {
-
   /** Raises event with single strongly typed argument. */
   public emit(args: TEventArgs): void { this.raiseEvent(args); }
 }

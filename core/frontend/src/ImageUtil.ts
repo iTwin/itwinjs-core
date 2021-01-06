@@ -204,7 +204,9 @@ export async function imageElementFromUrl(url: string): Promise<HTMLImageElement
   return new Promise((resolve: (image: HTMLImageElement) => void, reject) => {
     const image = new Image();
     image.onload = () => resolve(image);
-    image.onerror = reject;
+
+    // The "error" produced by Image is not an Error. It looks like an Event, but isn't one.
+    image.onerror = () => reject(new Error("Failed to create image from url"));
     image.src = url;
   });
 }

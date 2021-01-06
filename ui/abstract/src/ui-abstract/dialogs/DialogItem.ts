@@ -61,7 +61,6 @@ export interface DialogPropertySyncItem extends DialogPropertyItem {
   readonly property?: PropertyDescription;
 }
 
-
 /** [[DialogProperty]] is generic helper class that assist working with properties used by UiLayoutDataProvider implementations (i.e. Tool Settings and Dynamic Dialogs).
  * @beta
  */

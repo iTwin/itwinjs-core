@@ -224,7 +224,6 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    */
   public bindArray(parameter: number | string, val: any[]): void { this.getBinder(parameter).bindArray(val); }
 
-
   public bindIdSet(parameter: number | string, val: Id64String[]): void { this.getBinder(parameter).bindIdSet(val); }
   /**
    * Gets a binder to bind a value for an ECSQL parameter
