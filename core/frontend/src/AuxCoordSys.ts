@@ -15,7 +15,8 @@ import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { DecorateContext } from "./ViewContext";
-import { CoordSystem, Viewport } from "./Viewport";
+import { CoordSystem } from "./CoordSystem";
+import { Viewport } from "./Viewport";
 import { ViewState } from "./ViewState";
 
 /** @public */

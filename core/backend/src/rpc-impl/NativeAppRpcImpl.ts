@@ -41,7 +41,7 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
     return NativeAppBackend.checkInternetConnectivity();
   }
 
-  public async overrideInternetConnectivity(by: OverriddenBy, status?: InternetConnectivityStatus): Promise<void> {
+  public async overrideInternetConnectivity(by: OverriddenBy, status: InternetConnectivityStatus): Promise<void> {
     NativeAppBackend.overrideInternetConnectivity(by, status);
   }
 

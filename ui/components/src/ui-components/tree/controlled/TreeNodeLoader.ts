@@ -16,8 +16,9 @@ import { map } from "rxjs/internal/operators/map";
 import { publish } from "rxjs/internal/operators/publish";
 import { refCount } from "rxjs/internal/operators/refCount";
 import { toArray } from "rxjs/internal/operators/toArray";
-import { BeUiEvent, IDisposable } from "@bentley/bentleyjs-core";
+import { BeEvent, IDisposable } from "@bentley/bentleyjs-core";
 import { UiError } from "@bentley/ui-abstract";
+import { scheduleSubscription, SubscriptionScheduler } from "../../common/SubscriptionScheduler";
 import { UiComponents } from "../../UiComponents";
 import {
   ImmediatelyLoadedTreeNodeItem, isTreeDataProviderInterface, isTreeDataProviderMethod, isTreeDataProviderPromise, isTreeDataProviderRaw,
@@ -26,7 +27,6 @@ import {
 import { Observable } from "./Observable";
 import { isTreeModelNode, MutableTreeModel, TreeModelNode, TreeModelNodeInput, TreeModelRootNode, TreeNodeItemData } from "./TreeModel";
 import { TreeModelSource } from "./TreeModelSource";
-import { scheduleSubscription, SubscriptionScheduler } from "../../common/SubscriptionScheduler";
 
 /**
  * Data structure that describes node load result
@@ -408,7 +408,7 @@ export class TreeDataSource implements IDisposable {
   private _dataProvider: TreeDataProvider;
   private _disposeTreeNodesChangedListener?: () => void;
 
-  public readonly onItemsChanged = new BeUiEvent<TreeDataChangesListener>();
+  public readonly onItemsChanged = new BeEvent<TreeDataChangesListener>();
 
   constructor(dataProvider: TreeDataProvider) {
     this._dataProvider = dataProvider;

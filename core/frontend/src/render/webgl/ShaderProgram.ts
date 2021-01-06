@@ -187,6 +187,7 @@ export class ShaderProgram implements WebGLDisposable {
 
     return shader;
   }
+
   private linkProgram(vert: WebGLShader, frag: WebGLShader): boolean {
     assert(undefined !== this.glProgram);
     if (undefined === this._glProgram || null === this._glProgram) // because WebGL APIs used Thing|null, not Thing|undefined...
@@ -217,6 +218,7 @@ export class ShaderProgram implements WebGLDisposable {
 
     return true;
   }
+
   public compile(forUse: boolean = false): CompileStatus {
     if (System.instance.options.debugShaders && forUse && this._status === CompileStatus.Success)
       this.setDebugShaderUsage();

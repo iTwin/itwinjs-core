@@ -9,6 +9,9 @@ import { expect } from "chai";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
+import { Loop } from "../../curve/Loop";
+import { ParityRegion } from "../../curve/ParityRegion";
+import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
@@ -16,6 +19,7 @@ import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Point3dArray } from "../../geometry3d/PointHelpers";
 import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
+import { IndexedPolyface } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { Sample } from "../../serialization/GeometrySamples";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph";
@@ -674,5 +678,155 @@ it("SingleFaceTriangulation", () => {
     dy = 0.0;
   }
   GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "SingleFaceTriangulation");
+  expect(ck.getNumErrors()).equals(0);
+});
+
+/**
+ *
+ */
+it("SingleFaceTriangulation", () => {
+  const ck = new Checker();
+  const allGeometry: GeometryQuery[] = [];
+  const outerCurvePts = [
+    Point3d.create(2458.903271, -125, 270.731123),
+    Point3d.create(1910.868011, -125, 368.849255),
+    Point3d.create(1357.90124, -125, 433.637879),
+    Point3d.create(802.028043, -125, 464.859726),
+    Point3d.create(245.284146, -125, 462.400454),
+    Point3d.create(-310.291535, -125, 426.269069),
+    Point3d.create(-862.664364, -125, 356.597893),
+    Point3d.create(-1409.811432, -125, 253.642076),
+    Point3d.create(-1949.728971, -125, 117.778665),
+    Point3d.create(-2480.439685, -125, -50.494779),
+    Point3d.create(-3000, -125, -250.562004),
+    Point3d.create(-3000, -125, -467.932),
+    Point3d.create(-2446.268881, -125, -250.521763),
+    Point3d.create(-1879.384827, -125, -70.167019),
+    Point3d.create(-1301.824531, -125, 72.344269),
+    Point3d.create(-716.111326, -125, 176.389477),
+    Point3d.create(-124.804168, -125, 241.514035),
+    Point3d.create(469.51355, -125, 267.433418),
+    Point3d.create(1064.245279, -125, 254.034385),
+    Point3d.create(1656.792663, -125, 201.375475),
+    Point3d.create(2244.56689, -125, 109.686752),
+    Point3d.create(2825, -125, -20.631198),
+    Point3d.create(2912.5, -125, -20.631198),
+    Point3d.create(2912.5, -125, 32.068),
+    Point3d.create(3000, -125, 32.068),
+    Point3d.create(3000, -125, 139.642813),
+    Point3d.create(2458.903271, -125, 270.731123),
+  ];
+  console.log("outerCurvePts = ", outerCurvePts.length / 3);
+
+  const innerCurvePts = [Point3d.create(-1515.307337, -125, 55.112819),
+  Point3d.create(-1528.284271, -125, 63.783729),
+  Point3d.create(-1536.955181, -125, 76.760663),
+  Point3d.create(-1540, -125, 92.068),
+  Point3d.create(-1536.955181, -125, 107.375337),
+  Point3d.create(-1528.284271, -125, 120.352271),
+  Point3d.create(-1515.307337, -125, 129.023181),
+  Point3d.create(-1500, -125, 132.068),
+  Point3d.create(-1484.692663, -125, 129.023181),
+  Point3d.create(-1471.715729, -125, 120.352271),
+  Point3d.create(-1463.044819, -125, 107.375337),
+  Point3d.create(-1460, -125, 92.068),
+  Point3d.create(-1463.044819, -125, 76.760663),
+  Point3d.create(-1471.715729, -125, 63.783729),
+  Point3d.create(-1484.692663, -125, 55.112819),
+  Point3d.create(-1500, -125, 52.068),
+  Point3d.create(-1515.307337, -125, 55.112819),
+  ];
+
+  // placement points for replicating the hole:
+  const placementA: Point3d = outerCurvePts[7].interpolate(0.65, outerCurvePts[15]);
+  const placementB: Point3d = outerCurvePts[15].interpolate(0.35, outerCurvePts[5]);
+  const extraPlacements = [placementA, placementB];
+  let x0 = 0;
+  let y0 = 0;
+
+  const parityRegion = ParityRegion.create();
+  const lsOuter = LineString3d.create(outerCurvePts);
+  const lsInner = LineString3d.create(innerCurvePts);
+
+  const outerLoop: Loop = Loop.create(lsOuter);
+  outerLoop.isInner = false;
+
+  const innerLoop: Loop = Loop.create(lsInner);
+  innerLoop.isInner = true;
+  parityRegion.tryAddChild(outerLoop);
+  parityRegion.tryAddChild(innerLoop);
+  const range = parityRegion.range();
+  const yStep = Math.max(range.yLength(), range.zLength());
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, outerCurvePts, x0, y0);
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, innerCurvePts, x0, y0);
+
+  const optionsEx = StrokeOptions.createForFacets();
+  const faceBuilderEx = PolyfaceBuilder.create(optionsEx);
+
+  faceBuilderEx.addTriangulatedRegion(parityRegion);
+  const pMesh1: IndexedPolyface = faceBuilderEx.claimPolyface();
+
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, pMesh1, x0, y0 += yStep);
+
+  y0 = 0;
+  x0 += range.xLength() * 2;
+  for (const placement of extraPlacements) {
+    const shift = innerCurvePts[0].vectorTo(placement);
+    const newInner = [];
+    for (const xyz0 of innerCurvePts)
+      newInner.push(xyz0.plus(shift));
+    const faceBuilder = PolyfaceBuilder.create(optionsEx);
+    parityRegion.tryAddChild(Loop.createPolygon(newInner));
+    faceBuilder.addTriangulatedRegion(parityRegion);
+    const meshA: IndexedPolyface = faceBuilder.claimPolyface();
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, meshA, x0, y0 += yStep);
+  }
+  /*
+    const rotateAroundX = Transform.createFixedPointAndMatrix(outerCurvePts[0], Matrix3d.createRotationAroundAxisIndex(AxisIndex.X, Angle.createDegrees(90)));
+    rotateAroundX.multiplyPoint3dArrayInPlace(outerCurvePts);
+    rotateAroundX.multiplyPoint3dArrayInPlace(innerCurvePts);
+    console.log({ areaA: PolygonOps.areaXY(outerCurvePts) });
+    console.log({ areaB: PolygonOps.areaXY(innerCurvePts) });
+
+    const graph1 = Triangulator.createTriangulatedGraphFromLoops([outerCurvePts, innerCurvePts]);
+    if (graph1) {
+      const mesh1 = PolyfaceBuilder.graphToPolyface(graph1);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh1, x0, y0 += yStep / 2);
+      for (let i = 0; i < 3; i++) {
+        Triangulator.flipTriangles(graph1);
+        const mesh2 = PolyfaceBuilder.graphToPolyface(graph1);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh2, x0, y0 += yStep / 2);
+      }
+
+    }
+  */
+
+  /*
+    0: -0.9843483101160521
+    1: -0.17623394784113658
+    2: 0
+    3: -0.17623394784113658
+    4: 0.9843483101160521
+    5: 0
+    6: 0
+    7: 0
+    8: -1
+  */
+  /*
+    const thetaRadians = Math.atan2(-0.17623394784113658, -0.9843483101160521);
+    const rotateAroundZ = Transform.createFixedPointAndMatrix(outerCurvePts[0], Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createRadians(thetaRadians)));
+
+    y0 = 0.0;
+    for (let step = 0; step < 10; step++) {
+      x0 += 2 * range.xLength();
+      rotateAroundZ.multiplyPoint3dArrayInPlace(outerCurvePts);
+      rotateAroundZ.multiplyPoint3dArrayInPlace(innerCurvePts);
+      testFullGraphRegularizeAndTriangulate(
+        ck, allGeometry,
+        x0, y0,
+        [outerCurvePts, innerCurvePts]);
+    }
+  */
+  GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "HoleInLargeFacet");
   expect(ck.getNumErrors()).equals(0);
 });

@@ -19,8 +19,10 @@ import { MessageBoxIconType, MessageBoxType } from "../NotificationManager";
 import { CanvasDecoration } from "../render/CanvasDecoration";
 import { IconSprites } from "../Sprites";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
-import { linePlaneIntersect, ScreenViewport, ViewChangeOptions, Viewport } from "../Viewport";
-import { ViewStatus } from "../ViewState";
+import { linePlaneIntersect } from "../LinePlaneIntersect";
+import { ViewChangeOptions } from "../ViewAnimation";
+import { ScreenViewport, Viewport } from "../Viewport";
+import { ViewStatus } from "../ViewStatus";
 import { IdleTool } from "./IdleTool";
 import { PrimitiveTool } from "./PrimitiveTool";
 import {
