@@ -16,7 +16,7 @@ import { getStableWidgetProps } from "../zones/Zone";
 
 /** Enum for StagePanel state.
  * @beta
- */
+ */
 export enum StagePanelState {
   Off,
   Minimized,
@@ -26,7 +26,7 @@ export enum StagePanelState {
 
 /** Panel State Changed Event Args interface.
  * @beta
- */
+ */
 export interface PanelStateChangedEventArgs {
   panelDef: StagePanelDef;
   panelState: StagePanelState;
@@ -34,7 +34,7 @@ export interface PanelStateChangedEventArgs {
 
 /** Widget State Changed Event class.
  * @beta
- */
+ */
 export class PanelStateChangedEvent extends UiEvent<PanelStateChangedEventArgs> { }
 
 /** @internal */
@@ -49,7 +49,7 @@ export class PanelSizeChangedEvent extends UiEvent<PanelSizeChangedEventArgs> { 
 /**
  * A StagePanelDef represents each Stage Panel within a Frontstage.
  * @beta
- */
+ */
 export class StagePanelDef extends WidgetHost {
   private _panelState = StagePanelState.Open;
   private _maxSizeSpec: StagePanelMaxSizeSpec | undefined;
@@ -153,6 +153,18 @@ export class StagePanelDef extends WidgetHost {
         this.addWidgetDef(widgetDef);
       });
     }
+  }
+
+  /** Gets the list of Widgets. */
+  public get widgetDefs(): ReadonlyArray<WidgetDef> {
+    if (this.panelZones) {
+      const widgetDefs = [];
+      for (const [, panelZone] of this.panelZones) {
+        widgetDefs.push(...panelZone.widgetDefs);
+      }
+      return widgetDefs;
+    }
+    return super.widgetDefs;
   }
 
   /** Finds a [[WidgetDef]] based on a given id */
