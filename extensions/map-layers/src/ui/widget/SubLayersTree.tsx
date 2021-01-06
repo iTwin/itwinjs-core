@@ -270,7 +270,6 @@ class SubLayerCheckboxHandler extends TreeEventHandler {
     }
   }
 
-
   /** Changes nodes checkboxes states until event is handled or handler is disposed */
   public onCheckboxStateChanged({ stateChanges }: TreeCheckboxStateChangeEventArgs) {
     // call base checkbox handling

@@ -13,7 +13,7 @@ const value1: DialogItemValue = { value: 3 };
 const value2: DialogItemValue = { value: 10 };
 const lockValue: DialogItemValue = { value: true };
 const buttonGroupValue: DialogItemValue = { value: "One" };
-const updatedDialogPropertyItem: DialogPropertyItem = {propertyName: "Item2", value: value1 };
+const updatedDialogPropertyItem: DialogPropertyItem = { propertyName: "Item2", value: value1 };
 
 const getItem1Description = (): PropertyDescription => {
   return {
@@ -142,7 +142,6 @@ describe("UiLayoutDataProvider", () => {
   });
 });
 
-
 class TestDialogDynamicUiDataProvider extends DialogLayoutDataProvider {
   /** Applies change of a single property - this is the default method used when property editors are dynamically generated. */
   public applyUiPropertyChange = (_updatedValue: DialogPropertySyncItem): void => {
@@ -176,15 +175,15 @@ describe("DialogLayoutDataProvider", () => {
     });
 
     it("should process changes", () => {
-      dialogSut.processChangesInUi ([updatedDialogPropertyItem]);
+      dialogSut.processChangesInUi([updatedDialogPropertyItem]);
       expect(dialogSut.items.length).to.be.eq(dialogItems.length);
       dialogSut.rows.should.not.be.empty;
     });
 
     it("should handle empty items", () => {
-      dialogSut.reloadDialogItems ();
-      dialogSut.reloadDialogItems (false);
-      dialogSut.fireDialogButtonsReloadEvent ();
+      dialogSut.reloadDialogItems();
+      dialogSut.reloadDialogItems(false);
+      dialogSut.fireDialogButtonsReloadEvent();
       expect(emptySut.rows.length).to.be.eq(0);
       expect(emptySut.items.length).to.be.eq(0);
       expect(emptySut.rows.length).to.be.eq(0);

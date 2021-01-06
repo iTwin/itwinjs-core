@@ -7,7 +7,7 @@
  * @module Tools
  */
 
-import { ColorDef, Hilite } from "@bentley/imodeljs-common";
+import { Camera, ColorDef, Hilite } from "@bentley/imodeljs-common";
 import { DrawingViewState, IModelApp, TileBoundingBoxes, Tool, Viewport } from "@bentley/imodeljs-frontend";
 import { parseArgs } from "./parseArgs";
 import { parseToggle } from "./parseToggle";
@@ -389,5 +389,43 @@ export class ToggleSectionDrawingSpatialViewTool extends ViewportToggleTool {
         });
       }
     }
+  }
+}
+
+/** Change the camera settings of the selected viewport.
+ * @beta
+ */
+export class ChangeCameraTool extends Tool {
+  public static get minArgs() { return 1; }
+  public static get maxArgs() { return 2; }
+  public static toolId = "ChangeCamera";
+
+  public run(camera?: Camera): boolean {
+    const vp = IModelApp.viewManager.selectedView;
+    if (camera && vp && vp.view.is3d()) {
+      const view = vp.view.clone();
+      view.camera.setFrom(camera);
+      vp.changeView(view);
+    }
+
+    return true;
+  }
+
+  public parseAndRun(...inArgs: string[]): boolean {
+    const vp = IModelApp.viewManager.selectedView;
+    if (!vp || !vp.view.is3d())
+      return false;
+
+    const camera = vp.view.camera.clone();
+    const args = parseArgs(inArgs);
+    const lens = args.getFloat("l");
+    if (undefined !== lens)
+      camera.lens.setDegrees(lens);
+
+    const focusDist = args.getFloat("d");
+    if (undefined !== focusDist)
+      camera.focusDist = focusDist;
+
+    return this.run(camera);
   }
 }

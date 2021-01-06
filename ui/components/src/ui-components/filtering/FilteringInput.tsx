@@ -167,32 +167,31 @@ export class FilteringInput extends React.PureComponent<FilteringInputProps, Fil
   };
 
   private _onInputChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if(this.state.searchStarted){
+    if (this.state.searchStarted) {
       this.props.onFilterCancel();
     }
-    this.setState({ searchText: e.target.value, searchStarted: false});
+    this.setState({ searchText: e.target.value, searchStarted: false });
   };
-
 
   /** @internal */
   public componentDidUpdate(prevProps: FilteringInputProps) {
-    if (FilteringInput.isDeprecatedProps(prevProps) && FilteringInput.isDeprecatedProps(this.props)){
+    if (FilteringInput.isDeprecatedProps(prevProps) && FilteringInput.isDeprecatedProps(this.props)) {
       // eslint-disable-next-line deprecation/deprecation
-      if (prevProps.filteringInProgress !== this.props.filteringInProgress){
+      if (prevProps.filteringInProgress !== this.props.filteringInProgress) {
         // eslint-disable-next-line deprecation/deprecation
         this.setState((_state, props) => (FilteringInput.isDeprecatedProps(props) ? { prevFilteringInProgress: props.filteringInProgress } : { prevFilteringInProgress: undefined }));
       }
       return;
     }
-    if(this.props.resultSelectorProps !== prevProps.resultSelectorProps){
+    if (this.props.resultSelectorProps !== prevProps.resultSelectorProps) {
       this.setState((state) => ({ resultSelectorKey: state.resultSelectorKey + 1 }));
     }
   }
 
-  public static getDerivedStateFromProps(nextProps: FilteringInputProps, prevState: FilteringInputState){
+  public static getDerivedStateFromProps(nextProps: FilteringInputProps, prevState: FilteringInputState) {
     // eslint-disable-next-line deprecation/deprecation
-    if (FilteringInput.isDeprecatedProps(nextProps) && !nextProps.filteringInProgress && prevState.prevFilteringInProgress){
-      return { searchStarted: true};
+    if (FilteringInput.isDeprecatedProps(nextProps) && !nextProps.filteringInProgress && prevState.prevFilteringInProgress) {
+      return { searchStarted: true };
     }
     return null;
   }
@@ -207,14 +206,13 @@ export class FilteringInput extends React.PureComponent<FilteringInputProps, Fil
   }
 
   private getStatus(props: FilteringInputProps) {
-    if(FilteringInput.isDeprecatedProps(props)){
+    if (FilteringInput.isDeprecatedProps(props)) {
       // eslint-disable-next-line deprecation/deprecation
       return (props.filteringInProgress ? FilteringInputStatus.FilteringInProgress :
         (this.state.searchStarted ? FilteringInputStatus.FilteringFinished : FilteringInputStatus.ReadyToFilter));
     }
     return props.status;
   }
-
 
   public render() {
     const status = this.getStatus(this.props);

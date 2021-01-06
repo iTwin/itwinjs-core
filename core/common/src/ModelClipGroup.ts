@@ -9,7 +9,6 @@
 import { Id64Array, Id64String } from "@bentley/bentleyjs-core";
 import { ClipVector, ClipVectorProps } from "@bentley/geometry-core";
 
-
 /** @internal */
 export interface ModelClipGroupProps {
   models?: Id64Array;
@@ -38,7 +37,7 @@ export class ModelClipGroup {
 
   /** Create a deep copy of this group. */
   public clone(): ModelClipGroup {
-    const models = this.models ? [ ...this.models ] : undefined;
+    const models = this.models ? [...this.models] : undefined;
     return new ModelClipGroup(models, this.clip?.clone());
   }
 
@@ -49,16 +48,16 @@ export class ModelClipGroup {
 
   /** @internal */
   public static fromJSON(props: ModelClipGroupProps): ModelClipGroup {
-    const models = props.models ? [ ...props.models ] : undefined;
+    const models = props.models ? [...props.models] : undefined;
     const clip = props.clip ? ClipVector.fromJSON(props.clip) : undefined;
     return new ModelClipGroup(models, undefined !== clip && clip.isValid ? clip : undefined);
   }
 
   /** @internal */
   public toJSON(): ModelClipGroupProps {
-    const props: ModelClipGroupProps = { };
+    const props: ModelClipGroupProps = {};
     if (this.models)
-      props.models = [ ...this.models ];
+      props.models = [...this.models];
 
     if (this.clip)
       props.clip = this.clip.toJSON();

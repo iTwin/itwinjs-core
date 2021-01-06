@@ -15,9 +15,7 @@ const testProjectName = "iModelJsIntegrationTest";
 const testIModelName = "ReadOnlyTest";
 
 chai.should();
-// Skipping this set of tests for now as there appears to be a race condition when multiple instances of this test are
-// being run at the same time causing the tests to fail.
-describe.skip("MapLayerSettingsService (#integration)", () => {
+describe("MapLayerSettingsService (#integration)", () => {
   let projectId: GuidString;
   let iModelId: GuidString;
   let requestContext: AuthorizedClientRequestContext;
@@ -52,12 +50,14 @@ describe.skip("MapLayerSettingsService (#integration)", () => {
     });
     chai.assert.isDefined(layer);
     let sources = await MapLayerSettingsService.getSourcesFromSettingsService(projectId, iModelId);
-    chai.expect(sources.length).to.be.equal(0);
+    let foundSource = sources.some((value) => { return value.name === testName; }); // expect not to find it bc we haven't stored yet.
+    chai.expect(foundSource).to.be.false;
     const success = await MapLayerSettingsService.storeSourceInSettingsService(layer!, false, projectId, iModelId);
     chai.assert.isTrue(success);
 
     sources = await MapLayerSettingsService.getSourcesFromSettingsService(projectId, iModelId);
-    chai.expect(sources.length).to.be.equal(1); // we've stored one setting
+    foundSource = sources.some((value) => { return value.name === testName; });
+    chai.expect(foundSource).to.be.true;
     const settingsResult: SettingsResult = await IModelApp.settings.deleteSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, testName, true, projectId);
     chai.expect(settingsResult.status).to.be.equal(SettingsStatus.Success);
   });

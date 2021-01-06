@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodelhub-client-tests",
+      "comment": "Fixed the tests to not delete random iModels",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodelhub-client-tests",
+  "email": "70565417+austeja-bentley@users.noreply.github.com"
+}
