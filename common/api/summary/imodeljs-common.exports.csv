@@ -476,6 +476,7 @@ alpha;RpcRoutingMap
 public;RpcRoutingToken
 public;RpcSerializedValue
 public;RpcSerializedValue
+beta;SchemaState
 beta;SectionDrawingLocationProps 
 beta;SectionDrawingProps 
 beta;SectionDrawingViewProps
@@ -505,7 +506,7 @@ public;SourceAndTarget
 beta;SpatialClassificationProps
 public;SpatialViewDefinitionProps 
 internal;class StandaloneIModelRpcInterface 
-beta;StandaloneOpenOptions = OpenDbKey & UpgradeOptions
+beta;StandaloneOpenOptions = OpenDbKey
 internal;StorageValue = string | number | boolean | null | Uint8Array
 public;SubCategoryAppearance
 public;SubCategoryAppearance
