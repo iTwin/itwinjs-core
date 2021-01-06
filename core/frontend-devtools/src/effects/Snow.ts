@@ -6,7 +6,7 @@
  * @module Effects
  */
 
-import { Point2d, Range1d } from "@bentley/geometry-core";
+import { Point2d, Range1d, Range2d, Vector2d } from "@bentley/geometry-core";
 import { ColorDef, GraphicParams } from "@bentley/imodeljs-common";
 import { DecorateContext,GraphicType, IModelApp, Tool, Viewport } from "@bentley/imodeljs-frontend";
 import { parseToggle } from "../tools/parseToggle";
@@ -16,8 +16,13 @@ function randomInteger(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+function randomNumber(min: number, max: number): number {
+  return Math.random() * (max - min) + min;
+}
+
 interface SnowParticle {
   position: Point2d;
+  velocity: Vector2d;
   size: number;
   transparency: number;
 }
@@ -25,15 +30,18 @@ interface SnowParticle {
 class SnowDecorator {
   public readonly viewport: Viewport;
   public readonly dispose: VoidFunction;
-  public numParticles = 500;
+  public numParticles = 1200;
   public readonly sizeRange = Range1d.createXX(1, 15);
   public readonly transparencyRange = Range1d.createXX(0, 200);
+  public readonly velocityRange = new Range2d(-20, 20, 20, 70);
   private readonly _dimensions: Point2d;
   private readonly _particles: SnowParticle[] = [];
+  private _lastUpdateTime: number;
 
   private constructor(viewport: Viewport) {
     this.viewport = viewport;
     this._dimensions = new Point2d(viewport.viewRect.width, viewport.viewRect.height);
+    this._lastUpdateTime = Date.now();
 
     const removeDecorator = IModelApp.viewManager.addDecorator(this);
     const removeOnRender = viewport.onRender.addListener(() => viewport.invalidateDecorations());
@@ -48,17 +56,24 @@ class SnowDecorator {
 
     SnowDecorator._decorators.set(viewport, this);
 
-    for (let i = 0; i < this.numParticles; i++)
-      this._particles.push({ position: new Point2d(0, 0), size: 1, transparency: 0 });
-
-    this.updateParticles();
+    for (let i = 0; i < this.numParticles; i++) {
+      this._particles.push({
+        position: new Point2d(randomInteger(0, this._dimensions.x), randomInteger(0, this._dimensions.y)),
+        velocity: new Vector2d(randomNumber(this.velocityRange.low.x, this.velocityRange.high.x), randomNumber(this.velocityRange.low.y, this.velocityRange.high.y)),
+        size: randomInteger(this.sizeRange.low, this.sizeRange.high),
+        transparency: randomInteger(this.transparencyRange.low, this.transparencyRange.high),
+      });
+    }
   }
 
   public decorate(context: DecorateContext): void {
     if (context.viewport !== this.viewport)
       return;
 
-    this.updateParticles();
+    const now = Date.now();
+    const deltaMillis = now - this._lastUpdateTime;
+    this._lastUpdateTime = now;
+    this.updateParticles(deltaMillis / 1000);
 
     const params = new GraphicParams();
     params.lineColor = ColorDef.white;
@@ -76,12 +91,17 @@ class SnowDecorator {
     context.addDecorationFromBuilder(builder);
   }
 
-  private updateParticles(): void {
+  private updateParticles(timeDelta: number): void {
     for (const particle of this._particles) {
-      particle.position.x = randomInteger(0, this._dimensions.x);
-      particle.position.y = randomInteger(0, this._dimensions.y);
-      particle.size = randomInteger(this.sizeRange.low, this.sizeRange.high);
-      particle.transparency = randomInteger(this.transparencyRange.low, this.transparencyRange.high);
+      particle.position.y += particle.velocity.y * timeDelta;
+      if (particle.position.y > this._dimensions.y)
+        particle.position.y = 0;
+
+      particle.position.x += particle.velocity.x * timeDelta;
+      if (particle.position.x > this._dimensions.x)
+        particle.position.x = 0;
+      else if (particle.position.x < 0)
+        particle.position.x = this._dimensions.x;
     }
   }
 
