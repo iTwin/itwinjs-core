@@ -6,7 +6,7 @@ import { BentleyLoggerCategory, Config, Logger, LogLevel } from "@bentley/bentle
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { IModelJsExpressServer } from "@bentley/express-server";
 import { IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
-import { BackendLoggerCategory, IModelHostConfiguration, NativeAppBackend, NativeLoggerCategory } from "@bentley/imodeljs-backend";
+import { BackendIpc, BackendLoggerCategory, IModelHostConfiguration, NativeAppBackend, NativeLoggerCategory } from "@bentley/imodeljs-backend";
 import { BentleyCloudRpcManager, ElectronRpcConfiguration, ElectronRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
 import { ITwinClientLoggerCategory } from "@bentley/itwin-client";
 // Sets up certa to allow a method on the frontend to get an access token
