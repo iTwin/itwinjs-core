@@ -50,9 +50,7 @@ class SnowDecorator {
   public readonly velocityRange = new Range2d(-25, 30, 25, 90);
   /** Range from which to randomly select an acceleration to apply to each particle's velocity each frame, in pixels per second squared, to simulate wind. */
   public readonly accelerationRange = new Range2d(-1, -0.25, 1, 0.25);
-  /** The initial width and height of the viewport, from which we randomly select each particle's initial position.
-   * Note: This example does not react when the viewport's dimensions change.
-   */
+  /** The initial width and height of the viewport, from which we randomly select each particle's initial position. */
   private readonly _dimensions: Point2d;
   /** The list of particles being drawn. */
   private readonly _particles: SnowParticle[] = [];
