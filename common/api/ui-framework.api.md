@@ -3088,7 +3088,7 @@ export interface IVisibilityHandler extends IDisposable {
     // (undocumented)
     getVisibilityStatus(node: TreeNodeItem, nodeKey: NodeKey): VisibilityStatus | Promise<VisibilityStatus>;
     // (undocumented)
-    onVisibilityChange?: () => void;
+    onVisibilityChange: BeEvent<VisibilityChangeListener>;
 }
 
 // @public
@@ -3747,15 +3747,12 @@ export class ModelsVisibilityHandler implements IVisibilityHandler {
     protected getSubjectNodeVisibility(ids: Id64String[], node: TreeNodeItem): Promise<VisibilityStatus>;
     getVisibilityStatus(node: TreeNodeItem, nodeKey: NodeKey): VisibilityStatus | Promise<VisibilityStatus>;
     // (undocumented)
-    get onVisibilityChange(): (() => void) | undefined;
-    set onVisibilityChange(callback: (() => void) | undefined);
+    onVisibilityChange: BeEvent<VisibilityChangeListener>;
     setFilteredDataProvider(provider: IPresentationTreeDataProvider | undefined): void;
     }
 
 // @alpha
 export interface ModelsVisibilityHandlerProps {
-    // (undocumented)
-    onVisibilityChange?: () => void;
     // (undocumented)
     rulesetId: string;
     // (undocumented)
@@ -6525,6 +6522,9 @@ export class ViewUtilities {
     static viewSupportsCamera(viewport: ScreenViewport): boolean;
 }
 
+// @alpha
+export type VisibilityChangeListener = (nodeIds?: string[]) => void;
+
 // @beta
 export class VisibilityComponent extends React.Component<VisibilityComponentProps, VisibilityTreeState> {
     constructor(props: any);
@@ -6574,7 +6574,7 @@ export interface VisibilityStatus {
     // (undocumented)
     isDisabled?: boolean;
     // (undocumented)
-    isDisplayed: boolean;
+    state: "visible" | "partial" | "hidden";
     // (undocumented)
     tooltip?: string;
 }
