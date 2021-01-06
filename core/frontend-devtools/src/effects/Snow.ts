@@ -26,7 +26,7 @@ class SnowDecorator {
   public readonly viewport: Viewport;
   public readonly dispose: VoidFunction;
   public numParticles = 500;
-  public readonly sizeRange = Range1d.createXX(1, 30);
+  public readonly sizeRange = Range1d.createXX(1, 15);
   public readonly transparencyRange = Range1d.createXX(0, 200);
   private readonly _dimensions: Point2d;
   private readonly _particles: SnowParticle[] = [];
@@ -62,7 +62,10 @@ class SnowDecorator {
 
     const params = new GraphicParams();
     params.lineColor = ColorDef.white;
+
     const builder = context.createGraphicBuilder(GraphicType.ViewOverlay);
+    builder.preserveOrder = false;
+
     for (const particle of this._particles) {
       params.setLineTransparency(particle.transparency);
       params.rasterWidth = particle.size;
