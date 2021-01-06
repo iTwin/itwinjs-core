@@ -6570,21 +6570,11 @@ export interface VisibilityComponentProps {
 }
 
 // @alpha
-export enum VisibilityState {
-    // (undocumented)
-    Hidden = 2,
-    // (undocumented)
-    PartiallyVisible = 1,
-    // (undocumented)
-    Visible = 0
-}
-
-// @alpha
 export interface VisibilityStatus {
     // (undocumented)
     isDisabled?: boolean;
     // (undocumented)
-    state: VisibilityState;
+    state: "visible" | "partial" | "hidden";
     // (undocumented)
     tooltip?: string;
 }

@@ -17,7 +17,7 @@ import { TreeDataChangesListener, TreeNodeItem } from "@bentley/ui-components";
 import { fireEvent, render, waitForElement } from "@testing-library/react";
 import { CategoryTree, toggleAllCategories } from "../../../ui-framework/imodel-components/category-tree/CategoriesTree";
 import { CategoryVisibilityHandler } from "../../../ui-framework/imodel-components/category-tree/CategoryVisibilityHandler";
-import { VisibilityChangeListener, VisibilityState } from "../../../ui-framework/imodel-components/VisibilityTreeEventHandler";
+import { VisibilityChangeListener } from "../../../ui-framework/imodel-components/VisibilityTreeEventHandler";
 import TestUtils from "../../TestUtils";
 
 describe("CategoryTree", () => {
@@ -100,7 +100,7 @@ describe("CategoryTree", () => {
       };
 
       resetVisibilityHandlerMock();
-      visibilityHandler.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: VisibilityState.Visible, isDisabled: false }));
+      visibilityHandler.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: "visible", isDisabled: false }));
     });
 
     const setupDataProvider = (nodes: TreeNodeItem[]) => {
@@ -171,7 +171,7 @@ describe("CategoryTree", () => {
     it("renders checked checkbox if category is visible", async () => {
       setupDataProvider([{ id: "test", label: PropertyRecord.fromString("test-node") }]);
       resetVisibilityHandlerMock();
-      visibilityHandler.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: VisibilityState.Visible, isDisabled: false }));
+      visibilityHandler.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: "visible", isDisabled: false }));
       const result = render(
         <CategoryTree
           viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object}
@@ -187,7 +187,7 @@ describe("CategoryTree", () => {
       it("disables category when enabled category checkbox is unchecked", async () => {
         setupDataProvider([{ id: "test", label: PropertyRecord.fromString("test-node") }]);
         resetVisibilityHandlerMock();
-        visibilityHandler.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: VisibilityState.Visible, isDisabled: false }));
+        visibilityHandler.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: "visible", isDisabled: false }));
         visibilityHandler.setup(async (x) => x.changeVisibility(moq.It.isAny(), moq.It.isAny(), false)).returns(async () => { });
         const result = render(
           <CategoryTree
@@ -203,7 +203,7 @@ describe("CategoryTree", () => {
       it("enabled category when disabled category checkbox is unchecked", async () => {
         setupDataProvider([{ id: "test", label: PropertyRecord.fromString("test-node") }]);
         resetVisibilityHandlerMock();
-        visibilityHandler.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: VisibilityState.Hidden, isDisabled: false }));
+        visibilityHandler.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: "hidden", isDisabled: false }));
         visibilityHandler.setup(async (x) => x.changeVisibility(moq.It.isAny(), moq.It.isAny(), true)).returns(async () => { });
         const result = render(
           <CategoryTree
@@ -243,7 +243,7 @@ describe("CategoryTree", () => {
 
       it("renders checked checkbox if subcategory is enabled", async () => {
         resetVisibilityHandlerMock();
-        visibilityHandler.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: VisibilityState.Visible, isDisabled: false }));
+        visibilityHandler.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: "visible", isDisabled: false }));
         const result = render(
           <CategoryTree
             viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object}
@@ -256,7 +256,7 @@ describe("CategoryTree", () => {
 
       it("disables subCategory when enabled subCategory checkbox is unchecked", async () => {
         resetVisibilityHandlerMock();
-        visibilityHandler.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: VisibilityState.Visible, isDisabled: false }));
+        visibilityHandler.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: "visible", isDisabled: false }));
         visibilityHandler.setup(async (x) => x.changeVisibility(moq.It.isAny(), moq.It.isAny(), false)).returns(async () => { });
         const result = render(
           <CategoryTree
@@ -271,7 +271,7 @@ describe("CategoryTree", () => {
 
       it("enabled subCategory when disabled subCategory checkbox is checked", async () => {
         resetVisibilityHandlerMock();
-        visibilityHandler.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: VisibilityState.Hidden, isDisabled: false }));
+        visibilityHandler.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: "hidden", isDisabled: false }));
         visibilityHandler.setup(async (x) => x.changeVisibility(moq.It.isAny(), moq.It.isAny(), true)).returns(async () => { });
         const result = render(
           <CategoryTree
@@ -291,7 +291,7 @@ describe("CategoryTree", () => {
       beforeEach(() => {
         resetVisibilityHandlerMock();
         dataProvider.getNodeKey = (node: TreeNodeItem) => (node as any)["__presentation-components/key"];
-        visibilityHandler.setup(async (x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ state: VisibilityState.Hidden }));
+        visibilityHandler.setup(async (x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ state: "hidden" }));
       });
 
       it("filters nodes", async () => {

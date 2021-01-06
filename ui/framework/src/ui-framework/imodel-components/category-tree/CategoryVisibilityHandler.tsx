@@ -10,7 +10,7 @@ import * as React from "react";
 import { IModelConnection, PerModelCategoryVisibility, ViewManager, Viewport } from "@bentley/imodeljs-frontend";
 import { NodeKey } from "@bentley/presentation-common";
 import { TreeNodeItem, useAsyncValue } from "@bentley/ui-components";
-import { IVisibilityHandler, VisibilityChangeListener, VisibilityState, VisibilityStatus } from "../VisibilityTreeEventHandler";
+import { IVisibilityHandler, VisibilityChangeListener, VisibilityStatus } from "../VisibilityTreeEventHandler";
 import { BeEvent } from "@bentley/bentleyjs-core";
 
 /**
@@ -122,19 +122,19 @@ export class CategoryVisibilityHandler implements IVisibilityHandler {
     CategoryVisibilityHandler.enableCategory(this._viewManager, this._imodel, [instanceId], shouldDisplay, true);
   }
 
-  public getSubCategoryVisibility(id: string): VisibilityState {
+  public getSubCategoryVisibility(id: string) {
     const parentItem = this.getParent(id);
     if (!parentItem || !this._activeView)
-      return VisibilityState.Hidden;
+      return "hidden";
 
     const isVisible = this._activeView.view.viewsCategory(parentItem.key) && this._activeView.isSubCategoryVisible(id);
-    return isVisible ? VisibilityState.Visible : VisibilityState.Hidden;
+    return isVisible ? "visible" : "hidden";
   }
 
-  public getCategoryVisibility(id: string): VisibilityState {
+  public getCategoryVisibility(id: string) {
     if (!this._activeView)
-      return VisibilityState.Hidden;
-    return this._activeView.view.viewsCategory(id) ? VisibilityState.Visible : VisibilityState.Hidden;
+      return "hidden";
+    return this._activeView.view.viewsCategory(id) ? "visible" : "hidden";
   }
 
   public getParent(key: string): Category | undefined {

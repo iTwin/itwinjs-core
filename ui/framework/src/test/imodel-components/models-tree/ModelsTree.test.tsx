@@ -29,7 +29,7 @@ import {
   ModelsTree, ModelsTreeNodeType, ModelsVisibilityHandler, ModelsVisibilityHandlerProps, RULESET_MODELS, RULESET_MODELS_GROUPED_BY_CLASS,
 } from "../../../ui-framework";
 import TestUtils from "../../TestUtils";
-import { VisibilityChangeListener, VisibilityState } from "../../../ui-framework/imodel-components/VisibilityTreeEventHandler";
+import { VisibilityChangeListener } from "../../../ui-framework/imodel-components/VisibilityTreeEventHandler";
 
 describe("ModelsTree", () => {
 
@@ -186,7 +186,7 @@ describe("ModelsTree", () => {
 
       it("should match snapshot", async () => {
         setupDataProvider([{ id: "test", label: PropertyRecord.fromString("test-node"), isCheckboxVisible: true }]);
-        visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ state: VisibilityState.Hidden }));
+        visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: "hidden" }));
         const result = render(<ModelsTree iModel={imodelMock.object} dataProvider={dataProvider} modelsVisibilityHandler={visibilityHandlerMock.object} />);
         await waitForElement(() => result.getByText("test-node"), { container: result.container });
         expect(result.baseElement).to.matchSnapshot();
@@ -201,7 +201,7 @@ describe("ModelsTree", () => {
 
       it("renders nodes as unchecked when they're not displayed", async () => {
         setupDataProviderForEachNodeType();
-        visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ state: VisibilityState.Hidden }));
+        visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: "hidden" }));
 
         const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />);
         await waitForElement(() => result.getByText("model"));
@@ -212,7 +212,7 @@ describe("ModelsTree", () => {
 
       it("renders nodes as checked when they're displayed", async () => {
         setupDataProviderForEachNodeType();
-        visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ state: VisibilityState.Visible }));
+        visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: "visible" }));
 
         const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />);
         await waitForElement(() => result.getByText("model"));
@@ -225,7 +225,7 @@ describe("ModelsTree", () => {
         const node = createModelNode();
         setupDataProvider([node]);
 
-        visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: VisibilityState.Hidden, isDisabled: false })).verifiable(moq.Times.exactly(3));
+        visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: "hidden", isDisabled: false })).verifiable(moq.Times.exactly(3));
         const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />);
         await waitForElement(() => {
           const renderedNode = result.getByTestId("tree-node");
@@ -236,7 +236,7 @@ describe("ModelsTree", () => {
         visibilityHandlerMock.verifyAll();
 
         visibilityHandlerMock.reset();
-        visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: VisibilityState.Visible, isDisabled: false })).verifiable(moq.Times.exactly(2));
+        visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: "visible", isDisabled: false })).verifiable(moq.Times.exactly(2));
         visibilityChangeEvent.raiseEvent();
         await waitForElement(() => {
           const renderedNode = result.getByTestId("tree-node");
@@ -251,7 +251,7 @@ describe("ModelsTree", () => {
         const node = createModelNode();
         setupDataProvider([node]);
 
-        visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: VisibilityState.Visible }));
+        visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: "visible" }));
         const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />);
         const renderedNode = await waitForElement(() => result.getByTestId("tree-node"));
         expect(renderedNode.querySelectorAll("input").length).to.eq(1);
@@ -264,7 +264,7 @@ describe("ModelsTree", () => {
       it("calls visibility handler's `changeVisibility` on node checkbox state changes to 'checked'", async () => {
         const node = createModelNode();
         setupDataProvider([node]);
-        visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ state: VisibilityState.Hidden }));
+        visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: "hidden" }));
         visibilityHandlerMock.setup(async (x) => x.changeVisibility(node, moq.It.isAny(), true)).returns(async () => { }).verifiable();
 
         const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />);
@@ -280,7 +280,7 @@ describe("ModelsTree", () => {
         const modelNode = createModelNode();
         setupDataProvider([modelNode]);
 
-        visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ state: VisibilityState.Hidden }));
+        visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: "hidden" }));
 
         const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />);
         await waitForElement(() => result.getByText("model"));
@@ -307,7 +307,7 @@ describe("ModelsTree", () => {
         it("adds node to unified selection", async () => {
           const element = createElementNode();
           setupDataProvider([element]);
-          visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ state: VisibilityState.Hidden }));
+          visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: "hidden" }));
 
           const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} selectionMode={SelectionMode.Extended} />);
           await waitForElement(() => result.getByText("element"));
@@ -320,7 +320,7 @@ describe("ModelsTree", () => {
         it("adds element node to unified selection according to `selectionPredicate`", async () => {
           const element = createElementNode();
           setupDataProvider([element]);
-          visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ state: VisibilityState.Hidden }));
+          visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: "hidden" }));
 
           const predicate = (_key: NodeKey, type: ModelsTreeNodeType) => type === ModelsTreeNodeType.Element;
 
@@ -337,7 +337,7 @@ describe("ModelsTree", () => {
           const node2 = createModelNode();
           node2.id = "model2";
           setupDataProvider([node1, node2]);
-          visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ state: VisibilityState.Hidden }));
+          visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: "hidden" }));
 
           const predicate = (_key: NodeKey, type: ModelsTreeNodeType) => type === ModelsTreeNodeType.Model;
 
@@ -356,7 +356,7 @@ describe("ModelsTree", () => {
         it("adds subject node to unified selection according to `selectionPredicate`", async () => {
           const subject = createSubjectNode();
           setupDataProvider([subject]);
-          visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ state: VisibilityState.Hidden }));
+          visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: "hidden" }));
 
           const predicate = (_key: NodeKey, type: ModelsTreeNodeType) => type === ModelsTreeNodeType.Subject;
 
@@ -372,7 +372,7 @@ describe("ModelsTree", () => {
           const node = createElementNode();
           (node as any).extendedData = undefined;
           setupDataProvider([node]);
-          visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ state: VisibilityState.Hidden }));
+          visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: "hidden" }));
 
           const predicate = (_key: NodeKey, type: ModelsTreeNodeType) => type === ModelsTreeNodeType.Unknown;
 
@@ -387,7 +387,7 @@ describe("ModelsTree", () => {
         it("adds element class grouping node to unified selection according to `selectionPredicate`", async () => {
           const node = createElementClassGroupingNode([createRandomId(), createRandomId()]);
           setupDataProvider([node]);
-          visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ state: VisibilityState.Hidden }));
+          visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: "hidden" }));
 
           const predicate = (_key: NodeKey, type: ModelsTreeNodeType) => (type === ModelsTreeNodeType.Grouping);
 
@@ -402,7 +402,7 @@ describe("ModelsTree", () => {
         it("does not add category node to unified selection according to `selectionPredicate`", async () => {
           const node = createCategoryNode();
           setupDataProvider([node]);
-          visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ state: VisibilityState.Hidden }));
+          visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: "hidden" }));
 
           const predicate = (_key: NodeKey, type: ModelsTreeNodeType) => type === ModelsTreeNodeType.Model;
 
@@ -420,7 +420,7 @@ describe("ModelsTree", () => {
 
         beforeEach(() => {
           dataProvider.getNodeKey = (node: TreeNodeItem) => (node as any)["__presentation-components/key"];
-          visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ state: VisibilityState.Hidden }));
+          visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: "hidden" }));
         });
 
         it("filters nodes", async () => {
@@ -573,7 +573,7 @@ describe("ModelsTree", () => {
           await using(createHandler({ viewport: vpMock.object }), async (handler) => {
             const result = handler.getVisibilityStatus(node, node.__key);
             expect(isPromiseLike(result)).to.be.false;
-            expect(result).to.include({ state: VisibilityState.Hidden, isDisabled: true });
+            expect(result).to.include({ state: "hidden", isDisabled: true });
           });
         });
 
@@ -586,11 +586,11 @@ describe("ModelsTree", () => {
               const result = handler.getVisibilityStatus(node, node.__key);
               expect(isPromiseLike(result)).to.be.true;
               if (isPromiseLike(result))
-                expect(await result).to.include({ state: VisibilityState.Hidden, isDisabled: true });
+                expect(await result).to.include({ state: "hidden", isDisabled: true });
             });
           });
 
-          it("return 'VisibilityState.Hidden' when all models are not displayed", async () => {
+          it("return 'hidden' when all models are not displayed", async () => {
             const subjectIds = ["0x1", "0x2"];
             const node = createSubjectNode(subjectIds);
             mockSubjectModelIds({
@@ -614,11 +614,11 @@ describe("ModelsTree", () => {
               const result = handler.getVisibilityStatus(node, node.__key);
               expect(isPromiseLike(result)).to.be.true;
               if (isPromiseLike(result))
-                expect(await result).to.include({ state: VisibilityState.Hidden });
+                expect(await result).to.include({ state: "hidden" });
             });
           });
 
-          it("return 'VisibilityState.Visible' when at least one direct model is displayed", async () => {
+          it("return 'visible' when at least one direct model is displayed", async () => {
             const subjectIds = ["0x1", "0x2"];
             const node = createSubjectNode(subjectIds);
             mockSubjectModelIds({
@@ -642,11 +642,11 @@ describe("ModelsTree", () => {
               const result = handler.getVisibilityStatus(node, node.__key);
               expect(isPromiseLike(result)).to.be.true;
               if (isPromiseLike(result))
-                expect(await result).to.include({ state: VisibilityState.Visible });
+                expect(await result).to.include({ state: "visible" });
             });
           });
 
-          it("return 'VisibilityState.Visible' when at least one nested model is displayed", async () => {
+          it("return 'visible' when at least one nested model is displayed", async () => {
             const subjectIds = ["0x1", "0x2"];
             const node = createSubjectNode(subjectIds);
             mockSubjectModelIds({
@@ -672,7 +672,7 @@ describe("ModelsTree", () => {
               const result = handler.getVisibilityStatus(node, node.__key);
               expect(isPromiseLike(result)).to.be.true;
               if (isPromiseLike(result))
-                expect(await result).to.include({ state: VisibilityState.Visible });
+                expect(await result).to.include({ state: "visible" });
             });
           });
 
@@ -700,7 +700,7 @@ describe("ModelsTree", () => {
 
           describe("filtered", () => {
 
-            it("return 'VisibilityState.Visible' when subject node is leaf and at least one model is visible", async () => {
+            it("return 'visible' when subject node is leaf and at least one model is visible", async () => {
               const node = createSubjectNode();
               const key = node.__key.instanceKeys[0];
 
@@ -725,12 +725,12 @@ describe("ModelsTree", () => {
                 const result = handler.getVisibilityStatus(node, node.__key);
                 expect(isPromiseLike(result)).to.be.true;
                 if (isPromiseLike(result))
-                  expect(await result).to.include({ state: VisibilityState.Visible });
+                  expect(await result).to.include({ state: "visible" });
                 filteredProvider.verifyAll();
               });
             });
 
-            it("return 'VisibilityState.Visible' when subject node has child and at least one hidden model is visible", async () => {
+            it("return 'visible' when subject node has child and at least one hidden model is visible", async () => {
               const parentSubjectId = "0x1";
               const childSubjectId = "0x2";
               const node = createSubjectNode(parentSubjectId);
@@ -764,12 +764,12 @@ describe("ModelsTree", () => {
                 const result = handler.getVisibilityStatus(node, node.__key);
                 expect(isPromiseLike(result)).to.be.true;
                 if (isPromiseLike(result))
-                  expect(await result).to.include({ state: VisibilityState.Visible });
+                  expect(await result).to.include({ state: "visible" });
                 filteredProvider.verifyAll();
               });
             });
 
-            it("return 'VisibilityState.Visible' when subject node has children and at least one child has visible models", async () => {
+            it("return 'visible' when subject node has children and at least one child has visible models", async () => {
               const parentSubjectId = "0x1";
               const childSubjectIds = ["0x2", "0x3"];
               const node = createSubjectNode(parentSubjectId);
@@ -807,12 +807,12 @@ describe("ModelsTree", () => {
                 const result = handler.getVisibilityStatus(node, node.__key);
                 expect(isPromiseLike(result)).to.be.true;
                 if (isPromiseLike(result))
-                  expect(await result).to.include({ state: VisibilityState.Visible });
+                  expect(await result).to.include({ state: "visible" });
                 filteredProvider.verifyAll();
               });
             });
 
-            it("return 'VisibilityState.Hidden' when subject node has children and children models are not visible", async () => {
+            it("return 'hidden' when subject node has children and children models are not visible", async () => {
               const parentSubjectIds = ["0x1", "0x2"];
               const childSubjectId = "0x3";
               const node = createSubjectNode(parentSubjectIds);
@@ -849,7 +849,7 @@ describe("ModelsTree", () => {
                 const result = handler.getVisibilityStatus(node, node.__key);
                 expect(isPromiseLike(result)).to.be.true;
                 if (isPromiseLike(result))
-                  expect(await result).to.include({ state: VisibilityState.Hidden });
+                  expect(await result).to.include({ state: "hidden" });
                 filteredProvider.verifyAll();
               });
             });
@@ -866,11 +866,11 @@ describe("ModelsTree", () => {
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
               const result = handler.getVisibilityStatus(node, node.__key);
               expect(isPromiseLike(result)).to.be.false;
-              expect(result).to.include({ state: VisibilityState.Hidden, isDisabled: true });
+              expect(result).to.include({ state: "hidden", isDisabled: true });
             });
           });
 
-          it("return 'VisibilityState.Visible' when displayed", async () => {
+          it("return 'visible' when displayed", async () => {
             const node = createModelNode();
             const key = node.__key.instanceKeys[0];
 
@@ -882,11 +882,11 @@ describe("ModelsTree", () => {
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
               const result = handler.getVisibilityStatus(node, node.__key);
               expect(isPromiseLike(result)).to.be.false;
-              expect(result).to.include({ state: VisibilityState.Visible });
+              expect(result).to.include({ state: "visible" });
             });
           });
 
-          it("returns 'VisibilityState.Hidden' when not displayed", async () => {
+          it("returns 'hidden' when not displayed", async () => {
             const node = createModelNode();
             const key = node.__key.instanceKeys[0];
 
@@ -898,7 +898,7 @@ describe("ModelsTree", () => {
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
               const result = handler.getVisibilityStatus(node, node.__key);
               expect(isPromiseLike(result)).to.be.false;
-              expect(result).to.include({ state: VisibilityState.Hidden });
+              expect(result).to.include({ state: "hidden" });
             });
           });
 
@@ -920,11 +920,11 @@ describe("ModelsTree", () => {
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
               const result = handler.getVisibilityStatus(categoryNode, categoryNode.__key);
               expect(isPromiseLike(result)).to.be.false;
-              expect(result).to.include({ state: VisibilityState.Hidden, isDisabled: true });
+              expect(result).to.include({ state: "hidden", isDisabled: true });
             });
           });
 
-          it("return 'VisibilityState.Visible' when model displayed, category not displayed but per-model override says it's displayed", async () => {
+          it("return 'visible' when model displayed, category not displayed but per-model override says it's displayed", async () => {
             const parentModelNode = createModelNode();
             const parentModelKey = parentModelNode.__key.instanceKeys[0];
             const categoryNode = createCategoryNode(parentModelKey);
@@ -943,11 +943,11 @@ describe("ModelsTree", () => {
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
               const result = handler.getVisibilityStatus(categoryNode, categoryNode.__key);
               expect(isPromiseLike(result)).to.be.false;
-              expect(result).to.include({ state: VisibilityState.Visible });
+              expect(result).to.include({ state: "visible" });
             });
           });
 
-          it("return 'VisibilityState.Visible' when model displayed, category displayed and there're no per-model overrides", async () => {
+          it("return 'visible' when model displayed, category displayed and there're no per-model overrides", async () => {
             const parentModelNode = createModelNode();
             const parentModelKey = parentModelNode.__key.instanceKeys[0];
             const categoryNode = createCategoryNode(parentModelKey);
@@ -963,11 +963,11 @@ describe("ModelsTree", () => {
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
               const result = handler.getVisibilityStatus(categoryNode, categoryNode.__key);
               expect(isPromiseLike(result)).to.be.false;
-              expect(result).to.include({ state: VisibilityState.Visible });
+              expect(result).to.include({ state: "visible" });
             });
           });
 
-          it("return 'VisibilityState.Hidden' when model displayed, category displayed but per-model override says it's not displayed", async () => {
+          it("return 'hidden' when model displayed, category displayed but per-model override says it's not displayed", async () => {
             const parentModelNode = createModelNode();
             const parentModelKey = parentModelNode.__key.instanceKeys[0];
             const categoryNode = createCategoryNode(parentModelKey);
@@ -986,11 +986,11 @@ describe("ModelsTree", () => {
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
               const result = handler.getVisibilityStatus(categoryNode, categoryNode.__key);
               expect(isPromiseLike(result)).to.be.false;
-              expect(result).to.include({ state: VisibilityState.Hidden });
+              expect(result).to.include({ state: "hidden" });
             });
           });
 
-          it("return 'VisibilityState.Hidden' when model displayed, category not displayed and there're no per-model overrides", async () => {
+          it("return 'hidden' when model displayed, category not displayed and there're no per-model overrides", async () => {
             const parentModelNode = createModelNode();
             const parentModelKey = parentModelNode.__key.instanceKeys[0];
             const categoryNode = createCategoryNode(parentModelKey);
@@ -1006,11 +1006,11 @@ describe("ModelsTree", () => {
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
               const result = handler.getVisibilityStatus(categoryNode, categoryNode.__key);
               expect(isPromiseLike(result)).to.be.false;
-              expect(result).to.include({ state: VisibilityState.Hidden });
+              expect(result).to.include({ state: "hidden" });
             });
           });
 
-          it("return 'VisibilityState.Hidden' when category has no parent model and category is not displayed", async () => {
+          it("return 'hidden' when category has no parent model and category is not displayed", async () => {
             const categoryNode = createCategoryNode();
             const categoryKey = categoryNode.__key.instanceKeys[0];
 
@@ -1022,7 +1022,7 @@ describe("ModelsTree", () => {
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
               const result = handler.getVisibilityStatus(categoryNode, categoryNode.__key);
               expect(isPromiseLike(result)).to.be.false;
-              expect(result).to.include({ state: VisibilityState.Hidden });
+              expect(result).to.include({ state: "hidden" });
             });
           });
 
@@ -1045,11 +1045,11 @@ describe("ModelsTree", () => {
 
               const result = handler.getVisibilityStatus(node, node.__key);
               expect(isPromiseLike(result)).to.be.true;
-              expect(await result).to.include({ state: VisibilityState.Hidden, isDisabled: true });
+              expect(await result).to.include({ state: "hidden", isDisabled: true });
             });
           });
 
-          it("returns 'VisibilityState.Visible' when model displayed and at least one element is in always displayed list", async () => {
+          it("returns 'visible' when model displayed and at least one element is in always displayed list", async () => {
             const groupedElementIds = ["0x11", "0x12", "0x13"];
             const node = createElementClassGroupingNode(groupedElementIds);
 
@@ -1068,11 +1068,11 @@ describe("ModelsTree", () => {
 
               const result = handler.getVisibilityStatus(node, node.__key);
               expect(isPromiseLike(result)).to.be.true;
-              expect(await result).to.include({ state: VisibilityState.Visible });
+              expect(await result).to.include({ state: "visible" });
             });
           });
 
-          it("returns 'VisibilityState.Hidden' when model displayed and there's at least one element in always exclusive displayed list that's not grouped under node", async () => {
+          it("returns 'hidden' when model displayed and there's at least one element in always exclusive displayed list that's not grouped under node", async () => {
             const groupedElementIds = ["0x11", "0x12", "0x13"];
             const node = createElementClassGroupingNode(groupedElementIds);
 
@@ -1092,11 +1092,11 @@ describe("ModelsTree", () => {
 
               const result = handler.getVisibilityStatus(node, node.__key);
               expect(isPromiseLike(result)).to.be.true;
-              expect(await result).to.include({ state: VisibilityState.Hidden });
+              expect(await result).to.include({ state: "hidden" });
             });
           });
 
-          it("returns 'VisibilityState.Hidden' when model displayed and all elements are in never displayed list", async () => {
+          it("returns 'hidden' when model displayed and all elements are in never displayed list", async () => {
             const groupedElementIds = ["0x11", "0x12", "0x13"];
             const node = createElementClassGroupingNode(groupedElementIds);
 
@@ -1115,11 +1115,11 @@ describe("ModelsTree", () => {
 
               const result = handler.getVisibilityStatus(node, node.__key);
               expect(isPromiseLike(result)).to.be.true;
-              expect(await result).to.include({ state: VisibilityState.Hidden });
+              expect(await result).to.include({ state: "hidden" });
             });
           });
 
-          it("returns 'VisibilityState.Hidden' when model displayed and category not displayed", async () => {
+          it("returns 'hidden' when model displayed and category not displayed", async () => {
             const groupedElementIds = ["0x11", "0x12", "0x13"];
             const node = createElementClassGroupingNode(groupedElementIds);
 
@@ -1138,11 +1138,11 @@ describe("ModelsTree", () => {
 
               const result = handler.getVisibilityStatus(node, node.__key);
               expect(isPromiseLike(result)).to.be.true;
-              expect(await result).to.include({ state: VisibilityState.Hidden });
+              expect(await result).to.include({ state: "hidden" });
             });
           });
 
-          it("returns 'VisibilityState.Visible' when model displayed and category displayed", async () => {
+          it("returns 'visible' when model displayed and category displayed", async () => {
             const groupedElementIds = ["0x11", "0x12", "0x13"];
             const node = createElementClassGroupingNode(groupedElementIds);
 
@@ -1161,7 +1161,7 @@ describe("ModelsTree", () => {
 
               const result = handler.getVisibilityStatus(node, node.__key);
               expect(isPromiseLike(result)).to.be.true;
-              expect(await result).to.include({ state: VisibilityState.Visible });
+              expect(await result).to.include({ state: "visible" });
             });
           });
 
@@ -1180,7 +1180,7 @@ describe("ModelsTree", () => {
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
               const result = handler.getVisibilityStatus(node, node.__key);
               expect(isPromiseLike(result)).to.be.false;
-              expect(result).to.include({ state: VisibilityState.Hidden, isDisabled: true });
+              expect(result).to.include({ state: "hidden", isDisabled: true });
             });
           });
 
@@ -1195,11 +1195,11 @@ describe("ModelsTree", () => {
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
               const result = handler.getVisibilityStatus(node, node.__key);
               expect(isPromiseLike(result)).to.be.false;
-              expect(result).to.include({ state: VisibilityState.Hidden, isDisabled: true });
+              expect(result).to.include({ state: "hidden", isDisabled: true });
             });
           });
 
-          it("returns 'VisibilityState.Hidden' when model displayed, category displayed, but element is in never displayed list", async () => {
+          it("returns 'hidden' when model displayed, category displayed, but element is in never displayed list", async () => {
             const node = createElementNode("0x2", "0x1");
             const key = node.__key.instanceKeys[0];
 
@@ -1215,11 +1215,11 @@ describe("ModelsTree", () => {
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
               const result = handler.getVisibilityStatus(node, node.__key);
               expect(isPromiseLike(result)).to.be.false;
-              expect(result).to.include({ state: VisibilityState.Hidden });
+              expect(result).to.include({ state: "hidden" });
             });
           });
 
-          it("returns 'VisibilityState.Visible' when model displayed and element is in always displayed list", async () => {
+          it("returns 'visible' when model displayed and element is in always displayed list", async () => {
             const node = createElementNode("0x2", "0x1");
             const key = node.__key.instanceKeys[0];
 
@@ -1235,11 +1235,11 @@ describe("ModelsTree", () => {
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
               const result = handler.getVisibilityStatus(node, node.__key);
               expect(isPromiseLike(result)).to.be.false;
-              expect(result).to.include({ state: VisibilityState.Visible });
+              expect(result).to.include({ state: "visible" });
             });
           });
 
-          it("returns 'VisibilityState.Visible' when model displayed, category displayed and element is in neither 'never' nor 'always' displayed", async () => {
+          it("returns 'visible' when model displayed, category displayed and element is in neither 'never' nor 'always' displayed", async () => {
             const node = createElementNode("0x2", "0x1");
 
             const viewStateMock = moq.Mock.ofType<ViewState3d>();
@@ -1253,11 +1253,11 @@ describe("ModelsTree", () => {
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
               const result = handler.getVisibilityStatus(node, node.__key);
               expect(isPromiseLike(result)).to.be.false;
-              expect(result).to.include({ state: VisibilityState.Visible });
+              expect(result).to.include({ state: "visible" });
             });
           });
 
-          it("returns 'VisibilityState.Hidden' when model displayed, category not displayed and element is in neither 'never' nor 'always' displayed", async () => {
+          it("returns 'hidden' when model displayed, category not displayed and element is in neither 'never' nor 'always' displayed", async () => {
             const node = createElementNode("0x2", "0x1");
 
             const viewStateMock = moq.Mock.ofType<ViewState3d>();
@@ -1271,11 +1271,11 @@ describe("ModelsTree", () => {
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
               const result = handler.getVisibilityStatus(node, node.__key);
               expect(isPromiseLike(result)).to.be.false;
-              expect(result).to.include({ state: VisibilityState.Hidden });
+              expect(result).to.include({ state: "hidden" });
             });
           });
 
-          it("returns 'VisibilityState.Hidden' when model displayed, category displayed and some other element is exclusively 'always' displayed", async () => {
+          it("returns 'hidden' when model displayed, category displayed and some other element is exclusively 'always' displayed", async () => {
             const node = createElementNode("0x2", "0x1");
 
             const viewStateMock = moq.Mock.ofType<ViewState3d>();
@@ -1290,11 +1290,11 @@ describe("ModelsTree", () => {
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
               const result = handler.getVisibilityStatus(node, node.__key);
               expect(isPromiseLike(result)).to.be.false;
-              expect(result).to.include({ state: VisibilityState.Hidden });
+              expect(result).to.include({ state: "hidden" });
             });
           });
 
-          it("returns 'VisibilityState.Hidden' when model displayed, categoryId not set and element is in neither 'never' nor 'always' displayed", async () => {
+          it("returns 'hidden' when model displayed, categoryId not set and element is in neither 'never' nor 'always' displayed", async () => {
             const node = createElementNode("0x2", undefined);
 
             const viewStateMock = moq.Mock.ofType<ViewState3d>();
@@ -1308,7 +1308,7 @@ describe("ModelsTree", () => {
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
               const result = handler.getVisibilityStatus(node, node.__key);
               expect(isPromiseLike(result)).to.be.false;
-              expect(result).to.include({ state: VisibilityState.Hidden });
+              expect(result).to.include({ state: "hidden" });
             });
           });
 
