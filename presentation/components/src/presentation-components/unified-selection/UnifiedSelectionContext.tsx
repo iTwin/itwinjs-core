@@ -32,16 +32,16 @@ export interface UnifiedSelectionContext {
    */
   getSelection: UnifiedSelectionState;
 
-  /** Adds EC instances to current selection. */
+  /** Adds keys to current selection. */
   addToSelection(keys: Keys, level?: number): void;
 
-  /** Removes EC instances from current selection. */
+  /** Removes keys from current selection. */
   removeFromSelection(keys: Keys, level?: number): void;
 
-  /** Removes all EC instances from current selection and selects only the specified EC instances. */
+  /** Removes all keys from current selection and selects only the specified keys. */
   replaceSelection(keys: Keys, level?: number): void;
 
-  /** Removes all EC instances from current selection. */
+  /** Removes all keys from current selection. */
   clearSelection(level?: number): void;
 }
 
@@ -62,8 +62,8 @@ export interface UnifiedSelectionContextProviderProps {
   imodel: IModelConnection;
 
   /**
-   * Specifies the selection level to watch for selection changes. This also becomes the default selection level for
-   * [[UnifiedSelectionContext]]. Defaults to `0`.
+   * Specifies the selection level to watch for selection changes. Changes at deeper levels will not trigger context
+   * updates. This also becomes the default selection level for [[UnifiedSelectionContext]]. Defaults to `0`.
    */
   selectionLevel?: number;
 
