@@ -16,7 +16,7 @@ import { Presentation } from "@bentley/presentation-frontend";
 
 /**
  * Interface for accessing and modifying Unified Selection whithin React components.
- * @public
+ * @beta
  */
 export interface UnifiedSelectionContext {
   /** iModel associated with the selection. */
@@ -25,8 +25,12 @@ export interface UnifiedSelectionContext {
   /** Default selection level. */
   selectionLevel: number;
 
-  /** Returns current selection. */
-  getSelection(level?: number): Readonly<KeySet>;
+  /**
+   * Returns current selection. This is a different function each time selection at `selectionLevel` changes. The
+   * returned `KeySet` object exposes global data and is mutable. If you need to pass information about the current
+   * selection across React components, prefer [[UnifiedSelectionState]] over `KeySet` objects.
+   */
+  getSelection: UnifiedSelectionState;
 
   /** Adds EC instances to current selection. */
   addToSelection(keys: Keys, level?: number): void;
@@ -41,9 +45,17 @@ export interface UnifiedSelectionContext {
   clearSelection(level?: number): void;
 }
 
+
+/**
+ * Describes how to access the current Unified Selection state. The returned `KeySet` object exposes global data and is
+ * mutable.
+ * @beta
+ */
+export type UnifiedSelectionState = (selectionLevel?: number) => Readonly<KeySet>;
+
 /**
  * Props for Unified Selection context provider.
- * @public
+ * @beta
  */
 export interface UnifiedSelectionContextProviderProps {
   /** iModel associated with the selection. */
@@ -51,20 +63,21 @@ export interface UnifiedSelectionContextProviderProps {
 
   /**
    * Specifies the selection level to watch for selection changes. This also becomes the default selection level for
-   * [[UnifiedSelectionContext]]. Default value is 0.
+   * [[UnifiedSelectionContext]]. Defaults to `0`.
    */
   selectionLevel?: number;
 
+  /** Child elements. */
   children?: React.ReactNode;
 }
 
 /**
  * Unified Selection context provider. It adapts framework-agnostic
  * [Unified Selection]($docs/learning/presentation/Unified-Selection/index.md) API to be better suited for React
- * applications. The context is accessible via [[useUnifiedSelectionContext]].
- * @public
+ * applications. The provided context is accessible via [[useUnifiedSelectionContext]] hook.
+ * @beta
  */
-export const UnifiedSelectionContextProvider: React.FC<UnifiedSelectionContextProviderProps> = (props) => {
+export function UnifiedSelectionContextProvider(props: UnifiedSelectionContextProviderProps): React.ReactElement {
   const selectionLevel = props.selectionLevel ?? 0;
 
   const contextRef = React.useRef<UnifiedSelectionContext>();
@@ -142,7 +155,7 @@ const unifiedSelectionContext = React.createContext<UnifiedSelectionContext | un
 
 /**
  * Returns Unified Selection context provided by [[UnifiedSelectionContextProvider]].
- * @public
+ * @beta
  */
 export function useUnifiedSelectionContext(): UnifiedSelectionContext | undefined {
   return React.useContext(unifiedSelectionContext);

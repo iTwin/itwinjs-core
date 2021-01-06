@@ -22,7 +22,10 @@ describe("UnifiedSelectionContext", () => {
   ): RenderHookResult<UnifiedSelectionContextProviderProps, UnifiedSelectionContext> {
     return renderHook(
       () => useUnifiedSelectionContext()!,
-      { wrapper: UnifiedSelectionContextProvider, initialProps: { imodel, selectionLevel } },
+      {
+        wrapper: UnifiedSelectionContextProvider,
+        initialProps: { imodel, selectionLevel } as UnifiedSelectionContextProviderProps,
+      },
     );
   }
 
