@@ -45,7 +45,6 @@ export interface UnifiedSelectionContext {
   clearSelection(level?: number): void;
 }
 
-
 /**
  * Describes how to access the current Unified Selection state. The returned `KeySet` object exposes global data and is
  * mutable.
