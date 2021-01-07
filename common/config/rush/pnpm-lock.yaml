@@ -3,7 +3,7 @@ dependencies:
   '@babel/core': 7.7.4
   '@bentley/icons-generic': 1.0.30
   '@bentley/icons-generic-webfont': 1.0.30
-  '@bentley/imodeljs-native': 2.10.9
+  '@bentley/imodeljs-native': 2.10.10
   '@bentley/react-scripts': 3.4.6_2ce93b467f9fa052344b2dfa2e61a9ba
   '@microsoft/api-extractor': 7.7.3
   '@microsoft/applicationinsights-web': 2.5.10
@@ -1687,11 +1687,11 @@ packages:
     dev: false
     resolution:
       integrity: sha512-a4NCzogd0hbJa+kRIL7IpqfbPPvXeAijBuH2d3YFwwXf+7HsOphgrrRqSiEAcMBSQAUviFjLkmNOTsx+zLcm3Q==
-  /@bentley/imodeljs-native/2.10.9:
+  /@bentley/imodeljs-native/2.10.10:
     dev: false
     requiresBuild: true
     resolution:
-      integrity: sha512-g52NllGGebxVx3GZvAuwo6aQXiuAv4hMJ2Rtc6Et7IyJfN2LiSVMsmHfYs5t7vQokSr/eEM4/2srqeOCiAKp8w==
+      integrity: sha512-EAyyUBwRwRZSPbK0Ii8ZhDvE/NGg1qVZI9xzkN131YMbXwpjk26pZOINeR7B5fLRypcepBXZKhH+j6qt1mVqjA==
   /@bentley/react-scripts/3.4.6_2ce93b467f9fa052344b2dfa2e61a9ba:
     dependencies:
       '@babel/core': 7.9.0
@@ -19616,7 +19616,7 @@ packages:
   'file:projects/imodeljs-backend.tgz':
     dependencies:
       '@azure/storage-blob': 10.4.0
-      '@bentley/imodeljs-native': 2.10.9
+      '@bentley/imodeljs-native': 2.10.10
       '@openid/appauth': 1.3.0
       '@types/chai': 4.2.14
       '@types/chai-as-promised': 7.1.3
@@ -19661,7 +19661,7 @@ packages:
     dev: false
     name: '@rush-temp/imodeljs-backend'
     resolution:
-      integrity: sha512-q52YTkbIvyWBCLMN/qC74D0wQ34v7GTpgnM4fh9ksieGiN4Y/yPgiwyS0VpMR6ACfWexhwDhVyaCa0VNsVYcnA==
+      integrity: sha512-qIw7vhcehk7btIAsd2U3N6rNpp3CEX2o68jQaGFCm1YF4ymbfAhmF1UcNX53+wiw0hTS8TXEamzlUxWec1rI1w==
       tarball: 'file:projects/imodeljs-backend.tgz'
     version: 0.0.0
   'file:projects/imodeljs-common.tgz':
@@ -20976,7 +20976,7 @@ specifiers:
   '@babel/core': 7.7.4
   '@bentley/icons-generic': ^1.0.15
   '@bentley/icons-generic-webfont': ^1.0.15
-  '@bentley/imodeljs-native': 2.10.9
+  '@bentley/imodeljs-native': 2.10.10
   '@bentley/react-scripts': 3.4.6
   '@microsoft/api-extractor': 7.7.3
   '@microsoft/applicationinsights-web': ^2.5.5
