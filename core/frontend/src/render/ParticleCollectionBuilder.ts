@@ -162,7 +162,11 @@ class Builder implements ParticleCollectionBuilder {
       throw new Error("A particle must have a size greater than zero");
 
     const transparency = undefined !== props.transparency ? clampTransparency(props.transparency) : this.transparency;
+    if (transparency !== this.transparency && this._particles.length > 0)
+      this._hasVaryingTransparency = true;
+
     const particle = new Particle(props, width, height, transparency);
+    this._particles.push(particle);
     this._range.extendPoint(particle.centroid);
   }
 

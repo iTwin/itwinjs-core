@@ -189,6 +189,8 @@ export class BranchUniforms {
       // Zero out Z for silly clipping tools...
       mv = modelMatrix.clone(this._scratchTransform);
       mv.matrix.coffs[2] = mv.matrix.coffs[5] = mv.matrix.coffs[8] = 0.0;
+      if (instancedGeom)
+        mv = instancedGeom.getRtcModelTransform(mv);
 
       // Scale based on device-pixel ratio.
       const scale = this._target.devicePixelRatio;

@@ -6,9 +6,12 @@
  * @module Effects
  */
 
+import { dispose } from "@bentley/bentleyjs-core";
 import { Point2d, Range1d, Range2d, Vector2d } from "@bentley/geometry-core";
-import { ColorDef, GraphicParams } from "@bentley/imodeljs-common";
-import { DecorateContext, Decorator, GraphicType, IModelApp, Tool, Viewport } from "@bentley/imodeljs-frontend";
+import { ColorDef, GraphicParams, ImageBuffer, ImageBufferFormat, RenderTexture } from "@bentley/imodeljs-common";
+import {
+  DecorateContext, Decorator, GraphicType, ParticleCollectionBuilder, ParticleProps, IModelApp, Tool, Viewport,
+} from "@bentley/imodeljs-frontend";
 import { parseToggle } from "../tools/parseToggle";
 
 /** Generate integer in [min, max]. */
@@ -30,14 +33,14 @@ function wrapAround(value: number, min: number, max: number): number {
 }
 
 /** Represents one particle displayed by SnowDecorator. */
-interface SnowParticle {
-  /** Current position, in pixels. */
-  position: Point2d;
+interface SnowParticle extends ParticleProps {
+  /** Make x, y, and z from ParticleProps writable. */
+  x: number;
+  y: number;
+  z: number;
+
   /** Current velocity, in pixels per second. */
   velocity: Vector2d;
-  /** Diameter, in pixels. */
-  size: number;
-  transparency: number;
 }
 
 /** Simulates snowfall in a Viewport. */
@@ -60,6 +63,8 @@ class SnowDecorator implements Decorator {
   private readonly _dimensions: Point2d;
   /** The list of particles being drawn. */
   private readonly _particles: SnowParticle[] = [];
+  /** The image to display for each particle. */
+  private _texture?: RenderTexture;
   /** The last time `updateParticles()` was invoked, in milliseconds. */
   private _lastUpdateTime: number;
 
@@ -67,6 +72,10 @@ class SnowDecorator implements Decorator {
     this.viewport = viewport;
     this._dimensions = new Point2d(viewport.viewRect.width, viewport.viewRect.height);
     this._lastUpdateTime = Date.now();
+
+    // ###TODO: createTextureFromImageBuffer should permit undefined for iModel.
+    const image = ImageBuffer.create(new Uint8Array([255, 255, 0, 255]), ImageBufferFormat.Rgba, 1);
+    this._texture = IModelApp.renderSystem.createTextureFromImageBuffer(image, viewport.iModel, new RenderTexture.Params(undefined, RenderTexture.Type.Normal, true));
 
     // Tell the viewport to re-render the decorations every frame so that the snow particles animate smoothly.
     const removeOnRender = viewport.onRender.addListener(() => viewport.invalidateDecorations());
@@ -86,6 +95,7 @@ class SnowDecorator implements Decorator {
       removeOnRender();
       removeOnDispose();
       removeOnResized();
+      this._texture = dispose(this._texture);
       SnowDecorator._decorators.delete(viewport);
     };
 
@@ -94,7 +104,9 @@ class SnowDecorator implements Decorator {
     // Initialize the particles.
     for (let i = 0; i < this.numParticles; i++) {
       this._particles.push({
-        position: new Point2d(randomInteger(0, this._dimensions.x), randomInteger(0, this._dimensions.y)),
+        x: randomInteger(0, this._dimensions.x),
+        y: randomInteger(0, this._dimensions.y),
+        z: 0,
         velocity: new Vector2d(randomNumber(this.velocityRange.low.x, this.velocityRange.high.x), randomNumber(this.velocityRange.low.y, this.velocityRange.high.y)),
         size: randomInteger(this.sizeRange.low, this.sizeRange.high),
         transparency: randomInteger(this.transparencyRange.low, this.transparencyRange.high),
@@ -103,7 +115,7 @@ class SnowDecorator implements Decorator {
   }
 
   public decorate(context: DecorateContext): void {
-    if (context.viewport !== this.viewport)
+    if (context.viewport !== this.viewport || !this._texture)
       return;
 
     // Update the particles.
@@ -112,25 +124,18 @@ class SnowDecorator implements Decorator {
     this._lastUpdateTime = now;
     this.updateParticles(deltaMillis / 1000);
 
-    // Create one GraphicParams object to reuse for every particle, for better performance.
-    const params = new GraphicParams();
-    params.lineColor = ColorDef.white;
+    // Create particle graphics.
+    const builder = ParticleCollectionBuilder.create({
+      texture: this._texture,
+      size: (this.sizeRange.high - this.sizeRange.low) / 2,
+    });
 
-    // Create a view overlay because our particles' positions are specified in pixels and we want them to draw in front of everything else.
-    const builder = context.createGraphicBuilder(GraphicType.ViewOverlay);
+    for (const particle of this._particles)
+      builder.addParticle(particle);
 
-    // The order in which are particles doesn't matter - setting `preserveOrder` to `false` dramatically improves performance.
-    builder.preserveOrder = false;
-
-    // Draw a point for each particle. Alternatively, this could draw a square for each and map a snowflake image to them.
-    for (const particle of this._particles) {
-      params.setLineTransparency(particle.transparency);
-      params.rasterWidth = particle.size;
-      builder.activateGraphicParams(params);
-      builder.addPointString2d([particle.position], 0);
-    }
-
-    context.addDecorationFromBuilder(builder);
+    const graphic = builder.finish();
+    if (graphic)
+      context.addDecoration(GraphicType.ViewOverlay, graphic);
   }
 
   // Update the positions and velocities of all the particles based on the amount of time that has passed since the last update.
@@ -146,11 +151,12 @@ class SnowDecorator implements Decorator {
       // Apply velocity.
       particle.velocity.clone(velocity);
       velocity.scale(elapsedSeconds, velocity);
-      particle.position.plus(velocity, particle.position);
+      particle.x += velocity.x;
+      particle.y += velocity.y;
 
       // Particles that travel beyond the viewport's borders wrap around to the other side.
-      particle.position.x = wrapAround(particle.position.x, 0, this._dimensions.x);
-      particle.position.y = wrapAround(particle.position.y, 0, this._dimensions.y);
+      particle.x = wrapAround(particle.x, 0, this._dimensions.x);
+      particle.y = wrapAround(particle.y, 0, this._dimensions.y);
     }
   }
 
