@@ -1945,7 +1945,7 @@ describe("ECSqlStatement", () => {
       assert.equal(await query(ecdb, "SELECT ECInstanceId, ECClassId, Bl FROM test.Foo WHERE ECInstanceId=?", [id], 1, (row: any) => {
         assert.equal(row.id, id);
         assert.equal(row.className, "Test.Foo");
-        assert.deepEqual(row.bl, blobVal.slice(0, 10));
+        assert.deepEqual(row.bl, blobVal.slice(0, 1));
       }, true), 1);
 
         assert.equal(await query(ecdb, "SELECT ECInstanceId, ECClassId, Bl FROM test.Foo WHERE ECInstanceId=?", [id], 1, (row: any) => {
