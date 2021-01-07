@@ -4076,6 +4076,8 @@ export abstract class IModelConnection extends IModel {
     getGeometryContainment(requestProps: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
     // @beta
     getMassProperties(requestProps: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
+    // @alpha
+    getTextureImage(textureName: string): Promise<Uint8Array | undefined>;
     getToolTipMessage(id: Id64String): Promise<string[]>;
     // @beta
     readonly hilited: HiliteSet;
@@ -9203,6 +9205,8 @@ export abstract class TileAdmin {
     // @internal (undocumented)
     abstract get emptyViewportSet(): ReadonlyViewportSet;
     // @internal (undocumented)
+    abstract get enableExternalTextures(): boolean;
+    // @internal (undocumented)
     abstract get enableImprovedElision(): boolean;
     // @internal (undocumented)
     abstract get enableInstancing(): boolean;
@@ -9289,6 +9293,7 @@ export namespace TileAdmin {
         contextPreloadParentSkip?: number;
         defaultTileSizeModifier?: number;
         disableMagnification?: boolean;
+        enableExternalTextures?: boolean;
         enableImprovedElision?: boolean;
         enableInstancing?: boolean;
         ignoreAreaPatterns?: boolean;

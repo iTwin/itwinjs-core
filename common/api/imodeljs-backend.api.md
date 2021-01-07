@@ -2478,6 +2478,8 @@ export abstract class IModelDb extends IModel {
     // @beta
     getMassProperties(requestContext: ClientRequestContext, props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     getMetaData(classFullName: string): EntityMetaData;
+    // @alpha
+    getTextureImage(name: string): Uint8Array | undefined;
     get iModelId(): GuidString;
     importSchemas(requestContext: ClientRequestContext, schemaFileNames: string[]): Promise<void>;
     // @alpha

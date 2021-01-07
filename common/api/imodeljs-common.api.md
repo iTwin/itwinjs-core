@@ -1451,6 +1451,8 @@ export enum ContentFlags {
     // (undocumented)
     AllowInstancing = 1,
     // (undocumented)
+    ExternalTextures = 8,
+    // (undocumented)
     IgnoreAreaPatterns = 4,
     // (undocumented)
     ImprovedElision = 2,
@@ -3914,6 +3916,8 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     getMassProperties(_iModelToken: IModelRpcProps, _props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     // (undocumented)
     getModelProps(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<ModelProps[]>;
+    // @alpha (undocumented)
+    getTextureImage(_iModelToken: IModelRpcProps, _textureName: string): Promise<Uint8Array | undefined>;
     // (undocumented)
     getToolTipMessage(_iModelToken: IModelRpcProps, _elementId: string): Promise<string[]>;
     // (undocumented)
@@ -7415,6 +7419,8 @@ export interface TileOptions {
     readonly alwaysSubdivideIncompleteTiles: boolean;
     // (undocumented)
     readonly disableMagnification: boolean;
+    // (undocumented)
+    readonly enableExternalTextures: boolean;
     // (undocumented)
     readonly enableImprovedElision: boolean;
     // (undocumented)
