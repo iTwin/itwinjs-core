@@ -3,7 +3,7 @@ dependencies:
   '@babel/core': 7.7.4
   '@bentley/icons-generic': 1.0.30
   '@bentley/icons-generic-webfont': 1.0.30
-  '@bentley/imodeljs-native': 2.11.3
+  '@bentley/imodeljs-native': 2.11.4
   '@bentley/react-scripts': 3.4.6_01ca6d2f0cc02126054f079f738f0f7b
   '@microsoft/api-extractor': 7.7.3
   '@microsoft/applicationinsights-web': 2.5.10
@@ -1685,11 +1685,11 @@ packages:
     dev: false
     resolution:
       integrity: sha512-a4NCzogd0hbJa+kRIL7IpqfbPPvXeAijBuH2d3YFwwXf+7HsOphgrrRqSiEAcMBSQAUviFjLkmNOTsx+zLcm3Q==
-  /@bentley/imodeljs-native/2.11.3:
+  /@bentley/imodeljs-native/2.11.4:
     dev: false
     requiresBuild: true
     resolution:
-      integrity: sha512-6kMj1qh7YN2dh6FWu1aAQ/9b0z5pr8+rQm1a5JaYq7hoxlhOkLoxq/t0jJmtkd8+r26GOxnw6tXhK150IBhtag==
+      integrity: sha512-iO8J3AFgV7NwgZ0qoVF3AA3BTCxIgnjD81DmR9DuxkHzj1QLIdrRKf4NIAxlwjRyPhQpd87JzQ0IdiYxz5dQeQ==
   /@bentley/react-scripts/3.4.6_01ca6d2f0cc02126054f079f738f0f7b:
     dependencies:
       '@babel/core': 7.9.0
@@ -7747,6 +7747,8 @@ packages:
       co: 4.6.0
       fs-extra: 3.0.1
       loader-utils: 1.4.0
+      node-sass: 4.13.1
+      webpack: 4.42.0_webpack@4.42.0
     dev: false
     peerDependencies:
       node-sass: 4.x || 3.x
@@ -15573,6 +15575,33 @@ packages:
     hasBin: true
     resolution:
       integrity: sha512-MKuEYXFSGuRSi8FZ3A7imN1CeVn9Gpw0/SFJKdL1ejXJneI9a5rwlEZrKejhEFAA3O6yr3eIyl/WuvASvlT36g==
+  /sass-loader/10.1.0_53415b21df40cc83b644a66662504942:
+    dependencies:
+      klona: 2.0.4
+      loader-utils: 2.0.0
+      neo-async: 2.6.2
+      node-sass: 4.13.1
+      sass: 1.30.0
+      schema-utils: 3.0.0
+      semver: 7.3.4
+      webpack: 4.42.0_webpack@4.42.0
+    dev: false
+    engines:
+      node: '>= 10.13.0'
+    peerDependencies:
+      fibers: '>= 3.1.0'
+      node-sass: ^4.0.0 || ^5.0.0
+      sass: ^1.3.0
+      webpack: ^4.36.0 || ^5.0.0
+    peerDependenciesMeta:
+      fibers:
+        optional: true
+      node-sass:
+        optional: true
+      sass:
+        optional: true
+    resolution:
+      integrity: sha512-ZCKAlczLBbFd3aGAhowpYEy69Te3Z68cg8bnHHl6WnSCvnKpbM6pQrz957HWMa8LKVuhnD9uMplmMAHwGQtHeg==
   /sass-loader/10.1.0_sass@1.30.0+webpack@4.42.0:
     dependencies:
       klona: 2.0.4
@@ -19378,7 +19407,7 @@ packages:
       resolve-url-loader: 3.1.2
       rimraf: 3.0.2
       sass: 1.30.0
-      sass-loader: 10.1.0_sass@1.30.0+webpack@4.42.0
+      sass-loader: 10.1.0_53415b21df40cc83b644a66662504942
       source-map-loader: 1.1.3_webpack@4.42.0
       style-loader: 1.3.0_webpack@4.42.0
       svg-sprite-loader: 4.2.1_webpack@4.42.0
@@ -19665,7 +19694,7 @@ packages:
   'file:projects/imodeljs-backend.tgz':
     dependencies:
       '@azure/storage-blob': 10.4.0
-      '@bentley/imodeljs-native': 2.11.3
+      '@bentley/imodeljs-native': 2.11.4
       '@openid/appauth': 1.3.0
       '@types/chai': 4.2.14
       '@types/chai-as-promised': 7.1.3
@@ -19710,7 +19739,7 @@ packages:
     dev: false
     name: '@rush-temp/imodeljs-backend'
     resolution:
-      integrity: sha512-K01x8Btk7spPZMLtEMNaY4H1M0FKLRa9WJH+MtNzIF4d0GB2P/LqdeolIolVZ6Ixu4UT6hTVZD/9b0ohRoEYqQ==
+      integrity: sha512-BuzFHbyfD1X8kDYIVFZNh56Bq1vFLucnhfNnCxyxky/D/k0P9HWu6LG3QrHy94prhFz2FoShu/SAbz61BdnhDw==
       tarball: 'file:projects/imodeljs-backend.tgz'
     version: 0.0.0
   'file:projects/imodeljs-common.tgz':
@@ -21103,7 +21132,7 @@ specifiers:
   '@babel/core': 7.7.4
   '@bentley/icons-generic': ^1.0.15
   '@bentley/icons-generic-webfont': ^1.0.15
-  '@bentley/imodeljs-native': 2.11.3
+  '@bentley/imodeljs-native': 2.11.4
   '@bentley/react-scripts': 3.4.6
   '@microsoft/api-extractor': 7.7.3
   '@microsoft/applicationinsights-web': ^2.5.5
