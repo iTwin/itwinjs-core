@@ -65,6 +65,7 @@ export class BackendTileGenerator {
     useProjectExtents: false,
     disableMagnification: false,
     ignoreAreaPatterns: false,
+    enableExternalTextures: false,
     alwaysSubdivideIncompleteTiles: false,
   };
   private readonly _stats: Stats = {

@@ -226,14 +226,17 @@ export class ImdlReader extends GltfReader {
   private async readNamedTexture(namedTex: any, name: string): Promise<RenderTexture | undefined> {
     let texBytes: Uint8Array | undefined;
 
-    if (Id64.isValidId64(name)) {
-      // This texture has a valid Id64 name. It is valid to request it directly from the backend.
+    // If the texture has a valid Id64 name, it is valid to request it directly from the backend.
+    // If the texture does not have a valid Id64 name, it is not valid to request it directly from the backend.
+    // In that case, we instead retrieve the texture directly from the tile.
+    // Furthermore, if external textures are disabled, we retrieve the texture directly from the tile in both cases.
+
+    const useExternalTexture = Id64.isValidId64(name) && IModelApp.tileAdmin.enableExternalTextures;
+    if (useExternalTexture) {
       texBytes = await this._iModel.getTextureImage(name);
       if (undefined === texBytes)
         return undefined;
     } else {
-      // This texture does not have a valid Id64 name. It is not valid to request it directly from the backend.
-      // Instead, we retrieve the texture directly from the tile.
       const bufferViewId = JsonUtils.asString(namedTex.bufferView);
       const bufferViewJson = 0 !== bufferViewId.length ? this._bufferViews[bufferViewId] : undefined;
       if (undefined === bufferViewJson)

@@ -214,3 +214,9 @@ ECExpressions now support formatted property values. `GetFormattedValue` functio
 ```ts
 GetFormattedValue(this.Length, "Metric") = "10.0 m"
 ```
+
+## External textures
+
+Previously, all texture image data was embedded directly within iModel tiles. Now, when enabled, texture image data will be requested separate of the tile contents. This can reduce bandwidth and reduce memory consumption on the frontend.
+
+To enable usage of external textures, set the `enableExternalTextures` property of [TileAdmin.Props]($frontend) to true when passed in to [TileAdmin.create]($frontend). This [TileAdmins.Props[($frontend) object should be passed in to [IModelApp.startup]($frontend).

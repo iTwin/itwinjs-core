@@ -94,6 +94,8 @@ export abstract class TileAdmin {
   /** @internal */
   public abstract get ignoreAreaPatterns(): boolean;
   /** @internal */
+  public abstract get enableExternalTextures(): boolean;
+  /** @internal */
   public abstract get useProjectExtents(): boolean;
   /** @internal */
   public abstract get disableMagnification(): boolean;
@@ -369,6 +371,12 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      */
     ignoreAreaPatterns?: boolean;
 
+    /** If true, during tile generation the backend will not embed texture image data in the tile content. Instead, the frontend will request texture data separately from the backend. This can help reduce the amount of memory consumed by the frontend and the amount of data sent to the frontend.
+     *
+     * Default value: false
+     */
+    enableExternalTextures?: boolean;
+
     /** The interval in milliseconds at which a request for tile content will be retried until a response is received.
      *
      * Default value: 1000 (1 second)
@@ -629,6 +637,7 @@ class Admin extends TileAdmin {
   private readonly _enableInstancing: boolean;
   private readonly _enableImprovedElision: boolean;
   private readonly _ignoreAreaPatterns: boolean;
+  private readonly _enableExternalTextures: boolean;
   private readonly _disableMagnification: boolean;
   private readonly _alwaysRequestEdges: boolean;
   private readonly _alwaysSubdivideIncompleteTiles: boolean;
@@ -714,6 +723,7 @@ class Admin extends TileAdmin {
     this._enableInstancing = options.enableInstancing ?? defaultTileOptions.enableInstancing;
     this._enableImprovedElision = options.enableImprovedElision ?? defaultTileOptions.enableImprovedElision;
     this._ignoreAreaPatterns = options.ignoreAreaPatterns ?? defaultTileOptions.ignoreAreaPatterns;
+    this._enableExternalTextures = options.enableExternalTextures ?? defaultTileOptions.enableExternalTextures;
     this._disableMagnification = options.disableMagnification ?? defaultTileOptions.disableMagnification;
     this._alwaysRequestEdges = true === options.alwaysRequestEdges;
     this._alwaysSubdivideIncompleteTiles = options.alwaysSubdivideIncompleteTiles ?? defaultTileOptions.alwaysSubdivideIncompleteTiles;
@@ -774,6 +784,7 @@ class Admin extends TileAdmin {
   public get enableInstancing() { return this._enableInstancing && IModelApp.renderSystem.supportsInstancing; }
   public get enableImprovedElision() { return this._enableImprovedElision; }
   public get ignoreAreaPatterns() { return this._ignoreAreaPatterns; }
+  public get enableExternalTextures() { return this._enableExternalTextures; }
   public get useProjectExtents() { return this._useProjectExtents; }
   public get maximumLevelsToSkip() { return this._maximumLevelsToSkip; }
   public get mobileExpirationMemoryThreshold() { return this._mobileExpirationMemoryThreshold; }
