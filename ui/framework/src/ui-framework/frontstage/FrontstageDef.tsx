@@ -521,6 +521,8 @@ export class FrontstageDef {
       }
     }
     for (const panelDef of this.panelDefs) {
+      panelDef.size = panelDef.defaultSize;
+      panelDef.panelState = panelDef.defaultState;
       for (const widgetDef of panelDef.widgetDefs) {
         widgetDef.setWidgetState(widgetDef.defaultState);
       }

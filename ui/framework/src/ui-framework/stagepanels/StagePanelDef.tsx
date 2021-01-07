@@ -55,9 +55,11 @@ export class PanelSizeChangedEvent extends UiEvent<PanelSizeChangedEventArgs> { 
  */
 export class StagePanelDef extends WidgetHost {
   private _panelState = StagePanelState.Open;
+  private _defaultState = StagePanelState.Open;
   private _maxSizeSpec: StagePanelMaxSizeSpec | undefined;
   private _minSize: number | undefined;
   private _size: number | undefined;
+  private _defaultSize: number | undefined;
   private _resizable = true;
   private _pinned = true;
   private _applicationData?: any;
@@ -151,6 +153,12 @@ export class StagePanelDef extends WidgetHost {
     });
   }
 
+  /** @internal */
+  public get defaultState() { return this._defaultState; }
+
+  /** @internal */
+  public get defaultSize() { return this._defaultSize; }
+
   /** Panel zones.
    * @internal
    */
@@ -159,19 +167,17 @@ export class StagePanelDef extends WidgetHost {
   }
 
   /** @internal */
-  public initializePanelState(panelState: StagePanelState) {
-    this._panelState = panelState;
-  }
-
-  /** @internal */
   public initializeFromProps(props: StagePanelProps, panelLocation?: StagePanelLocation): void {
     this._size = props.size;
+    this._defaultSize = props.size;
     this._maxSizeSpec = props.maxSize;
     this._minSize = props.minSize;
     if (panelLocation !== undefined)
       this._location = panelLocation;
-    if (props.defaultState !== undefined)
-      this.initializePanelState(props.defaultState);
+    if (props.defaultState !== undefined) {
+      this._panelState = props.defaultState;
+      this._defaultState = props.defaultState;
+    }
     this._resizable = props.resizable;
     if (props.pinned !== undefined)
       this._pinned = props.pinned;
