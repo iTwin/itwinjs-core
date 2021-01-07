@@ -110,14 +110,13 @@ export namespace WmtsCapability {
         this.keywords = [];
 
         if (Array.isArray(keywords)) {
-          keywords.forEach((keyword: any) => {
+          for (const keyword of keywords) {
             if (keyword !== undefined) {
-              this.keywords?.push(keyword._text);
+              this.keywords.push(keyword._text);
             }
-
-          });
+          }
         } else {
-          this.keywords?.push(keywords._text);
+          this.keywords.push(keywords._text);
         }
       }
 
@@ -411,7 +410,6 @@ export namespace WmtsCapability {
     public readonly boundingBox?: BoundingBox;
     public readonly styles: Style[] = [];
     public readonly tileMatrixSetLinks: TileMatrixSetLink[] = [];
-
 
     constructor(_json: any) {
       if (!_json)
