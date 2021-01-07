@@ -24,6 +24,10 @@ import { NativeAppStorage } from "../NativeAppStorage";
 import { cancelTileContentRequests } from "../rpc-impl/IModelTileRpcImpl";
 import { BackendIpc, IpcHandler } from "./BackendIpc";
 
+/**
+ * Implementation for backend of NativeAppIpc
+ * @internal
+ */
 export class NativeAppImpl extends IpcHandler implements NativeAppIpc {
 
   public get channelName() { return nativeAppChannel; }

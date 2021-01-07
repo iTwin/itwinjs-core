@@ -72,9 +72,8 @@ export enum OverriddenBy {
 }
 
 /**
- * A "native app" is an iModel.js application in which a one-to-one relationship exists between the frontend and backend process. Both processes execute on the same device, which can
-* enable offline workflows. Such an app can target a specific platform - e.g., Electron, iOS, Android.
-* By contrast, browser-based iModel.js applications are platform-agnostic, may support multiple frontend connections, and require a network connection.
+ * The methods that may be invoked via Ipc from the frontend of a Native App and are implemented on its backend.
+ *
 * @internal
 */
 export interface NativeAppIpc extends IpcInterface {
@@ -86,15 +85,15 @@ export interface NativeAppIpc extends IpcInterface {
    */
   log: (_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any) => Promise<void>;
 
-  /** Check if internet is reachable and how its reachable. */
+  /** Check if the internet is reachable. */
   checkInternetConnectivity: () => Promise<InternetConnectivityStatus>;
 
-  /** Manually override internet reachability for testing purpose.
+  /** Manually override internet reachability for testing purposes.
    * @param _status New status to set on backend.
    */
   overrideInternetConnectivity: (_overriddenBy: OverriddenBy, _status: InternetConnectivityStatus) => Promise<void>;
 
-  /** Return config from backend */
+  /** Return configuration information from backend. */
   getConfig: () => Promise<any>;
 
   /** Cancels currently pending or active generation of tile content.
@@ -127,12 +126,12 @@ export interface NativeAppIpc extends IpcInterface {
   requestCancelDownloadBriefcase: (_fileName: string) => Promise<boolean>;
 
   /**
-   * Opens the briefcase on disk - this api can be called offline
+   * Open a briefcase file from the local disk.
    */
   open: (_args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
 
   /**
-   * Closes the briefcase on disk - this api can be called offline
+   * Close the backend of a briefcase connection.
    */
   closeBriefcase: (_key: string) => Promise<void>;
 
@@ -144,7 +143,7 @@ export interface NativeAppIpc extends IpcInterface {
 
   /**
    * Gets a list of all briefcases that were previously downloaded to the briefcase cache.
-   * @returns list of briefcases.
+   * @returns array of LocalBriefcaseProps.
    */
   getCachedBriefcases: (_iModelId?: GuidString) => Promise<LocalBriefcaseProps[]>;
 
@@ -157,18 +156,18 @@ export interface NativeAppIpc extends IpcInterface {
   /**
    * Close key/value pair base storage
    * @param _storageId string identifier of storage
-   * @param _deleteIt delete the storage on close
+   * @param _deleteOnClose delete the storage on close
    */
-  storageMgrClose: (_storageId: string, _deleteIt: boolean) => Promise<void>;
+  storageMgrClose: (_storageId: string, _deleteOnClose: boolean) => Promise<void>;
 
   /**
    * Get names of available storages
-   * @returns list of name of storage
+   * @returns list of storage names
    */
   storageMgrNames: () => Promise<string[]>;
 
   /**
-   * Get a value against a key.
+   * Get the value associated with a key.
    * @param _storageId string identifier of storage
    * @param _key key identifier for value
    * @returns key value or undefined
@@ -176,7 +175,7 @@ export interface NativeAppIpc extends IpcInterface {
   storageGet: (_storageId: string, _key: string) => Promise<StorageValue | undefined>;
 
   /**
-   * Set a value against a key.
+   * Set a value for a key.
    * @param _storageId string identifier of storage
    * @param _key key identifier for value
    * @param _value value to be set
@@ -191,7 +190,7 @@ export interface NativeAppIpc extends IpcInterface {
   storageRemove: (_storageId: string, _key: string) => Promise<void>;
 
   /**
-   * Get list of keys in storage.
+   * Get list of keys in a storage.
    * @param _storageId string identifier of storage
    * @returns list of storage ids
    */
@@ -204,12 +203,12 @@ export interface NativeAppIpc extends IpcInterface {
   storageRemoveAll: (_storageId: string) => Promise<void>;
 
   /**
-   * Trigger sigIn on backend. This will cause onUserStateChange() event.
+   * Trigger a sign in on backend. This will emit an onUserStateChange() event.
    */
   authSignIn: () => Promise<void>;
 
   /**
-   * SignOut user on backend. This will cause onUserStateChange() event.
+   * Sign out the user on the backend. This will emit an onUserStateChange() event.
    */
   authSignOut: () => Promise<void>;
 

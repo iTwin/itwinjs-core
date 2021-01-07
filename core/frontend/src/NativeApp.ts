@@ -31,7 +31,26 @@ export interface DownloadBriefcaseOptions {
 }
 
 /**
- * @internal
+ * Frontend support for native applications. A "native app" is an application where the frontend [IModelApp]frontend) process
+ * and backend [IModelHost]($backend) process are *always running on the same computer*.
+ *
+ * Native apps are *installed* on a computer by an installer program that supplies both the frontend and backend
+ * implementations at the same time. This implies a level of guaranteed version-compatibility, since both ends are
+ * delivered together, and a level of *trust* implied by the user's consent at install time. That doesn't mean that
+ * there aren't security concerns, particularly if the frontend loads the downloaded resources. But, the backend
+ * is explicitly granted access to OS level services on the device specified either at install time or via consent dialogs.
+ *
+ * Since the (single) frontend process and the (single) backend process are always paired on the same computer, the IPC
+ * connection between them can be assumed to be very efficient. The bandwidth and latency concerns of web applications
+ * are not as relevant for native apps. Of course Ipc bandwidth is not infinite and latency is not zero, so round-trips
+ * and payloads between processes should be minimized. But both are generally 2 orders of magnitude less limited.
+ *
+ * Native apps can connect to external services via HTTP (e.g. IModelHub), but may also work with no internet
+ * connection.
+ * Native apps sometimes target a specific platform (e.g., Electron, iOS, Android), but are often designed to work any
+ * platform.
+ * This class is platform agnostic.
+@internal
  */
 export class NativeApp {
   public static callBackend<T extends keyof NativeAppIpc>(methodName: T, ...args: Parameters<NativeAppIpc[T]>): ReturnType<NativeAppIpc[T]> {
