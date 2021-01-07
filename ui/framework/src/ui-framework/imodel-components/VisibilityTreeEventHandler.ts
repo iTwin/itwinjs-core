@@ -10,13 +10,11 @@ import { EMPTY } from "rxjs/internal/observable/empty";
 import { from } from "rxjs/internal/observable/from";
 import { map } from "rxjs/internal/operators/map";
 import { mergeMap } from "rxjs/internal/operators/mergeMap";
-import { takeUntil } from "rxjs/internal/operators/takeUntil";
-import { Subject } from "rxjs/internal/Subject";
-import { IDisposable } from "@bentley/bentleyjs-core";
+import { BeEvent, IDisposable } from "@bentley/bentleyjs-core";
 import { NodeKey } from "@bentley/presentation-common";
 import { UnifiedSelectionTreeEventHandler, UnifiedSelectionTreeEventHandlerParams } from "@bentley/presentation-components";
 import {
-  CheckBoxInfo, CheckboxStateChange, TreeCheckboxStateChangeEventArgs, TreeModelChanges, TreeModelNode, TreeNodeItem,
+  CheckBoxInfo, CheckboxStateChange, TreeCheckboxStateChangeEventArgs, TreeModelNode, TreeNodeItem,
   TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs,
 } from "@bentley/ui-components";
 import { CheckBoxState, isPromiseLike } from "@bentley/ui-core";
@@ -26,10 +24,16 @@ import { CheckBoxState, isPromiseLike } from "@bentley/ui-core";
  * @alpha
  */
 export interface VisibilityStatus {
-  isDisplayed: boolean;
+  state: "visible" | "partial" | "hidden";
   isDisabled?: boolean;
   tooltip?: string;
 }
+
+/**
+ * Type definition of visibility change event listener.
+ * @alpha
+ */
+export type VisibilityChangeListener = (nodeIds?: string[]) => void;
 
 /**
  * Visibility handler used to change or get visibility of instances represented by the tree node.
@@ -38,11 +42,11 @@ export interface VisibilityStatus {
 export interface IVisibilityHandler extends IDisposable {
   getVisibilityStatus(node: TreeNodeItem, nodeKey: NodeKey): VisibilityStatus | Promise<VisibilityStatus>;
   changeVisibility(node: TreeNodeItem, nodeKey: NodeKey, shouldDisplay: boolean): Promise<void>;
-  onVisibilityChange?: () => void;
+  onVisibilityChange: BeEvent<VisibilityChangeListener>;
 }
 
 /**
- * Type definition of predicate used to decide if node can be selected
+ * Type definition of predicate used to decide if node can be selected.
  * @alpha
  */
 export type VisibilityTreeSelectionPredicate = (key: NodeKey, node: TreeNodeItem) => boolean;
@@ -63,8 +67,7 @@ export interface VisibilityTreeEventHandlerParams extends UnifiedSelectionTreeEv
 export class VisibilityTreeEventHandler extends UnifiedSelectionTreeEventHandler {
   private _visibilityHandler: IVisibilityHandler | undefined;
   private _selectionPredicate?: VisibilityTreeSelectionPredicate;
-  private _cancelCheckboxEvent = new Subject<void>();
-  private _removeListener: () => void;
+  private _listeners = new Array<() => void>();
 
   constructor(params: VisibilityTreeEventHandlerParams) {
     super(params);
@@ -72,16 +75,16 @@ export class VisibilityTreeEventHandler extends UnifiedSelectionTreeEventHandler
     this._selectionPredicate = params.selectionPredicate;
 
     if (this._visibilityHandler) {
-      this._visibilityHandler.onVisibilityChange = async () => this.updateCheckboxes();
+      this._listeners.push(this._visibilityHandler.onVisibilityChange.addListener(async (nodeIds) => this.updateCheckboxes(nodeIds)));
     }
 
-    this._removeListener = this.modelSource.onModelChanged.addListener(async (args) => this.updateCheckboxes(args[1]));
+    this._listeners.push(this.modelSource.onModelChanged.addListener(async ([_, changes]) => this.updateCheckboxes([...changes.addedNodeIds, ...changes.modifiedNodeIds])));
     this.updateCheckboxes(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   public dispose() {
     super.dispose();
-    this._removeListener();
+    this._listeners.forEach((disposeFunc) => disposeFunc());
   }
 
   private filterSelectionItems(items: TreeNodeItem[]) {
@@ -122,15 +125,9 @@ export class VisibilityTreeEventHandler extends UnifiedSelectionTreeEventHandler
 
     from(event.stateChanges)
       .pipe(
-        takeUntil(this._cancelCheckboxEvent),
         mergeMap((changes) => this.changeVisibility(changes)),
       )
-      .subscribe({
-        complete: () => {
-          // needed for categories tree as it currently does no emit event when visibility changes
-          this.updateCheckboxes(); // eslint-disable-line @typescript-eslint/no-floating-promises
-        },
-      });
+      .subscribe();
     return undefined;
   }
 
@@ -146,8 +143,8 @@ export class VisibilityTreeEventHandler extends UnifiedSelectionTreeEventHandler
       );
   }
 
-  private async updateCheckboxes(modelChanges?: TreeModelChanges) {
-    const changes = await (modelChanges ? this.collectAffectedNodesCheckboxInfos(modelChanges) : this.collectAllNodesCheckboxInfos());
+  private async updateCheckboxes(affectedNodes?: string[]) {
+    const changes = await (affectedNodes ? this.collectAffectedNodesCheckboxInfos(affectedNodes) : this.collectAllNodesCheckboxInfos());
     this.updateModel(changes);
   }
 
@@ -167,13 +164,12 @@ export class VisibilityTreeEventHandler extends UnifiedSelectionTreeEventHandler
     });
   }
 
-  private async collectAffectedNodesCheckboxInfos(modelChanges: TreeModelChanges) {
+  private async collectAffectedNodesCheckboxInfos(affectedNodes: string[]) {
     const nodeStates = new Map<string, CheckBoxInfo>();
-    const affectedNodeIds = [...modelChanges.addedNodeIds, ...modelChanges.modifiedNodeIds];
-    if (affectedNodeIds.length === 0)
+    if (affectedNodes.length === 0)
       return nodeStates;
 
-    for (const nodeId of affectedNodeIds) {
+    for (const nodeId of affectedNodes) {
       const node = this.modelSource.getModel().getNode(nodeId);
       // istanbul ignore if
       if (!node)
@@ -204,10 +200,23 @@ export class VisibilityTreeEventHandler extends UnifiedSelectionTreeEventHandler
 
   private createCheckboxInfo(status: VisibilityStatus): CheckBoxInfo {
     return {
-      state: status.isDisplayed ? CheckBoxState.On : CheckBoxState.Off,
+      state: visibilityStateToCheckboxState(status),
       isDisabled: status.isDisabled || false,
       isVisible: true,
       tooltip: status.tooltip,
     };
   }
 }
+
+const visibilityStateToCheckboxState = (status: VisibilityStatus) => {
+  switch (status.state) {
+    case "visible":
+      return CheckBoxState.On;
+    // istanbul ignore next
+    case "partial":
+      return CheckBoxState.Partial;
+    case "hidden":
+    default:
+      return CheckBoxState.Off;
+  }
+};
