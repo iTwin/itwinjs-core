@@ -1578,6 +1578,16 @@ export interface SliderProps {
 }
 
 // @beta
+export class SnowEffect extends Tool {
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(enable?: boolean): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
 export class SourceAspectIdFromElementIdTool extends SourceAspectIdTool {
     // (undocumented)
     protected getECSql(queryId: string): string;
