@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-frontend",
+      "comment": "WmtsCapabilities now using 'xml-js' instead of 'fast-xml-parser'.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "mdastous-bentley@users.noreply.github.com"
+}
