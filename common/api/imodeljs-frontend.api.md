@@ -1498,6 +1498,9 @@ export interface CachedIModelCoordinatesResponseProps {
     result: Array<PointWithStatus | undefined>;
 }
 
+// @internal (undocumented)
+export function calculateEcefToDbTransformAtLocation(originIn: Point3d, iModel: IModelConnection): Promise<Transform | undefined>;
+
 // @public
 export interface CanvasDecoration {
     decorationCursor?: string;
@@ -3504,6 +3507,8 @@ export abstract class GraphicBuilder {
     pickId?: string;
     get placement(): Transform;
     set placement(tf: Transform);
+    // @beta
+    preserveOrder: boolean;
     setBlankingFill(fillColor: ColorDef): void;
     setSymbology(lineColor: ColorDef, fillColor: ColorDef, lineWidth: number, linePixels?: LinePixels): void;
     readonly type: GraphicType;
@@ -11375,6 +11380,8 @@ export abstract class Viewport implements IDisposable {
     readonly onFeatureOverridesChanged: BeEvent<(vp: Viewport) => void>;
     readonly onNeverDrawnChanged: BeEvent<(vp: Viewport) => void>;
     readonly onRender: BeEvent<(vp: Viewport) => void>;
+    // @beta
+    readonly onResized: BeEvent<(vp: Viewport) => void>;
     readonly onViewChanged: BeEvent<(vp: Viewport) => void>;
     readonly onViewedCategoriesChanged: BeEvent<(vp: Viewport) => void>;
     readonly onViewedCategoriesPerModelChanged: BeEvent<(vp: Viewport) => void>;
