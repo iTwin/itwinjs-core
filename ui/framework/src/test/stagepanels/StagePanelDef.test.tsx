@@ -4,10 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { expect } from "chai";
+import produce from "immer";
 import * as sinon from "sinon";
-import { FrontstageManager, StagePanelDef, StagePanelState, StagePanelZoneDef, StagePanelZonesDef, Widget, WidgetDef } from "../../ui-framework";
+import { FrontstageManager, setPanelSize, StagePanelDef, StagePanelState, StagePanelZoneDef, StagePanelZonesDef, toPanelSide, Widget, WidgetDef } from "../../ui-framework";
 import TestUtils from "../TestUtils";
 import { StagePanelLocation } from "@bentley/ui-abstract";
+import { createNineZoneState } from "@bentley/ui-ninezone";
 
 describe("StagePanelDef", () => {
 
@@ -98,5 +100,42 @@ describe("StagePanelZoneDef", () => {
     sut.initializeFromProps({ widgets: [<Widget />] }, StagePanelLocation.Left, "start"); // eslint-disable-line react/jsx-key
     expect(sut.widgetCount).to.eq(1);
     expect(sut.widgetDefs[0].id).to.eq("uifw-spz-Left-start-0");
+  });
+});
+
+describe("toPanelSide", () => {
+  it("should return 'left'", () => {
+    toPanelSide(StagePanelLocation.Left).should.eq("left");
+  });
+
+  it("should return 'right'", () => {
+    toPanelSide(StagePanelLocation.Right).should.eq("right");
+  });
+
+  it("should return 'bottom'", () => {
+    toPanelSide(StagePanelLocation.Bottom).should.eq("bottom");
+  });
+
+  it("should return 'bottom'", () => {
+    toPanelSide(StagePanelLocation.BottomMost).should.eq("bottom");
+  });
+
+  it("should return 'top'", () => {
+    toPanelSide(StagePanelLocation.Top).should.eq("top");
+  });
+
+  it("should return 'top'", () => {
+    toPanelSide(StagePanelLocation.TopMost).should.eq("top");
+  });
+});
+
+describe("setPanelSize", () => {
+  it("should reset size", () => {
+    let nineZone = createNineZoneState();
+    nineZone = produce(nineZone, (draft) => {
+      draft.panels.left.size = 200;
+    });
+    const sut = setPanelSize(nineZone, "left", undefined);
+    (sut.panels.left.size === undefined).should.true;
   });
 });

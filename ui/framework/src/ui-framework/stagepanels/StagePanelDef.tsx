@@ -6,13 +6,16 @@
  * @module Frontstage
  */
 
+import produce, { Draft } from "immer";
 import { StagePanelLocation } from "@bentley/ui-abstract";
 import { UiEvent } from "@bentley/ui-core";
+import { NineZoneState, PanelSide } from "@bentley/ui-ninezone";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { WidgetDef } from "../widgets/WidgetDef";
 import { WidgetHost } from "../widgets/WidgetHost";
 import { StagePanelMaxSizeSpec, StagePanelProps, StagePanelZoneProps, StagePanelZonesProps } from "./StagePanel";
 import { getStableWidgetProps } from "../zones/Zone";
+import { UiFramework } from "../UiFramework";
 
 /** Enum for StagePanel state.
  * @beta
@@ -77,9 +80,20 @@ export class StagePanelDef extends WidgetHost {
   public get size() { return this._size; }
 
   public set size(size) {
-    // istanbul ignore if
     if (this._size === size)
       return;
+
+    if (UiFramework.uiVersion === "2") {
+      const frontstageDef = FrontstageManager.activeFrontstageDef;
+      if (frontstageDef && frontstageDef.nineZoneState) {
+        const side = toPanelSide(this.location);
+        frontstageDef.nineZoneState = setPanelSize(frontstageDef.nineZoneState, side, size);
+        const panel = frontstageDef.nineZoneState.panels[side];
+        if (panel.size === this._size)
+          return;
+        size = panel.size;
+      }
+    }
     this._size = size;
     FrontstageManager.onPanelSizeChangedEvent.emit({
       panelDef: this,
@@ -249,3 +263,29 @@ export class StagePanelZoneDef extends WidgetHost {
     });
   }
 }
+
+/** @internal */
+export function toPanelSide(location: StagePanelLocation): PanelSide {
+  switch (location) {
+    case StagePanelLocation.Bottom:
+    case StagePanelLocation.BottomMost:
+      return "bottom";
+    case StagePanelLocation.Left:
+      return "left";
+    case StagePanelLocation.Right:
+      return "right";
+    case StagePanelLocation.Top:
+    case StagePanelLocation.TopMost:
+      return "top";
+  }
+}
+
+/** @internal */
+export const setPanelSize = produce((
+  nineZone: Draft<NineZoneState>,
+  side: PanelSide,
+  size: number | undefined,
+) => {
+  const panel = nineZone.panels[side];
+  panel.size = size === undefined ? size : Math.min(Math.max(size, panel.minSize), panel.maxSize);
+});

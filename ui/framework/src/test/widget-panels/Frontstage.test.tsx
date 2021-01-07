@@ -14,9 +14,9 @@ import { Size, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
 import { addFloatingWidget, addPanelWidget, addTab, createDraggedTabState, createNineZoneState, NineZone, NineZoneState, toolSettingsTabId } from "@bentley/ui-ninezone";
 import {
   ActiveFrontstageDefProvider, addPanelWidgets, addWidgets, expandWidget, FrontstageDef,
-  FrontstageManager, getPanelSide, getWidgetId, initializeNineZoneState, initializePanel, isFrontstageStateSettingResult,
-  ModalFrontstageComposer, packNineZoneState, restoreNineZoneState, setPanelSize, setWidgetState, showWidget, StagePanelDef, StagePanelZoneDef,
-  StagePanelZonesDef, UiSettingsProvider, useActiveModalFrontstageInfo, useFrontstageManager, useNineZoneDispatch, useNineZoneState,
+  FrontstageManager, getWidgetId, initializeNineZoneState, initializePanel, isFrontstageStateSettingResult, ModalFrontstageComposer,
+  packNineZoneState, restoreNineZoneState, setWidgetState, showWidget, StagePanelDef, StagePanelZoneDef, StagePanelZonesDef,
+  UiSettingsProvider, useActiveModalFrontstageInfo, useFrontstageManager, useNineZoneDispatch, useNineZoneState,
   useSavedFrontstageState, useSaveFrontstageSettings, useSyncDefinitions, useUpdateNineZoneSize, WidgetDef, WidgetPanelsFrontstage, WidgetState, ZoneDef,
 } from "../../ui-framework";
 import TestUtils, { mount, storageMock, UiSettingsStub } from "../TestUtils";
@@ -792,43 +792,6 @@ describe("getWidgetId", () => {
 describe("isFrontstageStateSettingResult", () => {
   it("isFrontstageStateSettingResult", () => {
     isFrontstageStateSettingResult({ status: UiSettingsStatus.UnknownError }).should.false;
-  });
-});
-
-describe("getPanelSide", () => {
-  it("should return 'left'", () => {
-    getPanelSide(StagePanelLocation.Left).should.eq("left");
-  });
-
-  it("should return 'right'", () => {
-    getPanelSide(StagePanelLocation.Right).should.eq("right");
-  });
-
-  it("should return 'bottom'", () => {
-    getPanelSide(StagePanelLocation.Bottom).should.eq("bottom");
-  });
-
-  it("should return 'bottom'", () => {
-    getPanelSide(StagePanelLocation.BottomMost).should.eq("bottom");
-  });
-
-  it("should return 'top'", () => {
-    getPanelSide(StagePanelLocation.Top).should.eq("top");
-  });
-
-  it("should return 'top'", () => {
-    getPanelSide(StagePanelLocation.TopMost).should.eq("top");
-  });
-});
-
-describe("setPanelSize", () => {
-  it("should reset size", () => {
-    let nineZone = createNineZoneState();
-    nineZone = produce(nineZone, (draft) => {
-      draft.panels.left.size = 200;
-    });
-    const sut = setPanelSize(nineZone, "left", undefined);
-    (sut.panels.left.size === undefined).should.true;
   });
 });
 
