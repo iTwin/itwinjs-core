@@ -123,7 +123,7 @@ export class Point2d extends XY implements BeJSONFunctions {
   /** Constructor for Point2d */
   constructor(x: number = 0, y: number = 0) { super(x, y); }
   /** return a new Point2d with x,y coordinates from this. */
-  public clone(): Point2d { return new Point2d(this.x, this.y); }
+  public clone(result?: Point2d): Point2d { return Point2d.create(this.x, this.y, result); }
 
   /**
    * Return a point (newly created unless result provided) with given x,y coordinates
@@ -274,7 +274,7 @@ export class Point2d extends XY implements BeJSONFunctions {
 export class Vector2d extends XY implements BeJSONFunctions {
   constructor(x: number = 0, y: number = 0) { super(x, y); }
   /** Return a new Vector2d with the same x,y */
-  public clone(): Vector2d { return new Vector2d(this.x, this.y); }
+  public clone(result?: Vector2d): Vector2d { return Vector2d.create(this.x, this.y, result); }
   /** Return a new Vector2d with given x and y */
   public static create(x: number = 0, y: number = 0, result?: Vector2d): Vector2d {
     if (result) {
