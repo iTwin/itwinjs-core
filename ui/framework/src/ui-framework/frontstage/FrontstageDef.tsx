@@ -39,7 +39,7 @@ export interface FrontstageNineZoneStateChangedEventArgs extends FrontstageEvent
 
 /** FrontstageDef class provides an API for a Frontstage.
  * @public
- */
+ */
 export class FrontstageDef {
   private _id: string = "";
   private _defaultTool?: ToolItemDef;
@@ -515,6 +515,16 @@ export class FrontstageDef {
 
   /** @beta */
   public restoreLayout() {
+    for (const zoneDef of this.zoneDefs) {
+      for (const widgetDef of zoneDef.widgetDefs) {
+        widgetDef.setWidgetState(widgetDef.defaultState);
+      }
+    }
+    for (const panelDef of this.panelDefs) {
+      for (const widgetDef of panelDef.widgetDefs) {
+        widgetDef.setWidgetState(widgetDef.defaultState);
+      }
+    }
     FrontstageManager.onFrontstageRestoreLayoutEvent.emit({ frontstageDef: this });
   }
 }

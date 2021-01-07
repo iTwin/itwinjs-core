@@ -201,7 +201,7 @@ export class FrontstageUi2 extends FrontstageProvider {
         bottomPanel={
           <StagePanel
             size={180}
-            defaultState={StagePanelState.Minimized}
+            defaultState={StagePanelState.Open}
             panelZones={{
               start: {
                 widgets: [
@@ -211,8 +211,8 @@ export class FrontstageUi2 extends FrontstageProvider {
               },
               end: {
                 widgets: [
-                  <Widget id="BottomEnd1" label="End1" defaultState={WidgetState.Open} element={<h2>Bottom End1 widget</h2>} />,
-                  <Widget id="BottomEnd2" label="End2" element={<LayoutControls />} />,
+                  <Widget id="BottomEnd1" label="End1" element={<h2>Bottom End1 widget</h2>} />,
+                  <Widget id="BottomEnd2" label="End2" defaultState={WidgetState.Open} element={<LayoutControls />} />,
                 ],
               },
             }}
