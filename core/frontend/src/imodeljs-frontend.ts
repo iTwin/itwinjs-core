@@ -83,6 +83,7 @@ export * from "./render/GraphicBranch";
 export * from "./render/GraphicBuilder";
 export * from "./render/InstancedGraphicParams";
 export * from "./render/MockRender";
+export * from "./render/ParticleCollectionBuilder";
 export * from "./render/Pixel";
 export * from "./render/RenderClipVolume";
 export * from "./render/RenderGraphic";

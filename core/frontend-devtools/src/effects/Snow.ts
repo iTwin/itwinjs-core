@@ -8,7 +8,7 @@
 
 import { Point2d, Range1d, Range2d, Vector2d } from "@bentley/geometry-core";
 import { ColorDef, GraphicParams } from "@bentley/imodeljs-common";
-import { DecorateContext,GraphicType, IModelApp, Tool, Viewport } from "@bentley/imodeljs-frontend";
+import { DecorateContext, Decorator, GraphicType, IModelApp, Tool, Viewport } from "@bentley/imodeljs-frontend";
 import { parseToggle } from "../tools/parseToggle";
 
 /** Generate integer in [min, max]. */
@@ -41,7 +41,7 @@ interface SnowParticle {
 }
 
 /** Simulates snowfall in a Viewport. */
-class SnowDecorator {
+class SnowDecorator implements Decorator {
   /** The viewport being decorated. */
   public readonly viewport: Viewport;
   /** Invoked when this decorator is to be destroyed. */
