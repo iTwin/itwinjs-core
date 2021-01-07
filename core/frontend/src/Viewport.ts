@@ -240,6 +240,10 @@ export abstract class Viewport implements IDisposable {
    * @beta
    */
   public readonly onDisposed = new BeEvent<(vp: Viewport) => void>();
+  /** Event invoked after [[renderFrame]] detects that the dimensions of the viewport's [[ViewRect]] have changed.
+   * @beta
+   */
+  public readonly onResized = new BeEvent<(vp: Viewport) => void>();
 
   /** This is initialized by a call to [[changeView]] sometime shortly after the constructor is invoked.
    * During that time it can be undefined. DO NOT assign directly to this member - use `setView()`.
@@ -2155,7 +2159,8 @@ export abstract class Viewport implements IDisposable {
     let isRedrawNeeded = this._redrawPending || this._doContinuousRendering;
     this._redrawPending = false;
 
-    if (target.updateViewRect()) {
+    const resized = target.updateViewRect();
+    if (resized) {
       target.onResized();
       this.invalidateController();
     }
@@ -2249,6 +2254,9 @@ export abstract class Viewport implements IDisposable {
     }
 
     // Dispatch change events after timer has stopped and update has finished.
+    if (resized)
+      this.onResized.raiseEvent(this);
+
     if (changeFlags.hasChanges) {
       this.onViewportChanged.raiseEvent(this, changeFlags);
 
