@@ -447,6 +447,30 @@ export interface TreeWithUnifiedSelectionProps {
 }
 
 // @beta
+export interface UnifiedSelectionContext {
+    addToSelection(keys: Keys, level?: number): void;
+    clearSelection(level?: number): void;
+    getSelection: UnifiedSelectionState;
+    imodel: IModelConnection;
+    removeFromSelection(keys: Keys, level?: number): void;
+    replaceSelection(keys: Keys, level?: number): void;
+    selectionLevel: number;
+}
+
+// @beta
+export function UnifiedSelectionContextProvider(props: UnifiedSelectionContextProviderProps): React.ReactElement;
+
+// @beta
+export interface UnifiedSelectionContextProviderProps {
+    children?: React.ReactNode;
+    imodel: IModelConnection;
+    selectionLevel?: number;
+}
+
+// @beta
+export type UnifiedSelectionState = (selectionLevel?: number) => Readonly<KeySet>;
+
+// @beta
 export class UnifiedSelectionTreeEventHandler extends TreeEventHandler implements IDisposable {
     constructor(params: UnifiedSelectionTreeEventHandlerParams);
     protected createKeysForSelection(nodes: TreeNodeItem[], _selectionType: SelectionChangeType): Keys;
@@ -496,6 +520,9 @@ export function usePropertyDataProviderWithUnifiedSelection(props: PropertyDataP
 
 // @public
 export function useRulesetRegistration(ruleset: Ruleset): void;
+
+// @beta
+export function useUnifiedSelectionContext(): UnifiedSelectionContext | undefined;
 
 // @beta
 export function useUnifiedSelectionTreeEventHandler(props: UnifiedSelectionTreeEventHandlerParams): UnifiedSelectionTreeEventHandler;
