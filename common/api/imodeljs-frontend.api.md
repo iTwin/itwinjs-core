@@ -6796,6 +6796,8 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     // (undocumented)
     collectStatistics(stats: RenderMemory.Statistics): void;
     // (undocumented)
+    createDrawArgs(context: SceneContext): TileDrawArgs | undefined;
+    // (undocumented)
     discloseTileTrees(trees: TileTreeSet): void;
     // (undocumented)
     getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined>;
