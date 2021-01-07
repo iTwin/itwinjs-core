@@ -3376,6 +3376,8 @@ export namespace Gradient {
 
 // @public
 export class GraphicParams {
+    // (undocumented)
+    clone(out?: GraphicParams): GraphicParams;
     fillColor: ColorDef;
     fillFlags: FillFlags;
     static fromBlankingFill(fillColor: ColorDef): GraphicParams;
@@ -3388,10 +3390,6 @@ export class GraphicParams {
     rasterWidth: number;
     setFillTransparency(transparency: number): void;
     setLineTransparency(transparency: number): void;
-    // @alpha (undocumented)
-    trueWidthEnd: number;
-    // @alpha (undocumented)
-    trueWidthStart: number;
 }
 
 // @public

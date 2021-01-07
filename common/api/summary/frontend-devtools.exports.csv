@@ -145,6 +145,7 @@ beta;ShowTileVolumesTool
 alpha;Slider
 alpha;SliderHandler = (slider: HTMLInputElement) => void
 alpha;SliderProps
+beta;SnowEffect 
 beta;SourceAspectIdFromElementIdTool 
 beta;class SourceAspectIdTool 
 alpha;TestClipStyleTool 
