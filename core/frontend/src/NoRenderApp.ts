@@ -37,7 +37,8 @@ export class NullTarget extends RenderTarget {
   public updateViewRect(): boolean { return false; }
   public readPixels(): void { }
   public readImage() { return undefined; }
-
+  public get screenSpaceEffects(): Iterable<string> { return []; }
+  public set screenSpaceEffects(_effects: Iterable<string>) { }
 }
 
 /**

@@ -47,7 +47,7 @@ export class IModeljsLibraryExportsPlugin {
           `\nif ((typeof window !== "undefined") && window && !window.${utils.IMJS_GLOBAL_LIBS}) window.${utils.IMJS_GLOBAL_LIBS} = {};`,
           `\nif ((typeof window !== "undefined") && window && !window.${utils.IMJS_GLOBAL_LIBS_VERS}) window.${utils.IMJS_GLOBAL_LIBS_VERS} = {};`,
           `\nwindow.${utils.IMJS_GLOBAL_LIBS}[${pkgName}] = __webpack_require__(${JSON.stringify(module.id)});`,
-          `\nwindow.${utils.IMJS_GLOBAL_LIBS_VERS}[${pkgName}] = ${JSON.stringify(pkgVersion)};\n`,
+          `\nwindow.${utils.IMJS_GLOBAL_LIBS_VERS}[${pkgName}] = ${pkgVersion};\n`,
         );
       });
     });

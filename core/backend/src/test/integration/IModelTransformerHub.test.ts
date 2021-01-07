@@ -2,16 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import * as path from "path";
-import * as semver from "semver";
-import { DbResult, Guid, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { DbResult, Guid, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
 import { ColorDef, IModel } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
+import { assert } from "chai";
+import * as path from "path";
+import * as semver from "semver";
 import {
-  AuthorizedBackendRequestContext, BackendLoggerCategory, BisCoreSchema, BriefcaseManager, ConcurrencyControl, ECSqlStatement, Element,
-  ElementRefersToElements, ExternalSourceAspect, GenericSchema, IModelDb, IModelExporter, IModelJsFs, IModelTransformer, NativeLoggerCategory,
+  BackendLoggerCategory, BisCoreSchema, ConcurrencyControl, ECSqlStatement, Element,
+  ElementRefersToElements, ExternalSourceAspect, GenericSchema, IModelDb, IModelExporter, IModelHost, IModelJsFs, IModelTransformer, NativeLoggerCategory,
   SnapshotDb,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -34,8 +34,8 @@ describe("IModelTransformerHub (#integration)", () => {
   });
 
   it("Transform source iModel to target iModel", async () => {
-    const requestContext: AuthorizedBackendRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager);
-    const projectId: GuidString = await HubUtility.queryProjectIdByName(requestContext, "iModelJsIntegrationTest");
+    const requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager);
+    const projectId = await HubUtility.queryProjectIdByName(requestContext, "iModelJsIntegrationTest");
     const outputDir = KnownTestLocations.outputDir;
     if (!IModelJsFs.existsSync(outputDir)) {
       IModelJsFs.mkdirSync(outputDir);
@@ -51,7 +51,7 @@ describe("IModelTransformerHub (#integration)", () => {
     assert.isTrue(IModelJsFs.existsSync(sourceSeedFileName));
     await IModelTransformerUtils.prepareSourceDb(sourceSeedDb);
     sourceSeedDb.close();
-    const sourceIModelId: GuidString = await HubUtility.pushIModel(requestContext, projectId, sourceSeedFileName);
+    const sourceIModelId = await HubUtility.pushIModel(requestContext, projectId, sourceSeedFileName);
     assert.isTrue(Guid.isGuid(sourceIModelId));
 
     // Create and push seed of target IModel
@@ -64,7 +64,7 @@ describe("IModelTransformerHub (#integration)", () => {
     assert.isTrue(IModelJsFs.existsSync(targetSeedFileName));
     await IModelTransformerUtils.prepareTargetDb(targetSeedDb);
     targetSeedDb.close();
-    const targetIModelId: GuidString = await HubUtility.pushIModel(requestContext, projectId, targetSeedFileName);
+    const targetIModelId = await HubUtility.pushIModel(requestContext, projectId, targetSeedFileName);
     assert.isTrue(Guid.isGuid(targetIModelId));
 
     try {
@@ -74,8 +74,8 @@ describe("IModelTransformerHub (#integration)", () => {
       assert.exists(targetDb.isBriefcaseDb());
       assert.isFalse(sourceDb.isSnapshot);
       assert.isFalse(targetDb.isSnapshot);
-      sourceDb.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
-      targetDb.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
+      sourceDb.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
+      targetDb.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
 
       if (true) { // initial import
         IModelTransformerUtils.populateSourceDb(sourceDb);
@@ -247,19 +247,19 @@ describe("IModelTransformerHub (#integration)", () => {
       await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, targetDb);
 
     } finally {
-      await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, sourceIModelId);
-      await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, targetIModelId);
+      await IModelHost.iModelClient.iModels.delete(requestContext, projectId, sourceIModelId);
+      await IModelHost.iModelClient.iModels.delete(requestContext, projectId, targetIModelId);
     }
   });
 
   it("Clone/upgrade test", async () => {
-    const requestContext: AuthorizedBackendRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager);
-    const projectId: GuidString = await HubUtility.queryProjectIdByName(requestContext, "iModelJsIntegrationTest");
+    const requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager);
+    const projectId = await HubUtility.queryProjectIdByName(requestContext, "iModelJsIntegrationTest");
     const sourceIModelName: string = HubUtility.generateUniqueName("CloneSource");
-    const sourceIModelId: GuidString = await HubUtility.recreateIModel(requestContext, projectId, sourceIModelName);
+    const sourceIModelId = await HubUtility.recreateIModel(requestContext, projectId, sourceIModelName);
     assert.isTrue(Guid.isGuid(sourceIModelId));
     const targetIModelName: string = HubUtility.generateUniqueName("CloneTarget");
-    const targetIModelId: GuidString = await HubUtility.recreateIModel(requestContext, projectId, targetIModelName);
+    const targetIModelId = await HubUtility.recreateIModel(requestContext, projectId, targetIModelName);
     assert.isTrue(Guid.isGuid(targetIModelId));
 
     try {
@@ -267,7 +267,7 @@ describe("IModelTransformerHub (#integration)", () => {
       const sourceDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: sourceIModelId });
       const seedBisCoreVersion = sourceDb.querySchemaVersion(BisCoreSchema.schemaName)!;
       assert.isTrue(semver.satisfies(seedBisCoreVersion, ">= 1.0.1"));
-      sourceDb.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
+      sourceDb.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
       assert.isFalse(sourceDb.concurrencyControl.locks.hasSchemaLock);
       await sourceDb.importSchemas(requestContext, [BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
       assert.isTrue(sourceDb.concurrencyControl.locks.hasSchemaLock);
@@ -303,7 +303,7 @@ describe("IModelTransformerHub (#integration)", () => {
 
       // open/upgrade targetDb
       const targetDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: targetIModelId });
-      targetDb.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
+      targetDb.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
       await targetDb.importSchemas(requestContext, [BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
       assert.isTrue(targetDb.containsClass(ExternalSourceAspect.classFullName), "Expect BisCore to be updated and contain ExternalSourceAspect");
 
@@ -326,8 +326,8 @@ describe("IModelTransformerHub (#integration)", () => {
       await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, targetDb);
     } finally {
       // delete iModel briefcases
-      await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, sourceIModelId);
-      await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, targetIModelId);
+      await IModelHost.iModelClient.iModels.delete(requestContext, projectId, sourceIModelId);
+      await IModelHost.iModelClient.iModels.delete(requestContext, projectId, targetIModelId);
     }
   });
 

@@ -9,6 +9,7 @@
 "use strict";
 
 const ts = require("typescript");
+const { getParserServices } = require("./utils/parser");
 
 const LOCKED = Symbol("LOCKED");
 
@@ -28,24 +29,6 @@ module.exports = {
   create(context) {
     const parserServices = getParserServices(context);
     const checker = parserServices.program.getTypeChecker();
-
-    function getParserServices(context) {
-      const errorMessage = "Could not find type information";
-      if (
-        !context.parserServices ||
-        !context.parserServices.program ||
-        !context.parserServices.esTreeNodeToTSNodeMap ||
-        !context.parserServices.tsNodeToESTreeNodeMap
-      ) {
-        throw new Error(errorMessage);
-      }
-      const hasFullTypeInformation = context.parserServices.hasFullTypeInformation; // ?? true; // true for backwards compatibility
-      if (hasFullTypeInformation === false) {
-        throw new Error(errorMessage);
-      }
-
-      return context.parserServices;
-    }
 
     function isRpcInterface(node) {
       if (node.superClass
