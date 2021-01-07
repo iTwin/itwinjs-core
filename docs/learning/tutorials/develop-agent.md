@@ -22,8 +22,8 @@
     ###############################################################################
 
     # Specify an iModel
-    IMJS_CONTEXT_ID=
-    IMJS_IMODEL_ID=
+    CONTEXT_ID=
+    IMODEL_ID=
 
     # OIDC configuration
     # Don't forget to add <CLIENT_ID>@apps.imsoidc.bentley.com to your CONNECT project. This can be done in the iModel Registration Dashboard.
@@ -31,7 +31,7 @@
     CLIENT_SECRET=
     ```
 
-    > The values for `IMJS_CONTEXT_ID` and `IMJS_CONTEXT_ID` can be obtained from the IDs column of the [iModel registration dashboard](../../../getting-started/registration-dashboard/?tab=1)
+    > The values for `CONTEXT_ID` and `CONTEXT_ID` can be obtained from the IDs column of the [iModel registration dashboard](../../../getting-started/registration-dashboard/?tab=1)
 
     > The values for `CLIENT_ID` and `CLIENT_SECRET` come from the Agent Application you registered during the Setup step
 
