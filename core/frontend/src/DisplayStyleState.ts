@@ -7,7 +7,11 @@
  */
 import { assert, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Angle, Point3d, Range1d, Vector3d } from "@bentley/geometry-core";
-import { BackgroundMapProps, BackgroundMapSettings, BaseLayerSettings, calculateSolarDirection, Cartographic, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps, DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EnvironmentProps, FeatureAppearance, GlobeMode, GroundPlane, LightSettings, MapImagerySettings, MapLayerProps, MapLayerSettings, MapSubLayerProps, RenderTexture, SkyBoxImageType, SkyBoxProps, SkyCubeProps, SolarShadowSettings, SubCategoryOverride, SubLayerId, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ViewFlags } from "@bentley/imodeljs-common";
+import {
+  BackgroundMapProps, BackgroundMapSettings, BaseLayerSettings, calculateSolarDirection, Cartographic, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
+  DisplayStyleProps, DisplayStyleSettings, EnvironmentProps, FeatureAppearance, GlobeMode, GroundPlane, LightSettings, MapImagerySettings, MapLayerProps, MapLayerSettings,
+  MapSubLayerProps, RenderTexture, SkyBoxImageType, SkyBoxProps, SkyCubeProps, SolarShadowSettings, SubCategoryOverride, SubLayerId, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ViewFlags,
+} from "@bentley/imodeljs-common";
 import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
 import { ContextRealityModelState } from "./ContextRealityModelState";
@@ -22,10 +26,7 @@ import { getCesiumOSMBuildingsUrl, MapCartoRectangle, MapTileTree, MapTileTreeRe
 import { viewGlobalLocation, ViewGlobalLocationConstants } from "./ViewGlobalLocation";
 import { OsmBuildingDisplayOptions, ScreenViewport, Viewport } from "./Viewport";
 
-/** A DisplayStyle defines the parameters for 'styling' the contents of a [[ViewState]]
- * @note If the DisplayStyle is associated with a [[ViewState]] which is being rendered inside a [[Viewport]], modifying
- * the DisplayStyle directly will generally not result in immediately visible changes on the screen.
- * [[ViewState]] provides APIs which forward to the DisplayStyle API and also ensure the screen is updated promptly.
+/** A DisplayStyle defines the parameters for 'styling' the contents of a [[ViewState]].
  * @public
  */
 export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps {
@@ -95,13 +96,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /** The settings controlling how a background map is displayed within a view.
    * @see [[ViewFlags.backgroundMap]] for toggling display of the map on or off.
-   * @note If this display style is associated with a [[Viewport]], prefer to use [[Viewport.backgroundMapSettings]] to change the settings to ensure the Viewport's display updates immediately.
    */
   public get backgroundMapSettings(): BackgroundMapSettings { return this._backgroundMap.settings; }
   public set backgroundMapSettings(settings: BackgroundMapSettings) {
-    this._backgroundMap.settings = settings;
-    this._overlayMap.settings = settings;
-    this._backgroundDrapeMap.settings = settings;
     this.settings.backgroundMap = settings;
   }
 
@@ -180,7 +177,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** @internal */
-  public getAnimationBranches(scheduleTime: number): AnimationBranchStates | undefined { return this._scheduleScript === undefined ? undefined : this._scheduleScript.getAnimationBranches(scheduleTime); }
+  public getAnimationBranches(scheduleTime: number): AnimationBranchStates | undefined {
+    return this._scheduleScript === undefined ? undefined : this._scheduleScript.getAnimationBranches(scheduleTime);
+  }
 
   /**
    * Attach a context reality model
@@ -232,12 +231,14 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       this.detachRealityModelByIndex(currentIndex);
       return true;
     }
+
     if (options.onOff === true && currentIndex < 0) {
       const tilesetUrl = getCesiumOSMBuildingsUrl();
       const name = IModelApp.i18n.translate("iModelJs:RealityModelNames.OSMBuildings");
       currentIndex = this._contextRealityModels.length;
       this.attachRealityModel({ tilesetUrl, name });
     }
+
     if (options.appearanceOverrides)
       this.overrideRealityModelAppearance(currentIndex, options.appearanceOverrides);
 
@@ -287,32 +288,37 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** The overrides applied by this style.
    * @beta
    */
-  public get modelAppearanceOverrides(): Map<Id64String, FeatureAppearance> { return this.settings.modelAppearanceOverrides; }
+  public get modelAppearanceOverrides(): Map<Id64String, FeatureAppearance> {
+    return this.settings.modelAppearanceOverrides;
+  }
+
   /** Customize the way a [[Model]]  is drawn by this display style.
    * @param modelId The ID of the [[model]] whose appearance is to be overridden.
    * @param ovr The overrides to apply to the [[Model]].
-   * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[Viewport.overrideModelAppearance]] to ensure
-   * the changes are promptly visible on the screen.
    * @see [[dropModelAppearanceOverride]]
    * @beta
    */
-  public overrideModelAppearance(modelId: Id64String, ovr: FeatureAppearance) { this.settings.overrideModelAppearance(modelId, ovr); }
+  public overrideModelAppearance(modelId: Id64String, ovr: FeatureAppearance) {
+    this.settings.overrideModelAppearance(modelId, ovr);
+  }
 
   /** Remove any appearance overrides applied to a [[Model]] by this style.
    * @param modelId The ID of the [[Model]].
    * @param ovr The overrides to apply to the [[Model]].
-   * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[Viewport.dropModelAppearanceOverride]] to ensure
-   * the changes are promptly visible on the screen.
    * @see [[overrideModelAppearance]]
    * @beta
    */
-  public dropModelAppearanceOverride(modelId: Id64String) { this.settings.dropModelAppearanceOverride(modelId); }
+  public dropModelAppearanceOverride(modelId: Id64String) {
+    this.settings.dropModelAppearanceOverride(modelId);
+  }
 
   /** Returns true if model appearance overridess are defined by this style.
    * @beta
    */
 
-  public get hasModelAppearanceOverride() { return this.settings.hasModelAppearanceOverride; }
+  public get hasModelAppearanceOverride() {
+    return this.settings.hasModelAppearanceOverride;
+  }
 
   /** Obtain the override applied to a [[Model]] by this style.
    * @param id The ID of the [[Model]].
@@ -320,7 +326,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * @see [[overrideModelAppearance]]
    * @beta
    */
-  public getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined { return this.settings.getModelAppearanceOverride(id); }
+  public getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined {
+    return this.settings.getModelAppearanceOverride(id);
+  }
 
   /** Change the appearance overrides for a context reality model displayed by this style.
    * @param overrides The overrides, only transparency, color, nonLocatable and emphasized are applicable.
@@ -398,7 +406,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     return index >= 0 && index < this._contextRealityModels.length ? this._contextRealityModels[index]?.appearanceOverrides : undefined;
   }
 
-
   /** @internal */
   public getMapLayers(isOverlay: boolean) { return isOverlay ? this.overlayMapLayers : this.backgroundMapLayers; }
 
@@ -423,12 +430,14 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public hasAttachedMapLayer(name: string, url: string, isOverlay: boolean): boolean {
     return -1 !== this.findMapLayerIndexByNameAndUrl(name, url, isOverlay);
   }
+
   /** @internal */
   public detachMapLayerByNameAndUrl(name: string, url: string, isOverlay: boolean): void {
     const index = this.findMapLayerIndexByNameAndUrl(name, url, isOverlay);
     if (- 1 !== index)
       this.detachMapLayerByIndex(index, isOverlay);
   }
+
   /** Detach map layer at index (-1 to remove all layers)
    * @internal
    */
@@ -441,15 +450,18 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
     this._synchBackgroundMapImagery();
   }
+
   /** @internal */
   public findMapLayerIndexByNameAndUrl(name: string, url: string, isOverlay: boolean) {
     return this.getMapLayers(isOverlay).findIndex((x) => x.matchesNameAndUrl(name, url));
   }
+
   /** @internal */
   public mapLayerAtIndex(index: number, isOverlay: boolean): MapLayerSettings | undefined {
     const layers = this.getMapLayers(isOverlay);
     return (index < 0 || index >= layers.length) ? undefined : layers[index];
   }
+
   /** @internal */
   public changeBaseMapProps(props: MapLayerProps | ColorDef) {
     if (props instanceof ColorDef) {
@@ -466,13 +478,14 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     }
     this._synchBackgroundMapImagery();
   }
+
   /** Return map base transparency as a number between 0 and 1.
    * @internal
    */
   public get baseMapTransparency(): number {
     return this.settings.mapImagery.baseTransparency;
-
   }
+
   /** @internal  */
   public changeBaseMapTransparency(transparency: number) {
     if (this.settings.mapImagery.backgroundBase instanceof ColorDef) {
@@ -581,10 +594,12 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       this._synchBackgroundMapImagery();
     }
   }
+
   /** @internal */
   public mapLayerFromHit(hit: HitDetail): MapLayerSettings | undefined {
     return undefined === hit.modelId ? undefined : this.mapLayerFromIds(hit.modelId, hit.sourceId);
   }
+
   /** @internal */
   public mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings | undefined {
     let mapLayer;
@@ -614,8 +629,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** The ViewFlags associated with this style.
-   * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[ViewState.viewFlags]] to modify the ViewFlags to ensure
-   * the changes are promptly visible on the screen.
+   * @see [DisplayStyleSettings.viewFlags]($common)
    */
   public get viewFlags(): ViewFlags { return this.settings.viewFlags; }
   public set viewFlags(flags: ViewFlags) { this.settings.viewFlags = flags; }
@@ -670,7 +684,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
     const bimElevationBias = this.backgroundMapElevationBias;
 
-
     const globeMode = this.globeMode;
     if (undefined === this._backgroundMapGeometry || this._backgroundMapGeometry.globeMode !== globeMode || this._backgroundMapGeometry.bimElevationBias !== bimElevationBias) {
       const geometry = new BackgroundMapGeometry(bimElevationBias, globeMode, this.iModel);
@@ -704,16 +717,12 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** Customize the way geometry belonging to a [[SubCategory]] is drawn by this display style.
    * @param id The ID of the SubCategory whose appearance is to be overridden.
    * @param ovr The overrides to apply to the [[SubCategoryAppearance]].
-   * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[Viewport.overrideSubCategory]] to ensure
-   * the changes are promptly visible on the screen.
    * @see [[dropSubCategoryOverride]]
    */
   public overrideSubCategory(id: Id64String, ovr: SubCategoryOverride) { this.settings.overrideSubCategory(id, ovr); }
 
   /** Remove any [[SubCategoryOverride]] applied to a [[SubCategoryAppearance]] by this style.
    * @param id The ID of the [[SubCategory]].
-   * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[Viewport.dropSubCategoryOverride]] to ensure
-   * the changes are promptly visible on the screen.
    * @see [[overrideSubCategory]]
    */
   public dropSubCategoryOverride(id: Id64String) { this.settings.dropSubCategoryOverride(id); }
@@ -742,18 +751,23 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** @internal */
-  protected onOverridesApplied(overrides: DisplayStyleSettingsProps): void {
-    if (overrides.backgroundMap)
-      this.backgroundMapSettings = BackgroundMapSettings.fromJSON(overrides.backgroundMap);
+  protected registerSettingsEventListeners(): void {
+    this.settings.onScheduleScriptPropsChanged.addListener((timeline) => {
+      this._scheduleScript = timeline ? RenderScheduleState.Script.fromJSON(this.id, timeline) : undefined;
+    });
 
-    if (overrides.scheduleScript)
-      this._scheduleScript = RenderScheduleState.Script.fromJSON(this.id, overrides.scheduleScript);
+    this.settings.onBackgroundMapChanged.addListener((mapSettings: BackgroundMapSettings) => {
+      this._backgroundMap.settings = this._overlayMap.settings = this._backgroundDrapeMap.settings = mapSettings;
+    });
 
-    if (overrides.contextRealityModels) {
-      this._contextRealityModels.length = 0;
-      for (const contextRealityModel of overrides.contextRealityModels)
-        this._contextRealityModels.push(new ContextRealityModelState(contextRealityModel, this.iModel, this));
-    }
+    // ###TODO contextRealityModels are a bit of a mess.
+    this.settings.onApplyOverrides.addListener((overrides) => {
+      if (overrides.contextRealityModels) {
+        this._contextRealityModels.length = 0;
+        for (const contextRealityModel of overrides.contextRealityModels)
+          this._contextRealityModels.push(new ContextRealityModelState(contextRealityModel, this.iModel, this));
+      }
+    });
   }
 }
 
@@ -773,7 +787,7 @@ export class DisplayStyle2dState extends DisplayStyleState {
   constructor(props: DisplayStyleProps, iModel: IModelConnection) {
     super(props, iModel);
     this._settings = new DisplayStyleSettings(this.jsonProperties);
-    this._settings.onOverridesApplied.addListener((_, overrides) => this.onOverridesApplied(overrides));
+    this.registerSettingsEventListeners();
   }
 }
 
@@ -1126,7 +1140,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
   public constructor(props: DisplayStyleProps, iModel: IModelConnection) {
     super(props, iModel);
     this._settings = new DisplayStyle3dSettings(this.jsonProperties);
-    this._settings.onOverridesApplied.addListener((_, overrides) => this.onOverridesApplied(overrides));
+    this.registerSettingsEventListeners();
   }
 
   /** The [[SkyBox]] and [[GroundPlane]] settings for this style. */
@@ -1207,20 +1221,23 @@ export class DisplayStyle3dState extends DisplayStyleState {
   }
 
   /** @internal */
-  protected onOverridesApplied(overrides: DisplayStyle3dSettingsProps): void {
-    super.onOverridesApplied(overrides);
+  protected registerSettingsEventListeners(): void {
+    super.registerSettingsEventListeners();
 
-    if (overrides.environment)
-      this.changeEnvironment(new Environment(overrides.environment));
+    this.settings.onEnvironmentChanged.addListener((env) => {
+      this.changeEnvironment(new Environment(env));
+    });
 
-    if (overrides.thematic && this.settings.thematic.displayMode === ThematicDisplayMode.Height && undefined === overrides.thematic.range) {
-      // Use the project extents as reasonable default height range.
-      // NB: assumes using Z axis...
-      const extents = this.iModel.projectExtents;
-      const props = { ...overrides.thematic };
-      props.range = { low: extents.zLow, high: extents.zHigh };
-      this.settings.thematic = ThematicDisplay.fromJSON(props);
-    }
+    this.settings.onOverridesApplied.addListener((overrides: DisplayStyle3dSettingsProps) => {
+      if (overrides.thematic && this.settings.thematic.displayMode === ThematicDisplayMode.Height && undefined === overrides.thematic.range) {
+        // Use the project extents as reasonable default height range.
+        // NB: assumes using Z axis...
+        const extents = this.iModel.projectExtents;
+        const props = { ...overrides.thematic };
+        props.range = { low: extents.zLow, high: extents.zHigh };
+        this.settings.thematic = ThematicDisplay.fromJSON(props);
+      }
+    });
   }
 
   /** @internal */
@@ -1230,5 +1247,4 @@ export class DisplayStyle3dState extends DisplayStyleState {
     }
     return undefined;
   }
-
 }

@@ -9,7 +9,7 @@
 import { ipcRenderer } from "electron";
 import { getIModelElectronApi } from "@bentley/imodeljs-common";
 import { CommandResult, editCommandApi } from "@bentley/imodeljs-editor-common";
-import { PrimitiveTool } from "@bentley/imodeljs-frontend";
+import { IModelConnection, PrimitiveTool } from "@bentley/imodeljs-frontend";
 
 /** @alpha */
 export class EditTool extends PrimitiveTool {
@@ -25,8 +25,8 @@ export class EditTool extends PrimitiveTool {
 
   public onRestartTool() { }
 
-  public static async startCommand<Arg, Result>(commandId: string, args?: Arg) {
-    return await this.ipc(editCommandApi.start, { commandId, args }) as CommandResult<Result>;
+  public static async startCommand<Arg, Result>(commandId: string, connection: IModelConnection, args?: Arg) {
+    return await this.ipc(editCommandApi.start, { iModelKey: connection.key, commandId, args }) as CommandResult<Result>;
   }
 
   public static async callCommand<Arg, Result>(name: string, args?: Arg) {

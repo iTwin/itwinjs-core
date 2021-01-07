@@ -4755,7 +4755,7 @@ export class TreeDataSource implements IDisposable {
     // (undocumented)
     dispose(): void;
     // (undocumented)
-    readonly onItemsChanged: BeUiEvent<TreeDataChangesListener>;
+    readonly onItemsChanged: BeEvent<TreeDataChangesListener>;
     // (undocumented)
     requestItems(parent: TreeNodeItem | undefined, firstItemIndex: number, numItems: number, requestNumChildren: boolean): Observable_2<TreeDataSourceResult>;
 }

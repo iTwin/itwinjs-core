@@ -19,11 +19,12 @@ export type CommandError =
   "MethodNotFound" |
   "NoActiveCommand";
 
-/** @alpha */
-export interface CommandResult<T> {
-  error?: CommandError;
-  result?: T;
-}
+/**
+ * The result from an EditCommand passed from the backend to the frontend, where exceptions can't be used.
+ * There can either be a result member or an error value, but never both.
+ * @alpha
+ */
+export type CommandResult<T> = { result?: T, error?: never } | { error: CommandError, details?: any, result?: never };
 
 /** @alpha */
 export interface PingResult {
@@ -41,5 +42,6 @@ export interface CommandMethodProps<T> {
 /** @alpha */
 export interface StartCommandProps<T> {
   commandId: string;
+  iModelKey: string;
   args?: T;
 }

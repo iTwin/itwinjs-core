@@ -7,10 +7,13 @@
 
 export * from "./ui-framework/UiFramework";  // Please ensure that this line comes before all other exports.
 
+export * from "./ui-framework/accudraw/AccuDrawCommandItems";
+export * from "./ui-framework/accudraw/AccuDrawDialog";
 export * from "./ui-framework/accudraw/AccuDrawPopupManager";
 export * from "./ui-framework/accudraw/Calculator";
 export * from "./ui-framework/accudraw/CalculatorEngine";
 export * from "./ui-framework/accudraw/CalculatorPopup";
+export * from "./ui-framework/accudraw/FrameworkAccuDraw";
 export * from "./ui-framework/accudraw/MenuButton";
 export * from "./ui-framework/accudraw/MenuButtonPopup";
 

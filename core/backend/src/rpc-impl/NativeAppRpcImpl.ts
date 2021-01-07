@@ -41,7 +41,7 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
     return NativeAppBackend.checkInternetConnectivity();
   }
 
-  public async overrideInternetConnectivity(by: OverriddenBy, status?: InternetConnectivityStatus): Promise<void> {
+  public async overrideInternetConnectivity(by: OverriddenBy, status: InternetConnectivityStatus): Promise<void> {
     NativeAppBackend.overrideInternetConnectivity(by, status);
   }
 
@@ -67,7 +67,7 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
     return BriefcaseManager.getFileName(props);
   }
 
-  public async downloadBriefcase(request: RequestNewBriefcaseProps, reportProgress: boolean): Promise<void> {
+  public async downloadBriefcase(request: RequestNewBriefcaseProps, reportProgress: boolean): Promise<LocalBriefcaseProps> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
 
     const args = {

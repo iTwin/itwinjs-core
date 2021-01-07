@@ -34,7 +34,7 @@ import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { CodeSpecs } from "./CodeSpecs";
 import { ConcurrencyControl } from "./ConcurrencyControl";
 import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
-import { Element, Subject } from "./Element";
+import { Element, SectionDrawing, Subject } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
 import { Entity, EntityClassType } from "./Entity";
 import { EventSink } from "./EventSink";
@@ -172,7 +172,6 @@ export abstract class IModelDb extends IModel {
 
   /** Event called when the iModel is about to be closed */
   public readonly onBeforeClose = new BeEvent<() => void>();
-
 
   /**
    * Called by derived classes before closing the connection
@@ -1953,6 +1952,21 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         } catch (_) {
           //
         }
+
+        // Include information about the associated [[SectionDrawing]], if any.
+        // NB: The SectionDrawing ECClass may not exist in the iModel's version of the BisCore ECSchema.
+        try {
+          const sectionDrawing = this._iModel.elements.tryGetElement<SectionDrawing>(viewDefinitionElement.baseModelId);
+          if (sectionDrawing && sectionDrawing.spatialView && Id64.isValidId64(sectionDrawing.spatialView.id)) {
+            viewStateData.sectionDrawing = {
+              spatialView: sectionDrawing.spatialView.id,
+              displaySpatialView: true === sectionDrawing.jsonProperties.displaySpatialView,
+              drawingToSpatialTransform: sectionDrawing.jsonProperties.drawingToSpatialTransform,
+            };
+          }
+        } catch (_) {
+          //
+        }
       }
 
       return viewStateData;
@@ -2587,8 +2601,9 @@ export class SnapshotDb extends IModelDb {
     return snapshotDb;
   }
 
-  /** open this SnapshotDb readwrite, strictly to apply incoming changesets. Used for creating new checkpoints.
-   * @internal */
+  /** open this SnapshotDb read/write, strictly to apply incoming changesets. Used for creating new checkpoints.
+   * @internal
+   */
   public static openForApplyChangesets(path: string, props?: SnapshotOpenOptions): SnapshotDb {
     const file = { path, key: props?.key };
     const nativeDb = this.openDgnDb(file, OpenMode.ReadWrite, undefined, props ? JSON.stringify(props) : undefined);

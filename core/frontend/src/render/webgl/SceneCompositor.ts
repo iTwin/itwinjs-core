@@ -633,6 +633,9 @@ export abstract class SceneCompositor implements WebGLDisposable, RenderMemory.C
   public abstract readFeatureIds(rect: ViewRect): Uint8Array | undefined;
   public abstract updateSolarShadows(context: SceneContext | undefined): void;
 
+  /** Obtain a framebuffer with a single spare RGBA texture that can be used for screen-space effect shaders. */
+  public abstract get screenSpaceEffectFbo(): FrameBuffer;
+
   public abstract get featureIds(): TextureHandle;
   public abstract get depthAndOrder(): TextureHandle;
   public abstract get antialiasSamples(): number;
@@ -1061,6 +1064,11 @@ abstract class Compositor extends SceneCompositor {
 
   public updateSolarShadows(context: SceneContext | undefined): void {
     this.solarShadowMap.update(context);
+  }
+
+  public get screenSpaceEffectFbo(): FrameBuffer {
+    assert(undefined !== this._frameBuffers.hilite);
+    return this._frameBuffers.hilite;
   }
 
   private readFrameBuffer(rect: ViewRect, fbo?: FrameBuffer): Uint8Array | undefined {
