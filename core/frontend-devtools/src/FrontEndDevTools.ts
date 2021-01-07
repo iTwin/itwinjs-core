@@ -41,6 +41,7 @@ import { ClearEffectsTool } from "./effects/EffectTools";
 import { FlipImageConfig, FlipImageEffect } from "./effects/FlipImage";
 import { LensDistortionConfig, LensDistortionEffect } from "./effects/LensDistortion";
 import { EdgeDetectionEffect, EmbossEffect, GaussianBlurEffect, SharpenEffect, SharpnessEffect, UnsharpenEffect } from "./effects/Convolution";
+import { SnowEffect } from "./effects/Snow";
 
 /** Entry-point for the package. Before using the package you *must* call [[FrontendDevTools.initialize]].
  * @beta
@@ -123,6 +124,7 @@ export class FrontendDevTools {
       SharpenEffect,
       SharpnessEffect,
       ShowTileVolumesTool,
+      SnowEffect,
       SourceAspectIdFromElementIdTool,
       TestClipStyleTool,
       Toggle3dManipulationsTool,
