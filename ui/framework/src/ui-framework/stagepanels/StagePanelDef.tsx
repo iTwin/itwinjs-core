@@ -121,6 +121,29 @@ export class StagePanelDef extends WidgetHost {
   public set panelState(panelState: StagePanelState) {
     if (panelState === this._panelState)
       return;
+    if (UiFramework.uiVersion === "2") {
+      const frontstageDef = FrontstageManager.activeFrontstageDef;
+      if (frontstageDef && frontstageDef.nineZoneState) {
+        const side = toPanelSide(this.location);
+        frontstageDef.nineZoneState = produce(frontstageDef.nineZoneState, (nineZone) => {
+          const panel = nineZone.panels[side];
+          switch (panelState) {
+            case StagePanelState.Minimized: {
+              panel.collapsed = true;
+              break;
+            }
+            case StagePanelState.Open: {
+              panel.collapsed = false;
+              break;
+            }
+            case StagePanelState.Off: {
+              panel.collapsed = true;
+              break;
+            }
+          }
+        });
+      }
+    }
     this._panelState = panelState;
     FrontstageManager.onPanelStateChangedEvent.emit({
       panelDef: this,
