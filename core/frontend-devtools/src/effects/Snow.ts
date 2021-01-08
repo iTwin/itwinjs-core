@@ -166,7 +166,7 @@ class SnowDecorator implements Decorator {
     if (particleDiscrepancy > 0 ) {
       // Birth new particles up to the new maximum.
       for (let i = 0; i < particleDiscrepancy; i++)
-        this._particles.push(this.emit(false));
+        this._particles.push(this.emit(true));
     } else {
       // Destroy extra particles.
       this._particles.length = this._params.numParticles;
