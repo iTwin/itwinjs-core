@@ -10,6 +10,7 @@ export * from "./effects/Convolution";
 export * from "./effects/EffectTools";
 export * from "./effects/FlipImage";
 export * from "./effects/LensDistortion";
+export * from "./effects/Saturation";
 export * from "./effects/Snow";
 
 export * from "./tools/AnimationIntervalTool";
