@@ -53,8 +53,8 @@ export abstract class IpcHandler implements IpcInterface {
   public abstract getVersion(): Promise<string>;
 
   /**
-   * Register this class as the handler for methods on its channel. This method will create a new instance of this class and
-   * set it as the handler for its channel.
+   * Register this class as the handler for methods on its channel. This static method creates a new instance
+   * that becomes the handler and is `this` when its methods are called.
    * @returns A function that can be called to remove the handler.
    * @note this method should only be called once per channel. If it is called multiple times, subsequent calls replace the previous ones.
    */

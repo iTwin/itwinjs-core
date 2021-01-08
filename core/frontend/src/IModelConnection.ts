@@ -836,7 +836,7 @@ export class RemoteBriefcaseConnection extends BriefcaseConnection {
   }
 }
 
-/** A connection to a [BriefcaseDb]($backend) hosted on the same machine in a different process, and is typically used in native (desktop and mobile) applications.
+/** A connection to a [BriefcaseDb]($backend) for a native application
  * @internal
  */
 export class LocalBriefcaseConnection extends BriefcaseConnection {
