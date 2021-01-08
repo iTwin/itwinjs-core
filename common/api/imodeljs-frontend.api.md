@@ -2040,7 +2040,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
     // @internal (undocumented)
     static get className(): string;
     // @internal (undocumented)
-    clone(iModel: IModelConnection): this;
+    clone(iModel?: IModelConnection): this;
     get environment(): Environment;
     set environment(env: Environment);
     // (undocumented)
@@ -11926,6 +11926,8 @@ export abstract class ViewState3d extends ViewState {
     decorate(context: DecorateContext): void;
     // @beta
     get details(): ViewDetails3d;
+    get displayStyle(): DisplayStyle3dState;
+    set displayStyle(style: DisplayStyle3dState);
     // @internal (undocumented)
     protected drawGroundPlane(context: DecorateContext): void;
     // @internal (undocumented)
@@ -11937,7 +11939,6 @@ export abstract class ViewState3d extends ViewState {
     getBackDistance(): number;
     // (undocumented)
     getCartographicHeight(point: XYAndZ): number | undefined;
-    // (undocumented)
     getDisplayStyle3d(): DisplayStyle3dState;
     // (undocumented)
     getExtents(): Vector3d;
