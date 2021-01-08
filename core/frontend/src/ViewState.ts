@@ -1450,6 +1450,11 @@ export abstract class ViewState3d extends ViewState {
     return this.getDisplayStyle3d();
   }
 
+  public set displayStyle(style: DisplayStyle3dState) {
+    assert(style instanceof DisplayStyle3dState);
+    super.displayStyle = style;
+  }
+
   /** The style that controls how the contents of the view are displayed.
    * @see [[ViewState3d.displayStyle]].
    */

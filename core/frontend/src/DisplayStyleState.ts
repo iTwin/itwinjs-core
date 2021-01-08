@@ -1125,7 +1125,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
   private _settings: DisplayStyle3dSettings;
 
   /** @internal */
-  public clone(iModel: IModelConnection): this {
+  public clone(iModel?: IModelConnection): this {
     const clone = super.clone(iModel);
     if (undefined === iModel || this.iModel === iModel) {
       clone._skyBoxParams = this._skyBoxParams;

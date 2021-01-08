@@ -2041,7 +2041,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
     // @internal (undocumented)
     static get className(): string;
     // @internal (undocumented)
-    clone(iModel: IModelConnection): this;
+    clone(iModel?: IModelConnection): this;
     get environment(): Environment;
     set environment(env: Environment);
     // (undocumented)
@@ -11893,6 +11893,7 @@ export abstract class ViewState3d extends ViewState {
     // @beta
     get details(): ViewDetails3d;
     get displayStyle(): DisplayStyle3dState;
+    set displayStyle(style: DisplayStyle3dState);
     // @internal (undocumented)
     protected drawGroundPlane(context: DecorateContext): void;
     // @internal (undocumented)
