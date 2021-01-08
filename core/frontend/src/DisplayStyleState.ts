@@ -881,22 +881,23 @@ export namespace SkyBox { // eslint-disable-line no-redeclare
 
 /** A [[SkyBox]] drawn as a sphere with a gradient mapped to its interior surface.
  * @see [[SkyBox.createFromJSON]]
+ * @see [SkyBoxProps]($common) for descriptions of the color and exponent properties.
  * @public
  */
 export class SkyGradient extends SkyBox {
-  /** If true, a 2-color gradient is used (ground & sky colors only), if false a 4-color gradient is used, defaults to false. */
+  /** If true, a 2-color gradient is used (nadir and zenith colors only); if false a 4-color gradient is used. Defaults to false. */
   public readonly twoColor: boolean = false;
-  /** The color of the sky (for 4-color gradient is sky color at horizon), defaults to (143, 205, 255). */
+  /** @see [SkyBoxProp]($frontend). */
   public readonly skyColor: ColorDef;
-  /** The color of the ground (for 4-color gradient is ground color at horizon), defaults to (120, 143, 125). */
+  /** @see [SkyBoxProp]($frontend). */
   public readonly groundColor: ColorDef;
-  /** For 4-color gradient is color of sky at zenith (shown when looking straight up), defaults to (54, 117, 255). */
+  /** @see [SkyBoxProp]($frontend). */
   public readonly zenithColor: ColorDef;
-  /** For 4-color gradient is color of ground at nadir (shown when looking straight down), defaults to (40, 15, 0). */
+  /** @see [SkyBoxProp]($frontend). */
   public readonly nadirColor: ColorDef;
-  /** Controls speed of gradient change from skyColor to zenithColor (4-color SkyGradient only), defaults to 4.0. */
+  /** @see [SkyBoxProp]($frontend). */
   public readonly skyExponent: number = 4.0;
-  /** Controls speed of gradient change from groundColor to nadirColor (4-color SkyGradient only), defaults to 4.0. */
+  /** @see [SkyBoxProp]($frontend). */
   public readonly groundExponent: number = 4.0;
 
   /** Construct a SkyGradient from its JSON representation. */
