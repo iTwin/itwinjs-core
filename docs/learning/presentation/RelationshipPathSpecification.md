@@ -11,7 +11,8 @@ Name | Required? | Type | Default | Meaning
 `relationship` | Yes | `SingleSchemaClassSpecification` | | Specification of the relationship to follow.
 `direction` | Yes | `"Forward" \| "Backward"` | | Direction in which the relationship should be followed.
 `targetClass` | No | `SingleSchemaClassSpecification` | Other end of relationship | Specification of the related class.
-`count` | No | `number \| "*"` | 1 | Number of times the relationship should be traversed. If "*" used the result of previous step will be included also.
+`count` | No | `number \| "*"` | 1 | Number of times the relationship should be traversed. `"*"` makes the step optional, so results of previous step are also included in results of this step, no matter if this step has any output of its own or not.
+
 
 ## Example
 
