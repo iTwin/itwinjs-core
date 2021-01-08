@@ -76,8 +76,8 @@ export interface ParticleCollectionBuilder {
   addParticle: (particle: ParticleProps) => void;
 
   /** Produces a finished graphic from the accumulated particles.
-   * @param renderSystem The render system that will create the finished graphic. Defaults to [[IModelApp.renderSystem]].
-   * @returns The finished graphic, or `undefined` if the collection contains no particles or the [[RenderSystem]] failed to produce the graphic.
+   * The caller can supply the render system that will create the finished graphic. If omitted, it defaults to [[IModelApp.renderSystem]].
+   * It returns the finished graphic, or `undefined` if the collection contains no particles or the [[RenderSystem]] failed to produce the graphic.
    * @note After this method returns, the particle collection is empty.
    */
   finish: (renderSystem?: RenderSystem) => RenderGraphic | undefined;

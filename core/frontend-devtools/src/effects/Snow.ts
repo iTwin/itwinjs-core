@@ -24,14 +24,6 @@ function randomNumber(min: number, max: number): number {
   return Math.random() * (max - min) + min;
 }
 
-/** If the input value exceeds one of the bounds, wrap it around to the opposite bound. */
-function wrapAround(value: number, min: number, max: number): number {
-  if (value < min)
-    return max;
-
-  return value > max ? min : value;
-}
-
 /** Represents one particle displayed by SnowDecorator. */
 interface SnowParticle extends ParticleProps {
   /** Make x, y, and z from ParticleProps writable. */
@@ -43,22 +35,35 @@ interface SnowParticle extends ParticleProps {
   velocity: Vector2d;
 }
 
+/** Parameters controlling how a SnowDecorator works. */
+interface SnowParams {
+  /** The number of snow particles to produce. This could alternatively be expressed as a density so that small viewports would not be more crowded than larger ones. */
+  numParticles: number;
+  /** Range from which to randomly select each particle's size, in pixels. */
+  sizeRange: Range1d;
+  /** Range from which to randomly select each particle's transparency. */
+  transparencyRange: Range1d;
+  /** Range from which to randomly select each particle's initial velocity, in pixels per second. */
+  velocityRange: Range2d;
+  /** Range from which to randomly select an acceleration to apply to each particle's velocity each frame, in pixels per second squared, to simulate wind. */
+  accelerationRange: Range2d;
+}
+
+/** The default snow effect parameters used by newly-created SnowDecorators. */
+const defaultSnowParams: SnowParams = {
+  numParticles: 1200,
+  sizeRange: Range1d.createXX(1, 15),
+  transparencyRange: Range1d.createXX(0, 200),
+  velocityRange: new Range2d(-25, 30, 25, 90),
+  accelerationRange: new Range2d(-1, -0.25, 1, 0.25),
+};
+
 /** Simulates snowfall in a Viewport. */
 class SnowDecorator implements Decorator {
   /** The viewport being decorated. */
   public readonly viewport: Viewport;
   /** Invoked when this decorator is to be destroyed. */
   public readonly dispose: VoidFunction;
-  /** The number of snow particles to produce. This could alternatively be expressed as a density so that small viewports would not be more crowded than larger ones. */
-  public numParticles = 1200;
-  /** Range from which to randomly select each particle's size, in pixels. */
-  public readonly sizeRange = Range1d.createXX(1, 15);
-  /** Range from which to randomly select each particle's transparency. */
-  public readonly transparencyRange = Range1d.createXX(0, 200);
-  /** Range from which to randomly select each particle's initial velocity, in pixels per second. */
-  public readonly velocityRange = new Range2d(-25, 30, 25, 90);
-  /** Range from which to randomly select an acceleration to apply to each particle's velocity each frame, in pixels per second squared, to simulate wind. */
-  public readonly accelerationRange = new Range2d(-1, -0.25, 1, 0.25);
   /** The initial width and height of the viewport, from which we randomly select each particle's initial position. */
   private readonly _dimensions: Point2d;
   /** The list of particles being drawn. */
@@ -67,8 +72,10 @@ class SnowDecorator implements Decorator {
   private _texture?: RenderTexture;
   /** The last time `updateParticles()` was invoked, in milliseconds. */
   private _lastUpdateTime: number;
+  private readonly _params: SnowParams;
 
   private constructor(viewport: Viewport, texture: RenderTexture | undefined) {
+    this._params = { ...defaultSnowParams };
     this.viewport = viewport;
     this._dimensions = new Point2d(viewport.viewRect.width, viewport.viewRect.height);
     this._lastUpdateTime = Date.now();
@@ -102,16 +109,8 @@ class SnowDecorator implements Decorator {
     SnowDecorator._decorators.set(viewport, this);
 
     // Initialize the particles.
-    for (let i = 0; i < this.numParticles; i++) {
-      this._particles.push({
-        x: randomInteger(0, this._dimensions.x),
-        y: randomInteger(0, this._dimensions.y),
-        z: 0,
-        velocity: new Vector2d(randomNumber(this.velocityRange.low.x, this.velocityRange.high.x), randomNumber(this.velocityRange.low.y, this.velocityRange.high.y)),
-        size: randomInteger(this.sizeRange.low, this.sizeRange.high),
-        transparency: randomInteger(this.transparencyRange.low, this.transparencyRange.high),
-      });
-    }
+    for (let i = 0; i < this._params.numParticles; i++)
+      this._particles.push(this.emit(true));
   }
 
   public decorate(context: DecorateContext): void {
@@ -127,7 +126,7 @@ class SnowDecorator implements Decorator {
     // Create particle graphics.
     const builder = ParticleCollectionBuilder.create({
       texture: this._texture,
-      size: (this.sizeRange.high - this.sizeRange.low) / 2,
+      size: (this._params.sizeRange.high - this._params.sizeRange.low) / 2,
     });
 
     for (const particle of this._particles)
@@ -138,13 +137,49 @@ class SnowDecorator implements Decorator {
       context.addDecoration(GraphicType.ViewOverlay, graphic);
   }
 
+  /** Change some of the parameters affecting this decorator. */
+  public configure(params: Partial<SnowParams>): void {
+    for (const key of Object.keys(params)) {
+      const val = (params as any)[key];
+      if (undefined !== val)
+        (this._params as any)[key] = val;
+    }
+  }
+
+  /** Emit a new particle with randomized properties. */
+  private emit(randomizeHeight: boolean): SnowParticle {
+    return {
+      x: randomInteger(0, this._dimensions.x),
+      y: randomizeHeight ? randomInteger(0, this._dimensions.y) : 0,
+      z: 0,
+      size: randomInteger(this._params.sizeRange.low, this._params.sizeRange.high),
+      transparency: randomInteger(this._params.transparencyRange.low, this._params.transparencyRange.high),
+      velocity: new Vector2d(randomNumber(this._params.velocityRange.low.x, this._params.velocityRange.high.x),
+        randomNumber(this._params.velocityRange.low.y, this._params.velocityRange.high.y)),
+    }
+  }
+
   // Update the positions and velocities of all the particles based on the amount of time that has passed since the last update.
   private updateParticles(elapsedSeconds: number): void {
+    // Determine if someone changed the desired number of particles.
+    const particleDiscrepancy = this._params.numParticles - this._particles.length;
+    if (particleDiscrepancy > 0 ) {
+      // Birth new particles up to the new maximum.
+      for (let i = 0; i < particleDiscrepancy; i++)
+        this._particles.push(this.emit(false));
+    } else {
+      // Destroy extra particles.
+      this._particles.length = this._params.numParticles;
+    }
+
     const acceleration = new Vector2d();
     const velocity = new Vector2d();
-    for (const particle of this._particles) {
+    for (let i = 0; i < this._particles.length; i++) {
       // Apply some acceleration to produce random drift.
-      acceleration.set(randomNumber(this.accelerationRange.low.x, this.accelerationRange.high.x), randomNumber(this.accelerationRange.low.y, this.accelerationRange.high.y));
+      const particle = this._particles[i];
+      acceleration.set(randomNumber(this._params.accelerationRange.low.x, this._params.accelerationRange.high.x),
+        randomNumber(this._params.accelerationRange.low.y, this._params.accelerationRange.high.y));
+
       acceleration.scale(elapsedSeconds, acceleration);
       particle.velocity.plus(acceleration, particle.velocity);
 
@@ -154,9 +189,9 @@ class SnowDecorator implements Decorator {
       particle.x += velocity.x;
       particle.y += velocity.y;
 
-      // Particles that travel beyond the viewport's borders wrap around to the other side.
-      particle.x = wrapAround(particle.x, 0, this._dimensions.x);
-      particle.y = wrapAround(particle.y, 0, this._dimensions.y);
+      // Particles that travel beyond the viewport's borders are replaced by newborn particles.
+      if (particle.x < 0 || particle.y < 0 || particle.x >= this._dimensions.x || particle.y >= this._dimensions.y)
+        this._particles[i] = this.emit(false);
     }
   }
 
