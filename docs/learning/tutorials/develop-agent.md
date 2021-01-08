@@ -45,5 +45,5 @@
 
 ### Next Steps
 - Read the [README](https://github.com/imodeljs/agent-starter/blob/master/README.md) for some more info
-- Implement your agent's custom behavior after the iModel is downloaded in `MyAgent.run()`
+- Implement custom functionality in the agent to fit a business use case
 - Watch our [Jump Start - Creating an Agent tutorial](https://www.youtube.com/watch?v=1E2srOoxc4I&t=46s) which explains in more detail how the agent-sample works
