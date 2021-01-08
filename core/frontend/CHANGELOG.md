@@ -1,6 +1,14 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Tue, 22 Dec 2020 00:53:38 GMT and should not be manually modified.
+This log was last generated on Fri, 08 Jan 2021 14:52:02 GMT and should not be manually modified.
+
+## 2.10.2
+Fri, 08 Jan 2021 14:52:02 GMT
+
+### Updates
+
+- WmtsCapabilities now using 'xml-js' instead of 'fast-xml-parser'.
+- Bias global reality models to match terrain corrections.
 
 ## 2.10.1
 Tue, 22 Dec 2020 00:53:38 GMT
