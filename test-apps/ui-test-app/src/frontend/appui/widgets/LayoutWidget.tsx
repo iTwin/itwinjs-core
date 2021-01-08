@@ -7,7 +7,6 @@ import {
   FrontstageManager, StagePanelState, useActiveFrontstageDef,
 } from "@bentley/ui-framework";
 import { SpecialKey, StagePanelLocation, WidgetState } from "@bentley/ui-abstract";
-import { ScrollableWidgetContent } from "@bentley/ui-ninezone";
 import { Input, Select } from "@bentley/ui-core";
 
 function usePanelDef(location: StagePanelLocation) {
@@ -395,11 +394,9 @@ const widgetContentStyle: React.CSSProperties = {
 
 function WidgetContent(props: React.PropsWithChildren<{}>) {
   return (
-    <ScrollableWidgetContent>
-      <div style={widgetContentStyle}>
-        {props.children}
-      </div>
-    </ScrollableWidgetContent>
+    <div style={widgetContentStyle}>
+      {props.children}
+    </div>
   );
 }
 
