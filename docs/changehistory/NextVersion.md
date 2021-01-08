@@ -35,6 +35,13 @@ Wide-angle camera with no lens distortion:
 Wide-angle camera with lens distortion:
 ![Wide-angle camera with lens distortion](./assets/wide-fov-distortion.jpg)
 
+## Custom particle effects
+
+The display system now makes it easy to implement [particle effects](https://en.wikipedia.org/wiki/Particle_system) using [decorators](../learning/frontend/ViewDecorations.md). Particle effects simulate phenomena like fire, smoke, snow, and rain by animating hundreds or thousands of small particles. The new [ParticleCollectionBuilder]($frontend) API allows such collections to be efficiently created and rendered.
+
+The frontend-devtools package contains an example [SnowEffect]($frontend-devtools), as illustrated in the still image below. When applied to a viewport, the effect is animated, of course.
+![Snow particle effect](./assets/snow.jpg)
+
 ## Automatic viewport synchronization
 
 A [Viewport]($frontend) holds a reference to a [ViewState]($frontend) defining its viewing parameters, which in turn holds references to objects like a [DisplayStyleState]($frontend) and [CategorySelectorState]($frontend) controlling the styling and contents of the Viewport. Previously, directly modifying the ViewState or its components would not cause the Viewport to update immediately on-screen - instead, callers would either need to manually invoke methods like `Viewport.invalidateScene` to notify the Viewport that something had changed; or use special Viewport APIs like [Viewport.changeCategoryDisplay]($frontend) that would forward to the appropriate object and also invalidate the Viewport's internal state. This was error-prone and tedious.
