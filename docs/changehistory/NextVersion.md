@@ -238,3 +238,74 @@ ECExpressions now support formatted property values. `GetFormattedValue` functio
 ```ts
 GetFormattedValue(this.Length, "Metric") = "10.0 m"
 ```
+
+### Breaking changes to `ContentRelatedInstances`
+
+Behavior of `ContentRelatedInstances` specification used in content rules was changed. It used to include input instance in a result if `relationshipPaths` property had paths consisting of all steps with `count` set to `"*"` and target class matched input instance class. This behavior was changed to match cases when paths contain step with `count` property set to something else and now input instance is not included in all cases. Example:
+
+```json
+{
+  "ruleType": "Content",
+  "specifications": [
+    {
+      "specType": "ContentRelatedInstances",
+      "relationshipPaths": [
+        [
+          {
+            "relationship": {
+              "schemaName": "BisCore",
+              "className": "GeometricElement3dHasTypeDefinition"
+            },
+            "direction": "Backward",
+            "count": "*"
+          },
+          {
+            "relationship": {
+              "schemaName": "BisCore",
+              "className": "ElementOwnsChildElements"
+            },
+            "direction": "Forward",
+            "count": "*"
+          }
+        ]
+      ]
+    }
+  ]
+}
+```
+
+This rule used to include *BisCore.TypeDefinitionElement* instance used as input along side *BisCore.GeometricElement3d* instances. If previous behavior is desired `SelectedNodeInstance` specification can be added to the content rule:
+
+```json
+{
+  "ruleType": "Content",
+  "specifications": [
+    {
+      "specType": "SelectedNodeInstances"
+    },
+    {
+      "specType": "ContentRelatedInstances",
+      "relationshipPaths": [
+        [
+          {
+            "relationship": {
+              "schemaName": "BisCore",
+              "className": "GeometricElement3dHasTypeDefinition"
+            },
+            "direction": "Backward",
+            "count": "*"
+          },
+          {
+            "relationship": {
+              "schemaName": "BisCore",
+              "className": "ElementOwnsChildElements"
+            },
+            "direction": "Forward",
+            "count": "*"
+          }
+        ]
+      ]
+    }
+  ]
+}
+```
