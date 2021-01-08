@@ -11892,6 +11892,7 @@ export abstract class ViewState3d extends ViewState {
     decorate(context: DecorateContext): void;
     // @beta
     get details(): ViewDetails3d;
+    get displayStyle(): DisplayStyle3dState;
     // @internal (undocumented)
     protected drawGroundPlane(context: DecorateContext): void;
     // @internal (undocumented)
@@ -11903,7 +11904,6 @@ export abstract class ViewState3d extends ViewState {
     getBackDistance(): number;
     // (undocumented)
     getCartographicHeight(point: XYAndZ): number | undefined;
-    // (undocumented)
     getDisplayStyle3d(): DisplayStyle3dState;
     // (undocumented)
     getExtents(): Vector3d;
