@@ -887,6 +887,10 @@ export function useSyncDefinitions(frontstageDef: FrontstageDef) {
       const panelDef = frontstageDef.getStagePanelDef(location);
       if (panelDef) {
         panelDef.size = panel.size;
+        let newState = panel.collapsed ? StagePanelState.Minimized : StagePanelState.Open;
+        if (panelDef.panelState === StagePanelState.Off && newState === StagePanelState.Minimized)
+          newState = StagePanelState.Off;
+        panelDef.panelState = newState;
       }
       for (const widgetId of panel.widgets) {
         const widget = nineZone.widgets[widgetId];
