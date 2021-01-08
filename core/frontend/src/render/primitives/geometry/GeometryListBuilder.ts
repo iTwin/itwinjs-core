@@ -31,7 +31,7 @@ function copy2dTo3d(pts2d: Point2d[], depth: number): Point3d[] {
 /** @internal */
 export abstract class GeometryListBuilder extends GraphicBuilder {
   public accum: GeometryAccumulator;
-  public graphicParams: GraphicParams = new GraphicParams();
+  public readonly graphicParams: GraphicParams = new GraphicParams();
   private _wantNormals = false;
 
   public abstract finishGraphic(accum: GeometryAccumulator): RenderGraphic; // Invoked by Finish() to obtain the finished RenderGraphic.
@@ -48,7 +48,7 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
   }
 
   public activateGraphicParams(graphicParams: GraphicParams): void {
-    this.graphicParams = graphicParams;
+    graphicParams.clone(this.graphicParams);
   }
 
   public get wantNormals() {

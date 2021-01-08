@@ -205,6 +205,11 @@ In particular, the method `BriefcaseManager.download` was removed and replaced w
 
 Also, the `@internal` class `NativeApp` has several changed methods, so some refactoring may be necessary to react to those changes for anyone implementing native applications using this internal API.
 
+## Upgrading schemas in an iModel
+
+In previous versions the method to open briefcases ([BriefcaseDb.open]($backend)) and standalone files ([StandaloneDb.open]($backend)) provided options to upgrade the schemas in the iModel. This functionality has been now separated out, and there are separate methods to validate and upgrade the schemas in the iModel. As a result [OpenBriefcaseProps]($common) and [SnapshotOpenOptions]($common) do not include options to upgrade anymore.
+
+See section on [Upgrading Schemas]($docs/learning/backend/IModelDb.md#upgrading-schemas-in-an-imodel) for more information.
 ## Updated version of Electron
 
 Updated version of electron used from 8.2.1 to 10.1.3. Note that Electron is specified as a peer dependency in the iModel.js stack - so it's recommended but not mandatory that applications migrate to this electron version.
