@@ -8,20 +8,22 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 
 import * as React from "react";
-import { DragDropContext, Draggable, DraggableChildrenFn, Droppable, DropResult } from "react-beautiful-dnd";
+import { DragDropContext, Draggable, DraggableChildrenFn, DraggableProvided, DraggableRubric, Droppable, DroppableProvided, DroppableStateSnapshot, DropResult } from "react-beautiful-dnd";
 import { MapSubLayerProps, MapSubLayerSettings } from "@bentley/imodeljs-common";
 import {
   DisplayStyleState, IModelApp, MapLayerSettingsService, MapLayerSource, MapLayerSources, NotifyMessageDetails, OutputMessagePriority,
   ScreenViewport, Viewport,
 } from "@bentley/imodeljs-frontend";
-import { ContextMenu, ContextMenuItem, Icon, Slider } from "@bentley/ui-core";
+import { ContextMenu, ContextMenuItem, Icon, Slider, Toggle } from "@bentley/ui-core";
 import { assert } from "@bentley/bentleyjs-core";
 import { SubLayersPopupButton } from "./SubLayersPopupButton";
-import { AttachLayerPopupButton } from "./AttachLayerPopupButton";
+import { AttachLayerButtonType, AttachLayerPopupButton } from "./AttachLayerPopupButton";
 import { BasemapPanel } from "./BasemapPanel";
 import { MapSettingsPanel } from "./MapSettingsPanel";
 import { MapLayerOptions, MapLayersUiItemsProvider, MapTypesOptions } from "../MapLayersUiItemsProvider";
+import { MapLayerSettingsPopupButton } from "./MapLayerSettingsPopupButton";
 import "./MapLayerManager.scss";
+
 
 /** @internal */
 export interface SourceMapContextProps {
@@ -190,11 +192,107 @@ function getMapLayerSettingsFromStyle(displayStyle: DisplayStyleState | undefine
   return layers.reverse();
 }
 
+
+interface MapLayerDroppableProps {
+  isOverlay: boolean;
+  layersList?: StyleMapLayerSettings[];
+  getContainerForClone: () => HTMLElement;
+  // renderClone?: DraggableChildrenFn;
+  activeViewport: ScreenViewport;
+  onMenuItemSelected: (action: string, mapLayerSettings: StyleMapLayerSettings) => void;
+  onItemVisibilityToggleClicked: (mapLayerSettings: StyleMapLayerSettings) => void;
+}
+
+export function MapLayerDroppable(props: MapLayerDroppableProps) {
+  const containsLayer = props.layersList && props.layersList.length > 0;
+  const droppableId = props.isOverlay ? "overlayMapLayers" : "backgroundMapLayers";
+  const [toggleVisibility] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.ToggleVisibility"));
+  const [noBackgroundMapsSpecifiedLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.NoBackgroundLayers"));
+  const [noUnderlaysSpecifiedLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.NoOverlayLayers"));
+  const [dropLayerLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.DropLayerLabel"));
+
+  const renderItem: DraggableChildrenFn = (dragProvided, _, rubric) => {
+    assert(props.layersList !== undefined);
+    const activeLayer = props.layersList[rubric.source.index];
+
+    return (
+      <div className="map-manager-source-item" data-id={rubric.source.index} key={activeLayer.name}
+        {...dragProvided.draggableProps}
+        ref={dragProvided.innerRef} >
+        <button className="map-manager-item-visibility" title={toggleVisibility} onClick={() => { props.onItemVisibilityToggleClicked(activeLayer); }}>
+          <Icon iconSpec={activeLayer.visible ? "icon-visibility" : "icon-visibility-hide-2"} /></button>
+        <span className="map-manager-item-label" {...dragProvided.dragHandleProps}>{activeLayer.name}</span>
+        <div className="map-manager-item-sub-layer-container">
+          {activeLayer.subLayers && activeLayer.subLayers!.length > 1 &&
+            <SubLayersPopupButton mapLayerSettings={activeLayer} activeViewport={props.activeViewport} />
+          }
+        </div>
+        <MapLayerSettingsMenu activeViewport={props.activeViewport} mapLayerSettings={activeLayer} onMenuItemSelection={props.onMenuItemSelected} />
+      </div>
+    );
+  };
+
+
+  function renderDraggableContent(snapshot: DroppableStateSnapshot): React.ReactNode {
+    let node: React.ReactNode;
+    if (containsLayer) {
+      // Render a <Draggable>
+      node = (props.layersList?.map((mapLayerSettings, i) =>
+        <Draggable key={mapLayerSettings.name} draggableId={mapLayerSettings.name} index={i}>
+          {renderItem}
+        </Draggable>));
+    } else {
+      // Render a label that provide a 'Drop here' hint
+      const label = props.isOverlay ? noUnderlaysSpecifiedLabel : noBackgroundMapsSpecifiedLabel;
+      node =
+        <div title={label} className="map-manager-no-layers-container">
+          {snapshot.isDraggingOver ?
+            <span className="map-manager-no-layers-label">{dropLayerLabel}</span>
+            :
+            <>
+              <span className="map-manager-no-layers-label">{label}</span>
+              <AttachLayerPopupButton buttonType={AttachLayerButtonType.Blue} isOverlay={false} />
+            </>
+          }
+        </div>
+    }
+    return node;
+  }
+
+
+  function renderDraggable(dropProvided: DroppableProvided, dropSnapshot: DroppableStateSnapshot): React.ReactElement<HTMLElement> {
+    return (
+      <div className={`map-manager-attachments${dropSnapshot.isDraggingOver && containsLayer ? " is-dragging-map-over" : ""}`} ref={dropProvided.innerRef} {...dropProvided.droppableProps} >
+
+        {renderDraggableContent(dropSnapshot)}
+
+        {
+          /* We don't want a placeholder when displaying the 'Drop here' message
+              Unfortunately, if don't add it, 'react-beautiful-dnd' show an error message in the console.
+              So I simply make it hidden. See https://github.com/atlassian/react-beautiful-dnd/issues/518 */
+        }
+        <div style={containsLayer ? undefined : { display: 'none' }}>{dropProvided.placeholder}</div>
+      </div>);
+  }
+
+  return (
+    <Droppable
+      droppableId={droppableId}
+      renderClone={renderItem}
+      getContainerForClone={props.getContainerForClone as any}
+    >
+      {renderDraggable}
+    </Droppable>
+  );
+}
+
+
 interface MapLayerManagerProps {
   getContainerForClone: () => HTMLElement;
   activeViewport: ScreenViewport;
   mapLayerOptions?: MapLayerOptions;
 }
+
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function MapLayerManager(props: MapLayerManagerProps) {
@@ -202,12 +300,10 @@ export function MapLayerManager(props: MapLayerManagerProps) {
   const [baseSources, setBaseSources] = React.useState<MapLayerSource[] | undefined>();
   const [overlaysLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.OverlayLayers"));
   const [underlaysLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.BackgroundLayers"));
-  const [noBackgroundMapsSpecifiedLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.NoBackgroundLayers"));
-  const [noUnderlaysSpecifiedLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.NoOverlayLayers"));
-  const [toggleVisibility] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.ToggleVisibility"));
   const { activeViewport, mapLayerOptions } = props;
   const hideExternalMapLayersSection = mapLayerOptions?.hideExternalMapLayers ? mapLayerOptions.hideExternalMapLayers : false;
   const fetchPublicMapLayerSources = mapLayerOptions?.fetchPublicMapLayerSources ? mapLayerOptions.fetchPublicMapLayerSources : false;
+
   // map layer settings from display style
   const [backgroundMapLayers, setBackgroundMapLayers] = React.useState<StyleMapLayerSettings[] | undefined>(getMapLayerSettingsFromStyle(activeViewport?.displayStyle, true));
   const [overlayMapLayers, setOverlayMapLayers] = React.useState<StyleMapLayerSettings[] | undefined>(getMapLayerSettingsFromStyle(activeViewport?.displayStyle, false));
@@ -216,6 +312,13 @@ export function MapLayerManager(props: MapLayerManagerProps) {
     setBackgroundMapLayers(getMapLayerSettingsFromStyle(displayStyle, true));
     setOverlayMapLayers(getMapLayerSettingsFromStyle(displayStyle, false));
   }, [setBackgroundMapLayers, setOverlayMapLayers]);
+
+  const [basemapVisible, setBasemapVisible] = React.useState(() => {
+    if (activeViewport) {
+      return activeViewport.viewFlags.backgroundMap;
+    }
+    return false;
+  });
 
   const isMounted = React.useRef(false);
 
@@ -322,6 +425,17 @@ export function MapLayerManager(props: MapLayerManagerProps) {
     }
   }, [activeViewport, loadMapLayerSettingsFromStyle]);
 
+  const handleVisibilityChange2 = React.useCallback(() => {
+    if (activeViewport) {
+      const newState = !basemapVisible;
+      const vf = activeViewport.viewFlags.clone();
+      vf.backgroundMap = newState; // Or any other modifications
+      activeViewport.viewFlags = vf;
+      activeViewport.invalidateRenderPlan();
+      setBasemapVisible(newState);
+    }
+  }, [basemapVisible, activeViewport]);
+
   const handleOnMapLayerDragEnd = React.useCallback((result: DropResult /* , _provided: ResponderProvided*/) => {
     const { destination, source } = result;
 
@@ -365,6 +479,15 @@ export function MapLayerManager(props: MapLayerManagerProps) {
       const layerProps = activeViewport.displayStyle.mapLayerAtIndex(fromIndexInDisplayStyle, fromMapLayer.isOverlay)?.toJSON();
       if (layerProps) {
         activeViewport.displayStyle.detachMapLayerByIndex(fromIndexInDisplayStyle, fromMapLayer.isOverlay);
+
+        // Manually reverse index when moved from one section to the other
+        if (fromMapLayer.isOverlay && backgroundMapLayers) {
+          toIndexInDisplayStyle = displayStyle.backgroundMapLayers.length - destination.index;
+        }
+        else if (!fromMapLayer.isOverlay && overlayMapLayers) {
+          toIndexInDisplayStyle = overlayMapLayers.length - destination.index;
+        }
+
         activeViewport.displayStyle.attachMapLayer(layerProps, !fromMapLayer.isOverlay, toIndexInDisplayStyle);
       }
     } else {
@@ -390,44 +513,22 @@ export function MapLayerManager(props: MapLayerManagerProps) {
       loadMapLayerSettingsFromStyle(activeViewport.displayStyle);
   }, [activeViewport, loadMapLayerSettingsFromStyle]);
 
-  const renderOverlayItem: DraggableChildrenFn = (overlayDragProvided, _, rubric) => {
-    assert(overlayMapLayers !== undefined);
+  const [baseMapTransparencyValue, setBaseMapTransparencyValue] = React.useState(() => {
+    if (activeViewport)
+      return activeViewport.displayStyle.baseMapTransparency;
+    return 0;
+  });
 
-    return (
-      <div className="map-manager-source-item" data-id={rubric.source.index} key={overlayMapLayers[rubric.source.index].name}
-        {...overlayDragProvided.draggableProps}
-        ref={overlayDragProvided.innerRef} >
-        <button className="map-manager-item-visibility" title={toggleVisibility} onClick={() => { handleVisibilityChange(overlayMapLayers[rubric.source.index]); }}>
-          <Icon iconSpec={overlayMapLayers[rubric.source.index].visible ? "icon-visibility" : "icon-visibility-hide-2"} /></button>
-        <span className="map-manager-item-label" {...overlayDragProvided.dragHandleProps}>{overlayMapLayers[rubric.source.index].name}</span>
-        <div className="map-manager-item-sub-layer-container">
-          {overlayMapLayers[rubric.source.index].subLayers && overlayMapLayers[rubric.source.index].subLayers!.length > 1 &&
-            <SubLayersPopupButton mapLayerSettings={overlayMapLayers[rubric.source.index]} activeViewport={activeViewport} />
-          }
-        </div>
-        <MapLayerSettingsMenu activeViewport={activeViewport} mapLayerSettings={overlayMapLayers[rubric.source.index]} onMenuItemSelection={handleOnMenuItemSelection} />
-      </div>
-    );
-  };
+  const handleBasemapTransparencyChange = React.useCallback((transparency: number) => {
+    if (activeViewport) {
+      activeViewport.displayStyle.changeBaseMapTransparency(transparency);
+      activeViewport.invalidateRenderPlan();
+      setBaseMapTransparencyValue(transparency);
+    }
+  }, [activeViewport]);
 
-  const renderUnderlayItem: DraggableChildrenFn = (underlayDragProvided, _, rubric) => {
-    assert(backgroundMapLayers !== undefined);
-    return (
-      <div className="map-manager-source-item" data-id={rubric.source.index} key={backgroundMapLayers[rubric.source.index].name}
-        {...underlayDragProvided.draggableProps}
-        ref={underlayDragProvided.innerRef} >
-        <button className="map-manager-item-visibility" title={toggleVisibility} onClick={() => { handleVisibilityChange(backgroundMapLayers[rubric.source.index]); }}>
-          <Icon iconSpec={backgroundMapLayers[rubric.source.index].visible ? "icon-visibility" : "icon-visibility-hide-2"} /></button>
-        <span className="map-manager-item-label" {...underlayDragProvided.dragHandleProps}>{backgroundMapLayers[rubric.source.index].name}</span>
-        <div className="map-manager-item-sub-layer-container">
-          {backgroundMapLayers[rubric.source.index].subLayers && backgroundMapLayers[rubric.source.index].subLayers!.length > 1 &&
-            <SubLayersPopupButton mapLayerSettings={backgroundMapLayers[rubric.source.index]} activeViewport={activeViewport} />
-          }
-        </div>
-        <MapLayerSettingsMenu activeViewport={activeViewport} mapLayerSettings={backgroundMapLayers[rubric.source.index]} onMenuItemSelection={handleOnMenuItemSelection} />
-      </div>
-    );
-  };
+
+  const [baseMapPanelLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Basemap.BaseMapPanelTitle"));
 
   return (
     <SourceMapContext.Provider value={{
@@ -439,55 +540,46 @@ export function MapLayerManager(props: MapLayerManagerProps) {
       overlayLayers: overlayMapLayers,
       mapTypesOptions: mapLayerOptions?.mapTypeOptions,
     }}>
+      <div className="map-manager-top-header">
+        <span className="map-manager-header-label">{baseMapPanelLabel}</span>
+        <div className="map-manager-header-buttons-group">
+          <Toggle className="map-manager-toggle" isOn={basemapVisible} onChange={handleVisibilityChange2} />
+          <MapLayerSettingsPopupButton transparency={baseMapTransparencyValue} onTransparencyChange={handleBasemapTransparencyChange} />
+        </div>
+      </div>
+
       <div className="map-manager-container">
+
         <div className="map-manager-basemap">
           <BasemapPanel />
         </div>
         {!hideExternalMapLayersSection &&
           <DragDropContext onDragEnd={handleOnMapLayerDragEnd}>
-            <div className="map-manager-underlays" >
-              <span className="map-manager-underlays-label">{underlaysLabel}</span><AttachLayerPopupButton isOverlay={false} />
+            <div className="map-manager-layer-wrapper">
+              <div className="map-manager-underlays" >
+                <span className="map-manager-underlays-label">{underlaysLabel}</span><AttachLayerPopupButton isOverlay={false} />
+              </div>
+              <MapLayerDroppable
+                isOverlay={false}
+                layersList={backgroundMapLayers}
+                getContainerForClone={props.getContainerForClone as any}
+                activeViewport={props.activeViewport}
+                onMenuItemSelected={handleOnMenuItemSelection}
+                onItemVisibilityToggleClicked={handleVisibilityChange} />
             </div>
-            <Droppable
-              droppableId="backgroundMapLayers"
-              renderClone={renderUnderlayItem}
-              getContainerForClone={props.getContainerForClone as any}
-            >
-              {(underlayDropProvided, underlayDropSnapshot) =>
-                <div className={`map-manager-attachments${underlayDropSnapshot.isDraggingOver ? " is-dragging-map-over" : ""}`} ref={underlayDropProvided.innerRef} {...underlayDropProvided.droppableProps}>
-                  {
-                    (backgroundMapLayers && backgroundMapLayers.length > 0) ?
-                      backgroundMapLayers.map((mapLayerSettings, i) =>
-                        <Draggable key={mapLayerSettings.name} draggableId={mapLayerSettings.name} index={i}>
-                          {renderUnderlayItem}
-                        </Draggable>) :
-                      <div title={noBackgroundMapsSpecifiedLabel} className="map-manager-no-layers-label">{noBackgroundMapsSpecifiedLabel}</div>
-                  }
-                  {underlayDropProvided.placeholder}
-                </div>}
-            </Droppable>
-            <div className="map-manager-overlays" >
-              <span className="map-manager-overlays-label">{overlaysLabel}</span><AttachLayerPopupButton isOverlay={true} />
+
+            <div className="map-manager-layer-wrapper">
+              <div className="map-manager-overlays" >
+                <span className="map-manager-overlays-label">{overlaysLabel}</span><AttachLayerPopupButton isOverlay={true} />
+              </div>
+              <MapLayerDroppable
+                isOverlay={true}
+                layersList={overlayMapLayers}
+                getContainerForClone={props.getContainerForClone as any}
+                activeViewport={props.activeViewport}
+                onMenuItemSelected={handleOnMenuItemSelection}
+                onItemVisibilityToggleClicked={handleVisibilityChange} />
             </div>
-            <Droppable
-              droppableId="overlayMapLayers"
-              renderClone={renderOverlayItem}
-              getContainerForClone={props.getContainerForClone as any}
-            >
-              {(overlayDropProvided, overlayDropSnapshot) => (
-                <div className={`map-manager-attachments${overlayDropSnapshot.isDraggingOver ? " is-dragging-map-over" : ""}`} ref={overlayDropProvided.innerRef} {...overlayDropProvided.droppableProps} >
-                  {
-                    (overlayMapLayers && overlayMapLayers.length > 0) ?
-                      overlayMapLayers.map((mapLayerSettings, i) =>
-                        <Draggable key={mapLayerSettings.name} draggableId={mapLayerSettings.name} index={i}>
-                          {renderOverlayItem}
-                        </Draggable>) :
-                      <div title={noUnderlaysSpecifiedLabel} className="map-manager-no-layers-label">{noUnderlaysSpecifiedLabel}</div>
-                  }
-                  {overlayDropProvided.placeholder}
-                </div>)
-              }
-            </Droppable>
           </DragDropContext>
         }
         <div className="map-manager-settings-container">
@@ -497,3 +589,4 @@ export function MapLayerManager(props: MapLayerManagerProps) {
     </SourceMapContext.Provider >
   );
 }
+

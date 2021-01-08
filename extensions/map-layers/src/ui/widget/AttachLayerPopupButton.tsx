@@ -155,13 +155,21 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
 }
 
 /** @internal */
+
+export enum AttachLayerButtonType {
+  Primary,
+  Blue,
+  Icon
+}
 export interface AttachLayerPopupButtonProps {
   isOverlay: boolean;
+  buttonType?: AttachLayerButtonType;
 }
+
 
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function AttachLayerPopupButton({ isOverlay }: AttachLayerPopupButtonProps) {
+export function AttachLayerPopupButton(props: AttachLayerPopupButtonProps) {
   const [showAttachLayerLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:AttachLayerPopup.Attach"));
   const [hideAttachLayerLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:AttachLayerPopup.Close"));
   const [popupOpen, setPopupOpen] = React.useState(false);
@@ -189,12 +197,39 @@ export function AttachLayerPopupButton({ isOverlay }: AttachLayerPopupButtonProp
     refreshFromStyle();
   }, [refreshFromStyle]);
 
+  function renderButton(): React.ReactNode {
+    let button: React.ReactNode;
+
+    if (props.buttonType === undefined || props.buttonType === AttachLayerButtonType.Icon) {
+      button = (
+        <button ref={buttonRef} className="map-manager-attach-layer-button" title={popupOpen ? hideAttachLayerLabel : showAttachLayerLabel}
+          onClick={togglePopup}>
+          <WebFontIcon iconName="icon-add" />
+        </button>
+      );
+    } else {
+      let typeClassName: string;
+      switch (props.buttonType) {
+        case AttachLayerButtonType.Blue:
+          typeClassName = "uicore-buttons-blue";
+          break;
+        case AttachLayerButtonType.Primary:
+        default:
+          typeClassName = "uicore-buttons-primary";
+          break;
+      }
+      button = (
+        <button ref={buttonRef} className={typeClassName} title={popupOpen ? hideAttachLayerLabel : showAttachLayerLabel}
+          onClick={togglePopup}>Add Layer</button>
+      );
+    }
+
+    return button;
+  }
+
   return (
     <>
-      <button ref={buttonRef} className="map-manager-attach-layer-button" title={popupOpen ? hideAttachLayerLabel : showAttachLayerLabel}
-        onClick={togglePopup}>
-        <WebFontIcon iconName="icon-add" />
-      </button>
+      {renderButton()}
       <Popup
         isOpen={popupOpen}
         position={RelativePosition.BottomRight}
@@ -202,7 +237,7 @@ export function AttachLayerPopupButton({ isOverlay }: AttachLayerPopupButtonProp
         target={buttonRef.current}
       >
         <div ref={panelRef} className="map-sources-popup-panel" >
-          <AttachLayerPanel isOverlay={isOverlay} onLayerAttached={handleLayerAttached} />
+          <AttachLayerPanel isOverlay={props.isOverlay} onLayerAttached={handleLayerAttached} />
         </div>
       </Popup >
     </>

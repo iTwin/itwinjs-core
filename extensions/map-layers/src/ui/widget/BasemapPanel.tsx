@@ -141,24 +141,20 @@ export function BasemapPanel() {
     }
   }, [bases, activeViewport, bgColor]);
 
+  const [baseMapPanelLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Basemap.BaseMapPanelTitle"));
   const [baseLayerLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Basemap.BaseLayer"));
   const [selectBaseMapLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Basemap.SelectBaseMap"));
 
   return (
     <>
-      <div className="map-manager-base-header">
-        <button className="map-manager-item-visibility" title={toggleVisibility} onClick={handleVisibilityChange}>
-          <WebFontIcon iconName={basemapVisible ? "icon-visibility" : "icon-visibility-hide-2"} />
-        </button>
-        <span className="map-manager-base-label">{baseLayerLabel}</span>
-        <TransparencyPopupButton transparency={baseMapTransparencyValue} onTransparencyChange={handleBasemapTransparencyChange} />
-      </div>
       <div className="map-manager-base-item" >
+        <span className="map-manager-base-label">{baseLayerLabel}</span>
         <ThemedSelect options={baseMapOptions} closeMenuOnSelect placeholder={selectBaseMapLabel} value={selectedBaseMapValue} onChange={handleBaseMapSelection} />
         {
           baseIsColor &&
           <ColorSwatch className="map-manager-base-item-color" colorDef={ColorDef.fromJSON(bgColor)} round={false} onColorPick={handleBgColorClick} />
         }
+        <TransparencyPopupButton transparency={baseMapTransparencyValue} onTransparencyChange={handleBasemapTransparencyChange} />
       </div>
     </>
   );
