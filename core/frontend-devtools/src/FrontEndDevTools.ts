@@ -7,10 +7,14 @@
  */
 
 import { IModelApp } from "@bentley/imodeljs-frontend";
+import { EdgeDetectionEffect, EmbossEffect, GaussianBlurEffect, SharpenEffect, SharpnessEffect, UnsharpenEffect } from "./effects/Convolution";
+import { ClearEffectsTool } from "./effects/EffectTools";
+import { FlipImageConfig, FlipImageEffect } from "./effects/FlipImage";
+import { LensDistortionConfig, LensDistortionEffect } from "./effects/LensDistortion";
 import {
-  ChangeEmphasisSettingsTool, ChangeHiliteSettingsTool, DefaultTileSizeModifierTool, FadeOutTool, FreezeSceneTool, SetAspectRatioSkewTool, ShowTileVolumesTool,
+  ChangeEmphasisSettingsTool, ChangeHiliteSettingsTool, DefaultTileSizeModifierTool, FadeOutTool, FreezeSceneTool, MaskBackgroundMapByElementTool, MaskBackgroundMapByModelTool, MaskBackgroundMapBySubCategoryTool, MaskRealityModelByElementTool, MaskRealityModelByModelTool, MaskRealityModelBySubCategoryTool, SetAspectRatioSkewTool, SetHigherPriorityRealityModelMasking, SetMapHigherPriorityMasking, ShowTileVolumesTool,
   Toggle3dManipulationsTool, ToggleDrawingGraphicsTool, ToggleSectionDrawingSpatialViewTool, ToggleViewAttachmentBoundariesTool, ToggleViewAttachmentClipShapesTool,
-  ToggleViewAttachmentsTool, ViewportAddRealityModel, ViewportTileSizeModifierTool,
+  ToggleViewAttachmentsTool, ViewportAddRealityModel, ViewportTileSizeModifierTool
 } from "./frontend-devtools";
 import { AnimationIntervalTool } from "./tools/AnimationIntervalTool";
 import { ChangeUnitsTool } from "./tools/ChangeUnitsTool";
@@ -20,12 +24,12 @@ import { ClearIsolatedElementsTool, EmphasizeSelectedElementsTool, IsolateSelect
 import { ExtensionServiceTool } from "./tools/ExtensionServiceTool";
 import { ToggleFrustumSnapshotTool, ToggleSelectedViewFrustumTool, ToggleShadowFrustumTool } from "./tools/FrustumDecoration";
 import { InspectElementTool } from "./tools/InspectElementTool";
-import { AttachArcGISMapLayerByUrlTool, AttachMapLayerTool, AttachMapOverlayTool, AttachTileURLMapLayerByUrlTool, AttachWmsMapLayerByUrlTool, AttachWmtsMapLayerByUrlTool, DetachMapLayersTool, MapBaseColorTool, MapBaseTransparencyTool, MapLayerSubLayerVisiblityTool, MapLayerTransparencyTool, MapLayerVisibilityTool, MapLayerZoomTool, ReorderMapLayers, SetMapBaseTool, SetMapHigherPriorityMasking, ToggleTerrainTool } from "./tools/MapLayerTool";
+import { AttachArcGISMapLayerByUrlTool, AttachMapLayerTool, AttachMapOverlayTool, AttachTileURLMapLayerByUrlTool, AttachWmsMapLayerByUrlTool, AttachWmtsMapLayerByUrlTool, DetachMapLayersTool, MapBaseColorTool, MapBaseTransparencyTool, MapLayerSubLayerVisiblityTool, MapLayerTransparencyTool, MapLayerVisibilityTool, MapLayerZoomTool, ReorderMapLayers, SetMapBaseTool, ToggleTerrainTool } from "./tools/MapLayerTool";
 import { MeasureTileLoadTimeTool } from "./tools/MeasureTileLoadTime";
 import { ClearModelAppearanceOverrides, SetModelColorTool, SetModelEmphasizedTool, SetModelIgnoresMaterialsTool, SetModelLineCodeTool, SetModelLineWeightTool, SetModelLocateTool, SetModelTransparencyTool } from "./tools/ModelAppearanceTools";
 import { ChangePlanProjectionSettingsTool, DumpPlanProjectionSettingsTool, OverrideSubCategoryPriorityTool } from "./tools/PlanProjectionTools";
 import { ToggleProjectExtentsTool } from "./tools/ProjectExtents";
-import { AttachCesiumAssetTool, AttachRealityModelTool, ClearRealityModelAppearanceOverrides, DetachRealityModelTool, MaskRealityModelByElementTool, MaskRealityModelByModelTool, MaskRealityModelBySubCategoryTool, SaveRealityModelTool, SetHigherPriorityRealityModelMasking, SetRealityModelColorTool, SetRealityModelEmphasizedTool, SetRealityModelLocateTool, SetRealityModelTransparencyTool, ToggleOSMBuildingDisplay } from "./tools/RealityModelTools";
+import { AttachCesiumAssetTool, AttachRealityModelTool, ClearRealityModelAppearanceOverrides, DetachRealityModelTool, SaveRealityModelTool, SetRealityModelColorTool, SetRealityModelEmphasizedTool, SetRealityModelLocateTool, SetRealityModelTransparencyTool, ToggleOSMBuildingDisplay } from "./tools/RealityModelTools";
 import { RealityTransitionTool } from "./tools/RealityTransitionTool";
 import { CompileShadersTool, LoseWebGLContextTool, ToggleDPIForLODTool, ToggleWiremeshTool } from "./tools/RenderSystemTools";
 import { SetAASamplesTool, ToggleDrapeFrustumTool, TogglePrimitiveVisibilityTool, ToggleReadPixelsTool, ToggleRealityTileBounds, ToggleRealityTileFreeze, ToggleRealityTileLogging, ToggleRealityTilePreload, ToggleVolClassIntersect } from "./tools/RenderTargetTools";
@@ -37,10 +41,6 @@ import { ToggleTileRequestDecorationTool } from "./tools/TileRequestDecoration";
 import { ToggleTileTreeBoundsDecorationTool } from "./tools/TileTreeBoundsDecoration";
 import { ToggleToolTipsTool } from "./tools/ToolTipProvider";
 import { ChangeCameraTool } from "./tools/ViewportTools";
-import { ClearEffectsTool } from "./effects/EffectTools";
-import { FlipImageConfig, FlipImageEffect } from "./effects/FlipImage";
-import { LensDistortionConfig, LensDistortionEffect } from "./effects/LensDistortion";
-import { EdgeDetectionEffect, EmbossEffect, GaussianBlurEffect, SharpenEffect, SharpnessEffect, UnsharpenEffect } from "./effects/Convolution";
 
 /** Entry-point for the package. Before using the package you *must* call [[FrontendDevTools.initialize]].
  * @beta
@@ -175,7 +175,10 @@ export class FrontendDevTools {
       SetMapHigherPriorityMasking,
       MaskRealityModelByModelTool,
       MaskRealityModelBySubCategoryTool,
-      MaskRealityModelByElementTool
+      MaskRealityModelByElementTool,
+      MaskBackgroundMapByModelTool,
+      MaskBackgroundMapBySubCategoryTool,
+      MaskBackgroundMapByElementTool
     ];
 
     for (const tool of tools)

@@ -325,10 +325,10 @@
       "keyin": "fdt effect clear"
     },
     "SetHigherPriorityRealityModelMasking": {
-      "keyin": "fdt set reality model mask"
+      "keyin": "fdt set reality model mask by priority"
     },
     "SetMapHigherPriorityMask": {
-      "keyin": "fdt set map mask"
+      "keyin": "fdt set map mask by priority"
     },
     "MaskRealityModelByModel": {
       "keyin": "fdt set reality model mask models",
@@ -348,6 +348,24 @@
       "keyin": "fdt set reality model mask subcategory",
       "Prompts": {
         "IdentifyRealityModel": "Identify Reality Model",
+        "IdentifyMaskSubCategory": "Identify Mask SubCategory"
+      }
+    },
+    "MaskBackgroundMapByElement": {
+      "keyin": "fdt set background map mask elements",
+      "Prompts": {
+        "IdentifyMaskElement": "Identify Mask Element"
+      }
+    },
+    "MaskBackgroundMapByModel": {
+      "keyin": "fdt set background map mask model",
+      "Prompts": {
+        "IdentifyMaskModel": "Identify Mask Model"
+      }
+    },
+    "MaskBackgroundMapBySubCategory": {
+      "keyin": "fdt set background map mask subcategory",
+      "Prompts": {
         "IdentifyMaskSubCategory": "Identify Mask SubCategory"
       }
     }
