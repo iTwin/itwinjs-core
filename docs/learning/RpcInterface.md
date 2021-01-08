@@ -1,6 +1,6 @@
 # RpcInterface
 
-This article discusses RPC communication in iModel.js. See also [RPC vs IPC]($./RpcVsIpc.md).
+This article discusses RPC communication in iModel.js. See also [RPC vs IPC](./RpcVsIpc.md).
 
 Table of Contents:
 
@@ -20,7 +20,7 @@ Table of Contents:
 
 ## Overview
 
-As described in the [software architecture overview](./SoftwareArchitecture.md), the functionality of an iModel.js app is typically implemented in separate components that run in different processes, potentially on different machines. These components communicate through interfaces. These interfaces can either be implemented as [Rpc or Ipc]($./RpcVsIpc.md). For web applications, iModel.js uses *RpcInterfaces* or [RPC](../learning/Glossary.md#RPC).
+As described in the [software architecture overview](./SoftwareArchitecture.md), the functionality of an iModel.js app is typically implemented in separate components that run in different processes, potentially on different machines. These components communicate through interfaces. These interfaces can either be implemented as [Rpc or Ipc](./RpcVsIpc.md). For web applications, iModel.js uses *RpcInterfaces* or [RPC](../learning/Glossary.md#RPC).
 
 ![SoftwareArchitecture-Rpc](./SoftwareArchitecture-RPC1.png)
 

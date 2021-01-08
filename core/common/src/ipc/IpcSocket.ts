@@ -14,7 +14,7 @@ export const iTwinChannel = (channel: string) => `itwin.${channel}`;
 
 /**
  * A function to handle an Ipc message.
- * @onternal
+ * @internal
  */
 export type IpcListener = (evt: any, ...arg: any[]) => void;
 
@@ -48,14 +48,14 @@ export interface IpcSocket {
    * Establish a handler to receive messages for a channel through a socket.
    * @param channel The name of the channel for the messages. Must begin with the [[iTwinChannel]] prefix.
    * @param listener A function called when messages are sent over `channel`
-   * @returns A function to call to remove the listener.
+   * @return A function to call to remove the listener.
    */
   receive: (channel: string, listener: IpcListener) => RemoveFunction;
 }
 
 /**
  * Interface for the frontend (browser) side of a socket connection. Frontends may invoke methods implemented on the backend.
- * @intenal
+ * @internal
  */
 export interface IpcSocketFrontend extends IpcSocket {
   /**
@@ -79,7 +79,7 @@ export interface IpcSocketBackend extends IpcSocket {
    * Establish a backend implementation of an [[IpcInterface]] for a channel.
    * @param channel The name of the channel for this handler. Must begin with the [[iTwinChannel]] prefix.
    * @param handler A function that supplies the implementation for methods invoked over `channel` via [[IpcSocketFrontend.invoke]]
-   * @returns A function to call to remove the handler.
+   * @return A function to call to remove the handler.
    */
   handle: (channel: string, handler: (methodName: string, ...args: any[]) => Promise<any>) => RemoveFunction;
 };

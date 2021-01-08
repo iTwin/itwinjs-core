@@ -1,6 +1,6 @@
 # Implementing IpcInterfaces
 
-This article discusses IPC communication in iModel.js. See also [RPC vs IPC]($./RpcVsIpc.md).
+This article discusses IPC communication in iModel.js. See also [RPC vs IPC](./RpcVsIpc.md).
 
 Table of Contents:
 
@@ -10,7 +10,7 @@ Table of Contents:
 
 ## IpcSocket Interface
 
-The basis for communication between the frontend/backend pair is a platform-specific implementation of the [IpcSocket](%common) interface. There are two specializations of IpcSocket, [IpcSocketFrontend]($common) and [IpcSocketBackend]($common) for the frontend and backend respectively. They both allow sending and receiving messages, but frontend has a method to invoke *functions* on the backend, and the backend interface has a method to handle those invocations.
+The basis for communication between the frontend/backend pair is a platform-specific implementation of the [IpcSocket]($common) interface. There are two specializations of IpcSocket, [IpcSocketFrontend]($common) and [IpcSocketBackend]($common) for the frontend and backend respectively. They both allow sending and receiving messages, but frontend has a method to invoke *functions* on the backend, and the backend interface has a method to handle those invocations.
 
 For desktops, those interface is implemented by Electron's ipc layers, exposed through the `@bentley/electron-manager` package. For mobile devices those interfaces are implemented over WebSockets.
 
@@ -30,7 +30,7 @@ Since Ipc is only enabled in situations where a dedicated backend is available, 
 
 To enable type-safe cross-process method calls using IPC, there are three required pieces:
 
-1. Define the method signatures in an interface that extends [IpcInterface]($common). This must be in a file that can be `import`ed from both your frontend code and backend code. In iModel.js we use the convention of a folder named `common` to indicate this. Note that all methods in your interface must return a `Promise`. In this same file, define a variable that has a string with a unique name for the *ipc channel* your interface will use. Also, define a variable with a string for a version identifier.
+1. Define the method signatures in an interface that extends [IpcInterface]($common). This must be in a file that can be `import`ed from both your frontend code and backend code. In iModel.js we use the convention of a folder named `common` for this purpose. Note that all methods in your interface must return a `Promise`. In the same file, define a variable that has a string with a unique name for the *ipc channel* your interface will use. Also, define a variable with a string for a version identifier.
 
 1. In your backend code, implement a class that extends [IpcHandler]($backend) and implements the interface you defined in step 1. In your startup code, call the static method `register` on your new class. Your class must implement the abstract methods `get channelName()` and `getVersion()`. Return the channel name and version variables from your interface file.
 
@@ -42,7 +42,7 @@ To enable type-safe cross-process method calls using IPC, there are three requir
   }
 ```
 
-The TypeScript gobbledygook in Step 3 above creates a type-safe asynchronous function you can use to invoke methods on your backend class from your frontend class.
+The TypeScript gobbledygook in Step 3 above creates a type-safe asynchronous function you can use to invoke methods on your backend class from your frontend code.
 
 ```ts
   const method1Val = await callMyBackend("method1", arg1, arg2, arg3);

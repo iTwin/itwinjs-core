@@ -122,7 +122,7 @@ export interface NativeAppIpc extends IpcInterface {
   /**
    * Cancels the previously requested download of a briefcase
    * @param _key Key to locate the briefcase in the disk cache
-   * @returns true if the cancel request was acknowledged. false otherwise
+   * @return true if the cancel request was acknowledged. false otherwise
    */
   requestCancelDownloadBriefcase: (_fileName: string) => Promise<boolean>;
 
@@ -145,7 +145,7 @@ export interface NativeAppIpc extends IpcInterface {
 
   /**
    * Gets a list of all briefcases that were previously downloaded to the system briefcase cache.
-   * @returns array of LocalBriefcaseProps.
+   * @return array of LocalBriefcaseProps.
    */
   getCachedBriefcases: (_iModelId?: GuidString) => Promise<LocalBriefcaseProps[]>;
 
@@ -164,7 +164,7 @@ export interface NativeAppIpc extends IpcInterface {
 
   /**
    * Get the names of available storages
-   * @returns list of storage names
+   * @return list of storage names
    */
   storageMgrNames: () => Promise<string[]>;
 
@@ -172,7 +172,7 @@ export interface NativeAppIpc extends IpcInterface {
    * Get the value associated with a key.
    * @param _storageId string identifier of storage
    * @param _key key identifier for value
-   * @returns key value or undefined
+   * @return key value or undefined
    */
   storageGet: (_storageId: string, _key: string) => Promise<StorageValue | undefined>;
 
@@ -194,7 +194,7 @@ export interface NativeAppIpc extends IpcInterface {
   /**
    * Get list of keys in a storage.
    * @param _storageId string identifier of storage
-   * @returns list of storage ids
+   * @return list of storage ids
    */
   storageKeys: (_storageId: string) => Promise<string[]>;
 
@@ -216,7 +216,7 @@ export interface NativeAppIpc extends IpcInterface {
 
   /**
    * Get access token and perform silent refresh as needed
-   * @returns OIDC token
+   * @return OIDC token
    */
   authGetAccessToken: () => Promise<string>;
 
