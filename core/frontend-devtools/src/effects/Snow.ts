@@ -10,7 +10,7 @@ import { dispose } from "@bentley/bentleyjs-core";
 import { Point2d, Range1d, Range2d, Vector2d } from "@bentley/geometry-core";
 import { ColorDef, GraphicParams, ImageBuffer, ImageBufferFormat, RenderTexture } from "@bentley/imodeljs-common";
 import {
-  DecorateContext, Decorator, GraphicType, ParticleCollectionBuilder, ParticleProps, IModelApp, Tool, Viewport,
+  DecorateContext, Decorator, GraphicType, imageElementFromUrl, ParticleCollectionBuilder, ParticleProps, IModelApp, Tool, Viewport,
 } from "@bentley/imodeljs-frontend";
 import { parseToggle } from "../tools/parseToggle";
 
@@ -68,22 +68,22 @@ class SnowDecorator implements Decorator {
   /** The last time `updateParticles()` was invoked, in milliseconds. */
   private _lastUpdateTime: number;
 
-  private constructor(viewport: Viewport) {
+  private constructor(viewport: Viewport, texture: RenderTexture | undefined) {
     this.viewport = viewport;
     this._dimensions = new Point2d(viewport.viewRect.width, viewport.viewRect.height);
     this._lastUpdateTime = Date.now();
-
-    // ###TODO: createTextureFromImageBuffer should permit undefined for iModel.
-    const image = ImageBuffer.create(new Uint8Array([255, 255, 0, 255]), ImageBufferFormat.Rgba, 1);
-    this._texture = IModelApp.renderSystem.createTextureFromImageBuffer(image, viewport.iModel, new RenderTexture.Params(undefined, RenderTexture.Type.Normal, true));
+    this._texture = texture;
 
     // Tell the viewport to re-render the decorations every frame so that the snow particles animate smoothly.
     const removeOnRender = viewport.onRender.addListener(() => viewport.invalidateDecorations());
 
     // When the viewport is resized, replace this decorator with a new one to match the new dimensions.
     const removeOnResized = viewport.onResized.addListener(() => {
+      // Transfer ownership of the texture to the new decorator.
+      const texture = this._texture;
+      this._texture = undefined;
       this.dispose();
-      new SnowDecorator(viewport);
+      new SnowDecorator(viewport, texture);
     });
 
     // When the viewport is destroyed, dispose of this decorator too.
@@ -162,19 +162,23 @@ class SnowDecorator implements Decorator {
 
   private static readonly _decorators = new Map<Viewport, SnowDecorator>();
 
-  public static getOrCreate(viewport: Viewport): SnowDecorator {
-    return this._decorators.get(viewport) ?? new SnowDecorator(viewport);
-  }
-
-  public static toggle(viewport: Viewport, enable?: boolean): void {
+  public static async toggle(viewport: Viewport, enable?: boolean): Promise<void> {
     const decorator = this._decorators.get(viewport);
     if (undefined === enable)
       enable = undefined === decorator;
 
     if (undefined !== decorator && !enable)
       decorator.dispose();
-    else if (undefined === decorator && enable)
-      new SnowDecorator(viewport);
+    else if (undefined === decorator && enable) {
+      // Create a texture to use for the particles.
+      // Note: the decorator takes ownership of the texture, and disposes of it when the decorator is disposed.
+      const isOwned = true;
+      const params = new RenderTexture.Params(undefined, undefined, isOwned);
+      const image = await imageElementFromUrl("./sprites/particle_snow.png");
+      const texture = await IModelApp.renderSystem.createTextureFromImage(image, true, undefined, params);
+
+      new SnowDecorator(viewport, texture);
+    }
   }
 }
 

@@ -183,7 +183,7 @@ class Builder implements ParticleCollectionBuilder {
     }
 
     // Define InstancedGraphicParams for particles.
-    const transformCenter = this._range.center;
+    const rangeCenter = this._range.center;
     const floatsPerTransform = 12;
     const transforms = new Float32Array(floatsPerTransform * numParticles);
     const bytesPerOverride = 8;
@@ -198,8 +198,8 @@ class Builder implements ParticleCollectionBuilder {
       transforms[tfIndex + 10] = 1;
 
       // Translation relative to center of particles range.
-      transforms[tfIndex + 3] = particle.centroid.x - transformCenter.x;
-      transforms[tfIndex + 7] = particle.centroid.y - transformCenter.y;
+      transforms[tfIndex + 3] = particle.centroid.x - rangeCenter.x;
+      transforms[tfIndex + 7] = particle.centroid.y - rangeCenter.y;
 
       if (symbologyOverrides) {
         // See FeatureOverrides.buildLookupTable() for layout.
@@ -218,13 +218,14 @@ class Builder implements ParticleCollectionBuilder {
     // ###TODO handle pickableId
     system = system ?? IModelApp.renderSystem;
     const quad = this.createQuad(meanSize);
+    const transformCenter = new Point3d(0, 0, 0);
     const instances = { count: numParticles, transforms, transformCenter, symbologyOverrides };
     let graphic = system.createMesh(quad,instances);
     if (!graphic)
       return undefined;
 
     // Transform from origin to collection, then to world.
-    const toCollection = Transform.createTranslation(transformCenter);
+    const toCollection = Transform.createTranslation(rangeCenter);
     const toWorld = toCollection.multiplyTransformTransform(this._localToWorldTransform);
     const branch = new GraphicBranch(true);
     branch.add(graphic);
