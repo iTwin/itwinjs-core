@@ -14,7 +14,7 @@ Generally (but not always), RPC in iModel.js is implemented over [HTTP](https://
 
 ## IPC
 
-IPC (as implemented in iModel.js) is used for cases where the fronted and backend are *tightly coupled*. In this mode a single frontend process is paired with a single backend process in a one-to-one relationship via the [IpcSocket]($common) api. In iModel.js terms, that means that an [IModelApp]($frontend) is paired with an [IModelHost]($backend), and their lifetimes coincide. Each can assume that the other can hold unambiguous *contextual state* information over the course of a session. For applications that edit iModels, this relationship is extremely helpful.
+IPC (as implemented in iModel.js) is used for cases where the fronted and backend are *tightly coupled*. In this mode a single frontend process is paired with a single backend process in a one-to-one relationship via the [IpcSocket]($common) api. In iModel.js terms, that means that an [IModelApp]($frontend) is paired with an [IModelHost]($backend) (sometimes referred to as a "dedicated" backend), and their lifetimes coincide. Each can assume that the other can hold unambiguous *contextual state* information over the course of a session. For applications that edit iModels, this relationship is extremely helpful.
 
 With IPC, after some initial validation, messages can be sent each way without any contextual overhead, since the connection is direct and unambiguous. This makes IPC slightly more efficient and straightforward to implement.
 

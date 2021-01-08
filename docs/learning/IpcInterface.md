@@ -30,7 +30,7 @@ Since Ipc is only enabled in situations where a dedicated backend is available, 
 
 To enable type-safe cross-process method calls using IPC, there are three required pieces:
 
-1. Define the method signatures in an interface that extends [IpcInterface]($common). This must be in a file that can be `import`ed from both your frontend code and backend code. In iModel.js we use the convention `common` to indicate this. Note that all methods in your interface must return a `Promise`. In this same file, define a variable that has a string with a unique name for the *ipc channel* your interface will use. Also, define a variable with a string for a version identifier.
+1. Define the method signatures in an interface that extends [IpcInterface]($common). This must be in a file that can be `import`ed from both your frontend code and backend code. In iModel.js we use the convention of a folder named `common` to indicate this. Note that all methods in your interface must return a `Promise`. In this same file, define a variable that has a string with a unique name for the *ipc channel* your interface will use. Also, define a variable with a string for a version identifier.
 
 1. In your backend code, implement a class that extends [IpcHandler]($backend) and implements the interface you defined in step 1. In your startup code, call the static method `register` on your new class. Your class must implement the abstract methods `get channelName()` and `getVersion()`. Return the channel name and version variables from your interface file.
 
@@ -42,12 +42,13 @@ To enable type-safe cross-process method calls using IPC, there are three requir
   }
 ```
 
-The TypeScript gobbledygook in Step 3 above creates a type-safe function you can use to invoke methods on your backend class from your frontend class.
-
+The TypeScript gobbledygook in Step 3 above creates a type-safe asynchronous function you can use to invoke methods on your backend class from your frontend class.
 
 ```ts
   const method1Val = await callMyBackend("method1", arg1, arg2, arg3);
 ```
+
+> Note that all IPC methods return a `Promise`, so their return value must always be `await`ed.
 
 It is probably a good practice to ensure that your backend is properly matched with your frontend somewhere in your startup code. E.g.:
 
@@ -57,5 +58,7 @@ It is probably a good practice to ensure that your backend is properly matched w
       throw new IModelError(IModelStatus.BadArg, `myIpcVersion version wrong: backend(${ipcVersion}) vs. frontend(${myIpcVersion})`);
     }
 ```
+
+As you refine your interface, you should change your version string.
 
 Your application can have as many `IpcInterfaces` as you like (each must have a unique channel name), and each of your interfaces may have as many functions as you need.
