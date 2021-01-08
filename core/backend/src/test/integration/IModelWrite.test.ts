@@ -689,12 +689,12 @@ describe("IModelWriteTest (#integration)", () => {
   });
 
   it("Locks conflict test II (#integration)", async () => {
-    const adminRequestContext: AuthorizedBackendRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager);
+    const adminRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager);
     let timer = new Timer("delete iModels");
     const iModelName = "LocksConflictTestII";
-    const iModels: HubIModel[] = await BriefcaseManager.imodelClient.iModels.get(adminRequestContext, writeTestProjectId, new IModelQuery().byName(iModelName));
+    const iModels = await IModelHost.iModelClient.iModels.get(adminRequestContext, writeTestProjectId, new IModelQuery().byName(iModelName));
     for (const iModelTemp of iModels) {
-      await BriefcaseManager.imodelClient.iModels.delete(adminRequestContext, writeTestProjectId, iModelTemp.id!);
+      await IModelHost.iModelClient.iModels.delete(adminRequestContext, writeTestProjectId, iModelTemp.id!);
       adminRequestContext.enter();
     }
     timer.end();
@@ -702,7 +702,7 @@ describe("IModelWriteTest (#integration)", () => {
     timer = new Timer("create iModel");
     const rwIModelId = await BriefcaseManager.create(adminRequestContext, writeTestProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
 
-    const rwIModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(adminRequestContext, writeTestProjectId, rwIModelId, SyncMode.PullAndPush);
+    const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: adminRequestContext, contextId: writeTestProjectId, iModelId: rwIModelId });
     adminRequestContext.enter();
     timer.end();
 
@@ -723,15 +723,15 @@ describe("IModelWriteTest (#integration)", () => {
     await rwIModel.pushChanges(adminRequestContext, "newPhysicalModel");
     adminRequestContext.enter();
 
-    await rwIModel.concurrencyControl.endBulkMode(adminRequestContext);
+    await rwIModel.concurrencyControl.endBulkMode(adminRequestContext); // leave bulk mode. Now we will have to get locks before making changes.
     adminRequestContext.enter();
 
     //  --- Briefcase 2
     //  Have another briefcase take out an exclusive lock on element #1
-    const briefcase2 = await IModelTestUtils.downloadAndOpenBriefcaseDb(superRequestContext, writeTestProjectId, rwIModelId, SyncMode.PullAndPush);
+    const briefcase2 = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: superRequestContext, contextId: writeTestProjectId, iModelId: rwIModelId });
     superRequestContext.enter();
 
-    assert.notEqual(briefcase2.briefcase.briefcaseId, rwIModel.briefcase.briefcaseId);
+    assert.notEqual(briefcase2.briefcaseId, rwIModel.briefcaseId);
 
     const el1bc2 = briefcase2.elements.getElement(elid1);
     await briefcase2.concurrencyControl.requestResourcesForUpdate(superRequestContext, [el1bc2]);
