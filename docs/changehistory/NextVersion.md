@@ -246,7 +246,9 @@ GetFormattedValue(this.Length, "Metric") = "10.0 m"
 
 ### Breaking changes to `ContentRelatedInstances`
 
-Behavior of `ContentRelatedInstances` specification used in content rules was changed. It used to include input instance in a result if `relationshipPaths` property had paths consisting of all steps with `count` set to `"*"` and target class matched input instance class. This behavior was changed to match cases when paths contain step with `count` property set to something else and now input instance is not included in all cases. Example:
+Behavior of `ContentRelatedInstances` specification used in content rules was changed. It used to include input instances into the result if all paths in `relationshipPaths` property had `count: "*"` and target class matched input instance class. The behavior was changed to match cases where steps `relationshipPaths` have `count` set to specific number - the result only includes instances resulting from step outputs. See [RelationshipPathSpecification documentation](../learning/presentation/RelationshipPathSpecification.md) for more details and examples.
+
+Example:
 
 ```json
 {
