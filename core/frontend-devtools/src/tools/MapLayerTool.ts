@@ -454,7 +454,7 @@ export class SetMapSelectedModelMasking extends Tool {
       for (const elementProp of elementProps)
         modelIds.add(elementProp.model)
 
-      applyMapMasking(onOff, PlanarClipMask.create(PlanarClipMaskMode.Models, modelIds)!.toJSON());
+      applyMapMasking(onOff, PlanarClipMask.create(PlanarClipMaskMode.HigherPriorityModels, modelIds)!.toJSON());
     });
     return true;
   }

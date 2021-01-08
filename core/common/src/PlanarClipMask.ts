@@ -6,37 +6,42 @@
  * @module DisplayStyles
  */
 
-import { assert, Id64Set, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { compareStringsOrUndefined, CompressedId64Set, Id64Set, Id64String } from "@bentley/bentleyjs-core";
+import { SSL_OP_NETSCAPE_DEMO_CIPHER_CHANGE_BUG } from "constants";
 
 export enum PlanarClipMaskMode {
   None = 0,
   HigherPriorityModels = 1,
   Models,
-  Categories,
+  SubCategories,
   Elements,
 };
+
 export class PlanarClipMask {
   public readonly mode: PlanarClipMaskMode = PlanarClipMaskMode.None;
-  public readonly ids?: Id64Set;
+  public readonly modelIds?: CompressedId64Set;
+  public readonly subCategoryOrElementIds?: CompressedId64Set;
 
   /** Create a new SubCategoryOverride from a JSON object */
   public static fromJSON(json?: PlanarClipMaskProps): PlanarClipMask {
     if (!json)
       return this.defaults;
 
-    return new PlanarClipMask(json.mode, json.ids ? new Set<Id64String>(json.ids) : undefined);
-
+    return new PlanarClipMask(json.mode, json.modelIds, json.subCategoryOrElementIds);
   }
-  public static create(mode: PlanarClipMaskMode, ids?: Id64Set): PlanarClipMask | undefined {
+
+  public static create(mode: PlanarClipMaskMode, modelIds?: Id64Set, subCategoryOrElementIds?: Id64Set): PlanarClipMask | undefined {
     switch (mode) {
       case PlanarClipMaskMode.None:
       case PlanarClipMaskMode.HigherPriorityModels:
-        return ids === undefined ? undefined : new PlanarClipMask(mode);
+        return new PlanarClipMask(mode);
 
       case PlanarClipMaskMode.Models:
-      case PlanarClipMaskMode.Categories:
+        return modelIds === undefined ? undefined : new PlanarClipMask(mode, CompressedId64Set.compressSet(modelIds));
+
+      case PlanarClipMaskMode.SubCategories:
       case PlanarClipMaskMode.Elements:
-        return (!ids || ids.size === 0) ? undefined : new PlanarClipMask(mode, ids);
+        return subCategoryOrElementIds === undefined ? undefined : new PlanarClipMask(mode, modelIds ? CompressedId64Set.compressSet(modelIds) : undefined, CompressedId64Set.compressSet(subCategoryOrElementIds));
 
       default:
         return undefined;
@@ -44,26 +49,21 @@ export class PlanarClipMask {
   }
 
   public toJSON(): PlanarClipMaskProps {
-    return { mode: this.mode, ids: this.ids }
+    return { mode: this.mode, modelIds: this.modelIds, subCategoryOrElementIds: this.subCategoryOrElementIds };
   }
 
   public get anyDefined(): boolean { return this.mode !== PlanarClipMaskMode.None; }
 
   public equals(other: PlanarClipMask): boolean {
-    if (this.mode !== other.mode || this.ids?.size !== other.ids?.size)
-      return false;
-
-    if (this.ids && other.ids)
-      for (const id of this.ids)
-        if (!other.ids.has(id))
-          return false;
-
-    return true;
+    return this.mode === other.mode &&
+      compareStringsOrUndefined(this.modelIds, other.modelIds) === 0 &&
+      compareStringsOrUndefined(this.subCategoryOrElementIds, other.subCategoryOrElementIds) === 0;
   }
 
-  private constructor(mode: PlanarClipMaskMode, ids?: Id64Set) {
+  private constructor(mode: PlanarClipMaskMode, modelIds?: CompressedId64Set, subCategoryOrElementIds?: CompressedId64Set) {
     this.mode = mode;
-    this.ids = ids;
+    this.modelIds = modelIds;
+    this.subCategoryOrElementIds = subCategoryOrElementIds;
   }
   /** A default PlanarClipMask which masks nothing. */
   public static defaults = new PlanarClipMask(PlanarClipMaskMode.None);
@@ -71,6 +71,7 @@ export class PlanarClipMask {
 
 export interface PlanarClipMaskProps {
   mode: PlanarClipMaskMode;
-  ids?: Id64Set;
+  modelIds?: CompressedId64Set;
+  subCategoryOrElementIds?: CompressedId64Set;
 }
 

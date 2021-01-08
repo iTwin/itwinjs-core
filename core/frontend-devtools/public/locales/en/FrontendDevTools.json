@@ -324,13 +324,32 @@
     "ClearEffects": {
       "keyin": "fdt effect clear"
     },
-    "MaskRealityModelByElement": {
-      "keyin": "fdt set reality model mask elements"
-    },
-    "SetRealityModelMasking": {
+    "SetHigherPriorityRealityModelMasking": {
       "keyin": "fdt set reality model mask"
     },
-    "SetMapMask": {
+    "SetMapHigherPriorityMask": {
       "keyin": "fdt set map mask"
+    },
+    "MaskRealityModelByModel": {
+      "keyin": "fdt set reality model mask models",
+      "Prompts": {
+        "IdentifyRealityModel": "Identify Reality Model",
+        "IdentifyMaskModel": "Identify Mask Models"
+      }
+    },
+    "MaskRealityModelByElement": {
+      "keyin": "fdt set reality model mask elements",
+      "Prompts": {
+        "IdentifyRealityModel": "Identify Reality Model",
+        "IdentifyMaskElement": "Identify Mask Element"
+      }
+    },
+    "MaskRealityModelBySubCategory": {
+      "keyin": "fdt set reality model mask subcategory",
+      "Prompts": {
+        "IdentifyRealityModel": "Identify Reality Model",
+        "IdentifyMaskSubCategory": "Identify Mask SubCategory"
+      }
     }
   }
+}

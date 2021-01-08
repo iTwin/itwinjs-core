@@ -9,7 +9,7 @@
 
 import { Id64, Id64Array, Id64String } from "@bentley/bentleyjs-core";
 import { FeatureAppearance, FeatureAppearanceProps, PlanarClipMask, PlanarClipMaskMode, PlanarClipMaskProps, RgbColorProps } from "@bentley/imodeljs-common";
-import { BeButtonEvent, ContextRealityModelState, EventHandled, GeometricModelState, getCesiumAssetUrl, HitDetail, IModelApp, LocateFilterStatus, LocateResponse, NotifyMessageDetails, OutputMessagePriority, PrimitiveTool, ScreenViewport, Tool, Viewport, ViewPose } from "@bentley/imodeljs-frontend";
+import { BeButtonEvent, ContextRealityModelState, EventHandled, GeometricModelState, getCesiumAssetUrl, HitDetail, HitGeomType, IModelApp, LocateFilterStatus, LocateResponse, NotifyMessageDetails, OutputMessagePriority, PrimitiveTool, ScreenViewport, Tool, Viewport, ViewPose } from "@bentley/imodeljs-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseBoolean } from "./parseBoolean";
 import { parseToggle } from "./parseToggle";
@@ -304,7 +304,7 @@ export class SetHigherPriorityRealityModelMasking extends Tool {
   public static get maxArgs() { return 2; }
 
   public run(index: number, onOff?: boolean): boolean {
-    return applyMaskToRealityModel(index, onOff, PlanarClipMask.fromJSON({ mode: PlanarClipMaskMode.HigherPriorityModels }));
+    return applyMaskToRealityModel(index, onOff, PlanarClipMask.create(PlanarClipMaskMode.HigherPriorityModels)!);
   }
 
   public parseAndRun(...args: string[]): boolean {
@@ -314,31 +314,32 @@ export class SetHigherPriorityRealityModelMasking extends Tool {
   }
 }
 
-/** Mask  reality model by element
+/** Mask reality model by element
  * @beta
  */
 
-export class MaskRealityModelByElementTool extends PrimitiveTool {
-  public static toolId = "MaskRealityModelByElement";
-  private readonly _acceptedIds: Id64Array = [];
-  private _useSelection: boolean = false;
-  private _targetModel?: Id64String | number;
-
+export abstract class MaskRealityModelBaseTool extends PrimitiveTool {
+  protected readonly _acceptedModelIds = new Set<Id64String>();
+  protected readonly _acceptedSubCategoryIds = new Set<Id64String>();
+  protected readonly _acceptedElementIds = new Set<Id64String>();
+  protected _useSelection: boolean = false;
+  protected _targetModelId?: Id64String | number;
 
   public requireWriteableTarget(): boolean { return false; }
   public onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
-  public onCleanup(): void { if (0 !== this._acceptedIds.length) this.iModel.hilited.setHilite(this._acceptedIds, false); }
+  public onCleanup(): void { if (0 !== this._acceptedElementIds.size) this.iModel.hilited.setHilite(this._acceptedElementIds, false); }
   public onUnsuspend(): void { this.showPrompt(); }
   private setupAndPromptForNextAction(): void {
     this._useSelection = (undefined !== this.targetView && this.targetView.iModel.selectionSet.isActive);
     this.initLocateElements();
     this.showPrompt();
   }
-  private showPrompt(): void {
-  }
+  protected abstract showPrompt(): void;
+  protected abstract createToolInstance(): MaskRealityModelBaseTool;
+  protected abstract applyMask(vp: ScreenViewport, targetModelId: Id64String | number): void;
 
   public onRestartTool(): void {
-    const tool = new MaskRealityModelByElementTool();
+    const tool = this.createToolInstance();
     if (!tool.run())
       this.exitTool();
   }
@@ -351,18 +352,70 @@ export class MaskRealityModelByElementTool extends PrimitiveTool {
     if (!model)
       return LocateFilterStatus.Reject;
 
-    if (undefined === this._targetModel)
+    if (undefined === this._targetModelId)
       return model.isRealityModel ? LocateFilterStatus.Accept : LocateFilterStatus.Reject;
     else
-      return Id64.isTransient(hit.sourceId) ? LocateFilterStatus.Reject : LocateFilterStatus.Accept;
+      return (hit.isElementHit && !hit.isModelHit && !this._acceptedElementIds.has(hit.sourceId)) ? LocateFilterStatus.Accept : LocateFilterStatus.Reject;
   }
 
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
-
     const hit = await IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, ev.inputSource);
-    if (undefined === hit || !hit.isElementHit)
+    const vp = IModelApp.viewManager.selectedView;
+    if (undefined === hit || undefined === vp)
       return EventHandled.No;
 
+    if (undefined === this._targetModelId) {
+      this._targetModelId = hit.modelId;
+    } else if (hit.isElementHit) {
+      const sourceId = hit.sourceId;
+      if (!this._acceptedElementIds.has(sourceId)) {
+        this._acceptedElementIds.add(sourceId);
+        this._acceptedModelIds.add(hit.modelId!)
+        if (hit.subCategoryId)
+          this._acceptedSubCategoryIds.add(hit.subCategoryId);
+        this.applyMask(vp, this._targetModelId);
+      }
+    }
+    this.setupAndPromptForNextAction();
     return EventHandled.No;
+  }
+}
+
+export class MaskRealityModelByElementTool extends MaskRealityModelBaseTool {
+  public static toolId = "MaskRealityModelByElement";
+
+  protected showPrompt(): void {
+    const key = "FrontendDevTools:tools.MaskRealityModelByElement.Prompts." + (this._targetModelId === undefined ? "IdentifyRealityModel" : "IdentifyMaskElement");
+    IModelApp.notifications.outputPromptByKey(key);
+  }
+  protected createToolInstance(): MaskRealityModelBaseTool { return new MaskRealityModelByElementTool(); }
+  protected applyMask(vp: ScreenViewport, targetModel: Id64String | number): void {
+    vp.overrideRealityModelPlanarClipMask(targetModel, PlanarClipMask.create(PlanarClipMaskMode.Elements, this._acceptedModelIds, this._acceptedElementIds)!);
+  }
+}
+
+export class MaskRealityModelByModelTool extends MaskRealityModelBaseTool {
+  public static toolId = "MaskRealityModelByModel";
+
+  protected showPrompt(): void {
+    const key = "FrontendDevTools:tools.MaskRealityModelByModel.Prompts." + (this._targetModelId === undefined ? "IdentifyRealityModel" : "IdentifyMaskModel");
+    IModelApp.notifications.outputPromptByKey(key);
+  }
+  protected createToolInstance(): MaskRealityModelBaseTool { return new MaskRealityModelByElementTool(); }
+  protected applyMask(vp: ScreenViewport, targetModel: Id64String | number): void {
+    vp.overrideRealityModelPlanarClipMask(targetModel, PlanarClipMask.create(PlanarClipMaskMode.Models, this._acceptedModelIds)!);
+  }
+}
+
+export class MaskRealityModelBySubCategoryTool extends MaskRealityModelBaseTool {
+  public static toolId = "MaskRealityModelBySubCategory";
+
+  protected showPrompt(): void {
+    const key = "FrontendDevTools:tools.MaskRealityModelByModel.Prompts." + (this._targetModelId === undefined ? "IdentifyRealityModel" : "IdentifyMaskSubCategory");
+    IModelApp.notifications.outputPromptByKey(key);
+  }
+  protected createToolInstance(): MaskRealityModelBaseTool { return new MaskRealityModelByElementTool(); }
+  protected applyMask(vp: ScreenViewport, targetModel: Id64String | number): void {
+    vp.overrideRealityModelPlanarClipMask(targetModel, PlanarClipMask.create(PlanarClipMaskMode.SubCategories, this._acceptedModelIds, this._acceptedSubCategoryIds)!);
   }
 }

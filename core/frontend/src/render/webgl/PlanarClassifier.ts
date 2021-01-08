@@ -7,13 +7,15 @@
  * @module WebGL
  */
 
-import { dispose, Id64String } from "@bentley/bentleyjs-core";
+import { CompressedId64Set, dispose, Id64String } from "@bentley/bentleyjs-core";
 import { Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Vector3d } from "@bentley/geometry-core";
 import { IModelsHandler } from "@bentley/imodelhub-client";
 import { ColorDef, Frustum, FrustumPlanes, PlanarClipMask, PlanarClipMaskMode, RenderMode, RenderTexture, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
-import { GraphicsCollectorDrawArgs, SpatialClassifierTileTreeReference, TileTree, TileTreeReference } from "../../tile/internal";
+import { IModelConnection } from "../../imodeljs-frontend";
+import { GraphicsCollectorDrawArgs, overrideRequestTileTreeProps, SpatialClassifierTileTreeReference, TileTree, TileTreeReference } from "../../tile/internal";
 import { SceneContext } from "../../ViewContext";
 import { ViewState, ViewState3d } from "../../ViewState";
+import { FeatureSymbology } from "../FeatureSymbology";
 import { RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
 import { PlanarClassifierTarget, RenderPlanarClassifier } from "../RenderPlanarClassifier";
@@ -259,6 +261,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   private readonly _batchState: BatchState;
   private _planarClipMask?: PlanarClipMask;
   private _classifierTreeRef?: TileTreeReference;
+  private _planarClipMaskOverrides?: FeatureSymbology.Overrides;
 
   private static _postProjectionMatrix = Matrix4d.createRowValues(
     0, 1, 0, 0,
@@ -360,8 +363,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     this._width = requiredWidth;
     this._height = requiredHeight;
     const sourceTrees: TileTreeReference[] = this._classifierTreeRef ? [this._classifierTreeRef] : [];
-    if (this._planarClipMask)
-      this.getPlanarClipMaskTileTrees(sourceTrees, context.viewport.view, target.modelId, this._planarClipMask);
+    this.getPlanarClipMaskTileTrees(sourceTrees, context.viewport.view, target.modelId);
 
     const projection = PlanarTextureProjection.computePlanarTextureProjection(this._plane, context, target, sourceTrees, viewState, this._width, this._height);
     if (!projection.textureFrustum || !projection.projectionMatrix || !projection.worldToViewMap)
@@ -370,6 +372,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     this._projectionMatrix = projection.projectionMatrix;
     this._frustum = projection.textureFrustum;
     this._debugFrustum = projection.debugFrustum;
+    this._planarClipMaskOverrides = this.getPlanarClipMaskSymbologyOverrides();
 
     for (const treeRef of sourceTrees) {
       const drawArgs = GraphicsCollectorDrawArgs.create(context, this, treeRef, new FrustumPlanes(this._frustum), projection.worldToViewMap);
@@ -422,6 +425,10 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
 
     system.applyRenderState(this._renderState);
     const prevPlan = target.plan;
+    const prevOverrides = target.currentFeatureSymbologyOverrides;
+
+    if (this._planarClipMaskOverrides)
+      target.overrideFeatureSymbology(this._planarClipMaskOverrides);
 
     target.uniforms.style.changeBackgroundColor(this._bgColor); // Avoid white on white reversal. Will be reset in changeRenderPlan below.
 
@@ -429,7 +436,6 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
 
     const prevProjMatrix = target.uniforms.frustum.projectionMatrix;
     target.uniforms.frustum.changeProjectionMatrix(PlanarClassifier._postProjectionMatrix.multiplyMatrixMatrix(prevProjMatrix));
-
     target.uniforms.branch.changeRenderPlan(vf, target.plan.is3d, target.plan.hline);
 
     const renderCommands = this._renderCommands;
@@ -466,32 +472,65 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     // Reset the Target's state.
     this._batchState.reset();
     target.changeRenderPlan(prevPlan);
+    target.overrideFeatureSymbology(prevOverrides);
 
     system.applyRenderState(prevState);
     system.context.viewport(0, 0, target.viewRect.width, target.viewRect.height);
   }
 
-  public getPlanarClipMaskTileTrees(trees: TileTreeReference[], view: ViewState, classifiedModelId: Id64String, planarClipMask: PlanarClipMask): void {
+  private getPlanarClipMaskTileTrees(trees: TileTreeReference[], view: ViewState, classifiedModelId: Id64String): void {
+    if (undefined === this._planarClipMask)
+      return;
     const viewTrees = new Map<Id64String, TileTreeReference>();
     view.forEachTileTreeRef((ref) => {
       const tree = ref.treeOwner.load();
       if (tree && tree.modelId !== classifiedModelId && !tree.isContentUnbounded)
         viewTrees.set(tree.modelId, ref);
     });
-    switch (planarClipMask.mode) {
+    switch (this._planarClipMask.mode) {
       case PlanarClipMaskMode.HigherPriorityModels:
         viewTrees.forEach((tree) => trees.push(tree));
         break;
-      case PlanarClipMaskMode.Models:
-        if (planarClipMask.ids) planarClipMask.ids.forEach((modelId) => {
-          const viewedTree = viewTrees.get(modelId);
-          if (viewedTree)
-            trees.push(viewedTree);
-          else {
-            // TBD - Mask with undisplayed or unloaded trees.
-          }
-        });
+
+      case PlanarClipMaskMode.None:
         break;
+
+      default:
+        if (this._planarClipMask.modelIds) {
+          const modelIdSet = CompressedId64Set.decompressSet(this._planarClipMask.modelIds);
+          for (const modelId of modelIdSet) {
+            const viewedTree = viewTrees.get(modelId);
+            if (viewedTree)
+              trees.push(viewedTree);
+            else {
+              // TBD - Load mask tree if not loaded.
+            }
+          }
+        } else {
+          viewTrees.forEach((tree) => trees.push(tree));
+        }
+    }
+  }
+  private getPlanarClipMaskSymbologyOverrides(): FeatureSymbology.Overrides | undefined {
+    if (!this._planarClipMask || !this._planarClipMask.subCategoryOrElementIds)
+      return undefined;
+
+    switch (this._planarClipMask.mode) {
+      case PlanarClipMaskMode.Elements: {
+        const overrides = new FeatureSymbology.Overrides();
+        overrides.setAlwaysDrawnSet(CompressedId64Set.decompressSet(this._planarClipMask.subCategoryOrElementIds), true);
+        return overrides;
+      }
+      case PlanarClipMaskMode.SubCategories: {
+        const overrides = new FeatureSymbology.Overrides();
+        const subCateoryIds = CompressedId64Set.decompressArray(this._planarClipMask.subCategoryOrElementIds)
+        for (const subCategoryId of subCateoryIds)
+          overrides.setVisibleSubCategory(subCategoryId);
+        return overrides;
+      }
+      default:
+        return undefined;
     }
   }
 }
+
