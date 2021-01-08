@@ -230,14 +230,18 @@ export class ImdlReader extends GltfReader {
     // In that case, we instead retrieve the texture directly from the tile.
     // Furthermore, if external textures are disabled, we retrieve the texture directly from the tile in both cases.
 
+    const bufferViewId = JsonUtils.asString(namedTex.bufferView);
+    const bufferViewJson = 0 !== bufferViewId.length ? this._bufferViews[bufferViewId] : undefined;
+
     const useExternalTexture = Id64.isValidId64(name) && IModelApp.tileAdmin.enableExternalTextures;
-    if (useExternalTexture) {
+    if (useExternalTexture && undefined === bufferViewJson) {
+      // Only do this if bufferViewJson does not exist.
+      // (If external textures are enabled and the backend provides a bufferViewJson, that means the image data
+      // is small enough that the backend decided to embed that data rather than make it an external texture.)
       texBytes = await this._iModel.getTextureImage(name);
       if (undefined === texBytes)
         return undefined;
     } else {
-      const bufferViewId = JsonUtils.asString(namedTex.bufferView);
-      const bufferViewJson = 0 !== bufferViewId.length ? this._bufferViews[bufferViewId] : undefined;
       if (undefined === bufferViewJson)
         return undefined;
 
