@@ -46,6 +46,7 @@ import { DialogProps as DialogProps_2 } from '@bentley/ui-abstract';
 import { DialogRow } from '@bentley/ui-abstract';
 import { Direction } from '@bentley/ui-ninezone';
 import { DisabledResizeHandles } from '@bentley/ui-ninezone';
+import { DisplayStyle3dState } from '@bentley/imodeljs-frontend';
 import { DndComponentClass } from 'react-dnd';
 import { DraggedWidgetManagerProps } from '@bentley/ui-ninezone';
 import { DragLayerProps } from '@bentley/ui-components';
@@ -5043,6 +5044,8 @@ export const SnapModeField: import("react-redux").ConnectedComponent<typeof Snap
 // @alpha
 export class SolarTimelineDataProvider extends BaseSolarDataProvider {
     constructor(viewState: ViewState, viewport?: ScreenViewport, longitude?: number, latitude?: number);
+    // (undocumented)
+    protected get _displayStyle3d(): DisplayStyle3dState | undefined;
     // (undocumented)
     onTimeChanged: (time: Date) => void;
     // (undocumented)
