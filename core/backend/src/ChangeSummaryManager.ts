@@ -177,7 +177,7 @@ export class ChangeSummaryManager {
     // Detach change cache as it's being written to during the extraction
     const isChangeCacheAttached = this.isChangeCacheAttached(iModel);
     if (isChangeCacheAttached) {
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "There is a attach change cache file. Re-open the connection to detach it.");
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "There is an attached change cache file. Re-open the connection to detach it.");
     }
 
     perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Open or create local Change Cache file");
