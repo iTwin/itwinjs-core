@@ -29,7 +29,6 @@ export interface DownloadBriefcaseOptions {
   syncMode: SyncMode;
   fileName?: string;
 }
-
 /**
  * The frontend of a native application
  * @see [Native Applications]($docs/learning/NativeApps.md)

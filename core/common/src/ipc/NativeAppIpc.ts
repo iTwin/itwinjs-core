@@ -13,6 +13,7 @@ import { IpcInterface } from "./IpcSocket";
 
 export const nativeAppChannel = "nativeApp";
 export const nativeAppIpcVersion = "1.0.0";
+
 /**
  * Type of value for storage values
  * @internal
@@ -56,15 +57,16 @@ export interface TileTreeContentIds {
   contentIds: string[];
 }
 
-/** InternetConnectivityStatus describe type of connectivity available to application
- * @internal
+/** Indicates whether or not the computer is currently connected to the internet.
+ * @alpha
  */
 export enum InternetConnectivityStatus {
   Online,
   Offline,
 }
-/** OverridenBy describe who overriding connectivity
- * @internal
+
+/** Describes whether the user or the browser overrode the internet connectivity status.
+ * @alpha
  */
 export enum OverriddenBy {
   Browser,
@@ -73,9 +75,8 @@ export enum OverriddenBy {
 
 /**
  * The methods that may be invoked via Ipc from the frontend of a Native App and are implemented on its backend.
- *
-* @internal
-*/
+ * @alpha
+ */
 export interface NativeAppIpc extends IpcInterface {
   /** Send frontend log to backend.
    * @param _level Specify log level.
@@ -131,37 +132,38 @@ export interface NativeAppIpc extends IpcInterface {
   open: (_args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
 
   /**
-   * Close the backend of a briefcase connection.
+   * Close a briefcase on the backend.
+   * @param _key The key from the IModelConnectionProps returned by [[open]]
    */
   closeBriefcase: (_key: string) => Promise<void>;
 
   /**
-   * Deletes a previously downloaded briefcase. The briefcase must be closed.
+   * Delete a previously downloaded briefcase. The briefcase must be closed.
    * @param _fileName the Briefcase to delete
    */
   deleteBriefcaseFiles: (_fileName: string) => Promise<void>;
 
   /**
-   * Gets a list of all briefcases that were previously downloaded to the briefcase cache.
+   * Gets a list of all briefcases that were previously downloaded to the system briefcase cache.
    * @returns array of LocalBriefcaseProps.
    */
   getCachedBriefcases: (_iModelId?: GuidString) => Promise<LocalBriefcaseProps[]>;
 
   /**
-   * Open key/value pair base storage
+   * Open a key/value pair base storage
    * @param _storageId string identifier of storage
    */
   storageMgrOpen: (_storageId: string) => Promise<string>;
 
   /**
-   * Close key/value pair base storage
+   * Close a key/value pair base storage
    * @param _storageId string identifier of storage
    * @param _deleteOnClose delete the storage on close
    */
   storageMgrClose: (_storageId: string, _deleteOnClose: boolean) => Promise<void>;
 
   /**
-   * Get names of available storages
+   * Get the names of available storages
    * @returns list of storage names
    */
   storageMgrNames: () => Promise<string[]>;
@@ -203,7 +205,7 @@ export interface NativeAppIpc extends IpcInterface {
   storageRemoveAll: (_storageId: string) => Promise<void>;
 
   /**
-   * Trigger a sign in on backend. This will emit an onUserStateChange() event.
+   * Initiate a sign in on backend. This will emit an onUserStateChange() event.
    */
   authSignIn: () => Promise<void>;
 

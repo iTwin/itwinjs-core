@@ -12,7 +12,7 @@ Since the (single) frontend process and the (single) backend process are always 
 
 ## iModel Editing
 
-Applications that modify iModels do so through a *long transaction* editing mode the requires a private local copy of the entire database (i.e. a [briefcase](../learning/Glossary.md#Backend)) synchronized through changesets. The briefcase holds all of the changes to the database for the editing session, that can span several minutes, days, even weeks. Native apps are well suited for this purpose, because a local disk on the device where the application is installed, owned by the user making the changes. is the ideal place for that file to live. In addition, editing applications can require substantial compute resources and are often very "chatty" when providing feedback during modification operations. For both of those reasons, most editing applications should be native apps.
+Applications that modify iModels do so through a *long transaction* editing mode the requires a private local copy of the entire database (i.e. a [briefcase](../learning/Glossary.md#Backend)) synchronized through changesets. The briefcase holds all of the changes to the database for the editing session, that can span several minutes, days, even weeks. Native apps are well suited for this purpose, because a local disk on the device where the application is installed, owned by the user making the changes, is the ideal place for that file to live. In addition, editing applications can require substantial compute resources and are often very "chatty" when providing feedback during modification operations. For both of those reasons, most editing applications should be native apps.
 
 Note that being a native app doesn't mean that the user experience should feel "disconnected". Native applications can and should often connect to servers, when the user is online, to coordinate the efforts of team members and to obtain shared resources. Remember, the frontend of a native application *is* a full featured web browser (either Chrome or Safari depending on the platform.)
 
@@ -22,7 +22,7 @@ An important virtue of native apps, and of iModels and iModel.js in general, is 
 
 ## Automatic Updates
 
-Native applications are installed on a single computer and are granted permissions to perform local operations by the owner of that computer at install time. One essential permission that must be granted is the ability to *continuously* refresh the application itself as and when required. In other words native applications, by design, are installed *once* and kept up-to-date *forever*. [Visual Studio Code](https://code.visualstudio.com/) is a good example to follow.
+Native applications are installed on a computer and are granted permissions to perform local operations by the owner of that computer. One essential permission that must be granted is the ability to *continuously* refresh the application itself as and when required. In other words, native applications, by design, are installed *once* and kept up-to-date *forever*. [Visual Studio Code](https://code.visualstudio.com/) is a good example to follow.
 
 This eliminates many issues associated with desktop applications and sometimes listed as a virtue of web/cloud-based applications; worrying about old versions continuing to create problems after issues are fixed. It also facilitates the fast paced build-measure-learn-refine software development cadence that web developers take for granted.
 

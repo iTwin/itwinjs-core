@@ -37,7 +37,7 @@ export class DesktopAuthorizationClient implements FrontendAuthorizationClient {
   /** Creates a new DesktopAuthorizationClient to be used in the electron render process */
   public constructor(clientConfiguration: DesktopAuthorizationClientConfiguration) {
     this._clientConfiguration = clientConfiguration;
-    if (FrontendIpc.isValid === undefined)
+    if (!FrontendIpc.isValid)
       throw new Error("This code should only be run in the electron renderer process");
   }
 

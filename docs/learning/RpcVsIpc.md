@@ -20,4 +20,4 @@ With IPC, after some initial validation, messages can be sent each way without a
 
 Generally, IPC in iModel.js is implemented as a [socket](https://en.wikipedia.org/wiki/Network_socket) - either via [Electron](https://www.electronjs.org/)'s ipc implementation for desktop applications. or through [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API) for web or mobile applications. A virtue of IPC is that a backend can initiate sending messages to *its* frontend.
 
-It should be noted that the [IpcSocket]($common) api does *not* require that the frontend and backend processes reside on the same computer, only that their lifetimes are paired. When they are known to always be on the same computer, we refer to that as a "native app".
+It should be noted that the [IpcSocket]($common) api does *not* require that the frontend and backend processes reside on the same computer, only that their lifetimes are paired. When they are known to *always* be on the same computer, we refer to that as a [native app](./NativeApps.md).

@@ -125,15 +125,6 @@ export enum RpcInterfaceStatus {
   IncompatibleVersion = RPC_INTERFACE_ERROR_BASE,
 }
 
-/** IpcInterface status codes
- * @beta Should these be internal?
- */
-export enum IpcInterfaceStatus {
-  IPC_INTERFACE_ERROR_BASE = 0x22000,
-  /** Could not find the requested function */
-  FunctionNotFound = IPC_INTERFACE_ERROR_BASE,
-}
-
 /** Error status from various ChangeSet operations
  * @beta Should these be internal?
  */

@@ -70,15 +70,15 @@ export interface IpcSocketFrontend extends IpcSocket {
 };
 
 /**
- * Interface for the backend (node) side of a socket connection. Backends provide the implementation
+ * Interface for the backend (Node.js) side of a socket connection. Backends provide the implementation
  * of methods that are invoked from the frontend.
  * @internal
  */
 export interface IpcSocketBackend extends IpcSocket {
   /**
-   * Establish a backend implementation for methods called via a channel.
+   * Establish a backend implementation of an [[IpcInterface]] for a channel.
    * @param channel The name of the channel for this handler. Must begin with the [[iTwinChannel]] prefix.
-   * @param handler A function that supplies the implementation for methods invoked via `channel`
+   * @param handler A function that supplies the implementation for methods invoked over `channel` via [[IpcSocketFrontend.invoke]]
    * @returns A function to call to remove the handler.
    */
   handle: (channel: string, handler: (methodName: string, ...args: any[]) => Promise<any>) => RemoveFunction;
@@ -86,7 +86,7 @@ export interface IpcSocketBackend extends IpcSocket {
 
 /**
  * All interfaces that specify methods invoked from the frontend and implemented on the backend via
- * Ipc must implement this interface.
+ * Ipc must implement this interface to supply their version information.
  * @alpha
  */
 export interface IpcInterface {
