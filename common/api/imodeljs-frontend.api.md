@@ -2070,6 +2070,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @internal (undocumented)
     get backgroundMapBase(): BaseLayerSettings | undefined;
     // @internal (undocumented)
+    get backgroundMapElevationBias(): number;
+    // @internal (undocumented)
     get backgroundMapLayers(): MapLayerSettings[];
     get backgroundMapSettings(): BackgroundMapSettings;
     set backgroundMapSettings(settings: BackgroundMapSettings);
@@ -6793,6 +6795,8 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     get classifiers(): SpatialClassifiers | undefined;
     // (undocumented)
     collectStatistics(stats: RenderMemory.Statistics): void;
+    // (undocumented)
+    createDrawArgs(context: SceneContext): TileDrawArgs | undefined;
     // (undocumented)
     discloseTileTrees(trees: TileTreeSet): void;
     // (undocumented)
