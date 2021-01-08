@@ -17,16 +17,16 @@ import * as utils from "./TestUtils";
 import { assetsPath, workDir } from "./TestConstants";
 import { createFileHandler } from "./FileHandler";
 
-function mockGetIModelByName(contextId: string, name: string, description = "", imodelId?: GuidString, initialized = true, iModelType = IModelType.Undefined, returnsInstances = true) {
-  mockGetIModelWithFilter(`?$filter=Name+eq+%27${encodeURIComponent(name)}%27`, contextId, name, description, imodelId, initialized, "Empty", iModelType, returnsInstances);
+function mockGetIModelByName(contextId: string, name: string, description = "", imodelId?: GuidString, initialized = true, iModelType = IModelType.Undefined, extent: number[] = [], returnsInstances = true) {
+  mockGetIModelWithFilter(`?$filter=Name+eq+%27${encodeURIComponent(name)}%27`, contextId, name, description, imodelId, initialized, "Empty", iModelType, extent, returnsInstances);
 }
 
 function mockGetIModelByType(contextId: string, name: string, imodelId: GuidString | undefined, iModelType: IModelType, returnsInstances = true) {
-  mockGetIModelWithFilter(`?$filter=Type+eq+${iModelType}`, contextId, name, "", imodelId, true, "Empty", iModelType, returnsInstances);
+  mockGetIModelWithFilter(`?$filter=Type+eq+${iModelType}`, contextId, name, "", imodelId, true, "Empty", iModelType, [], returnsInstances);
 }
 
 function mockGetIModelByTemplate(contextId: string, name: string, imodelId: GuidString | undefined, template: string, returnsInstances = true) {
-  mockGetIModelWithFilter(`?$filter=iModelTemplate+eq+%27${encodeURIComponent(template)}%27`, contextId, name, "", imodelId, true, template, IModelType.Undefined, returnsInstances);
+  mockGetIModelWithFilter(`?$filter=iModelTemplate+eq+%27${encodeURIComponent(template)}%27`, contextId, name, "", imodelId, true, template, IModelType.Undefined, [], returnsInstances);
 }
 
 function mockGetIModelWithFilter(
@@ -38,6 +38,7 @@ function mockGetIModelWithFilter(
   initialized: boolean,
   template: string,
   iModelType: IModelType,
+  extent: number[],
   returnsInstances: boolean) {
   if (!TestConfig.enableMocks)
     return;
@@ -53,6 +54,7 @@ function mockGetIModelWithFilter(
       ["initialized", initialized],
       ["iModelTemplate", template],
       ["iModelType", iModelType],
+      ["extent", extent],
     ])), returnsInstances ? 1 : 0);
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
 }
@@ -258,8 +260,8 @@ describe("iModelHub iModelsHandler", () => {
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
     (requestContext as any).activityId = "iModelHub iModelsHandler";
-    projectId = await utils.getProjectId(requestContext, "iModelJsTest");
-    assetId = await utils.getAssetId(requestContext, undefined);
+    projectId = await utils.getProjectId(requestContext);
+    assetId = await utils.getAssetId(requestContext);
 
     await utils.createIModel(requestContext, utils.sharedimodelName, projectId);
     imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, projectId);
@@ -425,7 +427,7 @@ describe("iModelHub iModelsHandler", () => {
 
   it("should download a Seed File (#iModelBank)", async () => {
     mockGetSeedFile(imodelId, true);
-    const downloadToPathname: string = path.join(workDir, imodelId.toString());
+    const downloadToPathname: string = path.join(workDir, `${imodelId}.bim`);
     utils.mockFileResponse();
 
     const progressTracker = new utils.ProgressTracker();
@@ -437,7 +439,7 @@ describe("iModelHub iModelsHandler", () => {
   it("should download a Seed File with Buffering (#iModelBank)", async () => {
     imodelClient.setFileHandler(createFileHandler(true));
     mockGetSeedFile(imodelId, true);
-    const downloadToPathname: string = path.join(workDir, imodelId.toString());
+    const downloadToPathname: string = path.join(workDir, `${imodelId}.bim`);
     utils.mockFileResponse();
 
     const progressTracker = new utils.ProgressTracker();
@@ -719,38 +721,40 @@ describe("iModelHub iModelsHandler", () => {
     progressTracker.check(false);
   });
 
-  // Inconsistently passes as integration test due to concurrency issues, temporarily make unit test
-  it("should update iModel extents (#unit)", async () => {
+  it("should update iModel extents", async () => {
     imodelId = imodelId || Guid.createValue();
     mockGetIModel(projectId, imodelName, imodelId, 1);
     const newName = `${imodelName}_updated`;
     const newDescription = "Description_updated";
     const newExtent = [1, 2, 3, 4];
 
-    const imodel = await iModelClient.iModel.get(requestContext, projectId);
+    mockGetIModelByName(projectId, imodelName);
+    const imodel: HubIModel = (await iModelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(imodelName)))[0];
+    const oldimodelName = imodel.name;
+
     imodel.name = newName;
     imodel.description = newDescription;
     imodel.extent = newExtent;
     mockUpdateiModel(projectId, imodel);
-    let updatediModel = await iModelClient.iModel.update(requestContext, projectId, imodel);
+    let updatediModel = await iModelClient.iModels.update(requestContext, projectId, imodel);
 
     chai.expect(updatediModel.wsgId).to.be.equal(imodel.wsgId);
     chai.expect(updatediModel.name).to.be.equal(newName);
     chai.expect(updatediModel.description).to.be.equal(newDescription);
     chai.expect(updatediModel.extent).to.be.eql(newExtent);
 
-    mockGetIModel(projectId, newName, imodel.id!, 1, newDescription, newExtent);
-    updatediModel = await iModelClient.iModel.get(requestContext, projectId);
-
-    mockGetIModel(projectId, newName, imodel.id!, 1, newDescription, newExtent);
-    mockDeleteiModel(projectId, imodel.id!);
-    await iModelClient.iModel.delete(requestContext, projectId);
+    mockGetIModelByName(projectId, newName, newDescription, imodel.id, true, undefined, newExtent);
+    updatediModel = (await iModelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(newName)))[0];
 
     chai.assert(!!updatediModel);
     chai.expect(updatediModel.wsgId).to.be.equal(imodel.wsgId);
     chai.expect(updatediModel.name).to.be.equal(newName);
     chai.expect(updatediModel.description).to.be.equal(newDescription);
     chai.expect(updatediModel.extent).to.be.eql(newExtent);
+
+    imodel.name = oldimodelName;
+    mockUpdateiModel(projectId, imodel);
+    await iModelClient.iModels.update(requestContext, projectId, imodel);
   });
 
   // Inconsistently passes as integration test due to concurrency issues, temporarily make unit test
