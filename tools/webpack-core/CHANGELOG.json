@@ -2,6 +2,18 @@
   "name": "@bentley/webpack-tools-core",
   "entries": [
     {
+      "version": "2.10.3",
+      "tag": "@bentley/webpack-tools-core_v2.10.3",
+      "date": "Fri, 08 Jan 2021 18:34:03 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Remove json.stringify of pkgVersion so it is stringified only once instead of twice"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.10.2",
       "tag": "@bentley/webpack-tools-core_v2.10.2",
       "date": "Fri, 08 Jan 2021 14:52:02 GMT",

@@ -1,6 +1,13 @@
 # Change Log - @bentley/webpack-tools-core
 
-This log was last generated on Fri, 08 Jan 2021 14:52:02 GMT and should not be manually modified.
+This log was last generated on Fri, 08 Jan 2021 18:34:03 GMT and should not be manually modified.
+
+## 2.10.3
+Fri, 08 Jan 2021 18:34:03 GMT
+
+### Updates
+
+- Remove json.stringify of pkgVersion so it is stringified only once instead of twice
 
 ## 2.10.2
 Fri, 08 Jan 2021 14:52:02 GMT
