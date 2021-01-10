@@ -68,9 +68,9 @@ class Particle implements ParticleProps {
  */
 class ParticleEmitter {
   /** Range from which each particle's initial speed in meters per second will be selected. */
-  public readonly speedRange = Range1d.createXX(1, 3);
+  public readonly speedRange = Range1d.createXX(3, 6);
   /** Range from which each particle's lifetime in seconds will be selected. */
-  public readonly lifetimeRange = Range1d.createXX(5, 15);
+  public readonly lifetimeRange = Range1d.createXX(5, 10);
   /** Range from which each particle's size in meters will be selected. */
   public readonly sizeRange = Range1d.createXX(0.2, 1.0);
   /** Range from which the number of particles emitted will be selected. */
@@ -178,6 +178,7 @@ class ParticleSystem {
     this.update();
 
     const builder = ParticleCollectionBuilder.create({
+      viewport: context.viewport,
       texture: this._texture,
       size: (this._emitter.sizeRange.high - this._emitter.sizeRange.low) / 2,
       transparency: 0,

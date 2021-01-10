@@ -7,9 +7,10 @@
  */
 
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d, Range3d, Transform, TransformProps, Vector2d, XAndY, XYAndZ } from "@bentley/geometry-core";
+import { Matrix3d, Point2d, Point3d, Range3d, Transform, TransformProps, Vector2d, XAndY, XYAndZ } from "@bentley/geometry-core";
 import { QParams3d, QPoint3dList, RenderTexture } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
+import { Viewport } from "../Viewport";
 import { RenderGraphic } from "./RenderGraphic";
 import { GraphicBranch } from "./GraphicBranch";
 import { RenderSystem } from "./RenderSystem";
@@ -34,6 +35,12 @@ export interface ParticleCollectionBuilderParams {
    * @see [[IModelConnection.transientIdSequence]] to obtain an Id that is unique within an iModel.
    */
   pickableId?: Id64String;
+  /** The viewport in which the particles will be drawn. */
+  viewport: Viewport;
+  /** If true, the finished graphic will be defined in view coordinates, for use as a decoration of type [[GraphicType.ViewBackground]] or [[GraphicType.ViewOverlay]].
+   * Defaults to false.
+   */
+  isViewCoords?: boolean;
 }
 
 /** Describes a particle to to add to a particle collection via [[ParticleCollectionBuilder.addParticle]].
@@ -76,11 +83,10 @@ export interface ParticleCollectionBuilder {
   addParticle: (particle: ParticleProps) => void;
 
   /** Produces a finished graphic from the accumulated particles.
-   * The caller can supply the render system that will create the finished graphic. If omitted, it defaults to [[IModelApp.renderSystem]].
    * It returns the finished graphic, or `undefined` if the collection contains no particles or the [[RenderSystem]] failed to produce the graphic.
    * @note After this method returns, the particle collection is empty.
    */
-  finish: (renderSystem?: RenderSystem) => RenderGraphic | undefined;
+  finish: () => RenderGraphic | undefined;
 }
 
 /** @beta */
@@ -108,6 +114,8 @@ class Particle {
 }
 
 class Builder implements ParticleCollectionBuilder {
+  private readonly _viewport: Viewport;
+  private readonly _isViewCoords: boolean;
   private readonly _pickableId?: Id64String;
   private readonly _texture: RenderTexture;
   private readonly _size: Vector2d;
@@ -118,6 +126,8 @@ class Builder implements ParticleCollectionBuilder {
   private readonly _particles: Particle[] = [];
 
   public constructor(params: ParticleCollectionBuilderParams) {
+    this._viewport = params.viewport;
+    this._isViewCoords = true === params.isViewCoords;
     this._pickableId = params.pickableId;
     this._texture = params.texture;
     this._transparency = undefined !== params.transparency ? clampTransparency(params.transparency) : 0;
@@ -170,7 +180,7 @@ class Builder implements ParticleCollectionBuilder {
     this._range.extendPoint(particle.centroid);
   }
 
-  public finish(system?: RenderSystem): RenderGraphic | undefined {
+  public finish(): RenderGraphic | undefined {
     if (0 === this._particles.length)
       return undefined;
 
@@ -188,16 +198,38 @@ class Builder implements ParticleCollectionBuilder {
     const transforms = new Float32Array(floatsPerTransform * numParticles);
     const bytesPerOverride = 8;
     const symbologyOverrides = this._hasVaryingTransparency ? new Uint8Array(bytesPerOverride * numParticles) : undefined;
+
+    const viewToWorld = this._viewport.view.getRotation().transpose();
+    const rotMatrix = new Matrix3d();
     for (let i = 0; i < numParticles; i++) {
       const particle = this._particles[i];
       const tfIndex = i * floatsPerTransform;
 
-      // Scale relative to size of quad.
-      transforms[tfIndex + 0] = particle.width / meanSize.x;
-      transforms[tfIndex + 5] = particle.height / meanSize.y;
-      transforms[tfIndex + 10] = 1;
+      const scaleX = particle.width / meanSize.x;
+      const scaleY = particle.height / meanSize.y;
+      if (this._isViewCoords) {
+        // Particles already face the camera in view coords - just apply the scale.
+        transforms[tfIndex + 0] = scaleX;
+        transforms[tfIndex + 5] = scaleY;
+        transforms[tfIndex + 10] = 1;
+      } else {
+        // Rotate about origin by inverse view matrix so quads always face the camera
+        viewToWorld.clone(rotMatrix);
 
-      // Translation relative to center of particles range.
+        // Scale relative to size of quad.
+        rotMatrix.scaleColumnsInPlace(scaleX, scaleY, 1);
+        transforms[tfIndex + 0] = rotMatrix.coffs[0];
+        transforms[tfIndex + 1] = rotMatrix.coffs[1];
+        transforms[tfIndex + 2] = rotMatrix.coffs[2];
+        transforms[tfIndex + 4] = rotMatrix.coffs[3];
+        transforms[tfIndex + 5] = rotMatrix.coffs[4];
+        transforms[tfIndex + 6] = rotMatrix.coffs[5];
+        transforms[tfIndex + 8] = rotMatrix.coffs[6];
+        transforms[tfIndex + 9] = rotMatrix.coffs[7];
+        transforms[tfIndex + 10] = rotMatrix.coffs[8];
+      }
+
+      // Translate relative to center of particles range.
       transforms[tfIndex + 3] = particle.centroid.x - rangeCenter.x;
       transforms[tfIndex + 7] = particle.centroid.y - rangeCenter.y;
       transforms[tfIndex + 11] = particle.centroid.z - rangeCenter.z;
@@ -217,7 +249,7 @@ class Builder implements ParticleCollectionBuilder {
 
     // Produce instanced quads.
     // ###TODO handle pickableId
-    system = system ?? IModelApp.renderSystem;
+    const system = this._viewport.target.renderSystem;
     const quad = this.createQuad(meanSize);
     const transformCenter = new Point3d(0, 0, 0);
     const instances = { count: numParticles, transforms, transformCenter, symbologyOverrides };

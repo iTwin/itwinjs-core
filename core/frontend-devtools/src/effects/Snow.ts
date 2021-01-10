@@ -125,6 +125,8 @@ class SnowDecorator implements Decorator {
 
     // Create particle graphics.
     const builder = ParticleCollectionBuilder.create({
+      viewport: this.viewport,
+      isViewCoords: true,
       texture: this._texture,
       size: (this._params.sizeRange.high - this._params.sizeRange.low) / 2,
     });
