@@ -7,8 +7,8 @@
  */
 
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Matrix3d, Point2d, Point3d, Range3d, Transform, TransformProps, Vector2d, XAndY, XYAndZ } from "@bentley/geometry-core";
-import { QParams3d, QPoint3dList, RenderTexture } from "@bentley/imodeljs-common";
+import { Matrix3d, Point2d, Point3d, Range3d, Transform, Vector2d, XAndY, XYAndZ } from "@bentley/geometry-core";
+import { Feature, FeatureIndexType, FeatureTable, PackedFeatureTable, QParams3d, QPoint3dList, RenderTexture } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { Viewport } from "../Viewport";
 import { RenderGraphic } from "./RenderGraphic";
@@ -29,8 +29,8 @@ export interface ParticleCollectionBuilderParams {
   size: XAndY | number;
   /** The initial transparency of the particles as an integer in [0,255]. Defaults to zero if omitted. */
   transparency?: number;
-  /** Optional transform from the coordinate space of the particle collection to world coordinates. Defaults to identity. */
-  localToWorldTransform?: TransformProps;
+  /** The origin of the particle collection in world coordinates. Defaults to (0, 0, 0). */
+  origin?: XYAndZ;
   /** If the particles are to be pickable, a unique identifier to associate with the resultant [[RenderGraphic]].
    * @see [[IModelConnection.transientIdSequence]] to obtain an Id that is unique within an iModel.
    */
@@ -131,7 +131,7 @@ class Builder implements ParticleCollectionBuilder {
     this._pickableId = params.pickableId;
     this._texture = params.texture;
     this._transparency = undefined !== params.transparency ? clampTransparency(params.transparency) : 0;
-    this._localToWorldTransform = Transform.fromJSON(params.localToWorldTransform);
+    this._localToWorldTransform = params.origin ? Transform.createTranslationXYZ(params.origin.x, params.origin.y, params.origin.z) : Transform.createIdentity();
 
     if ("number" === typeof params.size)
       this._size = new Vector2d(params.size, params.size);
@@ -198,6 +198,8 @@ class Builder implements ParticleCollectionBuilder {
     const transforms = new Float32Array(floatsPerTransform * numParticles);
     const bytesPerOverride = 8;
     const symbologyOverrides = this._hasVaryingTransparency ? new Uint8Array(bytesPerOverride * numParticles) : undefined;
+    const bytesPerFeatureId = 3;
+    const featureIds = this._pickableId ? new Uint8Array(bytesPerFeatureId * numParticles) : undefined;
 
     const viewToWorld = this._viewport.view.getRotation().transpose();
     const rotMatrix = new Matrix3d();
@@ -243,16 +245,16 @@ class Builder implements ParticleCollectionBuilder {
     }
 
     // Empty the collection.
+    const range = this._range.clone();
     this._particles.length = 0;
     this._hasVaryingTransparency = false;
     this._range.setNull();
 
     // Produce instanced quads.
-    // ###TODO handle pickableId
     const system = this._viewport.target.renderSystem;
     const quad = this.createQuad(meanSize);
     const transformCenter = new Point3d(0, 0, 0);
-    const instances = { count: numParticles, transforms, transformCenter, symbologyOverrides };
+    const instances = { count: numParticles, transforms, transformCenter, symbologyOverrides, featureIds };
     let graphic = system.createMesh(quad,instances);
     if (!graphic)
       return undefined;
@@ -262,7 +264,17 @@ class Builder implements ParticleCollectionBuilder {
     const toWorld = toCollection.multiplyTransformTransform(this._localToWorldTransform);
     const branch = new GraphicBranch(true);
     branch.add(graphic);
-    return system.createGraphicBranch(branch, toWorld);
+    graphic = system.createGraphicBranch(branch, toWorld);
+
+    // If we have a pickable Id, produce a batch.
+    const featureTable = this._pickableId ? new FeatureTable(1) : undefined;
+    if (featureTable) {
+      toWorld.multiplyRange(range, range);
+      featureTable.insert(new Feature(this._pickableId));
+      graphic = system.createBatch(graphic, PackedFeatureTable.pack(featureTable), range);
+    }
+
+    return graphic;
   }
 
   private createQuad(size: XAndY): MeshParams {

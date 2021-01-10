@@ -10,7 +10,7 @@ import { Id64String } from "@bentley/bentleyjs-core";
 import { Point3d, Range1d, Range3d, Transform, TransformProps, Vector3d } from "@bentley/geometry-core";
 import { RenderTexture } from "@bentley/imodeljs-common";
 import {
-  DecorateContext, GraphicType, imageElementFromUrl, IModelApp, IModelConnection, ParticleCollectionBuilder, ParticleProps, Tool,
+  BeButtonEvent, DecorateContext, EventHandled, GraphicType, HitDetail, imageElementFromUrl, IModelApp, IModelConnection, ParticleCollectionBuilder, ParticleProps, Tool,
 } from "@bentley/imodeljs-frontend";
 
 /** Generate random integer in [range.low, range.high]. */
@@ -95,7 +95,7 @@ class ParticleEmitter {
 }
 
 class ParticleSystem {
-  private readonly _transform: TransformProps;
+  private readonly _origin: Point3d;
   private readonly _pickableId: Id64String;
   private readonly _emitter = new ParticleEmitter();
   private _numEmissions: number;
@@ -115,8 +115,7 @@ class ParticleSystem {
     this._numEmissions = numEmissions;
     this._lastUpdateTime = Date.now();
 
-    const origin = randomPositionInRange(iModel.projectExtents);
-    this._transform = Transform.createTranslation(origin).toJSON();
+    this._origin = randomPositionInRange(iModel.projectExtents);
 
     this._dispose = iModel.onClose.addListener(() => this.dispose());
   }
@@ -182,7 +181,7 @@ class ParticleSystem {
       texture: this._texture,
       size: (this._emitter.sizeRange.high - this._emitter.sizeRange.low) / 2,
       transparency: 0,
-      localToWorldTransform: this._transform,
+      origin: this._origin,
       pickableId: this._pickableId,
     });
 
@@ -194,6 +193,18 @@ class ParticleSystem {
       context.addDecoration(GraphicType.WorldDecoration, graphic);
       context.viewport.onRender.addOnce((vp) => vp.invalidateDecorations());
     }
+  }
+
+  public testDecorationHit(id: Id64String): boolean {
+    return id === this._pickableId;
+  }
+
+  public async getDecorationToolTip(_hit: HitDetail): Promise<HTMLElement | string> {
+    return "Explosion effect";
+  }
+
+  public async onDecorationButtonEvent(_hit: HitDetail, _ev: BeButtonEvent): Promise<EventHandled> {
+    return EventHandled.Yes;
   }
 
   public static async addDecorator(iModel: IModelConnection): Promise<void> {
