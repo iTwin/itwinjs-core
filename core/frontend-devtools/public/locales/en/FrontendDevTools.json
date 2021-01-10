@@ -330,6 +330,9 @@
     "SnowEffect": {
       "keyin": "fdt particle snow"
     },
+    "ExplosionEffect": {
+      "keyin": "fdt particle explosion"
+    },
     "ClearEffects": {
       "keyin": "fdt effect clear"
     }

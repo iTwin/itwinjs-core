@@ -200,6 +200,7 @@ class Builder implements ParticleCollectionBuilder {
       // Translation relative to center of particles range.
       transforms[tfIndex + 3] = particle.centroid.x - rangeCenter.x;
       transforms[tfIndex + 7] = particle.centroid.y - rangeCenter.y;
+      transforms[tfIndex + 11] = particle.centroid.z - rangeCenter.z;
 
       if (symbologyOverrides) {
         // See FeatureOverrides.buildLookupTable() for layout.
