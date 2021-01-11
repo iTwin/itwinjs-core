@@ -243,3 +243,25 @@ ECExpressions now support formatted property values. `GetFormattedValue` functio
 ```ts
 GetFormattedValue(this.Length, "Metric") = "10.0 m"
 ```
+
+### Enhanced navigation property values
+
+Navigation property values now contain related instance class information in addition to instance ids, making them now full-fledged instance keys. As a result, it is now possible to use navigation property values directly with Unified Selection APIs.
+
+### Interactable navigation properties
+
+A new kind of property renderer has been added for navigation properties, which makes navigation property values be clickable. On click, it changes current Unified Selection to the instance pointed by the navigation property. To use this new renderer, you'll need to wrap your UI components with [UnifiedSelectionContextProvider]($presentation-components) and set `SelectableInstance` renderer on navigation properties using Presentation Rules:
+
+```json
+{
+  "ruleType": "ContentModifier",
+  "propertyOverrides": [
+    {
+      "name": "<navigation property to make clickable>",
+      "renderer": {
+        "rendererName": "SelectableInstance"
+      }
+    }
+  ]
+}
+```
