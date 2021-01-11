@@ -212,7 +212,7 @@ In previous versions the method to open briefcases ([BriefcaseDb.open]($backend)
 See section on [Upgrading Schemas]($docs/learning/backend/IModelDb.md#upgrading-schemas-in-an-imodel) for more information.
 ## Updated version of Electron
 
-Updated version of electron used from 8.2.1 to 10.1.3. Note that Electron is specified as a peer dependency in the iModel.js stack - so it's recommended but not mandatory that applications migrate to this electron version.
+Updated recommended version of Electron from 10.1.3 to 11.1.0. Note that Electron is specified as a peer dependency in iModel.js - so it's recommended but not mandatory that applications migrate to this electron version.
 
 ## Globe location tool fixes
 
