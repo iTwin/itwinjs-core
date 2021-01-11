@@ -43,7 +43,7 @@ export class ParserSpec {
   }
 
   /** Do the parsing. Done this way to allow Custom Parser Specs to parse custom formatted strings into their quantities. */
-  public parseIntoQuantityValue(inString: string): ParseResult {
+  public parseToQuantityValue(inString: string): ParseResult {
     return Parser.parseQuantityString(inString, this);
   }
 }

@@ -270,9 +270,9 @@ export class Parser {
     static createUnitConversionSpecs(unitsProvider: UnitsProvider, outUnitName: string, potentialParseUnits: PotentialParseUnit[]): Promise<UnitConversionSpec[]>;
     static createUnitConversionSpecsForUnit(unitsProvider: UnitsProvider, outUnit: UnitProps): Promise<UnitConversionSpec[]>;
     static parseIntoQuantity(inString: string, format: Format, unitsProvider: UnitsProvider): Promise<QuantityProps>;
-    static parseIntoQuantityValue(inString: string, format: Format, unitsConversions: UnitConversionSpec[]): ParseResult;
     static parseQuantitySpecification(quantitySpecification: string, format: Format): ParseToken[];
     static parseQuantityString(inString: string, parserSpec: ParserSpec): ParseResult;
+    static parseToQuantityValue(inString: string, format: Format, unitsConversions: UnitConversionSpec[]): ParseResult;
     }
 
 // @alpha
@@ -291,7 +291,7 @@ export class ParserSpec {
     get format(): Format;
     // (undocumented)
     get outUnit(): UnitProps;
-    parseIntoQuantityValue(inString: string): ParseResult;
+    parseToQuantityValue(inString: string): ParseResult;
     get unitConversions(): UnitConversionSpec[];
 }
 

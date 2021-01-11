@@ -6597,7 +6597,7 @@ export class QuantityFormatter implements UnitsProvider {
     readonly onQuantityFormatsChanged: BeUiEvent<QuantityFormatsChangedArgs>;
     // (undocumented)
     protected _overrideFormatPropsByQuantityType: Map<string, OverrideFormatEntry>;
-    parseIntoQuantityValue(inString: string, parserSpec: ParserSpec | undefined): ParseResult;
+    parseToQuantityValue(inString: string, parserSpec: ParserSpec | undefined): ParseResult;
     registerFormatterParserSpecsProviders(provider: FormatterParserSpecsProvider): Promise<boolean>;
     setActiveUnitSystem(isImperialOrUnitSystem: UnitSystemKey | boolean, restartActiveTool?: boolean): Promise<void>;
     // (undocumented)

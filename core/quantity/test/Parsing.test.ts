@@ -438,7 +438,7 @@ describe("Synchronous Parsing tests:", async () => {
     }
 
     for (const testEntry of testData) {
-      const parseResult = Parser.parseIntoQuantityValue(testEntry.value, format, meterConversionSpecs);
+      const parseResult = Parser.parseToQuantityValue(testEntry.value, format, meterConversionSpecs);
       if (logTestOutput) {
         // eslint-disable-next-line no-console
         console.log(`input=${testEntry.value} output=${parseResult.value}`);

@@ -70,9 +70,9 @@ describe("Quantity formatter", async () => {
     assert.equal(overrideImperialFormattedValue, "59.0551 in");
 
     const overrideImperialParserSpec = await quantityFormatter.getParserSpecByQuantityType(QuantityType.Length, true);
-    const overrideValueInMeters1 = quantityFormatter.parseIntoQuantityValue(`48"`, overrideImperialParserSpec);
-    const overrideValueInMeters2 = quantityFormatter.parseIntoQuantityValue(`48 in`, overrideImperialParserSpec);
-    const overrideValueInMeters3 = quantityFormatter.parseIntoQuantityValue(`4 ft`, overrideImperialParserSpec);
+    const overrideValueInMeters1 = quantityFormatter.parseToQuantityValue(`48"`, overrideImperialParserSpec);
+    const overrideValueInMeters2 = quantityFormatter.parseToQuantityValue(`48 in`, overrideImperialParserSpec);
+    const overrideValueInMeters3 = quantityFormatter.parseToQuantityValue(`4 ft`, overrideImperialParserSpec);
     assert(withinTolerance(overrideValueInMeters1.value!, 1.2192));
     assert(withinTolerance(overrideValueInMeters1.value!, overrideValueInMeters2.value!));
     assert(withinTolerance(overrideValueInMeters3.value!, overrideValueInMeters2.value!));
@@ -131,14 +131,14 @@ describe("Quantity formatter", async () => {
     assert.equal(overrideImperialFormattedValue, "328083.3333 ft (US Survey)");
 
     let overrideImperialParserSpec = await quantityFormatter.getParserSpecByQuantityType(QuantityType.Length, true);
-    let overrideValueInMeters1 = quantityFormatter.parseIntoQuantityValue("328083.333333333 ft (US Survey)", overrideImperialParserSpec);
-    let overrideValueInMeters2 = quantityFormatter.parseIntoQuantityValue("328083.333333333", overrideImperialParserSpec);
+    let overrideValueInMeters1 = quantityFormatter.parseToQuantityValue("328083.333333333 ft (US Survey)", overrideImperialParserSpec);
+    let overrideValueInMeters2 = quantityFormatter.parseToQuantityValue("328083.333333333", overrideImperialParserSpec);
     assert(withinTolerance(overrideValueInMeters1.value!, 100000));
     assert(withinTolerance(overrideValueInMeters1.value!, overrideValueInMeters2.value!));
 
     overrideImperialParserSpec = await quantityFormatter.getParserSpecByQuantityType(QuantityType.Coordinate, true);
-    overrideValueInMeters1 = quantityFormatter.parseIntoQuantityValue("328083.333333333 ft (US Survey)", overrideImperialParserSpec);
-    overrideValueInMeters2 = quantityFormatter.parseIntoQuantityValue("328083.333333333", overrideImperialParserSpec);
+    overrideValueInMeters1 = quantityFormatter.parseToQuantityValue("328083.333333333 ft (US Survey)", overrideImperialParserSpec);
+    overrideValueInMeters2 = quantityFormatter.parseToQuantityValue("328083.333333333", overrideImperialParserSpec);
     assert(withinTolerance(overrideValueInMeters1.value!, 100000));
     assert(withinTolerance(overrideValueInMeters1.value!, overrideValueInMeters2.value!));
 
@@ -208,14 +208,14 @@ describe("Quantity formatter", async () => {
     assert.equal(overrideImperialFormattedValue, "328083.3333 ft (US Survey)");
 
     let overrideImperialParserSpec = await quantityFormatter.getParserSpecByQuantityType(QuantityType.Length);
-    let overrideValueInMeters1 = quantityFormatter.parseIntoQuantityValue("328083.333333333 ft (US Survey)", overrideImperialParserSpec);
-    let overrideValueInMeters2 = quantityFormatter.parseIntoQuantityValue("328083.333333333", overrideImperialParserSpec);
+    let overrideValueInMeters1 = quantityFormatter.parseToQuantityValue("328083.333333333 ft (US Survey)", overrideImperialParserSpec);
+    let overrideValueInMeters2 = quantityFormatter.parseToQuantityValue("328083.333333333", overrideImperialParserSpec);
     assert(withinTolerance(overrideValueInMeters1.value!, 100000));
     assert(withinTolerance(overrideValueInMeters1.value!, overrideValueInMeters2.value!));
 
     overrideImperialParserSpec = await quantityFormatter.getParserSpecByQuantityType(QuantityType.Coordinate);
-    overrideValueInMeters1 = quantityFormatter.parseIntoQuantityValue("328083.333333333 ft (US Survey)", overrideImperialParserSpec);
-    overrideValueInMeters2 = quantityFormatter.parseIntoQuantityValue("328083.333333333", overrideImperialParserSpec);
+    overrideValueInMeters1 = quantityFormatter.parseToQuantityValue("328083.333333333 ft (US Survey)", overrideImperialParserSpec);
+    overrideValueInMeters2 = quantityFormatter.parseToQuantityValue("328083.333333333", overrideImperialParserSpec);
     assert(withinTolerance(overrideValueInMeters1.value!, 100000));
     assert(withinTolerance(overrideValueInMeters1.value!, overrideValueInMeters2.value!));
 
@@ -273,8 +273,8 @@ describe("Quantity formatter", async () => {
     assert.equal(overrideImperialFormattedValue, "1076386.7361 ft² (US Survey)");
 
     const overrideImperialParserSpec = await quantityFormatter.getParserSpecByQuantityType(QuantityType.Area, true);
-    const overrideValueInMeters1 = quantityFormatter.parseIntoQuantityValue("1076386.7361", overrideImperialParserSpec);
-    const overrideValueInMeters2 = quantityFormatter.parseIntoQuantityValue("1076386.7361 sussf", overrideImperialParserSpec);
+    const overrideValueInMeters1 = quantityFormatter.parseToQuantityValue("1076386.7361", overrideImperialParserSpec);
+    const overrideValueInMeters2 = quantityFormatter.parseToQuantityValue("1076386.7361 sussf", overrideImperialParserSpec);
     // eslint-disable-next-line no-console
     // console.log(`overrideValueInMeters1=${JSON.stringify(overrideValueInMeters1)}`);
     assert(withinTolerance(overrideValueInMeters1.value!, 100000, 1.0e-5));
@@ -375,8 +375,8 @@ class DummyParserSpec extends ParserSpec {
     super(outUnit, format, conversions ?? []);
   }
 
-  public parseIntoQuantityValue(inString: string): ParseResult {
-    return Parser.parseIntoQuantityValue(inString, this.format, this.unitConversions);
+  public parseToQuantityValue(inString: string): ParseResult {
+    return Parser.parseToQuantityValue(inString, this.format, this.unitConversions);
   }
 
   public static async createParserSpec(unitSystem: UnitSystemKey): Promise<DummyParserSpec> {
@@ -429,8 +429,8 @@ describe("Custom FormatterSpecs", async () => {
 
     // results should be in feet because we are set to imperial
     if (parserSpec) {
-      const meterToImperialResult = parserSpec.parseIntoQuantityValue("12.192 m");
-      const feetToImperialResult = parserSpec.parseIntoQuantityValue("40 ft");
+      const meterToImperialResult = parserSpec.parseToQuantityValue("12.192 m");
+      const feetToImperialResult = parserSpec.parseToQuantityValue("40 ft");
       assert(withinTolerance(40.0, feetToImperialResult.value!));
       assert(withinTolerance(meterToImperialResult.value!, feetToImperialResult.value!));
     }

@@ -51,7 +51,7 @@ export function QuantityInput({ initialValue, quantityType, readonly, className,
   const parseString = React.useCallback((userInput: string): ParseResults => {
     // istanbul ignore else
     if (parserSpec) {
-      const parseResult = IModelApp.quantityFormatter.parseIntoQuantityValue(userInput, parserSpec);
+      const parseResult = IModelApp.quantityFormatter.parseToQuantityValue(userInput, parserSpec);
       // istanbul ignore else
       if (parseResult.status === QuantityStatus.Success) {
         return { value: parseResult.value };

@@ -943,9 +943,9 @@ export class QuantityFormatter implements UnitsProvider {
    * @param parserSpec     The parse specification the defines the expected format of the string and the conversion to the output unit.
    * @return ParseResult object containing either the parsed value or an error value if unsuccessful.
    */
-  public parseIntoQuantityValue(inString: string, parserSpec: ParserSpec | undefined): ParseResult {
+  public parseToQuantityValue(inString: string, parserSpec: ParserSpec | undefined): ParseResult {
     if (parserSpec)
-      return parserSpec.parseIntoQuantityValue(inString);
+      return parserSpec.parseToQuantityValue(inString);
     return { status: QuantityStatus.UnknownUnit };
   }
 

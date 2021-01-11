@@ -431,7 +431,7 @@ export class Parser {
    *  @param defaultValue default value to return if parsing is un successful
    */
   public static parseQuantityString(inString: string, parserSpec: ParserSpec): ParseResult {
-    return Parser.parseIntoQuantityValue(inString, parserSpec.format, parserSpec.unitConversions);
+    return Parser.parseToQuantityValue(inString, parserSpec.format, parserSpec.unitConversions);
   }
 
   /** Method to generate a Quantity given a string that represents a quantity value and likely a unit label.
@@ -439,7 +439,7 @@ export class Parser {
    *  @param format   Defines the likely format of inString. Primary unit serves as a default unit if no unit label found in string.
    *  @param unitsConversions dictionary of conversions used to convert from unit used in inString to output quantity
    */
-  public static parseIntoQuantityValue(inString: string, format: Format, unitsConversions: UnitConversionSpec[]): ParseResult {
+  public static parseToQuantityValue(inString: string, format: Format, unitsConversions: UnitConversionSpec[]): ParseResult {
     const tokens: ParseToken[] = Parser.parseQuantitySpecification(inString, format);
     if (tokens.length === 0)
       return { status: QuantityStatus.UnableToGenerateParseTokens };
