@@ -48,7 +48,6 @@ export class UploadError extends BentleyError {
   }
 }
 
-
 /** Error thrown when sas-url provided for download has expired
  * @beta
  */
