@@ -22,6 +22,8 @@
     "Units": "Units",
     "Metric": "Metric",
     "Imperial": "Imperial",
+    "UsSurvey": "US Survey",
+    "UsCustomary": "US Customary",
     "UnitsFlyover": "Update the units system active in the user interface"
   },
   "tools": {

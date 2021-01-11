@@ -32,7 +32,7 @@ export abstract class FormattedQuantityDescription extends BaseQuantityDescripti
 
   protected parseString(userInput: string): ParseResults {
     if (this.parserSpec) {
-      const parseResult = IModelApp.quantityFormatter.parseIntoQuantityValue(userInput, this.parserSpec);
+      const parseResult = IModelApp.quantityFormatter.parseToQuantityValue(userInput, this.parserSpec);
       if (parseResult.status === QuantityStatus.Success) {
         return { value: parseResult.value };
       } else {
