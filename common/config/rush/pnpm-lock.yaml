@@ -356,7 +356,7 @@ dependencies:
   tslint-consistent-codestyle: 1.16.0_tslint@5.20.1+typescript@3.7.5
   tslint-eslint-rules: 5.4.0_tslint@5.20.1+typescript@3.7.5
   tslint-etc: 1.13.9_tslint@5.20.1+typescript@3.7.5
-  tsutils: 3.19.1_typescript@3.7.5
+  tsutils: 3.17.1_typescript@3.7.5
   typedoc: 0.16.11
   typedoc-plugin-external-module-name: 3.0.0_typedoc@0.16.11
   typedoc-plugin-internal-external: 2.1.1_typedoc@0.16.11
@@ -16947,6 +16947,17 @@ packages:
       typescript: '>=2.1.0 || >=2.1.0-dev || >=2.2.0-dev || >=2.3.0-dev || >=2.4.0-dev || >=2.5.0-dev || >=2.6.0-dev || >=2.7.0-dev || >=2.8.0-dev || >=2.9.0-dev || >= 3.0.0-dev || >= 3.1.0-dev'
     resolution:
       integrity: sha512-g5JVHCIJwzfISaXpXE1qvNalca5Jwob6FjI4AoPlqMusJ6ftFE7IkkFoMhVLRgK+4Kx3gkzb8UZK5t5yTTvEmA==
+  /tsutils/3.17.1_typescript@3.7.5:
+    dependencies:
+      tslib: 1.14.1
+      typescript: 3.7.5
+    dev: false
+    engines:
+      node: '>= 6'
+    peerDependencies:
+      typescript: '>=2.8.0 || >= 3.2.0-dev || >= 3.3.0-dev || >= 3.4.0-dev || >= 3.5.0-dev || >= 3.6.0-dev || >= 3.6.0-beta || >= 3.7.0-dev || >= 3.7.0-beta'
+    resolution:
+      integrity: sha512-kzeQ5B8H3w60nFY2g8cJIuH7JDpsALXySGtwGJ0p2LSjLgay3NdIpqq5SoOBe46bKDW2iq25irHCr8wjomUS2g==
   /tsutils/3.19.1_typescript@3.7.5:
     dependencies:
       tslib: 1.14.1
@@ -18444,7 +18455,7 @@ packages:
       tslint-consistent-codestyle: 1.16.0_tslint@5.20.1+typescript@3.7.5
       tslint-eslint-rules: 5.4.0_tslint@5.20.1+typescript@3.7.5
       tslint-etc: 1.13.9_tslint@5.20.1+typescript@3.7.5
-      tsutils: 3.19.1_typescript@3.7.5
+      tsutils: 3.17.1_typescript@3.7.5
       typedoc: 0.16.11
       typedoc-plugin-external-module-name: 3.0.0_typedoc@0.16.11
       typedoc-plugin-internal-external: 2.1.1_typedoc@0.16.11
@@ -18453,7 +18464,7 @@ packages:
     dev: false
     name: '@rush-temp/build-tools'
     resolution:
-      integrity: sha512-Jstf0fNPvEonvuuZsoJfIhhhTMU6OuTIL7n4JtkjhxS7F4Fvddxm0B/Ra4N0ZFpE5hKbQrlktIGhdwG1lYqhwg==
+      integrity: sha512-FZvEtVz4Dz2oBtPce3MEGkWoT/gbfZwXEuofzGcPp66DDStOBMhSDWzQ8iU3C8a5UcnmrQ/2uFNqT508cfKW7w==
       tarball: 'file:projects/build-tools.tgz'
     version: 0.0.0
   'file:projects/certa.tgz':
@@ -19799,6 +19810,7 @@ packages:
     version: 0.0.0
   'file:projects/presentation-components.tgz_jsdom@11.12.0':
     dependencies:
+      '@testing-library/react': 8.0.9_react-dom@16.14.0+react@16.14.0
       '@testing-library/react-hooks': 3.7.0_98e0eb37a9f7280a1c5a6c886619f5b4
       '@types/chai': 4.2.14
       '@types/chai-as-promised': 7.1.3
@@ -19847,7 +19859,7 @@ packages:
     peerDependencies:
       jsdom: '*'
     resolution:
-      integrity: sha512-TZxPK7kTmnwtoCmBfRut82VMylY0Cp/QxrkMNMY4mz/F02RR+ilhZd/O/3X9+qaIWUuWAHPuSefcWdlZTUmvKg==
+      integrity: sha512-Zd0sW6ZvMODZmj+iirGPTcmb3tBIEBal1J2r4FNvGEyyvLCh1hrLLtM6GKIP4m4cHPF+uDmh/EpXppAe5mXZsA==
       tarball: 'file:projects/presentation-components.tgz'
     version: 0.0.0
   'file:projects/presentation-frontend.tgz_jsdom@11.12.0':
@@ -20647,6 +20659,7 @@ packages:
       integrity: sha512-kYVD9visgbwu+AF23ciBP7G+oIncE+xcI2La3rVVUqP2Qa4KBN060GYItrAsGdlnh4rIMChrzTAeVkFtwPBokg==
       tarball: 'file:projects/webpack-tools-core.tgz'
     version: 0.0.0
+registry: ''
 specifiers:
   '@azure/storage-blob': 10.4.0
   '@babel/core': 7.7.4
@@ -21005,7 +21018,7 @@ specifiers:
   tslint-consistent-codestyle: ^1.11.0
   tslint-eslint-rules: ^5.4.0
   tslint-etc: ^1.5.2
-  tsutils: ^3.6.0
+  tsutils: ~3.17.1
   typedoc: ^0.16.8
   typedoc-plugin-external-module-name: 3.0.0
   typedoc-plugin-internal-external: 2.1.1
