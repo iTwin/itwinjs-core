@@ -633,6 +633,7 @@ beta;ViewSelectorChangedEventArgs
 beta;ViewSelectorDefaultProps = Pick
 beta;ViewSelectorProps
 public;ViewUtilities
+alpha;VisibilityChangeListener = (nodeIds?: string[]) => void
 beta;VisibilityComponent 
 beta;VisibilityComponentConfig
 public;VisibilityComponentHierarchy

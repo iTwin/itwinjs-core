@@ -46,6 +46,7 @@ import { DialogProps as DialogProps_2 } from '@bentley/ui-abstract';
 import { DialogRow } from '@bentley/ui-abstract';
 import { Direction } from '@bentley/ui-ninezone';
 import { DisabledResizeHandles } from '@bentley/ui-ninezone';
+import { DisplayStyle3dState } from '@bentley/imodeljs-frontend';
 import { DndComponentClass } from 'react-dnd';
 import { DraggedWidgetManagerProps } from '@bentley/ui-ninezone';
 import { DragLayerProps } from '@bentley/ui-components';
@@ -3088,7 +3089,7 @@ export interface IVisibilityHandler extends IDisposable {
     // (undocumented)
     getVisibilityStatus(node: TreeNodeItem, nodeKey: NodeKey): VisibilityStatus | Promise<VisibilityStatus>;
     // (undocumented)
-    onVisibilityChange?: () => void;
+    onVisibilityChange: BeEvent<VisibilityChangeListener>;
 }
 
 // @public
@@ -3747,15 +3748,12 @@ export class ModelsVisibilityHandler implements IVisibilityHandler {
     protected getSubjectNodeVisibility(ids: Id64String[], node: TreeNodeItem): Promise<VisibilityStatus>;
     getVisibilityStatus(node: TreeNodeItem, nodeKey: NodeKey): VisibilityStatus | Promise<VisibilityStatus>;
     // (undocumented)
-    get onVisibilityChange(): (() => void) | undefined;
-    set onVisibilityChange(callback: (() => void) | undefined);
+    onVisibilityChange: BeEvent<VisibilityChangeListener>;
     setFilteredDataProvider(provider: IPresentationTreeDataProvider | undefined): void;
     }
 
 // @alpha
 export interface ModelsVisibilityHandlerProps {
-    // (undocumented)
-    onVisibilityChange?: () => void;
     // (undocumented)
     rulesetId: string;
     // (undocumented)
@@ -5046,6 +5044,8 @@ export const SnapModeField: import("react-redux").ConnectedComponent<typeof Snap
 // @alpha
 export class SolarTimelineDataProvider extends BaseSolarDataProvider {
     constructor(viewState: ViewState, viewport?: ScreenViewport, longitude?: number, latitude?: number);
+    // (undocumented)
+    protected get _displayStyle3d(): DisplayStyle3dState | undefined;
     // (undocumented)
     onTimeChanged: (time: Date) => void;
     // (undocumented)
@@ -6525,6 +6525,9 @@ export class ViewUtilities {
     static viewSupportsCamera(viewport: ScreenViewport): boolean;
 }
 
+// @alpha
+export type VisibilityChangeListener = (nodeIds?: string[]) => void;
+
 // @beta
 export class VisibilityComponent extends React.Component<VisibilityComponentProps, VisibilityTreeState> {
     constructor(props: any);
@@ -6574,7 +6577,7 @@ export interface VisibilityStatus {
     // (undocumented)
     isDisabled?: boolean;
     // (undocumented)
-    isDisplayed: boolean;
+    state: "visible" | "partial" | "hidden";
     // (undocumented)
     tooltip?: string;
 }
