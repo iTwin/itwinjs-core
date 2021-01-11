@@ -33,7 +33,8 @@ class FireParticle implements ParticleProps {
 }
 
 class FireParticleEmitter {
-  public horizontalRange = Range1d.createXX(-1, 1);
+  public radius = 1;
+  public readonly height = 2;
   public verticalRange = Range1d.createXX(-0.05, 0.05);
   public sizeRange = Range1d.createXX(0.1, 0.3);
   public speedRange = Range1d.createXX(0.01, 0.2);
@@ -42,14 +43,17 @@ class FireParticleEmitter {
   public emit(): FireParticle {
     const size = randomFloatInRange(this.sizeRange);
     const speed = randomFloatInRange(this.speedRange);
-    const x = randomFloatInRange(this.horizontalRange);
-    const y = randomFloatInRange(this.horizontalRange);
+    const a = Math.random() * 2 * Math.PI;
+    const r = this.radius * Math.sqrt(Math.random());
+    const x = r * Math.cos(a);
+    const y = r * Math.sin(a);
     const z = randomFloatInRange(this.verticalRange);
-    const phi = Angle.createRadians(randomFloatInRange(this.phiRange));
-    const theta = Angle.createRadians(randomFloat(0, Math.PI * 2));
+    // const phi = Angle.createRadians(randomFloatInRange(this.phiRange));
+    // const theta = Angle.createRadians(randomFloat(0, Math.PI * 2));
 
     const position = new Point3d(x, y, z);
-    const velocity = Vector3d.createSpherical(speed, theta, phi);
+    // const velocity = Vector3d.createSpherical(speed, theta, phi);
+    const velocity = Vector3d.unitZ(randomFloatInRange(this.speedRange));
     return new FireParticle(position, velocity, size);
   }
 }

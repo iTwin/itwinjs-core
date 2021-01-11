@@ -26,6 +26,8 @@ class Particle implements ParticleProps {
   public readonly lifetime: number;
   /** Particle size in meters. */
   public size: number;
+  /** Particle transparency in [0..255]. */
+  public transparency = 0;
 
   public get x() { return this.position.x; }
   public get y() { return this.position.y; }
@@ -144,6 +146,7 @@ class ParticleSystem {
     velocity.scale(elapsedSeconds, velocity);
     velocity.z += elapsedSeconds * this.gravity;
     particle.position.addInPlace(velocity);
+    particle.transparency = 255 * (particle.age / particle.lifetime);
 
     particle.age += elapsedSeconds;
   }
