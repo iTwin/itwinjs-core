@@ -7,6 +7,7 @@ import { QuantityStatus } from "./Exception";
 import { Format } from "./Formatter/Format";
 import { FormatTraits, FormatType } from "./Formatter/FormatEnums";
 import { PotentialParseUnit, QuantityProps, UnitConversion, UnitConversionSpec, UnitProps, UnitsProvider } from "./Interfaces";
+import { ParserSpec } from "./ParserSpec";
 import { Quantity } from "./Quantity";
 
 /**
@@ -16,43 +17,6 @@ import { Quantity } from "./Quantity";
 export interface ParseResult {
   value?: number | undefined;
   status: QuantityStatus;
-}
-
-/** A ParserSpec holds information needed to parse a string into a quantity synchronously.
- * @alpha
- */
-export class ParserSpec {
-  private _outUnit: UnitProps;
-  private _conversions: UnitConversionSpec[] = [];  // max four entries
-  private _format: Format;
-
-  /** Constructor
-   *  @param outUnit     The name of a format specification.
-   *  @param format   Defines the output format for the quantity value.
-   *  @param conversions An array of conversion factors necessary to convert from an input unit to the units specified in the format..
-   */
-  constructor(outUnit: UnitProps, format: Format, conversions: UnitConversionSpec[]) {
-    this._outUnit = outUnit;
-    this._format = format;
-    this._conversions = conversions;
-  }
-
-  /** Returns an array of UnitConversionSpecs for each unit label that may be used in the input string. */
-  public get unitConversions(): UnitConversionSpec[] { return this._conversions; }
-  public get format(): Format { return this._format; }
-  public get outUnit(): UnitProps { return this._outUnit; }
-
-  /** Static async method to create a FormatSpec given the format and unit of the quantity that will be passed to the Formatter. The input unit will
-   * be used to generate conversion information for each unit specified in the Format. This method is async due to the fact that the units provider must make
-   * async calls to lookup unit definitions.
-   *  @param name     The name of a format specification.
-   *  @param unitsProvider The units provider is used to look up unit definitions and provide conversion information for converting between units.
-   *  @param inputUnit The unit the value to be formatted. This unit is often referred to as persistence unit.
-   */
-  public static async create(format: Format, unitsProvider: UnitsProvider, outUnit: UnitProps): Promise<ParserSpec> {
-    const conversions = await Parser.createUnitConversionSpecsForUnit(unitsProvider, outUnit);
-    return new ParserSpec(outUnit, format, conversions);
-  }
 }
 
 /** A ParseToken holds either a numeric or string token extracted from a string that represents a quantity value.
@@ -467,7 +431,7 @@ export class Parser {
    *  @param defaultValue default value to return if parsing is un successful
    */
   public static parseQuantityString(inString: string, parserSpec: ParserSpec): ParseResult {
-    return Parser.parseIntoQuantityValue(inString, parserSpec.format, parserSpec.unitConversions);
+    return Parser.parseToQuantityValue(inString, parserSpec.format, parserSpec.unitConversions);
   }
 
   /** Method to generate a Quantity given a string that represents a quantity value and likely a unit label.
@@ -475,7 +439,7 @@ export class Parser {
    *  @param format   Defines the likely format of inString. Primary unit serves as a default unit if no unit label found in string.
    *  @param unitsConversions dictionary of conversions used to convert from unit used in inString to output quantity
    */
-  public static parseIntoQuantityValue(inString: string, format: Format, unitsConversions: UnitConversionSpec[]): ParseResult {
+  public static parseToQuantityValue(inString: string, format: Format, unitsConversions: UnitConversionSpec[]): ParseResult {
     const tokens: ParseToken[] = Parser.parseQuantitySpecification(inString, format);
     if (tokens.length === 0)
       return { status: QuantityStatus.UnableToGenerateParseTokens };
