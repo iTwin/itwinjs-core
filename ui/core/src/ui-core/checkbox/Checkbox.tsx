@@ -39,6 +39,8 @@ export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputE
   onBlur?: (e: React.FocusEvent) => void;
   /** Indicates whether the checkbox should set focus */
   setFocus?: boolean;
+  /** set to true if using an external label (ie if the label is in a separate component in a grid layout). */
+  isLabeled?: boolean;
 }
 
 /** A React component that renders a simple checkbox with label.
@@ -78,10 +80,10 @@ export class Checkbox extends React.PureComponent<CheckboxProps> {
 
   public render() {
     const { status, disabled, label, indeterminate, className, inputClassName, inputStyle, labelClassName, labelStyle, // eslint-disable-line @typescript-eslint/no-unused-vars
-      onClick, onBlur, setFocus, ...inputProps } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
+      onClick, onBlur, setFocus, isLabeled, ...inputProps } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
     const checkBoxClass = classnames("core-checkbox",
       disabled && "core-disabled",
-      !label && "core-checkbox-no-label",
+      (!label && !isLabeled) && "core-checkbox-no-label",
       status,
       className);
 

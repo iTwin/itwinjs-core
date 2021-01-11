@@ -16,7 +16,7 @@ import {
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
 import {
   adjustDateToTimezone, ColorPickerButton, ColorPickerDialog, ColorPickerPopup, ColorSwatch, DatePickerPopupButton, DatePickerPopupButtonProps,
-  IntlFormatter, LineWeightSwatch, ParsedInput, QuantityInput, WeightPickerButton,
+  FormatPanel, IntlFormatter, LineWeightSwatch, ParsedInput, QuantityInput, WeightPickerButton,
 } from "@bentley/ui-components";
 import { MessageManager, ModalDialogManager, ReactNotifyMessageDetails } from "@bentley/ui-framework";
 import { ActivityMessageDetails, ActivityMessageEndReason, IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType, QuantityType } from "@bentley/imodeljs-frontend";
@@ -27,6 +27,7 @@ import { SampleImageCheckBox } from "./SampleImageCheckBox";
 import { SampleAppIModelApp } from "../../..";
 import { BeDuration, Logger } from "@bentley/bentleyjs-core";
 import { SamplePopupContextMenu } from "./SamplePopupContextMenu";
+import { FormatProps } from "@bentley/imodeljs-quantity";
 
 function WrappedSelect() {
   const [currentValue, setCurrentValue] = React.useState(3);
@@ -929,6 +930,27 @@ export class ComponentExamplesProvider {
     };
   }
 
+  private static get quantityFormatting(): ComponentExampleCategory {
+    const sampleFormat: FormatProps = {
+      composite: {
+        includeZero: true,
+        spacer: "",
+        units: [{ label: "cm", name: "Units.CM" }],
+      },
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      precision: 4,
+      type: "Decimal",
+      uomSeparator: "",
+    };
+
+    return {
+      title: "Quantity Formatting Component",
+      examples: [
+        createComponentExample("Quantity Formatting", "Formatting Panel", <FormatPanel format={sampleFormat} />),
+      ],
+    };
+  }
+
   public static get categories(): ComponentExampleCategory[] {
     return [
       ComponentExamplesProvider.badgeSamples,
@@ -954,6 +976,7 @@ export class ComponentExamplesProvider {
       ComponentExamplesProvider.tileSamples,
       ComponentExamplesProvider.toggleSamples,
       ComponentExamplesProvider.weightSamples,
+      ComponentExamplesProvider.quantityFormatting,
       ComponentExamplesProvider.deprecatedComponentSamples,
     ];
   }

@@ -152,6 +152,22 @@ export class Format {
     }
   }
 
+  /** Get FormatTrait from entry in FormatProps */
+  public static parseFormatTraits(formatTraitsFromJson: string | string[] | undefined) {
+    if (!formatTraitsFromJson)
+      return undefined;
+
+    const formatTraits = Array.isArray(formatTraitsFromJson) ? formatTraitsFromJson : formatTraitsFromJson.split(/,|;|\|/);
+    let traits = 0;
+    for (const traitStr of formatTraits) {
+      traits = Format.parseFormatTrait(traitStr, traits);
+    }
+    if (0 === traits)
+      return undefined;
+
+    return traits as FormatTraits;
+  }
+
   /** Method used when generating a JSON object that represents this Format. */
   public static formatTypeToString(type: FormatType): string {
     switch (type) {

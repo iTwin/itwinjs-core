@@ -1,0 +1,20 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@bentley/ui-core/lib/ui-core/select/select";
+
+.components-quantityFormat-panel {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  row-gap: 0;
+  column-gap: 6px;
+  align-items: center;
+
+  >.uicore-label {
+    padding-left: .5em;
+    font-size:    $uicore-font-size;
+    margin: 4.4px 0; /* match margin on other select controls so it spaces properly in grid */
+    &.uicore-disabled {   color: $buic-text-color-disabled; }
+  }
+}
