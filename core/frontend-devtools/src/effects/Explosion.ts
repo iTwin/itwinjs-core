@@ -12,29 +12,7 @@ import { RenderTexture } from "@bentley/imodeljs-common";
 import {
   BeButtonEvent, DecorateContext, EventHandled, GraphicType, HitDetail, imageElementFromUrl, IModelApp, IModelConnection, ParticleCollectionBuilder, ParticleProps, Tool,
 } from "@bentley/imodeljs-frontend";
-
-/** Generate random integer in [range.low, range.high]. */
-function randomIntegerInRange(range: Range1d): number {
-  return Math.floor(Math.random() * (range.high - range.low + 1)) + range.low;
-}
-
-/** Generate random floating-point number in [range.low, range.high). */
-function randomNumberInRange(range: Range1d): number {
-  return randomNumber(range.low, range.high);
-}
-
-/** Generate random floating-point number in [min, max). */
-function randomNumber(min: number, max: number): number {
-  return Math.random() * (max - min) + min;
-}
-
-/** Generate a random position in the specified range. */
-function randomPositionInRange(range: Range3d): Point3d {
-  const x = randomNumber(range.low.x, range.high.x);
-  const y = randomNumber(range.low.y, range.high.y);
-  const z = randomNumber(range.low.z, range.high.z);
-  return new Point3d(x, y, z);
-}
+import { randomFloat, randomFloatInRange, randomIntegerInRange, randomPositionInRange } from "./Random";
 
 /** Represents one particle in the system. */
 class Particle implements ParticleProps {
@@ -81,12 +59,12 @@ class ParticleEmitter {
     const particles = [];
     const numParticles = randomIntegerInRange(this.numParticlesRange);
     for (let i = 0; i < numParticles; i++) {
-      const velocity = new Vector3d(randomNumber(-1.0, 1.0), randomNumber(-1.0, 1.0), randomNumber(-1.0, 1.0));
+      const velocity = new Vector3d(randomFloat(-1.0, 1.0), randomFloat(-1.0, 1.0), randomFloat(-1.0, 1.0));
       velocity.normalizeInPlace();
-      velocity.scaleInPlace(randomNumberInRange(this.speedRange));
+      velocity.scaleInPlace(randomFloatInRange(this.speedRange));
 
-      const lifetime = randomNumberInRange(this.lifetimeRange);
-      const size = randomNumberInRange(this.sizeRange);
+      const lifetime = randomFloatInRange(this.lifetimeRange);
+      const size = randomFloatInRange(this.sizeRange);
       particles.push(new Particle(new Point3d(0, 0, 0), velocity, lifetime, size));
     }
 
@@ -213,7 +191,7 @@ class ParticleSystem {
     const image = await imageElementFromUrl("./sprites/particle_explosion.png");
     const texture = await IModelApp.renderSystem.createTextureFromImage(image, true, undefined, params);
     if (texture)
-      IModelApp.viewManager.addDecorator(new ParticleSystem(texture, iModel, randomNumberInRange(this.numEmissionsRange)));
+      IModelApp.viewManager.addDecorator(new ParticleSystem(texture, iModel, randomIntegerInRange(this.numEmissionsRange)));
   }
 }
 

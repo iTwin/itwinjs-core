@@ -13,16 +13,7 @@ import {
   DecorateContext, Decorator, GraphicType, imageElementFromUrl, ParticleCollectionBuilder, ParticleProps, IModelApp, Tool, Viewport,
 } from "@bentley/imodeljs-frontend";
 import { parseToggle } from "../tools/parseToggle";
-
-/** Generate integer in [min, max]. */
-function randomInteger(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-/** Generate floating-point number in [min, max). */
-function randomNumber(min: number, max: number): number {
-  return Math.random() * (max - min) + min;
-}
+import { randomFloat, randomInteger } from "./Random";
 
 /** Represents one particle displayed by SnowDecorator. */
 interface SnowParticle extends ParticleProps {
@@ -156,8 +147,8 @@ class SnowDecorator implements Decorator {
       z: 0,
       size: randomInteger(this._params.sizeRange.low, this._params.sizeRange.high),
       transparency: randomInteger(this._params.transparencyRange.low, this._params.transparencyRange.high),
-      velocity: new Vector2d(randomNumber(this._params.velocityRange.low.x, this._params.velocityRange.high.x),
-        randomNumber(this._params.velocityRange.low.y, this._params.velocityRange.high.y)),
+      velocity: new Vector2d(randomFloat(this._params.velocityRange.low.x, this._params.velocityRange.high.x),
+        randomFloat(this._params.velocityRange.low.y, this._params.velocityRange.high.y)),
     }
   }
 
@@ -179,8 +170,8 @@ class SnowDecorator implements Decorator {
     for (let i = 0; i < this._particles.length; i++) {
       // Apply some acceleration to produce random drift.
       const particle = this._particles[i];
-      acceleration.set(randomNumber(this._params.accelerationRange.low.x, this._params.accelerationRange.high.x),
-        randomNumber(this._params.accelerationRange.low.y, this._params.accelerationRange.high.y));
+      acceleration.set(randomFloat(this._params.accelerationRange.low.x, this._params.accelerationRange.high.x),
+        randomFloat(this._params.accelerationRange.low.y, this._params.accelerationRange.high.y));
 
       acceleration.scale(elapsedSeconds, acceleration);
       particle.velocity.plus(acceleration, particle.velocity);

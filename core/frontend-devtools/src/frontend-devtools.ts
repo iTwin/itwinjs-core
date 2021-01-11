@@ -11,6 +11,7 @@ export * from "./effects/EffectTools";
 export * from "./effects/Explosion";
 export * from "./effects/FlipImage";
 export * from "./effects/LensDistortion";
+export * from "./effects/Random";
 export * from "./effects/Saturation";
 export * from "./effects/Snow";
 
