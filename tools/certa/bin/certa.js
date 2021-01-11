@@ -98,6 +98,8 @@ else
     } else {
       console.error(error);
     }
+    if (process.send)
+      process.send({ exitCode: 1 });
     process.exit(1);
   }
 })();

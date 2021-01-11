@@ -34,6 +34,24 @@ export async function onExit(child: ChildProcess): Promise<number> {
   });
 }
 
+/** Returns a Promise that will be resolved with the given child process's exit code upon termination. */
+async function onExitElectronApp(child: ChildProcess): Promise<number> {
+  let messageExitCode = 1; // Default to error
+  child.on("message", (message: any) => {
+    messageExitCode = message.exitCode;
+  });
+
+  return new Promise((resolve) => {
+    child.on("exit", (_exitCode) => {
+      // Note: Upgrading to electron 10 seems to cause the electron child process to always exit with 3221225477 = 0xC0000005(Access Violation).
+      // This causes the exitCode we pass to app.exit(_exitCode) to be lost. To work around this issue, we instead pass a message from the
+      // child process (see ElectronTestRunner), right before we call app.exit(). This message includes the exitCode based on the status of the
+      // test runs. See ElectronTestRunner.runTests, and the above listener to the "message" event.
+      resolve(messageExitCode);
+    });
+  });
+}
+
 /**
  * Helper function for relaunching (as a child process) the current process in electron instead of node.
  * Returns a promise that will be resolved with the exit code of the child process, once it terminates.
