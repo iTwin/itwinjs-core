@@ -216,7 +216,7 @@ const dtaFrontendMain = async () => {
 
   if (isElectronRenderer) {
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    const ElectronFrontend = (await import("@bentley/electron-manager/lib/ElectronFrontend")).ElectronFrontend;
+    const ElectronFrontend = require("@bentley/electron-manager/lib/ElectronFrontend").ElectronFrontend;
     new ElectronFrontend({ rpcInterfaces });
   } else if (MobileRpcConfiguration.isMobileFrontend) {
     MobileRpcManager.initializeClient(rpcInterfaces);

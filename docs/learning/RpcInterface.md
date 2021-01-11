@@ -217,7 +217,7 @@ A desktop app must use a desktop configuration.
 *Desktop Example:*
 
 ``` ts
-[[include:RpcInterface.initializeClientDesktop]]
+[[include:RpcInterface.initializeElectronFrontend]]
 ```
 
 ### Web Configuration

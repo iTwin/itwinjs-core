@@ -29,7 +29,7 @@ Logger.setLevelDefault(LogLevel.Warning);
   RpcConfiguration.developmentMode = true;
   if (isElectronRenderer) {
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    const ElectronFrontend = (await import("@bentley/electron-manager/lib/ElectronFrontend")).ElectronFrontend;
+    const ElectronFrontend = require("@bentley/electron-manager/lib/ElectronFrontend").ElectronFrontend;
     new ElectronFrontend({ rpcInterfaces: rpcs });
   } else {
     const rpcParams: BentleyCloudRpcParams = { info: { title: "presentation-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };

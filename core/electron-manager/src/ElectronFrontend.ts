@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ipcRenderer } from "electron";
 import { isElectronRenderer } from "@bentley/bentleyjs-core";
-import { FrontendIpc, IpcListener, IpcSocketFrontend, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
-import { ElectronRpcManager } from "./ElectronRpcManager";
-
 if (!isElectronRenderer)
   throw new Error("this file may only be included by electron frontends");
+
+import { FrontendIpc, IpcListener, IpcSocketFrontend, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
+import { ElectronRpcManager } from "./ElectronRpcManager";
+import { ipcRenderer } from "electron";
 
 /** These methods are stored on "window.itwinjs" in ElectronPreload.js */
 interface ITwinElectronApi {

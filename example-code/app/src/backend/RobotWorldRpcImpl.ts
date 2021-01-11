@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 // __PUBLISH_EXTRACT_START__ RpcInterface.implementation
-import { BackendIpc, IModelRpcProps, RpcInterface, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
+import { IModelRpcProps, RpcInterface, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { IModelDb } from "@bentley/imodeljs-backend";
 import { RobotWorldEngine } from "./RobotWorldEngine";
@@ -49,7 +49,6 @@ export class RobotWorldWriteRpcImpl extends RpcInterface implements RobotWorldWr
 
 // __PUBLISH_EXTRACT_START__ RpcInterface.initializeForCloud
 import { BentleyCloudRpcManager, BentleyCloudRpcParams } from "@bentley/imodeljs-common";
-import { ElectronManager } from "@bentley/electron-manager";
 
 export function initializeRpcImplBentleyCloud(interfaces: RpcInterfaceDefinition[]) {
   const cloudParams: BentleyCloudRpcParams = { info: { title: "RobotWorldEngine", version: "v1.0" } };
@@ -59,7 +58,10 @@ export function initializeRpcImplBentleyCloud(interfaces: RpcInterfaceDefinition
 
 // __PUBLISH_EXTRACT_START__ RpcInterface.initializeForElectron
 
-export function initializeForDesktop(rpcInterfaces: RpcInterfaceDefinition[]) {
+export async function initializeForElectron(rpcInterfaces: RpcInterfaceDefinition[]) {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  const ElectronManager = (await import("@bentley/electron-manager")).ElectronManager;
   new ElectronManager({ rpcInterfaces });
-}
+};
+
 // __PUBLISH_EXTRACT_END__
