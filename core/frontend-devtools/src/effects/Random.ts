@@ -22,18 +22,18 @@ export function randomIntegerInRange(range: Range1d): number {
   return Math.floor(Math.random() * (range.high - range.low + 1)) + range.low;
 }
 
-/** Generate random floating-point number in [range.low, range.high).
- * @beta
- */
-export function randomFloatInRange(range: Range1d): number {
-  return randomFloat(range.low, range.high);
-}
-
 /** Generate random floating-point number in [min, max).
  * @beta
  */
 export function randomFloat(min: number, max: number): number {
   return Math.random() * (max - min) + min;
+}
+
+/** Generate random floating-point number in [range.low, range.high).
+ * @beta
+ */
+export function randomFloatInRange(range: Range1d): number {
+  return randomFloat(range.low, range.high);
 }
 
 /** Generate a random position in the specified range.

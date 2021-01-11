@@ -44,6 +44,7 @@ import { EdgeDetectionEffect, EmbossEffect, GaussianBlurEffect, SharpenEffect, S
 import { SaturationConfig, SaturationEffect } from "./effects/Saturation";
 import { SnowEffect } from "./effects/Snow";
 import { ExplosionEffect } from "./effects/Explosion";
+import { FireEffect } from "./effects/Fire";
 
 /** Entry-point for the package. Before using the package you *must* call [[FrontendDevTools.initialize]].
  * @beta
@@ -97,6 +98,7 @@ export class FrontendDevTools {
       ExplosionEffect,
       ExtensionServiceTool,
       FadeOutTool,
+      FireEffect,
       FlipImageConfig,
       FlipImageEffect,
       FreezeSceneTool,

@@ -46,7 +46,7 @@ class Particle implements ParticleProps {
  */
 class ParticleEmitter {
   /** Range from which each particle's initial speed in meters per second will be selected. */
-  public readonly speedRange = Range1d.createXX(3, 6);
+  public readonly speedRange = Range1d.createXX(1, 2);
   /** Range from which each particle's lifetime in seconds will be selected. */
   public readonly lifetimeRange = Range1d.createXX(5, 10);
   /** Range from which each particle's size in meters will be selected. */

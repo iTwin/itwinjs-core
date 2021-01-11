@@ -333,6 +333,9 @@
     "ExplosionEffect": {
       "keyin": "fdt particle explosion"
     },
+    "FireEffect": {
+      "keyin": "fdt particle fire"
+    },
     "ClearEffects": {
       "keyin": "fdt effect clear"
     }
