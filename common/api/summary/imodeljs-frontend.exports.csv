@@ -157,7 +157,11 @@ alpha;findAvailableUnattachedRealityModels(contextId: GuidString, iModel?: IMode
 public;FitViewTool 
 internal;Flags
 public;FlyViewTool 
+internal;FormatPropsByUnitSystem = Map
 beta;class FormattedQuantityDescription 
+alpha;FormatterParserSpecsProvider
+internal;FormatterSpecByQuantityType = Map
+alpha;FormattingUnitSystemChangedArgs
 internal;FrameBeforeRenderData
 internal;FrameCameraFrustumData
 internal;FrameCameraViewData
@@ -346,8 +350,10 @@ internal;PlanarTilePatch
 public;class PrimitiveTool 
 alpha;PrimitiveVisibility
 internal;QuadId
+alpha;QuantityFormatsChangedArgs
 alpha;QuantityFormatter 
 beta;QuantityType
+alpha;QuantityTypeArg = QuantityType | string
 internal;queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise
 internal;rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined
 internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined
@@ -515,6 +521,7 @@ beta;UniformArrayParams
 beta;UniformContext
 beta;UniformParams
 beta;UniformType
+alpha;UnitSystemKey = "metric" | "imperial" | "usCustomary" | "usSurvey"
 internal;UpsampledMapTile 
 internal;UsesDragSelect
 internal;UsesFence
