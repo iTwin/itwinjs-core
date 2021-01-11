@@ -509,10 +509,6 @@
       "allowedCategories": [ "tools" ]
     },
     {
-      "name": "fast-xml-parser",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
       "name": "file-loader",
       "allowedCategories": [ "tools" ]
     },
@@ -1042,7 +1038,7 @@
     },
     {
       "name": "webpack",
-      "allowedCategories": [ "backend", "common", "edit", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "webpack-cli",
