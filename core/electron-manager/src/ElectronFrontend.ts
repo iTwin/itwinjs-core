@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { isElectronRenderer } from "@bentley/bentleyjs-core";
+import { FrontendIpc, IpcListener, IpcSocketFrontend, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
+import { ElectronRpcManager } from "./ElectronRpcManager";
+
 if (!isElectronRenderer)
   throw new Error("this file may only be included by electron frontends");
 
-import { FrontendIpc, IpcListener, IpcSocketFrontend, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
-import { ElectronRpcManager } from "./ElectronRpcManager";
-import { ipcRenderer } from "electron";
 
 /** These methods are stored on "window.itwinjs" in ElectronPreload.js */
 interface ITwinElectronApi {
@@ -25,7 +25,7 @@ export interface ElectronFrontendOptions {
 }
 
 // use the methods on window.itwinjs, or ipcRenderer directly if running with electronIntegration=true (for tests)
-const electronIpc: ITwinElectronApi = (typeof window === "undefined" ? undefined : (window as any).itwinjs as ITwinElectronApi | undefined) ?? ipcRenderer;
+const electronIpc: ITwinElectronApi = (typeof window === "undefined" ? undefined : (window as any).itwinjs as ITwinElectronApi | undefined) ?? require("electron").ipcRenderer;
 
 /** @alpha */
 export class ElectronFrontend implements IpcSocketFrontend {
