@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/geometry-core",
+      "comment": "Point2d and Vector2d clone methods accept an optional output parameter.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "22944042+pmconne@users.noreply.github.com"
+}

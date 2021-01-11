@@ -2041,7 +2041,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
     // @internal (undocumented)
     static get className(): string;
     // @internal (undocumented)
-    clone(iModel: IModelConnection): this;
+    clone(iModel?: IModelConnection): this;
     get environment(): Environment;
     set environment(env: Environment);
     // (undocumented)
@@ -3507,6 +3507,8 @@ export abstract class GraphicBuilder {
     pickId?: string;
     get placement(): Transform;
     set placement(tf: Transform);
+    // @beta
+    preserveOrder: boolean;
     setBlankingFill(fillColor: ColorDef): void;
     setSymbology(lineColor: ColorDef, fillColor: ColorDef, lineWidth: number, linePixels?: LinePixels): void;
     readonly type: GraphicType;
@@ -11378,6 +11380,8 @@ export abstract class Viewport implements IDisposable {
     readonly onFeatureOverridesChanged: BeEvent<(vp: Viewport) => void>;
     readonly onNeverDrawnChanged: BeEvent<(vp: Viewport) => void>;
     readonly onRender: BeEvent<(vp: Viewport) => void>;
+    // @beta
+    readonly onResized: BeEvent<(vp: Viewport) => void>;
     readonly onViewChanged: BeEvent<(vp: Viewport) => void>;
     readonly onViewedCategoriesChanged: BeEvent<(vp: Viewport) => void>;
     readonly onViewedCategoriesPerModelChanged: BeEvent<(vp: Viewport) => void>;
@@ -11888,6 +11892,8 @@ export abstract class ViewState3d extends ViewState {
     decorate(context: DecorateContext): void;
     // @beta
     get details(): ViewDetails3d;
+    get displayStyle(): DisplayStyle3dState;
+    set displayStyle(style: DisplayStyle3dState);
     // @internal (undocumented)
     protected drawGroundPlane(context: DecorateContext): void;
     // @internal (undocumented)
@@ -11899,7 +11905,6 @@ export abstract class ViewState3d extends ViewState {
     getBackDistance(): number;
     // (undocumented)
     getCartographicHeight(point: XYAndZ): number | undefined;
-    // (undocumented)
     getDisplayStyle3d(): DisplayStyle3dState;
     // (undocumented)
     getExtents(): Vector3d;
