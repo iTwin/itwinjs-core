@@ -63,7 +63,7 @@ export const initializeLocalization = async () => {
  */
 export const initializePropertyValueRenderers = async () => {
   const customRenderers: Array<{ name: string, renderer: IPropertyValueRenderer }> = [
-    { name: "selectable_instance", renderer: new InstanceKeyValueRenderer() },
+    { name: "SelectableInstance", renderer: new InstanceKeyValueRenderer() },
   ];
 
   for (const { name, renderer } of customRenderers) {
