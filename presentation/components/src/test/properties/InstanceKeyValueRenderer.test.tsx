@@ -90,14 +90,14 @@ describe("InstanceKeyValueRenderer", () => {
       it("changes current selection when clicked", () => {
         const record = createNavigationPropertyRecord(createPrimitiveValue(instanceKey));
         const { getByRole } = render(
-          <UnifiedSelectionContextProvider imodel={testIModel}>
+          <UnifiedSelectionContextProvider imodel={testIModel} selectionLevel={10}>
             {renderer.render(record)}
           </UnifiedSelectionContextProvider>
         );
 
         act(() => { getByRole("link").click(); });
 
-        expect(Presentation.selection.getSelection(testIModel).has(instanceKey)).to.be.true;
+        expect(Presentation.selection.getSelection(testIModel, 10).has(instanceKey)).to.be.true;
       });
 
       it("renders non-clickable display value when UnifiedSelectionContext is not present", () => {
