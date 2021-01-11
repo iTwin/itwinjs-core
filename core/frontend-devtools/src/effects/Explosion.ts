@@ -74,7 +74,7 @@ class ParticleEmitter {
   /** Range from which each particle's size in meters will be selected. */
   public readonly sizeRange = Range1d.createXX(0.2, 1.0);
   /** Range from which the number of particles emitted will be selected. */
-  public numParticlesRange = Range1d.createXX(600, 1200);
+  public numParticlesRange = Range1d.createXX(1600, 2200);
 
   /** Emit an explosion of particles from the center of the sphere. */
   public emit(): Particle[] {
@@ -210,7 +210,7 @@ class ParticleSystem {
   public static async addDecorator(iModel: IModelConnection): Promise<void> {
     const isOwned = true;
     const params = new RenderTexture.Params(undefined, undefined, isOwned);
-    const image = await imageElementFromUrl("./sprites/particle_snow.png");
+    const image = await imageElementFromUrl("./sprites/particle_explosion.png");
     const texture = await IModelApp.renderSystem.createTextureFromImage(image, true, undefined, params);
     if (texture)
       IModelApp.viewManager.addDecorator(new ParticleSystem(texture, iModel, randomNumberInRange(this.numEmissionsRange)));

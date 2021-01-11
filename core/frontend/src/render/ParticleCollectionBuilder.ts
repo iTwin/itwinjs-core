@@ -294,7 +294,7 @@ class Builder implements ParticleCollectionBuilder {
       quadArgs.points.add(corner);
 
     quadArgs.vertIndices = [0, 1, 2, 2, 1, 3];
-    quadArgs.textureUv = [ new Point2d(0, 0), new Point2d(1, 0), new Point2d(0, 1), new Point2d(1, 1) ];
+    quadArgs.textureUv = [ new Point2d(0, 1), new Point2d(1, 1), new Point2d(0, 0), new Point2d(1, 0) ];
     quadArgs.texture = this._texture;
     quadArgs.isPlanar = true;
 
