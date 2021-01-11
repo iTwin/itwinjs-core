@@ -2,12 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BentleyLoggerCategory, Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
+
+import { BentleyLoggerCategory, Config, isElectronMain, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { IModelJsExpressServer } from "@bentley/express-server";
 import { IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
-import { BackendIpc, BackendLoggerCategory, IModelHostConfiguration, NativeAppBackend, NativeLoggerCategory } from "@bentley/imodeljs-backend";
-import { BentleyCloudRpcManager, ElectronRpcConfiguration, ElectronRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
+import { BackendLoggerCategory, IModelHostConfiguration, NativeAppBackend, NativeLoggerCategory } from "@bentley/imodeljs-backend";
+import { BentleyCloudRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
 import { ITwinClientLoggerCategory } from "@bentley/itwin-client";
 // Sets up certa to allow a method on the frontend to get an access token
 import "@bentley/oidc-signin-tool/lib/certa/certaBackend";
@@ -44,10 +45,14 @@ async function init() {
   // Bootstrap the cloud environment
   await CloudEnv.initialize();
 
-  if (ElectronRpcConfiguration.isElectron) {
-    const electronManager = new (require("@bentley/electron-manager").ElectronManager)();
-    BackendIpc.initialize(electronManager);
-    ElectronRpcManager.initializeImpl({}, rpcInterfaces, electronManager);
+  if (isElectronMain) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      const ElectronManager = (await import("@bentley/electron-manager")).ElectronManager;
+      new ElectronManager({ rpcInterfaces });
+    } catch (_e) {
+
+    }
   } else {
     const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "full-stack-test", version: "v1.0" } }, rpcInterfaces);
 

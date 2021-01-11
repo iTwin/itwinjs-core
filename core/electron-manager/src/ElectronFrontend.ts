@@ -5,7 +5,8 @@
 
 import { ipcRenderer } from "electron";
 import { isElectronRenderer } from "@bentley/bentleyjs-core";
-import { IpcListener, IpcSocketFrontend } from "@bentley/imodeljs-common";
+import { FrontendIpc, IpcListener, IpcSocketFrontend, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
+import { ElectronRpcManager } from "./ElectronRpcManager";
 
 if (!isElectronRenderer)
   throw new Error("this file may only be included by electron frontends");
@@ -18,20 +19,28 @@ interface ITwinElectronApi {
   send: (channel: string, ...data: any[]) => void; // only valid for render -> main
   invoke(channel: string, ...args: any[]): Promise<any>;
 }
+/** @beta */
+export interface ElectronFrontendOptions {
+  rpcInterfaces?: RpcInterfaceDefinition[];
+}
 
 // use the methods on window.itwinjs, or ipcRenderer directly if running with electronIntegration=true (for tests)
 const electronIpc: ITwinElectronApi = (typeof window === "undefined" ? undefined : (window as any).itwinjs as ITwinElectronApi | undefined) ?? ipcRenderer;
 
 /** @alpha */
-export const electronFrontendIpc: IpcSocketFrontend = {
-  receive: (channelName: string, listener: IpcListener) => {
+export class ElectronFrontend implements IpcSocketFrontend {
+  public receive(channelName: string, listener: IpcListener) {
     electronIpc.on(channelName, listener);
     return () => electronIpc.removeListener(channelName, listener);
-  },
-  send: (channel: string, ...data: any[]) => {
+  };
+  public send(channel: string, ...data: any[]) {
     electronIpc.send(channel, ...data);
-  },
-  invoke: async (channel: string, ...args: any[]) => {
+  }
+  public async invoke(channel: string, ...args: any[]) {
     return electronIpc.invoke(channel, ...args);
-  },
+  };
+  public constructor(opts?: ElectronFrontendOptions) {
+    FrontendIpc.initialize(this);
+    ElectronRpcManager.initializeFrontend(this, opts?.rpcInterfaces);
+  }
 };

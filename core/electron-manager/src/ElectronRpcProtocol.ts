@@ -7,10 +7,7 @@
  */
 
 import { BentleyStatus } from "@bentley/bentleyjs-core";
-import { IModelError } from "../../IModelError";
-import { IpcSocket } from "../../ipc/IpcSocket";
-import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
-import { RpcProtocol } from "../core/RpcProtocol";
+import { IModelError, IpcSocket, RpcInterface, RpcInterfaceDefinition, RpcProtocol } from "@bentley/imodeljs-common";
 import { ElectronIpcTransport, initializeIpc, IpcTransportMessage } from "./ElectronIpcTransport";
 import { ElectronRpcConfiguration } from "./ElectronRpcManager";
 import { ElectronRpcRequest } from "./ElectronRpcRequest";

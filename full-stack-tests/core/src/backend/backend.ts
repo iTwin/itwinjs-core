@@ -8,11 +8,11 @@ import "@bentley/oidc-signin-tool/lib/certa/certaBackend";
 import * as http from "http";
 import * as path from "path";
 import serveHandler = require("serve-handler");
-import { Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Config, isElectronMain, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { IModelJsExpressServer } from "@bentley/express-server";
-import { BackendIpc, FileNameResolver, IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
-import { BentleyCloudRpcManager, ElectronRpcConfiguration, ElectronRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
+import { FileNameResolver, IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
+import { BentleyCloudRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
 import { EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
@@ -27,11 +27,10 @@ async function init() {
   // Bootstrap the cloud environment
   await CloudEnv.initialize();
 
-  if (ElectronRpcConfiguration.isElectron) {
+  if (isElectronMain) {
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    const electronManager = new (require("@bentley/electron-manager").ElectronManager)();
-    BackendIpc.initialize(electronManager);
-    ElectronRpcManager.initializeImpl({}, rpcInterfaces, electronManager);
+    const ElectronManager = (await import("@bentley/electron-manager")).ElectronManager;
+    new ElectronManager({ rpcInterfaces });
     EditCommandAdmin.registerModule(testCommands);
   } else {
     const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "full-stack-test", version: "v1.0" } }, rpcInterfaces);

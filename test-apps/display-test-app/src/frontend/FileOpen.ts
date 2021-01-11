@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { isElectronRenderer } from "@bentley/bentleyjs-core";
-import { FrontendIpc } from "@bentley/imodeljs-frontend";
+import { FrontendIpc } from "@bentley/imodeljs-common";
 import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
 
 export interface BrowserFileSelector {

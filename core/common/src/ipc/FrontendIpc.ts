@@ -6,7 +6,8 @@
  * @module IpcSocket
  */
 
-import { BackendError, IpcInvokeReturn, IpcSocketFrontend, iTwinChannel, RemoveFunction } from "@bentley/imodeljs-common";
+import { BackendError } from "../IModelError";
+import { IpcInvokeReturn, IpcSocketFrontend, iTwinChannel, RemoveFunction } from "./IpcSocket";
 
 /**
  * This class provides frontend support for Ipc operations. It must be initialized with a platform-specific
@@ -48,7 +49,7 @@ export class FrontendIpc {
    * @note Ipc is only supported if [[isValid]] is true.
    */
   public static async callBackend(channelName: string, methodName: string, ...args: any[]): Promise<any> {
-    const retVal = (await FrontendIpc.ipc.invoke(iTwinChannel(channelName), methodName, ...args)) as IpcInvokeReturn;
+    const retVal = (await this._ipc!.invoke(iTwinChannel(channelName), methodName, ...args)) as IpcInvokeReturn;
     if (undefined !== retVal.error)
       throw new BackendError(retVal.error.errorNumber, retVal.error.name, retVal.error.message);
     return retVal.result;

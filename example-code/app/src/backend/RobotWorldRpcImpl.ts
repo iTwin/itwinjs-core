@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 // __PUBLISH_EXTRACT_START__ RpcInterface.implementation
-import { IModelRpcProps, RpcInterface, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
+import { BackendIpc, IModelRpcProps, RpcInterface, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import { Id64String } from "@bentley/bentleyjs-core";
-import { BackendIpc, IModelDb } from "@bentley/imodeljs-backend";
+import { IModelDb } from "@bentley/imodeljs-backend";
 import { RobotWorldEngine } from "./RobotWorldEngine";
 import { RobotWorldReadRpcInterface } from "../common/RobotWorldRpcInterface";
 
@@ -47,8 +47,9 @@ export class RobotWorldWriteRpcImpl extends RpcInterface implements RobotWorldWr
   }
 }
 
-// __PUBLISH_EXTRACT_START__ RpcInterface.initializeImplBentleyCloud
+// __PUBLISH_EXTRACT_START__ RpcInterface.initializeForCloud
 import { BentleyCloudRpcManager, BentleyCloudRpcParams } from "@bentley/imodeljs-common";
+import { ElectronManager } from "@bentley/electron-manager";
 
 export function initializeRpcImplBentleyCloud(interfaces: RpcInterfaceDefinition[]) {
   const cloudParams: BentleyCloudRpcParams = { info: { title: "RobotWorldEngine", version: "v1.0" } };
@@ -56,12 +57,9 @@ export function initializeRpcImplBentleyCloud(interfaces: RpcInterfaceDefinition
 }
 // __PUBLISH_EXTRACT_END__
 
-// __PUBLISH_EXTRACT_START__ RpcInterface.initializeImplDesktop
-import { ElectronRpcManager } from "@bentley/imodeljs-common";
+// __PUBLISH_EXTRACT_START__ RpcInterface.initializeForElectron
 
-export function initializeRpcImplDesktop(interfaces: RpcInterfaceDefinition[]) {
-  const electronManager = new (require("@bentley/electron-manager").ElectronManager)();
-  BackendIpc.initialize(electronManager);
-  ElectronRpcManager.initializeImpl({}, interfaces, electronManager);
+export function initializeForDesktop(rpcInterfaces: RpcInterfaceDefinition[]) {
+  new ElectronManager({ rpcInterfaces });
 }
 // __PUBLISH_EXTRACT_END__

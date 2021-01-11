@@ -10,10 +10,9 @@
 import { assert, BeEvent, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import {
-  defaultDesktopAuthorizationClientExpiryBuffer, DesktopAuthorizationClientConfiguration, DesktopAuthorizationClientMessages, IpcListener,
+  defaultDesktopAuthorizationClientExpiryBuffer, DesktopAuthorizationClientConfiguration, DesktopAuthorizationClientMessages, FrontendIpc, IpcListener,
 } from "@bentley/imodeljs-common";
 import { AccessToken } from "@bentley/itwin-client";
-import { FrontendIpc } from "../FrontendIpc";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 import { FrontendRequestContext } from "../FrontendRequestContext";
 

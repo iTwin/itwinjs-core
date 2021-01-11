@@ -69,13 +69,13 @@ export abstract class MobileRpcConfiguration extends RpcConfiguration {
   /** Return type of mobile platform using browser userAgent */
   public static get platform(): RpcMobilePlatform { return MobileRpcConfiguration.getMobilePlatform(); }
 
-  /** Check if running backend running on mobile */
+  /** Check if backend running on mobile */
   public static get isMobileBackend() { return typeof (process) !== "undefined" && (process.platform as any) === "ios"; }
 
-  /** Check if running backend running on mobile */
+  /** Check if frontend running on mobile */
   public static get isMobileFrontend() { return this.platform !== RpcMobilePlatform.Unknown; }
 
-  /** Check if running backend running on wkwebview on ios */
+  /** Check if frontend running on wkwebview on ios */
   public static get isIOSFrontend() { return MobileRpcConfiguration.isMobileFrontend && (window as any).webkit && (window as any).webkit.messageHandlers; }
 }
 

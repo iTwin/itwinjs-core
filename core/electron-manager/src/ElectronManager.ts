@@ -6,21 +6,23 @@ import { app, BrowserWindow, BrowserWindowConstructorOptions, ipcMain, protocol 
 import * as fs from "fs";
 import * as path from "path";
 import { BeDuration } from "@bentley/bentleyjs-core";
-import { ElectronRpcConfiguration, IpcListener, IpcSocketBackend, RemoveFunction } from "@bentley/imodeljs-common";
+import { BackendIpc, IpcHandler, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import { DesktopAuthorizationClientIpc } from "./DesktopAuthorizationClientIpc";
+import { ElectronRpcConfiguration, ElectronRpcManager } from "./ElectronRpcManager";
 
 // cSpell:ignore signin devserver webcontents
 
 /** @beta */
 export interface ElectronManagerOptions {
-  webResourcesPath: string;
+  webResourcesPath?: string;
   iconName?: string;
   frontendURL?: string;
+  rpcInterfaces?: RpcInterfaceDefinition[];
+  ipcHandlers?: typeof IpcHandler[];
 }
 
 /**
- * A helper class that simplifies the creation of basic single-window desktop applications
- * that follow platform-standard window behavior on all platforms.
+ * Manager for the backend implementation of Electron desktop applications
  * @beta
  */
 export class ElectronManager implements IpcSocketBackend {
@@ -29,6 +31,7 @@ export class ElectronManager implements IpcSocketBackend {
   public readonly webResourcesPath: string;
   public readonly appIconPath: string;
   public readonly frontendURL: string;
+  public readonly rpcConfig: RpcConfiguration;
 
   private openMainWindow(options: BrowserWindowConstructorOptions = {}) {
     const opts: BrowserWindowConstructorOptions = {
@@ -61,6 +64,10 @@ export class ElectronManager implements IpcSocketBackend {
     this.webResourcesPath = opts?.webResourcesPath ?? "";
     this.frontendURL = opts?.frontendURL ?? `${this._electronFrontend}index.html`;
     this.appIconPath = path.join(this.webResourcesPath, opts?.iconName ?? "appicon.ico");
+
+    BackendIpc.initialize(this);
+    this.rpcConfig = ElectronRpcManager.initializeBackend(this, opts?.rpcInterfaces);
+    opts?.ipcHandlers?.forEach((ipc) => ipc.register());
   }
 
   /**

@@ -6,10 +6,9 @@ import { app, dialog, OpenDialogOptions } from "electron";
 import * as path from "path";
 import { assert } from "@bentley/bentleyjs-core";
 import { ElectronManagerOptions, IModelJsElectronManager, WebpackDevServerElectronManager } from "@bentley/electron-manager";
-import { BackendIpc, IpcHandler } from "@bentley/imodeljs-backend";
-import { ElectronRpcManager } from "@bentley/imodeljs-common";
 import { dtaChannel, DtaIpcInterface, dtaIpcVersion } from "../common/DtaIpcInterface";
 import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
+import { IpcHandler } from "@bentley/imodeljs-common";
 
 const getWindowSize = () => {
   let width = 1280;
@@ -47,19 +46,13 @@ const dtaElectronMain = async () => {
   const opts: ElectronManagerOptions = {
     webResourcesPath: path.join(__dirname, "..", "..", "build"),
     iconName: "display-test-app.ico",
+    rpcInterfaces: getRpcInterfaces(),
+    ipcHandlers: [DtaIpcImpl],
   };
 
   const manager = (process.env.NODE_ENV === "development") ?
     new WebpackDevServerElectronManager(opts) : // port should match the port of the local dev server
     new IModelJsElectronManager(opts);
-
-  BackendIpc.initialize(manager);
-
-  // Initialize rpcs for the backend
-  ElectronRpcManager.initializeImpl({}, getRpcInterfaces(), manager);
-
-  // handler for the "openFile" from the frontend
-  DtaIpcImpl.register();
 
   await initializeDtaBackend();
 

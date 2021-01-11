@@ -6,8 +6,9 @@
  * @module Editing
  */
 
+import { FrontendIpc } from "@bentley/imodeljs-common";
 import { editorAppChannel } from "@bentley/imodeljs-editor-common";
-import { FrontendIpc, PrimitiveTool } from "@bentley/imodeljs-frontend";
+import { PrimitiveTool } from "@bentley/imodeljs-frontend";
 
 /** @alpha */
 export class EditTool extends PrimitiveTool {

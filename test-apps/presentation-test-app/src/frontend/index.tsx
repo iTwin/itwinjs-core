@@ -6,11 +6,11 @@
 import "./index.css";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Config, isElectronRenderer, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import {
-  BentleyCloudRpcManager, BentleyCloudRpcParams, ElectronRpcConfiguration, ElectronRpcManager, RpcConfiguration,
+  BentleyCloudRpcManager, BentleyCloudRpcParams, RpcConfiguration,
 } from "@bentley/imodeljs-common";
-import { FrontendIpc, IModelApp } from "@bentley/imodeljs-frontend";
+import { IModelApp } from "@bentley/imodeljs-frontend";
 import { PresentationUnitSystem } from "@bentley/presentation-common";
 // __PUBLISH_EXTRACT_START__ Presentation.Frontend.Imports
 import { Presentation } from "@bentley/presentation-frontend";
@@ -27,10 +27,10 @@ Logger.setLevelDefault(LogLevel.Warning);
 // initialize RPC
 (function initRpc() {
   RpcConfiguration.developmentMode = true;
-  if (ElectronRpcConfiguration.isElectron) {
-    const ipc = require("@bentley/electron-manager/lib/ElectronFrontendIpc").electronFrontendIpc;
-    FrontendIpc.initialize(ipc);
-    ElectronRpcManager.initializeClient({}, rpcs, ipc);
+  if (isElectronRenderer) {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const ElectronFrontend = (await import("@bentley/electron-manager/lib/ElectronFrontend")).ElectronFrontend;
+    new ElectronFrontend({ rpcInterfaces: rpcs });
   } else {
     const rpcParams: BentleyCloudRpcParams = { info: { title: "presentation-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
     // __PUBLISH_EXTRACT_START__ Presentation.Frontend.RpcInterface

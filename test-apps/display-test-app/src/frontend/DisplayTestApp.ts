@@ -2,17 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, isElectronRenderer } from "@bentley/bentleyjs-core";
 import {
   BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration,
 } from "@bentley/frontend-authorization-client";
 import {
-  BentleyCloudRpcManager, CloudStorageContainerUrl, CloudStorageTileCache, DesktopAuthorizationClientConfiguration, Editor3dRpcInterface, ElectronRpcConfiguration,
-  ElectronRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, MobileAuthorizationClientConfiguration, MobileRpcConfiguration, MobileRpcManager,
+  BentleyCloudRpcManager, CloudStorageContainerUrl, CloudStorageTileCache, DesktopAuthorizationClientConfiguration, Editor3dRpcInterface,
+  IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, MobileAuthorizationClientConfiguration, MobileRpcConfiguration, MobileRpcManager,
   RpcConfiguration, RpcInterfaceDefinition, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, TileContentIdentifier,
 } from "@bentley/imodeljs-common";
 import {
-  DesktopAuthorizationClient, FrontendIpc, FrontendRequestContext, IModelApp, IModelConnection, MobileAuthorizationClient, RenderDiagnostics, RenderSystem,
+  DesktopAuthorizationClient, FrontendRequestContext, IModelApp, IModelConnection, MobileAuthorizationClient, RenderDiagnostics, RenderSystem,
 } from "@bentley/imodeljs-frontend";
 import { AccessToken } from "@bentley/itwin-client";
 import { WebGLExtensionName } from "@bentley/webgl-compatibility";
@@ -70,7 +70,7 @@ function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | Deskt
   const redirectUri = MobileRpcConfiguration.isMobileFrontend ? "imodeljs://app/signin-callback" : "http://localhost:3000/signin-callback";
   const baseOidcScope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party imodel-extension-service-api";
 
-  return ElectronRpcConfiguration.isElectron || MobileRpcConfiguration.isMobileFrontend
+  return isElectronRenderer || MobileRpcConfiguration.isMobileFrontend
     ? {
       clientId: "imodeljs-electron-test",
       redirectUri,
@@ -85,13 +85,13 @@ function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | Deskt
 }
 
 async function handleOidcCallback(oidcConfiguration: BrowserAuthorizationClientConfiguration): Promise<void> {
-  if (!ElectronRpcConfiguration.isElectron) {
+  if (!isElectronRenderer) {
     await BrowserAuthorizationCallbackHandler.handleSigninCallback(oidcConfiguration.redirectUri);
   }
 }
 
 async function createOidcClient(requestContext: ClientRequestContext, oidcConfiguration: BrowserAuthorizationClientConfiguration | DesktopAuthorizationClientConfiguration): Promise<DesktopAuthorizationClient | BrowserAuthorizationClient | MobileAuthorizationClient> {
-  if (ElectronRpcConfiguration.isElectron) {
+  if (isElectronRenderer) {
     const desktopClient = new DesktopAuthorizationClient(oidcConfiguration as DesktopAuthorizationClientConfiguration);
     await desktopClient.initialize(requestContext);
     return desktopClient;
@@ -214,10 +214,10 @@ const dtaFrontendMain = async () => {
     StandaloneIModelRpcInterface,
   ];
 
-  if (ElectronRpcConfiguration.isElectron) {
-    const ipc = require("@bentley/electron-manager/lib/ElectronFrontendIpc").electronFrontendIpc;
-    FrontendIpc.initialize(ipc);
-    ElectronRpcManager.initializeClient({}, rpcInterfaces, ipc);
+  if (isElectronRenderer) {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const ElectronFrontend = (await import("@bentley/electron-manager/lib/ElectronFrontend")).ElectronFrontend;
+    new ElectronFrontend({ rpcInterfaces });
   } else if (MobileRpcConfiguration.isMobileFrontend) {
     MobileRpcManager.initializeClient(rpcInterfaces);
   } else {

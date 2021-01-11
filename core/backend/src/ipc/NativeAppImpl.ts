@@ -9,7 +9,8 @@
 
 import { ClientRequestContext, Config, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseProps, IModelConnectionProps, IModelError, IModelRpcProps, InternetConnectivityStatus, LocalBriefcaseProps,
+  BackendIpc,
+  BriefcaseProps, IModelConnectionProps, IModelError, IModelRpcProps, InternetConnectivityStatus, IpcHandler, LocalBriefcaseProps,
   MobileAuthorizationClientConfiguration, nativeAppChannel, NativeAppIpc, nativeAppIpcVersion, OpenBriefcaseProps, OverriddenBy,
   RequestNewBriefcaseProps, StorageValue, TileTreeContentIds,
 } from "@bentley/imodeljs-common";
@@ -22,7 +23,6 @@ import { MobileDevice } from "../MobileDevice";
 import { NativeAppBackend } from "../NativeAppBackend";
 import { NativeAppStorage } from "../NativeAppStorage";
 import { cancelTileContentRequests } from "../rpc-impl/IModelTileRpcImpl";
-import { BackendIpc, IpcHandler } from "./BackendIpc";
 
 /**
  * Implementation for backend of NativeAppIpc

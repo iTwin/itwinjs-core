@@ -21,7 +21,6 @@ export * from "./EventSource";
 export * from "./FeatureLogBatchClient";
 export * from "./FeatureOverrideProvider";
 export * from "./FeatureTrackingManager";
-export * from "./FrontendIpc";
 export * from "./FrontendLoggerCategory";
 export * from "./FrontendRequestContext";
 export * from "./Frustum2d";

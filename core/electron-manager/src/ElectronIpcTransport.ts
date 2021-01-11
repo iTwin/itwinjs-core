@@ -7,15 +7,13 @@
  */
 
 import { BentleyStatus, isElectronRenderer } from "@bentley/bentleyjs-core";
-import { IModelError } from "../../IModelError";
-import { RpcSerializedValue } from "../core/RpcMarshaling";
-import { RpcRequestFulfillment, SerializedRpcRequest } from "../core/RpcProtocol";
+import {
+  IModelError, iTwinChannel, RpcPushChannel, RpcPushConnection, RpcRequestFulfillment, RpcSerializedValue, SerializedRpcRequest,
+} from "@bentley/imodeljs-common";
+import { ElectronPushConnection, ElectronPushTransport } from "./ElectronPush";
+import { ElectronRpcConfiguration } from "./ElectronRpcManager";
 import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
 import { ElectronRpcRequest } from "./ElectronRpcRequest";
-import { ElectronRpcConfiguration } from "./ElectronRpcManager";
-import { RpcPushChannel, RpcPushConnection } from "../core/RpcPush";
-import { ElectronPushConnection, ElectronPushTransport } from "./ElectronPush";
-import { iTwinChannel } from "../../ipc/IpcSocket";
 
 const OBJECTS_CHANNEL = iTwinChannel("rpc.objects");
 const DATA_CHANNEL = iTwinChannel("rpc.data");

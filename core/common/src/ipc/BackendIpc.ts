@@ -6,7 +6,8 @@
  * @module IpcSocket
  */
 
-import { IModelError, IModelStatus, IpcInterface, IpcInvokeReturn, IpcSocketBackend, iTwinChannel, RemoveFunction } from "@bentley/imodeljs-common";
+import { IModelError, IModelStatus } from "../IModelError";
+import { IpcInterface, IpcInvokeReturn, IpcSocketBackend, iTwinChannel, RemoveFunction } from "./IpcSocket";
 
 /**
  * This class provides backend support for Ipc operations. It must be initialized with a platform-specific

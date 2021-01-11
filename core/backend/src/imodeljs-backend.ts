@@ -50,7 +50,6 @@ export * from "./DevTools";
 export * from "./oidc/DesktopAuthorizationClient";
 export * from "./oidc/MobileAuthorizationClient";
 export * from "./usage-logging/UsageLoggingUtilities";
-export * from "./ipc/BackendIpc";
 export * from "./IModelDb"; // must be last
 
 /** @docs-package-description

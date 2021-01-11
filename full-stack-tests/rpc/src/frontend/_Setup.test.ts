@@ -3,10 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { executeBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
-import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, ElectronRpcManager, MobileRpcManager, RpcConfiguration, RpcDefaultConfiguration } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, MobileRpcManager, RpcConfiguration, RpcDefaultConfiguration } from "@bentley/imodeljs-common";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { AttachedInterface, MultipleClientsInterface, rpcInterfaces } from "../common/TestRpcInterface";
-import { FrontendIpc } from "@bentley/imodeljs-frontend";
 
 RpcConfiguration.disableRoutingValidation = true;
 
@@ -53,11 +52,13 @@ export let currentEnvironment: string;
 before(async () => {
   currentEnvironment = await executeBackendCallback(BackendTestCallbacks.getEnvironment);
   switch (currentEnvironment) {
-    case "http": return initializeCloud("http");
+    case "http":
+      return initializeCloud("http");
     case "electron": {
-      const ipc = require("@bentley/electron-manager/lib/ElectronFrontendIpc").electronFrontendIpc;
-      FrontendIpc.initialize(ipc);
-      return ElectronRpcManager.initializeClient({}, rpcInterfaces, ipc);
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      const ElectronFrontend = (await import("@bentley/electron-manager/lib/ElectronFrontend")).ElectronFrontend;
+      new ElectronFrontend({ rpcInterfaces });
+      return;
     }
     case "direct": {
       // (global as any).window = undefined;

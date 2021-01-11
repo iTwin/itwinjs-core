@@ -6,22 +6,12 @@
  * @module RpcInterface
  */
 
-import { RpcInterfaceDefinition } from "../../RpcInterface";
-import { RpcManager } from "../../RpcManager";
-import { RpcConfiguration } from "../core/RpcConfiguration";
 import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
 import { isElectronMain, isElectronRenderer } from "@bentley/bentleyjs-core";
-import { IpcSocket, IpcSocketBackend, IpcSocketFrontend } from "../../ipc/IpcSocket";
-
-/** Initialization parameters for ElectronRpcConfiguration.
- * @beta
- */
-export interface ElectronRpcParams {
-  protocol?: typeof ElectronRpcProtocol;
-}
+import { IpcSocket, IpcSocketBackend, IpcSocketFrontend, RpcConfiguration, RpcInterfaceDefinition, RpcManager } from "@bentley/imodeljs-common";
 
 /** RPC interface configuration for an Electron-based application.
- * @beta
+ * @internal
  */
 export abstract class ElectronRpcConfiguration extends RpcConfiguration {
   public static readonly isElectron = isElectronMain || isElectronRenderer;
@@ -33,25 +23,24 @@ export abstract class ElectronRpcConfiguration extends RpcConfiguration {
 }
 
 /** Coordinates usage of RPC interfaces for an Electron-based application.
- * @beta
+ * @internal
  */
 export class ElectronRpcManager extends RpcManager {
   /** Initializes ElectronRpcManager for the frontend of an application. */
-  public static initializeClient(params: ElectronRpcParams, interfaces: RpcInterfaceDefinition[], ipcFrontend: IpcSocketFrontend): ElectronRpcConfiguration {
-    return ElectronRpcManager.performInitialization(params, interfaces, ipcFrontend);
+  public static initializeFrontend(ipcFrontend: IpcSocketFrontend, interfaces?: RpcInterfaceDefinition[]): ElectronRpcConfiguration {
+    return ElectronRpcManager.performInitialization(ipcFrontend, interfaces);
   }
 
   /** Initializes ElectronRpcManager for the backend of an application. */
-  public static initializeImpl(params: ElectronRpcParams, interfaces: RpcInterfaceDefinition[], ipcBackend: IpcSocketBackend): ElectronRpcConfiguration {
-    return ElectronRpcManager.performInitialization(params, interfaces, ipcBackend);
+  public static initializeBackend(ipcBackend: IpcSocketBackend, interfaces?: RpcInterfaceDefinition[]): ElectronRpcConfiguration {
+    return ElectronRpcManager.performInitialization(ipcBackend, interfaces);
   }
 
-  private static performInitialization(params: ElectronRpcParams, interfaces: RpcInterfaceDefinition[], ipcSocket: IpcSocket): ElectronRpcConfiguration {
-    const protocol = params.protocol ?? ElectronRpcProtocol;
-
+  private static performInitialization(ipcSocket: IpcSocket, rpcs?: RpcInterfaceDefinition[]): ElectronRpcConfiguration {
+    const interfaces = rpcs ?? [];
     const config = class extends ElectronRpcConfiguration {
       public interfaces = () => interfaces;
-      public protocol: ElectronRpcProtocol = new protocol(this, ipcSocket);
+      public protocol: ElectronRpcProtocol = new ElectronRpcProtocol(this, ipcSocket);
     };
 
     for (const def of interfaces) {

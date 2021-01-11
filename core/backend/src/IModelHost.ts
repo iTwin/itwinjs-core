@@ -10,10 +10,10 @@ import * as os from "os";
 import * as path from "path";
 import * as semver from "semver";
 import {
-  assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, Config, Guid, GuidString, IModelStatus, Logger, LogLevel,
+  assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, Config, Guid, GuidString, IModelStatus, isElectronMain, Logger, LogLevel,
 } from "@bentley/bentleyjs-core";
 import { IModelBankClient, IModelClient, IModelHubClient } from "@bentley/imodelhub-client";
-import { BentleyStatus, IModelError, MobileRpcConfiguration, RpcConfiguration, SerializedRpcRequest } from "@bentley/imodeljs-common";
+import { BackendIpc, BentleyStatus, IModelError, MobileRpcConfiguration, RpcConfiguration, SerializedRpcRequest } from "@bentley/imodeljs-common";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
 import { AccessToken, AuthorizationClient, AuthorizedClientRequestContext, UrlDiscoveryClient, UserInfo } from "@bentley/itwin-client";
 import { TelemetryManager } from "@bentley/telemetry-client";
@@ -41,7 +41,6 @@ import { UsageLoggingUtilities } from "./usage-logging/UsageLoggingUtilities";
 import { AzureFileHandler, BackendFeatureUsageTelemetryClient, ClientAuthIntrospectionManager, ImsClientAuthIntrospectionManager, IntrospectionClient, RequestHost } from "@bentley/backend-itwin-client";
 import { MobileFileHandler } from "./MobileFileHandler";
 import { EventSink } from "./EventSink";
-import { BackendIpc } from "./ipc/BackendIpc";
 import { NativeAppImpl } from "./ipc/NativeAppImpl";
 
 const loggerCategory: string = BackendLoggerCategory.IModelHost;
@@ -419,7 +418,7 @@ export class IModelHost {
     }
     this.initializeUsageLogging(IModelHost.platform, region, configuration.applicationType, configuration.imodelClient);
 
-    if (configuration.crashReportingConfig && configuration.crashReportingConfig.crashDir && this._platform && (Platform.isNodeJs && !Platform.electron)) {
+    if (configuration.crashReportingConfig && configuration.crashReportingConfig.crashDir && this._platform && !Platform.isElectron && !Platform.isMobile) {
       this._platform.setCrashReporting(configuration.crashReportingConfig);
 
       Logger.logTrace(loggerCategory, "Configured crash reporting", () => ({
@@ -642,7 +641,7 @@ export class Platform {
 
   /** The Electron info object, if this is running in Electron.
    * @beta
-   * @deprecated
+   * @deprecated use isElectron
    */
   public static get electron(): any {
     if ((typeof (process) !== "undefined") && ("electron" in process.versions)) {
@@ -654,14 +653,21 @@ export class Platform {
     return undefined;
   }
 
-  /** Query if this is a desktop configuration */
-  public static get isDesktop(): boolean { return Platform.electron !== undefined; }
+  /** Query if this is an electron backend */
+  public static get isElectron(): boolean { return isElectronMain; }
 
-  /** Query if this is a mobile configuration */
+  /** Query if this is a desktop backend
+   * @deprecated use isElectron
+   */
+  public static get isDesktop(): boolean { return isElectronMain; }
+
+  /** Query if this is a mobile backend */
   public static get isMobile(): boolean { return typeof (process) !== "undefined" && (process.platform as any) === "ios"; }
 
-  /** Query if this is running in Node.js  */
-  public static get isNodeJs(): boolean { return !Platform.isMobile; } // currently we use nodejs for all non-mobile backend apps
+  /** Query if this is running in Node.js
+   * @deprecated always returns true
+  */
+  public static get isNodeJs(): boolean { return true; }
 
   /** @internal */
   public static load(): typeof IModelJsNative {

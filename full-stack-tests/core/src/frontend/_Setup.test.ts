@@ -3,18 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { BentleyCloudRpcManager, ElectronRpcConfiguration, ElectronRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
 // Testing order of initialization for imodeljs-frontend and imodeljs-common
-import { FrontendIpc } from "@bentley/imodeljs-frontend";
 import { rpcInterfaces } from "../common/RpcInterfaces";
+import { isElectronRenderer } from "@bentley/bentleyjs-core";
 
 RpcConfiguration.developmentMode = true;
 RpcConfiguration.disableRoutingValidation = true;
 
-if (ElectronRpcConfiguration.isElectron) {
-  const ipc = require("@bentley/electron-manager/lib/ElectronFrontendIpc").electronFrontendIpc;
-  FrontendIpc.initialize(ipc);
-  ElectronRpcManager.initializeClient({}, rpcInterfaces, ipc);
+if (isElectronRenderer) {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  const ElectronFrontend = require("@bentley/electron-manager/lib/ElectronFrontend").ElectronFrontend;
+  new ElectronFrontend({ rpcInterfaces });
 } else {
   const config = BentleyCloudRpcManager.initializeClient({ info: { title: "full-stack-test", version: "v1.0" } }, rpcInterfaces);
   config.protocol.pathPrefix = `http://${window.location.hostname}:${Number(window.location.port) + 2000}`;
