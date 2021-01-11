@@ -2051,6 +2051,120 @@ describe("ECSqlStatement", () => {
     });
   });
 
+  it("getRow with abbreviated Blobs", async () => {
+    await using(ECDbTestHelper.createECDb(outDir, "getblobs.ecdb",
+      `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+      <ECEntityClass typeName="Foo" modifier="Sealed">
+        <ECProperty propertyName="Bl" typeName="binary"/>
+      </ECEntityClass>
+      </ECSchema>`), async (ecdb: ECDb) => {
+      assert.isTrue(ecdb.isOpen);
+
+      const singleBlobVal = blobVal.slice(0, 1);
+      const emptyBlobVal = new Uint8Array();
+
+      const fullId: Id64String = ecdb.withPreparedStatement("INSERT INTO test.Foo(Bl) VALUES(?)", (stmt: ECSqlStatement) => {
+        stmt.bindBlob(1, blobVal);
+        const res: ECSqlInsertResult = stmt.stepForInsert();
+        assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+        return res.id!;
+      });
+
+      const singleId: Id64String = ecdb.withPreparedStatement("INSERT INTO test.Foo(Bl) VALUES(?)", (stmt: ECSqlStatement) => {
+        stmt.bindBlob(1, singleBlobVal);
+        const res: ECSqlInsertResult = stmt.stepForInsert();
+        assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+        return res.id!;
+      });
+
+      const emptyId: Id64String = ecdb.withPreparedStatement("INSERT INTO test.Foo(Bl) VALUES(?)", (stmt: ECSqlStatement) => {
+        stmt.bindBlob(1, emptyBlobVal);
+        const res: ECSqlInsertResult = stmt.stepForInsert();
+        assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+        return res.id!;
+      });
+
+      const nullId: Id64String = ecdb.withPreparedStatement("INSERT INTO test.Foo(Bl) VALUES(?)", (stmt: ECSqlStatement) => {
+        stmt.bindNull(1);
+        const res: ECSqlInsertResult = stmt.stepForInsert();
+        assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+        return res.id!;
+      });
+
+      assert.equal(await query(ecdb, "SELECT ECInstanceId, ECClassId, Bl FROM test.Foo WHERE ECInstanceId=?", [fullId], 1, (row: any) => {
+        assert.equal(row.id, fullId);
+        assert.equal(row.className, "Test.Foo");
+        assert.deepEqual(row.bl, singleBlobVal);
+      }, true), 1);
+
+      assert.equal(await query(ecdb, "SELECT ECInstanceId, ECClassId, Bl FROM test.Foo WHERE ECInstanceId=?", [fullId], 1, (row: any) => {
+        assert.equal(row.id, fullId);
+        assert.equal(row.className, "Test.Foo");
+        assert.deepEqual(row.bl, blobVal);
+      }, false), 1);
+
+      assert.equal(await query(ecdb, "SELECT ECInstanceId, ECClassId, Bl FROM test.Foo WHERE ECInstanceId=?", [fullId], 1, (row: any) => {
+        assert.equal(row.id, fullId);
+        assert.equal(row.className, "Test.Foo");
+        assert.deepEqual(row.bl, blobVal);
+      }), 1);
+
+      assert.equal(await query(ecdb, "SELECT ECInstanceId, ECClassId, Bl FROM test.Foo WHERE ECInstanceId=?", [singleId], 1, (row: any) => {
+        assert.equal(row.id, singleId);
+        assert.equal(row.className, "Test.Foo");
+        assert.deepEqual(row.bl, singleBlobVal);
+      }, true), 1);
+
+      assert.equal(await query(ecdb, "SELECT ECInstanceId, ECClassId, Bl FROM test.Foo WHERE ECInstanceId=?", [singleId], 1, (row: any) => {
+        assert.equal(row.id, singleId);
+        assert.equal(row.className, "Test.Foo");
+        assert.deepEqual(row.bl, singleBlobVal);
+      }, false), 1);
+
+      assert.equal(await query(ecdb, "SELECT ECInstanceId, ECClassId, Bl FROM test.Foo WHERE ECInstanceId=?", [singleId], 1, (row: any) => {
+        assert.equal(row.id, singleId);
+        assert.equal(row.className, "Test.Foo");
+        assert.deepEqual(row.bl, singleBlobVal);
+      }), 1);
+
+      assert.equal(await query(ecdb, "SELECT ECInstanceId, ECClassId, Bl FROM test.Foo WHERE ECInstanceId=?", [emptyId], 1, (row: any) => {
+        assert.equal(row.id, emptyId);
+        assert.equal(row.className, "Test.Foo");
+        assert.deepEqual(row.bl.length, 0);
+      }, true), 1);
+
+      assert.equal(await query(ecdb, "SELECT ECInstanceId, ECClassId, Bl FROM test.Foo WHERE ECInstanceId=?", [emptyId], 1, (row: any) => {
+        assert.equal(row.id, emptyId);
+        assert.equal(row.className, "Test.Foo");
+        assert.deepEqual(row.bl.length, 0);
+      }, false), 1);
+
+      assert.equal(await query(ecdb, "SELECT ECInstanceId, ECClassId, Bl FROM test.Foo WHERE ECInstanceId=?", [emptyId], 1, (row: any) => {
+        assert.equal(row.id, emptyId);
+        assert.equal(row.className, "Test.Foo");
+        assert.deepEqual(row.bl.length, 0);
+      }), 1);
+
+      assert.equal(await query(ecdb, "SELECT ECInstanceId, ECClassId, Bl FROM test.Foo WHERE ECInstanceId=?", [nullId], 1, (row: any) => {
+        assert.equal(row.id, nullId);
+        assert.equal(row.className, "Test.Foo");
+        assert.deepEqual(row.bl, undefined);
+      }, true), 1);
+
+      assert.equal(await query(ecdb, "SELECT ECInstanceId, ECClassId, Bl FROM test.Foo WHERE ECInstanceId=?", [nullId], 1, (row: any) => {
+        assert.equal(row.id, nullId);
+        assert.equal(row.className, "Test.Foo");
+        assert.deepEqual(row.bl, undefined);
+      }, false), 1);
+
+      assert.equal(await query(ecdb, "SELECT ECInstanceId, ECClassId, Bl FROM test.Foo WHERE ECInstanceId=?", [nullId], 1, (row: any) => {
+        assert.equal(row.id, nullId);
+        assert.equal(row.className, "Test.Foo");
+        assert.deepEqual(row.bl, undefined);
+      }), 1);
+    });
+  });
+
   it("GetRow with NavigationProperties and Relationships", async () => {
     await using(ECDbTestHelper.createECDb(outDir, "getnavandrels.ecdb",
       `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
