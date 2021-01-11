@@ -191,9 +191,9 @@ New
 
 - Changed `highlightProps?: HighlightedRecordProps` property to `highlight?: HighlightingComponentProps` on [PropertyRendererProps]($ui-components) interface. To react to this change, simply rename `highlightProps` -> `highlight`.
 
-- The methods fromJson and toJson from alpha class `Format` have been renamed to fromJSON and toJSON respectively.
+- The methods fromJson and toJson from alpha class `Format`, in the quantity package, have been renamed to fromJSON and toJSON respectively.
 
-- The method parseIntoQuantityValue from alpha class `QuantityFormatter` has been renamed to parseToQuantityValue.
+- The method parseIntoQuantityValue from alpha class `QuantityFormatter` in the imodeljs-frontend package, has been renamed to parseToQuantityValue.
 
 ## BriefcaseManager breaking changes
 
