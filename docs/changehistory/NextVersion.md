@@ -191,6 +191,10 @@ New
 
 - Changed `highlightProps?: HighlightedRecordProps` property to `highlight?: HighlightingComponentProps` on [PropertyRendererProps]($ui-components) interface. To react to this change, simply rename `highlightProps` -> `highlight`.
 
+- The methods fromJson and toJson from alpha class `Format`, in the quantity package, have been renamed to fromJSON and toJSON respectively.
+
+- The method parseIntoQuantityValue from alpha class `QuantityFormatter` in the imodeljs-frontend package, has been renamed to parseToQuantityValue.
+
 ## BriefcaseManager breaking changes
 
 This version changes the approach to storing Briefcase and Checkpoint files in the local disk cache. Now, [BriefcaseManager]($backend) will create a subdirectory from the root directory supplied in [BriefcaseManager.initialize]($backend) for each iModelId, and then folders called `briefcases` and `checkpoints` within that folder. The Briefcase and Checkpoint files themselves are named with the `BriefcaseId` and `ChangeSetId` respectively.
@@ -242,4 +246,135 @@ ECExpressions now support formatted property values. `GetFormattedValue` functio
 
 ```ts
 GetFormattedValue(this.Length, "Metric") = "10.0 m"
+```
+
+### Breaking changes to `ContentRelatedInstances`
+
+Behavior of `ContentRelatedInstances` specification used in content rules was changed. It used to include input instances into the result if all paths in `relationshipPaths` property had `count: "*"` and target class matched input instance class. The behavior was changed to match cases where steps `relationshipPaths` have `count` set to specific number - the result only includes instances resulting from step outputs. See [RelationshipPathSpecification documentation](../learning/presentation/RelationshipPathSpecification.md) for more details and examples.
+
+Example:
+
+```json
+{
+  "ruleType": "Content",
+  "specifications": [
+    {
+      "specType": "ContentRelatedInstances",
+      "relationshipPaths": [
+        [
+          {
+            "relationship": {
+              "schemaName": "BisCore",
+              "className": "GeometricElement3dHasTypeDefinition"
+            },
+            "direction": "Backward",
+            "count": "*"
+          },
+          {
+            "relationship": {
+              "schemaName": "BisCore",
+              "className": "ElementOwnsChildElements"
+            },
+            "direction": "Forward",
+            "count": "*"
+          }
+        ]
+      ]
+    }
+  ]
+}
+```
+
+This rule used to include *BisCore.TypeDefinitionElement* instance used as input along side *BisCore.GeometricElement3d* instances. If previous behavior is desired `SelectedNodeInstance` specification can be added to the content rule:
+
+```json
+{
+  "ruleType": "Content",
+  "specifications": [
+    {
+      "specType": "SelectedNodeInstances"
+    },
+    {
+      "specType": "ContentRelatedInstances",
+      "relationshipPaths": [
+        [
+          {
+            "relationship": {
+              "schemaName": "BisCore",
+              "className": "GeometricElement3dHasTypeDefinition"
+            },
+            "direction": "Backward",
+            "count": "*"
+          },
+          {
+            "relationship": {
+              "schemaName": "BisCore",
+              "className": "ElementOwnsChildElements"
+            },
+            "direction": "Forward",
+            "count": "*"
+          }
+        ]
+      ]
+    }
+  ]
+}
+```
+
+## QuantityFormatter updates
+
+The [QuantityFormatter]($frontend) now support four unit systems: Metric, Imperial, US Survey, and US Customary. This allows it to align with the four unit systems supported in the `Presentation` package. The method `setActiveUnitSystem` and property `activeUnitSystem` can be used to set and query the active unit system. See [UnitSystemKey]($frontend).
+
+```ts
+export type UnitSystemKey = "metric" | "imperial" | "usCustomary" | "usSurvey";
+```
+
+There are also new methods to set and
+clear override formats for a particular [QuantityType]($frontend). The example below show how to set an override format for QuantityType.Length used be the measure tool.
+
+```ts
+    const overrideLengthFormats = {
+      metric: {
+        composite: {
+          includeZero: true,
+          spacer: " ",
+          units: [{ label: "cm", name: "Units.CM" }],
+        },
+        formatTraits: ["keepSingleZero", "showUnitLabel"],
+        precision: 4,
+        type: "Decimal",
+      },
+      imperial: {
+        composite: {
+          includeZero: true,
+          spacer: " ",
+          units: [{ label: "in", name: "Units.IN" }],
+        },
+        formatTraits: ["keepSingleZero", "showUnitLabel"],
+        precision: 4,
+        type: "Decimal",
+      },
+      usCustomary: {
+        composite: {
+          includeZero: true,
+          spacer: " ",
+          units: [{ label: "in", name: "Units.IN" }],
+        },
+        formatTraits: ["keepSingleZero", "showUnitLabel"],
+        precision: 4,
+        type: "Decimal",
+      },
+      usSurvey: {
+        composite: {
+          includeZero: true,
+          spacer: " ",
+          units: [{ label: "in", name: "Units.US_SURVEY_IN" }],
+        },
+        formatTraits: ["keepSingleZero", "showUnitLabel"],
+        precision: 4,
+        type: "Decimal",
+      },
+    };
+
+await IModelApp.quantityFormatter.setOverrideFormats(QuantityType.Length, overrideLengthFormats);
 ```

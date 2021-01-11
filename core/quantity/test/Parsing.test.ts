@@ -4,10 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { QuantityStatus } from "../src/Exception";
-import { Format, FormatterSpec } from "../src/Formatter/Format";
+import { Format } from "../src/Formatter/Format";
+import { FormatterSpec } from "../src/Formatter/FormatterSpec";
 import { Formatter } from "../src/Formatter/Formatter";
 import { UnitProps } from "../src/Interfaces";
-import { Parser, ParserSpec } from "../src/Parser";
+import { Parser } from "../src/Parser";
+import { ParserSpec } from "../src/ParserSpec";
 import { Quantity } from "../src/Quantity";
 import { BadUnit } from "../src/Unit";
 import { TestUnitsProvider } from "./TestUtils/TestHelper";
@@ -183,9 +185,8 @@ describe("Parsing tests:", () => {
 
     const unitsProvider = new TestUnitsProvider();
     const format = new Format("test");
-    await format.fromJson(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData).catch(() => { });
     assert.isTrue(format.hasUnits);
-    debugger;
 
     for (const testEntry of testData) {
       const quantityProps = await Parser.parseIntoQuantity(testEntry.value, format, unitsProvider);
@@ -224,7 +225,7 @@ describe("Parsing tests:", () => {
 
     const unitsProvider = new TestUnitsProvider();
     const format = new Format("test");
-    await format.fromJson(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData).catch(() => { });
     assert.isTrue(format.hasUnits);
 
     for (const testEntry of testData) {
@@ -261,7 +262,7 @@ describe("Parsing tests:", () => {
     ];
 
     const format = new Format("test");
-    await format.fromJson(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData).catch(() => { });
     assert.isTrue(format.hasUnits);
 
     for (const testEntry of testData) {
@@ -304,7 +305,7 @@ describe("Parsing tests:", () => {
 
     const unitsProvider = new TestUnitsProvider();
     const format = new Format("test");
-    await format.fromJson(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData).catch(() => { });
     assert.isTrue(format.hasUnits);
 
     for (const testEntry of testData) {
@@ -330,7 +331,7 @@ describe("Parsing tests:", () => {
 
     const unitsProvider = new TestUnitsProvider();
     const format = new Format("test");
-    await format.fromJson(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData).catch(() => { });
     assert.isTrue(!format.hasUnits);
 
     for (const testEntry of testData) {
@@ -367,7 +368,7 @@ describe("Synchronous Parsing tests:", async () => {
   };
 
   const format = new Format("test");
-  await format.fromJson(unitsProvider, formatData).catch(() => { });
+  await format.fromJSON(unitsProvider, formatData).catch(() => { });
 
   const parserSpec = await ParserSpec.create(format, unitsProvider, outUnit);
   const formatSpec = await FormatterSpec.create("test", format, unitsProvider, outUnit);
@@ -398,7 +399,7 @@ describe("Synchronous Parsing tests:", async () => {
   };
 
   const angleFormat = new Format("testAngle");
-  await angleFormat.fromJson(unitsProvider, angleFormatData).catch(() => { });
+  await angleFormat.fromJSON(unitsProvider, angleFormatData).catch(() => { });
   const outAngleUnit = await unitsProvider.findUnitByName("Units.ARC_DEG");
   const angleParserSpec = await ParserSpec.create(angleFormat, unitsProvider, outAngleUnit);
   const angleFormatSpec = await FormatterSpec.create("test", angleFormat, unitsProvider, outAngleUnit);
@@ -437,7 +438,7 @@ describe("Synchronous Parsing tests:", async () => {
     }
 
     for (const testEntry of testData) {
-      const parseResult = Parser.parseIntoQuantityValue(testEntry.value, format, meterConversionSpecs);
+      const parseResult = Parser.parseToQuantityValue(testEntry.value, format, meterConversionSpecs);
       if (logTestOutput) {
         // eslint-disable-next-line no-console
         console.log(`input=${testEntry.value} output=${parseResult.value}`);
