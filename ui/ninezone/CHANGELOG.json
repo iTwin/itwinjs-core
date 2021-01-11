@@ -2,6 +2,42 @@
   "name": "@bentley/ui-ninezone",
   "entries": [
     {
+      "version": "2.10.3",
+      "tag": "@bentley/ui-ninezone_v2.10.3",
+      "date": "Fri, 08 Jan 2021 18:34:03 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.10.2",
+      "tag": "@bentley/ui-ninezone_v2.10.2",
+      "date": "Fri, 08 Jan 2021 14:52:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.10.1",
+      "tag": "@bentley/ui-ninezone_v2.10.1",
+      "date": "Tue, 22 Dec 2020 00:53:38 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.10.0",
+      "tag": "@bentley/ui-ninezone_v2.10.0",
+      "date": "Fri, 18 Dec 2020 18:24:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Cancel requested animation frame in Panel component."
+          },
+          {
+            "comment": "Improve panel widget transitions."
+          },
+          {
+            "comment": "Render single border between panel widgets."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.9.9",
       "tag": "@bentley/ui-ninezone_v2.9.9",
       "date": "Sun, 13 Dec 2020 19:00:03 GMT",
