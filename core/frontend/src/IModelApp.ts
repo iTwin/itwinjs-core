@@ -438,11 +438,18 @@ export class IModelApp {
       this.locateManager,
       this.tentativePoint,
       this.extensionAdmin,
-      this.quantityFormatter,
       this.uiAdmin,
     ].forEach((sys) => {
       if (sys)
         sys.onInitialized();
+    });
+
+    // process async onInitialized methods
+    [
+      this.quantityFormatter,
+    ].forEach(async (sys) => {
+      if (sys)
+        await sys.onInitialized();
     });
   }
 

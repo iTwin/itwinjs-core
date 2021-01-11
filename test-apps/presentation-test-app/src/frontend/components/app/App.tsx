@@ -8,7 +8,9 @@ import * as React from "react";
 import { Geometry } from "@bentley/geometry-core";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { DefaultContentDisplayTypes, PresentationUnitSystem } from "@bentley/presentation-common";
-import { DataProvidersFactory, IPresentationPropertyDataProvider, IPresentationTableDataProvider } from "@bentley/presentation-components";
+import {
+  DataProvidersFactory, IPresentationPropertyDataProvider, IPresentationTableDataProvider, UnifiedSelectionContextProvider,
+} from "@bentley/presentation-components";
 import { Presentation, SelectionChangeEventArgs } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { ElementSeparator, Orientation, RatioChangeResult } from "@bentley/ui-core";
@@ -140,45 +142,47 @@ export default class App extends React.Component<{}, State> {
         style={{
           gridTemplateColumns: `${this.state.contentRatio * 100}% 1px calc(${(1 - this.state.contentRatio) * 100}% - 1px)`,
         }}>
-        <div className="app-content-left">
-          <div className="app-content-left-top">
-            <ViewportContentControl imodel={imodel} />
+        <UnifiedSelectionContextProvider imodel={imodel} selectionLevel={0}>
+          <div className="app-content-left">
+            <div className="app-content-left-top">
+              <ViewportContentControl imodel={imodel} />
+            </div>
+            <div className="app-content-left-bottom">
+              {
+                <GridWidget imodel={imodel} rulesetId={rulesetId} />
+              }
+              {
+                this.state.similarInstancesProvider ?
+                  <FindSimilarWidget dataProvider={this.state.similarInstancesProvider} onDismissed={this._onSimilarInstancesResultsDismissed} />
+                  : undefined
+              }
+            </div>
           </div>
-          <div className="app-content-left-bottom">
-            {
-              <GridWidget imodel={imodel} rulesetId={rulesetId} />
-            }
-            {
-              this.state.similarInstancesProvider ?
-                <FindSimilarWidget dataProvider={this.state.similarInstancesProvider} onDismissed={this._onSimilarInstancesResultsDismissed} />
-                : undefined
-            }
+          <ElementSeparator
+            orientation={Orientation.Horizontal}
+            ratio={this.state.contentRatio}
+            movableArea={this.state.contentWidth}
+            separatorSize={10}
+            onRatioChanged={this._onContentRatioChanged}
+          />
+          <div
+            ref={this._rightPaneRef}
+            className="app-content-right"
+            style={{
+              gridTemplateRows: `${this.state.rightPaneRatio * 100}% 30px calc(${(1 - this.state.rightPaneRatio) * 100}% - 30px)`,
+            }}>
+            <TreeWidget imodel={imodel} rulesetId={rulesetId} />
+            <div className="app-content-right-separator">
+              <hr />
+              <ElementSeparator
+                orientation={Orientation.Vertical}
+                ratio={this.state.rightPaneRatio}
+                movableArea={this.state.rightPaneHeight}
+                onRatioChanged={this._onTreePaneRatioChanged} />
+            </div>
+            <PropertiesWidget imodel={imodel} rulesetId={rulesetId} onFindSimilar={this._onFindSimilar} />
           </div>
-        </div>
-        <ElementSeparator
-          orientation={Orientation.Horizontal}
-          ratio={this.state.contentRatio}
-          movableArea={this.state.contentWidth}
-          separatorSize={10}
-          onRatioChanged={this._onContentRatioChanged}
-        />
-        <div
-          ref={this._rightPaneRef}
-          className="app-content-right"
-          style={{
-            gridTemplateRows: `${this.state.rightPaneRatio * 100}% 30px calc(${(1 - this.state.rightPaneRatio) * 100}% - 30px)`,
-          }}>
-          <TreeWidget imodel={imodel} rulesetId={rulesetId} />
-          <div className="app-content-right-separator">
-            <hr />
-            <ElementSeparator
-              orientation={Orientation.Vertical}
-              ratio={this.state.rightPaneRatio}
-              movableArea={this.state.rightPaneHeight}
-              onRatioChanged={this._onTreePaneRatioChanged} />
-          </div>
-          <PropertiesWidget imodel={imodel} rulesetId={rulesetId} onFindSimilar={this._onFindSimilar} />
-        </div>
+        </UnifiedSelectionContextProvider>
       </div>
     );
   }
