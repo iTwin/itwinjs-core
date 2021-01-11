@@ -158,15 +158,16 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
 
     const ctor = await imodelConnection.findClassFor<typeof EntityState>(className, undefined) as typeof ViewState | undefined;
 
+    // istanbul ignore next
     if (undefined === ctor)
       return undefined;
 
-    const clonedViewState = ctor.createFromProps (viewState.toProps(), imodelConnection);
+    const clonedViewState = ctor.createFromProps(viewState.toProps(), imodelConnection);
 
-    if (clonedViewState)
-      await clonedViewState.load();
-    else
+    // istanbul ignore next
+    if (!clonedViewState)
       Logger.logError(UiComponents.loggerCategory(this), `View state failed to load`);
+
     return clonedViewState;
   }
   private async getViewState(): Promise<ViewState | undefined> {
@@ -182,13 +183,16 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
       if (!viewState) {
         Logger.logError(UiComponents.loggerCategory(this), `View state failed to load`);
         return undefined;
+      } else {
+        return viewState;
       }
     } else {
       Logger.logError(UiComponents.loggerCategory(this), `Either viewDefinitionId or viewState must be provided as a ViewportComponent Prop`);
       return undefined;
     }
 
-    return ViewportComponent.cloneViewState(this.props.imodel, viewState);
+    const clonedViewState = await ViewportComponent.cloneViewState(this.props.imodel, viewState);
+    return clonedViewState;
   }
 
   private _handleDrawingViewportChangeEvent = (args: DrawingViewportChangeEventArgs) => {

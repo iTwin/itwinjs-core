@@ -9,9 +9,9 @@ import * as moq from "typemoq";
 
 import { BeEvent, Logger } from "@bentley/bentleyjs-core";
 import { AxisIndex, Matrix3d, Point3d, Vector3d, WritableXAndY } from "@bentley/geometry-core";
-import { Frustum, SpatialViewDefinitionProps } from "@bentley/imodeljs-common";
+import { CategorySelectorProps, DisplayStyleProps, Frustum, ModelSelectorProps, SpatialViewDefinitionProps, ViewStateProps } from "@bentley/imodeljs-common";
 import {
-  CategorySelectorState, DisplayStyle3dState, IModelConnection, MockRender, ModelSelectorState, OrthographicViewState, ScreenViewport,
+  CategorySelectorState, DisplayStyle3dState, EntityState, IModelConnection, MockRender, ModelSelectorState, OrthographicViewState, ScreenViewport,
   SpatialViewState, StandardViewId, TentativePoint, ViewManager, Viewport, ViewRect, ViewState,
 } from "@bentley/imodeljs-frontend";
 import { Face } from "@bentley/ui-core";
@@ -21,42 +21,84 @@ import { ViewportComponentEvents } from "../../ui-components/viewport/ViewportCo
 import TestUtils from "../TestUtils";
 
 describe("ViewportComponent", () => {
+  // set up descriptors to restore SpatialViewState behavior after testing is complete
+  const vspDescriptorToRestore = Object.getOwnPropertyDescriptor(SpatialViewState.prototype, "toProps")!;
+  const svsDescriptorToRestore = Object.getOwnPropertyDescriptor(SpatialViewState, "createFromProps")!;
 
-  before(async () => {
-    ViewportComponentEvents.terminate();
-    await TestUtils.initializeUiComponents();
-    await MockRender.App.startup();
-  });
+  const categorySelectorProps: CategorySelectorProps = {
+    categories: ["category1"],
+    model: "model",
+    code: { spec: "spec", scope: "scope" },
+    classFullName: "schema:classname",
+  };
 
-  after(async () => {
-    await MockRender.App.shutdown();
-  });
+  const displayStyleProps: DisplayStyleProps = {
+    model: "model",
+    code: { spec: "spec", scope: "scope" },
+    classFullName: "schema:classname",
+  };
+
+  const modelSelectorProps: ModelSelectorProps = {
+    models: ["model1"],
+    model: "model",
+    code: { spec: "spec", scope: "scope" },
+    classFullName: "schema:classname",
+  };
 
   let extents = Vector3d.create(400, 400);
   let origin = Point3d.createZero();
-  // let rotation = Matrix3d.createIdentity();
-  const imodelMock = moq.Mock.ofType<IModelConnection>();
-  const viewsMock = moq.Mock.ofType<IModelConnection.Views>();
 
   const viewDefinitionProps: SpatialViewDefinitionProps = {
     cameraOn: false, origin, extents,
     camera: { lens: 0, focusDist: 1, eye: [0, 0, 0] },
     classFullName: "Bis:SpatialViewDefinition",
+    description: "id1",
     id: "id1",
     modelSelectorId: "id1", categorySelectorId: "id1", displayStyleId: "id1",
     model: "model", code: { spec: "spec", scope: "scope" },
   };
+  // let rotation = Matrix3d.createIdentity();
+  const imodelMock = moq.Mock.ofType<IModelConnection>();
+  const viewsMock = moq.Mock.ofType<IModelConnection.Views>();
   let viewState = new SpatialViewState(viewDefinitionProps, imodelMock.object, moq.Mock.ofType<CategorySelectorState>().object, moq.Mock.ofType<DisplayStyle3dState>().object, moq.Mock.ofType<ModelSelectorState>().object);
 
   const viewDefinitionProps2: SpatialViewDefinitionProps = {
     cameraOn: false, origin, extents,
     camera: { lens: 0, focusDist: 1, eye: [0, 0, 0] },
     classFullName: "Bis:SpatialViewDefinition",
+    description: "id2",
     id: "id2",
     modelSelectorId: "id2", categorySelectorId: "id2", displayStyleId: "id2",
     model: "model", code: { spec: "spec", scope: "scope" },
   };
   const viewState2 = new SpatialViewState(viewDefinitionProps2, imodelMock.object, moq.Mock.ofType<CategorySelectorState>().object, moq.Mock.ofType<DisplayStyle3dState>().object, moq.Mock.ofType<ModelSelectorState>().object);
+
+  // globalViewId is set because createFromProps() must be an arrow function, so it has not context to get the viewId
+  let globalViewId: string = "id1";
+
+  const toProps = (): ViewStateProps => {
+    return { viewDefinitionProps, categorySelectorProps, displayStyleProps, modelSelectorProps };
+  };
+  const  createFromProps = (): ViewState => {
+    return getViewState(globalViewId);
+  };
+  before(async () => {
+    Object.defineProperty(SpatialViewState.prototype, "toProps", {
+      get: () => toProps,
+    });
+    Object.defineProperty(SpatialViewState, "createFromProps", {
+      get: () => createFromProps,
+    });
+    ViewportComponentEvents.terminate();
+    await TestUtils.initializeUiComponents();
+    await MockRender.App.startup();
+  });
+
+  after(async () => {
+    Object.defineProperty(SpatialViewState.prototype, "toProps", vspDescriptorToRestore);
+    Object.defineProperty(SpatialViewState, "createFromProps", svsDescriptorToRestore);
+    await MockRender.App.shutdown();
+  });
 
   const getViewState = (viewId: string): ViewState => {
     let vs: ViewState;
@@ -65,8 +107,12 @@ describe("ViewportComponent", () => {
     else vs = undefined as unknown as ViewState;
     return vs;
   };
+  const getViewStateConstructor = (): any => {
+    return SpatialViewState as unknown as typeof EntityState;
+  };
   viewsMock.setup((x) => x.load).returns(() => async (viewId: string) => getViewState(viewId));
   imodelMock.setup((x) => x.views).returns(() => viewsMock.object);
+  imodelMock.setup((x) => x.findClassFor).returns(() => async () => getViewStateConstructor());
 
   let tentativePointIsActive = false;
   const tentativePointMock = moq.Mock.ofType<TentativePoint>();
@@ -94,11 +140,11 @@ describe("ViewportComponent", () => {
       return viewportMock.object;
     }
   }
-
   beforeEach(async () => {
     extents = Vector3d.create(400, 400);
     origin = Point3d.createZero();
     viewState = new SpatialViewState(viewDefinitionProps, imodelMock.object, moq.Mock.ofType<CategorySelectorState>().object, moq.Mock.ofType<DisplayStyle3dState>().object, moq.Mock.ofType<ModelSelectorState>().object);
+    globalViewId = "id1";
     tentativePointIsActive = false;
     viewportMock.object.viewCmdTargetCenter = undefined;
     worldToViewPoint = Point3d.create(50, 50);
@@ -123,17 +169,20 @@ describe("ViewportComponent", () => {
   it("should update with viewState", async () => {
     const component = render(<ViewportComponent imodel={imodelMock.object} viewState={viewState} viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} />);
     await TestUtils.flushAsyncOperations();
+    globalViewId = "id2";
     render(<ViewportComponent imodel={imodelMock.object} viewState={viewState2} viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} />, component);
   });
 
   it("should update with viewDefinitionId", async () => {
     const component = render(<ViewportComponent imodel={imodelMock.object} viewDefinitionId={"id1"} viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} />);
     await TestUtils.flushAsyncOperations();
+    globalViewId = "id2";
     render(<ViewportComponent imodel={imodelMock.object} viewDefinitionId={"id2"} viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} />, component);
   });
 
   it("should log error when fake viewDefinitionId is used", async () => {
     const spyLogger = sinon.spy(Logger, "logError");
+    globalViewId = "FakeId";
     render(<ViewportComponent imodel={imodelMock.object} viewDefinitionId={"FakeId"} viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} />);
     await TestUtils.flushAsyncOperations();
     spyLogger.called.should.true;
@@ -154,6 +203,7 @@ describe("ViewportComponent", () => {
     await TestUtils.flushAsyncOperations();
     spyLogger.called.should.false;
 
+    globalViewId = "FakeId";
     component.rerender(<ViewportComponent imodel={imodelMock.object} viewDefinitionId={"FakeId"} viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} />);
     await TestUtils.flushAsyncOperations();
     spyLogger.called.should.true;
