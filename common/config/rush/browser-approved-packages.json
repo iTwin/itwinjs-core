@@ -503,6 +503,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "fast-xml-parser",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "file-loader",
       "allowedCategories": [ "tools" ]
     },
@@ -1057,6 +1061,10 @@
     {
       "name": "ws",
       "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "xml-js",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "xmldom",

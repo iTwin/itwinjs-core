@@ -1,5 +1,6 @@
 sep=;
 Release Tag;API Item
+beta;class AddEffectTool 
 beta;AnimationIntervalTool 
 alpha;appendDataListEntries(dl: DataList, entries: DataListEntry[]): void
 beta;ApplyRenderingStyleTool 
@@ -16,6 +17,7 @@ alpha;AttachWmtsMapLayerByUrlTool
 alpha;Button
 alpha;ButtonHandler = (button: HTMLInputElement) => void
 alpha;ButtonProps
+beta;ChangeCameraTool 
 beta;ChangeEmphasisSettingsTool 
 beta;ChangeHiliteSettingsTool 
 beta;class ChangeHiliteTool 
@@ -25,6 +27,7 @@ beta;ChangeViewFlagsTool
 alpha;CheckBox
 alpha;CheckBoxHandler = (checkbox: HTMLInputElement) => void
 alpha;CheckBoxProps
+beta;ClearEffectsTool 
 beta;ClearIsolatedElementsTool 
 beta;ClearModelAppearanceOverrides 
 beta;ClearRealityModelAppearanceOverrides 
@@ -38,6 +41,7 @@ alpha;ComboBoxHandler = (select: HTMLSelectElement) => void
 alpha;ComboBoxProps
 beta;CompileShadersTool 
 alpha;convertHexToRgb(hex: string): RgbColor | undefined
+beta;class ConvolutionEffect 
 beta;copyStringToClipboard(str: string): void
 alpha;createButton(props: ButtonProps): Button
 alpha;createCheckBox(props: CheckBoxProps): CheckBox
@@ -62,15 +66,20 @@ beta;DiagnosticsPanel
 beta;DiagnosticsPanelProps
 beta;class DisplayStyleTool 
 alpha;DumpPlanProjectionSettingsTool 
+beta;EdgeDetectionEffect 
 beta;ElementIdFromSourceAspectIdTool 
+beta;EmbossEffect 
 beta;class EmphasizeElementsTool 
 beta;EmphasizeSelectedElementsTool 
 internal;ExtensionServiceTool 
 beta;FadeOutTool 
+beta;FlipImageConfig 
+beta;FlipImageEffect 
 beta;FpsTracker
 beta;FreezeSceneTool 
 beta;FrontendDevTools
 beta;FrustumDecorator 
+beta;GaussianBlurEffect 
 alpha;GpuProfiler
 alpha;InspectElementTool 
 beta;IsolateSelectedElementsTool 
@@ -79,6 +88,8 @@ beta;KeyinFieldLocalization
 beta;KeyinFieldProps
 alpha;LabeledNumericInput
 alpha;LabeledNumericInputProps 
+beta;LensDistortionConfig 
+beta;LensDistortionEffect 
 beta;LoseWebGLContextTool 
 alpha;MapBaseColorTool 
 alpha;MapBaseTransparencyTool 
@@ -103,6 +114,7 @@ alpha;RadioBoxEntry
 alpha;RadioBoxHandler = (value: string, form: HTMLFormElement) => void
 alpha;RadioBoxProps
 alpha;RealityTransitionTool 
+beta;redrawSelectedView(): void
 beta;class RenderSystemDebugControlTool 
 beta;class RenderTargetDebugControlToggleTool 
 beta;class RenderTargetDebugControlTool 
@@ -127,10 +139,13 @@ beta;SetRealityModelColorTool
 beta;SetRealityModelEmphasizedTool 
 beta;SetRealityModelLocateTool 
 beta;SetRealityModelTransparencyTool 
+beta;SharpenEffect 
+beta;SharpnessEffect 
 beta;ShowTileVolumesTool 
 alpha;Slider
 alpha;SliderHandler = (slider: HTMLInputElement) => void
 alpha;SliderProps
+beta;SnowEffect 
 beta;SourceAspectIdFromElementIdTool 
 beta;class SourceAspectIdTool 
 alpha;TestClipStyleTool 
@@ -142,6 +157,7 @@ beta;TileStatisticsTracker
 alpha;Toggle3dManipulationsTool 
 beta;ToggleDPIForLODTool 
 alpha;ToggleDrapeFrustumTool 
+beta;ToggleDrawingGraphicsTool 
 beta;ToggleFrustumSnapshotTool 
 beta;ToggleOSMBuildingDisplay 
 beta;TogglePrimitiveVisibilityTool 
@@ -153,6 +169,7 @@ alpha;ToggleRealityTileFreeze
 alpha;ToggleRealityTileLogging 
 alpha;ToggleRealityTilePreload 
 alpha;ToggleSectionCutTool 
+beta;ToggleSectionDrawingSpatialViewTool 
 beta;ToggleSelectedViewFrustumTool 
 beta;ToggleShadowFrustumTool 
 beta;ToggleSkyboxTool 
@@ -166,6 +183,7 @@ internal;ToggleVolClassIntersect
 beta;ToggleWiremeshTool 
 beta;ToolArgs
 alpha;ToolSettingsTracker
+beta;UnsharpenEffect 
 alpha;ViewportAddRealityModel 
 alpha;ViewportTileSizeModifierTool 
 beta;class ViewportToggleTool 

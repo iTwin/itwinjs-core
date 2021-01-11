@@ -21,7 +21,6 @@ import {
 import { Notifications } from "./Notifications";
 import { UiManager } from "./UiManager";
 import { MarkupTool, ModelClipTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
-import { AttachViewTool, DetachViewsTool } from "./AttachViewTool";
 import { ApplyModelTransformTool } from "./DisplayTransform";
 import { TimePointComparisonTool } from "./TimePointComparison";
 import { FenceClassifySelectedTool } from "./Fence";
@@ -135,13 +134,11 @@ export class DisplayTestApp {
     const svtToolNamespace = IModelApp.i18n.registerNamespace("SVTTools");
     [
       ApplyModelTransformTool,
-      AttachViewTool,
       CloneViewportTool,
       CloseIModelTool,
       CloseWindowTool,
       CreateWindowTool,
       DeleteElementsTool,
-      DetachViewsTool,
       DockWindowTool,
       DrawingAidTestTool,
       EditingSessionTool,

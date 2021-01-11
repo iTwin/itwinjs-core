@@ -119,6 +119,11 @@ export abstract class IModelExportHandler {
    */
   protected onExportSchema(_schema: Schema): void { }
 
+  /** This method is called when IModelExporter has made incremental progress based on the [[IModelExporter.progressInterval]] setting.
+   * @note A subclass may override this method to report custom progress. The base implementation does nothing.
+   */
+  protected onProgress(): void { }
+
   /** Helper method that allows IModelExporter to call protected methods in IModelExportHandler.
    * @internal
    */
@@ -155,6 +160,10 @@ export class IModelExporter {
    * @note This flag is available as an optimization when the exporter doesn't need to visit relationships, so can skip loading them.
    */
   public visitRelationships: boolean = true;
+  /** The number of entities exported before incremental progress should be reported via the [[onProgress]] callback. */
+  public progressInterval: number = 1000;
+  /** Tracks the current total number of entities exported. */
+  private _progressCounter: number = 0;
   /** Optionally cached entity change information */
   private _sourceDbChanges?: ChangedInstanceIds;
   /** The handler called by this IModelExporter. */
@@ -344,6 +353,7 @@ export class IModelExporter {
     if (this.handler.callProtected.shouldExportCodeSpec(codeSpec)) {
       Logger.logTrace(loggerCategory, `exportCodeSpec(${codeSpecName})${this.getChangeOpSuffix(isUpdate)}`);
       this.handler.callProtected.onExportCodeSpec(codeSpec, isUpdate);
+      this.trackProgress();
     }
   }
 
@@ -395,6 +405,7 @@ export class IModelExporter {
     const font: FontProps | undefined = this.sourceDb.fontMap.getFont(fontNumber);
     if (undefined !== font) {
       this.handler.callProtected.onExportFont(font, isUpdate);
+      this.trackProgress();
     }
   }
 
@@ -430,6 +441,7 @@ export class IModelExporter {
       }
     }
     this.handler.callProtected.onExportModel(model, isUpdate);
+    this.trackProgress();
   }
 
   /** Export the model contents.
@@ -530,6 +542,7 @@ export class IModelExporter {
     Logger.logTrace(loggerCategory, `exportElement(${element.id}, "${element.getDisplayLabel()}")${this.getChangeOpSuffix(isUpdate)}`);
     if (this.shouldExportElement(element)) {
       this.handler.callProtected.onExportElement(element, isUpdate);
+      this.trackProgress();
       this.exportElementAspects(elementId);
       this.exportChildElements(elementId);
     }
@@ -590,13 +603,16 @@ export class IModelExporter {
           if (undefined !== this._sourceDbChanges) { // is changeSet information available?
             if (this._sourceDbChanges.aspect.insertIds.has(uniqueAspect.id)) {
               this.handler.callProtected.onExportElementUniqueAspect(uniqueAspect, false);
+              this.trackProgress();
             } else if (this._sourceDbChanges.aspect.updateIds.has(uniqueAspect.id)) {
               this.handler.callProtected.onExportElementUniqueAspect(uniqueAspect, true);
+              this.trackProgress();
             } else {
               // not in changeSet, don't export
             }
           } else {
             this.handler.callProtected.onExportElementUniqueAspect(uniqueAspect, undefined);
+            this.trackProgress();
           }
         });
       }
@@ -607,6 +623,7 @@ export class IModelExporter {
       multiAspects = multiAspects.filter((a) => this.shouldExportElementAspect(a));
       if (multiAspects.length > 0) {
         this.handler.callProtected.onExportElementMultiAspects(multiAspects);
+        this.trackProgress();
       }
     }
   }
@@ -658,6 +675,15 @@ export class IModelExporter {
     // relationship has passed standard exclusion rules, now give handler a chance to accept/reject export
     if (this.handler.callProtected.shouldExportRelationship(relationship)) {
       this.handler.callProtected.onExportRelationship(relationship, isUpdate);
+      this.trackProgress();
+    }
+  }
+
+  /** Tracks incremental progress */
+  private trackProgress(): void {
+    this._progressCounter++;
+    if (0 === (this._progressCounter % this.progressInterval)) {
+      this.handler.callProtected.onProgress();
     }
   }
 }
@@ -687,7 +713,7 @@ class ChangedInstanceIds {
     requestContext.enter();
     const extractContext = new ChangeSummaryExtractContext(iModelDb); // NOTE: ChangeSummaryExtractContext is nothing more than a wrapper around IModelDb that has a method to get the iModelId
     // NOTE: ChangeSummaryManager.downloadChangeSets has nothing really to do with change summaries but has the desired behavior of including the start changeSet (unlike BriefcaseManager.downloadChangeSets)
-    const changeSets: ChangeSet[] = await ChangeSummaryManager.downloadChangeSets(requestContext, extractContext, startChangeSetId, iModelDb.changeSetId);
+    const changeSets = await ChangeSummaryManager.downloadChangeSets(requestContext, extractContext, startChangeSetId, iModelDb.changeSetId);
     requestContext.enter();
     const changedInstanceIds = new ChangedInstanceIds();
     changeSets.forEach((changeSet: ChangeSet): void => {

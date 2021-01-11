@@ -8,7 +8,7 @@
 
 import "./ModelsTree.scss";
 import * as React from "react";
-import { Id64String } from "@bentley/bentleyjs-core";
+import { BeEvent, Id64String } from "@bentley/bentleyjs-core";
 import { IModelConnection, PerModelCategoryVisibility, Viewport } from "@bentley/imodeljs-frontend";
 import {
   ContentFlags, DescriptorOverrides, ECClassGroupingNodeKey, GroupingNodeKey, Keys, KeySet, NodeKey, Ruleset,
@@ -19,7 +19,7 @@ import { useDisposable, useOptionalDisposable } from "@bentley/ui-core";
 import { connectIModelConnection } from "../../../ui-framework/redux/connectIModel";
 import { UiFramework } from "../../../ui-framework/UiFramework";
 import { ClassGroupingOption, VisibilityTreeFilterInfo } from "../Common";
-import { IVisibilityHandler, VisibilityStatus, VisibilityTreeEventHandler } from "../VisibilityTreeEventHandler";
+import { IVisibilityHandler, VisibilityChangeListener, VisibilityStatus, VisibilityTreeEventHandler } from "../VisibilityTreeEventHandler";
 import { useVisibilityTreeFiltering, useVisibilityTreeRenderer, VisibilityTreeNoFilteredData } from "../VisibilityTreeRenderer";
 
 const PAGING_SIZE = 20;
@@ -245,7 +245,6 @@ const isCategoryNode = (node: TreeNodeItem) => (node.extendedData && node.extend
 export interface ModelsVisibilityHandlerProps {
   rulesetId: string;
   viewport: Viewport;
-  onVisibilityChange?: () => void;
 }
 
 /**
@@ -256,12 +255,10 @@ export class ModelsVisibilityHandler implements IVisibilityHandler {
   private _props: ModelsVisibilityHandlerProps;
   private _pendingVisibilityChange: any | undefined;
   private _subjectModelIdsCache: SubjectModelIdsCache;
-  private _onVisibilityChange?: () => void;
   private _filteredDataProvider?: IPresentationTreeDataProvider;
 
   constructor(props: ModelsVisibilityHandlerProps) {
     this._props = props;
-    this._onVisibilityChange = props.onVisibilityChange;
     this._subjectModelIdsCache = new SubjectModelIdsCache(this._props.viewport.iModel);
     this._props.viewport.onViewedCategoriesPerModelChanged.addListener(this.onViewChanged);
     this._props.viewport.onViewedCategoriesChanged.addListener(this.onViewChanged);
@@ -279,8 +276,7 @@ export class ModelsVisibilityHandler implements IVisibilityHandler {
     clearTimeout(this._pendingVisibilityChange);
   }
 
-  public get onVisibilityChange() { return this._onVisibilityChange; }
-  public set onVisibilityChange(callback: (() => void) | undefined) { this._onVisibilityChange = callback; }
+  public onVisibilityChange = new BeEvent<VisibilityChangeListener>();
 
   /** Sets data provider that is used to get filtered tree hierarchy. */
   public setFilteredDataProvider(provider: IPresentationTreeDataProvider | undefined) { this._filteredDataProvider = provider; }
@@ -291,7 +287,7 @@ export class ModelsVisibilityHandler implements IVisibilityHandler {
       return this.getElementGroupingNodeDisplayStatus(node.id, nodeKey);
 
     if (!NodeKey.isInstancesNodeKey(nodeKey))
-      return { isDisplayed: false, isDisabled: true };
+      return { state: "hidden", isDisabled: true };
 
     if (isSubjectNode(node)) {
       // note: subject nodes may be merged to represent multiple subject instances
@@ -327,7 +323,7 @@ export class ModelsVisibilityHandler implements IVisibilityHandler {
 
   protected async getSubjectNodeVisibility(ids: Id64String[], node: TreeNodeItem): Promise<VisibilityStatus> {
     if (!this._props.viewport.view.isSpatialView())
-      return { isDisabled: true, isDisplayed: false, tooltip: createTooltip("disabled", "subject.nonSpatialView") };
+      return { isDisabled: true, state: "hidden", tooltip: createTooltip("disabled", "subject.nonSpatialView") };
 
     if (this._filteredDataProvider)
       return this.getFilteredSubjectDisplayStatus(this._filteredDataProvider, ids, node);
@@ -337,10 +333,10 @@ export class ModelsVisibilityHandler implements IVisibilityHandler {
 
   private async getSubjectDisplayStatus(ids: Id64String[]): Promise<VisibilityStatus> {
     const modelIds = await this.getSubjectModelIds(ids);
-    const isDisplayed = modelIds.some((modelId) => this.getModelDisplayStatus(modelId).isDisplayed);
+    const isDisplayed = modelIds.some((modelId) => this.getModelDisplayStatus(modelId).state === "visible");
     if (isDisplayed)
-      return { isDisplayed, tooltip: createTooltip("visible", "subject.atLeastOneModelVisible") };
-    return { isDisplayed, tooltip: createTooltip("hidden", "subject.allModelsHidden") };
+      return { state: "visible", tooltip: createTooltip("visible", "subject.atLeastOneModelVisible") };
+    return { state: "hidden", tooltip: createTooltip("hidden", "subject.allModelsHidden") };
   }
 
   private async getFilteredSubjectDisplayStatus(provider: IPresentationTreeDataProvider, ids: Id64String[], node: TreeNodeItem): Promise<VisibilityStatus> {
@@ -349,38 +345,38 @@ export class ModelsVisibilityHandler implements IVisibilityHandler {
       return this.getSubjectDisplayStatus(ids);
 
     const hiddenModelIds = await this.getSubjectHiddenModelIds(ids);
-    if (hiddenModelIds.some((modelId) => this.getModelDisplayStatus(modelId).isDisplayed))
-      return { isDisplayed: true, tooltip: createTooltip("visible", "subject.atLeastOneModelVisible") };
+    if (hiddenModelIds.some((modelId) => this.getModelDisplayStatus(modelId).state === "visible"))
+      return { state: "visible", tooltip: createTooltip("visible", "subject.atLeastOneModelVisible") };
 
     const childrenDisplayStatuses = await Promise.all(children.map((childNode) => this.getVisibilityStatus(childNode, provider.getNodeKey(childNode))));
-    if (childrenDisplayStatuses.some((status) => status.isDisplayed))
-      return { isDisplayed: true, tooltip: createTooltip("visible", "subject.atLeastOneModelVisible") };
-    return { isDisplayed: false, tooltip: createTooltip("hidden", "subject.allModelsHidden") };
+    if (childrenDisplayStatuses.some((status) => status.state === "visible"))
+      return { state: "visible", tooltip: createTooltip("visible", "subject.atLeastOneModelVisible") };
+    return { state: "hidden", tooltip: createTooltip("hidden", "subject.allModelsHidden") };
   }
 
   protected getModelDisplayStatus(id: Id64String): VisibilityStatus {
     if (!this._props.viewport.view.isSpatialView())
-      return { isDisabled: true, isDisplayed: false, tooltip: createTooltip("disabled", "model.nonSpatialView") };
+      return { isDisabled: true, state: "hidden", tooltip: createTooltip("disabled", "model.nonSpatialView") };
     const isDisplayed = this._props.viewport.view.viewsModel(id);
-    return { isDisplayed, tooltip: createTooltip(isDisplayed ? "visible" : "hidden", undefined) };
+    return { state: isDisplayed ? "visible" : "hidden", tooltip: createTooltip(isDisplayed ? "visible" : "hidden", undefined) };
   }
 
   protected getCategoryDisplayStatus(id: Id64String, parentModelId: Id64String | undefined): VisibilityStatus {
     if (parentModelId) {
-      if (!this.getModelDisplayStatus(parentModelId).isDisplayed)
-        return { isDisplayed: false, isDisabled: true, tooltip: createTooltip("disabled", "category.modelNotDisplayed") };
+      if (this.getModelDisplayStatus(parentModelId).state === "hidden")
+        return { state: "hidden", isDisabled: true, tooltip: createTooltip("disabled", "category.modelNotDisplayed") };
 
       const override = this._props.viewport.perModelCategoryVisibility.getOverride(parentModelId, id);
       switch (override) {
         case PerModelCategoryVisibility.Override.Show:
-          return { isDisplayed: true, tooltip: createTooltip("visible", "category.displayedThroughPerModelOverride") };
+          return { state: "visible", tooltip: createTooltip("visible", "category.displayedThroughPerModelOverride") };
         case PerModelCategoryVisibility.Override.Hide:
-          return { isDisplayed: false, tooltip: createTooltip("hidden", "category.hiddenThroughPerModelOverride") };
+          return { state: "hidden", tooltip: createTooltip("hidden", "category.hiddenThroughPerModelOverride") };
       }
     }
     const isDisplayed = this._props.viewport.view.viewsCategory(id);
     return {
-      isDisplayed,
+      state: isDisplayed ? "visible" : "hidden",
       tooltip: isDisplayed
         ? createTooltip("visible", "category.displayedThroughCategorySelector")
         : createTooltip("hidden", "category.hiddenThroughCategorySelector"),
@@ -391,41 +387,41 @@ export class ModelsVisibilityHandler implements IVisibilityHandler {
     const { modelId, categoryId, elementIds } = await this.getGroupedElementIds(this._props.rulesetId, key);
 
     if (!modelId || !this._props.viewport.view.viewsModel(modelId))
-      return { isDisabled: true, isDisplayed: false, tooltip: createTooltip("disabled", "element.modelNotDisplayed") };
+      return { isDisabled: true, state: "hidden", tooltip: createTooltip("disabled", "element.modelNotDisplayed") };
 
     const atLeastOneElementForceDisplayed = (this._props.viewport.alwaysDrawn !== undefined)
       && elementIds.some((elementId) => this._props.viewport.alwaysDrawn!.has(elementId));
     if (atLeastOneElementForceDisplayed)
-      return { isDisplayed: true, tooltip: createTooltip("visible", "element.displayedThroughAlwaysDrawnList") };
+      return { state: "visible", tooltip: createTooltip("visible", "element.displayedThroughAlwaysDrawnList") };
 
     if (this._props.viewport.alwaysDrawn !== undefined && this._props.viewport.alwaysDrawn.size !== 0 && this._props.viewport.isAlwaysDrawnExclusive)
-      return { isDisplayed: false, tooltip: createTooltip("hidden", "element.hiddenDueToOtherElementsExclusivelyAlwaysDrawn") };
+      return { state: "hidden", tooltip: createTooltip("hidden", "element.hiddenDueToOtherElementsExclusivelyAlwaysDrawn") };
 
     const allElementsForceHidden = (this._props.viewport.neverDrawn !== undefined)
       && elementIds.every((elementId) => this._props.viewport.neverDrawn!.has(elementId));
     if (allElementsForceHidden)
-      return { isDisplayed: false, tooltip: createTooltip("visible", "element.hiddenThroughNeverDrawnList") };
+      return { state: "hidden", tooltip: createTooltip("visible", "element.hiddenThroughNeverDrawnList") };
 
-    if (categoryId && this.getCategoryDisplayStatus(categoryId, modelId).isDisplayed)
-      return { isDisplayed: true, tooltip: createTooltip("visible", undefined) };
+    if (categoryId && this.getCategoryDisplayStatus(categoryId, modelId).state === "visible")
+      return { state: "visible", tooltip: createTooltip("visible", undefined) };
 
-    return { isDisplayed: false, tooltip: createTooltip("hidden", "element.hiddenThroughCategory") };
+    return { state: "hidden", tooltip: createTooltip("hidden", "element.hiddenThroughCategory") };
   }
 
   protected getElementDisplayStatus(elementId: Id64String, modelId: Id64String | undefined, categoryId: Id64String | undefined): VisibilityStatus {
     if (!modelId || !this._props.viewport.view.viewsModel(modelId))
-      return { isDisabled: true, isDisplayed: false, tooltip: createTooltip("disabled", "element.modelNotDisplayed") };
+      return { isDisabled: true, state: "hidden", tooltip: createTooltip("disabled", "element.modelNotDisplayed") };
     if (this._props.viewport.neverDrawn !== undefined && this._props.viewport.neverDrawn.has(elementId))
-      return { isDisplayed: false, tooltip: createTooltip("hidden", "element.hiddenThroughNeverDrawnList") };
+      return { state: "hidden", tooltip: createTooltip("hidden", "element.hiddenThroughNeverDrawnList") };
     if (this._props.viewport.alwaysDrawn !== undefined) {
       if (this._props.viewport.alwaysDrawn.has(elementId))
-        return { isDisplayed: true, tooltip: createTooltip("visible", "element.displayedThroughAlwaysDrawnList") };
+        return { state: "visible", tooltip: createTooltip("visible", "element.displayedThroughAlwaysDrawnList") };
       if (this._props.viewport.alwaysDrawn.size !== 0 && this._props.viewport.isAlwaysDrawnExclusive)
-        return { isDisplayed: false, tooltip: createTooltip("hidden", "element.hiddenDueToOtherElementsExclusivelyAlwaysDrawn") };
+        return { state: "hidden", tooltip: createTooltip("hidden", "element.hiddenDueToOtherElementsExclusivelyAlwaysDrawn") };
     }
-    if (categoryId && this.getCategoryDisplayStatus(categoryId, modelId).isDisplayed)
-      return { isDisplayed: true, tooltip: createTooltip("visible", undefined) };
-    return { isDisplayed: false, tooltip: createTooltip("hidden", "element.hiddenThroughCategory") };
+    if (categoryId && this.getCategoryDisplayStatus(categoryId, modelId).state === "visible")
+      return { state: "visible", tooltip: createTooltip("visible", undefined) };
+    return { state: "hidden", tooltip: createTooltip("hidden", "element.hiddenThroughCategory") };
   }
 
   protected async changeSubjectNodeState(ids: Id64String[], node: TreeNodeItem, on: boolean) {
@@ -460,7 +456,6 @@ export class ModelsVisibilityHandler implements IVisibilityHandler {
     return this.changeModelsVisibility([id], on);
   }
 
-
   protected async changeModelsVisibility(ids: Id64String[], visible: boolean) {
     if (visible)
       return this._props.viewport.addViewedModels(ids);
@@ -494,8 +489,8 @@ export class ModelsVisibilityHandler implements IVisibilityHandler {
   }
 
   protected changeElementsState(modelId: Id64String | undefined, categoryId: Id64String | undefined, elementIds: Id64String[], on: boolean) {
-    const isDisplayedByDefault = modelId && this.getModelDisplayStatus(modelId).isDisplayed
-      && categoryId && this.getCategoryDisplayStatus(categoryId, modelId).isDisplayed;
+    const isDisplayedByDefault = modelId && this.getModelDisplayStatus(modelId).state === "visible"
+      && categoryId && this.getCategoryDisplayStatus(categoryId, modelId).state === "visible";
     const isHiddenDueToExclusiveAlwaysDrawnElements = this._props.viewport.isAlwaysDrawnExclusive && this._props.viewport.alwaysDrawn && 0 !== this._props.viewport.alwaysDrawn.size;
     const currNeverDrawn = new Set(this._props.viewport.neverDrawn ? this._props.viewport.neverDrawn : []);
     const currAlwaysDrawn = new Set(this._props.viewport.alwaysDrawn ?
@@ -521,7 +516,7 @@ export class ModelsVisibilityHandler implements IVisibilityHandler {
       return;
 
     this._pendingVisibilityChange = setTimeout(() => {
-      this._onVisibilityChange && this._onVisibilityChange();
+      this.onVisibilityChange.raiseEvent();
       this._pendingVisibilityChange = undefined;
     }, 0);
   }

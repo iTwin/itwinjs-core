@@ -2,11 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
 import { AgentAuthorizationClient, AgentAuthorizationClientConfiguration } from "@bentley/backend-itwin-client";
 import { ClientRequestContext, Config } from "@bentley/bentleyjs-core";
 import { MobileRpcConfiguration } from "@bentley/imodeljs-common";
-import { AccessToken } from "@bentley/itwin-client";
+import { assert } from "chai";
 import { AuthorizedBackendRequestContext } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
@@ -30,7 +29,7 @@ describe("Agent (#integration)", () => {
       };
 
       const agentClient = new AgentAuthorizationClient(agentConfiguration);
-      const jwt: AccessToken = await agentClient.getAccessToken(new ClientRequestContext());
+      const jwt = await agentClient.getAccessToken(new ClientRequestContext());
       requestContext = new AuthorizedBackendRequestContext(jwt);
 
       testProjectId = await HubUtility.queryProjectIdByName(requestContext, "iModelJsIntegrationTest");

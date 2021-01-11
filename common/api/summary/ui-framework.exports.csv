@@ -1,5 +1,8 @@
 sep=;
 Release Tag;API Item
+alpha;AccuDrawCommandItems
+alpha;AccuDrawDialog(props: AccuDrawDialogProps): JSX.Element
+alpha;AccuDrawDialogProps 
 alpha;AccuDrawPopupManager
 public;Action
 internal;ActionButtonItem(props: ActionButtonProps): JSX.Element
@@ -180,6 +183,7 @@ internal;expandWidget:
 beta;ExtensibleToolbarProps
 public;FooterModeField 
 public;FooterModeFieldProps 
+alpha;FrameworkAccuDraw 
 beta;FrameworkRootState
 internal;FrameworkStagePanel 
 internal;FrameworkStagePanelProps
@@ -421,7 +425,7 @@ alpha;SafeAreaContext: React.Context
 public;SavedView
 public;SavedViewLayout
 public;SavedViewLayoutProps
-public;SavedViewProps
+public;SavedViewProps 
 alpha;ScheduleAnimationTimelineDataProvider 
 beta;SectionsStatusField(props: SectionsStatusFieldProps): JSX.Element
 beta;SectionsStatusFieldProps 
@@ -629,6 +633,7 @@ beta;ViewSelectorChangedEventArgs
 beta;ViewSelectorDefaultProps = Pick
 beta;ViewSelectorProps
 public;ViewUtilities
+alpha;VisibilityChangeListener = (nodeIds?: string[]) => void
 beta;VisibilityComponent 
 beta;VisibilityComponentConfig
 public;VisibilityComponentHierarchy

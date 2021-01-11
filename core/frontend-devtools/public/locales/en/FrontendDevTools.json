@@ -281,6 +281,51 @@
     },
     "SetAASamples": {
       "keyin": "fdt aasamples"
+    },
+    "ChangeCamera": {
+      "keyin": "fdt camera"
+    },
+    "ToggleDrawingGraphics": {
+      "keyin": "fdt drawing graphics"
+    },
+    "ToggleSectionDrawingSpatialView": {
+      "keyin": "fdt sectiondrawing display spatial"
+    },
+    "FlipImageEffect": {
+      "keyin": "fdt effect add flip"
+    },
+    "FlipImageConfig": {
+      "keyin" :"fdt effect config flip"
+    },
+    "LensDistortionEffect": {
+      "keyin": "fdt effect add lensdistortion"
+    },
+    "LensDistortionConfig": {
+      "keyin": "fdt effect config lensdistortion"
+    },
+    "EmbossEffect": {
+      "keyin": "fdt effect add emboss"
+    },
+    "GaussianBlurEffect": {
+      "keyin": "fdt effect add blur"
+    },
+    "UnsharpenEffect": {
+      "keyin": "fdt effect add unsharpen"
+    },
+    "SharpenEffect": {
+      "keyin": "fdt effect add sharpen"
+    },
+    "SharpnessEffect": {
+      "keyin": "fdt effect add sharpness"
+    },
+    "EdgeDetectionEffect": {
+      "keyin": "fdt effect add edgedetect"
+    },
+    "SnowEffect": {
+      "keyin": "fdt particle snow"
+    },
+    "ClearEffects": {
+      "keyin": "fdt effect clear"
     }
   }
 }

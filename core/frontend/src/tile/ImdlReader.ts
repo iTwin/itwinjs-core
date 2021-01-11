@@ -9,11 +9,10 @@
 import { assert, ByteStream, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Point3d, Range2d, Range3d, Transform } from "@bentley/geometry-core";
 import {
-  BatchType, ColorDef, ElementAlignedBox3d, FeatureTableHeader, FillFlags, Gradient, ImageSource, ImageSourceFormat, ImdlHeader, LinePixels,
+  BatchType, ColorDef, ElementAlignedBox3d, FeatureTableHeader, FillFlags, Gradient, ImageSource, ImdlHeader, LinePixels,
   PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d, readTileContentDescription, RenderMaterial, RenderTexture, TextureMapping,
   TileReadError, TileReadStatus,
 } from "@bentley/imodeljs-common";
-import { imageElementFromImageSource } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { GraphicBranch } from "../render/GraphicBranch";
@@ -234,14 +233,6 @@ export class ImdlReader extends GltfReader {
     if (0 === byteLength)
       return undefined;
 
-    const bytes = this._binaryData.subarray(byteOffset, byteOffset + byteLength);
-    const format = namedTex.format;
-    const imageSource = new ImageSource(bytes, format);
-
-    const image = await imageElementFromImageSource(imageSource);
-    if (this._isCanceled)
-      return undefined;
-
     let textureType = RenderTexture.Type.Normal;
     const isGlyph = JsonUtils.asBool(namedTex.isGlyph);
     const isTileSection = !isGlyph && JsonUtils.asBool(namedTex.isTileSection);
@@ -254,7 +245,11 @@ export class ImdlReader extends GltfReader {
     // Neither should be cached.
     const cacheable = !isGlyph && !isTileSection;
     const params = new RenderTexture.Params(cacheable ? name : undefined, textureType);
-    return this._system.createTextureFromImage(image, ImageSourceFormat.Png === format, this._iModel, params);
+
+    const bytes = this._binaryData.subarray(byteOffset, byteOffset + byteLength);
+    const format = namedTex.format;
+    const imageSource = new ImageSource(bytes, format);
+    return this._system.createTextureFromImageSource(imageSource, this._iModel, params);
   }
 
   /** @internal */
