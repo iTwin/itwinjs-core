@@ -1,5 +1,5 @@
 ---
-ignore: true
+publish: false
 ---
 # NextVersion
 
@@ -51,9 +51,9 @@ New events have been added to ViewState and its related classes to notify listen
 
 - They are now always persisted to the database as a [CompressedId64Set]($bentleyjs-core).
 - The type of [DisplayStyleSettingsProps.excludedElements]($common) has changed from `Id64Array` to `Id64Array | CompressedId64Set`.
-- [DisplayStyleSettings.excludedElements]($common) - a `Set<string>` - has been deprecated in favor of [DisplayStyleSettings.excludedElementsIds]($common) - an [OrderedId64Iterable]($bentleyjs-core).
-- [IModelDb.views.getViewStateData]($backend) and [ElementLoadProps]($backend) allow the caller to specify whether the Ids should be returned in compressed (string) form or as an uncompressed array; by default, they are uncompressed.
-- [IModelConnection.views.load]($frontend) will always use the compressed representation of the Ids.
+- [DisplayStyleSettings.excludedElements]($common) - a `Set<string>` - has been deprecated in favor of [DisplayStyleSettings.excludedElementIds]($common) - an [OrderedId64Iterable]($bentleyjs-core).
+- [IModelDb.Views.getViewStateData]($backend) and [ElementLoadProps]($common) allow the caller to specify whether the Ids should be returned in compressed (string) form or as an uncompressed array; by default, they are uncompressed.
+- [IModelConnection.Views.load]($frontend) will always use the compressed representation of the Ids.
 
 To adjust code that uses [DisplayStyleSettings.excludedElements]($common), given `settings: DisplayStyleSettings`:
 
@@ -211,7 +211,7 @@ Also, the `@internal` class `NativeApp` has several changed methods, so some ref
 
 ## Upgrading schemas in an iModel
 
-In previous versions the method to open briefcases ([BriefcaseDb.open]($backend)) and standalone files ([StandaloneDb.open]($backend)) provided options to upgrade the schemas in the iModel. This functionality has been now separated out, and there are separate methods to validate and upgrade the schemas in the iModel. As a result [OpenBriefcaseProps]($common) and [SnapshotOpenOptions]($common) do not include options to upgrade anymore.
+In previous versions the method to open briefcases ([BriefcaseDb.open]($backend)) and standalone files (`StandaloneDb.open` renamed to `StandaloneDb.openFile`) provided options to upgrade the schemas in the iModel. This functionality has been now separated out, and there are separate methods to validate and upgrade the schemas in the iModel. As a result [OpenBriefcaseProps]($common) and [SnapshotOpenOptions]($common) do not include options to upgrade anymore.
 
 See section on [Upgrading Schemas]($docs/learning/backend/IModelDb.md#upgrading-schemas-in-an-imodel) for more information.
 ## Updated version of Electron
