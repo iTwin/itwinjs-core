@@ -11,8 +11,8 @@ import { Id64String, Logger } from "@bentley/bentleyjs-core";
 import { Point3d, Transform } from "@bentley/geometry-core";
 import { NpcCenter } from "@bentley/imodeljs-common";
 import {
-  DrawingViewState, EntityState, IModelApp, IModelConnection, OrthographicViewState, ScreenViewport,
-  SheetViewState, SpatialViewState, TentativePoint, ToolSettings, ViewManager,
+  EntityState, IModelApp, IModelConnection, ScreenViewport,
+  TentativePoint, ToolSettings, ViewManager,
   Viewport, ViewState,
 } from "@bentley/imodeljs-frontend";
 
