@@ -243,3 +243,76 @@ ECExpressions now support formatted property values. `GetFormattedValue` functio
 ```ts
 GetFormattedValue(this.Length, "Metric") = "10.0 m"
 ```
+
+### Breaking changes to `ContentRelatedInstances`
+
+Behavior of `ContentRelatedInstances` specification used in content rules was changed. It used to include input instances into the result if all paths in `relationshipPaths` property had `count: "*"` and target class matched input instance class. The behavior was changed to match cases where steps `relationshipPaths` have `count` set to specific number - the result only includes instances resulting from step outputs. See [RelationshipPathSpecification documentation](../learning/presentation/RelationshipPathSpecification.md) for more details and examples.
+
+Example:
+
+```json
+{
+  "ruleType": "Content",
+  "specifications": [
+    {
+      "specType": "ContentRelatedInstances",
+      "relationshipPaths": [
+        [
+          {
+            "relationship": {
+              "schemaName": "BisCore",
+              "className": "GeometricElement3dHasTypeDefinition"
+            },
+            "direction": "Backward",
+            "count": "*"
+          },
+          {
+            "relationship": {
+              "schemaName": "BisCore",
+              "className": "ElementOwnsChildElements"
+            },
+            "direction": "Forward",
+            "count": "*"
+          }
+        ]
+      ]
+    }
+  ]
+}
+```
+
+This rule used to include *BisCore.TypeDefinitionElement* instance used as input along side *BisCore.GeometricElement3d* instances. If previous behavior is desired `SelectedNodeInstance` specification can be added to the content rule:
+
+```json
+{
+  "ruleType": "Content",
+  "specifications": [
+    {
+      "specType": "SelectedNodeInstances"
+    },
+    {
+      "specType": "ContentRelatedInstances",
+      "relationshipPaths": [
+        [
+          {
+            "relationship": {
+              "schemaName": "BisCore",
+              "className": "GeometricElement3dHasTypeDefinition"
+            },
+            "direction": "Backward",
+            "count": "*"
+          },
+          {
+            "relationship": {
+              "schemaName": "BisCore",
+              "className": "ElementOwnsChildElements"
+            },
+            "direction": "Forward",
+            "count": "*"
+          }
+        ]
+      ]
+    }
+  ]
+}
+```
