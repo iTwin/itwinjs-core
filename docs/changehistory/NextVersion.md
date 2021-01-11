@@ -211,7 +211,7 @@ Also, the `@internal` class `NativeApp` has several changed methods, so some ref
 
 ## Upgrading schemas in an iModel
 
-In previous versions the method to open briefcases ([BriefcaseDb.open]($backend)) and standalone files (`StandaloneDb.open`, renamed to [StandaloneDb.openFile]($backend)) provided options to upgrade the schemas in the iModel. This functionality has been now separated out, and there are separate methods to validate and upgrade the schemas in the iModel. As a result [OpenBriefcaseProps]($common) and [SnapshotOpenOptions]($common) do not include options to upgrade anymore.
+In previous versions the method to open briefcases ([BriefcaseDb.open]($backend)) and standalone files (`StandaloneDb.open` renamed to `StandaloneDb.openFile`) provided options to upgrade the schemas in the iModel. This functionality has been now separated out, and there are separate methods to validate and upgrade the schemas in the iModel. As a result [OpenBriefcaseProps]($common) and [SnapshotOpenOptions]($common) do not include options to upgrade anymore.
 
 See section on [Upgrading Schemas]($docs/learning/backend/IModelDb.md#upgrading-schemas-in-an-imodel) for more information.
 ## Updated version of Electron
