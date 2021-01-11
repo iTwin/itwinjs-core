@@ -121,6 +121,7 @@ export abstract class PlanarMaskBaseTool extends PrimitiveTool {
   private setupAndPromptForNextAction(): void {
     this._useSelection = (undefined !== this.targetView && this.targetView.iModel.selectionSet.isActive);
     this.initLocateElements();
+    IModelApp.locateManager.options.allowDecorations = true;    // So we can select "contextual" reality models.
     this.showPrompt();
   }
   protected abstract targetModelRequired(): boolean;
@@ -138,12 +139,14 @@ export abstract class PlanarMaskBaseTool extends PrimitiveTool {
     if (!hit.modelId)
       return LocateFilterStatus.Reject;
 
-    const model = this.iModel.models.getLoaded(hit.modelId)?.asSpatialModel;
-    if (!model)
-      return LocateFilterStatus.Reject;
+    if (undefined === this._targetModelId && this.targetModelRequired()) {
+      const realityIndex = hit.viewport.getRealityModelIndexFromTransientId(hit.modelId);
+      if (realityIndex >= 0)
+        return LocateFilterStatus.Accept;
 
-    if (undefined === this._targetModelId && this.targetModelRequired())
-      return model.isRealityModel ? LocateFilterStatus.Accept : LocateFilterStatus.Reject;
+      const model = this.iModel.models.getLoaded(hit.modelId)?.asSpatialModel;
+      return model?.isRealityModel ? LocateFilterStatus.Accept : LocateFilterStatus.Reject;
+    }
     else
       return (hit.isElementHit && !hit.isModelHit && !this._acceptedElementIds.has(hit.sourceId)) ? LocateFilterStatus.Accept : LocateFilterStatus.Reject;
   }
@@ -155,7 +158,10 @@ export abstract class PlanarMaskBaseTool extends PrimitiveTool {
       return EventHandled.No;
 
     if (undefined === this._targetModelId && this.targetModelRequired()) {
-      this._targetModelId = hit.modelId;
+      if (hit.modelId) {
+        const realityIndex = hit.viewport.getRealityModelIndexFromTransientId(hit.modelId);
+        this._targetModelId = realityIndex >= 0 ? realityIndex : hit.modelId;
+      }
     } else if (hit.isElementHit) {
       const sourceId = hit.sourceId;
       if (!this._acceptedElementIds.has(sourceId)) {

@@ -724,6 +724,14 @@ export abstract class Viewport implements IDisposable {
     return this.displayStyle.getRealityModelAppearanceOverride(index);
   }
 
+
+  /** Return the "contextual" reality model index for a transient model ID or -1 if none found
+   * @beta
+   */
+  public getRealityModelIndexFromTransientId(id: Id64String): number {
+    return this.displayStyle.getRealityModelIndexFromTransientId(id);
+  }
+
   /** Override the planar clip  for a reality model displayed by this viewport.
   * @param planarClipMask The planar clip mask.
   * @param modelIdOrIndex The Id of the [[model]] if the attached to the view or the index if it is a context model displayed by this viewport.

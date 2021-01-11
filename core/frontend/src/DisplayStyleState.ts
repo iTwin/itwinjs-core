@@ -18,7 +18,7 @@ import { IModelConnection } from "./IModelConnection";
 import { AnimationBranchStates } from "./render/GraphicBranch";
 import { RenderSystem, TextureImage } from "./render/RenderSystem";
 import { RenderScheduleState } from "./RenderScheduleState";
-import { getCesiumOSMBuildingsUrl, MapCartoRectangle, MapTileTree, MapTileTreeReference, TileTreeReference } from "./tile/internal";
+import { getCesiumOSMBuildingsUrl, MapCartoRectangle, MapTileTree, MapTileTreeReference, RealityModelTileTree, TileTreeReference } from "./tile/internal";
 import { viewGlobalLocation, ViewGlobalLocationConstants } from "./ViewGlobalLocation";
 import { OsmBuildingDisplayOptions, ScreenViewport, Viewport } from "./Viewport";
 
@@ -383,6 +383,18 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    */
   public getRealityModelAppearanceOverride(index: number): FeatureAppearance | undefined {
     return index >= 0 && index < this._contextRealityModels.length ? this._contextRealityModels[index]?.appearanceOverrides : undefined;
+  }
+
+  /** Return the "contextual" reality model index for a transient model ID or -1 if none found
+   * @beta
+   */
+  public getRealityModelIndexFromTransientId(id: Id64String): number {
+    for (let i = 0; i < this._contextRealityModels.length; i++) {
+      const treeRef = this._contextRealityModels[i].treeRef;
+      if (treeRef instanceof RealityModelTileTree.Reference && treeRef.modelId === id)
+        return i;
+    }
+    return -1;
   }
 
   /** Override the planar clip mask for a reality model.

@@ -9,10 +9,8 @@
 
 import { CompressedId64Set, dispose, Id64String } from "@bentley/bentleyjs-core";
 import { Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Vector3d } from "@bentley/geometry-core";
-import { IModelsHandler } from "@bentley/imodelhub-client";
 import { ColorDef, Frustum, FrustumPlanes, PlanarClipMask, PlanarClipMaskMode, RenderMode, RenderTexture, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
-import { IModelConnection } from "../../imodeljs-frontend";
-import { GraphicsCollectorDrawArgs, overrideRequestTileTreeProps, SpatialClassifierTileTreeReference, TileTree, TileTreeReference } from "../../tile/internal";
+import { GraphicsCollectorDrawArgs, SpatialClassifierTileTreeReference, TileTreeReference } from "../../tile/internal";
 import { SceneContext } from "../../ViewContext";
 import { ViewState, ViewState3d } from "../../ViewState";
 import { FeatureSymbology } from "../FeatureSymbology";
@@ -499,11 +497,12 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
         if (this._planarClipMask.modelIds) {
           const modelIdSet = CompressedId64Set.decompressSet(this._planarClipMask.modelIds);
           for (const modelId of modelIdSet) {
-            const viewedTree = viewTrees.get(modelId);
-            if (viewedTree)
-              trees.push(viewedTree);
-            else {
-              // TBD - Load mask tree if not loaded.
+            const model = view.iModel.models.getLoaded(modelId);
+            if (model?.asGeometricModel) {
+              const treeRef = model.asGeometricModel.createTileTreeReference(view);
+              const tree = treeRef.treeOwner.load();
+              if (tree)
+                trees.push(treeRef);
             }
           }
         } else {
