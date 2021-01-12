@@ -1,7 +1,7 @@
 "Spirals" are a class of curve that are used to provide smooth transition from one turning radius to another.
 
 | Description | Geometry |
-|---|---|---|---|---|
+|---|---|
 | Blue line joints directly to green arc. <br> Curvature changes instantaneously from 0 to the arc radius | ![>](./figs/Spiral/LineArcR300.png) |
 | With the red spiral added, ><r> curvature changes smoothly from 0 to the arc radius.  | ![>](./figs/Spiral/LineSpiralL100R300Arc.png) |
 | components  |  |
