@@ -7,16 +7,16 @@
  */
 
 import "./FormatPanel.scss";
+import classnames from "classnames";
 import * as React from "react";
-import { Checkbox, CommonProps } from "@bentley/ui-core";
-import { Format, FormatProps, FormatTraits, FormatType } from "@bentley/imodeljs-quantity";
+import { Checkbox, CommonProps, Input } from "@bentley/ui-core";
+import { DecimalPrecision, Format, FormatProps, FormatterSpec, FormatTraits, FormatType, FractionalPrecision, ShowSignOption, UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
 import { UomSeparatorSelector } from "./UomSeparator";
 import { FormatTypeSelector } from "./FormatType";
 import { DecimalPrecisionSelector } from "./DecimalPrecision";
 import { FractionPrecisionSelector } from "./FractionPrecision";
 import { SignOptionSelector } from "./SignOption";
 import { ThousandSeparatorSelector } from "./ThousandSeparator";
-import classnames from "classnames";
 import { DecimalSeparatorSelector } from "./DecimalSeparator";
 import { UnitDescr } from "./UnitDescr";
 
@@ -24,88 +24,273 @@ import { UnitDescr } from "./UnitDescr";
  * @alpha
  */
 export interface FormatPanelProps extends CommonProps {
-  format: FormatProps;
+  initialFormat: FormatProps;
+  unitsProvider: UnitsProvider;
+  persistenceUnit: Promise<UnitProps>;
+  showSample?: boolean;
+  initialMagnitude?: number;
+}
+
+function getTraitString(trait: FormatTraits) {
+  switch (trait) {
+    case FormatTraits.KeepSingleZero:
+      return "keepSingleZero";
+    case FormatTraits.ZeroEmpty:
+      return "zeroEmpty";
+    case FormatTraits.KeepDecimalPoint:
+      return "keepDecimalPoint";
+    case FormatTraits.ApplyRounding:
+      return "applyRounding";
+    case FormatTraits.FractionDash:
+      return "fractionDash";
+    case FormatTraits.ShowUnitLabel:
+      return "showUnitLabel";
+    case FormatTraits.PrependUnitLabel:
+      return "prependUnitLabel";
+    case FormatTraits.Use1000Separator:
+      return "use1000Separator";
+    case FormatTraits.ExponentOnlyNegative:
+      return "exponentOnlyNegative";
+  }
+  return undefined;
 }
 
 /** Component to show/edit Quantity Format.
  * @alpha
  */
 export function FormatPanel(props: FormatPanelProps) {
-  const { format } = props;
+  const formatSpec = React.useRef<FormatterSpec>();
+  const { initialFormat, showSample, initialMagnitude, unitsProvider, persistenceUnit } = props;
+  const [magnitude, setMagnitude] = React.useState(() => initialMagnitude ?? 0);
+  const [formattedValue, setFormattedValue] = React.useState("");
+  const [activePersistenceUnitLabel, setActivePersistenceUnitLabel] = React.useState("");
 
-  const handleSeparatorChange = React.useCallback(() => {
+  const [formatProps, setFormatProps] = React.useState(initialFormat);
+  const formatType = Format.parseFormatType(formatProps.type, "format");
+  const showSignOption = Format.parseShowSignOption(formatProps.showSignOption ?? "onlyNegative", "format");
+
+  const handlePrecisionChange = React.useCallback((precision: number) => {
+    const newFormatProps = { ...formatProps, precision };
+    setFormatProps(newFormatProps);
+  }, [formatProps]);
+
+  const handleFormatTypeChange = React.useCallback((newType: FormatType) => {
+    const type = Format.formatTypeToString(newType);
+    let precision: number | undefined;
+    switch (newType) { // type must be decimal, fractional, scientific, or station
+      case FormatType.Decimal:
+      case FormatType.Scientific:
+      case FormatType.Station:
+        precision = DecimalPrecision.Six;
+        break;
+      case FormatType.Fractional:
+        precision = FractionalPrecision.Eight;
+        break;
+    }
+    const newFormatProps = { ...formatProps, type, precision };
+    setFormatProps(newFormatProps);
+  }, [formatProps]);
+
+  const isFormatTraitSet = React.useCallback((trait: FormatTraits) => {
+    if (!formatProps.formatTraits)
+      return false;
+    const formatTraits = Array.isArray(formatProps.formatTraits) ? formatProps.formatTraits : formatProps.formatTraits.split(/,|;|\|/);
+    const traitStr = getTraitString(trait);
+    return formatTraits.find((traitEntry) => traitStr === traitEntry) ? true : false;
+  }, [formatProps]);
+
+  const handleShowSignChange = React.useCallback((option: ShowSignOption) => {
+    const newShowSignOption = Format.showSignOptionToString(option);
+    const newFormatProps = { ...formatProps, showSignOption: newShowSignOption };
+    setFormatProps(newFormatProps);
+  }, [formatProps]);
+
+  const handleUomSeparatorChange = React.useCallback((separator: string) => {
+    if (separator.length < 2) {
+      const newFormatProps = { ...formatProps, uomSeparator: separator };
+      setFormatProps(newFormatProps);
+    } else {
+      const newFormatProps = { ...formatProps, uomSeparator: initialFormat.uomSeparator };
+      setFormatProps(newFormatProps);
+    }
+  }, [formatProps, initialFormat.uomSeparator]);
+
+  const handleThousandSeparatorChange = React.useCallback((thousandSeparator: string) => {
+    let decimalSeparator = formatProps.decimalSeparator;
+    // make sure 1000 and decimal separator do not match
+    if (isFormatTraitSet(FormatTraits.Use1000Separator)) {
+      if (thousandSeparator === ".")
+        decimalSeparator = ",";
+      else if (thousandSeparator === ",")
+        decimalSeparator = ".";
+    }
+    const newFormatProps = { ...formatProps, thousandSeparator, decimalSeparator };
+    setFormatProps(newFormatProps);
+  }, [formatProps, isFormatTraitSet]);
+
+  const setFormatTrait = React.useCallback((trait: FormatTraits, setActive: boolean) => {
+    const traitStr = getTraitString(trait);
+    if (undefined === traitStr)
+      return;
+    let formatTraits: string[] | undefined;
+
+    if (setActive) {
+      // setting trait
+      if (!formatProps.formatTraits) {
+        formatTraits = [traitStr];
+      } else {
+        const traits = Array.isArray(formatProps.formatTraits) ? formatProps.formatTraits : formatProps.formatTraits.split(/,|;|\|/);
+        if (!traits.find((traitEntry) => traitStr === traitEntry)) {
+          formatTraits = [...traits, traitStr];
+        }
+      }
+    } else {
+      // clearing trait
+      if (!formatProps.formatTraits)
+        return;
+      const traits = Array.isArray(formatProps.formatTraits) ? formatProps.formatTraits : formatProps.formatTraits.split(/,|;|\|/);
+      formatTraits = traits.filter((traitEntry) => traitEntry !== traitStr);
+    }
+    const newFormatProps = { ...formatProps, formatTraits };
+    // eslint-disable-next-line no-console
+    console.log(`FormatProps = ${JSON.stringify(newFormatProps)}`);
+    setFormatProps(newFormatProps);
+  }, [formatProps]);
+
+  const handleUseThousandsSeparatorChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormatTrait(FormatTraits.Use1000Separator, e.target.checked);
+  }, [setFormatTrait]);
+
+  const handleShowUnitLabelChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormatTrait(FormatTraits.ShowUnitLabel, e.target.checked);
+  }, [setFormatTrait]);
+
+  const handleShowTrailingZeroesChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormatTrait(FormatTraits.TrailZeroes, e.target.checked);
+  }, [setFormatTrait]);
+
+  const handleKeepDecimalPointChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormatTrait(FormatTraits.KeepDecimalPoint, e.target.checked);
+  }, [setFormatTrait]);
+
+  const handleKeepSingleZeroChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormatTrait(FormatTraits.KeepSingleZero, e.target.checked);
+  }, [setFormatTrait]);
+
+  const handleZeroEmptyChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormatTrait(FormatTraits.ZeroEmpty, e.target.checked);
+  }, [setFormatTrait]);
+
+  const handleUseFractionDashChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormatTrait(FormatTraits.FractionDash, e.target.checked);
+  }, [setFormatTrait]);
+
+  const handleExponentOnlyNegativeChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormatTrait(FormatTraits.ExponentOnlyNegative, e.target.checked);
+  }, [setFormatTrait]);
+
+  const handleDecimalSeparatorChange = React.useCallback((decimalSeparator: string) => {
+    let thousandSeparator = formatProps.thousandSeparator;
+    // make sure 1000 and decimal separator do not match
+    if (isFormatTraitSet(FormatTraits.Use1000Separator)) {
+      if (decimalSeparator === ".")
+        thousandSeparator = ",";
+      else if (decimalSeparator === ",")
+        thousandSeparator = ".";
+    }
+    const newFormatProps = { ...formatProps, thousandSeparator, decimalSeparator };
+    setFormatProps(newFormatProps);
+  }, [formatProps, isFormatTraitSet]);
+
+  const handleUnitLabelChange = React.useCallback((newLabel: string, index: number) => {
+    if (formatProps.composite?.units && formatProps.composite.units.length > index && index >= 0) {
+      const units = formatProps.composite.units.map((entry, ndx) => {
+        if (index === ndx)
+          return { name: entry.name, label: newLabel };
+        else
+          return entry;
+      });
+
+      const composite = { ...formatProps.composite, units };
+      const newFormatProps = { ...formatProps, composite };
+      setFormatProps(newFormatProps);
+    }
+  }, [formatProps]);
+
+  const handleOnValueChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setMagnitude(e.target.value ? Number.parseFloat(e.target.value) : 0);
   }, []);
 
-  const handleFormatTypeChange = React.useCallback(() => {
-  }, []);
+  const handleOnSpacerChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    if (formatProps.composite) {
+      const composite = { ...formatProps.composite, spacer: e.target.value };
+      const newFormatProps = { ...formatProps, composite };
+      setFormatProps(newFormatProps);
+    }
+  }, [formatProps]);
 
-  const formatType = Format.parseFormatType(format.type, "format");
-  const showSignOption = Format.parseShowSignOption(format.showSignOption ?? "onlyNegative", "format");
-  const decimalSeparator = format.decimalSeparator ?? ".";
-  const traits = Format.parseFormatTraits(format.formatTraits);
-  const use1000separator = traits && ((traits & FormatTraits.Use1000Separator) > 0);
-  const appendUnitLabel = traits && ((traits & FormatTraits.ShowUnitLabel) > 0);
-  const showTrailingZeros = traits && ((traits & FormatTraits.TrailZeroes) > 0);
-  const keepDecimalPoint = traits && ((traits & FormatTraits.KeepDecimalPoint) > 0);
-  const keepSingleZero = traits && ((traits & FormatTraits.KeepSingleZero) > 0);
-  const zeroEmpty = traits && ((traits & FormatTraits.ZeroEmpty) > 0);
-  const fractionDash = traits && ((traits & FormatTraits.FractionDash) > 0);
-  const exponentOnlyNegative = traits && ((traits & FormatTraits.ExponentOnlyNegative) > 0);
+  React.useEffect(() => {
+    async function fetchFormatSpec() {
+      const pu = await persistenceUnit;
+      setActivePersistenceUnitLabel(pu.label);
+      const actualFormat = new Format("custom");
+      await actualFormat.fromJSON(unitsProvider, formatProps);
+      formatSpec.current = await FormatterSpec.create(actualFormat.name, actualFormat, unitsProvider, pu);
+      setFormattedValue(formatSpec.current.applyFormatting(magnitude));
+    }
+    fetchFormatSpec(); // eslint-disable-line @typescript-eslint/no-floating-promises
+  }, [formatProps, magnitude, persistenceUnit, unitsProvider]);
 
-  const handleUseSeparatorChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    // if (e.target.value !== undefined && typeof e.target.value === "boolean")
-    //   use1000separator = e.target.value;
-  }, []);
-
-  const handleDecimalSeparatorChange = React.useCallback((_value: string) => {
-    // if (e.target.value !== undefined && typeof e.target.value === "boolean")
-    //   use1000separator = e.target.value;
-  }, []);
-
-  const handleUnitLabelChange = React.useCallback((_value: string, _index: number) => {
-    // if (e.target.value !== undefined && typeof e.target.value === "boolean")
-    //   use1000separator = e.target.value;
-  }, []);
-
-  // format.composite?.units
   return (
     <div className="components-quantityFormat-panel">
-      {(format.composite?.units && format.composite?.units.length > 0) &&
-        format.composite.units.map((value, index) => <UnitDescr key={value.name} name={value.name}
+      {showSample &&
+        <>
+          <span className={"uicore-label"}>Value</span>
+          <span className="components-inline"><Input value={initialMagnitude} onChange={handleOnValueChange} />{activePersistenceUnitLabel}</span>
+          <span className={"uicore-label"}>Formatted Value</span>
+          <span className={"uicore-label"}>{formattedValue}</span>
+        </>
+      }
+
+      {(formatProps.composite?.units && formatProps.composite?.units.length > 0) &&
+        formatProps.composite.units.map((value, index) => <UnitDescr key={value.name} name={value.name}
           label={value.label ?? ""} index={index} onChange={handleUnitLabelChange} />)
       }
-      <span className={"uicore-label"}>Separator</span>
-      <UomSeparatorSelector separator={format.uomSeparator ?? ""} onChange={handleSeparatorChange} />
+      <span className={"uicore-label"}>Label Separator</span>
+      <UomSeparatorSelector separator={formatProps.uomSeparator ?? ""} onChange={handleUomSeparatorChange} />
+
+      <span className={"uicore-label"}>Composite Separator</span>
+      <Input value={formatProps.composite?.spacer ?? ""} onChange={handleOnSpacerChange} />
+
       <span className={"uicore-label"}>Type</span>
       <FormatTypeSelector type={formatType} onChange={handleFormatTypeChange} />
       <span className={"uicore-label"}>Accuracy</span>
       {formatType === FormatType.Fractional ?
-        <FractionPrecisionSelector precision={format.precision ?? 0} onChange={handleFormatTypeChange} /> :
-        <DecimalPrecisionSelector precision={format.precision ?? 0} onChange={handleFormatTypeChange} />
+        <FractionPrecisionSelector precision={formatProps.precision ?? 0} onChange={handlePrecisionChange} /> :
+        <DecimalPrecisionSelector precision={formatProps.precision ?? 0} onChange={handlePrecisionChange} />
       }
       <span className={"uicore-label"}>Sign Option</span>
-      <SignOptionSelector signOption={showSignOption} onChange={handleFormatTypeChange} />
+      <SignOptionSelector signOption={showSignOption} onChange={handleShowSignChange} />
       <span className={"uicore-label"}>Use Thousand Separator</span>
-      <Checkbox isLabeled={true} checked={use1000separator} onChange={handleUseSeparatorChange} />
-      <span className={classnames("uicore-label", !use1000separator && "uicore-disabled")}>Thousand Separator</span>
-      <ThousandSeparatorSelector separator={format.thousandSeparator ?? ","} disabled={!use1000separator} onChange={handleSeparatorChange} />
+      <Checkbox isLabeled={true} checked={isFormatTraitSet(FormatTraits.Use1000Separator)} onChange={handleUseThousandsSeparatorChange} />
+      <span className={classnames("uicore-label", !(isFormatTraitSet(FormatTraits.Use1000Separator)) && "uicore-disabled")}>Thousand Separator</span>
+      <ThousandSeparatorSelector separator={formatProps.thousandSeparator ?? ","} disabled={!isFormatTraitSet(FormatTraits.Use1000Separator)} onChange={handleThousandSeparatorChange} />
       <span className={"uicore-label"}>Decimal Separator</span>
-      <DecimalSeparatorSelector separator={decimalSeparator} onChange={handleDecimalSeparatorChange} />
+      <DecimalSeparatorSelector separator={formatProps.decimalSeparator ?? "."} onChange={handleDecimalSeparatorChange} />
       <span className={"uicore-label"}>Append Unit Label</span>
-      <Checkbox isLabeled={true} checked={appendUnitLabel} onChange={handleUseSeparatorChange} />
+      <Checkbox isLabeled={true} checked={isFormatTraitSet(FormatTraits.ShowUnitLabel)} onChange={handleShowUnitLabelChange} />
       <span className={"uicore-label"}>Show Trailing Zeros</span>
-      <Checkbox isLabeled={true} checked={showTrailingZeros} onChange={handleUseSeparatorChange} />
+      <Checkbox isLabeled={true} checked={isFormatTraitSet(FormatTraits.TrailZeroes)} onChange={handleShowTrailingZeroesChange} />
       <span className={"uicore-label"}>Keep Decimal Point</span>
-      <Checkbox isLabeled={true} checked={keepDecimalPoint} onChange={handleUseSeparatorChange} />
+      <Checkbox isLabeled={true} checked={isFormatTraitSet(FormatTraits.KeepDecimalPoint)} onChange={handleKeepDecimalPointChange} />
       <span className={"uicore-label"}>Keep Single Zero</span>
-      <Checkbox isLabeled={true} checked={keepSingleZero} onChange={handleUseSeparatorChange} />
+      <Checkbox isLabeled={true} checked={isFormatTraitSet(FormatTraits.KeepSingleZero)} onChange={handleKeepSingleZeroChange} />
       <span className={"uicore-label"}>Zero Empty</span>
-      <Checkbox isLabeled={true} checked={zeroEmpty} onChange={handleUseSeparatorChange} />
+      <Checkbox isLabeled={true} checked={isFormatTraitSet(FormatTraits.ZeroEmpty)} onChange={handleZeroEmptyChange} />
       <span className={classnames("uicore-label", formatType !== FormatType.Fractional && "uicore-disabled")}>Fraction Dash</span>
-      <Checkbox isLabeled={true} checked={fractionDash} onChange={handleUseSeparatorChange} disabled={formatType !== FormatType.Fractional} />
+      <Checkbox isLabeled={true} checked={isFormatTraitSet(FormatTraits.FractionDash)} onChange={handleUseFractionDashChange} disabled={formatType !== FormatType.Fractional} />
       <span className={classnames("uicore-label", formatType !== FormatType.Scientific && "uicore-disabled")}>Exponent Only Negative</span>
-      <Checkbox isLabeled={true} checked={exponentOnlyNegative} onChange={handleUseSeparatorChange} disabled={formatType !== FormatType.Scientific} />
+      <Checkbox isLabeled={true} checked={isFormatTraitSet(FormatTraits.ExponentOnlyNegative)} onChange={handleExponentOnlyNegativeChange} disabled={formatType !== FormatType.Scientific} />
     </div>
   );
 }

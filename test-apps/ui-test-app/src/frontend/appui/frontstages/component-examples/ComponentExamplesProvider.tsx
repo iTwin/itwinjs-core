@@ -27,7 +27,7 @@ import { SampleImageCheckBox } from "./SampleImageCheckBox";
 import { SampleAppIModelApp } from "../../..";
 import { BeDuration, Logger } from "@bentley/bentleyjs-core";
 import { SamplePopupContextMenu } from "./SamplePopupContextMenu";
-import { FormatProps } from "@bentley/imodeljs-quantity";
+import { FormatProps, UnitsProvider } from "@bentley/imodeljs-quantity";
 
 function WrappedSelect() {
   const [currentValue, setCurrentValue] = React.useState(3);
@@ -943,10 +943,13 @@ export class ComponentExamplesProvider {
       uomSeparator: "",
     };
 
+    const persistenceUnit = (IModelApp.quantityFormatter as UnitsProvider).findUnitByName("Units.M");
+
     return {
       title: "Quantity Formatting Component",
       examples: [
-        createComponentExample("Quantity Formatting", "Formatting Panel", <FormatPanel format={sampleFormat} />),
+        createComponentExample("Quantity Formatting", "Formatting Panel", <FormatPanel initialFormat={sampleFormat} showSample={true}
+          initialMagnitude={1234.56} unitsProvider={IModelApp.quantityFormatter as UnitsProvider} persistenceUnit={persistenceUnit} />),
       ],
     };
   }
