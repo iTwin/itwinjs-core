@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Format, FormatterSpec } from "../src/Formatter/Format";
+import { Format } from "../src/Formatter/Format";
+import { FormatterSpec } from "../src/Formatter/FormatterSpec";
 import { Formatter } from "../src/Formatter/Formatter";
 import { BasicUnit } from "../src/Unit";
 import { TestUnitsProvider } from "./TestUtils/TestHelper";
@@ -35,7 +36,7 @@ describe("Composite Formats tests:", () => {
 
     try {
       const format = new Format("test");
-      await format.fromJson(unitsProvider, formatData).catch(() => { });
+      await format.fromJSON(unitsProvider, formatData).catch(() => { });
       assert.isTrue(format.hasUnits);
 
       const testEntry = { magnitude: 12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12:6 1/2" };
@@ -78,7 +79,7 @@ describe("Composite Formats tests:", () => {
 
     try {
       const format = new Format("test");
-      await format.fromJson(unitsProvider, formatData).catch(() => { });
+      await format.fromJSON(unitsProvider, formatData).catch(() => { });
       assert.isTrue(format.hasUnits);
 
       const testEntry = {
@@ -118,7 +119,7 @@ describe("Composite Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJson(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData).catch(() => { });
     assert.isTrue(format.hasUnits);
 
     const testQuantityData = [
@@ -166,7 +167,7 @@ describe("Composite Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJson(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData).catch(() => { });
     assert.isTrue(format.hasUnits);
 
     const testQuantityData = [
@@ -215,7 +216,7 @@ describe("Composite Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJson(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData).catch(() => { });
     assert.isTrue(format.hasUnits);
 
     const testQuantityData = [
@@ -260,7 +261,7 @@ describe("Composite Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJson(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData).catch(() => { });
     assert.isTrue(format.hasUnits);
 
     const testQuantityData = [
@@ -304,7 +305,7 @@ describe("Composite Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJson(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData).catch(() => { });
     assert.isTrue(format.hasUnits);
 
     const testQuantityData = [
@@ -348,7 +349,7 @@ describe("Composite Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJson(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData).catch(() => { });
     assert.isTrue(format.hasUnits);
 
     const testQuantityData = [
@@ -395,7 +396,7 @@ describe("Composite Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJson(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData).catch(() => { });
     assert.isTrue(format.hasUnits);
 
     const testQuantityData = [
@@ -442,7 +443,7 @@ describe("Composite Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJson(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData).catch(() => { });
     assert.isTrue(format.hasUnits);
 
     const testQuantityData = [
@@ -485,7 +486,7 @@ describe("Composite Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJson(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData).catch(() => { });
     assert.isTrue(format.hasUnits);
 
     const testQuantityData = [
@@ -525,7 +526,7 @@ describe("Composite Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJson(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData).catch(() => { });
     assert.isTrue(format.hasUnits);
 
     const testQuantityData = [
@@ -573,7 +574,7 @@ describe("Composite Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJson(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData).catch(() => { });
     assert.isTrue(format.hasUnits);
 
     const testQuantityData = [
@@ -620,7 +621,7 @@ describe("Composite Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJson(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData).catch(() => { });
     assert.isTrue(format.hasUnits);
 
     const testQuantityData = [

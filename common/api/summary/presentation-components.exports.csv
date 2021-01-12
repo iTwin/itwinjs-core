@@ -20,6 +20,7 @@ alpha;FavoritePropertiesDataFiltererProps
 beta;FavoritePropertiesDataProvider 
 beta;FavoritePropertiesDataProviderProps
 public;IContentDataProvider 
+beta;InstanceKeyValueRenderer 
 public;IPresentationDataProvider 
 public;IPresentationLabelsProvider
 public;IPresentationPropertyDataProvider = IPropertyDataProvider & IContentDataProvider
