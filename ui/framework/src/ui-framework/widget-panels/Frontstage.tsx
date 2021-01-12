@@ -118,7 +118,7 @@ function FrameworkStateReducer(state: NineZoneState, action: NineZoneActionTypes
       for (const panelSide of panelSides) {
         const panel = draft.panels[panelSide];
         const location = toStagePanelLocation(panelSide);
-        const panelDef = frontstageDef?.getStagePanelDef(location);
+        const panelDef = frontstageDef.getStagePanelDef(location);
         if (panelDef?.maxSizeSpec) {
           panel.maxSize = getPanelMaxSize(panelDef.maxSizeSpec, panelSide, action.size);
           if (panel.size) {
@@ -394,7 +394,7 @@ export function isFrontstageStateSettingResult(settingsResult: UiSettingsResult)
 export function initializePanel(nineZone: NineZoneState, frontstageDef: FrontstageDef, panelSide: PanelSide) {
   nineZone = addPanelWidgets(nineZone, frontstageDef, panelSide);
   const location = toStagePanelLocation(panelSide);
-  const panelDef = frontstageDef?.getStagePanelDef(location);
+  const panelDef = frontstageDef.getStagePanelDef(location);
   nineZone = produce(nineZone, (draft) => {
     const panel = draft.panels[panelSide];
     panel.size = panelDef?.size;
