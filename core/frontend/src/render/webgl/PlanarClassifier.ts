@@ -510,6 +510,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
         }
     }
   }
+
   private getPlanarClipMaskSymbologyOverrides(): FeatureSymbology.Overrides | undefined {
     if (!this._planarClipMask || !this._planarClipMask.subCategoryOrElementIds)
       return undefined;

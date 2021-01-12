@@ -14,7 +14,7 @@ import { LensDistortionConfig, LensDistortionEffect } from "./effects/LensDistor
 import {
   ChangeEmphasisSettingsTool, ChangeHiliteSettingsTool, DefaultTileSizeModifierTool, FadeOutTool, FreezeSceneTool, MaskBackgroundMapByElementTool, MaskBackgroundMapByModelTool, MaskBackgroundMapBySubCategoryTool, MaskRealityModelByElementTool, MaskRealityModelByModelTool, MaskRealityModelBySubCategoryTool, SetAspectRatioSkewTool, SetHigherPriorityRealityModelMasking, SetMapHigherPriorityMasking, ShowTileVolumesTool,
   Toggle3dManipulationsTool, ToggleDrawingGraphicsTool, ToggleSectionDrawingSpatialViewTool, ToggleViewAttachmentBoundariesTool, ToggleViewAttachmentClipShapesTool,
-  ToggleViewAttachmentsTool, ViewportAddRealityModel, ViewportTileSizeModifierTool
+  ToggleViewAttachmentsTool, UnmaskMapTool, UnmaskRealityModelTool, ViewportAddRealityModel, ViewportTileSizeModifierTool
 } from "./frontend-devtools";
 import { AnimationIntervalTool } from "./tools/AnimationIntervalTool";
 import { ChangeUnitsTool } from "./tools/ChangeUnitsTool";
@@ -176,9 +176,11 @@ export class FrontendDevTools {
       MaskRealityModelByModelTool,
       MaskRealityModelBySubCategoryTool,
       MaskRealityModelByElementTool,
+      UnmaskRealityModelTool,
       MaskBackgroundMapByModelTool,
       MaskBackgroundMapBySubCategoryTool,
-      MaskBackgroundMapByElementTool
+      MaskBackgroundMapByElementTool,
+      UnmaskMapTool
     ];
 
     for (const tool of tools)
