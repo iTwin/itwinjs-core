@@ -33,7 +33,7 @@
   },
   "dependencies": {},
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.11.0-dev.42"
+    "@bentley/bentleyjs-core": "^2.11.0-dev.42",
     "@bentley/imodeljs-common": "^2.11.0-dev.42"
   },
   "devDependencies": {
