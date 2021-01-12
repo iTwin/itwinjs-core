@@ -2,10 +2,10 @@
   "changes": [
     {
       "packageName": "@bentley/imodeljs-backend",
-      "comment": "Added CheckpointV2 client",
+      "comment": "update imodeljs-backend package.json to use 2.11.5 for imodeljs-native",
       "type": "none"
     }
   ],
   "packageName": "@bentley/imodeljs-backend",
-  "email": "196408+amikoliunas@users.noreply.github.com"
+  "email": "22119573+nick4598@users.noreply.github.com"
 }
