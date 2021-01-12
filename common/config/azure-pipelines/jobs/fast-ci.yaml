@@ -8,8 +8,8 @@ pr:
   drafts: false
   branches:
     include:
-    - master
-    - release/*
+      - master
+      - release/*
 
 jobs:
   - template: ci-core.yaml
@@ -17,6 +17,4 @@ jobs:
       name: Node_12
       nodeVersion: 12.17.0
       pool:
-        demands:
-        - Agent.OS -equals $(platform)
-
+        name: $(name)
