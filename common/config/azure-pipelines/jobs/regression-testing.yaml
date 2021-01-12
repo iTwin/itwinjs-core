@@ -14,7 +14,7 @@ schedules:
   branches:
     include:
     - master
-    - releases/*
+    - release/*
 
 jobs:
 - template: ci-core.yaml

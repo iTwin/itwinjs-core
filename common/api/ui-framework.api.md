@@ -10,6 +10,7 @@ import { AbstractStatusBarCustomItem } from '@bentley/ui-abstract';
 import { AbstractToolbarProps } from '@bentley/ui-abstract';
 import { AbstractTreeNodeLoaderWithProvider } from '@bentley/ui-components';
 import { AbstractWidgetProps } from '@bentley/ui-abstract';
+import { AccuDraw } from '@bentley/imodeljs-frontend';
 import { ActionButton } from '@bentley/ui-abstract';
 import { ActivityMessageDetails } from '@bentley/imodeljs-frontend';
 import { ActivityMessageEndReason } from '@bentley/imodeljs-frontend';
@@ -25,7 +26,6 @@ import { BeDuration } from '@bentley/bentleyjs-core';
 import { BeEvent } from '@bentley/bentleyjs-core';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
 import { ButtonProps } from '@bentley/ui-core';
-import { CategorySelectorProps } from '@bentley/imodeljs-common';
 import { ColorDef } from '@bentley/imodeljs-common';
 import { CommandHandler } from '@bentley/ui-abstract';
 import { CommonDivProps } from '@bentley/ui-core';
@@ -46,11 +46,12 @@ import { DialogProps as DialogProps_2 } from '@bentley/ui-abstract';
 import { DialogRow } from '@bentley/ui-abstract';
 import { Direction } from '@bentley/ui-ninezone';
 import { DisabledResizeHandles } from '@bentley/ui-ninezone';
-import { DisplayStyleProps } from '@bentley/imodeljs-common';
+import { DisplayStyle3dState } from '@bentley/imodeljs-frontend';
 import { DndComponentClass } from 'react-dnd';
 import { DraggedWidgetManagerProps } from '@bentley/ui-ninezone';
 import { DragLayerProps } from '@bentley/ui-components';
 import { DragSourceArguments } from '@bentley/ui-components';
+import { ECClassGroupingNodeKey } from '@bentley/presentation-common';
 import { EmphasizeElementsProps } from '@bentley/imodeljs-frontend';
 import { FunctionKey as FunctionKey_2 } from '@bentley/ui-abstract';
 import { GroupButton as GroupButton_2 } from '@bentley/ui-abstract';
@@ -59,19 +60,18 @@ import { HorizontalAnchor } from '@bentley/ui-ninezone';
 import { I18N } from '@bentley/imodeljs-i18n';
 import { IconProps } from '@bentley/ui-core';
 import { IconSpec } from '@bentley/ui-core';
-import { Id64Array } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
 import { IMatch } from '@bentley/ui-abstract';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
 import { InteractiveTool } from '@bentley/imodeljs-frontend';
 import { IPresentationTreeDataProvider } from '@bentley/presentation-components';
+import { ItemField } from '@bentley/imodeljs-frontend';
 import { MessageBoxIconType } from '@bentley/imodeljs-frontend';
 import { MessageBoxType } from '@bentley/imodeljs-frontend';
 import { MessageBoxValue } from '@bentley/imodeljs-frontend';
 import { MessageSeverity } from '@bentley/ui-core';
 import { MessageType } from '@bentley/ui-core';
-import { ModelSelectorProps } from '@bentley/imodeljs-common';
 import { NestedStagePanelKey } from '@bentley/ui-ninezone';
 import { NestedStagePanelsManagerProps } from '@bentley/ui-ninezone';
 import { NineZoneDispatch } from '@bentley/ui-ninezone';
@@ -118,7 +118,6 @@ import { SafeAreaInsets } from '@bentley/ui-ninezone';
 import { ScreenViewport } from '@bentley/imodeljs-frontend';
 import { SelectionMode } from '@bentley/ui-components';
 import { SettingsStatus } from '@bentley/product-settings-client';
-import { SheetProps } from '@bentley/imodeljs-common';
 import { Size } from '@bentley/ui-core';
 import { SizeProps } from '@bentley/ui-core';
 import { SnapMode } from '@bentley/imodeljs-frontend';
@@ -165,12 +164,12 @@ import { UnifiedSelectionTreeEventHandler } from '@bentley/presentation-componen
 import { UnifiedSelectionTreeEventHandlerParams } from '@bentley/presentation-components';
 import { UserInfo } from '@bentley/itwin-client';
 import { VerticalAnchor } from '@bentley/ui-ninezone';
-import { ViewDefinitionProps } from '@bentley/imodeljs-common';
 import { ViewFlagProps } from '@bentley/imodeljs-common';
 import { ViewManager } from '@bentley/imodeljs-frontend';
 import { Viewport } from '@bentley/imodeljs-frontend';
 import { ViewState } from '@bentley/imodeljs-frontend';
 import { ViewStateProp } from '@bentley/ui-components';
+import { ViewStateProps } from '@bentley/imodeljs-common';
 import { WidgetManagerProps } from '@bentley/ui-ninezone';
 import { WidgetState as WidgetState_2 } from '@bentley/ui-abstract';
 import { WidgetZoneId } from '@bentley/ui-ninezone';
@@ -179,6 +178,55 @@ import { ZoneManagerProps } from '@bentley/ui-ninezone';
 import { ZonesManagerProps } from '@bentley/ui-ninezone';
 import { ZonesManagerWidgetsProps } from '@bentley/ui-ninezone';
 import { ZoneTargetType } from '@bentley/ui-ninezone';
+
+// @alpha
+export class AccuDrawCommandItems {
+    // (undocumented)
+    static get changeCompassMode(): CommandItemDef;
+    // (undocumented)
+    static get defineACSByPoints(): CommandItemDef;
+    // (undocumented)
+    static get lockAngle(): CommandItemDef;
+    // (undocumented)
+    static get lockDistance(): CommandItemDef;
+    // (undocumented)
+    static get lockSmart(): CommandItemDef;
+    // (undocumented)
+    static get lockX(): CommandItemDef;
+    // (undocumented)
+    static get lockY(): CommandItemDef;
+    // (undocumented)
+    static get lockZ(): CommandItemDef;
+    // (undocumented)
+    static get rotateAxes(): CommandItemDef;
+    // (undocumented)
+    static get rotateCycle(): CommandItemDef;
+    // (undocumented)
+    static get rotateFront(): CommandItemDef;
+    // (undocumented)
+    static get rotateSide(): CommandItemDef;
+    // (undocumented)
+    static get rotateToElement(): CommandItemDef;
+    // (undocumented)
+    static get rotateTop(): CommandItemDef;
+    // (undocumented)
+    static get rotateView(): CommandItemDef;
+    // (undocumented)
+    static get setOrigin(): CommandItemDef;
+}
+
+// @alpha (undocumented)
+export function AccuDrawDialog(props: AccuDrawDialogProps): JSX.Element;
+
+// @alpha (undocumented)
+export interface AccuDrawDialogProps extends CommonProps {
+    // (undocumented)
+    dialogId: string;
+    // (undocumented)
+    onClose?: () => void;
+    // (undocumented)
+    opened: boolean;
+}
 
 // @alpha
 export class AccuDrawPopupManager {
@@ -1522,7 +1570,7 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
     // (undocumented)
     syncToolSettingsProperties(args: SyncToolSettingsPropertiesEventArgs): void;
     // (undocumented)
-    uiDataProvider: ToolSettingsUiDataProvider;
+    get uiDataProvider(): ToolSettingsUiDataProvider;
     // (undocumented)
     updateToolSettingsNodes(): void;
 }
@@ -1607,16 +1655,16 @@ export interface DialogRendererProps {
 // @internal
 export function DockedStatusBarItem(props: StatusBarItemProps): JSX.Element;
 
-// @beta
+// @beta @deprecated
 export class DragDropLayerChangedEvent extends UiEvent<DragDropLayerChangedEventArgs> {
 }
 
-// @beta
+// @beta @deprecated
 export interface DragDropLayerChangedEventArgs {
     type: string | undefined;
 }
 
-// @beta
+// @beta @deprecated
 export class DragDropLayerManager {
     static getActiveLayer(): React.ComponentClass<DragLayerProps<any>, any> | React.FunctionComponent<DragLayerProps<any>> | undefined;
     static getType(): string | undefined;
@@ -1626,10 +1674,10 @@ export class DragDropLayerManager {
     static setType(type: string | undefined): void;
 }
 
-// @beta
-export const DragDropLayerRenderer: typeof DragDropLayerRendererComponent & DndComponentClass<{}>;
+// @beta @deprecated
+export const DragDropLayerRenderer: typeof DragDropLayerRendererComponent & DndComponentClass<typeof React.Component, {}>;
 
-// @beta
+// @beta @deprecated
 export class DragDropLayerRendererComponent extends React.Component<DragDropLayerRendererProps> {
     constructor(props: DragDropLayerRendererProps);
     // (undocumented)
@@ -1640,7 +1688,7 @@ export class DragDropLayerRendererComponent extends React.Component<DragDropLaye
     render(): React.ReactNode;
 }
 
-// @beta
+// @beta @deprecated
 export interface DragDropLayerRendererProps extends CommonProps {
     // (undocumented)
     args?: DragSourceArguments;
@@ -1878,6 +1926,18 @@ export class FooterModeField extends React.PureComponent<FooterModeFieldProps> {
 export interface FooterModeFieldProps extends StatusFieldProps {
     children?: React.ReactNode;
 }
+
+// @alpha (undocumented)
+export class FrameworkAccuDraw extends AccuDraw {
+    // @internal (undocumented)
+    onCompassModeChange(): void;
+    // @internal (undocumented)
+    onFieldLockChange(index: ItemField): void;
+    // @internal (undocumented)
+    onFieldValueChange(index: ItemField): void;
+    // @internal (undocumented)
+    setFocusItem(index: ItemField): void;
+    }
 
 // @beta
 export const FrameworkReducer: (state: import("./redux-ts").CombinedReducerState<{
@@ -3029,7 +3089,7 @@ export interface IVisibilityHandler extends IDisposable {
     // (undocumented)
     getVisibilityStatus(node: TreeNodeItem, nodeKey: NodeKey): VisibilityStatus | Promise<VisibilityStatus>;
     // (undocumented)
-    onVisibilityChange?: () => void;
+    onVisibilityChange: BeEvent<VisibilityChangeListener>;
 }
 
 // @public
@@ -3644,8 +3704,8 @@ export interface ModelsTreeProps {
     // @alpha
     filterInfo?: VisibilityTreeFilterInfo;
     iModel: IModelConnection;
-    // @internal
-    modelsVisibilityHandler?: VisibilityHandler;
+    // @alpha
+    modelsVisibilityHandler?: ModelsVisibilityHandler;
     onFilterApplied?: (filteredDataProvider: IPresentationTreeDataProvider, matchesCount: number) => void;
     rootElementRef?: React.Ref<HTMLDivElement>;
     selectionMode?: SelectionMode;
@@ -3655,6 +3715,50 @@ export interface ModelsTreeProps {
 
 // @beta
 export type ModelsTreeSelectionPredicate = (key: NodeKey, type: ModelsTreeNodeType) => boolean;
+
+// @alpha
+export class ModelsVisibilityHandler implements IVisibilityHandler {
+    constructor(props: ModelsVisibilityHandlerProps);
+    // (undocumented)
+    protected changeCategoryState(categoryId: Id64String, parentModelId: Id64String | undefined, on: boolean): void;
+    // (undocumented)
+    protected changeElementGroupingNodeState(key: ECClassGroupingNodeKey, on: boolean): Promise<void>;
+    // (undocumented)
+    protected changeElementsState(modelId: Id64String | undefined, categoryId: Id64String | undefined, elementIds: Id64String[], on: boolean): void;
+    // (undocumented)
+    protected changeElementState(id: Id64String, modelId: Id64String | undefined, categoryId: Id64String | undefined, on: boolean): Promise<void>;
+    // (undocumented)
+    protected changeModelState(id: Id64String, on: boolean): Promise<void>;
+    // (undocumented)
+    protected changeModelsVisibility(ids: Id64String[], visible: boolean): Promise<void>;
+    // (undocumented)
+    protected changeSubjectNodeState(ids: Id64String[], node: TreeNodeItem, on: boolean): Promise<void | void[]>;
+    changeVisibility(node: TreeNodeItem, nodeKey: NodeKey, on: boolean): Promise<void>;
+    // (undocumented)
+    dispose(): void;
+    // (undocumented)
+    protected getCategoryDisplayStatus(id: Id64String, parentModelId: Id64String | undefined): VisibilityStatus;
+    // (undocumented)
+    protected getElementDisplayStatus(elementId: Id64String, modelId: Id64String | undefined, categoryId: Id64String | undefined): VisibilityStatus;
+    // (undocumented)
+    protected getElementGroupingNodeDisplayStatus(_id: string, key: ECClassGroupingNodeKey): Promise<VisibilityStatus>;
+    // (undocumented)
+    protected getModelDisplayStatus(id: Id64String): VisibilityStatus;
+    // (undocumented)
+    protected getSubjectNodeVisibility(ids: Id64String[], node: TreeNodeItem): Promise<VisibilityStatus>;
+    getVisibilityStatus(node: TreeNodeItem, nodeKey: NodeKey): VisibilityStatus | Promise<VisibilityStatus>;
+    // (undocumented)
+    onVisibilityChange: BeEvent<VisibilityChangeListener>;
+    setFilteredDataProvider(provider: IPresentationTreeDataProvider | undefined): void;
+    }
+
+// @alpha
+export interface ModelsVisibilityHandlerProps {
+    // (undocumented)
+    rulesetId: string;
+    // (undocumented)
+    viewport: Viewport;
+}
 
 // @public
 export class MouseDownChangedEvent extends UiEvent<MouseDownChangedEventArgs> {
@@ -4201,23 +4305,11 @@ export interface SavedViewLayoutProps {
 }
 
 // @public
-export interface SavedViewProps {
+export interface SavedViewProps extends ViewStateProps {
     // (undocumented)
     bisBaseClass: string;
     // (undocumented)
-    categorySelectorProps: CategorySelectorProps;
-    // (undocumented)
-    displayStyleProps: DisplayStyleProps;
-    // (undocumented)
     emphasizeElementsProps?: EmphasizeElementsProps;
-    // (undocumented)
-    modelSelectorProps?: ModelSelectorProps;
-    // (undocumented)
-    sheetAttachments?: Id64Array;
-    // (undocumented)
-    sheetProps?: SheetProps;
-    // (undocumented)
-    viewDefinitionProps: ViewDefinitionProps;
 }
 
 // @alpha
@@ -4952,6 +5044,8 @@ export const SnapModeField: import("react-redux").ConnectedComponent<typeof Snap
 // @alpha
 export class SolarTimelineDataProvider extends BaseSolarDataProvider {
     constructor(viewState: ViewState, viewport?: ScreenViewport, longitude?: number, latitude?: number);
+    // (undocumented)
+    protected get _displayStyle3d(): DisplayStyle3dState | undefined;
     // (undocumented)
     onTimeChanged: (time: Date) => void;
     // (undocumented)
@@ -5868,7 +5962,7 @@ export interface ToolSettingsGridProps {
     settings?: ToolSettingsEntry[];
 }
 
-// @internal
+// @beta
 export class ToolSettingsManager {
     static get activeToolDescription(): string;
     static get activeToolLabel(): string;
@@ -5927,9 +6021,10 @@ export interface ToolSettingsZoneProps extends CommonProps {
 // @public
 export class ToolUiProvider extends ConfigurableUiControl {
     constructor(info: ConfigurableCreateInfo, options: any);
-    // @deprecated
     get dataProvider(): UiDataProvider | undefined;
-    set dataProvider(_d: UiDataProvider | undefined);
+    set dataProvider(d: UiDataProvider | undefined);
+    // (undocumented)
+    protected _dataProvider: UiDataProvider | undefined;
     getType(): ConfigurableUiControlType;
     // @beta
     get horizontalToolSettingNodes(): ToolSettingsEntry[] | undefined;
@@ -6430,6 +6525,9 @@ export class ViewUtilities {
     static viewSupportsCamera(viewport: ScreenViewport): boolean;
 }
 
+// @alpha
+export type VisibilityChangeListener = (nodeIds?: string[]) => void;
+
 // @beta
 export class VisibilityComponent extends React.Component<VisibilityComponentProps, VisibilityTreeState> {
     constructor(props: any);
@@ -6474,36 +6572,12 @@ export interface VisibilityComponentProps {
     iModelConnection: IModelConnection;
 }
 
-// @internal (undocumented)
-export class VisibilityHandler implements IVisibilityHandler {
-    constructor(props: VisibilityHandlerProps);
-    // (undocumented)
-    changeVisibility(node: TreeNodeItem, nodeKey: NodeKey, on: boolean): Promise<void>;
-    // (undocumented)
-    dispose(): void;
-    // (undocumented)
-    getVisibilityStatus(node: TreeNodeItem, nodeKey: NodeKey): VisibilityStatus | Promise<VisibilityStatus>;
-    // (undocumented)
-    get onVisibilityChange(): (() => void) | undefined;
-    set onVisibilityChange(callback: (() => void) | undefined);
-    }
-
-// @internal (undocumented)
-export interface VisibilityHandlerProps {
-    // (undocumented)
-    onVisibilityChange?: () => void;
-    // (undocumented)
-    rulesetId: string;
-    // (undocumented)
-    viewport: Viewport;
-}
-
 // @alpha
 export interface VisibilityStatus {
     // (undocumented)
     isDisabled?: boolean;
     // (undocumented)
-    isDisplayed: boolean;
+    state: "visible" | "partial" | "hidden";
     // (undocumented)
     tooltip?: string;
 }

@@ -55,14 +55,14 @@
       bottom: $padding;
       filter: $icon-shadow;
 
-      @include triangle-bottom-right($width: $triangle-width, $color: $buic-foreground-body);
+      @include triangle-bottom-right($triangle-width, $color: $buic-foreground-body);
     }
 
     &:hover {
       color: $buic-foreground-primary;
 
       > .nz-triangle {
-        @include triangle-bottom-right($width: $triangle-width, $color: $buic-foreground-primary);
+        @include triangle-bottom-right($triangle-width, $color: $buic-foreground-primary);
       }
     }
 

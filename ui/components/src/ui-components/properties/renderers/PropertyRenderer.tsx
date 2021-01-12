@@ -9,14 +9,15 @@
 import * as React from "react";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { Orientation, RatioChangeResult } from "@bentley/ui-core";
+import { HighlightingComponentProps } from "../../common/HighlightingComponentProps";
 import { EditorContainer, PropertyUpdatedArgs } from "../../editors/EditorContainer";
 import { UiComponents } from "../../UiComponents";
 import { PropertyValueRendererManager } from "../ValueRendererManager";
 import { ActionButtonRenderer } from "./ActionButtonRenderer";
+import { CommonPropertyRenderer } from "./CommonPropertyRenderer";
 import { NonPrimitivePropertyRenderer } from "./NonPrimitivePropertyRenderer";
 import { PrimitivePropertyRenderer, PrimitiveRendererProps } from "./PrimitivePropertyRenderer";
 import { PropertyGridColumnInfo } from "./PropertyGridColumns";
-import { CommonPropertyRenderer } from "./CommonPropertyRenderer";
 
 /** Properties shared by all renderers and PropertyView
  * @public
@@ -74,6 +75,8 @@ export interface PropertyRendererProps extends SharedRendererProps {
   onEditCommit?: (args: PropertyUpdatedArgs) => void;
   /** Called when property edit is cancelled. @beta */
   onEditCancel?: () => void;
+  /** Props used for highlighting. @beta */
+  highlight?: HighlightingComponentProps;
 }
 
 /** State of [[PropertyRenderer]] React component

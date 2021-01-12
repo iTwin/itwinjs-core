@@ -67,7 +67,7 @@ export class SavedViewPicker extends ToolBarDropDown {
     if (!this._imodel.isOpen)
       return;
 
-    const filename = this._imodel.getRpcProps().key;
+    const filename = this._imodel.key;
     const esvString = await DtaRpcInterface.getClient().readExternalSavedViews(filename);
     this._views.loadFromString(esvString);
     this.populateFromViewList();
@@ -232,7 +232,7 @@ export class SavedViewPicker extends ToolBarDropDown {
   }
 
   private async saveNamedViews(): Promise<void> {
-    const filename = this._vp.view.iModel.getRpcProps().key;
+    const filename = this._vp.view.iModel.key;
     if (undefined === filename)
       return;
 

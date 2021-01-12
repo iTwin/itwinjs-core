@@ -83,6 +83,14 @@ export namespace JsonUtils {
 
   function isNullOrUndefined(json: any): boolean { return null === json || undefined === json; }
 
+  /** Determine if the input is a non-empty Javascript object.
+   * @param value The value to test.
+   * @returns true if `value` is an Object with at least one key.
+   */
+  export function isNonEmptyObject(value: any): value is Object {
+    return !isEmptyObjectOrUndefined(value);
+  }
+
   /**
    * Convert the input object into a "pure" JavaScript object, with only instances of "object" or primitives in the returned value.
    * Works recursively for object members, and over arrays entries. Calls "toJSON" on any members that implement it.

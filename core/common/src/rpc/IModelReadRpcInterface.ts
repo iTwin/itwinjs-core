@@ -12,14 +12,14 @@ import { ElementProps } from "../ElementProps";
 import { EntityQueryParams } from "../EntityProps";
 import { GeoCoordinatesResponseProps, IModelCoordinatesResponseProps } from "../GeoCoordinateServices";
 import { GeometrySummaryRequestProps } from "../GeometrySummary";
-import { IModelConnectionProps, IModelRpcProps } from "../IModel";
+import { IModelConnectionProps, IModelRpcOpenProps, IModelRpcProps } from "../IModel";
 import { MassPropertiesRequestProps, MassPropertiesResponseProps } from "../MassProperties";
 import { ModelProps } from "../ModelProps";
 import { QueryLimit, QueryPriority, QueryQuota, QueryResponse } from "../Paging";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
 import { SnapRequestProps, SnapResponseProps } from "../Snapping";
-import { ViewStateProps } from "../ViewProps";
+import { ViewStateLoadProps, ViewStateProps } from "../ViewProps";
 import { RpcNotFoundResponse } from "./core/RpcControl";
 import { GeometryContainmentRequestProps, GeometryContainmentResponseProps } from "../GeometryContainment";
 import { RpcRoutingToken } from "./core/RpcRoutingToken";
@@ -54,7 +54,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
     NOTE: Please consult the README in this folder for the semantic versioning rules.
   ===========================================================================================*/
-  public async openForRead(_iModelToken: IModelRpcProps): Promise<IModelConnectionProps> { return this.forward(arguments); }
+  public async openForRead(_iModelToken: IModelRpcOpenProps): Promise<IModelConnectionProps> { return this.forward(arguments); }
   public async close(_iModelToken: IModelRpcProps): Promise<boolean> { return this.forward(arguments); }
   public async queryRows(_iModelToken: IModelRpcProps, _ecsql: string, _bindings?: any[] | object, _limit?: QueryLimit, _quota?: QueryQuota, _priority?: QueryPriority, _restartToken?: string): Promise<QueryResponse> { return this.forward(arguments); }
   public async getModelProps(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<ModelProps[]> { return this.forward(arguments); }
@@ -65,7 +65,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   public async queryEntityIds(_iModelToken: IModelRpcProps, _params: EntityQueryParams): Promise<Id64String[]> { return this.forward(arguments); }
   public async getClassHierarchy(_iModelToken: IModelRpcProps, _startClassName: string): Promise<string[]> { return this.forward(arguments); }
   public async getAllCodeSpecs(_iModelToken: IModelRpcProps): Promise<any[]> { return this.forward(arguments); }
-  public async getViewStateData(_iModelToken: IModelRpcProps, _viewDefinitionId: string): Promise<ViewStateProps> { return this.forward(arguments); }
+  public async getViewStateData(_iModelToken: IModelRpcProps, _viewDefinitionId: string, _options?: ViewStateLoadProps): Promise<ViewStateProps> { return this.forward(arguments); }
   public async readFontJson(_iModelToken: IModelRpcProps): Promise<any> { return this.forward(arguments); }
   public async getToolTipMessage(_iModelToken: IModelRpcProps, _elementId: string): Promise<string[]> { return this.forward(arguments); }
   public async getViewThumbnail(_iModelToken: IModelRpcProps, _viewId: string): Promise<Uint8Array> { return this.forward(arguments); }

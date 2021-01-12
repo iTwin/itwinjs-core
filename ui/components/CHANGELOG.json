@@ -2,6 +2,162 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "2.10.3",
+      "tag": "@bentley/ui-components_v2.10.3",
+      "date": "Fri, 08 Jan 2021 18:34:03 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.10.2",
+      "tag": "@bentley/ui-components_v2.10.2",
+      "date": "Fri, 08 Jan 2021 14:52:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.10.1",
+      "tag": "@bentley/ui-components_v2.10.1",
+      "date": "Tue, 22 Dec 2020 00:53:38 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.10.0",
+      "tag": "@bentley/ui-components_v2.10.0",
+      "date": "Fri, 18 Dec 2020 18:24:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add support for onClose function in ColorPickerPopupProps. This allows color value from popup to be used by caller."
+          },
+          {
+            "comment": "Added matchesCount attribute to [[PropertyDataFilterResult]] to optionally tell how many matches there were in a [[PropertyRecord]]. Matches in label and value are separated."
+          },
+          {
+            "comment": "Added match counting functionality to [[FilteringPropertyDataProvider]]. The returned [[FilteredPropertyData]] now has total matches count and a function get information about a match at specific index."
+          },
+          {
+            "comment": "Added highlightedRecordProps to [[VirtualizedPropertyGridProps]] to allow highlighting specific parts of rendered PropertyRecords."
+          },
+          {
+            "comment": "Updated [[FilteringInput]] component. Component's `filteringInProgress` prop was deprecated and new `status` property was introduced. This allows rendering the component in any state, including `filtering finished`, without having to cycle through other states first."
+          },
+          {
+            "comment": "fix but in ParsedInput control where formatted text was not updating if underlying parsed value did not change."
+          },
+          {
+            "comment": "Refactor DialogItem and Property interfaces to make them eaiser to use."
+          },
+          {
+            "comment": "Added support for decimal point in Table numeric filter"
+          },
+          {
+            "comment": "Enable pointer events in Toolbar items container.\""
+          },
+          {
+            "comment": "Fix issue where entries in ButtonGroup would not properly disable/enable."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.9.9",
+      "tag": "@bentley/ui-components_v2.9.9",
+      "date": "Sun, 13 Dec 2020 19:00:03 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.8",
+      "tag": "@bentley/ui-components_v2.9.8",
+      "date": "Fri, 11 Dec 2020 02:57:36 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.7",
+      "tag": "@bentley/ui-components_v2.9.7",
+      "date": "Wed, 09 Dec 2020 20:58:23 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.6",
+      "tag": "@bentley/ui-components_v2.9.6",
+      "date": "Mon, 07 Dec 2020 18:40:48 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.5",
+      "tag": "@bentley/ui-components_v2.9.5",
+      "date": "Sat, 05 Dec 2020 01:55:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.4",
+      "tag": "@bentley/ui-components_v2.9.4",
+      "date": "Wed, 02 Dec 2020 20:55:40 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.3",
+      "tag": "@bentley/ui-components_v2.9.3",
+      "date": "Mon, 23 Nov 2020 20:57:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.2",
+      "tag": "@bentley/ui-components_v2.9.2",
+      "date": "Mon, 23 Nov 2020 15:33:50 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.1",
+      "tag": "@bentley/ui-components_v2.9.1",
+      "date": "Thu, 19 Nov 2020 17:03:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix calendar logic to avoid duplicate day numbers when day light saving ends, producing a 25hr day."
+          },
+          {
+            "comment": "Revert width change to EnumEditor component instead set width to auto only for docked tool settings."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.9.0",
+      "tag": "@bentley/ui-components_v2.9.0",
+      "date": "Wed, 18 Nov 2020 16:01:50 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added ParsedInput and QuantityInput controls used to parse and format numeric values."
+          },
+          {
+            "comment": "remove bogus \"code\" entries."
+          },
+          {
+            "comment": "Fix styling issue."
+          },
+          {
+            "comment": "Added FrameworkUiAdmin.showReactCard"
+          },
+          {
+            "comment": "Change Editor components to process native keyboard events instead of synthetic ones."
+          },
+          {
+            "comment": "Added MessagePopup - Displays Toast & Sticky messages without a StatusBar"
+          },
+          {
+            "comment": "Update EditorContainer tests in attempt to fix sporadic test failures."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.8.1",
+      "tag": "@bentley/ui-components_v2.8.1",
+      "date": "Tue, 03 Nov 2020 00:33:56 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.8.0",
       "tag": "@bentley/ui-components_v2.8.0",
       "date": "Fri, 23 Oct 2020 17:04:02 GMT",
@@ -27,6 +183,12 @@
           }
         ]
       }
+    },
+    {
+      "version": "2.7.6",
+      "tag": "@bentley/ui-components_v2.7.6",
+      "date": "Wed, 11 Nov 2020 16:28:23 GMT",
+      "comments": {}
     },
     {
       "version": "2.7.5",

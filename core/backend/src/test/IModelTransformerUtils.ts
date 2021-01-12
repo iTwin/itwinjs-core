@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { DbResult, Guid, GuidString, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { DbResult, Guid, GuidString, Id64, Id64Set, Id64String, Logger } from "@bentley/bentleyjs-core";
 import { Schema } from "@bentley/ecschema-metadata";
 import {
   Box, Cone, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles,
@@ -17,14 +17,14 @@ import {
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import {
-  AuxCoordSystem, AuxCoordSystem2d, BackendRequestContext, CategorySelector, DefinitionModel, DefinitionPartition, DisplayStyle2d, DisplayStyle3d,
-  DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition, ECSqlStatement, Element,
-  ElementAspect, ElementMultiAspect, ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementRefersToElements,
-  ElementUniqueAspect, ExternalSourceAspect, FunctionalModel, FunctionalSchema, GeometricElement3d, GeometryPart, GroupModel, IModelDb,
-  IModelExporter, IModelExportHandler, IModelImporter, IModelJsFs, IModelTransformer, InformationPartitionElement, InformationRecordModel, Model,
-  ModelSelector, OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, Platform, Relationship,
-  RelationshipProps, RenderMaterialElement, SnapshotDb, SpatialCategory, SpatialLocationModel, SubCategory, Subject, TemplateRecipe3d, Texture,
-  ViewDefinition,
+  AuxCoordSystem, AuxCoordSystem2d, BackendLoggerCategory, BackendRequestContext, CategorySelector, DefinitionModel, DefinitionPartition,
+  DisplayStyle2d, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition,
+  ECSqlStatement, Element, ElementAspect, ElementMultiAspect, ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect,
+  ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, FunctionalModel, FunctionalSchema, GeometricElement3d, GeometryPart, GroupModel,
+  IModelDb, IModelExporter, IModelExportHandler, IModelImporter, IModelJsFs, IModelTransformer, InformationPartitionElement, InformationRecordModel,
+  Model, ModelSelector, OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, Platform, Relationship,
+  RelationshipProps, RenderMaterialElement, SnapshotDb, SpatialCategory, SpatialLocationModel, SpatialViewDefinition, SubCategory, Subject,
+  TemplateRecipe3d, Texture, ViewDefinition,
 } from "../imodeljs-backend";
 import { KnownTestLocations } from "./KnownTestLocations";
 
@@ -652,7 +652,7 @@ export namespace IModelTransformerUtils {
     assert.isTrue(displayStyle3d.settings.hasSubCategoryOverride);
     assert.equal(displayStyle3d.settings.subCategoryOverrides.size, 1);
     assert.exists(displayStyle3d.settings.getSubCategoryOverride(subCategoryId), "Expect subCategoryOverrides to have been remapped");
-    assert.isTrue(displayStyle3d.settings.excludedElements.has(physicalObjectId1), "Expect excludedElements to be remapped");
+    assert.isTrue(displayStyle3d.settings.excludedElements.has(physicalObjectId1), "Expect excludedElements to be remapped"); // eslint-disable-line deprecation/deprecation
     assert.equal(displayStyle3d.settings.environment.sky?.image?.type, SkyBoxImageType.Spherical);
     assert.equal(displayStyle3d.settings.environment.sky?.image?.texture, textureId);
     assert.equal(displayStyle3d.settings.getPlanProjectionSettings(spatialLocationModelId)?.elevation, 10.0);
@@ -1082,7 +1082,7 @@ export namespace IModelTransformerUtils {
     return geometryStreamBuilder.geometryStream;
   }
 
-  function insertTextureElement(iModelDb: IModelDb, modelId: Id64String, textureName: string): Id64String {
+  export function insertTextureElement(iModelDb: IModelDb, modelId: Id64String, textureName: string): Id64String {
     // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in bottom right pixel. The rest of the square is red.
     const pngData = [137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217, 74, 34, 232, 0, 0, 0, 1, 115, 82, 71, 66, 0, 174, 206, 28, 233, 0, 0, 0, 4, 103, 65, 77, 65, 0, 0, 177, 143, 11, 252, 97, 5, 0, 0, 0, 9, 112, 72, 89, 115, 0, 0, 14, 195, 0, 0, 14, 195, 1, 199, 111, 168, 100, 0, 0, 0, 24, 73, 68, 65, 84, 24, 87, 99, 248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246, 127, 175, 154, 145, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130];
     const textureData = Base64.btoa(String.fromCharCode(...pngData));
@@ -1091,7 +1091,7 @@ export namespace IModelTransformerUtils {
     return Texture.insert(iModelDb, modelId, textureName, ImageSourceFormat.Png, textureData, textureWidth, textureHeight, `Description for ${textureName}`, TextureFlags.None);
   }
 
-  function queryByUserLabel(iModelDb: IModelDb, userLabel: string): Id64String {
+  export function queryByUserLabel(iModelDb: IModelDb, userLabel: string): Id64String {
     return iModelDb.withPreparedStatement(`SELECT ECInstanceId FROM ${Element.classFullName} WHERE UserLabel=:userLabel`, (statement: ECSqlStatement): Id64String => {
       statement.bindString("userLabel", userLabel);
       return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getId() : Id64.invalid;
@@ -1099,11 +1099,11 @@ export namespace IModelTransformerUtils {
   }
 
   export function dumpIModelInfo(iModelDb: IModelDb): void {
-    const outputFileName: string = `${iModelDb.nativeDb.getFilePath()}.info.txt`;
+    const outputFileName: string = `${iModelDb.pathName}.info.txt`;
     if (IModelJsFs.existsSync(outputFileName)) {
       IModelJsFs.removeSync(outputFileName);
     }
-    IModelJsFs.appendFileSync(outputFileName, `${iModelDb.nativeDb.getFilePath()}\n`);
+    IModelJsFs.appendFileSync(outputFileName, `${iModelDb.pathName}\n`);
     IModelJsFs.appendFileSync(outputFileName, "\n=== CodeSpecs ===\n");
     iModelDb.withPreparedStatement(`SELECT ECInstanceId,Name FROM BisCore:CodeSpec ORDER BY ECInstanceId`, (statement: ECSqlStatement): void => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
@@ -1186,7 +1186,7 @@ export class PhysicalModelConsolidator extends IModelTransformer {
   private readonly _targetModelId: Id64String;
   /** Construct a new PhysicalModelConsolidator */
   public constructor(sourceDb: IModelDb, targetDb: IModelDb, targetModelId: Id64String) {
-    super(sourceDb, targetDb, { cloneUsingBinaryGeometry: true });
+    super(sourceDb, targetDb);
     this._targetModelId = targetModelId;
     this.importer.doNotUpdateElementIds.add(targetModelId);
   }
@@ -1196,6 +1196,55 @@ export class PhysicalModelConsolidator extends IModelTransformer {
       this.context.remapElement(sourceElement.id, this._targetModelId);
     }
     return super.shouldExportElement(sourceElement);
+  }
+}
+
+/** Test IModelTransformer that uses a ViewDefinition to filter the iModel contents. */
+export class FilterByViewTransformer extends IModelTransformer {
+  private readonly _exportViewDefinitionId: Id64String;
+  private readonly _exportModelIds: Id64Set;
+  public constructor(sourceDb: IModelDb, targetDb: IModelDb, exportViewDefinitionId: Id64String) {
+    super(sourceDb, targetDb);
+    this._exportViewDefinitionId = exportViewDefinitionId;
+    const exportViewDefinition = sourceDb.elements.getElement<SpatialViewDefinition>(exportViewDefinitionId, SpatialViewDefinition);
+    const exportCategorySelector = sourceDb.elements.getElement<CategorySelector>(exportViewDefinition.categorySelectorId, CategorySelector);
+    this.excludeCategories(Id64.toIdSet(exportCategorySelector.categories));
+    const exportModelSelector = sourceDb.elements.getElement<ModelSelector>(exportViewDefinition.modelSelectorId, ModelSelector);
+    this._exportModelIds = Id64.toIdSet(exportModelSelector.models);
+  }
+  /** Excludes categories not referenced by the export view's CategorySelector */
+  private excludeCategories(exportCategoryIds: Id64Set): void {
+    const sql = `SELECT ECInstanceId FROM ${SpatialCategory.classFullName}`;
+    this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        const categoryId = statement.getValue(0).getId();
+        if (!exportCategoryIds.has(categoryId)) {
+          this.exporter.excludeElementCategory(categoryId);
+        }
+      }
+    });
+  }
+  /** Override of IModelTransformer.shouldExportElement that excludes PhysicalPartitions/Models not referenced by the export view's ModelSelector */
+  protected shouldExportElement(sourceElement: Element): boolean {
+    if (sourceElement instanceof PhysicalPartition) {
+      if (!this._exportModelIds.has(sourceElement.id)) {
+        return false;
+      }
+    } else if (sourceElement instanceof SpatialViewDefinition) {
+      if (sourceElement.id !== this._exportViewDefinitionId) {
+        return false;
+      }
+    }
+    return super.shouldExportElement(sourceElement);
+  }
+  /** Override of IModelTransformer.processAll that does additional logging after completion. */
+  public processAll(): void {
+    super.processAll();
+    Logger.logInfo(BackendLoggerCategory.IModelTransformer, `processAll complete with ${this._deferredElementIds.size} deferred elements remaining`);
+  }
+  /** Override of IModelTransformer.processDeferredElements that catches all exceptions and keeps going. */
+  public processDeferredElements(numRetries: number = 3): void {
+    try { super.processDeferredElements(numRetries); } catch (error) { }
   }
 }
 

@@ -7,6 +7,7 @@ import * as faker from "faker";
 import * as sinon from "sinon";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { LabelPropertyDataFilterer } from "../../../../ui-components/propertygrid/dataproviders/filterers/LabelPropertyDataFilterer";
+import { FilteredType } from "../../../../ui-components/propertygrid/dataproviders/filterers/PropertyDataFiltererBase";
 import { TestUtils } from "../../../TestUtils";
 
 describe("LabelPropertyDataFilterer", () => {
@@ -18,9 +19,16 @@ describe("LabelPropertyDataFilterer", () => {
       TestUtils.createStructProperty(faker.random.word()),
     ];
 
-    it(`Should return empty string`, () => {
-      const filterer = new LabelPropertyDataFilterer();
-      expect(filterer.filterText).to.be.equal("");
+    describe("[get] filterText", () => {
+      it(`Should return empty string`, () => {
+        const filterer = new LabelPropertyDataFilterer();
+        expect(filterer.filterText).to.be.equal("");
+      });
+
+      it(`Should return string which was set in the constructor`, () => {
+        const filterer = new LabelPropertyDataFilterer("test");
+        expect(filterer.filterText).to.be.equal("test");
+      });
     });
 
     it(`Should return filtering as disabled`, () => {
@@ -35,10 +43,17 @@ describe("LabelPropertyDataFilterer", () => {
       it(`Should always match propertyRecord (type: ${recordType}, displayValue: ${displayValue})`, async () => {
         const filterer = new LabelPropertyDataFilterer();
 
-        const matchResult = await filterer.matchesFilter(record);
+        const matchResult = await filterer.recordMatchesFilter(record);
         expect(matchResult).to.deep.eq({ matchesFilter: true });
       });
     }
+
+    it(`Should always return 'matchesFilter: true' when calling categoryMatchesFilter`, async () => {
+      const filterer = new LabelPropertyDataFilterer();
+
+      const matchResult = await filterer.categoryMatchesFilter();
+      expect(matchResult).to.deep.eq({ matchesFilter: true });
+    });
   });
 
   describe("When filter text set", () => {
@@ -59,12 +74,20 @@ describe("LabelPropertyDataFilterer", () => {
       expect(filterer.isActive).to.be.true;
     });
 
+    it("Should not match when calling `categoryMatchesFilter`", async () => {
+      const filterer = new LabelPropertyDataFilterer();
+
+      filterer.filterText = "test";
+      const matchResult = await filterer.categoryMatchesFilter();
+      expect(matchResult).to.deep.eq({ matchesFilter: false });
+    });
+
     it("Should not match when given empty display value property record", async () => {
       const filterer = new LabelPropertyDataFilterer();
       const record = TestUtils.createPrimitiveStringProperty("", "Value");
 
       filterer.filterText = "SomeFilter";
-      const matchResult = await filterer.matchesFilter(record);
+      const matchResult = await filterer.recordMatchesFilter(record);
       expect(matchResult).to.deep.eq({ matchesFilter: false });
     });
 
@@ -73,7 +96,7 @@ describe("LabelPropertyDataFilterer", () => {
       const record = TestUtils.createPrimitiveStringProperty("Property", "Value");
 
       filterer.filterText = "SomeFilter";
-      const matchResult = await filterer.matchesFilter(record);
+      const matchResult = await filterer.recordMatchesFilter(record);
       expect(matchResult).to.deep.eq({ matchesFilter: false });
     });
 
@@ -82,8 +105,8 @@ describe("LabelPropertyDataFilterer", () => {
       const record = TestUtils.createPrimitiveStringProperty("DisplaySomeFilteredName", "Value");
 
       filterer.filterText = "someFilter";
-      const matchResult = await filterer.matchesFilter(record);
-      expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true });
+      const matchResult = await filterer.recordMatchesFilter(record);
+      expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: 1, filteredTypes: [FilteredType.Label] });
     });
 
     it("Should match when given fully matching property record", async () => {
@@ -91,8 +114,8 @@ describe("LabelPropertyDataFilterer", () => {
       const record = TestUtils.createPrimitiveStringProperty("DisplaySomeFilteredName", "Value");
 
       filterer.filterText = "displaySomefilteredNaMe";
-      const matchResult = await filterer.matchesFilter(record);
-      expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true });
+      const matchResult = await filterer.recordMatchesFilter(record);
+      expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: 1, filteredTypes: [FilteredType.Label] });
     });
 
     it("Should match when given matching struct record", async () => {
@@ -100,8 +123,8 @@ describe("LabelPropertyDataFilterer", () => {
       const record = TestUtils.createStructProperty("Struct");
 
       filterer.filterText = "StrUCt";
-      const matchResult = await filterer.matchesFilter(record);
-      expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true });
+      const matchResult = await filterer.recordMatchesFilter(record);
+      expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: 1, filteredTypes: [FilteredType.Label] });
     });
 
     it("Should match when given matching array record", async () => {
@@ -109,8 +132,35 @@ describe("LabelPropertyDataFilterer", () => {
       const record = TestUtils.createArrayProperty("Array");
 
       filterer.filterText = "ArRAy";
-      const matchResult = await filterer.matchesFilter(record);
-      expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true });
+      const matchResult = await filterer.recordMatchesFilter(record);
+      expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: 1, filteredTypes: [FilteredType.Label] });
+    });
+
+    it("Should match several times when given property record with repeated filter pattern", async () => {
+      const filterer = new LabelPropertyDataFilterer();
+      const record = TestUtils.createPrimitiveStringProperty("DisplaySomeFilteredName", "Value");
+
+      filterer.filterText = "mE";
+      const matchResult = await filterer.recordMatchesFilter(record);
+      expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: 2, filteredTypes: [FilteredType.Label] });
+    });
+
+    it("Should match several times when given array record with repeated filter pattern", async () => {
+      const filterer = new LabelPropertyDataFilterer();
+      const record = TestUtils.createArrayProperty("ArrayAr");
+
+      filterer.filterText = "aR";
+      const matchResult = await filterer.recordMatchesFilter(record);
+      expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: 2, filteredTypes: [FilteredType.Label] });
+    });
+
+    it("Should match several times when given struct record with repeated filter pattern", async () => {
+      const filterer = new LabelPropertyDataFilterer();
+      const record = TestUtils.createStructProperty("StructsTSt");
+
+      filterer.filterText = "ST";
+      const matchResult = await filterer.recordMatchesFilter(record);
+      expect(matchResult).to.deep.eq({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: 3, filteredTypes: [FilteredType.Label] });
     });
   });
 

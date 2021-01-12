@@ -1,3 +1,5 @@
+# This defines the core steps for building and validating iModel.js
+
 parameters:
   - name: workingDir
     type: string
@@ -54,10 +56,6 @@ steps:
   - script: node common/scripts/install-run-rush.js audit
     displayName: rush audit
     workingDirectory: ${{ parameters.workingDir }}
-
-  - script: node common/scripts/install-run-rush.js rebuild -v --to-version-policy prerelease-monorepo-lockStep -p max
-    displayName: rush build packages
-    workingDirectory: ${{ parameters.workingDir }}
   - script: node common/scripts/install-run-rush.js build -v -p max
     displayName: rush build everything else (test-apps and example code)
     workingDirectory: ${{ parameters.workingDir }}
@@ -79,6 +77,7 @@ steps:
     displayName: rush cover
     workingDirectory: ${{ parameters.workingDir }}
     condition: and(succeeded(), ne(variables['Agent.OS'], 'Linux'))
+
   - script: node common/scripts/install-run-rush.js docs
     displayName: rush docs
     workingDirectory: ${{ parameters.workingDir }}

@@ -8,6 +8,11 @@
 
 import { Capabilities } from "./Capabilities";
 
+/** A WebGL 1 or WebGL 2 rendering context.
+ * @public
+ */
+export type WebGLContext = WebGLRenderingContext | WebGL2RenderingContext;
+
 /** Enumerates the required and optional WebGL features used by the [RenderSystem]($frontend).
  * @beta
  */
@@ -74,51 +79,51 @@ export enum WebGLRenderCompatibilityStatus {
   CannotCreateContext,
 }
 
-/** WebGL rendering compatibility information produced by [[queryRenderCompatibility]].
+/** Known bugs associated with specific graphics drivers for which iModel.js can apply workarounds to produce correct visualization.
+ * @beta
+ */
+export interface GraphicsDriverBugs {
+  /** If true, the graphics driver inappropriately applies the "early Z" optimization when a fragment shader writes to the depth buffer.
+   * Early Z elides execution of the fragment shader if the depth test fails; but if the fragment shader contains code that can alter the depth, it
+   * must be executed. The primary symptom of this bug is transparent geometry appearing to be behind opaque geometry despite actually being in front of it.
+   *
+   * Affects Intel HD/UHD Graphics 620/630.
+   *
+   * The workaround for this bug has minimal impact on performance and no impact on visual fidelity.
+   */
+  fragDepthDoesNotDisableEarlyZ?: true;
+}
+
+/** Describes the level of compatibility of a client device/browser with the iModel.js rendering system.
  * @beta
  */
 export interface WebGLRenderCompatibilityInfo {
-  /**
-   * Describes the overall status of rendering compatibility.
-   */
+  /** Describes the overall status of rendering compatibility. */
   status: WebGLRenderCompatibilityStatus;
-  /**
-   * An array containing required features that are unsupported by this system.
-   */
+  /** Features that are required by the rendering system but not supported by the client. */
   missingRequiredFeatures: WebGLFeature[];
-  /**
-   * An array containing optional features that are unsupported by this system.  These are features that could provide
-   * a performance and/or quality benefit.
-   */
+  /** Optional features unsupported by this client that would provide improved performance or quality if present. */
   missingOptionalFeatures: WebGLFeature[];
-  /**
-   * An string containing the user agent of the browser that is being used.
-   */
+  /** Known bugs associated with the client's graphics driver for which iModel.js can apply workarounds. */
+  driverBugs: GraphicsDriverBugs;
+  /** The user agent as reported by the browser. */
   userAgent: string;
-  /**
-   * An string containing the renderer that is being used in the underlying graphics driver.
-   */
+  /** The renderer string reported by this client's graphics driver. */
   unmaskedRenderer?: string;
-  /**
-   * An string containing the vendor that is being used in the underlying graphics driver.
-   */
+  /** The vendor string reported by this client's graphics driver. */
   unmaskedVendor?: string;
-  /**
-   * Possible supplemental details describing why a context could not be created (due to performance caveat or other reason).
-   */
+  /** If WebGL context creation failed, an error message supplied by the browser. */
   contextErrorMessage?: string;
-  /**
-   * The context used to generate the compatibility information.
-   */
-  createdContext?: WebGLRenderingContext | WebGL2RenderingContext | undefined;
+  /** The WebGL context created by the browser and used to generate the compatibility report. */
+  createdContext?: WebGLContext;
 }
 
-/** A function that creates and returns a WebGLRenderingContext given a canvas and desired attributes.
+/** A function that creates and returns a WebGLContext given a canvas and desired attributes.
  * @beta
  */
-export type ContextCreator = (canvas: HTMLCanvasElement, useWebGL2: boolean, inputContextAttributes?: WebGLContextAttributes) => WebGLRenderingContext | WebGL2RenderingContext | undefined;
+export type ContextCreator = (canvas: HTMLCanvasElement, useWebGL2: boolean, inputContextAttributes?: WebGLContextAttributes) => WebGLContext | undefined;
 
-function createDefaultContext(canvas: HTMLCanvasElement, useWebGL2: boolean = true, attributes?: WebGLContextAttributes): WebGLRenderingContext | WebGL2RenderingContext | undefined {
+function createDefaultContext(canvas: HTMLCanvasElement, useWebGL2: boolean = true, attributes?: WebGLContextAttributes): WebGLContext | undefined {
   let context = useWebGL2 ? canvas.getContext("webgl2", attributes) : canvas.getContext("webgl", attributes);
   if (context === null && useWebGL2)
     context = canvas.getContext("webgl", attributes);
@@ -127,14 +132,14 @@ function createDefaultContext(canvas: HTMLCanvasElement, useWebGL2: boolean = tr
 
 /** Produces information about the client's compatibility with the iModel.js rendering system.
  * @param useWebGL2 passed on to the createContext function to create the desired type of context; true to use WebGL2, false to use WebGL1.
- * @param createContext a function that returns a WebGLRenderingContext. The default uses `canvas.getContext()`.
+ * @param createContext a function that returns a WebGLContext. The default uses `canvas.getContext()`.
  * @returns a compatibility summary.
  * @beta
  */
 export function queryRenderCompatibility(useWebGL2: boolean, createContext?: ContextCreator): WebGLRenderCompatibilityInfo {
   const canvas = document.createElement("canvas");
   if (null === canvas)
-    return { status: WebGLRenderCompatibilityStatus.CannotCreateContext, missingOptionalFeatures: [], missingRequiredFeatures: [], userAgent: navigator.userAgent };
+    return { status: WebGLRenderCompatibilityStatus.CannotCreateContext, missingOptionalFeatures: [], missingRequiredFeatures: [], userAgent: navigator.userAgent, driverBugs: { } };
 
   let errorMessage: string | undefined;
   canvas.addEventListener("webglcontextcreationerror", (event) => {
@@ -156,6 +161,7 @@ export function queryRenderCompatibility(useWebGL2: boolean, createContext?: Con
         missingRequiredFeatures: [],
         userAgent: navigator.userAgent,
         contextErrorMessage: errorMessage,
+        driverBugs: {},
       };
   }
 

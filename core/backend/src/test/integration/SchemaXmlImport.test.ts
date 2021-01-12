@@ -2,16 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { assert } from "chai";
 import * as fs from "fs";
 import * as path from "path";
-import { AuthorizedBackendRequestContext, BriefcaseManager,  PhysicalElement } from "../../imodeljs-backend";
+import { AuthorizedBackendRequestContext, IModelHost, PhysicalElement } from "../../imodeljs-backend";
 import { IModelTestUtils, TestIModelInfo } from "../IModelTestUtils";
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { HubUtility } from "./HubUtility";
-import { SyncMode } from "@bentley/imodeljs-common";
 
 describe("Schema XML Import Tests (#integration)", () => {
   let managerRequestContext: AuthorizedBackendRequestContext;
@@ -37,7 +36,7 @@ describe("Schema XML Import Tests (#integration)", () => {
       await HubUtility.deleteIModel(managerRequestContext, "iModelJsIntegrationTest", readWriteTestIModelName);
     } catch (err) {
     }
-    await BriefcaseManager.imodelClient.iModels.create(managerRequestContext, testProjectId, readWriteTestIModelName, { description: "TestSubject" });
+    await IModelHost.iModelClient.iModels.create(managerRequestContext, testProjectId, readWriteTestIModelName, { description: "TestSubject" });
     readWriteTestIModel = await IModelTestUtils.getTestModelInfo(managerRequestContext, testProjectId, readWriteTestIModelName);
 
     // Purge briefcases that are close to reaching the acquire limit
@@ -55,7 +54,7 @@ describe("Schema XML Import Tests (#integration)", () => {
     const schemaFilePath = path.join(KnownTestLocations.assetsDir, "Test3.ecschema.xml");
     const schemaString = fs.readFileSync(schemaFilePath, "utf8");
 
-    const iModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(superRequestContext, testProjectId, readWriteTestIModel.id, SyncMode.PullAndPush);
+    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: superRequestContext, contextId: testProjectId, iModelId: readWriteTestIModel.id });
     await iModel.importSchemaStrings(superRequestContext, [schemaString]); // will throw an exception if import fails
 
     const testDomainClass = iModel.getMetaData("Test3:Test3Element"); // will throw on failure

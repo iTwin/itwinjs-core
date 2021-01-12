@@ -26,7 +26,6 @@ public;ACSDisplayOptions
 public;ACSType
 public;ActivityMessageDetails
 public;ActivityMessageEndReason
-internal;addAnimatedTileTreeReferences(refs: TileTreeReference[], view: ViewState, model: GeometricModelState, script: RenderScheduleState.Script): void
 internal;addRangeGraphic(builder: GraphicBuilder, range: Range3d, is2d: boolean): void
 beta;AngleDescription 
 internal;AnimatedTreeReference 
@@ -36,6 +35,7 @@ beta;Animator
 public;AppearanceOverrideProps
 internal;ArcGisUtilities
 internal;areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): number
+internal;areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise
 public;AuthorizedFrontendRequestContext 
 public;AuxCoordSystem2dState 
 public;AuxCoordSystem3dState 
@@ -61,6 +61,7 @@ beta;BlankConnectionProps
 public;class BriefcaseConnection 
 internal;CachedDecoration =
 internal;CachedIModelCoordinatesResponseProps
+internal;calculateEcefToDbTransformAtLocation(originIn: Point3d, iModel: IModelConnection): Promise
 public;CanvasDecoration
 public;CanvasDecorationList = CanvasDecoration[]
 public;canvasToImageBuffer(canvas: HTMLCanvasElement, format?: ImageBufferFormat): ImageBuffer | undefined
@@ -104,6 +105,7 @@ internal;DevTools
 public;DisplayStyle2dState 
 public;DisplayStyle3dState 
 public;class DisplayStyleState 
+internal;DownloadBriefcaseOptions
 alpha;DrawClipOptions
 public;DrawingModelState 
 public;DrawingViewState 
@@ -140,6 +142,7 @@ beta;ExternalServerExtensionLoader
 alpha;ExternalTileStatistics
 public;extractImageSourceDimensions(source: ImageSource): Promise
 internal;eyeToCartographicOnGlobe(viewport: ScreenViewport, preserveHeight?: boolean): Cartographic | undefined
+internal;eyeToCartographicOnGlobeFromGcs(viewport: ScreenViewport, preserveHeight?: boolean): Promise
 alpha;FeatureLogBatchClient
 alpha;FeatureLogBatchOptions
 public;FeatureOverrideProvider
@@ -154,7 +157,11 @@ alpha;findAvailableUnattachedRealityModels(contextId: GuidString, iModel?: IMode
 public;FitViewTool 
 internal;Flags
 public;FlyViewTool 
+internal;FormatPropsByUnitSystem = Map
 beta;class FormattedQuantityDescription 
+alpha;FormatterParserSpecsProvider
+internal;FormatterSpecByQuantityType = Map
+alpha;FormattingUnitSystemChangedArgs
 internal;FrameBeforeRenderData
 internal;FrameCameraFrustumData
 internal;FrameCameraViewData
@@ -163,6 +170,7 @@ public;FrontendLoggerCategory
 public;FrontendRequestContext 
 public;FrontendSecurityOptions
 public;Frustum2d
+internal;FrustumAnimator 
 public;FuzzySearch
 public;FuzzySearchResult
 public;FuzzySearchResults
@@ -173,6 +181,8 @@ public;GeometricModel3dState
 public;class GeometricModelState 
 internal;GeoServices
 beta;getCenteredViewRect(viewRect: ViewRect, aspectRatio?: number): ViewRect
+beta;getCesiumAssetUrl(osmAssetId: number, requestKey: string): string
+internal;getCesiumOSMBuildingsUrl(): string
 internal;getCesiumTerrainProvider(iModel: IModelConnection, modelId: Id64String, wantSkirts: boolean, exaggeration: number): Promise
 beta;getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes?: number, minCompressionQuality?: number): string | undefined
 internal;getGcsConverterAvailable(iModel: IModelConnection): Promise
@@ -180,6 +190,7 @@ public;getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | un
 public;getImageSourceMimeType(format: ImageSourceFormat): string
 alpha;GlobalLocation
 alpha;GlobalLocationArea
+internal;GlobeAnimator 
 internal;class GltfReader
 internal;GltfReaderProps
 internal;GltfReaderResult 
@@ -298,7 +309,7 @@ alpha;MobileAuthorizationClient
 internal;MockRender
 internal;ModalOptions
 internal;ModalReturn
-internal;ModelDisplayTransformProvider
+alpha;ModelDisplayTransformProvider
 public;ModelSelectorState 
 public;ModelState 
 internal;ModifyElementSource
@@ -317,9 +328,11 @@ beta;openImageDataUrlInNewWindow(url: string, title?: string): void
 internal;OrbitGtTileTree 
 internal;OrbitGtTileTree
 public;OrthographicViewState 
+beta;OsmBuildingDisplayOptions
 public;OutputMessageAlert
 public;OutputMessagePriority
 public;OutputMessageType
+alpha;OverrideFormatEntry
 internal;overrideRequestTileTreeProps(func: RequestTileTreePropsFunc | undefined): void
 public;PanViewTool 
 beta;ParseAndRunResult
@@ -337,11 +350,13 @@ internal;PlanarTilePatch
 public;class PrimitiveTool 
 alpha;PrimitiveVisibility
 internal;QuadId
+alpha;QuantityFormatsChangedArgs
 alpha;QuantityFormatter 
 beta;QuantityType
+alpha;QuantityTypeArg = QuantityType | string
 internal;queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise
 internal;rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined
-internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem, yAxisUp: boolean): RenderGraphic | undefined
+internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined
 internal;RealityModelSource = ViewState | DisplayStyleState
 internal;RealityModelTileClient
 internal;RealityModelTileTree 
@@ -353,7 +368,6 @@ internal;class RealityTileLoader
 internal;RealityTileParams 
 internal;RealityTileTree 
 internal;RealityTileTreeParams 
-internal;RealityTreeReference 
 public;RemoteBriefcaseConnection 
 beta;RemoveEventListener = () => void
 beta;class RenderClipVolume 
@@ -382,8 +396,13 @@ internal;SavedState
 beta;Scene
 beta;SceneContext 
 internal;SceneVolumeClassifier
+beta;ScreenSpaceEffectBuilder
+beta;ScreenSpaceEffectBuilderParams
+beta;ScreenSpaceEffectContext
+beta;ScreenSpaceEffectSource
 public;ScreenViewport 
 public;ScrollViewTool 
+internal;SectionDrawingInfo
 public;SectionDrawingModelState 
 public;SelectAddEvent
 internal;SelectedAndReadyTiles
@@ -419,6 +438,8 @@ internal;SpatialClassifiersContainer
 internal;class SpatialClassifierTileTreeReference 
 public;SpatialLocationModelState 
 public;SpatialModelState 
+internal;SpatialTileTreeReferences 
+internal;SpatialTileTreeReferences
 public;SpatialViewState 
 public;Sprite
 public;SpriteLocation 
@@ -495,10 +516,17 @@ internal;TraversalDetails
 internal;TraversalSelectionContext
 public;tryImageElementFromUrl(url: string): Promise
 beta;TwoWayViewportSync
+beta;Uniform
+beta;UniformArrayParams 
+beta;UniformContext
+beta;UniformParams
+beta;UniformType
+alpha;UnitSystemKey = "metric" | "imperial" | "usCustomary" | "usSurvey"
 internal;UpsampledMapTile 
 internal;UsesDragSelect
 internal;UsesFence
 internal;UsesSelection
+beta;VaryingType
 public;ViewAnimationOptions
 public;ViewChangeOptions 
 alpha;ViewClipByElementTool 
@@ -553,5 +581,7 @@ public;WindowAreaTool
 internal;WmsCapabilities
 internal;WmsCapability
 internal;WmsUtilities
+internal;WmtsCapabilities
+internal;WmtsCapability
 public;ZoomToOptions
 public;ZoomViewTool 

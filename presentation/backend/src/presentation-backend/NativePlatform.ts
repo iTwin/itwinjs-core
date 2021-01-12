@@ -67,6 +67,7 @@ export interface DefaultNativePlatformProps {
   mode: PresentationManagerMode;
   isChangeTrackingEnabled: boolean;
   cacheConfig?: IModelJsNative.ECPresentationHierarchyCacheConfig;
+  contentCacheSize?: number;
 }
 
 /** @internal */
@@ -114,11 +115,11 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
       const requestContext = ClientRequestContext.current;
       return new Promise((resolve: (result: NativePlatformResponse<void>) => void, reject: () => void) => {
         requestContext.enter();
-        this._nativeAddon.forceLoadSchemas(db, (result: IModelJsNative.ECPresentationManagerResponse<void>) => {
-          if (result === IModelJsNative.ECPresentationStatus.Success)
-            resolve({ result: undefined, diagnostics: result.diagnostics });
-          else
+        this._nativeAddon.forceLoadSchemas(db, (response: IModelJsNative.ECPresentationManagerResponse<void>) => {
+          if (response.error)
             reject();
+          else
+            resolve(this.createSuccessResponse(response));
         });
       });
     }
@@ -149,8 +150,8 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
       const requestContext = ClientRequestContext.current;
       const requestGuid = this.handleResult(this._nativeAddon.queueRequest(db, options)).result;
       return new Promise((resolve: (result: NativePlatformResponse<any>) => void, reject) => {
-        requestContext.enter();
         const interval = setInterval(() => {
+          requestContext.enter();
           const pollResult = this._nativeAddon.pollResponse(requestGuid);
           if (pollResult.error) {
             if (pollResult.error.status !== IModelJsNative.ECPresentationStatus.Pending) {

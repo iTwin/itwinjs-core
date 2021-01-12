@@ -16,7 +16,7 @@ import { CommonProps } from "../utils/Props";
  */
 export interface ExpandableBlockProps extends CommonProps {
   /** Label */
-  title: string;
+  title: string|JSX.Element;
   /** Indicates whether the ExpandableBlock is expanded */
   isExpanded: boolean;
   /** Callback function for click event */
@@ -27,6 +27,10 @@ export interface ExpandableBlockProps extends CommonProps {
   onKeyDown?: React.KeyboardEventHandler<HTMLDivElement>;
   /** Additional text displayed in the block below the label and in a smaller font size */
   caption?: string;
+  /** Custom tooltip for the component.
+   * @beta
+   */
+  tooltip?: string;
 }
 
 /** ExpandableBlock React component is a container that shows and hides child content.
@@ -44,6 +48,8 @@ export class ExpandableBlock extends React.PureComponent<ExpandableBlockProps> {
     const ariaExpanded = this.props.isExpanded ? "true" : "false";
     const tabIndex = (this.props.onKeyPress || this.props.onKeyDown) ? 0 : undefined;
 
+    const title = this.props.tooltip ?? (typeof this.props.title == "string" ? this.props.title : undefined);
+
     return (
       <div className={cName} style={this.props.style}>
         <div role="button" aria-expanded={ariaExpanded} className="header" onClick={this.props.onClick}
@@ -56,7 +62,7 @@ export class ExpandableBlock extends React.PureComponent<ExpandableBlockProps> {
               {this.props.caption}
             </div>
           }
-          <div className="title" title={this.props.title}>
+          <div className="title" title={title}>
             {this.props.title}
           </div>
         </div>

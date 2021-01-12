@@ -24,6 +24,7 @@ export class FakeDisplayParams extends DisplayParams {
 describe("MeshBuilderMap Tests", () => {
   let imodel: IModelConnection;
   let spatialView: SpatialViewState;
+  let viewport: ScreenViewport;
 
   const viewDiv = document.createElement("div");
   assert(null !== viewDiv);
@@ -37,9 +38,17 @@ describe("MeshBuilderMap Tests", () => {
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });
 
+  beforeEach(() => {
+    viewport = ScreenViewport.create(viewDiv, spatialView);
+  });
+
   after(async () => {
     if (imodel) await imodel.close();
     await MockRender.App.shutdown();
+  });
+
+  afterEach(() => {
+    viewport.dispose();
   });
 
   it("constructor", () => {
@@ -56,7 +65,6 @@ describe("MeshBuilderMap Tests", () => {
   });
 
   it("createFromGeometries", () => {
-    const viewport = ScreenViewport.create(viewDiv, spatialView);
     const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
 
     const pointA = new Point3d(-100, 0, 0);
@@ -107,7 +115,6 @@ describe("MeshBuilderMap Tests", () => {
   });
 
   it("toMeshes", () => {
-    const viewport = ScreenViewport.create(viewDiv, spatialView);
     const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
 
     const pointA = new Point3d(-100, 0, 0);
@@ -161,7 +168,6 @@ describe("MeshBuilderMap Tests", () => {
   });
 
   it("loadGeometry", () => {
-    const viewport = ScreenViewport.create(viewDiv, spatialView);
     const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
 
     const pointA = new Point3d(-100, 0, 0);
@@ -314,7 +320,6 @@ describe("MeshBuilderMap Tests", () => {
   });
 
   it("loadStrokePrimitiveList", () => {
-    const viewport = ScreenViewport.create(viewDiv, spatialView);
     const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
 
     const pointA = new Point3d(-100, 0, 0);
@@ -356,7 +361,6 @@ describe("MeshBuilderMap Tests", () => {
   });
 
   it("loadStrokesPrimitive", () => {
-    const viewport = ScreenViewport.create(viewDiv, spatialView);
     const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
 
     const pointA = new Point3d(-100, 0, 0);

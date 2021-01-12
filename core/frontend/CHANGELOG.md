@@ -1,6 +1,123 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Mon, 26 Oct 2020 21:21:01 GMT and should not be manually modified.
+This log was last generated on Fri, 08 Jan 2021 18:34:03 GMT and should not be manually modified.
+
+## 2.10.3
+Fri, 08 Jan 2021 18:34:03 GMT
+
+_Version update only_
+
+## 2.10.2
+Fri, 08 Jan 2021 14:52:02 GMT
+
+### Updates
+
+- WmtsCapabilities now using 'xml-js' instead of 'fast-xml-parser'.
+- Bias global reality models to match terrain corrections.
+
+## 2.10.1
+Tue, 22 Dec 2020 00:53:38 GMT
+
+### Updates
+
+- Added new WMTS capabilities parser and improved general support of WMTS.
+
+## 2.10.0
+Fri, 18 Dec 2020 18:24:01 GMT
+
+### Updates
+
+- Update minimum Node version to 10.17.0
+- Support compact representation of DisplayStyleSettings.excludedElements.
+- Handle missing 'window' object when run in Node for support of Server-Side Rendering
+- Ensure proper disposal of WebGL resources owned by Target.
+- Add tests for undefined values in script.
+- Fixed an issue where WMS GetFeatureInfo would not work correctly on all sublayers.
+- Correct reprojection to allow non-rigid linear transform.
+- Fix tap on measure distance marker showing information for wrong segment.
+- Add ability for caller to override quantity display format per QuantityType.
+- Make view globe tools use GCS reprojection as necessary to improve precision when navigating within the iModel extents.
+- Support display of OSM Buildings.
+
+## 2.9.9
+Sun, 13 Dec 2020 19:00:03 GMT
+
+### Updates
+
+- Add ability for caller to override quantity display format per QuantityType.
+
+## 2.9.8
+Fri, 11 Dec 2020 02:57:36 GMT
+
+_Version update only_
+
+## 2.9.7
+Wed, 09 Dec 2020 20:58:23 GMT
+
+### Updates
+
+- Fixed an issue where WMS GetFeatureInfo would not work correctly on all sublayers.
+
+## 2.9.6
+Mon, 07 Dec 2020 18:40:48 GMT
+
+_Version update only_
+
+## 2.9.5
+Sat, 05 Dec 2020 01:55:56 GMT
+
+_Version update only_
+
+## 2.9.4
+Wed, 02 Dec 2020 20:55:40 GMT
+
+_Version update only_
+
+## 2.9.3
+Mon, 23 Nov 2020 20:57:56 GMT
+
+_Version update only_
+
+## 2.9.2
+Mon, 23 Nov 2020 15:33:50 GMT
+
+### Updates
+
+- Apply workaround for transparency anomalies caused by buggy Intel drivers.
+
+## 2.9.1
+Thu, 19 Nov 2020 17:03:42 GMT
+
+_Version update only_
+
+## 2.9.0
+Wed, 18 Nov 2020 16:01:50 GMT
+
+### Updates
+
+- pass map layer accessKeys through configOptions instead of hardcoded
+- Preliminary support for interactive editing sessions.
+- Clean up EventSource API for push events.
+- Fix ECEF for reality models
+- Change key name for MapboxLayers
+- Create animation tile trees if only transform present.
+- disable frontend Bentley telemetry in iModelBank use case
+- Thematic surface isolines are now pickable. Previously, trying to select an area in between isolines for a surface would select the surface. Now the empty space in between does not count.
+- Added ability to override the color of a point cloud.
+- Work around memory issues on iPads when rendering reality tile trees by introducing a mobile-only memory threshold which triggers a prune on tile trees.
+- Fix issue where some apps would exception when quantityFormatter.onIntialize was called before redux state was set up.
+- Fix QuantityFormatter volume definitions.
+- Support for push events
+- Set reality tile and terrain branches to own their own children.
+- Add call to reload tool settings UI.
+- Added ViewCreator APIs
+
+## 2.8.1
+Tue, 03 Nov 2020 00:33:56 GMT
+
+### Updates
+
+- disable frontend Bentley telemetry in iModelBank use case
 
 ## 2.8.0
 Fri, 23 Oct 2020 17:04:02 GMT
@@ -25,6 +142,11 @@ Fri, 23 Oct 2020 17:04:02 GMT
 - Add support for OPC point clouds in Reality Data widget.
 - Added color mix to thematic display for background map terrain and point clouds
 - added IModelApp.translateErrorNumber
+
+## 2.7.6
+Wed, 11 Nov 2020 16:28:23 GMT
+
+_Version update only_
 
 ## 2.7.5
 Fri, 23 Oct 2020 16:23:50 GMT

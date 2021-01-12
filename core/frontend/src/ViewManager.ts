@@ -84,7 +84,6 @@ export class ViewManager {
   private _invalidateScenes = false;
   private _skipSceneCreation = false;
   private _doIdleWork = false;
-  private _removeTileAdminEventListeners?: () => void;
 
   /** @internal */
   public readonly toolTipProviders: ToolTipProvider[] = [];
@@ -107,8 +106,6 @@ export class ViewManager {
     this.addDecorator(IModelApp.toolAdmin);
     this.cursor = "default";
 
-    this._removeTileAdminEventListeners = IModelApp.tileAdmin.addLoadListener((_) => this.invalidateScenes());
-
     const options = IModelApp.renderSystem.options;
     this._doIdleWork = true === options.doIdleWork;
     if (this._doIdleWork)
@@ -121,11 +118,6 @@ export class ViewManager {
     this.decorators.length = 0;
     this.toolTipProviders.length = 0;
     this._selectedView = undefined;
-
-    if (this._removeTileAdminEventListeners) {
-      this._removeTileAdminEventListeners();
-      this._removeTileAdminEventListeners = undefined;
-    }
   }
 
   /** Called after the selected view changes.

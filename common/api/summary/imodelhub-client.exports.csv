@@ -4,7 +4,7 @@ beta;addApplicationVersion(version: string): HttpRequestOptionsTransformer
 beta;addCsrfHeader(headerName?: string, cookieName?: string): HttpRequestOptionsTransformer
 beta;addHeader(name: string, valueFactory: () => string): HttpRequestOptionsTransformer
 internal;addSelectApplicationData(query: RequestQueryOptions): void
-internal;addSelectBCVAccessKey(query: RequestQueryOptions): void
+internal;addSelectContainerAccessKey(query: RequestQueryOptions): void
 internal;addSelectFileAccessKey(query: RequestQueryOptions): void
 internal;AggregateResponseError 
 alpha;AllCodesDeletedEvent 
@@ -27,6 +27,11 @@ alpha;Checkpoint
 beta;CheckpointCreatedEvent 
 alpha;CheckpointHandler
 alpha;CheckpointQuery 
+alpha;CheckpointV2 
+alpha;CheckpointV2ErrorId
+alpha;CheckpointV2Handler
+alpha;CheckpointV2Query 
+alpha;CheckpointV2State
 beta;CloneIModelTemplate
 alpha;CodeBase 
 alpha;CodeEvent 

@@ -27,6 +27,8 @@ const loggingCategory = "backend-itwin-client.TestUtils";
 
 const bankProjects: string[] = [];
 
+export const sharedimodelName = "imodeljs-clients Shared iModel";
+
 let testInstanceId: GuidString;
 function getTestInstanceId(): GuidString {
   if (!testInstanceId)
@@ -774,7 +776,8 @@ export async function createIModel(requestContext: AuthorizedClientRequestContex
   }
 
   const pathName = fromSeedFile && !TestConfig.enableIModelBank ? getMockSeedFilePath() : undefined;
-  return client.iModels.create(requestContext, contextId, name, { path: pathName, timeOutInMilliseconds: 240000 });
+  return client.iModels.create(requestContext, contextId, name,
+    { path: pathName, timeOutInMilliseconds: TestConfig.initializeiModelTimeout });
 }
 
 /**

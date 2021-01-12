@@ -7,20 +7,16 @@
  */
 
 import * as React from "react";
-// eslint-disable-next-line no-duplicate-imports
-import { useRef } from "react";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
-import { FlatNonPrimitivePropertyRenderer } from "./FlatNonPrimitivePropertyRenderer";
-import { CommonPropertyRenderer } from "../../../properties/renderers/CommonPropertyRenderer";
-import { EditorContainer, PropertyUpdatedArgs } from "../../../editors/EditorContainer";
-import { PropertyCategory } from "../../PropertyDataProvider";
-import { PropertyValueRendererManager } from "../../../properties/ValueRendererManager";
-import { SharedRendererProps } from "../../../properties/renderers/PropertyRenderer";
-import {
-  PrimitivePropertyRenderer,
-  PrimitiveRendererProps,
-} from "../../../properties/renderers/PrimitivePropertyRenderer";
 import { Orientation } from "@bentley/ui-core";
+import { HighlightingComponentProps } from "../../../common/HighlightingComponentProps";
+import { EditorContainer, PropertyUpdatedArgs } from "../../../editors/EditorContainer";
+import { CommonPropertyRenderer } from "../../../properties/renderers/CommonPropertyRenderer";
+import { PrimitivePropertyRenderer, PrimitiveRendererProps } from "../../../properties/renderers/PrimitivePropertyRenderer";
+import { SharedRendererProps } from "../../../properties/renderers/PropertyRenderer";
+import { PropertyValueRendererManager } from "../../../properties/ValueRendererManager";
+import { PropertyCategory } from "../../PropertyDataProvider";
+import { FlatNonPrimitivePropertyRenderer } from "./FlatNonPrimitivePropertyRenderer";
 
 /** Properties of [[FlatPropertyRenderer]] React component
  * @internal
@@ -44,6 +40,8 @@ export interface FlatPropertyRendererProps extends SharedRendererProps {
   /** Reports property height changes. */
   onHeightChanged?: (newHeight: number) => void;
 
+  highlight?: HighlightingComponentProps & { applyOnLabel: boolean, applyOnValue: boolean };
+
   children?: never;
 }
 
@@ -58,6 +56,7 @@ export const FlatPropertyRenderer: React.FC<FlatPropertyRendererProps> = (props)
     onEditCommit,
     onEditCancel,
     onHeightChanged,
+    highlight,
     ...passthroughProps
   } = props;
 
@@ -75,6 +74,7 @@ export const FlatPropertyRenderer: React.FC<FlatPropertyRendererProps> = (props)
       isExpanded={passthroughProps.isExpanded}
       onExpansionToggled={passthroughProps.onExpansionToggled}
       onHeightChanged={onHeightChanged}
+      highlight={highlight}
     />
   );
 
@@ -83,14 +83,13 @@ export const FlatPropertyRenderer: React.FC<FlatPropertyRendererProps> = (props)
     valueElementRenderer,
     indentation: props.indentation,
   };
-
   switch (props.propertyRecord.value.valueFormat) {
     case PropertyValueFormat.Primitive:
-      return (<PrimitivePropertyRenderer {...primitiveRendererProps} />);
+      return (<PrimitivePropertyRenderer highlight={highlight?.applyOnLabel ? highlight : undefined} {...primitiveRendererProps} />);
     case PropertyValueFormat.Array:
       // If array is empty, render it as a primitive property
       if (props.propertyRecord.value.items.length === 0)
-        return (<PrimitivePropertyRenderer {...primitiveRendererProps} />);
+        return (<PrimitivePropertyRenderer highlight={highlight?.applyOnLabel ? highlight : undefined} {...primitiveRendererProps} />);
 
     // eslint-disable-next-line no-fallthrough
     case PropertyValueFormat.Struct:
@@ -121,6 +120,8 @@ interface DisplayValueProps {
   category?: PropertyCategory;
   onEditCancel?: () => void;
   onEditCommit?: (args: PropertyUpdatedArgs, category: PropertyCategory) => void;
+
+  highlight?: HighlightingComponentProps & { applyOnLabel: boolean, applyOnValue: boolean };
 }
 
 const DisplayValue: React.FC<DisplayValueProps> = (props) => {
@@ -154,6 +155,7 @@ const DisplayValue: React.FC<DisplayValueProps> = (props) => {
           props.isExpanded,
           props.onExpansionToggled,
           props.onHeightChanged,
+          props.highlight
         )
       }
     </>
@@ -161,7 +163,7 @@ const DisplayValue: React.FC<DisplayValueProps> = (props) => {
 };
 
 function useResetHeightOnEdit(isEditing?: boolean, onHeightChanged?: (newHeight: number) => void) {
-  const previousEditingStatusRef = useRef(isEditing);
+  const previousEditingStatusRef = React.useRef(isEditing);
   React.useEffect(() => {
     if (!previousEditingStatusRef.current && isEditing) {
       onHeightChanged?.(27);

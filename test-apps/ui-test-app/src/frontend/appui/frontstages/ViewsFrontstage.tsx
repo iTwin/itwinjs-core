@@ -721,8 +721,10 @@ class AdditionalTools {
 
   public formatGroupItemsItem = (): CommonToolbarItem => {
     const children = ToolbarHelper.constructChildToolbarItems([
-      AppTools.setLengthFormatMetricCommand, AppTools.setLengthFormatImperialCommand,
-      AppTools.toggleLengthFormatCommand,
+      AppTools.openUnitsFormatDialogCommand,
+      AppTools.setLengthFormatMetricCommand,
+      AppTools.setLengthFormatImperialCommand,
+      AppTools.toggleLengthFormatOverrideCommand,
     ]);
     const item = ToolbarItemUtilities.createGroupButton("tool-formatting-setting", 135, "icon-placeholder", "set formatting units", children, { badgeType: BadgeType.New, groupPriority: 40 });
     return item;

@@ -1,6 +1,103 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Mon, 26 Oct 2020 21:21:01 GMT and should not be manually modified.
+This log was last generated on Fri, 08 Jan 2021 18:34:03 GMT and should not be manually modified.
+
+## 2.10.3
+Fri, 08 Jan 2021 18:34:03 GMT
+
+_Version update only_
+
+## 2.10.2
+Fri, 08 Jan 2021 14:52:02 GMT
+
+_Version update only_
+
+## 2.10.1
+Tue, 22 Dec 2020 00:53:38 GMT
+
+_Version update only_
+
+## 2.10.0
+Fri, 18 Dec 2020 18:24:01 GMT
+
+### Updates
+
+- Add support for onClose function in ColorPickerPopupProps. This allows color value from popup to be used by caller.
+- Added matchesCount attribute to [[PropertyDataFilterResult]] to optionally tell how many matches there were in a [[PropertyRecord]]. Matches in label and value are separated.
+- Added match counting functionality to [[FilteringPropertyDataProvider]]. The returned [[FilteredPropertyData]] now has total matches count and a function get information about a match at specific index.
+- Added highlightedRecordProps to [[VirtualizedPropertyGridProps]] to allow highlighting specific parts of rendered PropertyRecords.
+- Updated [[FilteringInput]] component. Component's `filteringInProgress` prop was deprecated and new `status` property was introduced. This allows rendering the component in any state, including `filtering finished`, without having to cycle through other states first.
+- fix but in ParsedInput control where formatted text was not updating if underlying parsed value did not change.
+- Refactor DialogItem and Property interfaces to make them eaiser to use.
+- Added support for decimal point in Table numeric filter
+- Enable pointer events in Toolbar items container."
+- Fix issue where entries in ButtonGroup would not properly disable/enable.
+
+## 2.9.9
+Sun, 13 Dec 2020 19:00:03 GMT
+
+_Version update only_
+
+## 2.9.8
+Fri, 11 Dec 2020 02:57:36 GMT
+
+_Version update only_
+
+## 2.9.7
+Wed, 09 Dec 2020 20:58:23 GMT
+
+_Version update only_
+
+## 2.9.6
+Mon, 07 Dec 2020 18:40:48 GMT
+
+_Version update only_
+
+## 2.9.5
+Sat, 05 Dec 2020 01:55:56 GMT
+
+_Version update only_
+
+## 2.9.4
+Wed, 02 Dec 2020 20:55:40 GMT
+
+_Version update only_
+
+## 2.9.3
+Mon, 23 Nov 2020 20:57:56 GMT
+
+_Version update only_
+
+## 2.9.2
+Mon, 23 Nov 2020 15:33:50 GMT
+
+_Version update only_
+
+## 2.9.1
+Thu, 19 Nov 2020 17:03:42 GMT
+
+### Updates
+
+- Fix calendar logic to avoid duplicate day numbers when day light saving ends, producing a 25hr day.
+- Revert width change to EnumEditor component instead set width to auto only for docked tool settings.
+
+## 2.9.0
+Wed, 18 Nov 2020 16:01:50 GMT
+
+### Updates
+
+- Added ParsedInput and QuantityInput controls used to parse and format numeric values.
+- remove bogus "code" entries.
+- Fix styling issue.
+- Added FrameworkUiAdmin.showReactCard
+- Change Editor components to process native keyboard events instead of synthetic ones.
+- Added MessagePopup - Displays Toast & Sticky messages without a StatusBar
+- Update EditorContainer tests in attempt to fix sporadic test failures.
+
+## 2.8.1
+Tue, 03 Nov 2020 00:33:56 GMT
+
+_Version update only_
 
 ## 2.8.0
 Fri, 23 Oct 2020 17:04:02 GMT
@@ -13,6 +110,11 @@ Fri, 23 Oct 2020 17:04:02 GMT
 - Update all editors to be controlled components.
 - PropertyGrid: Fix component not updating on data provider change
 - Added jsdoc ESLint rule for UI packages
+
+## 2.7.6
+Wed, 11 Nov 2020 16:28:23 GMT
+
+_Version update only_
 
 ## 2.7.5
 Fri, 23 Oct 2020 16:23:51 GMT

@@ -107,7 +107,7 @@ describe("MenuItem", () => {
   it("createMenuItemNodes should create a valid MenuItem", () => {
     const menuItemProps: MenuItemProps[] = [
       {
-        id: "test", badgeType: BadgeType.New, item: { label: "test label", icon: "icon-placeholder", execute: () => { } }, iconRight: "icon-checkmark",
+        id: "test", badgeType: BadgeType.New, isDisabled: true, item: { label: "test label", icon: "icon-placeholder", execute: () => { } }, iconRight: "icon-checkmark",
       },
     ];
 
@@ -122,6 +122,26 @@ describe("MenuItem", () => {
     expect(wrapper.find(".core-badge").length).to.eq(1);
     expect(wrapper.find(".icon-placeholder").length).to.eq(1);
     expect(wrapper.find(".icon-checkmark").length).to.eq(1);
+  });
+
+  it("createMenuItemNodes should create a disabled MenuItem", () => {
+    const menuItemProps: MenuItemProps[] = [
+      {
+        id: "test", badgeType: BadgeType.New, item: { label: "test label", isDisabled: true, icon: "icon-placeholder", execute: () => { } }, iconRight: "icon-checkmark",
+      },
+    ];
+
+    const menuItems = MenuItemHelpers.createMenuItems(menuItemProps);
+    expect(menuItems.length).to.eq(1);
+
+    const menuItemNodes = MenuItemHelpers.createMenuItemNodes(menuItems);
+    expect(menuItemNodes.length).to.eq(1);
+
+    const wrapper = mount(<div>{menuItemNodes}</div>);
+    const contextMenuItems = wrapper.find(ContextMenuItem);
+    contextMenuItems.forEach((contextMenuItem): void => {
+      expect(contextMenuItem.props().disabled).to.equal(true);
+    });
   });
 
   it("onSelect handled correctly on click", async () => {

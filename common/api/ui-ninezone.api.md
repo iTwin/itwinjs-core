@@ -12,6 +12,7 @@ import { Omit } from '@bentley/ui-core';
 import { OmitChildrenProp } from '@bentley/ui-core';
 import { Point } from '@bentley/ui-core';
 import { PointProps } from '@bentley/ui-core';
+import { PopupProps } from '@bentley/ui-core';
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
 import { Rectangle } from '@bentley/ui-core';
@@ -657,14 +658,8 @@ export enum FooterPopupContentType {
 export type FooterPopupDefaultProps = Pick<FooterPopupProps, "contentType">;
 
 // @beta
-export interface FooterPopupProps extends CommonProps {
-    children?: React.ReactNode;
+export interface FooterPopupProps extends Partial<PopupProps> {
     contentType: FooterPopupContentType;
-    isOpen?: boolean;
-    isPinned?: boolean;
-    onClose?: () => void;
-    onOutsideClick?: (e: MouseEvent) => void;
-    target?: HTMLElement | null;
 }
 
 // @beta
@@ -2783,6 +2778,14 @@ export function useAnimatePanelWidgets(): {
     };
 };
 
+// @internal (undocumented)
+export function useBorders(widgetId: WidgetState["id"]): {
+    "nz-border-top": boolean;
+    "nz-border-bottom": boolean;
+    "nz-border-left": boolean;
+    "nz-border-right": boolean;
+};
+
 // @internal
 export function useCursor(): void;
 
@@ -3129,19 +3132,8 @@ export interface WidgetOverflowProps {
     onResize?: (w: number) => void;
 }
 
-// @internal
+// @internal (undocumented)
 export const WidgetPanel: React.NamedExoticComponent<WidgetPanelProps>;
-
-// @internal (undocumented)
-export const WidgetPanelComponent: React.NamedExoticComponent<WidgetPanelComponentProps>;
-
-// @internal (undocumented)
-export interface WidgetPanelComponentProps {
-    // (undocumented)
-    spanBottom?: boolean;
-    // (undocumented)
-    spanTop?: boolean;
-}
 
 // @internal (undocumented)
 export const WidgetPanelContext: React.Context<WidgetPanelContextArgs | undefined>;
@@ -3167,14 +3159,21 @@ export function WidgetPanelExpanders(): JSX.Element;
 // @internal
 export const WidgetPanelGrip: React.NamedExoticComponent<CommonProps>;
 
-// @internal
+// @internal (undocumented)
 export interface WidgetPanelProps {
-    // (undocumented)
-    panel: PanelState;
     // (undocumented)
     spanBottom?: boolean;
     // (undocumented)
     spanTop?: boolean;
+}
+
+// @internal
+export const WidgetPanelProvider: React.NamedExoticComponent<WidgetPanelProviderProps>;
+
+// @internal
+export interface WidgetPanelProviderProps {
+    // (undocumented)
+    side: PanelSide;
 }
 
 // @internal
@@ -3250,7 +3249,13 @@ export const WidgetStateContext: React.Context<WidgetState | undefined>;
 export const WidgetTab: React.NamedExoticComponent<WidgetTabProps>;
 
 // @internal (undocumented)
-export const WidgetTabBar: React.NamedExoticComponent<object>;
+export const WidgetTabBar: React.NamedExoticComponent<WidgetTabBarProps>;
+
+// @internal (undocumented)
+export interface WidgetTabBarProps {
+    // (undocumented)
+    separator?: boolean;
+}
 
 // @internal
 export interface WidgetTabClickAction {

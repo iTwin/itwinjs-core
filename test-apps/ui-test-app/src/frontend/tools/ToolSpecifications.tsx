@@ -4,15 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import imperialIconSvg from "@bentley/icons-generic/icons/app-2.svg?sprite";
+import automationIconSvg from "@bentley/icons-generic/icons/automation.svg?sprite";
 import {
   IModelApp, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType,
+  QuantityType,
   SelectionTool, SnapMode,
 } from "@bentley/imodeljs-frontend";
 import {
-  BackstageItem, BackstageItemUtilities, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue, StatusBarSection,
+  BackstageItem, BackstageItemUtilities, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue, DialogButtonType, StatusBarSection,
   UiItemsManager, UiItemsProvider,
 } from "@bentley/ui-abstract";
-import { MessageSeverity, ReactMessage, SvgPath, SvgSprite, UnderlinedButton } from "@bentley/ui-core";
+import { Dialog, MessageSeverity, Radio, ReactMessage, SvgPath, SvgSprite, UnderlinedButton } from "@bentley/ui-core";
 import {
   Backstage, BaseItemState, CommandItemDef, ContentViewManager, FrontstageManager, MessageManager, ModalDialogManager,
   ReactNotifyMessageDetails, StatusBarItemUtilities, SyncUiEventDispatcher, SyncUiEventId, ToolItemDef, WidgetState, withStatusFieldProps,
@@ -30,6 +32,85 @@ import { Presentation } from "@bentley/presentation-frontend";
 import { PresentationUnitSystem } from "@bentley/presentation-common";
 
 // cSpell:ignore appui appuiprovider
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export function UnitsFormatDialog() {
+  const [unitFormat, setUnitFormat] = React.useState(IModelApp.quantityFormatter.activeUnitSystem);
+  const dialogTitle = React.useRef("Select Unit Format");
+
+  React.useEffect(() => {
+    const handleUnitSystemChanged = ((): void => {
+      setUnitFormat(IModelApp.quantityFormatter.activeUnitSystem);
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Set Unit System to '${IModelApp.quantityFormatter.activeUnitSystem}'`));
+    });
+
+    IModelApp.quantityFormatter.onActiveFormattingUnitSystemChanged.addListener(handleUnitSystemChanged);
+    return () => {
+      IModelApp.quantityFormatter.onActiveFormattingUnitSystemChanged.removeListener(handleUnitSystemChanged);
+    };
+  }, [unitFormat]);
+
+  const handleClose = React.useCallback(() => {
+    ModalDialogManager.closeDialog();
+  }, []);
+
+  const onRadioChange = React.useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const unitSystem = event.target.value;
+
+    switch (unitSystem) {
+      case "imperial":
+        setUnitFormat(unitSystem);
+        Presentation.presentation.activeUnitSystem = PresentationUnitSystem.BritishImperial;
+        await IModelApp.quantityFormatter.setActiveUnitSystem(unitSystem);
+        break;
+      case "metric":
+        setUnitFormat(unitSystem);
+        Presentation.presentation.activeUnitSystem = PresentationUnitSystem.Metric;
+        await IModelApp.quantityFormatter.setActiveUnitSystem(unitSystem);
+        break;
+      case "usSurvey":
+        setUnitFormat(unitSystem);
+        Presentation.presentation.activeUnitSystem = PresentationUnitSystem.UsSurvey;
+        await IModelApp.quantityFormatter.setActiveUnitSystem(unitSystem);
+        break;
+      case "usCustomary":
+        setUnitFormat(unitSystem);
+        Presentation.presentation.activeUnitSystem = PresentationUnitSystem.UsCustomary;
+        await IModelApp.quantityFormatter.setActiveUnitSystem(unitSystem);
+        break;
+      default:
+        break;
+    }
+  }, [setUnitFormat]);
+
+  const buttonCluster = React.useMemo(() => [
+    { type: DialogButtonType.Close, onClick: handleClose },
+  ], [handleClose]);
+
+  return (
+    <div>
+      <Dialog
+        title={dialogTitle.current}
+        opened={true}
+        resizable={false}
+        movable={true}
+        modal={true}
+        buttonCluster={buttonCluster}
+        onClose={handleClose}
+        onEscape={handleClose}
+        minWidth={200}
+        width={"auto"}
+        trapFocus={false}
+      >
+        <div>
+          <Radio label="Imperial" name="unitFormat" value="imperial" onChange={onRadioChange} checked={unitFormat === "imperial"} />
+          <Radio label="Metric" name="unitFormat" value="metric" onChange={onRadioChange} checked={unitFormat === "metric"} />
+          <Radio label="US Survey" name="unitFormat" value="usSurvey" onChange={onRadioChange} checked={unitFormat === "usSurvey"} />
+          <Radio label="USCustomary" name="unitFormat" value="usCustomary" onChange={onRadioChange} checked={unitFormat === "usCustomary"} />
+        </div>
+      </Dialog>
+    </div>
+  );
+}
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const SampleStatus = withStatusFieldProps(SampleStatusField);
@@ -234,7 +315,7 @@ export class AppTools {
       iconSpec: pathIconSpec,
       labelKey: "SampleApp:buttons.setLengthFormatMetric",
       execute: () => {
-        IModelApp.quantityFormatter.useImperialFormats = false;
+        IModelApp.quantityFormatter.useImperialFormats = false; // eslint-disable-line deprecation/deprecation
         Presentation.presentation.activeUnitSystem = PresentationUnitSystem.Metric;
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Set Length Format to Metric"));
       },
@@ -248,31 +329,69 @@ export class AppTools {
       iconSpec: spriteIconSpec,
       labelKey: "SampleApp:buttons.setLengthFormatImperial",
       execute: () => {
-        IModelApp.quantityFormatter.useImperialFormats = true;
+        IModelApp.quantityFormatter.useImperialFormats = true; // eslint-disable-line deprecation/deprecation
         Presentation.presentation.activeUnitSystem = PresentationUnitSystem.BritishImperial;
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Set Length Format to Imperial"));
       },
     });
   }
 
-  public static get toggleLengthFormatCommand() {
-    return new CommandItemDef({
-      commandId: "toggleLengthFormat",
-      iconSpec: "icon-info",
-      labelKey: "SampleApp:buttons.toggleLengthFormat",
-      execute: () => {
-        const useImperialFormats = !IModelApp.quantityFormatter.useImperialFormats;
-        IModelApp.quantityFormatter.useImperialFormats = useImperialFormats;
-        Presentation.presentation.activeUnitSystem = useImperialFormats
-          ? PresentationUnitSystem.BritishImperial
-          : PresentationUnitSystem.Metric;
-        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, IModelApp.quantityFormatter.useImperialFormats ? "Set Length Format to Imperial" : "Set Length Format to Metric"));
+  public static get toggleLengthFormatOverrideCommand() {
+    const overrideLengthFormats = {
+      metric: {
+        composite: {
+          includeZero: true,
+          spacer: " ",
+          units: [{ label: "cm", name: "Units.CM" }],
+        },
+        formatTraits: ["keepSingleZero", "showUnitLabel"],
+        precision: 4,
+        type: "Decimal",
       },
-      stateSyncIds: [SyncUiEventId.ActiveContentChanged],
-      stateFunc: (currentState: Readonly<BaseItemState>): BaseItemState => {
-        const returnState: BaseItemState = { ...currentState };
-        returnState.isVisible = ContentViewManager.isContent3dView(ContentViewManager.getActiveContentControl());
-        return returnState;
+      imperial: {
+        composite: {
+          includeZero: true,
+          spacer: " ",
+          units: [{ label: "in", name: "Units.IN" }],
+        },
+        formatTraits: ["keepSingleZero", "showUnitLabel"],
+        precision: 4,
+        type: "Decimal",
+      },
+      usCustomary: {
+        composite: {
+          includeZero: true,
+          spacer: " ",
+          units: [{ label: "in", name: "Units.IN" }],
+        },
+        formatTraits: ["keepSingleZero", "showUnitLabel"],
+        precision: 4,
+        type: "Decimal",
+      },
+      usSurvey: {
+        composite: {
+          includeZero: true,
+          spacer: " ",
+          units: [{ label: "in", name: "Units.US_SURVEY_IN" }],
+        },
+        formatTraits: ["keepSingleZero", "showUnitLabel"],
+        precision: 4,
+        type: "Decimal",
+      },
+    };
+
+    return new CommandItemDef({
+      commandId: "toggleLengthFormatOverride",
+      iconSpec: `svg:${automationIconSvg}`,
+      labelKey: "SampleApp:buttons.toggleLengthFormatOverride",
+      execute: async () => {
+        if (IModelApp.quantityFormatter.hasActiveOverride(QuantityType.Length)) {
+          await IModelApp.quantityFormatter.clearOverrideFormats(QuantityType.Length);
+          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Length Overrides cleared"));
+        } else {
+          await IModelApp.quantityFormatter.setOverrideFormats(QuantityType.Length, overrideLengthFormats);
+          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Length Overrides set"));
+        }
       },
     });
   }
@@ -469,6 +588,15 @@ export class AppTools {
       iconSpec: "icon-status-warning",
       labelKey: "SampleApp:buttons.warningMessageBox",
       execute: () => ModalDialogManager.openDialog(AppTools._messageBox(MessageSeverity.Warning, IModelApp.i18n.translate("SampleApp:buttons.warningMessageBox"))),
+    });
+  }
+
+  public static get openUnitsFormatDialogCommand() {
+    return new CommandItemDef({
+      commandId: " ",
+      iconSpec: " icon-dashboard-2",
+      label: "Open Units Formatting Dialog",
+      execute: () => ModalDialogManager.openDialog(<UnitsFormatDialog />, "unitsFormatDialog"),
     });
   }
 

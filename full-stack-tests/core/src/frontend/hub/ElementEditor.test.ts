@@ -90,7 +90,7 @@ describe("Element editor tests (#integration)", async () => {
 
     contextId = await TestUtility.getTestProjectId(testProjectName);
 
-    const imodelId = await TestUtility.createIModel(testIModelName, contextId, true);
+    const imodelId = await TestUtility.createIModel(TestUtility.generateUniqueName(testIModelName), contextId, true);
     assert.isTrue(imodelId !== undefined);
     assert.isTrue(imodelId !== "");
 
@@ -100,6 +100,7 @@ describe("Element editor tests (#integration)", async () => {
   after(async () => {
     if (iModel) {
       await iModel.close();
+      await TestUtility.deleteIModel(iModel.iModelId, iModel.contextId);
     }
     await IModelApp.shutdown();
   });

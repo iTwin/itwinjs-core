@@ -11,7 +11,8 @@ import {
 } from "@bentley/geometry-core";
 import { Frustum, Npc, NpcCorners } from "@bentley/imodeljs-common";
 import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
-import { CoordSystem, Viewport } from "./Viewport";
+import { CoordSystem } from "./CoordSystem";
+import { Viewport } from "./Viewport";
 import { ViewRect } from "./ViewRect";
 import { ViewState } from "./ViewState";
 import { Frustum2d } from "./Frustum2d";
@@ -148,12 +149,11 @@ export class ViewingSpace {
       extents.setNull();
 
     let depthRange;
-    const backgroundMapGeometry = this.view.displayStyle.getBackgroundMapGeometry();
-    if (undefined !== backgroundMapGeometry) {
+    const globalGeometry = this.view.displayStyle.getGlobalGeometryAndHeightRange();
+    if (undefined !== globalGeometry) {
       const viewZ = this.rotation.getRow(2);
       const eyeDepth = this.eyePoint ? viewZ.dotProduct(this.eyePoint) : undefined;
-      const heightRange = this.view.displayStyle.displayTerrain ? ApproximateTerrainHeights.instance.globalHeightRange : Range1d.createXX(-1, 1);
-      depthRange = backgroundMapGeometry.getFrustumIntersectionDepthRange(frustum, extents, heightRange, this.view.maxGlobalScopeFactor > 1);
+      depthRange = globalGeometry.geometry.getFrustumIntersectionDepthRange(frustum, extents, globalGeometry.heightRange, this.view.maxGlobalScopeFactor > 1);
 
       if (eyeDepth !== undefined) {
         const maxBackgroundFrontBackRatio = 1.0E6;
@@ -299,7 +299,7 @@ export class ViewingSpace {
     this.viewOrigin.setFrom(origin);
     this.viewDelta.setFrom(delta);
 
-    const newRootToNpc = this.view.computeWorldToNpc(this.rotation, origin, delta, undefined === this.view.displayStyle.getBackgroundMapGeometry() /* if displaying background map, don't enforce front/back ratio as no Z-Buffer */);
+    const newRootToNpc = this.view.computeWorldToNpc(this.rotation, origin, delta, !this.view.displayStyle.getIsBackgroundMapVisible() /* if displaying background map, don't enforce front/back ratio as no Z-Buffer */);
     if (newRootToNpc.map === undefined) {
       this.frustFraction = 0; // invalid frustum
       return;

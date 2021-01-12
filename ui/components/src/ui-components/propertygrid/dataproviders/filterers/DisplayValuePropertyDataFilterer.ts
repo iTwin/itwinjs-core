@@ -7,14 +7,20 @@
  */
 
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
-import { PropertyDataFiltererBase, PropertyDataFilterResult } from "./PropertyDataFiltererBase";
+import { countMatchesInString } from "../../../common/countMatchesInString";
+import { FilteredType, PropertyDataFilterResult, PropertyRecordDataFiltererBase } from "./PropertyDataFiltererBase";
 
 /**
  * PropertyData filterer which matches on Primitive Property Record display value text.
  * @alpha
  */
-export class DisplayValuePropertyDataFilterer extends PropertyDataFiltererBase {
+export class DisplayValuePropertyDataFilterer extends PropertyRecordDataFiltererBase {
   private _filterText: string = "";
+
+  public constructor(filterText: string = "") {
+    super();
+    this._filterText = filterText;
+  }
 
   public get filterText(): string { return this._filterText; }
   public set filterText(value: string) {
@@ -27,7 +33,7 @@ export class DisplayValuePropertyDataFilterer extends PropertyDataFiltererBase {
 
   public get isActive() { return this.filterText !== ""; }
 
-  public async matchesFilter(node: PropertyRecord): Promise<PropertyDataFilterResult> {
+  public async recordMatchesFilter(node: PropertyRecord): Promise<PropertyDataFilterResult> {
     if (!this.isActive)
       return { matchesFilter: true };
 
@@ -35,12 +41,16 @@ export class DisplayValuePropertyDataFilterer extends PropertyDataFiltererBase {
       return { matchesFilter: false };
 
     const displayValue = node.value.displayValue?.toLowerCase() ?? "";
-    if (!displayValue.includes(this.filterText))
+    const matchesCount = countMatchesInString(displayValue, this.filterText);
+
+    if (matchesCount === 0)
       return { matchesFilter: false };
 
     return {
       matchesFilter: true,
       shouldExpandNodeParents: true,
+      matchesCount,
+      filteredTypes: [FilteredType.Value],
     };
   }
 }

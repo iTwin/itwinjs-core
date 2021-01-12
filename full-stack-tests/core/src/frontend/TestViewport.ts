@@ -170,9 +170,10 @@ function areAllChildTilesLoaded(parent?: Tile): boolean {
 }
 
 function areAllTilesLoaded(vp: Viewport): boolean {
-  if (vp.numRequestedTiles > 0)
+  if (vp.numRequestedTiles > 0 || !vp.view.areAllTileTreesLoaded)
     return false;
 
+  // In addition to ViewState.areAllTileTreesLoaded, ensure all child tiles are loaded (for map tiles).
   let allLoaded = true;
   vp.view.forEachTileTreeRef((ref) => {
     allLoaded = allLoaded && ref.isLoadingComplete && areAllChildTilesLoaded(ref.treeOwner.tileTree?.rootTile);
@@ -274,9 +275,11 @@ export class ScreenTestViewport extends ScreenViewport implements TestableViewpo
   }
 
   public dispose(): void {
-    IModelApp.viewManager.dropViewport(this, false); // do not allow dropViewport() to call dispose()...
-    super.dispose();
-    document.body.removeChild(this.parentDiv);
+    if (!this.isDisposed) {
+      IModelApp.viewManager.dropViewport(this, false); // do not allow dropViewport() to call dispose()...
+      super.dispose();
+      document.body.removeChild(this.parentDiv);
+    }
   }
 
   public static async createTestViewport(viewId: Id64String, imodel: IModelConnection, width: number, height: number): Promise<ScreenTestViewport> {

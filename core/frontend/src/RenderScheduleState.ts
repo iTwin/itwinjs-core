@@ -21,6 +21,7 @@ import { RenderClipVolume } from "./render/RenderClipVolume";
 function interpolate(value0: number, value1: number, fraction: number) {
   return value0 + fraction * (value1 - value0);
 }
+function isNullOrUndefined(value: any) { return value === undefined || value === null; };
 
 /** @internal */
 export namespace RenderScheduleState {
@@ -177,14 +178,14 @@ export namespace RenderScheduleState {
 
     public getVisibilityOverride(time: number, interval: Interval): number {
       if (undefined === this.visibilityTimeline ||
-        !ElementTimeline.findTimelineInterval(interval, time, this.visibilityTimeline) && this.visibilityTimeline[interval.index0].value !== null)
+        !ElementTimeline.findTimelineInterval(interval, time, this.visibilityTimeline) && !isNullOrUndefined(this.visibilityTimeline[interval.index0].value))
         return 100.0;
       const timeline = this.visibilityTimeline;
       let visibility = timeline[interval.index0].value;
       if (visibility === undefined || visibility === null)
         return 100.0;
 
-      if (interval.fraction > 0)
+      if (interval.fraction > 0 && !isNullOrUndefined(timeline[interval.index1].value))
         visibility = interpolate(visibility, timeline[interval.index1].value, interval.fraction);
 
       return visibility;
@@ -192,9 +193,9 @@ export namespace RenderScheduleState {
 
     public getColorOverride(time: number, interval: Interval): RgbColor | undefined {
       let colorOverride;
-      if (undefined !== this.colorTimeline && Timeline.findTimelineInterval(interval, time, this.colorTimeline) && this.colorTimeline[interval.index0].value !== null) {
+      if (undefined !== this.colorTimeline && Timeline.findTimelineInterval(interval, time, this.colorTimeline) && !isNullOrUndefined(this.colorTimeline[interval.index0].value)) {
         const entry0 = this.colorTimeline[interval.index0].value;
-        if (interval.fraction > 0) {
+        if (interval.fraction > 0 && !isNullOrUndefined(this.colorTimeline[interval.index1].value)) {
           const entry1 = this.colorTimeline[interval.index1].value;
           colorOverride = new RgbColor(interpolate(entry0.red, entry1.red, interval.fraction), interpolate(entry0.green, entry1.green, interval.fraction), interpolate(entry0.blue, entry1.blue, interval.fraction));
         } else
@@ -204,7 +205,7 @@ export namespace RenderScheduleState {
     }
 
     public getAnimationTransform(time: number, interval: Interval): Transform | undefined {
-      if (!ElementTimeline.findTimelineInterval(interval, time, this.transformTimeline) || this.transformTimeline![interval.index0].value === null)
+      if (!ElementTimeline.findTimelineInterval(interval, time, this.transformTimeline) || isNullOrUndefined(this.transformTimeline![interval.index0].value))
         return undefined;
 
       if (interval.index0 < 0)
@@ -213,9 +214,9 @@ export namespace RenderScheduleState {
       const timeline = this.transformTimeline!;
       const value = timeline[interval.index0].value;
       const transform = Transform.fromJSON(value.transform);
-      if (interval.fraction > 0.0) {
+      if (interval.fraction > 0.0 && !isNullOrUndefined(timeline[interval.index1].value)) {
         const value1 = timeline[interval.index1].value;
-        if (value1.pivot !== null && value1.orientation !== null && value1.position !== null) {
+        if (!isNullOrUndefined(value1.pivot) && !isNullOrUndefined(value1.orientation) && !isNullOrUndefined(value1.position)) {
           const q0 = Point4d.fromJSON(value.orientation), q1 = Point4d.fromJSON(value1.orientation);
           const sum = Point4d.interpolateQuaternions(q0, interval.fraction, q1);
           const interpolatedMatrix = Matrix3d.createFromQuaternion(sum);
@@ -239,17 +240,17 @@ export namespace RenderScheduleState {
     }
 
     public getAnimationClip(time: number, interval: Interval): RenderClipVolume | undefined {
-      if (!ElementTimeline.findTimelineInterval(interval, time, this.cuttingPlaneTimeline) || this.cuttingPlaneTimeline![interval.index0].value === null)
+      if (!ElementTimeline.findTimelineInterval(interval, time, this.cuttingPlaneTimeline) || isNullOrUndefined(this.cuttingPlaneTimeline![interval.index0].value))
         return undefined;
 
       const timeline = this.cuttingPlaneTimeline!;
       const value = timeline[interval.index0].value;
-      if (!value)
+      if (isNullOrUndefined(value))
         return undefined;
 
       const position = Point3d.fromJSON(value.position);
       const direction = Vector3d.fromJSON(value.direction);
-      if (interval.fraction > 0.0) {
+      if (interval.fraction > 0.0 && !isNullOrUndefined(timeline[interval.index1].value)) {
         const value1 = timeline[interval.index1].value;
         position.interpolate(interval.fraction, Point3d.fromJSON(value1.position), position);
         direction.interpolate(interval.fraction, Vector3d.fromJSON(value1.direction), direction);
@@ -463,7 +464,7 @@ export namespace RenderScheduleState {
       this.displayStyleId = displayStyleId;
     }
 
-    public static fromJSON(displayStyleId: Id64String, modelTimelines: RenderSchedule.ModelTimelineProps[]): Script | undefined {
+    public static fromJSON(displayStyleId: Id64String, modelTimelines: Readonly<RenderSchedule.ModelTimelineProps[]>): Script | undefined {
       const value = new Script(displayStyleId);
       modelTimelines.forEach((entry) => value.modelTimelines.push(ModelTimeline.fromJSON(entry)));
 

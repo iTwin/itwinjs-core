@@ -17,6 +17,7 @@ import { BingMapsImageryLayerProvider, ImageryMapLayerTreeReference, ImageryMapT
 import { ArcGisUtilities } from "./ArcGisUtilities";
 import { MapCartoRectangle } from "./MapCartoRectangle";
 import { WmsCapabilities, WmsCapability } from "./WmsCapabilities";
+import { WmtsCapabilities, WmtsCapability } from "./WmtsCapabilities";
 
 const tileImageSize = 256, untiledImageSize = 256;
 // eslint-disable-next-line prefer-const
@@ -44,6 +45,7 @@ export abstract class MapLayerImageryProvider {
   public get minimumZoomLevel(): number { return 4; }
   public get maximumZoomLevel(): number { return 22; }
   public get usesCachedTiles() { return this._usesCachedTiles; }
+  public get mutualExclusiveSubLayer(): boolean { return false; }
   public cartoRange?: MapCartoRectangle;
   protected get _filterByCartoRange() { return true; }
   constructor(protected readonly _settings: MapLayerSettings, protected _usesCachedTiles: boolean) { }
@@ -87,6 +89,9 @@ export abstract class MapLayerImageryProvider {
   // returns a Uint8Array with the contents of the tile.
   public async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
     const tileUrl: string = this.constructUrl(row, column, zoomLevel);
+    if (tileUrl.length === 0)
+      return undefined;
+
     const tileRequestOptions: RequestOptions = { method: "GET", responseType: "arraybuffer" };
     tileRequestOptions.auth = this.getRequestAuthorization();
     try {
@@ -185,7 +190,7 @@ export abstract class MapLayerImageryProvider {
   }
   public getEPSG3857ExtentString(row: number, column: number, zoomLevel: number) {
     const tileExtent = this.getEPSG3857Extent(row, column, zoomLevel);
-    return `${tileExtent.left.toFixed(2)},${tileExtent.bottom.toFixed(2)},${tileExtent.right.toFixed(2)},${tileExtent.top.toFixed(2)} `;
+    return `${tileExtent.left.toFixed(2)},${tileExtent.bottom.toFixed(2)},${tileExtent.right.toFixed(2)},${tileExtent.top.toFixed(2)}`;
   }
 }
 
@@ -247,7 +252,16 @@ class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
 
   private getQueryableLayers(): string[] {
     const layerNames = new Array<string>();
-    this._capabilities?.layer?.subLayers.forEach((subLayer) => { if (subLayer.queryable) layerNames.push(subLayer.name); });
+    const getQueryableSubLayers = ((subLayer: WmsCapability.SubLayer) => {
+      if (!subLayer)
+        return;
+
+      if (subLayer.queryable)
+        layerNames.push(subLayer.name);
+
+      subLayer.children?.forEach((childSubLayer) => { getQueryableSubLayers(childSubLayer); });
+    });
+    this._capabilities?.layer?.subLayers?.forEach((subLayer) => { getQueryableSubLayers(subLayer); });
     return layerNames;
   }
 
@@ -289,15 +303,115 @@ class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
 }
 class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
   private _baseUrl: string;
+  private _capabilities?: WmtsCapabilities;
+  private _preferredLayerTileMatrixSet = new Map<string, WmtsCapability.TileMatrixSet>();
+  private _preferredLayerStyle = new Map<string, WmtsCapability.Style>();
+
+  public get mutualExclusiveSubLayer(): boolean { return true; }
+
   constructor(settings: MapLayerSettings) {
     super(settings, true);
     this._baseUrl = WmsUtilities.getBaseUrl(this._settings.url);
   }
+
+  public async initialize(): Promise<void> {
+    try {
+      this._capabilities = await WmtsCapabilities.create(this._baseUrl);
+      this.initPreferredTileMatrixSet();
+      this.initPreferredStyle();
+      this.initCartoRange();
+
+      if (this._preferredLayerTileMatrixSet.size === 0 || this._preferredLayerStyle.size === 0)
+        throw new ServerError(IModelStatus.ValidationFailed, "");
+
+    } catch (_error) {
+      throw new ServerError(IModelStatus.ValidationFailed, "");
+    }
+
+  }
+
+  // Each layer can be served in multiple tile matrix set (i.e. TileTree).
+  // We have to pick one for each layer: for now we look for a Google Maps compatible tile tree.
+  private initPreferredTileMatrixSet() {
+    const googleMapsTms = this._capabilities?.contents?.getGoogleMapsCompatibleTileMatrixSet();
+
+    const wellGoogleKnownTms = googleMapsTms?.find((tms) => { return tms.wellKnownScaleSet?.toLowerCase().includes(WmtsCapability.Constants.GOOGLEMAPS_COMPATIBLE_WELLKNOWNNAME); });
+
+    this._capabilities?.contents?.layers.forEach((layer) => {
+
+      if (wellGoogleKnownTms && layer.tileMatrixSetLinks.some((tmsl) => { return (tmsl.tileMatrixSet === wellGoogleKnownTms.identifier); })) {
+        // Favor tile matrix set that was explicitly marked as GoogleMaps compatible
+        this._preferredLayerTileMatrixSet.set(layer.identifier, wellGoogleKnownTms);
+      } else {
+        // Search all compatible tile set matrix if previous attempt didn't work.
+        // If more than one candidate is found, pick the tile set with the most LODs.
+        const tileMatrixSets = googleMapsTms?.filter((tms) => {
+          return layer.tileMatrixSetLinks.some((tmsl) => { return (tmsl.tileMatrixSet === tms.identifier); });
+        });
+
+        let preferredTms: WmtsCapability.TileMatrixSet | undefined;
+        if (tileMatrixSets && tileMatrixSets.length === 1)
+          preferredTms = tileMatrixSets[0];
+        else if (tileMatrixSets && tileMatrixSets?.length > 1)
+          preferredTms = tileMatrixSets.reduce((prev, current) => (prev.tileMatrix.length > current.tileMatrix.length) ? prev : current);
+
+        if (preferredTms)
+          this._preferredLayerTileMatrixSet.set(layer.identifier, preferredTms);
+      }
+    });
+  }
+
+  // Each layer can be published different style.  We look for a style flagged as 'Default'.
+  private initPreferredStyle() {
+    this._capabilities?.contents?.layers.forEach((layer) => {
+      let preferredStyle: WmtsCapability.Style | undefined;
+      if (layer.styles.length === 1)
+        preferredStyle = layer.styles[0];
+      else if (layer.styles.length > 1) {
+        // If more than style is available, takes the default one, otherwise the first one.
+        const defaultStyle = layer.styles.find((style) => style.isDefault);
+        if (defaultStyle)
+          preferredStyle = defaultStyle;
+        else
+          preferredStyle = layer.styles[0];
+      }
+
+      if (preferredStyle)
+        this._preferredLayerStyle.set(layer.identifier, preferredStyle);
+    });
+  }
+
+  private initCartoRange() {
+    this._capabilities?.contents?.layers.forEach((layer) => {
+
+      if (layer.wsg84BoundingBox) {
+        if (this.cartoRange)
+          this.cartoRange.extendRange(layer.wsg84BoundingBox);
+        else
+          this.cartoRange = layer.wsg84BoundingBox.clone();
+      }
+    });
+  }
+
   public constructUrl(row: number, column: number, zoomLevel: number): string {
-    const layerNames = new Array<string>();
-    this._settings.subLayers.forEach((subLayer) => layerNames.push(subLayer.name));
-    const layerString = layerNames.join("%2C");
-    return `${this._baseUrl}?SERVICE=WMTS&VERSION=1.3.0&REQUEST=GetMap&FORMAT=image%2Fpng&TRANSPARENT=${this.transparentBackgroundString}&LAYERS=${layerString}&WIDTH=${this.tileSize}&HEIGHT=${this.tileSize}&CRS=EPSG%3A3857&style=default&tilematrixset=EPSG%3A3857&TileMatrix=${zoomLevel}&TileCol=${column}&TileRow=${row} `;
+    // WMTS support a single layer per tile request, so we pick the first visible layer.
+    const layerString = this._settings.subLayers.find((subLayer) => subLayer.visible)?.name;
+    let tileMatrix, tileMatrixSet, style;
+    if (layerString) {
+      tileMatrixSet = this._preferredLayerTileMatrixSet.get(layerString);
+
+      style = this._preferredLayerStyle.get(layerString);
+
+      // Matrix identifier might be something other than standard 0..n zoom level,
+      // so lookup the matrix identifier just in case.
+      if (tileMatrixSet && tileMatrixSet.tileMatrix.length > zoomLevel)
+        tileMatrix = tileMatrixSet.tileMatrix[zoomLevel].identifier;
+    }
+
+    if (layerString !== undefined && tileMatrix !== undefined && tileMatrixSet !== undefined && style !== undefined)
+      return `${this._baseUrl}?Service=WMTS&Version=1.0.0&Request=GetTile&Format=image%2Fpng&layer=${layerString}&style=${style.identifier}&TileMatrixSet=${tileMatrixSet.identifier}&TileMatrix=${tileMatrix}&TileCol=${column}&TileRow=${row} `;
+    else
+      return "";
   }
 }
 
@@ -590,9 +704,50 @@ class WmsMapLayerFormat extends ImageryMapLayerFormat {
 
 class WmtsMapLayerFormat extends ImageryMapLayerFormat {
   public static formatId = "WMTS";
+
   public static createImageryProvider(settings: MapLayerSettings): MapLayerImageryProvider | undefined {
     return new WmtsMapLayerImageryProvider(settings);
   }
+
+  public static async validateSource(url: string, credentials?: RequestBasicCredentials): Promise<MapLayerSourceValidation> {
+    try {
+      const subLayers: MapSubLayerProps[] = [];
+      const capabilities = await WmtsCapabilities.create(url, credentials);
+      if (!capabilities)
+        return { status: MapLayerSourceStatus.InvalidUrl };
+
+      // Only returns layer that can be published in the Google maps aligned tile tree.
+      const googleMapsTms = capabilities?.contents?.getGoogleMapsCompatibleTileMatrixSet();
+      if (!googleMapsTms)
+        return { status: MapLayerSourceStatus.InvalidTileTree };
+
+      let subLayerId = 0;
+      capabilities?.contents?.layers.forEach((layer) => {
+        if (googleMapsTms?.some((tms) => {
+          return layer.tileMatrixSetLinks.some((tmls) => { return (tmls.tileMatrixSet === tms.identifier); });
+        })) {
+          subLayers.push({
+            name: layer.identifier,
+            title: layer.title ?? layer.identifier,
+            visible: (subLayers.length === 0),   // Make the first layer visible.
+            parent: undefined,
+            children: undefined,
+            id: subLayerId++,
+          });
+        }
+      });
+
+      // Return error if we could find a single compatible layer.
+      if (subLayers.length === 0)
+        return { status: MapLayerSourceStatus.InvalidTileTree };
+
+      return { status: MapLayerSourceStatus.Valid, subLayers };
+    } catch (err) {
+      console.error(err); // eslint-disable-line no-console
+      return { status: MapLayerSourceStatus.InvalidUrl };
+    }
+  }
+
 }
 
 class ArcGISMapLayerFormat extends ImageryMapLayerFormat {

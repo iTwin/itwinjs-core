@@ -27,6 +27,7 @@ export enum GltfV2ChunkTypes {
 
 /** @internal */
 export enum GltfMeshMode {
+  Points = 0,
   Lines = 1,
   LineStrip = 3,
   Triangles = 4,
@@ -143,14 +144,16 @@ export class GltfBufferView {
   public readonly count: number;
   public readonly type: GltfDataType;
   public readonly accessor: any;
+  public readonly stride: number;
 
   public get byteLength(): number { return this.data.length; }
 
-  public constructor(data: Uint8Array, count: number, type: GltfDataType, accessor: any) {
+  public constructor(data: Uint8Array, count: number, type: GltfDataType, accessor: any, stride: number) {
     this.data = data;
     this.count = count;
     this.type = type;
     this.accessor = accessor;
+    this.stride = stride;
   }
 
   public toBufferData(desiredType: GltfDataType): GltfBufferData | undefined {

@@ -7,6 +7,7 @@
  */
 
 import { assert, dispose, using } from "@bentley/bentleyjs-core";
+import { WebGLContext } from "@bentley/webgl-compatibility";
 import { WebGLDisposable } from "./Disposable";
 import { DrawCommands, DrawParams } from "./DrawCommand";
 import { createAmbientOcclusionProgram } from "./glsl/AmbientOcclusion";
@@ -94,6 +95,12 @@ export abstract class VariedTechnique implements Technique {
   private readonly _basicPrograms: ShaderProgram[] = [];
   private readonly _clippingPrograms: ClippingProgram[] = [];
 
+  /** TechniqueFlags identifying shader programs for which the fragment shader writes depth but does not contain any discards.
+   * Buggy Intel HD 620/630 drivers incorrectly apply early-Z optimization in this case; we must insert a never-executed
+   * conditional discard to prevent that.
+   */
+  protected _earlyZFlags: TechniqueFlags[] = [];
+
   public compileShaders(): boolean {
     let allCompiled = true;
     for (const program of this._basicPrograms) {
@@ -108,7 +115,10 @@ export abstract class VariedTechnique implements Technique {
     return allCompiled;
   }
 
-  protected verifyShadersContiguous(): void {
+  protected finishConstruction(): void {
+    this._earlyZFlags.length = 0;
+
+    // Confirm no empty entries in our array.
     let emptyShaderIndex = -1;
     assert(-1 === (emptyShaderIndex = this._basicPrograms.findIndex((prog) => undefined === prog)), `Shader index ${emptyShaderIndex} is undefined in ${this.constructor.name}`);
   }
@@ -142,34 +152,44 @@ export abstract class VariedTechnique implements Technique {
   protected abstract computeShaderIndex(flags: TechniqueFlags): number;
   protected abstract get _debugDescription(): string;
 
-  protected addShader(builder: ProgramBuilder, flags: TechniqueFlags, gl: WebGLRenderingContext | WebGL2RenderingContext): void {
+  protected addShader(builder: ProgramBuilder, flags: TechniqueFlags, gl: WebGLContext): void {
     const descr = `${this._debugDescription}: ${flags.buildDescription()}`;
     builder.setDebugDescription(descr);
 
-    if (System.instance.supportsLogZBuffer)
+    if (System.instance.supportsLogZBuffer) {
       addLogDepth(builder);
+
+      assert(!builder.frag.requiresEarlyZWorkaround);
+      if (System.instance.capabilities.driverBugs.fragDepthDoesNotDisableEarlyZ)
+        builder.frag.requiresEarlyZWorkaround = -1 !== this._earlyZFlags.findIndex((x) => x.equals(flags));
+    }
 
     const index = this.getShaderIndex(flags);
     this.addProgram(builder, index, gl);
+
+    assert(!builder.frag.requiresEarlyZWorkaround);
   }
 
-  private addProgram(builder: ProgramBuilder, index: number, gl: WebGLRenderingContext | WebGL2RenderingContext): void {
+  private addProgram(builder: ProgramBuilder, index: number, gl: WebGLContext): void {
     assert(this._basicPrograms[index] === undefined);
     this._basicPrograms[index] = builder.buildProgram(gl);
     assert(this._basicPrograms[index] !== undefined);
+
+    // Clipping programs always include a discard, so never require workaround.
+    builder.frag.requiresEarlyZWorkaround = false;
 
     assert(this._clippingPrograms[index] === undefined);
     this._clippingPrograms[index] = createClippingProgram(builder);
     assert(this._clippingPrograms[index] !== undefined);
   }
 
-  protected addHiliteShader(gl: WebGLRenderingContext | WebGL2RenderingContext, instanced: IsInstanced, classified: IsClassified, create: (instanced: IsInstanced, classified: IsClassified) => ProgramBuilder): void {
+  protected addHiliteShader(gl: WebGLContext, instanced: IsInstanced, classified: IsClassified, create: (instanced: IsInstanced, classified: IsClassified) => ProgramBuilder): void {
     const builder = create(instanced, classified);
     scratchHiliteFlags.initForHilite(0, instanced, classified);
     this.addShader(builder, scratchHiliteFlags, gl);
   }
 
-  protected addTranslucentShader(builder: ProgramBuilder, flags: TechniqueFlags, gl: WebGLRenderingContext | WebGL2RenderingContext): void {
+  protected addTranslucentShader(builder: ProgramBuilder, flags: TechniqueFlags, gl: WebGLContext): void {
     flags.isTranslucent = true;
     addTranslucency(builder);
     this.addShader(builder, flags, gl);
@@ -222,6 +242,18 @@ export abstract class VariedTechnique implements Technique {
   public getShaderCount(): number {
     return this._basicPrograms.length;
   }
+
+  /** For tests. */
+  public forEachProgram(func: (program: ShaderProgram) => void): void {
+    for (const basic of this._basicPrograms)
+      func(basic);
+
+    for (const clip of this._clippingPrograms) {
+      const prog = clip.getProgram(1);
+      assert(undefined !== prog);
+      func(prog);
+    }
+  }
 }
 
 class SurfaceTechnique extends VariedTechnique {
@@ -238,14 +270,52 @@ class SurfaceTechnique extends VariedTechnique {
   // There are 3 base variations - 1 per feature mode - each with translucent/shadowed/thematic variants; plus 1 for hilite.
   private static readonly _kClassified = SurfaceTechnique._kHilite + numHiliteVariants;
 
-  public constructor(gl: WebGLRenderingContext | WebGL2RenderingContext) {
+  public constructor(gl: WebGLContext) {
     // 3 base classified variations - 1 per feature mode.
     // Plus thematic variant of each and shadowable variant of each = 9
     // Plus translucent variant of each of those = 18
     // Plus 1 hilite shader = 19
     super(SurfaceTechnique._kClassified + 19);
-    const flags = scratchTechniqueFlags;
 
+    this._earlyZFlags = [
+      TechniqueFlags.fromDescription("Opaque"),
+      TechniqueFlags.fromDescription("Opaque-Animated"),
+      TechniqueFlags.fromDescription("Opaque-Animated-Shadowable"),
+      TechniqueFlags.fromDescription("Opaque-Hilite-Classified"),
+      TechniqueFlags.fromDescription("Opaque-Hilite-Overrides"),
+      TechniqueFlags.fromDescription("Opaque-Instanced"),
+      TechniqueFlags.fromDescription("Opaque-Instanced-Animated"),
+      TechniqueFlags.fromDescription("Opaque-Instanced-Animated-Shadowable"),
+      TechniqueFlags.fromDescription("Opaque-Instanced-Hilite-Overrides"),
+      TechniqueFlags.fromDescription("Opaque-Instanced-Shadowable"),
+      TechniqueFlags.fromDescription("Opaque-Shadowable"),
+      TechniqueFlags.fromDescription("Translucent"),
+      TechniqueFlags.fromDescription("Translucent-Animated"),
+      TechniqueFlags.fromDescription("Translucent-Animated-Overrides"),
+      TechniqueFlags.fromDescription("Translucent-Animated-Pick"),
+      TechniqueFlags.fromDescription("Translucent-Animated-Shadowable"),
+      TechniqueFlags.fromDescription("Translucent-Animated-Shadowable-Overrides"),
+      TechniqueFlags.fromDescription("Translucent-Animated-Shadowable-Pick"),
+      TechniqueFlags.fromDescription("Translucent-Instanced"),
+      TechniqueFlags.fromDescription("Translucent-Instanced-Animated"),
+      TechniqueFlags.fromDescription("Translucent-Instanced-Animated-Overrides"),
+      TechniqueFlags.fromDescription("Translucent-Instanced-Animated-Pick"),
+      TechniqueFlags.fromDescription("Translucent-Instanced-Animated-Shadowable"),
+      TechniqueFlags.fromDescription("Translucent-Instanced-Animated-Shadowable-Overrides"),
+      TechniqueFlags.fromDescription("Translucent-Instanced-Animated-Shadowable-Pick"),
+      TechniqueFlags.fromDescription("Translucent-Instanced-Overrides"),
+      TechniqueFlags.fromDescription("Translucent-Instanced-Pick"),
+      TechniqueFlags.fromDescription("Translucent-Instanced-Shadowable"),
+      TechniqueFlags.fromDescription("Translucent-Instanced-Shadowable-Overrides"),
+      TechniqueFlags.fromDescription("Translucent-Instanced-Shadowable-Pick"),
+      TechniqueFlags.fromDescription("Translucent-Overrides"),
+      TechniqueFlags.fromDescription("Translucent-Pick"),
+      TechniqueFlags.fromDescription("Translucent-Shadowable"),
+      TechniqueFlags.fromDescription("Translucent-Shadowable-Overrides"),
+      TechniqueFlags.fromDescription("Translucent-Shadowable-Pick"),
+    ];
+
+    const flags = scratchTechniqueFlags;
     for (let instanced = IsInstanced.No; instanced <= IsInstanced.Yes; instanced++) {
       this.addHiliteShader(gl, instanced, IsClassified.No, createSurfaceHiliter);
       for (let iAnimate = IsAnimated.No; iAnimate <= IsAnimated.Yes; iAnimate++) {
@@ -296,7 +366,7 @@ class SurfaceTechnique extends VariedTechnique {
       }
     }
 
-    this.verifyShadersContiguous();
+    this.finishConstruction();
   }
 
   protected get _debugDescription() { return "Surface"; }
@@ -353,8 +423,13 @@ class PolylineTechnique extends VariedTechnique {
   private static readonly _kFeature = 4;
   private static readonly _kHilite = numFeatureVariants(PolylineTechnique._kFeature);
 
-  public constructor(gl: WebGLRenderingContext | WebGL2RenderingContext) {
+  public constructor(gl: WebGLContext) {
     super(PolylineTechnique._kHilite + numHiliteVariants);
+
+    this._earlyZFlags = [
+      TechniqueFlags.fromDescription("Opaque-Hilite-Overrides"),
+      TechniqueFlags.fromDescription("Opaque-Instanced-Hilite-Overrides"),
+    ];
 
     const flags = scratchTechniqueFlags;
     for (let instanced = IsInstanced.No; instanced <= IsInstanced.Yes; instanced++) {
@@ -381,7 +456,8 @@ class PolylineTechnique extends VariedTechnique {
         this.addShader(builder, flags, gl);
       }
     }
-    this.verifyShadersContiguous();
+
+    this.finishConstruction();
   }
 
   protected get _debugDescription() { return "Polyline"; }
@@ -407,7 +483,7 @@ class EdgeTechnique extends VariedTechnique {
   private static readonly _kFeature = 8;
   private readonly _isSilhouette: boolean;
 
-  public constructor(gl: WebGLRenderingContext | WebGL2RenderingContext, isSilhouette: boolean = false) {
+  public constructor(gl: WebGLContext, isSilhouette: boolean = false) {
     super(numFeatureVariants(EdgeTechnique._kFeature));
     this._isSilhouette = isSilhouette;
 
@@ -439,7 +515,8 @@ class EdgeTechnique extends VariedTechnique {
         }
       }
     }
-    this.verifyShadersContiguous();
+
+    this.finishConstruction();
   }
 
   protected get _debugDescription() { return this._isSilhouette ? "Silhouette" : "Edge"; }
@@ -463,7 +540,7 @@ class PointStringTechnique extends VariedTechnique {
   private static readonly _kFeature = 4;
   private static readonly _kHilite = numFeatureVariants(PointStringTechnique._kFeature);
 
-  public constructor(gl: WebGLRenderingContext | WebGL2RenderingContext) {
+  public constructor(gl: WebGLContext) {
     super((PointStringTechnique._kHilite + numHiliteVariants));
 
     const flags = scratchTechniqueFlags;
@@ -491,7 +568,8 @@ class PointStringTechnique extends VariedTechnique {
         this.addShader(builder, flags, gl);
       }
     }
-    this.verifyShadersContiguous();
+
+    this.finishConstruction();
   }
 
   protected get _debugDescription() { return "PointString"; }
@@ -512,8 +590,14 @@ class PointStringTechnique extends VariedTechnique {
 class PointCloudTechnique extends VariedTechnique {
   private static readonly _kHilite = 8;
 
-  public constructor(gl: WebGLRenderingContext | WebGL2RenderingContext) {
+  public constructor(gl: WebGLContext) {
     super(PointCloudTechnique._kHilite + 2);
+
+    this._earlyZFlags = [
+      TechniqueFlags.fromDescription("Opaque-Hilite-Overrides"),
+      TechniqueFlags.fromDescription("Opaque-Hilite-Classified"),
+    ];
+
     for (let iClassified = IsClassified.No; iClassified <= IsClassified.Yes; iClassified++) {
       this.addHiliteShader(gl, IsInstanced.No, iClassified, () => createPointCloudHiliter(iClassified));
       const flags = scratchTechniqueFlags;
@@ -531,7 +615,8 @@ class PointCloudTechnique extends VariedTechnique {
         }
       }
     }
-    this.verifyShadersContiguous();
+
+    this.finishConstruction();
   }
 
   protected get _debugDescription() { return "PointCloud"; }
@@ -581,7 +666,8 @@ class TerrainMeshTechnique extends VariedTechnique {
         }
       }
     }
-    this.verifyShadersContiguous();
+
+    this.finishConstruction();
   }
 
   protected get _debugDescription() { return "TerrainMesh"; }
@@ -674,7 +760,7 @@ export class Techniques implements WebGLDisposable {
   private _techniqueByPriorityIndex = 0;
   private _shaderIndex = 0;
 
-  public static create(gl: WebGLRenderingContext | WebGL2RenderingContext): Techniques {
+  public static create(gl: WebGLContext): Techniques {
     const techs = new Techniques();
     techs.initializeBuiltIns(gl);
     return techs;
@@ -685,16 +771,23 @@ export class Techniques implements WebGLDisposable {
     return this._list[id];
   }
 
+  public get numTechniques(): number {
+    return this._list.length;
+  }
+
   public addDynamicTechnique(technique: Technique, name: string): TechniqueId {
-    for (let i = 0; i < this._dynamicTechniqueIds.length; i++) {
-      if (this._dynamicTechniqueIds[i] === name) {
-        return TechniqueId.NumBuiltIn + i;
-      }
-    }
+    const id = this.getDynamicTechniqueId(name);
+    if (undefined !== id)
+      return id;
 
     this._dynamicTechniqueIds.push(name);
     this._list.push(technique);
     return TechniqueId.NumBuiltIn + this._dynamicTechniqueIds.length - 1;
+  }
+
+  public getDynamicTechniqueId(name: string): TechniqueId | undefined {
+    const index = this._dynamicTechniqueIds.indexOf(name);
+    return -1 !== index ? index + TechniqueId.NumBuiltIn + index : undefined;
   }
 
   /** Execute each command in the list */
@@ -791,9 +884,16 @@ export class Techniques implements WebGLDisposable {
     return compileStatus === CompileStatus.Success;
   }
 
+  /** For tests. */
+  public forEachVariedProgram(func: (program: ShaderProgram) => void): void {
+    for (const technique of this._list)
+      if (technique instanceof VariedTechnique)
+        technique.forEachProgram(func);
+  }
+
   private constructor() { }
 
-  private initializeBuiltIns(gl: WebGLRenderingContext | WebGL2RenderingContext): void {
+  private initializeBuiltIns(gl: WebGLContext): void {
     this._list[TechniqueId.OITClearTranslucent] = new SingularTechnique(createClearTranslucentProgram(gl));
     this._list[TechniqueId.ClearPickAndColor] = new SingularTechnique(createClearPickAndColorProgram(gl));
     this._list[TechniqueId.CopyColor] = new SingularTechnique(createCopyColorProgram(gl));

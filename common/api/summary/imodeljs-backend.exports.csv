@@ -20,7 +20,6 @@ public;BackendLoggerCategory
 public;BackendRequestContext 
 public;BisCoreSchema 
 public;BriefcaseDb 
-internal;BriefcaseEntry
 public;BriefcaseId = number
 public;BriefcaseIdValue
 beta;BriefcaseManager
@@ -37,6 +36,8 @@ beta;ChangeSummaryExtractContext
 beta;ChangeSummaryExtractOptions
 beta;ChangeSummaryManager
 public;ChannelRootAspect 
+internal;CheckpointManager
+beta;CheckpointProps
 public;ClassRegistry
 beta;class CloudStorageService
 beta;CloudStorageServiceCredentials
@@ -52,6 +53,7 @@ alpha;ChannelInfo
 alpha;ChannelRootInfo 
 alpha;RepositoryChannelInfo 
 internal;StateCache
+alpha;ConcurrencyControlChannel = ConcurrencyControl.Channel
 alpha;CrashReportingConfig
 alpha;CrashReportingConfigNameValuePair
 public;DefinitionContainer 
@@ -78,6 +80,9 @@ public;class Document
 internal;class DocumentCarrier 
 public;DocumentListModel 
 public;DocumentPartition 
+internal;DownloadJob
+beta;DownloadRequest
+internal;Downloads
 public;Drawing 
 public;DrawingCategory 
 public;DrawingGraphic 
@@ -211,7 +216,6 @@ alpha;MobileAuthorizationClient
 public;Model 
 public;ModelSelector 
 internal;NativeAppBackend
-public;OpenParams
 public;OrthographicViewDefinition 
 public;class PhysicalElement 
 public;PhysicalElementAssemblesElements 
@@ -226,6 +230,7 @@ public;class PhysicalType
 public;PhysicalTypeIsOfPhysicalMaterial 
 public;PlanCallout 
 public;Platform
+beta;ProgressFunction = (loaded: number, total: number) => number
 beta;class RecipeDefinitionElement 
 public;Relationship 
 public;Relationships
@@ -234,6 +239,7 @@ public;RenderMaterialElement
 public;RenderMaterialOwnsRenderMaterials 
 public;RepositoryLink 
 public;RepositoryModel 
+beta;RequestNewBriefcaseArg = RequestNewBriefcaseProps &
 public;class RoleElement 
 public;RoleModel 
 public;Schema
@@ -288,6 +294,8 @@ public;UpdateModelOptions
 public;UrlLink 
 internal;UsageLoggingUtilities
 internal;UsageLoggingUtilitiesOptions
+internal;V1CheckpointManager
+internal;V2CheckpointManager
 beta;ValidationError
 public;ViewAttachment 
 public;ViewAttachmentLabel 

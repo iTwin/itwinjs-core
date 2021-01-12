@@ -11,8 +11,9 @@ import { Range3d, Range3dProps } from "@bentley/geometry-core";
 import {
   ElementProps, EntityMetaData, EntityQueryParams, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps,
   ImageSourceFormat, IModel, IModelConnectionProps, IModelCoordinatesResponseProps, IModelReadRpcInterface,
+  IModelRpcOpenProps,
   IModelRpcProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, NoContentError, QueryLimit, QueryPriority, QueryQuota, QueryResponse, RpcInterface,
-  RpcManager, SnapRequestProps, SnapResponseProps, SyncMode, ViewStateProps,
+  RpcManager, SnapRequestProps, SnapResponseProps, SyncMode, ViewStateLoadProps, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
@@ -31,7 +32,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
 
   public static register() { RpcManager.registerImpl(IModelReadRpcInterface, IModelReadRpcImpl); }
 
-  public async openForRead(tokenProps: IModelRpcProps): Promise<IModelConnectionProps> {
+  public async openForRead(tokenProps: IModelRpcOpenProps): Promise<IModelConnectionProps> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     return RpcBriefcaseUtility.openWithTimeout(requestContext, tokenProps, SyncMode.FixedVersion);
   }
@@ -146,8 +147,8 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return codeSpecs;
   }
 
-  public async getViewStateData(tokenProps: IModelRpcProps, viewDefinitionId: string): Promise<ViewStateProps> {
-    return IModelDb.findByKey(tokenProps.key).views.getViewStateData(viewDefinitionId);
+  public async getViewStateData(tokenProps: IModelRpcProps, viewDefinitionId: string, options?: ViewStateLoadProps): Promise<ViewStateProps> {
+    return IModelDb.findByKey(tokenProps.key).views.getViewStateData(viewDefinitionId, options);
   }
 
   public async readFontJson(tokenProps: IModelRpcProps): Promise<any> {

@@ -125,7 +125,11 @@ jobs:
         git commit -m "$(getVersion.version)" --author="imodeljs-admin <38288322+imodeljs-admin@users.noreply.github.com>"
       displayName: Commit version bump
 
-    - bash: 'git push https://$(GITHUBTOKEN)@github.com/imodeljs/imodeljs HEAD:$(Build.SourceBranch)'
+    - ${{ if or(eq(parameters.BumpType, 'minor'), eq(parameters.BumpType, 'patch')) }}:
+      - bash: 'git tag -a release/$(getVersion.version) -m "v$(getVersion.version)"'
+        displayName: Create git tag
+
+    - bash: 'git push --follow-tags https://$(GITHUBTOKEN)@github.com/imodeljs/imodeljs HEAD:$(Build.SourceBranch)'
       displayName: Push version bump
 
   - ${{ if eq(parameters.BumpType, 'releaseCandidate') }}:
@@ -213,7 +217,7 @@ jobs:
           $sourceFile = 'docs/changehistory/NextVersion.md'
 
           # Overwrite everything with just the header
-          "---`nignore: true`n---`n# NextVersion`n" | Set-Content $sourceFile
+          "---`npublish: false`n---`n# NextVersion`n" | Set-Content $sourceFile
         displayName: 'Clear current NextVersion.md'
 
       - bash: git add .

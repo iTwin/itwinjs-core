@@ -60,3 +60,63 @@ export interface DialogPropertySyncItem extends DialogPropertyItem {
   readonly isDisabled?: boolean;
   readonly property?: PropertyDescription;
 }
+
+/** [[DialogProperty]] is generic helper class that assist working with properties used by UiLayoutDataProvider implementations (i.e. Tool Settings and Dynamic Dialogs).
+ * @beta
+ */
+export class DialogProperty<T> {
+  constructor(public description: PropertyDescription, private _value: T, private _displayValue?: string, private _isDisabled?: boolean) { }
+
+  public get isDisabled() {
+    return !!this._isDisabled;
+  }
+
+  public set isDisabled(val: boolean) {
+    this._isDisabled = val;
+  }
+
+  public get value() {
+    return this._value;
+  }
+
+  public set value(val: T) {
+    this._value = val;
+  }
+
+  public get name() {
+    return this.description.name;
+  }
+
+  public set displayValue(val: string | undefined) {
+    this._displayValue = val;
+  }
+
+  public get displayValue() {
+    return this._displayValue;
+  }
+
+  public get dialogItemValue() {
+    // istanbul ignore else
+    if (typeof this._value === "string" || typeof this._value === "number" || typeof this._value === "undefined" || typeof this._value === "boolean" || this._value instanceof Date)
+      return {
+        value: this._value,
+        displayValue: this._displayValue,
+      } as DialogItemValue;
+    // istanbul ignore next
+    throw new Error("Not valid primitive type");
+  }
+
+  public set dialogItemValue(val: DialogItemValue) {
+    this._value = val.value as unknown as T;
+    this._displayValue = val.displayValue;
+  }
+
+  public get syncItem(): DialogPropertySyncItem {
+    const isDisabled = this._isDisabled;
+    return { propertyName: this.name, value: this.dialogItemValue, isDisabled };
+  }
+
+  public toDialogItem(editorPosition: EditorPosition, lockProperty?: DialogItem): DialogItem {
+    return { value: this.dialogItemValue, property: this.description, editorPosition, isDisabled: this._isDisabled, lockProperty };
+  }
+}

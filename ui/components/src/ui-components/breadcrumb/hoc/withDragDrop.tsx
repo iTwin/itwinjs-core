@@ -19,6 +19,7 @@ import { DragDropBreadcrumbNode } from "./DragDropBreadcrumbNode";
 /**
  * Props that are injected to the HOC component.
  * @beta
+ * @deprecated
  */
 export interface BreadcrumbDragDropProps<DragDropObject = any> {
   dragProps?: DragSourceProps<DragDropObject>;
@@ -28,6 +29,7 @@ export interface BreadcrumbDragDropProps<DragDropObject = any> {
 /**
  * A HOC component that adds drag and drop functionality to the supplied breadcrumb component.
  * @beta
+ * @deprecated
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function withBreadcrumbDragDrop<P extends BreadcrumbProps, DragDropObject extends TreeDragDropType>(BreadcrumbComponent: React.ComponentType<P>): React.ComponentType<P & BreadcrumbDragDropProps<DragDropObject>> {

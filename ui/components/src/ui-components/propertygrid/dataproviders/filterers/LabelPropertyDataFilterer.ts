@@ -7,14 +7,20 @@
  */
 
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { PropertyDataFiltererBase, PropertyDataFilterResult } from "./PropertyDataFiltererBase";
+import { countMatchesInString } from "../../../common/countMatchesInString";
+import { FilteredType, PropertyDataFilterResult, PropertyRecordDataFiltererBase } from "./PropertyDataFiltererBase";
 
 /**
  * PropertyData filter which matches on any record type label and includes descendant nodes on match
  * @alpha
  */
-export class LabelPropertyDataFilterer extends PropertyDataFiltererBase {
+export class LabelPropertyDataFilterer extends PropertyRecordDataFiltererBase {
   private _filterText: string = "";
+
+  public constructor(filterText: string = "") {
+    super();
+    this._filterText = filterText;
+  }
 
   public get filterText(): string { return this._filterText; }
   public set filterText(value: string) {
@@ -27,18 +33,21 @@ export class LabelPropertyDataFilterer extends PropertyDataFiltererBase {
 
   public get isActive() { return this.filterText !== ""; }
 
-  public async matchesFilter(node: PropertyRecord): Promise<PropertyDataFilterResult> {
+  public async recordMatchesFilter(node: PropertyRecord): Promise<PropertyDataFilterResult> {
     if (!this.isActive)
       return { matchesFilter: true };
 
     const displayLabel = node.property.displayLabel.toLowerCase();
-    if (!displayLabel.includes(this._filterText))
+    const matchesCount = countMatchesInString(displayLabel, this.filterText);
+    if (matchesCount === 0)
       return { matchesFilter: false };
 
     return {
       matchesFilter: true,
       shouldExpandNodeParents: true,
       shouldForceIncludeDescendants: true,
+      matchesCount,
+      filteredTypes: [FilteredType.Label],
     };
   }
 }

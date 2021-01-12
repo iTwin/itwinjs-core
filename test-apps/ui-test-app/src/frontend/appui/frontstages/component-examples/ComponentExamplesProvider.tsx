@@ -10,13 +10,13 @@ import {
   BetaBadge, BlockText, BodyText, Button, ButtonSize, ButtonType, Checkbox, CheckListBox, CheckListBoxItem, CheckListBoxSeparator, ContextMenuItem,
   DisabledText, ExpandableBlock, ExpandableList, FeaturedTile, Headline, HorizontalTabs, Icon, IconInput, Input, InputStatus, LabeledInput,
   LabeledSelect, LabeledTextarea, LabeledThemedSelect, LabeledToggle, LeadingText, Listbox, ListboxItem, LoadingPrompt, LoadingSpinner, LoadingStatus, MinimalFeaturedTile, MinimalTile, MutedText,
-  NewBadge, NumberInput, NumericInput, ProgressBar, ProgressSpinner, Radio, ReactMessage, SearchBox, Select, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea,
+  NewBadge, NumberInput, NumericInput, Popup, ProgressBar, ProgressSpinner, Radio, ReactMessage, SearchBox, Select, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea,
   ThemedSelect, Tile, Title, Toggle, ToggleButtonType, UnderlinedButton, VerticalTabs,
 } from "@bentley/ui-core";
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
 import {
   adjustDateToTimezone, ColorPickerButton, ColorPickerDialog, ColorPickerPopup, ColorSwatch, DatePickerPopupButton, DatePickerPopupButtonProps,
-  IntlFormatter, ParsedInput, QuantityInput,
+  IntlFormatter, LineWeightSwatch, ParsedInput, QuantityInput, WeightPickerButton,
 } from "@bentley/ui-components";
 import { MessageManager, ModalDialogManager, ReactNotifyMessageDetails } from "@bentley/ui-framework";
 import { ActivityMessageDetails, ActivityMessageEndReason, IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType, QuantityType } from "@bentley/imodeljs-frontend";
@@ -27,6 +27,65 @@ import { SampleImageCheckBox } from "./SampleImageCheckBox";
 import { SampleAppIModelApp } from "../../..";
 import { BeDuration, Logger } from "@bentley/bentleyjs-core";
 import { SamplePopupContextMenu } from "./SamplePopupContextMenu";
+
+function WrappedSelect() {
+  const [currentValue, setCurrentValue] = React.useState(3);
+  const handleValueChange = React.useCallback((value: number) => {
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Set select value to ${value.toString()}`));
+    setCurrentValue(value);
+  }, []);
+
+  return (
+    <div style={{ display: "flex", alignItems: "center" }}>
+      <Select
+        value={currentValue}
+        onChange={(event) => handleValueChange(Number.parseInt(event.target.value, 10))}
+        options={[
+          { label: "Option 0", value: 0 },
+          { label: "Option 1", value: 1 },
+          { label: "Option 2", value: 2 },
+          { label: "Option 3", value: 3 },
+        ]} />
+      <button onClick={() => handleValueChange(0)}>0</button>
+      <button onClick={() => handleValueChange(1)}>1</button>
+      <button onClick={() => handleValueChange(2)}>2</button>
+      <button onClick={() => handleValueChange(3)}>3</button>
+    </div>
+  );
+
+}
+
+function NestedPopup({ closeOnNestedPopupOutsideClick }: { closeOnNestedPopupOutsideClick?: boolean }) {
+  const [showPopup, setShowPopup] = React.useState(false);
+  const [currentDate, setCurrentDate] = React.useState(new Date());
+
+  const handleOnDateChange = React.useCallback((day: Date) => {
+    setCurrentDate(day);
+  }, []);
+
+  const buttonRef = React.useRef<HTMLButtonElement>(null);
+  const togglePopup = React.useCallback(() => {
+    setShowPopup(!showPopup);
+  }, [showPopup]);
+
+  const handleClose = React.useCallback(() => {
+    setShowPopup(false);
+  }, []);
+
+  return (
+    <div>
+      <button onClick={togglePopup} ref={buttonRef}>{showPopup ? "Close" : "Open"}</button>
+
+      <Popup isOpen={showPopup} position={RelativePosition.Bottom} target={buttonRef.current}
+        onClose={handleClose} showArrow={true} showShadow={true} closeOnNestedPopupOutsideClick={closeOnNestedPopupOutsideClick}>
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <LabeledInput label="Date" value={currentDate.toLocaleDateString()} disabled />
+          <DatePickerPopupButton selected={currentDate} onDateChange={handleOnDateChange} />
+        </div>
+      </Popup>
+    </div>
+  );
+}
 
 function exoticStep(direction: string) {
   if (direction === "up")
@@ -136,6 +195,20 @@ export function DatePickerHost(props: DatePickerPopupButtonProps) {
 
   return (
     <DatePickerPopupButton selected={currentDate} onDateChange={handleOnDateChange} {...otherProp} />
+  );
+}
+
+export function WeightPickerHost(props: { activeWeight: number, onLineWeightPick: ((weight: number) => void) }) {
+  const { onLineWeightPick, activeWeight } = props;
+  const [currentWeight, setCurrentWeight] = React.useState(activeWeight);
+
+  const handleWeightPick = React.useCallback((weight: number) => {
+    onLineWeightPick && onLineWeightPick(weight);
+    setCurrentWeight(weight);
+  }, [onLineWeightPick]);
+
+  return (
+    <WeightPickerButton activeWeight={currentWeight} onLineWeightPick={handleWeightPick} />
   );
 }
 
@@ -254,6 +327,12 @@ export class ComponentExamplesProvider {
       console.log(`color picked: ${color.toRgbaString()}`);
     };
 
+    const onPopupClose = (color: ColorDef) => {
+      const msg = `popup color value: ${color.toRgbaString()}`;
+      console.log(msg);
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
+    };
+
     return {
       title: "Color Controls",
       examples: [
@@ -262,7 +341,26 @@ export class ComponentExamplesProvider {
         createComponentExample("Color Picker Button", undefined,
           <ColorPickerButton initialColor={colorDef} onColorPick={handleColorPick} />),
         createComponentExample("Color Picker Dialog", undefined, <ColorPickerToggle />),
-        createComponentExample("Color Picker Popup", undefined, <ColorPickerPopup initialColor={colorDef} />),
+        createComponentExample("Color Picker Popup", undefined, <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} />),
+      ],
+    };
+  }
+
+  private static get weightSamples(): ComponentExampleCategory {
+    const handleWeightPick = (weight: number) => {
+      const msg = `weight picked: ${weight}`;
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
+    };
+
+    return {
+      title: "Weight Controls",
+      examples: [
+        createComponentExample("Weight Swatch 1", undefined,
+          <LineWeightSwatch weight={1} style={{ width: "100px" }} onClick={() => handleWeightPick(1)} />),
+        createComponentExample("Weight Swatch 5", undefined,
+          <LineWeightSwatch weight={5} style={{ width: "100px" }} onClick={() => handleWeightPick(5)} />),
+        createComponentExample("Weight Picker Button", undefined,
+          <WeightPickerHost activeWeight={3} onLineWeightPick={handleWeightPick} />),
       ],
     };
   }
@@ -373,6 +471,8 @@ export class ComponentExamplesProvider {
         createComponentExample("Icon Input", "Icon Input component", <IconInput placeholder="Icon Input" icon={<Icon iconSpec="icon-placeholder" />} containerClassName="uicore-full-width" />),
         createComponentExample("Labeled Input", "Labeled Input component", <LabeledInput label="Labeled Input" placeholder="Labeled Input" className="uicore-full-width" />),
         createComponentExample("Labeled Input", "Labeled Input Icon", <LabeledInput label="Labeled Input with icon" placeholder="Labeled Input with Icon" status={InputStatus.Success} />),
+        createComponentExample("Labeled Input Warning", "Labeled Input Warning", <LabeledInput label="Labeled Input Warning" placeholder="Labeled Input Warning" status={InputStatus.Warning} />),
+        createComponentExample("Labeled Input Error", "Labeled Input Error", <LabeledInput label="Labeled Input Error" placeholder="Labeled Input Error" status={InputStatus.Error} />),
         createComponentExample("Labeled Textarea", "Labeled Textarea component", <LabeledTextarea label="Labeled Textarea" placeholder="Labeled Textarea" className="uicore-full-width" />),
 
         createComponentExample("Image Checkbox", "ImageCheckbox with WebFonts", <SampleImageCheckBox imageOn="icon-more-circular" imageOff="icon-more-vertical-circular" />),
@@ -466,6 +566,16 @@ export class ComponentExamplesProvider {
           }>Sticky message</UnderlinedButton>),
         createComponentExample("Activity", undefined,
           <UnderlinedButton onActivate={this._activityTool}>Activity message</UnderlinedButton>),
+      ],
+    };
+  }
+
+  private static get popupSamples(): ComponentExampleCategory {
+    return {
+      title: "Popups",
+      examples: [
+        createComponentExample("Allow Nested Popup", "Remain open when clicking in nested popup", <NestedPopup />),
+        createComponentExample("Close Nested Popup", "Close when clicking in nested popup", <NestedPopup closeOnNestedPopupOutsideClick={true} />),
       ],
     };
   }
@@ -576,9 +686,33 @@ export class ComponentExamplesProvider {
     return {
       title: "Select",
       examples: [
-        createComponentExample("Basic Select", "Basic Select component", <Select options={["Option 1", "Option 2", "Option 3", "Option 4"]} />),
+        createComponentExample("Basic Select", "Basic Select component",
+          <Select
+            onChange={(event) => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, event.target.value))}
+            options={["Option 1", "Option 2", "Option 3", "Option 4"]} />),
+        createComponentExample("Select with values", "Select with values in array",
+          <Select
+            onChange={(event) => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, event.target.value))}
+            options={[
+              { label: "Option 1", value: "option1" },
+              { label: "Option 2", value: "option2" },
+              { label: "Option 3", value: "option3" },
+              { label: "Option 4", value: "option4" },
+            ]} />),
+        createComponentExample("Select with values/labels", "Select with value objects",
+          <Select
+            onChange={(event) => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, event.target.value))}
+            options={{
+              option1: { label: "Option 1", value: "xyz" },
+              option2: "Option 2",
+              option3: "Option 3",
+              option4: "Option 4",
+            }} />),
+        createComponentExample("Select with Number values", "Sync Select with button values", <WrappedSelect />),
         createComponentExample("Disabled Select", "Select with disabled prop", <Select options={["Option 1", "Option 2", "Option 3", "Option 4"]} disabled />),
         createComponentExample("Placeholder Select", "Select with placeholder prop", <Select options={["Option 1", "Option 2", "Option 3", "Option 4"]} placeholder="Pick an option" />),
+        createComponentExample("Select with Disabled option", "Select with option with disabled prop",
+          <Select options={["Option 1", "Option 2", { label: "Disabled Option", disabled: true }, "Option 3", "Option 4"]} placeholder="Pick an option" />),
 
         createComponentExample("Labeled Select", "Labeled Select component", <LabeledSelect label="Labeled Select" options={["Option 1", "Option 2", "Option 3", "Option 4"]} />),
 
@@ -629,7 +763,7 @@ export class ComponentExamplesProvider {
           <Slider min={0} max={100} values={[50]} step={1} showTooltip showMinMax
             minImage={<Icon iconSpec="icon-placeholder" />} maxImage={<Icon iconSpec="icon-placeholder" />} />),
         createComponentExample("Slider w/ tick marks", "Slider with showTicks and getTickCount props",
-          <Slider min={0} max={100} values={[50]} step={1} showTooltip showMinMax
+          <Slider min={0} max={5} values={[2.25]} step={.01} showTooltip showMinMax
             showTicks getTickCount={() => 10} />),
         createComponentExample("Slider w/ multiple values", "Slider with array of values",
           <Slider min={0} max={100} values={[30, 70]} step={5} mode={2} showTooltip showMinMax
@@ -808,6 +942,7 @@ export class ComponentExamplesProvider {
       ComponentExamplesProvider.listboxSamples,
       ComponentExamplesProvider.loadingSamples,
       ComponentExamplesProvider.messageSamples,
+      ComponentExamplesProvider.popupSamples,
       ComponentExamplesProvider.progressIndicatorsSamples,
       ComponentExamplesProvider.quantitySamples,
       ComponentExamplesProvider.searchBoxSample,
@@ -818,6 +953,7 @@ export class ComponentExamplesProvider {
       ComponentExamplesProvider.textSamples,
       ComponentExamplesProvider.tileSamples,
       ComponentExamplesProvider.toggleSamples,
+      ComponentExamplesProvider.weightSamples,
       ComponentExamplesProvider.deprecatedComponentSamples,
     ];
   }

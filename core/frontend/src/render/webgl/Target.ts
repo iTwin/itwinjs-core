@@ -25,6 +25,7 @@ import { createEmptyRenderPlan, RenderPlan } from "../RenderPlan";
 import { PlanarClassifierMap, RenderPlanarClassifier } from "../RenderPlanarClassifier";
 import { RenderTextureDrape, TextureDrapeMap } from "../RenderSystem";
 import { PrimitiveVisibility, RenderTarget, RenderTargetDebugControl } from "../RenderTarget";
+import { ScreenSpaceEffectContext } from "../ScreenSpaceEffectBuilder";
 import { Scene } from "../Scene";
 import { BranchState } from "./BranchState";
 import { CachedGeometry, SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
@@ -95,8 +96,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _renderCommands: RenderCommands;
   private _overlayRenderState: RenderState;
   protected _compositor: SceneCompositor;
-  protected _fbo?: FrameBuffer;
-  protected _dcAssigned: boolean = false;
+  private _fbo?: FrameBuffer;
+  private _dcAssigned = false;
   public performanceMetrics?: PerformanceMetrics;
   public readonly decorationsState = BranchState.createForDecorations(); // Used when rendering view background and view/world overlays.
   public readonly uniforms = new TargetUniforms(this);
@@ -114,6 +115,9 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _currentlyDrawingClassifier?: PlanarClassifier;
   private _analysisFraction: number = 0;
   private _antialiasSamples = 1;
+  // This exists strictly to be forwarded to ScreenSpaceEffects. Do not use it for anything else.
+  private _viewport?: Viewport;
+  private _screenSpaceEffects: string[] = [];
   public isFadeOutActive = false;
   public activeVolumeClassifierTexture?: WebGLTexture;
   public activeVolumeClassifierProps?: SpatialClassificationProps.Classifier;
@@ -252,6 +256,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _isDisposed = false;
   public get isDisposed(): boolean {
     return this.graphics.isDisposed
+      && undefined === this._fbo
       && undefined === this._worldDecorations
       && undefined === this._planarClassifiers
       && undefined === this._textureDrapes
@@ -261,12 +266,43 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       && this._isDisposed;
   }
 
+  protected allocateFbo(): FrameBuffer | undefined {
+    if (this._fbo)
+      return this._fbo;
+
+    const rect = this.viewRect;
+    const color = TextureHandle.createForAttachment(rect.width, rect.height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
+    if (undefined === color)
+      return undefined;
+
+    this._fbo = FrameBuffer.create([color]);
+    if (undefined === this._fbo) {
+      color.dispose();
+      return undefined;
+    }
+
+    return this._fbo;
+  }
+
+  protected disposeFbo(): void {
+    if (!this._fbo)
+      return;
+
+    const tx = this._fbo.getColor(0);
+    this._fbo = dispose(this._fbo);
+    this._dcAssigned = false;
+
+    // We allocated our framebuffer's color attachment, so must dispose of it too.
+    assert(undefined !== tx);
+    dispose(tx);
+  }
+
   public dispose() {
     this.reset();
-
+    this.disposeFbo();
     dispose(this._compositor);
+    this._viewport = undefined;
 
-    this._dcAssigned = false;   // necessary to reassign to OnScreenTarget fbo member when re-validating render plan
     this._isDisposed = true;
   }
 
@@ -396,6 +432,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   }
 
   public onBeforeRender(viewport: Viewport, setSceneNeedRedraw: (redraw: boolean) => void) {
+    this._viewport = viewport;
     IModelFrameLifecycle.onBeforeRender.raiseEvent({
       renderSystem: this.renderSystem,
       viewport,
@@ -596,13 +633,13 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   }
 
   private paintScene(sceneMilSecElapsed?: number): void {
-    if (!this._dcAssigned) {
+    if (!this._dcAssigned)
       return;
-    }
 
     this.beginPerfMetricFrame(sceneMilSecElapsed, this.drawForReadPixels);
     this.beginPerfMetricRecord("Begin Paint", this.drawForReadPixels);
-    this._beginPaint();
+    assert(undefined !== this._fbo);
+    this._beginPaint(this._fbo);
     this.endPerfMetricRecord(this.drawForReadPixels);
 
     const gl = this.renderSystem.context;
@@ -633,8 +670,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
       this.compositor.drawForReadPixels(this._renderCommands, this.graphics.overlays, this.graphics.decorations?.worldOverlay);
       this.uniforms.branch.pop();
-
-      this._isReadPixelsInProgress = false;
     } else {
       // After the Target is first created or any time its dimensions change, SceneCompositor.preDraw() must update
       // the compositor's textures, framebuffers, etc. This *must* occur before any drawing occurs.
@@ -673,6 +708,13 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       this.endPerfMetricRecord(); // End "Overlay Draws"
     }
 
+    // Apply screen-space effects. Note we do not reset this._isReadPixelsInProgress until *after* doing so, as screen-space effects only apply
+    // during readPixels() if the effect shifts pixels from their original locations.
+    this.beginPerfMetricRecord("Screenspace Effects", this.drawForReadPixels);
+    this.renderSystem.screenSpaceEffects.apply(this);
+    this._isReadPixelsInProgress = false;
+    this.endPerfMetricRecord(this.drawForReadPixels);
+
     // Reset the batch IDs in all batches drawn for this call.
     this.uniforms.batch.resetBatchState();
 
@@ -695,17 +737,18 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   }
 
   private assignDC(): boolean {
-    if (!this._dcAssigned) {
-      if (!this._assignDC())
-        return false;
+    if (this._dcAssigned)
+      return true;
 
-      const rect = this.viewRect;
-      if (rect.width < 1 || rect.height < 1)
-        return false;
+    if (!this._assignDC())
+      return false;
 
-      this.uniforms.viewRect.update(rect.width, rect.height);
-      this._dcAssigned = true;
-    }
+    const rect = this.viewRect;
+    if (rect.width < 1 || rect.height < 1)
+      return false;
+
+    this.uniforms.viewRect.update(rect.width, rect.height);
+    this._dcAssigned = true;
 
     return true;
   }
@@ -786,43 +829,46 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     this.pushState(state);
 
-    // Create a culling frustum based on the input rect.
-    const viewRect = this.viewRect;
-    const leftScale = (rect.left - viewRect.left) / (viewRect.right - viewRect.left);
-    const rightScale = (viewRect.right - rect.right) / (viewRect.right - viewRect.left);
-    const topScale = (rect.top - viewRect.top) / (viewRect.bottom - viewRect.top);
-    const bottomScale = (viewRect.bottom - rect.bottom) / (viewRect.bottom - viewRect.top);
+    // Create a culling frustum based on the input rect. We can't do this if a screen-space effect is going to move pixels around.
+    if (!this.renderSystem.screenSpaceEffects.shouldApply(this)) {
+      const viewRect = this.viewRect;
+      const leftScale = (rect.left - viewRect.left) / (viewRect.right - viewRect.left);
+      const rightScale = (viewRect.right - rect.right) / (viewRect.right - viewRect.left);
+      const topScale = (rect.top - viewRect.top) / (viewRect.bottom - viewRect.top);
+      const bottomScale = (viewRect.bottom - rect.bottom) / (viewRect.bottom - viewRect.top);
 
-    const tmpFrust = this._scratchTmpFrustum;
-    const planFrust = this.planFrustum;
-    interpolateFrustumPoint(tmpFrust, planFrust, Npc._000, leftScale, Npc._100);
-    interpolateFrustumPoint(tmpFrust, planFrust, Npc._100, rightScale, Npc._000);
-    interpolateFrustumPoint(tmpFrust, planFrust, Npc._010, leftScale, Npc._110);
-    interpolateFrustumPoint(tmpFrust, planFrust, Npc._110, rightScale, Npc._010);
-    interpolateFrustumPoint(tmpFrust, planFrust, Npc._001, leftScale, Npc._101);
-    interpolateFrustumPoint(tmpFrust, planFrust, Npc._101, rightScale, Npc._001);
-    interpolateFrustumPoint(tmpFrust, planFrust, Npc._011, leftScale, Npc._111);
-    interpolateFrustumPoint(tmpFrust, planFrust, Npc._111, rightScale, Npc._011);
+      const tmpFrust = this._scratchTmpFrustum;
+      const planFrust = this.planFrustum;
+      interpolateFrustumPoint(tmpFrust, planFrust, Npc._000, leftScale, Npc._100);
+      interpolateFrustumPoint(tmpFrust, planFrust, Npc._100, rightScale, Npc._000);
+      interpolateFrustumPoint(tmpFrust, planFrust, Npc._010, leftScale, Npc._110);
+      interpolateFrustumPoint(tmpFrust, planFrust, Npc._110, rightScale, Npc._010);
+      interpolateFrustumPoint(tmpFrust, planFrust, Npc._001, leftScale, Npc._101);
+      interpolateFrustumPoint(tmpFrust, planFrust, Npc._101, rightScale, Npc._001);
+      interpolateFrustumPoint(tmpFrust, planFrust, Npc._011, leftScale, Npc._111);
+      interpolateFrustumPoint(tmpFrust, planFrust, Npc._111, rightScale, Npc._011);
 
-    const rectFrust = this._scratchRectFrustum;
-    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._000, bottomScale, Npc._010);
-    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._100, bottomScale, Npc._110);
-    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._010, topScale, Npc._000);
-    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._110, topScale, Npc._100);
-    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._001, bottomScale, Npc._011);
-    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._101, bottomScale, Npc._111);
-    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._011, topScale, Npc._001);
-    interpolateFrustumPoint(rectFrust, tmpFrust, Npc._111, topScale, Npc._101);
+      const rectFrust = this._scratchRectFrustum;
+      interpolateFrustumPoint(rectFrust, tmpFrust, Npc._000, bottomScale, Npc._010);
+      interpolateFrustumPoint(rectFrust, tmpFrust, Npc._100, bottomScale, Npc._110);
+      interpolateFrustumPoint(rectFrust, tmpFrust, Npc._010, topScale, Npc._000);
+      interpolateFrustumPoint(rectFrust, tmpFrust, Npc._110, topScale, Npc._100);
+      interpolateFrustumPoint(rectFrust, tmpFrust, Npc._001, bottomScale, Npc._011);
+      interpolateFrustumPoint(rectFrust, tmpFrust, Npc._101, bottomScale, Npc._111);
+      interpolateFrustumPoint(rectFrust, tmpFrust, Npc._011, topScale, Npc._001);
+      interpolateFrustumPoint(rectFrust, tmpFrust, Npc._111, topScale, Npc._101);
 
-    // If a clip has been applied to the view, trivially do nothing if aperture does not intersect
-    // ###TODO: This was never right, was it? Some branches in the scene ignore the clip volume...
-    // if (undefined !== this._activeClipVolume && this.currentBranch.showClipVolume && this.clips.isValid)
-    //   if (ClipPlaneContainment.StronglyOutside === this._activeClipVolume.clipVector.classifyPointContainment(rectFrust.points))
-    //     return undefined;
+      this._renderCommands.setCheckRange(rectFrust);
+
+      // If a clip has been applied to the view, trivially do nothing if aperture does not intersect
+      // ###TODO: This was never right, was it? Some branches in the scene ignore the clip volume...
+      // if (undefined !== this._activeClipVolume && this.currentBranch.showClipVolume && this.clips.isValid)
+      //   if (ClipPlaneContainment.StronglyOutside === this._activeClipVolume.clipVector.classifyPointContainment(rectFrust.points))
+      //     return undefined;
+    }
 
     // Repopulate the command list, omitting non-pickable decorations and putting transparent stuff into the opaque passes.
     this._renderCommands.clear();
-    this._renderCommands.setCheckRange(rectFrust);
     this._renderCommands.initForReadPixels(this.graphics);
     this._renderCommands.clearCheckRange();
 
@@ -844,6 +890,11 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
         this.performanceMetrics.endOperation();
       }
     }
+
+    // Apply any screen-space effects that shift pixels from their original locations.
+    this.beginPerfMetricRecord("Screenspace Effects", this.drawForReadPixels);
+    this.renderSystem.screenSpaceEffects.apply(this);
+    this.endPerfMetricRecord(true); // Screenspace Effects
 
     // Restore the state
     this.uniforms.branch.pop();
@@ -877,9 +928,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
         didSucceed = false;
       }
     });
-    if (!didSucceed)
-      return false;
-    return true;
+
+    return didSucceed;
   }
 
   /** Returns a new size scaled up to a maximum size while maintaining proper aspect ratio.  The new size will be
@@ -1002,10 +1052,21 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       this._textureDrapes.forEach((drape) => (drape as TextureDrape).draw(this));
   }
 
-  // ---- Methods expected to be overridden by subclasses ---- //
+  public get screenSpaceEffects(): Iterable<string> {
+    return this._screenSpaceEffects;
+  }
+
+  public set screenSpaceEffects(effects: Iterable<string>) {
+    this._screenSpaceEffects = [...effects];
+  }
+
+  public get screenSpaceEffectContext(): ScreenSpaceEffectContext {
+    assert(undefined !== this._viewport);
+    return { viewport: this._viewport };
+  }
 
   protected abstract _assignDC(): boolean;
-  protected abstract _beginPaint(): void;
+  protected abstract _beginPaint(fbo: FrameBuffer): void;
   protected abstract _endPaint(): void;
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
@@ -1083,15 +1144,13 @@ export class OnScreenTarget extends Target {
   }
 
   public get isDisposed(): boolean {
-    return undefined === this._fbo
-      && undefined === this._blitGeom
+    return undefined === this._blitGeom
       && undefined === this._scratchProgParams
       && undefined === this._scratchDrawParams
       && super.isDisposed;
   }
 
   public dispose() {
-    this._fbo = dispose(this._fbo);
     this._blitGeom = dispose(this._blitGeom);
     this._scratchProgParams = undefined;
     this._scratchDrawParams = undefined;
@@ -1124,22 +1183,16 @@ export class OnScreenTarget extends Target {
   }
 
   protected _assignDC(): boolean {
-    dispose(this._fbo);
-
-    const rect = this.viewRect;
-    const color = TextureHandle.createForAttachment(rect.width, rect.height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
-    if (undefined === color)
+    this.disposeFbo();
+    const fbo = this.allocateFbo();
+    if (!fbo)
       return false;
 
-    this._fbo = FrameBuffer.create([color]);
-    if (undefined === this._fbo)
-      return false;
-
-    const tx = this._fbo.getColor(0);
+    const tx = fbo.getColor(0);
     assert(undefined !== tx.getHandle());
     this._blitGeom = SingleTexturedViewportQuadGeometry.createGeometry(tx.getHandle()!, TechniqueId.CopyColorNoAlpha);
     if (undefined === this._blitGeom)
-      dispose(this._fbo);
+      this.disposeFbo();
 
     return undefined !== this._blitGeom;
   }
@@ -1152,12 +1205,10 @@ export class OnScreenTarget extends Target {
     return this._usingWebGLCanvas ? changedWebGL : changed2d;
   }
 
-  protected _beginPaint(): void {
-    assert(undefined !== this._fbo);
-
+  protected _beginPaint(fbo: FrameBuffer): void {
     // Render to our framebuffer
     const system = this.renderSystem;
-    system.frameBufferStack.push(this._fbo, true, false);
+    system.frameBufferStack.push(fbo, true, false);
 
     const viewRect = this.viewRect;
 
@@ -1186,9 +1237,10 @@ export class OnScreenTarget extends Target {
     if (undefined === this._blitGeom)
       return;
 
-    const system = this.renderSystem;
+    // Blit the final image to the canvas.
     const drawParams = this.getDrawParams(this, this._blitGeom);
 
+    const system = this.renderSystem;
     system.frameBufferStack.pop();
     system.applyRenderState(RenderState.defaults);
     system.techniques.draw(drawParams);
@@ -1248,8 +1300,7 @@ export class OnScreenTarget extends Target {
   }
 
   public onResized(): void {
-    this._dcAssigned = false;
-    this._fbo = dispose(this._fbo);
+    this.disposeFbo();
   }
 
   public setRenderToScreen(toScreen: boolean): HTMLCanvasElement | undefined {
@@ -1288,28 +1339,16 @@ export class OffScreenTarget extends Target {
       return;
     }
 
-    this._dcAssigned = false;
-    this._fbo = dispose(this._fbo);
+    this.disposeFbo();
     dispose(this._compositor);
   }
 
   protected _assignDC(): boolean {
-    if (this._fbo !== undefined)
-      return true;
-
-    const rect = this.viewRect;
-    const color = TextureHandle.createForAttachment(rect.width, rect.height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
-    if (color === undefined)
-      return false;
-
-    this._fbo = FrameBuffer.create([color]);
-    assert(this._fbo !== undefined);
-    return this._fbo !== undefined;
+    return undefined !== this.allocateFbo();
   }
 
-  protected _beginPaint(): void {
-    assert(this._fbo !== undefined);
-    this.renderSystem.frameBufferStack.push(this._fbo, true, false);
+  protected _beginPaint(fbo: FrameBuffer): void {
+    this.renderSystem.frameBufferStack.push(fbo, true, false);
   }
 
   protected _endPaint(): void {

@@ -49,7 +49,6 @@ describe("iModelHub ThumbnailHandler (#unit)", () => {
   let projectId: string;
   let imodelId: GuidString;
   let versions: Version[];
-  const imodelName = "imodeljs-clients Thumbnails test";
   let imodelHubClient: IModelClient;
   let requestContext: AuthorizedClientRequestContext;
 
@@ -60,8 +59,8 @@ describe("iModelHub ThumbnailHandler (#unit)", () => {
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
     projectId = await utils.getProjectId(requestContext);
-    await utils.createIModel(requestContext, imodelName, projectId);
-    imodelId = await getIModelId(requestContext, imodelName, projectId);
+    await utils.createIModel(requestContext, utils.sharedimodelName, projectId);
+    imodelId = await getIModelId(requestContext, utils.sharedimodelName, projectId);
     imodelHubClient = utils.getDefaultClient();
 
     if (TestConfig.enableMocks) {
@@ -99,7 +98,10 @@ describe("iModelHub ThumbnailHandler (#unit)", () => {
     if (!TestConfig.enableMocks) {
       utils.getRequestBehaviorOptionsHandler().resetDefaultBehaviorOptions();
       imodelHubClient.requestOptions.setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
-      await utils.deleteIModelByName(requestContext, projectId, imodelName);
+    }
+
+    if (TestConfig.enableIModelBank) {
+      await utils.deleteIModelByName(requestContext, projectId, utils.sharedimodelName);
     }
   });
 
@@ -115,7 +117,7 @@ describe("iModelHub ThumbnailHandler (#unit)", () => {
       params.thumbnails = await imodelHubClient.thumbnails.get(requestContext, imodelId, params.size);
 
       if (params.thumbnails.length < 3) {
-        await utils.deleteIModelByName(requestContext, projectId, imodelName);
+        await utils.deleteIModelByName(requestContext, projectId, utils.sharedimodelName);
         chai.expect(params.thumbnails.length).to.be.gte(3);
       }
     });

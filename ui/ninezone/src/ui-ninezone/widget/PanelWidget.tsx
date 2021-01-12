@@ -11,8 +11,8 @@ import classnames from "classnames";
 import * as React from "react";
 import { useRefs } from "@bentley/ui-core";
 import { assert } from "../base/assert";
-import { TabsStateContext, WidgetsStateContext } from "../base/NineZone";
-import { TabsState, WidgetsState, WidgetState } from "../base/NineZoneState";
+import { PanelsStateContext, TabsStateContext, ToolSettingsStateContext, WidgetsStateContext } from "../base/NineZone";
+import { isHorizontalPanelState, TabsState, WidgetsState, WidgetState } from "../base/NineZoneState";
 import { isHorizontalPanelSide, PanelStateContext } from "../widget-panels/Panel";
 import { WidgetContentContainer } from "./ContentContainer";
 import { useTabTransientState } from "./ContentRenderer";
@@ -48,6 +48,7 @@ export const PanelWidget = React.memo( // eslint-disable-line react/display-name
       const r = React.useRef<WidgetComponent>(null);
       const refs = useRefs(ref, r);
       const mode = useMode(widgetId);
+      const borders = useBorders(widgetId);
       const [prevMode, setPrevMode] = React.useState(mode);
       const lastOnPrepareTransition = React.useRef(onPrepareTransition);
       lastOnPrepareTransition.current = onPrepareTransition;
@@ -78,6 +79,7 @@ export const PanelWidget = React.memo( // eslint-disable-line react/display-name
         horizontal && "nz-horizontal",
         size === undefined && `nz-${mode}`,
         transition !== undefined && `nz-${transition}`,
+        borders,
       );
       return (
         <WidgetProvider
@@ -89,7 +91,7 @@ export const PanelWidget = React.memo( // eslint-disable-line react/display-name
             style={style}
             ref={refs}
           >
-            <WidgetTabBar />
+            <WidgetTabBar separator={isHorizontalPanelSide(panel.side) ? true : !widget.minimized} />
             <WidgetContentContainer />
           </Widget>
         </WidgetProvider>
@@ -147,4 +149,54 @@ export function useMode(widgetId: string): "fit" | "fill" | "minimized" {
   const tabId = widget.activeTabId;
   const tab = tabs[tabId];
   return tab.preferredPanelWidgetSize ? "fit" : "fill";
+}
+
+/** @internal */
+export function useBorders(widgetId: WidgetState["id"]) {
+  const panel = React.useContext(PanelStateContext);
+  const panels = React.useContext(PanelsStateContext);
+  const toolSettings = React.useContext(ToolSettingsStateContext);
+  assert(panel);
+  let top = true;
+  let bottom = true;
+  let left = true;
+  let right = true;
+  const isHorizontal = isHorizontalPanelSide(panel.side);
+  const isVertical = !isHorizontal;
+  const isFirst = panel.widgets[0] === widgetId;
+  const isLast = panel.widgets[panel.widgets.length - 1] === widgetId;
+  const isTopMostPanelBorder = panel.side === "top" ||
+    (isVertical && !panels.top.span) ||
+    (isVertical && panels.top.span && panels.top.collapsed) ||
+    (isVertical && panels.top.widgets.length === 0);
+  if (panel.side === "bottom") {
+    bottom = false;
+  }
+  if (isVertical && isLast) {
+    bottom = false;
+  }
+  if (isTopMostPanelBorder && toolSettings.type === "docked") {
+    top = false;
+  }
+  if (isVertical && !isFirst) {
+    top = false;
+  }
+  if (isVertical && panels.top.span && !panels.top.collapsed && panels.top.widgets.length > 0) {
+    top = false;
+  }
+  if (isHorizontal && !isFirst) {
+    left = false;
+  }
+  if (isHorizontalPanelState(panel) && !panel.span && isFirst && !panels.left.collapsed && panels.left.widgets.length > 0) {
+    left = false;
+  }
+  if (isHorizontalPanelState(panel) && !panel.span && isLast && !panels.right.collapsed && panels.right.widgets.length > 0) {
+    right = false;
+  }
+  return {
+    "nz-border-top": top,
+    "nz-border-bottom": bottom,
+    "nz-border-left": left,
+    "nz-border-right": right,
+  };
 }

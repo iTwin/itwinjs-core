@@ -289,6 +289,9 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
     window.addEventListener("mouseup", this._handleFocusChange);
 
     this.checkRenderDirection();
+
+    if (this.props.opened)
+      this.focus();
   }
 
   /** @internal */

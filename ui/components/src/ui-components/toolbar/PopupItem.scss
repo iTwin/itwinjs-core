@@ -54,6 +54,14 @@
     }
   }
 
+  &.components-disabled-drag {
+    > .components-icon {
+      color: $disabled-icon-color;
+    }
+    > .components-triangle {
+      @include triangle-bottom-right-color($disabled-icon-color);
+    }
+  }
 }
 
 .components-toolbar-popupItem_popupItemPopup {

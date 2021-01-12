@@ -1,0 +1,63 @@
+{
+  "name": "@bentley/imodeljs-editor-common",
+  "version": "2.11.0-dev.42",
+  "description": "iModel.js editing properties common to frontend and backend",
+  "main": "lib/imodeljs-editor-common.js",
+  "typings": "lib/imodeljs-editor-common",
+  "imodeljsSharedLibrary": false,
+  "license": "MIT",
+  "scripts": {
+    "compile": "npm run build",
+    "build": "tsc 1>&2",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/editor/imodeljs-editor-common/file.json --tsIndexFile=./imodeljs-editor-common.ts --onlyJson",
+    "extract-api": "betools extract-api --entry=imodeljs-editor-common",
+    "lint": "eslint -f visualstudio --max-warnings 0 ./src/**/*.ts 1>&2",
+    "test": "",
+    "cover": ""
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs/tree/master/editor/common"
+  },
+  "keywords": [
+    "Bentley",
+    "BIM",
+    "iModel",
+    "digital-twin",
+    "iTwin"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "dependencies": {},
+  "peerDependencies": {
+    "@bentley/bentleyjs-core": "^2.11.0-dev.42"
+  },
+  "devDependencies": {
+    "@bentley/bentleyjs-core": "2.11.0-dev.42",
+    "@bentley/build-tools": "2.11.0-dev.42",
+    "@bentley/eslint-plugin": "2.11.0-dev.42",
+    "@types/chai": "^4.1.4",
+    "@types/mocha": "^5.2.5",
+    "@types/node": "10.14.1",
+    "@types/semver": "^5.5.0",
+    "chai": "^4.1.2",
+    "eslint": "^6.8.0",
+    "mocha": "^5.2.0",
+    "rimraf": "^3.0.2",
+    "ts-node": "^7.0.1",
+    "typescript": "~3.7.4"
+  },
+  "nyc": {
+    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc",
+    "all": true
+  },
+  "eslintConfig": {
+    "plugins": [
+      "@bentley"
+    ],
+    "extends": "plugin:@bentley/imodeljs-recommended"
+  }
+}

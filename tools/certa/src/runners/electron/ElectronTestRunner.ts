@@ -19,30 +19,43 @@ export class ElectronTestRunner {
     const { app } = require("electron");
     if (config.debug)
       app.commandLine.appendSwitch("remote-debugging-port", String(config.ports.frontendDebugging));
+
+    const timeout = new Promise((_resolve, reject) => setTimeout(() => reject("Timed out after 2 minutes when starting electron"), 2 * 60 * 1000));
+    await Promise.race([app.whenReady(), timeout]);
   }
 
   public static async runTests(config: CertaConfig): Promise<void> {
     const { BrowserWindow, app, ipcMain } = require("electron"); // eslint-disable-line @typescript-eslint/naming-convention
 
-    const timeout = new Promise((_resolve, reject) => setTimeout(() => reject("Timed out after 2 minutes when starting electron"), 2 * 60 * 1000));
-    await Promise.race([app.whenReady(), timeout]);
-
     const rendererWindow = new BrowserWindow({
       show: config.debug,
       webPreferences: {
         nodeIntegration: true,
+        enableRemoteModule: true,
       },
     });
 
+    const exitElectronApp = (exitCode: number) => {
+      // Passing exit code to parent process doesn't seem to work anymore with electron 10 - sending message with status instead
+      // See note in SpawnUtils.onExitElectronApp
+      if (process.send)
+        process.send({ exitCode });
+      app.exit(exitCode);
+    };
+
     ipcMain.on("certa-done", (_e: any, count: number) => {
-      rendererWindow.webContents.once("destroyed", () => app.exit(count));
+      rendererWindow.webContents.once("destroyed", () => {
+        exitElectronApp(count);
+      });
       setImmediate(() => rendererWindow.close());
     });
 
     ipcMain.on("certa-error", (_e: any, { message, stack }: any) => {
       console.error("Uncaught Error in Tests: ", message);
       console.error(stack);
-      rendererWindow.webContents.once("destroyed", () => app.exit(1));
+      rendererWindow.webContents.once("destroyed", () => {
+        exitElectronApp(1);
+      });
       rendererWindow.close();
     });
 

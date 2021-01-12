@@ -8,10 +8,12 @@
 
 import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
+import { HighlightedText } from "../../common/HighlightedText";
+import { HighlightingComponentProps } from "../../common/HighlightingComponentProps";
+import { CommonPropertyRenderer } from "./CommonPropertyRenderer";
 import { PrimitivePropertyLabelRenderer } from "./label/PrimitivePropertyLabelRenderer";
 import { SharedRendererProps } from "./PropertyRenderer";
 import { PropertyView } from "./PropertyView";
-import { CommonPropertyRenderer } from "./CommonPropertyRenderer";
 
 /** Properties of [[PrimitivePropertyRenderer]] React component
  * @public
@@ -23,6 +25,10 @@ export interface PrimitiveRendererProps extends SharedRendererProps {
   valueElementRenderer?: () => React.ReactNode;
   /** Multiplier of how much the property is indented to the right */
   indentation?: number;
+  /** Properties used for highlighting
+   * @beta
+  */
+  highlight?: HighlightingComponentProps;
 }
 
 /** React Component that renders primitive properties
@@ -35,15 +41,21 @@ export class PrimitivePropertyRenderer extends React.Component<PrimitiveRenderer
 
   /** @internal */
   public render() {
-    const { children, indentation, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
+    const { children, indentation, highlight, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
+    const displayLabel = this.props.propertyRecord.property.displayLabel;
     const offset = CommonPropertyRenderer.getLabelOffset(indentation, props.orientation, props.width, props.columnRatio, props.columnInfo?.minLabelWidth);
+
+    const activeMatchIndex = this.props.propertyRecord.property.name === highlight?.activeHighlight?.highlightedItemIdentifier ? highlight.activeHighlight.highlightIndex : undefined;
+    const label = highlight ?
+      (HighlightedText({ text: displayLabel, searchText: highlight.highlightedText, activeMatchIndex })) :
+      displayLabel;
 
     return (
       <PropertyView
         {...props}
         labelElement={
-          <PrimitivePropertyLabelRenderer offset={offset} renderColon={this.props.orientation === Orientation.Horizontal}>
-            {this.props.propertyRecord.property.displayLabel}
+          <PrimitivePropertyLabelRenderer offset={offset} renderColon={this.props.orientation === Orientation.Horizontal} tooltip={displayLabel}>
+            {label}
           </PrimitivePropertyLabelRenderer>}
       />
     );

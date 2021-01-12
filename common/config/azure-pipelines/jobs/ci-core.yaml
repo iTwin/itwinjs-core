@@ -33,10 +33,10 @@ jobs:
         versionSpec: ${{ parameters.nodeVersion }}
         checkLatest: true
 
-    - script: 'git config --local user.email imodeljs-admin@users.noreply.github.com'
-      displayName: 'git config email'
-    - script: 'git config --local user.name imodeljs-admin'
-      displayName: 'git config name'
+    - script: |
+        git config --local user.email imodeljs-admin@users.noreply.github.com
+        git config --local user.name imodeljs-admin
+      displayName: git config
 
     - powershell: |
         # Get the new version number.
@@ -46,7 +46,7 @@ jobs:
         $newBuildNumber = $currVersion + "_$(Build.BuildNumber)"
 
         Write-Host "##vso[build.updatebuildnumber]$newBuildNumber"
-      displayName: 'Set build number'
+      displayName: Set build number
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
 
     - template: ../templates/core-build.yaml

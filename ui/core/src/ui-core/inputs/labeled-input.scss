@@ -46,7 +46,8 @@
 
     > .icon {
 
-      display:            block;
+      display:            flex;
+      align-items:        center;
       position:           absolute;
       right:              0;
       top:                0;
@@ -70,9 +71,9 @@
   /// Status colors ----------------------------------------------------------
 
   $status-colors: (
-    success:    $buic-accessory-success,
-    warning:    $buic-accessory-warning,
-    error:      $buic-accessory-alert
+    success:    $buic-foreground-success,
+    warning:    $buic-foreground-warning,
+    error:      $buic-foreground-alert
   );
 
   @each $status, $color in $status-colors {

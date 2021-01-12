@@ -6,8 +6,7 @@
 import { expect } from "chai";
 import * as enzyme from "enzyme";
 import * as React from "react";
-import { DragDropContext } from "react-dnd";
-import TestBackend from "react-dnd-test-backend";
+import { wrapInTestContext } from "react-dnd-test-utils";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { BeDuration } from "@bentley/bentleyjs-core";
@@ -487,9 +486,18 @@ describe("Table", () => {
       });
 
       describe("Extended", () => {
+        let buttonElement: HTMLElement;
 
         beforeEach(() => {
           table.setProps({ selectionMode: SelectionMode.Extended });
+
+          buttonElement = document.createElement("button");
+          document.body.appendChild(buttonElement);
+          buttonElement.focus();
+        });
+
+        afterEach(() => {
+          document.body.removeChild(buttonElement);
         });
 
         it("shift select rows from top to bottom", async () => {
@@ -1271,7 +1279,6 @@ describe("Table", () => {
       TestUtils.terminateUiComponents();
     });
 
-
     it("clicking on an editor cell after selection should start editing", async () => {
       const renderedTable = render(<Table
         dataProvider={dataProviderMock.object}
@@ -1336,24 +1343,22 @@ describe("Table", () => {
     };
   };
 
-  describe("column drag and drop", async () => {
-
-    beforeEach(async () => {
-      const DragDropTable = DragDropContext(TestBackend)(Table); // eslint-disable-line @typescript-eslint/naming-convention
+  describe("column drag and drop", () => {
+    it("should begin and end drag", async () => {
+      const ref = React.createRef<any>();
+      const DragDropTable = wrapInTestContext(Table);
       table = enzyme.mount(<DragDropTable
         dataProvider={dataProviderMock.object}
         onRowsLoaded={onRowsLoaded}
         reorderableColumns={true}
+        ref={ref}
         settingsIdentifier="test"
         uiSettings={new LocalUiSettings({ localStorage: storageMock() } as Window)}
       />);
       await waitForSpy(onRowsLoaded);
       table.update();
-    });
 
-    it("should begin and end drag", () => {
-      const instance = table.instance() as any;
-      const backend = instance.getManager().getBackend();
+      const backend = ref.current.getManager().getBackend();
       const head = table.find(DragDropHeaderWrapper);
       expect(head).to.exist;
       const firstInstance = head.at(1).instance() as any;
@@ -1361,7 +1366,6 @@ describe("Table", () => {
       backend.simulateEndDrag();
       table.update();
     });
-
   });
 
   describe("columns show/hide", async () => {
