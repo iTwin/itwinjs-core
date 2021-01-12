@@ -14,6 +14,7 @@ import { QuantityStatus } from "@bentley/imodeljs-quantity";
 import { IModelApp, QuantityType } from "@bentley/imodeljs-frontend";
 import { ParsedInput } from "./ParsedInput";
 import { UiComponents } from "../UiComponents";
+import { QuantityFormatsChangedArgs } from "@bentley/imodeljs-frontend/lib/QuantityFormatter";
 
 /** Props for [[QuantityInput]] control
  * @beta
@@ -50,7 +51,7 @@ export function QuantityInput({ initialValue, quantityType, readonly, className,
   const parseString = React.useCallback((userInput: string): ParseResults => {
     // istanbul ignore else
     if (parserSpec) {
-      const parseResult = IModelApp.quantityFormatter.parseIntoQuantityValue(userInput, parserSpec);
+      const parseResult = IModelApp.quantityFormatter.parseToQuantityValue(userInput, parserSpec);
       // istanbul ignore else
       if (parseResult.status === QuantityStatus.Success) {
         return { value: parseResult.value };
@@ -70,9 +71,24 @@ export function QuantityInput({ initialValue, quantityType, readonly, className,
       setParserSpec(IModelApp.quantityFormatter.findParserSpecByQuantityType(quantityType));
     });
 
-    IModelApp.quantityFormatter.onActiveUnitSystemChanged.addListener(handleUnitSystemChanged);
+    IModelApp.quantityFormatter.onActiveFormattingUnitSystemChanged.addListener(handleUnitSystemChanged);
     return () => {
-      IModelApp.quantityFormatter.onActiveUnitSystemChanged.removeListener(handleUnitSystemChanged);
+      IModelApp.quantityFormatter.onActiveFormattingUnitSystemChanged.removeListener(handleUnitSystemChanged);
+    };
+  }, [quantityType]);
+
+  React.useEffect(() => {
+    const handleUnitSystemChanged = ((args: QuantityFormatsChangedArgs): void => {
+      const quantityKey = IModelApp.quantityFormatter.getQuantityTypeKey(quantityType);
+      if (args.quantityType === quantityKey) {
+        setFormatterSpec(IModelApp.quantityFormatter.findFormatterSpecByQuantityType(quantityType));
+        setParserSpec(IModelApp.quantityFormatter.findParserSpecByQuantityType(quantityType));
+      }
+    });
+
+    IModelApp.quantityFormatter.onQuantityFormatsChanged.addListener(handleUnitSystemChanged);
+    return () => {
+      IModelApp.quantityFormatter.onQuantityFormatsChanged.removeListener(handleUnitSystemChanged);
     };
   }, [quantityType]);
 
