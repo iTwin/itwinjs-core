@@ -4,18 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { isElectronRenderer } from "@bentley/bentleyjs-core";
 import { FrontendIpc, IpcListener, IpcSocketFrontend, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
+import { ITwinElectronApi } from "./ElectronPreload";
 import { ElectronRpcManager } from "./ElectronRpcManager";
-
-type ElectronListener = (event: any, ...args: any[]) => void;
-
-/** These methods are stored on `window.itwinjs` in ElectronPreload.js */
-interface ITwinElectronApi {
-  addListener: (channel: string, listener: ElectronListener) => void;
-  removeListener: (channel: string, listener: ElectronListener) => void;
-  invoke: (channel: string, ...data: any[]) => Promise<any>;
-  once: (channel: string, listener: (event: any, ...args: any[]) => void) => void;
-  send: (channel: string, ...data: any[]) => void; // only valid for render -> main
-}
 
 /** @alpha */
 export interface ElectronFrontendOptions {
@@ -35,8 +25,8 @@ class ElectronFrontendIpc implements IpcSocketFrontend {
     return this._api.invoke(channel, ...args);
   };
   public constructor(opts?: ElectronFrontendOptions) {
-    // use the methods on window.itwinjs, or ipcRenderer directly if running with nodeIntegration=true (**only** for tests).
-    // Note that `require("electron")` doesn't work with nodeIntegration=false - that's why it exists
+    // use the methods on window.itwinjs exposed by ElectronPreload.ts, or ipcRenderer directly if running with nodeIntegration=true (**only** for tests).
+    // Note that `require("electron")` doesn't work with nodeIntegration=false - that's what it stops
     this._api = (typeof window === "undefined" ? undefined : (window as any).itwinjs as ITwinElectronApi | undefined) ?? require("electron").ipcRenderer;
     FrontendIpc.initialize(this);
     ElectronRpcManager.initializeFrontend(this, opts?.rpcInterfaces);
@@ -45,7 +35,7 @@ class ElectronFrontendIpc implements IpcSocketFrontend {
 };
 
 /** @alpha */
-export const initializeElectronFrontend = (opts?: ElectronFrontendOptions) => {
+export const initializeElectronFrontend = (opts?: ElectronFrontendOptions): void => {
   if (!isElectronRenderer)
     throw new Error("Not running under Electron");
 
