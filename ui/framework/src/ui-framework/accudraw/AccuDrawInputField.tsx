@@ -9,7 +9,7 @@
 import "./AccuDrawInputField.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, Icon, IconSpec, NumberInput } from "@bentley/ui-core";
+import { CommonProps, Icon, IconSpec, Input } from "@bentley/ui-core";
 import { isLetter, SpecialKey } from "@bentley/ui-abstract";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 
@@ -17,8 +17,8 @@ import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
  * @internal
  */
 export interface AccuDrawInputFieldProps extends CommonProps {
-  /** Initial value */
-  initialValue: number;
+  /** String value */
+  initialValue: string;
   /** Indicates whether field is locked */
   lock: boolean;
   /** id for the input element */
@@ -32,7 +32,7 @@ export interface AccuDrawInputFieldProps extends CommonProps {
   /** Custom CSS Style for the label */
   labelStyle?: React.CSSProperties;
   /** Triggered when the content is changed */
-  onValueChanged: (value: number, stringValue: string) => void;
+  onValueChanged: (stringValue: string) => void;
   /** Frequency to poll for changes in value, in milliseconds */
   valueChangedDelay?: number;
   /** Listens for <Enter> keypress */
@@ -49,28 +49,30 @@ export interface AccuDrawInputFieldProps extends CommonProps {
 export function AccuDrawInputField(props: AccuDrawInputFieldProps) {
   const { className, style, id, label, iconSpec, labelClassName, labelStyle, initialValue, lock,
     onValueChanged, valueChangedDelay, onEnterPressed, onEscPressed, setFocus } = props;
-  const [numberValue, setNumberValue] = React.useState(initialValue);
+  const [stringValue, setStringValue] = React.useState(initialValue);
   const timeoutId = React.useRef(0);
 
   React.useEffect(() => {
-    setNumberValue(initialValue);
+    setStringValue(initialValue);
   }, [initialValue]);
 
-  const trackChange = React.useCallback((value: number | undefined, stringValue: string): void => {
+  const trackChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>): void => {
+    const value = event.target.value;
+
     // istanbul ignore next
     if (value === undefined)
       return;
 
-    if (value !== numberValue)
-      setNumberValue(value);
+    if (value !== stringValue)
+      setStringValue(value);
 
     if (valueChangedDelay) {
       unsetTimeout();
-      timeoutId.current = window.setTimeout(() => { onValueChanged(value, stringValue); }, valueChangedDelay);
+      timeoutId.current = window.setTimeout(() => { onValueChanged(stringValue); }, valueChangedDelay);
     } else {
-      onValueChanged(value, stringValue);
+      onValueChanged(stringValue);
     }
-  }, [onValueChanged, numberValue, valueChangedDelay]);
+  }, [onValueChanged, stringValue, valueChangedDelay]);
 
   const unsetTimeout = (): void => {
     // istanbul ignore else
@@ -109,7 +111,7 @@ export function AccuDrawInputField(props: AccuDrawInputFieldProps) {
         {label}
         {iconSpec && <Icon iconSpec={iconSpec} />}
       </label>
-      <NumberInput id={id} value={numberValue} precision={4}
+      <Input id={id} value={stringValue}
         className={inputClassNames} style={style}
         onChange={trackChange} onKeyDown={handleKeyDown} setFocus={setFocus} />
       <span className="uifw-accudraw-lock" >

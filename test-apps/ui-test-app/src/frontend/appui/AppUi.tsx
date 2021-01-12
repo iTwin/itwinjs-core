@@ -539,7 +539,7 @@ export class AppUi {
     return new CommandItemDef({
       commandId: "setValueX",
       label: "Set Value X",
-      execute: () => IModelApp.uiAdmin.accuDrawUi.setFieldValueToUi(AccuDrawField.X, 123.456),
+      execute: () => IModelApp.uiAdmin.accuDrawUi.setFieldValueToUi(AccuDrawField.X, 123.456, "123.456"),
     });
   }
 
@@ -547,7 +547,7 @@ export class AppUi {
     return new CommandItemDef({
       commandId: "setValueY",
       label: "Set Value Y",
-      execute: () => IModelApp.uiAdmin.accuDrawUi.setFieldValueToUi(AccuDrawField.Y, 234.567),
+      execute: () => IModelApp.uiAdmin.accuDrawUi.setFieldValueToUi(AccuDrawField.Y, 234.567, "234.567"),
     });
   }
 
@@ -555,7 +555,7 @@ export class AppUi {
     return new CommandItemDef({
       commandId: "setValueZ",
       label: "Set Value Z",
-      execute: () => IModelApp.uiAdmin.accuDrawUi.setFieldValueToUi(AccuDrawField.Z, 345.678),
+      execute: () => IModelApp.uiAdmin.accuDrawUi.setFieldValueToUi(AccuDrawField.Z, 345.678, "345.678"),
     });
   }
 
@@ -563,7 +563,7 @@ export class AppUi {
     return new CommandItemDef({
       commandId: "setValueAngle",
       label: "Set Value Angle",
-      execute: () => IModelApp.uiAdmin.accuDrawUi.setFieldValueToUi(AccuDrawField.Angle, 12.34),
+      execute: () => IModelApp.uiAdmin.accuDrawUi.setFieldValueToUi(AccuDrawField.Angle, 12.34, "12.34"),
     });
   }
 
@@ -571,7 +571,7 @@ export class AppUi {
     return new CommandItemDef({
       commandId: "setValueDistance",
       label: "Set Value Distance",
-      execute: () => IModelApp.uiAdmin.accuDrawUi.setFieldValueToUi(AccuDrawField.Distance, 56.78),
+      execute: () => IModelApp.uiAdmin.accuDrawUi.setFieldValueToUi(AccuDrawField.Distance, 56.78, "56.78"),
     });
   }
 

@@ -13,7 +13,7 @@ import { KeyboardShortcutManager } from "../../ui-framework/keyboardshortcut/Key
 describe("AccuDrawInputField", () => {
 
   it("should render with lock", () => {
-    const value = 1.23;
+    const value = "1.23";
     const spyChanged = sinon.spy();
     const wrapper = render(<AccuDrawInputField initialValue={value} lock={true} id="x" onValueChanged={spyChanged} />);
     const icon = wrapper.container.querySelector(".icon-lock");
@@ -21,7 +21,7 @@ describe("AccuDrawInputField", () => {
   });
 
   it("should call onValueChanged on change", () => {
-    const value: number | undefined = 1.23;
+    const value = "1.23";
     const spyMethod = sinon.spy();
     const wrapper = render(<AccuDrawInputField initialValue={value} lock={false} id="x" onValueChanged={spyMethod} />);
     const input = wrapper.container.querySelector("input");
@@ -38,7 +38,7 @@ describe("AccuDrawInputField", () => {
 
   it("should call onValueChanged on change after delay", async () => {
     const fakeTimers = sinon.useFakeTimers();
-    const value: number | undefined = 1.23;
+    const value = "1.23";
     const spyMethod = sinon.spy();
     const wrapper = render(<AccuDrawInputField initialValue={value} lock={false} id="x" onValueChanged={spyMethod} valueChangedDelay={10} />);
     const input = wrapper.container.querySelector("input");
@@ -54,7 +54,8 @@ describe("AccuDrawInputField", () => {
   });
 
   it("should call onEscPressed on ESC", () => {
-    const value = 1.23;
+    const value = "1.23";
+
     const spyEsc = sinon.spy();
     const spyChanged = sinon.spy();
     const wrapper = render(<AccuDrawInputField initialValue={value} onEscPressed={spyEsc} lock={false} id="x" onValueChanged={spyChanged} />);
@@ -65,7 +66,8 @@ describe("AccuDrawInputField", () => {
   });
 
   it("should call onEnterPressed on Enter", () => {
-    const value = 1.23;
+    const value = "1.23";
+
     const spyEnter = sinon.spy();
     const spyChanged = sinon.spy();
     const wrapper = render(<AccuDrawInputField initialValue={value} onEnterPressed={spyEnter} lock={false} id="x" onValueChanged={spyChanged} />);
@@ -76,7 +78,8 @@ describe("AccuDrawInputField", () => {
   });
 
   it("should call KeyboardShortcutManager.processKey on a letter", () => {
-    const value = 1.23;
+    const value = "1.23";
+
     const spyMethod = sinon.spy(KeyboardShortcutManager, "processKey");
     const spyChanged = sinon.spy();
     const wrapper = render(<AccuDrawInputField initialValue={value} lock={false} id="x" onValueChanged={spyChanged} />);
