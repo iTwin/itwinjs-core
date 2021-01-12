@@ -56,7 +56,8 @@
     "NoOverlayLayers": "No Overlay layers specified",
     "NoBackgroundLayers": "No Background layers specified",
     "OverlayLayers": "Overlay",
-    "ToggleVisibility": "Toggle Visibility"
+    "ToggleVisibility": "Toggle Visibility",
+    "SettingsButtonTooltip": "Settings"
   },
   "LayerMenu": {
     "Detach": "Detach",

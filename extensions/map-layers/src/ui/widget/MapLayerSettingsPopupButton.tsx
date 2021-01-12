@@ -5,27 +5,17 @@
 
 import * as React from "react";
 import { RelativePosition } from "@bentley/ui-abstract";
-import { Popup, Slider, WebFontIcon } from "@bentley/ui-core";
+import { Popup, WebFontIcon } from "@bentley/ui-core";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
-import "./MapLayerSettingsPopupButton.scss";
-//import settingsIconSvg from "@bentley/icons-generic/icons/settings.svg?sprite";
+import { MapManagerSettings } from "./MapManagerSettings";
 
-/** @alpha */
-export interface MapLayerSettingsButtonProps {
-  /** initialValue range 0-1 */
-  transparency: number;
-  /** function called when value changes. Returned value range 0-1 */
-  onTransparencyChange(value: number): void;
-  /** optional tooltip */
-  buttonToolTip?: string;
-}
+import "./MapLayerSettingsPopupButton.scss";
 
 /** @alpha */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function MapLayerSettingsPopupButton({ transparency, onTransparencyChange, buttonToolTip }: MapLayerSettingsButtonProps) {
+export function MapLayerSettingsPopupButton() {
   const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
-  const [defaultTransparencyLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:TransparencyPopup.SetTransparency"));
-  const toolTipLabel = React.useMemo(() => buttonToolTip ? buttonToolTip : defaultTransparencyLabel, [buttonToolTip, defaultTransparencyLabel]);
+  const [buttonTooltip] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.SettingsButtonTooltip"));
 
   const buttonRef = React.useRef<HTMLButtonElement>(null);
   const togglePopupDisplay = React.useCallback((event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -37,19 +27,9 @@ export function MapLayerSettingsPopupButton({ transparency, onTransparencyChange
     setIsSettingsOpen(false);
   }, [setIsSettingsOpen]);
 
-  const handleTransparencyChange = React.useCallback((values: readonly number[]) => {
-    if (values.length) {
-      const newTransparency = values[0];
-      if (newTransparency !== transparency) {
-        if (onTransparencyChange)
-          onTransparencyChange(newTransparency / 100);
-      }
-    }
-  }, [onTransparencyChange, transparency]);
-
   return (
     <>
-      <button title={toolTipLabel} className="maplayers-settings-popup-button" onClick={togglePopupDisplay} ref={buttonRef}>
+      <button title={buttonTooltip} className="maplayers-settings-popup-button" onClick={togglePopupDisplay} ref={buttonRef}>
         <WebFontIcon iconName="icon-settings" />
       </button>
       <Popup
@@ -59,9 +39,7 @@ export function MapLayerSettingsPopupButton({ transparency, onTransparencyChange
         target={buttonRef.current}
       >
         <div className="maplayers-settings-popup-panel">
-          <div className="maplayers-settings-container">
-            <Slider min={0} max={100} values={[transparency * 100]} step={1} showTooltip showMinMax onChange={handleTransparencyChange} />
-          </div>
+          <MapManagerSettings />
         </div>
       </Popup >
     </ >

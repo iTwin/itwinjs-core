@@ -155,7 +155,6 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
 }
 
 /** @internal */
-
 export enum AttachLayerButtonType {
   Primary,
   Blue,
@@ -165,7 +164,6 @@ export interface AttachLayerPopupButtonProps {
   isOverlay: boolean;
   buttonType?: AttachLayerButtonType;
 }
-
 
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention

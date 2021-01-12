@@ -8,7 +8,7 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 
 import * as React from "react";
-import { DragDropContext, Draggable, DraggableChildrenFn, DraggableProvided, DraggableRubric, Droppable, DroppableProvided, DroppableStateSnapshot, DropResult } from "react-beautiful-dnd";
+import { DragDropContext, Draggable, DraggableChildrenFn, Droppable, DroppableProvided, DroppableStateSnapshot, DropResult } from "react-beautiful-dnd";
 import { MapSubLayerProps, MapSubLayerSettings } from "@bentley/imodeljs-common";
 import {
   DisplayStyleState, IModelApp, MapLayerImageryProvider, MapLayerSettingsService, MapLayerSource, MapLayerSources, NotifyMessageDetails, OutputMessagePriority,
@@ -19,11 +19,9 @@ import { assert } from "@bentley/bentleyjs-core";
 import { SubLayersPopupButton } from "./SubLayersPopupButton";
 import { AttachLayerButtonType, AttachLayerPopupButton } from "./AttachLayerPopupButton";
 import { BasemapPanel } from "./BasemapPanel";
-import { MapSettingsPanel } from "./MapSettingsPanel";
 import { MapLayerOptions, MapLayersUiItemsProvider, MapTypesOptions } from "../MapLayersUiItemsProvider";
 import { MapLayerSettingsPopupButton } from "./MapLayerSettingsPopupButton";
 import "./MapLayerManager.scss";
-
 
 /** @internal */
 export interface SourceMapContextProps {
@@ -195,13 +193,10 @@ function getMapLayerSettingsFromStyle(displayStyle: DisplayStyleState | undefine
   // since we want to display higher level maps above lower maps in UI reverse their order here.
   return layers.reverse();
 }
-
-
 interface MapLayerDroppableProps {
   isOverlay: boolean;
   layersList?: StyleMapLayerSettings[];
   getContainerForClone: () => HTMLElement;
-  // renderClone?: DraggableChildrenFn;
   activeViewport: ScreenViewport;
   onMenuItemSelected: (action: string, mapLayerSettings: StyleMapLayerSettings) => void;
   onItemVisibilityToggleClicked: (mapLayerSettings: StyleMapLayerSettings) => void;
@@ -227,7 +222,7 @@ export function MapLayerDroppable(props: MapLayerDroppableProps) {
           <Icon iconSpec={activeLayer.visible ? "icon-visibility" : "icon-visibility-hide-2"} /></button>
         <span className="map-manager-item-label" {...dragProvided.dragHandleProps}>{activeLayer.name}</span>
         <div className="map-manager-item-sub-layer-container">
-          {activeLayer.subLayers && activeLayer.subLayers!.length > 1 &&
+          {activeLayer.subLayers && activeLayer.subLayers.length > 1 &&
             <SubLayersPopupButton mapLayerSettings={activeLayer} activeViewport={props.activeViewport} />
           }
         </div>
@@ -235,7 +230,6 @@ export function MapLayerDroppable(props: MapLayerDroppableProps) {
       </div>
     );
   };
-
 
   function renderDraggableContent(snapshot: DroppableStateSnapshot): React.ReactNode {
     let node: React.ReactNode;
@@ -258,11 +252,10 @@ export function MapLayerDroppable(props: MapLayerDroppableProps) {
               <AttachLayerPopupButton buttonType={AttachLayerButtonType.Blue} isOverlay={false} />
             </>
           }
-        </div>
+        </div>;
     }
     return node;
   }
-
 
   function renderDraggable(dropProvided: DroppableProvided, dropSnapshot: DroppableStateSnapshot): React.ReactElement<HTMLElement> {
     return (
@@ -275,7 +268,7 @@ export function MapLayerDroppable(props: MapLayerDroppableProps) {
               Unfortunately, if don't add it, 'react-beautiful-dnd' show an error message in the console.
               So I simply make it hidden. See https://github.com/atlassian/react-beautiful-dnd/issues/518 */
         }
-        <div style={containsLayer ? undefined : { display: 'none' }}>{dropProvided.placeholder}</div>
+        <div style={containsLayer ? undefined : { display: "none" }}>{dropProvided.placeholder}</div>
       </div>);
   }
 
@@ -290,13 +283,11 @@ export function MapLayerDroppable(props: MapLayerDroppableProps) {
   );
 }
 
-
 interface MapLayerManagerProps {
   getContainerForClone: () => HTMLElement;
   activeViewport: ScreenViewport;
   mapLayerOptions?: MapLayerOptions;
 }
-
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function MapLayerManager(props: MapLayerManagerProps) {
@@ -412,7 +403,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
     loadMapLayerSettingsFromStyle(activeViewport.displayStyle);
   }, [activeViewport, loadMapLayerSettingsFromStyle]);
 
-  const handleVisibilityChange = React.useCallback((mapLayerSettings: StyleMapLayerSettings) => {
+  const handleLayerVisibilityChange = React.useCallback((mapLayerSettings: StyleMapLayerSettings) => {
     if (activeViewport) {
       const isVisible = !mapLayerSettings.visible;
 
@@ -429,7 +420,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
     }
   }, [activeViewport, loadMapLayerSettingsFromStyle]);
 
-  const handleVisibilityChange2 = React.useCallback(() => {
+  const handleMapLayersToggle = React.useCallback(() => {
     if (activeViewport) {
       const newState = !basemapVisible;
       const vf = activeViewport.viewFlags.clone();
@@ -487,8 +478,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
         // Manually reverse index when moved from one section to the other
         if (fromMapLayer.isOverlay && backgroundMapLayers) {
           toIndexInDisplayStyle = displayStyle.backgroundMapLayers.length - destination.index;
-        }
-        else if (!fromMapLayer.isOverlay && overlayMapLayers) {
+        } else if (!fromMapLayer.isOverlay && overlayMapLayers) {
           toIndexInDisplayStyle = overlayMapLayers.length - destination.index;
         }
 
@@ -517,21 +507,6 @@ export function MapLayerManager(props: MapLayerManagerProps) {
       loadMapLayerSettingsFromStyle(activeViewport.displayStyle);
   }, [activeViewport, loadMapLayerSettingsFromStyle]);
 
-  const [baseMapTransparencyValue, setBaseMapTransparencyValue] = React.useState(() => {
-    if (activeViewport)
-      return activeViewport.displayStyle.baseMapTransparency;
-    return 0;
-  });
-
-  const handleBasemapTransparencyChange = React.useCallback((transparency: number) => {
-    if (activeViewport) {
-      activeViewport.displayStyle.changeBaseMapTransparency(transparency);
-      activeViewport.invalidateRenderPlan();
-      setBaseMapTransparencyValue(transparency);
-    }
-  }, [activeViewport]);
-
-
   const [baseMapPanelLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Basemap.BaseMapPanelTitle"));
 
   return (
@@ -547,8 +522,8 @@ export function MapLayerManager(props: MapLayerManagerProps) {
       <div className="map-manager-top-header">
         <span className="map-manager-header-label">{baseMapPanelLabel}</span>
         <div className="map-manager-header-buttons-group">
-          <Toggle className="map-manager-toggle" isOn={basemapVisible} onChange={handleVisibilityChange2} />
-          <MapLayerSettingsPopupButton transparency={baseMapTransparencyValue} onTransparencyChange={handleBasemapTransparencyChange} />
+          <Toggle className="map-manager-toggle" isOn={basemapVisible} onChange={handleMapLayersToggle} />
+          <MapLayerSettingsPopupButton />
         </div>
       </div>
 
@@ -569,7 +544,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
                 getContainerForClone={props.getContainerForClone as any}
                 activeViewport={props.activeViewport}
                 onMenuItemSelected={handleOnMenuItemSelection}
-                onItemVisibilityToggleClicked={handleVisibilityChange} />
+                onItemVisibilityToggleClicked={handleLayerVisibilityChange} />
             </div>
 
             <div className="map-manager-layer-wrapper">
@@ -582,13 +557,10 @@ export function MapLayerManager(props: MapLayerManagerProps) {
                 getContainerForClone={props.getContainerForClone as any}
                 activeViewport={props.activeViewport}
                 onMenuItemSelected={handleOnMenuItemSelection}
-                onItemVisibilityToggleClicked={handleVisibilityChange} />
+                onItemVisibilityToggleClicked={handleLayerVisibilityChange} />
             </div>
           </DragDropContext>
         }
-        <div className="map-manager-settings-container">
-          <MapSettingsPanel />
-        </div>
       </div >
     </SourceMapContext.Provider >
   );

@@ -8,17 +8,11 @@ $hovered-icon-color: $buic-foreground-primary-tone;
 
 .maplayers-settings-popup-panel {
   z-index: 14000;
-  display: flex;
-  flex-direction: row;
-
-  .maplayers-settings-container {
-    display: flex;
-    align-items: center;
-    width: 160px;
-    height: 2.5em;
-    margin-left: 1em;
-    margin-right: 1em;
-  }
+  font-size: 14px;
+  margin: 0.5em;
+  width: 300px;
+  //display: flex;
+  //flex-direction: row;
 }
 
 .maplayers-settings-popup-button {
