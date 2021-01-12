@@ -657,8 +657,8 @@ export class IModelTransformer extends IModelExportHandler {
 
   /** Recursively import all Elements and sub-Models that descend from the specified Subject */
   public processSubject(sourceSubjectId: Id64String, targetSubjectId: Id64String): void {
-    this.sourceDb.elements.getElement<Subject>(sourceSubjectId); // throws if sourceSubjectId is not a Subject
-    this.targetDb.elements.getElement<Subject>(targetSubjectId); // throws if targetSubjectId is not a Subject
+    this.sourceDb.elements.getElement(sourceSubjectId, Subject); // throws if sourceSubjectId is not a Subject
+    this.targetDb.elements.getElement(targetSubjectId, Subject); // throws if targetSubjectId is not a Subject
     this.context.remapElement(sourceSubjectId, targetSubjectId);
     this.processChildElements(sourceSubjectId);
     this.processSubjectSubModels(sourceSubjectId);
