@@ -19,6 +19,7 @@ import { UiComponents } from "@bentley/ui-components";
 import rpcs from "../common/Rpcs";
 import { MyAppFrontend } from "./api/MyAppFrontend";
 import App from "./components/app/App";
+import { initializeElectronFrontend } from "@bentley/electron-manager/lib/ElectronFrontend";
 
 // initialize logging
 Logger.initializeToConsole();
@@ -28,9 +29,7 @@ Logger.setLevelDefault(LogLevel.Warning);
 (function initRpc() {
   RpcConfiguration.developmentMode = true;
   if (isElectronRenderer) {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    const ElectronFrontend = require("@bentley/electron-manager/lib/ElectronFrontend").ElectronFrontend;
-    new ElectronFrontend({ rpcInterfaces: rpcs });
+    initializeElectronFrontend({ rpcInterfaces: rpcs });
   } else {
     const rpcParams: BentleyCloudRpcParams = { info: { title: "presentation-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
     // __PUBLISH_EXTRACT_START__ Presentation.Frontend.RpcInterface

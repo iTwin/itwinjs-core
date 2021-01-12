@@ -5,13 +5,13 @@
 import * as electron from "electron";
 import * as path from "path";
 import { assert } from "@bentley/bentleyjs-core";
-import { IModelJsElectronManager } from "@bentley/electron-manager";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { getRpcInterfaces, initializeBackend } from "./backend";
+import { initializeElectronBackend } from "../../../../core/electron-manager/lib/ElectronBackend";
 
 const dptaElectronMain = async () => {
 
-  const manager = new IModelJsElectronManager({ webResourcesPath: path.join(__dirname, "..", "..", "build"), rpcInterfaces: getRpcInterfaces() });
+  const manager = initializeElectronBackend({ webResourcesPath: path.join(__dirname, "..", "..", "build"), rpcInterfaces: getRpcInterfaces() });
 
   // Start the backend
   await initializeBackend();
@@ -22,7 +22,7 @@ const dptaElectronMain = async () => {
   const autoOpenDevTools = (undefined === process.env.SVT_NO_DEV_TOOLS);
   const maximizeWindow = (undefined === process.env.SVT_NO_MAXIMIZE_WINDOW); // Make max window the default
 
-  await manager.initialize({ width: 1280, height: 800, show: !maximizeWindow });
+  await manager.openMainWindow({ width: 1280, height: 800, show: !maximizeWindow });
   assert(manager.mainWindow !== undefined);
 
   if (maximizeWindow) {

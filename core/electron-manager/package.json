@@ -2,8 +2,6 @@
   "name": "@bentley/electron-manager",
   "version": "2.11.0-dev.41",
   "description": "iModel.js electron utilities",
-  "main": "lib/electron-manager.js",
-  "typings": "lib/electron-manager",
   "license": "MIT",
   "engines": {
     "node": ">=10.17.0 <13.0"
@@ -33,6 +31,7 @@
   },
   "peerDependencies": {
     "@bentley/bentleyjs-core": "^2.11.0-dev.41",
+    "@bentley/imodeljs-common": "^2.11.0-dev.41",
     "@bentley/imodeljs-backend": "^2.11.0-dev.41",
     "electron": "^10.1.3"
   },

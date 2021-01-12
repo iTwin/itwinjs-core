@@ -16,6 +16,8 @@ import * as path from "path";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
 import "./RpcImpl";
+import { initializeElectronBackend } from "../../../../core/electron-manager/lib/ElectronBackend";
+
 /* eslint-disable no-console */
 
 function initDebugLogLevels(reset?: boolean) {
@@ -46,9 +48,7 @@ async function init() {
   await CloudEnv.initialize();
 
   if (isElectronMain) {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    const ElectronManager = (await import("@bentley/electron-manager")).ElectronManager;
-    new ElectronManager({ rpcInterfaces });
+    initializeElectronBackend({ rpcInterfaces });
   } else {
     const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "full-stack-test", version: "v1.0" } }, rpcInterfaces);
 

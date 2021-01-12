@@ -5,10 +5,10 @@
 import { app, dialog, OpenDialogOptions } from "electron";
 import * as path from "path";
 import { assert } from "@bentley/bentleyjs-core";
-import { ElectronManagerOptions, IModelJsElectronManager, WebpackDevServerElectronManager } from "@bentley/electron-manager";
+import { ElectronBackendOptions, initializeElectronBackend } from "@bentley/electron-manager/lib/ElectronBackend";
+import { IpcHandler } from "@bentley/imodeljs-common";
 import { dtaChannel, DtaIpcInterface, dtaIpcVersion } from "../common/DtaIpcInterface";
 import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
-import { IpcHandler } from "@bentley/imodeljs-common";
 
 const getWindowSize = () => {
   let width = 1280;
@@ -43,16 +43,15 @@ export class DtaIpcImpl extends IpcHandler implements DtaIpcInterface {
  * that starts from the file "index.ts". That launches the iModel.js frontend (IModelApp).
  */
 const dtaElectronMain = async () => {
-  const opts: ElectronManagerOptions = {
+  const opts: ElectronBackendOptions = {
     webResourcesPath: path.join(__dirname, "..", "..", "build"),
     iconName: "display-test-app.ico",
     rpcInterfaces: getRpcInterfaces(),
     ipcHandlers: [DtaIpcImpl],
+    developmentServer: process.env.NODE_ENV === "development",
   };
 
-  const manager = (process.env.NODE_ENV === "development") ?
-    new WebpackDevServerElectronManager(opts) : // port should match the port of the local dev server
-    new IModelJsElectronManager(opts);
+  const manager = initializeElectronBackend(opts);
 
   await initializeDtaBackend();
 
@@ -60,7 +59,7 @@ const dtaElectronMain = async () => {
   const maximizeWindow = (undefined === process.env.SVT_NO_MAXIMIZE_WINDOW);
 
   // after backend is initialized, start display-test-app frontend process and open the window
-  await manager.initialize({ ...getWindowSize(), show: !maximizeWindow, title: "Display Test App" });
+  await manager.openMainWindow({ ...getWindowSize(), show: !maximizeWindow, title: "Display Test App" });
   assert(manager.mainWindow !== undefined);
 
   if (maximizeWindow) {

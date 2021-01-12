@@ -64,6 +64,7 @@ import { ToolWithDynamicSettings } from "./tools/ToolWithDynamicSettings";
 import { UiProviderTool } from "./tools/UiProviderTool";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import { FrontendApplicationInsightsClient } from "@bentley/frontend-application-insights-client";
+import { initializeElectronFrontend } from "@bentley/electron-manager/lib/ElectronFrontend";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -732,8 +733,7 @@ async function main() {
 
   const rpcInterfaces = getSupportedRpcs();
   if (isElectronRenderer) {
-    const ElectronFrontend = (await import("@bentley/electron-manager/lib/ElectronFrontend")).ElectronFrontend;
-    new ElectronFrontend({ rpcInterfaces });
+    initializeElectronFrontend({ rpcInterfaces });
   } else if (MobileRpcConfiguration.isMobileFrontend) {
     MobileRpcManager.initializeClient(rpcInterfaces);
   } else if (process.env.imjs_gp_backend) {

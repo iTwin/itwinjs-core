@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import * as electron from "electron";
 import * as path from "path";
-import { ElectronManagerOptions, IModelJsElectronManager, WebpackDevServerElectronManager } from "@bentley/electron-manager";
 import { RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import { assert } from "@bentley/bentleyjs-core";
+import { ElectronBackendOptions, initializeElectronBackend } from "../../../../../core/electron-manager/lib/ElectronBackend";
 
 /**
  * Initializes Electron backend
@@ -15,14 +15,13 @@ const autoOpenDevTools = (undefined === process.env.SVT_NO_DEV_TOOLS);
 const maximizeWindow = (undefined === process.env.SVT_NO_MAXIMIZE_WINDOW);
 
 export default async function initialize(rpcInterfaces: RpcInterfaceDefinition[]) {
-  const opts: ElectronManagerOptions = {
+  const opts: ElectronBackendOptions = {
     webResourcesPath: path.join(__dirname, "..", "..", "..", "build"),
     rpcInterfaces,
+    developmentServer: process.env.NODE_ENV === "development",
   };
 
-  const manager = (process.env.NODE_ENV === "production") ?
-    new IModelJsElectronManager(opts) :
-    new WebpackDevServerElectronManager(opts, 3000); // port should match the port of the local dev server
+  const manager = initializeElectronBackend(opts);
 
   // Handle custom keyboard shortcuts
   electron.app.on("web-contents-created", (_e, wc) => {
@@ -37,7 +36,7 @@ export default async function initialize(rpcInterfaces: RpcInterfaceDefinition[]
     });
   });
 
-  await manager.initialize({ width: 800, height: 650, show: !maximizeWindow, title: "Ui Test App" });
+  await manager.openMainWindow({ width: 800, height: 650, show: !maximizeWindow, title: "Ui Test App" });
   assert(manager.mainWindow !== undefined);
 
   if (maximizeWindow) {

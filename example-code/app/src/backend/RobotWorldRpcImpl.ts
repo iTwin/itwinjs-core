@@ -57,11 +57,10 @@ export function initializeRpcImplBentleyCloud(interfaces: RpcInterfaceDefinition
 // __PUBLISH_EXTRACT_END__
 
 // __PUBLISH_EXTRACT_START__ RpcInterface.initializeForElectron
+import { initializeElectronBackend } from "@bentley/electron-manager/lib/ElectronBackend";
 
 export async function initializeForElectron(rpcInterfaces: RpcInterfaceDefinition[]) {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  const ElectronManager = (await import("@bentley/electron-manager")).ElectronManager;
-  new ElectronManager({ rpcInterfaces });
+  initializeElectronBackend({ rpcInterfaces });
 };
 
 // __PUBLISH_EXTRACT_END__
