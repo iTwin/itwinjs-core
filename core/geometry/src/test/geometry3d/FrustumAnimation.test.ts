@@ -211,7 +211,7 @@ function interpolateSwingingEye(
 }
 
 describe("FrustumSwing", () => {
-  it.only("PureTranslation", () => {
+  it("PureTranslation", () => {
     const ck = new Checker();
     // const allGeometry: GeometryQuery[] = [];
     const identity = Matrix3d.createIdentity();
