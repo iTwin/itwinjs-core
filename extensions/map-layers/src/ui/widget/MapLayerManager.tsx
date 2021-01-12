@@ -8,20 +8,20 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 
 import * as React from "react";
-import { DragDropContext, Draggable, DraggableChildrenFn, Droppable, DroppableProvided, DroppableStateSnapshot, DropResult } from "react-beautiful-dnd";
+import { DragDropContext, DropResult } from "react-beautiful-dnd";
 import { MapSubLayerProps, MapSubLayerSettings } from "@bentley/imodeljs-common";
 import {
-  DisplayStyleState, IModelApp, MapLayerImageryProvider, MapLayerSettingsService, MapLayerSource, MapLayerSources, NotifyMessageDetails, OutputMessagePriority,
+  DisplayStyleState, IModelApp, MapLayerSettingsService, MapLayerSource, MapLayerSources, NotifyMessageDetails, OutputMessagePriority,
   ScreenViewport, Viewport,
 } from "@bentley/imodeljs-frontend";
-import { ContextMenu, ContextMenuItem, Icon, Slider, Toggle } from "@bentley/ui-core";
-import { assert } from "@bentley/bentleyjs-core";
-import { SubLayersPopupButton } from "./SubLayersPopupButton";
-import { AttachLayerButtonType, AttachLayerPopupButton } from "./AttachLayerPopupButton";
+import { Toggle } from "@bentley/ui-core";
+import { AttachLayerPopupButton } from "./AttachLayerPopupButton";
 import { BasemapPanel } from "./BasemapPanel";
-import { MapLayerOptions, MapLayersUiItemsProvider, MapTypesOptions } from "../MapLayersUiItemsProvider";
+import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
+import { MapLayerOptions, MapTypesOptions, StyleMapLayerSettings } from "../Interfaces";
 import { MapLayerSettingsPopupButton } from "./MapLayerSettingsPopupButton";
 import "./MapLayerManager.scss";
+import { MapLayerDroppable } from "./MapLayerDroppable";
 
 /** @internal */
 export interface SourceMapContextProps {
@@ -44,110 +44,6 @@ export const SourceMapContext = React.createContext<SourceMapContextProps>({ // 
 /** @internal */
 export function useSourceMapContext(): SourceMapContextProps {
   return React.useContext(SourceMapContext);
-}
-
-export interface StyleMapLayerSettings {
-  /** Name */
-  name: string;
-  /** URL */
-  url: string;
-  /** Controls visibility of layer */
-  visible: boolean;
-  /** A transparency value from 0.0 (fully opaque) to 1.0 (fully transparent) to apply to map graphics when drawing, or false to indicate the transparency should not be overridden. Default value: false. */
-  transparency: number;
-  /** Transparent background */
-  transparentBackground: boolean;
-  /** set map as underlay or overlay */
-  isOverlay: boolean;
-  /** Available map sub-layer */
-  subLayers?: MapSubLayerProps[];
-  /** sub-layer panel displayed. */
-  showSubLayers: boolean;
-  /** Some format can publish only a single layer at a time (i.e WMTS) */
-  provider?: MapLayerImageryProvider;
-}
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function MapLayerSettingsMenu({ mapLayerSettings, onMenuItemSelection, activeViewport }: { mapLayerSettings: StyleMapLayerSettings, onMenuItemSelection: (action: string, mapLayerSettings: StyleMapLayerSettings) => void, activeViewport: ScreenViewport }) {
-  const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
-  const settingsRef = React.useRef<HTMLButtonElement>(null);
-  const [labelDetach] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:LayerMenu.Detach"));
-  const [labelZoomToLayer] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:LayerMenu.ZoomToLayer"));
-  const [hasRangeData, setHasRangeData] = React.useState<boolean | undefined>();
-  const [transparency, setTransparency] = React.useState(mapLayerSettings.transparency);
-
-  React.useEffect(() => {
-    async function fetchRangeData() {
-      let hasRange = false;
-      const indexInDisplayStyle = activeViewport?.displayStyle.findMapLayerIndexByNameAndUrl(mapLayerSettings.name, mapLayerSettings.url, mapLayerSettings.isOverlay);
-      if (undefined !== indexInDisplayStyle) {
-        hasRange = (undefined !== await activeViewport.displayStyle.getMapLayerRange(indexInDisplayStyle, mapLayerSettings.isOverlay));
-      }
-      setHasRangeData(hasRange);
-    }
-    fetchRangeData(); // eslint-disable-line @typescript-eslint/no-floating-promises
-  }, [activeViewport, mapLayerSettings]);
-
-  const onSettingsClick = React.useCallback(() => {
-    setIsSettingsOpen((prev) => !prev);
-  }, [setIsSettingsOpen]);
-
-  const handleCloseSetting = React.useCallback(() => {
-    setIsSettingsOpen(false);
-  }, [setIsSettingsOpen]);
-
-  const handleRemoveLayer = React.useCallback(() => {
-    setIsSettingsOpen(false);
-    onMenuItemSelection("delete", mapLayerSettings);
-  }, [setIsSettingsOpen, onMenuItemSelection, mapLayerSettings]);
-
-  const handleZoomToLayer = React.useCallback(() => {
-    setIsSettingsOpen(false);
-    onMenuItemSelection("zoom-to-layer", mapLayerSettings);
-  }, [setIsSettingsOpen, onMenuItemSelection, mapLayerSettings]);
-
-  const applyTransparencyChange = React.useCallback((value: number) => {
-    if (activeViewport) {
-      const newTransparency = value;
-      const displayStyle = activeViewport.displayStyle;
-      const indexInDisplayStyle = displayStyle.findMapLayerIndexByNameAndUrl(mapLayerSettings.name, mapLayerSettings.url, mapLayerSettings.isOverlay);
-      if (-1 !== indexInDisplayStyle) {
-        const styleTransparency = displayStyle.mapLayerAtIndex(indexInDisplayStyle, mapLayerSettings.isOverlay)?.transparency;
-        const styleTransparencyValue = styleTransparency ? styleTransparency : 0;
-        if (Math.abs(styleTransparencyValue - newTransparency) > 0.01) {
-          // update the display style
-          displayStyle.changeMapLayerProps({ transparency: newTransparency }, indexInDisplayStyle, mapLayerSettings.isOverlay);
-          activeViewport.invalidateRenderPlan();
-
-          // force UI to update
-          // loadMapLayerSettingsFromStyle(activeViewport.displayStyle);
-        }
-      }
-    }
-  }, [activeViewport, mapLayerSettings]);
-
-  const handleTransparencyChange = React.useCallback((values: readonly number[]) => {
-    if (values.length) {
-      const newTransparency = values[0] / 100.0;
-      if (newTransparency !== transparency) {
-        setTransparency(newTransparency);
-        applyTransparencyChange(newTransparency);
-      }
-    }
-  }, [transparency, applyTransparencyChange]);
-
-  return (
-    <>
-      <button data-testid="map-layer-settings" className="map-layer-settings icon icon-more-vertical-2" ref={settingsRef} onClick={onSettingsClick} ></button>
-      <ContextMenu opened={isSettingsOpen && (undefined !== hasRangeData)} onOutsideClick={handleCloseSetting} >
-        <ContextMenuItem key={0} className={hasRangeData ? "" : "core-context-menu-disabled"} onSelect={handleZoomToLayer}>{labelZoomToLayer}</ContextMenuItem>
-        <ContextMenuItem key={1} onSelect={handleRemoveLayer}>{labelDetach}</ContextMenuItem>
-        <ContextMenuItem key={2} >
-          <Slider min={0} max={100} values={[transparency * 100]} step={1} showTooltip showMinMax onChange={handleTransparencyChange} />
-        </ContextMenuItem>
-      </ContextMenu>
-    </>
-  );
 }
 
 function getSubLayerProps(subLayerSettings: MapSubLayerSettings[]): MapSubLayerProps[] {
@@ -192,95 +88,6 @@ function getMapLayerSettingsFromStyle(displayStyle: DisplayStyleState | undefine
 
   // since we want to display higher level maps above lower maps in UI reverse their order here.
   return layers.reverse();
-}
-interface MapLayerDroppableProps {
-  isOverlay: boolean;
-  layersList?: StyleMapLayerSettings[];
-  getContainerForClone: () => HTMLElement;
-  activeViewport: ScreenViewport;
-  onMenuItemSelected: (action: string, mapLayerSettings: StyleMapLayerSettings) => void;
-  onItemVisibilityToggleClicked: (mapLayerSettings: StyleMapLayerSettings) => void;
-}
-
-export function MapLayerDroppable(props: MapLayerDroppableProps) {
-  const containsLayer = props.layersList && props.layersList.length > 0;
-  const droppableId = props.isOverlay ? "overlayMapLayers" : "backgroundMapLayers";
-  const [toggleVisibility] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.ToggleVisibility"));
-  const [noBackgroundMapsSpecifiedLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.NoBackgroundLayers"));
-  const [noUnderlaysSpecifiedLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.NoOverlayLayers"));
-  const [dropLayerLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.DropLayerLabel"));
-
-  const renderItem: DraggableChildrenFn = (dragProvided, _, rubric) => {
-    assert(props.layersList !== undefined);
-    const activeLayer = props.layersList[rubric.source.index];
-
-    return (
-      <div className="map-manager-source-item" data-id={rubric.source.index} key={activeLayer.name}
-        {...dragProvided.draggableProps}
-        ref={dragProvided.innerRef} >
-        <button className="map-manager-item-visibility" title={toggleVisibility} onClick={() => { props.onItemVisibilityToggleClicked(activeLayer); }}>
-          <Icon iconSpec={activeLayer.visible ? "icon-visibility" : "icon-visibility-hide-2"} /></button>
-        <span className="map-manager-item-label" {...dragProvided.dragHandleProps}>{activeLayer.name}</span>
-        <div className="map-manager-item-sub-layer-container">
-          {activeLayer.subLayers && activeLayer.subLayers.length > 1 &&
-            <SubLayersPopupButton mapLayerSettings={activeLayer} activeViewport={props.activeViewport} />
-          }
-        </div>
-        <MapLayerSettingsMenu activeViewport={props.activeViewport} mapLayerSettings={activeLayer} onMenuItemSelection={props.onMenuItemSelected} />
-      </div>
-    );
-  };
-
-  function renderDraggableContent(snapshot: DroppableStateSnapshot): React.ReactNode {
-    let node: React.ReactNode;
-    if (containsLayer) {
-      // Render a <Draggable>
-      node = (props.layersList?.map((mapLayerSettings, i) =>
-        <Draggable key={mapLayerSettings.name} draggableId={mapLayerSettings.name} index={i}>
-          {renderItem}
-        </Draggable>));
-    } else {
-      // Render a label that provide a 'Drop here' hint
-      const label = props.isOverlay ? noUnderlaysSpecifiedLabel : noBackgroundMapsSpecifiedLabel;
-      node =
-        <div title={label} className="map-manager-no-layers-container">
-          {snapshot.isDraggingOver ?
-            <span className="map-manager-no-layers-label">{dropLayerLabel}</span>
-            :
-            <>
-              <span className="map-manager-no-layers-label">{label}</span>
-              <AttachLayerPopupButton buttonType={AttachLayerButtonType.Blue} isOverlay={false} />
-            </>
-          }
-        </div>;
-    }
-    return node;
-  }
-
-  function renderDraggable(dropProvided: DroppableProvided, dropSnapshot: DroppableStateSnapshot): React.ReactElement<HTMLElement> {
-    return (
-      <div className={`map-manager-attachments${dropSnapshot.isDraggingOver && containsLayer ? " is-dragging-map-over" : ""}`} ref={dropProvided.innerRef} {...dropProvided.droppableProps} >
-
-        {renderDraggableContent(dropSnapshot)}
-
-        {
-          /* We don't want a placeholder when displaying the 'Drop here' message
-              Unfortunately, if don't add it, 'react-beautiful-dnd' show an error message in the console.
-              So I simply make it hidden. See https://github.com/atlassian/react-beautiful-dnd/issues/518 */
-        }
-        <div style={containsLayer ? undefined : { display: "none" }}>{dropProvided.placeholder}</div>
-      </div>);
-  }
-
-  return (
-    <Droppable
-      droppableId={droppableId}
-      renderClone={renderItem}
-      getContainerForClone={props.getContainerForClone as any}
-    >
-      {renderDraggable}
-    </Droppable>
-  );
 }
 
 interface MapLayerManagerProps {

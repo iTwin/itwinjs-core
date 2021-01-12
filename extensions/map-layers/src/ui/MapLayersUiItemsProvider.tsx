@@ -9,6 +9,7 @@ import { I18N } from "@bentley/imodeljs-i18n";
 import { MapLayersWidget } from "./widget/MapLayersWidget";
 import { ConfigurableCreateInfo, WidgetControl } from "@bentley/ui-framework";
 import { IModelApp } from "@bentley/imodeljs-frontend";
+import { MapLayerOptions } from "./Interfaces";
 
 export class MapLayersUiItemsProvider implements UiItemsProvider {
   public readonly id = "MapLayersUiItemsProvider";
@@ -30,15 +31,6 @@ export class MapLayersUiItemsProvider implements UiItemsProvider {
     }
     return widgets;
   }
-}
-export interface MapTypesOptions {
-  readonly supportTileUrl: boolean;
-  readonly supportWmsAuthentication: boolean;
-}
-export interface MapLayerOptions {
-  hideExternalMapLayers?: boolean;
-  fetchPublicMapLayerSources?: boolean;
-  mapTypeOptions?: MapTypesOptions;
 }
 
 /** MapLayersWidgetControl provides a widget to attach and remove maps layers from the active view's display style.
