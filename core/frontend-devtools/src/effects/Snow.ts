@@ -43,9 +43,9 @@ interface SnowParams {
 /** The default snow effect parameters used by newly-created SnowDecorators. */
 const defaultSnowParams: SnowParams = {
   numParticles: 1200,
-  sizeRange: Range1d.createXX(1, 15),
+  sizeRange: Range1d.createXX(3, 22),
   transparencyRange: Range1d.createXX(0, 200),
-  velocityRange: new Range2d(-25, 30, 25, 90),
+  velocityRange: new Range2d(-30, 50, 30, 130),
   accelerationRange: new Range2d(-1, -0.25, 1, 0.25),
 };
 
