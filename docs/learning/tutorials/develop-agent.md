@@ -40,7 +40,7 @@
 ### Run
 - `npm start`
 - The agent will listen for changesets pushed to iModelHub
-- Use the [iTwinSynchronizer](https://www.bentley.com/en/products/product-line/digital-twins/itwin-synchronizer) to synchronize a change and exercise the agent.
+- Use the [iTwin Synchronizer](https://www.bentley.com/en/products/product-line/digital-twins/itwin-synchronizer) to synchronize a change and exercise the agent.
 - For testing, it can often also be useful to skip the event listening and just run against a specific changeset. To do that, either run `npm start -- --latest` to use the latest changeset, or `npm start -- --changeset=<CHANGESETID>` to use any specific changeset
 
 ### Next Steps
