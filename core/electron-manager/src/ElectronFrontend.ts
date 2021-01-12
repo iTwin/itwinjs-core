@@ -10,7 +10,6 @@ import { ElectronRpcManager } from "./ElectronRpcManager";
 if (!isElectronRenderer)
   throw new Error("this file may only be included by electron frontends");
 
-
 /** These methods are stored on "window.itwinjs" in ElectronPreload.js */
 interface ITwinElectronApi {
   on: (channel: string, listener: (event: any, ...args: any[]) => void) => void;
