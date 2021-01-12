@@ -24,7 +24,10 @@ const frontendApi = {
   },
   addListener(channel: string, listener: ElectronListener) {
     checkPrefix(channel);
-    return ipcRenderer.on(channel, listener);
+    return ipcRenderer.addListener(channel, listener);
+  },
+  removeListener(channel: string, listener: ElectronListener) {
+    return ipcRenderer.removeListener(channel, listener);
   },
   once(channel: string, listener: ElectronListener) {
     checkPrefix(channel);
@@ -33,10 +36,6 @@ const frontendApi = {
   async invoke(channel: string, ...data: any[]): Promise<any> {
     checkPrefix(channel);
     return ipcRenderer.invoke(channel, ...data);
-  },
-  sendSync(channel: string, ...args: any[]): any {
-    checkPrefix(channel);
-    return ipcRenderer.sendSync(channel, ...args);
   },
 };
 
