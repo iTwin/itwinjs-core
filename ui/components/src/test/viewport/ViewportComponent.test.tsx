@@ -9,7 +9,7 @@ import * as moq from "typemoq";
 
 import { BeEvent, Logger } from "@bentley/bentleyjs-core";
 import { AxisIndex, Matrix3d, Point3d, Vector3d, WritableXAndY } from "@bentley/geometry-core";
-import { CategorySelectorProps, DisplayStyleProps, Frustum, ModelSelectorProps, SpatialViewDefinitionProps, ViewStateProps } from "@bentley/imodeljs-common";
+import { Frustum, SpatialViewDefinitionProps } from "@bentley/imodeljs-common";
 import {
   CategorySelectorState, DisplayStyle3dState, EntityState, IModelConnection, MockRender, ModelSelectorState, OrthographicViewState, ScreenViewport,
   SpatialViewState, StandardViewId, TentativePoint, ViewManager, Viewport, ViewRect, ViewState,
@@ -22,28 +22,7 @@ import TestUtils from "../TestUtils";
 
 describe("ViewportComponent", () => {
   // set up descriptors to restore SpatialViewState behavior after testing is complete
-  const vspDescriptorToRestore = Object.getOwnPropertyDescriptor(SpatialViewState.prototype, "toProps")!;
-  const svsDescriptorToRestore = Object.getOwnPropertyDescriptor(SpatialViewState, "createFromProps")!;
-
-  const categorySelectorProps: CategorySelectorProps = {
-    categories: ["category1"],
-    model: "model",
-    code: { spec: "spec", scope: "scope" },
-    classFullName: "schema:classname",
-  };
-
-  const displayStyleProps: DisplayStyleProps = {
-    model: "model",
-    code: { spec: "spec", scope: "scope" },
-    classFullName: "schema:classname",
-  };
-
-  const modelSelectorProps: ModelSelectorProps = {
-    models: ["model1"],
-    model: "model",
-    code: { spec: "spec", scope: "scope" },
-    classFullName: "schema:classname",
-  };
+  const vsCloneDescriptorToRestore = Object.getOwnPropertyDescriptor(EntityState.prototype, "clone")!;
 
   let extents = Vector3d.create(400, 400);
   let origin = Point3d.createZero();
@@ -73,21 +52,15 @@ describe("ViewportComponent", () => {
   };
   const viewState2 = new SpatialViewState(viewDefinitionProps2, imodelMock.object, moq.Mock.ofType<CategorySelectorState>().object, moq.Mock.ofType<DisplayStyle3dState>().object, moq.Mock.ofType<ModelSelectorState>().object);
 
-  // globalViewId is set because createFromProps() must be an arrow function, so it has not context to get the viewId
+  // globalViewId is set because clone() must be an arrow function, so it has not context to get the viewId
   let globalViewId: string = "id1";
 
-  const toProps = (): ViewStateProps => {
-    return { viewDefinitionProps, categorySelectorProps, displayStyleProps, modelSelectorProps };
-  };
-  const  createFromProps = (): ViewState => {
+  const  clone = (): ViewState => {
     return getViewState(globalViewId);
   };
   before(async () => {
-    Object.defineProperty(SpatialViewState.prototype, "toProps", {
-      get: () => toProps,
-    });
-    Object.defineProperty(SpatialViewState, "createFromProps", {
-      get: () => createFromProps,
+    Object.defineProperty(EntityState.prototype, "clone", {
+      get: () => clone,
     });
     ViewportComponentEvents.terminate();
     await TestUtils.initializeUiComponents();
@@ -95,8 +68,7 @@ describe("ViewportComponent", () => {
   });
 
   after(async () => {
-    Object.defineProperty(SpatialViewState.prototype, "toProps", vspDescriptorToRestore);
-    Object.defineProperty(SpatialViewState, "createFromProps", svsDescriptorToRestore);
+    Object.defineProperty(EntityState.prototype, "clone", vsCloneDescriptorToRestore);
     await MockRender.App.shutdown();
   });
 
@@ -107,12 +79,8 @@ describe("ViewportComponent", () => {
     else vs = undefined as unknown as ViewState;
     return vs;
   };
-  const getViewStateConstructor = (): any => {
-    return SpatialViewState as unknown as typeof EntityState;
-  };
   viewsMock.setup((x) => x.load).returns(() => async (viewId: string) => getViewState(viewId));
   imodelMock.setup((x) => x.views).returns(() => viewsMock.object);
-  imodelMock.setup((x) => x.findClassFor).returns(() => async () => getViewStateConstructor());
 
   let tentativePointIsActive = false;
   const tentativePointMock = moq.Mock.ofType<TentativePoint>();

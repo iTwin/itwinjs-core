@@ -11,7 +11,7 @@ import { Id64String, Logger } from "@bentley/bentleyjs-core";
 import { Point3d, Transform } from "@bentley/geometry-core";
 import { NpcCenter } from "@bentley/imodeljs-common";
 import {
-  EntityState, IModelApp, IModelConnection, ScreenViewport,
+  IModelApp, IModelConnection, ScreenViewport,
   TentativePoint, ToolSettings, ViewManager,
   Viewport, ViewState,
 } from "@bentley/imodeljs-frontend";
@@ -153,23 +153,6 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
     }
   }
 
-  private static async cloneViewState(imodelConnection: IModelConnection, viewState: ViewState): Promise<ViewState | undefined> {
-    const className = viewState.classFullName;
-
-    const ctor = await imodelConnection.findClassFor<typeof EntityState>(className, undefined) as typeof ViewState | undefined;
-
-    // istanbul ignore next
-    if (undefined === ctor)
-      return undefined;
-
-    const clonedViewState = ctor.createFromProps(viewState.toProps(), imodelConnection);
-
-    // istanbul ignore next
-    if (!clonedViewState)
-      Logger.logError(UiComponents.loggerCategory(this), `View state failed to load`);
-
-    return clonedViewState;
-  }
   private async getViewState(): Promise<ViewState | undefined> {
     let viewState: ViewState;
 
@@ -191,8 +174,7 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
       return undefined;
     }
 
-    const clonedViewState = await ViewportComponent.cloneViewState(this.props.imodel, viewState);
-    return clonedViewState;
+    return viewState.clone();
   }
 
   private _handleDrawingViewportChangeEvent = (args: DrawingViewportChangeEventArgs) => {
