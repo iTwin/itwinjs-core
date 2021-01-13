@@ -345,7 +345,7 @@ export function addPanelWidgets(
   const location = toStagePanelLocation(side);
   const panelDef = frontstageDef.getStagePanelDef(location);
   const panelZones = panelDef?.panelZones;
-  if (!panelZones) {
+  if (!panelZones || UiFramework.uiVersion === "1") {
     switch (side) {
       case "left": {
         state = addWidgets(state, frontstageDef.centerLeft?.widgetDefs || [], side, "leftStart");
@@ -466,7 +466,6 @@ export function initializeNineZoneState(frontstageDef: FrontstageDef): NineZoneS
       toolSettingsTab.preferredPanelWidgetSize = toolSettingsWidgetDef.preferredPanelSize;
     }
   });
-
   return nineZone;
 }
 

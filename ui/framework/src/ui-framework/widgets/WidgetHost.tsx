@@ -14,7 +14,7 @@ import { WidgetDef } from "./WidgetDef";
 /**
  * A WidgetHost represents a definition that hosts one or most Widgets in a Frontstage.
  * @public
- */
+ */
 export class WidgetHost {
 
   private _widgetDefs: WidgetDef[] = new Array<WidgetDef>();

@@ -64,7 +64,7 @@ export class StagePanelDef extends WidgetHost {
   private _pinned = true;
   private _applicationData?: any;
   private _location: StagePanelLocation = StagePanelLocation.Left;
-  private _panelZones: StagePanelZonesDef | undefined;
+  private _panelZones = new StagePanelZonesDef();
 
   /** Constructor for PanelDef.
    */
@@ -165,7 +165,11 @@ export class StagePanelDef extends WidgetHost {
   }
 
   /** @internal */
-  public initializeFromProps(props: StagePanelProps, panelLocation?: StagePanelLocation): void {
+  public initializeFromProps(props?: StagePanelProps, panelLocation?: StagePanelLocation): void {
+    if (panelLocation !== undefined)
+      this._location = panelLocation;
+    if (!props)
+      return;
     this._size = props.size;
     this._defaultSize = props.size;
     this._maxSizeSpec = props.maxSize;
@@ -182,7 +186,6 @@ export class StagePanelDef extends WidgetHost {
     if (props.applicationData !== undefined)
       this._applicationData = props.applicationData;
     if (props.panelZones) {
-      this._panelZones = new StagePanelZonesDef();
       this._panelZones.initializeFromProps(props.panelZones, this._location);
     }
 
@@ -211,7 +214,7 @@ export class StagePanelDef extends WidgetHost {
   /** Finds a [[WidgetDef]] based on a given id */
   public findWidgetDef(id: string): WidgetDef | undefined {
     // istanbul ignore if
-    if (this.panelZones) {
+    if (UiFramework.uiVersion === "2") {
       for (const [, panelZone] of this.panelZones) {
         const widgetDef = panelZone.findWidgetDef(id);
         if (widgetDef)
@@ -224,13 +227,13 @@ export class StagePanelDef extends WidgetHost {
 
   /** @internal */
   public updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation, section?: StagePanelSection): void {
-    if (!this.panelZones) {
+    if (UiFramework.uiVersion === "1") {
       return super.updateDynamicWidgetDefs(stageId, stageUsage, location, section);
     }
 
-    this.panelZones.start?.updateDynamicWidgetDefs(stageId, stageUsage, location, StagePanelSection.Start);
-    this.panelZones.middle?.updateDynamicWidgetDefs(stageId, stageUsage, location, StagePanelSection.Middle);
-    this.panelZones.end?.updateDynamicWidgetDefs(stageId, stageUsage, location, StagePanelSection.End);
+    this.panelZones.start.updateDynamicWidgetDefs(stageId, stageUsage, location, StagePanelSection.Start);
+    this.panelZones.middle.updateDynamicWidgetDefs(stageId, stageUsage, location, StagePanelSection.Middle);
+    this.panelZones.end.updateDynamicWidgetDefs(stageId, stageUsage, location, StagePanelSection.End);
   }
 }
 
