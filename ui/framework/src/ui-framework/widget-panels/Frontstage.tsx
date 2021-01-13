@@ -18,7 +18,7 @@ import {
 } from "@bentley/ui-ninezone";
 import { useActiveFrontstageDef } from "../frontstage/Frontstage";
 import { FrontstageDef, FrontstageEventArgs, FrontstageNineZoneStateChangedEventArgs } from "../frontstage/FrontstageDef";
-import { PanelSizeChangedEventArgs, StagePanelState, StagePanelZoneDefKeys } from "../stagepanels/StagePanelDef";
+import { StagePanelState, StagePanelZoneDefKeys } from "../stagepanels/StagePanelDef";
 import { useUiSettingsContext } from "../uisettings/useUiSettings";
 import { WidgetDef, WidgetEventArgs, WidgetStateChangedEventArgs } from "../widgets/WidgetDef";
 import { ZoneState } from "../zones/ZoneDef";
@@ -117,8 +117,8 @@ function FrameworkStateReducer(state: NineZoneState, action: NineZoneActionTypes
     state = produce(state, (draft) => {
       for (const panelSide of panelSides) {
         const panel = draft.panels[panelSide];
-        const key = getPanelDefKey(panelSide);
-        const panelDef = frontstageDef[key];
+        const location = toStagePanelLocation(panelSide);
+        const panelDef = frontstageDef.getStagePanelDef(location);
         if (panelDef?.maxSizeSpec) {
           panel.maxSize = getPanelMaxSize(panelDef.maxSizeSpec, panelSide, action.size);
           if (panel.size) {
@@ -278,9 +278,6 @@ function getWidgetLabel(label: string) {
   return label === "" ? "Widget" : label;
 }
 
-type FrontstagePanelDefs = Pick<FrontstageDef, "leftPanel" | "rightPanel" | "topPanel" | "bottomPanel">;
-type FrontstagePanelDefKeys = keyof FrontstagePanelDefs;
-
 type WidgetIdTypes =
   "leftStart" |
   "leftMiddle" |
@@ -293,32 +290,16 @@ type WidgetIdTypes =
   "bottomStart" |
   "bottomEnd";
 
-function getPanelDefKey(side: PanelSide): FrontstagePanelDefKeys {
+function toStagePanelLocation(side: PanelSide): StagePanelLocation {
   switch (side) {
     case "bottom":
-      return "bottomPanel";
+      return StagePanelLocation.Bottom;
     case "left":
-      return "leftPanel";
+      return StagePanelLocation.Left;
     case "right":
-      return "rightPanel";
+      return StagePanelLocation.Right;
     case "top":
-      return "topPanel";
-  }
-}
-
-/** @internal */
-export function getPanelSide(location: StagePanelLocation): PanelSide {
-  switch (location) {
-    case StagePanelLocation.Bottom:
-    case StagePanelLocation.BottomMost:
-      return "bottom";
-    case StagePanelLocation.Left:
-      return "left";
-    case StagePanelLocation.Right:
-      return "right";
-    case StagePanelLocation.Top:
-    case StagePanelLocation.TopMost:
-      return "top";
+      return StagePanelLocation.Top;
   }
 }
 
@@ -361,8 +342,8 @@ export function addPanelWidgets(
   frontstageDef: FrontstageDef,
   side: PanelSide,
 ): NineZoneState {
-  const panelDefKey = getPanelDefKey(side);
-  const panelDef = frontstageDef[panelDefKey];
+  const location = toStagePanelLocation(side);
+  const panelDef = frontstageDef.getStagePanelDef(location);
   const panelZones = panelDef?.panelZones;
   if (!panelZones) {
     switch (side) {
@@ -412,8 +393,8 @@ export function isFrontstageStateSettingResult(settingsResult: UiSettingsResult)
 /** @internal */
 export function initializePanel(nineZone: NineZoneState, frontstageDef: FrontstageDef, panelSide: PanelSide) {
   nineZone = addPanelWidgets(nineZone, frontstageDef, panelSide);
-  const key = getPanelDefKey(panelSide);
-  const panelDef = frontstageDef[key];
+  const location = toStagePanelLocation(panelSide);
+  const panelDef = frontstageDef.getStagePanelDef(location);
   nineZone = produce(nineZone, (draft) => {
     const panel = draft.panels[panelSide];
     panel.size = panelDef?.size;
@@ -578,16 +559,6 @@ interface SavedTabsState {
 interface SavedNineZoneState extends Omit<NineZoneState, "tabs"> {
   readonly tabs: SavedTabsState;
 }
-
-/** @internal */
-export const setPanelSize = produce((
-  nineZone: Draft<NineZoneState>,
-  side: PanelSide,
-  size: number | undefined,
-) => {
-  const panel = nineZone.panels[side];
-  panel.size = size === undefined ? size : Math.min(Math.max(size, panel.minSize), panel.maxSize);
-});
 
 function addRemovedTab(nineZone: Draft<NineZoneState>, widgetDef: WidgetDef) {
   const newTab = createTabState(widgetDef.id, {
@@ -803,17 +774,6 @@ const createListener = <T extends (...args: any[]) => void>(frontstageDef: Front
 /** @internal */
 export function useFrontstageManager(frontstageDef: FrontstageDef) {
   React.useEffect(() => {
-    const listener = createListener(frontstageDef, ({ panelDef, size }: PanelSizeChangedEventArgs) => {
-      assert(!!frontstageDef.nineZoneState);
-      const panel = getPanelSide(panelDef.location);
-      frontstageDef.nineZoneState = setPanelSize(frontstageDef.nineZoneState, panel, size);
-    });
-    FrontstageManager.onPanelSizeChangedEvent.addListener(listener);
-    return () => {
-      FrontstageManager.onPanelSizeChangedEvent.removeListener(listener);
-    };
-  }, [frontstageDef]);
-  React.useEffect(() => {
     const listener = createListener(frontstageDef, ({ widgetDef, widgetState }: WidgetStateChangedEventArgs) => {
       assert(!!frontstageDef.nineZoneState);
       frontstageDef.nineZoneState = setWidgetState(frontstageDef.nineZoneState, widgetDef, widgetState);
@@ -923,6 +883,15 @@ export function useSyncDefinitions(frontstageDef: FrontstageDef) {
       return;
     for (const panelSide of panelSides) {
       const panel = nineZone.panels[panelSide];
+      const location = toStagePanelLocation(panelSide);
+      const panelDef = frontstageDef.getStagePanelDef(location);
+      if (panelDef) {
+        panelDef.size = panel.size;
+        let newState = panel.collapsed ? StagePanelState.Minimized : StagePanelState.Open;
+        if (panelDef.panelState === StagePanelState.Off && newState === StagePanelState.Minimized)
+          newState = StagePanelState.Off;
+        panelDef.panelState = newState;
+      }
       for (const widgetId of panel.widgets) {
         const widget = nineZone.widgets[widgetId];
         for (const tabId of widget.tabs) {
