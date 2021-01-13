@@ -38,15 +38,18 @@ interface SnowParams {
   velocityRange: Range2d;
   /** Range from which to randomly select an acceleration to apply to each particle's velocity each frame, in pixels per second squared, to simulate wind. */
   accelerationRange: Range2d;
+  /** Wind velocity in pixels per second in X. */
+  windVelocity: number;
 }
 
 /** The default snow effect parameters used by newly-created SnowDecorators. */
 const defaultSnowParams: SnowParams = {
-  numParticles: 1200,
+  numParticles: 2000,
   sizeRange: Range1d.createXX(3, 22),
   transparencyRange: Range1d.createXX(0, 200),
   velocityRange: new Range2d(-30, 50, 30, 130),
   accelerationRange: new Range2d(-1, -0.25, 1, 0.25),
+  windVelocity: 0,
 };
 
 /** Simulates snowfall in a Viewport. */
@@ -182,8 +185,17 @@ class SnowDecorator implements Decorator {
       particle.x += velocity.x;
       particle.y += velocity.y;
 
-      // Particles that travel beyond the viewport's borders are replaced by newborn particles.
-      if (particle.x < 0 || particle.y < 0 || particle.x >= this._dimensions.x || particle.y >= this._dimensions.y)
+      // Apply wind
+      particle.x += this._params.windVelocity * elapsedSeconds;
+
+      // Particles that travel beyond the viewport's left or right edges wrap around to the other side.
+      if (particle.x < 0)
+        particle.x = this._dimensions.x - 1;
+      else if (particle.x >= this._dimensions.x)
+        particle.x = 0;
+
+      // Particles that travel beyond the viewport's bottom or top edges are replaced by newborn particles.
+      if (particle.y < 0 || particle.y >= this._dimensions.y)
         this._particles[i] = this.emit(false);
     }
   }
