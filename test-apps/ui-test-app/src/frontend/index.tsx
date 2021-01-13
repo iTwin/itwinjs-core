@@ -20,6 +20,7 @@ import { Presentation } from "@bentley/presentation-frontend";
 import { getClassName } from "@bentley/ui-abstract";
 import { BeDragDropContext } from "@bentley/ui-components";
 import { LocalUiSettings, UiSettings } from "@bentley/ui-core";
+import { ElectronFrontend } from "@bentley/electron-manager/lib/ElectronFrontend";
 import {
   ActionsUnion, AppNotificationManager, ConfigurableUiContent, createAction, DeepReadonly, DragDropLayerRenderer,
   FrameworkAccuDraw, FrameworkReducer, FrameworkRootState, FrameworkUiAdmin, FrameworkVersion,
@@ -732,8 +733,7 @@ async function main() {
 
   const rpcInterfaces = getSupportedRpcs();
   if (isElectronRenderer) {
-    const ElectronFrontend = (await import("@bentley/electron-manager/lib/ElectronFrontend")).ElectronFrontend;
-    new ElectronFrontend({ rpcInterfaces });
+    ElectronFrontend.initialize({ rpcInterfaces });
   } else if (MobileRpcConfiguration.isMobileFrontend) {
     MobileRpcManager.initializeClient(rpcInterfaces);
   } else if (process.env.imjs_gp_backend) {

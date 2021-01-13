@@ -178,16 +178,16 @@ If the server is an app backend, the RPC configuration must correspond to the ap
 If the server is a [service](./App.md#imodel-services), it must always use a [Web RPC configuration](#web-rpc-configuration) for its interfaces.
 A backend should configure its RpcInterfaces in its [configuration-specific main](./AppTailoring.md#configuration-specific-main).
 
-*Desktop Example:*
+*Electron Example:*
 
 ``` ts
-[[include:RpcInterface.initializeImplDesktop]]
+[[include:RpcInterface.initializeBackendForElectron]]
 ```
 
 *Web Example:*
 
 ``` ts
-[[include:RpcInterface.initializeImplBentleyCloud]]
+[[include:RpcInterface.initializeForCloud]]
 ```
 
 ### Serve the Interfaces
@@ -217,7 +217,7 @@ A desktop app must use a desktop configuration.
 *Desktop Example:*
 
 ``` ts
-[[include:RpcInterface.initializeElectronFrontend]]
+[[include:RpcInterface.initializeFrontendForElectron]]
 ```
 
 ### Web Configuration

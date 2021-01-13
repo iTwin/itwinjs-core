@@ -6,8 +6,10 @@
 import { IpcInterface } from "@bentley/imodeljs-common";
 import { OpenDialogOptions, OpenDialogReturnValue } from "electron";
 
-export const dtaChannel = "dta";
-export const dtaIpcVersion = "1.0.2";
+export enum DtaIpcKey {
+  Channel = "dta",
+  Version = "1.0.2",
+}
 
 export interface DtaIpcInterface extends IpcInterface {
   openFile: (options: OpenDialogOptions) => Promise<OpenDialogReturnValue>;

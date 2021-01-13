@@ -10,7 +10,7 @@ import { IModelStatus } from "@bentley/bentleyjs-core";
 import { IModelDb } from "@bentley/imodeljs-backend";
 import { BackendIpc, IpcHandler } from "@bentley/imodeljs-common";
 import { IModelError } from "@bentley/imodeljs-common/lib/IModelError";
-import { EditCommandIpc, editorAppChannel, EditorAppIpc, editorAppIpcVersion } from "@bentley/imodeljs-editor-common";
+import { EditCommandIpc, EditorIpc, EditorIpcKey } from "@bentley/imodeljs-editor-common";
 
 /** @alpha */
 export type EditCommandType = typeof EditCommand;
@@ -45,9 +45,9 @@ export class EditCommand implements EditCommandIpc {
   public onFinish(): void { }
 }
 
-class EditorAppImpl extends IpcHandler implements EditorAppIpc {
-  public async getVersion() { return editorAppIpcVersion; }
-  public get channelName() { return editorAppChannel; }
+class EditorAppImpl extends IpcHandler implements EditorIpc {
+  public async getVersion() { return EditorIpcKey.Version; }
+  public get channelName() { return EditorIpcKey.Channel; }
 
   public async startCommand(commandId: string, iModelKey: string, ...args: any[]) {
     const commandClass = EditCommandAdmin.commands.get(commandId);

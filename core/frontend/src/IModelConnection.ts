@@ -837,7 +837,7 @@ export class RemoteBriefcaseConnection extends BriefcaseConnection {
 }
 
 /** A connection to a [BriefcaseDb]($backend) for a native application
- * @internal
+ * @alpha
  */
 export class LocalBriefcaseConnection extends BriefcaseConnection {
 

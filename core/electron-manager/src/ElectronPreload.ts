@@ -4,6 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 import { contextBridge, ipcRenderer, IpcRendererEvent } from "electron";
 
+/** These methods are stored on `window.itwinjs` */
+export interface ITwinElectronApi {
+  addListener: (channel: string, listener: ElectronListener) => void;
+  removeListener: (channel: string, listener: ElectronListener) => void;
+  invoke: (channel: string, ...data: any[]) => Promise<any>;
+  once: (channel: string, listener: (event: any, ...args: any[]) => void) => void;
+  send: (channel: string, ...data: any[]) => void; // only valid for render -> main
+}
+
 /**
  * This file is loaded as an Electron preload script
  * (see https://www.electronjs.org/docs/api/browser-window#class-browserwindow) from ElectronMain.ts
@@ -17,7 +26,7 @@ function checkPrefix(channel: string) {
 type ElectronListener = (event: IpcRendererEvent, ...args: any[]) => void;
 
 /** the implementation of the private api between the frontend (renderer) and backend (main) iTwin.js processes in Electron. */
-const frontendApi = {
+const frontendApi: ITwinElectronApi = {
   send(channel: string, ...data: any[]) {
     checkPrefix(channel);
     ipcRenderer.send(channel, ...data);

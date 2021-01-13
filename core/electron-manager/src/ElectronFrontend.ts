@@ -4,45 +4,53 @@
 *--------------------------------------------------------------------------------------------*/
 import { isElectronRenderer } from "@bentley/bentleyjs-core";
 import { FrontendIpc, IpcListener, IpcSocketFrontend, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
+import { ITwinElectronApi } from "./ElectronPreload";
 import { ElectronRpcManager } from "./ElectronRpcManager";
-
-if (!isElectronRenderer)
-  throw new Error("this file may only be included by electron frontends");
-
-type ElectronListener = (event: any, ...args: any[]) => void;
-
-/** These methods are stored on `window.itwinjs` in ElectronPreload.js */
-interface ITwinElectronApi {
-  addListener: (channel: string, listener: ElectronListener) => void;
-  removeListener: (channel: string, listener: ElectronListener) => void;
-  invoke: (channel: string, ...data: any[]) => Promise<any>;
-  once: (channel: string, listener: (event: any, ...args: any[]) => void) => void;
-  send: (channel: string, ...data: any[]) => void; // only valid for render -> main
-}
 
 /** @alpha */
 export interface ElectronFrontendOptions {
+  /** A list of RPC interfaces to register */
   rpcInterfaces?: RpcInterfaceDefinition[];
 }
 
-// use the methods on window.itwinjs, or ipcRenderer directly if running with nodeIntegration=true (**only** for tests).
-// Note that `require("electron")` doesn't work with nodeIntegration=false - that's why it exists
-const electronIpc: ITwinElectronApi = (typeof window === "undefined" ? undefined : (window as any).itwinjs as ITwinElectronApi | undefined) ?? require("electron").ipcRenderer;
-
-/** @alpha */
+/**
+ * Frontend Ipc and Rpc support for Electron apps.
+ * @alpha
+ */
 export class ElectronFrontend implements IpcSocketFrontend {
+  private _api: ITwinElectronApi;
+  /** @internal */
   public receive(channelName: string, listener: IpcListener) {
-    electronIpc.addListener(channelName, listener);
-    return () => electronIpc.removeListener(channelName, listener);
-  };
-  public send(channel: string, ...data: any[]) {
-    electronIpc.send(channel, ...data);
+    this._api.addListener(channelName, listener);
+    return () => this._api.removeListener(channelName, listener);
   }
+  /** @internal */
+  public send(channel: string, ...data: any[]) {
+    this._api.send(channel, ...data);
+  }
+  /** @internal */
   public async invoke(channel: string, ...args: any[]) {
-    return electronIpc.invoke(channel, ...args);
-  };
-  public constructor(opts?: ElectronFrontendOptions) {
+    return this._api.invoke(channel, ...args);
+  }
+  private constructor(opts?: ElectronFrontendOptions) {
+    // use the methods on window.itwinjs exposed by ElectronPreload.ts, or ipcRenderer directly if running with nodeIntegration=true (**only** for tests).
+    // Note that `require("electron")` doesn't work with nodeIntegration=false - that's what it stops
+    this._api = (typeof window === "undefined" ? undefined : (window as any).itwinjs as ITwinElectronApi | undefined) ?? require("electron").ipcRenderer;
     FrontendIpc.initialize(this);
     ElectronRpcManager.initializeFrontend(this, opts?.rpcInterfaces);
   }
+
+  /**
+   * Initialize the frontend IPC/RPC of an Electron application.
+   * Call this method early in your initialization of the frontend module loaded from your call to [[ElectronBackend.openMainWindow]], before you
+   * call [IModelApp.startup]($frontend).
+   * @param opts Options for your ElectronFrontend
+   * @note This method must (only) be called from the frontend of an Electron app (i.e. when [isElectronRenderer]($bentley) returns `true`).
+   */
+  public static initialize(opts?: ElectronFrontendOptions) {
+    if (!isElectronRenderer)
+      throw new Error("Not running under Electron");
+
+    return new ElectronFrontend(opts);
+  };
 };

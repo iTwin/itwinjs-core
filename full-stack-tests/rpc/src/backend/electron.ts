@@ -7,14 +7,12 @@ import { BackendTestCallbacks } from "../common/SideChannels";
 import { rpcInterfaces } from "../common/TestRpcInterface";
 import { commonSetup } from "./CommonBackendSetup";
 import { setupPushTest } from "./push";
+import { ElectronBackend } from "@bentley/electron-manager/lib/ElectronBackend";
 
 async function init() {
   await commonSetup();
   registerBackendCallback(BackendTestCallbacks.getEnvironment, () => "electron");
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  const ElectronManager = (await import("@bentley/electron-manager")).ElectronManager;
-  const manager = new ElectronManager({ rpcInterfaces });
-
+  const manager = ElectronBackend.initialize({ rpcInterfaces });
   registerBackendCallback(BackendTestCallbacks.setChunkThreshold, (value: number) => {
     manager.rpcConfig.protocol.transferChunkThreshold = value;
     return true;

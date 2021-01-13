@@ -12,9 +12,26 @@ Table of Contents:
 
 The basis for communication between the frontend/backend pair is a platform-specific implementation of the [IpcSocket]($common) interface. There are two specializations of IpcSocket, [IpcSocketFrontend]($common) and [IpcSocketBackend]($common) for the frontend and backend respectively. They both allow sending and receiving messages, but frontend has a method to invoke *functions* on the backend, and the backend interface has a method to handle those invocations.
 
-For desktops, those interface is implemented by Electron's ipc layers, exposed through the `@bentley/electron-manager` package. For mobile devices those interfaces are implemented over WebSockets.
+For desktops, those interfaces are implemented by Electron's ipc layers, exposed through the `@bentley/electron-manager` package.
 
-TODO: add startup code example
+To use Ipc under Electron, you must initialize both the backend and the backend:
+
+```ts
+[[include:RpcInterface.initializeBackendForElectron]]
+
+```
+
+and
+
+```ts
+[[include:RpcInterface.initializeFrontendForElectron]]
+
+```
+
+For mobile devices those interfaces are implemented over WebSockets.
+
+TODO: mobile initialization
+
 
 ## FrontendIpc and BackendIpc
 

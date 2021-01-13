@@ -46,6 +46,7 @@ export class BackendIpc {
  * to ensure all methods and signatures are correct.
  *
  * Then, call `MyClass.register` at startup to connect your class to your channel.
+ * @alpha
  */
 export abstract class IpcHandler implements IpcInterface {
   /** All subclasses must implement this method to specify their channel name. */

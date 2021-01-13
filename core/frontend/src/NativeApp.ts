@@ -8,8 +8,8 @@
 
 import { BeEvent, Config, GuidString, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseDownloader, BriefcaseProps, Events, FrontendIpc, IModelError, IModelVersion, InternetConnectivityStatus, LocalBriefcaseProps, nativeAppChannel,
-  NativeAppIpc, nativeAppIpcVersion, OpenBriefcaseProps, OverriddenBy, RequestNewBriefcaseProps, StorageValue, SyncMode,
+  BriefcaseDownloader, BriefcaseProps, Events, FrontendIpc, IModelError, IModelVersion, InternetConnectivityStatus, LocalBriefcaseProps, NativeAppIpc,
+  NativeAppIpcKey, OpenBriefcaseProps, OverriddenBy, RequestNewBriefcaseProps, StorageValue, SyncMode,
 } from "@bentley/imodeljs-common";
 import { ProgressCallback, RequestGlobalOptions } from "@bentley/itwin-client";
 import { EventSource } from "./EventSource";
@@ -28,14 +28,16 @@ export interface DownloadBriefcaseOptions {
   syncMode: SyncMode;
   fileName?: string;
 }
+
 /**
  * The frontend of a native application
  * @see [Native Applications]($docs/learning/NativeApps.md)
  * @alpha
  */
 export class NativeApp {
+  private constructor() { }
   public static callBackend<T extends keyof NativeAppIpc>(methodName: T, ...args: Parameters<NativeAppIpc[T]>): ReturnType<NativeAppIpc[T]> {
-    return FrontendIpc.callBackend(nativeAppChannel, methodName, ...args) as ReturnType<NativeAppIpc[T]>;
+    return FrontendIpc.callBackend(NativeAppIpcKey.Channel, methodName, ...args) as ReturnType<NativeAppIpc[T]>;
   }
 
   private static _storages = new Map<string, Storage>();
@@ -49,7 +51,6 @@ export class NativeApp {
     RequestGlobalOptions.online = (status === InternetConnectivityStatus.Online);
     await this.callBackend("overrideInternetConnectivity", by, status);
   }
-  private constructor() { }
   private static hookBrowserConnectivityEvents() {
     if (typeof window === "object" && window.ononline && window.onoffline) {
       window.addEventListener("online", this._onOnline);
@@ -79,8 +80,8 @@ export class NativeApp {
   public static async startup(opts?: IModelAppOptions) {
     Logger.logInfo(FrontendLoggerCategory.NativeApp, "Startup");
     const ipcVersion = await NativeApp.callBackend("getVersion");
-    if (ipcVersion !== nativeAppIpcVersion) {
-      throw new IModelError(IModelStatus.BadArg, `NativeAppIpc version wrong: backend(${ipcVersion}) vs. frontend(${nativeAppIpcVersion})`);
+    if (ipcVersion !== NativeAppIpcKey.Version) {
+      throw new IModelError(IModelStatus.BadArg, `NativeAppIpc version wrong: backend(${ipcVersion}) vs. frontend(${NativeAppIpcKey.Version})`);
     }
     await IModelApp.startup(opts);
     const backendConfig = await this.callBackend("getConfig");
@@ -239,8 +240,9 @@ export class NativeApp {
 }
 
 /**
- * Storage allow [[NativeApp]] to data to disk. This data is considered cached and therefore its not ensured to exist permanently
- * @internal
+ *  A local disk-based cache for key value pairs available for NativeApps.
+ * @note This should be used only for local caching, since its not guaranteed to exist permanently.
+ * @alpha
  */
 export class Storage {
   constructor(public readonly id: string, private _isOpen: boolean = true) { }
