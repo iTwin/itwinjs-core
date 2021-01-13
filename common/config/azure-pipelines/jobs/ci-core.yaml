@@ -7,10 +7,10 @@ jobs:
   - job:
     strategy:
       matrix:
-        # "Windows_${{ parameters.name }}":
-        #   OS: windows-latest
-        #   platform: Windows_NT
-        #   name: iModelJSScaleSet02
+        "Windows_${{ parameters.name }}":
+          OS: windows-latest
+          platform: Windows_NT
+          name: iModeljs Windows
         "Linux_${{ parameters.name }}":
           OS: ubuntu-latest
           platform: Linux
