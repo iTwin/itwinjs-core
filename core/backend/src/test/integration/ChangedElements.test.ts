@@ -105,8 +105,9 @@ describe("ChangedElements (#integration)", () => {
     assert.isTrue(changes!.elements.length === changes!.classIds.length);
     assert.isTrue(changes!.elements.length === changes!.opcodes.length);
     assert.isTrue(changes!.elements.length === changes!.type.length);
-    // assert.isTrue(changes!.elements.length === changes!.properties!.length);
-    // NEEDS_WORK: DP
+    assert.isTrue(changes!.elements.length === changes!.properties!.length);
+    assert.isTrue(changes!.elements.length === changes!.oldChecksums!.length);
+    assert.isTrue(changes!.elements.length === changes!.newChecksums!.length);
     assert.isTrue(changes!.elements.length === changes!.modelIds!.length);
     assert.isTrue(changes!.elements.length === changes!.parentIds!.length);
     assert.isTrue(changes!.elements.length === changes!.parentClassIds!.length);
@@ -132,8 +133,9 @@ describe("ChangedElements (#integration)", () => {
     assert.isTrue(changes!.elements.length === changes!.opcodes.length);
     assert.isTrue(changes!.elements.length === changes!.type.length);
     assert.isTrue(changes!.elements.length === changes!.modelIds!.length);
-    // assert.isTrue(changes!.elements.length === changes!.properties!.length);
-    // NEEDS_WORK: DP
+    assert.isTrue(changes!.elements.length === changes!.properties!.length);
+    assert.isTrue(changes!.elements.length === changes!.oldChecksums!.length);
+    assert.isTrue(changes!.elements.length === changes!.newChecksums!.length);
     assert.isTrue(changes!.elements.length === changes!.parentIds!.length);
     assert.isTrue(changes!.elements.length === changes!.parentClassIds!.length);
 
@@ -148,8 +150,9 @@ describe("ChangedElements (#integration)", () => {
     assert.isTrue(changeData!.changedElements.elements.length === changeData!.changedElements.classIds.length);
     assert.isTrue(changeData!.changedElements.elements.length === changeData!.changedElements.opcodes.length);
     assert.isTrue(changeData!.changedElements.elements.length === changeData!.changedElements.type.length);
-    // assert.isTrue(changeData?.changedElements.elements.length === changeData!.changedElements.properties!.length);
-    // NEEDS_WORK: DP
+    assert.isTrue(changeData?.changedElements.elements.length === changeData!.changedElements.properties!.length);
+    assert.isTrue(changeData?.changedElements.elements.length === changeData!.changedElements.oldChecksums!.length);
+    assert.isTrue(changeData?.changedElements.elements.length === changeData!.changedElements.newChecksums!.length);
     assert.isTrue(changeData?.changedElements.elements.length === changeData!.changedElements.modelIds!.length);
     assert.isTrue(changeData?.changedElements.elements.length === changeData!.changedElements.parentIds!.length);
     assert.isTrue(changeData?.changedElements.elements.length === changeData!.changedElements.parentClassIds!.length);
