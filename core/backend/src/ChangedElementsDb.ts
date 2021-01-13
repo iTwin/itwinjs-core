@@ -18,7 +18,10 @@ import { ECDbOpenMode } from "./ECDb";
 import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 
-/** Options for processChangesets function */
+/**
+ * Options for processChangesets function
+ * @internal
+ * */
 export interface ProcessChangesetOptions {
   startChangesetId: string;
   endChangesetId: string;

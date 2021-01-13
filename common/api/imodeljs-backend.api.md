@@ -591,7 +591,7 @@ export class ChangedElementsDb implements IDisposable {
     // (undocumented)
     get nativeDb(): IModelJsNative.ChangedElementsECDb;
     static openDb(pathName: string, openMode?: ECDbOpenMode): ChangedElementsDb;
-    processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, rulesetId: string, startChangesetId: GuidString, endChangesetId: GuidString, filterSpatial?: boolean, rulesetDir?: string, tempDir?: string): Promise<DbResult>;
+    processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult>;
 }
 
 // @internal
@@ -3428,6 +3428,26 @@ export class Platform {
     // @internal (undocumented)
     static load(): typeof IModelJsNative;
     static get platformName(): string;
+}
+
+// @internal
+export interface ProcessChangesetOptions {
+    // (undocumented)
+    endChangesetId: string;
+    // (undocumented)
+    filterSpatial?: boolean;
+    // (undocumented)
+    rulesetDir?: string;
+    // (undocumented)
+    rulesetId: string;
+    // (undocumented)
+    startChangesetId: string;
+    // (undocumented)
+    tempDir?: string;
+    // (undocumented)
+    wantParents?: boolean;
+    // (undocumented)
+    wantPropertyChecksums?: boolean;
 }
 
 // @beta

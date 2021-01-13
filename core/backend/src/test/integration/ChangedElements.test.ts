@@ -62,8 +62,8 @@ describe("ChangedElements (#integration)", () => {
     // Process changesets with "Items" presentation rules
     const options: ProcessChangesetOptions = {
       rulesetId: "Items",
-      startChangesetId: startChangesetId,
-      endChangesetId: endChangesetId,
+      startChangesetId,
+      endChangesetId,
     };
     const result = await cache.processChangesets(requestContext, iModel, options);
     assert.equal(result, DbResult.BE_SQLITE_OK);
