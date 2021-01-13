@@ -2,6 +2,12 @@
   "name": "@bentley/reality-data-client",
   "entries": [
     {
+      "version": "2.10.4",
+      "tag": "@bentley/reality-data-client_v2.10.4",
+      "date": "Wed, 13 Jan 2021 01:02:35 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.10.3",
       "tag": "@bentley/reality-data-client_v2.10.3",
       "date": "Fri, 08 Jan 2021 18:34:03 GMT",
