@@ -82,9 +82,9 @@ export function MapLayerSettingsMenu({ mapLayerSettings, onMenuItemSelection, ac
     <>
       <button data-testid="map-layer-settings" className="map-layer-settings icon icon-more-vertical-2" ref={settingsRef} onClick={onSettingsClick} ></button>
       <ContextMenu opened={isSettingsOpen && (undefined !== hasRangeData)} onOutsideClick={handleCloseSetting} >
-        <ContextMenuItem key={0} className={hasRangeData ? "" : "core-context-menu-disabled"} onSelect={handleZoomToLayer}>{labelZoomToLayer}</ContextMenuItem>
-        <ContextMenuItem key={1} onSelect={handleRemoveLayer}>{labelDetach}</ContextMenuItem>
-        <ContextMenuItem key={2} >
+        <ContextMenuItem hideIconContainer={true} key={0} className={hasRangeData ? "" : "core-context-menu-disabled"} onSelect={handleZoomToLayer}>{labelZoomToLayer}</ContextMenuItem>
+        <ContextMenuItem hideIconContainer={true} key={1} onSelect={handleRemoveLayer}>{labelDetach}</ContextMenuItem>
+        <ContextMenuItem hideIconContainer={true} key={2} >
           <Slider min={0} max={100} values={[transparency * 100]} step={1} showTooltip showMinMax onChange={handleTransparencyChange} />
         </ContextMenuItem>
       </ContextMenu>
