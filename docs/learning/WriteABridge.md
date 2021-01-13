@@ -67,11 +67,11 @@ If the source application data has a property that conceptually matches the BIS 
 
 Rather than starting over when the source data changes, a connector should be able to detect and convert only the changes. That makes for compact, meaningful changesets, which are added to the iModel's [timeline](./IModelHub/index.md#the-timeline-of-changes-to-an-imodel).
 
-To do incremental updates, a connector must do ID mapping and change-detection. An iTwin Connector uses the ExternalSourceAspect class defined in the BIS schema to achieve both. The following sections describe how this is achieved.
+To do incremental updates, a connector must do ID mapping and change-detection. An iTwin Connector uses the [ExternalSourceAspect](https://www.itwinjs.org/reference/imodeljs-backend/elementaspects/externalsourceaspect/) class defined in the BIS schema to achieve both. The following sections describe how this is achieved.
 
 **Provenance**
 
-ID mapping is a way of looking up the data in the iModel that corresponds to a given piece of source data. If the source data has stable, unique IDs, then ID mapping could be straightforward.
+ID mapping is a way of looking up the data in the iModel that corresponds to a given piece of source data. If the source data has stable, unique IDs, then ID mapping could be straightforward.  Typically, the [FederationGuid](https://www.itwinjs.org/bis/intro/element-fundamentals/#federationguid) is used for this purpose.
 
 Note: If the source data does not have stable, unique IDs, then the connector will have to use some other means of identifying pieces of source data in a stable way. A cryptographic hash of the source data itself can work as a stable ID -- that is, it can be used to identify data that has not changed.
 
@@ -106,7 +106,7 @@ Infer deletions:
 
 
 ## Execution Sequence
-The ultimate purpose of a connector is to synchronize an iModel with the data in one or more source documents. That involves not only converting data but also authorization, communicating with an iModel server, and concurrency control. iModel.js defines a framework in which the connector itself can focus on the tasks of extraction, alignment, and change-detection. The other tasks are handled by classes provided by iModel.js. The framework is implemented by the BridgeRunner class. A BridgeRunner conducts the overall synchronization process. It loads and calls functions on a connector at the appropriate points in the sequence. The process may be summarized as follows:
+The ultimate purpose of a connector is to synchronize an iModel with the data in one or more source repositories. That involves not only converting data but also authorization, communicating with an iModel server, and concurrency control. iModel.js defines a framework in which the connector itself can focus on the tasks of extraction, alignment, and change-detection. The other tasks are handled by classes provided by iModel.js. The framework is implemented by the BridgeRunner class. A BridgeRunner conducts the overall synchronization process. It loads and calls functions on a connector at the appropriate points in the sequence. The process may be summarized as follows:
 
 - BridgeRunner: [Opens a local briefcase copy](./backend/IModelDb.md) of the iModel that is to be updated.
 - Import or Update Schema
