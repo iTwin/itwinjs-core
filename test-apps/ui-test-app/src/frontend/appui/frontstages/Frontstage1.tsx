@@ -21,7 +21,6 @@ import { UiAdmin } from "@bentley/ui-abstract";
 
 function RightPanel() {
   const direction = useWidgetDirection();
-  const [collapsed, setCollapsed] = React.useState(true);
   const [state, setState] = React.useState(() => {
     const frontstageDef = FrontstageManager.activeFrontstageDef!;
     const widgetDef = frontstageDef.findWidgetDef("VerticalPropertyGrid")!;
@@ -40,43 +39,6 @@ function RightPanel() {
   return (
     <>
       <h2>Right panel</h2>
-      <button onClick={() => {
-        const frontstageDef = FrontstageManager.activeFrontstageDef!;
-        const panel = frontstageDef.rightPanel!;
-        const size = collapsed ? 500 : 200;
-        panel.size = size;
-        setCollapsed((prev) => !prev);
-      }}>{collapsed ? "<" : ">"}</button>
-      <button onClick={() => {
-        const frontstageDef = FrontstageManager.activeFrontstageDef!;
-        frontstageDef.restoreLayout();
-      }}>Restore layout</button>
-      <br />
-      <button onClick={() => {
-        const frontstageDef = FrontstageManager.activeFrontstageDef!;
-        const widgetDef = frontstageDef.findWidgetDef("VerticalPropertyGrid")!;
-        widgetDef.setWidgetState(WidgetState.Open);
-      }}>setWidgetState(Open)</button>
-      <button onClick={() => {
-        const frontstageDef = FrontstageManager.activeFrontstageDef!;
-        const widgetDef = frontstageDef.findWidgetDef("VerticalPropertyGrid")!;
-        widgetDef.setWidgetState(WidgetState.Closed);
-      }}>setWidgetState(Closed)</button>
-      <button onClick={() => {
-        const frontstageDef = FrontstageManager.activeFrontstageDef!;
-        const widgetDef = frontstageDef.findWidgetDef("VerticalPropertyGrid")!;
-        widgetDef.setWidgetState(WidgetState.Hidden);
-      }}>setWidgetState(Hidden)</button>
-      <button onClick={() => {
-        const frontstageDef = FrontstageManager.activeFrontstageDef!;
-        const widgetDef = frontstageDef.findWidgetDef("VerticalPropertyGrid")!;
-        widgetDef.show();
-      }}>Show</button>
-      <button onClick={() => {
-        const frontstageDef = FrontstageManager.activeFrontstageDef!;
-        const widgetDef = frontstageDef.findWidgetDef("VerticalPropertyGrid")!;
-        widgetDef.expand();
-      }}>Expand</button>
       <p>{state}</p>
       <p>{direction}</p>
     </>
