@@ -11,7 +11,6 @@ import * as React from "react";
 import { DockedToolSetting, DockedToolSettings, ScrollableWidgetContent, ToolSettingsStateContext } from "@bentley/ui-ninezone";
 import { useActiveFrontstageDef } from "../frontstage/Frontstage";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { FrameworkVersionSwitch } from "../hooks/useFrameworkVersion";
 
 /** Defines a ToolSettings property entry.
  * @beta
@@ -95,7 +94,7 @@ export interface ToolSettingsGridProps {
  * @beta
  */
 export function ToolSettingsGrid({ settings }: ToolSettingsGridProps) {
-  const grid = (
+  return (
     <div className="uifw-standard-toolsettings-two-column-grid">
       {settings && settings.map((setting: ToolSettingsEntry, index: number) => {
         return (
@@ -106,17 +105,6 @@ export function ToolSettingsGrid({ settings }: ToolSettingsGridProps) {
         );
       })}
     </div>
-  );
-  return (
-    <FrameworkVersionSwitch
-      v1={grid}
-      v2={(
-        <ScrollableWidgetContent>
-          {grid}
-        </ScrollableWidgetContent>
-      )}
-    />
-
   );
 }
 
@@ -160,5 +148,9 @@ export function ToolSettingsContent() {
 /** @internal */
 export function ToolSettingsWidgetContent() {
   const node = useToolSettingsNode();
-  return <>{node}</>;
+  return (
+    <ScrollableWidgetContent>
+      {node}
+    </ScrollableWidgetContent>
+  );
 }
