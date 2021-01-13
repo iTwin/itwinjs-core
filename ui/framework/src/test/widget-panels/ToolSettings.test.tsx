@@ -5,7 +5,8 @@
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { DragManager, DragManagerContext, ToolSettingsStateContext } from "@bentley/ui-ninezone";
+import { createNineZoneState, DragManager, DragManagerContext, ToolSettingsStateContext } from "@bentley/ui-ninezone";
+import { NineZoneProvider } from "@bentley/ui-ninezone/lib/test/Providers";
 import { render } from "@testing-library/react";
 import { act, renderHook } from "@testing-library/react-hooks";
 import {
@@ -88,9 +89,16 @@ describe("ToolSettingsContent", () => {
     const activeToolSettingsProvider = new ToolUiProviderMock(new ConfigurableCreateInfo("test", "test", "test"), undefined);
     sinon.stub(FrontstageManager, "activeToolSettingsProvider").get(() => activeToolSettingsProvider);
     sinon.stub(activeToolSettingsProvider, "toolSettingsNode").get(() => <div>Hello World</div>);
+    const state = createNineZoneState({
+      toolSettings: {
+        type: "widget",
+      },
+    });
     const { container } = render(
       <ToolSettingsStateContext.Provider value={{ type: "widget" }}>
-        <ToolSettingsContent />
+        <NineZoneProvider state={state}>
+          <ToolSettingsContent />
+        </NineZoneProvider>
       </ToolSettingsStateContext.Provider>,
     );
     container.firstChild!.should.matchSnapshot();
