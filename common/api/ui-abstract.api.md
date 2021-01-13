@@ -109,6 +109,10 @@ export enum AccuDrawField {
     Z = 2
 }
 
+// @alpha (undocumented)
+export class AccuDrawGrabInputFocusEvent extends BeUiEvent<{}> {
+}
+
 // @alpha
 export enum AccuDrawMode {
     // (undocumented)
@@ -149,8 +153,6 @@ export interface AccuDrawSetFieldValueFromUiEventArgs {
     field: AccuDrawField;
     // (undocumented)
     stringValue: string;
-    // (undocumented)
-    value: number;
 }
 
 // @alpha (undocumented)
@@ -161,6 +163,8 @@ export class AccuDrawSetFieldValueToUiEvent extends BeUiEvent<AccuDrawSetFieldVa
 export interface AccuDrawSetFieldValueToUiEventArgs {
     // (undocumented)
     field: AccuDrawField;
+    // (undocumented)
+    formattedValue: string;
     // (undocumented)
     value: number;
 }
@@ -177,17 +181,18 @@ export interface AccuDrawSetModeEventArgs {
 
 // @alpha (undocumented)
 export class AccuDrawUiAdmin {
+    grabInputFocus(): void;
+    get hasInputFocus(): boolean;
+    static readonly onAccuDrawGrabInputFocusEvent: AccuDrawGrabInputFocusEvent;
     static readonly onAccuDrawSetFieldFocusEvent: AccuDrawSetFieldFocusEvent;
     static readonly onAccuDrawSetFieldLockEvent: AccuDrawSetFieldLockEvent;
     static readonly onAccuDrawSetFieldValueFromUiEvent: AccuDrawSetFieldValueFromUiEvent;
     static readonly onAccuDrawSetFieldValueToUiEvent: AccuDrawSetFieldValueToUiEvent;
     static readonly onAccuDrawSetModeEvent: AccuDrawSetModeEvent;
     setFieldFocus(field: AccuDrawField): void;
-    // (undocumented)
     setFieldLock(field: AccuDrawField, lock: boolean): void;
-    setFieldValueFromUi(field: AccuDrawField, value: number, stringValue: string): void;
-    setFieldValueToUi(field: AccuDrawField, value: number): void;
-    // (undocumented)
+    setFieldValueFromUi(field: AccuDrawField, stringValue: string): void;
+    setFieldValueToUi(field: AccuDrawField, value: number, formattedValue: string): void;
     setMode(mode: AccuDrawMode): void;
 }
 

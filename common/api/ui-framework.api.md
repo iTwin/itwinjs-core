@@ -22,6 +22,7 @@ import { BackstageStageLauncher as BackstageStageLauncher_2 } from '@bentley/ui-
 import { BadgeType } from '@bentley/ui-abstract';
 import { BaseSolarDataProvider } from '@bentley/ui-components';
 import { BaseTimelineDataProvider } from '@bentley/ui-components';
+import { BeButtonEvent } from '@bentley/imodeljs-frontend';
 import { BeDuration } from '@bentley/bentleyjs-core';
 import { BeEvent } from '@bentley/bentleyjs-core';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
@@ -1929,12 +1930,21 @@ export interface FooterModeFieldProps extends StatusFieldProps {
 
 // @alpha (undocumented)
 export class FrameworkAccuDraw extends AccuDraw {
+    constructor();
+    // (undocumented)
+    static getFieldDisplayValue(index: ItemField): string;
+    // @internal
+    grabInputFocus(): void;
+    // @internal (undocumented)
+    get hasInputFocus(): boolean;
     // @internal (undocumented)
     onCompassModeChange(): void;
     // @internal (undocumented)
     onFieldLockChange(index: ItemField): void;
     // @internal (undocumented)
     onFieldValueChange(index: ItemField): void;
+    // @internal
+    onMotion(_ev: BeButtonEvent): void;
     // @internal (undocumented)
     setFocusItem(index: ItemField): void;
     }
@@ -2016,6 +2026,7 @@ export interface FrameworkState {
 
 // @beta
 export class FrameworkUiAdmin extends UiAdmin {
+    constructor();
     closeDialog(dialogId: string): boolean;
     closeToolSettingsPopup(): boolean;
     get cursorPosition(): XAndY;
