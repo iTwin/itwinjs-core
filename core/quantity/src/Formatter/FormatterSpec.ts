@@ -16,15 +16,28 @@ export class FormatterSpec {
   protected _name: string;
   protected _conversions: UnitConversionSpec[] = [];  // max four entries
   protected _format: Format;
+  protected _persistenceUnit: UnitProps;
 
   /** Constructor
    *  @param name     The name of a format specification.
    *  @param format   Defines the output format for the quantity value.
-   *  @param conversions An array of conversion factors necessary to convert from an input unit to the units specified in the format..
+   *  @param conversions An array of conversion factors necessary to convert from an input unit to the units specified in the format.
+   *  @param persistenceUnit The unit the magnitude value is input.
    */
-  constructor(name: string, format: Format, conversions?: UnitConversionSpec[]) {
+  constructor(name: string, format: Format, conversions?: UnitConversionSpec[], persistenceUnit?: UnitProps) {
+
+    if (!persistenceUnit) {
+      if (format.units) {
+        const [props] = format.units[0];
+        persistenceUnit = props;
+      } else {
+        throw new Error("Formatter Spec needs persistence unit to be specified");
+      }
+    }
+
     this._name = name;
     this._format = format;
+    this._persistenceUnit = persistenceUnit;
     if (conversions) this._conversions = conversions;
   }
 
@@ -32,6 +45,7 @@ export class FormatterSpec {
   /** Returns an array of UnitConversionSpecs, one for each unit that is to be shown in the formatted quantity string. */
   public get unitConversions(): UnitConversionSpec[] { return this._conversions; }
   public get format(): Format { return this._format; }
+  public get persistenceUnit(): UnitProps { return this._persistenceUnit; }
 
   /** Static async method to create a FormatSpec given the format and unit of the quantity that will be passed to the Formatter. The input unit will
    * be used to generate conversion information for each unit specified in the Format. This method is async due to the fact that the units provider must make
@@ -42,6 +56,15 @@ export class FormatterSpec {
    */
   public static async create(name: string, format: Format, unitsProvider: UnitsProvider, inputUnit?: UnitProps): Promise<FormatterSpec> {
     const conversions: UnitConversionSpec[] = [];
+    let persistenceUnit = inputUnit;
+    if (!persistenceUnit) {
+      if (format.units) {
+        const [props] = format.units[0];
+        persistenceUnit = props;
+      } else {
+        throw new Error("Formatter Spec needs persistence unit to be specified");
+      }
+    }
 
     if (format.units) {
       let convertFromUnit = inputUnit;
@@ -66,7 +89,7 @@ export class FormatterSpec {
       }
     }
 
-    return new FormatterSpec(name, format, conversions);
+    return new FormatterSpec(name, format, conversions, persistenceUnit);
   }
 
   /** Format a quantity value. */

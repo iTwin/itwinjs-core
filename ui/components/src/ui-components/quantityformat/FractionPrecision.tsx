@@ -39,7 +39,7 @@ export function FractionPrecisionSelector(props: FractionPrecisionSelectorProps)
   const handleOnChange = React.useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     e.preventDefault();
     const newValue = Number.parseInt(e.target.value, 10);
-    onChange && onChange(newValue); //
+    onChange && onChange(newValue);
   }, [onChange]);
 
   return (

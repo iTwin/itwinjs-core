@@ -87,8 +87,15 @@ export * from "./ui-components/properties/renderers/PropertyView";
 export * from "./ui-components/properties/renderers/ActionButtonList";
 export * from "./ui-components/properties/renderers/ActionButtonRenderer";
 
+export * from "./ui-components/quantityformat/DecimalPrecision";
+export * from "./ui-components/quantityformat/DecimalSeparator";
 export * from "./ui-components/quantityformat/FormatPanel";
+export * from "./ui-components/quantityformat/FormatPopupButton";
 export * from "./ui-components/quantityformat/FormatType";
+export * from "./ui-components/quantityformat/FractionPrecision";
+export * from "./ui-components/quantityformat/SignOption";
+export * from "./ui-components/quantityformat/ThousandSeparator";
+export * from "./ui-components/quantityformat/UnitDescr";
 export * from "./ui-components/quantityformat/UomSeparator";
 
 export * from "./ui-components/timeline/interfaces";

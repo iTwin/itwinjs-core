@@ -26,9 +26,10 @@ import { UnitDescr } from "./UnitDescr";
 export interface FormatPanelProps extends CommonProps {
   initialFormat: FormatProps;
   unitsProvider: UnitsProvider;
-  persistenceUnit: Promise<UnitProps>;
+  persistenceUnit: Promise<UnitProps> | UnitProps;
   showSample?: boolean;
   initialMagnitude?: number;
+  onFormatChange?: (format: FormatProps) => void;
 }
 
 function getTraitString(trait: FormatTraits) {
@@ -60,19 +61,32 @@ function getTraitString(trait: FormatTraits) {
  */
 export function FormatPanel(props: FormatPanelProps) {
   const formatSpec = React.useRef<FormatterSpec>();
-  const { initialFormat, showSample, initialMagnitude, unitsProvider, persistenceUnit } = props;
+  const { initialFormat, showSample, initialMagnitude, unitsProvider, persistenceUnit, onFormatChange } = props;
+
   const [magnitude, setMagnitude] = React.useState(() => initialMagnitude ?? 0);
   const [formattedValue, setFormattedValue] = React.useState("");
   const [activePersistenceUnitLabel, setActivePersistenceUnitLabel] = React.useState("");
-
   const [formatProps, setFormatProps] = React.useState(initialFormat);
-  const formatType = Format.parseFormatType(formatProps.type, "format");
-  const showSignOption = Format.parseShowSignOption(formatProps.showSignOption ?? "onlyNegative", "format");
+  const initialFormatRef = React.useRef<FormatProps>(initialFormat);
+
+  React.useEffect(() => {
+    if (initialFormatRef.current !== initialFormat) {
+      initialFormatRef.current = initialFormat;
+      setFormatProps(initialFormat);
+    }
+  }, [initialFormat]);
+
+  const handleSetFormatProps = React.useCallback((newProps: FormatProps) => {
+    setFormatProps(newProps);
+    onFormatChange && onFormatChange(newProps);
+    // eslint-disable-next-line no-console
+    console.log(`FormatProps = ${JSON.stringify(newProps)}`);
+  }, [onFormatChange]);
 
   const handlePrecisionChange = React.useCallback((precision: number) => {
     const newFormatProps = { ...formatProps, precision };
-    setFormatProps(newFormatProps);
-  }, [formatProps]);
+    handleSetFormatProps(newFormatProps);
+  }, [formatProps, handleSetFormatProps]);
 
   const handleFormatTypeChange = React.useCallback((newType: FormatType) => {
     const type = Format.formatTypeToString(newType);
@@ -88,8 +102,8 @@ export function FormatPanel(props: FormatPanelProps) {
         break;
     }
     const newFormatProps = { ...formatProps, type, precision };
-    setFormatProps(newFormatProps);
-  }, [formatProps]);
+    handleSetFormatProps(newFormatProps);
+  }, [formatProps, handleSetFormatProps]);
 
   const isFormatTraitSet = React.useCallback((trait: FormatTraits) => {
     if (!formatProps.formatTraits)
@@ -108,12 +122,12 @@ export function FormatPanel(props: FormatPanelProps) {
   const handleUomSeparatorChange = React.useCallback((separator: string) => {
     if (separator.length < 2) {
       const newFormatProps = { ...formatProps, uomSeparator: separator };
-      setFormatProps(newFormatProps);
+      handleSetFormatProps(newFormatProps);
     } else {
       const newFormatProps = { ...formatProps, uomSeparator: initialFormat.uomSeparator };
-      setFormatProps(newFormatProps);
+      handleSetFormatProps(newFormatProps);
     }
-  }, [formatProps, initialFormat.uomSeparator]);
+  }, [formatProps, initialFormat.uomSeparator, handleSetFormatProps]);
 
   const handleThousandSeparatorChange = React.useCallback((thousandSeparator: string) => {
     let decimalSeparator = formatProps.decimalSeparator;
@@ -125,8 +139,8 @@ export function FormatPanel(props: FormatPanelProps) {
         decimalSeparator = ".";
     }
     const newFormatProps = { ...formatProps, thousandSeparator, decimalSeparator };
-    setFormatProps(newFormatProps);
-  }, [formatProps, isFormatTraitSet]);
+    handleSetFormatProps(newFormatProps);
+  }, [formatProps, isFormatTraitSet, handleSetFormatProps]);
 
   const setFormatTrait = React.useCallback((trait: FormatTraits, setActive: boolean) => {
     const traitStr = getTraitString(trait);
@@ -152,10 +166,8 @@ export function FormatPanel(props: FormatPanelProps) {
       formatTraits = traits.filter((traitEntry) => traitEntry !== traitStr);
     }
     const newFormatProps = { ...formatProps, formatTraits };
-    // eslint-disable-next-line no-console
-    console.log(`FormatProps = ${JSON.stringify(newFormatProps)}`);
-    setFormatProps(newFormatProps);
-  }, [formatProps]);
+    handleSetFormatProps(newFormatProps);
+  }, [formatProps, handleSetFormatProps]);
 
   const handleUseThousandsSeparatorChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setFormatTrait(FormatTraits.Use1000Separator, e.target.checked);
@@ -199,8 +211,8 @@ export function FormatPanel(props: FormatPanelProps) {
         thousandSeparator = ".";
     }
     const newFormatProps = { ...formatProps, thousandSeparator, decimalSeparator };
-    setFormatProps(newFormatProps);
-  }, [formatProps, isFormatTraitSet]);
+    handleSetFormatProps(newFormatProps);
+  }, [formatProps, isFormatTraitSet, handleSetFormatProps]);
 
   const handleUnitLabelChange = React.useCallback((newLabel: string, index: number) => {
     if (formatProps.composite?.units && formatProps.composite.units.length > index && index >= 0) {
@@ -213,9 +225,9 @@ export function FormatPanel(props: FormatPanelProps) {
 
       const composite = { ...formatProps.composite, units };
       const newFormatProps = { ...formatProps, composite };
-      setFormatProps(newFormatProps);
+      handleSetFormatProps(newFormatProps);
     }
-  }, [formatProps]);
+  }, [formatProps, handleSetFormatProps]);
 
   const handleOnValueChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setMagnitude(e.target.value ? Number.parseFloat(e.target.value) : 0);
@@ -225,9 +237,9 @@ export function FormatPanel(props: FormatPanelProps) {
     if (formatProps.composite) {
       const composite = { ...formatProps.composite, spacer: e.target.value };
       const newFormatProps = { ...formatProps, composite };
-      setFormatProps(newFormatProps);
+      handleSetFormatProps(newFormatProps);
     }
-  }, [formatProps]);
+  }, [formatProps, handleSetFormatProps]);
 
   React.useEffect(() => {
     async function fetchFormatSpec() {
@@ -241,11 +253,14 @@ export function FormatPanel(props: FormatPanelProps) {
     fetchFormatSpec(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }, [formatProps, magnitude, persistenceUnit, unitsProvider]);
 
+  const formatType = React.useMemo(() => Format.parseFormatType(formatProps.type, "format"), [formatProps.type]);
+  const showSignOption = React.useMemo(() => Format.parseShowSignOption(formatProps.showSignOption ?? "onlyNegative", "format"), [formatProps.showSignOption]);
+
   return (
     <div className="components-quantityFormat-panel">
       {showSample &&
         <>
-          <span className={"uicore-label"}>Value</span>
+          <span className={"uicore-label"}>Sample Value</span>
           <span className="components-inline"><Input value={initialMagnitude} onChange={handleOnValueChange} />{activePersistenceUnitLabel}</span>
           <span className={"uicore-label"}>Formatted Value</span>
           <span className={"uicore-label"}>{formattedValue}</span>

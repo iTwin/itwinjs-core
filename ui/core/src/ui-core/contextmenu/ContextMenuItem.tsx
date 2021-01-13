@@ -30,7 +30,7 @@ export interface ContextMenuItemProps extends React.AllHTMLAttributes<HTMLDivEle
   badgeType?: BadgeType;
   /** Icon to display in the right margin. */
   iconRight?: IconSpec;
-  /** Hide the icon container. */
+  /** Hide the icon container. This can be used to eliminate space used to display an icon at the left of the menu item. */
   hideIconContainer?: boolean;
   /** @internal */
   onHover?: () => any;

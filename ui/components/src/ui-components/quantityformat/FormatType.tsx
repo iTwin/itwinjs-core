@@ -34,7 +34,8 @@ export function FormatTypeSelector(props: FormatTypeSelectorProps) {
 
   const handleOnChange = React.useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     e.preventDefault();
-    onChange && onChange(FormatType.Decimal); // e.target.value
+    const enumValue = parseInt(e.target.value, 10);
+    onChange && onChange(enumValue as FormatType);
   }, [onChange]);
 
   return (

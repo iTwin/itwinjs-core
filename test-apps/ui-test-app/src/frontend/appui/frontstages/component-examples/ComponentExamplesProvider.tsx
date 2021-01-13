@@ -16,7 +16,7 @@ import {
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
 import {
   adjustDateToTimezone, ColorPickerButton, ColorPickerDialog, ColorPickerPopup, ColorSwatch, DatePickerPopupButton, DatePickerPopupButtonProps,
-  FormatPanel, IntlFormatter, LineWeightSwatch, ParsedInput, QuantityInput, WeightPickerButton,
+  FormatPopupButton, IntlFormatter, LineWeightSwatch, ParsedInput, QuantityInput, WeightPickerButton,
 } from "@bentley/ui-components";
 import { MessageManager, ModalDialogManager, ReactNotifyMessageDetails } from "@bentley/ui-framework";
 import { ActivityMessageDetails, ActivityMessageEndReason, IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType, QuantityType } from "@bentley/imodeljs-frontend";
@@ -27,7 +27,32 @@ import { SampleImageCheckBox } from "./SampleImageCheckBox";
 import { SampleAppIModelApp } from "../../..";
 import { BeDuration, Logger } from "@bentley/bentleyjs-core";
 import { SamplePopupContextMenu } from "./SamplePopupContextMenu";
-import { FormatProps, UnitsProvider } from "@bentley/imodeljs-quantity";
+import { Format, FormatProps, FormatterSpec, UnitsProvider } from "@bentley/imodeljs-quantity";
+
+function WrappedFormatPopup({ initialFormatterSpec, initialMagnitude }: { initialFormatterSpec: FormatterSpec, initialMagnitude: number }) {
+  const [formatterSpec, setFormatterSpec] = React.useState(initialFormatterSpec);
+  const [formattedValue, setFormattedValue] = React.useState(() => formatterSpec.applyFormatting(initialMagnitude));
+  const handleFormatChange = React.useCallback((format: FormatProps) => {
+    async function fetchFormatSpec(formatProps: FormatProps) {
+      const pu = initialFormatterSpec.persistenceUnit;
+      const actualFormat = new Format("custom");
+      const unitsProvider = IModelApp.quantityFormatter as UnitsProvider;
+      await actualFormat.fromJSON(unitsProvider, formatProps);
+      const newSpec = await FormatterSpec.create(actualFormat.name, actualFormat, unitsProvider, pu);
+      setFormattedValue(newSpec.applyFormatting(initialMagnitude));
+      setFormatterSpec(newSpec);
+    }
+    fetchFormatSpec(format); // eslint-disable-line @typescript-eslint/no-floating-promises
+  }, [initialFormatterSpec.persistenceUnit, initialMagnitude]);
+
+  return (
+    <div style={{ display: "flex", alignItems: "center" }}>
+      <span>{formattedValue}</span>
+      <FormatPopupButton initialFormat={formatterSpec.format.toJSON()} showSample={true} onFormatChange={handleFormatChange}
+        initialMagnitude={initialMagnitude} unitsProvider={IModelApp.quantityFormatter as UnitsProvider} persistenceUnit={formatterSpec.persistenceUnit} />
+    </div>
+  );
+}
 
 function WrappedSelect() {
   const [currentValue, setCurrentValue] = React.useState(3);
@@ -931,26 +956,75 @@ export class ComponentExamplesProvider {
   }
 
   private static get quantityFormatting(): ComponentExampleCategory {
-    const sampleFormat: FormatProps = {
-      composite: {
-        includeZero: true,
-        spacer: "",
-        units: [{ label: "cm", name: "Units.CM" }],
-      },
-      formatTraits: ["keepSingleZero", "showUnitLabel"],
-      precision: 4,
-      type: "Decimal",
-      uomSeparator: "",
-    };
+    const sampleRadian = 45.5 * Math.PI / 180;
+    const examples = [];
 
-    const persistenceUnit = (IModelApp.quantityFormatter as UnitsProvider).findUnitByName("Units.M");
+    const lengthFormatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
+    if (lengthFormatterSpec) {
+      examples.push(
+        createComponentExample("Length", "Quantity Formatting", <WrappedFormatPopup initialFormatterSpec={lengthFormatterSpec} initialMagnitude={1234.56} />),
+      );
+    }
+
+    const angleFormatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Angle);
+    if (angleFormatterSpec) {
+      examples.push(
+        createComponentExample("Angle", "Quantity Formatting", <WrappedFormatPopup initialFormatterSpec={angleFormatterSpec} initialMagnitude={sampleRadian} />),
+      );
+    }
+
+    const areaFormatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Area);
+    if (areaFormatterSpec) {
+      examples.push(
+        createComponentExample("Area", "Quantity Formatting", <WrappedFormatPopup initialFormatterSpec={areaFormatterSpec} initialMagnitude={1234.56} />),
+      );
+    }
+
+    const coordinateFormatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Coordinate);
+    if (coordinateFormatterSpec) {
+      examples.push(
+        createComponentExample("Coordinate", "Quantity Formatting", <WrappedFormatPopup initialFormatterSpec={coordinateFormatterSpec} initialMagnitude={1234.56} />),
+      );
+    }
+
+    const latLongFormatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.LatLong);
+    if (latLongFormatterSpec) {
+      examples.push(
+        createComponentExample("Latitude/Longitude", "Quantity Formatting", <WrappedFormatPopup initialFormatterSpec={latLongFormatterSpec} initialMagnitude={sampleRadian} />),
+      );
+    }
+
+    const engineeringLengthFormatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.LengthEngineering);
+    if (engineeringLengthFormatterSpec) {
+      examples.push(
+        createComponentExample("Engineering Length", "Quantity Formatting", <WrappedFormatPopup initialFormatterSpec={engineeringLengthFormatterSpec} initialMagnitude={1234.56} />),
+      );
+    }
+
+    const surveyLengthFormatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.LengthSurvey);
+    if (surveyLengthFormatterSpec) {
+      examples.push(
+        createComponentExample("Survey Length", "Quantity Formatting", <WrappedFormatPopup initialFormatterSpec={surveyLengthFormatterSpec} initialMagnitude={1234.56} />),
+      );
+    }
+
+    const stationFormatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Stationing);
+    if (stationFormatterSpec) {
+      examples.push(
+        createComponentExample("Stationing", "Quantity Formatting", <WrappedFormatPopup initialFormatterSpec={stationFormatterSpec} initialMagnitude={1234.56} />),
+      );
+    }
+
+    const volumeFormatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Volume);
+    if (volumeFormatterSpec) {
+      examples.push(
+        createComponentExample("Volume", "Quantity Formatting", <WrappedFormatPopup initialFormatterSpec={volumeFormatterSpec} initialMagnitude={1234.56} />),
+      );
+    }
 
     return {
       title: "Quantity Formatting Component",
-      examples: [
-        createComponentExample("Quantity Formatting", "Formatting Panel", <FormatPanel initialFormat={sampleFormat} showSample={true}
-          initialMagnitude={1234.56} unitsProvider={IModelApp.quantityFormatter as UnitsProvider} persistenceUnit={persistenceUnit} />),
-      ],
+      examples,
     };
   }
 
