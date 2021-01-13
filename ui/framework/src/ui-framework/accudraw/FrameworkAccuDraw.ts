@@ -136,6 +136,7 @@ export class FrameworkAccuDraw extends AccuDraw {
     let formattedValue = value.toString();
 
     const formatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(ItemField.ANGLE_Item === index ? QuantityType.Angle : QuantityType.Length);
+    // istanbul ignore else
     if (formatterSpec)
       formattedValue = IModelApp.quantityFormatter.formatQuantity(value, formatterSpec);
 

@@ -13,6 +13,9 @@ import TestUtils from "../TestUtils";
 import { FrameworkAccuDraw } from "../../ui-framework/accudraw/FrameworkAccuDraw";
 import { AccuDrawFieldContainer } from "../../ui-framework/accudraw/AccuDrawFieldContainer";
 import { KeyboardShortcutManager } from "../../ui-framework/keyboardshortcut/KeyboardShortcut";
+import { FrameworkUiAdmin } from "../../ui-framework/uiadmin/FrameworkUiAdmin";
+
+// cspell:ignore uiadmin
 
 function requestNextAnimation() { }
 
@@ -30,6 +33,7 @@ describe("AccuDrawFieldContainer", () => {
 
     const opts: IModelAppOptions = {};
     opts.accuDraw = new FrameworkAccuDraw();
+    opts.uiAdmin = new FrameworkUiAdmin();
     await MockRender.App.startup(opts);
   });
 
@@ -95,12 +99,18 @@ describe("AccuDrawFieldContainer", () => {
     remove();
   });
 
-  it("should emit onAccuDrawSetFieldFocusEvent", () => {
+  it("should emit onAccuDrawSetFieldFocusEvent", async () => {
     const spy = sinon.spy();
     const remove = AccuDrawUiAdmin.onAccuDrawSetFieldFocusEvent.addListener(spy);
+    expect(IModelApp.accuDraw.hasInputFocus).to.be.false;
+
     render(<AccuDrawFieldContainer orientation={Orientation.Vertical} />);
     IModelApp.accuDraw.setFocusItem(ItemField.X_Item);
     spy.calledOnce.should.true;
+
+    await TestUtils.flushAsyncOperations();
+    expect(IModelApp.accuDraw.hasInputFocus).to.be.true;
+
     remove();
   });
 

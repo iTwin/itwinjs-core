@@ -124,7 +124,7 @@ export class AccuDrawUiAdmin {
 
   /** Set focus to the AccuDraw UI. */
   public grabInputFocus() {
-    AccuDrawUiAdmin.onAccuDrawGrabInputFocusEvent.emit({});;
+    AccuDrawUiAdmin.onAccuDrawGrabInputFocusEvent.emit({});
   }
 
 }

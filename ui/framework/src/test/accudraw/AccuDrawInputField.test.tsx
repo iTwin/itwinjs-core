@@ -33,7 +33,7 @@ describe("AccuDrawInputField", () => {
     fireEvent.change(input!, { target: { value: "22.3" } });  // Test no value change
     expect((input as HTMLInputElement).value).to.eq("22.3");
     fireEvent.keyDown(input!, { key: SpecialKey.Enter });
-    spyMethod.calledTwice.should.be.true;
+    spyMethod.calledOnce.should.be.true;
   });
 
   it("should call onValueChanged on change after delay", async () => {

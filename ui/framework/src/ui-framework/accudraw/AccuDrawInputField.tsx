@@ -63,6 +63,7 @@ export function AccuDrawInputField(props: AccuDrawInputFieldProps) {
     if (value === undefined)
       return;
 
+    // istanbul ignore else
     if (value !== stringValue)
       setStringValue(value);
 
@@ -113,7 +114,7 @@ export function AccuDrawInputField(props: AccuDrawInputFieldProps) {
       </label>
       <Input id={id} value={stringValue}
         className={inputClassNames} style={style}
-        onChange={trackChange} onKeyDown={handleKeyDown} setFocus={setFocus} />
+        onChange={trackChange} onInput={trackChange} onKeyDown={handleKeyDown} setFocus={setFocus} />
       <span className="uifw-accudraw-lock" >
         {lock && <Icon iconSpec="icon-lock" />}
       </span>

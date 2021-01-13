@@ -282,8 +282,6 @@ export class SampleAppIModelApp {
     await MapLayersUI.initialize(false); // if false then add widget in FrontstageDef
   }
 
-  // cSpell:enable
-
   public static loggerCategory(obj: any): string {
     const className = getClassName(obj);
     const category = `ui-test-app.${className}`;
