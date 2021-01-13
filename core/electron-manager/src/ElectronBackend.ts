@@ -173,8 +173,7 @@ export class ElectronBackend implements IpcSocketBackend {
   }
   /** @internal */
   public send(channel: string, ...args: any[]): void {
-    const windows = BrowserWindow.getAllWindows();
-    const window = this.mainWindow ?? windows[0];
+    const window = this.mainWindow ?? BrowserWindow.getAllWindows()[0];
     window?.webContents.send(channel, ...args);
   }
   /** @internal */
