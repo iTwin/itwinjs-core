@@ -7,7 +7,7 @@ import { ScreenViewport } from "@bentley/imodeljs-frontend";
 import { RelativePosition } from "@bentley/ui-abstract";
 import { OutsideClickEvent, Popup, useOnOutsideClick, WebFontIcon } from "@bentley/ui-core";
 import { SubLayersPanel } from "./SubLayersTree";
-import { StyleMapLayerSettings } from "./MapLayerManager";
+import { StyleMapLayerSettings } from "../Interfaces";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 
 // cSpell:ignore droppable Sublayer

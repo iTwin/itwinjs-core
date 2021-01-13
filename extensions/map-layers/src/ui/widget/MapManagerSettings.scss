@@ -1,0 +1,19 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@bentley/ui-core/lib/ui-core/index";
+
+.maplayers-settings-container {
+    display: grid;
+    align-items: baseline;
+    padding: 4px;
+    grid-template-columns: 2fr 3fr;
+    column-gap: 8px;
+    row-gap: 8px;
+    overflow: hidden;
+  }
+
+  .map-manager-settings-label {
+    text-align: right;
+  }
