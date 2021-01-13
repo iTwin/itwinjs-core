@@ -25,6 +25,7 @@ exports[`NavigationWidget NavigationWidget should render correctly 1`] = `
   navigationWidgetDef={
     NavigationWidgetDef {
       "_classId": undefined,
+      "_defaultState": 4,
       "_fillZone": false,
       "_handleSyncUiEvent": [Function],
       "_id": "navigationWidget",
