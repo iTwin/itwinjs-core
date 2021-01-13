@@ -333,6 +333,14 @@ export class BackendError extends IModelError {
     constructor(errorNumber: number, name: string, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
 }
 
+// @internal
+export class BackendIpc {
+    static initialize(ipc: IpcSocketBackend): void;
+    static get ipc(): IpcSocketBackend;
+    static get isValid(): boolean;
+    static sendMessage(channel: string, ...data: any[]): void;
+}
+
 // @public
 export enum BackgroundFill {
     None = 0,
@@ -2107,60 +2115,6 @@ export enum Editor3dRpcInterfaceWriteReturnType {
     Props = 2
 }
 
-// @beta
-export abstract class ElectronRpcConfiguration extends RpcConfiguration {
-    // (undocumented)
-    static readonly isElectron: boolean;
-    abstract protocol: ElectronRpcProtocol;
-    // (undocumented)
-    static targetWindowId?: number;
-}
-
-// @beta
-export class ElectronRpcManager extends RpcManager {
-    static initializeClient(params: ElectronRpcParams, interfaces: RpcInterfaceDefinition[]): ElectronRpcConfiguration;
-    static initializeImpl(params: ElectronRpcParams, interfaces: RpcInterfaceDefinition[]): ElectronRpcConfiguration;
-    }
-
-// @beta
-export interface ElectronRpcParams {
-    // (undocumented)
-    protocol?: typeof ElectronRpcProtocol;
-}
-
-// @beta
-export class ElectronRpcProtocol extends RpcProtocol {
-    constructor(configuration: ElectronRpcConfiguration);
-    // (undocumented)
-    static instances: Map<string, ElectronRpcProtocol>;
-    // @internal (undocumented)
-    onRpcClientInitialized(definition: RpcInterfaceDefinition, _client: RpcInterface): void;
-    // @internal (undocumented)
-    onRpcClientTerminated(definition: RpcInterfaceDefinition, _client: RpcInterface): void;
-    // @internal (undocumented)
-    onRpcImplInitialized(definition: RpcInterfaceDefinition, _impl: RpcInterface): void;
-    // @internal (undocumented)
-    onRpcImplTerminated(definition: RpcInterfaceDefinition, _impl: RpcInterface): void;
-    // @internal (undocumented)
-    requests: Map<string, ElectronRpcRequest>;
-    readonly requestType: typeof ElectronRpcRequest;
-    transferChunkThreshold: number;
-    // @internal (undocumented)
-    readonly transport: ElectronIpcTransport<IpcTransportMessage, IpcTransportMessage>;
-}
-
-// @beta (undocumented)
-export class ElectronRpcRequest extends RpcRequest {
-    // @internal (undocumented)
-    dispose(): void;
-    protected load(): Promise<import("../core/RpcMarshaling").RpcSerializedValue>;
-    // @internal (undocumented)
-    notifyResponse(fulfillment: RpcRequestFulfillment): void;
-    readonly protocol: ElectronRpcProtocol;
-    protected send(): Promise<number>;
-    protected setHeader(_name: string, _value: string): void;
-}
-
 // @public
 export type ElementAlignedBox2d = Range2d;
 
@@ -2776,6 +2730,15 @@ export interface FormDataCommon {
     append(name: string, value: string | Blob | Buffer, fileName?: string): void;
 }
 
+// @internal
+export class FrontendIpc {
+    static callBackend(channelName: string, methodName: string, ...args: any[]): Promise<any>;
+    static handleMessage(channel: string, handler: (...data: any[]) => void): RemoveFunction;
+    static initialize(ipc: IpcSocketFrontend): void;
+    static get ipc(): IpcSocketFrontend;
+    static get isValid(): boolean;
+}
+
 // @public
 export class Frustum {
     constructor();
@@ -3139,9 +3102,6 @@ export enum GeometrySummaryVerbosity {
     Detailed = 20,
     Full = 30
 }
-
-// @internal
-export const getIModelElectronApi: () => IModelElectronApi | undefined;
 
 // @internal (undocumented)
 export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number;
@@ -3813,7 +3773,7 @@ export abstract class IModel implements IModelProps {
     toJSON(): IModelConnectionProps;
 }
 
-// @internal (undocumented)
+// @alpha (undocumented)
 export type IModelConnectionProps = IModelProps & IModelRpcProps & IModelEventSourceProps;
 
 // @beta
@@ -3832,26 +3792,6 @@ export interface IModelCoordinatesResponseProps {
     iModelCoords: PointWithStatus[];
 }
 
-// @internal (undocumented)
-export interface IModelElectronApi extends IModelElectronIpc {
-    // (undocumented)
-    invoke(channel: string, ...args: any[]): Promise<any>;
-    // (undocumented)
-    sendSync(channel: string, ...args: any[]): any;
-}
-
-// @internal (undocumented)
-export interface IModelElectronIpc {
-    // (undocumented)
-    on: (channel: string, listener: (event: any, ...args: any[]) => void) => void;
-    // (undocumented)
-    once: (channel: string, listener: (event: any, ...args: any[]) => void) => void;
-    // (undocumented)
-    removeListener: (channel: string, listener: (event: any, ...args: any[]) => void) => void;
-    // (undocumented)
-    send: (channel: string, ...data: any[]) => void;
-}
-
 // @public
 export interface IModelEncryptionProps {
     password?: string;
@@ -3862,7 +3802,7 @@ export class IModelError extends BentleyError {
     constructor(errorNumber: number | IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | RepositoryStatus | ChangeSetStatus | RpcInterfaceStatus | AuthStatus, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
 }
 
-// @internal
+// @alpha
 export interface IModelEventSourceProps {
     // (undocumented)
     eventSourceName: string;
@@ -4075,7 +4015,7 @@ export const initializeRpcRequest: () => void;
 // @internal (undocumented)
 export const INSTANCE: unique symbol;
 
-// @internal
+// @alpha
 export enum InternetConnectivityStatus {
     // (undocumented)
     Offline = 1,
@@ -4099,6 +4039,50 @@ export const Interpolation: {
 // @beta (undocumented)
 export type InterpolationFunction = (v: any, k: number) => number;
 
+// @alpha
+export abstract class IpcHandler implements IpcInterface {
+    abstract get channelName(): string;
+    abstract getVersion(): Promise<string>;
+    static register(): RemoveFunction;
+}
+
+// @alpha
+export interface IpcInterface {
+    getVersion(): Promise<string>;
+}
+
+// @internal
+export type IpcInvokeReturn = {
+    result: any;
+    error?: never;
+} | {
+    result?: never;
+    error: {
+        name: string;
+        message: string;
+        errorNumber: number;
+    };
+};
+
+// @internal
+export type IpcListener = (evt: any, ...arg: any[]) => void;
+
+// @internal
+export interface IpcSocket {
+    receive: (channel: string, listener: IpcListener) => RemoveFunction;
+    send: (channel: string, ...data: any[]) => void;
+}
+
+// @internal
+export interface IpcSocketBackend extends IpcSocket {
+    handle: (channel: string, handler: (methodName: string, ...args: any[]) => Promise<any>) => RemoveFunction;
+}
+
+// @internal
+export interface IpcSocketFrontend extends IpcSocket {
+    invoke: (channel: string, methodName: string, ...args: any[]) => Promise<any>;
+}
+
 // @internal
 export function isKnownTileFormat(format: number): boolean;
 
@@ -4107,6 +4091,9 @@ export function isPowerOfTwo(num: number): boolean;
 
 // @internal (undocumented)
 export function isValidImageSourceFormat(format: ImageSourceFormat): boolean;
+
+// @internal
+export const iTwinChannel: (channel: string) => string;
 
 // @public (undocumented)
 export interface LatAndLong {
@@ -4677,41 +4664,47 @@ export enum MonochromeMode {
     Scaled = 1
 }
 
-// @internal
-export abstract class NativeAppRpcInterface extends RpcInterface {
-    acquireNewBriefcaseId(_iModelId: GuidString): Promise<number>;
-    authGetAccessToken(): Promise<string>;
-    authInitialize(_issuer: string, _config: any): Promise<void>;
-    authSignIn(): Promise<void>;
-    authSignOut(): Promise<void>;
-    cancelElementGraphicsRequests(_rpcProps: IModelRpcProps, _requestIds: string[]): Promise<void>;
-    cancelTileContentRequests(_iModelToken: IModelRpcProps, _contentIds: TileTreeContentIds[]): Promise<void>;
-    checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
-    closeBriefcase(_key: string): Promise<void>;
-    deleteBriefcaseFiles(_fileName: string): Promise<void>;
-    downloadBriefcase(_requestProps: RequestNewBriefcaseProps, _reportProgress: boolean): Promise<LocalBriefcaseProps>;
-    getBriefcaseFileName(_props: BriefcaseProps): Promise<string>;
-    getCachedBriefcases(_iModelId?: GuidString): Promise<LocalBriefcaseProps[]>;
-    static getClient(): NativeAppRpcInterface;
-    getConfig(): Promise<any>;
-    static readonly interfaceName = "NativeAppRpcInterface";
-    static interfaceVersion: string;
+// @internal (undocumented)
+export enum NativeAppEnum {
     // (undocumented)
-    isInteractiveEditingSupported(_tokenProps: IModelRpcProps): Promise<boolean>;
-    log(_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any): Promise<void>;
-    open(_args: OpenBriefcaseProps): Promise<IModelConnectionProps>;
-    overrideInternetConnectivity(_overriddenBy: OverriddenBy, _status?: InternetConnectivityStatus): Promise<void>;
-    requestCancelDownloadBriefcase(_fileName: string): Promise<boolean>;
-    storageGet(_storageId: string, _key: string): Promise<StorageValue | undefined>;
-    storageKeys(_storageId: string): Promise<string[]>;
-    storageMgrClose(_storageId: string, _deleteIt: boolean): Promise<void>;
-    storageMgrNames(): Promise<string[]>;
-    storageMgrOpen(_storageId: string): Promise<string>;
-    storageRemove(_storageId: string, _key: string): Promise<void>;
-    storageRemoveAll(_storageId: string): Promise<void>;
-    storageSet(_storageId: string, _key: string, _value: StorageValue): Promise<void>;
+    Channel = "nativeApp",
     // (undocumented)
-    toggleInteractiveEditingSession(_tokenProps: IModelRpcProps, _startSession: boolean): Promise<boolean>;
+    Version = "1.0.0"
+}
+
+// @alpha
+export interface NativeAppIpc extends IpcInterface {
+    acquireNewBriefcaseId: (_iModelId: GuidString) => Promise<number>;
+    authGetAccessToken: () => Promise<string>;
+    authInitialize: (_issuer: string, _config: any) => Promise<void>;
+    authSignIn: () => Promise<void>;
+    authSignOut: () => Promise<void>;
+    cancelElementGraphicsRequests: (_rpcProps: IModelRpcProps, _requestIds: string[]) => Promise<void>;
+    // @internal
+    cancelTileContentRequests: (_iModelToken: IModelRpcProps, _contentIds: TileTreeContentIds[]) => Promise<void>;
+    checkInternetConnectivity: () => Promise<InternetConnectivityStatus>;
+    closeBriefcase: (_key: string) => Promise<void>;
+    deleteBriefcaseFiles: (_fileName: string) => Promise<void>;
+    downloadBriefcase: (_requestProps: RequestNewBriefcaseProps, _reportProgress: boolean) => Promise<LocalBriefcaseProps>;
+    getBriefcaseFileName: (_props: BriefcaseProps) => Promise<string>;
+    getCachedBriefcases: (_iModelId?: GuidString) => Promise<LocalBriefcaseProps[]>;
+    getConfig: () => Promise<any>;
+    // @internal (undocumented)
+    isInteractiveEditingSupported: (_tokenProps: IModelRpcProps) => Promise<boolean>;
+    log: (_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any) => Promise<void>;
+    open: (_args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
+    overrideInternetConnectivity: (_overriddenBy: OverriddenBy, _status: InternetConnectivityStatus) => Promise<void>;
+    requestCancelDownloadBriefcase: (_fileName: string) => Promise<boolean>;
+    storageGet: (_storageId: string, _key: string) => Promise<StorageValue | undefined>;
+    storageKeys: (_storageId: string) => Promise<string[]>;
+    storageMgrClose: (_storageId: string, _deleteOnClose: boolean) => Promise<void>;
+    storageMgrNames: () => Promise<string[]>;
+    storageMgrOpen: (_storageId: string) => Promise<string>;
+    storageRemove: (_storageId: string, _key: string) => Promise<void>;
+    storageRemoveAll: (_storageId: string) => Promise<void>;
+    storageSet: (_storageId: string, _key: string, _value: StorageValue) => Promise<void>;
+    // @internal (undocumented)
+    toggleInteractiveEditingSession: (_tokenProps: IModelRpcProps, _startSession: boolean) => Promise<boolean>;
 }
 
 // @public
@@ -4998,7 +4991,7 @@ export interface OrbitGtBlobProps {
     sasToken: string;
 }
 
-// @internal
+// @alpha
 export enum OverriddenBy {
     // (undocumented)
     Browser = 0,
@@ -5631,6 +5624,9 @@ export interface RelatedElementProps {
 // @public
 export interface RelationshipProps extends EntityProps, SourceAndTarget {
 }
+
+// @alpha
+export type RemoveFunction = () => void;
 
 // @beta
 export abstract class RenderMaterial {
@@ -6899,7 +6895,7 @@ export abstract class StandaloneIModelRpcInterface extends RpcInterface {
 // @beta
 export type StandaloneOpenOptions = OpenDbKey;
 
-// @internal
+// @alpha
 export type StorageValue = string | number | boolean | null | Uint8Array;
 
 // @public

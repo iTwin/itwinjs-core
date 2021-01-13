@@ -6,7 +6,7 @@ import * as electron from "electron";
 import * as path from "path";
 import { RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import { assert } from "@bentley/bentleyjs-core";
-import { ElectronBackendOptions, initializeElectronBackend } from "../../../../../core/electron-manager/lib/ElectronBackend";
+import { ElectronBackendOptions, ElectronBackend } from "@bentley/electron-manager/lib/ElectronBackend";
 
 /**
  * Initializes Electron backend
@@ -21,7 +21,7 @@ export default async function initialize(rpcInterfaces: RpcInterfaceDefinition[]
     developmentServer: process.env.NODE_ENV === "development",
   };
 
-  const manager = initializeElectronBackend(opts);
+  const manager = ElectronBackend.initialize(opts);
 
   // Handle custom keyboard shortcuts
   electron.app.on("web-contents-created", (_e, wc) => {

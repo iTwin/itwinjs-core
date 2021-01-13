@@ -7,11 +7,11 @@ import * as path from "path";
 import { assert } from "@bentley/bentleyjs-core";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { getRpcInterfaces, initializeBackend } from "./backend";
-import { initializeElectronBackend } from "../../../../core/electron-manager/lib/ElectronBackend";
+import { ElectronBackend } from "@bentley/electron-manager/lib/ElectronBackend";
 
 const dptaElectronMain = async () => {
 
-  const manager = initializeElectronBackend({ webResourcesPath: path.join(__dirname, "..", "..", "build"), rpcInterfaces: getRpcInterfaces() });
+  const manager = ElectronBackend.initialize({ webResourcesPath: path.join(__dirname, "..", "..", "build"), rpcInterfaces: getRpcInterfaces() });
 
   // Start the backend
   await initializeBackend();

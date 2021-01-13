@@ -20,6 +20,7 @@ import { Presentation } from "@bentley/presentation-frontend";
 import { getClassName } from "@bentley/ui-abstract";
 import { BeDragDropContext } from "@bentley/ui-components";
 import { LocalUiSettings, UiSettings } from "@bentley/ui-core";
+import { ElectronFrontend } from "@bentley/electron-manager/lib/ElectronFrontend";
 import {
   ActionsUnion, AppNotificationManager, ConfigurableUiContent, createAction, DeepReadonly, DragDropLayerRenderer,
   FrameworkAccuDraw, FrameworkReducer, FrameworkRootState, FrameworkUiAdmin, FrameworkVersion,
@@ -64,7 +65,6 @@ import { ToolWithDynamicSettings } from "./tools/ToolWithDynamicSettings";
 import { UiProviderTool } from "./tools/UiProviderTool";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import { FrontendApplicationInsightsClient } from "@bentley/frontend-application-insights-client";
-import { initializeElectronFrontend } from "@bentley/electron-manager/lib/ElectronFrontend";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -733,7 +733,7 @@ async function main() {
 
   const rpcInterfaces = getSupportedRpcs();
   if (isElectronRenderer) {
-    initializeElectronFrontend({ rpcInterfaces });
+    ElectronFrontend.initialize({ rpcInterfaces });
   } else if (MobileRpcConfiguration.isMobileFrontend) {
     MobileRpcManager.initializeClient(rpcInterfaces);
   } else if (process.env.imjs_gp_backend) {

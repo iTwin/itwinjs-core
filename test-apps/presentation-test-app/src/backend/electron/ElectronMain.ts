@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { RpcInterfaceDefinition } from "@bentley/imodeljs-common";
-import { ElectronBackendOptions, initializeElectronBackend } from "../../../../../core/electron-manager/lib/ElectronBackend";
+import { ElectronBackendOptions, ElectronBackend } from "@bentley/electron-manager/lib/ElectronBackend";
 
 /**
  * Initializes Electron backend
@@ -20,7 +20,7 @@ export default async function initialize(rpcInterfaces: RpcInterfaceDefinition[]
     developmentServer: process.env.NODE_ENV === "development",
   };
 
-  const manager = initializeElectronBackend(opts);
+  const manager = ElectronBackend.initialize(opts);
   await manager.openMainWindow();
 
   // __PUBLISH_EXTRACT_END__

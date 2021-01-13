@@ -24,7 +24,7 @@ import { setTitle } from "./Title";
 import { showStatus } from "./Utils";
 import { Dock } from "./Window";
 import { openStandaloneIModel } from "./openStandaloneIModel";
-import { initializeElectronFrontend } from "@bentley/electron-manager/lib/ElectronFrontend";
+import { ElectronFrontend } from "@bentley/electron-manager/lib/ElectronFrontend";
 
 const configuration: DtaConfiguration = {};
 
@@ -216,7 +216,7 @@ const dtaFrontendMain = async () => {
   ];
 
   if (isElectronRenderer) {
-    initializeElectronFrontend({ rpcInterfaces });
+    ElectronFrontend.initialize({ rpcInterfaces });
   } else if (MobileRpcConfiguration.isMobileFrontend) {
     MobileRpcManager.initializeClient(rpcInterfaces);
   } else {

@@ -11,7 +11,7 @@ import { ClientRequestContext, Config, GuidString, Logger, LogLevel } from "@ben
 import {
   BackendIpc,
   BriefcaseProps, IModelConnectionProps, IModelError, IModelRpcProps, InternetConnectivityStatus, IpcHandler, LocalBriefcaseProps,
-  MobileAuthorizationClientConfiguration, nativeAppChannel, NativeAppIpc, nativeAppIpcVersion, OpenBriefcaseProps, OverriddenBy,
+  MobileAuthorizationClientConfiguration, NativeAppEnum, NativeAppIpc, OpenBriefcaseProps, OverriddenBy,
   RequestNewBriefcaseProps, StorageValue, TileTreeContentIds,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
@@ -30,8 +30,8 @@ import { cancelTileContentRequests } from "../rpc-impl/IModelTileRpcImpl";
  */
 export class NativeAppImpl extends IpcHandler implements NativeAppIpc {
 
-  public get channelName() { return nativeAppChannel; }
-  public async getVersion() { return nativeAppIpcVersion; }
+  public get channelName() { return NativeAppEnum.Channel; }
+  public async getVersion() { return NativeAppEnum.Version; }
   public async log(_timestamp: number, level: LogLevel, category: string, message: string, metaData?: any): Promise<void> {
     Logger.logRaw(level, category, message, () => metaData);
   }

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 // Note: only import types! Does not create a `require("electron")` in JavaScript. That's important so this file can
-// be imported by apps that sometimes use Electron and sometimes not. Call to `initializeElectronBackend`
+// be imported by apps that sometimes use Electron and sometimes not. Call to `ElectronBackend.initialize`
 // will do the necessary `require("electron")`
 import { BrowserWindow, BrowserWindowConstructorOptions, IpcMain } from "electron";
 
@@ -98,11 +98,7 @@ export class ElectronBackend implements IpcSocketBackend {
   /** The "main" BrowserWindow for this application. */
   public get mainWindow() { return this._mainWindow; }
 
-  /**
-   * Npte: Should only be called by initializeDtaBackend below
-   * @internal
-   * */
-  constructor(opts?: ElectronBackendOptions) {
+  private constructor(opts?: ElectronBackendOptions) {
     this._ipcMain = require("electron").ipcMain;
     this._developmentServer = opts?.developmentServer ?? false;
     const frontendPort = opts?.frontendPort ?? 3000;
@@ -180,19 +176,18 @@ export class ElectronBackend implements IpcSocketBackend {
     this._ipcMain.handle(channel, listener);
     return () => this._ipcMain.removeHandler(channel);
   }
+
+  public static initialize(opts?: ElectronBackendOptions) {
+    if (!isElectronMain)
+      throw new Error("Not running under Electron");
+
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const electron = require("electron");
+    electron.app.allowRendererProcessReuse = true; // see https://www.electronjs.org/docs/api/app#appallowrendererprocessreuse
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    if (!electron.app.isReady)
+      electron.protocol.registerSchemesAsPrivileged([{ scheme: "electron", privileges: { standard: true, secure: true } }]);
+
+    return new ElectronBackend(opts);
+  };
 }
-
-/** @alpha */
-export const initializeElectronBackend = (opts?: ElectronBackendOptions) => {
-  if (!isElectronMain)
-    throw new Error("Not running under Electron");
-
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const electron = require("electron");
-  electron.app.allowRendererProcessReuse = true; // see https://www.electronjs.org/docs/api/app#appallowrendererprocessreuse
-  // eslint-disable-next-line @typescript-eslint/unbound-method
-  if (!electron.app.isReady)
-    electron.protocol.registerSchemesAsPrivileged([{ scheme: "electron", privileges: { standard: true, secure: true } }]);
-
-  return new ElectronBackend(opts);
-};

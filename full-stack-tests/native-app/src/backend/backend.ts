@@ -9,6 +9,7 @@ import { IModelJsExpressServer } from "@bentley/express-server";
 import { IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
 import { BackendLoggerCategory, IModelHostConfiguration, NativeAppBackend, NativeLoggerCategory } from "@bentley/imodeljs-backend";
 import { BentleyCloudRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
+import { ElectronBackend } from "@bentley/electron-manager/lib/ElectronBackend";
 import { ITwinClientLoggerCategory } from "@bentley/itwin-client";
 // Sets up certa to allow a method on the frontend to get an access token
 import "@bentley/oidc-signin-tool/lib/certa/certaBackend";
@@ -16,7 +17,6 @@ import * as path from "path";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
 import "./RpcImpl";
-import { initializeElectronBackend } from "../../../../core/electron-manager/lib/ElectronBackend";
 
 /* eslint-disable no-console */
 
@@ -48,7 +48,7 @@ async function init() {
   await CloudEnv.initialize();
 
   if (isElectronMain) {
-    initializeElectronBackend({ rpcInterfaces });
+    ElectronBackend.initialize({ rpcInterfaces });
   } else {
     const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "full-stack-test", version: "v1.0" } }, rpcInterfaces);
 

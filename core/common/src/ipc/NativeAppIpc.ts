@@ -11,12 +11,15 @@ import { BriefcaseProps, LocalBriefcaseProps, OpenBriefcaseProps, RequestNewBrie
 import { IModelConnectionProps, IModelRpcProps } from "../IModel";
 import { IpcInterface } from "./IpcSocket";
 
-export const nativeAppChannel = "nativeApp";
-export const nativeAppIpcVersion = "1.0.0";
+/** @internal */
+export enum NativeAppEnum {
+  Channel = "nativeApp",
+  Version = "1.0.0",
+}
 
 /**
  * Type of value for storage values
- * @internal
+ * @alpha
  */
 export type StorageValue = string | number | boolean | null | Uint8Array;
 
@@ -100,6 +103,7 @@ export interface NativeAppIpc extends IpcInterface {
   /** Cancels currently pending or active generation of tile content.
    * @param _iModelToken Identifies the iModel
    * @param _contentIds A list of content requests to be canceled, grouped by tile tree Id.
+   * @internal
    */
   cancelTileContentRequests: (_iModelToken: IModelRpcProps, _contentIds: TileTreeContentIds[]) => Promise<void>;
 
@@ -122,7 +126,7 @@ export interface NativeAppIpc extends IpcInterface {
   /**
    * Cancels the previously requested download of a briefcase
    * @param _key Key to locate the briefcase in the disk cache
-   * @return true if the cancel request was acknowledged. false otherwise
+   * @note returns true if the cancel request was acknowledged. false otherwise
    */
   requestCancelDownloadBriefcase: (_fileName: string) => Promise<boolean>;
 
@@ -164,7 +168,7 @@ export interface NativeAppIpc extends IpcInterface {
 
   /**
    * Get the names of available storages
-   * @return list of storage names
+   * @note returns list of storage names
    */
   storageMgrNames: () => Promise<string[]>;
 
@@ -172,7 +176,7 @@ export interface NativeAppIpc extends IpcInterface {
    * Get the value associated with a key.
    * @param _storageId string identifier of storage
    * @param _key key identifier for value
-   * @return key value or undefined
+   * @note returns key value or undefined
    */
   storageGet: (_storageId: string, _key: string) => Promise<StorageValue | undefined>;
 
@@ -194,7 +198,7 @@ export interface NativeAppIpc extends IpcInterface {
   /**
    * Get list of keys in a storage.
    * @param _storageId string identifier of storage
-   * @return list of storage ids
+   * @note returns list of storage ids
    */
   storageKeys: (_storageId: string) => Promise<string[]>;
 
@@ -216,7 +220,7 @@ export interface NativeAppIpc extends IpcInterface {
 
   /**
    * Get access token and perform silent refresh as needed
-   * @return OIDC token
+   * @note returns OIDC token
    */
   authGetAccessToken: () => Promise<string>;
 
@@ -227,6 +231,8 @@ export interface NativeAppIpc extends IpcInterface {
    */
   authInitialize: (_issuer: string, _config: any) => Promise<void>;
 
+  /** @internal */
   toggleInteractiveEditingSession: (_tokenProps: IModelRpcProps, _startSession: boolean) => Promise<boolean>;
+  /** @internal */
   isInteractiveEditingSupported: (_tokenProps: IModelRpcProps) => Promise<boolean>;
 }

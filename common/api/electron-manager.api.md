@@ -6,28 +6,53 @@
 
 import { BrowserWindow } from 'electron';
 import { BrowserWindowConstructorOptions } from 'electron';
+import { IpcHandler } from '@bentley/imodeljs-common';
+import { IpcListener } from '@bentley/imodeljs-common';
+import { IpcSocketBackend } from '@bentley/imodeljs-common';
+import { RemoveFunction } from '@bentley/imodeljs-common';
+import { RpcConfiguration } from '@bentley/imodeljs-common';
+import { RpcInterfaceDefinition } from '@bentley/imodeljs-common';
+
+// @beta
+export class ElectronBackend implements IpcSocketBackend {
+    // (undocumented)
+    readonly appIconPath: string;
+    // (undocumented)
+    protected readonly _electronFrontend = "electron://frontend/";
+    // (undocumented)
+    readonly frontendURL: string;
+    // @internal (undocumented)
+    handle(channel: string, listener: (evt: any, ...args: any[]) => Promise<any>): RemoveFunction;
+    // (undocumented)
+    static initialize(opts?: ElectronBackendOptions): ElectronBackend;
+    get mainWindow(): BrowserWindow | undefined;
+    openMainWindow(windowOptions?: BrowserWindowConstructorOptions): Promise<void>;
+    // @internal (undocumented)
+    receive(channel: string, listener: IpcListener): RemoveFunction;
+    // (undocumented)
+    readonly rpcConfig: RpcConfiguration;
+    // @internal (undocumented)
+    send(channel: string, ...args: any[]): void;
+    // (undocumented)
+    readonly webResourcesPath: string;
+}
 
 // @beta (undocumented)
-export interface ElectronManagerOptions {
+export interface ElectronBackendOptions {
+    // (undocumented)
+    developmentServer?: boolean;
+    // (undocumented)
+    frontendPort?: number;
     // (undocumented)
     frontendURL?: string;
     // (undocumented)
     iconName?: string;
     // (undocumented)
-    webResourcesPath: string;
-}
-
-// @beta
-export class IModelJsElectronManager extends ElectronManager {
+    ipcHandlers?: typeof IpcHandler[];
     // (undocumented)
-    initialize(windowOptions?: BrowserWindowConstructorOptions): Promise<void>;
-    }
-
-// @beta
-export class WebpackDevServerElectronManager extends ElectronManager {
-    constructor(opts: ElectronManagerOptions, frontendPort?: number);
+    rpcInterfaces?: RpcInterfaceDefinition[];
     // (undocumented)
-    initialize(windowOptions?: BrowserWindowConstructorOptions): Promise<void>;
+    webResourcesPath?: string;
 }
 
 

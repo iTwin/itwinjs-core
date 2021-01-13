@@ -12,19 +12,23 @@ export interface ElectronFrontendOptions {
   rpcInterfaces?: RpcInterfaceDefinition[];
 }
 
-class ElectronFrontendIpc implements IpcSocketFrontend {
+/** @alpha */
+export class ElectronFrontend implements IpcSocketFrontend {
   private _api: ITwinElectronApi;
+  /** @internal */
   public receive(channelName: string, listener: IpcListener) {
     this._api.addListener(channelName, listener);
     return () => this._api.removeListener(channelName, listener);
   };
+  /** @internal */
   public send(channel: string, ...data: any[]) {
     this._api.send(channel, ...data);
   }
+  /** @internal */
   public async invoke(channel: string, ...args: any[]) {
     return this._api.invoke(channel, ...args);
   };
-  public constructor(opts?: ElectronFrontendOptions) {
+  private constructor(opts?: ElectronFrontendOptions) {
     // use the methods on window.itwinjs exposed by ElectronPreload.ts, or ipcRenderer directly if running with nodeIntegration=true (**only** for tests).
     // Note that `require("electron")` doesn't work with nodeIntegration=false - that's what it stops
     this._api = (typeof window === "undefined" ? undefined : (window as any).itwinjs as ITwinElectronApi | undefined) ?? require("electron").ipcRenderer;
@@ -32,12 +36,10 @@ class ElectronFrontendIpc implements IpcSocketFrontend {
     ElectronRpcManager.initializeFrontend(this, opts?.rpcInterfaces);
   }
 
-};
+  public static initialize(opts?: ElectronFrontendOptions): void {
+    if (!isElectronRenderer)
+      throw new Error("Not running under Electron");
 
-/** @alpha */
-export const initializeElectronFrontend = (opts?: ElectronFrontendOptions): void => {
-  if (!isElectronRenderer)
-    throw new Error("Not running under Electron");
-
-  new ElectronFrontendIpc(opts);
+    new ElectronFrontend(opts);
+  };
 };

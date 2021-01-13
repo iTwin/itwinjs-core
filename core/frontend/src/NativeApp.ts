@@ -8,8 +8,8 @@
 
 import { BeEvent, Config, GuidString, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseDownloader, BriefcaseProps, Events, FrontendIpc, IModelError, IModelVersion, InternetConnectivityStatus, LocalBriefcaseProps, nativeAppChannel,
-  NativeAppIpc, nativeAppIpcVersion, OpenBriefcaseProps, OverriddenBy, RequestNewBriefcaseProps, StorageValue, SyncMode,
+  BriefcaseDownloader, BriefcaseProps, Events, FrontendIpc, IModelError, IModelVersion, InternetConnectivityStatus, LocalBriefcaseProps,
+  NativeAppEnum, NativeAppIpc, OpenBriefcaseProps, OverriddenBy, RequestNewBriefcaseProps, StorageValue, SyncMode,
 } from "@bentley/imodeljs-common";
 import { ProgressCallback, RequestGlobalOptions } from "@bentley/itwin-client";
 import { EventSource } from "./EventSource";
@@ -35,7 +35,7 @@ export interface DownloadBriefcaseOptions {
  */
 export class NativeApp {
   public static callBackend<T extends keyof NativeAppIpc>(methodName: T, ...args: Parameters<NativeAppIpc[T]>): ReturnType<NativeAppIpc[T]> {
-    return FrontendIpc.callBackend(nativeAppChannel, methodName, ...args) as ReturnType<NativeAppIpc[T]>;
+    return FrontendIpc.callBackend(NativeAppEnum.Channel, methodName, ...args) as ReturnType<NativeAppIpc[T]>;
   }
 
   private static _storages = new Map<string, Storage>();
@@ -79,8 +79,8 @@ export class NativeApp {
   public static async startup(opts?: IModelAppOptions) {
     Logger.logInfo(FrontendLoggerCategory.NativeApp, "Startup");
     const ipcVersion = await NativeApp.callBackend("getVersion");
-    if (ipcVersion !== nativeAppIpcVersion) {
-      throw new IModelError(IModelStatus.BadArg, `NativeAppIpc version wrong: backend(${ipcVersion}) vs. frontend(${nativeAppIpcVersion})`);
+    if (ipcVersion !== NativeAppEnum.Version) {
+      throw new IModelError(IModelStatus.BadArg, `NativeAppIpc version wrong: backend(${ipcVersion}) vs. frontend(${NativeAppEnum.Version})`);
     }
     await IModelApp.startup(opts);
     const backendConfig = await this.callBackend("getConfig");
@@ -239,8 +239,9 @@ export class NativeApp {
 }
 
 /**
- * Storage allow [[NativeApp]] to data to disk. This data is considered cached and therefore its not ensured to exist permanently
- * @internal
+ *  A local disk-based cache for key value pairs available for NativeApps.
+ * @note This should be used only for local caching, since its not guaranteed to exist permanently.
+ * @alpha
  */
 export class Storage {
   constructor(public readonly id: string, private _isOpen: boolean = true) { }

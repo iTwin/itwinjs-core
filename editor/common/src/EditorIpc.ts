@@ -8,8 +8,11 @@
 
 import { IpcInterface } from "@bentley/imodeljs-common";
 
-export const editorAppChannel = "editor";
-export const editorAppIpcVersion = "1.0.0";
+/** @internal */
+export enum EditorAppEnum {
+  Channel = "editor",
+  Version = "1.0.0",
+}
 
 /** @alpha */
 export interface EditorAppIpc extends IpcInterface {

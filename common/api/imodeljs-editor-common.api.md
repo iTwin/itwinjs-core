@@ -4,51 +4,32 @@
 
 ```ts
 
-// @alpha (undocumented)
-export type CommandError = "CommandNotFound" | "Exception" | "MethodNotFound" | "NoActiveCommand";
+import { IpcInterface } from '@bentley/imodeljs-common';
 
 // @alpha (undocumented)
-export interface CommandMethodProps<T> {
+export interface EditCommandIpc {
     // (undocumented)
-    args?: T;
-    // (undocumented)
-    name: string;
+    ping: () => Promise<{
+        commandId: string;
+        version: string;
+        [propName: string]: any;
+    }>;
 }
 
-// @alpha
-export type CommandResult<T> = {
-    result?: T;
-    error?: never;
-} | {
-    error: CommandError;
-    details?: any;
-    result?: never;
-};
-
-// @alpha (undocumented)
-export const editCommandApi: {
-    start: string;
-    call: string;
-};
-
-// @alpha (undocumented)
-export interface PingResult {
+// @internal (undocumented)
+export enum EditorAppEnum {
     // (undocumented)
-    [propName: string]: any;
+    Channel = "editor",
     // (undocumented)
-    commandId?: string;
-    // (undocumented)
-    version?: string;
+    Version = "1.0.0"
 }
 
 // @alpha (undocumented)
-export interface StartCommandProps<T> {
+export interface EditorAppIpc extends IpcInterface {
     // (undocumented)
-    args?: T;
+    callMethod: (name: string, ...args: any[]) => Promise<any>;
     // (undocumented)
-    commandId: string;
-    // (undocumented)
-    iModelKey: string;
+    startCommand: (commandId: string, iModelKey: string, ...args: any[]) => Promise<any>;
 }
 
 

@@ -26,7 +26,7 @@ import { ProjectShareClient, ProjectShareFile, ProjectShareFileQuery, ProjectSha
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { initializeIModelHub } from "./ConnectEnv";
 import { IModelApi } from "./IModelApi";
-import { initializeElectronFrontend } from "@bentley/electron-manager/lib/ElectronFrontend";
+import { ElectronFrontend } from "@bentley/electron-manager/lib/ElectronFrontend";
 
 let curRenderOpts: RenderSystem.Options = {}; // Keep track of the current render options (disabled webgl extensions and enableOptimizedSurfaceShaders flag)
 let curTileProps: TileAdmin.Props = {}; // Keep track of whether or not instancing has been enabled
@@ -1627,7 +1627,7 @@ window.onload = async () => {
 
   const rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
   if (isElectronRenderer) {
-    initializeElectronFrontend({ rpcInterfaces });
+    ElectronFrontend.initialize({ rpcInterfaces });
   } else if (MobileRpcConfiguration.isMobileFrontend) {
     MobileRpcManager.initializeClient(rpcInterfaces);
   } else {

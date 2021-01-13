@@ -17,7 +17,7 @@ import { rpcInterfaces } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
 import { EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
 import * as testCommands from "./TestEditCommands";
-import { initializeElectronBackend } from "@bentley/electron-manager/lib/ElectronBackend";
+import { ElectronBackend } from "@bentley/electron-manager/lib/ElectronBackend";
 
 /* eslint-disable no-console */
 
@@ -29,7 +29,7 @@ async function init() {
   await CloudEnv.initialize();
 
   if (isElectronMain) {
-    initializeElectronBackend({ rpcInterfaces });
+    ElectronBackend.initialize({ rpcInterfaces });
     EditCommandAdmin.registerModule(testCommands);
   } else {
     const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "full-stack-test", version: "v1.0" } }, rpcInterfaces);

@@ -5,9 +5,9 @@
 import { app, dialog, OpenDialogOptions } from "electron";
 import * as path from "path";
 import { assert } from "@bentley/bentleyjs-core";
-import { ElectronBackendOptions, initializeElectronBackend } from "@bentley/electron-manager/lib/ElectronBackend";
+import { ElectronBackend, ElectronBackendOptions } from "@bentley/electron-manager/lib/ElectronBackend";
 import { IpcHandler } from "@bentley/imodeljs-common";
-import { dtaChannel, DtaIpcInterface, dtaIpcVersion } from "../common/DtaIpcInterface";
+import { DtaEnum, DtaIpcInterface } from "../common/DtaIpcInterface";
 import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
 
 const getWindowSize = () => {
@@ -31,8 +31,8 @@ const getWindowSize = () => {
 };
 
 export class DtaIpcImpl extends IpcHandler implements DtaIpcInterface {
-  public get channelName() { return dtaChannel; }
-  public async getVersion() { return dtaIpcVersion; }
+  public get channelName() { return DtaEnum.Channel; }
+  public async getVersion() { return DtaEnum.Version; }
   public async openFile(options: OpenDialogOptions) {
     return dialog.showOpenDialog(options);
   }
@@ -51,7 +51,7 @@ const dtaElectronMain = async () => {
     developmentServer: process.env.NODE_ENV === "development",
   };
 
-  const manager = initializeElectronBackend(opts);
+  const manager = ElectronBackend.initialize(opts);
 
   await initializeDtaBackend();
 
