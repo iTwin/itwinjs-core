@@ -9,14 +9,13 @@ import * as moq from "typemoq";
 import produce from "immer";
 import { act, renderHook } from "@testing-library/react-hooks";
 import { Logger } from "@bentley/bentleyjs-core";
-import { StagePanelLocation } from "@bentley/ui-abstract";
 import { Size, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
 import { addFloatingWidget, addPanelWidget, addTab, createDraggedTabState, createNineZoneState, NineZone, NineZoneState, toolSettingsTabId } from "@bentley/ui-ninezone";
 import {
   ActiveFrontstageDefProvider, addPanelWidgets, addWidgets, expandWidget, FrontstageDef,
-  FrontstageManager, getPanelSide, getWidgetId, initializeNineZoneState, initializePanel, isFrontstageStateSettingResult,
-  ModalFrontstageComposer, packNineZoneState, restoreNineZoneState, setPanelSize, setWidgetState, showWidget, StagePanelDef, StagePanelZoneDef,
-  StagePanelZonesDef, UiSettingsProvider, useActiveModalFrontstageInfo, useFrontstageManager, useNineZoneDispatch, useNineZoneState,
+  FrontstageManager, getWidgetId, initializeNineZoneState, initializePanel, isFrontstageStateSettingResult, ModalFrontstageComposer,
+  packNineZoneState, restoreNineZoneState, setWidgetState, showWidget, StagePanelDef, StagePanelState, StagePanelZoneDef, StagePanelZonesDef,
+  UiSettingsProvider, useActiveModalFrontstageInfo, useFrontstageManager, useNineZoneDispatch, useNineZoneState,
   useSavedFrontstageState, useSaveFrontstageSettings, useSyncDefinitions, useUpdateNineZoneSize, WidgetDef, WidgetPanelsFrontstage, WidgetState, ZoneDef,
 } from "../../ui-framework";
 import TestUtils, { mount, storageMock, UiSettingsStub } from "../TestUtils";
@@ -403,33 +402,14 @@ describe("useSaveFrontstageSettings", () => {
 });
 
 describe("useFrontstageManager", () => {
-  it("should handle onPanelSizeChangedEvent", () => {
-    const frontstageDef = new FrontstageDef();
-    const nineZoneState = createNineZoneState();
-    frontstageDef.nineZoneState = nineZoneState;
-    renderHook(() => useFrontstageManager(frontstageDef));
-    const panelDef = new StagePanelDef();
-    panelDef.initializeFromProps({
-      resizable: true,
-    }, StagePanelLocation.Left);
-    FrontstageManager.onPanelSizeChangedEvent.emit({
-      panelDef,
-      size: 200,
-    });
-    Number(200).should.eq(frontstageDef.nineZoneState.panels.left.size);
-  });
-
-  it("should not handle onPanelSizeChangedEvent when nineZoneState is unset", () => {
+  it("should not handle onWidgetStateChangedEvent when nineZoneState is unset", () => {
     const frontstageDef = new FrontstageDef();
     frontstageDef.nineZoneState = undefined;
     renderHook(() => useFrontstageManager(frontstageDef));
-    const panelDef = new StagePanelDef();
-    panelDef.initializeFromProps({
-      resizable: true,
-    }, StagePanelLocation.Left);
-    FrontstageManager.onPanelSizeChangedEvent.emit({
-      panelDef,
-      size: 200,
+    const widgetDef = new WidgetDef({});
+    FrontstageManager.onWidgetStateChangedEvent.emit({
+      widgetDef,
+      widgetState: WidgetState.Open,
     });
     (frontstageDef.nineZoneState === undefined).should.true;
   });
@@ -589,6 +569,39 @@ describe("useSyncDefinitions", () => {
       frontstageDef.nineZoneState = nineZone;
     });
     spy.calledOnceWithExactly(WidgetState.Closed).should.true;
+  });
+
+  it("should set StagePanelDef size", () => {
+    const frontstageDef = new FrontstageDef();
+    const rightPanel = new StagePanelDef();
+    sinon.stub(frontstageDef, "rightPanel").get(() => rightPanel);
+    const spy = sinon.spy(rightPanel, "size", ["set"]);
+    renderHook(() => useSyncDefinitions(frontstageDef));
+    act(() => {
+      let nineZone = createNineZoneState();
+      nineZone = produce(nineZone, (draft) => {
+        draft.panels.right.size = 234;
+      });
+      frontstageDef.nineZoneState = nineZone;
+    });
+    sinon.assert.calledOnceWithExactly(spy.set, 234);
+  });
+
+  it("should set StagePanelState.Off", () => {
+    const frontstageDef = new FrontstageDef();
+    const rightPanel = new StagePanelDef();
+    const spy = sinon.spy();
+    sinon.stub(rightPanel, "panelState").get(() => StagePanelState.Off).set(spy);
+    sinon.stub(frontstageDef, "rightPanel").get(() => rightPanel);
+    renderHook(() => useSyncDefinitions(frontstageDef));
+    act(() => {
+      let nineZone = createNineZoneState();
+      nineZone = produce(nineZone, (draft) => {
+        draft.panels.right.collapsed = true;
+      });
+      frontstageDef.nineZoneState = nineZone;
+    });
+    sinon.assert.calledOnceWithExactly(spy, StagePanelState.Off);
   });
 
   it("should set floating widget state to Open", () => {
@@ -792,43 +805,6 @@ describe("getWidgetId", () => {
 describe("isFrontstageStateSettingResult", () => {
   it("isFrontstageStateSettingResult", () => {
     isFrontstageStateSettingResult({ status: UiSettingsStatus.UnknownError }).should.false;
-  });
-});
-
-describe("getPanelSide", () => {
-  it("should return 'left'", () => {
-    getPanelSide(StagePanelLocation.Left).should.eq("left");
-  });
-
-  it("should return 'right'", () => {
-    getPanelSide(StagePanelLocation.Right).should.eq("right");
-  });
-
-  it("should return 'bottom'", () => {
-    getPanelSide(StagePanelLocation.Bottom).should.eq("bottom");
-  });
-
-  it("should return 'bottom'", () => {
-    getPanelSide(StagePanelLocation.BottomMost).should.eq("bottom");
-  });
-
-  it("should return 'top'", () => {
-    getPanelSide(StagePanelLocation.Top).should.eq("top");
-  });
-
-  it("should return 'top'", () => {
-    getPanelSide(StagePanelLocation.TopMost).should.eq("top");
-  });
-});
-
-describe("setPanelSize", () => {
-  it("should reset size", () => {
-    let nineZone = createNineZoneState();
-    nineZone = produce(nineZone, (draft) => {
-      draft.panels.left.size = 200;
-    });
-    const sut = setPanelSize(nineZone, "left", undefined);
-    (sut.panels.left.size === undefined).should.true;
   });
 });
 
