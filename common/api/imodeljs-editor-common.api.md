@@ -16,20 +16,20 @@ export interface EditCommandIpc {
     }>;
 }
 
-// @internal (undocumented)
-export enum EditorAppEnum {
-    // (undocumented)
-    Channel = "editor",
-    // (undocumented)
-    Version = "1.0.0"
-}
-
 // @alpha (undocumented)
-export interface EditorAppIpc extends IpcInterface {
+export interface EditorIpc extends IpcInterface {
     // (undocumented)
     callMethod: (name: string, ...args: any[]) => Promise<any>;
     // (undocumented)
     startCommand: (commandId: string, iModelKey: string, ...args: any[]) => Promise<any>;
+}
+
+// @internal (undocumented)
+export enum EditorIpcKey {
+    // (undocumented)
+    Channel = "editor",
+    // (undocumented)
+    Version = "1.0.0"
 }
 
 

@@ -9,17 +9,21 @@ import { ElectronRpcManager } from "./ElectronRpcManager";
 
 /** @alpha */
 export interface ElectronFrontendOptions {
+  /** A list of RPC interfaces to register */
   rpcInterfaces?: RpcInterfaceDefinition[];
 }
 
-/** @alpha */
+/**
+ * Frontend Ipc and Rpc support for Electron apps.
+ * @alpha
+ */
 export class ElectronFrontend implements IpcSocketFrontend {
   private _api: ITwinElectronApi;
   /** @internal */
   public receive(channelName: string, listener: IpcListener) {
     this._api.addListener(channelName, listener);
     return () => this._api.removeListener(channelName, listener);
-  };
+  }
   /** @internal */
   public send(channel: string, ...data: any[]) {
     this._api.send(channel, ...data);
@@ -27,7 +31,7 @@ export class ElectronFrontend implements IpcSocketFrontend {
   /** @internal */
   public async invoke(channel: string, ...args: any[]) {
     return this._api.invoke(channel, ...args);
-  };
+  }
   private constructor(opts?: ElectronFrontendOptions) {
     // use the methods on window.itwinjs exposed by ElectronPreload.ts, or ipcRenderer directly if running with nodeIntegration=true (**only** for tests).
     // Note that `require("electron")` doesn't work with nodeIntegration=false - that's what it stops
@@ -36,10 +40,17 @@ export class ElectronFrontend implements IpcSocketFrontend {
     ElectronRpcManager.initializeFrontend(this, opts?.rpcInterfaces);
   }
 
-  public static initialize(opts?: ElectronFrontendOptions): void {
+  /**
+   * Initialize the frontend IPC/RPC of an Electron application.
+   * Call this method early in your initialization of the frontend module loaded from your call to [[ElectronBackend.openMainWindow]], before you
+   * call [IModelApp.startup]($frontend).
+   * @param opts Options for your ElectronFrontend
+   * @note This method must (only) be called from the frontend of an Electron app (i.e. when [isElectronRenderer]($bentley) returns `true`).
+   */
+  public static initialize(opts?: ElectronFrontendOptions) {
     if (!isElectronRenderer)
       throw new Error("Not running under Electron");
 
-    new ElectronFrontend(opts);
+    return new ElectronFrontend(opts);
   };
 };

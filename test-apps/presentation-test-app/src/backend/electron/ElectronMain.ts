@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
+import { ElectronBackend, ElectronBackendOptions } from "@bentley/electron-manager/lib/ElectronBackend";
 import { RpcInterfaceDefinition } from "@bentley/imodeljs-common";
-import { ElectronBackendOptions, ElectronBackend } from "@bentley/electron-manager/lib/ElectronBackend";
 
 /**
  * Initializes Electron backend

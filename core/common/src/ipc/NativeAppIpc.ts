@@ -12,7 +12,7 @@ import { IModelConnectionProps, IModelRpcProps } from "../IModel";
 import { IpcInterface } from "./IpcSocket";
 
 /** @internal */
-export enum NativeAppEnum {
+export enum NativeAppIpcKey {
   Channel = "nativeApp",
   Version = "1.0.0",
 }

@@ -1,5 +1,5 @@
 sep=;
 Release Tag;API Item
 alpha;EditCommandIpc
-internal;EditorAppEnum
-alpha;EditorAppIpc 
+alpha;EditorIpc 
+internal;EditorIpcKey

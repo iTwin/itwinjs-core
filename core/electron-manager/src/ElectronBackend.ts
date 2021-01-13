@@ -15,17 +15,27 @@ import { BackendIpc, IpcHandler, IpcListener, IpcSocketBackend, RemoveFunction, 
 import { DesktopAuthorizationClientIpc } from "./DesktopAuthorizationClientIpc";
 import { ElectronRpcConfiguration, ElectronRpcManager } from "./ElectronRpcManager";
 
-// cSpell:ignore signin devserver webcontents
+// cSpell:ignore signin devserver webcontents copyfile
 
-/** @beta */
+/**
+ * Options for  [[ElectronBackend.initialize]]
+ * @beta
+ */
 export interface ElectronBackendOptions {
+  /** the path to find web resources  */
   webResourcesPath?: string;
+  /** filename for the app's icon, relative to [[webResourcesPath]] */
   iconName?: string;
+  /** name of frontend url to open.  */
   frontendURL?: string;
-  frontendPort?: number;
+  /** use a development server rather than the "electron" protocol for loading frontend (see https://www.electronjs.org/docs/api/protocol) */
   developmentServer?: boolean;
+  /** port number for development server. Default is 3000 */
+  frontendPort?: number;
+  /** list of RPC interface definitions to register */
   rpcInterfaces?: RpcInterfaceDefinition[];
-  ipcHandlers?: typeof IpcHandler[];
+  /** list of [IpcHandler]($common) classes to register */
+  ipcHandlers?: (typeof IpcHandler)[];
 }
 
 /**
@@ -36,12 +46,15 @@ export class ElectronBackend implements IpcSocketBackend {
   private _mainWindow?: BrowserWindow;
   private _developmentServer: boolean;
   private _ipcMain: IpcMain;
+  private _app: Electron.App;
   protected readonly _electronFrontend = "electron://frontend/";
   public readonly webResourcesPath: string;
   public readonly appIconPath: string;
   public readonly frontendURL: string;
   public readonly rpcConfig: RpcConfiguration;
 
+  public get ipcMain() { return this._ipcMain; }
+  public get app() { return this._app; }
   /**
    * Converts an "electron://frontend/" URL to an absolute file path.
    *
@@ -100,6 +113,7 @@ export class ElectronBackend implements IpcSocketBackend {
 
   private constructor(opts?: ElectronBackendOptions) {
     this._ipcMain = require("electron").ipcMain;
+    this._app = require("electron").app;
     this._developmentServer = opts?.developmentServer ?? false;
     const frontendPort = opts?.frontendPort ?? 3000;
     this.webResourcesPath = opts?.webResourcesPath ?? "";
@@ -111,17 +125,11 @@ export class ElectronBackend implements IpcSocketBackend {
   }
 
   /**
-   * wait for the app to be "ready", and then initialize the application by:
-   *   - Creating the main BrowserWindow.
-   *   - Opening the frontend in the main BrowserWindow.
-   *   - Defining some platform-standard window behavior.
-   *      - Basically, closing all windows should quit the application on platforms other that MacOS.
-   * @param windowOptions Options for constructing the main BrowserWindow.  See: https://electronjs.org/docs/api/browser-window#new-browserwindowoptions
+   * Open the main Window when the app is ready.
+   * @param windowOptions Options for constructing the main BrowserWindow. See: https://electronjs.org/docs/api/browser-window#new-browserwindowoptions
    */
   public async openMainWindow(windowOptions?: BrowserWindowConstructorOptions): Promise<void> {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const electron = require("electron");
-    const app = electron.app;
+    const app = this.app;
     // quit the application when all windows are closed (unless we're running on MacOS)
     app.on("window-all-closed", () => {
       if (process.platform !== "darwin")
@@ -152,8 +160,7 @@ export class ElectronBackend implements IpcSocketBackend {
 
     if (!this._developmentServer) {
       // handle any "electron://" requests and redirect them to "file://" URLs
-      // should registerFileProtocol after app is ready, https://www.electronjs.org/docs/api/protocol
-      electron.protocol.registerFileProtocol("electron", (request, callback) => callback(this.parseElectronUrl(request.url)));
+      require("electron").protocol.registerFileProtocol("electron", (request, callback) => callback(this.parseElectronUrl(request.url)));
     }
 
     this._openWindow(windowOptions);
@@ -177,6 +184,13 @@ export class ElectronBackend implements IpcSocketBackend {
     return () => this._ipcMain.removeHandler(channel);
   }
 
+  /**
+   * Initialize the backend of an Electron app.
+   * This method configures the backend for all of the inter-process communication (RPC and IPC) for an
+   * Electron app. It should be called from your Electron main function, before calling [IModelHost.startup]($backend).
+   * @param opts Options that control aspects of your backend.
+   * @returns an instance of [[ElectronBackend]]. When you are ready to show your main window, call `openMainWindow` on it.
+   * @note This method must (only) be called from the backend of an Electron app (i.e. when [isElectronMain]($bentley) returns `true`). */
   public static initialize(opts?: ElectronBackendOptions) {
     if (!isElectronMain)
       throw new Error("Not running under Electron");

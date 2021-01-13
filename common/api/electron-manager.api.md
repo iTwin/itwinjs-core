@@ -23,7 +23,6 @@ export class ElectronBackend implements IpcSocketBackend {
     readonly frontendURL: string;
     // @internal (undocumented)
     handle(channel: string, listener: (evt: any, ...args: any[]) => Promise<any>): RemoveFunction;
-    // (undocumented)
     static initialize(opts?: ElectronBackendOptions): ElectronBackend;
     get mainWindow(): BrowserWindow | undefined;
     openMainWindow(windowOptions?: BrowserWindowConstructorOptions): Promise<void>;
@@ -37,21 +36,14 @@ export class ElectronBackend implements IpcSocketBackend {
     readonly webResourcesPath: string;
 }
 
-// @beta (undocumented)
+// @beta
 export interface ElectronBackendOptions {
-    // (undocumented)
     developmentServer?: boolean;
-    // (undocumented)
     frontendPort?: number;
-    // (undocumented)
     frontendURL?: string;
-    // (undocumented)
     iconName?: string;
-    // (undocumented)
-    ipcHandlers?: typeof IpcHandler[];
-    // (undocumented)
+    ipcHandlers?: (typeof IpcHandler)[];
     rpcInterfaces?: RpcInterfaceDefinition[];
-    // (undocumented)
     webResourcesPath?: string;
 }
 

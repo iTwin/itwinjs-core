@@ -332,8 +332,8 @@ public;ModelProps
 public;ModelQueryParams 
 public;ModelSelectorProps 
 public;MonochromeMode
-internal;NativeAppEnum
 alpha;NativeAppIpc 
+internal;NativeAppIpcKey
 public;NavigationBindingValue
 public;NavigationValue
 public;nextHighestPowerOfTwo(num: number): number

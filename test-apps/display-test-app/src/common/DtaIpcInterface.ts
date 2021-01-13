@@ -6,7 +6,7 @@
 import { IpcInterface } from "@bentley/imodeljs-common";
 import { OpenDialogOptions, OpenDialogReturnValue } from "electron";
 
-export enum DtaEnum {
+export enum DtaIpcKey {
   Channel = "dta",
   Version = "1.0.2",
 }

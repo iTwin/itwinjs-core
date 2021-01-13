@@ -5,7 +5,7 @@
 
 import { isElectronRenderer } from "@bentley/bentleyjs-core";
 import { FrontendIpc } from "@bentley/imodeljs-common";
-import { DtaEnum, DtaIpcInterface } from "../common/DtaIpcInterface";
+import { DtaIpcInterface, DtaIpcKey } from "../common/DtaIpcInterface";
 
 export interface BrowserFileSelector {
   input: HTMLInputElement;
@@ -14,7 +14,7 @@ export interface BrowserFileSelector {
 
 export class DtaIpc {
   public static callBackend<T extends keyof DtaIpcInterface>(methodName: T, ...args: Parameters<DtaIpcInterface[T]>): ReturnType<DtaIpcInterface[T]> {
-    return FrontendIpc.callBackend(DtaEnum.Channel, methodName, ...args) as ReturnType<DtaIpcInterface[T]>;
+    return FrontendIpc.callBackend(DtaIpcKey.Channel, methodName, ...args) as ReturnType<DtaIpcInterface[T]>;
   }
 
   public static async selectFileElectron() {

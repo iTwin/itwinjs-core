@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { app, dialog, OpenDialogOptions } from "electron";
+import { dialog, OpenDialogOptions } from "electron";
 import * as path from "path";
 import { assert } from "@bentley/bentleyjs-core";
 import { ElectronBackend, ElectronBackendOptions } from "@bentley/electron-manager/lib/ElectronBackend";
 import { IpcHandler } from "@bentley/imodeljs-common";
-import { DtaEnum, DtaIpcInterface } from "../common/DtaIpcInterface";
+import { DtaIpcInterface, DtaIpcKey } from "../common/DtaIpcInterface";
 import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
 
 const getWindowSize = () => {
@@ -30,15 +30,16 @@ const getWindowSize = () => {
   return { width, height };
 };
 
-export class DtaIpcImpl extends IpcHandler implements DtaIpcInterface {
-  public get channelName() { return DtaEnum.Channel; }
-  public async getVersion() { return DtaEnum.Version; }
+class DtaIpcImpl extends IpcHandler implements DtaIpcInterface {
+  public get channelName() { return DtaIpcKey.Channel; }
+  public async getVersion() { return DtaIpcKey.Version; }
   public async openFile(options: OpenDialogOptions) {
     return dialog.showOpenDialog(options);
   }
 }
 
-/** This is the function that gets called when we start display-test-app via `electron DtaElectronMain.js` from the command line.
+/**
+ * This is the function that gets called when we start display-test-app via `electron DtaElectronMain.js` from the command line.
  * It runs in the Electron main process and hosts the iModeljs backend (IModelHost) code. It starts the render (frontend) process
  * that starts from the file "index.ts". That launches the iModel.js frontend (IModelApp).
  */
@@ -71,7 +72,7 @@ const dtaElectronMain = async () => {
     manager.mainWindow.webContents.toggleDevTools();
 
   // Handle custom keyboard shortcuts
-  app.on("web-contents-created", (_e, wc) => {
+  manager.app.on("web-contents-created", (_e, wc) => {
     wc.on("before-input-event", (event, input) => {
       // CTRL + SHIFT + I  ==> Toggle DevTools
       if (input.key === "I" && input.control && !input.alt && !input.meta && input.shift) {
@@ -86,7 +87,7 @@ const dtaElectronMain = async () => {
   const configPathname = path.normalize(path.join(__dirname, "..", "..", "build", "configuration.json"));
   const configuration = require(configPathname); // eslint-disable-line @typescript-eslint/no-var-requires
   if (configuration.useIModelBank) {
-    app.on("certificate-error", (event, _webContents, _url, _error, _certificate, callback) => {
+    manager.app.on("certificate-error", (event, _webContents, _url, _error, _certificate, callback) => {
       // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
       event.preventDefault();
       callback(true);

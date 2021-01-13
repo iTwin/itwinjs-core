@@ -4664,14 +4664,6 @@ export enum MonochromeMode {
     Scaled = 1
 }
 
-// @internal (undocumented)
-export enum NativeAppEnum {
-    // (undocumented)
-    Channel = "nativeApp",
-    // (undocumented)
-    Version = "1.0.0"
-}
-
 // @alpha
 export interface NativeAppIpc extends IpcInterface {
     acquireNewBriefcaseId: (_iModelId: GuidString) => Promise<number>;
@@ -4705,6 +4697,14 @@ export interface NativeAppIpc extends IpcInterface {
     storageSet: (_storageId: string, _key: string, _value: StorageValue) => Promise<void>;
     // @internal (undocumented)
     toggleInteractiveEditingSession: (_tokenProps: IModelRpcProps, _startSession: boolean) => Promise<boolean>;
+}
+
+// @internal (undocumented)
+export enum NativeAppIpcKey {
+    // (undocumented)
+    Channel = "nativeApp",
+    // (undocumented)
+    Version = "1.0.0"
 }
 
 // @public

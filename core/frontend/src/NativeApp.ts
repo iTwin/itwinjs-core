@@ -8,8 +8,8 @@
 
 import { BeEvent, Config, GuidString, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseDownloader, BriefcaseProps, Events, FrontendIpc, IModelError, IModelVersion, InternetConnectivityStatus, LocalBriefcaseProps,
-  NativeAppEnum, NativeAppIpc, OpenBriefcaseProps, OverriddenBy, RequestNewBriefcaseProps, StorageValue, SyncMode,
+  BriefcaseDownloader, BriefcaseProps, Events, FrontendIpc, IModelError, IModelVersion, InternetConnectivityStatus, LocalBriefcaseProps, NativeAppIpc,
+  NativeAppIpcKey, OpenBriefcaseProps, OverriddenBy, RequestNewBriefcaseProps, StorageValue, SyncMode,
 } from "@bentley/imodeljs-common";
 import { ProgressCallback, RequestGlobalOptions } from "@bentley/itwin-client";
 import { EventSource } from "./EventSource";
@@ -28,14 +28,16 @@ export interface DownloadBriefcaseOptions {
   syncMode: SyncMode;
   fileName?: string;
 }
+
 /**
  * The frontend of a native application
  * @see [Native Applications]($docs/learning/NativeApps.md)
  * @alpha
  */
 export class NativeApp {
+  private constructor() { }
   public static callBackend<T extends keyof NativeAppIpc>(methodName: T, ...args: Parameters<NativeAppIpc[T]>): ReturnType<NativeAppIpc[T]> {
-    return FrontendIpc.callBackend(NativeAppEnum.Channel, methodName, ...args) as ReturnType<NativeAppIpc[T]>;
+    return FrontendIpc.callBackend(NativeAppIpcKey.Channel, methodName, ...args) as ReturnType<NativeAppIpc[T]>;
   }
 
   private static _storages = new Map<string, Storage>();
@@ -49,7 +51,6 @@ export class NativeApp {
     RequestGlobalOptions.online = (status === InternetConnectivityStatus.Online);
     await this.callBackend("overrideInternetConnectivity", by, status);
   }
-  private constructor() { }
   private static hookBrowserConnectivityEvents() {
     if (typeof window === "object" && window.ononline && window.onoffline) {
       window.addEventListener("online", this._onOnline);
@@ -79,8 +80,8 @@ export class NativeApp {
   public static async startup(opts?: IModelAppOptions) {
     Logger.logInfo(FrontendLoggerCategory.NativeApp, "Startup");
     const ipcVersion = await NativeApp.callBackend("getVersion");
-    if (ipcVersion !== NativeAppEnum.Version) {
-      throw new IModelError(IModelStatus.BadArg, `NativeAppIpc version wrong: backend(${ipcVersion}) vs. frontend(${NativeAppEnum.Version})`);
+    if (ipcVersion !== NativeAppIpcKey.Version) {
+      throw new IModelError(IModelStatus.BadArg, `NativeAppIpc version wrong: backend(${ipcVersion}) vs. frontend(${NativeAppIpcKey.Version})`);
     }
     await IModelApp.startup(opts);
     const backendConfig = await this.callBackend("getConfig");
