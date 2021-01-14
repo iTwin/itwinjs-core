@@ -14,8 +14,7 @@ Overview:
   - [Automatic viewport synchronization](#automatic-viewport-synchronization)
   - [Globe location tool fixes](#globe-location-tool-fixes)
   - [Changes to display style excluded elements](#changes-to-display-style-excluded-elements)
-
-- [Tile compression](#tile-compression)
+  - [Tile compression](#tile-compression)
 - [Upgrading schemas in an iModel](#upgrading-schemas-in-an-imodel)
 - [Presentation](#presentation)
   - [Formatted property values in ECExpressions](#formatted-property-values-in-ecexpressions)
@@ -24,7 +23,6 @@ Overview:
   - [Breaking changes to `ContentRelatedInstances`](#breaking-changes-to-contentrelatedinstances)
   - React Components
     - [Filtering in Property Grid](#filtering-in-property-grid)
-
 - [QuantityFormatter updates](#quantityformatter-updates)
 
 ## Breaking Changes
