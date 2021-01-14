@@ -223,7 +223,7 @@ describe("EmphasizeElements tests", () => {
     let currMap = emph.getOverriddenElements();
     assert.isTrue(undefined !== currMap && 2 === currMap.size);
 
-    status = emph.clearOverriddenElements(vp, undefined, ["0x21", "0x2"]); // Clear some elements with red and blue overrides...
+    status = emph.clearOverriddenElements(vp, ["0x21", "0x2"]); // Clear some elements with red and blue overrides...
     assert.isTrue(status);
 
     currRedIds = emph.getOverriddenElementsByKey(redKey!);
@@ -232,7 +232,7 @@ describe("EmphasizeElements tests", () => {
     currBlueIds = emph.getOverriddenElementsByKey(blueKey!);
     assert.isTrue(undefined !== currBlueIds && 1 === currBlueIds.size);
 
-    status = emph.clearOverriddenElements(vp, undefined, redIds); // Clear remaining red overrides by element ids...
+    status = emph.clearOverriddenElements(vp, redIds); // Clear remaining red overrides by element ids...
     assert.isTrue(status);
 
     currRedIds = emph.getOverriddenElementsByKey(redKey!);
