@@ -2606,7 +2606,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     clearHiddenElements(vp: Viewport): boolean;
     clearIsolatedElements(vp: Viewport): boolean;
     clearNeverDrawnElements(vp: Viewport): boolean;
-    clearOverriddenElements(vp: Viewport, key?: number): boolean;
+    clearOverriddenElements(vp: Viewport, keyOrIds?: number | Id64Arg): boolean;
     // @internal (undocumented)
     protected createAppearanceFromKey(key: number): FeatureAppearance;
     createDefaultAppearance(): FeatureAppearance;
