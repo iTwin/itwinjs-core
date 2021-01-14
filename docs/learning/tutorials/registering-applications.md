@@ -5,12 +5,15 @@ Your application must be registered with Bentley’s OpenId provider in order to
 There are three types:
 
 ##### [Web Application]($docs/learning/app.md/#interactive-apps)
+
 An interactive application obtains information from an iModel and presents that information in a user interface.
 
 ##### [Agent Application]($docs/learning/app.md/#agents-and-services)
+
 iModel agents and services are apps that have no interactive user interface.
 
 ##### [Desktop Application]($docs/learning/app.md/#desktop-apps)
+
 An interactive application obtains information from an iModel and presents that information in a user interface. The app runs in Electron on the user's desktop.
 
 **[Register apps here]($docs/registration-dashboard.md)**
