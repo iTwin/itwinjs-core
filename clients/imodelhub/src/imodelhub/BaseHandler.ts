@@ -83,7 +83,7 @@ export class IModelBaseHandler extends WsgClient {
    */
   public constructor(keepAliveDuration = 30000, fileHandler?: FileHandler) {
     super("sv1.1");
-    // this.baseUrl = "https://api.bentley.com/imodelhub";
+    this.baseUrl = "https://api.bentley.com/imodelhub";
     this._fileHandler = fileHandler;
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     this._agent = require("https").Agent({ keepAlive: keepAliveDuration > 0, keepAliveMsecs: keepAliveDuration, secureProtocol: "TLSv1_2_method" });
