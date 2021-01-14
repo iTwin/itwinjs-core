@@ -230,7 +230,6 @@ internal;getFloatingZoneStyle: (props: ZoneManagerProps) =>
 beta;getIsHiddenIfFeatureOverridesActive(): ConditionalBooleanValue
 beta;getIsHiddenIfSelectionNotActive(): ConditionalBooleanValue
 internal;getNestedStagePanelKey: (location: StagePanelLocation_2) => NestedStagePanelKey
-internal;getPanelSide(location: StagePanelLocation_2): PanelSide
 beta;getSelectionContextSyncEventIds(): string[]
 internal;getStableWidgetProps(widgetProps: WidgetProps, stableId: string): WidgetProps
 internal;getStagePanelType: (location: StagePanelLocation_2) => StagePanelType
@@ -573,6 +572,7 @@ beta;ToolWidgetComposerProps
 public;ToolWidgetDef 
 public;ToolWidgetProps 
 public;ToolWidgetPropsEx 
+internal;toPanelSide(location: StagePanelLocation_2): PanelSide
 internal;TrackingTime
 internal;UiActivityEvent 
 internal;UiActivityEventArgs
