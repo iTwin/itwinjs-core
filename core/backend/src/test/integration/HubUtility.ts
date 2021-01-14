@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, BentleyStatus, ChangeSetApplyOption, ChangeSetStatus, DbResult, GuidString, Logger, OpenMode, PerfLogger } from "@bentley/bentleyjs-core";
-import { Project } from "@bentley/context-registry-client";
+import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
 import { BriefcaseQuery, ChangeSet, ChangeSetQuery, Briefcase as HubBriefcase, HubIModel, IModelHubClient, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
 import { IModelError } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import * as os from "os";
 import * as path from "path";
-import { BriefcaseIdValue, BriefcaseManager, ChangeSetToken, IModelDb, IModelHost, IModelJsFs } from "../../imodeljs-backend";
+import { BriefcaseIdValue, ChangeSetToken, IModelDb, IModelHost, IModelJsFs } from "../../imodeljs-backend";
 
 /** Utility to work with iModelHub */
 export class HubUtility {
@@ -44,7 +44,7 @@ export class HubUtility {
   }
 
   private static async queryProjectByName(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<Project | undefined> {
-    const project: Project = await getIModelProjectAbstraction().queryProject(requestContext, {
+    const project = await getIModelProjectAbstraction().queryProject(requestContext, {
       $select: "*",
       $filter: `Name+eq+'${projectName}'`,
     });
@@ -74,7 +74,7 @@ export class HubUtility {
    * @throws If the project is not found, or there is more than one project with the supplied name
    */
   public static async queryProjectIdByName(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<string> {
-    const project: Project | undefined = await HubUtility.queryProjectByName(requestContext, projectName);
+    const project = await HubUtility.queryProjectByName(requestContext, projectName);
     if (!project)
       throw new Error(`Project ${projectName} not found`);
     return project.wsgId;
@@ -88,7 +88,7 @@ export class HubUtility {
    * @throws If the iModel is not found, or if there is more than one iModel with the supplied name
    */
   public static async queryIModelIdByName(requestContext: AuthorizedClientRequestContext, projectId: string, iModelName: string): Promise<GuidString> {
-    const iModel: HubIModel | undefined = await HubUtility.queryIModelByName(requestContext, projectId, iModelName);
+    const iModel = await HubUtility.queryIModelByName(requestContext, projectId, iModelName);
     if (!iModel || !iModel.id)
       throw new Error(`IModel ${iModelName} not found`);
     return iModel.id;
@@ -96,14 +96,14 @@ export class HubUtility {
 
   /** Query the latest change set (id) of the specified iModel */
   public static async queryLatestChangeSet(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<ChangeSet | undefined> {
-    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.changeSets.get(requestContext, iModelId, new ChangeSetQuery().top(1).latest());
+    const changeSets = await IModelHost.iModelClient.changeSets.get(requestContext, iModelId, new ChangeSetQuery().top(1).latest());
     return (changeSets.length === 0) ? undefined : changeSets[changeSets.length - 1];
   }
 
   /** Download all change sets of the specified iModel */
   private static async downloadChangeSets(requestContext: AuthorizedClientRequestContext, changeSetsPath: string, _projectId: string, iModelId: GuidString): Promise<ChangeSet[]> {
     // Determine the range of changesets that remain to be downloaded
-    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.changeSets.get(requestContext, iModelId, new ChangeSetQuery()); // oldest to newest
+    const changeSets = await IModelHost.iModelClient.changeSets.get(requestContext, iModelId, new ChangeSetQuery()); // oldest to newest
     if (changeSets.length === 0)
       return changeSets;
     const latestIndex = changeSets.length - 1;
@@ -122,7 +122,7 @@ export class HubUtility {
     const query = earliestChangeSetId ? new ChangeSetQuery().betweenChangeSets(earliestChangeSetId, latestChangeSetId) : new ChangeSetQuery();
 
     const perfLogger = new PerfLogger("HubUtility.downloadChangeSets -> Download ChangeSets");
-    await BriefcaseManager.imodelClient.changeSets.download(requestContext, iModelId, query, changeSetsPath);
+    await IModelHost.iModelClient.changeSets.download(requestContext, iModelId, query, changeSetsPath);
     perfLogger.dispose();
     return changeSets;
   }
@@ -133,7 +133,7 @@ export class HubUtility {
     query.orderBy("createdDate");
 
     const perfLogger = new PerfLogger("HubUtility.downloadNamedVersions -> Get Version Infos");
-    const versions: Version[] = await BriefcaseManager.imodelClient.versions.get(requestContext, iModelId, query);
+    const versions = await IModelHost.iModelClient.versions.get(requestContext, iModelId, query);
     perfLogger.dispose();
     if (versions.length === 0)
       return new Array<ChangeSet>();
@@ -151,7 +151,7 @@ export class HubUtility {
       HubUtility.makeDirectoryRecursive(downloadDir);
     }
 
-    const iModel: HubIModel | undefined = await HubUtility.queryIModelById(requestContext, projectId, iModelId);
+    const iModel = await HubUtility.queryIModelById(requestContext, projectId, iModelId);
     if (!iModel)
       throw new Error(`IModel with id ${iModelId} not found`);
 
@@ -164,20 +164,20 @@ export class HubUtility {
     const seedPathname = path.join(downloadDir, "seed", iModel.name!.concat(".bim"));
     if (!IModelJsFs.existsSync(seedPathname)) {
       const perfLogger = new PerfLogger("HubUtility.downloadIModelById -> Download Seed File");
-      await BriefcaseManager.imodelClient.iModels.download(requestContext, iModelId, seedPathname);
+      await IModelHost.iModelClient.iModels.download(requestContext, iModelId, seedPathname);
       perfLogger.dispose();
     }
 
     // Download the change sets
     const changeSetDir = path.join(downloadDir, "changeSets//");
-    const changeSets: ChangeSet[] = await HubUtility.downloadChangeSets(requestContext, changeSetDir, projectId, iModelId);
+    const changeSets = await HubUtility.downloadChangeSets(requestContext, changeSetDir, projectId, iModelId);
 
     const changeSetsJsonStr = JSON.stringify(changeSets, undefined, 4);
     const changeSetsJsonPathname = path.join(downloadDir, "changeSets.json");
     IModelJsFs.writeFileSync(changeSetsJsonPathname, changeSetsJsonStr);
 
     // Download the version information
-    const namedVersions: Version[] = await HubUtility.downloadNamedVersions(requestContext, projectId, iModelId);
+    const namedVersions = await HubUtility.downloadNamedVersions(requestContext, projectId, iModelId);
     const namedVersionsJsonStr = JSON.stringify(namedVersions, undefined, 4);
     const namedVersionsJsonPathname = path.join(downloadDir, "namedVersions.json");
     IModelJsFs.writeFileSync(namedVersionsJsonPathname, namedVersionsJsonStr);
@@ -187,9 +187,9 @@ export class HubUtility {
    *  A standard hierarchy of folders is created below the supplied downloadDir
    */
   public static async downloadIModelByName(requestContext: AuthorizedClientRequestContext, projectName: string, iModelName: string, downloadDir: string, reDownload: boolean): Promise<void> {
-    const projectId: string = await HubUtility.queryProjectIdByName(requestContext, projectName);
+    const projectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
 
-    const iModel: HubIModel | undefined = await HubUtility.queryIModelByName(requestContext, projectId, iModelName);
+    const iModel = await HubUtility.queryIModelByName(requestContext, projectId, iModelName);
     if (!iModel)
       throw new Error(`IModel ${iModelName} not found`);
     const iModelId = iModel.id!;
@@ -201,10 +201,10 @@ export class HubUtility {
    * @internal
    */
   public static async deleteIModel(requestContext: AuthorizedClientRequestContext, projectName: string, iModelName: string): Promise<void> {
-    const projectId: string = await HubUtility.queryProjectIdByName(requestContext, projectName);
-    const iModelId: GuidString = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
+    const projectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
+    const iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
 
-    await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, iModelId);
+    await IModelHost.iModelClient.iModels.delete(requestContext, projectId, iModelId);
   }
 
   /** Get the pathname of the briefcase in the supplied directory - assumes a standard layout of the supplied directory */
@@ -366,15 +366,15 @@ export class HubUtility {
   public static async pushIModel(requestContext: AuthorizedClientRequestContext, projectId: string, pathname: string, iModelName?: string, overwrite?: boolean): Promise<GuidString> {
     // Delete any existing iModels with the same name as the required iModel
     const locIModelName = iModelName || path.basename(pathname, ".bim");
-    let iModel: HubIModel | undefined = await HubUtility.queryIModelByName(requestContext, projectId, locIModelName);
+    let iModel = await HubUtility.queryIModelByName(requestContext, projectId, locIModelName);
     if (iModel) {
       if (!overwrite)
         return iModel.id!;
-      await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, iModel.id!);
+      await IModelHost.iModelClient.iModels.delete(requestContext, projectId, iModel.id!);
     }
 
     // Upload a new iModel
-    iModel = await BriefcaseManager.imodelClient.iModels.create(requestContext, projectId, locIModelName, { path: pathname });
+    iModel = await IModelHost.iModelClient.iModels.create(requestContext, projectId, locIModelName, { path: pathname });
     return iModel.id!;
   }
 
@@ -382,16 +382,16 @@ export class HubUtility {
    * It's assumed that the uploadDir contains a standard hierarchy of seed files and change sets.
    */
   public static async pushIModelAndChangeSets(requestContext: AuthorizedClientRequestContext, projectName: string, uploadDir: string, iModelName?: string, overwrite?: boolean): Promise<GuidString> {
-    const projectId: string = await HubUtility.queryProjectIdByName(requestContext, projectName);
+    const projectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
     const seedPathname = HubUtility.getSeedPathname(uploadDir);
     const iModelId = await HubUtility.pushIModel(requestContext, projectId, seedPathname, iModelName, overwrite);
 
     let briefcase: HubBriefcase;
-    const hubBriefcases: HubBriefcase[] = await BriefcaseManager.imodelClient.briefcases.get(requestContext, iModelId);
+    const hubBriefcases = await IModelHost.iModelClient.briefcases.get(requestContext, iModelId);
     if (hubBriefcases.length > 0)
       briefcase = hubBriefcases[0];
     else
-      briefcase = await BriefcaseManager.imodelClient.briefcases.create(requestContext, iModelId);
+      briefcase = await IModelHost.iModelClient.briefcases.create(requestContext, iModelId);
     if (!briefcase) {
       throw new Error(`Could not acquire a briefcase for the iModel ${iModelId}`);
     }
@@ -432,7 +432,7 @@ export class HubUtility {
       changeSet.seedFileId = briefcase.fileId;
       changeSet.briefcaseId = briefcase.briefcaseId;
 
-      await BriefcaseManager.imodelClient.changeSets.create(requestContext, briefcase.iModelId!, changeSet, changeSetPathname);
+      await IModelHost.iModelClient.changeSets.create(requestContext, briefcase.iModelId!, changeSet, changeSetPathname);
       ii++;
       Logger.logInfo(HubUtility.logCategory, `Uploaded Change Set ${ii} of ${count}`, () => ({ ...changeSet }));
     }
@@ -449,10 +449,10 @@ export class HubUtility {
     for (const namedVersionJson of namedVersionsJson) {
       const query = (new VersionQuery()).byChangeSet(namedVersionJson.changeSetId);
 
-      const versions: Version[] = await BriefcaseManager.imodelClient.versions.get(requestContext, briefcase.iModelId!, query);
+      const versions = await IModelHost.iModelClient.versions.get(requestContext, briefcase.iModelId!, query);
       if (versions.length > 0 && !overwrite)
         continue;
-      await BriefcaseManager.imodelClient.versions.create(requestContext, briefcase.iModelId!, namedVersionJson.changeSetId, namedVersionJson.name, namedVersionJson.description);
+      await IModelHost.iModelClient.versions.create(requestContext, briefcase.iModelId!, namedVersionJson.changeSetId, namedVersionJson.name, namedVersionJson.description);
     }
   }
 
@@ -460,13 +460,13 @@ export class HubUtility {
    * Purges all acquired briefcases for the specified iModel (and user), if the specified threshold of acquired briefcases is exceeded
    */
   public static async purgeAcquiredBriefcasesById(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, onReachThreshold: () => void, acquireThreshold: number = 16): Promise<void> {
-    const briefcases: HubBriefcase[] = await BriefcaseManager.imodelClient.briefcases.get(requestContext, iModelId, new BriefcaseQuery().ownedByMe());
+    const briefcases = await IModelHost.iModelClient.briefcases.get(requestContext, iModelId, new BriefcaseQuery().ownedByMe());
     if (briefcases.length > acquireThreshold) {
       onReachThreshold();
 
       const promises = new Array<Promise<void>>();
       briefcases.forEach((briefcase: HubBriefcase) => {
-        promises.push(BriefcaseManager.imodelClient.briefcases.delete(requestContext, iModelId, briefcase.briefcaseId!));
+        promises.push(IModelHost.iModelClient.briefcases.delete(requestContext, iModelId, briefcase.briefcaseId!));
       });
       await Promise.all(promises);
     }
@@ -476,8 +476,8 @@ export class HubUtility {
    * Purges all acquired briefcases for the specified iModel (and user), if the specified threshold of acquired briefcases is exceeded
    */
   public static async purgeAcquiredBriefcases(requestContext: AuthorizedClientRequestContext, projectName: string, iModelName: string, acquireThreshold: number = 16): Promise<void> {
-    const projectId: string = await HubUtility.queryProjectIdByName(requestContext, projectName);
-    const iModelId: GuidString = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
+    const projectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
+    const iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
 
     return this.purgeAcquiredBriefcasesById(requestContext, iModelId, () => {
       Logger.logInfo(HubUtility.logCategory, `Reached limit of maximum number of briefcases for ${projectName}:${iModelName}. Purging all briefcases.`);
@@ -601,13 +601,13 @@ export class HubUtility {
   public static async recreateIModel(requestContext: AuthorizedClientRequestContext, projectId: GuidString, iModelName: string): Promise<GuidString> {
     // Delete any existing iModel
     try {
-      const deleteIModelId: GuidString = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
-      await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, deleteIModelId);
+      const deleteIModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
+      await IModelHost.iModelClient.iModels.delete(requestContext, projectId, deleteIModelId);
     } catch (err) {
     }
 
     // Create a new iModel
-    const iModel: HubIModel = await BriefcaseManager.imodelClient.iModels.create(requestContext, projectId, iModelName, { description: `Description for ${iModelName}` });
+    const iModel = await IModelHost.iModelClient.iModels.create(requestContext, projectId, iModelName, { description: `Description for ${iModelName}` });
     return iModel.wsgId;
   }
 }
@@ -618,13 +618,22 @@ class TestIModelHubProject {
   public terminate(): void { }
 
   public get iModelHubClient(): IModelHubClient {
-    return BriefcaseManager.imodelClient as IModelHubClient;
+    return IModelHost.iModelClient as IModelHubClient;
+  }
+
+  private static _contextRegistryClient?: ContextRegistryClient;
+
+  private static get connectClient(): ContextRegistryClient {
+    if (this._contextRegistryClient === undefined)
+      this._contextRegistryClient = new ContextRegistryClient();
+    return this._contextRegistryClient;
   }
 
   public async queryProject(requestContext: AuthorizedClientRequestContext, query: any | undefined): Promise<Project> {
-    const client = BriefcaseManager.connectClient;
+    const client = TestIModelHubProject.connectClient;
     return client.getProject(requestContext, query);
   }
+
   public async createIModel(requestContext: AuthorizedClientRequestContext, projectId: string, params: any): Promise<HubIModel> {
     const client = this.iModelHubClient;
     return client.iModels.create(requestContext, projectId, params.name, { path: params.seedFile, description: params.description, progressCallback: params.tracker });

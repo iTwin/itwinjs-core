@@ -177,14 +177,6 @@ describe("IModelTransformer", () => {
     });
   }
 
-  function countElementsInModel(iModelDb: IModelDb, modelId: Id64String): number {
-    const sql = `SELECT COUNT(*) FROM ${Element.classFullName} WHERE Model.Id=:modelId`;
-    return iModelDb.withPreparedStatement(sql, (statement: ECSqlStatement): number => {
-      statement.bindId("modelId", modelId);
-      return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getInteger() : 0;
-    });
-  }
-
   it("should clone from a component library", async () => {
     const componentLibraryDb: SnapshotDb = IModelTransformerUtils.createComponentLibrary(outputDir);
     const sourceLibraryModelId = componentLibraryDb.elements.queryElementIdByCode(DefinitionPartition.createCode(componentLibraryDb, IModel.rootSubjectId, "Components"))!;
@@ -340,27 +332,7 @@ describe("IModelTransformer", () => {
     iModelDb.close();
   });
 
-  // WIP: Included as skipped until test file management strategy can be refined.
-  it.skip("should successfully complete PlantSight workflow", async () => {
-    // Source IModelDb
-    const sourceFileName = "d:/data/DgnDb/PlantSight/PlantSightSource.bim";
-    const sourceDb = SnapshotDb.openFile(sourceFileName);
-    const sourceModelId: Id64String = "0x20000000002";
-    assert.doesNotThrow(() => sourceDb.elements.getElement<PhysicalPartition>(sourceModelId));
-    assert.doesNotThrow(() => sourceDb.models.getModel<PhysicalModel>(sourceModelId));
-    assert.isAtLeast(countElementsInModel(sourceDb, sourceModelId), 1, "Source Model should contain Elements");
-    // Target IModelDb
-    const targetFileName = IModelTestUtils.prepareOutputFile("IModelTransformer", "PlantSightTarget.bim");
-    const targetDb = SnapshotDb.createFrom(SnapshotDb.openFile("d:/data/DgnDb/PlantSight/PlantSightTarget.bim"), targetFileName);
-    // Import
-    const transformer = new IModelTransformer(sourceDb, targetDb);
-    transformer.processAll();
-    transformer.dispose();
-    // Close
-    sourceDb.close();
-    targetDb.close();
-  });
-
+  /** @note For debugging/testing purposes, you can use `it.only` and hard-code `sourceFileName` to test cloning of a particular iModel. */
   it("should clone test file", async () => {
     // open source iModel
     const sourceFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
@@ -369,12 +341,12 @@ describe("IModelTransformer", () => {
     assert.exists(sourceDb);
     assert.isAtLeast(numSourceElements, 12);
     // create target iModel
-    const targetDbFile: string = path.join(KnownTestLocations.outputDir, "Clone-Target.bim");
+    const targetDbFile: string = path.join(KnownTestLocations.outputDir, "IModelTransformer", "Clone-Target.bim");
     if (IModelJsFs.existsSync(targetDbFile)) {
       IModelJsFs.removeSync(targetDbFile);
     }
     const targetDbProps: CreateIModelProps = {
-      rootSubject: { name: "Clone-Target" },
+      rootSubject: { name: `Cloned target of ${sourceDb.elements.getRootSubject().code.getValue()}` },
       ecefLocation: sourceDb.ecefLocation,
     };
     const targetDb = SnapshotDb.createEmpty(targetDbFile, targetDbProps);
