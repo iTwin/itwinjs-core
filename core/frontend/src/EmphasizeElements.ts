@@ -251,7 +251,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
 
       for (const [otherKey, otherIds] of this._overrideAppearance) {
         const oldSize = otherIds.size;
-        Id64.toIdSet(ids).forEach((id) => { otherIds.delete(id); });
+        Id64.forEach(ids, (id) => otherIds.delete(id));
 
         if (oldSize !== otherIds.size)
           changed = true;
@@ -272,7 +272,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
   /** @internal */
   protected updateIdSet(ids: Id64Arg, replace: boolean, existingIds?: Id64Set): Id64Set | undefined {
     const newIds = new Set<string>();
-    Id64.toIdSet(ids).forEach((id) => { newIds.add(id); });
+    Id64.forEach(ids, (id) => newIds.add(id));
     if (0 === newIds.size)
       return undefined;
     const oldSize = (!replace && undefined !== existingIds ? existingIds.size : 0);
@@ -439,7 +439,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
       return false;
 
     const overrideIds = new Set<string>();
-    Id64.toIdSet(ids).forEach((id) => { overrideIds.add(id); });
+    Id64.forEach(ids, (id) => overrideIds.add(id));
     if (0 === overrideIds.size)
       return false;
 
@@ -459,7 +459,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
         if (key === ovrKey) // Make sure these ids are unique to this color/transparency key...
           continue;
 
-        Id64.toIdSet(ids).forEach((id) => { otherIds.delete(id); });
+        Id64.forEach(ids, (id) => otherIds.delete(id));
         if (0 !== otherIds.size)
           continue;
 
