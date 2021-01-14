@@ -20,7 +20,7 @@ export class BackendIpc {
   public static get ipc(): IpcSocketBackend { return this._ipc!; }
   /**
    * initialize backend support for Ipc
-   * @param ipc The platform-specific implementation of the [IpcSocketBackend]($common) interface
+   * @param ipc The platform-specific implementation of the [[IpcSocketBackend]] interface
    */
   public static initialize(ipc: IpcSocketBackend) { this._ipc = ipc; }
   /** Determine whether Ipc is available for this backend. This will only be true if [[initialize]] has been called on this class. */
@@ -28,7 +28,7 @@ export class BackendIpc {
 
   /**
    * Send a message to the frontend over an Ipc channel.
-   * @param channel the name of the channel matching the name registered with [FrontendIpc.handleMessage]($frontend).
+   * @param channel the name of the channel matching the name registered with [[FrontendIpc.handleMessage]].
    * @param data The content of the message.
    */
   public static sendMessage(channel: string, ...data: any[]) {
@@ -37,7 +37,7 @@ export class BackendIpc {
 }
 
 /**
- * Base class for all implementations of [IpcInterface]($frontend).
+ * Base class for all implementations of [[IpcInterface]].
  *
  * Create a subclass to implement your IpcInterface. Your class should be declared like this:
  * ```ts
@@ -61,12 +61,12 @@ export abstract class IpcHandler implements IpcInterface {
    * @note this method should only be called once per channel. If it is called multiple times, subsequent calls replace the previous ones.
    */
   public static register(): RemoveFunction {
-    const impl = new (this as any)(); // create an instance of subclass. "as any" is necessary because base class is abstract
+    const impl = new (this as any)() as IpcHandler; // create an instance of subclass. "as any" is necessary because base class is abstract
     return BackendIpc.ipc.handle(iTwinChannel(impl.channelName), async (_evt: any, funcName: string, ...args: any[]): Promise<IpcInvokeReturn> => {
       try {
-        const func = impl[funcName];
+        const func = (impl as any)[funcName];
         if (typeof func !== "function")
-          throw new IModelError(IModelStatus.FunctionNotFound, `Method Not Found ${funcName}`);
+          throw new IModelError(IModelStatus.FunctionNotFound, `Method "${impl.constructor.name}.${funcName}" not found on IpcHandler registered for channel: ${impl.channelName}`);
 
         return { result: await func.call(impl, ...args) };
       } catch (err) {

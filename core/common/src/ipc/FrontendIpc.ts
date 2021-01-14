@@ -11,14 +11,14 @@ import { IpcInvokeReturn, IpcSocketFrontend, iTwinChannel, RemoveFunction } from
 
 /**
  * This class provides frontend support for Ipc operations. It must be initialized with a platform-specific
- * implementation of the [IpcSocketFrontend]($common) interface at startup, before calling [IModelApp.startup]($frontend).
+ * implementation of the [[IpcSocketFrontend]] interface at startup, before calling [IModelApp.startup]($frontend).
  * @internal
  */
 export class FrontendIpc {
   private static _ipc: IpcSocketFrontend | undefined;
-  /** Get the implementation of the [IpcSocketFrontend]($common) interface. */
+  /** Get the implementation of the [[IpcSocketFrontend]] interface. */
   public static get ipc(): IpcSocketFrontend { return this._ipc!; }
-  /** initialize the FrontendIpc system with a platform-specific implementation of the [IpcSocketFrontend]($common) interface.
+  /** initialize the FrontendIpc system with a platform-specific implementation of the [[IpcSocketFrontend]] interface.
    * @param ipc the platform-specific implementation of the [IpcSocketFrontend]($common) interface
    * @note This method must be called before calling [[IModelApp.startup]]
    */
@@ -39,12 +39,12 @@ export class FrontendIpc {
   }
 
   /**
-   * Call a method on the backend through an [IpcInterface]($common).
+   * Call a method on the backend through an [[IpcInterface]].
    * @param channelName the channel registered by the backend handler.
    * @param methodName  the name of a method implemented by the backend handler.
    * @param args arguments to `methodName`
    * @return a Promise with the return value from `methodName`
-   * @note If the backend implementation throws an exception, this method will throw a [BackendError]($common) exception
+   * @note If the backend implementation throws an exception, this method will throw a [[BackendError]] exception
    * with the `errorNumber` and `message` from the backend.
    * @note Ipc is only supported if [[isValid]] is true.
    */
