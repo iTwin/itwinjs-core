@@ -46,7 +46,6 @@ Build and run the [query-agent](https://github.com/imodeljs/imodeljs-samples/tre
 
 > _Note: Test iModels should not be used to host sensitive data. The uploaded data is administered by Bentley and should only be used for the purpose of testing. It is not subject to the same data privacy, security policies, and access controls that apply to Bentley’s iTwin offerings. It is subject to data size and other usage limitations, and will be purged after 90 days, if not renewed._ _If you need help or have questions, please contact us on [Github](https://github.com/imodeljs/imodeljs/issues)._
 
-
 <style>
     a#getting-started---explore-imodel {
         display: none;

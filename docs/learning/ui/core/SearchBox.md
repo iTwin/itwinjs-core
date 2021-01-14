@@ -15,9 +15,9 @@ The `placeholder` prop specifies text to display when no search value has been e
 
 There are 3 event handler props:
 
-* `onEnterPressed` - listens for `Enter` key press
-* `onEscPressed` - listens for `Esc` key press
-* `onClear` - listens for `onClick` event for Clear (X) icon
+- `onEnterPressed` - listens for `Enter` key press
+- `onEscPressed` - listens for `Esc` key press
+- `onClear` - listens for `onClick` event for Clear (X) icon
 
 ## Example
 
@@ -39,4 +39,4 @@ After some text has been entered, the icon switches to the X/Clear icon.
 
 ## API Reference
 
-* [SearchBox]($ui-core:SearchBox)
+- [SearchBox]($ui-core:SearchBox)

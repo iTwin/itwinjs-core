@@ -2,19 +2,19 @@
 
 Table of Contents:
 
-* [Overview](#overview)
-* Implementing RpcInterfaces
-  * [RpcInterfaces are Typescript Classes](#rpcinterfaces-are-typescript-classes)
-  * [RpcInterface Performance](#rpcinterface-performance)
-  * [Define the Interface](#define-the-interface)
-  * [Client Stub](#client-stub)
-  * [Server Implementation](#server-implementation)
-* Configuring RpcInterfaces
-  * [Server-side Configuration](#server-side-configuration)
-  * [Client-side Configuration](#client-side-configuration)
-* [Serve the Interfaces](#serve-the-interfaces)
-* [Asynchronous Nature of RpcInterfaces](#asynchronous-nature-of-rpcinterfaces)
-* [Logging and ActivityIds](#logging-and-activityids)
+- [Overview](#overview)
+- Implementing RpcInterfaces
+  - [RpcInterfaces are Typescript Classes](#rpcinterfaces-are-typescript-classes)
+  - [RpcInterface Performance](#rpcinterface-performance)
+  - [Define the Interface](#define-the-interface)
+  - [Client Stub](#client-stub)
+  - [Server Implementation](#server-implementation)
+- Configuring RpcInterfaces
+  - [Server-side Configuration](#server-side-configuration)
+  - [Client-side Configuration](#client-side-configuration)
+- [Serve the Interfaces](#serve-the-interfaces)
+- [Asynchronous Nature of RpcInterfaces](#asynchronous-nature-of-rpcinterfaces)
+- [Logging and ActivityIds](#logging-and-activityids)
 
 ## Overview
 
@@ -24,9 +24,9 @@ As described in the [software architecture overview](./SoftwareArchitecture.md),
 
 The diagram above shows an app frontend requesting operations from some backend. The frontend in this case is the client and the backend is the server. In general, the terms *client* and *server* specify the two *roles* in an RpcInterface:
 
-* *client* -- the code that uses an RpcInterface and calls its methods. A client could be the [frontend of an app](./App.md#app-frontend), the [backend of an app](./App.md#app-backend), a [service](./App.md#imodel-services), or an [agent](./App.md#imodel-agents). A client could be [frontend code](../learning/Glossary.md#frontend) or [backend code](../learning/Glossary.md#backend).
+- *client* -- the code that uses an RpcInterface and calls its methods. A client could be the [frontend of an app](./App.md#app-frontend), the [backend of an app](./App.md#app-backend), a [service](./App.md#imodel-services), or an [agent](./App.md#imodel-agents). A client could be [frontend code](../learning/Glossary.md#frontend) or [backend code](../learning/Glossary.md#backend).
 
-* *server* -- the code that implements and exposes an RpcInterface to clients. A server could the [backend of an app](./App.md#app-backend) or a [service](./App.md#imodel-services). A server is always [backend code](../learning/Glossary.md#backend).
+- *server* -- the code that implements and exposes an RpcInterface to clients. A server could the [backend of an app](./App.md#app-backend) or a [service](./App.md#imodel-services). A server is always [backend code](../learning/Glossary.md#backend).
 
 An `RpcInterface` is defined as a set of operations exposed by a server that a client can call, using configurable protocols, in a platform-independent way.
 

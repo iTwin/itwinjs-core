@@ -1,6 +1,6 @@
 # Using iModel schema browser
 
-- Navigate to https://imodelconsole.bentley.com/
+- Navigate to <https://imodelconsole.bentley.com/>
 - Select your Project
 - Select your iModel
 - Choose most recent changeset

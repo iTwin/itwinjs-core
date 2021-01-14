@@ -28,7 +28,7 @@ The app can ensure that the underlying schema is imported by registering an onOp
 
 where the schema is:
 
-``` xml
+```xml
 [[include:RobotWorld.ecschema.xml]]
 ```
 

@@ -13,11 +13,11 @@
 | extract as separate meshes |  const fragmentPolyfaces = PolyfaceQuery.clonePartitions(polyface, facetIndexArraysWithEdgeConnectivity);|
 | 3 separate Polyface objects (blue, drab, magenta), each with at least edge-to-edge connectivity | ![>](./figs/PolyfaceQuery/PartitionByConnectivity/SplitByEdgeConnectivity.png)|
 
-
 Unit Test
-  * source: imodeljs/core/geometry/src/test/clipping/PolyfaceQuery.test.ts
-  * test name: "PartitionFacetIndicesByConnectivity"
-  * output: imodeljs/core/geometry/src/test/output/PolyfaceQuery/PartitionFacetsByConnectivity.imjs
+
+- source: imodeljs/core/geometry/src/test/clipping/PolyfaceQuery.test.ts
+- test name: "PartitionFacetIndicesByConnectivity"
+- output: imodeljs/core/geometry/src/test/output/PolyfaceQuery/PartitionFacetsByConnectivity.imjs
 
 ## Fixup TVertices
 
@@ -27,11 +27,11 @@ Unit Test
 | Skeletal display with circles near each vertex of each facet  <br> The circles indicate that each facet references only its actual corners <br> Red highlight shows "TVertex" situations | ![>](./figs/PolyfaceQuery/TVertexFixup/AllQuadsSectorMarkup.png) |
 | After calling `PolyfaceQuery.cloneWithTVertexFixup` the long edges that passed through the T-Vertex <br> have vertices inserted <br> The two larger "squares" now reference (left of center) 9 and (upper right) 6 vertices | ![>](./figs/PolyfaceQuery/TVertexFixup/FixupSectorMarkup.png) |
 
-
 Unit Test
-  * source: imodeljs/core/geometry/src/test/clipping/PolyfaceQuery.test.ts
-  * test name: "cloneWithTVertexFixup"
-  * output: imodeljs/core/geometry/src/test/output/PolyfaceQuery/cloneWithTVertexFixup.imjs
+
+- source: imodeljs/core/geometry/src/test/clipping/PolyfaceQuery.test.ts
+- test name: "cloneWithTVertexFixup"
+- output: imodeljs/core/geometry/src/test/output/PolyfaceQuery/cloneWithTVertexFixup.imjs
 
 ## Fixup Colinear Edges
 
@@ -45,9 +45,10 @@ Unit Test
 Note that colinearEdgeFixup and TVertexFixup have tricky interactions.  If colinearEdgeFixup is applied to the final figure (blue markup) of the TVertexFixup section (above), the locally colinear edges within the large rectangles are _not_ removed.  This the colinear edge logic will notice that those vertices are incident to other facets where the vertex is a true corner, and hence should not be removed.
 
 Unit Test
-  * source: imodeljs/core/geometry/src/test/clipping/PolyfaceQuery.test.ts
-  * test name: "cloneWithColinearEdgeFixup"
-  * output: imodeljs/core/geometry/src/test/output/PolyfaceQuery/cloneWithColinearEdgeFixup.imjs
+
+- source: imodeljs/core/geometry/src/test/clipping/PolyfaceQuery.test.ts
+- test name: "cloneWithColinearEdgeFixup"
+- output: imodeljs/core/geometry/src/test/output/PolyfaceQuery/cloneWithColinearEdgeFixup.imjs
 
 ## Mark Edge Visibility
 
@@ -65,14 +66,8 @@ During default construction by a `PolyfaceBuilder` all edges are marked visible 
 | Apply `PolyfaceQuery.markPairedEdgesInvisible(mesh, Angle.createDegrees (30)));` <br> this hides edges with adjacent facet angle less than 30 degrees.  <br> (Edges within the flat caps are hidden.   Visibility in the torus body varies.) | ![>](./figs/PolyfaceQuery\EdgeVisibility\TorusPipeHide30.png) |
 | Apply `PolyfaceQuery.markPairedEdgesInvisible(mesh, Angle.createDegrees (50)));` <br> this hides edges with adjacent facet angle less than 50 degrees.  <br> (Edges within the flat caps are hidden.   The only visible edges are at the 90 degree angles around the caps) | ![>](./figs/PolyfaceQuery\EdgeVisibility\TorusPipeHide50.png) |
 
-
 Unit Test
-  * source: imodeljs/core/geometry/src/test/clipping/Polyface.test.ts
-  * test name: "SolidPrimitiveBoundary"
-  * output: imodeljs/core/geometry/src/test/output/Polyface\SolidPrimitiveBoundary.imjs
 
-
-
-
-
-
+- source: imodeljs/core/geometry/src/test/clipping/Polyface.test.ts
+- test name: "SolidPrimitiveBoundary"
+- output: imodeljs/core/geometry/src/test/output/Polyface\SolidPrimitiveBoundary.imjs

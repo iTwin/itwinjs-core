@@ -18,9 +18,11 @@ ECClassId | Refers to the ECClassId of an ECClass. It uniquely identifies an ECC
 > *Goal:* Return the actual Element subclass of the [Element](../../bis/domains/BisCore.ecschema.md#element) with id 0x20000000004.
 >
 > *ECSQL*
+>
 > ```sql
 > SELECT ECClassId, CodeValue FROM bis.Element WHERE ECInstanceId=0x20000000004
 > ```
+>
 <iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT ECClassId, CodeValue FROM bis.Element WHERE ECInstanceId=0x20000000004"></iframe>
 
 ## Primitive Data Types
@@ -36,9 +38,11 @@ For Boolean types ECSQL supports the literals `True` and `False`.
 > *Goal:* Find out which [Model](../../bis/domains/BisCore.ecschema.md#model) are private or not.
 >
 > *ECSQL*
+>
 > ```sql
 > SELECT ECInstanceId, ECClassId, IsPrivate FROM bis.Model
 > ```
+>
 <iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT ECInstanceId, ECClassId, IsPrivate FROM bis.Model"></iframe>
 
 Boolean properties or expressions do not need to be compared to `True` and `False` as they return a
@@ -49,13 +53,17 @@ boolean value already.
 > *Goal:* Find private [Model](../../bis/domains/BisCore.ecschema.md#model)s.
 >
 > *ECSQL*
+>
 > ```sql
 > SELECT ECInstanceId,ECClassId FROM bis.Model WHERE IsPrivate = True
 > ```
+>
 > and
+>
 > ```sql
 > SELECT ECInstanceId,ECClassId FROM bis.Model WHERE IsPrivate
 > ```
+>
 > are equivalent.
 <iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT ECInstanceId,ECClassId FROM bis.Model WHERE IsPrivate"></iframe>
 
@@ -66,13 +74,17 @@ And the same example with `False`:
 > *Goal:* Find non-private [Model](../../bis/domains/BisCore.ecschema.md#model)s.
 >
 > *ECSQL*
+>
 > ```sql
 > SELECT ECInstanceId,ECClassId FROM bis.Model WHERE IsPrivate = False
 > ```
+>
 > and
+>
 > ```sql
 > SELECT ECInstanceId,ECClassId FROM bis.Model WHERE NOT IsPrivate
 > ```
+>
 <iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT ECInstanceId,ECClassId FROM bis.Model WHERE NOT IsPrivate"></iframe>
 
 ## DateTime
@@ -88,9 +100,11 @@ See [ECSQL Reference](../ECSQL.md#datetime) for details.
 > *Goal:* Find all elements which were modified between 12:30pm and 12:31pm UTC on March, 11th 2020.
 >
 > *ECSQL*
+>
 > ```sql
 > SELECT ECInstanceId, CodeValue, LastMod FROM bis.Element WHERE LastMod BETWEEN TIMESTAMP '2020-03-11T12:30:20.492Z' AND TIMESTAMP '2020-03-11T12:31:03.494Z'
 > ```
+>
 <iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT ECInstanceId, CodeValue, LastMod FROM bis.Element WHERE LastMod BETWEEN TIMESTAMP '2020-03-11T12:30:20.492Z' AND TIMESTAMP '2020-03-11T12:31:03.494Z'"></iframe>
 
 ## Points
@@ -112,9 +126,11 @@ Property | Description
 > lower corner point (0, 0, 0) and the upper corner point (10, 10, 10).
 >
 > *ECSQL*
+>
 > ```sql
 > SELECT ecinstanceid, Origin FROM bis.spatialelement WHERE Origin.X BETWEEN 0 AND 10 AND Origin.Y BETWEEN 0 AND 10 AND Origin.Z BETWEEN 0 AND 10
 > ```
+>
 <iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT ecinstanceid, Origin FROM bis.spatialelement WHERE Origin.X BETWEEN 0 AND 10 AND Origin.Y BETWEEN 0 AND 10 AND Origin.Z BETWEEN 0 AND 10"></iframe>
 
 ## Navigation Properties
@@ -138,20 +154,23 @@ Property | Description
 > *Goal:* Return the parent [Element](../../bis/domains/BisCore.ecschema.md#element) for the element with code value *0x20000000007*.
 >
 > *ECSQL*
+>
 > ```sql
 > SELECT ECInstanceId, CodeValue, LastMod, Parent FROM bis.Element WHERE ECInstanceId = 0x20000000007
 > ```
+>
 <iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT ECInstanceId, CodeValue, LastMod, Parent FROM bis.Element WHERE ECInstanceId = 0x20000000007"></iframe>
-
 
 > **Try it yourself**
 >
 > *Goal:* Return the id of the parent [Element](../../bis/domains/BisCore.ecschema.md#element) for the element with id value *0x20000000007*.
 >
 > *ECSQL*
+>
 > ```sql
 > SELECT ECInstanceId, CodeValue, LastMod, Parent.Id FROM bis.Element WHERE ECInstanceId = 0x20000000007
 > ```
+>
 <iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT ECInstanceId, CodeValue, LastMod, Parent.Id FROM bis.Element WHERE ECInstanceId = 0x20000000007"></iframe>
 
 ---
@@ -161,9 +180,11 @@ Property | Description
 > *Goal:* Return the id and RelECClassId of the parent [Element](../../bis/domains/BisCore.ecschema.md#element) separately for the element with id value *0x20000000007*.
 >
 > *ECSQL*
+>
 > ```sql
 > SELECT Parent.Id, Parent.RelECClassId FROM bis.Element WHERE ECInstanceId = 0x20000000007
 > ```
+>
 <iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT Parent.Id, Parent.RelECClassId FROM bis.Element WHERE ECInstanceId = 0x20000000007"></iframe>
 
 Find more examples in the lesson about [Joins and ECRelationshipClasses](./Joins.md#examples).
@@ -182,6 +203,7 @@ Follow the steps in the sections [Generate Change Summaries](./ChangeSummaryQuer
 > *Goal:* Return ChangedInstance struct (of type [InstanceKey](../ECDbChange.ecschema.md#instancekey)) as a whole and OpCode for the InstanceChange object `0x36`.
 >
 > *ECSQL*
+>
 > ```sql
 > SELECT ChangedInstance,OpCode FROM change.InstanceChange WHERE ECInstanceId=0x36
 > ```
@@ -199,6 +221,7 @@ And here is an example where individual members of the struct are used.
 > *Goal:* Return the ids of changed instances (structs of type [InstanceKey](../ECDbChange.ecschema.md#instancekey)) that are [Device](./MyDomain.ecschema.md#device)s (ECClass `0x100`) and the corresponding Change Summary id and OpCode.
 >
 > *ECSQL*
+>
 > ```sql
 > SELECT Summary.Id,ChangedInstance.Id,OpCode FROM change.InstanceChange WHERE ChangedInstance.ClassId=0x100
 > ```
@@ -224,6 +247,7 @@ In ECSQL you can refer to Array ECProperties only as a whole.
 in the array property [ECEnumerationDef.EnumValues](../ECDbMeta.ecschema.md#ecenumerationdef).
 >
 > *ECSQL*
+>
 > ```sql
 > SELECT Name, EnumValues FROM meta.ECEnumerationDef WHERE Name='SectionType'
 > ```

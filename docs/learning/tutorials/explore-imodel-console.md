@@ -1,6 +1,6 @@
 # Using iModel Console
 
-- Navigate to https://imodelconsole.bentley.com/
+- Navigate to <https://imodelconsole.bentley.com/>
 - Follow tutorial to learn how to use iModel Console
 - Select your Project
 - Select your iModel

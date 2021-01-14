@@ -2,6 +2,7 @@
 # ECSQL Built-In functions
 
 ECSQL allows use of these built-in functions:
+
 1. `ec_classname()` - Gets the formatted/qualified class name, given ECClassId as input
 2. `ec_classid())` - Gets ECClassId, given a formatted/qualified class name as input
 

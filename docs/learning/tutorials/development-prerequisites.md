@@ -18,7 +18,7 @@ The following tools are very helpful and highly suggested for working with iMode
   - This is the recommended editor and debugger for iModel.js applications.
   - VS Code also supplies a graphical user interface for working with Git.
   - The following VS Code extensions can also be quite helpful:
-    - [TSLint](https://marketplace.visualstudio.com/items?itemName=ms-vscode.vscode-typescript-tslint-plugin) (use tslint.json from @bentley/build-tools to enforce Bentley coding standards)
+    - [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) (use the [@bentley/eslint-plugin](https://www.npmjs.com/package/@bentley/eslint-plugin) to enforce Bentley coding standards)
     - [Debugger for Chrome](https://marketplace.visualstudio.com/items?itemName=msjsdiag.debugger-for-chrome)
     - [GitLens](https://marketplace.visualstudio.com/items?itemName=eamodio.gitlens) (great tools for using Git inside VS Code)
     - [MarkdownLint](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint) (for editing documentation)
