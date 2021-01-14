@@ -7,6 +7,7 @@
     "lint-staged": "^10.2.11",
     "object-is": "1.0.2",
     "ssri": "^6.0.1",
+    "tsutils": "~3.17.1",
     "typescript": "~3.7.4"
   }
 }
