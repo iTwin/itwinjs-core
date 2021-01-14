@@ -2,8 +2,6 @@
 
 This article discusses IPC communication in iModel.js. See also [RPC vs IPC](./RpcVsIpc.md).
 
-Table of Contents:
-
 ## Overview
 
 [IPC](https://en.wikipedia.org/wiki/Inter-process_communication) (Inter-Process Communication)) is a direct-connect communication technique used in iModel.js when the frontend and backend processes are paired one-to-one. IPC is most commonly used for [native apps](./NativeApps.md) where both processes are always on the same computer, but may also be used by web apps with a "dedicated" backend.
@@ -31,7 +29,6 @@ and
 For mobile devices those interfaces are implemented over WebSockets.
 
 TODO: mobile initialization
-
 
 ## FrontendIpc and BackendIpc
 
@@ -65,7 +62,7 @@ The TypeScript gobbledygook in Step 3 above creates a type-safe asynchronous fun
   const method1Val = await callMyBackend("method1", arg1, arg2, arg3);
 ```
 
-> Note that all IPC methods return a `Promise`, so their return value must always be `await`ed.
+> Note that all IPC methods return a `Promise`, so their return value must be `await`ed.
 
 It is probably a good practice to ensure that your backend is properly matched with your frontend somewhere in your startup code. E.g.:
 

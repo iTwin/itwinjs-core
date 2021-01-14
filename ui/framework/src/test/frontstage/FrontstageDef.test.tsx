@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { MockRender } from "@bentley/imodeljs-frontend";
-import { ContentLayoutDef, CoreTools, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider } from "../../ui-framework";
+import { ContentLayoutDef, CoreTools, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, StagePanelDef, WidgetDef, WidgetState } from "../../ui-framework";
 import TestUtils from "../TestUtils";
 
 describe("FrontstageDef", () => {
@@ -77,6 +77,31 @@ describe("FrontstageDef", () => {
       spy.calledOnceWithExactly(sinon.match({
         frontstageDef,
       })).should.true;
+    });
+
+    it("should restore panel widget to default state", () => {
+      const frontstageDef = new FrontstageDef();
+      const rightPanel = new StagePanelDef();
+      const w1 = new WidgetDef({
+        defaultState: WidgetState.Open,
+      });
+      sinon.stub(rightPanel, "widgetDefs").get(() => [w1]);
+      sinon.stub(frontstageDef, "rightPanel").get(() => rightPanel);
+      const spy = sinon.spy(w1, "setWidgetState");
+
+      frontstageDef.restoreLayout();
+      sinon.assert.calledOnceWithExactly(spy, WidgetState.Open);
+    });
+
+    it("should restore panel size to default size", () => {
+      const frontstageDef = new FrontstageDef();
+      const rightPanel = new StagePanelDef();
+      sinon.stub(rightPanel, "defaultSize").get(() => 300);
+      sinon.stub(frontstageDef, "rightPanel").get(() => rightPanel);
+      const spy = sinon.spy(rightPanel, "size", ["set"]);
+
+      frontstageDef.restoreLayout();
+      sinon.assert.calledOnceWithExactly(spy.set, 300);
     });
   });
 
