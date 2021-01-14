@@ -56,6 +56,7 @@ export * from "./ipc/BackendIpc";
 export * from "./ipc/FrontendIpc";
 export * from "./ipc/IpcSocket";
 export * from "./ipc/NativeAppIpc";
+export * from "./ipc/IpcWebSocket";
 export * from "./LightSettings";
 export * from "./LinePixels";
 export * from "./MapImagerySettings";

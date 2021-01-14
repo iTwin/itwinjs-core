@@ -17,6 +17,7 @@ export abstract class IpcWebSocketTransport {
 /** @alpha */
 export enum IpcWebSocketMessageType {
   Send,
+  Push,
   Invoke,
   Response
 }
@@ -41,9 +42,7 @@ export abstract class IpcWebSocket implements IpcSocket {
     IpcWebSocket.transport.listen((m) => this.broadcast(m));
   }
 
-  public send(channel: string, ...data: any[]): void {
-    IpcWebSocket.transport.send({ type: IpcWebSocketMessageType.Send, channel, data });
-  }
+  public abstract send(channel: string, ...data: any[]): void;
 
   public receive(channel: string, listener: IpcListener): RemoveFunction {
     let listeners = this._channels.get(channel);
@@ -60,7 +59,7 @@ export abstract class IpcWebSocket implements IpcSocket {
   }
 
   private async broadcast(message: IpcWebSocketMessage) {
-    if (message.type !== IpcWebSocketMessageType.Send) {
+    if (message.type !== IpcWebSocketMessageType.Send && message.type !== IpcWebSocketMessageType.Push) {
       return;
     }
 
@@ -90,8 +89,12 @@ export class IpcWebSocketFrontend extends IpcWebSocket implements IpcSocketFront
     IpcWebSocket.transport.listen((m) => this.dispatch(m));
   }
 
+  public send(channel: string, ...data: any[]): void {
+    IpcWebSocket.transport.send({ type: IpcWebSocketMessageType.Send, channel, data });
+  }
+
   public invoke(channel: string, methodName: string, ...args: any[]): Promise<any> {
-    const requestId = this._nextRequest++;
+    const requestId = ++this._nextRequest;
     IpcWebSocket.transport.send({ type: IpcWebSocketMessageType.Invoke, channel, method: methodName, data: args, request: requestId });
 
     return new Promise((resolve) => {
@@ -123,6 +126,10 @@ export class IpcWebSocketBackend extends IpcWebSocket implements IpcSocketBacken
     IpcWebSocket.transport.listen((m) => this.dispatch(m));
   }
 
+  public send(channel: string, ...data: any[]): void {
+    IpcWebSocket.transport.send({ type: IpcWebSocketMessageType.Push, channel, data });
+  }
+
   public handle(channel: string, handler: (methodName: string, ...args: any[]) => Promise<any>): RemoveFunction {
     this._handlers.set(channel, handler);
 
@@ -130,7 +137,7 @@ export class IpcWebSocketBackend extends IpcWebSocket implements IpcSocketBacken
       if (this._handlers.get(channel) === handler) {
         this._handlers.delete(channel);
       };
-    }
+    };
   }
 
   private async dispatch(message: IpcWebSocketMessage) {
