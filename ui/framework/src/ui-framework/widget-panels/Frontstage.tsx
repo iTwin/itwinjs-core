@@ -297,6 +297,23 @@ export function addMissingWidgets(frontstageDef: FrontstageDef, initialState: Ni
   return state;
 }
 
+/** Removes NineZoneState widgets that are missing in frontstageDef.
+ * @internal
+ */
+export function removeMissingWidgets(frontstageDef: FrontstageDef, initialState: NineZoneState): NineZoneState {
+  const state = produce(initialState, (draft) => {
+    for (const [, tab] of Object.entries(draft.tabs)) {
+      if (tab.id === toolSettingsTabId)
+        continue;
+      const widgetDef = frontstageDef.findWidgetDef(tab.id);
+      if (widgetDef)
+        continue;
+      removeTab(draft, tab.id);
+    }
+  });
+  return state;
+}
+
 function getWidgetLabel(label: string) {
   return label === "" ? "Widget" : label;
 }
@@ -862,22 +879,18 @@ export function useFrontstageManager(frontstageDef: FrontstageDef) {
 // istanbul ignore next
 export function useItemsManager(frontstageDef: FrontstageDef) {
   React.useEffect(() => {
-    const handleUiProviderRegisteredEvent = (ev: UiItemProviderRegisteredEventArgs): void => {
-      const itemsProvider = UiItemsManager.getUiItemsProvider(ev.providerId);
-      if (itemsProvider && itemsProvider.provideWidgets) {
-        const initialState = frontstageDef.nineZoneState;
-        frontstageDef.updateWidgetDefs();
+    const remove = UiItemsManager.onUiProviderRegisteredEvent.addListener(() => {
+      // Fired for both registered/unregistered. Update definitions and remove/add missing widgets.
+      frontstageDef.updateWidgetDefs();
+      let state = frontstageDef.nineZoneState;
 
-        if (!initialState)
-          return;
-        const state = addMissingWidgets(frontstageDef, initialState);
-        frontstageDef.nineZoneState = state;
-      }
-    };
-    UiItemsManager.onUiProviderRegisteredEvent.addListener(handleUiProviderRegisteredEvent);
-    return () => {
-      UiItemsManager.onUiProviderRegisteredEvent.removeListener(handleUiProviderRegisteredEvent);
-    };
+      if (!state)
+        return;
+      state = addMissingWidgets(frontstageDef, state);
+      state = removeMissingWidgets(frontstageDef, state);
+      frontstageDef.nineZoneState = state;
+    });
+    return remove;
   }, [frontstageDef]);
 }
 

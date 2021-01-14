@@ -89,9 +89,9 @@ export class TestFrontstageUi2 extends FrontstageProvider {
 export class TestUi2Provider implements UiItemsProvider {
   public readonly id = "TestUi2Provider";
 
-  public provideWidgets(_stageId: string, _stageUsage: string, location: StagePanelLocation, section?: StagePanelSection) {
+  public provideWidgets(_stageId: string, _stageUsage: string, location: StagePanelLocation, _section?: StagePanelSection) {
     const widgets: Array<AbstractWidgetProps> = [];
-    if (location === StagePanelLocation.Right && section === StagePanelSection.Middle)
+    if (location === StagePanelLocation.Right/* && section === StagePanelSection.Middle*/)
       widgets.push({
         id: "TestUi2ProviderRM1",
         label: "TestUi2Provider RM1",
@@ -415,7 +415,7 @@ describe("useSavedFrontstageState", () => {
     frontstageDef.nineZoneState!.should.not.eq(setting.nineZone);
   });
 
-  it.only("should add missing widgets", async () => {
+  it("should add missing widgets", async () => {
     const setting = createFrontstageState();
     const uiSettings = new UiSettingsStub();
     sinon.stub(uiSettings, "getSetting").resolves({
@@ -1253,7 +1253,7 @@ describe("dynamic widgets", () => {
     await findByText("TestUi2Provider RM1");
   });
 
-  it.skip("should stop rendering unloaded extension widgets", async () => {
+  it("should stop rendering unloaded extension widgets", async () => {
     const frontstageProvider = new TestFrontstageUi2();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
     await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
@@ -1265,17 +1265,15 @@ describe("dynamic widgets", () => {
     });
 
     await TestUtils.flushAsyncOperations();
-    should().exist(frontstageDef.nineZoneState!.tabs.LeftStart1);
-    should().exist(frontstageDef.nineZoneState!.tabs.TestUi2ProviderRM1);
+    should().exist(frontstageDef.nineZoneState!.tabs.LeftStart1, "LeftStart1");
+    should().exist(frontstageDef.nineZoneState!.tabs.TestUi2ProviderRM1, "TestUi2ProviderRM1");
 
     act(() => {
       UiItemsManager.unregister("TestUi2Provider");
     });
 
     await TestUtils.flushAsyncOperations();
-    should().exist(frontstageDef.nineZoneState!.tabs.LeftStart1);
+    should().exist(frontstageDef.nineZoneState!.tabs.LeftStart1, "LeftStart1 after unregister");
     should().not.exist(frontstageDef.nineZoneState!.tabs.TestUi2ProviderRM1);
   });
-
-  it.only("", () => { });
 });
