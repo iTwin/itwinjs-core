@@ -48,7 +48,7 @@ export interface IpcSocket {
    * Establish a handler to receive messages for a channel through a socket.
    * @param channel The name of the channel for the messages. Must begin with the [[iTwinChannel]] prefix.
    * @param listener A function called when messages are sent over `channel`
-   * @return A function to call to remove the listener.
+   * @note returns A function to call to remove the listener.
    */
   receive: (channel: string, listener: IpcListener) => RemoveFunction;
 }
