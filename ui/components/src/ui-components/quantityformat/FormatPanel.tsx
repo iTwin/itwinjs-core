@@ -10,7 +10,7 @@ import "./FormatPanel.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { Checkbox, CommonProps, Input } from "@bentley/ui-core";
-import { DecimalPrecision, Format, FormatProps, FormatterSpec, FormatTraits, FormatType, FractionalPrecision, ShowSignOption, UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
+import { DecimalPrecision, Format, FormatProps, FormatterSpec, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption, UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
 import { UomSeparatorSelector } from "./UomSeparator";
 import { FormatTypeSelector } from "./FormatType";
 import { DecimalPrecisionSelector } from "./DecimalPrecision";
@@ -19,6 +19,8 @@ import { SignOptionSelector } from "./SignOption";
 import { ThousandSeparatorSelector } from "./ThousandSeparator";
 import { DecimalSeparatorSelector } from "./DecimalSeparator";
 import { UnitDescr } from "./UnitDescr";
+import { SpecialKey } from "@bentley/ui-abstract";
+import { ScientificTypeSelector } from "./ScientificType";
 
 /** Properties of [[UomSeparatorSelector]] component.
  * @alpha
@@ -62,8 +64,8 @@ function getTraitString(trait: FormatTraits) {
 export function FormatPanel(props: FormatPanelProps) {
   const formatSpec = React.useRef<FormatterSpec>();
   const { initialFormat, showSample, initialMagnitude, unitsProvider, persistenceUnit, onFormatChange } = props;
-
   const [magnitude, setMagnitude] = React.useState(() => initialMagnitude ?? 0);
+  const [sampleValue, setSampleValue] = React.useState(magnitude.toString());
   const [formattedValue, setFormattedValue] = React.useState("");
   const [activePersistenceUnitLabel, setActivePersistenceUnitLabel] = React.useState("");
   const [formatProps, setFormatProps] = React.useState(initialFormat);
@@ -91,9 +93,13 @@ export function FormatPanel(props: FormatPanelProps) {
   const handleFormatTypeChange = React.useCallback((newType: FormatType) => {
     const type = Format.formatTypeToString(newType);
     let precision: number | undefined;
+    let scientificType: string | undefined;
     switch (newType) { // type must be decimal, fractional, scientific, or station
-      case FormatType.Decimal:
       case FormatType.Scientific:
+        precision = DecimalPrecision.Six;
+        scientificType = Format.scientificTypeToString(ScientificType.Normalized);
+        break;
+      case FormatType.Decimal:
       case FormatType.Station:
         precision = DecimalPrecision.Six;
         break;
@@ -101,7 +107,7 @@ export function FormatPanel(props: FormatPanelProps) {
         precision = FractionalPrecision.Eight;
         break;
     }
-    const newFormatProps = { ...formatProps, type, precision };
+    const newFormatProps = { ...formatProps, type, precision, scientificType };
     handleSetFormatProps(newFormatProps);
   }, [formatProps, handleSetFormatProps]);
 
@@ -229,8 +235,26 @@ export function FormatPanel(props: FormatPanelProps) {
     }
   }, [formatProps, handleSetFormatProps]);
 
-  const handleOnValueChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setMagnitude(e.target.value ? Number.parseFloat(e.target.value) : 0);
+  const handleOnValueBlur = React.useCallback((e: React.FocusEvent<HTMLInputElement>) => {
+    let newValue = e.target.value ? Number.parseFloat(e.target.value) : 0;
+    if (Number.isNaN(newValue))
+      newValue = 0;
+    setMagnitude(newValue);
+  }, []);
+
+  const handleOnValueChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    setSampleValue(event.target.value);
+  }, []);
+
+  const handleKeyDown = React.useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    // istanbul ignore else
+    if (e.key === SpecialKey.Enter) {
+      let newValue = e.currentTarget.value ? Number.parseFloat(e.currentTarget.value) : 0;
+      if (Number.isNaN(newValue))
+        newValue = 0;
+      setMagnitude(newValue);
+      e.preventDefault();
+    }
   }, []);
 
   const handleOnSpacerChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -239,6 +263,11 @@ export function FormatPanel(props: FormatPanelProps) {
       const newFormatProps = { ...formatProps, composite };
       handleSetFormatProps(newFormatProps);
     }
+  }, [formatProps, handleSetFormatProps]);
+
+  const handleScientificTypeChange = React.useCallback((type: ScientificType) => {
+    const newFormatProps = { ...formatProps, scientificType: Format.scientificTypeToString(type) };
+    handleSetFormatProps(newFormatProps);
   }, [formatProps, handleSetFormatProps]);
 
   React.useEffect(() => {
@@ -261,7 +290,7 @@ export function FormatPanel(props: FormatPanelProps) {
       {showSample &&
         <>
           <span className={"uicore-label"}>Sample Value</span>
-          <span className="components-inline"><Input value={initialMagnitude} onChange={handleOnValueChange} />{activePersistenceUnitLabel}</span>
+          <span className="components-inline"><Input value={sampleValue} onChange={handleOnValueChange} onKeyDown={handleKeyDown} onBlur={handleOnValueBlur} />{activePersistenceUnitLabel}</span>
           <span className={"uicore-label"}>Formatted Value</span>
           <span className={"uicore-label"}>{formattedValue}</span>
         </>
@@ -304,6 +333,9 @@ export function FormatPanel(props: FormatPanelProps) {
       <Checkbox isLabeled={true} checked={isFormatTraitSet(FormatTraits.ZeroEmpty)} onChange={handleZeroEmptyChange} />
       <span className={classnames("uicore-label", formatType !== FormatType.Fractional && "uicore-disabled")}>Fraction Dash</span>
       <Checkbox isLabeled={true} checked={isFormatTraitSet(FormatTraits.FractionDash)} onChange={handleUseFractionDashChange} disabled={formatType !== FormatType.Fractional} />
+      <span className={classnames("uicore-label", formatType !== FormatType.Scientific && "uicore-disabled")}>Scientific Type</span>
+      <ScientificTypeSelector type={(formatProps.scientificType && formatProps.scientificType.length > 0) ? Format.parseScientificType(formatProps.scientificType, "custom") : ScientificType.Normalized}
+        disabled={formatType !== FormatType.Scientific} onChange={handleScientificTypeChange} />
       <span className={classnames("uicore-label", formatType !== FormatType.Scientific && "uicore-disabled")}>Exponent Only Negative</span>
       <Checkbox isLabeled={true} checked={isFormatTraitSet(FormatTraits.ExponentOnlyNegative)} onChange={handleExponentOnlyNegativeChange} disabled={formatType !== FormatType.Scientific} />
     </div>

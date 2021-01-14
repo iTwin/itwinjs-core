@@ -29,7 +29,7 @@ export function FormatPopupButton(props: FormatPopupButtonProps) {
   const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
   const [showFocusOutline, setShowFocusOutline] = React.useState(false);
   const [formatProps, setFormatProps] = React.useState(props.initialFormat);
-  const toolTipLabelRef = React.useRef(UiComponents.translate("quantityFormatterPopup.setFormat"));
+  const toolTipLabelRef = React.useRef(UiComponents.translate("QuantityFormat.popupButton.setFormat"));
 
   const buttonRef = React.useRef<HTMLButtonElement>(null);
   const handleCloseSetting = React.useCallback(() => {

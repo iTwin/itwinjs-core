@@ -67,7 +67,7 @@ export class Format {
 
   /** This method parses input string that is typically extracted for persisted JSON data and validates that the string is a valid ScientificType. Throws exception if not valid. */
   public static parseScientificType(scientificType: string, formatName: string): ScientificType {
-    switch (scientificType) {
+    switch (scientificType.toLowerCase()) {
       case "normalized":
         return ScientificType.Normalized;
       case "zeronormalized":

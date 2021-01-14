@@ -218,6 +218,13 @@
     "decimal_separator": {
       "comma": "Comma",
       "point": "Point"
+    },
+    "scientific-type": {
+      "normalized": "Normalized",
+      "zero-normalized": "Zero Normalized"
+    },
+    "popupButton": {
+      "setFormat": "Set Format"
     }
   }
 }
