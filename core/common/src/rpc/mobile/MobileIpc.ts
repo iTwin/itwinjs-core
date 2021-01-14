@@ -37,9 +37,9 @@ export class MobileIpcTransport extends IpcWebSocketTransport {
 
   public send(message: IpcWebSocketMessage): void {
     if (message.type === IpcWebSocketMessageType.Send || message.type === IpcWebSocketMessageType.Invoke) {
-      this.sendToBackend(message);
+      this.sendToBackend(message); // eslint-disable-line @typescript-eslint/no-floating-promises
     } else if (message.type === IpcWebSocketMessageType.Push || message.type === IpcWebSocketMessageType.Response) {
-      this.sendToFrontend(message);
+      this.sendToFrontend(message); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
   }
 
@@ -48,9 +48,8 @@ export class MobileIpcTransport extends IpcWebSocketTransport {
   }
 
   public consumeRequest(request: SerializedRpcRequest): boolean {
-    if (request.operation.interfaceDefinition !== IPC) {
+    if (request.operation.interfaceDefinition !== IPC)
       return false;
-    }
 
     const message = RpcMarshaling.deserialize(this._protocol, request.parameters)[0] as IpcWebSocketMessage;
     this.broadcast(message);
@@ -58,15 +57,13 @@ export class MobileIpcTransport extends IpcWebSocketTransport {
   }
 
   public consumeResponse(response: RpcRequestFulfillment): boolean {
-    if (response.interfaceName !== IPC) {
+    if (response.interfaceName !== IPC)
       return false;
-    }
 
     const message = RpcMarshaling.deserialize(this._protocol, response.result) as IpcWebSocketMessage;
     this.broadcast(message);
     return true;
   }
-
 
   private async sendToBackend(message: IpcWebSocketMessage) {
     const request = new MobileRpcRequest(this._client, "send", [message]);
@@ -83,8 +80,7 @@ export class MobileIpcTransport extends IpcWebSocketTransport {
   }
 
   private broadcast(message: IpcWebSocketMessage) {
-    for (const listener of this._listeners) {
+    for (const listener of this._listeners)
       listener(message);
-    }
   }
 }

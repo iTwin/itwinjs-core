@@ -24,12 +24,12 @@ export enum IpcWebSocketMessageType {
 
 /** @alpha */
 export interface IpcWebSocketMessage {
-  type: IpcWebSocketMessageType,
-  request?: number,
-  response?: number,
-  channel: string,
-  method?: string,
-  data?: any[],
+  type: IpcWebSocketMessageType;
+  request?: number;
+  response?: number;
+  channel: string;
+  method?: string;
+  data?: any[];
 }
 
 /** @alpha */
@@ -39,7 +39,7 @@ export abstract class IpcWebSocket implements IpcSocket {
   protected _channels = new Map<string, Set<IpcListener>>();
 
   public constructor() {
-    IpcWebSocket.transport.listen((m) => this.broadcast(m));
+    IpcWebSocket.transport.listen(async (m) => this.broadcast(m));
   }
 
   public abstract send(channel: string, ...data: any[]): void;
@@ -51,31 +51,26 @@ export abstract class IpcWebSocket implements IpcSocket {
       this._channels.set(channel, listeners);
     }
 
-    if (!listeners.has(listener)) {
+    if (!listeners.has(listener))
       listeners.add(listener);
-    }
 
     return () => listeners!.delete(listener);
   }
 
   private async broadcast(message: IpcWebSocketMessage) {
-    if (message.type !== IpcWebSocketMessageType.Send && message.type !== IpcWebSocketMessageType.Push) {
+    if (message.type !== IpcWebSocketMessageType.Send && message.type !== IpcWebSocketMessageType.Push)
       return;
-    }
 
     const handlers = this._channels.get(message.channel);
-    if (!handlers) {
+    if (!handlers)
       return;
-    }
 
     let arg = message.data;
-    if (typeof (arg) === "undefined") {
+    if (typeof (arg) === "undefined")
       arg = [];
-    }
 
-    for (const handler of handlers) {
+    for (const handler of handlers)
       handler({}, ...arg);
-    }
   }
 }
 
@@ -86,14 +81,14 @@ export class IpcWebSocketFrontend extends IpcWebSocket implements IpcSocketFront
 
   public constructor() {
     super();
-    IpcWebSocket.transport.listen((m) => this.dispatch(m));
+    IpcWebSocket.transport.listen(async (m) => this.dispatch(m));
   }
 
   public send(channel: string, ...data: any[]): void {
     IpcWebSocket.transport.send({ type: IpcWebSocketMessageType.Send, channel, data });
   }
 
-  public invoke(channel: string, methodName: string, ...args: any[]): Promise<any> {
+  public async invoke(channel: string, methodName: string, ...args: any[]): Promise<any> {
     const requestId = ++this._nextRequest;
     IpcWebSocket.transport.send({ type: IpcWebSocketMessageType.Invoke, channel, method: methodName, data: args, request: requestId });
 
@@ -103,14 +98,12 @@ export class IpcWebSocketFrontend extends IpcWebSocket implements IpcSocketFront
   }
 
   private async dispatch(message: IpcWebSocketMessage) {
-    if (message.type !== IpcWebSocketMessageType.Response || !message.response) {
+    if (message.type !== IpcWebSocketMessageType.Response || !message.response)
       return;
-    }
 
     const pendingHandler = this._pendingRequests.get(message.response);
-    if (!pendingHandler) {
+    if (!pendingHandler)
       return;
-    }
 
     this._pendingRequests.delete(message.response);
     pendingHandler(message.data);
@@ -123,7 +116,7 @@ export class IpcWebSocketBackend extends IpcWebSocket implements IpcSocketBacken
 
   public constructor() {
     super();
-    IpcWebSocket.transport.listen((m) => this.dispatch(m));
+    IpcWebSocket.transport.listen(async (m) => this.dispatch(m));
   }
 
   public send(channel: string, ...data: any[]): void {
@@ -134,26 +127,22 @@ export class IpcWebSocketBackend extends IpcWebSocket implements IpcSocketBacken
     this._handlers.set(channel, handler);
 
     return () => {
-      if (this._handlers.get(channel) === handler) {
+      if (this._handlers.get(channel) === handler)
         this._handlers.delete(channel);
-      };
     };
   }
 
   private async dispatch(message: IpcWebSocketMessage) {
-    if (message.type !== IpcWebSocketMessageType.Invoke || !message.method) {
+    if (message.type !== IpcWebSocketMessageType.Invoke || !message.method)
       return;
-    }
 
     const handler = this._handlers.get(message.channel);
-    if (!handler) {
+    if (!handler)
       return;
-    }
 
     let args = message.data;
-    if (typeof (args) === "undefined") {
+    if (typeof (args) === "undefined")
       args = [];
-    }
 
     const response = await handler(message.method, ...args);
 
@@ -161,7 +150,7 @@ export class IpcWebSocketBackend extends IpcWebSocket implements IpcSocketBacken
       type: IpcWebSocketMessageType.Response,
       channel: message.channel,
       response: message.request,
-      data: response
+      data: response,
     });
   }
 }

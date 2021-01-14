@@ -5,9 +5,7 @@
 import * as path from "path";
 import { ClientRequestContext, DbResult, Id64String } from "@bentley/bentleyjs-core";
 import { Angle, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import {
-  BriefcaseDb, ECSqlStatement, Element, IModelDb, IModelHost, IModelHostConfiguration, KnownLocations, Platform,
-} from "@bentley/imodeljs-backend";
+import { BriefcaseDb, ECSqlStatement, Element, IModelDb, IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
 import {
   Code, FeatureGates, IModelReadRpcInterface, IModelWriteRpcInterface, RpcInterfaceDefinition, RpcManager, TestRpcManager,
 } from "@bentley/imodeljs-common";
