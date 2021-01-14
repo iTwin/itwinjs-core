@@ -235,9 +235,9 @@ export class EmphasizeElements implements FeatureOverrideProvider {
   }
 
   /** Clear color/transparency overrides from elements. Removes all overrides when neither key or ids is specified.
-   * @params key Specify key value from [[EmphasizeElements.getOverriddenElements]] or [[EmphasizeElements.createOverrideKey]]
+   * @param key Specify key value from [[EmphasizeElements.getOverriddenElements]] or [[EmphasizeElements.createOverrideKey]]
    * to remove a single color/transparency override for the corresponding elements.
-   * @params ids Specify the IDs of elements to remove any color/transparency override from.
+   * @param ids Specify the IDs of elements to remove any color/transparency override from.
    * @return false if nothing to clear.
    */
   public clearOverriddenElements(vp: Viewport, key?: number, ids?: Id64Arg): boolean {
