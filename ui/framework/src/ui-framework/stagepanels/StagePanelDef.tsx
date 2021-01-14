@@ -194,7 +194,7 @@ export class StagePanelDef extends WidgetHost {
         const stableId = `uifw-sp-${StagePanelLocation[this._location]}-${index}`;
         const stableProps = getStableWidgetProps(widgetNode.props, stableId);
         const widgetDef = new WidgetDef(stableProps);
-        this.addWidgetDef(widgetDef);
+        this.panelZones.start.addWidgetDef(widgetDef);
       });
     }
   }
@@ -213,27 +213,20 @@ export class StagePanelDef extends WidgetHost {
 
   /** Finds a [[WidgetDef]] based on a given id */
   public findWidgetDef(id: string): WidgetDef | undefined {
-    // istanbul ignore if
-    if (UiFramework.uiVersion === "2") {
-      for (const [, panelZone] of this.panelZones) {
-        const widgetDef = panelZone.findWidgetDef(id);
-        if (widgetDef)
-          return widgetDef;
-      }
+    for (const [, panelZone] of this.panelZones) {
+      const widgetDef = panelZone.findWidgetDef(id);
+      if (widgetDef)
+        return widgetDef;
     }
 
-    return super.findWidgetDef(id);
+    return undefined;
   }
 
   /** @internal */
-  public updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation, section?: StagePanelSection): void {
-    if (UiFramework.uiVersion === "1") {
-      return super.updateDynamicWidgetDefs(stageId, stageUsage, location, section);
-    }
-
+  public updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation, _section?: StagePanelSection): void {
     this.panelZones.start.updateDynamicWidgetDefs(stageId, stageUsage, location, StagePanelSection.Start);
-    this.panelZones.middle.updateDynamicWidgetDefs(stageId, stageUsage, location, StagePanelSection.Middle);
-    this.panelZones.end.updateDynamicWidgetDefs(stageId, stageUsage, location, StagePanelSection.End);
+    // this.panelZones.middle.updateDynamicWidgetDefs(stageId, stageUsage, location, StagePanelSection.Middle);
+    // this.panelZones.end.updateDynamicWidgetDefs(stageId, stageUsage, location, StagePanelSection.End);
   }
 }
 

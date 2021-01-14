@@ -40,7 +40,7 @@ export class WidgetHost {
 
   /** Gets the number of Widgets. */
   public get widgetCount(): number {
-    return this._sortedWidgetDefs.length;
+    return this.widgetDefs.length;
   }
 
   /** If there is only one Widget in the Panel, gets the single WidgetDef.
@@ -48,7 +48,7 @@ export class WidgetHost {
    */
   public getSingleWidgetDef(): WidgetDef | undefined {
     if (this.widgetCount === 1) {
-      return this._sortedWidgetDefs[0];
+      return this.widgetDefs[0];
     }
     return undefined;
   }

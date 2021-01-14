@@ -414,6 +414,34 @@ describe("useSavedFrontstageState", () => {
     (frontstageDef.nineZoneState !== undefined).should.true;
     frontstageDef.nineZoneState!.should.not.eq(setting.nineZone);
   });
+
+  it.only("should add missing widgets", async () => {
+    const setting = createFrontstageState();
+    const uiSettings = new UiSettingsStub();
+    sinon.stub(uiSettings, "getSetting").resolves({
+      status: UiSettingsStatus.Success,
+      setting,
+    });
+    const frontstageDef = new FrontstageDef();
+    const leftPanel = new StagePanelDef();
+    leftPanel.initializeFromProps({
+      resizable: true,
+      widgets: [
+        <Widget
+          key="w1"
+          id="w1"
+        />,
+      ],
+    }, StagePanelLocation.Left);
+    sinon.stub(frontstageDef, "leftPanel").get(() => leftPanel);
+
+    renderHook(() => useSavedFrontstageState(frontstageDef), {
+      wrapper: (props) => <UiSettingsProvider {...props} uiSettings={uiSettings} />,
+    });
+    await TestUtils.flushAsyncOperations();
+
+    should().exist(frontstageDef.nineZoneState?.tabs.w1);
+  });
 });
 
 describe("useSaveFrontstageSettings", () => {
