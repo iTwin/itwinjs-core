@@ -3,6 +3,106 @@ publish: false
 ---
 # NextVersion
 
+Overview:
+
+- Breaking Changes:
+  - [Breaking API changes](#breaking-api-changes)
+  - [BriefcaseManager changes](#briefcasemanager-breaking-changes)
+- Visualization
+  - [Section-cut graphics](#section-cut-graphics)
+  - [Custom screen-space effects](#custom-screen-space-effects)
+  - [Automatic viewport synchronization](#automatic-viewport-synchronization)
+  - [Globe location tool fixes](#globe-location-tool-fixes)
+  - [Changes to display style excluded elements](#changes-to-display-style-excluded-elements)
+  - [Tile compression](#tile-compression)
+- [Upgrading schemas in an iModel](#upgrading-schemas-in-an-imodel)
+- [Presentation](#presentation)
+  - [Formatted property values in ECExpressions](#formatted-property-values-in-ecexpressions)
+  - [Enhanced navigation property values](#enhanced-navigation-property-values)
+  - [Interactable navigation properties](#interactable-navigation-properties)
+  - [Breaking changes to `ContentRelatedInstances`](#breaking-changes-to-contentrelatedinstances)
+  - React Components
+    - [Filtering in Property Grid](#filtering-in-property-grid)
+- [QuantityFormatter updates](#quantityformatter-updates)
+
+## Breaking Changes
+
+## Breaking API Changes
+
+- The union type [Matrix3dProps]($geometry-core) inadvertently included [Matrix3d]($geometry-core). "Props" types are wire formats and so must be pure JavaScript primitives. To fix compilation errors where you are using `Matrix3d` where a `Matrix3dProps` is expected, simply call [Matrix3d.toJSON]($geometry-core) on your Matrix3d object. Also, since [TransformProps]($geometry-core) includes Matrix3dProps, you may need to call [Transform.toJSON]($geometry-core) on your Transform objects some places too.
+
+- The type of [Texture.data]($backend) has been corrected from `string` to `Uint8Array` to match the type in the BIS schema. If you get compilation errors, simply remove calls to `Buffer.from(texture.data, "base64")` for read, and `texture.data.toString("base64")` if you create texture objects.
+
+- Several interfaces in the `@bentley/ui-components` package have been renamed:
+
+ Previous
+
+  ```ts
+  interface HighlightedRecordProps {
+    activeMatch?: PropertyRecordMatchInfo;
+    searchText: string;
+  }
+  ```
+
+  New
+
+  ```ts
+  interface HighlightInfo {
+    highlightedText: string;
+    activeHighlight?: HighlightInfo;
+  }
+  ```
+
+ > This is just a terminology change, so reacting to the change is as simple as renaming `searchText` -> `highlightedText` and `activeMatch` -> `highlightedText`.
+
+Previous
+
+ ```ts
+ interface PropertyRecordMatchInfo {
+    matchCounts: {
+        label: number;
+        value: number;
+    };
+    matchIndex: number;
+    propertyName: string;
+  }
+  ```
+
+New
+
+  ```ts
+  interface HighlightInfo {
+    highlightedItemIdentifier: string;
+    highlightIndex: number;
+  }
+  ```
+
+> This is just a terminology change, so reacting to the change is as simple as renaming `matchIndex` -> `highlightedItemIdentifier` and `propertyName` -> `highlightedItemIdentifier`.
+
+- Changed `highlightProps?: HighlightedRecordProps` property to `highlight?: HighlightingComponentProps` on [PrimitiveRendererProps]($ui-components) interface. To react to this change, simply rename `highlightProps` -> `highlight`.
+
+- Changed `highlightProps?: HighlightedRecordProps` property to `highlight?: HighlightingComponentProps` on [PropertyRendererProps]($ui-components) interface. To react to this change, simply rename `highlightProps` -> `highlight`.
+
+- The methods fromJson and toJson from alpha class `Format`, in the quantity package, have been renamed to fromJSON and toJSON respectively.
+
+- The method parseIntoQuantityValue from alpha class `QuantityFormatter` in the imodeljs-frontend package, has been renamed to parseToQuantityValue.
+
+### BriefcaseManager breaking changes
+
+This version changes the approach to storing Briefcase and Checkpoint files in the local disk cache. Now, [BriefcaseManager]($backend) will create a subdirectory from the root directory supplied in [BriefcaseManager.initialize]($backend) for each iModelId, and then folders called `briefcases` and `checkpoints` within that folder. The Briefcase and Checkpoint files themselves are named with the `BriefcaseId` and `ChangeSetId` respectively.
+
+> For backwards compatibility: When searching for local files from RPC calls, the previous locations and naming rules are checked for briefcase and checkpoint files. This check will be removed in a future version.
+
+Several methods on the @beta class `BriefcaseManager` have been changed to simplify how local Briefcase files are acquired and managed. Previously the location and name of the local files holding Briefcases was hidden behind a local in-memory cache that complicated the API. Now, the [BriefcaseDb.open]($backend) method takes an argument that specifies the file name. This makes working with local Briefcases much simpler. BriefcaseManager's role is limited to acquiring and releasing briefcases, and for downloading, uploading, and applying changesets.
+
+In particular, the method `BriefcaseManager.download` was removed and replaced with [BriefcaseManager.downloadBriefcase]($backend), since backwards compatibility could not be maintained. See the documentation on that method to understand what you may need to change in your code.
+
+The `BriefcaseManager.imodelClient` has been removed in favor of directly using [IModelHost.iModelClient]($backend).
+
+> Note that the frontend APIs have not changed, so the impact of this change to the beta APIs should be limited.
+
+Also, the `@internal` class `NativeApp` has several changed methods, so some refactoring may be necessary to react to those changes for anyone implementing native applications using this internal API.
+
 ## Section-cut graphics
 
 A [DisplayStyleState]($frontend) can now be configured to produce section-cut graphics from the view's [ClipVector]($geometry-core). In the image below, a clipping plane has been applied to produce a cross-section view of a house. Note that all of the geometry intersecting the clipping plane appears to be hollow, whereas in the real world we'd expect things like walls, floors, and tables to be solid throughout:
@@ -41,9 +141,25 @@ A [Viewport]($frontend) holds a reference to a [ViewState]($frontend) defining i
 
 New events have been added to ViewState and its related classes to notify listeners when aspects of their states change. For example, changing the background color via [DisplayStyleSettings.backgroundColor]($common) raises the [DisplayStyleSettings.onBackgroundColorChanged]($common) event. A Viewport now listens for such events and updates its own state automatically. This eliminates the need for most manual synchronization. However, [Viewport.synchWithView]($frontend) should still be used when modifying the ViewState's [Frustum]($common)
 
-## Tile compression
+## Globe location tool fixes
 
-[IModelHostConfiguration.compressCachedTiles]($backend) specifies whether tiles uploaded to blob storage should be compressed using gzip. Previously, it defaulted to `false` if omitted. The default has now been switched to `true`. Compressing tiles conserves bandwidth; the tiles are transparently and efficiently decompressed by the browser.
+The globe location tools now will properly use GCS reprojection when navigating. Previously, navigating to certain cartographic locations within the iModel extents could be slightly inaccurate.
+
+The tools affected are:
+
+- [ViewGlobeSatelliteTool]($frontend)
+- [ViewGlobeBirdTool]($frontend)
+- [ViewGlobeLocationTool]($frontend)
+- [ViewGlobeIModelTool]($frontend)
+
+The [ViewGlobeLocationTool]($frontend) has been further improved to navigate better across long distances when using plane mode.
+
+There is now a method called `lookAtGlobalLocationFromGcs` on [ViewState3d]($frontend). This method behaves exactly like `lookAtGlobalLocation` except that is async and uses the GCS to reproject the location.
+
+[ViewState3d]($frontend) also has GCS versions of these methods:
+
+- `rootToCartographicFromGcs` behaves like `rootToCartographic` except it is async and uses the GCS to reproject the location.
+- `cartographicToRootFromGcs` behaves like `cartographicToRoot` except it is async and uses the GCS to reproject the location.
 
 ## Changes to display style excluded elements
 
@@ -72,6 +188,16 @@ To adjust code that uses [DisplayStyleSettings.excludedElements]($common), given
 ```
 
 Note that [DisplayStyleSettings.addExcludedElements]($common) and [DisplayStyleSettings.dropExcludedElements]($common) can accept any number of Ids. If you have multiple Ids, prefer to pass them all at once rather than one at a time - it is more efficient.
+
+## Tile compression
+
+[IModelHostConfiguration.compressCachedTiles]($backend) specifies whether tiles uploaded to blob storage should be compressed using gzip. Previously, it defaulted to `false` if omitted. The default has now been switched to `true`. Compressing tiles conserves bandwidth; the tiles are transparently and efficiently decompressed by the browser.
+
+## Upgrading schemas in an iModel
+
+In previous versions the method to open briefcases ([BriefcaseDb.open]($backend)) and standalone files (`StandaloneDb.open` renamed to `StandaloneDb.openFile`) provided options to upgrade the schemas in the iModel. This functionality has been now separated out, and there are separate methods to validate and upgrade the schemas in the iModel. As a result [OpenBriefcaseProps]($common) and [SnapshotOpenOptions]($common) do not include options to upgrade anymore.
+
+See section on [Upgrading Schemas]($docs/learning/backend/IModelDb.md#upgrading-schemas-in-an-imodel) for more information.
 
 ## Filtering in Property Grid
 
@@ -134,110 +260,6 @@ return (
   />
 );
 ```
-
-## Breaking API changes
-
-- The union type [Matrix3dProps]($geometry-core) inadvertently included [Matrix3d]($geometry-core). "Props" types are wire formats and so must be pure JavaScript primitives. To fix compilation errors where you are using `Matrix3d` where a `Matrix3dProps` is expected, simply call [Matrix3d.toJSON]($geometry-core) on your Matrix3d object. Also, since [TransformProps]($geometry-core) includes Matrix3dProps, you may need to call [Transform.toJSON]($geometry-core) on your Transform objects some places too.
-
-- The type of [Texture.data]($backend) has been corrected from `string` to `Uint8Array` to match the type in the BIS schema. If you get compilation errors, simply remove calls to `Buffer.from(texture.data, "base64")` for read, and `texture.data.toString("base64")` if you create texture objects.
-
-- Several interfaces in the `@bentley/ui-components` package have been renamed:
-
- Previous
-
-  ```ts
-  interface HighlightedRecordProps {
-    activeMatch?: PropertyRecordMatchInfo;
-    searchText: string;
-  }
-  ```
-
-  New
-
-  ```ts
-  interface HighlightInfo {
-    highlightedText: string;
-    activeHighlight?: HighlightInfo;
-  }
-  ```
-
- > This is just a terminology change, so reacting to the change is as simple as renaming `searchText` -> `highlightedText` and `activeMatch` -> `highlightedText`.
-
-Previous
-
- ```ts
- interface PropertyRecordMatchInfo {
-    matchCounts: {
-        label: number;
-        value: number;
-    };
-    matchIndex: number;
-    propertyName: string;
-  }
-  ```
-
-New
-
-  ```ts
-  interface HighlightInfo {
-    highlightedItemIdentifier: string;
-    highlightIndex: number;
-  }
-  ```
-
-> This is just a terminology change, so reacting to the change is as simple as renaming `matchIndex` -> `highlightedItemIdentifier` and `propertyName` -> `highlightedItemIdentifier`.
-
-- Changed `highlightProps?: HighlightedRecordProps` property to `highlight?: HighlightingComponentProps` on [PrimitiveRendererProps]($ui-components) interface. To react to this change, simply rename `highlightProps` -> `highlight`.
-
-- Changed `highlightProps?: HighlightedRecordProps` property to `highlight?: HighlightingComponentProps` on [PropertyRendererProps]($ui-components) interface. To react to this change, simply rename `highlightProps` -> `highlight`.
-
-- The methods fromJson and toJson from alpha class `Format`, in the quantity package, have been renamed to fromJSON and toJSON respectively.
-
-- The method parseIntoQuantityValue from alpha class `QuantityFormatter` in the imodeljs-frontend package, has been renamed to parseToQuantityValue.
-
-## BriefcaseManager breaking changes
-
-This version changes the approach to storing Briefcase and Checkpoint files in the local disk cache. Now, [BriefcaseManager]($backend) will create a subdirectory from the root directory supplied in [BriefcaseManager.initialize]($backend) for each iModelId, and then folders called `briefcases` and `checkpoints` within that folder. The Briefcase and Checkpoint files themselves are named with the `BriefcaseId` and `ChangeSetId` respectively.
-
-> For backwards compatibility: When searching for local files from RPC calls, the previous locations and naming rules are checked for briefcase and checkpoint files. This check will be removed in a future version.
-
-Several methods on the @beta class `BriefcaseManager` have been changed to simplify how local Briefcase files are acquired and managed. Previously the location and name of the local files holding Briefcases was hidden behind a local in-memory cache that complicated the API. Now, the [BriefcaseDb.open]($backend) method takes an argument that specifies the file name. This makes working with local Briefcases much simpler. BriefcaseManager's role is limited to acquiring and releasing briefcases, and for downloading, uploading, and applying changesets.
-
-In particular, the method `BriefcaseManager.download` was removed and replaced with [BriefcaseManager.downloadBriefcase]($backend), since backwards compatibility could not be maintained. See the documentation on that method to understand what you may need to change in your code.
-
-> Note that the frontend APIs have not changed, so the impact of this change to the beta APIs should be limited.
-
-Also, the `@internal` class `NativeApp` has several changed methods, so some refactoring may be necessary to react to those changes for anyone implementing native applications using this internal API.
-
-## Upgrading schemas in an iModel
-
-In previous versions the method to open briefcases ([BriefcaseDb.open]($backend)) and standalone files (`StandaloneDb.open` renamed to `StandaloneDb.openFile`) provided options to upgrade the schemas in the iModel. This functionality has been now separated out, and there are separate methods to validate and upgrade the schemas in the iModel. As a result [OpenBriefcaseProps]($common) and [SnapshotOpenOptions]($common) do not include options to upgrade anymore.
-
-See section on [Upgrading Schemas]($docs/learning/backend/IModelDb.md#upgrading-schemas-in-an-imodel) for more information.
-
-## Updated version of Electron
-
-Updated version of electron used from 8.2.1 to 10.1.3. Note that Electron is specified as a peer dependency in the iModel.js stack - so it's recommended but not mandatory that applications migrate to this electron version.
-
-## Globe location tool fixes
-
-The globe location tools now will properly use GCS reprojection when navigating. Previously, navigating to certain cartographic locations within the iModel extents could be slightly inaccurate.
-
-The tools affected are:
-
-- [ViewGlobeSatelliteTool]($frontend)
-- [ViewGlobeBirdTool]($frontend)
-- [ViewGlobeLocationTool]($frontend)
-- [ViewGlobeIModelTool]($frontend)
-
-The [ViewGlobeLocationTool]($frontend) has been further improved to navigate better across long distances when using plane mode.
-
-There is now a method called `lookAtGlobalLocationFromGcs` on [ViewState3d]($frontend). This method behaves exactly like `lookAtGlobalLocation` except that is async and uses the GCS to reproject the location.
-
-[ViewState3d]($frontend) also has GCS versions of these methods:
-
-- `rootToCartographicFromGcs` behaves like `rootToCartographic` except it is async and uses the GCS to reproject the location.
-- `cartographicToRootFromGcs` behaves like `cartographicToRoot` except it is async and uses the GCS to reproject the location.
 
 ## Presentation
 
