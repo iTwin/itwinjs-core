@@ -121,14 +121,8 @@ export class RobotWorldEngine {
 
   public static async initialize(_requestContext: ClientRequestContext): Promise<void> {
     const config = new IModelHostConfiguration();
-    if (Platform.isElectron)
-      config.appAssetsDir = path.join(__dirname, "assets");
-    else
-      config.appAssetsDir = KnownLocations.packageAssetsDir;
+    config.appAssetsDir = path.join(__dirname, "assets");
     await IModelHost.startup(config);
-
-    // Can't to this, as our logging config uses Bunyan/Seq, and we don't really want to do that here.
-    // initializeLogging();
 
     RpcManager.registerImpl(RobotWorldWriteRpcInterface, RobotWorldWriteRpcImpl); // register impls that we don't want in the doc example
     this.registerImpls();

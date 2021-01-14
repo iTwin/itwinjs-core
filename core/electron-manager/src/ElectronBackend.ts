@@ -189,7 +189,7 @@ export class ElectronBackend implements IpcSocketBackend {
    * Electron app. It should be called from your Electron main function, before calling [IModelHost.startup]($backend).
    * @param opts Options that control aspects of your backend.
    * @returns an instance of [[ElectronBackend]]. When you are ready to show your main window, call `openMainWindow` on it.
-   * @note This method must (only) be called from the backend of an Electron app (i.e. when [isElectronMain]($bentley) returns `true`). */
+   * @note This method must (only) be called from the backend of an Electron app (i.e. when [isElectronMain]($bentley) is `true`). */
   public static initialize(opts?: ElectronBackendOptions) {
     if (!isElectronMain)
       throw new Error("Not running under Electron");

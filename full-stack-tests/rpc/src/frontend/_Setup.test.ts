@@ -55,9 +55,8 @@ before(async () => {
   switch (currentEnvironment) {
     case "http":
       return initializeCloud("http");
-    case "electron": {
+    case "electron":
       return ElectronFrontend.initialize({ rpcInterfaces });
-    }
     case "direct": {
       // (global as any).window = undefined;
       // eslint-disable-next-line @typescript-eslint/no-var-requires

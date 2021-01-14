@@ -35,7 +35,7 @@ export class ElectronFrontend implements IpcSocketFrontend {
   private constructor(opts?: ElectronFrontendOptions) {
     // use the methods on window.itwinjs exposed by ElectronPreload.ts, or ipcRenderer directly if running with nodeIntegration=true (**only** for tests).
     // Note that `require("electron")` doesn't work with nodeIntegration=false - that's what it stops
-    this._api = (typeof window === "undefined" ? undefined : (window as any).itwinjs as ITwinElectronApi | undefined) ?? require("electron").ipcRenderer;
+    this._api = (window as any).itwinjs ?? require("electron").ipcRenderer;
     FrontendIpc.initialize(this);
     ElectronRpcManager.initializeFrontend(this, opts?.rpcInterfaces);
   }
@@ -45,7 +45,7 @@ export class ElectronFrontend implements IpcSocketFrontend {
    * Call this method early in your initialization of the frontend module loaded from your call to [[ElectronBackend.openMainWindow]], before you
    * call [IModelApp.startup]($frontend).
    * @param opts Options for your ElectronFrontend
-   * @note This method must (only) be called from the frontend of an Electron app (i.e. when [isElectronRenderer]($bentley) returns `true`).
+   * @note This method must (only) be called from the frontend of an Electron app (i.e. when [isElectronRenderer]($bentley) is `true`).
    */
   public static initialize(opts?: ElectronFrontendOptions) {
     if (!isElectronRenderer)
