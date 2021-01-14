@@ -149,7 +149,7 @@ export interface NativeAppIpc extends IpcInterface {
 
   /**
    * Gets a list of all briefcases that were previously downloaded to the system briefcase cache.
-   * @return array of LocalBriefcaseProps.
+   * @note returns array of LocalBriefcaseProps.
    */
   getCachedBriefcases: (_iModelId?: GuidString) => Promise<LocalBriefcaseProps[]>;
 

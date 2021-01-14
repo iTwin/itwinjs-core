@@ -79,7 +79,7 @@ export interface IpcSocketBackend extends IpcSocket {
    * Establish a backend implementation of an [[IpcInterface]] for a channel.
    * @param channel The name of the channel for this handler. Must begin with the [[iTwinChannel]] prefix.
    * @param handler A function that supplies the implementation for methods invoked over `channel` via [[IpcSocketFrontend.invoke]]
-   * @return A function to call to remove the handler.
+   * @note returns A function to call to remove the handler.
    */
   handle: (channel: string, handler: (methodName: string, ...args: any[]) => Promise<any>) => RemoveFunction;
 };

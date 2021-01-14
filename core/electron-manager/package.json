@@ -10,7 +10,7 @@
     "compile": "npm run build",
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/electron-manager/file.json --tsIndexFile=./ElectronManager.ts --onlyJson",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/electron-manager/file.json --tsIndexFile=./ElectronBackend.ts --onlyJson",
     "extract-api": "betools extract-api --entry=ElectronBackend",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "",
