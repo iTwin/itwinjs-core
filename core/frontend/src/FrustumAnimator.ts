@@ -61,7 +61,7 @@ export class FrustumAnimator implements Animator {
 
     this._duration = duration;
     let extentBias: Vector3d | undefined;
-    // let _eyeBias: Vector3d | undefined;
+    let eyeBias: Vector3d | undefined;
     const zVec = begin.zVec;
     const view = viewport.view;
     const view3 = view as ViewState3d;
@@ -86,9 +86,8 @@ export class FrustumAnimator implements Animator {
         view3.lookAtViewAlignedVolume(beginRange.union(endRange), viewport.viewRect.aspect); // set up a view that would show both extents
         duration *= zoomSettings.durationFactor; // increase duration so the zooming isn't too fast
         extentBias = view.getExtents().minus(begin.extents); // if the camera is off, the "bias" is the amount the union-ed view is larger than the starting view
-        // EDL I don't understand what the eye bias is for.  The eventual use in prior versions adds this to eye point (before computing target?)
-        // if (begin.cameraOn)
-        //  _eyeBias = zVec.scaleToLength(zVec.dotProduct(begin3.camera.eye.vectorTo(view3.camera.eye))); // if the camera is on, the bias is the difference in height of the two eye positions
+        if (begin.cameraOn)
+          eyeBias = zVec.scaleToLength(zVec.dotProduct(begin3.camera.eye.vectorTo(view3.camera.eye))); // if the camera is on, the bias is the difference in height of the two eye positions
       }
     }
 
@@ -104,14 +103,18 @@ export class FrustumAnimator implements Animator {
         const fraction = extentBias ? timing.position : timing.fraction; // if we're zooming, fraction comes from position interpolation
         const rot = Matrix3d.createRotationAroundVector(axis.axis, Angle.createDegrees(fraction * axis.angle.degrees))!.multiplyMatrixMatrix(begin.rotation);
         if (begin.cameraOn) {
-          const data = interpolateSwingingEye(
-            begin3.rotation, begin3.camera.eye, begin3.camera.focusDist,
-            end3.rotation, end3.camera.eye, end3.camera.focusDist, fraction, rot);
-          //  if (undefined !== eyeBias)
-          //    eye.plusScaled(eyeBias, timing.height, eye);
-          // const target = eye.plusScaled(rot.getRow(2), -1.0 * (Geometry.interpolate(begin3.camera.focusDist, fraction, end3.camera.focusDist)));
           const extents = begin.extents.interpolate(fraction, end.extents);
-          view3.lookAt(data.eye, data.target, rot.getRow(1), extents);
+          if (undefined !== eyeBias) {
+            const eye = begin3.camera.eye.interpolate(fraction, end3.camera.eye);
+            eye.plusScaled(eyeBias, timing.height, eye);
+            const target = eye.plusScaled(rot.getRow(2), -1.0 * (Geometry.interpolate(begin3.camera.focusDist, fraction, end3.camera.focusDist)));
+            view3.lookAt(eye, target, rot.getRow(1), extents);
+          } else {
+            const data = interpolateSwingingEye(
+              begin3.rotation, begin3.camera.eye, begin3.camera.focusDist,
+              end3.rotation, end3.camera.eye, end3.camera.focusDist, fraction, rot);
+            view3.lookAt(data.eye, data.target, rot.getRow(1), extents);
+          }
         } else {
           const extents = begin.extents.interpolate(timing.fraction, end.extents);
           if (undefined !== extentBias)
