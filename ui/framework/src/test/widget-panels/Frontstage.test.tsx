@@ -7,18 +7,22 @@ import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import produce from "immer";
+import { render } from "@testing-library/react";
 import { act, renderHook } from "@testing-library/react-hooks";
 import { Logger } from "@bentley/bentleyjs-core";
+import { AbstractWidgetProps, StagePanelLocation, UiItemsManager, UiItemsProvider } from "@bentley/ui-abstract";
 import { Size, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
 import { addFloatingWidget, addPanelWidget, addTab, createDraggedTabState, createNineZoneState, NineZone, NineZoneState, toolSettingsTabId } from "@bentley/ui-ninezone";
 import {
-  ActiveFrontstageDefProvider, addPanelWidgets, addWidgets, expandWidget, FrontstageDef,
-  FrontstageManager, getWidgetId, initializeNineZoneState, initializePanel, isFrontstageStateSettingResult, ModalFrontstageComposer,
-  packNineZoneState, restoreNineZoneState, setWidgetState, showWidget, StagePanelDef, StagePanelState, StagePanelZoneDef, StagePanelZonesDef,
-  UiSettingsProvider, useActiveModalFrontstageInfo, useFrontstageManager, useNineZoneDispatch, useNineZoneState,
-  useSavedFrontstageState, useSaveFrontstageSettings, useSyncDefinitions, useUpdateNineZoneSize, WidgetDef, WidgetPanelsFrontstage, WidgetState, ZoneDef,
+  ActiveFrontstageDefProvider, addPanelWidgets, addWidgets, CoreTools, expandWidget, Frontstage, FrontstageDef,
+  FrontstageManager, FrontstageProvider, FrontstageState, getWidgetId, initializeNineZoneState, initializePanel, isFrontstageStateSettingResult,
+  ModalFrontstageComposer, packNineZoneState, restoreNineZoneState, setWidgetState, showWidget, StagePanel, StagePanelDef, StagePanelSection, StagePanelState, StagePanelZoneDef,
+  StagePanelZonesDef, UiSettingsProvider, useActiveModalFrontstageInfo, useFrontstageManager, useNineZoneDispatch, useNineZoneState,
+  useSavedFrontstageState, useSaveFrontstageSettings, useSyncDefinitions, useUpdateNineZoneSize, Widget, WidgetDef, WidgetPanelsFrontstage, WidgetState, ZoneDef,
 } from "../../ui-framework";
 import TestUtils, { mount, storageMock, UiSettingsStub } from "../TestUtils";
+import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
+import { should } from "chai";
 
 /* eslint-disable @typescript-eslint/no-floating-promises, react/display-name */
 
@@ -39,13 +43,62 @@ function createSavedTabState(id: SavedTabState["id"], args?: Partial<SavedTabSta
   };
 }
 
-function createFrontstageState(nineZone = createSavedNineZoneState()) {
+function createFrontstageState(nineZone = createSavedNineZoneState()): FrontstageState {
   return {
     id: "frontstage1",
     nineZone,
     stateVersion: 100,
     version: 100,
   };
+}
+
+/** @internal */
+export class TestFrontstageUi2 extends FrontstageProvider {
+  public get frontstage() {
+    return (
+      <Frontstage
+        id="TestFrontstageUi2"
+        defaultTool={CoreTools.selectElementCommand}
+        defaultLayout="SingleContent"
+        contentGroup="TestContentGroup1"
+        defaultContentId="defaultContentId"
+        isInFooterMode={false}
+        applicationData={{ key: "value" }}
+        leftPanel={
+          <StagePanel
+            panelZones={{
+              start: {
+                widgets: [
+                  <Widget
+                    key="LeftStart1"
+                    id="LeftStart1"
+                    label="Left Start 1"
+                    element="Left Start 1 widget"
+                  />,
+                ],
+              },
+            }}
+          />
+        }
+      />
+    );
+  }
+}
+
+/** @internal */
+export class TestUi2Provider implements UiItemsProvider {
+  public readonly id = "TestUi2Provider";
+
+  public provideWidgets(_stageId: string, _stageUsage: string, location: StagePanelLocation, section?: StagePanelSection) {
+    const widgets: Array<AbstractWidgetProps> = [];
+    if (location === StagePanelLocation.Right && section === StagePanelSection.Middle)
+      widgets.push({
+        id: "TestUi2ProviderRM1",
+        label: "TestUi2Provider RM1",
+        getWidgetContent: () => "TestUi2Provider RM1 widget",
+      });
+    return widgets;
+  }
 }
 
 describe("WidgetPanelsFrontstage", () => {
@@ -1096,4 +1149,105 @@ describe("useUpdateNineZoneSize", () => {
 
     newFrontstageDef.nineZoneState.size.should.eql({ height: 1, width: 2 });
   });
+});
+
+describe("dynamic widgets", () => {
+  const localStorageToRestore = Object.getOwnPropertyDescriptor(window, "localStorage")!;
+  const localStorageMock = storageMock();
+
+  beforeEach(async () => {
+    Object.defineProperty(window, "localStorage", {
+      get: () => localStorageMock,
+    });
+
+    await TestUtils.initializeUiFramework();
+    await NoRenderApp.startup();
+  });
+
+  afterEach(() => {
+    Object.defineProperty(window, "localStorage", localStorageToRestore);
+    TestUtils.terminateUiFramework();
+    IModelApp.shutdown();
+  });
+
+  afterEach(() => {
+    UiItemsManager.unregister("TestUi2Provider");
+  });
+
+  it("should render pre-loaded extension widgets when state is initialized", async () => {
+    UiItemsManager.register(new TestUi2Provider());
+
+    const frontstageProvider = new TestFrontstageUi2();
+    FrontstageManager.addFrontstageProvider(frontstageProvider);
+    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    const { findByText } = render(<WidgetPanelsFrontstage />);
+    await findByText("Left Start 1");
+    await findByText("TestUi2Provider RM1");
+  });
+
+  it("should render pre-loaded extension widgets when state is restored", async () => {
+    UiItemsManager.register(new TestUi2Provider());
+
+    const spy = sinon.spy(localStorageMock, "getItem");
+    let state = createNineZoneState();
+    state = addPanelWidget(state, "left", "leftStart", ["LeftStart1"]);
+    state = addTab(state, "LeftStart1");
+    const setting = createFrontstageState(state);
+
+    const uiSettings = new UiSettingsStub();
+    sinon.stub(uiSettings, "getSetting").resolves({
+      status: UiSettingsStatus.Success,
+      setting,
+    });
+
+    const frontstageProvider = new TestFrontstageUi2();
+    FrontstageManager.addFrontstageProvider(frontstageProvider);
+    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    const { findByText } = render(<WidgetPanelsFrontstage />, {
+      wrapper: (props) => <UiSettingsProvider {...props} uiSettings={uiSettings} />,
+    });
+    await findByText("Left Start 1");
+    await findByText("TestUi2Provider RM1");
+
+    sinon.assert.notCalled(spy);
+  });
+
+  it("should render loaded extension widgets", async () => {
+    const frontstageProvider = new TestFrontstageUi2();
+    FrontstageManager.addFrontstageProvider(frontstageProvider);
+    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    const { findByText } = render(<WidgetPanelsFrontstage />);
+    await findByText("Left Start 1");
+
+    act(() => {
+      UiItemsManager.register(new TestUi2Provider());
+    });
+    await findByText("TestUi2Provider RM1");
+  });
+
+  it.skip("should stop rendering unloaded extension widgets", async () => {
+    const frontstageProvider = new TestFrontstageUi2();
+    FrontstageManager.addFrontstageProvider(frontstageProvider);
+    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    const frontstageDef = FrontstageManager.activeFrontstageDef!;
+    render(<WidgetPanelsFrontstage />);
+
+    act(() => {
+      UiItemsManager.register(new TestUi2Provider());
+    });
+
+    await TestUtils.flushAsyncOperations();
+    should().exist(frontstageDef.nineZoneState!.tabs.LeftStart1);
+    should().exist(frontstageDef.nineZoneState!.tabs.TestUi2ProviderRM1);
+
+    act(() => {
+      UiItemsManager.unregister("TestUi2Provider");
+    });
+
+    await TestUtils.flushAsyncOperations();
+    should().exist(frontstageDef.nineZoneState!.tabs.LeftStart1);
+    should().not.exist(frontstageDef.nineZoneState!.tabs.TestUi2ProviderRM1);
+  });
+
+  it.only("", () => { });
 });

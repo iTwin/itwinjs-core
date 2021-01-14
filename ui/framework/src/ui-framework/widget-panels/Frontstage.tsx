@@ -274,6 +274,29 @@ export function appendWidgets(state: NineZoneState, widgetDefs: ReadonlyArray<Wi
   return state;
 }
 
+/** Adds frontstageDef widgets that are missing in NineZoneState.
+ * @internal
+ */
+export function addMissingWidgets(frontstageDef: FrontstageDef, initialState: NineZoneState): NineZoneState {
+  let state = initialState;
+
+  state = appendWidgets(state, determineNewWidgets(frontstageDef.centerLeft?.widgetDefs, initialState), "left", 0);
+  state = appendWidgets(state, determineNewWidgets(frontstageDef.bottomLeft?.widgetDefs, initialState), "left", 1);
+  state = appendWidgets(state, determineNewWidgets(frontstageDef.leftPanel?.widgetDefs, initialState), "left", 2);
+
+  state = appendWidgets(state, determineNewWidgets(frontstageDef.centerRight?.widgetDefs, initialState), "right", 0);
+  state = appendWidgets(state, determineNewWidgets(frontstageDef.bottomRight?.widgetDefs, initialState), "right", 1);
+  state = appendWidgets(state, determineNewWidgets(frontstageDef.rightPanel?.widgetDefs, initialState), "right", 2);
+
+  state = appendWidgets(state, determineNewWidgets(frontstageDef.topPanel?.widgetDefs, initialState), "top", 0);
+  state = appendWidgets(state, determineNewWidgets(frontstageDef.topMostPanel?.widgetDefs, initialState), "top", 1); // eslint-disable-line deprecation/deprecation
+
+  state = appendWidgets(state, determineNewWidgets(frontstageDef.bottomPanel?.widgetDefs, initialState), "bottom", 0);
+  state = appendWidgets(state, determineNewWidgets(frontstageDef.bottomMostPanel?.widgetDefs, initialState), "bottom", 1); // eslint-disable-line deprecation/deprecation
+
+  return state;
+}
+
 function getWidgetLabel(label: string) {
   return label === "" ? "Widget" : label;
 }
@@ -540,8 +563,10 @@ export function isPanelCollapsed(zoneStates: ReadonlyArray<ZoneState | undefined
   return !openZone && !openPanel;
 }
 
-// FrontstageState is saved in UiSettings.
-interface FrontstageState {
+/** FrontstageState is saved in UiSettings.
+ * @internal
+ */
+export interface FrontstageState {
   nineZone: SavedNineZoneState;
   id: FrontstageDef["id"];
   version: number;
@@ -705,7 +730,9 @@ export function useSavedFrontstageState(frontstageDef: FrontstageDef) {
         settingsResult.setting.version >= version &&
         settingsResult.setting.stateVersion >= stateVersion
       ) {
-        frontstageDef.nineZoneState = restoreNineZoneState(frontstageDef, settingsResult.setting.nineZone);
+        const restored = restoreNineZoneState(frontstageDef, settingsResult.setting.nineZone);
+        const state = addMissingWidgets(frontstageDef, restored);
+        frontstageDef.nineZoneState = state;
         return;
       }
       frontstageDef.nineZoneState = initializeNineZoneState(frontstageDef);
@@ -843,22 +870,7 @@ export function useItemsManager(frontstageDef: FrontstageDef) {
 
         if (!initialState)
           return;
-        let state = initialState;
-
-        state = appendWidgets(state, determineNewWidgets(frontstageDef.centerLeft?.widgetDefs, initialState), "left", 0);
-        state = appendWidgets(state, determineNewWidgets(frontstageDef.bottomLeft?.widgetDefs, initialState), "left", 1);
-        state = appendWidgets(state, determineNewWidgets(frontstageDef.leftPanel?.widgetDefs, initialState), "left", 2);
-
-        state = appendWidgets(state, determineNewWidgets(frontstageDef.centerRight?.widgetDefs, initialState), "right", 0);
-        state = appendWidgets(state, determineNewWidgets(frontstageDef.bottomRight?.widgetDefs, initialState), "right", 1);
-        state = appendWidgets(state, determineNewWidgets(frontstageDef.rightPanel?.widgetDefs, initialState), "right", 2);
-
-        state = appendWidgets(state, determineNewWidgets(frontstageDef.topPanel?.widgetDefs, initialState), "top", 0);
-        state = appendWidgets(state, determineNewWidgets(frontstageDef.topMostPanel?.widgetDefs, initialState), "top", 1); // eslint-disable-line deprecation/deprecation
-
-        state = appendWidgets(state, determineNewWidgets(frontstageDef.bottomPanel?.widgetDefs, initialState), "bottom", 0);
-        state = appendWidgets(state, determineNewWidgets(frontstageDef.bottomMostPanel?.widgetDefs, initialState), "bottom", 1); // eslint-disable-line deprecation/deprecation
-
+        const state = addMissingWidgets(frontstageDef, initialState);
         frontstageDef.nineZoneState = state;
       }
     };
