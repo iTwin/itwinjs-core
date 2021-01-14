@@ -4279,4 +4279,3 @@ export class WebMercatorModel extends SpatialModel {
 // (No @packageDocumentation comment for this package)
 
 ```
->>>>>>> imodel02
