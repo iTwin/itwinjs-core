@@ -197,7 +197,7 @@ describe("EmphasizeElements tests", () => {
     EmphasizeElements.clear(vp);
   });
 
-  it.only("Clear color overrides test", async () => {
+  it("Clear color overrides test", async () => {
     const vp = ScreenViewport.create(viewDiv, spatialView.clone());
     EmphasizeElements.clear(vp);
     const emph = EmphasizeElements.getOrCreate(vp);
