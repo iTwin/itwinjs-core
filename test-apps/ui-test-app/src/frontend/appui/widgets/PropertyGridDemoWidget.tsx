@@ -7,7 +7,7 @@ import { PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValue, Pro
 import { PropertyCategory, PropertyGrid, PropertyUpdatedArgs, SimplePropertyDataProvider } from "@bentley/ui-components";
 import { Orientation } from "@bentley/ui-core";
 import { ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, WidgetControl } from "@bentley/ui-framework";
-import { HorizontalAnchor, ScrollableWidgetContent, WidgetContent } from "@bentley/ui-ninezone";
+import { HorizontalAnchor, WidgetContent } from "@bentley/ui-ninezone";
 
 class SamplePropertyRecord extends PropertyRecord {
   constructor(name: string, index: number, value: any, typename: string = StandardTypeNames.String, editor?: string) {
@@ -160,9 +160,7 @@ export class HorizontalPropertyGridWidgetControl2 extends WidgetControl {
     super(info, options);
 
     this.reactNode = (
-      <ScrollableWidgetContent
-        children={<HorizontalPropertyGridWidget style={{ overflow: "unset" }} />} // eslint-disable-line react/no-children-prop
-      />
+      <HorizontalPropertyGridWidget style={{ overflow: "unset" }} />
     );
   }
 }
