@@ -10,8 +10,7 @@ import "./DefaultDialogGridContainer.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { DialogRow } from "@bentley/ui-abstract";
-import { ScrollableWidgetContent } from "@bentley/ui-ninezone";
-import { FrameworkVersionSwitch, useFrameworkVersion } from "../hooks/useFrameworkVersion";
+import { useFrameworkVersion } from "../hooks/useFrameworkVersion";
 import { ToolSettingsContentContext } from "../widgets/ToolSettingsContent";
 import { ComponentGenerator } from "./ComponentGenerator";
 
@@ -33,20 +32,10 @@ export function ToolSettingsGridContainer({ componentGenerator }: { componentGen
     // istanbul ignore next
     LayoutMode.Narrow === layoutMode && "uifw-default-narrow",
   );
-  const container = (
+  return (
     <DialogGridContainer
       componentGenerator={componentGenerator}
       containerClassName={className}
-    />
-  );
-  return (
-    <FrameworkVersionSwitch
-      v1={container}
-      v2={
-        <ScrollableWidgetContent>
-          {container}
-        </ScrollableWidgetContent>
-      }
     />
   );
 }

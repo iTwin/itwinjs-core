@@ -4,7 +4,8 @@
     "Close": "Close source map layers pop-up"
   },
   "Basemap": {
-    "BaseLayer": "Base Layer",
+    "BaseLayer": "Base:",
+    "BaseMapPanelTitle": "Map Layers",
     "ColorFill": "Solid Fill Color",
     "SelectBaseMap": "Select Map for base layer"
   },
@@ -49,12 +50,14 @@
     "Start": "Map Layers Extension Loaded"
   },
   "Widget": {
-    "BackgroundLayers": "Background Layers",
+    "BackgroundLayers": "Background",
+    "DropLayerLabel": "Drop layer here",
     "Label": "Map Layers",
     "NoOverlayLayers": "No Overlay layers specified",
     "NoBackgroundLayers": "No Background layers specified",
-    "OverlayLayers": "Overlay Layers",
-    "ToggleVisibility": "Toggle Visibility"
+    "OverlayLayers": "Overlay",
+    "ToggleVisibility": "Toggle Visibility",
+    "SettingsButtonTooltip": "Settings"
   },
   "LayerMenu": {
     "Detach": "Detach",
