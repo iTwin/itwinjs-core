@@ -68,7 +68,7 @@ steps:
 
   # By default linux agents do not have a real display so use the virtual framebuffer
   - script: |
-      sudo apt-get install xvfb
+      sudo apt-get install -y xvfb
       xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' node common/scripts/install-run-rush.js cover --verbose
     displayName: rush cover
     workingDirectory: ${{ parameters.workingDir }}
