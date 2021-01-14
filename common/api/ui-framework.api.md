@@ -2583,9 +2583,6 @@ export function getIsHiddenIfSelectionNotActive(): ConditionalBooleanValue;
 // @internal (undocumented)
 export const getNestedStagePanelKey: (location: StagePanelLocation_2) => NestedStagePanelKey<NestedStagePanelsManagerProps>;
 
-// @internal (undocumented)
-export function getPanelSide(location: StagePanelLocation_2): PanelSide;
-
 // @beta
 export function getSelectionContextSyncEventIds(): string[];
 
@@ -5163,11 +5160,13 @@ export interface StagePanelChangeHandler {
 export class StagePanelDef extends WidgetHost {
     constructor();
     get applicationData(): any | undefined;
+    // @internal (undocumented)
+    get defaultSize(): number | undefined;
+    // @internal (undocumented)
+    get defaultState(): StagePanelState;
     findWidgetDef(id: string): WidgetDef | undefined;
     // @internal (undocumented)
     initializeFromProps(props: StagePanelProps, panelLocation?: StagePanelLocation_2): void;
-    // @internal (undocumented)
-    initializePanelState(panelState: StagePanelState): void;
     get location(): StagePanelLocation_2;
     // @internal (undocumented)
     get maxSizeSpec(): number | {
@@ -5183,7 +5182,8 @@ export class StagePanelDef extends WidgetHost {
     get resizable(): boolean;
     get size(): number | undefined;
     set size(size: number | undefined);
-    }
+    get widgetDefs(): ReadonlyArray<WidgetDef>;
+}
 
 // @beta
 export type StagePanelDefaultProps = Pick<StagePanelProps, "resizable">;
@@ -6094,6 +6094,9 @@ export interface ToolWidgetPropsEx extends ToolWidgetProps, CommonProps {
     verticalToolbar?: React.ReactNode;
 }
 
+// @internal (undocumented)
+export function toPanelSide(location: StagePanelLocation_2): PanelSide;
+
 // @internal
 export interface TrackingTime {
     // (undocumented)
@@ -6717,6 +6720,8 @@ export class WidgetDef {
     get classId(): string | ConfigurableUiControlConstructor | undefined;
     // (undocumented)
     static createWidgetPropsFromAbstractProps(abstractWidgetProps: AbstractWidgetProps): WidgetProps;
+    // @internal (undocumented)
+    get defaultState(): WidgetState_2;
     // @alpha
     expand(): void;
     // (undocumented)
