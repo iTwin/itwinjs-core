@@ -100,7 +100,7 @@ export class HalfEdgeGraphSearch {
    *   * more than 1 negative area face with `allowMultipleNegativeAreaFaces` false
    * * 2-edge faces are ignored.
    */
-  public static isTriangulatedCCW(source: HalfEdgeGraph | HalfEdge[], allowMultipleNegativeAreaFaces: boolean = true): boolean {
+  public static isTriangulatedCCW(source: HalfEdgeGraph | HalfEdge[], allowMultipleNegativeAreaFaces: boolean = true, numPositiveExceptionsAllowed = 0): boolean {
     let allFaces: HalfEdge[];
 
     if (source instanceof HalfEdgeGraph)
@@ -108,13 +108,17 @@ export class HalfEdgeGraphSearch {
     else
       allFaces = source;
     let numNegative = 0;
+    let numPositiveExceptions = 0;
     for (const node of allFaces) {
       const numEdges = node.countEdgesAroundFace();
       if (numEdges >= 3) {
         const area = node.signedFaceArea();
         if (area > 0) {
-          if (numEdges > 3)
-            return false;
+          if (numEdges > 3) {
+            numPositiveExceptions++;
+            if (numPositiveExceptions > numPositiveExceptionsAllowed)
+              return false;
+          }
         } else {
           numNegative++;
           if (numNegative > 1) {

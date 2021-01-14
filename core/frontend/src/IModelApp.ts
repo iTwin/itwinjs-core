@@ -39,7 +39,7 @@ import { NotificationManager } from "./NotificationManager";
 import { QuantityFormatter } from "./QuantityFormatter";
 import { RenderSystem } from "./render/RenderSystem";
 import { System } from "./render/webgl/System";
-import * as sheetState from "./Sheet";
+import * as sheetState from "./SheetViewState";
 import { TentativePoint } from "./TentativePoint";
 import { MapLayerFormatRegistry, MapLayerOptions, TileAdmin } from "./tile/internal";
 import * as accudrawTool from "./tools/AccuDrawTool";
@@ -53,6 +53,8 @@ import { ToolAdmin } from "./tools/ToolAdmin";
 import * as viewTool from "./tools/ViewTool";
 import { ViewManager } from "./ViewManager";
 import * as viewState from "./ViewState";
+import * as drawingViewState from "./DrawingViewState";
+import * as spatialViewState from "./SpatialViewState";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require("./IModeljs-css");
@@ -389,6 +391,8 @@ export class IModelApp {
       modelState,
       sheetState,
       viewState,
+      drawingViewState,
+      spatialViewState,
       displayStyleState,
       modelselector,
       categorySelectorState,
@@ -411,7 +415,6 @@ export class IModelApp {
     } else {
       opts.mapLayerOptions = defaultMapLayerOptions;
     }
-
 
     this._renderSystem = (opts.renderSys instanceof RenderSystem) ? opts.renderSys : this.createRenderSys(opts.renderSys);
 
@@ -439,11 +442,18 @@ export class IModelApp {
       this.locateManager,
       this.tentativePoint,
       this.extensionAdmin,
-      this.quantityFormatter,
       this.uiAdmin,
     ].forEach((sys) => {
       if (sys)
         sys.onInitialized();
+    });
+
+    // process async onInitialized methods
+    [
+      this.quantityFormatter,
+    ].forEach(async (sys) => {
+      if (sys)
+        await sys.onInitialized();
     });
   }
 
@@ -735,7 +745,7 @@ export class IModelApp {
     return this.makeLogoCard({
       iconSrc: "images/about-imodeljs.svg",
       heading: `<span style="font-weight:normal">${this.i18n.translate("Notices.PoweredBy")}</span>&nbsp;iModel.js`,
-      notice: `${this.applicationVersion}<br>${copyrightNotice}`,
+      notice: `${require("../package.json").version}<br>${copyrightNotice}`,
     });
   }
 

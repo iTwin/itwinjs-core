@@ -145,7 +145,7 @@ describe("Table withDragDrop HOC", () => {
     });
     it("should pass data through for functional objectType", async () => {
       const dataProviderMock = createDataProvider(10, { testType: "function-test" });
-      const objectType = sinon.spy((data: { testType: string } | any) => data.testType);
+      const objectType = sinon.spy((data: { testType: string } | any) => data?.testType);
       const root = renderIntoDocument(<DragDropTable dataProvider={dataProviderMock} dragProps={{ objectType }} />) as any;
       const callbacks = root.createDragProps(await dataProviderMock.getRow(0)) as DragSourceProps;
       const ret = (callbacks.objectType as any)();

@@ -21,7 +21,7 @@ export type StepFunctionProp = number | ((direction: string) => number | undefin
 /** Properties for the [[NumberInput]] component
  * @beta
  */
-export interface NumberInputProps extends Omit<InputProps, "min" | "max" | "step" | "onChange" | "onBlur"> {
+export interface NumberInputProps extends Omit<InputProps, "min" | "max" | "step" | "onChange"> {
   /** Numeric value, set to `undefined` to show placeholder text */
   value?: number;
   /** CSS class name for the NumberInput component container div */
@@ -42,8 +42,6 @@ export interface NumberInputProps extends Omit<InputProps, "min" | "max" | "step
   snap?: boolean;
   /** Function to call when value is changed. */
   onChange?: (value: number | undefined, stringValue: string) => void;
-  /** Function to call when focus is lost. */
-  onBlur?: React.FocusEventHandler<HTMLInputElement>;
   /** if true up/down buttons are shown larger and side by side */
   showTouchButtons?: boolean;
 }
@@ -53,7 +51,7 @@ export interface NumberInputProps extends Omit<InputProps, "min" | "max" | "step
  */
 export function NumberInput(props: NumberInputProps) {
   const { containerClassName, value, min, max, precision, format, parse,
-    onChange, onBlur, step, snap, showTouchButtons, ...otherProps } = props;
+    onChange, onBlur, onKeyDown, step, snap, showTouchButtons, ...otherProps } = props;
   const currentValueRef = React.useRef(value);
 
   /**
@@ -171,7 +169,8 @@ export function NumberInput(props: NumberInputProps) {
       applyStep(true);
       event.preventDefault();
     }
-  }, [applyStep, formatInternal, updateValueFromString]);
+    onKeyDown && onKeyDown(event);
+  }, [applyStep, formatInternal, updateValueFromString, onKeyDown]);
 
   const handleDownClick = React.useCallback((event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     applyStep(false);

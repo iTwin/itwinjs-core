@@ -371,7 +371,6 @@ export class Projection implements ProjectionProps {
   }
 }
 
-
 /** Min and max values
  *  @alpha
  */

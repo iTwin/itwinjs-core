@@ -2,19 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { GuidString } from "@bentley/bentleyjs-core";
+import { CheckpointV2Query } from "@bentley/imodelhub-client";
+import { BlobDaemon } from "@bentley/imodeljs-native";
+import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { assert } from "chai";
 import { ChildProcess } from "child_process";
 import * as path from "path";
-import { GuidString } from "@bentley/bentleyjs-core";
-import { CheckpointV2, CheckpointV2Query } from "@bentley/imodelhub-client";
-import { BlobDaemon } from "@bentley/imodeljs-native";
-import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import { AuthorizedBackendRequestContext, BriefcaseManager, IModelJsFs, SnapshotDb } from "../../imodeljs-backend";
+import { AuthorizedBackendRequestContext, IModelHost, IModelJsFs, SnapshotDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { HubUtility } from "./HubUtility";
 
-// FIXME: Disabled because blockcache checkpoints are not in QA yet...
+// FIXME: Disabled because V2 checkpoints are not in QA yet...
 describe.skip("Checkpoints (#integration)", () => {
 
   let requestContext: AuthorizedBackendRequestContext;
@@ -40,7 +40,7 @@ describe.skip("Checkpoints (#integration)", () => {
     testChangeSetId = (await HubUtility.queryLatestChangeSet(requestContext, testIModelId))!.wsgId;
 
     const checkpointQuery = new CheckpointV2Query().byChangeSetId(testChangeSetId).selectContainerAccessKey();
-    const checkpoints: CheckpointV2[] = await BriefcaseManager.imodelClient.checkpointsV2.get(requestContext, testIModelId, checkpointQuery);
+    const checkpoints = await IModelHost.iModelClient.checkpointsV2.get(requestContext, testIModelId, checkpointQuery);
     assert.equal(checkpoints.length, 1, "checkpoint missing");
     assert.isDefined(checkpoints[0].containerAccessKeyAccount, "checkpoint storage account is invalid");
 
@@ -63,11 +63,16 @@ describe.skip("Checkpoints (#integration)", () => {
       daemonProc.kill();
       await onDaemonExit;
     }
-    (BriefcaseManager as any).deleteFolderAndContents(blockcacheDir);
+    // BriefcaseManager.deleteFolderAndContents(blockcacheDir);
   });
 
-  it("should be able to open and read blockcache checkpoint", async () => {
-    const iModel = await SnapshotDb.openCheckpoint(requestContext, testProjectId, testIModelId, testChangeSetId);
+  it("should be able to open and read V2 checkpoint", async () => {
+    const iModel = await SnapshotDb.openCheckpointV2({
+      requestContext,
+      contextId: testProjectId,
+      iModelId: testIModelId,
+      changeSetId: testChangeSetId,
+    });
     assert.equal(iModel.getGuid(), testIModelId);
     assert.equal(iModel.changeSetId, testChangeSetId);
     assert.equal(iModel.contextId, testProjectId);

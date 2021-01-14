@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ecschema-locaters",
-  "version": "2.11.0-dev.13",
+  "version": "2.12.0-dev.0",
   "description": "EC Schema file locaters",
   "license": "MIT",
   "main": "lib/ecschema-locaters.js",
@@ -14,7 +14,7 @@
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "extract-api": "betools extract-api --entry=ecschema-locaters",
-    "lint": "eslint -f visualstudio ./src/**/*.ts 1>&2",
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "betools test-tsnode --testDir=./test/",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/ecschema-locaters/file.json --tsIndexFile=./ecschema-locaters.ts --onlyJson",
     "cover": "nyc npm test",
@@ -31,9 +31,9 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.11.0-dev.13",
-    "@bentley/ecschema-metadata": "2.11.0-dev.13",
-    "@bentley/eslint-plugin": "2.11.0-dev.13",
+    "@bentley/build-tools": "2.12.0-dev.0",
+    "@bentley/ecschema-metadata": "2.12.0-dev.0",
+    "@bentley/eslint-plugin": "2.12.0-dev.0",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/glob": "^5.0.35",
@@ -55,7 +55,7 @@
     "glob": "^7.1.2"
   },
   "peerDependencies": {
-    "@bentley/ecschema-metadata": "^2.11.0-dev.13"
+    "@bentley/ecschema-metadata": "^2.12.0-dev.0"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc",

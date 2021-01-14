@@ -7,6 +7,7 @@
 import { AxisAlignedBox3d } from '@bentley/imodeljs-common';
 import { BeButtonEvent } from '@bentley/imodeljs-frontend';
 import { BeDuration } from '@bentley/bentleyjs-core';
+import { Camera } from '@bentley/imodeljs-common';
 import { ColorDef } from '@bentley/imodeljs-common';
 import { DecorateContext } from '@bentley/imodeljs-frontend';
 import { Decorator } from '@bentley/imodeljs-frontend';
@@ -27,6 +28,8 @@ import { RenderSystemDebugControl } from '@bentley/imodeljs-frontend';
 import { RenderTargetDebugControl } from '@bentley/imodeljs-frontend';
 import { RgbColor } from '@bentley/imodeljs-common';
 import { RgbColorProps } from '@bentley/imodeljs-common';
+import { ScreenSpaceEffectBuilder } from '@bentley/imodeljs-frontend';
+import { ScreenSpaceEffectSource } from '@bentley/imodeljs-frontend';
 import { ScreenViewport } from '@bentley/imodeljs-frontend';
 import { TileBoundingBoxes } from '@bentley/imodeljs-frontend';
 import { Tool } from '@bentley/imodeljs-frontend';
@@ -34,6 +37,16 @@ import { ViewFlags } from '@bentley/imodeljs-common';
 import { Viewport } from '@bentley/imodeljs-frontend';
 import { ViewState } from '@bentley/imodeljs-frontend';
 import { ViewStateProps } from '@bentley/imodeljs-common';
+
+// @beta
+export abstract class AddEffectTool extends Tool {
+    protected abstract defineEffect(builder: ScreenSpaceEffectBuilder): void;
+    protected abstract get effectName(): string;
+    // (undocumented)
+    run(): boolean;
+    protected abstract get source(): ScreenSpaceEffectSource;
+    protected abstract get textureCoordFromPosition(): boolean;
+}
 
 // @beta
 export class AnimationIntervalTool extends Tool {
@@ -203,6 +216,20 @@ export interface ButtonProps {
 }
 
 // @beta
+export class ChangeCameraTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...inArgs: string[]): boolean;
+    // (undocumented)
+    run(camera?: Camera): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
 export class ChangeEmphasisSettingsTool extends ChangeHiliteTool {
     // (undocumented)
     protected apply(vp: Viewport, settings?: Hilite.Settings): void;
@@ -311,6 +338,18 @@ export interface CheckBoxProps {
     tooltip?: string;
     // (undocumented)
     typeOverride?: string;
+}
+
+// @beta
+export class ClearEffectsTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
 }
 
 // @beta
@@ -445,6 +484,25 @@ export class CompileShadersTool extends RenderSystemDebugControlTool {
 
 // @alpha (undocumented)
 export function convertHexToRgb(hex: string): RgbColor | undefined;
+
+// @beta
+export abstract class ConvolutionEffect extends AddEffectTool {
+    // (undocumented)
+    protected defineEffect(builder: ScreenSpaceEffectBuilder): void;
+    // (undocumented)
+    protected abstract get matrix(): number[];
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    protected get source(): {
+        vertex: string;
+        fragment: string;
+    };
+    // (undocumented)
+    protected get textureCoordFromPosition(): boolean;
+}
 
 // @beta
 export function copyStringToClipboard(str: string): void;
@@ -614,9 +672,29 @@ export class DumpPlanProjectionSettingsTool extends DisplayStyleTool {
 }
 
 // @beta
+export class EdgeDetectionEffect extends ConvolutionEffect {
+    // (undocumented)
+    protected get effectName(): string;
+    // (undocumented)
+    protected get matrix(): number[];
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
 export class ElementIdFromSourceAspectIdTool extends SourceAspectIdTool {
     // (undocumented)
     protected getECSql(queryId: string): string;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class EmbossEffect extends ConvolutionEffect {
+    // (undocumented)
+    protected get effectName(): string;
+    // (undocumented)
+    protected get matrix(): number[];
     // (undocumented)
     static toolId: string;
 }
@@ -668,6 +746,38 @@ export class FadeOutTool extends ViewportToggleTool {
 }
 
 // @beta
+export class FlipImageConfig extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...input: string[]): boolean;
+    // (undocumented)
+    run(horizontal?: boolean, vertical?: boolean, color?: boolean): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class FlipImageEffect extends AddEffectTool {
+    // (undocumented)
+    protected defineEffect(builder: ScreenSpaceEffectBuilder): void;
+    // (undocumented)
+    protected get effectName(): string;
+    // (undocumented)
+    protected get source(): {
+        vertex: string;
+        fragment: string;
+        sampleSourcePixel: string;
+    };
+    // (undocumented)
+    protected get textureCoordFromPosition(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
 export class FpsTracker {
     constructor(parent: HTMLElement, viewport: Viewport);
     // (undocumented)
@@ -696,6 +806,16 @@ export class FrustumDecorator implements Decorator {
     // (undocumented)
     static get isEnabled(): boolean;
     readonly useCachedDecorations = true;
+}
+
+// @beta
+export class GaussianBlurEffect extends ConvolutionEffect {
+    // (undocumented)
+    protected get effectName(): string;
+    // (undocumented)
+    protected get matrix(): number[];
+    // (undocumented)
+    static toolId: string;
 }
 
 // @alpha (undocumented)
@@ -794,6 +914,42 @@ export interface LabeledNumericInputProps extends NumericInputProps {
     id: string;
     // (undocumented)
     name: string;
+}
+
+// @beta
+export class LensDistortionConfig extends Tool {
+    // (undocumented)
+    static cylindricalRatio: number;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...input: string[]): boolean;
+    // (undocumented)
+    run(strength?: number, ratio?: number): boolean;
+    // (undocumented)
+    static strength: number;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class LensDistortionEffect extends AddEffectTool {
+    // (undocumented)
+    protected defineEffect(builder: ScreenSpaceEffectBuilder): void;
+    // (undocumented)
+    protected get effectName(): string;
+    // (undocumented)
+    protected get source(): {
+        vertex: string;
+        fragment: string;
+        sampleSourcePixel: string;
+    };
+    // (undocumented)
+    protected get textureCoordFromPosition(): boolean;
+    // (undocumented)
+    static toolId: string;
 }
 
 // @beta
@@ -1054,6 +1210,9 @@ export class RealityTransitionTool extends Tool {
     // (undocumented)
     static toolId: string;
 }
+
+// @beta
+export function redrawSelectedView(): void;
 
 // @beta
 export abstract class RenderSystemDebugControlTool extends Tool {
@@ -1352,6 +1511,26 @@ export class SetRealityModelTransparencyTool extends Tool {
 }
 
 // @beta
+export class SharpenEffect extends ConvolutionEffect {
+    // (undocumented)
+    protected get effectName(): string;
+    // (undocumented)
+    protected get matrix(): number[];
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class SharpnessEffect extends ConvolutionEffect {
+    // (undocumented)
+    protected get effectName(): string;
+    // (undocumented)
+    protected get matrix(): number[];
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
 export class ShowTileVolumesTool extends Tool {
     // (undocumented)
     static get maxArgs(): number;
@@ -1396,6 +1575,16 @@ export interface SliderProps {
     step: string;
     // (undocumented)
     value: string;
+}
+
+// @beta
+export class SnowEffect extends Tool {
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(enable?: boolean): boolean;
+    // (undocumented)
+    static toolId: string;
 }
 
 // @beta
@@ -1509,6 +1698,14 @@ export class ToggleDrapeFrustumTool extends RenderTargetDebugControlToggleTool {
 }
 
 // @beta
+export class ToggleDrawingGraphicsTool extends ViewportToggleTool {
+    // (undocumented)
+    protected toggle(vp: Viewport, enable?: boolean): void;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
 export class ToggleFrustumSnapshotTool extends Tool {
     // (undocumented)
     static get maxArgs(): number;
@@ -1617,6 +1814,14 @@ export class ToggleSectionCutTool extends Tool {
     parseAndRun(...args: string[]): boolean;
     // (undocumented)
     run(produceCutGeometry?: boolean): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class ToggleSectionDrawingSpatialViewTool extends ViewportToggleTool {
+    // (undocumented)
+    protected toggle(vp: Viewport, enable?: boolean): void;
     // (undocumented)
     static toolId: string;
 }
@@ -1757,6 +1962,16 @@ export class ToolSettingsTracker {
     // (undocumented)
     dispose(): void;
     }
+
+// @beta
+export class UnsharpenEffect extends ConvolutionEffect {
+    // (undocumented)
+    protected get effectName(): string;
+    // (undocumented)
+    protected get matrix(): number[];
+    // (undocumented)
+    static toolId: string;
+}
 
 // @alpha
 export class ViewportAddRealityModel extends Tool {

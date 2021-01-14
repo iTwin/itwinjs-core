@@ -10,7 +10,7 @@ import {
   BackstageItem, BackstageItemsManager, BackstageItemUtilities, ConditionalBooleanValue, UiItemsManager, UiItemsProvider,
 } from "@bentley/ui-abstract";
 import { Backstage as NZ_Backstage } from "@bentley/ui-ninezone";
-import { BackstageComposer, BackstageManager, SyncUiEventDispatcher, UiFramework, useGroupedItems } from "../../ui-framework";
+import { BackstageComposer, BackstageComposerActionItem, BackstageComposerStageLauncher, BackstageManager, SyncUiEventDispatcher, UiFramework, useGroupedItems } from "../../ui-framework";
 import TestUtils, { mount } from "../TestUtils";
 import { getActionItem, getStageLauncherItem } from "./BackstageComposerItem.test";
 import { act } from "@testing-library/react";
@@ -68,6 +68,29 @@ describe("BackstageComposer", () => {
       getStageLauncherItem(),
     ];
     shallow(<BackstageComposer items={items} />).should.matchSnapshot();
+  });
+
+  it("should honor prop updates", async () => {
+    const items: BackstageItem[] = [
+      getActionItem({ groupPriority: 200 }),
+      getStageLauncherItem(),
+    ];
+    const updatedItems: BackstageItem[] = [
+      getStageLauncherItem(),
+    ];
+
+    const wrapper = mount(<BackstageComposer items={items} />);
+    let actionItem = wrapper.find(BackstageComposerActionItem);
+    expect(actionItem.exists()).to.be.true;
+    let launchItem = wrapper.find(BackstageComposerStageLauncher);
+    expect(launchItem.exists()).to.be.true;
+
+    wrapper.setProps({ items: updatedItems });
+    wrapper.update();
+    actionItem = wrapper.find(BackstageComposerActionItem);
+    expect(actionItem.exists()).to.be.false;
+    launchItem = wrapper.find(BackstageComposerStageLauncher);
+    expect(launchItem.exists()).to.be.true;
   });
 
   it("should honor addon items", async () => {

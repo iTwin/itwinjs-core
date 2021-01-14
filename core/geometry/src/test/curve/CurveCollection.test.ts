@@ -347,7 +347,6 @@ describe("ConsolidateAdjacentPrimitives", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-
 });
 /**
  * Capture markers at shiftFraction and (1-shiftFraction) on each primitive of curves.
