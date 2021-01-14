@@ -234,14 +234,33 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     return true;
   }
 
-  /** Clear elements with color/transparency overrides. Specify key to clear only a single override.
+  /** Clear color/transparency overrides from elements. Removes all overrides when neither key or ids is specified.
+   * @params key Specify key value from [[EmphasizeElements.getOverriddenElements]] or [[EmphasizeElements.createOverrideKey]]
+   * to remove a single color/transparency override for the corresponding elements.
+   * @params ids Specify the IDs of elements to remove any color/transparency override from.
    * @return false if nothing to clear.
    */
-  public clearOverriddenElements(vp: Viewport, key?: number): boolean {
+  public clearOverriddenElements(vp: Viewport, key?: number, ids?: Id64Arg): boolean {
     if (undefined === this._overrideAppearance)
       return false;
     if (undefined !== key) {
       if (!this._overrideAppearance.delete(key))
+        return false;
+    } else if (undefined !== ids) {
+      let changed = false;
+
+      for (const [otherKey, otherIds] of this._overrideAppearance) {
+        const oldSize = otherIds.size;
+        Id64.toIdSet(ids).forEach((id) => { otherIds.delete(id); });
+
+        if (oldSize !== otherIds.size)
+          changed = true;
+
+        if (0 === otherIds.size)
+          this._overrideAppearance.delete(otherKey);
+      }
+
+      if (!changed)
         return false;
     } else {
       this._overrideAppearance = undefined;
