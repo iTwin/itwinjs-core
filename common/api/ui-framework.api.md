@@ -62,6 +62,7 @@ import { IconProps } from '@bentley/ui-core';
 import { IconSpec } from '@bentley/ui-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
+import { IFilteredPresentationTreeDataProvider } from '@bentley/presentation-components';
 import { IMatch } from '@bentley/ui-abstract';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
 import { InteractiveTool } from '@bentley/imodeljs-frontend';
@@ -3745,11 +3746,19 @@ export class ModelsVisibilityHandler implements IVisibilityHandler {
     // (undocumented)
     protected getModelDisplayStatus(id: Id64String): VisibilityStatus;
     // (undocumented)
+    static getNodeType(item: TreeNodeItem, dataProvider: IPresentationTreeDataProvider): ModelsTreeNodeType;
+    // (undocumented)
     protected getSubjectNodeVisibility(ids: Id64String[], node: TreeNodeItem): Promise<VisibilityStatus>;
     getVisibilityStatus(node: TreeNodeItem, nodeKey: NodeKey): VisibilityStatus | Promise<VisibilityStatus>;
     // (undocumented)
+    static isCategoryNode(node: TreeNodeItem): any;
+    // (undocumented)
+    static isModelNode(node: TreeNodeItem): any;
+    // (undocumented)
+    static isSubjectNode(node: TreeNodeItem): any;
+    // (undocumented)
     onVisibilityChange: BeEvent<VisibilityChangeListener>;
-    setFilteredDataProvider(provider: IPresentationTreeDataProvider | undefined): void;
+    setFilteredDataProvider(provider: IFilteredPresentationTreeDataProvider | undefined): void;
     }
 
 // @alpha
@@ -6385,7 +6394,7 @@ export function useUpdateNineZoneSize(frontstageDef: FrontstageDef): void;
 
 // @alpha
 export const useVisibilityTreeFiltering: (nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>, filterInfo?: VisibilityTreeFilterInfo | undefined, onFilterApplied?: ((filteredDataProvider: IPresentationTreeDataProvider, matchesCount: number) => void) | undefined) => {
-    filteredNodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider> | import("@bentley/ui-components").PagedTreeNodeLoader<import("@bentley/presentation-components/lib/presentation-components/tree/FilteredDataProvider").FilteredPresentationTreeDataProvider>;
+    filteredNodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>;
     isFiltering: boolean;
     nodeHighlightingProps: import("@bentley/ui-components").HighlightableTreeProps | undefined;
 };
