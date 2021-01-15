@@ -6,9 +6,7 @@
  * @module RpcInterface
  */
 
-import { RpcProtocolEvent } from "../core/RpcConstants";
-import { RpcRequestFulfillment } from "../core/RpcProtocol";
-import { RpcRequest } from "../core/RpcRequest";
+import { RpcProtocolEvent, RpcRequest, RpcRequestFulfillment } from "@bentley/imodeljs-common";
 import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
 
 /** @beta */
