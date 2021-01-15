@@ -650,6 +650,9 @@ export class ComponentExamplesProvider {
         createComponentExample("SearchBox", undefined,
           // eslint-disable-next-line no-console
           <SearchBox placeholder="Search" onValueChanged={(value: string) => console.log(`Search text: ${value}`)} />),
+        createComponentExample("SearchBoxWithDelay", undefined,
+          // eslint-disable-next-line no-console
+          <SearchBox placeholder="Search" valueChangedDelay={1000} onValueChanged={(value: string) => console.log(`Search text: ${value}`)} />),
       ],
     };
   }
