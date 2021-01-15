@@ -2,8 +2,6 @@
   "name": "@bentley/electron-manager",
   "version": "2.12.0-dev.2",
   "description": "iModel.js electron utilities",
-  "main": "lib/ElectronManager.js",
-  "typings": "lib/ElectronManager",
   "license": "MIT",
   "engines": {
     "node": ">=10.17.0 <13.0"
@@ -12,8 +10,8 @@
     "compile": "npm run build",
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/electron-manager/file.json --tsIndexFile=./ElectronManager.ts --onlyJson",
-    "extract-api": "betools extract-api --entry=ElectronManager",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/electron-manager/file.json --tsIndexFile=./ElectronBackend.ts --onlyJson",
+    "extract-api": "betools extract-api --entry=ElectronBackend",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "",
     "cover": ""
@@ -33,6 +31,7 @@
   },
   "peerDependencies": {
     "@bentley/bentleyjs-core": "^2.12.0-dev.2",
+    "@bentley/imodeljs-common": "^2.12.0-dev.2",
     "@bentley/imodeljs-backend": "^2.12.0-dev.2",
     "electron": "^11.1.0"
   },

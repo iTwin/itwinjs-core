@@ -28,6 +28,7 @@
     "@bentley/imodeljs-frontend": "2.12.0-dev.2",
     "@bentley/logger-config": "2.12.0-dev.2",
     "@bentley/rbac-client": "2.12.0-dev.2",
+    "@bentley/electron-manager": "2.12.0-dev.2",
     "body-parser": "^1.18.2",
     "chai": "^4.1.2",
     "electron": "^11.1.0",
