@@ -10,9 +10,10 @@ import { assert, BeEvent, ClientRequestContext, Logger } from "@bentley/bentleyj
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { AccessToken, ImsAuthorizationClient } from "@bentley/itwin-client";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
-import { defaultMobileAuthorizationClientExpiryBuffer, Events, MobileAuthorizationClientConfiguration, NativeAppRpcInterface } from "@bentley/imodeljs-common";
+import { defaultMobileAuthorizationClientExpiryBuffer, Events, MobileAuthorizationClientConfiguration } from "@bentley/imodeljs-common";
 import { EventSource } from "../EventSource";
 import { FrontendRequestContext } from "../FrontendRequestContext";
+import { NativeApp } from "../NativeApp";
 
 const loggerCategory: string = FrontendLoggerCategory.MobileAuthorizationClient;
 
@@ -42,18 +43,18 @@ export class MobileAuthorizationClient extends ImsAuthorizationClient implements
   public async initialize(requestContext: ClientRequestContext): Promise<void> {
     requestContext.enter();
     const issuer = await this.getUrl(requestContext);
-    await NativeAppRpcInterface.getClient().authInitialize(issuer, this._clientConfiguration);
+    await NativeApp.callBackend("authInitialize", issuer, this._clientConfiguration);
   }
   /** Start the sign-in process */
   public async signIn(requestContext: ClientRequestContext): Promise<void> {
     requestContext.enter();
-    await NativeAppRpcInterface.getClient().authSignIn();
+    await NativeApp.callBackend("authSignIn");
   }
 
   /** Start the sign-out process */
   public async signOut(requestContext: ClientRequestContext): Promise<void> {
     requestContext.enter();
-    return NativeAppRpcInterface.getClient().authSignOut();
+    return NativeApp.callBackend("authSignOut");
   }
 
   /** return accessToken */
@@ -62,7 +63,7 @@ export class MobileAuthorizationClient extends ImsAuthorizationClient implements
     if (this.isAuthorized) {
       return this._accessToken!;
     }
-    const tokenString = await NativeAppRpcInterface.getClient().authGetAccessToken();
+    const tokenString = await NativeApp.callBackend("authGetAccessToken");
     this._accessToken = AccessToken.fromJson(tokenString);
     return this._accessToken;
   }

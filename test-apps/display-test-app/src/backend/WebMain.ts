@@ -38,7 +38,7 @@ const dtaWebMain = (async () => {
   Logger.logTrace("SVT", `config = ${JSON.stringify(serverConfig)}`);
 
   // Set up the ability to serve the supported rpcInterfaces via web requests
-  const cloudConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "display-test-app", version: "v1.0" } }, getRpcInterfaces("browser"));
+  const cloudConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "display-test-app", version: "v1.0" } }, getRpcInterfaces());
 
   const app = express();
   app.use(express.text());
