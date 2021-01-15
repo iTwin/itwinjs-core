@@ -28,7 +28,7 @@ export class FrontendIpc {
 
   /**
    * Establish a message handler function for the supplied channel over Ipc. The handler will be called when messages are sent for
-   * the channel via  [BackendIpc.send]($common).
+   * the channel via  [BackendIpc.sendMessage]($common).
    * @param channel the name of the channel
    * @param handler the message handler
    * @returns A function to remove the handler
