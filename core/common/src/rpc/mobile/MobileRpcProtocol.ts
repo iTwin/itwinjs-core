@@ -8,11 +8,13 @@
 
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { IModelError } from "../../IModelError";
+import { IpcWebSocket } from "../../ipc/IpcWebSocket";
 import { RpcEndpoint } from "../core/RpcConstants";
 import { RpcSerializedValue } from "../core/RpcMarshaling";
 import { RpcProtocol, RpcRequestFulfillment, SerializedRpcRequest } from "../core/RpcProtocol";
 import { RpcPushChannel, RpcPushConnection } from "../core/RpcPush";
 import { RpcRequest } from "../core/RpcRequest";
+import { MobileIpcTransport } from "./MobileIpc";
 import { MobilePushConnection, MobilePushTransport } from "./MobilePush";
 import { MobileRpcConfiguration } from "./MobileRpcManager";
 import { MobileRpcRequest } from "./MobileRpcRequest";
@@ -45,6 +47,7 @@ export class MobileRpcProtocol extends RpcProtocol {
   private _partialData: Uint8Array[] = [];
   private _port: number = 0;
   private _transport?: MobilePushTransport;
+  private _ipc: MobileIpcTransport;
   public static obtainInterop(): MobileRpcGateway { throw new IModelError(BentleyStatus.ERROR, "Not implemented."); }
 
   public static async encodeRequest(request: MobileRpcRequest): Promise<MobileRpcChunks> {
@@ -66,11 +69,15 @@ export class MobileRpcProtocol extends RpcProtocol {
 
   constructor(configuration: MobileRpcConfiguration, endPoint: RpcEndpoint) {
     super(configuration);
+
     if (endPoint === RpcEndpoint.Frontend) {
       this.initializeFrontend();
     } else if (endPoint === RpcEndpoint.Backend) {
       this.initializeBackend();
     }
+
+    this._ipc = new MobileIpcTransport(this);
+    IpcWebSocket.transport = this._ipc;
   }
 
   private initializeFrontend() {
@@ -239,6 +246,10 @@ export class MobileRpcProtocol extends RpcProtocol {
       return;
     }
 
+    if (this._ipc.consumeResponse(response)) {
+      return;
+    }
+
     const request = this.requests.get(response.id) as MobileRpcRequest;
     this.requests.delete(response.id);
     request.notifyResponse(response);
@@ -304,6 +315,10 @@ export class MobileRpcProtocol extends RpcProtocol {
 
     this.consumePartialData(request.parameters);
     this._partialRequest = undefined;
+
+    if (this._ipc.consumeRequest(request)) {
+      return;
+    }
 
     const fulfillment = await this.fulfill(request);
     const response = MobileRpcProtocol.encodeResponse(fulfillment);

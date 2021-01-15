@@ -4,43 +4,39 @@
 *--------------------------------------------------------------------------------------------*/
 
 /** @packageDocumentation
- * @module RpcInterface
+ * @module IpcSocket
  */
 
 import { ClientRequestContext, Config, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseProps, Events, IModelConnectionProps, IModelError, IModelRpcProps, InternetConnectivityStatus,
-  LocalBriefcaseProps,
-  MobileAuthorizationClientConfiguration, NativeAppRpcInterface, OpenBriefcaseProps, OverriddenBy, RequestNewBriefcaseProps,
-  RpcInterface, RpcManager, StorageValue, TileTreeContentIds,
+  BackendIpc, BriefcaseProps, IModelConnectionProps, IModelError, IModelRpcProps, InternetConnectivityStatus, IpcHandler, LocalBriefcaseProps,
+  MobileAuthorizationClientConfiguration, NativeAppIpc, NativeAppIpcKey, OpenBriefcaseProps, OverriddenBy, RequestNewBriefcaseProps, StorageValue,
+  TileTreeContentIds,
 } from "@bentley/imodeljs-common";
-import { EmitStrategy, IModelJsNative } from "@bentley/imodeljs-native";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BriefcaseManager } from "../BriefcaseManager";
 import { Downloads } from "../CheckpointManager";
-import { EventSink } from "../EventSink";
 import { BriefcaseDb, IModelDb } from "../IModelDb";
 import { MobileDevice } from "../MobileDevice";
 import { NativeAppBackend } from "../NativeAppBackend";
 import { NativeAppStorage } from "../NativeAppStorage";
-import { cancelTileContentRequests } from "./IModelTileRpcImpl";
+import { cancelTileContentRequests } from "../rpc-impl/IModelTileRpcImpl";
 
-/** The backend implementation of NativeAppRpcInterface.
+/**
+ * Implementation for backend of NativeAppIpc
  * @internal
  */
-export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterface {
-  public static register() {
-    RpcManager.registerImpl(NativeAppRpcInterface, NativeAppRpcImpl);
-  }
+export class NativeAppImpl extends IpcHandler implements NativeAppIpc {
 
-  public async log(_timestamp: number, level: LogLevel, category: string, message: string, metaData?: any) {
+  public get channelName() { return NativeAppIpcKey.Channel; }
+  public async getVersion() { return NativeAppIpcKey.Version; }
+  public async log(_timestamp: number, level: LogLevel, category: string, message: string, metaData?: any): Promise<void> {
     Logger.logRaw(level, category, message, () => metaData);
   }
-
   public async checkInternetConnectivity(): Promise<InternetConnectivityStatus> {
     return NativeAppBackend.checkInternetConnectivity();
   }
-
   public async overrideInternetConnectivity(by: OverriddenBy, status: InternetConnectivityStatus): Promise<void> {
     NativeAppBackend.overrideInternetConnectivity(by, status);
   }
@@ -72,21 +68,22 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
 
     const args = {
       ...request,
-      abort: 0,
-      onProgress: (_a: number, _b: number) => args.abort,
+      onProgress: (_a: number, _b: number) => checkAbort(),
     };
 
     if (reportProgress) {
       args.onProgress = (loaded, total) => {
-        EventSink.global.emit(
-          Events.NativeApp.namespace,
-          `${Events.NativeApp.onBriefcaseDownloadProgress}-${request.iModelId}`,
-          { loaded, total }, { strategy: EmitStrategy.PurgeOlderEvents });
-        return args.abort;
+        BackendIpc.sendMessage(`nativeApp.progress-${request.iModelId}`, { loaded, total });
+        return checkAbort();
       };
     }
 
-    return BriefcaseManager.downloadBriefcase(requestContext, args);
+    const downloadPromise = BriefcaseManager.downloadBriefcase(requestContext, args);
+    const checkAbort = () => {
+      const job = Downloads.isInProgress(args.fileName!);
+      return (job && (job.request as any).abort === 1) ? 1 : 0;
+    };
+    return downloadPromise;
   }
 
   public async requestCancelDownloadBriefcase(fileName: string): Promise<boolean> {
