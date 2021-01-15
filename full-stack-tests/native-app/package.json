@@ -11,6 +11,7 @@
     "docs": "",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "npm run test:electron",
+    "test:chrome": "",
     "test:electron": "certa -r electron --grep \"#integration\" --invert",
     "test:integration": "npm run test:integration:electron",
     "test:integration:electron": "certa -r electron --grep \"#integration\"",
