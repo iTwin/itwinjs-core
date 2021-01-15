@@ -119,6 +119,7 @@ export class Format {
     if ((currentFormatTrait & FormatTraits.ShowUnitLabel) === FormatTraits.ShowUnitLabel) formatTraitsArr.push("showUnitLabel");
     if ((currentFormatTrait & FormatTraits.PrependUnitLabel) === FormatTraits.PrependUnitLabel) formatTraitsArr.push("prependUnitLabel");
     if ((currentFormatTrait & FormatTraits.Use1000Separator) === FormatTraits.Use1000Separator) formatTraitsArr.push("use1000Separator");
+    // NOTE: the formatter does not current use trait ExponentOnlyNegative
     if ((currentFormatTrait & FormatTraits.ExponentOnlyNegative) === FormatTraits.ExponentOnlyNegative) formatTraitsArr.push("exponentOnlyNegative");
 
     return formatTraitsArr;
@@ -145,7 +146,7 @@ export class Format {
         return currentFormatTrait | FormatTraits.PrependUnitLabel;
       case "use1000separator":
         return currentFormatTrait | FormatTraits.Use1000Separator;
-      case "exponentonlynegative":
+      case "exponentonlynegative": // NOTE: the formatter does not current use this trait
         return currentFormatTrait | FormatTraits.ExponentOnlyNegative;
       default:
         throw new QuantityError(QuantityStatus.InvalidJson, `Format has an invalid 'formatTraits' option.`);

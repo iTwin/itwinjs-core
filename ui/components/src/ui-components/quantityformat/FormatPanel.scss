@@ -12,7 +12,6 @@
   align-items: center;
 
   >.uicore-label {
-    padding-left: .5em;
     font-size:    $uicore-font-size;
     margin: 4.4px 0; /* match margin on other select controls so it spaces properly in grid */
     &.uicore-disabled {   color: $buic-text-color-disabled; }

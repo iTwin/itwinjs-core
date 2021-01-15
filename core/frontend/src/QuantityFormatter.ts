@@ -173,7 +173,7 @@ const DEFAULT_FORMATPROPS: UniqueFormatsProps[] = [
     format: {
       composite: {
         includeZero: true,
-        spacer: " ",
+        spacer: "",
         units: [{ label: "m", name: "Units.M" }],
       },
       formatTraits: ["keepSingleZero", "showUnitLabel"],
@@ -187,7 +187,7 @@ const DEFAULT_FORMATPROPS: UniqueFormatsProps[] = [
     format: {
       composite: {
         includeZero: true,
-        spacer: " ",
+        spacer: "",
         units: [{ label: "m", name: "Units.M" }],
       },
       formatTraits: ["keepSingleZero", "showUnitLabel"],
@@ -202,7 +202,7 @@ const DEFAULT_FORMATPROPS: UniqueFormatsProps[] = [
     format: {
       composite: {
         includeZero: true,
-        spacer: " ",
+        spacer: "",
         units: [{ label: "ft", name: "Units.FT" }],
       },
       formatTraits: ["keepSingleZero", "showUnitLabel"],
@@ -216,7 +216,7 @@ const DEFAULT_FORMATPROPS: UniqueFormatsProps[] = [
     format: {
       composite: {
         includeZero: true,
-        spacer: " ",
+        spacer: "",
         units: [{ label: "ft", name: "Units.FT" }],
       },
       formatTraits: ["keepSingleZero", "showUnitLabel"],
@@ -245,7 +245,7 @@ const DEFAULT_FORMATPROPS: UniqueFormatsProps[] = [
     format: {
       composite: {
         includeZero: true,
-        spacer: " ",
+        spacer: "",
         units: [{ label: "ft", name: "Units.FT" }],
       },
       formatTraits: ["trailZeroes", "keepSingleZero"],
@@ -260,7 +260,7 @@ const DEFAULT_FORMATPROPS: UniqueFormatsProps[] = [
     format: {
       composite: {
         includeZero: true,
-        spacer: " ",
+        spacer: "",
         units: [{ label: "ft", name: "Units.US_SURVEY_FT" }],
       },
       formatTraits: ["trailZeroes", "keepSingleZero"],
@@ -276,7 +276,7 @@ const DEFAULT_FORMATPROPS: UniqueFormatsProps[] = [
     format: {
       composite: {
         includeZero: true,
-        spacer: " ",
+        spacer: "",
         units: [{ label: "m", name: "Units.M" }],
       },
       formatTraits: ["trailZeroes", "keepSingleZero"],
@@ -291,7 +291,7 @@ const DEFAULT_FORMATPROPS: UniqueFormatsProps[] = [
     format: {
       composite: {
         includeZero: true,
-        spacer: " ",
+        spacer: "",
         units: [{ label: "ft", name: "Units.US_SURVEY_FT" }],
       },
       formatTraits: ["keepSingleZero", "showUnitLabel"],
@@ -305,7 +305,7 @@ const DEFAULT_FORMATPROPS: UniqueFormatsProps[] = [
     format: {
       composite: {
         includeZero: true,
-        spacer: " ",
+        spacer: "",
         units: [{ label: "ft (US Survey)", name: "Units.US_SURVEY_FT" }],
       },
       formatTraits: ["keepSingleZero", "showUnitLabel"],
@@ -320,7 +320,7 @@ const DEFAULT_FORMATPROPS: UniqueFormatsProps[] = [
     format: {
       composite: {
         includeZero: true,
-        spacer: " ",
+        spacer: "",
         units: [{ label: "ft", name: "Units.US_SURVEY_FT" }],
       },
       formatTraits: ["keepSingleZero", "showUnitLabel"],
@@ -379,7 +379,7 @@ const DEFAULT_FORMATPROPS: UniqueFormatsProps[] = [
     format: {
       composite: {
         includeZero: true,
-        spacer: " ",
+        spacer: "",
         units: [{ label: "m²", name: "Units.SQ_M" }],
       },
       formatTraits: ["keepSingleZero", "showUnitLabel"],
@@ -393,7 +393,7 @@ const DEFAULT_FORMATPROPS: UniqueFormatsProps[] = [
     format: {
       composite: {
         includeZero: true,
-        spacer: " ",
+        spacer: "",
         units: [{ label: "ft²", name: "Units.SQ_FT" }],
       },
       formatTraits: ["keepSingleZero", "showUnitLabel"],
@@ -407,7 +407,7 @@ const DEFAULT_FORMATPROPS: UniqueFormatsProps[] = [
     format: {
       composite: {
         includeZero: true,
-        spacer: " ",
+        spacer: "",
         units: [{ label: "ft²", name: "Units.SQ_US_SURVEY_FT" }],
       },
       formatTraits: ["keepSingleZero", "showUnitLabel"],
@@ -421,7 +421,7 @@ const DEFAULT_FORMATPROPS: UniqueFormatsProps[] = [
     format: {
       composite: {
         includeZero: true,
-        spacer: " ",
+        spacer: "",
         units: [{ label: "m³", name: "Units.CUB_M" }],
       },
       formatTraits: ["keepSingleZero", "showUnitLabel"],
@@ -435,7 +435,7 @@ const DEFAULT_FORMATPROPS: UniqueFormatsProps[] = [
     format: {
       composite: {
         includeZero: true,
-        spacer: " ",
+        spacer: "",
         units: [{ label: "ft³", name: "Units.CUB_FT" }],
       },
       formatTraits: ["keepSingleZero", "showUnitLabel"],
@@ -449,7 +449,7 @@ const DEFAULT_FORMATPROPS: UniqueFormatsProps[] = [
     format: {
       composite: {
         includeZero: true,
-        spacer: " ",
+        spacer: "",
         units: [{ label: "ft³", name: "Units.CUB_US_SURVEY_FT" }],
       },
       formatTraits: ["keepSingleZero", "showUnitLabel"],

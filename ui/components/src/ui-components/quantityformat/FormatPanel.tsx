@@ -58,6 +58,16 @@ function getTraitString(trait: FormatTraits) {
   return undefined;
 }
 
+/*
+async function getPossibleCompositeUnits(parentUnit: UnitProps, unitsProvider: UnitsProvider): Promise<UnitProps[]> {
+  const unitFamily = parentUnit.unitFamily;
+  const possibleUnits = await unitsProvider.getUnitsByFamily(unitFamily);
+  const conversionPromises = possibleUnits.map(async (unit) => unitsProvider.getConversion(unit, parentUnit));
+  const conversions = await Promise.all(conversionPromises);
+  return possibleUnits.filter((_unit, index) => conversions[index].factor > 1 && Number.isInteger(conversions[index].factor));
+}
+*/
+
 /** Component to show/edit Quantity Format.
  * @alpha
  */
@@ -336,8 +346,6 @@ export function FormatPanel(props: FormatPanelProps) {
       <span className={classnames("uicore-label", formatType !== FormatType.Scientific && "uicore-disabled")}>Scientific Type</span>
       <ScientificTypeSelector type={(formatProps.scientificType && formatProps.scientificType.length > 0) ? Format.parseScientificType(formatProps.scientificType, "custom") : ScientificType.Normalized}
         disabled={formatType !== FormatType.Scientific} onChange={handleScientificTypeChange} />
-      <span className={classnames("uicore-label", formatType !== FormatType.Scientific && "uicore-disabled")}>Exponent Only Negative</span>
-      <Checkbox isLabeled={true} checked={isFormatTraitSet(FormatTraits.ExponentOnlyNegative)} onChange={handleExponentOnlyNegativeChange} disabled={formatType !== FormatType.Scientific} />
     </div>
   );
 }
