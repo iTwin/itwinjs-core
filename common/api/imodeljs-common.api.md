@@ -333,7 +333,7 @@ export class BackendError extends IModelError {
     constructor(errorNumber: number, name: string, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
 }
 
-// @internal
+// @beta
 export class BackendIpc {
     static initialize(ipc: IpcSocketBackend): void;
     static get ipc(): IpcSocketBackend;
@@ -2730,7 +2730,7 @@ export interface FormDataCommon {
     append(name: string, value: string | Blob | Buffer, fileName?: string): void;
 }
 
-// @internal
+// @beta
 export class FrontendIpc {
     static callBackend(channelName: string, methodName: string, ...args: any[]): Promise<any>;
     static handleMessage(channel: string, handler: (...data: any[]) => void): RemoveFunction;
@@ -4015,7 +4015,7 @@ export const initializeRpcRequest: () => void;
 // @internal (undocumented)
 export const INSTANCE: unique symbol;
 
-// @alpha
+// @beta
 export enum InternetConnectivityStatus {
     // (undocumented)
     Offline = 1,
@@ -4039,14 +4039,14 @@ export const Interpolation: {
 // @beta (undocumented)
 export type InterpolationFunction = (v: any, k: number) => number;
 
-// @alpha
+// @beta
 export abstract class IpcHandler implements IpcInterface {
     abstract get channelName(): string;
     abstract getVersion(): Promise<string>;
     static register(): RemoveFunction;
 }
 
-// @alpha
+// @beta
 export interface IpcInterface {
     getVersion(): Promise<string>;
 }
@@ -4064,23 +4064,90 @@ export type IpcInvokeReturn = {
     };
 };
 
-// @internal
+// @beta
 export type IpcListener = (evt: any, ...arg: any[]) => void;
 
-// @internal
+// @beta
 export interface IpcSocket {
     receive: (channel: string, listener: IpcListener) => RemoveFunction;
     send: (channel: string, ...data: any[]) => void;
 }
 
-// @internal
+// @beta
 export interface IpcSocketBackend extends IpcSocket {
     handle: (channel: string, handler: (methodName: string, ...args: any[]) => Promise<any>) => RemoveFunction;
 }
 
-// @internal
+// @beta
 export interface IpcSocketFrontend extends IpcSocket {
     invoke: (channel: string, methodName: string, ...args: any[]) => Promise<any>;
+}
+
+// @internal (undocumented)
+export abstract class IpcWebSocket implements IpcSocket {
+    constructor();
+    // (undocumented)
+    protected _channels: Map<string, Set<IpcListener>>;
+    // (undocumented)
+    receive(channel: string, listener: IpcListener): RemoveFunction;
+    // (undocumented)
+    abstract send(channel: string, ...data: any[]): void;
+    // (undocumented)
+    static transport: IpcWebSocketTransport;
+}
+
+// @internal (undocumented)
+export class IpcWebSocketBackend extends IpcWebSocket implements IpcSocketBackend {
+    constructor();
+    // (undocumented)
+    handle(channel: string, handler: (methodName: string, ...args: any[]) => Promise<any>): RemoveFunction;
+    // (undocumented)
+    send(channel: string, ...data: any[]): void;
+}
+
+// @internal (undocumented)
+export class IpcWebSocketFrontend extends IpcWebSocket implements IpcSocketFrontend {
+    constructor();
+    // (undocumented)
+    invoke(channel: string, methodName: string, ...args: any[]): Promise<any>;
+    // (undocumented)
+    send(channel: string, ...data: any[]): void;
+}
+
+// @internal (undocumented)
+export interface IpcWebSocketMessage {
+    // (undocumented)
+    channel: string;
+    // (undocumented)
+    data?: any[];
+    // (undocumented)
+    method?: string;
+    // (undocumented)
+    request?: number;
+    // (undocumented)
+    response?: number;
+    // (undocumented)
+    type: IpcWebSocketMessageType;
+}
+
+// @internal (undocumented)
+export enum IpcWebSocketMessageType {
+    // (undocumented)
+    Invoke = 2,
+    // (undocumented)
+    Push = 1,
+    // (undocumented)
+    Response = 3,
+    // (undocumented)
+    Send = 0
+}
+
+// @internal (undocumented)
+export abstract class IpcWebSocketTransport {
+    // (undocumented)
+    abstract listen(handler: (message: IpcWebSocketMessage) => void): void;
+    // (undocumented)
+    abstract send(message: IpcWebSocketMessage): void;
 }
 
 // @internal
@@ -4664,7 +4731,7 @@ export enum MonochromeMode {
     Scaled = 1
 }
 
-// @alpha
+// @internal
 export interface NativeAppIpc extends IpcInterface {
     acquireNewBriefcaseId: (_iModelId: GuidString) => Promise<number>;
     authGetAccessToken: () => Promise<string>;
@@ -4672,7 +4739,6 @@ export interface NativeAppIpc extends IpcInterface {
     authSignIn: () => Promise<void>;
     authSignOut: () => Promise<void>;
     cancelElementGraphicsRequests: (_rpcProps: IModelRpcProps, _requestIds: string[]) => Promise<void>;
-    // @internal
     cancelTileContentRequests: (_iModelToken: IModelRpcProps, _contentIds: TileTreeContentIds[]) => Promise<void>;
     checkInternetConnectivity: () => Promise<InternetConnectivityStatus>;
     closeBriefcase: (_key: string) => Promise<void>;
@@ -4681,7 +4747,7 @@ export interface NativeAppIpc extends IpcInterface {
     getBriefcaseFileName: (_props: BriefcaseProps) => Promise<string>;
     getCachedBriefcases: (_iModelId?: GuidString) => Promise<LocalBriefcaseProps[]>;
     getConfig: () => Promise<any>;
-    // @internal (undocumented)
+    // (undocumented)
     isInteractiveEditingSupported: (_tokenProps: IModelRpcProps) => Promise<boolean>;
     log: (_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any) => Promise<void>;
     open: (_args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
@@ -4695,7 +4761,7 @@ export interface NativeAppIpc extends IpcInterface {
     storageRemove: (_storageId: string, _key: string) => Promise<void>;
     storageRemoveAll: (_storageId: string) => Promise<void>;
     storageSet: (_storageId: string, _key: string, _value: StorageValue) => Promise<void>;
-    // @internal (undocumented)
+    // (undocumented)
     toggleInteractiveEditingSession: (_tokenProps: IModelRpcProps, _startSession: boolean) => Promise<boolean>;
 }
 
@@ -4991,7 +5057,7 @@ export interface OrbitGtBlobProps {
     sasToken: string;
 }
 
-// @alpha
+// @beta
 export enum OverriddenBy {
     // (undocumented)
     Browser = 0,
@@ -5625,7 +5691,7 @@ export interface RelatedElementProps {
 export interface RelationshipProps extends EntityProps, SourceAndTarget {
 }
 
-// @alpha
+// @beta
 export type RemoveFunction = () => void;
 
 // @beta
@@ -6895,7 +6961,7 @@ export abstract class StandaloneIModelRpcInterface extends RpcInterface {
 // @beta
 export type StandaloneOpenOptions = OpenDbKey;
 
-// @alpha
+// @beta
 export type StorageValue = string | number | boolean | null | Uint8Array;
 
 // @public

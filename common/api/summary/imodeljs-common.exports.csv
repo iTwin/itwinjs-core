@@ -15,7 +15,7 @@ public;AxisAlignedBox3d = Range3d
 public;AxisAlignedBox3dProps = Range3dProps
 internal;B3dmHeader 
 public;BackendError 
-internal;BackendIpc
+beta;BackendIpc
 public;BackgroundFill
 public;BackgroundMapProps
 public;BackgroundMapProviderName = "BingProvider" | "MapBoxProvider"
@@ -178,7 +178,7 @@ public;FontMapProps
 public;FontProps
 public;FontType
 internal;FormDataCommon
-internal;FrontendIpc
+beta;FrontendIpc
 public;Frustum
 internal;FrustumPlanes
 internal;FrustumPlanes
@@ -272,16 +272,22 @@ internal;class IModelWriteRpcInterface
 public;InformationPartitionElementProps 
 internal;initializeRpcRequest: () => void
 internal;INSTANCE: unique symbol
-alpha;InternetConnectivityStatus
+beta;InternetConnectivityStatus
 beta;Interpolation:
 beta;InterpolationFunction = (v: any, k: number) => number
-alpha;class IpcHandler 
-alpha;IpcInterface
+beta;class IpcHandler 
+beta;IpcInterface
 internal;IpcInvokeReturn =
-internal;IpcListener = (evt: any, ...arg: any[]) => void
-internal;IpcSocket
-internal;IpcSocketBackend 
-internal;IpcSocketFrontend 
+beta;IpcListener = (evt: any, ...arg: any[]) => void
+beta;IpcSocket
+beta;IpcSocketBackend 
+beta;IpcSocketFrontend 
+internal;class IpcWebSocket 
+internal;IpcWebSocketBackend 
+internal;IpcWebSocketFrontend 
+internal;IpcWebSocketMessage
+internal;IpcWebSocketMessageType
+internal;class IpcWebSocketTransport
 internal;isKnownTileFormat(format: number): boolean
 public;isPowerOfTwo(num: number): boolean
 internal;isValidImageSourceFormat(format: ImageSourceFormat): boolean
@@ -332,7 +338,7 @@ public;ModelProps
 public;ModelQueryParams 
 public;ModelSelectorProps 
 public;MonochromeMode
-alpha;NativeAppIpc 
+internal;NativeAppIpc 
 internal;NativeAppIpcKey
 public;NavigationBindingValue
 public;NavigationValue
@@ -363,7 +369,7 @@ beta;OpenBriefcaseProps
 public;OpenDbKey
 internal;OPERATION: unique symbol
 alpha;OrbitGtBlobProps
-alpha;OverriddenBy
+beta;OverriddenBy
 internal;PackedFeature
 internal;PackedFeatureTable
 public;PartReference
@@ -409,7 +415,7 @@ internal;REGISTRY: unique symbol
 public;RelatedElement 
 public;RelatedElementProps
 public;RelationshipProps 
-alpha;RemoveFunction = () => void
+beta;RemoveFunction = () => void
 beta;class RenderMaterial
 beta;RenderMaterial
 beta;RenderMaterialProps 
@@ -511,7 +517,7 @@ beta;SpatialClassificationProps
 public;SpatialViewDefinitionProps 
 internal;class StandaloneIModelRpcInterface 
 beta;StandaloneOpenOptions = OpenDbKey
-alpha;StorageValue = string | number | boolean | null | Uint8Array
+beta;StorageValue = string | number | boolean | null | Uint8Array
 public;SubCategoryAppearance
 public;SubCategoryAppearance
 public;SubCategoryOverride

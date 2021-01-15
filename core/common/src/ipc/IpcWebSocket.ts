@@ -8,13 +8,13 @@
 
 import { IpcListener, IpcSocket, IpcSocketBackend, IpcSocketFrontend, RemoveFunction } from "./IpcSocket";
 
-/** @alpha */
+/** @internal */
 export abstract class IpcWebSocketTransport {
   public abstract send(message: IpcWebSocketMessage): void;
   public abstract listen(handler: (message: IpcWebSocketMessage) => void): void;
 }
 
-/** @alpha */
+/** @internal */
 export enum IpcWebSocketMessageType {
   Send,
   Push,
@@ -22,7 +22,7 @@ export enum IpcWebSocketMessageType {
   Response
 }
 
-/** @alpha */
+/** @internal */
 export interface IpcWebSocketMessage {
   type: IpcWebSocketMessageType;
   request?: number;
@@ -32,7 +32,7 @@ export interface IpcWebSocketMessage {
   data?: any[];
 }
 
-/** @alpha */
+/** @internal */
 export abstract class IpcWebSocket implements IpcSocket {
   public static transport: IpcWebSocketTransport;
 
@@ -74,7 +74,7 @@ export abstract class IpcWebSocket implements IpcSocket {
   }
 }
 
-/** @alpha */
+/** @internal */
 export class IpcWebSocketFrontend extends IpcWebSocket implements IpcSocketFrontend {
   private _nextRequest = 0;
   private _pendingRequests = new Map<number, (response: any) => void>();
@@ -110,7 +110,7 @@ export class IpcWebSocketFrontend extends IpcWebSocket implements IpcSocketFront
   }
 }
 
-/** @alpha */
+/** @internal */
 export class IpcWebSocketBackend extends IpcWebSocket implements IpcSocketBackend {
   private _handlers = new Map<string, (methodName: string, ...args: any[]) => Promise<any>>();
 

@@ -14,13 +14,13 @@ export const iTwinChannel = (channel: string) => `itwin.${channel}`;
 
 /**
  * A function to handle an Ipc message.
- * @internal
+ * @beta
  */
 export type IpcListener = (evt: any, ...arg: any[]) => void;
 
 /**
  * Function returned when establishing an Ipc `receive` listener or `invoke` handler. Call this method to remove the listener/handler.
- * @alpha
+ * @beta
  */
 export type RemoveFunction = () => void;
 
@@ -35,13 +35,15 @@ export type IpcInvokeReturn = { result: any, error?: never } | { result?: never,
  * An inter-process socket connection between a single [IModelHost]($backend) on the backend (the node process), and an [IModelApp]($frontend) on
  * the frontend (the browser process.) Each side will implement this interface to form a two way connection. The frontend and backend
  * processes connected through an IpcSocket don't necessarily have to be on the same computer, but often are.
- * @internal
+ * @beta
 */
 export interface IpcSocket {
   /**
    * Send a message over the socket.
    * @param channel The name of the channel for the message. Must begin with the [[iTwinChannel]] prefix.
    * @param data The optional data of the message.
+   * @note `data` is serialized with the [Structured Clone Algorithm](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm), so only
+   * primitive types and `ArrayBuffers` are allowed.
    */
   send: (channel: string, ...data: any[]) => void;
   /**
@@ -55,7 +57,7 @@ export interface IpcSocket {
 
 /**
  * Interface for the frontend (browser) side of a socket connection. Frontends may invoke methods implemented on the backend.
- * @internal
+ * @beta
  */
 export interface IpcSocketFrontend extends IpcSocket {
   /**
@@ -65,6 +67,8 @@ export interface IpcSocketFrontend extends IpcSocket {
    * Note that this interface *may* be implemented via Electron for desktop apps, or via
    * [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API) for mobile or web-based
    * Ipc connections. In either case, the Electron documentation provides the specifications for how it works.
+   * @note `args` are serialized with the [Structured Clone Algorithm](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm), so only
+   * primitive types and `ArrayBuffers` are allowed.
    */
   invoke: (channel: string, methodName: string, ...args: any[]) => Promise<any>;
 };
@@ -72,7 +76,7 @@ export interface IpcSocketFrontend extends IpcSocket {
 /**
  * Interface for the backend (Node.js) side of a socket connection. Backends provide the implementation
  * of methods that are invoked from the frontend.
- * @internal
+ * @beta
  */
 export interface IpcSocketBackend extends IpcSocket {
   /**
@@ -87,7 +91,9 @@ export interface IpcSocketBackend extends IpcSocket {
 /**
  * All interfaces that specify methods invoked from the frontend and implemented on the backend via
  * Ipc must implement this interface to supply their version information.
- * @alpha
+ * @note the arguments and return types of all functions in an `IpcInterface`  are serialized with the [Structured Clone Algorithm](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm), so only
+ * primitive types and `ArrayBuffers` are allowed.
+ * @beta
  */
 export interface IpcInterface {
   /** Get a string that specifies the version of the interface. */

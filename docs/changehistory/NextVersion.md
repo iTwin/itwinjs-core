@@ -15,7 +15,7 @@ For cases where a frontend and backend are explicitly paired (e.g. desktop and m
 
 ### Electron Initialization
 
-The `@beta` API's for desktop applications to use Electron via the `@bentley/electron-manager` package have been simplified substantially. Existing code will need to be adjusted to work with this version. The class `ElectronManager` has been removed, and it is now replaced with the classes [ElectronBackend]($electron-manager) and [ElectronFrontend]($electron-manager).
+The `@beta` API's for desktop applications to use Electron via the `@bentley/electron-manager` package have been simplified substantially. Existing code will need to be adjusted to work with this version. The class `ElectronManager` has been removed, and it is now replaced with the classes `ElectronBackend` and `ElectronFrontend`.
 
 To create an Electron application, you should initialize your frontend via:
 

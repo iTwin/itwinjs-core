@@ -12,7 +12,7 @@ import { IpcInterface, IpcInvokeReturn, IpcSocketBackend, iTwinChannel, RemoveFu
 /**
  * This class provides backend support for Ipc operations. It must be initialized with a platform-specific
  * implementation of the [IpcSocketBackend]($common) interface at startup, before calling [IModelHost.startup]($backend).
- * @internal
+ * @beta
  */
 export class BackendIpc {
   private static _ipc: IpcSocketBackend | undefined;
@@ -46,7 +46,7 @@ export class BackendIpc {
  * to ensure all methods and signatures are correct.
  *
  * Then, call `MyClass.register` at startup to connect your class to your channel.
- * @alpha
+ * @beta
  */
 export abstract class IpcHandler implements IpcInterface {
   /** All subclasses must implement this method to specify their channel name. */

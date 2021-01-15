@@ -12,7 +12,7 @@ import { IpcInvokeReturn, IpcSocketFrontend, iTwinChannel, RemoveFunction } from
 /**
  * This class provides frontend support for Ipc operations. It must be initialized with a platform-specific
  * implementation of the [[IpcSocketFrontend]] interface at startup, before calling [IModelApp.startup]($frontend).
- * @internal
+ * @beta
  */
 export class FrontendIpc {
   private static _ipc: IpcSocketFrontend | undefined;

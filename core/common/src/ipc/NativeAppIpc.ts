@@ -19,7 +19,7 @@ export enum NativeAppIpcKey {
 
 /**
  * Type of value for storage values
- * @alpha
+ * @beta
  */
 export type StorageValue = string | number | boolean | null | Uint8Array;
 
@@ -61,7 +61,7 @@ export interface TileTreeContentIds {
 }
 
 /** Indicates whether or not the computer is currently connected to the internet.
- * @alpha
+ * @beta
  */
 export enum InternetConnectivityStatus {
   Online,
@@ -69,7 +69,7 @@ export enum InternetConnectivityStatus {
 }
 
 /** Describes whether the user or the browser overrode the internet connectivity status.
- * @alpha
+ * @beta
  */
 export enum OverriddenBy {
   Browser,
@@ -78,7 +78,7 @@ export enum OverriddenBy {
 
 /**
  * The methods that may be invoked via Ipc from the frontend of a Native App and are implemented on its backend.
- * @alpha
+ * @internal
  */
 export interface NativeAppIpc extends IpcInterface {
   /** Send frontend log to backend.
