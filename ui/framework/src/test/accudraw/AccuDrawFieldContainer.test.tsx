@@ -102,16 +102,82 @@ describe("AccuDrawFieldContainer", () => {
   it("should emit onAccuDrawSetFieldFocusEvent", async () => {
     const spy = sinon.spy();
     const remove = AccuDrawUiAdmin.onAccuDrawSetFieldFocusEvent.addListener(spy);
+    const wrapper = render(<AccuDrawFieldContainer orientation={Orientation.Vertical} />);
     expect(IModelApp.accuDraw.hasInputFocus).to.be.false;
 
-    render(<AccuDrawFieldContainer orientation={Orientation.Vertical} />);
+    IModelApp.accuDraw.setCompassMode(CompassMode.Rectangular);
+    await TestUtils.flushAsyncOperations();
+
     IModelApp.accuDraw.setFocusItem(ItemField.X_Item);
     spy.calledOnce.should.true;
+    let input = wrapper.container.querySelector("input#uifw-accudraw-x");
+    expect(input).not.to.be.null;
+    expect(document.activeElement === input).to.be.true;
+    spy.resetHistory();
+
+    IModelApp.accuDraw.setFocusItem(ItemField.Y_Item);
+    spy.calledOnce.should.true;
+    input = wrapper.container.querySelector("input#uifw-accudraw-y");
+    expect(input).not.to.be.null;
+    expect(document.activeElement === input).to.be.true;
+    spy.resetHistory();
+
+    IModelApp.accuDraw.setFocusItem(ItemField.Z_Item);
+    spy.calledOnce.should.true;
+    input = wrapper.container.querySelector("input#uifw-accudraw-z");
+    expect(input).not.to.be.null;
+    expect(document.activeElement === input).to.be.true;
+    spy.resetHistory();
+
+    IModelApp.accuDraw.setCompassMode(CompassMode.Polar);
+    await TestUtils.flushAsyncOperations();
+
+    IModelApp.accuDraw.setFocusItem(ItemField.ANGLE_Item);
+    spy.calledOnce.should.true;
+    input = wrapper.container.querySelector("input#uifw-accudraw-angle");
+    expect(input).not.to.be.null;
+    expect(document.activeElement === input).to.be.true;
+    spy.resetHistory();
+
+    IModelApp.accuDraw.setFocusItem(ItemField.DIST_Item);
+    spy.calledOnce.should.true;
+    input = wrapper.container.querySelector("input#uifw-accudraw-distance");
+    expect(input).not.to.be.null;
+    expect(document.activeElement === input).to.be.true;
+    spy.resetHistory();
 
     await TestUtils.flushAsyncOperations();
     expect(IModelApp.accuDraw.hasInputFocus).to.be.true;
 
     remove();
+  });
+
+  it("should emit onAccuDrawGrabFieldFocusEvent", async () => {
+    const spySet = sinon.spy();
+    const removeSet = AccuDrawUiAdmin.onAccuDrawSetFieldFocusEvent.addListener(spySet);
+    const wrapper = render(<AccuDrawFieldContainer orientation={Orientation.Vertical} />);
+    expect(IModelApp.accuDraw.hasInputFocus).to.be.false;
+
+    IModelApp.accuDraw.setCompassMode(CompassMode.Rectangular);
+    await TestUtils.flushAsyncOperations();
+
+    IModelApp.accuDraw.setFocusItem(ItemField.X_Item);
+    spySet.calledOnce.should.true;
+    const input = wrapper.container.querySelector("input#uifw-accudraw-x");
+    expect(input).not.to.be.null;
+    expect(document.activeElement === input).to.be.true;
+
+    KeyboardShortcutManager.setFocusToHome();
+    expect(document.activeElement === input).to.be.false;
+
+    const spyGrab = sinon.spy();
+    const removeGrab = AccuDrawUiAdmin.onAccuDrawGrabInputFocusEvent.addListener(spyGrab);
+    IModelApp.accuDraw.grabInputFocus();
+    spyGrab.calledOnce.should.true;
+    expect(document.activeElement === input).to.be.true;
+
+    removeSet();
+    removeGrab();
   });
 
   it("should emit onAccuDrawSetModeEvent", () => {

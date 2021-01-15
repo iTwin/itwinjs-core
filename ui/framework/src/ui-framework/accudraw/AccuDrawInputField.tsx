@@ -39,85 +39,89 @@ export interface AccuDrawInputFieldProps extends CommonProps {
   onEnterPressed?: () => void;
   /** Listens for <Esc> keypress */
   onEscPressed?: () => void;
-  /** Indicates whether to set focus to the input element */
-  setFocus?: boolean;
+  /** Provides ability to return reference to HTMLInputElement */
+  ref?: React.Ref<HTMLInputElement>;
 }
+
+const ForwardRefParsedInput = React.forwardRef<HTMLInputElement, AccuDrawInputFieldProps>(
+  function ForwardRefAccuDrawInputField(props: AccuDrawInputFieldProps, ref) {
+    const { className, style, id, label, iconSpec, labelClassName, labelStyle, initialValue, lock,
+      onValueChanged, valueChangedDelay, onEnterPressed, onEscPressed } = props;
+    const [stringValue, setStringValue] = React.useState(initialValue);
+    const timeoutId = React.useRef(0);
+
+    React.useEffect(() => {
+      setStringValue(initialValue);
+    }, [initialValue]);
+
+    const trackChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>): void => {
+      const value = event.target.value;
+
+      // istanbul ignore next
+      if (value === undefined)
+        return;
+
+      // istanbul ignore else
+      if (value !== stringValue)
+        setStringValue(value);
+
+      if (valueChangedDelay) {
+        unsetTimeout();
+        timeoutId.current = window.setTimeout(() => { onValueChanged(stringValue); }, valueChangedDelay);
+      } else {
+        onValueChanged(stringValue);
+      }
+    }, [onValueChanged, stringValue, valueChangedDelay]);
+
+    const unsetTimeout = (): void => {
+      // istanbul ignore else
+      if (timeoutId) {
+        window.clearTimeout(timeoutId.current);
+        timeoutId.current = 0;
+      }
+    };
+
+    React.useEffect(() => {
+      return () => unsetTimeout();
+    }, []);
+
+    const handleKeyDown = React.useCallback((e: React.KeyboardEvent) => {
+      switch (e.key) {
+        case SpecialKey.Escape:
+          onEscPressed && onEscPressed();
+          return;
+        case SpecialKey.Enter:
+          onEnterPressed && onEnterPressed();
+          return;
+      }
+
+      if (isLetter(e.key)) {
+        KeyboardShortcutManager.processKey(e.key);
+        return;
+      }
+    }, [onEscPressed, onEnterPressed]);
+
+    const inputClassNames = classnames("uifw-accudraw-input-field", className);
+    const labelClassNames = classnames("uifw-accudraw-input-label", labelClassName);
+
+    return (
+      <>
+        <label htmlFor={id} className={labelClassNames} style={labelStyle}>
+          {label}
+          {iconSpec && <Icon iconSpec={iconSpec} />}
+        </label>
+        <Input ref={ref} id={id} value={stringValue}
+          className={inputClassNames} style={style}
+          onChange={trackChange} onInput={trackChange} onKeyDown={handleKeyDown} />
+        <span className="uifw-accudraw-lock" >
+          {lock && <Icon iconSpec="icon-lock" />}
+        </span>
+      </>
+    );
+  }
+);
 
 /** Input field for AccuDraw
  * @internal
  */
-export function AccuDrawInputField(props: AccuDrawInputFieldProps) {
-  const { className, style, id, label, iconSpec, labelClassName, labelStyle, initialValue, lock,
-    onValueChanged, valueChangedDelay, onEnterPressed, onEscPressed, setFocus } = props;
-  const [stringValue, setStringValue] = React.useState(initialValue);
-  const timeoutId = React.useRef(0);
-
-  React.useEffect(() => {
-    setStringValue(initialValue);
-  }, [initialValue]);
-
-  const trackChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>): void => {
-    const value = event.target.value;
-
-    // istanbul ignore next
-    if (value === undefined)
-      return;
-
-    // istanbul ignore else
-    if (value !== stringValue)
-      setStringValue(value);
-
-    if (valueChangedDelay) {
-      unsetTimeout();
-      timeoutId.current = window.setTimeout(() => { onValueChanged(stringValue); }, valueChangedDelay);
-    } else {
-      onValueChanged(stringValue);
-    }
-  }, [onValueChanged, stringValue, valueChangedDelay]);
-
-  const unsetTimeout = (): void => {
-    // istanbul ignore else
-    if (timeoutId) {
-      window.clearTimeout(timeoutId.current);
-      timeoutId.current = 0;
-    }
-  };
-
-  React.useEffect(() => {
-    return () => unsetTimeout();
-  }, []);
-
-  const handleKeyDown = React.useCallback((e: React.KeyboardEvent) => {
-    switch (e.key) {
-      case SpecialKey.Escape:
-        onEscPressed && onEscPressed();
-        return;
-      case SpecialKey.Enter:
-        onEnterPressed && onEnterPressed();
-        return;
-    }
-
-    if (isLetter(e.key)) {
-      KeyboardShortcutManager.processKey(e.key);
-      return;
-    }
-  }, [onEscPressed, onEnterPressed]);
-
-  const inputClassNames = classnames("uifw-accudraw-input-field", className);
-  const labelClassNames = classnames("uifw-accudraw-input-label", labelClassName);
-
-  return (
-    <>
-      <label htmlFor={id} className={labelClassNames} style={labelStyle}>
-        {label}
-        {iconSpec && <Icon iconSpec={iconSpec} />}
-      </label>
-      <Input id={id} value={stringValue}
-        className={inputClassNames} style={style}
-        onChange={trackChange} onInput={trackChange} onKeyDown={handleKeyDown} setFocus={setFocus} />
-      <span className="uifw-accudraw-lock" >
-        {lock && <Icon iconSpec="icon-lock" />}
-      </span>
-    </>
-  );
-}
+export const AccuDrawInputField: (props: AccuDrawInputFieldProps) => JSX.Element | null = ForwardRefParsedInput;

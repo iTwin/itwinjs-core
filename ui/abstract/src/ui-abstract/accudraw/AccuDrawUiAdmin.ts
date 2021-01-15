@@ -12,11 +12,11 @@ import { BeUiEvent } from "@bentley/bentleyjs-core";
  * @alpha
  */
 export enum AccuDrawField {
+  Distance,
+  Angle,
   X,
   Y,
   Z,
-  Distance,
-  Angle,
 }
 
 /** AccuDraw Mode

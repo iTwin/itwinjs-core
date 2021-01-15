@@ -63,7 +63,7 @@ describe("AccuDrawUiAdmin", () => {
     remove();
   });
 
-  it("grabInputFocus should emit AccuDrawGrabInputFocusEvent", () => {
+  it("hasInputFocus should return false", () => {
     expect(accuDrawUiAdmin.hasInputFocus).to.be.false;
   });
 

@@ -8,8 +8,9 @@ import { BeButtonEvent, CompassMode, CurrentState, IModelApp, IModelAppOptions, 
 import TestUtils from "../TestUtils";
 import { FrameworkAccuDraw } from "../../ui-framework/accudraw/FrameworkAccuDraw";
 import { AccuDrawUiAdmin } from "@bentley/ui-abstract";
+import { FrameworkUiAdmin } from "../../ui-framework/uiadmin/FrameworkUiAdmin";
 
-// cspell:ignore dont
+// cspell:ignore dont uiadmin
 
 describe("FrameworkAccuDraw", () => {
   before(async () => {
@@ -17,6 +18,7 @@ describe("FrameworkAccuDraw", () => {
 
     const opts: IModelAppOptions = {};
     opts.accuDraw = new FrameworkAccuDraw();
+    opts.uiAdmin = new FrameworkUiAdmin();
     await MockRender.App.startup(opts);
   });
 
@@ -81,7 +83,7 @@ describe("FrameworkAccuDraw", () => {
     remove();
   });
 
-  it("should emit onAccuDrawGrabInputFocusEvent", () => {
+  it("hasInputFocus should return false", () => {
     expect(IModelApp.accuDraw.hasInputFocus).to.be.false;
   });
 
