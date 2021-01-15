@@ -6,6 +6,8 @@
  * @module IpcSocket
  */
 
+import { BackendIpc } from "./BackendIpc";
+import { FrontendIpc } from "./FrontendIpc";
 import { IpcListener, IpcSocket, IpcSocketBackend, IpcSocketFrontend, RemoveFunction } from "./IpcSocket";
 
 /** @internal */
@@ -40,6 +42,7 @@ export abstract class IpcWebSocket implements IpcSocket {
 
   public constructor() {
     IpcWebSocket.transport.listen(async (m) => this.broadcast(m));
+    FrontendIpc.initialize(this);
   }
 
   public abstract send(channel: string, ...data: any[]): void;
@@ -117,6 +120,7 @@ export class IpcWebSocketBackend extends IpcWebSocket implements IpcSocketBacken
   public constructor() {
     super();
     IpcWebSocket.transport.listen(async (m) => this.dispatch(m));
+    BackendIpc.initialize(this);
   }
 
   public send(channel: string, ...data: any[]): void {
