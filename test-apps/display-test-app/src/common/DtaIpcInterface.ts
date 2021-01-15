@@ -3,21 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-export const cmdIds = {
-  cmd1: "test.command.1",
-  cmd2: "test.command.2",
-};
+import { IpcInterface } from "@bentley/imodeljs-common";
+import { OpenDialogOptions, OpenDialogReturnValue } from "electron";
 
-export interface Test1Args {
-  str1: string;
-  str2: string;
-  obj1: {
-    i1: number;
-    i2: number;
-  };
-};
+export enum DtaIpcKey {
+  Channel = "dta",
+  Version = "1.0.2",
+}
 
-export interface Test1Response {
-  outStr: string;
-  outNum: number;
-};
+export interface DtaIpcInterface extends IpcInterface {
+  openFile: (options: OpenDialogOptions) => Promise<OpenDialogReturnValue>;
+}
