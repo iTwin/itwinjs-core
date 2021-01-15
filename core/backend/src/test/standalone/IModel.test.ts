@@ -17,20 +17,20 @@ import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyleProps,
   DisplayStyleSettingsProps, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeometricElement3dProps,
   GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat, IModel, IModelError, IModelStatus, MapImageryProps, ModelProps,
-  PhysicalElementProps, Placement3d, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, TextureFlags,
-  TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
+  PhysicalElementProps, Placement3d, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance,
+  TextureFlags, TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { BlobDaemon } from "@bentley/imodeljs-native";
 import { AccessToken, AuthorizationClient, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BriefcaseDb } from "../../IModelDb";
 import {
-  AutoPush, AutoPushEventHandler, AutoPushEventType, AutoPushParams, AutoPushState, BackendRequestContext, BisCoreSchema, BriefcaseIdValue,
-  Category, ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel,
-  DefinitionPartition, DictionaryModel, DisplayStyle3d, DisplayStyleCreationOptions, DocumentPartition, DrawingGraphic, ECSqlStatement, Element,
-  ElementDrivesElement, ElementGroupsMembers, ElementOwnsChildElements, Entity, GeometricElement2d, GeometricElement3d, GeometricModel,
-  GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, LightLocation, LinkPartition, Model, PhysicalElement,
-  PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType,
-  StandaloneDb, SubCategory, Subject, Texture, ViewDefinition,
+  AutoPush, AutoPushEventHandler, AutoPushEventType, AutoPushParams, AutoPushState, BackendRequestContext, BisCoreSchema, BriefcaseIdValue, Category,
+  ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel, DefinitionPartition, DictionaryModel,
+  DisplayStyle3d, DisplayStyleCreationOptions, DocumentPartition, DrawingGraphic, ECSqlStatement, Element, ElementDrivesElement, ElementGroupsMembers,
+  ElementOwnsChildElements, Entity, GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, IModelHost,
+  IModelJsFs, InformationPartitionElement, InformationRecordElement, LightLocation, LinkPartition, Model, PhysicalElement, PhysicalModel,
+  PhysicalObject, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType, StandaloneDb,
+  SubCategory, Subject, Texture, ViewDefinition,
 } from "../../imodeljs-backend";
 import { DisableNativeAssertions, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -2265,6 +2265,25 @@ describe("iModel", () => {
     assert.isFalse(imodel1.containsClass(":Element"));
     assert.isFalse(imodel1.containsClass("BisCore:InvalidClassName"));
     assert.isFalse(imodel1.containsClass("InvalidSchemaName:Element"));
+  });
+
+  it("should update Element code", () => {
+    const elementId = imodel4.elements.insertElement({
+      classFullName: "DgnPlatformTest:TestInformationRecord",
+      model: IModel.repositoryModelId,
+      code: Code.createEmpty(),
+    });
+    let element = imodel4.elements.getElement<InformationRecordElement>(elementId, InformationRecordElement);
+    assert.isTrue(Code.isValid(element.code));
+    assert.isTrue(Code.isEmpty(element.code));
+    const codeSpecId = imodel4.codeSpecs.insert("TestCodeSpec", CodeScopeSpec.Type.Model);
+    const codeValue = `${element.className}-1`;
+    element.code = new Code({ spec: codeSpecId, scope: IModel.repositoryModelId, value: codeValue });
+    element.update();
+    element = imodel4.elements.getElement<InformationRecordElement>(elementId, InformationRecordElement);
+    assert.isTrue(Code.isValid(element.code));
+    assert.isFalse(Code.isEmpty(element.code));
+    assert.equal(element.code.getValue(), codeValue);
   });
 
   it("should clear UserLabel", () => {
