@@ -14,13 +14,13 @@ import { AbstractWidgetProps, StagePanelLocation, UiItemsManager, UiItemsProvide
 import { Size, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
 import { addFloatingWidget, addPanelWidget, addTab, createDraggedTabState, createNineZoneState, NineZone, NineZoneState, toolSettingsTabId } from "@bentley/ui-ninezone";
 import {
-  ActiveFrontstageDefProvider, addPanelWidgets, addWidgets, CoreTools, expandWidget, Frontstage, FrontstageDef,
+  ActiveFrontstageDefProvider, addMissingWidgets, addPanelWidgets, addWidgets, CoreTools, expandWidget, Frontstage, FrontstageDef,
   FrontstageManager, FrontstageProvider, FrontstageState, getWidgetId, initializeNineZoneState, initializePanel, isFrontstageStateSettingResult,
   ModalFrontstageComposer, packNineZoneState, restoreNineZoneState, setWidgetState, showWidget, StagePanel, StagePanelDef, StagePanelSection, StagePanelState, StagePanelZoneDef,
-  StagePanelZonesDef, UiSettingsProvider, useActiveModalFrontstageInfo, useFrontstageManager, useNineZoneDispatch, useNineZoneState,
+  StagePanelZonesDef, UiFramework, UiSettingsProvider, useActiveModalFrontstageInfo, useFrontstageManager, useNineZoneDispatch, useNineZoneState,
   useSavedFrontstageState, useSaveFrontstageSettings, useSyncDefinitions, useUpdateNineZoneSize, Widget, WidgetDef, WidgetPanelsFrontstage, WidgetState, ZoneDef,
 } from "../../ui-framework";
-import TestUtils, { mount, storageMock, UiSettingsStub } from "../TestUtils";
+import TestUtils, { mount, storageMock, stubRaf, UiSettingsStub } from "../TestUtils";
 import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
 import { should } from "chai";
 
@@ -795,6 +795,138 @@ describe("addPanelWidgets", () => {
     state = addPanelWidgets(state, frontstageDef, "left");
     state.panels.left.widgets[0].should.eq("leftStart");
   });
+
+  it("should add bottomLeft widgets", () => {
+    let state = createNineZoneState();
+    const frontstageDef = new FrontstageDef();
+    const zoneDef = new ZoneDef();
+    const widgetDef = new WidgetDef({
+      id: "w1",
+    });
+    sinon.stub(frontstageDef, "bottomLeft").get(() => zoneDef);
+    sinon.stub(zoneDef, "widgetDefs").get(() => [widgetDef]);
+    state = addPanelWidgets(state, frontstageDef, "left");
+    state.panels.left.widgets[0].should.eq("leftMiddle");
+    state.widgets.leftMiddle.tabs.should.eql(["w1"]);
+  });
+
+  it("should add centerRight widgets", () => {
+    let state = createNineZoneState();
+    const frontstageDef = new FrontstageDef();
+    const zoneDef = new ZoneDef();
+    const widgetDef = new WidgetDef({
+      id: "w1",
+    });
+    sinon.stub(frontstageDef, "centerRight").get(() => zoneDef);
+    sinon.stub(zoneDef, "widgetDefs").get(() => [widgetDef]);
+    state = addPanelWidgets(state, frontstageDef, "right");
+    state.panels.right.widgets[0].should.eq("rightStart");
+    state.widgets.rightStart.tabs.should.eql(["w1"]);
+  });
+
+  it("should add bottomRight widgets", () => {
+    let state = createNineZoneState();
+    const frontstageDef = new FrontstageDef();
+    const zoneDef = new ZoneDef();
+    const widgetDef = new WidgetDef({
+      id: "w1",
+    });
+    sinon.stub(frontstageDef, "bottomRight").get(() => zoneDef);
+    sinon.stub(zoneDef, "widgetDefs").get(() => [widgetDef]);
+    state = addPanelWidgets(state, frontstageDef, "right");
+    state.panels.right.widgets[0].should.eq("rightMiddle");
+    state.widgets.rightMiddle.tabs.should.eql(["w1"]);
+  });
+
+  it("should add leftPanel widgets", () => {
+    let state = createNineZoneState();
+    const frontstageDef = new FrontstageDef();
+    const panelDef = new StagePanelDef();
+    const widgetDef = new WidgetDef({
+      id: "w1",
+    });
+    sinon.stub(frontstageDef, "leftPanel").get(() => panelDef);
+    sinon.stub(panelDef, "widgetDefs").get(() => [widgetDef]);
+    sinon.stub(UiFramework, "uiVersion").get(() => "1");
+    state = addPanelWidgets(state, frontstageDef, "left");
+    state.panels.left.widgets[0].should.eq("leftEnd");
+    state.widgets.leftEnd.tabs.should.eql(["w1"]);
+  });
+
+  it("should add rightPanel widgets", () => {
+    let state = createNineZoneState();
+    const frontstageDef = new FrontstageDef();
+    const panelDef = new StagePanelDef();
+    const widgetDef = new WidgetDef({
+      id: "w1",
+    });
+    sinon.stub(frontstageDef, "rightPanel").get(() => panelDef);
+    sinon.stub(panelDef, "widgetDefs").get(() => [widgetDef]);
+    sinon.stub(UiFramework, "uiVersion").get(() => "1");
+    state = addPanelWidgets(state, frontstageDef, "right");
+    state.panels.right.widgets[0].should.eq("rightEnd");
+    state.widgets.rightEnd.tabs.should.eql(["w1"]);
+  });
+
+  it("should add topPanel widgets", () => {
+    let state = createNineZoneState();
+    const frontstageDef = new FrontstageDef();
+    const panelDef = new StagePanelDef();
+    const widgetDef = new WidgetDef({
+      id: "w1",
+    });
+    sinon.stub(frontstageDef, "topPanel").get(() => panelDef);
+    sinon.stub(panelDef, "widgetDefs").get(() => [widgetDef]);
+    sinon.stub(UiFramework, "uiVersion").get(() => "1");
+    state = addPanelWidgets(state, frontstageDef, "top");
+    state.panels.top.widgets[0].should.eq("topStart");
+    state.widgets.topStart.tabs.should.eql(["w1"]);
+  });
+
+  it("should add topMostPanel widgets", () => {
+    let state = createNineZoneState();
+    const frontstageDef = new FrontstageDef();
+    const panelDef = new StagePanelDef();
+    const widgetDef = new WidgetDef({
+      id: "w1",
+    });
+    sinon.stub(frontstageDef, "topMostPanel").get(() => panelDef);
+    sinon.stub(panelDef, "widgetDefs").get(() => [widgetDef]);
+    sinon.stub(UiFramework, "uiVersion").get(() => "1");
+    state = addPanelWidgets(state, frontstageDef, "top");
+    state.panels.top.widgets[0].should.eq("topEnd");
+    state.widgets.topEnd.tabs.should.eql(["w1"]);
+  });
+
+  it("should add bottomPanel widgets", () => {
+    let state = createNineZoneState();
+    const frontstageDef = new FrontstageDef();
+    const panelDef = new StagePanelDef();
+    const widgetDef = new WidgetDef({
+      id: "w1",
+    });
+    sinon.stub(frontstageDef, "bottomPanel").get(() => panelDef);
+    sinon.stub(panelDef, "widgetDefs").get(() => [widgetDef]);
+    sinon.stub(UiFramework, "uiVersion").get(() => "1");
+    state = addPanelWidgets(state, frontstageDef, "bottom");
+    state.panels.bottom.widgets[0].should.eq("bottomStart");
+    state.widgets.bottomStart.tabs.should.eql(["w1"]);
+  });
+
+  it("should add bottomMostPanel widgets", () => {
+    let state = createNineZoneState();
+    const frontstageDef = new FrontstageDef();
+    const panelDef = new StagePanelDef();
+    const widgetDef = new WidgetDef({
+      id: "w1",
+    });
+    sinon.stub(frontstageDef, "bottomMostPanel").get(() => panelDef);
+    sinon.stub(panelDef, "widgetDefs").get(() => [widgetDef]);
+    sinon.stub(UiFramework, "uiVersion").get(() => "1");
+    state = addPanelWidgets(state, frontstageDef, "bottom");
+    state.panels.bottom.widgets[0].should.eq("bottomEnd");
+    state.widgets.bottomEnd.tabs.should.eql(["w1"]);
+  });
 });
 
 describe("initializePanel", () => {
@@ -1179,10 +1311,57 @@ describe("useUpdateNineZoneSize", () => {
   });
 });
 
+describe("addMissingWidgets", () => {
+  it("should add centerLeft widgets", () => {
+    const state = createNineZoneState();
+    const frontstageDef = new FrontstageDef();
+    const zoneDef = new ZoneDef();
+    const widgetDef = new WidgetDef({ id: "w1" });
+    sinon.stub(zoneDef, "widgetDefs").get(() => [widgetDef]);
+    sinon.stub(frontstageDef, "centerLeft").get(() => zoneDef);
+    const newState = addMissingWidgets(frontstageDef, state);
+    should().exist(newState.tabs.w1);
+  });
+
+  it("should add bottomLeft widgets", () => {
+    const state = createNineZoneState();
+    const frontstageDef = new FrontstageDef();
+    const zoneDef = new ZoneDef();
+    const widgetDef = new WidgetDef({ id: "w1" });
+    sinon.stub(zoneDef, "widgetDefs").get(() => [widgetDef]);
+    sinon.stub(frontstageDef, "bottomLeft").get(() => zoneDef);
+    const newState = addMissingWidgets(frontstageDef, state);
+    should().exist(newState.tabs.w1);
+  });
+
+  it("should add centerRight widgets", () => {
+    const state = createNineZoneState();
+    const frontstageDef = new FrontstageDef();
+    const zoneDef = new ZoneDef();
+    const widgetDef = new WidgetDef({ id: "w1" });
+    sinon.stub(zoneDef, "widgetDefs").get(() => [widgetDef]);
+    sinon.stub(frontstageDef, "centerRight").get(() => zoneDef);
+    const newState = addMissingWidgets(frontstageDef, state);
+    should().exist(newState.tabs.w1);
+  });
+
+  it("should add bottomRight widgets", () => {
+    const state = createNineZoneState();
+    const frontstageDef = new FrontstageDef();
+    const zoneDef = new ZoneDef();
+    const widgetDef = new WidgetDef({ id: "w1" });
+    sinon.stub(zoneDef, "widgetDefs").get(() => [widgetDef]);
+    sinon.stub(frontstageDef, "bottomRight").get(() => zoneDef);
+    const newState = addMissingWidgets(frontstageDef, state);
+    should().exist(newState.tabs.w1);
+  });
+});
+
 describe("dynamic widgets", () => {
   const localStorageToRestore = Object.getOwnPropertyDescriptor(window, "localStorage")!;
   const localStorageMock = storageMock();
 
+  stubRaf();
   beforeEach(async () => {
     Object.defineProperty(window, "localStorage", {
       get: () => localStorageMock,
@@ -1193,13 +1372,15 @@ describe("dynamic widgets", () => {
   });
 
   afterEach(() => {
-    Object.defineProperty(window, "localStorage", localStorageToRestore);
-    TestUtils.terminateUiFramework();
-    IModelApp.shutdown();
+    UiItemsManager.unregister("TestUi2Provider");
+    FrontstageManager.clearFrontstageDefs();
+    FrontstageManager.setActiveFrontstageDef(undefined);
   });
 
   afterEach(() => {
-    UiItemsManager.unregister("TestUi2Provider");
+    Object.defineProperty(window, "localStorage", localStorageToRestore);
+    TestUtils.terminateUiFramework();
+    IModelApp.shutdown();
   });
 
   it("should render pre-loaded extension widgets when state is initialized", async () => {

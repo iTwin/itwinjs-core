@@ -201,25 +201,18 @@ export class StagePanelDef extends WidgetHost {
 
   /** Gets the list of Widgets. */
   public get widgetDefs(): ReadonlyArray<WidgetDef> {
-    if (this.panelZones) {
-      const widgetDefs = [];
-      for (const [, panelZone] of this.panelZones) {
-        widgetDefs.push(...panelZone.widgetDefs);
-      }
-      return widgetDefs;
+    const widgetDefs = [];
+    for (const [, panelZone] of this.panelZones) {
+      widgetDefs.push(...panelZone.widgetDefs);
     }
-    return super.widgetDefs;
+    return widgetDefs;
   }
 
-  /** Finds a [[WidgetDef]] based on a given id */
-  public findWidgetDef(id: string): WidgetDef | undefined {
-    for (const [, panelZone] of this.panelZones) {
-      const widgetDef = panelZone.findWidgetDef(id);
-      if (widgetDef)
-        return widgetDef;
-    }
-
-    return undefined;
+  /** Adds a WidgetDef to the list of Widgets.
+   * @param widgetDef  Definition of the Widget to add
+   */
+  public addWidgetDef(widgetDef: WidgetDef) {
+    this.panelZones.start.addWidgetDef(widgetDef);
   }
 
   /** @internal */

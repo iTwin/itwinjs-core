@@ -318,6 +318,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
     if (!this.state.isUiVisible && UiShowHideManager.showHidePanels)
       return null;
 
+    // istanbul ignore else
     if (panelDef) {
       const { location } = panelDef;
       const panelElement = Frontstage.getStagePanelElement(location, this.props);

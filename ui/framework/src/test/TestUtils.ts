@@ -262,6 +262,26 @@ export class UiSettingsStub implements UiSettings {
   }
 }
 
+/** Stubs requestAnimationFrame. */
+export function stubRaf() {
+  const raf = window.requestAnimationFrame;
+  const caf = window.cancelAnimationFrame;
+
+  before(() => {
+    window.requestAnimationFrame = (cb: FrameRequestCallback) => {
+      return window.setTimeout(cb, 1);
+    };
+    window.cancelAnimationFrame = (handle: number) => {
+      window.clearTimeout(handle);
+    };
+  });
+
+  after(() => {
+    window.requestAnimationFrame = raf;
+    window.cancelAnimationFrame = caf;
+  });
+}
+
 /** @internal */
 export type ReactWrapper<C extends React.Component, P = C["props"], S = C["state"]> = enzyme.ReactWrapper<P, S, C>;
 
