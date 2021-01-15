@@ -42,7 +42,6 @@ export abstract class IpcWebSocket implements IpcSocket {
 
   public constructor() {
     IpcWebSocket.transport.listen(async (m) => this.broadcast(m));
-    FrontendIpc.initialize(this);
   }
 
   public abstract send(channel: string, ...data: any[]): void;
@@ -85,6 +84,7 @@ export class IpcWebSocketFrontend extends IpcWebSocket implements IpcSocketFront
   public constructor() {
     super();
     IpcWebSocket.transport.listen(async (m) => this.dispatch(m));
+    FrontendIpc.initialize(this);
   }
 
   public send(channel: string, ...data: any[]): void {
