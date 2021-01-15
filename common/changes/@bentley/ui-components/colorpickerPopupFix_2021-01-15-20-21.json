@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/ui-components",
-      "comment": "UI 'pickers' that use <Popup> with fixed content should set closeOnNestedPopupOutsideClick prop.",
+      "comment": "UI 'pickers' that use Popup component with fixed content should set closeOnNestedPopupOutsideClick prop.",
       "type": "none"
     }
   ],
