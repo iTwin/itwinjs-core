@@ -107,7 +107,9 @@ const ForwardRefColorPickerPopup = React.forwardRef<HTMLButtonElement, ColorPick
           isOpen={showPopup}
           position={popupPosition}
           onClose={closePopup}
-          target={target.current} >
+          target={target.current}
+          closeOnNestedPopupOutsideClick
+        >
           <div className="components-colorpicker-popup-panel-padding">
             <ColorPickerPanel activeColor={colorDef} colorPresets={colorOptions} onColorChange={handleColorChanged} />
           </div>
