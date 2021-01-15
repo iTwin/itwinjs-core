@@ -1652,7 +1652,7 @@ export class Element extends Entity implements ElementProps {
     buildConcurrencyControlRequest(opcode: DbOpcode): void;
     // @internal (undocumented)
     static get className(): string;
-    readonly code: Code;
+    code: Code;
     // @alpha
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
     delete(): void;
