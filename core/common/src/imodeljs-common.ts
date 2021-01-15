@@ -181,6 +181,10 @@ export * from "./tile/TileMetadata";
  * Types for working with [RpcInterfaces]($docs/learning/RpcInterface.md).
  */
 /**
+ * @docs-group-description IpcSocket
+ * Types for working with [IpcInterfaces]($docs/learning/IpcInterface.md).
+ */
+/**
  * @docs-group-description ECSQL
  * Types for working with [ECSQL]($docs/learning/ECSQL.md), [Spatial Queries]($docs/learning/SpatialQueries.md), and [ECSQL Geometry Functions]($docs/learning/GeometrySqlFuncs.md).
  */
@@ -203,4 +207,8 @@ export * from "./tile/TileMetadata";
 /**
  * @docs-group-description Utils
  * Miscellaneous utility classes.
+ */
+/**
+ * @docs-group-description NativeApp
+ * [Native applications]($docs/learning/NativeApps.md)
  */

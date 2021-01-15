@@ -4159,7 +4159,7 @@ export function isPowerOfTwo(num: number): boolean;
 // @internal (undocumented)
 export function isValidImageSourceFormat(format: ImageSourceFormat): boolean;
 
-// @internal
+// @beta
 export const iTwinChannel: (channel: string) => string;
 
 // @public (undocumented)

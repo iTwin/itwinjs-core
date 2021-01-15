@@ -291,7 +291,7 @@ internal;class IpcWebSocketTransport
 internal;isKnownTileFormat(format: number): boolean
 public;isPowerOfTwo(num: number): boolean
 internal;isValidImageSourceFormat(format: ImageSourceFormat): boolean
-internal;iTwinChannel: (channel: string) => string
+beta;iTwinChannel: (channel: string) => string
 public;LatAndLong
 public;LatLongAndHeight 
 internal;LightLocationProps 
