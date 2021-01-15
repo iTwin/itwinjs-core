@@ -8,7 +8,7 @@ import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
 const dtaMobileMain = (async () => {
   // Initialize the backend
   await initializeDtaBackend();
-  MobileRpcManager.initializeImpl(getRpcInterfaces("native"));
+  MobileRpcManager.initializeImpl(getRpcInterfaces());
 });
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
