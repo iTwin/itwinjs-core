@@ -7,17 +7,16 @@
  */
 
 import { BentleyStatus, isElectronRenderer } from "@bentley/bentleyjs-core";
-import { IModelError } from "../../IModelError";
-import { RpcSerializedValue } from "../core/RpcMarshaling";
-import { RpcRequestFulfillment, SerializedRpcRequest } from "../core/RpcProtocol";
+import {
+  IModelError, iTwinChannel, RpcPushChannel, RpcPushConnection, RpcRequestFulfillment, RpcSerializedValue, SerializedRpcRequest,
+} from "@bentley/imodeljs-common";
+import { ElectronPushConnection, ElectronPushTransport } from "./ElectronPush";
+import { ElectronRpcConfiguration } from "./ElectronRpcManager";
 import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
 import { ElectronRpcRequest } from "./ElectronRpcRequest";
-import { ElectronRpcConfiguration, IModelElectronIpc } from "./ElectronRpcManager";
-import { RpcPushChannel, RpcPushConnection } from "../core/RpcPush";
-import { ElectronPushConnection, ElectronPushTransport } from "./ElectronPush";
 
-const OBJECTS_CHANNEL = "imodeljs.rpc.objects";
-const DATA_CHANNEL = "imodeljs.rpc.data";
+const OBJECTS_CHANNEL = iTwinChannel("rpc.objects");
+const DATA_CHANNEL = iTwinChannel("rpc.data");
 
 interface PartialPayload { id: string, index: number, data: Uint8Array }
 
@@ -26,7 +25,6 @@ export interface IpcTransportMessage { id: string, parameters?: RpcSerializedVal
 
 /** @internal */
 export abstract class ElectronIpcTransport<TIn extends IpcTransportMessage = IpcTransportMessage, TOut extends IpcTransportMessage = IpcTransportMessage> {
-  private _ipc: IModelElectronIpc;
   private _partials: Map<string, { message: TIn, received: number } | PartialPayload[]>;
   protected _protocol: ElectronRpcProtocol;
 
@@ -37,8 +35,7 @@ export abstract class ElectronIpcTransport<TIn extends IpcTransportMessage = Ipc
     this._send(request, value);
   }
 
-  public constructor(ipc: IModelElectronIpc, protocol: ElectronRpcProtocol) {
-    this._ipc = ipc;
+  public constructor(protocol: ElectronRpcProtocol) {
     this._protocol = protocol;
     this._partials = new Map();
     this._setupDataChannel();
@@ -49,7 +46,7 @@ export abstract class ElectronIpcTransport<TIn extends IpcTransportMessage = Ipc
   protected setupPush() { }
 
   private _setupDataChannel() {
-    this._ipc.on(DATA_CHANNEL, async (evt: any, chunk: PartialPayload) => {
+    this.protocol.ipcSocket.receive(DATA_CHANNEL, async (evt: any, chunk: PartialPayload) => {
       let pending = this._partials.get(chunk.id);
       if (!pending) {
         pending = [];
@@ -72,7 +69,7 @@ export abstract class ElectronIpcTransport<TIn extends IpcTransportMessage = Ipc
   }
 
   private _setupObjectsChannel() {
-    this._ipc.on(OBJECTS_CHANNEL, async (evt: any, message: TIn) => {
+    this.protocol.ipcSocket.receive(OBJECTS_CHANNEL, async (evt: any, message: TIn) => {
       const pending = this._partials.get(message.id);
       if (pending && !Array.isArray(pending)) {
         throw new IModelError(BentleyStatus.ERROR, `Message already received for id "${message.id}".`);
@@ -123,7 +120,7 @@ export abstract class ElectronIpcTransport<TIn extends IpcTransportMessage = Ipc
   }
 
   protected performSend(channel: string, message: any, evt: any) {
-    (evt ? evt.sender : this._ipc).send(channel, message);
+    (evt ? evt.sender : this.protocol.ipcSocket).send(channel, message);
   }
 
   protected abstract handleComplete(id: string, evt: any): void;
@@ -227,14 +224,9 @@ export function initializeIpc(protocol: ElectronRpcProtocol) {
 
   try { // Wrapping require in a try/catch signals to webpack that this is only an optional dependency
     if (isElectronRenderer) {
-
-      // If we're running with nodeIntegration=false, ElectronPreload.ts defines `window.imodeljs_api` and require() won't work.
-      // If we're running with nodeIntegration=true (e.g. from tests), ElectronPreload won't have run, just use ipcRenderer.
-
-      const electronIpc = (window as any).imodeljs_api ?? require("electron").ipcRenderer;
-      transport = new FrontendIpcTransport(electronIpc, protocol);
+      transport = new FrontendIpcTransport(protocol);
     } else {
-      transport = new BackendIpcTransport(require("electron").ipcMain, protocol);
+      transport = new BackendIpcTransport(protocol);
     }
   } catch (_err) {
     throw new IModelError(BentleyStatus.ERROR, `cannot load electron`);
