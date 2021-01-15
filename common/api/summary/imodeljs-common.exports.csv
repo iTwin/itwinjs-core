@@ -15,6 +15,7 @@ public;AxisAlignedBox3d = Range3d
 public;AxisAlignedBox3dProps = Range3dProps
 internal;B3dmHeader 
 public;BackendError 
+beta;BackendIpc
 public;BackgroundFill
 public;BackgroundMapProps
 public;BackgroundMapProviderName = "BingProvider" | "MapBoxProvider"
@@ -133,11 +134,6 @@ alpha;class Editor3dRpcInterface
 alpha;Editor3dRpcInterfaceWriteOptions
 alpha;Editor3dRpcInterfaceWriteReturnPropsOptions
 alpha;Editor3dRpcInterfaceWriteReturnType
-beta;class ElectronRpcConfiguration 
-beta;ElectronRpcManager 
-beta;ElectronRpcParams
-beta;ElectronRpcProtocol 
-beta;ElectronRpcRequest 
 public;ElementAlignedBox2d = Range2d
 public;ElementAlignedBox3d = Range3d
 public;ElementAspectProps 
@@ -182,6 +178,7 @@ public;FontMapProps
 public;FontProps
 public;FontType
 internal;FormDataCommon
+beta;FrontendIpc
 public;Frustum
 internal;FrustumPlanes
 internal;FrustumPlanes
@@ -215,7 +212,6 @@ public;GeometryStreamProps = GeometryStreamEntryProps[]
 beta;GeometrySummaryOptions
 beta;GeometrySummaryRequestProps
 beta;GeometrySummaryVerbosity
-internal;getIModelElectronApi: () => IModelElectronApi | undefined
 internal;getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number
 public;GlobeMode
 internal;GltfBufferData
@@ -255,14 +251,12 @@ public;ImageSourceFormat
 internal;ImdlFlags
 internal;ImdlHeader 
 public;class IModel 
-internal;IModelConnectionProps = IModelProps & IModelRpcProps & IModelEventSourceProps
+alpha;IModelConnectionProps = IModelProps & IModelRpcProps & IModelEventSourceProps
 beta;IModelCoordinatesRequestProps
 beta;IModelCoordinatesResponseProps
-internal;IModelElectronApi 
-internal;IModelElectronIpc
 public;IModelEncryptionProps
 public;IModelError 
-internal;IModelEventSourceProps
+alpha;IModelEventSourceProps
 public;IModelNotFoundResponse 
 public;IModelProps
 internal;class IModelReadRpcInterface 
@@ -278,12 +272,26 @@ internal;class IModelWriteRpcInterface
 public;InformationPartitionElementProps 
 internal;initializeRpcRequest: () => void
 internal;INSTANCE: unique symbol
-internal;InternetConnectivityStatus
+beta;InternetConnectivityStatus
 beta;Interpolation:
 beta;InterpolationFunction = (v: any, k: number) => number
+beta;class IpcHandler 
+beta;IpcInterface
+internal;IpcInvokeReturn =
+beta;IpcListener = (evt: any, ...arg: any[]) => void
+beta;IpcSocket
+beta;IpcSocketBackend 
+beta;IpcSocketFrontend 
+internal;class IpcWebSocket 
+internal;IpcWebSocketBackend 
+internal;IpcWebSocketFrontend 
+internal;IpcWebSocketMessage
+internal;IpcWebSocketMessageType
+internal;class IpcWebSocketTransport
 internal;isKnownTileFormat(format: number): boolean
 public;isPowerOfTwo(num: number): boolean
 internal;isValidImageSourceFormat(format: ImageSourceFormat): boolean
+beta;iTwinChannel: (channel: string) => string
 public;LatAndLong
 public;LatLongAndHeight 
 internal;LightLocationProps 
@@ -330,7 +338,8 @@ public;ModelProps
 public;ModelQueryParams 
 public;ModelSelectorProps 
 public;MonochromeMode
-internal;class NativeAppRpcInterface 
+internal;NativeAppIpc 
+internal;NativeAppIpcKey
 public;NavigationBindingValue
 public;NavigationValue
 public;nextHighestPowerOfTwo(num: number): number
@@ -360,7 +369,7 @@ beta;OpenBriefcaseProps
 public;OpenDbKey
 internal;OPERATION: unique symbol
 alpha;OrbitGtBlobProps
-internal;OverriddenBy
+beta;OverriddenBy
 internal;PackedFeature
 internal;PackedFeatureTable
 public;PartReference
@@ -406,6 +415,7 @@ internal;REGISTRY: unique symbol
 public;RelatedElement 
 public;RelatedElementProps
 public;RelationshipProps 
+beta;RemoveFunction = () => void
 beta;class RenderMaterial
 beta;RenderMaterial
 beta;RenderMaterialProps 
@@ -507,7 +517,7 @@ beta;SpatialClassificationProps
 public;SpatialViewDefinitionProps 
 internal;class StandaloneIModelRpcInterface 
 beta;StandaloneOpenOptions = OpenDbKey
-internal;StorageValue = string | number | boolean | null | Uint8Array
+beta;StorageValue = string | number | boolean | null | Uint8Array
 public;SubCategoryAppearance
 public;SubCategoryAppearance
 public;SubCategoryOverride

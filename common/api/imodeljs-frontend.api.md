@@ -169,6 +169,7 @@ import { ModelProps } from '@bentley/imodeljs-common';
 import { ModelQueryParams } from '@bentley/imodeljs-common';
 import { ModelSelectorProps } from '@bentley/imodeljs-common';
 import { MonochromeMode } from '@bentley/imodeljs-common';
+import { NativeAppIpc } from '@bentley/imodeljs-common';
 import { ObservableSet } from '@bentley/bentleyjs-core';
 import { OctEncodedNormal } from '@bentley/imodeljs-common';
 import { OpenBriefcaseProps } from '@bentley/imodeljs-common';
@@ -2200,7 +2201,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     get wantShadows(): boolean;
 }
 
-// @internal
+// @alpha
 export interface DownloadBriefcaseOptions {
     // (undocumented)
     fileName?: string;
@@ -3967,8 +3968,6 @@ export class IModelApp {
     static get iModelClient(): IModelClient;
     // @internal (undocumented)
     static get initialized(): boolean;
-    // @internal
-    static get isNativeApp(): boolean;
     // @internal (undocumented)
     static get locateManager(): ElementLocateManager;
     // @internal (undocumented)
@@ -4519,9 +4518,10 @@ export interface LoadedExtensionProps {
     props: ExtensionProps;
 }
 
-// @internal
+// @alpha
 export class LocalBriefcaseConnection extends BriefcaseConnection {
     close(): Promise<void>;
+    // @internal
     static open(briefcaseProps: OpenBriefcaseProps): Promise<LocalBriefcaseConnection>;
 }
 
@@ -5899,8 +5899,10 @@ export enum ModifyElementSource {
     Unknown = 0
 }
 
-// @internal
+// @alpha
 export class NativeApp {
+    // (undocumented)
+    static callBackend<T extends keyof NativeAppIpc>(methodName: T, ...args: Parameters<NativeAppIpc[T]>): ReturnType<NativeAppIpc[T]>;
     // (undocumented)
     static checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
     // (undocumented)
@@ -5911,6 +5913,8 @@ export class NativeApp {
     static getBriefcaseFileName(props: BriefcaseProps): Promise<string>;
     static getCachedBriefcases(iModelId?: GuidString): Promise<LocalBriefcaseProps[]>;
     static getStorageNames(): Promise<string[]>;
+    // (undocumented)
+    static get isValid(): boolean;
     // (undocumented)
     static onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void>;
     // (undocumented)
@@ -5924,7 +5928,6 @@ export class NativeApp {
     static requestDownloadBriefcase(contextId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions, asOf?: IModelVersion, progress?: ProgressCallback): Promise<BriefcaseDownloader>;
     // (undocumented)
     static shutdown(): Promise<void>;
-    // (undocumented)
     static startup(opts?: IModelAppOptions): Promise<void>;
     }
 
@@ -8630,10 +8633,11 @@ export enum StartOrResume {
     Start = 1
 }
 
-// @internal
+// @alpha
 export class Storage {
     constructor(id: string, _isOpen?: boolean);
     close(deleteIt?: boolean): Promise<void>;
+    // @internal
     getData(key: string): Promise<StorageValue | undefined>;
     getKeys(): Promise<string[]>;
     // (undocumented)
@@ -8641,6 +8645,7 @@ export class Storage {
     get isOpen(): boolean;
     removeAll(): Promise<void>;
     removeData(key: string): Promise<void>;
+    // @internal
     setData(key: string, value: StorageValue): Promise<void>;
 }
 

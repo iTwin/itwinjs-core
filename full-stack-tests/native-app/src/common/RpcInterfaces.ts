@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ClientRequestContextProps } from "@bentley/bentleyjs-core";
 import {
-  IModelReadRpcInterface, IModelRpcProps, IModelWriteRpcInterface, NativeAppRpcInterface, RpcInterface, RpcManager,
+  IModelReadRpcInterface, IModelRpcProps, IModelWriteRpcInterface, RpcInterface, RpcManager,
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContextProps } from "@bentley/itwin-client";
 
@@ -88,5 +88,4 @@ export const rpcInterfaces = [
   IModelReadRpcInterface,
   IModelWriteRpcInterface,
   TestRpcInterface,
-  NativeAppRpcInterface,
 ];

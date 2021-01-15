@@ -3,30 +3,33 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { OpenDialogReturnValue } from "electron";
-import { assert, isElectronRenderer } from "@bentley/bentleyjs-core";
-import { getIModelElectronApi } from "@bentley/imodeljs-common";
+import { isElectronRenderer } from "@bentley/bentleyjs-core";
+import { FrontendIpc } from "@bentley/imodeljs-common";
+import { DtaIpcInterface, DtaIpcKey } from "../common/DtaIpcInterface";
 
 export interface BrowserFileSelector {
   input: HTMLInputElement;
   directory: string;
 }
 
-const selectForElectron = async () => {
-  const options = {
-    properties: ["openFile"],
-    filters: [{ name: "iModels", extensions: ["ibim", "bim"] }],
-  };
+export class DtaIpc {
+  public static callBackend<T extends keyof DtaIpcInterface>(methodName: T, ...args: Parameters<DtaIpcInterface[T]>): ReturnType<DtaIpcInterface[T]> {
+    return FrontendIpc.callBackend(DtaIpcKey.Channel, methodName, ...args) as ReturnType<DtaIpcInterface[T]>;
+  }
 
-  const api = getIModelElectronApi();
-  assert(api !== undefined);
-  const val = (await api.invoke("imodeljs.dta.openFile", options)) as OpenDialogReturnValue; // eslint-disable-line @typescript-eslint/await-thenable
-  return val.canceled ? undefined : val.filePaths[0];
-};
+  public static async selectFileElectron() {
+    const val = await this.callBackend("openFile", {
+      properties: ["openFile"],
+      filters: [{ name: "iModels", extensions: ["ibim", "bim"] }],
+    });
+
+    return val.canceled ? undefined : val.filePaths[0];
+  };
+}
 
 export async function selectFileName(selector: BrowserFileSelector | undefined): Promise<string | undefined> {
   if (isElectronRenderer)
-    return selectForElectron();
+    return DtaIpc.selectFileElectron();
 
   // eslint-disable-next-line @typescript-eslint/unbound-method
   if (undefined === selector || !document.createEvent) {

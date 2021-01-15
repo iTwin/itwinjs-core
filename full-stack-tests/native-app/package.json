@@ -10,8 +10,8 @@
     "cover": "npm run test:chrome -- --cover && npm run test:electron -- --cover",
     "docs": "",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "npm run test:chrome && npm run test:electron",
-    "test:chrome": "certa -r chrome --grep \"#integration\" --invert",
+    "test": "npm run test:electron",
+    "test:chrome": "",
     "test:electron": "certa -r electron --grep \"#integration\" --invert",
     "test:integration": "npm run test:integration:electron",
     "test:integration:electron": "certa -r electron --grep \"#integration\"",
@@ -33,6 +33,7 @@
     "@bentley/imodeljs-frontend": "2.12.0-dev.2",
     "@bentley/imodeljs-markup": "2.12.0-dev.2",
     "@bentley/rbac-client": "2.12.0-dev.2",
+    "@bentley/electron-manager": "2.12.0-dev.2",
     "chai": "^4.1.2",
     "fs-extra": "^8.1.0",
     "electron": "^11.1.0"
