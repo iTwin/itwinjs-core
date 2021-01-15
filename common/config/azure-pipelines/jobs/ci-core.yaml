@@ -10,15 +10,17 @@ jobs:
         "Windows_${{ parameters.name }}":
           OS: windows-latest
           platform: Windows_NT
-          name: iModeljs Windows
+          name: iModelTechCI
+          # name: iModeljs Windows
         "Linux_${{ parameters.name }}":
           OS: ubuntu-latest
           platform: Linux
           name: iModeljs Linux
-        # "MacOS_${{ parameters.name }}":
-        #   OS: macOS-latest
-        #   platform: Darwin
-        #   name: iModelJSScaleSet02
+        "MacOS_${{ parameters.name }}":
+          OS: macOS-latest
+          platform: Darwin
+          name: iModelTechCI
+          # name: iModelJSScaleSet02
 
     timeoutInMinutes: 120
 
