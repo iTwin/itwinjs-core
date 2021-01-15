@@ -1,8 +1,8 @@
 # iModel.js CI Build
 
 trigger:
-  - master
-  - release/*
+- master
+- release/*
 
 pr:
   drafts: false

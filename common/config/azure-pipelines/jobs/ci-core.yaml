@@ -1,62 +1,62 @@
 parameters:
-  name: ""
-  pool: ""
-  nodeVersion: ""
+  name: ''
+  pool: ''
+  nodeVersion: ''
 
 jobs:
-  - job:
-    strategy:
-      matrix:
-        "Windows_${{ parameters.name }}":
-          OS: windows-latest
-          platform: Windows_NT
-          name: iModelTechCI
-        "Linux_${{ parameters.name }}":
-          OS: ubuntu-latest
-          platform: Linux
-          name: iModeljs Linux
-        "MacOS_${{ parameters.name }}":
-          OS: macOS-latest
-          platform: Darwin
-          name: iModelTechCI
+- job:
+  strategy:
+    matrix:
+      "Windows_${{ parameters.name }}":
+        OS: windows-latest
+        platform: Windows_NT
+        name: iModelTechCI
+      "Linux_${{ parameters.name }}":
+        OS: ubuntu-latest
+        platform: Linux
+        name: iModeljs Linux
+      "MacOS_${{ parameters.name }}":
+        OS: macOS-latest
+        platform: Darwin
+        name: iModelTechCI
 
-    timeoutInMinutes: 120
+  timeoutInMinutes: 120
 
-    pool: ${{ parameters.pool }}
+  pool: ${{ parameters.pool }}
 
-    workspace:
-      clean: all
+  workspace:
+    clean: all
 
-    steps:
-      - checkout: self
-        clean: true
-      - task: NodeTool@0
-        displayName: "Use Node ${{ parameters.nodeVersion }}"
-        inputs:
-          versionSpec: ${{ parameters.nodeVersion }}
-          checkLatest: true
+  steps:
+    - checkout: self
+      clean: true
+    - task: NodeTool@0
+      displayName: "Use Node ${{ parameters.nodeVersion }}"
+      inputs:
+        versionSpec: ${{ parameters.nodeVersion }}
+        checkLatest: true
 
-      - script: |
-          git config --local user.email imodeljs-admin@users.noreply.github.com
-          git config --local user.name imodeljs-admin
-        displayName: git config
+    - script: |
+        git config --local user.email imodeljs-admin@users.noreply.github.com
+        git config --local user.name imodeljs-admin
+      displayName: git config
 
-      - powershell: |
-          # Get the new version number.
-          $json = Get-Content -Raw -Path common/config/rush/version-policies.json | ConvertFrom-Json
-          $currVersion = $json[0].version
+    - powershell: |
+        # Get the new version number.
+        $json = Get-Content -Raw -Path common/config/rush/version-policies.json | ConvertFrom-Json
+        $currVersion = $json[0].version
 
-          $newBuildNumber = $currVersion + "_$(Build.BuildNumber)"
+        $newBuildNumber = $currVersion + "_$(Build.BuildNumber)"
 
-          Write-Host "##vso[build.updatebuildnumber]$newBuildNumber"
-        displayName: Set build number
-        condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
+        Write-Host "##vso[build.updatebuildnumber]$newBuildNumber"
+      displayName: Set build number
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
 
-      - template: ../templates/core-build.yaml
+    - template: ../templates/core-build.yaml
 
-      # Will run if even there is a failure somewhere else in the pipeline.
-      - template: ../templates/publish-test-results.yaml
-        parameters:
-          NodeVersion: ${{ parameters.nodeVersion }}
-      # The publish script identifies any new packages not previously published and tags the build
-      - template: ../templates/publish.yaml
+    # Will run if even there is a failure somewhere else in the pipeline.
+    - template: ../templates/publish-test-results.yaml
+      parameters:
+        NodeVersion: ${{ parameters.nodeVersion }}
+    # The publish script identifies any new packages not previously published and tags the build
+    - template: ../templates/publish.yaml
