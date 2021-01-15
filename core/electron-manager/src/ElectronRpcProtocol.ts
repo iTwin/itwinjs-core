@@ -7,9 +7,7 @@
  */
 
 import { BentleyStatus } from "@bentley/bentleyjs-core";
-import { IModelError } from "../../IModelError";
-import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
-import { RpcProtocol } from "../core/RpcProtocol";
+import { IModelError, IpcSocket, RpcInterface, RpcInterfaceDefinition, RpcProtocol } from "@bentley/imodeljs-common";
 import { ElectronIpcTransport, initializeIpc, IpcTransportMessage } from "./ElectronIpcTransport";
 import { ElectronRpcConfiguration } from "./ElectronRpcManager";
 import { ElectronRpcRequest } from "./ElectronRpcRequest";
@@ -19,6 +17,7 @@ import { ElectronRpcRequest } from "./ElectronRpcRequest";
  */
 export class ElectronRpcProtocol extends RpcProtocol {
   public static instances: Map<string, ElectronRpcProtocol> = new Map();
+  public ipcSocket: IpcSocket;
 
   /** The RPC request class for this protocol. */
   public readonly requestType = ElectronRpcRequest;
@@ -33,8 +32,9 @@ export class ElectronRpcProtocol extends RpcProtocol {
   public readonly transport: ElectronIpcTransport<IpcTransportMessage, IpcTransportMessage>;
 
   /** Constructs an Electron protocol. */
-  public constructor(configuration: ElectronRpcConfiguration) {
+  public constructor(configuration: ElectronRpcConfiguration, ipcSocket: IpcSocket) {
     super(configuration);
+    this.ipcSocket = ipcSocket;
     const transport = initializeIpc(this);
     if (!transport)
       throw new IModelError(BentleyStatus.ERROR, `Failed to initialize electron IPC.`);
