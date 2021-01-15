@@ -34,9 +34,9 @@ TODO: mobile initialization
 
 Generally, iModel.js programmers won't need to work with the low-level `IpcSocket` interface.
 
-On the frontend, the class [FrontendIpc]($frontend) must be initialized at startup with the platform-specific implementation of `IpcSocketFrontend` and contains the method [FrontendIpc.handleMessage]($frontend) to supply a handler for notification messages sent from the backend to the frontend.
+On the frontend, the class [FrontendIpc]($common) must be initialized at startup with the platform-specific implementation of `IpcSocketFrontend` and contains the method [FrontendIpc.handleMessage]($common) to supply a handler for notification messages sent from the backend to the frontend.
 
-On the backend, the class [BackendIpc]($backend) must be initialized at startup with the platform-specific implementation of `IpcSocketBackend` and contains the method [BackendIpc.sendMessage]($backend) to send a notification message from the backend to the frontend.
+On the backend, the class [BackendIpc]($common) must be initialized at startup with the platform-specific implementation of `IpcSocketBackend` and contains the method [BackendIpc.sendMessage]($common) to send a notification message from the backend to the frontend.
 
 Since Ipc is only enabled in situations where a dedicated backend is available, each of `FrontendIpc` and `BackendIpc` have an `isValid` method that may be tested from code designed to work with or without Ipc.
 
@@ -46,7 +46,7 @@ To enable type-safe cross-process method calls using IPC, there are three requir
 
 1. Define the method signatures in an interface that extends [IpcInterface]($common). This must be in a file that can be `import`ed from both your frontend code and backend code. In iModel.js we use the convention of a folder named `common` for this purpose. Note that all methods in your interface must return a `Promise`. In the same file, define a variable that has a string with a unique name for the *ipc channel* your interface will use. Also, define a variable with a string for a version identifier.
 
-1. In your backend code, implement a class that extends [IpcHandler]($backend) and implements the interface you defined in step 1. In your startup code, call the static method `register` on your new class. Your class must implement the abstract methods `get channelName()` and `getVersion()`. Return the channel name and version variables from your interface file.
+1. In your backend code, implement a class that extends [IpcHandler]($common) and implements the interface you defined in step 1. In your startup code, call the static method `register` on your new class. Your class must implement the abstract methods `get channelName()` and `getVersion()`. Return the channel name and version variables from your interface file.
 
 1. In your frontend code, implement a function like:
 
