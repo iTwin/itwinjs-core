@@ -1,15 +1,15 @@
 # iModel.js CI Build
 
 trigger:
-- master
-- release/*
+  - master
+  - release/*
 
 pr:
   drafts: false
   branches:
     include:
-      - master
-      - release/*
+    - master
+    - release/*
 
 jobs:
   - template: ci-core.yaml
