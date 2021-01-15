@@ -8,7 +8,7 @@
 
 /**
  * The prefix for all IpcSocket channels to disambiguate from system channels.
- * @internal
+ * @beta
  * */
 export const iTwinChannel = (channel: string) => `itwin.${channel}`;
 
