@@ -274,7 +274,7 @@ export class V1CheckpointManager {
         const dbGuid = Guid.normalize(nativeDb.getDbGuid());
         if (dbGuid !== Guid.normalize(requestedCkp.iModelId)) {
           Logger.logWarning(loggerCategory, "iModelId is not properly setup in the briefcase. Updated briefcase to the correct iModelId.", () => ({ ...traceInfo, ...checkpoint, dbGuid }));
-          nativeDb.setDbGuid(requestedCkp.iModelId);
+          nativeDb.setDbGuid(Guid.normalize(requestedCkp.iModelId));
         }
 
         const dbContextGuid = Guid.normalize(nativeDb.queryProjectGuid());
