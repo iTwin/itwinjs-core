@@ -3418,12 +3418,15 @@ export class PlanCallout extends Callout {
 
 // @public
 export class Platform {
-    // @beta
+    // @beta @deprecated
     static get electron(): any;
     // @beta
     static get imodeljsMobile(): any;
+    // @deprecated
     static get isDesktop(): boolean;
+    static get isElectron(): boolean;
     static get isMobile(): boolean;
+    // @deprecated
     static get isNodeJs(): boolean;
     // @internal (undocumented)
     static load(): typeof IModelJsNative;
@@ -4079,6 +4082,8 @@ export class TxnManager {
     protected _onDeletedDependency(props: RelationshipProps): void;
     // @internal (undocumented)
     protected _onEndValidate(): void;
+    // @internal (undocumented)
+    protected _onGeometryChanged(): void;
     // @internal (undocumented)
     protected _onRootChanged(props: RelationshipProps): void;
     // @internal (undocumented)

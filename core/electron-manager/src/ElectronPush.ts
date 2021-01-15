@@ -6,9 +6,7 @@
  * @module RpcInterface
  */
 
-import { RpcMarshaling } from "../core/RpcMarshaling";
-import { RpcRequestFulfillment } from "../core/RpcProtocol";
-import { RpcPushChannel, RpcPushConnection, RpcPushTransport } from "../core/RpcPush";
+import { RpcMarshaling, RpcPushChannel, RpcPushConnection, RpcPushTransport, RpcRequestFulfillment } from "@bentley/imodeljs-common";
 import { BackendIpcTransport, FrontendIpcTransport } from "./ElectronIpcTransport";
 
 const PUSH = "__push__";

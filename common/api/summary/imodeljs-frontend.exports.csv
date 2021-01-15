@@ -105,7 +105,7 @@ internal;DevTools
 public;DisplayStyle2dState 
 public;DisplayStyle3dState 
 public;class DisplayStyleState 
-internal;DownloadBriefcaseOptions
+alpha;DownloadBriefcaseOptions
 alpha;DrawClipOptions
 public;DrawingModelState 
 public;DrawingViewState 
@@ -258,7 +258,7 @@ internal;KeyinStatus
 beta;LengthDescription 
 internal;linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void
 internal;LoadedExtensionProps
-internal;LocalBriefcaseConnection 
+alpha;LocalBriefcaseConnection 
 public;LocateAction
 public;LocateFilterStatus
 public;LocateOptions
@@ -313,7 +313,7 @@ alpha;ModelDisplayTransformProvider
 public;ModelSelectorState 
 public;ModelState 
 internal;ModifyElementSource
-internal;NativeApp
+alpha;NativeApp
 internal;NativeAppLogger
 internal;NoRenderApp
 public;NotificationManager
@@ -448,7 +448,7 @@ public;StandardView
 public;StandardViewId
 public;StandardViewTool 
 public;StartOrResume
-internal;Storage
+alpha;Storage
 internal;SubCategoriesCache
 internal;SubCategoriesCache
 internal;SubCategoriesRequest
