@@ -275,8 +275,7 @@ internal;INSTANCE: unique symbol
 beta;InternetConnectivityStatus
 beta;Interpolation:
 beta;InterpolationFunction = (v: any, k: number) => number
-beta;class IpcHandler 
-beta;IpcInterface
+beta;class IpcHandler
 internal;IpcInvokeReturn =
 beta;IpcListener = (evt: any, ...arg: any[]) => void
 beta;IpcSocket
@@ -338,7 +337,7 @@ public;ModelProps
 public;ModelQueryParams 
 public;ModelSelectorProps 
 public;MonochromeMode
-internal;NativeAppIpc 
+internal;NativeAppIpc
 internal;NativeAppIpcKey
 public;NavigationBindingValue
 public;NavigationValue

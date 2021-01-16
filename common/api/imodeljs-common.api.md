@@ -4040,15 +4040,9 @@ export const Interpolation: {
 export type InterpolationFunction = (v: any, k: number) => number;
 
 // @beta
-export abstract class IpcHandler implements IpcInterface {
+export abstract class IpcHandler {
     abstract get channelName(): string;
-    abstract getVersion(): Promise<string>;
     static register(): RemoveFunction;
-}
-
-// @beta
-export interface IpcInterface {
-    getVersion(): Promise<string>;
 }
 
 // @internal
@@ -4732,7 +4726,7 @@ export enum MonochromeMode {
 }
 
 // @internal
-export interface NativeAppIpc extends IpcInterface {
+export interface NativeAppIpc {
     acquireNewBriefcaseId: (_iModelId: GuidString) => Promise<number>;
     authGetAccessToken: () => Promise<string>;
     authInitialize: (_issuer: string, _config: any) => Promise<void>;
@@ -4768,9 +4762,7 @@ export interface NativeAppIpc extends IpcInterface {
 // @internal (undocumented)
 export enum NativeAppIpcKey {
     // (undocumented)
-    Channel = "nativeApp",
-    // (undocumented)
-    Version = "1.0.0"
+    Channel = "nativeApp"
 }
 
 // @public
