@@ -25,6 +25,10 @@ export class ElectronFrontend implements IpcSocketFrontend {
     return () => this._api.removeListener(channelName, listener);
   }
   /** @internal */
+  public removeListener(channelName: string, listener: IpcListener) {
+    this._api.removeListener(channelName, listener);
+  }
+  /** @internal */
   public send(channel: string, ...data: any[]) {
     this._api.send(channel, ...data);
   }

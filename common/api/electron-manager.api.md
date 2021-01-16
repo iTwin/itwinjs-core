@@ -33,6 +33,8 @@ export class ElectronBackend implements IpcSocketBackend {
     openMainWindow(windowOptions?: BrowserWindowConstructorOptions): Promise<void>;
     // @internal (undocumented)
     receive(channel: string, listener: IpcListener): RemoveFunction;
+    // @internal (undocumented)
+    removeListener(channel: string, listener: IpcListener): void;
     // (undocumented)
     readonly rpcConfig: RpcConfiguration;
     // @internal (undocumented)

@@ -172,6 +172,10 @@ export class ElectronBackend implements IpcSocketBackend {
     return () => this._ipcMain.removeListener(channel, listener);
   }
   /** @internal */
+  public removeListener(channel: string, listener: IpcListener) {
+    this._ipcMain.removeListener(channel, listener);
+  }
+  /** @internal */
   public send(channel: string, ...args: any[]): void {
     const window = this.mainWindow ?? BrowserWindow.getAllWindows()[0];
     window?.webContents.send(channel, ...args);

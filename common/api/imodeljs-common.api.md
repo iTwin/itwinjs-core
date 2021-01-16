@@ -4064,6 +4064,7 @@ export type IpcListener = (evt: any, ...arg: any[]) => void;
 // @beta
 export interface IpcSocket {
     receive: (channel: string, listener: IpcListener) => RemoveFunction;
+    removeListener: (channel: string, listener: IpcListener) => void;
     send: (channel: string, ...data: any[]) => void;
 }
 
@@ -4084,6 +4085,8 @@ export abstract class IpcWebSocket implements IpcSocket {
     protected _channels: Map<string, Set<IpcListener>>;
     // (undocumented)
     receive(channel: string, listener: IpcListener): RemoveFunction;
+    // (undocumented)
+    removeListener(channel: string, listener: IpcListener): void;
     // (undocumented)
     abstract send(channel: string, ...data: any[]): void;
     // (undocumented)

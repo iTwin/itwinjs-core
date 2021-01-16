@@ -53,6 +53,12 @@ export interface IpcSocket {
    * @note returns A function to call to remove the listener.
    */
   receive: (channel: string, listener: IpcListener) => RemoveFunction;
+  /**
+   * Remove a previously registered listener
+   * @param channel The name of the channel for the listener previously registered with [[receive]]
+   * @param listener The function passed to [[receive]]
+   */
+  removeListener: (channel: string, listener: IpcListener) => void;
 }
 
 /**

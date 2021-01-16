@@ -59,6 +59,10 @@ export abstract class IpcWebSocket implements IpcSocket {
     return () => listeners!.delete(listener);
   }
 
+  public removeListener(channel: string, listener: IpcListener) {
+    this._channels.get(channel)?.delete(listener);
+  }
+
   private async broadcast(message: IpcWebSocketMessage) {
     if (message.type !== IpcWebSocketMessageType.Send && message.type !== IpcWebSocketMessageType.Push)
       return;
