@@ -30,7 +30,6 @@ import { cancelTileContentRequests } from "../rpc-impl/IModelTileRpcImpl";
 export class NativeAppImpl extends IpcHandler implements NativeAppIpc {
 
   public get channelName() { return NativeAppIpcKey.Channel; }
-  public async getVersion() { return NativeAppIpcKey.Version; }
   public async log(_timestamp: number, level: LogLevel, category: string, message: string, metaData?: any): Promise<void> {
     Logger.logRaw(level, category, message, () => metaData);
   }

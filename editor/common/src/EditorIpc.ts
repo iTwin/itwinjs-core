@@ -6,16 +6,12 @@
  * @module Editing
  */
 
-import { IpcInterface } from "@bentley/imodeljs-common";
-
-/** @internal */
 export enum EditorIpcKey {
   Channel = "editor",
-  Version = "1.0.0",
 }
 
 /** @alpha */
-export interface EditorIpc extends IpcInterface {
+export interface EditorIpc {
   startCommand: (commandId: string, iModelKey: string, ...args: any[]) => Promise<any>;
   callMethod: (name: string, ...args: any[]) => Promise<any>;
 }

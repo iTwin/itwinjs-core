@@ -7,7 +7,7 @@
  */
 
 import { IModelError, IModelStatus } from "../IModelError";
-import { IpcInterface, IpcInvokeReturn, IpcSocketBackend, iTwinChannel, RemoveFunction } from "./IpcSocket";
+import { IpcInvokeReturn, IpcSocketBackend, iTwinChannel, RemoveFunction } from "./IpcSocket";
 
 /**
  * This class provides backend support for Ipc operations. It must be initialized with a platform-specific
@@ -48,11 +48,9 @@ export class BackendIpc {
  * Then, call `MyClass.register` at startup to connect your class to your channel.
  * @beta
  */
-export abstract class IpcHandler implements IpcInterface {
+export abstract class IpcHandler {
   /** All subclasses must implement this method to specify their channel name. */
   public abstract get channelName(): string;
-  /** All subclasses must implement this method to return a version string that can be compared on the frontend. */
-  public abstract getVersion(): Promise<string>;
 
   /**
    * Register this class as the handler for methods on its channel. This static method creates a new instance

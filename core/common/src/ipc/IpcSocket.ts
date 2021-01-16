@@ -88,14 +88,3 @@ export interface IpcSocketBackend extends IpcSocket {
   handle: (channel: string, handler: (methodName: string, ...args: any[]) => Promise<any>) => RemoveFunction;
 };
 
-/**
- * All interfaces that specify methods invoked from the frontend and implemented on the backend via
- * Ipc must implement this interface to supply their version information.
- * @note the arguments and return types of all functions in an `IpcInterface`  are serialized with the [Structured Clone Algorithm](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm), so only
- * primitive types and `ArrayBuffers` are allowed.
- * @beta
- */
-export interface IpcInterface {
-  /** Get a string that specifies the version of the interface. */
-  getVersion(): Promise<string>;
-};

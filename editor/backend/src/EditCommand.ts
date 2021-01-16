@@ -46,7 +46,6 @@ export class EditCommand implements EditCommandIpc {
 }
 
 class EditorAppImpl extends IpcHandler implements EditorIpc {
-  public async getVersion() { return EditorIpcKey.Version; }
   public get channelName() { return EditorIpcKey.Channel; }
 
   public async startCommand(commandId: string, iModelKey: string, ...args: any[]) {

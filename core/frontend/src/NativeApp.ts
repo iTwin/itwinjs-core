@@ -79,10 +79,7 @@ export class NativeApp {
    */
   public static async startup(opts?: IModelAppOptions) {
     Logger.logInfo(FrontendLoggerCategory.NativeApp, "Startup");
-    const ipcVersion = await NativeApp.callBackend("getVersion");
-    if (ipcVersion !== NativeAppIpcKey.Version) {
-      throw new IModelError(IModelStatus.BadArg, `NativeAppIpc version wrong: backend(${ipcVersion}) vs. frontend(${NativeAppIpcKey.Version})`);
-    }
+
     await IModelApp.startup(opts);
     const backendConfig = await this.callBackend("getConfig");
     Config.App.merge(backendConfig);

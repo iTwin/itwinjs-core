@@ -32,7 +32,6 @@ const getWindowSize = () => {
 
 class DtaIpcImpl extends IpcHandler implements DtaIpcInterface {
   public get channelName() { return DtaIpcKey.Channel; }
-  public async getVersion() { return DtaIpcKey.Version; }
   public async openFile(options: OpenDialogOptions) {
     return dialog.showOpenDialog(options);
   }
