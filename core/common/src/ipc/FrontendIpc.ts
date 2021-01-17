@@ -7,7 +7,7 @@
  */
 
 import { BackendError } from "../IModelError";
-import { IpcInvokeReturn, IpcSocketFrontend, iTwinChannel, RemoveFunction } from "./IpcSocket";
+import { IpcInvokeReturn, IpcListener, IpcSocketFrontend, iTwinChannel, RemoveFunction } from "./IpcSocket";
 
 /**
  * This class provides frontend support for Ipc operations. It must be initialized with a platform-specific
@@ -17,7 +17,7 @@ import { IpcInvokeReturn, IpcSocketFrontend, iTwinChannel, RemoveFunction } from
 export class FrontendIpc {
   private static _ipc: IpcSocketFrontend | undefined;
   /** Get the implementation of the [[IpcSocketFrontend]] interface. */
-  public static get ipc(): IpcSocketFrontend { return this._ipc!; }
+  private static get ipc(): IpcSocketFrontend { return this._ipc!; }
   /** initialize the FrontendIpc system with a platform-specific implementation of the [[IpcSocketFrontend]] interface.
    * @param ipc the platform-specific implementation of the [IpcSocketFrontend]($common) interface
    * @note This method must be called before calling [[IModelApp.startup]]
@@ -28,18 +28,52 @@ export class FrontendIpc {
 
   /**
    * Establish a message handler function for the supplied channel over Ipc. The handler will be called when messages are sent for
-   * the channel via  [BackendIpc.sendMessage]($common).
+   * the channel via  [[BackendIpc.send]].
    * @param channel the name of the channel
    * @param handler the message handler
    * @returns A function to remove the handler
    * @note Ipc is only supported if [[isValid]] is true.
    */
-  public static handleMessage(channel: string, handler: (...data: any[]) => void): RemoveFunction {
-    return this._ipc!.receive(iTwinChannel(channel), (_evt: any, ...data: any[]) => handler(...data));
+  public static addListener(channel: string, handler: IpcListener): RemoveFunction {
+    return this.ipc.addListener(iTwinChannel(channel), handler);
   }
 
   /**
-   * Call a method on the backend through an [[IpcInterface]].
+   * Remove a previously registered listener
+   * @param channel The name of the channel for the listener previously registered with [[addListener]]
+   * @param listener The function passed to [[addListener]]
+   */
+  public static removeListener(channel: string, listener: IpcListener) {
+    this.ipc.removeListener(iTwinChannel(channel), listener);
+  }
+
+  /**
+   * Send a message to the backend via `channel` and expect a result asynchronously. The handler must be established on the backend via [[BackendIpc.handle]]
+   * @param channel The name of the channel for the method.
+   * @see Electron [ipcRenderer.invoke](https://www.electronjs.org/docs/api/ipc-renderer) documentation for details.
+   * Note that this interface may be implemented via Electron for desktop apps, or via
+   * [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API) for mobile or web-based
+   * Ipc connections. In either case, the Electron documentation provides the specifications for how it works.
+   * @note `args` are serialized with the [Structured Clone Algorithm](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm), so only
+   * primitive types and `ArrayBuffers` are allowed.
+   */
+  public static async invoke(channel: string, ...args: any[]): Promise<any> {
+    return this.ipc.invoke(iTwinChannel(channel), ...args);
+  }
+
+  /**
+   * Send a message over the socket.
+   * @param channel The name of the channel for the message.
+   * @param data The optional data of the message.
+   * @note `data` is serialized with the [Structured Clone Algorithm](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm), so only
+   * primitive types and `ArrayBuffers` are allowed.
+   */
+  public static send(channel: string, ...data: any[]) {
+    return this.ipc.send(iTwinChannel(channel), ...data);
+  }
+
+  /**
+   * Call a method on the backend through an Ipc interface.
    * @param channelName the channel registered by the backend handler.
    * @param methodName  the name of a method implemented by the backend handler.
    * @param args arguments to `methodName`

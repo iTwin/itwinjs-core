@@ -3,14 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IpcInterface } from "@bentley/imodeljs-common";
 import { OpenDialogOptions, OpenDialogReturnValue } from "electron";
 
-export enum DtaIpcKey {
-  Channel = "dta",
-  Version = "1.0.2",
-}
+export const dtaChannel = "dta";
 
-export interface DtaIpcInterface extends IpcInterface {
+export interface DtaIpcInterface {
   openFile: (options: OpenDialogOptions) => Promise<OpenDialogReturnValue>;
 }

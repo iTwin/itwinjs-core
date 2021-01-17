@@ -9,13 +9,9 @@
 import { GuidString, LogLevel } from "@bentley/bentleyjs-core";
 import { BriefcaseProps, LocalBriefcaseProps, OpenBriefcaseProps, RequestNewBriefcaseProps } from "../BriefcaseTypes";
 import { IModelConnectionProps, IModelRpcProps } from "../IModel";
-import { IpcInterface } from "./IpcSocket";
 
 /** @internal */
-export enum NativeAppIpcKey {
-  Channel = "nativeApp",
-  Version = "1.0.0",
-}
+export const nativeAppChannel = "nativeApp";
 
 /**
  * Type of value for storage values
@@ -80,7 +76,7 @@ export enum OverriddenBy {
  * The methods that may be invoked via Ipc from the frontend of a Native App and are implemented on its backend.
  * @internal
  */
-export interface NativeAppIpc extends IpcInterface {
+export interface NativeAppIpc {
   /** Send frontend log to backend.
    * @param _level Specify log level.
    * @param _category Specify log category.

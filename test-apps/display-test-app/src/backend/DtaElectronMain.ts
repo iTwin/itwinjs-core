@@ -7,7 +7,7 @@ import * as path from "path";
 import { assert } from "@bentley/bentleyjs-core";
 import { ElectronBackend, ElectronBackendOptions } from "@bentley/electron-manager/lib/ElectronBackend";
 import { IpcHandler } from "@bentley/imodeljs-common";
-import { DtaIpcInterface, DtaIpcKey } from "../common/DtaIpcInterface";
+import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
 import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
 
 const getWindowSize = () => {
@@ -31,8 +31,7 @@ const getWindowSize = () => {
 };
 
 class DtaIpcImpl extends IpcHandler implements DtaIpcInterface {
-  public get channelName() { return DtaIpcKey.Channel; }
-  public async getVersion() { return DtaIpcKey.Version; }
+  public get channelName() { return dtaChannel; }
   public async openFile(options: OpenDialogOptions) {
     return dialog.showOpenDialog(options);
   }
