@@ -4,8 +4,6 @@
 
 ```ts
 
-import { IpcInterface } from '@bentley/imodeljs-common';
-
 // @alpha (undocumented)
 export interface EditCommandIpc {
     // (undocumented)
@@ -16,20 +14,15 @@ export interface EditCommandIpc {
     }>;
 }
 
+// @internal (undocumented)
+export const editorChannel = "editor";
+
 // @alpha (undocumented)
-export interface EditorIpc extends IpcInterface {
+export interface EditorIpc {
     // (undocumented)
     callMethod: (name: string, ...args: any[]) => Promise<any>;
     // (undocumented)
     startCommand: (commandId: string, iModelKey: string, ...args: any[]) => Promise<any>;
-}
-
-// @internal (undocumented)
-export enum EditorIpcKey {
-    // (undocumented)
-    Channel = "editor",
-    // (undocumented)
-    Version = "1.0.0"
 }
 
 
