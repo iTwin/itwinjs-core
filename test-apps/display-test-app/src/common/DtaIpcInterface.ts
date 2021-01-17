@@ -5,9 +5,7 @@
 
 import { OpenDialogOptions, OpenDialogReturnValue } from "electron";
 
-export enum DtaIpcKey {
-  Channel = "dta",
-}
+export const dtaChannel = "dta";
 
 export interface DtaIpcInterface {
   openFile: (options: OpenDialogOptions) => Promise<OpenDialogReturnValue>;

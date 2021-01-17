@@ -335,10 +335,12 @@ export class BackendError extends IModelError {
 
 // @beta
 export class BackendIpc {
+    static addListener(channel: string, listener: IpcListener): RemoveFunction;
+    static handle(channel: string, handler: (...args: any[]) => Promise<any>): RemoveFunction;
     static initialize(ipc: IpcSocketBackend): void;
-    static get ipc(): IpcSocketBackend;
     static get isValid(): boolean;
-    static sendMessage(channel: string, ...data: any[]): void;
+    static removeListener(channel: string, listener: IpcListener): void;
+    static send(channel: string, ...data: any[]): void;
 }
 
 // @public
@@ -2732,11 +2734,13 @@ export interface FormDataCommon {
 
 // @beta
 export class FrontendIpc {
+    static addListener(channel: string, handler: IpcListener): RemoveFunction;
     static callBackend(channelName: string, methodName: string, ...args: any[]): Promise<any>;
-    static handleMessage(channel: string, handler: (...data: any[]) => void): RemoveFunction;
     static initialize(ipc: IpcSocketFrontend): void;
-    static get ipc(): IpcSocketFrontend;
+    static invoke(channel: string, ...args: any[]): Promise<any>;
     static get isValid(): boolean;
+    static removeListener(channel: string, listener: IpcListener): void;
+    static send(channel: string, ...data: any[]): void;
 }
 
 // @public
@@ -4059,32 +4063,32 @@ export type IpcInvokeReturn = {
 };
 
 // @beta
-export type IpcListener = (evt: any, ...arg: any[]) => void;
+export type IpcListener = (evt: Event, ...args: any[]) => void;
 
 // @beta
 export interface IpcSocket {
-    receive: (channel: string, listener: IpcListener) => RemoveFunction;
+    addListener: (channel: string, listener: IpcListener) => RemoveFunction;
     removeListener: (channel: string, listener: IpcListener) => void;
     send: (channel: string, ...data: any[]) => void;
 }
 
 // @beta
 export interface IpcSocketBackend extends IpcSocket {
-    handle: (channel: string, handler: (methodName: string, ...args: any[]) => Promise<any>) => RemoveFunction;
+    handle: (channel: string, handler: (...args: any[]) => Promise<any>) => RemoveFunction;
 }
 
 // @beta
 export interface IpcSocketFrontend extends IpcSocket {
-    invoke: (channel: string, methodName: string, ...args: any[]) => Promise<any>;
+    invoke: (channel: string, ...args: any[]) => Promise<any>;
 }
 
 // @internal (undocumented)
 export abstract class IpcWebSocket implements IpcSocket {
     constructor();
     // (undocumented)
-    protected _channels: Map<string, Set<IpcListener>>;
+    addListener(channel: string, listener: IpcListener): RemoveFunction;
     // (undocumented)
-    receive(channel: string, listener: IpcListener): RemoveFunction;
+    protected _channels: Map<string, Set<IpcListener>>;
     // (undocumented)
     removeListener(channel: string, listener: IpcListener): void;
     // (undocumented)
@@ -4142,7 +4146,7 @@ export enum IpcWebSocketMessageType {
 // @internal (undocumented)
 export abstract class IpcWebSocketTransport {
     // (undocumented)
-    abstract listen(handler: (message: IpcWebSocketMessage) => void): void;
+    abstract listen(handler: (evt: Event, message: IpcWebSocketMessage) => void): void;
     // (undocumented)
     abstract send(message: IpcWebSocketMessage): void;
 }
@@ -4728,6 +4732,9 @@ export enum MonochromeMode {
     Scaled = 1
 }
 
+// @internal (undocumented)
+export const nativeAppChannel = "nativeApp";
+
 // @internal
 export interface NativeAppIpc {
     acquireNewBriefcaseId: (_iModelId: GuidString) => Promise<number>;
@@ -4760,12 +4767,6 @@ export interface NativeAppIpc {
     storageSet: (_storageId: string, _key: string, _value: StorageValue) => Promise<void>;
     // (undocumented)
     toggleInteractiveEditingSession: (_tokenProps: IModelRpcProps, _startSession: boolean) => Promise<boolean>;
-}
-
-// @internal (undocumented)
-export enum NativeAppIpcKey {
-    // (undocumented)
-    Channel = "nativeApp"
 }
 
 // @public

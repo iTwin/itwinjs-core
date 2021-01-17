@@ -277,7 +277,7 @@ beta;Interpolation:
 beta;InterpolationFunction = (v: any, k: number) => number
 beta;class IpcHandler
 internal;IpcInvokeReturn =
-beta;IpcListener = (evt: any, ...arg: any[]) => void
+beta;IpcListener = (evt: Event, ...args: any[]) => void
 beta;IpcSocket
 beta;IpcSocketBackend 
 beta;IpcSocketFrontend 
@@ -337,8 +337,8 @@ public;ModelProps
 public;ModelQueryParams 
 public;ModelSelectorProps 
 public;MonochromeMode
+internal;nativeAppChannel = "nativeApp"
 internal;NativeAppIpc
-internal;NativeAppIpcKey
 public;NavigationBindingValue
 public;NavigationValue
 public;nextHighestPowerOfTwo(num: number): number

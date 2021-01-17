@@ -11,9 +11,7 @@ import { BriefcaseProps, LocalBriefcaseProps, OpenBriefcaseProps, RequestNewBrie
 import { IModelConnectionProps, IModelRpcProps } from "../IModel";
 
 /** @internal */
-export enum NativeAppIpcKey {
-  Channel = "nativeApp",
-}
+export const nativeAppChannel = "nativeApp";
 
 /**
  * Type of value for storage values

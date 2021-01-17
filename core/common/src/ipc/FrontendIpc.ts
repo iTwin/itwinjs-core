@@ -47,10 +47,27 @@ export class FrontendIpc {
     this.ipc.removeListener(iTwinChannel(channel), listener);
   }
 
+  /**
+   * Send a message to the backend via `channel` and expect a result asynchronously.
+   * @param channel The name of the channel for the method.
+   * @see Electron [ipcRenderer.invoke](https://www.electronjs.org/docs/api/ipc-renderer) documentation for details.
+   * Note that this interface *may* be implemented via Electron for desktop apps, or via
+   * [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API) for mobile or web-based
+   * Ipc connections. In either case, the Electron documentation provides the specifications for how it works.
+   * @note `args` are serialized with the [Structured Clone Algorithm](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm), so only
+   * primitive types and `ArrayBuffers` are allowed.
+   */
   public static async invoke(channel: string, ...args: any[]): Promise<any> {
     return this.ipc.invoke(iTwinChannel(channel), ...args);
   }
 
+  /**
+   * Send a message over the socket.
+   * @param channel The name of the channel for the message.
+   * @param data The optional data of the message.
+   * @note `data` is serialized with the [Structured Clone Algorithm](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm), so only
+   * primitive types and `ArrayBuffers` are allowed.
+   */
   public static send(channel: string, ...data: any[]) {
     return this.ipc.send(iTwinChannel(channel), ...data);
   }

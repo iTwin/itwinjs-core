@@ -28,19 +28,25 @@ export class BackendIpc {
 
   /**
    * Send a message to the frontend over an Ipc channel.
-   * @param channel the name of the channel matching the name registered with [[FrontendIpc.handleMessage]].
+   * @param channel the name of the channel matching the name registered with [[FrontendIpc.addListener]].
    * @param data The content of the message.
    */
   public static send(channel: string, ...data: any[]): void {
     this.ipc.send(iTwinChannel(channel), ...data);
   }
 
+  /**
+   * Establish a backend implementation of an [[IpcInterface]] for a channel.
+   * @param channel The name of the channel for this handler.
+   * @param handler A function that supplies the implementation for methods invoked over `channel` via [[FrontendIpc.invoke]]
+   * @note returns A function to call to remove the handler.
+   */
   public static handle(channel: string, handler: (...args: any[]) => Promise<any>): RemoveFunction {
     return this.ipc.handle(iTwinChannel(channel), handler);
   }
   /**
    * Establish a handler to receive messages for a channel through a socket.
-   * @param channel The name of the channel for the messages. Must begin with the [[iTwinChannel]] prefix.
+   * @param channel The name of the channel for the messages.
    * @param listener A function called when messages are sent over `channel`
    * @note returns A function to call to remove the listener.
    */

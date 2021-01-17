@@ -6,9 +6,8 @@
  * @module Editing
  */
 
-export enum EditorIpcKey {
-  Channel = "editor",
-}
+/** @internal */
+export const editorChannel = "editor";
 
 /** @alpha */
 export interface EditorIpc {
