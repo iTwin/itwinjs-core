@@ -8,15 +8,15 @@
 
 import { BentleyStatus, isElectronRenderer } from "@bentley/bentleyjs-core";
 import {
-  IModelError, iTwinChannel, RpcPushChannel, RpcPushConnection, RpcRequestFulfillment, RpcSerializedValue, SerializedRpcRequest,
+  IModelError, RpcPushChannel, RpcPushConnection, RpcRequestFulfillment, RpcSerializedValue, SerializedRpcRequest,
 } from "@bentley/imodeljs-common";
 import { ElectronPushConnection, ElectronPushTransport } from "./ElectronPush";
 import { ElectronRpcConfiguration } from "./ElectronRpcManager";
 import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
 import { ElectronRpcRequest } from "./ElectronRpcRequest";
 
-const OBJECTS_CHANNEL = iTwinChannel("rpc.objects");
-const DATA_CHANNEL = iTwinChannel("rpc.data");
+const OBJECTS_CHANNEL = "rpc.objects";
+const DATA_CHANNEL = "rpc.data";
 
 interface PartialPayload { id: string, index: number, data: Uint8Array }
 
@@ -46,7 +46,7 @@ export abstract class ElectronIpcTransport<TIn extends IpcTransportMessage = Ipc
   protected setupPush() { }
 
   private _setupDataChannel() {
-    this.protocol.ipcSocket.receive(DATA_CHANNEL, async (evt: any, chunk: PartialPayload) => {
+    this.protocol.ipcSocket.addListener(DATA_CHANNEL, async (evt: any, chunk: PartialPayload) => {
       let pending = this._partials.get(chunk.id);
       if (!pending) {
         pending = [];
@@ -69,7 +69,7 @@ export abstract class ElectronIpcTransport<TIn extends IpcTransportMessage = Ipc
   }
 
   private _setupObjectsChannel() {
-    this.protocol.ipcSocket.receive(OBJECTS_CHANNEL, async (evt: any, message: TIn) => {
+    this.protocol.ipcSocket.addListener(OBJECTS_CHANNEL, async (evt: any, message: TIn) => {
       const pending = this._partials.get(message.id);
       if (pending && !Array.isArray(pending)) {
         throw new IModelError(BentleyStatus.ERROR, `Message already received for id "${message.id}".`);

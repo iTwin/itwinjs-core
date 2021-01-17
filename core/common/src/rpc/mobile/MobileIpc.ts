@@ -24,7 +24,7 @@ class IpcInterface extends RpcInterface {
 /** @internal */
 export class MobileIpcTransport extends IpcWebSocketTransport {
   private _protocol: MobileRpcProtocol;
-  private _listeners: Array<(message: IpcWebSocketMessage) => void> = [];
+  private _listeners: Array<(evt: Event, message: IpcWebSocketMessage) => void> = [];
   private _client: IpcInterface;
 
   public constructor(protocol: MobileRpcProtocol) {
@@ -43,7 +43,7 @@ export class MobileIpcTransport extends IpcWebSocketTransport {
     }
   }
 
-  public listen(handler: (message: IpcWebSocketMessage) => void): void {
+  public listen(handler: (evt: Event, message: IpcWebSocketMessage) => void): void {
     this._listeners.push(handler);
   }
 
@@ -52,7 +52,7 @@ export class MobileIpcTransport extends IpcWebSocketTransport {
       return false;
 
     const message = RpcMarshaling.deserialize(this._protocol, request.parameters)[0] as IpcWebSocketMessage;
-    this.broadcast(message);
+    this.broadcast({} as Event, message);
     return true;
   }
 
@@ -61,7 +61,7 @@ export class MobileIpcTransport extends IpcWebSocketTransport {
       return false;
 
     const message = RpcMarshaling.deserialize(this._protocol, response.result) as IpcWebSocketMessage;
-    this.broadcast(message);
+    this.broadcast({} as Event, message);
     return true;
   }
 
@@ -79,8 +79,8 @@ export class MobileIpcTransport extends IpcWebSocketTransport {
     this._protocol.sendToFrontend(encoded);
   }
 
-  private broadcast(message: IpcWebSocketMessage) {
+  private broadcast(evt: Event, message: IpcWebSocketMessage) {
     for (const listener of this._listeners)
-      listener(message);
+      listener(evt, message);
   }
 }
