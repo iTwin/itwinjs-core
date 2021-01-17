@@ -10,7 +10,7 @@ import { IModelStatus } from "@bentley/bentleyjs-core";
 import { IModelDb } from "@bentley/imodeljs-backend";
 import { BackendIpc, IpcHandler } from "@bentley/imodeljs-common";
 import { IModelError } from "@bentley/imodeljs-common/lib/IModelError";
-import { EditCommandIpc, EditorIpc, editorChannel } from "@bentley/imodeljs-editor-common";
+import { EditCommandIpc, editorChannel, EditorIpc } from "@bentley/imodeljs-editor-common";
 
 /** @alpha */
 export type EditCommandType = typeof EditCommand;

@@ -10,7 +10,7 @@
 import { ClientRequestContext, Config, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import {
   BackendIpc, BriefcaseProps, IModelConnectionProps, IModelError, IModelRpcProps, InternetConnectivityStatus, IpcHandler, LocalBriefcaseProps,
-  MobileAuthorizationClientConfiguration, NativeAppIpc, nativeAppChannel, OpenBriefcaseProps, OverriddenBy, RequestNewBriefcaseProps, StorageValue,
+  MobileAuthorizationClientConfiguration, nativeAppChannel, NativeAppIpc, OpenBriefcaseProps, OverriddenBy, RequestNewBriefcaseProps, StorageValue,
   TileTreeContentIds,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { AuthStatus, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import { DesktopAuthorizationClient, IModelHost } from "@bentley/imodeljs-backend";
-import { BackendIpc, DesktopAuthorizationClientConfiguration, DesktopAuthorizationClientMessages, IpcListener } from "@bentley/imodeljs-common";
+import { BackendIpc, DesktopAuthorizationClientConfiguration, DesktopAuthorizationClientMessages } from "@bentley/imodeljs-common";
 import { AccessToken } from "@bentley/itwin-client";
 import { ElectronManagerLoggerCategory } from "./ElectronManagerLoggerCategory";
 
