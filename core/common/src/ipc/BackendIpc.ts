@@ -36,16 +36,16 @@ export class BackendIpc {
   }
 
   /**
-   * Establish a backend handler for an Ipc channel to receive messages from [[Frontend.invoke]]
+   * Establish a handler for an Ipc channel to receive [[Frontend.invoke]] calls
    * @param channel The name of the channel for this handler.
-   * @param handler A function that supplies the implementation for `channel` via [[FrontendIpc.invoke]]
+   * @param handler A function that supplies the implementation for `channel`
    * @note returns A function to call to remove the handler.
    */
   public static handle(channel: string, handler: (...args: any[]) => Promise<any>): RemoveFunction {
     return this.ipc.handle(iTwinChannel(channel), handler);
   }
   /**
-   * Establish a handler to receive messages for a channel through a socket.
+   * Establish a handler to receive messages sent via [[FrontendIpc.send]].
    * @param channel The name of the channel for the messages.
    * @param listener A function called when messages are sent over `channel`
    * @note returns A function to call to remove the listener.
@@ -64,9 +64,9 @@ export class BackendIpc {
 }
 
 /**
- * Base class for all implementations of [[IpcInterface]].
+ * Base class for all implementations of an Ipc interface.
  *
- * Create a subclass to implement your IpcInterface. Your class should be declared like this:
+ * Create a subclass to implement your Ipc interface. Your class should be declared like this:
  * ```ts
  * class MyHandler extends IpcHandler implements MyInterface
  * ```

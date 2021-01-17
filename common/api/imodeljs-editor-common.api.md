@@ -14,18 +14,15 @@ export interface EditCommandIpc {
     }>;
 }
 
+// @internal (undocumented)
+export const editorChannel = "editor";
+
 // @alpha (undocumented)
 export interface EditorIpc {
     // (undocumented)
     callMethod: (name: string, ...args: any[]) => Promise<any>;
     // (undocumented)
     startCommand: (commandId: string, iModelKey: string, ...args: any[]) => Promise<any>;
-}
-
-// @public
-export enum EditorIpcKey {
-    // (undocumented)
-    Channel = "editor"
 }
 
 

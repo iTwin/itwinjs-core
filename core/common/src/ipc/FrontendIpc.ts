@@ -28,7 +28,7 @@ export class FrontendIpc {
 
   /**
    * Establish a message handler function for the supplied channel over Ipc. The handler will be called when messages are sent for
-   * the channel via  [BackendIpc.sendMessage]($common).
+   * the channel via  [[BackendIpc.send]].
    * @param channel the name of the channel
    * @param handler the message handler
    * @returns A function to remove the handler
@@ -48,10 +48,10 @@ export class FrontendIpc {
   }
 
   /**
-   * Send a message to the backend via `channel` and expect a result asynchronously.
+   * Send a message to the backend via `channel` and expect a result asynchronously. The handler must be established on the backend via [[BackendIpc.handle]]
    * @param channel The name of the channel for the method.
    * @see Electron [ipcRenderer.invoke](https://www.electronjs.org/docs/api/ipc-renderer) documentation for details.
-   * Note that this interface *may* be implemented via Electron for desktop apps, or via
+   * Note that this interface may be implemented via Electron for desktop apps, or via
    * [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API) for mobile or web-based
    * Ipc connections. In either case, the Electron documentation provides the specifications for how it works.
    * @note `args` are serialized with the [Structured Clone Algorithm](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm), so only
@@ -73,7 +73,7 @@ export class FrontendIpc {
   }
 
   /**
-   * Call a method on the backend through an [[IpcInterface]].
+   * Call a method on the backend through an Ipc interface.
    * @param channelName the channel registered by the backend handler.
    * @param methodName  the name of a method implemented by the backend handler.
    * @param args arguments to `methodName`

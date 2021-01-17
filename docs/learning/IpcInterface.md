@@ -34,9 +34,9 @@ TODO: mobile initialization
 
 Generally, iModel.js programmers won't need to work with the low-level `IpcSocket` interface.
 
-On the frontend, the class [FrontendIpc]($common) must be initialized at startup with the platform-specific implementation of `IpcSocketFrontend` and contains the method [FrontendIpc.handleMessage]($common) to supply a handler for notification messages sent from the backend to the frontend.
+On the frontend, the class [FrontendIpc]($common) must be initialized at startup with the platform-specific implementation of `IpcSocketFrontend` and contains the method [FrontendIpc.addListener]($common) to supply a handler for notification messages sent from the backend to the frontend.
 
-On the backend, the class [BackendIpc]($common) must be initialized at startup with the platform-specific implementation of `IpcSocketBackend` and contains the method [BackendIpc.sendMessage]($common) to send a notification message from the backend to the frontend.
+On the backend, the class [BackendIpc]($common) must be initialized at startup with the platform-specific implementation of `IpcSocketBackend` and contains the method [BackendIpc.send]($common) to send a notification message from the backend to the frontend.
 
 Since Ipc is only enabled in situations where a dedicated backend is available, each of `FrontendIpc` and `BackendIpc` have an `isValid` method that may be tested from code designed to work with or without Ipc.
 
