@@ -36,9 +36,9 @@ export class BackendIpc {
   }
 
   /**
-   * Establish a backend implementation of an [[IpcInterface]] for a channel.
+   * Establish a backend handler for an Ipc channel to receive messages from [[Frontend.invoke]]
    * @param channel The name of the channel for this handler.
-   * @param handler A function that supplies the implementation for methods invoked over `channel` via [[FrontendIpc.invoke]]
+   * @param handler A function that supplies the implementation for `channel` via [[FrontendIpc.invoke]]
    * @note returns A function to call to remove the handler.
    */
   public static handle(channel: string, handler: (...args: any[]) => Promise<any>): RemoveFunction {
