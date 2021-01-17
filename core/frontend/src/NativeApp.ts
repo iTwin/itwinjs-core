@@ -120,7 +120,7 @@ export class NativeApp {
 
     let stopProgressEvents = () => { };
     if (progress !== undefined) {
-      stopProgressEvents = FrontendIpc.handleMessage(`nativeApp.progress-${iModelId}`, (data: { loaded: number, total: number }) => {
+      stopProgressEvents = FrontendIpc.addListener(`nativeApp.progress-${iModelId}`, (_evt: Event, data: { loaded: number, total: number }) => {
         progress(data);
       });
     }

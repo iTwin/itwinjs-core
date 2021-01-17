@@ -7,7 +7,7 @@
  */
 
 import { IModelError, IModelStatus } from "../IModelError";
-import { IpcInvokeReturn, IpcSocketBackend, iTwinChannel, RemoveFunction } from "./IpcSocket";
+import { IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel, RemoveFunction } from "./IpcSocket";
 
 /**
  * This class provides backend support for Ipc operations. It must be initialized with a platform-specific
@@ -17,7 +17,7 @@ import { IpcInvokeReturn, IpcSocketBackend, iTwinChannel, RemoveFunction } from 
 export class BackendIpc {
   private static _ipc: IpcSocketBackend | undefined;
   /** Get the implementation of the [IpcSocketBackend]($common) interface. */
-  public static get ipc(): IpcSocketBackend { return this._ipc!; }
+  private static get ipc(): IpcSocketBackend { return this._ipc!; }
   /**
    * initialize backend support for Ipc
    * @param ipc The platform-specific implementation of the [[IpcSocketBackend]] interface
@@ -31,9 +31,30 @@ export class BackendIpc {
    * @param channel the name of the channel matching the name registered with [[FrontendIpc.handleMessage]].
    * @param data The content of the message.
    */
-  public static sendMessage(channel: string, ...data: any[]) {
-    return this._ipc!.send(iTwinChannel(channel), ...data);
+  public static send(channel: string, ...data: any[]): void {
+    this.ipc.send(iTwinChannel(channel), ...data);
   }
+
+  public static handle(channel: string, handler: (...args: any[]) => Promise<any>): RemoveFunction {
+    return this.ipc.handle(iTwinChannel(channel), handler);
+  }
+  /**
+   * Establish a handler to receive messages for a channel through a socket.
+   * @param channel The name of the channel for the messages. Must begin with the [[iTwinChannel]] prefix.
+   * @param listener A function called when messages are sent over `channel`
+   * @note returns A function to call to remove the listener.
+   */
+  public static addListener(channel: string, listener: IpcListener): RemoveFunction {
+    return this.ipc.addListener(iTwinChannel(channel), listener);
+  }
+  /**
+   * Remove a previously registered listener
+   * @param channel The name of the channel for the listener previously registered with [[addListener]]
+   * @param listener The function passed to [[addListener]]
+   */
+  public static removeListener(channel: string, listener: IpcListener): void {
+    this.ipc.removeListener(iTwinChannel(channel), listener);
+  };
 }
 
 /**
@@ -60,7 +81,7 @@ export abstract class IpcHandler {
    */
   public static register(): RemoveFunction {
     const impl = new (this as any)() as IpcHandler; // create an instance of subclass. "as any" is necessary because base class is abstract
-    return BackendIpc.ipc.handle(iTwinChannel(impl.channelName), async (_evt: any, funcName: string, ...args: any[]): Promise<IpcInvokeReturn> => {
+    return BackendIpc.handle(impl.channelName, async (_evt: Event, funcName: string, ...args: any[]): Promise<IpcInvokeReturn> => {
       try {
         const func = (impl as any)[funcName];
         if (typeof func !== "function")

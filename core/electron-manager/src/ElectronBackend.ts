@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-// Note: only import types! Does not create a `require("electron")` in JavaScript. That's important so this file can
+// Note: only import types! Does not create a `require("electron")` in JavaScript after transpiling. That's important so this file can
 // be imported by apps that sometimes use Electron and sometimes not. Call to `ElectronBackend.initialize`
 // will do the necessary `require("electron")`
 import { BrowserWindow, BrowserWindowConstructorOptions, IpcMain } from "electron";
@@ -105,7 +105,7 @@ export class ElectronBackend implements IpcSocketBackend {
     this._mainWindow.loadURL(this.frontendURL); // eslint-disable-line @typescript-eslint/no-floating-promises
 
     // Setup handlers for IPC calls to support Authorization
-    DesktopAuthorizationClientIpc.initializeIpc(this.mainWindow!);
+    DesktopAuthorizationClientIpc.initializeIpc();
   }
 
   /** The "main" BrowserWindow for this application. */
@@ -167,7 +167,7 @@ export class ElectronBackend implements IpcSocketBackend {
   }
 
   /** @internal */
-  public receive(channel: string, listener: IpcListener): RemoveFunction {
+  public addListener(channel: string, listener: IpcListener): RemoveFunction {
     this._ipcMain.addListener(channel, listener);
     return () => this._ipcMain.removeListener(channel, listener);
   }

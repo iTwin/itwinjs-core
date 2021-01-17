@@ -72,7 +72,7 @@ export class NativeAppImpl extends IpcHandler implements NativeAppIpc {
 
     if (reportProgress) {
       args.onProgress = (loaded, total) => {
-        BackendIpc.sendMessage(`nativeApp.progress-${request.iModelId}`, { loaded, total });
+        BackendIpc.send(`nativeApp.progress-${request.iModelId}`, { loaded, total });
         return checkAbort();
       };
     }

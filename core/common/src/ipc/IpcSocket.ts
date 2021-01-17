@@ -16,7 +16,7 @@ export const iTwinChannel = (channel: string) => `itwin.${channel}`;
  * A function to handle an Ipc message.
  * @beta
  */
-export type IpcListener = (evt: any, ...arg: any[]) => void;
+export type IpcListener = (evt: Event, ...args: any[]) => void;
 
 /**
  * Function returned when establishing an Ipc `receive` listener or `invoke` handler. Call this method to remove the listener/handler.
@@ -52,11 +52,11 @@ export interface IpcSocket {
    * @param listener A function called when messages are sent over `channel`
    * @note returns A function to call to remove the listener.
    */
-  receive: (channel: string, listener: IpcListener) => RemoveFunction;
+  addListener: (channel: string, listener: IpcListener) => RemoveFunction;
   /**
    * Remove a previously registered listener
-   * @param channel The name of the channel for the listener previously registered with [[receive]]
-   * @param listener The function passed to [[receive]]
+   * @param channel The name of the channel for the listener previously registered with [[addListener]]
+   * @param listener The function passed to [[addListener]]
    */
   removeListener: (channel: string, listener: IpcListener) => void;
 }
@@ -76,7 +76,7 @@ export interface IpcSocketFrontend extends IpcSocket {
    * @note `args` are serialized with the [Structured Clone Algorithm](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm), so only
    * primitive types and `ArrayBuffers` are allowed.
    */
-  invoke: (channel: string, methodName: string, ...args: any[]) => Promise<any>;
+  invoke: (channel: string, ...args: any[]) => Promise<any>;
 };
 
 /**
@@ -91,6 +91,6 @@ export interface IpcSocketBackend extends IpcSocket {
    * @param handler A function that supplies the implementation for methods invoked over `channel` via [[IpcSocketFrontend.invoke]]
    * @note returns A function to call to remove the handler.
    */
-  handle: (channel: string, handler: (methodName: string, ...args: any[]) => Promise<any>) => RemoveFunction;
+  handle: (channel: string, handler: (...args: any[]) => Promise<any>) => RemoveFunction;
 };
 

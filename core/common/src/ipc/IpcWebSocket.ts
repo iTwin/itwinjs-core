@@ -13,7 +13,7 @@ import { IpcListener, IpcSocket, IpcSocketBackend, IpcSocketFrontend, RemoveFunc
 /** @internal */
 export abstract class IpcWebSocketTransport {
   public abstract send(message: IpcWebSocketMessage): void;
-  public abstract listen(handler: (message: IpcWebSocketMessage) => void): void;
+  public abstract listen(handler: (evt: Event, message: IpcWebSocketMessage) => void): void;
 }
 
 /** @internal */
@@ -41,12 +41,12 @@ export abstract class IpcWebSocket implements IpcSocket {
   protected _channels = new Map<string, Set<IpcListener>>();
 
   public constructor() {
-    IpcWebSocket.transport.listen(async (m) => this.broadcast(m));
+    IpcWebSocket.transport.listen(async (e, m) => this.broadcast(e, m));
   }
 
   public abstract send(channel: string, ...data: any[]): void;
 
-  public receive(channel: string, listener: IpcListener): RemoveFunction {
+  public addListener(channel: string, listener: IpcListener): RemoveFunction {
     let listeners = this._channels.get(channel);
     if (!listeners) {
       listeners = new Set();
@@ -63,7 +63,7 @@ export abstract class IpcWebSocket implements IpcSocket {
     this._channels.get(channel)?.delete(listener);
   }
 
-  private async broadcast(message: IpcWebSocketMessage) {
+  private async broadcast(evt: Event, message: IpcWebSocketMessage) {
     if (message.type !== IpcWebSocketMessageType.Send && message.type !== IpcWebSocketMessageType.Push)
       return;
 
@@ -76,7 +76,7 @@ export abstract class IpcWebSocket implements IpcSocket {
       arg = [];
 
     for (const handler of handlers)
-      handler({}, ...arg);
+      handler(evt, ...arg);
   }
 }
 
@@ -87,7 +87,7 @@ export class IpcWebSocketFrontend extends IpcWebSocket implements IpcSocketFront
 
   public constructor() {
     super();
-    IpcWebSocket.transport.listen(async (m) => this.dispatch(m));
+    IpcWebSocket.transport.listen(async (e, m) => this.dispatch(e, m));
     FrontendIpc.initialize(this);
   }
 
@@ -104,7 +104,7 @@ export class IpcWebSocketFrontend extends IpcWebSocket implements IpcSocketFront
     });
   }
 
-  private async dispatch(message: IpcWebSocketMessage) {
+  private async dispatch(_evt: Event, message: IpcWebSocketMessage) {
     if (message.type !== IpcWebSocketMessageType.Response || !message.response)
       return;
 
@@ -123,7 +123,7 @@ export class IpcWebSocketBackend extends IpcWebSocket implements IpcSocketBacken
 
   public constructor() {
     super();
-    IpcWebSocket.transport.listen(async (m) => this.dispatch(m));
+    IpcWebSocket.transport.listen(async (e, m) => this.dispatch(e, m));
     BackendIpc.initialize(this);
   }
 
@@ -140,7 +140,7 @@ export class IpcWebSocketBackend extends IpcWebSocket implements IpcSocketBacken
     };
   }
 
-  private async dispatch(message: IpcWebSocketMessage) {
+  private async dispatch(_evt: Event, message: IpcWebSocketMessage) {
     if (message.type !== IpcWebSocketMessageType.Invoke || !message.method)
       return;
 

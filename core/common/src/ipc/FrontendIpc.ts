@@ -7,7 +7,7 @@
  */
 
 import { BackendError } from "../IModelError";
-import { IpcInvokeReturn, IpcSocketFrontend, iTwinChannel, RemoveFunction } from "./IpcSocket";
+import { IpcInvokeReturn, IpcListener, IpcSocketFrontend, iTwinChannel, RemoveFunction } from "./IpcSocket";
 
 /**
  * This class provides frontend support for Ipc operations. It must be initialized with a platform-specific
@@ -17,7 +17,7 @@ import { IpcInvokeReturn, IpcSocketFrontend, iTwinChannel, RemoveFunction } from
 export class FrontendIpc {
   private static _ipc: IpcSocketFrontend | undefined;
   /** Get the implementation of the [[IpcSocketFrontend]] interface. */
-  public static get ipc(): IpcSocketFrontend { return this._ipc!; }
+  private static get ipc(): IpcSocketFrontend { return this._ipc!; }
   /** initialize the FrontendIpc system with a platform-specific implementation of the [[IpcSocketFrontend]] interface.
    * @param ipc the platform-specific implementation of the [IpcSocketFrontend]($common) interface
    * @note This method must be called before calling [[IModelApp.startup]]
@@ -34,8 +34,25 @@ export class FrontendIpc {
    * @returns A function to remove the handler
    * @note Ipc is only supported if [[isValid]] is true.
    */
-  public static handleMessage(channel: string, handler: (...data: any[]) => void): RemoveFunction {
-    return this._ipc!.receive(iTwinChannel(channel), (_evt: any, ...data: any[]) => handler(...data));
+  public static addListener(channel: string, handler: IpcListener): RemoveFunction {
+    return this.ipc.addListener(iTwinChannel(channel), handler);
+  }
+
+  /**
+   * Remove a previously registered listener
+   * @param channel The name of the channel for the listener previously registered with [[addListener]]
+   * @param listener The function passed to [[addListener]]
+   */
+  public static removeListener(channel: string, listener: IpcListener) {
+    this.ipc.removeListener(iTwinChannel(channel), listener);
+  }
+
+  public static async invoke(channel: string, ...args: any[]): Promise<any> {
+    return this.ipc.invoke(iTwinChannel(channel), ...args);
+  }
+
+  public static send(channel: string, ...data: any[]) {
+    return this.ipc.send(iTwinChannel(channel), ...data);
   }
 
   /**
