@@ -20,9 +20,13 @@ export interface ElectronFrontendOptions {
 export class ElectronFrontend implements IpcSocketFrontend {
   private _api: ITwinElectronApi;
   /** @internal */
-  public receive(channelName: string, listener: IpcListener) {
+  public addListener(channelName: string, listener: IpcListener) {
     this._api.addListener(channelName, listener);
     return () => this._api.removeListener(channelName, listener);
+  }
+  /** @internal */
+  public removeListener(channelName: string, listener: IpcListener) {
+    this._api.removeListener(channelName, listener);
   }
   /** @internal */
   public send(channel: string, ...data: any[]) {
