@@ -194,25 +194,25 @@ export class StagePanelDef extends WidgetHost {
         const stableId = `uifw-sp-${StagePanelLocation[this._location]}-${index}`;
         const stableProps = getStableWidgetProps(widgetNode.props, stableId);
         const widgetDef = new WidgetDef(stableProps);
-        this.panelZones.start.addWidgetDef(widgetDef);
+        this.addWidgetDef(widgetDef);
       });
     }
   }
 
   /** Gets the list of Widgets. */
   public get widgetDefs(): ReadonlyArray<WidgetDef> {
-    const widgetDefs = [];
+    const widgetDefs = [...super.widgetDefs];
     for (const [, panelZone] of this.panelZones) {
       widgetDefs.push(...panelZone.widgetDefs);
     }
     return widgetDefs;
   }
 
-  /** Adds a WidgetDef to the list of Widgets.
-   * @param widgetDef  Definition of the Widget to add
+  /** Gets the list of Widgets (w/o StagePanelZone widgets).
+   * @internal
    */
-  public addWidgetDef(widgetDef: WidgetDef) {
-    this.panelZones.start.addWidgetDef(widgetDef);
+  public get panelWidgetDefs() {
+    return super.widgetDefs;
   }
 
   /** @internal */
