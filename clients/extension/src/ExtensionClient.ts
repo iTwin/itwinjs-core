@@ -7,7 +7,7 @@
  * @module ExtensionService
  */
 
-import { ClientRequestContext, ExtensionStatus } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Config, ExtensionStatus } from "@bentley/bentleyjs-core";
 import { IModelError } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, Client, getArrayBuffer, request, RequestOptions, ResponseError } from "@bentley/itwin-client";
 import { ExtensionFile } from "./ExtensionFile";
@@ -33,9 +33,10 @@ export class ExtensionClient extends Client {
 
   protected async setupOptionDefaults(options: RequestOptions): Promise<void> {
     await super.setupOptionDefaults(options);
+    const iTwinJsAccept = Config.App.get("imjs_itwinjs_api_accept", "application/vnd.bentley.itwinjs+json");
     deepAssign(options, {
       headers: {
-        accept: "application/vnd.bentley.itwinjs+json",
+        accept: iTwinJsAccept,
       },
     });
   }

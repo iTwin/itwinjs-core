@@ -154,10 +154,11 @@ export class ContextRegistryClient extends WsgClient {
 
   protected async setupOptionDefaults(options: RequestOptions): Promise<void> {
     await super.setupOptionDefaults(options);
+    const iTwinJsAccept = Config.App.get("imjs_itwinjs_api_accept", "application/vnd.bentley.itwinjs+json");
     deepAssign(options, {
       headers: {
         "content-type": "application/json",
-        "accept": "application/vnd.bentley.itwinjs+json",
+        "accept": iTwinJsAccept,
       },
     });
   }

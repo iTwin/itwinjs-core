@@ -6,7 +6,7 @@
 /** @packageDocumentation
  * @module Settings
  */
-import { BentleyError, BentleyStatus, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { BentleyError, BentleyStatus, ClientRequestContext, Config } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, Client, request, RequestOptions, Response } from "@bentley/itwin-client";
 import { SettingsAdmin, SettingsMapResult, SettingsResult, SettingsStatus } from "./SettingsAdmin";
 import * as deepAssign from "deep-assign";
@@ -39,9 +39,10 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
 
   protected async setupOptionDefaults(options: RequestOptions): Promise<void> {
     await super.setupOptionDefaults(options);
+    const iTwinJsAccept = Config.App.get("imjs_itwinjs_api_accept", "application/vnd.bentley.itwinjs+json");
     deepAssign(options, {
       headers: {
-        accept: "application/vnd.bentley.itwinjs+json",
+        accept: iTwinJsAccept,
       },
     });
   }

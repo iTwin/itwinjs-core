@@ -21,6 +21,7 @@ import { UserInfoHandler } from "./imodelhub/Users";
 import { VersionHandler } from "./imodelhub/Versions";
 import { PermissionHandler } from "./imodelhub/Permissions";
 import { CheckpointV2Handler } from "./imodelhub/CheckpointsV2";
+import { Config } from "@bentley/bentleyjs-core";
 
 /**
  * Base class that allows access to different iModel related Class handlers. Handlers should be accessed through an instance of this class, rather than constructed directly.
@@ -35,7 +36,8 @@ export abstract class IModelClient {
    */
   public constructor(baseHandler: IModelBaseHandler, fileHandler?: FileHandler, applicationVersion?: string) {
     this._handler = baseHandler;
-    this.use(addHeader("accept", () => "application/vnd.bentley.itwinjs+json"));
+    const iTwinJsAccept = Config.App.get("imjs_itwinjs_api_accept", "application/vnd.bentley.itwinjs+json");
+    this.use(addHeader("accept", () => iTwinJsAccept));
     if (applicationVersion)
       this.use(addApplicationVersion(applicationVersion));
     this._fileHandler = fileHandler || this._handler.getFileHandler();
