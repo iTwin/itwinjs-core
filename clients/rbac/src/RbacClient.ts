@@ -7,7 +7,8 @@
  */
 
 import { Config, GuidString } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, ECJsonTypeMap, request, Response, WsgClient, WsgInstance } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext, ECJsonTypeMap, request, RequestOptions, Response, WsgClient, WsgInstance } from "@bentley/itwin-client";
+import * as deepAssign from "deep-assign";
 
 /** RBAC permission
  * @internal
@@ -52,6 +53,15 @@ export class RbacClient extends WsgClient {
 
   public constructor() {
     super("v2.4");
+  }
+
+  protected async setupOptionDefaults(options: RequestOptions): Promise<void> {
+    await super.setupOptionDefaults(options);
+    deepAssign(options, {
+      headers: {
+        accept: "application/vnd.bentley.itwinjs+json",
+      },
+    });
   }
 
   /**

@@ -6,7 +6,7 @@
  * @module iModelHubClient
  */
 import { FileHandler } from "@bentley/itwin-client";
-import { addApplicationVersion, HttpRequestOptionsTransformer, IModelBaseHandler } from "./imodelhub/BaseHandler";
+import { addApplicationVersion, addHeader, HttpRequestOptionsTransformer, IModelBaseHandler } from "./imodelhub/BaseHandler";
 import { BriefcaseHandler } from "./imodelhub/Briefcases";
 import { ChangeSetHandler } from "./imodelhub/ChangeSets";
 import { CheckpointHandler } from "./imodelhub/Checkpoints";
@@ -35,6 +35,7 @@ export abstract class IModelClient {
    */
   public constructor(baseHandler: IModelBaseHandler, fileHandler?: FileHandler, applicationVersion?: string) {
     this._handler = baseHandler;
+    this.use(addHeader("accept", () => "application/vnd.bentley.itwinjs+json"));
     if (applicationVersion)
       this.use(addApplicationVersion(applicationVersion));
     this._fileHandler = fileHandler || this._handler.getFileHandler();

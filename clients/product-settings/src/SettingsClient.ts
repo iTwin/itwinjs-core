@@ -9,6 +9,7 @@
 import { BentleyError, BentleyStatus, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, Client, request, RequestOptions, Response } from "@bentley/itwin-client";
 import { SettingsAdmin, SettingsMapResult, SettingsResult, SettingsStatus } from "./SettingsAdmin";
+import * as deepAssign from "deep-assign";
 
 /** Client API for the iTwin Product Settings Service
  *
@@ -38,6 +39,11 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
 
   protected async setupOptionDefaults(options: RequestOptions): Promise<void> {
     await super.setupOptionDefaults(options);
+    deepAssign(options, {
+      headers: {
+        accept: "application/vnd.bentley.itwinjs+json",
+      },
+    });
   }
 
   /** Gets the URL of the service.

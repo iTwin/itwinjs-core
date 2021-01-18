@@ -12,6 +12,7 @@ import { IModelError } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, Client, getArrayBuffer, request, RequestOptions, ResponseError } from "@bentley/itwin-client";
 import { ExtensionFile } from "./ExtensionFile";
 import { ExtensionProps, extensionPropsFromJSON } from "./ExtensionProps";
+import * as deepAssign from "deep-assign";
 
 /**
  * Client for querying, publishing and deleting iModel.js Extensions.
@@ -28,6 +29,15 @@ export class ExtensionClient extends Client {
 
   protected getUrlSearchKey(): string {
     return "iModelExtensionService.URL";
+  }
+
+  protected async setupOptionDefaults(options: RequestOptions): Promise<void> {
+    await super.setupOptionDefaults(options);
+    deepAssign(options, {
+      headers: {
+        accept: "application/vnd.bentley.itwinjs+json",
+      },
+    });
   }
 
   public async getUrl(requestContext: ClientRequestContext): Promise<string> {
@@ -64,9 +74,9 @@ export class ExtensionClient extends Client {
   public async getExtensions(requestContext: AuthorizedClientRequestContext, contextId: string, extensionName?: string): Promise<ExtensionProps[]> {
     requestContext.enter();
     const options: RequestOptions = { method: "GET" };
+    options.headers = { authorization: requestContext.accessToken.toTokenString() };
     await this.setupOptionDefaults(options);
     requestContext.enter();
-    options.headers = { authorization: requestContext.accessToken.toTokenString() };
     try {
       const urlBase = await this.getUrl(requestContext);
       const response = await request(requestContext, `${urlBase}${contextId}/IModelExtension/${extensionName ?? ""}`, options);

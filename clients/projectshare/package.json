@@ -48,6 +48,7 @@
     "@bentley/itwin-client": "2.12.0-dev.6",
     "@bentley/oidc-signin-tool": "2.12.0-dev.6",
     "@types/chai": "^4.1.4",
+    "@types/deep-assign": "^0.1.0",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
     "chai": "^4.1.2",
@@ -58,6 +59,9 @@
     "source-map-loader": "^1.0.0",
     "typescript": "~3.7.4",
     "webpack": "4.42.0"
+  },
+  "dependencies": {
+    "deep-assign": "^2.0.0"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"

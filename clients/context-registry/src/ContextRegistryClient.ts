@@ -154,7 +154,12 @@ export class ContextRegistryClient extends WsgClient {
 
   protected async setupOptionDefaults(options: RequestOptions): Promise<void> {
     await super.setupOptionDefaults(options);
-    deepAssign(options, { headers: { "content-type": "application/json" } });
+    deepAssign(options, {
+      headers: {
+        "content-type": "application/json",
+        "accept": "application/vnd.bentley.itwinjs+json",
+      },
+    });
   }
 
   /** Gets theRelyingPartyUrl for the service.

@@ -9,6 +9,7 @@ import { BentleyError, BentleyStatus, Config, GuidString, Logger } from "@bentle
 import {
   AuthorizedClientRequestContext, ECJsonTypeMap, ITwinClientLoggerCategory, request, RequestOptions, WsgClient, WsgInstance, WsgQuery,
 } from "@bentley/itwin-client";
+import * as deepAssign from "deep-assign";
 
 const loggerCategory = ITwinClientLoggerCategory.Clients;
 
@@ -258,6 +259,15 @@ export class ProjectShareClient extends WsgClient {
    */
   public constructor() {
     super("v2.4");
+  }
+
+  protected async setupOptionDefaults(options: RequestOptions): Promise<void> {
+    await super.setupOptionDefaults(options);
+    deepAssign(options, {
+      headers: {
+        accept: "application/vnd.bentley.itwinjs+json",
+      },
+    });
   }
 
   protected getRelyingPartyUrl(): string {
