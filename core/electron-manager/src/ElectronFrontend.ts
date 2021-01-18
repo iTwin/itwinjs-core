@@ -39,7 +39,7 @@ export class ElectronFrontend implements IpcSocketFrontend {
   private constructor(opts?: ElectronFrontendOptions) {
     // use the methods on window.itwinjs exposed by ElectronPreload.ts, or ipcRenderer directly if running with nodeIntegration=true (**only** for tests).
     // Note that `require("electron")` doesn't work with nodeIntegration=false - that's what it stops
-    this._api = (window as any).itwinjs ?? require("electron").ipcRenderer;
+    this._api = (window as any).itwinjs ?? require("electron").ipcRenderer; // eslint-disable-line @typescript-eslint/no-var-requires
     FrontendIpc.initialize(this);
     ElectronRpcManager.initializeFrontend(this, opts?.rpcInterfaces);
   }
@@ -56,5 +56,5 @@ export class ElectronFrontend implements IpcSocketFrontend {
       throw new Error("Not running under Electron");
 
     return new ElectronFrontend(opts);
-  };
-};
+  }
+}

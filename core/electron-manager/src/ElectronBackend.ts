@@ -7,11 +7,12 @@
 // be imported by apps that sometimes use Electron and sometimes not. Call to `ElectronBackend.initialize`
 // will do the necessary `require("electron")`
 import { BrowserWindow, BrowserWindowConstructorOptions, IpcMain } from "electron";
-
 import * as fs from "fs";
 import * as path from "path";
 import { BeDuration, isElectronMain } from "@bentley/bentleyjs-core";
-import { BackendIpc, IpcHandler, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
+import {
+  BackendIpc, IpcHandler, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition,
+} from "@bentley/imodeljs-common";
 import { DesktopAuthorizationClientIpc } from "./DesktopAuthorizationClientIpc";
 import { ElectronRpcConfiguration, ElectronRpcManager } from "./ElectronRpcManager";
 
@@ -112,8 +113,8 @@ export class ElectronBackend implements IpcSocketBackend {
   public get mainWindow() { return this._mainWindow; }
 
   private constructor(opts?: ElectronBackendOptions) {
-    this._ipcMain = require("electron").ipcMain;
-    this._app = require("electron").app;
+    this._ipcMain = require("electron").ipcMain; // eslint-disable-line @typescript-eslint/no-var-requires
+    this._app = require("electron").app; // eslint-disable-line @typescript-eslint/no-var-requires
     this._developmentServer = opts?.developmentServer ?? false;
     const frontendPort = opts?.frontendPort ?? 3000;
     this.webResourcesPath = opts?.webResourcesPath ?? "";
@@ -160,7 +161,7 @@ export class ElectronBackend implements IpcSocketBackend {
 
     if (!this._developmentServer) {
       // handle any "electron://" requests and redirect them to "file://" URLs
-      require("electron").protocol.registerFileProtocol("electron", (request, callback) => callback(this.parseElectronUrl(request.url)));
+      require("electron").protocol.registerFileProtocol("electron", (request, callback) => callback(this.parseElectronUrl(request.url))); // eslint-disable-line @typescript-eslint/no-var-requires
     }
 
     this._openWindow(windowOptions);
@@ -206,5 +207,5 @@ export class ElectronBackend implements IpcSocketBackend {
       electron.protocol.registerSchemesAsPrivileged([{ scheme: "electron", privileges: { standard: true, secure: true } }]);
 
     return new ElectronBackend(opts);
-  };
+  }
 }

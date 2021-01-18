@@ -2,12 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-// __PUBLISH_EXTRACT_START__ RpcInterface.implementation
-import { IModelRpcProps, RpcInterface, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import { Id64String } from "@bentley/bentleyjs-core";
+// __PUBLISH_EXTRACT_END__
+// __PUBLISH_EXTRACT_START__ RpcInterface.initializeBackendForElectron
+import { ElectronBackend } from "@bentley/electron-manager/lib/ElectronBackend";
+// __PUBLISH_EXTRACT_END__
+/* eslint-disable no-duplicate-imports */
+// Disable this because it is intentionally separated.
+import { Angle, AngleProps, Point3d, XYZProps } from "@bentley/geometry-core";
 import { IModelDb } from "@bentley/imodeljs-backend";
+// __PUBLISH_EXTRACT_START__ RpcInterface.implementation
+import { BentleyCloudRpcManager, BentleyCloudRpcParams, IModelRpcProps, RpcInterface, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
+import { RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface } from "../common/RobotWorldRpcInterface";
 import { RobotWorldEngine } from "./RobotWorldEngine";
-import { RobotWorldReadRpcInterface } from "../common/RobotWorldRpcInterface";
 
 // Implement RobotWorldReadRpcInterface
 export class RobotWorldReadRpcImpl extends RpcInterface implements RobotWorldReadRpcInterface {
@@ -26,12 +33,6 @@ export class RobotWorldReadRpcImpl extends RpcInterface implements RobotWorldRea
     return RobotWorldEngine.queryObstaclesHitByRobot(iModelDb, rid);
   }
 }
-// __PUBLISH_EXTRACT_END__
-
-/* eslint-disable no-duplicate-imports */ // Disable this because it is intentionally separated.
-import { Angle, AngleProps, Point3d, XYZProps } from "@bentley/geometry-core";
-import { RobotWorldWriteRpcInterface } from "../common/RobotWorldRpcInterface";
-
 // Implement RobotWorldWriteRpcInterface
 export class RobotWorldWriteRpcImpl extends RpcInterface implements RobotWorldWriteRpcInterface {
   public async insertRobot(tokenProps: IModelRpcProps, modelId: Id64String, name: string, location: XYZProps): Promise<Id64String> {
@@ -47,20 +48,12 @@ export class RobotWorldWriteRpcImpl extends RpcInterface implements RobotWorldWr
   }
 }
 
-// __PUBLISH_EXTRACT_START__ RpcInterface.initializeForCloud
-import { BentleyCloudRpcManager, BentleyCloudRpcParams } from "@bentley/imodeljs-common";
-
 export function initializeRpcImplBentleyCloud(interfaces: RpcInterfaceDefinition[]) {
   const cloudParams: BentleyCloudRpcParams = { info: { title: "RobotWorldEngine", version: "v1.0" } };
   BentleyCloudRpcManager.initializeImpl(cloudParams, interfaces);
 }
-// __PUBLISH_EXTRACT_END__
-
-// __PUBLISH_EXTRACT_START__ RpcInterface.initializeBackendForElectron
-import { ElectronBackend } from "@bentley/electron-manager/lib/ElectronBackend";
-
 export async function initializeForElectron(rpcInterfaces: RpcInterfaceDefinition[]) {
   ElectronBackend.initialize({ rpcInterfaces });
-};
+}
 
 // __PUBLISH_EXTRACT_END__

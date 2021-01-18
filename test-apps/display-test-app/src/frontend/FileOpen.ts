@@ -24,7 +24,7 @@ export class DtaIpc {
     });
 
     return val.canceled ? undefined : val.filePaths[0];
-  };
+  }
 }
 
 export async function selectFileName(selector: BrowserFileSelector | undefined): Promise<string | undefined> {
