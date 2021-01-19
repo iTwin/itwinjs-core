@@ -7,7 +7,8 @@
 import * as React from "react";
 import { Dialog, DialogButtonType, Input, Radio, Select } from "@bentley/ui-core";
 import { ModalDialogManager } from "@bentley/ui-framework";
-import { MapLayersUiItemsProvider, MapTypesOptions } from "../MapLayersUiItemsProvider";
+import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
+import { MapTypesOptions } from "../Interfaces";
 import { IModelApp, MapLayerSettingsService, MapLayerSource, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 
 import "./MapUrlDialog.scss";

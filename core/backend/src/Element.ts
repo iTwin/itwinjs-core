@@ -49,7 +49,7 @@ export class Element extends Entity implements ElementProps {
   /** The ModelId of the [Model]($docs/bis/intro/model-fundamentals.md) containing this element */
   public readonly model: Id64String;
   /** The [Code]($docs/bis/intro/codes.md) for this element */
-  public readonly code: Code;
+  public code: Code;
   /** The parent element, if present, of this element. */
   public parent?: RelatedElement;
   /** A [FederationGuid]($docs/bis/intro/element-fundamentals.md#federationguid) assigned to this element by some other federated database */
@@ -189,7 +189,7 @@ export class Element extends Entity implements ElementProps {
   public toJSON(): ElementProps {
     const val = super.toJSON() as ElementProps;
 
-    if (Id64.isValid(this.code.spec))
+    if (Code.isValid(this.code))
       val.code = this.code;
 
     val.model = this.model;
