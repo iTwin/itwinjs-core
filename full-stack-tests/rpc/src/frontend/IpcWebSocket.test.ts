@@ -19,7 +19,7 @@ if (!isElectronRenderer) {
 
     it("should support send/receive", async () => {
       return new Promise(async (resolve) => {
-        socket.receive("test", (_evt: any, ...arg: any[]) => {
+        socket.addListener("test", (_evt: Event, ...arg: any[]) => {
           assert.equal(arg[0], 4);
           assert.equal(arg[1], 5);
           assert.equal(arg[2], 6);

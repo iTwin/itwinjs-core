@@ -20,9 +20,13 @@ export interface ElectronFrontendOptions {
 export class ElectronFrontend implements IpcSocketFrontend {
   private _api: ITwinElectronApi;
   /** @internal */
-  public receive(channelName: string, listener: IpcListener) {
+  public addListener(channelName: string, listener: IpcListener) {
     this._api.addListener(channelName, listener);
     return () => this._api.removeListener(channelName, listener);
+  }
+  /** @internal */
+  public removeListener(channelName: string, listener: IpcListener) {
+    this._api.removeListener(channelName, listener);
   }
   /** @internal */
   public send(channel: string, ...data: any[]) {
@@ -53,4 +57,11 @@ export class ElectronFrontend implements IpcSocketFrontend {
 
     return new ElectronFrontend(opts);
   };
+
+  public static callDialog<T extends keyof Electron.Dialog>(methodName: T, ...args: Parameters<Electron.Dialog[T]>): ReturnType<Electron.Dialog[T]> {
+    return FrontendIpc.callBackend("electron-safe", "callElectron", "dialog", methodName, ...args) as ReturnType<Electron.Dialog[T]>;
+  }
+  public static callShell<T extends keyof Electron.Shell>(methodName: T, ...args: Parameters<Electron.Shell[T]>): ReturnType<Electron.Shell[T]> {
+    return FrontendIpc.callBackend("electron-safe", "callElectron", "shell", methodName, ...args) as ReturnType<Electron.Shell[T]>;
+  }
 };

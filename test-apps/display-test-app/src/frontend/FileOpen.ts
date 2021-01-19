@@ -4,8 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { isElectronRenderer } from "@bentley/bentleyjs-core";
+import { ElectronFrontend } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { FrontendIpc } from "@bentley/imodeljs-common";
-import { DtaIpcInterface, DtaIpcKey } from "../common/DtaIpcInterface";
+import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
 
 export interface BrowserFileSelector {
   input: HTMLInputElement;
@@ -14,11 +15,11 @@ export interface BrowserFileSelector {
 
 export class DtaIpc {
   public static callBackend<T extends keyof DtaIpcInterface>(methodName: T, ...args: Parameters<DtaIpcInterface[T]>): ReturnType<DtaIpcInterface[T]> {
-    return FrontendIpc.callBackend(DtaIpcKey.Channel, methodName, ...args) as ReturnType<DtaIpcInterface[T]>;
+    return FrontendIpc.callBackend(dtaChannel, methodName, ...args) as ReturnType<DtaIpcInterface[T]>;
   }
 
   public static async selectFileElectron() {
-    const val = await this.callBackend("openFile", {
+    const val = await ElectronFrontend.callDialog("showOpenDialog", {
       properties: ["openFile"],
       filters: [{ name: "iModels", extensions: ["ibim", "bim"] }],
     });

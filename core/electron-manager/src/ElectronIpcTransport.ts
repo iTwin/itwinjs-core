@@ -46,7 +46,7 @@ export abstract class ElectronIpcTransport<TIn extends IpcTransportMessage = Ipc
   protected setupPush() { }
 
   private _setupDataChannel() {
-    this.protocol.ipcSocket.receive(DATA_CHANNEL, async (evt: any, chunk: PartialPayload) => {
+    this.protocol.ipcSocket.addListener(DATA_CHANNEL, async (evt: any, chunk: PartialPayload) => {
       let pending = this._partials.get(chunk.id);
       if (!pending) {
         pending = [];
@@ -69,7 +69,7 @@ export abstract class ElectronIpcTransport<TIn extends IpcTransportMessage = Ipc
   }
 
   private _setupObjectsChannel() {
-    this.protocol.ipcSocket.receive(OBJECTS_CHANNEL, async (evt: any, message: TIn) => {
+    this.protocol.ipcSocket.addListener(OBJECTS_CHANNEL, async (evt: any, message: TIn) => {
       const pending = this._partials.get(message.id);
       if (pending && !Array.isArray(pending)) {
         throw new IModelError(BentleyStatus.ERROR, `Message already received for id "${message.id}".`);
@@ -228,8 +228,8 @@ export function initializeIpc(protocol: ElectronRpcProtocol) {
     } else {
       transport = new BackendIpcTransport(protocol);
     }
-  } catch (_err) {
-    throw new IModelError(BentleyStatus.ERROR, `cannot load electron`);
+  } catch (err) {
+    throw new IModelError(BentleyStatus.ERROR, `cannot load electron: ${err}`);
   }
 
   return transport;

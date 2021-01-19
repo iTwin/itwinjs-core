@@ -3,15 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-// Note: only import types! Does not create a `require("electron")` in JavaScript. That's important so this file can
+// Note: only import types! Does not create a `require("electron")` in JavaScript after transpiling. That's important so this file can
 // be imported by apps that sometimes use Electron and sometimes not. Call to `ElectronBackend.initialize`
 // will do the necessary `require("electron")`
-import { BrowserWindow, BrowserWindowConstructorOptions, IpcMain } from "electron";
+import { BrowserWindow, BrowserWindowConstructorOptions } from "electron";
 
 import * as fs from "fs";
 import * as path from "path";
-import { BeDuration, isElectronMain } from "@bentley/bentleyjs-core";
-import { BackendIpc, IpcHandler, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
+import { BeDuration, IModelStatus, isElectronMain } from "@bentley/bentleyjs-core";
+import { BackendIpc, IModelError, IpcHandler, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import { DesktopAuthorizationClientIpc } from "./DesktopAuthorizationClientIpc";
 import { ElectronRpcConfiguration, ElectronRpcManager } from "./ElectronRpcManager";
 
@@ -43,18 +43,20 @@ export interface ElectronBackendOptions {
  * @beta
  */
 export class ElectronBackend implements IpcSocketBackend {
+  private static _instance: ElectronBackend;
+  public static get instance() { return this._instance; }
   private _mainWindow?: BrowserWindow;
   private _developmentServer: boolean;
-  private _ipcMain: IpcMain;
-  private _app: Electron.App;
+  private _electron: typeof Electron;
   protected readonly _electronFrontend = "electron://frontend/";
   public readonly webResourcesPath: string;
   public readonly appIconPath: string;
   public readonly frontendURL: string;
   public readonly rpcConfig: RpcConfiguration;
 
-  public get ipcMain() { return this._ipcMain; }
-  public get app() { return this._app; }
+  public get ipcMain() { return this._electron.ipcMain; }
+  public get app() { return this._electron.app; }
+  public get electron() { return this._electron; }
   /**
    * Converts an "electron://frontend/" URL to an absolute file path.
    *
@@ -105,15 +107,14 @@ export class ElectronBackend implements IpcSocketBackend {
     this._mainWindow.loadURL(this.frontendURL); // eslint-disable-line @typescript-eslint/no-floating-promises
 
     // Setup handlers for IPC calls to support Authorization
-    DesktopAuthorizationClientIpc.initializeIpc(this.mainWindow!);
+    DesktopAuthorizationClientIpc.initializeIpc();
   }
 
   /** The "main" BrowserWindow for this application. */
   public get mainWindow() { return this._mainWindow; }
 
   private constructor(opts?: ElectronBackendOptions) {
-    this._ipcMain = require("electron").ipcMain;
-    this._app = require("electron").app;
+    this._electron = require("electron");
     this._developmentServer = opts?.developmentServer ?? false;
     const frontendPort = opts?.frontendPort ?? 3000;
     this.webResourcesPath = opts?.webResourcesPath ?? "";
@@ -167,9 +168,13 @@ export class ElectronBackend implements IpcSocketBackend {
   }
 
   /** @internal */
-  public receive(channel: string, listener: IpcListener): RemoveFunction {
-    this._ipcMain.addListener(channel, listener);
-    return () => this._ipcMain.removeListener(channel, listener);
+  public addListener(channel: string, listener: IpcListener): RemoveFunction {
+    this.ipcMain.addListener(channel, listener);
+    return () => this.ipcMain.removeListener(channel, listener);
+  }
+  /** @internal */
+  public removeListener(channel: string, listener: IpcListener) {
+    this.ipcMain.removeListener(channel, listener);
   }
   /** @internal */
   public send(channel: string, ...args: any[]): void {
@@ -178,9 +183,9 @@ export class ElectronBackend implements IpcSocketBackend {
   }
   /** @internal */
   public handle(channel: string, listener: (evt: any, ...args: any[]) => Promise<any>): RemoveFunction {
-    this._ipcMain.removeHandler(channel); // make sure there's not already a handler registered
-    this._ipcMain.handle(channel, listener);
-    return () => this._ipcMain.removeHandler(channel);
+    this.ipcMain.removeHandler(channel); // make sure there's not already a handler registered
+    this.ipcMain.handle(channel, listener);
+    return () => this.ipcMain.removeHandler(channel);
   }
 
   /**
@@ -190,17 +195,33 @@ export class ElectronBackend implements IpcSocketBackend {
    * @param opts Options that control aspects of your backend.
    * @returns an instance of [[ElectronBackend]]. When you are ready to show your main window, call `openMainWindow` on it.
    * @note This method must (only) be called from the backend of an Electron app (i.e. when [isElectronMain]($bentley) is `true`). */
-  public static initialize(opts?: ElectronBackendOptions) {
+  public static initialize(opts?: ElectronBackendOptions): ElectronBackend {
     if (!isElectronMain)
       throw new Error("Not running under Electron");
 
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const electron = require("electron");
-    electron.app.allowRendererProcessReuse = true; // see https://www.electronjs.org/docs/api/app#appallowrendererprocessreuse
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    if (!electron.app.isReady)
-      electron.protocol.registerSchemesAsPrivileged([{ scheme: "electron", privileges: { standard: true, secure: true } }]);
+    if (this._instance)
+      return this._instance;
 
-    return new ElectronBackend(opts);
+    this._instance = new ElectronBackend(opts);
+    ElectronBackendImpl.register();
+
+    const app = this.instance.app;
+    app.allowRendererProcessReuse = true; // see https://www.electronjs.org/docs/api/app#appallowrendererprocessreuse
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    if (!app.isReady)
+      this.instance.electron.protocol.registerSchemesAsPrivileged([{ scheme: "electron", privileges: { standard: true, secure: true } }]);
+
+    return this._instance;
   };
+}
+
+class ElectronBackendImpl extends IpcHandler {
+  public get channelName() { return "electron-safe"; };
+  public async callElectron(member: string, method: string, ...args: any) {
+    const func = (ElectronBackend.instance.electron as any)[member][method];
+    if (typeof func !== "function")
+      throw new IModelError(IModelStatus.FunctionNotFound, `Method ${method} not found electron.${member}`);
+
+    return func.call(...args);
+  }
 }

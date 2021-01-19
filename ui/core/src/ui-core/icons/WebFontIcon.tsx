@@ -23,7 +23,7 @@ export interface WebFontIconProps extends CommonProps {
   /** Text that will be shown when hovered on the icon. */
   title?: string;
   /** Size of the icon */
-  iconSize?: "small" | "medium" | "large" | "x-large";
+  iconSize?: "x-small" | "small" | "medium" | "large" | "x-large";
   /** Class name of icon used for custom font-family icons */
   iconClassName?: string;
 }
