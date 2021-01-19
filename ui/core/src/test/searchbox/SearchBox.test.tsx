@@ -50,6 +50,21 @@ describe("SearchBox", () => {
       }
     });
 
+    it("should ignore if value specified is not different", async () => {
+      const spyMethod = sinon.spy();
+      const component = render(<SearchBox onValueChanged={spyMethod} valueChangedDelay={100} />);
+      const inputNode = component.container.querySelector("input") as HTMLElement;
+
+      expect(inputNode).not.to.be.null;
+      if (inputNode) {
+        const testValue = "Test";
+        fireEvent.change(inputNode, { target: { value: testValue } });
+        fireEvent.change(inputNode, { target: { value: "" } });
+        await fakeTimers.tickAsync(100);
+        expect(spyMethod.called).to.be.false;
+      }
+    });
+
     it("should honor valueChangedDelay", async () => {
       const spyMethod = sinon.spy();
       const component = render(<SearchBox onValueChanged={spyMethod} valueChangedDelay={100} />);
