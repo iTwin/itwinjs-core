@@ -281,18 +281,28 @@ export function addMissingWidgets(frontstageDef: FrontstageDef, initialState: Ni
   let state = initialState;
 
   state = appendWidgets(state, determineNewWidgets(frontstageDef.centerLeft?.widgetDefs, initialState), "left", 0);
+  state = appendWidgets(state, determineNewWidgets(frontstageDef.leftPanel?.panelZones.start.widgetDefs, initialState), "left", 0);
   state = appendWidgets(state, determineNewWidgets(frontstageDef.bottomLeft?.widgetDefs, initialState), "left", 1);
-  state = appendWidgets(state, determineNewWidgets(frontstageDef.leftPanel?.widgetDefs, initialState), "left", 2);
+  state = appendWidgets(state, determineNewWidgets(frontstageDef.leftPanel?.panelZones.middle.widgetDefs, initialState), "left", 1);
+  state = appendWidgets(state, determineNewWidgets(frontstageDef.leftPanel?.panelWidgetDefs, initialState), "left", 2);
+  state = appendWidgets(state, determineNewWidgets(frontstageDef.leftPanel?.panelZones.end.widgetDefs, initialState), "left", 2);
 
   state = appendWidgets(state, determineNewWidgets(frontstageDef.centerRight?.widgetDefs, initialState), "right", 0);
+  state = appendWidgets(state, determineNewWidgets(frontstageDef.rightPanel?.panelZones.start.widgetDefs, initialState), "right", 0);
   state = appendWidgets(state, determineNewWidgets(frontstageDef.bottomRight?.widgetDefs, initialState), "right", 1);
-  state = appendWidgets(state, determineNewWidgets(frontstageDef.rightPanel?.widgetDefs, initialState), "right", 2);
+  state = appendWidgets(state, determineNewWidgets(frontstageDef.rightPanel?.panelZones.middle.widgetDefs, initialState), "right", 1);
+  state = appendWidgets(state, determineNewWidgets(frontstageDef.rightPanel?.panelWidgetDefs, initialState), "right", 2);
+  state = appendWidgets(state, determineNewWidgets(frontstageDef.rightPanel?.panelZones.end.widgetDefs, initialState), "right", 2);
 
-  state = appendWidgets(state, determineNewWidgets(frontstageDef.topPanel?.widgetDefs, initialState), "top", 0);
-  state = appendWidgets(state, determineNewWidgets(frontstageDef.topMostPanel?.widgetDefs, initialState), "top", 1); // eslint-disable-line deprecation/deprecation
+  state = appendWidgets(state, determineNewWidgets(frontstageDef.topPanel?.panelWidgetDefs, initialState), "top", 0);
+  state = appendWidgets(state, determineNewWidgets(frontstageDef.topPanel?.panelZones.start.widgetDefs, initialState), "top", 0);
+  state = appendWidgets(state, determineNewWidgets(frontstageDef.topMostPanel?.panelWidgetDefs, initialState), "top", 1); // eslint-disable-line deprecation/deprecation
+  state = appendWidgets(state, determineNewWidgets(frontstageDef.topPanel?.panelZones.end.widgetDefs, initialState), "top", 1);
 
-  state = appendWidgets(state, determineNewWidgets(frontstageDef.bottomPanel?.widgetDefs, initialState), "bottom", 0);
-  state = appendWidgets(state, determineNewWidgets(frontstageDef.bottomMostPanel?.widgetDefs, initialState), "bottom", 1); // eslint-disable-line deprecation/deprecation
+  state = appendWidgets(state, determineNewWidgets(frontstageDef.bottomPanel?.panelWidgetDefs, initialState), "bottom", 0);
+  state = appendWidgets(state, determineNewWidgets(frontstageDef.bottomPanel?.panelZones.start.widgetDefs, initialState), "bottom", 0);
+  state = appendWidgets(state, determineNewWidgets(frontstageDef.bottomMostPanel?.panelWidgetDefs, initialState), "bottom", 1); // eslint-disable-line deprecation/deprecation
+  state = appendWidgets(state, determineNewWidgets(frontstageDef.bottomPanel?.panelZones.end.widgetDefs, initialState), "bottom", 1);
 
   return state;
 }

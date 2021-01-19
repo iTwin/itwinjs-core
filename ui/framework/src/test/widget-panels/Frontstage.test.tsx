@@ -1603,6 +1603,214 @@ describe("addMissingWidgets", () => {
     const newState = addMissingWidgets(frontstageDef, state);
     should().exist(newState.tabs.w1);
   });
+
+  it("should add leftPanel widgets", () => {
+    let state = createNineZoneState();
+    state = addPanelWidget(state, "left", "start", ["start1"]);
+    state = addPanelWidget(state, "left", "middle", ["middle1"]);
+    state = addPanelWidget(state, "left", "end", ["end1"]);
+    state = addTab(state, "start1");
+    state = addTab(state, "middle1");
+    state = addTab(state, "end1");
+    const frontstageDef = new FrontstageDef();
+    const panelDef = new StagePanelDef();
+    panelDef.initializeFromProps({
+      resizable: true,
+      widgets: [
+        <Widget
+          key="w1"
+          id="w1"
+        />,
+      ],
+      panelZones: {
+        start: {
+          widgets: [
+            <Widget
+              key="ws1"
+              id="ws1"
+            />,
+          ],
+        },
+        middle: {
+          widgets: [
+            <Widget
+              key="wm1"
+              id="wm1"
+            />,
+          ],
+        },
+        end: {
+          widgets: [
+            <Widget
+              key="we1"
+              id="we1"
+            />,
+          ],
+        },
+      },
+    }, StagePanelLocation.Left);
+    sinon.stub(frontstageDef, "leftPanel").get(() => panelDef);
+    const newState = addMissingWidgets(frontstageDef, state);
+    newState.widgets.start.tabs.should.eql(["start1", "ws1"]);
+    newState.widgets.middle.tabs.should.eql(["middle1", "wm1"]);
+    newState.widgets.end.tabs.should.eql(["end1", "w1", "we1"]);
+  });
+
+  it("should add rightPanel widgets", () => {
+    let state = createNineZoneState();
+    state = addPanelWidget(state, "right", "start", ["start1"]);
+    state = addPanelWidget(state, "right", "middle", ["middle1"]);
+    state = addPanelWidget(state, "right", "end", ["end1"]);
+    state = addTab(state, "start1");
+    state = addTab(state, "middle1");
+    state = addTab(state, "end1");
+    const frontstageDef = new FrontstageDef();
+    const panelDef = new StagePanelDef();
+    panelDef.initializeFromProps({
+      resizable: true,
+      widgets: [
+        <Widget
+          key="w1"
+          id="w1"
+        />,
+      ],
+      panelZones: {
+        start: {
+          widgets: [
+            <Widget
+              key="ws1"
+              id="ws1"
+            />,
+          ],
+        },
+        middle: {
+          widgets: [
+            <Widget
+              key="wm1"
+              id="wm1"
+            />,
+          ],
+        },
+        end: {
+          widgets: [
+            <Widget
+              key="we1"
+              id="we1"
+            />,
+          ],
+        },
+      },
+    }, StagePanelLocation.Right);
+    sinon.stub(frontstageDef, "rightPanel").get(() => panelDef);
+    const newState = addMissingWidgets(frontstageDef, state);
+    newState.widgets.start.tabs.should.eql(["start1", "ws1"]);
+    newState.widgets.middle.tabs.should.eql(["middle1", "wm1"]);
+    newState.widgets.end.tabs.should.eql(["end1", "w1", "we1"]);
+  });
+
+  it("should add topPanel widgets", () => {
+    let state = createNineZoneState();
+    state = addPanelWidget(state, "top", "start", ["start1"]);
+    state = addPanelWidget(state, "top", "end", ["end1"]);
+    state = addTab(state, "start1");
+    state = addTab(state, "end1");
+    const frontstageDef = new FrontstageDef();
+    const panelDef = new StagePanelDef();
+    panelDef.initializeFromProps({
+      resizable: true,
+      widgets: [
+        <Widget
+          key="w1"
+          id="w1"
+        />,
+      ],
+      panelZones: {
+        start: {
+          widgets: [
+            <Widget
+              key="ws1"
+              id="ws1"
+            />,
+          ],
+        },
+        end: {
+          widgets: [
+            <Widget
+              key="we1"
+              id="we1"
+            />,
+          ],
+        },
+      },
+    }, StagePanelLocation.Top);
+    const panelDef1 = new StagePanelDef();
+    panelDef1.initializeFromProps({
+      resizable: true,
+      widgets: [
+        <Widget
+          key="w2"
+          id="w2"
+        />,
+      ],
+    }, StagePanelLocation.TopMost);
+    sinon.stub(frontstageDef, "topPanel").get(() => panelDef);
+    sinon.stub(frontstageDef, "topMostPanel").get(() => panelDef1);
+    const newState = addMissingWidgets(frontstageDef, state);
+    newState.widgets.start.tabs.should.eql(["start1", "w1", "ws1"]);
+    newState.widgets.end.tabs.should.eql(["end1", "w2", "we1"]);
+  });
+
+  it("should add bottomPanel widgets", () => {
+    let state = createNineZoneState();
+    state = addPanelWidget(state, "bottom", "start", ["start1"]);
+    state = addPanelWidget(state, "bottom", "end", ["end1"]);
+    state = addTab(state, "start1");
+    state = addTab(state, "end1");
+    const frontstageDef = new FrontstageDef();
+    const panelDef = new StagePanelDef();
+    panelDef.initializeFromProps({
+      resizable: true,
+      widgets: [
+        <Widget
+          key="w1"
+          id="w1"
+        />,
+      ],
+      panelZones: {
+        start: {
+          widgets: [
+            <Widget
+              key="ws1"
+              id="ws1"
+            />,
+          ],
+        },
+        end: {
+          widgets: [
+            <Widget
+              key="we1"
+              id="we1"
+            />,
+          ],
+        },
+      },
+    }, StagePanelLocation.Bottom);
+    const panelDef1 = new StagePanelDef();
+    panelDef1.initializeFromProps({
+      resizable: true,
+      widgets: [
+        <Widget
+          key="w2"
+          id="w2"
+        />,
+      ],
+    }, StagePanelLocation.BottomMost);
+    sinon.stub(frontstageDef, "bottomPanel").get(() => panelDef);
+    sinon.stub(frontstageDef, "bottomMostPanel").get(() => panelDef1);
+    const newState = addMissingWidgets(frontstageDef, state);
+    newState.widgets.start.tabs.should.eql(["start1", "w1", "ws1"]);
+    newState.widgets.end.tabs.should.eql(["end1", "w2", "we1"]);
+  });
 });
 
 describe("dynamic widgets", () => {
