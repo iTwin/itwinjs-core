@@ -1,6 +1,11 @@
 # Change Log - @bentley/analytical-backend
 
-This log was last generated on Thu, 14 Jan 2021 21:04:31 GMT and should not be manually modified.
+This log was last generated on Tue, 19 Jan 2021 21:14:17 GMT and should not be manually modified.
+
+## 2.10.6
+Tue, 19 Jan 2021 21:14:17 GMT
+
+_Version update only_
 
 ## 2.10.5
 Thu, 14 Jan 2021 21:04:31 GMT
