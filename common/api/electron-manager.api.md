@@ -16,6 +16,8 @@ import { RpcInterfaceDefinition } from '@bentley/imodeljs-common';
 
 // @beta
 export class ElectronBackend implements IpcSocketBackend {
+    // @internal (undocumented)
+    addListener(channel: string, listener: IpcListener): RemoveFunction;
     // (undocumented)
     get app(): Electron.App;
     // (undocumented)
@@ -32,7 +34,7 @@ export class ElectronBackend implements IpcSocketBackend {
     get mainWindow(): BrowserWindow | undefined;
     openMainWindow(windowOptions?: BrowserWindowConstructorOptions): Promise<void>;
     // @internal (undocumented)
-    receive(channel: string, listener: IpcListener): RemoveFunction;
+    removeListener(channel: string, listener: IpcListener): void;
     // (undocumented)
     readonly rpcConfig: RpcConfiguration;
     // @internal (undocumented)

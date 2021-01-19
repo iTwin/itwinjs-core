@@ -275,10 +275,9 @@ internal;INSTANCE: unique symbol
 beta;InternetConnectivityStatus
 beta;Interpolation:
 beta;InterpolationFunction = (v: any, k: number) => number
-beta;class IpcHandler 
-beta;IpcInterface
+beta;class IpcHandler
 internal;IpcInvokeReturn =
-beta;IpcListener = (evt: any, ...arg: any[]) => void
+beta;IpcListener = (evt: Event, ...args: any[]) => void
 beta;IpcSocket
 beta;IpcSocketBackend 
 beta;IpcSocketFrontend 
@@ -338,8 +337,8 @@ public;ModelProps
 public;ModelQueryParams 
 public;ModelSelectorProps 
 public;MonochromeMode
-internal;NativeAppIpc 
-internal;NativeAppIpcKey
+internal;nativeAppChannel = "nativeApp"
+internal;NativeAppIpc
 public;NavigationBindingValue
 public;NavigationValue
 public;nextHighestPowerOfTwo(num: number): number
