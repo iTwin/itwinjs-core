@@ -11947,6 +11947,8 @@ export abstract class ViewState3d extends ViewState {
     getExtents(): Vector3d;
     // (undocumented)
     getEyeCartographicHeight(): number | undefined;
+    // @internal (undocumented)
+    getEyeOrOrthographicViewPoint(): Point3d;
     getEyePoint(): Point3d;
     getFocusDistance(): number;
     getFrontDistance(): number;
