@@ -479,18 +479,19 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
       throw new Error("Must initialize IModelId before using");
     const settingsClient = new ConnectSettingsClient("2661");
     // Retrieve BriefcaseId from the Product Settings Service
-    let retrievedBriefcaseId = -1;
-    let result = await settingsClient.getSetting(this._requestContext, "DocumentMapping", "Documents", true, this._serverArgs.contextId, this._serverArgs.iModelId );
-    if ( result.status === SettingsStatus.SettingNotFound || result.setting.briefcaseId === undefined) {
-      retrievedBriefcaseId = -1;
-    } else {
-      retrievedBriefcaseId = result.setting.briefcaseId;
-    }
+    // let retrievedBriefcaseId = -1;
+    // let result = await settingsClient.getSetting(this._requestContext, "DocumentMapping", "Documents", true, this._serverArgs.contextId, this._serverArgs.iModelId );
+    // if ( result.status === SettingsStatus.SettingNotFound || result.setting.briefcaseId === undefined) {
+    //   retrievedBriefcaseId = -1;
+    // } else {
+    //   retrievedBriefcaseId = result.setting.briefcaseId;
+    // }
     // First, download the briefcase
     let props: LocalBriefcaseProps;
-    if (retrievedBriefcaseId !== -1) {
+    // if (retrievedBriefcaseId !== -1) {
+    if (this._bridgeArgs.argsJson.BriefcaseId) {
       props = await BriefcaseManager.downloadBriefcase(this._requestContext, {
-        briefcaseId: retrievedBriefcaseId,
+        briefcaseId: this._bridgeArgs.argsJson.BriefcaseId,
         contextId: this._serverArgs.contextId,
         iModelId: this._serverArgs.iModelId,
       });
@@ -499,7 +500,7 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
         contextId: this._serverArgs.contextId,
         iModelId: this._serverArgs.iModelId,
       });
-      result = await settingsClient.saveSetting(this._requestContext, { briefcaseId: props.briefcaseId }, "DocumentMapping", "Documents", true, this._serverArgs.contextId, this._serverArgs.iModelId);
+      const result = await settingsClient.saveSetting(this._requestContext, { briefcaseId: props.briefcaseId }, "DocumentMapping", "Documents", true, this._serverArgs.contextId, this._serverArgs.iModelId);
     }
     let briefcaseDb: BriefcaseDb | undefined;
     const openArgs: OpenBriefcaseProps = {
