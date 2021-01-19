@@ -8,11 +8,21 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { SearchBox } from "../../ui-core";
 import TestUtils from "../TestUtils";
+import { fireEvent, render } from "@testing-library/react";
 
 describe("SearchBox", () => {
+  let fakeTimers: sinon.SinonFakeTimers;
 
   before(async () => {
     await TestUtils.initializeUiCore();
+  });
+
+  beforeEach(() => {
+    fakeTimers = sinon.useFakeTimers();
+  });
+
+  afterEach(() => {
+    fakeTimers.restore();
   });
 
   describe("renders", () => {
@@ -29,70 +39,81 @@ describe("SearchBox", () => {
   describe("track change", () => {
     it("should call onValueChanged", () => {
       const spyMethod = sinon.spy();
-      const wrapper = mount(<SearchBox onValueChanged={spyMethod} />);
-      const inputNode = wrapper.find("input");
+      const component = render(<SearchBox onValueChanged={spyMethod} />);
+      const inputNode = component.container.querySelector("input") as HTMLElement;
 
-      expect(inputNode.length).to.eq(1);
+      expect(inputNode).not.to.be.null;
       if (inputNode) {
         const testValue = "Test";
-        inputNode.simulate("change", { target: { value: testValue } });
-        wrapper.update();
+        fireEvent.change(inputNode, { target: { value: testValue } });
         expect(spyMethod.calledOnce).to.be.true;
       }
     });
 
-    it("should honor valueChangedDelay", () => {
+    it("should ignore if value specified is not different", async () => {
       const spyMethod = sinon.spy();
-      const wrapper = mount(<SearchBox onValueChanged={spyMethod} valueChangedDelay={100} />);
-      const inputNode = wrapper.find("input");
+      const component = render(<SearchBox onValueChanged={spyMethod} valueChangedDelay={100} />);
+      const inputNode = component.container.querySelector("input") as HTMLElement;
 
-      expect(inputNode.length).to.eq(1);
+      expect(inputNode).not.to.be.null;
       if (inputNode) {
         const testValue = "Test";
-        inputNode.simulate("change", { target: { value: testValue } });
+        fireEvent.change(inputNode, { target: { value: testValue } });
+        fireEvent.change(inputNode, { target: { value: "" } });
+        await fakeTimers.tickAsync(100);
+        expect(spyMethod.called).to.be.false;
+      }
+    });
 
-        setTimeout(() => {
-          expect(spyMethod.called).to.be.false;
-        }, 1);
-        setTimeout(() => {
-          expect(spyMethod.calledOnce).to.be.true;
-          wrapper.unmount();
-        }, 100);
+    it("should honor valueChangedDelay", async () => {
+      const spyMethod = sinon.spy();
+      const component = render(<SearchBox onValueChanged={spyMethod} valueChangedDelay={100} />);
+      const inputNode = component.container.querySelector("input") as HTMLElement;
+
+      expect(inputNode).not.to.be.null;
+      if (inputNode) {
+        const testValue = "Test";
+        fireEvent.change(inputNode, { target: { value: testValue } });
+
+        await fakeTimers.tickAsync(1);
+        expect(spyMethod.called).to.be.false;
+        await fakeTimers.tickAsync(100);
+        expect(spyMethod.calledOnce).to.be.true;
       }
     });
 
     it("should call onEscPressed", () => {
       const spyMethod = sinon.spy();
-      const wrapper = mount(<SearchBox onValueChanged={() => { }} onEscPressed={spyMethod} />);
-      const inputNode = wrapper.find("input");
+      const component = render(<SearchBox onValueChanged={() => { }} onEscPressed={spyMethod} />);
+      const inputNode = component.container.querySelector("input") as HTMLElement;
 
-      expect(inputNode.length).to.eq(1);
+      expect(inputNode).not.to.be.null;
       if (inputNode) {
-        inputNode.simulate("keyDown", { key: "Escape" });
+        fireEvent.keyDown(inputNode, { key: "Escape" });
         expect(spyMethod.calledOnce).to.be.true;
       }
     });
 
     it("should call onEnterPressed", () => {
       const spyMethod = sinon.spy();
-      const wrapper = mount(<SearchBox onValueChanged={() => { }} onEnterPressed={spyMethod} />);
-      const inputNode = wrapper.find("input");
+      const component = render(<SearchBox onValueChanged={() => { }} onEnterPressed={spyMethod} />);
+      const inputNode = component.container.querySelector("input") as HTMLElement;
 
-      expect(inputNode.length).to.eq(1);
+      expect(inputNode).not.to.be.null;
       if (inputNode) {
-        inputNode.simulate("keyDown", { key: "Enter" });
+        fireEvent.keyDown(inputNode, { key: "Enter" });
         expect(spyMethod.calledOnce).to.be.true;
       }
     });
 
     it("should call onClear", () => {
       const spyMethod = sinon.spy();
-      const wrapper = mount(<SearchBox onValueChanged={() => { }} onClear={spyMethod} initialValue="Test" />);
+      const component = render(<SearchBox onValueChanged={() => { }} onClear={spyMethod} initialValue="Test" />);
 
-      const buttonNode = wrapper.find("div.core-searchbox-button");
-      expect(buttonNode.length).to.eq(1);
+      const buttonNode = component.container.querySelector("div.core-searchbox-button") as HTMLElement;
+      expect(buttonNode).not.to.be.null;
 
-      buttonNode.simulate("click");
+      fireEvent.click(buttonNode);
       expect(spyMethod.calledOnce).to.be.true;
     });
 
