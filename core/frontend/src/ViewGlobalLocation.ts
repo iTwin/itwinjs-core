@@ -7,7 +7,7 @@
  */
 
 import { Point3d, Range3d } from "@bentley/geometry-core";
-import { Camera, Cartographic, GlobeMode } from "@bentley/imodeljs-common";
+import { Cartographic, GlobeMode } from "@bentley/imodeljs-common";
 import { BingElevationProvider } from "./tile/internal";
 import { ScreenViewport } from "./Viewport";
 import { ViewState3d } from "./ViewState";

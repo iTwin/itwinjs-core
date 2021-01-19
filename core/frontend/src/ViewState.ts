@@ -1273,7 +1273,7 @@ export abstract class ViewState3d extends ViewState {
     targetPoint = this.cartographicToRoot(targetPointCartographic)!;
 
     targetPointCartographic.height = eyeHeight;
-    let lEyePoint = this.cartographicToRoot(targetPointCartographic)!;
+    const lEyePoint = this.cartographicToRoot(targetPointCartographic)!;
     return this.finishLookAtGlobalLocation(targetPointCartographic, origEyePoint, lEyePoint, targetPoint, pitchAngleRadians);
   }
 
@@ -1300,7 +1300,7 @@ export abstract class ViewState3d extends ViewState {
     targetPoint = (await this.cartographicToRootFromGcs(targetPointCartographic))!;
 
     targetPointCartographic.height = eyeHeight;
-    let lEyePoint = (await this.cartographicToRootFromGcs(targetPointCartographic))!;
+    const lEyePoint = (await this.cartographicToRootFromGcs(targetPointCartographic))!;
     return this.finishLookAtGlobalLocation(targetPointCartographic, origEyePoint, lEyePoint, targetPoint, pitchAngleRadians);
   }
 
