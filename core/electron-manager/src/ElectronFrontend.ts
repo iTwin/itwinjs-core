@@ -57,4 +57,11 @@ export class ElectronFrontend implements IpcSocketFrontend {
 
     return new ElectronFrontend(opts);
   };
+
+  public static callDialog<T extends keyof Electron.Dialog>(methodName: T, ...args: Parameters<Electron.Dialog[T]>): ReturnType<Electron.Dialog[T]> {
+    return FrontendIpc.callBackend("electron-safe", "callElectron", "dialog", methodName, ...args) as ReturnType<Electron.Dialog[T]>;
+  }
+  public static callShell<T extends keyof Electron.Shell>(methodName: T, ...args: Parameters<Electron.Shell[T]>): ReturnType<Electron.Shell[T]> {
+    return FrontendIpc.callBackend("electron-safe", "callElectron", "shell", methodName, ...args) as ReturnType<Electron.Shell[T]>;
+  }
 };
