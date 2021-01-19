@@ -15,10 +15,10 @@ import { Size, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
 import { addFloatingWidget, addPanelWidget, addTab, createDraggedTabState, createNineZoneState, NineZone, NineZoneState, toolSettingsTabId } from "@bentley/ui-ninezone";
 import {
   ActiveFrontstageDefProvider, addMissingWidgets, addPanelWidgets, addWidgets, CoreTools, expandWidget, Frontstage, FrontstageDef,
-  FrontstageManager, FrontstageProvider, FrontstageState, getWidgetId, initializeNineZoneState, initializePanel, isFrontstageStateSettingResult,
-  ModalFrontstageComposer, packNineZoneState, restoreNineZoneState, setWidgetState, showWidget, StagePanel, StagePanelDef, StagePanelSection, StagePanelState, StagePanelZoneDef,
-  StagePanelZonesDef, UiSettingsProvider, useActiveModalFrontstageInfo, useFrontstageManager, useNineZoneDispatch, useNineZoneState,
-  useSavedFrontstageState, useSaveFrontstageSettings, useSyncDefinitions, useUpdateNineZoneSize, Widget, WidgetDef, WidgetPanelsFrontstage, WidgetState, Zone, ZoneDef,
+  FrontstageManager, FrontstageProvider, getWidgetId, initializeNineZoneState, initializePanel, isFrontstageStateSettingResult, ModalFrontstageComposer,
+  packNineZoneState, restoreNineZoneState, setWidgetState, showWidget, StagePanel, StagePanelDef, StagePanelSection, StagePanelState, StagePanelZoneDef, StagePanelZonesDef,
+  UiSettingsProvider, useActiveModalFrontstageInfo, useFrontstageManager, useNineZoneDispatch, useNineZoneState, useSavedFrontstageState,
+  useSaveFrontstageSettings, useSyncDefinitions, useUpdateNineZoneSize, Widget, WidgetDef, WidgetPanelsFrontstage, WidgetPanelsFrontstageState, WidgetState, Zone, ZoneDef,
 } from "../../ui-framework";
 import TestUtils, { mount, storageMock, stubRaf, UiSettingsStub } from "../TestUtils";
 import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
@@ -43,7 +43,7 @@ function createSavedTabState(id: SavedTabState["id"], args?: Partial<SavedTabSta
   };
 }
 
-function createFrontstageState(nineZone = createSavedNineZoneState()): FrontstageState {
+function createFrontstageState(nineZone = createSavedNineZoneState()): WidgetPanelsFrontstageState {
   return {
     id: "frontstage1",
     nineZone,

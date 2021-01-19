@@ -479,7 +479,7 @@ export function addPanelWidgets(
 /** @internal */
 export function isFrontstageStateSettingResult(settingsResult: UiSettingsResult): settingsResult is {
   status: UiSettingsStatus.Success;
-  setting: FrontstageState;
+  setting: WidgetPanelsFrontstageState;
 } {
   if (settingsResult.status === UiSettingsStatus.Success)
     return true;
@@ -639,7 +639,7 @@ export function isPanelCollapsed(zoneStates: ReadonlyArray<ZoneState | undefined
 /** FrontstageState is saved in UiSettings.
  * @internal
  */
-export interface FrontstageState {
+export interface WidgetPanelsFrontstageState {
   nineZone: SavedNineZoneState;
   id: FrontstageDef["id"];
   version: number;
@@ -819,7 +819,7 @@ export function useSaveFrontstageSettings(frontstageDef: FrontstageDef) {
   const nineZone = useNineZoneState(frontstageDef);
   const uiSettings = useUiSettingsContext();
   const saveSetting = React.useCallback(debounce(async (id: string, version: number, state: NineZoneState) => {
-    const setting: FrontstageState = {
+    const setting: WidgetPanelsFrontstageState = {
       id,
       nineZone: packNineZoneState(state),
       stateVersion,
@@ -841,7 +841,7 @@ export function useSaveFrontstageSettings(frontstageDef: FrontstageDef) {
 
 const FRONTSTAGE_SETTINGS_NAMESPACE = "uifw-frontstageSettings";
 
-function getFrontstageStateSettingName(frontstageId: FrontstageState["id"]) {
+function getFrontstageStateSettingName(frontstageId: WidgetPanelsFrontstageState["id"]) {
   return `frontstageState[${frontstageId}]`;
 }
 
