@@ -8,15 +8,15 @@
 
 import { BentleyStatus, isElectronRenderer } from "@bentley/bentleyjs-core";
 import {
-  IModelError, RpcPushChannel, RpcPushConnection, RpcRequestFulfillment, RpcSerializedValue, SerializedRpcRequest,
+  IModelError, iTwinChannel, RpcPushChannel, RpcPushConnection, RpcRequestFulfillment, RpcSerializedValue, SerializedRpcRequest,
 } from "@bentley/imodeljs-common";
 import { ElectronPushConnection, ElectronPushTransport } from "./ElectronPush";
 import { ElectronRpcConfiguration } from "./ElectronRpcManager";
 import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
 import { ElectronRpcRequest } from "./ElectronRpcRequest";
 
-const OBJECTS_CHANNEL = "rpc.objects";
-const DATA_CHANNEL = "rpc.data";
+const OBJECTS_CHANNEL = iTwinChannel("rpc.objects");
+const DATA_CHANNEL = iTwinChannel("rpc.data");
 
 interface PartialPayload { id: string, index: number, data: Uint8Array }
 
@@ -228,8 +228,8 @@ export function initializeIpc(protocol: ElectronRpcProtocol) {
     } else {
       transport = new BackendIpcTransport(protocol);
     }
-  } catch (_err) {
-    throw new IModelError(BentleyStatus.ERROR, `cannot load electron`);
+  } catch (err) {
+    throw new IModelError(BentleyStatus.ERROR, `cannot load electron: ${err}`);
   }
 
   return transport;
