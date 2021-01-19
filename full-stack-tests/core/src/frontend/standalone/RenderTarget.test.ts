@@ -14,15 +14,9 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { BuffersContainer, VAOContainer, VBOContainer } from "@bentley/imodeljs-frontend/lib/webgl";
 import { expect } from "chai";
-import { Color, comparePixelData, createOnScreenTestViewport, testOnScreenViewport, TestViewport, testViewports } from "../TestViewport";
+import { Color, comparePixelData, createOnScreenTestViewport, testOnScreenViewport, TestViewport, testViewports, testViewportsWithDpr } from "../TestViewport";
 
 /* eslint-disable @typescript-eslint/unbound-method */
-
-async function testViewportsWithDpr(imodel: IModelConnection, rect: ViewRect, test: (vp: TestViewport) => Promise<void>): Promise<void> {
-  const devicePixelRatios = [1.0, 1.25, 1.5, 2.0];
-  for (const dpr of devicePixelRatios)
-    await testViewports("0x24", imodel, rect.width, rect.height, test, dpr);
-}
 
 describe("Vertex buffer objects", () => {
   let imodel: IModelConnection;
@@ -32,7 +26,7 @@ describe("Vertex buffer objects", () => {
     renderSysOpts.disabledExtensions = ["OES_vertex_array_object"];
 
     await IModelApp.startup({ renderSys: renderSysOpts });
-    imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
+    imodel = await SnapshotConnection.openFile("mirukuru.ibim");
   });
 
   after(async () => {
@@ -92,506 +86,16 @@ describe("Vertex buffer objects", () => {
   });
 });
 
-describe("Properly render on- or off-screen", () => {
-  let imodel: IModelConnection;
-
-  before(async () => {
-    await IModelApp.startup();
-    imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
-  });
-
-  after(async () => {
-    if (imodel) await imodel.close();
-    await IModelApp.shutdown();
-  });
-
-  it("single viewport should render using system canvas", async () => {
-    const rect = new ViewRect(0, 0, 100, 100);
-    await testOnScreenViewport("0x24", imodel, rect.width, rect.height, async (vp) => {
-      expect(vp.rendersToScreen).to.be.true;
-    });
-  });
-
-  it("neither of dual viewports should render using system canvas", async () => {
-    const rect = new ViewRect(0, 0, 100, 100);
-    const vp0 = await createOnScreenTestViewport("0x24", imodel, rect.width, rect.height);
-    expect(vp0.rendersToScreen).to.be.true; // when only one viewport is on the view manager, it should render using system canvas.
-    const vp1 = await createOnScreenTestViewport("0x24", imodel, rect.width, rect.height);
-    expect(vp0.rendersToScreen).to.be.false;
-    expect(vp1.rendersToScreen).to.be.false;
-
-    vp0.dispose();
-    vp1.dispose();
-  });
-});
-
-describe("Render mirukuru with single clip plane", () => {
-  let imodel: IModelConnection;
-
-  before(async () => {
-    await IModelApp.startup();
-    imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
-  });
-
-  after(async () => {
-    if (imodel) await imodel.close();
-    await IModelApp.shutdown();
-  });
-
-  it("should render the model", async () => {
-    const rect = new ViewRect(0, 0, 100, 100);
-    await testViewportsWithDpr(imodel, rect, async (vp) => {
-      const vf = vp.view.viewFlags;
-      vf.visibleEdges = false;
-
-      const clip = ClipVector.fromJSON([{
-        shape: {
-          points: [[-58.57249751634662, -261.9870625343174, 0], [297.4029912650585, -261.9870625343174, 0], [297.4029912650585, 111.24234024435282, 0], [-58.57249751634662, 111.24234024435282, 0], [-58.57249751634662, -261.9870625343174, 0]],
-          trans: [[1, 0, 0, 289076.52682419703], [0, 1, 0, 3803926.4450675533], [0, 0, 1, 0]],
-        },
-      }]);
-      expect(clip).to.not.be.undefined;
-      vp.view.setViewClip(clip);
-      vp.outsideClipColor = ColorDef.red;
-      vp.insideClipColor = ColorDef.green;
-
-      await vp.waitForAllTilesToRender();
-      expect(vp.numRequestedTiles).to.equal(0);
-      expect(vp.numSelectedTiles).to.equal(1);
-
-      vp.outsideClipColor = ColorDef.red;
-      vp.insideClipColor = ColorDef.green;
-
-      // White rectangle is centered in view with black background surrounding. Clipping shape and colors splits the shape into red and green halves. Lighting is on so rectangle will not be pure red and green.
-      const colors = vp.readUniqueColors();
-      const bgColor = Color.fromRgba(0, 0, 0, 0xff);
-      expect(colors.length).least(3);
-      expect(colors.contains(bgColor)).to.be.true; // black background
-
-      const isReddish = (c: Color): boolean => {
-        return c.r >= 0x50 && c.g < 0xa && c.b < 0xa && c.a === 0xff;
-      };
-
-      const isGreenish = (c: Color) => {
-        return c.r < 0xa && c.g >= 0x50 && c.b < 0xa && c.a === 0xff;
-      };
-
-      for (const c of colors.array) {
-        if (0 !== c.compare(bgColor)) {
-          expect(isReddish(c) || isGreenish(c)).to.be.true;
-        }
-      }
-    });
-  });
-});
-
-describe("Render mirukuru with model appearance override applied", () => {
-  let imodel: IModelConnection;
-  before(async () => {
-    await IModelApp.startup();
-    imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
-  });
-
-  after(async () => {
-    if (imodel) await imodel.close();
-    await IModelApp.shutdown();
-  });
-
-  function isReddish(c: Color): boolean {
-    return c.r > c.g && c.g < 0xa && c.b < 0xa && c.a === 0xff;
-  }
-
-  const bgColor = Color.fromRgba(0, 0, 0, 0xff);
-  function expectCorrectColors(vp: TestViewport) {
-    const colors = vp.readUniqueColors();
-    expect(colors.length === 2);
-    expect(colors.contains(bgColor)).to.be.true; // black background
-    colors.forEach((color) => expect(color === bgColor || isReddish(color)));
-  }
-  function expectAlmostTransparent(vp: TestViewport) {
-    const colors = vp.readUniqueColors();
-    expect(colors.length === 2);
-    expect(colors.contains(bgColor)).to.be.true; // black background
-    colors.forEach((color) => expect(color.r < 20 && color.b < 20 && color.g < 20));
-  }
-
-  it("should render the model with color override applied", async () => {
-    const rect = new ViewRect(0, 0, 100, 100);
-    await testViewportsWithDpr(imodel, rect, async (vp) => {
-      expect(vp.view.is3d());
-      const colorOverride = FeatureAppearance.fromJSON({ rgb: new RgbColor(0xff, 0, 0) });
-
-      vp.view.forEachModel((model) => vp.overrideModelAppearance(model.id, colorOverride));
-
-      await vp.waitForAllTilesToRender();
-      expect(vp.numRequestedTiles).to.equal(0);
-      expect(vp.numSelectedTiles).to.equal(1);
-
-      expectCorrectColors(vp);
-    });
-  });
-  it("should render the model almost transparent", async () => {
-    const rect = new ViewRect(0, 0, 100, 100);
-    await testViewportsWithDpr(imodel, rect, async (vp) => {
-      expect(vp.view.is3d());
-      const colorOverride = FeatureAppearance.fromJSON({ transparency: .95 });
-
-      vp.view.forEachModel((model) => vp.overrideModelAppearance(model.id, colorOverride));
-
-      await vp.waitForAllTilesToRender();
-      expect(vp.numRequestedTiles).to.equal(0);
-      expect(vp.numSelectedTiles).to.equal(1);
-
-      expectAlmostTransparent(vp);
-    });
-  });
-});
-
-describe("Render mirukuru with thematic display applied", () => {
-  let imodel: IModelConnection;
-
-  before(async () => {
-    await IModelApp.startup();
-    imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
-  });
-
-  after(async () => {
-    if (imodel) await imodel.close();
-    await IModelApp.shutdown();
-  });
-
-  function isReddish(c: Color): boolean {
-    return c.r > c.g && c.g < 0xa && c.b < 0xa && c.a === 0xff;
-  }
-
-  function isBluish(c: Color): boolean {
-    return c.r < 0xa && c.g < 0xa && c.b > c.g && c.a === 0xff;
-  }
-
-  function isPurplish(c: Color): boolean {
-    return c.r > c.g && c.g < 0xa && c.b > c.g && c.a === 0xff;
-  }
-
-  function expectCorrectColors(vp: TestViewport) {
-    // White rectangle is centered in view with black background surrounding. Thematic display sets a blue/red gradient on the rectangle. Lighting is off.
-    const colors = vp.readUniqueColors();
-    const bgColor = Color.fromRgba(0, 0, 0, 0xff);
-    expect(colors.length).least(3); // red, blue, and black - (actually way more colors!)
-    expect(colors.contains(bgColor)).to.be.true; // black background
-
-    for (const c of colors.array) {
-      if (0 !== c.compare(bgColor)) {
-        expect(isReddish(c) || isBluish(c) || isPurplish(c)).to.be.true;
-      }
-    }
-  }
-
-  function isRed(c: Color): boolean {
-    return c.r === 0xff && c.g === 0x0 && c.b === 0x0 && c.a === 0xff;
-  }
-
-  function isBlue(c: Color): boolean {
-    return c.r === 0x0 && c.g === 0x0 && c.b === 0xff && c.a === 0xff;
-  }
-
-  function expectPreciseSteppedColors(vp: TestViewport) {
-    // White rectangle is centered in view with black background surrounding. Thematic stepped display sets a blue/red gradient on the rectangle with two steps. Lighting is off.
-    const colors = vp.readUniqueColors();
-    const bgColor = Color.fromRgba(0, 0, 0, 0xff);
-    expect(colors.length).least(3); // red, blue, and black - (actually way more colors!)
-    expect(colors.contains(bgColor)).to.be.true; // black background
-
-    for (const c of colors.array) {
-      if (0 !== c.compare(bgColor)) {
-        expect(isRed(c) || isBlue(c)).to.be.true;
-      }
-    }
-  }
-
-  function expectPreciseSlopeColors(vp: TestViewport) {
-    // White rectangle is centered in view with black background surrounding. Thematic sloped display results in red square. Lighting is off.
-    const colors = vp.readUniqueColors();
-    const bgColor = Color.fromRgba(0, 0, 0, 0xff);
-    expect(colors.length).least(2); // red and black
-    expect(colors.contains(bgColor)).to.be.true; // black background
-
-    for (const c of colors.array) {
-      if (0 !== c.compare(bgColor)) {
-        expect(isRed(c)).to.be.true;
-      }
-    }
-  }
-
-  function expectPreciseHillShadeColors(vp: TestViewport) {
-    // White rectangle is centered in view with black background surrounding. Thematic hillshade display results in blue square. Lighting is off.
-    const colors = vp.readUniqueColors();
-    const bgColor = Color.fromRgba(0, 0, 0, 0xff);
-    expect(colors.length).least(2); // blue and black
-    expect(colors.contains(bgColor)).to.be.true; // black background
-
-    for (const c of colors.array) {
-      if (0 !== c.compare(bgColor)) {
-        expect(isBlue(c)).to.be.true;
-      }
-    }
-  }
-
-  it("should render the model with proper thematic colors applied for smooth height mode", async () => {
-    const rect = new ViewRect(0, 0, 100, 100);
-    await testViewportsWithDpr(imodel, rect, async (vp) => {
-      expect(vp.view.is3d());
-
-      const vf = vp.view.viewFlags;
-      vf.visibleEdges = false;
-      vf.lighting = false;
-      vf.renderMode = RenderMode.SmoothShade;
-      vf.thematicDisplay = true;
-
-      // Create a ThematicDisplay object with the desired thematic settings
-      const thematicProps: ThematicDisplayProps = {
-        gradientSettings: {
-          colorScheme: ThematicGradientColorScheme.Custom,
-          customKeys: [{ value: 0.0, color: ColorDef.computeTbgrFromComponents(0, 0, 255) }, { value: 1.0, color: ColorDef.computeTbgrFromComponents(255, 0, 0) }],
-        },
-        range: { low: imodel.projectExtents.xLow, high: imodel.projectExtents.xHigh }, // grab imodel project extents to set range of thematic display
-        axis: [1.0, 0.0, 0.0],
-      };
-      const thematicDisplay = ThematicDisplay.fromJSON(thematicProps);
-
-      const displaySettings = (vp.view as ViewState3d).getDisplayStyle3d().settings;
-      displaySettings.thematic = thematicDisplay;
-
-      await vp.waitForAllTilesToRender();
-      expect(vp.numRequestedTiles).to.equal(0);
-      expect(vp.numSelectedTiles).to.equal(1);
-
-      expectCorrectColors(vp);
-    });
-  });
-
-  it("should render the model with proper thematic colors applied for stepped height mode", async () => {
-    const rect = new ViewRect(0, 0, 100, 100);
-    await testViewportsWithDpr(imodel, rect, async (vp) => {
-      expect(vp.view.is3d());
-
-      const vf = vp.view.viewFlags;
-      vf.visibleEdges = false;
-      vf.lighting = false;
-      vf.renderMode = RenderMode.SmoothShade;
-      vf.thematicDisplay = true;
-
-      // Create a ThematicDisplay object with the desired thematic settings
-      const thematicProps: ThematicDisplayProps = {
-        gradientSettings: {
-          mode: ThematicGradientMode.Stepped,
-          stepCount: 2,
-          colorScheme: ThematicGradientColorScheme.Custom,
-          customKeys: [{ value: 0.0, color: ColorDef.computeTbgrFromComponents(0, 0, 255) }, { value: 1.0, color: ColorDef.computeTbgrFromComponents(255, 0, 0) }],
-        },
-        range: { low: imodel.projectExtents.xLow - 3.0, high: imodel.projectExtents.xHigh + 3.0 }, // grab imodel project extents to set range of thematic display
-        axis: [1.0, 0.0, 0.0],
-      };
-      const thematicDisplay = ThematicDisplay.fromJSON(thematicProps);
-
-      const displaySettings = (vp.view as ViewState3d).getDisplayStyle3d().settings;
-      displaySettings.thematic = thematicDisplay;
-
-      await vp.waitForAllTilesToRender();
-      expect(vp.numRequestedTiles).to.equal(0);
-      expect(vp.numSelectedTiles).to.equal(1);
-
-      expectPreciseSteppedColors(vp);
-    });
-  });
-
-  it("should render the model with proper thematic colors applied for isoline height mode", async () => {
-    const rect = new ViewRect(0, 0, 100, 100);
-    await testViewportsWithDpr(imodel, rect, async (vp) => {
-      expect(vp.view.is3d());
-
-      const vf = vp.view.viewFlags;
-      vf.visibleEdges = false;
-      vf.lighting = false;
-      vf.renderMode = RenderMode.SmoothShade;
-      vf.thematicDisplay = true;
-
-      // Create a ThematicDisplay object with the desired thematic settings
-      const thematicProps: ThematicDisplayProps = {
-        gradientSettings: {
-          mode: ThematicGradientMode.IsoLines,
-          colorScheme: ThematicGradientColorScheme.Custom,
-          customKeys: [{ value: 0.0, color: ColorDef.computeTbgrFromComponents(0, 0, 255) }, { value: 1.0, color: ColorDef.computeTbgrFromComponents(255, 0, 0) }],
-        },
-        range: { low: imodel.projectExtents.xLow, high: imodel.projectExtents.xHigh }, // grab imodel project extents to set range of thematic display
-        axis: [1.0, 0.0, 0.0],
-      };
-      const thematicDisplay = ThematicDisplay.fromJSON(thematicProps);
-
-      const displaySettings = (vp.view as ViewState3d).getDisplayStyle3d().settings;
-      displaySettings.thematic = thematicDisplay;
-
-      await vp.waitForAllTilesToRender();
-      expect(vp.numRequestedTiles).to.equal(0);
-      expect(vp.numSelectedTiles).to.equal(1);
-
-      expectCorrectColors(vp);
-    });
-  });
-
-  it("should render the model with proper thematic colors applied for stepped-with-delimiter height mode", async () => {
-    const rect = new ViewRect(0, 0, 100, 100);
-    await testViewportsWithDpr(imodel, rect, async (vp) => {
-      expect(vp.view.is3d());
-
-      const vf = vp.view.viewFlags;
-      vf.visibleEdges = false;
-      vf.lighting = false;
-      vf.renderMode = RenderMode.SmoothShade;
-      vf.thematicDisplay = true;
-
-      // Create a ThematicDisplay object with the desired thematic settings
-      const thematicProps: ThematicDisplayProps = {
-        gradientSettings: {
-          mode: ThematicGradientMode.SteppedWithDelimiter,
-          colorScheme: ThematicGradientColorScheme.Custom,
-          customKeys: [{ value: 0.0, color: ColorDef.computeTbgrFromComponents(0, 0, 255) }, { value: 1.0, color: ColorDef.computeTbgrFromComponents(255, 0, 0) }],
-        },
-        range: { low: imodel.projectExtents.xLow, high: imodel.projectExtents.xHigh }, // grab imodel project extents to set range of thematic display
-        axis: [1.0, 0.0, 0.0],
-      };
-      const thematicDisplay = ThematicDisplay.fromJSON(thematicProps);
-
-      const displaySettings = (vp.view as ViewState3d).getDisplayStyle3d().settings;
-      displaySettings.thematic = thematicDisplay;
-
-      await vp.waitForAllTilesToRender();
-      expect(vp.numRequestedTiles).to.equal(0);
-      expect(vp.numSelectedTiles).to.equal(1);
-
-      expectCorrectColors(vp);
-    });
-  });
-
-  it("should render the model with proper thematic colors applied for sensor mode", async () => {
-    const rect = new ViewRect(0, 0, 100, 100);
-    await testViewportsWithDpr(imodel, rect, async (vp) => {
-      expect(vp.view.is3d());
-
-      const vf = vp.view.viewFlags;
-      vf.visibleEdges = false;
-      vf.lighting = false;
-      vf.renderMode = RenderMode.SmoothShade;
-      vf.thematicDisplay = true;
-
-      // Create a ThematicDisplay object with the desired thematic settings
-      const thematicProps: ThematicDisplayProps = {
-        displayMode: ThematicDisplayMode.InverseDistanceWeightedSensors,
-        gradientSettings: {
-          colorScheme: ThematicGradientColorScheme.Custom,
-          customKeys: [{ value: 0.0, color: ColorDef.computeTbgrFromComponents(0, 0, 255) }, { value: 1.0, color: ColorDef.computeTbgrFromComponents(255, 0, 0) }],
-        },
-        sensorSettings: {
-          sensors: [
-            { position: imodel.projectExtents.low.toJSON(), value: 0.01 },
-            { position: imodel.projectExtents.high.toJSON(), value: 0.99 },
-          ],
-        },
-      };
-      const thematicDisplay = ThematicDisplay.fromJSON(thematicProps);
-
-      const displaySettings = (vp.view as ViewState3d).getDisplayStyle3d().settings;
-      displaySettings.thematic = thematicDisplay;
-
-      await vp.waitForAllTilesToRender();
-      expect(vp.numRequestedTiles).to.equal(0);
-      expect(vp.numSelectedTiles).to.equal(1);
-
-      expectCorrectColors(vp);
-    });
-  });
-
-  it("should render the model with proper thematic colors applied for slope mode", async () => {
-    const rect = new ViewRect(0, 0, 100, 100);
-    await testViewportsWithDpr(imodel, rect, async (vp) => {
-      expect(vp.view.is3d());
-
-      const vf = vp.view.viewFlags;
-      vf.visibleEdges = false;
-      vf.lighting = false;
-      vf.renderMode = RenderMode.SmoothShade;
-      vf.thematicDisplay = true;
-
-      // Create a ThematicDisplay object with the desired thematic settings
-      const thematicProps: ThematicDisplayProps = {
-        gradientSettings: {
-          mode: ThematicGradientMode.Stepped,
-          stepCount: 2,
-          colorScheme: ThematicGradientColorScheme.Custom,
-          customKeys: [{ value: 0.0, color: ColorDef.computeTbgrFromComponents(0, 0, 255) }, { value: 1.0, color: ColorDef.computeTbgrFromComponents(255, 0, 0) }],
-        },
-        range: { low: 0.0, high: 90.0 }, // range of 0 to 90 degree slopes
-        axis: [1.0, 0.0, 0.0],
-        displayMode: ThematicDisplayMode.Slope,
-      };
-      const thematicDisplay = ThematicDisplay.fromJSON(thematicProps);
-
-      const displaySettings = (vp.view as ViewState3d).getDisplayStyle3d().settings;
-      displaySettings.thematic = thematicDisplay;
-
-      await vp.waitForAllTilesToRender();
-      expect(vp.numRequestedTiles).to.equal(0);
-      expect(vp.numSelectedTiles).to.equal(1);
-
-      expectPreciseSlopeColors(vp);
-    });
-  });
-
-  it("should render the model with proper thematic colors applied for hillshade mode", async () => {
-    const rect = new ViewRect(0, 0, 100, 100);
-    await testViewportsWithDpr(imodel, rect, async (vp) => {
-      expect(vp.view.is3d());
-
-      const vf = vp.view.viewFlags;
-      vf.visibleEdges = false;
-      vf.lighting = false;
-      vf.renderMode = RenderMode.SmoothShade;
-      vf.thematicDisplay = true;
-
-      // Create a ThematicDisplay object with the desired thematic settings
-      const thematicProps: ThematicDisplayProps = {
-        gradientSettings: {
-          mode: ThematicGradientMode.Stepped,
-          stepCount: 2,
-          colorScheme: ThematicGradientColorScheme.Custom,
-          customKeys: [{ value: 0.0, color: ColorDef.computeTbgrFromComponents(0, 0, 255) }, { value: 1.0, color: ColorDef.computeTbgrFromComponents(255, 0, 0) }],
-        },
-        sunDirection: { x: 0.0, y: 0.0, z: 1.0 },
-        displayMode: ThematicDisplayMode.HillShade,
-      };
-      const thematicDisplay = ThematicDisplay.fromJSON(thematicProps);
-
-      const displaySettings = (vp.view as ViewState3d).getDisplayStyle3d().settings;
-      displaySettings.thematic = thematicDisplay;
-
-      await vp.waitForAllTilesToRender();
-      expect(vp.numRequestedTiles).to.equal(0);
-      expect(vp.numSelectedTiles).to.equal(1);
-
-      expectPreciseHillShadeColors(vp);
-    });
-  });
-});
-
 // Mirukuru contains a single view, looking at a single design model containing a single white rectangle (element ID 41 (0x29), subcategory ID = 24 (0x18)).
 // (It also is supposed to contain a reality model but the URL is presumably wrong).
 // The initial view is in top orientation, centered on the top of the rectangle, but not fitted to its extents (empty space on all sides of rectangle).
 // Background color is black; ACS triad on; render mode smooth with lighting enabled and visible edges enabled.
-describe("Render mirukuru", () => {
+describe("RenderTarget", () => {
   let imodel: IModelConnection;
 
   before(async () => {
     await IModelApp.startup();
-    imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
+    imodel = await SnapshotConnection.openFile("mirukuru.ibim");
   });
 
   after(async () => {
@@ -1152,249 +656,121 @@ describe("Render mirukuru", () => {
       expect(mapTree).not.to.be.undefined;
     });
   });
-});
 
-describe("White-on-white reversal", async () => {
-  let imodel: IModelConnection;
-
-  before(async () => {
-    await IModelApp.startup();
-    imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
+  it("should render to screen if only a single viewport exists", async () => {
+    const rect = new ViewRect(0, 0, 100, 100);
+    await testOnScreenViewport("0x24", imodel, rect.width, rect.height, async (vp) => {
+      expect(vp.rendersToScreen).to.be.true;
+    });
   });
 
-  after(async () => {
-    if (imodel) await imodel.close();
-    await IModelApp.shutdown();
+  it("should render off-screen if multiple viewports exist", async () => {
+    const rect = new ViewRect(0, 0, 100, 100);
+    const vp0 = await createOnScreenTestViewport("0x24", imodel, rect.width, rect.height);
+    expect(vp0.rendersToScreen).to.be.true; // when only one viewport is on the view manager, it should render using system canvas.
+    const vp1 = await createOnScreenTestViewport("0x24", imodel, rect.width, rect.height);
+    expect(vp0.rendersToScreen).to.be.false;
+    expect(vp1.rendersToScreen).to.be.false;
+
+    vp0.dispose();
+    vp1.dispose();
   });
 
-  async function test(expectedColors: Color[], setup: (vp: Viewport, vf: ViewFlags) => void, cleanup?: (vp: Viewport) => void): Promise<void> {
-    await testOnScreenViewport("0x24", imodel, 100, 100, async (vp) => {
-      const vf = vp.viewFlags.clone();
-      vf.renderMode = RenderMode.Wireframe;
-      vf.acsTriad = false;
-      setup(vp, vf);
+  it("should clip using a single plane", async () => {
+    const rect = new ViewRect(0, 0, 100, 100);
+    await testViewportsWithDpr(imodel, rect, async (vp) => {
+      const vf = vp.view.viewFlags;
+      vf.visibleEdges = false;
 
-      vp.viewFlags = vf;
-      vp.invalidateRenderPlan();
+      const clip = ClipVector.fromJSON([{
+        shape: {
+          points: [[-58.57249751634662, -261.9870625343174, 0], [297.4029912650585, -261.9870625343174, 0], [297.4029912650585, 111.24234024435282, 0], [-58.57249751634662, 111.24234024435282, 0], [-58.57249751634662, -261.9870625343174, 0]],
+          trans: [[1, 0, 0, 289076.52682419703], [0, 1, 0, 3803926.4450675533], [0, 0, 1, 0]],
+        },
+      }]);
+      expect(clip).to.not.be.undefined;
+      vp.view.setViewClip(clip);
+      vp.outsideClipColor = ColorDef.red;
+      vp.insideClipColor = ColorDef.green;
 
       await vp.waitForAllTilesToRender();
-      if (undefined !== cleanup)
-        cleanup(vp);
+      expect(vp.numRequestedTiles).to.equal(0);
+      expect(vp.numSelectedTiles).to.equal(1);
 
+      vp.outsideClipColor = ColorDef.red;
+      vp.insideClipColor = ColorDef.green;
+
+      // White rectangle is centered in view with black background surrounding. Clipping shape and colors splits the shape into red and green halves. Lighting is on so rectangle will not be pure red and green.
       const colors = vp.readUniqueColors();
-      expect(colors.length).to.equal(expectedColors.length);
-      for (const color of expectedColors)
-        expect(colors.contains(color)).to.be.true;
-    });
-  }
+      const bgColor = Color.fromRgba(0, 0, 0, 0xff);
+      expect(colors.length).least(3);
+      expect(colors.contains(bgColor)).to.be.true; // black background
 
-  const white = Color.fromRgba(255, 255, 255, 255);
-  const black = Color.fromRgba(0, 0, 0, 255);
-  const red = Color.fromRgba(255, 0, 0, 255);
-  const blue = Color.fromRgba(0, 0, 255, 255);
+      const isReddish = (c: Color): boolean => {
+        return c.r >= 0x50 && c.g < 0xa && c.b < 0xa && c.a === 0xff;
+      };
 
-  it("should not apply if background is not white", async () => {
-    await test([red, white], (vp, _vf) => {
-      vp.displayStyle.backgroundColor = ColorDef.red;
-    });
-  });
+      const isGreenish = (c: Color) => {
+        return c.r < 0xa && c.g >= 0x50 && c.b < 0xa && c.a === 0xff;
+      };
 
-  it("should apply if background is white and geometry is white", async () => {
-    await test([black, white], (vp, _vf) => {
-      vp.displayStyle.backgroundColor = ColorDef.white;
-    });
-  });
-
-  it("should not apply if explicitly disabled", async () => {
-    await test([white], (vp, vf) => {
-      vf.whiteOnWhiteReversal = false;
-      vp.displayStyle.backgroundColor = ColorDef.white;
-    });
-  });
-
-  it("should not apply if geometry is not white", async () => {
-    await test([white, blue], (vp, _vf) => {
-      class ColorOverride {
-        public addFeatureOverrides(ovrs: FeatureSymbology.Overrides, _viewport: Viewport): void {
-          ovrs.setDefaultOverrides(FeatureAppearance.fromRgb(ColorDef.blue));
+      for (const c of colors.array) {
+        if (0 !== c.compare(bgColor)) {
+          expect(isReddish(c) || isGreenish(c)).to.be.true;
         }
       }
-
-      vp.displayStyle.backgroundColor = ColorDef.white;
-      vp.addFeatureOverrideProvider(new ColorOverride());
     });
   });
 
-  it("should not apply to decorations", async () => {
-    class TestDecorator {
-      public decorate(context: DecorateContext) {
-        const vp = context.viewport;
-        const rect = vp.viewRect;
-
-        const viewOverlay = context.createGraphicBuilder(GraphicType.ViewOverlay);
-        viewOverlay.setSymbology(ColorDef.white, ColorDef.white, 4);
-        viewOverlay.addLineString([
-          new Point3d(0, rect.height / 2, 0),
-          new Point3d(rect.width / 2, rect.height / 2, 0),
-        ]);
-        viewOverlay.setSymbology(ColorDef.blue, ColorDef.blue, 4);
-        viewOverlay.addLineString([
-          new Point3d(rect.width / 2, rect.height / 2, 0),
-          new Point3d(rect.width, rect.height / 2, 0),
-        ]);
-        context.addDecorationFromBuilder(viewOverlay);
-
-        const viewBG = context.createGraphicBuilder(GraphicType.ViewBackground);
-        viewBG.setSymbology(ColorDef.white, ColorDef.white, 4);
-        viewBG.addLineString([
-          new Point3d(rect.width / 2, 0, 0),
-          new Point3d(rect.width / 2, rect.height / 2, 0),
-        ]);
-        viewBG.setSymbology(ColorDef.red, ColorDef.red, 4);
-        viewBG.addLineString([
-          new Point3d(rect.width / 2, rect.height / 2, 0),
-          new Point3d(rect.width / 2, rect.height, 0),
-        ]);
-        context.addDecorationFromBuilder(viewBG);
-
-        const worldOverlay = context.createGraphicBuilder(GraphicType.WorldOverlay);
-        worldOverlay.setSymbology(ColorDef.white, ColorDef.white, 4);
-        worldOverlay.addLineString([
-          vp.npcToWorld({ x: 0, y: 0, z: 0.5 }),
-          vp.npcToWorld({ x: 0.5, y: 0.5, z: 0.5 }),
-        ]);
-
-        const greenDef = ColorDef.create(0x00ff00);
-        worldOverlay.setSymbology(greenDef, greenDef, 4);
-        worldOverlay.addLineString([
-          vp.npcToWorld({ x: 0.5, y: 0.5, z: 0.5 }),
-          vp.npcToWorld({ x: 1, y: 1, z: 0.5 }),
-        ]);
-        context.addDecorationFromBuilder(worldOverlay);
-
-        const yellowDef = ColorDef.create(0x00ffff);
-        const world = context.createGraphicBuilder(GraphicType.WorldDecoration);
-        world.setSymbology(ColorDef.white, ColorDef.white, 4);
-        world.addLineString([
-          vp.npcToWorld({ x: 0, y: 1, z: 0.5 }),
-          vp.npcToWorld({ x: 0.5, y: 0.5, z: 0.5 }),
-        ]);
-        world.setSymbology(yellowDef, yellowDef, 4);
-        world.addLineString([
-          vp.npcToWorld({ x: 0.5, y: 0.5, z: 0.5 }),
-          vp.npcToWorld({ x: 1, y: 0, z: 0.5 }),
-        ]);
-        context.addDecorationFromBuilder(world);
-      }
+  describe("Model appearance overrides", () => {
+    function isReddish(c: Color): boolean {
+      return c.r > c.g && c.g < 0xa && c.b < 0xa && c.a === 0xff;
     }
 
-    const decorator = new TestDecorator();
-    const yellow = Color.fromRgba(255, 255, 0, 255);
-    const green = Color.fromRgba(0, 255, 0, 255);
+    const bgColor = Color.fromRgba(0, 0, 0, 0xff);
+    function expectCorrectColors(vp: TestViewport) {
+      const colors = vp.readUniqueColors();
+      expect(colors.length === 2);
+      expect(colors.contains(bgColor)).to.be.true; // black background
+      colors.forEach((color) => expect(color === bgColor || isReddish(color)));
+    }
+    function expectAlmostTransparent(vp: TestViewport) {
+      const colors = vp.readUniqueColors();
+      expect(colors.length === 2);
+      expect(colors.contains(bgColor)).to.be.true; // black background
+      colors.forEach((color) => expect(color.r < 20 && color.b < 20 && color.g < 20));
+    }
 
-    await test([white, red, blue, green, yellow], (vp, _vf) => {
-      IModelApp.viewManager.addDecorator(decorator);
-      vp.changeViewedModels([]);
-      vp.displayStyle.backgroundColor = ColorDef.white;
-    }, (_vp) => {
-      IModelApp.viewManager.dropDecorator(decorator);
-    });
-  });
-});
+    it("should override color", async () => {
+      const rect = new ViewRect(0, 0, 100, 100);
+      await testViewportsWithDpr(imodel, rect, async (vp) => {
+        expect(vp.view.is3d());
+        const colorOverride = FeatureAppearance.fromJSON({ rgb: new RgbColor(0xff, 0, 0) });
 
-describe("Monochrome", async () => {
-  let imodel: IModelConnection;
-
-  before(async () => {
-    await IModelApp.startup();
-    imodel = await SnapshotConnection.openFile("mirukuru.ibim");
-  });
-
-  after(async () => {
-    if (imodel) await imodel.close();
-    await IModelApp.shutdown();
-  });
-
-  it("should always apply to surfaces and to edges only in wireframe", async () => {
-    await testOnScreenViewport("0x24", imodel, 100, 100, async (vp) => {
-      const vf = vp.viewFlags.clone();
-      vf.acsTriad = false;
-      vf.visibleEdges = true;
-      vf.hiddenEdges = false;
-      vf.lighting = false;
-      vf.monochrome = true;
-      vp.displayStyle.settings.monochromeColor = ColorDef.red;
-      vp.displayStyle.settings.monochromeMode = MonochromeMode.Flat;
-      vp.displayStyle.backgroundColor = ColorDef.blue;
-
-      const edgeColor = Color.fromColorDef(ColorDef.black); // the view's display style overrides edge color.
-      const monoColor = Color.fromColorDef(ColorDef.red);
-      const bgColor = Color.fromColorDef(ColorDef.blue);
-
-      for (const renderMode of [RenderMode.Wireframe, RenderMode.HiddenLine, RenderMode.SolidFill, RenderMode.SmoothShade]) {
-        vf.renderMode = renderMode;
-        vp.viewFlags = vf;
+        vp.view.forEachModel((model) => vp.overrideModelAppearance(model.id, colorOverride));
 
         await vp.waitForAllTilesToRender();
+        expect(vp.numRequestedTiles).to.equal(0);
+        expect(vp.numSelectedTiles).to.equal(1);
 
-        const isWireframe = RenderMode.Wireframe === renderMode;
-        const colors = vp.readUniqueColors();
-        expect(colors.length).to.equal(isWireframe ? 2 : 3);
-        expect(colors.contains(bgColor)).to.be.true;
-        expect(colors.contains(monoColor)).to.be.true;
-        expect(colors.contains(edgeColor)).to.equal(!isWireframe);
-      }
+        expectCorrectColors(vp);
+      });
     });
-  });
 
-  it("should scale with surface color in scaled mode", async () => {
-    await testOnScreenViewport("0x24", imodel, 100, 100, async (vp) => {
-      const vf = vp.viewFlags.clone();
-      vf.renderMode = RenderMode.SmoothShade;
-      vf.acsTriad = vf.visibleEdges = vf.lighting = false;
-      vf.monochrome = true;
-      vp.displayStyle.settings.monochromeColor = ColorDef.red;
-      vp.displayStyle.settings.backgroundColor = ColorDef.blue;
+    it("should override tranparency", async () => {
+      const rect = new ViewRect(0, 0, 100, 100);
+      await testViewportsWithDpr(imodel, rect, async (vp) => {
+        expect(vp.view.is3d());
+        const colorOverride = FeatureAppearance.fromJSON({ transparency: .95 });
 
-      vp.viewFlags = vf;
+        vp.view.forEachModel((model) => vp.overrideModelAppearance(model.id, colorOverride));
 
-      // Draw white surface on blue background. 100% intensity = 100% monochrome color.
-      await vp.waitForAllTilesToRender();
-      let colors = vp.readUniqueColors();
-      expect(colors.length).to.equal(2);
-      expect(colors.contains(Color.fromColorDef(ColorDef.red))).to.be.true;
-      expect(colors.contains(Color.fromColorDef(ColorDef.blue))).to.be.true;
+        await vp.waitForAllTilesToRender();
+        expect(vp.numRequestedTiles).to.equal(0);
+        expect(vp.numSelectedTiles).to.equal(1);
 
-      class ColorOverride {
-        constructor(public color: ColorDef) { }
-        public addFeatureOverrides(ovrs: FeatureSymbology.Overrides, _vp: Viewport): void {
-          ovrs.setDefaultOverrides(FeatureAppearance.fromRgb(this.color));
-        }
-      }
-
-      // Draw surface as black. 0% intensity = 0% monochrome color.
-      const provider = new ColorOverride(ColorDef.black);
-      vp.addFeatureOverrideProvider(provider);
-      await vp.waitForAllTilesToRender();
-      colors = vp.readUniqueColors();
-      expect(colors.length).to.equal(2);
-      expect(colors.contains(Color.fromColorDef(ColorDef.blue))).to.be.true;
-      expect(colors.contains(Color.fromColorDef(ColorDef.black))).to.be.true;
-
-      // Draw surface as grey. 50% intensity = 50% monochrome color.
-      provider.color = ColorDef.from(0x7f, 0x7f, 0x7f);
-      vp.setFeatureOverrideProviderChanged();
-      await vp.waitForAllTilesToRender();
-      colors = vp.readUniqueColors();
-      expect(colors.length).to.equal(2);
-      for (const color of colors) {
-        if (!color.equalsColorDef(ColorDef.blue)) {
-          expect(color.r).least(0x79);
-          expect(color.r).most(0x85);
-          expect(color.g).to.equal(0);
-          expect(color.b).to.equal(0);
-        }
-      }
+        expectAlmostTransparent(vp);
+      });
     });
   });
 });
