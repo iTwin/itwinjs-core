@@ -16,6 +16,8 @@ export * from "./ColorByName";
 export * from "./ColorDef";
 export * from "./CommonLoggerCategory";
 export * from "./DisplayStyleSettings";
+export * from "./domains/FunctionalElementProps";
+export * from "./domains/GenericElementProps";
 export * from "./ECSqlTypes";
 export * from "./ElementProps";
 export * from "./EntityProps";
@@ -26,6 +28,16 @@ export * from "./FeatureTable";
 export * from "./Fonts";
 export * from "./Frustum";
 export * from "./GeoCoordinateServices";
+export * from "./geometry/AreaPattern";
+export * from "./geometry/BoundingSphere";
+export * from "./geometry/Cartographic";
+export * from "./geometry/ElementGeometry";
+export * from "./geometry/FrustumPlanes";
+export * from "./geometry/GeometryStream";
+export * from "./geometry/ImageGraphic";
+export * from "./geometry/LineStyle";
+export * from "./geometry/Placement";
+export * from "./geometry/TextString";
 export * from "./GeometryContainment";
 export * from "./GeometryParams";
 export * from "./GeometrySummary";
@@ -36,10 +48,15 @@ export * from "./HiddenLine";
 export * from "./Hilite";
 export * from "./HSLColor";
 export * from "./HSVColor";
+export * from "./Image";
 export * from "./IModel";
 export * from "./IModelError";
 export * from "./IModelVersion";
-export * from "./Image";
+export * from "./ipc/BackendIpc";
+export * from "./ipc/FrontendIpc";
+export * from "./ipc/IpcSocket";
+export * from "./ipc/NativeAppIpc";
+export * from "./ipc/IpcWebSocket";
 export * from "./LightSettings";
 export * from "./LinePixels";
 export * from "./MapImagerySettings";
@@ -54,8 +71,8 @@ export * from "./PlanProjectionSettings";
 export * from "./QPoint";
 export * from "./Render";
 export * from "./RenderMaterial";
-export * from "./RenderTexture";
 export * from "./RenderSchedule";
+export * from "./RenderTexture";
 export * from "./RgbColor";
 export * from "./RpcInterface";
 export * from "./RpcManager";
@@ -76,18 +93,6 @@ export * from "./Tween";
 export * from "./ViewDetails";
 export * from "./ViewFlags";
 export * from "./ViewProps";
-export * from "./domains/FunctionalElementProps";
-export * from "./domains/GenericElementProps";
-export * from "./geometry/AreaPattern";
-export * from "./geometry/BoundingSphere";
-export * from "./geometry/Cartographic";
-export * from "./geometry/ElementGeometry";
-export * from "./geometry/FrustumPlanes";
-export * from "./geometry/GeometryStream";
-export * from "./geometry/ImageGraphic";
-export * from "./geometry/LineStyle";
-export * from "./geometry/Placement";
-export * from "./geometry/TextString";
 export * from "./oidc/DesktopAuthorizationClientConfiguration";
 export * from "./oidc/MobileAuthorizationClientConfiguration";
 export * from "./rpc/DevToolsRpcInterface";
@@ -96,7 +101,6 @@ export * from "./rpc/IModelReadRpcInterface";
 export * from "./rpc/IModelTileRpcInterface";
 export * from "./rpc/IModelWriteRpcInterface";
 export * from "./rpc/ModelGeometryChanges";
-export * from "./rpc/NativeAppRpcInterface";
 export * from "./rpc/SnapshotIModelRpcInterface";
 export * from "./rpc/StandaloneIModelRpcInterface";
 export * from "./rpc/TestRpcManager";
@@ -114,9 +118,6 @@ export * from "./rpc/core/RpcRequest";
 export * from "./rpc/core/RpcRequestContext";
 export * from "./rpc/core/RpcRoutingToken";
 export * from "./rpc/core/RpcPush";
-export * from "./rpc/electron/ElectronRpcManager";
-export * from "./rpc/electron/ElectronRpcProtocol";
-export * from "./rpc/electron/ElectronRpcRequest";
 export * from "./rpc/mobile/MobileRpcManager";
 export * from "./rpc/mobile/MobileRpcManager";
 export * from "./rpc/mobile/MobileRpcProtocol";
@@ -180,6 +181,10 @@ export * from "./tile/TileMetadata";
  * Types for working with [RpcInterfaces]($docs/learning/RpcInterface.md).
  */
 /**
+ * @docs-group-description IpcSocket
+ * Types for working with [IpcInterfaces]($docs/learning/IpcInterface.md).
+ */
+/**
  * @docs-group-description ECSQL
  * Types for working with [ECSQL]($docs/learning/ECSQL.md), [Spatial Queries]($docs/learning/SpatialQueries.md), and [ECSQL Geometry Functions]($docs/learning/GeometrySqlFuncs.md).
  */
@@ -202,4 +207,8 @@ export * from "./tile/TileMetadata";
 /**
  * @docs-group-description Utils
  * Miscellaneous utility classes.
+ */
+/**
+ * @docs-group-description NativeApp
+ * [Native applications]($docs/learning/NativeApps.md)
  */
