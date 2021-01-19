@@ -11,9 +11,18 @@ import TestUtils from "../TestUtils";
 import { fireEvent, render } from "@testing-library/react";
 
 describe("SearchBox", () => {
+  let fakeTimers: sinon.SinonFakeTimers;
 
   before(async () => {
     await TestUtils.initializeUiCore();
+  });
+
+  beforeEach(() => {
+    fakeTimers = sinon.useFakeTimers();
+  });
+
+  afterEach(() => {
+    fakeTimers.restore();
   });
 
   describe("renders", () => {
@@ -36,12 +45,12 @@ describe("SearchBox", () => {
       expect(inputNode).not.to.be.null;
       if (inputNode) {
         const testValue = "Test";
-        fireEvent.change(inputNode,  { target: { value: testValue } });
+        fireEvent.change(inputNode, { target: { value: testValue } });
         expect(spyMethod.calledOnce).to.be.true;
       }
     });
 
-    it("should honor valueChangedDelay", () => {
+    it("should honor valueChangedDelay", async () => {
       const spyMethod = sinon.spy();
       const component = render(<SearchBox onValueChanged={spyMethod} valueChangedDelay={100} />);
       const inputNode = component.container.querySelector("input") as HTMLElement;
@@ -49,14 +58,12 @@ describe("SearchBox", () => {
       expect(inputNode).not.to.be.null;
       if (inputNode) {
         const testValue = "Test";
-        fireEvent.change(inputNode,  { target: { value: testValue } });
+        fireEvent.change(inputNode, { target: { value: testValue } });
 
-        setTimeout(() => {
-          expect(spyMethod.called).to.be.false;
-        }, 1);
-        setTimeout(() => {
-          expect(spyMethod.calledOnce).to.be.true;
-        }, 100);
+        await fakeTimers.tickAsync(1);
+        expect(spyMethod.called).to.be.false;
+        await fakeTimers.tickAsync(100);
+        expect(spyMethod.calledOnce).to.be.true;
       }
     });
 
