@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { isElectronRenderer } from "@bentley/bentleyjs-core";
+import { ElectronFrontend } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { FrontendIpc } from "@bentley/imodeljs-common";
 import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
 
@@ -18,7 +19,7 @@ export class DtaIpc {
   }
 
   public static async selectFileElectron() {
-    const val = await this.callBackend("openFile", {
+    const val = await ElectronFrontend.callDialog("showOpenDialog", {
       properties: ["openFile"],
       filters: [{ name: "iModels", extensions: ["ibim", "bim"] }],
     });
