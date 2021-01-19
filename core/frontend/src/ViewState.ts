@@ -1273,27 +1273,8 @@ export abstract class ViewState3d extends ViewState {
     targetPoint = this.cartographicToRoot(targetPointCartographic)!;
 
     targetPointCartographic.height = eyeHeight;
-    let lEyePoint = this.cartographicToRoot(targetPointCartographic)!;
-
-    targetPointCartographic.latitude += 10.0;
-    const northOfEyePoint = this.cartographicToRoot(targetPointCartographic)!;
-    let upVector = northOfEyePoint.unitVectorTo(lEyePoint)!;
-    if (this.globeMode === GlobeMode.Plane)
-      upVector = Vector3d.create(Math.abs(upVector.x), Math.abs(upVector.y), Math.abs(upVector.z));
-
-    if (0 !== pitchAngleRadians) {
-      const pitchAxis = upVector.unitCrossProduct(Vector3d.createStartEnd(targetPoint, lEyePoint));
-      if (undefined !== pitchAxis) {
-        const pitchMatrix = Matrix3d.createRotationAroundVector(pitchAxis, Angle.createRadians(pitchAngleRadians))!;
-        const pitchTransform = Transform.createFixedPointAndMatrix(targetPoint, pitchMatrix);
-        lEyePoint = pitchTransform.multiplyPoint3d(lEyePoint);
-        pitchMatrix.multiplyVector(upVector, upVector);
-      }
-    }
-
-    this.lookAtUsingLensAngle(lEyePoint, targetPoint, upVector, this.camera.getLensAngle());
-
-    return lEyePoint.distance(origEyePoint);
+    const lEyePoint = this.cartographicToRoot(targetPointCartographic)!;
+    return this.finishLookAtGlobalLocation(targetPointCartographic, origEyePoint, lEyePoint, targetPoint, pitchAngleRadians);
   }
 
   /** Look at a global location, placing the camera's eye at the specified eye height above a viewed location using the GCS.
@@ -1311,7 +1292,7 @@ export abstract class ViewState3d extends ViewState {
     if (location !== undefined && location.area !== undefined)
       eyeHeight = await areaToEyeHeightFromGcs(this, location.area, location.center.height);
 
-    const origEyePoint = eyePoint !== undefined ? eyePoint.clone() : this.getEyePoint().clone();
+    const origEyePoint = eyePoint !== undefined ? eyePoint.clone() : this.getEyeOrOrthographicViewPoint().clone();
 
     let targetPoint = origEyePoint;
     const targetPointCartographic = location !== undefined ? location.center.clone() : this.rootToCartographic(targetPoint)!;
@@ -1319,10 +1300,13 @@ export abstract class ViewState3d extends ViewState {
     targetPoint = (await this.cartographicToRootFromGcs(targetPointCartographic))!;
 
     targetPointCartographic.height = eyeHeight;
-    let lEyePoint = (await this.cartographicToRootFromGcs(targetPointCartographic))!;
+    const lEyePoint = (await this.cartographicToRootFromGcs(targetPointCartographic))!;
+    return this.finishLookAtGlobalLocation(targetPointCartographic, origEyePoint, lEyePoint, targetPoint, pitchAngleRadians);
+  }
 
+  private finishLookAtGlobalLocation(targetPointCartographic: Cartographic, origEyePoint: Point3d, lEyePoint: Point3d, targetPoint: Point3d, pitchAngleRadians: number): number {
     targetPointCartographic.latitude += 10.0;
-    const northOfEyePoint = (await this.cartographicToRootFromGcs(targetPointCartographic))!;
+    const northOfEyePoint = this.cartographicToRoot(targetPointCartographic)!;
     let upVector = northOfEyePoint.unitVectorTo(lEyePoint)!;
     if (this.globeMode === GlobeMode.Plane)
       upVector = Vector3d.create(Math.abs(upVector.x), Math.abs(upVector.y), Math.abs(upVector.z));
@@ -1337,7 +1321,10 @@ export abstract class ViewState3d extends ViewState {
       }
     }
 
+    const isCameraEnabled = this.isCameraEnabled();
     this.lookAtUsingLensAngle(lEyePoint, targetPoint, upVector, this.camera.getLensAngle());
+    if (!isCameraEnabled && this.isCameraEnabled)
+      this.turnCameraOff();
 
     return lEyePoint.distance(origEyePoint);
   }
@@ -1768,6 +1755,20 @@ export abstract class ViewState3d extends ViewState {
 
   /**  Get the distance from the eyePoint to the focus plane for this view. */
   public getFocusDistance(): number { return this.camera.focusDist; }
+
+  /** @internal */
+  public getEyeOrOrthographicViewPoint(): Point3d {
+    if (this.isCameraOn)
+      return this.camera.getEyePoint();
+
+    this.camera.validateLens();
+    const tanHalfAngle = Math.tan(this.camera.lens.radians / 2);
+    const halfDelta = this.getExtents().magnitudeXY();
+    const eyeDistance = tanHalfAngle ? (halfDelta / tanHalfAngle) : 0;
+    const zVector = this.getRotation().getRow(2);
+
+    return this.getCenter().plusScaled(zVector, - eyeDistance);
+  }
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystem3dState.createNew(acsName, this.iModel); }
 
   public decorate(context: DecorateContext): void {
