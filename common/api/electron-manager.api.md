@@ -8,7 +8,6 @@ import { BrowserWindow } from 'electron';
 import { BrowserWindowConstructorOptions } from 'electron';
 import { IpcHandler } from '@bentley/imodeljs-common';
 import { IpcListener } from '@bentley/imodeljs-common';
-import { IpcMain } from 'electron';
 import { IpcSocketBackend } from '@bentley/imodeljs-common';
 import { RemoveFunction } from '@bentley/imodeljs-common';
 import { RpcConfiguration } from '@bentley/imodeljs-common';
@@ -23,6 +22,8 @@ export class ElectronBackend implements IpcSocketBackend {
     // (undocumented)
     readonly appIconPath: string;
     // (undocumented)
+    get electron(): typeof Electron;
+    // (undocumented)
     protected readonly _electronFrontend = "electron://frontend/";
     // (undocumented)
     readonly frontendURL: string;
@@ -30,7 +31,9 @@ export class ElectronBackend implements IpcSocketBackend {
     handle(channel: string, listener: (evt: any, ...args: any[]) => Promise<any>): RemoveFunction;
     static initialize(opts?: ElectronBackendOptions): ElectronBackend;
     // (undocumented)
-    get ipcMain(): IpcMain;
+    static get instance(): ElectronBackend;
+    // (undocumented)
+    get ipcMain(): Electron.IpcMain;
     get mainWindow(): BrowserWindow | undefined;
     openMainWindow(windowOptions?: BrowserWindowConstructorOptions): Promise<void>;
     // @internal (undocumented)
