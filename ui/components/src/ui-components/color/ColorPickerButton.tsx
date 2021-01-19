@@ -129,7 +129,9 @@ export const ColorPickerButton = React.forwardRef<HTMLButtonElement, ColorPicker
           isOpen={showPopup}
           position={RelativePosition.BottomLeft}
           onClose={closePopup}
-          target={target.current} >
+          target={target.current}
+          closeOnNestedPopupOutsideClick
+        >
           <ColorOptions handleColorPicked={handleColorPicked} options={colorOptions} numColumns={numColumns ?? 4} round={!!round} title={dropDownTitle} />
         </Popup>
       </>
