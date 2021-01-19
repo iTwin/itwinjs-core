@@ -158,6 +158,7 @@ export class ToolbarGroupItem extends React.Component<ToolbarGroupItemComponentP
 
   public componentDidUpdate(prevProps: ToolbarGroupItemComponentProps, _prevState: ToolbarGroupItemState) {
     if (!PropsHelper.isShallowEqual(this.props, prevProps)) {
+      // istanbul ignore else
       if (this.props.groupItem !== prevProps.groupItem)
         Logger.logTrace(UiFramework.loggerCategory(this), `Different ToolbarGroupItem for same groupId of ${this.state.groupItem.id}`);
       this.setState((_, props) => this.getGroupItemState(props));
