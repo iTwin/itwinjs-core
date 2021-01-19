@@ -7,16 +7,13 @@
  * @module Authentication
  */
 
-import { assert, BeEvent, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
+import { assert, BeEvent, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import {
   defaultDesktopAuthorizationClientExpiryBuffer, DesktopAuthorizationClientConfiguration, DesktopAuthorizationClientMessages, FrontendIpc, IpcListener,
 } from "@bentley/imodeljs-common";
 import { AccessToken } from "@bentley/itwin-client";
-import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 import { FrontendRequestContext } from "../FrontendRequestContext";
-
-const loggerCategory: string = FrontendLoggerCategory.Authorization;
 
 /**
  * Ipc Wrapper around DesktopAuthorizationClient for use in the electron render process
@@ -48,15 +45,13 @@ export class DesktopAuthorizationClient implements FrontendAuthorizationClient {
   }
 
   /** Wrapper around ipc.send to add log traces */
-  private ipcSend(message: string, ...args: any[]) {
-    Logger.logTrace(loggerCategory, "DesktopAuthorizationClient sends message", () => ({ message }));
-    FrontendIpc.ipc.send(message, ...args);
+  private ipcSend(channel: string, ...args: any[]) {
+    FrontendIpc.send(channel, ...args);
   }
 
   /** Wrapper around ipc.on to add log traces */
-  private ipcOn(message: string, fn: IpcListener) {
-    Logger.logTrace(loggerCategory, "DesktopAuthorizationClient receives message", () => ({ message }));
-    FrontendIpc.ipc.receive(message, fn);
+  private ipcOn(channel: string, fn: IpcListener) {
+    FrontendIpc.addListener(channel, fn);
   }
 
   /** Used to initialize the client - must be awaited before any other methods are called */
