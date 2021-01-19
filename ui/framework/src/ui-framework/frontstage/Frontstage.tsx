@@ -18,7 +18,7 @@ import {
 import { ContentGroup } from "../content/ContentGroup";
 import { ContentLayout, ContentLayoutDef } from "../content/ContentLayout";
 import { ToolItemDef } from "../shared/ToolItemDef";
-import { getNestedStagePanelKey, StagePanel, StagePanelProps, StagePanelRuntimeProps } from "../stagepanels/StagePanel";
+import { getNestedStagePanelKey, StagePanelProps, StagePanelRuntimeProps } from "../stagepanels/StagePanel";
 import { StagePanelDef } from "../stagepanels/StagePanelDef";
 import { UiFramework, UiVisibilityEventArgs } from "../UiFramework";
 import { UiShowHideManager } from "../utils/UiShowHideManager";

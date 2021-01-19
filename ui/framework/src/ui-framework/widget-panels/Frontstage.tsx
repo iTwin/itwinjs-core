@@ -9,7 +9,7 @@
 import "./Frontstage.scss";
 import produce, { castDraft, Draft } from "immer";
 import * as React from "react";
-import { StagePanelLocation, UiItemProviderRegisteredEventArgs, UiItemsManager, WidgetState } from "@bentley/ui-abstract";
+import { StagePanelLocation, UiItemsManager, WidgetState } from "@bentley/ui-abstract";
 import { Size, SizeProps, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
 import {
   addPanelWidget, addTab, createNineZoneState, createTabsState, createTabState, createWidgetState, findTab, floatingWidgetBringToFront, FloatingWidgets,
