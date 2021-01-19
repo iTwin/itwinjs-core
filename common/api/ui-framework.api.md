@@ -378,6 +378,9 @@ export interface ActivityMessageProps {
 export class ActivityMessageUpdatedEvent extends UiEvent<ActivityMessageEventArgs> {
 }
 
+// @internal
+export function addMissingWidgets(frontstageDef: FrontstageDef, initialState: NineZoneState): NineZoneState;
+
 // @internal (undocumented)
 export function addPanelWidgets(state: NineZoneState, frontstageDef: FrontstageDef, side: PanelSide): NineZoneState;
 
@@ -2144,7 +2147,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
     // @internal
     componentWillUnmount(): void;
     // @internal (undocumented)
-    static createStagePanelDef(panelNode: React.ReactElement<StagePanelProps> | undefined, panelLocation: StagePanelLocation_2, props: FrontstageProps): StagePanelDef | undefined;
+    static createStagePanelDef(panelLocation: StagePanelLocation_2, props: FrontstageProps): StagePanelDef | undefined;
     // @internal (undocumented)
     static createZoneDef(zoneNode: React.ReactElement<ZoneProps> | undefined, zoneLocation: ZoneLocation, props: FrontstageProps): ZoneDef | undefined;
     static initializeFrontstageDef(frontstageDef: FrontstageDef, props: FrontstageProps): void;
@@ -2582,6 +2585,9 @@ export function getIsHiddenIfSelectionNotActive(): ConditionalBooleanValue;
 // @internal (undocumented)
 export const getNestedStagePanelKey: (location: StagePanelLocation_2) => NestedStagePanelKey<NestedStagePanelsManagerProps>;
 
+// @internal (undocumented)
+export function getPanelZoneWidgets(frontstageDef: FrontstageDef, panelZone: WidgetIdTypes): WidgetDef[];
+
 // @beta
 export function getSelectionContextSyncEventIds(): string[];
 
@@ -2971,7 +2977,7 @@ export const isCollapsedToPanelState: (isCollapsed: boolean) => StagePanelState.
 // @internal (undocumented)
 export function isFrontstageStateSettingResult(settingsResult: UiSettingsResult): settingsResult is {
     status: UiSettingsStatus.Success;
-    setting: FrontstageState_2;
+    setting: WidgetPanelsFrontstageState;
 };
 
 // @beta
@@ -4215,6 +4221,9 @@ export class ReducerRegistry {
 // @beta
 export const ReducerRegistryInstance: ReducerRegistry;
 
+// @internal
+export function removeMissingWidgets(frontstageDef: FrontstageDef, initialState: NineZoneState): NineZoneState;
+
 // @alpha
 export class RestoreFrontstageLayoutTool extends Tool {
     // (undocumented)
@@ -5155,9 +5164,8 @@ export class StagePanelDef extends WidgetHost {
     get defaultSize(): number | undefined;
     // @internal (undocumented)
     get defaultState(): StagePanelState;
-    findWidgetDef(id: string): WidgetDef | undefined;
     // @internal (undocumented)
-    initializeFromProps(props: StagePanelProps, panelLocation?: StagePanelLocation_2): void;
+    initializeFromProps(props?: StagePanelProps, panelLocation?: StagePanelLocation_2): void;
     get location(): StagePanelLocation_2;
     // @internal (undocumented)
     get maxSizeSpec(): number | {
@@ -5168,11 +5176,15 @@ export class StagePanelDef extends WidgetHost {
     get panelState(): StagePanelState;
     set panelState(panelState: StagePanelState);
     // @internal
-    get panelZones(): StagePanelZonesDef | undefined;
+    get panelWidgetDefs(): readonly WidgetDef[];
+    // @internal
+    get panelZones(): StagePanelZonesDef;
     get pinned(): boolean;
     get resizable(): boolean;
     get size(): number | undefined;
     set size(size: number | undefined);
+    // @internal (undocumented)
+    updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation_2, _section?: StagePanelSection_2): void;
     get widgetDefs(): ReadonlyArray<WidgetDef>;
 }
 
@@ -5299,13 +5311,13 @@ export class StagePanelZonesDef {
     // (undocumented)
     [Symbol.iterator](): Iterator<[StagePanelZoneDefKeys, StagePanelZoneDef]>;
     // (undocumented)
-    get end(): StagePanelZoneDef | undefined;
+    get end(): StagePanelZoneDef;
     // (undocumented)
     initializeFromProps(props: StagePanelZonesProps, panelLocation: StagePanelLocation_2): void;
     // (undocumented)
-    get middle(): StagePanelZoneDef | undefined;
+    get middle(): StagePanelZoneDef;
     // (undocumented)
-    get start(): StagePanelZoneDef | undefined;
+    get start(): StagePanelZoneDef;
     }
 
 // @beta
@@ -6841,6 +6853,18 @@ export const WidgetPanelsFrontstage: React.NamedExoticComponent<object>;
 
 // @internal (undocumented)
 export function WidgetPanelsFrontstageContent(): JSX.Element | null;
+
+// @internal
+export interface WidgetPanelsFrontstageState {
+    // (undocumented)
+    id: FrontstageDef["id"];
+    // (undocumented)
+    nineZone: SavedNineZoneState;
+    // (undocumented)
+    stateVersion: number;
+    // (undocumented)
+    version: number;
+}
 
 // @internal (undocumented)
 export function WidgetPanelsStatusBar(props: CommonProps): JSX.Element | null;
