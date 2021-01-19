@@ -366,8 +366,16 @@ export class ComponentExamplesProvider {
           <ColorSwatch colorDef={colorDef} onColorPick={handleColorPick} />),
         createComponentExample("Color Picker Button", undefined,
           <ColorPickerButton initialColor={colorDef} onColorPick={handleColorPick} />),
+        createComponentExample("Color Picker Button", "with Caret",
+          <ColorPickerButton initialColor={colorDef} onColorPick={handleColorPick} showCaret />),
+        createComponentExample("Color Picker Button", "disabled with Caret",
+          <ColorPickerButton initialColor={colorDef} onColorPick={handleColorPick} disabled showCaret />),
+        createComponentExample("Color Picker Button", "Round with Caret",
+          <ColorPickerButton initialColor={colorDef} onColorPick={handleColorPick} round showCaret />),
         createComponentExample("Color Picker Dialog", undefined, <ColorPickerToggle />),
         createComponentExample("Color Picker Popup", undefined, <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} />),
+        createComponentExample("Color Picker Popup", "with Caret", <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} showCaret />),
+        createComponentExample("Color Picker Popup", "disabled with Caret", <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} disabled showCaret />),
       ],
     };
   }
