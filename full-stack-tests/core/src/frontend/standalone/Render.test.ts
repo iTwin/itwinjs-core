@@ -18,39 +18,6 @@ import { Color, comparePixelData, createOnScreenTestViewport, testOnScreenViewpo
 
 /* eslint-disable @typescript-eslint/unbound-method */
 
-describe("Test VAO creation", () => {
-  before(async () => {
-    const renderSysOpts: RenderSystem.Options = {};
-    await IModelApp.startup({ renderSys: renderSysOpts });
-  });
-
-  after(async () => {
-    await IModelApp.shutdown();
-  });
-
-  it("should create VAO BuffersContainer object", async () => {
-    const buffers = BuffersContainer.create();
-    expect(buffers instanceof VAOContainer).to.be.true;
-  });
-});
-
-describe("Test VBO creation", () => {
-  before(async () => {
-    const renderSysOpts: RenderSystem.Options = { useWebGL2: false };
-    renderSysOpts.disabledExtensions = ["OES_vertex_array_object"];
-    await IModelApp.startup({ renderSys: renderSysOpts });
-  });
-
-  after(async () => {
-    await IModelApp.shutdown();
-  });
-
-  it("should create VBO BuffersContainer object", async () => {
-    const buffers = BuffersContainer.create();
-    expect(buffers instanceof VBOContainer).to.be.true;
-  });
-});
-
 async function testViewportsWithDpr(imodel: IModelConnection, rect: ViewRect, test: (vp: TestViewport) => Promise<void>): Promise<void> {
   const devicePixelRatios = [1.0, 1.25, 1.5, 2.0];
   for (const dpr of devicePixelRatios)

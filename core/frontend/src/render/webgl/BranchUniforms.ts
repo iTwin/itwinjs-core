@@ -16,7 +16,7 @@ import { BranchStack } from "./BranchStack";
 import { BatchState } from "./BatchState";
 import { CachedGeometry } from "./CachedGeometry";
 import { Branch } from "./Graphic";
-import { UniformHandle } from "./Handle";
+import { UniformHandle } from "./UniformHandle";
 import { Matrix4 } from "./Matrix";
 import { RenderCommands } from "./RenderCommands";
 import { desync, sync, SyncToken } from "./Sync";

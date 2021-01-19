@@ -11,7 +11,7 @@ import { ImageBuffer, ImageBufferFormat, isPowerOfTwo, nextHighestPowerOfTwo, Re
 import { imageBufferToPngDataUrl, openImageDataUrlInNewWindow } from "../../ImageUtil";
 import { WebGLDisposable } from "./Disposable";
 import { GL } from "./GL";
-import { UniformHandle } from "./Handle";
+import { UniformHandle } from "./UniformHandle";
 import { OvrFlags, TextureUnit } from "./RenderFlags";
 import { System } from "./System";
 

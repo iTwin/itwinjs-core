@@ -21,7 +21,7 @@ import { LineCode } from "./LineCode";
 import { FloatRgba } from "./FloatRGBA";
 import { GL } from "./GL";
 import { Graphic } from "./Graphic";
-import { BufferHandle, BufferParameters, BuffersContainer } from "./Handle";
+import { BufferHandle, BufferParameters, BuffersContainer } from "./AttributeBuffers";
 import { InstanceBuffers } from "./InstancedGeometry";
 import { createMaterialInfo, MaterialInfo } from "./Material";
 import { Primitive } from "./Primitive";
