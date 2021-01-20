@@ -1466,8 +1466,6 @@ export abstract class BriefcaseConnection extends IModelConnection {
     // @internal
     changeCacheAttached(): Promise<boolean>;
     get contextId(): GuidString;
-    // @internal
-    detachChangeCache(): Promise<void>;
     get iModelId(): GuidString;
     get isClosed(): boolean;
     // (undocumented)

@@ -642,14 +642,6 @@ export abstract class BriefcaseConnection extends IModelConnection {
    */
   public async attachChangeCache(): Promise<void> { return WipRpcInterface.getClient().attachChangeCache(this.getRpcProps()); }
 
-  /** WIP - Detaches the *Change Cache file* to this iModel if it had been attached before.
-   * > You do not have to check whether a Change Cache file had been attached before. The
-   * > method does not do anything, if no Change Cache is attached.
-   * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
-   * @internal
-   */
-  public async detachChangeCache(): Promise<void> { return WipRpcInterface.getClient().detachChangeCache(this.getRpcProps()); }
-
   /** Pull and merge new server changes
    * @alpha
    */
