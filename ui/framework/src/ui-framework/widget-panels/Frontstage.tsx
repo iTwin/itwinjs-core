@@ -656,6 +656,7 @@ export const showWidget = produce((nineZone: Draft<NineZoneState>, id: TabState[
     widget.activeTabId = id;
     return;
   }
+  widget.activeTabId = id;
   widget.minimized = false;
   floatingWidgetBringToFront(nineZone, location.floatingWidgetId);
 });
@@ -796,7 +797,9 @@ export function useFrontstageManager(frontstageDef: FrontstageDef) {
   React.useEffect(() => {
     const listener = createListener(frontstageDef, ({ widgetDef }: WidgetEventArgs) => {
       assert(!!frontstageDef.nineZoneState);
-      frontstageDef.nineZoneState = expandWidget(frontstageDef.nineZoneState, widgetDef.id);
+      let nineZoneState = showWidget(frontstageDef.nineZoneState, widgetDef.id);
+      nineZoneState = expandWidget(nineZoneState, widgetDef.id);
+      frontstageDef.nineZoneState = nineZoneState;
     });
     FrontstageManager.onWidgetExpandEvent.addListener(listener);
     return () => {
