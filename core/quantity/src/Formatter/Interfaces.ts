@@ -20,7 +20,7 @@ export interface FormatProps {
   readonly stationSeparator?: string;
   readonly composite?: {
     readonly spacer?: string;
-    readonly includeZero?: boolean;
+    readonly includeZero?: boolean; // not currently used in Native formatter
     readonly units: Array<{
       readonly name: string;
       readonly label?: string;
