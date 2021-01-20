@@ -85,6 +85,7 @@ export * from "./ui-framework/hooks/useFrameworkVersion";
 export * from "./ui-framework/imodel-components/spatial-tree/SpatialContainmentTree";
 export * from "./ui-framework/imodel-components/category-tree/CategoriesTree";
 export * from "./ui-framework/imodel-components/models-tree/ModelsTree";
+export * from "./ui-framework/imodel-components/models-tree/ModelsVisibilityHandler";
 export * from "./ui-framework/imodel-components/Common";
 export * from "./ui-framework/imodel-components/VisibilityTreeEventHandler";
 export * from "./ui-framework/imodel-components/VisibilityTreeRenderer";
