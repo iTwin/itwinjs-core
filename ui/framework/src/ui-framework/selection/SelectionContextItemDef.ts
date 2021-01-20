@@ -41,7 +41,7 @@ export function isNoSelectionActive(): boolean {
     selectionCount = UiFramework.store.getState()[UiFramework.frameworkStateKey].frameworkState.sessionState.numItemsSelected;
 
   // istanbul ignore if
-  if (activeContentControl && activeContentControl.viewport
+  if (activeContentControl /* istanbul ignore next */ && activeContentControl.viewport
     && /* istanbul ignore next */ (activeContentControl.viewport.view.iModel.selectionSet.size > 0 || selectionCount > 0))
     return false;
   return true;
