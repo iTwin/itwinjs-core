@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelReadRpcInterface, IModelTileRpcInterface, MobileRpcManager, NativeAppRpcInterface, SnapshotIModelRpcInterface } from "@bentley/imodeljs-common";
+import { IModelReadRpcInterface, IModelTileRpcInterface, MobileRpcManager, SnapshotIModelRpcInterface } from "@bentley/imodeljs-common";
 import { Presentation } from "@bentley/presentation-backend";
 import { NativeAppBackend } from "@bentley/imodeljs-backend";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
@@ -40,7 +40,6 @@ import { PresentationRpcInterface } from "@bentley/presentation-common";
       IModelTileRpcInterface,
       SnapshotIModelRpcInterface,
       PresentationRpcInterface,
-      NativeAppRpcInterface,
     ]);
   } catch (error) {
     Logger.logError("ui-test-app", error);

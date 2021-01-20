@@ -43,7 +43,7 @@ export const defaultDesktopAuthorizationClientExpiryBuffer: number = 10 * 60 * 1
  * @internal
  */
 export class DesktopAuthorizationClientMessages {
-  private static readonly prefix = "imodeljs.auth.";
+  private static readonly prefix = "desktopAuth.";
   private static readonly completeSuffix = ":complete";
 
   public static readonly signIn = `${DesktopAuthorizationClientMessages.prefix}signIn`;
