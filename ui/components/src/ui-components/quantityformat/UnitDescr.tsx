@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { CommonProps, Input, Select, SelectOption } from "@bentley/ui-core";
-import { UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
+import { UnitConversion, UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
 
 /** Properties of [[UnitDescr]] component.
  * @alpha
@@ -24,15 +24,31 @@ export interface UnitDescrProps extends CommonProps {
   onLabelChange: (value: string, index: number) => void;
 }
 
-async function getPossibleUnits(parentUnit: UnitProps, unitsProvider: UnitsProvider, ensureCompatibleComposite: boolean): Promise<UnitProps[]> {
+interface UnitConversionEntry {
+  conversion: UnitConversion;
+  unitProps: UnitProps;
+}
+
+async function getUnitConversionData(possibleUnits: UnitProps[], toUnit: UnitProps, unitsProvider: UnitsProvider) {
+  const unitConversionEntries = possibleUnits.map(async (unit) => {
+    const conversion = await unitsProvider.getConversion(unit, toUnit);
+    return { conversion, unitProps: unit };
+  });
+  return unitConversionEntries;
+}
+
+async function getPossibleUnits(parentUnit: UnitProps, unitsProvider: UnitsProvider, ensureCompatibleComposite: boolean) {
   const unitFamily = parentUnit.unitFamily;
   const possibleUnits = await unitsProvider.getUnitsByFamily(unitFamily);
   if (!ensureCompatibleComposite)
     return possibleUnits;
 
-  const conversionPromises = possibleUnits.map(async (unit) => unitsProvider.getConversion(unit, parentUnit));
-  const conversions = await Promise.all(conversionPromises);
-  return possibleUnits.filter((unit, index) => ((unit.system === parentUnit.system) && (conversions[index].factor < 1))); // && Number.isInteger(conversions[index].factor)
+  const conversionPromises = await getUnitConversionData(possibleUnits, parentUnit, unitsProvider);
+  const conversionEntries = await Promise.all(conversionPromises);
+  // sort the entries so the best potential sub unit will be the first one in the array
+  return conversionEntries.filter((entry) => ((entry.unitProps.system === parentUnit.system) && (entry.conversion.factor < 1)))
+    .sort((a, b) => b.conversion.factor - a.conversion.factor)
+    .map((value) => value.unitProps);
 }
 
 function getUnitName(fullUnitName: string) {
