@@ -75,22 +75,9 @@ export abstract class MapLayerImageryProvider {
     this._testChildAvailability(tile, resolveChildren);
   }
 
-  public async getToolTip(strings: string[], quadId: QuadId, _carto: Cartographic, tree: ImageryMapTileTree): Promise<void> {
-    if (debugToolTip) {
-      const cartoRectangle = tree.cartoRectangleFromQuadId(quadId);
-      let url = "";
-      try {
-        url = await this.constructUrl(quadId.row, quadId.column, quadId.level);
-      }
-      catch (_error) {
-
-      }
-      const debugString = `QuadId: ${quadId.debugString} Rectangle: ${cartoRectangle.latLongString} EPSG:3857: ${this.getEPSG3857ExtentString(quadId.row, quadId.column, quadId.level)} URL: ${url}`;
-      strings.push(debugString);
-      // eslint-disable-next-line no-console
-      console.log(debugString);
-    }
+  public async getToolTip(_strings: string[], _quadId: QuadId, _carto: Cartographic, _tree: ImageryMapTileTree): Promise<void> {
   }
+
   protected getRequestAuthorization(): RequestBasicCredentials | undefined {
     return (this._settings.userName && this._settings.password) ? { user: this._settings.userName, password: this._settings.password } : undefined;
   }
