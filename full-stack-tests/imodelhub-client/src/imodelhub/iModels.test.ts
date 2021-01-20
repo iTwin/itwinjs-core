@@ -500,7 +500,7 @@ describe("iModelHub iModelsHandler", () => {
     chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.FileNotFound);
   });
 
-  it("should fail creating an iModel with invalid size of extent", async () => {
+  it("should fail creating an iModel with invalid size of extent (#iModelBank)", async () => {
     let error: IModelHubClientError | undefined;
     try {
       await iModelClient.iModels.create(requestContext, projectId, createimodelName, { extent: [1] });
@@ -512,7 +512,7 @@ describe("iModelHub iModelsHandler", () => {
     chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.InvalidArgumentError);
   });
 
-  it("should fail creating an iModel with invalid coordinate of extent", async () => {
+  it("should fail creating an iModel with invalid coordinate of extent (#iModelBank)", async () => {
     let error: IModelHubClientError | undefined;
     try {
       await iModelClient.iModels.create(requestContext, projectId, createimodelName, { extent: [1, -200, 3, 4] });
@@ -721,7 +721,7 @@ describe("iModelHub iModelsHandler", () => {
     progressTracker.check(false);
   });
 
-  it("should update iModel extents", async () => {
+  it("should update iModel extents (#iModelBank)", async () => {
     imodelId = imodelId || Guid.createValue();
     mockGetIModel(projectId, imodelName, imodelId, 1);
     const newName = `${imodelName}_updated`;
@@ -786,7 +786,7 @@ describe("iModelHub iModelsHandler", () => {
     chai.expect(getiModel.wsgId).to.be.equal(imodel.id!);
   });
 
-  it("should create iModel with an extent from empty seed file", async () => {
+  it("should create iModel with an extent from empty seed file (#iModelBank)", async () => {
     const description = "Test iModel created by imodeljs-clients tests";
     const extent = [1.1, 2.2, -3.3, -4.4];
     mockCreateEmptyiModel(projectId, Guid.createValue(), createimodelName, description, undefined, extent);
