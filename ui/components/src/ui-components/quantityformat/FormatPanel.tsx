@@ -58,16 +58,6 @@ function getTraitString(trait: FormatTraits) {
   return undefined;
 }
 
-/*
-async function getPossibleCompositeUnits(parentUnit: UnitProps, unitsProvider: UnitsProvider): Promise<UnitProps[]> {
-  const unitFamily = parentUnit.unitFamily;
-  const possibleUnits = await unitsProvider.getUnitsByFamily(unitFamily);
-  const conversionPromises = possibleUnits.map(async (unit) => unitsProvider.getConversion(unit, parentUnit));
-  const conversions = await Promise.all(conversionPromises);
-  return possibleUnits.filter((_unit, index) => conversions[index].factor > 1 && Number.isInteger(conversions[index].factor));
-}
-*/
-
 /** Component to show/edit Quantity Format.
  * @alpha
  */
@@ -213,10 +203,6 @@ export function FormatPanel(props: FormatPanelProps) {
     setFormatTrait(FormatTraits.FractionDash, e.target.checked);
   }, [setFormatTrait]);
 
-  const handleExponentOnlyNegativeChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormatTrait(FormatTraits.ExponentOnlyNegative, e.target.checked);
-  }, [setFormatTrait]);
-
   const handleDecimalSeparatorChange = React.useCallback((decimalSeparator: string) => {
     let thousandSeparator = formatProps.thousandSeparator;
     // make sure 1000 and decimal separator do not match
@@ -229,21 +215,6 @@ export function FormatPanel(props: FormatPanelProps) {
     const newFormatProps = { ...formatProps, thousandSeparator, decimalSeparator };
     handleSetFormatProps(newFormatProps);
   }, [formatProps, isFormatTraitSet, handleSetFormatProps]);
-
-  const handleUnitLabelChange = React.useCallback((newLabel: string, index: number) => {
-    if (formatProps.composite?.units && formatProps.composite.units.length > index && index >= 0) {
-      const units = formatProps.composite.units.map((entry, ndx) => {
-        if (index === ndx)
-          return { name: entry.name, label: newLabel };
-        else
-          return entry;
-      });
-
-      const composite = { ...formatProps.composite, units };
-      const newFormatProps = { ...formatProps, composite };
-      handleSetFormatProps(newFormatProps);
-    }
-  }, [formatProps, handleSetFormatProps]);
 
   const handleOnValueBlur = React.useCallback((e: React.FocusEvent<HTMLInputElement>) => {
     let newValue = e.target.value ? Number.parseFloat(e.target.value) : 0;
@@ -292,6 +263,57 @@ export function FormatPanel(props: FormatPanelProps) {
     fetchFormatSpec(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }, [formatProps, magnitude, persistenceUnit, unitsProvider]);
 
+  const handleUnitLabelChange = React.useCallback((newLabel: string, index: number) => {
+    if (formatProps.composite?.units && formatProps.composite.units.length > index && index >= 0) {
+      const units = formatProps.composite.units.map((entry, ndx) => {
+        if (index === ndx)
+          return { name: entry.name, label: newLabel };
+        else
+          return entry;
+      });
+
+      const composite = { ...formatProps.composite, units };
+      const newFormatProps = { ...formatProps, composite };
+      handleSetFormatProps(newFormatProps);
+    }
+  }, [formatProps, handleSetFormatProps]);
+
+  const handleUnitChange = React.useCallback((newUnit: string, index: number) => {
+    const unitParts = newUnit.split(/:/);
+    if (unitParts[0] === "REMOVEUNIT") {
+      if (formatProps.composite && formatProps.composite.units.length > 1) {
+        const units = [...formatProps.composite.units];
+        units.pop();
+        const composite = { ...formatProps.composite, units };
+        const newFormatProps = { ...formatProps, composite };
+        handleSetFormatProps(newFormatProps);
+      }
+    } else if (unitParts[0] === "ADDSUBUNIT") {
+      const units = formatProps.composite?.units && formatProps.composite.units.length ?
+        [...formatProps.composite.units, { name: unitParts[1], label: unitParts[2] }] :
+        [{ name: unitParts[1], label: unitParts[2] }];
+      const composite = { ...formatProps.composite, units };
+      const newFormatProps = { ...formatProps, composite };
+      handleSetFormatProps(newFormatProps);
+    } else {
+      if (formatProps.composite?.units && formatProps.composite.units.length > index && index >= 0) {
+        const units = formatProps.composite.units.map((entry, ndx) => {
+          if (index === ndx)
+            return { name: unitParts[0], label: unitParts[1] };
+          else
+            return entry;
+        });
+        const composite = { ...formatProps.composite, units };
+        const newFormatProps = { ...formatProps, composite };
+        handleSetFormatProps(newFormatProps);
+      } else if (!formatProps.composite) {
+        const composite = { units: [{ name: unitParts[0], label: unitParts[1] }] };
+        const newFormatProps = { ...formatProps, composite };
+        handleSetFormatProps(newFormatProps);
+      }
+    }
+  }, [formatProps, handleSetFormatProps]);
+
   const formatType = React.useMemo(() => Format.parseFormatType(formatProps.type, "format"), [formatProps.type]);
   const showSignOption = React.useMemo(() => Format.parseShowSignOption(formatProps.showSignOption ?? "onlyNegative", "format"), [formatProps.showSignOption]);
 
@@ -305,17 +327,24 @@ export function FormatPanel(props: FormatPanelProps) {
           <span className={"uicore-label"}>{formattedValue}</span>
         </>
       }
-
-      {(formatProps.composite?.units && formatProps.composite?.units.length > 0) &&
-        formatProps.composite.units.map((value, index) => <UnitDescr key={value.name} name={value.name}
-          label={value.label ?? ""} index={index} onChange={handleUnitLabelChange} />)
-      }
       <span className={"uicore-label"}>Label Separator</span>
       <UomSeparatorSelector separator={formatProps.uomSeparator ?? ""} onChange={handleUomSeparatorChange} />
 
-      <span className={"uicore-label"}>Composite Separator</span>
-      <Input value={formatProps.composite?.spacer ?? ""} onChange={handleOnSpacerChange} />
+      {(formatProps.composite?.units && formatProps.composite?.units.length > 0)
+        ?
+        formatProps.composite.units.map((value, index) => <UnitDescr key={value.name} name={value.name}
+          label={value.label ?? ""} parentUnitName={index > 0 ? formatProps.composite!.units[index - 1].name : undefined} unitsProvider={unitsProvider} readonly={index < (formatProps.composite!.units.length - 1)} index={index} onUnitChange={handleUnitChange} onLabelChange={handleUnitLabelChange} />)
+        :
+        formatSpec.current && <UnitDescr key={formatSpec.current.persistenceUnit.name} name={formatSpec.current.persistenceUnit.name}
+          label={formatSpec.current?.persistenceUnit.label ?? ""} unitsProvider={unitsProvider} index={0} onUnitChange={handleUnitChange} onLabelChange={handleUnitLabelChange} />
+      }
 
+      {(formatProps.composite?.units && formatProps.composite?.units.length > 1) &&
+        <>
+          <span className={"uicore-label"}>Composite Spacer</span>
+          <Input value={formatProps.composite?.spacer ?? ""} onChange={handleOnSpacerChange} />
+        </>
+      }
       <span className={"uicore-label"}>Type</span>
       <FormatTypeSelector type={formatType} onChange={handleFormatTypeChange} />
       <span className={"uicore-label"}>Accuracy</span>

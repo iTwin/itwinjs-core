@@ -29,6 +29,64 @@ import { BeDuration, Logger } from "@bentley/bentleyjs-core";
 import { SamplePopupContextMenu } from "./SamplePopupContextMenu";
 import { Format, FormatProps, FormatterSpec, UnitsProvider } from "@bentley/imodeljs-quantity";
 
+
+function NumericFormatPopup({ persistenceUnitName, initialMagnitude }: { persistenceUnitName: string, initialMagnitude: number }) {
+  const initialFormatProps: FormatProps = {
+    formatTraits: ["keepSingleZero", "applyRounding", "showUnitLabel", "trailZeroes"],
+    precision: 4,
+    type: "Decimal",
+    uomSeparator: " ",
+    decimalSeparator: ".",
+  };
+
+  const [formatterSpec, setFormatterSpec] = React.useState<FormatterSpec>();
+  const [formattedValue, setFormattedValue] = React.useState<string>();
+  const handleFormatChange = React.useCallback((format: FormatProps) => {
+    async function fetchFormatSpec(formatProps: FormatProps) {
+      const unitsProvider = IModelApp.quantityFormatter as UnitsProvider;
+      if (formatterSpec) {
+        const pu = formatterSpec.persistenceUnit;
+        if (pu) {
+          const actualFormat = new Format("custom");
+          await actualFormat.fromJSON(unitsProvider, formatProps);
+          const newSpec = await FormatterSpec.create(actualFormat.name, actualFormat, unitsProvider, pu);
+          setFormattedValue(newSpec.applyFormatting(initialMagnitude));
+          setFormatterSpec(newSpec);
+        }
+      }
+    }
+    fetchFormatSpec(format); // eslint-disable-line @typescript-eslint/no-floating-promises
+  }, []);
+
+  React.useEffect(() => {
+    async function fetchInitialFormatSpec() {
+      const unitsProvider = IModelApp.quantityFormatter as UnitsProvider;
+      const pu = await unitsProvider.findUnitByName(persistenceUnitName);
+      if (pu) {
+        const actualFormat = new Format("custom");
+        await actualFormat.fromJSON(unitsProvider, initialFormatProps);
+        const newSpec = await FormatterSpec.create(actualFormat.name, actualFormat, unitsProvider, pu);
+        setFormattedValue(newSpec.applyFormatting(initialMagnitude));
+        setFormatterSpec(newSpec);
+      }
+    }
+
+    fetchInitialFormatSpec();
+  }, [persistenceUnitName, initialMagnitude]);
+
+  return (
+    <div style={{ display: "flex", alignItems: "center" }}>
+      { (formatterSpec && formattedValue) &&
+        <>
+          <span>{formattedValue}</span>
+          <FormatPopupButton initialFormat={formatterSpec.format.toJSON()} showSample={true} onFormatChange={handleFormatChange}
+            initialMagnitude={initialMagnitude} unitsProvider={IModelApp.quantityFormatter as UnitsProvider} persistenceUnit={formatterSpec.persistenceUnit} />
+        </>
+      }
+    </div>
+  );
+}
+
 function WrappedFormatPopup({ initialFormatterSpec, initialMagnitude }: { initialFormatterSpec: FormatterSpec, initialMagnitude: number }) {
   const [formatterSpec, setFormatterSpec] = React.useState(initialFormatterSpec);
   const [formattedValue, setFormattedValue] = React.useState(() => formatterSpec.applyFormatting(initialMagnitude));
@@ -966,6 +1024,10 @@ export class ComponentExamplesProvider {
   private static get quantityFormatting(): ComponentExampleCategory {
     const sampleRadian = 45.5 * Math.PI / 180;
     const examples = [];
+
+    examples.push(
+      createComponentExample("Meter", "Non-composite Formatting", <NumericFormatPopup persistenceUnitName={"Units.M"} initialMagnitude={1234.56} />),
+    );
 
     const lengthFormatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
     if (lengthFormatterSpec) {

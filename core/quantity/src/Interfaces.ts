@@ -17,6 +17,8 @@ export interface UnitProps {
   readonly isValid: boolean;
   /** Optionally defined set of unit labels that can be used to represent the unit. This is helpful when parsing quantity value strings */
   readonly alternateLabels?: string[];
+  /** Unique system name. Example "Units.USCUSTOM"," Units.METRIC", "Units.USSURVEY", "Units.IMPERIAL" */
+  readonly system: string;
 }
 
 /** This interface defines the required properties of a Quantity.
