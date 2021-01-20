@@ -50,4 +50,10 @@ export class ArcGisTokenManager {
 
     return newToken;
   }
+
+  public static invalidateToken(esriRestServiceUrl: string, userName: string): boolean {
+    const tokenCacheKey = `${userName}@${esriRestServiceUrl}`;
+    sessionStorage.removeItem(`arcgis:${tokenCacheKey}`)
+    return ArcGisTokenManager._cache.delete(tokenCacheKey);
+  }
 }
