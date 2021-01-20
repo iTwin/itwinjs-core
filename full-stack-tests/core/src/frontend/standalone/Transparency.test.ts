@@ -26,7 +26,7 @@ class TransparencyDecorator {
   }
 
   /** Make a rectangle that occupies the entire view. Priority is Z in NPC coords - [0,1] maps to [far, near]. */
-  public add(vp: Viewport, color: ColorDef, priority = 0): void {
+  public add(vp: Viewport, color: ColorDef, priority = 0, pickableId? string): void {
     const pts = [
       new Point3d(0, 0, priority),
       new Point3d(1, 0, priority),
@@ -37,7 +37,7 @@ class TransparencyDecorator {
     vp.npcToWorldArray(pts);
     pts.push(pts[0].clone());
 
-    const builder = vp.target.createGraphicBuilder(GraphicType.Scene, vp);
+    const builder = vp.target.createGraphicBuilder(GraphicType.Scene, vp, undefined, pickableId);
     builder.setSymbology(color, color, 1);
     builder.addShape(pts);
 
@@ -45,7 +45,7 @@ class TransparencyDecorator {
   }
 }
 
-describe("Transparency", async () => {
+describe.only("Transparency", async () => {
   let imodel: SnapshotConnection;
   let decorator: TransparencyDecorator;
 
@@ -72,16 +72,16 @@ describe("Transparency", async () => {
 
   async function test(setup: (vp: TestViewport) => void, verify: (vp: TestViewport) => void): Promise<void> {
     await testOnScreenViewport("0x24", imodel, 100, 100, async (viewport) => {
-      const vf = viewport.viewFlags.clone();
-      expect(vf.renderMode).to.equal(RenderMode.SmoothShade);
+      expect(viewport.viewFlags.renderMode).to.equal(RenderMode.SmoothShade);
       expect(viewport.displayStyle.backgroundColor.equals(ColorDef.black)).to.be.true;
 
       viewport.changeViewedModels([]);
-      vf.lighting = false;
-      viewport.viewFlags = vf;
+      viewport.viewFlags.lighting = false;
       viewport.isFadeOutActive = true;
 
       setup(viewport);
+      viewport.viewFlags = viewport.viewFlags.clone();
+
       await viewport.renderFrame();
       verify(viewport);
     });
@@ -125,9 +125,6 @@ describe("Transparency", async () => {
       },
       (vp) => expectColor(vp, ColorDef.from(0x7f, 0, 0x80, 0x7f))
     );
-  });
-
-  it("should blend with transparent geometry", async () => {
   });
 
   it("should be obscured by opaque geometry", async () => {
