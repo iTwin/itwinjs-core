@@ -6,16 +6,17 @@
  * @module Tiles
  */
 
-import { ClientRequestContext, Dictionary, IModelStatus } from "@bentley/bentleyjs-core";
+import { AbandonedError, ClientRequestContext, Dictionary, IModelStatus } from "@bentley/bentleyjs-core";
 import { Point2d } from "@bentley/geometry-core";
-import { Cartographic, ImageSource, ImageSourceFormat, MapLayerSettings, MapSubLayerProps, ServerError } from "@bentley/imodeljs-common";
+import { Cartographic, ImageSource, ImageSourceFormat, MapLayerSettings, MapLayerStatus, MapSubLayerProps, ServerError } from "@bentley/imodeljs-common";
 import { getJson, request, RequestBasicCredentials, RequestOptions, Response } from "@bentley/itwin-client";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
+import { NotifyMessageDetails, OutputMessagePriority } from "../../imodeljs-frontend";
 import { ScreenViewport } from "../../Viewport";
 import { ArcGisTokenClientType, BingMapsImageryLayerProvider, ImageryMapLayerTreeReference, ImageryMapTile, ImageryMapTileTree, MapLayerFormat, MapLayerSourceStatus, MapLayerSourceValidation, MapLayerTileTreeReference, QuadId, WmsUtilities } from "../internal";
 import { ArcGisTokenManager } from "./ArcGisTokenManager";
-import { ArcGisUtilities } from "./ArcGisUtilities";
+import { ArcGisErrorCode, ArcGisUtilities } from "./ArcGisUtilities";
 import { MapCartoRectangle } from "./MapCartoRectangle";
 import { WmsCapabilities, WmsCapability } from "./WmsCapabilities";
 import { WmtsCapabilities, WmtsCapability } from "./WmtsCapabilities";
@@ -94,6 +95,27 @@ export abstract class MapLayerImageryProvider {
     return (this._settings.userName && this._settings.password) ? { user: this._settings.userName, password: this._settings.password } : undefined;
   }
 
+  protected getImageFromTileResponse(tileResponse: Response, zoomLevel: number) {
+    const byteArray: Uint8Array = new Uint8Array(tileResponse.body);
+    if (!byteArray || (byteArray.length === 0))
+      return undefined;
+    if (this.matchesMissingTile(byteArray) && zoomLevel > 8)
+      return undefined;
+    let imageFormat: ImageSourceFormat;
+    switch (tileResponse.header["content-type"]) {
+      case "image/jpeg":
+        imageFormat = ImageSourceFormat.Jpeg;
+        break;
+      case "image/png":
+        imageFormat = ImageSourceFormat.Png;
+        break;
+      default:
+        return undefined;
+    }
+
+    return new ImageSource(byteArray, imageFormat);
+  }
+
   // returns a Uint8Array with the contents of the tile.
   public async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
     const tileRequestOptions: RequestOptions = { method: "GET", responseType: "arraybuffer" };
@@ -104,28 +126,12 @@ export abstract class MapLayerImageryProvider {
         return undefined;
 
       const tileResponse: Response = await request(this._requestContext, tileUrl, tileRequestOptions);
-      const byteArray: Uint8Array = new Uint8Array(tileResponse.body);
-      if (!byteArray || (byteArray.length === 0))
-        return undefined;
-      if (this.matchesMissingTile(byteArray) && zoomLevel > 8)
-        return undefined;
-      let imageFormat: ImageSourceFormat;
-      switch (tileResponse.header["content-type"]) {
-        case "image/jpeg":
-          imageFormat = ImageSourceFormat.Jpeg;
-          break;
-        case "image/png":
-          imageFormat = ImageSourceFormat.Png;
-          break;
-        default:
-          return undefined;
-      }
-
-      return new ImageSource(byteArray, imageFormat);
+      return this.getImageFromTileResponse(tileResponse, zoomLevel);
     } catch (error) {
       return undefined;
     }
   }
+
   protected async toolTipFromUrl(strings: string[], url: string): Promise<void> {
 
     const requestOptions: RequestOptions = {
@@ -439,8 +445,43 @@ class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
 
   protected get _filterByCartoRange() { return false; }      // Can't trust footprint ranges (USGS Hydro)
   public get maximumZoomLevel() { return this._maxDepthFromLod > 0 ? this._maxDepthFromLod : super.maximumZoomLevel; }
+
+  public uintToString(uintArray: any) {
+    return Buffer.from(uintArray).toJSON();
+
+  }
+
   public async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
-    return super.loadTile(row, column, zoomLevel);
+
+    if (this._settings.status != MapLayerStatus.Valid) {
+      throw new AbandonedError("Layer status not valid.")
+    }
+
+    const tileRequestOptions: RequestOptions = { method: "GET", responseType: "arraybuffer" };
+    tileRequestOptions.auth = this.getRequestAuthorization();
+    try {
+      const tileUrl: string = await this.constructUrl(row, column, zoomLevel);
+      if (tileUrl.length === 0)
+        return undefined;
+
+      const tileResponse: Response = await request(this._requestContext, tileUrl, tileRequestOptions);
+
+      // Check the content type from the response, it might contains an authentication error that need to be reported.
+      if ((tileResponse.header["content-type"] as string).toLowerCase().includes("json")) {
+        const json = JSON.parse(Buffer.from(tileResponse.body).toString());
+        if (json?.error?.code === ArcGisErrorCode.TokenRequired || json?.error?.code === ArcGisErrorCode.InvalidToken) {
+          if (this._settings.status === MapLayerStatus.Valid) {
+            this._settings.status = MapLayerStatus.RequireAuth;
+            IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, "Error loading map layers"));
+          }
+
+          throw new AbandonedError("Layer status not valid.")
+        }
+      }
+      return this.getImageFromTileResponse(tileResponse, zoomLevel);
+    } catch (error) {
+      return undefined;
+    }
   }
 
   protected _testChildAvailability(tile: ImageryMapTile, resolveChildren: () => void) {

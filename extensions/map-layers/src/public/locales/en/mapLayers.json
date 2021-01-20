@@ -22,6 +22,7 @@
     "AttacheInfo": "Map layer attached from URL:",
     "Custom": "Custom",
     "LoadingMapSources": "Loading Map Sources",
+    "EditCustomLayer": "Edit Custom Layer",
     "ErrorLoadingLayers": "Error retrieving map layers stored in the settings service",
     "ErrorRetrieveUserModel": "Could not get saved Map Layers for user by model: {{errorMessage}}",
     "ErrorRetrieveUserProject": "Could not get saved Map Layers for user by project: {{errorMessage}}",

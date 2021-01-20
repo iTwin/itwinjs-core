@@ -7,7 +7,7 @@
  * @module Tools
  */
 
-import { ColorDef } from "@bentley/imodeljs-common";
+import { ColorDef, MapLayerStatus } from "@bentley/imodeljs-common";
 import { IModelApp, MapLayerSource, MapLayerSources, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority, Tool, WmsUtilities } from "@bentley/imodeljs-frontend";
 import { parseToggle } from "./parseToggle";
 
@@ -25,12 +25,18 @@ class AttachMapLayerBaseTool extends Tool {
       return;
 
     source.validateSource().then((validation) => {
-      if (validation.status === MapLayerSourceStatus.Valid) {
+      if (validation.status === MapLayerSourceStatus.Valid || validation.status === MapLayerSourceStatus.RequireAuth) {
         source.subLayers = validation.subLayers;
-        if (this._isBase)
+        if (validation.status === MapLayerSourceStatus.RequireAuth) {
+          source.status = MapLayerStatus.RequireAuth;
+        }
+
+        if (this._isBase) {
           vp.displayStyle.changeBaseMapProps(source);
-        else
+        } else {
           vp.displayStyle.attachMapLayer(source, !this._isBackground);
+        }
+
 
         vp.invalidateRenderPlan();
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Map layer ${source.name} attached from URL: ${source.url}`));

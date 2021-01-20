@@ -10,6 +10,7 @@ import { ModalDialogManager } from "@bentley/ui-framework";
 import { useSourceMapContext } from "./MapLayerManager";
 import { MapUrlDialog } from "./MapUrlDialog";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
+import { MapLayerStatus } from "@bentley/imodeljs-common";
 
 // cSpell:ignore droppable Sublayer
 
@@ -56,17 +57,22 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
             try {
               setLoading(true);
               const { status, subLayers } = await mapLayerSettings.validateSource();
-              if (status === MapLayerSourceStatus.Valid) {
-                activeViewport.displayStyle.attachMapLayer({
-                  formatId: mapLayerSettings.formatId,
-                  name: mapLayerSettings.name,
-                  url: mapLayerSettings.url,
-                  userName: mapLayerSettings.userName,
-                  password: mapLayerSettings.password,
-                  maxZoom: mapLayerSettings.maxZoom,
-                  subLayers,
-                }, isOverlay);
-                activeViewport.invalidateRenderPlan();
+              if (status === MapLayerSourceStatus.Valid || status === MapLayerSourceStatus.RequireAuth) {
+
+                const source = Object.assign({}, mapLayerSettings);  // shallow copy
+                source.subLayers = subLayers;
+                if (status === MapLayerSourceStatus.RequireAuth) {
+                  source.status = MapLayerStatus.RequireAuth;
+                  IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, `Authentication required for Layer : ${source.name}`));
+                }
+
+                activeViewport.displayStyle.attachMapLayer(source, isOverlay);
+
+                if (status === MapLayerSourceStatus.Valid) {
+                  activeViewport.invalidateRenderPlan();
+                  IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Map layer ${source.name} attached from URL: ${source.url}`));
+                }
+
                 setLoading(false);
                 if (onLayerAttached)
                   onLayerAttached();

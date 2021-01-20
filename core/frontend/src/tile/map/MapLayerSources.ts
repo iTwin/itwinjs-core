@@ -6,7 +6,7 @@
 
 import { compareStrings } from "@bentley/bentleyjs-core";
 import { Point2d } from "@bentley/geometry-core";
-import { BackgroundMapProps, BackgroundMapSettings, BackgroundMapType, MapLayerProps, MapLayerSettings, MapSubLayerProps } from "@bentley/imodeljs-common";
+import { BackgroundMapProps, BackgroundMapSettings, BackgroundMapType, MapLayerProps, MapLayerSettings, MapLayerStatus, MapSubLayerProps } from "@bentley/imodeljs-common";
 import { getJson, RequestBasicCredentials } from "@bentley/itwin-client";
 import { FrontendRequestContext } from "../../FrontendRequestContext";
 import { IModelApp } from "../../IModelApp";
@@ -21,6 +21,7 @@ export enum MapLayerSourceStatus {
   InvalidFormat,
   InvalidTileTree,
   InvalidUrl,
+  RequireAuth,
 }
 
 /** A source for map layers.  These may be catalogued for convenient use by users or applications.
@@ -28,6 +29,8 @@ export enum MapLayerSourceStatus {
  */
 export class MapLayerSource implements MapLayerProps {
   public subLayers?: MapSubLayerProps[];
+  public status?: MapLayerStatus;
+
   private constructor(public formatId: string, public name: string, public url: string, public baseMap = false, public transparentBackground?: boolean, public maxZoom?: number, public userName?: string, public password?: string) { }
   public static fromJSON(json: any): MapLayerSource | undefined {
     const baseMap = json.baseMap === true || (json.url && json.url.toLowerCase().indexOf("basemap") >= 0);

@@ -22,6 +22,8 @@ import { MapLayerOptions, MapTypesOptions, StyleMapLayerSettings } from "../Inte
 import { MapLayerSettingsPopupButton } from "./MapLayerSettingsPopupButton";
 import "./MapLayerManager.scss";
 import { MapLayerDroppable } from "./MapLayerDroppable";
+import { ModalDialogManager } from "@bentley/ui-framework";
+import { MapUrlDialog } from "./MapUrlDialog";
 
 /** @internal */
 export interface SourceMapContextProps {
@@ -68,6 +70,7 @@ function getMapLayerSettingsFromStyle(displayStyle: DisplayStyleState | undefine
         showSubLayers: false,
         isOverlay: false,
         provider: IModelApp.mapLayerFormatRegistry.createImageryProvider(layerSettings),
+        status: layerSettings.status
       });
     });
   } else {
@@ -82,6 +85,7 @@ function getMapLayerSettingsFromStyle(displayStyle: DisplayStyleState | undefine
         showSubLayers: false,
         isOverlay: true,
         provider: IModelApp.mapLayerFormatRegistry.createImageryProvider(layerSettings),
+        status: layerSettings.status
       });
     });
   }
@@ -348,10 +352,12 @@ export function MapLayerManager(props: MapLayerManagerProps) {
               <MapLayerDroppable
                 isOverlay={false}
                 layersList={backgroundMapLayers}
+                mapTypesOptions={props.mapLayerOptions?.mapTypeOptions}
                 getContainerForClone={props.getContainerForClone as any}
                 activeViewport={props.activeViewport}
                 onMenuItemSelected={handleOnMenuItemSelection}
-                onItemVisibilityToggleClicked={handleLayerVisibilityChange} />
+                onItemVisibilityToggleClicked={handleLayerVisibilityChange}
+                onItemEdited={handleRefreshFromStyle} />
             </div>
 
             <div className="map-manager-layer-wrapper">
@@ -361,10 +367,12 @@ export function MapLayerManager(props: MapLayerManagerProps) {
               <MapLayerDroppable
                 isOverlay={true}
                 layersList={overlayMapLayers}
+                mapTypesOptions={props.mapLayerOptions?.mapTypeOptions}
                 getContainerForClone={props.getContainerForClone as any}
                 activeViewport={props.activeViewport}
                 onMenuItemSelected={handleOnMenuItemSelection}
-                onItemVisibilityToggleClicked={handleLayerVisibilityChange} />
+                onItemVisibilityToggleClicked={handleLayerVisibilityChange}
+                onItemEdited={handleRefreshFromStyle} />
             </div>
           </DragDropContext>
         }

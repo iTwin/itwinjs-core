@@ -15,6 +15,11 @@ import { ArcGisTokenManager } from "./ArcGisTokenManager";
 /** @packageDocumentation
  * @module Tiles
  */
+export enum ArcGisErrorCode {
+  InvalidToken = 498,
+  TokenRequired = 499,
+}
+
 export class ArcGisUtilities {
   private static getBBoxString(range?: MapCartoRectangle) {
     if (!range)
@@ -99,8 +104,14 @@ export class ArcGisUtilities {
 
   public static async validateSource(url: string, credentials?: RequestBasicCredentials): Promise<MapLayerSourceValidation> {
     const json = await this.getServiceJson(url, credentials);
-    if (json === undefined || json.error !== undefined)
+    if (json === undefined) {
       return { status: MapLayerSourceStatus.InvalidUrl };
+    } else if (json.error !== undefined) {
+      if (json.error.code === ArcGisErrorCode.TokenRequired) {
+        return { status: MapLayerSourceStatus.RequireAuth };
+      }
+      return { status: MapLayerSourceStatus.InvalidUrl };
+    }
 
     let subLayers;
     if (json.layers) {

@@ -10,23 +10,28 @@
 import * as React from "react";
 import { Draggable, DraggableChildrenFn, Droppable, DroppableProvided, DroppableStateSnapshot } from "react-beautiful-dnd";
 import { ScreenViewport } from "@bentley/imodeljs-frontend";
-import { Icon } from "@bentley/ui-core";
+import { MapLayerStatus } from "@bentley/imodeljs-common";
+import { Button, Icon } from "@bentley/ui-core";
 import { assert } from "@bentley/bentleyjs-core";
 import { SubLayersPopupButton } from "./SubLayersPopupButton";
 import { AttachLayerButtonType, AttachLayerPopupButton } from "./AttachLayerPopupButton";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import "./MapLayerManager.scss";
-import { StyleMapLayerSettings } from "../Interfaces";
+import { MapTypesOptions, StyleMapLayerSettings } from "../Interfaces";
 import { MapLayerSettingsMenu } from "./MapLayerSettingsMenu";
+import { MapUrlDialog } from "./MapUrlDialog";
+import { ModalDialogManager } from "@bentley/ui-framework";
 
 /** @internal */
 interface MapLayerDroppableProps {
   isOverlay: boolean;
   layersList?: StyleMapLayerSettings[];
+  mapTypesOptions?: MapTypesOptions;
   getContainerForClone: () => HTMLElement;
   activeViewport: ScreenViewport;
   onMenuItemSelected: (action: string, mapLayerSettings: StyleMapLayerSettings) => void;
   onItemVisibilityToggleClicked: (mapLayerSettings: StyleMapLayerSettings) => void;
+  onItemEdited: () => void;
 }
 
 /** @internal */
@@ -55,6 +60,16 @@ export function MapLayerDroppable(props: MapLayerDroppableProps) {
             <SubLayersPopupButton mapLayerSettings={activeLayer} activeViewport={props.activeViewport} />
           }
         </div>
+        {activeLayer.status == MapLayerStatus.RequireAuth &&
+          <Button className="map-manager-item-visibility"
+            onClick={() => {
+              ModalDialogManager.openDialog(<MapUrlDialog activeViewport={props.activeViewport} isOverlay={props.isOverlay} layerToEdit={activeLayer} onOkResult={props.onItemEdited} mapTypesOptions={props.mapTypesOptions} />);
+            }}
+            title={toggleVisibility}
+          >
+            <Icon iconSpec="icon-status-error" />
+          </Button>
+        }
         <MapLayerSettingsMenu activeViewport={props.activeViewport} mapLayerSettings={activeLayer} onMenuItemSelection={props.onMenuItemSelected} />
       </div>
     );

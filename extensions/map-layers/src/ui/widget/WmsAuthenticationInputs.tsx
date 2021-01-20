@@ -7,6 +7,7 @@ import * as React from "react";
 import { Icon, Input, Select } from "@bentley/ui-core";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import { MAP_TYPES } from "./MapUrlDialog";
+import { MapLayerStatus } from "@bentley/imodeljs-common";
 
 /** @alpha */
 export interface WmsAutenticationInputProps {
@@ -16,6 +17,7 @@ export interface WmsAutenticationInputProps {
   setWmsServerUsername: Function;
   setWmsServerPassword: Function;
   setSkipSettingsStorage: Function;
+  layerStatus?: MapLayerStatus;
 }
 
 /** @alpha */
@@ -29,7 +31,7 @@ export function WmsAuthenticationInput(props: WmsAutenticationInputProps) {
   const passwordLabel = MapLayersUiItemsProvider.i18n.translate("mapLayers:WmsAuthenticationInputs.Password");
   const usernameLabel = MapLayersUiItemsProvider.i18n.translate("mapLayers:WmsAuthenticationInputs.Username");
 
-  const [authenticationType, setAuthenticationType] = React.useState(noAuthLabel);
+  const [authenticationType, setAuthenticationType] = React.useState(props?.layerStatus === MapLayerStatus.RequireAuth ? basicLabel : noAuthLabel);
   const [invalidProtocol, setInvalidProtocol] = React.useState(true);
   const authenticationTypes = [noAuthLabel, basicLabel];
 
@@ -95,7 +97,7 @@ export function WmsAuthenticationInput(props: WmsAutenticationInputProps) {
               <Icon iconSpec="icon-info-hollow" />
             </span>}
         </span>
-        <Select disabled={invalidProtocol && props.mapType === MAP_TYPES.wms}
+        <Select disabled={(props?.layerStatus === MapLayerStatus.RequireAuth) || (invalidProtocol && props.mapType === MAP_TYPES.wms)}
           className="map-manager-base-select"
           options={authenticationTypes}
           value={authenticationType}
