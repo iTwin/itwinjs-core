@@ -205,9 +205,9 @@ export class Geometry {
   }
   /** Radians value for full circle 2PI radians minus `smallAngleRadians` */
   public static readonly fullCircleRadiansMinusSmallAngle = 2.0 * Math.PI - 1.0e-12;    // smallAngleRadians less than 360degrees
-  /** Correct `distance` to zero if smaller than metric tolerance.   Otherwise return it unchanged. */
-  public static correctSmallMetricDistance(distance: number, replacement: number = 0.0): number {
-    if (Math.abs(distance) < Geometry.smallMetricDistance) {
+  /** Correct `distance` to zero if undefined or smaller than metric tolerance.   Otherwise return it unchanged. */
+  public static correctSmallMetricDistance(distance: number | undefined, replacement: number = 0.0): number {
+    if (distance === undefined || Math.abs(distance) < Geometry.smallMetricDistance) {
       return replacement;
     }
     return distance;
@@ -344,6 +344,13 @@ export class Geometry {
   public static isSmallMetricDistance(distance: number): boolean {
     return Math.abs(distance) <= Geometry.smallMetricDistance;
   }
+  /** Toleranced equality test, using `smallMetricDistance` tolerance, and considering undefined to be zero.
+   * * Intended for checking args for undefined and zero are treated the same.
+   */
+  public static isUndefinedOrSmallMetricDistance(distance: number | undefined): boolean {
+    return distance === undefined || Math.abs(distance) <= Geometry.smallMetricDistance;
+  }
+
   /** Toleranced equality, using `smallMetricDistanceSquared` tolerance. */
   public static isSmallMetricDistanceSquared(distanceSquared: number): boolean {
     return Math.abs(distanceSquared) <= Geometry.smallMetricDistanceSquared;

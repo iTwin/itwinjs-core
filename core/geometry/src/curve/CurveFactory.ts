@@ -161,15 +161,16 @@ export class CurveFactory {
 
   /** Create a `Loop` with given xy corners and fixed z. */
   public static createRectangleXY(x0: number, y0: number, x1: number, y1: number, z: number = 0, filletRadius?: number): Loop {
-    if (filletRadius === undefined)
+    const radius = Geometry.correctSmallMetricDistance(filletRadius);
+    if (radius === 0.0)
       return Loop.createPolygon([Point3d.create(x0, y0, z), Point3d.create(x1, y0, z), Point3d.create(x1, y1, z), Point3d.create(x0, y1, z), Point3d.create(x0, y0, z)]);
     else {
       const vectorU = Vector3d.create(filletRadius, 0, 0);
       const vectorV = Vector3d.create(0, filletRadius, 0);
-      const x0A = x0 + filletRadius;
-      const y0A = y0 + filletRadius;
-      const x1A = x1 - filletRadius;
-      const y1A = y1 - filletRadius;
+      const x0A = x0 + radius;
+      const y0A = y0 + radius;
+      const x1A = x1 - radius;
+      const y1A = y1 - radius;
       const centers = [Point3d.create(x1A, y1A, z), Point3d.create(x0A, y1A, z), Point3d.create(x0A, y0A, z), Point3d.create(x1A, y0A, z)];
       const loop = Loop.create();
       for (let i = 0; i < 4; i++) {
@@ -179,7 +180,8 @@ export class CurveFactory {
         const arc = Arc3d.create(center, vectorU, vectorV, AngleSweep.createStartEndDegrees(0, 90));
         loop.tryAddChild(arc);
         const arcEnd = arc.endPoint();
-        loop.tryAddChild(LineSegment3d.create(arcEnd, arcEnd.plus(edgeVector)));
+        if (!edgeVector.isAlmostZero)
+          loop.tryAddChild(LineSegment3d.create(arcEnd, arcEnd.plus(edgeVector)));
         vectorU.rotate90CCWXY(vectorU);
         vectorV.rotate90CCWXY(vectorV);
       }
