@@ -8171,8 +8171,6 @@ export abstract class WipRpcInterface extends RpcInterface {
     // (undocumented)
     attachChangeCache(_iModelToken: IModelRpcProps): Promise<void>;
     // (undocumented)
-    detachChangeCache(_iModelToken: IModelRpcProps): Promise<void>;
-    // (undocumented)
     getChangedElements(_iModelToken: IModelRpcProps, _startChangesetId: string, _endChangesetId: string): Promise<ChangedElements | undefined>;
     static getClient(): WipRpcInterface;
     static readonly interfaceName = "WipRpcInterface";

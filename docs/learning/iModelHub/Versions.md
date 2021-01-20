@@ -29,3 +29,7 @@ Thumbnail might not be immediately available after creating a Named Version, as 
 ``` ts
 [[include:VersionHandler.thumbnail.example-code]]
 ```
+
+## detachChangeCache() depreciated
+
+The only way to detach change cache is to close the connection. The api will be remove in future.
