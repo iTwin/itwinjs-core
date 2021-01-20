@@ -29,7 +29,7 @@ export abstract class WipRpcInterface extends RpcInterface {
   /** The semantic version of the interface.
    * @note The WipRpcInterface will never progress to 1.0 since it is never intended to be public.
    */
-  public static interfaceVersion = "0.4.0";
+  public static interfaceVersion = "0.5.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -38,7 +38,6 @@ export abstract class WipRpcInterface extends RpcInterface {
   public async placeholder(_iModelToken: IModelRpcProps): Promise<string> { return this.forward(arguments); } // here to test that WipRpcInterface is configured properly
   public async isChangeCacheAttached(_iModelToken: IModelRpcProps): Promise<boolean> { return this.forward(arguments); }
   public async attachChangeCache(_iModelToken: IModelRpcProps): Promise<void> { return this.forward(arguments); }
-  public async detachChangeCache(_iModelToken: IModelRpcProps): Promise<void> { return this.forward(arguments); }
   public async getChangedElements(_iModelToken: IModelRpcProps, _startChangesetId: string, _endChangesetId: string): Promise<ChangedElements | undefined> { return this.forward(arguments); }
   public async isChangesetProcessed(_iModelToken: IModelRpcProps, _changesetId: string): Promise<boolean> { return this.forward(arguments); }
 }
