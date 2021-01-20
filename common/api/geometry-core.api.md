@@ -1965,7 +1965,6 @@ export class Geometry {
     static isSmallMetricDistance(distance: number): boolean;
     static isSmallMetricDistanceSquared(distanceSquared: number): boolean;
     static isSmallRelative(value: number): boolean;
-    static isUndefinedOrSmallMetricDistance(distance: number | undefined): boolean;
     static readonly largeCoordinateResult = 10000000000000;
     static readonly largeFractionResult = 10000000000;
     static lexicalXYLessThan(a: XY | XYZ, b: XY | XYZ): -1 | 0 | 1;

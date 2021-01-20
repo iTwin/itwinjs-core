@@ -1004,7 +1004,7 @@ describe("MatrixProductAliasing", () => {
     }
     expect(ck.getNumErrors()).equals(0);
   });
-  it.only("cloneRigid", () => {
+  it("cloneRigid", () => {
     const ck = new Checker();
     // createRigidFromMatrix3d failed on this.
     // Failure due to applying metric tolerance to columns AFTER doing cross products.

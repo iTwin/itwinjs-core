@@ -2401,7 +2401,7 @@ export class Matrix3d implements BeJSONFunctions {
     if (Geometry.isSmallMetricDistance(maxAbs))
       return undefined;
     const scale = 1.0 / maxAbs;
-    result.scaleColumnsInPlace(scale, scale, scale)
+    result.scaleColumnsInPlace(scale, scale, scale);
     result.axisOrderCrossProductsInPlace(axisOrder);
     if (result.normalizeColumnsInPlace())
       return result;

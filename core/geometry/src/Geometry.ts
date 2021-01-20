@@ -344,12 +344,6 @@ export class Geometry {
   public static isSmallMetricDistance(distance: number): boolean {
     return Math.abs(distance) <= Geometry.smallMetricDistance;
   }
-  /** Toleranced equality test, using `smallMetricDistance` tolerance, and considering undefined to be zero.
-   * * Intended for checking args for undefined and zero are treated the same.
-   */
-  public static isUndefinedOrSmallMetricDistance(distance: number | undefined): boolean {
-    return distance === undefined || Math.abs(distance) <= Geometry.smallMetricDistance;
-  }
 
   /** Toleranced equality, using `smallMetricDistanceSquared` tolerance. */
   public static isSmallMetricDistanceSquared(distanceSquared: number): boolean {
