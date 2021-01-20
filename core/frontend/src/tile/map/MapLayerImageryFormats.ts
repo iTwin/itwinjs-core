@@ -75,10 +75,22 @@ export abstract class MapLayerImageryProvider {
     this._testChildAvailability(tile, resolveChildren);
   }
 
-  public async getToolTip(_strings: string[], _quadId: QuadId, _carto: Cartographic, _tree: ImageryMapTileTree): Promise<void> {
+  public async getToolTip(strings: string[], quadId: QuadId, _carto: Cartographic, tree: ImageryMapTileTree): Promise<void> {
+    if (debugToolTip) {
+      const cartoRectangle = tree.cartoRectangleFromQuadId(quadId);
+      let url = "";
+      try {
+        url = await this.constructUrl(quadId.row, quadId.column, quadId.level);
+      }
+      catch (_error) {
 
+      }
+      const debugString = `QuadId: ${quadId.debugString} Rectangle: ${cartoRectangle.latLongString} EPSG:3857: ${this.getEPSG3857ExtentString(quadId.row, quadId.column, quadId.level)} URL: ${url}`;
+      strings.push(debugString);
+      // eslint-disable-next-line no-console
+      console.log(debugString);
+    }
   }
-
   protected getRequestAuthorization(): RequestBasicCredentials | undefined {
     return (this._settings.userName && this._settings.password) ? { user: this._settings.userName, password: this._settings.password } : undefined;
   }
@@ -439,57 +451,33 @@ class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
 
   }
 
-  private async fetchTile(row: number, column: number, zoomLevel: number): Promise<Response | undefined> {
-    const tileRequestOptions: RequestOptions = { method: "GET", responseType: "arraybuffer" };
-    tileRequestOptions.auth = this.getRequestAuthorization();
-    const tileUrl: string = await this.constructUrl(row, column, zoomLevel);
-    if (tileUrl.length === 0)
-      return undefined;
-
-    return await request(this._requestContext, tileUrl, tileRequestOptions);
-  }
-
-  private static containsTokenError(response: Response): boolean {
-    const jsonContentType = (response.header["content-type"] as string).toLowerCase().includes("json");
-
-    if (jsonContentType) {
-      const json = JSON.parse(Buffer.from(response.body).toString());
-      return (json?.error?.code === ArcGisErrorCode.TokenRequired || json?.error?.code === ArcGisErrorCode.InvalidToken);
-    }
-    return false;
-  }
-
   public async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
+
     if (this._settings.status != MapLayerStatus.Valid) {
       throw new AbandonedError("Layer status not valid.")
     }
 
+    const tileRequestOptions: RequestOptions = { method: "GET", responseType: "arraybuffer" };
+    tileRequestOptions.auth = this.getRequestAuthorization();
     try {
-      let tileResponse = await this.fetchTile(row, column, zoomLevel);
-      if (tileResponse === undefined)
+      const tileUrl: string = await this.constructUrl(row, column, zoomLevel);
+      if (tileUrl.length === 0)
         return undefined;
 
+      const tileResponse: Response = await request(this._requestContext, tileUrl, tileRequestOptions);
+
       // Check the content type from the response, it might contains an authentication error that need to be reported.
-      if (ArcGISMapLayerImageryProvider.containsTokenError(tileResponse) && this._settings.status === MapLayerStatus.Valid) {
+      if ((tileResponse.header["content-type"] as string).toLowerCase().includes("json")) {
+        const json = JSON.parse(Buffer.from(tileResponse.body).toString());
+        if (json?.error?.code === ArcGisErrorCode.TokenRequired || json?.error?.code === ArcGisErrorCode.InvalidToken) {
+          if (this._settings.status === MapLayerStatus.Valid) {
+            this._settings.status = MapLayerStatus.RequireAuth;
+            IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, "Error loading map layers"));
+          }
 
-        // Token might have expired, make a second attempt by forcing new token.
-        if (this._settings.userName && this._settings.userName.length > 0) {
-          ArcGisTokenManager.invalidateToken(this._settings.url, this._settings.userName);
-          tileResponse = await this.fetchTile(row, column, zoomLevel);
-          if (tileResponse === undefined)
-            return undefined;
-        }
-
-        // OK if at this point, response still contain a token error, we assume end-user will
-        // have to provide credentials again.  Change the layer status so we
-        // don't make additional invalid requests..
-        if (tileResponse && ArcGISMapLayerImageryProvider.containsTokenError(tileResponse)) {
-          this._settings.status = MapLayerStatus.RequireAuth;
-          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, "Error loading map layers"));
           throw new AbandonedError("Layer status not valid.")
         }
       }
-
       return this.getImageFromTileResponse(tileResponse, zoomLevel);
     } catch (error) {
       return undefined;

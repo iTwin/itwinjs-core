@@ -15,7 +15,6 @@ export class ArcGisTokenManager {
   private static _generator: ArcGisTokenGenerator | undefined;
 
   public static async getToken(esriRestServiceUrl: string, options: ArcGisGenerateTokenOptions, saveSessionStorage: boolean = true): Promise<ArcGisToken | undefined> {
-
     if (!ArcGisTokenManager._generator)
       ArcGisTokenManager._generator = new ArcGisTokenGenerator();
 
@@ -50,13 +49,5 @@ export class ArcGisTokenManager {
     }
 
     return newToken;
-  }
-
-  public static invalidateToken(esriRestServiceUrl: string, userName: string): boolean {
-
-    const tokenCacheKey = `${userName}@${esriRestServiceUrl}`;
-    sessionStorage.removeItem(`arcgis:${tokenCacheKey}`)
-    return ArcGisTokenManager._cache.delete(tokenCacheKey);
-
   }
 }
