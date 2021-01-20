@@ -288,7 +288,7 @@ describe("PipeConnections", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "createArcPointTangentPoint");
     expect(ck.getNumErrors()).equals(0);
   });
-  it("createRectangleXY", () => {
+  it.only("createRectangleXY", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const x0 = 1.5;
