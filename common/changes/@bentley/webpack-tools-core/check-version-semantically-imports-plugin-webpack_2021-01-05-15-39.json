@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/webpack-tools-core",
-      "comment": "Remove json.stringify of pkgVersion so it is stringified only once instead of twice",
+      "comment": "Add function to check versions semantically ",
       "type": "none"
     }
   ],

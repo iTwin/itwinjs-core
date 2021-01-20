@@ -87,7 +87,6 @@ import { FeatureOverrides } from '@bentley/imodeljs-common';
 import { FeatureTable } from '@bentley/imodeljs-common';
 import { FillFlags } from '@bentley/imodeljs-common';
 import { FontMap } from '@bentley/imodeljs-common';
-import { Format } from '@bentley/imodeljs-quantity';
 import { FormatProps } from '@bentley/imodeljs-quantity';
 import { FormatterSpec } from '@bentley/imodeljs-quantity';
 import { FrontendAuthorizationClient } from '@bentley/frontend-authorization-client';
@@ -2041,7 +2040,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
     // @internal (undocumented)
     static get className(): string;
     // @internal (undocumented)
-    clone(iModel: IModelConnection): this;
+    clone(iModel?: IModelConnection): this;
     get environment(): Environment;
     set environment(env: Environment);
     // (undocumented)
@@ -2986,6 +2985,9 @@ export class FlyViewTool extends ViewManip {
     static toolId: string;
 }
 
+// @internal
+export type FormatPropsByUnitSystem = Map<UnitSystemKey, FormatProps>;
+
 // @beta
 export abstract class FormattedQuantityDescription extends BaseQuantityDescription {
     constructor(name: string, displayLabel: string, iconSpec?: string);
@@ -3001,6 +3003,25 @@ export abstract class FormattedQuantityDescription extends BaseQuantityDescripti
     get parserSpec(): ParserSpec | undefined;
     // (undocumented)
     protected parseString(userInput: string): ParseResults;
+}
+
+// @alpha
+export interface FormatterParserSpecsProvider {
+    // (undocumented)
+    createFormatterSpec: (unitSystem: UnitSystemKey) => Promise<FormatterSpec>;
+    // (undocumented)
+    createParserSpec: (unitSystem: UnitSystemKey) => Promise<ParserSpec>;
+    // (undocumented)
+    quantityType: QuantityTypeArg;
+}
+
+// @internal
+export type FormatterSpecByQuantityType = Map<QuantityTypeKey, FormatterSpec>;
+
+// @alpha
+export interface FormattingUnitSystemChangedArgs {
+    // (undocumented)
+    readonly system: UnitSystemKey;
 }
 
 // @internal (undocumented)
@@ -3507,6 +3528,8 @@ export abstract class GraphicBuilder {
     pickId?: string;
     get placement(): Transform;
     set placement(tf: Transform);
+    // @beta
+    preserveOrder: boolean;
     setBlankingFill(fillColor: ColorDef): void;
     setSymbology(lineColor: ColorDef, fillColor: ColorDef, lineWidth: number, linePixels?: LinePixels): void;
     readonly type: GraphicType;
@@ -4109,11 +4132,11 @@ export abstract class IModelConnection extends IModel {
     // @beta
     readonly onClose: BeEvent<(_imodel: IModelConnection) => void>;
     static readonly onOpen: BeEvent<(_imodel: IModelConnection) => void>;
-    query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any>;
+    query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority, abbreviateBlobs?: boolean): AsyncIterableIterator<any>;
     queryEntityIds(params: EntityQueryParams): Promise<Id64Set>;
     queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number>;
     // @internal
-    queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string): Promise<QueryResponse>;
+    queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string, abbreviateBlobs?: boolean): Promise<QueryResponse>;
     requestSnap(props: SnapRequestProps): Promise<SnapResponseProps>;
     // @beta
     restartQuery(token: string, ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any>;
@@ -6249,9 +6272,13 @@ export enum OutputMessageType {
 // @alpha
 export interface OverrideFormatEntry {
     // (undocumented)
-    imperial: FormatProps;
+    imperial?: FormatProps;
     // (undocumented)
-    metric: FormatProps;
+    metric?: FormatProps;
+    // (undocumented)
+    usCustomary?: FormatProps;
+    // (undocumented)
+    usSurvey?: FormatProps;
 }
 
 // @internal
@@ -6514,67 +6541,70 @@ export class QuadId {
 }
 
 // @alpha
-export class QuantityFormatter implements UnitsProvider {
-    constructor(showMetricValues?: boolean);
+export interface QuantityFormatsChangedArgs {
     // (undocumented)
-    protected _activeSystemIsImperial: boolean;
+    readonly quantityType: string;
+}
+
+// @alpha
+export class QuantityFormatter implements UnitsProvider {
+    constructor(showMetricOrUnitSystem?: boolean | UnitSystemKey);
+    // (undocumented)
+    protected _activeFormatSpecsByType: Map<string, FormatterSpec>;
+    // (undocumented)
+    protected _activeParserSpecsByType: Map<string, ParserSpec>;
+    get activeUnitSystem(): UnitSystemKey;
+    // (undocumented)
+    protected _activeUnitSystem: UnitSystemKey;
     // (undocumented)
     clearAllOverrideFormats(): Promise<void>;
     // (undocumented)
     clearOverrideFormats(type: QuantityType): Promise<void>;
-    findFormatterSpecByQuantityType(type: QuantityType, imperial?: boolean): FormatterSpec | undefined;
+    findFormatterSpecByQuantityType(type: QuantityTypeArg, _unused?: boolean): FormatterSpec | undefined;
     protected findKoqFormatterSpec(koq: string, useImperial: boolean): FormatterSpec | undefined;
-    findParserSpecByQuantityType(type: QuantityType, imperial?: boolean): ParserSpec | undefined;
+    findParserSpecByQuantityType(type: QuantityTypeArg, _unused?: boolean): ParserSpec | undefined;
     findUnit(unitLabel: string, unitFamily?: string): Promise<UnitProps>;
     findUnitByName(unitName: string): Promise<UnitProps>;
     // (undocumented)
     protected findUnitDefinition(name: string): UnitDefinition | undefined;
-    formatQuantity(magnitude: number, formatSpec: FormatterSpec): string;
+    formatQuantity(magnitude: number, formatSpec: FormatterSpec | undefined): string;
+    // (undocumented)
+    protected _formatSpecProviders: FormatterParserSpecsProvider[];
     // (undocumented)
     protected _formatSpecsByKoq: Map<string, FormatterSpec[]>;
     getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversion>;
-    // (undocumented)
-    protected getFormatByQuantityType(type: QuantityType, imperial: boolean): Promise<Format>;
-    getFormatterSpecByQuantityType(type: QuantityType, imperial?: boolean): Promise<FormatterSpec>;
+    getFormatterSpecByQuantityType(type: QuantityTypeArg, isImperial?: boolean): Promise<FormatterSpec | undefined>;
     protected getKoqFormatterSpec(koq: string, useImperial: boolean): Promise<FormatterSpec | undefined>;
     protected getKoqFormatterSpecsAsync(koq: string, useImperial: boolean): Promise<FormatterSpec[] | undefined>;
-    // (undocumented)
-    protected getOverrideFormat(type: QuantityType, imperial: boolean): Promise<FormatProps | undefined>;
-    getParserSpecByQuantityType(type: QuantityType, imperial?: boolean): Promise<ParserSpec>;
-    // (undocumented)
-    protected _getStandardFormatterSpec(type: QuantityType, useImperial: boolean): Promise<FormatterSpec>;
+    getParserSpecByQuantityType(type: QuantityTypeArg, isImperial?: boolean): Promise<ParserSpec | undefined>;
+    protected getPersistenceUnitByQuantityType(type: QuantityTypeKey): Promise<UnitProps>;
+    getQuantityTypeKey(type: QuantityTypeArg): string;
     protected getUnitByQuantityType(type: QuantityType): Promise<UnitProps>;
     getUnitsByFamily(unitFamily: string): Promise<UnitProps[]>;
+    getUnitSystemFromString(inputSystem: string, fallback?: UnitSystemKey): UnitSystemKey;
     // (undocumented)
-    protected _imperialFormatsByType: Map<QuantityType, Format>;
-    // (undocumented)
-    protected _imperialFormatSpecsByType: Map<QuantityType, FormatterSpec>;
-    // (undocumented)
-    protected _imperialParserSpecsByType: Map<QuantityType, ParserSpec>;
-    loadFormatAndParsingMaps(useImperial: boolean, restartActiveTool?: boolean): Promise<void>;
-    protected loadFormatSpecsForQuantityType(quantityType: QuantityType, useImperial: boolean): Promise<void>;
-    protected loadFormatSpecsForQuantityTypes(useImperial: boolean): Promise<void>;
+    hasActiveOverride(type: QuantityTypeArg, checkOnlyActiveUnitSystem?: boolean): boolean;
+    // @deprecated
+    loadFormatAndParsingMaps(useImperial: boolean, _restartActiveTool?: boolean): Promise<void>;
+    // @internal
+    protected loadFormatAndParsingMapsForSystem(systemType?: UnitSystemKey): Promise<void>;
     protected loadKoqFormatSpecs(koq: string): Promise<void>;
-    protected loadParsingSpecsForQuantityType(quantityType: QuantityType, useImperial: boolean): Promise<void>;
-    protected loadParsingSpecsForQuantityTypes(useImperial: boolean): Promise<void>;
-    // (undocumented)
-    protected loadStdFormat(type: QuantityType, imperial: boolean): Promise<Format>;
-    // (undocumented)
-    protected _metricFormatsByType: Map<QuantityType, Format>;
-    // (undocumented)
-    protected _metricFormatSpecsByType: Map<QuantityType, FormatterSpec>;
-    // (undocumented)
-    protected _metricUnitParserSpecsByType: Map<QuantityType, ParserSpec>;
+    readonly onActiveFormattingUnitSystemChanged: BeUiEvent<FormattingUnitSystemChangedArgs>;
+    // @deprecated
     readonly onActiveUnitSystemChanged: BeUiEvent<{
         useImperial: boolean;
     }>;
     // (undocumented)
-    onInitialized(): void;
+    onInitialized(): Promise<void>;
+    readonly onQuantityFormatsChanged: BeUiEvent<QuantityFormatsChangedArgs>;
     // (undocumented)
-    protected _overrideFormatDataByType: Map<QuantityType, OverrideFormatEntry>;
-    parseIntoQuantityValue(inString: string, parserSpec: ParserSpec): ParseResult;
+    protected _overrideFormatPropsByQuantityType: Map<string, OverrideFormatEntry>;
+    parseToQuantityValue(inString: string, parserSpec: ParserSpec | undefined): ParseResult;
+    registerFormatterParserSpecsProviders(provider: FormatterParserSpecsProvider): Promise<boolean>;
+    setActiveUnitSystem(isImperialOrUnitSystem: UnitSystemKey | boolean, restartActiveTool?: boolean): Promise<void>;
     // (undocumented)
-    setOverrideFormats(type: QuantityType, entry: OverrideFormatEntry): Promise<void>;
+    setOverrideFormats(type: QuantityType, overrideEntry: OverrideFormatEntry): Promise<void>;
+    // @deprecated (undocumented)
     get useImperialFormats(): boolean;
     set useImperialFormats(useImperial: boolean);
 }
@@ -6600,6 +6630,9 @@ export enum QuantityType {
     // (undocumented)
     Volume = 4
 }
+
+// @alpha
+export type QuantityTypeArg = QuantityType | string;
 
 // @internal
 export function queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise<number>;
@@ -10197,6 +10230,9 @@ export enum UniformType {
     Vec4 = 5
 }
 
+// @alpha
+export type UnitSystemKey = "metric" | "imperial" | "usCustomary" | "usSurvey";
+
 // @internal (undocumented)
 export class UpsampledMapTile extends MapTile {
     // (undocumented)
@@ -11383,6 +11419,8 @@ export abstract class Viewport implements IDisposable {
     readonly onFeatureOverridesChanged: BeEvent<(vp: Viewport) => void>;
     readonly onNeverDrawnChanged: BeEvent<(vp: Viewport) => void>;
     readonly onRender: BeEvent<(vp: Viewport) => void>;
+    // @beta
+    readonly onResized: BeEvent<(vp: Viewport) => void>;
     readonly onViewChanged: BeEvent<(vp: Viewport) => void>;
     readonly onViewedCategoriesChanged: BeEvent<(vp: Viewport) => void>;
     readonly onViewedCategoriesPerModelChanged: BeEvent<(vp: Viewport) => void>;
@@ -11893,6 +11931,8 @@ export abstract class ViewState3d extends ViewState {
     decorate(context: DecorateContext): void;
     // @beta
     get details(): ViewDetails3d;
+    get displayStyle(): DisplayStyle3dState;
+    set displayStyle(style: DisplayStyle3dState);
     // @internal (undocumented)
     protected drawGroundPlane(context: DecorateContext): void;
     // @internal (undocumented)
@@ -11904,7 +11944,6 @@ export abstract class ViewState3d extends ViewState {
     getBackDistance(): number;
     // (undocumented)
     getCartographicHeight(point: XYAndZ): number | undefined;
-    // (undocumented)
     getDisplayStyle3d(): DisplayStyle3dState;
     // (undocumented)
     getExtents(): Vector3d;

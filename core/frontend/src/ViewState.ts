@@ -152,7 +152,7 @@ export abstract class ViewState extends ElementState {
     }
   }
 
-  /** Selects the styling parameters for this this ViewState. */
+  /** The style that controls how the contents of the view are displayed. */
   public get displayStyle(): DisplayStyleState {
     return this._displayStyle;
   }
@@ -1445,7 +1445,22 @@ export abstract class ViewState3d extends ViewState {
     return !this._cameraOn ? (this.getZVector().z > 0) : (this.getEyePoint().z > elevation);
   }
 
-  public getDisplayStyle3d() { return this.displayStyle as DisplayStyle3dState; }
+  /** The style that controls how the contents of the view are displayed. */
+  public get displayStyle(): DisplayStyle3dState {
+    return this.getDisplayStyle3d();
+  }
+
+  public set displayStyle(style: DisplayStyle3dState) {
+    assert(style instanceof DisplayStyle3dState);
+    super.displayStyle = style;
+  }
+
+  /** The style that controls how the contents of the view are displayed.
+   * @see [[ViewState3d.displayStyle]].
+   */
+  public getDisplayStyle3d() {
+    return super.displayStyle as DisplayStyle3dState;
+  }
 
   /** Turn the camera off for this view. After this call, the camera parameters in this view definition are ignored and views that use it will
    * display with an orthographic (infinite focal length) projection of the view volume from the view direction.
