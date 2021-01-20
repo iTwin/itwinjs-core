@@ -9,7 +9,7 @@ import { ExternalTextureLoader, GL, Texture2DHandle } from "@bentley/imodeljs-fr
 import { TestUtility } from "./TestUtility";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 
-describe.only("external texture requests", () => {
+describe("external texture requests", () => {
   const projectName = "iModelJsIntegrationTest";
   let imodel: IModelConnection;
   const origLoadTexture = ExternalTextureLoader.instance.loadTexture; // eslint-disable-line @typescript-eslint/unbound-method
