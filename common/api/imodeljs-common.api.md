@@ -3919,7 +3919,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     // (undocumented)
     getModelProps(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<ModelProps[]>;
     // @alpha (undocumented)
-    getTextureImage(_iModelToken: IModelRpcProps, _textureName: string): Promise<Uint8Array | undefined>;
+    getTextureImage(_iModelToken: IModelRpcProps, _textureLoadProps: TextureLoadProps): Promise<Uint8Array | undefined>;
     // (undocumented)
     getToolTipMessage(_iModelToken: IModelRpcProps, _elementId: string): Promise<string[]>;
     // (undocumented)
@@ -7105,6 +7105,11 @@ export interface TextStringProps {
 export enum TextureFlags {
     // (undocumented)
     None = 0
+}
+
+// @alpha
+export interface TextureLoadProps {
+    name: string;
 }
 
 // @beta

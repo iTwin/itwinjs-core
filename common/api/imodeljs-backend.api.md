@@ -175,6 +175,7 @@ import { SubjectProps } from '@bentley/imodeljs-common';
 import { TelemetryEvent } from '@bentley/telemetry-client';
 import { TelemetryManager } from '@bentley/telemetry-client';
 import { TextureFlags } from '@bentley/imodeljs-common';
+import { TextureLoadProps } from '@bentley/imodeljs-common';
 import { TextureMapProps } from '@bentley/imodeljs-common';
 import { TextureProps } from '@bentley/imodeljs-common';
 import { ThumbnailProps } from '@bentley/imodeljs-common';
@@ -2477,7 +2478,7 @@ export abstract class IModelDb extends IModel {
     getMassProperties(requestContext: ClientRequestContext, props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     getMetaData(classFullName: string): EntityMetaData;
     // @alpha
-    getTextureImage(name: string): Uint8Array | undefined;
+    getTextureImage(props: TextureLoadProps): Uint8Array | undefined;
     get iModelId(): GuidString;
     importSchemas(requestContext: ClientRequestContext, schemaFileNames: string[]): Promise<void>;
     // @alpha
