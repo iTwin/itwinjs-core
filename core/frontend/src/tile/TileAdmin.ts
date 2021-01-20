@@ -215,6 +215,9 @@ export abstract class TileAdmin {
   public abstract registerViewport(vp: Viewport): void;
 
   /** @internal */
+  public abstract invalidateAllScenes(): void;
+
+  /** @internal */
   public abstract onShutDown(): void;
 
   /** @internal */
@@ -788,6 +791,10 @@ class Admin extends TileAdmin {
       removeEditingListener();
       removeLoadListener();
     };
+  }
+
+  public invalidateAllScenes() {
+    this._viewports.forEach((vp) => vp.invalidateScene());
   }
 
   public get enableInstancing() { return this._enableInstancing && IModelApp.renderSystem.supportsInstancing; }

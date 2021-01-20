@@ -7,8 +7,10 @@
  */
 
 import { assert, dispose } from "@bentley/bentleyjs-core";
-import { ImageBuffer, ImageBufferFormat, isPowerOfTwo, nextHighestPowerOfTwo, RenderTexture } from "@bentley/imodeljs-common";
-import { imageBufferToPngDataUrl, openImageDataUrlInNewWindow } from "../../ImageUtil";
+import { ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, isPowerOfTwo, nextHighestPowerOfTwo, RenderTexture } from "@bentley/imodeljs-common";
+import { imageBufferToPngDataUrl, imageElementFromImageSource, openImageDataUrlInNewWindow } from "../../ImageUtil";
+import { IModelConnection } from "../../IModelConnection";
+import { IModelApp } from "../../imodeljs-frontend";
 import { WebGLDisposable } from "./Disposable";
 import { GL } from "./GL";
 import { UniformHandle } from "./Handle";
@@ -294,7 +296,7 @@ export abstract class TextureHandle implements WebGLDisposable {
   public abstract get dataBytes(): Uint8Array | undefined;
   public get bytesUsed(): number { return this._bytesUsed; }
   public set bytesUsed(bytesUsed: number) {
-    assert(0 === this.bytesUsed);
+    // assert(0 === this.bytesUsed);
     this._bytesUsed = bytesUsed;
   }
 
@@ -339,6 +341,10 @@ export abstract class TextureHandle implements WebGLDisposable {
   /** Create a cube map texture from six HTMLImageElement objects. */
   public static createForCubeImages(posX: HTMLImageElement, negX: HTMLImageElement, posY: HTMLImageElement, negY: HTMLImageElement, posZ: HTMLImageElement, negZ: HTMLImageElement) {
     return TextureCubeHandle.createForCubeImages(posX, negX, posY, negY, posZ, negZ);
+  }
+
+  public static createForExternalImage(name: string, imodel: IModelConnection, type: RenderTexture.Type, format: ImageSourceFormat) {
+    return Texture2DHandle.createForExternalImage(name, imodel, type, format);
   }
 
   protected constructor(glTexture: WebGLTexture) {
@@ -468,6 +474,31 @@ export class Texture2DHandle extends TextureHandle {
     return this.create(Texture2DCreateParams.createForImage(image, hasAlpha, type));
   }
 
+  private static _placeHolderTextureData = new Uint8Array([255, 0, 0]);
+
+  public static createForExternalImage(name: string, imodel: IModelConnection, type: RenderTexture.Type, format: ImageSourceFormat) {
+    // set a placeholder texture while we wait for the external texture to load
+    const handle = this.createForData(1, 1, this._placeHolderTextureData, undefined, undefined, GL.Texture.Format.Rgb);
+
+    if (undefined === handle)
+      return undefined;
+
+    // kick off loading the texture from the backend
+    ExternalTextureLoader.instance.loadTexture(handle, name, imodel, type, format);
+
+    return handle;
+  }
+
+  public reload(params: Texture2DCreateParams) {
+    this._width = params.width;
+    this._height = params.height;
+    this._format = params.format;
+    this._dataType = params.dataType;
+    this._dataBytes = params.dataBytes;
+
+    params.loadImageData(this, params);
+  }
+
   private constructor(glTexture: WebGLTexture, params: Texture2DCreateParams) {
     super(glTexture);
     this._width = params.width;
@@ -477,6 +508,69 @@ export class Texture2DHandle extends TextureHandle {
     this._dataBytes = params.dataBytes;
 
     params.loadImageData(this, params);
+  }
+}
+
+interface ExternalTextureRequest {
+  handle: Texture2DHandle;
+  name: string;
+  imodel: IModelConnection;
+  type: RenderTexture.Type;
+  format: ImageSourceFormat;
+}
+
+/** @internal */
+export class ExternalTextureLoader { /* currently exported for tests only */
+  public static readonly instance = new ExternalTextureLoader(10);
+  private readonly _maxActiveRequests: number;
+  private _numActiveRequests = 0;
+  private _pendingRequests: Array<ExternalTextureRequest> = [];
+
+  public get numActiveRequests() { return this._numActiveRequests; }
+  public get numPendingRequests() { return this._pendingRequests.length; }
+  public get maxActiveRequests() { return this._maxActiveRequests; }
+
+  private constructor(maxActiveRequests: number) {
+    this._maxActiveRequests = maxActiveRequests;
+  }
+
+  private _nextRequest() {
+    this._numActiveRequests--;
+    console.log("numActiveRequests = " + this._numActiveRequests);
+    if (this._numActiveRequests < this._maxActiveRequests && this._pendingRequests.length > 0) {
+      this._activateRequest(this._pendingRequests.pop()!);
+      console.log("pendingRequests.length = " + this._pendingRequests.length);
+    }
+  }
+
+  private _activateRequest(req: ExternalTextureRequest) {
+    this._numActiveRequests++;
+    console.log("numActiveRequests = " + this._numActiveRequests);
+    const texBytesPromise = req.imodel.getTextureImage({ name: req.name });
+    texBytesPromise.then((texBytes: Uint8Array | undefined) => {
+      if (undefined !== texBytes && !req.imodel.isClosed) {
+        const imageSource = new ImageSource(texBytes, req.format);
+        const imageElementPromise = imageElementFromImageSource(imageSource);
+        imageElementPromise.then((image: HTMLImageElement) => {
+          if (!req.imodel.isClosed) {
+            req.handle.reload(Texture2DCreateParams.createForImage(image, ImageSourceFormat.Png === req.format, req.type));
+            IModelApp.tileAdmin.invalidateAllScenes();
+          }
+          this._nextRequest();
+        }).catch((_e: any) => { });
+      } else
+        this._nextRequest();
+    }).catch((_e: any) => { });
+  }
+
+  public loadTexture(handle: Texture2DHandle, name: string, imodel: IModelConnection, type: RenderTexture.Type, format: ImageSourceFormat) {
+    console.log("loadTexture: " + name);
+    const req = { handle, name, imodel, type, format };
+    if (this._numActiveRequests + 1 > this._maxActiveRequests) {
+      this._pendingRequests.push(req);
+      console.log("pendingRequests.length = " + this._pendingRequests.length);
+    } else
+      this._activateRequest(req);
   }
 }
 

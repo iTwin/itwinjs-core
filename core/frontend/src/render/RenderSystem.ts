@@ -440,6 +440,8 @@ export abstract class RenderSystem implements IDisposable {
     });
   }
 
+  public createTextureFromExternalImage(_name: string, _imodel: IModelConnection, _params: RenderTexture.Params, _format: ImageSourceFormat): RenderTexture | undefined { return undefined; }
+
   /** Create a new texture from a cube of HTML images.
    * @internal
    */

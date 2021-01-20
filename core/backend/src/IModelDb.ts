@@ -22,7 +22,7 @@ import {
   IModelEventSourceProps, IModelNotFoundResponse, IModelProps, IModelRpcProps, IModelStatus, IModelTileTreeProps, IModelVersion,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions,
   PropertyCallback, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, SheetProps, SnapRequestProps, SnapResponseProps,
-  SnapshotOpenOptions, SpatialViewDefinitionProps, StandaloneOpenOptions, ThumbnailProps, UpgradeOptions, ViewDefinitionProps,
+  SnapshotOpenOptions, SpatialViewDefinitionProps, StandaloneOpenOptions, TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinitionProps,
   ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
@@ -1038,11 +1038,11 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Retrieve a named texture image from this iModel, as a Uint8Array.
-   * @param name the identifier of the texture
+   * @param props the texture load properties which must include the name of the texture to load
    * @returns the Uint8Array or undefined if the texture image is not present.
    * @alpha
    */
-  public getTextureImage(name: string): Uint8Array | undefined { return this.nativeDb.getTextureImage(name) as Uint8Array | undefined; }
+  public getTextureImage(props: TextureLoadProps): Uint8Array | undefined { return this.nativeDb.getTextureImage(props); }
 
   /** Query a "file property" from this iModel, as a string.
    * @returns the property string or undefined if the property is not present.

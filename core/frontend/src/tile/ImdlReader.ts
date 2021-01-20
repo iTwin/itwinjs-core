@@ -223,35 +223,13 @@ export class ImdlReader extends GltfReader {
   }
 
   private async readNamedTexture(namedTex: any, name: string): Promise<RenderTexture | undefined> {
-    let texBytes: Uint8Array | undefined;
-
     // If the texture has a valid Id64 name, it is valid to request it directly from the backend.
     // If the texture does not have a valid Id64 name, it is not valid to request it directly from the backend.
     // In that case, we instead retrieve the texture directly from the tile.
     // Furthermore, if external textures are disabled, we retrieve the texture directly from the tile in both cases.
-
-    const bufferViewId = JsonUtils.asString(namedTex.bufferView);
-    const bufferViewJson = 0 !== bufferViewId.length ? this._bufferViews[bufferViewId] : undefined;
-
-    const useExternalTexture = Id64.isValidId64(name) && IModelApp.tileAdmin.enableExternalTextures;
-    if (useExternalTexture && undefined === bufferViewJson) {
-      // Only do this if bufferViewJson does not exist.
-      // (If external textures are enabled and the backend provides a bufferViewJson, that means the image data
-      // is small enough that the backend decided to embed that data rather than make it an external texture.)
-      texBytes = await this._iModel.getTextureImage(name);
-      if (undefined === texBytes)
-        return undefined;
-    } else {
-      if (undefined === bufferViewJson)
-        return undefined;
-
-      const byteOffset = JsonUtils.asInt(bufferViewJson.byteOffset);
-      const byteLength = JsonUtils.asInt(bufferViewJson.byteLength);
-      if (0 === byteLength)
-        return undefined;
-
-      texBytes = this._binaryData.subarray(byteOffset, byteOffset + byteLength);
-    }
+    // Only do this if bufferViewJson does not exist.
+    // (If external textures are enabled and the backend provides a bufferViewJson, that means the image data
+    // is small enough that the backend decided to embed that data rather than make it an external texture.)
 
     let textureType = RenderTexture.Type.Normal;
     const isGlyph = JsonUtils.asBool(namedTex.isGlyph);
@@ -266,9 +244,26 @@ export class ImdlReader extends GltfReader {
     const cacheable = !isGlyph && !isTileSection;
     const params = new RenderTexture.Params(cacheable ? name : undefined, textureType);
 
-    const format = namedTex.format;
-    const imageSource = new ImageSource(texBytes, format);
-    return this._system.createTextureFromImageSource(imageSource, this._iModel, params);
+    const bufferViewId = JsonUtils.asString(namedTex.bufferView);
+    const bufferViewJson = 0 !== bufferViewId.length ? this._bufferViews[bufferViewId] : undefined;
+
+    const useExternalTexture = Id64.isValidId64(name) && IModelApp.tileAdmin.enableExternalTextures && undefined === bufferViewJson;
+    if (!useExternalTexture) {
+      if (undefined === bufferViewJson)
+        return undefined;
+
+      const byteOffset = JsonUtils.asInt(bufferViewJson.byteOffset);
+      const byteLength = JsonUtils.asInt(bufferViewJson.byteLength);
+      if (0 === byteLength)
+        return undefined;
+
+      const texBytes = this._binaryData.subarray(byteOffset, byteOffset + byteLength);
+      const format = namedTex.format;
+      const imageSource = new ImageSource(texBytes, format);
+      return this._system.createTextureFromImageSource(imageSource, this._iModel, params);
+    }
+
+    return this._system.createTextureFromExternalImage(name, this._iModel, params, namedTex.format);
   }
 
   /** @internal */
