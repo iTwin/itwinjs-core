@@ -218,6 +218,7 @@ export class StagePanelDef extends WidgetHost {
   /** @internal */
   public updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation, _section?: StagePanelSection): void {
     this.panelZones.start.updateDynamicWidgetDefs(stageId, stageUsage, location, StagePanelSection.Start);
+    // TODO: filter out provided recurring widgets in case a section parameter is ignored by the provider.
     // this.panelZones.middle.updateDynamicWidgetDefs(stageId, stageUsage, location, StagePanelSection.Middle);
     // this.panelZones.end.updateDynamicWidgetDefs(stageId, stageUsage, location, StagePanelSection.End);
   }
