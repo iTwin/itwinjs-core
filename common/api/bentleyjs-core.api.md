@@ -867,6 +867,8 @@ export enum IModelStatus {
     // (undocumented)
     ForeignKeyConstraint = 65553,
     // (undocumented)
+    FunctionNotFound = 65606,
+    // (undocumented)
     IdExists = 65554,
     // (undocumented)
     IMODEL_ERROR_BASE = 65536,
@@ -901,6 +903,8 @@ export enum IModelStatus {
     // (undocumented)
     MissingId = 65569,
     // (undocumented)
+    NoActiveCommand = 65607,
+    // (undocumented)
     NoContent = 65604,
     // (undocumented)
     NoGeoLocation = 65602,
@@ -922,6 +926,8 @@ export enum IModelStatus {
     NotOpen = 65575,
     // (undocumented)
     NotOpenForWrite = 65576,
+    // (undocumented)
+    NotRegistered = 65605,
     // (undocumented)
     NotSameUnitBase = 65577,
     // (undocumented)

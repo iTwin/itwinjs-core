@@ -11,7 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
 import { RelativePosition } from "@bentley/ui-abstract";
-import { CommonProps, Popup, useRefs } from "@bentley/ui-core";
+import { CommonProps, Popup, useRefs, WebFontIcon } from "@bentley/ui-core";
 import { ColorSwatch } from "./Swatch";
 
 // cSpell:ignore colorpicker
@@ -51,11 +51,13 @@ export interface ColorPickerProps extends React.ButtonHTMLAttributes<HTMLButtonE
   numColumns?: number;
   /** Provides ability to return reference to HTMLButtonElement */
   ref?: React.Ref<HTMLButtonElement>;
+  /** If true show up/down caret next to color  */
+  showCaret?: boolean;
 }
 
 // Defined using following pattern (const ColorPickerButton at bottom) to ensure useful API documentation is extracted
 const ForwardRefColorPickerButton = React.forwardRef<HTMLButtonElement, ColorPickerProps>(
-  function ForwardRefColorPickerButton({ className, colorDefs, disabled, dropDownTitle, initialColor, numColumns, onColorPick, readonly, round, style }, ref) {
+  function ForwardRefColorPickerButton({ className, colorDefs, disabled, dropDownTitle, initialColor, numColumns, onColorPick, readonly, round, showCaret, style }, ref) {
     const target = React.useRef<HTMLButtonElement>();
     const refs = useRefs(target, ref);  // combine ref needed for target with the forwardRef needed by the Parent when parent is a Type Editor.
     const [showPopup, setShowPopup] = React.useState(false);
@@ -112,7 +114,9 @@ const ForwardRefColorPickerButton = React.forwardRef<HTMLButtonElement, ColorPic
     const { b, g, r, t } = colorDef.colors;
     const rgbaString = `rgb(${r},${g},${b},${(255 - t) / 255})`;
 
-    const buttonStyle = { backgroundColor: rgbaString, ...style } as React.CSSProperties;
+    const buttonStyle = { ...style } as React.CSSProperties;
+    const swatchStyle = { backgroundColor: rgbaString } as React.CSSProperties;
+
     const buttonClassNames = classnames("components-colorpicker-button",
       round && "round",
       readonly && "readonly",
@@ -123,13 +127,20 @@ const ForwardRefColorPickerButton = React.forwardRef<HTMLButtonElement, ColorPic
     return (
       <>
         <button data-testid="components-colorpicker-button" data-value={rgbaString} onClick={togglePopup} className={buttonClassNames}
-          style={buttonStyle} disabled={disabled} ref={refs} />
+          style={buttonStyle} disabled={disabled} ref={refs} >
+          <div className="components-colorpicker-button-container">
+            <div className="components-colorpicker-button-color-swatch" style={swatchStyle} />
+            {showCaret && <WebFontIcon className="components-caret" iconName={showPopup ? "icon-caret-up" : "icon-caret-down"} iconSize="x-small" />}
+          </div>
+        </button>
         <Popup
           className="components-colorpicker-popup"
           isOpen={showPopup}
           position={RelativePosition.BottomLeft}
           onClose={closePopup}
-          target={target.current} >
+          target={target.current}
+          closeOnNestedPopupOutsideClick
+        >
           <ColorOptions handleColorPicked={handleColorPicked} options={colorOptions} numColumns={numColumns ?? 4} round={!!round} title={dropDownTitle} />
         </Popup>
       </>

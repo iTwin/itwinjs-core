@@ -488,7 +488,7 @@ export function WidgetContent() {
           <h1>D</h1>
         </>
       }
-    </ScrollableWidgetContent >
+    </ScrollableWidgetContent>
   );
 }
 

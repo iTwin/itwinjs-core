@@ -62,6 +62,7 @@ import { IconProps } from '@bentley/ui-core';
 import { IconSpec } from '@bentley/ui-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
+import { IFilteredPresentationTreeDataProvider } from '@bentley/presentation-components';
 import { IMatch } from '@bentley/ui-abstract';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
 import { InteractiveTool } from '@bentley/imodeljs-frontend';
@@ -2582,9 +2583,6 @@ export function getIsHiddenIfSelectionNotActive(): ConditionalBooleanValue;
 // @internal (undocumented)
 export const getNestedStagePanelKey: (location: StagePanelLocation_2) => NestedStagePanelKey<NestedStagePanelsManagerProps>;
 
-// @internal (undocumented)
-export function getPanelSide(location: StagePanelLocation_2): PanelSide;
-
 // @beta
 export function getSelectionContextSyncEventIds(): string[];
 
@@ -3745,11 +3743,19 @@ export class ModelsVisibilityHandler implements IVisibilityHandler {
     // (undocumented)
     protected getModelDisplayStatus(id: Id64String): VisibilityStatus;
     // (undocumented)
+    static getNodeType(item: TreeNodeItem, dataProvider: IPresentationTreeDataProvider): ModelsTreeNodeType;
+    // (undocumented)
     protected getSubjectNodeVisibility(ids: Id64String[], node: TreeNodeItem): Promise<VisibilityStatus>;
     getVisibilityStatus(node: TreeNodeItem, nodeKey: NodeKey): VisibilityStatus | Promise<VisibilityStatus>;
     // (undocumented)
+    static isCategoryNode(node: TreeNodeItem): any;
+    // (undocumented)
+    static isModelNode(node: TreeNodeItem): any;
+    // (undocumented)
+    static isSubjectNode(node: TreeNodeItem): any;
+    // (undocumented)
     onVisibilityChange: BeEvent<VisibilityChangeListener>;
-    setFilteredDataProvider(provider: IPresentationTreeDataProvider | undefined): void;
+    setFilteredDataProvider(provider: IFilteredPresentationTreeDataProvider | undefined): void;
     }
 
 // @alpha
@@ -5154,11 +5160,13 @@ export interface StagePanelChangeHandler {
 export class StagePanelDef extends WidgetHost {
     constructor();
     get applicationData(): any | undefined;
+    // @internal (undocumented)
+    get defaultSize(): number | undefined;
+    // @internal (undocumented)
+    get defaultState(): StagePanelState;
     findWidgetDef(id: string): WidgetDef | undefined;
     // @internal (undocumented)
     initializeFromProps(props: StagePanelProps, panelLocation?: StagePanelLocation_2): void;
-    // @internal (undocumented)
-    initializePanelState(panelState: StagePanelState): void;
     get location(): StagePanelLocation_2;
     // @internal (undocumented)
     get maxSizeSpec(): number | {
@@ -5174,7 +5182,8 @@ export class StagePanelDef extends WidgetHost {
     get resizable(): boolean;
     get size(): number | undefined;
     set size(size: number | undefined);
-    }
+    get widgetDefs(): ReadonlyArray<WidgetDef>;
+}
 
 // @beta
 export type StagePanelDefaultProps = Pick<StagePanelProps, "resizable">;
@@ -6085,6 +6094,9 @@ export interface ToolWidgetPropsEx extends ToolWidgetProps, CommonProps {
     verticalToolbar?: React.ReactNode;
 }
 
+// @internal (undocumented)
+export function toPanelSide(location: StagePanelLocation_2): PanelSide;
+
 // @internal
 export interface TrackingTime {
     // (undocumented)
@@ -6385,7 +6397,7 @@ export function useUpdateNineZoneSize(frontstageDef: FrontstageDef): void;
 
 // @alpha
 export const useVisibilityTreeFiltering: (nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>, filterInfo?: VisibilityTreeFilterInfo | undefined, onFilterApplied?: ((filteredDataProvider: IPresentationTreeDataProvider, matchesCount: number) => void) | undefined) => {
-    filteredNodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider> | import("@bentley/ui-components").PagedTreeNodeLoader<import("@bentley/presentation-components/lib/presentation-components/tree/FilteredDataProvider").FilteredPresentationTreeDataProvider>;
+    filteredNodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>;
     isFiltering: boolean;
     nodeHighlightingProps: import("@bentley/ui-components").HighlightableTreeProps | undefined;
 };
@@ -6708,6 +6720,8 @@ export class WidgetDef {
     get classId(): string | ConfigurableUiControlConstructor | undefined;
     // (undocumented)
     static createWidgetPropsFromAbstractProps(abstractWidgetProps: AbstractWidgetProps): WidgetProps;
+    // @internal (undocumented)
+    get defaultState(): WidgetState_2;
     // @alpha
     expand(): void;
     // (undocumented)
