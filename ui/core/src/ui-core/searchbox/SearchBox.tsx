@@ -86,25 +86,32 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
     );
   }
 
-  private _trackChange = (_event?: any): void => {
-    let value = "";
-
+  /** Wrapper for onValueChanged to make sure we don't call search unless the new value is different from the previous value */
+  private _onValueChanged = (value: string, previousValue: string) => {
     // istanbul ignore else
-    if (this._inputElement)
-      value = this._inputElement.value;
+    if (value === previousValue)
+      return;
 
     this.setState((_prevState) => {
       return {
         value,
       };
-    }, () => {
-      if (this.props.valueChangedDelay) {
-        this._unsetTimeout();
-        this._timeoutId = window.setTimeout(() => { this.props.onValueChanged(this.state.value); }, this.props.valueChangedDelay);
-      } else {
-        this.props.onValueChanged(this.state.value);
-      }
-    });
+    }, () => { this.props.onValueChanged(this.state.value); });
+  };
+  private _trackChange = (_event?: any): void => {
+    let value = "";
+    const previousValue = this.state.value;
+
+    // istanbul ignore else
+    if (this._inputElement)
+      value = this._inputElement.value;
+
+    if (this.props.valueChangedDelay) {
+      this._unsetTimeout();
+      this._timeoutId = window.setTimeout(() => { this._onValueChanged(value, previousValue); }, this.props.valueChangedDelay);
+    } else {
+      this._onValueChanged(value, previousValue);
+    }
   };
 
   private _handleKeyDown = (e: React.KeyboardEvent) => {

@@ -278,7 +278,7 @@ public;Subject
 public;SubjectOwnsPartitionElements 
 public;SubjectOwnsSubjects 
 beta;TemplateModelCloner 
-internal;TemplateRecipe2d 
+beta;TemplateRecipe2d 
 beta;TemplateRecipe3d 
 internal;TemplateViewDefinition2d 
 internal;TemplateViewDefinition3d 

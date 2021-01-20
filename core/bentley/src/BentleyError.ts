@@ -95,6 +95,9 @@ export enum IModelStatus {
   NoGeoLocation = IMODEL_ERROR_BASE + 66,
   ServerTimeout = IMODEL_ERROR_BASE + 67,
   NoContent = IMODEL_ERROR_BASE + 68,
+  NotRegistered = IMODEL_ERROR_BASE + 69,
+  FunctionNotFound = IMODEL_ERROR_BASE + 70,
+  NoActiveCommand = IMODEL_ERROR_BASE + 71,
 }
 
 /** Error status from various briefcase operations
