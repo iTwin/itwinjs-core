@@ -6,14 +6,12 @@
  * @module Rendering
  */
 
-import { Id64, Id64String } from "@bentley/bentleyjs-core";
+import { Id64String } from "@bentley/bentleyjs-core";
 import { Matrix3d, Point2d, Point3d, Range3d, Transform, Vector2d, XAndY, XYAndZ } from "@bentley/geometry-core";
-import { Feature, FeatureIndexType, FeatureTable, PackedFeatureTable, QParams3d, QPoint3dList, RenderTexture } from "@bentley/imodeljs-common";
-import { IModelApp } from "../IModelApp";
+import { Feature, FeatureTable, PackedFeatureTable, QParams3d, QPoint3dList, RenderTexture } from "@bentley/imodeljs-common";
 import { Viewport } from "../Viewport";
 import { RenderGraphic } from "./RenderGraphic";
 import { GraphicBranch } from "./GraphicBranch";
-import { RenderSystem } from "./RenderSystem";
 import { MeshParams} from "./primitives/VertexTable";
 import { MeshArgs } from "./primitives/mesh/MeshPrimitives";
 
@@ -186,7 +184,7 @@ class Builder implements ParticleCollectionBuilder {
 
     // To keep scale values close to 1, compute mean size to use as size of quad.
     const numParticles = this._particles.length;
-    let meanSize = new Vector2d();
+    const meanSize = new Vector2d();
     for (const particle of this._particles) {
       meanSize.x += particle.width / numParticles;
       meanSize.y += particle.height / numParticles;

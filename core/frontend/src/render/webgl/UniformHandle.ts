@@ -7,10 +7,6 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { Point3d } from "@bentley/geometry-core";
-import { QParams2d, QParams3d } from "@bentley/imodeljs-common";
-import { WebGLDisposable } from "./Disposable";
-import { GL } from "./GL";
 import { Matrix3, Matrix4 } from "./Matrix";
 import { SyncToken } from "./Sync";
 import { System } from "./System";

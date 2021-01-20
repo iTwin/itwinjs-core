@@ -2,19 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClipVector, Point2d, Point3d, Transform } from "@bentley/geometry-core";
+import { Point3d } from "@bentley/geometry-core";
+import { ColorDef, FeatureAppearance, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
 import {
-  ColorDef, FeatureAppearance, FeatureAppearanceProvider, Hilite, MonochromeMode, RenderMode, RgbColor, ThematicDisplay, ThematicDisplayMode,
-  ThematicDisplayProps, ThematicGradientColorScheme, ThematicGradientMode, ViewFlags,
-} from "@bentley/imodeljs-common";
-import {
-  DecorateContext, Decorator, FeatureOverrideProvider, FeatureSymbology, GraphicBranch, GraphicBranchOptions, GraphicType, IModelApp, IModelConnection, OffScreenViewport,
-  Pixel, RenderMemory, RenderSystem, SnapshotConnection, SpatialViewState, Viewport, ViewRect,
-  ViewState3d,
+  DecorateContext, FeatureSymbology, GraphicType, IModelApp, IModelConnection, SnapshotConnection, Viewport,
 } from "@bentley/imodeljs-frontend";
-import { BuffersContainer, VAOContainer, VBOContainer } from "@bentley/imodeljs-frontend/lib/webgl";
 import { expect } from "chai";
-import { Color, comparePixelData, createOnScreenTestViewport, testOnScreenViewport, TestViewport, testViewports, testViewportsWithDpr } from "../TestViewport";
+import { Color, testOnScreenViewport } from "../TestViewport";
 
 describe("White-on-white reversal", async () => {
   let imodel: IModelConnection;

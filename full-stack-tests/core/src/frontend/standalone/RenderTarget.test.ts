@@ -4,15 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { ClipVector, Point2d, Point3d, Transform } from "@bentley/geometry-core";
 import {
-  ColorDef, FeatureAppearance, FeatureAppearanceProvider, Hilite, MonochromeMode, RenderMode, RgbColor, ThematicDisplay, ThematicDisplayMode,
-  ThematicDisplayProps, ThematicGradientColorScheme, ThematicGradientMode, ViewFlags,
+  ColorDef, FeatureAppearance, FeatureAppearanceProvider, Hilite, RenderMode, RgbColor,
 } from "@bentley/imodeljs-common";
 import {
   DecorateContext, Decorator, FeatureOverrideProvider, FeatureSymbology, GraphicBranch, GraphicBranchOptions, GraphicType, IModelApp, IModelConnection, OffScreenViewport,
-  Pixel, RenderMemory, RenderSystem, SnapshotConnection, SpatialViewState, Viewport, ViewRect,
-  ViewState3d,
+  Pixel, RenderSystem, SnapshotConnection, SpatialViewState, Viewport, ViewRect,
 } from "@bentley/imodeljs-frontend";
-import { BuffersContainer, VAOContainer, VBOContainer } from "@bentley/imodeljs-frontend/lib/webgl";
 import { expect } from "chai";
 import { Color, comparePixelData, createOnScreenTestViewport, testOnScreenViewport, TestViewport, testViewports, testViewportsWithDpr } from "../TestViewport";
 

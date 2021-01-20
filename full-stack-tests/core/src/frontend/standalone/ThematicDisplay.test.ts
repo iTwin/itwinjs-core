@@ -2,19 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClipVector, Point2d, Point3d, Transform } from "@bentley/geometry-core";
 import {
-  ColorDef, FeatureAppearance, FeatureAppearanceProvider, Hilite, MonochromeMode, RenderMode, RgbColor, ThematicDisplay, ThematicDisplayMode,
-  ThematicDisplayProps, ThematicGradientColorScheme, ThematicGradientMode, ViewFlags,
+  ColorDef, RenderMode, ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps, ThematicGradientColorScheme, ThematicGradientMode,
 } from "@bentley/imodeljs-common";
 import {
-  DecorateContext, Decorator, FeatureOverrideProvider, FeatureSymbology, GraphicBranch, GraphicBranchOptions, GraphicType, IModelApp, IModelConnection, OffScreenViewport,
-  Pixel, RenderMemory, RenderSystem, SnapshotConnection, SpatialViewState, Viewport, ViewRect,
+  IModelApp, IModelConnection,
+  SnapshotConnection, ViewRect,
   ViewState3d,
 } from "@bentley/imodeljs-frontend";
-import { BuffersContainer, VAOContainer, VBOContainer } from "@bentley/imodeljs-frontend/lib/webgl";
 import { expect } from "chai";
-import { Color, comparePixelData, createOnScreenTestViewport, testOnScreenViewport, TestViewport, testViewports, testViewportsWithDpr } from "../TestViewport";
+import { Color, TestViewport, testViewportsWithDpr } from "../TestViewport";
 
 describe("Thematic display", () => {
   let imodel: IModelConnection;

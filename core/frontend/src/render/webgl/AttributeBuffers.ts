@@ -11,8 +11,6 @@ import { Point3d } from "@bentley/geometry-core";
 import { QParams2d, QParams3d } from "@bentley/imodeljs-common";
 import { WebGLDisposable } from "./Disposable";
 import { GL } from "./GL";
-import { Matrix3, Matrix4 } from "./Matrix";
-import { SyncToken } from "./Sync";
 import { System } from "./System";
 
 /** Describes a connection between a BufferHandle and an arbitrary number of attributes associated with that BufferHandle. */
