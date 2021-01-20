@@ -133,8 +133,6 @@ export interface MapLayerProps {
   password?: string;
   /** Access Key for the Layer, like a subscription key or access token */
   accessKey?: MapLayerKey;
-  /** Status of the layer (i.e. layer may require credentials to be provided) */
-  status?: MapLayerStatus;
 }
 /**
  * stores key-value pair to be added to all requests made involving map layer.
@@ -166,7 +164,10 @@ export class MapLayerSettings {
   public readonly userName?: string;
   public readonly password?: string;
   public readonly accessKey?: MapLayerKey;
+
+  /** Status of the layer (i.e. layer may require credentials to be provided) */
   public status: MapLayerStatus = MapLayerStatus.Valid;
+
   // eslint-disable-next-line no-undef-init
   private constructor(url: string, name: string, formatId: string = "WMS", visible = true,
     jsonSubLayers: MapSubLayerProps[] | undefined = undefined, transparency: number = 0,
@@ -205,7 +206,7 @@ export class MapLayerSettings {
       return undefined;
 
     const transparentBackground = (json.transparentBackground === undefined) ? true : json.transparentBackground;
-    return new MapLayerSettings(json.url, json.name, json.formatId, json.visible, json.subLayers, json.transparency, transparentBackground, json.isBase === true, json.userName, json.password, json.accessKey, json.status);
+    return new MapLayerSettings(json.url, json.name, json.formatId, json.visible, json.subLayers, json.transparency, transparentBackground, json.isBase === true, json.userName, json.password, json.accessKey);
   }
   /** return JSON representation of this MapLayerSettings object */
   public toJSON(): MapLayerProps {
@@ -230,8 +231,6 @@ export class MapLayerSettings {
       props.transparentBackground = this.transparentBackground;
     if (this.isBase === true)
       props.isBase = this.isBase;
-    if (this.status != MapLayerStatus.Valid)
-      props.status = this.status;
     return props;
   }
   /** @internal */
@@ -309,9 +308,12 @@ export class MapLayerSettings {
       userName: undefined !== changedProps.userName ? changedProps.userName : this.userName,
       password: undefined !== changedProps.password ? changedProps.password : this.password,
       accessKey: undefined !== changedProps.accessKey ? changedProps.accessKey : this.accessKey,
-      status: undefined !== changedProps.status ? changedProps.status : this.status,
     };
-    return MapLayerSettings.fromJSON(props)!;
+    const clone = MapLayerSettings.fromJSON(props)!;
+
+    // Clone members not part of MapLayerProps
+    clone.status = this.status;
+    return clone;
   }
 
   /** @internal */

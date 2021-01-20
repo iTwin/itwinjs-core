@@ -29,7 +29,6 @@ export enum MapLayerSourceStatus {
  */
 export class MapLayerSource implements MapLayerProps {
   public subLayers?: MapSubLayerProps[];
-  public status?: MapLayerStatus;
 
   private constructor(public formatId: string, public name: string, public url: string, public baseMap = false, public transparentBackground?: boolean, public maxZoom?: number, public userName?: string, public password?: string) { }
   public static fromJSON(json: any): MapLayerSource | undefined {

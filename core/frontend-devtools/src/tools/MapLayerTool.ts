@@ -27,9 +27,6 @@ class AttachMapLayerBaseTool extends Tool {
     source.validateSource().then((validation) => {
       if (validation.status === MapLayerSourceStatus.Valid || validation.status === MapLayerSourceStatus.RequireAuth) {
         source.subLayers = validation.subLayers;
-        if (validation.status === MapLayerSourceStatus.RequireAuth) {
-          source.status = MapLayerStatus.RequireAuth;
-        }
 
         if (this._isBase) {
           vp.displayStyle.changeBaseMapProps(source);
@@ -37,9 +34,22 @@ class AttachMapLayerBaseTool extends Tool {
           vp.displayStyle.attachMapLayer(source, !this._isBackground);
         }
 
+        if (validation.status === MapLayerSourceStatus.Valid) {
+          vp.invalidateRenderPlan();
+          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Map layer ${source.name} attached from URL: ${source.url}`));
+        } else if (validation.status === MapLayerSourceStatus.RequireAuth) {
+          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, `Map layer '${source.name}' requires authentication information`));
 
-        vp.invalidateRenderPlan();
-        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Map layer ${source.name} attached from URL: ${source.url}`));
+          //Set layer status
+          const layerIdx = vp.displayStyle.findMapLayerIndexByNameAndUrl(source.name, source.url, !this._isBackground);
+          if (-1 !== layerIdx) {
+            const layerSettings = vp.displayStyle.mapLayerAtIndex(layerIdx, !this._isBackground);
+            if (layerSettings) {
+              layerSettings.status = MapLayerStatus.RequireAuth;
+            }
+          }
+        }
+
       } else {
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Map layer validation failed for URL: ${source.url}`));
       }

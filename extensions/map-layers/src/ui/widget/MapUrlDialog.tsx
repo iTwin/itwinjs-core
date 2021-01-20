@@ -151,13 +151,15 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
         source.validateSource().then(async (validation) => {
           if (validation.status === MapLayerSourceStatus.Valid && props?.activeViewport) {
             source.subLayers = validation.subLayers;
-
             props.activeViewport.displayStyle.changeMapLayerProps({
               userName: wmsServerUsername,
               password: wmsServerPassword,
-              subLayers: validation.subLayers,
-              status: MapLayerStatus.Valid
+              subLayers: validation.subLayers
             }, layerIdxToEdit, isOverlay);
+            const layerSettings = props.activeViewport.displayStyle.mapLayerAtIndex(layerIdxToEdit, isOverlay);
+            if (layerSettings) {
+              layerSettings.status = MapLayerStatus.Valid;
+            }
 
             props.activeViewport.invalidateRenderPlan();
             const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.AttacheInfo");

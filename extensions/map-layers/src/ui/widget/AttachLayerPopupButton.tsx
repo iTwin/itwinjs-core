@@ -61,12 +61,20 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
 
                 const source = Object.assign({}, mapLayerSettings);  // shallow copy
                 source.subLayers = subLayers;
-                if (status === MapLayerSourceStatus.RequireAuth) {
-                  source.status = MapLayerStatus.RequireAuth;
-                  IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, `Authentication required for Layer : ${source.name}`));
-                }
-
                 activeViewport.displayStyle.attachMapLayer(source, isOverlay);
+
+                if (status === MapLayerSourceStatus.RequireAuth) {
+                  IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, `Authentication required for Layer : ${source.name}`));
+
+                  //Set layer status
+                  const layerIdx = activeViewport.displayStyle.findMapLayerIndexByNameAndUrl(source.name, source.url, isOverlay);
+                  if (-1 !== layerIdx) {
+                    const layerSettings = activeViewport.displayStyle.mapLayerAtIndex(layerIdx, isOverlay);
+                    if (layerSettings) {
+                      layerSettings.status = MapLayerStatus.RequireAuth;
+                    }
+                  }
+                }
 
                 if (status === MapLayerSourceStatus.Valid) {
                   activeViewport.invalidateRenderPlan();
