@@ -574,7 +574,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
         position: Point.create(action.position).toProps(),
         home,
       };
-      removeWidgetTab(state, action.widgetId, action.floatingWidgetId, action.side, action.id);
+      removeWidgetTabInternal(state, action.widgetId, action.floatingWidgetId, action.side, action.id);
       return;
     }
     case "WIDGET_TAB_DRAG": {
@@ -658,7 +658,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       return;
     }
     case "TOOL_SETTINGS_DOCK": {
-      removeTab(state, toolSettingsTabId);
+      removeWidgetTab(state, toolSettingsTabId);
       state.toolSettings = {
         type: "docked",
       };
@@ -682,17 +682,27 @@ export function floatingWidgetBringToFront(state: Draft<NineZoneState>, floating
   state.floatingWidgets.allIds.push(spliced[0]);
 }
 
-/** @internal */
-export function removeTab(state: Draft<NineZoneState>, tabId: TabState["id"]) {
+/** Removes tab from the UI, but keeps the tab state.
+ * @internal
+ */
+export function removeWidgetTab(state: Draft<NineZoneState>, tabId: TabState["id"]) {
   const location = findTab(state, tabId);
   if (!location)
     return;
   const floatingWidgetId = "floatingWidgetId" in location ? location.floatingWidgetId : undefined;
   const side = "side" in location ? location.side : undefined;
-  return removeWidgetTab(state, location.widgetId, floatingWidgetId, side, tabId);
+  return removeWidgetTabInternal(state, location.widgetId, floatingWidgetId, side, tabId);
 }
 
-function removeWidgetTab(
+/** Removes tab from the UI and deletes the tab state.
+ * @internal
+ */
+export function removeTab(state: Draft<NineZoneState>, tabId: TabState["id"]) {
+  removeWidgetTab(state, tabId);
+  delete state.tabs[tabId];
+}
+
+function removeWidgetTabInternal(
   state: Draft<NineZoneState>,
   widgetId: WidgetState["id"],
   floatingWidgetId: FloatingWidgetState["id"] | undefined,
