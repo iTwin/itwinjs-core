@@ -116,7 +116,7 @@ export class CheckpointV2Query extends WsgQuery {
    * @returns This query.
    */
   public precedingCheckpoint(targetChangeSetId: string): this {
-    this.filter(`PrecedingCheckpoint-backward-ChangeSet.Id+eq+'${targetChangeSetId}'`);
+    this.filter(`PrecedingCheckpointV2-backward-ChangeSet.Id+eq+'${targetChangeSetId}'`);
     return this;
   }
 
