@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { DbResult, Id64, Id64String, Logger, LogLevel, OpenMode, PerfLogger } from "@bentley/bentleyjs-core";
+import { DbResult, Id64, Id64String, Logger, LogLevel, PerfLogger } from "@bentley/bentleyjs-core";
 import {
   ChangedValueState, ChangeOpCode, ColorDef, IModel, IModelVersion, SubCategoryAppearance,
 } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import { assert, expect } from "chai";
+import { assert } from "chai";
 import * as path from "path";
 import {
   AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, ChangeSummary, ChangeSummaryManager, ConcurrencyControl, ECSqlStatement,
@@ -91,9 +91,6 @@ describe("ChangeSummary (#integration)", () => {
     await HubUtility.purgeAcquiredBriefcases(managerRequestContext, "iModelJsIntegrationTest", "ReadOnlyTest");
     await HubUtility.purgeAcquiredBriefcases(managerRequestContext, "iModelJsIntegrationTest", "ReadWriteTest");
   });
-
-
-
 
   it("Attach / Detach ChangeCache file to closed imodel", async () => {
     setupTest(readOnlyTestIModel.id);
