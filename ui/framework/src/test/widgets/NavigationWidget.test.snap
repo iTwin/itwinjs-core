@@ -50,7 +50,7 @@ exports[`NavigationWidget NavigationWidget should render correctly 1`] = `
         "widgetId": "",
         "widgetIndex": 0,
       },
-      "_toolbarBaseName": "[TestFrontstage]NavigationWidget",
+      "_toolbarBaseName": "[]NavigationWidget",
       "_tooltip": "",
       "_widgetType": 1,
       "horizontalDirection": 4,
