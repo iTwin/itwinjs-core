@@ -248,4 +248,30 @@ describe("Surface transparency", () => {
     expectTranslucent(() => createMesh(0, m4));
     expectTranslucent(() => createMesh(127, m4));
   });
+
+  it("always applies to glyph text unless reading pixels", () => {
+    const img = ImageBuffer.create(new Uint8Array([255, 255, 255, 127]), ImageBufferFormat.Rgba, 1);
+    const tx = IModelApp.renderSystem.createTextureFromImageBuffer(img, imodel, new RenderTexture.Params(imodel.transientIds.next, RenderTexture.Type.Glyph))!;
+    expect(tx).not.to.be.undefined;
+
+    expectTranslucent(() => createMesh(0, tx));
+    expectTranslucent(() => createMesh(127, tx));
+
+    viewport.viewFlags.textures = viewport.viewFlags.materials = false;
+    expectTranslucent(() => createMesh(0, tx));
+    expectTranslucent(() => createMesh(127, tx));
+
+    viewport.viewFlags.renderMode = RenderMode.Wireframe;
+    expectTranslucent(() => createMesh(0, tx));
+    expectTranslucent(() => createMesh(127, tx));
+
+    viewport.viewFlags.renderMode = RenderMode.HiddenLine;
+    expectTranslucent(() => createMesh(0, tx));
+    expectTranslucent(() => createMesh(127, tx));
+
+    (viewport.target as any)._isReadPixelsInProgress = true;
+    expect((viewport.target as Target).isReadPixelsInProgress).to.be.true;
+    expectOpaque(() => createMesh(0, tx));
+    expectOpaque(() => createMesh(127, tx));
+  });
 });
