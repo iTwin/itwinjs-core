@@ -4,11 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Point3d } from "@bentley/geometry-core";
-import { ColorDef, RenderMode } from "@bentley/imodeljs-common";
+import { ColorDef, GraphicParams, RenderMaterial, RenderMode } from "@bentley/imodeljs-common";
 import {
   DecorateContext, GraphicType, IModelApp, RenderGraphicOwner, SnapshotConnection, Viewport,
 } from "@bentley/imodeljs-frontend";
 import { testOnScreenViewport, TestViewport } from "../TestViewport";
+
+interface GraphicOptions {
+  color: ColorDef;
+  /** Z in NPC coords - [0,1] maps to [far,near]. */
+  priority?: number;
+  pickableId?: string;
+  material?: RenderMaterial;
+}
 
 class TransparencyDecorator {
   private readonly _graphics: RenderGraphicOwner[] = [];
@@ -26,7 +34,8 @@ class TransparencyDecorator {
   }
 
   /** Make a rectangle that occupies the entire view. Priority is Z in NPC coords - [0,1] maps to [far, near]. */
-  public add(vp: Viewport, color: ColorDef, priority = 0, pickableId? string): void {
+  public add(vp: Viewport, opts: GraphicOptions): void {
+    const priority = opts.priority ?? 0;
     const pts = [
       new Point3d(0, 0, priority),
       new Point3d(1, 0, priority),
@@ -37,15 +46,18 @@ class TransparencyDecorator {
     vp.npcToWorldArray(pts);
     pts.push(pts[0].clone());
 
-    const builder = vp.target.createGraphicBuilder(GraphicType.Scene, vp, undefined, pickableId);
-    builder.setSymbology(color, color, 1);
+    const gfParams = GraphicParams.fromSymbology(opts.color, opts.color, 1);
+    gfParams.material = opts.material;
+
+    const builder = vp.target.createGraphicBuilder(GraphicType.Scene, vp, undefined, opts.pickableId);
+    builder.activateGraphicParams(gfParams);
     builder.addShape(pts);
 
     this._graphics.push(vp.target.renderSystem.createGraphicOwner(builder.finish()));
   }
 }
 
-describe.only("Transparency", async () => {
+describe("Transparency", async () => {
   let imodel: SnapshotConnection;
   let decorator: TransparencyDecorator;
 
@@ -111,17 +123,18 @@ describe.only("Transparency", async () => {
   }
 
   it("should blend with background color", async () => {
+    const color = ColorDef.red.withTransparency(0x7f);
     await test(
-      (vp) => decorator.add(vp, ColorDef.red.withTransparency(0x7f)),
-      (vp) => expectTransparency(vp, ColorDef.red.withTransparency(0x7f)),
+      (vp) => decorator.add(vp, { color }),
+      (vp) => expectTransparency(vp, color),
     );
   });
 
   it("should blend with opaque geometry", async () => {
     await test(
       (vp) => {
-        decorator.add(vp, ColorDef.red, 0.1);
-        decorator.add(vp, ColorDef.blue.withTransparency(0x7f), 0.9);
+        decorator.add(vp, { color: ColorDef.red, priority: 0.1 });
+        decorator.add(vp, { color: ColorDef.blue.withTransparency(0x7f), priority: 0.9 });
       },
       (vp) => expectColor(vp, ColorDef.from(0x7f, 0, 0x80, 0x7f))
     );
@@ -130,8 +143,8 @@ describe.only("Transparency", async () => {
   it("should be obscured by opaque geometry", async () => {
     await test(
       (vp) => {
-        decorator.add(vp, ColorDef.red, 0.9);
-        decorator.add(vp, ColorDef.blue.withTransparency(0x7f));
+        decorator.add(vp, { color: ColorDef.red, priority: 0.9 });
+        decorator.add(vp, { color: ColorDef.blue.withTransparency(0x7f), priority: 0.1 });
       },
       (vp) => expectColor(vp, ColorDef.red)
     );
