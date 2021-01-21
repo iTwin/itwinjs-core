@@ -546,23 +546,27 @@ export class ExternalTextureLoader { /* currently exported for tests only */
 
   private _activateRequest(req: ExternalTextureRequest) {
     this._activeRequests.push(req);
-    const texBytesPromise = req.imodel.getTextureImage({ name: req.name });
-    texBytesPromise.then((texBytes: Uint8Array | undefined) => {
-      if (undefined !== texBytes && !req.imodel.isClosed) {
-        const imageSource = new ImageSource(texBytes, req.format);
-        const imageElementPromise = imageElementFromImageSource(imageSource);
-        imageElementPromise.then((image: HTMLImageElement) => {
-          if (!req.imodel.isClosed) {
-            req.handle.reload(Texture2DCreateParams.createForImage(image, ImageSourceFormat.Png === req.format, req.type));
-            IModelApp.tileAdmin.invalidateAllScenes();
-            if (undefined !== req.onLoaded)
-              req.onLoaded(req);
-          }
+    try {
+      const texBytesPromise = req.imodel.getTextureImage({ name: req.name });
+      texBytesPromise.then((texBytes: Uint8Array | undefined) => {
+        if (undefined !== texBytes && !req.imodel.isClosed) {
+          const imageSource = new ImageSource(texBytes, req.format);
+          const imageElementPromise = imageElementFromImageSource(imageSource);
+          imageElementPromise.then((image: HTMLImageElement) => {
+            if (!req.imodel.isClosed) {
+              req.handle.reload(Texture2DCreateParams.createForImage(image, ImageSourceFormat.Png === req.format, req.type));
+              IModelApp.tileAdmin.invalidateAllScenes();
+              if (undefined !== req.onLoaded)
+                req.onLoaded(req);
+            }
+            this._nextRequest(req);
+          }).catch((_e) => { });
+        } else
           this._nextRequest(req);
-        }).catch((_e: any) => { });
-      } else
-        this._nextRequest(req);
-    }).catch((_e: any) => { });
+      }).catch((_e) => { });
+    } catch (_e) {
+      this._nextRequest(req); // if exception occurs while calling getTextureImage, remove this request and go to the next.
+    }
   }
 
   private _requestExists(reqToCheck: ExternalTextureRequest) {
