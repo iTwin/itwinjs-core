@@ -16,10 +16,6 @@ import rpcs from "../common/Rpcs";
 // __PUBLISH_EXTRACT_END__
 import { PresentationBackendLoggerCategory, PresentationBackendNativeLoggerCategory } from "@bentley/presentation-backend"; // eslint-disable-line no-duplicate-imports
 
-if (electron) {
-  require("@bentley/electron-manager"); // static electron manager initialization
-}
-
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   IModelJsConfig.init(true /* suppress error */, true /* suppress message */, Config.App);
 
