@@ -474,7 +474,7 @@ export class Texture2DHandle extends TextureHandle {
     return this.create(Texture2DCreateParams.createForImage(image, hasAlpha, type));
   }
 
-  private static _placeHolderTextureData = new Uint8Array([255, 0, 0]);
+  private static _placeHolderTextureData = new Uint8Array([128, 128, 128]);
 
   public static createForExternalImage(name: string, imodel: IModelConnection, type: RenderTexture.Type, format: ImageSourceFormat) {
     // set a placeholder texture while we wait for the external texture to load
