@@ -19,11 +19,19 @@ describe("Quantity formatter", async () => {
     quantityFormatter = new QuantityFormatter();
   });
 
-  it("Length", async () => {
+  it("Length should be cached during onInitialized processing", async () => {
+    await quantityFormatter.onInitialized();
+    const expected = `405'-0 1/2"`;
+    const newFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
+    assert(newFormatterSpec !== undefined);
+    const actual = quantityFormatter.formatQuantity(123.456, newFormatterSpec);
+    assert.equal(actual, expected);
+  });
+
+  it("Length format spec retrieved asynchronously", async () => {
     await quantityFormatter.onInitialized();
     const expected = `405'-0 1/2"`;
     const newFormatterSpec = await quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length);
-
     const actual = quantityFormatter.formatQuantity(123.456, newFormatterSpec);
     assert.equal(actual, expected);
   });
@@ -347,8 +355,8 @@ describe("Quantity formatter", async () => {
 
 // ==========================================================================================================
 class DummyFormatterSpec extends FormatterSpec {
-  constructor(name: string, format: Format, conversions?: UnitConversionSpec[]) {
-    super(name, format, conversions);
+  constructor(name: string, format: Format, conversions?: UnitConversionSpec[], persistenceUnit?: UnitProps) {
+    super(name, format, conversions, persistenceUnit);
   }
 
   public applyFormatting(magnitude: number): string {
@@ -356,14 +364,16 @@ class DummyFormatterSpec extends FormatterSpec {
   }
 
   public static async createSpec(unitSystem: UnitSystemKey): Promise<DummyFormatterSpec> {
+    const dummyUnit = { name: "dummy", label: "x", unitFamily: "unknown", isValid: false, system: "unknown" };
+
     if (unitSystem === "imperial")
-      return new DummyFormatterSpec("dummy-imperial", new Format("formatName"));
+      return new DummyFormatterSpec("dummy-imperial", new Format("formatName"), undefined, dummyUnit);
     else if (unitSystem === "usCustomary")
-      return new DummyFormatterSpec("dummy-usCustomary", new Format("formatName"));
+      return new DummyFormatterSpec("dummy-usCustomary", new Format("formatName"), undefined, dummyUnit);
     else if (unitSystem === "usSurvey")
-      return new DummyFormatterSpec("dummy-usSurvey", new Format("formatName"));
+      return new DummyFormatterSpec("dummy-usSurvey", new Format("formatName"), undefined, dummyUnit);
     else
-      return new DummyFormatterSpec("dummy-metric", new Format("formatName"));
+      return new DummyFormatterSpec("dummy-metric", new Format("formatName"), undefined, dummyUnit);
   }
 }
 
