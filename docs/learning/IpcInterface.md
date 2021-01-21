@@ -46,20 +46,41 @@ To enable type-safe cross-process method calls using IPC, there are three requir
 
 1. Define the method signatures in an interface. This must be in a file that can be `import`ed from both your frontend code and backend code. In iModel.js we use the convention of a folder named `common` for this purpose. Note that all methods in your interface must return a `Promise`. In the same file, define a variable that has a string with a unique name for the _ipc channel_ your interface will use. If you'd like, you can incorporate a version identifier in the channel name (e.g. append "-1").
 
-1. In your backend code, implement a class that extends [IpcHandler]($common) and implements the interface you defined in step 1. In your startup code, call the static method `register` on your new class. Your class must implement the abstract method `get channelName()`. Return the channel name variable from your interface file.
+```ts
+const myChannel = "my-interface-1";
 
-1. In your frontend code, implement a function like:
+interface MyInterface {
+  sayHello(arg1: string, arg2: number, arg3: boolean): Promise<string>;
+}
+```
+
+2. In your backend code, implement a class that extends [IpcHandler]($common) and implements the interface you defined in step 1. In your startup code, call the static method `register` on your new class. Your class must implement the abstract method `get channelName()`. Return the channel name variable from your interface file.
 
 ```ts
-  const callMyBackend = <T extends keyof MyInterface>(methodName: T, ...args: Parameters<MyInterface[T]>): ReturnType<MyInterface[T]> {
-    return FrontendIpc.callBackend(myChannel, methodName, ...args) as ReturnType<MyInterface[T]>;
+class MyClass extends IpcHandler implements MyInterface
+  public get channelName() { return myChannel; }
+  public async sayHello(arg1: string, arg2: number, arg3: boolean) {
+    return `hello: ${arg1} ${arg2} ${arg3}`
   }
+
+  // ...in startup code
+  MyClass.register();
+```
+
+3. In your frontend code, implement a function like:
+
+```ts
+  import { AsyncMethodsOf, PromiseReturnType } from "@bentley/imodeljs-common";
+
+  const callMyBackend = async <T extends AsyncMethodsOf<MyInterface>>(methodName: T,...args: Parameters<MyInterface[T]>) => {
+    return FrontendIpc.callBackend(myChannel, methodName, ...args) as PromiseReturnType<MyInterface[T]>;
+  };
 ```
 
 The TypeScript gobbledygook in Step 3 above creates a type-safe asynchronous function you can use to invoke methods on your backend class from your frontend code.
 
 ```ts
-const method1Val = await callMyBackend("method1", arg1, arg2, arg3);
+const method1Val = await callMyBackend("sayHello", "abc", 10, true);
 ```
 
 > Note that all IPC methods return a `Promise`, so their return value must be `await`ed.
