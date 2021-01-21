@@ -8,8 +8,9 @@
 
 import { BeEvent, Config, GuidString, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import {
+  AsyncMethodsOf,
   BriefcaseDownloader, BriefcaseProps, Events, FrontendIpc, IModelError, IModelVersion, InternetConnectivityStatus, LocalBriefcaseProps,
-  nativeAppChannel, NativeAppIpc, OpenBriefcaseProps, OverriddenBy, RequestNewBriefcaseProps, StorageValue, SyncMode,
+  nativeAppChannel, NativeAppIpc, OpenBriefcaseProps, OverriddenBy, PromiseReturnType, RequestNewBriefcaseProps, StorageValue, SyncMode,
 } from "@bentley/imodeljs-common";
 import { ProgressCallback, RequestGlobalOptions } from "@bentley/itwin-client";
 import { EventSource } from "./EventSource";
@@ -36,8 +37,8 @@ export interface DownloadBriefcaseOptions {
  */
 export class NativeApp {
   private constructor() { }
-  public static callBackend<T extends keyof NativeAppIpc>(methodName: T, ...args: Parameters<NativeAppIpc[T]>): ReturnType<NativeAppIpc[T]> {
-    return FrontendIpc.callBackend(nativeAppChannel, methodName, ...args) as ReturnType<NativeAppIpc[T]>;
+  public static async callBackend<T extends AsyncMethodsOf<NativeAppIpc>>(methodName: T, ...args: Parameters<NativeAppIpc[T]>) {
+    return FrontendIpc.callBackend(nativeAppChannel, methodName, ...args) as PromiseReturnType<NativeAppIpc[T]>;
   }
 
   private static _storages = new Map<string, Storage>();
