@@ -8,6 +8,8 @@ alpha;AnalysisStyleProps
 internal;AntiAliasPref
 public;AreaFillProps
 public;AreaPattern
+beta;AsyncFunction = (...args: any) => Promise
+beta;AsyncMethodsOf
 public;AuxCoordSystem2dProps 
 public;AuxCoordSystem3dProps 
 public;AuxCoordSystemProps 
@@ -391,6 +393,7 @@ internal;PolylineTypeFlags
 internal;PrimaryTileTreeId
 beta;PrimitiveTypeCode
 beta;ProfileOptions
+beta;PromiseReturnType
 beta;PropertyCallback = (name: string, meta: PropertyMetaData) => void
 beta;PropertyMetaData 
 beta;PropertyMetaDataProps
