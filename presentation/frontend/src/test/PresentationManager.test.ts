@@ -1347,8 +1347,8 @@ describe("PresentationManager", () => {
   describe("listening to updates", () => {
 
     let eventSourceListener: (report: UpdateInfo) => void;
-    let hierarchyUpdatesSpy: sinon.SinonSpy<[{ ruleset: Ruleset, updateInfo: HierarchyUpdateInfo }], void>;
-    let contentUpdatesSpy: sinon.SinonSpy<[{ ruleset: Ruleset, updateInfo: ContentUpdateInfo }], void>;
+    let hierarchyUpdatesSpy: sinon.SinonSpy<[{ rulesetId: string, updateInfo: HierarchyUpdateInfo, imodelKey: string }], void>;
+    let contentUpdatesSpy: sinon.SinonSpy<[{ rulesetId: string, updateInfo: ContentUpdateInfo, imodelKey: string }], void>;
 
     beforeEach(() => {
       sinon.stub(IModelApp, "isNativeApp").get(() => true);
@@ -1367,6 +1367,7 @@ describe("PresentationManager", () => {
     });
 
     it("triggers appropriate hierarchy and content events on update event", async () => {
+      const imodelKey = "test-imodel-key";
       const ruleset1: Ruleset = { id: "1", rules: [] };
       const ruleset2: Ruleset = { id: "2", rules: [] };
       const ruleset3: Ruleset = { id: "3", rules: [] };
@@ -1377,17 +1378,19 @@ describe("PresentationManager", () => {
       rulesetsManagerMock.setup((x) => x.get(ruleset4.id)).returns(async () => undefined);
 
       const report: UpdateInfo = {
-        [ruleset1.id]: {
-          hierarchy: "FULL",
-          content: "FULL",
+        [imodelKey]: {
+          [ruleset1.id]: {
+            hierarchy: "FULL",
+            content: "FULL",
+          },
+          [ruleset2.id]: {
+            hierarchy: [],
+          },
+          [ruleset3.id]: {
+            content: "FULL",
+          },
+          [ruleset4.id]: {},
         },
-        [ruleset2.id]: {
-          hierarchy: [],
-        },
-        [ruleset3.id]: {
-          content: "FULL",
-        },
-        [ruleset4.id]: {},
       };
       eventSourceListener(report);
 
@@ -1396,22 +1399,26 @@ describe("PresentationManager", () => {
 
       expect(hierarchyUpdatesSpy).to.be.calledTwice;
       expect(hierarchyUpdatesSpy.firstCall).to.be.calledWith({
-        ruleset: sinon.match((r) => r.id === ruleset1.id),
+        rulesetId: ruleset1.id,
         updateInfo: "FULL",
+        imodelKey,
       });
       expect(hierarchyUpdatesSpy.secondCall).to.be.calledWith({
-        ruleset: sinon.match((r) => r.id === ruleset2.id),
+        rulesetId: ruleset2.id,
         updateInfo: [],
+        imodelKey,
       });
 
       expect(contentUpdatesSpy).to.be.calledTwice;
       expect(contentUpdatesSpy.firstCall).to.be.calledWith({
-        ruleset: sinon.match((r) => r.id === ruleset1.id),
+        rulesetId: ruleset1.id,
         updateInfo: "FULL",
+        imodelKey,
       });
       expect(contentUpdatesSpy.secondCall).to.be.calledWith({
-        ruleset: sinon.match((r) => r.id === ruleset3.id),
+        rulesetId: ruleset3.id,
         updateInfo: "FULL",
+        imodelKey,
       });
     });
 

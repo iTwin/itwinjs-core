@@ -48,8 +48,8 @@ export const mockPresentationManager = () => {
   const rulesetVariablesManagerMock = moq.Mock.ofType<RulesetVariablesManager>();
   rulesetVariablesManagerMock.setup((x) => x.onVariableChanged).returns(() => onRulesetVariableChanged);
 
-  const onIModelHierarchyChanged = new BeEvent<(args: { ruleset: Ruleset, updateInfo: HierarchyUpdateInfo }) => void>();
-  const onIModelContentChanged = new BeEvent<(args: { ruleset: Ruleset, updateInfo: ContentUpdateInfo }) => void>();
+  const onIModelHierarchyChanged = new BeEvent<(args: { rulesetId: string, updateInfo: HierarchyUpdateInfo, imodelKey: string }) => void>();
+  const onIModelContentChanged = new BeEvent<(args: { rulesetId: string, updateInfo: ContentUpdateInfo, imodelKey: string }) => void>();
   const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
   presentationManagerMock.setup((x) => x.onIModelHierarchyChanged).returns(() => onIModelHierarchyChanged);
   presentationManagerMock.setup((x) => x.onIModelContentChanged).returns(() => onIModelContentChanged);

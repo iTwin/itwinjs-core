@@ -86,8 +86,8 @@ interface ModelSourceUpdateProps {
 
 function useModelSourceUpdateOnIModelHierarchyUpdate(props: ModelSourceUpdateProps) {
   const { modelSource, dataProvider, reset } = props;
-  const onIModelHierarchyChanged = useCallback(async (args: { ruleset: Ruleset, updateInfo: HierarchyUpdateInfo }) => {
-    if (args.ruleset.id === dataProvider.rulesetId) {
+  const onIModelHierarchyChanged = useCallback(async (args: { rulesetId: string, updateInfo: HierarchyUpdateInfo, imodelKey: string }) => {
+    if (args.rulesetId === dataProvider.rulesetId && args.imodelKey === dataProvider.imodel.key) {
       if (args.updateInfo === UPDATE_FULL)
         reset();
       else

@@ -420,8 +420,8 @@ export class ContentDataProvider implements IContentDataProvider {
   }
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  private onIModelContentChanged = (args: { ruleset: Ruleset }) => {
-    if (args.ruleset.id === this.rulesetId)
+  private onIModelContentChanged = (args: { rulesetId: string }) => {
+    if (args.rulesetId === this.rulesetId)
       this.onContentUpdate();
   };
 

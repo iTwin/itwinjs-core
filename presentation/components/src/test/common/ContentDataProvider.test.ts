@@ -11,7 +11,7 @@ import * as sinon from "sinon";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
   Content, ContentDescriptorRequestOptions, Descriptor, DescriptorOverrides, ExtendedContentRequestOptions, Field, Item, KeySet, NestedContentField,
-  Paged, RegisteredRuleset, Ruleset, SelectionInfo,
+  Paged, RegisteredRuleset, SelectionInfo,
 } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { PromiseContainer, ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
@@ -639,14 +639,12 @@ describe("ContentDataProvider", () => {
   describe("reacting to updates", () => {
 
     it("doesn't react to imodel content updates to unrelated rulesets", () => {
-      const ruleset: Ruleset = { id: "unrelated", rules: [] };
-      presentationManagerMock.object.onIModelContentChanged.raiseEvent({ ruleset, updateInfo: "FULL" });
+      presentationManagerMock.object.onIModelContentChanged.raiseEvent({ rulesetId: "unrelated", updateInfo: "FULL", imodelKey: "imodelKey" });
       expect(invalidateCacheSpy).to.not.be.called;
     });
 
     it("invalidates cache when imodel content change happens to related ruleset", () => {
-      const ruleset: Ruleset = { id: rulesetId, rules: [] };
-      presentationManagerMock.object.onIModelContentChanged.raiseEvent({ ruleset, updateInfo: "FULL" });
+      presentationManagerMock.object.onIModelContentChanged.raiseEvent({ rulesetId, updateInfo: "FULL", imodelKey: "imodelKey" });
       expect(invalidateCacheSpy).to.be.calledOnceWith(CacheInvalidationProps.full());
     });
 

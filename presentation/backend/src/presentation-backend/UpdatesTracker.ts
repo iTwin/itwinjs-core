@@ -7,8 +7,8 @@
  */
 
 import { IDisposable } from "@bentley/bentleyjs-core";
-import { EventSink } from "@bentley/imodeljs-backend";
-import { PresentationRpcEvents, PresentationRpcInterface } from "@bentley/presentation-common";
+import { EventSink, IModelDb } from "@bentley/imodeljs-backend";
+import { PresentationRpcEvents, PresentationRpcInterface, UpdateInfoJSON } from "@bentley/presentation-common";
 import { NativePlatformDefinition } from "./NativePlatform";
 
 /**
@@ -45,8 +45,29 @@ export class UpdatesTracker implements IDisposable {
   }
 
   private onInterval() {
-    const updateInfo = this._getNativePlatform().getUpdateInfo();
-    if (updateInfo.result)
-      this._eventSink.emit(PresentationRpcInterface.interfaceName, PresentationRpcEvents.Update, updateInfo.result);
+    const response = this._getNativePlatform().getUpdateInfo();
+    const info = parseUpdateInfo(response.result);
+    if (info) {
+      this._eventSink.emit(PresentationRpcInterface.interfaceName, PresentationRpcEvents.Update, info);
+    }
   }
 }
+
+const parseUpdateInfo = (info: UpdateInfoJSON | undefined) => {
+  if (info === undefined)
+    return undefined;
+
+  const parsedInfo: UpdateInfoJSON = {};
+  for (const fileName in info) {
+    // istanbul ignore if
+    if (!info.hasOwnProperty(fileName))
+      continue;
+
+    const imodelDb = IModelDb.findByFilename(fileName);
+    if (!imodelDb)
+      continue;
+
+    parsedInfo[imodelDb.getRpcProps().key] = info[fileName];
+  }
+  return Object.keys(parsedInfo).length > 0 ? parsedInfo : undefined;
+};

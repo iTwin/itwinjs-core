@@ -15,7 +15,7 @@ import {
   isDisplayLabelsRequestOptions, isExtendedContentRequestOptions, isExtendedHierarchyRequestOptions, Item, Key, KeySet, LabelDefinition,
   LabelRequestOptions, Node, NodeKey, NodeKeyJSON, NodePathElement, Paged, PagedResponse, PageOptions, PartialHierarchyModification,
   PresentationDataCompareOptions, PresentationError, PresentationRpcEvents, PresentationRpcInterface, PresentationStatus, PresentationUnitSystem,
-  RegisteredRuleset, RequestPriority, RpcRequestsHandler, Ruleset, RulesetVariable, SelectionInfo, UpdateInfo, UpdateInfoJSON,
+  RequestPriority, RpcRequestsHandler, Ruleset, RulesetVariable, SelectionInfo, UpdateInfo, UpdateInfoJSON,
 } from "@bentley/presentation-common";
 import { PresentationFrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { LocalizationHelper } from "./LocalizationHelper";
@@ -77,13 +77,13 @@ export class PresentationManager implements IDisposable {
    * An event raised when hierarchies created using specific ruleset change
    * @alpha
    */
-  public onIModelHierarchyChanged = new BeEvent<(args: { ruleset: Ruleset, updateInfo: HierarchyUpdateInfo }) => void>();
+  public onIModelHierarchyChanged = new BeEvent<(args: { rulesetId: string, updateInfo: HierarchyUpdateInfo, imodelKey: string }) => void>();
 
   /**
    * An event raised when content created using specific ruleset changes
    * @alpha
    */
-  public onIModelContentChanged = new BeEvent<(args: { ruleset: Ruleset, updateInfo: ContentUpdateInfo }) => void>();
+  public onIModelContentChanged = new BeEvent<(args: { rulesetId: string, updateInfo: ContentUpdateInfo, imodelKey: string }) => void>();
 
   /** Get / set active locale used for localizing presentation data */
   public activeLocale: string | undefined;
@@ -140,21 +140,24 @@ export class PresentationManager implements IDisposable {
 
   /** @note This is only called in native apps after changes in iModels */
   private async handleUpdateAsync(report: UpdateInfo) {
-    const rulesetIds = new Array<string>();
-    for (const rulesetId in report) {
-      // istanbul ignore else
-      if (report.hasOwnProperty(rulesetId))
-        rulesetIds.push(rulesetId);
+    for (const imodelKey in report) {
+      // istanbul ignore if
+      if (!report.hasOwnProperty(imodelKey))
+        continue;
+
+      const imodelReport = report[imodelKey];
+      for (const rulesetId in imodelReport) {
+        // istanbul ignore if
+        if (!imodelReport.hasOwnProperty(rulesetId))
+          continue;
+
+        const updateInfo = imodelReport[rulesetId];
+        if (updateInfo.content)
+          this.onIModelContentChanged.raiseEvent({ rulesetId, updateInfo: updateInfo.content, imodelKey });
+        if (updateInfo.hierarchy)
+          this.onIModelHierarchyChanged.raiseEvent({ rulesetId, updateInfo: updateInfo.hierarchy, imodelKey });
+      }
     }
-    const rulesets = (await Promise.all(rulesetIds.map(async (id) => this._rulesets.get(id))))
-      .filter<RegisteredRuleset>((ruleset): ruleset is RegisteredRuleset => !!ruleset);
-    rulesets.forEach((ruleset: Ruleset) => {
-      const updateInfo = report[ruleset.id];
-      if (updateInfo.content)
-        this.onIModelContentChanged.raiseEvent({ ruleset, updateInfo: updateInfo.content });
-      if (updateInfo.hierarchy)
-        this.onIModelHierarchyChanged.raiseEvent({ ruleset, updateInfo: updateInfo.hierarchy });
-    });
   }
 
   /** @alpha */
