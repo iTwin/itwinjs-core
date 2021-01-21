@@ -233,13 +233,15 @@ export class PresentationManager implements IDisposable {
     loadHierarchy(requestOptions: HierarchyRequestOptions<IModelConnection>): Promise<void>;
     // @alpha
     onIModelContentChanged: BeEvent<(args: {
-        ruleset: Ruleset;
+        rulesetId: string;
         updateInfo: "FULL";
+        imodelKey: string;
     }) => void>;
     // @alpha
     onIModelHierarchyChanged: BeEvent<(args: {
-        ruleset: Ruleset;
+        rulesetId: string;
         updateInfo: HierarchyUpdateInfo;
+        imodelKey: string;
     }) => void>;
     // @internal
     onNewiModelConnection(_: IModelConnection): Promise<void>;
