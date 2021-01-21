@@ -445,14 +445,7 @@ export class IModelApp {
     });
 
     // process async onInitialized methods
-    const initPromises: Promise<void>[] = [];
-    [
-      this.quantityFormatter,
-    ].forEach(async (sys) => {
-      if (sys)
-        initPromises.push(sys.onInitialized());
-    });
-    await Promise.all(initPromises);
+    await this.quantityFormatter.onInitialized();
   }
 
   /** Must be called before the application exits to release any held resources. */
