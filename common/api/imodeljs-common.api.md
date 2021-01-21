@@ -768,6 +768,10 @@ export interface ChangedElements {
     // (undocumented)
     modelIds?: Id64String[];
     // (undocumented)
+    newChecksums?: number[][];
+    // (undocumented)
+    oldChecksums?: number[][];
+    // (undocumented)
     opcodes: number[];
     // (undocumented)
     parentClassIds?: Id64String[];

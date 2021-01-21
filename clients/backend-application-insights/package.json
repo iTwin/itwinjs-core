@@ -1,6 +1,6 @@
 {
   "name": "@bentley/backend-application-insights-client",
-  "version": "2.11.0-dev.45",
+  "version": "2.11.0-dev.46",
   "description": "iModel.js Backend Application Insights Client",
   "main": "lib/backend-application-insights-client.js",
   "typings": "lib/backend-application-insights-client",
@@ -30,19 +30,19 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/backend-itwin-client": "2.11.0-dev.45",
-    "@bentley/bentleyjs-core": "2.11.0-dev.45",
+    "@bentley/backend-itwin-client": "2.11.0-dev.46",
+    "@bentley/bentleyjs-core": "2.11.0-dev.46",
     "applicationinsights": "^1.7.5"
   },
   "peerDependencies": {
-    "@bentley/itwin-client": "^2.11.0-dev.45"
+    "@bentley/itwin-client": "^2.11.0-dev.46"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.11.0-dev.45",
-    "@bentley/certa": "2.11.0-dev.45",
-    "@bentley/config-loader": "2.11.0-dev.45",
-    "@bentley/eslint-plugin": "2.11.0-dev.45",
-    "@bentley/itwin-client": "2.11.0-dev.45",
+    "@bentley/build-tools": "2.11.0-dev.46",
+    "@bentley/certa": "2.11.0-dev.46",
+    "@bentley/config-loader": "2.11.0-dev.46",
+    "@bentley/eslint-plugin": "2.11.0-dev.46",
+    "@bentley/itwin-client": "2.11.0-dev.46",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
