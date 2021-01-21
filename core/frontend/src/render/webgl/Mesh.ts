@@ -515,7 +515,7 @@ export class SurfaceGeometry extends MeshGeometry {
     let hasAlpha = false;
 
     // If the material overrides alpha (currently, everything except the default - aka "no" - material), alpha comes from the material
-    const mat = this.isLit && wantMaterials(vf) ? this.mesh.materialInfo : undefined;
+    const mat = wantMaterials(vf) ? this.mesh.materialInfo : undefined;
     if (undefined !== mat && mat.overridesAlpha)
       hasAlpha = mat.hasTranslucency;
 
