@@ -4,9 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Point3d } from "@bentley/geometry-core";
-import { ColorDef, GraphicParams, RenderMaterial, RenderMode } from "@bentley/imodeljs-common";
 import {
-  DecorateContext, GraphicType, IModelApp, RenderGraphicOwner, SnapshotConnection, Viewport,
+  ColorDef, FeatureAppearance, GraphicParams, ImageBuffer, ImageBufferFormat, RenderMaterial, RenderMode, RenderTexture, TextureMapping,
+} from "@bentley/imodeljs-common";
+import {
+  DecorateContext, FeatureSymbology, GraphicType, IModelApp, RenderGraphicOwner, SnapshotConnection, Viewport,
 } from "@bentley/imodeljs-frontend";
 import { testOnScreenViewport, TestViewport } from "../TestViewport";
 
@@ -20,17 +22,28 @@ interface GraphicOptions {
 
 class TransparencyDecorator {
   private readonly _graphics: RenderGraphicOwner[] = [];
+  public readonly transparencyOverrides = new Map<string, number>();
 
   public dispose(): void {
     for (const graphic of this._graphics)
       graphic.disposeGraphic();
 
     this._graphics.length = 0;
+    this.transparencyOverrides.clear();
+  }
+
+  public reset(): void {
+    this.dispose();
   }
 
   public decorate(context: DecorateContext): void {
     for (const graphic of this._graphics)
       context.addDecoration(GraphicType.Scene, graphic.graphic);
+  }
+
+  public addFeatureOverrides(overrides: FeatureSymbology.Overrides): void {
+    for (const [id, transp] of this.transparencyOverrides)
+      overrides.overrideElement(id, FeatureAppearance.fromTransparency(transp));
   }
 
   /** Make a rectangle that occupies the entire view. Priority is Z in NPC coords - [0,1] maps to [far, near]. */
@@ -83,6 +96,7 @@ describe("Transparency", async () => {
   });
 
   async function test(setup: (vp: TestViewport) => void, verify: (vp: TestViewport) => void): Promise<void> {
+    decorator.reset();
     await testOnScreenViewport("0x24", imodel, 100, 100, async (viewport) => {
       expect(viewport.viewFlags.renderMode).to.equal(RenderMode.SmoothShade);
       expect(viewport.displayStyle.backgroundColor.equals(ColorDef.black)).to.be.true;
@@ -93,6 +107,7 @@ describe("Transparency", async () => {
 
       setup(viewport);
       viewport.viewFlags = viewport.viewFlags.clone();
+      viewport.addFeatureOverrideProvider(decorator);
 
       await viewport.renderFrame();
       verify(viewport);
@@ -108,14 +123,18 @@ describe("Transparency", async () => {
     return ColorDef.from(colors.r, colors.g, colors.b, colors.t);
   }
 
+  function expectComponent(actual: number, expected: number): void {
+    expect(Math.abs(actual - expected)).lessThan(2);
+  }
+
   function expectColor(vp: TestViewport, color: ColorDef): void {
     const colors = vp.readUniqueColors();
     expect(colors.length).to.equal(1);
     const actual = colors.array[0];
     const expected = color.colors;
-    expect(actual.r).to.equal(expected.r);
-    expect(actual.g).to.equal(expected.g);
-    expect(actual.b).to.equal(expected.b);
+    expectComponent(actual.r, expected.r);
+    expectComponent(actual.g, expected.g);
+    expectComponent(actual.b, expected.b);
   }
 
   function expectTransparency(vp: TestViewport, color: ColorDef): void {
@@ -148,5 +167,78 @@ describe("Transparency", async () => {
       },
       (vp) => expectColor(vp, ColorDef.red)
     );
+  });
+
+  it("should be overridden per-feature", async () => {
+    const pickableId = imodel.transientIds.next;
+    await test(
+      (vp) => {
+        decorator.transparencyOverrides.set(pickableId, 0);
+        decorator.add(vp, { color: ColorDef.red.withTransparency(0xcf), pickableId });
+      },
+      (vp) => expectColor(vp, ColorDef.red),
+    );
+
+    await test(
+      (vp) => {
+        decorator.transparencyOverrides.set(pickableId, 0.5);
+        decorator.add(vp, { color: ColorDef.red, pickableId });
+      },
+      (vp) => expectTransparency(vp, ColorDef.red.withTransparency(0x7f))
+    );
+
+    await test(
+      (vp) => {
+        decorator.transparencyOverrides.set(pickableId, 0.5);
+        decorator.add(vp, { color: ColorDef.red.withTransparency(0xcf), pickableId });
+      },
+      (vp) => expectTransparency(vp, ColorDef.red.withTransparency(0x7f))
+    );
+  });
+
+  // Alpha in [0,255].
+  function createBlueTexture(alpha?: number): RenderTexture {
+    const fmt = undefined !== alpha ? ImageBufferFormat.Rgba : ImageBufferFormat.Rgb;
+    const bytes = [ 0, 0, 255 ];
+    if (undefined !== alpha)
+      bytes.push(alpha);
+
+    const img = ImageBuffer.create(new Uint8Array(bytes), fmt, 1);
+    const texture = IModelApp.renderSystem.createTextureFromImageBuffer(img, imodel, new RenderTexture.Params(imodel.transientIds.next));
+    expect(texture).not.to.be.undefined;
+    return texture!;
+  }
+
+  // Alpha in [0,1].
+  function createMaterial(alpha?: number, texture?: RenderTexture, textureWeight?: number, diffuseColor?: ColorDef): RenderMaterial {
+    const params = new RenderMaterial.Params();
+    params.alpha = alpha;
+    params.diffuseColor = diffuseColor;
+    if (texture)
+      params.textureMapping = new TextureMapping(texture, new TextureMapping.Params({ textureWeight }));
+
+    const material = IModelApp.renderSystem.createMaterial(params, imodel);
+    expect(material).not.to.be.undefined;
+    return material!;
+  }
+
+  it("should multiply material alpha with texture if material overrides alpha", async () => {
+    const testCases: Array<[RenderMaterial, number]> = [
+      [ createMaterial(1, createBlueTexture(0x7f)), 0x7f ],
+      [ createMaterial(0.5, createBlueTexture()), 0x7f ],
+      [ createMaterial(0.5, createBlueTexture(0x7f)), 0xbf ],
+      [ createMaterial(0, createBlueTexture()), 0xff ],
+      [ createMaterial(1, createBlueTexture(0)), 0xff ],
+    ];
+
+    for (const testCase of testCases) {
+      await test(
+        (vp) => decorator.add(vp, { color: ColorDef.red, material: testCase[0] }),
+        (vp) => expectTransparency(vp, ColorDef.blue.withTransparency(testCase[1]))
+      );
+    }
+  });
+
+  it("should multiply element alpha with texture if material does not override alpha", () => {
   });
 });
