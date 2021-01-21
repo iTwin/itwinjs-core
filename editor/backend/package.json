@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-editor-backend",
-  "version": "2.11.0-dev.45",
+  "version": "2.11.0-dev.46",
   "description": "iModel.js editor backend",
   "main": "lib/imodeljs-editor-backend.js",
   "typings": "lib/imodeljs-editor-backend",
@@ -34,20 +34,20 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.11.0-dev.45",
-    "@bentley/imodeljs-backend": "2.11.0-dev.45",
-    "@bentley/imodeljs-common": "^2.11.0-dev.45"
+    "@bentley/bentleyjs-core": "^2.11.0-dev.46",
+    "@bentley/imodeljs-backend": "2.11.0-dev.46",
+    "@bentley/imodeljs-common": "^2.11.0-dev.46"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.11.0-dev.45",
-    "@bentley/build-tools": "2.11.0-dev.45",
-    "@bentley/eslint-plugin": "2.11.0-dev.45",
-    "@bentley/imodeljs-backend": "2.11.0-dev.45",
-    "@bentley/imodeljs-common": "2.11.0-dev.45",
+    "@bentley/bentleyjs-core": "2.11.0-dev.46",
+    "@bentley/build-tools": "2.11.0-dev.46",
+    "@bentley/eslint-plugin": "2.11.0-dev.46",
+    "@bentley/imodeljs-backend": "2.11.0-dev.46",
+    "@bentley/imodeljs-common": "2.11.0-dev.46",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/deep-assign": "^0.1.0",
@@ -69,7 +69,7 @@
     "typescript": "~3.7.4"
   },
   "dependencies": {
-    "@bentley/imodeljs-editor-common": "2.11.0-dev.45"
+    "@bentley/imodeljs-editor-common": "2.11.0-dev.46"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
