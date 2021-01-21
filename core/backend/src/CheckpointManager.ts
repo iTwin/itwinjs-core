@@ -275,7 +275,7 @@ export class V1CheckpointManager {
         if (dbGuid !== Guid.normalize(requestedCkp.iModelId)) {
           Logger.logWarning(loggerCategory, "iModelId is not properly setup in the briefcase. Updated briefcase to the correct iModelId.", () => ({ ...traceInfo, ...checkpoint, dbGuid }));
           nativeDb.setDbGuid(Guid.normalize(requestedCkp.iModelId));
-          // Required to reset the ChangeSetId because the `setDbGuid` method resets the value.
+          // Required to reset the ChangeSetId because setDbGuid clears the value.
           nativeDb.saveLocalValue("ParentChangeSetId", dbChangeSetId);
         }
 
