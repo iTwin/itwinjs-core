@@ -277,6 +277,14 @@ export namespace AreaPattern {
     }
 }
 
+// @beta
+export type AsyncFunction = (...args: any) => Promise<any>;
+
+// @beta
+export type AsyncMethodsOf<T> = {
+    [P in keyof T]: T[P] extends AsyncFunction ? P : never;
+}[keyof T];
+
 export { AuthStatus }
 
 // @public
@@ -5354,6 +5362,9 @@ export enum ProfileOptions {
     None = 0,
     Upgrade = 1
 }
+
+// @beta
+export type PromiseReturnType<T extends AsyncFunction> = T extends (...args: any) => Promise<infer R> ? R : any;
 
 // @beta
 export type PropertyCallback = (name: string, meta: PropertyMetaData) => void;
