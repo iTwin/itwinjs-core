@@ -56,12 +56,20 @@ const applyMaterialColor = `
 // Multiply texel alpha with diffuse alpha if specified.
 const applyTextureWeight = `
   float textureWeight = isSurfaceBitSet(kSurfaceBit_HasTexture) && !u_applyGlyphTex ? mat_texture_weight : 0.0;
-  vec4 rgba = mix(baseColor, g_surfaceTexel, textureWeight);
-  rgba.rgb = chooseVec3WithBitFlag(rgba.rgb, v_color.rgb, surfaceFlags, kSurfaceBit_OverrideRgb);
-  rgba.a = chooseFloatWithBitFlag(rgba.a, v_color.a, surfaceFlags, kSurfaceBit_OverrideAlpha);
-  rgba.a = chooseFloatWithBitFlag(rgba.a, v_color.a * rgba.a, surfaceFlags, kSurfaceBit_MultiplyAlpha);
-  return rgba;
+  vec3 rgb = mix(baseColor.rgb, g_surfaceTexel.rgb, textureWeight);
+  float a = textureWeight > 0.0 ? g_surfaceTexel.a : baseColor.a;
+  rgb = chooseVec3WithBitFlag(rgb, baseColor.rgb, surfaceFlags, kSurfaceBit_OverrideRgb);
+  a = chooseFloatWithBitFlag(a, baseColor.a, surfaceFlags, kSurfaceBit_OverrideAlpha);
+  a = chooseFloatWithBitFlag(a, baseColor.a * a, surfaceFlags, kSurfaceBit_MultiplyAlpha);
+  return vec4(rgb, a);
 `;
+
+//   vec4 rgba = mix(baseColor, g_surfaceTexel, textureWeight);
+//   rgba.rgb = chooseVec3WithBitFlag(rgba.rgb, v_color.rgb, surfaceFlags, kSurfaceBit_OverrideRgb);
+//   rgba.a = chooseFloatWithBitFlag(rgba.a, v_color.a, surfaceFlags, kSurfaceBit_OverrideAlpha);
+//   rgba.a = chooseFloatWithBitFlag(rgba.a, v_color.a * rgba.a, surfaceFlags, kSurfaceBit_MultiplyAlpha);
+//   return rgba;
+// `;
 
 const decodeFragMaterialParams = `
 void decodeMaterialParams(vec4 params) {
@@ -409,22 +417,18 @@ const computeBaseColor = `
   g_surfaceTexel = sampleSurfaceTexture();
   vec4 surfaceColor = getSurfaceColor();
 
+  if (!u_applyGlyphTex)
+    return surfaceColor;
+
   // Compute color for raster glyph.
-  vec4 glyphColor = surfaceColor;
   const vec3 white = vec3(1.0);
   const vec3 epsilon = vec3(0.0001);
   const vec3 almostWhite = white - epsilon;
 
   // set to black if almost white and reverse white-on-white is on
-  bvec3 isAlmostWhite = greaterThan(glyphColor.rgb, almostWhite);
-  glyphColor.rgb = (u_reverseWhiteOnWhite && isAlmostWhite.r && isAlmostWhite.g && isAlmostWhite.b ? vec3(0.0, 0.0, 0.0) : glyphColor.rgb);
-  glyphColor = vec4(glyphColor.rgb * g_surfaceTexel.rgb, g_surfaceTexel.a);
-
-  // Choose glyph color or unmodified texture sample
-  vec4 texColor = u_applyGlyphTex ? glyphColor : g_surfaceTexel;
-
-  // If untextured, or textureWeight < 1.0, choose surface color.
-  return isSurfaceBitSet(kSurfaceBit_HasTexture) && mat_texture_weight >= 1.0 ? texColor : surfaceColor;
+  bvec3 isAlmostWhite = greaterThan(surfaceColor.rgb, almostWhite);
+  surfaceColor.rgb = (u_reverseWhiteOnWhite && isAlmostWhite.r && isAlmostWhite.g && isAlmostWhite.b ? vec3(0.0, 0.0, 0.0) : surfaceColor.rgb);
+  return vec4(surfaceColor.rgb * g_surfaceTexel.rgb, g_surfaceTexel.a);
 `;
 
 const surfaceFlagArray = new Int32Array(SurfaceBitIndex.Count);

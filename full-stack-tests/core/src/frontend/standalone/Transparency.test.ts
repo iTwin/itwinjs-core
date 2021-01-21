@@ -70,7 +70,7 @@ class TransparencyDecorator {
   }
 }
 
-describe("Transparency", async () => {
+describe.only("Transparency", async () => {
   let imodel: SnapshotConnection;
   let decorator: TransparencyDecorator;
 
@@ -132,6 +132,7 @@ describe("Transparency", async () => {
     expect(colors.length).to.equal(1);
     const actual = colors.array[0];
     const expected = color.colors;
+
     expectComponent(actual.r, expected.r);
     expectComponent(actual.g, expected.g);
     expectComponent(actual.b, expected.b);
@@ -237,6 +238,32 @@ describe("Transparency", async () => {
         (vp) => expectTransparency(vp, ColorDef.blue.withTransparency(testCase[1]))
       );
     }
+  });
+
+  it("should apply texture weight to material color but not alpha", async () => {
+    const testCases: Array<[RenderMaterial, ColorDef]> = [
+      // Opaque
+      [ createMaterial(1, createBlueTexture(), 0.5, ColorDef.red), ColorDef.from(0x80, 0, 0x80) ],
+      [ createMaterial(1, createBlueTexture(), 0.25, ColorDef.red), ColorDef.from(0xc0, 0, 0x40) ],
+      [ createMaterial(1, createBlueTexture(), 0, ColorDef.red), ColorDef.from(0xff, 0, 0) ],
+
+      // Translucent
+      [ createMaterial(0.5, createBlueTexture(), 0.5, ColorDef.red), ColorDef.from(0x40, 0, 0x40) ],
+      [ createMaterial(1, createBlueTexture(0x80), 0.5, ColorDef.red), ColorDef.from(0x40, 0, 0x40) ],
+      [ createMaterial(1, createBlueTexture(0x80), 0.75, ColorDef.red), ColorDef.from(0x20, 0, 0x60) ],
+      [ createMaterial(0.5, createBlueTexture(0x80), 0.5, ColorDef.red), ColorDef.from(0x20, 0, 0x20) ],
+      [ createMaterial(0.5, createBlueTexture(0x80), 0.25, ColorDef.red), ColorDef.from(0x30, 0, 0x10) ],
+    ];
+
+    for (const testCase of testCases) {
+      await test(
+        (vp) => decorator.add(vp, { color: ColorDef.green, material: testCase[0] }),
+        (vp) => expectColor(vp, testCase[1])
+      );
+    }
+  });
+
+  it("should apply texture weight to element color but not alpha", async () => {
   });
 
   it("should multiply element alpha with texture if material does not override alpha", () => {
