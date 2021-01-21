@@ -86,7 +86,7 @@ export class FrameworkAccuDraw extends AccuDraw {
   public onFieldValueChange(index: ItemField) {
     const field = this.translateFromItemField(index);
     const value = this.getValueByIndex(index);
-    const formattedValue = FrameworkAccuDraw.getFieldDisplayValue(index); value.toString();
+    const formattedValue = FrameworkAccuDraw.getFieldDisplayValue(index);
     IModelApp.uiAdmin.accuDrawUi.setFieldValueToUi(field, value, formattedValue);
   }
 

@@ -133,8 +133,10 @@ export function AccuDrawFieldContainer(props: AccuDrawFieldContainerProps) {
     }
 
     // istanbul ignore else
-    if (inputRef && inputRef.current && document.activeElement !== inputRef.current)
+    if (inputRef && inputRef.current && document.activeElement !== inputRef.current) {
       inputRef.current.focus();
+      inputRef.current.select();
+    }
   }, [xInputRef, yInputRef, zInputRef, angleInputRef, distanceInputRef]);
 
   React.useEffect(() => {

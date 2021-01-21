@@ -231,7 +231,7 @@ class AdditionalTools {
     const dialogId = "accudraw";
     return new CommandItemDef({
       iconSpec: "icon-placeholder",
-      labelKey: "SampleApp:buttons.accudrawDialog",
+      labelKey: "SampleApp:buttons.accuDrawDialog",
       execute: () => {
         ModelessDialogManager.openDialog(
           <AccuDrawDialog

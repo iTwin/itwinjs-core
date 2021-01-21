@@ -181,7 +181,9 @@
     "clearMessages": "Clear Messages",
     "toggleTimelinePlay": "Toggle Timeline Pause/Play",
     "sampleModelessDialog": "Sample Modeless Dialog",
-    "sampleModalDialog": "Sample Modal Dialog"
+    "sampleModalDialog": "Sample Modal Dialog",
+    "misc": "Miscellaneous",
+    "accuDrawDialog": "AccuDraw Dialog"
   },
   "tools": {
     "ToolWithSettings": {
