@@ -28,4 +28,10 @@ describe("WebFontIcon", () => {
 
     expect(icon.container.getElementsByClassName("uicore-icons-medium")).to.not.be.empty;
   });
+  it("renders specified size", () => {
+    const icon = render(<WebFontIcon iconName="icon-test" iconSize="x-small" />);
+
+    expect(icon.container.getElementsByClassName("uicore-icons-x-small")).to.not.be.empty;
+  });
+
 });

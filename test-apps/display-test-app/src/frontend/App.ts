@@ -27,7 +27,8 @@ import { FenceClassifySelectedTool } from "./Fence";
 import { ToggleAspectRatioSkewDecoratorTool } from "./AspectRatioSkewDecorator";
 import { PathDecorationTestTool } from "./PathDecorationTest";
 import { DeleteElementsTool, EditingSessionTool, MoveElementTool, PlaceLineStringTool, RedoTool, UndoTool } from "./EditingTools";
-import { MobileRpcConfiguration } from "@bentley/imodeljs-common";
+import { AsyncMethodsOf, FrontendIpc, MobileRpcConfiguration, PromiseReturnType } from "@bentley/imodeljs-common";
+import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -48,6 +49,12 @@ class SVTSelectionTool extends SelectionTool {
 
     // ###TODO Want to do this only if version comparison enabled, but meh.
     IModelApp.locateManager.options.allowExternalIModels = true;
+  }
+}
+
+export class DtaIpc {
+  public static async callBackend<T extends AsyncMethodsOf<DtaIpcInterface>>(methodName: T, ...args: Parameters<DtaIpcInterface[T]>) {
+    return FrontendIpc.callBackend(dtaChannel, methodName, ...args) as PromiseReturnType<DtaIpcInterface[T]>;
   }
 }
 
