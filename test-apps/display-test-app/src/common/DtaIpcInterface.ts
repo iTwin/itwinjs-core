@@ -3,10 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { OpenDialogOptions, OpenDialogReturnValue } from "electron";
-
 export const dtaChannel = "dta";
 
 export interface DtaIpcInterface {
-  openFile: (options: OpenDialogOptions) => Promise<OpenDialogReturnValue>;
+  sayHello: () => Promise<string>;
 }
