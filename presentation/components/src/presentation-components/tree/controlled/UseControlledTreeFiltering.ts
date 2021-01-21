@@ -11,7 +11,7 @@ import {
   AbstractTreeNodeLoaderWithProvider, ActiveMatchInfo, HighlightableTreeProps, ITreeNodeLoaderWithProvider,
   PagedTreeNodeLoader, TreeModelSource, useDebouncedAsyncValue,
 } from "@bentley/ui-components";
-import { FilteredPresentationTreeDataProvider } from "../FilteredDataProvider";
+import { FilteredPresentationTreeDataProvider, IFilteredPresentationTreeDataProvider } from "../FilteredDataProvider";
 import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
 
 const FILTERED_DATA_PAGE_SIZE = 20;
@@ -57,7 +57,7 @@ export function useFilteredNodeLoader(
 
   const { filteredProvider, matchesCount } = useMemo(() => {
     if (nodePaths !== undefined) {
-      const provider = new FilteredPresentationTreeDataProvider({
+      const provider: IFilteredPresentationTreeDataProvider = new FilteredPresentationTreeDataProvider({
         parentDataProvider: dataProvider,
         filter: normalizedFilter,
         paths: nodePaths,
@@ -89,7 +89,7 @@ const useNodePaths = (dataProvider: IPresentationTreeDataProvider, filter: strin
 /** @internal */
 export function useNodeHighlightingProps(
   filter: string | undefined,
-  filteredNodeLoader?: ITreeNodeLoaderWithProvider<FilteredPresentationTreeDataProvider>,
+  filteredNodeLoader?: ITreeNodeLoaderWithProvider<IFilteredPresentationTreeDataProvider>,
   activeMatchIndex?: number,
 ) {
   const [nodeHighlightingProps, setNodeHighlightingProps] = useState<HighlightableTreeProps>();

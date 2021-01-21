@@ -651,6 +651,7 @@ export class ChangeSummaryManager {
             className: string;
         };
     }, changedValueState: ChangedValueState, changedPropertyNames?: string[]): string;
+    // @deprecated
     static detachChangeCache(iModel: IModelDb): void;
     // (undocumented)
     static downloadChangeSets(requestContext: AuthorizedClientRequestContext, ctx: ChangeSummaryExtractContext, startChangeSetId: GuidString, endChangeSetId: GuidString): Promise<ChangeSet[]>;
@@ -3946,14 +3947,19 @@ export class SubjectOwnsSubjects extends ElementOwnsChildElements {
 export class TemplateModelCloner extends IModelTransformer {
     constructor(sourceDb: IModelDb, targetDb: IModelDb);
     protected onTransformElement(sourceElement: Element): ElementProps;
+    placeTemplate2d(sourceTemplateModelId: Id64String, targetModelId: Id64String, placement: Placement2d): Map<Id64String, Id64String>;
     placeTemplate3d(sourceTemplateModelId: Id64String, targetModelId: Id64String, placement: Placement3d): Map<Id64String, Id64String>;
     }
 
-// @internal
+// @beta
 export class TemplateRecipe2d extends RecipeDefinitionElement {
+    // @internal
     constructor(props: ElementProps, iModel: IModelDb);
-    // (undocumented)
+    // @internal (undocumented)
     static get className(): string;
+    static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): TemplateRecipe2d;
+    static createCode(iModelDb: IModelDb, definitionModelId: CodeScopeProps, codeValue: string): Code;
+    static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String;
 }
 
 // @beta

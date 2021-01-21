@@ -152,7 +152,7 @@ exports[`ToolWidget Not Extension-compatible ToolWidget should render correctly 
         "widgetId": "",
         "widgetIndex": 0,
       },
-      "_toolbarBaseName": "[TestFrontstage]ToolWidget",
+      "_toolbarBaseName": "[]ToolWidget",
       "_tooltip": "",
       "_widgetType": 0,
       "horizontalDirection": 4,
