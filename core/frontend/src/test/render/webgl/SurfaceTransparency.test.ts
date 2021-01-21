@@ -161,13 +161,6 @@ describe("Surface transparency", () => {
     expectTranslucent(() => createMesh(127, translucentMaterial));
   });
 
-  it("uses texture transparency", () => {
-    expectOpaque(() => createMesh(0, opaqueTexture));
-    expectOpaque(() => createMesh(127, opaqueTexture));
-    expectTranslucent(() => createMesh(0, translucentTexture));
-    expectTranslucent(() => createMesh(127, translucentTexture));
-  });
-
   it("uses combination of material and texture transparency", () => {
     const m1 = createMaterial(1, opaqueTexture);
     const m2 = createMaterial(0.5, opaqueTexture);
@@ -186,8 +179,73 @@ describe("Surface transparency", () => {
 
   it("ignores texture transparency if textures are disabled", () => {
     viewport.viewFlags.textures = false;
+
+    const m1 = createMaterial(1, opaqueTexture);
+    const m2 = createMaterial(0.5, opaqueTexture);
+    const m3 = createMaterial(0.5, translucentTexture);
+    const m4 = createMaterial(1, translucentTexture);
+
+    expectOpaque(() => createMesh(0, m1));
+    expectOpaque(() => createMesh(127, m1));
+    expectTranslucent(() => createMesh(0, m2));
+    expectTranslucent(() => createMesh(127, m2));
+    expectTranslucent(() => createMesh(0, m3));
+    expectTranslucent(() => createMesh(127, m3));
+    expectOpaque(() => createMesh(0, m4));
+    expectOpaque(() => createMesh(127, m4));
+
+    expectOpaque(() => createMesh(0, opaqueTexture));
+    expectTranslucent(() => createMesh(127, opaqueTexture));
+    expectOpaque(() => createMesh(0, translucentTexture));
+    expectTranslucent(() => createMesh(127, translucentTexture));
   });
 
   it("ignores material and texture transparency if both view flags are disabled", () => {
+    viewport.viewFlags.textures = viewport.viewFlags.materials = false;
+
+    const materials = [
+      createMaterial(1, opaqueTexture),
+      createMaterial(0.5, opaqueTexture),
+      createMaterial(0.5, translucentTexture),
+      createMaterial(1, translucentTexture),
+    ];
+
+    for (const material of materials) {
+      expectOpaque(() => createMesh(0, material));
+      expectTranslucent(() => createMesh(127, material));
+    }
+  });
+
+  it("uses combination of element and texture transparency if not overridden by material", () => {
+    const opaque = createMaterial(undefined, opaqueTexture);
+    const trans = createMaterial(undefined, translucentTexture);
+
+    expectOpaque(() => createMesh(0, opaque));
+    expectOpaque(() => createMesh(0, opaqueTexture));
+    expectTranslucent(() => createMesh(127, opaque));
+    expectTranslucent(() => createMesh(127, opaqueTexture));
+
+    expectTranslucent(() => createMesh(0, trans));
+    expectTranslucent(() => createMesh(127, trans));
+    expectTranslucent(() => createMesh(0, translucentTexture));
+    expectTranslucent(() => createMesh(127, translucentTexture));
+  });
+
+  it("uses combination of element and texture transparency if materials are disabled", () => {
+    viewport.viewFlags.materials = false;
+
+    const m1 = createMaterial(1, opaqueTexture);
+    const m2 = createMaterial(0.5, opaqueTexture);
+    const m3 = createMaterial(1, translucentTexture);
+    const m4 = createMaterial(0.5, translucentTexture);
+
+    expectOpaque(() => createMesh(0, m1));
+    expectTranslucent(() => createMesh(127, m1));
+    expectOpaque(() => createMesh(0, m2));
+    expectTranslucent(() => createMesh(127, m2));
+    expectTranslucent(() => createMesh(0, m3));
+    expectTranslucent(() => createMesh(127, m3));
+    expectTranslucent(() => createMesh(0, m4));
+    expectTranslucent(() => createMesh(127, m4));
   });
 });
