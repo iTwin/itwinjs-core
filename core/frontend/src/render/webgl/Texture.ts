@@ -511,22 +511,24 @@ export class Texture2DHandle extends TextureHandle {
   }
 }
 
-interface ExternalTextureRequest {
+/** @internal */
+export interface ExternalTextureRequest {
   handle: Texture2DHandle;
   name: string;
   imodel: IModelConnection;
   type: RenderTexture.Type;
   format: ImageSourceFormat;
+  onLoaded?: (req: ExternalTextureRequest) => void;
 }
 
 /** @internal */
 export class ExternalTextureLoader { /* currently exported for tests only */
   public static readonly instance = new ExternalTextureLoader(10);
   private readonly _maxActiveRequests: number;
-  private _numActiveRequests = 0;
+  private _activeRequests: Array<ExternalTextureRequest> = [];
   private _pendingRequests: Array<ExternalTextureRequest> = [];
 
-  public get numActiveRequests() { return this._numActiveRequests; }
+  public get numActiveRequests() { return this._activeRequests.length; }
   public get numPendingRequests() { return this._pendingRequests.length; }
   public get maxActiveRequests() { return this._maxActiveRequests; }
 
@@ -534,18 +536,16 @@ export class ExternalTextureLoader { /* currently exported for tests only */
     this._maxActiveRequests = maxActiveRequests;
   }
 
-  private _nextRequest() {
-    this._numActiveRequests--;
-    console.log("numActiveRequests = " + this._numActiveRequests);
-    if (this._numActiveRequests < this._maxActiveRequests && this._pendingRequests.length > 0) {
-      this._activateRequest(this._pendingRequests.pop()!);
-      console.log("pendingRequests.length = " + this._pendingRequests.length);
+  private _nextRequest(prevReq: ExternalTextureRequest) {
+    this._activeRequests.splice(this._activeRequests.indexOf(prevReq), 1);
+    if (this._activeRequests.length < this._maxActiveRequests && this._pendingRequests.length > 0) {
+      const req = this._pendingRequests.pop()!;
+      this._activateRequest(req);
     }
   }
 
   private _activateRequest(req: ExternalTextureRequest) {
-    this._numActiveRequests++;
-    console.log("numActiveRequests = " + this._numActiveRequests);
+    this._activeRequests.push(req);
     const texBytesPromise = req.imodel.getTextureImage({ name: req.name });
     texBytesPromise.then((texBytes: Uint8Array | undefined) => {
       if (undefined !== texBytes && !req.imodel.isClosed) {
@@ -555,21 +555,36 @@ export class ExternalTextureLoader { /* currently exported for tests only */
           if (!req.imodel.isClosed) {
             req.handle.reload(Texture2DCreateParams.createForImage(image, ImageSourceFormat.Png === req.format, req.type));
             IModelApp.tileAdmin.invalidateAllScenes();
+            if (undefined !== req.onLoaded)
+              req.onLoaded(req);
           }
-          this._nextRequest();
+          this._nextRequest(req);
         }).catch((_e: any) => { });
       } else
-        this._nextRequest();
+        this._nextRequest(req);
     }).catch((_e: any) => { });
   }
 
-  public loadTexture(handle: Texture2DHandle, name: string, imodel: IModelConnection, type: RenderTexture.Type, format: ImageSourceFormat) {
-    console.log("loadTexture: " + name);
-    const req = { handle, name, imodel, type, format };
-    if (this._numActiveRequests + 1 > this._maxActiveRequests) {
+  private _requestExists(reqToCheck: ExternalTextureRequest) {
+    for (const r of this._activeRequests)
+      if (reqToCheck.name === r.name && reqToCheck.imodel.iModelId === r.imodel.iModelId)
+        return true;
+
+    for (const r of this._pendingRequests)
+      if (reqToCheck.name === r.name && reqToCheck.imodel.iModelId === r.imodel.iModelId)
+        return true;
+
+    return false;
+  }
+
+  public loadTexture(handle: Texture2DHandle, name: string, imodel: IModelConnection, type: RenderTexture.Type, format: ImageSourceFormat, onLoaded?: (req: ExternalTextureRequest) => void) {
+    const req = { handle, name, imodel, type, format, onLoaded };
+    if (this._requestExists(req))
+      return;
+
+    if (this._activeRequests.length + 1 > this._maxActiveRequests)
       this._pendingRequests.push(req);
-      console.log("pendingRequests.length = " + this._pendingRequests.length);
-    } else
+    else
       this._activateRequest(req);
   }
 }
