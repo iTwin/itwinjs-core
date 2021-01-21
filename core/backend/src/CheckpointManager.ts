@@ -282,7 +282,7 @@ export class V1CheckpointManager {
         const dbContextGuid = Guid.normalize(nativeDb.queryProjectGuid());
         if (dbContextGuid !== Guid.normalize(requestedCkp.contextId)) {
           Logger.logWarning(loggerCategory, "ContextId was not properly setup in the briefcase. Updated briefcase to the correct ContextId.", () => ({ ...traceInfo, ...checkpoint, dbContextGuid }));
-          nativeDb.saveProjectGuid(dbContextGuid);
+          nativeDb.saveProjectGuid(Guid.normalize(requestedCkp.contextId));
         }
 
         // Apply change sets if necessary
