@@ -878,6 +878,7 @@ export interface ColorPickerPopupProps extends React.ButtonHTMLAttributes<HTMLBu
     popupPosition?: RelativePosition;
     readonly?: boolean;
     ref?: React.Ref<HTMLButtonElement>;
+    showCaret?: boolean;
 }
 
 // @beta
@@ -891,6 +892,7 @@ export interface ColorPickerProps extends React.ButtonHTMLAttributes<HTMLButtonE
     readonly?: boolean;
     ref?: React.Ref<HTMLButtonElement>;
     round?: boolean;
+    showCaret?: boolean;
 }
 
 // @beta
