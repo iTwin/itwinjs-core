@@ -10,6 +10,22 @@ import { BackendError } from "../IModelError";
 import { IpcInvokeReturn, IpcListener, IpcSocketFrontend, iTwinChannel, RemoveFunction } from "./IpcSocket";
 
 /**
+ * type check for an function that returns a Promise
+ * @beta
+ */
+export type AsyncFunction = (...args: any) => Promise<any>;
+/**
+ * a type that is the list of the asynchronous functions in an interface
+ * @beta
+ */
+export type AsyncMethodsOf<T> = { [P in keyof T]: T[P] extends AsyncFunction ? P : never }[keyof T];
+/**
+ * get the type of the promised value of an asynchronous function
+ * @beta
+ */
+export type PromiseReturnType<T extends AsyncFunction> = T extends (...args: any) => Promise<infer R> ? R : any;
+
+/**
  * This class provides frontend support for Ipc operations. It must be initialized with a platform-specific
  * implementation of the [[IpcSocketFrontend]] interface at startup, before calling [IModelApp.startup]($frontend).
  * @beta
