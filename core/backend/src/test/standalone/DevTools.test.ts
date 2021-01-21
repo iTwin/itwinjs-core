@@ -14,9 +14,6 @@ interface StringIndexedObject<T> {
 }
 
 describe("DevTools", () => {
-  before(() => {
-    IModelTestUtils.setupLogging();
-  });
   // we like to skip this test fixture for ios
   if (!MobileRpcConfiguration.isMobileBackend) {
     it("can fetch stats from backend", () => {

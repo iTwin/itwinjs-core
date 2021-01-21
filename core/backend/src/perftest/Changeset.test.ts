@@ -227,8 +227,9 @@ async function reverseChanges(requestContext: AuthorizedClientRequestContext, re
   const secondCount = getElementCount(rwIModel);
   assert.equal(secondCount, 11);
 
-  const imodelInfo = await IModelTestUtils.getTestModelInfo(requestContext, projectId, "reverseChangeTest");
-  const firstChangeSetId = imodelInfo.changeSets[0].wsgId;
+  const imodelId = await HubUtility.queryIModelIdByName(requestContext, projectId, "reverseChangeTest");
+  const changeSets = await IModelHost.iModelClient.changeSets.get(requestContext, imodelId);
+  const firstChangeSetId = changeSets[0].wsgId;
   const startTime = new Date().getTime();
   await rwIModel.reverseChanges(requestContext, IModelVersion.asOfChangeSet(firstChangeSetId));
   const endTime = new Date().getTime();
@@ -272,8 +273,9 @@ async function reinstateChanges(requestContext: AuthorizedClientRequestContext, 
   const secondCount = getElementCount(rwIModel);
   assert.equal(secondCount, 11);
 
-  const imodelInfo = await IModelTestUtils.getTestModelInfo(requestContext, projectId, iModelName);
-  const firstChangeSetId = imodelInfo.changeSets[0].wsgId;
+  const imodelId = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
+  const changeSets = await IModelHost.iModelClient.changeSets.get(requestContext, imodelId);
+  const firstChangeSetId = changeSets[0].wsgId;
   await rwIModel.reverseChanges(requestContext, IModelVersion.asOfChangeSet(firstChangeSetId));
   const reverseCount = getElementCount(rwIModel);
   assert.equal(reverseCount, firstCount);

@@ -2,14 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import * as chai from "chai";
+import * as chaiAsPromised from "chai-as-promised";
 import * as path from "path";
 import {
   BeEvent, BentleyLoggerCategory, ChangeSetStatus, Config, DbResult, GuidString, Id64, Id64String, IDisposable, IModelStatus, Logger, LogLevel,
   OpenMode,
 } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { ChangeSet, IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
+import { IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
 import {
   Code, CodeProps, ElementProps, IModel, IModelError, IModelReadRpcInterface, IModelVersion, IModelVersionProps, PhysicalElementProps, RelatedElement,
   RequestNewBriefcaseProps,
@@ -29,8 +30,10 @@ import { DrawingModel } from "../Model";
 import { ElementDrivesElement, RelationshipProps } from "../Relationship";
 import { DownloadAndOpenArgs, RpcBriefcaseUtility } from "../rpc-impl/RpcBriefcaseUtility";
 import { Schema, Schemas } from "../Schema";
-import { HubUtility } from "./integration/HubUtility";
 import { KnownTestLocations } from "./KnownTestLocations";
+
+const assert = chai.assert;
+chai.use(chaiAsPromised);
 
 /* eslint-disable @typescript-eslint/explicit-member-accessibility */
 
@@ -44,39 +47,11 @@ export class Timer {
   }
 
   public end() {
-
     const stop = new Date();
     const elapsed = stop.getTime() - this._start.getTime();
     // eslint-disable-next-line no-console
     console.log(`${this._label}: ${elapsed}ms`);
   }
-}
-
-export class TestIModelInfo {
-  private _name: string;
-  private _id: string;
-  private _localReadonlyPath: string;
-  private _localReadWritePath: string;
-  private _changeSets: ChangeSet[];
-
-  constructor(name: string) {
-    this._name = name;
-    this._id = "";
-    this._localReadonlyPath = "";
-    this._localReadWritePath = "";
-    this._changeSets = [];
-  }
-
-  get name(): string { return this._name; }
-  set name(name: string) { this._name = name; }
-  get id(): string { return this._id; }
-  set id(id: string) { this._id = id; }
-  get localReadonlyPath(): string { return this._localReadonlyPath; }
-  set localReadonlyPath(localReadonlyPath: string) { this._localReadonlyPath = localReadonlyPath; }
-  get localReadWritePath(): string { return this._localReadWritePath; }
-  set localReadWritePath(localReadWritePath: string) { this._localReadWritePath = localReadWritePath; }
-  get changeSets(): ChangeSet[] { return this._changeSets; }
-  set changeSets(changeSets: ChangeSet[]) { this._changeSets = changeSets; }
 }
 
 RpcConfiguration.developmentMode = true;
@@ -188,6 +163,7 @@ export class IModelTestUtils {
   }
 
   public static async openCheckpointUsingRpc(args: RequestNewBriefcaseProps & { requestContext: AuthorizedClientRequestContext, deleteFirst?: boolean }): Promise<SnapshotDb> {
+    args.requestContext.enter();
     if (undefined === args.asOf)
       args.asOf = IModelVersion.latest().toJSON();
 
@@ -201,6 +177,7 @@ export class IModelTestUtils {
       syncMode: SyncMode.FixedVersion,
       forceDownload: args.deleteFirst,
     };
+    args.requestContext.enter();
 
     while (true) {
       try {
@@ -213,11 +190,14 @@ export class IModelTestUtils {
   }
 
   public static async closeAndDeleteBriefcaseDb(requestContext: AuthorizedClientRequestContext, briefcaseDb: IModelDb) {
+    requestContext.enter();
+
     const fileName = briefcaseDb.pathName;
     const iModelId = briefcaseDb.iModelId;
     briefcaseDb.close();
 
     await BriefcaseManager.deleteBriefcaseFiles(fileName, requestContext);
+    requestContext.enter();
 
     // try to clean up empty briefcase directories, and empty iModel directories.
     if (0 === BriefcaseManager.getCachedBriefcases(iModelId).length) {
@@ -227,14 +207,6 @@ export class IModelTestUtils {
         IModelJsFs.removeSync(imodelPath);
       }
     }
-  }
-
-  public static async getTestModelInfo(requestContext: AuthorizedClientRequestContext, testProjectId: string, iModelName: string): Promise<TestIModelInfo> {
-    const iModelInfo = new TestIModelInfo(iModelName);
-    iModelInfo.id = await HubUtility.queryIModelIdByName(requestContext, testProjectId, iModelInfo.name);
-
-    iModelInfo.changeSets = await IModelHost.iModelClient.changeSets.get(requestContext, iModelInfo.id);
-    return iModelInfo;
   }
 
   /** Prepare for an output file by:
@@ -356,10 +328,10 @@ export class IModelTestUtils {
     return [eid, mid];
   }
 
-  //
-  // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
-  // @return [modeledElementId, modelId]
-  //
+  /**
+   * Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
+   * @return [modeledElementId, modelId]
+   */
   public static async createAndInsertPhysicalPartitionAndModelAsync(reqContext: AuthorizedClientRequestContext, testImodel: IModelDb, newModelCode: CodeProps, privateModel: boolean = false, parentId?: Id64String): Promise<Id64String[]> {
     const eid = await IModelTestUtils.createAndInsertPhysicalPartitionAsync(reqContext, testImodel, newModelCode, parentId);
     reqContext.enter();
@@ -369,7 +341,7 @@ export class IModelTestUtils {
     return [eid, mid];
   }
 
-  // Create and insert a Drawing Partition element (in the repositoryModel).
+  /** Create and insert a Drawing Partition element (in the repositoryModel). */
   public static createAndInsertDrawingPartition(testDb: IModelDb, newModelCode: CodeProps, parentId?: Id64String): Id64String {
     const model = parentId ? testDb.elements.getElement(parentId).model : IModel.repositoryModelId;
     const parent = new SubjectOwnsPartitionElements(parentId || IModel.rootSubjectId);
@@ -384,7 +356,7 @@ export class IModelTestUtils {
     return testDb.elements.insertElement(modeledElement);
   }
 
-  // Create and insert a DrawingModel associated with Drawing Partition.
+  /** Create and insert a DrawingModel associated with Drawing Partition. */
   public static createAndInsertDrawingModel(testDb: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Id64String {
     const newModel = testDb.models.createModel({ modeledElement: modeledElementRef, classFullName: DrawingModel.classFullName, isPrivate: privateModel });
     const newModelId = testDb.models.insertModel(newModel);
@@ -394,10 +366,10 @@ export class IModelTestUtils {
     return newModelId;
   }
 
-  //
-  // Create and insert a Drawing Partition element (in the repositoryModel) and an associated DrawingModel.
-  // @return [modeledElementId, modelId]
-  //
+  /**
+   * Create and insert a Drawing Partition element (in the repositoryModel) and an associated DrawingModel.
+   * @return [modeledElementId, modelId]
+   */
   public static createAndInsertDrawingPartitionAndModel(testImodel: IModelDb, newModelCode: CodeProps, privateModel: boolean = false, parent?: Id64String): Id64String[] {
     const eid = IModelTestUtils.createAndInsertDrawingPartition(testImodel, newModelCode, parent);
     const modeledElementRef = new RelatedElement({ id: eid });
@@ -432,6 +404,7 @@ export class IModelTestUtils {
     IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
     const config = new IModelHostConfiguration();
     config.concurrentQuery.concurrent = 4; // for test restrict this to two threads. Making closing connection faster
+    config.cacheDir = path.join(__dirname, ".cache");  // Set the cache dir to be under the lib directory.
     await IModelHost.startup(config);
   }
 
@@ -529,3 +502,8 @@ before(async () => {
   IModelTestUtils.setupLogging();
   await IModelTestUtils.startBackend();
 });
+
+after(async () => {
+  console.log("Shutting down IModelHost");
+  await IModelTestUtils.shutdownBackend();
+})
