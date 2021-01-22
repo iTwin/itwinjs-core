@@ -24,7 +24,7 @@ import { ElementState } from "./EntityState";
 import { Frustum2d } from "./Frustum2d";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
-import { GeometricModel2dState, GeometricModel3dState, GeometricModelState } from "./ModelState";
+import { GeometricModel2dState, GeometricModelState } from "./ModelState";
 import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager";
 import { GraphicType } from "./render/GraphicBuilder";
 import { RenderClipVolume } from "./render/RenderClipVolume";

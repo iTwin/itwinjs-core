@@ -11,6 +11,7 @@ import { assert } from "@bentley/bentleyjs-core";
 import { Matrix4d } from "@bentley/geometry-core";
 import { SpatialClassificationProps } from "@bentley/imodeljs-common";
 import { Matrix4 } from "../Matrix";
+import { PlanarClassifierContent } from "../PlanarClassifier";
 import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariableType } from "../ShaderBuilder";
 import { IsThematic } from "../TechniqueFlags";
@@ -55,14 +56,34 @@ const applyPlanarClassificationColor = `
   if (classPos.x < 0.0 || classPos.x > 1.0 || classPos.y < 0.0 || classPos.y > 1.0)
     return baseColor;
 
-  vec4 colorTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, classPos.y / 2.0));
+  float contentMode = u_pClassColorParams.z;
+  vec4 colorTexel = vec4(0);
+  vec4 maskTexel = vec4(0);
+  bool doMask = contentMode > kTextureContentClassifierOnly;
+  bool doClassify = contentMode != kTextureContentMaskOnly;
+  if (contentMode == kTextureContentClassifierOnly) {
+    colorTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, classPos.y / 2.0));
+  } else if (contentMode == kTextureContentMaskOnly) {
+    maskTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, classPos.y));
+  } else if (contentMode == kTextureContentClassifierAndMask) {
+    colorTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, classPos.y / 3.0));
+    maskTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, (2.0 + classPos.y) / 3.0));
+  }
+  if (doMask && !isOutside && (maskTexel.r + maskTexel.g + maskTexel.b + maskTexel.a > 0.0)) {
+    discard;
+    return vec4(0);
+
+    if (!doClassify)
+      return baseColor;
+    }
+
+
   bool isClassified = !isOutside && (colorTexel.r + colorTexel.g + colorTexel.b + colorTexel.a > 0.0);
   float param = isClassified ? u_pClassColorParams.x : u_pClassColorParams.y;
   if (kClassifierDisplay_Off == param) {
     discard;
     return vec4(0);
   }
-
 
   vec4 classColor;
   if (kClassifierDisplay_On == param)
@@ -163,7 +184,7 @@ const computeClassifierPosW = "v_pClassPosW = classProj.w;";
 const scratchBytes = new Uint8Array(4);
 const scratchBatchBaseId = new Uint32Array(scratchBytes.buffer);
 const scratchBatchBaseComponents = [0, 0, 0, 0];
-const scratchColorParams = new Float32Array(2);      // Unclassified scale, classified base scale, classified classifier scale.
+const scratchColorParams = new Float32Array(3);      // Unclassified scale, classified base scale, classified classifier scale.
 const scratchModel = Matrix4d.createIdentity();
 const scratchModelProjection = Matrix4d.createIdentity();
 const scratchMatrix = new Matrix4();
@@ -200,6 +221,9 @@ function addPlanarClassifierConstants(builder: ShaderBuilder) {
   builder.addDefine("kClassifierDisplay_Element", SpatialClassificationProps.Display.ElementColor.toFixed(1));
   const td = SpatialClassificationProps.Display.ElementColor + 1;
   builder.addDefine("kTextureDrape", td.toFixed(1));
+  builder.addDefine("kTextureContentClassifierOnly", PlanarClassifierContent.ClassifierOnly.toFixed(1));
+  builder.addDefine("kTextureContentMaskOnly", PlanarClassifierContent.MaskOnly.toFixed(1));
+  builder.addDefine("kTextureContentClassifierAndMask", PlanarClassifierContent.ClassifierAndMask.toFixed(1));
 }
 
 /** @internal */
@@ -219,7 +243,7 @@ export function addColorPlanarClassifier(builder: ProgramBuilder, translucent: b
     });
   });
 
-  frag.addUniform("u_pClassColorParams", VariableType.Vec2, (prog) => {
+  frag.addUniform("u_pClassColorParams", VariableType.Vec3, (prog) => {
     prog.addGraphicUniform("u_pClassColorParams", (uniform, params) => {
       const source = params.target.currentPlanarClassifierOrDrape;
       const volClass = params.target.activeVolumeClassifierTexture;
@@ -229,6 +253,7 @@ export function addColorPlanarClassifier(builder: ProgramBuilder, translucent: b
       } else {
         scratchColorParams[0] = 6.0;      // Volume classifier, by element color.
         scratchColorParams[1] = 0.5;      // used for alpha value
+        scratchColorParams[2] = 0.0;      // Not used for volume.
       }
       uniform.setUniform2fv(scratchColorParams);
     });

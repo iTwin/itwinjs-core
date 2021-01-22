@@ -48,6 +48,7 @@ import {
   FeatureMode, IsAnimated, IsClassified, IsEdgeTestNeeded, IsInstanced, IsShadowable, IsThematic, TechniqueFlags,
 } from "./TechniqueFlags";
 import { computeCompositeTechniqueId, TechniqueId } from "./TechniqueId";
+import { createCombine3TexturesProgram } from "./glsl/Combine3Textures";
 
 /** Defines a rendering technique implemented using one or more shader programs.
  * @internal
@@ -748,6 +749,7 @@ const techniquesByPriority: PrioritizedTechniqueOrShader[] = [
   { techniqueId: TechniqueId.VolClassCopyZ },
   { techniqueId: TechniqueId.VolClassSetBlend },
   { techniqueId: TechniqueId.VolClassBlend },
+  { techniqueId: TechniqueId.Combine3Textures },
 ];
 const numTechniquesByPriority = techniquesByPriority.length;
 
@@ -906,6 +908,7 @@ export class Techniques implements WebGLDisposable {
     this._list[TechniqueId.AmbientOcclusion] = new SingularTechnique(createAmbientOcclusionProgram(gl));
     this._list[TechniqueId.Blur] = new SingularTechnique(createBlurProgram(gl));
     this._list[TechniqueId.CombineTextures] = new SingularTechnique(createCombineTexturesProgram(gl));
+    this._list[TechniqueId.Combine3Textures] = new SingularTechnique(createCombine3TexturesProgram(gl));
     this._list[TechniqueId.Surface] = new SurfaceTechnique(gl);
     this._list[TechniqueId.Edge] = new EdgeTechnique(gl, false);
     this._list[TechniqueId.SilhouetteEdge] = new EdgeTechnique(gl, true);

@@ -864,6 +864,25 @@ export class CombineTexturesGeometry extends TexturedViewportQuadGeometry {
   }
 }
 
+export class Combine3TexturesGeometry extends TexturedViewportQuadGeometry {
+  public static createGeometry(texture0: WebGLTexture, texture1: WebGLTexture, texture2: WebGLTexture) {
+    const params = ViewportQuad.getInstance().createParams();
+    if (undefined !== params) {
+      return new Combine3TexturesGeometry(params, [texture0, texture1, texture2]);
+    } else {
+      return undefined;
+    }
+  }
+
+  public get texture0() { return this._textures[0]; }
+  public get texture1() { return this._textures[1]; }
+  public get texture2() { return this._textures[2]; }
+
+  private constructor(params: IndexedGeometryParams, textures: WebGLTexture[]) {
+    super(params, TechniqueId.Combine3Textures, textures);
+  }
+}
+
 /** @internal */
 export class SingleTexturedViewportQuadGeometry extends TexturedViewportQuadGeometry {
   public static createGeometry(texture: WebGLTexture, techId: TechniqueId) {
