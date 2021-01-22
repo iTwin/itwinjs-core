@@ -313,7 +313,7 @@ alpha;ModelDisplayTransformProvider
 public;ModelSelectorState 
 public;ModelState 
 internal;ModifyElementSource
-alpha;NativeApp
+alpha;NativeApp 
 internal;NativeAppLogger
 internal;NoRenderApp
 public;NotificationManager
