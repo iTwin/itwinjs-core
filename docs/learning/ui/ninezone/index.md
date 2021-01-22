@@ -13,7 +13,7 @@ The 9-Zone UI Pattern allows applications to work across a range of devices and 
 
 ## Zones
 
-The 9-zone UI takes gets its name because it divides up the screen into different zones.
+The 9-zone UI gets its name due to the fact that it divides the screen up into different zones.
 Each zone has a specific purpose. These zones are positioned in a consistent orientation across all 9-zone UI apps.
 This a list of the zones and their recommended contents:
 
