@@ -449,12 +449,7 @@ export class IModelApp {
     });
 
     // process async onInitialized methods
-    [
-      this.quantityFormatter,
-    ].forEach(async (sys) => {
-      if (sys)
-        await sys.onInitialized();
-    });
+    await this.quantityFormatter.onInitialized();
   }
 
   /** Must be called before the application exits to release any held resources. */
