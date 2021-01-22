@@ -52,7 +52,7 @@ export interface TipThumbnail {
 
 /**
  * Query object for getting [[Thumbnail]]s. You can use this to modify the [[ThumbnailHandler.get]] results.
- * @internal
+ * @public
  */
 export class ThumbnailQuery extends InstanceIdQuery {
   /**

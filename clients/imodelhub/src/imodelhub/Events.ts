@@ -58,7 +58,7 @@ export enum IModelHubEventType {
 
 /* eslint-enable no-shadow */
 
-/** @beta @deprecated Use [[IModelHubEventType]] instead */
+/** @internal @deprecated Use [[IModelHubEventType]] instead */
 export type EventType = "LockEvent" | "AllLocksDeletedEvent" | "ChangeSetPostPushEvent" | "ChangeSetPrePushEvent" | "CodeEvent" | "AllCodesDeletedEvent" | "BriefcaseDeletedEvent" | "iModelDeletedEvent" | "VersionEvent" | "CheckpointCreatedEvent";
 
 /** Base type for all iModelHub events.
@@ -221,7 +221,7 @@ export class VersionEvent extends IModelHubEvent {
 }
 
 /** Sent when a new [[Checkpoint]] is generated. [[Checkpoint]]s can be generated daily when there are new [[ChangeSet]]s pushed or when a new [[Version]] is created.
- * @beta
+ * @internal
  */
 export class CheckpointCreatedEvent extends IModelHubEvent {
   /** Index of the [[ChangeSet]] this [[Checkpoint]] was created for.  */
@@ -342,7 +342,7 @@ export class EventSubscriptionHandler {
    * @param events Array of EventTypes to subscribe to.
    * @return Created EventSubscription instance.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
-   * @deprecated Use IModelHubEventType enum for `events` instead.
+   * @internal @deprecated Use IModelHubEventType enum for `events` instead.
    */
   public async create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, events: EventType[]): Promise<EventSubscription>; // eslint-disable-line @typescript-eslint/unified-signatures, deprecation/deprecation
   public async create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, events: IModelHubEventType[] | EventType[]) { // eslint-disable-line deprecation/deprecation

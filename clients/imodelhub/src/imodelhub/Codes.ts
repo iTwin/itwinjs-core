@@ -145,7 +145,7 @@ export class DefaultCodeUpdateOptionsProvider {
 
 /**
  * Error for conflicting [Code]($common)s. It contains an array of Codes that failed to acquire. This is returned when calling [[CodeHandler.update]] with [[CodeUpdateOptions.deniedCodes]] set to true.
- * @public
+ * @internal
  */
 export class ConflictingCodesError extends IModelHubError {
   /** Codes that couldn't be updated due to other users owning them or setting them to [[CodeState.Retired]]. */

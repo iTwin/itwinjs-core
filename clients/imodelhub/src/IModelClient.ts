@@ -177,6 +177,7 @@ export abstract class IModelClient {
   /**
    * Adds a method that will be called for every request to modify HttpRequestOptions.
    * @param func Method that will be used to modify HttpRequestOptions.
+   * @beta
    */
   public use(transformer: HttpRequestOptionsTransformer) {
     this._handler.use(transformer);
