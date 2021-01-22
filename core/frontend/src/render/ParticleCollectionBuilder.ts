@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String, partitionArray } from "@bentley/bentleyjs-core";
 import { Matrix3d, Point2d, Point3d, Range3d, Transform, Vector2d, XAndY, XYAndZ } from "@bentley/geometry-core";
 import {
   ColorDef, Feature, FeatureTable, PackedFeatureTable, QParams3d, QPoint3dList, RenderTexture,
@@ -16,6 +16,7 @@ import { RenderGraphic } from "./RenderGraphic";
 import { GraphicBranch } from "./GraphicBranch";
 import { MeshParams} from "./primitives/VertexTable";
 import { MeshArgs } from "./primitives/mesh/MeshPrimitives";
+import { DisplayParams } from "./primitives/DisplayParams";
 
 /** Parameters used to construct a [[ParticleCollectionBuilder]].
  * @beta
@@ -184,10 +185,51 @@ class Builder implements ParticleCollectionBuilder {
     if (0 === this._particles.length)
       return undefined;
 
+    // Order-independent transparency doesn't work well with opaque geometry - it will look semi-transparent.
+    // If we have a mix of opaque and transparent particles, put them in separate graphics to be rendered in separate passes.
+    const partitionIndex = partitionArray(this._particles, (x) => x.transparency === 0);
+    const opaque = this.createGraphic(0, partitionIndex, 0);
+    const transparent = this.createGraphic(partitionIndex, this._particles.length, this._hasVaryingTransparency ? undefined : this._transparency);
+
+    // Empty the collection before any return statements.
+    const range = this._range.clone();
+    this._range.setNull();
+    this._particles.length = 0;
+    this._hasVaryingTransparency = false;
+
+    let graphic;
+    const system = this._viewport.target.renderSystem;
+    graphic = opaque && transparent ? system.createGraphicList([opaque, transparent]) : (opaque ?? transparent);
+    if (!graphic)
+      return undefined;
+
+    // Transform from origin to collection, then to world.
+    const toCollection = Transform.createTranslation(range.center);
+    const toWorld = toCollection.multiplyTransformTransform(this._localToWorldTransform);
+    const branch = new GraphicBranch(true);
+    branch.add(graphic);
+    graphic = system.createGraphicBranch(branch, toWorld);
+
+    // If we have a pickable Id, produce a batch.
+    const featureTable = this._pickableId ? new FeatureTable(1) : undefined;
+    if (featureTable) {
+      toWorld.multiplyRange(range, range);
+      featureTable.insert(new Feature(this._pickableId));
+      graphic = system.createBatch(graphic, PackedFeatureTable.pack(featureTable), range);
+    }
+
+    return graphic;
+  }
+
+  private createGraphic(startIndex: number, endIndex: number, uniformTransparency: number | undefined): RenderGraphic | undefined {
+    const numParticles = endIndex - startIndex;
+    if (numParticles <= 0)
+      return undefined;
+
     // To keep scale values close to 1, compute mean size to use as size of quad.
-    const numParticles = this._particles.length;
     const meanSize = new Vector2d();
-    for (const particle of this._particles) {
+    for (let i = startIndex; i < endIndex; i++) {
+      const particle = this._particles[i];
       meanSize.x += particle.width / numParticles;
       meanSize.y += particle.height / numParticles;
     }
@@ -197,13 +239,13 @@ class Builder implements ParticleCollectionBuilder {
     const floatsPerTransform = 12;
     const transforms = new Float32Array(floatsPerTransform * numParticles);
     const bytesPerOverride = 8;
-    const symbologyOverrides = this._hasVaryingTransparency ? new Uint8Array(bytesPerOverride * numParticles) : undefined;
+    const symbologyOverrides = undefined === uniformTransparency ? new Uint8Array(bytesPerOverride * numParticles) : undefined;
     const bytesPerFeatureId = 3;
     const featureIds = this._pickableId ? new Uint8Array(bytesPerFeatureId * numParticles) : undefined;
 
     const viewToWorld = this._viewport.view.getRotation().transpose();
     const rotMatrix = new Matrix3d();
-    for (let i = 0; i < numParticles; i++) {
+    for (let i = startIndex; i < endIndex; i++) {
       const particle = this._particles[i];
       const tfIndex = i * floatsPerTransform;
 
@@ -245,69 +287,43 @@ class Builder implements ParticleCollectionBuilder {
     }
 
     // Produce instanced quads.
-    const system = this._viewport.target.renderSystem;
-    const quad = this.createQuad(meanSize);
+    const quad = createQuad(meanSize, this._texture, uniformTransparency ?? 0x7f);
     const transformCenter = new Point3d(0, 0, 0);
     const instances = { count: numParticles, transforms, transformCenter, symbologyOverrides, featureIds };
-
-    // Empty the collection before any return statements.
-    const range = this._range.clone();
-    this._particles.length = 0;
-    this._hasVaryingTransparency = false;
-    this._range.setNull();
-
-    let graphic = system.createMesh(quad,instances);
-    if (!graphic)
-      return undefined;
-
-    // Transform from origin to collection, then to world.
-    const toCollection = Transform.createTranslation(rangeCenter);
-    const toWorld = toCollection.multiplyTransformTransform(this._localToWorldTransform);
-    const branch = new GraphicBranch(true);
-    branch.add(graphic);
-    graphic = system.createGraphicBranch(branch, toWorld);
-
-    // If we have a pickable Id, produce a batch.
-    const featureTable = this._pickableId ? new FeatureTable(1) : undefined;
-    if (featureTable) {
-      toWorld.multiplyRange(range, range);
-      featureTable.insert(new Feature(this._pickableId));
-      graphic = system.createBatch(graphic, PackedFeatureTable.pack(featureTable), range);
-    }
-
-    return graphic;
+    return this._viewport.target.renderSystem.createMesh(quad, instances);
   }
+}
 
-  private createQuad(size: XAndY): MeshParams {
-    const halfWidth = size.x / 2;
-    const halfHeight = size.y / 2;
-    const corners = [
-      new Point3d(-halfWidth, -halfHeight, 0), new Point3d(halfWidth, -halfHeight, 0),
-      new Point3d(-halfWidth, halfHeight, 0), new Point3d(halfWidth,halfHeight, 0),
-    ];
+function createQuad(size: XAndY, texture: RenderTexture, transparency: number): MeshParams {
+  const halfWidth = size.x / 2;
+  const halfHeight = size.y / 2;
+  const corners = [
+    new Point3d(-halfWidth, -halfHeight, 0), new Point3d(halfWidth, -halfHeight, 0),
+    new Point3d(-halfWidth, halfHeight, 0), new Point3d(halfWidth,halfHeight, 0),
+  ];
 
-    const quadArgs = new MeshArgs();
-    const range = new Range3d();
-    range.low = corners[0];
-    range.high = corners[3];
-    quadArgs.points = new QPoint3dList(QParams3d.fromRange(range));
-    for (const corner of corners)
-      quadArgs.points.add(corner);
+  const quadArgs = new MeshArgs();
+  const range = new Range3d();
+  range.low = corners[0];
+  range.high = corners[3];
+  quadArgs.points = new QPoint3dList(QParams3d.fromRange(range));
+  for (const corner of corners)
+    quadArgs.points.add(corner);
 
-    quadArgs.vertIndices = [0, 1, 2, 2, 1, 3];
-    quadArgs.textureUv = [ new Point2d(0, 1), new Point2d(1, 1), new Point2d(0, 0), new Point2d(1, 0) ];
-    quadArgs.texture = this._texture;
-    quadArgs.isPlanar = true;
+  quadArgs.vertIndices = [0, 1, 2, 2, 1, 3];
+  quadArgs.textureUv = [ new Point2d(0, 1), new Point2d(1, 1), new Point2d(0, 0), new Point2d(1, 0) ];
+  quadArgs.texture = texture;
+  quadArgs.colors.initUniform(ColorDef.white.withTransparency(transparency));
+  quadArgs.isPlanar = true;
 
-    // The specific transparency doesn't matter unless all particles have the same transparency.
-    const transparency = this._hasVaryingTransparency ? 0x7f : this._transparency;
-    quadArgs.colors.initUniform(ColorDef.white.withTransparency(transparency));
-
-    return MeshParams.create(quadArgs);
-  }
+  return MeshParams.create(quadArgs);
 }
 
 function clampTransparency(transparency: number): number {
   transparency = Math.min(255, transparency, Math.max(0, transparency));
-  return Math.floor(transparency);
+  transparency = Math.floor(transparency);
+  if (transparency < DisplayParams.minTransparency)
+    transparency = 0;
+
+  return transparency;
 }
