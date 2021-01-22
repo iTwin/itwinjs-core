@@ -30,7 +30,7 @@ jobs:
     steps:
       - template: templates/integration-test-steps.yaml
         parameters:
-          nodeVersion: 12.x
+          Node_Version: 12.x
   - job: Node_10_x
     condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
     pool:
@@ -38,7 +38,7 @@ jobs:
     steps:
       - template: templates/integration-test-steps.yaml
         parameters:
-          nodeVersion: 10.x
+          Node_Version: 10.x
   - job: Node_10_17
     condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
     pool:
@@ -46,4 +46,4 @@ jobs:
     steps:
       - template: templates/integration-test-steps.yaml
         parameters:
-          nodeVersion: 10.17.0
+          Node_Version: 10.17.0

@@ -1,5 +1,5 @@
 parameters:
-  - name: NodeVersion # name of the parameter; required
+  - name: Node_Version # name of the parameter; required
     type: string # data type of the parameter; required
 
 steps:
