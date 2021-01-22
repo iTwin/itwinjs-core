@@ -144,7 +144,6 @@ export const enum SurfaceBitIndex {
   OverrideRgb,
   NoFaceFront,
   HasMaterialAtlas,
-  MultiplyAlpha, // IMPORTANT: This must be the last one!
   Count,
 }
 
@@ -170,16 +169,13 @@ export const enum SurfaceFlags {
   // For textured meshes, the color index in the vertex LUT is unused - we place the normal there instead.
   // For untextured lit meshes, the normal is placed after the feature ID.
   HasColorAndNormal = 1 << SurfaceBitIndex.HasColorAndNormal,
-  // For textured meshes, use alpha from v_color instead of from texture. Takes precedence over MultiplyAlpha if both are set.
+  // For textured meshes, use alpha from base color instead of from texture.
   OverrideAlpha = 1 << SurfaceBitIndex.OverrideAlpha,
   // For textured meshes, use rgb from v_color instead of from texture.
   OverrideRgb = 1 << SurfaceBitIndex.OverrideRgb,
   // For geometry with fixed normals (terrain meshes) we must avoid front facing normal reversal or skirts will be incorrectly lit.
   NoFaceFront = 1 << SurfaceBitIndex.NoFaceFront,
   HasMaterialAtlas = 1 << SurfaceBitIndex.HasMaterialAtlas,
-  // For textured meshes, multiplied the texture alpha by v_color's alpha. OverrideAlpha takes precedence if both are set.
-  MultiplyAlpha = 1 << SurfaceBitIndex.MultiplyAlpha,
-  // MultiplyAlpha must be last -- add additional flags above it, not here.
 }
 
 /** @internal */

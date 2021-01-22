@@ -278,8 +278,6 @@ function addSurfaceFlagsLookup(builder: ShaderBuilder) {
   builder.addConstant("kSurfaceBitIndex_OverrideRgb", VariableType.Int, SurfaceBitIndex.OverrideRgb.toString());
   builder.addConstant("kSurfaceBitIndex_NoFaceFront", VariableType.Int, SurfaceBitIndex.NoFaceFront.toString());
   builder.addConstant("kSurfaceBitIndex_HasMaterialAtlas", VariableType.Int, SurfaceBitIndex.HasMaterialAtlas.toString());
-  builder.addConstant("kSurfaceBitIndex_MultiplyAlpha", VariableType.Int, SurfaceBitIndex.MultiplyAlpha.toString());
-  // MultiplyAlpha must be highest value - insert additional above it, not here.
 
   // Surface flags which get modified in vertex shader are still passed to fragment shader as a single float & are thus
   // used differently there & so require different constants.  Unused constants are commented out.
@@ -287,7 +285,6 @@ function addSurfaceFlagsLookup(builder: ShaderBuilder) {
   builder.addBitFlagConstant("kSurfaceBit_IgnoreMaterial", SurfaceBitIndex.IgnoreMaterial);
   builder.addBitFlagConstant("kSurfaceBit_OverrideAlpha", SurfaceBitIndex.OverrideAlpha);
   builder.addBitFlagConstant("kSurfaceBit_OverrideRgb", SurfaceBitIndex.OverrideRgb);
-  builder.addBitFlagConstant("kSurfaceBit_MultiplyAlpha", SurfaceBitIndex.MultiplyAlpha);
 
   // Only need masks for flags modified in vertex shader
   const suffix = System.instance.capabilities.isWebGL2 ? "u" : ".0";
@@ -296,7 +293,6 @@ function addSurfaceFlagsLookup(builder: ShaderBuilder) {
   builder.addConstant("kSurfaceMask_IgnoreMaterial", type, SurfaceFlags.IgnoreMaterial.toString() + suffix);
   builder.addConstant("kSurfaceMask_OverrideAlpha", type, SurfaceFlags.OverrideAlpha.toString() + suffix);
   builder.addConstant("kSurfaceMask_OverrideRgb", type, SurfaceFlags.OverrideRgb.toString() + suffix);
-  builder.addConstant("kSurfaceMask_MultiplyAlpha", type, SurfaceFlags.MultiplyAlpha.toString() + suffix);
 
   addExtractNthBit(builder);
   if (System.instance.capabilities.isWebGL2) {
@@ -310,14 +306,12 @@ function addSurfaceFlagsLookup(builder: ShaderBuilder) {
 
 const initSurfaceFlags = `
   surfaceFlags = u_surfaceFlags[kSurfaceBitIndex_HasTexture] ? kSurfaceMask_HasTexture : 0.0;
-  surfaceFlags += u_surfaceFlags[kSurfaceBitIndex_MultiplyAlpha] ? kSurfaceMask_MultiplyAlpha : 0.0;
   surfaceFlags += u_surfaceFlags[kSurfaceBitIndex_IgnoreMaterial] ? kSurfaceMask_IgnoreMaterial : 0.0;
   surfaceFlags += u_surfaceFlags[kSurfaceBitIndex_OverrideAlpha] ? kSurfaceMask_OverrideAlpha : 0.0;
   surfaceFlags += u_surfaceFlags[kSurfaceBitIndex_OverrideRgb] ? kSurfaceMask_OverrideRgb : 0.0;
 `;
 const initSurfaceFlags2 = `
   surfaceFlags = u_surfaceFlags[kSurfaceBitIndex_HasTexture] ? kSurfaceMask_HasTexture : 0u;
-  surfaceFlags += u_surfaceFlags[kSurfaceBitIndex_MultiplyAlpha] ? kSurfaceMask_MultiplyAlpha : 0u;
   surfaceFlags += u_surfaceFlags[kSurfaceBitIndex_IgnoreMaterial] ? kSurfaceMask_IgnoreMaterial : 0u;
   surfaceFlags += u_surfaceFlags[kSurfaceBitIndex_OverrideAlpha] ? kSurfaceMask_OverrideAlpha : 0u;
   surfaceFlags += u_surfaceFlags[kSurfaceBitIndex_OverrideRgb] ? kSurfaceMask_OverrideRgb : 0u;
@@ -329,8 +323,6 @@ const computeBaseSurfaceFlags = `
     if (hasTexture) {
       hasTexture = false;
       surfaceFlags -= kSurfaceMask_HasTexture;
-      if (surfaceFlags >= kSurfaceMask_MultiplyAlpha) // NB: This only works if MultiplyAlpha is the largest flag!!!
-      surfaceFlags -= kSurfaceMask_MultiplyAlpha;
     }
 
     surfaceFlags += kSurfaceMask_IgnoreMaterial;
@@ -342,15 +334,8 @@ const computeColorSurfaceFlags = `
   if (feature_rgb.r >= 0.0)
     surfaceFlags += kSurfaceMask_OverrideRgb;
 
-  if (feature_alpha >= 0.0) {
-    if (!hasTexture) {
-      surfaceFlags += kSurfaceMask_OverrideAlpha;
-      if (surfaceFlags >= kSurfaceMask_MultiplyAlpha) // NB: This only works if MultiplyAlpha is the largest flag!!!
-      surfaceFlags -= kSurfaceMask_MultiplyAlpha;
-    } else if (surfaceFlags < kSurfaceMask_MultiplyAlpha) {
-      surfaceFlags += kSurfaceMask_MultiplyAlpha;
-    }
-  }
+  if (feature_alpha >= 0.0 && !hasTexture)
+    surfaceFlags += kSurfaceMask_OverrideAlpha;
 `;
 
 const returnSurfaceFlags = "  return surfaceFlags;\n";

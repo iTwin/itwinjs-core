@@ -585,16 +585,7 @@ export class SurfaceGeometry extends MeshGeometry {
       flags[SurfaceBitIndex.HasNormals] = 0;
     }
 
-    if (this.useTexture(params)) {
-      flags[SurfaceBitIndex.HasTexture] = 1;
-      if (useMaterial && undefined !== this.mesh.materialInfo && this.mesh.materialInfo.overridesAlpha && RenderPass.Translucent === params.renderPass)
-        flags[SurfaceBitIndex.MultiplyAlpha] = 1;
-      else
-        flags[SurfaceBitIndex.MultiplyAlpha] = 0;
-    } else {
-      flags[SurfaceBitIndex.HasTexture] = 0;
-      flags[SurfaceBitIndex.MultiplyAlpha] = 0;
-    }
+    flags[SurfaceBitIndex.HasTexture] = this.useTexture(params) ? 1 : 0;
 
     // The transparency threshold controls how transparent a surface must be to allow light to pass through; more opaque surfaces cast shadows.
     flags[SurfaceBitIndex.TransparencyThreshold] = params.target.isDrawingShadowMap ? 1 : 0;
