@@ -9,9 +9,9 @@ steps:
   - template: setup-integration-users.yaml
 
   - task: NodeTool@0
-    displayName: "Use Node $(Node_Version)"
+    displayName: "Use Node ${{ parameters.Node_Version }}"
     inputs:
-      versionSpec: "$(Node_Version)"
+      versionSpec: "${{ parameters.Node_Version }}"
       checkLatest: true
 
   - script: "git config --local user.email imodeljs-admin@users.noreply.github.com"
@@ -127,7 +127,7 @@ steps:
     displayName: "Publish Context Registry Client Test Results"
     inputs:
       testResultsFiles: "clients/context-registry/lib/test/junit_results.xml"
-      testRunTitle: "Client - Context Registry Tests - $(Node_Version)"
+      testRunTitle: "Client - Context Registry Tests - ${{ parameters.Node_Version }}"
     continueOnError: true
     condition: succeededOrFailed()
 
@@ -135,7 +135,7 @@ steps:
     displayName: "Publish Extension Clients Test Results"
     inputs:
       testResultsFiles: "clients/extension/lib/test/junit_results.xml"
-      testRunTitle: "Client - Extension Tests - $(Node_Version)"
+      testRunTitle: "Client - Extension Tests - ${{ parameters.Node_Version }}"
     continueOnError: true
     condition: succeededOrFailed()
 
@@ -143,7 +143,7 @@ steps:
     displayName: "Publish Forms Data Management Clients Test Results"
     inputs:
       testResultsFiles: "clients/forms-data-management/lib/test/junit_results.xml"
-      testRunTitle: "Client - Forms Data Management Tests - $(Node_Version)"
+      testRunTitle: "Client - Forms Data Management Tests - ${{ parameters.Node_Version }}"
     continueOnError: true
     condition: succeededOrFailed()
 
@@ -151,7 +151,7 @@ steps:
     displayName: "Publish Product Settings Clients Test Results"
     inputs:
       testResultsFiles: "clients/product-settings/lib/test/junit_results.xml"
-      testRunTitle: "Client - Product Settings Tests - $(Node_Version)"
+      testRunTitle: "Client - Product Settings Tests - ${{ parameters.Node_Version }}"
     continueOnError: true
     condition: succeededOrFailed()
 
@@ -159,7 +159,7 @@ steps:
     displayName: "Publish Project Share Clients Test Results"
     inputs:
       testResultsFiles: "clients/projectshare/lib/test/junit_results.xml"
-      testRunTitle: "Client - Project Share Tests - $(Node_Version)"
+      testRunTitle: "Client - Project Share Tests - ${{ parameters.Node_Version }}"
     continueOnError: true
     condition: succeededOrFailed()
 
@@ -167,7 +167,7 @@ steps:
     displayName: "Publish RBAC Clients Test Results"
     inputs:
       testResultsFiles: "clients/rbac/lib/test/junit_results.xml"
-      testRunTitle: "Client - RBAC Tests - $(Node_Version)"
+      testRunTitle: "Client - RBAC Tests - ${{ parameters.Node_Version }}"
     continueOnError: true
     condition: succeededOrFailed()
 
@@ -175,7 +175,7 @@ steps:
     displayName: "Publish Reality Data Clients Test Results"
     inputs:
       testResultsFiles: "clients/reality-data/lib/test/junit_results.xml"
-      testRunTitle: "Client - Reality Data Tests - $(Node_Version)"
+      testRunTitle: "Client - Reality Data Tests - ${{ parameters.Node_Version }}"
     continueOnError: true
     condition: succeededOrFailed()
 
@@ -183,7 +183,7 @@ steps:
     displayName: "Publish Usage Logging Clients Test Results"
     inputs:
       testResultsFiles: "clients/usage-logging/lib/test/junit_results.xml"
-      testRunTitle: "Client - Usage Logging Tests - $(Node_Version)"
+      testRunTitle: "Client - Usage Logging Tests - ${{ parameters.Node_Version }}"
     continueOnError: true
     condition: succeededOrFailed()
 
@@ -191,7 +191,7 @@ steps:
     displayName: "Publish Backend Test Results"
     inputs:
       testResultsFiles: "core/backend/lib/test/junit_results.xml"
-      testRunTitle: "Core - Backend Tests - $(Node_Version)"
+      testRunTitle: "Core - Backend Tests - ${{ parameters.Node_Version }}"
     enabled: false
     continueOnError: true
     condition: succeededOrFailed()
@@ -200,7 +200,7 @@ steps:
     displayName: "Publish Backend iTwin Client Test Results"
     inputs:
       testResultsFiles: "core/backend-itwin-client/lib/test/junit_results.xml"
-      testRunTitle: "Core - Backend iTwin Client Tests - $(Node_Version)"
+      testRunTitle: "Core - Backend iTwin Client Tests - ${{ parameters.Node_Version }}"
     continueOnError: true
     condition: succeededOrFailed()
 
@@ -208,21 +208,21 @@ steps:
     displayName: "Publish Core Integration Test Results"
     inputs:
       testResultsFiles: "full-stack-tests/core/lib/test/junit_results.xml"
-      testRunTitle: "Core - Integration Tests - $(Node_Version)"
+      testRunTitle: "Core - Integration Tests - ${{ parameters.Node_Version }}"
     condition: succeededOrFailed()
 
   - task: PublishTestResults@2
     displayName: "Publish iModelHub Client Integration Test Results"
     inputs:
       testResultsFiles: "full-stack-tests/imodelhub-client/lib/test/junit_results.xml"
-      testRunTitle: "iModelHub Client - Integration Tests - $(Node_Version)"
+      testRunTitle: "iModelHub Client - Integration Tests - ${{ parameters.Node_Version }}"
     condition: succeededOrFailed()
 
   - task: PublishTestResults@2
     displayName: "Publish Native App Integration Test Results"
     inputs:
       testResultsFiles: "full-stack-tests/native-app/lib/test/junit_results.xml"
-      testRunTitle: "Native App - Integration Tests - $(Node_Version)"
+      testRunTitle: "Native App - Integration Tests - ${{ parameters.Node_Version }}"
     enabled: false
     condition: succeededOrFailed()
 
@@ -230,19 +230,19 @@ steps:
     displayName: "Publish Rpc Interface Integration Test Results"
     inputs:
       testResultsFiles: "full-stack-tests/rpc-interface/full_stack_test_results/full_stack_test_result.xml"
-      testRunTitle: "Core - Integration Tests - $(Node_Version)"
+      testRunTitle: "Core - Integration Tests - ${{ parameters.Node_Version }}"
     condition: succeededOrFailed()
 
   - task: PublishTestResults@2
     displayName: "Publish Presentation Integration Test Results"
     inputs:
       testResultsFiles: full-stack-tests/presentation/lib/test/junit_results.xml
-      testRunTitle: "Presentation - Integration Tests - $(Node_Version)"
+      testRunTitle: "Presentation - Integration Tests - ${{ parameters.Node_Version }}"
     condition: succeededOrFailed()
 
   - task: PublishTestResults@2
     displayName: "Publish Oidc Signin Tool Test Results"
     inputs:
       testResultsFiles: "tools/oidc-signin-tool/lib/test/junit_results.xml"
-      testRunTitle: "Tools - Oidc Signin Tool Tests - $(Node_Version)"
+      testRunTitle: "Tools - Oidc Signin Tool Tests - ${{ parameters.Node_Version }}"
     condition: succeededOrFailed()
