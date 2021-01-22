@@ -6,9 +6,10 @@
  * @module Core
  */
 
-import { IDisposable } from "@bentley/bentleyjs-core";
+import { IDisposable, Logger } from "@bentley/bentleyjs-core";
 import { EventSink, IModelDb } from "@bentley/imodeljs-backend";
 import { PresentationRpcEvents, PresentationRpcInterface, UpdateInfoJSON } from "@bentley/presentation-common";
+import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { NativePlatformDefinition } from "./NativePlatform";
 
 /**
@@ -64,8 +65,10 @@ const parseUpdateInfo = (info: UpdateInfoJSON | undefined) => {
       continue;
 
     const imodelDb = IModelDb.findByFilename(fileName);
-    if (!imodelDb)
+    if (!imodelDb) {
+      Logger.logError(PresentationBackendLoggerCategory.PresentationManager, `Update records IModelDb not found with path ${fileName}`);
       continue;
+    }
 
     parsedInfo[imodelDb.getRpcProps().key] = info[fileName];
   }

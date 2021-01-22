@@ -98,7 +98,7 @@ describe("UpdatesTracker", () => {
       eventSinkMock.verify((x) => x.emit(PresentationRpcInterface.interfaceName, PresentationRpcEvents.Update, expectedUpdateInfo), moq.Times.once());
     });
 
-    it("does not emit events if imodelDb is not fount", () => {
+    it("does not emit events if imodelDb is not found", () => {
       const updates: UpdateInfoJSON = {
         ["imodel-File-Path"]: {
           "a-ruleset": { hierarchy: "FULL" },
