@@ -107,20 +107,53 @@ export class Format {
     }
   }
 
+  public static isFormatTraitSetInProps(formatProps: FormatProps, trait: FormatTraits) {
+    if (!formatProps.formatTraits)
+      return false;
+    const formatTraits = Array.isArray(formatProps.formatTraits) ? formatProps.formatTraits : formatProps.formatTraits.split(/,|;|\|/);
+    const traitStr = Format.getTraitString(trait);
+    return formatTraits.find((traitEntry) => traitStr === traitEntry) ? true : false;
+  }
+
+  /** Get string used in FormatProps  */
+  public static getTraitString(trait: FormatTraits) {
+    switch (trait) {
+      case FormatTraits.KeepSingleZero:
+        return "keepSingleZero";
+      case FormatTraits.ZeroEmpty:
+        return "zeroEmpty";
+      case FormatTraits.KeepDecimalPoint:
+        return "keepDecimalPoint";
+      case FormatTraits.ApplyRounding:
+        return "applyRounding";
+      case FormatTraits.FractionDash:
+        return "fractionDash";
+      case FormatTraits.ShowUnitLabel:
+        return "showUnitLabel";
+      case FormatTraits.PrependUnitLabel:
+        return "prependUnitLabel";
+      case FormatTraits.Use1000Separator:
+        return "use1000Separator";
+      case FormatTraits.ExponentOnlyNegative:
+      default:
+        return "exponentOnlyNegative";
+    }
+  }
+
   /** Method used when generating a JSON object that represents this Format. */
   public static formatTraitsToArray(currentFormatTrait: FormatTraits): string[] {
     const formatTraitsArr = Array<string>();
-    if ((currentFormatTrait & FormatTraits.TrailZeroes) === FormatTraits.TrailZeroes) formatTraitsArr.push("trailZeroes");
-    if ((currentFormatTrait & FormatTraits.KeepSingleZero) === FormatTraits.KeepSingleZero) formatTraitsArr.push("keepSingleZero");
-    if ((currentFormatTrait & FormatTraits.ZeroEmpty) === FormatTraits.ZeroEmpty) formatTraitsArr.push("zeroEmpty");
-    if ((currentFormatTrait & FormatTraits.KeepDecimalPoint) === FormatTraits.KeepDecimalPoint) formatTraitsArr.push("keepDecimalPoint");
-    if ((currentFormatTrait & FormatTraits.ApplyRounding) === FormatTraits.ApplyRounding) formatTraitsArr.push("applyRounding");
-    if ((currentFormatTrait & FormatTraits.FractionDash) === FormatTraits.FractionDash) formatTraitsArr.push("fractionDash");
-    if ((currentFormatTrait & FormatTraits.ShowUnitLabel) === FormatTraits.ShowUnitLabel) formatTraitsArr.push("showUnitLabel");
-    if ((currentFormatTrait & FormatTraits.PrependUnitLabel) === FormatTraits.PrependUnitLabel) formatTraitsArr.push("prependUnitLabel");
-    if ((currentFormatTrait & FormatTraits.Use1000Separator) === FormatTraits.Use1000Separator) formatTraitsArr.push("use1000Separator");
+    if ((currentFormatTrait & FormatTraits.TrailZeroes) === FormatTraits.TrailZeroes) formatTraitsArr.push(Format.getTraitString(FormatTraits.TrailZeroes));
+    if ((currentFormatTrait & FormatTraits.KeepSingleZero) === FormatTraits.KeepSingleZero) formatTraitsArr.push(Format.getTraitString(FormatTraits.KeepSingleZero));
+    if ((currentFormatTrait & FormatTraits.ZeroEmpty) === FormatTraits.ZeroEmpty) formatTraitsArr.push(Format.getTraitString(FormatTraits.ZeroEmpty));
+    if ((currentFormatTrait & FormatTraits.KeepDecimalPoint) === FormatTraits.KeepDecimalPoint) formatTraitsArr.push(Format.getTraitString(FormatTraits.KeepDecimalPoint));
+    if ((currentFormatTrait & FormatTraits.ApplyRounding) === FormatTraits.ApplyRounding) formatTraitsArr.push(Format.getTraitString(FormatTraits.ApplyRounding));
+    if ((currentFormatTrait & FormatTraits.FractionDash) === FormatTraits.FractionDash) formatTraitsArr.push(Format.getTraitString(FormatTraits.FractionDash));
+    if ((currentFormatTrait & FormatTraits.ShowUnitLabel) === FormatTraits.ShowUnitLabel) formatTraitsArr.push(Format.getTraitString(FormatTraits.ShowUnitLabel));
+    if ((currentFormatTrait & FormatTraits.PrependUnitLabel) === FormatTraits.PrependUnitLabel) formatTraitsArr.push(Format.getTraitString(FormatTraits.PrependUnitLabel));
+    if ((currentFormatTrait & FormatTraits.Use1000Separator) === FormatTraits.Use1000Separator) formatTraitsArr.push(Format.getTraitString(FormatTraits.Use1000Separator));
     // NOTE: the formatter does not current use trait ExponentOnlyNegative
-    if ((currentFormatTrait & FormatTraits.ExponentOnlyNegative) === FormatTraits.ExponentOnlyNegative) formatTraitsArr.push("exponentOnlyNegative");
+    if ((currentFormatTrait & FormatTraits.ExponentOnlyNegative) === FormatTraits.ExponentOnlyNegative) formatTraitsArr.push(Format.getTraitString(FormatTraits.ExponentOnlyNegative));
 
     return formatTraitsArr;
   }

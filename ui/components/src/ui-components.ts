@@ -94,7 +94,7 @@ export * from "./ui-components/quantityformat/FormatPopupButton";
 export * from "./ui-components/quantityformat/FormatType";
 export * from "./ui-components/quantityformat/FractionPrecision";
 export * from "./ui-components/quantityformat/SignOption";
-export * from "./ui-components/quantityformat/ThousandSeparator";
+export * from "./ui-components/quantityformat/ThousandsSeparator";
 export * from "./ui-components/quantityformat/UnitDescr";
 export * from "./ui-components/quantityformat/UomSeparator";
 

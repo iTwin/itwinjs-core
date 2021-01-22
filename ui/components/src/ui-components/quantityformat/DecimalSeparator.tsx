@@ -15,6 +15,7 @@ import { UiComponents } from "../UiComponents";
  */
 export interface DecimalSeparatorSelectorProps extends CommonProps {
   separator: string;
+  disabled?: boolean;
   onChange: (value: string) => void;
 }
 

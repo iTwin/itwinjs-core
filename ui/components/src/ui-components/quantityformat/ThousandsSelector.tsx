@@ -10,10 +10,10 @@ import * as React from "react";
 import { CommonProps, Select, SelectOption } from "@bentley/ui-core";
 import { UiComponents } from "../UiComponents";
 
-/** Properties of [[ThousandSeparatorSelector]] component.
+/** Properties of [[ThousandsSelector]] component.
  * @alpha
  */
-export interface ThousandSeparatorSelectorProps extends CommonProps {
+export interface ThousandsSelectorProps extends CommonProps {
   separator: string;
   disabled: boolean;
   onChange: (value: string) => void;
@@ -22,7 +22,7 @@ export interface ThousandSeparatorSelectorProps extends CommonProps {
 /** Component use to set Quantity Format thousand group separator.
  * @alpha
  */
-export function ThousandSeparatorSelector(props: ThousandSeparatorSelectorProps) {
+export function ThousandsSelector(props: ThousandsSelectorProps) {
   const { separator, disabled, onChange, ...otherProps } = props;
   const uomDefaultEntries = React.useRef<SelectOption[]>([
     { value: ",", label: UiComponents.translate("QuantityFormat.thousand_separator.comma") },

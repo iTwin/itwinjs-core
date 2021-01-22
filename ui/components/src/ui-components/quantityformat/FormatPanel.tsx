@@ -9,18 +9,18 @@
 import "./FormatPanel.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { Checkbox, CommonProps, Input } from "@bentley/ui-core";
+import { Checkbox, CommonProps } from "@bentley/ui-core";
 import { DecimalPrecision, Format, FormatProps, FormatterSpec, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption, UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
-import { UomSeparatorSelector } from "./UomSeparator";
 import { FormatTypeSelector } from "./FormatType";
 import { DecimalPrecisionSelector } from "./DecimalPrecision";
 import { FractionPrecisionSelector } from "./FractionPrecision";
 import { SignOptionSelector } from "./SignOption";
-import { ThousandSeparatorSelector } from "./ThousandSeparator";
+import { ThousandsSeparator } from "./ThousandsSeparator";
 import { DecimalSeparatorSelector } from "./DecimalSeparator";
-import { UnitDescr } from "./UnitDescr";
-import { SpecialKey } from "@bentley/ui-abstract";
+import { FormatSample } from "./FormatSample";
 import { ScientificTypeSelector } from "./ScientificType";
+import { FormatUnits } from "./FormatUnits";
+import { FormatUnitLabel } from "./FormatUnitLabel";
 
 /** Properties of [[UomSeparatorSelector]] component.
  * @alpha
@@ -33,31 +33,6 @@ export interface FormatPanelProps extends CommonProps {
   initialMagnitude?: number;
   onFormatChange?: (format: FormatProps) => void;
   formatSpecFactory?: (persistenceUnit: UnitProps, formatProps: FormatProps, unitsProvider: UnitsProvider) => Promise<FormatterSpec>;
-  childEditors?: React.ReactNodeArray;
-}
-
-function getTraitString(trait: FormatTraits) {
-  switch (trait) {
-    case FormatTraits.KeepSingleZero:
-      return "keepSingleZero";
-    case FormatTraits.ZeroEmpty:
-      return "zeroEmpty";
-    case FormatTraits.KeepDecimalPoint:
-      return "keepDecimalPoint";
-    case FormatTraits.ApplyRounding:
-      return "applyRounding";
-    case FormatTraits.FractionDash:
-      return "fractionDash";
-    case FormatTraits.ShowUnitLabel:
-      return "showUnitLabel";
-    case FormatTraits.PrependUnitLabel:
-      return "prependUnitLabel";
-    case FormatTraits.Use1000Separator:
-      return "use1000Separator";
-    case FormatTraits.ExponentOnlyNegative:
-      return "exponentOnlyNegative";
-  }
-  return undefined;
 }
 
 async function generateFormatSpec(persistenceUnit: UnitProps, formatProps: FormatProps, unitsProvider: UnitsProvider) {
@@ -70,12 +45,8 @@ async function generateFormatSpec(persistenceUnit: UnitProps, formatProps: Forma
  * @alpha
  */
 export function FormatPanel(props: FormatPanelProps) {
-  const formatSpec = React.useRef<FormatterSpec>();
+  const [formatSpec, setFormatSpec] = React.useState<FormatterSpec>();
   const { initialFormat, showSample, initialMagnitude, unitsProvider, persistenceUnit, onFormatChange, formatSpecFactory } = props;
-  const [magnitude, setMagnitude] = React.useState(() => initialMagnitude ?? 0);
-  const [sampleValue, setSampleValue] = React.useState(magnitude.toString());
-  const [formattedValue, setFormattedValue] = React.useState("");
-  const [activePersistenceUnitLabel, setActivePersistenceUnitLabel] = React.useState("");
   const [formatProps, setFormatProps] = React.useState(initialFormat);
   const initialFormatRef = React.useRef<FormatProps>(initialFormat);
 
@@ -88,6 +59,7 @@ export function FormatPanel(props: FormatPanelProps) {
 
   const handleSetFormatProps = React.useCallback((newProps: FormatProps) => {
     setFormatProps(newProps);
+    setFormatSpec(undefined); // this will trigger the new spec to be created in the useEffect hook
     onFormatChange && onFormatChange(newProps);
     // console.log(`FormatProps = ${JSON.stringify(newProps)}`); // eslint-disable-line no-console
   }, [onFormatChange]);
@@ -119,44 +91,17 @@ export function FormatPanel(props: FormatPanelProps) {
   }, [formatProps, handleSetFormatProps]);
 
   const isFormatTraitSet = React.useCallback((trait: FormatTraits) => {
-    if (!formatProps.formatTraits)
-      return false;
-    const formatTraits = Array.isArray(formatProps.formatTraits) ? formatProps.formatTraits : formatProps.formatTraits.split(/,|;|\|/);
-    const traitStr = getTraitString(trait);
-    return formatTraits.find((traitEntry) => traitStr === traitEntry) ? true : false;
+    return Format.isFormatTraitSetInProps(formatProps, trait);
   }, [formatProps]);
 
   const handleShowSignChange = React.useCallback((option: ShowSignOption) => {
     const newShowSignOption = Format.showSignOptionToString(option);
     const newFormatProps = { ...formatProps, showSignOption: newShowSignOption };
-    setFormatProps(newFormatProps);
-  }, [formatProps]);
-
-  const handleUomSeparatorChange = React.useCallback((separator: string) => {
-    if (separator.length < 2) {
-      const newFormatProps = { ...formatProps, uomSeparator: separator };
-      handleSetFormatProps(newFormatProps);
-    } else {
-      const newFormatProps = { ...formatProps, uomSeparator: initialFormat.uomSeparator };
-      handleSetFormatProps(newFormatProps);
-    }
-  }, [formatProps, initialFormat.uomSeparator, handleSetFormatProps]);
-
-  const handleThousandSeparatorChange = React.useCallback((thousandSeparator: string) => {
-    let decimalSeparator = formatProps.decimalSeparator;
-    // make sure 1000 and decimal separator do not match
-    if (isFormatTraitSet(FormatTraits.Use1000Separator)) {
-      if (thousandSeparator === ".")
-        decimalSeparator = ",";
-      else if (thousandSeparator === ",")
-        decimalSeparator = ".";
-    }
-    const newFormatProps = { ...formatProps, thousandSeparator, decimalSeparator };
     handleSetFormatProps(newFormatProps);
-  }, [formatProps, isFormatTraitSet, handleSetFormatProps]);
+  }, [formatProps, handleSetFormatProps]);
 
   const setFormatTrait = React.useCallback((trait: FormatTraits, setActive: boolean) => {
-    const traitStr = getTraitString(trait);
+    const traitStr = Format.getTraitString(trait);
     if (undefined === traitStr)
       return;
     let formatTraits: string[] | undefined;
@@ -181,14 +126,6 @@ export function FormatPanel(props: FormatPanelProps) {
     const newFormatProps = { ...formatProps, formatTraits };
     handleSetFormatProps(newFormatProps);
   }, [formatProps, handleSetFormatProps]);
-
-  const handleUseThousandsSeparatorChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormatTrait(FormatTraits.Use1000Separator, e.target.checked);
-  }, [setFormatTrait]);
-
-  const handleShowUnitLabelChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormatTrait(FormatTraits.ShowUnitLabel, e.target.checked);
-  }, [setFormatTrait]);
 
   const handleShowTrailingZeroesChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setFormatTrait(FormatTraits.TrailZeroes, e.target.checked);
@@ -223,36 +160,6 @@ export function FormatPanel(props: FormatPanelProps) {
     handleSetFormatProps(newFormatProps);
   }, [formatProps, isFormatTraitSet, handleSetFormatProps]);
 
-  const handleOnValueBlur = React.useCallback((e: React.FocusEvent<HTMLInputElement>) => {
-    let newValue = e.target.value ? Number.parseFloat(e.target.value) : 0;
-    if (Number.isNaN(newValue))
-      newValue = 0;
-    setMagnitude(newValue);
-  }, []);
-
-  const handleOnValueChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    setSampleValue(event.target.value);
-  }, []);
-
-  const handleKeyDown = React.useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-    // istanbul ignore else
-    if (e.key === SpecialKey.Enter) {
-      let newValue = e.currentTarget.value ? Number.parseFloat(e.currentTarget.value) : 0;
-      if (Number.isNaN(newValue))
-        newValue = 0;
-      setMagnitude(newValue);
-      e.preventDefault();
-    }
-  }, []);
-
-  const handleOnSpacerChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    if (formatProps.composite) {
-      const composite = { ...formatProps.composite, spacer: e.target.value };
-      const newFormatProps = { ...formatProps, composite };
-      handleSetFormatProps(newFormatProps);
-    }
-  }, [formatProps, handleSetFormatProps]);
-
   const handleScientificTypeChange = React.useCallback((type: ScientificType) => {
     const newFormatProps = { ...formatProps, scientificType: Format.scientificTypeToString(type) };
     handleSetFormatProps(newFormatProps);
@@ -261,103 +168,33 @@ export function FormatPanel(props: FormatPanelProps) {
   React.useEffect(() => {
     async function fetchFormatSpec() {
       const pu = await persistenceUnit;
-      setActivePersistenceUnitLabel(pu.label);
+      let newFormatSpec: FormatterSpec;
       if (formatSpecFactory) {
-        formatSpec.current = await formatSpecFactory(pu, formatProps, unitsProvider);
+        newFormatSpec = await formatSpecFactory(pu, formatProps, unitsProvider);
       } else {
-        formatSpec.current = await generateFormatSpec(pu, formatProps, unitsProvider);
+        newFormatSpec = await generateFormatSpec(pu, formatProps, unitsProvider);
       }
-      setFormattedValue(formatSpec.current.applyFormatting(magnitude));
+      setFormatSpec(newFormatSpec);
     }
-    fetchFormatSpec(); // eslint-disable-line @typescript-eslint/no-floating-promises
-  }, [formatProps, formatSpecFactory, magnitude, persistenceUnit, unitsProvider]);
+    if (!formatSpec)
+      fetchFormatSpec(); // eslint-disable-line @typescript-eslint/no-floating-promises
+  }, [formatProps, formatSpec, formatSpecFactory, persistenceUnit, unitsProvider]);
 
-  const handleUnitLabelChange = React.useCallback((newLabel: string, index: number) => {
-    if (formatProps.composite?.units && formatProps.composite.units.length > index && index >= 0) {
-      const units = formatProps.composite.units.map((entry, ndx) => {
-        if (index === ndx)
-          return { name: entry.name, label: newLabel };
-        else
-          return entry;
-      });
-
-      const composite = { ...formatProps.composite, units };
-      const newFormatProps = { ...formatProps, composite };
-      handleSetFormatProps(newFormatProps);
-    }
-  }, [formatProps, handleSetFormatProps]);
-
-  const handleUnitChange = React.useCallback((newUnit: string, index: number) => {
-    const unitParts = newUnit.split(/:/);
-    if (unitParts[0] === "REMOVEUNIT") {
-      if (formatProps.composite && formatProps.composite.units.length > 1) {
-        const units = [...formatProps.composite.units];
-        units.pop();
-        const composite = { ...formatProps.composite, units };
-        const newFormatProps = { ...formatProps, composite };
-        handleSetFormatProps(newFormatProps);
-      }
-    } else if (unitParts[0] === "ADDSUBUNIT") {
-      const units = formatProps.composite?.units && formatProps.composite.units.length ?
-        [...formatProps.composite.units, { name: unitParts[1], label: unitParts[2] }] :
-        [{ name: unitParts[1], label: unitParts[2] }];
-      const composite = { ...formatProps.composite, units };
-      const newFormatProps = { ...formatProps, composite };
-      handleSetFormatProps(newFormatProps);
-    } else {
-      if (formatProps.composite?.units && formatProps.composite.units.length > index && index >= 0) {
-        const units = formatProps.composite.units.map((entry, ndx) => {
-          if (index === ndx)
-            return { name: unitParts[0], label: unitParts[1] };
-          else
-            return entry;
-        });
-        const composite = { ...formatProps.composite, units };
-        const newFormatProps = { ...formatProps, composite };
-        handleSetFormatProps(newFormatProps);
-      } else if (!formatProps.composite) {
-        const composite = { units: [{ name: unitParts[0], label: unitParts[1] }] };
-        const newFormatProps = { ...formatProps, composite };
-        handleSetFormatProps(newFormatProps);
-      }
-    }
-  }, [formatProps, handleSetFormatProps]);
+  const handleFormatChange = React.useCallback((newFormatProps: FormatProps) => {
+    handleSetFormatProps(newFormatProps);
+  }, [handleSetFormatProps]);
 
   const formatType = React.useMemo(() => Format.parseFormatType(formatProps.type, "format"), [formatProps.type]);
   const showSignOption = React.useMemo(() => Format.parseShowSignOption(formatProps.showSignOption ?? "onlyNegative", "format"), [formatProps.showSignOption]);
 
   return (
     <div className="components-quantityFormat-panel">
-      {showSample &&
-        <>
-          <span className={"uicore-label"}>Persisted Value</span>
-          <span className="components-inline"><Input value={sampleValue} onChange={handleOnValueChange} onKeyDown={handleKeyDown} onBlur={handleOnValueBlur} />{activePersistenceUnitLabel}</span>
-          <span className={"uicore-label"}>Formatted Value</span>
-          <span className={"uicore-label"}>{formattedValue}</span>
-        </>
-      }
-      <span className={"uicore-label"}>Label Separator</span>
-      <UomSeparatorSelector separator={formatProps.uomSeparator ?? ""} onChange={handleUomSeparatorChange} />
+      {showSample && <FormatSample formatSpec={formatSpec} initialMagnitude={initialMagnitude} />}
 
-      {(formatProps.composite?.units && formatProps.composite?.units.length > 0)
-        ?
-        formatProps.composite.units.map((value, index) => <UnitDescr key={value.name} name={value.name}
-          label={value.label ?? ""} parentUnitName={index > 0 ? formatProps.composite!.units[index - 1].name :
-            undefined} unitsProvider={unitsProvider} index={index} onUnitChange={handleUnitChange} onLabelChange={handleUnitLabelChange}
-          readonly={index < (formatProps.composite!.units.length - 1)} />)
-        :
-        formatSpec.current && <UnitDescr key={formatSpec.current.persistenceUnit.name} name={formatSpec.current.persistenceUnit.name}
-          label={formatSpec.current?.persistenceUnit.label ?? ""} unitsProvider={unitsProvider} index={0} onUnitChange={handleUnitChange} onLabelChange={handleUnitLabelChange} />
-      }
+      <FormatUnits unitsProvider={unitsProvider} persistenceUnit={formatSpec?.persistenceUnit} initialFormat={formatProps} onUnitsChange={handleFormatChange} />
 
-      {(formatProps.composite?.units && formatProps.composite?.units.length > 1) &&
-        <>
-          <span className={"uicore-label"}>Composite Spacer</span>
-          <Input value={formatProps.composite?.spacer ?? ""} onChange={handleOnSpacerChange} />
-        </>
-      }
-      <span className={"uicore-label"}>Type</span>
-      <FormatTypeSelector type={formatType} onChange={handleFormatTypeChange} />
+      <FormatUnitLabel formatProps={formatProps} onUnitLabelChange={handleFormatChange} />
+
       <span className={"uicore-label"}>Accuracy</span>
       {formatType === FormatType.Fractional ?
         <FractionPrecisionSelector precision={formatProps.precision ?? 0} onChange={handlePrecisionChange} /> :
@@ -365,24 +202,30 @@ export function FormatPanel(props: FormatPanelProps) {
       }
       <span className={"uicore-label"}>Sign Option</span>
       <SignOptionSelector signOption={showSignOption} onChange={handleShowSignChange} />
-      <span className={"uicore-label"}>Use Thousand Separator</span>
-      <Checkbox isLabeled={true} checked={isFormatTraitSet(FormatTraits.Use1000Separator)} onChange={handleUseThousandsSeparatorChange} />
-      <span className={classnames("uicore-label", !(isFormatTraitSet(FormatTraits.Use1000Separator)) && "uicore-disabled")}>Thousand Separator</span>
-      <ThousandSeparatorSelector separator={formatProps.thousandSeparator ?? ","} disabled={!isFormatTraitSet(FormatTraits.Use1000Separator)} onChange={handleThousandSeparatorChange} />
-      <span className={"uicore-label"}>Decimal Separator</span>
-      <DecimalSeparatorSelector separator={formatProps.decimalSeparator ?? "."} onChange={handleDecimalSeparatorChange} />
-      <span className={"uicore-label"}>Append Unit Label</span>
-      <Checkbox isLabeled={true} checked={isFormatTraitSet(FormatTraits.ShowUnitLabel)} onChange={handleShowUnitLabelChange} />
+
+      <ThousandsSeparator formatProps={formatProps} onChange={handleFormatChange} />
+
+      <span className={"uicore-label"}>Type</span>
+      <FormatTypeSelector type={formatType} onChange={handleFormatTypeChange} />
+
+      <span className={classnames("uicore-label", formatType === FormatType.Fractional && "uicore-disabled")}>Decimal Separator</span>
+      <DecimalSeparatorSelector separator={formatProps.decimalSeparator ?? "."} onChange={handleDecimalSeparatorChange} disabled={formatType === FormatType.Fractional} />
+
       <span className={"uicore-label"}>Show Trailing Zeros</span>
       <Checkbox isLabeled={true} checked={isFormatTraitSet(FormatTraits.TrailZeroes)} onChange={handleShowTrailingZeroesChange} />
-      <span className={"uicore-label"}>Keep Decimal Point</span>
+
+      <span className={classnames("uicore-label", formatType === FormatType.Fractional && "uicore-disabled")} >Keep Decimal Point</span>
       <Checkbox isLabeled={true} checked={isFormatTraitSet(FormatTraits.KeepDecimalPoint)} onChange={handleKeepDecimalPointChange} />
+
       <span className={"uicore-label"}>Keep Single Zero</span>
       <Checkbox isLabeled={true} checked={isFormatTraitSet(FormatTraits.KeepSingleZero)} onChange={handleKeepSingleZeroChange} />
+
       <span className={"uicore-label"}>Zero Empty</span>
       <Checkbox isLabeled={true} checked={isFormatTraitSet(FormatTraits.ZeroEmpty)} onChange={handleZeroEmptyChange} />
+
       <span className={classnames("uicore-label", formatType !== FormatType.Fractional && "uicore-disabled")}>Fraction Dash</span>
       <Checkbox isLabeled={true} checked={isFormatTraitSet(FormatTraits.FractionDash)} onChange={handleUseFractionDashChange} disabled={formatType !== FormatType.Fractional} />
+
       <span className={classnames("uicore-label", formatType !== FormatType.Scientific && "uicore-disabled")}>Scientific Type</span>
       <ScientificTypeSelector type={(formatProps.scientificType && formatProps.scientificType.length > 0) ? Format.parseScientificType(formatProps.scientificType, "custom") : ScientificType.Normalized}
         disabled={formatType !== FormatType.Scientific} onChange={handleScientificTypeChange} />
