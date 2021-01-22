@@ -207,8 +207,7 @@ export class ElectronBackend implements IpcSocketBackend {
 
     const app = this.instance.app;
     app.allowRendererProcessReuse = true; // see https://www.electronjs.org/docs/api/app#appallowrendererprocessreuse
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    if (!app.isReady)
+    if (!app.isReady())
       this.instance.electron.protocol.registerSchemesAsPrivileged([{ scheme: "electron", privileges: { standard: true, secure: true } }]);
 
     return this._instance;
