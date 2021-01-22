@@ -8,11 +8,9 @@
 
 import * as path from "path";
 import { BeEvent, BentleyError, BentleyStatus, Logger } from "@bentley/bentleyjs-core";
-import { Events, InternetConnectivityStatus, MobileRpcConfiguration, OverriddenBy } from "@bentley/imodeljs-common";
+import { BackendIpc, InternetConnectivityStatus, MobileRpcConfiguration, NativeAppResponse, nativeAppResponse, OverriddenBy } from "@bentley/imodeljs-common";
 import { RequestGlobalOptions } from "@bentley/itwin-client";
-import { EmitStrategy } from "@bentley/imodeljs-native";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { EventSink } from "./EventSink";
 import { ApplicationType, IModelHost, IModelHostConfiguration } from "./IModelHost";
 import { initialize, MobileDevice } from "./MobileDevice";
 
@@ -38,6 +36,9 @@ export class NativeAppBackend {
     }
     return this._appSettingsCacheDir;
   }
+  private static notifyFrontend<T extends keyof NativeAppResponse>(methodName: T, ...args: Parameters<NativeAppResponse[T]>) {
+    return BackendIpc.send(nativeAppResponse, methodName, ...args);
+  }
 
   /**
    * Startups native app backend. It does necessary initialization of the backend.
@@ -48,9 +49,7 @@ export class NativeAppBackend {
     if (IModelHost.isNativeAppBackend) {
       throw new Error("NativeAppBackend.startup() has already been called once");
     }
-    this.onInternetConnectivityChanged.addListener((status: InternetConnectivityStatus) => {
-      EventSink.global.emit(Events.NativeApp.namespace, Events.NativeApp.onInternetConnectivityChanged, { status }, { strategy: EmitStrategy.PurgeOlderEvents });
-    });
+    this.onInternetConnectivityChanged.addListener((status: InternetConnectivityStatus) => NativeAppBackend.notifyFrontend("onInternetConnectivityChanged", status));
 
     if (!configuration) {
       configuration = new IModelHostConfiguration();
@@ -60,7 +59,7 @@ export class NativeAppBackend {
     if (MobileRpcConfiguration.isMobileBackend) {
       MobileDevice.currentDevice.onUserStateChanged.addListener((accessToken?: string, err?: string) => {
         const accessTokenObj = accessToken ? JSON.parse(accessToken) : {};
-        EventSink.global.emit(Events.NativeApp.namespace, Events.NativeApp.onUserStateChanged, { accessToken: accessTokenObj, err }, { strategy: EmitStrategy.None });
+        NativeAppBackend.notifyFrontend("onUserStateChanged", { accessToken: accessTokenObj, err });
       });
     }
     await IModelHost.startup(configuration);

@@ -9,8 +9,8 @@
 import { BeEvent, Config, GuidString, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import {
   AsyncMethodsOf,
-  BriefcaseDownloader, BriefcaseProps, Events, FrontendIpc, IModelError, IModelVersion, InternetConnectivityStatus, LocalBriefcaseProps,
-  nativeAppChannel, NativeAppIpc, OpenBriefcaseProps, OverriddenBy, PromiseReturnType, RequestNewBriefcaseProps, StorageValue, SyncMode,
+  BriefcaseDownloader, BriefcaseProps, FrontendIpc, IModelError, IModelVersion, InternetConnectivityStatus, LocalBriefcaseProps,
+  nativeAppChannel, NativeAppIpc, NativeAppResponse, OpenBriefcaseProps, OverriddenBy, PromiseReturnType, RequestNewBriefcaseProps, ResponseHandler, StorageValue, SyncMode,
 } from "@bentley/imodeljs-common";
 import { ProgressCallback, RequestGlobalOptions } from "@bentley/itwin-client";
 import { EventSource } from "./EventSource";
@@ -35,8 +35,10 @@ export interface DownloadBriefcaseOptions {
  * @see [Native Applications]($docs/learning/NativeApps.md)
  * @alpha
  */
-export class NativeApp {
-  private constructor() { }
+export class NativeApp extends ResponseHandler implements NativeAppResponse {
+  private constructor() {
+    super();
+  }
   public static async callBackend<T extends AsyncMethodsOf<NativeAppIpc>>(methodName: T, ...args: Parameters<NativeAppIpc[T]>) {
     return FrontendIpc.callBackend(nativeAppChannel, methodName, ...args) as PromiseReturnType<NativeAppIpc[T]>;
   }
@@ -75,6 +77,13 @@ export class NativeApp {
   private static _isValid = false;
   public static get isValid(): boolean { return this._isValid; }
 
+  public onInternetConnectivityChanged(status: InternetConnectivityStatus) {
+    Logger.logInfo(FrontendLoggerCategory.NativeApp, "Internet connectivity changed");
+    NativeApp.onInternetConnectivityChanged.raiseEvent(status);
+  }
+  public onUserStateChanged(_arg: { accessToken: any, err?: string }) {
+
+  }
   /**
    * This should be called instead of IModelApp.startup() for native apps.
    */
@@ -82,6 +91,8 @@ export class NativeApp {
     Logger.logInfo(FrontendLoggerCategory.NativeApp, "Startup");
 
     await IModelApp.startup(opts);
+    this.register();
+
     const backendConfig = await this.callBackend("getConfig");
     Config.App.merge(backendConfig);
     NativeApp.hookBrowserConnectivityEvents();

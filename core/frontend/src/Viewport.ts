@@ -849,12 +849,11 @@ export abstract class Viewport implements IDisposable {
    * @note this method clones the current ViewState2d and sets its baseModelId to the supplied value. The DisplayStyle and CategorySelector remain unchanged.
    */
   public async changeViewedModel2d(baseModelId: Id64String, options?: ChangeViewedModel2dOptions & ViewChangeOptions): Promise<void> {
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    if (!this.view.is2d)
+    if (!this.view.is2d())
       return;
 
     // Clone the current ViewState, change its baseModelId, and ensure the new model is loaded.
-    const newView = this.view.clone() as ViewState2d; // start by cloning the current ViewState
+    const newView = this.view.clone(); // start by cloning the current ViewState
     await newView.changeViewedModel(baseModelId);
 
     this.changeView(newView, options); // switch this viewport to use new ViewState2d

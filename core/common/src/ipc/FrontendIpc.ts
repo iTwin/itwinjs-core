@@ -6,7 +6,7 @@
  * @module IpcSocket
  */
 
-import { BackendError } from "../IModelError";
+import { BackendError, IModelError, IModelStatus } from "../IModelError";
 import { IpcInvokeReturn, IpcListener, IpcSocketFrontend, iTwinChannel, RemoveFunction } from "./IpcSocket";
 
 /**
@@ -105,4 +105,26 @@ export class FrontendIpc {
     return retVal.result;
   }
 
+}
+
+export abstract class ResponseHandler {
+  /** All subclasses must implement this method to specify their channel name. */
+  public abstract get responseChannel(): string;
+
+  /**
+   * Register this class as the handler for methods on its channel. This static method creates a new instance
+   * that becomes the handler and is `this` when its methods are called.
+   * @returns A function that can be called to remove the handler.
+   * @note this method should only be called once per channel. If it is called multiple times, subsequent calls replace the previous ones.
+   */
+  public static register(): RemoveFunction {
+    const impl = new (this as any)() as ResponseHandler; // create an instance of subclass. "as any" is necessary because base class is abstract
+    return FrontendIpc.addListener(impl.responseChannel, (_evt: Event, funcName: string, ...args: any[]) => {
+      const func = (impl as any)[funcName];
+      if (typeof func !== "function")
+        throw new IModelError(IModelStatus.FunctionNotFound, `Method "${impl.constructor.name}.${funcName}" not found on ResponseHandler registered for channel: ${impl.responseChannel}`);
+
+      func.call(impl, ...args);
+    });
+  }
 }
