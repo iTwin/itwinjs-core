@@ -3,33 +3,25 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { OpenDialogOptions } from "electron";
 import { isElectronRenderer } from "@bentley/bentleyjs-core";
-import { FrontendIpc } from "@bentley/imodeljs-common";
-import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
+import { ElectronFrontend } from "@bentley/electron-manager/lib/ElectronFrontend";
 
 export interface BrowserFileSelector {
   input: HTMLInputElement;
   directory: string;
 }
 
-export class DtaIpc {
-  public static callBackend<T extends keyof DtaIpcInterface>(methodName: T, ...args: Parameters<DtaIpcInterface[T]>): ReturnType<DtaIpcInterface[T]> {
-    return FrontendIpc.callBackend(dtaChannel, methodName, ...args) as ReturnType<DtaIpcInterface[T]>;
-  }
-
-  public static async selectFileElectron() {
-    const val = await this.callBackend("openFile", {
+export async function selectFileName(selector: BrowserFileSelector | undefined): Promise<string | undefined> {
+  if (isElectronRenderer) {
+    const opts: OpenDialogOptions = {
       properties: ["openFile"],
       filters: [{ name: "iModels", extensions: ["ibim", "bim"] }],
-    });
 
+    };
+    const val = await ElectronFrontend.callDialog("showOpenDialog", opts);
     return val.canceled ? undefined : val.filePaths[0];
   }
-}
-
-export async function selectFileName(selector: BrowserFileSelector | undefined): Promise<string | undefined> {
-  if (isElectronRenderer)
-    return DtaIpc.selectFileElectron();
 
   // eslint-disable-next-line @typescript-eslint/unbound-method
   if (undefined === selector || !document.createEvent) {

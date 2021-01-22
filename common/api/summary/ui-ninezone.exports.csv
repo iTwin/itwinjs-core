@@ -261,6 +261,7 @@ beta;ProgressProps
 internal;RECTANGULAR_DEFAULT_MIN_HEIGHT = 220
 internal;RECTANGULAR_DEFAULT_MIN_WIDTH = 296
 internal;removeTab(state: Draft
+internal;removeWidgetTab(state: Draft
 internal;ResizeAction
 alpha;ResizeDirection
 alpha;ResizeDirectionHelpers

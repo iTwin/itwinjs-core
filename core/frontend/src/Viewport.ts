@@ -2482,7 +2482,7 @@ export abstract class Viewport implements IDisposable {
    * @beta
    */
   public addScreenSpaceEffect(effectName: string): void {
-    this.screenSpaceEffects = [ ...this.screenSpaceEffects, effectName ];
+    this.screenSpaceEffects = [...this.screenSpaceEffects, effectName];
   }
 
   /** Remove all screen-space effects from this Viewport.
@@ -2842,10 +2842,7 @@ export class ScreenViewport extends Viewport {
    * @internal
    */
   public async animateFlyoverToGlobalLocation(destination: GlobalLocation) {
-    if (!this.isCameraOn) {
-      this.turnCameraOn();
-      this.setupFromView();
-    }
+
     const animator = await GlobeAnimator.create(this, destination);
     this.setAnimator(animator);
   }

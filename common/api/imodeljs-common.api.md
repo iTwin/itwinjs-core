@@ -277,6 +277,14 @@ export namespace AreaPattern {
     }
 }
 
+// @beta
+export type AsyncFunction = (...args: any) => Promise<any>;
+
+// @beta
+export type AsyncMethodsOf<T> = {
+    [P in keyof T]: T[P] extends AsyncFunction ? P : never;
+}[keyof T];
+
 export { AuthStatus }
 
 // @public
@@ -5356,6 +5364,9 @@ export enum ProfileOptions {
 }
 
 // @beta
+export type PromiseReturnType<T extends AsyncFunction> = T extends (...args: any) => Promise<infer R> ? R : any;
+
+// @beta
 export type PropertyCallback = (name: string, meta: PropertyMetaData) => void;
 
 // @beta
@@ -8170,8 +8181,6 @@ export class WebAppRpcRequest extends RpcRequest {
 export abstract class WipRpcInterface extends RpcInterface {
     // (undocumented)
     attachChangeCache(_iModelToken: IModelRpcProps): Promise<void>;
-    // (undocumented)
-    detachChangeCache(_iModelToken: IModelRpcProps): Promise<void>;
     // (undocumented)
     getChangedElements(_iModelToken: IModelRpcProps, _startChangesetId: string, _endChangesetId: string): Promise<ChangedElements | undefined>;
     static getClient(): WipRpcInterface;
