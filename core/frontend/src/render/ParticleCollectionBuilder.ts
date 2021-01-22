@@ -8,7 +8,9 @@
 
 import { Id64String } from "@bentley/bentleyjs-core";
 import { Matrix3d, Point2d, Point3d, Range3d, Transform, Vector2d, XAndY, XYAndZ } from "@bentley/geometry-core";
-import { Feature, FeatureTable, PackedFeatureTable, QParams3d, QPoint3dList, RenderTexture } from "@bentley/imodeljs-common";
+import {
+  ColorDef, Feature, FeatureTable, PackedFeatureTable, QParams3d, QPoint3dList, RenderTexture,
+} from "@bentley/imodeljs-common";
 import { Viewport } from "../Viewport";
 import { RenderGraphic } from "./RenderGraphic";
 import { GraphicBranch } from "./GraphicBranch";
@@ -238,21 +240,22 @@ class Builder implements ParticleCollectionBuilder {
         // See FeatureOverrides.buildLookupTable() for layout.
         const ovrIndex = bytesPerOverride * numParticles;
         symbologyOverrides[ovrIndex + 0] = 1 << 2; // OvrFlags.Alpha
-        symbologyOverrides[ovrIndex + 7] = particle.transparency;
+        symbologyOverrides[ovrIndex + 7] = 0xff - particle.transparency;
       }
     }
-
-    // Empty the collection.
-    const range = this._range.clone();
-    this._particles.length = 0;
-    this._hasVaryingTransparency = false;
-    this._range.setNull();
 
     // Produce instanced quads.
     const system = this._viewport.target.renderSystem;
     const quad = this.createQuad(meanSize);
     const transformCenter = new Point3d(0, 0, 0);
     const instances = { count: numParticles, transforms, transformCenter, symbologyOverrides, featureIds };
+
+    // Empty the collection before any return statements.
+    const range = this._range.clone();
+    this._particles.length = 0;
+    this._hasVaryingTransparency = false;
+    this._range.setNull();
+
     let graphic = system.createMesh(quad,instances);
     if (!graphic)
       return undefined;
@@ -295,6 +298,10 @@ class Builder implements ParticleCollectionBuilder {
     quadArgs.textureUv = [ new Point2d(0, 1), new Point2d(1, 1), new Point2d(0, 0), new Point2d(1, 0) ];
     quadArgs.texture = this._texture;
     quadArgs.isPlanar = true;
+
+    // The specific transparency doesn't matter unless all particles have the same transparency.
+    const transparency = this._hasVaryingTransparency ? 0x7f : this._transparency;
+    quadArgs.colors.initUniform(ColorDef.white.withTransparency(transparency));
 
     return MeshParams.create(quadArgs);
   }
