@@ -51,6 +51,7 @@ describe("ContentDataProvider", () => {
   let presentationManagerMock: moq.IMock<PresentationManager>;
   let rulesetsManagerMock: moq.IMock<RulesetManager>;
   const imodelMock = moq.Mock.ofType<IModelConnection>();
+  const imodelKey = "test-imodel-Key";
 
   before(() => {
     rulesetId = faker.random.word();
@@ -62,6 +63,9 @@ describe("ContentDataProvider", () => {
     rulesetsManagerMock = mocks.rulesetsManager;
     presentationManagerMock = mocks.presentationManager;
     Presentation.setPresentationManager(presentationManagerMock.object);
+
+    imodelMock.reset();
+    imodelMock.setup((x) => x.key).returns(() => imodelKey);
 
     provider = new Provider({ imodel: imodelMock.object, ruleset: rulesetId, displayType, enableContentAutoUpdate: true });
     invalidateCacheSpy = sinon.spy(provider, "invalidateCache");
@@ -639,12 +643,17 @@ describe("ContentDataProvider", () => {
   describe("reacting to updates", () => {
 
     it("doesn't react to imodel content updates to unrelated rulesets", () => {
-      presentationManagerMock.object.onIModelContentChanged.raiseEvent({ rulesetId: "unrelated", updateInfo: "FULL", imodelKey: "imodelKey" });
+      presentationManagerMock.object.onIModelContentChanged.raiseEvent({ rulesetId: "unrelated", updateInfo: "FULL", imodelKey });
+      expect(invalidateCacheSpy).to.not.be.called;
+    });
+
+    it("doesn't react to imodel content updates to unrelated imodels", () => {
+      presentationManagerMock.object.onIModelContentChanged.raiseEvent({ rulesetId, updateInfo: "FULL", imodelKey: "unrelated" });
       expect(invalidateCacheSpy).to.not.be.called;
     });
 
     it("invalidates cache when imodel content change happens to related ruleset", () => {
-      presentationManagerMock.object.onIModelContentChanged.raiseEvent({ rulesetId, updateInfo: "FULL", imodelKey: "imodelKey" });
+      presentationManagerMock.object.onIModelContentChanged.raiseEvent({ rulesetId, updateInfo: "FULL", imodelKey });
       expect(invalidateCacheSpy).to.be.calledOnceWith(CacheInvalidationProps.full());
     });
 
