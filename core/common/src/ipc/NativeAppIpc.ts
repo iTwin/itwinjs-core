@@ -12,6 +12,7 @@ import { IModelConnectionProps, IModelRpcProps } from "../IModel";
 
 /** @internal */
 export const nativeAppChannel = "nativeApp";
+/** @internal */
 export const nativeAppResponse = "nativeApp-notify";
 
 /**
@@ -33,6 +34,16 @@ export interface QueuedEvent {
   eventName: string;
   /** Event payload. The specific type depends on the event name. */
   data: any;
+}
+/** Event names and namespace exposed by iModel.js.
+ * @internal
+ */
+export namespace Events {
+  export namespace NativeApp {
+    export const namespace = "NativeApp";
+    /** [[QueuedEvent.data]] is an array of [[ModelGeometryChangesProps]]. */
+    export const modelGeometryChanges = "modelGeometryChanges";
+  }
 }
 
 /** Identifies a list of tile content Ids belonging to a single tile tree.
@@ -59,9 +70,14 @@ export enum OverriddenBy {
   User,
 }
 
+/**
+ * Interface registered by the frontend [NotificationHandler]($common) to be notified of events from NativeApp backend.
+ * @internal
+ */
 export interface NativeAppResponse {
-  onInternetConnectivityChanged: (status: InternetConnectivityStatus) => void;
-  onUserStateChanged: (arg: { accessToken: any, err?: string }) => void;
+  notifyInternetConnectivityChanged: (status: InternetConnectivityStatus) => void;
+  notifyUserStateChanged: (arg: { accessToken: any, err?: string }) => void;
+  notifyMemoryWarning: () => void;
 }
 
 /**

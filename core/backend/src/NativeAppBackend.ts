@@ -16,6 +16,7 @@ import { initialize, MobileDevice } from "./MobileDevice";
 
 const loggerCategory = BackendLoggerCategory.NativeApp;
 initialize();
+
 /**
  * Used by desktop/mobile native application
  * @internal
@@ -36,20 +37,21 @@ export class NativeAppBackend {
     }
     return this._appSettingsCacheDir;
   }
-  private static notifyFrontend<T extends keyof NativeAppResponse>(methodName: T, ...args: Parameters<NativeAppResponse[T]>) {
+
+  public static notifyFrontend<T extends keyof NativeAppResponse>(methodName: T, ...args: Parameters<NativeAppResponse[T]>) {
     return BackendIpc.send(nativeAppResponse, methodName, ...args);
   }
 
   /**
-   * Startups native app backend. It does necessary initialization of the backend.
-   * @param [configuration]
-   * @note this should be called instead of IModelHost.startup(). But it would indirectly call that.
+   * Start the backend of a native app.
+   * @param configuration
+   * @note this method calls [[IModelHost.startup]] internally.
    */
   public static async startup(configuration?: IModelHostConfiguration): Promise<void> {
     if (IModelHost.isNativeAppBackend) {
       throw new Error("NativeAppBackend.startup() has already been called once");
     }
-    this.onInternetConnectivityChanged.addListener((status: InternetConnectivityStatus) => NativeAppBackend.notifyFrontend("onInternetConnectivityChanged", status));
+    this.onInternetConnectivityChanged.addListener((status: InternetConnectivityStatus) => NativeAppBackend.notifyFrontend("notifyInternetConnectivityChanged", status));
 
     if (!configuration) {
       configuration = new IModelHostConfiguration();
@@ -59,7 +61,7 @@ export class NativeAppBackend {
     if (MobileRpcConfiguration.isMobileBackend) {
       MobileDevice.currentDevice.onUserStateChanged.addListener((accessToken?: string, err?: string) => {
         const accessTokenObj = accessToken ? JSON.parse(accessToken) : {};
-        NativeAppBackend.notifyFrontend("onUserStateChanged", { accessToken: accessTokenObj, err });
+        NativeAppBackend.notifyFrontend("notifyUserStateChanged", { accessToken: accessTokenObj, err });
       });
     }
     await IModelHost.startup(configuration);

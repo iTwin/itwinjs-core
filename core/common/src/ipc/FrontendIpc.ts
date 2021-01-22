@@ -99,7 +99,7 @@ export class FrontendIpc {
    * @note Ipc is only supported if [[isValid]] is true.
    */
   public static async callBackend(channelName: string, methodName: string, ...args: any[]): Promise<any> {
-    const retVal = (await this._ipc!.invoke(iTwinChannel(channelName), methodName, ...args)) as IpcInvokeReturn;
+    const retVal = (await this.invoke(channelName, methodName, ...args)) as IpcInvokeReturn;
     if (undefined !== retVal.error)
       throw new BackendError(retVal.error.errorNumber, retVal.error.name, retVal.error.message);
     return retVal.result;
@@ -107,13 +107,26 @@ export class FrontendIpc {
 
 }
 
+/**
+ * Base class for all implementations of an Ipc notification response interface. This class is implemented on your frontend to supply
+ * methods to receive notifications from your backend.
+ *
+ * Create a subclass to implement your Ipc response interface. Your class should be declared like this:
+ * ```ts
+ * class MyResponseHandler extends ResponseHandler implements MyResponseInterface
+ * ```
+ * to ensure all method names and signatures are correct. Your methods cannot have a return value.
+ *
+ * Then, call `MyResponseHandler.register` at startup to connect your class to your channel.
+ * @beta
+ */
 export abstract class ResponseHandler {
-  /** All subclasses must implement this method to specify their channel name. */
+  /** All subclasses must implement this method to specify their response channel name. */
   public abstract get responseChannel(): string;
 
   /**
    * Register this class as the handler for methods on its channel. This static method creates a new instance
-   * that becomes the handler and is `this` when its methods are called.
+   * that becomes the response handler and is `this` when its methods are called.
    * @returns A function that can be called to remove the handler.
    * @note this method should only be called once per channel. If it is called multiple times, subsequent calls replace the previous ones.
    */
