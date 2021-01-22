@@ -786,6 +786,10 @@ export interface ChangedElements {
     // (undocumented)
     modelIds?: Id64String[];
     // (undocumented)
+    newChecksums?: number[][];
+    // (undocumented)
+    oldChecksums?: number[][];
+    // (undocumented)
     opcodes: number[];
     // (undocumented)
     parentClassIds?: Id64String[];
@@ -3875,7 +3879,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     // (undocumented)
     queryModelRanges(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<Range3dProps[]>;
     // (undocumented)
-    queryRows(_iModelToken: IModelRpcProps, _ecsql: string, _bindings?: any[] | object, _limit?: QueryLimit, _quota?: QueryQuota, _priority?: QueryPriority, _restartToken?: string): Promise<QueryResponse>;
+    queryRows(_iModelToken: IModelRpcProps, _ecsql: string, _bindings?: any[] | object, _limit?: QueryLimit, _quota?: QueryQuota, _priority?: QueryPriority, _restartToken?: string, _abbreviateBlobs?: boolean): Promise<QueryResponse>;
     // (undocumented)
     readFontJson(_iModelToken: IModelRpcProps): Promise<any>;
     // @beta (undocumented)
