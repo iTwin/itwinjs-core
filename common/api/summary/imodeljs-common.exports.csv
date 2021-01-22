@@ -341,8 +341,8 @@ public;ModelSelectorProps
 public;MonochromeMode
 internal;nativeAppChannel = "nativeApp"
 internal;NativeAppIpc
-public;NativeAppResponse
-public;nativeAppResponse = "nativeApp-notify"
+internal;NativeAppResponse
+internal;nativeAppResponse = "nativeApp-notify"
 public;NavigationBindingValue
 public;NavigationValue
 public;nextHighestPowerOfTwo(num: number): number
@@ -429,7 +429,7 @@ beta;class RenderTexture
 beta;RenderTexture
 public;RepositoryLinkProps 
 beta;RequestNewBriefcaseProps
-public;class ResponseHandler
+beta;class ResponseHandler
 public;ResponseLike 
 public;RgbColor
 public;RgbColorProps
