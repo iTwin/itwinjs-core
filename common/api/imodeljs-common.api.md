@@ -4773,7 +4773,7 @@ export interface NativeAppIpc {
     toggleInteractiveEditingSession: (_tokenProps: IModelRpcProps, _startSession: boolean) => Promise<boolean>;
 }
 
-// @public (undocumented)
+// @internal
 export interface NativeAppResponse {
     // (undocumented)
     notifyInternetConnectivityChanged: (status: InternetConnectivityStatus) => void;
@@ -4786,7 +4786,7 @@ export interface NativeAppResponse {
     }) => void;
 }
 
-// @public (undocumented)
+// @internal (undocumented)
 export const nativeAppResponse = "nativeApp-notify";
 
 // @public
@@ -5909,7 +5909,7 @@ export interface RequestNewBriefcaseProps {
     iModelId: GuidString;
 }
 
-// @public (undocumented)
+// @beta
 export abstract class ResponseHandler {
     static register(): RemoveFunction;
     abstract get responseChannel(): string;
