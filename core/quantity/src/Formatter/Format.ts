@@ -131,11 +131,11 @@ export class Format {
       case "trailzeroes":
         return currentFormatTrait | FormatTraits.TrailZeroes;
       case "keepsinglezero":
-        return currentFormatTrait | FormatTraits.KeepSingleZero;
+        return currentFormatTrait | FormatTraits.KeepSingleZero; // keep single when format type is Decimal
       case "zeroempty":
         return currentFormatTrait | FormatTraits.ZeroEmpty;
       case "keepdecimalpoint":
-        return currentFormatTrait | FormatTraits.KeepDecimalPoint;
+        return currentFormatTrait | FormatTraits.KeepDecimalPoint; // add decimal point when no fractional part and format type is Decimal
       case "applyrounding":
         return currentFormatTrait | FormatTraits.ApplyRounding;
       case "fractiondash":
@@ -146,7 +146,7 @@ export class Format {
         return currentFormatTrait | FormatTraits.PrependUnitLabel;
       case "use1000separator":
         return currentFormatTrait | FormatTraits.Use1000Separator;
-      case "exponentonlynegative": // NOTE: the formatter does not current use this trait
+      case "exponentonlynegative":
         return currentFormatTrait | FormatTraits.ExponentOnlyNegative;
       default:
         throw new QuantityError(QuantityStatus.InvalidJson, `Format has an invalid 'formatTraits' option.`);

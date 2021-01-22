@@ -197,7 +197,7 @@ export class Formatter {
       const currentLabel = spec.unitConversions[i].label;
       const unitConversion = spec.unitConversions[i].conversion;
 
-      if (unitConversion.factor < 1.0)
+      if (i > 0 && unitConversion.factor < 1.0)
         throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has a invalid unit specification..`);
       if (i > 0 && unitConversion.offset !== 0)
         throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has a invalid unit specification..`);
@@ -276,9 +276,10 @@ export class Formatter {
 
       formattedValue = Formatter.integerPartToText(wholePart, spec);
       if (isPrecisionZero) {
-        if (isKeepSingleZero) {
+        if (spec.format.hasFormatTraitSet(FormatTraits.KeepDecimalPoint) && !isKeepSingleZero)
+          formattedValue = formattedValue + spec.format.decimalSeparator;
+        else if (isKeepSingleZero)
           formattedValue = `${formattedValue + spec.format.decimalSeparator}0`;
-        }
       } else {
         fractionPart = Math.floor(fractionPart) / precisionScale;
         let fractionString = fractionPart.toFixed(spec.format.precision);

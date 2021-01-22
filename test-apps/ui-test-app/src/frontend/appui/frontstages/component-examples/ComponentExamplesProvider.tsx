@@ -29,7 +29,6 @@ import { BeDuration, Logger } from "@bentley/bentleyjs-core";
 import { SamplePopupContextMenu } from "./SamplePopupContextMenu";
 import { Format, FormatProps, FormatterSpec, UnitsProvider } from "@bentley/imodeljs-quantity";
 
-
 function NumericFormatPopup({ persistenceUnitName, initialMagnitude }: { persistenceUnitName: string, initialMagnitude: number }) {
   const initialFormatProps: FormatProps = {
     formatTraits: ["keepSingleZero", "applyRounding", "showUnitLabel", "trailZeroes"],
@@ -56,7 +55,7 @@ function NumericFormatPopup({ persistenceUnitName, initialMagnitude }: { persist
       }
     }
     fetchFormatSpec(format); // eslint-disable-line @typescript-eslint/no-floating-promises
-  }, []);
+  }, [formatterSpec, initialMagnitude]);
 
   React.useEffect(() => {
     async function fetchInitialFormatSpec() {
@@ -71,8 +70,9 @@ function NumericFormatPopup({ persistenceUnitName, initialMagnitude }: { persist
       }
     }
 
-    fetchInitialFormatSpec();
-  }, [persistenceUnitName, initialMagnitude]);
+    if (undefined === formatterSpec)
+      fetchInitialFormatSpec(); // eslint-disable-line @typescript-eslint/no-floating-promises
+  }, [formatterSpec, persistenceUnitName, initialMagnitude, initialFormatProps]);
 
   return (
     <div style={{ display: "flex", alignItems: "center" }}>

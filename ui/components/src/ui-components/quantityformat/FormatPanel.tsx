@@ -32,6 +32,8 @@ export interface FormatPanelProps extends CommonProps {
   showSample?: boolean;
   initialMagnitude?: number;
   onFormatChange?: (format: FormatProps) => void;
+  formatSpecFactory?: (persistenceUnit: UnitProps, formatProps: FormatProps, unitsProvider: UnitsProvider) => Promise<FormatterSpec>;
+  childEditors?: React.ReactNodeArray;
 }
 
 function getTraitString(trait: FormatTraits) {
@@ -58,12 +60,18 @@ function getTraitString(trait: FormatTraits) {
   return undefined;
 }
 
+async function generateFormatSpec(persistenceUnit: UnitProps, formatProps: FormatProps, unitsProvider: UnitsProvider) {
+  const actualFormat = new Format("custom");
+  await actualFormat.fromJSON(unitsProvider, formatProps);
+  return FormatterSpec.create(actualFormat.name, actualFormat, unitsProvider, persistenceUnit);
+}
+
 /** Component to show/edit Quantity Format.
  * @alpha
  */
 export function FormatPanel(props: FormatPanelProps) {
   const formatSpec = React.useRef<FormatterSpec>();
-  const { initialFormat, showSample, initialMagnitude, unitsProvider, persistenceUnit, onFormatChange } = props;
+  const { initialFormat, showSample, initialMagnitude, unitsProvider, persistenceUnit, onFormatChange, formatSpecFactory } = props;
   const [magnitude, setMagnitude] = React.useState(() => initialMagnitude ?? 0);
   const [sampleValue, setSampleValue] = React.useState(magnitude.toString());
   const [formattedValue, setFormattedValue] = React.useState("");
@@ -81,8 +89,7 @@ export function FormatPanel(props: FormatPanelProps) {
   const handleSetFormatProps = React.useCallback((newProps: FormatProps) => {
     setFormatProps(newProps);
     onFormatChange && onFormatChange(newProps);
-    // eslint-disable-next-line no-console
-    console.log(`FormatProps = ${JSON.stringify(newProps)}`);
+    // console.log(`FormatProps = ${JSON.stringify(newProps)}`); // eslint-disable-line no-console
   }, [onFormatChange]);
 
   const handlePrecisionChange = React.useCallback((precision: number) => {
@@ -255,13 +262,15 @@ export function FormatPanel(props: FormatPanelProps) {
     async function fetchFormatSpec() {
       const pu = await persistenceUnit;
       setActivePersistenceUnitLabel(pu.label);
-      const actualFormat = new Format("custom");
-      await actualFormat.fromJSON(unitsProvider, formatProps);
-      formatSpec.current = await FormatterSpec.create(actualFormat.name, actualFormat, unitsProvider, pu);
+      if (formatSpecFactory) {
+        formatSpec.current = await formatSpecFactory(pu, formatProps, unitsProvider);
+      } else {
+        formatSpec.current = await generateFormatSpec(pu, formatProps, unitsProvider);
+      }
       setFormattedValue(formatSpec.current.applyFormatting(magnitude));
     }
     fetchFormatSpec(); // eslint-disable-line @typescript-eslint/no-floating-promises
-  }, [formatProps, magnitude, persistenceUnit, unitsProvider]);
+  }, [formatProps, formatSpecFactory, magnitude, persistenceUnit, unitsProvider]);
 
   const handleUnitLabelChange = React.useCallback((newLabel: string, index: number) => {
     if (formatProps.composite?.units && formatProps.composite.units.length > index && index >= 0) {
@@ -321,7 +330,7 @@ export function FormatPanel(props: FormatPanelProps) {
     <div className="components-quantityFormat-panel">
       {showSample &&
         <>
-          <span className={"uicore-label"}>Sample Value</span>
+          <span className={"uicore-label"}>Persisted Value</span>
           <span className="components-inline"><Input value={sampleValue} onChange={handleOnValueChange} onKeyDown={handleKeyDown} onBlur={handleOnValueBlur} />{activePersistenceUnitLabel}</span>
           <span className={"uicore-label"}>Formatted Value</span>
           <span className={"uicore-label"}>{formattedValue}</span>
@@ -333,7 +342,9 @@ export function FormatPanel(props: FormatPanelProps) {
       {(formatProps.composite?.units && formatProps.composite?.units.length > 0)
         ?
         formatProps.composite.units.map((value, index) => <UnitDescr key={value.name} name={value.name}
-          label={value.label ?? ""} parentUnitName={index > 0 ? formatProps.composite!.units[index - 1].name : undefined} unitsProvider={unitsProvider} readonly={index < (formatProps.composite!.units.length - 1)} index={index} onUnitChange={handleUnitChange} onLabelChange={handleUnitLabelChange} />)
+          label={value.label ?? ""} parentUnitName={index > 0 ? formatProps.composite!.units[index - 1].name :
+            undefined} unitsProvider={unitsProvider} index={index} onUnitChange={handleUnitChange} onLabelChange={handleUnitLabelChange}
+          readonly={index < (formatProps.composite!.units.length - 1)} />)
         :
         formatSpec.current && <UnitDescr key={formatSpec.current.persistenceUnit.name} name={formatSpec.current.persistenceUnit.name}
           label={formatSpec.current?.persistenceUnit.label ?? ""} unitsProvider={unitsProvider} index={0} onUnitChange={handleUnitChange} onLabelChange={handleUnitLabelChange} />

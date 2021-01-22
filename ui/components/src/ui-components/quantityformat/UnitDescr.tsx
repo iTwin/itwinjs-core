@@ -113,7 +113,7 @@ export function UnitDescr(props: UnitDescrProps) {
   return (
     <>
       <Select options={unitOptions} value={`${currentUnit.name}:${currentUnit.label}`} onChange={handleOnUnitChange} disabled={readonly} />
-      <Input value={label} onChange={handleOnLabelChange} disabled={readonly} />
+      <Input value={label} onChange={handleOnLabelChange} />
     </>
   );
 }
