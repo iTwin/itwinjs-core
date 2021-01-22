@@ -2388,14 +2388,6 @@ export namespace Events {
     export namespace NativeApp {
         const // (undocumented)
         namespace = "NativeApp";
-        const // (undocumented)
-        onMemoryWarning = "onMemoryWarning";
-        const // (undocumented)
-        onBriefcaseDownloadProgress = "download-progress";
-        const // (undocumented)
-        onInternetConnectivityChanged = "onInternetConnectivityChanged";
-        const // (undocumented)
-        onUserStateChanged = "onUserStateChanged";
         const modelGeometryChanges = "modelGeometryChanges";
     }
 }
@@ -4777,6 +4769,22 @@ export interface NativeAppIpc {
     toggleInteractiveEditingSession: (_tokenProps: IModelRpcProps, _startSession: boolean) => Promise<boolean>;
 }
 
+// @public (undocumented)
+export interface NativeAppResponse {
+    // (undocumented)
+    notifyInternetConnectivityChanged: (status: InternetConnectivityStatus) => void;
+    // (undocumented)
+    notifyMemoryWarning: () => void;
+    // (undocumented)
+    notifyUserStateChanged: (arg: {
+        accessToken: any;
+        err?: string;
+    }) => void;
+}
+
+// @public (undocumented)
+export const nativeAppResponse = "nativeApp-notify";
+
 // @public
 export interface NavigationBindingValue {
     id: Id64String;
@@ -5895,6 +5903,12 @@ export interface RequestNewBriefcaseProps {
     contextId: GuidString;
     fileName?: string;
     iModelId: GuidString;
+}
+
+// @public (undocumented)
+export abstract class ResponseHandler {
+    static register(): RemoveFunction;
+    abstract get responseChannel(): string;
 }
 
 // @public (undocumented)
