@@ -6,7 +6,7 @@ steps:
   - checkout: self
     clean: all
 
-  - template: templates/setup-integration-users.yaml
+  - template: setup-integration-users.yaml
 
   - task: NodeTool@0
     displayName: "Use Node $(Node_Version)"
