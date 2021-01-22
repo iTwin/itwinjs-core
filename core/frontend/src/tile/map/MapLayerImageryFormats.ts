@@ -12,7 +12,7 @@ import { Cartographic, ImageSource, ImageSourceFormat, MapLayerSettings, MapLaye
 import { getJson, request, RequestBasicCredentials, RequestOptions, Response } from "@bentley/itwin-client";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
-import { NotifyMessageDetails, OutputMessagePriority } from "../../imodeljs-frontend";
+import { ArcGisErrorCode, NotifyMessageDetails, OutputMessagePriority } from "../../imodeljs-frontend";
 import { ScreenViewport } from "../../Viewport";
 import { ArcGisTokenClientType, BingMapsImageryLayerProvider, ImageryMapLayerTreeReference, ImageryMapTile, ImageryMapTileTree, MapLayerFormat, MapLayerSourceStatus, MapLayerSourceValidation, MapLayerTileTreeReference, QuadId, WmsUtilities } from "../internal";
 import { ArcGisTokenManager } from "./ArcGisTokenManager";
@@ -471,7 +471,6 @@ class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
         // OK at this point, if response still contain a token error, we assume end-user will
         // have to provide credentials again.  Change the layer status so we
         // don't make additional invalid requests..
-
         if (tileResponse && ArcGisUtilities.hasTokenError(tileResponse)) {
           // Check again layer status, it might have change during await.
           if (this._settings.status === MapLayerStatus.Valid) {
@@ -589,9 +588,32 @@ class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     const bboxString = this.getEPSG3857ExtentString(quadId.row, quadId.column, quadId.level);
     const x = this.getEPSG3857X(carto.longitudeDegrees);
     const y = this.getEPSG3857Y(carto.latitudeDegrees);
-    const url = `${this._settings.url}/identify?f=json&tolerance=1&returnGeometry=false&sr=3857&imageDisplay=${this.tileSize},${this.tileSize},96&layers=${this.getLayerString("visible")}&geometry=${x},${y}&geometryType=esriGeometryPoint&mapExtent=${bboxString}`;
+    const tmpUrl = `${this._settings.url}/identify?f=json&tolerance=1&returnGeometry=false&sr=3857&imageDisplay=${this.tileSize},${this.tileSize},96&layers=${this.getLayerString("visible")}&geometry=${x},${y}&geometryType=esriGeometryPoint&mapExtent=${bboxString}`;
+    const url = await this.appendSecurityToken(tmpUrl);
 
-    const json = await getJson(this._requestContext, url);
+    let json = await getJson(this._requestContext, url);
+    if (json?.error?.code === ArcGisErrorCode.TokenRequired || json?.error?.code === ArcGisErrorCode.InvalidToken) {
+      // Token might have expired, make a second attempt by forcing new token.
+      if (this._settings.userName && this._settings.userName.length > 0) {
+        ArcGisTokenManager.invalidateToken(this._settings.url, this._settings.userName);
+        json = await getJson(this._requestContext, url);
+      }
+
+      // OK at this point, if response still contain a token error, we assume end-user will
+      // have to provide credentials again.  Change the layer status so we
+      // don't make additional invalid requests..
+      if (json?.error?.code === ArcGisErrorCode.TokenRequired || json?.error?.code === ArcGisErrorCode.InvalidToken) {
+        // Check again layer status, it might have change during await.
+        if (this._settings.status === MapLayerStatus.Valid) {
+          this._settings.status = MapLayerStatus.RequireAuth;
+          const msg = IModelApp.i18n.translate("iModelJs:MapLayers.Messages.FetchTooltipTokenError", { layerName: this._settings.name });
+          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
+        }
+
+        return;
+      }
+    }
+
 
     if (json && Array.isArray(json.results)) {
       for (const result of json.results) {
