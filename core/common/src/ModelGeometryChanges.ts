@@ -3,15 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module RpcInterface
+ * @module Geometry
  */
 
-import {
-  assert, CompressedId64Set, DbOpcode, GuidString, Id64String,
-} from "@bentley/bentleyjs-core";
-import {
-  Range3d, Range3dProps,
-} from "@bentley/geometry-core";
+import { assert, CompressedId64Set, DbOpcode, GuidString, Id64String } from "@bentley/bentleyjs-core";
+import { Range3d, Range3dProps } from "@bentley/geometry-core";
 
 /** Compact wire format representing geometric changes to a set of elements as part of a [[ModelGeometryChangesProps]].
  * All of the elements belong to the same model.
@@ -82,7 +78,7 @@ export type ElementGeometryChange = ExtantElementGeometryChange | DeletedElement
  * @alpha
  */
 export namespace ElementGeometryChange {
-  function * extantIterator(props: ElementIdsAndRangesProps, type: DbOpcode.Insert | DbOpcode.Update): Iterator<ElementGeometryChange> {
+  function* extantIterator(props: ElementIdsAndRangesProps, type: DbOpcode.Insert | DbOpcode.Update): Iterator<ElementGeometryChange> {
     let index = 0;
     const ids = CompressedId64Set.iterable(props.ids);
     for (const id of ids) {
@@ -98,12 +94,12 @@ export namespace ElementGeometryChange {
   }
 
   /** Obtain an iterator over the geometry changes for a single [GeometricModel]($backend). A given element will appear at most once. */
-  export function * iterator(modelChanges: ModelGeometryChangesProps): Iterator<ElementGeometryChange> {
+  export function* iterator(modelChanges: ModelGeometryChangesProps): Iterator<ElementGeometryChange> {
     if (modelChanges.inserted)
-      yield * extantIterable(modelChanges.inserted, DbOpcode.Insert);
+      yield* extantIterable(modelChanges.inserted, DbOpcode.Insert);
 
     if (modelChanges.updated)
-      yield * extantIterable(modelChanges.updated, DbOpcode.Update);
+      yield* extantIterable(modelChanges.updated, DbOpcode.Update);
 
     if (modelChanges.deleted)
       for (const id of CompressedId64Set.iterable(modelChanges.deleted))
@@ -135,7 +131,7 @@ export interface ModelGeometryChanges {
  */
 export namespace ModelGeometryChanges {
   /** Obtain an iterator over the geometry changes for a set of models. A given model will appear at most once. */
-  export function * iterator(modelChanges: ModelGeometryChangesProps[]): Iterator<ModelGeometryChanges> {
+  export function* iterator(modelChanges: ModelGeometryChangesProps[]): Iterator<ModelGeometryChanges> {
     for (const props of modelChanges)
       yield fromJSON(props);
   }

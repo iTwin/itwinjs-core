@@ -19,6 +19,7 @@ export * from "./ExportGraphics";
 export * from "./IModelJsFs";
 export * from "./Relationship";
 export * from "./Texture";
+export * from "./TxnManager";
 export * from "./LineStyle";
 export * from "./BackendLoggerCategory";
 export * from "./Material";
