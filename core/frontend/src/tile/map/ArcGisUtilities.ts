@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Angle } from "@bentley/geometry-core";
 import { MapSubLayerProps } from "@bentley/imodeljs-common";
-import { getJson, request, RequestBasicCredentials, RequestOptions } from "@bentley/itwin-client";
+import { getJson, request, RequestBasicCredentials, RequestOptions, Response } from "@bentley/itwin-client";
 import { FrontendRequestContext } from "../../imodeljs-frontend";
 import { MapLayerSourceValidation } from "../internal";
 import { MapCartoRectangle } from "./MapCartoRectangle";
@@ -21,6 +21,20 @@ export enum ArcGisErrorCode {
 }
 
 export class ArcGisUtilities {
+
+  public static hasTokenError(response: Response): boolean {
+    if (response.header && (response.header["content-type"] as string)?.toLowerCase().includes("json")) {
+      try {
+        // Tile response returns byte array, so we need to check the response data type and convert accordingly.
+        const json = ((response.body instanceof ArrayBuffer) ? JSON.parse(Buffer.from(response.body).toString()) : response.body);
+        return (json?.error?.code === ArcGisErrorCode.TokenRequired || json?.error?.code === ArcGisErrorCode.InvalidToken);
+      } catch (_err) {
+        return false;  // that probably means we failed to convert byte array to JSON
+      }
+    }
+    return false;
+  }
+
   private static getBBoxString(range?: MapCartoRectangle) {
     if (!range)
       range = MapCartoRectangle.create();
@@ -136,26 +150,29 @@ export class ArcGisUtilities {
     try {
       const options: RequestOptions = {
         method: "GET",
-        responseType: "json"
+        responseType: "json",
       };
       let tokenParam = "";
       if (credentials) {
         const token = await ArcGisTokenManager.getToken(url, { userName: credentials.user, password: credentials.password, client: ArcGisTokenClientType.referer });
         if (token)
-          tokenParam = `&token=${token.token}`
+          tokenParam = `&token=${token.token}`;
       }
       const finalUrl = `${url}?f=json${tokenParam}`;
       const data = await request(new FrontendRequestContext(""), finalUrl, options);
-      const json = data.body ? data.body : undefined;
-      ArcGisUtilities._serviceCache.set(url, json);
+      const json = data.body ?? undefined;
+
+      // Cache the response only if it doesn't contain a token error.
+      if (!ArcGisUtilities.hasTokenError(data)) {
+        ArcGisUtilities._serviceCache.set(url, json);
+      }
+
       return json;
     } catch (_error) {
       ArcGisUtilities._serviceCache.set(url, undefined);
       return undefined;
     }
   }
-
-
 
   private static _footprintCache = new Map<string, any>();
   public static async getFootprintJson(url: string, credentials?: RequestBasicCredentials): Promise<any> {
@@ -168,7 +185,7 @@ export class ArcGisUtilities {
       if (credentials) {
         const token = await ArcGisTokenManager.getToken(url, { userName: credentials.user, password: credentials.password, client: ArcGisTokenClientType.referer });
         if (token)
-          tokenParam = `&token=${token.token}`
+          tokenParam = `&token=${token.token}`;
       }
       const json = await getJson(new FrontendRequestContext(""), `${url}?f=json&option=footprints&outSR=4326${tokenParam}`);
       ArcGisUtilities._footprintCache.set(url, json);

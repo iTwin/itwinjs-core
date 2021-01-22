@@ -16,7 +16,7 @@ import { NotifyMessageDetails, OutputMessagePriority } from "../../imodeljs-fron
 import { ScreenViewport } from "../../Viewport";
 import { ArcGisTokenClientType, BingMapsImageryLayerProvider, ImageryMapLayerTreeReference, ImageryMapTile, ImageryMapTileTree, MapLayerFormat, MapLayerSourceStatus, MapLayerSourceValidation, MapLayerTileTreeReference, QuadId, WmsUtilities } from "../internal";
 import { ArcGisTokenManager } from "./ArcGisTokenManager";
-import { ArcGisErrorCode, ArcGisUtilities } from "./ArcGisUtilities";
+import { ArcGisUtilities } from "./ArcGisUtilities";
 import { MapCartoRectangle } from "./MapCartoRectangle";
 import { WmsCapabilities, WmsCapability } from "./WmsCapabilities";
 import { WmtsCapabilities, WmtsCapability } from "./WmtsCapabilities";
@@ -24,8 +24,6 @@ import { WmtsCapabilities, WmtsCapability } from "./WmtsCapabilities";
 const tileImageSize = 256, untiledImageSize = 256;
 // eslint-disable-next-line prefer-const
 let doToolTips = true;
-// eslint-disable-next-line prefer-const
-let debugToolTip = false;
 
 const scratchPoint2d = Point2d.createZero();
 
@@ -445,22 +443,12 @@ class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     if (tileUrl.length === 0)
       return undefined;
 
-    return await request(this._requestContext, tileUrl, tileRequestOptions);
-  }
-
-  private static containsTokenError(response: Response): boolean {
-    const jsonContentType = (response.header["content-type"] as string).toLowerCase().includes("json");
-
-    if (jsonContentType) {
-      const json = JSON.parse(Buffer.from(response.body).toString());
-      return (json?.error?.code === ArcGisErrorCode.TokenRequired || json?.error?.code === ArcGisErrorCode.InvalidToken);
-    }
-    return false;
+    return request(this._requestContext, tileUrl, tileRequestOptions);
   }
 
   public async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
-    if (this._settings.status != MapLayerStatus.Valid) {
-      throw new AbandonedError("Layer status not valid.")
+    if (this._settings.status !== MapLayerStatus.Valid) {
+      throw new AbandonedError("Layer status not valid.");
     }
 
     try {
@@ -468,8 +456,9 @@ class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
       if (tileResponse === undefined)
         return undefined;
 
-      // Check the content type from the response, it might contains an authentication error that need to be reported.
-      if (ArcGISMapLayerImageryProvider.containsTokenError(tileResponse) && this._settings.status === MapLayerStatus.Valid) {
+      // Check the content type from the response, it might contain an authentication error that need to be reported.
+      // Skip if the layer state was already invalid
+      if (ArcGisUtilities.hasTokenError(tileResponse)) {
 
         // Token might have expired, make a second attempt by forcing new token.
         if (this._settings.userName && this._settings.userName.length > 0) {
@@ -479,13 +468,20 @@ class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
             return undefined;
         }
 
-        // OK if at this point, response still contain a token error, we assume end-user will
+        // OK at this point, if response still contain a token error, we assume end-user will
         // have to provide credentials again.  Change the layer status so we
         // don't make additional invalid requests..
-        if (tileResponse && ArcGISMapLayerImageryProvider.containsTokenError(tileResponse)) {
-          this._settings.status = MapLayerStatus.RequireAuth;
-          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, "Error loading map layers"));
-          throw new AbandonedError("Layer status not valid.")
+
+        if (tileResponse && ArcGisUtilities.hasTokenError(tileResponse)) {
+          // Check again layer status, it might have change during await.
+          if (this._settings.status === MapLayerStatus.Valid) {
+            this._settings.status = MapLayerStatus.RequireAuth;
+
+            const msg = IModelApp.i18n.translate("iModelJs:MapLayers.Messages.LoadTileTokenError", { layerName: this._settings.name });
+            IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
+          }
+
+          throw new AbandonedError("Map layer requires authentication");
         }
       }
       return this.getImageFromTileResponse(tileResponse, zoomLevel);
@@ -635,10 +631,10 @@ class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
         const token = await ArcGisTokenManager.getToken(this._settings.url, {
           userName: this._settings.userName,
           password: this._settings.password,
-          client: ArcGisTokenClientType.referer
+          client: ArcGisTokenClientType.referer,
         });
         if (token)
-          tokenParam = `&token=${token.token}`
+          tokenParam = `&token=${token.token}`;
       } catch {
       }
     }

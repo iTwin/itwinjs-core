@@ -36,10 +36,11 @@ class AttachMapLayerBaseTool extends Tool {
 
         if (validation.status === MapLayerSourceStatus.Valid) {
           vp.invalidateRenderPlan();
-          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Map layer ${source.name} attached from URL: ${source.url}`));
+          const msg = IModelApp.i18n.translate("FrontendDevTools:AttachMapLayerTool.Messages.MapLayerAttached", { sourceName: source.name, sourceUrl: source.url });
+          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
         } else if (validation.status === MapLayerSourceStatus.RequireAuth) {
-          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, `Map layer '${source.name}' requires authentication information`));
-
+          const msg = IModelApp.i18n.translate("FrontendDevTools:AttachMapLayerTool.Messages.MapLayerAttachedRequiresAuth", { sourceName: source.name });
+          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
           //Set layer status
           const layerIdx = vp.displayStyle.findMapLayerIndexByNameAndUrl(source.name, source.url, !this._isBackground);
           if (-1 !== layerIdx) {
@@ -51,10 +52,12 @@ class AttachMapLayerBaseTool extends Tool {
         }
 
       } else {
-        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Map layer validation failed for URL: ${source.url}`));
+        const msg = IModelApp.i18n.translate("FrontendDevTools:AttachMapLayerTool.Messages.MapLayerValidationFailed", { sourceUrl: source.url });
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
       }
     }).catch((error) => {
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Error ${error} occured attaching MapLayer from URL: ${source.url}`));
+      const msg = IModelApp.i18n.translate("FrontendDevTools:AttachMapLayerTool.Messages.MapLayerAttachError", { error: error, sourceUrl: source.url });
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
     });
   }
 }

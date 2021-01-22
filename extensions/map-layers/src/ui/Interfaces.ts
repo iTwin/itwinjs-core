@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { MapSubLayerProps, MapLayerStatus } from "@bentley/imodeljs-common";
+import { MapLayerStatus, MapSubLayerProps } from "@bentley/imodeljs-common";
 import { MapLayerImageryProvider } from "@bentley/imodeljs-frontend";
 
 export interface StyleMapLayerSettings {

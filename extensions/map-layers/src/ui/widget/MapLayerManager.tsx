@@ -22,8 +22,6 @@ import { MapLayerOptions, MapTypesOptions, StyleMapLayerSettings } from "../Inte
 import { MapLayerSettingsPopupButton } from "./MapLayerSettingsPopupButton";
 import "./MapLayerManager.scss";
 import { MapLayerDroppable } from "./MapLayerDroppable";
-import { ModalDialogManager } from "@bentley/ui-framework";
-import { MapUrlDialog } from "./MapUrlDialog";
 
 /** @internal */
 export interface SourceMapContextProps {
@@ -70,7 +68,7 @@ function getMapLayerSettingsFromStyle(displayStyle: DisplayStyleState | undefine
         showSubLayers: false,
         isOverlay: false,
         provider: IModelApp.mapLayerFormatRegistry.createImageryProvider(layerSettings),
-        status: layerSettings.status
+        status: layerSettings.status,
       });
     });
   } else {
@@ -85,7 +83,7 @@ function getMapLayerSettingsFromStyle(displayStyle: DisplayStyleState | undefine
         showSubLayers: false,
         isOverlay: true,
         provider: IModelApp.mapLayerFormatRegistry.createImageryProvider(layerSettings),
-        status: layerSettings.status
+        status: layerSettings.status,
       });
     });
   }
@@ -294,6 +292,10 @@ export function MapLayerManager(props: MapLayerManagerProps) {
         }
 
         activeViewport.displayStyle.attachMapLayer(layerProps, !fromMapLayer.isOverlay, toIndexInDisplayStyle);
+        const newlyInsertedLayer = activeViewport.displayStyle.mapLayerAtIndex(toIndexInDisplayStyle, !fromMapLayer.isOverlay);
+        if (newlyInsertedLayer && fromMapLayer.status !== undefined) {
+          newlyInsertedLayer.status = fromMapLayer.status;
+        }
       }
     } else {
       if (undefined === destination.index) {

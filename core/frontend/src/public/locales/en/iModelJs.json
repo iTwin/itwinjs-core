@@ -114,5 +114,10 @@
   },
   "RealityModelNames": {
     "OSMBuildings": "OpenStreetMap Buildings"
+  },
+  "MapLayers": {
+    "Messages": {
+      "LoadTileTokenError": "An authentication error occurred while loading tiles for layer '{{layerName}}'"
+    }
   }
 }

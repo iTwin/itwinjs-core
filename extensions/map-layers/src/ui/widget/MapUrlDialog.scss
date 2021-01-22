@@ -13,6 +13,7 @@ $hovered-icon-color: $buic-foreground-primary-tone;
   width: 100%;
   display: grid;
   grid-template-columns: auto 1fr;
+  grid-column-gap: 10px;
   align-items: center;
 
   .map-layer-source-label{

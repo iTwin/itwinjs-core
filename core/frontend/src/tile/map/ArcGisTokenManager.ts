@@ -10,7 +10,7 @@ import { ArcGisGenerateTokenOptions, ArcGisToken, ArcGisTokenGenerator } from ".
 
 /** @internal */
 export class ArcGisTokenManager {
-  private static readonly tokenExpiryThreshold = 300000  // 5 minutes in milliseconds
+  private static readonly tokenExpiryThreshold = 300000;  // 5 minutes in milliseconds
   private static _cache = new Map<string, ArcGisToken>();
   private static _generator: ArcGisTokenGenerator | undefined;
 
@@ -25,14 +25,14 @@ export class ArcGisTokenManager {
 
     // Check in local storage if nothing found in session cache
     if (cachedToken === undefined) {
-      const tokenFromStorageStr = sessionStorage.getItem(`arcgis:${tokenCacheKey}`)
+      const tokenFromStorageStr = sessionStorage.getItem(`arcgis:${tokenCacheKey}`);
       if (tokenFromStorageStr !== null) {
         cachedToken = JSON.parse(tokenFromStorageStr);
       }
     }
 
     // Check if token is in cached and is valid within the threshold, if not, generate a new token immediately.
-    if (cachedToken !== undefined && (cachedToken.expires - (+new Date) > ArcGisTokenManager.tokenExpiryThreshold)) {
+    if (cachedToken !== undefined && (cachedToken.expires - (+new Date()) > ArcGisTokenManager.tokenExpiryThreshold)) {
       return cachedToken;
     }
 
@@ -43,7 +43,7 @@ export class ArcGisTokenManager {
 
       // Also store in the local storage.
       if (saveSessionStorage) {
-        sessionStorage.setItem(`arcgis:${tokenCacheKey}`, JSON.stringify(newToken))
+        sessionStorage.setItem(`arcgis:${tokenCacheKey}`, JSON.stringify(newToken));
       }
 
     }
@@ -53,7 +53,7 @@ export class ArcGisTokenManager {
 
   public static invalidateToken(esriRestServiceUrl: string, userName: string): boolean {
     const tokenCacheKey = `${userName}@${esriRestServiceUrl}`;
-    sessionStorage.removeItem(`arcgis:${tokenCacheKey}`)
+    sessionStorage.removeItem(`arcgis:${tokenCacheKey}`);
     return ArcGisTokenManager._cache.delete(tokenCacheKey);
   }
 }

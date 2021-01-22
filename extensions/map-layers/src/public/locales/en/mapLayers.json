@@ -35,20 +35,20 @@
     "Type": "Type",
     "URL": "URL",
     "ValidationError": "Map layer validation failed for URL:",
-    "WarningAuthenticationSettings": "Connection that require an authentication can't be save for right now"
+    "NoSaveSettingsWarning": "Layer settings cannot saved in the actual configuration"
   },
-  "WmsAuthenticationInputs": {
-    "Authentication": "Authentication",
-    "Basic": "Basic",
-    "NoAuth": "No authentication",
+  "AuthenticationInputs": {
     "Password": "Password",
-    "Username": "Username",
-    "WarningProtocolLabel": "The source's protocol needs to be https in order to use the authentication system"
+    "Username": "Username"
   },
   "Messages": {
     "NotSupported": "No active viewport or geo-located Imodel available.",
     "NoRangeDefined": "No range is defined for Map Layer",
-    "Start": "Map Layers Extension Loaded"
+    "Start": "Map Layers Extension Loaded",
+    "MapLayerAttached": "Map layer {{sourceName}} attached from URL: {{sourceUrl}}",
+    "MapLayerAttachedRequiresAuth": "Map layer {{sourceName}} attached, but requires credentials to be provided",
+    "MapLayerValidationFailed": "Map layer validation failed for URL: {{sourceUrl}}",
+    "MapLayerAttachError": "Error '{{error}}' occurred attaching MapLayer from URL: {{sourceUrl}}"
   },
   "Widget": {
     "BackgroundLayers": "Background",
@@ -57,6 +57,7 @@
     "NoOverlayLayers": "No Overlay layers specified",
     "NoBackgroundLayers": "No Background layers specified",
     "OverlayLayers": "Overlay",
+    "RequireAuthTooltip": "Authentication required",
     "ToggleVisibility": "Toggle Visibility",
     "SettingsButtonTooltip": "Settings"
   },

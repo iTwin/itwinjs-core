@@ -129,7 +129,6 @@ export class ArcGisTokenGenerator {
           refererStr = encodeURIComponent(options.referer);
         }
 
-
         clientStr = `&client=referer&referer=${refererStr}`;
       } else if (options.client === ArcGisTokenClientType.ip) {
         if (options.ip === undefined)
@@ -156,17 +155,17 @@ export class ArcGisTokenGenerator {
   // Encode following 'application/x-www-form-urlencoded' standard (https://www.w3.org/TR/html401/interact/forms.html#h-17.13.3.3)
   // Also mentioned here: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent
   public static formEncode(str: string): string {
-    return ArcGisTokenGenerator.rfc1738Encode(str).replace(/%20/g, '+');
+    return ArcGisTokenGenerator.rfc1738Encode(str).replace(/%20/g, "+");
   }
 
   // Encode following RFC1738 standard (https://www.ietf.org/rfc/rfc1738.txt)
   // Code from https://locutus.io/php/url/rawurlencode/
   public static rfc1738Encode(str: string): string {
     return encodeURIComponent(str)
-      .replace(/!/g, '%21')
-      .replace(/'/g, '%27')
-      .replace(/\(/g, '%28')
-      .replace(/\)/g, '%29')
-      .replace(/\*/g, '%2A');
+      .replace(/!/g, "%21")
+      .replace(/'/g, "%27")
+      .replace(/\(/g, "%28")
+      .replace(/\)/g, "%29")
+      .replace(/\*/g, "%2A");
   }
 }

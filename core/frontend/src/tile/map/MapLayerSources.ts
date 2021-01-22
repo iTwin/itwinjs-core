@@ -6,7 +6,7 @@
 
 import { compareStrings } from "@bentley/bentleyjs-core";
 import { Point2d } from "@bentley/geometry-core";
-import { BackgroundMapProps, BackgroundMapSettings, BackgroundMapType, MapLayerProps, MapLayerSettings, MapLayerStatus, MapSubLayerProps } from "@bentley/imodeljs-common";
+import { BackgroundMapProps, BackgroundMapSettings, BackgroundMapType, MapLayerProps, MapLayerSettings, MapSubLayerProps } from "@bentley/imodeljs-common";
 import { getJson, RequestBasicCredentials } from "@bentley/itwin-client";
 import { FrontendRequestContext } from "../../FrontendRequestContext";
 import { IModelApp } from "../../IModelApp";

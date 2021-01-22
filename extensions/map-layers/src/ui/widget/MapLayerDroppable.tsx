@@ -40,6 +40,7 @@ export function MapLayerDroppable(props: MapLayerDroppableProps) {
   const containsLayer = props.layersList && props.layersList.length > 0;
   const droppableId = props.isOverlay ? "overlayMapLayers" : "backgroundMapLayers";
   const [toggleVisibility] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.ToggleVisibility"));
+  const [requireAuthTooltip] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.RequireAuthTooltip"));
   const [noBackgroundMapsSpecifiedLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.NoBackgroundLayers"));
   const [noUnderlaysSpecifiedLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.NoOverlayLayers"));
   const [dropLayerLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.DropLayerLabel"));
@@ -60,14 +61,15 @@ export function MapLayerDroppable(props: MapLayerDroppableProps) {
             <SubLayersPopupButton mapLayerSettings={activeLayer} activeViewport={props.activeViewport} />
           }
         </div>
-        {activeLayer.status == MapLayerStatus.RequireAuth &&
-          <Button className="map-manager-item-visibility"
+        {activeLayer.status === MapLayerStatus.RequireAuth &&
+          <Button
+            className="map-manager-item-requireAuth"
             onClick={() => {
               ModalDialogManager.openDialog(<MapUrlDialog activeViewport={props.activeViewport} isOverlay={props.isOverlay} layerToEdit={activeLayer} onOkResult={props.onItemEdited} mapTypesOptions={props.mapTypesOptions} />);
             }}
-            title={toggleVisibility}
+            title={requireAuthTooltip}
           >
-            <Icon iconSpec="icon-status-error" />
+            <Icon iconSpec="icon-status-warning" />
           </Button>
         }
         <MapLayerSettingsMenu activeViewport={props.activeViewport} mapLayerSettings={activeLayer} onMenuItemSelection={props.onMenuItemSelected} />

@@ -53,47 +53,54 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
         // if the layer is not in the style add it now.
         if (undefined === backgroundLayers?.find((layer) => layerName === layer.name) && undefined === overlayLayers?.find((layer) => layerName === layer.name)) {
           const mapLayerSettings = sources?.find((source) => source.name === layerName);
-          if (mapLayerSettings) {
-            try {
-              setLoading(true);
-              const { status, subLayers } = await mapLayerSettings.validateSource();
-              if (status === MapLayerSourceStatus.Valid || status === MapLayerSourceStatus.RequireAuth) {
+          if (mapLayerSettings === undefined) {
+            return;
+          }
 
-                const source = Object.assign({}, mapLayerSettings);  // shallow copy
-                source.subLayers = subLayers;
-                activeViewport.displayStyle.attachMapLayer(source, isOverlay);
+          try {
+            setLoading(true);
+            const { status, subLayers } = await mapLayerSettings.validateSource();
+            if (status === MapLayerSourceStatus.Valid || status === MapLayerSourceStatus.RequireAuth) {
+              const source = Object.assign({}, mapLayerSettings);  // shallow copy
+              source.subLayers = subLayers;
+              activeViewport.displayStyle.attachMapLayer(source, isOverlay);
 
-                if (status === MapLayerSourceStatus.RequireAuth) {
-                  IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, `Authentication required for Layer : ${source.name}`));
+              if (status === MapLayerSourceStatus.Valid) {
+                activeViewport.invalidateRenderPlan();
+                const msg = IModelApp.i18n.translate("mapLayers:Messages.MapLayerAttached", { sourceName: source.name, sourceUrl: source.url });
+                IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
 
-                  //Set layer status
-                  const layerIdx = activeViewport.displayStyle.findMapLayerIndexByNameAndUrl(source.name, source.url, isOverlay);
-                  if (-1 !== layerIdx) {
-                    const layerSettings = activeViewport.displayStyle.mapLayerAtIndex(layerIdx, isOverlay);
-                    if (layerSettings) {
-                      layerSettings.status = MapLayerStatus.RequireAuth;
-                    }
+              } else if (status === MapLayerSourceStatus.RequireAuth) {
+                const msg = IModelApp.i18n.translate("mapLayers:Messages.MapLayerAttachedRequiresAuth", { sourceName: source.name });
+                IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
+
+                // Set layer status
+                const layerIdx = activeViewport.displayStyle.findMapLayerIndexByNameAndUrl(source.name, source.url, isOverlay);
+                if (-1 !== layerIdx) {
+                  const layerSettings = activeViewport.displayStyle.mapLayerAtIndex(layerIdx, isOverlay);
+                  if (layerSettings) {
+                    layerSettings.status = MapLayerStatus.RequireAuth;
                   }
                 }
-
-                if (status === MapLayerSourceStatus.Valid) {
-                  activeViewport.invalidateRenderPlan();
-                  IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Map layer ${source.name} attached from URL: ${source.url}`));
-                }
-
-                setLoading(false);
-                if (onLayerAttached)
-                  onLayerAttached();
-              } else {
-                IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, `Invalid response from URL: ${mapLayerSettings.url}`));
-                setLoading(false);
               }
-            } catch (err) {
+
               setLoading(false);
-              IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, "Error loading map layers", err.toString()));
+              if (onLayerAttached) {
+                onLayerAttached();
+              }
+
+            } else {
+              const msg = IModelApp.i18n.translate("mapLayers:Messages.MapLayerValidationFailed", { sourceUrl: mapLayerSettings.url });
+              IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
+              setLoading(false);
             }
+          } catch (err) {
+            setLoading(false);
+            const msg = IModelApp.i18n.translate("mapLayers:Messages.MapLayerAttachError", { error: err, sourceUrl: mapLayerSettings.url });
+            IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
           }
         }
+
       }
       return;
     }

@@ -5,14 +5,13 @@
 // cSpell:ignore Modeless WMTS
 
 import * as React from "react";
-import { Dialog, DialogButtonType, Input, Radio, Select } from "@bentley/ui-core";
+import { Dialog, DialogButtonType, Input, InputStatus, LabeledInput, Radio, Select } from "@bentley/ui-core";
 import { ModalDialogManager } from "@bentley/ui-framework";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import { MapTypesOptions, StyleMapLayerSettings } from "../Interfaces";
 import { IModelApp, MapLayerSettingsService, MapLayerSource, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority, ScreenViewport } from "@bentley/imodeljs-frontend";
 
 import "./MapUrlDialog.scss";
-import { WmsAuthenticationInput } from "./WmsAuthenticationInputs";
 import { MapLayerSettings, MapLayerStatus } from "@bentley/imodeljs-common";
 
 export const MAP_TYPES = {
@@ -64,11 +63,18 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   });
 
   const [editMode] = React.useState(layerToEdit !== undefined);
-  const [wmsServerUsername, setWmsServerUsername] = React.useState("");
-  const [wmsServerPassword, setWmsServerPassword] = React.useState("");
-  const [warningAuthenticationSettings] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.WarningAuthenticationSettings"));
+  const [userName, setUserName] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [noSaveSettingsWarning] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.NoSaveSettingsWarning"));
+  const [passwordLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:AuthenticationInputs.Password"));
+  const [userNameLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:AuthenticationInputs.Username"));
   const [settingsStorage, setSettingsStorageRadio] = React.useState("Project");
-  const [skipSettingsStorage, setSkipSettingsStorage] = React.useState(editMode ? true : false);
+
+  // Is Setting service available (i.e. should we should the options in the UI and attempt to save to settings service)
+  const [settingsStorageAvailable] = React.useState(!editMode && !!IModelApp.viewManager?.selectedView?.iModel?.contextId && !!IModelApp.viewManager?.selectedView?.iModel?.iModelId);
+
+  // Even though the settings storage is available, we might want to disable it in the UI
+  const [settingsStorageDisabled, setSettingsStorageDisabled] = React.useState(settingsStorageAvailable);
   const [mapType, setMapType] = React.useState(layerToEdit?.formatId ?? MAP_TYPES.arcGis);
 
   const [mapTypes] = React.useState((): string[] => {
@@ -91,6 +97,20 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     ModalDialogManager.closeDialog();
   }, []);
 
+  const onWmsUsernameChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    setUserName(event.target.value);
+  }, [setUserName]);
+
+  const onWmsPasswordChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    setPassword(event.target.value);
+  }, [setPassword]);
+
+  React.useEffect(() => {
+    if (settingsStorageAvailable) {
+      setSettingsStorageDisabled(mapType === MAP_TYPES.wms && (userName.length > 0 || password.length > 0));
+    }
+  }, [mapType, userName, password, setSettingsStorageDisabled, settingsStorageAvailable]);
+
   const doAttach = React.useCallback((source: MapLayerSource) => {
     const vp = IModelApp.viewManager.selectedView;
     if (vp === undefined || source === undefined)
@@ -100,8 +120,8 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     source.validateSource().then(async (validation) => {
       if (validation.status === MapLayerSourceStatus.Valid) {
         source.subLayers = validation.subLayers;
-        // We don't save the source if it has an authentication set on it for right now.
-        if ((vp.iModel.contextId !== undefined && vp.iModel !== undefined && vp.iModel.iModelId !== undefined) && !skipSettingsStorage) {
+
+        if (!settingsStorageDisabled) {
           if (!(await MapLayerSettingsService.storeSourceInSettingsService(source, storeOnIModel, vp.iModel.contextId!, vp.iModel.iModelId!)))
             return;
         }
@@ -119,7 +139,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${msg} ${source.url}-${error}`));
     });
 
-  }, [isOverlay, onOkResult, settingsStorage, skipSettingsStorage]);
+  }, [isOverlay, onOkResult, settingsStorage, settingsStorageDisabled]);
 
   const [mapUrl, setMapUrl] = React.useState(layerToEdit?.url ?? "");
   const [mapName, setMapName] = React.useState(layerToEdit?.name ?? "");
@@ -142,8 +162,8 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
         url: mapUrl,
         name: mapName,
         formatId: mapType,
-        userName: wmsServerUsername,
-        password: wmsServerPassword,
+        userName,
+        password,
       });
 
       if (source) {
@@ -152,9 +172,9 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
           if (validation.status === MapLayerSourceStatus.Valid && props?.activeViewport) {
             source.subLayers = validation.subLayers;
             props.activeViewport.displayStyle.changeMapLayerProps({
-              userName: wmsServerUsername,
-              password: wmsServerPassword,
-              subLayers: validation.subLayers
+              userName,
+              password,
+              subLayers: validation.subLayers,
             }, layerIdxToEdit, isOverlay);
             const layerSettings = props.activeViewport.displayStyle.mapLayerAtIndex(layerIdxToEdit, isOverlay);
             if (layerSettings) {
@@ -174,15 +194,14 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${msg} ${source.url}-${error}`));
         });
       }
-    }
-    else {
+    } else {
       if (mapUrl && mapName) {
         const source = MapLayerSource.fromJSON({
           url: mapUrl,
           name: mapName,
           formatId: mapType,
-          userName: wmsServerUsername,
-          password: wmsServerPassword,
+          userName,
+          password,
         });
         if (source)
           doAttach(source);
@@ -190,13 +209,21 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
 
     }
     ModalDialogManager.closeDialog();
-  }, [doAttach, mapName, mapUrl, mapType, wmsServerUsername, wmsServerPassword]);
+  }, [doAttach, mapName, mapUrl, mapType, userName, password, isOverlay, layerIdxToEdit, layerToEdit, onOkResult, props]);
+
   const dialogContainer = React.useRef<HTMLDivElement>(null);
 
+  const requireCredentials = React.useCallback(() => { return (layerToEdit && layerToEdit.status === MapLayerStatus.RequireAuth); }, [layerToEdit]);
+
+  const readyToSave = React.useCallback(() => {
+    const credentialsSet = !!userName && !!password;
+    return (!!mapUrl && !!mapName) && (!requireCredentials() || (requireCredentials() && credentialsSet));
+  }, [mapUrl, mapName, userName, password, requireCredentials]);
+
   const buttonCluster = React.useMemo(() => [
-    { type: DialogButtonType.OK, onClick: handleOk, disabled: !(!!mapUrl && !!mapName) },
+    { type: DialogButtonType.OK, onClick: handleOk, disabled: !readyToSave() },
     { type: DialogButtonType.Cancel, onClick: handleCancel },
-  ], [mapUrl, mapName, handleCancel, handleOk]);
+  ], [readyToSave, handleCancel, handleOk]);
 
   return (
     <div ref={dialogContainer}>
@@ -223,24 +250,29 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
             <span className="map-layer-source-label">{urlLabel}</span>
             <Input placeholder="Enter Map Source URL" onChange={onUrlChange} value={layerToEdit?.url} disabled={editMode} />
             {authSupported &&
-              <WmsAuthenticationInput mapType={mapType}
-                wmsServerUrl={mapUrl}
-                setSettingsStorageRadio={setSettingsStorageRadio}
-                setWmsServerUsername={setWmsServerUsername}
-                setWmsServerPassword={setWmsServerPassword}
-                setSkipSettingsStorage={setSkipSettingsStorage}
-                layerStatus={props.layerToEdit?.status} />
+              <>
+                <span className="map-layer-source-label">{userNameLabel}</span>
+                <LabeledInput placeholder={requireCredentials() ? "Username required" : userNameLabel}
+                  status={!!!userName && requireCredentials() ? InputStatus.Warning : undefined}
+                  onChange={onWmsUsernameChange} />
+
+                <span className="map-layer-source-label">{passwordLabel}</span>
+                <LabeledInput type="password" placeholder={requireCredentials() ? "Password required" : passwordLabel}
+                  status={!!!password && requireCredentials() ? InputStatus.Warning : undefined}
+                  onChange={onWmsPasswordChange} />
+              </>
             }
-            <div title={skipSettingsStorage ? warningAuthenticationSettings : ""}>
-              <Radio disabled={skipSettingsStorage}
+            {/* Store settings options, not shown when  editing a layer */}
+            {settingsStorageAvailable && <div title={settingsStorageDisabled ? noSaveSettingsWarning : ""}>
+              <Radio disabled={settingsStorageDisabled}
                 name="settingsStorage" value="Project"
                 label={projectSettingsLabel} checked={settingsStorage === "Project"}
                 onChange={onRadioChange} />
-              <Radio disabled={skipSettingsStorage}
+              <Radio disabled={settingsStorageDisabled}
                 name="settingsStorage" value="Model"
                 label={modelSettingsLabel} checked={settingsStorage === "Model"}
                 onChange={onRadioChange} />
-            </div>
+            </div>}
           </div>
         </div>
       </Dialog>
