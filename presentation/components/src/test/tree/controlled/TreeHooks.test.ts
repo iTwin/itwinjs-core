@@ -8,8 +8,8 @@ import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { BeEvent, IDisposable } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { HierarchyUpdateInfo, RegisteredRuleset, Ruleset, VariableValue, VariableValueTypes } from "@bentley/presentation-common";
-import { Presentation, PresentationManager, RulesetVariablesManager } from "@bentley/presentation-frontend";
+import { RegisteredRuleset, Ruleset, VariableValue, VariableValueTypes } from "@bentley/presentation-common";
+import { IModelHierarchyChangeEventArgs, Presentation, PresentationManager, RulesetVariablesManager } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { TreeDataChangesListener, TreeModelNodeInput, TreeNodeItem } from "@bentley/ui-components";
 import { renderHook } from "@testing-library/react-hooks";
@@ -19,7 +19,7 @@ import { createRandomTreeNodeItem, mockPresentationManager } from "../../_helper
 
 describe("usePresentationNodeLoader", () => {
 
-  let onIModelHierarchyChanged: BeEvent<(args: { rulesetId: string, updateInfo: HierarchyUpdateInfo, imodelKey: string }) => void>;
+  let onIModelHierarchyChanged: BeEvent<(args: IModelHierarchyChangeEventArgs) => void>;
   let onRulesetModified: BeEvent<(curr: RegisteredRuleset, prev: Ruleset) => void>;
   let onRulesetVariableChanged: BeEvent<(variableId: string, prevValue: VariableValue, currValue: VariableValue) => void>;
   let presentationManagerMock: moq.IMock<PresentationManager>;

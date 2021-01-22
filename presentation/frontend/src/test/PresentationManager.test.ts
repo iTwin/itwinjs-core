@@ -11,9 +11,9 @@ import { IModelRpcProps } from "@bentley/imodeljs-common";
 import { EventSource, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
 import {
-  Content, ContentDescriptorRequestOptions, ContentRequestOptions, ContentUpdateInfo, Descriptor, DisplayLabelRequestOptions,
+  Content, ContentDescriptorRequestOptions, ContentRequestOptions, Descriptor, DisplayLabelRequestOptions,
   DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions,
-  FieldDescriptor, FieldDescriptorType, HierarchyRequestOptions, HierarchyUpdateInfo, InstanceKey, Item, KeySet, LabelDefinition, LabelRequestOptions,
+  FieldDescriptor, FieldDescriptorType, HierarchyRequestOptions, InstanceKey, Item, KeySet, LabelDefinition, LabelRequestOptions,
   Node, NodeKey, NodePathElement, Paged, PresentationDataCompareOptions, PresentationError, PresentationRpcEvents, PresentationRpcInterface,
   PresentationStatus, PresentationUnitSystem, RegisteredRuleset, RequestPriority, RpcRequestsHandler, Ruleset, RulesetVariable, UpdateInfo,
   VariableValueTypes,
@@ -24,7 +24,7 @@ import {
   createRandomLabelDefinition, createRandomNodePathElement, createRandomRuleset, createRandomTransientId,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { Presentation } from "../presentation-frontend/Presentation";
-import { buildPagedResponse, PresentationManager } from "../presentation-frontend/PresentationManager";
+import { buildPagedResponse, IModelContentChangeEventArgs, IModelHierarchyChangeEventArgs, PresentationManager } from "../presentation-frontend/PresentationManager";
 import { RulesetManagerImpl } from "../presentation-frontend/RulesetManager";
 import { RulesetVariablesManagerImpl } from "../presentation-frontend/RulesetVariablesManager";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "../presentation-frontend/selection/SelectionManager";
@@ -1347,8 +1347,8 @@ describe("PresentationManager", () => {
   describe("listening to updates", () => {
 
     let eventSourceListener: (report: UpdateInfo) => void;
-    let hierarchyUpdatesSpy: sinon.SinonSpy<[{ rulesetId: string, updateInfo: HierarchyUpdateInfo, imodelKey: string }], void>;
-    let contentUpdatesSpy: sinon.SinonSpy<[{ rulesetId: string, updateInfo: ContentUpdateInfo, imodelKey: string }], void>;
+    let hierarchyUpdatesSpy: sinon.SinonSpy<[IModelHierarchyChangeEventArgs], void>;
+    let contentUpdatesSpy: sinon.SinonSpy<[IModelContentChangeEventArgs], void>;
 
     beforeEach(() => {
       sinon.stub(IModelApp, "isNativeApp").get(() => true);

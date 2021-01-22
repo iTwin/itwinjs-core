@@ -24,6 +24,32 @@ import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetV
 import { TRANSIENT_ELEMENT_CLASSNAME } from "./selection/SelectionManager";
 
 /**
+ * Data structure that describes IModel hierarchy change event arguments.
+ * @alpha
+ */
+export interface IModelHierarchyChangeEventArgs {
+  /** Id of ruleset that was used to create hierarchy. */
+  rulesetId: string;
+  /** Hierarchy changes info. */
+  updateInfo: HierarchyUpdateInfo;
+  /** Key of iModel that was used to create hierarchy. It matches [[IModelConnection.key]] property. */
+  imodelKey: string;
+};
+
+/**
+ * Data structure that describes iModel content change event arguments.
+ * @alpha
+ */
+export interface IModelContentChangeEventArgs {
+  /** Id of ruleset that was used to create content. */
+  rulesetId: string;
+  /** Content changes info. */
+  updateInfo: ContentUpdateInfo;
+  /** Key of iModel that was used to create content. It matches [[IModelConnection.key]] property. */
+  imodelKey: string;
+}
+
+/**
  * Properties used to configure [[PresentationManager]]
  * @public
  */
@@ -77,13 +103,13 @@ export class PresentationManager implements IDisposable {
    * An event raised when hierarchies created using specific ruleset change
    * @alpha
    */
-  public onIModelHierarchyChanged = new BeEvent<(args: { rulesetId: string, updateInfo: HierarchyUpdateInfo, imodelKey: string }) => void>();
+  public onIModelHierarchyChanged = new BeEvent<(args: IModelHierarchyChangeEventArgs) => void>();
 
   /**
    * An event raised when content created using specific ruleset changes
    * @alpha
    */
-  public onIModelContentChanged = new BeEvent<(args: { rulesetId: string, updateInfo: ContentUpdateInfo, imodelKey: string }) => void>();
+  public onIModelContentChanged = new BeEvent<(args: IModelContentChangeEventArgs) => void>();
 
   /** Get / set active locale used for localizing presentation data */
   public activeLocale: string | undefined;
