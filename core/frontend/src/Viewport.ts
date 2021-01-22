@@ -2648,6 +2648,7 @@ export class ScreenViewport extends Viewport {
 
     const showLogos = (ev: Event) => {
       const aboutBox = IModelApp.makeModalDiv({ autoClose: true, width: 460, closeBox: true }).modal;
+      aboutBox.className += " imodeljs-about"; // only added so the CSS knows this is the about dialog
       const logos = IModelApp.makeHTMLElement("table", { parent: aboutBox, className: "logo-cards" });
       if (undefined !== IModelApp.applicationLogoCard)
         logos.appendChild(IModelApp.applicationLogoCard());
