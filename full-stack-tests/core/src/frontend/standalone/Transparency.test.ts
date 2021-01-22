@@ -70,7 +70,7 @@ class TransparencyDecorator {
   }
 }
 
-describe.only("Transparency", async () => {
+describe("Transparency", async () => {
   let imodel: SnapshotConnection;
   let decorator: TransparencyDecorator;
 
@@ -263,9 +263,44 @@ describe.only("Transparency", async () => {
     }
   });
 
-  it("should apply texture weight to element color but not alpha", async () => {
+  it("should apply texture weight to element color but not alpha if material does not override color", async () => {
+    const testCases: Array<[RenderMaterial, ColorDef]> = [
+      // Opaque
+      [ createMaterial(1, createBlueTexture(), 0.5), ColorDef.from(0x80, 0, 0x80) ],
+      [ createMaterial(1, createBlueTexture(), 0.25), ColorDef.from(0xc0, 0, 0x40) ],
+      [ createMaterial(1, createBlueTexture(), 0), ColorDef.from(0xff, 0, 0) ],
+
+      // Translucent
+      [ createMaterial(0.5, createBlueTexture(), 0.5), ColorDef.from(0x40, 0, 0x40) ],
+      [ createMaterial(1, createBlueTexture(0x80), 0.5), ColorDef.from(0x40, 0, 0x40) ],
+      [ createMaterial(1, createBlueTexture(0x80), 0.75), ColorDef.from(0x20, 0, 0x60) ],
+      [ createMaterial(0.5, createBlueTexture(0x80), 0.5), ColorDef.from(0x20, 0, 0x20) ],
+      [ createMaterial(0.5, createBlueTexture(0x80), 0.25), ColorDef.from(0x30, 0, 0x10) ],
+    ];
+
+    for (const testCase of testCases) {
+      await test(
+        (vp) => decorator.add(vp, { color: ColorDef.red, material: testCase[0] }),
+        (vp) => expectColor(vp, testCase[1])
+      );
+    }
   });
 
-  it("should multiply element alpha with texture if material does not override alpha", () => {
+  it("should multiply element alpha with texture if material does not override alpha", async () => {
+    // [Element transparency, material, expected transparency]
+    const testCases: Array<[number, RenderMaterial, number]> = [
+      [ 0, createMaterial(undefined, createBlueTexture(0x7f)), 0x7f ],
+      [ 0x7f, createMaterial(undefined, createBlueTexture()), 0x7f ],
+      [ 0x7f, createMaterial(undefined, createBlueTexture(0x7f)), 0xbf ],
+      [ 0xff, createMaterial(undefined, createBlueTexture()), 0xff ],
+      [ 0, createMaterial(undefined, createBlueTexture(0)), 0xff ],
+    ];
+
+    for (const testCase of testCases) {
+      await test(
+        (vp) => decorator.add(vp, { color: ColorDef.red.withTransparency(testCase[0]), material: testCase[1] }),
+        (vp) => expectTransparency(vp, ColorDef.blue.withTransparency(testCase[2]))
+      );
+    }
   });
 });

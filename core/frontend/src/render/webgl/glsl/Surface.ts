@@ -55,21 +55,17 @@ const applyMaterialColor = `
 // Replace with diffuse alpha if alpha overridden.
 // Multiply texel alpha with diffuse alpha if specified.
 const applyTextureWeight = `
-  float textureWeight = isSurfaceBitSet(kSurfaceBit_HasTexture) && !u_applyGlyphTex ? mat_texture_weight : 0.0;
+  bool applyTexture = !u_applyGlyphTex && isSurfaceBitSet(kSurfaceBit_HasTexture);
+  float textureWeight = applyTexture ? mat_texture_weight : 0.0;
   vec3 rgb = mix(baseColor.rgb, g_surfaceTexel.rgb, textureWeight);
-  float a = textureWeight > 0.0 ? g_surfaceTexel.a : baseColor.a;
   rgb = chooseVec3WithBitFlag(rgb, baseColor.rgb, surfaceFlags, kSurfaceBit_OverrideRgb);
-  a = chooseFloatWithBitFlag(a, baseColor.a, surfaceFlags, kSurfaceBit_OverrideAlpha);
-  a = chooseFloatWithBitFlag(a, baseColor.a * a, surfaceFlags, kSurfaceBit_MultiplyAlpha);
+
+  float a = baseColor.a;
+  if (applyTexture && !isSurfaceBitSet(kSurfaceBit_OverrideAlpha))
+    a = a * g_surfaceTexel.a;
+
   return vec4(rgb, a);
 `;
-
-//   vec4 rgba = mix(baseColor, g_surfaceTexel, textureWeight);
-//   rgba.rgb = chooseVec3WithBitFlag(rgba.rgb, v_color.rgb, surfaceFlags, kSurfaceBit_OverrideRgb);
-//   rgba.a = chooseFloatWithBitFlag(rgba.a, v_color.a, surfaceFlags, kSurfaceBit_OverrideAlpha);
-//   rgba.a = chooseFloatWithBitFlag(rgba.a, v_color.a * rgba.a, surfaceFlags, kSurfaceBit_MultiplyAlpha);
-//   return rgba;
-// `;
 
 const decodeFragMaterialParams = `
 void decodeMaterialParams(vec4 params) {
