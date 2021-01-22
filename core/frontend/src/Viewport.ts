@@ -2482,7 +2482,7 @@ export abstract class Viewport implements IDisposable {
    * @beta
    */
   public addScreenSpaceEffect(effectName: string): void {
-    this.screenSpaceEffects = [ ...this.screenSpaceEffects, effectName ];
+    this.screenSpaceEffects = [...this.screenSpaceEffects, effectName];
   }
 
   /** Remove all screen-space effects from this Viewport.
@@ -2648,6 +2648,7 @@ export class ScreenViewport extends Viewport {
 
     const showLogos = (ev: Event) => {
       const aboutBox = IModelApp.makeModalDiv({ autoClose: true, width: 460, closeBox: true }).modal;
+      aboutBox.className += " imodeljs-about"; // only added so the CSS knows this is the about dialog
       const logos = IModelApp.makeHTMLElement("table", { parent: aboutBox, className: "logo-cards" });
       if (undefined !== IModelApp.applicationLogoCard)
         logos.appendChild(IModelApp.applicationLogoCard());
@@ -2842,10 +2843,7 @@ export class ScreenViewport extends Viewport {
    * @internal
    */
   public async animateFlyoverToGlobalLocation(destination: GlobalLocation) {
-    if (!this.isCameraOn) {
-      this.turnCameraOn();
-      this.setupFromView();
-    }
+
     const animator = await GlobeAnimator.create(this, destination);
     this.setAnimator(animator);
   }

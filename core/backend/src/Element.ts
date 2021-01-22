@@ -11,10 +11,10 @@ import { Range3d, Transform } from "@bentley/geometry-core";
 import { LockLevel } from "@bentley/imodelhub-client";
 import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementAlignedBox3d, ElementProps, EntityMetaData,
-  GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps, GeometricModel3dProps, GeometryPartProps, GeometryStreamProps, IModel,
-  InformationPartitionElementProps, LineStyleProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d, Placement3d, RelatedElement,
-  RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionLocationProps, SectionType, SheetBorderTemplateProps, SheetProps,
-  SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
+  GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps, GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps,
+  GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d,
+  Placement3d, RelatedElement, RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionLocationProps, SectionType,
+  SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
 } from "@bentley/imodeljs-common";
 import { ConcurrencyControl } from "./ConcurrencyControl";
 import { Entity } from "./Entity";
@@ -49,7 +49,7 @@ export class Element extends Entity implements ElementProps {
   /** The ModelId of the [Model]($docs/bis/intro/model-fundamentals.md) containing this element */
   public readonly model: Id64String;
   /** The [Code]($docs/bis/intro/codes.md) for this element */
-  public readonly code: Code;
+  public code: Code;
   /** The parent element, if present, of this element. */
   public parent?: RelatedElement;
   /** A [FederationGuid]($docs/bis/intro/element-fundamentals.md#federationguid) assigned to this element by some other federated database */
@@ -189,7 +189,7 @@ export class Element extends Entity implements ElementProps {
   public toJSON(): ElementProps {
     const val = super.toJSON() as ElementProps;
 
-    if (Id64.isValid(this.code.spec))
+    if (Code.isValid(this.code))
       val.code = this.code;
 
     val.model = this.model;
@@ -1048,7 +1048,7 @@ export class TemplateRecipe3d extends RecipeDefinitionElement {
       modeledElement: { id: modeledElementId },
       isTemplate: true,
     };
-    return iModelDb.models.insertModel(modelProps);
+    return iModelDb.models.insertModel(modelProps); // will be the same value as modeledElementId
   }
 }
 
@@ -1073,13 +1073,55 @@ export abstract class GraphicalType2d extends TypeDefinitionElement {
 }
 
 /** A recipe that uses a 2D template for creating new instances.
- * @internal
+ * @beta
  */
 export class TemplateRecipe2d extends RecipeDefinitionElement {
   /** @internal */
   public static get className(): string { return "TemplateRecipe2d"; }
   /** @internal */
   public constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
+  /** Create a Code for a TemplateRecipe2d given a name that is meant to be unique within the scope of its Model.
+   * @param iModelDb The IModelDb
+   * @param definitionModelId The Id of the [DefinitionModel]($backend) that contains this TemplateRecipe2d element.
+   * @param codeValue The name of the TemplateRecipe2d element.
+   */
+  public static createCode(iModelDb: IModelDb, definitionModelId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModelDb.codeSpecs.getByName(BisCodeSpec.templateRecipe2d);
+    return new Code({ spec: codeSpec.id, scope: definitionModelId, value: codeValue });
+  }
+  /** Create a TemplateRecipe2d
+   * @param iModelDb The IModelDb
+   * @param definitionModelId The Id of the [DefinitionModel]($backend) that contains this TemplateRecipe2d element.
+   * @param name The name (Code.value) of the TemplateRecipe2d
+   * @returns The newly constructed TemplateRecipe2d
+   * @throws [[IModelError]] if there is a problem creating the TemplateRecipe2d
+   */
+  public static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): TemplateRecipe2d {
+    const elementProps: DefinitionElementProps = {
+      classFullName: this.classFullName,
+      model: definitionModelId,
+      code: this.createCode(iModelDb, definitionModelId, name),
+      isPrivate,
+    };
+    return new TemplateRecipe2d(elementProps, iModelDb);
+  }
+  /** Insert a TemplateRecipe2d and a DrawingModel (sub-model) that will contain the 2d template elements.
+   * @param iModelDb The IModelDb
+   * @param definitionModelId The Id of the [DefinitionModel]($backend) that contains this TemplateRecipe2d element.
+   * @param name The name (Code.value) of the TemplateRecipe2d
+   * @returns The Id of the newly inserted TemplateRecipe2d and the PhysicalModel that sub-models it.
+   * @throws [[IModelError]] if there is a problem inserting the TemplateRecipe2d or its sub-model.
+   */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String {
+    const element = this.create(iModelDb, definitionModelId, name, isPrivate);
+    const modeledElementId: Id64String = iModelDb.elements.insertElement(element);
+    const modelProps: GeometricModel2dProps = {
+      classFullName: DrawingModel.classFullName,
+      modeledElement: { id: modeledElementId },
+      isTemplate: true,
+    };
+    return iModelDb.models.insertModel(modelProps); // will be the same value as modeledElementId
+  }
 }
 
 /** An abstract base class for elements that establishes a particular modeling perspective for its parent Subject.

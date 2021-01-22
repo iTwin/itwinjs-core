@@ -2,11 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as electron from "electron";
 import * as path from "path";
-import { ElectronManagerOptions, IModelJsElectronManager, WebpackDevServerElectronManager } from "@bentley/electron-manager";
-import { ElectronRpcManager, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import { assert } from "@bentley/bentleyjs-core";
+import { ElectronBackend, ElectronBackendOptions } from "@bentley/electron-manager/lib/ElectronBackend";
+import { RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 
 /**
  * Initializes Electron backend
@@ -14,38 +13,35 @@ import { assert } from "@bentley/bentleyjs-core";
 const autoOpenDevTools = (undefined === process.env.SVT_NO_DEV_TOOLS);
 const maximizeWindow = (undefined === process.env.SVT_NO_MAXIMIZE_WINDOW);
 
-export default async function initialize(rpcs: RpcInterfaceDefinition[]) {
-  const opts: ElectronManagerOptions = {
+export default async function initialize(rpcInterfaces: RpcInterfaceDefinition[]) {
+  const opts: ElectronBackendOptions = {
     webResourcesPath: path.join(__dirname, "..", "..", "..", "build"),
+    rpcInterfaces,
+    developmentServer: process.env.NODE_ENV === "development",
   };
 
-  const manager = (process.env.NODE_ENV === "production") ?
-    new IModelJsElectronManager(opts) :
-    new WebpackDevServerElectronManager(opts, 3000); // port should match the port of the local dev server
+  const backend = ElectronBackend.initialize(opts);
 
   // Handle custom keyboard shortcuts
-  electron.app.on("web-contents-created", (_e, wc) => {
+  backend.app.on("web-contents-created", (_e, wc) => {
     wc.on("before-input-event", (event, input) => {
       // CTRL + SHIFT + I  ==> Toggle DevTools
       if (input.key === "I" && input.control && !input.alt && !input.meta && input.shift) {
-        if (manager.mainWindow)
-          manager.mainWindow.webContents.toggleDevTools();
+        if (backend.mainWindow)
+          backend.mainWindow.webContents.toggleDevTools();
 
         event.preventDefault();
       }
     });
   });
 
-  await manager.initialize({ width: 800, height: 650, show: !maximizeWindow, title: "Ui Test App" });
-  assert(manager.mainWindow !== undefined);
-
-  // tell ElectronRpcManager which RPC interfaces to handle
-  ElectronRpcManager.initializeImpl({}, rpcs);
+  await backend.openMainWindow({ width: 800, height: 650, show: !maximizeWindow, title: "Ui Test App" });
+  assert(backend.mainWindow !== undefined);
 
   if (maximizeWindow) {
-    manager.mainWindow.maximize(); // maximize before showing to avoid resize event on startup
-    manager.mainWindow.show();
+    backend.mainWindow.maximize(); // maximize before showing to avoid resize event on startup
+    backend.mainWindow.show();
   }
   if (autoOpenDevTools)
-    manager.mainWindow.webContents.toggleDevTools();
+    backend.mainWindow.webContents.toggleDevTools();
 }
