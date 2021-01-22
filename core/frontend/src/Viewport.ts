@@ -167,6 +167,15 @@ export interface OsmBuildingDisplayOptions {
   appearanceOverrides?: FeatureAppearance;
 }
 
+/** @internal */
+const ELEMENT_MARKED_FOR_REMOVAL = Symbol.for("@bentley/imodeljs/Viewport/__element_marked_for_removal__");
+
+declare global {
+  interface Element {
+    [ELEMENT_MARKED_FOR_REMOVAL]?: boolean;
+  }
+}
+
 /** A Viewport renders the contents of one or more [GeometricModel]($backend)s onto an `HTMLCanvasElement`.
  *
  * It holds a [[ViewState]] object that defines its viewing parameters; the ViewState in turn defines the [[DisplayStyleState]],
@@ -2600,6 +2609,18 @@ export class ScreenViewport extends Viewport {
     return vp;
   }
 
+  public static markAllChildrenForRemoval(el: HTMLDivElement) {
+    for (const child of el.children)
+      child[ELEMENT_MARKED_FOR_REMOVAL] = true;
+  }
+
+  /** @internal */
+  public static removeMarkedChildren(el: HTMLDivElement) {
+    for (const child of el.children)
+      if (child[ELEMENT_MARKED_FOR_REMOVAL])
+        el.removeChild(child);
+  }
+
   /** Remove all of the children of an HTMLDivElement.
    * @internal
    */
@@ -2607,6 +2628,7 @@ export class ScreenViewport extends Viewport {
     while (el.lastChild)
       el.removeChild(el.lastChild);
   }
+
   /** set Div style to absolute, {0,0,100%,100%}
    * @internal
    */
@@ -2858,13 +2880,15 @@ export class ScreenViewport extends Viewport {
 
   /** @internal */
   protected addDecorations(decorations: Decorations): void {
-    ScreenViewport.removeAllChildren(this.decorationDiv);
+    ScreenViewport.markAllChildrenForRemoval(this.decorationDiv);
     const context = new DecorateContext(this, decorations);
     context.addFromDecorator(this.view);
     this.forEachTiledGraphicsProviderTree((ref) => context.addFromDecorator(ref));
 
     for (const decorator of IModelApp.viewManager.decorators)
       context.addFromDecorator(decorator);
+
+    ScreenViewport.removeMarkedChildren(this.decorationDiv);
   }
 
   /** Change the cursor for this Viewport */
