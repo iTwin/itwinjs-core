@@ -1,3 +1,21 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`WidgetContent should render 1`] = `Content`;
+exports[`WidgetContent should render 1`] = `
+<div
+  class="nz-widget-content"
+>
+  Content
+</div>
+`;
+
+exports[`WidgetContent should render w/o frontstage 1`] = `
+<div
+  class="nz-widget-content"
+/>
+`;
+
+exports[`WidgetContent should render w/o widgetDef 1`] = `
+<div
+  class="nz-widget-content"
+/>
+`;

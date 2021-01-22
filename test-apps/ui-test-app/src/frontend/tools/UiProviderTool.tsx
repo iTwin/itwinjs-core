@@ -151,7 +151,8 @@ class TestUiProvider implements UiItemsProvider {
 
   public provideWidgets(stageId: string, _stageUsage: string, location: StagePanelLocation, _section?: StagePanelSection | undefined): ReadonlyArray<AbstractWidgetProps> {
     const widgets: AbstractWidgetProps[] = [];
-    if (stageId === "ViewsFrontstage" && location === StagePanelLocation.Right) {
+    const allowedStages = ["ViewsFrontstage", "Ui2"];
+    if (allowedStages.includes(stageId) && location === StagePanelLocation.Right) {
       widgets.push({
         id: "addonWidget",
         getWidgetContent: () => <FillCentered>Addon Widget in panel</FillCentered>, // eslint-disable-line react/display-name

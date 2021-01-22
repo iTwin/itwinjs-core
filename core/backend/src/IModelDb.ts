@@ -2190,6 +2190,8 @@ export class TxnManager {
   protected _onBeginValidate() { this.validationErrors.length = 0; }
   /** @internal */
   protected _onEndValidate() { }
+  /** @internal */
+  protected _onGeometryChanged() { }
 
   /** Dependency handlers may call method this to report a validation error.
    * @param error The error. If error.fatal === true, the transaction will cancel rather than commit.

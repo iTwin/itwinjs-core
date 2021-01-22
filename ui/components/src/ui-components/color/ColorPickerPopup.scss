@@ -5,19 +5,45 @@
 @import "~@bentley/ui-core/lib/ui-core/style/themecolors";
 @import "~@bentley/ui-core/lib/ui-core/style/typography";
 
-.components-colorpicker-popup-button {
+button.components-colorpicker-popup-button {
   font-family: $uicore-font-family;
   font-size: $uicore-font-size;
   color: $buic-foreground-body;
-  background: $buic-background-control;
+  background-color: transparent;
   box-sizing: border-box;
-  border: 1px solid $buic-inputs-border;
   border-radius: 3px;
-  width: 1.25em;
-  height: 1.25em;
+  border: none;
+  padding: 0;
 
   &:not(.readonly) {
     cursor: pointer;
+  }
+
+  >.components-colorpicker-button-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    >.components-colorpicker-button-color-swatch {
+      border: 1px solid $buic-inputs-border;
+      border-radius: 3px;
+      width: 1.25em;
+      height: 1.25em;
+    }
+
+    >.components-caret {
+      margin-left: .25em;
+      margin-right: .25em;
+    }
+  }
+
+  &:disabled {
+    pointer-events: none;
+    >.components-colorpicker-button-container {
+      >.components-caret {
+        color: $buic-icon-color-disabled;
+      }
+    }
   }
 }
 

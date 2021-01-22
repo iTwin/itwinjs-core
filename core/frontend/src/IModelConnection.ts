@@ -15,7 +15,7 @@ import {
   FontMapProps, GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps, ImageSourceFormat, IModel, IModelConnectionProps,
   IModelError, IModelEventSourceProps, IModelReadRpcInterface, IModelRpcOpenProps, IModelRpcProps, IModelStatus, IModelVersion,
   IModelWriteRpcInterface, mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams,
-  NativeAppRpcInterface, OpenBriefcaseProps, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager,
+  OpenBriefcaseProps, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager,
   RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface,
   StandaloneIModelRpcInterface, StandaloneOpenOptions, TextureLoadProps, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, WipRpcInterface,
 } from "@bentley/imodeljs-common";
@@ -29,6 +29,7 @@ import { GeoServices } from "./GeoServices";
 import { IModelApp } from "./IModelApp";
 import { IModelRoutingContext } from "./IModelRoutingContext";
 import { ModelState } from "./ModelState";
+import { NativeApp } from "./NativeApp";
 import { HiliteSet, SelectionSet } from "./SelectionSet";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import { Tiles } from "./Tiles";
@@ -655,14 +656,6 @@ export abstract class BriefcaseConnection extends IModelConnection {
    */
   public async attachChangeCache(): Promise<void> { return WipRpcInterface.getClient().attachChangeCache(this.getRpcProps()); }
 
-  /** WIP - Detaches the *Change Cache file* to this iModel if it had been attached before.
-   * > You do not have to check whether a Change Cache file had been attached before. The
-   * > method does not do anything, if no Change Cache is attached.
-   * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
-   * @internal
-   */
-  public async detachChangeCache(): Promise<void> { return WipRpcInterface.getClient().detachChangeCache(this.getRpcProps()); }
-
   /** Pull and merge new server changes
    * @alpha
    */
@@ -849,8 +842,8 @@ export class RemoteBriefcaseConnection extends BriefcaseConnection {
   }
 }
 
-/** A connection to a [BriefcaseDb]($backend) hosted on the same machine in a different process, and is typically used in native (desktop and mobile) applications.
- * @internal
+/** A connection to a [BriefcaseDb]($backend) for a native application
+ * @alpha
  */
 export class LocalBriefcaseConnection extends BriefcaseConnection {
 
@@ -869,7 +862,7 @@ export class LocalBriefcaseConnection extends BriefcaseConnection {
     requestContext.enter();
 
     requestContext.useContextForRpc = true;
-    const iModelProps = await NativeAppRpcInterface.getClient().open(briefcaseProps);
+    const iModelProps = await NativeApp.callBackend("open", briefcaseProps);
     const connection = new this({ ...briefcaseProps, ...iModelProps });
 
     IModelConnection.onOpen.raiseEvent(connection);
@@ -890,7 +883,7 @@ export class LocalBriefcaseConnection extends BriefcaseConnection {
     requestContext.enter();
 
     requestContext.useContextForRpc = true;
-    const closePromise: Promise<void> = NativeAppRpcInterface.getClient().closeBriefcase(this._fileKey); // Ensure the method isn't awaited right away.
+    const closePromise: Promise<void> = NativeApp.callBackend("closeBriefcase", this._fileKey); // Ensure the method isn't awaited right away.
 
     try {
       this.eventSource.dispose();
