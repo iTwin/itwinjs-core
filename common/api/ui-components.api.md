@@ -4459,7 +4459,7 @@ export class Timeline extends React.Component<TimelineProps, TimelineState> {
 }
 
 // @alpha
-export class TimelineComponent extends React.PureComponent<TimelineComponentProps, TimelineComponentState> {
+export class TimelineComponent extends React.Component<TimelineComponentProps, TimelineComponentState> {
     constructor(props: TimelineComponentProps);
     // (undocumented)
     componentDidUpdate(prevProps: TimelineComponentProps): void;
@@ -4467,6 +4467,8 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
     componentWillUnmount(): void;
     // (undocumented)
     render(): JSX.Element;
+    // (undocumented)
+    shouldComponentUpdate(nextProps: TimelineComponentProps, nextState: TimelineComponentState): boolean;
     }
 
 // @alpha
