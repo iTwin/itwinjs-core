@@ -273,13 +273,15 @@ export class V1CheckpointManager {
 
         const dbGuid = Guid.normalize(nativeDb.getDbGuid());
         if (dbGuid !== Guid.normalize(requestedCkp.iModelId)) {
-          Logger.logWarning(loggerCategory, "iModelId is not properly setup in the briefcase. Updated briefcase to the correct iModelId.", () => ({ ...traceInfo, ...checkpoint, dbGuid }));
+          Logger.logWarning(loggerCategory, "iModelId is not properly setup in the checkpoint. Updated checkpoint to the correct iModelId.", () => ({ ...traceInfo, ...checkpoint, dbGuid }));
           nativeDb.setDbGuid(Guid.normalize(requestedCkp.iModelId));
+          // Required to reset the ChangeSetId because setDbGuid clears the value.
+          nativeDb.saveLocalValue("ParentChangeSetId", dbChangeSetId);
         }
 
         const dbContextGuid = Guid.normalize(nativeDb.queryProjectGuid());
         if (dbContextGuid !== Guid.normalize(requestedCkp.contextId))
-          throw new IModelError(IModelStatus.ValidationFailed, "ContextId was not properly setup in the briefcase", Logger.logError, loggerCategory, () => ({ ...traceInfo, dbContextGuid }));
+          throw new IModelError(IModelStatus.ValidationFailed, "ContextId was not properly setup in the checkpoint", Logger.logError, loggerCategory, () => ({ ...traceInfo, dbContextGuid }));
 
         // Apply change sets if necessary
         if (dbChangeSetId !== requestedCkp.changeSetId) {
