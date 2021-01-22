@@ -212,11 +212,11 @@ export class ElectronBackend implements IpcSocketBackend {
       this.instance.electron.protocol.registerSchemesAsPrivileged([{ scheme: "electron", privileges: { standard: true, secure: true } }]);
 
     return this._instance;
-  };
+  }
 }
 
 class ElectronBackendImpl extends IpcHandler {
-  public get channelName() { return "electron-safe"; };
+  public get channelName() { return "electron-safe"; }
   public async callElectron(member: string, method: string, ...args: any) {
     const func = (ElectronBackend.instance.electron as any)[member][method];
     if (typeof func !== "function")

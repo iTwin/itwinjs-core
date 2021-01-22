@@ -56,7 +56,7 @@ export class ElectronFrontend implements IpcSocketFrontend {
       throw new Error("Not running under Electron");
 
     return new ElectronFrontend(opts);
-  };
+  }
 
   /**
    * Call an asynchronous method in the [Electron.Dialog](https://www.electronjs.org/docs/api/dialog) interface from a previously initialized ElectronFrontend.
@@ -82,4 +82,4 @@ export class ElectronFrontend implements IpcSocketFrontend {
   public static async callApp<T extends AsyncMethodsOf<Electron.App>>(methodName: T, ...args: Parameters<Electron.App[T]>) {
     return FrontendIpc.callBackend("electron-safe", "callElectron", "app", methodName, ...args) as PromiseReturnType<Electron.App[T]>;
   }
-};
+}

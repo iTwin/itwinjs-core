@@ -9,16 +9,20 @@
 import "./Frontstage.scss";
 import produce, { castDraft, Draft } from "immer";
 import * as React from "react";
+import { assert, Logger } from "@bentley/bentleyjs-core";
 import { StagePanelLocation, UiItemsManager, WidgetState } from "@bentley/ui-abstract";
 import { Size, SizeProps, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
 import {
-  addPanelWidget, addTab, createNineZoneState, createTabsState, createTabState, createWidgetState, findTab, floatingWidgetBringToFront, FloatingWidgets,
-  getUniqueId, isHorizontalPanelSide, NineZone, NineZoneActionTypes, NineZoneDispatch, NineZoneLabels, NineZoneState,
+  addPanelWidget, addTab, createNineZoneState, createTabsState, createTabState, createWidgetState, findTab, floatingWidgetBringToFront,
+  FloatingWidgets, getUniqueId, isHorizontalPanelSide, NineZone, NineZoneActionTypes, NineZoneDispatch, NineZoneLabels, NineZoneState,
   NineZoneStateReducer, PanelSide, panelSides, removeTab, TabState, toolSettingsTabId, WidgetPanels,
 } from "@bentley/ui-ninezone";
 import { useActiveFrontstageDef } from "../frontstage/Frontstage";
 import { FrontstageDef, FrontstageEventArgs, FrontstageNineZoneStateChangedEventArgs } from "../frontstage/FrontstageDef";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
+import { StagePanelMaxSizeSpec } from "../stagepanels/StagePanel";
 import { StagePanelState, StagePanelZoneDefKeys } from "../stagepanels/StagePanelDef";
+import { UiFramework } from "../UiFramework";
 import { useUiSettingsContext } from "../uisettings/useUiSettings";
 import { WidgetDef, WidgetEventArgs, WidgetStateChangedEventArgs } from "../widgets/WidgetDef";
 import { ZoneState } from "../zones/ZoneDef";
@@ -26,13 +30,9 @@ import { WidgetContent } from "./Content";
 import { WidgetPanelsFrontstageContent } from "./FrontstageContent";
 import { ModalFrontstageComposer, useActiveModalFrontstageInfo } from "./ModalFrontstageComposer";
 import { WidgetPanelsStatusBar } from "./StatusBar";
+import { WidgetPanelsTab } from "./Tab";
 import { WidgetPanelsToolbars } from "./Toolbars";
 import { ToolSettingsContent, WidgetPanelsToolSettings } from "./ToolSettings";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { assert, Logger } from "@bentley/bentleyjs-core";
-import { UiFramework } from "../UiFramework";
-import { StagePanelMaxSizeSpec } from "../stagepanels/StagePanel";
-import { WidgetPanelsTab } from "./Tab";
 
 // istanbul ignore next
 const WidgetPanelsFrontstageComponent = React.memo(function WidgetPanelsFrontstageComponent() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
@@ -386,7 +386,7 @@ export function getWidgetId(side: PanelSide, key: StagePanelZoneDefKeys): Widget
   }
 }
 
-function isVerticalPanelSide(side: PanelSide) { return !isHorizontalPanelSide(side); };
+function isVerticalPanelSide(side: PanelSide) { return !isHorizontalPanelSide(side); }
 
 /** @internal */
 export function getPanelZoneWidgets(frontstageDef: FrontstageDef, panelZone: WidgetIdTypes): WidgetDef[] {
