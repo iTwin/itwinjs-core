@@ -7,7 +7,7 @@
  */
 
 import { BeEvent, IDisposable, Logger } from "@bentley/bentleyjs-core";
-import { EventSource, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
+import { EventSource, IModelConnection, NativeApp } from "@bentley/imodeljs-frontend";
 import {
   Content, ContentDescriptorRequestOptions, ContentRequestOptions, ContentUpdateInfo, Descriptor, DescriptorOverrides, DisplayLabelRequestOptions,
   DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions,
@@ -129,7 +129,7 @@ export class PresentationManager implements IDisposable {
     this._localizationHelper = new LocalizationHelper();
     this._connections = new Map<IModelConnection, Promise<void>>();
 
-    if (IModelApp.isNativeApp) {
+    if (NativeApp.isValid) {
       // EventSource only works in native apps, so the `onUpdate` callback will only be called there. Adding
       // under the condition just to avoid an error message being logged.
       const eventSource = props?.eventSource ?? EventSource.global;

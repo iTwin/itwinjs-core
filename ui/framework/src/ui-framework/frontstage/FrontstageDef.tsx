@@ -39,7 +39,7 @@ export interface FrontstageNineZoneStateChangedEventArgs extends FrontstageEvent
 
 /** FrontstageDef class provides an API for a Frontstage.
  * @public
- */
+ */
 export class FrontstageDef {
   private _id: string = "";
   private _defaultTool?: ToolItemDef;
@@ -494,12 +494,12 @@ export class FrontstageDef {
     this._bottomCenter = Frontstage.createZoneDef(props.statusBar ? props.statusBar : props.bottomCenter, ZoneLocation.BottomCenter, props);
     this._bottomRight = Frontstage.createZoneDef(props.bottomRight, ZoneLocation.BottomRight, props);
 
-    this._topPanel = Frontstage.createStagePanelDef(props.topPanel, StagePanelLocation.Top, props);
-    this._topMostPanel = Frontstage.createStagePanelDef(props.topMostPanel, StagePanelLocation.TopMost, props);
-    this._leftPanel = Frontstage.createStagePanelDef(props.leftPanel, StagePanelLocation.Left, props);
-    this._rightPanel = Frontstage.createStagePanelDef(props.rightPanel, StagePanelLocation.Right, props);
-    this._bottomPanel = Frontstage.createStagePanelDef(props.bottomPanel, StagePanelLocation.Bottom, props);
-    this._bottomMostPanel = Frontstage.createStagePanelDef(props.bottomMostPanel, StagePanelLocation.BottomMost, props);
+    this._topPanel = Frontstage.createStagePanelDef(StagePanelLocation.Top, props);
+    this._topMostPanel = Frontstage.createStagePanelDef(StagePanelLocation.TopMost, props);
+    this._leftPanel = Frontstage.createStagePanelDef(StagePanelLocation.Left, props);
+    this._rightPanel = Frontstage.createStagePanelDef(StagePanelLocation.Right, props);
+    this._bottomPanel = Frontstage.createStagePanelDef(StagePanelLocation.Bottom, props);
+    this._bottomMostPanel = Frontstage.createStagePanelDef(StagePanelLocation.BottomMost, props);
   }
 
   /** @internal */
@@ -515,6 +515,18 @@ export class FrontstageDef {
 
   /** @beta */
   public restoreLayout() {
+    for (const zoneDef of this.zoneDefs) {
+      for (const widgetDef of zoneDef.widgetDefs) {
+        widgetDef.setWidgetState(widgetDef.defaultState);
+      }
+    }
+    for (const panelDef of this.panelDefs) {
+      panelDef.size = panelDef.defaultSize;
+      panelDef.panelState = panelDef.defaultState;
+      for (const widgetDef of panelDef.widgetDefs) {
+        widgetDef.setWidgetState(widgetDef.defaultState);
+      }
+    }
     FrontstageManager.onFrontstageRestoreLayoutEvent.emit({ frontstageDef: this });
   }
 }
