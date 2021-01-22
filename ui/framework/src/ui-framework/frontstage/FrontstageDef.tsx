@@ -504,12 +504,15 @@ export class FrontstageDef {
 
   /** @internal */
   public updateWidgetDefs(): void {
+    // Tracks provided widgets to prevent duplicates.
+    const widgetDefs: WidgetDef[] = [];
+
     this.zoneDefs.forEach((zoneDef: ZoneDef) => {
-      zoneDef.updateDynamicWidgetDefs(this.id, this.usage, zoneDef.zoneLocation);
+      zoneDef.updateDynamicWidgetDefs(this.id, this.usage, zoneDef.zoneLocation, undefined, widgetDefs);
     });
 
     this.panelDefs.forEach((panelDef: StagePanelDef) => {
-      panelDef.updateDynamicWidgetDefs(this.id, this.usage, panelDef.location);
+      panelDef.updateDynamicWidgetDefs(this.id, this.usage, panelDef.location, undefined, widgetDefs);
     });
   }
 

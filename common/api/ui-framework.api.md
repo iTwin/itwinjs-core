@@ -5193,7 +5193,7 @@ export class StagePanelDef extends WidgetHost {
     get size(): number | undefined;
     set size(size: number | undefined);
     // @internal (undocumented)
-    updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation_2, _section?: StagePanelSection_2): void;
+    updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation_2, _section: StagePanelSection_2 | undefined, widgetDefs: WidgetDef[]): void;
     get widgetDefs(): ReadonlyArray<WidgetDef>;
 }
 
@@ -6817,7 +6817,7 @@ export class WidgetHost {
     findWidgetDef(id: string): WidgetDef | undefined;
     getSingleWidgetDef(): WidgetDef | undefined;
     // @internal
-    updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation_2, section?: StagePanelSection_2): void;
+    updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation_2, section: StagePanelSection_2 | undefined, widgetDefs: WidgetDef[]): void;
     get widgetCount(): number;
     get widgetDefs(): ReadonlyArray<WidgetDef>;
     }
