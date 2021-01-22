@@ -2331,11 +2331,7 @@ describe("iModel", () => {
     assert.isUndefined(element.userLabel); // NOTE: userLabel is also cleared when the empty string is specified
   });
 
-<<<<<<< Updated upstream
-  it("should clear FederationGuid", () => {
-=======
   it("should update FederationGuid", () => {
->>>>>>> Stashed changes
     // insert element with an undefined FederationGuid
     const elementProps: DefinitionElementProps = {
       classFullName: SpatialCategory.classFullName,
