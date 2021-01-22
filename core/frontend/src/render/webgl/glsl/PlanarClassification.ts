@@ -53,25 +53,28 @@ const applyPlanarClassificationColor = `
     return vec4(rgb, baseColor.a);
   }
 
-  if (classPos.x < 0.0 || classPos.x > 1.0 || classPos.y < 0.0 || classPos.y > 1.0)
-    return baseColor;
+  // return isOutside ? vec4(0.0, 1.0, 0.0, 1.0) : TEXTURE(s_pClassSampler, vec2(classPos.x, classPos.y));
 
   float contentMode = u_pClassColorParams.z;
   vec4 colorTexel = vec4(0);
   vec4 maskTexel = vec4(0);
   bool doMask = contentMode > kTextureContentClassifierOnly;
   bool doClassify = contentMode != kTextureContentMaskOnly;
-  if (contentMode == kTextureContentClassifierOnly) {
-    colorTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, classPos.y / 2.0));
-  } else if (contentMode == kTextureContentMaskOnly) {
-    maskTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, classPos.y));
-  } else if (contentMode == kTextureContentClassifierAndMask) {
-    colorTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, classPos.y / 3.0));
-    maskTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, (2.0 + classPos.y) / 3.0));
+  if (!isOutside) {
+    if (contentMode == kTextureContentClassifierOnly) {
+      colorTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, classPos.y / 2.0));
+    } else if (contentMode == kTextureContentMaskOnly) {
+      maskTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, classPos.y));
+    } else if (contentMode == kTextureContentClassifierAndMask) {
+      colorTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, classPos.y / 3.0));
+      maskTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, (2.0 + classPos.y) / 3.0));
+    }
   }
-  if (doMask && !isOutside && (maskTexel.r + maskTexel.g + maskTexel.b + maskTexel.a > 0.0)) {
-    discard;
-    return vec4(0);
+  if (doMask) {
+    if (!isOutside && (maskTexel.r + maskTexel.g + maskTexel.b + maskTexel.a > 0.0)) {
+      discard;
+      return vec4(0);
+     }
 
     if (!doClassify)
       return baseColor;
@@ -255,7 +258,7 @@ export function addColorPlanarClassifier(builder: ProgramBuilder, translucent: b
         scratchColorParams[1] = 0.5;      // used for alpha value
         scratchColorParams[2] = 0.0;      // Not used for volume.
       }
-      uniform.setUniform2fv(scratchColorParams);
+      uniform.setUniform3fv(scratchColorParams);
     });
   });
 

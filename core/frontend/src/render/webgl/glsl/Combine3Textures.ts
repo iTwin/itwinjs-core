@@ -17,9 +17,9 @@ import { createViewportQuadBuilder } from "./ViewportQuad";
 const computeBaseColor = "return vec4(1.0);";
 
 const assignFragData = `
-  if (v_texCoord.y < 1.0 / 3.0)
+  if (v_texCoord.y < (1.0 / 3.0))
     FragColor = TEXTURE(u_texture0, vec2(v_texCoord.x, v_texCoord.y * 3.0));
-  else if (v_texCoord.y < 2.0 / 3.0)
+  else if (v_texCoord.y < (2.0 / 3.0))
     FragColor = TEXTURE(u_texture1, vec2(v_texCoord.x, v_texCoord.y * 3.0 - 1.0));
   else
     FragColor = TEXTURE(u_texture2, vec2(v_texCoord.x, v_texCoord.y * 3.0 - 2.0));

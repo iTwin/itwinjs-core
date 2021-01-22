@@ -323,7 +323,7 @@ class ClassifierAndMaskCombinationBuffer extends CombineTexturesFrameBuffer {
       return undefined;
 
     const textureFbo = SingleTextureFrameBuffer.createTextureAndFrameBuffer(width, 3 * height);
-    return undefined === textureFbo ? undefined : new ClassifierAndMaskCombinationBuffer(textureFbo, combineGeom, width, height, 2);
+    return undefined === textureFbo ? undefined : new ClassifierAndMaskCombinationBuffer(textureFbo, combineGeom, width, height, 3);
   }
 }
 
@@ -535,27 +535,39 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
       if (this._maskGraphics.length === 0) {
         return;
       } else {
-        this._maskBuffer = MaskFrameBuffer.create(this._width, this._height);
-        if (undefined === this._maskBuffer)
-          return;
+        if (undefined === this._maskBuffer) {
+          this._maskBuffer = MaskFrameBuffer.create(this._width, this._height);
+          if (undefined === this._maskBuffer)
+            return;
+        }
         this._contentMode = PlanarClassifierContent.MaskOnly;
       }
     } else {
-      this._classifierBuffers = ClassifierFrameBuffers.create(this._width, this._height);
-      if (undefined === this._classifierBuffers)
-        return;
+      if (undefined === this._classifierBuffers) {
+        this._classifierBuffers = ClassifierFrameBuffers.create(this._width, this._height);
+        if (undefined === this._classifierBuffers)
+          return;
+      }
       if (this._maskGraphics.length === 0) {
-        combinationBuffer = this._classifierCombinedBuffer = ClassifierCombinationBuffer.create(this._width, this._height, this._classifierBuffers.textures.color, this._classifierBuffers.textures.feature);
-        if (undefined === this._classifierCombinedBuffer)
-          return;
+        if (undefined === this._classifierCombinedBuffer) {
+          combinationBuffer = this._classifierCombinedBuffer = ClassifierCombinationBuffer.create(this._width, this._height, this._classifierBuffers.textures.color, this._classifierBuffers.textures.feature);
+          if (undefined === this._classifierCombinedBuffer)
+            return;
+        }
         this._contentMode = PlanarClassifierContent.ClassifierOnly;
+        combinationBuffer = this._classifierCombinedBuffer
       } else {
-        this._maskBuffer = MaskFrameBuffer.create(this._width, this._height);
-        if (undefined === this._maskBuffer)
-          return;
-        combinationBuffer = this._classifierAndMaskCombinedBuffer = ClassifierAndMaskCombinationBuffer.create(this._width, this._height, this._classifierBuffers.textures.color, this._classifierBuffers.textures.feature, this._maskBuffer.texture);
-        if (undefined === this._classifierAndMaskCombinedBuffer)
-          return;
+        if (undefined === this._maskBuffer) {
+          this._maskBuffer = MaskFrameBuffer.create(this._width, this._height);
+          if (undefined === this._maskBuffer)
+            return;
+        }
+        if (undefined === this._classifierAndMaskCombinedBuffer) {
+          combinationBuffer = this._classifierAndMaskCombinedBuffer = ClassifierAndMaskCombinationBuffer.create(this._width, this._height, this._classifierBuffers.textures.color, this._classifierBuffers.textures.feature, this._maskBuffer.texture);
+          if (undefined === this._classifierAndMaskCombinedBuffer)
+            return;
+        }
+        combinationBuffer = this._classifierAndMaskCombinedBuffer;
         this._contentMode = PlanarClassifierContent.ClassifierAndMask;
       }
     }
