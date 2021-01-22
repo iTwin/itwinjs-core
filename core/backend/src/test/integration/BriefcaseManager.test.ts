@@ -7,9 +7,9 @@ import { assert } from "chai";
 import * as os from "os";
 import * as path from "path";
 import * as readline from "readline";
-import { BriefcaseStatus, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { BeDuration, BriefcaseStatus, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { IModelError, IModelVersion } from "@bentley/imodeljs-common";
-import { UserCancelledError } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext, ECJsonTypeMap, ProgressCallback, UserCancelledError, WsgInstance, WsgQuery } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { CheckpointManager, V1CheckpointManager } from "../../CheckpointManager";
 import {
@@ -19,6 +19,7 @@ import {
 import { IModelTestUtils, TestIModelInfo } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 import { TestChangeSetUtility } from "./TestChangeSetUtility";
+import { ChangeSetQuery, CheckpointQuery, IModelBaseHandler, InitializationState } from "@bentley/imodelhub-client";
 
 async function createIModelOnHub(requestContext: AuthorizedBackendRequestContext, projectId: GuidString, iModelName: string): Promise<string> {
   let iModel = await HubUtility.queryIModelByName(requestContext, projectId, iModelName);
@@ -53,20 +54,20 @@ describe("BriefcaseManager (#integration)", () => {
     // IModelTestUtils.setupDebugLogLevels();
 
     requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
-    testProjectId = await HubUtility.queryProjectIdByName(requestContext, testProjectName);
-    readOnlyTestIModel = await IModelTestUtils.getTestModelInfo(requestContext, testProjectId, "ReadOnlyTest");
-    noVersionsTestIModel = await IModelTestUtils.getTestModelInfo(requestContext, testProjectId, "NoVersionsTest");
-    readWriteTestIModel = await IModelTestUtils.getTestModelInfo(requestContext, testProjectId, "ReadWriteTest");
+    testProjectId = '1a0ca7de-1e84-4daa-b297-29901986c99a';
+    // readOnlyTestIModel = await IModelTestUtils.getTestModelInfo(requestContext, testProjectId, "ReadOnlyTest");
+    // noVersionsTestIModel = await IModelTestUtils.getTestModelInfo(requestContext, testProjectId, "NoVersionsTest");
+    // readWriteTestIModel = await IModelTestUtils.getTestModelInfo(requestContext, testProjectId, "ReadWriteTest");
 
-    // Purge briefcases that are close to reaching the acquire limit
-    await HubUtility.purgeAcquiredBriefcases(requestContext, testProjectName, "ReadOnlyTest");
-    await HubUtility.purgeAcquiredBriefcases(requestContext, testProjectName, "NoVersionsTest");
-    await HubUtility.purgeAcquiredBriefcases(requestContext, testProjectName, "ReadWriteTest");
-    await HubUtility.purgeAcquiredBriefcases(requestContext, testProjectName, "Stadium Dataset 1");
+    // // Purge briefcases that are close to reaching the acquire limit
+    // await HubUtility.purgeAcquiredBriefcases(requestContext, testProjectName, "ReadOnlyTest");
+    // await HubUtility.purgeAcquiredBriefcases(requestContext, testProjectName, "NoVersionsTest");
+    // await HubUtility.purgeAcquiredBriefcases(requestContext, testProjectName, "ReadWriteTest");
+    // await HubUtility.purgeAcquiredBriefcases(requestContext, testProjectName, "Stadium Dataset 1");
     managerRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager);
-    await HubUtility.purgeAcquiredBriefcases(managerRequestContext, testProjectName, "ReadOnlyTest");
-    await HubUtility.purgeAcquiredBriefcases(managerRequestContext, testProjectName, "NoVersionsTest");
-    await HubUtility.purgeAcquiredBriefcases(managerRequestContext, testProjectName, "ReadWriteTest");
+    // await HubUtility.purgeAcquiredBriefcases(managerRequestContext, testProjectName, "ReadOnlyTest");
+    // await HubUtility.purgeAcquiredBriefcases(managerRequestContext, testProjectName, "NoVersionsTest");
+    // await HubUtility.purgeAcquiredBriefcases(managerRequestContext, testProjectName, "ReadWriteTest");
   });
 
   after(() => {
@@ -732,4 +733,127 @@ describe("BriefcaseManager (#integration)", () => {
     assert.isTrue(cancelled2);
   });
 
+  it.only("Should be able to recover after changeSet deletion (#integration)", async () => {
+    const userContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager); // User2 is used for the test
+    const projectId = "1a0ca7de-1e84-4daa-b297-29901986c99a";
+
+    const testIModelName = "DeleteCsTest";
+    const testUtility = new TestChangeSetUtility(userContext, testIModelName);
+    testUtility.projectId = projectId; // todo
+    var iModel = await testUtility.createTestIModel();
+    assert.exists(iModel);
+
+    // Push 2 valid changeSets
+    await testUtility.pushTestChangeSet();
+    await testUtility.pushTestChangeSet();
+
+    // Push an invalid changeSet
+    const fileHandler = IModelHost.iModelClient.fileHandler!;
+    const oldUploadFunc = fileHandler.uploadFile.bind(fileHandler);
+    try {
+      var newUploadFunc: (requestContext: AuthorizedClientRequestContext, uploadUrlString: string, path: string, progress?: ProgressCallback) => Promise<void> =
+        (requestContext, uploadUrlString, filePath, progress) => {
+          const changeSetFileContentsLength = IModelJsFs.readFileSync(filePath).length;
+          const invalidChangeSetFileContents = 'x'.repeat(changeSetFileContentsLength);
+          IModelJsFs.writeFileSync(filePath, invalidChangeSetFileContents);
+
+          return oldUploadFunc(requestContext, uploadUrlString, filePath, progress);
+        }
+      // newUploadFunc = newUploadFunc.bind(fileHandler);
+      fileHandler.uploadFile = newUploadFunc;
+      await testUtility.pushTestChangeSet();
+    } finally {
+      fileHandler.uploadFile = oldUploadFunc;
+    }
+
+    // Push 2 more valid changeSets
+    await testUtility.pushTestChangeSet();
+    await testUtility.pushTestChangeSet();
+
+    const lastChangeSetId = iModel.nativeDb.getParentChangeSetId();
+    // Ensure that DoNotScheduleRenderThumbnailJob option is disabled
+    assert.isFalse(IModelHost.iModelClient.requestOptions.isSet);
+    // Create version to trigger checkpoint generation
+    await IModelHost.iModelClient.versions.create(userContext, iModel.iModelId, lastChangeSetId, "Version 1");
+
+    for (var i = 0; i < 50; i++) {
+      const checkpoint = (await IModelHost.iModelClient.checkpoints.get(userContext, iModel.iModelId, new CheckpointQuery().byChangeSetId(lastChangeSetId)))[0];
+      if (checkpoint.state === InitializationState.Failed)
+        break;
+
+      // TODO: fail if didn't break
+      await BeDuration.wait(10000);
+    }
+
+    // Delete changeSet
+    @ECJsonTypeMap.classToJson("wsg", "iModelActions.DeleteChangeSet", { schemaPropertyName: "schemaName", classPropertyName: "className" })
+    class DeleteChangeSetAction extends WsgInstance {
+      @ECJsonTypeMap.propertyToJson("wsg", "instanceId")
+      public id?: GuidString;
+
+      @ECJsonTypeMap.propertyToJson("wsg", "properties.ChangeSetId")
+      public changeSetId?: GuidString;
+
+      @ECJsonTypeMap.propertyToJson("wsg", "properties.State")
+      public state?: number;
+    }
+
+    const invalidChangeSet = (await IModelHost.iModelClient.changeSets.get(userContext, iModel.iModelId, new ChangeSetQuery().filter("Index+eq+4")))[0];
+    const deleteChangeSetActionInstance = new DeleteChangeSetAction();
+    deleteChangeSetActionInstance.changeSetId = invalidChangeSet.id;
+
+    const relativePostActionUrl = `/Repositories/iModel--${iModel.iModelId}/iModelActions/DeleteChangeSet`;
+    const iModelBaseHandler = new IModelBaseHandler();
+
+    const deleteChangeSetAction = await iModelBaseHandler.postInstance(userContext, DeleteChangeSetAction, relativePostActionUrl, deleteChangeSetActionInstance);
+
+    const relativeGetActionUrl = `/Repositories/iModel--${iModel.iModelId}/iModelActions/DeleteChangeSet/${deleteChangeSetAction.id}`;
+    for (var i = 0; i < 50; i++) {
+      const deleteChangeSetAction = (await iModelBaseHandler.getInstances(userContext, DeleteChangeSetAction, relativeGetActionUrl))[0];
+      if (deleteChangeSetAction.state === 2) // TODO completed
+        break;
+
+      // TODO: fail if didn't break
+      await BeDuration.wait(10000);
+    }
+
+    // Redownload briefcase
+    const args = {
+      contextId: projectId,
+      iModelId: iModel.iModelId,
+      briefcaseId: iModel.briefcaseId
+    };
+
+    await BriefcaseManager.downloadBriefcase(requestContext, args);
+    requestContext.enter();
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // const rootEl: Element = iModel.elements.getRootSubject();
+    // rootEl.userLabel = `${rootEl.userLabel}changed`;
+    // await iModel.concurrencyControl.requestResourcesForUpdate(userContext, [rootEl]);
+    // iModel.elements.updateElement(rootEl);
+
+    // await iModel.concurrencyControl.request(userContext);
+    // assert.isTrue(iModel.nativeDb.hasUnsavedChanges());
+    // assert.isFalse(iModel.nativeDb.hasPendingTxns());
+    // iModel.saveChanges();
+    // assert.isFalse(iModel.nativeDb.hasUnsavedChanges());
+    // assert.isTrue(iModel.nativeDb.hasPendingTxns());
+
+    // iModel.close();
+
+    // Delete iModel from the Hub and disk
+    await testUtility.deleteTestIModel();
+  });
 });
