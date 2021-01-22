@@ -60,9 +60,7 @@ const applyTextureWeight = `
   vec3 rgb = mix(baseColor.rgb, g_surfaceTexel.rgb, textureWeight);
   rgb = chooseVec3WithBitFlag(rgb, baseColor.rgb, surfaceFlags, kSurfaceBit_OverrideRgb);
 
-  float a = baseColor.a;
-  if (applyTexture && !isSurfaceBitSet(kSurfaceBit_OverrideAlpha))
-    a = a * g_surfaceTexel.a;
+  float a = applyTexture ? baseColor.a * g_surfaceTexel.a : baseColor.a;
 
   return vec4(rgb, a);
 `;
@@ -274,7 +272,6 @@ function addSurfaceFlagsLookup(builder: ShaderBuilder) {
   builder.addConstant("kSurfaceBitIndex_TransparencyThreshold", VariableType.Int, SurfaceBitIndex.TransparencyThreshold.toString());
   builder.addConstant("kSurfaceBitIndex_BackgroundFill", VariableType.Int, SurfaceBitIndex.BackgroundFill.toString());
   builder.addConstant("kSurfaceBitIndex_HasColorAndNormal", VariableType.Int, SurfaceBitIndex.HasColorAndNormal.toString());
-  builder.addConstant("kSurfaceBitIndex_OverrideAlpha", VariableType.Int, SurfaceBitIndex.OverrideAlpha.toString());
   builder.addConstant("kSurfaceBitIndex_OverrideRgb", VariableType.Int, SurfaceBitIndex.OverrideRgb.toString());
   builder.addConstant("kSurfaceBitIndex_NoFaceFront", VariableType.Int, SurfaceBitIndex.NoFaceFront.toString());
   builder.addConstant("kSurfaceBitIndex_HasMaterialAtlas", VariableType.Int, SurfaceBitIndex.HasMaterialAtlas.toString());
@@ -283,7 +280,6 @@ function addSurfaceFlagsLookup(builder: ShaderBuilder) {
   // used differently there & so require different constants.  Unused constants are commented out.
   builder.addBitFlagConstant("kSurfaceBit_HasTexture", SurfaceBitIndex.HasTexture);
   builder.addBitFlagConstant("kSurfaceBit_IgnoreMaterial", SurfaceBitIndex.IgnoreMaterial);
-  builder.addBitFlagConstant("kSurfaceBit_OverrideAlpha", SurfaceBitIndex.OverrideAlpha);
   builder.addBitFlagConstant("kSurfaceBit_OverrideRgb", SurfaceBitIndex.OverrideRgb);
 
   // Only need masks for flags modified in vertex shader
@@ -291,7 +287,6 @@ function addSurfaceFlagsLookup(builder: ShaderBuilder) {
   const type = System.instance.capabilities.isWebGL2 ? VariableType.Uint : VariableType.Float;
   builder.addConstant("kSurfaceMask_HasTexture", type, SurfaceFlags.HasTexture.toString() + suffix);
   builder.addConstant("kSurfaceMask_IgnoreMaterial", type, SurfaceFlags.IgnoreMaterial.toString() + suffix);
-  builder.addConstant("kSurfaceMask_OverrideAlpha", type, SurfaceFlags.OverrideAlpha.toString() + suffix);
   builder.addConstant("kSurfaceMask_OverrideRgb", type, SurfaceFlags.OverrideRgb.toString() + suffix);
 
   addExtractNthBit(builder);
@@ -307,13 +302,11 @@ function addSurfaceFlagsLookup(builder: ShaderBuilder) {
 const initSurfaceFlags = `
   surfaceFlags = u_surfaceFlags[kSurfaceBitIndex_HasTexture] ? kSurfaceMask_HasTexture : 0.0;
   surfaceFlags += u_surfaceFlags[kSurfaceBitIndex_IgnoreMaterial] ? kSurfaceMask_IgnoreMaterial : 0.0;
-  surfaceFlags += u_surfaceFlags[kSurfaceBitIndex_OverrideAlpha] ? kSurfaceMask_OverrideAlpha : 0.0;
   surfaceFlags += u_surfaceFlags[kSurfaceBitIndex_OverrideRgb] ? kSurfaceMask_OverrideRgb : 0.0;
 `;
 const initSurfaceFlags2 = `
   surfaceFlags = u_surfaceFlags[kSurfaceBitIndex_HasTexture] ? kSurfaceMask_HasTexture : 0u;
   surfaceFlags += u_surfaceFlags[kSurfaceBitIndex_IgnoreMaterial] ? kSurfaceMask_IgnoreMaterial : 0u;
-  surfaceFlags += u_surfaceFlags[kSurfaceBitIndex_OverrideAlpha] ? kSurfaceMask_OverrideAlpha : 0u;
   surfaceFlags += u_surfaceFlags[kSurfaceBitIndex_OverrideRgb] ? kSurfaceMask_OverrideRgb : 0u;
 `;
 
@@ -333,9 +326,6 @@ const computeBaseSurfaceFlags = `
 const computeColorSurfaceFlags = `
   if (feature_rgb.r >= 0.0)
     surfaceFlags += kSurfaceMask_OverrideRgb;
-
-  if (feature_alpha >= 0.0 && !hasTexture)
-    surfaceFlags += kSurfaceMask_OverrideAlpha;
 `;
 
 const returnSurfaceFlags = "  return surfaceFlags;\n";

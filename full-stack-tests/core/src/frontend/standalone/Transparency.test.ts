@@ -22,14 +22,14 @@ interface GraphicOptions {
 
 class TransparencyDecorator {
   private readonly _graphics: RenderGraphicOwner[] = [];
-  public readonly transparencyOverrides = new Map<string, number>();
+  private readonly _symbologyOverrides = new Map<string, FeatureAppearance>();
 
   public dispose(): void {
     for (const graphic of this._graphics)
       graphic.disposeGraphic();
 
     this._graphics.length = 0;
-    this.transparencyOverrides.clear();
+    this._symbologyOverrides.clear();
   }
 
   public reset(): void {
@@ -42,8 +42,16 @@ class TransparencyDecorator {
   }
 
   public addFeatureOverrides(overrides: FeatureSymbology.Overrides): void {
-    for (const [id, transp] of this.transparencyOverrides)
-      overrides.overrideElement(id, FeatureAppearance.fromTransparency(transp));
+    for (const [id, app] of this._symbologyOverrides)
+      overrides.overrideElement(id, app);
+  }
+
+  public overrideTransparency(id: string, transparency: number): void {
+    this._symbologyOverrides.set(id, FeatureAppearance.fromTransparency(transparency));
+  }
+
+  public ignoreMaterial(id: string): void {
+    this._symbologyOverrides.set(id, FeatureAppearance.fromJSON({ ignoresMaterial: true }));
   }
 
   /** Make a rectangle that occupies the entire view. Priority is Z in NPC coords - [0,1] maps to [far, near]. */
@@ -174,7 +182,7 @@ describe("Transparency", async () => {
     const pickableId = imodel.transientIds.next;
     await test(
       (vp) => {
-        decorator.transparencyOverrides.set(pickableId, 0);
+        decorator.overrideTransparency(pickableId, 0);
         decorator.add(vp, { color: ColorDef.red.withTransparency(0xcf), pickableId });
       },
       (vp) => expectColor(vp, ColorDef.red),
@@ -182,7 +190,7 @@ describe("Transparency", async () => {
 
     await test(
       (vp) => {
-        decorator.transparencyOverrides.set(pickableId, 0.5);
+        decorator.overrideTransparency(pickableId, 0.5);
         decorator.add(vp, { color: ColorDef.red, pickableId });
       },
       (vp) => expectTransparency(vp, ColorDef.red.withTransparency(0x7f))
@@ -190,7 +198,7 @@ describe("Transparency", async () => {
 
     await test(
       (vp) => {
-        decorator.transparencyOverrides.set(pickableId, 0.5);
+        decorator.overrideTransparency(pickableId, 0.5);
         decorator.add(vp, { color: ColorDef.red.withTransparency(0xcf), pickableId });
       },
       (vp) => expectTransparency(vp, ColorDef.red.withTransparency(0x7f))
@@ -302,5 +310,115 @@ describe("Transparency", async () => {
         (vp) => expectTransparency(vp, ColorDef.blue.withTransparency(testCase[2]))
       );
     }
+  });
+
+  it("should use element alpha and ignore texture if symbology overrides ignore material", async () => {
+    const pickableId = imodel.transientIds.next;
+    await test(
+      (vp) => {
+        decorator.ignoreMaterial(pickableId);
+        const material = createMaterial(0.5, createBlueTexture(0x7f), undefined, ColorDef.green);
+        decorator.add(vp, { color: ColorDef.red, material, pickableId });
+      },
+      (vp) => expectColor(vp, ColorDef.red)
+    );
+
+    await test(
+      (vp) => {
+        decorator.ignoreMaterial(pickableId);
+        const color = ColorDef.red.withTransparency(0xaf);
+        const material = createMaterial(0.5, createBlueTexture(0x7f), undefined, ColorDef.green);
+        decorator.add(vp, { color, material, pickableId });
+      },
+      (vp) => expectTransparency(vp, ColorDef.red.withTransparency(0xaf))
+    );
+  });
+
+  it("should replace material alpha with symbology override", async () => {
+    const pickableId = imodel.transientIds.next;
+
+    await test(
+      (vp) => {
+        decorator.add(vp, { color: ColorDef.green, pickableId, material: createMaterial(1, undefined, undefined, ColorDef.red) });
+        decorator.overrideTransparency(pickableId, 0.5);
+      },
+      (vp) => expectTransparency(vp, ColorDef.red.withTransparency(0x7f))
+    );
+
+    await test(
+      (vp) => {
+        decorator.add(vp, { color: ColorDef.green, pickableId, material: createMaterial(0.5, undefined, undefined, ColorDef.red) });
+        decorator.overrideTransparency(pickableId, 0);
+      },
+      (vp) => expectColor(vp, ColorDef.red)
+    );
+
+    await test(
+      (vp) => {
+        decorator.add(vp, { color: ColorDef.green, pickableId, material: createMaterial(0.5, undefined, undefined, ColorDef.red) });
+        decorator.overrideTransparency(pickableId, 1);
+      },
+      (vp) => expectColor(vp, ColorDef.black)
+    );
+
+    await test(
+      (vp) => {
+        decorator.add(vp, { color: ColorDef.green, pickableId, material: createMaterial(1) });
+        decorator.overrideTransparency(pickableId, 0.5);
+      },
+      (vp) => expectTransparency(vp, ColorDef.green.withTransparency(0x7f))
+    );
+
+    await test(
+      (vp) => {
+        decorator.add(vp, { color: ColorDef.green, pickableId, material: createMaterial(0.5) });
+        decorator.overrideTransparency(pickableId, 0);
+      },
+      (vp) => expectColor(vp, ColorDef.green)
+    );
+
+    await test(
+      (vp) => {
+        decorator.add(vp, { color: ColorDef.green, pickableId, material: createMaterial(undefined, undefined, undefined, ColorDef.red) });
+        decorator.overrideTransparency(pickableId, 0.5);
+      },
+      (vp) => expectTransparency(vp, ColorDef.red.withTransparency(0x7f))
+    );
+
+    await test(
+      (vp) => {
+        decorator.add(vp, { color: ColorDef.green.withTransparency(0x7f), pickableId, material: createMaterial(undefined, undefined, undefined, ColorDef.red) });
+        decorator.overrideTransparency(pickableId, 0);
+      },
+      (vp) => expectColor(vp, ColorDef.red)
+    );
+  });
+
+  // NB: Overriding transparency to ZERO causes the texture to draw fully-opaque except where it is fully-transparent.
+  // Unclear if this is what we want. Without it, there's no way to make a very-transparent textured surface more visible via symbology overrides -
+  // but any value other than zero will multiply, making transparent textures always more transparent, never less.
+  it("should multiply texture alpha with symbology override", async () => {
+    const pickableId = imodel.transientIds.next;
+    async function testCase(color: ColorDef, transparencyOverride: number, material: RenderMaterial, expectedColor: ColorDef): Promise<void> {
+      await test(
+        (vp) => {
+          decorator.overrideTransparency(pickableId, transparencyOverride);
+          decorator.add(vp, { color, pickableId, material });
+        },
+        (vp) => expectTransparency(vp, expectedColor)
+      );
+    }
+
+    await testCase(ColorDef.red, 0.5, createMaterial(undefined, createBlueTexture()), ColorDef.blue.withTransparency(0x7f));
+    await testCase(ColorDef.red, 0.5, createMaterial(undefined, createBlueTexture(0x7f)), ColorDef.blue.withTransparency(0xbf));
+    await testCase(ColorDef.red, 0, createMaterial(undefined, createBlueTexture(0x7f)), ColorDef.blue);
+    await testCase(ColorDef.red, 1, createMaterial(undefined, createBlueTexture()), ColorDef.black);
+
+    await testCase(ColorDef.green, 0.5, createMaterial(1, createBlueTexture()), ColorDef.blue.withTransparency(0x7f));
+    await testCase(ColorDef.green, 0.5, createMaterial(1, createBlueTexture(0x7f)), ColorDef.blue.withTransparency(0xbf));
+    await testCase(ColorDef.green, 0, createMaterial(1, createBlueTexture(0x7f)), ColorDef.blue);
+    await testCase(ColorDef.green, 1, createMaterial(1, createBlueTexture()), ColorDef.black);
+
+    await testCase(ColorDef.green, 0.75, createMaterial(0.9, createBlueTexture(0x7f)), ColorDef.blue.withTransparency(0xdf));
   });
 });
