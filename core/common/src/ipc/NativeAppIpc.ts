@@ -12,6 +12,8 @@ import { IModelConnectionProps, IModelRpcProps } from "../IModel";
 
 /** @internal */
 export const nativeAppChannel = "nativeApp";
+/** @internal */
+export const nativeAppResponse = "nativeApp-notify";
 
 /**
  * Type of value for storage values
@@ -39,10 +41,6 @@ export interface QueuedEvent {
 export namespace Events {
   export namespace NativeApp {
     export const namespace = "NativeApp";
-    export const onMemoryWarning = "onMemoryWarning";
-    export const onBriefcaseDownloadProgress = "download-progress";
-    export const onInternetConnectivityChanged = "onInternetConnectivityChanged";
-    export const onUserStateChanged = "onUserStateChanged";
     /** [[QueuedEvent.data]] is an array of [[ModelGeometryChangesProps]]. */
     export const modelGeometryChanges = "modelGeometryChanges";
   }
@@ -73,10 +71,21 @@ export enum OverriddenBy {
 }
 
 /**
+ * Interface registered by the frontend [NotificationHandler]($common) to be notified of events from NativeApp backend.
+ * @internal
+ */
+export interface NativeAppResponse {
+  notifyInternetConnectivityChanged: (status: InternetConnectivityStatus) => void;
+  notifyUserStateChanged: (arg: { accessToken: any, err?: string }) => void;
+  notifyMemoryWarning: () => void;
+}
+
+/**
  * The methods that may be invoked via Ipc from the frontend of a Native App and are implemented on its backend.
  * @internal
  */
 export interface NativeAppIpc {
+
   /** Send frontend log to backend.
    * @param _level Specify log level.
    * @param _category Specify log category.
