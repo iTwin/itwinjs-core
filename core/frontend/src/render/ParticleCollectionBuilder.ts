@@ -215,7 +215,7 @@ class Builder implements ParticleCollectionBuilder {
     // If we have a pickable Id, produce a batch.
     const featureTable = this._pickableId ? new FeatureTable(1) : undefined;
     if (featureTable) {
-      toWorld.multiplyRange(range, range);
+      this._localToWorldTransform.multiplyRange(range, range);
       featureTable.insert(new Feature(this._pickableId));
       graphic = this._viewport.target.renderSystem.createBatch(graphic, PackedFeatureTable.pack(featureTable), range);
     }
