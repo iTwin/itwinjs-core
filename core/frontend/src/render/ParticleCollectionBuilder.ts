@@ -197,25 +197,27 @@ class Builder implements ParticleCollectionBuilder {
     this._particles.length = 0;
     this._hasVaryingTransparency = false;
 
-    let graphic;
-    const system = this._viewport.target.renderSystem;
-    graphic = opaque && transparent ? system.createGraphicList([opaque, transparent]) : (opaque ?? transparent);
-    if (!graphic)
+    if (!transparent && !opaque)
       return undefined;
 
     // Transform from origin to collection, then to world.
     const toCollection = Transform.createTranslation(range.center);
     const toWorld = toCollection.multiplyTransformTransform(this._localToWorldTransform);
     const branch = new GraphicBranch(true);
-    branch.add(graphic);
-    graphic = system.createGraphicBranch(branch, toWorld);
+    if (opaque)
+      branch.add(opaque);
+
+    if (transparent)
+      branch.add(transparent);
+
+    let graphic = this._viewport.target.renderSystem.createGraphicBranch(branch, toWorld);
 
     // If we have a pickable Id, produce a batch.
     const featureTable = this._pickableId ? new FeatureTable(1) : undefined;
     if (featureTable) {
       toWorld.multiplyRange(range, range);
       featureTable.insert(new Feature(this._pickableId));
-      graphic = system.createBatch(graphic, PackedFeatureTable.pack(featureTable), range);
+      graphic = this._viewport.target.renderSystem.createBatch(graphic, PackedFeatureTable.pack(featureTable), range);
     }
 
     return graphic;
