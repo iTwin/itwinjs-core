@@ -29,7 +29,6 @@ import * as displayStyleState from "./DisplayStyleState";
 import * as drawingViewState from "./DrawingViewState";
 import { ElementLocateManager } from "./ElementLocateManager";
 import { EntityState } from "./EntityState";
-import { EventSource } from "./EventSource";
 import { ExtensionAdmin } from "./extension/ExtensionAdmin";
 import { FeatureToggleClient } from "./FeatureToggleClient";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
@@ -203,8 +202,8 @@ export class IModelApp {
   private static _securityOptions: FrontendSecurityOptions;
   private static _mapLayerFormatRegistry: MapLayerFormatRegistry;
 
-  // No instances or subclasses of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
-  private constructor() { }
+  // No instances of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
+  protected constructor() { }
 
   /** Provides authorization information for various frontend APIs */
   public static authorizationClient?: FrontendAuthorizationClient;
@@ -461,7 +460,6 @@ export class IModelApp {
     [this.toolAdmin, this.viewManager, this.tileAdmin].forEach((sys) => sys.onShutDown());
     this._renderSystem = dispose(this._renderSystem);
     this._entityClasses.clear();
-    EventSource.clearGlobal();
     this._initialized = false;
   }
 

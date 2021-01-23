@@ -17,7 +17,6 @@ export * from "./ElementEditor";
 export * from "./ElementLocateManager";
 export * from "./EmphasizeElements";
 export * from "./EntityState";
-export * from "./EventSource";
 export * from "./FeatureLogBatchClient";
 export * from "./FeatureOverrideProvider";
 export * from "./FeatureTrackingManager";

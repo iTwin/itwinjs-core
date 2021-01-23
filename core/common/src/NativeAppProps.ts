@@ -6,53 +6,19 @@
  * @module NativeApp
  */
 
-import { GuidString, LogLevel } from "@bentley/bentleyjs-core";
-import { BriefcaseProps, LocalBriefcaseProps, OpenBriefcaseProps, RequestNewBriefcaseProps } from "../BriefcaseTypes";
-import { IModelConnectionProps, IModelRpcProps } from "../IModel";
+import { GuidString } from "@bentley/bentleyjs-core";
+import { BriefcaseProps, LocalBriefcaseProps, RequestNewBriefcaseProps } from "./BriefcaseTypes";
 
 /** @internal */
 export const nativeAppChannel = "nativeApp";
 /** @internal */
-export const nativeAppResponse = "nativeApp-notify";
+export const nativeAppNotify = "nativeApp-notify";
 
 /**
  * Type of value for storage values
  * @beta
  */
 export type StorageValue = string | number | boolean | null | Uint8Array;
-
-/** Represents a push event emitted from an [EventSink]($backend) to an [EventSource]($frontend).
- * @note Events are received by an EventSink in the order in which they were emitted by the EventSource.
- * @internal
- */
-export interface QueuedEvent {
-  /** Auto-incremented id. */
-  eventId: number;
-  /** A namespace used for preventing collisions between event names. */
-  namespace: string;
-  /** A name uniquely identifying the type of event within its namespace. */
-  eventName: string;
-  /** Event payload. The specific type depends on the event name. */
-  data: any;
-}
-/** Event names and namespace exposed by iModel.js.
- * @internal
- */
-export namespace Events {
-  export namespace NativeApp {
-    export const namespace = "NativeApp";
-    /** [[QueuedEvent.data]] is an array of [[ModelGeometryChangesProps]]. */
-    export const modelGeometryChanges = "modelGeometryChanges";
-  }
-}
-
-/** Identifies a list of tile content Ids belonging to a single tile tree.
- * @internal
- */
-export interface TileTreeContentIds {
-  treeId: string;
-  contentIds: string[];
-}
 
 /** Indicates whether or not the computer is currently connected to the internet.
  * @beta
@@ -71,10 +37,10 @@ export enum OverriddenBy {
 }
 
 /**
- * Interface registered by the frontend [NotificationHandler]($common) to be notified of events from NativeApp backend.
+ * Interface implemented by the frontend [NotificationHandler]($common) to be notified of events from NativeApp backend.
  * @internal
  */
-export interface NativeAppResponse {
+export interface NativeAppNotifications {
   notifyInternetConnectivityChanged: (status: InternetConnectivityStatus) => void;
   notifyUserStateChanged: (arg: { accessToken: any, err?: string }) => void;
   notifyMemoryWarning: () => void;
@@ -84,16 +50,7 @@ export interface NativeAppResponse {
  * The methods that may be invoked via Ipc from the frontend of a Native App and are implemented on its backend.
  * @internal
  */
-export interface NativeAppIpc {
-
-  /** Send frontend log to backend.
-   * @param _level Specify log level.
-   * @param _category Specify log category.
-   * @param _message Specify log message.
-   * @param _metaData metaData if any.
-   */
-  log: (_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any) => Promise<void>;
-
+export interface NativeAppFunctions {
   /** Check if the internet is reachable. */
   checkInternetConnectivity: () => Promise<InternetConnectivityStatus>;
 
@@ -104,18 +61,6 @@ export interface NativeAppIpc {
 
   /** Return configuration information from backend. */
   getConfig: () => Promise<any>;
-
-  /** Cancels currently pending or active generation of tile content.
-   * @param _iModelToken Identifies the iModel
-   * @param _contentIds A list of content requests to be canceled, grouped by tile tree Id.
-   * @internal
-   */
-  cancelTileContentRequests: (_iModelToken: IModelRpcProps, _contentIds: TileTreeContentIds[]) => Promise<void>;
-
-  /** Cancel element graphics requests.
-   * @see [[IModelTileRpcInterface.requestElementGraphics]].
-   */
-  cancelElementGraphicsRequests: (_rpcProps: IModelRpcProps, _requestIds: string[]) => Promise<void>;
 
   /** Acquire a new BriefcaseId for the supplied iModelId from iModelHub */
   acquireNewBriefcaseId: (_iModelId: GuidString) => Promise<number>;
@@ -134,17 +79,6 @@ export interface NativeAppIpc {
    * @note returns true if the cancel request was acknowledged. false otherwise
    */
   requestCancelDownloadBriefcase: (_fileName: string) => Promise<boolean>;
-
-  /**
-   * Open a briefcase file from the local disk.
-   */
-  open: (_args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
-
-  /**
-   * Close a briefcase on the backend.
-   * @param _key The key from the IModelConnectionProps returned by [[open]]
-   */
-  closeBriefcase: (_key: string) => Promise<void>;
 
   /**
    * Delete a previously downloaded briefcase. The briefcase must be closed.
@@ -235,9 +169,4 @@ export interface NativeAppIpc {
    * @param _config configuration for oidc client
    */
   authInitialize: (_issuer: string, _config: any) => Promise<void>;
-
-  /** @internal */
-  toggleInteractiveEditingSession: (_tokenProps: IModelRpcProps, _startSession: boolean) => Promise<boolean>;
-  /** @internal */
-  isInteractiveEditingSupported: (_tokenProps: IModelRpcProps) => Promise<boolean>;
 }

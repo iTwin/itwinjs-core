@@ -8,7 +8,7 @@ import * as faker from "faker";
 import sinon from "sinon";
 import { BeDuration, BeEvent, Logger, using } from "@bentley/bentleyjs-core";
 import { IModelRpcProps } from "@bentley/imodeljs-common";
-import { EventSource, IModelConnection, NativeApp } from "@bentley/imodeljs-frontend";
+import { IModelConnection, NativeApp } from "@bentley/imodeljs-frontend";
 import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
 import {
   Content, ContentDescriptorRequestOptions, ContentRequestOptions, ContentUpdateInfo, Descriptor, DisplayLabelRequestOptions,

@@ -7,7 +7,7 @@
  */
 
 import { GetMetaDataFunction, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { NativeApp } from "./NativeApp";
+import { IpcApp } from "./IpcApp";
 
 /**
  * Describe log message
@@ -39,7 +39,7 @@ export class NativeAppLogger {
     try {
       while (messages.length > 0) {
         const msg: LogMessage = messages.shift()!;
-        await NativeApp.callBackend("log", msg.timestamp, msg.level, msg.category, msg.message, { ...msg.metaData });
+        await IpcApp.callIpcAppBackend("log", msg.timestamp, msg.level, msg.category, msg.message, { ...msg.metaData });
       }
     } finally {
       // Put back unsent messages.

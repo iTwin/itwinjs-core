@@ -2,15 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BentleyError, BentleyStatus, ClientRequestContext, ClientRequestContextProps, Config, GuidString } from "@bentley/bentleyjs-core";
+import { BentleyError, BentleyStatus, ClientRequestContext, ClientRequestContextProps, Config } from "@bentley/bentleyjs-core";
 import { IModelBankClient, IModelQuery } from "@bentley/imodelhub-client";
 import {
-  BriefcaseDb, BriefcaseManager, ChangeSummaryExtractOptions, ChangeSummaryManager, EventSink, IModelDb, IModelHost, IModelJsFs,
+  BriefcaseDb, BriefcaseManager, ChangeSummaryExtractOptions, ChangeSummaryManager, IModelDb, IModelHost, IModelJsFs,
 } from "@bentley/imodeljs-backend";
 import { V1CheckpointManager } from "@bentley/imodeljs-backend/lib/CheckpointManager";
 import { IModelRpcProps, RpcInterface, RpcManager } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, AuthorizedClientRequestContextProps } from "@bentley/itwin-client";
-import { CloudEnvProps, EventsTestRpcInterface, TestRpcInterface } from "../common/RpcInterfaces";
+import { CloudEnvProps, TestRpcInterface } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
 
 export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
@@ -88,16 +88,4 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
   }
 }
 
-/** The backend implementation of WipRpcInterface.
- * @internal
- */
-export class EventsTestRpcImpl extends RpcInterface implements EventsTestRpcInterface {
-  public static register() { RpcManager.registerImpl(EventsTestRpcInterface, EventsTestRpcImpl); }
-
-  // set event that will be send to the frontend
-  public async echo(id: GuidString, message: string): Promise<void> {
-    EventSink.global.emit(EventsTestRpcInterface.name, "echo", { id, message });
-  }
-}
-EventsTestRpcImpl.register();
 TestRpcImpl.register();

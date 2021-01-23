@@ -19,7 +19,7 @@ import {
   CreateSnapshotIModelProps, DisplayStyleProps, DomainOptions, EcefLocation, ElementAspectProps, ElementGeometryRequest, ElementGeometryUpdate,
   ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps,
   GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesResponseProps, IModelError,
-  IModelEventSourceProps, IModelNotFoundResponse, IModelProps, IModelRpcProps, IModelStatus, IModelTileTreeProps, IModelVersion, LocalBriefcaseProps,
+  IModelNotFoundResponse, IModelProps, IModelRpcProps, IModelStatus, IModelTileTreeProps, IModelVersion, LocalBriefcaseProps,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions,
   PropertyCallback, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, SchemaState, SheetProps, SnapRequestProps,
   SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, StandaloneOpenOptions, ThumbnailProps, UpgradeOptions, ViewDefinitionProps,
@@ -37,7 +37,6 @@ import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
 import { Element, SectionDrawing, Subject } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
 import { Entity, EntityClassType } from "./Entity";
-import { EventSink } from "./EventSink";
 import { ExportGraphicsOptions, ExportPartGraphicsOptions } from "./ExportGraphics";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
@@ -98,8 +97,6 @@ export abstract class IModelDb extends IModel {
   public readonly elements = new IModelDb.Elements(this);
   public readonly views = new IModelDb.Views(this);
   public readonly tiles = new IModelDb.Tiles(this);
-  /** @beta */
-  public readonly txns = new TxnManager(this);
   private _relationships?: Relationships;
   private _concurrentQueryInitialized: boolean = false;
   private readonly _statementCache = new ECSqlStatementCache();
@@ -109,7 +106,6 @@ export abstract class IModelDb extends IModel {
   protected _fontMap?: FontMap;
   protected _concurrentQueryStats = { resetTimerHandle: (null as any), logTimerHandle: (null as any), lastActivityTime: Date.now(), dispose: () => { } };
   private readonly _snaps = new Map<string, IModelJsNative.SnapRequest>();
-  private readonly _eventSink: EventSink;
 
   /** Event called after a changeset is applied to this IModelDb. */
   public readonly onChangesetApplied = new BeEvent<() => void>();
@@ -118,11 +114,6 @@ export abstract class IModelDb extends IModel {
     this._changeSetId = this.nativeDb.getReversedChangeSetId() ?? this.nativeDb.getParentChangeSetId();
     this.onChangesetApplied.raiseEvent();
   }
-
-  /** Emits push events to the frontend.
-   * @internal
-   */
-  public get eventSink(): EventSink { return this._eventSink; }
 
   public readFontJson(): string { return this.nativeDb.readFontMap(); }
   public get fontMap(): FontMap { return this._fontMap || (this._fontMap = new FontMap(JSON.parse(this.readFontJson()) as FontMapProps)); }
@@ -149,9 +140,6 @@ export abstract class IModelDb extends IModel {
     this._nativeDb = nativeDb;
     this.nativeDb.setIModelDb(this);
     this.initializeIModelDb();
-
-    this._eventSink = new EventSink(this._fileKey);
-    this.nativeDb.setEventSink(this._eventSink);
     IModelDb._openDbs.set(this._fileKey, this);
   }
 
@@ -177,18 +165,12 @@ export abstract class IModelDb extends IModel {
     this.onBeforeClose.raiseEvent();
     this.clearCaches();
     this._concurrentQueryStats.dispose();
-    this._eventSink.dispose();
   }
 
   /** @internal */
   protected initializeIModelDb() {
     const props = JSON.parse(this.nativeDb.getIModelProps()) as IModelProps;
     super.initialize(props.rootSubject.name, props);
-  }
-
-  /** @internal */
-  protected getEventSourceProps(): IModelEventSourceProps {
-    return { eventSourceName: this._eventSink.id };
   }
 
   /** Type guard for instanceof [[BriefcaseDb]] */
@@ -2141,6 +2123,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
  * @public
  */
 export class BriefcaseDb extends IModelDb {
+  /** @beta */
+  public readonly txns = new TxnManager(this);
+
   /** Returns `true` if this is a briefcase can be used to make changesets */
   public readonly allowLocalChanges: boolean;
   /* the BriefcaseId of the briefcase opened with this BriefcaseDb */
@@ -2619,6 +2604,8 @@ export class SnapshotDb extends IModelDb {
  * @internal
  */
 export class StandaloneDb extends IModelDb {
+  /** @beta */
+  public readonly txns: TxnManager;
   /** The full path to the snapshot iModel file.
    * @deprecated use pathName
    */
@@ -2640,6 +2627,7 @@ export class StandaloneDb extends IModelDb {
     const openMode = nativeDb.isReadonly() ? OpenMode.Readonly : OpenMode.ReadWrite;
     const iModelRpcProps: IModelRpcProps = { key, iModelId: nativeDb.getDbGuid(), openMode };
     super(nativeDb, iModelRpcProps, openMode);
+    this.txns = new TxnManager(this);
   }
 
   /** Create an *empty* standalone iModel.

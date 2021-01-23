@@ -1978,9 +1978,6 @@ describe("iModel", () => {
     assert.isTrue(snapshotDb1.isSnapshot);
     assert.isTrue(snapshotDb2.isSnapshot);
     assert.isTrue(snapshotDb3.isSnapshot);
-    assert.isFalse(snapshotDb1.txns.hasPendingTxns);
-    assert.isFalse(snapshotDb2.txns.hasPendingTxns);
-    assert.isFalse(snapshotDb3.txns.hasPendingTxns);
     assert.isFalse(snapshotDb1.isReadonly, "Expect snapshots to be read-write during create");
     assert.isFalse(snapshotDb2.isReadonly, "Expect snapshots to be read-write during create");
     assert.isFalse(snapshotDb3.isReadonly, "Expect snapshots to be read-write during create");

@@ -10,10 +10,14 @@ import * as os from "os";
 import * as path from "path";
 import * as semver from "semver";
 import {
+  AzureFileHandler, BackendFeatureUsageTelemetryClient, ClientAuthIntrospectionManager, ImsClientAuthIntrospectionManager, IntrospectionClient,
+  RequestHost,
+} from "@bentley/backend-itwin-client";
+import {
   assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, Config, Guid, GuidString, IModelStatus, isElectronMain, Logger, LogLevel,
 } from "@bentley/bentleyjs-core";
 import { IModelBankClient, IModelClient, IModelHubClient } from "@bentley/imodelhub-client";
-import { BackendIpc, BentleyStatus, IModelError, MobileRpcConfiguration, RpcConfiguration, SerializedRpcRequest } from "@bentley/imodeljs-common";
+import { BentleyStatus, IModelError, MobileRpcConfiguration, RpcConfiguration, SerializedRpcRequest } from "@bentley/imodeljs-common";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
 import { AccessToken, AuthorizationClient, AuthorizedClientRequestContext, UrlDiscoveryClient, UserInfo } from "@bentley/itwin-client";
 import { TelemetryManager } from "@bentley/telemetry-client";
@@ -28,6 +32,7 @@ import { FunctionalSchema } from "./domains/FunctionalSchema";
 import { GenericSchema } from "./domains/GenericSchema";
 import { IElementEditor } from "./ElementEditor";
 import { IModelJsFs } from "./IModelJsFs";
+import { MobileFileHandler } from "./MobileFileHandler";
 import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
 import { Editor3dRpcImpl } from "./rpc-impl/EditorRpcImpl";
 import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
@@ -38,10 +43,6 @@ import { StandaloneIModelRpcImpl } from "./rpc-impl/StandaloneIModelRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
 import { UsageLoggingUtilities } from "./usage-logging/UsageLoggingUtilities";
-import { AzureFileHandler, BackendFeatureUsageTelemetryClient, ClientAuthIntrospectionManager, ImsClientAuthIntrospectionManager, IntrospectionClient, RequestHost } from "@bentley/backend-itwin-client";
-import { MobileFileHandler } from "./MobileFileHandler";
-import { EventSink } from "./EventSink";
-import { NativeAppImpl } from "./ipc/NativeAppImpl";
 
 const loggerCategory: string = BackendLoggerCategory.IModelHost;
 
@@ -459,12 +460,6 @@ export class IModelHost {
       Editor3dRpcImpl,
     ].forEach((rpc) => rpc.register()); // register all of the RPC implementations
 
-    if (BackendIpc.isValid) {
-      [
-        NativeAppImpl,
-      ].forEach((ipcHandler) => ipcHandler.register());
-    }
-
     [
       BisCoreSchema,
       GenericSchema,
@@ -535,7 +530,6 @@ export class IModelHost {
     if (!IModelHost.configuration)
       return;
     IModelHost.onBeforeShutdown.raiseEvent();
-    EventSink.clearGlobal();
     IModelHost.platform.shutdown();
     IModelHost.configuration = undefined;
     IModelHost._nativeAppBackend = false;

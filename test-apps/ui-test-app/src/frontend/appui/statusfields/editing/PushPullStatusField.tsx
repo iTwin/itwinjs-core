@@ -6,10 +6,10 @@ import "./PushPullField.scss";
 import * as React from "react";
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { ChangeSetPostPushEvent, ChangeSetQuery } from "@bentley/imodelhub-client";
-import { IModelWriteRpcInterface } from "@bentley/imodeljs-common";
+import { BriefcasePushAndPullNotifications, IpcAppChannel, RemoveFunction } from "@bentley/imodeljs-common";
 import {
-  AuthorizedFrontendRequestContext, BriefcaseConnection, IModelApp, NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority,
-  OutputMessageType,
+  AuthorizedFrontendRequestContext, BriefcaseConnection, BriefcaseNotificationHandler, IModelApp, NotifyMessageDetails, OutputMessageAlert,
+  OutputMessagePriority, OutputMessageType,
 } from "@bentley/imodeljs-frontend";
 import { Icon, Spinner, SpinnerSize } from "@bentley/ui-core";
 import { StatusFieldProps, UiFramework } from "@bentley/ui-framework";
@@ -28,11 +28,40 @@ interface PushPullState {
   isSynchronizing: boolean;
 }
 
+class SyncNotifications extends BriefcaseNotificationHandler implements BriefcasePushAndPullNotifications {
+  public get briefcaseChannelName() { return IpcAppChannel.PushPull; }
+  public notifyPulledChanges(data: { parentChangeSetId: string }) {
+    SyncManager.updateParentChangesetId(data.parentChangeSetId);
+    SyncManager.onStateChange.raiseEvent();
+
+    // TODO: Remove this when we get tile healing
+    IModelApp.viewManager.refreshForModifiedModels(undefined);
+  }
+  public notifyPushedChanges(data: { parentChangeSetId: string }) {
+    const state = SyncManager.state;
+
+    // In case I got the changeSetSubscription event first, remove the changeset that I pushed from the list of server changes waiting to be merged.
+    const allChangesOnServer = state.changesOnServer.filter((cs) => cs !== data.parentChangeSetId);
+    state.mustPush = false;
+    state.changesOnServer = allChangesOnServer;
+    state.parentChangesetId = data.parentChangeSetId;
+    SyncManager.onStateChange.raiseEvent();
+  }
+  public notifySavedChanges(data: { hasPendingTxns: boolean, time: number }) {
+    const state = SyncManager.state;
+    if (data.time > state.timeOfLastSaveEvent) { // work around out-of-order events
+      state.timeOfLastSaveEvent = data.time;
+      state.mustPush = data.hasPendingTxns;
+      SyncManager.onStateChange.raiseEvent();
+    }
+  }
+}
+
 class SyncManager {
   public static state: PushPullState = { timeOfLastSaveEvent: 0, mustPush: false, parentChangesetId: "", changesOnServer: [], isSynchronizing: false };
   public static onStateChange = new BeEvent();
   public static changesetListenerInitialized = false;
-  public static localChangesListenerInitialized = false;
+  public static localChangesListenerInitialized?: RemoveFunction;
 
   public static get iModelConnection(): BriefcaseConnection {
     return UiFramework.getIModelConnection()! as BriefcaseConnection;
@@ -75,7 +104,7 @@ class SyncManager {
   public static async initializeLocalChangesListener() {
     if (this.localChangesListenerInitialized)
       return;
-    this.localChangesListenerInitialized = true;
+    this.localChangesListenerInitialized = (new SyncNotifications(this.iModelConnection.key)).registerImpl();
     try {
       // Bootstrap the process by finding out if the briefcase has local txns already.
       this.state.mustPush = await this.iModelConnection.editing.hasPendingTxns();
@@ -84,35 +113,9 @@ class SyncManager {
     }
 
     this.onStateChange.raiseEvent();
-
-    // Once the initial state of the briefcase is known, register for events announcing new txns and pushes that clear local txns.
-    this.iModelConnection.eventSource.on(IModelWriteRpcInterface.name, "onSavedChanges", (data: any) => {
-      if (data.time > this.state.timeOfLastSaveEvent) { // work around out-of-order events
-        this.state.timeOfLastSaveEvent = data.time;
-        this.state.mustPush = data.hasPendingTxns;
-        this.onStateChange.raiseEvent();
-      }
-    });
-
-    this.iModelConnection.eventSource.on(IModelWriteRpcInterface.name, "onPushedChanges", (data: any) => {
-      // In case I got the changeSetSubscription event first, remove the changeset that I pushed from the list of server changes waiting to be merged.
-      const allChangesOnServer = this.state.changesOnServer.filter((cs) => cs !== data.parentChangeSetId);
-      this.state.mustPush = false;
-      this.state.changesOnServer = allChangesOnServer;
-      this.state.parentChangesetId = data.parentChangeSetId;
-      this.onStateChange.raiseEvent();
-    });
-
-    this.iModelConnection.eventSource.on(IModelWriteRpcInterface.name, "onPulledChanges", (data: any) => {
-      this.updateParentChangesetId(data.parentChangeSetId);
-      this.onStateChange.raiseEvent();
-
-      // TODO: Remove this when we get tile healing
-      IModelApp.viewManager.refreshForModifiedModels(undefined);
-    });
   }
 
-  private static updateParentChangesetId(parentChangeSetId: string) {
+  public static updateParentChangesetId(parentChangeSetId: string) {
     this.state.parentChangesetId = parentChangeSetId;
     const lastPulledIdx = this.state.changesOnServer.findIndex((csId) => csId === parentChangeSetId);
     if (lastPulledIdx !== -1)

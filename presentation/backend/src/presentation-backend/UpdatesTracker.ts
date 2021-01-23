@@ -7,7 +7,6 @@
  */
 
 import { IDisposable } from "@bentley/bentleyjs-core";
-import { EventSink } from "@bentley/imodeljs-backend";
 import { PresentationRpcEvents, PresentationRpcInterface } from "@bentley/presentation-common";
 import { NativePlatformDefinition } from "./NativePlatform";
 
@@ -17,7 +16,6 @@ import { NativePlatformDefinition } from "./NativePlatform";
  */
 export interface UpdatesTrackerProps {
   nativePlatformGetter: () => NativePlatformDefinition;
-  eventSink: EventSink;
   pollInterval: number;
 }
 
@@ -29,12 +27,10 @@ export interface UpdatesTrackerProps {
  */
 export class UpdatesTracker implements IDisposable {
   private _getNativePlatform: () => NativePlatformDefinition;
-  private _eventSink: EventSink;
   private _intervalHandle: any;
 
   private constructor(props: UpdatesTrackerProps) {
     this._getNativePlatform = props.nativePlatformGetter;
-    this._eventSink = props.eventSink;
     this._intervalHandle = setInterval(this.onInterval.bind(this), props.pollInterval);
   }
 

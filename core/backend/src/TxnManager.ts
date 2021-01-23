@@ -8,7 +8,8 @@
 
 import { BeEvent, DbResult, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
 import { ModelGeometryChangesProps } from "@bentley/imodeljs-common";
-import { IModelDb } from "./IModelDb";
+import { BriefcaseDb, StandaloneDb } from "./IModelDb";
+import { IpcAppHost } from "./IpcAppHost";
 import { Relationship, RelationshipProps } from "./Relationship";
 
 /** @public */
@@ -34,7 +35,8 @@ export interface ValidationError {
  * @beta
  */
 export class TxnManager {
-  constructor(private _iModel: IModelDb) { }
+  constructor(private _iModel: BriefcaseDb | StandaloneDb) { }
+  public readonly onGeometryChanged = new BeEvent<(models: ModelGeometryChangesProps[]) => void>();
   /** Array of errors from dependency propagation */
   public readonly validationErrors: ValidationError[] = [];
 
@@ -70,7 +72,10 @@ export class TxnManager {
   /** @internal */
   protected _onEndValidate() { }
   /** @internal */
-  protected _onGeometryChanged(_models: ModelGeometryChangesProps[]) { }
+  protected _onGeometryChanged(models: ModelGeometryChangesProps[]) {
+    this.onGeometryChanged.raiseEvent(models);
+    IpcAppHost.notifyGeometryChanges(this._iModel, "notifyGeometryChanged", models); // send to frontend
+  }
 
   /** Dependency handlers may call method this to report a validation error.
    * @param error The error. If error.fatal === true, the transaction will cancel rather than commit.

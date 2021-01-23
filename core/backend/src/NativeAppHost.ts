@@ -2,55 +2,44 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
 /** @packageDocumentation
- * @module IpcSocket
+ * @module NativeAppBackend
  */
 
-import { ClientRequestContext, Config, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import * as path from "path";
+import { BeEvent, BentleyError, BentleyStatus, ClientRequestContext, Config, GuidString, Logger } from "@bentley/bentleyjs-core";
 import {
-  BackendIpc, BriefcaseProps, IModelConnectionProps, IModelError, IModelRpcProps, InternetConnectivityStatus, IpcHandler, LocalBriefcaseProps,
-  MobileAuthorizationClientConfiguration, nativeAppChannel, NativeAppIpc, OpenBriefcaseProps, OverriddenBy, RequestNewBriefcaseProps, StorageValue,
-  TileTreeContentIds,
+  BackendIpc, BriefcaseProps, InternetConnectivityStatus, IpcHandler, LocalBriefcaseProps, MobileAuthorizationClientConfiguration,
+  MobileRpcConfiguration, nativeAppChannel, NativeAppFunctions, NativeAppNotifications, nativeAppNotify, OverriddenBy, RequestNewBriefcaseProps, StorageValue,
 } from "@bentley/imodeljs-common";
-import { IModelJsNative } from "@bentley/imodeljs-native";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { BriefcaseManager } from "../BriefcaseManager";
-import { Downloads } from "../CheckpointManager";
-import { BriefcaseDb, IModelDb } from "../IModelDb";
-import { MobileDevice } from "../MobileDevice";
-import { NativeAppBackend } from "../NativeAppBackend";
-import { NativeAppStorage } from "../NativeAppStorage";
-import { cancelTileContentRequests } from "../rpc-impl/IModelTileRpcImpl";
+import { AuthorizedClientRequestContext, RequestGlobalOptions } from "@bentley/itwin-client";
+import { BriefcaseManager } from "./BriefcaseManager";
+import { Downloads } from "./CheckpointManager";
+import { NativeAppStorage } from "./NativeAppStorage";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
+import { ApplicationType, IModelHost, IModelHostConfiguration } from "./IModelHost";
+import { IpcAppHost } from "./IpcAppHost";
+import { initialize, MobileDevice } from "./MobileDevice";
+
+const loggerCategory = BackendLoggerCategory.NativeApp;
+initialize();
 
 /**
  * Implementation for backend of NativeAppIpc
  * @internal
  */
-export class NativeAppImpl extends IpcHandler implements NativeAppIpc {
+class NativeAppImpl extends IpcHandler implements NativeAppFunctions {
 
   public get channelName() { return nativeAppChannel; }
-  public async log(_timestamp: number, level: LogLevel, category: string, message: string, metaData?: any): Promise<void> {
-    Logger.logRaw(level, category, message, () => metaData);
-  }
   public async checkInternetConnectivity(): Promise<InternetConnectivityStatus> {
-    return NativeAppBackend.checkInternetConnectivity();
+    return NativeAppHost.checkInternetConnectivity();
   }
   public async overrideInternetConnectivity(by: OverriddenBy, status: InternetConnectivityStatus): Promise<void> {
-    NativeAppBackend.overrideInternetConnectivity(by, status);
+    NativeAppHost.overrideInternetConnectivity(by, status);
   }
 
   public async getConfig(): Promise<any> {
     return Config.App.getContainer();
-  }
-
-  public async cancelTileContentRequests(tokenProps: IModelRpcProps, contentIds: TileTreeContentIds[]): Promise<void> {
-    return cancelTileContentRequests(tokenProps, contentIds);
-  }
-
-  public async cancelElementGraphicsRequests(rpcProps: IModelRpcProps, requestIds: string[]): Promise<void> {
-    const iModel = IModelDb.findByKey(rpcProps.key);
-    return iModel.nativeDb.cancelElementGraphicsRequests(requestIds);
   }
 
   public async acquireNewBriefcaseId(iModelId: GuidString): Promise<number> {
@@ -90,17 +79,6 @@ export class NativeAppImpl extends IpcHandler implements NativeAppIpc {
     if (job)
       (job.request as any).abort = 1;
     return job !== undefined;
-  }
-
-  public async open(args: OpenBriefcaseProps): Promise<IModelConnectionProps> {
-    const requestContext = ClientRequestContext.current;
-    const db = await BriefcaseDb.open(requestContext, args);
-    requestContext.enter();
-    return db.toJSON();
-  }
-
-  public async closeBriefcase(key: string): Promise<void> {
-    BriefcaseDb.findByKey(key).close();
   }
 
   public async deleteBriefcaseFiles(fileName: string): Promise<void> {
@@ -174,17 +152,79 @@ export class NativeAppImpl extends IpcHandler implements NativeAppIpc {
     });
   }
 
-  public async toggleInteractiveEditingSession(tokenProps: IModelRpcProps, startSession: boolean): Promise<boolean> {
-    const imodel = IModelDb.findByKey(tokenProps.key);
-    const val: IModelJsNative.ErrorStatusOrResult<any, boolean> = imodel.nativeDb.setGeometricModelTrackingEnabled(startSession);
-    if (val.error)
-      throw new IModelError(val.error.status, "Failed to toggle interactive editing session");
+}
 
-    return val.result!;
+/**
+ * Used by desktop/mobile native applications
+ * @beta
+ */
+export class NativeAppHost extends IpcAppHost {
+  private static _reachability?: InternetConnectivityStatus;
+  private constructor() { super(); }
+
+  public static onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void> = new BeEvent<(status: InternetConnectivityStatus) => void>();
+
+  private static _appSettingsCacheDir?: string;
+
+  /** Get the local cache folder for application settings */
+  public static get appSettingsCacheDir(): string {
+    if (this._appSettingsCacheDir === undefined) {
+      if (!IModelHost.isNativeAppBackend)
+        throw new BentleyError(BentleyStatus.ERROR, "Call NativeAppBackend.startup before fetching the appSettingsCacheDir", Logger.logError, loggerCategory);
+      this._appSettingsCacheDir = path.join(IModelHost.cacheDir, "appSettings");
+    }
+    return this._appSettingsCacheDir;
   }
 
-  public async isInteractiveEditingSupported(tokenProps: IModelRpcProps): Promise<boolean> {
-    const imodel = IModelDb.findByKey(tokenProps.key);
-    return imodel.nativeDb.isGeometricModelTrackingSupported();
+  public static notifyNativeFrontend<T extends keyof NativeAppNotifications>(methodName: T, ...args: Parameters<NativeAppNotifications[T]>) {
+    return BackendIpc.send(nativeAppNotify, methodName, ...args);
+  }
+
+  /**
+   * Start the backend of a native app.
+   * @param configuration
+   * @note this method calls [[IModelHost.startup]] internally.
+   */
+  public static async startup(configuration: IModelHostConfiguration = new IModelHostConfiguration()): Promise<void> {
+    this.onInternetConnectivityChanged.addListener((status: InternetConnectivityStatus) => NativeAppHost.notifyNativeFrontend("notifyInternetConnectivityChanged", status));
+
+    /** Override applicationType to NativeApp */
+    configuration.applicationType = ApplicationType.NativeApp;
+    if (MobileRpcConfiguration.isMobileBackend) {
+      MobileDevice.currentDevice.onUserStateChanged.addListener((accessToken?: string, err?: string) => {
+        const accessTokenObj = accessToken ? JSON.parse(accessToken) : {};
+        NativeAppHost.notifyNativeFrontend("notifyUserStateChanged", { accessToken: accessTokenObj, err });
+      });
+    }
+    await super.startup(configuration);
+    NativeAppImpl.register();
+  }
+
+  /**
+   * Shutdown native app backend. Also calls IModelHost.shutdown()
+   */
+  public static async shutdown(): Promise<void> {
+    this.onInternetConnectivityChanged.clear();
+    await IModelHost.shutdown();
+  }
+
+  /**
+   * Checks internet connectivity
+   * @returns return current value of internet connectivity from backend.
+   */
+  public static checkInternetConnectivity(): InternetConnectivityStatus {
+    return this._reachability ?? InternetConnectivityStatus.Online;
+  }
+
+  /**
+   * Overrides internet connectivity value at backend.
+   * @param _overridenBy who overrode the value.
+   */
+  public static overrideInternetConnectivity(_overridenBy: OverriddenBy, status: InternetConnectivityStatus): void {
+    if (this._reachability !== status) {
+      this._reachability = status;
+      RequestGlobalOptions.online = this._reachability === InternetConnectivityStatus.Online;
+      this.onInternetConnectivityChanged.raiseEvent(status);
+    }
   }
 }

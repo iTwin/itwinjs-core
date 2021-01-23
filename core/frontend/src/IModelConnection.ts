@@ -13,23 +13,22 @@ import { Point3d, Range3d, Range3dProps, XYAndZ, XYZProps } from "@bentley/geome
 import {
   AxisAlignedBox3d, BentleyStatus, Cartographic, CodeSpec, DbResult, EcefLocation, EcefLocationProps, ElementProps, EntityQueryParams, FontMap,
   FontMapProps, GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps, ImageSourceFormat, IModel, IModelConnectionProps,
-  IModelError, IModelEventSourceProps, IModelReadRpcInterface, IModelRpcOpenProps, IModelRpcProps, IModelStatus, IModelVersion,
-  IModelWriteRpcInterface, mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams,
-  OpenBriefcaseProps, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager,
-  RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface,
-  StandaloneIModelRpcInterface, StandaloneOpenOptions, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, WipRpcInterface,
+  IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelRpcProps, IModelStatus, IModelVersion, IModelWriteRpcInterface,
+  mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams, NotificationHandler,
+  OpenBriefcaseProps, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager, RpcNotFoundResponse, RpcOperation,
+  RpcRequest, RpcRequestEvent, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, StandaloneOpenOptions,
+  ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, WipRpcInterface,
 } from "@bentley/imodeljs-common";
 import { BackgroundMapLocation } from "./BackgroundMapGeometry";
 import { EditingFunctions } from "./EditingFunctions";
 import { EntityState } from "./EntityState";
-import { EventSource } from "./EventSource";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { AuthorizedFrontendRequestContext, FrontendRequestContext } from "./FrontendRequestContext";
 import { GeoServices } from "./GeoServices";
 import { IModelApp } from "./IModelApp";
 import { IModelRoutingContext } from "./IModelRoutingContext";
+import { IpcApp } from "./IpcApp";
 import { ModelState } from "./ModelState";
-import { NativeApp } from "./NativeApp";
 import { HiliteSet, SelectionSet } from "./SelectionSet";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import { Tiles } from "./Tiles";
@@ -65,8 +64,6 @@ export abstract class IModelConnection extends IModel {
   public readonly codeSpecs: IModelConnection.CodeSpecs;
   /** The [[ViewState]]s in this IModelConnection. */
   public readonly views: IModelConnection.Views;
-  /** @internal */
-  protected _eventSource: EventSource;
   /** The set of currently hilited elements for this IModelConnection.
    * @beta
    */
@@ -117,14 +114,6 @@ export abstract class IModelConnection extends IModel {
       this._editing = new EditingFunctions(this);
     return this._editing;
   }
-
-  /** Supplies access to push events originating on the backend.
-   * @beta
-   */
-  public get eventSource(): EventSource { return this._eventSource; }
-
-  /** @internal */
-  protected getEventSourceProps(): IModelEventSourceProps { return { eventSourceName: this.eventSource.id }; }
 
   /** Type guard for instanceof [[BriefcaseConnection]] */
   public isBriefcaseConnection(): this is BriefcaseConnection { return this instanceof BriefcaseConnection; }
@@ -262,7 +251,6 @@ export abstract class IModelConnection extends IModel {
     this.subcategories = new SubCategoriesCache(this);
     this.geoServices = new GeoServices(this);
     this.displayedExtents = Range3d.fromJSON(this.projectExtents);
-    this._eventSource = EventSource.create(iModelProps.eventSourceName);
   }
 
   /** Called prior to connection closing. Raises close events and calls tiles.dispose.
@@ -271,7 +259,6 @@ export abstract class IModelConnection extends IModel {
   protected beforeClose() {
     this.onClose.raiseEvent(this); // event for this connection
     IModelConnection.onClose.raiseEvent(this); // event for all connections
-    this.eventSource.dispose();
     this.tiles.dispose();
   }
 
@@ -614,6 +601,8 @@ export abstract class IModelConnection extends IModel {
  * @public
  */
 export abstract class BriefcaseConnection extends IModelConnection {
+  /** @internal */
+
   /** The Guid that identifies the *context* that owns this iModel. */
   public get contextId(): GuidString { return super.contextId!; } // GuidString | undefined for the superclass, but required for BriefcaseConnection
   /** The Guid that identifies this iModel. */
@@ -664,15 +653,17 @@ export abstract class BriefcaseConnection extends IModelConnection {
   }
 }
 
+export abstract class BriefcaseNotificationHandler extends NotificationHandler {
+  constructor(private _key: string) { super(); }
+  public abstract get briefcaseChannelName(): string;
+  public get channelName() { return `${this.briefcaseChannelName}:${this._key}`; }
+}
+
 /** A connection to a [BriefcaseDb]($backend) hosted on a remote backend, and is typically used in web applications.
  * A briefcase is a copy of an iModel that is synchronized with iModelHub.
  * @public
  */
 export class RemoteBriefcaseConnection extends BriefcaseConnection {
-
-  private constructor(iModelProps: IModelConnectionProps) {
-    super(iModelProps);
-  }
 
   /** Open an IModelConnection to an iModel. It's recommended that every open call be matched with a corresponding call to close. */
   public static async open(contextId: string, iModelId: string, openMode: OpenMode = OpenMode.Readonly, version: IModelVersion = IModelVersion.latest()): Promise<RemoteBriefcaseConnection> {
@@ -787,10 +778,6 @@ export class RemoteBriefcaseConnection extends BriefcaseConnection {
       this._fileKey = openResponse.key;
       this._changeSetId = openResponse.changeSetId;
 
-      if (openResponse.eventSourceName !== this.eventSource.id) {
-        this._eventSource.dispose();
-        this._eventSource = EventSource.create(openResponse.eventSourceName);
-      }
     } catch (error) {
       reject(error.message);
     } finally {
@@ -833,22 +820,15 @@ export class RemoteBriefcaseConnection extends BriefcaseConnection {
  */
 export class LocalBriefcaseConnection extends BriefcaseConnection {
 
-  private constructor(iModelProps: IModelConnectionProps) {
-    super(iModelProps);
-  }
-
   /** Open an IModelConnection to a locally downloaded briefcase of an iModel. Only applicable for Native applications
    * @internal
    */
   public static async open(briefcaseProps: OpenBriefcaseProps): Promise<LocalBriefcaseConnection> {
-    if (!IModelApp.initialized)
-      throw new IModelError(IModelStatus.BadRequest, "Call NativeApp.startup() before calling openBriefcase");
-
     const requestContext = new FrontendRequestContext();
     requestContext.enter();
 
     requestContext.useContextForRpc = true;
-    const iModelProps = await NativeApp.callBackend("open", briefcaseProps);
+    const iModelProps = await IpcApp.callIpcAppBackend("open", briefcaseProps);
     const connection = new this({ ...briefcaseProps, ...iModelProps });
 
     IModelConnection.onOpen.raiseEvent(connection);
@@ -860,20 +840,16 @@ export class LocalBriefcaseConnection extends BriefcaseConnection {
    * any un-pushed changes are lost after the close.
    */
   public async close(): Promise<void> {
-    if (this.isClosed) {
+    if (this.isClosed)
       return;
-    }
     this.beforeClose();
 
     const requestContext = new FrontendRequestContext();
     requestContext.enter();
-
     requestContext.useContextForRpc = true;
-    const closePromise: Promise<void> = NativeApp.callBackend("closeBriefcase", this._fileKey); // Ensure the method isn't awaited right away.
 
     try {
-      this.eventSource.dispose();
-      await closePromise;
+      await IpcApp.callIpcAppBackend("closeBriefcase", this._fileKey);
     } finally {
       requestContext.enter();
       this._isClosed = true;
@@ -919,7 +895,6 @@ export class BlankConnection extends IModelConnection {
       ecefLocation: props.location instanceof Cartographic ? EcefLocation.createFromCartographicOrigin(props.location) : props.location,
       key: "",
       contextId: props.contextId,
-      eventSourceName: "",
     });
   }
 

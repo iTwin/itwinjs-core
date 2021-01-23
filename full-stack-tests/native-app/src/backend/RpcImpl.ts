@@ -6,7 +6,7 @@ import * as nock from "nock";
 import { BentleyError, BentleyStatus, ClientRequestContext, ClientRequestContextProps, Config } from "@bentley/bentleyjs-core";
 import { IModelBankClient, IModelQuery } from "@bentley/imodelhub-client";
 import {
-  BriefcaseDb, BriefcaseManager, ChangeSummaryExtractOptions, ChangeSummaryManager, IModelDb, IModelJsFs, NativeAppBackend,
+  BriefcaseDb, BriefcaseManager, ChangeSummaryExtractOptions, ChangeSummaryManager, IModelDb, IModelJsFs, NativeAppHost,
 } from "@bentley/imodeljs-backend";
 import { IModelRpcProps, RpcInterface, RpcManager } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, AuthorizedClientRequestContextProps } from "@bentley/itwin-client";
@@ -20,8 +20,8 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
   }
 
   public async restartIModelHost(): Promise<void> {
-    await NativeAppBackend.shutdown();
-    await NativeAppBackend.startup();
+    await NativeAppHost.shutdown();
+    await NativeAppHost.startup();
   }
 
   public async extractChangeSummaries(tokenProps: IModelRpcProps, options: any): Promise<void> {
@@ -84,7 +84,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
   }
 
   public async purgeStorageCache(): Promise<void> {
-    return IModelJsFs.purgeDirSync(NativeAppBackend.appSettingsCacheDir);
+    return IModelJsFs.purgeDirSync(NativeAppHost.appSettingsCacheDir);
   }
 
   public async beginOfflineScope(): Promise<void> {

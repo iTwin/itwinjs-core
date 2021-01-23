@@ -113,31 +113,34 @@ export class FrontendIpc {
  *
  * Create a subclass to implement your Ipc response interface. Your class should be declared like this:
  * ```ts
- * class MyResponseHandler extends ResponseHandler implements MyResponseInterface
+ * class MyNotificationHandler extends NotificationHandler implements MyNotifications
  * ```
  * to ensure all method names and signatures are correct. Your methods cannot have a return value.
  *
- * Then, call `MyResponseHandler.register` at startup to connect your class to your channel.
+ * Then, call `MyNotificationHandler.register` at startup to connect your class to your channel.
  * @beta
  */
-export abstract class ResponseHandler {
+export abstract class NotificationHandler {
   /** All subclasses must implement this method to specify their response channel name. */
-  public abstract get responseChannel(): string;
+  public abstract get channelName(): string;
+
+  public registerImpl(): RemoveFunction {
+    return FrontendIpc.addListener(this.channelName, (_evt: Event, funcName: string, ...args: any[]) => {
+      const func = (this as any)[funcName];
+      if (typeof func !== "function")
+        throw new IModelError(IModelStatus.FunctionNotFound, `Method "${this.constructor.name}.${funcName}" not found on NotificationHandler registered for channel: ${this.channelName}`);
+
+      func.call(this, ...args);
+    });
+  }
 
   /**
-   * Register this class as the handler for methods on its channel. This static method creates a new instance
-   * that becomes the response handler and is `this` when its methods are called.
+   * Register this class as the handler for notifications on its channel. This static method creates a new instance
+   * that becomes the notification handler and is `this` when its methods are called.
    * @returns A function that can be called to remove the handler.
-   * @note this method should only be called once per channel. If it is called multiple times, subsequent calls replace the previous ones.
+   * @note this method should only be called once per channel. If it is called multiple times, multiple handlers are established.
    */
   public static register(): RemoveFunction {
-    const impl = new (this as any)() as ResponseHandler; // create an instance of subclass. "as any" is necessary because base class is abstract
-    return FrontendIpc.addListener(impl.responseChannel, (_evt: Event, funcName: string, ...args: any[]) => {
-      const func = (impl as any)[funcName];
-      if (typeof func !== "function")
-        throw new IModelError(IModelStatus.FunctionNotFound, `Method "${impl.constructor.name}.${funcName}" not found on ResponseHandler registered for channel: ${impl.responseChannel}`);
-
-      func.call(impl, ...args);
-    });
+    return (new (this as any)() as NotificationHandler).registerImpl(); // create an instance of subclass. "as any" is necessary because base class is abstract
   }
 }

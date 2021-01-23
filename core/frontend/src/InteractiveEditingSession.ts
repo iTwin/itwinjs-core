@@ -8,12 +8,10 @@
 
 import { assert, BeEvent, compareStrings, DbOpcode, DuplicatePolicy, GuidString, Id64String, SortedArray } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
-import {
-  ElementGeometryChange, Events, ModelGeometryChanges, ModelGeometryChangesProps,
-} from "@bentley/imodeljs-common";
+import { ElementGeometryChange, GeometryChangeNotifications, IpcAppChannel, ModelGeometryChanges, ModelGeometryChangesProps, RemoveFunction } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
-import { RemoveEventListener } from "./EventSource";
-import { NativeApp } from "./NativeApp";
+import { BriefcaseNotificationHandler } from "./imodeljs-frontend";
+import { IpcApp } from "./IpcApp";
 
 let initialized = false;
 const sessions: InteractiveEditingSession[] = [];
@@ -29,7 +27,8 @@ class ModelChanges extends SortedArray<ElementGeometryChange> {
   }
 }
 
-/** Represents an active session for performing interactive editing of an [[IModelConnection]].
+/**
+ * Represents an active session for performing interactive editing of an [[IModelConnection]].
  * "Interactive editing" refers to modifying the geometry contained in the iModel while viewing the iModel's contents in one or more [[Viewports]] - e.g., creating new [GeometricElement]($backend)s, modifying their geometric properties, and/or deleting them. During the session, any changes made by the user will become visually reflected in the viewport, without the need to wait for brand-new tiles to be generated. The graphics update after every call to [[IModelConnection.saveChanges]] as well as in response to undo and redo.
  * When the session ends, new tiles will begin to be generated for any models whose geometry was modified during the session.
  * The session also provides notifications regarding changes to element geometry.
@@ -39,11 +38,13 @@ class ModelChanges extends SortedArray<ElementGeometryChange> {
  * @note iModels with older versions of the BisCore ECSchema (prior to version 0.1.11) do not support interactive editing.
  * @alpha
  */
-export class InteractiveEditingSession {
+export class InteractiveEditingSession extends BriefcaseNotificationHandler implements GeometryChangeNotifications {
+  public get briefcaseChannelName() { return IpcAppChannel.GeometryChanges; }
+
   /** Maps model Id to accumulated changes to geometric elements within the associated model. */
   private readonly _geometryChanges = new Map<Id64String, ModelChanges>();
   private _disposed = false;
-  private _cleanup?: RemoveEventListener;
+  private _cleanup?: RemoveFunction;
   /** The iModel being edited. */
   public readonly iModel: IModelConnection;
 
@@ -71,7 +72,7 @@ export class InteractiveEditingSession {
    * the BisCore ECSchema older than v0.1.11.
    */
   public static async isSupported(imodel: IModelConnection): Promise<boolean> {
-    return NativeApp.callBackend("isInteractiveEditingSupported", imodel.getRpcProps());
+    return IpcApp.callIpcAppBackend("isInteractiveEditingSupported", imodel.getRpcProps());
   }
 
   /** Get the active editing session for the specified iModel, if any.
@@ -94,7 +95,7 @@ export class InteractiveEditingSession {
     const session = new InteractiveEditingSession(imodel);
     sessions.push(session);
     try {
-      const sessionStarted = await NativeApp.callBackend("toggleInteractiveEditingSession", imodel.getRpcProps(), true);
+      const sessionStarted = await IpcApp.callIpcAppBackend("toggleInteractiveEditingSession", imodel.getRpcProps(), true);
       assert(sessionStarted); // If it didn't, the rpc interface threw an error.
     } catch (e) {
       session.dispose();
@@ -126,7 +127,7 @@ export class InteractiveEditingSession {
     try {
       this.onEnding.raiseEvent(this);
     } finally {
-      const sessionEnded = await NativeApp.callBackend("toggleInteractiveEditingSession", this.iModel.getRpcProps(), false);
+      const sessionEnded = await IpcApp.callIpcAppBackend("toggleInteractiveEditingSession", this.iModel.getRpcProps(), false);
       assert(!sessionEnded);
       try {
         this.onEnded.raiseEvent(this);
@@ -158,8 +159,9 @@ export class InteractiveEditingSession {
   }
 
   private constructor(iModel: IModelConnection) {
+    super(iModel.key);
     this.iModel = iModel;
-    this._cleanup = iModel.eventSource.on(Events.NativeApp.namespace, Events.NativeApp.modelGeometryChanges, (changes: any) => this.handleGeometryChanges(changes));
+    this._cleanup = this.registerImpl();
   }
 
   private dispose(): void {
@@ -181,7 +183,7 @@ export class InteractiveEditingSession {
       sessions.splice(index);
   }
 
-  private handleGeometryChanges(props: ModelGeometryChangesProps[]): void {
+  public notifyGeometryChanged(props: ModelGeometryChangesProps[]) {
     const changes = ModelGeometryChanges.iterable(props);
     const modelIds: Id64String[] = [];
     for (const modelChanges of changes) {
