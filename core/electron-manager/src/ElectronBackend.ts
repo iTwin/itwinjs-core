@@ -97,9 +97,20 @@ export class ElectronBackend implements IpcSocketBackend {
         contextIsolation: true,
         sandbox: true,
       },
-      icon: this.appIconPath,
       ...options, // overrides everything above
     };
+
+    // opts.icon cannot be set to undefined, an invalid path, or a local file path
+    // when using the development server as it'd crash Electron on macOS/linux
+    // https://github.com/electron/electron/issues/27303#issuecomment-759501184
+    const icon = process.platform === 'win32' ?? this.appIconPath;
+    if (icon)
+      opts.icon = this.appIconPath;
+
+    console.log(fs.existsSync(this.appIconPath));
+    console.log(this._developmentServer);
+    console.log(this.appIconPath);
+    console.log(opts.icon);
 
     this._mainWindow = new BrowserWindow(opts);
     ElectronRpcConfiguration.targetWindowId = this._mainWindow.id;
@@ -119,7 +130,8 @@ export class ElectronBackend implements IpcSocketBackend {
     const frontendPort = opts?.frontendPort ?? 3000;
     this.webResourcesPath = opts?.webResourcesPath ?? "";
     this.frontendURL = opts?.frontendURL ?? this._developmentServer ? `http://localhost:${frontendPort}` : `${this._electronFrontend}index.html`;
-    this.appIconPath = path.join(this.webResourcesPath, opts?.iconName ?? "appicon.ico");
+    const iconName = opts?.iconName ?? "appicon.ico";
+    this.appIconPath = opts?.developmentServer ? `${this.frontendURL}/${iconName}` : path.join(this.webResourcesPath, iconName);
     BackendIpc.initialize(this);
     this.rpcConfig = ElectronRpcManager.initializeBackend(this, opts?.rpcInterfaces);
     opts?.ipcHandlers?.forEach((ipc) => ipc.register());
@@ -219,7 +231,7 @@ class ElectronBackendImpl extends IpcHandler {
   public async callElectron(member: string, method: string, ...args: any) {
     const func = (ElectronBackend.instance.electron as any)[member][method];
     if (typeof func !== "function")
-      throw new IModelError(IModelStatus.FunctionNotFound, `Method ${method} not found electron.${member}`);
+      throw new IModelError(IModelStatus.FunctionNotFound, `Method ${method} not found electron.${member} `);
 
     return func.call(...args);
   }
