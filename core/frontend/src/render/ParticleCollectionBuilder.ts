@@ -187,9 +187,9 @@ class Builder implements ParticleCollectionBuilder {
 
     // Order-independent transparency doesn't work well with opaque geometry - it will look semi-transparent.
     // If we have a mix of opaque and transparent particles, put them in separate graphics to be rendered in separate passes.
-    const partitionIndex = partitionArray(this._particles, (x) => x.transparency === 0);
-    const opaque = this.createGraphic(0, partitionIndex, 0);
-    const transparent = this.createGraphic(partitionIndex, this._particles.length, this._hasVaryingTransparency ? undefined : this._transparency);
+    const slices = this.partition();
+    const opaque = this.createGraphic(slices.opaque, 0);
+    const transparent = this.createGraphic(slices.transparent, this._hasVaryingTransparency ? undefined : this._transparency);
 
     // Empty the collection before any return statements.
     const range = this._range.clone();
@@ -221,15 +221,22 @@ class Builder implements ParticleCollectionBuilder {
     return graphic;
   }
 
-  private createGraphic(startIndex: number, endIndex: number, uniformTransparency: number | undefined): RenderGraphic | undefined {
-    const numParticles = endIndex - startIndex;
+  private partition(): { opaque: ArraySlice<Particle>, transparent: ArraySlice<Particle> } {
+    const partitionIndex = partitionArray(this._particles, (x) => x.transparency === 0);
+    return {
+      opaque: new ArraySlice(this._particles, 0, partitionIndex),
+      transparent: new ArraySlice(this._particles, partitionIndex, this._particles.length),
+    };
+  }
+
+  private createGraphic(particles: ArraySlice<Particle>, uniformTransparency: number | undefined): RenderGraphic | undefined {
+    const numParticles = particles.length;
     if (numParticles <= 0)
       return undefined;
 
     // To keep scale values close to 1, compute mean size to use as size of quad.
     const meanSize = new Vector2d();
-    for (let i = startIndex; i < endIndex; i++) {
-      const particle = this._particles[i];
+    for (const particle of particles) {
       meanSize.x += particle.width / numParticles;
       meanSize.y += particle.height / numParticles;
     }
@@ -245,10 +252,9 @@ class Builder implements ParticleCollectionBuilder {
 
     const viewToWorld = this._viewport.view.getRotation().transpose();
     const rotMatrix = new Matrix3d();
-    for (let i = startIndex; i < endIndex; i++) {
-      const particle = this._particles[i];
-      const tfIndex = i * floatsPerTransform;
-
+    let tfIndex = 0;
+    let ovrIndex = 0;
+    for (const particle of particles) {
       const scaleX = particle.width / meanSize.x;
       const scaleY = particle.height / meanSize.y;
       if (this._isViewCoords) {
@@ -278,11 +284,14 @@ class Builder implements ParticleCollectionBuilder {
       transforms[tfIndex + 7] = particle.centroid.y - rangeCenter.y;
       transforms[tfIndex + 11] = particle.centroid.z - rangeCenter.z;
 
+      tfIndex += floatsPerTransform;
+
       if (symbologyOverrides) {
         // See FeatureOverrides.buildLookupTable() for layout.
-        const ovrIndex = bytesPerOverride * numParticles;
         symbologyOverrides[ovrIndex + 0] = 1 << 2; // OvrFlags.Alpha
         symbologyOverrides[ovrIndex + 7] = 0xff - particle.transparency;
+
+        ovrIndex += bytesPerOverride;
       }
     }
 
@@ -326,4 +335,29 @@ function clampTransparency(transparency: number): number {
     transparency = 0;
 
   return transparency;
+}
+
+class ArraySlice<T> {
+  private readonly _array:  T[];
+  private readonly _startIndex: number;
+  private readonly _endIndex: number;
+
+  public constructor(array: T[], startIndex: number, endIndex: number) {
+    this._array = array;
+    this._startIndex = startIndex;
+    this._endIndex = endIndex;
+  }
+
+  public get length(): number {
+    return this._endIndex - this._startIndex;
+  }
+
+  public [Symbol.iterator](): Iterator<T> {
+    function * iterator(array: T[], start: number, end: number) {
+      for (let i = start; i < end; i++)
+        yield array[i];
+    }
+
+    return iterator(this._array, this._startIndex, this._endIndex);
+  }
 }
