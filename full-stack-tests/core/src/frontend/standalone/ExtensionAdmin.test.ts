@@ -13,7 +13,7 @@ describe("ExtensionAdmin tests", () => {
 
   if (!isElectronRenderer) {
     it("loads local extension", async () => {
-      IModelApp.extensionAdmin.addExtensionLoaderFront(new ExternalServerExtensionLoader(`http://localhost:${Number(window.location.port) + 3000}`));
+      IModelApp.extensionAdmin.addExtensionLoaderFront(new ExternalServerExtensionLoader(`http://localhost:${Number(window.location.port) + 4000}`));
 
       await IModelApp.extensionAdmin.loadExtension("loadingTestExtension");
 
