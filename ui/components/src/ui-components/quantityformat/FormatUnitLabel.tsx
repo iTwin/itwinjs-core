@@ -8,9 +8,42 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { Checkbox, CommonProps } from "@bentley/ui-core";
+import { Checkbox, CommonProps, Select, SelectOption } from "@bentley/ui-core";
 import { Format, FormatProps, FormatTraits } from "@bentley/imodeljs-quantity";
-import { UomSeparatorSelector } from "./UomSeparator";
+import { UiComponents } from "../UiComponents";
+
+interface UomSeparatorSelectorProps extends CommonProps {
+  separator: string;
+  disabled?: boolean;
+  onChange: (value: string) => void;
+}
+
+function UomSeparatorSelector(props: UomSeparatorSelectorProps) {
+  const { separator, onChange, ...otherProps } = props;
+  const uomDefaultEntries = React.useRef<SelectOption[]>([
+    { value: "", label: UiComponents.translate("QuantityFormat.none") },
+    { value: " ", label: UiComponents.translate("QuantityFormat.space") },
+    { value: "-", label: UiComponents.translate("QuantityFormat.dash") },
+  ]);
+
+  const handleOnChange = React.useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    e.preventDefault();
+    onChange && onChange(e.target.value);
+  }, [onChange]);
+
+  const separatorOptions = React.useMemo(() => {
+    const completeListOfEntries: SelectOption[] = [];
+    if (undefined === uomDefaultEntries.current.find((option) => option.value as string === separator)) {
+      completeListOfEntries.push({ value: separator, label: separator });
+    }
+    completeListOfEntries.push(...uomDefaultEntries.current);
+    return completeListOfEntries;
+  }, [separator]);
+
+  return (
+    <Select options={separatorOptions} value={separator} onChange={handleOnChange} {...otherProps} />
+  );
+}
 
 /** Properties of [[FormatUnitLabel]] component.
  * @alpha

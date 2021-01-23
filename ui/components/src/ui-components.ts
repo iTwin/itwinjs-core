@@ -96,7 +96,6 @@ export * from "./ui-components/quantityformat/FractionPrecision";
 export * from "./ui-components/quantityformat/SignOption";
 export * from "./ui-components/quantityformat/ThousandsSeparator";
 export * from "./ui-components/quantityformat/UnitDescr";
-export * from "./ui-components/quantityformat/UomSeparator";
 
 export * from "./ui-components/timeline/interfaces";
 export * from "./ui-components/timeline/BaseTimelineDataProvider";

@@ -9,21 +9,13 @@
 import * as React from "react";
 import { CommonProps, Select, SelectOption } from "@bentley/ui-core";
 import { UiComponents } from "../UiComponents";
-import { FormatType } from "@bentley/imodeljs-quantity";
-
-/** Properties of [[FormatTypeSelector]] component.
- * @alpha
- */
-export interface FormatTypeSelectorProps extends CommonProps {
+import { DecimalPrecision, Format, FormatProps, FormatType, FractionalPrecision, ScientificType } from "@bentley/imodeljs-quantity";
+interface FormatTypeSelectorProps extends CommonProps {
   type: FormatType;
   onChange: (value: FormatType) => void;
 }
 
-/** Component use to set Quantity Format UOM separator, this is the character to put between the magnitude and
- * the unit label.
- * @alpha
- */
-export function FormatTypeSelector(props: FormatTypeSelectorProps) {
+function FormatTypeSelector(props: FormatTypeSelectorProps) {
   const { type, onChange, ...otherProps } = props;
   const formatOptions = React.useRef<SelectOption[]>([
     { value: FormatType.Decimal, label: UiComponents.translate("QuantityFormat.decimal") },
@@ -42,3 +34,53 @@ export function FormatTypeSelector(props: FormatTypeSelectorProps) {
     <Select options={formatOptions.current} value={type} onChange={handleOnChange} {...otherProps} />
   );
 }
+
+/** Properties of [[FormatTypeOptionProps]] component.
+ * @alpha
+ */
+export interface FormatTypeOptionProps extends CommonProps {
+  formatProps: FormatProps;
+  onChange?: (format: FormatProps) => void;
+}
+
+/** Component to show/edit Quantity Format.
+ * @alpha
+ */
+export function FormatTypeOption(props: FormatTypeOptionProps) {
+  const { formatProps, onChange } = props;
+  const handleFormatTypeChange = React.useCallback((newType: FormatType) => {
+    const type = Format.formatTypeToString(newType);
+    let precision: number | undefined;
+    let stationOffsetSize: number | undefined;
+    let scientificType: string | undefined;
+    switch (newType) { // type must be decimal, fractional, scientific, or station
+      case FormatType.Scientific:
+        precision = DecimalPrecision.Six;
+        scientificType = Format.scientificTypeToString(ScientificType.Normalized);
+        break;
+      case FormatType.Decimal:
+        precision = DecimalPrecision.Six;
+        break;
+      case FormatType.Station:
+        precision = DecimalPrecision.Two;
+        stationOffsetSize = formatProps.composite?.units &&
+          formatProps.composite?.units[0] &&
+          formatProps.composite?.units[0].name.toLocaleLowerCase().endsWith("m") ? 3 : 2;
+        break;
+      case FormatType.Fractional:
+        precision = FractionalPrecision.Eight;
+        break;
+    }
+    const newFormatProps = { ...formatProps, type, precision, scientificType, stationOffsetSize };
+    onChange && onChange(newFormatProps);
+  }, [formatProps, onChange]);
+
+  const formatType = Format.parseFormatType(formatProps.type, "format");
+  return (
+    <>
+      <span className={"uicore-label"}>Type</span>
+      <FormatTypeSelector type={formatType} onChange={handleFormatTypeChange} />
+    </>
+  );
+}
+
