@@ -94,8 +94,14 @@ describe("NativeApp (#integration)", () => {
     const locTestIModelId = await TestUtility.getTestIModelId(testProjectId, locTestIModelName);
 
     let events = 0;
+    let loaded = 0;
     const downloader = await NativeApp.requestDownloadBriefcase(testProjectId, locTestIModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest(),
-      (_progress: ProgressInfo) => {
+      (progress: ProgressInfo) => {
+        assert.isNumber(progress.loaded);
+        assert.isNumber(progress.total);
+        assert.isTrue(progress.loaded >= loaded);
+        assert.isTrue(progress.total! >= progress.loaded);
+        loaded = progress.loaded;
         events++;
       });
 
@@ -114,14 +120,7 @@ describe("NativeApp (#integration)", () => {
     const downloader = await NativeApp.requestDownloadBriefcase(testProjectId, locTestIModelId, { syncMode: SyncMode.PullOnly });
 
     let cancelled1: boolean = false;
-    setTimeout(async () => {
-      try {
-        cancelled1 = await downloader.requestCancel();
-      } catch (err) {
-        assert(false, "WIP: The 'user cancelled' error is now caught here...");
-      }
-    }, 10000);
-
+    setTimeout(async () => { cancelled1 = await downloader.requestCancel(); }, 1000);
     let cancelled2: boolean = false;
     try {
       await downloader.downloadPromise;

@@ -331,7 +331,7 @@ export abstract class IModelDb extends IModel {
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @internal
    */
-  public async queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string): Promise<QueryResponse> {
+  public async queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string, abbreviateBlobs?: boolean): Promise<QueryResponse> {
     const stats = this._concurrentQueryStats;
     const config = IModelHost.configuration!.concurrentQuery;
     stats.lastActivityTime = Date.now();
@@ -415,7 +415,7 @@ export abstract class IModelDb extends IModel {
         if (sessionRestartToken !== "")
           sessionRestartToken = `${ClientRequestContext.current.sessionId}:${sessionRestartToken}`;
 
-        const postResult = this.nativeDb.postConcurrentQuery(ecsql, JSON.stringify(bindings, replacer), limit!, quota!, priority!, sessionRestartToken);
+        const postResult = this.nativeDb.postConcurrentQuery(ecsql, JSON.stringify(bindings, replacer), limit!, quota!, priority!, sessionRestartToken, abbreviateBlobs);
         if (postResult.status !== IModelJsNative.ConcurrentQuery.PostStatus.Done)
           resolve({ status: QueryResponseStatus.PostError, rows: [] });
 
@@ -467,14 +467,14 @@ export abstract class IModelDb extends IModel {
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @throws [[IModelError]] If there was any error while submitting, preparing or stepping into query
    */
-  public async * query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any> {
+  public async * query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority, abbreviateBlobs?: boolean): AsyncIterableIterator<any> {
     let result: QueryResponse;
     let offset: number = 0;
     let rowsToGet = limitRows ? limitRows : -1;
     do {
-      result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority);
+      result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority, undefined, abbreviateBlobs);
       while (result.status === QueryResponseStatus.Timeout) {
-        result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority);
+        result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority, undefined, abbreviateBlobs);
       }
 
       if (result.status === QueryResponseStatus.Error) {
@@ -2183,6 +2183,8 @@ export class TxnManager {
   protected _onBeginValidate() { this.validationErrors.length = 0; }
   /** @internal */
   protected _onEndValidate() { }
+  /** @internal */
+  protected _onGeometryChanged() { }
 
   /** Dependency handlers may call method this to report a validation error.
    * @param error The error. If error.fatal === true, the transaction will cancel rather than commit.

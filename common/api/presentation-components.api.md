@@ -22,6 +22,7 @@ import { IDisposable } from '@bentley/bentleyjs-core';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
 import { InstanceKey } from '@bentley/presentation-common';
 import { IPropertyDataProvider } from '@bentley/ui-components';
+import { IPropertyValueRenderer } from '@bentley/ui-components';
 import { Item } from '@bentley/presentation-common';
 import { ITreeDataProvider } from '@bentley/ui-components';
 import { Keys } from '@bentley/presentation-common';
@@ -41,6 +42,7 @@ import { PropertyDataFilterResult } from '@bentley/ui-components';
 import { PropertyDescription } from '@bentley/ui-abstract';
 import { PropertyGridProps } from '@bentley/ui-components';
 import { PropertyRecord } from '@bentley/ui-abstract';
+import { PropertyValueRendererContext } from '@bentley/ui-components';
 import * as React from 'react';
 import { RowItem } from '@bentley/ui-components';
 import { Ruleset } from '@bentley/presentation-common';
@@ -219,6 +221,22 @@ export interface IContentDataProvider extends IPresentationDataProvider {
     getFieldByPropertyRecord: (propertyRecord: PropertyRecord) => Promise<Field | undefined>;
     keys: KeySet;
     selectionInfo: SelectionInfo | undefined;
+}
+
+// @public
+export interface IFilteredPresentationTreeDataProvider extends IPresentationTreeDataProvider {
+    countFilteringResults(nodePaths: ReadonlyArray<Readonly<NodePathElement>>): number;
+    filter: string;
+    getActiveMatch(index: number): ActiveMatchInfo | undefined;
+    nodeMatchesFilter(node: TreeNodeItem): boolean;
+}
+
+// @beta
+export class InstanceKeyValueRenderer implements IPropertyValueRenderer {
+    // (undocumented)
+    canRender(record: PropertyRecord): boolean;
+    // (undocumented)
+    render(record: PropertyRecord, context?: PropertyValueRendererContext): JSX.Element;
 }
 
 // @public
@@ -504,7 +522,7 @@ export interface UnifiedSelectionTreeEventHandlerParams {
 // @beta
 export function useControlledTreeFiltering(props: ControlledTreeFilteringProps): {
     nodeHighlightingProps: HighlightableTreeProps | undefined;
-    filteredNodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider> | PagedTreeNodeLoader<FilteredPresentationTreeDataProvider>;
+    filteredNodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>;
     filteredModelSource: TreeModelSource;
     isFiltering: boolean;
     matchesCount: number | undefined;

@@ -105,7 +105,7 @@ internal;DevTools
 public;DisplayStyle2dState 
 public;DisplayStyle3dState 
 public;class DisplayStyleState 
-internal;DownloadBriefcaseOptions
+alpha;DownloadBriefcaseOptions
 alpha;DrawClipOptions
 public;DrawingModelState 
 public;DrawingViewState 
@@ -157,7 +157,11 @@ alpha;findAvailableUnattachedRealityModels(contextId: GuidString, iModel?: IMode
 public;FitViewTool 
 internal;Flags
 public;FlyViewTool 
+internal;FormatPropsByUnitSystem = Map
 beta;class FormattedQuantityDescription 
+alpha;FormatterParserSpecsProvider
+internal;FormatterSpecByQuantityType = Map
+alpha;FormattingUnitSystemChangedArgs
 internal;FrameBeforeRenderData
 internal;FrameCameraFrustumData
 internal;FrameCameraViewData
@@ -254,7 +258,7 @@ internal;KeyinStatus
 beta;LengthDescription 
 internal;linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void
 internal;LoadedExtensionProps
-internal;LocalBriefcaseConnection 
+alpha;LocalBriefcaseConnection 
 public;LocateAction
 public;LocateFilterStatus
 public;LocateOptions
@@ -309,7 +313,7 @@ alpha;ModelDisplayTransformProvider
 public;ModelSelectorState 
 public;ModelState 
 internal;ModifyElementSource
-internal;NativeApp
+alpha;NativeApp 
 internal;NativeAppLogger
 internal;NoRenderApp
 public;NotificationManager
@@ -346,8 +350,10 @@ internal;PlanarTilePatch
 public;class PrimitiveTool 
 alpha;PrimitiveVisibility
 internal;QuadId
+alpha;QuantityFormatsChangedArgs
 alpha;QuantityFormatter 
 beta;QuantityType
+alpha;QuantityTypeArg = QuantityType | string
 internal;queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise
 internal;rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined
 internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined
@@ -442,7 +448,7 @@ public;StandardView
 public;StandardViewId
 public;StandardViewTool 
 public;StartOrResume
-internal;Storage
+alpha;Storage
 internal;SubCategoriesCache
 internal;SubCategoriesCache
 internal;SubCategoriesRequest
@@ -515,6 +521,7 @@ beta;UniformArrayParams
 beta;UniformContext
 beta;UniformParams
 beta;UniformType
+alpha;UnitSystemKey = "metric" | "imperial" | "usCustomary" | "usSurvey"
 internal;UpsampledMapTile 
 internal;UsesDragSelect
 internal;UsesFence
