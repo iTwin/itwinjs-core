@@ -130,8 +130,7 @@ export class ElectronBackend implements IpcSocketBackend {
     const frontendPort = opts?.frontendPort ?? 3000;
     this.webResourcesPath = opts?.webResourcesPath ?? "";
     this.frontendURL = opts?.frontendURL ?? this._developmentServer ? `http://localhost:${frontendPort}` : `${this._electronFrontend}index.html`;
-    const iconName = opts?.iconName ?? "appicon.ico";
-    this.appIconPath = opts?.developmentServer ? `${this.frontendURL}/${iconName}` : path.join(this.webResourcesPath, iconName);
+    this.appIconPath = path.join(this.webResourcesPath, opts?.iconName ?? "appicon.ico");
     BackendIpc.initialize(this);
     this.rpcConfig = ElectronRpcManager.initializeBackend(this, opts?.rpcInterfaces);
     opts?.ipcHandlers?.forEach((ipc) => ipc.register());
