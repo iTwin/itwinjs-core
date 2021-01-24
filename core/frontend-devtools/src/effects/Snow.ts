@@ -15,8 +15,11 @@ import {
 import { parseToggle } from "../tools/parseToggle";
 import { randomFloat, randomInteger } from "./Random";
 
-/** Represents one particle displayed by SnowDecorator. */
-interface SnowParticle extends ParticleProps {
+/** Represents one particle displayed by a [[SnowDecorator]].
+ * Particle positions are in [CoordSystem.View]($frontend).
+ * @beta
+ */
+export interface SnowParticle extends ParticleProps {
   /** Make x, y, and z from ParticleProps writable. */
   x: number;
   y: number;
@@ -26,8 +29,10 @@ interface SnowParticle extends ParticleProps {
   velocity: Vector2d;
 }
 
-/** Parameters controlling how a SnowDecorator works. */
-interface SnowParams {
+/** Parameters controlling how a [[SnowDecorator]] works.
+ * @beta
+ */
+export interface SnowParams {
   /** The number of snow particles to produce. This could alternatively be expressed as a density so that small viewports would not be more crowded than larger ones. */
   numParticles: number;
   /** Range from which to randomly select each particle's size, in pixels. */
@@ -52,8 +57,12 @@ const defaultSnowParams: SnowParams = {
   windVelocity: 0,
 };
 
-/** Simulates snowfall in a Viewport. */
-class SnowDecorator implements Decorator {
+/** Simulates snowfall in a [Viewport]($frontend) using particle effects.
+ * @see [[SnowEffect]] for a [Tool]($frontend) that toggles this decorator.
+ * @see [ParticleCollectionBuilder]($frontend) for defining custom particle effects.
+ * @beta
+ */
+export class SnowDecorator implements Decorator {
   /** The viewport being decorated. */
   public readonly viewport: Viewport;
   /** Invoked when this decorator is to be destroyed. */
@@ -202,6 +211,10 @@ class SnowDecorator implements Decorator {
 
   private static readonly _decorators = new Map<Viewport, SnowDecorator>();
 
+  /** Toggle this decorator for the specified viewport.
+   * @param viewport The viewport to which the effect should be applied or removed.
+   * @param enable `true` to enable the effect, `false` to disable it, or `undefined` to toggle the current state.
+   */
   public static async toggle(viewport: Viewport, enable?: boolean): Promise<void> {
     const decorator = this._decorators.get(viewport);
     if (undefined === enable)
@@ -223,6 +236,7 @@ class SnowDecorator implements Decorator {
 }
 
 /** Toggles a decorator that simulates snow using particle effects.
+ * @see [[SnowDecorator]] for the implementation of the decorator.
  * @beta
  */
 export class SnowEffect extends Tool {

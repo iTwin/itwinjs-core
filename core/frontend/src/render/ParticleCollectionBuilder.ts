@@ -23,7 +23,8 @@ import { DisplayParams } from "./primitives/DisplayParams";
  */
 export interface ParticleCollectionBuilderParams {
   /** The image mapped to each particle quad.
-   * @note ###TODO ownership and disposal of this texture.
+   * @note The texture should be disposed of when no longer needed to free up WebGL resources. For example, if a [[Decorator]] creates the texture, the
+   * texture should probably be disposed of when the decorator is removed from the [[ViewManager]].
    */
   texture: RenderTexture;
   /** The default extents of the particle quad. Individual particles may apply a scale to these extents to produce particles of varying dimensions. */
@@ -64,7 +65,7 @@ export interface ParticleProps extends XYAndZ {
  * such that the image is fully visible.
  *
  * Creating a particle collection using a ParticleCollectionBuilder is far more efficient (in both CPU and GPU usage) than doing so using a [[GraphicBuilder]].
- * @see [SnowEffect]($frontend-devtools) and [FireEffect]($frontend-devtools) for examples of particle effects.
+ * @see [SnowEffect]($frontend-devtools) for an example of a particle effect.
  * @beta
  */
 export interface ParticleCollectionBuilder {
