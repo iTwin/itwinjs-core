@@ -250,7 +250,6 @@ class Builder implements ParticleCollectionBuilder {
     const bytesPerOverride = 8;
     const symbologyOverrides = undefined === uniformTransparency ? new Uint8Array(bytesPerOverride * numParticles) : undefined;
     const bytesPerFeatureId = 3;
-    const featureIds = this._pickableId ? new Uint8Array(bytesPerFeatureId * numParticles) : undefined;
 
     const viewToWorld = this._viewport.view.getRotation().transpose();
     const rotMatrix = new Matrix3d();
@@ -298,9 +297,11 @@ class Builder implements ParticleCollectionBuilder {
     }
 
     // Produce instanced quads.
+    // Note: We do not need to allocate an array of featureIds. If we have a pickableId, all particles refer to the same Feature, with index 0.
+    // So we leave the vertex attribute disabled causing the shader to receive the default (0, 0, 0) which happens to correspond to our feature index.
     const quad = createQuad(meanSize, this._texture, uniformTransparency ?? 0x7f);
     const transformCenter = new Point3d(0, 0, 0);
-    const instances = { count: numParticles, transforms, transformCenter, symbologyOverrides, featureIds };
+    const instances = { count: numParticles, transforms, transformCenter, symbologyOverrides };
     return this._viewport.target.renderSystem.createMesh(quad, instances);
   }
 }
