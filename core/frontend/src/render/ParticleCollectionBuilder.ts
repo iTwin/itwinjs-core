@@ -79,12 +79,12 @@ export interface ParticleProps extends XYAndZ {
  * @beta
  */
 export interface ParticleCollectionBuilder {
-  /** The default transparency for newly-added particles as an integer in [0,255], used by [[addParticle]] if [[ParticleProps.transparency]] is omitted.
+  /** The default transparency for newly-added particles as an integer in [0,255], used by [[ParticleCollectionBuilder.addParticle]] if [[ParticleProps.transparency]] is omitted.
    * Changing this value has no effect on the transparency of previously-added particles.
    */
   transparency: number;
 
-  /** The default size of each particle, used by [[addParticle]] if [[ParticleProps.size]] is omitted. */
+  /** The default size of each particle, used by [[ParticleCollectionBuilder.addParticle]] if [[ParticleProps.size]] is omitted. */
   size: XAndY;
 
   /** Add a particle to the collection.

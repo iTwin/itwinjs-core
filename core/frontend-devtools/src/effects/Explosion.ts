@@ -189,7 +189,7 @@ class ParticleSystem {
   }
 
   public static async addDecorator(iModel: IModelConnection): Promise<void> {
-    // Note; The decorator takes ownership of the texture, and disposes of it when the decorator is disposed.
+    // Note: The decorator takes ownership of the texture, and disposes of it when the decorator is disposed.
     const isOwned = true;
     const params = new RenderTexture.Params(undefined, undefined, isOwned);
     const image = await imageElementFromUrl("./sprites/particle_explosion.png");
