@@ -27,20 +27,29 @@ export interface ParticleCollectionBuilderParams {
    * texture should probably be disposed of when the decorator is removed from the [[ViewManager]].
    */
   texture: RenderTexture;
-  /** The default extents of the particle quad. Individual particles may apply a scale to these extents to produce particles of varying dimensions. */
+
+  /** The default extents of the particle quad. Individual particles may apply a scale to these extents to produce particles of varying dimensions.
+   * Must be positive.
+   */
   size: XAndY | number;
+
   /** The initial transparency of the particles as an integer in [0,255]. Defaults to zero if omitted. */
   transparency?: number;
+
   /** The origin of the particle collection in world coordinates. Defaults to (0, 0, 0). */
   origin?: XYAndZ;
+
   /** If the particles are to be pickable, a unique identifier to associate with the resultant [[RenderGraphic]].
    * @see [[IModelConnection.transientIdSequence]] to obtain an Id that is unique within an iModel.
    */
   pickableId?: Id64String;
+
   /** The viewport in which the particles will be drawn. */
   viewport: Viewport;
+
   /** If true, the finished graphic will be defined in view coordinates, for use as a decoration of type [[GraphicType.ViewBackground]] or [[GraphicType.ViewOverlay]].
-   * Defaults to false.
+   * Defaults to false, indicating the graphic will be defined in world coordinates.
+   * @see [[CoordSystem.View]] and [[CoordSystem.World]].
    */
   isViewCoords?: boolean;
 }
@@ -51,9 +60,10 @@ export interface ParticleCollectionBuilderParams {
  */
 export interface ParticleProps extends XYAndZ {
   /** The size of the particle, in the collection's coordinate space. If omitted, it defaults to the size supplied to the collection by [[ParticleCollectionBuilderParams.size]].
-   * Supplying a `number` produces a square; supplying a non-uniform `XAndY` produces a rectangle.
+   * Supplying a `number` produces a square; supplying a non-uniform `XAndY` produces a rectangle. Must be positive.
    */
   size?: XAndY | number;
+
   /** The transparency with which to draw the particle as an integer in [0,255]. If omitted, it defaults to the current value of [[ParticleCollectionBuilder.transparency]]. */
   transparency?: number;
 }
