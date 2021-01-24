@@ -61,7 +61,7 @@ class TransparencyDecorator {
       new Point3d(0, 0, priority),
       new Point3d(1, 0, priority),
       new Point3d(1, 1, priority),
-      new Point3d(0, 1, priority)
+      new Point3d(0, 1, priority),
     ];
 
     vp.npcToWorldArray(pts);
@@ -117,7 +117,7 @@ describe("Transparency", async () => {
       viewport.viewFlags = viewport.viewFlags.clone();
       viewport.addFeatureOverrideProvider(decorator);
 
-      await viewport.renderFrame();
+      viewport.renderFrame();
       verify(viewport);
     });
   }

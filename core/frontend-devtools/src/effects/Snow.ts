@@ -8,9 +8,9 @@
 
 import { dispose } from "@bentley/bentleyjs-core";
 import { Point2d, Range1d, Range2d, Vector2d } from "@bentley/geometry-core";
-import { ColorDef, GraphicParams, ImageBuffer, ImageBufferFormat, RenderTexture } from "@bentley/imodeljs-common";
+import { RenderTexture } from "@bentley/imodeljs-common";
 import {
-  DecorateContext, Decorator, GraphicType, imageElementFromUrl, ParticleCollectionBuilder, ParticleProps, IModelApp, Tool, Viewport,
+  DecorateContext, Decorator, GraphicType, imageElementFromUrl, IModelApp, ParticleCollectionBuilder, ParticleProps, Tool, Viewport,
 } from "@bentley/imodeljs-frontend";
 import { parseToggle } from "../tools/parseToggle";
 import { randomFloat, randomInteger } from "./Random";
@@ -90,10 +90,10 @@ export class SnowDecorator implements Decorator {
     // When the viewport is resized, replace this decorator with a new one to match the new dimensions.
     const removeOnResized = viewport.onResized.addListener(() => {
       // Transfer ownership of the texture to the new decorator.
-      const texture = this._texture;
+      const tex = this._texture;
       this._texture = undefined;
       this.dispose();
-      new SnowDecorator(viewport, texture);
+      new SnowDecorator(viewport, tex);
     });
 
     // When the viewport is destroyed, dispose of this decorator too.
@@ -161,7 +161,7 @@ export class SnowDecorator implements Decorator {
       transparency: randomInteger(this._params.transparencyRange.low, this._params.transparencyRange.high),
       velocity: new Vector2d(randomFloat(this._params.velocityRange.low.x, this._params.velocityRange.high.x),
         randomFloat(this._params.velocityRange.low.y, this._params.velocityRange.high.y)),
-    }
+    };
   }
 
   // Update the positions and velocities of all the particles based on the amount of time that has passed since the last update.
@@ -228,7 +228,7 @@ export class SnowDecorator implements Decorator {
       const isOwned = true;
       const params = new RenderTexture.Params(undefined, undefined, isOwned);
       const image = await imageElementFromUrl("./sprites/particle_snow.png");
-      const texture = await IModelApp.renderSystem.createTextureFromImage(image, true, undefined, params);
+      const texture = IModelApp.renderSystem.createTextureFromImage(image, true, undefined, params);
 
       new SnowDecorator(viewport, texture);
     }
@@ -245,7 +245,7 @@ export class SnowEffect extends Tool {
   public run(enable?: boolean): boolean {
     const vp = IModelApp.viewManager.selectedView;
     if (vp)
-      SnowDecorator.toggle(vp, enable);
+      SnowDecorator.toggle(vp, enable); // eslint-disable-line @typescript-eslint/no-floating-promises
 
     return true;
   }

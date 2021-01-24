@@ -7,7 +7,7 @@
  */
 
 import { Id64String } from "@bentley/bentleyjs-core";
-import { Point3d, Range1d, Range3d, Transform, TransformProps, Vector3d } from "@bentley/geometry-core";
+import { Point3d, Range1d, Vector3d } from "@bentley/geometry-core";
 import { RenderTexture } from "@bentley/imodeljs-common";
 import {
   BeButtonEvent, DecorateContext, EventHandled, GraphicType, HitDetail, imageElementFromUrl, IModelApp, IModelConnection, ParticleCollectionBuilder, ParticleProps, Tool,
@@ -193,7 +193,7 @@ class ParticleSystem {
     const isOwned = true;
     const params = new RenderTexture.Params(undefined, undefined, isOwned);
     const image = await imageElementFromUrl("./sprites/particle_explosion.png");
-    const texture = await IModelApp.renderSystem.createTextureFromImage(image, true, undefined, params);
+    const texture = IModelApp.renderSystem.createTextureFromImage(image, true, undefined, params);
     if (texture)
       IModelApp.viewManager.addDecorator(new ParticleSystem(texture, iModel, randomIntegerInRange(this.numEmissionsRange)));
   }
@@ -208,7 +208,7 @@ export class ExplosionEffect extends Tool {
   public run(): boolean {
     const vp = IModelApp.viewManager.selectedView;
     if (vp)
-      ParticleSystem.addDecorator(vp.iModel);
+      ParticleSystem.addDecorator(vp.iModel); // eslint-disable-line @typescript-eslint/no-floating-promises
 
     return true;
   }

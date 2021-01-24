@@ -260,7 +260,6 @@ class Builder implements ParticleCollectionBuilder {
     const transforms = new Float32Array(floatsPerTransform * numParticles);
     const bytesPerOverride = 8;
     const symbologyOverrides = undefined === uniformTransparency ? new Uint8Array(bytesPerOverride * numParticles) : undefined;
-    const bytesPerFeatureId = 3;
 
     const viewToWorld = this._viewport.view.getRotation().transpose();
     const rotMatrix = new Matrix3d();
