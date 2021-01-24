@@ -198,6 +198,9 @@ class ParticleSystem {
   }
 }
 
+/** A temporary effect used for testing [ParticleCollectionBuilder]($frontend), to be replaced by a more useful/interesting example later.
+ * @alpha
+ */
 export class ExplosionEffect extends Tool {
   public static toolId = "ExplosionEffect";
 
