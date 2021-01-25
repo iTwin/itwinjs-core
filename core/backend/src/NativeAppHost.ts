@@ -158,9 +158,9 @@ class NativeAppImpl extends IpcHandler implements NativeAppFunctions {
  * Used by desktop/mobile native applications
  * @beta
  */
-export class NativeAppHost extends IpcAppHost {
+export class NativeAppHost {
   private static _reachability?: InternetConnectivityStatus;
-  private constructor() { super(); }
+  private constructor() { }
 
   public static onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void> = new BeEvent<(status: InternetConnectivityStatus) => void>();
 
@@ -169,8 +169,6 @@ export class NativeAppHost extends IpcAppHost {
   /** Get the local cache folder for application settings */
   public static get appSettingsCacheDir(): string {
     if (this._appSettingsCacheDir === undefined) {
-      if (!IModelHost.isNativeAppBackend)
-        throw new BentleyError(BentleyStatus.ERROR, "Call NativeAppBackend.startup before fetching the appSettingsCacheDir", Logger.logError, loggerCategory);
       this._appSettingsCacheDir = path.join(IModelHost.cacheDir, "appSettings");
     }
     return this._appSettingsCacheDir;
@@ -179,6 +177,9 @@ export class NativeAppHost extends IpcAppHost {
   public static notifyNativeFrontend<T extends keyof NativeAppNotifications>(methodName: T, ...args: Parameters<NativeAppNotifications[T]>) {
     return BackendIpc.send(nativeAppNotify, methodName, ...args);
   }
+
+  private static _isValid = false;
+  public static get isValid(): boolean { return this._isValid; }
 
   /**
    * Start the backend of a native app.
@@ -196,16 +197,18 @@ export class NativeAppHost extends IpcAppHost {
         NativeAppHost.notifyNativeFrontend("notifyUserStateChanged", { accessToken: accessTokenObj, err });
       });
     }
-    await super.startup(configuration);
+    await IpcAppHost.startup(configuration);
     NativeAppImpl.register();
+    this._isValid = true;
   }
 
   /**
-   * Shutdown native app backend. Also calls IModelHost.shutdown()
+   * Shutdown native app backend. Also calls IpcAppHost.shutdown()
    */
   public static async shutdown(): Promise<void> {
+    this._isValid = false;
     this.onInternetConnectivityChanged.clear();
-    await IModelHost.shutdown();
+    await IpcAppHost.shutdown();
   }
 
   /**

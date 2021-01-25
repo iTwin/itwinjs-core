@@ -9,10 +9,8 @@
 import { DbOpcode, Id64Array, Id64String, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { LockLevel } from "@bentley/imodelhub-client";
 import { AxisAlignedBox3d, BisCodeSpec, CodeProps, IModelError, IModelWriteRpcInterface, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { BriefcaseConnection } from "./BriefcaseConnection";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
-import { IModelApp } from "./IModelApp";
-import { IModelConnection } from "./IModelConnection";
-import { InteractiveEditingSession } from "./InteractiveEditingSession";
 
 const loggerCategory = FrontendLoggerCategory.IModelConnection;
 
@@ -21,17 +19,17 @@ const loggerCategory = FrontendLoggerCategory.IModelConnection;
  * @alpha
  */
 export class EditingFunctions {
-  private _connection: IModelConnection;
+  private _connection: BriefcaseConnection;
   private _concurrencyControl?: EditingFunctions.ConcurrencyControl;
   private _models?: EditingFunctions.ModelEditor;
   private _categories?: EditingFunctions.CategoryEditor;
   private _codes?: EditingFunctions.Codes;
 
   /** @private */
-  public constructor(c: IModelConnection) {
-    if (c.isReadonly)
+  public constructor(connection: BriefcaseConnection) {
+    if (connection.isReadonly)
       throw new IModelError(IModelStatus.ReadOnly, "EditingFunctions not available", Logger.logError, loggerCategory);
-    this._connection = c;
+    this._connection = connection;
   }
 
   /**
@@ -104,17 +102,7 @@ export class EditingFunctions {
     if (OpenMode.ReadWrite !== this._connection.openMode)
       throw new IModelError(IModelStatus.ReadOnly, "IModelConnection was opened read-only", Logger.logError);
 
-    if (undefined !== InteractiveEditingSession.get(this._connection)) {
-      // The session will receive notifications about modified elements and hide them in the tiles, drawing their new geometry separately instead.
-      return IModelWriteRpcInterface.getClientForRouting(this._connection.routingContext.token).saveChanges(this._connection.getRpcProps(), description);
-    }
-
-    // ###TODO: Remove all of this once tile healing is fully functional.
-    const affectedModels = await IModelWriteRpcInterface.getClientForRouting(this._connection.routingContext.token).getModelsAffectedByWrites(this._connection.getRpcProps()); // TODO: Remove this when we get tile healing
-
-    await IModelWriteRpcInterface.getClientForRouting(this._connection.routingContext.token).saveChanges(this._connection.getRpcProps(), description);
-
-    IModelApp.viewManager.refreshForModifiedModels(affectedModels); // TODO: Remove this when we get tile healing
+    return IModelWriteRpcInterface.getClientForRouting(this._connection.routingContext.token).saveChanges(this._connection.getRpcProps(), description);
   }
 
   /**
@@ -145,10 +133,10 @@ export namespace EditingFunctions { // eslint-disable-line no-redeclare
    * @alpha
    */
   export class Codes {
-    private _connection: IModelConnection;
+    private _connection: BriefcaseConnection;
 
     /** @private */
-    public constructor(c: IModelConnection) {
+    public constructor(c: BriefcaseConnection) {
       this._connection = c;
     }
 
@@ -179,11 +167,11 @@ export namespace EditingFunctions { // eslint-disable-line no-redeclare
    * @alpha
    */
   export class CategoryEditor {
-    private _connection: IModelConnection;
+    private _connection: BriefcaseConnection;
     private _rpc: IModelWriteRpcInterface;
 
     /** @private */
-    public constructor(c: IModelConnection) {
+    public constructor(c: BriefcaseConnection) {
       this._connection = c;
       this._rpc = IModelWriteRpcInterface.getClientForRouting(c.routingContext.token);
     }
@@ -200,11 +188,11 @@ export namespace EditingFunctions { // eslint-disable-line no-redeclare
    * @alpha
    */
   export class ModelEditor {
-    private _connection: IModelConnection;
+    private _connection: BriefcaseConnection;
     private _rpc: IModelWriteRpcInterface;
 
     /** @private */
-    public constructor(c: IModelConnection) {
+    public constructor(c: BriefcaseConnection) {
       this._connection = c;
       this._rpc = IModelWriteRpcInterface.getClientForRouting(c.routingContext.token);
     }
@@ -222,11 +210,11 @@ export namespace EditingFunctions { // eslint-disable-line no-redeclare
    * @alpha
    */
   export class ConcurrencyControl {
-    private _connection: IModelConnection;
+    private _connection: BriefcaseConnection;
     private _rpc: IModelWriteRpcInterface;
 
     /** @private */
-    public constructor(c: IModelConnection) {
+    public constructor(c: BriefcaseConnection) {
       this._connection = c;
       this._rpc = IModelWriteRpcInterface.getClientForRouting(c.routingContext.token);
     }

@@ -6,8 +6,7 @@ import { expect } from "chai";
 import { CompressedId64Set, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  Code, ColorByName, GeometricElement3dProps, GeometryStreamBuilder, IModel, ModelGeometryChangesProps, RpcPushChannel,
-  RpcPushConnection, SubCategoryAppearance,
+  Code, ColorByName, GeometricElement3dProps, GeometryStreamBuilder, IModel, ModelGeometryChangesProps, SubCategoryAppearance,
 } from "@bentley/imodeljs-common";
 import {
   IModelHost, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb, VolumeElement,
@@ -21,18 +20,9 @@ describe("Model geometry changes", () => {
   let categoryId: string;
   let lastChanges: ModelGeometryChangesProps[] | undefined;
 
-  function mockRpcPushConnection(channel: RpcPushChannel<any>, client: unknown): RpcPushConnection<any> {
-    return {
-      channel,
-      client,
-      send: async (_data: any) => Promise.resolve(),
-    };
-  }
-
   before(async () => {
-    RpcPushConnection.for = mockRpcPushConnection;
     await IModelHost.shutdown();
-    await IpcAppHost.startup();
+    await IModelHost.startup();
 
     const testFileName = IModelTestUtils.prepareOutputFile("ModelGeometryTracking", "ModelGeometryTracking.bim");
     const seedFileName = IModelTestUtils.resolveAssetFile("test.bim");

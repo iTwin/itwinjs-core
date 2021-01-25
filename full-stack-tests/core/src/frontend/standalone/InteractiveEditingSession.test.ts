@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-const expect = chai.expect;
-import * as path from "path";
 import * as chaiAsPromised from "chai-as-promised";
-chai.use(chaiAsPromised);
+import * as path from "path";
 import { isElectronRenderer, OpenMode } from "@bentley/bentleyjs-core";
 import { IModelError } from "@bentley/imodeljs-common";
-import { IModelApp, InteractiveEditingSession, StandaloneConnection } from "@bentley/imodeljs-frontend";
+import { InteractiveEditingSession, IpcApp, StandaloneConnection } from "@bentley/imodeljs-frontend";
 
+const expect = chai.expect;
+chai.use(chaiAsPromised);
 if (isElectronRenderer) {
   describe("InteractiveEditingSession", () => {
     let imodel: StandaloneConnection | undefined;
@@ -27,12 +27,12 @@ if (isElectronRenderer) {
     }
 
     before(async () => {
-      await IModelApp.startup();
+      await IpcApp.startup();
     });
 
     after(async () => {
       await closeIModel();
-      await IModelApp.shutdown();
+      await IpcApp.shutdown();
     });
 
     afterEach(async () => {

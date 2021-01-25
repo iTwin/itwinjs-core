@@ -52,7 +52,7 @@ async function createAssembly(editor: ElementEditor3d, model: Id64String, catego
   return parentId!;
 }
 
-async function checkAssembly(iModel: IModelConnection, parentId: Id64String, nExpected: number[]): Promise<Id64Array> {
+async function checkAssembly(iModel: BriefcaseConnection, parentId: Id64String, nExpected: number[]): Promise<Id64Array> {
   await iModel.saveChanges(""); // TODO: Move this after select statement when we fix the problem with querying uncommitted changes
 
   const nParentQres = await iModel.queryRows("select count(*) as n from bis.GeometricElement3d where ecinstanceid=?", [parentId]);

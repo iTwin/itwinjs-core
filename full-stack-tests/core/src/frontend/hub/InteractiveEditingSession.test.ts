@@ -10,16 +10,16 @@ import { BeDuration, compareStrings, DbOpcode, Id64String, isElectronRenderer, O
 import { IModelJson, LineSegment3d, Point3d, Range3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
 import { BatchType, Code, ElementGeometryChange } from "@bentley/imodeljs-common";
 import {
-  ElementEditor3d, GeometricModel3dState, IModelApp, IModelTileTree, IModelTileTreeParams, InteractiveEditingSession, RemoteBriefcaseConnection, TileLoadPriority,
+  ElementEditor3d, GeometricModel3dState, IModelTileTree, IModelTileTreeParams, InteractiveEditingSession, IpcApp, RemoteBriefcaseConnection, TileLoadPriority,
 } from "@bentley/imodeljs-frontend";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "./TestUtility";
 
 let codeSuffix = 1;
 
-// The Web RPC protocol currently does not support the push notifications required for interactive editing.
+// The Web RPC protocol does not support Ipc required for interactive editing.
 if (isElectronRenderer) {
-  describe("InteractiveEditingSession (#integration)", () => {
+  describe.only("InteractiveEditingSession (#integration)", () => {
     let briefcase: RemoteBriefcaseConnection | undefined;
     let imodelId: string;
     let projectId: string;
@@ -33,7 +33,7 @@ if (isElectronRenderer) {
 
     before(async () => {
       const projectName = "iModelJsIntegrationTest";
-      await IModelApp.startup({
+      await IpcApp.startup({
         authorizationClient: await TestUtility.initializeTestProject(projectName, TestUsers.regular),
         imodelClient: TestUtility.imodelCloudEnv.imodelClient,
         applicationVersion: "1.2.1.1",
@@ -54,7 +54,7 @@ if (isElectronRenderer) {
     after(async () => {
       await closeIModel();
       await TestUtility.deleteIModel(imodelId, projectId);
-      await IModelApp.shutdown();
+      await IpcApp.shutdown();
     });
 
     function makeLine(p1?: Point3d, p2?: Point3d): LineSegment3d {
@@ -100,9 +100,6 @@ if (isElectronRenderer) {
       const session = await InteractiveEditingSession.begin(imodel);
 
       async function expectChanges(expected: ElementGeometryChange[], compareRange = false): Promise<void> {
-        // ###TODO: After we switch from polling for native events, we should not need to wait for changed events to be fetched here...
-        const waitTime = 150;
-        await BeDuration.wait(waitTime);
 
         const changes = session.getGeometryChangesForModel(modelId);
         expect(undefined === changes).to.equal(expected.length === 0);

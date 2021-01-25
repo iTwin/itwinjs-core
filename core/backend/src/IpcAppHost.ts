@@ -63,17 +63,29 @@ class IpcAppImpl extends IpcHandler implements IpcAppFunctions {
  * Used by applications that have a dedicated backend
  * @internal
 */
-export class IpcAppHost extends IModelHost {
+export class IpcAppHost {
+  private static notify(channel: string, briefcase: BriefcaseDb | StandaloneDb, methodName: string, ...args: any[]) {
+    if (this._isValid)
+      return BackendIpc.send(`${channel}:${briefcase.key}`, methodName, ...args);
+
+  }
   public static notifyGeometryChanges<T extends keyof GeometryChangeNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<GeometryChangeNotifications[T]>) {
-    return BackendIpc.send(`${IpcAppChannel.GeometryChanges}:${briefcase.key}`, methodName, ...args);
+    this.notify(IpcAppChannel.GeometryChanges, briefcase, methodName, ...args);
   }
 
   public static notifyPushAndPull<T extends keyof BriefcasePushAndPullNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<BriefcasePushAndPullNotifications[T]>) {
-    return BackendIpc.send(`${IpcAppChannel.GeometryChanges}:${briefcase.key}`, methodName, ...args);
+    this.notify(IpcAppChannel.PushPull, briefcase, methodName, ...args);
   }
 
-  public static async startup(configuration: IModelHostConfiguration = new IModelHostConfiguration()): Promise<void> {
-    await super.startup(configuration);
+  private static _isValid = false;
+  public static get isValid(): boolean { return this._isValid; }
+  public static async startup(configuration?: IModelHostConfiguration): Promise<void> {
+    await IModelHost.startup(configuration);
     IpcAppImpl.register();
+    this._isValid = true;
+  }
+  public static async shutdown(): Promise<void> {
+    this._isValid = false;
+    await IModelHost.shutdown();
   }
 }

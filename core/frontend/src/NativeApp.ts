@@ -13,10 +13,10 @@ import {
   PromiseReturnType, RequestNewBriefcaseProps, StorageValue, SyncMode,
 } from "@bentley/imodeljs-common";
 import { ProgressCallback, RequestGlobalOptions } from "@bentley/itwin-client";
+import { LocalBriefcaseConnection } from "./BriefcaseConnection";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { AuthorizedFrontendRequestContext, FrontendRequestContext } from "./FrontendRequestContext";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
-import { LocalBriefcaseConnection } from "./IModelConnection";
 import { IpcApp } from "./IpcApp";
 import { NativeAppLogger } from "./NativeAppLogger";
 
@@ -54,7 +54,7 @@ class NativeAppNotifyHandler extends NotificationHandler implements NativeAppNot
  * @see [Native Applications]($docs/learning/NativeApps.md)
  * @alpha
  */
-export class NativeApp extends IpcApp {
+export class NativeApp {
   public static async callBackend<T extends AsyncMethodsOf<NativeAppFunctions>>(methodName: T, ...args: Parameters<NativeAppFunctions[T]>) {
     return FrontendIpc.callBackend(nativeAppChannel, methodName, ...args) as PromiseReturnType<NativeAppFunctions[T]>;
   }
@@ -101,7 +101,7 @@ export class NativeApp extends IpcApp {
   public static async startup(opts?: IModelAppOptions) {
     Logger.logInfo(FrontendLoggerCategory.NativeApp, "Startup");
 
-    await super.startup(opts);
+    await IpcApp.startup(opts);
     NativeAppNotifyHandler.register();
 
     const backendConfig = await this.callBackend("getConfig");
@@ -118,8 +118,8 @@ export class NativeApp extends IpcApp {
   public static async shutdown() {
     NativeApp.unhookBrowserConnectivityEvents();
     await NativeAppLogger.flush();
-    await IModelApp.shutdown();
     this._isValid = false;
+    await IpcApp.shutdown();
   }
 
   public static async requestDownloadBriefcase(contextId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions,

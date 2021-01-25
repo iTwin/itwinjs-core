@@ -8,9 +8,11 @@
 
 import { assert, BeEvent, compareStrings, DbOpcode, DuplicatePolicy, GuidString, Id64String, SortedArray } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
-import { ElementGeometryChange, GeometryChangeNotifications, IpcAppChannel, ModelGeometryChanges, ModelGeometryChangesProps, RemoveFunction } from "@bentley/imodeljs-common";
-import { IModelConnection } from "./IModelConnection";
-import { BriefcaseNotificationHandler } from "./imodeljs-frontend";
+import {
+  ElementGeometryChange, GeometryChangeNotifications, IpcAppChannel, ModelGeometryChanges, ModelGeometryChangesProps, RemoveFunction,
+} from "@bentley/imodeljs-common";
+import { BriefcaseConnection, BriefcaseNotificationHandler } from "./BriefcaseConnection";
+import { IModelConnection, StandaloneConnection } from "./IModelConnection";
 import { IpcApp } from "./IpcApp";
 
 let initialized = false;
@@ -26,6 +28,8 @@ class ModelChanges extends SortedArray<ElementGeometryChange> {
     this.range = range;
   }
 }
+
+type EditableConnection = BriefcaseConnection | StandaloneConnection;
 
 /**
  * Represents an active session for performing interactive editing of an [[IModelConnection]].
@@ -46,7 +50,7 @@ export class InteractiveEditingSession extends BriefcaseNotificationHandler impl
   private _disposed = false;
   private _cleanup?: RemoveFunction;
   /** The iModel being edited. */
-  public readonly iModel: IModelConnection;
+  public readonly iModel: EditableConnection;
 
   /** Event raised when a new session begins.
    * @see [[onEnding]] and [[onEnd]] for complementary events.
@@ -71,14 +75,14 @@ export class InteractiveEditingSession extends BriefcaseNotificationHandler impl
   /** Return whether interactive editing is supported for the specified iModel. It is not supported if the iModel is read-only, or the iModel contains a version of
    * the BisCore ECSchema older than v0.1.11.
    */
-  public static async isSupported(imodel: IModelConnection): Promise<boolean> {
+  public static async isSupported(imodel: EditableConnection): Promise<boolean> {
     return IpcApp.callIpcAppBackend("isInteractiveEditingSupported", imodel.getRpcProps());
   }
 
   /** Get the active editing session for the specified iModel, if any.
    * @note Only one editing session can be active for a given iModel at any given time.
    */
-  public static get(imodel: IModelConnection): InteractiveEditingSession | undefined {
+  public static get(imodel: EditableConnection): InteractiveEditingSession | undefined {
     return sessions.find((x) => x.iModel === imodel);
   }
 
@@ -87,7 +91,7 @@ export class InteractiveEditingSession extends BriefcaseNotificationHandler impl
    * @throws Error if a new session could not be started.
    * @see [[isSupported]] to determine whether this method should be expected to succeed.
    */
-  public static async begin(imodel: IModelConnection): Promise<InteractiveEditingSession> {
+  public static async begin(imodel: EditableConnection): Promise<InteractiveEditingSession> {
     if (InteractiveEditingSession.get(imodel))
       throw new Error("Cannot create an editing session for an iModel that already has one");
 
@@ -96,7 +100,7 @@ export class InteractiveEditingSession extends BriefcaseNotificationHandler impl
     sessions.push(session);
     try {
       const sessionStarted = await IpcApp.callIpcAppBackend("toggleInteractiveEditingSession", imodel.getRpcProps(), true);
-      assert(sessionStarted); // If it didn't, the rpc interface threw an error.
+      assert(sessionStarted); // If it didn't, the backend threw an error.
     } catch (e) {
       session.dispose();
       throw e;
@@ -105,7 +109,7 @@ export class InteractiveEditingSession extends BriefcaseNotificationHandler impl
     if (!initialized) {
       initialized = true;
       IModelConnection.onClose.addListener((iModel) => {
-        if (undefined !== this.get(iModel))
+        if (undefined !== this.get(iModel as EditableConnection))
           throw new Error("InteractiveEditingSession must be ended before closing the associated iModel");
       });
     }
@@ -158,7 +162,7 @@ export class InteractiveEditingSession extends BriefcaseNotificationHandler impl
     }
   }
 
-  private constructor(iModel: IModelConnection) {
+  private constructor(iModel: EditableConnection) {
     super(iModel.key);
     this.iModel = iModel;
     this._cleanup = this.registerImpl();

@@ -86,8 +86,10 @@ export interface CrashReportingConfig {
  */
 export enum ApplicationType {
   WebAgent,
-  WebApplicationBackend,
+  WebReadonlyApp,
+  WebEditorApp,
   NativeApp,
+  MobileApp,
 }
 
 /** Configuration of imodeljs-backend.
@@ -209,6 +211,7 @@ export class IModelHostConfiguration {
  * @public
  */
 export class IModelHost {
+  private constructor() { }
   private static _authorizationClient?: AuthorizationClient;
   /** Implementation of [AuthorizationClient]($itwin-client) to supply the authorization information for this session - only required for backend applications */
   /** Implementation of [AuthorizationClient]($itwin-client) to supply the authorization information for this session - only required for agent applications, or backends that want to override access tokens passed from the frontend */
@@ -225,16 +228,12 @@ export class IModelHost {
   /** @alpha */
   public static readonly telemetry: TelemetryManager = new TelemetryManager();
 
-  private static _nativeAppBackend: boolean;
   public static backendVersion = "";
   private static _cacheDir = "";
 
   private static _platform?: typeof IModelJsNative;
   /** @internal */
   public static get platform(): typeof IModelJsNative { return this._platform!; }
-
-  /** @internal */
-  public static get isNativeAppBackend(): boolean { return IModelHost._nativeAppBackend; }
 
   public static configuration?: IModelHostConfiguration;
   /** Event raised just after the backend IModelHost was started */
@@ -390,10 +389,6 @@ export class IModelHost {
 
     await RequestHost.initialize(); // Initialize configuration for HTTP requests at the backend.
 
-    if (configuration.applicationType && configuration.applicationType === ApplicationType.NativeApp) {
-      this._nativeAppBackend = true;
-    }
-
     // Setup a current context for all requests that originate from this backend
     const requestContext = new BackendRequestContext();
     requestContext.enter();
@@ -532,7 +527,6 @@ export class IModelHost {
     IModelHost.onBeforeShutdown.raiseEvent();
     IModelHost.platform.shutdown();
     IModelHost.configuration = undefined;
-    IModelHost._nativeAppBackend = false;
   }
 
   /**

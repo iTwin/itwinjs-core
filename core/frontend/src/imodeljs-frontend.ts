@@ -5,6 +5,7 @@
 export * from "./AccuDraw";
 export * from "./AccuSnap";
 export * from "./AuxCoordSys";
+export * from "./BriefcaseConnection";
 export * from "./CategorySelectorState";
 export * from "./ChangeFlags";
 export * from "./ContextRealityModelState";
@@ -33,6 +34,7 @@ export * from "./IModelApp";
 export * from "./IModelConnection";
 export * from "./IModelRoutingContext";
 export * from "./InteractiveEditingSession";
+export * from "./IpcApp";
 export * from "./LinePlaneIntersect";
 export * from "./MarginPercent";
 export * from "./Marker";
