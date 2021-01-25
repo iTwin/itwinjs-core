@@ -566,7 +566,7 @@ export class ExternalTextureLoader { /* currently exported for tests only */
       }
     } catch (_e) { }
 
-    await this._nextRequest(req);
+    return this._nextRequest(req);
   }
 
   private _requestExists(reqToCheck: ExternalTextureRequest) {
