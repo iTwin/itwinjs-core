@@ -27,7 +27,72 @@ import { SampleImageCheckBox } from "./SampleImageCheckBox";
 import { SampleAppIModelApp } from "../../..";
 import { BeDuration, Logger } from "@bentley/bentleyjs-core";
 import { SamplePopupContextMenu } from "./SamplePopupContextMenu";
-import { Format, FormatProps, FormatterSpec, UnitsProvider } from "@bentley/imodeljs-quantity";
+import { Format, FormatProps, FormatterSpec, FormatTraits, UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
+
+function setFormatTrait(formatProps: FormatProps, trait: FormatTraits, setActive: boolean) {
+  const traitStr = Format.getTraitString(trait);
+  if (undefined === traitStr)
+    return;
+  let formatTraits: string[] | undefined;
+  if (setActive) {
+    // setting trait
+    if (!formatProps.formatTraits) {
+      formatTraits = [traitStr];
+    } else {
+      const traits = Array.isArray(formatProps.formatTraits) ? formatProps.formatTraits : formatProps.formatTraits.split(/,|;|\|/);
+      if (!traits.find((traitEntry) => traitStr === traitEntry)) {
+        formatTraits = [...traits, traitStr];
+      }
+    }
+  } else {
+    // clearing trait
+    if (!formatProps.formatTraits)
+      return;
+    const traits = Array.isArray(formatProps.formatTraits) ? formatProps.formatTraits : formatProps.formatTraits.split(/,|;|\|/);
+    formatTraits = traits.filter((traitEntry) => traitEntry !== traitStr);
+  }
+  return { ...formatProps, formatTraits };
+}
+
+function provideSecondaryChildren(formatProps: FormatProps, _unitsProvider: UnitsProvider, fireFormatChange: (newProps: FormatProps) => void) {
+  const inProps = formatProps;
+  const onChange = fireFormatChange;
+  const handleUseThousandsSeparatorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newProps = setFormatTrait(inProps, FormatTraits.Use1000Separator, e.target.checked);
+    if (newProps)
+      onChange(newProps);
+  };
+
+  return (
+    <>
+      <span className={"uicore-label"}>Secondary (1000 sep)</span>
+      <Checkbox isLabeled={true} checked={Format.isFormatTraitSetInProps(formatProps, FormatTraits.Use1000Separator)} onChange={handleUseThousandsSeparatorChange} />
+    </>
+  );
+}
+
+function providePrimaryChildren(formatProps: FormatProps, _unitsProvider: UnitsProvider, fireFormatChange: (newProps: FormatProps) => void) {
+  const inProps = formatProps;
+  const onChange = fireFormatChange;
+  const handleUseThousandsSeparatorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newProps = setFormatTrait(inProps, FormatTraits.Use1000Separator, e.target.checked);
+    if (newProps)
+      onChange(newProps);
+  };
+
+  return (
+    <>
+      <span className={"uicore-label"}>Primary (1000 sep)</span>
+      <Checkbox isLabeled={true} checked={Format.isFormatTraitSetInProps(formatProps, FormatTraits.Use1000Separator)} onChange={handleUseThousandsSeparatorChange} />
+    </>
+  );
+}
+
+async function provideFormatSpec(persistenceUnit: UnitProps, formatProps: FormatProps, unitsProvider: UnitsProvider, formatName?: string) {
+  const actualFormat = new Format(formatName ?? "custom");
+  await actualFormat.fromJSON(unitsProvider, formatProps);
+  return FormatterSpec.create(actualFormat.name, actualFormat, unitsProvider, persistenceUnit);
+}
 
 function NumericFormatPopup({ persistenceUnitName, initialMagnitude }: { persistenceUnitName: string, initialMagnitude: number }) {
   const initialFormatProps: FormatProps = {
@@ -62,9 +127,7 @@ function NumericFormatPopup({ persistenceUnitName, initialMagnitude }: { persist
       const unitsProvider = IModelApp.quantityFormatter as UnitsProvider;
       const pu = await unitsProvider.findUnitByName(persistenceUnitName);
       if (pu) {
-        const actualFormat = new Format("custom");
-        await actualFormat.fromJSON(unitsProvider, initialFormatProps);
-        const newSpec = await FormatterSpec.create(actualFormat.name, actualFormat, unitsProvider, pu);
+        const newSpec = await provideFormatSpec(pu, initialFormatProps, unitsProvider);
         setFormattedValue(newSpec.applyFormatting(initialMagnitude));
         setFormatterSpec(newSpec);
       }
@@ -80,7 +143,11 @@ function NumericFormatPopup({ persistenceUnitName, initialMagnitude }: { persist
         <>
           <span>{formattedValue}</span>
           <FormatPopupButton initialFormat={formatterSpec.format.toJSON()} showSample={true} onFormatChange={handleFormatChange}
-            initialMagnitude={initialMagnitude} unitsProvider={IModelApp.quantityFormatter as UnitsProvider} persistenceUnit={formatterSpec.persistenceUnit} />
+            initialMagnitude={initialMagnitude} unitsProvider={IModelApp.quantityFormatter as UnitsProvider} persistenceUnit={formatterSpec.persistenceUnit}
+            provideFormatSpec={provideFormatSpec}
+            providePrimaryChildren={providePrimaryChildren}
+            provideSecondaryChildren={provideSecondaryChildren}
+          />
         </>
       }
     </div>
@@ -136,7 +203,6 @@ function WrappedSelect() {
       <button onClick={() => handleValueChange(3)}>3</button>
     </div>
   );
-
 }
 
 function NestedPopup({ closeOnNestedPopupOutsideClick }: { closeOnNestedPopupOutsideClick?: boolean }) {

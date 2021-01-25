@@ -23,4 +23,29 @@
     align-items: center;
     gap: 4px;
   }
+
+  >button.components-quantityFormat-more-button {
+    grid-column: 1 / span 2;
+    border: none;
+    outline: none;
+    background: none;
+  }
+
+  .components-quantityFormat-more-button-label {
+    margin-right: .25em;
+  }
+
+  > a.components-quantityFormat-more-less {
+    font-size: $uicore-font-size;
+    color: $buic-foreground-alert;
+    -webkit-transition: text-decoration 1s ease;
+    -moz-transition: text-decoration 1s ease;
+    -o-transition: text-decoration 1s ease;
+    transition: text-decoration 0.1s ease;
+
+    &:hover {
+      text-decoration: underline;
+      cursor: pointer;
+    }
+  }
 }

@@ -8,12 +8,13 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { Button, ButtonType, Checkbox, CommonProps, WebFontIcon } from "@bentley/ui-core";
+import { Checkbox, CommonProps } from "@bentley/ui-core";
 import { Format, FormatProps, FormatTraits, FormatType, ScientificType, ShowSignOption } from "@bentley/imodeljs-quantity";
 import { SignOptionSelector } from "./SignOption";
 import { ThousandsSeparator } from "./ThousandsSeparator";
 import { DecimalSeparatorSelector } from "./DecimalSeparator";
 import { ScientificTypeSelector } from "./ScientificType";
+import { SpecialKey } from "@bentley/ui-abstract";
 
 /** Properties of [[MiscFormatOptions]] component.
  * @alpha
@@ -23,6 +24,7 @@ export interface MiscFormatOptionsProps extends CommonProps {
   onChange?: (format: FormatProps) => void;
   showOptions: boolean;
   onShowHideOptions: (show: boolean) => void;
+  children?: React.ReactNode;
 }
 
 /** Component to show/edit Quantity Format.
@@ -121,13 +123,19 @@ export function MiscFormatOptions(props: MiscFormatOptionsProps) {
     onShowHideOptions(!showOptions);
   }, [onShowHideOptions, showOptions]);
 
+  const handleKeyUpOnLink = React.useCallback((e: React.KeyboardEvent<HTMLAnchorElement>) => {
+    if (e.key === SpecialKey.Enter || e.key === SpecialKey.Space) {
+      onShowHideOptions(!showOptions);
+      e.preventDefault();
+    }
+  }, [onShowHideOptions, showOptions]);
+
   return (
     <>
-      <span />
-      <Button buttonType={ButtonType.Hollow} onClick={handleToggleButtonClick}>
-        <WebFontIcon iconName={showOptions ? "icon-caret-up" : "icon-caret-down"} />
-      </Button>
-      {showOptions &&
+      { // eslint-disable-next-line jsx-a11y/anchor-is-valid
+        !showOptions && <a onClick={handleToggleButtonClick} onKeyUp={handleKeyUpOnLink} className={"components-quantityFormat-more-less"} role="link" tabIndex={0} >More</a>}
+      {
+        showOptions &&
         <>
           <span className={"uicore-label"}>Sign Option</span>
           <SignOptionSelector signOption={showSignOption} onChange={handleShowSignChange} />
@@ -155,6 +163,11 @@ export function MiscFormatOptions(props: MiscFormatOptionsProps) {
           <span className={classnames("uicore-label", formatType !== FormatType.Scientific && "uicore-disabled")}>Scientific Type</span>
           <ScientificTypeSelector type={(formatProps.scientificType && formatProps.scientificType.length > 0) ? Format.parseScientificType(formatProps.scientificType, "custom") : ScientificType.Normalized}
             disabled={formatType !== FormatType.Scientific} onChange={handleScientificTypeChange} />
+
+          {props.children}
+
+          { // eslint-disable-next-line jsx-a11y/anchor-is-valid
+            showOptions && <a onClick={handleToggleButtonClick} onKeyUp={handleKeyUpOnLink} className={"components-quantityFormat-more-less"} role="link" tabIndex={0} >Less</a>}
         </>
       }
     </>

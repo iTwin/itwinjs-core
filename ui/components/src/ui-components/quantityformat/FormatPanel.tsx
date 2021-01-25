@@ -27,7 +27,9 @@ export interface FormatPanelProps extends CommonProps {
   showSample?: boolean;
   initialMagnitude?: number;
   onFormatChange?: (format: FormatProps) => void;
-  formatSpecFactory?: (persistenceUnit: UnitProps, formatProps: FormatProps, unitsProvider: UnitsProvider) => Promise<FormatterSpec>;
+  provideFormatSpec?: (persistenceUnit: UnitProps, formatProps: FormatProps, unitsProvider: UnitsProvider) => Promise<FormatterSpec>;
+  providePrimaryChildren?: (formatProps: FormatProps, unitsProvider: UnitsProvider, fireFormatChange: (newProps: FormatProps) => void) => React.ReactNode;
+  provideSecondaryChildren?: (formatProps: FormatProps, unitsProvider: UnitsProvider, fireFormatChange: (newProps: FormatProps) => void) => React.ReactNode;
 }
 
 async function generateFormatSpec(persistenceUnit: UnitProps, formatProps: FormatProps, unitsProvider: UnitsProvider) {
@@ -41,7 +43,7 @@ async function generateFormatSpec(persistenceUnit: UnitProps, formatProps: Forma
  */
 export function FormatPanel(props: FormatPanelProps) {
   const [formatSpec, setFormatSpec] = React.useState<FormatterSpec>();
-  const { initialFormat, showSample, initialMagnitude, unitsProvider, persistenceUnit, onFormatChange, formatSpecFactory } = props;
+  const { initialFormat, showSample, initialMagnitude, unitsProvider, persistenceUnit, onFormatChange, provideFormatSpec } = props;
   const [formatProps, setFormatProps] = React.useState(initialFormat);
   const initialFormatRef = React.useRef<FormatProps>(initialFormat);
   const [showOptions, setShowOptions] = React.useState(false);
@@ -64,8 +66,8 @@ export function FormatPanel(props: FormatPanelProps) {
     async function fetchFormatSpec() {
       const pu = await persistenceUnit;
       let newFormatSpec: FormatterSpec;
-      if (formatSpecFactory) {
-        newFormatSpec = await formatSpecFactory(pu, formatProps, unitsProvider);
+      if (provideFormatSpec) {
+        newFormatSpec = await provideFormatSpec(pu, formatProps, unitsProvider);
       } else {
         newFormatSpec = await generateFormatSpec(pu, formatProps, unitsProvider);
       }
@@ -73,7 +75,7 @@ export function FormatPanel(props: FormatPanelProps) {
     }
     if (!formatSpec)
       fetchFormatSpec(); // eslint-disable-line @typescript-eslint/no-floating-promises
-  }, [formatProps, formatSpec, formatSpecFactory, persistenceUnit, unitsProvider]);
+  }, [formatProps, formatSpec, persistenceUnit, provideFormatSpec, unitsProvider]);
 
   const handleFormatChange = React.useCallback((newFormatProps: FormatProps) => {
     handleSetFormatProps(newFormatProps);
@@ -92,7 +94,10 @@ export function FormatPanel(props: FormatPanelProps) {
       <FormatUnitLabel formatProps={formatProps} onUnitLabelChange={handleFormatChange} />
       <FormatTypeOption formatProps={formatProps} onChange={handleFormatChange} />
       <FormatPrecision formatProps={formatProps} onChange={handleFormatChange} />
-      <MiscFormatOptions formatProps={formatProps} onChange={handleFormatChange} showOptions={showOptions} onShowHideOptions={handleShowOptions} />
+      {props.providePrimaryChildren && props.providePrimaryChildren(formatProps, unitsProvider, handleFormatChange)}
+      <MiscFormatOptions formatProps={formatProps} onChange={handleFormatChange} showOptions={showOptions} onShowHideOptions={handleShowOptions}>
+        {props.provideSecondaryChildren && props.provideSecondaryChildren(formatProps, unitsProvider, handleFormatChange)}
+      </MiscFormatOptions>
     </div>
   );
 }
