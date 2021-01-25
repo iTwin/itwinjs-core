@@ -146,12 +146,12 @@ describe("Disposal of System", () => {
 
     // Texture from image buffer
     const textureParams0 = new RenderTexture.Params("-192837465");
-    const texture0 = system.createTextureFromImageBuffer(imageBuff!, imodel0, textureParams0);
+    const texture0 = system.createTextureFromImageBuffer(imageBuff, imodel0, textureParams0);
     assert.isDefined(texture0);
 
     // Texture from image source
     const textureParams1 = new RenderTexture.Params("-918273645");
-    const texture1 = system.createTextureFromImageBuffer(imageBuff!, imodel0, textureParams1);
+    const texture1 = system.createTextureFromImageBuffer(imageBuff, imodel0, textureParams1);
     assert.isDefined(texture1);
 
     // Pre-disposal
