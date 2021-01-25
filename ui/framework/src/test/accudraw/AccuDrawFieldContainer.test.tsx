@@ -193,6 +193,7 @@ describe("AccuDrawFieldContainer", () => {
   });
 
   it("should call onValueChanged & setFieldValueFromUi", () => {
+    const fakeTimers = sinon.useFakeTimers();
     const spy = sinon.spy();
     const remove = AccuDrawUiAdmin.onAccuDrawSetFieldValueFromUiEvent.addListener(spy);
     const wrapper = render(<AccuDrawFieldContainer orientation={Orientation.Vertical} />);
@@ -202,21 +203,21 @@ describe("AccuDrawFieldContainer", () => {
     let input = wrapper.container.querySelector("input#uifw-accudraw-x");
     expect(input).not.to.be.null;
     fireEvent.change(input!, { target: { value: "22.3" } });
-    fireEvent.keyDown(input!, { key: SpecialKey.Enter });
+    fakeTimers.tick(300);
     spy.calledOnce.should.true;
     spy.resetHistory();
 
     input = wrapper.container.querySelector("input#uifw-accudraw-y");
     expect(input).not.to.be.null;
     fireEvent.change(input!, { target: { value: "22.3" } });
-    fireEvent.keyDown(input!, { key: SpecialKey.Enter });
+    fakeTimers.tick(300);
     spy.calledOnce.should.true;
     spy.resetHistory();
 
     input = wrapper.container.querySelector("input#uifw-accudraw-z");
     expect(input).not.to.be.null;
     fireEvent.change(input!, { target: { value: "22.3" } });
-    fireEvent.keyDown(input!, { key: SpecialKey.Enter });
+    fakeTimers.tick(300);
     spy.calledOnce.should.true;
     spy.resetHistory();
 
@@ -225,18 +226,19 @@ describe("AccuDrawFieldContainer", () => {
     input = wrapper.container.querySelector("input#uifw-accudraw-angle");
     expect(input).not.to.be.null;
     fireEvent.change(input!, { target: { value: "22.3" } });
-    fireEvent.keyDown(input!, { key: SpecialKey.Enter });
+    fakeTimers.tick(300);
     spy.calledOnce.should.true;
     spy.resetHistory();
 
     input = wrapper.container.querySelector("input#uifw-accudraw-distance");
     expect(input).not.to.be.null;
     fireEvent.change(input!, { target: { value: "22.3" } });
-    fireEvent.keyDown(input!, { key: SpecialKey.Enter });
+    fakeTimers.tick(300);
     spy.calledOnce.should.true;
     spy.resetHistory();
 
     remove();
+    fakeTimers.restore();
   });
 
   it("should set focus to home on Esc", () => {

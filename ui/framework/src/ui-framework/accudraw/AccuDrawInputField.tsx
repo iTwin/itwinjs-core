@@ -47,11 +47,11 @@ const ForwardRefAccuDrawInput = React.forwardRef<HTMLInputElement, AccuDrawInput
   function ForwardRefAccuDrawInputField(props: AccuDrawInputFieldProps, ref) {
     const { className, style, id, label, iconSpec, labelClassName, labelStyle, initialValue, lock,
       onValueChanged, valueChangedDelay, onEnterPressed, onEscPressed } = props;
-    const [stringValue, setStringValue] = React.useState(initialValue);
+    const stringValue = React.useRef(initialValue);
     const timeoutId = React.useRef(0);
 
     React.useEffect(() => {
-      setStringValue(initialValue);
+      stringValue.current = (initialValue);
     }, [initialValue]);
 
     const trackChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>): void => {
@@ -62,14 +62,17 @@ const ForwardRefAccuDrawInput = React.forwardRef<HTMLInputElement, AccuDrawInput
         return;
 
       // istanbul ignore else
-      if (value !== stringValue)
-        setStringValue(value);
+      if (value !== stringValue.current) {
+        stringValue.current = (value);
+      }
 
       if (valueChangedDelay) {
         unsetTimeout();
-        timeoutId.current = window.setTimeout(() => { onValueChanged(stringValue); }, valueChangedDelay);
+        timeoutId.current = window.setTimeout(() => {
+          onValueChanged(stringValue.current);
+        }, valueChangedDelay);
       } else {
-        onValueChanged(stringValue);
+        onValueChanged(stringValue.current);
       }
     }, [onValueChanged, stringValue, valueChangedDelay]);
 
@@ -96,6 +99,7 @@ const ForwardRefAccuDrawInput = React.forwardRef<HTMLInputElement, AccuDrawInput
       }
 
       if (isLetter(e.key)) {
+        e.preventDefault();
         KeyboardShortcutManager.processKey(e.key);
         return;
       }
@@ -110,8 +114,8 @@ const ForwardRefAccuDrawInput = React.forwardRef<HTMLInputElement, AccuDrawInput
           {label}
           {iconSpec && <Icon iconSpec={iconSpec} />}
         </label>
-        <Input ref={ref} id={id} value={stringValue}
-          className={inputClassNames} style={style}
+        <Input ref={ref} id={id} defaultValue={stringValue.current}
+          className={inputClassNames} style={style} autoComplete="off"
           onChange={trackChange} onKeyDown={handleKeyDown} />
         <span className="uifw-accudraw-lock" >
           {lock && <Icon iconSpec="icon-lock" />}

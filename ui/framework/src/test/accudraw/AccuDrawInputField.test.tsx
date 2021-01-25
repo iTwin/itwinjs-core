@@ -49,8 +49,8 @@ describe("AccuDrawInputField", () => {
     spyMethod.called.should.not.be.true;
 
     fakeTimers.tick(20);
-    fakeTimers.restore();
     spyMethod.calledOnce.should.be.true;
+    fakeTimers.restore();
   });
 
   it("should call onEscPressed on ESC", () => {

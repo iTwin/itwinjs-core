@@ -147,7 +147,7 @@ export function AccuDrawFieldContainer(props: AccuDrawFieldContainerProps) {
     // istanbul ignore else
     if (inputRef.current && document.activeElement !== inputRef.current) {
       inputRef.current.focus();
-      // inputRef.current.select();
+      inputRef.current.select();
     }
   }, []);
 
@@ -193,7 +193,7 @@ export function AccuDrawFieldContainer(props: AccuDrawFieldContainerProps) {
     className,
   );
 
-  const delay = 0;
+  const delay = 250;
 
   return (
     <div className={classNames} style={style} {...otherProps}>
