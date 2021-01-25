@@ -2609,6 +2609,7 @@ export class ScreenViewport extends Viewport {
     return vp;
   }
 
+  /** @internal */
   public static markAllChildrenForRemoval(el: HTMLDivElement) {
     for (const child of el.children)
       child[ELEMENT_MARKED_FOR_REMOVAL] = true;
