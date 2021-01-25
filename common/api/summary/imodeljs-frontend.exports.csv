@@ -339,6 +339,10 @@ beta;ParseAndRunResult
 beta;ParsedKeyin
 beta;ParseKeyinError
 beta;ParseKeyinResult = ParsedKeyin | ParseKeyinError
+beta;ParticleCollectionBuilder
+beta;ParticleCollectionBuilder
+beta;ParticleCollectionBuilderParams
+beta;ParticleProps 
 beta;PendingExtension
 internal;PerformanceMetrics
 beta;PerModelCategoryVisibility
