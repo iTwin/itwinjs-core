@@ -43,7 +43,7 @@ export interface AccuDrawInputFieldProps extends CommonProps {
   ref?: React.Ref<HTMLInputElement>;
 }
 
-const ForwardRefParsedInput = React.forwardRef<HTMLInputElement, AccuDrawInputFieldProps>(
+const ForwardRefAccuDrawInput = React.forwardRef<HTMLInputElement, AccuDrawInputFieldProps>(
   function ForwardRefAccuDrawInputField(props: AccuDrawInputFieldProps, ref) {
     const { className, style, id, label, iconSpec, labelClassName, labelStyle, initialValue, lock,
       onValueChanged, valueChangedDelay, onEnterPressed, onEscPressed } = props;
@@ -112,7 +112,7 @@ const ForwardRefParsedInput = React.forwardRef<HTMLInputElement, AccuDrawInputFi
         </label>
         <Input ref={ref} id={id} value={stringValue}
           className={inputClassNames} style={style}
-          onChange={trackChange} onInput={trackChange} onKeyDown={handleKeyDown} />
+          onChange={trackChange} onKeyDown={handleKeyDown} />
         <span className="uifw-accudraw-lock" >
           {lock && <Icon iconSpec="icon-lock" />}
         </span>
@@ -124,4 +124,4 @@ const ForwardRefParsedInput = React.forwardRef<HTMLInputElement, AccuDrawInputFi
 /** Input field for AccuDraw
  * @internal
  */
-export const AccuDrawInputField: (props: AccuDrawInputFieldProps) => JSX.Element | null = ForwardRefParsedInput;
+export const AccuDrawInputField: (props: AccuDrawInputFieldProps) => JSX.Element | null = ForwardRefAccuDrawInput;

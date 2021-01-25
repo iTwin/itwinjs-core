@@ -23,8 +23,8 @@ export enum AccuDrawField {
  * @alpha
  */
 export enum AccuDrawMode {
-  Rectangular,
   Polar,
+  Rectangular,
 }
 
 /** @alpha */

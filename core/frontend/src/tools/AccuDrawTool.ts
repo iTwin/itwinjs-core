@@ -946,59 +946,60 @@ export class AccuDrawShortcuts {
   }
 
   /** @internal Temporary keyboard shortcuts. */
-  public static processShortcutKey(keyEvent: KeyboardEvent): boolean {
-    switch (keyEvent.key.toLowerCase()) {
-      case "enter":
-        AccuDrawShortcuts.lockSmart();
-        return true;
-      case "x":
-        AccuDrawShortcuts.lockX();
-        return true;
-      case "y":
-        AccuDrawShortcuts.lockY();
-        return true;
-      case "z":
-        AccuDrawShortcuts.lockZ();
-        return true;
-      case "a":
-        AccuDrawShortcuts.lockAngle();
-        return true;
-      case "d":
-        AccuDrawShortcuts.lockDistance();
-        return true;
-      case "m":
-        AccuDrawShortcuts.changeCompassMode();
-        return true;
-      case "t":
-        AccuDrawShortcuts.setStandardRotation(RotationMode.Top);
-        return true;
-      case "f":
-        AccuDrawShortcuts.setStandardRotation(RotationMode.Front);
-        return true;
-      case "s":
-        AccuDrawShortcuts.setStandardRotation(RotationMode.Side);
-        return true;
-      case "v":
-        AccuDrawShortcuts.setStandardRotation(RotationMode.View);
-        return true;
-      case "o":
-        AccuDrawShortcuts.setOrigin();
-        return true;
-      case "c":
-        AccuDrawShortcuts.rotateCycle();
-        return true;
-      case "q":
-        AccuDrawShortcuts.rotateAxes(true);
-        return true;
-      case "e":
-        AccuDrawShortcuts.rotateToElement();
-        return true;
-      case "r":
-        AccuDrawShortcuts.defineACSByPoints();
-        return true;
-      default:
-        return false;
-    }
+  public static processShortcutKey(_keyEvent: KeyboardEvent): boolean {
+    // switch (keyEvent.key.toLowerCase()) {
+    //   case "enter":
+    //     AccuDrawShortcuts.lockSmart();
+    //     return true;
+    //   case "x":
+    //     AccuDrawShortcuts.lockX();
+    //     return true;
+    //   case "y":
+    //     AccuDrawShortcuts.lockY();
+    //     return true;
+    //   case "z":
+    //     AccuDrawShortcuts.lockZ();
+    //     return true;
+    //   case "a":
+    //     AccuDrawShortcuts.lockAngle();
+    //     return true;
+    //   case "d":
+    //     AccuDrawShortcuts.lockDistance();
+    //     return true;
+    //   case "m":
+    //     AccuDrawShortcuts.changeCompassMode();
+    //     return true;
+    //   case "t":
+    //     AccuDrawShortcuts.setStandardRotation(RotationMode.Top);
+    //     return true;
+    //   case "f":
+    //     AccuDrawShortcuts.setStandardRotation(RotationMode.Front);
+    //     return true;
+    //   case "s":
+    //     AccuDrawShortcuts.setStandardRotation(RotationMode.Side);
+    //     return true;
+    //   case "v":
+    //     AccuDrawShortcuts.setStandardRotation(RotationMode.View);
+    //     return true;
+    //   case "o":
+    //     AccuDrawShortcuts.setOrigin();
+    //     return true;
+    //   case "c":
+    //     AccuDrawShortcuts.rotateCycle();
+    //     return true;
+    //   case "q":
+    //     AccuDrawShortcuts.rotateAxes(true);
+    //     return true;
+    //   case "e":
+    //     AccuDrawShortcuts.rotateToElement();
+    //     return true;
+    //   case "r":
+    //     AccuDrawShortcuts.defineACSByPoints();
+    //     return true;
+    //   default:
+    //     return false;
+    // }
+    return false;
   }
 }
 

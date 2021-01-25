@@ -21,7 +21,7 @@ export class FrameworkAccuDraw extends AccuDraw {
 
   private handleSetFieldValueFromUiEvent = async (args: AccuDrawSetFieldValueFromUiEventArgs) => {
     const item = this.translateToItemField(args.field);
-    return IModelApp.accuDraw.processFieldInput(item, args.stringValue, false);
+    return IModelApp.accuDraw.processFieldInput(item, args.stringValue, true);
   };
 
   private translateFromItemField(item: ItemField): AccuDrawField {

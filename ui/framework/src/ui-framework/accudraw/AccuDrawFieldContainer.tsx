@@ -36,48 +36,77 @@ export function AccuDrawFieldContainer(props: AccuDrawFieldContainerProps) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { className, style, uiSettings, ...otherProps } = props;
 
-  const xInputRef = React.createRef<HTMLInputElement>();
-  const yInputRef = React.createRef<HTMLInputElement>();
-  const zInputRef = React.createRef<HTMLInputElement>();
-  const angleInputRef = React.createRef<HTMLInputElement>();
-  const distanceInputRef = React.createRef<HTMLInputElement>();
+  const xInputRef = React.useRef<HTMLInputElement>(null);
+  const yInputRef = React.useRef<HTMLInputElement>(null);
+  const zInputRef = React.useRef<HTMLInputElement>(null);
+  const angleInputRef = React.useRef<HTMLInputElement>(null);
+  const distanceInputRef = React.useRef<HTMLInputElement>(null);
   const focusField = React.useRef<AccuDrawField | undefined>(undefined);
   const [mode, setMode] = React.useState(AccuDrawMode.Rectangular);
-  const [xFormattedValue, setXFormattedValue] = React.useState("");
-  const [yFormattedValue, setYFormattedValue] = React.useState("");
-  const [zFormattedValue, setZFormattedValue] = React.useState("");
-  const [angleFormattedValue, setAngleFormattedValue] = React.useState("");
-  const [distanceFormattedValue, setDistanceFormattedValue] = React.useState("");
+  const xFormattedValue = React.useRef<string>("");
+  const yFormattedValue = React.useRef<string>("");
+  const zFormattedValue = React.useRef<string>("");
+  const angleFormattedValue = React.useRef<string>("");
+  const distanceFormattedValue = React.useRef<string>("");
   const [xLock, setXLock] = React.useState(false);
   const [yLock, setYLock] = React.useState(false);
   const [zLock, setZLock] = React.useState(false);
   const [angleLock, setAngleLock] = React.useState(false);
   const [distanceLock, setDistanceLock] = React.useState(false);
 
+  const getInputRef = (field: AccuDrawField): React.RefObject<HTMLInputElement> => {
+    let inputRef: React.RefObject<HTMLInputElement>;
+    switch (field) {
+      case AccuDrawField.X:
+        inputRef = xInputRef;
+        break;
+      case AccuDrawField.Y:
+        inputRef = yInputRef;
+        break;
+      case AccuDrawField.Z:
+        inputRef = zInputRef;
+        break;
+      case AccuDrawField.Angle:
+        inputRef = angleInputRef;
+        break;
+      case AccuDrawField.Distance:
+        inputRef = distanceInputRef;
+        break;
+    }
+    return inputRef;
+  };
+
   React.useEffect(() => {
-    setXFormattedValue(FrameworkAccuDraw.getFieldDisplayValue(ItemField.X_Item));
-    setYFormattedValue(FrameworkAccuDraw.getFieldDisplayValue(ItemField.Y_Item));
-    setZFormattedValue(FrameworkAccuDraw.getFieldDisplayValue(ItemField.Z_Item));
-    setAngleFormattedValue(FrameworkAccuDraw.getFieldDisplayValue(ItemField.ANGLE_Item));
-    setDistanceFormattedValue(FrameworkAccuDraw.getFieldDisplayValue(ItemField.DIST_Item));
+    xFormattedValue.current = FrameworkAccuDraw.getFieldDisplayValue(ItemField.X_Item);
+    yFormattedValue.current = FrameworkAccuDraw.getFieldDisplayValue(ItemField.Y_Item);
+    zFormattedValue.current = FrameworkAccuDraw.getFieldDisplayValue(ItemField.Z_Item);
+    angleFormattedValue.current = FrameworkAccuDraw.getFieldDisplayValue(ItemField.ANGLE_Item);
+    distanceFormattedValue.current = FrameworkAccuDraw.getFieldDisplayValue(ItemField.DIST_Item);
 
     const handleSetFieldValueToUi = (args: AccuDrawSetFieldValueToUiEventArgs) => {
       switch (args.field) {
         case AccuDrawField.X:
-          setXFormattedValue(args.formattedValue);
+          xFormattedValue.current = args.formattedValue;
           break;
         case AccuDrawField.Y:
-          setYFormattedValue(args.formattedValue);
+          yFormattedValue.current = args.formattedValue;
           break;
         case AccuDrawField.Z:
-          setZFormattedValue(args.formattedValue);
+          zFormattedValue.current = args.formattedValue;
           break;
         case AccuDrawField.Angle:
-          setAngleFormattedValue(args.formattedValue);
+          angleFormattedValue.current = args.formattedValue;
           break;
         case AccuDrawField.Distance:
-          setDistanceFormattedValue(args.formattedValue);
+          distanceFormattedValue.current = args.formattedValue;
           break;
+      }
+
+      const inputRef = getInputRef(args.field);
+      if (inputRef.current) {
+        inputRef.current.value = args.formattedValue;
+        if (focusField.current === args.field)
+          inputRef.current.select();
       }
     };
     return AccuDrawUiAdmin.onAccuDrawSetFieldValueToUiEvent.addListener(handleSetFieldValueToUi);
@@ -113,31 +142,14 @@ export function AccuDrawFieldContainer(props: AccuDrawFieldContainerProps) {
   }, []);
 
   const setFocusToField = React.useCallback((field: AccuDrawField) => {
-    let inputRef: React.RefObject<HTMLInputElement> | undefined;
-    switch (field) {
-      case AccuDrawField.X:
-        inputRef = xInputRef;
-        break;
-      case AccuDrawField.Y:
-        inputRef = yInputRef;
-        break;
-      case AccuDrawField.Z:
-        inputRef = zInputRef;
-        break;
-      case AccuDrawField.Angle:
-        inputRef = angleInputRef;
-        break;
-      case AccuDrawField.Distance:
-        inputRef = distanceInputRef;
-        break;
-    }
+    const inputRef = getInputRef(field);
 
     // istanbul ignore else
-    if (inputRef && inputRef.current && document.activeElement !== inputRef.current) {
+    if (inputRef.current && document.activeElement !== inputRef.current) {
       inputRef.current.focus();
-      inputRef.current.select();
+      // inputRef.current.select();
     }
-  }, [xInputRef, yInputRef, zInputRef, angleInputRef, distanceInputRef]);
+  }, []);
 
   React.useEffect(() => {
     const handleSetFieldFocus = (args: AccuDrawSetFieldFocusEventArgs) => {
@@ -187,15 +199,15 @@ export function AccuDrawFieldContainer(props: AccuDrawFieldContainerProps) {
     <div className={classNames} style={style} {...otherProps}>
       {mode === AccuDrawMode.Rectangular &&
         <>
-          <AccuDrawInputField ref={xInputRef} initialValue={xFormattedValue} lock={xLock} className="uifw-accudraw-x-value" valueChangedDelay={delay}
+          <AccuDrawInputField ref={xInputRef} initialValue={xFormattedValue.current} lock={xLock} className="uifw-accudraw-x-value" valueChangedDelay={delay}
             id="uifw-accudraw-x" label="X"
             onValueChanged={(stringValue) => handleValueChanged(AccuDrawField.X, stringValue)}
             onEscPressed={handleEscPressed} />
-          <AccuDrawInputField ref={yInputRef} initialValue={yFormattedValue} lock={yLock} className="uifw-accudraw-y-value" valueChangedDelay={delay}
+          <AccuDrawInputField ref={yInputRef} initialValue={yFormattedValue.current} lock={yLock} className="uifw-accudraw-y-value" valueChangedDelay={delay}
             id="uifw-accudraw-y" label="Y"
             onValueChanged={(stringValue) => handleValueChanged(AccuDrawField.Y, stringValue)}
             onEscPressed={handleEscPressed} />
-          <AccuDrawInputField ref={zInputRef} initialValue={zFormattedValue} lock={zLock} className="uifw-accudraw-z-value" valueChangedDelay={delay}
+          <AccuDrawInputField ref={zInputRef} initialValue={zFormattedValue.current} lock={zLock} className="uifw-accudraw-z-value" valueChangedDelay={delay}
             id="uifw-accudraw-z" label="Z"
             onValueChanged={(stringValue) => handleValueChanged(AccuDrawField.Z, stringValue)}
             onEscPressed={handleEscPressed} />
@@ -203,11 +215,11 @@ export function AccuDrawFieldContainer(props: AccuDrawFieldContainerProps) {
       }
       {mode === AccuDrawMode.Polar &&
         <>
-          <AccuDrawInputField ref={angleInputRef} initialValue={angleFormattedValue} lock={angleLock} className="uifw-accudraw-angle-value" valueChangedDelay={delay}
+          <AccuDrawInputField ref={angleInputRef} initialValue={angleFormattedValue.current} lock={angleLock} className="uifw-accudraw-angle-value" valueChangedDelay={delay}
             id="uifw-accudraw-angle" iconSpec={IconSpecUtilities.createSvgIconSpec(angleIcon)}
             onValueChanged={(stringValue) => handleValueChanged(AccuDrawField.Angle, stringValue)}
             onEscPressed={handleEscPressed} />
-          <AccuDrawInputField ref={distanceInputRef} initialValue={distanceFormattedValue} lock={distanceLock} className="uifw-accudraw-distance-value" valueChangedDelay={delay}
+          <AccuDrawInputField ref={distanceInputRef} initialValue={distanceFormattedValue.current} lock={distanceLock} className="uifw-accudraw-distance-value" valueChangedDelay={delay}
             id="uifw-accudraw-distance" iconSpec={IconSpecUtilities.createSvgIconSpec(distanceIcon)}
             onValueChanged={(stringValue) => handleValueChanged(AccuDrawField.Distance, stringValue)}
             onEscPressed={handleEscPressed} />
