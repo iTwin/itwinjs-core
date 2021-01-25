@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Field } from "@bentley/presentation-common";
 import {
   IPresentationPropertyDataProvider, PresentationPropertyDataProvider, usePropertyDataProviderWithUnifiedSelection,
@@ -33,7 +33,7 @@ export interface State {
 function PresentationPropertyGrid(props: VirtualizedPropertyGridWithDataProviderProps & { dataProvider: IPresentationPropertyDataProvider }) {
   const { isOverLimit } = usePropertyDataProviderWithUnifiedSelection({ dataProvider: props.dataProvider });
   if (isOverLimit) {
-    return (<FillCentered>{IModelApp.i18n.translate("SampleApp:property-grid.too-many-elements-selected")}</FillCentered>);
+    return (<FillCentered>{ExtensionUiItemsProvider.i18n.translate("uiTestExtension:properties.too-many-elements-selected")}</FillCentered>);
   }
   return <VirtualizedPropertyGridWithDataProvider {...props} />;
 }
@@ -87,16 +87,16 @@ export class PresentationPropertyGridWidget extends React.Component<Presentation
             key: "remove-favorite",
             icon: "icon-remove-2",
             onSelect: async () => this._onRemoveFavorite(field),
-            title: IModelApp.i18n.translate("SampleApp:properties.context-menu.remove-favorite.description"),
-            label: IModelApp.i18n.translate("SampleApp:properties.context-menu.remove-favorite.label"),
+            title: ExtensionUiItemsProvider.i18n.translate("uiTestExtension:properties.context-menu.remove-favorite.description"),
+            label: ExtensionUiItemsProvider.i18n.translate("uiTestExtension:properties.context-menu.remove-favorite.label"),
           });
         } else {
           items.push({
             key: "add-favorite",
             icon: "icon-add",
             onSelect: async () => this._onAddFavorite(field),
-            title: IModelApp.i18n.translate("SampleApp:properties.context-menu.add-favorite.description"),
-            label: IModelApp.i18n.translate("SampleApp:properties.context-menu.add-favorite.label"),
+            title: ExtensionUiItemsProvider.i18n.translate("uiTestExtension:properties.context-menu.add-favorite.description"),
+            label: ExtensionUiItemsProvider.i18n.translate("uiTestExtension:properties.context-menu.add-favorite.label"),
           });
         }
       }
@@ -250,7 +250,7 @@ export class PresentationPropertyGridWidgetControl extends WidgetControl {
   public static id = "uiTestExtension:PresentationPropertyGridWidget";
   public static iconSpec = "icon-info";
   public static get label(): string {
-    return ExtensionUiItemsProvider.i18n.translate("uiTestExtension:PropertyGrid.Label");
+    return ExtensionUiItemsProvider.i18n.translate("uiTestExtension:properties.widget-label");
   }
 
   constructor(info: ConfigurableCreateInfo, options: any) {

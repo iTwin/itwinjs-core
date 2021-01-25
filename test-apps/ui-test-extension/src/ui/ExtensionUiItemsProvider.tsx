@@ -66,6 +66,9 @@ export class ExtensionUiItemsProvider implements UiItemsProvider {
     return statusBarItems;
   }
 
+  /** provideWidgets() is called for each registered UI provider to allow the provider to add widgets to a specific section of a stage panel.
+   *  items to the StatusBar.
+   */
   public provideWidgets(_stageId: string, stageUsage: string, location: StagePanelLocation, section: StagePanelSection | undefined): ReadonlyArray<AbstractWidgetProps> {
     const widgets: AbstractWidgetProps[] = [];
     if (stageUsage === StageUsage.General && location === StagePanelLocation.Right && section === StagePanelSection.End) {
