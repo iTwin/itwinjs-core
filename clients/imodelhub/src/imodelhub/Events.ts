@@ -25,11 +25,11 @@ const loggerCategory: string = IModelHubClientLoggerCategory.IModelHub;
  */
 export enum IModelHubEventType {
   /** Sent when one or more [[Lock]]s are updated. See [[LockEvent]].
-   * @alpha Hide Lock API while focused on readonly viewing scenarios
+   * @internal
    */
   LockEvent = "LockEvent",
   /** Sent when all [[Lock]]s for a [[Briefcase]] are deleted. See [[AllLocksDeletedEvent]].
-   * @alpha Hide Lock API while focused on readonly viewing scenarios
+   * @internal
    */
   AllLocksDeletedEvent = "AllLocksDeletedEvent",
   /** Sent when a [[ChangeSet]] is successfully pushed. See [[ChangeSetPostPushEvent]]. */
@@ -37,22 +37,23 @@ export enum IModelHubEventType {
   /** Sent when a [[ChangeSet]] push has started. See [[ChangeSetPrePushEvent]]. */
   ChangeSetPrePushEvent = "ChangeSetPrePushEvent",
   /** Sent when one or more [Code]($common)s are updated. See [[CodeEvent]].
-   * @alpha Hide Code API while focused on readonly viewing scenarios
+   * @internal
    */
   CodeEvent = "CodeEvent",
   /** Sent when all [Code]($common)s for a [[Briefcase]] are deleted. See [[AllCodesDeletedEvent]].
-   * @alpha Hide Code API while focused on readonly viewing scenarios
-   */
-  AllCodesDeletedEvent = "AllCodesDeletedEvent",
-  /** Sent when a [[Briefcase]] is deleted. See [[BriefcaseDeletedEvent]].
    * @internal
    */
+  AllCodesDeletedEvent = "AllCodesDeletedEvent",
+  /** Sent when a [[Briefcase]] is deleted. See [[BriefcaseDeletedEvent]]. */
   BriefcaseDeletedEvent = "BriefcaseDeletedEvent",
   /** Sent when an iModel is deleted. See [[iModelDeletedEvent]]. */
   iModelDeletedEvent = "iModelDeletedEvent",
   /** Sent when a new named [[Version]] is created. See [[VersionEvent]]. */
   VersionEvent = "VersionEvent",
-  /** Sent when a new [[Checkpoint]] is generated. See [[CheckpointCreatedEvent]]. */
+  /**
+   * Sent when a new [[Checkpoint]] is generated. See [[CheckpointCreatedEvent]].
+   * @internal
+   */
   CheckpointCreatedEvent = "CheckpointCreatedEvent",
 }
 
@@ -65,7 +66,7 @@ export type EventType = "LockEvent" | "AllLocksDeletedEvent" | "ChangeSetPostPus
  * @public
  */
 export abstract class IModelHubEvent extends IModelHubBaseEvent {
-  /** Id of the iModel where the event occured. */
+  /** Id of the iModel where the event occurred. */
   public iModelId?: GuidString;
 
   /** Construct this event from object instance.
