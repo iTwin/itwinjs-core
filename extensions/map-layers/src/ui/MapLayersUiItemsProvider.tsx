@@ -23,8 +23,8 @@ export class MapLayersUiItemsProvider implements UiItemsProvider {
     const widgets: AbstractWidgetProps[] = [];
     const mapLayerOptions: MapLayerOptions = {
       hideExternalMapLayers: false,
-      mapTypeOptions: { supportTileUrl: true, supportWmsAuthentication: true },
-      fetchPublicMapLayerSources: true,
+      mapTypeOptions: { supportTileUrl: false, supportWmsAuthentication: true },
+      fetchPublicMapLayerSources: false,
     };
 
     if (stageUsage === StageUsage.General && location === StagePanelLocation.Right && section === StagePanelSection.Start) {
