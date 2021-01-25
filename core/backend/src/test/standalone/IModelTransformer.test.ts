@@ -5,18 +5,21 @@
 import { assert } from "chai";
 import * as path from "path";
 import { DbResult, Id64, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { Point3d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
-import { AxisAlignedBox3d, Code, ColorDef, CreateIModelProps, IModel, PhysicalElementProps, Placement3d } from "@bentley/imodeljs-common";
+import { Angle, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  BackendLoggerCategory, BackendRequestContext, CategorySelector, DefinitionPartition, DisplayStyle3d, ECSqlStatement, Element, ElementMultiAspect,
-  ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, IModelCloneContext, IModelDb, IModelExporter, IModelExportHandler, IModelJsFs,
-  IModelTransformer, InformationRecordModel, InformationRecordPartition, Model, ModelSelector, OrthographicViewDefinition, PhysicalModel,
-  PhysicalObject, PhysicalPartition, PhysicalType, Relationship, SnapshotDb, SpatialCategory, Subject, TemplateModelCloner, TemplateRecipe3d,
+  AxisAlignedBox3d, Code, ColorDef, CreateIModelProps, IModel, PhysicalElementProps, Placement2d, Placement3d,
+} from "@bentley/imodeljs-common";
+import {
+  BackendLoggerCategory, BackendRequestContext, CategorySelector, DefinitionPartition, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory,
+  ECSqlStatement, Element, ElementMultiAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, IModelCloneContext, IModelDb,
+  IModelExporter, IModelExportHandler, IModelJsFs, IModelTransformer, InformationRecordModel, InformationRecordPartition, Model, ModelSelector,
+  OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, SnapshotDb, SpatialCategory, Subject,
+  TemplateModelCloner, TemplateRecipe2d, TemplateRecipe3d,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import {
-  ClassCounter, FilterByViewTransformer, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerUtils, PhysicalModelConsolidator, RecordingIModelImporter,
-  TestIModelTransformer,
+  ClassCounter, FilterByViewTransformer, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerUtils, PhysicalModelConsolidator,
+  RecordingIModelImporter, TestIModelTransformer,
 } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
@@ -181,23 +184,31 @@ describe("IModelTransformer", () => {
     const componentLibraryDb: SnapshotDb = IModelTransformerUtils.createComponentLibrary(outputDir);
     const sourceLibraryModelId = componentLibraryDb.elements.queryElementIdByCode(DefinitionPartition.createCode(componentLibraryDb, IModel.rootSubjectId, "Components"))!;
     assert.isTrue(Id64.isValidId64(sourceLibraryModelId));
-    const sourceCategoryId = componentLibraryDb.elements.queryElementIdByCode(SpatialCategory.createCode(componentLibraryDb, IModel.dictionaryId, "Components"))!;
-    assert.isTrue(Id64.isValidId64(sourceCategoryId));
+    const sourceSpatialCategoryId = componentLibraryDb.elements.queryElementIdByCode(SpatialCategory.createCode(componentLibraryDb, IModel.dictionaryId, "Components"))!;
+    assert.isTrue(Id64.isValidId64(sourceSpatialCategoryId));
+    const sourceDrawingCategoryId = componentLibraryDb.elements.queryElementIdByCode(DrawingCategory.createCode(componentLibraryDb, IModel.dictionaryId, "Components"))!;
+    assert.isTrue(Id64.isValidId64(sourceDrawingCategoryId));
     const cylinderTemplateId = componentLibraryDb.elements.queryElementIdByCode(TemplateRecipe3d.createCode(componentLibraryDb, sourceLibraryModelId, "Cylinder"))!;
     assert.isTrue(Id64.isValidId64(cylinderTemplateId));
     const assemblyTemplateId = componentLibraryDb.elements.queryElementIdByCode(TemplateRecipe3d.createCode(componentLibraryDb, sourceLibraryModelId, "Assembly"))!;
     assert.isTrue(Id64.isValidId64(assemblyTemplateId));
+    const drawingGraphicTemplateId = componentLibraryDb.elements.queryElementIdByCode(TemplateRecipe2d.createCode(componentLibraryDb, sourceLibraryModelId, "DrawingGraphic"))!;
+    assert.isTrue(Id64.isValidId64(drawingGraphicTemplateId));
     const targetTeamName = "Target";
     const targetDb: SnapshotDb = IModelTransformerUtils.createTeamIModel(outputDir, targetTeamName, Point3d.createZero(), ColorDef.green);
     const targetPhysicalModelId = targetDb.elements.queryElementIdByCode(PhysicalPartition.createCode(targetDb, IModel.rootSubjectId, `Physical${targetTeamName}`))!;
     assert.isTrue(Id64.isValidId64(targetPhysicalModelId));
-    const targetCategoryModelId = targetDb.elements.queryElementIdByCode(DefinitionPartition.createCode(targetDb, IModel.rootSubjectId, `Definition${targetTeamName}`))!;
-    assert.isTrue(Id64.isValidId64(targetCategoryModelId));
-    const targetCategoryId = targetDb.elements.queryElementIdByCode(SpatialCategory.createCode(targetDb, targetCategoryModelId, `SpatialCategory${targetTeamName}`))!;
-    assert.isTrue(Id64.isValidId64(targetCategoryId));
+    const targetDefinitionModelId = targetDb.elements.queryElementIdByCode(DefinitionPartition.createCode(targetDb, IModel.rootSubjectId, `Definition${targetTeamName}`))!;
+    assert.isTrue(Id64.isValidId64(targetDefinitionModelId));
+    const targetSpatialCategoryId = targetDb.elements.queryElementIdByCode(SpatialCategory.createCode(targetDb, targetDefinitionModelId, `SpatialCategory${targetTeamName}`))!;
+    assert.isTrue(Id64.isValidId64(targetSpatialCategoryId));
+    const targetDrawingCategoryId = targetDb.elements.queryElementIdByCode(DrawingCategory.createCode(targetDb, IModel.dictionaryId, "DrawingCategoryShared"))!;
+    assert.isTrue(Id64.isValidId64(targetDrawingCategoryId));
+    const targetDrawingListModelId = DocumentListModel.insert(targetDb, IModel.rootSubjectId, "Drawings");
+    const targetDrawingId = Drawing.insert(targetDb, targetDrawingListModelId, "Drawing1");
     const cloner = new TemplateModelCloner(componentLibraryDb, targetDb);
     assert.throws(() => cloner.placeTemplate3d(cylinderTemplateId, targetPhysicalModelId, Placement3d.fromJSON())); // expect error since category not remapped
-    cloner.context.remapElement(sourceCategoryId, targetCategoryId);
+    cloner.context.remapElement(sourceSpatialCategoryId, targetSpatialCategoryId);
     const cylinderLocations: Point3d[] = [
       Point3d.create(10, 10), Point3d.create(20, 10), Point3d.create(30, 10),
       Point3d.create(10, 20), Point3d.create(20, 20), Point3d.create(30, 20),
@@ -222,6 +233,17 @@ describe("IModelTransformer", () => {
         assert.equal(sourceElement.classFullName, targetElement.classFullName);
         assert.equal(sourceElement.parent?.id ? true : false, targetElement.parent?.id ? true : false);
       }
+    });
+    assert.throws(() => cloner.placeTemplate2d(drawingGraphicTemplateId, targetDrawingId, Placement2d.fromJSON())); // expect error since category not remapped
+    cloner.context.remapElement(sourceDrawingCategoryId, targetDrawingCategoryId);
+    const drawingGraphicLocations: Point2d[] = [
+      Point2d.create(10, 10), Point2d.create(20, 10), Point2d.create(30, 10),
+      Point2d.create(10, 20), Point2d.create(20, 20), Point2d.create(30, 20),
+      Point2d.create(10, 30), Point2d.create(20, 30), Point2d.create(30, 30),
+    ];
+    drawingGraphicLocations.forEach((location: Point2d) => {
+      const placement = new Placement2d(location, Angle.zero(), new Range2d());
+      cloner.placeTemplate2d(drawingGraphicTemplateId, targetDrawingId, placement);
     });
     cloner.dispose();
     componentLibraryDb.close();
