@@ -70,7 +70,7 @@ describe("ScreenViewport", () => {
       )
     );
     vp.setAllValid();
-    (vp as any)._decorationsValid = false;
+    vp.invalidateDecorations();
     return vp;
   }
 
