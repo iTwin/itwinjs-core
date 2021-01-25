@@ -227,8 +227,9 @@ export class ImdlReader extends GltfReader {
     // - external textures are disabled
     // - the texture name is not a valid Id64 string
     // - the texture is below a certain backend-hardcoded size threshold
-    // The bufferViewJson being undefined signifies any of the above conditions. In that case, the texture contents
-    // will be requested separately from the tile contents.
+    // The bufferViewJson being defined signifies any of the above conditions. In that case, the image content
+    // has been embedded in the tile contents. Otherwise, we will attempt to request the image content separately
+    // from the backend.
 
     let textureType = RenderTexture.Type.Normal;
     const isGlyph = JsonUtils.asBool(namedTex.isGlyph);
