@@ -223,13 +223,12 @@ export class ImdlReader extends GltfReader {
   }
 
   private async readNamedTexture(namedTex: any, name: string): Promise<RenderTexture | undefined> {
-    // If the texture has a valid Id64 name, it is valid to request it directly from the backend.
-    // If the texture does not have a valid Id64 name, it is not valid to request it directly from the backend.
-    // In that case, we instead retrieve the texture directly from the tile.
-    // Furthermore, if external textures are disabled, we retrieve the texture directly from the tile in both cases.
-    // Only do this if bufferViewJson does not exist.
-    // (If external textures are enabled and the backend provides a bufferViewJson, that means the image data
-    // is small enough that the backend decided to embed that data rather than make it an external texture.)
+    // Reasons a texture could be embedded in the tile content instead of requested separately from the backend:
+    // - external textures are disabled
+    // - the texture name is not a valid Id64 string
+    // - the texture is below a certain backend-hardcoded size threshold
+    // The bufferViewJson being undefined signifies any of the above conditions. In that case, the texture contents
+    // will be requested separately from the tile contents.
 
     let textureType = RenderTexture.Type.Normal;
     const isGlyph = JsonUtils.asBool(namedTex.isGlyph);
@@ -247,11 +246,7 @@ export class ImdlReader extends GltfReader {
     const bufferViewId = JsonUtils.asString(namedTex.bufferView);
     const bufferViewJson = 0 !== bufferViewId.length ? this._bufferViews[bufferViewId] : undefined;
 
-    const useExternalTexture = Id64.isValidId64(name) && IModelApp.tileAdmin.enableExternalTextures && undefined === bufferViewJson;
-    if (!useExternalTexture) {
-      if (undefined === bufferViewJson)
-        return undefined;
-
+    if (undefined !== bufferViewJson) { // presence of bufferViewJson signifies we should read the texture from the tile content
       const byteOffset = JsonUtils.asInt(bufferViewJson.byteOffset);
       const byteLength = JsonUtils.asInt(bufferViewJson.byteLength);
       if (0 === byteLength)
@@ -263,6 +258,7 @@ export class ImdlReader extends GltfReader {
       return this._system.createTextureFromImageSource(imageSource, this._iModel, params);
     }
 
+    // bufferViewJson was undefined, so attempt to request the texture directly from the backend
     return this._system.createTextureFromExternalImage(name, this._iModel, params, namedTex.format);
   }
 
