@@ -71,6 +71,12 @@ describe("external texture requests", () => {
             extTexLoader.loadTexture(handle, texName, imodel, RenderTexture.Type.Normal, ImageSourceFormat.Jpeg, onExternalTextureLoaded);
         }
       });
+
+      // Load a texture with a bad texture name (not a string). ExternalTextureLoader will throw an exception and should handle it properly.
+      const handleB = Texture2DHandle.createForData(1, 1, placeHolderTextureData, undefined, undefined, GL.Texture.Format.Rgb);
+      expect(handleB).to.not.be.undefined;
+      if (undefined !== handleB)
+        extTexLoader.loadTexture(handleB, 0 as unknown as string, imodel, RenderTexture.Type.Normal, ImageSourceFormat.Jpeg, onExternalTextureLoaded);
     };
 
     loadTextures();

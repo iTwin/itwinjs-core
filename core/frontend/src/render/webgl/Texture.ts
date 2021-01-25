@@ -536,45 +536,46 @@ export class ExternalTextureLoader { /* currently exported for tests only */
     this._maxActiveRequests = maxActiveRequests;
   }
 
-  private _nextRequest(prevReq: ExternalTextureRequest) {
+  private async _nextRequest(prevReq: ExternalTextureRequest) {
     this._activeRequests.splice(this._activeRequests.indexOf(prevReq), 1);
     if (this._activeRequests.length < this._maxActiveRequests && this._pendingRequests.length > 0) {
       const req = this._pendingRequests.pop()!;
-      this._activateRequest(req);
+      await this._activateRequest(req);
     }
   }
 
-  private _activateRequest(req: ExternalTextureRequest) {
+  private async _activateRequest(req: ExternalTextureRequest) {
+    if (req.imodel.isClosed)
+      return;
+
     this._activeRequests.push(req);
+
     try {
-      const texBytesPromise = req.imodel.getTextureImage({ name: req.name });
-      texBytesPromise.then((texBytes: Uint8Array | undefined) => {
-        if (undefined === texBytes || req.imodel.isClosed) {
-          throw new Error("Requested a texture element that does not exist or iModel is closed.");
-        } else {
+      if (!req.imodel.isClosed) {
+        const texBytes = await req.imodel.getTextureImage({ name: req.name });
+        if (undefined !== texBytes) {
           const imageSource = new ImageSource(texBytes, req.format);
-          const imageElementPromise = imageElementFromImageSource(imageSource);
-          imageElementPromise.then((image: HTMLImageElement) => {
-            if (!req.imodel.isClosed) {
-              req.handle.reload(Texture2DCreateParams.createForImage(image, ImageSourceFormat.Png === req.format, req.type));
-              IModelApp.tileAdmin.invalidateAllScenes();
-              if (undefined !== req.onLoaded)
-                req.onLoaded(req);
-            }
-            this._nextRequest(req);
-          }).catch((_e) => { this._nextRequest(req); });
+          const image = await imageElementFromImageSource(imageSource);
+          if (!req.imodel.isClosed) {
+            req.handle.reload(Texture2DCreateParams.createForImage(image, ImageSourceFormat.Png === req.format, req.type));
+            IModelApp.tileAdmin.invalidateAllScenes();
+            if (undefined !== req.onLoaded)
+              req.onLoaded(req);
+          }
         }
-      }).catch((_e) => { this._nextRequest(req); });
-    } catch (_e) { this._nextRequest(req); }
+      }
+    } catch (_e) { }
+
+    await this._nextRequest(req);
   }
 
   private _requestExists(reqToCheck: ExternalTextureRequest) {
     for (const r of this._activeRequests)
-      if (reqToCheck.name === r.name && reqToCheck.imodel.iModelId === r.imodel.iModelId)
+      if (reqToCheck.name === r.name && reqToCheck.imodel === r.imodel)
         return true;
 
     for (const r of this._pendingRequests)
-      if (reqToCheck.name === r.name && reqToCheck.imodel.iModelId === r.imodel.iModelId)
+      if (reqToCheck.name === r.name && reqToCheck.imodel === r.imodel)
         return true;
 
     return false;
@@ -588,7 +589,7 @@ export class ExternalTextureLoader { /* currently exported for tests only */
     if (this._activeRequests.length + 1 > this._maxActiveRequests)
       this._pendingRequests.push(req);
     else
-      this._activateRequest(req);
+      this._activateRequest(req); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 }
 
