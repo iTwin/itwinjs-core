@@ -5,55 +5,23 @@
 import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
-import {
-  assert,
-  BentleyStatus,
-  Guid,
-  GuidString,
-  Id64String,
-  IModelStatus,
-  Logger,
-} from "@bentley/bentleyjs-core";
+import { assert, BentleyStatus, Guid, GuidString, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 /** @packageDocumentation
  * @module Framework
  */
 import { ChangesType, LockLevel } from "@bentley/imodelhub-client";
 import {
-  BackendRequestContext,
-  BriefcaseDb,
-  BriefcaseManager,
-  ComputeProjectExtentsOptions,
-  ConcurrencyControl,
-  IModelDb,
-  IModelJsFs,
-  IModelJsNative,
-  SnapshotDb,
-  Subject,
-  SubjectOwnsSubjects,
-  UsageLoggingUtilities,
+  BackendRequestContext, BriefcaseDb, BriefcaseManager, ComputeProjectExtentsOptions, ConcurrencyControl, IModelDb, IModelJsFs, IModelJsNative,
+  SnapshotDb, Subject, SubjectOwnsSubjects, UsageLoggingUtilities,
 } from "@bentley/imodeljs-backend";
-import {
-  DomainOptions,
-  IModel,
-  IModelError,
-  LocalBriefcaseProps,
-  OpenBriefcaseProps,
-  ProfileOptions,
-  SubjectProps,
-} from "@bentley/imodeljs-common";
-import {
-  AccessToken,
-  AuthorizedClientRequestContext,
-} from "@bentley/itwin-client";
+import { DomainOptions, IModel, IModelError, LocalBriefcaseProps, OpenBriefcaseProps, ProfileOptions, SubjectProps } from "@bentley/imodeljs-common";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BridgeLoggerCategory } from "./BridgeLoggerCategory";
 import { IModelBankArgs, IModelBankUtils } from "./IModelBankUtils";
 import { IModelBridge } from "./IModelBridge";
 import { ServerArgs } from "./IModelHubUtils";
 import { Synchronizer } from "./Synchronizer";
-import {
-  ConnectSettingsClient,
-  SettingsStatus,
-} from "@bentley/product-settings-client";
+import { ConnectSettingsClient, SettingsStatus} from "@bentley/product-settings-client";
 
 /** @beta */
 export const loggerCategory: string = BridgeLoggerCategory.Framework;
@@ -109,77 +77,41 @@ export class BridgeRunner {
     }
   }
 
-  private static parseArguments(
-    args: string[],
-    bridgeJobDef: BridgeJobDefArgs,
-    serverArgs: ServerArgs,
-    bankArgs: IModelBankArgs
-  ) {
+  private static parseArguments(args: string[], bridgeJobDef: BridgeJobDefArgs, serverArgs: ServerArgs, bankArgs: IModelBankArgs) {
     for (const line of args) {
-      if (!line) continue;
+      if (!line)
+        continue;
       const keyVal = line.split("=");
       if (keyVal[0].startsWith("@")) {
         const argFile = keyVal[0].substr(1);
         if (!fs.existsSync(argFile))
           throw new Error("Error file {argFile} does not exist.");
-        BridgeRunner.parseArgumentFile(
-          argFile,
-          bridgeJobDef,
-          serverArgs,
-          bankArgs
-        );
+        BridgeRunner.parseArgumentFile(argFile, bridgeJobDef, serverArgs, bankArgs);
         continue;
       }
       const argName = keyVal[0].trim();
       switch (argName) {
-        case "--fwk-input":
-          bridgeJobDef.sourcePath = keyVal[1].trim();
-          break;
-        case "--fwk-output":
-          bridgeJobDef.outputDir = keyVal[1].trim();
-          break;
-        case "--fwk-bridge-library":
-          bridgeJobDef.bridgeModule = keyVal[1].trim();
-          break;
-        case "--fwk-create-repository-if-necessary":
-          serverArgs.createiModel = true;
-          break;
-        case "--server-repository":
-          serverArgs.iModelName = keyVal[1].trim();
-          break;
-        case "--server-project":
-          serverArgs.contextName = keyVal[1].trim();
-          break;
-        case "--server-project-guid":
-          serverArgs.contextId = keyVal[1].trim();
-          break;
-        case "--server-environment":
-          serverArgs.environment = keyVal[1].trim();
-          break;
-        case "--snapshot":
-          bridgeJobDef.isSnapshot = true;
-          break;
+        case "--fwk-input": bridgeJobDef.sourcePath = keyVal[1].trim(); break;
+        case "--fwk-output": bridgeJobDef.outputDir = keyVal[1].trim(); break;
+        case "--fwk-bridge-library": bridgeJobDef.bridgeModule = keyVal[1].trim(); break;
+        case "--fwk-create-repository-if-necessary": serverArgs.createiModel = true; break;
+        case "--server-repository": serverArgs.iModelName = keyVal[1].trim(); break;
+        case "--server-project": serverArgs.contextName = keyVal[1].trim(); break;
+        case "--server-project-guid": serverArgs.contextId = keyVal[1].trim(); break;
+        case "--server-environment": serverArgs.environment = keyVal[1].trim(); break;
+        case "--snapshot": bridgeJobDef.isSnapshot = true; break;
         case "--server-accessToken": {
           StaticTokenStore.tokenString = fs.readFileSync(keyVal[1]).toString();
-          serverArgs.getToken = async (): Promise<AccessToken> =>
-            AccessToken.fromTokenString(StaticTokenStore.tokenString);
+          serverArgs.getToken = async (): Promise<AccessToken> => AccessToken.fromTokenString(StaticTokenStore.tokenString);
           break;
         }
 
-        case "--imodel-bank-url":
-          bankArgs.url = keyVal[1].trim();
-          break;
+        case "--imodel-bank-url": bankArgs.url = keyVal[1].trim(); break;
         // TODO: more iModelBank-specific args
 
-        case "--dms-inputFileUrn=":
-          bridgeJobDef.dmsServerUrl = keyVal[1].trim();
-          break;
-        case "--dms-accessToken=":
-          bridgeJobDef.dmsAccessToken = keyVal[1].trim();
-          break;
-        case "--dms-documentGuid=":
-          bridgeJobDef.documentGuid = keyVal[1].trim();
-          break;
+        case "--dms-inputFileUrn=": bridgeJobDef.dmsServerUrl = keyVal[1].trim(); break;
+        case "--dms-accessToken=": bridgeJobDef.dmsAccessToken = keyVal[1].trim(); break;
+        case "--dms-documentGuid=": bridgeJobDef.documentGuid = keyVal[1].trim(); break;
         default:
           /** Unsupported options
            * --fwk-skip-assignment-check
@@ -193,12 +125,7 @@ export class BridgeRunner {
     // TODO: check that we have serverArgs or bankArgs, or neither, but not both
   }
 
-  private static parseArgumentFile(
-    argFile: string,
-    bridgeJobDef: BridgeJobDefArgs,
-    serverArgs: ServerArgs,
-    bankArgs: IModelBankArgs
-  ) {
+  private static parseArgumentFile(argFile: string, bridgeJobDef: BridgeJobDefArgs, serverArgs: ServerArgs, bankArgs: IModelBankArgs) {
     const fileContent = fs.readFileSync(argFile).toString().split("\n");
     this.parseArguments(fileContent, bridgeJobDef, serverArgs, bankArgs);
   }
@@ -214,17 +141,11 @@ export class BridgeRunner {
   }
 
   /** Create a new instance with the given arguments. */
-  public constructor(
-    jobDefArgs: BridgeJobDefArgs,
-    serverArgs?: ServerArgs | IModelBankArgs
-  ) {
+  public constructor(jobDefArgs: BridgeJobDefArgs, serverArgs?: ServerArgs | IModelBankArgs) {
     // this._ldClient = iModelBridgeLDClient.getInstance(env);
     this._bridgeArgs = jobDefArgs;
     this._serverArgs = serverArgs;
-    if (
-      this._bridgeArgs.isSnapshot &&
-      undefined === this._bridgeArgs.outputDir
-    ) {
+    if (this._bridgeArgs.isSnapshot && undefined === this._bridgeArgs.outputDir) {
       throw new Error("Output directory must be defined for snapshot.");
     }
   }
@@ -233,12 +154,7 @@ export class BridgeRunner {
   public async synchronize(): Promise<BentleyStatus> {
     // If we can't load the bridge, no point in trying anything else;
     if (this._bridgeArgs.bridgeModule === undefined) {
-      throw new IModelError(
-        IModelStatus.BadArg,
-        "Bridge module undefined",
-        Logger.logError,
-        loggerCategory
-      );
+      throw new IModelError(IModelStatus.BadArg, "Bridge module undefined", Logger.logError, loggerCategory);
     }
 
     if (this._bridgeArgs.sourcePath === undefined) {
@@ -247,12 +163,7 @@ export class BridgeRunner {
 
     await this.loadBridge(this._bridgeArgs.bridgeModule);
     if (this._bridge === undefined) {
-      throw new IModelError(
-        IModelStatus.BadArg,
-        "Failed to load bridge",
-        Logger.logError,
-        loggerCategory
-      );
+      throw new IModelError(IModelStatus.BadArg, "Failed to load bridge", Logger.logError, loggerCategory);
     }
     await this._bridge.initialize(this._bridgeArgs);
 
@@ -261,11 +172,7 @@ export class BridgeRunner {
       iModelDbBuilder = new SnapshotDbBuilder(this._bridge, this._bridgeArgs);
     } else {
       assert(this._serverArgs !== undefined);
-      iModelDbBuilder = new BriefcaseDbBuilder(
-        this._bridge,
-        this._bridgeArgs,
-        this._serverArgs
-      );
+      iModelDbBuilder = new BriefcaseDbBuilder(this._bridge, this._bridgeArgs, this._serverArgs);
     }
 
     await iModelDbBuilder.initialize();
@@ -273,16 +180,8 @@ export class BridgeRunner {
     this.initProgressMeter();
 
     await iModelDbBuilder.acquire();
-    if (
-      undefined === iModelDbBuilder.imodel ||
-      !iModelDbBuilder.imodel.isOpen
-    ) {
-      throw new IModelError(
-        IModelStatus.BadModel,
-        "Failed to open imodel",
-        Logger.logError,
-        loggerCategory
-      );
+    if (undefined === iModelDbBuilder.imodel || !iModelDbBuilder.imodel.isOpen) {
+      throw new IModelError(IModelStatus.BadModel, "Failed to open imodel", Logger.logError, loggerCategory);
     }
 
     try {
@@ -290,10 +189,7 @@ export class BridgeRunner {
       await this._bridge.onOpenIModel();
       await iModelDbBuilder.updateExistingIModel();
     } finally {
-      if (
-        iModelDbBuilder.imodel.isBriefcaseDb() ||
-        iModelDbBuilder.imodel.isSnapshotDb()
-      ) {
+      if (iModelDbBuilder.imodel.isBriefcaseDb() || iModelDbBuilder.imodel.isSnapshotDb()) {
         iModelDbBuilder.imodel.close();
       }
     }
@@ -308,7 +204,8 @@ export class BridgeRunner {
     return null !== this._bridge;
   }
 
-  private initProgressMeter() {}
+  private initProgressMeter() {
+  }
 }
 
 abstract class IModelDbBuilder {
@@ -316,38 +213,30 @@ abstract class IModelDbBuilder {
   protected _jobSubjectName: string;
   protected _jobSubject?: Subject;
 
-  constructor(
-    protected readonly _bridge: IModelBridge,
-    protected readonly _bridgeArgs: BridgeJobDefArgs
-  ) {
+  constructor(protected readonly _bridge: IModelBridge, protected readonly _bridgeArgs: BridgeJobDefArgs) {
     // this._jobSubjectName = this._bridge.getBridgeName() + ":" + this._bridgeArgs.sourcePath!;
-    this._jobSubjectName = this._bridge.getJobSubjectName(
-      this._bridgeArgs.sourcePath!
-    );
+    this._jobSubjectName = this._bridge.getJobSubjectName(this._bridgeArgs.sourcePath!);
   }
 
-  public abstract async initialize(): Promise<void>;
-  public abstract async acquire(): Promise<void>;
+  public async abstract initialize(): Promise<void>;
+  public async abstract acquire(): Promise<void>;
 
-  protected abstract async _updateExistingData(): Promise<void>;
-  protected abstract async _initDomainSchema(): Promise<void>;
-  protected abstract async _importDefinitions(): Promise<void>;
+  protected async abstract _updateExistingData(): Promise<void>;
+  protected async abstract _initDomainSchema(): Promise<void>;
+  protected async abstract _importDefinitions(): Promise<void>;
 
   protected getRevisionComment(pushComments: string): string {
     let comment = "";
     if (this._bridgeArgs.revisionComments !== undefined)
       comment = this._bridgeArgs.revisionComments.substring(0, 400);
-    if (comment.length > 0) comment = `${comment} - `;
+    if (comment.length > 0)
+      comment = `${comment} - `;
     return comment + pushComments;
   }
 
   protected findJob(): Subject | undefined {
     assert(this._imodel !== undefined);
-    const jobCode = Subject.createCode(
-      this._imodel,
-      IModel.rootSubjectId,
-      this._jobSubjectName
-    );
+    const jobCode = Subject.createCode(this._imodel, IModel.rootSubjectId, this._jobSubjectName);
     const subjectId = this._imodel.elements.queryElementIdByCode(jobCode);
     if (undefined === subjectId) {
       return undefined;
@@ -371,11 +260,7 @@ abstract class IModelDbBuilder {
     subjProps.Subject.Job = jobProps;
 
     const root = this._imodel.elements.getRootSubject();
-    const jobCode = Subject.createCode(
-      this._imodel,
-      root.id,
-      this._jobSubjectName
-    );
+    const jobCode = Subject.createCode(this._imodel, root.id, this._jobSubjectName);
 
     const subjectProps: SubjectProps = {
       classFullName: Subject.classFullName,
@@ -395,10 +280,7 @@ abstract class IModelDbBuilder {
     assert(!this._imodel.txns.hasLocalChanges);
   }
 
-  protected abstract async _enterChannel(
-    channelRootId: Id64String,
-    lockRoot?: boolean
-  ): Promise<void>;
+  protected abstract async _enterChannel(channelRootId: Id64String, lockRoot?: boolean): Promise<void>;
 
   public async updateExistingData(): Promise<void> {
     await this._updateExistingData();
@@ -413,9 +295,7 @@ abstract class IModelDbBuilder {
     // TODO: Report outliers and then change the options to true
   }
 
-  public async enterRepositoryChannel(lockRoot: boolean = true) {
-    return this._enterChannel(IModelDb.repositoryModelId, lockRoot);
-  }
+  public async enterRepositoryChannel(lockRoot: boolean = true) { return this._enterChannel(IModelDb.repositoryModelId, lockRoot); }
   public async enterBridgeChannel(lockRoot: boolean = true) {
     assert(this._jobSubject !== undefined);
     return this._enterChannel(this._jobSubject.id, lockRoot);
@@ -438,20 +318,13 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
   private _activityId: GuidString;
   private _serverArgs: ServerArgs | IModelBankArgs;
 
-  constructor(
-    bridge: IModelBridge,
-    bridgeArgs: BridgeJobDefArgs,
-    serverArgs: ServerArgs | IModelBankArgs
-  ) {
+  constructor(bridge: IModelBridge, bridgeArgs: BridgeJobDefArgs, serverArgs: ServerArgs | IModelBankArgs) {
     super(bridge, bridgeArgs);
     this._serverArgs = serverArgs;
     this._activityId = Guid.createValue();
   }
 
-  protected async _saveAndPushChanges(
-    comment: string,
-    changesType: ChangesType
-  ): Promise<void> {
+  protected async _saveAndPushChanges(comment: string, changesType: ChangesType): Promise<void> {
     assert(this._requestContext !== undefined);
     assert(this._imodel instanceof BriefcaseDb);
 
@@ -468,40 +341,22 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
     assert(this._imodel instanceof BriefcaseDb);
     assert(!this._imodel.concurrencyControl.hasPendingRequests);
     assert(this._imodel.concurrencyControl.isBulkMode);
-    assert(
-      !this._imodel.concurrencyControl.locks.hasSchemaLock,
-      "bridgeRunner must release all locks before switching channels"
-    );
-    assert(
-      !this._imodel.concurrencyControl.locks.hasCodeSpecsLock,
-      "bridgeRunner must release all locks before switching channels"
-    );
+    assert(!this._imodel.concurrencyControl.locks.hasSchemaLock, "bridgeRunner must release all locks before switching channels");
+    assert(!this._imodel.concurrencyControl.locks.hasCodeSpecsLock, "bridgeRunner must release all locks before switching channels");
     const currentRoot = this._imodel.concurrencyControl.channel.channelRoot;
     if (currentRoot !== undefined)
-      assert(
-        !this._imodel.concurrencyControl.locks.holdsLock(
-          ConcurrencyControl.Request.getElementLock(
-            currentRoot,
-            LockLevel.Exclusive
-          )
-        ),
-        "bridgeRunner must release channel locks before switching channels"
-      );
+      assert(!this._imodel.concurrencyControl.locks.holdsLock(ConcurrencyControl.Request.getElementLock(currentRoot, LockLevel.Exclusive)), "bridgeRunner must release channel locks before switching channels");
   }
 
-  protected async _enterChannel(
-    channelRootId: Id64String,
-    lockRoot: boolean = true
-  ) {
+  protected async _enterChannel(channelRootId: Id64String, lockRoot: boolean = true) {
     assert(this._requestContext !== undefined);
     assert(this._imodel instanceof BriefcaseDb);
     this._onChangeChannel(channelRootId);
     this._imodel.concurrencyControl.channel.channelRoot = channelRootId;
-    if (!lockRoot) return;
+    if (!lockRoot)
+      return;
     assert(this._requestContext !== undefined);
-    return this._imodel.concurrencyControl.channel.lockChannelRoot(
-      this._requestContext
-    );
+    return this._imodel.concurrencyControl.channel.lockChannelRoot(this._requestContext);
   }
 
   protected async _importDefinitions() {
@@ -516,22 +371,16 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
     if (undefined !== this._jobSubject) {
       this._bridge.jobSubject = this._jobSubject;
     } else {
-      this._jobSubject = this.insertJobSubject(); // this is the first time that this bridge has tried to convert this input file into this iModel
+      this._jobSubject = this.insertJobSubject();    // this is the first time that this bridge has tried to convert this input file into this iModel
 
-      await this._saveAndPushChanges(
-        "Inserted Bridge Job Subject",
-        ChangesType.GlobalProperties
-      );
+      await this._saveAndPushChanges("Inserted Bridge Job Subject", ChangesType.GlobalProperties);
 
       await this.enterBridgeChannel(); // (also locks the Job Subject)
 
       this._bridge.jobSubject = this._jobSubject;
       await this._bridge.initializeJob();
 
-      await this._saveAndPushChanges(
-        "Initialized Bridge Job Subject",
-        ChangesType.Regular
-      );
+      await this._saveAndPushChanges("Initialized Bridge Job Subject", ChangesType.Regular);
 
       await this.enterRepositoryChannel();
     }
@@ -541,10 +390,7 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
 
     await this._bridge.importDefinitions();
 
-    return this._saveAndPushChanges(
-      "Definition changes",
-      ChangesType.Definition
-    );
+    return this._saveAndPushChanges("Definition changes", ChangesType.Definition);
   }
 
   protected async _initDomainSchema() {
@@ -563,10 +409,7 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
     await this._bridge.importDynamicSchema(this._requestContext);
     await this._imodel.concurrencyControl.request(this._requestContext);
     this._imodel.saveChanges();
-    return this._saveAndPushChanges(
-      "Dynamic schema changes",
-      ChangesType.Schema
-    );
+    return this._saveAndPushChanges("Dynamic schema changes", ChangesType.Schema);
   }
 
   protected async _updateExistingData(): Promise<void> {
@@ -585,10 +428,7 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
     if (this._bridge.getDataChangesDescription)
       dataChangesDescription = this._bridge.getDataChangesDescription();
 
-    return this._saveAndPushChanges(
-      dataChangesDescription,
-      ChangesType.Regular
-    );
+    return this._saveAndPushChanges(dataChangesDescription, ChangesType.Regular);
   }
 
   /** Pushes any pending transactions to the hub. */
@@ -608,43 +448,19 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
 
   public async initialize() {
     if (undefined === this._serverArgs.getToken) {
-      throw new IModelError(
-        IModelStatus.BadArg,
-        "getToken() undefined",
-        Logger.logError,
-        loggerCategory
-      );
+      throw new IModelError(IModelStatus.BadArg, "getToken() undefined", Logger.logError, loggerCategory);
     }
 
     const token = await this._serverArgs.getToken();
-    this._requestContext = new AuthorizedClientRequestContext(
-      token,
-      this._activityId,
-      this._bridge.getApplicationId(),
-      this._bridge.getApplicationVersion()
-    );
+    this._requestContext = new AuthorizedClientRequestContext(token, this._activityId, this._bridge.getApplicationId(), this._bridge.getApplicationVersion());
     if (this._requestContext === undefined) {
-      throw new IModelError(
-        IModelStatus.BadRequest,
-        "Failed to instantiate AuthorizedClientRequestContext",
-        Logger.logError,
-        loggerCategory
-      );
+      throw new IModelError(IModelStatus.BadRequest, "Failed to instantiate AuthorizedClientRequestContext", Logger.logError, loggerCategory);
     }
     assert(this._serverArgs.contextId !== undefined);
-    UsageLoggingUtilities.postUserUsage(
-      this._requestContext,
-      this._serverArgs.contextId,
-      IModelJsNative.AuthType.OIDC,
-      os.hostname(),
-      IModelJsNative.UsageType.Trial
-    ).catch((err) => {
-      Logger.logError(
-        loggerCategory,
-        `Could not log user usage for bridge`,
-        () => ({ errorStatus: err.status, errorMessage: err.message })
-      );
-    });
+    UsageLoggingUtilities.postUserUsage(this._requestContext, this._serverArgs.contextId, IModelJsNative.AuthType.OIDC, os.hostname(), IModelJsNative.UsageType.Trial)
+      .catch((err) => {
+        Logger.logError(loggerCategory, `Could not log user usage for bridge`, () => ({ errorStatus: err.status, errorMessage: err.message }));
+      });
   }
 
   /** This will download the briefcase, open it with the option to update the Db profile, close it, re-open with the option to upgrade core domain schemas */
@@ -657,9 +473,7 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
 
     // Can't actually get here with a null _requestContext, but this guard removes the need to instead use this._requestContext!
     if (this._requestContext === undefined)
-      throw new Error(
-        "Must initialize AuthorizedClientRequestContext before using"
-      );
+      throw new Error("Must initialize AuthorizedClientRequestContext before using");
     if (this._serverArgs.contextId === undefined)
       throw new Error("Must initialize ContextId before using");
     if (this._serverArgs.iModelId === undefined)
@@ -687,15 +501,7 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
         contextId: this._serverArgs.contextId,
         iModelId: this._serverArgs.iModelId,
       });
-      const result = await settingsClient.saveSetting(
-        this._requestContext,
-        { briefcaseId: props.briefcaseId },
-        "DocumentMapping",
-        "Documents",
-        true,
-        this._serverArgs.contextId,
-        this._serverArgs.iModelId
-      );
+      const result = await settingsClient.saveSetting(this._requestContext, { briefcaseId: props.briefcaseId }, "DocumentMapping", "Documents", true, this._serverArgs.contextId, this._serverArgs.iModelId);
     }
     let briefcaseDb: BriefcaseDb | undefined;
     const openArgs: OpenBriefcaseProps = {
@@ -704,20 +510,15 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
     if (this._bridgeArgs.updateDbProfile) {
       openArgs.upgrade = { profile: ProfileOptions.Upgrade };
       briefcaseDb = await BriefcaseDb.open(this._requestContext, openArgs);
-      await briefcaseDb.pushChanges(
-        this._requestContext,
-        "Open with Db Profile update"
-      );
-      if (this._bridgeArgs.updateDomainSchemas) briefcaseDb.close();
+      await briefcaseDb.pushChanges(this._requestContext, "Open with Db Profile update");
+      if (this._bridgeArgs.updateDomainSchemas)
+        briefcaseDb.close();
     }
 
     if (this._bridgeArgs.updateDomainSchemas) {
       openArgs.upgrade = { domain: DomainOptions.Upgrade };
       briefcaseDb = await BriefcaseDb.open(this._requestContext, openArgs);
-      await briefcaseDb.pushChanges(
-        this._requestContext,
-        "Open with Domain Schema update"
-      );
+      await briefcaseDb.pushChanges(this._requestContext, "Open with Domain Schema update");
     }
 
     if (briefcaseDb === undefined || !briefcaseDb.isOpen) {
@@ -725,11 +526,7 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
     }
 
     this._imodel = briefcaseDb;
-    const synchronizer = new Synchronizer(
-      briefcaseDb,
-      this._bridge.supportsMultipleFilesPerChannel(),
-      this._requestContext
-    );
+    const synchronizer = new Synchronizer(briefcaseDb, this._bridge.supportsMultipleFilesPerChannel(), this._requestContext);
     this._bridge.synchronizer = synchronizer;
 
     briefcaseDb.concurrencyControl.startBulkMode(); // We will run in bulk mode the whole time.
@@ -737,40 +534,25 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
 }
 
 class SnapshotDbBuilder extends IModelDbBuilder {
-  public async initialize() {}
+  public async initialize() {
+  }
 
   public async acquire(): Promise<void> {
-    const fileName = `${path.basename(
-      this._bridgeArgs.sourcePath!,
-      path.extname(this._bridgeArgs.sourcePath!)
-    )}.bim`;
+    const fileName = `${path.basename(this._bridgeArgs.sourcePath!, path.extname(this._bridgeArgs.sourcePath!))}.bim`;
     const filePath = path.join(this._bridgeArgs.outputDir!, fileName);
     if (IModelJsFs.existsSync(filePath)) {
       IModelJsFs.unlinkSync(filePath);
     }
-    this._imodel = SnapshotDb.createEmpty(filePath, {
-      rootSubject: { name: this._bridge.getBridgeName() },
-    });
+    this._imodel = SnapshotDb.createEmpty(filePath, { rootSubject: { name: this._bridge.getBridgeName() } });
     if (undefined === this._imodel) {
-      throw new IModelError(
-        IModelStatus.BadModel,
-        `Unable to create empty SnapshotDb at ${filePath}`,
-        Logger.logError,
-        loggerCategory
-      );
+      throw new IModelError(IModelStatus.BadModel, `Unable to create empty SnapshotDb at ${filePath}`, Logger.logError, loggerCategory);
     }
 
-    const synchronizer = new Synchronizer(
-      this._imodel,
-      this._bridge.supportsMultipleFilesPerChannel()
-    );
+    const synchronizer = new Synchronizer(this._imodel, this._bridge.supportsMultipleFilesPerChannel());
     this._bridge.synchronizer = synchronizer;
   }
 
-  protected async _enterChannel(
-    channelRootId: Id64String,
-    _lockRoot?: boolean
-  ): Promise<void> {
+  protected async _enterChannel(channelRootId: Id64String, _lockRoot?: boolean): Promise<void> {
     return this._onChangeChannel(channelRootId);
   }
 
@@ -780,7 +562,7 @@ class SnapshotDbBuilder extends IModelDbBuilder {
     if (undefined !== this._jobSubject) {
       this._bridge.jobSubject = this._jobSubject;
     } else {
-      this._jobSubject = this.insertJobSubject(); // this is the first time that this bridge has tried to convert this input file into this iModel
+      this._jobSubject = this.insertJobSubject();    // this is the first time that this bridge has tried to convert this input file into this iModel
       this._bridge.jobSubject = this._jobSubject;
       await this._bridge.initializeJob();
     }
