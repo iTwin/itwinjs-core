@@ -184,10 +184,6 @@ class ParticleSystem {
     return "Explosion effect";
   }
 
-  public async onDecorationButtonEvent(_hit: HitDetail, _ev: BeButtonEvent): Promise<EventHandled> {
-    return EventHandled.Yes;
-  }
-
   public static async addDecorator(iModel: IModelConnection): Promise<void> {
     // Note: The decorator takes ownership of the texture, and disposes of it when the decorator is disposed.
     const isOwned = true;
