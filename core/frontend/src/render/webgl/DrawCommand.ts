@@ -212,8 +212,7 @@ export class PrimitiveCommand {
     const isAnimated = this.primitive.hasAnimation ? IsAnimated.Yes : IsAnimated.No;
 
     // Point clouds do not support hillshade or slope mode for thematic display.
-    // For now, Terrain meshes do not support hillshade or slope mode for thematic display either.
-    if (isThematic && (undefined !== this.primitive.cachedGeometry.asPointCloud || undefined !== this.primitive.cachedGeometry.asTerrainMesh) && (target.uniforms.thematic.wantSlopeMode || target.uniforms.thematic.wantHillShadeMode))
+    if (isThematic && (undefined !== this.primitive.cachedGeometry.asPointCloud) && (target.uniforms.thematic.wantSlopeMode || target.uniforms.thematic.wantHillShadeMode))
       isThematic = IsThematic.No;
 
     const flags = PrimitiveCommand._scratchTechniqueFlags;
