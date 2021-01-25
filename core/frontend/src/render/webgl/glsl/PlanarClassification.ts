@@ -52,22 +52,24 @@ const applyPlanarClassificationColor = `
     vec3 rgb = TEXTURE(s_pClassSampler, classPos.xy).rgb;
     return vec4(rgb, baseColor.a);
   }
+  float imageCount = u_pClassColorParams.z;
+  // For debugging features.
+  // vec4 featureTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, (1.0 + classPos.y) / imageCount));
+  // return (isOutside || featureTexel == vec4(0)) ? vec4(0.0, 1.0, 0.0, 1.0) : vec4 (featureTexel.x, 0.0, 0.0, 1.0);
 
-  // return isOutside ? vec4(0.0, 1.0, 0.0, 1.0) : TEXTURE(s_pClassSampler, vec2(classPos.x, classPos.y));
 
-  float contentMode = u_pClassColorParams.z;
   vec4 colorTexel = vec4(0);
   vec4 maskTexel = vec4(0);
-  bool doMask = contentMode > kTextureContentClassifierOnly;
-  bool doClassify = contentMode != kTextureContentMaskOnly;
+  bool doMask = imageCount != kTextureContentClassifierOnly;
+  bool doClassify = imageCount != kTextureContentMaskOnly;
   if (!isOutside) {
-    if (contentMode == kTextureContentClassifierOnly) {
-      colorTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, classPos.y / 2.0));
-    } else if (contentMode == kTextureContentMaskOnly) {
+    if (imageCount == kTextureContentClassifierOnly) {
+      colorTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, classPos.y / imageCount));
+    } else if (imageCount == kTextureContentMaskOnly) {
       maskTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, classPos.y));
-    } else if (contentMode == kTextureContentClassifierAndMask) {
-      colorTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, classPos.y / 3.0));
-      maskTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, (2.0 + classPos.y) / 3.0));
+    } else if (imageCount == kTextureContentClassifierAndMask) {
+      colorTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, classPos.y / imageCount));
+      maskTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, (2.0 + classPos.y) / imageCount));
     }
   }
   if (doMask) {
@@ -167,7 +169,7 @@ const applyPlanarClassificationColorForThematic = `
 const overrideFeatureId = `
   if (u_pClassColorParams.x > kClassifierDisplay_Element) return currentId;
   vec2 classPos = v_pClassPos / v_pClassPosW;
-  vec4 featureTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, (1.0 + classPos.y) / 2.0));
+  vec4 featureTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, (1.0 + classPos.y) /  u_pClassColorParams.z));
   return (featureTexel == vec4(0)) ? currentId : addUInt32s(u_batchBase, featureTexel * 255.0) / 255.0;
   `;
 

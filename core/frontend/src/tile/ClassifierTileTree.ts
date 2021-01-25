@@ -137,10 +137,10 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
     if (undefined === classifierTree)
       return;
 
-    if (!this.isPlanar)
+    if (!this.isPlanar) {
       context.setVolumeClassifier(classifier, classifiedTree.modelId);
-
-    super.addToScene(context);
+      super.addToScene(context);
+    }
   }
 
   private createId(classifiers: SpatialClassifiers, source: ViewState | DisplayStyleState): ClassifierTreeId {

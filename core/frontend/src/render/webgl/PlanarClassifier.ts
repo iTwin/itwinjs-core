@@ -35,77 +35,63 @@ import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
 import { Texture, TextureHandle } from "./Texture";
 
-export enum PlanarClassifierContent { None = 0, ClassifierOnly = 1, MaskOnly = 2, ClassifierAndMask = 3 };
+export enum PlanarClassifierContent { None = 0, MaskOnly = 1, ClassifierOnly = 2, ClassifierAndMask = 3 };
 
 function createTexture(handle: TextureHandle) { return new Texture(new RenderTexture.Params(undefined, RenderTexture.Type.TileSection, true), handle) }
 function createTextureHandle(width: number, height: number, heightMult = 1.0) { return TextureHandle.createForAttachment(width, height * heightMult, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte); }
 
 class ClassifierTextures implements WebGLDisposable {
-  private constructor(
-    public readonly color: Texture,
+  private constructor(public readonly color: Texture,
     public readonly feature: Texture,
-    public readonly hilite: Texture,
-    public readonly combined: Texture) { }
+    public readonly hilite: Texture) { }
 
   public get isDisposed(): boolean {
     return this.color.isDisposed
       && this.feature.isDisposed
-      && this.hilite.isDisposed
-      && this.combined.isDisposed;
+      && this.hilite.isDisposed;
   }
 
   public dispose(): void {
     dispose(this.color);
     dispose(this.feature);
     dispose(this.hilite);
-    dispose(this.combined);
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
     stats.addPlanarClassifier(this.color.bytesUsed);
     stats.addPlanarClassifier(this.feature.bytesUsed);
     stats.addPlanarClassifier(this.hilite.bytesUsed);
-    stats.addPlanarClassifier(this.combined.bytesUsed);
   }
 
   public static create(width: number, height: number): ClassifierTextures | undefined {
     const hColor = createTextureHandle(width, height);
     const hFeature = createTextureHandle(width, height);
-    const hCombined = createTextureHandle(width, height, 2.0);
     const hHilite = createTextureHandle(width, height);
-    if (!hColor || !hFeature || !hCombined || !hHilite)
+    if (!hColor || !hFeature || !hHilite)
       return undefined;
 
     const color = createTexture(hColor);
     const feature = createTexture(hFeature);
-    const combined = createTexture(hCombined);
     const hilite = createTexture(hHilite);
-    if (!color || !feature || !combined || !hilite)
+    if (!color || !feature || !hilite)
       return undefined;
 
-    return new ClassifierTextures(color, feature, hilite, combined);
+    return new ClassifierTextures(color, feature, hilite);
   }
 }
 
 abstract class ClassifierFrameBuffers implements WebGLDisposable {
   protected constructor(
     public readonly textures: ClassifierTextures,
-    private readonly _hilite: FrameBuffer,
-    private readonly _combine: FrameBuffer,
-    private readonly _combineGeom: CombineTexturesGeometry) { }
+    private readonly _hilite: FrameBuffer) { }
 
   public get isDisposed(): boolean {
-    return this.textures.isDisposed
-      && this._hilite.isDisposed
-      && this._combine.isDisposed
-      && this._combineGeom.isDisposed;
+    return this.textures.isDisposed && this._hilite.isDisposed;
   }
 
   public dispose(): void {
     dispose(this.textures);
     dispose(this._hilite);
-    dispose(this._combine);
-    dispose(this._combineGeom);
   }
 
   public abstract draw(cmds: DrawCommands, target: Target): void;
@@ -120,16 +106,6 @@ abstract class ClassifierFrameBuffers implements WebGLDisposable {
     });
   }
 
-  public compose(target: Target): void {
-    const system = System.instance;
-    const gl = system.context;
-    system.frameBufferStack.execute(this._combine, true, false, () => {
-      gl.clearColor(0, 0, 0, 0);
-      gl.clear(GL.BufferBit.Color);
-      target.techniques.draw(getDrawParams(target, this._combineGeom));
-    });
-  }
-
   public static create(width: number, height: number): ClassifierFrameBuffers | undefined {
     const textures = ClassifierTextures.create(width, height);
     if (undefined === textures)
@@ -139,18 +115,10 @@ abstract class ClassifierFrameBuffers implements WebGLDisposable {
     if (undefined === hiliteFbo)
       return undefined;
 
-    const combineFbo = FrameBuffer.create([textures.combined.texture]);
-    if (undefined === combineFbo)
-      return undefined;
-
-    const combineGeom = CombineTexturesGeometry.createGeometry(textures.color.texture.getHandle()!, textures.feature.texture.getHandle()!);
-    if (undefined === combineGeom)
-      return undefined;
-
     if (System.instance.capabilities.supportsDrawBuffers)
-      return ClassifierMRTFrameBuffers.createMRT(textures, hiliteFbo, combineFbo, combineGeom);
+      return ClassifierMRTFrameBuffers.createMRT(textures, hiliteFbo);
     else
-      return ClassifierMPFrameBuffers.createMP(textures, hiliteFbo, combineFbo, combineGeom);
+      return ClassifierMPFrameBuffers.createMP(textures, hiliteFbo);
   }
 }
 
@@ -158,8 +126,8 @@ class ClassifierMRTFrameBuffers extends ClassifierFrameBuffers {
   private readonly _fbo: FrameBuffer;
   private readonly _clearGeom: ViewportQuadGeometry;
 
-  private constructor(textures: ClassifierTextures, hilite: FrameBuffer, combine: FrameBuffer, combineGeom: CombineTexturesGeometry, fbo: FrameBuffer, geom: ViewportQuadGeometry) {
-    super(textures, hilite, combine, combineGeom);
+  private constructor(textures: ClassifierTextures, hilite: FrameBuffer, fbo: FrameBuffer, geom: ViewportQuadGeometry) {
+    super(textures, hilite);
     this._fbo = fbo;
     this._clearGeom = geom;
   }
@@ -176,13 +144,13 @@ class ClassifierMRTFrameBuffers extends ClassifierFrameBuffers {
     super.dispose();
   }
 
-  public static createMRT(textures: ClassifierTextures, hilite: FrameBuffer, combine: FrameBuffer, combineGeom: CombineTexturesGeometry): ClassifierMRTFrameBuffers | undefined {
+  public static createMRT(textures: ClassifierTextures, hilite: FrameBuffer): ClassifierMRTFrameBuffers | undefined {
     const fbo = FrameBuffer.create([textures.color.texture, textures.feature.texture]);
     if (undefined === fbo)
       return undefined;
 
     const geom = ViewportQuadGeometry.create(TechniqueId.ClearPickAndColor);
-    return undefined !== geom ? new ClassifierMRTFrameBuffers(textures, hilite, combine, combineGeom, fbo, geom) : undefined;
+    return undefined !== geom ? new ClassifierMRTFrameBuffers(textures, hilite, fbo, geom) : undefined;
   }
 
   public draw(cmds: DrawCommands, target: Target): void {
@@ -197,8 +165,8 @@ class ClassifierMPFrameBuffers extends ClassifierFrameBuffers {
   private readonly _color: FrameBuffer;
   private readonly _feature: FrameBuffer;
 
-  private constructor(textures: ClassifierTextures, hilite: FrameBuffer, combine: FrameBuffer, combineGeom: CombineTexturesGeometry, color: FrameBuffer, feature: FrameBuffer) {
-    super(textures, hilite, combine, combineGeom);
+  private constructor(textures: ClassifierTextures, hilite: FrameBuffer, color: FrameBuffer, feature: FrameBuffer) {
+    super(textures, hilite);
     this._color = color;
     this._feature = feature;
   }
@@ -215,10 +183,10 @@ class ClassifierMPFrameBuffers extends ClassifierFrameBuffers {
     super.dispose();
   }
 
-  public static createMP(textures: ClassifierTextures, hilite: FrameBuffer, combine: FrameBuffer, combineGeom: CombineTexturesGeometry): ClassifierMPFrameBuffers | undefined {
+  public static createMP(textures: ClassifierTextures, hilite: FrameBuffer): ClassifierMPFrameBuffers | undefined {
     const color = FrameBuffer.create([textures.color.texture]);
     const feature = FrameBuffer.create([textures.feature.texture]);
-    return undefined !== color && undefined !== feature ? new ClassifierMPFrameBuffers(textures, hilite, combine, combineGeom, color, feature) : undefined;
+    return undefined !== color && undefined !== feature ? new ClassifierMPFrameBuffers(textures, hilite, color, feature) : undefined;
   }
 
   public draw(cmds: DrawCommands, target: Target): void {
@@ -454,8 +422,8 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
 
   public pushBatchState(batchState: BatchState) {
     this._baseBatchId = batchState.nextBatchId - 1;
-    if (undefined !== this._graphics)
-      this.pushBatches(batchState, this._graphics);
+    if (undefined !== this._classifierGraphics)
+      this.pushBatches(batchState, this._classifierGraphics);
   }
 
   public setSource(classifierTreeRef?: SpatialClassifierTileTreeReference, planarClipMask?: PlanarClipMask) {
@@ -602,6 +570,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
 
     const renderCommands = this._renderCommands;
     const getDrawCommands = (graphics: RenderGraphic[]) => {
+      this._batchState.reset();
       renderCommands.reset(target, this._branchStack, this._batchState);
       renderCommands.addGraphics(graphics);
 
@@ -630,19 +599,18 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
       this._anyHilited = 0 !== hiliteCommands.length;
       if (this._anyHilited)
         this._classifierBuffers.drawHilite(hiliteCommands, target);
-
-      this._batchState.reset();
     }
     if (this._maskGraphics.length > 0 && this._maskBuffer) {
       if (this._planarClipMaskOverrides)
         target.overrideFeatureSymbology(this._planarClipMaskOverrides);
 
       this._maskBuffer.draw(getDrawCommands(this._maskGraphics), target);
-      this._batchState.reset();
+
     }
     if (combinationBuffer)
       combinationBuffer.compose(target);
 
+    this._batchState.reset();
     target.changeRenderPlan(prevPlan);
     target.overrideFeatureSymbology(prevOverrides);
 
