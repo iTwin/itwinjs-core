@@ -549,7 +549,9 @@ export class ExternalTextureLoader { /* currently exported for tests only */
     try {
       const texBytesPromise = req.imodel.getTextureImage({ name: req.name });
       texBytesPromise.then((texBytes: Uint8Array | undefined) => {
-        if (undefined !== texBytes && !req.imodel.isClosed) {
+        if (undefined === texBytes || req.imodel.isClosed) {
+          throw new Error("Requested a texture element that does not exist or iModel is closed.");
+        } else {
           const imageSource = new ImageSource(texBytes, req.format);
           const imageElementPromise = imageElementFromImageSource(imageSource);
           imageElementPromise.then((image: HTMLImageElement) => {
@@ -560,13 +562,10 @@ export class ExternalTextureLoader { /* currently exported for tests only */
                 req.onLoaded(req);
             }
             this._nextRequest(req);
-          }).catch((_e) => { });
-        } else
-          this._nextRequest(req);
-      }).catch((_e) => { });
-    } catch (_e) {
-      this._nextRequest(req); // if exception occurs while calling getTextureImage, remove this request and go to the next.
-    }
+          }).catch((_e) => { this._nextRequest(req); });
+        }
+      }).catch((_e) => { this._nextRequest(req); });
+    } catch (_e) { this._nextRequest(req); }
   }
 
   private _requestExists(reqToCheck: ExternalTextureRequest) {

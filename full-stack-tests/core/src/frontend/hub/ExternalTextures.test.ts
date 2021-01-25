@@ -9,10 +9,20 @@ import { ExternalTextureLoader, ExternalTextureRequest, GL, Texture2DHandle } fr
 import { TestUtility } from "./TestUtility";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 
-describe("external texture requests", () => {
+describe.only("external texture requests", () => {
   const projectName = "iModelJsIntegrationTest";
   let imodel: IModelConnection;
-  const texNames = ["0x48", "0x4b", "0x52", "0x54", "0x56", "0x59", "0x5e", "0x60", "0x64", "0x66", "0x69", "0x6d", "0x6f", "0x71", "0x73", "0x75", "0x7c", "0x7f", "0x82", "0x85", "0x8a", "0x8c", "0x8f", "0x91", "0x94", "0x97", "0x99", "0x9b", "0x9d", "0x9f", "0xa1", "0xa3", "0xa5"];
+  const texNames = [
+    "0x48", "0x4b", "0x52", "0x54", "0x56", "0x59",
+    "0x01", // bad request
+    "0x5e", "0x60", "0x64", "0x66", "0x69", "0x6d",
+    "0x6f", "0x71", "0x73", "0x75", "0x7c", "0x7f",
+    "0x02", // bad request
+    "0x82", "0x85", "0x8a", "0x8c", "0x8f", "0x91",
+    "0x94", "0x97", "0x99", "0x9b", "0x9d", "0x9f",
+    "0x03", // bad request
+    "0xa1", "0xa3", "0xa5"];
+  const numExpectedBadRequests = 3;
   const finishedTexRequests: Array<ExternalTextureRequest> = [];
   const extTexLoader = ExternalTextureLoader.instance;
   let totalLoadTextureCalls = 0;
@@ -69,8 +79,9 @@ describe("external texture requests", () => {
       return extTexLoader.numActiveRequests === 0 && extTexLoader.numPendingRequests === 0;
     });
 
-    expect(finishedTexRequests.length).to.equal(texNames.length);
-    expect(texNames.length).to.equal(totalLoadTextureCalls);
+    const numExpectedGoodRequests = texNames.length - numExpectedBadRequests;
+    expect(finishedTexRequests.length).to.equal(numExpectedGoodRequests);
+    expect(numExpectedGoodRequests).to.equal(totalLoadTextureCalls);
     expect(extTexLoader.numActiveRequests).to.equal(0);
     expect(extTexLoader.numPendingRequests).to.equal(0);
 
