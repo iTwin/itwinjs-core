@@ -313,7 +313,7 @@ alpha;ModelDisplayTransformProvider
 public;ModelSelectorState 
 public;ModelState 
 internal;ModifyElementSource
-alpha;NativeApp
+alpha;NativeApp 
 internal;NativeAppLogger
 internal;NoRenderApp
 public;NotificationManager
@@ -339,6 +339,10 @@ beta;ParseAndRunResult
 beta;ParsedKeyin
 beta;ParseKeyinError
 beta;ParseKeyinResult = ParsedKeyin | ParseKeyinError
+beta;ParticleCollectionBuilder
+beta;ParticleCollectionBuilder
+beta;ParticleCollectionBuilderParams
+beta;ParticleProps 
 beta;PendingExtension
 internal;PerformanceMetrics
 beta;PerModelCategoryVisibility

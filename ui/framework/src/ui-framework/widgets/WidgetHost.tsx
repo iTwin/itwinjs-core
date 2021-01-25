@@ -64,8 +64,16 @@ export class WidgetHost {
   /** Updates the WidgetHost with dynamic widgets
    * @internal
    */
-  public updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation, section?: StagePanelSection): void {
-    this._dynamicWidgetDefs = UiFramework.widgetManager.getWidgetDefs(stageId, stageUsage, location, section);
+  public updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation, section: StagePanelSection | undefined,
+    widgetDefs: WidgetDef[],
+  ): void {
+    widgetDefs.push(...this._widgetDefs);
+    this._dynamicWidgetDefs = UiFramework.widgetManager.getWidgetDefs(stageId, stageUsage, location, section)
+      ?.filter((widgetDef) => {
+        const duplicate = widgetDefs.find((wDef) => wDef.id === widgetDef.id);
+        return !duplicate;
+      });
+    this._dynamicWidgetDefs && widgetDefs.push(...this._dynamicWidgetDefs);
     this.sortWidgetDefs();
   }
 

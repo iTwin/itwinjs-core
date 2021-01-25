@@ -13,7 +13,7 @@ import { WebGLDisposable } from "./Disposable";
 import { GL } from "./GL";
 import { System } from "./System";
 import { Texture2DData, Texture2DHandle } from "./Texture";
-import { UniformHandle } from "./Handle";
+import { UniformHandle } from "./UniformHandle";
 import { TextureUnit } from "./RenderFlags";
 import { Target } from "./Target";
 

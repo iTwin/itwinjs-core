@@ -320,9 +320,14 @@ export class TestFrontstageUi1 extends FrontstageProvider {
 export class TestUi2Provider implements UiItemsProvider {
   public readonly id = "TestUi2Provider";
 
-  public provideWidgets(_stageId: string, _stageUsage: string, location: StagePanelLocation, _section?: StagePanelSection) {
+  public provideWidgets(_stageId: string, _stageUsage: string, location: StagePanelLocation, section?: StagePanelSection) {
     const widgets: Array<AbstractWidgetProps> = [];
-    if (location === StagePanelLocation.Right/* && section === StagePanelSection.Middle*/)
+    widgets.push({ // should only be added once to Left Start pane
+      id: "TestUi2ProviderW1",
+      label: "TestUi2Provider W1",
+      getWidgetContent: () => "TestUi2Provider W1 widget",
+    });
+    if (location === StagePanelLocation.Right && section === StagePanelSection.Middle)
       widgets.push({
         id: "TestUi2ProviderRM1",
         label: "TestUi2Provider RM1",
@@ -1848,6 +1853,7 @@ describe("dynamic widgets", () => {
     const { findByText } = render(<WidgetPanelsFrontstage />);
     await findByText("Left Start 1");
     await findByText("TestUi2Provider RM1");
+    await findByText("TestUi2Provider W1");
   });
 
   it("should render pre-loaded extension widgets when state is restored", async () => {
@@ -1873,6 +1879,7 @@ describe("dynamic widgets", () => {
     });
     await findByText("Left Start 1");
     await findByText("TestUi2Provider RM1");
+    await findByText("TestUi2Provider W1");
 
     sinon.assert.notCalled(spy);
   });
@@ -1888,6 +1895,7 @@ describe("dynamic widgets", () => {
       UiItemsManager.register(new TestUi2Provider());
     });
     await findByText("TestUi2Provider RM1");
+    await findByText("TestUi2Provider W1");
   });
 
   it("should stop rendering unloaded extension widgets", async () => {
@@ -1904,6 +1912,9 @@ describe("dynamic widgets", () => {
     await TestUtils.flushAsyncOperations();
     should().exist(frontstageDef.nineZoneState!.tabs.LeftStart1, "LeftStart1");
     should().exist(frontstageDef.nineZoneState!.tabs.TestUi2ProviderRM1, "TestUi2ProviderRM1");
+    should().exist(frontstageDef.nineZoneState!.tabs.TestUi2ProviderW1, "TestUi2ProviderW1");
+    frontstageDef.nineZoneState!.widgets.rightMiddle.tabs.should.eql(["TestUi2ProviderRM1"], "rigthMiddle widget tabs");
+    frontstageDef.nineZoneState!.widgets.leftStart.tabs.should.eql(["LeftStart1", "TestUi2ProviderW1"], "leftStart widget tabs");
 
     act(() => {
       UiItemsManager.unregister("TestUi2Provider");
@@ -1911,7 +1922,10 @@ describe("dynamic widgets", () => {
 
     await TestUtils.flushAsyncOperations();
     should().exist(frontstageDef.nineZoneState!.tabs.LeftStart1, "LeftStart1 after unregister");
-    should().not.exist(frontstageDef.nineZoneState!.tabs.TestUi2ProviderRM1);
+    should().not.exist(frontstageDef.nineZoneState!.tabs.TestUi2ProviderRM1, "TestUi2ProviderRM1 after unregister");
+    should().not.exist(frontstageDef.nineZoneState!.tabs.TestUi2ProviderW1, "TestUi2ProviderW1 after unregister");
+    should().not.exist(frontstageDef.nineZoneState!.widgets.rightMiddle, "rigthMiddle widget");
+    frontstageDef.nineZoneState!.widgets.leftStart.tabs.should.eql(["LeftStart1"], "leftStart widget tabs");
   });
 
   it("should render from 1.0 definition", async () => {
