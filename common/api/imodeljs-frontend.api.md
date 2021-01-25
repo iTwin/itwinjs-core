@@ -6340,6 +6340,36 @@ export interface ParseKeyinError {
 export type ParseKeyinResult = ParsedKeyin | ParseKeyinError;
 
 // @beta
+export interface ParticleCollectionBuilder {
+    addParticle: (particle: ParticleProps) => void;
+    finish: () => RenderGraphic | undefined;
+    size: XAndY;
+    transparency: number;
+}
+
+// @beta (undocumented)
+export namespace ParticleCollectionBuilder {
+    export function create(params: ParticleCollectionBuilderParams): ParticleCollectionBuilder;
+}
+
+// @beta
+export interface ParticleCollectionBuilderParams {
+    isViewCoords?: boolean;
+    origin?: XYAndZ;
+    pickableId?: Id64String;
+    size: XAndY | number;
+    texture: RenderTexture;
+    transparency?: number;
+    viewport: Viewport;
+}
+
+// @beta
+export interface ParticleProps extends XYAndZ {
+    size?: XAndY | number;
+    transparency?: number;
+}
+
+// @beta
 export class PendingExtension {
     constructor(_tarFileUrl: string, loader: ExtensionLoader, args?: string[] | undefined);
     // (undocumented)
