@@ -6,75 +6,94 @@
  * @module Effects
  */
 
+import { dispose } from "@bentley/bentleyjs-core";
 import { Point2d, Range1d, Range2d, Vector2d } from "@bentley/geometry-core";
-import { ColorDef, GraphicParams } from "@bentley/imodeljs-common";
-import { DecorateContext,GraphicType, IModelApp, Tool, Viewport } from "@bentley/imodeljs-frontend";
+import { RenderTexture } from "@bentley/imodeljs-common";
+import {
+  DecorateContext, Decorator, GraphicType, imageElementFromUrl, IModelApp, ParticleCollectionBuilder, ParticleProps, Tool, Viewport,
+} from "@bentley/imodeljs-frontend";
 import { parseToggle } from "../tools/parseToggle";
+import { randomFloat, randomInteger } from "./Random";
 
-/** Generate integer in [min, max]. */
-function randomInteger(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
+/** Represents one particle displayed by a [[SnowDecorator]].
+ * Particle positions are in [CoordSystem.View]($frontend).
+ * @beta
+ */
+export interface SnowParticle extends ParticleProps {
+  /** Make x, y, and z from ParticleProps writable. */
+  x: number;
+  y: number;
+  z: number;
 
-/** Generate floating-point number in [min, max). */
-function randomNumber(min: number, max: number): number {
-  return Math.random() * (max - min) + min;
-}
-
-/** If the input value exceeds one of the bounds, wrap it around to the opposite bound. */
-function wrapAround(value: number, min: number, max: number): number {
-  if (value < min)
-    return max;
-
-  return value > max ? min : value;
-}
-
-/** Represents one particle displayed by SnowDecorator. */
-interface SnowParticle {
-  /** Current position, in pixels. */
-  position: Point2d;
   /** Current velocity, in pixels per second. */
   velocity: Vector2d;
-  /** Diameter, in pixels. */
-  size: number;
-  transparency: number;
 }
 
-/** Simulates snowfall in a Viewport. */
-class SnowDecorator {
+/** Parameters controlling how a [[SnowDecorator]] works.
+ * @beta
+ */
+export interface SnowParams {
+  /** The number of snow particles to produce. This could alternatively be expressed as a density so that small viewports would not be more crowded than larger ones. */
+  numParticles: number;
+  /** Range from which to randomly select each particle's size, in pixels. */
+  sizeRange: Range1d;
+  /** Range from which to randomly select each particle's transparency. */
+  transparencyRange: Range1d;
+  /** Range from which to randomly select each particle's initial velocity, in pixels per second. */
+  velocityRange: Range2d;
+  /** Range from which to randomly select an acceleration to apply to each particle's velocity each frame, in pixels per second squared, to simulate wind. */
+  accelerationRange: Range2d;
+  /** Wind velocity in pixels per second in X. */
+  windVelocity: number;
+}
+
+/** The default snow effect parameters used by newly-created SnowDecorators. */
+const defaultSnowParams: SnowParams = {
+  numParticles: 2000,
+  sizeRange: Range1d.createXX(3, 22),
+  transparencyRange: Range1d.createXX(0, 50),
+  velocityRange: new Range2d(-30, 50, 30, 130),
+  accelerationRange: new Range2d(-1, -0.25, 1, 0.25),
+  windVelocity: 0,
+};
+
+/** Simulates snowfall in a [Viewport]($frontend) using particle effects.
+ * @see [[SnowEffect]] for a [Tool]($frontend) that toggles this decorator.
+ * @see [ParticleCollectionBuilder]($frontend) for defining custom particle effects.
+ * @beta
+ */
+export class SnowDecorator implements Decorator {
   /** The viewport being decorated. */
   public readonly viewport: Viewport;
   /** Invoked when this decorator is to be destroyed. */
   public readonly dispose: VoidFunction;
-  /** The number of snow particles to produce. This could alternatively be expressed as a density so that small viewports would not be more crowded than larger ones. */
-  public numParticles = 1200;
-  /** Range from which to randomly select each particle's size, in pixels. */
-  public readonly sizeRange = Range1d.createXX(1, 15);
-  /** Range from which to randomly select each particle's transparency. */
-  public readonly transparencyRange = Range1d.createXX(0, 200);
-  /** Range from which to randomly select each particle's initial velocity, in pixels per second. */
-  public readonly velocityRange = new Range2d(-25, 30, 25, 90);
-  /** Range from which to randomly select an acceleration to apply to each particle's velocity each frame, in pixels per second squared, to simulate wind. */
-  public readonly accelerationRange = new Range2d(-1, -0.25, 1, 0.25);
   /** The initial width and height of the viewport, from which we randomly select each particle's initial position. */
   private readonly _dimensions: Point2d;
   /** The list of particles being drawn. */
   private readonly _particles: SnowParticle[] = [];
+  /** The image to display for each particle. */
+  private _texture?: RenderTexture;
   /** The last time `updateParticles()` was invoked, in milliseconds. */
   private _lastUpdateTime: number;
+  private readonly _params: SnowParams;
 
-  private constructor(viewport: Viewport) {
+  private constructor(viewport: Viewport, texture: RenderTexture | undefined) {
+    this._params = { ...defaultSnowParams };
     this.viewport = viewport;
     this._dimensions = new Point2d(viewport.viewRect.width, viewport.viewRect.height);
     this._lastUpdateTime = Date.now();
+    this._texture = texture;
 
     // Tell the viewport to re-render the decorations every frame so that the snow particles animate smoothly.
     const removeOnRender = viewport.onRender.addListener(() => viewport.invalidateDecorations());
 
     // When the viewport is resized, replace this decorator with a new one to match the new dimensions.
     const removeOnResized = viewport.onResized.addListener(() => {
+      // Transfer ownership of the texture to the new decorator.
+      const tex = this._texture;
+      this._texture = undefined;
       this.dispose();
-      new SnowDecorator(viewport);
+      new SnowDecorator(viewport, tex);
     });
 
     // When the viewport is destroyed, dispose of this decorator too.
@@ -86,24 +105,19 @@ class SnowDecorator {
       removeOnRender();
       removeOnDispose();
       removeOnResized();
+      this._texture = dispose(this._texture);
       SnowDecorator._decorators.delete(viewport);
     };
 
     SnowDecorator._decorators.set(viewport, this);
 
     // Initialize the particles.
-    for (let i = 0; i < this.numParticles; i++) {
-      this._particles.push({
-        position: new Point2d(randomInteger(0, this._dimensions.x), randomInteger(0, this._dimensions.y)),
-        velocity: new Vector2d(randomNumber(this.velocityRange.low.x, this.velocityRange.high.x), randomNumber(this.velocityRange.low.y, this.velocityRange.high.y)),
-        size: randomInteger(this.sizeRange.low, this.sizeRange.high),
-        transparency: randomInteger(this.transparencyRange.low, this.transparencyRange.high),
-      });
-    }
+    for (let i = 0; i < this._params.numParticles; i++)
+      this._particles.push(this.emit(true));
   }
 
   public decorate(context: DecorateContext): void {
-    if (context.viewport !== this.viewport)
+    if (context.viewport !== this.viewport || !this._texture)
       return;
 
     // Update the particles.
@@ -112,67 +126,117 @@ class SnowDecorator {
     this._lastUpdateTime = now;
     this.updateParticles(deltaMillis / 1000);
 
-    // Create one GraphicParams object to reuse for every particle, for better performance.
-    const params = new GraphicParams();
-    params.lineColor = ColorDef.white;
+    // Create particle graphics.
+    const builder = ParticleCollectionBuilder.create({
+      viewport: this.viewport,
+      isViewCoords: true,
+      texture: this._texture,
+      size: (this._params.sizeRange.high - this._params.sizeRange.low) / 2,
+    });
 
-    // Create a view overlay because our particles' positions are specified in pixels and we want them to draw in front of everything else.
-    const builder = context.createGraphicBuilder(GraphicType.ViewOverlay);
+    for (const particle of this._particles)
+      builder.addParticle(particle);
 
-    // The order in which are particles doesn't matter - setting `preserveOrder` to `false` dramatically improves performance.
-    builder.preserveOrder = false;
+    const graphic = builder.finish();
+    if (graphic)
+      context.addDecoration(GraphicType.ViewOverlay, graphic);
+  }
 
-    // Draw a point for each particle. Alternatively, this could draw a square for each and map a snowflake image to them.
-    for (const particle of this._particles) {
-      params.setLineTransparency(particle.transparency);
-      params.rasterWidth = particle.size;
-      builder.activateGraphicParams(params);
-      builder.addPointString2d([particle.position], 0);
+  /** Change some of the parameters affecting this decorator. */
+  public configure(params: Partial<SnowParams>): void {
+    for (const key of Object.keys(params)) {
+      const val = (params as any)[key];
+      if (undefined !== val)
+        (this._params as any)[key] = val;
     }
+  }
 
-    context.addDecorationFromBuilder(builder);
+  /** Emit a new particle with randomized properties. */
+  private emit(randomizeHeight: boolean): SnowParticle {
+    return {
+      x: randomInteger(0, this._dimensions.x),
+      y: randomizeHeight ? randomInteger(0, this._dimensions.y) : 0,
+      z: 0,
+      size: randomInteger(this._params.sizeRange.low, this._params.sizeRange.high),
+      transparency: randomInteger(this._params.transparencyRange.low, this._params.transparencyRange.high),
+      velocity: new Vector2d(randomFloat(this._params.velocityRange.low.x, this._params.velocityRange.high.x),
+        randomFloat(this._params.velocityRange.low.y, this._params.velocityRange.high.y)),
+    };
   }
 
   // Update the positions and velocities of all the particles based on the amount of time that has passed since the last update.
   private updateParticles(elapsedSeconds: number): void {
+    // Determine if someone changed the desired number of particles.
+    const particleDiscrepancy = this._params.numParticles - this._particles.length;
+    if (particleDiscrepancy > 0 ) {
+      // Birth new particles up to the new maximum.
+      for (let i = 0; i < particleDiscrepancy; i++)
+        this._particles.push(this.emit(true));
+    } else {
+      // Destroy extra particles.
+      this._particles.length = this._params.numParticles;
+    }
+
     const acceleration = new Vector2d();
     const velocity = new Vector2d();
-    for (const particle of this._particles) {
+    for (let i = 0; i < this._particles.length; i++) {
       // Apply some acceleration to produce random drift.
-      acceleration.set(randomNumber(this.accelerationRange.low.x, this.accelerationRange.high.x), randomNumber(this.accelerationRange.low.y, this.accelerationRange.high.y));
+      const particle = this._particles[i];
+      acceleration.set(randomFloat(this._params.accelerationRange.low.x, this._params.accelerationRange.high.x),
+        randomFloat(this._params.accelerationRange.low.y, this._params.accelerationRange.high.y));
+
       acceleration.scale(elapsedSeconds, acceleration);
       particle.velocity.plus(acceleration, particle.velocity);
 
       // Apply velocity.
       particle.velocity.clone(velocity);
       velocity.scale(elapsedSeconds, velocity);
-      particle.position.plus(velocity, particle.position);
+      particle.x += velocity.x;
+      particle.y += velocity.y;
 
-      // Particles that travel beyond the viewport's borders wrap around to the other side.
-      particle.position.x = wrapAround(particle.position.x, 0, this._dimensions.x);
-      particle.position.y = wrapAround(particle.position.y, 0, this._dimensions.y);
+      // Apply wind
+      particle.x += this._params.windVelocity * elapsedSeconds;
+
+      // Particles that travel beyond the viewport's left or right edges wrap around to the other side.
+      if (particle.x < 0)
+        particle.x = this._dimensions.x - 1;
+      else if (particle.x >= this._dimensions.x)
+        particle.x = 0;
+
+      // Particles that travel beyond the viewport's bottom or top edges are replaced by newborn particles.
+      if (particle.y < 0 || particle.y >= this._dimensions.y)
+        this._particles[i] = this.emit(false);
     }
   }
 
   private static readonly _decorators = new Map<Viewport, SnowDecorator>();
 
-  public static getOrCreate(viewport: Viewport): SnowDecorator {
-    return this._decorators.get(viewport) ?? new SnowDecorator(viewport);
-  }
-
-  public static toggle(viewport: Viewport, enable?: boolean): void {
+  /** Toggle this decorator for the specified viewport.
+   * @param viewport The viewport to which the effect should be applied or removed.
+   * @param enable `true` to enable the effect, `false` to disable it, or `undefined` to toggle the current state.
+   */
+  public static async toggle(viewport: Viewport, enable?: boolean): Promise<void> {
     const decorator = this._decorators.get(viewport);
     if (undefined === enable)
       enable = undefined === decorator;
 
     if (undefined !== decorator && !enable)
       decorator.dispose();
-    else if (undefined === decorator && enable)
-      new SnowDecorator(viewport);
+    else if (undefined === decorator && enable) {
+      // Create a texture to use for the particles.
+      // Note: the decorator takes ownership of the texture, and disposes of it when the decorator is disposed.
+      const isOwned = true;
+      const params = new RenderTexture.Params(undefined, undefined, isOwned);
+      const image = await imageElementFromUrl("./sprites/particle_snow.png");
+      const texture = IModelApp.renderSystem.createTextureFromImage(image, true, undefined, params);
+
+      new SnowDecorator(viewport, texture);
+    }
   }
 }
 
 /** Toggles a decorator that simulates snow using particle effects.
+ * @see [[SnowDecorator]] for the implementation of the decorator.
  * @beta
  */
 export class SnowEffect extends Tool {
@@ -181,7 +245,7 @@ export class SnowEffect extends Tool {
   public run(enable?: boolean): boolean {
     const vp = IModelApp.viewManager.selectedView;
     if (vp)
-      SnowDecorator.toggle(vp, enable);
+      SnowDecorator.toggle(vp, enable); // eslint-disable-line @typescript-eslint/no-floating-promises
 
     return true;
   }
