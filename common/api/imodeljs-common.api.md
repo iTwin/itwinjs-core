@@ -277,6 +277,14 @@ export namespace AreaPattern {
     }
 }
 
+// @beta
+export type AsyncFunction = (...args: any) => Promise<any>;
+
+// @beta
+export type AsyncMethodsOf<T> = {
+    [P in keyof T]: T[P] extends AsyncFunction ? P : never;
+}[keyof T];
+
 export { AuthStatus }
 
 // @public
@@ -777,6 +785,10 @@ export interface ChangedElements {
     elements: Id64String[];
     // (undocumented)
     modelIds?: Id64String[];
+    // (undocumented)
+    newChecksums?: number[][];
+    // (undocumented)
+    oldChecksums?: number[][];
     // (undocumented)
     opcodes: number[];
     // (undocumented)
@@ -2380,14 +2392,6 @@ export namespace Events {
     export namespace NativeApp {
         const // (undocumented)
         namespace = "NativeApp";
-        const // (undocumented)
-        onMemoryWarning = "onMemoryWarning";
-        const // (undocumented)
-        onBriefcaseDownloadProgress = "download-progress";
-        const // (undocumented)
-        onInternetConnectivityChanged = "onInternetConnectivityChanged";
-        const // (undocumented)
-        onUserStateChanged = "onUserStateChanged";
         const modelGeometryChanges = "modelGeometryChanges";
     }
 }
@@ -3875,7 +3879,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     // (undocumented)
     queryModelRanges(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<Range3dProps[]>;
     // (undocumented)
-    queryRows(_iModelToken: IModelRpcProps, _ecsql: string, _bindings?: any[] | object, _limit?: QueryLimit, _quota?: QueryQuota, _priority?: QueryPriority, _restartToken?: string): Promise<QueryResponse>;
+    queryRows(_iModelToken: IModelRpcProps, _ecsql: string, _bindings?: any[] | object, _limit?: QueryLimit, _quota?: QueryQuota, _priority?: QueryPriority, _restartToken?: string, _abbreviateBlobs?: boolean): Promise<QueryResponse>;
     // (undocumented)
     readFontJson(_iModelToken: IModelRpcProps): Promise<any>;
     // @beta (undocumented)
@@ -4769,6 +4773,22 @@ export interface NativeAppIpc {
     toggleInteractiveEditingSession: (_tokenProps: IModelRpcProps, _startSession: boolean) => Promise<boolean>;
 }
 
+// @internal
+export interface NativeAppResponse {
+    // (undocumented)
+    notifyInternetConnectivityChanged: (status: InternetConnectivityStatus) => void;
+    // (undocumented)
+    notifyMemoryWarning: () => void;
+    // (undocumented)
+    notifyUserStateChanged: (arg: {
+        accessToken: any;
+        err?: string;
+    }) => void;
+}
+
+// @internal (undocumented)
+export const nativeAppResponse = "nativeApp-notify";
+
 // @public
 export interface NavigationBindingValue {
     id: Id64String;
@@ -5356,6 +5376,9 @@ export enum ProfileOptions {
 }
 
 // @beta
+export type PromiseReturnType<T extends AsyncFunction> = T extends (...args: any) => Promise<infer R> ? R : any;
+
+// @beta
 export type PropertyCallback = (name: string, meta: PropertyMetaData) => void;
 
 // @beta
@@ -5884,6 +5907,12 @@ export interface RequestNewBriefcaseProps {
     contextId: GuidString;
     fileName?: string;
     iModelId: GuidString;
+}
+
+// @beta
+export abstract class ResponseHandler {
+    static register(): RemoveFunction;
+    abstract get responseChannel(): string;
 }
 
 // @public (undocumented)

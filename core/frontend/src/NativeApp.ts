@@ -8,11 +8,11 @@
 
 import { BeEvent, Config, GuidString, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseDownloader, BriefcaseProps, Events, FrontendIpc, IModelError, IModelVersion, InternetConnectivityStatus, LocalBriefcaseProps,
-  nativeAppChannel, NativeAppIpc, OpenBriefcaseProps, OverriddenBy, RequestNewBriefcaseProps, StorageValue, SyncMode,
+  AsyncMethodsOf, BriefcaseDownloader, BriefcaseProps, FrontendIpc, IModelError, IModelVersion, InternetConnectivityStatus, LocalBriefcaseProps,
+  nativeAppChannel, NativeAppIpc, nativeAppResponse, NativeAppResponse, OpenBriefcaseProps, OverriddenBy, PromiseReturnType, RequestNewBriefcaseProps,
+  ResponseHandler, StorageValue, SyncMode,
 } from "@bentley/imodeljs-common";
 import { ProgressCallback, RequestGlobalOptions } from "@bentley/itwin-client";
-import { EventSource } from "./EventSource";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { AuthorizedFrontendRequestContext, FrontendRequestContext } from "./FrontendRequestContext";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
@@ -34,10 +34,14 @@ export interface DownloadBriefcaseOptions {
  * @see [Native Applications]($docs/learning/NativeApps.md)
  * @alpha
  */
-export class NativeApp {
-  private constructor() { }
-  public static callBackend<T extends keyof NativeAppIpc>(methodName: T, ...args: Parameters<NativeAppIpc[T]>): ReturnType<NativeAppIpc[T]> {
-    return FrontendIpc.callBackend(nativeAppChannel, methodName, ...args) as ReturnType<NativeAppIpc[T]>;
+export class NativeApp extends ResponseHandler implements NativeAppResponse {
+  public get responseChannel() { return nativeAppResponse; }
+
+  private constructor() {
+    super();
+  }
+  public static async callBackend<T extends AsyncMethodsOf<NativeAppIpc>>(methodName: T, ...args: Parameters<NativeAppIpc[T]>) {
+    return FrontendIpc.callBackend(nativeAppChannel, methodName, ...args) as PromiseReturnType<NativeAppIpc[T]>;
   }
 
   private static _storages = new Map<string, Storage>();
@@ -65,6 +69,8 @@ export class NativeApp {
   }
   public static onInternetConnectivityChanged = new BeEvent<(status: InternetConnectivityStatus) => void>();
   public static onMemoryWarning = new BeEvent<() => void>();
+  public static onUserStateChanged = new BeEvent<(_arg: { accessToken: any, err?: string }) => void>();
+
   public static async checkInternetConnectivity(): Promise<InternetConnectivityStatus> {
     return this.callBackend("checkInternetConnectivity");
   }
@@ -74,6 +80,20 @@ export class NativeApp {
   private static _isValid = false;
   public static get isValid(): boolean { return this._isValid; }
 
+  public notifyInternetConnectivityChanged(status: InternetConnectivityStatus) {
+    Logger.logInfo(FrontendLoggerCategory.NativeApp, "Internet connectivity changed");
+    NativeApp.onInternetConnectivityChanged.raiseEvent(status);
+  }
+  public notifyUserStateChanged(arg: { accessToken: any, err?: string }) {
+    NativeApp.onUserStateChanged.raiseEvent(arg);
+  }
+  public notifyMemoryWarning() {
+    Logger.logWarning(FrontendLoggerCategory.NativeApp, "Low memory warning");
+    if (NativeApp.onMemoryWarning.numberOfListeners === 0) {
+      alert("Low memory warning");
+    }
+    NativeApp.onMemoryWarning.raiseEvent();
+  }
   /**
    * This should be called instead of IModelApp.startup() for native apps.
    */
@@ -81,6 +101,8 @@ export class NativeApp {
     Logger.logInfo(FrontendLoggerCategory.NativeApp, "Startup");
 
     await IModelApp.startup(opts);
+    this.register();
+
     const backendConfig = await this.callBackend("getConfig");
     Config.App.merge(backendConfig);
     NativeApp.hookBrowserConnectivityEvents();
@@ -89,17 +111,6 @@ export class NativeApp {
       RequestGlobalOptions.online = window.navigator.onLine;
       await NativeApp.setConnectivity(OverriddenBy.Browser, window.navigator.onLine ? InternetConnectivityStatus.Online : InternetConnectivityStatus.Offline);
     }
-    EventSource.global.on(Events.NativeApp.namespace, Events.NativeApp.onMemoryWarning, () => {
-      Logger.logWarning(FrontendLoggerCategory.NativeApp, "Low memory warning");
-      if (NativeApp.onMemoryWarning.numberOfListeners === 0) {
-        alert("Low memory warning");
-      }
-      NativeApp.onMemoryWarning.raiseEvent();
-    });
-    EventSource.global.on(Events.NativeApp.namespace, Events.NativeApp.onInternetConnectivityChanged, (args: any) => {
-      Logger.logInfo(FrontendLoggerCategory.NativeApp, "Internet connectivity changed");
-      NativeApp.onInternetConnectivityChanged.raiseEvent(args.status);
-    });
     this._isValid = true;
   }
 

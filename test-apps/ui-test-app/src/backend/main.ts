@@ -15,10 +15,6 @@ import getSupportedRpcs from "../common/rpcs";
 import { initializeLogging } from "./web/BackendServer";
 import { BackendApplicationInsightsClient } from "@bentley/backend-application-insights-client";
 
-if (electron) {
-  require("@bentley/electron-manager"); // static electron manager initialization
-}
-
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   try {
     // Load .env file first so it's added to `Config.App` below when it parses the environment variables.

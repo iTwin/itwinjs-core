@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { dialog, OpenDialogOptions } from "electron";
 import * as path from "path";
 import { assert } from "@bentley/bentleyjs-core";
 import { ElectronBackend, ElectronBackendOptions } from "@bentley/electron-manager/lib/ElectronBackend";
@@ -32,8 +31,8 @@ const getWindowSize = () => {
 
 class DtaIpcImpl extends IpcHandler implements DtaIpcInterface {
   public get channelName() { return dtaChannel; }
-  public async openFile(options: OpenDialogOptions) {
-    return dialog.showOpenDialog(options);
+  public async sayHello() {
+    return "Hello from backend";
   }
 }
 
