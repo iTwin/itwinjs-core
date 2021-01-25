@@ -1648,7 +1648,10 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     }
 
     /** Update some properties of an existing element.
+     * To support clearing a property value, every property name that is present in the `elProps` object will be updated even if the value is `undefined`.
+     * To keep an individual element property unchanged, it should either be excluded from the `elProps` parameter or set to its current value.
      * @param elProps the properties of the element to update.
+     * @note As described above, this is a special case where there is a difference between a property being excluded and a property being present in `elProps` but set to `undefined`.
      * @throws [[IModelError]] if unable to update the element.
      */
     public updateElement(elProps: ElementProps): void {
