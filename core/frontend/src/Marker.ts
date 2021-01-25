@@ -284,14 +284,8 @@ export class Marker implements CanvasDecoration {
   public addMarker(context: DecorateContext) {
     context.addCanvasDecoration(this);
     if (undefined !== this.htmlElement) {
-      // marker htmlElements that already existed are marked for removal,
-      // if readding them, then we undo that mark
-      if (this.htmlElement[ELEMENT_MARKED_FOR_REMOVAL]) {
-        this.htmlElement[ELEMENT_MARKED_FOR_REMOVAL] = false;
-      } else {
-        // if this Marker has a new HTMLElement, add it to the DOM
-        context.addHtmlDecoration(this.htmlElement);
-      }
+      // add this Marker to the DOM
+      context.addHtmlDecoration(this.htmlElement);
       this.positionHtml(); // always reposition it
     }
   }
