@@ -51,10 +51,14 @@ export class ImageBuffer {
    * @param data The uncompressed image bytes. Must be a multiple of the width times the number of bytes per pixel specified by the format.
    * @param format The format of the image.
    * @param width The width of the image in pixels.
-   * @returns A new ImageBuffer, or undefined if the length of the Uint8Array is not appropriate for the specified width and format.
+   * @returns A new ImageBuffer.
+   * @throws Error if the length of the Uint8Array is not appropriate for the specified width and format.
    */
-  public static create(data: Uint8Array, format: ImageBufferFormat, width: number): ImageBuffer | undefined {
-    return this.isValidData(data, format, width) ? new ImageBuffer(data, format, width) : undefined;
+  public static create(data: Uint8Array, format: ImageBufferFormat, width: number): ImageBuffer {
+    if (!this.isValidData(data, format, width))
+      throw new Error("The number of bytes supplied for ImageBuffer do not match its width and format.");
+
+    return new ImageBuffer(data, format, width);
   }
 
   /** @internal */

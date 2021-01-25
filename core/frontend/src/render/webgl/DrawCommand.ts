@@ -14,7 +14,7 @@ import { CachedGeometry } from "./CachedGeometry";
 import { ClipVolume } from "./ClipVolume";
 import { isFeatureHilited } from "./FeatureOverrides";
 import { Batch, Branch } from "./Graphic";
-import { UniformHandle } from "./Handle";
+import { UniformHandle } from "./UniformHandle";
 import { Primitive } from "./Primitive";
 import { RenderOrder, RenderPass } from "./RenderFlags";
 import { ShaderProgramExecutor } from "./ShaderProgram";
