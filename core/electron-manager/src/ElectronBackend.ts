@@ -107,11 +107,6 @@ export class ElectronBackend implements IpcSocketBackend {
     if (icon)
       opts.icon = this.appIconPath;
 
-    console.log(fs.existsSync(this.appIconPath));
-    console.log(this._developmentServer);
-    console.log(this.appIconPath);
-    console.log(opts.icon);
-
     this._mainWindow = new BrowserWindow(opts);
     ElectronRpcConfiguration.targetWindowId = this._mainWindow.id;
     this._mainWindow.on("closed", () => this._mainWindow = undefined);
@@ -230,7 +225,7 @@ class ElectronBackendImpl extends IpcHandler {
   public async callElectron(member: string, method: string, ...args: any) {
     const func = (ElectronBackend.instance.electron as any)[member][method];
     if (typeof func !== "function")
-      throw new IModelError(IModelStatus.FunctionNotFound, `Method ${method} not found electron.${member} `);
+      throw new IModelError(IModelStatus.FunctionNotFound, `Method ${method} not found electron.${member}`);
 
     return func.call(...args);
   }
