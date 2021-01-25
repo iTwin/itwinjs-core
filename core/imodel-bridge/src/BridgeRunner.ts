@@ -151,7 +151,7 @@ export class BridgeRunner {
   }
 
   /** Main driver. */
-  public async synchronize(): Promise<BentleyStatus> {
+  public async synchronize(): Promise<any> {
     // If we can't load the bridge, no point in trying anything else;
     if (this._bridgeArgs.bridgeModule === undefined) {
       throw new IModelError(IModelStatus.BadArg, "Bridge module undefined", Logger.logError, loggerCategory);
@@ -179,7 +179,7 @@ export class BridgeRunner {
 
     this.initProgressMeter();
 
-    await iModelDbBuilder.acquire();
+    const briefcaseId = await iModelDbBuilder.acquire();
     if (undefined === iModelDbBuilder.imodel || !iModelDbBuilder.imodel.isOpen) {
       throw new IModelError(IModelStatus.BadModel, "Failed to open imodel", Logger.logError, loggerCategory);
     }
@@ -194,7 +194,7 @@ export class BridgeRunner {
       }
     }
 
-    return BentleyStatus.SUCCESS;
+    return {briefcaseId, status: BentleyStatus.SUCCESS};
   }
 
   private async loadBridge(bridgeModulePath: string): Promise<boolean> {
@@ -219,7 +219,7 @@ abstract class IModelDbBuilder {
   }
 
   public async abstract initialize(): Promise<void>;
-  public async abstract acquire(): Promise<void>;
+  public async abstract acquire(): Promise<Number>;
 
   protected async abstract _updateExistingData(): Promise<void>;
   protected async abstract _initDomainSchema(): Promise<void>;
@@ -464,7 +464,7 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
   }
 
   /** This will download the briefcase, open it with the option to update the Db profile, close it, re-open with the option to upgrade core domain schemas */
-  public async acquire(): Promise<void> {
+  public async acquire(): Promise<Number> {
     // ********
     // ********
     // ******** TODO: Where do we check if the briefcase is already on the local disk??
@@ -478,7 +478,7 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
       throw new Error("Must initialize ContextId before using");
     if (this._serverArgs.iModelId === undefined)
       throw new Error("Must initialize IModelId before using");
-    const settingsClient = new ConnectSettingsClient("2661");
+    // const settingsClient = new ConnectSettingsClient("2661");
     // Retrieve BriefcaseId from the Product Settings Service
     // let retrievedBriefcaseId = -1;
     // let result = await settingsClient.getSetting(this._requestContext, "DocumentMapping", "Documents", true, this._serverArgs.contextId, this._serverArgs.iModelId );
@@ -501,7 +501,7 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
         contextId: this._serverArgs.contextId,
         iModelId: this._serverArgs.iModelId,
       });
-      const result = await settingsClient.saveSetting(this._requestContext, { briefcaseId: props.briefcaseId }, "DocumentMapping", "Documents", true, this._serverArgs.contextId, this._serverArgs.iModelId);
+      // const result = await settingsClient.saveSetting(this._requestContext, { briefcaseId: props.briefcaseId }, "DocumentMapping", "Documents", true, this._serverArgs.contextId, this._serverArgs.iModelId);
     }
     let briefcaseDb: BriefcaseDb | undefined;
     const openArgs: OpenBriefcaseProps = {
@@ -530,6 +530,7 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
     this._bridge.synchronizer = synchronizer;
 
     briefcaseDb.concurrencyControl.startBulkMode(); // We will run in bulk mode the whole time.
+    return props.briefcaseId;
   }
 }
 
@@ -537,7 +538,7 @@ class SnapshotDbBuilder extends IModelDbBuilder {
   public async initialize() {
   }
 
-  public async acquire(): Promise<void> {
+  public async acquire(): Promise<Number> {
     const fileName = `${path.basename(this._bridgeArgs.sourcePath!, path.extname(this._bridgeArgs.sourcePath!))}.bim`;
     const filePath = path.join(this._bridgeArgs.outputDir!, fileName);
     if (IModelJsFs.existsSync(filePath)) {
@@ -550,6 +551,7 @@ class SnapshotDbBuilder extends IModelDbBuilder {
 
     const synchronizer = new Synchronizer(this._imodel, this._bridge.supportsMultipleFilesPerChannel());
     this._bridge.synchronizer = synchronizer;
+    return 0;
   }
 
   protected async _enterChannel(channelRootId: Id64String, _lockRoot?: boolean): Promise<void> {
