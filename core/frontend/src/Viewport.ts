@@ -168,7 +168,7 @@ export interface OsmBuildingDisplayOptions {
 }
 
 /** @internal */
-const ELEMENT_MARKED_FOR_REMOVAL = Symbol.for("@bentley/imodeljs/Viewport/__element_marked_for_removal__");
+export const ELEMENT_MARKED_FOR_REMOVAL = Symbol.for("@bentley/imodeljs/Viewport/__element_marked_for_removal__");
 
 declare global {
   interface Element {
@@ -2616,7 +2616,7 @@ export class ScreenViewport extends Viewport {
 
   /** @internal */
   public static removeMarkedChildren(el: HTMLDivElement) {
-    for (const child of el.children)
+    for (const child of [...el.children]) // spread to duplicate the HTMLCollection which is invalidated by removals
       if (child[ELEMENT_MARKED_FOR_REMOVAL])
         el.removeChild(child);
   }

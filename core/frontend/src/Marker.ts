@@ -16,7 +16,7 @@ import { ToolTipOptions } from "./NotificationManager";
 import { CanvasDecoration } from "./render/CanvasDecoration";
 import { BeButtonEvent } from "./tools/Tool";
 import { DecorateContext } from "./ViewContext";
-import { ScreenViewport, Viewport } from "./Viewport";
+import { ELEMENT_MARKED_FOR_REMOVAL, ScreenViewport, Viewport } from "./Viewport";
 import { ViewRect } from "./ViewRect";
 
 /** The types that may be used for Markers
@@ -284,8 +284,15 @@ export class Marker implements CanvasDecoration {
   public addMarker(context: DecorateContext) {
     context.addCanvasDecoration(this);
     if (undefined !== this.htmlElement) {
-      context.addHtmlDecoration(this.htmlElement);    // if this Marker has an HTMLElement, add it to the DOM
-      this.positionHtml(); // and position it relative to the Marker location
+      // marker htmlElements that already existed are marked for removal,
+      // if readding them, then we undo that mark
+      if (this.htmlElement[ELEMENT_MARKED_FOR_REMOVAL]) {
+        this.htmlElement[ELEMENT_MARKED_FOR_REMOVAL] = false;
+      } else {
+        // if this Marker has a new HTMLElement, add it to the DOM
+        context.addHtmlDecoration(this.htmlElement);
+        this.positionHtml(); // and position it relative to the Marker location
+      }
     }
   }
 
