@@ -21,7 +21,6 @@ import { IModelBankArgs, IModelBankUtils } from "./IModelBankUtils";
 import { IModelBridge } from "./IModelBridge";
 import { ServerArgs } from "./IModelHubUtils";
 import { Synchronizer } from "./Synchronizer";
-import { ConnectSettingsClient, SettingsStatus} from "@bentley/product-settings-client";
 
 /** @beta */
 export const loggerCategory: string = BridgeLoggerCategory.Framework;
@@ -478,24 +477,12 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
       throw new Error("Must initialize ContextId before using");
     if (this._serverArgs.iModelId === undefined)
       throw new Error("Must initialize IModelId before using");
-    // const settingsClient = new ConnectSettingsClient("2661");
-    // Retrieve BriefcaseId from the Product Settings Service
-    // let retrievedBriefcaseId = -1;
-    // let result = await settingsClient.getSetting(this._requestContext, "DocumentMapping", "Documents", true, this._serverArgs.contextId, this._serverArgs.iModelId );
-    // if ( result.status === SettingsStatus.SettingNotFound || result.setting.briefcaseId === undefined) {
-    //   retrievedBriefcaseId = -1;
-    // } else {
-    //   retrievedBriefcaseId = result.setting.briefcaseId;
-    // }
-    // First, download the briefcase
     let props: LocalBriefcaseProps;
-    // if (retrievedBriefcaseId !== -1) {
     if (this._bridgeArgs.argsJson.BriefcaseId) {
       props = await BriefcaseManager.downloadBriefcase(this._requestContext, {briefcaseId: this._bridgeArgs.argsJson.BriefcaseId, contextId: this._serverArgs.contextId, iModelId: this._serverArgs.iModelId});
     } else {
       props = await BriefcaseManager.downloadBriefcase(this._requestContext, {contextId: this._serverArgs.contextId, iModelId: this._serverArgs.iModelId});
       this._bridgeArgs.argsJson.BriefcaseId = props.briefcaseId;
-      // const result = await settingsClient.saveSetting(this._requestContext, { briefcaseId: props.briefcaseId }, "DocumentMapping", "Documents", true, this._serverArgs.contextId, this._serverArgs.iModelId);
     }
     let briefcaseDb: BriefcaseDb | undefined;
     const openArgs: OpenBriefcaseProps = {

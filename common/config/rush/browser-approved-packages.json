@@ -188,7 +188,7 @@
     },
     {
       "name": "@bentley/product-settings-client",
-      "allowedCategories": [ "backend", "frontend", "internal" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@bentley/projectshare-client",
