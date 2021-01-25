@@ -59,6 +59,7 @@ describe("AccuDrawFieldContainer", () => {
     const spy = sinon.spy();
     const remove = AccuDrawUiAdmin.onAccuDrawSetFieldValueToUiEvent.addListener(spy);
     render(<AccuDrawFieldContainer orientation={Orientation.Vertical} />);
+    IModelApp.accuDraw.setFocusItem(ItemField.X_Item);
     IModelApp.accuDraw.onFieldValueChange(ItemField.X_Item);
     spy.calledOnce.should.true;
     spy.resetHistory();
