@@ -10,7 +10,7 @@ import { Id64String } from "@bentley/bentleyjs-core";
 import { Point3d, Range1d, Vector3d } from "@bentley/geometry-core";
 import { RenderTexture } from "@bentley/imodeljs-common";
 import {
-  BeButtonEvent, DecorateContext, EventHandled, GraphicType, HitDetail, imageElementFromUrl, IModelApp, IModelConnection, ParticleCollectionBuilder, ParticleProps, Tool,
+  DecorateContext, GraphicType, HitDetail, imageElementFromUrl, IModelApp, IModelConnection, ParticleCollectionBuilder, ParticleProps, Tool,
 } from "@bentley/imodeljs-frontend";
 import { randomFloat, randomFloatInRange, randomIntegerInRange, randomPositionInRange } from "./Random";
 
