@@ -183,7 +183,7 @@ internal;GeoServices
 beta;getCenteredViewRect(viewRect: ViewRect, aspectRatio?: number): ViewRect
 beta;getCesiumAssetUrl(osmAssetId: number, requestKey: string): string
 internal;getCesiumOSMBuildingsUrl(): string
-internal;getCesiumTerrainProvider(iModel: IModelConnection, modelId: Id64String, wantSkirts: boolean, exaggeration: number): Promise
+internal;getCesiumTerrainProvider(iModel: IModelConnection, modelId: Id64String, wantSkirts: boolean, wantNormals: boolean, exaggeration: number): Promise
 beta;getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes?: number, minCompressionQuality?: number): string | undefined
 internal;getGcsConverterAvailable(iModel: IModelConnection): Promise
 public;getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined
@@ -339,6 +339,10 @@ beta;ParseAndRunResult
 beta;ParsedKeyin
 beta;ParseKeyinError
 beta;ParseKeyinResult = ParsedKeyin | ParseKeyinError
+beta;ParticleCollectionBuilder
+beta;ParticleCollectionBuilder
+beta;ParticleCollectionBuilderParams
+beta;ParticleProps 
 beta;PendingExtension
 internal;PerformanceMetrics
 beta;PerModelCategoryVisibility
@@ -457,6 +461,7 @@ internal;SuspendedToolState
 internal;class Target 
 internal;TentativeOrAccuSnap
 public;TentativePoint
+internal;TerrainDisplayOverrides
 internal;class TerrainMeshProvider
 internal;TerrainTexture
 internal;TerrainTileContent 

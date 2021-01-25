@@ -2032,7 +2032,7 @@ export class DisplayStyle2dState extends DisplayStyleState {
     // @internal (undocumented)
     static get className(): string;
     // @internal (undocumented)
-    overrideTerrainSkirtDisplay(): boolean | undefined;
+    overrideTerrainDisplay(): TerrainDisplayOverrides | undefined;
     // (undocumented)
     get settings(): DisplayStyleSettings;
     }
@@ -2052,7 +2052,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
     // @internal
     loadSkyBoxParams(system: RenderSystem, vp?: Viewport): SkyBox.CreateParams | undefined;
     // @internal (undocumented)
-    overrideTerrainSkirtDisplay(): boolean | undefined;
+    overrideTerrainDisplay(): TerrainDisplayOverrides | undefined;
     // @internal (undocumented)
     protected registerSettingsEventListeners(): void;
     setSunTime(time: number): void;
@@ -2186,7 +2186,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     overrideRealityModelAppearance(index: number, overrides: FeatureAppearance): boolean;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     // @internal (undocumented)
-    abstract overrideTerrainSkirtDisplay(): boolean | undefined;
+    abstract overrideTerrainDisplay(): TerrainDisplayOverrides | undefined;
     // @internal (undocumented)
     protected registerSettingsEventListeners(): void;
     // @internal (undocumented)
@@ -3255,7 +3255,7 @@ export function getCesiumAssetUrl(osmAssetId: number, requestKey: string): strin
 export function getCesiumOSMBuildingsUrl(): string;
 
 // @internal (undocumented)
-export function getCesiumTerrainProvider(iModel: IModelConnection, modelId: Id64String, wantSkirts: boolean, exaggeration: number): Promise<TerrainMeshProvider | undefined>;
+export function getCesiumTerrainProvider(iModel: IModelConnection, modelId: Id64String, wantSkirts: boolean, wantNormals: boolean, exaggeration: number): Promise<TerrainMeshProvider | undefined>;
 
 // @beta
 export function getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes?: number, minCompressionQuality?: number): string | undefined;
@@ -5133,7 +5133,7 @@ export class MapTileTree extends RealityTileTree {
 
 // @internal
 export class MapTileTreeReference extends TileTreeReference {
-    constructor(settings: BackgroundMapSettings, _baseLayerSettings: BaseLayerSettings | undefined, _layerSettings: MapLayerSettings[], iModel: IModelConnection, isOverlay: boolean, _isDrape: boolean, _overrideSkirtDisplay?: CheckSkirtDisplayOverride | undefined);
+    constructor(settings: BackgroundMapSettings, _baseLayerSettings: BaseLayerSettings | undefined, _layerSettings: MapLayerSettings[], iModel: IModelConnection, isOverlay: boolean, _isDrape: boolean, _overrideTerrainDisplay?: CheckTerrainDisplayOverride | undefined);
     addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void;
     addToScene(context: SceneContext): void;
     // (undocumented)
@@ -6338,6 +6338,36 @@ export interface ParseKeyinError {
 
 // @beta
 export type ParseKeyinResult = ParsedKeyin | ParseKeyinError;
+
+// @beta
+export interface ParticleCollectionBuilder {
+    addParticle: (particle: ParticleProps) => void;
+    finish: () => RenderGraphic | undefined;
+    size: XAndY;
+    transparency: number;
+}
+
+// @beta (undocumented)
+export namespace ParticleCollectionBuilder {
+    export function create(params: ParticleCollectionBuilderParams): ParticleCollectionBuilder;
+}
+
+// @beta
+export interface ParticleCollectionBuilderParams {
+    isViewCoords?: boolean;
+    origin?: XYAndZ;
+    pickableId?: Id64String;
+    size: XAndY | number;
+    texture: RenderTexture;
+    transparency?: number;
+    viewport: Viewport;
+}
+
+// @beta
+export interface ParticleProps extends XYAndZ {
+    size?: XAndY | number;
+    transparency?: number;
+}
 
 // @beta
 export class PendingExtension {
@@ -9047,6 +9077,14 @@ export class TentativePoint {
     tpHits?: HitList<HitDetail>;
     // (undocumented)
     viewport?: ScreenViewport;
+}
+
+// @internal (undocumented)
+export class TerrainDisplayOverrides {
+    // (undocumented)
+    wantNormals?: boolean;
+    // (undocumented)
+    wantSkirts?: boolean;
 }
 
 // @internal

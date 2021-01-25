@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import * as puppeteer from "puppeteer";
-import * as detect from "detect-port";
+import { ChildProcess } from "child_process";
 import { spawnChildProcess } from "../../utils/SpawnUtils";
 import { executeRegisteredCallback } from "../../utils/CallbackUtils";
 import { CertaConfig } from "../../CertaConfig";
@@ -19,6 +19,7 @@ interface ChromeTestResults {
 type ConsoleMethodName = keyof typeof console;
 
 let browser: puppeteer.Browser;
+let webserverProcess: ChildProcess;
 
 export class ChromeTestRunner {
   public static readonly supportsCoverage = true;
@@ -35,26 +36,23 @@ export class ChromeTestRunner {
 
     browser = await puppeteer.launch(options);
 
-    const openPort = await detect(config.ports.frontend);
-    if (openPort !== config.ports.frontend)
-      console.warn(`CERTA: Port ${config.ports.frontend} is already in use, so serving test resources on port ${openPort}`);
-
-    process.env.CERTA_PORT = String(openPort);
-  }
-
-  public static async runTests(config: CertaConfig): Promise<void> {
     const webserverEnv = {
-      CERTA_PORT: process.env.CERTA_PORT, // eslint-disable-line @typescript-eslint/naming-convention
+      CERTA_PORT: `${config.ports.frontend}`, // eslint-disable-line @typescript-eslint/naming-convention
       CERTA_PATH: path.join(__dirname, "../../../public/index.html"), // eslint-disable-line @typescript-eslint/naming-convention
       CERTA_PUBLIC_DIRS: JSON.stringify(config.chromeOptions.publicDirs), // eslint-disable-line @typescript-eslint/naming-convention
     };
-    const webserverProcess = spawnChildProcess("node", [require.resolve("./webserver")], webserverEnv, true);
+    webserverProcess = spawnChildProcess("node", [require.resolve("./webserver")], webserverEnv, true);
 
-    // Don't start puppeteer until the webserver is started and listening.
-    const webserverExited = new Promise((_resolve, reject) => webserverProcess.once("exit", () => reject("Webserver exited!")));
-    const webserverStarted = new Promise((resolve) => webserverProcess.once("message", resolve));
-    await Promise.race([webserverExited, webserverStarted]);
+    // Don't continue until the webserver is started and listening.
+    const webserverExited = new Promise<never>((_resolve, reject) => webserverProcess.once("exit", () => reject("Webserver exited!")));
+    const webserverStarted = new Promise<number>((resolve) => webserverProcess.once("message", resolve));
+    const actualPort = await Promise.race([webserverExited, webserverStarted]);
+    if (actualPort !== config.ports.frontend)
+      console.warn(`CERTA: Port ${config.ports.frontend} was already in use, so serving test resources on port ${actualPort}`);
+    process.env.CERTA_PORT = String(actualPort);
+  }
 
+  public static async runTests(config: CertaConfig): Promise<void> {
     // FIXME: Do we really want to always enforce this behavior?
     if (process.env.CI || process.env.TF_BUILD)
       (config.mochaOptions as any).forbidOnly = true;
