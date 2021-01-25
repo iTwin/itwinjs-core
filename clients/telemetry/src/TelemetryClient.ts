@@ -67,20 +67,24 @@ export class TelemetryManager {
     this._subClients = new Set<TelemetryClient>(subClients);
   }
 
-  /**
-   *
-   * This function should not throw errors
+  /** This function should not throw errors
    * @param requestContext
    * @param telemetryEvent
    */
   public async postTelemetry(requestContext: AuthorizedClientRequestContext, telemetryEvent: TelemetryEvent): Promise<void> {
-    const subClientPromises = Array.from(this._subClients).map(async (subClient) => {
+    const postPerClient = async (subClient: TelemetryClient) => {
       try {
         await subClient.postTelemetry(requestContext, telemetryEvent);
       } catch (err) {
         Logger.logError(TelemetryClientLoggerCategory.Telemetry, `Failed to post telemetry via subclient`, () => err);
       }
-    });
+    };
+
+    const subClientPromises = [];
+    for (const subClient of this._subClients) {
+      subClientPromises.push(postPerClient(subClient));
+    }
+
     await Promise.all(subClientPromises);
   }
 

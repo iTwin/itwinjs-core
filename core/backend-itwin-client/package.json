@@ -22,7 +22,7 @@
     "extract-api": "betools extract-api --entry=backend-itwin-client",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "pretest": "npm run copy:test-assets",
-    "test": "",
+    "test": "betools test --grep=\"#integration\" --invert",
     "test:integration": "npm run pretest && betools test --grep=\"#integration\""
   },
   "repository": {

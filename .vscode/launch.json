@@ -479,6 +479,23 @@
         "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
       ]
     },
+    {
+      "name": "Backend iTwin Client Tests (Offline)",
+      "presentation": {
+        "group": "3_ClientsTests",
+        "order": 3
+      },
+      "cwd": "${workspaceFolder}/core/backend-itwin-client",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "test"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
+      ]
+    },
     // UI TESTS
     {
       "name": "[UI] Tests: Abstract",
