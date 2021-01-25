@@ -440,8 +440,8 @@ export abstract class RenderSystem implements IDisposable {
     });
   }
 
-  /** Create a new texture by its name. This texture will be retrieved asynchronously from the backend. A placeholder image will be associated with the texture until the requested image data loads. */
-  public createTextureFromExternalImage(_name: string, _imodel: IModelConnection, _params: RenderTexture.Params, _format: ImageSourceFormat): RenderTexture | undefined { return undefined; }
+  /** Create a new texture by its element ID. This texture will be retrieved asynchronously from the backend. A placeholder image will be associated with the texture until the requested image data loads. */
+  public createTextureFromElement(_id: Id64String, _imodel: IModelConnection, _params: RenderTexture.Params, _format: ImageSourceFormat): RenderTexture | undefined { return undefined; }
 
   /** Create a new texture from a cube of HTML images.
    * @internal

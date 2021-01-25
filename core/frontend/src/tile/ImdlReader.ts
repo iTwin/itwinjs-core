@@ -260,7 +260,7 @@ export class ImdlReader extends GltfReader {
     }
 
     // bufferViewJson was undefined, so attempt to request the texture directly from the backend
-    return this._system.createTextureFromExternalImage(name, this._iModel, params, namedTex.format);
+    return this._system.createTextureFromElement(name, this._iModel, params, namedTex.format);
   }
 
   /** @internal */

@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert, dispose } from "@bentley/bentleyjs-core";
+import { assert, dispose, Id64String } from "@bentley/bentleyjs-core";
 import { ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, isPowerOfTwo, nextHighestPowerOfTwo, RenderTexture } from "@bentley/imodeljs-common";
 import { imageBufferToPngDataUrl, imageElementFromImageSource, openImageDataUrlInNewWindow } from "../../ImageUtil";
 import { IModelConnection } from "../../IModelConnection";
@@ -343,8 +343,8 @@ export abstract class TextureHandle implements WebGLDisposable {
     return TextureCubeHandle.createForCubeImages(posX, negX, posY, negY, posZ, negZ);
   }
 
-  public static createForExternalImage(name: string, imodel: IModelConnection, type: RenderTexture.Type, format: ImageSourceFormat) {
-    return Texture2DHandle.createForExternalImage(name, imodel, type, format);
+  public static createForElement(id: Id64String, imodel: IModelConnection, type: RenderTexture.Type, format: ImageSourceFormat) {
+    return Texture2DHandle.createForElement(id, imodel, type, format);
   }
 
   protected constructor(glTexture: WebGLTexture) {
@@ -476,7 +476,7 @@ export class Texture2DHandle extends TextureHandle {
 
   private static _placeHolderTextureData = new Uint8Array([128, 128, 128]);
 
-  public static createForExternalImage(name: string, imodel: IModelConnection, type: RenderTexture.Type, format: ImageSourceFormat) {
+  public static createForElement(id: Id64String, imodel: IModelConnection, type: RenderTexture.Type, format: ImageSourceFormat) {
     // set a placeholder texture while we wait for the external texture to load
     const handle = this.createForData(1, 1, this._placeHolderTextureData, undefined, undefined, GL.Texture.Format.Rgb);
 
@@ -484,7 +484,7 @@ export class Texture2DHandle extends TextureHandle {
       return undefined;
 
     // kick off loading the texture from the backend
-    ExternalTextureLoader.instance.loadTexture(handle, name, imodel, type, format);
+    ExternalTextureLoader.instance.loadTexture(handle, id, imodel, type, format);
 
     return handle;
   }
@@ -514,7 +514,7 @@ export class Texture2DHandle extends TextureHandle {
 /** @internal */
 export interface ExternalTextureRequest {
   handle: Texture2DHandle;
-  name: string;
+  name: Id64String;
   imodel: IModelConnection;
   type: RenderTexture.Type;
   format: ImageSourceFormat;
@@ -581,7 +581,7 @@ export class ExternalTextureLoader { /* currently exported for tests only */
     return false;
   }
 
-  public loadTexture(handle: Texture2DHandle, name: string, imodel: IModelConnection, type: RenderTexture.Type, format: ImageSourceFormat, onLoaded?: (req: ExternalTextureRequest) => void) {
+  public loadTexture(handle: Texture2DHandle, name: Id64String, imodel: IModelConnection, type: RenderTexture.Type, format: ImageSourceFormat, onLoaded?: (req: ExternalTextureRequest) => void) {
     const req = { handle, name, imodel, type, format, onLoaded };
     if (this._requestExists(req))
       return;

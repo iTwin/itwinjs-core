@@ -7178,7 +7178,7 @@ export enum TextureFlags {
 
 // @alpha
 export interface TextureLoadProps {
-    name: string;
+    name: Id64String;
 }
 
 // @beta

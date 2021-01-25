@@ -236,8 +236,8 @@ export class IdMap implements WebGLDisposable {
     return this.createTexture(params, TextureHandle.createForCubeImages(posX, negX, posY, negY, posZ, negZ));
   }
 
-  private createTextureFromExternalImage(name: string, imodel: IModelConnection, params: RenderTexture.Params, format: ImageSourceFormat): RenderTexture | undefined {
-    return this.createTexture(params, TextureHandle.createForExternalImage(name, imodel, params.type, format));
+  private createTextureFromElement(id: Id64String, imodel: IModelConnection, params: RenderTexture.Params, format: ImageSourceFormat): RenderTexture | undefined {
+    return this.createTexture(params, TextureHandle.createForElement(id, imodel, params.type, format));
   }
 
   public findTexture(key?: string): RenderTexture | undefined { return undefined !== key ? this.textures.get(key) : undefined; }
@@ -248,9 +248,9 @@ export class IdMap implements WebGLDisposable {
     return undefined !== tex ? tex : this.createTextureFromImageBuffer(img, params);
   }
 
-  public getTextureFromExternalImage(name: string, imodel: IModelConnection, params: RenderTexture.Params, format: ImageSourceFormat): RenderTexture | undefined {
+  public getTextureFromElement(id: Id64String, imodel: IModelConnection, params: RenderTexture.Params, format: ImageSourceFormat): RenderTexture | undefined {
     const tex = this.findTexture(params.key);
-    return undefined !== tex ? tex : this.createTextureFromExternalImage(name, imodel, params, format);
+    return undefined !== tex ? tex : this.createTextureFromElement(id, imodel, params, format);
   }
 
   public getTextureFromImage(image: HTMLImageElement, hasAlpha: boolean, params: RenderTexture.Params): RenderTexture | undefined {
@@ -655,8 +655,8 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return this.getIdMap(imodel).getTextureFromImage(image, hasAlpha, params);
   }
 
-  public createTextureFromExternalImage(name: string, imodel: IModelConnection, params: RenderTexture.Params, format: ImageSourceFormat): RenderTexture | undefined {
-    return this.getIdMap(imodel).getTextureFromExternalImage(name, imodel, params, format);
+  public createTextureFromElement(id: Id64String, imodel: IModelConnection, params: RenderTexture.Params, format: ImageSourceFormat): RenderTexture | undefined {
+    return this.getIdMap(imodel).getTextureFromElement(id, imodel, params, format);
   }
 
   /** Attempt to create a texture from a cube of HTML images. */
