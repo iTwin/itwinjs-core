@@ -6,12 +6,11 @@ import { expect } from "chai";
 import { ScreenViewport } from "../Viewport";
 import { Marker } from "../Marker";
 import { Decorator } from "../ViewManager";
-import { Point3d } from "@bentley/geometry-core";
 import { DecorateContext } from "../ViewContext";
 import { IModelApp } from "../IModelApp";
 import { SpatialViewState } from "../SpatialViewState";
-// import { NoRenderApp } from "../NoRenderApp";
-import { IModelConnection } from "../IModelConnection";
+import { BlankConnection } from "../IModelConnection";
+import { Cartographic } from "@bentley/imodeljs-common";
 
 describe("ScreenViewport", () => {
   beforeEach(async () => {
@@ -64,7 +63,11 @@ describe("ScreenViewport", () => {
     const vp = ScreenViewport.create(
       parentDiv,
       SpatialViewState.createBlank(
-        {} as IModelConnection,
+        BlankConnection.create({
+          name: "test",
+          location: Cartographic.fromRadians(0, 0),
+          extents: {low: {x: 0, y: 0, z: 0}, high:{x: 1, y: 1, z: 1}},
+        }),
         { x: 0, y: 0, z: 0 },
         { x: 1, y: 1, z: 1 }
       )
