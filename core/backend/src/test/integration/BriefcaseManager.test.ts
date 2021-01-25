@@ -7,9 +7,9 @@ import { assert } from "chai";
 import * as os from "os";
 import * as path from "path";
 import * as readline from "readline";
-import { BeDuration, BriefcaseStatus, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { BriefcaseStatus, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { IModelError, IModelVersion } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext, ECJsonTypeMap, ProgressCallback, UserCancelledError, WsgInstance, WsgQuery } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { CheckpointManager, V1CheckpointManager } from "../../CheckpointManager";
 import {
@@ -19,7 +19,6 @@ import {
 import { IModelTestUtils, TestIModelInfo } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 import { TestChangeSetUtility } from "./TestChangeSetUtility";
-import { ChangeSetQuery, CheckpointQuery, IModelBaseHandler, InitializationState } from "@bentley/imodelhub-client";
 
 async function createIModelOnHub(requestContext: AuthorizedBackendRequestContext, projectId: GuidString, iModelName: string): Promise<string> {
   let iModel = await HubUtility.queryIModelByName(requestContext, projectId, iModelName);
@@ -776,84 +775,33 @@ describe("BriefcaseManager (#integration)", () => {
     // Create version to trigger checkpoint generation
     await IModelHost.iModelClient.versions.create(userContext, iModel.iModelId, lastChangeSetId, "Version 1");
 
-    for (var i = 0; i < 50; i++) {
-      const checkpoint = (await IModelHost.iModelClient.checkpoints.get(userContext, iModel.iModelId, new CheckpointQuery().byChangeSetId(lastChangeSetId)))[0];
-      if (checkpoint.state === InitializationState.Failed)
-        break;
-
-      // TODO: fail if didn't break
-      await BeDuration.wait(10000);
-    }
+    // Wait until the scheduled checkpoint job fails
+    await HubUtility.waitforCheckpointGenerationFailure(userContext, iModel.iModelId, lastChangeSetId);
 
     // Delete changeSet
-    @ECJsonTypeMap.classToJson("wsg", "iModelActions.DeleteChangeSet", { schemaPropertyName: "schemaName", classPropertyName: "className" })
-    class DeleteChangeSetAction extends WsgInstance {
-      @ECJsonTypeMap.propertyToJson("wsg", "instanceId")
-      public id?: GuidString;
-
-      @ECJsonTypeMap.propertyToJson("wsg", "properties.ChangeSetId")
-      public changeSetId?: GuidString;
-
-      @ECJsonTypeMap.propertyToJson("wsg", "properties.State")
-      public state?: number;
-    }
-
-    const invalidChangeSet = (await IModelHost.iModelClient.changeSets.get(userContext, iModel.iModelId, new ChangeSetQuery().filter("Index+eq+4")))[0];
-    const deleteChangeSetActionInstance = new DeleteChangeSetAction();
-    deleteChangeSetActionInstance.changeSetId = invalidChangeSet.id;
-
-    const relativePostActionUrl = `/Repositories/iModel--${iModel.iModelId}/iModelActions/DeleteChangeSet`;
-    const iModelBaseHandler = new IModelBaseHandler();
-
-    const deleteChangeSetAction = await iModelBaseHandler.postInstance(userContext, DeleteChangeSetAction, relativePostActionUrl, deleteChangeSetActionInstance);
-
-    const relativeGetActionUrl = `/Repositories/iModel--${iModel.iModelId}/iModelActions/DeleteChangeSet/${deleteChangeSetAction.id}`;
-    for (var i = 0; i < 50; i++) {
-      const deleteChangeSetAction = (await iModelBaseHandler.getInstances(userContext, DeleteChangeSetAction, relativeGetActionUrl))[0];
-      if (deleteChangeSetAction.state === 2) // TODO completed
-        break;
-
-      // TODO: fail if didn't break
-      await BeDuration.wait(10000);
-    }
+    const deleteChangeSetActionId = (await HubUtility.deleteChangeSet(userContext, iModel.iModelId, 4)).id!;
+    await HubUtility.waitForChangeSetDeletion(userContext, iModel.iModelId, deleteChangeSetActionId);
 
     // Redownload briefcase
     const args = {
       contextId: projectId,
       iModelId: iModel.iModelId,
-      briefcaseId: iModel.briefcaseId
+      briefcaseId: iModel.briefcaseId,
+      fileName: iModel.pathName
     };
 
-    await BriefcaseManager.downloadBriefcase(requestContext, args);
+    iModel.close();
+    const newBriefcase = await BriefcaseManager.downloadBriefcase(requestContext, args);
+    iModel.open();
     requestContext.enter();
 
+    // Assert that user can now push another changeSet
+    await testUtility.pushTestChangeSet();
 
-
-
-
-
-
-
-
-
-
-
-
-    // const rootEl: Element = iModel.elements.getRootSubject();
-    // rootEl.userLabel = `${rootEl.userLabel}changed`;
-    // await iModel.concurrencyControl.requestResourcesForUpdate(userContext, [rootEl]);
-    // iModel.elements.updateElement(rootEl);
-
-    // await iModel.concurrencyControl.request(userContext);
-    // assert.isTrue(iModel.nativeDb.hasUnsavedChanges());
-    // assert.isFalse(iModel.nativeDb.hasPendingTxns());
-    // iModel.saveChanges();
-    // assert.isFalse(iModel.nativeDb.hasUnsavedChanges());
-    // assert.isTrue(iModel.nativeDb.hasPendingTxns());
 
     // iModel.close();
 
     // Delete iModel from the Hub and disk
-    await testUtility.deleteTestIModel();
+    await testUtility.deleteTestIModel(); // todo
   });
 });
