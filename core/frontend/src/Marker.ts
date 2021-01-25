@@ -291,8 +291,8 @@ export class Marker implements CanvasDecoration {
       } else {
         // if this Marker has a new HTMLElement, add it to the DOM
         context.addHtmlDecoration(this.htmlElement);
-        this.positionHtml(); // and position it relative to the Marker location
       }
+      this.positionHtml(); // always reposition it
     }
   }
 
