@@ -23,7 +23,7 @@ export class TestEditCommand1 extends TestCommand {
     arr.push(-22);
     return { str: str1 + str2, num: obj1.i1 + obj1.i2, buf: Int32Array.from(arr) };
   }
-};
+}
 
 export class TestEditCommand2 extends TestCommand {
   public static commandId = testCmdIds.cmd2;
@@ -37,4 +37,4 @@ export class TestEditCommand2 extends TestCommand {
     arr.push(-32);
     return { str: str2 + str1, num: obj1.i1 - obj1.i2, buf: Int32Array.from(arr) };
   }
-};
+}

@@ -96,7 +96,7 @@ function disposeCachedDecoration(dec: CachedDecoration): void {
 /** @alpha Source of depth point returned by [[Viewport.pickDepthPoint]]. */
 export enum DepthPointSource {
   /** Depth point from geometry within specified radius of pick point */
-  Geometry, // eslint-disable-line no-shadow
+  Geometry, // eslint-disable-line @typescript-eslint/no-shadow
   /** Depth point from reality model within specified radius of pick point */
   Model,
   /** Depth point from ray projection to background map plane */
@@ -165,6 +165,15 @@ export interface OsmBuildingDisplayOptions {
   onOff?: boolean;
   /** If defined will apply appearance overrides to to the OpenStreetMap building reality model. Has no effect if the OSM reality model is not displayed. */
   appearanceOverrides?: FeatureAppearance;
+}
+
+/** @internal */
+export const ELEMENT_MARKED_FOR_REMOVAL = Symbol.for("@bentley/imodeljs/Viewport/__element_marked_for_removal__");
+
+declare global {
+  interface Element {
+    [ELEMENT_MARKED_FOR_REMOVAL]?: boolean;
+  }
 }
 
 /** A Viewport renders the contents of one or more [GeometricModel]($backend)s onto an `HTMLCanvasElement`.
@@ -2577,7 +2586,10 @@ export class ScreenViewport extends Viewport {
   public readonly vpDiv: HTMLDivElement;
   /** The canvas to display the view contents. */
   public readonly canvas: HTMLCanvasElement;
-  /** The HTMLDivElement used for HTML decorations. May be referenced from the DOM by class "overlay-decorators". */
+  /** The HTMLDivElement used for HTML decorations. May be referenced from the DOM by class "overlay-decorators".
+   * @deprecated from public access, use DecorateContext.addHtmlDecoration
+   * it will be un-deprecated for internal usage only in a future release
+   */
   public readonly decorationDiv: HTMLDivElement;
   /** The HTMLDivElement used for toolTips. May be referenced from the DOM by class "overlay-tooltip". */
   public readonly toolTipDiv: HTMLDivElement;
@@ -2600,6 +2612,19 @@ export class ScreenViewport extends Viewport {
     return vp;
   }
 
+  /** @internal */
+  public static markAllChildrenForRemoval(el: HTMLDivElement) {
+    for (const child of el.children)
+      child[ELEMENT_MARKED_FOR_REMOVAL] = true;
+  }
+
+  /** @internal */
+  public static removeMarkedChildren(el: HTMLDivElement) {
+    for (const child of [...el.children]) // spread to duplicate the HTMLCollection which is invalidated by removals
+      if (child[ELEMENT_MARKED_FOR_REMOVAL])
+        el.removeChild(child);
+  }
+
   /** Remove all of the children of an HTMLDivElement.
    * @internal
    */
@@ -2607,6 +2632,7 @@ export class ScreenViewport extends Viewport {
     while (el.lastChild)
       el.removeChild(el.lastChild);
   }
+
   /** set Div style to absolute, {0,0,100%,100%}
    * @internal
    */
@@ -2675,6 +2701,8 @@ export class ScreenViewport extends Viewport {
     this.addChildDiv(this.vpDiv, canvas, 10);
     this.target.updateViewRect();
 
+    // SEE: decorationDiv doc comment
+    // eslint-disable-next-line deprecation/deprecation
     this.decorationDiv = this.addNewDiv("overlay-decorators", true, 30);
     this.toolTipDiv = this.addNewDiv("overlay-tooltip", true, 40);
     this.setCursor();
@@ -2858,13 +2886,18 @@ export class ScreenViewport extends Viewport {
 
   /** @internal */
   protected addDecorations(decorations: Decorations): void {
-    ScreenViewport.removeAllChildren(this.decorationDiv);
+    // SEE: decorationDiv doc comment
+    // eslint-disable-next-line deprecation/deprecation
+    ScreenViewport.markAllChildrenForRemoval(this.decorationDiv);
     const context = new DecorateContext(this, decorations);
     context.addFromDecorator(this.view);
     this.forEachTiledGraphicsProviderTree((ref) => context.addFromDecorator(ref));
 
     for (const decorator of IModelApp.viewManager.decorators)
       context.addFromDecorator(decorator);
+
+    // eslint-disable-next-line deprecation/deprecation
+    ScreenViewport.removeMarkedChildren(this.decorationDiv);
   }
 
   /** Change the cursor for this Viewport */

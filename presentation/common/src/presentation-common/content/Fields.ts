@@ -507,7 +507,7 @@ export interface FieldDescriptorBase {
  */
 export type FieldDescriptor = NamedFieldDescriptor | PropertiesFieldDescriptor;
 /** @beta */
-export namespace FieldDescriptor {
+export namespace FieldDescriptor { // eslint-disable-line @typescript-eslint/no-redeclare
   /** Is this a named field descriptor */
   export function isNamed(d: FieldDescriptor): d is NamedFieldDescriptor {
     return d.type === FieldDescriptorType.Name;
