@@ -71,6 +71,7 @@ steps:
     workingDirectory: "clients/product-settings"
     displayName: "Run Product Settings Client Tests"
     condition: succeededOrFailed()
+    enabled: false
 
   - script: "npm run test:integration"
     workingDirectory: clients/projectshare
