@@ -92,7 +92,8 @@ const purgeMem: Array<PurgeMem | undefined> = [
   (olderThan?) => IModelApp.viewManager.purgeTileTrees(olderThan ? olderThan : BeTimePoint.now()),
 ];
 
-function formatMemory(numBytes: number): string {
+/** @internal */
+export function formatMemory(numBytes: number): string {
   let suffix = "b";
   if (numBytes >= 1024) {
     numBytes /= 1024;

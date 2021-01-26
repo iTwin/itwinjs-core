@@ -7,6 +7,8 @@
  */
 
 import { IModelApp, IModelConnection, RenderMemory, Tile } from "@bentley/imodeljs-frontend";
+import { createCheckBox } from "../ui/CheckBox";
+import { formatMemory } from "./MemoryTracker";
 
 interface TileMemoryCounter {
   numTiles: number;
@@ -18,6 +20,7 @@ enum TileMemorySelector {
   Ancestors, // Ancestors of selected tiles, themselves not selected for display by any viewport.
   Descendants, // Descendants of selected tiles, themselves not selected for display by any viewport.
   Orphaned, // Tiles not selected for display having no ancestors nor descendants selected for display.
+  Total, // Total of all the above
   Count,
 }
 
@@ -26,10 +29,6 @@ class TileMemoryTracer {
   private readonly _processedTiles = new Set<Tile>();
   public readonly counters: TileMemoryCounter[] = [];
   public numSelected = 0;
-
-  public get numTiles() {
-    return this._processedTiles.size;
-  }
 
   public constructor() {
     for (let i = 0; i < TileMemorySelector.Count; i++)
@@ -64,6 +63,9 @@ class TileMemoryTracer {
           this.processOrphan(tree.rootTile);
       });
     }
+
+    this.counters[TileMemorySelector.Total].numTiles = this.counters.reduce((accum, counter) => accum + counter.numTiles, 0);
+    this.counters[TileMemorySelector.Total].bytesUsed = this.counters.reduce((accum, counter) => accum + counter.bytesUsed, 0);
   }
 
   private reset(): void {
@@ -76,7 +78,7 @@ class TileMemoryTracer {
   private add(tile: Tile, selector: TileMemorySelector): void {
     this._processedTiles.add(tile);
     this._stats.clear();
-    tile.collectStatistics(this._stats);
+    tile.collectStatistics(this._stats, false);
 
     const bytesUsed = this._stats.totalBytes;
     if (bytesUsed > 0) {
@@ -116,13 +118,61 @@ class TileMemoryTracer {
   }
 }
 
-/*
+const labels = ["Selected", "Ancestors", "Descendants", "Orphaned", "Total"];
+
 export class TileMemoryBreakdown {
   private readonly _tracer = new TileMemoryTracer();
   private readonly _div: HTMLDivElement;
   private _curIntervalId?: NodeJS.Timer;
+  private readonly _statsElements: HTMLElement[] = [];
 
   public constructor(parent: HTMLElement) {
-    createCheck
+    createCheckBox({
+      parent,
+      name: "Tile Memory Breakdown",
+      id: "tileMemoryBreakdown",
+      handler: (_cb) => this.toggle(),
+    });
+
+    parent.appendChild(this._div = document.createElement("div"));
+    this._div.style.display = "none";
+    this._div.style.textAlign = "right";
+    for (const label of labels) {
+      const div = document.createElement("div");
+      const elem = document.createElement("text");
+      this._statsElements.push(elem);
+      div.appendChild(elem);
+      this._div.appendChild(div);
+    }
+  }
+
+  public dispose(): void {
+    this.clearInterval();
+  }
+
+  private toggle(): void {
+    if (undefined !== this._curIntervalId) {
+      this._div.style.display = "none";
+      this.clearInterval();
+    } else {
+      this._div.style.display = "block";
+      this.update();
+      this._curIntervalId = setInterval(() => this.update(), 500);
+    }
+  }
+
+  private clearInterval(): void {
+    if (undefined !== this._curIntervalId) {
+      clearInterval(this._curIntervalId);
+      this._curIntervalId = undefined;
+    }
+  }
+
+  private update(): void {
+    this._tracer.update();
+    for (let i = 0; i < this._statsElements.length; i++) {
+      const counter = this._tracer.counters[i];
+      this._statsElements[i].innerText = `${counter.numTiles} ${labels[i]}: ${formatMemory(counter.bytesUsed)}`;
+    }
+  }
 }
-  */
