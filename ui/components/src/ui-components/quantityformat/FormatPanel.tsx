@@ -45,7 +45,7 @@ async function generateFormatSpec(persistenceUnit: UnitProps, formatProps: Forma
  */
 export function FormatPanel(props: FormatPanelProps) {
   const [formatSpec, setFormatSpec] = React.useState<FormatterSpec>();
-  const { initialFormat, showSample, initialMagnitude, unitsProvider, persistenceUnit, onFormatChange, provideFormatSpec } = props;
+  const { initialFormat, showSample, initialMagnitude, unitsProvider, persistenceUnit, onFormatChange, provideFormatSpec, enableMinimumProperties } = props;
   const [formatProps, setFormatProps] = React.useState(initialFormat);
   const initialFormatRef = React.useRef<FormatProps>(initialFormat);
   const [showOptions, setShowOptions] = React.useState(false);
