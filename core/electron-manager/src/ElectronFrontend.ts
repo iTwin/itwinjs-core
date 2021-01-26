@@ -39,7 +39,7 @@ export class ElectronFrontend implements IpcSocketFrontend {
   private constructor(opts?: ElectronFrontendOptions) {
     // use the methods on window.itwinjs exposed by ElectronPreload.ts, or ipcRenderer directly if running with nodeIntegration=true (**only** for tests).
     // Note that `require("electron")` doesn't work with nodeIntegration=false - that's what it stops
-    this._api = (window as any).itwinjs ?? require("electron").ipcRenderer;
+    this._api = (window as any).itwinjs ?? require("electron").ipcRenderer; // eslint-disable-line @typescript-eslint/no-var-requires
     FrontendIpc.initialize(this);
     ElectronRpcManager.initializeFrontend(this, opts?.rpcInterfaces);
   }
@@ -56,7 +56,7 @@ export class ElectronFrontend implements IpcSocketFrontend {
       throw new Error("Not running under Electron");
 
     return new ElectronFrontend(opts);
-  };
+  }
 
   /**
    * Call an asynchronous method in the [Electron.Dialog](https://www.electronjs.org/docs/api/dialog) interface from a previously initialized ElectronFrontend.
@@ -82,4 +82,4 @@ export class ElectronFrontend implements IpcSocketFrontend {
   public static async callApp<T extends AsyncMethodsOf<Electron.App>>(methodName: T, ...args: Parameters<Electron.App[T]>) {
     return FrontendIpc.callBackend("electron-safe", "callElectron", "app", methodName, ...args) as PromiseReturnType<Electron.App[T]>;
   }
-};
+}
