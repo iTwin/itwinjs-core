@@ -21,7 +21,10 @@ describe("ScreenViewport", () => {
   });
 
   function makeMarker(vp: ScreenViewport) {
-    const marker = new Marker(vp.viewToWorld({x: 0, y: 0, z: 0}), { x: 10, y: 10 });
+    const marker = new Marker(vp.viewToWorld({ x: 0, y: 0, z: 0 }), {
+      x: 10,
+      y: 10,
+    });
     marker.htmlElement = document.createElement("div");
     return marker;
   }
@@ -66,7 +69,7 @@ describe("ScreenViewport", () => {
         BlankConnection.create({
           name: "test",
           location: Cartographic.fromRadians(0, 0),
-          extents: {low: {x: 0, y: 0, z: 0}, high:{x: 1, y: 1, z: 1}},
+          extents: { low: { x: 0, y: 0, z: 0 }, high: { x: 1, y: 1, z: 1 } },
         }),
         { x: 0, y: 0, z: 0 },
         { x: 1, y: 1, z: 1 }
@@ -86,7 +89,7 @@ describe("ScreenViewport", () => {
     vp.renderFrame();
     for (const marker of decorator.markers) {
       // eslint-disable-next-line deprecation/deprecation
-      expect(vp.decorationDiv.contains(marker.htmlElement || null)).to.be.true;
+      expect(vp.decorationDiv.contains(marker.htmlElement!)).to.be.true;
     }
 
     vp.invalidateDecorations();
@@ -94,7 +97,7 @@ describe("ScreenViewport", () => {
     vp.renderFrame();
     for (const marker of decorator.markers) {
       // eslint-disable-next-line deprecation/deprecation
-      expect(vp.decorationDiv.contains(marker.htmlElement || null)).to.be.true;
+      expect(vp.decorationDiv.contains(marker.htmlElement!)).to.be.true;
     }
 
     IModelApp.viewManager.dropDecorator(decorator);
@@ -111,7 +114,7 @@ describe("ScreenViewport", () => {
     vp.renderFrame();
     for (const marker of decorator.markers) {
       // eslint-disable-next-line deprecation/deprecation
-      expect(vp.decorationDiv.contains(marker.htmlElement || null)).to.be.true;
+      expect(vp.decorationDiv.contains(marker.htmlElement!)).to.be.true;
     }
 
     vp.invalidateDecorations();
@@ -119,7 +122,7 @@ describe("ScreenViewport", () => {
     vp.renderFrame();
     for (const marker of decorator.markers) {
       // eslint-disable-next-line deprecation/deprecation
-      expect(vp.decorationDiv.contains(marker.htmlElement || null)).to.be.false;
+      expect(vp.decorationDiv.contains(marker.htmlElement!)).to.be.false;
     }
 
     IModelApp.viewManager.dropDecorator(decorator);
