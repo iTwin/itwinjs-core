@@ -41,6 +41,13 @@ export interface IModelTransformOptions {
   /** Set to true if IModelTransformer should not record provenance back to the source element in the sourceDb on the target element within the targetDb. */
   noProvenance?: boolean;
 
+  /** Flag that indicates that the target iModel was created by copying the source iModel.
+   * This is common when the target iModel is intended to be a *branch* of the source iModel.
+   * This *hint* is essential to properly initialize the source to target element mapping and to cause provenance to be recorded for future synchronizations.
+   * @note This *hint* is typically only set for the first synchronization after the iModel was copied since every other synchronization can utilize the provenance.
+   */
+  wasSourceIModelCopiedToTarget?: boolean;
+
   /** Flag that indicates whether or not the transformation process needs to consider the source geometry before cloning/transforming.
    * For standard cases, it is not required to load the source GeometryStream in JavaScript since the cloning happens in native code.
    * Also, the target GeometryStream will be available in JavaScript prior to insert.
@@ -80,6 +87,8 @@ export class IModelTransformer extends IModelExportHandler {
   private readonly _noProvenance: boolean;
   /** If true, clone elements using binary geometry as a performance optimization. */
   private readonly _cloneUsingBinaryGeometry: boolean;
+  /** If true, it indicates that the target iModel was created from a copy of the source iModel. */
+  private readonly _wasSourceIModelCopiedToTarget: boolean;
 
   /** Construct a new IModelTransformer
    * @param source Specifies the source IModelExporter or the source IModelDb that will be used to construct the source IModelExporter.
@@ -92,6 +101,7 @@ export class IModelTransformer extends IModelExportHandler {
     this.targetScopeElementId = options?.targetScopeElementId ?? IModel.rootSubjectId;
     this._noProvenance = options?.noProvenance ?? false;
     this._cloneUsingBinaryGeometry = options?.cloneUsingBinaryGeometry ?? true;
+    this._wasSourceIModelCopiedToTarget = options?.wasSourceIModelCopiedToTarget ?? false;
     // initialize exporter and sourceDb
     if (source instanceof IModelDb) {
       this.exporter = new IModelExporter(source);
@@ -307,8 +317,15 @@ export class IModelTransformer extends IModelExportHandler {
    * This override calls [[onTransformElement]] and then [IModelImporter.importElement]($backend) to update the target iModel.
    */
   protected onExportElement(sourceElement: Element): void {
-    let targetElementId: Id64String | undefined = this.context.findTargetElementId(sourceElement.id);
-    const targetElementProps: ElementProps = this.onTransformElement(sourceElement);
+    let targetElementId: Id64String | undefined;
+    let targetElementProps: ElementProps;
+    if (this._wasSourceIModelCopiedToTarget) {
+      targetElementId = sourceElement.id;
+      targetElementProps = this.targetDb.elements.getElementProps(targetElementId);
+    } else {
+      targetElementId = this.context.findTargetElementId(sourceElement.id);
+      targetElementProps = this.onTransformElement(sourceElement);
+    }
     if (!Id64.isValidId64(targetElementId)) {
       targetElementId = this.targetDb.elements.queryElementIdByCode(new Code(targetElementProps.code));
       if (undefined !== targetElementId) {
@@ -342,7 +359,9 @@ export class IModelTransformer extends IModelExportHandler {
       }
     }
     targetElementProps.id = targetElementId; // targetElementId will be valid (indicating update) or undefined (indicating insert)
-    this.importer.importElement(targetElementProps);
+    if (!this._wasSourceIModelCopiedToTarget) {
+      this.importer.importElement(targetElementProps); // don't need to import if iModel was copied
+    }
     this.context.remapElement(sourceElement.id, targetElementProps.id!); // targetElementProps.id assigned by importElement
     if (!this._noProvenance) { // clone scenarios do not record provenance
       // record provenance in ExternalSourceAspect
