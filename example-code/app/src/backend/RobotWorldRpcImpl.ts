@@ -61,6 +61,6 @@ import { ElectronBackend } from "@bentley/electron-manager/lib/ElectronBackend";
 
 export async function initializeForElectron(rpcInterfaces: RpcInterfaceDefinition[]) {
   ElectronBackend.initialize({ rpcInterfaces });
-};
+}
 
 // __PUBLISH_EXTRACT_END__

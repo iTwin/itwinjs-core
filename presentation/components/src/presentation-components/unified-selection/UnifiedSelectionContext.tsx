@@ -110,7 +110,7 @@ export function UnifiedSelectionContextProvider(props: UnifiedSelectionContextPr
       {props.children}
     </unifiedSelectionContext.Provider>
   );
-};
+}
 
 function createContext(imodel: IModelConnection, selectionLevel: number): UnifiedSelectionContext {
   return {
