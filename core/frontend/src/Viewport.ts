@@ -96,7 +96,7 @@ function disposeCachedDecoration(dec: CachedDecoration): void {
 /** @alpha Source of depth point returned by [[Viewport.pickDepthPoint]]. */
 export enum DepthPointSource {
   /** Depth point from geometry within specified radius of pick point */
-  Geometry, // eslint-disable-line no-shadow
+  Geometry, // eslint-disable-line @typescript-eslint/no-shadow
   /** Depth point from reality model within specified radius of pick point */
   Model,
   /** Depth point from ray projection to background map plane */
