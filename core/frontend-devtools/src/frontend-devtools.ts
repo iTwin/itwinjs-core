@@ -59,6 +59,7 @@ export * from "./widgets/FpsTracker";
 export * from "./widgets/GpuProfiler";
 export * from "./widgets/KeyinField";
 export * from "./widgets/MemoryTracker";
+export * from "./widgets/TileMemoryBreakdown";
 export * from "./widgets/TileStatisticsTracker";
 export * from "./widgets/ToolSettingsTracker";
 
