@@ -19,6 +19,7 @@ import { DistinctValuesRequestOptions } from '@bentley/presentation-common';
 import { EventSink } from '@bentley/imodeljs-backend';
 import { ExtendedContentRequestOptions } from '@bentley/presentation-common';
 import { ExtendedHierarchyRequestOptions } from '@bentley/presentation-common';
+import { FormatProps } from '@bentley/imodeljs-quantity';
 import { HierarchyRequestOptions } from '@bentley/presentation-common';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
@@ -254,6 +255,13 @@ export interface PresentationManagerProps {
     cacheConfig?: HierarchyCacheConfig;
     // @alpha (undocumented)
     contentCacheSize?: number;
+    // @alpha
+    defaultFormatsMap?: {
+        [phenomenon: string]: {
+            unitSystems: string[];
+            format: FormatProps;
+        };
+    };
     enableSchemasPreload?: boolean;
     // @internal (undocumented)
     eventSink?: EventSink;
