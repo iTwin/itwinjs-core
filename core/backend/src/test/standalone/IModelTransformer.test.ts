@@ -174,6 +174,46 @@ describe("IModelTransformer", () => {
     targetDb.close();
   });
 
+  it("should initialize from iModel copy", async () => {
+    // Initialize targetDb to be a copy of the populated sourceDb
+    const sourceDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "InitFromCopy-Source.bim");
+    const sourceDb = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "InitFromCopy-Source" } });
+    await IModelTransformerUtils.prepareSourceDb(sourceDb);
+    IModelTransformerUtils.populateSourceDb(sourceDb);
+    sourceDb.saveChanges();
+    const targetDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "InitFromCopy-Target.bim");
+    const targetDb = SnapshotDb.createFrom(sourceDb, targetDbFile, { createClassViews: true });
+
+    const numSourceElements = count(sourceDb, Element.classFullName);
+    const numSourceRelationships = count(sourceDb, ElementRefersToElements.classFullName);
+    assert.isAtLeast(numSourceElements, 12);
+    assert.isAtLeast(numSourceRelationships, 1);
+    assert.equal(numSourceElements, count(targetDb, Element.classFullName));
+    assert.equal(numSourceRelationships, count(targetDb, ElementRefersToElements.classFullName));
+    assert.equal(0, count(targetDb, ExternalSourceAspect.classFullName));
+
+    const transformer = new IModelTransformer(sourceDb, targetDb, { wasSourceIModelCopiedToTarget: true });
+    transformer.processAll();
+    transformer.dispose();
+
+    assert.equal(numSourceElements, count(targetDb, Element.classFullName));
+    assert.equal(numSourceRelationships, count(targetDb, ElementRefersToElements.classFullName));
+    assert.isAtLeast(count(targetDb, ExternalSourceAspect.classFullName), numSourceElements + numSourceRelationships - 1); // provenance not recorded for the root Subject
+
+    const sql = `SELECT aspect.Identifier,aspect.Element.Id FROM ${ExternalSourceAspect.classFullName} aspect WHERE aspect.Kind=:kind`;
+    targetDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
+      statement.bindString("kind", ExternalSourceAspect.Kind.Element);
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        const sourceElementId = statement.getValue(0).getString(); // ExternalSourceAspect.Identifier is of type string
+        const targetElementId = statement.getValue(1).getId();
+        assert.equal(sourceElementId, targetElementId);
+      }
+    });
+
+    sourceDb.close();
+    targetDb.close();
+  });
+
   function count(iModelDb: IModelDb, classFullName: string): number {
     return iModelDb.withPreparedStatement(`SELECT COUNT(*) FROM ${classFullName}`, (statement: ECSqlStatement): number => {
       return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getInteger() : 0;
