@@ -10,7 +10,7 @@ import { GeometryStreamProps } from "@bentley/imodeljs-common";
 import { HitDetail } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
-import { TileTree, TileTreeSet } from "./tile/internal";
+import { DisclosedTileTreeSet, TileTree } from "./tile/internal";
 import { EventController } from "./tools/EventController";
 import { BeButtonEvent, EventHandled } from "./tools/Tool";
 import { ScreenViewport, ViewportDecorator } from "./Viewport";
@@ -368,7 +368,7 @@ export class ViewManager {
     // A single viewport can display tiles from more than one IModelConnection.
     // NOTE: A viewport may be displaying no trees - but we need to record its IModel so we can purge those which are NOT being displayed
     //  NOTE: That won't catch external tile trees previously used by that viewport.
-    const trees = new TileTreeSet();
+    const trees = new DisclosedTileTreeSet();
     const treesByIModel = new Map<IModelConnection, Set<TileTree>>();
     for (const vp of this._viewports) {
       vp.discloseTileTrees(trees);
@@ -376,7 +376,7 @@ export class ViewManager {
         treesByIModel.set(vp.iModel, new Set<TileTree>());
     }
 
-    for (const tree of trees.trees) {
+    for (const tree of trees) {
       let set = treesByIModel.get(tree.iModel);
       if (undefined === set) {
         set = new Set<TileTree>();

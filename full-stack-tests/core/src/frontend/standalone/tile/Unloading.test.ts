@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core";
 import {
-  IModelApp, IModelConnection, IModelTileTree, SnapshotConnection, TileAdmin, TileLoadStatus, TileTree, TileTreeSet, TileUsageMarker, Viewport,
+  DisclosedTileTreeSet, IModelApp, IModelConnection, IModelTileTree, SnapshotConnection, TileAdmin, TileLoadStatus, TileTree, TileUsageMarker, Viewport,
 } from "@bentley/imodeljs-frontend";
 import { createOnScreenTestViewport, testOffScreenViewport, testOnScreenViewport, TestViewport, testViewports } from "../../TestViewport";
 
@@ -36,11 +36,11 @@ describe("Tile unloading", async () => {
   });
 
   function getTileTree(vp: Viewport): TileTree {
-    const trees = new TileTreeSet();
+    const trees = new DisclosedTileTreeSet();
     vp.discloseTileTrees(trees);
     expect(trees.size).to.equal(1);
     let tree: TileTree | undefined;
-    for (const t of trees.trees)
+    for (const t of trees)
       tree = t;
 
     return tree!;

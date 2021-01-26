@@ -19,6 +19,7 @@
 export * from "./ViewFlagOverrides";
 export * from "./map/MapCartoRectangle";
 export * from "./map/QuadId";
+export * from "./DisclosedTileTreeSet";
 export * from "./Tile";
 export * from "./RealityTile";
 export * from "./TileParams";

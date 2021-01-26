@@ -18,7 +18,7 @@ import { Viewport } from "../Viewport";
 import { ReadonlyViewportSet, UniqueViewportSets } from "../ViewportSet";
 import { InteractiveEditingSession } from "../InteractiveEditingSession";
 import { GeometricModelState } from "../ModelState";
-import { Tile, TileLoadStatus, TileRequest, TileTree, TileTreeOwner, TileTreeSet, TileUsageMarker } from "./internal";
+import { DisclosedTileTreeSet, Tile, TileLoadStatus, TileRequest, TileTree, TileTreeOwner, TileUsageMarker } from "./internal";
 import { NativeApp } from "../NativeApp";
 
 /** Details about any tiles not handled by [[TileAdmin]]. At this time, that means OrbitGT point cloud tiles.
@@ -894,18 +894,17 @@ class Admin extends TileAdmin {
   // Possibly prune tiles belonging to trees based on overall tree memory usage.
   // Note: this currently only occurs on mobile devices.
   private pruneForMemoryUsage(): void {
-    const memoryTrees = new TileTreeSet();
+    const memoryTrees = new DisclosedTileTreeSet();
     for (const vp of this._viewports) {
-      if (!vp.iModel.isOpen) // case of closing an IModelConnection while keeping the Viewport open, possibly for reuse with a different IModelConnection.
-        continue;
-      vp.discloseTileTrees(memoryTrees);
+      if (vp.iModel.isOpen)
+        vp.discloseTileTrees(memoryTrees);
     }
 
     let exceedsThreshold = false;
 
     // Gather total memory used by trees.
     const stats = new RenderMemory.Statistics();
-    for (const tree of memoryTrees.trees) {
+    for (const tree of memoryTrees) {
       tree.collectStatistics(stats);
       if (stats.totalBytes > this.mobileExpirationMemoryThreshold) {
         exceedsThreshold = true;
@@ -915,7 +914,7 @@ class Admin extends TileAdmin {
 
     // Force pruning those trees if total bytes consumed exceeds the threshold.
     if (exceedsThreshold) {
-      for (const tree of memoryTrees.trees)
+      for (const tree of memoryTrees)
         tree.forcePrune();
     }
   }
@@ -940,7 +939,7 @@ class Admin extends TileAdmin {
     // A single viewport can display tiles from more than one IModelConnection.
     // NOTE: A viewport may be displaying no trees - but we need to record its IModel so we can purge those which are NOT being displayed
     //  NOTE: That won't catch external tile trees previously used by that viewport.
-    const trees = new TileTreeSet();
+    const trees = new DisclosedTileTreeSet();
     const treesByIModel = needPurge ? new Map<IModelConnection, Set<TileTree>>() : undefined;
     for (const vp of this._viewports) {
       if (!vp.iModel.isOpen) // case of closing an IModelConnection while keeping the Viewport open, possibly for reuse with a different IModelConnection.
@@ -953,14 +952,14 @@ class Admin extends TileAdmin {
 
     if (needPrune) {
       // Request that each displayed tile tree discard any tiles and/or tile content that is no longer needed.
-      for (const tree of trees.trees)
+      for (const tree of trees)
         tree.prune();
 
       this._nextPruneTime = now.plus(this._tileExpirationTime);
     }
 
     if (treesByIModel) {
-      for (const tree of trees.trees) {
+      for (const tree of trees) {
         let set = treesByIModel.get(tree.iModel);
         if (undefined === set)
           treesByIModel.set(tree.iModel, set = new Set<TileTree>());

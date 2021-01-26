@@ -8,7 +8,7 @@
  */
 
 import { assert, BeTimePoint } from "@bentley/bentleyjs-core";
-import { IModelApp, RenderMemory, TileTreeOwner, TileTreeSet, Viewport } from "@bentley/imodeljs-frontend";
+import { DisclosedTileTreeSet, IModelApp, RenderMemory, TileTreeOwner, Viewport } from "@bentley/imodeljs-frontend";
 import { ComboBoxEntry, createComboBox } from "../ui/ComboBox";
 
 function collectTileTreeMemory(stats: RenderMemory.Statistics, owner: TileTreeOwner): void {
@@ -47,7 +47,7 @@ const memLabels = [
 
 function collectStatisticsForViewedTileTrees(vp: Viewport, stats: RenderMemory.Statistics): number {
   vp.collectStatistics(stats);
-  const trees = new TileTreeSet();
+  const trees = new DisclosedTileTreeSet();
   vp.discloseTileTrees(trees);
   return trees.size;
 }

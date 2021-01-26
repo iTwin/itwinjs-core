@@ -31,9 +31,8 @@ import { SceneContext } from "../ViewContext";
 import { ViewingSpace } from "../ViewingSpace";
 import { Viewport } from "../Viewport";
 import {
-  createClassifierTileTreeReference,
-  RealityModelTileTree, SpatialClassifierTileTreeReference, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest,
-  TileTree, TileTreeOwner, TileTreeParams, TileTreeReference, TileTreeSet, TileTreeSupplier,
+  createClassifierTileTreeReference, DisclosedTileTreeSet, RealityModelTileTree, SpatialClassifierTileTreeReference, Tile, TileContent,
+  TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeOwner, TileTreeParams, TileTreeReference, TileTreeSupplier,
 } from "./internal";
 import { TileUsageMarker } from "./TileUsageMarker";
 
@@ -423,7 +422,7 @@ class OrbitGtTreeReference extends RealityModelTileTree.Reference {
     super.addToScene(context);
   }
 
-  public discloseTileTrees(trees: TileTreeSet): void {
+  public discloseTileTrees(trees: DisclosedTileTreeSet): void {
     super.discloseTileTrees(trees);
 
     if (undefined !== this._classifier)

@@ -18,7 +18,11 @@ import { IModelConnection } from "../../IModelConnection";
 import { FeatureSymbology } from "../../render/FeatureSymbology";
 import { SceneContext } from "../../ViewContext";
 import { ScreenViewport } from "../../Viewport";
-import { BingElevationProvider, createDefaultViewFlagOverrides, EllipsoidTerrainProvider, getCesiumTerrainProvider, ImageryMapLayerTreeReference, ImageryMapTileTree, MapCartoRectangle, MapTile, MapTileLoader, MapTilingScheme, PlanarTilePatch, QuadId, RealityTileDrawArgs, RealityTileTree, RealityTileTreeParams, Tile, TileDrawArgs, TileLoadPriority, TileParams, TileTree, TileTreeOwner, TileTreeReference, TileTreeSet, TileTreeSupplier, UpsampledMapTile, WebMercatorTilingScheme } from "../internal";
+import {
+  BingElevationProvider, createDefaultViewFlagOverrides, DisclosedTileTreeSet, EllipsoidTerrainProvider, getCesiumTerrainProvider, ImageryMapLayerTreeReference, ImageryMapTileTree,
+  MapCartoRectangle, MapTile, MapTileLoader, MapTilingScheme, PlanarTilePatch, QuadId, RealityTileDrawArgs, RealityTileTree, RealityTileTreeParams, Tile,
+  TileDrawArgs, TileLoadPriority, TileParams, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier, UpsampledMapTile, WebMercatorTilingScheme,
+} from "../internal";
 import { TileTreeLoadStatus } from "../TileTree";
 
 const scratchPoint = Point3d.create();
@@ -660,7 +664,7 @@ export class MapTileTreeReference extends TileTreeReference {
     return this._symbologyOverrides;
   }
 
-  public discloseTileTrees(trees: TileTreeSet): void {
+  public discloseTileTrees(trees: DisclosedTileTreeSet): void {
     super.discloseTileTrees(trees);
     this._imageryTrees.forEach((imageryTree) => trees.disclose(imageryTree));
   }
