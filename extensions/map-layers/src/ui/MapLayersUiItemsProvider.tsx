@@ -21,14 +21,21 @@ export class MapLayersUiItemsProvider implements UiItemsProvider {
 
   public provideWidgets(_stageId: string, stageUsage: string, location: StagePanelLocation, section: StagePanelSection | undefined): ReadonlyArray<AbstractWidgetProps> {
     const widgets: AbstractWidgetProps[] = [];
+    const mapLayerOptions: MapLayerOptions = {
+      hideExternalMapLayers: false,
+      mapTypeOptions: { supportTileUrl: false, supportWmsAuthentication: true },
+      fetchPublicMapLayerSources: false,
+    };
+
     if (stageUsage === StageUsage.General && location === StagePanelLocation.Right && section === StagePanelSection.Start) {
       widgets.push({
         id: "map-layers:mapLayersWidget",
         label: MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.Label"),
         icon: "icon-map",
-        getWidgetContent: () => <MapLayersWidget />, // eslint-disable-line react/display-name
+        getWidgetContent: () => <MapLayersWidget mapLayerOptions={mapLayerOptions} />, // eslint-disable-line react/display-name
       });
     }
+
     return widgets;
   }
 }
