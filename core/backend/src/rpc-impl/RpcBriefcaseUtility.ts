@@ -81,7 +81,7 @@ export class RpcBriefcaseUtility {
 
     const props = await BriefcaseManager.downloadBriefcase(requestContext, request);
     return BriefcaseDb.open(requestContext, { fileName: props.fileName });
-  };
+  }
 
   private static _briefcasePromise: Promise<BriefcaseDb> | undefined;
   private static async openBriefcase(args: DownloadAndOpenArgs): Promise<BriefcaseDb> {

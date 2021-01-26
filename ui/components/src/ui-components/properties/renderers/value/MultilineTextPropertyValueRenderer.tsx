@@ -28,7 +28,7 @@ export class MultilineTextPropertyValueRenderer implements IPropertyValueRendere
   public render(record: PropertyRecord, context?: PropertyValueRendererContext): React.ReactNode {
     return <MultilineTextPropertyValueRendererImpl record={record} context={context} />;
   }
-};
+}
 
 interface MultilineTextPropertyValueRendererImplProps {
   record: PropertyRecord;
@@ -61,7 +61,7 @@ interface MultilineTextRenderer {
 }
 
 /** @internal */
-export const MultilineTextRenderer: React.FC<MultilineTextRenderer> = (props) => {
+export const MultilineTextRenderer: React.FC<MultilineTextRenderer> = (props) => { // eslint-disable-line @typescript-eslint/no-redeclare
   const { rerenderContext, numRerenders, rerender } = useRerender({ contentOverflows: false });
   const spanRef = useRef<HTMLSpanElement>(null);
   const divRef = useRef<HTMLDivElement>(null);

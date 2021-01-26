@@ -15,9 +15,9 @@ import { Range3d } from "../geometry3d/Range";
 import { Segment1d } from "../geometry3d/Segment1d";
 import { Transform } from "../geometry3d/Transform";
 import { Matrix4d } from "../geometry4d/Matrix4d";
+import { ClipPlane } from "./ClipPlane";
 import { ClipMaskXYZRangePlanes, ClipPrimitive, ClipPrimitiveProps, ClipShape } from "./ClipPrimitive";
 import { ClipPlaneContainment } from "./ClipUtils";
-import { ClipPlane } from "./ClipPlane";
 import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
 
 /** Wire format describing a [[ClipVector]].
@@ -444,7 +444,7 @@ export type StringifiedClipVector = ClipVector & { readonly clipString: string }
  * @note The string representation is computed once; the ClipVector is assumed not to be subsequently modified.
  * @alpha
  */
-export namespace StringifiedClipVector {
+export namespace StringifiedClipVector { // eslint-disable-line @typescript-eslint/no-redeclare
   /** Create from a ClipVector.
    * @param clip The ClipVector to stringify.
    * @returns The input ClipVector with its compact string representation, or undefined if the input is undefined or empty.
