@@ -14,7 +14,7 @@ chai.should();
  * Project Share Client API TODOs:
  * + Add an id field, and replace all wsgIds with ids - including parentFolderWsgId
  */
-const testFolderPostfix = "_testFolder"
+const testFolderPostfix = "_testFolder";
 const mainTestFolderName = `${Guid.createValue()}${testFolderPostfix}`;
 const testFolderAName = "2A";
 const testFolderBName = "2B";
@@ -34,7 +34,7 @@ const createFolders = async (projectShareClient: ProjectShareClient, requestCont
   testFolder2B.name = testFolderBName;
   const createdFolder2B = await projectShareClient.createFolder(requestContext, projectId, parentFolderId, testFolder2B);
 
-  return [createdFolder2A, createdFolder2B]
+  return [createdFolder2A, createdFolder2B];
 };
 
 const createFiles = async (projectShareClient: ProjectShareClient, requestContext: AuthorizedClientRequestContext, projectId: string, parentFolderId: any): Promise<ProjectShareFile[]> => {
@@ -68,22 +68,22 @@ const createFiles = async (projectShareClient: ProjectShareClient, requestContex
   const file3A: ProjectShareFile = await projectShareClient.createFile(requestContext, projectId, parentFolderId, testFile3);
   const data3A = {};
   const createdFile3A = await projectShareClient.uploadContentInFile(requestContext, projectId, file3A, JSON.stringify(data3A));
-  return [createdFileA, createdFile2A, createdFile3A]
+  return [createdFileA, createdFile2A, createdFile3A];
 };
 
-const deleteOldTestFolders = async(projectShareClient: ProjectShareClient, requestContext: AuthorizedClientRequestContext, projectId: string) => {
+const deleteOldTestFolders = async (projectShareClient: ProjectShareClient, requestContext: AuthorizedClientRequestContext, projectId: string) => {
   const folders = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inFolder(projectId));
   const maximumAgeInHours = 1;
-  let date = new Date();
-  date.setHours(date.getHours() - maximumAgeInHours)
+  const date = new Date();
+  date.setHours(date.getHours() - maximumAgeInHours);
 
-  const foldersToDelete = folders.filter(x => x.name?.endsWith(testFolderPostfix) && x.modifiedTimeStamp !== undefined
+  const foldersToDelete = folders.filter((x) => x.name?.endsWith(testFolderPostfix) && x.modifiedTimeStamp !== undefined
     && new Date(x.modifiedTimeStamp) < date);
 
   for (const folder of foldersToDelete) {
     await projectShareClient.deleteFolder(requestContext, projectId, folder.wsgId);
   }
-}
+};
 
 describe("ProjectShareClient (#integration)", () => {
   const projectShareClient: ProjectShareClient = new ProjectShareClient();
@@ -99,7 +99,7 @@ describe("ProjectShareClient (#integration)", () => {
     projectId = project.wsgId;
 
     // removing old folders to avoid trash data
-    await deleteOldTestFolders(projectShareClient, requestContext, projectId)
+    await deleteOldTestFolders(projectShareClient, requestContext, projectId);
   });
 
   beforeEach(async () => {
@@ -176,7 +176,7 @@ describe("ProjectShareClient (#integration)", () => {
     const folder2B = createdFolders.find((x) => x.name === testFolderBName) ?? createdFolders[0];
 
     // act
-    const folders = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inPath(projectId, mainTestFolderName + "/"));
+    const folders = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inPath(projectId, `${mainTestFolderName}/`));
 
     // assert
     chai.assert.strictEqual(2, folders.length);
