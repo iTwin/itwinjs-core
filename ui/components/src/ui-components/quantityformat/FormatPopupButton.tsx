@@ -77,7 +77,7 @@ export function FormatPopupButton(props: FormatPopupButtonProps) {
         moveFocus={showFocusOutline}
       >
         <div className="components-quantity-format-popup-panel" data-testid="components-quantity-format-popup-panel">
-          <FormatPanel onFormatChange={handleOnFormatChanged} {...otherProps} />
+          <FormatPanel onFormatChange={handleOnFormatChanged} {...otherProps} enableMinimumProperties />
           <div className="components-button-panel">
             <Button buttonType={ButtonType.Blue} onClick={handleOnFormatSave}>Save</Button>
           </div>

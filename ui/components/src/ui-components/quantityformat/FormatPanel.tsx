@@ -26,6 +26,8 @@ export interface FormatPanelProps extends CommonProps {
   persistenceUnit: Promise<UnitProps> | UnitProps;
   showSample?: boolean;
   initialMagnitude?: number;
+  // if true a only primary format properties are initially displayed and a "More/Less" link is added.
+  enableMinimumProperties?: boolean;
   onFormatChange?: (format: FormatProps) => void;
   provideFormatSpec?: (persistenceUnit: UnitProps, formatProps: FormatProps, unitsProvider: UnitsProvider) => Promise<FormatterSpec>;
   providePrimaryChildren?: (formatProps: FormatProps, unitsProvider: UnitsProvider, fireFormatChange: (newProps: FormatProps) => void) => React.ReactNode;
@@ -95,7 +97,7 @@ export function FormatPanel(props: FormatPanelProps) {
       <FormatTypeOption formatProps={formatProps} onChange={handleFormatChange} />
       <FormatPrecision formatProps={formatProps} onChange={handleFormatChange} />
       {props.providePrimaryChildren && props.providePrimaryChildren(formatProps, unitsProvider, handleFormatChange)}
-      <MiscFormatOptions formatProps={formatProps} onChange={handleFormatChange} showOptions={showOptions} onShowHideOptions={handleShowOptions}>
+      <MiscFormatOptions formatProps={formatProps} onChange={handleFormatChange} enableMinimumProperties={enableMinimumProperties} showOptions={showOptions} onShowHideOptions={handleShowOptions}>
         {props.provideSecondaryChildren && props.provideSecondaryChildren(formatProps, unitsProvider, handleFormatChange)}
       </MiscFormatOptions>
     </div>

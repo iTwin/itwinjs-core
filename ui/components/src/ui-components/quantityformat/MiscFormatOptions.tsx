@@ -22,6 +22,7 @@ import { SpecialKey } from "@bentley/ui-abstract";
 export interface MiscFormatOptionsProps extends CommonProps {
   formatProps: FormatProps;
   onChange?: (format: FormatProps) => void;
+  enableMinimumProperties?: boolean;
   showOptions: boolean;
   onShowHideOptions: (show: boolean) => void;
   children?: React.ReactNode;
@@ -31,7 +32,7 @@ export interface MiscFormatOptionsProps extends CommonProps {
  * @alpha
  */
 export function MiscFormatOptions(props: MiscFormatOptionsProps) {
-  const { formatProps, onChange, showOptions, onShowHideOptions } = props;
+  const { formatProps, onChange, showOptions, onShowHideOptions, enableMinimumProperties } = props;
 
   const handleSetFormatProps = React.useCallback((newFormatProps: FormatProps) => {
     onChange && onChange(newFormatProps);
@@ -133,9 +134,9 @@ export function MiscFormatOptions(props: MiscFormatOptionsProps) {
   return (
     <>
       { // eslint-disable-next-line jsx-a11y/anchor-is-valid
-        !showOptions && <a onClick={handleToggleButtonClick} onKeyUp={handleKeyUpOnLink} className={"components-quantityFormat-more-less"} role="link" tabIndex={0} >More</a>}
+        enableMinimumProperties && !showOptions && <a onClick={handleToggleButtonClick} onKeyUp={handleKeyUpOnLink} className={"components-quantityFormat-more-less"} role="link" tabIndex={0} >More</a>}
       {
-        showOptions &&
+        (!enableMinimumProperties || showOptions) &&
         <>
           <span className={"uicore-label"}>Sign Option</span>
           <SignOptionSelector signOption={showSignOption} onChange={handleShowSignChange} />
@@ -167,7 +168,7 @@ export function MiscFormatOptions(props: MiscFormatOptionsProps) {
           {props.children}
 
           { // eslint-disable-next-line jsx-a11y/anchor-is-valid
-            showOptions && <a onClick={handleToggleButtonClick} onKeyUp={handleKeyUpOnLink} className={"components-quantityFormat-more-less"} role="link" tabIndex={0} >Less</a>}
+            enableMinimumProperties && showOptions && <a onClick={handleToggleButtonClick} onKeyUp={handleKeyUpOnLink} className={"components-quantityFormat-more-less"} role="link" tabIndex={0} >Less</a>}
         </>
       }
     </>

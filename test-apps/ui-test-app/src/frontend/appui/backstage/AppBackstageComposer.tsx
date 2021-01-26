@@ -11,10 +11,12 @@ import { BackstageComposer, FrontstageManager, UserProfileBackstageItem } from "
 import { ComponentExamplesModalFrontstage } from "../frontstages/component-examples/ComponentExamples";
 import { LocalFileOpenFrontstage } from "../frontstages/LocalFileStage";
 import { SettingsModalFrontstage } from "../frontstages/Settings";
+import { QuantityFormatModalFrontstage } from "../frontstages/QuantityFormatStage";
 import { RootState, SampleAppIModelApp, SampleAppUiActionId } from "../..";
 
 import stageIconSvg from "./imodeljs.svg?sprite";
 import settingsIconSvg from "@bentley/icons-generic/icons/settings.svg?sprite";
+import measureIconSvg from "@bentley/icons-generic/icons/measure.svg?sprite";
 import { EditFrontstage } from "../frontstages/editing/EditFrontstage";
 import { ViewsFrontstage } from "../frontstages/ViewsFrontstage";
 
@@ -60,6 +62,7 @@ export function AppBackstageComposerComponent({ userInfo }: AppBackstageComposer
       BackstageItemUtilities.createActionItem("SampleApp.open-local-file", 300, 30, async () => LocalFileOpenFrontstage.open(), IModelApp.i18n.translate("SampleApp:backstage:fileSelect"), undefined, "icon-placeholder"),
       BackstageItemUtilities.createActionItem("SampleApp.settings", 400, 10, () => FrontstageManager.openModalFrontstage(new SettingsModalFrontstage()), IModelApp.i18n.translate("SampleApp:backstage.testFrontstage6"), undefined, IconSpecUtilities.createSvgIconSpec(settingsIconSvg)),
       BackstageItemUtilities.createActionItem("SampleApp.componentExamples", 400, 20, () => FrontstageManager.openModalFrontstage(new ComponentExamplesModalFrontstage()), IModelApp.i18n.translate("SampleApp:backstage.componentExamples"), undefined, "icon-details", { badgeType: BadgeType.New }),
+      BackstageItemUtilities.createActionItem("SampleApp.quantityFormats", 400, 30, () => FrontstageManager.openModalFrontstage(new QuantityFormatModalFrontstage()), IModelApp.i18n.translate("SampleApp:backstage.quantityFormat"), undefined, IconSpecUtilities.createSvgIconSpec(measureIconSvg)),
     ];
   });
 

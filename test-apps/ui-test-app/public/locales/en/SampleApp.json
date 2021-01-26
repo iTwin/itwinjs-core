@@ -45,6 +45,9 @@
     "snapWidgetOpacityTitle": "Snap Widget Opacity",
     "snapWidgetOpacityDescription": "Immediately change the toolbar opacity when the mouse gets close"
   },
+  "QuantityFormatModalFrontstage": {
+    "QuantityFormatStage": "Define Quantity Formats"
+  },
   "backstage": {
     "command": "Command",
     "testFrontstage1": "Panels Showcase",
@@ -56,6 +59,7 @@
     "viewIModel": "View iModel",
     "editIModel": "Edit iModel",
     "testFrontstage6": "Settings",
+    "quantityFormat": "Quantity Formats",
     "iModelStage": "Review iModel",
     "editStage": "Edit and Modify iModel",
     "task1": "Test 1 Frontstage via Task",
