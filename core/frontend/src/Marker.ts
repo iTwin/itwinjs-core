@@ -16,7 +16,7 @@ import { ToolTipOptions } from "./NotificationManager";
 import { CanvasDecoration } from "./render/CanvasDecoration";
 import { BeButtonEvent } from "./tools/Tool";
 import { DecorateContext } from "./ViewContext";
-import { ELEMENT_MARKED_FOR_REMOVAL, ScreenViewport, Viewport } from "./Viewport";
+import { ScreenViewport, Viewport } from "./Viewport";
 import { ViewRect } from "./ViewRect";
 
 /** The types that may be used for Markers

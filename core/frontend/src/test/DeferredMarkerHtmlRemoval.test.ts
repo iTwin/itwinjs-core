@@ -72,8 +72,6 @@ describe("ScreenViewport", () => {
         { x: 1, y: 1, z: 1 }
       )
     );
-    vp.setAllValid();
-    vp.invalidateDecorations();
     return vp;
   }
 
@@ -82,10 +80,12 @@ describe("ScreenViewport", () => {
     const decorator = new AddMarkersAlwaysDecorator(vp);
     IModelApp.viewManager.addDecorator(decorator);
     IModelApp.viewManager.addViewport(vp);
-    (IModelApp as any)._wantEventLoop = false;
+    vp.setAllValid();
+    vp.invalidateDecorations();
 
     vp.renderFrame();
     for (const marker of decorator.markers) {
+      // eslint-disable-next-line deprecation/deprecation
       expect(vp.decorationDiv.contains(marker.htmlElement || null)).to.be.true;
     }
 
@@ -93,8 +93,11 @@ describe("ScreenViewport", () => {
 
     vp.renderFrame();
     for (const marker of decorator.markers) {
+      // eslint-disable-next-line deprecation/deprecation
       expect(vp.decorationDiv.contains(marker.htmlElement || null)).to.be.true;
     }
+
+    IModelApp.viewManager.dropDecorator(decorator);
   });
 
   it("should delete markers that aren't readded by registered decorators", () => {
@@ -102,10 +105,12 @@ describe("ScreenViewport", () => {
     const decorator = new AddMarkersOnceDecorator(vp);
     IModelApp.viewManager.addDecorator(decorator);
     IModelApp.viewManager.addViewport(vp);
-    (IModelApp as any)._wantEventLoop = false;
+    vp.setAllValid();
+    vp.invalidateDecorations();
 
     vp.renderFrame();
     for (const marker of decorator.markers) {
+      // eslint-disable-next-line deprecation/deprecation
       expect(vp.decorationDiv.contains(marker.htmlElement || null)).to.be.true;
     }
 
@@ -113,7 +118,10 @@ describe("ScreenViewport", () => {
 
     vp.renderFrame();
     for (const marker of decorator.markers) {
+      // eslint-disable-next-line deprecation/deprecation
       expect(vp.decorationDiv.contains(marker.htmlElement || null)).to.be.false;
     }
+
+    IModelApp.viewManager.dropDecorator(decorator);
   });
 });

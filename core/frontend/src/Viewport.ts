@@ -2586,8 +2586,9 @@ export class ScreenViewport extends Viewport {
   public readonly vpDiv: HTMLDivElement;
   /** The canvas to display the view contents. */
   public readonly canvas: HTMLCanvasElement;
-  /** @deprecated from public access use DecorateContext.addHtmlDecoration
-   * The HTMLDivElement used for HTML decorations. May be referenced from the DOM by class "overlay-decorators".
+  /** The HTMLDivElement used for HTML decorations. May be referenced from the DOM by class "overlay-decorators".
+   * @deprecated from public access, use DecorateContext.addHtmlDecoration
+   * it will be un-deprecated for internal usage only in a future release
    */
   public readonly decorationDiv: HTMLDivElement;
   /** The HTMLDivElement used for toolTips. May be referenced from the DOM by class "overlay-tooltip". */
@@ -2700,6 +2701,8 @@ export class ScreenViewport extends Viewport {
     this.addChildDiv(this.vpDiv, canvas, 10);
     this.target.updateViewRect();
 
+    // SEE: decorationDiv doc comment
+    // eslint-disable-next-line deprecation/deprecation
     this.decorationDiv = this.addNewDiv("overlay-decorators", true, 30);
     this.toolTipDiv = this.addNewDiv("overlay-tooltip", true, 40);
     this.setCursor();
@@ -2883,6 +2886,8 @@ export class ScreenViewport extends Viewport {
 
   /** @internal */
   protected addDecorations(decorations: Decorations): void {
+    // SEE: decorationDiv doc comment
+    // eslint-disable-next-line deprecation/deprecation
     ScreenViewport.markAllChildrenForRemoval(this.decorationDiv);
     const context = new DecorateContext(this, decorations);
     context.addFromDecorator(this.view);
@@ -2891,6 +2896,7 @@ export class ScreenViewport extends Viewport {
     for (const decorator of IModelApp.viewManager.decorators)
       context.addFromDecorator(decorator);
 
+    // eslint-disable-next-line deprecation/deprecation
     ScreenViewport.removeMarkedChildren(this.decorationDiv);
   }
 
