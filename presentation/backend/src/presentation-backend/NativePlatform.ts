@@ -8,6 +8,7 @@
 
 import { ClientRequestContext, IDisposable } from "@bentley/bentleyjs-core";
 import { IModelDb, IModelHost, IModelJsNative } from "@bentley/imodeljs-backend";
+import { FormatProps } from "@bentley/imodeljs-quantity";
 import {
   DiagnosticsScopeLogs, PresentationError, PresentationStatus, UpdateInfoJSON, VariableValueJSON, VariableValueTypes,
 } from "@bentley/presentation-common";
@@ -68,6 +69,12 @@ export interface DefaultNativePlatformProps {
   isChangeTrackingEnabled: boolean;
   cacheConfig?: IModelJsNative.ECPresentationHierarchyCacheConfig;
   contentCacheSize?: number;
+  defaultFormatsMap?: {
+    [phenomenon: string]: {
+      unitSystems: string[];
+      format: FormatProps;
+    };
+  };
 }
 
 /** @internal */
@@ -79,7 +86,8 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
     public constructor() {
       const mode = (props.mode === PresentationManagerMode.ReadOnly) ? IModelJsNative.ECPresentationManagerMode.ReadOnly : IModelJsNative.ECPresentationManagerMode.ReadWrite;
       const cacheConfig = props.cacheConfig ?? { mode: HierarchyCacheMode.Disk, directory: "" };
-      this._nativeAddon = new IModelHost.platform.ECPresentationManager({ ...props, mode, cacheConfig });
+      const defaultFormatsMap = props.defaultFormatsMap ?  this.getSerializedMap(props.defaultFormatsMap) : {};
+      this._nativeAddon = new IModelHost.platform.ECPresentationManager({ ...props, mode, cacheConfig, defaultFormatsMap});
     }
     private getStatus(responseStatus: IModelJsNative.ECPresentationStatus): PresentationStatus {
       switch (responseStatus) {
@@ -87,6 +95,20 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
         case IModelJsNative.ECPresentationStatus.Canceled: return PresentationStatus.Canceled;
         default: return PresentationStatus.Error;
       }
+    }
+    private getSerializedMap(defaultMap: { [phenomenon: string]: { unitSystems: string[], format: FormatProps } }){
+      const res: {
+        [phenomenon: string]: {
+          unitSystems: string[];
+          serializedFormat: string;
+        };
+      } = {};
+      Object.keys(defaultMap).forEach((key) => {
+        const value = defaultMap[key];
+        res[key] = {unitSystems: value.unitSystems, serializedFormat: JSON.stringify(value.format)};
+      });
+
+      return res;
     }
     private createSuccessResponse<T>(response: IModelJsNative.ECPresentationManagerResponse<T>): NativePlatformResponse<T> {
       const retValue: NativePlatformResponse<T> = { result: response.result! };

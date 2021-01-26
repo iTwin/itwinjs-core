@@ -10,6 +10,7 @@ import * as hash from "object-hash";
 import * as path from "path";
 import { ClientRequestContext, Id64String, Logger } from "@bentley/bentleyjs-core";
 import { BriefcaseDb, EventSink, IModelDb, IModelHost, IModelJsNative } from "@bentley/imodeljs-backend";
+import { FormatProps } from "@bentley/imodeljs-quantity";
 import {
   Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides,
   DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ExtendedContentRequestOptions,
@@ -247,6 +248,16 @@ export interface PresentationManagerProps {
   contentCacheSize?: number;
 
   /**
+   * A map for setting up default formats.
+   *  @alpha */
+  defaultFormatsMap?: {
+    [phenomenon: string]: {
+      unitSystems: string[];
+      format: FormatProps;
+    };
+  };
+
+  /**
    * An identifier which helps separate multiple presentation managers. It's
    * mostly useful in tests where multiple presentation managers can co-exist
    * and try to share the same resources, which we don't want. With this identifier
@@ -307,6 +318,7 @@ export class PresentationManager {
         isChangeTrackingEnabled,
         cacheConfig: createCacheConfig(this._props.cacheConfig),
         contentCacheSize: this._props.contentCacheSize,
+        defaultFormatsMap: this._props.defaultFormatsMap,
       });
       this._nativePlatform = new nativePlatformImpl();
     }

@@ -93,6 +93,7 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: false,
             cacheConfig: { mode: HierarchyCacheMode.Disk, directory: "" },
             contentCacheSize: undefined,
+            defaultFormatsMap: {},
           });
         });
       });
@@ -127,6 +128,7 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: true,
             cacheConfig: expectedCacheConfig,
             contentCacheSize: 999,
+            defaultFormatsMap: {},
           });
         });
       });
@@ -143,6 +145,7 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: false,
             cacheConfig: { mode: HierarchyCacheMode.Disk, directory: "" },
             contentCacheSize: undefined,
+            defaultFormatsMap: {},
           });
         });
         constructorSpy.resetHistory();
@@ -161,6 +164,7 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: false,
             cacheConfig: expectedConfig,
             contentCacheSize: undefined,
+            defaultFormatsMap: {},
           });
         });
       });
@@ -177,6 +181,7 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: false,
             cacheConfig: { mode: HierarchyCacheMode.Hybrid, disk: undefined },
             contentCacheSize: undefined,
+            defaultFormatsMap: {},
           });
         });
         constructorSpy.resetHistory();
@@ -200,6 +205,7 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: false,
             cacheConfig: expectedConfig,
             contentCacheSize: undefined,
+            defaultFormatsMap: {},
           });
         });
       });
