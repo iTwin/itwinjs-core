@@ -32,7 +32,7 @@ class TileMemoryTracer {
 
   public constructor() {
     for (let i = 0; i < TileMemorySelector.Count; i++)
-        this.counters.push({ numTiles: 0, bytesUsed: 0 });
+      this.counters.push({ numTiles: 0, bytesUsed: 0 });
   }
 
   public update(): void {
@@ -120,12 +120,24 @@ class TileMemoryTracer {
 
 const labels = ["Selected", "Ancestors", "Descendants", "Orphaned", "Total"];
 
+/** Breaks down the GPU memory allocated to tiles into the following groups, displaying the amount of memory consumed and number of tiles for each group:
+ * - "Selected" - tiles that have been selected for display in at least one viewport.
+ * - "Ancestors" - tiles not selected for display, but have descendents selected for display.
+ * - "Descendants" - tiles not selected for display, but have ancestors selected for display.
+ * - "Orphans" - tiles not selected for display that have no ancestors nor descendants selected for display.
+ * - "Total" - totals of the above categories.
+ *
+ * The number of tiles in each group includes only those tiles that are consuming a non-zero amount of GPU memory.
+ * The widget includes a checkbox to toggle tracking and display of these statistics.
+ * @beta
+ */
 export class TileMemoryBreakdown {
   private readonly _tracer = new TileMemoryTracer();
   private readonly _div: HTMLDivElement;
   private _curIntervalId?: NodeJS.Timer;
   private readonly _statsElements: HTMLElement[] = [];
 
+  /** Construct a new breakdown widget as a child of the specified parent element. */
   public constructor(parent: HTMLElement) {
     createCheckBox({
       parent,
@@ -137,7 +149,7 @@ export class TileMemoryBreakdown {
     parent.appendChild(this._div = document.createElement("div"));
     this._div.style.display = "none";
     this._div.style.textAlign = "right";
-    for (const label of labels) {
+    for (let i = 0; i < TileMemorySelector.Count; i++) {
       const div = document.createElement("div");
       const elem = document.createElement("text");
       this._statsElements.push(elem);

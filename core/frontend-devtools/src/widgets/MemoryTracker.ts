@@ -9,7 +9,7 @@
 
 import { assert, BeTimePoint } from "@bentley/bentleyjs-core";
 import {
-  DisclosedTileTreeSet, IModelApp, IModelConnection, RenderMemory, Tile, TileTreeOwner, Viewport,
+  DisclosedTileTreeSet, IModelApp, RenderMemory, TileTreeOwner, Viewport,
 } from "@bentley/imodeljs-frontend";
 import { ComboBoxEntry, createComboBox } from "../ui/ComboBox";
 

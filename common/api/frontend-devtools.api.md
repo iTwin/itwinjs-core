@@ -642,6 +642,7 @@ export interface DiagnosticsPanelProps {
         fps?: boolean;
         tileStats?: boolean;
         memory?: boolean;
+        tileMemoryBreakdown?: boolean;
         gpuProfiler?: boolean;
         toolSettings?: boolean;
     };
@@ -790,6 +791,9 @@ export class FlipImageEffect extends AddEffectTool {
     // (undocumented)
     static toolId: string;
 }
+
+// @internal (undocumented)
+export function formatMemory(numBytes: number): string;
 
 // @beta
 export class FpsTracker {
@@ -1750,6 +1754,13 @@ export interface TextBoxProps {
     // (undocumented)
     tooltip?: string;
 }
+
+// @beta
+export class TileMemoryBreakdown {
+    constructor(parent: HTMLElement);
+    // (undocumented)
+    dispose(): void;
+    }
 
 // @beta
 export class TileStatisticsTracker {

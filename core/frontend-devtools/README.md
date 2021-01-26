@@ -19,6 +19,7 @@ Because this is a developer-only package, its functionality is not expected to e
   * `FpsTracker` - displays the average frames-per-second.
   * `TileStatisticsTracker` - displays the state of tile requests in the system.
   * `MemoryTracker` - displays statistics about GPU memory allocated by the display system.
+  * `TileMemoryBreakdown` - breaks down GPU memory used by tiles based on their relationship to the set of displayed tiles.
   * `GpuProfiler` - displays GPU timing queries and allows recording for viewing in chrome://tracing. See https://aras-p.info/blog/2017/01/23/Chrome-Tracing-as-Profiler-Frontend/ for more information.
   * `DiagnosticsPanel` - combines all of the above widgets into a single panel.
 
