@@ -539,7 +539,7 @@ export class ExternalTextureLoader { /* currently exported for tests only */
   private async _nextRequest(prevReq: ExternalTextureRequest) {
     this._activeRequests.splice(this._activeRequests.indexOf(prevReq), 1);
     if (this._activeRequests.length < this._maxActiveRequests && this._pendingRequests.length > 0) {
-      const req = this._pendingRequests.pop()!;
+      const req = this._pendingRequests.shift()!;
       await this._activateRequest(req);
     }
   }
