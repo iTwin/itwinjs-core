@@ -1,0 +1,264 @@
+pool:
+  name: iModelTechCI
+  demands: Agent.OS -equals Windows_NT
+
+#Your build pipeline references an undefined variable named ‘Pipeline.Workspace’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
+#Your build pipeline references an undefined variable named ‘Pipeline.Workspace’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
+#Your build pipeline references an undefined variable named ‘tempDocsV1Location\public_build’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
+#Your build pipeline references an undefined variable named ‘Pipeline.Workspace’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
+#Your build pipeline references an undefined variable named ‘Pipeline.Workspace’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
+#Your build pipeline references an undefined variable named ‘Pipeline.Workspace’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
+variables:
+  tempDocsLocation: '$(Agent.BuildDirectory)\tempDocsBuild'
+
+steps:
+- task: NodeTool@0
+  displayName: 'Use Node 10.x'
+  inputs:
+    versionSpec: 10.x
+    checkLatest: true
+
+- script: |
+   git config --local user.email imodeljs-admin@users.noreply.github.com
+   git config --local user.name imodeljs-admin
+  displayName: 'Setup git config'
+
+- script: 'node common/scripts/install-run-rush.js install --purge'
+  displayName: 'rush install'
+
+- script: 'node common/scripts/install-run-rush.js build -v'
+  displayName: 'rush build'
+  condition: and(succeeded(), ne(startsWith(variables['Build.SourceBranch'], 'refs/heads/master'), true), ne(startsWith(variables['System.PullRequest.TargetBranch'], 'refs/heads/master'), true))
+
+- script: 'node common/scripts/install-run-rush.js compile -v'
+  displayName: 'rush compile'
+  condition: and(succeeded(), ne(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/2'), true), ne(startsWith(variables['System.PullRequest.TargetBranch'], 'refs/heads/release/2'), true))
+
+- script: 'node common/scripts/install-run-rush.js docs'
+  displayName: 'rush docs'
+
+- task: PublishPipelineArtifact@1
+  displayName: 'Publish Pipeline Artifact - TypeDoc json'
+  inputs:
+    targetPath: '$(Build.SourcesDirectory)/generated-docs'
+    artifact: 'TypeDoc json'
+
+- task: CopyFiles@2
+  displayName: 'Copy Core Reference to Staging'
+  inputs:
+    SourceFolder: '$(Build.SourcesDirectory)/generated-docs/core'
+    TargetFolder: '$(System.ArtifactsDirectory)\staging\reference\'
+
+- task: CopyFiles@2
+  displayName: 'Copy Clients Reference to Staging'
+  inputs:
+    SourceFolder: '$(Build.SourcesDirectory)/generated-docs/clients'
+    TargetFolder: '$(System.ArtifactsDirectory)\staging\reference\'
+  continueOnError: true
+
+- task: CopyFiles@2
+  displayName: 'Copy UI reference to staging'
+  inputs:
+    SourceFolder: '$(Build.SourcesDirectory)/generated-docs/ui/'
+    TargetFolder: '$(System.ArtifactsDirectory)\staging\reference\'
+
+- task: CopyFiles@2
+  displayName: 'Copy Presentation reference to staging'
+  inputs:
+    SourceFolder: '$(Build.SourcesDirectory)/generated-docs/presentation/'
+    TargetFolder: '$(System.ArtifactsDirectory)\staging\reference\'
+
+- task: CopyFiles@2
+  displayName: 'Copy Domains reference to staging'
+  inputs:
+    SourceFolder: '$(Build.SourcesDirectory)/generated-docs/domains'
+    TargetFolder: '$(System.ArtifactsDirectory)\staging\reference\'
+  condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/v1.x'), ne(startsWith(variables['System.PullRequest.TargetBranch'], 'refs/heads/v1.x'), true), ne(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/1'), true), ne(variables['System.PullRequest.TargetBranch'], 'refs/heads/hotfix/briefcase-fix'))
+
+- task: CopyFiles@2
+  displayName: 'Copy Extracted Code to staging area'
+  inputs:
+    SourceFolder: '$(Build.SourcesDirectory)/generated-docs/extract/'
+    TargetFolder: '$(System.ArtifactsDirectory)\staging\extract\'
+
+- task: CopyFiles@2
+  displayName: 'Copy imodeljs\docs folder to staging area'
+  inputs:
+    SourceFolder: '$(Build.SourcesDirectory)/docs/'
+    TargetFolder: '$(System.ArtifactsDirectory)/staging'
+
+- task: DownloadPipelineArtifact@2
+  displayName: 'Download Pipeline Artifact - .updated.json'
+  inputs:
+    buildType: specific
+    project: '2c48216e-e72f-48b4-a4eb-40ff1c04e8e4'
+    definition: 1734
+    buildVersionToDownload: latestFromBranch
+    artifactName: .updated.json
+    targetPath: '$(System.ArtifactsDirectory)'
+
+- task: CopyFiles@2
+  displayName: 'Copy .updated.json to staging'
+  inputs:
+    SourceFolder: '$(System.ArtifactsDirectory)'
+    Contents: .updated.json
+    TargetFolder: '$(System.ArtifactsDirectory)\staging\config'
+
+- task: DownloadBuildArtifacts@0
+  displayName: 'Download Bis Docs Artifacts'
+  inputs:
+    buildType: specific
+    project: '2c48216e-e72f-48b4-a4eb-40ff1c04e8e4'
+    pipeline: 1633
+    buildVersionToDownload: specific
+    buildId: 709524
+    artifactName: 'Bis Docs'
+
+- task: CopyFiles@2
+  displayName: 'Copy Bis Docs to staging'
+  inputs:
+    SourceFolder: '$(System.ArtifactsDirectory)/Bis Docs'
+    TargetFolder: '$(System.ArtifactsDirectory)\staging\bis\domains'
+
+- task: Npm@0
+  displayName: 'Install BeMetalsmith'
+  inputs:
+    arguments: '@bentley/bemetalsmith@4.x'
+
+- task: Npm@1
+  displayName: 'npm audit'
+  inputs:
+    command: custom
+    verbose: false
+    customCommand: 'audit --registry=https://registry.npmjs.org/ --audit-level=high'
+  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/v1.x'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release')))
+
+- script: './node_modules/.bin/bmsBuild --strictLinkChecking --topicsMustHaveDesc --source $(System.ArtifactsDirectory)/staging --destination $(agent.builddirectory)/tempDocsBuild/public_build --siteTitle iTwin.js'
+  displayName: 'Run bmsBuild'
+  condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/v1.x'), ne(startsWith(variables['System.PullRequest.TargetBranch'], 'refs/heads/v1.x'), true), ne(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/1'), true))
+
+- script: './node_modules/.bin/bmsBuild --strictLinkChecking --source $(System.ArtifactsDirectory)/staging --destination $(agent.builddirectory)/tempDocsV1Build/public_build/v1 --siteTitle iTwin.js --siteRoot /v1'
+  displayName: 'Run bmsBuild - v1'
+  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/v1.x'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/1'), startsWith(variables['System.PullRequest.TargetBranch'], 'refs/heads/v1.x')))
+
+- task: DownloadBuildArtifacts@0
+  displayName: 'Download Build Artifacts - Demo Viewer'
+  inputs:
+    buildType: specific
+    project: '2c48216e-e72f-48b4-a4eb-40ff1c04e8e4'
+    pipeline: 674
+    buildVersionToDownload: specific
+    buildId: 374323
+    downloadType: specific
+  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release'),  eq(variables['Build.SourceBranch'], 'refs/heads/v1.x')))
+
+- task: CopyFiles@2
+  displayName: 'Copy demo-viewer to public-viewer'
+  inputs:
+    SourceFolder: '$(System.ArtifactsDirectory)\demo-viewer-frontend'
+    TargetFolder: '$(agent.builddirectory)/tempDocsBuild/public_build/learning/public-viewer-demonstrator'
+  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/2')))
+
+- task: CopyFiles@2
+  displayName: 'Copy demo-viewer to public-viewer - v1'
+  inputs:
+    SourceFolder: '$(System.ArtifactsDirectory)\demo-viewer-frontend'
+    TargetFolder: '$(agent.builddirectory)/tempDocsV1Build/public_build/v1/learning/public-viewer-demonstrator'
+  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/v1.x'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/1')))
+
+- task: ms-codeanalysis.vss-microsoft-security-code-analysis-devops.build-task-credscan.CredScan@2
+  displayName: 'Run Credential Scanner'
+  inputs:
+    scanFolder: '$(agent.builddirectory)/tempDocsBuild'
+  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/2')))
+
+- task: ms-codeanalysis.vss-microsoft-security-code-analysis-devops.build-task-credscan.CredScan@2
+  displayName: 'Run Credential Scanner v1'
+  inputs:
+    scanFolder: '$(agent.builddirectory)/tempDocsV1Build'
+  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/v1.x'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/1')))
+
+- task: PublishPipelineArtifact@1
+  displayName: 'Publish Pipeline Artifact - .updated.json'
+  inputs:
+    targetPath: '$(System.ArtifactsDirectory)\staging\config\.updated.json'
+    artifact: .updated.json
+  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release'),  eq(variables['Build.SourceBranch'], 'refs/heads/v1.x')))
+
+- task: PublishPipelineArtifact@1
+  displayName: 'Publish Pipeline Artifact - Credential Scanner'
+  inputs:
+    targetPath: '$(Build.ArtifactStagingDirectory)\..\_sdt\logs\CredentialScanner'
+    artifact: CredentialScanner
+  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release'),  eq(variables['Build.SourceBranch'], 'refs/heads/v1.x')))
+
+- task: DownloadPipelineArtifact@2
+  displayName: 'Download Pipeline Artifact - Nuget Spec'
+  inputs:
+    buildType: specific
+    project: '2c48216e-e72f-48b4-a4eb-40ff1c04e8e4'
+    definition: 1830
+  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release'),  eq(variables['Build.SourceBranch'], 'refs/heads/v1.x')))
+
+- task: qetza.replacetokens.replacetokens-task.replacetokens@3
+  displayName: 'Replace tokens in NugetPackage.nuspec'
+  inputs:
+    targetFiles: '$(Pipeline.Workspace)\DocsNugetSpecFile\NugetPackage.nuspec'
+  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release')))
+
+- task: qetza.replacetokens.replacetokens-task.replacetokens@3
+  displayName: 'Replace tokens in NugetPackageV1.nuspec'
+  inputs:
+    targetFiles: '$(Pipeline.Workspace)\DocsNugetSpecFile\NugetPackageV1.nuspec'
+  condition: and(succeeded(), or(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/1'), startsWith(variables['Build.SourceBranch'], 'refs/heads/v1.x')))
+
+- task: DeleteFiles@1
+  displayName: 'Delete files from $(tempDocsLocation\public_build'
+  inputs:
+    SourceFolder: '$(tempDocsLocation)\public_build'
+    Contents: index.html
+  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release')))
+
+- task: DeleteFiles@1
+  displayName: 'Delete files from $(tempDocsLocation\public_build - V1'
+  inputs:
+    SourceFolder: '$(tempDocsV1Location\public_build'
+    Contents: index.html
+  condition: and(succeeded(), or(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/1'), startsWith(variables['Build.SourceBranch'], 'refs/heads/v1.x')))
+
+- task: NuGetToolInstaller@0
+  displayName: 'Use NuGet 4.9.2'
+  inputs:
+    versionSpec: 4.9.2
+  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release'),  eq(variables['Build.SourceBranch'], 'refs/heads/v1.x')))
+
+- task: NuGetCommand@2
+  displayName: 'NuGet pack'
+  inputs:
+    command: pack
+    packagesToPack: '$(Pipeline.Workspace)\DocsNugetSpecFile\NugetPackage.nuspec'
+    versioningScheme: byBuildNumber
+  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/2')))
+
+- task: NuGetCommand@2
+  displayName: 'NuGet pack v1.x'
+  inputs:
+    command: pack
+    packagesToPack: '$(Pipeline.Workspace)\DocsNugetSpecFile\NugetPackageV1.nuspec'
+    versioningScheme: byBuildNumber
+  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/v1.x'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/1')))
+
+- task: PublishPipelineArtifact@1
+  displayName: 'Publish Pipeline Artifact - iModel.jsDocumentation .nupkg'
+  inputs:
+    targetPath: '$(Build.ArtifactStagingDirectory)\iModeljs.Documentation.$(Build.BuildNumber).nupkg'
+    artifact: 'iModeljsDocumentationFiles_$(Build.BuildNumber)'
+  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/2')))
+
+- task: PublishPipelineArtifact@1
+  displayName: 'Publish Pipeline Artifact v1.x only - iModel.jsDocumentation .nupkg '
+  inputs:
+    targetPath: '$(Build.ArtifactStagingDirectory)\iModeljs.Documentation.V1.$(Build.BuildNumber).nupkg'
+    artifact: 'iModeljsDocumentationArchiveFiles_$(Build.BuildNumber)'
+  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/v1.x'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/1')))
+
