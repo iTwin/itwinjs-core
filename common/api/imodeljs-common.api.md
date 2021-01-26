@@ -4094,6 +4094,8 @@ export abstract class IpcWebSocket implements IpcSocket {
     // (undocumented)
     protected _channels: Map<string, Set<IpcListener>>;
     // (undocumented)
+    static receivers: Set<(evt: Event, message: IpcWebSocketMessage) => void>;
+    // (undocumented)
     removeListener(channel: string, listener: IpcListener): void;
     // (undocumented)
     abstract send(channel: string, ...data: any[]): void;
@@ -4149,8 +4151,6 @@ export enum IpcWebSocketMessageType {
 
 // @internal (undocumented)
 export abstract class IpcWebSocketTransport {
-    // (undocumented)
-    abstract listen(handler: (evt: Event, message: IpcWebSocketMessage) => void): void;
     // (undocumented)
     abstract send(message: IpcWebSocketMessage): void;
 }
