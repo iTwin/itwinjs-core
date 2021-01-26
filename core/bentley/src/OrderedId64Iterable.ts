@@ -7,8 +7,8 @@
  */
 
 import { assert } from "./Assert";
-import { Id64Array, Id64String } from "./Id";
 import { CompressedId64Set } from "./CompressedId64Set";
+import { Id64Array, Id64String } from "./Id";
 
 /** A collection of **valid** [[Id64String]]s sorted in ascending order by the unsigned 64-bit integer value of the Ids.
  * This ordering is a requirement for several groups of APIs including [[CompressedId64Set]].
@@ -26,7 +26,7 @@ export type OrderedId64Iterable = Iterable<Id64String>;
  * @see [[OrderedId64Iterable.compare]] for a function that compares Ids based on this criterion.
  * @beta
  */
-export namespace OrderedId64Iterable {
+export namespace OrderedId64Iterable { // eslint-disable-line @typescript-eslint/no-redeclare
   /** An ordered comparison of [[Id64String]]s suitable for use with sorting routines like `Array.sort` and sorted containers
    * like [[SortedArray]] and [[Dictionary]]. The comparison compares the 64-bit numerical values of the two Ids, returning a negative number if lhs < rhs,
    * a positive number if lhs > rhs, or zero if lhs == rhs.
@@ -107,7 +107,7 @@ export namespace OrderedId64Iterable {
    * @note If the inputs are not ordered as required by [[OrderedId64Iterable]], the results are unpredictable.
    * @beta
    */
-  export function * uniqueIterator(ids: OrderedId64Iterable) {
+  export function* uniqueIterator(ids: OrderedId64Iterable) {
     const iter = ids[Symbol.iterator]();
     let state = iter.next();
     let prev: Id64String | undefined;
@@ -150,7 +150,7 @@ export namespace OrderedId64Iterable {
    * @note If the inputs are not ordered as required by [[OrderedId64Iterable]], the results are unpredictable.
    * @beta
    */
-  export function * unionIterator(ids1: OrderedId64Iterable, ids2: OrderedId64Iterable) {
+  export function* unionIterator(ids1: OrderedId64Iterable, ids2: OrderedId64Iterable) {
     const leftIter = ids1[Symbol.iterator]();
     const rightIter = ids2[Symbol.iterator]();
     let leftState = leftIter.next();
@@ -198,7 +198,7 @@ export namespace OrderedId64Iterable {
    * @note If the inputs are not ordered as required by [[OrderedId64Iterable]], the results are unpredictable.
    * @beta
    */
-  export function * intersectionIterator(ids1: OrderedId64Iterable, ids2: OrderedId64Iterable) {
+  export function* intersectionIterator(ids1: OrderedId64Iterable, ids2: OrderedId64Iterable) {
     const leftIter = ids1[Symbol.iterator]();
     const rightIter = ids2[Symbol.iterator]();
     let leftState = leftIter.next();
@@ -233,7 +233,7 @@ export namespace OrderedId64Iterable {
    * @note If the inputs are not ordered as required by [[OrderedId64Iterable]], the results are unpredictable.
    * @beta
    */
-  export function * differenceIterator(ids1: OrderedId64Iterable, ids2: OrderedId64Iterable) {
+  export function* differenceIterator(ids1: OrderedId64Iterable, ids2: OrderedId64Iterable) {
     const leftIter = ids1[Symbol.iterator]();
     const rightIter = ids2[Symbol.iterator]();
     let leftState = leftIter.next();

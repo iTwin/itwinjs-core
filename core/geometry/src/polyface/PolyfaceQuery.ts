@@ -363,7 +363,7 @@ export class PolyfaceQuery {
     announce: AnnounceDrapePanel): Promise<number> {
     const context = SweepLineStringToFacetContext.create(linestringPoints);
     this.awaitBlockCount = 0;
-    let workTotal = 0;;
+    let workTotal = 0;
     if (context) {
       const visitor = polyface.createVisitor(0);
       let workCount;
