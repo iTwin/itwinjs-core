@@ -134,8 +134,10 @@ let iModelJsCss: string | undefined = `
   filter:drop-shadow(1px 1px 1px black)
 }
 
-.imodeljs-icon:hover {
-  opacity:1.0
+@media (hover: hover) {
+  .imodeljs-icon:hover {
+    opacity:1.0;
+  }
 }
 `;
 
