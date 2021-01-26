@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Config } from "@bentley/bentleyjs-core";
-import { AuthorizedFrontendRequestContext, IModelConnection, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
+import { AuthorizedFrontendRequestContext, BriefcaseConnection, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
 import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
 import { IModelData } from "../../common/Settings";
@@ -16,7 +16,7 @@ export class IModelSession {
   public contextId: string;
   public iModelId: string;
 
-  private _iModel?: IModelConnection;
+  private _iModel?: BriefcaseConnection;
 
   private constructor(contextId: string, imodelId: string) {
     this.contextId = contextId;
@@ -52,11 +52,11 @@ export class IModelSession {
     return new IModelSession(contextId, imodelId);
   }
 
-  public async getConnection(): Promise<IModelConnection> {
+  public async getConnection(): Promise<BriefcaseConnection> {
     return undefined === this._iModel ? this.open() : this._iModel;
   }
 
-  public async open(): Promise<IModelConnection> {
+  public async open(): Promise<BriefcaseConnection> {
     try {
       const env = Config.App.get("imjs_buddi_resolve_url_using_region");
       // eslint-disable-next-line no-console

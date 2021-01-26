@@ -18,7 +18,7 @@ import { Downloads } from "./CheckpointManager";
 import { NativeAppStorage } from "./NativeAppStorage";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ApplicationType, IModelHost, IModelHostConfiguration } from "./IModelHost";
-import { IpcAppHost } from "./IpcAppHost";
+import { IpcHost } from "./IpcHost";
 import { initialize, MobileDevice } from "./MobileDevice";
 
 const loggerCategory = BackendLoggerCategory.NativeApp;
@@ -32,10 +32,10 @@ class NativeAppImpl extends IpcHandler implements NativeAppFunctions {
 
   public get channelName() { return nativeAppChannel; }
   public async checkInternetConnectivity(): Promise<InternetConnectivityStatus> {
-    return NativeAppHost.checkInternetConnectivity();
+    return NativeHost.checkInternetConnectivity();
   }
   public async overrideInternetConnectivity(by: OverriddenBy, status: InternetConnectivityStatus): Promise<void> {
-    NativeAppHost.overrideInternetConnectivity(by, status);
+    NativeHost.overrideInternetConnectivity(by, status);
   }
 
   public async getConfig(): Promise<any> {
@@ -158,7 +158,7 @@ class NativeAppImpl extends IpcHandler implements NativeAppFunctions {
  * Used by desktop/mobile native applications
  * @beta
  */
-export class NativeAppHost {
+export class NativeHost {
   private static _reachability?: InternetConnectivityStatus;
   private constructor() { }
 
@@ -187,18 +187,19 @@ export class NativeAppHost {
    * @note this method calls [[IModelHost.startup]] internally.
    */
   public static async startup(configuration: IModelHostConfiguration = new IModelHostConfiguration()): Promise<void> {
-    this.onInternetConnectivityChanged.addListener((status: InternetConnectivityStatus) => NativeAppHost.notifyNativeFrontend("notifyInternetConnectivityChanged", status));
+    this.onInternetConnectivityChanged.addListener((status: InternetConnectivityStatus) => NativeHost.notifyNativeFrontend("notifyInternetConnectivityChanged", status));
 
     /** Override applicationType to NativeApp */
     configuration.applicationType = ApplicationType.NativeApp;
     if (MobileRpcConfiguration.isMobileBackend) {
       MobileDevice.currentDevice.onUserStateChanged.addListener((accessToken?: string, err?: string) => {
         const accessTokenObj = accessToken ? JSON.parse(accessToken) : {};
-        NativeAppHost.notifyNativeFrontend("notifyUserStateChanged", { accessToken: accessTokenObj, err });
+        NativeHost.notifyNativeFrontend("notifyUserStateChanged", { accessToken: accessTokenObj, err });
       });
     }
-    await IpcAppHost.startup(configuration);
-    NativeAppImpl.register();
+    await IpcHost.startup(configuration);
+    if (BackendIpc.isValid) // for tests, we use NativeHost but don't have a frontend
+      NativeAppImpl.register();
     this._isValid = true;
   }
 
@@ -208,7 +209,7 @@ export class NativeAppHost {
   public static async shutdown(): Promise<void> {
     this._isValid = false;
     this.onInternetConnectivityChanged.clear();
-    await IpcAppHost.shutdown();
+    await IpcHost.shutdown();
   }
 
   /**

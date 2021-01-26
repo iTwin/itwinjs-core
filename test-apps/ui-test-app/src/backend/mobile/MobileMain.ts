@@ -5,7 +5,7 @@
 
 import { IModelReadRpcInterface, IModelTileRpcInterface, MobileRpcManager, SnapshotIModelRpcInterface } from "@bentley/imodeljs-common";
 import { Presentation } from "@bentley/presentation-backend";
-import { NativeAppBackend } from "@bentley/imodeljs-backend";
+import { NativeHost } from "@bentley/imodeljs-backend";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import * as fs from "fs";
 import * as path from "path";
@@ -25,7 +25,7 @@ import { PresentationRpcInterface } from "@bentley/presentation-common";
     IModelJsConfig.init(true /* suppress error */, true /* suppress message */, Config.App);
 
     // initialize imodeljs-backend
-    await NativeAppBackend.startup();
+    await NativeHost.startup();
 
     // initialize presentation-backend
     Presentation.initialize({

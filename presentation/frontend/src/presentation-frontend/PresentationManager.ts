@@ -7,15 +7,16 @@
  */
 
 import { BeEvent, IDisposable, Logger } from "@bentley/bentleyjs-core";
-import { IModelConnection, NativeApp } from "@bentley/imodeljs-frontend";
+import { FrontendIpc } from "@bentley/imodeljs-common";
+import { IModelConnection, IpcApp } from "@bentley/imodeljs-frontend";
 import {
   Content, ContentDescriptorRequestOptions, ContentRequestOptions, ContentUpdateInfo, Descriptor, DescriptorOverrides, DisplayLabelRequestOptions,
   DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions,
   HierarchyRequestOptions, HierarchyUpdateInfo, InstanceKey, isContentDescriptorRequestOptions, isDisplayLabelRequestOptions,
   isDisplayLabelsRequestOptions, isExtendedContentRequestOptions, isExtendedHierarchyRequestOptions, Item, Key, KeySet, LabelDefinition,
   LabelRequestOptions, Node, NodeKey, NodeKeyJSON, NodePathElement, Paged, PagedResponse, PageOptions, PartialHierarchyModification,
-  PresentationDataCompareOptions, PresentationError, PresentationRpcEvents, PresentationRpcInterface, PresentationStatus, PresentationUnitSystem,
-  RequestPriority, RpcRequestsHandler, Ruleset, RulesetVariable, SelectionInfo, UpdateInfo, UpdateInfoJSON,
+  PresentationDataCompareOptions, PresentationError, PresentationIpcEvents, PresentationStatus, PresentationUnitSystem, RequestPriority, RpcRequestsHandler, Ruleset,
+  RulesetVariable, SelectionInfo, UpdateInfo, UpdateInfoJSON,
 } from "@bentley/presentation-common";
 import { PresentationFrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { LocalizationHelper } from "./LocalizationHelper";
@@ -129,11 +130,9 @@ export class PresentationManager implements IDisposable {
     this._localizationHelper = new LocalizationHelper();
     this._connections = new Map<IModelConnection, Promise<void>>();
 
-    if (NativeApp.isValid) {
-      // EventSource only works in native apps, so the `onUpdate` callback will only be called there. Adding
-      // under the condition just to avoid an error message being logged.
-      const eventSource = props?.eventSource ?? EventSource.global;
-      this._clearEventListener = eventSource.on(PresentationRpcInterface.interfaceName, PresentationRpcEvents.Update, this.onUpdate);
+    if (IpcApp.isValid) {
+      // Ipc only works in ipc apps, so the `onUpdate` callback will only be called there.
+      this._clearEventListener = FrontendIpc.addListener(PresentationIpcEvents.Update, this.onUpdate);
     }
   }
 
@@ -159,7 +158,7 @@ export class PresentationManager implements IDisposable {
   }
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  private onUpdate = (report: UpdateInfoJSON) => {
+  private onUpdate = (_evt: Event, report: UpdateInfoJSON) => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.handleUpdateAsync(UpdateInfo.fromJSON(report));
   };

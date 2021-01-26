@@ -12,7 +12,7 @@ import {
   IModelHost, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb, VolumeElement,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { IpcAppHost } from "../../IpcAppHost";
+import { IpcHost } from "../../IpcHost";
 
 describe("Model geometry changes", () => {
   let imodel: StandaloneDb;
@@ -42,7 +42,7 @@ describe("Model geometry changes", () => {
     imodel.nativeDb.setGeometricModelTrackingEnabled(false);
     imodel.close();
 
-    await IpcAppHost.shutdown();
+    await IpcHost.shutdown();
     await IModelHost.startup();
   });
 

@@ -63,7 +63,7 @@ class IpcAppImpl extends IpcHandler implements IpcAppFunctions {
  * Used by applications that have a dedicated backend
  * @internal
 */
-export class IpcAppHost {
+export class IpcHost {
   private static notify(channel: string, briefcase: BriefcaseDb | StandaloneDb, methodName: string, ...args: any[]) {
     if (this._isValid)
       return BackendIpc.send(`${channel}:${briefcase.key}`, methodName, ...args);
@@ -81,7 +81,8 @@ export class IpcAppHost {
   public static get isValid(): boolean { return this._isValid; }
   public static async startup(configuration?: IModelHostConfiguration): Promise<void> {
     await IModelHost.startup(configuration);
-    IpcAppImpl.register();
+    if (BackendIpc.isValid) // for tests, we use IpcHost but don't have a frontend
+      IpcAppImpl.register();
     this._isValid = true;
   }
   public static async shutdown(): Promise<void> {

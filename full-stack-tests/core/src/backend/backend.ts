@@ -11,7 +11,7 @@ import serveHandler = require("serve-handler");
 import { Config, isElectronMain, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { IModelJsExpressServer } from "@bentley/express-server";
-import { FileNameResolver, IModelHost, IModelHostConfiguration, NativeAppHost } from "@bentley/imodeljs-backend";
+import { FileNameResolver, IModelHost, IModelHostConfiguration, NativeHost } from "@bentley/imodeljs-backend";
 import { BentleyCloudRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
@@ -56,7 +56,7 @@ async function init() {
   hostConfig.imodelClient = CloudEnv.cloudEnv.imodelClient;
   hostConfig.concurrentQuery.concurrent = 2;
   hostConfig.concurrentQuery.pollInterval = 5;
-  await (isElectronMain ? NativeAppHost.startup(hostConfig) : IModelHost.startup(hostConfig));
+  await (isElectronMain ? NativeHost.startup(hostConfig) : IModelHost.startup(hostConfig));
   IModelHost.snapshotFileNameResolver = new BackendTestAssetResolver();
 
   Logger.initializeToConsole();
@@ -64,7 +64,6 @@ async function init() {
   Logger.setLevel("imodeljs-backend.IModelDb", LogLevel.Error);  // Change to trace to debug
   Logger.setLevel("Performance", LogLevel.Error);  // Change to Info to capture
   Logger.setLevel("imodeljs-backend.ConcurrencyControl", LogLevel.Error);
-
 }
 
 /** A FileNameResolver for resolving test iModel files from core/backend */

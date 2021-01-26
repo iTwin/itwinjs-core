@@ -66,7 +66,7 @@ describe("IModel Read/Write Connection", () => {
     const contextId = testContext.iModelForWrite!.contextId;
     const iModelId = testContext.iModelForWrite!.iModelId;
 
-    const iModel: IModelConnection = await RemoteBriefcaseConnection.open(contextId, iModelId, OpenMode.ReadWrite);
+    const iModel = await RemoteBriefcaseConnection.open(contextId, iModelId, OpenMode.ReadWrite);
 
     const originalExtents = iModel.projectExtents;
     const newExtents = Range3d.create(originalExtents.low, originalExtents.high);
@@ -76,7 +76,7 @@ describe("IModel Read/Write Connection", () => {
 
     await iModel.saveChanges();
 
-    const updatediModel: IModelConnection = await RemoteBriefcaseConnection.open(contextId, iModelId, OpenMode.ReadWrite);
+    const updatediModel = await RemoteBriefcaseConnection.open(contextId, iModelId, OpenMode.ReadWrite);
 
     const updatedExtents = Range3d.fromJSON(updatediModel.projectExtents);
     assert.isTrue(newExtents.isAlmostEqual(updatedExtents), "Project extents successfully updated in database");

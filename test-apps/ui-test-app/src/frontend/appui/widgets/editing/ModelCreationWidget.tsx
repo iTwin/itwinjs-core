@@ -43,7 +43,7 @@ export class ModelCreationComponent extends React.Component<{}, ModelCreationCom
 
   private async createNewModel() {
     const iModel = UiFramework.getIModelConnection();
-    if (iModel === undefined)
+    if (iModel === undefined || !iModel.isBriefcaseConnection())
       return;
     const modelName = this.modelName;
     if (modelName === "")

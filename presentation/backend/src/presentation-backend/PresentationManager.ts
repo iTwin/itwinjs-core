@@ -9,7 +9,7 @@
 import * as hash from "object-hash";
 import * as path from "path";
 import { ClientRequestContext, Id64String, Logger } from "@bentley/bentleyjs-core";
-import { BriefcaseDb, EventSink, IModelDb, IModelHost, IModelJsNative } from "@bentley/imodeljs-backend";
+import { BriefcaseDb, IModelDb, IModelJsNative, IpcHost } from "@bentley/imodeljs-backend";
 import {
   Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides,
   DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ExtendedContentRequestOptions,
@@ -258,9 +258,6 @@ export interface PresentationManagerProps {
 
   /** @internal */
   addon?: NativePlatformDefinition;
-
-  /** @internal */
-  eventSink?: EventSink;
 }
 
 /**
@@ -322,13 +319,10 @@ export class PresentationManager {
     if (this._props.enableSchemasPreload)
       this._disposeIModelOpenedListener = BriefcaseDb.onOpened.addListener(this.onIModelOpened);
 
-    this._isOneFrontendPerBackend = IModelHost.isNativeAppBackend;
+    this._isOneFrontendPerBackend = IpcHost.isValid;
     if (isChangeTrackingEnabled) {
-      // if change tracking is enabled, assume we're in native app mode even if `IModelHost.isNativeAppBackend` tells we're not
-      this._isOneFrontendPerBackend = true;
       this._updatesTracker = UpdatesTracker.create({
         nativePlatformGetter: this.getNativePlatform,
-        eventSink: (props && props.eventSink) ? props.eventSink /* istanbul ignore next */ : EventSink.global,
         pollInterval: props!.updatesPollInterval!, // set if `isChangeTrackingEnabled == true`
       });
     }

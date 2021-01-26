@@ -51,11 +51,8 @@ export abstract class PrimitiveTool extends InteractiveTool {
     const view = vp.view;
     const iModel = view.iModel;
 
-    if (!iModel.isBriefcase) // primitive tool is only allowed with BriefcaseConnection, even for readonly
-      return false;
-
     if (this.requireWriteableTarget() && iModel.isReadonly)
-      return false; // Tool can't be used when iModel is read only.
+      return false; // this Tool can't be used when iModel is read only.
 
     if (undefined === this.targetView || (!this.targetIsLocked && isSelectedViewChange))
       this.targetView = vp; // Update target to new view if undefined or still free to change.

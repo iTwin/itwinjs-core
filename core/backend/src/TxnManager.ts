@@ -9,7 +9,7 @@
 import { BeEvent, DbResult, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
 import { ModelGeometryChangesProps } from "@bentley/imodeljs-common";
 import { BriefcaseDb, StandaloneDb } from "./IModelDb";
-import { IpcAppHost } from "./IpcAppHost";
+import { IpcHost } from "./IpcHost";
 import { Relationship, RelationshipProps } from "./Relationship";
 
 /** @public */
@@ -74,7 +74,7 @@ export class TxnManager {
   /** @internal */
   protected _onGeometryChanged(models: ModelGeometryChangesProps[]) {
     this.onGeometryChanged.raiseEvent(models);
-    IpcAppHost.notifyGeometryChanges(this._iModel, "notifyGeometryChanged", models); // send to frontend
+    IpcHost.notifyGeometryChanges(this._iModel, "notifyGeometryChanged", models); // send to frontend
   }
 
   /** Dependency handlers may call method this to report a validation error.

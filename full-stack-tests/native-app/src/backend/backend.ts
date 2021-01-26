@@ -7,7 +7,7 @@ import { BentleyLoggerCategory, Config, isElectronMain, Logger, LogLevel } from 
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { IModelJsExpressServer } from "@bentley/express-server";
 import { IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
-import { BackendLoggerCategory, IModelHostConfiguration, NativeAppHost, NativeLoggerCategory } from "@bentley/imodeljs-backend";
+import { BackendLoggerCategory, IModelHostConfiguration, NativeHost, NativeLoggerCategory } from "@bentley/imodeljs-backend";
 import { BentleyCloudRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
 import { ElectronBackend } from "@bentley/electron-manager/lib/ElectronBackend";
 import { ITwinClientLoggerCategory } from "@bentley/itwin-client";
@@ -65,7 +65,7 @@ async function init() {
   hostConfig.concurrentQuery.concurrent = 2;
   hostConfig.concurrentQuery.pollInterval = 5;
   hostConfig.cacheDir = path.join(__dirname, "out");
-  await NativeAppHost.startup(hostConfig);
+  await NativeHost.startup(hostConfig);
 
   Logger.initializeToConsole();
   // setupDebugLogLevels();

@@ -20,7 +20,7 @@ import { ChannelRootAspect } from "./ElementAspect";
 import { BriefcaseDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
-import { IpcAppHost } from "./IpcAppHost";
+import { IpcHost } from "./IpcHost";
 import { Model } from "./Model";
 import { RelationshipProps } from "./Relationship";
 
@@ -137,7 +137,7 @@ export class ConcurrencyControl {
     this.applyTransactionOptions();
     this._iModel.nativeDb.purgeTileTrees(undefined); // TODO: Remove this when we get tile healing
     const data = { parentChangeSetId: this.iModel.changeSetId };
-    IpcAppHost.notifyPushAndPull(this._iModel, "notifyPulledChanges", data);
+    IpcHost.notifyPushAndPull(this._iModel, "notifyPulledChanges", data);
   }
 
   /** @internal */
@@ -509,14 +509,14 @@ export class ConcurrencyControl {
     requestContext.enter();
 
     const data = { parentChangeSetId: this.iModel.changeSetId };
-    IpcAppHost.notifyPushAndPull(this._iModel, "notifyPushedChanges", data);
+    IpcHost.notifyPushAndPull(this._iModel, "notifyPushedChanges", data);
     return this.openOrCreateCache(requestContext); // re-create after we know that push has succeeded
   }
 
   /** @internal */
   private emitOnSavedChangesEvent() {
     const data = { hasPendingTxns: this.iModel.txns.hasPendingTxns, time: Date.now() }; // Note that not all calls to saveChanges create a txn. For example, an update to be_local does not.
-    IpcAppHost.notifyPushAndPull(this._iModel, "notifySavedChanges", data);
+    IpcHost.notifyPushAndPull(this._iModel, "notifySavedChanges", data);
   }
 
   /** @internal */

@@ -8,7 +8,8 @@
 
 import { IDisposable, Logger } from "@bentley/bentleyjs-core";
 import { IModelDb } from "@bentley/imodeljs-backend";
-import { PresentationRpcEvents, PresentationRpcInterface, UpdateInfoJSON } from "@bentley/presentation-common";
+import { BackendIpc } from "@bentley/imodeljs-common";
+import { PresentationIpcEvents, UpdateInfoJSON } from "@bentley/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { NativePlatformDefinition } from "./NativePlatform";
 
@@ -45,9 +46,8 @@ export class UpdatesTracker implements IDisposable {
   private onInterval() {
     const response = this._getNativePlatform().getUpdateInfo();
     const info = parseUpdateInfo(response.result);
-    if (info) {
-      this._eventSink.emit(PresentationRpcInterface.interfaceName, PresentationRpcEvents.Update, info);
-    }
+    if (info)
+      BackendIpc.send(PresentationIpcEvents.Update, info);
   }
 }
 

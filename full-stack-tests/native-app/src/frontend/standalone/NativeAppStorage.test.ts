@@ -6,7 +6,7 @@ import { assert } from "chai";
 import { NativeApp } from "@bentley/imodeljs-frontend";
 import { TestUtility } from "../hub/TestUtility";
 
-describe("NativeApp Storage", () => {
+describe("NativeApp Storage frontend", () => {
   before(async () => {
     await NativeApp.startup();
     await TestUtility.purgeStorageCache();

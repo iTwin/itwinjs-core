@@ -380,7 +380,7 @@ export class IModelHost {
    */
   public static async startup(configuration: IModelHostConfiguration = new IModelHostConfiguration()): Promise<void> {
     if (IModelHost.configuration)
-      throw new IModelError(BentleyStatus.ERROR, "startup may only be called once", Logger.logError, loggerCategory, () => (configuration));
+      return; // we're already initialized
 
     if (!IModelHost.applicationId) IModelHost.applicationId = "2686"; // Default to product id of iModel.js
     if (!IModelHost.applicationVersion) IModelHost.applicationVersion = "1.0.0"; // Default to placeholder version.

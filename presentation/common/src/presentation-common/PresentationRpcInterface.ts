@@ -210,9 +210,9 @@ export class PresentationRpcInterface extends RpcInterface {
 }
 
 /** @alpha */
-export enum PresentationRpcEvents {
+export enum PresentationIpcEvents {
   /**
    * ID of an event that's emitted when backend detects changes in presented data.
    */
-  Update = "OnUpdate",
+  Update = "presentation.onUpdate",
 }
