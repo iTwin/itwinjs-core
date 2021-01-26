@@ -267,14 +267,17 @@ export abstract class Tile {
    */
   protected _collectStatistics(_stats: RenderMemory.Statistics): void { }
 
-  /** Disclose resources owned by this tile and all of its child tiles.
+  /** Disclose resources owned by this tile and (by default) all of its child tiles.
+   * @note Do not override this method! Override `_collectStatistics` instead.
    * @internal
    */
-  public collectStatistics(stats: RenderMemory.Statistics): void {
+  public collectStatistics(stats: RenderMemory.Statistics, includeChildren = true): void {
     if (undefined !== this._graphic)
       this._graphic.collectStatistics(stats);
 
     this._collectStatistics(stats);
+    if (!includeChildren)
+      return;
 
     const children = this.children;
     if (undefined !== children)
