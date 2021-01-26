@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ui-ninezone",
-  "version": "2.12.0-dev.14",
+  "version": "2.12.0-dev.15",
   "description": "iModel.js Nine-zone React UI components",
   "main": "lib/ui-ninezone.js",
   "typings": "lib/ui-ninezone",
@@ -33,8 +33,8 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/ui-abstract": "^2.12.0-dev.14",
-    "@bentley/ui-core": "^2.12.0-dev.14",
+    "@bentley/ui-abstract": "^2.12.0-dev.15",
+    "@bentley/ui-core": "^2.12.0-dev.15",
     "react": "^16.8.0",
     "react-dom": "^16.8.0"
   },
@@ -43,10 +43,10 @@
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/build-tools": "2.12.0-dev.14",
-    "@bentley/eslint-plugin": "2.12.0-dev.14",
-    "@bentley/ui-abstract": "2.12.0-dev.14",
-    "@bentley/ui-core": "2.12.0-dev.14",
+    "@bentley/build-tools": "2.12.0-dev.15",
+    "@bentley/eslint-plugin": "2.12.0-dev.15",
+    "@bentley/ui-abstract": "2.12.0-dev.15",
+    "@bentley/ui-core": "2.12.0-dev.15",
     "@testing-library/react": "^8.0.1",
     "@testing-library/react-hooks": "^3.2.1",
     "@types/chai": "^4.1.4",
