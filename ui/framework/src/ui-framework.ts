@@ -7,10 +7,13 @@
 
 export * from "./ui-framework/UiFramework";  // Please ensure that this line comes before all other exports.
 
+export * from "./ui-framework/accudraw/AccuDrawCommandItems";
+export * from "./ui-framework/accudraw/AccuDrawDialog";
 export * from "./ui-framework/accudraw/AccuDrawPopupManager";
 export * from "./ui-framework/accudraw/Calculator";
 export * from "./ui-framework/accudraw/CalculatorEngine";
 export * from "./ui-framework/accudraw/CalculatorPopup";
+export * from "./ui-framework/accudraw/FrameworkAccuDraw";
 export * from "./ui-framework/accudraw/MenuButton";
 export * from "./ui-framework/accudraw/MenuButtonPopup";
 
@@ -82,6 +85,7 @@ export * from "./ui-framework/hooks/useFrameworkVersion";
 export * from "./ui-framework/imodel-components/spatial-tree/SpatialContainmentTree";
 export * from "./ui-framework/imodel-components/category-tree/CategoriesTree";
 export * from "./ui-framework/imodel-components/models-tree/ModelsTree";
+export * from "./ui-framework/imodel-components/models-tree/ModelsVisibilityHandler";
 export * from "./ui-framework/imodel-components/Common";
 export * from "./ui-framework/imodel-components/VisibilityTreeEventHandler";
 export * from "./ui-framework/imodel-components/VisibilityTreeRenderer";

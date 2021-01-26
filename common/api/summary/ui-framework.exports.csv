@@ -1,5 +1,8 @@
 sep=;
 Release Tag;API Item
+alpha;AccuDrawCommandItems
+alpha;AccuDrawDialog(props: AccuDrawDialogProps): JSX.Element
+alpha;AccuDrawDialogProps 
 alpha;AccuDrawPopupManager
 public;Action
 internal;ActionButtonItem(props: ActionButtonProps): JSX.Element
@@ -21,6 +24,7 @@ beta;ActivityMessagePopup(props: ActivityMessagePopupProps): JSX.Element | null
 beta;ActivityMessagePopupProps 
 beta;ActivityMessageProps
 public;ActivityMessageUpdatedEvent 
+internal;addMissingWidgets(frontstageDef: FrontstageDef, initialState: NineZoneState): NineZoneState
 internal;addPanelWidgets(state: NineZoneState, frontstageDef: FrontstageDef, side: PanelSide): NineZoneState
 internal;addWidgets(state: NineZoneState, widgets: ReadonlyArray
 alpha;AnalysisAnimationTimelineDataProvider 
@@ -180,6 +184,7 @@ internal;expandWidget:
 beta;ExtensibleToolbarProps
 public;FooterModeField 
 public;FooterModeFieldProps 
+alpha;FrameworkAccuDraw 
 beta;FrameworkRootState
 internal;FrameworkStagePanel 
 internal;FrameworkStagePanelProps
@@ -226,7 +231,7 @@ internal;getFloatingZoneStyle: (props: ZoneManagerProps) =>
 beta;getIsHiddenIfFeatureOverridesActive(): ConditionalBooleanValue
 beta;getIsHiddenIfSelectionNotActive(): ConditionalBooleanValue
 internal;getNestedStagePanelKey: (location: StagePanelLocation_2) => NestedStagePanelKey
-internal;getPanelSide(location: StagePanelLocation_2): PanelSide
+internal;getPanelZoneWidgets(frontstageDef: FrontstageDef, panelZone: WidgetIdTypes): WidgetDef[]
 beta;getSelectionContextSyncEventIds(): string[]
 internal;getStableWidgetProps(widgetProps: WidgetProps, stableId: string): WidgetProps
 internal;getStagePanelType: (location: StagePanelLocation_2) => StagePanelType
@@ -407,6 +412,7 @@ public;ReducerActions
 public;ReducerMapActions
 beta;ReducerRegistry
 beta;ReducerRegistryInstance: ReducerRegistry
+internal;removeMissingWidgets(frontstageDef: FrontstageDef, initialState: NineZoneState): NineZoneState
 alpha;RestoreFrontstageLayoutTool 
 internal;restoreNineZoneState(frontstageDef: FrontstageDef, saved: SavedNineZoneState): NineZoneState
 beta;ReviewToolWidget 
@@ -421,7 +427,7 @@ alpha;SafeAreaContext: React.Context
 public;SavedView
 public;SavedViewLayout
 public;SavedViewLayoutProps
-public;SavedViewProps
+public;SavedViewProps 
 alpha;ScheduleAnimationTimelineDataProvider 
 beta;SectionsStatusField(props: SectionsStatusFieldProps): JSX.Element
 beta;SectionsStatusFieldProps 
@@ -569,6 +575,7 @@ beta;ToolWidgetComposerProps
 public;ToolWidgetDef 
 public;ToolWidgetProps 
 public;ToolWidgetPropsEx 
+internal;toPanelSide(location: StagePanelLocation_2): PanelSide
 internal;TrackingTime
 internal;UiActivityEvent 
 internal;UiActivityEventArgs
@@ -629,6 +636,7 @@ beta;ViewSelectorChangedEventArgs
 beta;ViewSelectorDefaultProps = Pick
 beta;ViewSelectorProps
 public;ViewUtilities
+alpha;VisibilityChangeListener = (nodeIds?: string[]) => void
 beta;VisibilityComponent 
 beta;VisibilityComponentConfig
 public;VisibilityComponentHierarchy
@@ -655,6 +663,7 @@ internal;WidgetInfo
 beta;WidgetManager
 internal;WidgetPanelsFrontstage: React.NamedExoticComponent
 internal;WidgetPanelsFrontstageContent(): JSX.Element | null
+internal;WidgetPanelsFrontstageState
 internal;WidgetPanelsStatusBar(props: CommonProps): JSX.Element | null
 internal;WidgetPanelsTab(): JSX.Element
 internal;WidgetPanelsToolbars(): JSX.Element

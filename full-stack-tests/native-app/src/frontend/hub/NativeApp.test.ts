@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Config, GuidString } from "@bentley/bentleyjs-core";
-import { BriefcaseDownloader, BriefcaseProps, IModelVersion, SyncMode } from "@bentley/imodeljs-common";
+import { BriefcaseDownloader, IModelVersion, SyncMode } from "@bentley/imodeljs-common";
 import { IModelApp, NativeApp, NativeAppLogger } from "@bentley/imodeljs-frontend";
 import { ProgressInfo } from "@bentley/itwin-client";
 import { TestFrontendAuthorizationClient, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
@@ -43,10 +43,6 @@ describe("NativeApp (#integration)", () => {
     IModelApp.authorizationClient = undefined;
   });
 
-  it.skip("should purge the briefcase cache", async () => {
-    await TestUtility.purgeBriefcaseCache();
-  });
-
   it("Download Briefcase (#integration)", async () => {
     // Redirect native log to backend. Logger must be config.
     NativeAppLogger.initialize();
@@ -55,12 +51,9 @@ describe("NativeApp (#integration)", () => {
     await downloader.downloadPromise;
 
     await usingOfflineScope(async () => {
-      const briefcases = await NativeApp.getBriefcases();
-      const rs = briefcases.filter((_: BriefcaseProps) => _.iModelId === testIModelId);
+      const rs = await NativeApp.getCachedBriefcases(testIModelId);
       assert(rs.length > 0);
-      assert.isNumber(rs[0].fileSize);
-      assert(rs[0].fileSize! > 0);
-      const conn = await NativeApp.openBriefcase(downloader.briefcaseProps);
+      const conn = await NativeApp.openBriefcase({ fileName: downloader.fileName });
       const rowCount = await conn.queryRowCount("SELECT ECInstanceId FROM bis.Element");
       assert.notEqual(rowCount, 0);
     });
@@ -86,14 +79,12 @@ describe("NativeApp (#integration)", () => {
     const locTestIModelName = "Stadium Dataset 1";
     const locTestIModelId = await TestUtility.getTestIModelId(testProjectId, locTestIModelName);
 
-    const downloader: BriefcaseDownloader = await NativeApp.requestDownloadBriefcase(testProjectId, locTestIModelId, { syncMode: SyncMode.PullOnly });
+    const downloader = await NativeApp.requestDownloadBriefcase(testProjectId, locTestIModelId, { syncMode: SyncMode.PullOnly });
     await downloader.downloadPromise;
 
-    const briefcaseKey = downloader.briefcaseProps.key;
-    await NativeApp.openBriefcase(downloader.briefcaseProps);
-    await NativeApp.closeBriefcase(briefcaseKey);
-
-    await NativeApp.deleteBriefcase(briefcaseKey);
+    const connection = await NativeApp.openBriefcase({ fileName: downloader.fileName });
+    await NativeApp.closeBriefcase(connection);
+    await NativeApp.deleteBriefcase(downloader.fileName);
   });
 
   it("Progress event (#integration)", async () => {
@@ -103,15 +94,21 @@ describe("NativeApp (#integration)", () => {
     const locTestIModelId = await TestUtility.getTestIModelId(testProjectId, locTestIModelName);
 
     let events = 0;
-    const downloader: BriefcaseDownloader = await NativeApp.requestDownloadBriefcase(testProjectId, locTestIModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest(),
-      (_progress: ProgressInfo) => {
+    let loaded = 0;
+    const downloader = await NativeApp.requestDownloadBriefcase(testProjectId, locTestIModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest(),
+      (progress: ProgressInfo) => {
+        assert.isNumber(progress.loaded);
+        assert.isNumber(progress.total);
+        assert.isTrue(progress.loaded >= loaded);
+        assert.isTrue(progress.total! >= progress.loaded);
+        loaded = progress.loaded;
         events++;
       });
 
     await downloader.downloadPromise;
     assert.notEqual(events, 0);
 
-    await NativeApp.deleteBriefcase(downloader.briefcaseProps.key);
+    await NativeApp.deleteBriefcase(downloader.fileName);
   });
 
   // NEEDS_WORK: VSTS#295999
@@ -120,21 +117,14 @@ describe("NativeApp (#integration)", () => {
     const locTestIModelName = "Stadium Dataset 1";
     const locTestIModelId = await TestUtility.getTestIModelId(testProjectId, locTestIModelName);
 
-    const downloader: BriefcaseDownloader = await NativeApp.requestDownloadBriefcase(testProjectId, locTestIModelId, { syncMode: SyncMode.PullOnly });
+    const downloader = await NativeApp.requestDownloadBriefcase(testProjectId, locTestIModelId, { syncMode: SyncMode.PullOnly });
 
     let cancelled1: boolean = false;
-    setTimeout(async () => {
-      try {
-        cancelled1 = await downloader.requestCancel();
-      } catch (err) {
-        assert(false, "WIP: The 'user cancelled' error is now caught here...");
-      }
-    }, 10000);
-
+    setTimeout(async () => { cancelled1 = await downloader.requestCancel(); }, 1000);
     let cancelled2: boolean = false;
     try {
       await downloader.downloadPromise;
-      await NativeApp.deleteBriefcase(downloader.briefcaseProps.key);
+      await NativeApp.deleteBriefcase(downloader.fileName);
     } catch (err) {
       cancelled2 = true;
     }
@@ -153,10 +143,10 @@ describe("NativeApp (#integration)", () => {
     const locTestIModelId = await testChangeSetUtility.createTestIModel();
 
     // Download the test iModel in NativeApp (using syncMode: PullOnly)
-    const downloader: BriefcaseDownloader = await NativeApp.requestDownloadBriefcase(testProjectId, locTestIModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest());
+    const downloader = await NativeApp.requestDownloadBriefcase(testProjectId, locTestIModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest());
     await downloader.downloadPromise;
 
-    const briefcases: BriefcaseProps[] = await NativeApp.getBriefcases();
+    const briefcases = await NativeApp.getCachedBriefcases(locTestIModelId);
     assert.isTrue(briefcases.length > 0);
 
     // Update test iModel in the Hub with a change set
@@ -165,19 +155,19 @@ describe("NativeApp (#integration)", () => {
     // Restart the Host (to force re-initialization of caches)
     await TestUtility.restartIModelHost();
 
-    // Download the test iModel in NativeApp again (using SyncMode: PUllOnly)
-    const updatedDownloader: BriefcaseDownloader = await NativeApp.requestDownloadBriefcase(testProjectId, locTestIModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest());
+    // Download the test iModel in NativeApp again (using SyncMode: PullOnly)
+    const updatedDownloader = await NativeApp.requestDownloadBriefcase(testProjectId, locTestIModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest());
     await updatedDownloader.downloadPromise;
 
     // Validate that the change set got updated
-    assert.notEqual(updatedDownloader.briefcaseProps.changeSetId, downloader.briefcaseProps.changeSetId);
+    // assert.notEqual(updatedDownloader.briefcaseProps.changeSetId, downloader.briefcaseProps.changeSetId);
     // NEEDS_WORK: Check that the change set id matches the one that was pushed
 
-    const updatedBriefcases: BriefcaseProps[] = await NativeApp.getBriefcases();
+    const updatedBriefcases = await NativeApp.getCachedBriefcases(locTestIModelId);
     assert.equal(updatedBriefcases.length, briefcases.length);
 
     // Delete the downloaded test iModel in NativeApp
-    await NativeApp.deleteBriefcase(updatedDownloader.briefcaseProps.key);
+    await NativeApp.deleteBriefcase(updatedDownloader.fileName);
 
     // Delete test iModel from the Hub and disk
     await testChangeSetUtility.deleteTestIModel();

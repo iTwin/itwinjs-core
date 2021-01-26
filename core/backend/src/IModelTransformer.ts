@@ -7,15 +7,15 @@
  */
 import * as path from "path";
 import { ClientRequestContext, DbResult, Guid, GuidString, Id64, Id64Set, Id64String, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { Transform } from "@bentley/geometry-core";
+import { Point3d, Transform } from "@bentley/geometry-core";
 import {
-  Code, CodeSpec, ElementAspectProps, ElementProps, ExternalSourceAspectProps, FontProps, GeometricElement3dProps, IModel, IModelError, ModelProps,
-  Placement3d, PrimitiveTypeCode, PropertyMetaData,
+  Code, CodeSpec, ElementAspectProps, ElementProps, ExternalSourceAspectProps, FontProps, GeometricElement2dProps, GeometricElement3dProps, IModel,
+  IModelError, ModelProps, Placement2d, Placement3d, PrimitiveTypeCode, PropertyMetaData,
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ECSqlStatement } from "./ECSqlStatement";
-import { DefinitionPartition, Element, GeometricElement3d, InformationPartitionElement, Subject } from "./Element";
+import { DefinitionPartition, Element, GeometricElement2d, GeometricElement3d, InformationPartitionElement, Subject } from "./Element";
 import { ChannelRootAspect, ElementAspect, ElementMultiAspect, ElementUniqueAspect, ExternalSourceAspect } from "./ElementAspect";
 import { IModelCloneContext } from "./IModelCloneContext";
 import { IModelDb } from "./IModelDb";
@@ -601,7 +601,10 @@ export class IModelTransformer extends IModelExportHandler {
     return targetElementAspectProps;
   }
 
-  /** Cause all schemas to be exported from the source iModel and imported into the target iModel. */
+  /** Cause all schemas to be exported from the source iModel and imported into the target iModel.
+   * @note For performance reasons, it is recommended that [IModelDb.saveChanges]($backend) be called after `processSchemas` is complete.
+   * It is more efficient to process *data* changes after the schema changes have been saved.
+   */
   public async processSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext): Promise<void> {
     requestContext.enter();
     const schemasDir: string = path.join(KnownLocations.tmpdir, Guid.createValue());
@@ -654,8 +657,8 @@ export class IModelTransformer extends IModelExportHandler {
 
   /** Recursively import all Elements and sub-Models that descend from the specified Subject */
   public processSubject(sourceSubjectId: Id64String, targetSubjectId: Id64String): void {
-    this.sourceDb.elements.getElement<Subject>(sourceSubjectId); // throws if sourceSubjectId is not a Subject
-    this.targetDb.elements.getElement<Subject>(targetSubjectId); // throws if targetSubjectId is not a Subject
+    this.sourceDb.elements.getElement(sourceSubjectId, Subject); // throws if sourceSubjectId is not a Subject
+    this.targetDb.elements.getElement(targetSubjectId, Subject); // throws if targetSubjectId is not a Subject
     this.context.remapElement(sourceSubjectId, targetSubjectId);
     this.processChildElements(sourceSubjectId);
     this.processSubjectSubModels(sourceSubjectId);
@@ -714,7 +717,7 @@ export class TemplateModelCloner extends IModelTransformer {
   }
   /** Place a template from the sourceDb at the specified placement in the target model within the targetDb.
    * @param sourceTemplateModelId The Id of the template model in the sourceDb
-   * @param targetModelId The Id of the target model where the cloned component will be inserted.
+   * @param targetModelId The Id of the target model (must be a subclass of GeometricModel3d) where the cloned component will be inserted.
    * @param placement The placement for the cloned component.
    * @note *Predecessors* like the SpatialCategory must be remapped before calling this method.
    * @returns The mapping of sourceElementIds from the template model to the instantiated targetElementIds in the targetDb in case further processing is required.
@@ -722,6 +725,26 @@ export class TemplateModelCloner extends IModelTransformer {
   public placeTemplate3d(sourceTemplateModelId: Id64String, targetModelId: Id64String, placement: Placement3d): Map<Id64String, Id64String> {
     this.context.remapElement(sourceTemplateModelId, targetModelId);
     this._transform3d = Transform.createOriginAndMatrix(placement.origin, placement.angles.toMatrix3d());
+    this._sourceIdToTargetIdMap = new Map<Id64String, Id64String>();
+    this.exporter.exportModelContents(sourceTemplateModelId);
+    // Note: the source --> target mapping was needed during the template model cloning phase (remapping parent/child, for example), but needs to be reset afterwards
+    for (const sourceElementId of this._sourceIdToTargetIdMap.keys()) {
+      const targetElementId = this.context.findTargetElementId(sourceElementId);
+      this._sourceIdToTargetIdMap.set(sourceElementId, targetElementId);
+      this.context.removeElement(sourceElementId); // clear the underlying native remapping context for the next clone operation
+    }
+    return this._sourceIdToTargetIdMap; // return the sourceElementId -> targetElementId Map in case further post-processing is required.
+  }
+  /** Place a template from the sourceDb at the specified placement in the target model within the targetDb.
+   * @param sourceTemplateModelId The Id of the template model in the sourceDb
+   * @param targetModelId The Id of the target model (must be a subclass of GeometricModel2d) where the cloned component will be inserted.
+   * @param placement The placement for the cloned component.
+   * @note *Predecessors* like the DrawingCategory must be remapped before calling this method.
+   * @returns The mapping of sourceElementIds from the template model to the instantiated targetElementIds in the targetDb in case further processing is required.
+   */
+  public placeTemplate2d(sourceTemplateModelId: Id64String, targetModelId: Id64String, placement: Placement2d): Map<Id64String, Id64String> {
+    this.context.remapElement(sourceTemplateModelId, targetModelId);
+    this._transform3d = Transform.createOriginAndMatrix(Point3d.createFrom(placement.origin), placement.rotation);
     this._sourceIdToTargetIdMap = new Map<Id64String, Id64String>();
     this.exporter.exportModelContents(sourceTemplateModelId);
     // Note: the source --> target mapping was needed during the template model cloning phase (remapping parent/child, for example), but needs to be reset afterwards
@@ -748,6 +771,12 @@ export class TemplateModelCloner extends IModelTransformer {
       if (placement.isValid) {
         placement.multiplyTransform(this._transform3d!);
         (targetElementProps as GeometricElement3dProps).placement = placement;
+      }
+    } else if (sourceElement instanceof GeometricElement2d) {
+      const placement = Placement2d.fromJSON((targetElementProps as GeometricElement2dProps).placement);
+      if (placement.isValid) {
+        placement.multiplyTransform(this._transform3d!);
+        (targetElementProps as GeometricElement2dProps).placement = placement;
       }
     }
     this._sourceIdToTargetIdMap!.set(sourceElement.id, Id64.invalid); // keep track of (source) elementIds from the template model, but the target hasn't been inserted yet

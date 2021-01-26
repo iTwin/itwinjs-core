@@ -1,0 +1,83 @@
+{
+  "name": "@bentley/imodeljs-editor-backend",
+  "version": "2.12.0-dev.14",
+  "description": "iModel.js editor backend",
+  "main": "lib/imodeljs-editor-backend.js",
+  "typings": "lib/imodeljs-editor-backend",
+  "license": "MIT",
+  "engines": {
+    "node": ">=10.17.0 <13.0"
+  },
+  "scripts": {
+    "compile": "npm run build",
+    "build": "tsc 1>&2",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/editor/imodeljs-editor-backend/file.json --tsIndexFile=./imodeljs-editor-backend.ts --onlyJson",
+    "extract-api": "betools extract-api --entry=imodeljs-editor-backend",
+    "lint": "eslint -f visualstudio --max-warnings 0 ./src/**/*.ts 1>&2",
+    "test": "",
+    "cover": ""
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs/tree/master/editor/backend"
+  },
+  "keywords": [
+    "Bentley",
+    "BIM",
+    "iModel",
+    "digital-twin",
+    "iTwin"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "peerDependencies": {
+    "@bentley/bentleyjs-core": "^2.12.0-dev.14",
+    "@bentley/imodeljs-backend": "2.12.0-dev.14",
+    "@bentley/imodeljs-common": "^2.12.0-dev.14"
+  },
+  "//devDependencies": [
+    "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
+    "NOTE: All tools used by scripts in this package must be listed as devDependencies"
+  ],
+  "devDependencies": {
+    "@bentley/bentleyjs-core": "2.12.0-dev.14",
+    "@bentley/build-tools": "2.12.0-dev.14",
+    "@bentley/eslint-plugin": "2.12.0-dev.14",
+    "@bentley/imodeljs-backend": "2.12.0-dev.14",
+    "@bentley/imodeljs-common": "2.12.0-dev.14",
+    "@types/chai": "^4.1.4",
+    "@types/chai-as-promised": "^7",
+    "@types/deep-assign": "^0.1.0",
+    "@types/mocha": "^5.2.5",
+    "@types/node": "10.14.1",
+    "@types/semver": "^5.5.0",
+    "chai": "^4.1.2",
+    "chai-as-promised": "^7",
+    "cpx": "^1.5.0",
+    "eslint": "^6.8.0",
+    "electron": "^11.1.0",
+    "mocha": "^5.2.0",
+    "nyc": "^14.0.0",
+    "rimraf": "^3.0.2",
+    "sinon": "^9.0.2",
+    "source-map-loader": "^1.0.0",
+    "source-map-support": "^0.5.6",
+    "ts-node": "^7.0.1",
+    "typescript": "~3.7.4"
+  },
+  "dependencies": {
+    "@bentley/imodeljs-editor-common": "2.12.0-dev.14"
+  },
+  "nyc": {
+    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
+  },
+  "eslintConfig": {
+    "plugins": [
+      "@bentley"
+    ],
+    "extends": "plugin:@bentley/imodeljs-recommended"
+  }
+}

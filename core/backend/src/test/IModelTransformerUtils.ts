@@ -18,13 +18,13 @@ import {
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import {
   AuxCoordSystem, AuxCoordSystem2d, BackendLoggerCategory, BackendRequestContext, CategorySelector, DefinitionModel, DefinitionPartition,
-  DisplayStyle2d, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition,
-  ECSqlStatement, Element, ElementAspect, ElementMultiAspect, ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect,
-  ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, FunctionalModel, FunctionalSchema, GeometricElement3d, GeometryPart, GroupModel,
-  IModelDb, IModelExporter, IModelExportHandler, IModelImporter, IModelJsFs, IModelTransformer, InformationPartitionElement, InformationRecordModel,
-  Model, ModelSelector, OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, Platform, Relationship,
-  RelationshipProps, RenderMaterialElement, SnapshotDb, SpatialCategory, SpatialLocationModel, SpatialViewDefinition, SubCategory, Subject,
-  TemplateRecipe3d, Texture, ViewDefinition,
+  DisplayStyle2d, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingModel,
+  DrawingViewDefinition, ECSqlStatement, Element, ElementAspect, ElementMultiAspect, ElementOwnsChildElements, ElementOwnsMultiAspects,
+  ElementOwnsUniqueAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, FunctionalModel, FunctionalSchema, GeometricElement3d,
+  GeometryPart, GroupModel, IModelDb, IModelExporter, IModelExportHandler, IModelImporter, IModelJsFs, IModelTransformer, InformationPartitionElement,
+  InformationRecordModel, Model, ModelSelector, OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition,
+  Platform, Relationship, RelationshipProps, RenderMaterialElement, SnapshotDb, SpatialCategory, SpatialLocationModel, SpatialViewDefinition,
+  SubCategory, Subject, TemplateRecipe2d, TemplateRecipe3d, Texture, ViewDefinition,
 } from "../imodeljs-backend";
 import { KnownTestLocations } from "./KnownTestLocations";
 
@@ -806,6 +806,8 @@ export namespace IModelTransformerUtils {
     assert.isTrue(Id64.isValidId64(teamSpatialCategoryId));
     const sharedSpatialCategoryId = insertSpatialCategory(teamDb, IModel.dictionaryId, "SpatialCategoryShared", ColorDef.white);
     assert.isTrue(Id64.isValidId64(sharedSpatialCategoryId));
+    const sharedDrawingCategoryId = DrawingCategory.insert(teamDb, IModel.dictionaryId, "DrawingCategoryShared", new SubCategoryAppearance());
+    assert.isTrue(Id64.isValidId64(sharedDrawingCategoryId));
     const physicalModelId = PhysicalModel.insert(teamDb, IModel.rootSubjectId, `Physical${teamName}`);
     assert.isTrue(Id64.isValidId64(physicalModelId));
     // insert PhysicalObject-team1 using team SpatialCategory
@@ -904,10 +906,12 @@ export namespace IModelTransformerUtils {
     }
     const iModelDb: SnapshotDb = SnapshotDb.createEmpty(iModelFile, { rootSubject: { name: iModelName }, createClassViews: true });
     const componentCategoryId = insertSpatialCategory(iModelDb, IModel.dictionaryId, "Components", ColorDef.green);
-    const definitionModelId: Id64String = DefinitionModel.insert(iModelDb, IModel.rootSubjectId, "Components");
+    const drawingComponentCategoryId = DrawingCategory.insert(iModelDb, IModel.dictionaryId, "Components", new SubCategoryAppearance());
+    const definitionModelId = DefinitionModel.insert(iModelDb, IModel.rootSubjectId, "Components");
     // Cylinder component
-    const cylinderTemplateId: Id64String = TemplateRecipe3d.insert(iModelDb, definitionModelId, "Cylinder");
-    assert.exists(iModelDb.models.getModel<PhysicalModel>(cylinderTemplateId));
+    const cylinderTemplateId = TemplateRecipe3d.insert(iModelDb, definitionModelId, "Cylinder");
+    const cylinderTemplateModel = iModelDb.models.getModel<PhysicalModel>(cylinderTemplateId, PhysicalModel);
+    assert.isTrue(cylinderTemplateModel.isTemplate);
     const cylinderProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: cylinderTemplateId,
@@ -919,7 +923,7 @@ export namespace IModelTransformerUtils {
     };
     iModelDb.elements.insertElement(cylinderProps);
     // Assembly component
-    const assemblyTemplateId: Id64String = TemplateRecipe3d.insert(iModelDb, definitionModelId, "Assembly");
+    const assemblyTemplateId = TemplateRecipe3d.insert(iModelDb, definitionModelId, "Assembly");
     assert.exists(iModelDb.models.getModel<PhysicalModel>(assemblyTemplateId));
     const assemblyHeadProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
@@ -942,6 +946,20 @@ export namespace IModelTransformerUtils {
       geom: createBox(Point3d.create(1, 1, 1)),
     };
     iModelDb.elements.insertElement(childBoxProps);
+    // 2d component
+    const drawingGraphicTemplateId = TemplateRecipe2d.insert(iModelDb, definitionModelId, "DrawingGraphic");
+    const drawingGraphicTemplateModel = iModelDb.models.getModel<DrawingModel>(drawingGraphicTemplateId, DrawingModel);
+    assert.isTrue(drawingGraphicTemplateModel.isTemplate);
+    const drawingGraphicProps: GeometricElement2dProps = {
+      classFullName: DrawingGraphic.classFullName,
+      model: drawingGraphicTemplateId,
+      category: drawingComponentCategoryId,
+      code: Code.createEmpty(),
+      userLabel: "DrawingGraphic",
+      placement: { origin: Point2d.createZero(), angle: 0 },
+      geom: createRectangle(Point2d.create(1, 1)),
+    };
+    iModelDb.elements.insertElement(drawingGraphicProps);
     return iModelDb;
   }
 
@@ -1099,11 +1117,11 @@ export namespace IModelTransformerUtils {
   }
 
   export function dumpIModelInfo(iModelDb: IModelDb): void {
-    const outputFileName: string = `${iModelDb.nativeDb.getFilePath()}.info.txt`;
+    const outputFileName: string = `${iModelDb.pathName}.info.txt`;
     if (IModelJsFs.existsSync(outputFileName)) {
       IModelJsFs.removeSync(outputFileName);
     }
-    IModelJsFs.appendFileSync(outputFileName, `${iModelDb.nativeDb.getFilePath()}\n`);
+    IModelJsFs.appendFileSync(outputFileName, `${iModelDb.pathName}\n`);
     IModelJsFs.appendFileSync(outputFileName, "\n=== CodeSpecs ===\n");
     iModelDb.withPreparedStatement(`SELECT ECInstanceId,Name FROM BisCore:CodeSpec ORDER BY ECInstanceId`, (statement: ECSqlStatement): void => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {

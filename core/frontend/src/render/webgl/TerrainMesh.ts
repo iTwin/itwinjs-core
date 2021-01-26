@@ -18,7 +18,7 @@ import { RenderMemory } from "../RenderMemory";
 import { RenderSystem, RenderTerrainMeshGeometry, TerrainTexture } from "../RenderSystem";
 import { AttributeMap } from "./AttributeMap";
 import { GL } from "./GL";
-import { BufferHandle, BufferParameters, QBufferHandle2d, QBufferHandle3d } from "./Handle";
+import { BufferHandle, BufferParameters, QBufferHandle2d, QBufferHandle3d } from "./AttributeBuffers";
 import { Primitive } from "./Primitive";
 import { RenderOrder, RenderPass } from "./RenderFlags";
 import { System } from "./System";

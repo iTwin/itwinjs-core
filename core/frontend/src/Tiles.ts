@@ -22,6 +22,7 @@ class TreeOwner implements TileTreeOwner {
 
   public get tileTree(): TileTree | undefined { return this._tileTree; }
   public get loadStatus(): TileTreeLoadStatus { return this._loadStatus; }
+  public get iModel(): IModelConnection { return this._iModel; }
 
   public constructor(id: any, supplier: TileTreeSupplier, iModel: IModelConnection) {
     this.id = id;

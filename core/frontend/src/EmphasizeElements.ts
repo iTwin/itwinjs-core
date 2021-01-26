@@ -9,7 +9,8 @@
 import { Id64, Id64Arg, Id64Array, Id64Set } from "@bentley/bentleyjs-core";
 import { ColorDef, ColorDefProps, FeatureAppearance, FeatureAppearanceProps, RgbColor } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "./render/FeatureSymbology";
-import { FeatureOverrideProvider, Viewport } from "./Viewport";
+import { FeatureOverrideProvider } from "./FeatureOverrideProvider";
+import { Viewport } from "./Viewport";
 
 /** Options for overriding element appearance.
  * @see [[EmphasizeElements]]
@@ -233,15 +234,37 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     return true;
   }
 
-  /** Clear elements with color/transparency overrides. Specify key to clear only a single override.
+  /** Clear color/transparency overrides from elements. Removes all overrides when keyOrIds isn't supplied.
+   * @param keyOrIds Specify a key value from [[EmphasizeElements.getOverriddenElements]] or [[EmphasizeElements.createOverrideKey]]
+   * to remove a single color/transparency override for the corresponding elements or specify the IDs of elements to
+   * remove any color/transparency override from.
    * @return false if nothing to clear.
    */
-  public clearOverriddenElements(vp: Viewport, key?: number): boolean {
+  public clearOverriddenElements(vp: Viewport, keyOrIds?: number | Id64Arg): boolean {
     if (undefined === this._overrideAppearance)
       return false;
-    if (undefined !== key) {
-      if (!this._overrideAppearance.delete(key))
-        return false;
+
+    if (undefined !== keyOrIds) {
+      if (typeof keyOrIds === "number") {
+        if (!this._overrideAppearance.delete(keyOrIds))
+          return false;
+      } else {
+        let changed = false;
+
+        for (const [otherKey, otherIds] of this._overrideAppearance) {
+          const oldSize = otherIds.size;
+          Id64.forEach(keyOrIds, (id) => otherIds.delete(id));
+
+          if (oldSize !== otherIds.size)
+            changed = true;
+
+          if (0 === otherIds.size)
+            this._overrideAppearance.delete(otherKey);
+        }
+
+        if (!changed)
+          return false;
+      }
     } else {
       this._overrideAppearance = undefined;
     }
@@ -252,7 +275,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
   /** @internal */
   protected updateIdSet(ids: Id64Arg, replace: boolean, existingIds?: Id64Set): Id64Set | undefined {
     const newIds = new Set<string>();
-    Id64.toIdSet(ids).forEach((id) => { newIds.add(id); });
+    Id64.forEach(ids, (id) => newIds.add(id));
     if (0 === newIds.size)
       return undefined;
     const oldSize = (!replace && undefined !== existingIds ? existingIds.size : 0);
@@ -419,7 +442,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
       return false;
 
     const overrideIds = new Set<string>();
-    Id64.toIdSet(ids).forEach((id) => { overrideIds.add(id); });
+    Id64.forEach(ids, (id) => overrideIds.add(id));
     if (0 === overrideIds.size)
       return false;
 
@@ -439,7 +462,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
         if (key === ovrKey) // Make sure these ids are unique to this color/transparency key...
           continue;
 
-        Id64.toIdSet(ids).forEach((id) => { otherIds.delete(id); });
+        Id64.forEach(ids, (id) => otherIds.delete(id));
         if (0 !== otherIds.size)
           continue;
 

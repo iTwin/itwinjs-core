@@ -11,7 +11,8 @@ import {
 } from "@bentley/geometry-core";
 import { Frustum, Npc, NpcCorners } from "@bentley/imodeljs-common";
 import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
-import { CoordSystem, Viewport } from "./Viewport";
+import { CoordSystem } from "./CoordSystem";
+import { Viewport } from "./Viewport";
 import { ViewRect } from "./ViewRect";
 import { ViewState } from "./ViewState";
 import { Frustum2d } from "./Frustum2d";

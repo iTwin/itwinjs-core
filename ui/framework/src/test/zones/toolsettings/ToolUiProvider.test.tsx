@@ -155,5 +155,4 @@ describe("ToolUiProvider", () => {
     ConfigurableUiManager.unregisterControl("ToolTest1");
   });
 
-
 });

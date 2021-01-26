@@ -1,0 +1,5 @@
+sep=;
+Release Tag;API Item
+alpha;EditCommandIpc
+internal;editorChannel = "editor"
+alpha;EditorIpc

@@ -15,8 +15,23 @@ import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BriefcaseManager, ChangeSetToken } from "./BriefcaseManager";
 import { ChangeSummaryExtractContext, ChangeSummaryManager } from "./ChangeSummaryManager";
 import { ECDbOpenMode } from "./ECDb";
-import { BriefcaseDb, IModelDb } from "./IModelDb";
+import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
+
+/**
+ * Options for processChangesets function
+ * @internal
+ * */
+export interface ProcessChangesetOptions {
+  startChangesetId: string;
+  endChangesetId: string;
+  rulesetId: string;
+  filterSpatial?: boolean;
+  wantParents?: boolean;
+  wantPropertyChecksums?: boolean;
+  rulesetDir?: string;
+  tempDir?: string;
+}
 
 /** An ChangedElementsDb file
  * @internal
@@ -100,15 +115,24 @@ export class ChangedElementsDb implements IDisposable {
    * @param rulesetDir [optional] Directories string for ruleset directory locater
    * @param tempDir [optional] Directory to use to store temporary Db used to do processing. This Db is cleaned up automatically unless the process crashes.
    */
-  public async processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseDb, rulesetId: string, startChangesetId: GuidString, endChangesetId: GuidString, filterSpatial?: boolean, rulesetDir?: string, tempDir?: string): Promise<DbResult> {
+  public async processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult> {
     requestContext.enter();
     const changeSummaryContext = new ChangeSummaryExtractContext(briefcase);
-    const changesets = await ChangeSummaryManager.downloadChangeSets(requestContext, changeSummaryContext, startChangesetId, endChangesetId);
+    const changesets = await ChangeSummaryManager.downloadChangeSets(requestContext, changeSummaryContext, options.startChangesetId, options.endChangesetId);
     requestContext.enter();
     const tokens = ChangedElementsDb.buildChangeSetTokens(changesets, BriefcaseManager.getChangeSetsPath(briefcase.iModelId));
     // ChangeSets need to be processed from newest to oldest
     tokens.reverse();
-    const status: DbResult = this.nativeDb.processChangesets(briefcase.nativeDb, JSON.stringify(tokens), rulesetId, !!filterSpatial ? filterSpatial : false, rulesetDir, tempDir);
+    const status: DbResult = this.nativeDb.processChangesets(
+      briefcase.nativeDb,
+      JSON.stringify(tokens),
+      options.rulesetId,
+      options.filterSpatial,
+      options.wantParents,
+      options.wantPropertyChecksums,
+      options.rulesetDir,
+      options.tempDir
+    );
     if (status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(status, "Failed to process changesets");
     return status;
