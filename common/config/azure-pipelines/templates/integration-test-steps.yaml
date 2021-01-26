@@ -76,7 +76,6 @@ steps:
   - script: "npm run test:integration"
     workingDirectory: clients/projectshare
     displayName: "Run ProjectShare Client Tests"
-    enabled: false
     condition: succeededOrFailed()
 
   - script: "npm run test:integration"
