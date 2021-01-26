@@ -2938,6 +2938,7 @@ export interface IModelTransformOptions {
     loadSourceGeometry?: boolean;
     noProvenance?: boolean;
     targetScopeElementId?: Id64String;
+    wasSourceIModelCopiedToTarget?: boolean;
 }
 
 // @internal @deprecated
