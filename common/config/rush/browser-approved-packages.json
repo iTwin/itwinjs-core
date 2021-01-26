@@ -283,6 +283,10 @@
       "allowedCategories": [ "common" ]
     },
     {
+      "name": "@wojtekmaj/enzyme-adapter-react-17",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "applicationinsights",
       "allowedCategories": [ "backend" ]
     },
