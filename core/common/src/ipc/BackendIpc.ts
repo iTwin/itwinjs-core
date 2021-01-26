@@ -60,7 +60,7 @@ export class BackendIpc {
    */
   public static removeListener(channel: string, listener: IpcListener): void {
     this.ipc.removeListener(iTwinChannel(channel), listener);
-  };
+  }
 }
 
 /**

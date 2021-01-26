@@ -67,7 +67,7 @@ export type HierarchyUpdateInfoJSON = typeof UPDATE_FULL | PartialHierarchyModif
 export type HierarchyUpdateInfo = typeof UPDATE_FULL | PartialHierarchyModification[];
 
 /** @alpha */
-export namespace HierarchyUpdateInfo {
+export namespace HierarchyUpdateInfo { // eslint-disable-line @typescript-eslint/no-redeclare
   /** Serialize given object to JSON. */
   export function toJSON(obj: HierarchyUpdateInfo): HierarchyUpdateInfoJSON {
     if (typeof obj === "string")
@@ -93,7 +93,7 @@ export type PartialHierarchyModificationJSON = NodeInsertionInfoJSON | NodeDelet
 export type PartialHierarchyModification = NodeInsertionInfo | NodeDeletionInfo | NodeUpdateInfo;
 
 /** @alpha */
-export namespace PartialHierarchyModification {
+export namespace PartialHierarchyModification { // eslint-disable-line @typescript-eslint/no-redeclare
   /** Serialize given object to JSON. */
   export function toJSON(obj: PartialHierarchyModification): PartialHierarchyModificationJSON {
     return {
