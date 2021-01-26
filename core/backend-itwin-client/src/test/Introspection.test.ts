@@ -12,7 +12,7 @@ describe("MemoryIntrospectionResponseCache", async () => {
   it("adds the token to the cache with a valid expiration", async () => {
     const testRes: IntrospectionResponse = {
       active: true,
-      client_id: "test",
+      client_id: "test", // eslint-disable-line @typescript-eslint/naming-convention
       scope: "test",
       exp: Date.now() + 10000, // make the timeout long enough it won't be removed.
     };
@@ -28,7 +28,7 @@ describe("MemoryIntrospectionResponseCache", async () => {
   it("does not add the token to the cache when the token is already expired", async () => {
     const testRes: IntrospectionResponse = {
       active: true,
-      client_id: "test",
+      client_id: "test", // eslint-disable-line @typescript-eslint/naming-convention
       scope: "test",
       exp: new Date().getTime() / 1000 - 10000, // make the timeout prior to the time right now.
     };
@@ -43,7 +43,7 @@ describe("MemoryIntrospectionResponseCache", async () => {
   it("does not add to the cache if missing an expiration in response object", async () => {
     const testRes: IntrospectionResponse = {
       active: true,
-      client_id: "test",
+      client_id: "test", // eslint-disable-line @typescript-eslint/naming-convention
       scope: "test",
     };
 
@@ -59,7 +59,7 @@ describe("MemoryIntrospectionResponseCache", async () => {
 
     const testRes: IntrospectionResponse = {
       active: true,
-      client_id: "test",
+      client_id: "test", // eslint-disable-line @typescript-eslint/naming-convention
       scope: "test",
       exp: (new Date().getTime() + 10) / 1000,
     };
