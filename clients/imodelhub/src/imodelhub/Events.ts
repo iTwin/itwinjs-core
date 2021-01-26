@@ -44,7 +44,9 @@ export enum IModelHubEventType {
    * @internal
    */
   AllCodesDeletedEvent = "AllCodesDeletedEvent",
-  /** Sent when a [[Briefcase]] is deleted. See [[BriefcaseDeletedEvent]]. */
+  /** Sent when a [[Briefcase]] is deleted. See [[BriefcaseDeletedEvent]].
+   * @internal
+   */
   BriefcaseDeletedEvent = "BriefcaseDeletedEvent",
   /** Sent when an iModel is deleted. See [[iModelDeletedEvent]]. */
   iModelDeletedEvent = "iModelDeletedEvent",
@@ -181,13 +183,13 @@ export class CodeEvent extends BriefcaseEvent {
 }
 
 /** Sent when all [Code]($common)s for a [[Briefcase]] are deleted. Can occur when calling [[CodeHandler.deleteAll]] or [[BriefcaseHandler.delete]].
- * @public
+ * @internal
  */
 export class AllCodesDeletedEvent extends BriefcaseEvent {
 }
 
 /** Sent when a [[Briefcase]] is deleted. See [[BriefcaseHandler.delete]].
- * @public
+ * @internal
  */
 export class BriefcaseDeletedEvent extends BriefcaseEvent {
 }

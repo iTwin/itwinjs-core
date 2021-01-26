@@ -57,7 +57,7 @@ export class AggregateResponseError extends Error {
     errors: ResponseError[];
 }
 
-// @public
+// @internal
 export class AllCodesDeletedEvent extends BriefcaseEvent {
 }
 
@@ -117,7 +117,7 @@ export enum BriefcaseAccessMode {
     Shared = 0
 }
 
-// @public
+// @internal
 export class BriefcaseDeletedEvent extends BriefcaseEvent {
 }
 
@@ -840,6 +840,7 @@ export enum IModelHubEventType {
     AllCodesDeletedEvent = "AllCodesDeletedEvent",
     // @internal
     AllLocksDeletedEvent = "AllLocksDeletedEvent",
+    // @internal
     BriefcaseDeletedEvent = "BriefcaseDeletedEvent",
     ChangeSetPostPushEvent = "ChangeSetPostPushEvent",
     ChangeSetPrePushEvent = "ChangeSetPrePushEvent",

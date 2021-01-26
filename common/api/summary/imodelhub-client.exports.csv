@@ -7,12 +7,12 @@ internal;addSelectApplicationData(query: RequestQueryOptions): void
 internal;addSelectContainerAccessKey(query: RequestQueryOptions): void
 internal;addSelectFileAccessKey(query: RequestQueryOptions): void
 public;AggregateResponseError 
-public;AllCodesDeletedEvent 
+internal;AllCodesDeletedEvent 
 internal;AllLocksDeletedEvent 
 internal;ArgumentCheck
 internal;Briefcase 
 internal;BriefcaseAccessMode
-public;BriefcaseDeletedEvent 
+internal;BriefcaseDeletedEvent 
 public;class BriefcaseEvent 
 internal;BriefcaseHandler
 internal;BriefcaseQuery 
