@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/projectshare-client",
+      "comment": "Updating projectshare client tests",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/projectshare-client",
+  "email": "11948909+tomaspakala@users.noreply.github.com"
+}
