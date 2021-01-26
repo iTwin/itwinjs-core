@@ -136,31 +136,6 @@ steps:
   displayName: 'Run bmsBuild - v1'
   condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/v1.x'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/1'), startsWith(variables['System.PullRequest.TargetBranch'], 'refs/heads/v1.x')))
 
-- task: DownloadBuildArtifacts@0
-  displayName: 'Download Build Artifacts - Demo Viewer'
-  inputs:
-    buildType: specific
-    project: '2c48216e-e72f-48b4-a4eb-40ff1c04e8e4'
-    pipeline: 674
-    buildVersionToDownload: specific
-    buildId: 374323
-    downloadType: specific
-  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release'),  eq(variables['Build.SourceBranch'], 'refs/heads/v1.x')))
-
-- task: CopyFiles@2
-  displayName: 'Copy demo-viewer to public-viewer'
-  inputs:
-    SourceFolder: '$(System.ArtifactsDirectory)\demo-viewer-frontend'
-    TargetFolder: '$(agent.builddirectory)/tempDocsBuild/public_build/learning/public-viewer-demonstrator'
-  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/2')))
-
-- task: CopyFiles@2
-  displayName: 'Copy demo-viewer to public-viewer - v1'
-  inputs:
-    SourceFolder: '$(System.ArtifactsDirectory)\demo-viewer-frontend'
-    TargetFolder: '$(agent.builddirectory)/tempDocsV1Build/public_build/v1/learning/public-viewer-demonstrator'
-  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/v1.x'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/1')))
-
 - task: ms-codeanalysis.vss-microsoft-security-code-analysis-devops.build-task-credscan.CredScan@2
   displayName: 'Run Credential Scanner'
   inputs:
