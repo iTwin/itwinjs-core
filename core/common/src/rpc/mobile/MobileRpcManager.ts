@@ -10,6 +10,9 @@ import { RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcConfiguration } from "../core/RpcConfiguration";
 import { RpcEndpoint, RpcMobilePlatform } from "../core/RpcConstants";
 import { MobileRpcProtocol } from "./MobileRpcProtocol";
+import { BackendIpc } from "../../ipc/BackendIpc";
+import { FrontendIpc } from "../../ipc/FrontendIpc";
+import { IpcWebSocketBackend, IpcWebSocketFrontend } from "../../ipc/IpcWebSocket";
 
 /** Holds configuration for the RpcInterfaces used by the application.
  * @beta
@@ -112,10 +115,14 @@ export class MobileRpcManager {
 
   /** Initializes MobileRpcManager for the frontend of an application. */
   public static initializeClient(interfaces: RpcInterfaceDefinition[]): MobileRpcConfiguration {
-    return MobileRpcManager.performInitialization(interfaces, RpcEndpoint.Frontend);
+    const config = MobileRpcManager.performInitialization(interfaces, RpcEndpoint.Frontend);
+    FrontendIpc.initialize(new IpcWebSocketFrontend());
+    return config;
   }
   /** Initializes MobileRpcManager for the backend of an application. */
   public static initializeImpl(interfaces: RpcInterfaceDefinition[]): MobileRpcConfiguration {
-    return MobileRpcManager.performInitialization(interfaces, RpcEndpoint.Backend);
+    const config = MobileRpcManager.performInitialization(interfaces, RpcEndpoint.Backend);
+    BackendIpc.initialize(new IpcWebSocketBackend());
+    return config;
   }
 }
