@@ -2,14 +2,9 @@ pool:
   name: iModelTechCI
   demands: Agent.OS -equals Windows_NT
 
-#Your build pipeline references an undefined variable named ‘Pipeline.Workspace’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
-#Your build pipeline references an undefined variable named ‘Pipeline.Workspace’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
-#Your build pipeline references an undefined variable named ‘tempDocsV1Location\public_build’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
-#Your build pipeline references an undefined variable named ‘Pipeline.Workspace’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
-#Your build pipeline references an undefined variable named ‘Pipeline.Workspace’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
-#Your build pipeline references an undefined variable named ‘Pipeline.Workspace’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
 variables:
   tempDocsLocation: '$(Agent.BuildDirectory)\tempDocsBuild'
+  tempDocsV1Location: '$(Agent.BuildDirectory)\tempDocsV1Build'
 
 steps:
 - task: NodeTool@0
@@ -203,13 +198,13 @@ steps:
 - task: qetza.replacetokens.replacetokens-task.replacetokens@3
   displayName: 'Replace tokens in NugetPackage.nuspec'
   inputs:
-    targetFiles: '$(Pipeline.Workspace)\DocsNugetSpecFile\NugetPackage.nuspec'
+    targetFiles: '$(Agent.BuildDirectory)\DocsNugetSpecFile\NugetPackage.nuspec'
   condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release')))
 
 - task: qetza.replacetokens.replacetokens-task.replacetokens@3
   displayName: 'Replace tokens in NugetPackageV1.nuspec'
   inputs:
-    targetFiles: '$(Pipeline.Workspace)\DocsNugetSpecFile\NugetPackageV1.nuspec'
+    targetFiles: '$(Agent.BuildDirectory)\DocsNugetSpecFile\NugetPackageV1.nuspec'
   condition: and(succeeded(), or(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/1'), startsWith(variables['Build.SourceBranch'], 'refs/heads/v1.x')))
 
 - task: DeleteFiles@1
@@ -236,7 +231,7 @@ steps:
   displayName: 'NuGet pack'
   inputs:
     command: pack
-    packagesToPack: '$(Pipeline.Workspace)\DocsNugetSpecFile\NugetPackage.nuspec'
+    packagesToPack: '$(Agent.BuildDirectory)\DocsNugetSpecFile\NugetPackage.nuspec'
     versioningScheme: byBuildNumber
   condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/2')))
 
@@ -244,7 +239,7 @@ steps:
   displayName: 'NuGet pack v1.x'
   inputs:
     command: pack
-    packagesToPack: '$(Pipeline.Workspace)\DocsNugetSpecFile\NugetPackageV1.nuspec'
+    packagesToPack: '$(Agent.BuildDirectory)\DocsNugetSpecFile\NugetPackageV1.nuspec'
     versioningScheme: byBuildNumber
   condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/v1.x'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/1')))
 
