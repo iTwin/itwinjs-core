@@ -478,11 +478,11 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
     if (this._serverArgs.iModelId === undefined)
       throw new Error("Must initialize IModelId before using");
     let props: LocalBriefcaseProps;
-    if (this._bridgeArgs.argsJson.BriefcaseId) {
+    if (this._bridgeArgs.argsJson && this._bridgeArgs.argsJson.BriefcaseId) {
       props = await BriefcaseManager.downloadBriefcase(this._requestContext, {briefcaseId: this._bridgeArgs.argsJson.BriefcaseId, contextId: this._serverArgs.contextId, iModelId: this._serverArgs.iModelId});
     } else {
       props = await BriefcaseManager.downloadBriefcase(this._requestContext, {contextId: this._serverArgs.contextId, iModelId: this._serverArgs.iModelId});
-      this._bridgeArgs.argsJson.BriefcaseId = props.briefcaseId;
+      this._bridgeArgs.argsJson= {BriefcaseId: props.briefcaseId};
     }
     let briefcaseDb: BriefcaseDb | undefined;
     const openArgs: OpenBriefcaseProps = {
