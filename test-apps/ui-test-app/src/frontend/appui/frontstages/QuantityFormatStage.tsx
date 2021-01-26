@@ -8,7 +8,7 @@ import { ModalFrontstageInfo, UiFramework } from "@bentley/ui-framework";
 import { IModelApp, QuantityType } from "@bentley/imodeljs-frontend";
 import { Button, ButtonType, Listbox, ListboxItem } from "@bentley/ui-core";
 import { Format, FormatProps, FormatterSpec, UnitsProvider } from "@bentley/imodeljs-quantity";
-import { FormatPanel } from "@bentley/ui-components";
+import { FormatPanel, FormatSample } from "@bentley/ui-components";
 
 /** Modal frontstage displaying the active QuantityFormatStage.
  * @alpha
@@ -51,29 +51,38 @@ function QuantityFormatStage() {
   }, []);
 
   return (
-    <div className="quantity-types-container">
-      <div className="left-panel">
-        <Listbox id="quantity-types-list" className="quantity-types" onKeyPress={handleKeypressOnSourceList} onListboxValueChange={onListboxValueChange} >
-          {
-            enumKeys(QuantityType).map((enumValue) =>
-              <ListboxItem key={enumValue} className="quantity-type-list-entry" value={QuantityType[enumValue].toString()}>
-                <span className="map-source-list-entry-name" title={enumValue}>{enumValue}</span>
-              </ListboxItem>)
+    <div className="quantity-types-stage">
+      <div className="quantity-types-container">
+        <div className="left-panel">
+          <Listbox id="quantity-types-list" className="quantity-types" onKeyPress={handleKeypressOnSourceList} onListboxValueChange={onListboxValueChange} >
+            {
+              enumKeys(QuantityType).map((enumValue) =>
+                <ListboxItem key={enumValue} className="quantity-type-list-entry" value={QuantityType[enumValue].toString()}>
+                  <span className="map-source-list-entry-name" title={enumValue.toString()}>{enumValue}</span>
+                </ListboxItem>)
+            }
+          </Listbox>
+        </div>
+        <div className="right-panel">
+          {activeFormatterSpec &&
+            <>
+              <div className="quantity-types-right-top">
+                <div className="quantity-types-right-top-sample">
+                  <FormatSample formatSpec={activeFormatterSpec} initialMagnitude={1234.56} />
+                </div>
+                <div className="components-button-panel">
+                  <Button buttonType={ButtonType.Blue} onClick={handleOnFormatSave}>Save</Button>
+                </div>
+              </div>
+              <div className="quantity-types-formats">
+                <FormatPanel onFormatChange={handleOnFormatChanged}
+                  initialFormat={activeFormatterSpec.format.toJSON()} showSample={false}
+                  unitsProvider={IModelApp.quantityFormatter as UnitsProvider} persistenceUnit={activeFormatterSpec.persistenceUnit} />
+              </div>
+            </>
           }
-        </Listbox>
+        </div>
       </div>
-      <div className="right-panel">
-        {activeFormatterSpec &&
-          <div className="quantity-types-formats">
-            <FormatPanel onFormatChange={handleOnFormatChanged} initialMagnitude={1234.56}
-              initialFormat={activeFormatterSpec.format.toJSON()} showSample={true}
-              unitsProvider={IModelApp.quantityFormatter as UnitsProvider} persistenceUnit={activeFormatterSpec.persistenceUnit} />
-            <div className="components-button-panel">
-              <Button buttonType={ButtonType.Blue} onClick={handleOnFormatSave}>Save</Button>
-            </div>
-          </div>
-        }
-      </div>
-    </div >
+    </div>
   );
 }

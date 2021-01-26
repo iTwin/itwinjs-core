@@ -15,6 +15,8 @@ import { ThousandsSeparator } from "./ThousandsSeparator";
 import { DecimalSeparatorSelector } from "./DecimalSeparator";
 import { ScientificTypeSelector } from "./ScientificType";
 import { SpecialKey } from "@bentley/ui-abstract";
+import { StationSeparatorSelector } from "./StationSeparatorSelector";
+import { StationSizeSelector } from "./StationSizeSelector";
 
 /** Properties of [[MiscFormatOptions]] component.
  * @alpha
@@ -131,6 +133,16 @@ export function MiscFormatOptions(props: MiscFormatOptionsProps) {
     }
   }, [onShowHideOptions, showOptions]);
 
+  const handleStationSeparatorChange = React.useCallback((value: string) => {
+    const newFormatProps = { ...formatProps, stationSeparator: value };
+    handleSetFormatProps(newFormatProps);
+  }, [formatProps, handleSetFormatProps]);
+
+  const handleStationOffsetChange = React.useCallback((value: number) => {
+    const newFormatProps = { ...formatProps, stationOffsetSize: value };
+    handleSetFormatProps(newFormatProps);
+  }, [formatProps, handleSetFormatProps]);
+
   return (
     <>
       { // eslint-disable-next-line jsx-a11y/anchor-is-valid
@@ -140,6 +152,14 @@ export function MiscFormatOptions(props: MiscFormatOptionsProps) {
         <>
           <span className={"uicore-label"}>Sign Option</span>
           <SignOptionSelector signOption={showSignOption} onChange={handleShowSignChange} />
+
+          <span className={classnames("uicore-label", formatType !== FormatType.Station && "uicore-disabled")}>Station Offset</span>
+          <StationSizeSelector value={(formatProps.stationOffsetSize ?? 2)}
+            disabled={formatType !== FormatType.Station} onChange={handleStationOffsetChange} />
+
+          <span className={classnames("uicore-label", formatType !== FormatType.Station && "uicore-disabled")}>Station Separator</span>
+          <StationSeparatorSelector separator={(undefined !== formatProps.stationSeparator ? formatProps.stationSeparator : "+")}
+            disabled={formatType !== FormatType.Station} onChange={handleStationSeparatorChange} />
 
           <ThousandsSeparator formatProps={formatProps} onChange={handleFormatChange} />
 

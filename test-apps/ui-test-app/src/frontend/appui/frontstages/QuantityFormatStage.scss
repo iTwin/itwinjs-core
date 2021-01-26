@@ -5,51 +5,76 @@
 @import "~@bentley/ui-core/lib/ui-core/style/themecolors";
 @import "~@bentley/ui-core/lib/ui-core/style/typography";
 
-$quantity-settings-leftpanel-width: 225px;
-$quantity-settings-rightpanel-width: 300px;
-
-.quantity-types-settings {
-  background: $buic-background-dialog;
-  color: $buic-text-color;
-  width: auto;
-  height: auto;
-  position: absolute;
-  top: 45%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  padding: 30px;
-  border-radius: 3px;
-  font-size: $uicore-font-size;
-  display: flex;
-  flex-direction: column;
-}
-
-.quantity-types-container {
+.quantity-types-stage {
   display: flex;
   height: 100%;
-  box-sizing: border-box;
+  width: 100%;
+  justify-content: center;
 
-  > .left-panel {
-    flex-direction: column;
-    width: $quantity-settings-leftpanel-width;
-    padding: 30px 50px 30px 30px;
-    height: auto;
-    .quantity-types-list {
-      height: 100%;
-    }
-  }
-
-  > .right-panel {
+  .quantity-types-container {
+    background: $buic-background-dialog;
+    display: flex;
+    height: 100%;
     width: auto;
-    height: auto;
-    padding: 30px 0;
+    box-sizing: border-box;
 
-    .quantity-types-formats {
-      border: 1px solid $buic-inputs-border;
-      border-radius: 3px;
-      height: 100%;
-      box-sizing: border-box;
-      padding: 6px;
+    > .left-panel {
+      flex-direction: column;
+      min-width: 200px;
+      width: auto;
+      padding: 30px 50px 30px 30px;
+      height: auto;
+      .quantity-types-list {
+        height: 100%;
+      }
+    }
+
+    > .right-panel {
+      display: flex;
+      flex-direction: column;
+      width: auto;
+      height: auto;
+      min-width: 410px;
+      padding: 30px 30px 30px 0;
+
+      .quantity-types-right-top {
+        display: flex;
+        padding-block-end: 20px;
+
+        .components-button-panel {
+          flex: 1 1 auto;
+          justify-content: flex-end;
+          display: flex;
+          align-items: flex-start;
+        }
+
+        .quantity-types-right-top-sample {
+          display: grid;
+          grid-template-columns: auto 1fr;
+          row-gap: 0;
+          column-gap: 6px;
+          align-items: center;
+
+          >span.components-inline {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 4px;
+          }
+        }
+      }
+
+      .quantity-types-formats {
+        display: flex;
+        flex-direction: column;
+        border: 1px solid $buic-inputs-border;
+        border-radius: 3px;
+        height: auto;
+        overflow-y: auto;
+        box-sizing: border-box;
+        padding: 6px;
+        flex: 1 1 auto;
+      }
     }
   }
 }

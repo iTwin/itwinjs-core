@@ -24,26 +24,22 @@ export interface FormatSampleProps extends CommonProps {
  */
 export function FormatSample(props: FormatSampleProps) {
   const { initialMagnitude, formatSpec } = props;
-  const initialFormatSpecRef = React.useRef(formatSpec);
   const initialMagnitudeRef = React.useRef(initialMagnitude ?? 0);
   const [magnitude, setMagnitude] = React.useState(initialMagnitudeRef.current);
   const [sampleValue, setSampleValue] = React.useState(magnitude.toString());
-  const [formattedValue, setFormattedValue] = React.useState(formatSpec ? formatSpec.applyFormatting(magnitude) : "");
 
   React.useEffect(() => {
-    if ((initialFormatSpecRef.current !== formatSpec) || (initialMagnitudeRef.current !== initialMagnitude)) {
-      initialFormatSpecRef.current = formatSpec;
+    if (initialMagnitudeRef.current !== initialMagnitude) {
       initialMagnitudeRef.current = initialMagnitude ?? 0;
-      setFormattedValue(formatSpec ? formatSpec.applyFormatting(initialMagnitudeRef.current) : "");
       setMagnitude(initialMagnitudeRef.current);
+      setSampleValue(initialMagnitudeRef.current.toString());
     }
-  }, [formatSpec, initialMagnitude]);
+  }, [initialMagnitude]);
 
   const handleOnValueBlur = React.useCallback(() => {
     let newValue = Number.parseFloat(sampleValue);
-    if (Number.isNaN(newValue)) {
+    if (Number.isNaN(newValue))
       newValue = 0;
-    }
     setMagnitude(newValue);
     setSampleValue(newValue.toString());
   }, [sampleValue]);
@@ -55,7 +51,7 @@ export function FormatSample(props: FormatSampleProps) {
   const handleKeyDown = React.useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     // istanbul ignore else
     if (e.key === SpecialKey.Enter) {
-      let newValue = e.currentTarget.value ? Number.parseFloat(e.currentTarget.value) : 0;
+      let newValue = Number.parseFloat(e.currentTarget.value);
       if (Number.isNaN(newValue))
         newValue = 0;
       setMagnitude(newValue);
@@ -67,12 +63,12 @@ export function FormatSample(props: FormatSampleProps) {
   const activePersistenceUnitLabel = formatSpec ? formatSpec.persistenceUnit.label : "";
   return (
     <>
-      <span className={"uicore-label"}>Persisted Value</span>
+      <span className={"uicore-label"}>Value</span>
       <span className="components-inline">
         <Input value={sampleValue} onChange={handleOnValueChange} onKeyDown={handleKeyDown} onBlur={handleOnValueBlur} />{activePersistenceUnitLabel}
       </span>
-      <span className={"uicore-label"}>Formatted Value</span>
-      <span className={"uicore-label"}>{formattedValue}</span>
+      <span className={"uicore-label"}>Formatted</span>
+      <span className={"uicore-label"}>{formatSpec ? formatSpec.applyFormatting(magnitude) : ""}</span>
     </>
   );
 }

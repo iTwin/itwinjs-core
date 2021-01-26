@@ -54,14 +54,14 @@ export function FormatPanel(props: FormatPanelProps) {
     if (initialFormatRef.current !== initialFormat) {
       initialFormatRef.current = initialFormat;
       setFormatProps(initialFormat);
+      setFormatSpec(undefined); // this will trigger the new spec to be created in the useEffect hook
     }
   }, [initialFormat]);
 
-  const handleSetFormatProps = React.useCallback((newProps: FormatProps) => {
+  const handleUserFormatChanges = React.useCallback((newProps: FormatProps) => {
     setFormatProps(newProps);
     setFormatSpec(undefined); // this will trigger the new spec to be created in the useEffect hook
     onFormatChange && onFormatChange(newProps);
-    // console.log(`FormatProps = ${JSON.stringify(newProps)}`); // eslint-disable-line no-console
   }, [onFormatChange]);
 
   React.useEffect(() => {
@@ -80,8 +80,8 @@ export function FormatPanel(props: FormatPanelProps) {
   }, [formatProps, formatSpec, persistenceUnit, provideFormatSpec, unitsProvider]);
 
   const handleFormatChange = React.useCallback((newFormatProps: FormatProps) => {
-    handleSetFormatProps(newFormatProps);
-  }, [handleSetFormatProps]);
+    handleUserFormatChanges(newFormatProps);
+  }, [handleUserFormatChanges]);
 
   const handleShowOptions = React.useCallback((show: boolean) => {
     setShowOptions(show);

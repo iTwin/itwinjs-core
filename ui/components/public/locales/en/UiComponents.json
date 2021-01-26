@@ -190,6 +190,16 @@
       "over128": "1/128",
       "over256": "1/256"
     },
+    "station_size": {
+      "two": "0+00",
+      "three": "0+000"
+    },
+    "station_separator": {
+      "plus": "+",
+      "minus": "-",
+      "blank": "Blank",
+      "caret": "^"
+    },
     "decimal_precision": {
       "zero": "1",
       "one": "0.1",
