@@ -61,16 +61,12 @@ export interface TelemetryClient {
 
 /** @alpha */
 export class TelemetryManager {
-  protected readonly _subClients: Set<TelemetryClient>;
+  protected readonly _clients: Set<TelemetryClient>;
 
-  constructor(...subClients: TelemetryClient[]) {
-    this._subClients = new Set<TelemetryClient>(subClients);
+  constructor(...clients: TelemetryClient[]) {
+    this._clients = new Set<TelemetryClient>(clients);
   }
 
-  /** This function should not throw errors
-   * @param requestContext
-   * @param telemetryEvent
-   */
   public async postTelemetry(requestContext: AuthorizedClientRequestContext, telemetryEvent: TelemetryEvent): Promise<void> {
     const postPerClient = async (subClient: TelemetryClient) => {
       try {
@@ -81,7 +77,7 @@ export class TelemetryManager {
     };
 
     const subClientPromises = [];
-    for (const subClient of this._subClients) {
+    for (const subClient of this._clients) {
       subClientPromises.push(postPerClient(subClient));
     }
 
@@ -89,10 +85,10 @@ export class TelemetryManager {
   }
 
   public addClient(client: TelemetryClient): void {
-    this._subClients.add(client);
+    this._clients.add(client);
   }
 
   public hasClient(client: TelemetryClient): boolean {
-    return this._subClients.has(client);
+    return this._clients.has(client);
   }
 }

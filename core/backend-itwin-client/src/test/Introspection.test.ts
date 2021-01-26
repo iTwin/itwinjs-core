@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
+import * as sinon from "sinon";
 import { MemoryIntrospectionResponseCache } from "../oidc/introspection/IntrospectionResponseCache";
 import { IntrospectionResponse } from "../oidc/introspection/IntrospectionResponse";
 
@@ -54,6 +55,8 @@ describe("MemoryIntrospectionResponseCache", async () => {
   });
 
   it("adds the response to the cache and removes it after a timeout", async () => {
+    const clock = sinon.useFakeTimers();
+
     const testRes: IntrospectionResponse = {
       active: true,
       client_id: "test",
@@ -68,11 +71,13 @@ describe("MemoryIntrospectionResponseCache", async () => {
     assert.isDefined(res);
     assert.equal(res?.client_id, "test");
 
-    // set timeout to go past timeout
-    await (new Promise<void>((resolve: any) => setTimeout(resolve, 50)));
+    // set clock to go past timeout
+    clock.tick(100);
 
     // the key should be removed
     res = await newCache.get("test");
     assert.isUndefined(res);
+
+    clock.restore();
   });
 });
