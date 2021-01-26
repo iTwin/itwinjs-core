@@ -2447,6 +2447,9 @@ export namespace EditManipulator {
 }
 
 // @internal (undocumented)
+export const ELEMENT_MARKED_FOR_REMOVAL: unique symbol;
+
+// @internal (undocumented)
 export class ElementAgenda {
     constructor(iModel: IModelConnection);
     add(arg: Id64Arg): boolean;
@@ -7871,6 +7874,7 @@ export class ScreenViewport extends Viewport {
     changeView(view: ViewState, opts?: ViewChangeOptions): void;
     clearViewUndo(): void;
     static create(parentDiv: HTMLDivElement, view: ViewState): ScreenViewport;
+    // @deprecated
     readonly decorationDiv: HTMLDivElement;
     doRedo(animationTime?: BeDuration): void;
     doUndo(animationTime?: BeDuration): void;
@@ -7881,6 +7885,8 @@ export class ScreenViewport extends Viewport {
     get isUndoPossible(): boolean;
     // @beta
     get logo(): HTMLImageElement;
+    // @internal (undocumented)
+    static markAllChildrenForRemoval(el: HTMLDivElement): void;
     maxUndoSteps: number;
     // @internal (undocumented)
     mouseMovementFromEvent(ev: MouseEvent): XAndY;
@@ -7899,6 +7905,8 @@ export class ScreenViewport extends Viewport {
     pickNearestVisibleGeometry(pickPoint: Point3d, radius?: number, allowNonLocatable?: boolean, out?: Point3d): Point3d | undefined;
     // @internal
     static removeAllChildren(el: HTMLDivElement): void;
+    // @internal (undocumented)
+    static removeMarkedChildren(el: HTMLDivElement): void;
     // @internal
     get rendersToScreen(): boolean;
     set rendersToScreen(toScreen: boolean);
