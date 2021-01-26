@@ -11,7 +11,7 @@ import { RenderPlan } from "../RenderPlan";
 import { BatchUniforms } from "./BatchUniforms";
 import { BranchUniforms } from "./BranchUniforms";
 import { FrustumUniforms, FrustumUniformType } from "./FrustumUniforms";
-import { UniformHandle } from "./Handle";
+import { UniformHandle } from "./UniformHandle";
 import { HiliteUniforms } from "./HiliteUniforms";
 import { LightingUniforms } from "./LightingUniforms";
 import { Matrix4 } from "./Matrix";

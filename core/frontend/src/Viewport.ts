@@ -7,8 +7,8 @@
  */
 
 import {
-  asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, Constructor, dispose, Id64, Id64Arg, Id64Set,
-  Id64String, IDisposable, isInstanceOf, StopWatch,
+  asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, Constructor, dispose, Id64, Id64Arg, Id64Set, Id64String, IDisposable, isInstanceOf,
+  StopWatch,
 } from "@bentley/bentleyjs-core";
 import {
   Angle, AngleSweep, Arc3d, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range1d,
@@ -21,12 +21,19 @@ import {
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
+import { ChangeFlag, ChangeFlags } from "./ChangeFlags";
+import { CoordSystem } from "./CoordSystem";
 import { DisplayStyleState } from "./DisplayStyleState";
 import { ElementPicker, LocateOptions } from "./ElementLocateManager";
+import { FeatureOverrideProvider } from "./FeatureOverrideProvider";
+import { FrustumAnimator } from "./FrustumAnimator";
+import { GlobeAnimator } from "./GlobeAnimator";
 import { HitDetail, SnapDetail } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
+import { linePlaneIntersect } from "./LinePlaneIntersect";
 import { ToolTipOptions } from "./NotificationManager";
+import { PerModelCategoryVisibility } from "./PerModelCategoryVisibility";
 import { CanvasDecoration } from "./render/CanvasDecoration";
 import { Decorations } from "./render/Decorations";
 import { FeatureSymbology } from "./render/FeatureSymbology";
@@ -42,21 +49,14 @@ import { SubCategoriesCache } from "./SubCategoriesCache";
 import { TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference, TileTreeSet } from "./tile/internal";
 import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolSettings";
+import { Animator, ViewAnimationOptions, ViewChangeOptions } from "./ViewAnimation";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { GlobalLocation } from "./ViewGlobalLocation";
 import { ViewingSpace } from "./ViewingSpace";
-import { ViewRect } from "./ViewRect";
-import { ViewStatus } from "./ViewStatus";
 import { ViewPose } from "./ViewPose";
-import { ModelDisplayTransformProvider, ViewState, ViewState2d } from "./ViewState";
-import { FeatureOverrideProvider } from "./FeatureOverrideProvider";
-import { ChangeFlag, ChangeFlags } from "./ChangeFlags";
-import { CoordSystem } from "./CoordSystem";
-import { Animator, ViewAnimationOptions, ViewChangeOptions } from "./ViewAnimation";
-import { GlobeAnimator } from "./GlobeAnimator";
-import { FrustumAnimator } from "./FrustumAnimator";
-import { PerModelCategoryVisibility } from "./PerModelCategoryVisibility";
-import { linePlaneIntersect } from "./LinePlaneIntersect";
+import { ViewRect } from "./ViewRect";
+import { ModelDisplayTransformProvider, ViewState } from "./ViewState";
+import { ViewStatus } from "./ViewStatus";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -849,12 +849,11 @@ export abstract class Viewport implements IDisposable {
    * @note this method clones the current ViewState2d and sets its baseModelId to the supplied value. The DisplayStyle and CategorySelector remain unchanged.
    */
   public async changeViewedModel2d(baseModelId: Id64String, options?: ChangeViewedModel2dOptions & ViewChangeOptions): Promise<void> {
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    if (!this.view.is2d)
+    if (!this.view.is2d())
       return;
 
     // Clone the current ViewState, change its baseModelId, and ensure the new model is loaded.
-    const newView = this.view.clone() as ViewState2d; // start by cloning the current ViewState
+    const newView = this.view.clone(); // start by cloning the current ViewState
     await newView.changeViewedModel(baseModelId);
 
     this.changeView(newView, options); // switch this viewport to use new ViewState2d
@@ -2648,6 +2647,7 @@ export class ScreenViewport extends Viewport {
 
     const showLogos = (ev: Event) => {
       const aboutBox = IModelApp.makeModalDiv({ autoClose: true, width: 460, closeBox: true }).modal;
+      aboutBox.className += " imodeljs-about"; // only added so the CSS knows this is the about dialog
       const logos = IModelApp.makeHTMLElement("table", { parent: aboutBox, className: "logo-cards" });
       if (undefined !== IModelApp.applicationLogoCard)
         logos.appendChild(IModelApp.applicationLogoCard());

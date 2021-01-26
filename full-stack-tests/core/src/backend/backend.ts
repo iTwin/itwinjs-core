@@ -47,7 +47,7 @@ async function init() {
           public: "lib",
           headers: [{ source: "*", headers: [{ key: "Access-Control-Allow-Origin", value: "*" }] }],
         });
-      }).listen(Number(process.env.CERTA_PORT ?? 3011) + 3000, undefined, undefined, resolve);
+      }).listen(Number(process.env.CERTA_PORT ?? 3011) + 4000, undefined, undefined, resolve);
     });
   }
 

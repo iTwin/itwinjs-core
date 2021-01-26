@@ -8,7 +8,7 @@
 
 import { assert } from "@bentley/bentleyjs-core";
 import { DrawParams } from "../DrawCommand";
-import { UniformHandle } from "../Handle";
+import { UniformHandle } from "../UniformHandle";
 import { Matrix4 } from "../Matrix";
 import { RenderPass, TextureUnit } from "../RenderFlags";
 import { VariableType, VertexShaderBuilder } from "../ShaderBuilder";

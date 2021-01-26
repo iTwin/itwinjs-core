@@ -9,7 +9,7 @@
 import { assert, dispose } from "@bentley/bentleyjs-core";
 import { Gradient, RenderTexture, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode } from "@bentley/imodeljs-common";
 import { WebGLDisposable } from "./Disposable";
-import { UniformHandle } from "./Handle";
+import { UniformHandle } from "./UniformHandle";
 import { TextureUnit } from "./RenderFlags";
 import { desync, sync } from "./Sync";
 import { TextureHandle } from "./Texture";

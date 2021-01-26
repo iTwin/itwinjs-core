@@ -85,7 +85,8 @@ export class AttributeMap {
     ]);
     const terrainMesh = new AttributeMapEntry([
       ["a_pos", 0, VariableType.Vec3],
-      ["a_uvParam", 1, VariableType.Vec2],
+      ["a_norm", 1, VariableType.Vec2],
+      ["a_uvParam", 2, VariableType.Vec2],
     ]);
     const screenPoints = new AttributeMapEntry([
       ["a_pos", 0, VariableType.Vec2],
