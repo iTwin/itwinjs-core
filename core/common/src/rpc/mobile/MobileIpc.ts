@@ -7,7 +7,7 @@
  */
 
 import { RpcInterface, RpcManager } from "../../imodeljs-common";
-import { IpcWebSocketMessage, IpcWebSocketMessageType, IpcWebSocketTransport } from "../../ipc/IpcWebSocket";
+import { IpcWebSocket, IpcWebSocketMessage, IpcWebSocketMessageType, IpcWebSocketTransport } from "../../ipc/IpcWebSocket";
 import { RpcMarshaling } from "../core/RpcMarshaling";
 import { RpcRequestFulfillment, SerializedRpcRequest } from "../core/RpcProtocol";
 import { MobileRpcProtocol } from "./MobileRpcProtocol";
@@ -24,7 +24,6 @@ class IpcInterface extends RpcInterface {
 /** @internal */
 export class MobileIpcTransport extends IpcWebSocketTransport {
   private _protocol: MobileRpcProtocol;
-  private _listeners: Array<(evt: Event, message: IpcWebSocketMessage) => void> = [];
   private _client: IpcInterface;
 
   public constructor(protocol: MobileRpcProtocol) {
@@ -41,10 +40,6 @@ export class MobileIpcTransport extends IpcWebSocketTransport {
     } else if (message.type === IpcWebSocketMessageType.Push || message.type === IpcWebSocketMessageType.Response) {
       this.sendToFrontend(message); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
-  }
-
-  public listen(handler: (evt: Event, message: IpcWebSocketMessage) => void): void {
-    this._listeners.push(handler);
   }
 
   public consumeRequest(request: SerializedRpcRequest): boolean {
@@ -80,7 +75,7 @@ export class MobileIpcTransport extends IpcWebSocketTransport {
   }
 
   private broadcast(evt: Event, message: IpcWebSocketMessage) {
-    for (const listener of this._listeners)
+    for (const listener of IpcWebSocket.receivers)
       listener(evt, message);
   }
 }
