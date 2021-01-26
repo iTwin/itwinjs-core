@@ -62,4 +62,10 @@ export class DisclosedTileTreeSet implements Iterable<TileTree> {
     this._processed.add(discloser);
     discloser.discloseTileTrees(this);
   }
+
+  /** Clear the contents of this set. */
+  public clear(): void {
+    this._processed.clear();
+    this._trees.clear();
+  }
 }

@@ -292,7 +292,9 @@ export class ViewManager {
   }
 
   /** Call the specified function on each [[Viewport]] registered with the ViewManager. */
-  public forEachViewport(func: (vp: ScreenViewport) => void) { this._viewports.forEach((vp) => func(vp)); }
+  public forEachViewport(func: (vp: ScreenViewport) => void) {
+    this._viewports.forEach((vp) => func(vp));
+  }
 
   /** Force each registered [[Viewport]] to regenerate all of its cached [[Decorations]] on the next frame. If the decorator parameter is specified, only
    * the specified decorator will have its cached decorations invalidated for all viewports.
