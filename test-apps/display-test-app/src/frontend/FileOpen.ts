@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { OpenDialogOptions } from "electron";
 import { isElectronRenderer } from "@bentley/bentleyjs-core";
 import { ElectronFrontend } from "@bentley/electron-manager/lib/ElectronFrontend";
-import { OpenDialogOptions } from "electron";
 
 export interface BrowserFileSelector {
   input: HTMLInputElement;

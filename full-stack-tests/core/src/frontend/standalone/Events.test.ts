@@ -169,9 +169,8 @@ describe("EventSource", () => {
     });
 
     it("removes listeners upon disposal", () => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      let dummy = 0;
-      const listener = (input: number) => { dummy += input; };
+      let _dummy = 0;
+      const listener = (input: number) => { _dummy += input; };
       const src = EventSource.create("remove-on-disposal");
       const getDummyListeners = () => getListeners(src, "dummy", "event");
 
@@ -185,10 +184,9 @@ describe("EventSource", () => {
     });
 
     it("adds and removes listeners for individual events", () => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      let dummy = 0;
-      const l1 = (input: number) => { dummy += input; };
-      const l2 = (input: number) => { dummy -= input; };
+      let _dummy = 0;
+      const l1 = (input: number) => { _dummy += input; };
+      const l2 = (input: number) => { _dummy -= input; };
       const src = EventSource.create("listeners");
       const getA = () => getListeners(src, "dummy", "a");
       const getB = () => getListeners(src, "dummy", "b");

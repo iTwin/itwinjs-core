@@ -52,7 +52,7 @@ export namespace GL {
 
     export enum Parameter {
       Size = WebGLRenderingContext.BUFFER_SIZE,
-      Usage = WebGLRenderingContext.BUFFER_USAGE, // eslint-disable-line no-shadow
+      Usage = WebGLRenderingContext.BUFFER_USAGE, // eslint-disable-line @typescript-eslint/no-shadow
     }
 
     export enum Usage {
@@ -131,12 +131,12 @@ export namespace GL {
     BlendSrcRgb = WebGLRenderingContext.BLEND_SRC_RGB,
     BlendDstAlpha = WebGLRenderingContext.BLEND_DST_ALPHA,
     BlendDstRgb = WebGLRenderingContext.BLEND_DST_RGB,
-    CullFace = WebGLRenderingContext.CULL_FACE, // eslint-disable-line no-shadow
+    CullFace = WebGLRenderingContext.CULL_FACE, // eslint-disable-line @typescript-eslint/no-shadow
     CullFaceMode = WebGLRenderingContext.CULL_FACE_MODE,
-    DepthFunc = WebGLRenderingContext.DEPTH_FUNC, // eslint-disable-line no-shadow
+    DepthFunc = WebGLRenderingContext.DEPTH_FUNC, // eslint-disable-line @typescript-eslint/no-shadow
     DepthTest = WebGLRenderingContext.DEPTH_TEST,
     DepthWriteMask = WebGLRenderingContext.DEPTH_WRITEMASK,
-    FrontFace = WebGLRenderingContext.FRONT_FACE, // eslint-disable-line no-shadow
+    FrontFace = WebGLRenderingContext.FRONT_FACE, // eslint-disable-line @typescript-eslint/no-shadow
     StencilFrontFunc = WebGLRenderingContext.STENCIL_FUNC,
     StencilFrontRef = WebGLRenderingContext.STENCIL_REF,
     StencilFrontValueMask = WebGLRenderingContext.STENCIL_VALUE_MASK,
@@ -175,7 +175,7 @@ export namespace GL {
     }
 
     // This name is unambiguous as it is qualified by the namespace...https://github.com/palantir/tslint/issues/3789
-    export enum DataType { // eslint-disable-line no-shadow
+    export enum DataType { // eslint-disable-line @typescript-eslint/no-shadow
       Float = WebGLRenderingContext.FLOAT,
       UnsignedByte = WebGLRenderingContext.UNSIGNED_BYTE,
       //    UnsignedInt24_8 = WebGLRenderingContext.UNSIGNED_INT_24_8,

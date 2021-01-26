@@ -14,9 +14,9 @@ import { AuthorizedClientRequestContext, ECJsonTypeMap, RequestOptions, RequestQ
  */
 export enum ContextType {
   Unknown,
-  Team = 1, // eslint-disable-line no-shadow
-  Asset = 2, // eslint-disable-line no-shadow
-  Project = 3, // eslint-disable-line no-shadow
+  Team = 1, // eslint-disable-line @typescript-eslint/no-shadow
+  Asset = 2, // eslint-disable-line @typescript-eslint/no-shadow
+  Project = 3, // eslint-disable-line @typescript-eslint/no-shadow
 }
 
 /** The iTwin context. Currently supported context types are [[Project]] and [[Asset]].
