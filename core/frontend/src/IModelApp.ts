@@ -13,7 +13,7 @@ import {
 } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { addCsrfHeader, IModelClient, IModelHubClient } from "@bentley/imodelhub-client";
-import { IModelError, IModelStatus, RpcConfiguration, RpcRequest } from "@bentley/imodeljs-common";
+import { IModelStatus, RpcConfiguration, RpcRequest } from "@bentley/imodeljs-common";
 import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
 import { AccessToken, IncludePrefix } from "@bentley/itwin-client";
 import { ConnectSettingsClient, SettingsAdmin } from "@bentley/product-settings-client";
@@ -328,15 +328,14 @@ export class IModelApp {
    * @param opts The options for configuring IModelApp
    */
   public static async startup(opts?: IModelAppOptions): Promise<void> {
-    opts = opts ? opts : {};
-
     if (this._initialized)
-      throw new IModelError(IModelStatus.AlreadyLoaded, "startup may only be called once");
+      return; // we're already initialized, do nothing.
 
     // Setup a current context for all requests that originate from this frontend
     const requestContext = new FrontendRequestContext();
     requestContext.enter();
 
+    opts = opts ?? {};
     this._securityOptions = opts.security || {};
 
     this._initialized = true;

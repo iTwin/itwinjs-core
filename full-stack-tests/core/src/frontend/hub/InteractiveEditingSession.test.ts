@@ -19,7 +19,7 @@ let codeSuffix = 1;
 
 // The Web RPC protocol does not support Ipc required for interactive editing.
 if (isElectronRenderer) {
-  describe.only("InteractiveEditingSession (#integration)", () => {
+  describe("InteractiveEditingSession (#integration)", () => {
     let briefcase: RemoteBriefcaseConnection | undefined;
     let imodelId: string;
     let projectId: string;
