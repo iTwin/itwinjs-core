@@ -138,6 +138,7 @@ describe("iModelHub ThumbnailHandler (#unit)", () => {
     it(`should get ${params.size}Thumbnail by version id`, async () => {
       for (let i = 0; i < 3; i++) {
         utils.mockGetThumbnailsByVersionId(imodelId, params.size, versions[i].id!, params.thumbnails[i]);
+        // eslint-disable-next-line deprecation/deprecation
         const actualThumbnail: Thumbnail = (await imodelHubClient.thumbnails.get(requestContext, imodelId, params.size, new ThumbnailQuery().byVersionId(versions[i].id!)))[0];
         chai.assert(!!actualThumbnail);
         chai.expect(actualThumbnail.id!.toString()).to.be.equal(params.thumbnails[i].id!.toString());

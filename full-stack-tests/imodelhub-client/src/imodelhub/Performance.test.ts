@@ -187,7 +187,6 @@ describe.skip("iModelHub Performance tests", () => {
       lock.lockLevel = LockLevel.Shared;
       lock.lockType = LockType.Element;
       lock.objectId = Id64.fromString(j.toString());
-      lock.seedFileId = briefcase.fileId;
       j++;
       return lock;
     });
