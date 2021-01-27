@@ -73,14 +73,14 @@ FloatingWidgetIdContext.displayName = "nz:FloatingWidgetIdContext";
 export const FloatingWidgetContext = React.createContext<FloatingWidgetState | undefined>(undefined); // eslint-disable-line @typescript-eslint/naming-convention
 FloatingWidgetContext.displayName = "nz:FloatingWidgetContext";
 
-const FloatingWidgetComponent = React.memo<CommonProps>(function FloatingWidgetComponent(props) { // eslint-disable-line no-shadow, @typescript-eslint/naming-convention
+const FloatingWidgetComponent = React.memo<CommonProps>(function FloatingWidgetComponent(props) { // eslint-disable-line @typescript-eslint/no-shadow, @typescript-eslint/naming-convention
   const widget = React.useContext(WidgetStateContext);
   const floatingWidgetId = React.useContext(FloatingWidgetIdContext);
   assert(widget);
   assert(floatingWidgetId);
   const item = React.useMemo(() => ({
     id: floatingWidgetId,
-    type: "widget" as "widget",
+    type: "widget" as const,
   }), [floatingWidgetId]);
   const dragged = useIsDraggedItem(item);
   const className = classnames(
@@ -111,7 +111,7 @@ interface FloatingWidgetHandleProps {
   handle: FloatingWidgetResizeHandle;
 }
 
-const FloatingWidgetHandle = React.memo<FloatingWidgetHandleProps>(function FloatingWidgetHandle(props) { // eslint-disable-line no-shadow, @typescript-eslint/naming-convention
+const FloatingWidgetHandle = React.memo<FloatingWidgetHandleProps>(function FloatingWidgetHandle(props) { // eslint-disable-line @typescript-eslint/no-shadow, @typescript-eslint/naming-convention
   const id = React.useContext(FloatingWidgetIdContext);
   const dispatch = React.useContext(NineZoneDispatchContext);
   const { handle } = props;

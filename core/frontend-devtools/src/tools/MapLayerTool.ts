@@ -41,7 +41,7 @@ class AttachMapLayerBaseTool extends Tool {
         } else if (validation.status === MapLayerSourceStatus.RequireAuth) {
           const msg = IModelApp.i18n.translate("FrontendDevTools:AttachMapLayerTool.Messages.MapLayerAttachedRequiresAuth", { sourceName: source.name });
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
-          //Set layer status
+          // Set layer status
           const layerIdx = vp.displayStyle.findMapLayerIndexByNameAndUrl(source.name, source.url, !this._isBackground);
           if (-1 !== layerIdx) {
             const layerSettings = vp.displayStyle.mapLayerAtIndex(layerIdx, !this._isBackground);
@@ -56,7 +56,7 @@ class AttachMapLayerBaseTool extends Tool {
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
       }
     }).catch((error) => {
-      const msg = IModelApp.i18n.translate("FrontendDevTools:AttachMapLayerTool.Messages.MapLayerAttachError", { error: error, sourceUrl: source.url });
+      const msg = IModelApp.i18n.translate("FrontendDevTools:AttachMapLayerTool.Messages.MapLayerAttachError", { error, sourceUrl: source.url });
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
     });
   }

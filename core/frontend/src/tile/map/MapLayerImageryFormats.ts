@@ -614,7 +614,6 @@ class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
       }
     }
 
-
     if (json && Array.isArray(json.results)) {
       for (const result of json.results) {
         if (result.attributes !== undefined && result.attributes[result.displayFieldName] !== undefined) {

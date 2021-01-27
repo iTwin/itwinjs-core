@@ -19,7 +19,7 @@ import { NodeKey, NodeKeyJSON } from "./hierarchy/Key";
 export type Key = Readonly<NodeKey> | Readonly<InstanceKey> | Readonly<EntityProps>;
 
 /** @public */
-export namespace Key {
+export namespace Key { // eslint-disable-line @typescript-eslint/no-redeclare
   /** Check if the supplied key is a `NodeKey` */
   export function isNodeKey(key: Key): key is NodeKey {
     return (key as any).type;

@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { MobileRpcConfiguration, MobileRpcManager } from "@bentley/imodeljs-common";
+import { setupIpcTest } from "./ipc";
 import { setupPushTest } from "./push";
 
 export async function setupMockMobileTest(port: number) {
@@ -16,4 +17,5 @@ export async function initializeMockMobileTest() {
   MobileRpcManager.initializeImpl([]);
 
   await setupPushTest(async () => MobileRpcManager.ready());
+  await setupIpcTest(async () => MobileRpcManager.ready());
 }
