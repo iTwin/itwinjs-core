@@ -46,7 +46,7 @@
     "snapWidgetOpacityDescription": "Immediately change the toolbar opacity when the mouse gets close"
   },
   "QuantityFormatModalFrontstage": {
-    "QuantityFormatStage": "Define Quantity Formats"
+    "QuantityFormatStage": "Quantity Format Overrides"
   },
   "backstage": {
     "command": "Command",

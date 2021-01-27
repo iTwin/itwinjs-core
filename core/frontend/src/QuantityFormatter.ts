@@ -842,6 +842,22 @@ export class QuantityFormatter implements UnitsProvider {
     await this.setOverrideFormatsByQuantityTypeKey(this.getQuantityTypeKey(type), overrideEntry);
   }
 
+  // TODO: make more generic to support "named" systems.
+  public async setOverrideFormat(type: QuantityType, overrideFormat: FormatProps) {
+    const typeKey = this.getQuantityTypeKey(type);
+    let overrideEntry: OverrideFormatEntry = {};
+    if (this.activeUnitSystem === "imperial")
+      overrideEntry = { imperial: overrideFormat };
+    else if (this.activeUnitSystem === "metric")
+      overrideEntry = { metric: overrideFormat };
+    else if (this.activeUnitSystem === "usCustomary")
+      overrideEntry = { usCustomary: overrideFormat };
+    else
+      overrideEntry = { usSurvey: overrideFormat };
+
+    await this.setOverrideFormatsByQuantityTypeKey(typeKey, overrideEntry);
+  }
+
   public async clearAllOverrideFormats() {
     const promises = new Array<Promise<void>>();
     this._overrideFormatPropsByQuantityType.forEach(async (_value, type) => {

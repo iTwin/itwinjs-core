@@ -10,6 +10,7 @@ import * as React from "react";
 import { CommonProps, Input } from "@bentley/ui-core";
 import { FormatterSpec } from "@bentley/imodeljs-quantity";
 import { SpecialKey } from "@bentley/ui-abstract";
+import { WebFontIcon } from "../../../../core/lib/ui-core";
 
 /** Properties of [[UomSeparatorSelector]] component.
  * @alpha
@@ -17,13 +18,14 @@ import { SpecialKey } from "@bentley/ui-abstract";
 export interface FormatSampleProps extends CommonProps {
   formatSpec?: FormatterSpec;
   initialMagnitude?: number;
+  hideLabels?: boolean;
 }
 
 /** Component to show/edit Quantity Format.
  * @alpha
  */
 export function FormatSample(props: FormatSampleProps) {
-  const { initialMagnitude, formatSpec } = props;
+  const { initialMagnitude, formatSpec, hideLabels } = props;
   const initialMagnitudeRef = React.useRef(initialMagnitude ?? 0);
   const [magnitude, setMagnitude] = React.useState(initialMagnitudeRef.current);
   const [sampleValue, setSampleValue] = React.useState(magnitude.toString());
@@ -61,14 +63,16 @@ export function FormatSample(props: FormatSampleProps) {
   }, []);
 
   const activePersistenceUnitLabel = formatSpec ? formatSpec.persistenceUnit.label : "";
+  const formattedValue = formatSpec ? formatSpec.applyFormatting(magnitude) : "";
+
   return (
     <>
-      <span className={"uicore-label"}>Value</span>
+      {!hideLabels && <span className={"uicore-label"}>{"Value"}</span>}
       <span className="components-inline">
-        <Input value={sampleValue} onChange={handleOnValueChange} onKeyDown={handleKeyDown} onBlur={handleOnValueBlur} />{activePersistenceUnitLabel}
+        <Input className={"components-quantity-persistence-input"} value={sampleValue} onChange={handleOnValueChange} onKeyDown={handleKeyDown} onBlur={handleOnValueBlur} />{activePersistenceUnitLabel}
       </span>
-      <span className={"uicore-label"}>Formatted</span>
-      <span className={"uicore-label"}>{formatSpec ? formatSpec.applyFormatting(magnitude) : ""}</span>
+      {!hideLabels && <span className={"uicore-label"}>{"Formatted"}</span>}
+      <span>{hideLabels && (formattedValue.length > 0) && <WebFontIcon iconName="icon-progress-forward-2" />}<span className={"uicore-label components-quantity-formatted-sample"}>{formattedValue}</span></span>
     </>
   );
 }
