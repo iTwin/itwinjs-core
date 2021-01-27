@@ -38,3 +38,10 @@ And your backend via:
 ```
 
 > Note that the class `ElectronRpcManager` is now initialized internally by the calls above, and you do not need to initialize it directly.
+
+### Update element behavior
+
+In order to support partial updates and clearing an existing value, the update element behavior has been enhanced/changed with regard to how `undefined` values are handled.
+The new behavior is documented as part of the method documentation here:
+
+[IModelDb.Elements.updateElement]($backend)
