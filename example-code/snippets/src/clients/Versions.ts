@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Guid, GuidString } from "@bentley/bentleyjs-core";
-import { ChangeSet, IModelHubClient, SmallThumbnail, Version, VersionQuery } from "@bentley/imodelhub-client";
+import { ChangeSet, IModelHubClient, Version, VersionQuery } from "@bentley/imodelhub-client";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
 class MockAccessToken extends AccessToken {
@@ -42,20 +42,5 @@ export async function test2() {
   // __PUBLISH_EXTRACT_END__
 
   if (!allVersions || !versionByName)
-    return;
-}
-
-// enclosing function avoids compile errors and code analysis report.
-export async function test3() {
-  // __PUBLISH_EXTRACT_START__ VersionHandler.thumbnail.example-code
-  // Query Named Version with its Thumbnail Id
-  const thumbnailIdQuery: VersionQuery = new VersionQuery().byName("Version name").selectThumbnailId("Small");
-  const versionWithThumbnailId: Version[] = await imodelHubClient.versions.get(authorizedRequestContext, imodelId, thumbnailIdQuery);
-  // Download the Thumbnail
-  const thumbnail: SmallThumbnail = new SmallThumbnail();
-  thumbnail.id = versionWithThumbnailId[0].smallThumbnailId!;
-  const thumbnailContents: string = await imodelHubClient.thumbnails.download(authorizedRequestContext, imodelId, thumbnail);
-  // __PUBLISH_EXTRACT_END__
-  if (!thumbnailContents)
     return;
 }

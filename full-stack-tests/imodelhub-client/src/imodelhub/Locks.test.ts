@@ -97,14 +97,12 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
     utils.mockUpdateLocks(imodelId, [generatedLock]);
     let lock = (await iModelClient.locks.update(requestContext, imodelId, [generatedLock]))[0];
 
-    lock.seedFileId = briefcases[0].fileId!;
     lock.lockLevel = LockLevel.None;
     utils.mockUpdateLocks(imodelId, [lock]);
     lock = (await iModelClient.locks.update(requestContext, imodelId, [lock]))[0];
     chai.assert(lock);
     chai.expect(lock.lockLevel).equals(LockLevel.None);
 
-    lock.seedFileId = briefcases[0].fileId!;
     lock.lockLevel = LockLevel.Shared;
     lock.releasedWithChangeSet = changeSet.id;
     utils.mockUpdateLocks(imodelId, [lock]);
