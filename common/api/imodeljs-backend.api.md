@@ -121,6 +121,7 @@ import { MobileAuthorizationClientConfiguration } from '@bentley/imodeljs-common
 import { ModelLoadProps } from '@bentley/imodeljs-common';
 import { ModelProps } from '@bentley/imodeljs-common';
 import { ModelSelectorProps } from '@bentley/imodeljs-common';
+import { NativeAppResponse } from '@bentley/imodeljs-common';
 import { NativeLoggerCategory } from '@bentley/imodeljs-native';
 import { NavigationBindingValue } from '@bentley/imodeljs-common';
 import { NavigationValue } from '@bentley/imodeljs-common';
@@ -2940,6 +2941,7 @@ export interface IModelTransformOptions {
     loadSourceGeometry?: boolean;
     noProvenance?: boolean;
     targetScopeElementId?: Id64String;
+    wasSourceIModelCopiedToTarget?: boolean;
 }
 
 // @internal @deprecated
@@ -3309,6 +3311,8 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
 export class NativeAppBackend {
     static get appSettingsCacheDir(): string;
     static checkInternetConnectivity(): InternetConnectivityStatus;
+    // (undocumented)
+    static notifyFrontend<T extends keyof NativeAppResponse>(methodName: T, ...args: Parameters<NativeAppResponse[T]>): void;
     // (undocumented)
     static onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void>;
     static overrideInternetConnectivity(_overridenBy: OverriddenBy, status: InternetConnectivityStatus): void;

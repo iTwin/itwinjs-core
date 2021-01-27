@@ -16,7 +16,7 @@ import {
 } from "./EventsBase";
 import { LockLevel, LockType } from "./Locks";
 
-/* eslint-disable no-shadow */
+/* eslint-disable @typescript-eslint/no-shadow */
 
 const loggerCategory: string = IModelHubClientLoggerCategory.IModelHub;
 
@@ -56,7 +56,7 @@ export enum IModelHubEventType {
   CheckpointCreatedEvent = "CheckpointCreatedEvent",
 }
 
-/* eslint-enable no-shadow */
+/* eslint-enable @typescript-eslint/no-shadow */
 
 /** @beta @deprecated Use [[IModelHubEventType]] instead */
 export type EventType = "LockEvent" | "AllLocksDeletedEvent" | "ChangeSetPostPushEvent" | "ChangeSetPrePushEvent" | "CodeEvent" | "AllCodesDeletedEvent" | "BriefcaseDeletedEvent" | "iModelDeletedEvent" | "VersionEvent" | "CheckpointCreatedEvent";

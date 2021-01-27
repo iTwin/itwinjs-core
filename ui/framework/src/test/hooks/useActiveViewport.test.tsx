@@ -21,7 +21,7 @@ const ActiveViewport = (props: { children?: (activeViewport: ReturnType<typeof u
 
 describe("useActiveViewport", () => {
   before(async () => {
-    (global as any).XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
+    (global as any).XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; // eslint-disable-line @typescript-eslint/no-var-requires
     await NoRenderApp.startup();
   });
 

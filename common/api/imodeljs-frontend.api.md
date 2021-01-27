@@ -171,6 +171,7 @@ import { ModelQueryParams } from '@bentley/imodeljs-common';
 import { ModelSelectorProps } from '@bentley/imodeljs-common';
 import { MonochromeMode } from '@bentley/imodeljs-common';
 import { NativeAppIpc } from '@bentley/imodeljs-common';
+import { NativeAppResponse } from '@bentley/imodeljs-common';
 import { ObservableSet } from '@bentley/bentleyjs-core';
 import { OctEncodedNormal } from '@bentley/imodeljs-common';
 import { OpenBriefcaseProps } from '@bentley/imodeljs-common';
@@ -222,6 +223,7 @@ import { RenderSchedule } from '@bentley/imodeljs-common';
 import { RenderTexture } from '@bentley/imodeljs-common';
 import { RequestBasicCredentials } from '@bentley/itwin-client';
 import { RequestOptions } from '@bentley/itwin-client';
+import { ResponseHandler } from '@bentley/imodeljs-common';
 import { RgbColor } from '@bentley/imodeljs-common';
 import { RpcRoutingToken } from '@bentley/imodeljs-common';
 import { SectionDrawingViewProps } from '@bentley/imodeljs-common';
@@ -2031,7 +2033,7 @@ export class DisplayStyle2dState extends DisplayStyleState {
     // @internal (undocumented)
     static get className(): string;
     // @internal (undocumented)
-    overrideTerrainSkirtDisplay(): boolean | undefined;
+    overrideTerrainDisplay(): TerrainDisplayOverrides | undefined;
     // (undocumented)
     get settings(): DisplayStyleSettings;
     }
@@ -2051,7 +2053,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
     // @internal
     loadSkyBoxParams(system: RenderSystem, vp?: Viewport): SkyBox.CreateParams | undefined;
     // @internal (undocumented)
-    overrideTerrainSkirtDisplay(): boolean | undefined;
+    overrideTerrainDisplay(): TerrainDisplayOverrides | undefined;
     // @internal (undocumented)
     protected registerSettingsEventListeners(): void;
     setSunTime(time: number): void;
@@ -2185,7 +2187,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     overrideRealityModelAppearance(index: number, overrides: FeatureAppearance): boolean;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     // @internal (undocumented)
-    abstract overrideTerrainSkirtDisplay(): boolean | undefined;
+    abstract overrideTerrainDisplay(): TerrainDisplayOverrides | undefined;
     // @internal (undocumented)
     protected registerSettingsEventListeners(): void;
     // @internal (undocumented)
@@ -2444,6 +2446,9 @@ export namespace EditManipulator {
         View = 6
     }
 }
+
+// @internal (undocumented)
+export const ELEMENT_MARKED_FOR_REMOVAL: unique symbol;
 
 // @internal (undocumented)
 export class ElementAgenda {
@@ -3254,7 +3259,7 @@ export function getCesiumAssetUrl(osmAssetId: number, requestKey: string): strin
 export function getCesiumOSMBuildingsUrl(): string;
 
 // @internal (undocumented)
-export function getCesiumTerrainProvider(iModel: IModelConnection, modelId: Id64String, wantSkirts: boolean, exaggeration: number): Promise<TerrainMeshProvider | undefined>;
+export function getCesiumTerrainProvider(iModel: IModelConnection, modelId: Id64String, wantSkirts: boolean, wantNormals: boolean, exaggeration: number): Promise<TerrainMeshProvider | undefined>;
 
 // @beta
 export function getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes?: number, minCompressionQuality?: number): string | undefined;
@@ -5134,7 +5139,7 @@ export class MapTileTree extends RealityTileTree {
 
 // @internal
 export class MapTileTreeReference extends TileTreeReference {
-    constructor(settings: BackgroundMapSettings, _baseLayerSettings: BaseLayerSettings | undefined, _layerSettings: MapLayerSettings[], iModel: IModelConnection, isOverlay: boolean, _isDrape: boolean, _overrideSkirtDisplay?: CheckSkirtDisplayOverride | undefined);
+    constructor(settings: BackgroundMapSettings, _baseLayerSettings: BaseLayerSettings | undefined, _layerSettings: MapLayerSettings[], iModel: IModelConnection, isOverlay: boolean, _isDrape: boolean, _overrideTerrainDisplay?: CheckTerrainDisplayOverride | undefined);
     addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void;
     addToScene(context: SceneContext): void;
     // (undocumented)
@@ -5903,7 +5908,7 @@ export enum ModifyElementSource {
 }
 
 // @alpha
-export class NativeApp {
+export class NativeApp extends ResponseHandler implements NativeAppResponse {
     // (undocumented)
     static callBackend<T extends AsyncMethodsOf<NativeAppIpc>>(methodName: T, ...args: Parameters<NativeAppIpc[T]>): Promise<PromiseReturnType<NativeAppIpc[T]>>;
     // (undocumented)
@@ -5919,9 +5924,23 @@ export class NativeApp {
     // (undocumented)
     static get isValid(): boolean;
     // (undocumented)
+    notifyInternetConnectivityChanged(status: InternetConnectivityStatus): void;
+    // (undocumented)
+    notifyMemoryWarning(): void;
+    // (undocumented)
+    notifyUserStateChanged(arg: {
+        accessToken: any;
+        err?: string;
+    }): void;
+    // (undocumented)
     static onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void>;
     // (undocumented)
     static onMemoryWarning: BeEvent<() => void>;
+    // (undocumented)
+    static onUserStateChanged: BeEvent<(_arg: {
+        accessToken: any;
+        err?: string | undefined;
+    }) => void>;
     // (undocumented)
     static openBriefcase(briefcaseProps: OpenBriefcaseProps): Promise<LocalBriefcaseConnection>;
     static openStorage(name: string): Promise<Storage>;
@@ -5929,6 +5948,8 @@ export class NativeApp {
     static overrideInternetConnectivity(status: InternetConnectivityStatus): Promise<void>;
     // (undocumented)
     static requestDownloadBriefcase(contextId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions, asOf?: IModelVersion, progress?: ProgressCallback): Promise<BriefcaseDownloader>;
+    // (undocumented)
+    get responseChannel(): string;
     // (undocumented)
     static shutdown(): Promise<void>;
     static startup(opts?: IModelAppOptions): Promise<void>;
@@ -6323,6 +6344,36 @@ export interface ParseKeyinError {
 
 // @beta
 export type ParseKeyinResult = ParsedKeyin | ParseKeyinError;
+
+// @beta
+export interface ParticleCollectionBuilder {
+    addParticle: (particle: ParticleProps) => void;
+    finish: () => RenderGraphic | undefined;
+    size: XAndY;
+    transparency: number;
+}
+
+// @beta (undocumented)
+export namespace ParticleCollectionBuilder {
+    export function create(params: ParticleCollectionBuilderParams): ParticleCollectionBuilder;
+}
+
+// @beta
+export interface ParticleCollectionBuilderParams {
+    isViewCoords?: boolean;
+    origin?: XYAndZ;
+    pickableId?: Id64String;
+    size: XAndY | number;
+    texture: RenderTexture;
+    transparency?: number;
+    viewport: Viewport;
+}
+
+// @beta
+export interface ParticleProps extends XYAndZ {
+    size?: XAndY | number;
+    transparency?: number;
+}
 
 // @beta
 export class PendingExtension {
@@ -7827,6 +7878,7 @@ export class ScreenViewport extends Viewport {
     changeView(view: ViewState, opts?: ViewChangeOptions): void;
     clearViewUndo(): void;
     static create(parentDiv: HTMLDivElement, view: ViewState): ScreenViewport;
+    // @deprecated
     readonly decorationDiv: HTMLDivElement;
     doRedo(animationTime?: BeDuration): void;
     doUndo(animationTime?: BeDuration): void;
@@ -7837,6 +7889,8 @@ export class ScreenViewport extends Viewport {
     get isUndoPossible(): boolean;
     // @beta
     get logo(): HTMLImageElement;
+    // @internal (undocumented)
+    static markAllChildrenForRemoval(el: HTMLDivElement): void;
     maxUndoSteps: number;
     // @internal (undocumented)
     mouseMovementFromEvent(ev: MouseEvent): XAndY;
@@ -7855,6 +7909,8 @@ export class ScreenViewport extends Viewport {
     pickNearestVisibleGeometry(pickPoint: Point3d, radius?: number, allowNonLocatable?: boolean, out?: Point3d): Point3d | undefined;
     // @internal
     static removeAllChildren(el: HTMLDivElement): void;
+    // @internal (undocumented)
+    static removeMarkedChildren(el: HTMLDivElement): void;
     // @internal
     get rendersToScreen(): boolean;
     set rendersToScreen(toScreen: boolean);
@@ -9033,6 +9089,14 @@ export class TentativePoint {
     tpHits?: HitList<HitDetail>;
     // (undocumented)
     viewport?: ScreenViewport;
+}
+
+// @internal (undocumented)
+export class TerrainDisplayOverrides {
+    // (undocumented)
+    wantNormals?: boolean;
+    // (undocumented)
+    wantSkirts?: boolean;
 }
 
 // @internal

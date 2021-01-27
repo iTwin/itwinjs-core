@@ -13,7 +13,7 @@ import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../imodeljs-frontend";
 import { WebGLDisposable } from "./Disposable";
 import { GL } from "./GL";
-import { UniformHandle } from "./Handle";
+import { UniformHandle } from "./UniformHandle";
 import { OvrFlags, TextureUnit } from "./RenderFlags";
 import { System } from "./System";
 
