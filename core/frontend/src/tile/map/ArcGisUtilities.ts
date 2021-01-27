@@ -154,7 +154,7 @@ export class ArcGisUtilities {
       };
       let tokenParam = "";
       if (credentials) {
-        const token = await ArcGisTokenManager.getToken(url, { userName: credentials.user, password: credentials.password, client: ArcGisTokenClientType.referer });
+        const token = await ArcGisTokenManager.getToken(url, credentials.user, credentials.password, { client: ArcGisTokenClientType.referer });
         if (token)
           tokenParam = `&token=${token.token}`;
       }
@@ -183,7 +183,7 @@ export class ArcGisUtilities {
     try {
       let tokenParam = "";
       if (credentials) {
-        const token = await ArcGisTokenManager.getToken(url, { userName: credentials.user, password: credentials.password, client: ArcGisTokenClientType.referer });
+        const token = await ArcGisTokenManager.getToken(url, credentials.user, credentials.password, { client: ArcGisTokenClientType.referer });
         if (token)
           tokenParam = `&token=${token.token}`;
       }

@@ -9,7 +9,7 @@ import { Dialog, DialogButtonType, Input, InputStatus, LabeledInput, Radio, Sele
 import { ModalDialogManager } from "@bentley/ui-framework";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import { MapTypesOptions, StyleMapLayerSettings } from "../Interfaces";
-import { IModelApp, MapLayerSettingsService, MapLayerSource, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority, ScreenViewport } from "@bentley/imodeljs-frontend";
+import { ArcGisTokenManager, IModelApp, MapLayerSettingsService, MapLayerSource, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority, ScreenViewport } from "@bentley/imodeljs-frontend";
 
 import "./MapUrlDialog.scss";
 import { MapLayerSettings, MapLayerStatus } from "@bentley/imodeljs-common";
@@ -116,9 +116,14 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     if (vp === undefined || source === undefined)
       return;
 
+    if (source.formatId === MAP_TYPES.arcGis && source.url && source.userName) {
+      // Force a new token to be generated, in case new credentials have been specified
+      ArcGisTokenManager.invalidateToken(source.url, source.userName);
+    }
+
     const storeOnIModel = "Model" === settingsStorage;
     source.validateSource().then(async (validation) => {
-      if (validation.status === MapLayerSourceStatus.Valid) {
+      if (validation.status === MapLayerSourceStatus.Valid || validation.status === MapLayerSourceStatus.RequireAuth) {
         source.subLayers = validation.subLayers;
 
         if (!settingsStorageDisabled) {
@@ -126,9 +131,26 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
             return;
         }
         vp.displayStyle.attachMapLayer(source, isOverlay);
-        vp.invalidateRenderPlan();
-        const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.AttacheInfo");
-        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `[${source.name}] ${msg} ${source.url}`));
+
+        if (validation.status === MapLayerSourceStatus.Valid) {
+          vp.invalidateRenderPlan();
+          const msg = IModelApp.i18n.translate("mapLayers:Messages.MapLayerAttached", { sourceName: source.name, sourceUrl: source.url });
+          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
+
+        } else if (validation.status === MapLayerSourceStatus.RequireAuth) {
+          const msg = IModelApp.i18n.translate("mapLayers:Messages.MapLayerAttachedRequiresAuth", { sourceName: source.name });
+          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
+
+          // Set layer status
+          const layerIdx = vp.displayStyle.findMapLayerIndexByNameAndUrl(source.name, source.url, isOverlay);
+          if (-1 !== layerIdx) {
+            const layerSettings = vp.displayStyle.mapLayerAtIndex(layerIdx, isOverlay);
+            if (layerSettings) {
+              layerSettings.status = MapLayerStatus.RequireAuth;
+            }
+          }
+        }
+
         onOkResult();
       } else {
         const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.ValidationError");

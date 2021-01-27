@@ -650,11 +650,10 @@ class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     let tokenParam = "";
     if (this._settings.userName && this._settings.password) {
       try {
-        const token = await ArcGisTokenManager.getToken(this._settings.url, {
-          userName: this._settings.userName,
-          password: this._settings.password,
-          client: ArcGisTokenClientType.referer,
-        });
+        const token = await ArcGisTokenManager.getToken(this._settings.url, this._settings.userName, this._settings.password,
+          {
+            client: ArcGisTokenClientType.referer,
+          });
         if (token)
           tokenParam = `&token=${token.token}`;
       } catch {

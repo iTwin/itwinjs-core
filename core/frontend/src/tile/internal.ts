@@ -41,6 +41,7 @@ export * from "./GltfReader";
 export * from "./I3dmReader";
 export * from "./B3dmReader";
 export * from "./ImdlReader";
+export * from "./map/ArcGisTokenManager";
 export * from "./map/MapLayerFormatRegistry";
 export * from "./map/MapLayerImageryFormats";
 export * from "./map/BingImageryProvider";

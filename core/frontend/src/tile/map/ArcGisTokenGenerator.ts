@@ -30,12 +30,6 @@ export enum ArcGisTokenClientType {
 
 export interface ArcGisGenerateTokenOptions {
 
-  // User name of the user who wants to get a token.
-  userName: string;
-
-  // Password of the user who wants to get a token.
-  password: string;
-
   // The client type that will be granted access to the token.
   // Users will be able to specify whether the token will be generated for a client application's base URL,
   // a user-specified IP address, or the IP address that is making the request.
@@ -102,7 +96,7 @@ export class ArcGisTokenGenerator {
   }
 
   // base url:  ArcGis REST service base URL (format must be "https://<host>/<instance>/rest/")
-  public async generate(esriRestServiceUrl: string, options: ArcGisGenerateTokenOptions): Promise<ArcGisToken | undefined> {
+  public async generate(esriRestServiceUrl: string, userName: string, password: string, options: ArcGisGenerateTokenOptions): Promise<ArcGisToken | undefined> {
 
     const tokenServiceUrl = await this.getTokenServiceUrl(esriRestServiceUrl);
     if (!tokenServiceUrl)
@@ -110,8 +104,8 @@ export class ArcGisTokenGenerator {
 
     let token: ArcGisToken | undefined;
     try {
-      const username = encodeURIComponent(options.userName);
-      const password = encodeURIComponent(options.password);
+      const encodedUsername = encodeURIComponent(userName);
+      const encodedPassword = encodeURIComponent(password);
 
       // Compose the expiration param
       let expirationStr = "";
@@ -140,7 +134,7 @@ export class ArcGisTokenGenerator {
 
       const httpRequestOptions: RequestOptions = {
         method: "POST",
-        body: `username=${username}&password=${password}${clientStr}${expirationStr}&f=pjson`,
+        body: `username=${encodedUsername}&password=${encodedPassword}${clientStr}${expirationStr}&f=pjson`,
         headers: { "content-type": "application/x-www-form-urlencoded" },
         responseType: "json",
       };
