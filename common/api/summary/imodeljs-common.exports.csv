@@ -536,6 +536,7 @@ public;TextString
 public;TextStringPrimitive
 public;TextStringProps
 beta;TextureFlags
+alpha;TextureLoadProps
 beta;TextureMapping
 beta;TextureMapping
 beta;TextureMapProps

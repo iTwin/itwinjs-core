@@ -236,12 +236,21 @@ export class IdMap implements WebGLDisposable {
     return this.createTexture(params, TextureHandle.createForCubeImages(posX, negX, posY, negY, posZ, negZ));
   }
 
+  private createTextureFromElement(id: Id64String, imodel: IModelConnection, params: RenderTexture.Params, format: ImageSourceFormat): RenderTexture | undefined {
+    return this.createTexture(params, TextureHandle.createForElement(id, imodel, params.type, format));
+  }
+
   public findTexture(key?: string): RenderTexture | undefined { return undefined !== key ? this.textures.get(key) : undefined; }
 
   /** Find or attempt to create a new texture using an ImageBuffer. If a new texture was created, it will be cached provided its key is valid. */
   public getTexture(img: ImageBuffer, params: RenderTexture.Params): RenderTexture | undefined {
     const tex = this.findTexture(params.key);
     return undefined !== tex ? tex : this.createTextureFromImageBuffer(img, params);
+  }
+
+  public getTextureFromElement(id: Id64String, imodel: IModelConnection, params: RenderTexture.Params, format: ImageSourceFormat): RenderTexture | undefined {
+    const tex = this.findTexture(params.key);
+    return undefined !== tex ? tex : this.createTextureFromElement(id, imodel, params, format);
   }
 
   public getTextureFromImage(image: HTMLImageElement, hasAlpha: boolean, params: RenderTexture.Params): RenderTexture | undefined {
@@ -644,6 +653,10 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     }
 
     return this.getIdMap(imodel).getTextureFromImage(image, hasAlpha, params);
+  }
+
+  public createTextureFromElement(id: Id64String, imodel: IModelConnection, params: RenderTexture.Params, format: ImageSourceFormat): RenderTexture | undefined {
+    return this.getIdMap(imodel).getTextureFromElement(id, imodel, params, format);
   }
 
   /** Attempt to create a texture from a cube of HTML images. */
