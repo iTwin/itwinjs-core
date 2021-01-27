@@ -9,7 +9,7 @@
 
 import { assert, BeTimePoint } from "@bentley/bentleyjs-core";
 import {
-  DisclosedTileTreeSet, IModelApp, RenderMemory, TileTreeOwner, Viewport,
+  DisclosedTileTreeSet, IModelApp, RenderMemory, TileTree, TileTreeOwner, Viewport,
 } from "@bentley/imodeljs-frontend";
 import { ComboBoxEntry, createComboBox } from "../ui/ComboBox";
 
@@ -26,6 +26,7 @@ type PurgeMem = (olderThan?: BeTimePoint) => void;
 const enum MemIndex { // eslint-disable-line no-restricted-syntax
   None = -1,
   ViewportTileTrees,
+  SelectedTiles,
   AllTileTrees,
   RenderTarget,
   // eslint-disable-next-line no-shadow
@@ -40,6 +41,7 @@ const enum MemIndex { // eslint-disable-line no-restricted-syntax
 const memLabels = [
   "None",
   "Viewed Tile Trees",
+  "Selected Tiles",
   "All Tile Trees",
   "Render Target",
   "Viewport",
@@ -51,6 +53,19 @@ function collectStatisticsForViewedTileTrees(vp: Viewport, stats: RenderMemory.S
   vp.collectStatistics(stats);
   const trees = new DisclosedTileTreeSet();
   vp.discloseTileTrees(trees);
+  return trees.size;
+}
+
+function collectStatisticsForSelectedTiles(vp: Viewport, stats: RenderMemory.Statistics): number {
+  const trees = new Set<TileTree>();
+  const selectedTiles = IModelApp.tileAdmin.getTilesForViewport(vp)?.selected;
+  if (selectedTiles) {
+    for (const tile of selectedTiles) {
+      trees.add(tile.tree);
+      tile.collectStatistics(stats);
+    }
+  }
+
   return trees.size;
 }
 
@@ -66,6 +81,7 @@ function collectStatisticsForAllTileTrees(vp: Viewport, stats: RenderMemory.Stat
 
 const calcMem: CalcMem[] = [
   (stats, vp) => collectStatisticsForViewedTileTrees(vp, stats),
+  (stats, vp) => collectStatisticsForSelectedTiles(vp, stats),
   (stats, vp) => collectStatisticsForAllTileTrees(vp, stats),
   (stats, vp) => {
     vp.target.collectStatistics(stats);
