@@ -256,7 +256,6 @@ export class ImdlReader extends GltfReader {
       const texBytes = this._binaryData.subarray(byteOffset, byteOffset + byteLength);
       const format = namedTex.format;
       const imageSource = new ImageSource(texBytes, format);
-      console.log("reading texture from tile content, byteLength = " + byteLength);
       return this._system.createTextureFromImageSource(imageSource, this._iModel, params);
     }
 
