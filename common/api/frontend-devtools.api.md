@@ -23,7 +23,12 @@ import { LinePixels } from '@bentley/imodeljs-common';
 import { LocateFilterStatus } from '@bentley/imodeljs-frontend';
 import { LocateResponse } from '@bentley/imodeljs-frontend';
 import { MapLayerSource } from '@bentley/imodeljs-frontend';
+import { ParticleProps } from '@bentley/imodeljs-frontend';
+import { Point3d } from '@bentley/geometry-core';
 import { PrimitiveTool } from '@bentley/imodeljs-frontend';
+import { Range1d } from '@bentley/geometry-core';
+import { Range2d } from '@bentley/geometry-core';
+import { Range3d } from '@bentley/geometry-core';
 import { RenderSystemDebugControl } from '@bentley/imodeljs-frontend';
 import { RenderTargetDebugControl } from '@bentley/imodeljs-frontend';
 import { RgbColor } from '@bentley/imodeljs-common';
@@ -33,6 +38,7 @@ import { ScreenSpaceEffectSource } from '@bentley/imodeljs-frontend';
 import { ScreenViewport } from '@bentley/imodeljs-frontend';
 import { TileBoundingBoxes } from '@bentley/imodeljs-frontend';
 import { Tool } from '@bentley/imodeljs-frontend';
+import { Vector2d } from '@bentley/geometry-core';
 import { ViewFlags } from '@bentley/imodeljs-common';
 import { Viewport } from '@bentley/imodeljs-frontend';
 import { ViewState } from '@bentley/imodeljs-frontend';
@@ -723,6 +729,14 @@ export class EmphasizeSelectedElementsTool extends EmphasizeElementsTool {
     static toolId: string;
     }
 
+// @alpha
+export class ExplosionEffect extends Tool {
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
 // @internal
 export class ExtensionServiceTool extends Tool {
     // (undocumented)
@@ -1197,6 +1211,21 @@ export interface RadioBoxProps {
     vertical?: boolean;
 }
 
+// @beta
+export function randomFloat(min: number, max: number): number;
+
+// @beta
+export function randomFloatInRange(range: Range1d): number;
+
+// @beta
+export function randomInteger(min: number, max: number): number;
+
+// @beta
+export function randomIntegerInRange(range: Range1d): number;
+
+// @beta
+export function randomPositionInRange(range: Range3d): Point3d;
+
 // @alpha (undocumented)
 export class RealityTransitionTool extends Tool {
     // (undocumented)
@@ -1262,6 +1291,38 @@ export class ReorderMapLayers extends Tool {
 export class ReportWebGLCompatibilityTool extends Tool {
     // (undocumented)
     run(_args: any[]): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class SaturationConfig extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    static multiplier: number;
+    // (undocumented)
+    parseAndRun(...input: string[]): boolean;
+    // (undocumented)
+    run(multiplier?: number): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class SaturationEffect extends AddEffectTool {
+    // (undocumented)
+    protected defineEffect(builder: ScreenSpaceEffectBuilder): void;
+    // (undocumented)
+    protected get effectName(): string;
+    // (undocumented)
+    protected get source(): {
+        vertex: string;
+        fragment: string;
+    };
+    // (undocumented)
+    protected get textureCoordFromPosition(): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -1575,6 +1636,46 @@ export interface SliderProps {
     step: string;
     // (undocumented)
     value: string;
+}
+
+// @beta
+export class SnowDecorator implements Decorator {
+    configure(params: Partial<SnowParams>): void;
+    // (undocumented)
+    decorate(context: DecorateContext): void;
+    readonly dispose: VoidFunction;
+    static toggle(viewport: Viewport, enable?: boolean): Promise<void>;
+    readonly viewport: Viewport;
+}
+
+// @beta
+export class SnowEffect extends Tool {
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(enable?: boolean): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export interface SnowParams {
+    accelerationRange: Range2d;
+    numParticles: number;
+    sizeRange: Range1d;
+    transparencyRange: Range1d;
+    velocityRange: Range2d;
+    windVelocity: number;
+}
+
+// @beta
+export interface SnowParticle extends ParticleProps {
+    velocity: Vector2d;
+    x: number;
+    // (undocumented)
+    y: number;
+    // (undocumented)
+    z: number;
 }
 
 // @beta

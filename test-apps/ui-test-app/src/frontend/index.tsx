@@ -7,7 +7,7 @@ import { ContextRegistryClient } from "@bentley/context-registry-client";
 import { BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration, FrontendAuthorizationClient, isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
-import { BentleyCloudRpcManager, DesktopAuthorizationClientConfiguration, ElectronRpcManager, IModelVersion, MobileAuthorizationClientConfiguration, MobileRpcConfiguration, MobileRpcManager, NativeAppRpcInterface, RpcConfiguration, SyncMode } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcManager, DesktopAuthorizationClientConfiguration, IModelVersion, MobileAuthorizationClientConfiguration, MobileRpcConfiguration, MobileRpcManager, RpcConfiguration, SyncMode } from "@bentley/imodeljs-common";
 import {
   AccuSnap, AuthorizedFrontendRequestContext, DesktopAuthorizationClient, ExternalServerExtensionLoader, IModelApp,
   IModelAppOptions, IModelConnection, MobileAuthorizationClient, NativeApp, NativeAppLogger, RenderSystem, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool, ViewState,
@@ -20,6 +20,7 @@ import { Presentation } from "@bentley/presentation-frontend";
 import { getClassName } from "@bentley/ui-abstract";
 import { BeDragDropContext } from "@bentley/ui-components";
 import { LocalUiSettings, UiSettings } from "@bentley/ui-core";
+import { ElectronFrontend } from "@bentley/electron-manager/lib/ElectronFrontend";
 import {
   ActionsUnion, AppNotificationManager, ConfigurableUiContent, createAction, DeepReadonly, DragDropLayerRenderer,
   FrameworkAccuDraw, FrameworkReducer, FrameworkRootState, FrameworkUiAdmin, FrameworkVersion,
@@ -273,7 +274,7 @@ export class SampleAppIModelApp {
     SampleAppIModelApp._selectionSetListener.initialize();
 
     // default to showing imperial formatted units
-    IModelApp.quantityFormatter.useImperialFormats = true;
+    await IModelApp.quantityFormatter.setActiveUnitSystem("imperial");
     Presentation.presentation.activeUnitSystem = PresentationUnitSystem.BritishImperial;
 
     await FrontendDevTools.initialize();
@@ -732,9 +733,8 @@ async function main() {
 
   const rpcInterfaces = getSupportedRpcs();
   if (isElectronRenderer) {
-    ElectronRpcManager.initializeClient({}, rpcInterfaces);
+    ElectronFrontend.initialize({ rpcInterfaces });
   } else if (MobileRpcConfiguration.isMobileFrontend) {
-    rpcInterfaces.push(NativeAppRpcInterface);
     MobileRpcManager.initializeClient(rpcInterfaces);
   } else if (process.env.imjs_gp_backend) {
     const urlClient = new UrlDiscoveryClient();

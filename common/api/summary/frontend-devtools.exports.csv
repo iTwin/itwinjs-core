@@ -71,6 +71,7 @@ beta;ElementIdFromSourceAspectIdTool
 beta;EmbossEffect 
 beta;class EmphasizeElementsTool 
 beta;EmphasizeSelectedElementsTool 
+alpha;ExplosionEffect 
 internal;ExtensionServiceTool 
 beta;FadeOutTool 
 beta;FlipImageConfig 
@@ -113,6 +114,11 @@ alpha;RadioBox
 alpha;RadioBoxEntry
 alpha;RadioBoxHandler = (value: string, form: HTMLFormElement) => void
 alpha;RadioBoxProps
+beta;randomFloat(min: number, max: number): number
+beta;randomFloatInRange(range: Range1d): number
+beta;randomInteger(min: number, max: number): number
+beta;randomIntegerInRange(range: Range1d): number
+beta;randomPositionInRange(range: Range3d): Point3d
 alpha;RealityTransitionTool 
 beta;redrawSelectedView(): void
 beta;class RenderSystemDebugControlTool 
@@ -120,6 +126,8 @@ beta;class RenderTargetDebugControlToggleTool
 beta;class RenderTargetDebugControlTool 
 alpha;ReorderMapLayers 
 beta;ReportWebGLCompatibilityTool 
+beta;SaturationConfig 
+beta;SaturationEffect 
 alpha;SaveRealityModelTool 
 beta;SaveRenderingStyleTool 
 beta;SaveViewTool 
@@ -145,6 +153,10 @@ beta;ShowTileVolumesTool
 alpha;Slider
 alpha;SliderHandler = (slider: HTMLInputElement) => void
 alpha;SliderProps
+beta;SnowDecorator 
+beta;SnowEffect 
+beta;SnowParams
+beta;SnowParticle 
 beta;SourceAspectIdFromElementIdTool 
 beta;class SourceAspectIdTool 
 alpha;TestClipStyleTool 

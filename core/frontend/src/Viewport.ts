@@ -7,8 +7,8 @@
  */
 
 import {
-  asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, Constructor, dispose, Id64, Id64Arg, Id64Set,
-  Id64String, IDisposable, isInstanceOf, StopWatch,
+  asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, Constructor, dispose, Id64, Id64Arg, Id64Set, Id64String, IDisposable, isInstanceOf,
+  StopWatch,
 } from "@bentley/bentleyjs-core";
 import {
   Angle, AngleSweep, Arc3d, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range1d,
@@ -21,12 +21,19 @@ import {
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
+import { ChangeFlag, ChangeFlags } from "./ChangeFlags";
+import { CoordSystem } from "./CoordSystem";
 import { DisplayStyleState } from "./DisplayStyleState";
 import { ElementPicker, LocateOptions } from "./ElementLocateManager";
+import { FeatureOverrideProvider } from "./FeatureOverrideProvider";
+import { FrustumAnimator } from "./FrustumAnimator";
+import { GlobeAnimator } from "./GlobeAnimator";
 import { HitDetail, SnapDetail } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
+import { linePlaneIntersect } from "./LinePlaneIntersect";
 import { ToolTipOptions } from "./NotificationManager";
+import { PerModelCategoryVisibility } from "./PerModelCategoryVisibility";
 import { CanvasDecoration } from "./render/CanvasDecoration";
 import { Decorations } from "./render/Decorations";
 import { FeatureSymbology } from "./render/FeatureSymbology";
@@ -42,21 +49,14 @@ import { SubCategoriesCache } from "./SubCategoriesCache";
 import { TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference, TileTreeSet } from "./tile/internal";
 import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolSettings";
+import { Animator, ViewAnimationOptions, ViewChangeOptions } from "./ViewAnimation";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { GlobalLocation } from "./ViewGlobalLocation";
 import { ViewingSpace } from "./ViewingSpace";
-import { ViewRect } from "./ViewRect";
-import { ViewStatus } from "./ViewStatus";
 import { ViewPose } from "./ViewPose";
-import { ModelDisplayTransformProvider, ViewState, ViewState2d } from "./ViewState";
-import { FeatureOverrideProvider } from "./FeatureOverrideProvider";
-import { ChangeFlag, ChangeFlags } from "./ChangeFlags";
-import { CoordSystem } from "./CoordSystem";
-import { Animator, ViewAnimationOptions, ViewChangeOptions } from "./ViewAnimation";
-import { GlobeAnimator } from "./GlobeAnimator";
-import { FrustumAnimator } from "./FrustumAnimator";
-import { PerModelCategoryVisibility } from "./PerModelCategoryVisibility";
-import { linePlaneIntersect } from "./LinePlaneIntersect";
+import { ViewRect } from "./ViewRect";
+import { ModelDisplayTransformProvider, ViewState } from "./ViewState";
+import { ViewStatus } from "./ViewStatus";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -96,7 +96,7 @@ function disposeCachedDecoration(dec: CachedDecoration): void {
 /** @alpha Source of depth point returned by [[Viewport.pickDepthPoint]]. */
 export enum DepthPointSource {
   /** Depth point from geometry within specified radius of pick point */
-  Geometry, // eslint-disable-line no-shadow
+  Geometry, // eslint-disable-line @typescript-eslint/no-shadow
   /** Depth point from reality model within specified radius of pick point */
   Model,
   /** Depth point from ray projection to background map plane */
@@ -165,6 +165,15 @@ export interface OsmBuildingDisplayOptions {
   onOff?: boolean;
   /** If defined will apply appearance overrides to to the OpenStreetMap building reality model. Has no effect if the OSM reality model is not displayed. */
   appearanceOverrides?: FeatureAppearance;
+}
+
+/** @internal */
+export const ELEMENT_MARKED_FOR_REMOVAL = Symbol.for("@bentley/imodeljs/Viewport/__element_marked_for_removal__");
+
+declare global {
+  interface Element {
+    [ELEMENT_MARKED_FOR_REMOVAL]?: boolean;
+  }
 }
 
 /** A Viewport renders the contents of one or more [GeometricModel]($backend)s onto an `HTMLCanvasElement`.
@@ -240,6 +249,10 @@ export abstract class Viewport implements IDisposable {
    * @beta
    */
   public readonly onDisposed = new BeEvent<(vp: Viewport) => void>();
+  /** Event invoked after [[renderFrame]] detects that the dimensions of the viewport's [[ViewRect]] have changed.
+   * @beta
+   */
+  public readonly onResized = new BeEvent<(vp: Viewport) => void>();
 
   /** This is initialized by a call to [[changeView]] sometime shortly after the constructor is invoked.
    * During that time it can be undefined. DO NOT assign directly to this member - use `setView()`.
@@ -845,12 +858,11 @@ export abstract class Viewport implements IDisposable {
    * @note this method clones the current ViewState2d and sets its baseModelId to the supplied value. The DisplayStyle and CategorySelector remain unchanged.
    */
   public async changeViewedModel2d(baseModelId: Id64String, options?: ChangeViewedModel2dOptions & ViewChangeOptions): Promise<void> {
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    if (!this.view.is2d)
+    if (!this.view.is2d())
       return;
 
     // Clone the current ViewState, change its baseModelId, and ensure the new model is loaded.
-    const newView = this.view.clone() as ViewState2d; // start by cloning the current ViewState
+    const newView = this.view.clone(); // start by cloning the current ViewState
     await newView.changeViewedModel(baseModelId);
 
     this.changeView(newView, options); // switch this viewport to use new ViewState2d
@@ -2155,7 +2167,8 @@ export abstract class Viewport implements IDisposable {
     let isRedrawNeeded = this._redrawPending || this._doContinuousRendering;
     this._redrawPending = false;
 
-    if (target.updateViewRect()) {
+    const resized = target.updateViewRect();
+    if (resized) {
       target.onResized();
       this.invalidateController();
     }
@@ -2249,6 +2262,9 @@ export abstract class Viewport implements IDisposable {
     }
 
     // Dispatch change events after timer has stopped and update has finished.
+    if (resized)
+      this.onResized.raiseEvent(this);
+
     if (changeFlags.hasChanges) {
       this.onViewportChanged.raiseEvent(this, changeFlags);
 
@@ -2474,7 +2490,7 @@ export abstract class Viewport implements IDisposable {
    * @beta
    */
   public addScreenSpaceEffect(effectName: string): void {
-    this.screenSpaceEffects = [ ...this.screenSpaceEffects, effectName ];
+    this.screenSpaceEffects = [...this.screenSpaceEffects, effectName];
   }
 
   /** Remove all screen-space effects from this Viewport.
@@ -2570,7 +2586,10 @@ export class ScreenViewport extends Viewport {
   public readonly vpDiv: HTMLDivElement;
   /** The canvas to display the view contents. */
   public readonly canvas: HTMLCanvasElement;
-  /** The HTMLDivElement used for HTML decorations. May be referenced from the DOM by class "overlay-decorators". */
+  /** The HTMLDivElement used for HTML decorations. May be referenced from the DOM by class "overlay-decorators".
+   * @deprecated from public access, use DecorateContext.addHtmlDecoration
+   * it will be un-deprecated for internal usage only in a future release
+   */
   public readonly decorationDiv: HTMLDivElement;
   /** The HTMLDivElement used for toolTips. May be referenced from the DOM by class "overlay-tooltip". */
   public readonly toolTipDiv: HTMLDivElement;
@@ -2593,6 +2612,19 @@ export class ScreenViewport extends Viewport {
     return vp;
   }
 
+  /** @internal */
+  public static markAllChildrenForRemoval(el: HTMLDivElement) {
+    for (const child of el.children)
+      child[ELEMENT_MARKED_FOR_REMOVAL] = true;
+  }
+
+  /** @internal */
+  public static removeMarkedChildren(el: HTMLDivElement) {
+    for (const child of [...el.children]) // spread to duplicate the HTMLCollection which is invalidated by removals
+      if (child[ELEMENT_MARKED_FOR_REMOVAL])
+        el.removeChild(child);
+  }
+
   /** Remove all of the children of an HTMLDivElement.
    * @internal
    */
@@ -2600,6 +2632,7 @@ export class ScreenViewport extends Viewport {
     while (el.lastChild)
       el.removeChild(el.lastChild);
   }
+
   /** set Div style to absolute, {0,0,100%,100%}
    * @internal
    */
@@ -2640,6 +2673,7 @@ export class ScreenViewport extends Viewport {
 
     const showLogos = (ev: Event) => {
       const aboutBox = IModelApp.makeModalDiv({ autoClose: true, width: 460, closeBox: true }).modal;
+      aboutBox.className += " imodeljs-about"; // only added so the CSS knows this is the about dialog
       const logos = IModelApp.makeHTMLElement("table", { parent: aboutBox, className: "logo-cards" });
       if (undefined !== IModelApp.applicationLogoCard)
         logos.appendChild(IModelApp.applicationLogoCard());
@@ -2667,6 +2701,8 @@ export class ScreenViewport extends Viewport {
     this.addChildDiv(this.vpDiv, canvas, 10);
     this.target.updateViewRect();
 
+    // SEE: decorationDiv doc comment
+    // eslint-disable-next-line deprecation/deprecation
     this.decorationDiv = this.addNewDiv("overlay-decorators", true, 30);
     this.toolTipDiv = this.addNewDiv("overlay-tooltip", true, 40);
     this.setCursor();
@@ -2834,10 +2870,7 @@ export class ScreenViewport extends Viewport {
    * @internal
    */
   public async animateFlyoverToGlobalLocation(destination: GlobalLocation) {
-    if (!this.isCameraOn) {
-      this.turnCameraOn();
-      this.setupFromView();
-    }
+
     const animator = await GlobeAnimator.create(this, destination);
     this.setAnimator(animator);
   }
@@ -2853,13 +2886,18 @@ export class ScreenViewport extends Viewport {
 
   /** @internal */
   protected addDecorations(decorations: Decorations): void {
-    ScreenViewport.removeAllChildren(this.decorationDiv);
+    // SEE: decorationDiv doc comment
+    // eslint-disable-next-line deprecation/deprecation
+    ScreenViewport.markAllChildrenForRemoval(this.decorationDiv);
     const context = new DecorateContext(this, decorations);
     context.addFromDecorator(this.view);
     this.forEachTiledGraphicsProviderTree((ref) => context.addFromDecorator(ref));
 
     for (const decorator of IModelApp.viewManager.decorators)
       context.addFromDecorator(decorator);
+
+    // eslint-disable-next-line deprecation/deprecation
+    ScreenViewport.removeMarkedChildren(this.decorationDiv);
   }
 
   /** Change the cursor for this Viewport */

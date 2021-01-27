@@ -878,6 +878,7 @@ export interface ColorPickerPopupProps extends React.ButtonHTMLAttributes<HTMLBu
     popupPosition?: RelativePosition;
     readonly?: boolean;
     ref?: React.Ref<HTMLButtonElement>;
+    showCaret?: boolean;
 }
 
 // @beta
@@ -891,6 +892,7 @@ export interface ColorPickerProps extends React.ButtonHTMLAttributes<HTMLButtonE
     readonly?: boolean;
     ref?: React.Ref<HTMLButtonElement>;
     round?: boolean;
+    showCaret?: boolean;
 }
 
 // @beta
@@ -4457,7 +4459,7 @@ export class Timeline extends React.Component<TimelineProps, TimelineState> {
 }
 
 // @alpha
-export class TimelineComponent extends React.PureComponent<TimelineComponentProps, TimelineComponentState> {
+export class TimelineComponent extends React.Component<TimelineComponentProps, TimelineComponentState> {
     constructor(props: TimelineComponentProps);
     // (undocumented)
     componentDidUpdate(prevProps: TimelineComponentProps): void;
@@ -4465,6 +4467,8 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
     componentWillUnmount(): void;
     // (undocumented)
     render(): JSX.Element;
+    // (undocumented)
+    shouldComponentUpdate(nextProps: TimelineComponentProps, nextState: TimelineComponentState): boolean;
     }
 
 // @alpha
