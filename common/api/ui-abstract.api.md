@@ -98,15 +98,15 @@ export interface AbstractWidgetProps extends ProvidedItem {
 // @alpha
 export enum AccuDrawField {
     // (undocumented)
-    Angle = 4,
+    Angle = 1,
     // (undocumented)
-    Distance = 3,
+    Distance = 0,
     // (undocumented)
-    X = 0,
+    X = 2,
     // (undocumented)
-    Y = 1,
+    Y = 3,
     // (undocumented)
-    Z = 2
+    Z = 4
 }
 
 // @alpha (undocumented)
@@ -116,9 +116,9 @@ export class AccuDrawGrabInputFocusEvent extends BeUiEvent<{}> {
 // @alpha
 export enum AccuDrawMode {
     // (undocumented)
-    Polar = 1,
+    Polar = 0,
     // (undocumented)
-    Rectangular = 0
+    Rectangular = 1
 }
 
 // @alpha (undocumented)

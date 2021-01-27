@@ -38,7 +38,7 @@ export class EditCommand implements EditCommandIpc {
 
   public async ping(): Promise<{ commandId: string, version: string, [propName: string]: any }> {
     return { version: this.ctor.version, commandId: this.ctor.commandId };
-  };
+  }
 
   public onCleanup(): void { }
 
@@ -124,4 +124,4 @@ export class EditCommandAdmin {
     }
   }
 
-};
+}

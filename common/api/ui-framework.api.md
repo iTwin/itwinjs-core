@@ -222,12 +222,10 @@ export function AccuDrawDialog(props: AccuDrawDialogProps): JSX.Element;
 
 // @alpha (undocumented)
 export interface AccuDrawDialogProps extends CommonProps {
-    // (undocumented)
     dialogId: string;
-    // (undocumented)
     onClose?: () => void;
-    // (undocumented)
     opened: boolean;
+    orientation?: Orientation;
 }
 
 // @alpha
@@ -6165,6 +6163,9 @@ export class UiFramework {
     static closeCursorMenu(): void;
     // (undocumented)
     static dispatchActionToStore(type: string, payload: any, immediateSync?: boolean): void;
+    // @alpha
+    static get escapeToHome(): boolean;
+    static set escapeToHome(v: boolean);
     // @beta
     static get frameworkState(): FrameworkState | undefined;
     // @beta (undocumented)
