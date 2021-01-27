@@ -20,9 +20,14 @@ For cases where a frontend and backend are explicitly paired (e.g. desktop and m
 
 ## External textures
 
-Previously, all texture image data was embedded directly within iModel tiles. Now, when enabled, texture image data will be requested separate of the tile contents when the image data is considered large enough by the backend. This can reduce bandwidth and reduce memory consumption on the frontend.
+By default, a tile containing textured materials embeds the texture images as JPEGs or PNGs. This increases the size of the tile, wasting bandwidth. A new alternative requires only the Id of the texture element to be included in the tile; the image can be requested separately. Texture images are cached, so the image need only be requested once no matter how many tiles reference it.
 
-To enable usage of external textures, set the `enableExternalTextures` property of [TileAdmin.Props]($frontend) to true when passed in to [TileAdmin.create]($frontend). This [TileAdmins.Props]($frontend) object should be passed in to [IModelApp.startup]($frontend).
+This feature is currently disabled by default. Enabling it requires the use of APIs currently marked `@alpha`. Pass to [IModelApp.startup]($frontend) a `TileAdmin` with the feature enabled as follows:
+```ts
+  const tileAdminProps: TileAdmin.Props = { enableExternalTextures: true };
+  const tileAdmin = TileAdmin.create(tileAdminProps);
+   IModelApp.startup({ tileAdmin });
+```
 
 ## Breaking API Changes
 
