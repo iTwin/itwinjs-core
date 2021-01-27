@@ -4107,7 +4107,7 @@ export abstract class IpcWebSocket implements IpcSocket {
 export class IpcWebSocketBackend extends IpcWebSocket implements IpcSocketBackend {
     constructor();
     // (undocumented)
-    handle(channel: string, handler: (methodName: string, ...args: any[]) => Promise<any>): RemoveFunction;
+    handle(channel: string, handler: (event: Event, methodName: string, ...args: any[]) => Promise<any>): RemoveFunction;
     // (undocumented)
     send(channel: string, ...data: any[]): void;
 }

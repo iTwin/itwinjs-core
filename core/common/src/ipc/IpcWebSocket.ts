@@ -119,7 +119,7 @@ export class IpcWebSocketFrontend extends IpcWebSocket implements IpcSocketFront
 
 /** @internal */
 export class IpcWebSocketBackend extends IpcWebSocket implements IpcSocketBackend {
-  private _handlers = new Map<string, (methodName: string, ...args: any[]) => Promise<any>>();
+  private _handlers = new Map<string, (event: Event, methodName: string, ...args: any[]) => Promise<any>>();
 
   public constructor() {
     super();
@@ -131,7 +131,7 @@ export class IpcWebSocketBackend extends IpcWebSocket implements IpcSocketBacken
     IpcWebSocket.transport.send({ type: IpcWebSocketMessageType.Push, channel, data });
   }
 
-  public handle(channel: string, handler: (methodName: string, ...args: any[]) => Promise<any>): RemoveFunction {
+  public handle(channel: string, handler: (event: Event, methodName: string, ...args: any[]) => Promise<any>): RemoveFunction {
     this._handlers.set(channel, handler);
 
     return () => {
@@ -152,7 +152,7 @@ export class IpcWebSocketBackend extends IpcWebSocket implements IpcSocketBacken
     if (typeof (args) === "undefined")
       args = [];
 
-    const response = await handler(message.method, ...args);
+    const response = await handler({} as any, message.method, ...args);
 
     IpcWebSocket.transport.send({
       type: IpcWebSocketMessageType.Response,
