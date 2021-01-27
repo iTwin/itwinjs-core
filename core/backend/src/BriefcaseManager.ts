@@ -877,7 +877,6 @@ export class BriefcaseManager {
     changeSet.id = changeSetToken.id;
     changeSet.parentId = changeSetToken.parentId;
     changeSet.changesType = changeSetToken.changeType === ChangesType.Schema ? ChangesType.Schema : changeType;
-    changeSet.seedFileId = db.iModelId;
     changeSet.fileSize = IModelJsFs.lstatSync(changeSetToken.pathname)!.size.toString();
     changeSet.description = description;
     if (changeSet.description.length >= 255) {
