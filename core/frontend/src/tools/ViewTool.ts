@@ -26,9 +26,13 @@ import { DecorateContext } from "../ViewContext";
 import {
   eyeToCartographicOnGlobeFromGcs, GlobalLocation, queryTerrainElevationOffset, rangeToCartographicArea, viewGlobalLocation, ViewGlobalLocationConstants,
 } from "../ViewGlobalLocation";
-import { Animator, CoordSystem, DepthPointSource, ScreenViewport, ViewChangeOptions, Viewport } from "../Viewport";
+import { Animator, ViewChangeOptions } from "../ViewAnimation";
+import { CoordSystem } from "../CoordSystem";
+import { DepthPointSource, ScreenViewport, Viewport } from "../Viewport";
 import { ViewRect } from "../ViewRect";
-import { ViewPose, ViewState3d, ViewStatus } from "../ViewState";
+import { ViewPose } from "../ViewPose";
+import { ViewStatus } from "../ViewStatus";
+import { ViewState3d } from "../ViewState";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
 import { PrimitiveTool } from "./PrimitiveTool";
 import {
@@ -2439,7 +2443,7 @@ class ViewLookAndMove extends ViewNavigate {
       return super.onWheel(ev);
     const focusHandle = tool.viewHandles.focusHandle;
     if (undefined === focusHandle || ViewHandleType.LookAndMove !== focusHandle.handleType)
-      return super.onWheel(ev);;
+      return super.onWheel(ev);
     this.changeWalkVelocity(ev.wheelDelta > 0);
     tool.viewport.setAnimator(this); // animator was cleared by wheel event...
     return true;
@@ -4259,8 +4263,8 @@ export class SetupCameraTool extends PrimitiveTool {
   public supplyToolSettingsProperties(): DialogItem[] | undefined {
 
     // load latest values from session
-    IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValues(this.toolId,
-      [SetupCameraTool._useCameraHeightName, SetupCameraTool._cameraHeightName, SetupCameraTool._useTargetHeightName, SetupCameraTool._targetHeightName])?.forEach((value) => {
+    IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValues(this.toolId, [SetupCameraTool._useCameraHeightName, SetupCameraTool._cameraHeightName, SetupCameraTool._useTargetHeightName, SetupCameraTool._targetHeightName])
+      ?.forEach((value) => {
         if (value.propertyName === SetupCameraTool._useCameraHeightName)
           this._useCameraHeightValue = value.value;
         else if (value.propertyName === SetupCameraTool._cameraHeightName)

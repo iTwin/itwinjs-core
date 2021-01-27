@@ -5,46 +5,24 @@
 ```ts
 
 // @alpha (undocumented)
-export type CommandError = "CommandNotFound" | "Exception" | "MethodNotFound" | "NoActiveCommand";
-
-// @alpha (undocumented)
-export interface CommandMethodProps<T> {
+export interface EditCommandIpc {
     // (undocumented)
-    args?: T;
-    // (undocumented)
-    name: string;
+    ping: () => Promise<{
+        commandId: string;
+        version: string;
+        [propName: string]: any;
+    }>;
 }
 
-// @alpha (undocumented)
-export interface CommandResult<T> {
-    // (undocumented)
-    error?: CommandError;
-    // (undocumented)
-    result?: T;
-}
+// @internal (undocumented)
+export const editorChannel = "editor";
 
 // @alpha (undocumented)
-export const editCommandApi: {
-    start: string;
-    call: string;
-};
-
-// @alpha (undocumented)
-export interface PingResult {
+export interface EditorIpc {
     // (undocumented)
-    [propName: string]: any;
+    callMethod: (name: string, ...args: any[]) => Promise<any>;
     // (undocumented)
-    commandId?: string;
-    // (undocumented)
-    version?: string;
-}
-
-// @alpha (undocumented)
-export interface StartCommandProps<T> {
-    // (undocumented)
-    args?: T;
-    // (undocumented)
-    commandId: string;
+    startCommand: (commandId: string, iModelKey: string, ...args: any[]) => Promise<any>;
 }
 
 

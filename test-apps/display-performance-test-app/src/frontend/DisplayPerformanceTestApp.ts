@@ -3,15 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import { ClientRequestContext, Id64, Id64Arg, Id64String, OpenMode, StopWatch } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Id64, Id64Arg, Id64String, isElectronRenderer, OpenMode, StopWatch } from "@bentley/bentleyjs-core";
 import { Project } from "@bentley/context-registry-client";
 import {
   BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration, FrontendAuthorizationClient,
 } from "@bentley/frontend-authorization-client";
 import { HubIModel } from "@bentley/imodelhub-client";
 import {
-  BackgroundMapProps, BackgroundMapType, BentleyCloudRpcManager, ColorDef, DesktopAuthorizationClientConfiguration, DisplayStyleProps, ElectronRpcConfiguration,
-  ElectronRpcManager, FeatureAppearance, FeatureAppearanceProps, Hilite, IModelReadRpcInterface, IModelTileRpcInterface, MobileRpcConfiguration, MobileRpcManager,
+  BackgroundMapProps, BackgroundMapType, BentleyCloudRpcManager, ColorDef, DesktopAuthorizationClientConfiguration, DisplayStyleProps,
+  FeatureAppearance, FeatureAppearanceProps, Hilite, IModelReadRpcInterface, IModelTileRpcInterface, MobileRpcConfiguration, MobileRpcManager,
   RenderMode, RpcConfiguration, SnapshotIModelRpcInterface, ViewDefinitionProps,
 } from "@bentley/imodeljs-common";
 import {
@@ -26,6 +26,7 @@ import { ProjectShareClient, ProjectShareFile, ProjectShareFileQuery, ProjectSha
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { initializeIModelHub } from "./ConnectEnv";
 import { IModelApi } from "./IModelApi";
+import { ElectronFrontend } from "@bentley/electron-manager/lib/ElectronFrontend";
 
 let curRenderOpts: RenderSystem.Options = {}; // Keep track of the current render options (disabled webgl extensions and enableOptimizedSurfaceShaders flag)
 let curTileProps: TileAdmin.Props = {}; // Keep track of whether or not instancing has been enabled
@@ -68,7 +69,7 @@ function debugPrint(msg: string): void {
     console.log(msg); // eslint-disable-line no-console
 }
 
-async function resolveAfterXMilSeconds(ms: number) { // must call await before this function!!!
+async function resolveAfterXMilSeconds(ms: number) {
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve();
@@ -399,7 +400,7 @@ async function waitForTilesToLoad(modelLocation?: string) {
   const timer = new StopWatch(undefined, true);
   let haveNewTiles = true;
   while (haveNewTiles) {
-    theViewport!.setRedrawPending();
+    theViewport!.requestRedraw();
     theViewport!.invalidateScene();
     theViewport!.renderFrame();
 
@@ -927,7 +928,7 @@ async function openView(state: SimpleViewState, viewSize: ViewSize) {
     canvas.style.width = `${String(width)}px`;
     canvas.style.height = `${String(height)}px`;
     theViewport.continuousRendering = false;
-    theViewport.setRedrawPending();
+    theViewport.requestRedraw();
     (theViewport.target as Target).performanceMetrics = undefined;
     await _changeView(state.viewState!);
   }
@@ -936,7 +937,7 @@ async function openView(state: SimpleViewState, viewSize: ViewSize) {
 async function createOidcClient(requestContext: ClientRequestContext): Promise<FrontendAuthorizationClient> {
   const scope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party";
 
-  if (ElectronRpcConfiguration.isElectron) {
+  if (isElectronRenderer) {
     const clientId = "imodeljs-electron-test";
     const redirectUri = "http://localhost:3000/signin-callback";
     const oidcConfiguration: DesktopAuthorizationClientConfiguration = { clientId, redirectUri, scope: `${scope} offline_access` };
@@ -1000,7 +1001,6 @@ async function getAllMatchingSavedViews(testConfig: DefaultConfigs): Promise<str
 
 async function openImodelAndLoadExtViews(testConfig: DefaultConfigs, extViews?: any[]): Promise<void> {
   activeViewState = new SimpleViewState();
-
 
   // Open an iModel from a local file
   let openLocalIModel = (testConfig.iModelLocation !== undefined) || MobileRpcConfiguration.isMobileFrontend;
@@ -1350,7 +1350,7 @@ async function renderAsync(vp: ScreenViewport, numFrames: number, timings: Array
         debugControl.resultsCallback = undefined; // Turn off glTimer metrics
         resolve();
       } else {
-        vp.setRedrawPending();
+        vp.requestRedraw();
         timer.start();
       }
     });
@@ -1384,7 +1384,7 @@ async function runTest(testConfig: DefaultConfigs, extViews?: any[]) {
 
   // Throw away the first n renderFrame times, until it's more consistent
   for (let i = 0; i < (testConfig.numRendersToSkip ? testConfig.numRendersToSkip : 50); ++i) {
-    theViewport!.setRedrawPending();
+    theViewport!.requestRedraw();
     theViewport!.renderFrame();
   }
   testConfig.numRendersToTime = testConfig.numRendersToTime ? testConfig.numRendersToTime : 100;
@@ -1625,10 +1625,11 @@ window.onload = async () => {
   RpcConfiguration.developmentMode = true;
   RpcConfiguration.disableRoutingValidation = true;
 
-  if (ElectronRpcConfiguration.isElectron) {
-    ElectronRpcManager.initializeClient({}, [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]);
+  const rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
+  if (isElectronRenderer) {
+    ElectronFrontend.initialize({ rpcInterfaces });
   } else if (MobileRpcConfiguration.isMobileFrontend) {
-    MobileRpcManager.initializeClient([DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]);
+    MobileRpcManager.initializeClient(rpcInterfaces);
   } else {
     const uriPrefix = "http://localhost:3001";
     BentleyCloudRpcManager.initializeClient({ info: { title: "DisplayPerformanceTestApp", version: "v1.0" }, uriPrefix }, [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]);

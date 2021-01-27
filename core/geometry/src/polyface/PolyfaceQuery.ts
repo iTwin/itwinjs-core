@@ -327,7 +327,6 @@ export class PolyfaceQuery {
     }
   }
 
-
   /** Execute context.projectToPolygon until its work estimates accumulate to workLimit  */
   private static async continueAnnouunceSweepLinestringToConvexPolyfaceXY(
     context: SweepLineStringToFacetContext, visitor: PolyfaceVisitor, announce: AnnounceDrapePanel): Promise<number> {
@@ -364,7 +363,7 @@ export class PolyfaceQuery {
     announce: AnnounceDrapePanel): Promise<number> {
     const context = SweepLineStringToFacetContext.create(linestringPoints);
     this.awaitBlockCount = 0;
-    let workTotal = 0;;
+    let workTotal = 0;
     if (context) {
       const visitor = polyface.createVisitor(0);
       let workCount;

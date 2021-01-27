@@ -8,8 +8,8 @@
 
 import { assert, BeDuration, BeEvent, BeTimePoint, Id64Array, Id64String, PriorityQueue } from "@bentley/bentleyjs-core";
 import {
-  defaultTileOptions, ElementGraphicsRequestProps, getMaximumMajorTileFormatVersion, IModelTileRpcInterface, IModelTileTreeProps, ModelGeometryChanges,
-  NativeAppRpcInterface, RpcOperation, RpcRegistry, RpcResponseCacheControl, ServerTimeoutError, TileTreeContentIds,
+  defaultTileOptions, ElementGraphicsRequestProps, FrontendIpc, getMaximumMajorTileFormatVersion, IModelTileRpcInterface, IModelTileTreeProps, ModelGeometryChanges,
+  RpcOperation, RpcResponseCacheControl, ServerTimeoutError, TileTreeContentIds,
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -18,7 +18,8 @@ import { Viewport } from "../Viewport";
 import { ReadonlyViewportSet, UniqueViewportSets } from "../ViewportSet";
 import { InteractiveEditingSession } from "../InteractiveEditingSession";
 import { GeometricModelState } from "../ModelState";
-import { Tile, TileLoadStatus, TileRequest, TileTree, TileTreeSet, TileUsageMarker } from "./internal";
+import { Tile, TileLoadStatus, TileRequest, TileTree, TileTreeOwner, TileTreeSet, TileUsageMarker } from "./internal";
+import { NativeApp } from "../NativeApp";
 
 /** Details about any tiles not handled by [[TileAdmin]]. At this time, that means OrbitGT point cloud tiles.
  * Used for bookkeeping by SelectedAndReadyTiles
@@ -216,13 +217,13 @@ export abstract class TileAdmin {
   public abstract onShutDown(): void;
 
   /** @internal */
-  public abstract async requestTileTreeProps(iModel: IModelConnection, treeId: string): Promise<IModelTileTreeProps>;
+  public abstract requestTileTreeProps(iModel: IModelConnection, treeId: string): Promise<IModelTileTreeProps>;
 
   /** @internal */
-  public abstract async requestTileContent(iModel: IModelConnection, treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined, qualifier: string | undefined): Promise<Uint8Array>;
+  public abstract requestTileContent(iModel: IModelConnection, treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined, qualifier: string | undefined): Promise<Uint8Array>;
 
   /** @internal */
-  public abstract async requestElementGraphics(iModel: IModelConnection, props: ElementGraphicsRequestProps): Promise<Uint8Array | undefined>;
+  public abstract requestElementGraphics(iModel: IModelConnection, props: ElementGraphicsRequestProps): Promise<Uint8Array | undefined>;
 
   /** Create a TileAdmin. Chiefly intended for use by subclasses of [[IModelApp]] to customize the behavior of the TileAdmin.
    * @param props Options for customizing the behavior of the TileAdmin.
@@ -242,7 +243,7 @@ export abstract class TileAdmin {
    * ```
    * @internal
    */
-  public abstract async purgeTileTrees(iModel: IModelConnection, modelIds: Id64Array | undefined): Promise<void>;
+  public abstract purgeTileTrees(iModel: IModelConnection, modelIds: Id64Array | undefined): Promise<void>;
 
   /** @internal */
   public abstract onTileCompleted(tile: Tile): void;
@@ -267,7 +268,7 @@ export abstract class TileAdmin {
   /** Event raised when a request to load a tile tree completes.
    * @internal
    */
-  public readonly onTileTreeLoad = new BeEvent<(tileTree: TileTree) => void>();
+  public readonly onTileTreeLoad = new BeEvent<(tileTree: TileTreeOwner) => void>();
 
   /** Event raised when a request to load a tile's child tiles completes.
    * @internal
@@ -761,7 +762,7 @@ class Admin extends TileAdmin {
     // If unspecified skip one level before preloading  of parents of context tiles.
     this._contextPreloadParentSkip = Math.max(0, Math.min((options.contextPreloadParentSkip === undefined ? 1 : options.contextPreloadParentSkip), 5));
 
-    this._cleanup = InteractiveEditingSession.onBegin.addListener((session) => {
+    const removeEditingListener = InteractiveEditingSession.onBegin.addListener((session) => {
       const removeGeomListener = session.onGeometryChanges.addListener((changes: Iterable<ModelGeometryChanges>) => this.onModelGeometryChanged(changes));
       session.onEnded.addOnce((sesh: InteractiveEditingSession) => {
         assert(sesh === session);
@@ -769,6 +770,15 @@ class Admin extends TileAdmin {
         this.onSessionEnd(session);
       });
     });
+
+    const removeLoadListener = this.addLoadListener(() => {
+      this._viewports.forEach((vp) => vp.invalidateScene());
+    });
+
+    this._cleanup = () => {
+      removeEditingListener();
+      removeLoadListener();
+    };
   }
 
   public get enableInstancing() { return this._enableInstancing && IModelApp.renderSystem.supportsInstancing; }
@@ -855,7 +865,7 @@ class Admin extends TileAdmin {
         }
 
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        NativeAppRpcInterface.getClient().cancelTileContentRequests(iModelConnection.getRpcProps(), treeContentIds);
+        NativeApp.callBackend("cancelTileContentRequests", iModelConnection.getRpcProps(), treeContentIds);
       }
 
       this._canceledIModelTileRequests.clear();
@@ -864,7 +874,7 @@ class Admin extends TileAdmin {
     if (this._canceledElementGraphicsRequests && this._canceledElementGraphicsRequests.size > 0) {
       for (const [connection, requestIds] of this._canceledElementGraphicsRequests) {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        NativeAppRpcInterface.getClient().cancelElementGraphicsRequests(connection.getRpcProps(), requestIds);
+        NativeApp.callBackend("cancelElementGraphicsRequests", connection.getRpcProps(), requestIds);
         this._totalAbortedRequests += requestIds.length;
       }
 
@@ -1215,7 +1225,7 @@ class Admin extends TileAdmin {
     policy.retryInterval = () => retryInterval;
     policy.allowResponseCaching = () => RpcResponseCacheControl.Immutable;
 
-    if (RpcRegistry.instance.isRpcInterfaceInitialized(NativeAppRpcInterface)) {
+    if (FrontendIpc.isValid) {
       this._canceledElementGraphicsRequests = new Map<IModelConnection, string[]>();
       if (this._cancelBackendTileRequests)
         this._canceledIModelTileRequests = new Map<IModelConnection, Map<string, Set<string>>>();

@@ -8,7 +8,6 @@ import * as os from "os";
 import * as path from "path";
 import * as readline from "readline";
 import { BriefcaseStatus, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
-import { Briefcase, BriefcaseQuery, HubIModel } from "@bentley/imodelhub-client";
 import { IModelError, IModelVersion } from "@bentley/imodeljs-common";
 import { UserCancelledError } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
@@ -22,9 +21,9 @@ import { HubUtility } from "./HubUtility";
 import { TestChangeSetUtility } from "./TestChangeSetUtility";
 
 async function createIModelOnHub(requestContext: AuthorizedBackendRequestContext, projectId: GuidString, iModelName: string): Promise<string> {
-  let iModel: HubIModel | undefined = await HubUtility.queryIModelByName(requestContext, projectId, iModelName);
+  let iModel = await HubUtility.queryIModelByName(requestContext, projectId, iModelName);
   if (!iModel)
-    iModel = await BriefcaseManager.imodelClient.iModels.create(requestContext, projectId, iModelName, { description: `Description for iModel` });
+    iModel = await IModelHost.iModelClient.iModels.create(requestContext, projectId, iModelName, { description: `Description for iModel` });
   assert.isDefined(iModel.wsgId);
   return iModel.wsgId;
 }
@@ -86,7 +85,7 @@ describe("BriefcaseManager (#integration)", () => {
       // Validate that the IModelDb is readonly
       assert(iModel.openMode === OpenMode.Readonly, "iModel not set to Readonly mode");
 
-      const expectedChangeSetId = await IModelVersion.first().evaluateChangeSet(requestContext, readOnlyTestIModel.id, BriefcaseManager.imodelClient);
+      const expectedChangeSetId = await IModelVersion.first().evaluateChangeSet(requestContext, readOnlyTestIModel.id, IModelHost.iModelClient);
       assert.strictEqual<string>(iModel.changeSetId!, expectedChangeSetId);
       assert.strictEqual<string>(iModel.changeSetId!, expectedChangeSetId);
 
@@ -394,30 +393,8 @@ describe("BriefcaseManager (#integration)", () => {
     IModelJsFs.unlinkSync(file2);
   });
 
-  const briefcaseExistsOnHub = async (iModelId: GuidString, briefcaseId: number): Promise<boolean> => {
-    try {
-      const hubBriefcases: Briefcase[] = await BriefcaseManager.imodelClient.briefcases.get(requestContext, iModelId, new BriefcaseQuery().byId(briefcaseId));
-      return (hubBriefcases.length > 0) ? true : false;
-    } catch (e) {
-      return false;
-    }
-  };
-
-  it.skip("should allow purging the cache and delete any acquired briefcases from the hub", async () => {
-    const args = { requestContext, contextId: testProjectId, iModelId: readOnlyTestIModel.id };
-    const iModel1 = await IModelTestUtils.openBriefcaseUsingRpc(args);
-    const briefcaseId1: number = iModel1.briefcaseId;
-    let exists = await briefcaseExistsOnHub(readOnlyTestIModel.id, briefcaseId1);
-    assert.isTrue(exists);
-
-    //    await BriefcaseManager.purgeCache(managerRequestContext);
-
-    exists = await briefcaseExistsOnHub(readOnlyTestIModel.id, briefcaseId1);
-    assert.isFalse(exists);
-  });
-
   it("Open iModels with various names causing potential issues on Windows/Unix", async () => {
-    const projectId: string = await HubUtility.queryProjectIdByName(managerRequestContext, testProjectName);
+    const projectId = await HubUtility.queryProjectIdByName(managerRequestContext, testProjectName);
     let iModelName = "iModel Name With Spaces";
     let iModelId = await createIModelOnHub(managerRequestContext, projectId, iModelName);
     const args = { requestContext, contextId: projectId, iModelId };
@@ -680,7 +657,6 @@ describe("BriefcaseManager (#integration)", () => {
     await testUtility.deleteTestIModel();
   });
 
-
   it("should be able to show progress when downloading a briefcase (#integration)", async () => {
     const testIModelName = "Stadium Dataset 1";
     const testIModelId = await HubUtility.queryIModelIdByName(requestContext, testProjectId, testIModelName);
@@ -699,7 +675,6 @@ describe("BriefcaseManager (#integration)", () => {
       numProgressCalls++;
       return 0;
     };
-
 
     const args = {
       contextId: testProjectId,

@@ -878,6 +878,7 @@ export interface ColorPickerPopupProps extends React.ButtonHTMLAttributes<HTMLBu
     popupPosition?: RelativePosition;
     readonly?: boolean;
     ref?: React.Ref<HTMLButtonElement>;
+    showCaret?: boolean;
 }
 
 // @beta
@@ -891,6 +892,7 @@ export interface ColorPickerProps extends React.ButtonHTMLAttributes<HTMLButtonE
     readonly?: boolean;
     ref?: React.Ref<HTMLButtonElement>;
     round?: boolean;
+    showCaret?: boolean;
 }
 
 // @beta
@@ -2834,9 +2836,9 @@ export interface NavCubeFaceProps extends React.AllHTMLAttributes<HTMLDivElement
 // @public
 export class NavigationPropertyTypeConverter extends TypeConverter {
     // (undocumented)
-    convertPropertyToString(propertyDescription: PropertyDescription, value?: Primitives.Hexadecimal): string;
+    convertPropertyToString(propertyDescription: PropertyDescription, value?: Primitives.Value): string;
     // (undocumented)
-    sortCompare(a: Primitives.Hexadecimal, b: Primitives.Hexadecimal, ignoreCase?: boolean): number;
+    sortCompare(a: Primitives.Value, b: Primitives.Value, ignoreCase?: boolean): number;
 }
 
 // @public
@@ -4457,7 +4459,7 @@ export class Timeline extends React.Component<TimelineProps, TimelineState> {
 }
 
 // @alpha
-export class TimelineComponent extends React.PureComponent<TimelineComponentProps, TimelineComponentState> {
+export class TimelineComponent extends React.Component<TimelineComponentProps, TimelineComponentState> {
     constructor(props: TimelineComponentProps);
     // (undocumented)
     componentDidUpdate(prevProps: TimelineComponentProps): void;
@@ -4465,6 +4467,8 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
     componentWillUnmount(): void;
     // (undocumented)
     render(): JSX.Element;
+    // (undocumented)
+    shouldComponentUpdate(nextProps: TimelineComponentProps, nextState: TimelineComponentState): boolean;
     }
 
 // @alpha
@@ -4755,7 +4759,7 @@ export class TreeDataSource implements IDisposable {
     // (undocumented)
     dispose(): void;
     // (undocumented)
-    readonly onItemsChanged: BeUiEvent<TreeDataChangesListener>;
+    readonly onItemsChanged: BeEvent<TreeDataChangesListener>;
     // (undocumented)
     requestItems(parent: TreeNodeItem | undefined, firstItemIndex: number, numItems: number, requestNumChildren: boolean): Observable_2<TreeDataSourceResult>;
 }

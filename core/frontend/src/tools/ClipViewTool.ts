@@ -1671,7 +1671,7 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
       let fillHidColorOvr = fillHidColor;
       let fillSelColorOvr = fillSelColor;
       if (undefined !== fillVisColorOvr) {
-        fillVisColorOvr = EditManipulator.HandleUtils.adjustForBackgroundColor(fillVisColorOvr, vp);;
+        fillVisColorOvr = EditManipulator.HandleUtils.adjustForBackgroundColor(fillVisColorOvr, vp);
         fillVisColorOvr = fillVisColorOvr.withAlpha(fillVisColor.getAlpha());
         fillHidColorOvr = fillVisColorOvr.withAlpha(fillHidColor.getAlpha());
         fillSelColorOvr = fillVisColorOvr.inverse().withAlpha(fillSelColor.getAlpha());

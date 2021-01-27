@@ -6,7 +6,6 @@
  * @module Core
  */
 
-
 import { BeEvent, IDisposable, isIDisposable } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { ClassId, Field, NestedContentField, PropertiesField } from "@bentley/presentation-common";

@@ -97,7 +97,6 @@ describe("CategoryVisibilityHandler", () => {
       viewManager: partialProps.viewManager || viewManagerMock.object,
       imodel: partialProps.imodel || imodelMock.object,
       activeView: partialProps.activeView,
-      onVisibilityChange: partialProps.onVisibilityChange || sinon.stub(),
       categories: partialProps.categories || [],
       allViewports: partialProps.allViewports,
     };
@@ -122,18 +121,6 @@ describe("CategoryVisibilityHandler", () => {
       using(createHandler({ activeView: viewport.object }), (_) => { });
       expect(onDisplayStyleChanged.numberOfListeners).to.be.eq(0);
       expect(onViewedCategoriesChanged.numberOfListeners).to.be.eq(0);
-    });
-
-  });
-
-  describe("onVisibilityChange", () => {
-
-    it("sets onVisibilityChange callback", async () => {
-      const callback = () => { };
-      using(createHandler({}), (handler) => {
-        handler.onVisibilityChange = callback;
-        expect(callback).to.be.eq(handler.onVisibilityChange);
-      });
     });
 
   });
@@ -171,17 +158,17 @@ describe("CategoryVisibilityHandler", () => {
 
   describe("getVisibilityStatus", () => {
 
-    it("calls isCategoryVisible", () => {
+    it("calls getCategoryVisibility", () => {
       using(createHandler({}), (handler) => {
-        const spy = sinon.stub(handler, "isCategoryVisible");
+        const spy = sinon.stub(handler, "getCategoryVisibility");
         handler.getVisibilityStatus(categoryNode, categoryKey);
         expect(spy).to.be.calledWith(categoryNode.id);
       });
     });
 
-    it("calls isSubCategoryVisible", () => {
+    it("calls getSubCategoryVisibility", () => {
       using(createHandler({ categories }), (handler) => {
-        const spy = sinon.stub(handler, "isSubCategoryVisible");
+        const spy = sinon.stub(handler, "getSubCategoryVisibility");
         handler.getVisibilityStatus(subcategoryNode, subcategoryKey);
         expect(spy).to.be.calledWith(subcategoryNode.id);
       });
@@ -189,77 +176,77 @@ describe("CategoryVisibilityHandler", () => {
 
   });
 
-  describe("isCategoryVisible", () => {
+  describe("getCategoryVisibility", () => {
 
     beforeEach(() => {
       viewStateMock.reset();
     });
 
-    it("returns false if active viewport is not supplied", () => {
+    it("returns 'hidden' if active viewport is not supplied", () => {
       using(createHandler({}), (handler) => {
-        expect(handler.isCategoryVisible("CategoryId")).to.be.false;
+        expect(handler.getCategoryVisibility("CategoryId")).to.be.eq("hidden");
       });
     });
 
-    it("returns false if category is not visible", () => {
+    it("returns 'hidden' if category is not visible", () => {
       viewStateMock.setup((x) => x.viewsCategory("CategoryId")).returns(() => false);
       const viewMock = mockViewport({ viewState: viewStateMock.object });
       using(createHandler({ activeView: viewMock.object }), (handler) => {
-        expect(handler.isCategoryVisible("CategoryId")).to.be.false;
+        expect(handler.getCategoryVisibility("CategoryId")).to.be.eq("hidden");
       });
     });
 
-    it("returns true if category is visible", () => {
+    it("returns 'visible' if category is visible", () => {
       viewStateMock.setup((x) => x.viewsCategory("CategoryId")).returns(() => true);
       const viewMock = mockViewport({ viewState: viewStateMock.object });
       using(createHandler({ activeView: viewMock.object }), (handler) => {
-        expect(handler.isCategoryVisible("CategoryId")).to.be.true;
+        expect(handler.getCategoryVisibility("CategoryId")).to.be.eq("visible");
       });
     });
 
   });
 
-  describe("isSubCategoryVisible", () => {
+  describe("getSubCategoryVisibility", () => {
 
     beforeEach(() => {
       viewStateMock.reset();
     });
 
-    it("returns false if active viewport is not supplied", () => {
+    it("returns 'hidden' if active viewport is not supplied", () => {
       using(createHandler({ categories }), (handler) => {
-        expect(handler.isSubCategoryVisible("SubCategoryId")).to.be.false;
+        expect(handler.getSubCategoryVisibility("SubCategoryId")).to.be.eq("hidden");
       });
     });
 
-    it("returns false if parent category is not found", () => {
+    it("returns 'hidden' if parent category is not found", () => {
       using(createHandler({ activeView: mockViewport().object, categories }), (handler) => {
-        expect(handler.isSubCategoryVisible("SubCategoryWithoutParent")).to.be.false;
+        expect(handler.getSubCategoryVisibility("SubCategoryWithoutParent")).to.be.eq("hidden");
       });
     });
 
-    it("returns false if parent category is not visible in view", () => {
+    it("returns 'hidden' if parent category is not visible in view", () => {
       const viewMock = mockViewport({ viewState: viewStateMock.object });
       viewStateMock.setup((x) => x.viewsCategory("CategoryId")).returns(() => false);
       using(createHandler({ activeView: viewMock.object, categories }), (handler) => {
-        expect(handler.isSubCategoryVisible("SubCategoryId")).to.be.false;
+        expect(handler.getSubCategoryVisibility("SubCategoryId")).to.be.eq("hidden");
       });
     });
 
-    it("returns false if subCategory is not visible in view", () => {
+    it("returns 'hidden' if subCategory is not visible in view", () => {
       const viewMock = mockViewport({ viewState: viewStateMock.object });
       viewStateMock.setup((x) => x.viewsCategory("CategoryId")).returns(() => true);
       viewMock.setup((x) => x.isSubCategoryVisible("SubCategoryId")).returns(() => false);
       using(createHandler({ activeView: viewMock.object, categories }), (handler) => {
-        expect(handler.isSubCategoryVisible("SubCategoryId")).to.be.false;
+        expect(handler.getSubCategoryVisibility("SubCategoryId")).to.be.eq("hidden");
       });
     });
 
-    it("returns true if subCategory and parent are visible in view", () => {
+    it("returns 'visible' if subCategory and parent are visible in view", () => {
       const viewMock = mockViewport({ viewState: viewStateMock.object });
       viewStateMock.setup((x) => x.viewsCategory("CategoryId")).returns(() => true);
       viewMock.setup((x) => x.isSubCategoryVisible("SubCategoryId")).returns(() => true);
       using(createHandler({ activeView: viewMock.object, categories }), (handler) => {
-        expect(handler.isSubCategoryVisible("SubCategoryId")).to.be.true;
+        expect(handler.getSubCategoryVisibility("SubCategoryId")).to.be.eq("visible");
       });
     });
 
@@ -268,32 +255,38 @@ describe("CategoryVisibilityHandler", () => {
   describe("visibility change callback", () => {
 
     it("calls the callback on `onDisplayStyleChanged` event", async () => {
+      const vpMock = mockViewport();
       const onDisplayStyleChanged = new BeEvent<(vp: Viewport) => void>();
-      const spy = sinon.spy();
-      await using(createHandler({ onVisibilityChange: spy, activeView: mockViewport({ onDisplayStyleChanged }).object }), async (_) => {
-        onDisplayStyleChanged.raiseEvent();
+      await using(createHandler({ activeView: mockViewport({ onDisplayStyleChanged }).object }), async (handler) => {
+        const spy = sinon.spy();
+        handler.onVisibilityChange.addListener(spy);
+        onDisplayStyleChanged.raiseEvent(vpMock.object);
         await new Promise((resolve) => setTimeout(resolve));
         expect(spy).to.be.calledOnce;
       });
     });
 
     it("calls the callback on `onViewedCategoriesChanged` event", async () => {
+      const vpMock = mockViewport();
       const onViewedCategoriesChanged = new BeEvent<(vp: Viewport) => void>();
-      const spy = sinon.spy();
-      await using(createHandler({ onVisibilityChange: spy, activeView: mockViewport({ onViewedCategoriesChanged }).object }), async (_) => {
-        onViewedCategoriesChanged.raiseEvent();
+      await using(createHandler({ activeView: mockViewport({ onViewedCategoriesChanged }).object }), async (handler) => {
+        const spy = sinon.spy();
+        handler.onVisibilityChange.addListener(spy);
+        onViewedCategoriesChanged.raiseEvent(vpMock.object);
         await new Promise((resolve) => setTimeout(resolve));
         expect(spy).to.be.calledOnce;
       });
     });
 
     it("calls the callback only once when multiple events are raised", async () => {
+      const vpMock = mockViewport();
       const onDisplayStyleChanged = new BeEvent<(vp: Viewport) => void>();
       const onViewedCategoriesChanged = new BeEvent<(vp: Viewport) => void>();
-      const spy = sinon.spy();
-      await using(createHandler({ onVisibilityChange: spy, activeView: mockViewport({ onDisplayStyleChanged, onViewedCategoriesChanged }).object }), async (_) => {
-        onViewedCategoriesChanged.raiseEvent();
-        onDisplayStyleChanged.raiseEvent();
+      await using(createHandler({ activeView: mockViewport({ onDisplayStyleChanged, onViewedCategoriesChanged }).object }), async (handler) => {
+        const spy = sinon.spy();
+        handler.onVisibilityChange.addListener(spy);
+        onViewedCategoriesChanged.raiseEvent(vpMock.object);
+        onDisplayStyleChanged.raiseEvent(vpMock.object);
         await new Promise((resolve) => setTimeout(resolve));
         expect(spy).to.be.calledOnce;
       });

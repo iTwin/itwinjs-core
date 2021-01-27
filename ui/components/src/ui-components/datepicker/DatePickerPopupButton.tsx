@@ -116,6 +116,7 @@ export function DatePickerPopupButton({ displayEditField, timeDisplay, selected,
         target={buttonRef.current}
         closeOnEnter={false}
         moveFocus={showFocusOutline}
+        closeOnNestedPopupOutsideClick
       >
         <div className="components-date-picker-calendar-popup-panel" data-testid="components-date-picker-calendar-popup-panel">
           <DatePicker selected={workingDate} onDateChange={handleOnDateChanged} showFocusOutline={showFocusOutline} />

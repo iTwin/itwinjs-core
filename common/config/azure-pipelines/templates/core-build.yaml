@@ -57,8 +57,13 @@ steps:
     displayName: rush audit
     workingDirectory: ${{ parameters.workingDir }}
   - script: node common/scripts/install-run-rush.js build -v -p max
-    displayName: rush build everything else (test-apps and example code)
+    displayName: rush build
     workingDirectory: ${{ parameters.workingDir }}
+    condition: and(succeeded(), not(and(eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Agent.OS'], 'Darwin'))))
+  - script: node common/scripts/install-run-rush.js compile -v -p max
+    displayName: rush build
+    workingDirectory: ${{ parameters.workingDir }}
+    condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Agent.OS'], 'Darwin'))
   - script: node common/scripts/install-run-rush.js lint
     displayName: rush lint
     workingDirectory: ${{ parameters.workingDir }}
@@ -67,7 +72,7 @@ steps:
     workingDirectory: ${{ parameters.workingDir }}
 
   # By default linux agents do not have a real display so use the virtual framebuffer
-  - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' node common/scripts/install-run-rush.js cover --to core-full-stack-tests --verbose
+  - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' node common/scripts/install-run-rush.js cover --verbose
     displayName: rush cover
     workingDirectory: ${{ parameters.workingDir }}
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))

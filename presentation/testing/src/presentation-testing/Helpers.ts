@@ -20,7 +20,6 @@ import { PresentationRpcInterface } from "@bentley/presentation-common";
 import { Presentation as PresentationFrontend, PresentationManagerProps as PresentationFrontendProps } from "@bentley/presentation-frontend";
 
 function initializeRpcInterfaces(interfaces: RpcInterfaceDefinition[]) {
-  // eslint-disable-next-line @typescript-eslint/class-name-casing
   const config = class extends RpcDefaultConfiguration {
     public interfaces: any = () => interfaces;
   };

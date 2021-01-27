@@ -8,7 +8,6 @@
 
 import { GeoServiceStatus, GuidString, Id64, Id64String, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { Angle, AxisIndex, AxisOrder, Constant, Matrix3d, Point3d, Range3d, Range3dProps, Transform, Vector3d, XYAndZ, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@bentley/geometry-core";
-import { UpgradeOptions } from "./BriefcaseTypes";
 import { Cartographic, LatLongAndHeight } from "./geometry/Cartographic";
 import { GeographicCRS, GeographicCRSProps } from "./geometry/CoordinateReferenceSystem";
 import { AxisAlignedBox3d } from "./geometry/Placement";
@@ -78,13 +77,13 @@ export interface IModelProps {
 }
 
 /** Supplies the name of the [EventSource]($frontend) through which the backend pushes notifications to the frontend.
- * @internal
+ * @alpha
  */
 export interface IModelEventSourceProps {
   eventSourceName: string;
 }
 
-/** @internal */
+/** @alpha */
 export type IModelConnectionProps = IModelProps & IModelRpcProps & IModelEventSourceProps;
 
 /** The properties that can be supplied when creating a *new* iModel.
@@ -127,12 +126,14 @@ export interface OpenDbKey {
 export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey {
   /** @internal */
   lazyBlockCache?: boolean;
+  /** @internal */
+  autoUploadBlocks?: boolean;
 }
 
 /** Options that can be supplied when opening an existing StandaloneDb.
  * @beta
  */
-export type StandaloneOpenOptions = OpenDbKey & UpgradeOptions;
+export type StandaloneOpenOptions = OpenDbKey;
 
 /** Options that can be supplied when creating snapshot iModels.
  * @public

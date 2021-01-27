@@ -56,4 +56,4 @@ export function AccuDrawDialog(props: AccuDrawDialogProps) {
       <AccuDrawFieldContainer orientation={Orientation.Vertical} />
     </ModelessDialog >
   );
-};
+}

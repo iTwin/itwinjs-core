@@ -19,6 +19,7 @@ import { ECSqlStatement } from "./ECSqlStatement";
 import { BriefcaseDb, IModelDb } from "./IModelDb";
 import { KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
+import { IModelHost } from "./imodeljs-backend";
 
 const loggerCategory: string = BackendLoggerCategory.ECDb;
 
@@ -120,6 +121,7 @@ export class ChangeSummaryManager {
   /** Detaches the *Change Cache file* from the specified iModel.
    * @param iModel iModel to detach the *Change Cache file* to
    * @throws [IModelError]($common) in case of errors, e.g. if no *Change Cache file* was attached before.
+   * @deprecated This method is not required to be called anymore. The attach change cache will stay around until connection is closed.
    */
   public static detachChangeCache(iModel: IModelDb): void {
     if (!iModel || !iModel.isOpen)
@@ -155,7 +157,7 @@ export class ChangeSummaryManager {
     let startChangeSetId: GuidString = "";
     if (options) {
       if (options.startVersion) {
-        startChangeSetId = await options.startVersion.evaluateChangeSet(requestContext, ctx.iModelId, BriefcaseManager.imodelClient);
+        startChangeSetId = await options.startVersion.evaluateChangeSet(requestContext, ctx.iModelId, IModelHost.iModelClient);
         requestContext.enter();
       } else if (options.currentVersionOnly) {
         startChangeSetId = endChangeSetId;
@@ -167,15 +169,16 @@ export class ChangeSummaryManager {
 
     // download necessary changesets if they were not downloaded before and retrieve infos about those changesets
     let perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Retrieve ChangeSetInfos and download ChangeSets from Hub");
-    const changeSetInfos: ChangeSet[] = await ChangeSummaryManager.downloadChangeSets(requestContext, ctx, startChangeSetId, endChangeSetId);
+    const changeSetInfos = await ChangeSummaryManager.downloadChangeSets(requestContext, ctx, startChangeSetId, endChangeSetId);
     requestContext.enter();
     perfLogger.dispose();
     Logger.logTrace(loggerCategory, "Retrieved changesets to extract from from cache or from hub.", () => ({ iModelId: ctx.iModelId, startChangeSetId, endChangeSetId, changeSets: changeSetInfos }));
 
     // Detach change cache as it's being written to during the extraction
     const isChangeCacheAttached = this.isChangeCacheAttached(iModel);
-    if (isChangeCacheAttached)
-      ChangeSummaryManager.detachChangeCache(iModel);
+    if (isChangeCacheAttached) {
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "There is an attached change cache file. Re-open the connection to detach it.");
+    }
 
     perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Open or create local Change Cache file");
     const changesFile: ECDb = ChangeSummaryManager.openOrCreateChangesFile(iModel);
@@ -268,7 +271,7 @@ export class ChangeSummaryManager {
       const query = new ChangeSetQuery();
       query.byId(startChangeSetId);
 
-      const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.changeSets.get(requestContext, ctx.iModelId, query);
+      const changeSets = await IModelHost.iModelClient.changeSets.get(requestContext, ctx.iModelId, query);
       requestContext.enter();
       if (changeSets.length === 0)
         throw new Error(`Unable to find change set ${startChangeSetId} for iModel ${ctx.iModelId}`);
@@ -278,7 +281,7 @@ export class ChangeSummaryManager {
       beforeStartChangeSetId = !changeSetInfo.parentId ? "" : changeSetInfo.parentId;
     }
 
-    const changeSetInfos: ChangeSet[] = await BriefcaseManager.downloadChangeSets(requestContext, ctx.iModelId, beforeStartChangeSetId, endChangeSetId);
+    const changeSetInfos = await BriefcaseManager.downloadChangeSets(requestContext, ctx.iModelId, beforeStartChangeSetId, endChangeSetId);
     requestContext.enter();
     assert(startChangeSetId.length === 0 || startChangeSetId === changeSetInfos[0].wsgId);
     assert(endChangeSetId === changeSetInfos[changeSetInfos.length - 1].wsgId);

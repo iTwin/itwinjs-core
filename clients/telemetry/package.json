@@ -1,6 +1,6 @@
 {
   "name": "@bentley/telemetry-client",
-  "version": "2.11.0-dev.19",
+  "version": "2.12.0-dev.16",
   "description": "iModel.js Telemetry Client",
   "main": "lib/telemetry-client.js",
   "typings": "lib/telemetry-client",
@@ -18,7 +18,7 @@
     "test": "",
     "extract-api": "betools extract-api --entry=telemetry-client",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/clients/telemetry-client/file.json --tsIndexFile=telemetry-client.ts --onlyJson",
-    "lint": "eslint -f visualstudio ./src/**/*.ts 1>&2"
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2"
   },
   "keywords": [
     "Bentley",
@@ -31,21 +31,22 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "2.11.0-dev.19"
+    "@bentley/bentleyjs-core": "2.12.0-dev.16"
   },
   "peerDependencies": {
-    "@bentley/itwin-client": "^2.11.0-dev.19"
+    "@bentley/itwin-client": "^2.12.0-dev.16"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.11.0-dev.19",
-    "@bentley/certa": "2.11.0-dev.19",
-    "@bentley/config-loader": "2.11.0-dev.19",
-    "@bentley/eslint-plugin": "2.11.0-dev.19",
-    "@bentley/itwin-client": "2.11.0-dev.19",
+    "@bentley/build-tools": "2.12.0-dev.16",
+    "@bentley/certa": "2.12.0-dev.16",
+    "@bentley/config-loader": "2.12.0-dev.16",
+    "@bentley/eslint-plugin": "2.12.0-dev.16",
+    "@bentley/itwin-client": "2.12.0-dev.16",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
     "chai": "^4.1.2",
+    "eslint": "^6.8.0",
     "mocha": "^5.2.0",
     "nyc": "^14.0.0",
     "rimraf": "^3.0.2",

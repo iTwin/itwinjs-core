@@ -4,46 +4,47 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
-import { ElectronRpcConfiguration } from "@bentley/imodeljs-common";
+import { isElectronRenderer } from "@bentley/bentleyjs-core";
 import { EditTool } from "@bentley/imodeljs-editor-frontend";
-import { IModelApp, Viewport } from "@bentley/imodeljs-frontend";
-import { cmdIds, Test1Args, Test1Response } from "../../common/TestEditCommandProps";
+import { IModelApp, SnapshotConnection, Viewport } from "@bentley/imodeljs-frontend";
+import { testCmdIds, TestCmdOjb1, TestCmdResult, TestCommandIpc } from "../../common/TestEditCommandIpc";
 
 const expect = chai.expect;
 const assert = chai.assert;
 
 chai.use(chaiAsPromised);
 
-let testNum: number;
-let testStr: string;
+let iModel: SnapshotConnection;
+let testOut: TestCmdResult;
 const cmdArg = "test command arg";
 let cmdStr: string;
 
 class TestEditTool1 extends EditTool {
   public static toolId = "TestEditTool1";
   public isCompatibleViewport(_vp: Viewport | undefined, _isSelectedViewChange: boolean): boolean { return true; }
+  public static callCommand<T extends keyof TestCommandIpc>(method: T, ...args: Parameters<TestCommandIpc[T]>): ReturnType<TestCommandIpc[T]> {
+    return super.callCommand(method, ...args) as ReturnType<TestCommandIpc[T]>;
+  }
 
-  public async go(cmd: string, args: Test1Args) {
-    const ret = await EditTool.startCommand<string, string>(cmd, cmdArg);
-    cmdStr = ret.result!;
-    const ret2 = await EditTool.callCommand<Test1Args, Test1Response>("testMethod1", args);
-    if (ret2.result) {
-      testNum = ret2.result.outNum;
-      testStr = ret2.result.outStr;
-    }
+  public async go(cmd: string, str1: string, str2: string, obj1: TestCmdOjb1) {
+    cmdStr = await EditTool.startCommand<string>(cmd, iModel.key, cmdArg);
+    testOut = await TestEditTool1.callCommand("testMethod1", str1, str2, obj1);
   }
 }
 
-if (ElectronRpcConfiguration.isElectron) {
+if (isElectronRenderer) {
   describe("EditTools", () => {
 
     before(async () => {
       await IModelApp.startup();
       const testNamespace = IModelApp.i18n.registerNamespace("TestApp");
       IModelApp.tools.register(TestEditTool1, testNamespace);
+      iModel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
+
     });
 
     after(async () => {
+      await iModel.close();
       await IModelApp.shutdown();
     });
 
@@ -51,24 +52,25 @@ if (ElectronRpcConfiguration.isElectron) {
       expect(IModelApp.tools.run("TestEditTool1")).to.be.true;
       const tool = IModelApp.toolAdmin.currentTool as TestEditTool1;
       assert.isTrue(tool instanceof TestEditTool1);
-      const arg: Test1Args = {
-        str1: "abc",
-        str2: "def",
-        obj1: {
-          i1: 10,
-          i2: 20,
-        },
+      const str1 = "abc";
+      const str2 = "def";
+      const obj1 = {
+        i1: 10,
+        i2: 20,
+        buf: Int8Array.from([1, 2, 3, 4, 6]),
       };
 
-      await tool.go(cmdIds.cmd1, arg);
+      await tool.go(testCmdIds.cmd1, str1, str2, obj1);
       assert.equal(cmdStr, `${cmdArg}:1`);
-      assert.equal(testNum, 30);
-      assert.equal(testStr, "abcdef");
+      assert.equal(testOut.num, 30);
+      assert.equal(testOut.str, "abcdef");
+      assert.deepEqual(Array.from(testOut.buf), [1, 2, 3, 4, 6, -22]);
 
-      await tool.go(cmdIds.cmd2, arg);
+      await tool.go(testCmdIds.cmd2, str1, str2, obj1);
       assert.equal(cmdStr, `${cmdArg}:2`);
-      assert.equal(testNum, -10);
-      assert.equal(testStr, "defabc");
+      assert.equal(testOut.num, -10);
+      assert.equal(testOut.str, "defabc");
+      assert.deepEqual(Array.from(testOut.buf), [1, 2, 3, 4, 6, -32]);
     });
 
   });

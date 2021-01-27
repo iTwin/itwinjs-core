@@ -8,7 +8,6 @@ import { Icon, Input, Select } from "@bentley/ui-core";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import { MAP_TYPES } from "./MapUrlDialog";
 
-
 /** @alpha */
 export interface WmsAutenticationInputProps {
   mapType: string;
@@ -18,7 +17,6 @@ export interface WmsAutenticationInputProps {
   setWmsServerPassword: Function;
   setSkipSettingsStorage: Function;
 }
-
 
 /** @alpha */
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -30,7 +28,6 @@ export function WmsAuthenticationInput(props: WmsAutenticationInputProps) {
   const basicLabel = MapLayersUiItemsProvider.i18n.translate("mapLayers:WmsAuthenticationInputs.Basic");
   const passwordLabel = MapLayersUiItemsProvider.i18n.translate("mapLayers:WmsAuthenticationInputs.Password");
   const usernameLabel = MapLayersUiItemsProvider.i18n.translate("mapLayers:WmsAuthenticationInputs.Username");
-
 
   const [authenticationType, setAuthenticationType] = React.useState(noAuthLabel);
   const [invalidProtocol, setInvalidProtocol] = React.useState(true);

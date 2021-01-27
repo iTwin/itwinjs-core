@@ -21,7 +21,7 @@ import { RenderClipVolume } from "./render/RenderClipVolume";
 function interpolate(value0: number, value1: number, fraction: number) {
   return value0 + fraction * (value1 - value0);
 }
-function isNullOrUndefined(value: any) { return value === undefined || value === null; };
+function isNullOrUndefined(value: any) { return value === undefined || value === null; }
 
 /** @internal */
 export namespace RenderScheduleState {
@@ -464,7 +464,7 @@ export namespace RenderScheduleState {
       this.displayStyleId = displayStyleId;
     }
 
-    public static fromJSON(displayStyleId: Id64String, modelTimelines: RenderSchedule.ModelTimelineProps[]): Script | undefined {
+    public static fromJSON(displayStyleId: Id64String, modelTimelines: Readonly<RenderSchedule.ModelTimelineProps[]>): Script | undefined {
       const value = new Script(displayStyleId);
       modelTimelines.forEach((entry) => value.modelTimelines.push(ModelTimeline.fromJSON(entry)));
 

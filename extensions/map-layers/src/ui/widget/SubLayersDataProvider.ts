@@ -7,15 +7,17 @@ import { MapSubLayerProps, SubLayerId } from "@bentley/imodeljs-common";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { DelayLoadedTreeNodeItem, ITreeDataProvider, TreeDataChangesListener, TreeNodeItem } from "@bentley/ui-components";
 import { CheckBoxState } from "@bentley/ui-core";
-import { StyleMapLayerSettings } from "./MapLayerManager";
+import { StyleMapLayerSettings } from "../Interfaces";
 
 /**
  * Data provider that returns some fake nodes to show in tree.
  */
 export class SubLayersDataProvider implements ITreeDataProvider {
   private readonly _nodeMap = new Map<string, TreeNodeItem[]>();
+  private readonly _mapLayer: StyleMapLayerSettings;
 
   constructor(mapLayer: StyleMapLayerSettings) {
+    this._mapLayer = mapLayer;
     this.loadNodes(mapLayer.subLayers);
   }
 
@@ -26,11 +28,9 @@ export class SubLayersDataProvider implements ITreeDataProvider {
     return (!subLayer.name || subLayer.name.length === 0) && (subLayer.children !== undefined && subLayer.children.length > 0);
   }
 
-
   private createId(props: MapSubLayerProps): string {
     return undefined !== props.id ? `${props.id}` : props.name ? props.name : "no-id";
   }
-
 
   private createNode(props: MapSubLayerProps, expanded?: boolean, isCheckboxDisabled?: boolean, icon?: string): DelayLoadedTreeNodeItem {
     return {
@@ -73,7 +73,6 @@ export class SubLayersDataProvider implements ITreeDataProvider {
       this.loadChildNodes(subLayerNodes, undefined);
     }
   }
-
 
   public onTreeNodeChanged = new BeEvent<TreeDataChangesListener>();
 

@@ -8,7 +8,7 @@ import * as faker from "faker";
 import sinon from "sinon";
 import { BeDuration, BeEvent, Logger, using } from "@bentley/bentleyjs-core";
 import { IModelRpcProps } from "@bentley/imodeljs-common";
-import { EventSource, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
+import { EventSource, IModelConnection, NativeApp } from "@bentley/imodeljs-frontend";
 import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
 import {
   Content, ContentDescriptorRequestOptions, ContentRequestOptions, ContentUpdateInfo, Descriptor, DisplayLabelRequestOptions,
@@ -123,14 +123,14 @@ describe("PresentationManager", () => {
     });
 
     it("starts listening to update events", async () => {
-      sinon.stub(IModelApp, "isNativeApp").get(() => true);
+      sinon.stub(NativeApp, "isValid").get(() => true);
       const eventSourceStub = sinon.createStubInstance(EventSource);
       using(PresentationManager.create({ eventSource: (eventSourceStub as unknown as EventSource) }), (_) => { });
       expect(eventSourceStub.on).to.be.calledOnceWith(PresentationRpcInterface.interfaceName, PresentationRpcEvents.Update, sinon.match((arg) => typeof arg === "function"));
     });
 
     it("uses global EventSource if not provided through props", async () => {
-      sinon.stub(IModelApp, "isNativeApp").get(() => true);
+      sinon.stub(NativeApp, "isValid").get(() => true);
       const eventSourceStub = sinon.createStubInstance(EventSource);
       sinon.stub(EventSource, "global").get(() => (eventSourceStub as unknown as EventSource));
 
@@ -151,7 +151,7 @@ describe("PresentationManager", () => {
     });
 
     it("stops listening to update events", async () => {
-      sinon.stub(IModelApp, "isNativeApp").get(() => true);
+      sinon.stub(NativeApp, "isValid").get(() => true);
       const offSpy = sinon.stub();
       const eventSourceStub = sinon.createStubInstance(EventSource);
       eventSourceStub.on.returns(offSpy);
@@ -1351,7 +1351,7 @@ describe("PresentationManager", () => {
     let contentUpdatesSpy: sinon.SinonSpy<[{ ruleset: Ruleset, updateInfo: ContentUpdateInfo }], void>;
 
     beforeEach(() => {
-      sinon.stub(IModelApp, "isNativeApp").get(() => true);
+      sinon.stub(NativeApp, "isValid").get(() => true);
 
       const eventSource = sinon.createStubInstance(EventSource);
       manager = PresentationManager.create({ eventSource: eventSource as unknown as EventSource });

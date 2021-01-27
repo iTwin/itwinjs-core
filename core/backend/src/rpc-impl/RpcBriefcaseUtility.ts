@@ -8,10 +8,10 @@
 
 import { BeDuration, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { BriefcaseQuery } from "@bentley/imodelhub-client";
-import { BriefcaseProps, IModelConnectionProps, IModelError, IModelRpcOpenProps, IModelRpcProps, RpcPendingResponse, SyncMode } from "@bentley/imodeljs-common";
+import { BriefcaseProps, IModelConnectionProps, IModelError, IModelRpcOpenProps, IModelRpcProps, RequestNewBriefcaseProps, RpcPendingResponse, SyncMode } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
-import { BriefcaseManager, RequestNewBriefcaseArg } from "../BriefcaseManager";
+import { BriefcaseManager } from "../BriefcaseManager";
 import { CheckpointProps, V1CheckpointManager } from "../CheckpointManager";
 import { BriefcaseDb, IModelDb, SnapshotDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
@@ -53,8 +53,9 @@ export class RpcBriefcaseUtility {
       for (const briefcaseId of myBriefcaseIds) {
         const fileName = resolver({ briefcaseId, iModelId });
         if (IModelJsFs.existsSync(fileName)) {
-          if (BriefcaseDb.findByFilename(fileName))
-            throw new IModelError(IModelStatus.AlreadyOpen, `briefcase is already open: ${fileName}`);
+          const briefcaseDb = BriefcaseDb.findByFilename(fileName);
+          if (briefcaseDb !== undefined)
+            return briefcaseDb as BriefcaseDb;
           try {
             if (args.forceDownload)
               throw new Error(); // causes delete below
@@ -72,7 +73,7 @@ export class RpcBriefcaseUtility {
     }
 
     // no local briefcase available. Download one and open it.
-    const request: RequestNewBriefcaseArg = {
+    const request: RequestNewBriefcaseProps = {
       contextId: tokenProps.contextId!,
       iModelId,
       briefcaseId: myBriefcaseIds.length > 0 ? myBriefcaseIds[0] : undefined, // if briefcaseId is undefined, we'll acquire a new one.
@@ -80,7 +81,7 @@ export class RpcBriefcaseUtility {
 
     const props = await BriefcaseManager.downloadBriefcase(requestContext, request);
     return BriefcaseDb.open(requestContext, { fileName: props.fileName });
-  };
+  }
 
   private static _briefcasePromise: Promise<BriefcaseDb> | undefined;
   private static async openBriefcase(args: DownloadAndOpenArgs): Promise<BriefcaseDb> {

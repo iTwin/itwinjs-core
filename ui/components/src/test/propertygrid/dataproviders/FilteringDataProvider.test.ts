@@ -162,7 +162,7 @@ describe("FilteringDataProvider", () => {
         const potentialMatch = findRecord(record.getChildrenRecords(), name);
         if (potentialMatch)
           return potentialMatch;
-      };
+      }
 
       return undefined;
     }
@@ -304,7 +304,6 @@ describe("FilteringDataProvider", () => {
 
       mockFilterer.setup(async (x) => x.categoryMatchesFilter(findCategoryFromPropertyData("Cat1-1", originalPropertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: 2, filteredTypes: [FilteredType.Category] }));
       mockFilterer.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
-
 
       const filteringProvider = new FilteringPropertyDataProvider(dataProvider, mockFilterer.object);
 
@@ -464,7 +463,7 @@ describe("FilteringDataProvider", () => {
 
       const filteringProvider = new FilteringPropertyDataProvider(dataProv, mockFilterer.object);
 
-      const filteredData = await filteringProvider.getData();;
+      const filteredData = await filteringProvider.getData();
       const filteredData2 = await filteringProvider.getData();
 
       expect(filteredData === filteredData2).to.be.true;

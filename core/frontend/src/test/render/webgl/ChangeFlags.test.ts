@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ChangeFlag, ChangeFlags } from "../../../Viewport";
+import { ChangeFlag, ChangeFlags } from "../../../ChangeFlags";
 
 describe("ChangeFlags", () => {
   it("should behave as expected", () => {

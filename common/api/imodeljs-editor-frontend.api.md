@@ -4,17 +4,16 @@
 
 ```ts
 
-import { CommandResult } from '@bentley/imodeljs-editor-common';
 import { PrimitiveTool } from '@bentley/imodeljs-frontend';
 
 // @alpha (undocumented)
 export class EditTool extends PrimitiveTool {
     // (undocumented)
-    static callCommand<Arg, Result>(name: string, args?: Arg): Promise<CommandResult<Result>>;
+    static callCommand(methodName: string, ...args: any[]): Promise<any>;
     // (undocumented)
     onRestartTool(): void;
     // (undocumented)
-    static startCommand<Arg, Result>(commandId: string, args?: Arg): Promise<CommandResult<Result>>;
+    static startCommand<T>(commandId: string, iModelKey: string, ...args: any[]): Promise<T>;
 }
 
 

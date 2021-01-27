@@ -12,7 +12,6 @@ import { BingElevationProvider } from "./tile/internal";
 import { ScreenViewport } from "./Viewport";
 import { ViewState3d } from "./ViewState";
 
-
 /** Describes a rectangular area of the earth using cartographic data structures.
  * @alpha
  */
@@ -76,8 +75,10 @@ function _areaToEyeHeight(view3d: ViewState3d, ne?: Point3d, sw?: Point3d, offse
   if (ne === undefined || sw === undefined)
     return 0;
   const diagonal = ne.distance(sw);
+
+  view3d.camera.validateLens();
   const td = Math.tan(view3d.camera.getLensAngle().radians / 2.0);
-  return 0 !== td ? diagonal / td + offset : offset;
+  return 0 !== td ? (diagonal / (2 * td) + offset) : offset;
 }
 
 /** Converts a cartographic area on the globe to an ideal eye height to view that area.
@@ -100,7 +101,6 @@ export async function areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLo
   return _areaToEyeHeight(view3d, ne, sw, offset);
 }
 
-
 /** Converts a root range (often project extents) to a cartographic area.
  * @internal
  */
@@ -122,7 +122,7 @@ export function eyeToCartographicOnGlobe(viewport: ScreenViewport, preserveHeigh
 
   const view3d = viewport.view;
 
-  const eyePointCartographic = view3d.rootToCartographic(view3d.getEyePoint());
+  const eyePointCartographic = view3d.rootToCartographic(view3d.getEyeOrOrthographicViewPoint());
   if (eyePointCartographic !== undefined) {
     if (!preserveHeight)
       eyePointCartographic.height = 0.0;
@@ -142,7 +142,7 @@ export async function eyeToCartographicOnGlobeFromGcs(viewport: ScreenViewport, 
 
   const view3d = viewport.view;
 
-  const eyePointCartographic = await view3d.rootToCartographicFromGcs(view3d.getEyePoint());
+  const eyePointCartographic = await view3d.rootToCartographicFromGcs(view3d.getEyeOrOrthographicViewPoint());
   if (eyePointCartographic !== undefined) {
     if (!preserveHeight)
       eyePointCartographic.height = 0.0;
@@ -156,11 +156,6 @@ export async function eyeToCartographicOnGlobeFromGcs(viewport: ScreenViewport, 
 export function viewGlobalLocation(viewport: ScreenViewport, doAnimate: boolean, eyeHeight = ViewGlobalLocationConstants.birdHeightAboveEarthInMeters, pitchAngleRadians = 0, location?: GlobalLocation): number {
   if (!(viewport.view instanceof ViewState3d))
     return 0;
-
-  if (!viewport.isCameraOn) {
-    viewport.turnCameraOn();
-    viewport.setupFromView();
-  }
 
   const before = viewport.getFrustum();
   const view3d = viewport.view;

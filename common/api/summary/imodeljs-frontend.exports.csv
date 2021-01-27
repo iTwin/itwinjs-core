@@ -61,6 +61,7 @@ beta;BlankConnectionProps
 public;class BriefcaseConnection 
 internal;CachedDecoration =
 internal;CachedIModelCoordinatesResponseProps
+internal;calculateEcefToDbTransformAtLocation(originIn: Point3d, iModel: IModelConnection): Promise
 public;CanvasDecoration
 public;CanvasDecorationList = CanvasDecoration[]
 public;canvasToImageBuffer(canvas: HTMLCanvasElement, format?: ImageBufferFormat): ImageBuffer | undefined
@@ -104,7 +105,7 @@ internal;DevTools
 public;DisplayStyle2dState 
 public;DisplayStyle3dState 
 public;class DisplayStyleState 
-internal;DownloadBriefcaseOptions
+alpha;DownloadBriefcaseOptions
 alpha;DrawClipOptions
 public;DrawingModelState 
 public;DrawingViewState 
@@ -113,6 +114,7 @@ public;DynamicsContext
 alpha;EditingFunctions
 alpha;EditingFunctions
 alpha;EditManipulator
+internal;ELEMENT_MARKED_FOR_REMOVAL: unique symbol
 internal;ElementAgenda
 alpha;ElementEditor3d
 public;ElementLocateManager
@@ -156,7 +158,11 @@ alpha;findAvailableUnattachedRealityModels(contextId: GuidString, iModel?: IMode
 public;FitViewTool 
 internal;Flags
 public;FlyViewTool 
+internal;FormatPropsByUnitSystem = Map
 beta;class FormattedQuantityDescription 
+alpha;FormatterParserSpecsProvider
+internal;FormatterSpecByQuantityType = Map
+alpha;FormattingUnitSystemChangedArgs
 internal;FrameBeforeRenderData
 internal;FrameCameraFrustumData
 internal;FrameCameraViewData
@@ -165,6 +171,7 @@ public;FrontendLoggerCategory
 public;FrontendRequestContext 
 public;FrontendSecurityOptions
 public;Frustum2d
+internal;FrustumAnimator 
 public;FuzzySearch
 public;FuzzySearchResult
 public;FuzzySearchResults
@@ -177,13 +184,14 @@ internal;GeoServices
 beta;getCenteredViewRect(viewRect: ViewRect, aspectRatio?: number): ViewRect
 beta;getCesiumAssetUrl(osmAssetId: number, requestKey: string): string
 internal;getCesiumOSMBuildingsUrl(): string
-internal;getCesiumTerrainProvider(iModel: IModelConnection, modelId: Id64String, wantSkirts: boolean, exaggeration: number): Promise
+internal;getCesiumTerrainProvider(iModel: IModelConnection, modelId: Id64String, wantSkirts: boolean, wantNormals: boolean, exaggeration: number): Promise
 beta;getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes?: number, minCompressionQuality?: number): string | undefined
 internal;getGcsConverterAvailable(iModel: IModelConnection): Promise
 public;getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined
 public;getImageSourceMimeType(format: ImageSourceFormat): string
 alpha;GlobalLocation
 alpha;GlobalLocationArea
+internal;GlobeAnimator 
 internal;class GltfReader
 internal;GltfReaderProps
 internal;GltfReaderResult 
@@ -251,7 +259,7 @@ internal;KeyinStatus
 beta;LengthDescription 
 internal;linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void
 internal;LoadedExtensionProps
-internal;LocalBriefcaseConnection 
+alpha;LocalBriefcaseConnection 
 public;LocateAction
 public;LocateFilterStatus
 public;LocateOptions
@@ -302,11 +310,11 @@ alpha;MobileAuthorizationClient
 internal;MockRender
 internal;ModalOptions
 internal;ModalReturn
-internal;ModelDisplayTransformProvider
+alpha;ModelDisplayTransformProvider
 public;ModelSelectorState 
 public;ModelState 
 internal;ModifyElementSource
-internal;NativeApp
+alpha;NativeApp 
 internal;NativeAppLogger
 internal;NoRenderApp
 public;NotificationManager
@@ -332,6 +340,10 @@ beta;ParseAndRunResult
 beta;ParsedKeyin
 beta;ParseKeyinError
 beta;ParseKeyinResult = ParsedKeyin | ParseKeyinError
+beta;ParticleCollectionBuilder
+beta;ParticleCollectionBuilder
+beta;ParticleCollectionBuilderParams
+beta;ParticleProps 
 beta;PendingExtension
 internal;PerformanceMetrics
 beta;PerModelCategoryVisibility
@@ -343,8 +355,10 @@ internal;PlanarTilePatch
 public;class PrimitiveTool 
 alpha;PrimitiveVisibility
 internal;QuadId
+alpha;QuantityFormatsChangedArgs
 alpha;QuantityFormatter 
 beta;QuantityType
+alpha;QuantityTypeArg = QuantityType | string
 internal;queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise
 internal;rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined
 internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined
@@ -387,8 +401,13 @@ internal;SavedState
 beta;Scene
 beta;SceneContext 
 internal;SceneVolumeClassifier
+beta;ScreenSpaceEffectBuilder
+beta;ScreenSpaceEffectBuilderParams
+beta;ScreenSpaceEffectContext
+beta;ScreenSpaceEffectSource
 public;ScreenViewport 
 public;ScrollViewTool 
+internal;SectionDrawingInfo
 public;SectionDrawingModelState 
 public;SelectAddEvent
 internal;SelectedAndReadyTiles
@@ -434,7 +453,7 @@ public;StandardView
 public;StandardViewId
 public;StandardViewTool 
 public;StartOrResume
-internal;Storage
+alpha;Storage
 internal;SubCategoriesCache
 internal;SubCategoriesCache
 internal;SubCategoriesRequest
@@ -443,6 +462,7 @@ internal;SuspendedToolState
 internal;class Target 
 internal;TentativeOrAccuSnap
 public;TentativePoint
+internal;TerrainDisplayOverrides
 internal;class TerrainMeshProvider
 internal;TerrainTexture
 internal;TerrainTileContent 
@@ -502,10 +522,17 @@ internal;TraversalDetails
 internal;TraversalSelectionContext
 public;tryImageElementFromUrl(url: string): Promise
 beta;TwoWayViewportSync
+beta;Uniform
+beta;UniformArrayParams 
+beta;UniformContext
+beta;UniformParams
+beta;UniformType
+alpha;UnitSystemKey = "metric" | "imperial" | "usCustomary" | "usSurvey"
 internal;UpsampledMapTile 
 internal;UsesDragSelect
 internal;UsesFence
 internal;UsesSelection
+beta;VaryingType
 public;ViewAnimationOptions
 public;ViewChangeOptions 
 alpha;ViewClipByElementTool 
@@ -560,5 +587,7 @@ public;WindowAreaTool
 internal;WmsCapabilities
 internal;WmsCapability
 internal;WmsUtilities
+internal;WmtsCapabilities
+internal;WmtsCapability
 public;ZoomToOptions
 public;ZoomViewTool 

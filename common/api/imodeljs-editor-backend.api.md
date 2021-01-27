@@ -4,25 +4,28 @@
 
 ```ts
 
-import { CommandMethodProps } from '@bentley/imodeljs-editor-common';
-import { CommandResult } from '@bentley/imodeljs-editor-common';
-import { PingResult } from '@bentley/imodeljs-editor-common';
-import { StartCommandProps } from '@bentley/imodeljs-editor-common';
+import { EditCommandIpc } from '@bentley/imodeljs-editor-common';
+import { IModelDb } from '@bentley/imodeljs-backend';
 
 // @alpha
-export class EditCommand {
-    constructor(_arg?: any);
+export class EditCommand implements EditCommandIpc {
+    constructor(iModel: IModelDb, ..._args: any[]);
     static commandId: string;
     // (undocumented)
-    get ctor(): typeof EditCommand;
+    get ctor(): EditCommandType;
+    readonly iModel: IModelDb;
     // (undocumented)
     onCleanup(): void;
     // (undocumented)
     onFinish(): void;
     // (undocumented)
-    onPing(): CommandResult<PingResult>;
+    onStart(): Promise<any>;
     // (undocumented)
-    onStart(): CommandResult<any>;
+    ping(): Promise<{
+        commandId: string;
+        version: string;
+        [propName: string]: any;
+    }>;
     // (undocumented)
     static version: string;
 }
@@ -30,15 +33,13 @@ export class EditCommand {
 // @alpha
 export class EditCommandAdmin {
     // (undocumented)
-    static callMethod(method: CommandMethodProps<any>): CommandResult<any>;
+    static get activeCommand(): EditCommand | undefined;
     // (undocumented)
     static readonly commands: Map<string, typeof EditCommand>;
     static register(commandType: EditCommandType): void;
     static registerModule(moduleObj: any): void;
     // (undocumented)
-    static runCommand(cmd?: EditCommand): CommandResult<any>;
-    // (undocumented)
-    static startCommand(props: StartCommandProps<any>): CommandResult<any>;
+    static runCommand(cmd?: EditCommand): Promise<any> | undefined;
     static unRegister(commandId: string): void;
 }
 
