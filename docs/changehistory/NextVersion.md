@@ -15,7 +15,7 @@ For cases where a frontend and backend are explicitly paired (e.g. desktop and m
 
 Previously, all texture image data was embedded directly within iModel tiles. Now, when enabled, texture image data will be requested separate of the tile contents when the image data is considered large enough by the backend. This can reduce bandwidth and reduce memory consumption on the frontend.
 
-To enable usage of external textures, set the `enableExternalTextures` property of [TileAdmin.Props]($frontend) to true when passed in to [TileAdmin.create]($frontend). This [TileAdmins.Props[($frontend) object should be passed in to [IModelApp.startup]($frontend).
+To enable usage of external textures, set the `enableExternalTextures` property of [TileAdmin.Props]($frontend) to true when passed in to [TileAdmin.create]($frontend). This [TileAdmins.Props]($frontend) object should be passed in to [IModelApp.startup]($frontend).
 
 ## Breaking API Changes
 
