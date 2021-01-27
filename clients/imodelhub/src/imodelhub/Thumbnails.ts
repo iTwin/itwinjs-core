@@ -104,7 +104,7 @@ export class ThumbnailHandler {
   }
 
   /** Check if given thumbnail is TipThumbnail.
-   * @param thumbnail SmallThumbnail, LargeThumbnail or TipThumbnail.s
+   * @param thumbnail SmallThumbnail, LargeThumbnail or TipThumbnail.
    */
   private isTipThumbnail(thumbnail: Thumbnail | TipThumbnail): thumbnail is TipThumbnail {
     return (thumbnail as TipThumbnail).contextId !== undefined;

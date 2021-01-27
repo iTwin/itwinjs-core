@@ -803,9 +803,9 @@ export class IModelHubClientError extends IModelHubError {
     static undefinedArgument(argumentName: string): IModelHubClientError;
 }
 
-// @internal
+// @public
 export enum IModelHubClientLoggerCategory {
-    // (undocumented)
+    // @internal (undocumented)
     IModelBank = "imodelhub-client.iModelBank",
     IModelHub = "imodelhub-client.iModelHub"
 }

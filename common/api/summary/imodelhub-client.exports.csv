@@ -79,7 +79,7 @@ internal;IModelFileSystemContextProps
 beta;IModelHandler
 public;IModelHubClient 
 public;IModelHubClientError 
-internal;IModelHubClientLoggerCategory
+public;IModelHubClientLoggerCategory
 public;IModelHubError 
 public;class IModelHubEvent 
 public;IModelHubEventType
