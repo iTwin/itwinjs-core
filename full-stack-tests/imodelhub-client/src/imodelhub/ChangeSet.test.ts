@@ -465,11 +465,7 @@ describe("iModelHub ChangeSetHandler", () => {
       new ChangeSetQuery().betweenChangeSets(changeSets[0].id!, changeSets[2].id));
     chai.expect(selectedChangeSets.length).to.be.equal(2);
     chai.expect(selectedChangeSets[0].id).to.be.equal(changeSets[1].id);
-    // eslint-disable-next-line deprecation/deprecation
-    chai.expect(selectedChangeSets[0].seedFileId!.toString()).to.be.equal(changeSets[1].seedFileId!.toString());
     chai.expect(selectedChangeSets[1].id).to.be.equal(changeSets[2].id);
-    // eslint-disable-next-line deprecation/deprecation
-    chai.expect(selectedChangeSets[1].seedFileId!.toString()).to.be.equal(changeSets[2].seedFileId!.toString());
   });
 
   it("should query between changeset (#iModelBank)", async () => {
@@ -491,14 +487,8 @@ describe("iModelHub ChangeSetHandler", () => {
       new ChangeSetQuery().betweenChangeSets(changeSets[2].id!));
     chai.expect(selectedChangeSets.length).to.be.equal(3);
     chai.expect(selectedChangeSets[0].id).to.be.equal(changeSets[0].id);
-    // eslint-disable-next-line deprecation/deprecation
-    chai.expect(selectedChangeSets[0].seedFileId!.toString()).to.be.equal(changeSets[0].seedFileId!.toString());
     chai.expect(selectedChangeSets[1].id).to.be.equal(changeSets[1].id);
-    // eslint-disable-next-line deprecation/deprecation
-    chai.expect(selectedChangeSets[1].seedFileId!.toString()).to.be.equal(changeSets[1].seedFileId!.toString());
     chai.expect(selectedChangeSets[2].id).to.be.equal(changeSets[2].id);
-    // eslint-disable-next-line deprecation/deprecation
-    chai.expect(selectedChangeSets[2].seedFileId!.toString()).to.be.equal(changeSets[2].seedFileId!.toString());
   });
 
   it("should get version changesets (#iModelBank)", async () => {
@@ -526,8 +516,6 @@ describe("iModelHub ChangeSetHandler", () => {
       new ChangeSetQuery().getVersionChangeSets(versions[versions.length - 1].id!));
     chai.expect(selectedChangeSets.length).to.be.equal(1);
     chai.expect(selectedChangeSets[0].id).to.be.equal(changeSets[0].id);
-    // eslint-disable-next-line deprecation/deprecation
-    chai.expect(selectedChangeSets[0].seedFileId!.toString()).to.be.equal(changeSets[0].seedFileId!.toString());
   });
 
   it("should get changesets after version (#iModelBank)", async () => {
@@ -555,8 +543,6 @@ describe("iModelHub ChangeSetHandler", () => {
       new ChangeSetQuery().afterVersion(versions[versions.length - 2].id!));
     chai.expect(selectedChangeSets.length).to.be.greaterThan(1);
     chai.expect(selectedChangeSets[0].id).to.be.equal(changeSets[2].id);
-    // eslint-disable-next-line deprecation/deprecation
-    chai.expect(selectedChangeSets[0].seedFileId!.toString()).to.be.equal(changeSets[2].seedFileId!.toString());
   });
 
   it("should query changesets between versions (#iModelBank)", async () => {
@@ -588,11 +574,7 @@ describe("iModelHub ChangeSetHandler", () => {
       new ChangeSetQuery().betweenVersions(versions[0].id!, versions[2].id!));
     chai.expect(selectedChangeSets.length).to.be.equal(2);
     chai.expect(selectedChangeSets[0].id).to.be.equal(changeSets[1].id);
-    // eslint-disable-next-line deprecation/deprecation
-    chai.expect(selectedChangeSets[0].seedFileId!.toString()).to.be.equal(changeSets[1].seedFileId!.toString());
     chai.expect(selectedChangeSets[1].id).to.be.equal(changeSets[2].id);
-    // eslint-disable-next-line deprecation/deprecation
-    chai.expect(selectedChangeSets[1].seedFileId!.toString()).to.be.equal(changeSets[2].seedFileId!.toString());
   });
 
   it("should query changesets between version and changeset (#iModelBank)", async () => {
@@ -625,34 +607,6 @@ describe("iModelHub ChangeSetHandler", () => {
       new ChangeSetQuery().betweenVersionAndChangeSet(versions[versions.length - 1].id!, changeSets[1].id!));
     chai.expect(selectedChangeSets.length).to.be.equal(1);
     chai.expect(selectedChangeSets[0].id).to.be.equal(changeSets[1].id);
-    // eslint-disable-next-line deprecation/deprecation
-    chai.expect(selectedChangeSets[0].seedFileId!.toString()).to.be.equal(changeSets[1].seedFileId!.toString());
-  });
-
-  it("should query changesets by seed file id (#iModelBank)", async () => {
-    if (TestConfig.enableMocks) {
-      const mockedChangeSets = utils.getMockChangeSets(briefcase).slice(0, 3);
-      utils.mockGetChangeSet(imodelId, true, `&$top=${ChangeSetQuery.defaultPageSize}`, ...mockedChangeSets);
-
-      // eslint-disable-next-line deprecation/deprecation
-      const filter = `SeedFileId+eq+%27${mockedChangeSets[0].seedFileId!}%27`;
-
-      const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "ChangeSet",
-        `?$filter=${filter}&$top=${ChangeSetQuery.defaultPageSize}`);
-      ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath,
-        ResponseBuilder.generateGetResponse(mockedChangeSets[0]));
-    }
-    const changeSets: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().selectDownloadUrl());
-    chai.expect(changeSets.length).to.be.greaterThan(0);
-
-    const selectedChangeSets: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId,
-      // eslint-disable-next-line deprecation/deprecation
-      new ChangeSetQuery().bySeedFileId(changeSets[0].seedFileId!));
-    chai.expect(selectedChangeSets.length).to.be.greaterThan(0);
-    selectedChangeSets.forEach((cs: ChangeSet) => {
-      // eslint-disable-next-line deprecation/deprecation
-      chai.expect(cs.seedFileId!.toString()).to.be.equal(changeSets[0].seedFileId!.toString());
-    });
   });
 
   it("should query changesets application data", async () => {
