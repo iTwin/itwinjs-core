@@ -538,9 +538,11 @@ export class ExternalTextureLoader { /* currently exported for tests only */
 
   private async _nextRequest(prevReq: ExternalTextureRequest) {
     this._activeRequests.splice(this._activeRequests.indexOf(prevReq), 1);
+    this._debugPrint();
     if (this._activeRequests.length < this._maxActiveRequests && this._pendingRequests.length > 0) {
       const req = this._pendingRequests.shift()!;
       await this._activateRequest(req);
+      this._debugPrint();
     }
   }
 
@@ -549,6 +551,7 @@ export class ExternalTextureLoader { /* currently exported for tests only */
       return;
 
     this._activeRequests.push(req);
+    this._debugPrint();
 
     try {
       if (!req.imodel.isClosed) {
@@ -557,6 +560,7 @@ export class ExternalTextureLoader { /* currently exported for tests only */
           const imageSource = new ImageSource(texBytes, req.format);
           const image = await imageElementFromImageSource(imageSource);
           if (!req.imodel.isClosed) {
+            console.log("texBytes.byteLength = " + texBytes.byteLength);
             req.handle.reload(Texture2DCreateParams.createForImage(image, ImageSourceFormat.Png === req.format, req.type));
             IModelApp.tileAdmin.invalidateAllScenes();
             if (undefined !== req.onLoaded)
@@ -581,14 +585,19 @@ export class ExternalTextureLoader { /* currently exported for tests only */
     return false;
   }
 
+  private _debugPrint() {
+    console.log(`activeRequests = ${this.numActiveRequests}, pendingRequests = ${this.numPendingRequests}`); // eslint-disable-line no-console
+  }
+
   public loadTexture(handle: Texture2DHandle, name: Id64String, imodel: IModelConnection, type: RenderTexture.Type, format: ImageSourceFormat, onLoaded?: (req: ExternalTextureRequest) => void) {
     const req = { handle, name, imodel, type, format, onLoaded };
     if (this._requestExists(req))
       return;
 
-    if (this._activeRequests.length + 1 > this._maxActiveRequests)
+    if (this._activeRequests.length + 1 > this._maxActiveRequests) {
       this._pendingRequests.push(req);
-    else
+      this._debugPrint();
+    } else
       this._activateRequest(req); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 }

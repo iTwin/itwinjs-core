@@ -375,7 +375,7 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      */
     ignoreAreaPatterns?: boolean;
 
-    /** If true, during tile generation the backend will not embed texture image data in the tile content. Instead, the frontend will request texture data separately from the backend. This can help reduce the amount of memory consumed by the frontend and the amount of data sent to the frontend.
+    /** If true, during tile generation the backend will not embed all texture image data in the tile content. If texture image data is considered large enough by the backend, it will not be embedded in the tile content and the frontend will request that element texture data separately from the backend. This can help reduce the amount of memory consumed by the frontend and the amount of data sent to the frontend.
      *
      * Default value: false
      */

@@ -9,7 +9,7 @@ import { ExternalTextureLoader, ExternalTextureRequest, GL, Texture2DHandle } fr
 import { TestUtility } from "./TestUtility";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 
-describe("external texture requests", () => {
+describe.only("external texture requests (#integration)", () => {
   const projectName = "iModelJsIntegrationTest";
   let imodel: IModelConnection;
   const texNames = [
