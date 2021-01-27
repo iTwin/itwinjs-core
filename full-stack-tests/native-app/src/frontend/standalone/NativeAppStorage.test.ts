@@ -5,15 +5,16 @@
 import { assert } from "chai";
 import { NativeApp } from "@bentley/imodeljs-frontend";
 import { TestUtility } from "../hub/TestUtility";
+import { ElectronApp } from "@bentley/electron-manager/lib/ElectronApp";
 
 describe("NativeApp Storage frontend", () => {
   before(async () => {
-    await NativeApp.startup();
+    await ElectronApp.startup();
     await TestUtility.purgeStorageCache();
   });
 
   after(async () => {
-    await NativeApp.shutdown();
+    await ElectronApp.shutdown();
   });
 
   it("Primitive Type ", async () => {

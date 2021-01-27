@@ -120,7 +120,7 @@
     },
     {
       "name": "@bentley/imodeljs-frontend",
-      "allowedCategories": [ "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "@bentley/imodeljs-i18n",

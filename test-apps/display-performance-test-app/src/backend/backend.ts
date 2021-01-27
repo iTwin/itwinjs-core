@@ -5,7 +5,7 @@
 import "./DisplayPerfRpcImpl"; // just to get the RPC implementation registered
 import { Config } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
+import { IModelHost } from "@bentley/imodeljs-backend";
 import { IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@bentley/imodeljs-common";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 
@@ -17,6 +17,5 @@ export async function initializeBackend() {
   IModelJsConfig.init(true /* suppress exception */, true /* suppress error message */, Config.App);
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
 
-  const hostConfig = new IModelHostConfiguration();
-  await IModelHost.startup(hostConfig);
+  await IModelHost.startup();
 }

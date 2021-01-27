@@ -9,7 +9,7 @@ import { IModelJsExpressServer } from "@bentley/express-server";
 import { IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
 import { BackendLoggerCategory, IModelHostConfiguration, NativeHost, NativeLoggerCategory } from "@bentley/imodeljs-backend";
 import { BentleyCloudRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
-import { ElectronBackend } from "@bentley/electron-manager/lib/ElectronBackend";
+import { ElectronHost } from "@bentley/electron-manager/lib/ElectronHost";
 import { ITwinClientLoggerCategory } from "@bentley/itwin-client";
 // Sets up certa to allow a method on the frontend to get an access token
 import "@bentley/oidc-signin-tool/lib/certa/certaBackend";
@@ -47,28 +47,12 @@ async function init() {
   // Bootstrap the cloud environment
   await CloudEnv.initialize();
 
-  if (isElectronMain) {
-    ElectronBackend.initialize({ rpcInterfaces });
-  } else {
-    const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "full-stack-test", version: "v1.0" } }, rpcInterfaces);
-
-    // create a basic express web server
-    const port = Number(process.env.CERTA_PORT || 3011) + 2000;
-    const server = new IModelJsExpressServer(rpcConfig.protocol);
-    await server.initialize(port);
-    console.log(`Web backend for full-stack-tests listening on port ${port}`);
-  }
-
   // Start the backend
-  const hostConfig = new IModelHostConfiguration();
-  hostConfig.imodelClient = CloudEnv.cloudEnv.imodelClient;
-  hostConfig.concurrentQuery.concurrent = 2;
-  hostConfig.concurrentQuery.pollInterval = 5;
-  hostConfig.cacheDir = path.join(__dirname, "out");
-  await NativeHost.startup(hostConfig);
-
-  Logger.initializeToConsole();
-  // setupDebugLogLevels();
+  const config = new IModelHostConfiguration();
+  config.imodelClient = CloudEnv.cloudEnv.imodelClient;
+  config.concurrentQuery.concurrent = 2;
+  config.concurrentQuery.pollInterval = 5;
+  config.cacheDir = path.join(__dirname, "out");
+  await ElectronHost.startup({ electronHost: { rpcInterfaces }, config });
 }
-
 module.exports = init();

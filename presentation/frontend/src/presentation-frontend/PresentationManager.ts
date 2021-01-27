@@ -7,7 +7,6 @@
  */
 
 import { BeEvent, IDisposable, Logger } from "@bentley/bentleyjs-core";
-import { FrontendIpc } from "@bentley/imodeljs-common";
 import { IModelConnection, IpcApp } from "@bentley/imodeljs-frontend";
 import {
   Content, ContentDescriptorRequestOptions, ContentRequestOptions, ContentUpdateInfo, Descriptor, DescriptorOverrides, DisplayLabelRequestOptions,
@@ -132,7 +131,7 @@ export class PresentationManager implements IDisposable {
 
     if (IpcApp.isValid) {
       // Ipc only works in ipc apps, so the `onUpdate` callback will only be called there.
-      this._clearEventListener = FrontendIpc.addListener(PresentationIpcEvents.Update, this.onUpdate);
+      this._clearEventListener = IpcApp.addListener(PresentationIpcEvents.Update, this.onUpdate);
     }
   }
 

@@ -7,25 +7,24 @@
  */
 
 import * as path from "path";
-import { BeEvent, BentleyError, BentleyStatus, ClientRequestContext, Config, GuidString, Logger } from "@bentley/bentleyjs-core";
+import { BeEvent, ClientRequestContext, Config, GuidString } from "@bentley/bentleyjs-core";
 import {
-  BackendIpc, BriefcaseProps, InternetConnectivityStatus, IpcHandler, LocalBriefcaseProps, MobileAuthorizationClientConfiguration,
-  MobileRpcConfiguration, nativeAppChannel, NativeAppFunctions, NativeAppNotifications, nativeAppNotify, OverriddenBy, RequestNewBriefcaseProps, StorageValue,
+  BriefcaseProps, InternetConnectivityStatus, LocalBriefcaseProps, MobileAuthorizationClientConfiguration,
+  MobileRpcConfiguration, nativeAppChannel, NativeAppFunctions, NativeAppNotifications, nativeAppNotify, OverriddenBy, RequestNewBriefcaseProps,
+  StorageValue,
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, RequestGlobalOptions } from "@bentley/itwin-client";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { Downloads } from "./CheckpointManager";
-import { NativeAppStorage } from "./NativeAppStorage";
-import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ApplicationType, IModelHost, IModelHostConfiguration } from "./IModelHost";
-import { IpcHost } from "./IpcHost";
+import { IpcHost, IpcHandler, IpcHostOptions } from "./IpcHost";
 import { initialize, MobileDevice } from "./MobileDevice";
+import { NativeAppStorage } from "./NativeAppStorage";
 
-const loggerCategory = BackendLoggerCategory.NativeApp;
 initialize();
 
 /**
- * Implementation for backend of NativeAppIpc
+ * Implementation of NativeAppFunctions
  * @internal
  */
 class NativeAppImpl extends IpcHandler implements NativeAppFunctions {
@@ -61,7 +60,7 @@ class NativeAppImpl extends IpcHandler implements NativeAppFunctions {
 
     if (reportProgress) {
       args.onProgress = (loaded, total) => {
-        BackendIpc.send(`nativeApp.progress-${request.iModelId}`, { loaded, total });
+        IpcHost.send(`nativeApp.progress-${request.iModelId}`, { loaded, total });
         return checkAbort();
       };
     }
@@ -175,7 +174,7 @@ export class NativeHost {
   }
 
   public static notifyNativeFrontend<T extends keyof NativeAppNotifications>(methodName: T, ...args: Parameters<NativeAppNotifications[T]>) {
-    return BackendIpc.send(nativeAppNotify, methodName, ...args);
+    return IpcHost.send(nativeAppNotify, methodName, ...args);
   }
 
   private static _isValid = false;
@@ -186,27 +185,29 @@ export class NativeHost {
    * @param configuration
    * @note this method calls [[IModelHost.startup]] internally.
    */
-  public static async startup(configuration: IModelHostConfiguration = new IModelHostConfiguration()): Promise<void> {
+  public static async startup(opt?: { ipc?: IpcHostOptions, config?: IModelHostConfiguration }): Promise<void> {
+    if (this._isValid)
+      return;
+    this._isValid = true;
     this.onInternetConnectivityChanged.addListener((status: InternetConnectivityStatus) => NativeHost.notifyNativeFrontend("notifyInternetConnectivityChanged", status));
 
-    /** Override applicationType to NativeApp */
-    configuration.applicationType = ApplicationType.NativeApp;
     if (MobileRpcConfiguration.isMobileBackend) {
       MobileDevice.currentDevice.onUserStateChanged.addListener((accessToken?: string, err?: string) => {
         const accessTokenObj = accessToken ? JSON.parse(accessToken) : {};
         NativeHost.notifyNativeFrontend("notifyUserStateChanged", { accessToken: accessTokenObj, err });
       });
     }
-    await IpcHost.startup(configuration);
-    if (BackendIpc.isValid) // for tests, we use NativeHost but don't have a frontend
+    await IpcHost.startup(opt);
+    if (IpcHost.isValid) // for tests, we use NativeHost but don't have a frontend
       NativeAppImpl.register();
-    this._isValid = true;
   }
 
   /**
    * Shutdown native app backend. Also calls IpcAppHost.shutdown()
    */
   public static async shutdown(): Promise<void> {
+    if (!this._isValid)
+      return;
     this._isValid = false;
     this.onInternetConnectivityChanged.clear();
     await IpcHost.shutdown();

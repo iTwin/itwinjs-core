@@ -7,8 +7,7 @@
  */
 
 import { IModelStatus } from "@bentley/bentleyjs-core";
-import { IModelDb } from "@bentley/imodeljs-backend";
-import { BackendIpc, IpcHandler } from "@bentley/imodeljs-common";
+import { IModelDb, IpcHandler, IpcHost } from "@bentley/imodeljs-backend";
 import { IModelError } from "@bentley/imodeljs-common/lib/IModelError";
 import { EditCommandIpc, editorChannel, EditorIpc } from "@bentley/imodeljs-editor-common";
 
@@ -103,8 +102,8 @@ export class EditCommandAdmin {
   public static register(commandType: EditCommandType) {
     if (!this._isInitialized) {
       this._isInitialized = true;
-      if (!BackendIpc.isValid)
-        throw new Error("Edit Commands require Ipc");
+      if (!IpcHost.isValid)
+        throw new Error("Edit Commands require IpcHost");
       EditorAppImpl.register();
     }
     if (commandType.commandId.length !== 0)

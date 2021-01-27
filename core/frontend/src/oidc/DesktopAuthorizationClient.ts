@@ -10,10 +10,11 @@
 import { assert, BeEvent, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import {
-  defaultDesktopAuthorizationClientExpiryBuffer, DesktopAuthorizationClientConfiguration, DesktopAuthorizationClientMessages, FrontendIpc, IpcListener,
+  defaultDesktopAuthorizationClientExpiryBuffer, DesktopAuthorizationClientConfiguration, DesktopAuthorizationClientMessages, IpcListener,
 } from "@bentley/imodeljs-common";
 import { AccessToken } from "@bentley/itwin-client";
 import { FrontendRequestContext } from "../FrontendRequestContext";
+import { IpcApp } from "../IpcApp";
 
 /**
  * Ipc Wrapper around DesktopAuthorizationClient for use in the electron render process
@@ -33,7 +34,7 @@ export class DesktopAuthorizationClient implements FrontendAuthorizationClient {
   /** Creates a new DesktopAuthorizationClient to be used in the electron render process */
   public constructor(clientConfiguration: DesktopAuthorizationClientConfiguration) {
     this._clientConfiguration = clientConfiguration;
-    if (!FrontendIpc.isValid)
+    if (!IpcApp.isValid)
       throw new Error("This code should only be run in the electron renderer process");
   }
 
@@ -46,12 +47,12 @@ export class DesktopAuthorizationClient implements FrontendAuthorizationClient {
 
   /** Wrapper around ipc.send to add log traces */
   private ipcSend(channel: string, ...args: any[]) {
-    FrontendIpc.send(channel, ...args);
+    IpcApp.send(channel, ...args);
   }
 
   /** Wrapper around ipc.on to add log traces */
   private ipcOn(channel: string, fn: IpcListener) {
-    FrontendIpc.addListener(channel, fn);
+    IpcApp.addListener(channel, fn);
   }
 
   /** Used to initialize the client - must be awaited before any other methods are called */

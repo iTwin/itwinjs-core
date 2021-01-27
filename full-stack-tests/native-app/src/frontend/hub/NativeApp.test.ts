@@ -11,6 +11,7 @@ import { TestFrontendAuthorizationClient, TestUsers } from "@bentley/oidc-signin
 import { usingOfflineScope } from "./HttpRequestHook";
 import { TestChangeSetUtility } from "./TestChangeSetUtility";
 import { TestUtility } from "./TestUtility";
+import { ElectronApp } from "@bentley/electron-manager/lib/ElectronApp";
 
 describe("NativeApp (#integration)", () => {
   let testProjectName: string;
@@ -19,7 +20,7 @@ describe("NativeApp (#integration)", () => {
   let testIModelId: GuidString;
 
   before(async () => {
-    await NativeApp.startup({
+    await ElectronApp.startup({
       applicationId: "1234",
       applicationVersion: "testappversion",
       sessionId: "testsessionid",
@@ -39,7 +40,7 @@ describe("NativeApp (#integration)", () => {
   });
 
   after(async () => {
-    await NativeApp.shutdown();
+    await ElectronApp.shutdown();
     IModelApp.authorizationClient = undefined;
   });
 

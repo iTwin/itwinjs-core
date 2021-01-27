@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Id64 } from "@bentley/bentleyjs-core";
+import { Id64, isElectronRenderer } from "@bentley/bentleyjs-core";
 import {
   BackgroundMapSettings, ColorByName, ColorDef, GlobeMode, PlanProjectionSettings, PlanProjectionSettingsProps,
 } from "@bentley/imodeljs-common";
@@ -11,17 +11,25 @@ import {
   DisplayStyle3dState, GeometricModel3dState, IModelApp, IModelConnection, Pixel, SnapshotConnection,
 } from "@bentley/imodeljs-frontend";
 import { testOnScreenViewport } from "../TestViewport";
+import { ElectronApp } from "@bentley/electron-manager/lib/ElectronApp";
+import { rpcInterfaces } from "../../common/RpcInterfaces";
 
 describe("Plan projections", () => {
   let mirukuru: IModelConnection;
 
   before(async () => {
-    await IModelApp.startup({
+    const opts = {
+      rpcInterfaces,
       renderSys: {
         // Test wants to read the color of exactly one pixel, specified in CSS pixels. Ignore device pixel ratio.
         dpiAwareViewports: false,
       },
-    });
+    };
+
+    if (isElectronRenderer)
+      await ElectronApp.startup(opts);
+    else
+      await IModelApp.startup(opts);
 
     mirukuru = await SnapshotConnection.openFile("planprojection.bim");
   });

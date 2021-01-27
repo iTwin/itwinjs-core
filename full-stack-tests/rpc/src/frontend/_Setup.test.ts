@@ -6,7 +6,7 @@ import { executeBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
 import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, MobileRpcManager, RpcConfiguration, RpcDefaultConfiguration } from "@bentley/imodeljs-common";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { AttachedInterface, MultipleClientsInterface, rpcInterfaces } from "../common/TestRpcInterface";
-import { ElectronFrontend } from "@bentley/electron-manager/lib/ElectronFrontend";
+import { ElectronApp } from "@bentley/electron-manager/lib/ElectronApp";
 
 RpcConfiguration.disableRoutingValidation = true;
 
@@ -56,7 +56,7 @@ before(async () => {
     case "http":
       return initializeCloud("http");
     case "electron":
-      return ElectronFrontend.initialize({ rpcInterfaces });
+      return ElectronApp.startup({ rpcInterfaces });
     case "direct": {
       // (global as any).window = undefined;
       // eslint-disable-next-line @typescript-eslint/no-var-requires

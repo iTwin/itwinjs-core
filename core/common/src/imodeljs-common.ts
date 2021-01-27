@@ -52,8 +52,6 @@ export * from "./Image";
 export * from "./IModel";
 export * from "./IModelError";
 export * from "./IModelVersion";
-export * from "./ipc/BackendIpc";
-export * from "./ipc/FrontendIpc";
 export * from "./ipc/IpcSocket";
 export * from "./ipc/IpcWebSocket";
 export * from "./IpcAppProps";

@@ -17,7 +17,7 @@ import { rpcInterfaces } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
 import { EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
 import * as testCommands from "./TestEditCommands";
-import { ElectronBackend } from "@bentley/electron-manager/lib/ElectronBackend";
+import { ElectronHost } from "@bentley/electron-manager/lib/ElectronHost";
 
 /* eslint-disable no-console */
 
@@ -28,8 +28,13 @@ async function init() {
   // Bootstrap the cloud environment
   await CloudEnv.initialize();
 
+  const config = new IModelHostConfiguration();
+  config.imodelClient = CloudEnv.cloudEnv.imodelClient;
+  config.concurrentQuery.concurrent = 2;
+  config.concurrentQuery.pollInterval = 5;
+
   if (isElectronMain) {
-    ElectronBackend.initialize({ rpcInterfaces });
+    await ElectronHost.startup({ electronHost: { rpcInterfaces }, config });
     EditCommandAdmin.registerModule(testCommands);
   } else {
     const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "full-stack-test", version: "v1.0" } }, rpcInterfaces);
@@ -49,14 +54,10 @@ async function init() {
         });
       }).listen(Number(process.env.CERTA_PORT ?? 3011) + 3000, undefined, undefined, resolve);
     });
+    await IModelHost.startup(config);
   }
 
   // Start the backend
-  const hostConfig = new IModelHostConfiguration();
-  hostConfig.imodelClient = CloudEnv.cloudEnv.imodelClient;
-  hostConfig.concurrentQuery.concurrent = 2;
-  hostConfig.concurrentQuery.pollInterval = 5;
-  await (isElectronMain ? NativeHost.startup(hostConfig) : IModelHost.startup(hostConfig));
   IModelHost.snapshotFileNameResolver = new BackendTestAssetResolver();
 
   Logger.initializeToConsole();

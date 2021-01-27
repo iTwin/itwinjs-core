@@ -7,8 +7,7 @@
  */
 
 import { IDisposable, Logger } from "@bentley/bentleyjs-core";
-import { IModelDb } from "@bentley/imodeljs-backend";
-import { BackendIpc } from "@bentley/imodeljs-common";
+import { IModelDb, IpcHost } from "@bentley/imodeljs-backend";
 import { PresentationIpcEvents, UpdateInfoJSON } from "@bentley/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { NativePlatformDefinition } from "./NativePlatform";
@@ -47,7 +46,7 @@ export class UpdatesTracker implements IDisposable {
     const response = this._getNativePlatform().getUpdateInfo();
     const info = parseUpdateInfo(response.result);
     if (info)
-      BackendIpc.send(PresentationIpcEvents.Update, info);
+      IpcHost.send(PresentationIpcEvents.Update, info);
   }
 }
 

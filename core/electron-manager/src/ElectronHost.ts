@@ -11,17 +11,37 @@ import { BrowserWindow, BrowserWindowConstructorOptions } from "electron";
 import * as fs from "fs";
 import * as path from "path";
 import { BeDuration, IModelStatus, isElectronMain } from "@bentley/bentleyjs-core";
-import { BackendIpc, IModelError, IpcHandler, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
+import { IModelError, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import { DesktopAuthorizationClientIpc } from "./DesktopAuthorizationClientIpc";
 import { ElectronRpcConfiguration, ElectronRpcManager } from "./ElectronRpcManager";
+import { IModelHostConfiguration, IpcHandler, IpcHost, NativeHost } from "@bentley/imodeljs-backend";
 
 // cSpell:ignore signin devserver webcontents copyfile
 
+class ElectronIpc implements IpcSocketBackend {
+  public addListener(channel: string, listener: IpcListener): RemoveFunction {
+    ElectronHost.ipcMain.addListener(channel, listener);
+    return () => ElectronHost.ipcMain.removeListener(channel, listener);
+  }
+  public removeListener(channel: string, listener: IpcListener) {
+    ElectronHost.ipcMain.removeListener(channel, listener);
+  }
+  public send(channel: string, ...args: any[]): void {
+    const window = ElectronHost.mainWindow ?? BrowserWindow.getAllWindows()[0];
+    window?.webContents.send(channel, ...args);
+  }
+  public handle(channel: string, listener: (evt: any, ...args: any[]) => Promise<any>): RemoveFunction {
+    ElectronHost.ipcMain.removeHandler(channel); // make sure there's not already a handler registered
+    ElectronHost.ipcMain.handle(channel, listener);
+    return () => ElectronHost.ipcMain.removeHandler(channel);
+  }
+}
+
 /**
- * Options for  [[ElectronBackend.initialize]]
+ * Options for  [[ElectronHost.startup]]
  * @beta
  */
-export interface ElectronBackendOptions {
+export interface ElectronHostOptions {
   /** the path to find web resources  */
   webResourcesPath?: string;
   /** filename for the app's icon, relative to [[webResourcesPath]] */
@@ -42,21 +62,22 @@ export interface ElectronBackendOptions {
  * The backend for Electron-based desktop applications
  * @beta
  */
-export class ElectronBackend implements IpcSocketBackend {
-  private static _instance: ElectronBackend;
-  public static get instance() { return this._instance; }
-  private _mainWindow?: BrowserWindow;
-  private _developmentServer: boolean;
-  private _electron: typeof Electron;
-  protected readonly _electronFrontend = "electron://frontend/";
-  public readonly webResourcesPath: string;
-  public readonly appIconPath: string;
-  public readonly frontendURL: string;
-  public readonly rpcConfig: RpcConfiguration;
+export class ElectronHost {
+  private static _ipc: ElectronIpc;
+  private static _developmentServer: boolean;
+  private static _electron: typeof Electron;
+  private static _electronFrontend = "electron://frontend/";
+  private static _mainWindow?: BrowserWindow;
+  public static webResourcesPath: string;
+  public static appIconPath: string;
+  public static frontendURL: string;
+  public static rpcConfig: RpcConfiguration;
+  public static get ipcMain() { return this._electron.ipcMain; }
+  public static get app() { return this._electron.app; }
+  public static get electron() { return this._electron; }
 
-  public get ipcMain() { return this._electron.ipcMain; }
-  public get app() { return this._electron.app; }
-  public get electron() { return this._electron; }
+  private constructor() { }
+
   /**
    * Converts an "electron://frontend/" URL to an absolute file path.
    *
@@ -64,7 +85,7 @@ export class ElectronBackend implements IpcSocketBackend {
    * however, since we're loading everything directly from the install directory, we cannot know the
    * absolute path at build time.
    */
-  private parseElectronUrl(requestedUrl: string): string {
+  private static parseElectronUrl(requestedUrl: string): string {
     // Note that the "frontend/" path is arbitrary - this is just so we can handle *some* relative URLs...
     let assetPath = requestedUrl.substr(this._electronFrontend.length);
     if (assetPath.length === 0)
@@ -86,7 +107,7 @@ export class ElectronBackend implements IpcSocketBackend {
     return assetPath;
   }
 
-  private _openWindow(options: BrowserWindowConstructorOptions = {}) {
+  private static _openWindow(options: BrowserWindowConstructorOptions = {}) {
     const opts: BrowserWindowConstructorOptions = {
       autoHideMenuBar: true,
       webPreferences: {
@@ -111,25 +132,13 @@ export class ElectronBackend implements IpcSocketBackend {
   }
 
   /** The "main" BrowserWindow for this application. */
-  public get mainWindow() { return this._mainWindow; }
-
-  private constructor(opts?: ElectronBackendOptions) {
-    this._electron = require("electron");
-    this._developmentServer = opts?.developmentServer ?? false;
-    const frontendPort = opts?.frontendPort ?? 3000;
-    this.webResourcesPath = opts?.webResourcesPath ?? "";
-    this.frontendURL = opts?.frontendURL ?? this._developmentServer ? `http://localhost:${frontendPort}` : `${this._electronFrontend}index.html`;
-    this.appIconPath = path.join(this.webResourcesPath, opts?.iconName ?? "appicon.ico");
-    BackendIpc.initialize(this);
-    this.rpcConfig = ElectronRpcManager.initializeBackend(this, opts?.rpcInterfaces);
-    opts?.ipcHandlers?.forEach((ipc) => ipc.register());
-  }
+  public static get mainWindow() { return this._mainWindow; }
 
   /**
    * Open the main Window when the app is ready.
    * @param windowOptions Options for constructing the main BrowserWindow. See: https://electronjs.org/docs/api/browser-window#new-browserwindowoptions
    */
-  public async openMainWindow(windowOptions?: BrowserWindowConstructorOptions): Promise<void> {
+  public static async openMainWindow(windowOptions?: BrowserWindowConstructorOptions): Promise<void> {
     const app = this.app;
     // quit the application when all windows are closed (unless we're running on MacOS)
     app.on("window-all-closed", () => {
@@ -167,57 +176,44 @@ export class ElectronBackend implements IpcSocketBackend {
     this._openWindow(windowOptions);
   }
 
-  /** @internal */
-  public addListener(channel: string, listener: IpcListener): RemoveFunction {
-    this.ipcMain.addListener(channel, listener);
-    return () => this.ipcMain.removeListener(channel, listener);
-  }
-  /** @internal */
-  public removeListener(channel: string, listener: IpcListener) {
-    this.ipcMain.removeListener(channel, listener);
-  }
-  /** @internal */
-  public send(channel: string, ...args: any[]): void {
-    const window = this.mainWindow ?? BrowserWindow.getAllWindows()[0];
-    window?.webContents.send(channel, ...args);
-  }
-  /** @internal */
-  public handle(channel: string, listener: (evt: any, ...args: any[]) => Promise<any>): RemoveFunction {
-    this.ipcMain.removeHandler(channel); // make sure there's not already a handler registered
-    this.ipcMain.handle(channel, listener);
-    return () => this.ipcMain.removeHandler(channel);
-  }
-
   /**
    * Initialize the backend of an Electron app.
    * This method configures the backend for all of the inter-process communication (RPC and IPC) for an
-   * Electron app. It should be called from your Electron main function, before calling [IModelHost.startup]($backend).
+   * Electron app. It should be called from your Electron main function.
    * @param opts Options that control aspects of your backend.
-   * @returns an instance of [[ElectronBackend]]. When you are ready to show your main window, call `openMainWindow` on it.
-   * @note This method must (only) be called from the backend of an Electron app (i.e. when [isElectronMain]($bentley) is `true`). */
-  public static initialize(opts?: ElectronBackendOptions): ElectronBackend {
+   * @note This method must only be called from the backend of an Electron app (i.e. when [isElectronMain]($bentley) is `true`). */
+  public static async startup(opts?: { electronHost?: ElectronHostOptions, config?: IModelHostConfiguration }) {
     if (!isElectronMain)
       throw new Error("Not running under Electron");
 
-    if (this._instance)
-      return this._instance;
+    if (this._ipc)
+      return;
+    this._ipc = new ElectronIpc();
 
-    this._instance = new ElectronBackend(opts);
-    ElectronBackendImpl.register();
-
-    const app = this.instance.app;
+    this._electron = require("electron");
+    const app = this.app;
     app.allowRendererProcessReuse = true; // see https://www.electronjs.org/docs/api/app#appallowrendererprocessreuse
     if (!app.isReady())
-      this.instance.electron.protocol.registerSchemesAsPrivileged([{ scheme: "electron", privileges: { standard: true, secure: true } }]);
+      this.electron.protocol.registerSchemesAsPrivileged([{ scheme: "electron", privileges: { standard: true, secure: true } }]);
+    const eopt = opts?.electronHost;
+    this._developmentServer = eopt?.developmentServer ?? false;
+    const frontendPort = eopt?.frontendPort ?? 3000;
+    this.webResourcesPath = eopt?.webResourcesPath ?? "";
+    this.frontendURL = eopt?.frontendURL ?? this._developmentServer ? `http://localhost:${frontendPort}` : `${this._electronFrontend}index.html`;
+    this.appIconPath = path.join(this.webResourcesPath, eopt?.iconName ?? "appicon.ico");
+    this.rpcConfig = ElectronRpcManager.initializeBackend(this._ipc, eopt?.rpcInterfaces);
+    eopt?.ipcHandlers?.forEach((ipc) => ipc.register());
 
-    return this._instance;
+    await NativeHost.startup({ ipc: { socket: this._ipc }, config: opts?.config });
+    if (IpcHost.isValid)
+      ElectronBackendImpl.register();
   };
 }
 
 class ElectronBackendImpl extends IpcHandler {
   public get channelName() { return "electron-safe"; };
   public async callElectron(member: string, method: string, ...args: any) {
-    const func = (ElectronBackend.instance.electron as any)[member][method];
+    const func = (ElectronHost.electron as any)[member][method];
     if (typeof func !== "function")
       throw new IModelError(IModelStatus.FunctionNotFound, `Method ${method} not found electron.${member}`);
 

@@ -7,7 +7,8 @@ import * as chaiAsPromised from "chai-as-promised";
 import * as path from "path";
 import { isElectronRenderer, OpenMode } from "@bentley/bentleyjs-core";
 import { IModelError } from "@bentley/imodeljs-common";
-import { InteractiveEditingSession, IpcApp, StandaloneConnection } from "@bentley/imodeljs-frontend";
+import { InteractiveEditingSession, StandaloneConnection } from "@bentley/imodeljs-frontend";
+import { ElectronApp } from "@bentley/electron-manager/lib/ElectronApp";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);
@@ -27,12 +28,12 @@ if (isElectronRenderer) {
     }
 
     before(async () => {
-      await IpcApp.startup();
+      await ElectronApp.startup();
     });
 
     after(async () => {
       await closeIModel();
-      await IpcApp.shutdown();
+      await ElectronApp.shutdown();
     });
 
     afterEach(async () => {

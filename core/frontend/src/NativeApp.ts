@@ -8,16 +8,16 @@
 
 import { BeEvent, Config, GuidString, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import {
-  AsyncMethodsOf, BriefcaseDownloader, BriefcaseProps, FrontendIpc, IModelError, IModelVersion, InternetConnectivityStatus, LocalBriefcaseProps,
-  nativeAppChannel, NativeAppFunctions, NativeAppNotifications, nativeAppNotify, NotificationHandler, OpenBriefcaseProps, OverriddenBy,
-  PromiseReturnType, RequestNewBriefcaseProps, StorageValue, SyncMode,
+  BriefcaseDownloader, BriefcaseProps, IModelError, IModelVersion, InternetConnectivityStatus, LocalBriefcaseProps, nativeAppChannel,
+  NativeAppFunctions, NativeAppNotifications, nativeAppNotify, OpenBriefcaseProps, OverriddenBy,
+  RequestNewBriefcaseProps, StorageValue, SyncMode,
 } from "@bentley/imodeljs-common";
 import { ProgressCallback, RequestGlobalOptions } from "@bentley/itwin-client";
 import { LocalBriefcaseConnection } from "./BriefcaseConnection";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { AuthorizedFrontendRequestContext, FrontendRequestContext } from "./FrontendRequestContext";
-import { IModelApp, IModelAppOptions } from "./IModelApp";
-import { IpcApp } from "./IpcApp";
+import { IModelAppOptions } from "./imodeljs-frontend";
+import { AsyncMethodsOf, IpcApp, IpcAppOptions, NotificationHandler, PromiseReturnType } from "./IpcApp";
 import { NativeAppLogger } from "./NativeAppLogger";
 
 /**
@@ -56,7 +56,7 @@ class NativeAppNotifyHandler extends NotificationHandler implements NativeAppNot
  */
 export class NativeApp {
   public static async callBackend<T extends AsyncMethodsOf<NativeAppFunctions>>(methodName: T, ...args: Parameters<NativeAppFunctions[T]>) {
-    return FrontendIpc.callBackend(nativeAppChannel, methodName, ...args) as PromiseReturnType<NativeAppFunctions[T]>;
+    return IpcApp.callBackend(nativeAppChannel, methodName, ...args) as PromiseReturnType<NativeAppFunctions[T]>;
   }
 
   private static _storages = new Map<string, Storage>();
@@ -98,7 +98,7 @@ export class NativeApp {
   /**
    * This should be called instead of IModelApp.startup() for native apps.
    */
-  public static async startup(opts?: IModelAppOptions) {
+  public static async startup(opts: IpcAppOptions & IModelAppOptions) {
     Logger.logInfo(FrontendLoggerCategory.NativeApp, "Startup");
 
     await IpcApp.startup(opts);
@@ -124,15 +124,13 @@ export class NativeApp {
 
   public static async requestDownloadBriefcase(contextId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions,
     asOf: IModelVersion = IModelVersion.latest(), progress?: ProgressCallback): Promise<BriefcaseDownloader> {
-    if (!IModelApp.initialized)
-      throw new IModelError(IModelStatus.BadRequest, "Call NativeApp.startup() before calling requestDownloadBriefcase");
 
     const requestContext = await AuthorizedFrontendRequestContext.create();
     requestContext.enter();
 
     let stopProgressEvents = () => { };
     if (progress !== undefined) {
-      stopProgressEvents = FrontendIpc.addListener(`nativeApp.progress-${iModelId}`, (_evt: Event, data: { loaded: number, total: number }) => {
+      stopProgressEvents = IpcApp.addListener(`nativeApp.progress-${iModelId}`, (_evt: Event, data: { loaded: number, total: number }) => {
         progress(data);
       });
     }
@@ -174,9 +172,6 @@ export class NativeApp {
    * @param fileName the briefcase fileName
    */
   public static async deleteBriefcase(fileName: string): Promise<void> {
-    if (!IModelApp.initialized)
-      throw new IModelError(IModelStatus.BadRequest, "Call NativeApp.requestDownloadBriefcase first");
-
     const requestContext = new FrontendRequestContext();
     requestContext.enter();
     requestContext.useContextForRpc = true;
@@ -184,19 +179,10 @@ export class NativeApp {
   }
 
   public static async openBriefcase(briefcaseProps: OpenBriefcaseProps): Promise<LocalBriefcaseConnection> {
-    const requestContext = new FrontendRequestContext();
-    requestContext.enter();
-    if (!IModelApp.initialized)
-      throw new IModelError(IModelStatus.BadRequest, "Call NativeApp.startup() before calling openBriefcase");
     return LocalBriefcaseConnection.open(briefcaseProps);
   }
 
   public static async closeBriefcase(connection: LocalBriefcaseConnection): Promise<void> {
-    const requestContext = new FrontendRequestContext();
-    requestContext.enter();
-    if (!IModelApp.initialized)
-      throw new IModelError(IModelStatus.BadRequest, "Call NativeApp.startup() before calling downloadBriefcase");
-    requestContext.useContextForRpc = true;
     await IpcApp.callIpcAppBackend("closeBriefcase", connection.key);
   }
 
@@ -205,9 +191,6 @@ export class NativeApp {
    * @returns list of BriefcaseProps in cache
    */
   public static async getCachedBriefcases(iModelId?: GuidString): Promise<LocalBriefcaseProps[]> {
-    if (!IModelApp.initialized)
-      throw new IModelError(IModelStatus.BadRequest, "Call NativeApp.startup() before calling downloadBriefcase");
-
     return this.callBackend("getCachedBriefcases", iModelId);
   }
 
@@ -328,7 +311,7 @@ export class Storage {
   }
 
   /**
-   * Can be check to see if the storage is still open on frontend
+   * Can be check to see if the storage is still open
    */
   public get isOpen(): boolean {
     return this._isOpen;

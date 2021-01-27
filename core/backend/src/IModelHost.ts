@@ -373,14 +373,17 @@ export class IModelHost {
     return IModelHost.iModelClient instanceof IModelBankClient;
   }
 
+  private static _isValid = false;
+  public static get isValid() { return this._isValid; }
   /** This method must be called before any iModel.js services are used.
    * @param configuration Host configuration data.
    * Raises [[onAfterStartup]].
    * @see [[shutdown]].
    */
   public static async startup(configuration: IModelHostConfiguration = new IModelHostConfiguration()): Promise<void> {
-    if (IModelHost.configuration)
+    if (this._isValid)
       return; // we're already initialized
+    this._isValid = true;
 
     if (!IModelHost.applicationId) IModelHost.applicationId = "2686"; // Default to product id of iModel.js
     if (!IModelHost.applicationVersion) IModelHost.applicationVersion = "1.0.0"; // Default to placeholder version.
@@ -522,8 +525,9 @@ export class IModelHost {
 
   /** This method must be called when an iModel.js services is shut down. Raises [[onBeforeShutdown]] */
   public static async shutdown(): Promise<void> {
-    if (!IModelHost.configuration)
+    if (!this._isValid)
       return;
+    this._isValid = false;
     IModelHost.onBeforeShutdown.raiseEvent();
     IModelHost.platform.shutdown();
     IModelHost.configuration = undefined;

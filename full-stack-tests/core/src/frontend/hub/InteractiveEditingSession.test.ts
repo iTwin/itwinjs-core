@@ -14,6 +14,7 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "./TestUtility";
+import { ElectronApp } from "@bentley/electron-manager/lib/ElectronApp";
 
 let codeSuffix = 1;
 
@@ -33,7 +34,7 @@ if (isElectronRenderer) {
 
     before(async () => {
       const projectName = "iModelJsIntegrationTest";
-      await IpcApp.startup({
+      await ElectronApp.startup({
         authorizationClient: await TestUtility.initializeTestProject(projectName, TestUsers.regular),
         imodelClient: TestUtility.imodelCloudEnv.imodelClient,
         applicationVersion: "1.2.1.1",
@@ -54,7 +55,7 @@ if (isElectronRenderer) {
     after(async () => {
       await closeIModel();
       await TestUtility.deleteIModel(imodelId, projectId);
-      await IpcApp.shutdown();
+      await ElectronApp.shutdown();
     });
 
     function makeLine(p1?: Point3d, p2?: Point3d): LineSegment3d {

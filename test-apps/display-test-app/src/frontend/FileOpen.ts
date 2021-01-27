@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { isElectronRenderer } from "@bentley/bentleyjs-core";
-import { ElectronFrontend } from "@bentley/electron-manager/lib/ElectronFrontend";
+import { ElectronApp } from "@bentley/electron-manager/lib/ElectronApp";
 import { OpenDialogOptions } from "electron";
 
 export interface BrowserFileSelector {
@@ -19,7 +19,7 @@ export async function selectFileName(selector: BrowserFileSelector | undefined):
       filters: [{ name: "iModels", extensions: ["ibim", "bim"] }],
 
     };
-    const val = await ElectronFrontend.callDialog("showOpenDialog", opts);
+    const val = await ElectronApp.callDialog("showOpenDialog", opts);
     return val.canceled ? undefined : val.filePaths[0];
   }
 

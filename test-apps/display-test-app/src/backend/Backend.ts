@@ -5,7 +5,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { UrlFileHandler } from "@bentley/backend-itwin-client";
-import { Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Config, isElectronMain, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { IModelBankClient } from "@bentley/imodelhub-client";
 import { IModelHost, IModelHostConfiguration, NativeHost } from "@bentley/imodeljs-backend";
@@ -16,6 +16,7 @@ import {
 import { DtaConfiguration } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { FakeTileCacheService } from "./FakeTileCacheService";
+import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib/ElectronHost";
 
 class DisplayTestAppRpc extends DtaRpcInterface {
 
@@ -223,22 +224,22 @@ const setupStandaloneConfiguration = () => {
   return configuration;
 };
 
-export const initializeDtaBackend = async () => {
+export const initializeDtaBackend = async (electronHost?: ElectronHostOptions) => {
   const dtaConfig = setupStandaloneConfiguration();
 
-  const hostConfig = new IModelHostConfiguration();
-  hostConfig.logTileLoadTimeThreshold = 3;
-  hostConfig.logTileSizeThreshold = 500000;
+  const config = new IModelHostConfiguration();
+  config.logTileLoadTimeThreshold = 3;
+  config.logTileSizeThreshold = 500000;
 
   let logLevel = LogLevel.None;
   if (MobileRpcConfiguration.isMobileBackend) {
     // Does not seem DtaConfiguration is used anymore.
   } else {
     if (dtaConfig.customOrchestratorUri)
-      hostConfig.imodelClient = new IModelBankClient(dtaConfig.customOrchestratorUri, new UrlFileHandler());
+      config.imodelClient = new IModelBankClient(dtaConfig.customOrchestratorUri, new UrlFileHandler());
 
     if (dtaConfig.useFakeCloudStorageTileCache)
-      hostConfig.tileCacheCredentials = { service: "external", account: "", accessKey: "" };
+      config.tileCacheCredentials = { service: "external", account: "", accessKey: "" };
 
     const logLevelEnv = process.env.SVT_LOG_LEVEL as string;
     if (undefined !== logLevelEnv)
@@ -247,10 +248,12 @@ export const initializeDtaBackend = async () => {
 
   /** register the implementation of our RPCs. */
   RpcManager.registerImpl(DtaRpcInterface, DisplayTestAppRpc);
-  if (MobileRpcConfiguration.isMobileBackend)
-    await NativeHost.startup(hostConfig);
+  if (isElectronMain)
+    await ElectronHost.startup({ electronHost, config });
+  else if (MobileRpcConfiguration.isMobileBackend)
+    await NativeHost.startup({ config });
   else
-    await IModelHost.startup(hostConfig);
+    await IModelHost.startup(config);
 
   // Set up logging (by default, no logging is enabled)
   Logger.initializeToConsole();

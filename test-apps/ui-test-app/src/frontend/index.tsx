@@ -20,7 +20,6 @@ import { Presentation } from "@bentley/presentation-frontend";
 import { getClassName } from "@bentley/ui-abstract";
 import { BeDragDropContext } from "@bentley/ui-components";
 import { LocalUiSettings, UiSettings } from "@bentley/ui-core";
-import { ElectronFrontend } from "@bentley/electron-manager/lib/ElectronFrontend";
 import {
   ActionsUnion, AppNotificationManager, ConfigurableUiContent, createAction, DeepReadonly, DragDropLayerRenderer,
   FrameworkAccuDraw, FrameworkReducer, FrameworkRootState, FrameworkUiAdmin, FrameworkVersion,
@@ -65,6 +64,7 @@ import { ToolWithDynamicSettings } from "./tools/ToolWithDynamicSettings";
 import { UiProviderTool } from "./tools/UiProviderTool";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import { FrontendApplicationInsightsClient } from "@bentley/frontend-application-insights-client";
+import { ElectronApp, ElectronAppOptions } from "@bentley/electron-manager/lib/ElectronApp";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -197,15 +197,14 @@ export class SampleAppIModelApp {
 
   public static get appUiSettings(): AppUiSettings { return SampleAppIModelApp._appUiSettings; }
 
-  public static async startup(opts?: IModelAppOptions): Promise<void> {
-    opts = opts ? opts : {};
+  public static async startup(opts: ElectronAppOptions & IModelAppOptions): Promise<void> {
     opts.accuSnap = new SampleAppAccuSnap();
     opts.notifications = new AppNotificationManager();
     opts.uiAdmin = new FrameworkUiAdmin();
     opts.accuDraw = new FrameworkAccuDraw();
     opts.viewManager = new AppViewManager(true);  // Favorite Properties Support
-    if (MobileRpcConfiguration.isMobileFrontend) {
-      await NativeApp.startup(opts);
+    if (isElectronRenderer) {
+      await ElectronApp.startup(opts);
       NativeAppLogger.initialize();
     } else
       await IModelApp.startup(opts);
@@ -732,9 +731,7 @@ async function main() {
   }
 
   const rpcInterfaces = getSupportedRpcs();
-  if (isElectronRenderer) {
-    ElectronFrontend.initialize({ rpcInterfaces });
-  } else if (MobileRpcConfiguration.isMobileFrontend) {
+  if (MobileRpcConfiguration.isMobileFrontend) {
     MobileRpcManager.initializeClient(rpcInterfaces);
   } else if (process.env.imjs_gp_backend) {
     const urlClient = new UrlDiscoveryClient();
@@ -754,7 +751,7 @@ async function main() {
   };
 
   // Start the app.
-  await SampleAppIModelApp.startup({ renderSys: renderSystemOptions, authorizationClient: oidcClient });
+  await SampleAppIModelApp.startup({ rpcInterfaces, renderSys: renderSystemOptions, authorizationClient: oidcClient });
 
   // Add ApplicationInsights telemetry client
   const iModelJsApplicationInsightsKey = Config.App.getString("imjs_telemetry_application_insights_instrumentation_key", "");

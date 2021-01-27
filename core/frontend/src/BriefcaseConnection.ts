@@ -9,7 +9,7 @@
 import { GuidString, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import {
   AxisAlignedBox3d, BentleyStatus, IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelRpcProps, IModelVersion,
-  IModelWriteRpcInterface, NotificationHandler, OpenBriefcaseProps, RpcManager, RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent,
+  IModelWriteRpcInterface, OpenBriefcaseProps, RpcManager, RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent,
   WipRpcInterface,
 } from "@bentley/imodeljs-common";
 import { EditingFunctions } from "./EditingFunctions";
@@ -18,7 +18,7 @@ import { AuthorizedFrontendRequestContext, FrontendRequestContext } from "./Fron
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { IModelRoutingContext } from "./IModelRoutingContext";
-import { IpcApp } from "./IpcApp";
+import { IpcApp, NotificationHandler } from "./IpcApp";
 
 const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
 

@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { AuthStatus, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { DesktopAuthorizationClient, IModelHost } from "@bentley/imodeljs-backend";
-import { BackendIpc, DesktopAuthorizationClientConfiguration, DesktopAuthorizationClientMessages } from "@bentley/imodeljs-common";
+import { DesktopAuthorizationClient, IModelHost, IpcHost } from "@bentley/imodeljs-backend";
+import { DesktopAuthorizationClientConfiguration, DesktopAuthorizationClientMessages } from "@bentley/imodeljs-common";
 import { AccessToken } from "@bentley/itwin-client";
 import { ElectronManagerLoggerCategory } from "./ElectronManagerLoggerCategory";
 
@@ -24,13 +24,13 @@ export class DesktopAuthorizationClientIpc {
     else
       Logger.logTrace(loggerCategory, "DesktopAuthorizationClientIpc replies with success message", () => ({ channel }));
 
-    BackendIpc.send(channel, err, ...args);
+    IpcHost.send(channel, err, ...args);
   }
 
-  /** Wrapper around BackendIpc.send to add log traces */
+  /** Wrapper around IpcHost.send to add log traces */
   private static ipcSend(channel: string, ...args: any[]) {
     Logger.logTrace(loggerCategory, "DesktopAuthorizationClientIpc sends", () => ({ channel }));
-    BackendIpc.send(channel, ...args);
+    IpcHost.send(channel, ...args);
   }
 
   /** Get the desktop client */
@@ -44,7 +44,7 @@ export class DesktopAuthorizationClientIpc {
 
   /** Initialize the IPC communication for DesktopAuthorizationClient */
   public static initializeIpc() {
-    BackendIpc.addListener(DesktopAuthorizationClientMessages.initialize, async (_event: Event, requestContextObj: ClientRequestContext, configuration: DesktopAuthorizationClientConfiguration) => {
+    IpcHost.addListener(DesktopAuthorizationClientMessages.initialize, async (_event: Event, requestContextObj: ClientRequestContext, configuration: DesktopAuthorizationClientConfiguration) => {
       const requestContext = this.createRequestContext(requestContextObj);
       requestContext.enter();
       try {
@@ -67,7 +67,7 @@ export class DesktopAuthorizationClientIpc {
       }
     });
 
-    BackendIpc.addListener(DesktopAuthorizationClientMessages.signIn, async (_event: Event, requestContextObj: ClientRequestContext) => {
+    IpcHost.addListener(DesktopAuthorizationClientMessages.signIn, async (_event: Event, requestContextObj: ClientRequestContext) => {
       const requestContext = this.createRequestContext(requestContextObj);
       requestContext.enter();
       if (!this._desktopAuthorizationClient) {
@@ -83,7 +83,7 @@ export class DesktopAuthorizationClientIpc {
       }
     });
 
-    BackendIpc.addListener(DesktopAuthorizationClientMessages.signOut, async (_event: Event, requestContextObj: ClientRequestContext) => {
+    IpcHost.addListener(DesktopAuthorizationClientMessages.signOut, async (_event: Event, requestContextObj: ClientRequestContext) => {
       const requestContext = this.createRequestContext(requestContextObj);
       requestContext.enter();
       if (!this._desktopAuthorizationClient) {
@@ -99,7 +99,7 @@ export class DesktopAuthorizationClientIpc {
       }
     });
 
-    BackendIpc.addListener(DesktopAuthorizationClientMessages.getAccessToken, async (_event: Event, requestContextObj: ClientRequestContext) => {
+    IpcHost.addListener(DesktopAuthorizationClientMessages.getAccessToken, async (_event: Event, requestContextObj: ClientRequestContext) => {
       const requestContext = this.createRequestContext(requestContextObj);
       requestContext.enter();
       if (!this._desktopAuthorizationClient) {

@@ -6,7 +6,7 @@
 import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import {
-  AccuSnap, ExternalServerExtensionLoader, IModelApp, IModelAppOptions, NativeApp, SelectionTool, SnapMode, TileAdmin, Tool,
+  AccuSnap, AsyncMethodsOf, ExternalServerExtensionLoader, IModelApp, IModelAppOptions, IpcApp, PromiseReturnType, SelectionTool, SnapMode, TileAdmin, Tool,
 } from "@bentley/imodeljs-frontend";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
 import { RecordFpsTool } from "./FpsMonitor";
@@ -27,8 +27,9 @@ import { FenceClassifySelectedTool } from "./Fence";
 import { ToggleAspectRatioSkewDecoratorTool } from "./AspectRatioSkewDecorator";
 import { PathDecorationTestTool } from "./PathDecorationTest";
 import { DeleteElementsTool, EditingSessionTool, MoveElementTool, PlaceLineStringTool, RedoTool, UndoTool } from "./EditingTools";
-import { AsyncMethodsOf, FrontendIpc, MobileRpcConfiguration, PromiseReturnType } from "@bentley/imodeljs-common";
 import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
+import { isElectronRenderer } from "@bentley/bentleyjs-core";
+import { ElectronApp, ElectronAppOptions } from "@bentley/electron-manager/lib/ElectronApp";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -54,7 +55,8 @@ class SVTSelectionTool extends SelectionTool {
 
 export class DtaIpc {
   public static async callBackend<T extends AsyncMethodsOf<DtaIpcInterface>>(methodName: T, ...args: Parameters<DtaIpcInterface[T]>) {
-    return FrontendIpc.callBackend(dtaChannel, methodName, ...args) as PromiseReturnType<DtaIpcInterface[T]>;
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    return IpcApp.callBackend(dtaChannel, methodName, ...args) as PromiseReturnType<DtaIpcInterface[T]>;
   }
 }
 
@@ -105,7 +107,10 @@ class ShutDownTool extends Tool {
 
   public run(_args: any[]): boolean {
     DisplayTestApp.surface.closeAllViewers();
-    IModelApp.shutdown(); // eslint-disable-line @typescript-eslint/no-floating-promises
+    if (isElectronRenderer)
+      ElectronApp.shutdown();
+    else
+      IModelApp.shutdown(); // eslint-disable-line @typescript-eslint/no-floating-promises
     debugger; // eslint-disable-line no-debugger
     return true;
   }
@@ -121,14 +126,13 @@ export class DisplayTestApp {
   public static get surface() { return this._surface!; }
   public static set surface(surface: Surface) { this._surface = surface; }
 
-  public static async startup(opts?: IModelAppOptions): Promise<void> {
-    opts = opts ? opts : {};
+  public static async startup(opts: ElectronAppOptions & IModelAppOptions): Promise<void> {
     opts.accuSnap = new DisplayTestAppAccuSnap();
     opts.notifications = new Notifications();
     opts.tileAdmin = TileAdmin.create(DisplayTestApp.tileAdminProps);
     opts.uiAdmin = new UiManager();
-    if (MobileRpcConfiguration.isMobileFrontend)
-      await NativeApp.startup(opts);
+    if (isElectronRenderer)
+      await ElectronApp.startup(opts);
     else
       await IModelApp.startup(opts);
 
