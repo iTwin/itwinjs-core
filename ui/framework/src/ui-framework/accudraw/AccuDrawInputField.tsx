@@ -51,7 +51,7 @@ export interface AccuDrawInputFieldProps extends CommonProps {
 const ForwardRefAccuDrawInput = React.forwardRef<HTMLInputElement, AccuDrawInputFieldProps>(
   function ForwardRefAccuDrawInputField(props: AccuDrawInputFieldProps, ref) {
     const { className, style, id, label, iconSpec, labelClassName, labelStyle, initialValue, field, isLocked,
-      onValueChanged, valueChangedDelay, onEnterPressed, onEscPressed } = props;
+      onValueChanged, valueChangedDelay, onEnterPressed, onEscPressed, ...inputProps } = props;
     const [stringValue, setStringValue] = React.useState(initialValue);
     const timeoutId = React.useRef(0);
     const [needValueChanged, setNeedValueChanged] = React.useState(false);
@@ -156,18 +156,18 @@ const ForwardRefAccuDrawInput = React.forwardRef<HTMLInputElement, AccuDrawInput
     const labelClassNames = classnames("uifw-accudraw-input-label", labelClassName);
 
     return (
-      <>
+      <div className="uifw-accudraw-input-container">
         <label htmlFor={id} className={labelClassNames} style={labelStyle}>
           {label}
           {iconSpec && <Icon iconSpec={iconSpec} />}
         </label>
-        <Input ref={refs} id={id} value={stringValue}
+        <Input {...inputProps} ref={refs} id={id} value={stringValue}
           className={inputClassNames} style={style} autoComplete="off"
           onChange={handleChange} onKeyDown={handleKeyDown} />
         <span className="uifw-accudraw-lock" >
           {isLocked && <Icon iconSpec="icon-lock" />}
         </span>
-      </>
+      </div>
     );
   }
 );

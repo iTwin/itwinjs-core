@@ -111,21 +111,21 @@ describe("AccuDrawFieldContainer", () => {
 
     IModelApp.accuDraw.setFocusItem(ItemField.X_Item);
     spy.calledOnce.should.true;
-    let input = wrapper.container.querySelector("input#uifw-accudraw-x");
+    let input = wrapper.queryByTestId("uifw-accudraw-x");
     expect(input).not.to.be.null;
     expect(document.activeElement === input).to.be.true;
     spy.resetHistory();
 
     IModelApp.accuDraw.setFocusItem(ItemField.Y_Item);
     spy.calledOnce.should.true;
-    input = wrapper.container.querySelector("input#uifw-accudraw-y");
+    input = wrapper.queryByTestId("uifw-accudraw-y");
     expect(input).not.to.be.null;
     expect(document.activeElement === input).to.be.true;
     spy.resetHistory();
 
     IModelApp.accuDraw.setFocusItem(ItemField.Z_Item);
     spy.calledOnce.should.true;
-    input = wrapper.container.querySelector("input#uifw-accudraw-z");
+    input = wrapper.queryByTestId("uifw-accudraw-z");
     expect(input).not.to.be.null;
     expect(document.activeElement === input).to.be.true;
     spy.resetHistory();
@@ -135,14 +135,14 @@ describe("AccuDrawFieldContainer", () => {
 
     IModelApp.accuDraw.setFocusItem(ItemField.ANGLE_Item);
     spy.calledOnce.should.true;
-    input = wrapper.container.querySelector("input#uifw-accudraw-angle");
+    input = wrapper.queryByTestId("uifw-accudraw-angle");
     expect(input).not.to.be.null;
     expect(document.activeElement === input).to.be.true;
     spy.resetHistory();
 
     IModelApp.accuDraw.setFocusItem(ItemField.DIST_Item);
     spy.calledOnce.should.true;
-    input = wrapper.container.querySelector("input#uifw-accudraw-distance");
+    input = wrapper.queryByTestId("uifw-accudraw-distance");
     expect(input).not.to.be.null;
     expect(document.activeElement === input).to.be.true;
     spy.resetHistory();
@@ -164,7 +164,7 @@ describe("AccuDrawFieldContainer", () => {
 
     IModelApp.accuDraw.setFocusItem(ItemField.X_Item);
     spySet.calledOnce.should.true;
-    const input = wrapper.container.querySelector("input#uifw-accudraw-x");
+    const input = wrapper.queryByTestId("uifw-accudraw-x");
     expect(input).not.to.be.null;
     expect(document.activeElement === input).to.be.true;
 
@@ -200,21 +200,21 @@ describe("AccuDrawFieldContainer", () => {
 
     IModelApp.accuDraw.setCompassMode(CompassMode.Rectangular);
 
-    let input = wrapper.container.querySelector("input#uifw-accudraw-x");
+    let input = wrapper.queryByTestId("uifw-accudraw-x");
     expect(input).not.to.be.null;
     fireEvent.change(input!, { target: { value: "22.3" } });
     fakeTimers.tick(300);
     spy.calledOnce.should.true;
     spy.resetHistory();
 
-    input = wrapper.container.querySelector("input#uifw-accudraw-y");
+    input = wrapper.queryByTestId("uifw-accudraw-y");
     expect(input).not.to.be.null;
     fireEvent.change(input!, { target: { value: "22.3" } });
     fakeTimers.tick(300);
     spy.calledOnce.should.true;
     spy.resetHistory();
 
-    input = wrapper.container.querySelector("input#uifw-accudraw-z");
+    input = wrapper.queryByTestId("uifw-accudraw-z");
     expect(input).not.to.be.null;
     fireEvent.change(input!, { target: { value: "22.3" } });
     fakeTimers.tick(300);
@@ -223,14 +223,14 @@ describe("AccuDrawFieldContainer", () => {
 
     IModelApp.accuDraw.setCompassMode(CompassMode.Polar);
 
-    input = wrapper.container.querySelector("input#uifw-accudraw-angle");
+    input = wrapper.queryByTestId("uifw-accudraw-angle");
     expect(input).not.to.be.null;
     fireEvent.change(input!, { target: { value: "22.3" } });
     fakeTimers.tick(300);
     spy.calledOnce.should.true;
     spy.resetHistory();
 
-    input = wrapper.container.querySelector("input#uifw-accudraw-distance");
+    input = wrapper.queryByTestId("uifw-accudraw-distance");
     expect(input).not.to.be.null;
     fireEvent.change(input!, { target: { value: "22.3" } });
     fakeTimers.tick(300);
@@ -247,7 +247,7 @@ describe("AccuDrawFieldContainer", () => {
 
     IModelApp.accuDraw.setCompassMode(CompassMode.Rectangular);
 
-    const input = wrapper.container.querySelector("input#uifw-accudraw-x");
+    const input = wrapper.queryByTestId("uifw-accudraw-x");
     expect(input).not.to.be.null;
     fireEvent.keyDown(input!, { key: SpecialKey.Escape });
     spy.calledOnce.should.true;

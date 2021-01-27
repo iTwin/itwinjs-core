@@ -43,7 +43,9 @@
     "useProximityOpacityTitle": "Change Toolbar Opacity",
     "useProximityOpacityDescription": "Change the toolbar opacity as the mouse gets closer or farther away",
     "snapWidgetOpacityTitle": "Snap Widget Opacity",
-    "snapWidgetOpacityDescription": "Immediately change the toolbar opacity when the mouse gets close"
+    "snapWidgetOpacityDescription": "Immediately change the toolbar opacity when the mouse gets close",
+    "escapeToHomeTitle": "Escape To Home",
+    "escapeToHomeDescription": "Pressing the Escape key puts focus in Home position for shortcuts"
   },
   "backstage": {
     "command": "Command",
@@ -183,7 +185,8 @@
     "sampleModelessDialog": "Sample Modeless Dialog",
     "sampleModalDialog": "Sample Modal Dialog",
     "misc": "Miscellaneous",
-    "accuDrawDialog": "AccuDraw Dialog"
+    "accuDrawDialogVertical": "AccuDraw Dialog - Vertical",
+    "accuDrawDialogHorizontal": "AccuDraw Dialog - Horizontal"
   },
   "tools": {
     "ToolWithSettings": {

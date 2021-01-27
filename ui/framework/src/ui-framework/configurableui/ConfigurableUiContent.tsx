@@ -25,6 +25,7 @@ import { PointerMessage } from "../messages/Pointer";
 import { PopupRenderer } from "../popup/PopupManager";
 import { WidgetPanelsFrontstage } from "../widget-panels/Frontstage";
 import { ConfigurableUiManager } from "./ConfigurableUiManager";
+import { UiFramework } from "../UiFramework";
 
 // cSpell:ignore cursormenu cursorpopup
 
@@ -55,6 +56,8 @@ export function ConfigurableUiContent(props: ConfigurableUiContentProps) {
 
       if (element === document.body && e.key !== SpecialKey.Escape) {
         KeyboardShortcutManager.processKey(e.key, e.altKey, e.ctrlKey, e.shiftKey);
+      } else if (UiFramework.escapeToHome && element !== document.body && e.key === SpecialKey.Escape) {
+        KeyboardShortcutManager.setFocusToHome();
       }
     };
     window.addEventListener("keyup", handleKeyUp);

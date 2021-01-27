@@ -19,7 +19,8 @@ import { UiCore } from "../UiCore";
 
 import "./themed-select.scss";
 
-// cspell:ignore reactselect
+// cspell:ignore reactselect builtins
+
 /* eslint-disable no-shadow, @typescript-eslint/consistent-type-definitions, @typescript-eslint/array-type */
 type FormatOptionLabelContext = "menu" | "value";
 type FormatOptionLabelMeta = {
@@ -230,7 +231,7 @@ export function ThemedSelect(props: ThemedSelectProps) {
         classNamePrefix="react-select"
         noOptionsMessage={noOptionFunction}
         menuPortalTarget={portalTarget}
-        styles={ selectStyles }
+        styles={selectStyles}
         // eslint-disable-next-line @typescript-eslint/naming-convention
         components={{ Menu: ThemedMenu, ...props.components }}
         {...otherProps}

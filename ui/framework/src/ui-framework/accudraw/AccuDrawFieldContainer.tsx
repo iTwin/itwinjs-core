@@ -31,11 +31,14 @@ export interface AccuDrawFieldContainerProps extends CommonProps {
   uiSettings?: UiSettings;
 }
 
+let AccuDrawContainerIndex = 0;
+
 /** @alpha */
 export function AccuDrawFieldContainer(props: AccuDrawFieldContainerProps) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { className, style, uiSettings, ...otherProps } = props;
+  const { className, style, orientation, uiSettings, ...otherProps } = props;
 
+  const [containerIndex] = React.useState(() => ++AccuDrawContainerIndex);
   const xInputRef = React.useRef<HTMLInputElement>(null);
   const yInputRef = React.useRef<HTMLInputElement>(null);
   const zInputRef = React.useRef<HTMLInputElement>(null);
@@ -183,6 +186,7 @@ export function AccuDrawFieldContainer(props: AccuDrawFieldContainerProps) {
 
   const classNames = classnames(
     "uifw-accudraw-field-container",
+    (orientation === Orientation.Vertical) ? "uifw-accudraw-field-container-vertical" : "uifw-accudraw-field-container-horizontal",
     className,
   );
 
@@ -192,29 +196,31 @@ export function AccuDrawFieldContainer(props: AccuDrawFieldContainerProps) {
     <div className={classNames} style={style} {...otherProps}>
       {mode === AccuDrawMode.Rectangular &&
         <>
-          <AccuDrawInputField ref={xInputRef} initialValue={xFormattedValue.current} isLocked={xLock} className="uifw-accudraw-x-value" valueChangedDelay={delay}
-            field={AccuDrawField.X} id="uifw-accudraw-x" label="X"
-            onValueChanged={(stringValue) => handleValueChanged(AccuDrawField.X, stringValue)}
+          <AccuDrawInputField ref={xInputRef} initialValue={xFormattedValue.current} isLocked={xLock} className="uifw-accudraw-x-value"
+            field={AccuDrawField.X} id={`uifw-accudraw-x-${containerIndex}`} label="X" data-testid="uifw-accudraw-x"
+            valueChangedDelay={delay} onValueChanged={(stringValue) => handleValueChanged(AccuDrawField.X, stringValue)}
             onEscPressed={handleEscPressed} />
-          <AccuDrawInputField ref={yInputRef} initialValue={yFormattedValue.current} isLocked={yLock} className="uifw-accudraw-y-value" valueChangedDelay={delay}
-            field={AccuDrawField.Y} id="uifw-accudraw-y" label="Y"
-            onValueChanged={(stringValue) => handleValueChanged(AccuDrawField.Y, stringValue)}
+          <AccuDrawInputField ref={yInputRef} initialValue={yFormattedValue.current} isLocked={yLock} className="uifw-accudraw-y-value"
+            field={AccuDrawField.Y} id={`uifw-accudraw-y-${containerIndex}`} label="Y" data-testid="uifw-accudraw-y"
+            valueChangedDelay={delay} onValueChanged={(stringValue) => handleValueChanged(AccuDrawField.Y, stringValue)}
             onEscPressed={handleEscPressed} />
-          <AccuDrawInputField ref={zInputRef} initialValue={zFormattedValue.current} isLocked={zLock} className="uifw-accudraw-z-value" valueChangedDelay={delay}
-            field={AccuDrawField.Z} id="uifw-accudraw-z" label="Z"
-            onValueChanged={(stringValue) => handleValueChanged(AccuDrawField.Z, stringValue)}
+          <AccuDrawInputField ref={zInputRef} initialValue={zFormattedValue.current} isLocked={zLock} className="uifw-accudraw-z-value"
+            field={AccuDrawField.Z} id={`uifw-accudraw-z-${containerIndex}`} label="Z" data-testid="uifw-accudraw-z"
+            valueChangedDelay={delay} onValueChanged={(stringValue) => handleValueChanged(AccuDrawField.Z, stringValue)}
             onEscPressed={handleEscPressed} />
         </>
       }
       {mode === AccuDrawMode.Polar &&
         <>
-          <AccuDrawInputField ref={angleInputRef} initialValue={angleFormattedValue.current} isLocked={angleLock} className="uifw-accudraw-angle-value" valueChangedDelay={delay}
-            field={AccuDrawField.Angle} id="uifw-accudraw-angle" iconSpec={IconSpecUtilities.createSvgIconSpec(angleIcon)}
-            onValueChanged={(stringValue) => handleValueChanged(AccuDrawField.Angle, stringValue)}
+          <AccuDrawInputField ref={angleInputRef} initialValue={angleFormattedValue.current} isLocked={angleLock} className="uifw-accudraw-angle-value"
+            field={AccuDrawField.Angle} id={`uifw-accudraw-angle-${containerIndex}`} data-testid="uifw-accudraw-angle"
+            iconSpec={IconSpecUtilities.createSvgIconSpec(angleIcon)}
+            valueChangedDelay={delay} onValueChanged={(stringValue) => handleValueChanged(AccuDrawField.Angle, stringValue)}
             onEscPressed={handleEscPressed} />
-          <AccuDrawInputField ref={distanceInputRef} initialValue={distanceFormattedValue.current} isLocked={distanceLock} className="uifw-accudraw-distance-value" valueChangedDelay={delay}
-            field={AccuDrawField.Distance} id="uifw-accudraw-distance" iconSpec={IconSpecUtilities.createSvgIconSpec(distanceIcon)}
-            onValueChanged={(stringValue) => handleValueChanged(AccuDrawField.Distance, stringValue)}
+          <AccuDrawInputField ref={distanceInputRef} initialValue={distanceFormattedValue.current} isLocked={distanceLock} className="uifw-accudraw-distance-value"
+            field={AccuDrawField.Distance} id={`uifw-accudraw-distance-${containerIndex}`} data-testid="uifw-accudraw-distance"
+            iconSpec={IconSpecUtilities.createSvgIconSpec(distanceIcon)}
+            valueChangedDelay={delay} onValueChanged={(stringValue) => handleValueChanged(AccuDrawField.Distance, stringValue)}
             onEscPressed={handleEscPressed} />
         </>
       }

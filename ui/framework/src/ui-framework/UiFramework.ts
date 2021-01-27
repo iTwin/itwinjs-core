@@ -89,6 +89,7 @@ export class UiFramework {
   private static _uiVersion = "";
   private static _hideIsolateEmphasizeActionHandler?: HideIsolateEmphasizeActionHandler;
   private static _uiSettings: UiSettings;
+  private static _escapeToHome = false;
 
   /** Get Show Ui event.
    * @public
@@ -371,7 +372,7 @@ export class UiFramework {
   /** @beta */
   public static getUiSettings(): UiSettings {
     if (undefined === UiFramework._uiSettings)
-      UiFramework._uiSettings= new LocalUiSettings();
+      UiFramework._uiSettings = new LocalUiSettings();
     return UiFramework._uiSettings;
   }
 
@@ -507,5 +508,11 @@ export class UiFramework {
       ConfigurableUiManager.closeUi();
     }
   };
+
+  /** Determines if Escape sends focus to Home
+   * @alpha
+   */
+  public static get escapeToHome(): boolean { return UiFramework._escapeToHome; }
+  public static set escapeToHome(v: boolean) { UiFramework._escapeToHome = v; }
 
 }
