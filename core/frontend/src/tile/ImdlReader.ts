@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, ByteStream, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { assert, ByteStream, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Point3d, Range2d, Range3d, Transform } from "@bentley/geometry-core";
 import {
   BatchType, ColorDef, ElementAlignedBox3d, FeatureTableHeader, FillFlags, Gradient, ImageSource, ImdlHeader, LinePixels,
