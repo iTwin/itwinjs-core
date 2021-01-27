@@ -8,6 +8,7 @@ import * as sinon from "sinon";
 import { MockRender } from "@bentley/imodeljs-frontend";
 import { ContentLayoutDef, CoreTools, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, StagePanelDef, WidgetDef, WidgetState } from "../../ui-framework";
 import TestUtils from "../TestUtils";
+import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, UiItemsManager, UiItemsProvider } from "@bentley/ui-abstract";
 
 describe("FrontstageDef", () => {
   before(async () => {
@@ -105,4 +106,65 @@ describe("FrontstageDef", () => {
     });
   });
 
+  describe("dynamic widgets", () => {
+    class WidgetsProvider implements UiItemsProvider {
+      public readonly id = "WidgetsProvider";
+
+      public provideWidgets(_stageId: string, _stageUsage: string, location: StagePanelLocation, section?: StagePanelSection) {
+        const widgets: Array<AbstractWidgetProps> = [];
+        widgets.push({ // This should be added to Left stage panel, Start location.
+          id: "WidgetsProviderW1",
+          label: "WidgetsProvider W1",
+          getWidgetContent: () => "",
+        });
+        if (location === StagePanelLocation.Right)
+          widgets.push({ // This should be added to Right stage panel, Start location.
+            id: "WidgetsProviderR1",
+            label: "WidgetsProvider R1",
+            getWidgetContent: () => "",
+          });
+        if (location === StagePanelLocation.Right && section === StagePanelSection.Middle)
+          widgets.push({
+            id: "WidgetsProviderRM1",
+            label: "WidgetsProvider RM1",
+            getWidgetContent: () => "",
+          });
+        return widgets;
+      }
+    }
+
+    class EmptyFrontstageProvider extends FrontstageProvider {
+      public get frontstage() {
+        return (
+          <Frontstage
+            id="TestFrontstageUi2"
+            defaultTool={CoreTools.selectElementCommand}
+            defaultLayout="SingleContent"
+            contentGroup="TestContentGroup1"
+            defaultContentId="defaultContentId"
+            isInFooterMode={false}
+            applicationData={{ key: "value" }}
+          />
+        );
+      }
+    }
+
+    beforeEach(() => {
+      UiItemsManager.register(new WidgetsProvider());
+    });
+
+    afterEach(() => {
+      UiItemsManager.unregister("WidgetsProvider");
+    });
+
+    it("should add extension widgets to stage panel zones", async () => {
+      const frontstageProvider = new EmptyFrontstageProvider();
+      FrontstageManager.addFrontstageProvider(frontstageProvider);
+      await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+      const sut = FrontstageManager.activeFrontstageDef!;
+      sut.rightPanel!.panelZones.start.widgetDefs.map((w) => w.id).should.eql(["WidgetsProviderR1"]);
+      sut.rightPanel!.panelZones.middle.widgetDefs.map((w) => w.id).should.eql(["WidgetsProviderRM1"]);
+      sut.leftPanel!.panelZones.start.widgetDefs.map((w) => w.id).should.eql(["WidgetsProviderW1"]);
+    });
+  });
 });

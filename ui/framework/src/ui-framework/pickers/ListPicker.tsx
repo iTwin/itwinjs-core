@@ -25,7 +25,7 @@ const ContainedGroup = withOnOutsideClick(withContainIn(Group), undefined, false
  * @beta
  */
 export enum ListItemType {
-  Item = 0, // eslint-disable-line no-shadow
+  Item = 0, // eslint-disable-line @typescript-eslint/no-shadow
   Separator = 1,
   Container = 2,
 }

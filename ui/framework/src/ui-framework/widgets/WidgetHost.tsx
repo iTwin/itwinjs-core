@@ -14,7 +14,7 @@ import { WidgetDef } from "./WidgetDef";
 /**
  * A WidgetHost represents a definition that hosts one or most Widgets in a Frontstage.
  * @public
- */
+ */
 export class WidgetHost {
 
   private _widgetDefs: WidgetDef[] = new Array<WidgetDef>();
@@ -40,7 +40,7 @@ export class WidgetHost {
 
   /** Gets the number of Widgets. */
   public get widgetCount(): number {
-    return this._sortedWidgetDefs.length;
+    return this.widgetDefs.length;
   }
 
   /** If there is only one Widget in the Panel, gets the single WidgetDef.
@@ -48,7 +48,7 @@ export class WidgetHost {
    */
   public getSingleWidgetDef(): WidgetDef | undefined {
     if (this.widgetCount === 1) {
-      return this._sortedWidgetDefs[0];
+      return this.widgetDefs[0];
     }
     return undefined;
   }
@@ -64,8 +64,16 @@ export class WidgetHost {
   /** Updates the WidgetHost with dynamic widgets
    * @internal
    */
-  public updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation, section?: StagePanelSection): void {
-    this._dynamicWidgetDefs = UiFramework.widgetManager.getWidgetDefs(stageId, stageUsage, location, section);
+  public updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation, section: StagePanelSection | undefined,
+    widgetDefs: WidgetDef[],
+  ): void {
+    widgetDefs.push(...this._widgetDefs);
+    this._dynamicWidgetDefs = UiFramework.widgetManager.getWidgetDefs(stageId, stageUsage, location, section)
+      ?.filter((widgetDef) => {
+        const duplicate = widgetDefs.find((wDef) => wDef.id === widgetDef.id);
+        return !duplicate;
+      });
+    this._dynamicWidgetDefs && widgetDefs.push(...this._dynamicWidgetDefs);
     this.sortWidgetDefs();
   }
 
