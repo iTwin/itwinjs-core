@@ -1,0 +1,17 @@
+{
+  "name": "@bentley/imodeljs-editor-frontend",
+  "entries": [
+    {
+      "version": "2.11.0",
+      "tag": "@bentley/imodeljs-editor-frontend_v2.11.0",
+      "date": "Thu, 28 Jan 2021 13:39:27 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "EditCommands now require an iModel"
+          }
+        ]
+      }
+    }
+  ]
+}
