@@ -160,6 +160,8 @@ You can use these environment variables to alter the default behavior of various
   * If defined, TileAdmin.Props.alwaysSubdivideIncompleteTiles will be initialized to `true`.
 * SVT_MIN_SPATIAL_TOLERANCE
   * See TileAdmin.Props.minimumSpatialTolerance.
+* SVT_NO_EXTERNAL_TEXTURES
+  * If defined, the backend will embed all texture image data directly in the tiles.
 
 ## Key-ins
 

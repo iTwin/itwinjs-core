@@ -23,6 +23,7 @@ import { ViewStateLoadProps, ViewStateProps } from "../ViewProps";
 import { RpcNotFoundResponse } from "./core/RpcControl";
 import { GeometryContainmentRequestProps, GeometryContainmentResponseProps } from "../GeometryContainment";
 import { RpcRoutingToken } from "./core/RpcRoutingToken";
+import { TextureLoadProps } from "../TextureProps";
 
 /** Response if the IModelDb was not found at the backend
  * (if the service has moved)
@@ -84,4 +85,6 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   public async getGeoCoordinatesFromIModelCoordinates(_iModelToken: IModelRpcProps, _props: string): Promise<GeoCoordinatesResponseProps> { return this.forward(arguments); }
   /** @beta */
   public async getGeometrySummary(_iModelToken: IModelRpcProps, _props: GeometrySummaryRequestProps): Promise<string> { return this.forward(arguments); }
+  /** @alpha */
+  public async getTextureImage(_iModelToken: IModelRpcProps, _textureLoadProps: TextureLoadProps): Promise<Uint8Array | undefined> { return this.forward(arguments); }
 }
