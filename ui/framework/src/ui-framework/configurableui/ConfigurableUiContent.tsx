@@ -8,7 +8,6 @@
 
 import "./configurableui.scss";
 import * as React from "react";
-import { SpecialKey } from "@bentley/ui-abstract";
 import { CommonProps, Point } from "@bentley/ui-core";
 import { CursorInformation } from "../cursor/CursorInformation";
 import { CursorPopupMenu } from "../cursor/cursormenu/CursorMenu";
@@ -25,7 +24,6 @@ import { PointerMessage } from "../messages/Pointer";
 import { PopupRenderer } from "../popup/PopupManager";
 import { WidgetPanelsFrontstage } from "../widget-panels/Frontstage";
 import { ConfigurableUiManager } from "./ConfigurableUiManager";
-import { UiFramework } from "../UiFramework";
 
 // cSpell:ignore cursormenu cursorpopup
 
@@ -49,21 +47,6 @@ export function ConfigurableUiContent(props: ConfigurableUiContentProps) {
   const version = useFrameworkVersion();
   React.useEffect(() => {
     KeyboardShortcutManager.setFocusToHome();
-  }, []);
-  React.useEffect(() => {
-    const handleKeyUp = (e: KeyboardEvent) => {
-      const element = document.activeElement as HTMLElement;
-
-      if (element === document.body && e.key !== SpecialKey.Escape) {
-        KeyboardShortcutManager.processKey(e.key, e.altKey, e.ctrlKey, e.shiftKey);
-      } else if (UiFramework.escapeToHome && element !== document.body && e.key === SpecialKey.Escape) {
-        KeyboardShortcutManager.setFocusToHome();
-      }
-    };
-    window.addEventListener("keyup", handleKeyUp);
-    return () => {
-      window.removeEventListener("keyup", handleKeyUp);
-    };
   }, []);
   React.useEffect(() => {
     ConfigurableUiManager.activityTracker.initialize({ idleTimeout: props.idleTimeout, intervalTimeout: props.intervalTimeout });

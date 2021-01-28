@@ -8,6 +8,7 @@
 
 import { AccuDraw, BeButtonEvent, CompassMode, IModelApp, ItemField, QuantityType } from "@bentley/imodeljs-frontend";
 import { AccuDrawField, AccuDrawMode, AccuDrawSetFieldValueFromUiEventArgs, AccuDrawUiAdmin } from "@bentley/ui-abstract";
+import { UiFramework } from "../UiFramework";
 
 // cspell:ignore dont
 
@@ -110,7 +111,7 @@ export class FrameworkAccuDraw extends AccuDraw {
    * @internal
    */
   public onMotion(_ev: BeButtonEvent): void {
-    if (!this.isEnabled || this.isDeactivated)
+    if (!this.isEnabled || this.isDeactivated || UiFramework.isContextMenuOpen)
       return;
 
     this.fieldValuesChanged();

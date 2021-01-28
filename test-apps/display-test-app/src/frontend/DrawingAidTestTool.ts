@@ -6,8 +6,7 @@
 import { IModelJson as GeomJson, LineString3d, Point3d, Vector3d } from "@bentley/geometry-core";
 import { ColorDef, GeometryStreamProps } from "@bentley/imodeljs-common";
 import {
-  AccuDrawHintBuilder, AccuDrawShortcuts, BeButtonEvent, DecorateContext, DynamicsContext, EventHandled, GraphicType, HitDetail, IModelApp,
-  PrimitiveTool, SnapStatus,
+  AccuDrawHintBuilder, BeButtonEvent, DecorateContext, DynamicsContext, EventHandled, GraphicType, HitDetail, IModelApp, PrimitiveTool, SnapStatus,
 } from "@bentley/imodeljs-frontend";
 
 export class DrawingAidTestTool extends PrimitiveTool {
@@ -106,7 +105,7 @@ export class DrawingAidTestTool extends PrimitiveTool {
   public async onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled> {
     if (EventHandled.Yes === await super.onKeyTransition(wentDown, keyEvent))
       return EventHandled.Yes;
-    return (wentDown && AccuDrawShortcuts.processShortcutKey(keyEvent)) ? EventHandled.Yes : EventHandled.No;
+    return EventHandled.No;
   }
 
   public onRestartTool(): void {

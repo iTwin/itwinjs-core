@@ -3,19 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, Id64, Id64Array, Id64String } from "@bentley/bentleyjs-core";
-import {
-  IModelJson,
-  LineSegment3d,
-  LineString3d,
-  Point3d,
-  Transform,
-  Vector3d,
-  YawPitchRollAngles,
-} from "@bentley/geometry-core";
+import { IModelJson, LineSegment3d, LineString3d, Point3d, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { Code, ColorDef, GeometryStreamProps, IModelWriteRpcInterface, LinePixels, PhysicalElementProps } from "@bentley/imodeljs-common";
 import {
-  AccuDrawHintBuilder, AccuDrawShortcuts, BeButtonEvent, DecorateContext, DynamicsContext, ElementEditor3d, EventHandled, GraphicType, HitDetail, IModelApp, InteractiveEditingSession,
-  LocateFilterStatus, LocateResponse, PrimitiveTool, Tool,
+  AccuDrawHintBuilder, BeButtonEvent, DecorateContext, DynamicsContext, ElementEditor3d, EventHandled, GraphicType, HitDetail, IModelApp,
+  InteractiveEditingSession, LocateFilterStatus, LocateResponse, PrimitiveTool, Tool,
 } from "@bentley/imodeljs-frontend";
 import { setTitle } from "./Title";
 
@@ -410,7 +402,7 @@ export class PlaceLineStringTool extends InteractiveEditingTool {
     if (EventHandled.Yes === await super.onKeyTransition(wentDown, keyEvent))
       return EventHandled.Yes;
 
-    return wentDown && AccuDrawShortcuts.processShortcutKey(keyEvent) ? EventHandled.Yes : EventHandled.No;
+    return EventHandled.No;
   }
 
   public onRestartTool(): void {
