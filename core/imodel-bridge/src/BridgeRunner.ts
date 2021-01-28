@@ -486,7 +486,11 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
       props = await BriefcaseManager.downloadBriefcase(this._requestContext, {briefcaseId: this._bridgeArgs.argsJson.briefcaseId, contextId: this._serverArgs.contextId, iModelId: this._serverArgs.iModelId});
     } else {
       props = await BriefcaseManager.downloadBriefcase(this._requestContext, {contextId: this._serverArgs.contextId, iModelId: this._serverArgs.iModelId});
+      if(this._bridgeArgs.argsJson) {
+        this._bridgeArgs.argsJson.briefcaseId = props.briefcaseId; // don't overwrite other arguments if anything is passed in
+      } else {
       this._bridgeArgs.argsJson= {briefcaseId: props.briefcaseId};
+      }
     }
     let briefcaseDb: BriefcaseDb | undefined;
     const openArgs: OpenBriefcaseProps = {
