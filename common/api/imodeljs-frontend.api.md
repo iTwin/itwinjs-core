@@ -249,6 +249,7 @@ import { SubLayerId } from '@bentley/imodeljs-common';
 import { SyncMode } from '@bentley/imodeljs-common';
 import { TelemetryManager } from '@bentley/telemetry-client';
 import { TerrainProviderName } from '@bentley/imodeljs-common';
+import { TextureLoadProps } from '@bentley/imodeljs-common';
 import { TextureMapping } from '@bentley/imodeljs-common';
 import { ThematicDisplay } from '@bentley/imodeljs-common';
 import { ThematicDisplaySensor } from '@bentley/imodeljs-common';
@@ -4103,6 +4104,8 @@ export abstract class IModelConnection extends IModel {
     getGeometryContainment(requestProps: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
     // @beta
     getMassProperties(requestProps: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
+    // @alpha
+    getTextureImage(textureLoadProps: TextureLoadProps): Promise<Uint8Array | undefined>;
     getToolTipMessage(id: Id64String): Promise<string[]>;
     // @beta
     readonly hilited: HiliteSet;
@@ -7472,6 +7475,7 @@ export abstract class RenderSystem implements IDisposable {
     createTerrainMeshGraphic(_terrainGeometry: RenderTerrainMeshGeometry, _featureTable: PackedFeatureTable, _tileId: string, _baseColor: ColorDef | undefined, _baseTransparent: boolean, _textures?: TerrainTexture[]): RenderGraphic | undefined;
     // @internal
     createTextureFromCubeImages(_posX: HTMLImageElement, _negX: HTMLImageElement, _posY: HTMLImageElement, _negY: HTMLImageElement, _posZ: HTMLImageElement, _negZ: HTMLImageElement, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined;
+    createTextureFromElement(_id: Id64String, _imodel: IModelConnection, _params: RenderTexture.Params, _format: ImageSourceFormat): RenderTexture | undefined;
     createTextureFromImage(_image: HTMLImageElement, _hasAlpha: boolean, _imodel: IModelConnection | undefined, _params: RenderTexture.Params): RenderTexture | undefined;
     createTextureFromImageBuffer(_image: ImageBuffer, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined;
     createTextureFromImageSource(source: ImageSource, imodel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined>;
@@ -9305,6 +9309,8 @@ export abstract class TileAdmin {
     // @internal (undocumented)
     abstract get emptyViewportSet(): ReadonlyViewportSet;
     // @internal (undocumented)
+    abstract get enableExternalTextures(): boolean;
+    // @internal (undocumented)
     abstract get enableImprovedElision(): boolean;
     // @internal (undocumented)
     abstract get enableInstancing(): boolean;
@@ -9321,6 +9327,8 @@ export abstract class TileAdmin {
     abstract getViewportSetForRequest(vp: Viewport, vps?: ReadonlyViewportSet): ReadonlyViewportSet;
     // @internal (undocumented)
     abstract get ignoreAreaPatterns(): boolean;
+    // @internal (undocumented)
+    abstract invalidateAllScenes(): void;
     // @internal
     abstract isTileInUse(marker: TileUsageMarker): boolean;
     // @internal
@@ -9391,6 +9399,7 @@ export namespace TileAdmin {
         contextPreloadParentSkip?: number;
         defaultTileSizeModifier?: number;
         disableMagnification?: boolean;
+        enableExternalTextures?: boolean;
         enableImprovedElision?: boolean;
         enableInstancing?: boolean;
         ignoreAreaPatterns?: boolean;
