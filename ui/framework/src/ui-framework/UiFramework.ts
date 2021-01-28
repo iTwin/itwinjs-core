@@ -518,12 +518,9 @@ export class UiFramework {
   /** Determines whether a ContextMenu is open
    * @alpha
    * */
-  public static get isContextMenuOpen() {
+  public static get isContextMenuOpen(): boolean {
     const contextMenu = document.querySelector("div.core-context-menu-opened");
-    let isOpen = false;
-    if (contextMenu)
-      isOpen = true;
-    return isOpen;
+    return contextMenu !== null && contextMenu !== undefined;
   }
 
 }
