@@ -164,7 +164,8 @@ function isLinked(node: LRUTileListNode): boolean {
   return undefined !== node.previous || undefined !== node.next;
 }
 
-/** A doubly-linked list of LRUTileListNodes, containing Tiles partitioned by a singleton sentinel node into two partitions and ordered from least-recently- to most-recently-selected for display in any Viewport.
+/** An intrusive doubly-linked list of LRUTileListNodes, containing Tiles partitioned by a singleton sentinel node into two partitions and ordered from least-recently- to most-recently-selected for display in any Viewport.
+ * Used by TileAdmin to keep track of and impose limits upon the total amount of GPU memory allocated to tile content.
  *
  * Illustration of the structure of the list:
  *
@@ -178,7 +179,7 @@ function isLinked(node: LRUTileListNode): boolean {
  * least-recently-selected --> --> --> --> --> --> --> --> --> --> --> --> --> --> --> --> --> --> --> most-recently-selected
  * ```
  *
- * The sentinel node is always present and floats freely as the contents of each partition change.
+ * The sentinel node is always present and floats freely as the contents of each partition change. Note that the `next` and `previous` pointers are stored directly on the tiles - no link nodes are allocated to hold the entries in the list. This of course means that a Tile can only ever belong to one LRUTileList - the one owned by the TileAdmin.
  *
  * The list contains only those tiles whose content has been loaded. Each node records the amount of GPU memory allocated for the tile's content. The list keeps track of the total amount of GPU memory allocated by all tiles. The list's contents are updated as follows:
  *
