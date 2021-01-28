@@ -11,7 +11,7 @@ import { IModelBaseHandler } from "../imodelhub/BaseHandler";
 
 /**
  * This class acts as the WsgClient for other iModelBank Handlers.
- * @beta
+ * @internal
  */
 export class IModelBankHandler extends IModelBaseHandler {
   private _baseUrl: string;
