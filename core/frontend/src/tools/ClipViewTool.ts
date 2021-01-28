@@ -713,12 +713,6 @@ export class ViewClipByShapeTool extends ViewClipTool {
     this.setupAndPromptForNextAction();
     return true;
   }
-
-  public async onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled> {
-    if (EventHandled.Yes === await super.onKeyTransition(wentDown, keyEvent))
-      return EventHandled.Yes;
-    return EventHandled.No;
-  }
 }
 
 /** @alpha A tool to define a clip volume for a view by specifying range corners */

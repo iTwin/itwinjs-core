@@ -819,7 +819,7 @@ export class AccuDrawShortcuts {
     // (undocumented)
     static processPendingHints(): void;
     // @internal
-    static processShortcutKey(_keyEvent: KeyboardEvent): boolean;
+    static processShortcutKey(keyEvent: KeyboardEvent): boolean;
     // (undocumented)
     static requestInputFocus(): void;
     // (undocumented)
@@ -5357,8 +5357,6 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
-    onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled>;
-    // (undocumented)
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
     // (undocumented)
     onPostInstall(): void;
@@ -5458,8 +5456,6 @@ export class MeasureDistanceTool extends PrimitiveTool {
     }[];
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
-    onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled>;
     // (undocumented)
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
     // (undocumented)
@@ -8177,8 +8173,6 @@ export class SetupCameraTool extends PrimitiveTool {
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
-    onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled>;
-    // (undocumented)
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
     // (undocumented)
     onPostInstall(): void;
@@ -9898,6 +9892,10 @@ export class ToolAdmin {
     readonly manipulatorToolEvent: BeEvent<(tool: Tool, event: ManipulatorToolEvent) => void>;
     // (undocumented)
     markupView?: ScreenViewport;
+    onCtrlKeyPressed(keyEvent: KeyboardEvent): Promise<{
+        handled: boolean;
+        result: boolean;
+    }>;
     // @internal (undocumented)
     onInitialized(): void;
     // @internal (undocumented)
@@ -9914,6 +9912,7 @@ export class ToolAdmin {
     get primitiveTool(): PrimitiveTool | undefined;
     // @internal
     processEvent(): Promise<void>;
+    processShortcutKey(keyEvent: KeyboardEvent, wentDown: boolean): boolean;
     processWheelEvent(ev: BeWheelEvent, doUpdate: boolean): Promise<EventHandled>;
     // @internal
     get reloadToolSettingsHandler(): (() => void) | undefined;
@@ -10448,8 +10447,6 @@ export class ViewClipByShapeTool extends ViewClipTool {
     protected _matrix?: Matrix3d;
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
-    onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled>;
     // (undocumented)
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
     // (undocumented)

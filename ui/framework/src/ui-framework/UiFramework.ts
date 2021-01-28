@@ -515,7 +515,9 @@ export class UiFramework {
   public static get escapeToHome(): boolean { return UiFramework._escapeToHome; }
   public static set escapeToHome(v: boolean) { UiFramework._escapeToHome = v; }
 
-  /** @internal */
+  /** Determines whether a ContextMenu is open
+   * @alpha
+   * */
   public static get isContextMenuOpen() {
     const contextMenu = document.querySelector("div.core-context-menu-opened");
     let isOpen = false;

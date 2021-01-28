@@ -249,12 +249,6 @@ export class PlaceBlockTool extends PrimitiveToolEx {
     return true;
   }
 
-  public async onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled> {
-    if (EventHandled.Yes === await super.onKeyTransition(wentDown, keyEvent))
-      return EventHandled.Yes;
-    return EventHandled.No;
-  }
-
   public onRestartTool(): void {
     const tool = new PlaceBlockTool();
     if (!tool.run())

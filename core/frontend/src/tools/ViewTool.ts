@@ -4060,12 +4060,6 @@ export class SetupCameraTool extends PrimitiveTool {
     IModelApp.viewManager.invalidateDecorationsAllViews();
   }
 
-  public async onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled> {
-    if (EventHandled.Yes === await super.onKeyTransition(wentDown, keyEvent))
-      return EventHandled.Yes;
-    return EventHandled.No;
-  }
-
   public static drawCameraFrustum(context: DecorateContext, vp: ScreenViewport, eyePtWorld: Point3d, targetPtWorld: Point3d, eyeSnapPtWorld?: Point3d, targetSnapPtWorld?: Point3d) {
     if (!vp.view.is3d() || vp.view.iModel !== context.viewport.view.iModel)
       return;
