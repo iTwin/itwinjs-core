@@ -10,7 +10,7 @@ import { assert, ReadonlySortedArray, SortedArray } from "@bentley/bentleyjs-cor
 import { RenderMemory } from "../render/RenderMemory";
 import { Tile } from "./internal";
 
-/** Maintains in sorted order a set of Viewport Ids for which a given tile has been selected for display.
+/** Maintains in sorted order a set of Viewport Ids for which a given tile has been selected for display. The number of viewports in a set is expected to be very small - often only 1 for a typical application.
  * Strictly for use by LRUTileList.
  * @see ViewportIdSets.
  * @internal
@@ -88,6 +88,7 @@ export class ViewportIdSets extends SortedArray<ViewportIdSet> {
     });
   }
 
+  /** Remove the specified viewport Id from all sets and remove empty and duplicate sets. */
   public drop(viewportId: number): void {
     // Remove from all sets, and delete empty sets.
     for (let i = 0; i < this._array.length; i++) {
@@ -153,6 +154,7 @@ export class ViewportIdSets extends SortedArray<ViewportIdSet> {
 export interface LRUTileListNode {
   previous?: LRUTileListNode;
   next?: LRUTileListNode;
+  /** The number of bytes of GPU memory allocated to the tile's content. The only node in a LRUTileListNode with `bytesUsed` less than 1 is the sentinel node. */
   bytesUsed: number;
   /** For a tile, the Ids of all of the Viewports for which the tile is currently selected for display. The ViewportIdSet is owned by the LRUTileList's ViewportIdSets member.
    * Undefined if the tile is not selected for display in any viewport.
@@ -221,6 +223,9 @@ export class LRUTileList {
     this._viewportIdSets.clear();
   }
 
+  /** Compute the amount of GPU memory allocated to the tile's content and, if greater than zero, add the tile to the end of the "not selected" partition.
+   * Invoked by TileAdmin whenever a tile's content is set to a valid RenderGraphic.
+   */
   public add(tile: Tile): void {
     assert(!isLinked(tile));
     if (isLinked(tile))
@@ -244,8 +249,11 @@ export class LRUTileList {
     this.moveBeforeSentinel(tile);
   }
 
+  /** Remove the tile from the list and deduct its previously-used GPU memory from the list's running total.
+   * Invoked by TileAdmin when a tile's content is unloaded, including when the list itself disposes of the content in its `freeMemory` method.
+   */
   public drop(tile: Tile): void {
-    assert(isLinked(tile));
+    assert(isLinked(tile) || tile.bytesUsed === 0);
     if (!isLinked(tile))
       return;
 
@@ -258,6 +266,36 @@ export class LRUTileList {
     tile.bytesUsed = 0;
 
     this.assertList();
+  }
+
+  /** Mark the tiles as selected for display in the specified Viewport. They are moved to the end of the "selected" partition. */
+  public markSelectedForViewport(viewportId: number, tiles: Iterable<Tile>): void {
+    for (const tile of tiles) {
+      assert(isLinked(tile));
+      assert(tile.bytesUsed > 0);
+
+      if (isLinked(tile)) {
+        tile.viewportIds = this._viewportIdSets.plus(viewportId, tile.viewportIds);
+        this.moveToEnd(tile);
+      }
+    }
+  }
+
+  /** Mark the tiles as no longer selected for display in the specified Viewport.
+   * If this results in a tile being no longer selected for any viewport, it is moved to the end of the "not selected" partition.
+   */
+  public clearSelectedForViewport(viewportId: number): void {
+    this._viewportIdSets.drop(viewportId);
+    let prev: LRUTileListNode | undefined = this._sentinel;
+    while (prev && prev.next) {
+      const tile = prev.next as Tile;
+      assert(tile !== this._sentinel);
+      tile.viewportIds = this._viewportIdSets.minus(viewportId, tile.viewportIds);
+      if (undefined === tile.viewportIds)
+        this.moveBeforeSentinel(tile as Tile);
+      else
+        prev = tile;
+    }
   }
 
   protected assertList(): void {
@@ -323,31 +361,5 @@ export class LRUTileList {
       this._head = tile;
     else
       tile.previous.next = tile;
-  }
-
-  public markSelectedForViewport(viewportId: number, tiles: Iterable<Tile>): void {
-    for (const tile of tiles) {
-      assert(isLinked(tile));
-      assert(tile.bytesUsed > 0);
-
-      if (isLinked(tile)) {
-        tile.viewportIds = this._viewportIdSets.plus(viewportId, tile.viewportIds);
-        this.moveToEnd(tile);
-      }
-    }
-  }
-
-  public clearSelectedForViewport(viewportId: number): void {
-    this._viewportIdSets.drop(viewportId);
-    let prev: LRUTileListNode | undefined = this._sentinel;
-    while (prev && prev.next) {
-      const tile = prev.next as Tile;
-      assert(tile !== this._sentinel);
-      tile.viewportIds = this._viewportIdSets.minus(viewportId, tile.viewportIds);
-      if (undefined === tile.viewportIds)
-        this.moveBeforeSentinel(tile as Tile);
-      else
-        prev = tile;
-    }
   }
 }
