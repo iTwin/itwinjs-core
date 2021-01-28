@@ -19,23 +19,28 @@ class List extends LRUTileList {
   public get tail() { return this._tail; }
   public get totalBytesUsed() { return this._totalBytesUsed; }
 
-  public toArray(): LRUTileListNode[] {
-    const nodes = [];
-    for (let node: LRUTileListNode | undefined = this.head; node !== undefined; node = node.next)
-      nodes.push(node);
-
-    return nodes;
-  }
-
   public expectOrder(expected: LRUTileListNode[]): void {
-    const actual = this.toArray();
+    expect(this.head.previous).to.be.undefined;
+    expect(this.tail.next).to.be.undefined;
+    const actual = [];
+    for (let node: LRUTileListNode | undefined = this.head; node !== undefined; node = node.next)
+      actual.push(node);
+
     expect(actual.length).to.equal(expected.length);
     for (let i = 0; i < actual.length; i++)
       expect(actual[i]).to.equal(expected[i]);
+
+    let j = actual.length;
+    for (let node: LRUTileListNode | undefined = this.tail; node !== undefined; node = node.previous) {
+      expect(j).greaterThan(0);
+      expect(actual[--j]).to.equal(node);
+    }
+
+    expect(j).to.equal(0);
   }
 }
 
-describe.only("LRUTileList", () => {
+describe("LRUTileList", () => {
   it("adds and removes nodes", () => {
     const list = new List();
     expect(list.head).to.equal(list.sentinel);
@@ -67,13 +72,9 @@ describe.only("LRUTileList", () => {
     expect(tiles[4].previous).to.equal(tiles[2]);
     list.expectOrder([ tiles[0], tiles[1], tiles[2], tiles[4], list.sentinel ]);
 
-    expect(list.tail).to.equal(tiles[4]);
     list.drop(tiles[4]);
     expect(tiles[4].previous).to.be.undefined;
     expect(tiles[4].next).to.be.undefined;
-    expect(list.tail).to.equal(tiles[2]);
-    expect(tiles[2].next).to.be.undefined;
-    expect(tiles[2].previous).to.equal(tiles[1]);
     list.expectOrder([ tiles[0], tiles[1], tiles[2], list.sentinel ]);
 
     expect(list.head).to.equal(tiles[0]);
@@ -81,8 +82,6 @@ describe.only("LRUTileList", () => {
     expect(tiles[0].previous).to.be.undefined;
     expect(tiles[0].next).to.be.undefined;
     expect(list.head).to.equal(tiles[1]);
-    expect(list.head.previous).to.be.undefined;
-    expect(list.head.next).to.equal(tiles[1]);
     list.expectOrder([ tiles[1], tiles[2], list.sentinel ]);
   });
 

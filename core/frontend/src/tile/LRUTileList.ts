@@ -320,9 +320,8 @@ export class LRUTileList {
 
     if (!tile.previous)
       this._head = tile;
-
-    if (!tile.next)
-      this._tail = tile;
+    else
+      tile.previous.next = tile;
   }
 
   public markSelectedForViewport(viewportId: number, tiles: Iterable<Tile>): void {
