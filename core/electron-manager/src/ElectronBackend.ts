@@ -104,7 +104,7 @@ export class ElectronBackend implements IpcSocketBackend {
     // opts.icon cannot be set to undefined, an invalid path, or a local file path
     // when using the development server as it'd crash Electron on macOS/linux
     // https://github.com/electron/electron/issues/27303#issuecomment-759501184
-    const icon = process.platform === "win32" ?? this.appIconPath;
+    const icon = process.platform === "win32" && this.appIconPath;
     if (icon)
       opts.icon = this.appIconPath;
 
