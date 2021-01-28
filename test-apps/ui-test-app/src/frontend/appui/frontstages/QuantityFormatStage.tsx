@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import "./QuantityFormatStage.scss";
 import * as React from "react";
-import { ModalFrontstageInfo, ModalDialogManager, UiFramework } from "@bentley/ui-framework";
-import { IModelApp, QuantityFormatsChangedArgs, QuantityType } from "@bentley/imodeljs-frontend";
-import { Button, ButtonType, Listbox, ListboxItem, Dialog } from "@bentley/ui-core";
-import { Format, FormatProps, FormatterSpec, UnitsProvider } from "@bentley/imodeljs-quantity";
-import { FormatPanel, FormatSample } from "@bentley/ui-components";
 import { DeepCompare } from "@bentley/geometry-core";
+import { IModelApp, QuantityFormatsChangedArgs, QuantityType } from "@bentley/imodeljs-frontend";
+import { Format, FormatProps, FormatterSpec, UnitsProvider } from "@bentley/imodeljs-quantity";
 import { DialogButtonType } from "@bentley/ui-abstract";
+import { FormatPanel, FormatSample } from "@bentley/ui-components";
+import { Button, ButtonType, Dialog, Listbox, ListboxItem } from "@bentley/ui-core";
+import { ModalDialogManager, ModalFrontstageInfo, UiFramework } from "@bentley/ui-framework";
 
 /** Modal frontstage displaying the active QuantityFormatStage.
  * @alpha
@@ -23,7 +23,7 @@ export class QuantityFormatModalFrontstage implements ModalFrontstageInfo {
 function formatAreEqual(obj1: FormatProps, obj2: FormatProps) {
   const compare = new DeepCompare();
   return compare.compare(obj1, obj2);
-};
+}
 
 function QuantityFormatStage({ initialQuantityType }: { initialQuantityType: QuantityType }) {
   const [activeQuantityType, setActiveQuantityType] = React.useState(initialQuantityType);
@@ -172,7 +172,7 @@ function SaveFormatModalDialog({ formatProps, quantityType, newQuantityType, onD
   }, [newQuantityType, onDialogClose]);
 
   const handleOK = React.useCallback(() => {
-    IModelApp.quantityFormatter.setOverrideFormat(quantityType, formatProps);
+    void IModelApp.quantityFormatter.setOverrideFormat(quantityType, formatProps); // eslint-disable-line @typescript-eslint/no-floating-promises
     handleClose();
   }, [formatProps, handleClose, quantityType]);
 
