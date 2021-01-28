@@ -28,6 +28,10 @@ This feature is currently disabled by default. Enabling it requires the use of A
   const tileAdmin = TileAdmin.create(tileAdminProps);
    IModelApp.startup({ tileAdmin });
 ```
+## Change of default behavior of IModelDb.close() and IModelDb.saveChanges()
+By default `IModelDb.close()` use to save changes. But now it does not. Application must call `IModelDb.saveChanges()` explicitly before closing to ensure any changes made so far are committed to disk. `IModelDb.saveChanges()` also now expect to throw an exception if it fails and rollback any changes. Application code must treat exceptions as fatal an should exit afterwords. Application should not expect this to be common case and `IModelDb.saveChanges()` only fail in rare cases where there were not enough system resources to complete the operation.
+
+As best practice always call `IModelDb.saveChanges()` before close if you intent to commit changes to disk or call `IModelDb.abandonChanges()` in case you do not want current change to be committed to disk. Also make sure you have try/catch around `IModelDb.saveChanges()` that quit the application without attempting to use IModelDb again. Client code must not call close()/saveChanges()/abandonChange() in catch block as the connection is already performed the rollback and is not in state where it can perform any other operation.
 
 ## Breaking API Changes
 
