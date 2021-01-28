@@ -35,7 +35,7 @@ export namespace IModelTransformerUtils {
   const federationGuid3: GuidString = Guid.createValue();
 
   export async function prepareSourceDb(sourceDb: IModelDb): Promise<void> {
-    // Import desired target schemas
+    // Import desired schemas
     const requestContext = new BackendRequestContext();
     const sourceSchemaFileName: string = path.join(KnownTestLocations.assetsDir, "TestTransformerSource.ecschema.xml");
     await sourceDb.importSchemas(requestContext, [FunctionalSchema.schemaFilePath, sourceSchemaFileName]);
@@ -407,21 +407,40 @@ export namespace IModelTransformerUtils {
     sourceMultiAspects[1].asAny.sourceString += "-Updated";
     sourceDb.elements.updateAspect(sourceMultiAspects[1]);
     // clear NavigationProperty of PhysicalElement1
-    const physicalElementId: Id64String = queryByUserLabel(sourceDb, "PhysicalElement1");
-    let physicalElement: PhysicalElement = sourceDb.elements.getElement(physicalElementId);
-    physicalElement.asAny.commonNavigation = RelatedElement.none;
-    physicalElement.update();
-    physicalElement = sourceDb.elements.getElement(physicalElementId);
-    assert.isUndefined(physicalElement.asAny.commonNavigation);
+    const physicalElementId1: Id64String = queryByUserLabel(sourceDb, "PhysicalElement1");
+    let physicalElement1: PhysicalElement = sourceDb.elements.getElement(physicalElementId1);
+    physicalElement1.asAny.commonNavigation = RelatedElement.none;
+    physicalElement1.update();
+    physicalElement1 = sourceDb.elements.getElement(physicalElementId1);
+    assert.isUndefined(physicalElement1.asAny.commonNavigation);
     // delete PhysicalObject3
     const physicalObjectId3: Id64String = queryByUserLabel(sourceDb, "PhysicalObject3");
     assert.isTrue(Id64.isValidId64(physicalObjectId3));
     sourceDb.elements.deleteElement(physicalObjectId3);
     assert.equal(Id64.invalid, queryByUserLabel(sourceDb, "PhysicalObject3"));
+    // Insert PhysicalObject5
+    const physicalObjectProps5: PhysicalElementProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: physicalElement1.model,
+      category: spatialCategoryId,
+      code: Code.createEmpty(),
+      userLabel: "PhysicalObject5",
+      geom: createBox(Point3d.create(1, 1, 1)),
+      placement: {
+        origin: Point3d.create(5, 5, 5),
+        angles: YawPitchRollAngles.createDegrees(0, 0, 0),
+      },
+    };
+    const physicalObjectId5: Id64String = sourceDb.elements.insertElement(physicalObjectProps5);
+    assert.isTrue(Id64.isValidId64(physicalObjectId5));
     // delete relationship
+    const drawingGraphicId1: Id64String = queryByUserLabel(sourceDb, "DrawingGraphic1");
     const drawingGraphicId2: Id64String = queryByUserLabel(sourceDb, "DrawingGraphic2");
     const relationship: Relationship = sourceDb.relationships.getInstance(DrawingGraphicRepresentsElement.classFullName, { sourceId: drawingGraphicId2, targetId: physicalObjectId1 });
     relationship.delete();
+    // insert relationships
+    DrawingGraphicRepresentsElement.insert(sourceDb, drawingGraphicId1, physicalObjectId5);
+    DrawingGraphicRepresentsElement.insert(sourceDb, drawingGraphicId2, physicalObjectId5);
     // update InformationRecord2
     const informationRecordCodeSpec: CodeSpec = sourceDb.codeSpecs.getByName("InformationRecords");
     const informationModelId = sourceDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(sourceDb, subjectId, "Information"))!;
@@ -684,75 +703,93 @@ export namespace IModelTransformerUtils {
     assert.isTrue(Guid.isV4Guid(relWithProps.targetGuid));
   }
 
-  export function assertUpdatesInTargetDb(targetDb: IModelDb): void {
+  export function assertUpdatesInDb(iModelDb: IModelDb, assertDeletes: boolean = true): void {
+    // determine which schema was imported
+    const testSourceSchema = iModelDb.querySchemaVersion("TestTransformerSource") ? true : false;
+    const testTargetSchema = iModelDb.querySchemaVersion("TestTransformerTarget") ? true : false;
+    assert.notEqual(testSourceSchema, testTargetSchema);
     // assert Subject was updated
-    const subjectId = targetDb.elements.queryElementIdByCode(Subject.createCode(targetDb, IModel.rootSubjectId, "Subject"))!;
+    const subjectId = iModelDb.elements.queryElementIdByCode(Subject.createCode(iModelDb, IModel.rootSubjectId, "Subject"))!;
     assert.isTrue(Id64.isValidId64(subjectId));
-    const subject: Subject = targetDb.elements.getElement<Subject>(subjectId);
+    const subject: Subject = iModelDb.elements.getElement<Subject>(subjectId);
     assert.equal(subject.description, "Subject description (Updated)");
     // assert SpatialCategory was updated
-    const definitionModelId = targetDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(targetDb, subjectId, "Definition"))!;
+    const definitionModelId = iModelDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(iModelDb, subjectId, "Definition"))!;
     assert.isTrue(Id64.isValidId64(definitionModelId));
-    const spatialCategoryId = targetDb.elements.queryElementIdByCode(SpatialCategory.createCode(targetDb, definitionModelId, "SpatialCategory"))!;
+    const spatialCategoryId = iModelDb.elements.queryElementIdByCode(SpatialCategory.createCode(iModelDb, definitionModelId, "SpatialCategory"))!;
     assert.isTrue(Id64.isValidId64(spatialCategoryId));
-    const spatialCategory: SpatialCategory = targetDb.elements.getElement<SpatialCategory>(spatialCategoryId);
+    const spatialCategory: SpatialCategory = iModelDb.elements.getElement<SpatialCategory>(spatialCategoryId);
     assert.exists(spatialCategory.federationGuid);
     // assert TargetRelWithProps was updated
-    const spatialCategorySelectorId = targetDb.elements.queryElementIdByCode(CategorySelector.createCode(targetDb, definitionModelId, "SpatialCategories"))!;
+    const spatialCategorySelectorId = iModelDb.elements.queryElementIdByCode(CategorySelector.createCode(iModelDb, definitionModelId, "SpatialCategories"))!;
     assert.isTrue(Id64.isValidId64(spatialCategorySelectorId));
-    const drawingCategorySelectorId = targetDb.elements.queryElementIdByCode(CategorySelector.createCode(targetDb, definitionModelId, "DrawingCategories"))!;
+    const drawingCategorySelectorId = iModelDb.elements.queryElementIdByCode(CategorySelector.createCode(iModelDb, definitionModelId, "DrawingCategories"))!;
     assert.isTrue(Id64.isValidId64(drawingCategorySelectorId));
-    const relWithProps: any = targetDb.relationships.getInstanceProps(
-      "TestTransformerTarget:TargetRelWithProps",
+    const relClassFullName = testTargetSchema ? "TestTransformerTarget:TargetRelWithProps" : "TestTransformerSource:SourceRelWithProps";
+    const relWithProps: any = iModelDb.relationships.getInstanceProps(
+      relClassFullName,
       { sourceId: spatialCategorySelectorId, targetId: drawingCategorySelectorId },
     );
-    assert.equal(relWithProps.targetString, "One-Updated");
-    assert.equal(relWithProps.targetDouble, 1.2);
+    assert.equal(testTargetSchema ? relWithProps.targetString : relWithProps.sourceString, "One-Updated");
+    assert.equal(testTargetSchema ? relWithProps.targetDouble : relWithProps.sourceDouble, 1.2);
     // assert ElementAspect properties
-    const physicalObjectId1: Id64String = queryByUserLabel(targetDb, "PhysicalObject1");
-    const targetUniqueAspects: ElementAspect[] = targetDb.elements.getAspects(physicalObjectId1, "TestTransformerTarget:TargetUniqueAspect");
-    assert.equal(targetUniqueAspects.length, 1);
-    assert.equal(targetUniqueAspects[0].asAny.commonDouble, 1.1);
-    assert.equal(targetUniqueAspects[0].asAny.commonString, "Unique-Updated");
-    assert.equal(targetUniqueAspects[0].asAny.commonLong, physicalObjectId1);
-    assert.equal(targetUniqueAspects[0].asAny.targetDouble, 11.1);
-    assert.equal(targetUniqueAspects[0].asAny.targetString, "UniqueAspect-Updated");
-    assert.equal(targetUniqueAspects[0].asAny.targetLong, physicalObjectId1);
-    const targetMultiAspects: ElementAspect[] = targetDb.elements.getAspects(physicalObjectId1, "TestTransformerTarget:TargetMultiAspect");
-    assert.equal(targetMultiAspects.length, 2);
-    assert.equal(targetMultiAspects[0].asAny.commonDouble, 2.2);
-    assert.equal(targetMultiAspects[0].asAny.commonString, "Multi");
-    assert.equal(targetMultiAspects[0].asAny.commonLong, physicalObjectId1);
-    assert.equal(targetMultiAspects[0].asAny.targetDouble, 22.2);
-    assert.equal(targetMultiAspects[0].asAny.targetString, "MultiAspect");
-    assert.equal(targetMultiAspects[0].asAny.targetLong, physicalObjectId1);
-    assert.equal(targetMultiAspects[1].asAny.commonDouble, 3.3);
-    assert.equal(targetMultiAspects[1].asAny.commonString, "Multi-Updated");
-    assert.equal(targetMultiAspects[1].asAny.commonLong, physicalObjectId1);
-    assert.equal(targetMultiAspects[1].asAny.targetDouble, 33.3);
-    assert.equal(targetMultiAspects[1].asAny.targetString, "MultiAspect-Updated");
-    assert.equal(targetMultiAspects[1].asAny.targetLong, physicalObjectId1);
+    const physicalObjectId1: Id64String = queryByUserLabel(iModelDb, "PhysicalObject1");
+    const uniqueAspectClassFullName = testTargetSchema ? "TestTransformerTarget:TargetUniqueAspect" : "TestTransformerSource:SourceUniqueAspect";
+    const uniqueAspects: ElementAspect[] = iModelDb.elements.getAspects(physicalObjectId1, uniqueAspectClassFullName);
+    assert.equal(uniqueAspects.length, 1);
+    const uniqueAspect = uniqueAspects[0].asAny;
+    assert.equal(uniqueAspect.commonDouble, 1.1);
+    assert.equal(uniqueAspect.commonString, "Unique-Updated");
+    assert.equal(uniqueAspect.commonLong, physicalObjectId1);
+    assert.equal(testTargetSchema ? uniqueAspect.targetDouble : uniqueAspect.sourceDouble, 11.1);
+    assert.equal(testTargetSchema ? uniqueAspect.targetString : uniqueAspect.sourceString, "UniqueAspect-Updated");
+    assert.equal(testTargetSchema ? uniqueAspect.targetLong : uniqueAspect.sourceLong, physicalObjectId1);
+    const multiAspectClassFullName = testTargetSchema ? "TestTransformerTarget:TargetMultiAspect" : "TestTransformerSource:SourceMultiAspect";
+    const multiAspects: ElementAspect[] = iModelDb.elements.getAspects(physicalObjectId1, multiAspectClassFullName);
+    assert.equal(multiAspects.length, 2);
+    const multiAspect0 = multiAspects[0].asAny;
+    const multiAspect1 = multiAspects[1].asAny;
+    assert.equal(multiAspect0.commonDouble, 2.2);
+    assert.equal(multiAspect0.commonString, "Multi");
+    assert.equal(multiAspect0.commonLong, physicalObjectId1);
+    assert.equal(testTargetSchema ? multiAspect0.targetDouble : multiAspect0.sourceDouble, 22.2);
+    assert.equal(testTargetSchema ? multiAspect0.targetString : multiAspect0.sourceString, "MultiAspect");
+    assert.equal(testTargetSchema ? multiAspect0.targetLong : multiAspect0.sourceLong, physicalObjectId1);
+    assert.equal(multiAspect1.commonDouble, 3.3);
+    assert.equal(multiAspect1.commonString, "Multi-Updated");
+    assert.equal(multiAspect1.commonLong, physicalObjectId1);
+    assert.equal(testTargetSchema ? multiAspect1.targetDouble : multiAspect1.sourceDouble, 33.3);
+    assert.equal(testTargetSchema ? multiAspect1.targetString : multiAspect1.sourceString, "MultiAspect-Updated");
+    assert.equal(testTargetSchema ? multiAspect1.targetLong : multiAspect1.sourceLong, physicalObjectId1);
     // assert NavigationProperty of PhysicalElement1 was cleared
-    const physicalElementId: Id64String = queryByUserLabel(targetDb, "PhysicalElement1");
-    const physicalElement: PhysicalElement = targetDb.elements.getElement(physicalElementId);
+    const physicalElementId: Id64String = queryByUserLabel(iModelDb, "PhysicalElement1");
+    const physicalElement: PhysicalElement = iModelDb.elements.getElement(physicalElementId);
     assert.isUndefined(physicalElement.asAny.commonNavigation);
-    // assert PhysicalObject3 was deleted
-    assert.equal(Id64.invalid, queryByUserLabel(targetDb, "PhysicalObject3"));
-    // assert relationship was deleted
-    const drawingGraphicId2: Id64String = queryByUserLabel(targetDb, "DrawingGraphic2");
-    assert.throws(() => targetDb.relationships.getInstanceProps(DrawingGraphicRepresentsElement.classFullName, { sourceId: drawingGraphicId2, targetId: physicalObjectId1 }));
+    // assert PhysicalObject5 was inserted
+    const physicalObjectId5: Id64String = queryByUserLabel(iModelDb, "PhysicalObject5");
+    assert.isTrue(Id64.isValidId64(physicalObjectId5));
+    // assert relationships were inserted
+    const drawingGraphicId1: Id64String = queryByUserLabel(iModelDb, "DrawingGraphic1");
+    const drawingGraphicId2: Id64String = queryByUserLabel(iModelDb, "DrawingGraphic2");
+    iModelDb.relationships.getInstance(DrawingGraphicRepresentsElement.classFullName, { sourceId: drawingGraphicId1, targetId: physicalObjectId5 });
+    iModelDb.relationships.getInstance(DrawingGraphicRepresentsElement.classFullName, { sourceId: drawingGraphicId2, targetId: physicalObjectId5 });
     // assert InformationRecord2 was updated
-    const informationRecordCodeSpec: CodeSpec = targetDb.codeSpecs.getByName("InformationRecords");
-    const informationModelId: Id64String = targetDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(targetDb, subjectId, "Information"))!;
-    const informationRecordId2 = targetDb.elements.queryElementIdByCode(new Code({ spec: informationRecordCodeSpec.id, scope: informationModelId, value: "InformationRecord2" }));
+    const informationRecordCodeSpec: CodeSpec = iModelDb.codeSpecs.getByName("InformationRecords");
+    const informationModelId: Id64String = iModelDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(iModelDb, subjectId, "Information"))!;
+    const informationRecordId2 = iModelDb.elements.queryElementIdByCode(new Code({ spec: informationRecordCodeSpec.id, scope: informationModelId, value: "InformationRecord2" }));
     assert.isTrue(Id64.isValidId64(informationRecordId2!));
-    const informationRecord2: any = targetDb.elements.getElement(informationRecordId2!);
+    const informationRecord2: any = iModelDb.elements.getElement(informationRecordId2!);
     assert.equal(informationRecord2.commonString, "Common2-Updated");
-    assert.equal(informationRecord2.targetString, "Two-Updated");
+    assert.equal(testTargetSchema ? informationRecord2.targetString : informationRecord2.sourceString, "Two-Updated");
     // assert InformationRecord3 was deleted
-    assert.isDefined(targetDb.elements.queryElementIdByCode(new Code({ spec: informationRecordCodeSpec.id, scope: informationModelId, value: "InformationRecord1" })));
-    assert.isDefined(targetDb.elements.queryElementIdByCode(new Code({ spec: informationRecordCodeSpec.id, scope: informationModelId, value: "InformationRecord2" })));
-    assert.isUndefined(targetDb.elements.queryElementIdByCode(new Code({ spec: informationRecordCodeSpec.id, scope: informationModelId, value: "InformationRecord3" })));
+    assert.isDefined(iModelDb.elements.queryElementIdByCode(new Code({ spec: informationRecordCodeSpec.id, scope: informationModelId, value: "InformationRecord1" })));
+    assert.isDefined(iModelDb.elements.queryElementIdByCode(new Code({ spec: informationRecordCodeSpec.id, scope: informationModelId, value: "InformationRecord2" })));
+    // detect deletes if possible - cannot detect during processAll when isReverseSynchronization is true
+    if (assertDeletes) {
+      assert.equal(Id64.invalid, queryByUserLabel(iModelDb, "PhysicalObject3"));
+      assert.throws(() => iModelDb.relationships.getInstanceProps(DrawingGraphicRepresentsElement.classFullName, { sourceId: drawingGraphicId2, targetId: physicalObjectId1 }));
+      assert.isUndefined(iModelDb.elements.queryElementIdByCode(new Code({ spec: informationRecordCodeSpec.id, scope: informationModelId, value: "InformationRecord3" })));
+    }
   }
 
   function assertTargetElement(sourceDb: IModelDb, targetDb: IModelDb, targetElementId: Id64String): void {
