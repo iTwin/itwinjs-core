@@ -141,15 +141,124 @@ describe("LRUTileList", () => {
     list.expectOrder(t3, s, t4, t2, t1);
   });
 
-  it("accumulates total memory used", () => {
+  it("updates when selected tiles change", () => {
+    const vp1 = 1;
+    const vp2 = 2;
+    const t1 = mockTile(1);
+    const t2 = mockTile(2);
+    const t3 = mockTile(3);
+    const t4 = mockTile(4);
+
+    const list = new List();
+    const s = list.sentinel;
+    list.add(t1);
+    list.add(t2);
+    list.add(t3);
+    list.add(t4);
+    list.expectOrder(t1, t2, t3, t4, s);
+
+    list.markSelectedForViewport(vp1, [t1, t2]);
+    list.expectOrder(t3, t4, s, t1, t2);
+    expect(t1.viewportIds).not.to.be.undefined;
+    expect(t2.viewportIds).not.to.be.undefined;
+    expect(t3.viewportIds).to.be.undefined;
+    expect(t4.viewportIds).to.be.undefined;
+
+    list.markSelectedForViewport(vp2, [t1, t4]);
+    list.expectOrder(t3, s, t2, t1, t4);
+    expect(t1.viewportIds).not.to.be.undefined;
+    expect(t2.viewportIds).not.to.be.undefined;
+    expect(t3.viewportIds).to.be.undefined;
+    expect(t4.viewportIds).not.to.be.undefined;
+
+    list.clearSelectedForViewport(vp1);
+    list.expectOrder(t3, t2, s, t1, t4);
+    expect(t1.viewportIds).not.to.be.undefined;
+    expect(t2.viewportIds).to.be.undefined;
+    expect(t3.viewportIds).to.be.undefined;
+    expect(t4.viewportIds).not.to.be.undefined;
+
+    list.markSelectedForViewport(vp1, [t3, t4, t2]);
+    list.expectOrder(s, t1, t3, t4, t2);
+    expect(t1.viewportIds).not.to.be.undefined;
+    expect(t2.viewportIds).not.to.be.undefined;
+    expect(t3.viewportIds).not.to.be.undefined;
+    expect(t4.viewportIds).not.to.be.undefined;
+
+    list.clearSelectedForViewport(vp2);
+    list.expectOrder(t1, s, t3, t4, t2);
+    expect(t1.viewportIds).to.be.undefined;
+    expect(t2.viewportIds).not.to.be.undefined;
+    expect(t3.viewportIds).not.to.be.undefined;
+    expect(t4.viewportIds).not.to.be.undefined;
+
+    list.clearSelectedForViewport(vp1);
+    list.expectOrder(t1, t3, t4, t2, s);
+    expect(t1.viewportIds).to.be.undefined;
+    expect(t2.viewportIds).to.be.undefined;
+    expect(t3.viewportIds).to.be.undefined;
+    expect(t4.viewportIds).to.be.undefined;
   });
 
-  it("updates when selected tiles change", () => {
+  it("accumulates total memory used", () => {
+    const list = new List();
+    expect(list.totalBytesUsed).to.equal(0);
+
+    const t1 = mockTile(1);
+    const t10 = mockTile(10);
+    const t100 = mockTile(100);
+    list.add(t1);
+    list.add(t10);
+    list.add(t100);
+    expect(list.totalBytesUsed).to.equal(111);
+
+    list.drop(t10);
+    expect(list.totalBytesUsed).to.equal(101);
+
+    list.drop(t1);
+    expect(list.totalBytesUsed).to.equal(100);
+
+    list.add(t10);
+    expect(list.totalBytesUsed).to.equal(110);
+
+    list.drop(t100);
+    expect(list.totalBytesUsed).to.equal(10);
+
+    list.drop(t10);
+    expect(list.totalBytesUsed).to.equal(0);
   });
 
   it("frees memory to specified target", () => {
   });
 
   it("disposes", () => {
+    const list = new List();
+    const tiles = [];
+    for (let i = 0; i < 4; i++) {
+      tiles.push(mockTile(i + 1));
+      list.add(tiles[i]);
+    }
+
+    expect(list.head).not.to.equal(list.tail);
+    expect(list.tail).to.equal(list.sentinel);
+    expect(list.totalBytesUsed).greaterThan(0);
+
+    list.markSelectedForViewport(1, tiles);
+    expect(list.head).to.equal(list.sentinel);
+    for (const tile of tiles) {
+      expect(tile.previous !== undefined || tile.next !== undefined).to.be.true;
+      expect(tile.bytesUsed).greaterThan(0);
+      expect(tile.viewportIds).not.to.be.undefined;
+    }
+
+    list.dispose();
+    expect(list.head).to.equal(list.sentinel);
+    expect(list.tail).to.equal(list.sentinel);
+    expect(list.totalBytesUsed).to.equal(0);
+    for (const tile of tiles) {
+      expectUnlinked(tile);
+      expect(tile.viewportIds).to.be.undefined;
+      expect(tile.bytesUsed).to.equal(0);
+    }
   });
 });

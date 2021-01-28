@@ -338,11 +338,15 @@ export class LRUTileList {
 
   public clearSelectedForViewport(viewportId: number): void {
     this._viewportIdSets.drop(viewportId);
-    for (let node = this._sentinel.next; node !== undefined; node = node.next) {
-      assert(node instanceof Tile);
-      node.viewportIds = this._viewportIdSets.minus(viewportId, node.viewportIds);
-      if (undefined === node.viewportIds)
-        this.moveBeforeSentinel(node);
+    let prev: LRUTileListNode | undefined = this._sentinel;
+    while (prev && prev.next) {
+      const tile = prev.next as Tile;
+      assert(tile !== this._sentinel);
+      tile.viewportIds = this._viewportIdSets.minus(viewportId, tile.viewportIds);
+      if (undefined === tile.viewportIds)
+        this.moveBeforeSentinel(tile as Tile);
+      else
+        prev = tile;
     }
   }
 }
