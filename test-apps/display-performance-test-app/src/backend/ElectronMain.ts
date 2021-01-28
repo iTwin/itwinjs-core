@@ -2,15 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as path from "path";
 import { assert } from "@bentley/bentleyjs-core";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
-import { getRpcInterfaces, initializeBackend } from "./backend";
+import { initializeBackend } from "./backend";
 import { ElectronHost } from "@bentley/electron-manager/lib/ElectronHost";
 
 const dptaElectronMain = async () => {
-
-  await ElectronHost.startup({ electronHost: { webResourcesPath: path.join(__dirname, "..", "..", "build"), rpcInterfaces: getRpcInterfaces() } });
 
   // Start the backend
   await initializeBackend();

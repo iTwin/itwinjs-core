@@ -198,9 +198,10 @@ export class RemoteBriefcaseConnection extends BriefcaseConnection {
 
     let openPromise: Promise<IModelConnectionProps>;
     requestContext.useContextForRpc = true;
-    if (openMode === OpenMode.ReadWrite)
+    if (openMode === OpenMode.ReadWrite) {
+      /* eslint-disable-next-line deprecation/deprecation */
       openPromise = IModelWriteRpcInterface.getClientForRouting(routingContext.token).openForWrite(iModelToken);
-    else
+    } else
       openPromise = IModelReadRpcInterface.getClientForRouting(routingContext.token).openForRead(iModelToken);
 
     let openResponse: IModelConnectionProps;

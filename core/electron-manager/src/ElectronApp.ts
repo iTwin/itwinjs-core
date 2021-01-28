@@ -15,24 +15,20 @@ export interface ElectronAppOptions {
 }
 
 /**
- * Frontend Ipc and Rpc support for Electron apps.
+ * Frontend Ipc support for Electron apps.
  */
 class ElectronIpc implements IpcSocketFrontend {
   private _api: ITwinElectronApi;
-  /** @internal */
   public addListener(channelName: string, listener: IpcListener) {
     this._api.addListener(channelName, listener);
     return () => this._api.removeListener(channelName, listener);
   }
-  /** @internal */
   public removeListener(channelName: string, listener: IpcListener) {
     this._api.removeListener(channelName, listener);
   }
-  /** @internal */
   public send(channel: string, ...data: any[]) {
     this._api.send(channel, ...data);
   }
-  /** @internal */
   public async invoke(channel: string, ...args: any[]) {
     return this._api.invoke(channel, ...args);
   }
@@ -43,29 +39,28 @@ class ElectronIpc implements IpcSocketFrontend {
   }
 }
 
+// Frontend of an Electron App.
 export class ElectronApp {
-  private static _isValid = false;
-  public static get isValid(): boolean { return this._isValid; }
+  private static _ipc?: ElectronIpc;
+  public static get isValid(): boolean { return undefined !== this._ipc; }
 
   /**
    * Start the frontend of an Electron application.
    * @param opts Options for your ElectronApp
    * @note This method must only be called from the frontend of an Electron app (i.e. when [isElectronRenderer]($bentley) is `true`).
    */
-  public static async startup(opts?: ElectronAppOptions & IModelAppOptions) {
+  public static async startup(opts?: { electronApp?: ElectronAppOptions, iModelApp?: IModelAppOptions }) {
     if (!isElectronRenderer)
       throw new Error("Not running under Electron");
-    if (this._isValid)
-      return;
-    this._isValid = true;
-
-    const ipc = new ElectronIpc();
-    ElectronRpcManager.initializeFrontend(ipc, opts?.rpcInterfaces);
-    await NativeApp.startup({ ipc, ...opts });
+    if (!this.isValid) {
+      this._ipc = new ElectronIpc();
+      ElectronRpcManager.initializeFrontend(this._ipc, opts?.electronApp?.rpcInterfaces);
+    }
+    await NativeApp.startup({ ipcApp: { ipc: this._ipc! }, ...opts });
   };
 
   public static async shutdown() {
-    this._isValid = false;
+    this._ipc = undefined;
     await NativeApp.shutdown();
   }
 

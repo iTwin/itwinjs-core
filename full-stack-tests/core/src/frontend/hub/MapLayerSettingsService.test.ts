@@ -29,6 +29,7 @@ describe("MapLayerSettingsService (#integration)", () => {
     const options: IModelAppOptions = {
       authorizationClient,
     };
+    await IModelApp.shutdown();
     await IModelApp.startup(options);
     projectId = await TestUtility.getTestProjectId(testProjectName);
     chai.assert.isDefined(projectId);

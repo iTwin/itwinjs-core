@@ -330,6 +330,7 @@ export class IModelApp {
   public static async startup(opts?: IModelAppOptions): Promise<void> {
     if (this._initialized)
       return; // we're already initialized, do nothing.
+    this._initialized = true;
 
     // Setup a current context for all requests that originate from this frontend
     const requestContext = new FrontendRequestContext();
@@ -337,8 +338,6 @@ export class IModelApp {
 
     opts = opts ?? {};
     this._securityOptions = opts.security || {};
-
-    this._initialized = true;
 
     // Make IModelApp globally accessible for debugging purposes. We'll remove it on shutdown.
     (window as IModelAppForDebugger).iModelAppForDebugger = this;

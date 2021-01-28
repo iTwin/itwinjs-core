@@ -21,7 +21,7 @@ interface LogMessage {
   metaData: any;
 }
 /**
- * NativeAppLogger send log message from frontend to backend. It work on native app only.
+ * NativeAppLogger send log message from frontend to backend. It works on native app only.
  * @internal
  */
 export class NativeAppLogger {

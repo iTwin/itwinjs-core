@@ -6,11 +6,10 @@
  * @module NativeApp
  */
 
-import { BeEvent, Config, GuidString, IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { BeEvent, Config, GuidString, Logger } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseDownloader, BriefcaseProps, IModelError, IModelVersion, InternetConnectivityStatus, LocalBriefcaseProps, nativeAppChannel,
-  NativeAppFunctions, NativeAppNotifications, nativeAppNotify, OpenBriefcaseProps, OverriddenBy,
-  RequestNewBriefcaseProps, StorageValue, SyncMode,
+  BriefcaseDownloader, BriefcaseProps, IModelVersion, InternetConnectivityStatus, LocalBriefcaseProps, nativeAppChannel, NativeAppFunctions,
+  NativeAppNotifications, nativeAppNotify, OpenBriefcaseProps, OverriddenBy, RequestNewBriefcaseProps, StorageValue, SyncMode,
 } from "@bentley/imodeljs-common";
 import { ProgressCallback, RequestGlobalOptions } from "@bentley/itwin-client";
 import { LocalBriefcaseConnection } from "./BriefcaseConnection";
@@ -96,30 +95,32 @@ export class NativeApp {
   public static get isValid(): boolean { return this._isValid; }
 
   /**
-   * This should be called instead of IModelApp.startup() for native apps.
+   * This is called by either ElectronApp.startup or MobileApp.startup - it should not be called directly
+   * @internal
    */
-  public static async startup(opts: IpcAppOptions & IModelAppOptions) {
-    Logger.logInfo(FrontendLoggerCategory.NativeApp, "Startup");
-
+  public static async startup(opts: { ipcApp?: IpcAppOptions, iModelApp?: IModelAppOptions }) {
     await IpcApp.startup(opts);
-    NativeAppNotifyHandler.register();
-
-    const backendConfig = await this.callBackend("getConfig");
-    Config.App.merge(backendConfig);
-    NativeApp.hookBrowserConnectivityEvents();
-    // initialize current state.
-    if (typeof window === "object" && typeof window.navigator === "object" && window.navigator.onLine) {
-      RequestGlobalOptions.online = window.navigator.onLine;
-      await NativeApp.setConnectivity(OverriddenBy.Browser, window.navigator.onLine ? InternetConnectivityStatus.Online : InternetConnectivityStatus.Offline);
-    }
+    if (this._isValid)
+      return;
     this._isValid = true;
+
+    NativeAppNotifyHandler.register(); // receives notifications from backend
+
+    Config.App.merge(await this.callBackend("getConfig"));
+    NativeApp.hookBrowserConnectivityEvents();
+
+    // initialize current online state.
+    if (window.navigator.onLine) {
+      RequestGlobalOptions.online = window.navigator.onLine;
+      await this.setConnectivity(OverriddenBy.Browser, window.navigator.onLine ? InternetConnectivityStatus.Online : InternetConnectivityStatus.Offline);
+    }
   }
 
   public static async shutdown() {
     NativeApp.unhookBrowserConnectivityEvents();
     await NativeAppLogger.flush();
-    this._isValid = false;
     await IpcApp.shutdown();
+    this._isValid = false;
   }
 
   public static async requestDownloadBriefcase(contextId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions,

@@ -113,9 +113,9 @@ export class IpcApp {
     return this.callBackend(IpcAppChannel.Functions, methodName, ...args) as PromiseReturnType<IpcAppFunctions[T]>;
   }
 
-  public static async startup(opts: IpcAppOptions & IModelAppOptions) {
-    this._ipc = opts.ipc;
-    await IModelApp.startup(opts);
+  public static async startup(opts?: { ipcApp?: IpcAppOptions, iModelApp?: IModelAppOptions }) {
+    this._ipc = opts?.ipcApp?.ipc;
+    await IModelApp.startup(opts?.iModelApp);
   }
 
   public static async shutdown() {

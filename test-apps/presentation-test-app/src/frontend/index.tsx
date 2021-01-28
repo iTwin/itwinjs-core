@@ -39,7 +39,7 @@ Logger.setLevelDefault(LogLevel.Warning);
 export class SampleApp {
   private static _ready: Promise<void>;
   public static async startup(): Promise<void> {
-    await ElectronApp.startup({ rpcInterfaces: rpcs });
+    await ElectronApp.startup({ electronApp: { rpcInterfaces: rpcs } });
     const readyPromises = new Array<Promise<void>>();
 
     const localizationNamespace = IModelApp.i18n.registerNamespace("Sample");

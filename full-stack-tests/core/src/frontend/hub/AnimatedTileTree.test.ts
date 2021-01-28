@@ -26,6 +26,7 @@ describe("Animated tile trees (#integration)", () => {
   let imodel: IModelConnection;
 
   before(async () => {
+    await IModelApp.shutdown();
     await IModelApp.startup({
       authorizationClient: await TestUtility.initializeTestProject(projectName, TestUsers.regular),
       imodelClient: TestUtility.imodelCloudEnv.imodelClient,

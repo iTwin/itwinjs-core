@@ -7,7 +7,6 @@
  */
 
 import { IModelApp } from "../IModelApp";
-import { IModelConnection } from "../IModelConnection";
 import { BriefcaseConnection } from "../imodeljs-frontend";
 import { NotifyMessageDetails, OutputMessagePriority } from "../NotificationManager";
 import { Viewport } from "../Viewport";

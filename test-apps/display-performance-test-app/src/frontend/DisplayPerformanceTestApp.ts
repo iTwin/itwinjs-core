@@ -36,6 +36,8 @@ const testNamesImages = new Map<string, number>(); // Keep track of test names a
 const testNamesTimings = new Map<string, number>(); // Keep track of test names and how many duplicate names exist for timings
 const defaultHilite = new Hilite.Settings();
 const defaultEmphasis = new Hilite.Settings(ColorDef.black, 0, 0, Hilite.Silhouette.Thick);
+const rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
+
 let minimize = false;
 interface Options {
   [key: string]: any; // Add index signature
@@ -70,7 +72,7 @@ function debugPrint(msg: string): void {
 }
 
 async function resolveAfterXMilSeconds(ms: number) {
-  return new Promise((resolve) => {
+  return new Promise<void>((resolve) => {
     setTimeout(() => {
       resolve();
     }, ms);
@@ -133,9 +135,12 @@ function getBrowserName(userAgent: string) {
 
 class DisplayPerfTestApp {
   public static async startup(opts?: IModelAppOptions): Promise<void> {
-    opts = opts ? opts : {};
+    opts = opts ?? {};
     opts.i18n = { urlTemplate: "locales/en/{{ns}}.json" } as I18NOptions;
-    await IModelApp.startup(opts);
+    if (isElectronRenderer)
+      await ElectronApp.startup({ electronApp: { rpcInterfaces }, iModelApp: opts });
+    else
+      await IModelApp.startup(opts);
     IModelApp.animationInterval = undefined;
   }
 }
@@ -996,7 +1001,7 @@ async function getAllMatchingSavedViews(testConfig: DefaultConfigs): Promise<str
   }
 
   const allViews = intViews.concat(extViews);
-  return allViews.filter((view) => matchRule(view, testConfig.viewName ?? "*")).sort(); // Filter & alphabatize all view names
+  return allViews.filter((view) => matchRule(view, testConfig.viewName ?? "*")).sort(); // Filter & alphabetize all view names
 }
 
 async function openImodelAndLoadExtViews(testConfig: DefaultConfigs, extViews?: any[]): Promise<void> {
@@ -1397,7 +1402,7 @@ async function runTest(testConfig: DefaultConfigs, extViews?: any[]) {
     if (gpuFramesCollected < testConfig.numRendersToTime!) {
       const label = result.label;
       const timings = finalGPUFrameTimings.get(label);
-      finalGPUFrameTimings.set(label, timings ? timings.concat(result.nanoseconds / 1e6) : [result.nanoseconds / 1e6]); // Save as miliseconds
+      finalGPUFrameTimings.set(label, timings ? timings.concat(result.nanoseconds / 1e6) : [result.nanoseconds / 1e6]); // Save as milliseconds
       if (result.children) {
         for (const kid of result.children)
           gpuResultsCallback(kid);
@@ -1625,9 +1630,7 @@ window.onload = async () => {
   RpcConfiguration.developmentMode = true;
   RpcConfiguration.disableRoutingValidation = true;
 
-  const rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
   if (isElectronRenderer) {
-    await ElectronApp.startup({ rpcInterfaces });
   } else if (MobileRpcConfiguration.isMobileFrontend) {
     MobileRpcManager.initializeClient(rpcInterfaces);
   } else {
@@ -1635,8 +1638,6 @@ window.onload = async () => {
     BentleyCloudRpcManager.initializeClient({ info: { title: "DisplayPerformanceTestApp", version: "v1.0" }, uriPrefix }, [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]);
   }
 
-  // ###TODO: Raman added one-time initialization logic IModelApp.startup which replaces a couple of RpcRequest-related functions.
-  // Cheap hacky workaround until that's fixed.
   await DisplayPerfTestApp.startup();
 
   await main();

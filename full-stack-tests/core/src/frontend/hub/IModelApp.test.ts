@@ -13,6 +13,7 @@ import { TestUtility } from "./TestUtility";
 describe("IModelApp (#integration)", () => {
 
   before(async () => {
+    await IModelApp.shutdown();
     await IModelApp.startup({
       applicationId: "1234",
       applicationVersion: "testappversion",

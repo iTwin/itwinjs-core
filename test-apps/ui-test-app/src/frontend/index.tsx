@@ -197,17 +197,17 @@ export class SampleAppIModelApp {
 
   public static get appUiSettings(): AppUiSettings { return SampleAppIModelApp._appUiSettings; }
 
-  public static async startup(opts: ElectronAppOptions & IModelAppOptions): Promise<void> {
-    opts.accuSnap = new SampleAppAccuSnap();
-    opts.notifications = new AppNotificationManager();
-    opts.uiAdmin = new FrameworkUiAdmin();
-    opts.accuDraw = new FrameworkAccuDraw();
-    opts.viewManager = new AppViewManager(true);  // Favorite Properties Support
+  public static async startup(opts: { electronApp?: ElectronAppOptions, iModelApp: IModelAppOptions }): Promise<void> {
+    opts.iModelApp.accuSnap = new SampleAppAccuSnap();
+    opts.iModelApp.notifications = new AppNotificationManager();
+    opts.iModelApp.uiAdmin = new FrameworkUiAdmin();
+    opts.iModelApp.accuDraw = new FrameworkAccuDraw();
+    opts.iModelApp.viewManager = new AppViewManager(true);  // Favorite Properties Support
     if (isElectronRenderer) {
       await ElectronApp.startup(opts);
       NativeAppLogger.initialize();
     } else
-      await IModelApp.startup(opts);
+      await IModelApp.startup(opts.iModelApp);
 
     // For testing local extensions only, should not be used in production.
     IModelApp.extensionAdmin.addExtensionLoaderFront(new ExternalServerExtensionLoader("http://localhost:3000"));
@@ -751,7 +751,7 @@ async function main() {
   };
 
   // Start the app.
-  await SampleAppIModelApp.startup({ rpcInterfaces, renderSys: renderSystemOptions, authorizationClient: oidcClient });
+  await SampleAppIModelApp.startup({ electronApp: { rpcInterfaces }, iModelApp: { renderSys: renderSystemOptions, authorizationClient: oidcClient } });
 
   // Add ApplicationInsights telemetry client
   const iModelJsApplicationInsightsKey = Config.App.getString("imjs_telemetry_application_insights_instrumentation_key", "");

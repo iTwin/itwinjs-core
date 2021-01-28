@@ -36,6 +36,7 @@ describe("ChangeSummary (#integration)", () => {
       imodelClient: TestUtility.imodelCloudEnv.imodelClient,
       applicationVersion: "1.2.1.1",
     };
+    await IModelApp.shutdown();
     await MockRender.App.startup(options);
 
     assert(IModelApp.authorizationClient);

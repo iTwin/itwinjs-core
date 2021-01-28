@@ -19,17 +19,20 @@ describe("Plan projections", () => {
 
   before(async () => {
     const opts = {
-      rpcInterfaces,
-      renderSys: {
-        // Test wants to read the color of exactly one pixel, specified in CSS pixels. Ignore device pixel ratio.
-        dpiAwareViewports: false,
+      electronApp: { rpcInterfaces },
+      iModelApp: {
+        renderSys: {
+          // Test wants to read the color of exactly one pixel, specified in CSS pixels. Ignore device pixel ratio.
+          dpiAwareViewports: false,
+        },
       },
     };
 
+    await IModelApp.shutdown();
     if (isElectronRenderer)
       await ElectronApp.startup(opts);
     else
-      await IModelApp.startup(opts);
+      await IModelApp.startup(opts.iModelApp);
 
     mirukuru = await SnapshotConnection.openFile("planprojection.bim");
   });

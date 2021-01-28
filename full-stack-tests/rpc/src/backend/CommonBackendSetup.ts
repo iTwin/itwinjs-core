@@ -5,9 +5,11 @@
 import { Config, isElectronMain, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { registerBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { IModelHost, NativeHost } from "@bentley/imodeljs-backend";
+import { ElectronHost } from "@bentley/electron-manager/lib/ElectronHost";
+import { IModelHost } from "@bentley/imodeljs-backend";
 import { IModelReadRpcInterface, RpcConfiguration } from "@bentley/imodeljs-common";
 import { BackendTestCallbacks } from "../common/SideChannels";
+import { rpcInterfaces } from "../common/TestRpcInterface";
 import { resetOp8Initializer, TestRpcImpl2 } from "./TestRpcImpl";
 
 export async function commonSetup(): Promise<void> {
@@ -16,7 +18,7 @@ export async function commonSetup(): Promise<void> {
 
   // Start the backend
   if (isElectronMain)
-    await NativeHost.startup();
+    await ElectronHost.startup({ electronHost: { rpcInterfaces } });
   else
     await IModelHost.startup();
 

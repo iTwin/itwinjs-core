@@ -108,7 +108,7 @@ class ShutDownTool extends Tool {
   public run(_args: any[]): boolean {
     DisplayTestApp.surface.closeAllViewers();
     if (isElectronRenderer)
-      ElectronApp.shutdown();
+      ElectronApp.shutdown();// eslint-disable-line @typescript-eslint/no-floating-promises
     else
       IModelApp.shutdown(); // eslint-disable-line @typescript-eslint/no-floating-promises
     debugger; // eslint-disable-line no-debugger
@@ -126,15 +126,15 @@ export class DisplayTestApp {
   public static get surface() { return this._surface!; }
   public static set surface(surface: Surface) { this._surface = surface; }
 
-  public static async startup(opts: ElectronAppOptions & IModelAppOptions): Promise<void> {
-    opts.accuSnap = new DisplayTestAppAccuSnap();
-    opts.notifications = new Notifications();
-    opts.tileAdmin = TileAdmin.create(DisplayTestApp.tileAdminProps);
-    opts.uiAdmin = new UiManager();
+  public static async startup(opts: { electronApp?: ElectronAppOptions, iModelApp: IModelAppOptions }): Promise<void> {
+    opts.iModelApp.accuSnap = new DisplayTestAppAccuSnap();
+    opts.iModelApp.notifications = new Notifications();
+    opts.iModelApp.tileAdmin = TileAdmin.create(DisplayTestApp.tileAdminProps);
+    opts.iModelApp.uiAdmin = new UiManager();
     if (isElectronRenderer)
       await ElectronApp.startup(opts);
     else
-      await IModelApp.startup(opts);
+      await IModelApp.startup(opts.iModelApp);
 
     // For testing local extensions only, should not be used in production.
     IModelApp.extensionAdmin.addExtensionLoaderFront(new ExternalServerExtensionLoader("http://localhost:3000"));

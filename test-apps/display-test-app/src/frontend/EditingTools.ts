@@ -54,7 +54,7 @@ export abstract class UndoRedoTool extends Tool {
   public run(): boolean {
     const imodel = IModelApp.viewManager.selectedView?.iModel;
     if (imodel) {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises,deprecation/deprecation
       IModelWriteRpcInterface.getClient().undoRedo(imodel.getRpcProps(), this.isUndo);
     }
 
@@ -94,6 +94,7 @@ export class DeleteElementsTool extends Tool {
       return;
 
     try {
+      // eslint-disable-next-line deprecation/deprecation
       await IModelWriteRpcInterface.getClient().deleteElements(imodel.getRpcProps(), Array.from(elements));
       await imodel.saveChanges();
     } catch (err) {

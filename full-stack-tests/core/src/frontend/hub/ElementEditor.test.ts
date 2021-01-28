@@ -84,6 +84,7 @@ describe("Element editor tests (#integration)", async () => {
       imodelClient: TestUtility.imodelCloudEnv.imodelClient,
       applicationVersion: "1.2.1.1",
     };
+    await IModelApp.shutdown();
     await IModelApp.startup(options);
 
     // NB: Call IModelApp.startup and set the authorizationClient *before* calling any other functions that might query the server.

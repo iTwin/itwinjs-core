@@ -20,7 +20,6 @@ import { RpcRoutingToken } from "./core/RpcRoutingToken";
  * All operations require read+write access.
  * This interface is not normally used directly. See IModelConnection for higher-level and more convenient API for accessing iModels from a frontend.
  * @internal
- * @deprecated
  */
 export abstract class IModelWriteRpcInterface extends RpcInterface {
   /** Returns the IModelWriteRpcInterface client instance for the frontend. */

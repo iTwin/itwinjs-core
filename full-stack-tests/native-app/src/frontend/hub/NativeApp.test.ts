@@ -12,6 +12,7 @@ import { usingOfflineScope } from "./HttpRequestHook";
 import { TestChangeSetUtility } from "./TestChangeSetUtility";
 import { TestUtility } from "./TestUtility";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronApp";
+import { rpcInterfaces } from "../../common/RpcInterfaces";
 
 describe("NativeApp (#integration)", () => {
   let testProjectName: string;
@@ -21,9 +22,12 @@ describe("NativeApp (#integration)", () => {
 
   before(async () => {
     await ElectronApp.startup({
-      applicationId: "1234",
-      applicationVersion: "testappversion",
-      sessionId: "testsessionid",
+      electronApp: { rpcInterfaces },
+      iModelApp: {
+        applicationId: "1234",
+        applicationVersion: "testappversion",
+        sessionId: "testsessionid",
+      },
     });
 
     const requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);

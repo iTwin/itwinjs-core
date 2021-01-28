@@ -175,6 +175,7 @@ export class ElectronHost {
 
     this._openWindow(windowOptions);
   }
+  public static get isValid() { return this._ipc !== undefined; }
 
   /**
    * Initialize the backend of an Electron app.
@@ -186,24 +187,22 @@ export class ElectronHost {
     if (!isElectronMain)
       throw new Error("Not running under Electron");
 
-    if (this._ipc)
-      return;
-    this._ipc = new ElectronIpc();
-
-    this._electron = require("electron");
-    const app = this.app;
-    app.allowRendererProcessReuse = true; // see https://www.electronjs.org/docs/api/app#appallowrendererprocessreuse
-    if (!app.isReady())
-      this.electron.protocol.registerSchemesAsPrivileged([{ scheme: "electron", privileges: { standard: true, secure: true } }]);
-    const eopt = opts?.electronHost;
-    this._developmentServer = eopt?.developmentServer ?? false;
-    const frontendPort = eopt?.frontendPort ?? 3000;
-    this.webResourcesPath = eopt?.webResourcesPath ?? "";
-    this.frontendURL = eopt?.frontendURL ?? this._developmentServer ? `http://localhost:${frontendPort}` : `${this._electronFrontend}index.html`;
-    this.appIconPath = path.join(this.webResourcesPath, eopt?.iconName ?? "appicon.ico");
-    this.rpcConfig = ElectronRpcManager.initializeBackend(this._ipc, eopt?.rpcInterfaces);
-    eopt?.ipcHandlers?.forEach((ipc) => ipc.register());
-
+    if (!this.isValid) {
+      this._electron = require("electron");
+      this._ipc = new ElectronIpc();
+      const app = this.app;
+      app.allowRendererProcessReuse = true; // see https://www.electronjs.org/docs/api/app#appallowrendererprocessreuse
+      if (!app.isReady())
+        this.electron.protocol.registerSchemesAsPrivileged([{ scheme: "electron", privileges: { standard: true, secure: true } }]);
+      const eopt = opts?.electronHost;
+      this._developmentServer = eopt?.developmentServer ?? false;
+      const frontendPort = eopt?.frontendPort ?? 3000;
+      this.webResourcesPath = eopt?.webResourcesPath ?? "";
+      this.frontendURL = eopt?.frontendURL ?? this._developmentServer ? `http://localhost:${frontendPort}` : `${this._electronFrontend}index.html`;
+      this.appIconPath = path.join(this.webResourcesPath, eopt?.iconName ?? "appicon.ico");
+      this.rpcConfig = ElectronRpcManager.initializeBackend(this._ipc, eopt?.rpcInterfaces);
+      eopt?.ipcHandlers?.forEach((ipc) => ipc.register());
+    }
     await NativeHost.startup({ ipc: { socket: this._ipc }, config: opts?.config });
     if (IpcHost.isValid)
       ElectronBackendImpl.register();

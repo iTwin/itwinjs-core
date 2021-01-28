@@ -4,14 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { BentleyCloudRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
-// Testing order of initialization for imodeljs-frontend and imodeljs-common
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { isElectronRenderer } from "@bentley/bentleyjs-core";
+import { ElectronApp } from "@bentley/electron-manager/lib/ElectronApp";
 
 RpcConfiguration.developmentMode = true;
 RpcConfiguration.disableRoutingValidation = true;
 
-if (!isElectronRenderer) {
+if (isElectronRenderer) {
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+  ElectronApp.startup({ electronApp: { rpcInterfaces } });
+} else {
   const config = BentleyCloudRpcManager.initializeClient({ info: { title: "full-stack-test", version: "v1.0" } }, rpcInterfaces);
   config.protocol.pathPrefix = `http://${window.location.hostname}:${Number(window.location.port) + 2000}`;
 

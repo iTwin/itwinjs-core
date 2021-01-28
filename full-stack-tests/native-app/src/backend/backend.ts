@@ -3,20 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BentleyLoggerCategory, Config, isElectronMain, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { IModelJsExpressServer } from "@bentley/express-server";
-import { IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
-import { BackendLoggerCategory, IModelHostConfiguration, NativeHost, NativeLoggerCategory } from "@bentley/imodeljs-backend";
-import { BentleyCloudRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
-import { ElectronHost } from "@bentley/electron-manager/lib/ElectronHost";
-import { ITwinClientLoggerCategory } from "@bentley/itwin-client";
 // Sets up certa to allow a method on the frontend to get an access token
 import "@bentley/oidc-signin-tool/lib/certa/certaBackend";
+import "./RpcImpl";
 import * as path from "path";
+import { BentleyLoggerCategory, Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+import { ElectronHost } from "@bentley/electron-manager/lib/ElectronHost";
+import { IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
+import { BackendLoggerCategory, IModelHostConfiguration, NativeLoggerCategory } from "@bentley/imodeljs-backend";
+import { RpcConfiguration } from "@bentley/imodeljs-common";
+import { ITwinClientLoggerCategory } from "@bentley/itwin-client";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
-import "./RpcImpl";
 
 /* eslint-disable no-console */
 

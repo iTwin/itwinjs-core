@@ -24,7 +24,6 @@ import { setTitle } from "./Title";
 import { showStatus } from "./Utils";
 import { Dock } from "./Window";
 import { openStandaloneIModel } from "./openStandaloneIModel";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronApp";
 
 const configuration: DtaConfiguration = {};
 
@@ -222,7 +221,7 @@ const dtaFrontendMain = async () => {
     BentleyCloudRpcManager.initializeClient({ info: { title: "SimpleViewApp", version: "v1.0" }, uriPrefix }, rpcInterfaces);
   }
 
-  await DisplayTestApp.startup({ rpcInterfaces, renderSys: renderSystemOptions });
+  await DisplayTestApp.startup({ electronApp: { rpcInterfaces }, iModelApp: { renderSys: renderSystemOptions } });
   if (false !== configuration.enableDiagnostics)
     IModelApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
 

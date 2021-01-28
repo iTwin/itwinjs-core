@@ -6,10 +6,11 @@ import { assert } from "chai";
 import { NativeApp } from "@bentley/imodeljs-frontend";
 import { TestUtility } from "../hub/TestUtility";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronApp";
+import { rpcInterfaces } from "../../common/RpcInterfaces";
 
 describe("NativeApp Storage frontend", () => {
   before(async () => {
-    await ElectronApp.startup();
+    await ElectronApp.startup({ electronApp: { rpcInterfaces } });
     await TestUtility.purgeStorageCache();
   });
 

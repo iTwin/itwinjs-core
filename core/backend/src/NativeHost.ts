@@ -9,15 +9,14 @@
 import * as path from "path";
 import { BeEvent, ClientRequestContext, Config, GuidString } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseProps, InternetConnectivityStatus, LocalBriefcaseProps, MobileAuthorizationClientConfiguration,
-  MobileRpcConfiguration, nativeAppChannel, NativeAppFunctions, NativeAppNotifications, nativeAppNotify, OverriddenBy, RequestNewBriefcaseProps,
-  StorageValue,
+  BriefcaseProps, InternetConnectivityStatus, LocalBriefcaseProps, MobileAuthorizationClientConfiguration, MobileRpcConfiguration, nativeAppChannel,
+  NativeAppFunctions, NativeAppNotifications, nativeAppNotify, OverriddenBy, RequestNewBriefcaseProps, StorageValue,
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, RequestGlobalOptions } from "@bentley/itwin-client";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { Downloads } from "./CheckpointManager";
-import { ApplicationType, IModelHost, IModelHostConfiguration } from "./IModelHost";
-import { IpcHost, IpcHandler, IpcHostOptions } from "./IpcHost";
+import { IModelHost, IModelHostConfiguration } from "./IModelHost";
+import { IpcHandler, IpcHost, IpcHostOptions } from "./IpcHost";
 import { initialize, MobileDevice } from "./MobileDevice";
 import { NativeAppStorage } from "./NativeAppStorage";
 
@@ -186,16 +185,16 @@ export class NativeHost {
    * @note this method calls [[IModelHost.startup]] internally.
    */
   public static async startup(opt?: { ipc?: IpcHostOptions, config?: IModelHostConfiguration }): Promise<void> {
-    if (this._isValid)
-      return;
-    this._isValid = true;
-    this.onInternetConnectivityChanged.addListener((status: InternetConnectivityStatus) => NativeHost.notifyNativeFrontend("notifyInternetConnectivityChanged", status));
+    if (!this.isValid) {
+      this._isValid = true;
+      this.onInternetConnectivityChanged.addListener((status: InternetConnectivityStatus) => NativeHost.notifyNativeFrontend("notifyInternetConnectivityChanged", status));
 
-    if (MobileRpcConfiguration.isMobileBackend) {
-      MobileDevice.currentDevice.onUserStateChanged.addListener((accessToken?: string, err?: string) => {
-        const accessTokenObj = accessToken ? JSON.parse(accessToken) : {};
-        NativeHost.notifyNativeFrontend("notifyUserStateChanged", { accessToken: accessTokenObj, err });
-      });
+      if (MobileRpcConfiguration.isMobileBackend) {
+        MobileDevice.currentDevice.onUserStateChanged.addListener((accessToken?: string, err?: string) => {
+          const accessTokenObj = accessToken ? JSON.parse(accessToken) : {};
+          NativeHost.notifyNativeFrontend("notifyUserStateChanged", { accessToken: accessTokenObj, err });
+        });
+      }
     }
     await IpcHost.startup(opt);
     if (IpcHost.isValid) // for tests, we use NativeHost but don't have a frontend

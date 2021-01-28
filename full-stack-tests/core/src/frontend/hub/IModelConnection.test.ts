@@ -24,6 +24,7 @@ describe("IModelConnection (#integration)", () => {
   let iModel: IModelConnection;
 
   before(async () => {
+    await IModelApp.shutdown();
     await MockRender.App.startup({
       applicationVersion: "1.2.1.1",
     });

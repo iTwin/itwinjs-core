@@ -14,6 +14,8 @@ import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 
 const loggerCategory = FrontendLoggerCategory.IModelConnection;
 
+/* eslint-disable deprecation/deprecation */
+
 /**
  * General editing functions. See IModelApp.elementEditor for editing 3D elements.
  * @alpha
@@ -71,6 +73,7 @@ export class EditingFunctions {
       this._codes = new EditingFunctions.Codes(this._connection);
     return this._codes;
   }
+
 
   /**
    * Delete elements

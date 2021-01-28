@@ -3,19 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-const expect = chai.expect;
 import * as chaiAsPromised from "chai-as-promised";
-chai.use(chaiAsPromised);
 import { BeDuration, compareStrings, DbOpcode, Id64String, isElectronRenderer, OpenMode } from "@bentley/bentleyjs-core";
+import { ElectronApp } from "@bentley/electron-manager/lib/ElectronApp";
 import { IModelJson, LineSegment3d, Point3d, Range3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
 import { BatchType, Code, ElementGeometryChange } from "@bentley/imodeljs-common";
 import {
-  ElementEditor3d, GeometricModel3dState, IModelTileTree, IModelTileTreeParams, InteractiveEditingSession, IpcApp, RemoteBriefcaseConnection, TileLoadPriority,
+  ElementEditor3d, GeometricModel3dState, IModelTileTree, IModelTileTreeParams, InteractiveEditingSession, RemoteBriefcaseConnection,
+  TileLoadPriority,
 } from "@bentley/imodeljs-frontend";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "./TestUtility";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronApp";
 
+const expect = chai.expect;
+chai.use(chaiAsPromised);
 let codeSuffix = 1;
 
 // The Web RPC protocol does not support Ipc required for interactive editing.
@@ -35,9 +36,11 @@ if (isElectronRenderer) {
     before(async () => {
       const projectName = "iModelJsIntegrationTest";
       await ElectronApp.startup({
-        authorizationClient: await TestUtility.initializeTestProject(projectName, TestUsers.regular),
-        imodelClient: TestUtility.imodelCloudEnv.imodelClient,
-        applicationVersion: "1.2.1.1",
+        iModelApp: {
+          authorizationClient: await TestUtility.initializeTestProject(projectName, TestUsers.regular),
+          imodelClient: TestUtility.imodelCloudEnv.imodelClient,
+          applicationVersion: "1.2.1.1",
+        },
       });
 
       projectId = await TestUtility.getTestProjectId(projectName);
