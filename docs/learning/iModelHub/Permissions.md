@@ -16,7 +16,7 @@ iModelHub uses 6 permissions:
 
 Permissions automatically included: _Read iModel_, _Modify iModel_
 
-Create iModel permission allows creating iModels. See [BriefcaseManager.create]($backend) and [IModelHandler.create]($imodelhub-client).
+Create iModel permission allows creating iModels. See [BriefcaseManager.create]($backend).
 
 ## Delete iModel
 

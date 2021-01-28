@@ -18,7 +18,7 @@ const loggerCategory: string = IModelHubClientLoggerCategory.IModelHub;
 
 /**
  * Named Version is a specific [[ChangeSet]] given a name to differentiate it from others. It can be used to represent some significant milestone for the iModel (e.g. a review version).
- * @beta
+ * @public
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.Version", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class Version extends WsgInstance {
@@ -49,18 +49,24 @@ export class Version extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Hidden")
   public hidden?: boolean;
 
-  /** Id of the [[SmallThumbnail]] of the named Version. */
+  /**
+   * Id of the [[SmallThumbnail]] of the named Version.
+   * @internal @deprecated
+   */
   @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[HasThumbnail].relatedInstance[SmallThumbnail].instanceId")
   public smallThumbnailId?: GuidString;
 
-  /** Id of the [[LargeThumbnail]] of the named Version. */
+  /**
+   * Id of the [[LargeThumbnail]] of the named Version.
+   * @internal @deprecated
+   */
   @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[HasThumbnail].relatedInstance[LargeThumbnail].instanceId")
   public largeThumbnailId?: GuidString;
 }
 
 /**
  * Query object for getting [[Version]]s. You can use this to modify the [[VersionHandler.get]] results.
- * @beta
+ * @public
  */
 export class VersionQuery extends InstanceIdQuery {
   /**
@@ -91,7 +97,7 @@ export class VersionQuery extends InstanceIdQuery {
    * Query will additionally select ids of [[Thumbnail]]s for given [[ThumbnailSize]]s.
    * @returns This query.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if sizes array is undefined or empty.
-   * @beta
+   * @internal @deprecated
    */
   public selectThumbnailId(...sizes: ThumbnailSize[]): this {
     ArgumentCheck.nonEmptyArray("sizes", sizes);
@@ -117,7 +123,7 @@ export class VersionQuery extends InstanceIdQuery {
 
 /**
  * Handler for managing [[Version]]s. Use [[IModelClient.Versions]] to get an instance of this class.
- * @beta
+ * @public
  */
 export class VersionHandler {
   private _handler: IModelBaseHandler;
