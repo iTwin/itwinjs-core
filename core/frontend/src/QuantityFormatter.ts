@@ -47,7 +47,9 @@ export interface QuantityTypeEntry {
   generateFormatterSpec?: (persistenceUnit: UnitProps, formatProps: FormatProps) => FormatterSpec;
   // if not specified generic ParserSpec will be created
   generateParserSpec?: (persistenceUnit: UnitProps, formatProps: FormatProps) => FormatterSpec;
-};
+  // if not specified generic look up we be made.
+  getFormatPropsByTypeAndSystem?: (quantityEntry: QuantityTypeEntry, requestedSystem: UnitSystemKey) => FormatProps;
+}
 
 // cSpell:ignore FORMATPROPS FORMATKEY ussurvey uscustomary
 
@@ -556,7 +558,8 @@ export class QuantityFormatter implements UnitsProvider {
   protected _formatSpecsByKoq = new Map<string, FormatterSpec[]>();
   protected _activeFormatSpecsByType = new Map<QuantityTypeKey, FormatterSpec>();
   protected _activeParserSpecsByType = new Map<QuantityTypeKey, ParserSpec>();
-  protected _overrideFormatPropsByQuantityType = new Map<QuantityTypeKey, OverrideFormatEntry>();
+  protected _overrideFormatPropsByUnitSystem = new Map<UnitSystemKey, Map<QuantityTypeKey, FormatProps>>();
+  // TODO Remove _formatSpecProviders and support via quantityTypeRegistry
   protected _formatSpecProviders = new Array<FormatterParserSpecsProvider>();
 
   /** Called after the active unit system is changed.
@@ -590,14 +593,13 @@ export class QuantityFormatter implements UnitsProvider {
     }
   }
 
-  private getOverrideFormatPropsByQuantityType(quantityType: QuantityTypeKey, systemType: UnitSystemKey): FormatProps | undefined {
-    const overrideEntry = this._overrideFormatPropsByQuantityType.get(quantityType);
-    if (overrideEntry) {
-      const entryForActiveUnitSystem = Object.entries(overrideEntry).find((entry) => this.getUnitSystemFromString(entry[0]) === systemType);
-      if (entryForActiveUnitSystem)
-        return entryForActiveUnitSystem[1];
-    }
-    return undefined;
+  private getOverrideFormatPropsByQuantityType(quantityTypeKey: QuantityTypeKey, unitSystem?: UnitSystemKey): FormatProps | undefined {
+    const requestedUnitSystem = unitSystem??this.activeUnitSystem;
+    const overrideMap = this._overrideFormatPropsByUnitSystem.get(requestedUnitSystem);
+    if (!overrideMap)
+      return undefined;
+
+    return overrideMap.get(quantityTypeKey);
   }
 
   private async loadSpecs(systemKey: UnitSystemKey, provider: FormatterParserSpecsProvider) {
@@ -719,31 +721,15 @@ export class QuantityFormatter implements UnitsProvider {
    *  so they can be quickly accessed.
    * @internal public for unit test usage
    */
-  protected async loadFormatAndParsingMapsForSystem(systemType?: UnitSystemKey): Promise<void> {
+  protected async loadFormatAndParsingMapsForSystem(systemType?: UnitSystemKey, ignoreOverrides?: boolean): Promise<void> {
     const systemKey = (undefined !== systemType) ? systemType : this._activeUnitSystem;
     const formatPropsByType = new Map<QuantityTypeKey, FormatProps>();
 
-    // First get default formats
-    const defaultUnitSystemData = DEFAULT_FORMATKEY_BY_UNIT_SYSTEM.find((value) => value.system === systemKey);
-    if (defaultUnitSystemData) {
-      defaultUnitSystemData.entries.forEach((entry) => {
-        const defaultFormatEntry = DEFAULT_FORMATPROPS.find((props) => props.key === entry.formatKey);
-        if (defaultFormatEntry) {
-          formatPropsByType.set(entry.type, defaultFormatEntry.format);
-        } else {
-          throw new Error(`Default quantity format named ${entry.formatKey} is not found`);
-        }
-      });
-    } else {
-      throw new Error(`Default formatting data for unit system '${systemKey}' was not found`);
-    }
-
-    // Override with any registered overrides
-    for (const [typeKey, overrideEntry] of this._overrideFormatPropsByQuantityType) {
-      const entryForActiveUnitSystem = Object.entries(overrideEntry).find((entry) => entry[0] === systemType);
-      if (entryForActiveUnitSystem)
-        formatPropsByType.set(typeKey, entryForActiveUnitSystem[1]);
-    }
+    // load cache for every registered QuantityType
+    [...IModelApp.quantityFormatter.quantityTypesRegistry.keys()].forEach((key) => {
+      const entry = this.quantityTypesRegistry.get(key)!;
+      formatPropsByType.set(entry.key, this.getFormatPropsByTypeAndSystem(entry, systemKey, ignoreOverrides));
+    });
 
     const formatPropPromises = new Array<Promise<void>>();
     for (const [typeKey, formatProps] of formatPropsByType) {
@@ -925,27 +911,28 @@ export class QuantityFormatter implements UnitsProvider {
     this._activeParserSpecsByType.set(typeKey, parserSpec);
   }
 
+  // repopulate formatSpec and parserSpec entries using only default format
   private async loadDefaultFormatAndParserSpecForQuantity(typeKey: QuantityTypeKey) {
-    // repopulate formatSpec and parserSpec entries
-    const defaultFormatsForSystem = DEFAULT_FORMATKEY_BY_UNIT_SYSTEM.find((value) => value.system === this.activeUnitSystem);
-    if (defaultFormatsForSystem?.entries) {
-      const defaultFormatByType = defaultFormatsForSystem?.entries.find((props) => props.type === typeKey);
-      if (defaultFormatByType) {
-        const defaultFormatEntry = DEFAULT_FORMATPROPS.find((props) => props.key === defaultFormatByType.formatKey);
-        if (defaultFormatEntry?.format) {
-          await this.loadFormatAndParserSpec(typeKey, defaultFormatEntry.format);
-        }
-      }
-    }
+    const quantityTypeEntry = this.quantityTypesRegistry.get(typeKey);
+    if (!quantityTypeEntry)
+      throw new Error (`Unable to locate QuantityType by key ${typeKey}`);
+
+    const defaultFormat = this.getFormatPropsByTypeAndSystem(quantityTypeEntry, this.activeUnitSystem, true);
+    await this.loadFormatAndParserSpec(typeKey, defaultFormat);
   }
 
   /** Method called to clear override and restore defaults formatter and parser spec */
   private async clearOverrideFormatsByQuantityTypeKey(type: QuantityTypeKey) {
-    if (this.getOverrideFormatPropsByQuantityType(type, this.activeUnitSystem)) {
-      this._overrideFormatPropsByQuantityType.delete(type);
-      await this.loadDefaultFormatAndParserSpecForQuantity(type);
-      // trigger a message to let callers know the format has changed.
-      this.onQuantityFormatsChanged.emit({ quantityType: type });
+    const unitSystem = this.activeUnitSystem;
+    if (this.getOverrideFormatPropsByQuantityType(type, unitSystem)) {
+      const overrideMap = this._overrideFormatPropsByUnitSystem.get(unitSystem);
+      if (overrideMap && overrideMap.has(type)) {
+        overrideMap.delete(type);
+
+        await this.loadDefaultFormatAndParserSpecForQuantity(type);
+        // trigger a message to let callers know the format has changed.
+        this.onQuantityFormatsChanged.emit({ quantityType: type });
+      }
     }
   }
 
@@ -954,7 +941,21 @@ export class QuantityFormatter implements UnitsProvider {
   }
 
   private async setOverrideFormatsByQuantityTypeKey(typeKey: QuantityTypeKey, overrideEntry: OverrideFormatEntry) {
-    this._overrideFormatPropsByQuantityType.set(typeKey, overrideEntry);
+    // extract overrides and insert into appropriate override map entry
+    Object.keys(overrideEntry).forEach ((systemKey) => {
+      const unitSystemKey = systemKey as UnitSystemKey;
+      const props = overrideEntry[unitSystemKey];
+      if (props) {
+        if (this._overrideFormatPropsByUnitSystem.has(unitSystemKey)) {
+          this._overrideFormatPropsByUnitSystem.get(unitSystemKey)!.set(typeKey, props);
+        } else {
+          const newMap = new Map<string, FormatProps>();
+          newMap.set(typeKey, props);
+          this._overrideFormatPropsByUnitSystem.set(unitSystemKey, newMap);
+        }
+      }
+    });
+
     const formatProps = this.getOverrideFormatPropsByQuantityType(typeKey, this.activeUnitSystem);
     if (formatProps) {
       await this.loadFormatAndParserSpec(typeKey, formatProps);
@@ -984,13 +985,24 @@ export class QuantityFormatter implements UnitsProvider {
   }
 
   public async clearAllOverrideFormats() {
-    const promises = new Array<Promise<void>>();
-    this._overrideFormatPropsByQuantityType.forEach(async (_value, type) => {
-      promises.push(this.clearOverrideFormatsByQuantityTypeKey(type));
-    });
+    if (0 === this._overrideFormatPropsByUnitSystem.size)
+      return;
 
-    if (promises.length)
-      await Promise.all(promises);
+    if (this._overrideFormatPropsByUnitSystem.has(this.activeUnitSystem)) {
+      const overrides = this._overrideFormatPropsByUnitSystem.get(this.activeUnitSystem);
+      const typesRemoved: string[] = [];
+      if (overrides && overrides.size) {
+        overrides.forEach((_props, typeKey) => typesRemoved.push(typeKey));
+      }
+
+      if (typesRemoved.length) {
+        const promises = new Array<Promise<void>>();
+        typesRemoved.forEach((typeRemoved)=> promises.push(this.loadDefaultFormatAndParserSpecForQuantity(typeRemoved)));
+        await Promise.all(promises);
+        // trigger a message to let callers know the format has changed.
+        this.onQuantityFormatsChanged.emit({ quantityType: typesRemoved.join("|") });
+      }
+    }
   }
 
   /** Converts a QuantityTypeArg into a QuantityTypeKey/string value. */
@@ -999,17 +1011,17 @@ export class QuantityFormatter implements UnitsProvider {
   }
 
   /** Get the 'persistence' unit from the UnitsProvider. For a tool this 'persistence' unit is the unit being used by the tool internally. */
-  protected getPersistenceUnitByQuantityType(type: QuantityTypeKey): UnitProps {
+  protected async getPersistenceUnitByQuantityType(type: QuantityTypeKey) {
     if (this.quantityTypesRegistry.has(type)) {
       const entry = this.quantityTypesRegistry.get(type);
       if (entry)
         return entry.persistenceUnit;
     }
     throw new Error(`Cannot find quantityType with key ${type} in QuantityTypesRegistry`);
-  };
+  }
 
   /** get the 'persistence' unit from the UnitsProvider. For a tool this 'persistence' unit is the unit being used by the tool internally. */
-  protected getUnitByQuantityType(type: QuantityTypeArg): UnitProps {
+  protected  async getUnitByQuantityType(type: QuantityTypeArg) {
     return this.getPersistenceUnitByQuantityType(this.getQuantityTypeKey(type));
   }
 
@@ -1143,15 +1155,18 @@ export class QuantityFormatter implements UnitsProvider {
 
   public hasActiveOverride(type: QuantityTypeArg, checkOnlyActiveUnitSystem?: boolean): boolean {
     const quantityTypeKey = this.getQuantityTypeKey(type);
-    const override = this._overrideFormatPropsByQuantityType.get(quantityTypeKey);
-    if (override) {
-      if (!checkOnlyActiveUnitSystem)
-        return true;
 
-      if (this.getOverrideFormatPropsByQuantityType(quantityTypeKey, this.activeUnitSystem))
+    if (checkOnlyActiveUnitSystem){
+      const overrides = this._overrideFormatPropsByUnitSystem.get(this.activeUnitSystem);
+      if (overrides && overrides.has(quantityTypeKey))
         return true;
+      return false;
     }
 
+    for (const [_key, overrideMap] of this._overrideFormatPropsByUnitSystem) {
+      if (overrideMap.has(quantityTypeKey))
+        return true;
+    }
     return false;
   }
 
@@ -1176,4 +1191,35 @@ export class QuantityFormatter implements UnitsProvider {
     }
     return this.getQuantityLabel(entry);
   }
+
+  protected getFormatPropsByTypeAndSystem(quantityEntry: QuantityTypeEntry, requestedSystem: UnitSystemKey, ignoreOverrides?: boolean): FormatProps {
+    const fallbackProps: FormatProps = {
+      formatTraits: ["keepSingleZero", "applyRounding", "showUnitLabel"],
+      precision: 4,
+      type: "Decimal",
+      uomSeparator: " ",
+      decimalSeparator: ".",
+    };
+
+    if (!ignoreOverrides) {
+      const overrideProps = this.getOverrideFormatPropsByQuantityType (quantityEntry.key, requestedSystem);
+      if (overrideProps)
+        return overrideProps;
+    }
+
+    if (quantityEntry.getFormatPropsByTypeAndSystem)
+      return quantityEntry.getFormatPropsByTypeAndSystem(quantityEntry, requestedSystem);
+
+    const defaultUnitSystemData = DEFAULT_FORMATKEY_BY_UNIT_SYSTEM.find((value) => value.system === requestedSystem);
+    if (defaultUnitSystemData) {
+      const defaultFormatEntry = defaultUnitSystemData.entries.find ((value) => value.type === quantityEntry.key);
+      if (defaultFormatEntry) {
+        const defaultFormatPropsEntry = DEFAULT_FORMATPROPS.find((props) => props.key === defaultFormatEntry.formatKey);
+        if (defaultFormatPropsEntry)
+          return defaultFormatPropsEntry.format;
+      }
+    }
+    return fallbackProps;
+  }
+
 }
