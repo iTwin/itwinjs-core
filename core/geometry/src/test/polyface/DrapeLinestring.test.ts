@@ -34,8 +34,7 @@ export class RFunctions {
 
 it("DrapeLinestringAsPanels", async () => {
   const ck = new Checker();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  let dy = 0.0;
+  let _dy = 0.0;
   const allGeometry: GeometryQuery[] = [];
   const wanderingPoints = [[-1, 1, 1], [1.5, 1, 1], [2, 3, -1], [3.5, 3, -2], [3.5, 6, 1], [4, 8, -2], [6, 3, 5], [8, 3, -2]];
   const packedWanderingPoints = new GrowableXYZArray();
@@ -54,10 +53,9 @@ it("DrapeLinestringAsPanels", async () => {
         return 1.0 * RFunctions.cosineOfMappedAngle(x, 0.0, 5.0) * RFunctions.cosineOfMappedAngle(y, 0.0, 8.0);
       });
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const panels = PolyfaceQuery.sweepLinestringToFacetsXYreturnSweptFacets(linestring.packedPoints, mesh);
+    const _panels = PolyfaceQuery.sweepLinestringToFacetsXYreturnSweptFacets(linestring.packedPoints, mesh);
     // GeometryCoreTestIO.captureGeometry(allGeometry, [mesh, linestring, panels], 0, dy, 0);
-    dy += 20.0;
+    _dy += 20.0;
   }
   GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "DrapeLinestringAsPanels");
   expect(ck.getNumErrors()).equals(0);

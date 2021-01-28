@@ -7,11 +7,12 @@
 // be imported by apps that sometimes use Electron and sometimes not. Call to `ElectronBackend.initialize`
 // will do the necessary `require("electron")`
 import { BrowserWindow, BrowserWindowConstructorOptions } from "electron";
-
 import * as fs from "fs";
 import * as path from "path";
 import { BeDuration, IModelStatus, isElectronMain } from "@bentley/bentleyjs-core";
-import { BackendIpc, IModelError, IpcHandler, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
+import {
+  BackendIpc, IModelError, IpcHandler, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition,
+} from "@bentley/imodeljs-common";
 import { DesktopAuthorizationClientIpc } from "./DesktopAuthorizationClientIpc";
 import { ElectronRpcConfiguration, ElectronRpcManager } from "./ElectronRpcManager";
 
@@ -97,9 +98,15 @@ export class ElectronBackend implements IpcSocketBackend {
         contextIsolation: true,
         sandbox: true,
       },
-      icon: this.appIconPath,
       ...options, // overrides everything above
     };
+
+    // opts.icon cannot be set to undefined, an invalid path, or a local file path
+    // when using the development server as it'd crash Electron on macOS/linux
+    // https://github.com/electron/electron/issues/27303#issuecomment-759501184
+    const icon = process.platform === "win32" && this.appIconPath;
+    if (icon)
+      opts.icon = this.appIconPath;
 
     this._mainWindow = new BrowserWindow(opts);
     ElectronRpcConfiguration.targetWindowId = this._mainWindow.id;
@@ -161,7 +168,7 @@ export class ElectronBackend implements IpcSocketBackend {
 
     if (!this._developmentServer) {
       // handle any "electron://" requests and redirect them to "file://" URLs
-      require("electron").protocol.registerFileProtocol("electron", (request, callback) => callback(this.parseElectronUrl(request.url)));
+      require("electron").protocol.registerFileProtocol("electron", (request, callback) => callback(this.parseElectronUrl(request.url))); // eslint-disable-line @typescript-eslint/no-var-requires
     }
 
     this._openWindow(windowOptions);
@@ -211,11 +218,11 @@ export class ElectronBackend implements IpcSocketBackend {
       this.instance.electron.protocol.registerSchemesAsPrivileged([{ scheme: "electron", privileges: { standard: true, secure: true } }]);
 
     return this._instance;
-  };
+  }
 }
 
 class ElectronBackendImpl extends IpcHandler {
-  public get channelName() { return "electron-safe"; };
+  public get channelName() { return "electron-safe"; }
   public async callElectron(member: string, method: string, ...args: any) {
     const func = (ElectronBackend.instance.electron as any)[member][method];
     if (typeof func !== "function")
