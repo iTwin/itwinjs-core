@@ -20,7 +20,7 @@
     "copy:assets": "cpx \"./node_modules/@bentley/icons-generic-webfont/dist/**/*\" ./build",
     "docs": "",
     "lint": "eslint -f visualstudio --config package.json --no-eslintrc ./src/**/*.ts 1>&2",
-    "start": "run-p start:webserver start:electron",
+    "start": "cross-env NODE_ENV=development run-p start:webserver start:electron",
     "start:electron": "electron ./lib/backend/DtaElectronMain.js",
     "start:webserver": "cross-env BROWSER=none USE_FULL_SOURCEMAP=true EXTEND_ESLINT=true react-scripts start",
     "start:backend": "node --max-http-header-size=16000 lib/backend/WebMain.js",
