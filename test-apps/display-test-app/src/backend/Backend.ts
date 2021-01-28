@@ -227,19 +227,19 @@ const setupStandaloneConfiguration = () => {
 export const initializeDtaBackend = async (electronHost?: ElectronHostOptions) => {
   const dtaConfig = setupStandaloneConfiguration();
 
-  const config = new IModelHostConfiguration();
-  config.logTileLoadTimeThreshold = 3;
-  config.logTileSizeThreshold = 500000;
+  const iModelHost = new IModelHostConfiguration();
+  iModelHost.logTileLoadTimeThreshold = 3;
+  iModelHost.logTileSizeThreshold = 500000;
 
   let logLevel = LogLevel.None;
   if (MobileRpcConfiguration.isMobileBackend) {
     // Does not seem DtaConfiguration is used anymore.
   } else {
     if (dtaConfig.customOrchestratorUri)
-      config.imodelClient = new IModelBankClient(dtaConfig.customOrchestratorUri, new UrlFileHandler());
+      iModelHost.imodelClient = new IModelBankClient(dtaConfig.customOrchestratorUri, new UrlFileHandler());
 
     if (dtaConfig.useFakeCloudStorageTileCache)
-      config.tileCacheCredentials = { service: "external", account: "", accessKey: "" };
+      iModelHost.tileCacheCredentials = { service: "external", account: "", accessKey: "" };
 
     const logLevelEnv = process.env.SVT_LOG_LEVEL as string;
     if (undefined !== logLevelEnv)
@@ -249,11 +249,11 @@ export const initializeDtaBackend = async (electronHost?: ElectronHostOptions) =
   /** register the implementation of our RPCs. */
   RpcManager.registerImpl(DtaRpcInterface, DisplayTestAppRpc);
   if (isElectronMain)
-    await ElectronHost.startup({ electronHost, config });
+    await ElectronHost.startup({ electronHost, iModelHost });
   else if (MobileRpcConfiguration.isMobileBackend)
-    await NativeHost.startup({ config });
+    await NativeHost.startup({ iModelHost });
   else
-    await IModelHost.startup(config);
+    await IModelHost.startup(iModelHost);
 
   // Set up logging (by default, no logging is enabled)
   Logger.initializeToConsole();

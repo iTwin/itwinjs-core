@@ -35,7 +35,7 @@ export class IpcHost {
 
   /**
    * Send a message to the frontend over an Ipc channel.
-   * @param channel the name of the channel matching the name registered with [[FrontendIpc.addListener]].
+   * @param channel the name of the channel matching the name registered with [[IpcApp.addListener]].
    * @param data The content of the message.
    */
   public static send(channel: string, ...data: any[]): void {
@@ -52,7 +52,7 @@ export class IpcHost {
     return this.ipc.handle(iTwinChannel(channel), handler);
   }
   /**
-   * Establish a handler to receive messages sent via [[FrontendIpc.send]].
+   * Establish a handler to receive messages sent via [[IpcApp.send]].
    * @param channel The name of the channel for the messages.
    * @param listener A function called when messages are sent over `channel`
    * @note returns A function to call to remove the listener.
@@ -82,11 +82,11 @@ export class IpcHost {
     this.notify(IpcAppChannel.PushPull, briefcase, methodName, ...args);
   }
 
-  public static async startup(opt?: { ipc?: IpcHostOptions, config?: IModelHostConfiguration }): Promise<void> {
-    this._ipc = opt?.ipc?.socket;
+  public static async startup(opt?: { ipcHost?: IpcHostOptions, iModelHost?: IModelHostConfiguration }): Promise<void> {
+    this._ipc = opt?.ipcHost?.socket;
     if (this.isValid) // for tests, we use IpcHost but don't have a frontend
       IpcAppImpl.register();
-    await IModelHost.startup(opt?.config);
+    await IModelHost.startup(opt?.iModelHost);
   }
 
   public static async shutdown(): Promise<void> {

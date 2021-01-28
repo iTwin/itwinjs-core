@@ -47,11 +47,11 @@ async function init() {
   await CloudEnv.initialize();
 
   // Start the backend
-  const config = new IModelHostConfiguration();
-  config.imodelClient = CloudEnv.cloudEnv.imodelClient;
-  config.concurrentQuery.concurrent = 2;
-  config.concurrentQuery.pollInterval = 5;
-  config.cacheDir = path.join(__dirname, "out");
-  await ElectronHost.startup({ electronHost: { rpcInterfaces }, config });
+  const iModelHost = new IModelHostConfiguration();
+  iModelHost.imodelClient = CloudEnv.cloudEnv.imodelClient;
+  iModelHost.concurrentQuery.concurrent = 2;
+  iModelHost.concurrentQuery.pollInterval = 5;
+  iModelHost.cacheDir = path.join(__dirname, "out");
+  await ElectronHost.startup({ electronHost: { rpcInterfaces }, iModelHost });
 }
 module.exports = init();

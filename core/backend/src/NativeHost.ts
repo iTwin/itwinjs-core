@@ -184,7 +184,7 @@ export class NativeHost {
    * @param configuration
    * @note this method calls [[IModelHost.startup]] internally.
    */
-  public static async startup(opt?: { ipc?: IpcHostOptions, config?: IModelHostConfiguration }): Promise<void> {
+  public static async startup(opt?: { ipcHost?: IpcHostOptions, iModelHost?: IModelHostConfiguration }): Promise<void> {
     if (!this.isValid) {
       this._isValid = true;
       this.onInternetConnectivityChanged.addListener((status: InternetConnectivityStatus) => NativeHost.notifyNativeFrontend("notifyInternetConnectivityChanged", status));

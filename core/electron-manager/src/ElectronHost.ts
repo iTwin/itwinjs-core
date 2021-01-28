@@ -183,7 +183,7 @@ export class ElectronHost {
    * Electron app. It should be called from your Electron main function.
    * @param opts Options that control aspects of your backend.
    * @note This method must only be called from the backend of an Electron app (i.e. when [isElectronMain]($bentley) is `true`). */
-  public static async startup(opts?: { electronHost?: ElectronHostOptions, config?: IModelHostConfiguration }) {
+  public static async startup(opts?: { electronHost?: ElectronHostOptions, iModelHost?: IModelHostConfiguration }) {
     if (!isElectronMain)
       throw new Error("Not running under Electron");
 
@@ -203,7 +203,7 @@ export class ElectronHost {
       this.rpcConfig = ElectronRpcManager.initializeBackend(this._ipc, eopt?.rpcInterfaces);
       eopt?.ipcHandlers?.forEach((ipc) => ipc.register());
     }
-    await NativeHost.startup({ ipc: { socket: this._ipc }, config: opts?.config });
+    await NativeHost.startup({ ipcHost: { socket: this._ipc }, iModelHost: opts?.iModelHost });
     if (IpcHost.isValid)
       ElectronBackendImpl.register();
   };

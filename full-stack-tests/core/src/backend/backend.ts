@@ -7,18 +7,18 @@ import "./RpcImpl";
 import "@bentley/oidc-signin-tool/lib/certa/certaBackend";
 import * as http from "http";
 import * as path from "path";
+import serveHandler = require("serve-handler");
 import { Config, isElectronMain, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { ElectronHost } from "@bentley/electron-manager/lib/ElectronHost";
 import { IModelJsExpressServer } from "@bentley/express-server";
 import { FileNameResolver, IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
 import { BentleyCloudRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
-import { EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
+import { EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
 import * as testCommands from "./TestEditCommands";
+import { ElectronHost } from "@bentley/electron-manager/lib/ElectronHost";
 
-import serveHandler = require("serve-handler");
 /* eslint-disable no-console */
 
 async function init() {
@@ -28,13 +28,13 @@ async function init() {
   // Bootstrap the cloud environment
   await CloudEnv.initialize();
 
-  const config = new IModelHostConfiguration();
-  config.imodelClient = CloudEnv.cloudEnv.imodelClient;
-  config.concurrentQuery.concurrent = 2;
-  config.concurrentQuery.pollInterval = 5;
+  const iModelHost = new IModelHostConfiguration();
+  iModelHost.imodelClient = CloudEnv.cloudEnv.imodelClient;
+  iModelHost.concurrentQuery.concurrent = 2;
+  iModelHost.concurrentQuery.pollInterval = 5;
 
   if (isElectronMain) {
-    await ElectronHost.startup({ electronHost: { rpcInterfaces }, config });
+    await ElectronHost.startup({ electronHost: { rpcInterfaces }, iModelHost });
     EditCommandAdmin.registerModule(testCommands);
   } else {
     const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "full-stack-test", version: "v1.0" } }, rpcInterfaces);
@@ -54,7 +54,7 @@ async function init() {
         });
       }).listen(Number(process.env.CERTA_PORT ?? 3011) + 3000, undefined, undefined, resolve);
     });
-    await IModelHost.startup(config);
+    await IModelHost.startup(iModelHost);
   }
 
   // Start the backend
