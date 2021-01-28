@@ -19,7 +19,7 @@ class List extends LRUTileList {
   public get tail() { return this._tail; }
   public get totalBytesUsed() { return this._totalBytesUsed; }
 
-  public expectOrder(expected: LRUTileListNode[]): void {
+  public expectOrder(...expected: LRUTileListNode[]): void {
     expect(this.head.previous).to.be.undefined;
     expect(this.tail.next).to.be.undefined;
     const actual = [];
@@ -38,6 +38,14 @@ class List extends LRUTileList {
 
     expect(j).to.equal(0);
   }
+
+  public moveTileToEnd(tile: Tile) { this.moveToEnd(tile); }
+  public moveTileBeforeSentinel(tile: Tile) { this.moveBeforeSentinel(tile); }
+}
+
+function expectUnlinked(node: LRUTileListNode): void {
+  expect(node.previous).to.be.undefined;
+  expect(node.next).to.be.undefined;
 }
 
 describe("LRUTileList", () => {
@@ -63,35 +71,83 @@ describe("LRUTileList", () => {
       expect(tile.next).to.equal(list.sentinel);
     }
 
-    list.expectOrder([...tiles, list.sentinel]);
+    list.expectOrder(...tiles, list.sentinel);
 
     list.drop(tiles[3]);
-    expect(tiles[3].previous).to.be.undefined;
-    expect(tiles[3].next).to.be.undefined;
+    expectUnlinked(tiles[3]);
     expect(tiles[2].next).to.equal(tiles[4]);
     expect(tiles[4].previous).to.equal(tiles[2]);
-    list.expectOrder([ tiles[0], tiles[1], tiles[2], tiles[4], list.sentinel ]);
+    list.expectOrder(tiles[0], tiles[1], tiles[2], tiles[4], list.sentinel);
 
     list.drop(tiles[4]);
-    expect(tiles[4].previous).to.be.undefined;
-    expect(tiles[4].next).to.be.undefined;
-    list.expectOrder([ tiles[0], tiles[1], tiles[2], list.sentinel ]);
+    expectUnlinked(tiles[4]);
+    list.expectOrder(tiles[0], tiles[1], tiles[2], list.sentinel);
 
     expect(list.head).to.equal(tiles[0]);
     list.drop(tiles[0]);
-    expect(tiles[0].previous).to.be.undefined;
-    expect(tiles[0].next).to.be.undefined;
+    expectUnlinked(tiles[0]);
     expect(list.head).to.equal(tiles[1]);
-    list.expectOrder([ tiles[1], tiles[2], list.sentinel ]);
+    list.expectOrder(tiles[1], tiles[2], list.sentinel);
+  });
+
+  it("ignores empty nodes", () => {
+    const list = new List();
+    const tile = mockTile(0);
+    list.add(tile);
+    expect(list.tail).to.equal(list.sentinel);
+    expect(list.head).to.equal(list.sentinel);
+    expectUnlinked(tile);
   });
 
   it("moves nodes", () => {
+    const t1 = mockTile(1);
+    const t2 = mockTile(2);
+    const t3 = mockTile(3);
+    const t4 = mockTile(4);
+
+    const list = new List();
+    const s = list.sentinel;
+
+    list.add(t1);
+    list.expectOrder(t1, s);
+    list.moveTileToEnd(t1);
+    list.expectOrder(s, t1);
+
+    list.add(t2);
+    list.expectOrder(t2, s, t1);
+    list.moveTileToEnd(t2);
+    list.expectOrder(s, t1, t2);
+    list.moveTileBeforeSentinel(t1);
+    list.expectOrder(t1, s, t2);
+    list.moveTileBeforeSentinel(t2);
+    list.expectOrder(t1, t2, s);
+
+    list.add(t3);
+    list.add(t4);
+    list.expectOrder(t1, t2, t3, t4, s);
+    list.moveTileToEnd(t4);
+    list.expectOrder(t1, t2, t3, s, t4);
+    list.moveTileToEnd(t2);
+    list.expectOrder(t1, t3, s, t4, t2);
+
+    // No-op
+    list.moveTileToEnd(t2);
+    list.expectOrder(t1, t3, s, t4, t2);
+
+    // No-op
+    list.moveTileToEnd(t1);
+    list.expectOrder(t3, s, t4, t2, t1);
+    list.moveTileBeforeSentinel(t3);
+    list.expectOrder(t3, s, t4, t2, t1);
   });
 
   it("accumulates total memory used", () => {
   });
 
   it("updates when selected tiles change", () => {
+  });
+
+  it("frees memory to specified target", () => {
   });
 
   it("disposes", () => {
