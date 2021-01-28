@@ -169,13 +169,13 @@ function isLinked(node: LRUTileListNode): boolean {
  * Illustration of the structure of the list:
  *
  * ```
- * v------------ Not selected --------------v                      v------------- Selected -------------v
- *   ______               ______               __________                   ______               ______
- *  |      |.next =>     |      |.next => ... |          |.next => ...     |      |.next =>     |      |
- *  | head |             |      |         ... | sentinel |         ...     |      |             | tail |
- *  |______| <= previous.|______| <= previous.|__________| ... <= previous.|______| <= previous.|______|
+ * v------------- Not selected --------------v                                v----------------- Selected ------------------v
+ *   ______               ______                           __________                           ______               ______
+ *  |      |.next =>     |      |.next => ...             |          |.next => ...             |      |.next =>     |      |
+ *  | head |             |      |                         | sentinel |                         |      |             | tail |
+ *  |______| <= previous.|______|         ... <= previous.|__________|         ... <= previous.|______| <= previous.|______|
  *
- * least-recently-selected --> --> --> --> --> --> --> --> --> --> --> --> --> --> most-recently-selected
+ * least-recently-selected --> --> --> --> --> --> --> --> --> --> --> --> --> --> --> --> --> --> --> most-recently-selected
  * ```
  *
  * The sentinel node is always present and floats freely as the contents of each partition change.
@@ -270,7 +270,7 @@ export class LRUTileList {
       this.unlink(tile);
 
     this._tail.next = tile;
-    tile.next = this._tail;
+    tile.previous = this._tail;
     this._tail = tile;
   }
 
@@ -289,7 +289,7 @@ export class LRUTileList {
       tile.next.previous = tile.previous;
     } else if (tile.previous) {
       assert(tile === this._tail);
-      assert(undefined !== tile.next);
+      assert(undefined === tile.next);
       assert(tile.previous.next === tile);
 
       tile.previous.next = undefined;
@@ -325,7 +325,7 @@ export class LRUTileList {
       this._tail = tile;
   }
 
-  public markSelectedForViewport(viewportId: number, tiles: Set<Tile>): void {
+  public markSelectedForViewport(viewportId: number, tiles: Iterable<Tile>): void {
     for (const tile of tiles) {
       assert(isLinked(tile));
       assert(tile.bytesUsed > 0);
