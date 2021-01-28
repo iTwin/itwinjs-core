@@ -226,6 +226,7 @@ export class IModelTransformer extends IModelExportHandler {
   /** Detect Element deletes using ExternalSourceAspects in the target iModel and a *brute force* comparison against Elements in the source iModel.
    * @see processChanges
    * @note This method is called from [[processAll]] and is not needed by [[processChanges]], so it only needs to be called directly when processing a subset of an iModel.
+   * @throws [[IModelError]] If the required provenance or changeset information is not available to detect deletes.
    */
   public detectElementDeletes(): void {
     if (this._isReverseSynchronization) {
@@ -554,6 +555,7 @@ export class IModelTransformer extends IModelExportHandler {
   /** Detect Relationship deletes using ExternalSourceAspects in the target iModel and a *brute force* comparison against relationships in the source iModel.
    * @see processChanges
    * @note This method is called from [[processAll]] and is not needed by [[processChanges]], so it only needs to be called directly when processing a subset of an iModel.
+   * @throws [[IModelError]] If the required provenance or changeset information is not available to detect deletes.
    */
   public detectRelationshipDeletes(): void {
     if (this._isReverseSynchronization) {
