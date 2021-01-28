@@ -20,10 +20,6 @@ export class QuantityFormatModalFrontstage implements ModalFrontstageInfo {
   public get content(): React.ReactNode { return (<QuantityFormatStage initialQuantityType={QuantityType.Length} />); }
 }
 
-function enumKeys<O extends object, K extends keyof O = keyof O>(obj: O): K[] {
-  return Object.keys(obj).filter((k) => Number.isNaN(+k)) as K[];
-}
-
 function formatAreEqual(obj1: FormatProps, obj2: FormatProps) {
   const compare = new DeepCompare();
   return compare.compare(obj1, obj2);
@@ -128,10 +124,16 @@ function QuantityFormatStage({ initialQuantityType }: { initialQuantityType: Qua
           <Listbox id="quantity-types-list" className="quantity-types"
             onListboxValueChange={onListboxValueChange} selectedValue={activeQuantityType.toString()} >
             {
-              enumKeys(QuantityType).map((enumValue) =>
-                <ListboxItem key={enumValue} className="quantity-type-list-entry" value={QuantityType[enumValue].toString()}>
-                  <span className="map-source-list-entry-name" title={enumValue.toString()}>{enumValue}</span>
-                </ListboxItem>)
+              [...IModelApp.quantityFormatter.quantityTypesRegistry.keys()].map((key) => {
+                const entry = IModelApp.quantityFormatter.quantityTypesRegistry.get(key)!;
+                const description = IModelApp.quantityFormatter.getQuantityDescription(entry);
+                const label = IModelApp.quantityFormatter.getQuantityLabel(entry);
+                return (
+                  <ListboxItem key={entry.key} className="quantity-type-list-entry" value={entry.type.toString()}>
+                    <span className="map-source-list-entry-name" title={description}>{label}</span>
+                  </ListboxItem>
+                );
+              })
             }
           </Listbox>
         </div>

@@ -12,15 +12,42 @@ import {
 } from "@bentley/imodeljs-quantity";
 import { IModelApp } from "./IModelApp";
 
-/** Defines standard format types for tools that need to display measurements to user.
+/** String used to uniquely identify a Quantity. See function `getQuantityTypeKey`.
+ * @beta
+ */
+export type QuantityTypeKey = string;
+
+/** Defines standard format types for tools that need to display measurements to user. Kept only to provide compatibility for existing API.
  * @beta
  */
 export enum QuantityType { Length = 1, Angle = 2, Area = 3, Volume = 4, LatLong = 5, Coordinate = 6, Stationing = 7, LengthSurvey = 8, LengthEngineering = 9 }
 
-/** String used to uniquely identify a Quantity. See `QuantityFormatter.getQuantityTypeKey`.
- * @internal
+/** Type the can be used to uniquely identify a Quantity Type.
+ * @beta
  */
-type QuantityTypeKey = string;
+export type QuantityTypeArg = QuantityType | string;
+
+/** Function to return a QuantityTypeKey given either a QuantityType or a string */
+export function getQuantityTypeKey(type: QuantityTypeArg): string {
+  // For QuantityType enum values, build a string that shouldn't collide with anything a user may come up with
+  if (typeof type === "number")
+    return `QuantityTypeEnumValue-${type.toString()}`;
+  return type;
+}
+
+export interface QuantityTypeEntry {
+  readonly key: QuantityTypeKey;
+  readonly type: QuantityTypeArg;
+  readonly persistenceUnit: UnitProps;
+  label?: string;
+  labelKey?: string;
+  description?: string;
+  descriptionKey?: string;
+  // if not specified generic FormatterSpec will be created
+  generateFormatterSpec?: (persistenceUnit: UnitProps, formatProps: FormatProps) => FormatterSpec;
+  // if not specified generic ParserSpec will be created
+  generateParserSpec?: (persistenceUnit: UnitProps, formatProps: FormatProps) => FormatterSpec;
+};
 
 // cSpell:ignore FORMATPROPS FORMATKEY ussurvey uscustomary
 
@@ -87,18 +114,6 @@ const UNIT_DATA: UnitDefinition[] = [
  * @alpha
  */
 export type UnitSystemKey = "metric" | "imperial" | "usCustomary" | "usSurvey";
-
-/** Represents both standard and custom quantity types
- * @alpha
- */
-export type QuantityTypeArg = QuantityType | string;
-
-function getQuantityTypeKey(type: QuantityTypeArg): string {
-  // For QuantityType enum values, build a string that shouldn't collide with anything a user may come up with
-  if (typeof type === "number")
-    return `QuantityTypeEnumValue-${type.toString()}`;
-  return type;
-}
 
 const DEFAULT_FORMATKEY_BY_UNIT_SYSTEM = [
   {
@@ -461,8 +476,7 @@ const DEFAULT_FORMATPROPS: UniqueFormatsProps[] = [
 
 /** Class that implements the minimum UnitConversion interface to provide information needed to convert unit values.
  * @alpha
- */
-export class ConversionData implements UnitConversion {
+ */export class ConversionData implements UnitConversion {
   public factor: number = 1.0;
   public offset: number = 0.0;
 }
@@ -537,6 +551,7 @@ export interface QuantityFormatsChangedArgs {
  * @alpha
  */
 export class QuantityFormatter implements UnitsProvider {
+  protected _quantityTypeRegistry: Map<QuantityTypeKey, QuantityTypeEntry> = new Map<QuantityTypeKey, QuantityTypeEntry>();
   protected _activeUnitSystem: UnitSystemKey = "imperial";
   protected _formatSpecsByKoq = new Map<string, FormatterSpec[]>();
   protected _activeFormatSpecsByType = new Map<QuantityTypeKey, FormatterSpec>();
@@ -592,6 +607,114 @@ export class QuantityFormatter implements UnitsProvider {
     this._activeParserSpecsByType.set(this.getQuantityTypeKey(provider.quantityType), parserSpec);
   }
 
+  public get quantityTypesRegistry() {
+    return this._quantityTypeRegistry;
+  }
+
+  public addQuantityType(entry: QuantityTypeEntry) {
+    if (this._quantityTypeRegistry.has(entry.key))
+      return false;
+
+    this._quantityTypeRegistry.set(entry.key, entry);
+    return true;
+  }
+
+  protected async initializeQuantityTypesRegistry() {
+    // QuantityType.Length
+    const lengthUnit = await this.findUnitByName("Units.M");
+    let key = this.getQuantityTypeKey(QuantityType.Length);
+    this._quantityTypeRegistry.set(key, {
+      key,
+      type: QuantityType.Length,
+      labelKey: "iModelJs:QuantityType.Length.label",
+      descriptionKey: "iModelJs:QuantityType.Length.description",
+      persistenceUnit: lengthUnit,
+    });
+
+    // QuantityType.LengthEngineering
+    key = this.getQuantityTypeKey(QuantityType.LengthEngineering);
+    this._quantityTypeRegistry.set(key, {
+      key,
+      type: QuantityType.LengthEngineering,
+      labelKey: "iModelJs:QuantityType.LengthEngineering.label",
+      descriptionKey: "iModelJs:QuantityType.LengthEngineering.description",
+      persistenceUnit: lengthUnit,
+    });
+
+    // QuantityType.Coordinate
+    key = this.getQuantityTypeKey(QuantityType.Coordinate);
+    this._quantityTypeRegistry.set(key, {
+      key,
+      type: QuantityType.Coordinate,
+      labelKey: "iModelJs:QuantityType.Coordinate.label",
+      descriptionKey: "iModelJs:QuantityType.Coordinate.description",
+      persistenceUnit: lengthUnit,
+    });
+
+    // QuantityType.Stationing
+    key = this.getQuantityTypeKey(QuantityType.Stationing);
+    this._quantityTypeRegistry.set(key, {
+      key,
+      type: QuantityType.Stationing,
+      labelKey: "iModelJs:QuantityType.Stationing.label",
+      descriptionKey: "iModelJs:QuantityType.Stationing.description",
+      persistenceUnit: lengthUnit,
+    });
+
+    // QuantityType.LengthSurvey
+    key = this.getQuantityTypeKey(QuantityType.LengthSurvey);
+    this._quantityTypeRegistry.set(key, {
+      key,
+      type: QuantityType.LengthSurvey,
+      labelKey: "iModelJs:QuantityType.LengthSurvey.label",
+      descriptionKey: "iModelJs:QuantityType.LengthSurvey.description",
+      persistenceUnit: lengthUnit,
+    });
+
+    // QuantityType.Angle
+    const radUnit = await this.findUnitByName("Units.RAD");
+    key = this.getQuantityTypeKey(QuantityType.Angle);
+    this._quantityTypeRegistry.set(key, {
+      key,
+      type: QuantityType.Angle,
+      labelKey: "iModelJs:QuantityType.Angle.label",
+      descriptionKey: "iModelJs:QuantityType.Angle.description",
+      persistenceUnit: radUnit,
+    });
+
+    // QuantityType.LatLong
+    key = this.getQuantityTypeKey(QuantityType.LatLong);
+    this._quantityTypeRegistry.set(key, {
+      key,
+      type: QuantityType.LatLong,
+      labelKey: "iModelJs:QuantityType.LatLong.label",
+      descriptionKey: "iModelJs:QuantityType.LatLong.description",
+      persistenceUnit: radUnit,
+    });
+
+    // QuantityType.Area
+    const sqMetersUnit = await this.findUnitByName("Units.SQ_M");
+    key = this.getQuantityTypeKey(QuantityType.Area);
+    this._quantityTypeRegistry.set(key, {
+      key,
+      type: QuantityType.Area,
+      labelKey: "iModelJs:QuantityType.Area.label",
+      descriptionKey: "iModelJs:QuantityType.Area.description",
+      persistenceUnit: sqMetersUnit,
+    });
+
+    // QuantityType.Volume
+    const cubicMetersUnit = await this.findUnitByName("Units.CUB_M");
+    key = this.getQuantityTypeKey(QuantityType.Volume);
+    this._quantityTypeRegistry.set(key, {
+      key,
+      type: QuantityType.Volume,
+      labelKey: "iModelJs:QuantityType.Volume.label",
+      descriptionKey: "iModelJs:QuantityType.Volume.description",
+      persistenceUnit: cubicMetersUnit,
+    });
+  }
+
   /** Asynchronous call to load Formatting and ParsingSpecs for a unit system. This method ends up caching FormatterSpecs and ParserSpecs
    *  so they can be quickly accessed.
    * @internal public for unit test usage
@@ -636,6 +759,8 @@ export class QuantityFormatter implements UnitsProvider {
   }
 
   public async onInitialized() {
+    await this.initializeQuantityTypesRegistry();
+
     // initialize default format and parsing specs
     await this.loadFormatAndParsingMapsForSystem();
   }
@@ -873,24 +998,18 @@ export class QuantityFormatter implements UnitsProvider {
     return getQuantityTypeKey(type);
   }
 
-  /** Async request to get the 'persistence' unit from the UnitsProvider. For a tool this 'persistence' unit is the unit being used by the tool internally. */
-  protected async getPersistenceUnitByQuantityType(type: QuantityTypeKey): Promise<UnitProps> {
-    if ((this.getQuantityTypeKey(QuantityType.Angle) === type) || (this.getQuantityTypeKey(QuantityType.LatLong) === type))
-      return this.findUnitByName("Units.RAD");
+  /** Get the 'persistence' unit from the UnitsProvider. For a tool this 'persistence' unit is the unit being used by the tool internally. */
+  protected getPersistenceUnitByQuantityType(type: QuantityTypeKey): UnitProps {
+    if (this.quantityTypesRegistry.has(type)) {
+      const entry = this.quantityTypesRegistry.get(type);
+      if (entry)
+        return entry.persistenceUnit;
+    }
+    throw new Error(`Cannot find quantityType with key ${type} in QuantityTypesRegistry`);
+  };
 
-    if (this.getQuantityTypeKey(QuantityType.Area) === type)
-      return this.findUnitByName("Units.SQ_M");
-
-    if (this.getQuantityTypeKey(QuantityType.Volume) === type)
-      return this.findUnitByName("Units.CUB_M");
-
-    // all other default quantity types are persisted/processed in meters
-    // QuantityType.Coordinate, QuantityType.Length, QuantityType.Stationing, QuantityType.LengthSurvey, QuantityType.LengthEngineering:
-    return this.findUnitByName("Units.M");
-  }
-
-  /** Async request to get the 'persistence' unit from the UnitsProvider. For a tool this 'persistence' unit is the unit being used by the tool internally. */
-  protected async getUnitByQuantityType(type: QuantityType): Promise<UnitProps> {
+  /** get the 'persistence' unit from the UnitsProvider. For a tool this 'persistence' unit is the unit being used by the tool internally. */
+  protected getUnitByQuantityType(type: QuantityTypeArg): UnitProps {
     return this.getPersistenceUnitByQuantityType(this.getQuantityTypeKey(type));
   }
 
@@ -1034,5 +1153,27 @@ export class QuantityFormatter implements UnitsProvider {
     }
 
     return false;
+  }
+
+  public getQuantityLabel(entry: QuantityTypeEntry): string {
+    if (entry.label)
+      return entry.label;
+    if (entry.labelKey) {
+      const label = IModelApp.i18n.translate(entry.labelKey);
+      entry.label = label;
+      return entry.label;
+    }
+    return entry.key;
+  }
+
+  public getQuantityDescription(entry: QuantityTypeEntry): string {
+    if (entry.description)
+      return entry.description;
+    if (entry.descriptionKey) {
+      const description = IModelApp.i18n.translate(entry.descriptionKey);
+      entry.description = description;
+      return entry.description;
+    }
+    return this.getQuantityLabel(entry);
   }
 }
