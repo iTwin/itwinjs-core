@@ -10,7 +10,7 @@ While BIS models a significant portion of the world of built infrastructure, and
 
 - Customizations and extensions to existing BIS concepts (often per-project or per-company)
 - Vendor-specific information
-- Transfer of information from other infrastructure-related databases (e.g. via iModel bridges).
+- Transfer of information from other infrastructure-related databases (e.g. via iModel connectors).
 - Modeling of concepts that do not currently exist in BIS.
 - The need to add unstructured information to Elements.
 
