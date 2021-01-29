@@ -15,6 +15,29 @@ import {
 import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
 import { createTreeNodeItem } from "./Utils";
 
+/**
+ * Filtered presentation tree data provider.
+ * @public
+ */
+export interface IFilteredPresentationTreeDataProvider extends IPresentationTreeDataProvider {
+  /**
+   * Applied filter.
+   */
+  filter: string;
+  /**
+   * Returns active match for given index.
+   */
+  getActiveMatch(index: number): ActiveMatchInfo | undefined;
+  /**
+   * Counts all filter matches.
+   */
+  countFilteringResults(nodePaths: ReadonlyArray<Readonly<NodePathElement>>): number;
+  /**
+   * Checks whether node matches applied filter or not.
+   */
+  nodeMatchesFilter(node: TreeNodeItem): boolean;
+}
+
 /** @internal */
 export interface FilteredPresentationTreeDataProviderProps {
   parentDataProvider: IPresentationTreeDataProvider;
@@ -26,7 +49,7 @@ export interface FilteredPresentationTreeDataProviderProps {
  * Rules-driven presentation tree data provider that returns filtered results.
  * @internal
  */
-export class FilteredPresentationTreeDataProvider implements IPresentationTreeDataProvider {
+export class FilteredPresentationTreeDataProvider implements IFilteredPresentationTreeDataProvider {
   private _parentDataProvider: IPresentationTreeDataProvider;
   private _filteredDataProvider: SimpleTreeDataProvider;
   private _filter: string;
@@ -120,6 +143,11 @@ export class FilteredPresentationTreeDataProvider implements IPresentationTreeDa
 
   public getNodeKey(node: TreeNodeItem): NodeKey {
     return this._parentDataProvider.getNodeKey(node);
+  }
+
+  /** Check if node matches currently applied filter */
+  public nodeMatchesFilter(node: TreeNodeItem): boolean {
+    return this._filteredResultMatches.some((result) => result.id === node.id);
   }
 
   /** @alpha Hierarchy loading performance needs to be improved before this becomes publicly available. */

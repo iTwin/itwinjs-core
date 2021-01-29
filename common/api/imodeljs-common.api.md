@@ -277,6 +277,14 @@ export namespace AreaPattern {
     }
 }
 
+// @beta
+export type AsyncFunction = (...args: any) => Promise<any>;
+
+// @beta
+export type AsyncMethodsOf<T> = {
+    [P in keyof T]: T[P] extends AsyncFunction ? P : never;
+}[keyof T];
+
 export { AuthStatus }
 
 // @public
@@ -335,10 +343,12 @@ export class BackendError extends IModelError {
 
 // @beta
 export class BackendIpc {
+    static addListener(channel: string, listener: IpcListener): RemoveFunction;
+    static handle(channel: string, handler: (...args: any[]) => Promise<any>): RemoveFunction;
     static initialize(ipc: IpcSocketBackend): void;
-    static get ipc(): IpcSocketBackend;
     static get isValid(): boolean;
-    static sendMessage(channel: string, ...data: any[]): void;
+    static removeListener(channel: string, listener: IpcListener): void;
+    static send(channel: string, ...data: any[]): void;
 }
 
 // @public
@@ -775,6 +785,10 @@ export interface ChangedElements {
     elements: Id64String[];
     // (undocumented)
     modelIds?: Id64String[];
+    // (undocumented)
+    newChecksums?: number[][];
+    // (undocumented)
+    oldChecksums?: number[][];
     // (undocumented)
     opcodes: number[];
     // (undocumented)
@@ -1459,6 +1473,8 @@ export enum ContentFlags {
     // (undocumented)
     AllowInstancing = 1,
     // (undocumented)
+    ExternalTextures = 8,
+    // (undocumented)
     IgnoreAreaPatterns = 4,
     // (undocumented)
     ImprovedElision = 2,
@@ -1539,8 +1555,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 1441792,
-    Major = 22,
+    Combined = 1507328,
+    Major = 23,
     Minor = 0
 }
 
@@ -2378,14 +2394,6 @@ export namespace Events {
     export namespace NativeApp {
         const // (undocumented)
         namespace = "NativeApp";
-        const // (undocumented)
-        onMemoryWarning = "onMemoryWarning";
-        const // (undocumented)
-        onBriefcaseDownloadProgress = "download-progress";
-        const // (undocumented)
-        onInternetConnectivityChanged = "onInternetConnectivityChanged";
-        const // (undocumented)
-        onUserStateChanged = "onUserStateChanged";
         const modelGeometryChanges = "modelGeometryChanges";
     }
 }
@@ -2732,11 +2740,13 @@ export interface FormDataCommon {
 
 // @beta
 export class FrontendIpc {
+    static addListener(channel: string, handler: IpcListener): RemoveFunction;
     static callBackend(channelName: string, methodName: string, ...args: any[]): Promise<any>;
-    static handleMessage(channel: string, handler: (...data: any[]) => void): RemoveFunction;
     static initialize(ipc: IpcSocketFrontend): void;
-    static get ipc(): IpcSocketFrontend;
+    static invoke(channel: string, ...args: any[]): Promise<any>;
     static get isValid(): boolean;
+    static removeListener(channel: string, listener: IpcListener): void;
+    static send(channel: string, ...data: any[]): void;
 }
 
 // @public
@@ -3602,7 +3612,7 @@ export class ImageBuffer {
     protected constructor(data: Uint8Array, format: ImageBufferFormat, width: number);
     // @internal (undocumented)
     protected static computeHeight(data: Uint8Array, format: ImageBufferFormat, width: number): number;
-    static create(data: Uint8Array, format: ImageBufferFormat, width: number): ImageBuffer | undefined;
+    static create(data: Uint8Array, format: ImageBufferFormat, width: number): ImageBuffer;
     readonly data: Uint8Array;
     readonly format: ImageBufferFormat;
     static getNumBytesPerPixel(format: ImageBufferFormat): number;
@@ -3852,6 +3862,8 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     getMassProperties(_iModelToken: IModelRpcProps, _props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     // (undocumented)
     getModelProps(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<ModelProps[]>;
+    // @alpha (undocumented)
+    getTextureImage(_iModelToken: IModelRpcProps, _textureLoadProps: TextureLoadProps): Promise<Uint8Array | undefined>;
     // (undocumented)
     getToolTipMessage(_iModelToken: IModelRpcProps, _elementId: string): Promise<string[]>;
     // (undocumented)
@@ -3871,7 +3883,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     // (undocumented)
     queryModelRanges(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<Range3dProps[]>;
     // (undocumented)
-    queryRows(_iModelToken: IModelRpcProps, _ecsql: string, _bindings?: any[] | object, _limit?: QueryLimit, _quota?: QueryQuota, _priority?: QueryPriority, _restartToken?: string): Promise<QueryResponse>;
+    queryRows(_iModelToken: IModelRpcProps, _ecsql: string, _bindings?: any[] | object, _limit?: QueryLimit, _quota?: QueryQuota, _priority?: QueryPriority, _restartToken?: string, _abbreviateBlobs?: boolean): Promise<QueryResponse>;
     // (undocumented)
     readFontJson(_iModelToken: IModelRpcProps): Promise<any>;
     // @beta (undocumented)
@@ -4040,15 +4052,9 @@ export const Interpolation: {
 export type InterpolationFunction = (v: any, k: number) => number;
 
 // @beta
-export abstract class IpcHandler implements IpcInterface {
+export abstract class IpcHandler {
     abstract get channelName(): string;
-    abstract getVersion(): Promise<string>;
     static register(): RemoveFunction;
-}
-
-// @beta
-export interface IpcInterface {
-    getVersion(): Promise<string>;
 }
 
 // @internal
@@ -4065,31 +4071,36 @@ export type IpcInvokeReturn = {
 };
 
 // @beta
-export type IpcListener = (evt: any, ...arg: any[]) => void;
+export type IpcListener = (evt: Event, ...args: any[]) => void;
 
 // @beta
 export interface IpcSocket {
-    receive: (channel: string, listener: IpcListener) => RemoveFunction;
+    addListener: (channel: string, listener: IpcListener) => RemoveFunction;
+    removeListener: (channel: string, listener: IpcListener) => void;
     send: (channel: string, ...data: any[]) => void;
 }
 
 // @beta
 export interface IpcSocketBackend extends IpcSocket {
-    handle: (channel: string, handler: (methodName: string, ...args: any[]) => Promise<any>) => RemoveFunction;
+    handle: (channel: string, handler: (...args: any[]) => Promise<any>) => RemoveFunction;
 }
 
 // @beta
 export interface IpcSocketFrontend extends IpcSocket {
-    invoke: (channel: string, methodName: string, ...args: any[]) => Promise<any>;
+    invoke: (channel: string, ...args: any[]) => Promise<any>;
 }
 
 // @internal (undocumented)
 export abstract class IpcWebSocket implements IpcSocket {
     constructor();
     // (undocumented)
+    addListener(channel: string, listener: IpcListener): RemoveFunction;
+    // (undocumented)
     protected _channels: Map<string, Set<IpcListener>>;
     // (undocumented)
-    receive(channel: string, listener: IpcListener): RemoveFunction;
+    static receivers: Set<(evt: Event, message: IpcWebSocketMessage) => void>;
+    // (undocumented)
+    removeListener(channel: string, listener: IpcListener): void;
     // (undocumented)
     abstract send(channel: string, ...data: any[]): void;
     // (undocumented)
@@ -4100,7 +4111,7 @@ export abstract class IpcWebSocket implements IpcSocket {
 export class IpcWebSocketBackend extends IpcWebSocket implements IpcSocketBackend {
     constructor();
     // (undocumented)
-    handle(channel: string, handler: (methodName: string, ...args: any[]) => Promise<any>): RemoveFunction;
+    handle(channel: string, handler: (event: Event, methodName: string, ...args: any[]) => Promise<any>): RemoveFunction;
     // (undocumented)
     send(channel: string, ...data: any[]): void;
 }
@@ -4144,8 +4155,6 @@ export enum IpcWebSocketMessageType {
 
 // @internal (undocumented)
 export abstract class IpcWebSocketTransport {
-    // (undocumented)
-    abstract listen(handler: (message: IpcWebSocketMessage) => void): void;
     // (undocumented)
     abstract send(message: IpcWebSocketMessage): void;
 }
@@ -4731,8 +4740,11 @@ export enum MonochromeMode {
     Scaled = 1
 }
 
+// @internal (undocumented)
+export const nativeAppChannel = "nativeApp";
+
 // @internal
-export interface NativeAppIpc extends IpcInterface {
+export interface NativeAppIpc {
     acquireNewBriefcaseId: (_iModelId: GuidString) => Promise<number>;
     authGetAccessToken: () => Promise<string>;
     authInitialize: (_issuer: string, _config: any) => Promise<void>;
@@ -4765,13 +4777,21 @@ export interface NativeAppIpc extends IpcInterface {
     toggleInteractiveEditingSession: (_tokenProps: IModelRpcProps, _startSession: boolean) => Promise<boolean>;
 }
 
-// @internal (undocumented)
-export enum NativeAppIpcKey {
+// @internal
+export interface NativeAppResponse {
     // (undocumented)
-    Channel = "nativeApp",
+    notifyInternetConnectivityChanged: (status: InternetConnectivityStatus) => void;
     // (undocumented)
-    Version = "1.0.0"
+    notifyMemoryWarning: () => void;
+    // (undocumented)
+    notifyUserStateChanged: (arg: {
+        accessToken: any;
+        err?: string;
+    }) => void;
 }
+
+// @internal (undocumented)
+export const nativeAppResponse = "nativeApp-notify";
 
 // @public
 export interface NavigationBindingValue {
@@ -5360,6 +5380,9 @@ export enum ProfileOptions {
 }
 
 // @beta
+export type PromiseReturnType<T extends AsyncFunction> = T extends (...args: any) => Promise<infer R> ? R : any;
+
+// @beta
 export type PropertyCallback = (name: string, meta: PropertyMetaData) => void;
 
 // @beta
@@ -5888,6 +5911,12 @@ export interface RequestNewBriefcaseProps {
     contextId: GuidString;
     fileName?: string;
     iModelId: GuidString;
+}
+
+// @beta
+export abstract class ResponseHandler {
+    static register(): RemoveFunction;
+    abstract get responseChannel(): string;
 }
 
 // @public (undocumented)
@@ -7161,6 +7190,11 @@ export enum TextureFlags {
     None = 0
 }
 
+// @alpha
+export interface TextureLoadProps {
+    name: Id64String;
+}
+
 // @beta
 export class TextureMapping {
     constructor(tx: RenderTexture, params: TextureMapping.Params);
@@ -7485,6 +7519,8 @@ export interface TileOptions {
     readonly alwaysSubdivideIncompleteTiles: boolean;
     // (undocumented)
     readonly disableMagnification: boolean;
+    // (undocumented)
+    readonly enableExternalTextures: boolean;
     // (undocumented)
     readonly enableImprovedElision: boolean;
     // (undocumented)
@@ -8174,8 +8210,6 @@ export class WebAppRpcRequest extends RpcRequest {
 export abstract class WipRpcInterface extends RpcInterface {
     // (undocumented)
     attachChangeCache(_iModelToken: IModelRpcProps): Promise<void>;
-    // (undocumented)
-    detachChangeCache(_iModelToken: IModelRpcProps): Promise<void>;
     // (undocumented)
     getChangedElements(_iModelToken: IModelRpcProps, _startChangesetId: string, _endChangesetId: string): Promise<ChangedElements | undefined>;
     static getClient(): WipRpcInterface;

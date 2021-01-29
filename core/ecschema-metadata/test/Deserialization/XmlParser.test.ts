@@ -738,6 +738,27 @@ describe("XmlParser", () => {
       const [itemName, , itemElement] = findResult;
       assert.throws(() => parser.parseMixin(itemElement), ECObjectsError, `The Mixin TestSchema.${itemName} is missing the required 'AppliesToEntityClass' tag.`);
     });
+
+    it("should throw for multiple base classes", () => {
+      const itemXml = `
+        <ECEntityClass typeName="TestMixin" modifier="Abstract">
+          <ECCustomAttributes>
+              <IsMixin>
+                  <AppliesToEntityClass>TestEntityClass</AppliesToEntityClass>
+              </IsMixin>
+          </ECCustomAttributes>
+          <BaseClass>BaseMixin1</BaseClass>
+          <BaseClass>BaseMixin2</BaseClass>
+        </ECEntityClass>`;
+
+      parser = new XmlParser(createSchemaXmlWithItems(itemXml));
+      const findResult = parser.findItem("TestMixin");
+      if (findResult === undefined)
+        throw new Error("Expected finding Mixin to be successful");
+
+      const [itemName, , itemElement] = findResult;
+      assert.throws(() => parser.parseMixin(itemElement), ECObjectsError, `The Mixin TestSchema.${itemName} has more than one base class which is not allowed.`);
+    });
   });
 
   describe("parsePhenomenon", () => {

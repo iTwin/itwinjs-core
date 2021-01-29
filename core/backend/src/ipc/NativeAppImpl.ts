@@ -10,7 +10,7 @@
 import { ClientRequestContext, Config, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import {
   BackendIpc, BriefcaseProps, IModelConnectionProps, IModelError, IModelRpcProps, InternetConnectivityStatus, IpcHandler, LocalBriefcaseProps,
-  MobileAuthorizationClientConfiguration, NativeAppIpc, NativeAppIpcKey, OpenBriefcaseProps, OverriddenBy, RequestNewBriefcaseProps, StorageValue,
+  MobileAuthorizationClientConfiguration, nativeAppChannel, NativeAppIpc, OpenBriefcaseProps, OverriddenBy, RequestNewBriefcaseProps, StorageValue,
   TileTreeContentIds,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
@@ -29,8 +29,7 @@ import { cancelTileContentRequests } from "../rpc-impl/IModelTileRpcImpl";
  */
 export class NativeAppImpl extends IpcHandler implements NativeAppIpc {
 
-  public get channelName() { return NativeAppIpcKey.Channel; }
-  public async getVersion() { return NativeAppIpcKey.Version; }
+  public get channelName() { return nativeAppChannel; }
   public async log(_timestamp: number, level: LogLevel, category: string, message: string, metaData?: any): Promise<void> {
     Logger.logRaw(level, category, message, () => metaData);
   }
@@ -73,7 +72,7 @@ export class NativeAppImpl extends IpcHandler implements NativeAppIpc {
 
     if (reportProgress) {
       args.onProgress = (loaded, total) => {
-        BackendIpc.sendMessage(`nativeApp.progress-${request.iModelId}`, { loaded, total });
+        BackendIpc.send(`nativeApp.progress-${request.iModelId}`, { loaded, total });
         return checkAbort();
       };
     }

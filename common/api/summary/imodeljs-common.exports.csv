@@ -8,6 +8,8 @@ alpha;AnalysisStyleProps
 internal;AntiAliasPref
 public;AreaFillProps
 public;AreaPattern
+beta;AsyncFunction = (...args: any) => Promise
+beta;AsyncMethodsOf
 public;AuxCoordSystem2dProps 
 public;AuxCoordSystem3dProps 
 public;AuxCoordSystemProps 
@@ -275,10 +277,9 @@ internal;INSTANCE: unique symbol
 beta;InternetConnectivityStatus
 beta;Interpolation:
 beta;InterpolationFunction = (v: any, k: number) => number
-beta;class IpcHandler 
-beta;IpcInterface
+beta;class IpcHandler
 internal;IpcInvokeReturn =
-beta;IpcListener = (evt: any, ...arg: any[]) => void
+beta;IpcListener = (evt: Event, ...args: any[]) => void
 beta;IpcSocket
 beta;IpcSocketBackend 
 beta;IpcSocketFrontend 
@@ -338,8 +339,10 @@ public;ModelProps
 public;ModelQueryParams 
 public;ModelSelectorProps 
 public;MonochromeMode
-internal;NativeAppIpc 
-internal;NativeAppIpcKey
+internal;nativeAppChannel = "nativeApp"
+internal;NativeAppIpc
+internal;NativeAppResponse
+internal;nativeAppResponse = "nativeApp-notify"
 public;NavigationBindingValue
 public;NavigationValue
 public;nextHighestPowerOfTwo(num: number): number
@@ -392,6 +395,7 @@ internal;PolylineTypeFlags
 internal;PrimaryTileTreeId
 beta;PrimitiveTypeCode
 beta;ProfileOptions
+beta;PromiseReturnType
 beta;PropertyCallback = (name: string, meta: PropertyMetaData) => void
 beta;PropertyMetaData 
 beta;PropertyMetaDataProps
@@ -425,6 +429,7 @@ beta;class RenderTexture
 beta;RenderTexture
 public;RepositoryLinkProps 
 beta;RequestNewBriefcaseProps
+beta;class ResponseHandler
 public;ResponseLike 
 public;RgbColor
 public;RgbColorProps
@@ -534,6 +539,7 @@ public;TextString
 public;TextStringPrimitive
 public;TextStringProps
 beta;TextureFlags
+alpha;TextureLoadProps
 beta;TextureMapping
 beta;TextureMapping
 beta;TextureMapProps

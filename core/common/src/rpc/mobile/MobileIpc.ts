@@ -7,9 +7,10 @@
  */
 
 import { RpcInterface, RpcManager } from "../../imodeljs-common";
-import { IpcWebSocketMessage, IpcWebSocketMessageType, IpcWebSocketTransport } from "../../ipc/IpcWebSocket";
+import { IpcWebSocket, IpcWebSocketMessage, IpcWebSocketMessageType, IpcWebSocketTransport } from "../../ipc/IpcWebSocket";
 import { RpcMarshaling } from "../core/RpcMarshaling";
 import { RpcRequestFulfillment, SerializedRpcRequest } from "../core/RpcProtocol";
+import { MobileEventLoop } from "./MobileEventLoop";
 import { MobileRpcProtocol } from "./MobileRpcProtocol";
 import { MobileRpcRequest } from "./MobileRpcRequest";
 
@@ -24,7 +25,6 @@ class IpcInterface extends RpcInterface {
 /** @internal */
 export class MobileIpcTransport extends IpcWebSocketTransport {
   private _protocol: MobileRpcProtocol;
-  private _listeners: Array<(message: IpcWebSocketMessage) => void> = [];
   private _client: IpcInterface;
 
   public constructor(protocol: MobileRpcProtocol) {
@@ -43,16 +43,12 @@ export class MobileIpcTransport extends IpcWebSocketTransport {
     }
   }
 
-  public listen(handler: (message: IpcWebSocketMessage) => void): void {
-    this._listeners.push(handler);
-  }
-
   public consumeRequest(request: SerializedRpcRequest): boolean {
     if (request.operation.interfaceDefinition !== IPC)
       return false;
 
     const message = RpcMarshaling.deserialize(this._protocol, request.parameters)[0] as IpcWebSocketMessage;
-    this.broadcast(message);
+    this.broadcast({} as Event, message);
     return true;
   }
 
@@ -61,7 +57,7 @@ export class MobileIpcTransport extends IpcWebSocketTransport {
       return false;
 
     const message = RpcMarshaling.deserialize(this._protocol, response.result) as IpcWebSocketMessage;
-    this.broadcast(message);
+    this.broadcast({} as Event, message);
     return true;
   }
 
@@ -73,14 +69,17 @@ export class MobileIpcTransport extends IpcWebSocketTransport {
   }
 
   private async sendToFrontend(message: IpcWebSocketMessage) {
+    MobileEventLoop.addTask();
     const result = await RpcMarshaling.serialize(this._protocol, message);
+    MobileEventLoop.removeTask();
+
     const fulfillment: RpcRequestFulfillment = { result, rawResult: message, interfaceName: IPC, id: message.channel, status: 0 };
     const encoded = MobileRpcProtocol.encodeResponse(fulfillment);
     this._protocol.sendToFrontend(encoded);
   }
 
-  private broadcast(message: IpcWebSocketMessage) {
-    for (const listener of this._listeners)
-      listener(message);
+  private broadcast(evt: Event, message: IpcWebSocketMessage) {
+    for (const listener of IpcWebSocket.receivers)
+      listener(evt, message);
   }
 }

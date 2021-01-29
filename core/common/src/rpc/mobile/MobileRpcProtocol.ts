@@ -14,6 +14,7 @@ import { RpcSerializedValue } from "../core/RpcMarshaling";
 import { RpcProtocol, RpcRequestFulfillment, SerializedRpcRequest } from "../core/RpcProtocol";
 import { RpcPushChannel, RpcPushConnection } from "../core/RpcPush";
 import { RpcRequest } from "../core/RpcRequest";
+import { MobileEventLoop } from "./MobileEventLoop";
 import { MobileIpcTransport } from "./MobileIpc";
 import { MobilePushConnection, MobilePushTransport } from "./MobilePush";
 import { MobileRpcConfiguration } from "./MobileRpcManager";
@@ -320,7 +321,10 @@ export class MobileRpcProtocol extends RpcProtocol {
       return;
     }
 
+    MobileEventLoop.addTask();
     const fulfillment = await this.fulfill(request);
+    MobileEventLoop.removeTask();
+
     const response = MobileRpcProtocol.encodeResponse(fulfillment);
     this.sendToFrontend(response, connection);
   }

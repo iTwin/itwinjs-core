@@ -14,13 +14,13 @@ export async function setupIpcTest(before = async () => { }) {
       await before();
       socket = new IpcWebSocketBackend();
 
-      socket.receive("test", (_evt: any, ...arg: any[]) => {
+      socket.addListener("test", (_evt: Event, ...arg: any[]) => {
         if (arg[0] !== 1 || arg[1] !== 2 || arg[2] !== 3) {
           throw new Error("failed");
         }
       });
 
-      socket.handle("testinvoke", async (methodName: string, ...args: any[]) => {
+      socket.handle("testinvoke", async (_event: Event, methodName: string, ...args: any[]) => {
         return [methodName, ...args];
       });
     });

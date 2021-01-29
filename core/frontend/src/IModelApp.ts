@@ -6,7 +6,7 @@
  * @module IModelApp
  */
 
-const copyrightNotice = 'Copyright © 2017-2020 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
+const copyrightNotice = 'Copyright © 2017-2021 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
 
 import {
   BeDuration, BentleyStatus, ClientRequestContext, DbResult, dispose, Guid, GuidString, Logger, SerializedClientRequestContext,
@@ -445,12 +445,7 @@ export class IModelApp {
     });
 
     // process async onInitialized methods
-    [
-      this.quantityFormatter,
-    ].forEach(async (sys) => {
-      if (sys)
-        await sys.onInitialized();
-    });
+    await this.quantityFormatter.onInitialized();
   }
 
   /** Must be called before the application exits to release any held resources. */
@@ -656,8 +651,11 @@ export class IModelApp {
     }
 
     const modal = IModelApp.makeHTMLElement("div", { parent: overlay, className: "imodeljs-modal" });
-    if (undefined !== options.width)
+    if (undefined !== options.width) {
       modal.style.width = `${options.width}px`;
+      // allow the dialog to be smaller than the width
+      modal.style.maxWidth = `clamp(0px, calc(100% - (2 * var(--width-border))), ${options.width}px)`;
+    }
     if (options.closeBox) {
       const close = IModelApp.makeHTMLElement("p", { parent: modal, className: "imodeljs-modal-close" });
       close.innerText = "\u00d7"; // unicode "times" symbol
@@ -721,7 +719,7 @@ export class IModelApp {
     return this.makeLogoCard({
       iconSrc: "images/about-imodeljs.svg",
       heading: `<span style="font-weight:normal">${this.i18n.translate("Notices.PoweredBy")}</span>&nbsp;iModel.js`,
-      notice: `${require("../package.json").version}<br>${copyrightNotice}`,
+      notice: `${require("../package.json").version}<br>${copyrightNotice}`, // eslint-disable-line @typescript-eslint/no-var-requires
     });
   }
 

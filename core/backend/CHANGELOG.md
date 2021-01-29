@@ -1,6 +1,25 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Fri, 08 Jan 2021 18:34:03 GMT and should not be manually modified.
+This log was last generated on Thu, 28 Jan 2021 13:39:27 GMT and should not be manually modified.
+
+## 2.11.0
+Thu, 28 Jan 2021 13:39:27 GMT
+
+### Updates
+
+- Changed storageType from azure to azure?sas=1 for getCommandArgs function
+- Fix brep DataProps to/from flatbuffer to account for base64 string header.
+- Element geometry creation by brep operations. 
+- Reinstated behavior when re-opening files read-write. 
+- enhance BriefcaseManager and BriefcaseDb for edit commands
+- Improve ElementGeometry documentation.
+- Add a check to verify, and fix, the DbGuid in the iModel if it is different than the Guid in iModelHub.
+- ConcurrencyControl.setPolicy was allowing incorrectly typed arguments
+- update imodeljs-backend package.json to use 2.11.5 for imodeljs-native
+- Update to @bentley/imodeljs-native@2.11.8
+- Add IModelExportHandler.onProgress and IModelImporter.onProgress callbacks
+- Separated out API to upgrade iModels.
+- Version compare property checksums
 
 ## 2.10.3
 Fri, 08 Jan 2021 18:34:03 GMT
