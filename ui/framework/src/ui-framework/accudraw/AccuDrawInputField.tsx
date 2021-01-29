@@ -20,8 +20,6 @@ import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
  * @internal
  */
 export interface AccuDrawInputFieldProps extends CommonProps {
-  /** String value */
-  initialValue: string;
   /** Which AccuDraw field this represents */
   field: AccuDrawField;
   /** id for the input element */
@@ -50,19 +48,15 @@ export interface AccuDrawInputFieldProps extends CommonProps {
 
 const ForwardRefAccuDrawInput = React.forwardRef<HTMLInputElement, AccuDrawInputFieldProps>(
   function ForwardRefAccuDrawInputField(props: AccuDrawInputFieldProps, ref) {
-    const { className, style, id, label, iconSpec, labelClassName, labelStyle, initialValue, field, isLocked,
+    const { className, style, id, label, iconSpec, labelClassName, labelStyle, field, isLocked,
       onValueChanged, valueChangedDelay, onEnterPressed, onEscPressed, ...inputProps } = props;
-    const [stringValue, setStringValue] = React.useState(initialValue);
+    const [stringValue, setStringValue] = React.useState("");
     const timeoutId = React.useRef(0);
     const [needValueChanged, setNeedValueChanged] = React.useState(false);
     const [needSelection, setNeedSelection] = React.useState(false);
     const [isFocusField, setIsFocusField] = React.useState(false);
     const inputElementRef = React.useRef<HTMLInputElement>();
     const refs = useRefs(inputElementRef, ref);  // combine ref needed for target with the forwardRef needed by the Parent when parent is a Type Editor.
-
-    React.useEffect(() => {
-      setStringValue(initialValue);
-    }, [initialValue]);
 
     const handleChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>): void => {
       const value = event.currentTarget.value;
