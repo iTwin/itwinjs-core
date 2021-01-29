@@ -29,6 +29,12 @@ This feature is currently disabled by default. Enabling it requires the use of A
    IModelApp.startup({ tileAdmin });
 ```
 
+## Changes to [IModelDb.close]($backend) and [IModelDb.saveChanges]($backend)
+
+Previously, [IModelDb.close]($backend) would save any uncommitted changes to disk before closing the iModel. It no longer does so - instead, if uncommitted changes exist when the iModel is closed, they will be discarded. Applications should explicitly call either [IModelDb.saveChanges]($backend) to commit the changes or [IModelDb.abandonChanges]($backend) to discard them before calling `close`.
+
+In rare circumstances, [IModelDb.saveChanges]($backend) may now throw an exception. This indicates a fatal condition like exhaustion of memory or disk space. Applications should wrap calls to `saveChanges` in a `try-catch` block and handle exceptions by terminating without making further use of the iModel. In particular, they should not attempt to call `close`, `saveChanges`, or `abandonChanges` after such an exception has occurred.
+
 ## Breaking API Changes
 
 ### Electron Initialization
