@@ -357,12 +357,6 @@ export class AppUi {
             key: "t",
             item: AccuDrawCommandItems.changeCompassMode,
           },
-        ],
-      },
-      {
-        key: "c",
-        labelKey: "SampleApp:buttons.accuDrawLocks",
-        shortcuts: [
           {
             key: "x",
             item: AccuDrawCommandItems.lockX,

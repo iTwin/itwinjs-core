@@ -72,6 +72,7 @@ describe("KeyboardShortcutMenu", () => {
     expect(wrapper.find("div.core-context-menu").length).to.not.eq(0);
     expect(UiFramework.isContextMenuOpen).to.be.true;
 
+    wrapper.find("div.core-context-menu").at(0).simulate("keyUp", { key: SpecialKey.Escape /* <Esc> */ });  // Does nothing because of ignoreNextKeyUp=true
     wrapper.find("div.core-context-menu").at(0).simulate("keyUp", { key: SpecialKey.Escape /* <Esc> */ });
     wrapper.update();
 
