@@ -16,6 +16,7 @@ export class AppUiSettings {
   public snapWidgetOpacity: UiSetting<boolean>;
   public dragInteraction: UiSetting<boolean>;
   public frameworkVersion: UiSetting<string>;
+  public escapeToHome: UiSetting<boolean>;
 
   constructor() {
     this._settings = [];
@@ -44,6 +45,10 @@ export class AppUiSettings {
       () => SampleAppIModelApp.store.getState().sampleAppState.frameworkVersion,
       (value: string) => UiFramework.dispatchActionToStore(SampleAppUiActionId.setFrameworkVersion, value, true));
     this._settings.push(this.frameworkVersion);
+
+    this.escapeToHome = new UiSetting<boolean>(AppUiSettings._settingNamespace, "EscapeToHome",
+      () => UiFramework.escapeToHome, (value: boolean) => UiFramework.escapeToHome = value);
+    this._settings.push(this.escapeToHome);
   }
 
   public async apply(uiSettings: UiSettings): Promise<void> {
