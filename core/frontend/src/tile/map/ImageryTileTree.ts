@@ -12,11 +12,15 @@ import { Cartographic, ImageSource, ImageSourceFormat, MapLayerSettings, RenderT
 import { imageElementFromImageSource } from "../../ImageUtil";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
+import { RenderMemory } from "../../render/RenderMemory";
 import { RenderSystem } from "../../render/RenderSystem";
 import { ScreenViewport, Viewport } from "../../Viewport";
-import { MapCartoRectangle, MapLayerImageryProvider, MapLayerTileTreeReference, MapTile, QuadId, RealityTile, RealityTileLoader, RealityTileTree, RealityTileTreeParams, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeSupplier } from "../internal";
+import {
+  MapCartoRectangle, MapLayerImageryProvider, MapLayerTileTreeReference, MapTile, QuadId, RealityTile, RealityTileLoader, RealityTileTree,
+  RealityTileTreeParams, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeLoadStatus, TileTreeOwner,
+  TileTreeSupplier,
+} from "../internal";
 import { WebMercatorTilingScheme } from "./MapTilingScheme";
-import { RenderMemory } from "../../render/RenderMemory";
 
 /** @internal */
 export interface ImageryTileContent extends TileContent {
@@ -172,6 +176,7 @@ class ImageryTileLoader extends RealityTileLoader {
   public get priority(): TileLoadPriority { return TileLoadPriority.Map; }
   public getLogo(vp: ScreenViewport): HTMLTableRowElement | undefined { return this._imageryProvider.getLogo(vp); }
   public get maximumScreenSize(): number { return this._imageryProvider.maximumScreenSize; }
+  public get imageryProvider(): MapLayerImageryProvider { return this._imageryProvider; }
   public async getToolTip(strings: string[], quadId: QuadId, carto: Cartographic, tree: ImageryMapTileTree): Promise<void> { await this._imageryProvider.getToolTip(strings, quadId, carto, tree); }
   public testChildAvailability(tile: ImageryMapTile, resolveChildren: () => void) { return this._imageryProvider.testChildAvailability(tile, resolveChildren); }
 
@@ -273,5 +278,12 @@ export class ImageryMapLayerTreeReference extends MapLayerTileTreeReference {
   /** Return the owner of the TileTree to draw. */
   public get treeOwner(): TileTreeOwner {
     return this.iModel.tiles.getTileTreeOwner({ settings: this._layerSettings }, imageryTreeSupplier);
+  }
+  public get imageryProvider(): MapLayerImageryProvider | undefined {
+    const tree = this.treeOwner.load();
+    if (!tree || !(tree instanceof ImageryMapTileTree))
+      return undefined;
+
+    return tree.imageryLoader.imageryProvider;
   }
 }
