@@ -2,19 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @packageDocumentation
- * @module OIDC
- */
 
 import { assert, BeEvent, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { FrontendRequestContext, NativeApp } from "@bentley/imodeljs-frontend";
 import { AccessToken, ImsAuthorizationClient } from "@bentley/itwin-client";
-import { FrontendLoggerCategory } from "../../../frontend/src/FrontendLoggerCategory";
-import { defaultMobileAuthorizationClientExpiryBuffer, MobileAuthorizationClientConfiguration } from "@bentley/imodeljs-common";
-import { FrontendRequestContext } from "../../../frontend/src/FrontendRequestContext";
-import { NativeApp } from "../../../frontend/src/NativeApp";
-
-const loggerCategory: string = FrontendLoggerCategory.MobileAuthorizationClient;
+import { defaultMobileAuthorizationClientExpiryBuffer, MobileAuthorizationClientConfiguration } from "../MobileAuthorizationClientConfiguration";
+import { MobileApp } from "./MobileApp";
 
 /** Utility to provide OIDC/OAuth tokens from native ios app to frontend
  * @alpha
@@ -32,7 +26,7 @@ export class MobileAuthorizationClient extends ImsAuthorizationClient implements
         this._accessToken = undefined;
       }
       if (args.err) {
-        Logger.logInfo(loggerCategory, "onUserStateChanged() threw error", () => args.err);
+        Logger.logInfo("mobilefrontend", "onUserStateChanged() threw error", () => args.err);
         throw new Error(args.err);
       }
       this.onUserStateChanged.raiseEvent(this._accessToken);
@@ -42,18 +36,18 @@ export class MobileAuthorizationClient extends ImsAuthorizationClient implements
   public async initialize(requestContext: ClientRequestContext): Promise<void> {
     requestContext.enter();
     const issuer = await this.getUrl(requestContext);
-    await NativeApp.callBackend("authInitialize", issuer, this._clientConfiguration);
+    await MobileApp.callBackend("authInitialize", issuer, this._clientConfiguration);
   }
   /** Start the sign-in process */
   public async signIn(requestContext: ClientRequestContext): Promise<void> {
     requestContext.enter();
-    await NativeApp.callBackend("authSignIn");
+    await MobileApp.callBackend("authSignIn");
   }
 
   /** Start the sign-out process */
   public async signOut(requestContext: ClientRequestContext): Promise<void> {
     requestContext.enter();
-    return NativeApp.callBackend("authSignOut");
+    return MobileApp.callBackend("authSignOut");
   }
 
   /** return accessToken */
@@ -62,7 +56,7 @@ export class MobileAuthorizationClient extends ImsAuthorizationClient implements
     if (this.isAuthorized) {
       return this._accessToken!;
     }
-    const tokenString = await NativeApp.callBackend("authGetAccessToken");
+    const tokenString = await MobileApp.callBackend("authGetAccessToken");
     this._accessToken = AccessToken.fromJson(tokenString);
     return this._accessToken;
   }

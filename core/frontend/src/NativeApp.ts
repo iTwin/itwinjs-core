@@ -39,13 +39,6 @@ class NativeAppNotifyHandler extends NotificationHandler implements NativeAppNot
   public notifyUserStateChanged(arg: { accessToken: any, err?: string }) {
     NativeApp.onUserStateChanged.raiseEvent(arg);
   }
-  public notifyMemoryWarning() {
-    Logger.logWarning(FrontendLoggerCategory.NativeApp, "Low memory warning");
-    if (NativeApp.onMemoryWarning.numberOfListeners === 0) {
-      alert("Low memory warning");
-    }
-    NativeApp.onMemoryWarning.raiseEvent();
-  }
 }
 
 /**
@@ -82,7 +75,6 @@ export class NativeApp {
     }
   }
   public static onInternetConnectivityChanged = new BeEvent<(status: InternetConnectivityStatus) => void>();
-  public static onMemoryWarning = new BeEvent<() => void>();
   public static onUserStateChanged = new BeEvent<(_arg: { accessToken: any, err?: string }) => void>();
 
   public static async checkInternetConnectivity(): Promise<InternetConnectivityStatus> {

@@ -7,21 +7,22 @@ import * as path from "path";
 import { UrlFileHandler } from "@bentley/backend-itwin-client";
 import { Config, isElectronMain, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib/ElectronHost";
 import { IModelBankClient } from "@bentley/imodelhub-client";
-import { IModelHost, IModelHostConfiguration, NativeHost } from "@bentley/imodeljs-backend";
+import { IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
 import {
-  Editor3dRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, MobileRpcConfiguration, RpcInterfaceDefinition,
-  RpcManager, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface,
+  Editor3dRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, RpcInterfaceDefinition, RpcManager,
+  SnapshotIModelRpcInterface, StandaloneIModelRpcInterface,
 } from "@bentley/imodeljs-common";
+import { AndroidHost, IOSHost, MobileUtils } from "@bentley/mobile-manager/lib/MobileBackend";
 import { DtaConfiguration } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { FakeTileCacheService } from "./FakeTileCacheService";
-import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib/ElectronHost";
 
 class DisplayTestAppRpc extends DtaRpcInterface {
 
   public async readExternalSavedViews(bimFileName: string): Promise<string> {
-    if (MobileRpcConfiguration.isMobileBackend && process.env.DOCS) {
+    if (MobileUtils.isMobileBackend && process.env.DOCS) {
       const docPath = process.env.DOCS;
       bimFileName = path.join(docPath, bimFileName);
     }
@@ -35,7 +36,7 @@ class DisplayTestAppRpc extends DtaRpcInterface {
   }
 
   public async writeExternalSavedViews(bimFileName: string, namedViews: string): Promise<void> {
-    if (MobileRpcConfiguration.isMobileBackend && process.env.DOCS) {
+    if (MobileUtils.isMobileBackend && process.env.DOCS) {
       const docPath = process.env.DOCS;
       bimFileName = path.join(docPath, bimFileName);
     }
@@ -104,7 +105,7 @@ const setupStandaloneConfiguration = () => {
   IModelJsConfig.init(true /* suppress exception */, true /* suppress error message */, Config.App);
 
   const configuration: DtaConfiguration = {};
-  if (MobileRpcConfiguration.isMobileBackend)
+  if (MobileUtils.isMobileBackend)
     return configuration;
 
   // Currently display-test-app ONLY supports opening files from local disk - i.e., "standalone" mode.
@@ -235,7 +236,7 @@ export const initializeDtaBackend = async (electronHost?: ElectronHostOptions) =
   iModelHost.logTileSizeThreshold = 500000;
 
   let logLevel = LogLevel.None;
-  if (MobileRpcConfiguration.isMobileBackend) {
+  if (MobileUtils.isMobileBackend) {
     // Does not seem DtaConfiguration is used anymore.
   } else {
     if (dtaConfig.customOrchestratorUri)
@@ -253,8 +254,10 @@ export const initializeDtaBackend = async (electronHost?: ElectronHostOptions) =
   RpcManager.registerImpl(DtaRpcInterface, DisplayTestAppRpc);
   if (isElectronMain)
     await ElectronHost.startup({ electronHost, iModelHost });
-  else if (MobileRpcConfiguration.isMobileBackend)
-    await NativeHost.startup({ iModelHost });
+  else if (MobileUtils.isIOSBackend)
+    await IOSHost.startup();
+  else if (MobileUtils.isAndroidBackend)
+    await AndroidHost.startup();
   else
     await IModelHost.startup(iModelHost);
 

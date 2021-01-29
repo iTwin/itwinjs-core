@@ -6,9 +6,10 @@
  * @module RpcInterface
  */
 
-import { BentleyStatus, IModelError, RpcConfiguration, RpcEndpoint, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
-import { MobileRpcGateway, MobileRpcProtocol } from "./MobileRpcProtocol";
 import * as ws from "ws";
+import { BentleyStatus, IModelError, RpcConfiguration, RpcEndpoint, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
+import { MobileHost } from "./Backend/MobileHost";
+import { MobileRpcGateway, MobileRpcProtocol } from "./MobileRpcProtocol";
 
 /** RPC supported mobile platforms.
  * @beta
@@ -177,7 +178,7 @@ class MobileRpcServer {
     (global as any).__imodeljsRpcPort = this._port;
 
     if (this._connectionId !== 0) {
-      MobileDevice.currentDevice.reconnect(this._port);
+      MobileHost.reconnect(this._port);
     }
   }
 
@@ -236,21 +237,21 @@ class MobileRpcServer {
   }
 }
 
-function setupMobileRpc() {
-  let server: MobileRpcServer | null = new MobileRpcServer();
+// function setupMobileRpc() {
+//   let server: MobileRpcServer | null = new MobileRpcServer();
 
-  MobileDevice.currentDevice.onEnterBackground.addListener(() => {
-    if (server === null) {
-      return;
-    }
+//   MobileDevice.currentDevice.onEnterBackground.addListener(() => {
+//     if (server === null) {
+//       return;
+//     }
 
-    server.dispose();
-    server = null;
-  });
+//     server.dispose();
+//     server = null;
+//   });
 
-  MobileDevice.currentDevice.onEnterForeground.addListener(() => {
-    server = new MobileRpcServer();
-  });
+//   MobileDevice.currentDevice.onEnterForeground.addListener(() => {
+//     server = new MobileRpcServer();
+//   });
 
-  MobileRpcProtocol.obtainInterop = () => MobileRpcServer.interop;
-}
+//   MobileRpcProtocol.obtainInterop = () => MobileRpcServer.interop;
+// }

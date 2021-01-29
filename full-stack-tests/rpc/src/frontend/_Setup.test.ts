@@ -3,10 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { executeBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
+import { ElectronApp } from "@bentley/electron-manager/lib/ElectronApp";
 import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, RpcConfiguration, RpcDefaultConfiguration } from "@bentley/imodeljs-common";
+import { MobileRpcManager } from "@bentley/mobile-manager/lib/MobileFrontend";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { AttachedInterface, MultipleClientsInterface, rpcInterfaces } from "../common/TestRpcInterface";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronApp";
 
 RpcConfiguration.disableRoutingValidation = true;
 

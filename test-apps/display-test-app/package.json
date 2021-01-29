@@ -41,6 +41,7 @@
     "@bentley/hypermodeling-frontend": "2.12.0-dev.16",
     "@bentley/bentleyjs-core": "2.12.0-dev.16",
     "@bentley/electron-manager": "2.12.0-dev.16",
+    "@bentley/mobile-manager": "2.12.0-dev.16",
     "@bentley/frontend-authorization-client": "2.12.0-dev.16",
     "@bentley/geometry-core": "2.12.0-dev.16",
     "@bentley/imodelhub-client": "2.12.0-dev.16",

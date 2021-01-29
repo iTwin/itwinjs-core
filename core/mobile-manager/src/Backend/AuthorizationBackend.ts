@@ -8,10 +8,10 @@
 
 import { assert, BeEvent, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { BackendRequestContext } from "@bentley/imodeljs-backend";
 import { AccessToken, ImsAuthorizationClient } from "@bentley/itwin-client";
 import { defaultMobileAuthorizationClientExpiryBuffer, MobileAuthorizationClientConfiguration } from "../MobileAuthorizationClientConfiguration";
-
-const loggerCategory = BackendLoggerCategory.Authorization;
+import { MobileHost } from "./MobileHost";
 
 /** Utility to provide OIDC/OAuth tokens from native ios app to frontend
  * @alpha
@@ -22,14 +22,14 @@ export class MobileAuthorizationClient extends ImsAuthorizationClient implements
   public constructor(clientConfiguration: MobileAuthorizationClientConfiguration) {
     super();
     this._clientConfiguration = clientConfiguration;
-    MobileDevice.currentDevice.onUserStateChanged.addListener((accessToken?: string, err?: string) => {
+    MobileHost.onUserStateChanged.addListener((accessToken?: string, err?: string) => {
       if (accessToken) {
         this._accessToken = AccessToken.fromJson(accessToken);
       } else {
         this._accessToken = undefined;
       }
       if (err) {
-        Logger.logInfo(loggerCategory, "onUserStateChanged() threw error", () => err);
+        Logger.logInfo("mobile", "onUserStateChanged() threw error", () => err);
         throw new Error(err);
       }
       this.onUserStateChanged.raiseEvent(this._accessToken);
@@ -39,7 +39,7 @@ export class MobileAuthorizationClient extends ImsAuthorizationClient implements
   public async initialize(requestContext: ClientRequestContext): Promise<void> {
     requestContext.enter();
     const issuer = await this.getUrl(requestContext);
-    await MobileDevice.currentDevice.authInit(requestContext, {
+    await MobileHost.authInit(requestContext, {
       issuerUrl: issuer,
       clientId: this._clientConfiguration.clientId,
       redirectUrl: this._clientConfiguration.redirectUri,
@@ -49,13 +49,13 @@ export class MobileAuthorizationClient extends ImsAuthorizationClient implements
   /** Start the sign-in process */
   public async signIn(requestContext: ClientRequestContext): Promise<void> {
     requestContext.enter();
-    await MobileDevice.currentDevice.signIn(requestContext);
+    await MobileHost.signIn(requestContext);
   }
 
   /** Start the sign-out process */
   public async signOut(requestContext: ClientRequestContext): Promise<void> {
     requestContext.enter();
-    return MobileDevice.currentDevice.signOut(requestContext);
+    return MobileHost.signOut(requestContext);
   }
 
   /** return accessToken */
@@ -64,7 +64,7 @@ export class MobileAuthorizationClient extends ImsAuthorizationClient implements
     if (this.isAuthorized) {
       return this._accessToken!;
     }
-    const accessTokenStr = await MobileDevice.currentDevice.getAccessToken(requestContext);
+    const accessTokenStr = await MobileHost.getAccessToken(requestContext);
     this._accessToken = AccessToken.fromJson(JSON.stringify(accessTokenStr));
     return this._accessToken;
   }

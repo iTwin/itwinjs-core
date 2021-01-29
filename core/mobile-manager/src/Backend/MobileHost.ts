@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @packageDocumentation
- * @module NativeApp
- */
 
 import { BeEvent, BriefcaseStatus, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
+import { IModelHostConfiguration, IpcHandler, IpcHostOptions, NativeHost } from "@bentley/imodeljs-backend";
+import { IpcApp } from "@bentley/imodeljs-frontend";
 import { AccessToken, CancelRequest, DownloadFailed, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
-import { BatteryState, Orientation } from "../MobileAppProps";
+import { BatteryState, mobileAppChannel, MobileAppFunctions, Orientation } from "../MobileAppProps";
+import { MobileAuthorizationClientConfiguration } from "../MobileAuthorizationClientConfiguration";
 
 export type MobileCompletionCallback = (downloadUrl: string, downloadFileUrl: string, cancelled: boolean, err?: string) => void;
 export type MobileProgressCallback = (bytesWritten: number, totalBytesWritten: number, totalBytesExpectedToWrite: number) => void;
@@ -53,7 +53,41 @@ export abstract class MobileDevice {
   public abstract authStateChanged(accessToken?: string, err?: string): void;
 }
 
+class MobileAppImpl extends IpcHandler implements MobileAppFunctions {
+  public get channelName() { return mobileAppChannel; }
+  public async reconnect(connection: number) {
+    MobileHost.reconnect(connection);
+  }
+  public async authSignIn(): Promise<void> {
+    const requestContext = ClientRequestContext.current;
+    return MobileHost.signIn(requestContext);
+  }
+
+  public async authSignOut(): Promise<void> {
+    const requestContext = ClientRequestContext.current;
+    return MobileHost.signOut(requestContext);
+  }
+
+  public async authGetAccessToken(): Promise<string> {
+    const requestContext = ClientRequestContext.current;
+    const accessToken = await MobileHost.getAccessToken(requestContext);
+    return JSON.stringify(accessToken);
+  }
+
+  public async authInitialize(issuer: string, config: MobileAuthorizationClientConfiguration): Promise<void> {
+    const requestContext = ClientRequestContext.current;
+    await MobileHost.authInit(requestContext, {
+      issuerUrl: issuer,
+      clientId: config.clientId,
+      redirectUrl: config.redirectUri,
+      scope: config.scope,
+    });
+  }
+}
+
 export class MobileHost {
+  private static _device?: MobileDevice;
+  public static get device() { return this._device!; }
   private static _authInitialized: boolean = false;
   public static readonly onMemoryWarning = new BeEvent();
   public static readonly onOrientationChanged = new BeEvent();
@@ -61,15 +95,16 @@ export class MobileHost {
   public static readonly onEnterBackground = new BeEvent();
   public static readonly onWillTerminate = new BeEvent();
   public static readonly onUserStateChanged = new BeEvent<(accessToken?: string, err?: string) => void>();
-  /**
-   * Download file
-   * @internal
-   */
+
+  /**  @internal */
+  public static reconnect(connection: number) {
+    this.device.reconnect(connection);
+  }
+
+  /**  @internal */
   public static async downloadFile(downloadUrl: string, downloadTo: string, progress?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-      if (!this._impl.createDownloadTask) {
-        throw new Error("Native backend did not registered downloadFile() functions");
-      }
+
       let progressCb: MobileProgressCallback | undefined;
       if (progress) {
         progressCb = (_bytesWritten: number, totalBytesWritten: number, totalBytesExpectedToWrite: number) => {
@@ -77,7 +112,7 @@ export class MobileHost {
           progress({ total: totalBytesExpectedToWrite, loaded: totalBytesWritten, percent });
         };
       }
-      const requestId = this._impl.createDownloadTask(downloadUrl, false, downloadTo, (_downloadUrl: string, _downloadFileUrl: string, cancelled: boolean, err?: string) => {
+      const requestId = this.device.createDownloadTask(downloadUrl, false, downloadTo, (_downloadUrl: string, _downloadFileUrl: string, cancelled: boolean, err?: string) => {
         if (cancelled)
           reject(new UserCancelledError(BriefcaseStatus.DownloadCancelled, "User cancelled download", Logger.logWarning));
         else if (err)
@@ -87,47 +122,16 @@ export class MobileHost {
       }, progressCb);
       if (cancelRequest) {
         // eslint-disable-next-line @typescript-eslint/unbound-method
-        cancelRequest.cancel = () => { return this._impl.cancelDownloadTask!(requestId); };
+        cancelRequest.cancel = () => { return this.device.cancelDownloadTask(requestId); };
       }
     });
   }
-  /**
-   * Reconnect app
-   * @internal
-   */
-  public reconnect(connection: number) {
-    if (!this._impl.reconnect) {
-      throw new Error("Native backend did not registered reconnect() functions");
-    }
-    this._impl.reconnect(connection);
-  }
-
-  public emit(eventName: DeviceEvents, ...args: any[]) {
-    switch (eventName) {
-      case DeviceEvents.MemoryWarning:
-        this.onMemoryWarning.raiseEvent(...args); break;
-      case DeviceEvents.OrientationChanged:
-        this.onOrientationChanged.raiseEvent(...args); break;
-      case DeviceEvents.EnterForeground:
-        this.onEnterForeground.raiseEvent(...args); break;
-      case DeviceEvents.EnterBackground:
-        this.onEnterBackground.raiseEvent(...args); break;
-      case DeviceEvents.WillTerminate:
-        this.onWillTerminate.raiseEvent(...args); break;
-    }
-  }
-  public get hasAuthClient(): boolean {
-    return !(!this._impl.authSignIn || !this._impl.authSignOut || !this._impl.authInit || !this._impl.authGetAccessToken);
-  }
-  public async authInit(ctx: ClientRequestContext, settings: MobileDeviceAuthSettings) {
-    if (!this.hasAuthClient) {
-      throw new Error("App did not registered any native auth client or implement all required functions");
-    }
-    if (this._authInitialized) {
+  public static async authInit(ctx: ClientRequestContext, settings: MobileDeviceAuthSettings) {
+    if (this._authInitialized)
       return;
-    }
+
     // Set callback for ios
-    this._impl.authStateChanged = (accessToken?: string, err?: string) => {
+    this.device.authStateChanged = (accessToken?: string, err?: string) => {
       if (accessToken) {
         // Patch user info
         const tmp = JSON.parse(accessToken);
@@ -140,7 +144,7 @@ export class MobileHost {
     };
 
     return new Promise<void>((resolve, reject) => {
-      this._impl.authInit!(ctx, settings, (err?: string) => {
+      this.device.authInit(ctx, settings, (err?: string) => {
         if (!err) {
           this._authInitialized = true;
           resolve();
@@ -151,14 +155,12 @@ export class MobileHost {
       });
     });
   }
-  public async signIn(ctx: ClientRequestContext): Promise<void> {
+
+  public static async signIn(ctx: ClientRequestContext): Promise<void> {
     // eslint-disable-next-line no-console
     console.log("signIn() ", JSON.stringify(ctx));
-    if (!this.hasAuthClient) {
-      throw new Error("App did not registered any native auth client or implement all required functions");
-    }
     return new Promise<void>((resolve, reject) => {
-      this._impl.authSignIn!(ctx, (err?: string) => {
+      this.device.authSignIn(ctx, (err?: string) => {
         if (!err) {
           resolve();
         } else {
@@ -168,12 +170,9 @@ export class MobileHost {
     });
   }
 
-  public async signOut(ctx: ClientRequestContext): Promise<void> {
-    if (!this.hasAuthClient) {
-      throw new Error("App did not registered any native auth client or implement all required functions");
-    }
+  public static async signOut(ctx: ClientRequestContext): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-      this._impl.authSignOut!(ctx, (err?: string) => {
+      this.device.authSignOut(ctx, (err?: string) => {
         if (!err) {
           resolve();
         } else {
@@ -182,12 +181,10 @@ export class MobileHost {
       });
     });
   }
-  public async getAccessToken(ctx: ClientRequestContext): Promise<AccessToken> {
-    if (!this.hasAuthClient) {
-      throw new Error("App did not registered any native auth client or implement all required functions");
-    }
+
+  public static async getAccessToken(ctx: ClientRequestContext): Promise<AccessToken> {
     return new Promise<AccessToken>((resolve, reject) => {
-      this._impl.authGetAccessToken!(ctx, (accessToken?: string, err?: string) => {
+      this.device.authGetAccessToken(ctx, (accessToken?: string, err?: string) => {
         if (!err) {
           resolve(AccessToken.fromJson(accessToken));
         } else {
@@ -196,48 +193,22 @@ export class MobileHost {
       });
     });
   }
-  public async authSignIn(): Promise<void> {
-    const requestContext = ClientRequestContext.current;
-    return MobileDevice.currentDevice.signIn(requestContext);
-  }
 
-  public async authSignOut(): Promise<void> {
-    const requestContext = ClientRequestContext.current;
-    return MobileDevice.currentDevice.signOut(requestContext);
-  }
-
-  public async authGetAccessToken(): Promise<string> {
-    const requestContext = ClientRequestContext.current;
-    const accessToken = await MobileDevice.currentDevice.getAccessToken(requestContext);
-    return JSON.stringify(accessToken);
-  }
-
-  public async authInitialize(issuer: string, config: MobileAuthorizationClientConfiguration): Promise<void> {
-    const requestContext = ClientRequestContext.current;
-    await MobileDevice.currentDevice.authInit(requestContext, {
-      issuerUrl: issuer,
-      clientId: config.clientId,
-      redirectUrl: config.redirectUri,
-      scope: config.scope,
-    });
-  }
-
-  private static _isValid: boolean = false;
-  public static get isValid() { return this._isValid; }
+  public static get isValid() { return undefined !== this._device; }
 
   /**
-   * Start the backend of a native app.
-   * @param configuration
-   * @note this method calls [[IModelHost.startup]] internally.
+   * Start the backend of a mobile app.
    */
-  public static async startup(opt?: { ipcHost?: IpcHostOptions, iModelHost?: IModelHostConfiguration }): Promise<void> {
+  public static async startup(opt?: { mobileHost: { device: MobileDevice }, ipcHost?: IpcHostOptions, iModelHost?: IModelHostConfiguration }): Promise<void> {
     if (!this.isValid) {
-      this._isValid = true;
-      MobileDevice.currentDevice.onUserStateChanged.addListener((accessToken?: string, err?: string) => {
+      this._device = opt?.mobileHost.device;
+      this.onUserStateChanged.addListener((accessToken?: string, err?: string) => {
         const accessTokenObj = accessToken ? JSON.parse(accessToken) : {};
         NativeHost.notifyNativeFrontend("notifyUserStateChanged", { accessToken: accessTokenObj, err });
       });
     }
     await NativeHost.startup(opt);
+    if (IpcApp.isValid)
+      MobileAppImpl.register();
   }
 }

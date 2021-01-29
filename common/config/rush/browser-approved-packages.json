@@ -155,6 +155,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@bentley/mobile-manager",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@bentley/oidc-signin-tool",
       "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
     },

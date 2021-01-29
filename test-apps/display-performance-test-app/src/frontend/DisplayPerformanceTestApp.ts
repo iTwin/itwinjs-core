@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import { ClientRequestContext, Id64, Id64Arg, Id64String, isElectronRenderer, OpenMode, StopWatch } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Id64, Id64Arg, Id64String, isElectronRenderer, isMobileFrontend, OpenMode, StopWatch } from "@bentley/bentleyjs-core";
 import { Project } from "@bentley/context-registry-client";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronApp";
 import {
@@ -556,7 +556,7 @@ function removeOptsFromString(input: string, ignore: string[] | string | undefin
 
 function getImageString(configs: DefaultConfigs, prefix = ""): string {
   const filename = `${getTestName(configs, prefix, true)}.png`;
-  if (MobileRpcConfiguration.isMobileFrontend)
+  if (isMobileFrontend)
     return filename; // skip path for mobile - we use device's Documents path as determined by mobile backend
   return path.join(configs.outputPath ? configs.outputPath : "", filename);
 }
@@ -640,7 +640,7 @@ class DefaultConfigs {
       this.numRendersToTime = 100;
       this.numRendersToSkip = 50;
       this.outputName = "performanceResults.csv";
-      this.outputPath = MobileRpcConfiguration.isMobileFrontend ? undefined : "D:\\output\\performanceData\\";
+      this.outputPath = isMobileFrontend ? undefined : "D:\\output\\performanceData\\";
       this.iModelName = "TimingTest_General.bim";
       this.iModelHubProject = "iModel Testing";
       this.viewName = "*"; // If no view is specified, test all views
@@ -1008,7 +1008,7 @@ async function openImodelAndLoadExtViews(testConfig: DefaultConfigs, extViews?: 
   activeViewState = new SimpleViewState();
 
   // Open an iModel from a local file
-  let openLocalIModel = (testConfig.iModelLocation !== undefined) || MobileRpcConfiguration.isMobileFrontend;
+  let openLocalIModel = (testConfig.iModelLocation !== undefined) || isMobileFrontend;
   if (openLocalIModel) {
     try {
       activeViewState.iModelConnection = await SnapshotConnection.openFile(testConfig.iModelFile!);
@@ -1027,7 +1027,7 @@ async function openImodelAndLoadExtViews(testConfig: DefaultConfigs, extViews?: 
   }
 
   // Open an iModel from iModelHub
-  if (!openLocalIModel && testConfig.iModelHubProject !== undefined && !MobileRpcConfiguration.isMobileFrontend) {
+  if (!openLocalIModel && testConfig.iModelHubProject !== undefined && !isMobileFrontend) {
     const signedIn: boolean = await signIn();
     if (!signedIn)
       return;
@@ -1630,10 +1630,7 @@ window.onload = async () => {
   RpcConfiguration.developmentMode = true;
   RpcConfiguration.disableRoutingValidation = true;
 
-  if (isElectronRenderer) {
-  } else if (MobileRpcConfiguration.isMobileFrontend) {
-    MobileRpcManager.initializeClient(rpcInterfaces);
-  } else {
+  if (!isElectronRenderer && !isMobileFrontend) {
     const uriPrefix = "http://localhost:3001";
     BentleyCloudRpcManager.initializeClient({ info: { title: "DisplayPerformanceTestApp", version: "v1.0" }, uriPrefix }, [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]);
   }

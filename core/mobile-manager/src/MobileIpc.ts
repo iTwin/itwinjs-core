@@ -6,10 +6,10 @@
  * @module RpcInterface
  */
 
-import { RpcInterface, RpcManager } from "../../common/src/imodeljs-common";
-import { IpcWebSocketMessage, IpcWebSocketMessageType, IpcWebSocketTransport } from "../../common/src/ipc/IpcWebSocket";
-import { RpcMarshaling } from "../../common/src/rpc/core/RpcMarshaling";
-import { RpcRequestFulfillment, SerializedRpcRequest } from "../../common/src/rpc/core/RpcProtocol";
+import {
+  IpcWebSocketMessage, IpcWebSocketMessageType, IpcWebSocketTransport, RpcInterface, RpcManager, RpcMarshaling, RpcRequestFulfillment,
+  SerializedRpcRequest,
+} from "@bentley/imodeljs-common";
 import { MobileRpcProtocol } from "./MobileRpcProtocol";
 import { MobileRpcRequest } from "./MobileRpcRequest";
 

@@ -13,12 +13,12 @@ import * as urllib from "url";
 import { Logger } from "@bentley/bentleyjs-core";
 import { ArgumentCheck } from "@bentley/imodelhub-client";
 import {
-  AuthorizedClientRequestContext, CancelRequest, DownloadFailed, FileHandler, ProgressCallback, ProgressInfo, request, RequestOptions,
-  SasUrlExpired, UserCancelledError,
+  AuthorizedClientRequestContext, CancelRequest, DownloadFailed, FileHandler, ProgressCallback, ProgressInfo, request, RequestOptions, SasUrlExpired,
+  UserCancelledError,
 } from "@bentley/itwin-client";
-import { BackendITwinClientLoggerCategory } from "@bentley/backend-itwin-client";
+import { MobileHost } from "./MobileHost";
 
-const loggerCategory: string = BackendITwinClientLoggerCategory.FileHandlers;
+const loggerCategory: string = "mobile.filehandler";
 
 /**
  * Provides methods to work with the file system and azure storage. An instance of this class has to be provided to [[IModelClient]] for file upload/download methods to work.
@@ -101,7 +101,7 @@ export class MobileFileHandler implements FileHandler {
 
     MobileFileHandler.makeDirectoryRecursive(path.dirname(downloadToPathname));
     try {
-      await MobileDevice.currentDevice.downloadFile(downloadUrl, downloadToPathname, progressCallback, cancelRequest);
+      await MobileHost.downloadFile(downloadUrl, downloadToPathname, progressCallback, cancelRequest);
     } catch (err) {
       requestContext.enter();
       if (fs.existsSync(downloadToPathname))

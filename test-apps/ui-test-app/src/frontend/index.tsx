@@ -2,35 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContext, Config, Id64String, isElectronRenderer, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
-import { ContextRegistryClient } from "@bentley/context-registry-client";
-import { BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration, FrontendAuthorizationClient, isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { FrontendDevTools } from "@bentley/frontend-devtools";
-import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
-import { BentleyCloudRpcManager, DesktopAuthorizationClientConfiguration, IModelVersion, MobileAuthorizationClientConfiguration, MobileRpcConfiguration, MobileRpcManager, RpcConfiguration, SyncMode } from "@bentley/imodeljs-common";
-import {
-  AccuSnap, AuthorizedFrontendRequestContext, DesktopAuthorizationClient, ExternalServerExtensionLoader, IModelApp,
-  IModelAppOptions, IModelConnection, MobileAuthorizationClient, NativeApp, NativeAppLogger, RenderSystem, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool, ViewState,
-} from "@bentley/imodeljs-frontend";
-import { I18NNamespace } from "@bentley/imodeljs-i18n";
-import { MarkupApp } from "@bentley/imodeljs-markup";
-import { AccessToken, ProgressInfo, UrlDiscoveryClient } from "@bentley/itwin-client";
-import { PresentationUnitSystem } from "@bentley/presentation-common";
-import { Presentation } from "@bentley/presentation-frontend";
-import { getClassName } from "@bentley/ui-abstract";
-import { BeDragDropContext } from "@bentley/ui-components";
-import { LocalUiSettings, UiSettings } from "@bentley/ui-core";
-import {
-  ActionsUnion, AppNotificationManager, ConfigurableUiContent, createAction, DeepReadonly, DragDropLayerRenderer,
-  FrameworkAccuDraw, FrameworkReducer, FrameworkRootState, FrameworkUiAdmin, FrameworkVersion,
-  FrontstageDeactivatedEventArgs, FrontstageDef, FrontstageManager,
-  IModelAppUiSettings, IModelInfo,
-  ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, ThemeManager,
-  ToolbarDragInteractionContext, UiFramework, UiSettingsProvider,
-} from "@bentley/ui-framework";
-import { SafeAreaInsets } from "@bentley/ui-ninezone";
-// To test map-layer extension comment out the following and ensure ui-test-app\build\imjs_extensions contains map-layers, if not see Readme.md in map-layers package.
-import { MapLayersUI } from "@bentley/map-layers";
+
+import "./index.scss";
 // Mobx demo
 import { configure as mobxConfigure } from "mobx";
 import * as React from "react";
@@ -38,6 +11,42 @@ import reactAxe from "react-axe";
 import * as ReactDOM from "react-dom";
 import { connect, Provider } from "react-redux";
 import { Store } from "redux"; // createStore,
+import { ClientRequestContext, Config, Id64String, isElectronRenderer, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
+import { ContextRegistryClient } from "@bentley/context-registry-client";
+import { ElectronApp, ElectronAppOptions } from "@bentley/electron-manager/lib/ElectronApp";
+import { FrontendApplicationInsightsClient } from "@bentley/frontend-application-insights-client";
+import {
+  BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration, FrontendAuthorizationClient,
+  isFrontendAuthorizationClient,
+} from "@bentley/frontend-authorization-client";
+import { FrontendDevTools } from "@bentley/frontend-devtools";
+import { HyperModeling } from "@bentley/hypermodeling-frontend";
+import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
+import { BentleyCloudRpcManager, DesktopAuthorizationClientConfiguration, IModelVersion, RpcConfiguration, SyncMode } from "@bentley/imodeljs-common";
+import {
+  AccuSnap, AuthorizedFrontendRequestContext, DesktopAuthorizationClient, ExternalServerExtensionLoader, IModelApp, IModelAppOptions,
+  IModelConnection, NativeApp, NativeAppLogger, RenderSystem, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool, ViewState,
+} from "@bentley/imodeljs-frontend";
+import { I18NNamespace } from "@bentley/imodeljs-i18n";
+import { MarkupApp } from "@bentley/imodeljs-markup";
+import { AccessToken, ProgressInfo, UrlDiscoveryClient } from "@bentley/itwin-client";
+// To test map-layer extension comment out the following and ensure ui-test-app\build\imjs_extensions contains map-layers, if not see Readme.md in map-layers package.
+import { MapLayersUI } from "@bentley/map-layers";
+import {
+  MobileAuthorizationClient, MobileAuthorizationClientConfiguration, MobileRpcManager, MobileUtils,
+} from "@bentley/mobile-manager/lib/MobileFrontend";
+import { PresentationUnitSystem } from "@bentley/presentation-common";
+import { Presentation } from "@bentley/presentation-frontend";
+import { getClassName } from "@bentley/ui-abstract";
+import { BeDragDropContext } from "@bentley/ui-components";
+import { LocalUiSettings, UiSettings } from "@bentley/ui-core";
+import {
+  ActionsUnion, AppNotificationManager, ConfigurableUiContent, createAction, DeepReadonly, DragDropLayerRenderer, FrameworkAccuDraw, FrameworkReducer,
+  FrameworkRootState, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageDef, FrontstageManager, IModelAppUiSettings,
+  IModelInfo, ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, ThemeManager, ToolbarDragInteractionContext,
+  UiFramework, UiSettingsProvider,
+} from "@bentley/ui-framework";
+import { SafeAreaInsets } from "@bentley/ui-ninezone";
 import getSupportedRpcs from "../common/rpcs";
 import { TestAppConfiguration } from "../common/TestAppConfiguration";
 import { ActiveSettingsManager } from "./api/ActiveSettingsManager";
@@ -51,7 +60,6 @@ import { ViewsFrontstage } from "./appui/frontstages/ViewsFrontstage";
 import { AppUiSettings } from "./AppUiSettings";
 import { AppViewManager } from "./favorites/AppViewManager"; // Favorite Properties Support
 import { ElementSelectionListener } from "./favorites/ElementSelectionListener"; // Favorite Properties Support
-import "./index.scss";
 import { AnalysisAnimationTool } from "./tools/AnalysisAnimation";
 import { DeleteElementTool } from "./tools/editing/DeleteElementTool";
 import { MoveElementTool } from "./tools/editing/MoveElementTool";
@@ -59,12 +67,9 @@ import { PlaceBlockTool } from "./tools/editing/PlaceBlockTool";
 import { PlaceLineStringTool } from "./tools/editing/PlaceLineStringTool";
 import { Tool1 } from "./tools/Tool1";
 import { Tool2 } from "./tools/Tool2";
-import { ToolWithSettings } from "./tools/ToolWithSettings";
 import { ToolWithDynamicSettings } from "./tools/ToolWithDynamicSettings";
+import { ToolWithSettings } from "./tools/ToolWithSettings";
 import { UiProviderTool } from "./tools/UiProviderTool";
-import { HyperModeling } from "@bentley/hypermodeling-frontend";
-import { FrontendApplicationInsightsClient } from "@bentley/frontend-application-insights-client";
-import { ElectronApp, ElectronAppOptions } from "@bentley/electron-manager/lib/ElectronApp";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -206,7 +211,11 @@ export class SampleAppIModelApp {
     if (isElectronRenderer) {
       await ElectronApp.startup(opts);
       NativeAppLogger.initialize();
-    } else
+    } else if (MobileUtils.isIOSFrontend) {
+      IOSApp.startup();
+    } else if (MobileUtils.isAndroidFrontend)
+      AndroidApp.startup();
+    else
       await IModelApp.startup(opts.iModelApp);
 
     // For testing local extensions only, should not be used in production.
@@ -299,7 +308,7 @@ export class SampleAppIModelApp {
       `openIModelAndViews: projectId=${projectId}&iModelId=${iModelId} mode=${this.allowWrite ? "ReadWrite" : "Readonly"}`);
 
     let iModelConnection: IModelConnection | undefined;
-    if (MobileRpcConfiguration.isMobileFrontend) {
+    if (MobileUtils.isMobileFrontend) {
       const req = await NativeApp.requestDownloadBriefcase(projectId, iModelId, { syncMode: SyncMode.FixedVersion }, IModelVersion.latest(), async (progress: ProgressInfo) => {
         // eslint-disable-next-line no-console
         console.log(`Progress (${progress.loaded}/${progress.total}) -> ${progress.percent}%`);
@@ -407,7 +416,7 @@ export class SampleAppIModelApp {
         `showIModelIndex: projectId=${contextId}&iModelId=${iModelId} mode=${this.allowWrite ? "ReadWrite" : "Readonly"}`);
 
       let iModelConnection: IModelConnection | undefined;
-      if (MobileRpcConfiguration.isMobileFrontend) {
+      if (MobileUtils.isMobileFrontend) {
         const req = await NativeApp.requestDownloadBriefcase(contextId, iModelId, { syncMode: SyncMode.FixedVersion }, IModelVersion.latest(), async (progress: ProgressInfo) => {
           // eslint-disable-next-line no-console
           console.log(`Progress (${progress.loaded}/${progress.total}) -> ${progress.percent}%`);
@@ -656,7 +665,7 @@ window.addEventListener("beforeunload", async () => { // eslint-disable-line @ty
 
 function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | DesktopAuthorizationClientConfiguration {
   let redirectUri = "http://localhost:3000/signin-callback";
-  if (MobileRpcConfiguration.isMobileFrontend) {
+  if (MobileUtils.isMobileFrontend) {
     redirectUri = "imodeljs://app/signin-callback";
   }
   const baseOidcScopes = [
@@ -672,7 +681,7 @@ function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | Deskt
     "imodel-extension-service-api",
   ];
 
-  return isElectronRenderer || MobileRpcConfiguration.isMobileFrontend
+  return isElectronRenderer || MobileUtils.isMobileFrontend
     ? {
       clientId: "imodeljs-electron-test",
       redirectUri,
@@ -691,7 +700,7 @@ async function createOidcClient(requestContext: ClientRequestContext, oidcConfig
     const desktopClient = new DesktopAuthorizationClient(oidcConfiguration as DesktopAuthorizationClientConfiguration);
     await desktopClient.initialize(requestContext);
     return desktopClient;
-  } else if (MobileRpcConfiguration.isMobileFrontend) {
+  } else if (MobileUtils.isMobileFrontend) {
     const mobileClient = new MobileAuthorizationClient(oidcConfiguration as MobileAuthorizationClientConfiguration);
     await mobileClient.initialize(requestContext);
     return mobileClient;
@@ -731,7 +740,7 @@ async function main() {
   }
 
   const rpcInterfaces = getSupportedRpcs();
-  if (MobileRpcConfiguration.isMobileFrontend) {
+  if (MobileUtils.isMobileFrontend) {
     MobileRpcManager.initializeClient(rpcInterfaces);
   } else if (process.env.imjs_gp_backend) {
     const urlClient = new UrlDiscoveryClient();

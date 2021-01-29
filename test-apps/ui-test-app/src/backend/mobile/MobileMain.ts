@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelReadRpcInterface, IModelTileRpcInterface, MobileRpcManager, SnapshotIModelRpcInterface } from "@bentley/imodeljs-common";
-import { Presentation } from "@bentley/presentation-backend";
-import { NativeHost } from "@bentley/imodeljs-backend";
-import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import * as fs from "fs";
 import * as path from "path";
 import { Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+import { IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@bentley/imodeljs-common";
+import { AndroidHost, IOSHost, MobileRpcManager, MobileUtils } from "@bentley/mobile-manager/lib/MobileBackend";
+import { Presentation } from "@bentley/presentation-backend";
 import { PresentationRpcInterface } from "@bentley/presentation-common";
 
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
@@ -25,7 +25,10 @@ import { PresentationRpcInterface } from "@bentley/presentation-common";
     IModelJsConfig.init(true /* suppress error */, true /* suppress message */, Config.App);
 
     // initialize imodeljs-backend
-    await NativeHost.startup();
+    if (MobileUtils.isIOSBackend)
+      await IOSHost.startup();
+    else
+      await AndroidHost.startup();
 
     // initialize presentation-backend
     Presentation.initialize({

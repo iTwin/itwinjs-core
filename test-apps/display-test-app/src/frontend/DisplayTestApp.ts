@@ -8,29 +8,32 @@ import {
 } from "@bentley/frontend-authorization-client";
 import {
   BentleyCloudRpcManager, CloudStorageContainerUrl, CloudStorageTileCache, DesktopAuthorizationClientConfiguration, Editor3dRpcInterface,
-  IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, MobileAuthorizationClientConfiguration,
-  RpcConfiguration, RpcInterfaceDefinition, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, TileContentIdentifier,
+  IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, RpcConfiguration, RpcInterfaceDefinition, SnapshotIModelRpcInterface,
+  StandaloneIModelRpcInterface, TileContentIdentifier,
 } from "@bentley/imodeljs-common";
 import {
   DesktopAuthorizationClient, FrontendRequestContext, IModelApp, IModelConnection, RenderDiagnostics, RenderSystem,
 } from "@bentley/imodeljs-frontend";
 import { AccessToken } from "@bentley/itwin-client";
+import {
+  MobileAuthorizationClient, MobileAuthorizationClientConfiguration, MobileRpcManager, MobileUtils,
+} from "@bentley/mobile-manager/lib/MobileFrontend";
 import { WebGLExtensionName } from "@bentley/webgl-compatibility";
 import { DtaConfiguration } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { DisplayTestApp } from "./App";
+import { openStandaloneIModel } from "./openStandaloneIModel";
 import { Surface } from "./Surface";
 import { setTitle } from "./Title";
 import { showStatus } from "./Utils";
 import { Dock } from "./Window";
-import { openStandaloneIModel } from "./openStandaloneIModel";
 
 const configuration: DtaConfiguration = {};
 
 // Retrieves the configuration for starting SVT from configuration.json file located in the built public folder
 async function retrieveConfiguration(): Promise<void> {
   return new Promise<void>((resolve, _reject) => {
-    if (MobileRpcConfiguration.isMobileFrontend) {
+    if (MobileUtils.isMobileFrontend) {
       if (window) {
         const urlParams = new URLSearchParams(window.location.hash);
         urlParams.forEach((val, key) => {
@@ -67,10 +70,10 @@ async function openIModel(filename: string, writable: boolean): Promise<IModelCo
 }
 
 function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | DesktopAuthorizationClientConfiguration {
-  const redirectUri = MobileRpcConfiguration.isMobileFrontend ? "imodeljs://app/signin-callback" : "http://localhost:3000/signin-callback";
+  const redirectUri = MobileUtils.isMobileFrontend ? "imodeljs://app/signin-callback" : "http://localhost:3000/signin-callback";
   const baseOidcScope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party imodel-extension-service-api";
 
-  return isElectronRenderer || MobileRpcConfiguration.isMobileFrontend
+  return isElectronRenderer || MobileUtils.isMobileFrontend
     ? {
       clientId: "imodeljs-electron-test",
       redirectUri,
@@ -95,7 +98,7 @@ async function createOidcClient(requestContext: ClientRequestContext, oidcConfig
     const desktopClient = new DesktopAuthorizationClient(oidcConfiguration as DesktopAuthorizationClientConfiguration);
     await desktopClient.initialize(requestContext);
     return desktopClient;
-  } else if (MobileRpcConfiguration.isMobileFrontend) {
+  } else if (MobileUtils.isMobileFrontend) {
     const mobileClient = new MobileAuthorizationClient(oidcConfiguration as MobileAuthorizationClientConfiguration);
     await mobileClient.initialize(requestContext);
     return mobileClient;
@@ -215,7 +218,7 @@ const dtaFrontendMain = async () => {
     StandaloneIModelRpcInterface,
   ];
 
-  if (MobileRpcConfiguration.isMobileFrontend) {
+  if (MobileUtils.isMobileFrontend) {
     MobileRpcManager.initializeClient(rpcInterfaces);
   } else {
     const uriPrefix = configuration.customOrchestratorUri || "http://localhost:3001";
@@ -307,7 +310,7 @@ async function initView(iModel: IModelConnection | undefined) {
 
 // Set up the HTML UI elements and wire them to our functions
 async function displayUi() {
-  return new Promise(async (resolve) => { // eslint-disable-line @typescript-eslint/no-misused-promises
+  return new Promise<void>(async (resolve) => { // eslint-disable-line @typescript-eslint/no-misused-promises
     showSpinner();
     resolve();
   });

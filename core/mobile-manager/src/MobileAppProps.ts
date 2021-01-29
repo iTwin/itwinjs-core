@@ -41,7 +41,7 @@ export interface MobileNotifications {
 * @internal
 */
 export interface MobileAppFunctions {
-  reconnect?: (connection: number) => void;
+  reconnect: (connection: number) => Promise<void>;
   /**
    * Initiate a sign in on backend. This will emit an onUserStateChange() event.
    */

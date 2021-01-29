@@ -6,9 +6,7 @@
  * @module RpcInterface
  */
 
-import { RpcSerializedValue } from "../../common/src/rpc/core/RpcMarshaling";
-import { RpcRequestFulfillment } from "../../common/src/rpc/core/RpcProtocol";
-import { RpcRequest } from "../../common/src/rpc/core/RpcRequest";
+import { RpcRequest, RpcRequestFulfillment, RpcSerializedValue } from "@bentley/imodeljs-common";
 import { MobileRpcProtocol } from "./MobileRpcProtocol";
 
 /** @beta */
