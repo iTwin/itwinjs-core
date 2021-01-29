@@ -103,6 +103,12 @@ export class ViewsFrontstage extends FrontstageProvider {
           case HideIsolateEmphasizeAction.IsolateSelectedModels:
             await HideIsolateEmphasizeManager.isolateSelectedElementsModel(vp);
             break;
+          case HideIsolateEmphasizeAction.ClearOverrideModels:
+            await HideIsolateEmphasizeManager.clearOverrideModels(vp);
+            break;
+          case HideIsolateEmphasizeAction.ClearOverrideCategories:
+            await HideIsolateEmphasizeManager.clearOverrideCategories(vp);
+            break;
           default:
             break;
         }

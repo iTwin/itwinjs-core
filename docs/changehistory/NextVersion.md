@@ -1,6 +1,7 @@
 ---
 publish: false
 ---
+
 # NextVersion
 
 ## Updated version of Electron
@@ -13,6 +14,8 @@ For cases where a frontend and backend are explicitly paired (e.g. desktop and m
 
 ## Breaking API Changes
 
+The `@alpha` API's for HideIsolateEmphasizeActionHandler now require two additional abstract functions, processClearOverrideCategories and processClearOverrideModels to be implemented.
+
 ### Electron Initialization
 
 The `@beta` API's for desktop applications to use Electron via the `@bentley/electron-manager` package have been simplified substantially. Existing code will need to be adjusted to work with this version. The class `ElectronManager` has been removed, and it is now replaced with the classes `ElectronBackend` and `ElectronFrontend`.
@@ -20,15 +23,15 @@ The `@beta` API's for desktop applications to use Electron via the `@bentley/ele
 To create an Electron application, you should initialize your frontend via:
 
 ```ts
-  import { ElectronFrontend } from "@bentley/electron-manager/lib/ElectronFrontend";
-  ElectronFrontend.initialize({ rpcInterfaces });
+import { ElectronFrontend } from "@bentley/electron-manager/lib/ElectronFrontend";
+ElectronFrontend.initialize({ rpcInterfaces });
 ```
 
 And your backend via:
 
 ```ts
-  import { ElectronBackend } from "@bentley/electron-manager/lib/ElectronBackend";
-  ElectronBackend.initialize({ rpcInterfaces });
+import { ElectronBackend } from "@bentley/electron-manager/lib/ElectronBackend";
+ElectronBackend.initialize({ rpcInterfaces });
 ```
 
 > Note that the class `ElectronRpcManager` is now initialized internally by the calls above, and you do not need to initialize it directly.
