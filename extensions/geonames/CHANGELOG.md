@@ -1,6 +1,11 @@
 # Change Log - @bentley/geonames-extension
 
-This log was last generated on Fri, 08 Jan 2021 18:34:03 GMT and should not be manually modified.
+This log was last generated on Thu, 28 Jan 2021 13:39:27 GMT and should not be manually modified.
+
+## 2.11.0
+Thu, 28 Jan 2021 13:39:27 GMT
+
+_Version update only_
 
 ## 2.10.3
 Fri, 08 Jan 2021 18:34:03 GMT
