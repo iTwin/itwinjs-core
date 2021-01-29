@@ -71,6 +71,7 @@ export class KeyboardShortcutMenu extends React.PureComponent<CommonProps, Keybo
           onOutsideClick={onClose}
           edgeLimit={false}
           autoflip={true}
+          ignoreNextKeyUp={true}  // Executing the shortcut on the keydown, so ignore the keyup in the menu
         >
           {items}
         </GlobalContextMenu>
