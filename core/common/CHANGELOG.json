@@ -2,6 +2,51 @@
   "name": "@bentley/imodeljs-common",
   "entries": [
     {
+      "version": "2.11.0",
+      "tag": "@bentley/imodeljs-common_v2.11.0",
+      "date": "Thu, 28 Jan 2021 13:39:27 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix brep DataProps to/from flatbuffer to account for base64 string header."
+          },
+          {
+            "comment": "Element geometry creation by brep operations. "
+          },
+          {
+            "comment": "add EditCommand"
+          },
+          {
+            "comment": "Improve ElementGeometry documentation."
+          },
+          {
+            "comment": "Remove assertion in supplyPathForOperation when defaulting changeSetId."
+          },
+          {
+            "comment": "Introduced the the Geographic Coordinate System classes and plugged in the Imodel props."
+          },
+          {
+            "comment": "Separated out API to upgrade iModels."
+          },
+          {
+            "comment": "Remove unused trueWidth and trueStart properties from GraphicParams."
+          },
+          {
+            "comment": "Add option to SectionDrawingProps specifying the spatial view should be drawn in the context of the drawing view."
+          },
+          {
+            "comment": "Support for section-cut graphics."
+          },
+          {
+            "comment": "Version compare property checksums"
+          },
+          {
+            "comment": "Add change events to DisplayStyleSettings and ViewDetails."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.10.3",
       "tag": "@bentley/imodeljs-common_v2.10.3",
       "date": "Fri, 08 Jan 2021 18:34:03 GMT",

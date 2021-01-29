@@ -1,6 +1,22 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Fri, 08 Jan 2021 18:34:03 GMT and should not be manually modified.
+This log was last generated on Thu, 28 Jan 2021 13:39:27 GMT and should not be manually modified.
+
+## 2.11.0
+Thu, 28 Jan 2021 13:39:27 GMT
+
+### Updates
+
+- Update components that support providing refs via React.forwardRef to work better with document generation.  
+- Fix backstage not updating when props.items are updated.
+- Propagate isDisabled MenuItem property to ContextMenuItem disabled property
+- Added partially visible instances support to VisibilityHandler
+- Initial implementation of AccuDraw UI
+- Prevent unnecessary 1.0 Toolbar rerenders in ToolbarComposer.
+- Updated UI Learning docs
+- Set active viewport to match active content view when overlay is clicked.
+- Add ability to control panel size and state from StagePanelDef.
+- Update to latest react-dnd version.
 
 ## 2.10.3
 Fri, 08 Jan 2021 18:34:03 GMT
