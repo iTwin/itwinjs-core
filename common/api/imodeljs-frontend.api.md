@@ -249,6 +249,7 @@ import { SubLayerId } from '@bentley/imodeljs-common';
 import { SyncMode } from '@bentley/imodeljs-common';
 import { TelemetryManager } from '@bentley/telemetry-client';
 import { TerrainProviderName } from '@bentley/imodeljs-common';
+import { TextureLoadProps } from '@bentley/imodeljs-common';
 import { TextureMapping } from '@bentley/imodeljs-common';
 import { ThematicDisplay } from '@bentley/imodeljs-common';
 import { ThematicDisplaySensor } from '@bentley/imodeljs-common';
@@ -2032,7 +2033,7 @@ export class DisplayStyle2dState extends DisplayStyleState {
     // @internal (undocumented)
     static get className(): string;
     // @internal (undocumented)
-    overrideTerrainSkirtDisplay(): boolean | undefined;
+    overrideTerrainDisplay(): TerrainDisplayOverrides | undefined;
     // (undocumented)
     get settings(): DisplayStyleSettings;
     }
@@ -2052,7 +2053,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
     // @internal
     loadSkyBoxParams(system: RenderSystem, vp?: Viewport): SkyBox.CreateParams | undefined;
     // @internal (undocumented)
-    overrideTerrainSkirtDisplay(): boolean | undefined;
+    overrideTerrainDisplay(): TerrainDisplayOverrides | undefined;
     // @internal (undocumented)
     protected registerSettingsEventListeners(): void;
     setSunTime(time: number): void;
@@ -2186,7 +2187,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     overrideRealityModelAppearance(index: number, overrides: FeatureAppearance): boolean;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     // @internal (undocumented)
-    abstract overrideTerrainSkirtDisplay(): boolean | undefined;
+    abstract overrideTerrainDisplay(): TerrainDisplayOverrides | undefined;
     // @internal (undocumented)
     protected registerSettingsEventListeners(): void;
     // @internal (undocumented)
@@ -2445,6 +2446,9 @@ export namespace EditManipulator {
         View = 6
     }
 }
+
+// @internal (undocumented)
+export const ELEMENT_MARKED_FOR_REMOVAL: unique symbol;
 
 // @internal (undocumented)
 export class ElementAgenda {
@@ -3255,7 +3259,7 @@ export function getCesiumAssetUrl(osmAssetId: number, requestKey: string): strin
 export function getCesiumOSMBuildingsUrl(): string;
 
 // @internal (undocumented)
-export function getCesiumTerrainProvider(iModel: IModelConnection, modelId: Id64String, wantSkirts: boolean, exaggeration: number): Promise<TerrainMeshProvider | undefined>;
+export function getCesiumTerrainProvider(iModel: IModelConnection, modelId: Id64String, wantSkirts: boolean, wantNormals: boolean, exaggeration: number): Promise<TerrainMeshProvider | undefined>;
 
 // @beta
 export function getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes?: number, minCompressionQuality?: number): string | undefined;
@@ -4100,6 +4104,8 @@ export abstract class IModelConnection extends IModel {
     getGeometryContainment(requestProps: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
     // @beta
     getMassProperties(requestProps: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
+    // @alpha
+    getTextureImage(textureLoadProps: TextureLoadProps): Promise<Uint8Array | undefined>;
     getToolTipMessage(id: Id64String): Promise<string[]>;
     // @beta
     readonly hilited: HiliteSet;
@@ -5133,7 +5139,7 @@ export class MapTileTree extends RealityTileTree {
 
 // @internal
 export class MapTileTreeReference extends TileTreeReference {
-    constructor(settings: BackgroundMapSettings, _baseLayerSettings: BaseLayerSettings | undefined, _layerSettings: MapLayerSettings[], iModel: IModelConnection, isOverlay: boolean, _isDrape: boolean, _overrideSkirtDisplay?: CheckSkirtDisplayOverride | undefined);
+    constructor(settings: BackgroundMapSettings, _baseLayerSettings: BaseLayerSettings | undefined, _layerSettings: MapLayerSettings[], iModel: IModelConnection, isOverlay: boolean, _isDrape: boolean, _overrideTerrainDisplay?: CheckTerrainDisplayOverride | undefined);
     addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void;
     addToScene(context: SceneContext): void;
     // (undocumented)
@@ -6340,6 +6346,36 @@ export interface ParseKeyinError {
 export type ParseKeyinResult = ParsedKeyin | ParseKeyinError;
 
 // @beta
+export interface ParticleCollectionBuilder {
+    addParticle: (particle: ParticleProps) => void;
+    finish: () => RenderGraphic | undefined;
+    size: XAndY;
+    transparency: number;
+}
+
+// @beta (undocumented)
+export namespace ParticleCollectionBuilder {
+    export function create(params: ParticleCollectionBuilderParams): ParticleCollectionBuilder;
+}
+
+// @beta
+export interface ParticleCollectionBuilderParams {
+    isViewCoords?: boolean;
+    origin?: XYAndZ;
+    pickableId?: Id64String;
+    size: XAndY | number;
+    texture: RenderTexture;
+    transparency?: number;
+    viewport: Viewport;
+}
+
+// @beta
+export interface ParticleProps extends XYAndZ {
+    size?: XAndY | number;
+    transparency?: number;
+}
+
+// @beta
 export class PendingExtension {
     constructor(_tarFileUrl: string, loader: ExtensionLoader, args?: string[] | undefined);
     // (undocumented)
@@ -7439,6 +7475,7 @@ export abstract class RenderSystem implements IDisposable {
     createTerrainMeshGraphic(_terrainGeometry: RenderTerrainMeshGeometry, _featureTable: PackedFeatureTable, _tileId: string, _baseColor: ColorDef | undefined, _baseTransparent: boolean, _textures?: TerrainTexture[]): RenderGraphic | undefined;
     // @internal
     createTextureFromCubeImages(_posX: HTMLImageElement, _negX: HTMLImageElement, _posY: HTMLImageElement, _negY: HTMLImageElement, _posZ: HTMLImageElement, _negZ: HTMLImageElement, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined;
+    createTextureFromElement(_id: Id64String, _imodel: IModelConnection, _params: RenderTexture.Params, _format: ImageSourceFormat): RenderTexture | undefined;
     createTextureFromImage(_image: HTMLImageElement, _hasAlpha: boolean, _imodel: IModelConnection | undefined, _params: RenderTexture.Params): RenderTexture | undefined;
     createTextureFromImageBuffer(_image: ImageBuffer, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined;
     createTextureFromImageSource(source: ImageSource, imodel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined>;
@@ -7841,6 +7878,7 @@ export class ScreenViewport extends Viewport {
     changeView(view: ViewState, opts?: ViewChangeOptions): void;
     clearViewUndo(): void;
     static create(parentDiv: HTMLDivElement, view: ViewState): ScreenViewport;
+    // @deprecated
     readonly decorationDiv: HTMLDivElement;
     doRedo(animationTime?: BeDuration): void;
     doUndo(animationTime?: BeDuration): void;
@@ -7851,6 +7889,8 @@ export class ScreenViewport extends Viewport {
     get isUndoPossible(): boolean;
     // @beta
     get logo(): HTMLImageElement;
+    // @internal (undocumented)
+    static markAllChildrenForRemoval(el: HTMLDivElement): void;
     maxUndoSteps: number;
     // @internal (undocumented)
     mouseMovementFromEvent(ev: MouseEvent): XAndY;
@@ -7869,6 +7909,8 @@ export class ScreenViewport extends Viewport {
     pickNearestVisibleGeometry(pickPoint: Point3d, radius?: number, allowNonLocatable?: boolean, out?: Point3d): Point3d | undefined;
     // @internal
     static removeAllChildren(el: HTMLDivElement): void;
+    // @internal (undocumented)
+    static removeMarkedChildren(el: HTMLDivElement): void;
     // @internal
     get rendersToScreen(): boolean;
     set rendersToScreen(toScreen: boolean);
@@ -9049,6 +9091,14 @@ export class TentativePoint {
     viewport?: ScreenViewport;
 }
 
+// @internal (undocumented)
+export class TerrainDisplayOverrides {
+    // (undocumented)
+    wantNormals?: boolean;
+    // (undocumented)
+    wantSkirts?: boolean;
+}
+
 // @internal
 export abstract class TerrainMeshProvider {
     constructor(_iModel: IModelConnection, _modelId: Id64String);
@@ -9259,6 +9309,8 @@ export abstract class TileAdmin {
     // @internal (undocumented)
     abstract get emptyViewportSet(): ReadonlyViewportSet;
     // @internal (undocumented)
+    abstract get enableExternalTextures(): boolean;
+    // @internal (undocumented)
     abstract get enableImprovedElision(): boolean;
     // @internal (undocumented)
     abstract get enableInstancing(): boolean;
@@ -9275,6 +9327,8 @@ export abstract class TileAdmin {
     abstract getViewportSetForRequest(vp: Viewport, vps?: ReadonlyViewportSet): ReadonlyViewportSet;
     // @internal (undocumented)
     abstract get ignoreAreaPatterns(): boolean;
+    // @internal (undocumented)
+    abstract invalidateAllScenes(): void;
     // @internal
     abstract isTileInUse(marker: TileUsageMarker): boolean;
     // @internal
@@ -9345,6 +9399,7 @@ export namespace TileAdmin {
         contextPreloadParentSkip?: number;
         defaultTileSizeModifier?: number;
         disableMagnification?: boolean;
+        enableExternalTextures?: boolean;
         enableImprovedElision?: boolean;
         enableInstancing?: boolean;
         ignoreAreaPatterns?: boolean;

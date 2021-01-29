@@ -77,7 +77,7 @@ export type ElementGeometryChange = ExtantElementGeometryChange | DeletedElement
 /** Represents a change to the geometry of a [GeometricElement]($backend).
  * @alpha
  */
-export namespace ElementGeometryChange {
+export namespace ElementGeometryChange { // eslint-disable-line @typescript-eslint/no-redeclare
   function* extantIterator(props: ElementIdsAndRangesProps, type: DbOpcode.Insert | DbOpcode.Update): Iterator<ElementGeometryChange> {
     let index = 0;
     const ids = CompressedId64Set.iterable(props.ids);

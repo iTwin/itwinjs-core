@@ -61,6 +61,6 @@ import { ElectronHost } from "@bentley/electron-manager/lib/ElectronHost";
 
 export async function initializeForElectron(rpcInterfaces: RpcInterfaceDefinition[]) {
   await ElectronHost.startup({ electronHost: { rpcInterfaces } });
-};
+}
 
 // __PUBLISH_EXTRACT_END__

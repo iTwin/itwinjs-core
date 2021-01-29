@@ -440,6 +440,20 @@ export abstract class IModelConnection extends IModel {
    */
   public async getGeometryContainment(requestProps: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps> { return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getGeometryContainment(this.getRpcProps(), requestProps); }
 
+  /** Request a named texture image from the backend.
+   * @param textureLoadProps The texture load properties which must contain a name property (a valid 64-bit integer identifier)
+   * @see [[Id64]]
+   * @alpha
+   */
+  public async getTextureImage(textureLoadProps: TextureLoadProps): Promise<Uint8Array | undefined> {
+    if (this.isOpen) {
+      const rpcClient = IModelReadRpcInterface.getClientForRouting(this.routingContext.token);
+      const img = rpcClient.getTextureImage(this.getRpcProps(), textureLoadProps);
+      return img;
+    }
+    return undefined;
+  }
+
   /** Request element mass properties from the backend.
    * @beta
    */

@@ -20,7 +20,7 @@ import { BackendApplicationInsightsClient } from "@bentley/backend-application-i
     // Load .env file first so it's added to `Config.App` below when it parses the environment variables.
     if (fs.existsSync(path.join(process.cwd(), ".env"))) {
       require("dotenv-expand")( // eslint-disable-line @typescript-eslint/no-var-requires
-        require("dotenv").config(),
+        require("dotenv").config(), // eslint-disable-line @typescript-eslint/no-var-requires
       );
     }
 

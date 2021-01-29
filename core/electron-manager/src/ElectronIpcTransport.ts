@@ -208,7 +208,7 @@ export class BackendIpcTransport extends ElectronIpcTransport<SerializedRpcReque
     }
 
     try { // Wrapping require in a try/catch signals to webpack that this is only an optional dependency
-      this._browserWindow = require("electron").BrowserWindow;
+      this._browserWindow = require("electron").BrowserWindow; // eslint-disable-line @typescript-eslint/no-var-requires
     } catch (err) {
       throw new IModelError(BentleyStatus.ERROR, `Error requiring electron`, undefined, undefined, () => err);
     }

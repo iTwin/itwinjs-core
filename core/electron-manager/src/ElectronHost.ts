@@ -170,7 +170,7 @@ export class ElectronHost {
 
     if (!this._developmentServer) {
       // handle any "electron://" requests and redirect them to "file://" URLs
-      require("electron").protocol.registerFileProtocol("electron", (request, callback) => callback(this.parseElectronUrl(request.url)));
+      require("electron").protocol.registerFileProtocol("electron", (request, callback) => callback(this.parseElectronUrl(request.url))); // eslint-disable-line @typescript-eslint/no-var-requires
     }
 
     this._openWindow(windowOptions);
@@ -206,11 +206,11 @@ export class ElectronHost {
     await NativeHost.startup({ ipcHost: { socket: this._ipc }, iModelHost: opts?.iModelHost });
     if (IpcHost.isValid)
       ElectronBackendImpl.register();
-  };
+  }
 }
 
 class ElectronBackendImpl extends IpcHandler {
-  public get channelName() { return "electron-safe"; };
+  public get channelName() { return "electron-safe"; }
   public async callElectron(member: string, method: string, ...args: any) {
     const func = (ElectronHost.electron as any)[member][method];
     if (typeof func !== "function")

@@ -9,7 +9,7 @@
 import { Matrix4d } from "@bentley/geometry-core";
 import { ColorDef, RgbColor } from "@bentley/imodeljs-common";
 import { FloatRgba } from "./FloatRGBA";
-import { UniformHandle } from "./Handle";
+import { UniformHandle } from "./UniformHandle";
 import { Matrix4 } from "./Matrix";
 import { desync, sync, SyncToken } from "./Sync";
 import { Target } from "./Target";

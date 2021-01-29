@@ -12,13 +12,14 @@ RpcConfiguration.disableRoutingValidation = true;
 
 function initializeCloud(protocol: string) {
   const port = Number(window.location.port) + 2000;
+  const mobilePort = port + 2000;
 
   const config = BentleyCloudRpcManager.initializeClient({ info: { title: "rpc-full-stack-test", version: "v1.0" } }, rpcInterfaces);
   config.protocol.pathPrefix = `${protocol}://${window.location.hostname}:${port}`;
 
   initializeMultipleClientsTest(config.protocol.pathPrefix);
   initializeAttachedInterfacesTest(config);
-  setupMockMobileFrontend(port + 1);
+  setupMockMobileFrontend(mobilePort);
 }
 
 function setupMockMobileFrontend(port: number) {

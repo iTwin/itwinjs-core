@@ -27,7 +27,7 @@ export function useResizeObserver<T extends Element>(onResize?: (width: number, 
   const handleRef = React.useCallback((instance: T | null) => {
     const bounds = instance && instance.getBoundingClientRect();
     bounds && onResize && onResize(bounds.width, bounds.height);
-  }, [onResize]);
+  }, [onResize]); // eslint-disable-line react-hooks/exhaustive-deps
   const ref = useRefs(handleRef, observerRef);
   return ref;
 }

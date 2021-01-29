@@ -81,7 +81,7 @@ export namespace Pixel {
   export enum Selector {
     None = 0,
     /** Select the [[Feature]] which produced each pixel, as well as the [[PackedFeatureTable]] from which the feature originated. */
-    Feature = 1 << 0, // eslint-disable-line no-shadow
+    Feature = 1 << 0, // eslint-disable-line @typescript-eslint/no-shadow
     /** Select the type and planarity of geometry which produced each pixel as well as the fraction of its distance between the near and far planes. */
     GeometryAndDistance = 1 << 2,
     /** Select all aspects of each pixel. */
