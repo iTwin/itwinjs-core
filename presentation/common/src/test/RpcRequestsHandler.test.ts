@@ -9,8 +9,8 @@ import * as moq from "typemoq";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { IModelRpcProps, RpcInterface, RpcInterfaceDefinition, RpcManager } from "@bentley/imodeljs-common";
 import {
-  ContentRequestOptions, DescriptorJSON, DistinctValuesRpcRequestOptions, HierarchyRequestOptions, KeySet, KeySetJSON, Paged,
-  PartialHierarchyModificationJSON, PresentationError, PresentationRpcInterface, PresentationRpcRequestOptions, PresentationRpcResponse,
+  ContentRequestOptions, DescriptorJSON, DistinctValuesRpcRequestOptions, HierarchyCompareInfoJSON, HierarchyRequestOptions,
+  KeySet, KeySetJSON, Paged, PresentationError, PresentationRpcInterface, PresentationRpcRequestOptions, PresentationRpcResponse,
   PresentationStatus, RpcRequestsHandler, SelectionInfo, SelectionScopeRequestOptions,
 } from "../presentation-common";
 import { FieldDescriptorType } from "../presentation-common/content/Fields";
@@ -514,7 +514,9 @@ describe("RpcRequestsHandler", () => {
         rulesetOrId: "test2",
         expandedNodeKeys: [...handlerOptions.expandedNodeKeys!],
       };
-      const result = new Array<PartialHierarchyModificationJSON>();
+      const result: HierarchyCompareInfoJSON = {
+        changes: [],
+      };
       rpcInterfaceMock.setup(async (x) => x.compareHierarchies(token, rpcOptions)).returns(async () => successResponse(result)).verifiable();
       expect(await handler.compareHierarchies(handlerOptions)).to.eq(result);
       rpcInterfaceMock.verifyAll();

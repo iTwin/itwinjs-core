@@ -26,7 +26,7 @@ import {
   SelectionScopeRequestOptions,
 } from "./PresentationManagerOptions";
 import { SelectionScope } from "./selection/SelectionScope";
-import { PartialHierarchyModificationJSON } from "./Update";
+import { HierarchyCompareInfoJSON } from "./Update";
 import { Omit, PagedResponse } from "./Utils";
 
 /**
@@ -205,8 +205,8 @@ export class PresentationRpcInterface extends RpcInterface {
   // TODO: need to enforce paging on this
   public async computeSelection(_token: IModelRpcProps, _options: SelectionScopeRpcRequestOptions, _ids: Id64String[], _scopeId: string): PresentationRpcResponse<KeySetJSON> { return this.forward(arguments); }
 
-  /** @alpha TODO: need to page results of this */
-  public async compareHierarchies(_token: IModelRpcProps, _options: PresentationDataCompareRpcOptions): PresentationRpcResponse<PartialHierarchyModificationJSON[]> { return this.forward(arguments); }
+  /** @alpha */
+  public async compareHierarchies(_token: IModelRpcProps, _options: PresentationDataCompareRpcOptions): PresentationRpcResponse<HierarchyCompareInfoJSON> { return this.forward(arguments); }
 }
 
 /** @alpha */

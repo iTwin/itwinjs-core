@@ -192,10 +192,24 @@ export class PresentationManager implements IDisposable {
       return [];
 
     const options = await this.addRulesetAndVariablesToOptions(props);
-    let modifications: PartialHierarchyModification[];
+    let modifications: PartialHierarchyModification[] = [];
+
     try {
-      modifications = (await this.rpcRequestsHandler.compareHierarchies(this.toRpcTokenOptions(options)))
-        .map(PartialHierarchyModification.fromJSON);
+      while (true) {
+        const result = (await this.rpcRequestsHandler.compareHierarchies(this.toRpcTokenOptions(options)));
+        modifications.push(...result.changes.map(PartialHierarchyModification.fromJSON));
+        if (!result.nextStep)
+          break;
+
+        const prevStep = options.startPosition;
+        const nextStep = result.nextStep;
+        if (prevStep !== undefined && prevStep.prevHierarchyNode === nextStep.prevHierarchyNode && prevStep.currHierarchyNode === nextStep.currHierarchyNode) {
+          Logger.logError(PresentationFrontendLoggerCategory.Package, "Hierarchy compare next step is the same as previous. Returning [].");
+          return [];
+        }
+
+        options.startPosition = nextStep;
+      }
     } catch (e) {
       if (e instanceof PresentationError && e.errorNumber === PresentationStatus.Canceled) {
         modifications = [];

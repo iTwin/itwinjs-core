@@ -12,9 +12,9 @@ import {
   ContentDescriptorRequestOptions, ContentDescriptorRpcRequestOptions, ContentRequestOptions, ContentRpcRequestOptions, Descriptor, DescriptorJSON,
   DescriptorOverrides, DiagnosticsScopeLogs, DisplayLabelRequestOptions, DisplayLabelRpcRequestOptions, DisplayLabelsRequestOptions,
   DisplayLabelsRpcRequestOptions, DistinctValuesRequestOptions, ExtendedContentRequestOptions, ExtendedContentRpcRequestOptions,
-  ExtendedHierarchyRequestOptions, ExtendedHierarchyRpcRequestOptions, FieldDescriptor, FieldDescriptorType, HierarchyRequestOptions,
-  HierarchyRpcRequestOptions, HierarchyUpdateInfo, InstanceKey, Item, KeySet, KeySetJSON, Node, NodeKey, NodePathElement, Paged, PageOptions,
-  PartialHierarchyModification, PresentationDataCompareOptions, PresentationDataCompareRpcOptions, PresentationError, PresentationRpcRequestOptions,
+  ExtendedHierarchyRequestOptions, ExtendedHierarchyRpcRequestOptions, FieldDescriptor, FieldDescriptorType, HierarchyCompareInfo, HierarchyRequestOptions,
+  HierarchyRpcRequestOptions, InstanceKey, Item, KeySet, KeySetJSON, Node, NodeKey, NodePathElement, Paged, PageOptions,
+  PresentationDataCompareOptions, PresentationDataCompareRpcOptions, PresentationError, PresentationRpcRequestOptions,
   PresentationStatus, SelectionScopeRequestOptions, VariableValueTypes,
 } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
@@ -1634,36 +1634,74 @@ describe("PresentationRpcImpl", () => {
     describe("compareHierarchies", () => {
 
       it("calls manager for comparison based on ruleset changes", async () => {
-        const result: PartialHierarchyModification[] = [{
-          type: "Delete",
-          node: createRandomECInstancesNode(),
-        }];
+        const result: HierarchyCompareInfo = {
+          changes: [{
+            type: "Delete",
+            node: createRandomECInstancesNode(),
+          }],
+        };
         const rpcOptions: PresentationDataCompareRpcOptions = {
           ...defaultRpcParams,
           prev: {
             rulesetOrId: "1",
           },
           rulesetOrId: "2",
+          resultSetSize: 10,
         };
         const managerOptions: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>> = {
           requestContext: ClientRequestContext.current,
           imodel: testData.imodelMock.object,
           prev: rpcOptions.prev,
           rulesetOrId: rpcOptions.rulesetOrId,
+          resultSetSize: 10,
         };
         presentationManagerMock.setup((x) => x.compareHierarchies(managerOptions))
           .returns(async () => result)
           .verifiable();
         const actualResult = await impl.compareHierarchies(testData.imodelToken, rpcOptions);
         presentationManagerMock.verifyAll();
-        expect(actualResult.result).to.deep.eq(HierarchyUpdateInfo.toJSON(result));
+        expect(actualResult.result).to.deep.eq(HierarchyCompareInfo.toJSON(result));
       });
 
       it("calls manager for comparison based on ruleset variables' changes", async () => {
-        const result: PartialHierarchyModification[] = [{
-          type: "Delete",
-          node: createRandomECInstancesNode(),
-        }];
+        const result: HierarchyCompareInfo = {
+          changes: [{
+            type: "Delete",
+            node: createRandomECInstancesNode(),
+          }],
+        };
+        const rpcOptions: PresentationDataCompareRpcOptions = {
+          ...defaultRpcParams,
+          prev: {
+            rulesetVariables: [{ id: "test", type: VariableValueTypes.Int, value: 123 }],
+          },
+          rulesetOrId: "2",
+          expandedNodeKeys: [createRandomECInstancesNodeKeyJSON()],
+          resultSetSize: 10,
+        };
+        const managerOptions: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>> = {
+          requestContext: ClientRequestContext.current,
+          imodel: testData.imodelMock.object,
+          prev: rpcOptions.prev,
+          rulesetOrId: rpcOptions.rulesetOrId,
+          expandedNodeKeys: rpcOptions.expandedNodeKeys!.map(NodeKey.fromJSON),
+          resultSetSize: 10,
+        };
+        presentationManagerMock.setup((x) => x.compareHierarchies(managerOptions))
+          .returns(async () => result)
+          .verifiable();
+        const actualResult = await impl.compareHierarchies(testData.imodelToken, rpcOptions);
+        presentationManagerMock.verifyAll();
+        expect(actualResult.result).to.deep.eq(HierarchyCompareInfo.toJSON(result));
+      });
+
+      it("enforces maximum result set size", async () => {
+        const result: HierarchyCompareInfo = {
+          changes: [{
+            type: "Delete",
+            node: createRandomECInstancesNode(),
+          }],
+        };
         const rpcOptions: PresentationDataCompareRpcOptions = {
           ...defaultRpcParams,
           prev: {
@@ -1678,13 +1716,14 @@ describe("PresentationRpcImpl", () => {
           prev: rpcOptions.prev,
           rulesetOrId: rpcOptions.rulesetOrId,
           expandedNodeKeys: rpcOptions.expandedNodeKeys!.map(NodeKey.fromJSON),
+          resultSetSize: MAX_ALLOWED_PAGE_SIZE,
         };
         presentationManagerMock.setup((x) => x.compareHierarchies(managerOptions))
           .returns(async () => result)
           .verifiable();
         const actualResult = await impl.compareHierarchies(testData.imodelToken, rpcOptions);
         presentationManagerMock.verifyAll();
-        expect(actualResult.result).to.deep.eq(HierarchyUpdateInfo.toJSON(result));
+        expect(actualResult.result).to.deep.eq(HierarchyCompareInfo.toJSON(result));
       });
 
     });

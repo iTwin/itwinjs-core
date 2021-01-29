@@ -13,14 +13,14 @@ import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
 import {
   Content, ContentDescriptorRequestOptions, ContentRequestOptions, Descriptor, DisplayLabelRequestOptions,
   DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions,
-  FieldDescriptor, FieldDescriptorType, HierarchyRequestOptions, InstanceKey, Item, KeySet, LabelDefinition, LabelRequestOptions,
-  Node, NodeKey, NodePathElement, Paged, PresentationDataCompareOptions, PresentationError, PresentationRpcEvents, PresentationRpcInterface,
+  FieldDescriptor, FieldDescriptorType, HierarchyCompareInfoJSON, HierarchyRequestOptions, InstanceKey, Item, KeySet, LabelDefinition, LabelRequestOptions,
+  Node, NodeKey, NodePathElement, Paged, PartialHierarchyModification, PresentationDataCompareOptions, PresentationError, PresentationRpcEvents, PresentationRpcInterface,
   PresentationStatus, PresentationUnitSystem, RegisteredRuleset, RequestPriority, RpcRequestsHandler, Ruleset, RulesetVariable, UpdateInfo,
   VariableValueTypes,
 } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import {
-  createRandomBaseNodeKey, createRandomDescriptor, createRandomECInstanceKey, createRandomECInstancesNode, createRandomECInstancesNodeKey,
+  createRandomBaseNodeKey, createRandomDescriptor, createRandomECInstanceKey, createRandomECInstancesNode, createRandomECInstancesNodeJSON, createRandomECInstancesNodeKey,
   createRandomLabelDefinition, createRandomNodePathElement, createRandomRuleset, createRandomTransientId,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { Presentation } from "../presentation-frontend/Presentation";
@@ -1250,12 +1250,115 @@ describe("PresentationManager", () => {
         rulesetVariables: [],
         expandedNodeKeys: [createRandomBaseNodeKey()],
       };
+      const compareInfo: HierarchyCompareInfoJSON = {
+        changes: [
+          {
+            type: "Insert",
+            position: 0,
+            node: createRandomECInstancesNodeJSON(),
+          },
+        ],
+      };
       rpcRequestsHandlerMock
         .setup(async (x) => x.compareHierarchies(prepareOptions({ ...options, expandedNodeKeys: options.expandedNodeKeys!.map(NodeKey.toJSON) })))
-        .throws(new PresentationError(PresentationStatus.Error))
+        .returns(async () => compareInfo)
         .verifiable();
-      await expect(manager.compareHierarchies(options)).to.eventually.be.rejectedWith(PresentationError);
+      const changes = await manager.compareHierarchies(options);
       rpcRequestsHandlerMock.verify(async (x) => x.compareHierarchies(moq.It.isAny()), moq.Times.once());
+      expect(changes).to.be.deep.eq(compareInfo.changes.map(PartialHierarchyModification.fromJSON));
+    });
+
+    it("makes multiple requests until collects all results", async () => {
+      const options: PresentationDataCompareOptions<IModelConnection, NodeKey> = {
+        imodel: testData.imodelMock.object,
+        prev: {
+          rulesetOrId: "test1",
+          rulesetVariables: [],
+        },
+        rulesetOrId: "test",
+        rulesetVariables: [],
+        expandedNodeKeys: [createRandomBaseNodeKey()],
+      };
+      const compareInfo1: HierarchyCompareInfoJSON = {
+        changes: [
+          {
+            type: "Insert",
+            position: 0,
+            node: createRandomECInstancesNodeJSON(),
+          },
+        ],
+        nextStep: {
+          prevHierarchyNode: "prevNode",
+          currHierarchyNode: "currNode",
+        },
+      };
+      const compareInfo2: HierarchyCompareInfoJSON = {
+        changes: [
+          {
+            type: "Insert",
+            position: 1,
+            node: createRandomECInstancesNodeJSON(),
+          },
+        ],
+      };
+      rpcRequestsHandlerMock
+        .setup(async (x) => x.compareHierarchies(prepareOptions({ ...options, expandedNodeKeys: options.expandedNodeKeys!.map(NodeKey.toJSON) })))
+        .returns(async () => compareInfo1);
+      rpcRequestsHandlerMock
+        .setup(async (x) => x.compareHierarchies(prepareOptions({ ...options, expandedNodeKeys: options.expandedNodeKeys!.map(NodeKey.toJSON), startPosition: compareInfo1.nextStep })))
+        .returns(async () => compareInfo2);
+      const changes = await manager.compareHierarchies(options);
+      rpcRequestsHandlerMock.verify(async (x) => x.compareHierarchies(moq.It.isAny()), moq.Times.exactly(2));
+      expect(changes.length).to.be.eq(2);
+      expect(changes).to.be.deep.eq([...compareInfo1.changes.map(PartialHierarchyModification.fromJSON), ...compareInfo2.changes.map(PartialHierarchyModification.fromJSON)]);
+    });
+
+    it("avoid infinitely requesting if next step is same as previous", async () => {
+      const options: PresentationDataCompareOptions<IModelConnection, NodeKey> = {
+        imodel: testData.imodelMock.object,
+        prev: {
+          rulesetOrId: "test1",
+          rulesetVariables: [],
+        },
+        rulesetOrId: "test",
+        rulesetVariables: [],
+        expandedNodeKeys: [createRandomBaseNodeKey()],
+      };
+      const compareInfo1: HierarchyCompareInfoJSON = {
+        changes: [
+          {
+            type: "Insert",
+            position: 0,
+            node: createRandomECInstancesNodeJSON(),
+          },
+        ],
+        nextStep: {
+          prevHierarchyNode: "prevNode",
+          currHierarchyNode: "currNode",
+        },
+      };
+      const compareInfo2: HierarchyCompareInfoJSON = {
+        changes: [
+          {
+            type: "Insert",
+            position: 1,
+            node: createRandomECInstancesNodeJSON(),
+          },
+        ],
+        nextStep: {
+          prevHierarchyNode: "prevNode",
+          currHierarchyNode: "currNode",
+        },
+      };
+      rpcRequestsHandlerMock
+        .setup(async (x) => x.compareHierarchies(prepareOptions({ ...options, expandedNodeKeys: options.expandedNodeKeys!.map(NodeKey.toJSON) })))
+        .returns(async () => compareInfo1);
+      rpcRequestsHandlerMock
+        .setup(async (x) => x.compareHierarchies(prepareOptions({ ...options, expandedNodeKeys: options.expandedNodeKeys!.map(NodeKey.toJSON), startPosition: compareInfo1.nextStep })))
+        .returns(async () => compareInfo2);
+      const changes = await manager.compareHierarchies(options);
+      rpcRequestsHandlerMock.verify(async (x) => x.compareHierarchies(moq.It.isAny()), moq.Times.exactly(2));
+      expect(changes.length).to.be.eq(0);
     });
 
   });

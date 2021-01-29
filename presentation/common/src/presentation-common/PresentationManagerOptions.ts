@@ -197,6 +197,11 @@ export interface PresentationDataCompareOptions<TIModel, TNodeKey> extends Reque
     rulesetVariables?: RulesetVariable[];
   };
   expandedNodeKeys?: TNodeKey[];
+  startPosition?: {
+    prevHierarchyNode: string;
+    currHierarchyNode: string;
+  };
+  resultSetSize?: number;
 }
 
 /**
