@@ -52,6 +52,8 @@ class SettingsPageComponent extends React.Component<SettingsPageProps> {
   private _darkLabel = UiFramework.i18n.translate("SampleApp:settingsStage.dark");
   private _lightLabel = UiFramework.i18n.translate("SampleApp:settingsStage.light");
   private _systemPreferredLabel = UiFramework.i18n.translate("SampleApp:settingsStage.systemPreferred");
+  private _escapeToHomeTitle: string = UiFramework.i18n.translate("SampleApp:settingsStage.escapeToHomeTitle");
+  private _escapeToHomeDescription: string = UiFramework.i18n.translate("SampleApp:settingsStage.escapeToHomeDescription");
 
   private _defaultThemeOption = { label: this._systemPreferredLabel, value: SYSTEM_PREFERRED_COLOR_THEME };
   private _themeOptions: Array<OptionType> = [
@@ -96,6 +98,12 @@ class SettingsPageComponent extends React.Component<SettingsPageProps> {
     UiShowHideManager.snapWidgetOpacity = !UiShowHideManager.snapWidgetOpacity;
 
     await SampleAppIModelApp.appUiSettings.snapWidgetOpacity.saveSetting(SampleAppIModelApp.uiSettings);
+  };
+
+  private _onEscapeToHomeChange = async () => {
+    UiFramework.escapeToHome = !UiFramework.escapeToHome;
+
+    await SampleAppIModelApp.appUiSettings.escapeToHome.saveSetting(SampleAppIModelApp.uiSettings);
   };
 
   public render(): React.ReactNode {
@@ -160,6 +168,15 @@ class SettingsPageComponent extends React.Component<SettingsPageProps> {
           </div>
           <div className="panel right-panel">
             <Toggle isOn={UiShowHideManager.snapWidgetOpacity} showCheckmark={false} onChange={this._onSnapWidgetOpacityChange} />
+          </div>
+        </div>
+        <div className="uifw-settings-item">
+          <div className="panel left-panel">
+            <span className="title">{this._escapeToHomeTitle}</span>
+            <span className="description">{this._escapeToHomeDescription}</span>
+          </div>
+          <div className="panel right-panel">
+            <Toggle isOn={UiFramework.escapeToHome} showCheckmark={false} onChange={this._onEscapeToHomeChange} />
           </div>
         </div>
       </div>
