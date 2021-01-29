@@ -189,6 +189,7 @@ beta;FrameworkRootState
 internal;FrameworkStagePanel 
 internal;FrameworkStagePanelProps
 beta;FrameworkState
+alpha;FrameworkToolAdmin 
 beta;FrameworkUiAdmin 
 alpha;FrameworkVersion(props: FrameworkVersionProps): JSX.Element
 alpha;FrameworkVersion = "1" | "2"
