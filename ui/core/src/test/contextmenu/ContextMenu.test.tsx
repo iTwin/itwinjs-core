@@ -204,6 +204,19 @@ describe("ContextMenu", () => {
         root.dispatchEvent(createBubbledEvent("keyup", { key: "f" }));
         expect(onSelectFake).to.have.been.calledOnce;
       });
+      it("should ignore next keyup when ignoreNextKeyUp=true", () => {
+        const onSelectFake = sinon.fake();
+        const component = render(
+          <ContextMenu opened={true} ignoreNextKeyUp={true}>
+            <ContextMenuItem onSelect={onSelectFake}>~First item</ContextMenuItem>
+            <ContextMenuItem>~Second item</ContextMenuItem>
+          </ContextMenu>);
+        const root = component.getAllByTestId("core-context-menu-root")[0];
+        root.dispatchEvent(createBubbledEvent("keyup", { key: "f" }));
+        expect(onSelectFake).to.not.have.been.called;
+        root.dispatchEvent(createBubbledEvent("keyup", { key: "f" }));
+        expect(onSelectFake).to.have.been.calledOnce;
+      });
       it("should select sub menu list item of hotkey", () => {
         const onSelectFake = sinon.fake();
         const component = render(

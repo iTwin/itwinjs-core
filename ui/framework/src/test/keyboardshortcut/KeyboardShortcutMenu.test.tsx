@@ -8,6 +8,7 @@ import * as sinon from "sinon";
 import { CommandItemDef, KeyboardShortcutManager, KeyboardShortcutMenu, KeyboardShortcutProps } from "../../ui-framework";
 import TestUtils, { mount } from "../TestUtils";
 import { FunctionKey, SpecialKey } from "@bentley/ui-abstract";
+import { UiFramework } from "../../ui-framework/UiFramework";
 
 describe("KeyboardShortcutMenu", () => {
   const testSpyMethod = sinon.spy();
@@ -59,6 +60,7 @@ describe("KeyboardShortcutMenu", () => {
 
   it("Should render shortcuts and close on Escape", () => {
     KeyboardShortcutManager.loadKeyboardShortcuts(keyboardShortcutList);
+    expect(UiFramework.isContextMenuOpen).to.be.false;
 
     const wrapper = mount(
       <KeyboardShortcutMenu />,
@@ -68,11 +70,14 @@ describe("KeyboardShortcutMenu", () => {
     wrapper.update();
 
     expect(wrapper.find("div.core-context-menu").length).to.not.eq(0);
+    expect(UiFramework.isContextMenuOpen).to.be.true;
 
+    wrapper.find("div.core-context-menu").at(0).simulate("keyUp", { key: SpecialKey.Escape /* <Esc> */ });  // Does nothing because of ignoreNextKeyUp=true
     wrapper.find("div.core-context-menu").at(0).simulate("keyUp", { key: SpecialKey.Escape /* <Esc> */ });
     wrapper.update();
 
     expect(wrapper.find("div.core-context-menu-item").length).to.eq(0);
+    expect(UiFramework.isContextMenuOpen).to.be.false;
   });
 
   it("Should render shortcuts and execute item on click", async () => {
