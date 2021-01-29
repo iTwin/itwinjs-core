@@ -181,6 +181,7 @@ export interface NodeUpdateInfoJSON {
   }>;
 }
 
+/** @alpha */
 export interface HierarchyCompareInfoJSON {
   changes: PartialHierarchyModificationJSON[];
   nextStep?: {
@@ -189,6 +190,7 @@ export interface HierarchyCompareInfoJSON {
   };
 }
 
+/** @alpha */
 export interface HierarchyCompareInfo {
   changes: PartialHierarchyModification[];
   nextStep?: {
@@ -197,6 +199,7 @@ export interface HierarchyCompareInfo {
   };
 }
 
+/** @alpha */
 export namespace HierarchyCompareInfo {
   /** Serialize given object to JSON. */
   export function toJSON(obj: HierarchyCompareInfo): HierarchyCompareInfoJSON {
