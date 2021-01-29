@@ -16,10 +16,19 @@ import { FrameworkUiAdmin } from "../../ui-framework/uiadmin/FrameworkUiAdmin";
 
 // cspell:ignore uiadmin
 
+function requestNextAnimation() { }
+
 describe("AccuDrawInputField", () => {
+  const rnaDescriptorToRestore = Object.getOwnPropertyDescriptor(IModelApp, "requestNextAnimation")!;
   const sandbox = sinon.createSandbox();
 
   before(async () => {
+    // Avoid requestAnimationFrame exception during test by temporarily replacing function that calls it.
+    // Tried replacing window.requestAnimationFrame first but that did not work.
+    Object.defineProperty(IModelApp, "requestNextAnimation", {
+      get: () => requestNextAnimation,
+    });
+
     await TestUtils.initializeUiFramework();
 
     const opts: IModelAppOptions = {};
@@ -30,6 +39,8 @@ describe("AccuDrawInputField", () => {
 
   after(async () => {
     await MockRender.App.shutdown();
+
+    Object.defineProperty(IModelApp, "requestNextAnimation", rnaDescriptorToRestore);
 
     TestUtils.terminateUiFramework();
   });
