@@ -6,10 +6,10 @@
  * @module Views
  */
 
-import { assert, CompressedId64Set, Id64Set } from "@bentley/bentleyjs-core";
-import { PlanarClipMaskSettings } from "@bentley/imodeljs-common";
-import { IModelConnection } from "./IModelConnection";
+import { assert, CompressedId64Set, Id64Set, Id64String } from "@bentley/bentleyjs-core";
+import { PlanarClipMaskMode, PlanarClipMaskProps, PlanarClipMaskSettings } from "@bentley/imodeljs-common";
 import { createMaskTreeReference, TileTreeReference, TileTreeSet } from "./tile/internal";
+import { ViewState3d } from "./ViewState";
 
 
 export class PlanarClipMaskState {
@@ -22,12 +22,22 @@ export class PlanarClipMaskState {
     this.settings = settings;
     this._modelIds = modelIds;
   }
-  public getTileTrees(iModel: IModelConnection): TileTreeReference[] | undefined {
+  public getTileTrees(view: ViewState3d, classifiedModelId: Id64String): TileTreeReference[] | undefined {
+    if (this.settings.mode == PlanarClipMaskMode.HigherPriorityModels) {
+      const viewTrees = new Array<TileTreeReference>();
+      view.forEachTileTreeRef((ref) => {
+        const tree = ref.treeOwner.load();
+        if (tree && tree.modelId !== classifiedModelId && !tree.isContentUnbounded)
+          viewTrees.push(ref);
+      });
+      return viewTrees;
+    }
+
     if (!this._tileTreeRefs) {
       this._tileTreeRefs = new Array<TileTreeReference>();
       if (this._modelIds) {
         for (const modelId of this._modelIds) {
-          const model = iModel.models.getLoaded(modelId);
+          const model = view.iModel.models.getLoaded(modelId);
           assert(model !== undefined);   // Models should be loaded by RealitModelTileTree
           if (model?.asGeometricModel)
             this._tileTreeRefs.push(createMaskTreeReference(model.asGeometricModel));
@@ -42,6 +52,9 @@ export class PlanarClipMaskState {
 
   public static create(settings: PlanarClipMaskSettings): PlanarClipMaskState {
     return new PlanarClipMaskState(settings, settings.modelIds ? CompressedId64Set.decompressSet(settings.modelIds) : undefined);
+  }
+  public static fromJSON(props: PlanarClipMaskProps): PlanarClipMaskState {
+    return this.create(PlanarClipMaskSettings.fromJSON(props));
   }
   public discloseTileTrees(trees: TileTreeSet): void {
     if (this._tileTreeRefs)

@@ -1160,6 +1160,7 @@ export abstract class Viewport implements IDisposable {
     removals.push(settings.onMonochromeColorChanged.addListener(displayStyleChanged));
     removals.push(settings.onMonochromeModeChanged.addListener(displayStyleChanged));
     removals.push(settings.onClipStyleChanged.addListener(styleAndOverridesChanged));
+    removals.push(settings.onPlanarClipMaskOverridesChanged.addListener(displayStyleChanged));
 
     const analysisChanged = () => {
       this._changeFlags.setDisplayStyle();

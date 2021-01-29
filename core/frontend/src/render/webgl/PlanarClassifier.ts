@@ -451,7 +451,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
 
     this._width = requiredWidth;
     this._height = requiredHeight;
-    const maskTrees = this._planarClipMask?.getTileTrees(context.viewport.iModel);
+    const maskTrees = this._planarClipMask?.getTileTrees(viewState, target.modelId);
     if (!maskTrees && !this._classifierTreeRef)
       return;
 

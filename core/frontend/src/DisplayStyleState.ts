@@ -63,6 +63,11 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
       if (styles.scheduleScript)
         this._scheduleScript = RenderScheduleState.Script.fromJSON(this.id, styles.scheduleScript);
+
+      if (styles.planarClipOvr)
+        for (const planarClipOvr of styles.planarClipOvr)
+          if (Id64.isValid(planarClipOvr.modelId))
+            this._attachedRealityModelPlanarClipMasks.set(planarClipOvr.modelId, PlanarClipMaskState.fromJSON(planarClipOvr));
     }
   }
 
@@ -413,7 +418,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       const model = this.iModel.models.getLoaded(modelIdOrIndex)?.asSpatialModel;
       if (model?.isRealityModel) {
         this.settings.overrideModelPlanarClipMask(modelIdOrIndex, mask);
-        this._attachedRealityModelPlanarClipMasks.set(modelIdOrIndex, maskState)
         return true;
       } else
         return false;
@@ -818,6 +822,13 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
     this.settings.onBackgroundMapChanged.addListener((mapSettings: BackgroundMapSettings) => {
       this._backgroundMap.settings = this._overlayMap.settings = this._backgroundDrapeMap.settings = mapSettings;
+    });
+
+    this.settings.onPlanarClipMaskOverridesChanged.addListener((id: Id64String, newSettings: PlanarClipMaskSettings | undefined) => {
+      if (newSettings)
+        this._attachedRealityModelPlanarClipMasks.set(id, PlanarClipMaskState.create(newSettings));
+      else
+        this._attachedRealityModelPlanarClipMasks.delete(id);
     });
 
     // ###TODO contextRealityModels are a bit of a mess.
