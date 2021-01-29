@@ -49,8 +49,7 @@ export function MessageRenderer(props: MessageRendererProps) {
         return;
       }
       const children = Array.from(parent.children);
-      for (let i = 0; i < children.length; i++){
-        let child = children[i];
+      for (const child of children){
         if (child.hasAttribute("target") && (child as HTMLAnchorElement).target === "_blank") {
           hasAnchors = true;
           validAnchors = isAnchorValid(child as HTMLAnchorElement);
@@ -83,7 +82,8 @@ export function MessageRenderer(props: MessageRendererProps) {
       sanitizedHtml = sanitizer(props.message.outerHTML);
     }
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention
+    // we can safely disable jam3/no-sanitizer-with-danger as we are sanitizing above
+    // eslint-disable-next-line @typescript-eslint/naming-convention, jam3/no-sanitizer-with-danger
     messageNode = <OutElement className={props.className} dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />;
   } else {
     /* istanbul ignore else */

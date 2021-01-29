@@ -85,5 +85,5 @@ describe("MessageRenderer", () => {
       outerContainer.appendChild(innerContainer);
       shallow(<MessageRenderer message={outerContainer} />).should.matchSnapshot();
     });
-  })
+  });
 });
