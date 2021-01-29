@@ -15,8 +15,8 @@ import {
   GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError,
   IModelReadRpcInterface, IModelStatus, IModelWriteRpcInterface, mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps,
   ModelProps, ModelQueryParams, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager, SnapRequestProps,
-  SnapResponseProps, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, StandaloneOpenOptions, ThumbnailProps, ViewDefinitionProps,
-  ViewQueryParams, ViewStateLoadProps,
+  SnapResponseProps, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, StandaloneOpenOptions, TextureLoadProps, ThumbnailProps,
+  ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps,
 } from "@bentley/imodeljs-common";
 import { BackgroundMapLocation } from "./BackgroundMapGeometry";
 import { BriefcaseConnection, LocalBriefcaseConnection, RemoteBriefcaseConnection } from "./BriefcaseConnection";

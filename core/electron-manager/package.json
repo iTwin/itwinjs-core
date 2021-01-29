@@ -33,7 +33,7 @@
     "@bentley/bentleyjs-core": "^2.12.0-dev.16",
     "@bentley/imodeljs-common": "^2.12.0-dev.16",
     "@bentley/imodeljs-frontend": "^2.12.0-dev.16",
-    "@bentley/imodeljs-backend": "^2.12.0-dev.16,
+    "@bentley/imodeljs-backend": "^2.12.0-dev.16",
     "@bentley/itwin-client": "^2.12.0-dev.16",
     "electron": "^11.1.0"
   },

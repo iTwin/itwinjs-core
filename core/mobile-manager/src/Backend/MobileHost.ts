@@ -36,21 +36,21 @@ export interface DownloadTask {
   toForeground: () => boolean;
 }
 
-class MobileDeviceRpcImpl {
-  public getOrientation?: () => Orientation;
-  public getBatteryState?: () => BatteryState;
-  public getBatteryLevel?: () => number;
-  public createDownloadTask?: (downloadUrl: string, isBackground: boolean, downloadTo: string, completion: MobileCompletionCallback, progress?: MobileProgressCallback) => number;
-  public cancelDownloadTask?: (cancelId: number) => boolean;
-  public getDownloadTasks?: () => DownloadTask[];
-  public resumeDownloadInForeground?: (requestId: number) => boolean;
-  public resumeDownloadInBackground?: (requestId: number) => boolean;
-  public reconnect?: (connection: number) => void;
-  public authSignIn?: (ctx: ClientRequestContext, callback: (err?: string) => void) => void;
-  public authSignOut?: (ctx: ClientRequestContext, callback: (err?: string) => void) => void;
-  public authGetAccessToken?: (ctx: ClientRequestContext, callback: (accessToken?: string, err?: string) => void) => void;
-  public authInit?: (ctx: ClientRequestContext, settings: MobileDeviceAuthSettings, callback: (err?: string) => void) => void;
-  public authStateChanged?: (accessToken?: string, err?: string) => void;
+export abstract class MobileDevice {
+  public abstract getOrientation(): Orientation;
+  public abstract getBatteryState(): BatteryState;
+  public abstract getBatteryLevel(): number;
+  public abstract createDownloadTask(downloadUrl: string, isBackground: boolean, downloadTo: string, completion: MobileCompletionCallback, progress?: MobileProgressCallback): number;
+  public abstract cancelDownloadTask(cancelId: number): boolean;
+  public abstract getDownloadTasks(): DownloadTask[];
+  public abstract resumeDownloadInForeground(requestId: number): boolean;
+  public abstract resumeDownloadInBackground(requestId: number): boolean;
+  public abstract reconnect(connection: number): void;
+  public abstract authSignIn(ctx: ClientRequestContext, callback: (err?: string) => void): void;
+  public abstract authSignOut(ctx: ClientRequestContext, callback: (err?: string) => void): void;
+  public abstract authGetAccessToken(ctx: ClientRequestContext, callback: (accessToken?: string, err?: string) => void): void;
+  public abstract authInit(ctx: ClientRequestContext, settings: MobileDeviceAuthSettings, callback: (err?: string) => void): void;
+  public abstract authStateChanged(accessToken?: string, err?: string): void;
 }
 
 export class MobileHost {

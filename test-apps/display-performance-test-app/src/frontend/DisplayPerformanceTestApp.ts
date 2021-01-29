@@ -5,14 +5,15 @@
 import * as path from "path";
 import { ClientRequestContext, Id64, Id64Arg, Id64String, isElectronRenderer, OpenMode, StopWatch } from "@bentley/bentleyjs-core";
 import { Project } from "@bentley/context-registry-client";
+import { ElectronApp } from "@bentley/electron-manager/lib/ElectronApp";
 import {
   BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration, FrontendAuthorizationClient,
 } from "@bentley/frontend-authorization-client";
 import { HubIModel } from "@bentley/imodelhub-client";
 import {
   BackgroundMapProps, BackgroundMapType, BentleyCloudRpcManager, ColorDef, DesktopAuthorizationClientConfiguration, DisplayStyleProps,
-  FeatureAppearance, FeatureAppearanceProps, Hilite, IModelReadRpcInterface, IModelTileRpcInterface, MobileRpcConfiguration, MobileRpcManager,
-  RenderMode, RpcConfiguration, SnapshotIModelRpcInterface, ViewDefinitionProps,
+  FeatureAppearance, FeatureAppearanceProps, Hilite, IModelReadRpcInterface, IModelTileRpcInterface, RenderMode, RpcConfiguration,
+  SnapshotIModelRpcInterface, ViewDefinitionProps,
 } from "@bentley/imodeljs-common";
 import {
   AuthorizedFrontendRequestContext, DesktopAuthorizationClient, DisplayStyle3dState, DisplayStyleState, EntityState, FeatureOverrideProvider,
@@ -26,7 +27,6 @@ import { ProjectShareClient, ProjectShareFile, ProjectShareFileQuery, ProjectSha
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { initializeIModelHub } from "./ConnectEnv";
 import { IModelApi } from "./IModelApi";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronApp";
 
 let curRenderOpts: RenderSystem.Options = {}; // Keep track of the current render options (disabled webgl extensions and enableOptimizedSurfaceShaders flag)
 let curTileProps: TileAdmin.Props = {}; // Keep track of whether or not instancing has been enabled

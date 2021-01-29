@@ -22,8 +22,8 @@ import {
   IModelNotFoundResponse, IModelProps, IModelRpcProps, IModelStatus, IModelTileTreeProps, IModelVersion, LocalBriefcaseProps,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions,
   PropertyCallback, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, SchemaState, SheetProps, SnapRequestProps,
-  SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, StandaloneOpenOptions, ThumbnailProps, UpgradeOptions, ViewDefinitionProps,
-  ViewQueryParams, ViewStateLoadProps, ViewStateProps,
+  SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, StandaloneOpenOptions, TextureLoadProps, ThumbnailProps, UpgradeOptions,
+  ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
