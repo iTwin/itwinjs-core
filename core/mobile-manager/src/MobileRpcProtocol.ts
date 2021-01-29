@@ -7,13 +7,13 @@
  */
 
 import { BentleyStatus } from "@bentley/bentleyjs-core";
-import { IModelError } from "../../IModelError";
-import { IpcWebSocket } from "../../ipc/IpcWebSocket";
-import { RpcEndpoint } from "../core/RpcConstants";
-import { RpcSerializedValue } from "../core/RpcMarshaling";
-import { RpcProtocol, RpcRequestFulfillment, SerializedRpcRequest } from "../core/RpcProtocol";
-import { RpcPushChannel, RpcPushConnection } from "../core/RpcPush";
-import { RpcRequest } from "../core/RpcRequest";
+import { IModelError } from "../../common/src/IModelError";
+import { IpcWebSocket } from "../../common/src/ipc/IpcWebSocket";
+import { RpcEndpoint } from "../../common/src/rpc/core/RpcConstants";
+import { RpcSerializedValue } from "../../common/src/rpc/core/RpcMarshaling";
+import { RpcProtocol, RpcRequestFulfillment, SerializedRpcRequest } from "../../common/src/rpc/core/RpcProtocol";
+import { RpcPushChannel, RpcPushConnection } from "../../common/src/rpc/core/RpcPush";
+import { RpcRequest } from "../../common/src/rpc/core/RpcRequest";
 import { MobileIpcTransport } from "./MobileIpc";
 import { MobilePushConnection, MobilePushTransport } from "./MobilePush";
 import { MobileRpcConfiguration } from "./MobileRpcManager";

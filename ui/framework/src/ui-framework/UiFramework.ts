@@ -9,7 +9,6 @@
 import { Store } from "redux";
 import { GuidString, Logger } from "@bentley/bentleyjs-core";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { MobileRpcConfiguration } from "@bentley/imodeljs-common";
 import { AuthorizedFrontendRequestContext, IModelApp, IModelConnection, SnapMode, ViewState } from "@bentley/imodeljs-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { AccessToken, UserInfo } from "@bentley/itwin-client";
@@ -40,19 +39,19 @@ import * as keyinPaletteTools from "./tools/KeyinPaletteTools";
 
 /** UiVisibility Event Args interface.
  * @public
- */
+ */
 export interface UiVisibilityEventArgs {
   visible: boolean;
 }
 
 /** UiVisibility Event class.
  * @public
- */
+ */
 export class UiVisibilityChangedEvent extends UiEvent<UiVisibilityEventArgs> { }
 
 /** FrameworkVersion Changed Event Args interface.
  * @internal
- */
+ */
 export interface FrameworkVersionChangedEventArgs {
   oldVersion: string;
   version: string;
@@ -60,7 +59,7 @@ export interface FrameworkVersionChangedEventArgs {
 
 /** FrameworkVersion Changed Event class.
  * @internal
- */
+ */
 export class FrameworkVersionChangedEvent extends UiEvent<FrameworkVersionChangedEventArgs> { }
 
 /** TrackingTime time argument used by our feature tracking manager as an option argument to the TelemetryClient
@@ -371,7 +370,7 @@ export class UiFramework {
   /** @beta */
   public static getUiSettings(): UiSettings {
     if (undefined === UiFramework._uiSettings)
-      UiFramework._uiSettings= new LocalUiSettings();
+      UiFramework._uiSettings = new LocalUiSettings();
     return UiFramework._uiSettings;
   }
 
@@ -457,8 +456,6 @@ export class UiFramework {
       mobile = true;
     } else /* istanbul ignore next */ if (/Mobi|iPad|iPhone|iPod/i.test(navigator.userAgent)) {
       mobile = true;
-    } else {
-      mobile = MobileRpcConfiguration.isMobileFrontend;
     }
     return mobile;
   }

@@ -8,31 +8,7 @@
 
 import { BeEvent, BriefcaseStatus, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import { AccessToken, CancelRequest, DownloadFailed, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
-
-export enum Orientation {
-  Unknown = 0,
-  Portrait = 0x1,
-  PortraitUpsideDown = 0x2,
-  LandscapeLeft = 0x4,
-  LandscapeRight = 0x8,
-  FaceUp = 0x10,
-  FaceDown = 0x20,
-}
-
-export enum BatteryState {
-  Unknown = 0,
-  Unplugged = 1,
-  Charging = 2,
-  Full = 3,
-}
-
-export enum DeviceEvents {
-  MemoryWarning = "memoryWarning",
-  OrientationChanged = "orientationChanged",
-  EnterForeground = "enterForeground",
-  EnterBackground = "enterBackground",
-  WillTerminate = "willTerminate",
-}
+import { BatteryState, Orientation } from "../MobileAppProps";
 
 export type MobileCompletionCallback = (downloadUrl: string, downloadFileUrl: string, cancelled: boolean, err?: string) => void;
 export type MobileProgressCallback = (bytesWritten: number, totalBytesWritten: number, totalBytesExpectedToWrite: number) => void;
@@ -45,6 +21,7 @@ export interface MobileDeviceAuthSettings {
   scope: string;
   stateKey?: string;
 }
+
 export interface DownloadTask {
   url: string;
   downloadPath: string;
@@ -58,10 +35,8 @@ export interface DownloadTask {
   toBackground: () => boolean;
   toForeground: () => boolean;
 }
+
 class MobileDeviceRpcImpl {
-  public emit(eventName: DeviceEvents, ...args: any[]) {
-    MobileDevice.currentDevice.emit(eventName, ...args);
-  }
   public getOrientation?: () => Orientation;
   public getBatteryState?: () => BatteryState;
   public getBatteryLevel?: () => number;
@@ -78,26 +53,19 @@ class MobileDeviceRpcImpl {
   public authStateChanged?: (accessToken?: string, err?: string) => void;
 }
 
-export class MobileDevice {
-  private get _impl(): MobileDeviceRpcImpl {
-    const client = (global as any).MobileDeviceRpcImpl as MobileDeviceRpcImpl;
-    if (!client) {
-      throw new Error("MobileDeviceRpcImpl is not registered.");
-    }
-    return client;
-  }
-  private _authInitialized: boolean = false;
-  public readonly onMemoryWarning = new BeEvent();
-  public readonly onOrientationChanged = new BeEvent();
-  public readonly onEnterForeground = new BeEvent();
-  public readonly onEnterBackground = new BeEvent();
-  public readonly onWillTerminate = new BeEvent();
-  public readonly onUserStateChanged = new BeEvent<(accessToken?: string, err?: string) => void>();
+export class MobileHost {
+  private static _authInitialized: boolean = false;
+  public static readonly onMemoryWarning = new BeEvent();
+  public static readonly onOrientationChanged = new BeEvent();
+  public static readonly onEnterForeground = new BeEvent();
+  public static readonly onEnterBackground = new BeEvent();
+  public static readonly onWillTerminate = new BeEvent();
+  public static readonly onUserStateChanged = new BeEvent<(accessToken?: string, err?: string) => void>();
   /**
    * Download file
    * @internal
    */
-  public async downloadFile(downloadUrl: string, downloadTo: string, progress?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
+  public static async downloadFile(downloadUrl: string, downloadTo: string, progress?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       if (!this._impl.createDownloadTask) {
         throw new Error("Native backend did not registered downloadFile() functions");
@@ -228,12 +196,48 @@ export class MobileDevice {
       });
     });
   }
+  public async authSignIn(): Promise<void> {
+    const requestContext = ClientRequestContext.current;
+    return MobileDevice.currentDevice.signIn(requestContext);
+  }
 
-  public static readonly currentDevice = new MobileDevice();
-}
+  public async authSignOut(): Promise<void> {
+    const requestContext = ClientRequestContext.current;
+    return MobileDevice.currentDevice.signOut(requestContext);
+  }
 
-export function initialize() {
-  if ((global as any).MobileDeviceRpcImpl instanceof MobileDeviceRpcImpl)
-    return;
-  (global as any).MobileDeviceRpcImpl = new MobileDeviceRpcImpl();
+  public async authGetAccessToken(): Promise<string> {
+    const requestContext = ClientRequestContext.current;
+    const accessToken = await MobileDevice.currentDevice.getAccessToken(requestContext);
+    return JSON.stringify(accessToken);
+  }
+
+  public async authInitialize(issuer: string, config: MobileAuthorizationClientConfiguration): Promise<void> {
+    const requestContext = ClientRequestContext.current;
+    await MobileDevice.currentDevice.authInit(requestContext, {
+      issuerUrl: issuer,
+      clientId: config.clientId,
+      redirectUrl: config.redirectUri,
+      scope: config.scope,
+    });
+  }
+
+  private static _isValid: boolean = false;
+  public static get isValid() { return this._isValid; }
+
+  /**
+   * Start the backend of a native app.
+   * @param configuration
+   * @note this method calls [[IModelHost.startup]] internally.
+   */
+  public static async startup(opt?: { ipcHost?: IpcHostOptions, iModelHost?: IModelHostConfiguration }): Promise<void> {
+    if (!this.isValid) {
+      this._isValid = true;
+      MobileDevice.currentDevice.onUserStateChanged.addListener((accessToken?: string, err?: string) => {
+        const accessTokenObj = accessToken ? JSON.parse(accessToken) : {};
+        NativeHost.notifyNativeFrontend("notifyUserStateChanged", { accessToken: accessTokenObj, err });
+      });
+    }
+    await NativeHost.startup(opt);
+  }
 }

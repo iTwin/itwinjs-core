@@ -5,8 +5,7 @@
 import { assert } from "chai";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { MobileRpcConfiguration } from "@bentley/imodeljs-common";
-import { KnownTestLocations } from "../KnownTestLocations";
+import { KnownTestLocations } from "../../../../backend/src/test/KnownTestLocations";
 
 if (MobileRpcConfiguration.isMobileBackend) {
   describe.skip("IOS Platform Test", () => {

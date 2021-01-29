@@ -43,7 +43,6 @@ export enum OverriddenBy {
 export interface NativeAppNotifications {
   notifyInternetConnectivityChanged: (status: InternetConnectivityStatus) => void;
   notifyUserStateChanged: (arg: { accessToken: any, err?: string }) => void;
-  notifyMemoryWarning: () => void;
 }
 
 /**
@@ -146,27 +145,4 @@ export interface NativeAppFunctions {
    * @param _storageId string identifier of storage
    */
   storageRemoveAll: (_storageId: string) => Promise<void>;
-
-  /**
-   * Initiate a sign in on backend. This will emit an onUserStateChange() event.
-   */
-  authSignIn: () => Promise<void>;
-
-  /**
-   * Sign out the user on the backend. This will emit an onUserStateChange() event.
-   */
-  authSignOut: () => Promise<void>;
-
-  /**
-   * Get access token and perform silent refresh as needed
-   * @note returns OIDC token
-   */
-  authGetAccessToken: () => Promise<string>;
-
-  /**
-   * Initialize OIDC client
-   * @param _issuer URL for issuer.
-   * @param _config configuration for oidc client
-   */
-  authInitialize: (_issuer: string, _config: any) => Promise<void>;
 }

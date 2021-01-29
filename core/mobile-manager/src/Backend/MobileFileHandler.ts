@@ -17,7 +17,7 @@ import {
   SasUrlExpired, UserCancelledError,
 } from "@bentley/itwin-client";
 import { BackendITwinClientLoggerCategory } from "@bentley/backend-itwin-client";
-import { MobileDevice } from "./MobileDevice";
+
 const loggerCategory: string = BackendITwinClientLoggerCategory.FileHandlers;
 
 /**

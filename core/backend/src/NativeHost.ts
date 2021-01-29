@@ -9,18 +9,15 @@
 import * as path from "path";
 import { BeEvent, ClientRequestContext, Config, GuidString } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseProps, InternetConnectivityStatus, LocalBriefcaseProps, MobileAuthorizationClientConfiguration, MobileRpcConfiguration, nativeAppChannel,
-  NativeAppFunctions, NativeAppNotifications, nativeAppNotify, OverriddenBy, RequestNewBriefcaseProps, StorageValue,
+  BriefcaseProps, InternetConnectivityStatus, LocalBriefcaseProps, nativeAppChannel, NativeAppFunctions, NativeAppNotifications, nativeAppNotify,
+  OverriddenBy, RequestNewBriefcaseProps, StorageValue,
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, RequestGlobalOptions } from "@bentley/itwin-client";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { Downloads } from "./CheckpointManager";
 import { IModelHost, IModelHostConfiguration } from "./IModelHost";
 import { IpcHandler, IpcHost, IpcHostOptions } from "./IpcHost";
-import { initialize, MobileDevice } from "./MobileDevice";
 import { NativeAppStorage } from "./NativeAppStorage";
-
-initialize();
 
 /**
  * Implementation of NativeAppFunctions
@@ -123,33 +120,6 @@ class NativeAppImpl extends IpcHandler implements NativeAppFunctions {
     const storage = NativeAppStorage.find(storageId)!;
     storage.removeAll();
   }
-
-  public async authSignIn(): Promise<void> {
-    const requestContext = ClientRequestContext.current;
-    return MobileDevice.currentDevice.signIn(requestContext);
-  }
-
-  public async authSignOut(): Promise<void> {
-    const requestContext = ClientRequestContext.current;
-    return MobileDevice.currentDevice.signOut(requestContext);
-  }
-
-  public async authGetAccessToken(): Promise<string> {
-    const requestContext = ClientRequestContext.current;
-    const accessToken = await MobileDevice.currentDevice.getAccessToken(requestContext);
-    return JSON.stringify(accessToken);
-  }
-
-  public async authInitialize(issuer: string, config: MobileAuthorizationClientConfiguration): Promise<void> {
-    const requestContext = ClientRequestContext.current;
-    await MobileDevice.currentDevice.authInit(requestContext, {
-      issuerUrl: issuer,
-      clientId: config.clientId,
-      redirectUrl: config.redirectUri,
-      scope: config.scope,
-    });
-  }
-
 }
 
 /**
@@ -188,13 +158,6 @@ export class NativeHost {
     if (!this.isValid) {
       this._isValid = true;
       this.onInternetConnectivityChanged.addListener((status: InternetConnectivityStatus) => NativeHost.notifyNativeFrontend("notifyInternetConnectivityChanged", status));
-
-      if (MobileRpcConfiguration.isMobileBackend) {
-        MobileDevice.currentDevice.onUserStateChanged.addListener((accessToken?: string, err?: string) => {
-          const accessTokenObj = accessToken ? JSON.parse(accessToken) : {};
-          NativeHost.notifyNativeFrontend("notifyUserStateChanged", { accessToken: accessTokenObj, err });
-        });
-      }
     }
     await IpcHost.startup(opt);
     if (IpcHost.isValid) // for tests, we use NativeHost but don't have a frontend
@@ -205,8 +168,6 @@ export class NativeHost {
    * Shutdown native app backend. Also calls IpcAppHost.shutdown()
    */
   public static async shutdown(): Promise<void> {
-    if (!this._isValid)
-      return;
     this._isValid = false;
     this.onInternetConnectivityChanged.clear();
     await IpcHost.shutdown();

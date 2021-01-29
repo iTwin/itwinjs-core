@@ -17,7 +17,7 @@ import {
   assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, Config, Guid, GuidString, IModelStatus, isElectronMain, Logger, LogLevel,
 } from "@bentley/bentleyjs-core";
 import { IModelBankClient, IModelClient, IModelHubClient } from "@bentley/imodelhub-client";
-import { BentleyStatus, IModelError, MobileRpcConfiguration, RpcConfiguration, SerializedRpcRequest } from "@bentley/imodeljs-common";
+import { BentleyStatus, IModelError, RpcConfiguration, SerializedRpcRequest } from "@bentley/imodeljs-common";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
 import { AccessToken, AuthorizationClient, AuthorizedClientRequestContext, UrlDiscoveryClient, UserInfo } from "@bentley/itwin-client";
 import { TelemetryManager } from "@bentley/telemetry-client";
@@ -32,7 +32,6 @@ import { FunctionalSchema } from "./domains/FunctionalSchema";
 import { GenericSchema } from "./domains/GenericSchema";
 import { IElementEditor } from "./ElementEditor";
 import { IModelJsFs } from "./IModelJsFs";
-import { MobileFileHandler } from "./MobileFileHandler";
 import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
 import { Editor3dRpcImpl } from "./rpc-impl/EditorRpcImpl";
 import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
@@ -361,12 +360,9 @@ export class IModelHost {
   public static tileUploader: CloudStorageTileUploader;
 
   public static get iModelClient(): IModelClient {
-    if (!IModelHost.configuration) {
-      throw new IModelError(BentleyStatus.ERROR, "startup must be called first");
-    }
-    if (!IModelHost._imodelClient) {
-      IModelHost._imodelClient = new IModelHubClient(MobileRpcConfiguration.isMobileBackend ? new MobileFileHandler() : new AzureFileHandler());
-    }
+    if (!IModelHost._imodelClient)
+      IModelHost._imodelClient = new IModelHubClient(new AzureFileHandler());
+
     return IModelHost._imodelClient;
   }
   public static get isUsingIModelBankClient(): boolean {
@@ -396,9 +392,6 @@ export class IModelHost {
     const requestContext = new BackendRequestContext();
     requestContext.enter();
 
-    if (!MobileRpcConfiguration.isMobileBackend) {
-      this.validateNodeJsVersion();
-    }
     this.backendVersion = require("../package.json").version;
     initializeRpcBackend();
 

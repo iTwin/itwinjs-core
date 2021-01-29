@@ -68,7 +68,6 @@ export * from "./ViewRect";
 export * from "./ViewState";
 export * from "./ViewStatus";
 export * from "./oidc/DesktopAuthorizationClient";
-export * from "./oidc/MobileAuthorizationClient";
 export * from "./oidc/OidcBrowserClient";
 export * from "./extension/Extension";
 export * from "./extension/ExtensionAdmin";

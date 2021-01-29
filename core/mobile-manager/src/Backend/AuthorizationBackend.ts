@@ -10,9 +10,6 @@ import { assert, BeEvent, ClientRequestContext, Logger } from "@bentley/bentleyj
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { AccessToken, ImsAuthorizationClient } from "@bentley/itwin-client";
 import { defaultMobileAuthorizationClientExpiryBuffer, MobileAuthorizationClientConfiguration } from "@bentley/imodeljs-common";
-import { BackendRequestContext } from "../BackendRequestContext";
-import { MobileDevice } from "../MobileDevice";
-import { BackendLoggerCategory } from "../BackendLoggerCategory";
 
 const loggerCategory = BackendLoggerCategory.Authorization;
 

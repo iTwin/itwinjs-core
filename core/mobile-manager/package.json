@@ -1,7 +1,7 @@
 {
-  "name": "@bentley/electron-manager",
+  "name": "@bentley/mobile-manager",
   "version": "2.12.0-dev.10",
-  "description": "iTwin.js ElectronHost and ElectronApp",
+  "description": "iTwin.js MobileHost and MobileApp",
   "license": "MIT",
   "engines": {
     "node": ">=10.17.0 <13.0"
@@ -10,15 +10,15 @@
     "compile": "npm run build",
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/electron-manager/file.json --tsIndexFile=./ElectronHost.ts --onlyJson",
-    "extract-api": "betools extract-api --entry=ElectronHost",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/mobile-manager/file.json --tsIndexFile=./MobileHost.ts --onlyJson",
+    "extract-api": "betools extract-api --entry=MobileHost",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "",
     "cover": ""
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/electron-manager"
+    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/mobile-manager"
   },
   "keywords": [
     "Bentley",
@@ -31,11 +31,12 @@
   },
   "peerDependencies": {
     "@bentley/bentleyjs-core": "^2.12.0-dev.10",
+    "@bentley/frontend-authorization-client": "^2.12.0-dev.10",
     "@bentley/imodeljs-common": "^2.12.0-dev.10",
     "@bentley/imodeljs-frontend": "^2.12.0-dev.10",
     "@bentley/imodeljs-backend": "^2.12.0-dev.10",
     "@bentley/itwin-client": "^2.12.0-dev.10",
-    "electron": "^11.1.0"
+    "ws": "^7.2.0"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -43,6 +44,7 @@
   ],
   "devDependencies": {
     "@bentley/bentleyjs-core": "2.12.0-dev.10",
+    "@bentley/frontend-authorization-client": "2.12.0-dev.10",
     "@bentley/build-tools": "2.12.0-dev.10",
     "@bentley/eslint-plugin": "2.12.0-dev.10",
     "@bentley/imodeljs-backend": "2.12.0-dev.10",
@@ -50,10 +52,11 @@
     "@bentley/imodeljs-common": "2.12.0-dev.10",
     "@bentley/itwin-client": "2.12.0-dev.10",
     "@types/node": "10.14.1",
-    "electron": "^11.1.0",
+    "@types/ws": "^6.0.4",
     "eslint": "^6.8.0",
     "rimraf": "^3.0.2",
-    "typescript": "~3.7.4"
+    "typescript": "~3.7.4",
+    "ws": "^7.2.0"
   },
   "eslintConfig": {
     "plugins": [

@@ -9,10 +9,10 @@
 import { assert, BeEvent, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { AccessToken, ImsAuthorizationClient } from "@bentley/itwin-client";
-import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
+import { FrontendLoggerCategory } from "../../../frontend/src/FrontendLoggerCategory";
 import { defaultMobileAuthorizationClientExpiryBuffer, MobileAuthorizationClientConfiguration } from "@bentley/imodeljs-common";
-import { FrontendRequestContext } from "../FrontendRequestContext";
-import { NativeApp } from "../NativeApp";
+import { FrontendRequestContext } from "../../../frontend/src/FrontendRequestContext";
+import { NativeApp } from "../../../frontend/src/NativeApp";
 
 const loggerCategory: string = FrontendLoggerCategory.MobileAuthorizationClient;
 
