@@ -29,11 +29,11 @@ This feature is currently disabled by default. Enabling it requires the use of A
    IModelApp.startup({ tileAdmin });
 ```
 
-## Change of default behavior of `IModelDb.close()` and `IModelDb.saveChanges()`
+## Changes to [IModelDb.close]($backend) and [IModelDb.saveChanges]($backend)
 
-By default `IModelDb.close()` use to save changes. But now it does not and instead it will rollback any change since last time `IModelDb.saveChanges()` was called. Application will loose any any change made to imodel if they just called `IModelDb.close()`. Application must call `IModelDb.saveChanges()` explicitly before closing to ensure any changes made so far are committed to disk. `IModelDb.saveChanges()` also now expect to throw an exception if it fails and rollback any changes. Application code must treat exceptions as fatal an should exit afterwords. Application should not expect this to be common case and `IModelDb.saveChanges()` only fail in rare cases where there were not enough system resources to complete the operation.
+Previously, [IModelDb.close]($backend) would save any uncommitted changes to disk before closing the iModel. It no longer does so - instead, if uncommitted changes exist when the iModel is closed, they will be discarded. Applications should explicitly call either [IModelDb.saveChanges]($backend) to commit the changes or [IModelDb.abandonChanges]($backend) to discard them before calling `close`.
 
-As best practice always call `IModelDb.saveChanges()` before close if you intent to commit changes to disk or call `IModelDb.abandonChanges()` in case you do not want current change to be committed to disk. Also make sure you have try/catch around `IModelDb.saveChanges()` that quit the application without attempting to use IModelDb again. Client code must not call close()/saveChanges()/abandonChange() in catch block as the connection is already performed the rollback and is not in state where it can perform any other operation.
+In rare circumstances, [IModelDb.saveChanges]($backend) may now throw an exception. This indicates a fatal condition like exhaustion of memory or disk space. Applications should wrap calls to `saveChanges` in a `try-catch` block and handle exceptions by terminating without making further use of the iModel. In particular, they should not attempt to call `close`, `saveChanges`, or `abandonChanges` after such an exception has occurred.
 
 ## Breaking API Changes
 
