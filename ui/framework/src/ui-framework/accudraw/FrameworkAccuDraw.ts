@@ -21,11 +21,12 @@ export class FrameworkAccuDraw extends AccuDraw {
   }
 
   private handleSetFieldValueFromUiEvent = async (args: AccuDrawSetFieldValueFromUiEventArgs) => {
-    const item = this.translateToItemField(args.field);
+    const item = FrameworkAccuDraw.translateToItemField(args.field);
     return IModelApp.accuDraw.processFieldInput(item, args.stringValue, false);
   };
 
-  private translateFromItemField(item: ItemField): AccuDrawField {
+  /** @internal */
+  public static translateFromItemField(item: ItemField): AccuDrawField {
     let field: AccuDrawField;
     switch (item) {
       case ItemField.Y_Item:
@@ -48,7 +49,8 @@ export class FrameworkAccuDraw extends AccuDraw {
     return field;
   }
 
-  private translateToItemField(field: AccuDrawField): ItemField {
+  /** @internal */
+  public static translateToItemField(field: AccuDrawField): ItemField {
     let item: ItemField;
     switch (field) {
       case AccuDrawField.Y:
@@ -79,13 +81,13 @@ export class FrameworkAccuDraw extends AccuDraw {
 
   /** @internal */
   public onFieldLockChange(index: ItemField) {
-    const field = this.translateFromItemField(index);
+    const field = FrameworkAccuDraw.translateFromItemField(index);
     IModelApp.uiAdmin.accuDrawUi.setFieldLock(field, this.getFieldLock(index));
   }
 
   /** @internal */
   public onFieldValueChange(index: ItemField) {
-    const field = this.translateFromItemField(index);
+    const field = FrameworkAccuDraw.translateFromItemField(index);
     const value = this.getValueByIndex(index);
     const formattedValue = FrameworkAccuDraw.getFieldDisplayValue(index);
     IModelApp.uiAdmin.accuDrawUi.setFieldValueToUi(field, value, formattedValue);
@@ -101,7 +103,7 @@ export class FrameworkAccuDraw extends AccuDraw {
 
   /** @internal */
   public setFocusItem(index: ItemField) {
-    const field = this.translateFromItemField(index);
+    const field = FrameworkAccuDraw.translateFromItemField(index);
     IModelApp.uiAdmin.accuDrawUi.setFieldFocus(field);
   }
 

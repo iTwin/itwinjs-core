@@ -15,6 +15,7 @@ import {
   AccuDrawUiAdmin, isLetter, SpecialKey,
 } from "@bentley/ui-abstract";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
+import { FrameworkAccuDraw } from "./FrameworkAccuDraw";
 
 /** Properties for [[AccuDrawInputField]] component
  * @internal
@@ -57,6 +58,12 @@ const ForwardRefAccuDrawInput = React.forwardRef<HTMLInputElement, AccuDrawInput
     const [isFocusField, setIsFocusField] = React.useState(false);
     const inputElementRef = React.useRef<HTMLInputElement>();
     const refs = useRefs(inputElementRef, ref);  // combine ref needed for target with the forwardRef needed by the Parent when parent is a Type Editor.
+
+    React.useEffect(() => {
+      const item = FrameworkAccuDraw.translateToItemField(field);
+      const formattedValue = FrameworkAccuDraw.getFieldDisplayValue(item);
+      setStringValue(formattedValue);
+    }, [field]);
 
     const handleChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>): void => {
       const value = event.currentTarget.value;
