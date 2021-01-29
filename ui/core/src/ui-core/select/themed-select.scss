@@ -112,11 +112,11 @@
         background-color: $buic-background-active-overlay;
       }
 
-      &:hover:not(&--is-selected) {
+      &:hover:not(.react-select__option--is-selected) {
         background-color: $buic-background-hover-overlay;
       }
 
-      &--is-focused:not(&--is-selected) {
+      &--is-focused:not(.react-select__option--is-selected) {
         background-color: $buic-background-hover-overlay;
       }
 
