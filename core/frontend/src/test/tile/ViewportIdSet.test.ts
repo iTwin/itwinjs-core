@@ -77,7 +77,7 @@ describe("ViewportIdSets", () => {
 
   it("drops empty and duplicate sets", () => {
     const sets = new ViewportIdSets();
-    let set = sets.plus(1);
+    const set = sets.plus(1);
     expect(sets.length).to.equal(1);
     expect(set.length).to.equal(1);
 

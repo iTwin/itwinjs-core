@@ -91,7 +91,8 @@ export class ViewportIdSets extends SortedArray<ViewportIdSet> {
   /** Remove the specified viewport Id from all sets and remove empty and duplicate sets. */
   public drop(viewportId: number): void {
     // Remove from all sets, and delete empty sets.
-    for (let i = 0; i < this._array.length; i++) {
+    let i =0;
+    for (/* */; i < this._array.length; i++) {
       const set = this._array[i];
       set.drop(viewportId);
       if (set.length === 0)
@@ -99,7 +100,7 @@ export class ViewportIdSets extends SortedArray<ViewportIdSet> {
     }
 
     // Collapse equivalent sets.
-    let i = 0;
+    i = 0;
     for (let j = 1; j < this._array.length; /* */) {
       if (this._array[i].equals(this._array[j])) {
         this._array.splice(i, 1);
@@ -292,7 +293,7 @@ export class LRUTileList {
       assert(tile !== this._sentinel);
       tile.viewportIds = this._viewportIdSets.minus(viewportId, tile.viewportIds);
       if (undefined === tile.viewportIds)
-        this.moveBeforeSentinel(tile as Tile);
+        this.moveBeforeSentinel(tile);
       else
         prev = tile;
     }
