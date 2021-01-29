@@ -40,7 +40,7 @@ export class SpatialClassifiers {
 
   /** The currently-active classifier, if any is active.
    * @note If the `Classifier` object supplied to the setter did not originate from this `SpatialClassifier`'s list but an equivalent entry exists in the list, that entry
-   * will be set as active - **not** the object supplied to the setter.
+   * will be set as active - **not** the object supplied to the setter.#S
    */
   public get active(): SpatialClassificationProps.Classifier | undefined {
     return this._active;

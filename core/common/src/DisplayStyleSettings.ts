@@ -19,7 +19,7 @@ import { ColorDef, ColorDefProps } from "./ColorDef";
 import { DefinitionElementProps } from "./ElementProps";
 import { GroundPlaneProps } from "./GroundPlane";
 import { HiddenLine } from "./HiddenLine";
-import { FeatureAppearance, FeatureAppearanceProps, PlanarClipMask, PlanarClipMaskProps, SubCategoryOverride } from "./imodeljs-common";
+import { FeatureAppearance, FeatureAppearanceProps, PlanarClipMaskSettings, PlanarClipMaskProps, SubCategoryOverride } from "./imodeljs-common";
 import { LightSettings, LightSettingsProps } from "./LightSettings";
 import { MapImageryProps, MapImagerySettings } from "./MapImagerySettings";
 import { PlanProjectionSettings, PlanProjectionSettingsProps } from "./PlanProjectionSettings";
@@ -372,7 +372,7 @@ export class DisplayStyleSettings {
   private _monochromeMode: MonochromeMode;
   private readonly _subCategoryOverrides: Map<Id64String, SubCategoryOverride> = new Map<Id64String, SubCategoryOverride>();
   private readonly _modelAppearanceOverrides: Map<Id64String, FeatureAppearance> = new Map<Id64String, FeatureAppearance>();
-  private readonly _planarClipMaskOverrides: Map<Id64String, PlanarClipMask> = new Map<Id64String, PlanarClipMask>();
+  private readonly _planarClipMaskOverrides: Map<Id64String, PlanarClipMaskSettings> = new Map<Id64String, PlanarClipMaskSettings>();
   private readonly _excludedElements: ExcludedElements;
   private _backgroundMap: BackgroundMapSettings;
   private _mapImagery: MapImagerySettings;
@@ -518,7 +518,7 @@ export class DisplayStyleSettings {
       for (const ovrJson of ovrsArray) {
         const modelId = Id64.fromJSON(ovrJson.modelId);
         if (Id64.isValid(modelId)) {
-          const mask = PlanarClipMask.fromJSON(ovrJson);
+          const mask = PlanarClipMaskSettings.fromJSON(ovrJson);
           if (mask.anyDefined)
             this.changePlanarClipMaskOverride(modelId, false, mask);
         }
@@ -743,7 +743,7 @@ export class DisplayStyleSettings {
  * the changes are promptly visible on the screen.
  * @see [[dropModelAppearanceOverride]]
  */
-  public overrideModelPlanarClipMask(modelId: Id64String, planarClipMask: PlanarClipMask): boolean { return this.changePlanarClipMaskOverride(modelId, true, planarClipMask); }
+  public overrideModelPlanarClipMask(modelId: Id64String, planarClipMask: PlanarClipMaskSettings): boolean { return this.changePlanarClipMaskOverride(modelId, true, planarClipMask); }
 
   /** Remove any planar applied to a [[Model]] by this style.
    * @param modelId The ID of the [[Model]].
@@ -758,7 +758,7 @@ export class DisplayStyleSettings {
     * @param id The ID of the [[Model]].
     * @returns The corresponding planar clip mask, or undefined if none exist.
     */
-  public getModelPlanarClipMask(id: Id64String): PlanarClipMask | undefined {
+  public getModelPlanarClipMask(id: Id64String): PlanarClipMaskSettings | undefined {
     return this._planarClipMaskOverrides.get(id);
   }
 
@@ -1092,7 +1092,7 @@ export class DisplayStyleSettings {
     }
   }
 
-  private changePlanarClipMaskOverride(id: Id64String, updateJson: boolean, ovr?: PlanarClipMask): boolean {
+  private changePlanarClipMaskOverride(id: Id64String, updateJson: boolean, ovr?: PlanarClipMaskSettings): boolean {
     if (undefined === ovr) {
       // undefined => drop the override if present.
       this._planarClipMaskOverrides.delete(id);

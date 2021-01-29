@@ -8,13 +8,14 @@
 
 import { assert, compareBooleans, compareNumbers, compareStrings, Id64String } from "@bentley/bentleyjs-core";
 import { Angle, AngleSweep, Constant, Ellipsoid, EllipsoidPatch, Point3d, Range1d, Range3d, Ray3d, Transform, Vector3d, XYZProps } from "@bentley/geometry-core";
-import { BackgroundMapSettings, BaseLayerSettings, Cartographic, ColorDef, GeoCoordStatus, GlobeMode, MapLayerSettings, PlanarClipMask, TerrainHeightOriginMode, TerrainProviderName } from "@bentley/imodeljs-common";
+import { BackgroundMapSettings, BaseLayerSettings, Cartographic, ColorDef, GeoCoordStatus, GlobeMode, MapLayerSettings, PlanarClipMaskSettings, TerrainHeightOriginMode, TerrainProviderName } from "@bentley/imodeljs-common";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
 import { BackgroundMapGeometry } from "../../BackgroundMapGeometry";
 import { GeoConverter } from "../../GeoServices";
 import { HitDetail } from "../../HitDetail";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
+import { PlanarClipMaskState } from "../../PlanarClipMaskState";
 import { FeatureSymbology } from "../../render/FeatureSymbology";
 import { SceneContext } from "../../ViewContext";
 import { ScreenViewport } from "../../Viewport";
@@ -479,6 +480,7 @@ export class MapTileTreeReference extends TileTreeReference {
   private readonly _imageryTrees: ImageryMapLayerTreeReference[] = new Array<ImageryMapLayerTreeReference>();
   private _baseTransparent = false;
   private _symbologyOverrides = new FeatureSymbology.Overrides(); /** Empty overrides so that maps ignore the view overrides (isolate etc.) */
+  private _planarClipMask?: PlanarClipMaskState;
 
   public constructor(settings: BackgroundMapSettings, private _baseLayerSettings: BaseLayerSettings | undefined, private _layerSettings: MapLayerSettings[], iModel: IModelConnection, public isOverlay: boolean, private _isDrape: boolean, private _overrideSkirtDisplay?: CheckSkirtDisplayOverride) {
     super();
@@ -502,6 +504,9 @@ export class MapTileTreeReference extends TileTreeReference {
     for (let i = 0; i < this._layerSettings.length; i++)
       if (undefined !== (tree = IModelApp.mapLayerFormatRegistry.createImageryMapLayerTree(this._layerSettings[i], i + 1, iModel)))
         this._imageryTrees.push(tree);
+
+    if (this._settings.planarClipMask)
+      this._planarClipMask = PlanarClipMaskState.create(this._settings.planarClipMask)
   }
   public get isGlobal() { return true; }
   public get baseColor(): ColorDef | undefined { return this._baseColor; }
@@ -511,6 +516,7 @@ export class MapTileTreeReference extends TileTreeReference {
   public get settings(): BackgroundMapSettings { return this._settings; }
   public set settings(settings: BackgroundMapSettings) {
     this._settings = settings;
+    this._planarClipMask = settings.planarClipMask ? PlanarClipMaskState.create(settings.planarClipMask) : undefined;
   }
   public setBaseLayerSettings(baseLayerSettings: BaseLayerSettings) {
     assert(!this.isOverlay);
@@ -639,8 +645,8 @@ export class MapTileTreeReference extends TileTreeReference {
       return;     // Not loaded yet.
 
 
-    if (this._settings.planarClipMask.anyDefined)
-      context.addPlanarClassifier(tree.modelId, undefined, this.settings.planarClipMask);
+    if (this._planarClipMask)
+      context.addPlanarClassifier(tree.modelId, undefined, this._planarClipMask);
 
     const args = this.createDrawArgs(context);
     if (undefined !== args)
@@ -668,6 +674,8 @@ export class MapTileTreeReference extends TileTreeReference {
   public discloseTileTrees(trees: TileTreeSet): void {
     super.discloseTileTrees(trees);
     this._imageryTrees.forEach((imageryTree) => trees.disclose(imageryTree));
+    if (this._planarClipMask)
+      this._planarClipMask.discloseTileTrees(trees);
   }
   public imageryTreeFromTreeModelIds(mapTreeModelId: Id64String, layerTreeModelId: Id64String): ImageryMapLayerTreeReference | undefined {
     const tree = this.treeOwner.tileTree as MapTileTree;

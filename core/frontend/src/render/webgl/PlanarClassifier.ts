@@ -9,7 +9,8 @@
 
 import { assert, CompressedId64Set, dispose, Id64String } from "@bentley/bentleyjs-core";
 import { Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Vector3d } from "@bentley/geometry-core";
-import { ColorDef, Frustum, FrustumPlanes, PlanarClipMask, PlanarClipMaskMode, RenderMode, RenderTexture, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
+import { ColorDef, Frustum, FrustumPlanes, PlanarClipMaskSettings, PlanarClipMaskMode, RenderMode, RenderTexture, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
+import { PlanarClipMaskState } from "../../PlanarClipMaskState";
 import { GraphicsCollectorDrawArgs, SpatialClassifierTileTreeReference, TileTreeReference } from "../../tile/internal";
 import { SceneContext } from "../../ViewContext";
 import { ViewState, ViewState3d } from "../../ViewState";
@@ -321,7 +322,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   private readonly _renderCommands: RenderCommands;
   private readonly _branchStack = new BranchStack();
   private readonly _batchState: BatchState;
-  private _planarClipMask?: PlanarClipMask;
+  private _planarClipMask?: PlanarClipMaskState;
   private _classifierTreeRef?: TileTreeReference;
   private _planarClipMaskOverrides?: FeatureSymbology.Overrides;
   private _contentMode: PlanarClassifierContent = PlanarClassifierContent.None;
@@ -426,7 +427,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
       this.pushBatches(batchState, this._classifierGraphics);
   }
 
-  public setSource(classifierTreeRef?: SpatialClassifierTileTreeReference, planarClipMask?: PlanarClipMask) {
+  public setSource(classifierTreeRef?: SpatialClassifierTileTreeReference, planarClipMask?: PlanarClipMaskState) {
     this._classifierTreeRef = classifierTreeRef;
     this._classifier = classifierTreeRef?.activeClassifier;
     this._planarClipMask = planarClipMask;
@@ -450,9 +451,13 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
 
     this._width = requiredWidth;
     this._height = requiredHeight;
-    const maskTrees: TileTreeReference[] = [];
-    this.getPlanarClipMaskTileTrees(maskTrees, context.viewport.view, target.modelId);
-    const allTrees = this._classifierTreeRef ? maskTrees.concat([this._classifierTreeRef]) : maskTrees;
+    const maskTrees = this._planarClipMask?.getTileTrees(context.viewport.iModel);
+    if (!maskTrees && !this._classifierTreeRef)
+      return;
+
+    const allTrees = maskTrees ? maskTrees.slice() : new Array<TileTreeReference>();
+    if (this._classifierTreeRef)
+      allTrees.push(this._classifierTreeRef);
 
     const projection = PlanarTextureProjection.computePlanarTextureProjection(this._plane, context, target, allTrees, viewState, this._width, this._height);
     if (!projection.textureFrustum || !projection.projectionMatrix || !projection.worldToViewMap)
@@ -474,7 +479,8 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     if (this._classifierTreeRef)
       drawTree(this._classifierTreeRef, this._classifierGraphics);
 
-    maskTrees.forEach((maskTree) => drawTree(maskTree, this._maskGraphics));
+    if (maskTrees)
+      maskTrees.forEach((maskTree) => drawTree(maskTree, this._maskGraphics));
 
     // Shader behaves slightly differently when classifying surfaces vs point clouds.
     this._isClassifyingPointCloud = target.isPointCloud;
@@ -618,54 +624,19 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     system.context.viewport(0, 0, target.viewRect.width, target.viewRect.height);
   }
 
-  private getPlanarClipMaskTileTrees(trees: TileTreeReference[], view: ViewState, classifiedModelId: Id64String): void {
-    if (undefined === this._planarClipMask)
-      return;
-    const viewTrees = new Map<Id64String, TileTreeReference>();
-    view.forEachTileTreeRef((ref) => {
-      const tree = ref.treeOwner.load();
-      if (tree && tree.modelId !== classifiedModelId && !tree.isContentUnbounded)
-        viewTrees.set(tree.modelId, ref);
-    });
-    switch (this._planarClipMask.mode) {
-      case PlanarClipMaskMode.HigherPriorityModels:
-        viewTrees.forEach((tree) => trees.push(tree));
-        break;
-
-      case PlanarClipMaskMode.None:
-        break;
-
-      default:
-        if (this._planarClipMask.modelIds) {
-          const modelIdSet = CompressedId64Set.decompressSet(this._planarClipMask.modelIds);
-          for (const modelId of modelIdSet) {
-            const model = view.iModel.models.getLoaded(modelId);
-            if (model?.asGeometricModel) {
-              const treeRef = model.asGeometricModel.createTileTreeReference(view);
-              const tree = treeRef.treeOwner.load();
-              if (tree)
-                trees.push(treeRef);
-            }
-          }
-        } else {
-          viewTrees.forEach((tree) => trees.push(tree));
-        }
-    }
-  }
-
   private getPlanarClipMaskSymbologyOverrides(): FeatureSymbology.Overrides | undefined {
-    if (!this._planarClipMask || !this._planarClipMask.subCategoryOrElementIds)
+    if (!this._planarClipMask || !this._planarClipMask.settings.subCategoryOrElementIds)
       return undefined;
 
-    switch (this._planarClipMask.mode) {
+    switch (this._planarClipMask.settings.mode) {
       case PlanarClipMaskMode.Elements: {
         const overrides = new FeatureSymbology.Overrides();
-        overrides.setAlwaysDrawnSet(CompressedId64Set.decompressSet(this._planarClipMask.subCategoryOrElementIds), true);
+        overrides.setAlwaysDrawnSet(CompressedId64Set.decompressSet(this._planarClipMask.settings.subCategoryOrElementIds), true);
         return overrides;
       }
       case PlanarClipMaskMode.SubCategories: {
         const overrides = new FeatureSymbology.Overrides();
-        const subCateoryIds = CompressedId64Set.decompressArray(this._planarClipMask.subCategoryOrElementIds)
+        const subCateoryIds = CompressedId64Set.decompressArray(this._planarClipMask.settings.subCategoryOrElementIds)
         for (const subCategoryId of subCateoryIds)
           overrides.setVisibleSubCategory(subCategoryId);
         return overrides;

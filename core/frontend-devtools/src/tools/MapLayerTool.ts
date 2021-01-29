@@ -7,9 +7,8 @@
  * @module Tools
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
-import { ColorDef, PlanarClipMask, PlanarClipMaskMode, PlanarClipMaskProps } from "@bentley/imodeljs-common";
-import { IModelApp, MapLayerSource, MapLayerSources, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority, ScreenViewport, Tool, WmsUtilities } from "@bentley/imodeljs-frontend";
+import { ColorDef } from "@bentley/imodeljs-common";
+import { IModelApp, MapLayerSource, MapLayerSources, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority, Tool, WmsUtilities } from "@bentley/imodeljs-frontend";
 import { parseToggle } from "./parseToggle";
 
 /** Base class for attaching map layer tool.

@@ -6,7 +6,7 @@
  * @module DisplayStyles
  */
 
-import { PlanarClipMask, PlanarClipMaskProps } from "./PlanarClipMask";
+import { PlanarClipMaskSettings, PlanarClipMaskProps } from "./PlanarClipMask";
 import { TerrainProps, TerrainSettings } from "./TerrainSettings";
 
 /** Describes the type of background map displayed by a [[DisplayStyle]]
@@ -118,7 +118,7 @@ export class BackgroundMapSettings {
   /** Globe display mode. */
   public readonly globeMode: GlobeMode;
   /** Planar Mask - used to mask the background map to avoid overlapping with other geometry */
-  public readonly planarClipMask: PlanarClipMask;
+  public readonly planarClipMask: PlanarClipMaskSettings;
   private readonly _locatable: boolean;
   /** If false, the map will be treated as non-locatable - i.e., tools will not interact with it. This is particularly useful when the map is transparent - it
    * allows the user to select elements that are behind the map.
@@ -147,7 +147,7 @@ export class BackgroundMapSettings {
     this.terrainSettings = TerrainSettings.fromJSON(props.terrainSettings);
     this.globeMode = normalizeGlobeMode(props.globeMode);
     this._locatable = true !== props.nonLocatable;
-    this.planarClipMask = PlanarClipMask.fromJSON(props.planarClipMask);
+    this.planarClipMask = PlanarClipMaskSettings.fromJSON(props.planarClipMask);
   }
 
   /** Construct from JSON, performing validation and applying default values for undefined fields. */

@@ -39,7 +39,6 @@ class ClassifierTreeSupplier implements TileTreeSupplier {
     loadTree: async () => undefined,
     iModel: undefined as unknown as IModelConnection,
   };
-
   public compareTileTreeIds(lhs: ClassifierTreeId, rhs: ClassifierTreeId): number {
     return compareIds(lhs, rhs);
   }
@@ -125,7 +124,11 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
   }
   public get isPlanar() { return BatchType.PlanarClassifier === this._id.type; }
 
+  // Add volume classifiers to scene (planar classifiers are added seperately.)
   public addToScene(context: SceneContext): void {
+    if (this.isPlanar)
+      return;
+
     const classifiedTree = this._classifiedTree.treeOwner.load();
     if (undefined === classifiedTree)
       return;
@@ -133,14 +136,13 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
     const classifier = this._classifiers.active;
     if (undefined === classifier)
       return;
+
     const classifierTree = this.treeOwner.load();
     if (undefined === classifierTree)
       return;
 
-    if (!this.isPlanar) {
-      context.setVolumeClassifier(classifier, classifiedTree.modelId);
-      super.addToScene(context);
-    }
+    context.setVolumeClassifier(classifier, classifiedTree.modelId);
+    super.addToScene(context);
   }
 
   private createId(classifiers: SpatialClassifiers, source: ViewState | DisplayStyleState): ClassifierTreeId {

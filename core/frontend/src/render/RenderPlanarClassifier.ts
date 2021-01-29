@@ -8,7 +8,8 @@
 
 import { Id64String, IDisposable } from "@bentley/bentleyjs-core";
 import { Transform } from "@bentley/geometry-core";
-import { PlanarClipMask } from "@bentley/imodeljs-common";
+import { PlanarClipMaskSettings } from "@bentley/imodeljs-common";
+import { PlanarClipMaskState } from "../PlanarClipMaskState";
 import { SpatialClassifierTileTreeReference, Tile } from "../tile/internal";
 import { SceneContext } from "../ViewContext";
 
@@ -21,7 +22,7 @@ export interface PlanarClassifierTarget { modelId: Id64String, tiles: Tile[], lo
 export abstract class RenderPlanarClassifier implements IDisposable {
   public abstract dispose(): void;
   public abstract collectGraphics(context: SceneContext, target: PlanarClassifierTarget): void;
-  public abstract setSource(classifierTreeRef?: SpatialClassifierTileTreeReference, planarClipMask?: PlanarClipMask): void;
+  public abstract setSource(classifierTreeRef?: SpatialClassifierTileTreeReference, planarClipMask?: PlanarClipMaskState): void;
 }
 
 /** @internal */

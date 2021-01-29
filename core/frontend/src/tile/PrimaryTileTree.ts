@@ -356,6 +356,39 @@ export function createPrimaryTileTreeReference(view: ViewState, model: Geometric
   return createTreeRef(view, model, undefined);
 }
 
+
+class MaskTreeReference extends TileTreeReference {
+  protected _id: PrimaryTreeId;
+  private _owner: TileTreeOwner;
+  public readonly model: GeometricModelState;
+  public get castsShadows() { return false; }
+  public constructor(model: GeometricModelState) {
+    super();
+    this.model = model;
+    this._id = { modelId: model.id, is3d: model.is3d, treeId: this.createTreeId(), isPlanProjection: false };
+    this._owner = primaryTreeSupplier.getOwner(this._id, model.iModel);
+  }
+
+  public get treeOwner(): TileTreeOwner {
+    const newId = this.createTreeId();
+    if (0 !== compareIModelTileTreeIds(newId, this._id.treeId)) {
+      this._id = { modelId: this._id.modelId, is3d: this._id.is3d, treeId: newId, isPlanProjection: false };
+      this._owner = primaryTreeSupplier.getOwner(this._id, this.model.iModel);
+    }
+
+    return this._owner;
+  }
+  protected createTreeId(): PrimaryTileTreeId {
+    return { type: BatchType.Primary, edgesRequired: false, };
+  }
+}
+
+
+/** @internal */
+export function createMaskTreeReference(model: GeometricModelState): TileTreeReference {
+  return new MaskTreeReference(model);
+}
+
 /** Provides [[TileTreeReference]]s for the loaded models present in a [[SpatialViewState]]'s [[ModelSelectorState]].
  * @internal
  */
@@ -392,7 +425,7 @@ class SpatialModelRefs implements Iterable<TileTreeReference> {
     this._isPrimaryRef = this._modelRef instanceof PrimaryTreeReference;
   }
 
-  public * [Symbol.iterator](): Iterator<TileTreeReference> {
+  public *[Symbol.iterator](): Iterator<TileTreeReference> {
     yield this._modelRef;
     for (const animated of this._animatedRefs)
       yield animated;
@@ -457,7 +490,7 @@ class SpatialRefs implements SpatialTileTreeReferences {
     this._allLoaded = false;
   }
 
-  public * [Symbol.iterator](): Iterator<TileTreeReference> {
+  public *[Symbol.iterator](): Iterator<TileTreeReference> {
     this.load();
     for (const modelRef of this._refs.values())
       for (const ref of modelRef)

@@ -17,7 +17,7 @@ import {
 import {
   AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, ClipStyle, ColorDef, ContextRealityModelProps, DisplayStyleSettingsProps, Easing,
   ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer, Interpolation, LightSettings, NpcCenter, Placement2d,
-  Placement2dProps, Placement3d, Placement3dProps, PlacementProps, PlanarClipMask, SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, Tweens, ViewFlags,
+  Placement2dProps, Placement3d, Placement3dProps, PlacementProps, PlanarClipMaskSettings, SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, Tweens, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
@@ -57,6 +57,7 @@ import { GlobeAnimator } from "./GlobeAnimator";
 import { FrustumAnimator } from "./FrustumAnimator";
 import { PerModelCategoryVisibility } from "./PerModelCategoryVisibility";
 import { linePlaneIntersect } from "./LinePlaneIntersect";
+import { PlanarClipMaskState } from "./PlanarClipMaskState";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -738,7 +739,7 @@ export abstract class Viewport implements IDisposable {
   * @returns true if clip masks are successfully applied.
   * @beta
   */
-  public overrideRealityModelPlanarClipMask(modelIdOrIndex: Id64String | number, planarClipMask: PlanarClipMask): boolean {
+  public overrideRealityModelPlanarClipMask(modelIdOrIndex: Id64String | number, planarClipMask: PlanarClipMaskSettings): boolean {
     const changed = this.displayStyle.overrideRealityModelPlanarClipMask(modelIdOrIndex, planarClipMask);
     if (changed) {
       this._changeFlags.setDisplayStyle();
@@ -767,7 +768,7 @@ export abstract class Viewport implements IDisposable {
    * @see [[overrideRealityModelAppearance]]
    * @beta
    */
-  public getRealityModelPlanarClipMask(modelIdOrIndex: Id64String | number): PlanarClipMask | undefined {
+  public getRealityModelPlanarClipMask(modelIdOrIndex: Id64String | number): PlanarClipMaskState | undefined {
     return this.displayStyle.getRealityModelPlanarClipMask(modelIdOrIndex);
   }
   /** @beta

@@ -7,13 +7,14 @@
  */
 import { GuidString, Id64String } from "@bentley/bentleyjs-core";
 import { Angle } from "@bentley/geometry-core";
-import { CartographicRange, ContextRealityModelProps, FeatureAppearance, OrbitGtBlobProps, PlanarClipMask } from "@bentley/imodeljs-common";
+import { CartographicRange, ContextRealityModelProps, FeatureAppearance, OrbitGtBlobProps, PlanarClipMaskSettings } from "@bentley/imodeljs-common";
 import { AccessToken } from "@bentley/itwin-client";
 import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
 import { DisplayStyleState } from "./DisplayStyleState";
 import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
+import { PlanarClipMaskState } from "./imodeljs-frontend";
 import { SpatialModelState } from "./ModelState";
 import { SpatialClassifiers } from "./SpatialClassifiers";
 import { createOrbitGtTileTreeReference, createRealityTileTreeReference, RealityModelTileClient, RealityModelTileTree, RealityModelTileUtils, TileTreeReference } from "./tile/internal";
@@ -80,8 +81,8 @@ export class ContextRealityModelState {
   public get modelId(): Id64String | undefined { return (this._treeRef instanceof RealityModelTileTree.Reference) ? this._treeRef.modelId : undefined; }
   /** Return true if the model spans the entire globe ellipsoid in 3D */
   public get isGlobal(): boolean { return this.treeRef.isGlobal; }
-  public get planarClipMask(): PlanarClipMask | undefined { return this._treeRef.planarClipMask; }
-  public set planarClipMask(planarClipMask: PlanarClipMask | undefined) { this._treeRef.planarClipMask = planarClipMask; }
+  public get planarClipMask(): PlanarClipMaskState | undefined { return this._treeRef.planarClipMask; }
+  public set planarClipMask(planarClipMask: PlanarClipMaskState | undefined) { this._treeRef.planarClipMask = planarClipMask; }
 
 
   public toJSON(): ContextRealityModelProps {

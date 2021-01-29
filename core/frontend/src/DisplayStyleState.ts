@@ -7,7 +7,7 @@
  */
 import { assert, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Angle, Point3d, Range1d, Vector3d } from "@bentley/geometry-core";
-import { DisplayStyleProps, DisplayStyleSettings, BackgroundMapSettings, MapImagerySettings, GlobeMode, MapLayerSettings, BaseLayerSettings, BackgroundMapProps, ContextRealityModelProps, PlanarClipMaskMode, FeatureAppearance, PlanarClipMask, MapLayerProps, ColorDef, MapSubLayerProps, SubLayerId, ViewFlags, SubCategoryOverride, SkyBoxProps, SkyBoxImageType, RenderTexture, SkyCubeProps, GroundPlane, EnvironmentProps, DisplayStyle3dSettings, LightSettings, Cartographic, calculateSolarDirection, SolarShadowSettings, DisplayStyle3dSettingsProps, ThematicDisplayMode, ThematicDisplay, ThematicGradientMode } from "@bentley/imodeljs-common";
+import { DisplayStyleProps, DisplayStyleSettings, BackgroundMapSettings, MapImagerySettings, GlobeMode, MapLayerSettings, BaseLayerSettings, BackgroundMapProps, ContextRealityModelProps, PlanarClipMaskMode, FeatureAppearance, PlanarClipMaskSettings, MapLayerProps, ColorDef, MapSubLayerProps, SubLayerId, ViewFlags, SubCategoryOverride, SkyBoxProps, SkyBoxImageType, RenderTexture, SkyCubeProps, GroundPlane, EnvironmentProps, DisplayStyle3dSettings, LightSettings, Cartographic, calculateSolarDirection, SolarShadowSettings, DisplayStyle3dSettingsProps, ThematicDisplayMode, ThematicDisplay, ThematicGradientMode } from "@bentley/imodeljs-common";
 import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
 import { ContextRealityModelState } from "./ContextRealityModelState";
@@ -15,6 +15,7 @@ import { ElementState } from "./EntityState";
 import { HitDetail } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
+import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { AnimationBranchStates } from "./render/GraphicBranch";
 import { RenderSystem, TextureImage } from "./render/RenderSystem";
 import { RenderScheduleState } from "./RenderScheduleState";
@@ -34,6 +35,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   private readonly _contextRealityModels: ContextRealityModelState[] = [];
   private _scheduleScript?: RenderScheduleState.Script;
   private _ellipsoidMapGeometry: BackgroundMapGeometry | undefined;
+  private _attachedRealityModelPlanarClipMasks = new Map<Id64String, PlanarClipMaskState>();
 
   /** The container for this display style's settings. */
   public abstract get settings(): DisplayStyleSettings;
@@ -405,13 +407,20 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * @see [[dropRealityModelPlanarClipMask]
    * @beta
    */
-  public overrideRealityModelPlanarClipMask(modelIdOrIndex: Id64String | number, mask: PlanarClipMask): boolean {
+  public overrideRealityModelPlanarClipMask(modelIdOrIndex: Id64String | number, mask: PlanarClipMaskSettings): boolean {
+    const maskState = PlanarClipMaskState.create(mask);
     if (typeof modelIdOrIndex === "string") {
       const model = this.iModel.models.getLoaded(modelIdOrIndex)?.asSpatialModel;
-      return (model && model.isRealityModel) ? this.settings.overrideModelPlanarClipMask(modelIdOrIndex, mask) : false;
+      if (model?.isRealityModel) {
+        this.settings.overrideModelPlanarClipMask(modelIdOrIndex, mask);
+        this._attachedRealityModelPlanarClipMasks.set(modelIdOrIndex, maskState)
+        return true;
+      } else
+        return false;
     } else {
       return this.applyToRealityModel(modelIdOrIndex, (changeIndex: number, jsonContextRealityModels: any[]) => {
-        jsonContextRealityModels[changeIndex].planarClipMask = this._contextRealityModels[changeIndex].planarClipMask = mask;
+        jsonContextRealityModels[changeIndex].planarClipMask = mask;
+        this._contextRealityModels[changeIndex].planarClipMask = maskState;
         return true;
       });
     }
@@ -427,10 +436,16 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public dropRealityModelPlanarClipMask(modelIdOrIndex: Id64String | number): boolean {
     if (typeof modelIdOrIndex === "string") {
       const model = this.iModel.models.getLoaded(modelIdOrIndex)?.asSpatialModel;
-      return (model && model.isRealityModel) ? this.settings.dropModelPlanarClipMaskOverride(modelIdOrIndex) : false;
+      if (model && model.isRealityModel) {
+        this._attachedRealityModelPlanarClipMasks.delete(modelIdOrIndex);
+        this.settings.dropModelPlanarClipMaskOverride(modelIdOrIndex);
+        return true;
+      } else
+        return false;
     } else {
       return this.applyToRealityModel(modelIdOrIndex, (changeIndex: number, jsonContextRealityModels: any[]) => {
-        jsonContextRealityModels[changeIndex].planarClipMask = this._contextRealityModels[changeIndex].planarClipMask = undefined;
+        jsonContextRealityModels[changeIndex].planarClipMask = undefined;
+        this._contextRealityModels[changeIndex].planarClipMask = undefined;
         return true;
       });
     }
@@ -442,10 +457,10 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * @see [[overrideRealityModelPlanarClipMask]]
    * @beta
    */
-  public getRealityModelPlanarClipMask(modelIdOrIndex: Id64String | number): PlanarClipMask | undefined {
+  public getRealityModelPlanarClipMask(modelIdOrIndex: Id64String | number): PlanarClipMaskState | undefined {
     if (typeof modelIdOrIndex === "string") {
       const model = this.iModel.models.getLoaded(modelIdOrIndex)?.asSpatialModel;
-      return (model && model.isRealityModel) ? this.settings.getModelPlanarClipMask(modelIdOrIndex) : undefined;
+      return (model && model.isRealityModel) ? this._attachedRealityModelPlanarClipMasks.get(modelIdOrIndex) : undefined;
     } else {
       return modelIdOrIndex >= 0 && modelIdOrIndex < this._contextRealityModels.length ? this._contextRealityModels[modelIdOrIndex]?.planarClipMask : undefined;
     }

@@ -6,9 +6,9 @@
  * @module Utils
  */
 
-import { assert, BentleyStatus, compareNumbers, compareStrings, compareStringsOrUndefined, Guid, Id64String } from "@bentley/bentleyjs-core";
+import { assert, BentleyStatus, compareNumbers, compareStrings, compareStringsOrUndefined, CompressedId64Set, Guid, Id64String } from "@bentley/bentleyjs-core";
 import { Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Ray3d, Transform, TransformProps, Vector3d, XYZ } from "@bentley/geometry-core";
-import { Cartographic, GeoCoordStatus, IModelError, PlanarClipMask, PlanarClipMaskProps, ViewFlagOverrides, ViewFlagPresence } from "@bentley/imodeljs-common";
+import { Cartographic, GeoCoordStatus, IModelError, PlanarClipMaskSettings, PlanarClipMaskProps, ViewFlagOverrides, ViewFlagPresence } from "@bentley/imodeljs-common";
 import { AccessToken, request, RequestOptions } from "@bentley/itwin-client";
 import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
 import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
@@ -17,6 +17,7 @@ import { AuthorizedFrontendRequestContext, FrontendRequestContext } from "../Fro
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
+import { PlanarClipMaskState } from "../PlanarClipMaskState";
 import { RenderMemory } from "../render/RenderMemory";
 import { SpatialClassifiers } from "../SpatialClassifiers";
 import { SceneContext } from "../ViewContext";
@@ -36,6 +37,7 @@ interface RealityTreeId {
   url: string;
   transform?: Transform;
   modelId: Id64String;
+  maskModelIds?: string;
 }
 
 function compareOrigins(lhs: XYZ, rhs: XYZ): number {
@@ -67,6 +69,9 @@ class RealityTreeSupplier implements TileTreeSupplier {
   }
 
   public async createTileTree(treeId: RealityTreeId, iModel: IModelConnection): Promise<TileTree | undefined> {
+    if (treeId.maskModelIds)
+      await iModel.models.load(CompressedId64Set.decompressSet(treeId.maskModelIds));
+
     return RealityModelTileTree.createRealityModelTileTree(treeId.url, iModel, treeId.modelId, treeId.transform);
   }
 
@@ -75,6 +80,10 @@ class RealityTreeSupplier implements TileTreeSupplier {
     if (0 === cmp)
       cmp = compareStringsOrUndefined(lhs.modelId, rhs.modelId);
 
+    if (0 !== cmp)
+      return cmp;
+
+    cmp = compareStringsOrUndefined(lhs.maskModelIds, rhs.maskModelIds);
     if (0 !== cmp)
       return cmp;
 
@@ -412,10 +421,10 @@ export namespace RealityModelTileTree {
   export abstract class Reference extends TileTreeReference {
     private _modelId: Id64String;
     private _isGlobal?: boolean;
-    protected _planarClipMask?: PlanarClipMask;
+    protected _planarClipMask?: PlanarClipMaskState;
     public get modelId() { return this._modelId; }
-    public get planarClipMask(): PlanarClipMask | undefined { return this._planarClipMask; }
-    public set planarClipMask(planarClipMask: PlanarClipMask | undefined) { this._planarClipMask = planarClipMask; }
+    public get planarClipMask(): PlanarClipMaskState | undefined { return this._planarClipMask; }
+    public set planarClipMask(planarClipMask: PlanarClipMaskState | undefined) { this._planarClipMask = planarClipMask; }
 
     public constructor(modelId: Id64String | undefined, iModel: IModelConnection) {
       super();
@@ -520,6 +529,7 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
   private _mapDrapeTree?: TileTreeReference;
   private _transform?: Transform;
   private _iModel: IModelConnection;
+  private _maskModelIds?: string;
 
 
   public constructor(props: RealityModelTileTree.ReferenceProps) {
@@ -535,13 +545,14 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
     this._url = props.url;
     this._transform = transform;
     this._iModel = props.iModel;
-    this._planarClipMask = props.planarMask ? PlanarClipMask.fromJSON(props.planarMask) : undefined;
+    this._planarClipMask = props.planarMask ? PlanarClipMaskState.create(PlanarClipMaskSettings.fromJSON(props.planarMask)) : undefined;
+    this._maskModelIds = props.planarMask?.modelIds;
 
     if (undefined !== props.classifiers)
       this._classifier = createClassifierTileTreeReference(props.classifiers, this, props.iModel, props.source);
   }
   public get treeOwner(): TileTreeOwner {
-    const treeId = { url: this._url, transform: this._transform, modelId: this.modelId };
+    const treeId = { url: this._url, transform: this._transform, modelId: this.modelId, maskModelIds: this._maskModelIds };
     return realityTreeSupplier.getOwner(treeId, this._iModel);
   }
 
@@ -576,7 +587,7 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
     if (this._classifier && this._classifier.activeClassifier)
       this._classifier.addToScene(context);
 
-    this.addPlanarClassifierToScene(context);
+    this.addPlanarClassifierOrMaskToScene(context);
 
     const tree = this.treeOwner.tileTree as RealityTileTree;
     if (undefined !== tree && (tree.loader as RealityModelTileLoader).doDrapeBackgroundMap) {
@@ -587,11 +598,15 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
 
     super.addToScene(context);
   }
-  private addPlanarClassifierToScene(context: SceneContext) {
+
+  private addPlanarClassifierOrMaskToScene(context: SceneContext) {
     // A planarClassifier is required if there is a classification tree OR planar masking is required.
     const classifierTree = this.planarClassifierTreeRef;
     const planarClipMask = this._planarClipMask ? this._planarClipMask : context.viewport.displayStyle.getRealityModelPlanarClipMask(this.modelId);
     if (!classifierTree && !planarClipMask)
+      return;
+
+    if (classifierTree && !classifierTree.treeOwner.load())
       return;
 
     context.addPlanarClassifier(this.modelId, classifierTree, planarClipMask);
@@ -605,6 +620,9 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
 
     if (undefined !== this._mapDrapeTree)
       this._mapDrapeTree.discloseTileTrees(trees);
+
+    if (undefined !== this._planarClipMask)
+      this._planarClipMask.discloseTileTrees(trees);
   }
 
   public async getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined> {
