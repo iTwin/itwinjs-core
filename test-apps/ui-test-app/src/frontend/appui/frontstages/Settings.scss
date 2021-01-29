@@ -4,20 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 @import "~@bentley/ui-core/lib/ui-core/style/themecolors";
 @import "~@bentley/ui-core/lib/ui-core/style/typography";
+@import "~@bentley/ui-core/lib/ui-core/base/base";
+
+// cspell:ignore leftpanel rightpanel
 
 $settings-leftpanel-width: 225px;
 $settings-rightpanel-width: 200px;
 
 .uifw-settings {
+  @include uicore-scrollview;
   background: $buic-background-dialog;
   color: $buic-text-color;
-  width: auto;
-  height: auto;
-  position: absolute;
-  top: 45%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  padding: 30px;
   border-radius: 3px;
   font-size: $uicore-font-size;
   display: flex;
@@ -36,7 +33,7 @@ $settings-rightpanel-width: 200px;
   > .left-panel {
     flex-direction: column;
     width: $settings-leftpanel-width;
-    padding: 30px 50px 30px 30px;
+    padding: 30px 50px 30px 50px;
 
     > .title {
       font-size: 18px;
@@ -52,7 +49,7 @@ $settings-rightpanel-width: 200px;
   > .right-panel {
     align-items: center;
     width: $settings-rightpanel-width;
-    padding: 30px;
+    padding: 30px 50px 30px 30px;
 
     .toggle {
       margin-right: 10px;
