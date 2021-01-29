@@ -18,7 +18,7 @@ import { Viewport } from "../Viewport";
 import { ReadonlyViewportSet, UniqueViewportSets } from "../ViewportSet";
 import { InteractiveEditingSession } from "../InteractiveEditingSession";
 import { GeometricModelState } from "../ModelState";
-import { DisclosedTileTreeSet, Tile, TileLoadStatus, TileRequest, TileTree, TileTreeOwner, TileUsageMarker } from "./internal";
+import { DisclosedTileTreeSet, LRUTileList, Tile, TileLoadStatus, TileRequest, TileTree, TileTreeOwner, TileUsageMarker } from "./internal";
 import { NativeApp } from "../NativeApp";
 
 /** Details about any tiles not handled by [[TileAdmin]]. At this time, that means OrbitGT point cloud tiles.
@@ -106,6 +106,7 @@ export class TileAdmin {
   private _cancelBackendTileRequests: boolean;
   private _tileTreePropsRequests: TileTreePropsRequest[] = [];
   private _cleanup?: () => void;
+  private readonly _lruList = new LRUTileList();
 
   /** Create a TileAdmin suitable for passing to [[IModelApp.startup]] via [[IModelAppOptions.tileAdmin]] to customize aspects of
    * its behavior.
@@ -430,6 +431,7 @@ export class TileAdmin {
     this._viewportSetsForRequests.clear();
     this._tileUsagePerViewport.clear();
     this._tileTreePropsRequests.length = 0;
+    this._lruList.dispose();
   }
 
   /** Returns the union of the input set and the input viewport, to be associated with a [[TileRequest]].
@@ -549,6 +551,25 @@ export class TileAdmin {
       ++this._totalEmpty;
     else if (!tile.isDisplayable)
       ++this._totalUndisplayable;
+  }
+
+  /** Invoked when a Tile marks itself as "ready" - i.e., its content is loaded (or determined not to exist, or not to be needed).
+   * If the tile has content, it is added to the LRU list of tiles with content.
+   * The `onTileLoad` event will also be raised.
+   * @internal
+   */
+  public onTileContentLoaded(tile: Tile): void {
+    // It may already be present if it previously had content - perhaps we're replacing its content.
+    this._lruList.drop(tile);
+    this._lruList.add(tile);
+    this.onTileLoad.raiseEvent(tile);
+  }
+
+  /** Invoked when a Tile's content is disposed of. It will be removed from the LRU list of tiles with content.
+   * @internal
+   */
+  public onTileContentDisposed(tile: Tile): void {
+    this._lruList.drop(tile);
   }
 
   /** @internal */

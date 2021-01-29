@@ -131,6 +131,7 @@ export abstract class Tile {
     this._graphic = dispose(this._graphic);
     this._rangeGraphic = dispose(this._rangeGraphic);
     this._rangeGraphicType = TileBoundingBoxes.None;
+    IModelApp.tileAdmin.onTileContentDisposed(this);
   }
 
   /** Dispose of resources held by this tile and all of its children, marking it and all of its children as "abandoned". */
@@ -167,7 +168,7 @@ export abstract class Tile {
   public setIsReady(): void {
     this._wasLoaded = true;
     this._state = TileState.Ready;
-    IModelApp.tileAdmin.onTileLoad.raiseEvent(this);
+    IModelApp.tileAdmin.onTileContentLoaded(this);
   }
 
   /** @internal */
