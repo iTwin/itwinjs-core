@@ -48,11 +48,19 @@ describe("MessageRenderer", () => {
   });
 
   describe("Anchor", ()=>{
-    it("allows target _blank if it has proper relationships", ()=>{
+    it("allows target _blank if it has a noopener rel", ()=>{
       const anchor = document.createElement("a");
       anchor.href = "https://itwinjs.org";
       anchor.target = "_blank";
-      anchor.rel = "noopener noreferrer";
+      anchor.rel = "noopener";
+      shallow(<MessageRenderer message={anchor} />).should.matchSnapshot();
+    });
+
+    it("allows target _blank if it has a noreferrer rel", ()=>{
+      const anchor = document.createElement("a");
+      anchor.href = "https://itwinjs.org";
+      anchor.target = "_blank";
+      anchor.rel = "noreferrer";
       shallow(<MessageRenderer message={anchor} />).should.matchSnapshot();
     });
 

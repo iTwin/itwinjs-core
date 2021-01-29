@@ -45,9 +45,6 @@ export function MessageRenderer(props: MessageRendererProps) {
 
     // recursively check child elements for valid anchor tags
     const checkChildAnchors = (parent: Element) => {
-      if (hasAnchors && !validAnchors) {
-        return;
-      }
       const children = Array.from(parent.children);
       for (const child of children){
         if (child.hasAttribute("target") && (child as HTMLAnchorElement).target === "_blank") {
@@ -64,6 +61,7 @@ export function MessageRenderer(props: MessageRendererProps) {
     // check for anchor tags in the message that have target _blank also have a relationship that avoids security holes
     // https://web.dev/external-anchors-use-rel-noopener/
     // first check the message element
+    /* istanbul ignore else */
     if (props.message.hasAttribute("target") && (props.message as HTMLAnchorElement).target === "_blank") {
       hasAnchors = true;
       validAnchors = isAnchorValid(props.message as HTMLAnchorElement);
