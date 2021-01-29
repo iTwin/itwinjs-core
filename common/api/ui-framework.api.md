@@ -11,6 +11,7 @@ import { AbstractToolbarProps } from '@bentley/ui-abstract';
 import { AbstractTreeNodeLoaderWithProvider } from '@bentley/ui-components';
 import { AbstractWidgetProps } from '@bentley/ui-abstract';
 import { AccuDraw } from '@bentley/imodeljs-frontend';
+import { AccuDrawField } from '@bentley/ui-abstract';
 import { ActionButton } from '@bentley/ui-abstract';
 import { ActivityMessageDetails } from '@bentley/imodeljs-frontend';
 import { ActivityMessageEndReason } from '@bentley/imodeljs-frontend';
@@ -1950,7 +1951,11 @@ export class FrameworkAccuDraw extends AccuDraw {
     onMotion(_ev: BeButtonEvent): void;
     // @internal (undocumented)
     setFocusItem(index: ItemField): void;
-    }
+    // @internal (undocumented)
+    static translateFromItemField(item: ItemField): AccuDrawField;
+    // @internal (undocumented)
+    static translateToItemField(field: AccuDrawField): ItemField;
+}
 
 // @beta
 export const FrameworkReducer: (state: import("./redux-ts").CombinedReducerState<{
