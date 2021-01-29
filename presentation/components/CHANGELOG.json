@@ -2,6 +2,30 @@
   "name": "@bentley/presentation-components",
   "entries": [
     {
+      "version": "2.11.0",
+      "tag": "@bentley/presentation-components_v2.11.0",
+      "date": "Thu, 28 Jan 2021 13:39:27 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Minimaly changed `FavoritePropertiesDataFilterer` interface, to match new `PropertyDataFiltererBase`, added some more `FavoritePropertiesDataFilterer` testing"
+          },
+          {
+            "comment": "Add `InstanceKeyValueRenderer`."
+          },
+          {
+            "comment": "Updated PresentationLabelsProvider to send requests in batches"
+          },
+          {
+            "comment": "Add class information to navigation properties"
+          },
+          {
+            "comment": "Add `UnifiedSelectionContext`."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.10.3",
       "tag": "@bentley/presentation-components_v2.10.3",
       "date": "Fri, 08 Jan 2021 18:34:03 GMT",
