@@ -115,8 +115,8 @@ export class CheckpointV2Query extends WsgQuery {
    * This query returns a closest CheckpointV2 that will reach target ChangeSet by only merging forward. This resets all previously set filters.
    * @returns This query.
    */
-  public precedingCheckpoint(targetChangeSetId: string): this {
-    this.filter(`PrecedingCheckpoint-backward-ChangeSet.Id+eq+'${targetChangeSetId}'`);
+  public precedingCheckpointV2(targetChangeSetId: string): this {
+    this.filter(`PrecedingCheckpointV2-backward-ChangeSet.Id+eq+'${targetChangeSetId}'`);
     return this;
   }
 
