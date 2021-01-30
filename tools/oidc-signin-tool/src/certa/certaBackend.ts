@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Config } from "@bentley/bentleyjs-core";
+import * as path from "path";
 import { registerBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
-import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+import { loadEnv } from "@bentley/config-loader";
 import { AccessToken } from "@bentley/itwin-client";
 import { TestBrowserAuthorizationClientConfiguration, TestUserCredentials } from "../TestUsers";
 import { TestUtility } from "../TestUtility";
@@ -15,7 +15,7 @@ import { getTokenCallbackName, serializeToken } from "./certaCommon";
 
 /* eslint-disable no-console */
 
-IModelJsConfig.init(true, true, Config.App);
+loadEnv(path.join(__dirname, "..", "..", ".env"));
 
 /** Signs in for the provided user.
  *

@@ -5,8 +5,8 @@
 import * as fs from "fs";
 import * as path from "path";
 import { UrlFileHandler } from "@bentley/backend-itwin-client";
-import { Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+import { Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { loadEnv } from "@bentley/config-loader";
 import { IModelBankClient } from "@bentley/imodelhub-client";
 import { IModelHost, IModelHostConfiguration, NativeAppBackend } from "@bentley/imodeljs-backend";
 import {
@@ -100,7 +100,7 @@ export const getRpcInterfaces = (): RpcInterfaceDefinition[] => {
 
 const setupStandaloneConfiguration = () => {
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
-  IModelJsConfig.init(true /* suppress exception */, true /* suppress error message */, Config.App);
+  loadEnv(path.join(__dirname, "..", "..", ".env"));
 
   const configuration: DtaConfiguration = {};
   if (MobileRpcConfiguration.isMobileBackend)

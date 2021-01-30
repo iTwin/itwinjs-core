@@ -5,15 +5,13 @@
 import { assert } from "chai";
 import * as path from "path";
 import {
-  BeEvent, BentleyLoggerCategory, ChangeSetStatus, Config, DbResult, GuidString, Id64, Id64String, IDisposable, IModelStatus, Logger, LogLevel,
-  OpenMode,
+  BeEvent, BentleyLoggerCategory, ChangeSetStatus, DbResult, GuidString, Id64, Id64String, IDisposable, IModelStatus, Logger, LogLevel, OpenMode,
 } from "@bentley/bentleyjs-core";
-import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+import { loadEnv } from "@bentley/config-loader";
 import { ChangeSet, IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
 import {
   Code, CodeProps, ElementProps, IModel, IModelError, IModelReadRpcInterface, IModelVersion, IModelVersionProps, PhysicalElementProps, RelatedElement,
-  RequestNewBriefcaseProps,
-  RpcConfiguration, RpcManager, RpcPendingResponse, SyncMode,
+  RequestNewBriefcaseProps, RpcConfiguration, RpcManager, RpcPendingResponse, SyncMode,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext, ITwinClientLoggerCategory } from "@bentley/itwin-client";
@@ -429,7 +427,7 @@ export class IModelTestUtils {
   }
 
   public static async startBackend(): Promise<void> {
-    IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
+    loadEnv(path.join(__dirname, "..", "..", ".env"));
     const config = new IModelHostConfiguration();
     config.concurrentQuery.concurrent = 4; // for test restrict this to two threads. Making closing connection faster
     await IModelHost.startup(config);

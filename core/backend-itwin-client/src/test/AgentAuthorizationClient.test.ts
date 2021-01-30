@@ -4,14 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as chai from "chai";
-import { Issuer, Client as OpenIdClient } from "openid-client";
+import { Client as OpenIdClient, Issuer } from "openid-client";
+import * as path from "path";
 import { BeDuration, ClientRequestContext, Config } from "@bentley/bentleyjs-core";
-import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+import { loadEnv } from "@bentley/config-loader";
 import { AccessToken, IncludePrefix } from "@bentley/itwin-client";
 import { AgentAuthorizationClient, AgentAuthorizationClientConfiguration } from "../backend-itwin-client";
 import { HubAccessTestValidator } from "./HubAccessTestValidator";
 
-IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
+loadEnv(path.join(__dirname, "..", "..", ".env"));
 
 chai.should();
 

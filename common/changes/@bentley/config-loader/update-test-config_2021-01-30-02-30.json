@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/config-loader",
+      "comment": "Deprecate IModelJsConfig class in favor of `.env` loading. Add a simple `loadEnv()` function to use dotenv and dotenv-expand to load .env file.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/config-loader",
+  "email": "31107829+calebmshafer@users.noreply.github.com"
+}

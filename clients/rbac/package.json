@@ -22,6 +22,7 @@
     "test:integration": "npm run webpackTests && npm run test:integration:chrome",
     "test:integration:chrome": "certa -r chrome --grep \"#integration\"",
     "test:integration:electron": "certa -r electron --grep \"#integration\"",
+    "copy:config": "internal-tools copy-config",
     "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2"
   },
   "keywords": [
@@ -53,6 +54,7 @@
     "@types/node": "10.14.1",
     "chai": "^4.1.2",
     "eslint": "^6.8.0",
+    "internal-tools": "0.0.0",
     "mocha": "^5.2.0",
     "nyc": "^14.0.0",
     "rimraf": "^3.0.2",

@@ -6,10 +6,9 @@
 const path = require("path");
 const webpack = require("webpack");
 const fs = require("fs");
-// 'is_ci_job' variable is set in ci job env. CI job already set all the envirnoment variable required to run integeration test
+// 'is_ci_job' variable is set in ci job env. CI job already set all the environment variable required to run integration test
 if (!process.env.TF_BUILD) {
-  const config = require("@bentley/config-loader/lib/IModelJsConfig").IModelJsConfig;
-  config.init();
+  require("@bentley/config-loader").loadEnv(path.join(__dirname, "..", "..", ".env"));
 }
 
 /** Find package root folder where package.json exist */

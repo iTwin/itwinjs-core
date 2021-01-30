@@ -5,6 +5,7 @@
   "license": "MIT",
   "scripts": {
     "compile": "npm run build",
+    "copy:config": "internal-tools copy-config",
     "build": "tsc 1>&2 && npm run webpack:frontend && npm run build:extensions",
     "build:extensions": "npm run build:loadingTestExtension",
     "build:loadingTestExtension": "extension-webpack-tools build -s ./src/common/extensions/loadingTestExtension/loadingTestExtension.ts -o ./lib/imjs_extensions/loadingTestExtension --sourceMap",
@@ -63,6 +64,7 @@
     "chai": "^4.1.2",
     "glob": "^7.1.2",
     "istanbul-instrumenter-loader": "^3.0.1",
+    "internal-tools": "0.0.0",
     "null-loader": "^0.1.1",
     "rimraf": "^3.0.2",
     "source-map-loader": "^1.0.0",

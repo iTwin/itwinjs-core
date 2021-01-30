@@ -5,19 +5,19 @@
 import "./SampleRpcImpl"; // just to get the RPC implementation registered
 import { app as electron } from "electron";
 import * as path from "path";
-import { Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+import { Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { loadEnv } from "@bentley/config-loader";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { RpcConfiguration, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
+import {
+  Presentation, PresentationBackendLoggerCategory, PresentationBackendNativeLoggerCategory, PresentationManagerMode,
+} from "@bentley/presentation-backend";
 // __PUBLISH_EXTRACT_START__ Presentation.Backend.Initialization
 import { RequestPriority } from "@bentley/presentation-common";
-import { Presentation, PresentationManagerMode } from "@bentley/presentation-backend";
 import rpcs from "../common/Rpcs";
-// __PUBLISH_EXTRACT_END__
-import { PresentationBackendLoggerCategory, PresentationBackendNativeLoggerCategory } from "@bentley/presentation-backend"; // eslint-disable-line no-duplicate-imports
 
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
-  IModelJsConfig.init(true /* suppress error */, true /* suppress message */, Config.App);
+  loadEnv(path.join(__dirname, "..", "..", ".env"));
 
   // initialize logging
   Logger.initializeToConsole();
