@@ -5,7 +5,9 @@
 import "./QuantityFormatStage.scss";
 import * as React from "react";
 import { DeepCompare } from "@bentley/geometry-core";
-import { IModelApp, QuantityFormatsChangedArgs, QuantityType } from "@bentley/imodeljs-frontend";
+import {
+  getQuantityTypeKey, IModelApp, QuantityFormatsChangedArgs, QuantityType, QuantityTypeArg, QuantityTypeKey,
+} from "@bentley/imodeljs-frontend";
 import { Format, FormatProps, FormatterSpec, UnitsProvider } from "@bentley/imodeljs-quantity";
 import { DialogButtonType } from "@bentley/ui-abstract";
 import { FormatPanel, FormatSample } from "@bentley/ui-components";
@@ -17,7 +19,7 @@ import { ModalDialogManager, ModalFrontstageInfo, UiFramework } from "@bentley/u
  */
 export class QuantityFormatModalFrontstage implements ModalFrontstageInfo {
   public title: string = UiFramework.i18n.translate("SampleApp:QuantityFormatModalFrontstage.QuantityFormatStage");
-  public get content(): React.ReactNode { return (<QuantityFormatStage initialQuantityType={QuantityType.Length} />); }
+  public get content(): React.ReactNode { return (<QuantityFormatStage initialQuantityType={getQuantityTypeKey(QuantityType.Length)} />); }
 }
 
 function formatAreEqual(obj1: FormatProps, obj2: FormatProps) {
@@ -25,12 +27,12 @@ function formatAreEqual(obj1: FormatProps, obj2: FormatProps) {
   return compare.compare(obj1, obj2);
 }
 
-function QuantityFormatStage({ initialQuantityType }: { initialQuantityType: QuantityType }) {
-  const [activeQuantityType, setActiveQuantityType] = React.useState(initialQuantityType);
-  const [activeFormatterSpec, setActiveFormatterSpec] = React.useState<FormatterSpec | undefined>(IModelApp.quantityFormatter.findFormatterSpecByQuantityType(initialQuantityType));
+function QuantityFormatStage({ initialQuantityType }: { initialQuantityType: QuantityTypeArg }) {
+  const [activeQuantityType, setActiveQuantityType] = React.useState(getQuantityTypeKey(initialQuantityType));
+  const [activeFormatterSpec, setActiveFormatterSpec] = React.useState<FormatterSpec | undefined>(IModelApp.quantityFormatter.findFormatterSpecByQuantityType(getQuantityTypeKey(initialQuantityType)));
   const [saveEnabled, setSaveEnabled] = React.useState(false);
   const [clearEnabled, setClearEnabled] = React.useState(IModelApp.quantityFormatter.hasActiveOverride(initialQuantityType, true));
-  const newQuantityTypeRef = React.useRef<QuantityType>();
+  const newQuantityTypeRef = React.useRef<QuantityTypeKey>();
 
   /* Not yet needed as no way to change system from modal stage
   React.useEffect(() => {
@@ -65,7 +67,7 @@ function QuantityFormatStage({ initialQuantityType }: { initialQuantityType: Qua
     };
   }, [activeQuantityType]);
 
-  const processListboxValueChange = React.useCallback((newQuantityType: QuantityType) => {
+  const processListboxValueChange = React.useCallback((newQuantityType: QuantityTypeKey) => {
     const volumeFormatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(newQuantityType);
     setActiveFormatterSpec(volumeFormatterSpec);
     setActiveQuantityType(newQuantityType);
@@ -73,18 +75,17 @@ function QuantityFormatStage({ initialQuantityType }: { initialQuantityType: Qua
     setClearEnabled(IModelApp.quantityFormatter.hasActiveOverride(newQuantityType, true));
   }, []);
 
-  const onListboxValueChange = React.useCallback((enumValue: string) => {
-    const newQuantityType = Number.parseInt(enumValue, 10) as QuantityType;
+  const onListboxValueChange = React.useCallback((newQuantityType: string) => {
     if (activeFormatterSpec) {
       const formatProps = activeFormatterSpec.format.toJSON();
       const formatPropsInUse = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(activeQuantityType)?.format.toJSON();
       if (formatPropsInUse && !formatAreEqual(formatProps, formatPropsInUse)) {
         newQuantityTypeRef.current = newQuantityType;
         ModalDialogManager.openDialog(<SaveFormatModalDialog formatProps={formatProps} quantityType={activeQuantityType} newQuantityType={newQuantityType} onDialogClose={processListboxValueChange} />, "saveQuantityFormat");
-      } else {
-        processListboxValueChange(newQuantityType);
+        return;
       }
     }
+    processListboxValueChange(newQuantityType);
   }, [activeFormatterSpec, activeQuantityType, processListboxValueChange]);
 
   const handleOnFormatChanged = React.useCallback((format: FormatProps) => {
@@ -122,14 +123,14 @@ function QuantityFormatStage({ initialQuantityType }: { initialQuantityType: Qua
       <div className="quantity-types-container">
         <div className="left-panel">
           <Listbox id="quantity-types-list" className="quantity-types"
-            onListboxValueChange={onListboxValueChange} selectedValue={activeQuantityType.toString()} >
+            onListboxValueChange={onListboxValueChange} selectedValue={activeQuantityType} >
             {
               [...IModelApp.quantityFormatter.quantityTypesRegistry.keys()].map((key) => {
                 const entry = IModelApp.quantityFormatter.quantityTypesRegistry.get(key)!;
                 const description = IModelApp.quantityFormatter.getQuantityDescription(entry);
                 const label = IModelApp.quantityFormatter.getQuantityLabel(entry);
                 return (
-                  <ListboxItem key={entry.key} className="quantity-type-list-entry" value={entry.type.toString()}>
+                  <ListboxItem key={entry.key} className="quantity-type-list-entry" value={entry.key}>
                     <span className="map-source-list-entry-name" title={description}>{label}</span>
                   </ListboxItem>
                 );
@@ -162,7 +163,7 @@ function QuantityFormatStage({ initialQuantityType }: { initialQuantityType: Qua
   );
 }
 
-function SaveFormatModalDialog({ formatProps, quantityType, newQuantityType, onDialogClose }: { formatProps: FormatProps, quantityType: QuantityType, newQuantityType: QuantityType, onDialogClose: (newQuantityType: QuantityType) => void }) {
+function SaveFormatModalDialog({ formatProps, quantityType, newQuantityType, onDialogClose }: { formatProps: FormatProps, quantityType: QuantityTypeKey, newQuantityType: QuantityTypeKey, onDialogClose: (newQuantityType: QuantityTypeKey) => void }) {
   const [isOpen, setIsOpen] = React.useState(true);
 
   const handleClose = React.useCallback(() => {

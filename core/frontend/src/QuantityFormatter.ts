@@ -12,6 +12,8 @@ import {
 } from "@bentley/imodeljs-quantity";
 import { IModelApp } from "./IModelApp";
 
+// cSpell:ignore FORMATPROPS FORMATKEY ussurvey uscustomary
+
 /** String used to uniquely identify a Quantity. See function `getQuantityTypeKey`.
  * @beta
  */
@@ -43,15 +45,21 @@ export interface QuantityTypeEntry {
   labelKey?: string;
   description?: string;
   descriptionKey?: string;
-  // if not specified generic FormatterSpec will be created
-  generateFormatterSpec?: (persistenceUnit: UnitProps, formatProps: FormatProps) => FormatterSpec;
-  // if not specified generic ParserSpec will be created
-  generateParserSpec?: (persistenceUnit: UnitProps, formatProps: FormatProps) => FormatterSpec;
-  // if not specified generic look up we be made.
-  getFormatPropsByTypeAndSystem?: (quantityEntry: QuantityTypeEntry, requestedSystem: UnitSystemKey) => FormatProps;
 }
 
-// cSpell:ignore FORMATPROPS FORMATKEY ussurvey uscustomary
+export interface CustomQuantityTypeEntry extends QuantityTypeEntry {
+  // to be implemented by custom Quantity Types
+  generateFormatterSpec: (formatProps: FormatProps, unitsProvider: UnitsProvider) => Promise<FormatterSpec>;
+  // to be implemented by custom Quantity Types
+  generateParserSpec: (formatProps: FormatProps, unitsProvider: UnitsProvider) => Promise<ParserSpec>;
+  // to be implemented by custom Quantity Types
+  getFormatPropsBySystem: (requestedSystem: UnitSystemKey) => FormatProps;
+}
+
+/** CustomQuantityTypeEntry type guard. */
+export function isCustomQuantityTypeEntry(item: QuantityTypeEntry): item is CustomQuantityTypeEntry {
+  return !!(item as CustomQuantityTypeEntry).generateFormatterSpec;
+}
 
 // ========================================================================================================================================
 // Default Data
@@ -559,8 +567,6 @@ export class QuantityFormatter implements UnitsProvider {
   protected _activeFormatSpecsByType = new Map<QuantityTypeKey, FormatterSpec>();
   protected _activeParserSpecsByType = new Map<QuantityTypeKey, ParserSpec>();
   protected _overrideFormatPropsByUnitSystem = new Map<UnitSystemKey, Map<QuantityTypeKey, FormatProps>>();
-  // TODO Remove _formatSpecProviders and support via quantityTypeRegistry
-  protected _formatSpecProviders = new Array<FormatterParserSpecsProvider>();
 
   /** Called after the active unit system is changed.
    * The useImperial argument should not be relied on now that multiple systems are supported. It will
@@ -613,12 +619,17 @@ export class QuantityFormatter implements UnitsProvider {
     return this._quantityTypeRegistry;
   }
 
-  public addQuantityType(entry: QuantityTypeEntry) {
+  public async registerQuantityType(entry: CustomQuantityTypeEntry) {
     if (this._quantityTypeRegistry.has(entry.key))
       return false;
 
     this._quantityTypeRegistry.set(entry.key, entry);
-    return true;
+    if (entry.getFormatPropsBySystem) {
+      const formatProps = entry.getFormatPropsBySystem(this.activeUnitSystem);
+      await this.loadFormatAndParserSpec(entry, formatProps);
+      return true;
+    }
+    return false;
   }
 
   protected async initializeQuantityTypesRegistry() {
@@ -723,25 +734,19 @@ export class QuantityFormatter implements UnitsProvider {
    */
   protected async loadFormatAndParsingMapsForSystem(systemType?: UnitSystemKey, ignoreOverrides?: boolean): Promise<void> {
     const systemKey = (undefined !== systemType) ? systemType : this._activeUnitSystem;
-    const formatPropsByType = new Map<QuantityTypeKey, FormatProps>();
+    const formatPropsByType = new Map<QuantityTypeEntry, FormatProps>();
 
     // load cache for every registered QuantityType
     [...IModelApp.quantityFormatter.quantityTypesRegistry.keys()].forEach((key) => {
       const entry = this.quantityTypesRegistry.get(key)!;
-      formatPropsByType.set(entry.key, this.getFormatPropsByTypeAndSystem(entry, systemKey, ignoreOverrides));
+      formatPropsByType.set(entry, this.getFormatPropsByQuantityTypeEntyAndSystem(entry, systemKey, ignoreOverrides));
     });
 
     const formatPropPromises = new Array<Promise<void>>();
-    for (const [typeKey, formatProps] of formatPropsByType) {
-      formatPropPromises.push(this.loadFormatAndParserSpec(typeKey, formatProps));
+    for (const [entry, formatProps] of formatPropsByType) {
+      formatPropPromises.push(this.loadFormatAndParserSpec(entry, formatProps));
     }
     await Promise.all(formatPropPromises);
-
-    const specPromises = new Array<Promise<void>>();
-    for (const provider of this._formatSpecProviders) {
-      specPromises.push(this.loadSpecs(systemKey, provider));
-    }
-    await Promise.all(specPromises);
   }
 
   public async onInitialized() {
@@ -901,14 +906,11 @@ export class QuantityFormatter implements UnitsProvider {
     throw new Error("not yet implemented");
   }
 
-  private async loadFormatAndParserSpec(typeKey: QuantityTypeKey, formatProps: FormatProps) {
-    const format = new Format("stdFormat");
-    await format.fromJSON(this, formatProps);
-    const unit = await this.getPersistenceUnitByQuantityType(typeKey);
-    const formatterSpec = await FormatterSpec.create(format.name, format, this, unit);
-    const parserSpec = await ParserSpec.create(format, this, unit);
-    this._activeFormatSpecsByType.set(typeKey, formatterSpec);
-    this._activeParserSpecsByType.set(typeKey, parserSpec);
+  private async loadFormatAndParserSpec(quantityTypeEntry: QuantityTypeEntry, formatProps: FormatProps) {
+    const formatterSpec = await this.generateFormatterSpec(quantityTypeEntry, formatProps);
+    const parserSpec = await this.generateParserSpec(quantityTypeEntry, formatProps);
+    this._activeFormatSpecsByType.set(quantityTypeEntry.key, formatterSpec);
+    this._activeParserSpecsByType.set(quantityTypeEntry.key, parserSpec);
   }
 
   // repopulate formatSpec and parserSpec entries using only default format
@@ -917,8 +919,8 @@ export class QuantityFormatter implements UnitsProvider {
     if (!quantityTypeEntry)
       throw new Error (`Unable to locate QuantityType by key ${typeKey}`);
 
-    const defaultFormat = this.getFormatPropsByTypeAndSystem(quantityTypeEntry, this.activeUnitSystem, true);
-    await this.loadFormatAndParserSpec(typeKey, defaultFormat);
+    const defaultFormat = this.getFormatPropsByQuantityTypeEntyAndSystem(quantityTypeEntry, this.activeUnitSystem, true);
+    await this.loadFormatAndParserSpec(quantityTypeEntry, defaultFormat);
   }
 
   /** Method called to clear override and restore defaults formatter and parser spec */
@@ -936,7 +938,7 @@ export class QuantityFormatter implements UnitsProvider {
     }
   }
 
-  public async clearOverrideFormats(type: QuantityType) {
+  public async clearOverrideFormats(type: QuantityTypeArg) {
     await this.clearOverrideFormatsByQuantityTypeKey(this.getQuantityTypeKey(type));
   }
 
@@ -958,18 +960,21 @@ export class QuantityFormatter implements UnitsProvider {
 
     const formatProps = this.getOverrideFormatPropsByQuantityType(typeKey, this.activeUnitSystem);
     if (formatProps) {
-      await this.loadFormatAndParserSpec(typeKey, formatProps);
-      // trigger a message to let callers know the format has changed.
-      this.onQuantityFormatsChanged.emit({ quantityType: typeKey });
+      const typeEntry = this.quantityTypesRegistry.get (typeKey);
+      if (typeEntry) {
+        await this.loadFormatAndParserSpec(typeEntry, formatProps);
+        // trigger a message to let callers know the format has changed.
+        this.onQuantityFormatsChanged.emit({ quantityType: typeKey });
+      }
     }
   }
 
-  public async setOverrideFormats(type: QuantityType, overrideEntry: OverrideFormatEntry) {
+  public async setOverrideFormats(type: QuantityTypeArg, overrideEntry: OverrideFormatEntry) {
     await this.setOverrideFormatsByQuantityTypeKey(this.getQuantityTypeKey(type), overrideEntry);
   }
 
   // TODO: make more generic to support "named" systems.
-  public async setOverrideFormat(type: QuantityType, overrideFormat: FormatProps) {
+  public async setOverrideFormat(type: QuantityTypeArg, overrideFormat: FormatProps) {
     const typeKey = this.getQuantityTypeKey(type);
     let overrideEntry: OverrideFormatEntry = {};
     if (this.activeUnitSystem === "imperial")
@@ -1026,10 +1031,61 @@ export class QuantityFormatter implements UnitsProvider {
   }
 
   /** Synchronous call to get a FormatterSpec of a QuantityType. If the FormatterSpec is not yet cached an undefined object is returned. The
-   * cache is populated by the async call loadFormatSpecsForQuantityTypes.
+   * cache is populated by the async call loadFormatAndParsingMapsForSystem.
    */
   public findFormatterSpecByQuantityType(type: QuantityTypeArg, _unused?: boolean): FormatterSpec | undefined {
     return this._activeFormatSpecsByType.get(this.getQuantityTypeKey(type));
+  }
+
+  protected async generateFormatterSpec(quantityEntry: QuantityTypeEntry, formatProps: FormatProps) {
+    if (isCustomQuantityTypeEntry(quantityEntry))
+      return quantityEntry.generateFormatterSpec (formatProps, this as UnitsProvider);
+
+    const actualFormat = new Format(quantityEntry.key);
+    await actualFormat.fromJSON(this, formatProps);
+    return FormatterSpec.create(actualFormat.name, actualFormat, this as UnitsProvider, quantityEntry.persistenceUnit);
+  }
+
+  protected async generateParserSpec(quantityEntry: QuantityTypeEntry, formatProps: FormatProps) {
+    const unitsProvider = this as UnitsProvider;
+    if (isCustomQuantityTypeEntry(quantityEntry))
+      return quantityEntry.generateParserSpec (formatProps, unitsProvider);
+
+    const format = new Format(quantityEntry.key);
+    await format.fromJSON(unitsProvider, formatProps);
+    return ParserSpec.create(format, unitsProvider, quantityEntry.persistenceUnit);
+  }
+
+  /** Asynchronous Call to get a FormatterSpec of a QuantityType.
+   * @param type        One of the built-in quantity types supported.
+   * @param system  deprecated argument that should not be used - use setActiveUnitSystem to set unit system.
+   * @return A FormatterSpec Promise.
+   */
+  protected async getFormatterSpecByQuantityTypeEntryAndSystem(quantityTypeEntry: QuantityTypeEntry, system?: UnitSystemKey): Promise<FormatterSpec | undefined> {
+    const requestedSystem = system ?? this.activeUnitSystem;
+    const formatProps = this.getFormatPropsByQuantityTypeEntyAndSystem (quantityTypeEntry, requestedSystem);
+    return this.generateFormatterSpec (quantityTypeEntry, formatProps);
+  }
+
+  /** Asynchronous Call to get a FormatterSpec of a QuantityType.
+   * @param type        One of the built-in quantity types supported.
+   * @param system  deprecated argument that should not be used - use setActiveUnitSystem to set unit system.
+   * @return A FormatterSpec Promise.
+   */
+  public async getFormatterSpecByQuantityTypeAndSystem(type: QuantityTypeArg, system?: UnitSystemKey): Promise<FormatterSpec | undefined> {
+    const quantityKey = this.getQuantityTypeKey(type);
+    const requestedSystem = system ?? this.activeUnitSystem;
+
+    if (requestedSystem === this.activeUnitSystem) {
+      const formatterSpec = this._activeFormatSpecsByType.get(quantityKey);
+      if (formatterSpec)
+        return formatterSpec;
+    }
+
+    const entry = this.quantityTypesRegistry.get(quantityKey);
+    if (!entry)
+      throw new Error (`Unable to find registered quantity type with key ${quantityKey}`);
+    return this.getFormatterSpecByQuantityTypeEntryAndSystem(entry, requestedSystem);
   }
 
   /** Asynchronous Call to get a FormatterSpec of a QuantityType.
@@ -1042,15 +1098,11 @@ export class QuantityFormatter implements UnitsProvider {
     if (undefined !== isImperial)
       requestedSystem = isImperial ? "imperial" : "metric";
 
-    if (requestedSystem !== this.activeUnitSystem)
-      await this.setActiveUnitSystem(requestedSystem);
-
-    const typeKey = this.getQuantityTypeKey(type);
-    return this._activeFormatSpecsByType.get(typeKey);
+    return this.getFormatterSpecByQuantityTypeAndSystem (type, requestedSystem);
   }
 
   /** Synchronous call to get a ParserSpec for a QuantityType. If the ParserSpec is not yet cached an undefined object is returned. The
-   * cache is populated by the async call loadFormatSpecsForQuantityTypes.
+   * cache is populated by the async call loadFormatAndParsingMapsForSystem.
    */
   public findParserSpecByQuantityType(type: QuantityTypeArg, _unused?: boolean): ParserSpec | undefined {
     return this._activeParserSpecsByType.get(this.getQuantityTypeKey(type));
@@ -1130,29 +1182,6 @@ export class QuantityFormatter implements UnitsProvider {
     return "imperial";
   }
 
-  /** Register a FormatterSpec provider. */
-  public async registerFormatterParserSpecsProviders(provider: FormatterParserSpecsProvider): Promise<boolean> {
-    if (undefined !== this._formatSpecProviders.find((p) => p.quantityType === provider.quantityType))
-      return false;
-
-    this._formatSpecProviders.push(provider);
-    const providerQuantityType = this.getQuantityTypeKey(provider.quantityType);
-
-    // If the FormatSpec are already loaded for the active unit, add it now.
-    if (this._activeFormatSpecsByType.size > 0) {
-      const spec = await provider.createFormatterSpec(this.activeUnitSystem);
-      this._activeFormatSpecsByType.set(providerQuantityType, spec);
-    }
-
-    // If the ParserSpecs are already loaded for the active unit, add it now.
-    if (this._activeParserSpecsByType.size > 0) {
-      const spec = await provider.createParserSpec(this.activeUnitSystem);
-      this._activeParserSpecsByType.set(providerQuantityType, spec);
-    }
-
-    return true;
-  }
-
   public hasActiveOverride(type: QuantityTypeArg, checkOnlyActiveUnitSystem?: boolean): boolean {
     const quantityTypeKey = this.getQuantityTypeKey(type);
 
@@ -1192,7 +1221,7 @@ export class QuantityFormatter implements UnitsProvider {
     return this.getQuantityLabel(entry);
   }
 
-  protected getFormatPropsByTypeAndSystem(quantityEntry: QuantityTypeEntry, requestedSystem: UnitSystemKey, ignoreOverrides?: boolean): FormatProps {
+  protected getFormatPropsByQuantityTypeEntyAndSystem(quantityEntry: QuantityTypeEntry, requestedSystem: UnitSystemKey, ignoreOverrides?: boolean): FormatProps {
     const fallbackProps: FormatProps = {
       formatTraits: ["keepSingleZero", "applyRounding", "showUnitLabel"],
       precision: 4,
@@ -1207,8 +1236,8 @@ export class QuantityFormatter implements UnitsProvider {
         return overrideProps;
     }
 
-    if (quantityEntry.getFormatPropsByTypeAndSystem)
-      return quantityEntry.getFormatPropsByTypeAndSystem(quantityEntry, requestedSystem);
+    if (isCustomQuantityTypeEntry(quantityEntry))
+      return quantityEntry.getFormatPropsBySystem(requestedSystem);
 
     const defaultUnitSystemData = DEFAULT_FORMATKEY_BY_UNIT_SYSTEM.find((value) => value.system === requestedSystem);
     if (defaultUnitSystemData) {

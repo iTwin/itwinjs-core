@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { Format, FormatterSpec, Parser, ParseResult, ParserSpec, UnitConversionSpec, UnitProps } from "@bentley/imodeljs-quantity";
-import { FormatterParserSpecsProvider, QuantityFormatter, QuantityType, QuantityTypeArg, UnitSystemKey } from "../QuantityFormatter";
+
+import { QuantityFormatter, QuantityType, QuantityTypeArg } from "../QuantityFormatter";
 
 function withinTolerance(x: number, y: number, tolerance?: number): boolean {
   const tol: number = undefined !== tolerance ? tolerance : 0.1e-6;
@@ -353,102 +353,102 @@ describe("Quantity formatter", async () => {
   });
 });
 
-// ==========================================================================================================
-class DummyFormatterSpec extends FormatterSpec {
-  constructor(name: string, format: Format, conversions?: UnitConversionSpec[], persistenceUnit?: UnitProps) {
-    super(name, format, conversions, persistenceUnit);
-  }
+// // ==========================================================================================================
+// class DummyFormatterSpec extends FormatterSpec {
+//   constructor(name: string, format: Format, conversions?: UnitConversionSpec[], persistenceUnit?: UnitProps) {
+//     super(name, format, conversions, persistenceUnit);
+//   }
+//
+//   public applyFormatting(magnitude: number): string {
+//     return magnitude.toFixed(6);
+//   }
+//
+//   public static async createSpec(unitSystem: UnitSystemKey): Promise<DummyFormatterSpec> {
+//     const dummyUnit = { name: "dummy", label: "x", unitFamily: "unknown", isValid: false, system: "unknown" };
+//
+//     if (unitSystem === "imperial")
+//       return new DummyFormatterSpec("dummy-imperial", new Format("formatName"), undefined, dummyUnit);
+//     else if (unitSystem === "usCustomary")
+//       return new DummyFormatterSpec("dummy-usCustomary", new Format("formatName"), undefined, dummyUnit);
+//     else if (unitSystem === "usSurvey")
+//       return new DummyFormatterSpec("dummy-usSurvey", new Format("formatName"), undefined, dummyUnit);
+//     else
+//       return new DummyFormatterSpec("dummy-metric", new Format("formatName"), undefined, dummyUnit);
+//   }
+// }
+//
+// // ==========================================================================================================
+// // Register and test FormatterParserSpecsProvider
+// // ==========================================================================================================
+// class DummyParserSpec extends ParserSpec {
+//   constructor(outUnit: UnitProps, format: Format, conversions?: UnitConversionSpec[]) {
+//     super(outUnit, format, conversions ?? []);
+//   }
+//
+//   public parseToQuantityValue(inString: string): ParseResult {
+//     return Parser.parseToQuantityValue(inString, this.format, this.unitConversions);
+//   }
+//
+//   public static async createParserSpec(unitSystem: UnitSystemKey): Promise<DummyParserSpec> {
+//     const quantityFormatter = new QuantityFormatter();
+//     const formatterSpec = await DummyFormatterSpec.createSpec(unitSystem);
+//     if (unitSystem === "imperial" || unitSystem === "usCustomary" || unitSystem === "usSurvey") {
+//       const outUnit = await quantityFormatter.findUnitByName("Units.FT");
+//       const conversions = await Parser.createUnitConversionSpecsForUnit(quantityFormatter, outUnit);
+//       return new DummyParserSpec(outUnit, formatterSpec.format, conversions);
+//     } else {
+//       const outUnit = await quantityFormatter.findUnitByName("Units.M");
+//       const conversions = await Parser.createUnitConversionSpecsForUnit(quantityFormatter, outUnit);
+//       return new DummyParserSpec(outUnit, formatterSpec.format, conversions);
+//     }
+//   }
+// }
 
-  public applyFormatting(magnitude: number): string {
-    return magnitude.toFixed(6);
-  }
+// describe("Custom FormatterSpecs", async () => {
+//   let quantityFormatter: QuantityFormatter;
+//   beforeEach(async () => {
+//     quantityFormatter = new QuantityFormatter();
+//     await quantityFormatter.onInitialized();
+//   });
+//
+//   it("QuantityFormatter should register properly", async () => {
+//     assert.isTrue(quantityFormatter.useImperialFormats); // eslint-disable-line deprecation/deprecation
+//     assert.isTrue(quantityFormatter.activeUnitSystem === "imperial");
+//
+//     const customFormatterParserSpecsProvider: FormatterParserSpecsProvider = {
+//       quantityType: "DummyQuantity",
+//       createFormatterSpec: DummyFormatterSpec.createSpec,
+//       createParserSpec: DummyParserSpec.createParserSpec,
+//     };
+//
+//     let foundFormatterSpec: FormatterSpec | undefined;
+//     foundFormatterSpec = await quantityFormatter.getFormatterSpecByQuantityType("DummyQuantity");
+//     assert.isUndefined(foundFormatterSpec);
+//
+//     assert.isTrue(await quantityFormatter.registerFormatterParserSpecsProviders(customFormatterParserSpecsProvider));
+//     assert.isFalse(await quantityFormatter.registerFormatterParserSpecsProviders(customFormatterParserSpecsProvider), "Can't register a provider twice");
+//
+//     foundFormatterSpec = await quantityFormatter.getFormatterSpecByQuantityType("DummyQuantity")!;
+//     assert.instanceOf(foundFormatterSpec, DummyFormatterSpec);
+//
+//     const formattedValue = quantityFormatter.formatQuantity(1.234567891234, foundFormatterSpec);
+//     assert.strictEqual(formattedValue, "1.234568");
+//
+//     const parserSpec = await quantityFormatter.getParserSpecByQuantityType("DummyQuantity")!;
+//     assert.instanceOf(parserSpec, DummyParserSpec);
+//
+//     // results should be in feet because we are set to imperial
+//     if (parserSpec) {
+//       const meterToImperialResult = parserSpec.parseToQuantityValue("12.192 m");
+//       const feetToImperialResult = parserSpec.parseToQuantityValue("40 ft");
+//       assert(withinTolerance(40.0, feetToImperialResult.value!));
+//       assert(withinTolerance(meterToImperialResult.value!, feetToImperialResult.value!));
+//     }
+//   });
+//
+// });
 
-  public static async createSpec(unitSystem: UnitSystemKey): Promise<DummyFormatterSpec> {
-    const dummyUnit = { name: "dummy", label: "x", unitFamily: "unknown", isValid: false, system: "unknown" };
-
-    if (unitSystem === "imperial")
-      return new DummyFormatterSpec("dummy-imperial", new Format("formatName"), undefined, dummyUnit);
-    else if (unitSystem === "usCustomary")
-      return new DummyFormatterSpec("dummy-usCustomary", new Format("formatName"), undefined, dummyUnit);
-    else if (unitSystem === "usSurvey")
-      return new DummyFormatterSpec("dummy-usSurvey", new Format("formatName"), undefined, dummyUnit);
-    else
-      return new DummyFormatterSpec("dummy-metric", new Format("formatName"), undefined, dummyUnit);
-  }
-}
-
-// ==========================================================================================================
-// Register and test FormatterParserSpecsProvider
-// ==========================================================================================================
-class DummyParserSpec extends ParserSpec {
-  constructor(outUnit: UnitProps, format: Format, conversions?: UnitConversionSpec[]) {
-    super(outUnit, format, conversions ?? []);
-  }
-
-  public parseToQuantityValue(inString: string): ParseResult {
-    return Parser.parseToQuantityValue(inString, this.format, this.unitConversions);
-  }
-
-  public static async createParserSpec(unitSystem: UnitSystemKey): Promise<DummyParserSpec> {
-    const quantityFormatter = new QuantityFormatter();
-    const formatterSpec = await DummyFormatterSpec.createSpec(unitSystem);
-    if (unitSystem === "imperial" || unitSystem === "usCustomary" || unitSystem === "usSurvey") {
-      const outUnit = await quantityFormatter.findUnitByName("Units.FT");
-      const conversions = await Parser.createUnitConversionSpecsForUnit(quantityFormatter, outUnit);
-      return new DummyParserSpec(outUnit, formatterSpec.format, conversions);
-    } else {
-      const outUnit = await quantityFormatter.findUnitByName("Units.M");
-      const conversions = await Parser.createUnitConversionSpecsForUnit(quantityFormatter, outUnit);
-      return new DummyParserSpec(outUnit, formatterSpec.format, conversions);
-    }
-  }
-}
-
-describe("Custom FormatterSpecs", async () => {
-  let quantityFormatter: QuantityFormatter;
-  beforeEach(async () => {
-    quantityFormatter = new QuantityFormatter();
-    await quantityFormatter.onInitialized();
-  });
-
-  it("QuantityFormatter should register properly", async () => {
-    assert.isTrue(quantityFormatter.useImperialFormats); // eslint-disable-line deprecation/deprecation
-    assert.isTrue(quantityFormatter.activeUnitSystem === "imperial");
-
-    const customFormatterParserSpecsProvider: FormatterParserSpecsProvider = {
-      quantityType: "DummyQuantity",
-      createFormatterSpec: DummyFormatterSpec.createSpec,
-      createParserSpec: DummyParserSpec.createParserSpec,
-    };
-
-    let foundFormatterSpec: FormatterSpec | undefined;
-    foundFormatterSpec = await quantityFormatter.getFormatterSpecByQuantityType("DummyQuantity");
-    assert.isUndefined(foundFormatterSpec);
-
-    assert.isTrue(await quantityFormatter.registerFormatterParserSpecsProviders(customFormatterParserSpecsProvider));
-    assert.isFalse(await quantityFormatter.registerFormatterParserSpecsProviders(customFormatterParserSpecsProvider), "Can't register a provider twice");
-
-    foundFormatterSpec = await quantityFormatter.getFormatterSpecByQuantityType("DummyQuantity")!;
-    assert.instanceOf(foundFormatterSpec, DummyFormatterSpec);
-
-    const formattedValue = quantityFormatter.formatQuantity(1.234567891234, foundFormatterSpec);
-    assert.strictEqual(formattedValue, "1.234568");
-
-    const parserSpec = await quantityFormatter.getParserSpecByQuantityType("DummyQuantity")!;
-    assert.instanceOf(parserSpec, DummyParserSpec);
-
-    // results should be in feet because we are set to imperial
-    if (parserSpec) {
-      const meterToImperialResult = parserSpec.parseToQuantityValue("12.192 m");
-      const feetToImperialResult = parserSpec.parseToQuantityValue("40 ft");
-      assert(withinTolerance(40.0, feetToImperialResult.value!));
-      assert(withinTolerance(meterToImperialResult.value!, feetToImperialResult.value!));
-    }
-  });
-
-});
-
-describe("Custom FormatterSpecs", async () => {
+describe("Test Formatted Quantities", async () => {
   let quantityFormatter: QuantityFormatter;
   beforeEach(async () => {
     quantityFormatter = new QuantityFormatter();
