@@ -3,31 +3,34 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
+import { BeDuration, Logger } from "@bentley/bentleyjs-core";
 import moreSvg from "@bentley/icons-generic/icons/more-circular.svg?sprite";
 import moreVerticalSvg from "@bentley/icons-generic/icons/more-vertical-circular.svg?sprite";
-import { DateFormatter, IconSpecUtilities, ParseResults, RelativePosition, TimeDisplay } from "@bentley/ui-abstract";
-import {
-  BetaBadge, BlockText, BodyText, Button, ButtonSize, ButtonType, Checkbox, CheckListBox, CheckListBoxItem, CheckListBoxSeparator, ContextMenuItem,
-  DisabledText, ExpandableBlock, ExpandableList, FeaturedTile, Headline, HorizontalTabs, Icon, IconInput, Input, InputStatus, LabeledInput,
-  LabeledSelect, LabeledTextarea, LabeledThemedSelect, LabeledToggle, LeadingText, Listbox, ListboxItem, LoadingPrompt, LoadingSpinner, LoadingStatus, MinimalFeaturedTile, MinimalTile, MutedText,
-  NewBadge, NumberInput, NumericInput, Popup, ProgressBar, ProgressSpinner, Radio, ReactMessage, SearchBox, Select, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea,
-  ThemedSelect, Tile, Title, Toggle, ToggleButtonType, UnderlinedButton, VerticalTabs,
-} from "@bentley/ui-core";
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
+import {
+  ActivityMessageDetails, ActivityMessageEndReason, IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType, QuantityType,
+} from "@bentley/imodeljs-frontend";
+import { Format, FormatProps, FormatterSpec, FormatTraits, UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
+import { DateFormatter, IconSpecUtilities, ParseResults, RelativePosition, TimeDisplay } from "@bentley/ui-abstract";
 import {
   adjustDateToTimezone, ColorPickerButton, ColorPickerDialog, ColorPickerPopup, ColorSwatch, DatePickerPopupButton, DatePickerPopupButtonProps,
   FormatPopupButton, IntlFormatter, LineWeightSwatch, ParsedInput, QuantityInput, WeightPickerButton,
 } from "@bentley/ui-components";
+import {
+  BetaBadge, BlockText, BodyText, Button, ButtonSize, ButtonType, Checkbox, CheckListBox, CheckListBoxItem, CheckListBoxSeparator, ContextMenuItem,
+  DisabledText, ExpandableBlock, ExpandableList, FeaturedTile, Headline, HorizontalTabs, Icon, IconInput, Input, InputStatus, LabeledInput,
+  LabeledSelect, LabeledTextarea, LabeledThemedSelect, LabeledToggle, LeadingText, Listbox, ListboxItem, LoadingPrompt, LoadingSpinner, LoadingStatus,
+  MinimalFeaturedTile, MinimalTile, MutedText, NewBadge, NumberInput, NumericInput, Popup, ProgressBar, ProgressSpinner, Radio, ReactMessage,
+  SearchBox, Select, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea, ThemedSelect, Tile, Title, Toggle, ToggleButtonType,
+  UnderlinedButton, VerticalTabs,
+} from "@bentley/ui-core";
 import { MessageManager, ModalDialogManager, ReactNotifyMessageDetails } from "@bentley/ui-framework";
-import { ActivityMessageDetails, ActivityMessageEndReason, IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType, QuantityType } from "@bentley/imodeljs-frontend";
+import { SampleAppIModelApp } from "../../..";
 import { ComponentExampleCategory, ComponentExampleProps } from "./ComponentExamples";
 import { SampleContextMenu } from "./SampleContextMenu";
 import { SampleExpandableBlock } from "./SampleExpandableBlock";
 import { SampleImageCheckBox } from "./SampleImageCheckBox";
-import { SampleAppIModelApp } from "../../..";
-import { BeDuration, Logger } from "@bentley/bentleyjs-core";
 import { SamplePopupContextMenu } from "./SamplePopupContextMenu";
-import { Format, FormatProps, FormatterSpec, FormatTraits, UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
 
 function setFormatTrait(formatProps: FormatProps, trait: FormatTraits, setActive: boolean) {
   const traitStr = Format.getTraitString(trait);
@@ -793,6 +796,8 @@ export class ComponentExamplesProvider {
           <QuantityInput initialValue={initialLength} quantityType={QuantityType.Length} onQuantityChange={onLengthChange} />),
         createComponentExample("Angle", undefined,
           <QuantityInput initialValue={initialAngle} quantityType={QuantityType.Angle} onQuantityChange={onAngleChange} />),
+        createComponentExample("Bearing", undefined,
+          <QuantityInput initialValue={initialAngle} quantityType={"Bearing"} onQuantityChange={onAngleChange} />),
         createComponentExample("Volume", undefined,
           <QuantityInput initialValue={initialVolume} quantityType={QuantityType.Volume} onQuantityChange={onVolumeChange} />),
         createComponentExample("Temperature (Custom)", undefined,

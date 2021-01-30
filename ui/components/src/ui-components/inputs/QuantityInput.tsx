@@ -6,15 +6,15 @@
  * @module Inputs
  */
 
-import * as React from "react";
 import classnames from "classnames";
-import { CommonProps } from "@bentley/ui-core";
-import { ParseResults } from "@bentley/ui-abstract";
-import { QuantityStatus } from "@bentley/imodeljs-quantity";
-import { IModelApp, QuantityType } from "@bentley/imodeljs-frontend";
-import { ParsedInput } from "./ParsedInput";
-import { UiComponents } from "../UiComponents";
+import * as React from "react";
+import { IModelApp, QuantityTypeArg } from "@bentley/imodeljs-frontend";
 import { QuantityFormatsChangedArgs } from "@bentley/imodeljs-frontend/lib/QuantityFormatter";
+import { QuantityStatus } from "@bentley/imodeljs-quantity";
+import { ParseResults } from "@bentley/ui-abstract";
+import { CommonProps } from "@bentley/ui-core";
+import { UiComponents } from "../UiComponents";
+import { ParsedInput } from "./ParsedInput";
 
 /** Props for [[QuantityInput]] control
  * @beta
@@ -23,7 +23,7 @@ export interface QuantityProps extends CommonProps {
   /** Initial magnitude in 'persistence' units. See `getUnitByQuantityType` in [QuantityFormatter]($imodeljs-frontend) */
   initialValue: number;
   /** Type of quantity being input. */
-  quantityType: QuantityType;
+  quantityType: QuantityTypeArg;
   /** Function to call in the quantity value is changed. The value returned will be in 'persistence' units. */
   onQuantityChange: (newQuantityValue: number) => void;
   /** Set to `true` if value is for display only */
@@ -42,7 +42,7 @@ export function QuantityInput({ initialValue, quantityType, readonly, className,
   const formatValue = React.useCallback((value: number) => {
     // istanbul ignore else
     if (formatterSpec) {
-      return IModelApp.quantityFormatter.formatQuantity(value, formatterSpec);
+      return formatterSpec.applyFormatting(value);
     }
     // istanbul ignore next
     return value.toFixed(2);

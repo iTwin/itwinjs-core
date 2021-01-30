@@ -6,7 +6,7 @@
 import { Logger } from "@bentley/bentleyjs-core";
 import { CustomQuantityTypeEntry, IModelApp, UnitSystemKey } from "@bentley/imodeljs-frontend";
 import {
-  Format, FormatProps, FormatterSpec, Parser, ParseResult, ParserSpec, UnitConversion, UnitConversionSpec, UnitProps, UnitsProvider,
+  Format, FormatProps, FormatterSpec, Parser, ParseResult, ParserSpec, QuantityStatus, UnitConversion, UnitConversionSpec, UnitProps, UnitsProvider,
 } from "@bentley/imodeljs-quantity";
 
 const defaultBearingFormat: FormatProps = {
@@ -108,7 +108,30 @@ class BearingParserSpec extends ParserSpec {
   }
 
   public parseToQuantityValue(inString: string): ParseResult {
-    return Parser.parseToQuantityValue(inString, this.format, this.unitConversions);
+    let prefix: string|undefined;
+    let suffix: string|undefined;
+    let adjustedString=inString.toLocaleUpperCase().trimLeft().trimRight();
+    if (adjustedString.startsWith("S") || adjustedString.startsWith("N")){
+      prefix = adjustedString.slice(0,1);
+      adjustedString = adjustedString.substr(1);
+    }
+    if (adjustedString.endsWith("E") || adjustedString.endsWith("W")){
+      suffix = adjustedString.slice(adjustedString.length-1);
+      adjustedString = adjustedString.substr(adjustedString.length-1, 1);
+    }
+
+    const parsedRadians = Parser.parseToQuantityValue(inString, this.format, this.unitConversions);
+    if (parsedRadians.status === QuantityStatus.Success) {
+      if (prefix === "N" && suffix === "W") {
+        parsedRadians.value = Math.PI - parsedRadians.value!;
+      } else if (prefix === "S" && suffix === "W") {
+        parsedRadians.value = parsedRadians.value! +  Math.PI;
+      } else if (prefix === "N" && suffix === "W") {
+        parsedRadians.value = (2*Math.PI)- parsedRadians.value!;
+      }
+    }
+
+    return parsedRadians;
   }
 
   /** Static async method to create a ParserSpec given the format and unit of the quantity that will be passed to the Parser. The input unit will
@@ -126,7 +149,7 @@ class BearingParserSpec extends ParserSpec {
 }
 
 export class BearingQuantityType implements CustomQuantityTypeEntry {
-  private  _key = "BearingQuantityType";
+  private  _key = "Bearing";  // key and type should be the same unless a QuatityType enum is specified in _type
   private _type = "Bearing";
   private _persistenceUnitName = "Units.RAD";
   private _persistenceUnit: UnitProps|undefined;
@@ -149,15 +172,24 @@ export class BearingQuantityType implements CustomQuantityTypeEntry {
   }
 
   public get label(): string {
-    if (!this._label)
-      this._label = IModelApp.i18n.translate(this._labelKey);
-    return this._label;
+    if (!this._label) {
+      if (this._labelKey)
+        this._label = IModelApp.i18n.translate(this._labelKey);
+      else
+        this._label = this._type;
+    }
+    return this._label?this._label:"unknown";
   }
 
   public get description(): string {
-    if (!this._description)
-      this._description = IModelApp.i18n.translate(this._descriptionKey);
-    return this._description;
+    if (!this._description) {
+      if (this._descriptionKey)
+        this._description = IModelApp.i18n.translate(this._descriptionKey);
+      else
+        this._description = this.label;
+    }
+
+    return this._description?this._description:"unknown";
   }
 
   public generateFormatterSpec = async (formatProps: FormatProps, unitsProvider: UnitsProvider) => {
