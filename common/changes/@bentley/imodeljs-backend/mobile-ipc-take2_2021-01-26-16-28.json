@@ -2,10 +2,10 @@
   "changes": [
     {
       "packageName": "@bentley/imodeljs-backend",
-      "comment": "Reinstated behavior when re-opening files read-write. ",
+      "comment": "Mobile IPC fix",
       "type": "none"
     }
   ],
   "packageName": "@bentley/imodeljs-backend",
-  "email": "32458710+ramanujam-raman@users.noreply.github.com"
+  "email": "69857376+swbsi@users.noreply.github.com"
 }

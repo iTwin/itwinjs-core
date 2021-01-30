@@ -2,6 +2,24 @@
   "name": "@bentley/ui-ninezone",
   "entries": [
     {
+      "version": "2.11.0",
+      "tag": "@bentley/ui-ninezone_v2.11.0",
+      "date": "Thu, 28 Jan 2021 13:39:27 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Allow all PopupProps to be passed in to FooterPopup."
+          },
+          {
+            "comment": "Fix double border issue in minimized active widget tab."
+          },
+          {
+            "comment": "Update panel transition to persist content size when collapsing."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.10.3",
       "tag": "@bentley/ui-ninezone_v2.10.3",
       "date": "Fri, 08 Jan 2021 18:34:03 GMT",
