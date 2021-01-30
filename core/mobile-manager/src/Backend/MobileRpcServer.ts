@@ -3,12 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import * as ws from "ws";
 import { BentleyStatus, IModelError } from "@bentley/imodeljs-common";
 import { MobileRpcGateway } from "../common/MobileRpcProtocol";
 import { MobileRpcConfiguration } from "../MobileBackend";
 import { MobileHost } from "./MobileHost";
-
-import ws = require("ws");
 
 export class MobileRpcServer {
   private static _nextId = -1;
@@ -78,7 +77,7 @@ export class MobileRpcServer {
         return;
       }
 
-      this._connection.send(message, (err) => {
+      this._connection!.send(message, (err) => {
         if (err) {
           throw err;
         }
