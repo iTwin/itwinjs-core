@@ -15,7 +15,6 @@ describe("FormDataManagementClient", () => {
   const formDataManagementClient: FormDataManagementClient = new FormDataManagementClient();
   let projectId: string;
 
-
   before(async function () {
     const accessToken = await getAccessTokenFromBackend(TestUsers.super);
     requestContext = new AuthorizedClientRequestContext((accessToken as any) as AccessToken);

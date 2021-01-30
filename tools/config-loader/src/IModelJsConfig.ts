@@ -7,7 +7,9 @@ import * as fs from "fs";
 import * as JSON5 from "json5";
 import * as path from "path";
 
-/** Loads the provided `.env` file into process.env */
+/** Loads the provided `.env` file into process.env
+ * @internal
+ */
 export function loadEnv(envFile: string) {
   if (!fs.existsSync(envFile))
     return;
@@ -21,6 +23,8 @@ export function loadEnv(envFile: string) {
 
   dotenvExpand(envResult);
 }
+
+/* eslint-disable deprecation/deprecation */
 
 /** Handles locating an iModel.js configuration JSON file and merging it with the existing configuration.
  *

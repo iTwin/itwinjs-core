@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as chai from "chai";
-import { Client as OpenIdClient, Issuer } from "openid-client";
+import { Client, Issuer } from "openid-client";
 import * as path from "path";
 import { BeDuration, ClientRequestContext, Config } from "@bentley/bentleyjs-core";
 import { loadEnv } from "@bentley/config-loader";
@@ -38,7 +38,7 @@ describe("AgentAuthorizationClient (#integration)", () => {
     const client = new AgentAuthorizationClient(agentConfiguration);
     const url: string = await client.getUrl(requestContext);
 
-    const issuer: Issuer<OpenIdClient> = await client.discoverEndpoints(requestContext);
+    const issuer: Issuer<Client> = await client.discoverEndpoints(requestContext);
     chai.expect(issuer.token_endpoint).equals(`${url}/connect/token`);
     chai.expect(issuer.authorization_endpoint).equals(`${url}/connect/authorize`);
     chai.expect(issuer.introspection_endpoint).equals(`${url}/connect/introspect`);
