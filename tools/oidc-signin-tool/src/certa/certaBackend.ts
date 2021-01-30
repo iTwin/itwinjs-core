@@ -15,7 +15,10 @@ import { getTokenCallbackName, serializeToken } from "./certaCommon";
 
 /* eslint-disable no-console */
 
-loadEnv(path.join(__dirname, "..", "..", ".env"));
+// The assumption is the certa.json file is a peer of the `package.json` file and
+// when certa is invoked via a npm script (in the package.json) the `.env` will
+// also be a peer of both files.
+loadEnv(path.join(process.cwd(), ".env"));
 
 /** Signs in for the provided user.
  *
