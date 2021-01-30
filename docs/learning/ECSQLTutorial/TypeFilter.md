@@ -50,3 +50,5 @@ ECSQL allows filters by type
 <iframe class="embedded-console" src="/console/?imodel=HouseSample&query=SELECT * FROM bis.Element WHERE ECClassId IS NOT (ONLY Generic.PhysicalObject, ONLY Biscore.LightLocation)"></iframe>
 
 ---
+
+[**< Previous**](./ChangeSummaryQueries.md) &nbsp; | &nbsp; [**Next >**](./ConditionalExpr.md)

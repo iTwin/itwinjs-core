@@ -1,6 +1,6 @@
 # App Tailoring
 
-While the bulk of an iModel.js app is portable, it must also be tailored to fit each configuration and platform well. The app's UI and functionality can vary by configuration. And, the app can integrate platform-specific functionality.
+While the bulk of an iModel.js app is portable, it must also be tailored to fit each configuration and platform well. An app's UI and functionality may vary if it supports more than one configuration. And, an app can integrate platform-specific functionality.
 
 ## App Packaging and Deployment
 
@@ -20,7 +20,7 @@ An app [frontend](../learning/Glossary.md#frontend) typically has a different "m
   - You may apply the [backends-for-frontends pattern](#backends-for-frontends).
   - Web apps have several configuration options, as described in [the article on writing an interactive Web app](./WriteAnInteractiveWebApp.md).
 
-An app [backend](../learning/Glossary.md#backend) typically has a different "main" for each configuration. For more information, see:
+An app [backend](../learning/Glossary.md#backend) may have a different "main" if it supports more than one configuration. For more information, see:
 
 - [Web app](../learning/WriteAnInteractiveWebApp.md)
 - [Desktop app](../learning/WriteAnInteractiveDesktopApp.md)

@@ -1,6 +1,15 @@
 # Change Log - @bentley/ui-abstract
 
-This log was last generated on Fri, 08 Jan 2021 18:34:03 GMT and should not be manually modified.
+This log was last generated on Thu, 28 Jan 2021 13:39:27 GMT and should not be manually modified.
+
+## 2.11.0
+Thu, 28 Jan 2021 13:39:27 GMT
+
+### Updates
+
+- Add InstanceKey type description
+- Initial implementation of AccuDraw UI
+- Updated UI Learning docs
 
 ## 2.10.3
 Fri, 08 Jan 2021 18:34:03 GMT
