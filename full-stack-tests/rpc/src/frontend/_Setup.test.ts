@@ -58,7 +58,7 @@ before(async () => {
     case "http":
       return initializeCloud("http");
     case "electron":
-      return ElectronApp.startup({ electronApp: { rpcInterfaces } });
+      return ElectronApp.startup({ iModelApp: { rpcInterfaces } });
     case "direct": {
       // (global as any).window = undefined;
       // eslint-disable-next-line @typescript-eslint/no-var-requires

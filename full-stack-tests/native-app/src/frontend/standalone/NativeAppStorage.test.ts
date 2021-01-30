@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { NativeApp } from "@bentley/imodeljs-frontend";
-import { TestUtility } from "../hub/TestUtility";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronApp";
+import { NativeApp } from "@bentley/imodeljs-frontend";
 import { rpcInterfaces } from "../../common/RpcInterfaces";
+import { TestUtility } from "../hub/TestUtility";
 
 describe("NativeApp Storage frontend", () => {
   before(async () => {
-    await ElectronApp.startup({ electronApp: { rpcInterfaces } });
+    await ElectronApp.startup({ iModelApp: { rpcInterfaces } });
     await TestUtility.purgeStorageCache();
   });
 

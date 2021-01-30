@@ -11,9 +11,9 @@ import reactAxe from "react-axe";
 import * as ReactDOM from "react-dom";
 import { connect, Provider } from "react-redux";
 import { Store } from "redux"; // createStore,
-import { ClientRequestContext, Config, Id64String, isElectronRenderer, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Config, Id64String, isElectronRenderer, Logger, LogLevel, MobileUtils, OpenMode } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient } from "@bentley/context-registry-client";
-import { ElectronApp, ElectronAppOptions } from "@bentley/electron-manager/lib/ElectronApp";
+import { ElectronApp } from "@bentley/electron-manager/lib/ElectronApp";
 import { FrontendApplicationInsightsClient } from "@bentley/frontend-application-insights-client";
 import {
   BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration, FrontendAuthorizationClient,
@@ -22,19 +22,17 @@ import {
 import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
-import { BentleyCloudRpcManager, DesktopAuthorizationClientConfiguration, IModelVersion, RpcConfiguration, SyncMode } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcParams, DesktopAuthorizationClientConfiguration, IModelVersion, RpcConfiguration, SyncMode } from "@bentley/imodeljs-common";
 import {
   AccuSnap, AuthorizedFrontendRequestContext, DesktopAuthorizationClient, ExternalServerExtensionLoader, IModelApp, IModelAppOptions,
-  IModelConnection, NativeApp, NativeAppLogger, RenderSystem, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool, ViewState,
+  IModelConnection, NativeApp, NativeAppLogger, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool, ViewState, WebViewerApp, WebViewerAppOptions,
 } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { MarkupApp } from "@bentley/imodeljs-markup";
 import { AccessToken, ProgressInfo, UrlDiscoveryClient } from "@bentley/itwin-client";
 // To test map-layer extension comment out the following and ensure ui-test-app\build\imjs_extensions contains map-layers, if not see Readme.md in map-layers package.
 import { MapLayersUI } from "@bentley/map-layers";
-import {
-  MobileAuthorizationClient, MobileAuthorizationClientConfiguration, MobileRpcManager, MobileUtils,
-} from "@bentley/mobile-manager/lib/MobileFrontend";
+import { AndroidApp, IOSApp, MobileAuthorizationClient, MobileAuthorizationClientConfiguration } from "@bentley/mobile-manager/lib/MobileFrontend";
 import { PresentationUnitSystem } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { getClassName } from "@bentley/ui-abstract";
@@ -202,21 +200,16 @@ export class SampleAppIModelApp {
 
   public static get appUiSettings(): AppUiSettings { return SampleAppIModelApp._appUiSettings; }
 
-  public static async startup(opts: { electronApp?: ElectronAppOptions, iModelApp: IModelAppOptions }): Promise<void> {
-    opts.iModelApp.accuSnap = new SampleAppAccuSnap();
-    opts.iModelApp.notifications = new AppNotificationManager();
-    opts.iModelApp.uiAdmin = new FrameworkUiAdmin();
-    opts.iModelApp.accuDraw = new FrameworkAccuDraw();
-    opts.iModelApp.viewManager = new AppViewManager(true);  // Favorite Properties Support
+  public static async startup(opts: { webViewerApp: WebViewerAppOptions, iModelApp: IModelAppOptions }): Promise<void> {
     if (isElectronRenderer) {
       await ElectronApp.startup(opts);
       NativeAppLogger.initialize();
     } else if (MobileUtils.isIOSFrontend) {
-      IOSApp.startup();
+      await IOSApp.startup(opts);
     } else if (MobileUtils.isAndroidFrontend)
-      AndroidApp.startup();
+      await AndroidApp.startup(opts);
     else
-      await IModelApp.startup(opts.iModelApp);
+      await WebViewerApp.startup(opts);
 
     // For testing local extensions only, should not be used in production.
     IModelApp.extensionAdmin.addExtensionLoaderFront(new ExternalServerExtensionLoader("http://localhost:3000"));
@@ -739,28 +732,35 @@ async function main() {
     Logger.logInfo("Configuration", JSON.stringify(SampleAppIModelApp.testAppConfiguration)); // eslint-disable-line no-console
   }
 
-  const rpcInterfaces = getSupportedRpcs();
-  if (MobileUtils.isMobileFrontend) {
-    MobileRpcManager.initializeClient(rpcInterfaces);
-  } else if (process.env.imjs_gp_backend) {
+  let rpcParams: BentleyCloudRpcParams;
+  if (process.env.imjs_gp_backend) {
     const urlClient = new UrlDiscoveryClient();
     const requestContext = new ClientRequestContext();
     const orchestratorUrl = await urlClient.discoverUrl(requestContext, "iModelJsOrchestrator.K8S", undefined);
-    BentleyCloudRpcManager.initializeClient({ info: { title: "general-purpose-imodeljs-backend", version: "v2.0" }, uriPrefix: orchestratorUrl }, rpcInterfaces);
+    rpcParams = { info: { title: "general-purpose-imodeljs-backend", version: "v2.0" }, uriPrefix: orchestratorUrl };
   } else {
-    BentleyCloudRpcManager.initializeClient({ info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" }, rpcInterfaces);
+    rpcParams = { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
   }
 
   const oidcConfig = getOidcConfiguration();
   const oidcClient = await createOidcClient(new ClientRequestContext(), oidcConfig);
 
-  // Set up render option to displaySolarShadows.
-  const renderSystemOptions: RenderSystem.Options = {
-    displaySolarShadows: true,
+  const opts = {
+    iModelApp: {
+      accuSnap: new SampleAppAccuSnap(),
+      notifications: new AppNotificationManager(),
+      uiAdmin: new FrameworkUiAdmin(),
+      accuDraw: new FrameworkAccuDraw(),
+      viewManager: new AppViewManager(true),  // Favorite Properties Support
+      renderSys: { displaySolarShadows: true },
+      rpcInterfaces: getSupportedRpcs(),
+      authorizationClient: oidcClient,
+    },
+    webViewerApp: { rpcParams },
   };
 
   // Start the app.
-  await SampleAppIModelApp.startup({ electronApp: { rpcInterfaces }, iModelApp: { renderSys: renderSystemOptions, authorizationClient: oidcClient } });
+  await SampleAppIModelApp.startup(opts);
 
   // Add ApplicationInsights telemetry client
   const iModelJsApplicationInsightsKey = Config.App.getString("imjs_telemetry_application_insights_instrumentation_key", "");

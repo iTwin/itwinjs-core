@@ -10,7 +10,7 @@ import { assert, BeEvent, ClientRequestContext, Logger } from "@bentley/bentleyj
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { BackendRequestContext } from "@bentley/imodeljs-backend";
 import { AccessToken, ImsAuthorizationClient } from "@bentley/itwin-client";
-import { defaultMobileAuthorizationClientExpiryBuffer, MobileAuthorizationClientConfiguration } from "../MobileAuthorizationClientConfiguration";
+import { defaultMobileAuthorizationClientExpiryBuffer, MobileAuthorizationClientConfiguration } from "../common/MobileAuthorizationClientConfiguration";
 import { MobileHost } from "./MobileHost";
 
 /** Utility to provide OIDC/OAuth tokens from native ios app to frontend

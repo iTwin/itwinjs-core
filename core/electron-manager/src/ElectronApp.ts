@@ -3,16 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { isElectronRenderer } from "@bentley/bentleyjs-core";
-import { IpcListener, IpcSocketFrontend, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
+import { IpcListener, IpcSocketFrontend } from "@bentley/imodeljs-common";
 import { AsyncMethodsOf, IModelAppOptions, IpcApp, NativeApp, PromiseReturnType } from "@bentley/imodeljs-frontend";
 import { ITwinElectronApi } from "./ElectronPreload";
 import { ElectronRpcManager } from "./ElectronRpcManager";
-
-/** @alpha */
-export interface ElectronAppOptions {
-  /** A list of RPC interfaces to register */
-  rpcInterfaces?: RpcInterfaceDefinition[];
-}
 
 /**
  * Frontend Ipc support for Electron apps.
@@ -49,12 +43,12 @@ export class ElectronApp {
    * @param opts Options for your ElectronApp
    * @note This method must only be called from the frontend of an Electron app (i.e. when [isElectronRenderer]($bentley) is `true`).
    */
-  public static async startup(opts?: { electronApp?: ElectronAppOptions, iModelApp?: IModelAppOptions }) {
+  public static async startup(opts?: { iModelApp?: IModelAppOptions }) {
     if (!isElectronRenderer)
       throw new Error("Not running under Electron");
     if (!this.isValid) {
       this._ipc = new ElectronIpc();
-      ElectronRpcManager.initializeFrontend(this._ipc, opts?.electronApp?.rpcInterfaces);
+      ElectronRpcManager.initializeFrontend(this._ipc, opts?.iModelApp?.rpcInterfaces);
     }
     await NativeApp.startup({ ipcApp: { ipc: this._ipc! }, ...opts });
   }

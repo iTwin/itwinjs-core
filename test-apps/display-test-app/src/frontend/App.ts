@@ -3,33 +3,41 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { isElectronRenderer, MobileUtils } from "@bentley/bentleyjs-core";
+import { ElectronApp } from "@bentley/electron-manager/lib/ElectronApp";
 import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import {
-  AccuSnap, AsyncMethodsOf, ExternalServerExtensionLoader, IModelApp, IModelAppOptions, IpcApp, PromiseReturnType, SelectionTool, SnapMode, TileAdmin, Tool,
+  Editor3dRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, SnapshotIModelRpcInterface,
+  StandaloneIModelRpcInterface,
+} from "@bentley/imodeljs-common";
+import {
+  AccuSnap, AsyncMethodsOf, ExternalServerExtensionLoader, IModelApp, IpcApp, PromiseReturnType, RenderSystem, SelectionTool, SnapMode, TileAdmin,
+  Tool, WebViewerApp,
 } from "@bentley/imodeljs-frontend";
+import { AndroidApp, IOSApp } from "@bentley/mobile-manager/lib/MobileFrontend";
+import { DtaConfiguration } from "../common/DtaConfiguration";
+import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
+import { DtaRpcInterface } from "../common/DtaRpcInterface";
+import { ToggleAspectRatioSkewDecoratorTool } from "./AspectRatioSkewDecorator";
+import { ApplyModelTransformTool } from "./DisplayTransform";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
+import { DeleteElementsTool, EditingSessionTool, MoveElementTool, PlaceLineStringTool, RedoTool, UndoTool } from "./EditingTools";
+import { FenceClassifySelectedTool } from "./Fence";
 import { RecordFpsTool } from "./FpsMonitor";
 import { IncidentMarkerDemoTool } from "./IncidentMarkerDemo";
 import { MarkupSelectTestTool } from "./MarkupSelectTestTool";
+import { Notifications } from "./Notifications";
 import { OutputShadersTool } from "./OutputShadersTool";
+import { PathDecorationTestTool } from "./PathDecorationTest";
 import { ToggleShadowMapTilesTool } from "./ShadowMapDecoration";
 import {
   CloneViewportTool, CloseIModelTool, CloseWindowTool, CreateWindowTool, DockWindowTool, FocusWindowTool, MaximizeWindowTool, OpenIModelTool,
   ReopenIModelTool, ResizeWindowTool, RestoreWindowTool, Surface,
 } from "./Surface";
-import { Notifications } from "./Notifications";
+import { TimePointComparisonTool } from "./TimePointComparison";
 import { UiManager } from "./UiManager";
 import { MarkupTool, ModelClipTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
-import { ApplyModelTransformTool } from "./DisplayTransform";
-import { TimePointComparisonTool } from "./TimePointComparison";
-import { FenceClassifySelectedTool } from "./Fence";
-import { ToggleAspectRatioSkewDecoratorTool } from "./AspectRatioSkewDecorator";
-import { PathDecorationTestTool } from "./PathDecorationTest";
-import { DeleteElementsTool, EditingSessionTool, MoveElementTool, PlaceLineStringTool, RedoTool, UndoTool } from "./EditingTools";
-import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
-import { isElectronRenderer } from "@bentley/bentleyjs-core";
-import { ElectronApp, ElectronAppOptions } from "@bentley/electron-manager/lib/ElectronApp";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -126,15 +134,40 @@ export class DisplayTestApp {
   public static get surface() { return this._surface!; }
   public static set surface(surface: Surface) { this._surface = surface; }
 
-  public static async startup(opts: { electronApp?: ElectronAppOptions, iModelApp: IModelAppOptions }): Promise<void> {
-    opts.iModelApp.accuSnap = new DisplayTestAppAccuSnap();
-    opts.iModelApp.notifications = new Notifications();
-    opts.iModelApp.tileAdmin = TileAdmin.create(DisplayTestApp.tileAdminProps);
-    opts.iModelApp.uiAdmin = new UiManager();
+  public static async startup(configuration: DtaConfiguration, renderSys: RenderSystem.Options): Promise<void> {
+    const opts = {
+      iModelApp: {
+        accuSnap: new DisplayTestAppAccuSnap(),
+        notifications: new Notifications(),
+        tileAdmin: TileAdmin.create(DisplayTestApp.tileAdminProps),
+        uiAdmin: new UiManager(),
+        renderSys,
+        rpcInterfaces: [
+          DtaRpcInterface,
+          Editor3dRpcInterface,
+          IModelReadRpcInterface,
+          IModelTileRpcInterface,
+          IModelWriteRpcInterface,
+          SnapshotIModelRpcInterface,
+          StandaloneIModelRpcInterface,
+        ],
+      },
+      webViewerApp: {
+        rpcParams: {
+          uriPrefix: configuration.customOrchestratorUri || "http://localhost:3001",
+          info: { title: "DisplayTestApp", version: "v1.0" },
+        },
+      },
+    };
+
     if (isElectronRenderer)
       await ElectronApp.startup(opts);
+    else if (MobileUtils.isIOSFrontend)
+      await IOSApp.startup(opts);
+    else if (MobileUtils.isAndroidFrontend)
+      await AndroidApp.startup(opts);
     else
-      await IModelApp.startup(opts.iModelApp);
+      await WebViewerApp.startup(opts);
 
     // For testing local extensions only, should not be used in production.
     IModelApp.extensionAdmin.addExtensionLoaderFront(new ExternalServerExtensionLoader("http://localhost:3000"));

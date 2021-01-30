@@ -7,9 +7,8 @@ import "./index.css";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Config, isElectronRenderer, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import {
-  BentleyCloudRpcManager, BentleyCloudRpcParams, RpcConfiguration,
-} from "@bentley/imodeljs-common";
+import { ElectronApp } from "@bentley/electron-manager/lib/ElectronApp";
+import { BentleyCloudRpcManager, BentleyCloudRpcParams, RpcConfiguration } from "@bentley/imodeljs-common";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { PresentationUnitSystem } from "@bentley/presentation-common";
 // __PUBLISH_EXTRACT_START__ Presentation.Frontend.Imports
@@ -19,7 +18,6 @@ import { UiComponents } from "@bentley/ui-components";
 import rpcs from "../common/Rpcs";
 import { MyAppFrontend } from "./api/MyAppFrontend";
 import App from "./components/app/App";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronApp";
 
 // initialize logging
 Logger.initializeToConsole();
@@ -39,7 +37,7 @@ Logger.setLevelDefault(LogLevel.Warning);
 export class SampleApp {
   private static _ready: Promise<void>;
   public static async startup(): Promise<void> {
-    await ElectronApp.startup({ electronApp: { rpcInterfaces: rpcs } });
+    await ElectronApp.startup({ iModelApp: { rpcInterfaces: rpcs } });
     const readyPromises = new Array<Promise<void>>();
 
     const localizationNamespace = IModelApp.i18n.registerNamespace("Sample");

@@ -2,25 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContext, isElectronRenderer } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, isElectronRenderer, MobileUtils } from "@bentley/bentleyjs-core";
 import {
   BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration,
 } from "@bentley/frontend-authorization-client";
 import {
-  BentleyCloudRpcManager, CloudStorageContainerUrl, CloudStorageTileCache, DesktopAuthorizationClientConfiguration, Editor3dRpcInterface,
-  IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, RpcConfiguration, RpcInterfaceDefinition, SnapshotIModelRpcInterface,
-  StandaloneIModelRpcInterface, TileContentIdentifier,
+  CloudStorageContainerUrl, CloudStorageTileCache, DesktopAuthorizationClientConfiguration, RpcConfiguration, TileContentIdentifier,
 } from "@bentley/imodeljs-common";
 import {
   DesktopAuthorizationClient, FrontendRequestContext, IModelApp, IModelConnection, RenderDiagnostics, RenderSystem,
 } from "@bentley/imodeljs-frontend";
 import { AccessToken } from "@bentley/itwin-client";
-import {
-  MobileAuthorizationClient, MobileAuthorizationClientConfiguration, MobileRpcManager, MobileUtils,
-} from "@bentley/mobile-manager/lib/MobileFrontend";
+import { MobileAuthorizationClient, MobileAuthorizationClientConfiguration } from "@bentley/mobile-manager/lib/MobileFrontend";
 import { WebGLExtensionName } from "@bentley/webgl-compatibility";
 import { DtaConfiguration } from "../common/DtaConfiguration";
-import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { DisplayTestApp } from "./App";
 import { openStandaloneIModel } from "./openStandaloneIModel";
 import { Surface } from "./Surface";
@@ -207,25 +202,7 @@ const dtaFrontendMain = async () => {
   if (configuration.useFakeCloudStorageTileCache)
     (CloudStorageTileCache as any)._instance = new FakeTileCache();
 
-  // Choose RpcConfiguration based on whether we are in electron or browser
-  const rpcInterfaces: RpcInterfaceDefinition[] = [
-    DtaRpcInterface,
-    Editor3dRpcInterface,
-    IModelReadRpcInterface,
-    IModelTileRpcInterface,
-    IModelWriteRpcInterface,
-    SnapshotIModelRpcInterface,
-    StandaloneIModelRpcInterface,
-  ];
-
-  if (MobileUtils.isMobileFrontend) {
-    MobileRpcManager.initializeClient(rpcInterfaces);
-  } else {
-    const uriPrefix = configuration.customOrchestratorUri || "http://localhost:3001";
-    BentleyCloudRpcManager.initializeClient({ info: { title: "SimpleViewApp", version: "v1.0" }, uriPrefix }, rpcInterfaces);
-  }
-
-  await DisplayTestApp.startup({ electronApp: { rpcInterfaces }, iModelApp: { renderSys: renderSystemOptions } });
+  await DisplayTestApp.startup(configuration, renderSystemOptions);
   if (false !== configuration.enableDiagnostics)
     IModelApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
 

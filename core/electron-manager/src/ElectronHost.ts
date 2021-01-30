@@ -201,11 +201,12 @@ export class ElectronHost {
       this.frontendURL = eopt?.frontendURL ?? this._developmentServer ? `http://localhost:${frontendPort}` : `${this._electronFrontend}index.html`;
       this.appIconPath = path.join(this.webResourcesPath, eopt?.iconName ?? "appicon.ico");
       this.rpcConfig = ElectronRpcManager.initializeBackend(this._ipc, eopt?.rpcInterfaces);
-      eopt?.ipcHandlers?.forEach((ipc) => ipc.register());
     }
     await NativeHost.startup({ ipcHost: { socket: this._ipc }, iModelHost: opts?.iModelHost });
-    if (IpcHost.isValid)
+    if (IpcHost.isValid) {
       ElectronBackendImpl.register();
+      opts?.electronHost?.ipcHandlers?.forEach((ipc) => ipc.register());
+    }
   }
 }
 

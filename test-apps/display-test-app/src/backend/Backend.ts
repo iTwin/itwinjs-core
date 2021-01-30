@@ -5,7 +5,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { UrlFileHandler } from "@bentley/backend-itwin-client";
-import { Config, isElectronMain, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Config, isElectronMain, Logger, LogLevel, MobileUtils } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib/ElectronHost";
 import { IModelBankClient } from "@bentley/imodelhub-client";
@@ -14,7 +14,7 @@ import {
   Editor3dRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, RpcInterfaceDefinition, RpcManager,
   SnapshotIModelRpcInterface, StandaloneIModelRpcInterface,
 } from "@bentley/imodeljs-common";
-import { AndroidHost, IOSHost, MobileUtils } from "@bentley/mobile-manager/lib/MobileBackend";
+import { AndroidHost, IOSHost } from "@bentley/mobile-manager/lib/MobileBackend";
 import { DtaConfiguration } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { FakeTileCacheService } from "./FakeTileCacheService";

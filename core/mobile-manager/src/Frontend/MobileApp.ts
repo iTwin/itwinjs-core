@@ -4,8 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { BeEvent, Logger } from "@bentley/bentleyjs-core";
+import { IModelReadRpcInterface, IModelTileRpcInterface, IpcWebSocketFrontend } from "@bentley/imodeljs-common";
 import { AsyncMethodsOf, IModelAppOptions, IpcApp, NativeApp, NotificationHandler, PromiseReturnType } from "@bentley/imodeljs-frontend";
-import { mobileAppChannel, MobileAppFunctions, mobileAppNotify, MobileNotifications } from "../MobileAppProps";
+import { mobileAppChannel, MobileAppFunctions, mobileAppNotify, MobileNotifications } from "../common/MobileAppProps";
+import { MobileRpcManager } from "../common/MobileRpcManager";
 
 /** receive notifications from backend */
 class MobileAppNotifyHandler extends NotificationHandler implements MobileNotifications {
@@ -22,7 +24,6 @@ class MobileAppNotifyHandler extends NotificationHandler implements MobileNotifi
   public notifyEnterForeground() { MobileApp.onEnterBackground.raiseEvent(); }
   public notifyEnterBackground() { MobileApp.onEnterBackground.raiseEvent(); }
   public notifyWillTerminate() { MobileApp.onWillTerminate.raiseEvent(); }
-
 }
 
 export class MobileApp {
@@ -41,12 +42,14 @@ export class MobileApp {
    * This is called by either ElectronApp.startup or MobileApp.startup - it should not be called directly
    * @internal
    */
-  public static async startup(opts: { iModelApp?: IModelAppOptions }) {
-
-    await NativeApp.startup(opts);
-    if (this._isValid)
-      return;
-    this._isValid = true;
+  public static async startup(opts?: { iModelApp?: IModelAppOptions }) {
+    if (!this._isValid) {
+      const rpcInterfaces = opts?.iModelApp?.rpcInterfaces ?? [IModelReadRpcInterface, IModelTileRpcInterface];
+      MobileRpcManager.initializeClient(rpcInterfaces);
+      this._isValid = true;
+    }
+    const socket = new IpcWebSocketFrontend(); // needs work
+    await NativeApp.startup({ ipcApp: { ipc: socket }, iModelApp: opts?.iModelApp });
 
     MobileAppNotifyHandler.register(); // receives notifications from backend
   }

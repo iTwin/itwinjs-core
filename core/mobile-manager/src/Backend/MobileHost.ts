@@ -7,8 +7,8 @@ import { BeEvent, BriefcaseStatus, ClientRequestContext, Logger } from "@bentley
 import { IModelHostConfiguration, IpcHandler, IpcHostOptions, NativeHost } from "@bentley/imodeljs-backend";
 import { IpcApp } from "@bentley/imodeljs-frontend";
 import { AccessToken, CancelRequest, DownloadFailed, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
-import { BatteryState, mobileAppChannel, MobileAppFunctions, Orientation } from "../MobileAppProps";
-import { MobileAuthorizationClientConfiguration } from "../MobileAuthorizationClientConfiguration";
+import { BatteryState, mobileAppChannel, MobileAppFunctions, Orientation } from "../common/MobileAppProps";
+import { MobileAuthorizationClientConfiguration } from "../common/MobileAuthorizationClientConfiguration";
 
 export type MobileCompletionCallback = (downloadUrl: string, downloadFileUrl: string, cancelled: boolean, err?: string) => void;
 export type MobileProgressCallback = (bytesWritten: number, totalBytesWritten: number, totalBytesExpectedToWrite: number) => void;

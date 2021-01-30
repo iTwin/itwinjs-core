@@ -3,8 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-export * from "./Frontend/AuthorizationFrontend";
-export * from "./Frontend/MobileApp";
-export * from "./MobileRpcManager";
-export * from "./MobileAuthorizationClientConfiguration";
-export * from "./MobileUtils";
+export * from "./frontend/AndroidApp";
+export * from "./frontend/AuthorizationFrontend";
+export * from "./frontend/IOSApp";
+export * from "./frontend/MobileApp";
+export * from "./common/MobileRpcManager";
+export * from "./common/MobileAuthorizationClientConfiguration";

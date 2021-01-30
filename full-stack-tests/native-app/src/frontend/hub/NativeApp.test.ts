@@ -4,15 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Config, GuidString } from "@bentley/bentleyjs-core";
+import { ElectronApp } from "@bentley/electron-manager/lib/ElectronApp";
 import { BriefcaseDownloader, IModelVersion, SyncMode } from "@bentley/imodeljs-common";
 import { IModelApp, NativeApp, NativeAppLogger } from "@bentley/imodeljs-frontend";
 import { ProgressInfo } from "@bentley/itwin-client";
 import { TestFrontendAuthorizationClient, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
+import { rpcInterfaces } from "../../common/RpcInterfaces";
 import { usingOfflineScope } from "./HttpRequestHook";
 import { TestChangeSetUtility } from "./TestChangeSetUtility";
 import { TestUtility } from "./TestUtility";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronApp";
-import { rpcInterfaces } from "../../common/RpcInterfaces";
 
 describe("NativeApp (#integration)", () => {
   let testProjectName: string;
@@ -22,8 +22,8 @@ describe("NativeApp (#integration)", () => {
 
   before(async () => {
     await ElectronApp.startup({
-      electronApp: { rpcInterfaces },
       iModelApp: {
+        rpcInterfaces,
         applicationId: "1234",
         applicationVersion: "testappversion",
         sessionId: "testsessionid",

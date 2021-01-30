@@ -13,7 +13,7 @@ import {
 } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { addCsrfHeader, IModelClient, IModelHubClient } from "@bentley/imodelhub-client";
-import { IModelStatus, RpcConfiguration, RpcRequest } from "@bentley/imodeljs-common";
+import { IModelStatus, RpcConfiguration, RpcInterfaceDefinition, RpcRequest } from "@bentley/imodeljs-common";
 import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
 import { AccessToken, IncludePrefix } from "@bentley/itwin-client";
 import { ConnectSettingsClient, SettingsAdmin } from "@bentley/product-settings-client";
@@ -133,6 +133,7 @@ export interface IModelAppOptions {
    * @internal
    */
   featureToggles?: FeatureToggleClient;
+  rpcInterfaces?: RpcInterfaceDefinition[];
 }
 
 /** Options for [[IModelApp.makeModalDiv]]

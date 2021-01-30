@@ -5,10 +5,10 @@
 
 import * as fs from "fs";
 import * as path from "path";
-import { Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Config, Logger, LogLevel, MobileUtils } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@bentley/imodeljs-common";
-import { AndroidHost, IOSHost, MobileRpcManager, MobileUtils } from "@bentley/mobile-manager/lib/MobileBackend";
+import { AndroidHost, IOSHost, MobileRpcManager } from "@bentley/mobile-manager/lib/MobileBackend";
 import { Presentation } from "@bentley/presentation-backend";
 import { PresentationRpcInterface } from "@bentley/presentation-common";
 
@@ -38,6 +38,7 @@ import { PresentationRpcInterface } from "@bentley/presentation-common";
       enableSchemasPreload: true,
       updatesPollInterval: 100,
     });
+
     MobileRpcManager.initializeImpl([
       IModelReadRpcInterface,
       IModelTileRpcInterface,

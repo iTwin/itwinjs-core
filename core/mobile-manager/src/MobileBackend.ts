@@ -3,10 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-export * from "./Backend/AndroidHost";
-export * from "./Backend/iOSHost";
-export * from "./Backend/MobileHost";
-export * from "./Backend/AuthorizationBackend";
-export * from "./MobileRpcManager";
-export * from "./MobileUtils";
+// Barrel file for backend of a mobile application
+
+export * from "./backend/AndroidHost";
+export * from "./backend/iOSHost";
+export * from "./backend/MobileHost";
+export * from "./backend/AuthorizationBackend";
+export * from "./common/MobileRpcManager";
 

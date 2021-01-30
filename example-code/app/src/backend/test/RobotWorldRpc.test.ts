@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { ClientRequestContext, Id64, Id64String, isElectronRenderer, OpenMode } from "@bentley/bentleyjs-core";
+import { ElectronApp } from "@bentley/electron-manager/lib/ElectronApp";
 import { Angle, Point3d } from "@bentley/geometry-core";
 import { IModelJsFs, PhysicalModel, StandaloneDb } from "@bentley/imodeljs-backend";
 import {
@@ -16,7 +17,6 @@ import { RobotWorldEngine } from "../RobotWorldEngine";
 import { RobotWorld } from "../RobotWorldSchema";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { IModelTestUtils } from "./Utils";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronApp";
 
 const requestContext = new ClientRequestContext();
 
@@ -139,6 +139,6 @@ export function initializeRpcClientBentleyCloud(interfaces: RpcInterfaceDefiniti
 // __PUBLISH_EXTRACT_START__ RpcInterface.initializeFrontendForElectron
 
 export async function initializeElectron(rpcInterfaces: RpcInterfaceDefinition[]) {
-  await ElectronApp.startup({ electronApp: { rpcInterfaces } });
+  await ElectronApp.startup({ iModelApp: { rpcInterfaces } });
 }
 // __PUBLISH_EXTRACT_END__
