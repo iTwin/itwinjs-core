@@ -91,7 +91,7 @@ function QuantityFormatStage({ initialQuantityType }: { initialQuantityType: Qua
   const handleOnFormatChanged = React.useCallback(async (formatProps: FormatProps) => {
     if (activeFormatterSpec) {
       const newSpec = await IModelApp.quantityFormatter.generateFormatterSpecByType(activeQuantityType, formatProps);
-      const formatPropsInUse = await IModelApp.quantityFormatter.getFormatPropsByQuantityType(activeQuantityType);
+      const formatPropsInUse = IModelApp.quantityFormatter.getFormatPropsByQuantityType(activeQuantityType);
       if (formatPropsInUse)
         setSaveEnabled(!formatAreEqual(formatProps, formatPropsInUse));
       setActiveFormatterSpec(newSpec);

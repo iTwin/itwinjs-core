@@ -189,7 +189,8 @@ export class BearingQuantityType implements CustomQuantityTypeEntry {
     if (initialProps)
       quantityTypeEntry.formatProps = initialProps;
     quantityTypeEntry._persistenceUnit = await IModelApp.quantityFormatter.findUnitByName(quantityTypeEntry._persistenceUnitName);
-    if (!IModelApp.quantityFormatter.registerQuantityType (quantityTypeEntry)) {
+    const wasRegistered = await IModelApp.quantityFormatter.registerQuantityType (quantityTypeEntry);
+    if (!wasRegistered) {
       Logger.logInfo("BearingQuantityType",
         `Unable to register QuantityType [BearingQuantityType] with key '${quantityTypeEntry.key}'`);
     }
