@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/presentation-backend",
-      "comment": "added default units map",
+      "comment": "Added a way to set default property formatting",
       "type": "none"
     }
   ],

@@ -575,7 +575,7 @@ class ECClassHierarchy {
   }
 }
 
-function findFieldByLabel(fields: Field[], label: string, allFields?: Field[]): Field | undefined {
+export function findFieldByLabel(fields: Field[], label: string, allFields?: Field[]): Field | undefined {
   const isTopLevel = (undefined === allFields);
   if (!allFields)
     allFields = new Array<Field>();

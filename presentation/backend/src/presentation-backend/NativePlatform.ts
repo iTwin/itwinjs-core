@@ -8,11 +8,10 @@
 
 import { ClientRequestContext, IDisposable } from "@bentley/bentleyjs-core";
 import { IModelDb, IModelHost, IModelJsNative } from "@bentley/imodeljs-backend";
-import { FormatProps } from "@bentley/imodeljs-quantity";
 import {
   DiagnosticsScopeLogs, PresentationError, PresentationStatus, UpdateInfoJSON, VariableValueJSON, VariableValueTypes,
 } from "@bentley/presentation-common";
-import { HierarchyCacheMode, PresentationManagerMode } from "./PresentationManager";
+import { HierarchyCacheMode, PresentationManagerMode, UnitSystemFormat } from "./PresentationManager";
 
 /** @internal */
 export enum NativePlatformRequestTypes {
@@ -69,11 +68,8 @@ export interface DefaultNativePlatformProps {
   isChangeTrackingEnabled: boolean;
   cacheConfig?: IModelJsNative.ECPresentationHierarchyCacheConfig;
   contentCacheSize?: number;
-  defaultFormatsMap?: {
-    [phenomenon: string]: {
-      unitSystems: string[];
-      format: FormatProps;
-    };
+  defaultFormats?: {
+    [phenomenon: string]: UnitSystemFormat;
   };
 }
 
@@ -86,7 +82,7 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
     public constructor() {
       const mode = (props.mode === PresentationManagerMode.ReadOnly) ? IModelJsNative.ECPresentationManagerMode.ReadOnly : IModelJsNative.ECPresentationManagerMode.ReadWrite;
       const cacheConfig = props.cacheConfig ?? { mode: HierarchyCacheMode.Disk, directory: "" };
-      const defaultFormatsMap = props.defaultFormatsMap ?  this.getSerializedMap(props.defaultFormatsMap) : {};
+      const defaultFormatsMap = props.defaultFormats ?  this.getSerializedDefaultFormatsMap(props.defaultFormats) : {};
       this._nativeAddon = new IModelHost.platform.ECPresentationManager({ ...props, mode, cacheConfig, defaultFormatsMap});
     }
     private getStatus(responseStatus: IModelJsNative.ECPresentationStatus): PresentationStatus {
@@ -96,7 +92,7 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
         default: return PresentationStatus.Error;
       }
     }
-    private getSerializedMap(defaultMap: { [phenomenon: string]: { unitSystems: string[], format: FormatProps } }){
+    private getSerializedDefaultFormatsMap(defaultMap: { [phenomenon: string]: UnitSystemFormat }){
       const res: {
         [phenomenon: string]: {
           unitSystems: string[];

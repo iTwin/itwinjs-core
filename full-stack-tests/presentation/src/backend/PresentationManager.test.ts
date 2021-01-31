@@ -6,7 +6,8 @@ import { expect } from "chai";
 import { ClientRequestContext, Guid } from "@bentley/bentleyjs-core";
 import { IModelDb, SnapshotDb } from "@bentley/imodeljs-backend";
 import { PresentationManager } from "@bentley/presentation-backend";
-import { ContentSpecificationTypes, Field, KeySet, PresentationUnitSystem, Ruleset, RuleTypes } from "@bentley/presentation-common";
+import { ContentSpecificationTypes, Item, KeySet, PresentationUnitSystem, Ruleset, RuleTypes } from "@bentley/presentation-common";
+import { findFieldByLabel } from "../frontend/Content.test";
 import { initialize, terminate } from "../IntegrationTests";
 
 describe("PresentationManager", () => {
@@ -23,7 +24,7 @@ describe("PresentationManager", () => {
     await terminate();
   });
 
-  describe("Calculated Properties", () => {
+  describe("Property Formatting", () => {
     const ruleset: Ruleset = {
       id: Guid.createValue(),
       rules: [{
@@ -33,7 +34,7 @@ describe("PresentationManager", () => {
     };
 
     const keys = KeySet.fromJSON({ instanceKeys: [["Generic:PhysicalObject", ["0x74"]]], nodeKeys: [] });
-    it("creates calculated fields without defaultMap", async () => {
+    it("formats property when it doesn't have format for requested unit system", async () => {
       const manager: PresentationManager = new PresentationManager();
       const descriptor = await manager.getContentDescriptor({
         imodel,
@@ -46,10 +47,13 @@ describe("PresentationManager", () => {
       expect(descriptor).to.not.be.undefined;
       const field = findFieldByLabel(descriptor!.fields, "cm2")!;
       expect(field).not.to.be.undefined;
-      const allDistinctValues =await manager.getPagedDistinctValues({ imodel, rulesetOrId: ruleset, keys, descriptor: descriptor!, fieldDescriptor: field.getFieldDescriptor(), requestContext: new ClientRequestContext() });
-      expect(allDistinctValues.items[0].displayValue).to.eq("150.1235 cm²");
+      const content = await manager.getContent({ imodel, keys, descriptor: descriptor!, rulesetOrId: ruleset, requestContext: ClientRequestContext.current });
+      // const content = await manager.getContent({ imodel, keys, descriptor: descriptor!, rulesetOrId: ruleset, requestContext: ClientRequestContext.current });
+      // const allDistinctValues = await manager.getPagedDistinctValues({ imodel, rulesetOrId: ruleset, keys, descriptor: descriptor!, fieldDescriptor: field.getFieldDescriptor(), requestContext: new ClientRequestContext() });
+      // expect(allDistinctValues.items[0].displayValue).to.eq("150.1235 cm²");
+      expect(content!.contentSet).to.eq([new Item([], "", "", undefined, {}, {}, [])]);
     });
-    it("creates calculated fields with defaultMap", async () => {
+    it("formats property using default format when it doesn't have format for requested unit system", async () => {
       const formatProps = {
         composite:
         {includeZero:true,
@@ -63,7 +67,7 @@ describe("PresentationManager", () => {
 
       const map = {
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        AREA: {unitSystems: ["Undefined"], format: formatProps},
+        AREA: {unitSystems: [PresentationUnitSystem.BritishImperial, "Undefined"], format: formatProps},
       };
 
       const manager: PresentationManager = new PresentationManager({defaultFormatsMap: map});
@@ -81,29 +85,38 @@ describe("PresentationManager", () => {
       const allDistinctValues = await manager.getPagedDistinctValues({ imodel, rulesetOrId: ruleset, keys, descriptor: descriptor!, fieldDescriptor: field.getFieldDescriptor(), requestContext: new ClientRequestContext() });
       expect(allDistinctValues.items[0].displayValue).to.eq("0.1616 ft²");
     });
+    it("formats property using provided format when it has format for requested unit system, even when default unit is given", async () => {
+      const formatProps = {
+        composite:
+        {includeZero:true,
+          spacer:" ",
+          units:[{label:"ft²",name:"SQ_FT"}],
+        },
+        formatTraits:"KeepSingleZero|KeepDecimalPoint|ShowUnitLabel",
+        precision:4,
+        type:"Decimal",
+        uomSeparator:""};
 
-    function findFieldByLabel(fields: Field[], label: string, allFields?: Field[]): Field | undefined {
-      const isTopLevel = (undefined === allFields);
-      if (!allFields)
-        allFields = new Array<Field>();
-      for (const field of fields) {
-        if (field.label === label)
-          return field;
+      const map = {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        AREA: {unitSystems: [PresentationUnitSystem.Metric], format: formatProps},
+      };
 
-        if (field.isNestedContentField()) {
-          const nestedMatchingField = findFieldByLabel(field.nestedFields, label, allFields);
-          if (nestedMatchingField)
-            return nestedMatchingField;
-        }
-
-        allFields.push(field);
-      }
-      if (isTopLevel) {
-        // eslint-disable-next-line no-console
-        console.error(`Field '${label}' not found. Available fields: [${allFields.map((f) => `"${f.label}"`).join(", ")}]`);
-      }
-      return undefined;
-    }
+      const manager: PresentationManager = new PresentationManager({defaultFormatsMap: map});
+      const descriptor = await manager.getContentDescriptor({
+        imodel,
+        rulesetOrId: ruleset,
+        keys,
+        displayType: "Grid",
+        requestContext: new ClientRequestContext(),
+        unitSystem: PresentationUnitSystem.Metric,
+      });
+      expect(descriptor).to.not.be.undefined;
+      const field = findFieldByLabel(descriptor!.fields, "cm2")!;
+      expect(field).not.to.be.undefined;
+      const allDistinctValues = await manager.getPagedDistinctValues({ imodel, rulesetOrId: ruleset, keys, descriptor: descriptor!, fieldDescriptor: field.getFieldDescriptor(), requestContext: new ClientRequestContext() });
+      expect(allDistinctValues.items[0].displayValue).to.eq("150.1235 cm²");
+    });
   });
 
 });

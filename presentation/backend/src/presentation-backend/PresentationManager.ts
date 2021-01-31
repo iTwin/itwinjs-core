@@ -113,6 +113,11 @@ export interface HybridCacheConfig extends HierarchyCacheConfigBase {
   disk?: DiskHierarchyCacheConfig;
 }
 
+export interface UnitSystemFormat {
+  unitSystems: PresentationUnitSystem[];
+  format: FormatProps;
+};
+
 /**
  * Properties that can be used to configure [[PresentationManager]]
  * @public
@@ -250,11 +255,8 @@ export interface PresentationManagerProps {
   /**
    * A map for setting up default formats.
    *  @alpha */
-  defaultFormatsMap?: {
-    [phenomenon: string]: {
-      unitSystems: string[];
-      format: FormatProps;
-    };
+  defaultFormats?: {
+    [phenomenon: string]: UnitSystemFormat;
   };
 
   /**
@@ -318,7 +320,7 @@ export class PresentationManager {
         isChangeTrackingEnabled,
         cacheConfig: createCacheConfig(this._props.cacheConfig),
         contentCacheSize: this._props.contentCacheSize,
-        defaultFormatsMap: this._props.defaultFormatsMap,
+        defaultFormats: this._props.defaultFormats,
       });
       this._nativePlatform = new nativePlatformImpl();
     }
