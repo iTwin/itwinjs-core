@@ -1041,9 +1041,15 @@ export class QuantityFormatter implements UnitsProvider {
     if (isCustomQuantityTypeEntry(quantityEntry))
       return quantityEntry.generateFormatterSpec (formatProps, this as UnitsProvider);
 
-    const actualFormat = new Format(quantityEntry.key);
-    await actualFormat.fromJSON(this, formatProps);
-    return FormatterSpec.create(actualFormat.name, actualFormat, this as UnitsProvider, quantityEntry.persistenceUnit);
+    const format = await Format.createFromJSON(quantityEntry.key, this, formatProps);
+    return FormatterSpec.create(format.name, format, this as UnitsProvider, quantityEntry.persistenceUnit);
+  }
+
+  public async generateFormatterSpecByType(type: QuantityTypeArg, formatProps: FormatProps) {
+    const quantityTypeEntry = this.quantityTypesRegistry.get(this.getQuantityTypeKey(type));
+    if (quantityTypeEntry)
+      return this.generateFormatterSpec(quantityTypeEntry, formatProps);
+    return undefined;
   }
 
   protected async generateParserSpec(quantityEntry: QuantityTypeEntry, formatProps: FormatProps) {
@@ -1051,8 +1057,7 @@ export class QuantityFormatter implements UnitsProvider {
     if (isCustomQuantityTypeEntry(quantityEntry))
       return quantityEntry.generateParserSpec (formatProps, unitsProvider);
 
-    const format = new Format(quantityEntry.key);
-    await format.fromJSON(unitsProvider, formatProps);
+    const format = await Format.createFromJSON(quantityEntry.key, this, formatProps);
     return ParserSpec.create(format, unitsProvider, quantityEntry.persistenceUnit);
   }
 
@@ -1249,6 +1254,13 @@ export class QuantityFormatter implements UnitsProvider {
       }
     }
     return fallbackProps;
+  }
+
+  public getFormatPropsByQuantityType(quantityType: QuantityTypeArg, requestedSystem?: UnitSystemKey, ignoreOverrides?: boolean) {
+    const quantityEntry=this.quantityTypesRegistry.get (this.getQuantityTypeKey(quantityType));
+    if (quantityEntry)
+      return this.getFormatPropsByQuantityTypeEntyAndSystem(quantityEntry,requestedSystem ?? this.activeUnitSystem, ignoreOverrides);
+    return undefined;
   }
 
 }

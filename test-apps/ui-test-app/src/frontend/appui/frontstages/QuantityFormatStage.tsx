@@ -8,7 +8,7 @@ import { DeepCompare } from "@bentley/geometry-core";
 import {
   getQuantityTypeKey, IModelApp, QuantityFormatsChangedArgs, QuantityType, QuantityTypeArg, QuantityTypeKey,
 } from "@bentley/imodeljs-frontend";
-import { Format, FormatProps, FormatterSpec, UnitsProvider } from "@bentley/imodeljs-quantity";
+import { FormatProps, FormatterSpec, UnitsProvider } from "@bentley/imodeljs-quantity";
 import { DialogButtonType } from "@bentley/ui-abstract";
 import { FormatPanel, FormatSample } from "@bentley/ui-components";
 import { Button, ButtonType, Dialog, Listbox, ListboxItem } from "@bentley/ui-core";
@@ -88,21 +88,14 @@ function QuantityFormatStage({ initialQuantityType }: { initialQuantityType: Qua
     processListboxValueChange(newQuantityType);
   }, [activeFormatterSpec, activeQuantityType, processListboxValueChange]);
 
-  const handleOnFormatChanged = React.useCallback((format: FormatProps) => {
-    async function fetchFormatSpec(formatProps: FormatProps) {
-      if (activeFormatterSpec) {
-        const pu = activeFormatterSpec.persistenceUnit;
-        const actualFormat = new Format("custom");
-        const unitsProvider = IModelApp.quantityFormatter as UnitsProvider;
-        await actualFormat.fromJSON(unitsProvider, formatProps);
-        const newSpec = await FormatterSpec.create(actualFormat.name, actualFormat, unitsProvider, pu);
-        const formatPropsInUse = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(activeQuantityType)?.format.toJSON();
-        if (formatPropsInUse)
-          setSaveEnabled(!formatAreEqual(formatProps, formatPropsInUse));
-        setActiveFormatterSpec(newSpec);
-      }
+  const handleOnFormatChanged = React.useCallback(async (formatProps: FormatProps) => {
+    if (activeFormatterSpec) {
+      const newSpec = await IModelApp.quantityFormatter.generateFormatterSpecByType(activeQuantityType, formatProps);
+      const formatPropsInUse = await IModelApp.quantityFormatter.getFormatPropsByQuantityType(activeQuantityType);
+      if (formatPropsInUse)
+        setSaveEnabled(!formatAreEqual(formatProps, formatPropsInUse));
+      setActiveFormatterSpec(newSpec);
     }
-    fetchFormatSpec(format); // eslint-disable-line @typescript-eslint/no-floating-promises
   }, [activeFormatterSpec, activeQuantityType]);
 
   const handleOnFormatSave = React.useCallback(async () => {

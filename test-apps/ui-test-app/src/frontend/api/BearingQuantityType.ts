@@ -9,7 +9,13 @@ import {
   Format, FormatProps, FormatterSpec, Parser, ParseResult, ParserSpec, QuantityStatus, UnitConversionSpec, UnitProps, UnitsProvider,
 } from "@bentley/imodeljs-quantity";
 
-const defaultBearingFormat: FormatProps = {
+export interface BearingFormatProps extends FormatProps {
+  readonly custom?: {
+    readonly addDirectionLabelGap?: boolean;
+  };
+}
+
+const defaultBearingFormat: BearingFormatProps = {
   composite: {
     includeZero: true,
     spacer: "",
@@ -19,6 +25,7 @@ const defaultBearingFormat: FormatProps = {
   precision: 0,
   type: "Decimal",
   uomSeparator: "",
+  custom: {addDirectionLabelGap: true},
 };
 
 class BearingFormatterSpec extends FormatterSpec {
@@ -52,8 +59,9 @@ class BearingFormatterSpec extends FormatterSpec {
       quadrant = 4;
     }
 
+    const gapChar = (this.format.customProps?.addDirectionLabelGap) ? " " : "";
     const formattedValue = super.applyFormatting(radToFormat);
-    return `${prefix[quadrant-1]}${formattedValue}${suffix[quadrant-1]}`;
+    return `${prefix[quadrant-1]}${gapChar}${formattedValue}${gapChar}${suffix[quadrant-1]}`;
   }
 
   /** Static async method to create a FormatSpec given the format and unit of the quantity that will be passed to the Formatter. The input unit will

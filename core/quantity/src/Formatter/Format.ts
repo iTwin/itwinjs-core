@@ -31,6 +31,7 @@ export class Format {
   protected _spacer: string = " "; // optional; default is " "
   protected _includeZero: boolean = true; // optional; default is true
   protected _units?: Array<[UnitProps, string | undefined]>;
+  protected _customProps?: any;  // used by custom formatters and parsers
 
   /** Constructor
    *  @param name     The name of a format specification. TODO: make optional or remove
@@ -56,6 +57,7 @@ export class Format {
   public get includeZero(): boolean | undefined { return this._includeZero; }
   public get units(): Array<[UnitProps, string | undefined]> | undefined { return this._units; }
   public get hasUnits(): boolean { return this._units !== undefined && this._units.length > 0; }
+  public get customProps(): any { return this._customProps; }
 
   // parse and toString methods
   public static scientificTypeToString(scientificType: ScientificType): string {
@@ -331,6 +333,8 @@ export class Format {
   }
 
   private loadFormatProperties(jsonObj: FormatProps) {
+    this._customProps = jsonObj.custom;
+
     if (undefined === jsonObj.type) // type is required
       throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} does not have the required 'type' attribute.`);
     if (typeof (jsonObj.type) !== "string")
@@ -465,6 +469,13 @@ export class Format {
     }
   }
 
+  /** Create a Format from FormatProps */
+  public static async createFromJSON(name: string, unitsProvider: UnitsProvider, formatProps: FormatProps) {
+    const actualFormat = new Format(name);
+    await actualFormat.fromJSON(unitsProvider, formatProps);
+    return actualFormat;
+  }
+
   /**
    * Returns a JSON object that contain the specification for this Format.
    */
@@ -499,6 +510,7 @@ export class Format {
       stationOffsetSize: this.stationOffsetSize,
       stationSeparator: this.stationSeparator,
       composite,
+      custom: this.customProps,
     };
     return schemaJson;
   }

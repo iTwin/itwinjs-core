@@ -8,13 +8,13 @@
 
 import "./FormatPanel.scss";
 import * as React from "react";
-import { CommonProps } from "@bentley/ui-core";
 import { Format, FormatProps, FormatterSpec, UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
-import { FormatTypeOption } from "./FormatType";
+import { CommonProps } from "@bentley/ui-core";
 import { FormatPrecision } from "./FormatPrecision";
 import { FormatSample } from "./FormatSample";
-import { FormatUnits } from "./FormatUnits";
+import { FormatTypeOption } from "./FormatType";
 import { FormatUnitLabel } from "./FormatUnitLabel";
+import { FormatUnits } from "./FormatUnits";
 import { MiscFormatOptions } from "./MiscFormatOptions";
 
 /** Properties of [[UomSeparatorSelector]] component.
@@ -34,9 +34,9 @@ export interface FormatPanelProps extends CommonProps {
   provideSecondaryChildren?: (formatProps: FormatProps, unitsProvider: UnitsProvider, fireFormatChange: (newProps: FormatProps) => void) => React.ReactNode;
 }
 
+// TODO pass in QuantityType and get spec from it.
 async function generateFormatSpec(persistenceUnit: UnitProps, formatProps: FormatProps, unitsProvider: UnitsProvider) {
-  const actualFormat = new Format("custom");
-  await actualFormat.fromJSON(unitsProvider, formatProps);
+  const actualFormat = await Format.createFromJSON("custom", unitsProvider, formatProps);
   return FormatterSpec.create(actualFormat.name, actualFormat, unitsProvider, persistenceUnit);
 }
 

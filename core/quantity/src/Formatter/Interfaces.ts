@@ -26,5 +26,6 @@ export interface FormatProps {
       readonly label?: string;
     }>;
   };
+  readonly custom?: any;
 }
 
