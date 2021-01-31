@@ -44,12 +44,15 @@ export interface ContextMenuProps extends CommonProps {
   parentMenu?: ContextMenu;
   /** @internal */
   parentSubmenu?: ContextSubMenu;
+  /** @internal */
+  ignoreNextKeyUp?: boolean;
 }
 
 /** @internal */
 interface ContextMenuState {
   selectedIndex: number;
   direction: ContextMenuDirection;
+  ignoreNextKeyUp: boolean;
 }
 
 /**
@@ -85,6 +88,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
     this.state = {
       selectedIndex: this.props.selectedIndex!,
       direction: props.direction!,
+      ignoreNextKeyUp: props.ignoreNextKeyUp!,
     };
   }
 
@@ -158,7 +162,8 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
   public render(): JSX.Element {
     const {
       opened, direction, onOutsideClick, onSelect, onEsc, autoflip, edgeLimit, hotkeySelect, // eslint-disable-line @typescript-eslint/no-unused-vars
-      selectedIndex, floating, parentMenu, parentSubmenu, children, className, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
+      selectedIndex, floating, parentMenu, parentSubmenu, children, className, ignoreNextKeyUp, // eslint-disable-line @typescript-eslint/no-unused-vars
+      ...props } = this.props;
     const renderDirection = parentMenu === undefined ? this.state.direction : direction;
 
     if (this._lastChildren !== children || this._lastDirection !== renderDirection || this._lastSelectedIndex !== this.state.selectedIndex) {
@@ -349,6 +354,11 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
   };
 
   private _handleKeyUp = (event: React.KeyboardEvent<HTMLDivElement>): void => {
+    if (this.state.ignoreNextKeyUp) {
+      this.setState({ignoreNextKeyUp: false});
+      return;
+    }
+
     // istanbul ignore else
     if (event.key) {
       for (const [key, value] of this._hotKeyMap) {
