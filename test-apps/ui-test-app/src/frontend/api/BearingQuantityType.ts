@@ -6,7 +6,7 @@
 import { Logger } from "@bentley/bentleyjs-core";
 import { CustomQuantityTypeEntry, IModelApp, UnitSystemKey } from "@bentley/imodeljs-frontend";
 import {
-  Format, FormatProps, FormatterSpec, Parser, ParseResult, ParserSpec, QuantityStatus, UnitConversion, UnitConversionSpec, UnitProps, UnitsProvider,
+  Format, FormatProps, FormatterSpec, Parser, ParseResult, ParserSpec, QuantityStatus, UnitConversionSpec, UnitProps, UnitsProvider,
 } from "@bentley/imodeljs-quantity";
 
 const defaultBearingFormat: FormatProps = {
@@ -61,43 +61,10 @@ class BearingFormatterSpec extends FormatterSpec {
    * async calls to lookup unit definitions.
    *  @param name     The name of a format specification.
    *  @param unitsProvider The units provider is used to look up unit definitions and provide conversion information for converting between units.
-   *  @param inputUnit The unit the value to be formatted. This unit is often referred to as persistence unit.
+   *  @param persistenceUnit The unit of the value to be formatted.
    */
-  public static async create(name: string, format: Format, unitsProvider: UnitsProvider, inputUnit?: UnitProps): Promise<FormatterSpec> {
-    const conversions: UnitConversionSpec[] = [];
-    let persistenceUnit = inputUnit;
-    if (!persistenceUnit) {
-      if (format.units) {
-        const [props] = format.units[0];
-        persistenceUnit = props;
-      } else {
-        throw new Error("Formatter Spec needs persistence unit to be specified");
-      }
-    }
-
-    if (format.units) {
-      let convertFromUnit = inputUnit;
-      for (const unit of format.units) {
-        let unitConversion: UnitConversion;
-        if (convertFromUnit) {
-          unitConversion = await unitsProvider.getConversion(convertFromUnit, unit[0]);
-        } else {
-          unitConversion = ({ factor: 1.0, offset: 0.0 }) as UnitConversion;
-        }
-        const unitLabel = (unit[1] && unit[1]!.length > 0) ? unit[1]! : unit[0].label;
-        const spec = ({ name: unit[0].name, label: unitLabel, conversion: unitConversion }) as UnitConversionSpec;
-
-        conversions.push(spec);
-        convertFromUnit = unit[0];
-      }
-    } else {
-      // if format is only numeric and a input unit is defined set spec to use the input unit as the format unit
-      if (inputUnit) {
-        const spec: UnitConversionSpec = { name: inputUnit.name, label: inputUnit.label, conversion: { factor: 1.0, offset: 0.0 } };
-        conversions.push(spec);
-      }
-    }
-
+  public static async create(name: string, format: Format, unitsProvider: UnitsProvider, persistenceUnit: UnitProps): Promise<FormatterSpec> {
+    const conversions: UnitConversionSpec[] = await FormatterSpec.getUnitConversions(format,unitsProvider, persistenceUnit);
     return new BearingFormatterSpec(name, format, conversions, persistenceUnit);
   }
 }

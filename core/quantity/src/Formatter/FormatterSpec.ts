@@ -25,7 +25,6 @@ export class FormatterSpec {
    *  @param persistenceUnit The unit the magnitude value is input.
    */
   constructor(name: string, format: Format, conversions?: UnitConversionSpec[], persistenceUnit?: UnitProps) {
-
     if (!persistenceUnit) {
       if (format.units) {
         const [props] = format.units[0];
@@ -47,14 +46,8 @@ export class FormatterSpec {
   public get format(): Format { return this._format; }
   public get persistenceUnit(): UnitProps { return this._persistenceUnit; }
 
-  /** Static async method to create a FormatSpec given the format and unit of the quantity that will be passed to the Formatter. The input unit will
-   * be used to generate conversion information for each unit specified in the Format. This method is async due to the fact that the units provider must make
-   * async calls to lookup unit definitions.
-   *  @param name     The name of a format specification.
-   *  @param unitsProvider The units provider is used to look up unit definitions and provide conversion information for converting between units.
-   *  @param inputUnit The unit the value to be formatted. This unit is often referred to as persistence unit.
-   */
-  public static async create(name: string, format: Format, unitsProvider: UnitsProvider, inputUnit?: UnitProps): Promise<FormatterSpec> {
+  /** Get an array of UnitConversionSpecs, one for each unit that is to be shown in the formatted quantity string. */
+  public static async getUnitConversions(format: Format, unitsProvider: UnitsProvider, inputUnit?: UnitProps): Promise<UnitConversionSpec[]> {
     const conversions: UnitConversionSpec[] = [];
     let persistenceUnit = inputUnit;
     if (!persistenceUnit) {
@@ -89,7 +82,19 @@ export class FormatterSpec {
       }
     }
 
-    return new FormatterSpec(name, format, conversions, persistenceUnit);
+    return conversions;
+  }
+
+  /** Static async method to create a FormatSpec given the format and unit of the quantity that will be passed to the Formatter. The input unit will
+   * be used to generate conversion information for each unit specified in the Format. This method is async due to the fact that the units provider must make
+   * async calls to lookup unit definitions.
+   *  @param name     The name of a format specification.
+   *  @param unitsProvider The units provider is used to look up unit definitions and provide conversion information for converting between units.
+   *  @param inputUnit The unit the value to be formatted. This unit is often referred to as persistence unit.
+   */
+  public static async create(name: string, format: Format, unitsProvider: UnitsProvider, inputUnit?: UnitProps): Promise<FormatterSpec> {
+    const conversions: UnitConversionSpec[] = await FormatterSpec.getUnitConversions(format,unitsProvider, inputUnit);
+    return new FormatterSpec(name, format, conversions, inputUnit);
   }
 
   /** Format a quantity value. */
