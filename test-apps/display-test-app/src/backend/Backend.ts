@@ -131,6 +131,9 @@ const setupStandaloneConfiguration = () => {
   if (undefined !== process.env.SVT_IGNORE_AREA_PATTERNS)
     configuration.ignoreAreaPatterns = true;
 
+  if (undefined !== process.env.SVT_NO_EXTERNAL_TEXTURES)
+    configuration.enableExternalTextures = false;
+
   if (undefined !== process.env.SVT_DISABLE_MAGNIFICATION)
     configuration.disableMagnification = true;
 

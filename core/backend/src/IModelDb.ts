@@ -22,7 +22,7 @@ import {
   IModelEventSourceProps, IModelNotFoundResponse, IModelProps, IModelRpcProps, IModelStatus, IModelTileTreeProps, IModelVersion, LocalBriefcaseProps,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions,
   PropertyCallback, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, SchemaState, SheetProps, SnapRequestProps, SnapResponseProps,
-  SnapshotOpenOptions, SpatialViewDefinitionProps, StandaloneOpenOptions, ThumbnailProps, UpgradeOptions, ViewDefinitionProps,
+  SnapshotOpenOptions, SpatialViewDefinitionProps, StandaloneOpenOptions, TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinitionProps,
   ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
@@ -1090,6 +1090,13 @@ export abstract class IModelDb extends IModel {
     });
   }
 
+  /** Retrieve a named texture image from this iModel, as a Uint8Array.
+   * @param props the texture load properties which must include the name of the texture to load
+   * @returns the Uint8Array or undefined if the texture image is not present.
+   * @alpha
+   */
+  public getTextureImage(props: TextureLoadProps): Uint8Array | undefined { return this.nativeDb.getTextureImage(props); }
+
   /** Query a "file property" from this iModel, as a string.
    * @returns the property string or undefined if the property is not present.
    */
@@ -1648,7 +1655,10 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     }
 
     /** Update some properties of an existing element.
+     * To support clearing a property value, every property name that is present in the `elProps` object will be updated even if the value is `undefined`.
+     * To keep an individual element property unchanged, it should either be excluded from the `elProps` parameter or set to its current value.
      * @param elProps the properties of the element to update.
+     * @note As described above, this is a special case where there is a difference between a property being excluded and a property being present in `elProps` but set to `undefined`.
      * @throws [[IModelError]] if unable to update the element.
      */
     public updateElement(elProps: ElementProps): void {

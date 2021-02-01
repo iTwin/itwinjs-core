@@ -598,6 +598,6 @@ describe("MutableCompressedId64Set", () => {
       mutate(set);
       expect(set.equals(test[2])).to.be.true;
       expect(set.equals(expected)).to.be.true;
-    };
+    }
   });
 });

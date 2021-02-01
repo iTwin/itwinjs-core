@@ -250,6 +250,7 @@ import { SubLayerId } from '@bentley/imodeljs-common';
 import { SyncMode } from '@bentley/imodeljs-common';
 import { TelemetryManager } from '@bentley/telemetry-client';
 import { TerrainProviderName } from '@bentley/imodeljs-common';
+import { TextureLoadProps } from '@bentley/imodeljs-common';
 import { TextureMapping } from '@bentley/imodeljs-common';
 import { ThematicDisplay } from '@bentley/imodeljs-common';
 import { ThematicDisplaySensor } from '@bentley/imodeljs-common';
@@ -2459,6 +2460,9 @@ export namespace EditManipulator {
 }
 
 // @internal (undocumented)
+export const ELEMENT_MARKED_FOR_REMOVAL: unique symbol;
+
+// @internal (undocumented)
 export class ElementAgenda {
     constructor(iModel: IModelConnection);
     add(arg: Id64Arg): boolean;
@@ -4112,6 +4116,8 @@ export abstract class IModelConnection extends IModel {
     getGeometryContainment(requestProps: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
     // @beta
     getMassProperties(requestProps: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
+    // @alpha
+    getTextureImage(textureLoadProps: TextureLoadProps): Promise<Uint8Array | undefined>;
     getToolTipMessage(id: Id64String): Promise<string[]>;
     // @beta
     readonly hilited: HiliteSet;
@@ -5409,8 +5415,6 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
-    onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled>;
-    // (undocumented)
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
     // (undocumented)
     onPostInstall(): void;
@@ -5510,8 +5514,6 @@ export class MeasureDistanceTool extends PrimitiveTool {
     }[];
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
-    onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled>;
     // (undocumented)
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
     // (undocumented)
@@ -7524,6 +7526,7 @@ export abstract class RenderSystem implements IDisposable {
     createTerrainMeshGraphic(_terrainGeometry: RenderTerrainMeshGeometry, _featureTable: PackedFeatureTable, _tileId: string, _baseColor: ColorDef | undefined, _baseTransparent: boolean, _textures?: TerrainTexture[]): RenderGraphic | undefined;
     // @internal
     createTextureFromCubeImages(_posX: HTMLImageElement, _negX: HTMLImageElement, _posY: HTMLImageElement, _negY: HTMLImageElement, _posZ: HTMLImageElement, _negZ: HTMLImageElement, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined;
+    createTextureFromElement(_id: Id64String, _imodel: IModelConnection, _params: RenderTexture.Params, _format: ImageSourceFormat): RenderTexture | undefined;
     createTextureFromImage(_image: HTMLImageElement, _hasAlpha: boolean, _imodel: IModelConnection | undefined, _params: RenderTexture.Params): RenderTexture | undefined;
     createTextureFromImageBuffer(_image: ImageBuffer, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined;
     createTextureFromImageSource(source: ImageSource, imodel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined>;
@@ -7926,6 +7929,7 @@ export class ScreenViewport extends Viewport {
     changeView(view: ViewState, opts?: ViewChangeOptions): void;
     clearViewUndo(): void;
     static create(parentDiv: HTMLDivElement, view: ViewState): ScreenViewport;
+    // @deprecated
     readonly decorationDiv: HTMLDivElement;
     doRedo(animationTime?: BeDuration): void;
     doUndo(animationTime?: BeDuration): void;
@@ -7936,6 +7940,8 @@ export class ScreenViewport extends Viewport {
     get isUndoPossible(): boolean;
     // @beta
     get logo(): HTMLImageElement;
+    // @internal (undocumented)
+    static markAllChildrenForRemoval(el: HTMLDivElement): void;
     maxUndoSteps: number;
     // @internal (undocumented)
     mouseMovementFromEvent(ev: MouseEvent): XAndY;
@@ -7954,6 +7960,8 @@ export class ScreenViewport extends Viewport {
     pickNearestVisibleGeometry(pickPoint: Point3d, radius?: number, allowNonLocatable?: boolean, out?: Point3d): Point3d | undefined;
     // @internal
     static removeAllChildren(el: HTMLDivElement): void;
+    // @internal (undocumented)
+    static removeMarkedChildren(el: HTMLDivElement): void;
     // @internal
     get rendersToScreen(): boolean;
     set rendersToScreen(toScreen: boolean);
@@ -8223,8 +8231,6 @@ export class SetupCameraTool extends PrimitiveTool {
     isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean;
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
-    onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled>;
     // (undocumented)
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
     // (undocumented)
@@ -9360,6 +9366,8 @@ export class TileAdmin {
     // @internal (undocumented)
     get emptyViewportSet(): ReadonlyViewportSet;
     // @internal (undocumented)
+    abstract get enableExternalTextures(): boolean;
+    // @internal (undocumented)
     get enableImprovedElision(): boolean;
     // @internal (undocumented)
     get enableInstancing(): boolean;
@@ -9375,6 +9383,8 @@ export class TileAdmin {
     getViewportSetForRequest(vp: Viewport, vps?: ReadonlyViewportSet): ReadonlyViewportSet;
     // @internal (undocumented)
     get ignoreAreaPatterns(): boolean;
+    // @internal (undocumented)
+    abstract invalidateAllScenes(): void;
     // @internal
     isTileInUse(marker: TileUsageMarker): boolean;
     // @internal
@@ -9450,6 +9460,7 @@ export namespace TileAdmin {
         defaultTileSizeModifier?: number;
         // @alpha
         disableMagnification?: boolean;
+        enableExternalTextures?: boolean;
         enableImprovedElision?: boolean;
         enableInstancing?: boolean;
         // @alpha
@@ -9957,6 +9968,10 @@ export class ToolAdmin {
     readonly manipulatorToolEvent: BeEvent<(tool: Tool, event: ManipulatorToolEvent) => void>;
     // (undocumented)
     markupView?: ScreenViewport;
+    onCtrlKeyPressed(keyEvent: KeyboardEvent): Promise<{
+        handled: boolean;
+        result: boolean;
+    }>;
     // @internal (undocumented)
     onInitialized(): void;
     // @internal (undocumented)
@@ -9973,6 +9988,7 @@ export class ToolAdmin {
     get primitiveTool(): PrimitiveTool | undefined;
     // @internal
     processEvent(): Promise<void>;
+    processShortcutKey(keyEvent: KeyboardEvent, wentDown: boolean): boolean;
     processWheelEvent(ev: BeWheelEvent, doUpdate: boolean): Promise<EventHandled>;
     // @internal
     get reloadToolSettingsHandler(): (() => void) | undefined;
@@ -10507,8 +10523,6 @@ export class ViewClipByShapeTool extends ViewClipTool {
     protected _matrix?: Matrix3d;
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
-    onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled>;
     // (undocumented)
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
     // (undocumented)

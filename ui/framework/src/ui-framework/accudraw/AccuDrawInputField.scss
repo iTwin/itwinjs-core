@@ -5,46 +5,56 @@
 @import "~@bentley/ui-core/lib/ui-core/base/base";
 @import "~@bentley/ui-core/lib/ui-core/text/mixins";
 
-.uifw-accudraw-input-label {
-  margin-right: 4px;
+.uifw-accudraw-input-container {
 
-  @include uicore-text( leading-2 );
+  display: inline-flex;
+  flex-direction: row;
+  flex: 1;
 
-  justify-self: center;
-  align-self: center;
+  .uifw-accudraw-input-label {
+    width: 16px;
+    margin-right: 4px;
 
-  .icon {
-    width:  16px;
-    height: 16px;
+    @include uicore-text( leading-2 );
+    @include uicore-centered;
 
-    margin-top: 2px;
+    .icon {
+      width:  16px;
+      height: 16px;
+
+      margin-top: 2px;
+      @include uicore-centered;
+    }
+  }
+
+  .uifw-accudraw-input-field {
+    flex: 1;
+  }
+
+  .uifw-accudraw-lock {
+    width: 22px;
     @include uicore-centered;
   }
-}
 
-.uifw-accudraw-input-field {
-  color: $buic-foreground-body;
-}
+  .uifw-accudraw-x-value {
+    background-color: $buic-accessory-alert;
+    color: $buic-accessory-hollow;
+  }
 
-.uifw-accudraw-lock {
-  justify-self: center;
-  align-self: center;
-}
+  .uifw-accudraw-y-value {
+    background-color: $buic-accessory-success;
+    color: $buic-accessory-hollow;
+  }
 
-.uifw-accudraw-x-value {
-  background-color: $buic-foreground-primary;
-}
+  .uifw-accudraw-z-value {
+    background-color: $buic-accessory-primary;
+    color: $buic-accessory-hollow;
+  }
 
-.uifw-accudraw-y-value {
-  background-color: $buic-foreground-success;
-}
+  .uifw-accudraw-angle-value {
+  }
 
-.uifw-accudraw-z-value {
-  background-color: $buic-foreground-error;
-}
+  .uifw-accudraw-distance-value {
+  }
 
-.uifw-accudraw-angle-value {
-}
-
-.uifw-accudraw-distance-value {
 }

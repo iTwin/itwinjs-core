@@ -193,6 +193,7 @@ const dtaFrontendMain = async () => {
   if (configuration.disableMagnification)
     tileAdminProps.disableMagnification = true;
 
+  tileAdminProps.enableExternalTextures = (configuration.enableExternalTextures !== false);
   tileAdminProps.cancelBackendTileRequests = (configuration.cancelBackendTileRequests !== false);
   tileAdminProps.tileTreeExpirationTime = configuration.tileTreeExpirationSeconds;
   tileAdminProps.tileExpirationTime = configuration.tileExpirationSeconds;

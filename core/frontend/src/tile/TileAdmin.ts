@@ -69,6 +69,7 @@ export class TileAdmin {
   private readonly _enableInstancing: boolean;
   private readonly _enableImprovedElision: boolean;
   private readonly _ignoreAreaPatterns: boolean;
+  private readonly _enableExternalTextures: boolean;
   private readonly _disableMagnification: boolean;
   private readonly _alwaysRequestEdges: boolean;
   private readonly _alwaysSubdivideIncompleteTiles: boolean;
@@ -167,6 +168,7 @@ export class TileAdmin {
     this._enableInstancing = options.enableInstancing ?? defaultTileOptions.enableInstancing;
     this._enableImprovedElision = options.enableImprovedElision ?? defaultTileOptions.enableImprovedElision;
     this._ignoreAreaPatterns = options.ignoreAreaPatterns ?? defaultTileOptions.ignoreAreaPatterns;
+    this._enableExternalTextures = options.enableExternalTextures ?? defaultTileOptions.enableExternalTextures;
     this._disableMagnification = options.disableMagnification ?? defaultTileOptions.disableMagnification;
     this._alwaysRequestEdges = true === options.alwaysRequestEdges;
     this._alwaysSubdivideIncompleteTiles = options.alwaysSubdivideIncompleteTiles ?? defaultTileOptions.alwaysSubdivideIncompleteTiles;
@@ -241,6 +243,10 @@ export class TileAdmin {
   public get ignoreAreaPatterns() { return this._ignoreAreaPatterns; }
   /** @internal */
   public get useProjectExtents() { return this._useProjectExtents; }
+  /** @internal */
+  public get enableExternalTextures(): boolean { return this._enableExternalTextures; }
+  /** @internal */
+  public abstract get useProjectExtents(): boolean;
   /** @internal */
   public get maximumLevelsToSkip() { return this._maximumLevelsToSkip; }
   /** @internal */
@@ -434,6 +440,11 @@ export class TileAdmin {
    */
   public registerViewport(vp: Viewport): void {
     this._viewports.add(vp);
+  }
+
+  /** @internal */
+  public invalidateAllScenes() {
+    this._viewports.forEach((vp) => vp.invalidateScene());
   }
 
   /** @internal */
@@ -1068,6 +1079,12 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      * @alpha
      */
     ignoreAreaPatterns?: boolean;
+
+    /** If true, during tile generation the backend will not embed all texture image data in the tile content. If texture image data is considered large enough by the backend, it will not be embedded in the tile content and the frontend will request that element texture data separately from the backend. This can help reduce the amount of memory consumed by the frontend and the amount of data sent to the frontend.
+     *
+     * Default value: false
+     */
+    enableExternalTextures?: boolean;
 
     /** The interval in milliseconds at which a request for tile content will be retried until a response is received.
      *

@@ -115,6 +115,7 @@ public;DynamicsContext
 alpha;EditingFunctions
 alpha;EditingFunctions
 alpha;EditManipulator
+internal;ELEMENT_MARKED_FOR_REMOVAL: unique symbol
 internal;ElementAgenda
 alpha;ElementEditor3d
 public;ElementLocateManager
