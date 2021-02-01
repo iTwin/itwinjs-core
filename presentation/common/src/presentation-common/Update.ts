@@ -184,7 +184,7 @@ export interface NodeUpdateInfoJSON {
 /** @alpha */
 export interface HierarchyCompareInfoJSON {
   changes: PartialHierarchyModificationJSON[];
-  nextStep?: {
+  continuationToken?: {
     prevHierarchyNode: string;
     currHierarchyNode: string;
   };
@@ -193,7 +193,7 @@ export interface HierarchyCompareInfoJSON {
 /** @alpha */
 export interface HierarchyCompareInfo {
   changes: PartialHierarchyModification[];
-  nextStep?: {
+  continuationToken?: {
     prevHierarchyNode: string;
     currHierarchyNode: string;
   };

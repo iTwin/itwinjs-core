@@ -131,7 +131,7 @@ Object {
       "type": "Delete",
     },
   ],
-  "nextStep": Object {
+  "continuationToken": Object {
     "currHierarchyNode": "currHierarchyNode",
     "prevHierarchyNode": "prevHierarchyNode",
   },
@@ -272,7 +272,7 @@ Object {
       "type": "Delete",
     },
   ],
-  "nextStep": Object {
+  "continuationToken": Object {
     "currHierarchyNode": "currHierarchyNode",
     "prevHierarchyNode": "prevHierarchyNode",
   },

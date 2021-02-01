@@ -201,7 +201,7 @@ describe("HierarchyCompareInfo", () => {
             node: createRandomECInstancesNode(),
           },
         ],
-        nextStep: {
+        continuationToken: {
           prevHierarchyNode: "prevHierarchyNode",
           currHierarchyNode: "currHierarchyNode",
         },
@@ -235,7 +235,7 @@ describe("HierarchyCompareInfo", () => {
             node: createRandomECInstancesNodeJSON(),
           },
         ],
-        nextStep: {
+        continuationToken: {
           prevHierarchyNode: "prevHierarchyNode",
           currHierarchyNode: "currHierarchyNode",
         },

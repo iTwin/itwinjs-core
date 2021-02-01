@@ -817,7 +817,7 @@ export interface HierarchyCompareInfo {
     // (undocumented)
     changes: PartialHierarchyModification[];
     // (undocumented)
-    nextStep?: {
+    continuationToken?: {
         prevHierarchyNode: string;
         currHierarchyNode: string;
     };
@@ -834,7 +834,7 @@ export interface HierarchyCompareInfoJSON {
     // (undocumented)
     changes: PartialHierarchyModificationJSON[];
     // (undocumented)
-    nextStep?: {
+    continuationToken?: {
         prevHierarchyNode: string;
         currHierarchyNode: string;
     };
@@ -1552,6 +1552,11 @@ export const PRESENTATION_COMMON_ROOT: string;
 // @alpha
 export interface PresentationDataCompareOptions<TIModel, TNodeKey> extends RequestOptionsWithRuleset<TIModel> {
     // (undocumented)
+    continuationToken?: {
+        prevHierarchyNode: string;
+        currHierarchyNode: string;
+    };
+    // (undocumented)
     expandedNodeKeys?: TNodeKey[];
     // (undocumented)
     prev: {
@@ -1560,11 +1565,6 @@ export interface PresentationDataCompareOptions<TIModel, TNodeKey> extends Reque
     };
     // (undocumented)
     resultSetSize?: number;
-    // (undocumented)
-    startPosition?: {
-        prevHierarchyNode: string;
-        currHierarchyNode: string;
-    };
 }
 
 // @alpha
