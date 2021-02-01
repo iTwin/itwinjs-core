@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { VariableSizeList } from "react-window";
 import * as React from "react";
+import { VariableSizeList } from "react-window";
 import sinon from "sinon";
 import * as moq from "typemoq";
 import { PropertyRecord } from "@bentley/ui-abstract";

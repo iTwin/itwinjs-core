@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "@bentley/bentleyjs-core";
 import * as React from "react";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { VariableSizeList, VariableSizeListProps } from "react-window";
 import { Observable } from "rxjs/internal/Observable";
 import { ReplaySubject } from "rxjs/internal/ReplaySubject";
+import { assert } from "@bentley/bentleyjs-core";
 
 /** @internal */
 export type VirtualizedListAttributes = Pick<VariableSizeList, "resetAfterIndex" | "scrollToItem">;
