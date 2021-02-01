@@ -12,11 +12,12 @@ import { IModelRpcProps } from "@bentley/imodeljs-common";
 import {
   ContentDescriptorRpcRequestOptions, ContentJSON, ContentRpcRequestOptions, Descriptor, DescriptorJSON, DescriptorOverrides, DiagnosticsOptions,
   DiagnosticsScopeLogs, DisplayLabelRpcRequestOptions, DisplayLabelsRpcRequestOptions, DisplayValueGroup, DisplayValueGroupJSON,
-  DistinctValuesRpcRequestOptions, ExtendedContentRpcRequestOptions, ExtendedHierarchyRpcRequestOptions, HierarchyCompareInfo, HierarchyCompareInfoJSON,
-  HierarchyRpcRequestOptions, InstanceKey, InstanceKeyJSON, isContentDescriptorRequestOptions, isDisplayLabelRequestOptions, isExtendedContentRequestOptions,
-  isExtendedHierarchyRequestOptions, ItemJSON, KeySet, KeySetJSON, LabelDefinition, LabelDefinitionJSON, LabelRpcRequestOptions, Node, NodeJSON,
-  NodeKey, NodeKeyJSON, NodePathElement, NodePathElementJSON, Paged, PagedResponse, PageOptions, PresentationDataCompareRpcOptions, PresentationError,
-  PresentationRpcInterface, PresentationRpcResponse, PresentationStatus, Ruleset, SelectionInfo, SelectionScope, SelectionScopeRpcRequestOptions,
+  DistinctValuesRpcRequestOptions, ExtendedContentRpcRequestOptions, ExtendedHierarchyRpcRequestOptions, HierarchyCompareInfo,
+  HierarchyCompareInfoJSON, HierarchyRpcRequestOptions, InstanceKey, InstanceKeyJSON, isContentDescriptorRequestOptions, isDisplayLabelRequestOptions,
+  isExtendedContentRequestOptions, isExtendedHierarchyRequestOptions, ItemJSON, KeySet, KeySetJSON, LabelDefinition, LabelDefinitionJSON,
+  LabelRpcRequestOptions, Node, NodeJSON, NodeKey, NodeKeyJSON, NodePathElement, NodePathElementJSON, Paged, PagedResponse, PageOptions,
+  PartialHierarchyModification, PartialHierarchyModificationJSON, PresentationDataCompareRpcOptions, PresentationError, PresentationRpcInterface,
+  PresentationRpcResponse, PresentationStatus, Ruleset, SelectionInfo, SelectionScope, SelectionScopeRpcRequestOptions,
 } from "@bentley/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { Presentation } from "./Presentation";
@@ -356,7 +357,18 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
     });
   }
 
-  public async compareHierarchies(token: IModelRpcProps, requestOptions: PresentationDataCompareRpcOptions): PresentationRpcResponse<HierarchyCompareInfoJSON> {
+  public async compareHierarchies(token: IModelRpcProps, requestOptions: PresentationDataCompareRpcOptions): PresentationRpcResponse<PartialHierarchyModificationJSON[]> {
+    return this.makeRequest(token, "compareHierarchies", requestOptions, async (options) => {
+      options = {
+        ...options,
+        ...(options.expandedNodeKeys ? { expandedNodeKeys: options.expandedNodeKeys.map(NodeKey.fromJSON) } : undefined),
+      };
+      const result = await this.getManager(requestOptions.clientId).compareHierarchies(options);
+      return result.changes.map(PartialHierarchyModification.toJSON);
+    });
+  }
+
+  public async compareHierarchiesPaged(token: IModelRpcProps, requestOptions: PresentationDataCompareRpcOptions): PresentationRpcResponse<HierarchyCompareInfoJSON> {
     return this.makeRequest(token, "compareHierarchies", requestOptions, async (options) => {
       options = {
         ...options,

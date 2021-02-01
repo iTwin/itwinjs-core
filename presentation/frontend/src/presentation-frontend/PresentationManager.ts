@@ -196,7 +196,7 @@ export class PresentationManager implements IDisposable {
 
     try {
       while (true) {
-        const result = (await this.rpcRequestsHandler.compareHierarchies(this.toRpcTokenOptions(options)));
+        const result = (await this.rpcRequestsHandler.compareHierarchiesPaged(this.toRpcTokenOptions(options)));
         modifications.push(...result.changes.map(PartialHierarchyModification.fromJSON));
         if (!result.nextStep)
           break;

@@ -25,7 +25,7 @@ import {
 } from "./PresentationManagerOptions";
 import { PresentationRpcInterface, PresentationRpcRequestOptions, PresentationRpcResponse } from "./PresentationRpcInterface";
 import { SelectionScope } from "./selection/SelectionScope";
-import { HierarchyCompareInfoJSON } from "./Update";
+import { HierarchyCompareInfoJSON, PartialHierarchyModificationJSON } from "./Update";
 import { Omit, PagedResponse } from "./Utils";
 
 /**
@@ -184,8 +184,12 @@ export class RpcRequestsHandler implements IDisposable {
     return this.request<KeySetJSON, SelectionScopeRequestOptions<IModelRpcProps>>(
       this.rpcClient.computeSelection.bind(this.rpcClient), options, ids, scopeId);
   }
-  public async compareHierarchies(options: PresentationDataCompareOptions<IModelRpcProps, NodeKeyJSON>): Promise<HierarchyCompareInfoJSON> {
+  public async compareHierarchies(options: PresentationDataCompareOptions<IModelRpcProps, NodeKeyJSON>): Promise<PartialHierarchyModificationJSON[]> {
+    return this.request<PartialHierarchyModificationJSON[], PresentationDataCompareOptions<IModelRpcProps, NodeKeyJSON>>(
+      this.rpcClient.compareHierarchies.bind(this.rpcClient), options); // eslint-disable-line deprecation/deprecation
+  }
+  public async compareHierarchiesPaged(options: PresentationDataCompareOptions<IModelRpcProps, NodeKeyJSON>): Promise<HierarchyCompareInfoJSON> {
     return this.request<HierarchyCompareInfoJSON, PresentationDataCompareOptions<IModelRpcProps, NodeKeyJSON>>(
-      this.rpcClient.compareHierarchies.bind(this.rpcClient), options);
+      this.rpcClient.compareHierarchiesPaged.bind(this.rpcClient), options);
   }
 }

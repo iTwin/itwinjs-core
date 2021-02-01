@@ -13,9 +13,10 @@ import { BriefcaseDb, EventSink, IModelDb, IModelHost, IModelJsNative } from "@b
 import {
   Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides,
   DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ExtendedContentRequestOptions,
-  ExtendedHierarchyRequestOptions, getLocalesDirectory, HierarchyCompareInfo, HierarchyRequestOptions, InstanceKey, KeySet, LabelDefinition, LabelRequestOptions, Node,
-  NodeKey, NodePathElement, Paged, PagedResponse, PresentationDataCompareOptions, PresentationError, PresentationStatus,
-  PresentationUnitSystem, RequestPriority, Ruleset, SelectionInfo, SelectionScope, SelectionScopeRequestOptions,
+  ExtendedHierarchyRequestOptions, getLocalesDirectory, HierarchyCompareInfo, HierarchyRequestOptions, InstanceKey, KeySet, LabelDefinition,
+  LabelRequestOptions, Node, NodeKey, NodePathElement, Paged, PagedResponse, PartialHierarchyModification, PresentationDataCompareOptions,
+  PresentationError, PresentationStatus, PresentationUnitSystem, RequestPriority, Ruleset, SelectionInfo, SelectionScope,
+  SelectionScopeRequestOptions,
 } from "@bentley/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "./Constants";
@@ -848,16 +849,16 @@ export class PresentationManager {
   }
 
   /** @deprecated Use an overload with one argument */
-  public async compareHierarchies(requestContext: ClientRequestContext, requestOptions: PresentationDataCompareOptions<IModelDb, NodeKey>): Promise<HierarchyCompareInfo>;
+  public async compareHierarchies(requestContext: ClientRequestContext, requestOptions: PresentationDataCompareOptions<IModelDb, NodeKey>): Promise<PartialHierarchyModification[]>;
   /**
    * Compares two hierarchies specified in the request options
    * TODO: Return results in pages
    * @beta
    */
   public async compareHierarchies(requestOptions: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>>): Promise<HierarchyCompareInfo>;
-  public async compareHierarchies(requestContextOrOptions: ClientRequestContext | WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>>, deprecatedRequestOptions?: PresentationDataCompareOptions<IModelDb, NodeKey>): Promise<HierarchyCompareInfo> {
+  public async compareHierarchies(requestContextOrOptions: ClientRequestContext | WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>>, deprecatedRequestOptions?: PresentationDataCompareOptions<IModelDb, NodeKey>): Promise<HierarchyCompareInfo | PartialHierarchyModification[]> {
     if (requestContextOrOptions instanceof ClientRequestContext) {
-      return this.compareHierarchies({ ...deprecatedRequestOptions!, requestContext: requestContextOrOptions });
+      return (await this.compareHierarchies({ ...deprecatedRequestOptions!, requestContext: requestContextOrOptions })).changes;
     }
 
     if (!requestContextOrOptions.prev.rulesetOrId && !requestContextOrOptions.prev.rulesetVariables)

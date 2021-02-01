@@ -1150,7 +1150,7 @@ describe("PresentationManager", () => {
           expandedNodeKeys: [nodeKey],
         };
         const result = await manager.compareHierarchies(ClientRequestContext.current, options);
-        verifyWithExpectedResult(result, HierarchyCompareInfo.fromJSON(addonResponse), expectedParams);
+        verifyWithExpectedResult(result, HierarchyCompareInfo.fromJSON(addonResponse).changes, expectedParams);
       });
 
       it("requests addon to compare hierarchies based on ruleset and variables' changes", async () => {
