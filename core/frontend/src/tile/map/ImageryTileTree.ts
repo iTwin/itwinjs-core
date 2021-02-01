@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, compareBooleans, compareNumbers, compareStrings, dispose } from "@bentley/bentleyjs-core";
+import { assert, compareBooleans, compareNumbers, compareStrings, compareStringsOrUndefined, dispose } from "@bentley/bentleyjs-core";
 import { Angle, Range3d, Transform } from "@bentley/geometry-core";
 import { Cartographic, ImageSource, ImageSourceFormat, MapLayerSettings, RenderTexture, ViewFlagOverrides } from "@bentley/imodeljs-common";
 import { imageElementFromImageSource } from "../../ImageUtil";
@@ -224,12 +224,18 @@ class ImageryMapLayerTreeSupplier implements TileTreeSupplier {
   public compareTileTreeIds(lhs: ImageryMapLayerTreeId, rhs: ImageryMapLayerTreeId): number {
     let cmp = compareStrings(lhs.settings.url, rhs.settings.url);
     if (0 === cmp) {
-      cmp = compareBooleans(lhs.settings.transparentBackground, rhs.settings.transparentBackground);
+      cmp = compareStringsOrUndefined(lhs.settings.userName, rhs.settings.userName)
       if (0 === cmp) {
-        cmp = compareNumbers(lhs.settings.subLayers.length, rhs.settings.subLayers.length);
+        cmp = compareStringsOrUndefined(lhs.settings.password, rhs.settings.password)
         if (0 === cmp) {
-          for (let i = 0; i < lhs.settings.subLayers.length && 0 === cmp; i++)
-            cmp = compareBooleans(lhs.settings.subLayers[i].visible, rhs.settings.subLayers[i].visible);
+          cmp = compareBooleans(lhs.settings.transparentBackground, rhs.settings.transparentBackground);
+          if (0 === cmp) {
+            cmp = compareNumbers(lhs.settings.subLayers.length, rhs.settings.subLayers.length);
+            if (0 === cmp) {
+              for (let i = 0; i < lhs.settings.subLayers.length && 0 === cmp; i++)
+                cmp = compareBooleans(lhs.settings.subLayers[i].visible, rhs.settings.subLayers[i].visible);
+            }
+          }
         }
       }
     }
