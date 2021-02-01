@@ -1,5 +1,6 @@
 # Using iModel schema browser
-- Navigate to https://imodelconsole.bentley.com/
+
+- Navigate to <https://imodelconsole.bentley.com/>
 - Select your Project
 - Select your iModel
 - Choose most recent changeset
@@ -11,6 +12,7 @@
 - Explore schemas in iModel
 
 ## Learn More
+
 [Learn more about Base Infrastructure Schemas (BIS)]($docs/bis)
 
 <br/>

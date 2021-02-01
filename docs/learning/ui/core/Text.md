@@ -38,4 +38,4 @@ CSS classes and React components for working with styled text.
 
 ## API Reference
 
-* [Text]($ui-core:Text)
+- [Text]($ui-core:Text)

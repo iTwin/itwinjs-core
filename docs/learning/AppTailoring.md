@@ -10,21 +10,21 @@ An app is prepared for deployment by "last mile" scripts. Different scripts will
 
 An app [frontend](../learning/Glossary.md#frontend) typically has a different "main" for each configuration to do the following:
 
-* Change the app's UI and functionality to suit the configuration and platform.
-  * Do platform-specific initialization:
-    * UI "chrome"
-    * Entitlements
-    * Other platform integration
-  * [Tailor the GUI](#change-the-gui)
-* [Configure interfaces on the client side](../learning/RpcInterface.md#client-side-configuration).
-  * You may apply the [backends-for-frontends pattern](#backends-for-frontends).
-  * Web apps have several configuration options, as described in [the article on writing an interactive Web app](./WriteAnInteractiveWebApp.md).
+- Change the app's UI and functionality to suit the configuration and platform.
+  - Do platform-specific initialization:
+    - UI "chrome"
+    - Entitlements
+    - Other platform integration
+  - [Tailor the GUI](#change-the-gui)
+- [Configure interfaces on the client side](../learning/RpcInterface.md#client-side-configuration).
+  - You may apply the [backends-for-frontends pattern](#backends-for-frontends).
+  - Web apps have several configuration options, as described in [the article on writing an interactive Web app](./WriteAnInteractiveWebApp.md).
 
 An app [backend](../learning/Glossary.md#backend) may have a different "main" if it supports more than one configuration. For more information, see:
 
-* [Web app](../learning/WriteAnInteractiveWebApp.md)
-* [Desktop app](../learning/WriteAnInteractiveDesktopApp.md)
-* [Mobile app](../learning/WriteAnInteractiveMobileApp.md)
+- [Web app](../learning/WriteAnInteractiveWebApp.md)
+- [Desktop app](../learning/WriteAnInteractiveDesktopApp.md)
+- [Mobile app](../learning/WriteAnInteractiveMobileApp.md)
 
 The last-mile packaging and deployment scripts select the appropriate main for frontend and backend.
 
