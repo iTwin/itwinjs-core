@@ -335,6 +335,9 @@
     },
     "ClearEffects": {
       "keyin": "fdt effect clear"
+    },
+    "SetMaxTileMemory": {
+      "keyin": "fdt max tile mem"
     }
   }
 }
