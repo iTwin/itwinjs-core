@@ -1037,7 +1037,7 @@ export class QuantityFormatter implements UnitsProvider {
     return this._activeFormatSpecsByType.get(this.getQuantityTypeKey(type));
   }
 
-  protected async generateFormatterSpec(quantityEntry: QuantityTypeEntry, formatProps: FormatProps) {
+  public async generateFormatterSpec(quantityEntry: QuantityTypeEntry, formatProps: FormatProps) {
     if (isCustomQuantityTypeEntry(quantityEntry))
       return quantityEntry.generateFormatterSpec (formatProps, this as UnitsProvider);
 
@@ -1049,7 +1049,8 @@ export class QuantityFormatter implements UnitsProvider {
     const quantityTypeEntry = this.quantityTypesRegistry.get(this.getQuantityTypeKey(type));
     if (quantityTypeEntry)
       return this.generateFormatterSpec(quantityTypeEntry, formatProps);
-    return undefined;
+
+    throw new Error(`Unable to generate FormatSpec for QuantityType ${type}`);
   }
 
   protected async generateParserSpec(quantityEntry: QuantityTypeEntry, formatProps: FormatProps) {

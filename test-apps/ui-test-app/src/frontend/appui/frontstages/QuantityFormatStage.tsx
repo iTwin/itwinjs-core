@@ -8,9 +8,9 @@ import { DeepCompare } from "@bentley/geometry-core";
 import {
   getQuantityTypeKey, IModelApp, QuantityFormatsChangedArgs, QuantityType, QuantityTypeArg, QuantityTypeKey,
 } from "@bentley/imodeljs-frontend";
-import { FormatProps, FormatterSpec, UnitsProvider } from "@bentley/imodeljs-quantity";
+import { FormatProps, FormatterSpec } from "@bentley/imodeljs-quantity";
 import { DialogButtonType } from "@bentley/ui-abstract";
-import { FormatPanel, FormatSample } from "@bentley/ui-components";
+import { FormatSample, QuantityFormatPanel } from "@bentley/ui-components";
 import { Button, ButtonType, Dialog, Listbox, ListboxItem } from "@bentley/ui-core";
 import { ModalDialogManager, ModalFrontstageInfo, UiFramework } from "@bentley/ui-framework";
 
@@ -140,9 +140,7 @@ function QuantityFormatStage({ initialQuantityType }: { initialQuantityType: Qua
                 </div>
               </div>
               <div className="quantity-types-formats">
-                <FormatPanel onFormatChange={handleOnFormatChanged}
-                  initialFormat={activeFormatterSpec.format.toJSON()} showSample={false}
-                  unitsProvider={IModelApp.quantityFormatter as UnitsProvider} persistenceUnit={activeFormatterSpec.persistenceUnit} />
+                <QuantityFormatPanel onFormatChange={handleOnFormatChanged} quantityType={activeQuantityType} />
               </div>
               <div className="components-button-panel">
                 <Button buttonType={ButtonType.Blue} onClick={handleOnFormatSave} disabled={!saveEnabled}>Set</Button>

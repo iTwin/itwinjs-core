@@ -57,7 +57,7 @@ function setFormatTrait(formatProps: FormatProps, trait: FormatTraits, setActive
   return { ...formatProps, formatTraits };
 }
 
-function provideSecondaryChildren(formatProps: FormatProps, _unitsProvider: UnitsProvider, fireFormatChange: (newProps: FormatProps) => void) {
+function provideSecondaryChildren(formatProps: FormatProps, fireFormatChange: (newProps: FormatProps) => void) {
   const inProps = formatProps;
   const onChange = fireFormatChange;
   const handleUseThousandsSeparatorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -74,7 +74,7 @@ function provideSecondaryChildren(formatProps: FormatProps, _unitsProvider: Unit
   );
 }
 
-function providePrimaryChildren(formatProps: FormatProps, _unitsProvider: UnitsProvider, fireFormatChange: (newProps: FormatProps) => void) {
+function providePrimaryChildren(formatProps: FormatProps, fireFormatChange: (newProps: FormatProps) => void) {
   const inProps = formatProps;
   const onChange = fireFormatChange;
   const handleUseThousandsSeparatorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -91,9 +91,8 @@ function providePrimaryChildren(formatProps: FormatProps, _unitsProvider: UnitsP
   );
 }
 
-async function provideFormatSpec(persistenceUnit: UnitProps, formatProps: FormatProps, unitsProvider: UnitsProvider, formatName?: string) {
-  const actualFormat = new Format(formatName ?? "custom");
-  await actualFormat.fromJSON(unitsProvider, formatProps);
+async function provideFormatSpec(formatProps: FormatProps, persistenceUnit: UnitProps, unitsProvider: UnitsProvider, formatName?: string) {
+  const actualFormat = await Format.createFromJSON(formatName ?? "custom",unitsProvider, formatProps);
   return FormatterSpec.create(actualFormat.name, actualFormat, unitsProvider, persistenceUnit);
 }
 
@@ -108,13 +107,13 @@ function NumericFormatPopup({ persistenceUnitName, initialMagnitude }: { persist
 
   const [formatterSpec, setFormatterSpec] = React.useState<FormatterSpec>();
   const [formattedValue, setFormattedValue] = React.useState<string>();
-  const handleFormatChange = React.useCallback((format: FormatProps) => {
+  const handleFormatChange = React.useCallback((inProps: FormatProps) => {
     async function fetchFormatSpec(formatProps: FormatProps) {
       const unitsProvider = IModelApp.quantityFormatter as UnitsProvider;
       if (formatterSpec) {
         const pu = formatterSpec.persistenceUnit;
         if (pu) {
-          const actualFormat = new Format("custom");
+          const actualFormat = await  Format.createFromJSON("custom", unitsProvider, formatProps);
           await actualFormat.fromJSON(unitsProvider, formatProps);
           const newSpec = await FormatterSpec.create(actualFormat.name, actualFormat, unitsProvider, pu);
           setFormattedValue(newSpec.applyFormatting(initialMagnitude));
@@ -122,7 +121,7 @@ function NumericFormatPopup({ persistenceUnitName, initialMagnitude }: { persist
         }
       }
     }
-    fetchFormatSpec(format); // eslint-disable-line @typescript-eslint/no-floating-promises
+    fetchFormatSpec(inProps); // eslint-disable-line @typescript-eslint/no-floating-promises
   }, [formatterSpec, initialMagnitude]);
 
   React.useEffect(() => {
@@ -130,7 +129,7 @@ function NumericFormatPopup({ persistenceUnitName, initialMagnitude }: { persist
       const unitsProvider = IModelApp.quantityFormatter as UnitsProvider;
       const pu = await unitsProvider.findUnitByName(persistenceUnitName);
       if (pu) {
-        const newSpec = await provideFormatSpec(pu, initialFormatProps, unitsProvider);
+        const newSpec = await provideFormatSpec(initialFormatProps, pu, unitsProvider);
         setFormattedValue(newSpec.applyFormatting(initialMagnitude));
         setFormatterSpec(newSpec);
       }
@@ -1096,76 +1095,10 @@ export class ComponentExamplesProvider {
   }
 
   private static get quantityFormatting(): ComponentExampleCategory {
-    const sampleRadian = 45.5 * Math.PI / 180;
     const examples = [];
-
     examples.push(
       createComponentExample("Meter", "Non-composite Formatting", <NumericFormatPopup persistenceUnitName={"Units.M"} initialMagnitude={1234.56} />),
     );
-
-    const lengthFormatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
-    if (lengthFormatterSpec) {
-      examples.push(
-        createComponentExample("Length", "Quantity Formatting", <WrappedFormatPopup initialFormatterSpec={lengthFormatterSpec} initialMagnitude={1234.56} />),
-      );
-    }
-
-    const angleFormatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Angle);
-    if (angleFormatterSpec) {
-      examples.push(
-        createComponentExample("Angle", "Quantity Formatting", <WrappedFormatPopup initialFormatterSpec={angleFormatterSpec} initialMagnitude={sampleRadian} />),
-      );
-    }
-
-    const areaFormatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Area);
-    if (areaFormatterSpec) {
-      examples.push(
-        createComponentExample("Area", "Quantity Formatting", <WrappedFormatPopup initialFormatterSpec={areaFormatterSpec} initialMagnitude={1234.56} />),
-      );
-    }
-
-    const coordinateFormatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Coordinate);
-    if (coordinateFormatterSpec) {
-      examples.push(
-        createComponentExample("Coordinate", "Quantity Formatting", <WrappedFormatPopup initialFormatterSpec={coordinateFormatterSpec} initialMagnitude={1234.56} />),
-      );
-    }
-
-    const latLongFormatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.LatLong);
-    if (latLongFormatterSpec) {
-      examples.push(
-        createComponentExample("Latitude/Longitude", "Quantity Formatting", <WrappedFormatPopup initialFormatterSpec={latLongFormatterSpec} initialMagnitude={sampleRadian} />),
-      );
-    }
-
-    const engineeringLengthFormatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.LengthEngineering);
-    if (engineeringLengthFormatterSpec) {
-      examples.push(
-        createComponentExample("Engineering Length", "Quantity Formatting", <WrappedFormatPopup initialFormatterSpec={engineeringLengthFormatterSpec} initialMagnitude={1234.56} />),
-      );
-    }
-
-    const surveyLengthFormatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.LengthSurvey);
-    if (surveyLengthFormatterSpec) {
-      examples.push(
-        createComponentExample("Survey Length", "Quantity Formatting", <WrappedFormatPopup initialFormatterSpec={surveyLengthFormatterSpec} initialMagnitude={1234.56} />),
-      );
-    }
-
-    const stationFormatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Stationing);
-    if (stationFormatterSpec) {
-      examples.push(
-        createComponentExample("Stationing", "Quantity Formatting", <WrappedFormatPopup initialFormatterSpec={stationFormatterSpec} initialMagnitude={1234.56} />),
-      );
-    }
-
-    const volumeFormatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Volume);
-    if (volumeFormatterSpec) {
-      examples.push(
-        createComponentExample("Volume", "Quantity Formatting", <WrappedFormatPopup initialFormatterSpec={volumeFormatterSpec} initialMagnitude={1234.56} />),
-      );
-    }
-
     return {
       title: "Quantity Formatting Component",
       examples,

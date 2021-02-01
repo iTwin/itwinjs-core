@@ -7,10 +7,9 @@
  */
 
 import * as React from "react";
-import { CommonProps, Input } from "@bentley/ui-core";
 import { FormatterSpec } from "@bentley/imodeljs-quantity";
 import { SpecialKey } from "@bentley/ui-abstract";
-import { WebFontIcon } from "../../../../core/lib/ui-core";
+import { CommonProps, Input, WebFontIcon } from "@bentley/ui-core";
 
 /** Properties of [[UomSeparatorSelector]] component.
  * @alpha

@@ -7,8 +7,8 @@
  */
 
 import * as React from "react";
+import { UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
 import { CommonProps, Input, Select, SelectOption } from "@bentley/ui-core";
-import { UnitConversion, UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
 
 /** Properties of [[UnitDescr]] component.
  * @alpha
@@ -22,11 +22,6 @@ export interface UnitDescrProps extends CommonProps {
   readonly?: boolean;
   onUnitChange: (value: string, index: number) => void;
   onLabelChange: (value: string, index: number) => void;
-}
-
-interface UnitConversionEntry {
-  conversion: UnitConversion;
-  unitProps: UnitProps;
 }
 
 async function getUnitConversionData(possibleUnits: UnitProps[], toUnit: UnitProps, unitsProvider: UnitsProvider) {

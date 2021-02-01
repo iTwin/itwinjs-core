@@ -17,7 +17,7 @@ import { FormatUnitLabel } from "./FormatUnitLabel";
 import { FormatUnits } from "./FormatUnits";
 import { MiscFormatOptions } from "./MiscFormatOptions";
 
-/** Properties of [[UomSeparatorSelector]] component.
+/** Properties of [[FormatPanel]] component.
  * @alpha
  */
 export interface FormatPanelProps extends CommonProps {
@@ -29,13 +29,13 @@ export interface FormatPanelProps extends CommonProps {
   // if true a only primary format properties are initially displayed and a "More/Less" link is added.
   enableMinimumProperties?: boolean;
   onFormatChange?: (format: FormatProps) => void;
-  provideFormatSpec?: (persistenceUnit: UnitProps, formatProps: FormatProps, unitsProvider: UnitsProvider) => Promise<FormatterSpec>;
-  providePrimaryChildren?: (formatProps: FormatProps, unitsProvider: UnitsProvider, fireFormatChange: (newProps: FormatProps) => void) => React.ReactNode;
-  provideSecondaryChildren?: (formatProps: FormatProps, unitsProvider: UnitsProvider, fireFormatChange: (newProps: FormatProps) => void) => React.ReactNode;
+  provideFormatSpec?: (formatProps: FormatProps, persistenceUnit: UnitProps, unitsProvider: UnitsProvider) => Promise<FormatterSpec>;
+  providePrimaryChildren?: (formatProps: FormatProps, fireFormatChange: (newProps: FormatProps) => void) => React.ReactNode;
+  provideSecondaryChildren?: (formatProps: FormatProps, fireFormatChange: (newProps: FormatProps) => void) => React.ReactNode;
 }
 
 // TODO pass in QuantityType and get spec from it.
-async function generateFormatSpec(persistenceUnit: UnitProps, formatProps: FormatProps, unitsProvider: UnitsProvider) {
+async function generateFormatSpec(formatProps: FormatProps, persistenceUnit: UnitProps, unitsProvider: UnitsProvider) {
   const actualFormat = await Format.createFromJSON("custom", unitsProvider, formatProps);
   return FormatterSpec.create(actualFormat.name, actualFormat, unitsProvider, persistenceUnit);
 }
@@ -69,9 +69,9 @@ export function FormatPanel(props: FormatPanelProps) {
       const pu = await persistenceUnit;
       let newFormatSpec: FormatterSpec;
       if (provideFormatSpec) {
-        newFormatSpec = await provideFormatSpec(pu, formatProps, unitsProvider);
+        newFormatSpec = await provideFormatSpec(formatProps, pu, unitsProvider);
       } else {
-        newFormatSpec = await generateFormatSpec(pu, formatProps, unitsProvider);
+        newFormatSpec = await generateFormatSpec(formatProps, pu, unitsProvider);
       }
       setFormatSpec(newFormatSpec);
     }
@@ -96,9 +96,9 @@ export function FormatPanel(props: FormatPanelProps) {
       <FormatUnitLabel formatProps={formatProps} onUnitLabelChange={handleFormatChange} />
       <FormatTypeOption formatProps={formatProps} onChange={handleFormatChange} />
       <FormatPrecision formatProps={formatProps} onChange={handleFormatChange} />
-      {props.providePrimaryChildren && props.providePrimaryChildren(formatProps, unitsProvider, handleFormatChange)}
+      {props.providePrimaryChildren && props.providePrimaryChildren(formatProps, handleFormatChange)}
       <MiscFormatOptions formatProps={formatProps} onChange={handleFormatChange} enableMinimumProperties={enableMinimumProperties} showOptions={showOptions} onShowHideOptions={handleShowOptions}>
-        {props.provideSecondaryChildren && props.provideSecondaryChildren(formatProps, unitsProvider, handleFormatChange)}
+        {props.provideSecondaryChildren && props.provideSecondaryChildren(formatProps, handleFormatChange)}
       </MiscFormatOptions>
     </div>
   );
