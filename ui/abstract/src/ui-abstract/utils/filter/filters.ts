@@ -521,7 +521,7 @@ const enum Arrow { Top = 0b1, Diag = 0b10, Left = 0b100 }
 export type FuzzyScore = [number, number, number];
 
 /** @internal */
-export namespace FuzzyScore {
+export namespace FuzzyScore { // eslint-disable-line @typescript-eslint/no-redeclare
   /**
   * No matches and value `-100`
   * @internal

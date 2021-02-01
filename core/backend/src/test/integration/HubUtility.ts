@@ -442,7 +442,6 @@ export class HubUtility {
       changeSet.parentId = changeSetJson.parentId;
       changeSet.fileSize = changeSetJson.fileSize;
       changeSet.changesType = changeSetJson.changesType;
-      changeSet.seedFileId = briefcase.fileId;
       changeSet.briefcaseId = briefcase.briefcaseId;
 
       await IModelHost.iModelClient.changeSets.create(requestContext, briefcase.iModelId!, changeSet, changeSetPathname);

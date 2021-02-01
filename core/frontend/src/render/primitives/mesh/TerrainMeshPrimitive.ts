@@ -1,14 +1,13 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Rendering
  */
 
-import { assert } from "@bentley/bentleyjs-core";
 import { Point3d, Range1d, Range2d, Range3d, Vector3d } from "@bentley/geometry-core";
-import { QParams2d, QParams3d, QPoint2d, QPoint2dList, QPoint3d, QPoint3dList, Quantization } from "@bentley/imodeljs-common";
+import { OctEncodedNormal, QParams2d, QParams3d, QPoint2d, QPoint2dList, QPoint3d, QPoint3dList, Quantization } from "@bentley/imodeljs-common";
 import { RenderMemory } from "../../RenderMemory";
 
 export enum Child { Q00, Q01, Q10, Q11 }
@@ -36,11 +35,13 @@ class ClipAxis {
 export class TerrainMeshPrimitive implements RenderMemory.Consumer {
   public readonly indices: number[];
   public readonly points: QPoint3dList;
+  public readonly normals: OctEncodedNormal[];
   public readonly uvParams: QPoint2dList;
   public readonly featureID: number = 0;
 
   private constructor(pointParams: QParams3d, indices?: number[]) {
     this.points = new QPoint3dList(pointParams);
+    this.normals = [];
     this.uvParams = new QPoint2dList(QParams2d.fromRange(Range2d.createXYXY(0, 0, 1, 1)));
     this.indices = indices ? indices : new Array<number>();
   }
@@ -48,17 +49,17 @@ export class TerrainMeshPrimitive implements RenderMemory.Consumer {
     return new TerrainMeshPrimitive(QParams3d.fromRange(props.range), indices);
   }
   public get bytesUsed() {
-    return 8 * (this.indices.length + this.points.length * 3 + this.uvParams.length * 2);
+    return 8 * (this.indices.length + this.points.length * 3 + this.uvParams.length * 2) + 2 * this.normals.length;
   }
   public collectStatistics(stats: RenderMemory.Statistics): void {
     stats.addTerrain(this.bytesUsed);
   }
 
-  public addVertex(point: Point3d, uvParam: QPoint2d, normal?: Vector3d) {
+  public addVertex(point: Point3d, uvParam: QPoint2d, normal?: OctEncodedNormal) {
     this.points.add(point);
     this.uvParams.push(uvParam.clone());
     if (undefined !== normal)
-      assert(false, "Terrain normals are not currently supported");
+      this.normals.push(normal);
   }
 
   private static _scratchZRange = Range1d.createNull();
@@ -98,6 +99,7 @@ export class TerrainMeshPrimitive implements RenderMemory.Consumer {
 
     const parentPoints = this.points.list;
     const parentParams = this.uvParams.list;
+    const parentNormals = this.normals;
     const qParams = this.points.params;
 
     const zRange = Range1d.createNull(TerrainMeshPrimitive._scratchZRange);
@@ -108,6 +110,8 @@ export class TerrainMeshPrimitive implements RenderMemory.Consumer {
       zRange.extendX(parentPoint.z);
       mesh.points.list.push(parentPoint);
       mesh.uvParams.list.push(parentParams[parentIndex]);
+      if (parentNormals.length > 0)
+        mesh.normals.push(parentNormals[parentIndex]);
     }
     const heightRange = Range1d.createXX(Quantization.unquantize(zRange.low, qParams.origin.z, qParams.scale.z), Quantization.unquantize(zRange.high, qParams.origin.z, qParams.scale.z));
     return { heightRange, mesh };
@@ -124,6 +128,7 @@ export class TerrainMeshPrimitive implements RenderMemory.Consumer {
     const clipAxis = clipAxes[clipIndex++];
     const parentPoints = this.points.list;
     const parentParams = this.uvParams.list;
+    const parentNormals = this.normals;
     const clipValue = clipAxis.value;
     for (let i = 0; i < 3; i++) {
       const index = triangleIndices[i];
@@ -144,6 +149,9 @@ export class TerrainMeshPrimitive implements RenderMemory.Consumer {
         clipOutput.push(parentPoints.length);
         parentPoints.push(interpolateQPoint3d(parentPoints[index], parentPoints[nextIndex], fraction));
         parentParams.push(interpolateQPoint2d(parentParams[index], parentParams[nextIndex], fraction));
+        if (parentNormals.length > 0)
+          parentNormals.push(interpolateOctEncodedNormal(parentNormals[index], parentNormals[nextIndex], fraction));
+
       }
     }
     if (clipOutput.length > 2) {
@@ -153,13 +161,28 @@ export class TerrainMeshPrimitive implements RenderMemory.Consumer {
     }
   }
 }
-function interpolate(value0: number, value1: number, fraction: number) { return Math.floor(.5 + value0 + (value1 - value0) * fraction); }
+
+function interpolate(value0: number, value1: number, fraction: number) { return value0 + (value1 - value0) * fraction; }
+function interpolateInt(value0: number, value1: number, fraction: number) { return Math.floor(.5 + interpolate(value0, value1, fraction)); }
+
 function interpolateQPoint3d(p0: QPoint3d, p1: QPoint3d, fraction: number): QPoint3d {
-  return QPoint3d.fromScalars(interpolate(p0.x, p1.x, fraction), interpolate(p0.y, p1.y, fraction), interpolate(p0.z, p1.z, fraction));
+  return QPoint3d.fromScalars(interpolateInt(p0.x, p1.x, fraction), interpolateInt(p0.y, p1.y, fraction), interpolateInt(p0.z, p1.z, fraction));
 }
 
 function interpolateQPoint2d(p0: QPoint2d, p1: QPoint2d, fraction: number): QPoint2d {
-  return QPoint2d.fromScalars(interpolate(p0.x, p1.x, fraction), interpolate(p0.y, p1.y, fraction));
+  return QPoint2d.fromScalars(interpolateInt(p0.x, p1.x, fraction), interpolateInt(p0.y, p1.y, fraction));
+}
+
+function interpolateOctEncodedNormal(oen0: OctEncodedNormal, oen1: OctEncodedNormal, fraction: number): OctEncodedNormal {
+  const n0 = oen0.decode();
+  const n1 = oen1.decode();
+  if (undefined !== n0 && undefined !== n1) {
+    const n = Vector3d.create(interpolate(n0.x, n1.x, fraction), interpolate(n0.y, n1.y, fraction), interpolate(n0.z, n1.z, fraction));
+    n.normalizeInPlace();
+    return OctEncodedNormal.fromVector(n);
+  } else {
+    return OctEncodedNormal.fromVector(Vector3d.create(0, 0, 1));
+  }
 }
 
 export namespace TerrainMesh {

@@ -20,12 +20,6 @@ After creating Named Version, its possible to query them by calling [VersionHand
 [[include:VersionHandler.get.example-code]]
 ```
 
-## Downloading Thumbnails
+## detachChangeCache() deprecated
 
-Once a Named Version is created, iModelHub generates its [Thumbnail]($imodelhub-client) in the background. To get this Thumbnail, a Version query can be specified with [VersionQuery.selectThumbnailId]($imodelhub-client) or all Thumbnails can be queried through ThumbnailHandler.get.
-
-Thumbnail might not be immediately available after creating a Named Version, as generating it could take some time. If Thumbnail is not returned after creating Named Version, you can try querying it again later.
-
-``` ts
-[[include:VersionHandler.thumbnail.example-code]]
-```
+The only way to detach change cache is to close the connection. The api will be remove in future.

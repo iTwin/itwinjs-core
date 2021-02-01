@@ -12,7 +12,7 @@ import { AuxChannel, AuxChannelTable, AuxDisplacementChannel, AuxParamChannel } 
 import { VertexTable } from "../primitives/VertexTable";
 import { ColorInfo } from "./ColorInfo";
 import { WebGLDisposable } from "./Disposable";
-import { qorigin3dToArray, qparams2dToArray, qscale3dToArray } from "./Handle";
+import { qorigin3dToArray, qparams2dToArray, qscale3dToArray } from "./AttributeBuffers";
 import { TextureHandle } from "./Texture";
 
 type ChannelPropName = "normals" | "displacements" | "params";

@@ -43,7 +43,7 @@ describe("IModelTransformer", () => {
     }
   });
 
-  it("should import", async () => {
+  it("should transform changes from source to target", async () => {
     // Source IModelDb
     const sourceDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TestIModelTransformer-Source.bim");
     const sourceDb = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "TestIModelTransformer-Source" } });
@@ -99,6 +99,7 @@ describe("IModelTransformer", () => {
     const numTargetRelationships: number = count(targetDb, ElementRefersToElements.classFullName);
     assert.isAtLeast(numTargetUniqueAspects, 1);
     assert.isAtLeast(numTargetMultiAspects, 1);
+    assert.isAtLeast(numTargetRelationships, 1);
 
     if (true) { // tests of IModelExporter
       // test #1 - export structure
@@ -153,17 +154,17 @@ describe("IModelTransformer", () => {
       transformer.processAll();
       assert.equal(targetImporter.numModelsInserted, 0);
       assert.equal(targetImporter.numModelsUpdated, 0);
-      assert.equal(targetImporter.numElementsInserted, 0);
+      assert.equal(targetImporter.numElementsInserted, 1);
       assert.equal(targetImporter.numElementsUpdated, 5);
       assert.equal(targetImporter.numElementsDeleted, 2);
       assert.equal(targetImporter.numElementAspectsInserted, 0);
       assert.equal(targetImporter.numElementAspectsUpdated, 2);
-      assert.equal(targetImporter.numRelationshipsInserted, 0);
+      assert.equal(targetImporter.numRelationshipsInserted, 2);
       assert.equal(targetImporter.numRelationshipsUpdated, 1);
       assert.equal(targetImporter.numRelationshipsDeleted, 1);
       targetDb.saveChanges();
-      IModelTransformerUtils.assertUpdatesInTargetDb(targetDb);
-      assert.equal(numTargetRelationships - targetImporter.numRelationshipsDeleted, count(targetDb, ElementRefersToElements.classFullName));
+      IModelTransformerUtils.assertUpdatesInDb(targetDb);
+      assert.equal(numTargetRelationships + targetImporter.numRelationshipsInserted - targetImporter.numRelationshipsDeleted, count(targetDb, ElementRefersToElements.classFullName));
       assert.equal(2, count(targetDb, "TestTransformerTarget:TargetInformationRecord"));
       transformer.dispose();
     }
@@ -172,6 +173,68 @@ describe("IModelTransformer", () => {
     IModelTransformerUtils.dumpIModelInfo(targetDb);
     sourceDb.close();
     targetDb.close();
+  });
+
+  it("should synchronize changes from master to branch and back", async () => {
+    // Simulate branching workflow by initializing branchDb to be a copy of the populated masterDb
+    const masterDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "Master.bim");
+    const masterDb = SnapshotDb.createEmpty(masterDbFile, { rootSubject: { name: "Branching Workflow" }, createClassViews: true });
+    await IModelTransformerUtils.prepareSourceDb(masterDb);
+    IModelTransformerUtils.populateSourceDb(masterDb);
+    masterDb.saveChanges();
+    const branchDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "Branch.bim");
+    const branchDb = SnapshotDb.createFrom(masterDb, branchDbFile, { createClassViews: true });
+
+    const numMasterElements = count(masterDb, Element.classFullName);
+    const numMasterRelationships = count(masterDb, ElementRefersToElements.classFullName);
+    assert.isAtLeast(numMasterElements, 12);
+    assert.isAtLeast(numMasterRelationships, 1);
+    assert.equal(numMasterElements, count(branchDb, Element.classFullName));
+    assert.equal(numMasterRelationships, count(branchDb, ElementRefersToElements.classFullName));
+    assert.equal(0, count(branchDb, ExternalSourceAspect.classFullName));
+
+    // Ensure that master to branch synchronization did not add any new Elements or Relationships, but did add ExternalSourceAspects
+    const masterToBranchTransformer = new IModelTransformer(masterDb, branchDb, { wasSourceIModelCopiedToTarget: true }); // Note use of `wasSourceIModelCopiedToTarget` flag
+    masterToBranchTransformer.processAll();
+    masterToBranchTransformer.dispose();
+    branchDb.saveChanges();
+    assert.equal(numMasterElements, count(branchDb, Element.classFullName));
+    assert.equal(numMasterRelationships, count(branchDb, ElementRefersToElements.classFullName));
+    assert.isAtLeast(count(branchDb, ExternalSourceAspect.classFullName), numMasterElements + numMasterRelationships - 1); // provenance not recorded for the root Subject
+
+    // Confirm that provenance (captured in ExternalSourceAspects) was set correctly
+    const sql = `SELECT aspect.Identifier,aspect.Element.Id FROM ${ExternalSourceAspect.classFullName} aspect WHERE aspect.Kind=:kind`;
+    branchDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
+      statement.bindString("kind", ExternalSourceAspect.Kind.Element);
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        const masterElementId = statement.getValue(0).getString(); // ExternalSourceAspect.Identifier is of type string
+        const branchElementId = statement.getValue(1).getId();
+        assert.equal(masterElementId, branchElementId);
+      }
+    });
+
+    // Make changes to simulate working on the branch
+    IModelTransformerUtils.updateSourceDb(branchDb);
+    IModelTransformerUtils.assertUpdatesInDb(branchDb);
+    branchDb.saveChanges();
+
+    const numBranchElements = count(branchDb, Element.classFullName);
+    const numBranchRelationships = count(branchDb, ElementRefersToElements.classFullName);
+    assert.notEqual(numBranchElements, numMasterElements);
+    assert.notEqual(numBranchRelationships, numMasterRelationships);
+
+    // Synchronize changes from branch back to master
+    const branchToMasterTransformer = new IModelTransformer(branchDb, masterDb, { isReverseSynchronization: true, noProvenance: true });
+    branchToMasterTransformer.processAll();
+    branchToMasterTransformer.dispose();
+    masterDb.saveChanges();
+    IModelTransformerUtils.assertUpdatesInDb(masterDb, false);
+    assert.equal(numBranchElements, count(masterDb, Element.classFullName) - 2); // processAll cannot detect deletes when isReverseSynchronization=true
+    assert.equal(numBranchRelationships, count(masterDb, ElementRefersToElements.classFullName) - 1); // processAll cannot detect deletes when isReverseSynchronization=true
+    assert.equal(0, count(masterDb, ExternalSourceAspect.classFullName));
+
+    masterDb.close();
+    branchDb.close();
   });
 
   function count(iModelDb: IModelDb, classFullName: string): number {

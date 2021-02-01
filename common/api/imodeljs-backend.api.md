@@ -121,6 +121,7 @@ import { MobileAuthorizationClientConfiguration } from '@bentley/imodeljs-common
 import { ModelLoadProps } from '@bentley/imodeljs-common';
 import { ModelProps } from '@bentley/imodeljs-common';
 import { ModelSelectorProps } from '@bentley/imodeljs-common';
+import { NativeAppResponse } from '@bentley/imodeljs-common';
 import { NativeLoggerCategory } from '@bentley/imodeljs-native';
 import { NavigationBindingValue } from '@bentley/imodeljs-common';
 import { NavigationValue } from '@bentley/imodeljs-common';
@@ -175,6 +176,7 @@ import { SubjectProps } from '@bentley/imodeljs-common';
 import { TelemetryEvent } from '@bentley/telemetry-client';
 import { TelemetryManager } from '@bentley/telemetry-client';
 import { TextureFlags } from '@bentley/imodeljs-common';
+import { TextureLoadProps } from '@bentley/imodeljs-common';
 import { TextureMapProps } from '@bentley/imodeljs-common';
 import { TextureProps } from '@bentley/imodeljs-common';
 import { ThumbnailProps } from '@bentley/imodeljs-common';
@@ -591,7 +593,7 @@ export class ChangedElementsDb implements IDisposable {
     // (undocumented)
     get nativeDb(): IModelJsNative.ChangedElementsECDb;
     static openDb(pathName: string, openMode?: ECDbOpenMode): ChangedElementsDb;
-    processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, rulesetId: string, startChangesetId: GuidString, endChangesetId: GuidString, filterSpatial?: boolean, rulesetDir?: string, tempDir?: string): Promise<DbResult>;
+    processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult>;
 }
 
 // @internal
@@ -651,6 +653,7 @@ export class ChangeSummaryManager {
             className: string;
         };
     }, changedValueState: ChangedValueState, changedPropertyNames?: string[]): string;
+    // @deprecated
     static detachChangeCache(iModel: IModelDb): void;
     // (undocumented)
     static downloadChangeSets(requestContext: AuthorizedClientRequestContext, ctx: ChangeSummaryExtractContext, startChangeSetId: GuidString, endChangeSetId: GuidString): Promise<ChangeSet[]>;
@@ -1447,10 +1450,10 @@ export class ECDb implements IDisposable {
     // @internal
     prepareSqliteStatement(sql: string): SqliteStatement;
     prepareStatement(ecsql: string): ECSqlStatement;
-    query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any>;
+    query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority, abbreviateBlobs?: boolean): AsyncIterableIterator<any>;
     queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number>;
     // @internal
-    queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string): Promise<QueryResponse>;
+    queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string, abbreviateBlobs?: boolean): Promise<QueryResponse>;
     restartQuery(token: string, ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any>;
     saveChanges(changeSetName?: string): void;
     // @internal
@@ -2476,6 +2479,8 @@ export abstract class IModelDb extends IModel {
     // @beta
     getMassProperties(requestContext: ClientRequestContext, props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     getMetaData(classFullName: string): EntityMetaData;
+    // @alpha
+    getTextureImage(props: TextureLoadProps): Uint8Array | undefined;
     get iModelId(): GuidString;
     importSchemas(requestContext: ClientRequestContext, schemaFileNames: string[]): Promise<void>;
     // @alpha
@@ -2514,14 +2519,14 @@ export abstract class IModelDb extends IModel {
     // @internal
     prepareSqliteStatement(sql: string): SqliteStatement;
     prepareStatement(sql: string): ECSqlStatement;
-    query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any>;
+    query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority, abbreviateBlobs?: boolean): AsyncIterableIterator<any>;
     queryEntityIds(params: EntityQueryParams): Id64Set;
     queryFilePropertyBlob(prop: FilePropertyProps): Uint8Array | undefined;
     queryFilePropertyString(prop: FilePropertyProps): string | undefined;
     queryNextAvailableFileProperty(prop: FilePropertyProps): number;
     queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number>;
     // @internal
-    queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string): Promise<QueryResponse>;
+    queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string, abbreviateBlobs?: boolean): Promise<QueryResponse>;
     querySchemaVersion(schemaName: string): string | undefined;
     // (undocumented)
     readFontJson(): string;
@@ -2933,9 +2938,11 @@ export class IModelTransformer extends IModelExportHandler {
 // @beta
 export interface IModelTransformOptions {
     cloneUsingBinaryGeometry?: boolean;
+    isReverseSynchronization?: boolean;
     loadSourceGeometry?: boolean;
     noProvenance?: boolean;
     targetScopeElementId?: Id64String;
+    wasSourceIModelCopiedToTarget?: boolean;
 }
 
 // @internal @deprecated
@@ -3306,6 +3313,8 @@ export class NativeAppBackend {
     static get appSettingsCacheDir(): string;
     static checkInternetConnectivity(): InternetConnectivityStatus;
     // (undocumented)
+    static notifyFrontend<T extends keyof NativeAppResponse>(methodName: T, ...args: Parameters<NativeAppResponse[T]>): void;
+    // (undocumented)
     static onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void>;
     static overrideInternetConnectivity(_overridenBy: OverriddenBy, status: InternetConnectivityStatus): void;
     static shutdown(): Promise<void>;
@@ -3431,6 +3440,26 @@ export class Platform {
     // @internal (undocumented)
     static load(): typeof IModelJsNative;
     static get platformName(): string;
+}
+
+// @internal
+export interface ProcessChangesetOptions {
+    // (undocumented)
+    endChangesetId: string;
+    // (undocumented)
+    filterSpatial?: boolean;
+    // (undocumented)
+    rulesetDir?: string;
+    // (undocumented)
+    rulesetId: string;
+    // (undocumented)
+    startChangesetId: string;
+    // (undocumented)
+    tempDir?: string;
+    // (undocumented)
+    wantParents?: boolean;
+    // (undocumented)
+    wantPropertyChecksums?: boolean;
 }
 
 // @beta
