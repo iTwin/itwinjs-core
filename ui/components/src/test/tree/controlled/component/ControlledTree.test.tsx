@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import { VariableSizeList } from "react-window";
 import * as React from "react";
 import sinon from "sinon";
 import * as moq from "typemoq";
@@ -67,11 +68,16 @@ describe("ControlledTree", () => {
     nodeLoaderMock.setup((x) => x.loadNode(moq.It.isAny(), moq.It.isAny())).returns(() => from([]));
   });
 
+  afterEach(() => {
+    sinon.restore();
+  });
+
   const mockVisibleNode = () => {
     visibleNodesMock.reset();
     visibleNodesMock.setup((x) => x.getNumRootNodes()).returns(() => 1);
     visibleNodesMock.setup((x) => x.getNumNodes()).returns(() => 1);
     visibleNodesMock.setup((x) => x.getAtIndex(0)).returns(() => node);
+    visibleNodesMock.setup((x) => x[Symbol.iterator]()).returns([node][Symbol.iterator]);
   };
 
   it("renders loading spinner if root nodes are not loaded", () => {
@@ -158,6 +164,9 @@ describe("ControlledTree", () => {
         matchIndex: 0,
       },
     };
+
+    const verticalScrollSpy = sinon.spy();
+    sinon.replace(VariableSizeList.prototype, "scrollToItem", verticalScrollSpy);
 
     const { container } = render(
       <ControlledTree
