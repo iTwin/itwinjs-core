@@ -862,8 +862,8 @@ export class TileAdmin {
 
   // NB: This does *not* remove from this._viewports - the viewport could later be reused with a different IModelConnection.
   private onViewportIModelClosed(vp: Viewport): void {
-    this._selectedAndReady.delete(vp);
     this.clearUsageForViewport(vp);
+    this.clearTilesForViewport(vp);
 
     // NB: vp will be removed from ViewportSets in process() - but if we can establish that only this vp wants a given tile, cancel its request immediately.
     const tiles = this._requestsPerViewport.get(vp);
