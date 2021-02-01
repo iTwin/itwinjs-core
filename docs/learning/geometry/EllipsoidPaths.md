@@ -5,8 +5,8 @@
 |---|---|---|
 | Surface with paths | ![>](./figs/Ellipsoid/PerfectSphereWith7Paths.png) | ![>](./figs/Ellipsoid/4x4x1EllipsoidWithPaths.png) |
 | Closeup | ![>](./figs/Ellipsoid/PerfectSphereCloseup.png) | ![>](./figs/Ellipsoid/4x4x1Closeup.png) |
-| The _red_ Arc is intersection of the sphere with <br> a plane passing through the two endpoints and through the sphere or ellipsoid center.| On the _sphere_ <br> *this is a "great circle" <br>* its radius equals the sphere radius <br> the red arc is the shortest path between its on-sphere points. | On the _ellipsoid_ <br> * the intersection is elliptic (not circular) <br> it is _not_ the _shortest_ path between its endpoints. |
-| blue and yellow arcs are intersections of planes containing the two endpoints but _not_ the sphere or ellipse center. | Side arcs are <br> * always longer paths than the red arc <br> always _circular_ | Side arcs <br> can be shorter than the red arc <br> If the plane is not perpendicular to the principal axes of the ellipsoid, these are _ellipses_ rather than circles |
+| The _red_ Arc is intersection of the sphere with <br> a plane passing through the two endpoints and through the sphere or ellipsoid center.| On the _sphere_ <br> - this is a "great circle" <br> - its radius equals the sphere radius <br> the red arc is the shortest path between its on-sphere points. | On the _ellipsoid_ <br> - the intersection is elliptic (not circular) <br> it is _not_ the _shortest_ path between its endpoints. |
+| blue and yellow arcs are intersections of planes containing the two endpoints but _not_ the sphere or ellipse center. | Side arcs are <br> - always longer paths than the red arc <br> - always _circular_ | Side arcs <br> can be shorter than the red arc <br> If the plane is not perpendicular to the principal axes of the ellipsoid, these are _ellipses_ rather than circles |
 | | |
 
 ## True shortest paths on an ellipsoid
@@ -46,7 +46,7 @@ At this level of resolution, it is difficult to discern that there are three nea
   - This is computed by `ellipsoid.radiansPairToGreatArc`
 - Alternating red and green arcs that span about 2 degrees each.  The endpoints are computed by an approximation algorithm that produces the joints at 2-degree separation.
   - The points on this path are computed by `GeodesicPathSolver.createGeodesicPath`
-- Almost coincident with the alternating red and green, another, non-central plane intersection, this time with a plane defined by the two endpoints and a true surface normal somwhere along the way, chosen by sampling among about 40 candidates to get the smallest length.
+- Almost coincident with the alternating red and green, another, non-central plane intersection, this time with a plane defined by the two endpoints and a true surface normal somewhere along the way, chosen by sampling among about 40 candidates to get the smallest length.
   - candidate planes to create section arcs are computed by `ellipsoid.createSectionArcPointPointVectorInPlane` with 40 candidate "in plane" vectors computed based on endpoint surface normals
 
 This figure is a deep zoom to a portion of the first path section:
