@@ -247,6 +247,16 @@ export interface PresentationManagerProps {
   contentCacheSize?: number;
 
   /**
+   * Use [SQLite's Memory-Mapped I/O](https://sqlite.org/mmap.html) for worker connections. This mode improves performance of handling
+   * requests with high I/O intensity, e.g. filtering large tables on non-indexed columns. No downsides have been noticed.
+   *
+   * Set to a falsy value to turn off. `true` for memory-mapping the whole iModel. Number value for memory-mapping the specified amount of bytes.
+   *
+   * @alpha
+   */
+  useMmap?: boolean | number;
+
+  /**
    * An identifier which helps separate multiple presentation managers. It's
    * mostly useful in tests where multiple presentation managers can co-exist
    * and try to share the same resources, which we don't want. With this identifier
@@ -307,6 +317,7 @@ export class PresentationManager {
         isChangeTrackingEnabled,
         cacheConfig: createCacheConfig(this._props.cacheConfig),
         contentCacheSize: this._props.contentCacheSize,
+        useMmap: this._props.useMmap,
       });
       this._nativePlatform = new nativePlatformImpl();
     }
