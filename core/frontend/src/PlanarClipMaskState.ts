@@ -11,8 +11,6 @@ import { PlanarClipMaskMode, PlanarClipMaskProps, PlanarClipMaskSettings } from 
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { createMaskTreeReference, TileTreeReference, TileTreeSet } from "./tile/internal";
 import { ViewState3d } from "./ViewState";
-
-
 export class PlanarClipMaskState {
   public readonly settings: PlanarClipMaskSettings;
   private _modelIds?: Id64Set;
@@ -77,7 +75,10 @@ export class PlanarClipMaskState {
       }
       case PlanarClipMaskMode.ExcludeElements: {
         const overrides = new FeatureSymbology.Overrides();
+
+        overrides.ignoreSubCategory = true;
         overrides.setNeverDrawnSet(this._subCategoryOrElementIds);
+
         return overrides;
       }
       case PlanarClipMaskMode.IncludeSubCategories: {
