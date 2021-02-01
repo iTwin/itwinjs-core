@@ -47,7 +47,7 @@ export class ConditionalBooleanValue {
     if (undefined === conditionalValue || !(conditionalValue instanceof ConditionalBooleanValue))
       return false;
 
-    if (conditionalValue.syncEventIds.some((value: string): boolean => eventIds.has(value)))
+    if (conditionalValue.syncEventIds.some((value: string): boolean => eventIds.has(value.toLowerCase())))
       return conditionalValue.refresh();
 
     return false;
