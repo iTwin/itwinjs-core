@@ -11,6 +11,7 @@ import { AbstractToolbarProps } from '@bentley/ui-abstract';
 import { AbstractTreeNodeLoaderWithProvider } from '@bentley/ui-components';
 import { AbstractWidgetProps } from '@bentley/ui-abstract';
 import { AccuDraw } from '@bentley/imodeljs-frontend';
+import { AccuDrawField } from '@bentley/ui-abstract';
 import { ActionButton } from '@bentley/ui-abstract';
 import { ActivityMessageDetails } from '@bentley/imodeljs-frontend';
 import { ActivityMessageEndReason } from '@bentley/imodeljs-frontend';
@@ -22,6 +23,7 @@ import { BackstageStageLauncher as BackstageStageLauncher_2 } from '@bentley/ui-
 import { BadgeType } from '@bentley/ui-abstract';
 import { BaseSolarDataProvider } from '@bentley/ui-components';
 import { BaseTimelineDataProvider } from '@bentley/ui-components';
+import { BeButtonEvent } from '@bentley/imodeljs-frontend';
 import { BeDuration } from '@bentley/bentleyjs-core';
 import { BeEvent } from '@bentley/bentleyjs-core';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
@@ -138,6 +140,7 @@ import { TabMode } from '@bentley/ui-ninezone';
 import { TabState } from '@bentley/ui-ninezone';
 import { TimelineDataProvider } from '@bentley/ui-components';
 import { Tool } from '@bentley/imodeljs-frontend';
+import { ToolAdmin } from '@bentley/imodeljs-frontend';
 import { ToolAssistanceInstruction } from '@bentley/imodeljs-frontend';
 import { ToolAssistanceInstructions } from '@bentley/imodeljs-frontend';
 import { ToolbarItem } from '@bentley/ui-abstract';
@@ -221,12 +224,10 @@ export function AccuDrawDialog(props: AccuDrawDialogProps): JSX.Element;
 
 // @alpha (undocumented)
 export interface AccuDrawDialogProps extends CommonProps {
-    // (undocumented)
     dialogId: string;
-    // (undocumented)
     onClose?: () => void;
-    // (undocumented)
     opened: boolean;
+    orientation?: Orientation;
 }
 
 // @alpha
@@ -1933,15 +1934,28 @@ export interface FooterModeFieldProps extends StatusFieldProps {
 
 // @alpha (undocumented)
 export class FrameworkAccuDraw extends AccuDraw {
+    constructor();
+    // (undocumented)
+    static getFieldDisplayValue(index: ItemField): string;
+    // @internal
+    grabInputFocus(): void;
+    // @internal (undocumented)
+    get hasInputFocus(): boolean;
     // @internal (undocumented)
     onCompassModeChange(): void;
     // @internal (undocumented)
     onFieldLockChange(index: ItemField): void;
     // @internal (undocumented)
     onFieldValueChange(index: ItemField): void;
+    // @internal
+    onMotion(_ev: BeButtonEvent): void;
     // @internal (undocumented)
     setFocusItem(index: ItemField): void;
-    }
+    // @internal (undocumented)
+    static translateFromItemField(item: ItemField): AccuDrawField;
+    // @internal (undocumented)
+    static translateToItemField(field: AccuDrawField): ItemField;
+}
 
 // @beta
 export const FrameworkReducer: (state: import("./redux-ts").CombinedReducerState<{
@@ -2018,8 +2032,14 @@ export interface FrameworkState {
     sessionState: SessionState;
 }
 
+// @alpha
+export class FrameworkToolAdmin extends ToolAdmin {
+    processShortcutKey(e: KeyboardEvent, wentDown: boolean): boolean;
+}
+
 // @beta
 export class FrameworkUiAdmin extends UiAdmin {
+    constructor();
     closeDialog(dialogId: string): boolean;
     closeToolSettingsPopup(): boolean;
     get cursorPosition(): XAndY;
@@ -6166,6 +6186,9 @@ export class UiFramework {
     static closeCursorMenu(): void;
     // (undocumented)
     static dispatchActionToStore(type: string, payload: any, immediateSync?: boolean): void;
+    // @alpha
+    static get escapeToHome(): boolean;
+    static set escapeToHome(v: boolean);
     // @beta
     static get frameworkState(): FrameworkState | undefined;
     // @beta (undocumented)
@@ -6208,6 +6231,8 @@ export class UiFramework {
     static get initialized(): boolean;
     // @internal
     static initializeEx(store: Store<any> | undefined, i18n?: I18N, frameworkStateKey?: string, projectServices?: ProjectServices, iModelServices?: IModelServices): Promise<void>;
+    // @alpha
+    static get isContextMenuOpen(): boolean;
     // (undocumented)
     static isMobile(): boolean;
     // @internal (undocumented)
