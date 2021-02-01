@@ -63,7 +63,7 @@ export abstract class MobileDevice {
   public abstract authStateChanged(accessToken?: string, err?: string): void;
 }
 
-class MobileAppImpl extends IpcHandler implements MobileAppFunctions {
+class MobileAppHandler extends IpcHandler implements MobileAppFunctions {
   public get channelName() { return mobileAppChannel; }
   public async reconnect(connection: number) {
     MobileHost.reconnect(connection);
@@ -222,6 +222,6 @@ export class MobileHost {
     }
     await NativeHost.startup(opt);
     if (IpcApp.isValid)
-      MobileAppImpl.register();
+      MobileAppHandler.register();
   }
 }

@@ -97,7 +97,7 @@ export class IpcApp {
   }
 
   /**
-   * Call a method on the backend through an Ipc interface.
+   * Call a method on the backend through an Ipc channel.
    * @param channelName the channel registered by the backend handler.
    * @param methodName  the name of a method implemented by the backend handler.
    * @param args arguments to `methodName`
@@ -105,16 +105,17 @@ export class IpcApp {
    * @note If the backend implementation throws an exception, this method will throw a [[BackendError]] exception
    * with the `errorNumber` and `message` from the backend.
    * @note Ipc is only supported if [[isValid]] is true.
+   * @internal
    */
-  public static async callBackend(channelName: string, methodName: string, ...args: any[]): Promise<any> {
+  public static async callIpcChannel(channelName: string, methodName: string, ...args: any[]): Promise<any> {
     const retVal = (await this.invoke(channelName, methodName, ...args)) as IpcInvokeReturn;
     if (undefined !== retVal.error)
       throw new BackendError(retVal.error.errorNumber, retVal.error.name, retVal.error.message);
     return retVal.result;
   }
 
-  public static async callIpcAppBackend<T extends AsyncMethodsOf<IpcAppFunctions>>(methodName: T, ...args: Parameters<IpcAppFunctions[T]>) {
-    return this.callBackend(IpcAppChannel.Functions, methodName, ...args) as PromiseReturnType<IpcAppFunctions[T]>;
+  public static async callIpcHost<T extends AsyncMethodsOf<IpcAppFunctions>>(methodName: T, ...args: Parameters<IpcAppFunctions[T]>) {
+    return this.callIpcChannel(IpcAppChannel.Functions, methodName, ...args) as PromiseReturnType<IpcAppFunctions[T]>;
   }
 
   public static async startup(opts?: { ipcApp?: IpcAppOptions, iModelApp?: IModelAppOptions }) {

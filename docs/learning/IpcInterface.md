@@ -57,7 +57,7 @@ interface MyInterface {
 2. In your backend code, implement a class that extends [IpcHandler]($backend) and implements the interface you defined in step 1. In your startup code, call the static method `register` on your new class. Your class must implement the abstract method `get channelName()`. Return the channel name variable from your interface file.
 
 ```ts
-class MyClass extends IpcHandler implements MyInterface
+class MyClassHandler extends IpcHandler implements MyInterface
   public get channelName() { return myChannel; }
   public async sayHello(arg1: string, arg2: number, arg3: boolean) {
     return `hello: ${arg1} ${arg2} ${arg3}`

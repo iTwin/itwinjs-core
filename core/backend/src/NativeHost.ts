@@ -23,7 +23,7 @@ import { NativeAppStorage } from "./NativeAppStorage";
  * Implementation of NativeAppFunctions
  * @internal
  */
-class NativeAppImpl extends IpcHandler implements NativeAppFunctions {
+class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   public get channelName() { return nativeAppChannel; }
   public async checkInternetConnectivity(): Promise<InternetConnectivityStatus> {
     return NativeHost.checkInternetConnectivity();
@@ -160,7 +160,7 @@ export class NativeHost {
     }
     await IpcHost.startup(opt);
     if (IpcHost.isValid) // for tests, we use NativeHost but don't have a frontend
-      NativeAppImpl.register();
+      NativeAppHandler.register();
   }
 
   /**

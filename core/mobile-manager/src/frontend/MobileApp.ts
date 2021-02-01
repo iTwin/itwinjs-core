@@ -34,7 +34,7 @@ export class MobileApp {
   public static onEnterBackground = new BeEvent<() => void>();
   public static onWillTerminate = new BeEvent<() => void>();
   public static async callBackend<T extends AsyncMethodsOf<MobileAppFunctions>>(methodName: T, ...args: Parameters<MobileAppFunctions[T]>) {
-    return IpcApp.callBackend(mobileAppChannel, methodName, ...args) as PromiseReturnType<MobileAppFunctions[T]>;
+    return IpcApp.callIpcChannel(mobileAppChannel, methodName, ...args) as PromiseReturnType<MobileAppFunctions[T]>;
   }
 
   private static _isValid = false;

@@ -62,8 +62,7 @@ class SVTSelectionTool extends SelectionTool {
 
 export class DtaIpc {
   public static async callBackend<T extends AsyncMethodsOf<DtaIpcInterface>>(methodName: T, ...args: Parameters<DtaIpcInterface[T]>) {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-    return IpcApp.callBackend(dtaChannel, methodName, ...args) as PromiseReturnType<DtaIpcInterface[T]>;
+    return IpcApp.callIpcChannel(dtaChannel, methodName, ...args) as PromiseReturnType<DtaIpcInterface[T]>;
   }
 }
 

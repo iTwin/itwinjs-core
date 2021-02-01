@@ -204,13 +204,13 @@ export class ElectronHost {
     }
     await NativeHost.startup({ ipcHost: { socket: this._ipc }, iModelHost: opts?.iModelHost });
     if (IpcHost.isValid) {
-      ElectronBackendImpl.register();
+      ElectronAppHandler.register();
       opts?.electronHost?.ipcHandlers?.forEach((ipc) => ipc.register());
     }
   }
 }
 
-class ElectronBackendImpl extends IpcHandler {
+class ElectronAppHandler extends IpcHandler {
   public get channelName() { return "electron-safe"; }
   public async callElectron(member: string, method: string, ...args: any) {
     const func = (ElectronHost.electron as any)[member][method];

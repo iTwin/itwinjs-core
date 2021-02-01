@@ -67,7 +67,7 @@ export class ElectronApp {
    * @param args arguments to method
    */
   public static async callDialog<T extends AsyncMethodsOf<Electron.Dialog>>(methodName: T, ...args: Parameters<Electron.Dialog[T]>) {
-    return IpcApp.callBackend("electron-safe", "callElectron", "dialog", methodName, ...args) as PromiseReturnType<Electron.Dialog[T]>;
+    return IpcApp.callIpcChannel("electron-safe", "callElectron", "dialog", methodName, ...args) as PromiseReturnType<Electron.Dialog[T]>;
   }
   /**
    * Call an asynchronous method in the [Electron.shell](https://www.electronjs.org/docs/api/shell) interface from a previously initialized ElectronFrontend.
@@ -75,7 +75,7 @@ export class ElectronApp {
    * @param args arguments to method
    */
   public static async callShell<T extends AsyncMethodsOf<Electron.Shell>>(methodName: T, ...args: Parameters<Electron.Shell[T]>) {
-    return IpcApp.callBackend("electron-safe", "callElectron", "shell", methodName, ...args) as PromiseReturnType<Electron.Shell[T]>;
+    return IpcApp.callIpcChannel("electron-safe", "callElectron", "shell", methodName, ...args) as PromiseReturnType<Electron.Shell[T]>;
   }
   /**
    * Call an asynchronous method in the [Electron.app](https://www.electronjs.org/docs/api/app) interface from a previously initialized ElectronFrontend.
@@ -83,6 +83,6 @@ export class ElectronApp {
    * @param args arguments to method
    */
   public static async callApp<T extends AsyncMethodsOf<Electron.App>>(methodName: T, ...args: Parameters<Electron.App[T]>) {
-    return IpcApp.callBackend("electron-safe", "callElectron", "app", methodName, ...args) as PromiseReturnType<Electron.App[T]>;
+    return IpcApp.callIpcChannel("electron-safe", "callElectron", "app", methodName, ...args) as PromiseReturnType<Electron.App[T]>;
   }
 }

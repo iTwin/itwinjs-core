@@ -92,7 +92,7 @@ export class IpcHost {
   public static async startup(opt?: { ipcHost?: IpcHostOptions, iModelHost?: IModelHostConfiguration }): Promise<void> {
     this._ipc = opt?.ipcHost?.socket;
     if (this.isValid) // for tests, we use IpcHost but don't have a frontend
-      IpcAppImpl.register();
+      IpcAppHandler.register();
     await IModelHost.startup(opt?.iModelHost);
   }
 
@@ -143,7 +143,7 @@ export abstract class IpcHandler {
 /**
  * Implementation  of IpcAppFunctions
  */
-class IpcAppImpl extends IpcHandler implements IpcAppFunctions {
+class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   public get channelName() { return IpcAppChannel.Functions; }
   public async log(_timestamp: number, level: LogLevel, category: string, message: string, metaData?: any): Promise<void> {
     Logger.logRaw(level, category, message, () => metaData);

@@ -284,7 +284,7 @@ export class LocalBriefcaseConnection extends BriefcaseConnection {
    * @internal
    */
   public static async open(briefcaseProps: OpenBriefcaseProps): Promise<LocalBriefcaseConnection> {
-    const iModelProps = await IpcApp.callIpcAppBackend("openBriefcase", briefcaseProps);
+    const iModelProps = await IpcApp.callIpcHost("openBriefcase", briefcaseProps);
     const connection = new this({ ...briefcaseProps, ...iModelProps });
     IModelConnection.onOpen.raiseEvent(connection);
     return connection;
@@ -304,7 +304,7 @@ export class LocalBriefcaseConnection extends BriefcaseConnection {
     requestContext.useContextForRpc = true;
 
     try {
-      await IpcApp.callIpcAppBackend("closeBriefcase", this._fileKey);
+      await IpcApp.callIpcHost("closeBriefcase", this._fileKey);
     } finally {
       requestContext.enter();
       this._isClosed = true;

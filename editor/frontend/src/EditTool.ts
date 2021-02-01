@@ -15,10 +15,10 @@ export class EditTool extends PrimitiveTool {
   public onRestartTool() { }
 
   public static async startCommand<T>(commandId: string, iModelKey: string, ...args: any[]): Promise<T> {
-    return IpcApp.callBackend(editorChannel, "startCommand", commandId, iModelKey, ...args) as Promise<T>;
+    return IpcApp.callIpcChannel(editorChannel, "startCommand", commandId, iModelKey, ...args) as Promise<T>;
   }
 
   public static async callCommand(methodName: string, ...args: any[]): Promise<any> {
-    return IpcApp.callBackend(editorChannel, "callMethod", methodName, ...args);
+    return IpcApp.callIpcChannel(editorChannel, "callMethod", methodName, ...args);
   }
 }

@@ -29,7 +29,7 @@ const getWindowSize = () => {
   return { width, height };
 };
 
-class DtaIpcImpl extends IpcHandler implements DtaIpcInterface {
+class DtaHandler extends IpcHandler implements DtaIpcInterface {
   public get channelName() { return dtaChannel; }
   public async sayHello() {
     return "Hello from backend";
@@ -46,7 +46,7 @@ const dtaElectronMain = async () => {
     webResourcesPath: path.join(__dirname, "..", "..", "build"),
     iconName: "display-test-app.ico",
     rpcInterfaces: getRpcInterfaces(),
-    ipcHandlers: [DtaIpcImpl],
+    ipcHandlers: [DtaHandler],
     developmentServer: process.env.NODE_ENV === "development",
   };
 

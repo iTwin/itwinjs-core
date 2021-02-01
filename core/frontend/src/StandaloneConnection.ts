@@ -28,7 +28,7 @@ export class StandaloneConnection extends IModelConnection {
    * @note This method is intended for desktop or mobile applications and should not be used for web applications.
    */
   public static async openFile(filePath: string, openMode: OpenMode = OpenMode.ReadWrite, opts?: StandaloneOpenOptions): Promise<StandaloneConnection> {
-    const openResponse = await IpcApp.callBackend("openStandalone", filePath, openMode, opts);
+    const openResponse = await IpcApp.callIpcHost("openStandalone", filePath, openMode, opts);
     const connection = new StandaloneConnection(openResponse);
     IModelConnection.onOpen.raiseEvent(connection);
     return connection;
@@ -43,7 +43,7 @@ export class StandaloneConnection extends IModelConnection {
 
     this.beforeClose();
     try {
-      await IpcApp.callBackend("closeStandalone", this.key);
+      await IpcApp.callIpcHost("closeStandalone", this.key);
     } finally {
       this._isClosed = true;
       this.subcategories.onIModelConnectionClose();

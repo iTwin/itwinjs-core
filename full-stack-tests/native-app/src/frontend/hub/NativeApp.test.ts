@@ -6,7 +6,7 @@ import { assert } from "chai";
 import { Config, GuidString } from "@bentley/bentleyjs-core";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { BriefcaseDownloader, IModelVersion, SyncMode } from "@bentley/imodeljs-common";
-import { IModelApp, NativeApp, NativeAppLogger } from "@bentley/imodeljs-frontend";
+import { IModelApp, IpcApp, LocalBriefcaseConnection, NativeApp, NativeAppLogger } from "@bentley/imodeljs-frontend";
 import { ProgressInfo } from "@bentley/itwin-client";
 import { TestFrontendAuthorizationClient, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 import { rpcInterfaces } from "../../common/RpcInterfaces";
@@ -58,7 +58,7 @@ describe("NativeApp (#integration)", () => {
     await usingOfflineScope(async () => {
       const rs = await NativeApp.getCachedBriefcases(testIModelId);
       assert(rs.length > 0);
-      const conn = await NativeApp.openBriefcase({ fileName: downloader.fileName });
+      const conn = await LocalBriefcaseConnection.open({ fileName: downloader.fileName });
       const rowCount = await conn.queryRowCount("SELECT ECInstanceId FROM bis.Element");
       assert.notEqual(rowCount, 0);
     });
@@ -87,8 +87,8 @@ describe("NativeApp (#integration)", () => {
     const downloader = await NativeApp.requestDownloadBriefcase(testProjectId, locTestIModelId, { syncMode: SyncMode.PullOnly });
     await downloader.downloadPromise;
 
-    const connection = await NativeApp.openBriefcase({ fileName: downloader.fileName });
-    await NativeApp.closeBriefcase(connection);
+    const connection = await LocalBriefcaseConnection.open({ fileName: downloader.fileName });
+    await connection.close();
     await NativeApp.deleteBriefcase(downloader.fileName);
   });
 

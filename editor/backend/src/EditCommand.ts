@@ -44,7 +44,7 @@ export class EditCommand implements EditCommandIpc {
   public onFinish(): void { }
 }
 
-class EditorAppImpl extends IpcHandler implements EditorIpc {
+class EditorAppHandler extends IpcHandler implements EditorIpc {
   public get channelName() { return editorChannel; }
 
   public async startCommand(commandId: string, iModelKey: string, ...args: any[]) {
@@ -104,7 +104,7 @@ export class EditCommandAdmin {
       this._isInitialized = true;
       if (!IpcHost.isValid)
         throw new Error("Edit Commands require IpcHost");
-      EditorAppImpl.register();
+      EditorAppHandler.register();
     }
     if (commandType.commandId.length !== 0)
       this.commands.set(commandType.commandId, commandType);
