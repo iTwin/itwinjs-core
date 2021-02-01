@@ -64,3 +64,7 @@ In order to support partial updates and clearing an existing value, the update e
 The new behavior is documented as part of the method documentation here:
 
 [IModelDb.Elements.updateElement]($backend)
+
+## Common table expression support in ECSQL
+
+CTE are now supported in ECSQL. For more information read [Common Table Expression](..\learning\CommonTableExp.md)
