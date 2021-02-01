@@ -115,7 +115,8 @@
   "eslint.format.enable": true,
   "eslint.lintTask.enable": true,
   "editor.codeActionsOnSave": {
-    "editor.action.fixAll": true, // first run the default formatter, it handles whitespace better
+    "source.fixAll.markdownlint": true, // first run the markdown linter
+    "editor.action.fixAll": true, // Run the default formatter before eslint, it handles whitespace better
     "source.fixAll.eslint": true // then run ESLint auto-fix
   }
 }

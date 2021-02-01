@@ -12,9 +12,9 @@ Any interactive app can be configured as a desktop app. A small additional effor
 
 You must write an [Electron-specific main](../learning/AppTailoring.md) to do the following:
 
-* [Configure the backend interfaces](./RpcInterface.md#configure-interfaces) for Electron.
-* Integrate with Electron IPC
-* Identify the main html page.
+- [Configure the backend interfaces](./RpcInterface.md#configure-interfaces) for Electron.
+- Integrate with Electron IPC
+- Identify the main html page.
 
 ## 3. Package and Deploy
 
