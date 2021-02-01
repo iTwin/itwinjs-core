@@ -125,7 +125,7 @@ steps:
     command: custom
     verbose: false
     customCommand: 'audit --registry=https://registry.npmjs.org/ --audit-level=high'
-  condition: and(succeeded(), or(startsWith(variables['Build.SourceBranch'], 'refs/heads/release')))
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/release'))
 
 - script: './node_modules/.bin/bmsBuild --strictLinkChecking --topicsMustHaveDesc --source $(System.ArtifactsDirectory)/staging --destination $(agent.builddirectory)/tempDocsBuild/public_build --siteTitle iTwin.js'
   displayName: 'Run bmsBuild'
