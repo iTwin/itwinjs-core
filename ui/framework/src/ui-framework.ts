@@ -209,6 +209,7 @@ export * from "./ui-framework/toolbar/useUiItemsProviderToolbarItems";
 export * from "./ui-framework/toolbar/useDefaultToolbarItems";
 
 export * from "./ui-framework/tools/CoreToolDefinitions";
+export * from "./ui-framework/tools/FrameworkToolAdmin";
 export * from "./ui-framework/tools/MarkupToolDefinitions";
 export * from "./ui-framework/tools/RestoreLayoutTool";
 

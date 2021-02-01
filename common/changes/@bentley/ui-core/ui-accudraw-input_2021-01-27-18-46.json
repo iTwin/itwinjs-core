@@ -2,10 +2,10 @@
   "changes": [
     {
       "packageName": "@bentley/ui-core",
-      "comment": "Add option to use a 'x-small' webfont icon.",
+      "comment": "AccuDraw bi-directional value updates",
       "type": "none"
     }
   ],
   "packageName": "@bentley/ui-core",
-  "email": "65047615+bsteinbk@users.noreply.github.com"
+  "email": "51122937+DanEastBentley@users.noreply.github.com"
 }
