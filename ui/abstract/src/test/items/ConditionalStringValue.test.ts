@@ -11,7 +11,7 @@ const goodByeValue = "goodBye";
 const defaultValue = "default";
 const helloFunc = () => helloValue;
 const goodbyeFunc = () => goodByeValue;
-const syncEventIds = ["sync-id-one", "sync-id-two"];
+const syncEventIds = ["sync-id-one", "sync-id-two", "sync-id-THREE"];
 
 describe("ConditionalStringValue", () => {
   it("should construct without initial string value", () => {
@@ -51,6 +51,15 @@ describe("ConditionalStringValue", () => {
     expect(ConditionalStringValue.refreshValue(sut, new Set<string>(["sync-id-two"]))).to.be.true;
     expect(sut.value).to.be.equal(helloValue);
     expect(ConditionalStringValue.refreshValue(undefined, new Set<string>(["cat"]))).to.be.false;
+  });
 
+  it("test static refreshValue method with capitalized ids", () => {
+    const sut = new ConditionalStringValue(helloFunc, syncEventIds, defaultValue);
+    expect(sut.value).to.be.equal(defaultValue);
+    expect(ConditionalStringValue.refreshValue(sut, new Set<string>(["cat"]))).to.be.false;
+    expect(sut.value).to.be.equal(defaultValue);
+    expect(ConditionalStringValue.refreshValue(sut, new Set<string>(["sync-id-three"]))).to.be.true;
+    expect(sut.value).to.be.equal(helloValue);
+    expect(ConditionalStringValue.refreshValue(undefined, new Set<string>(["cat"]))).to.be.false;
   });
 });
