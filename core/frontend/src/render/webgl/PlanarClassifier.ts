@@ -466,7 +466,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     this._projectionMatrix = projection.projectionMatrix;
     this._frustum = projection.textureFrustum;
     this._debugFrustum = projection.debugFrustum;
-    this._planarClipMaskOverrides = this.getPlanarClipMaskSymbologyOverrides();
+    this._planarClipMaskOverrides = this._planarClipMask?.getPlanarClipMaskSymbologyOverrides();
 
     const drawTree = (treeRef: TileTreeReference, graphics: RenderGraphic[]) => {
       this._graphics = graphics;
@@ -622,28 +622,6 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
 
     system.applyRenderState(prevState);
     system.context.viewport(0, 0, target.viewRect.width, target.viewRect.height);
-  }
-
-  private getPlanarClipMaskSymbologyOverrides(): FeatureSymbology.Overrides | undefined {
-    if (!this._planarClipMask || !this._planarClipMask.settings.subCategoryOrElementIds)
-      return undefined;
-
-    switch (this._planarClipMask.settings.mode) {
-      case PlanarClipMaskMode.Elements: {
-        const overrides = new FeatureSymbology.Overrides();
-        overrides.setAlwaysDrawnSet(CompressedId64Set.decompressSet(this._planarClipMask.settings.subCategoryOrElementIds), true);
-        return overrides;
-      }
-      case PlanarClipMaskMode.SubCategories: {
-        const overrides = new FeatureSymbology.Overrides();
-        const subCateoryIds = CompressedId64Set.decompressArray(this._planarClipMask.settings.subCategoryOrElementIds)
-        for (const subCategoryId of subCateoryIds)
-          overrides.setVisibleSubCategory(subCategoryId);
-        return overrides;
-      }
-      default:
-        return undefined;
-    }
   }
 }
 

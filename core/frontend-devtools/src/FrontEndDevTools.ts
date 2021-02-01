@@ -12,7 +12,7 @@ import { ClearEffectsTool } from "./effects/EffectTools";
 import { FlipImageConfig, FlipImageEffect } from "./effects/FlipImage";
 import { LensDistortionConfig, LensDistortionEffect } from "./effects/LensDistortion";
 import {
-  ChangeEmphasisSettingsTool, ChangeHiliteSettingsTool, DefaultTileSizeModifierTool, FadeOutTool, FreezeSceneTool, MaskBackgroundMapByElementTool, MaskBackgroundMapByModelTool, MaskBackgroundMapBySubCategoryTool, MaskRealityModelByElementTool, MaskRealityModelByModelTool, MaskRealityModelBySubCategoryTool, SetAspectRatioSkewTool, SetHigherPriorityRealityModelMasking, SetMapHigherPriorityMasking, ShowTileVolumesTool,
+  ChangeEmphasisSettingsTool, ChangeHiliteSettingsTool, DefaultTileSizeModifierTool, FadeOutTool, FreezeSceneTool, MaskBackgroundMapByElementTool, MaskBackgroundMapByExcludedElementTool, MaskBackgroundMapByModelTool, MaskBackgroundMapBySubCategoryTool, MaskRealityModelByElementTool, MaskRealityModelByExcludedElementTool, MaskRealityModelByModelTool, MaskRealityModelBySubCategoryTool, SetAspectRatioSkewTool, SetHigherPriorityRealityModelMasking, SetMapHigherPriorityMasking, ShowTileVolumesTool,
   Toggle3dManipulationsTool, ToggleDrawingGraphicsTool, ToggleSectionDrawingSpatialViewTool, ToggleViewAttachmentBoundariesTool, ToggleViewAttachmentClipShapesTool,
   ToggleViewAttachmentsTool, UnmaskMapTool, UnmaskRealityModelTool, ViewportAddRealityModel, ViewportTileSizeModifierTool
 } from "./frontend-devtools";
@@ -176,10 +176,12 @@ export class FrontendDevTools {
       MaskRealityModelByModelTool,
       MaskRealityModelBySubCategoryTool,
       MaskRealityModelByElementTool,
+      MaskRealityModelByExcludedElementTool,
       UnmaskRealityModelTool,
       MaskBackgroundMapByModelTool,
       MaskBackgroundMapBySubCategoryTool,
       MaskBackgroundMapByElementTool,
+      MaskBackgroundMapByExcludedElementTool,
       UnmaskMapTool
     ];
 

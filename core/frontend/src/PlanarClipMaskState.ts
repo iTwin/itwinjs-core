@@ -8,6 +8,7 @@
 
 import { assert, CompressedId64Set, Id64Set, Id64String } from "@bentley/bentleyjs-core";
 import { PlanarClipMaskMode, PlanarClipMaskProps, PlanarClipMaskSettings } from "@bentley/imodeljs-common";
+import { FeatureSymbology } from "./render/FeatureSymbology";
 import { createMaskTreeReference, TileTreeReference, TileTreeSet } from "./tile/internal";
 import { ViewState3d } from "./ViewState";
 
@@ -15,13 +16,27 @@ import { ViewState3d } from "./ViewState";
 export class PlanarClipMaskState {
   public readonly settings: PlanarClipMaskSettings;
   private _modelIds?: Id64Set;
+  private _subCategoryOrElementIds?: Id64Set;
   private _tileTreeRefs?: TileTreeReference[];
   private _allLoaded = false;
 
-  private constructor(settings: PlanarClipMaskSettings, modelIds?: Id64Set) {
+  private constructor(settings: PlanarClipMaskSettings, modelIds?: Id64Set, subCateoryOrElementIds?: Id64Set) {
     this.settings = settings;
     this._modelIds = modelIds;
+    this._subCategoryOrElementIds = subCateoryOrElementIds;
   }
+
+  public static create(settings: PlanarClipMaskSettings): PlanarClipMaskState {
+    return new PlanarClipMaskState(settings, settings.modelIds ? CompressedId64Set.decompressSet(settings.modelIds) : undefined, settings.subCategoryOrElementIds ? CompressedId64Set.decompressSet(settings.subCategoryOrElementIds) : undefined);
+  }
+  public static fromJSON(props: PlanarClipMaskProps): PlanarClipMaskState {
+    return this.create(PlanarClipMaskSettings.fromJSON(props));
+  }
+  public discloseTileTrees(trees: TileTreeSet): void {
+    if (this._tileTreeRefs)
+      this._tileTreeRefs.forEach((treeRef) => treeRef.discloseTileTrees(trees));
+  }
+
   public getTileTrees(view: ViewState3d, classifiedModelId: Id64String): TileTreeReference[] | undefined {
     if (this.settings.mode == PlanarClipMaskMode.HigherPriorityModels) {
       const viewTrees = new Array<TileTreeReference>();
@@ -50,14 +65,28 @@ export class PlanarClipMaskState {
     return this._allLoaded ? this._tileTreeRefs : undefined;
   }
 
-  public static create(settings: PlanarClipMaskSettings): PlanarClipMaskState {
-    return new PlanarClipMaskState(settings, settings.modelIds ? CompressedId64Set.decompressSet(settings.modelIds) : undefined);
-  }
-  public static fromJSON(props: PlanarClipMaskProps): PlanarClipMaskState {
-    return this.create(PlanarClipMaskSettings.fromJSON(props));
-  }
-  public discloseTileTrees(trees: TileTreeSet): void {
-    if (this._tileTreeRefs)
-      this._tileTreeRefs.forEach((treeRef) => treeRef.discloseTileTrees(trees));
+  public getPlanarClipMaskSymbologyOverrides(): FeatureSymbology.Overrides | undefined {
+    if (!this._subCategoryOrElementIds)
+      return undefined;
+
+    switch (this.settings.mode) {
+      case PlanarClipMaskMode.IncludeElements: {
+        const overrides = new FeatureSymbology.Overrides();
+        overrides.setAlwaysDrawnSet(this._subCategoryOrElementIds, true);
+        return overrides;
+      }
+      case PlanarClipMaskMode.ExcludeElements: {
+        const overrides = new FeatureSymbology.Overrides();
+        overrides.setNeverDrawnSet(this._subCategoryOrElementIds);
+        return overrides;
+      }
+      case PlanarClipMaskMode.IncludeSubCategories: {
+        const overrides = new FeatureSymbology.Overrides();
+        for (const subCategoryId of this._subCategoryOrElementIds)
+          overrides.setVisibleSubCategory(subCategoryId);
+        return overrides;
+      }
+    }
+    return undefined;
   }
 }

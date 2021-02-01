@@ -12,8 +12,10 @@ export enum PlanarClipMaskMode {
   None = 0,
   HigherPriorityModels = 1,
   Models,
-  SubCategories,
-  Elements,
+  IncludeSubCategories,
+  IncludeElements,
+  ExcludeSubCategories,
+  ExcludeElements,
 };
 
 export class PlanarClipMaskSettings {
@@ -38,8 +40,9 @@ export class PlanarClipMaskSettings {
       case PlanarClipMaskMode.Models:
         return modelIds === undefined ? undefined : new PlanarClipMaskSettings(mode, CompressedId64Set.compressSet(modelIds));
 
-      case PlanarClipMaskMode.SubCategories:
-      case PlanarClipMaskMode.Elements:
+      case PlanarClipMaskMode.IncludeSubCategories:
+      case PlanarClipMaskMode.IncludeElements:
+      case PlanarClipMaskMode.ExcludeElements:
         return subCategoryOrElementIds === undefined ? undefined : new PlanarClipMaskSettings(mode, modelIds ? CompressedId64Set.compressSet(modelIds) : undefined, CompressedId64Set.compressSet(subCategoryOrElementIds));
 
       default:

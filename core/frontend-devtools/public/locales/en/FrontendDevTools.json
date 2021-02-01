@@ -356,6 +356,13 @@
         "IdentifyMaskElement": "Identify mask elements"
       }
     },
+    "MaskRealityModelByExcludedElement": {
+      "keyin": "fdt set reality model mask exclude elements",
+      "Prompts": {
+        "IdentifyRealityModel": "Identify reality model to mask with excluded elements",
+        "IdentifyMaskElement": "Identify excluded mask elements"
+      }
+    },
     "MaskRealityModelBySubCategory": {
       "keyin": "fdt set reality model mask subcategory",
       "Prompts": {
@@ -367,6 +374,12 @@
       "keyin": "fdt set background map mask elements",
       "Prompts": {
         "IdentifyMaskElement": "Identify mask element"
+      }
+    },
+    "MaskBackgroundMapByExcludedElement": {
+      "keyin": "fdt set background map mask exclude elements",
+      "Prompts": {
+        "IdentifyMaskElement": "Identify excluded mask element"
       }
     },
     "MaskBackgroundMapByModel": {
