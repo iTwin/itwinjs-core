@@ -11,8 +11,8 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { BadgeType, ConditionalStringValue, OnItemExecutedFunc, SpecialKey, StringGetter } from "@bentley/ui-abstract";
 import { BadgeUtilities, CommonProps, Icon, IconSpec, SizeProps, withOnOutsideClick } from "@bentley/ui-core";
 import {
-  Direction, ExpandableItem, GroupColumn, GroupTool, GroupToolExpander, Item, NestedGroup as NestedToolGroupComponent, ToolbarDirectionContext,
-  Group as ToolGroupComponent, withDragInteraction,
+  Direction, ExpandableItem, Group as ToolGroupComponent, GroupColumn, GroupTool, GroupToolExpander, Item, NestedGroup as NestedToolGroupComponent,
+  ToolbarDirectionContext, withDragInteraction,
 } from "@bentley/ui-ninezone";
 import { ToolGroupPanelContext } from "../frontstage/FrontstageComposer";
 import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
@@ -217,11 +217,11 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
     let refreshState = false;
     // istanbul ignore else
     if (this._childSyncIds && this._childSyncIds.size > 0)
-      if ([...this._childSyncIds].some((value: string): boolean => args.eventIds.has(value)))
+      if ([...this._childSyncIds].some((value: string): boolean => args.eventIds.has(value.toLowerCase())))
         this._childRefreshRequired = true;  // this is cleared when render occurs
     let newState: GroupItemState = { ...this.state };
     if (this.props.groupItemDef.stateSyncIds && this.props.groupItemDef.stateSyncIds.length > 0) // eslint-disable-line deprecation/deprecation
-      refreshState = this.props.groupItemDef.stateSyncIds.some((value: string): boolean => args.eventIds.has(value)); // eslint-disable-line deprecation/deprecation
+      refreshState = this.props.groupItemDef.stateSyncIds.some((value: string): boolean => args.eventIds.has(value.toLowerCase())); // eslint-disable-line deprecation/deprecation
     if (refreshState || this._childRefreshRequired) {
       if (this.props.groupItemDef.stateFunc) // eslint-disable-line deprecation/deprecation
         newState = this.props.groupItemDef.stateFunc(newState) as GroupItemState; // eslint-disable-line deprecation/deprecation
