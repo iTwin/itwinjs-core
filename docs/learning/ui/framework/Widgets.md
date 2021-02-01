@@ -81,14 +81,14 @@ A [WidgetDef]($ui-framework) object is created for each Widget component in the 
 
 The following example demonstrates how to open a widget programmatically. The example assumes an `id` prop of "VerticalPropertyGrid" has been provided on the Widget component.
 
-```TS
-    const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
-    if (activeFrontstageDef) {
-      const widgetDef = activeFrontstageDef.findWidgetDef("VerticalPropertyGrid");
-      if (widgetDef) {
-        widgetDef.setWidgetState(WidgetState.Open);
-      }
-    }
+```ts
+const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+if (activeFrontstageDef) {
+  const widgetDef = activeFrontstageDef.findWidgetDef("VerticalPropertyGrid");
+  if (widgetDef) {
+    widgetDef.setWidgetState(WidgetState.Open);
+  }
+}
 ```
 
 ## Tool Widget
@@ -154,4 +154,4 @@ There is an extensible Navigation Widget named [BasicNavigationWidget]($ui-frame
 
 ## API Reference
 
-* [Widget]($ui-framework:Widget)
+- [Widget]($ui-framework:Widget)

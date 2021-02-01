@@ -39,4 +39,4 @@ import { FrontendRequestContext } from "@bentley/imodeljs-frontend";
 
 ## API Reference
 
-* [OIDC]($ui-components:OIDC)
+- [OIDC]($ui-components:OIDC)
