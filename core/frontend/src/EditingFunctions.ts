@@ -74,7 +74,6 @@ export class EditingFunctions {
     return this._codes;
   }
 
-
   /**
    * Delete elements
    * @param ids The elements to delete

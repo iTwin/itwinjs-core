@@ -22,8 +22,8 @@ export interface IpcHostOptions {
 }
 
 /**
- * Used by applications that have a dedicated backend
- * @internal
+ * Used by applications that have a dedicated backend. IpcHosts may send messages to their corresponding IpcApp.
+ * @beta
 */
 export class IpcHost {
 
@@ -67,7 +67,7 @@ export class IpcHost {
    */
   public static removeListener(channel: string, listener: IpcListener): void {
     this.ipc.removeListener(iTwinChannel(channel), listener);
-  };
+  }
 
   private static notify(channel: string, briefcase: BriefcaseDb | StandaloneDb, methodName: string, ...args: any[]) {
     if (this.isValid)

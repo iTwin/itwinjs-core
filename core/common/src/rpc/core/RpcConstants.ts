@@ -68,7 +68,6 @@ export enum RpcContentType {
   Stream,
 }
 
-
 /** Endpoints for RPC protocols.
  * @public
  */
