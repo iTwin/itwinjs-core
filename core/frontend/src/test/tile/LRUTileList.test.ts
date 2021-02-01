@@ -228,9 +228,6 @@ describe("LRUTileList", () => {
     expect(list.totalBytesUsed).to.equal(0);
   });
 
-  it("frees memory to specified target", () => {
-  });
-
   it("disposes", () => {
     const list = new List();
     const tiles = [];

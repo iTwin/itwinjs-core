@@ -521,6 +521,11 @@ export class IModelApp {
     }
   }
 
+  /** Strictly for tests. @internal */
+  public static stopEventLoop() {
+    this._wantEventLoop = false;
+  }
+
   /** The main event processing loop for Tools and rendering. */
   private static eventLoop() {
     IModelApp._animationRequested = false;

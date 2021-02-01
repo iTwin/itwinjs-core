@@ -175,8 +175,8 @@ function isLinked(node: LRUTileListNode): boolean {
  * ```
  * v------------- Not selected --------------v                                v----------------- Selected ------------------v
  *   ______               ______                           __________                           ______               ______
- *  |      |.next =>     |      |.next => ...             |          |.next => ...             |      |.next =>     |      |
- *  | head |             |      |                         | sentinel |                         |      |             | tail |
+ *  | head |.next =>     |      |.next => ...             | sentinel |.next => ...             |      |.next =>     | tail |
+ *  | 12kb |             |  8kb |                         |   0kb    |                         | 19kb |             | 23kb |
  *  |______| <= previous.|______|         ... <= previous.|__________|         ... <= previous.|______| <= previous.|______|
  *
  * least-recently-selected --> --> --> --> --> --> --> --> --> --> --> --> --> --> --> --> --> --> --> most-recently-selected
@@ -203,6 +203,11 @@ export class LRUTileList {
   protected _head: LRUTileListNode;
   protected _tail: LRUTileListNode;
   protected _totalBytesUsed = 0;
+
+  /** The amount of GPU memory, in bytes, allocated to all tiles in the list. */
+  public get totalBytesUsed(): number {
+    return this._totalBytesUsed;
+  }
 
   public constructor() {
     this._head = this._tail = this._sentinel = { bytesUsed: 0 };
@@ -237,7 +242,7 @@ export class LRUTileList {
 
     this._stats.clear();
     tile.collectStatistics(this._stats, false);
-    tile.bytesUsed = this._stats.totalBytes;
+    tile.bytesUsed = this.computeBytesUsed(tile);
     assert(tile.bytesUsed >= 0);
     assert(tile.bytesUsed === Math.floor(tile.bytesUsed));
 
@@ -272,8 +277,10 @@ export class LRUTileList {
   /** Mark the tiles as selected for display in the specified Viewport. They are moved to the end of the "selected" partition. */
   public markSelectedForViewport(viewportId: number, tiles: Iterable<Tile>): void {
     for (const tile of tiles) {
+      if (tile.bytesUsed <= 0)
+        continue;
+
       assert(isLinked(tile));
-      assert(tile.bytesUsed > 0);
 
       if (isLinked(tile)) {
         tile.viewportIds = this._viewportIdSets.plus(viewportId, tile.viewportIds);
@@ -297,6 +304,29 @@ export class LRUTileList {
       else
         prev = tile;
     }
+  }
+
+  /** Dispose of the contents of tiles currently not selected for display until the total amount of memory consumed is no more than `maxBytes`
+   * or until the contents of all un-selected tiles have been disposed.
+   */
+  public freeMemory(maxBytes: number): void {
+    let prev: LRUTileListNode | undefined = this._head;
+    while (prev && prev !== this._sentinel && this.totalBytesUsed > maxBytes) {
+      const tile = prev as Tile;
+      prev = tile.next;
+      tile.disposeContents();
+
+      // Some tiles (ImageryMapTile) use reference-counting, in which case disposeContents() may not actually free the contents.
+      // If the contents *were* disposed, then `this.drop` will have been called, and `tile` is no longer in the list.
+      // Otherwise, `tile` remains in the list. Either way, we proceed to the next entry in the list.
+      assert((this.computeBytesUsed(tile) > 0) === isLinked(tile));
+    }
+  }
+
+  protected computeBytesUsed(tile: Tile): number {
+    this._stats.clear();
+    tile.collectStatistics(this._stats, false);
+    return this._stats.totalBytes;
   }
 
   protected assertList(): void {

@@ -107,6 +107,7 @@ export class TileAdmin {
   private _tileTreePropsRequests: TileTreePropsRequest[] = [];
   private _cleanup?: () => void;
   private readonly _lruList = new LRUTileList();
+  private _maxBytes?: number;
 
   /** Create a TileAdmin suitable for passing to [[IModelApp.startup]] via [[IModelAppOptions.tileAdmin]] to customize aspects of
    * its behavior.
@@ -305,12 +306,37 @@ export class TileAdmin {
     }
   }
 
+  /** The total number of bytes of GPU memory allocated to [[Tile]] contents.
+   * @see [[maxTotalTileContentBytes]] to impose limits on how high this can grow.
+   * @beta
+   */
+  public get totalTileContentBytes(): number {
+    return this._lruList.totalBytesUsed;
+  }
+
+  /** The maximum number of bytes of GPU memory that can be allocated to the contents of [[Tile]]s. When this limit is exceeded, the contents of the least-recently-drawn
+   * tiles are discarded until the total is below this limit or all undisplayed tiles' contents have been discarded.
+   * @see [[totalTileContentBytes]] for the current GPU memory usage.
+   * @beta
+   */
+  public get maxTotalTileContentBytes(): number | undefined {
+    return this._maxBytes;
+  }
+  public set maxTotalTileContentBytes(max: number | undefined) {
+    this._maxBytes = max;
+  }
+
   /** Invoked from the [[ToolAdmin]] event loop to process any pending or active requests for tiles.
    * @internal
    */
   public process(): void {
     this.processQueue();
+
+    // Prune expired tiles and purge expired tile trees. This may free up some memory.
     this.pruneAndPurge();
+
+    // Free up any additional memory as required to keep within our limit.
+    this.freeMemory();
   }
 
   /** Returns the number of pending and active requests associated with the specified viewport. */
@@ -354,6 +380,8 @@ export class TileAdmin {
    * @internal
    */
   public addTilesForViewport(vp: Viewport, selected: Tile[], ready: Set<Tile>): void {
+    this._lruList.markSelectedForViewport(vp.viewportId, selected);
+
     const entry = this.getTilesForViewport(vp);
     if (undefined === entry) {
       this._selectedAndReady.set(vp, { ready, selected: new Set<Tile>(selected), external: { selected: 0, requested: 0, ready: 0 } });
@@ -388,6 +416,7 @@ export class TileAdmin {
    */
   public clearTilesForViewport(vp: Viewport): void {
     this._selectedAndReady.delete(vp);
+    this._lruList.clearSelectedForViewport(vp.viewportId);
   }
 
   /** Indicates that the TileAdmin should cease tracking the specified viewport, e.g. because it is about to be destroyed.
@@ -743,9 +772,14 @@ export class TileAdmin {
     }
   }
 
+  /** Exported strictly for tests. @internal */
+  public freeMemory(): void {
+    if (undefined !== this._maxBytes)
+      this._lruList.freeMemory(this._maxBytes);
+  }
+
   private pruneAndPurge(): void {
     const now = BeTimePoint.now();
-
     if (IModelApp.renderSystem.isMobile) {
       const needPruneForMemoryUsage = this._nextPruneForMemoryUsageTime.before(now);
       if (needPruneForMemoryUsage) {
