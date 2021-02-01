@@ -9,11 +9,10 @@
 import { assert, ByteStream, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Point3d, Range2d, Range3d, Transform } from "@bentley/geometry-core";
 import {
-  BatchType, ColorDef, ElementAlignedBox3d, FeatureTableHeader, FillFlags, Gradient, ImageSource, ImageSourceFormat, ImdlHeader, LinePixels,
+  BatchType, ColorDef, ElementAlignedBox3d, FeatureTableHeader, FillFlags, Gradient, ImageSource, ImdlHeader, LinePixels,
   PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d, readTileContentDescription, RenderMaterial, RenderTexture, TextureMapping,
   TileReadError, TileReadStatus,
 } from "@bentley/imodeljs-common";
-import { imageElementFromImageSource } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { GraphicBranch } from "../render/GraphicBranch";
@@ -224,23 +223,13 @@ export class ImdlReader extends GltfReader {
   }
 
   private async readNamedTexture(namedTex: any, name: string): Promise<RenderTexture | undefined> {
-    const bufferViewId = JsonUtils.asString(namedTex.bufferView);
-    const bufferViewJson = 0 !== bufferViewId.length ? this._bufferViews[bufferViewId] : undefined;
-    if (undefined === bufferViewJson)
-      return undefined;
-
-    const byteOffset = JsonUtils.asInt(bufferViewJson.byteOffset);
-    const byteLength = JsonUtils.asInt(bufferViewJson.byteLength);
-    if (0 === byteLength)
-      return undefined;
-
-    const bytes = this._binaryData.subarray(byteOffset, byteOffset + byteLength);
-    const format = namedTex.format;
-    const imageSource = new ImageSource(bytes, format);
-
-    const image = await imageElementFromImageSource(imageSource);
-    if (this._isCanceled)
-      return undefined;
+    // Reasons a texture could be embedded in the tile content instead of requested separately from the backend:
+    // - external textures are disabled
+    // - the texture name is not a valid Id64 string
+    // - the texture is below a certain backend-hardcoded size threshold
+    // The bufferViewJson being defined signifies any of the above conditions. In that case, the image content
+    // has been embedded in the tile contents. Otherwise, we will attempt to request the image content separately
+    // from the backend.
 
     let textureType = RenderTexture.Type.Normal;
     const isGlyph = JsonUtils.asBool(namedTex.isGlyph);
@@ -254,7 +243,24 @@ export class ImdlReader extends GltfReader {
     // Neither should be cached.
     const cacheable = !isGlyph && !isTileSection;
     const params = new RenderTexture.Params(cacheable ? name : undefined, textureType);
-    return this._system.createTextureFromImage(image, ImageSourceFormat.Png === format, this._iModel, params);
+
+    const bufferViewId = JsonUtils.asString(namedTex.bufferView);
+    const bufferViewJson = 0 !== bufferViewId.length ? this._bufferViews[bufferViewId] : undefined;
+
+    if (undefined !== bufferViewJson) { // presence of bufferViewJson signifies we should read the texture from the tile content
+      const byteOffset = JsonUtils.asInt(bufferViewJson.byteOffset);
+      const byteLength = JsonUtils.asInt(bufferViewJson.byteLength);
+      if (0 === byteLength)
+        return undefined;
+
+      const texBytes = this._binaryData.subarray(byteOffset, byteOffset + byteLength);
+      const format = namedTex.format;
+      const imageSource = new ImageSource(texBytes, format);
+      return this._system.createTextureFromImageSource(imageSource, this._iModel, params);
+    }
+
+    // bufferViewJson was undefined, so attempt to request the texture directly from the backend
+    return this._system.createTextureFromElement(name, this._iModel, params, namedTex.format);
   }
 
   /** @internal */

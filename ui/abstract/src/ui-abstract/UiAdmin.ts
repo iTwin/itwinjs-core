@@ -17,6 +17,7 @@ import { PropertyRecord } from "./properties/Record";
 import { UiDataProvider } from "./dialogs/UiDataProvider";
 import { DialogLayoutDataProvider } from "./dialogs/UiLayoutDataProvider";
 import { BeUiEvent } from "@bentley/bentleyjs-core";
+import { AccuDrawUiAdmin } from "./accudraw/AccuDrawUiAdmin";
 
 /** The Generic UI Event args contains information useful for any UI message
  * @beta
@@ -52,7 +53,7 @@ export interface DialogProps {
  */
 export class GenericUiEvent extends BeUiEvent<GenericUiEventArgs> { }
 
-/** Flags that control enabling/disabling certain UI feature
+/** Flags that control enabling/disabling certain UI features
  * @beta
  */
 export interface UiFlags {
@@ -65,6 +66,7 @@ export interface UiFlags {
  */
 export class UiAdmin {
   private _featureFlags: UiFlags = {};
+  private _accuDrawUiAdmin: AccuDrawUiAdmin = new AccuDrawUiAdmin();
 
   public get featureFlags(): UiFlags {
     return { ...this._featureFlags }; // return copy so no direct access to modify value
@@ -73,6 +75,12 @@ export class UiAdmin {
   public updateFeatureFlags(uiFlags: UiFlags) {
     this._featureFlags = { ...this._featureFlags, ...uiFlags };
   }
+
+  /** Get/Set the AccuDrawUi Admin
+   * @alpha
+   */
+  public get accuDrawUi(): AccuDrawUiAdmin { return this._accuDrawUiAdmin; }
+  public set accuDrawUi(v: AccuDrawUiAdmin) { this._accuDrawUiAdmin = v; }
 
   /** @internal */
   public onInitialized() { }
@@ -278,7 +286,7 @@ export class UiAdmin {
   public static readonly onGenericUiEvent = new GenericUiEvent();
 
   /** Opens a Dialog and automatically populates it using the properties defined by the UiDataProvider.
-   * @param _uiDataProvider The UiDataProvider for the tool settings
+   * @param _uiDataProvider The DialogLayoutDataProvider for the dialog
    * @param _title Specify title for dialog.
    * @param _isModal Specify if the dialog is opened as a modal or modeless.
    * @param _id Id of the dialog that is used to close it.
@@ -286,10 +294,10 @@ export class UiAdmin {
    * @return true if the tool settings were displayed, false if the tool settings could not be displayed.
    */
   public openDialog(_uiDataProvider: DialogLayoutDataProvider, _title: string, _isModal: boolean, _id: string,
-    _optionalProps?: DialogProps ): boolean {
+    _optionalProps?: DialogProps): boolean {
     return false;
   }
 
-  /** Closes the Tool Settings Ui popup. */
+  /** Closes the Dialog with a given Id. */
   public closeDialog(_dialogId: string): boolean { return false; }
 }

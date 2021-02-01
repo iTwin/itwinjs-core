@@ -48,8 +48,9 @@ module.exports = {
         }
       }
     ],
+    "@typescript-eslint/explicit-module-boundary-types": "off",
     "@typescript-eslint/indent": [
-      "warn",
+      "error",
       2
     ],
     "@typescript-eslint/interface-name-prefix": "off",
@@ -68,7 +69,7 @@ module.exports = {
     ],
     "@typescript-eslint/member-ordering": "off",
     "@typescript-eslint/naming-convention": [
-      "warn",
+      "error",
       {
         "selector": "default",
         "format": ["camelCase"],
@@ -135,6 +136,7 @@ module.exports = {
     "@typescript-eslint/no-empty-interface": "error",
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-floating-promises": "error",
+    "@typescript-eslint/no-implied-eval": "off",
     "@typescript-eslint/no-inferrable-types": "off",
     "@typescript-eslint/no-misused-new": "error",
     "@typescript-eslint/no-misused-promises": [
@@ -146,10 +148,26 @@ module.exports = {
     "@typescript-eslint/no-namespace": "off",
     "@typescript-eslint/no-non-null-assertion": "off",
     "@typescript-eslint/no-parameter-properties": "off",
-    "@typescript-eslint/no-this-alias": "warn",
+    "@typescript-eslint/no-redeclare": [
+      "error",
+      {
+        "ignoreDeclarationMerge": true,
+      }
+    ],
+    "@typescript-eslint/no-shadow": [
+      "error",
+      {
+        "hoist": "all",
+        "allow": ["T", "args"]
+      }
+    ],
+    "@typescript-eslint/no-this-alias": "error",
     "@typescript-eslint/no-use-before-define": "off",
-    "@typescript-eslint/no-var-requires": "error",
-    "@typescript-eslint/no-unnecessary-type-assertion": "warn",
+    "@typescript-eslint/no-unnecessary-type-assertion": "error",
+    "@typescript-eslint/no-unsafe-assignment": "off",
+    "@typescript-eslint/no-unsafe-call": "off",
+    "@typescript-eslint/no-unsafe-member-access": "off",
+    "@typescript-eslint/no-unsafe-return": "off",
     "@typescript-eslint/no-unused-vars": [
       "error",
       {
@@ -158,6 +176,7 @@ module.exports = {
         "varsIgnorePattern": "^_",
       }
     ],
+    "@typescript-eslint/no-var-requires": "error",
     "@typescript-eslint/prefer-for-of": "error",
     "@typescript-eslint/prefer-function-type": "error",
     "@typescript-eslint/prefer-includes": "off",
@@ -174,6 +193,8 @@ module.exports = {
       }
     ],
     "@typescript-eslint/require-await": "off",
+    "@typescript-eslint/restrict-plus-operands": "off",
+    "@typescript-eslint/restrict-template-expressions": "off",
     "@typescript-eslint/semi": [
       "error",
       "always"
@@ -191,7 +212,7 @@ module.exports = {
     "@typescript-eslint/typedef": "off",
     // TODO: We have assignments of unbound methods all over the place.  There's a github issue open to fix this: https://github.com/typescript-eslint/typescript-eslint/issues/1256
     "@typescript-eslint/unbound-method": [
-      "warn",
+      "error",
       {
         "ignoreStatic": true
       }
@@ -251,28 +272,25 @@ module.exports = {
     "no-eval": "error",
     "no-fallthrough": "error",
     "no-invalid-this": "off",
-    "no-multiple-empty-lines": "error",
+    "no-multiple-empty-lines": ["error", { max: 1 }],
     "no-new-wrappers": "error",
-    "no-redeclare": "error",
-    "no-restricted-properties": ["error", {
-      "object": "Math",
-      "property": "hypot",
-      "message": "Use Geometry.hypotenuse methods instead",
-    }],
-    "no-restricted-syntax": ["error", { selector: "TSEnumDeclaration[const=true]", message: "const enums are not allowed" }],
-    "no-return-await": "error",
-    "no-shadow": [
-      "error",
-      {
-        "hoist": "all"
+    "no-redeclare": "off", // using @typescript-eslint/no-redeclare instead
+    "no-restricted-properties": [
+      "error", {
+        "object": "Math",
+        "property": "hypot",
+        "message": "Use Geometry.hypotenuse methods instead",
       }
     ],
+    "no-restricted-syntax": ["error", { selector: "TSEnumDeclaration[const=true]", message: "const enums are not allowed" }],
+    "no-return-await": "error",
+    "no-shadow": "off", // using @typescript-eslint/no-shadow instead
     "no-sparse-arrays": "error",
     "no-template-curly-in-string": "error",
     "no-throw-literal": "error",
     "no-trailing-spaces": "error",
     "no-undef-init": "error",
-    // TODO: The current implementation does not support the confirgurations we want to allow.  Need to have it extended...
+    // TODO: The current implementation does not support the configurations we want to allow.  Need to have it extended...
     "no-underscore-dangle": [
       "off",
       {
@@ -303,7 +321,7 @@ module.exports = {
     "prefer-const": "error",
     "prefer-rest-params": "off",
     "prefer-spread": "off",
-    "prefer-template": "warn",
+    "prefer-template": "error",
     "quote-props": [
       "error",
       "consistent-as-needed"
@@ -312,7 +330,7 @@ module.exports = {
     "radix": "error",
     "react/prop-types": "off",
     "sort-imports": [
-      "warn",
+      "error",
       {
         "ignoreDeclarationSort": true,
         "ignoreCase": true,
@@ -351,7 +369,7 @@ module.exports = {
     }],
     "@bentley/import-within-package": "error",
     "@bentley/prefer-get": "error",
-    "@bentley/react-set-state-usage": ["warn", { "updater-only": false, "allow-object": true }],
+    "@bentley/react-set-state-usage": ["error", { "updater-only": false, "allow-object": true }],
     "@bentley/require-basic-rpc-values": "off",
   },
   settings: {

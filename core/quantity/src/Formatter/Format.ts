@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { QuantityConstants } from "../Constants";
 import { QuantityError, QuantityStatus } from "../Exception";
-import { UnitConversion, UnitConversionSpec, UnitProps, UnitsProvider } from "../Interfaces";
+import { UnitProps, UnitsProvider } from "../Interfaces";
 import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "./FormatEnums";
 import { FormatProps } from "./Interfaces";
 
@@ -14,9 +14,8 @@ import { FormatProps } from "./Interfaces";
 /** A class used to both define the specifications for formatting a quantity values and the methods to do the formatting.
  * @alpha
  */
-export class Format implements FormatProps {
+export class Format {
   private _name = "";
-
   protected _roundFactor: number = 0.0;
   protected _type: FormatType = FormatType.Decimal; // required; options are decimal, fractional, scientific, station
   protected _precision: number = DecimalPrecision.Six; // required
@@ -281,7 +280,7 @@ export class Format implements FormatProps {
     this.units!.push([newUnit, label]);
   }
 
-  private loadFormatProperties(jsonObj: any) {
+  private loadFormatProperties(jsonObj: FormatProps) {
     if (undefined === jsonObj.type) // type is required
       throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} does not have the required 'type' attribute.`);
     if (typeof (jsonObj.type) !== "string")
@@ -377,7 +376,7 @@ export class Format implements FormatProps {
   /**
    * Populates this Format with the values from the provided.
    */
-  public async fromJson(unitsProvider: UnitsProvider, jsonObj: any): Promise<void> {
+  public async fromJSON(unitsProvider: UnitsProvider, jsonObj: FormatProps): Promise<void> {
     this.loadFormatProperties(jsonObj);
 
     if (undefined !== jsonObj.composite) { // optional
@@ -419,100 +418,38 @@ export class Format implements FormatProps {
   /**
    * Returns a JSON object that contain the specification for this Format.
    */
-  public toJson() {
-    const schemaJson: { [value: string]: any } = {};
-    schemaJson.type = Format.formatTypeToString(this.type);
-    schemaJson.precision = this.precision;
-    schemaJson.roundFactor = this.roundFactor;
-    if (undefined !== this.minWidth) schemaJson.minWidth = this.minWidth;
-    schemaJson.showSignOption = Format.showSignOptionToString(this.showSignOption);
-    schemaJson.formatTraits = Format.formatTraitsToArray(this.formatTraits);
-    schemaJson.decimalSeparator = this.decimalSeparator;
-    schemaJson.thousandSeparator = this.thousandSeparator;
-    schemaJson.uomSeparator = this.uomSeparator;
-    if (undefined !== this.scientificType) schemaJson.scientificType = Format.scientificTypeToString(this.scientificType);
-    if (undefined !== this.stationOffsetSize) schemaJson.stationOffsetSize = this.stationOffsetSize;
-    schemaJson.stationSeparator = this.stationSeparator;
-    if (undefined !== this.units) {
-      const composite: { [value: string]: any } = {};
-      composite.spacer = this.spacer;
-      composite.includeZero = this.includeZero;
-      composite.units = [];
-      this.units.forEach((unit: any) => {
-        if (undefined !== unit[1])
-          composite.units.push({
-            name: unit[0].name,
-            label: unit[1],
-          });
+  public toJSON(): FormatProps {
+    let composite;
+    if (this.units) {
+      const units = this.units.map((value) => {
+        if (undefined !== value[1])
+          return { name: value[0].name, label: value[1] };
         else
-          composite.units.push({
-            name: unit[0].name,
-          });
+          return { name: value[0].name };
       });
-      schemaJson.composite = composite;
-    } else { }
 
-    return schemaJson;
-  }
-}
-
-/** A class that contains both formatting information and the conversion factors necessary to convert from an input unit to the units specified in the format.
- * @alpha
- */
-export class FormatterSpec {
-  private _name = "";
-  private _conversions: UnitConversionSpec[] = [];  // max four entries
-  private _format: Format;
-
-  /** Constructor
-   *  @param name     The name of a format specification.
-   *  @param format   Defines the output format for the quantity value.
-   *  @param conversions An array of conversion factors necessary to convert from an input unit to the units specified in the format..
-   */
-  constructor(name: string, format: Format, conversions?: UnitConversionSpec[]) {
-    this._name = name;
-    this._format = format;
-    if (conversions) this._conversions = conversions;
-  }
-
-  public get name(): string { return this._name; }
-  /** Returns an array of UnitConversionSpecs, one for each unit that is to be shown in the formatted quantity string. */
-  public get unitConversions(): UnitConversionSpec[] { return this._conversions; }
-  public get format(): Format { return this._format; }
-
-  /** Static async method to create a FormatSpec given the format and unit of the quantity that will be passed to the Formatter. The input unit will
-   * be used to generate conversion information for each unit specified in the Format. This method is async due to the fact that the units provider must make
-   * async calls to lookup unit definitions.
-   *  @param name     The name of a format specification.
-   *  @param unitsProvider The units provider is used to look up unit definitions and provide conversion information for converting between units.
-   *  @param inputUnit The unit the value to be formatted. This unit is often referred to as persistence unit.
-   */
-  public static async create(name: string, format: Format, unitsProvider: UnitsProvider, inputUnit?: UnitProps): Promise<FormatterSpec> {
-    const conversions: UnitConversionSpec[] = [];
-
-    if (format.units) {
-      let convertFromUnit = inputUnit;
-      for (const unit of format.units) {
-        let unitConversion: UnitConversion;
-        if (convertFromUnit) {
-          unitConversion = await unitsProvider.getConversion(convertFromUnit, unit[0]);
-        } else {
-          unitConversion = ({ factor: 1.0, offset: 0.0 }) as UnitConversion;
-        }
-        const unitLabel = (unit[1] && unit[1]!.length > 0) ? unit[1]! : unit[0].label;
-        const spec = ({ name: unit[0].name, label: unitLabel, conversion: unitConversion }) as UnitConversionSpec;
-
-        conversions.push(spec);
-        convertFromUnit = unit[0];
-      }
-    } else {
-      // if format is only numeric and a input unit is defined set spec to use the input unit as the format unit
-      if (inputUnit) {
-        const spec: UnitConversionSpec = { name: inputUnit.name, label: inputUnit.label, conversion: { factor: 1.0, offset: 0.0 } };
-        conversions.push(spec);
-      }
+      composite = {
+        spacer: this.spacer,
+        includeZero: this.includeZero,
+        units,
+      };
     }
 
-    return new FormatterSpec(name, format, conversions);
+    const schemaJson: FormatProps = {
+      type: Format.formatTypeToString(this.type),
+      precision: this.precision,
+      roundFactor: this.roundFactor,
+      minWidth: this.minWidth,
+      showSignOption: Format.showSignOptionToString(this.showSignOption),
+      formatTraits: Format.formatTraitsToArray(this.formatTraits),
+      decimalSeparator: this.decimalSeparator,
+      thousandSeparator: this.thousandSeparator,
+      uomSeparator: this.uomSeparator,
+      scientificType: this.scientificType ? Format.scientificTypeToString(this.scientificType) : undefined,
+      stationOffsetSize: this.stationOffsetSize,
+      stationSeparator: this.stationSeparator,
+      composite,
+    };
+    return schemaJson;
   }
 }

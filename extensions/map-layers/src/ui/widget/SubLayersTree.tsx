@@ -14,7 +14,7 @@ import {
   TreeNodeRenderer, TreeNodeRendererProps, TreeRenderer, TreeRendererProps, useVisibleTreeNodes,
 } from "@bentley/ui-components";
 import { MapLayerSettings, MapSubLayerProps, MapSubLayerSettings } from "@bentley/imodeljs-common";
-import { StyleMapLayerSettings } from "./MapLayerManager";
+import { StyleMapLayerSettings } from "../Interfaces";
 import { SubLayersDataProvider } from "./SubLayersDataProvider";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import "./SubLayersTree.scss";
@@ -66,6 +66,7 @@ function getStyleMapLayerSettings(settings: MapLayerSettings, isOverlay: boolean
     subLayers: settings.subLayers ? getSubLayerProps(settings.subLayers) : undefined,
     showSubLayers: true,
     isOverlay,
+    provider: IModelApp.mapLayerFormatRegistry.createImageryProvider(settings),
   };
 }
 
@@ -144,7 +145,7 @@ export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
             onChange={handleFilterTextChanged} />
         }
       >
-        {[
+        {mapLayer.provider?.mutualExclusiveSubLayer ? undefined : [
           <button key="show-all-btn" title={allOnLabel} onClick={showAll}>
             <WebFontIcon iconName="icon-visibility" />
           </button>,
@@ -195,6 +196,20 @@ class SubLayerCheckboxHandler extends TreeEventHandler {
 
       // Drill down the tree.
       this.cascadeStateToAllChildren(model, childID);
+    }
+  }
+
+  private applyMutualExclusiveState(model: MutableTreeModel, nodeId: string) {
+    const changedNode = model.getNode(nodeId);
+    if (changedNode?.checkbox.state === CheckBoxState.Off)
+      return;
+
+    for (const node of model.iterateTreeModelNodes()) {
+      if (node.id === changedNode?.id)
+        continue;
+
+      if (node && node.checkbox.state === CheckBoxState.On)
+        node.checkbox.state = CheckBoxState.Off;
     }
   }
 
@@ -255,7 +270,6 @@ class SubLayerCheckboxHandler extends TreeEventHandler {
     }
   }
 
-
   /** Changes nodes checkboxes states until event is handled or handler is disposed */
   public onCheckboxStateChanged({ stateChanges }: TreeCheckboxStateChangeEventArgs) {
     // call base checkbox handling
@@ -270,19 +284,32 @@ class SubLayerCheckboxHandler extends TreeEventHandler {
         changes.forEach((change) => {
           const isSelected = (change.newState === CheckBoxState.On);
 
-          // Update sublayer object, otherwise state would get out of sync with DisplayStyle each time the TreeView is re-rendered
           const subLayerId = undefined !== change.nodeItem.extendedData?.subLayerId ? change.nodeItem.extendedData?.subLayerId : change.nodeItem.id;
+
+          // Get the previously visible node if any
+          let prevVisibleLayer: MapSubLayerProps | undefined;
+          if (this._mapLayer.provider?.mutualExclusiveSubLayer) {
+            prevVisibleLayer = this._mapLayer.subLayers?.find((subLayer) => subLayer.visible && subLayer.id !== subLayerId);
+          }
+
+          // Update sublayer object, otherwise state would get out of sync with DisplayStyle each time the TreeView is re-rendered
           const foundSubLayer = this._mapLayer.subLayers?.find((subLayer) => subLayer.id === subLayerId);
           if (foundSubLayer)
             foundSubLayer.visible = isSelected;
+          if (prevVisibleLayer?.visible)
+            prevVisibleLayer.visible = false;
 
           // Update displaystyle state
           if (-1 !== indexInDisplayStyle && displayStyle) {
+            if (prevVisibleLayer && prevVisibleLayer.id !== undefined)
+              displayStyle.changeMapSubLayerProps({ visible: false }, prevVisibleLayer.id, indexInDisplayStyle, this._mapLayer.isOverlay);
             displayStyle.changeMapSubLayerProps({ visible: isSelected }, subLayerId, indexInDisplayStyle, this._mapLayer.isOverlay);
           }
 
           // Cascade state
           this.modelSource.modifyModel((model) => {
+            if (this._mapLayer.provider?.mutualExclusiveSubLayer)
+              this.applyMutualExclusiveState(model, change.nodeItem.id);
             this.cascadeStateToAllChildren(model, change.nodeItem.id);
           });
         });

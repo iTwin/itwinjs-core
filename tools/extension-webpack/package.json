@@ -1,6 +1,6 @@
 {
   "name": "@bentley/extension-webpack-tools",
-  "version": "2.10.0-dev.13",
+  "version": "2.12.0-dev.21",
   "description": "Configuration and scripts for iModel.js Extensions.",
   "license": "MIT",
   "repository": {
@@ -26,7 +26,7 @@
   "types": "./index.d.ts",
   "dependencies": {
     "@babel/core": "7.7.4",
-    "@bentley/webpack-tools-core": "2.10.0-dev.13",
+    "@bentley/webpack-tools-core": "2.12.0-dev.21",
     "@svgr/webpack": "4.3.3",
     "babel-loader": "8.1.0",
     "babel-plugin-named-asset-import": "^0.3.5",
@@ -36,12 +36,12 @@
     "chalk": "^3.0.0",
     "concurrently": "^3.6.1",
     "css-loader": "3.4.2",
-    "fast-sass-loader": "^1.5.0",
+    "sass-loader": "^10.1.0",
     "file-loader": "^4.2.0",
     "fs-extra": "^8.1.0",
     "glob": "^7.1.2",
     "mini-css-extract-plugin": "0.8.0",
-    "node-sass": "4.13.1",
+    "sass": "^1.29.0",
     "nodemon": "^2.0.4",
     "null-loader": "^0.1.1",
     "postcss-flexbugs-fixes": "4.1.0",

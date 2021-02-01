@@ -17,7 +17,6 @@ import { CommonToolbarItem } from '@bentley/ui-abstract';
 import { ConnectDragPreview } from 'react-dnd';
 import { ConnectDragSource } from 'react-dnd';
 import { ConnectDropTarget } from 'react-dnd';
-import { ContextComponent } from 'react-dnd';
 import * as CSS from 'csstype';
 import { CSSProperties } from 'react';
 import { CustomButtonDefinition } from '@bentley/ui-abstract';
@@ -298,14 +297,10 @@ export class BasicPropertyEditor extends PropertyEditorBase {
     get reactNode(): React.ReactNode;
 }
 
-// @beta
-export const BeDragDropContext: typeof BeDragDropContextComponent & ContextComponent<any>;
-
-// @beta
-export class BeDragDropContextComponent extends React.PureComponent {
-    // (undocumented)
-    render(): React.ReactNode;
-}
+// @beta @deprecated
+export function BeDragDropContext(props: {
+    children?: React.ReactNode;
+}): JSX.Element;
 
 // @public @deprecated
 export class BeInspireTree<TNodePayload> {
@@ -577,7 +572,7 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
     readonly state: BreadcrumbDetailsState;
     }
 
-// @beta
+// @beta @deprecated
 export interface BreadcrumbDetailsDragDropProps<DragDropObject = any> {
     // (undocumented)
     dragProps?: DragSourceProps<DragDropObject>;
@@ -585,7 +580,7 @@ export interface BreadcrumbDetailsDragDropProps<DragDropObject = any> {
     dropProps?: DropTargetProps<DragDropObject>;
 }
 
-// @beta
+// @beta @deprecated
 export type BreadcrumbDetailsDragDropType = {} | TreeNodeItem | TableDataProvider;
 
 // @beta
@@ -601,7 +596,7 @@ export interface BreadcrumbDetailsProps extends CommonProps {
     renderTable?: (props: TableProps, node: TreeNodeItem | undefined, children: TreeNodeItem[]) => React.ReactNode;
 }
 
-// @beta
+// @beta @deprecated
 export interface BreadcrumbDragDropProps<DragDropObject = any> {
     // (undocumented)
     dragProps?: DragSourceProps<DragDropObject>;
@@ -838,7 +833,7 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
 }
 
 // @beta
-export const ColorPickerButton: React.ForwardRefExoticComponent<ColorPickerProps & React.RefAttributes<HTMLButtonElement>>;
+export const ColorPickerButton: (props: ColorPickerProps) => JSX.Element | null;
 
 // @beta
 export function ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResult, colorPresets }: ColorPickerDialogProps): JSX.Element;
@@ -871,16 +866,19 @@ export interface ColorPickerPanelProps {
 }
 
 // @beta
-export const ColorPickerPopup: React.ForwardRefExoticComponent<ColorPickerPopupProps & React.RefAttributes<HTMLButtonElement>>;
+export const ColorPickerPopup: (props: ColorPickerPopupProps) => JSX.Element | null;
 
 // @beta
 export interface ColorPickerPopupProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
     colorDefs?: ColorDef[];
     disabled?: boolean;
     initialColor: ColorDef;
+    onClose?: ((colorValue: ColorDef) => void) | undefined;
     onColorChange?: ((newColor: ColorDef) => void) | undefined;
     popupPosition?: RelativePosition;
     readonly?: boolean;
+    ref?: React.Ref<HTMLButtonElement>;
+    showCaret?: boolean;
 }
 
 // @beta
@@ -892,7 +890,9 @@ export interface ColorPickerProps extends React.ButtonHTMLAttributes<HTMLButtonE
     numColumns?: number;
     onColorPick?: ((color: ColorDef) => void) | undefined;
     readonly?: boolean;
+    ref?: React.Ref<HTMLButtonElement>;
     round?: boolean;
+    showCaret?: boolean;
 }
 
 // @beta
@@ -998,7 +998,7 @@ export interface CompositeFilterDescriptorCollection {
     logicalOperator: FilterCompositionLogicalOperator;
 }
 
-// @alpha
+// @beta
 export enum CompositeFilterType {
     // (undocumented)
     And = 0,
@@ -1010,9 +1010,11 @@ export enum CompositeFilterType {
 export class CompositePropertyDataFilterer extends PropertyDataFiltererBase {
     constructor(_leftFilterer: IPropertyDataFilterer, _operator: CompositeFilterType, _rightFilterer: IPropertyDataFilterer);
     // (undocumented)
+    categoryMatchesFilter(node: PropertyCategory, parents: PropertyCategory[]): Promise<PropertyDataFilterResult>;
+    // (undocumented)
     get isActive(): boolean;
     // (undocumented)
-    matchesFilter(node: PropertyRecord, parents: PropertyRecord[]): Promise<PropertyDataFilterResult>;
+    recordMatchesFilter(node: PropertyRecord, parents: PropertyRecord[]): Promise<PropertyDataFilterResult>;
     }
 
 // @public
@@ -1374,7 +1376,7 @@ export class DirectionHelpers {
 }
 
 // @alpha
-export class DisplayValuePropertyDataFilterer extends PropertyDataFiltererBase {
+export class DisplayValuePropertyDataFilterer extends PropertyRecordDataFiltererBase {
     constructor(filterText?: string);
     // (undocumented)
     get filterText(): string;
@@ -1382,7 +1384,7 @@ export class DisplayValuePropertyDataFilterer extends PropertyDataFiltererBase {
     // (undocumented)
     get isActive(): boolean;
     // (undocumented)
-    matchesFilter(node: PropertyRecord): Promise<PropertyDataFilterResult>;
+    recordMatchesFilter(node: PropertyRecord): Promise<PropertyDataFilterResult>;
 }
 
 // @beta
@@ -1419,7 +1421,7 @@ export class DragAction<Item> {
     };
 }
 
-// @beta
+// @beta @deprecated
 export interface DragDropArguments<DragDropObject = any> {
     clientOffset: {
         x: number;
@@ -1447,20 +1449,20 @@ export interface DragDropArguments<DragDropObject = any> {
     };
 }
 
-// @beta
+// @beta @deprecated
 export interface DragLayerProps<DragDropObject = any> extends CommonProps {
     // (undocumented)
     args?: DragSourceArguments<DragDropObject>;
 }
 
-// @beta
+// @beta @deprecated
 export interface DragSourceArguments<DragDropObject = any> extends DragDropArguments<DragDropObject> {
     // (undocumented)
     defaultDragLayer?: React.ComponentType<DragLayerProps<DragDropObject>>;
     parentObject?: DragDropObject;
 }
 
-// @beta
+// @beta @deprecated
 export interface DragSourceProps<DragDropObject = any> {
     defaultDragLayer?: React.ComponentType<DragLayerProps<DragDropObject>>;
     objectType?: ((data?: DragDropObject) => string | symbol) | string | symbol;
@@ -1561,7 +1563,7 @@ export interface DrawingViewportChangeEventArgs {
     rotation: Matrix3d;
 }
 
-// @beta
+// @beta @deprecated
 export enum DropEffects {
     // (undocumented)
     Copy = 1,
@@ -1573,7 +1575,7 @@ export enum DropEffects {
     None = 0
 }
 
-// @beta
+// @beta @deprecated
 export enum DropStatus {
     // (undocumented)
     Cancel = 3,
@@ -1585,12 +1587,12 @@ export enum DropStatus {
     Ok = 1
 }
 
-// @beta
+// @beta @deprecated
 export interface DropTargetArguments<DragDropObject = any> extends DragSourceArguments<DragDropObject> {
     dropLocation?: DragDropObject;
 }
 
-// @beta
+// @beta @deprecated
 export interface DropTargetProps<DragDropObject = any> {
     canDropTargetDrop?: (args: DropTargetArguments<DragDropObject>) => boolean;
     objectTypes?: Array<string | symbol> | (() => Array<string | symbol>);
@@ -1821,12 +1823,24 @@ export abstract class FilterDescriptorCollectionBase<TDescriptor extends FilterD
     remove(item: TDescriptor): boolean;
 }
 
-// @alpha
+// @beta
 export interface FilteredPropertyData extends PropertyData {
     // (undocumented)
-    getMatchByIndex?: (index: number) => PropertyRecordMatchInfo | undefined;
+    filteredTypes?: FilteredType[];
+    // (undocumented)
+    getMatchByIndex?: (index: number) => HighlightInfo | undefined;
     // (undocumented)
     matchesCount?: number;
+}
+
+// @beta
+export enum FilteredType {
+    // (undocumented)
+    Category = 0,
+    // (undocumented)
+    Label = 1,
+    // (undocumented)
+    Value = 2
 }
 
 // @public
@@ -2034,14 +2048,6 @@ export interface HighlightableTreeNodeProps {
 export interface HighlightableTreeProps {
     // (undocumented)
     activeMatch?: ActiveMatchInfo;
-    // (undocumented)
-    searchText: string;
-}
-
-// @beta
-export interface HighlightedRecordProps {
-    // (undocumented)
-    activeMatch?: PropertyRecordMatchInfo;
     // (undocumented)
     searchText: string;
 }
@@ -2338,14 +2344,16 @@ export class IntTypeConverter extends NumericTypeConverterBase {
     convertToString(value?: Primitives.Int): string;
 }
 
-// @alpha
+// @beta
 export interface IPropertyDataFilterer {
+    // (undocumented)
+    categoryMatchesFilter: (node: PropertyCategory, parents: PropertyCategory[]) => Promise<PropertyDataFilterResult>;
     // (undocumented)
     readonly isActive: boolean;
     // (undocumented)
-    matchesFilter: (node: PropertyRecord, parents: PropertyRecord[]) => Promise<PropertyDataFilterResult>;
-    // (undocumented)
     onFilterChanged: PropertyFilterChangeEvent;
+    // (undocumented)
+    recordMatchesFilter: (node: PropertyRecord, parents: PropertyRecord[]) => Promise<PropertyDataFilterResult>;
 }
 
 // @public
@@ -2461,7 +2469,7 @@ export interface ITreeNodeLoaderWithProvider<TDataProvider extends TreeDataProvi
 }
 
 // @alpha
-export class LabelPropertyDataFilterer extends PropertyDataFiltererBase {
+export class LabelPropertyDataFilterer extends PropertyRecordDataFiltererBase {
     constructor(filterText?: string);
     // (undocumented)
     get filterText(): string;
@@ -2469,7 +2477,7 @@ export class LabelPropertyDataFilterer extends PropertyDataFiltererBase {
     // (undocumented)
     get isActive(): boolean;
     // (undocumented)
-    matchesFilter(node: PropertyRecord): Promise<PropertyDataFilterResult>;
+    recordMatchesFilter(node: PropertyRecord): Promise<PropertyDataFilterResult>;
 }
 
 // @public
@@ -2828,9 +2836,9 @@ export interface NavCubeFaceProps extends React.AllHTMLAttributes<HTMLDivElement
 // @public
 export class NavigationPropertyTypeConverter extends TypeConverter {
     // (undocumented)
-    convertPropertyToString(propertyDescription: PropertyDescription, value?: Primitives.Hexadecimal): string;
+    convertPropertyToString(propertyDescription: PropertyDescription, value?: Primitives.Value): string;
     // (undocumented)
-    sortCompare(a: Primitives.Hexadecimal, b: Primitives.Hexadecimal, ignoreCase?: boolean): number;
+    sortCompare(a: Primitives.Value, b: Primitives.Value, ignoreCase?: boolean): number;
 }
 
 // @public
@@ -3027,7 +3035,7 @@ export interface PageOptions {
 }
 
 // @beta
-export const ParsedInput: React.ForwardRefExoticComponent<ParsedInputProps & React.RefAttributes<HTMLInputElement>>;
+export const ParsedInput: (props: ParsedInputProps) => JSX.Element | null;
 
 // @beta
 export interface ParsedInputProps extends CommonProps {
@@ -3036,6 +3044,7 @@ export interface ParsedInputProps extends CommonProps {
     onChange?: (newValue: number) => void;
     parseString: (stringValue: string) => ParseResults;
     readonly?: boolean;
+    ref?: React.Ref<HTMLInputElement>;
 }
 
 // @alpha
@@ -3148,7 +3157,7 @@ export function PrimitivePropertyValueRendererImpl(props: PrimitivePropertyValue
 // @public
 export interface PrimitiveRendererProps extends SharedRendererProps {
     // @beta
-    highlightProps?: HighlightedRecordProps;
+    highlight?: HighlightingComponentProps;
     indentation?: number;
     valueElement?: React.ReactNode;
     valueElementRenderer?: () => React.ReactNode;
@@ -3178,7 +3187,27 @@ export class PropertyCategoryBlock extends React.Component<PropertyCategoryBlock
 // @public
 export interface PropertyCategoryBlockProps extends CommonProps {
     category: PropertyCategory;
+    // @beta
+    highlight?: HighlightingComponentProps;
     onExpansionToggled?: (categoryName: string) => void;
+}
+
+// @beta
+export abstract class PropertyCategoryDataFiltererBase extends PropertyDataFiltererBase {
+    // (undocumented)
+    recordMatchesFilter(): Promise<PropertyDataFilterResult>;
+}
+
+// @alpha
+export class PropertyCategoryLabelFilterer extends PropertyCategoryDataFiltererBase {
+    constructor(filterText?: string);
+    // (undocumented)
+    categoryMatchesFilter(node: PropertyCategory): Promise<PropertyDataFilterResult>;
+    // (undocumented)
+    get filterText(): string;
+    set filterText(value: string);
+    // (undocumented)
+    get isActive(): boolean;
 }
 
 // @public
@@ -3214,22 +3243,22 @@ export class PropertyDataChangeEvent extends BeEvent<PropertyDataChangesListener
 // @public
 export type PropertyDataChangesListener = () => void;
 
-// @alpha
+// @beta
 export abstract class PropertyDataFiltererBase implements IPropertyDataFilterer {
+    // (undocumented)
+    abstract categoryMatchesFilter(node: PropertyCategory, parents: PropertyCategory[]): Promise<PropertyDataFilterResult>;
     // (undocumented)
     abstract get isActive(): boolean;
     // (undocumented)
-    abstract matchesFilter(node: PropertyRecord, parents: PropertyRecord[]): Promise<PropertyDataFilterResult>;
-    // (undocumented)
     onFilterChanged: PropertyFilterChangeEvent;
+    // (undocumented)
+    abstract recordMatchesFilter(node: PropertyRecord, parents: PropertyRecord[]): Promise<PropertyDataFilterResult>;
 }
 
-// @alpha
+// @beta
 export interface PropertyDataFilterResult {
-    matchesCount?: {
-        label?: number;
-        value?: number;
-    };
+    filteredTypes?: FilteredType[];
+    matchesCount?: number;
     matchesFilter: boolean;
     shouldExpandNodeParents?: boolean;
     shouldForceIncludeDescendants?: boolean;
@@ -3292,11 +3321,11 @@ export interface PropertyEditorProps extends CommonProps {
     setFocus?: boolean;
 }
 
-// @alpha
+// @beta
 export class PropertyFilterChangeEvent extends BeEvent<PropertyFilterChangesListener> {
 }
 
-// @alpha
+// @beta
 export type PropertyFilterChangesListener = () => void;
 
 // @public
@@ -3408,16 +3437,9 @@ export interface PropertyPopupState {
 }
 
 // @beta
-export interface PropertyRecordMatchInfo {
+export abstract class PropertyRecordDataFiltererBase extends PropertyDataFiltererBase {
     // (undocumented)
-    matchCounts: {
-        label: number;
-        value: number;
-    };
-    // (undocumented)
-    matchIndex: number;
-    // (undocumented)
-    propertyName: string;
+    categoryMatchesFilter(): Promise<PropertyDataFilterResult>;
 }
 
 // @public
@@ -3439,7 +3461,7 @@ export class PropertyRenderer extends React.Component<PropertyRendererProps, Pro
 // @public
 export interface PropertyRendererProps extends SharedRendererProps {
     // @beta
-    highlightProps?: HighlightedRecordProps;
+    highlight?: HighlightingComponentProps;
     indentation?: number;
     // @beta
     isEditing?: boolean;
@@ -3506,7 +3528,7 @@ export interface PropertyViewProps extends SharedRendererProps {
 }
 
 // @beta
-export const QuantityInput: React.ForwardRefExoticComponent<QuantityProps & React.RefAttributes<HTMLInputElement>>;
+export function QuantityInput({ initialValue, quantityType, readonly, className, style, onQuantityChange, ref }: QuantityProps): JSX.Element;
 
 // @beta
 export interface QuantityProps extends CommonProps {
@@ -3514,6 +3536,7 @@ export interface QuantityProps extends CommonProps {
     onQuantityChange: (newQuantityValue: number) => void;
     quantityType: QuantityType;
     readonly?: boolean;
+    ref?: React.Ref<HTMLInputElement>;
 }
 
 // @public
@@ -4238,7 +4261,7 @@ export interface TableDistinctValue {
     value: Primitives.Value;
 }
 
-// @beta
+// @beta @deprecated
 export interface TableDragDropProps<DragDropObject = any> {
     // (undocumented)
     dragProps?: DragSourceProps<DragDropObject>;
@@ -4246,10 +4269,10 @@ export interface TableDragDropProps<DragDropObject = any> {
     dropProps?: TableDropTargetProps<DragDropObject>;
 }
 
-// @beta
+// @beta @deprecated
 export type TableDragDropType = {} | RowItem | TableDataProvider;
 
-// @beta
+// @beta @deprecated
 export interface TableDropTargetProps<DragDropObject = any> extends DropTargetProps<DragDropObject> {
     canDropOn?: boolean;
 }
@@ -4436,7 +4459,7 @@ export class Timeline extends React.Component<TimelineProps, TimelineState> {
 }
 
 // @alpha
-export class TimelineComponent extends React.PureComponent<TimelineComponentProps, TimelineComponentState> {
+export class TimelineComponent extends React.Component<TimelineComponentProps, TimelineComponentState> {
     constructor(props: TimelineComponentProps);
     // (undocumented)
     componentDidUpdate(prevProps: TimelineComponentProps): void;
@@ -4444,6 +4467,8 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
     componentWillUnmount(): void;
     // (undocumented)
     render(): JSX.Element;
+    // (undocumented)
+    shouldComponentUpdate(nextProps: TimelineComponentProps, nextState: TimelineComponentState): boolean;
     }
 
 // @alpha
@@ -4734,7 +4759,7 @@ export class TreeDataSource implements IDisposable {
     // (undocumented)
     dispose(): void;
     // (undocumented)
-    readonly onItemsChanged: BeUiEvent<TreeDataChangesListener>;
+    readonly onItemsChanged: BeEvent<TreeDataChangesListener>;
     // (undocumented)
     requestItems(parent: TreeNodeItem | undefined, firstItemIndex: number, numItems: number, requestNumChildren: boolean): Observable_2<TreeDataSourceResult>;
 }
@@ -5459,7 +5484,9 @@ export interface VirtualizedPropertyGridContext {
         isResizeHandleBeingDragged?: boolean;
         onResizeHandleDragChanged?: (isDragStarted: boolean) => void;
         columnInfo?: PropertyGridColumnInfo;
-        highlightedRecordProps?: HighlightedRecordProps;
+        highlight?: HighlightingComponentProps & {
+            filteredTypes?: FilteredType[];
+        };
     };
     // (undocumented)
     gridEventHandler: IPropertyGridEventHandler;
@@ -5490,7 +5517,9 @@ export interface VirtualizedPropertyGridProps extends CommonPropertyGridProps {
     // (undocumented)
     eventHandler: IPropertyGridEventHandler;
     // (undocumented)
-    highlightedRecordProps?: HighlightedRecordProps;
+    highlight?: HighlightingComponentProps & {
+        filteredTypes?: FilteredType[];
+    };
     // (undocumented)
     model: IPropertyGridModel;
 }
@@ -5503,7 +5532,9 @@ export interface VirtualizedPropertyGridWithDataProviderProps extends CommonProp
     // (undocumented)
     dataProvider: IPropertyDataProvider;
     // (undocumented)
-    highlightedRecordProps?: HighlightedRecordProps;
+    highlight?: HighlightingComponentProps & {
+        filteredTypes?: FilteredType[];
+    };
 }
 
 // @beta
@@ -5571,16 +5602,16 @@ export class WeightPropertyEditor extends PropertyEditorBase {
     get reactNode(): React.ReactNode;
 }
 
-// @beta
+// @beta @deprecated
 export function withBreadcrumbDetailsDragDrop<P extends BreadcrumbDetailsProps, DragDropObject extends BreadcrumbDetailsDragDropType>(BreadcrumbComponent: React.ComponentType<P>): React.ComponentType<P & BreadcrumbDetailsDragDropProps<DragDropObject>>;
 
-// @beta
+// @beta @deprecated
 export function withBreadcrumbDragDrop<P extends BreadcrumbProps, DragDropObject extends TreeDragDropType>(BreadcrumbComponent: React.ComponentType<P>): React.ComponentType<P & BreadcrumbDragDropProps<DragDropObject>>;
 
-// @beta
-export const withDragSource: <ComponentProps extends {}, DragDropObject = any>(Component: React.ComponentType<ComponentProps>) => DndComponentClass<ComponentProps & WithDragSourceProps<DragDropObject>>;
+// @beta @deprecated
+export const withDragSource: <ComponentProps extends {}, DragDropObject = any>(Component: React.ComponentType<ComponentProps>) => DndComponentClass<typeof React.Component, ComponentProps & WithDragSourceProps<DragDropObject>>;
 
-// @beta
+// @beta @deprecated
 export interface WithDragSourceProps<DragDropObject = any> {
     altDropEffect?: DropEffects;
     // @internal (undocumented)
@@ -5601,10 +5632,10 @@ export interface WithDragSourceProps<DragDropObject = any> {
     type?: string | symbol | null;
 }
 
-// @beta
-export const withDropTarget: <ComponentProps extends {}, DragDropObject = any>(Component: React.ComponentType<ComponentProps>) => DndComponentClass<ComponentProps & WithDropTargetProps<DragDropObject>>;
+// @beta @deprecated
+export const withDropTarget: <ComponentProps extends {}, DragDropObject = any>(Component: React.ComponentType<ComponentProps>) => DndComponentClass<typeof React.Component, ComponentProps & WithDropTargetProps<DragDropObject>>;
 
-// @beta
+// @beta @deprecated
 export interface WithDropTargetProps<DragDropObject = any> {
     // @internal (undocumented)
     canDrop?: boolean;
@@ -5621,7 +5652,7 @@ export interface WithDropTargetProps<DragDropObject = any> {
     type?: string | symbol;
 }
 
-// @beta
+// @beta @deprecated
 export function withTableDragDrop<P extends TableProps, DragDropObject extends TableDragDropType>(TableComponent: React.ComponentType<P>): React.ComponentType<P & TableDragDropProps<DragDropObject>>;
 
 

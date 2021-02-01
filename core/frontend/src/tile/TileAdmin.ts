@@ -8,8 +8,8 @@
 
 import { assert, BeDuration, BeEvent, BeTimePoint, Id64Array, Id64String, PriorityQueue } from "@bentley/bentleyjs-core";
 import {
-  defaultTileOptions, ElementGraphicsRequestProps, getMaximumMajorTileFormatVersion, IModelTileRpcInterface, IModelTileTreeProps, ModelGeometryChanges,
-  NativeAppRpcInterface, RpcOperation, RpcRegistry, RpcResponseCacheControl, ServerTimeoutError, TileTreeContentIds,
+  defaultTileOptions, ElementGraphicsRequestProps, FrontendIpc, getMaximumMajorTileFormatVersion, IModelTileRpcInterface, IModelTileTreeProps, ModelGeometryChanges,
+  RpcOperation, RpcResponseCacheControl, ServerTimeoutError, TileTreeContentIds,
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -18,7 +18,8 @@ import { Viewport } from "../Viewport";
 import { ReadonlyViewportSet, UniqueViewportSets } from "../ViewportSet";
 import { InteractiveEditingSession } from "../InteractiveEditingSession";
 import { GeometricModelState } from "../ModelState";
-import { Tile, TileLoadStatus, TileRequest, TileTree, TileTreeSet, TileUsageMarker } from "./internal";
+import { Tile, TileLoadStatus, TileRequest, TileTree, TileTreeOwner, TileTreeSet, TileUsageMarker } from "./internal";
+import { NativeApp } from "../NativeApp";
 
 /** Details about any tiles not handled by [[TileAdmin]]. At this time, that means OrbitGT point cloud tiles.
  * Used for bookkeeping by SelectedAndReadyTiles
@@ -93,6 +94,8 @@ export abstract class TileAdmin {
   public abstract get enableImprovedElision(): boolean;
   /** @internal */
   public abstract get ignoreAreaPatterns(): boolean;
+  /** @internal */
+  public abstract get enableExternalTextures(): boolean;
   /** @internal */
   public abstract get useProjectExtents(): boolean;
   /** @internal */
@@ -213,16 +216,19 @@ export abstract class TileAdmin {
   public abstract registerViewport(vp: Viewport): void;
 
   /** @internal */
+  public abstract invalidateAllScenes(): void;
+
+  /** @internal */
   public abstract onShutDown(): void;
 
   /** @internal */
-  public abstract async requestTileTreeProps(iModel: IModelConnection, treeId: string): Promise<IModelTileTreeProps>;
+  public abstract requestTileTreeProps(iModel: IModelConnection, treeId: string): Promise<IModelTileTreeProps>;
 
   /** @internal */
-  public abstract async requestTileContent(iModel: IModelConnection, treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined, qualifier: string | undefined): Promise<Uint8Array>;
+  public abstract requestTileContent(iModel: IModelConnection, treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined, qualifier: string | undefined): Promise<Uint8Array>;
 
   /** @internal */
-  public abstract async requestElementGraphics(iModel: IModelConnection, props: ElementGraphicsRequestProps): Promise<Uint8Array | undefined>;
+  public abstract requestElementGraphics(iModel: IModelConnection, props: ElementGraphicsRequestProps): Promise<Uint8Array | undefined>;
 
   /** Create a TileAdmin. Chiefly intended for use by subclasses of [[IModelApp]] to customize the behavior of the TileAdmin.
    * @param props Options for customizing the behavior of the TileAdmin.
@@ -242,7 +248,7 @@ export abstract class TileAdmin {
    * ```
    * @internal
    */
-  public abstract async purgeTileTrees(iModel: IModelConnection, modelIds: Id64Array | undefined): Promise<void>;
+  public abstract purgeTileTrees(iModel: IModelConnection, modelIds: Id64Array | undefined): Promise<void>;
 
   /** @internal */
   public abstract onTileCompleted(tile: Tile): void;
@@ -267,7 +273,7 @@ export abstract class TileAdmin {
   /** Event raised when a request to load a tile tree completes.
    * @internal
    */
-  public readonly onTileTreeLoad = new BeEvent<(tileTree: TileTree) => void>();
+  public readonly onTileTreeLoad = new BeEvent<(tileTree: TileTreeOwner) => void>();
 
   /** Event raised when a request to load a tile's child tiles completes.
    * @internal
@@ -368,6 +374,12 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      * Default value: false
      */
     ignoreAreaPatterns?: boolean;
+
+    /** If true, during tile generation the backend will not embed all texture image data in the tile content. If texture image data is considered large enough by the backend, it will not be embedded in the tile content and the frontend will request that element texture data separately from the backend. This can help reduce the amount of memory consumed by the frontend and the amount of data sent to the frontend.
+     *
+     * Default value: false
+     */
+    enableExternalTextures?: boolean;
 
     /** The interval in milliseconds at which a request for tile content will be retried until a response is received.
      *
@@ -629,6 +641,7 @@ class Admin extends TileAdmin {
   private readonly _enableInstancing: boolean;
   private readonly _enableImprovedElision: boolean;
   private readonly _ignoreAreaPatterns: boolean;
+  private readonly _enableExternalTextures: boolean;
   private readonly _disableMagnification: boolean;
   private readonly _alwaysRequestEdges: boolean;
   private readonly _alwaysSubdivideIncompleteTiles: boolean;
@@ -714,6 +727,7 @@ class Admin extends TileAdmin {
     this._enableInstancing = options.enableInstancing ?? defaultTileOptions.enableInstancing;
     this._enableImprovedElision = options.enableImprovedElision ?? defaultTileOptions.enableImprovedElision;
     this._ignoreAreaPatterns = options.ignoreAreaPatterns ?? defaultTileOptions.ignoreAreaPatterns;
+    this._enableExternalTextures = options.enableExternalTextures ?? defaultTileOptions.enableExternalTextures;
     this._disableMagnification = options.disableMagnification ?? defaultTileOptions.disableMagnification;
     this._alwaysRequestEdges = true === options.alwaysRequestEdges;
     this._alwaysSubdivideIncompleteTiles = options.alwaysSubdivideIncompleteTiles ?? defaultTileOptions.alwaysSubdivideIncompleteTiles;
@@ -761,7 +775,7 @@ class Admin extends TileAdmin {
     // If unspecified skip one level before preloading  of parents of context tiles.
     this._contextPreloadParentSkip = Math.max(0, Math.min((options.contextPreloadParentSkip === undefined ? 1 : options.contextPreloadParentSkip), 5));
 
-    this._cleanup = InteractiveEditingSession.onBegin.addListener((session) => {
+    const removeEditingListener = InteractiveEditingSession.onBegin.addListener((session) => {
       const removeGeomListener = session.onGeometryChanges.addListener((changes: Iterable<ModelGeometryChanges>) => this.onModelGeometryChanged(changes));
       session.onEnded.addOnce((sesh: InteractiveEditingSession) => {
         assert(sesh === session);
@@ -769,11 +783,25 @@ class Admin extends TileAdmin {
         this.onSessionEnd(session);
       });
     });
+
+    const removeLoadListener = this.addLoadListener(() => {
+      this._viewports.forEach((vp) => vp.invalidateScene());
+    });
+
+    this._cleanup = () => {
+      removeEditingListener();
+      removeLoadListener();
+    };
+  }
+
+  public invalidateAllScenes() {
+    this._viewports.forEach((vp) => vp.invalidateScene());
   }
 
   public get enableInstancing() { return this._enableInstancing && IModelApp.renderSystem.supportsInstancing; }
   public get enableImprovedElision() { return this._enableImprovedElision; }
   public get ignoreAreaPatterns() { return this._ignoreAreaPatterns; }
+  public get enableExternalTextures() { return this._enableExternalTextures; }
   public get useProjectExtents() { return this._useProjectExtents; }
   public get maximumLevelsToSkip() { return this._maximumLevelsToSkip; }
   public get mobileExpirationMemoryThreshold() { return this._mobileExpirationMemoryThreshold; }
@@ -855,7 +883,7 @@ class Admin extends TileAdmin {
         }
 
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        NativeAppRpcInterface.getClient().cancelTileContentRequests(iModelConnection.getRpcProps(), treeContentIds);
+        NativeApp.callBackend("cancelTileContentRequests", iModelConnection.getRpcProps(), treeContentIds);
       }
 
       this._canceledIModelTileRequests.clear();
@@ -864,7 +892,7 @@ class Admin extends TileAdmin {
     if (this._canceledElementGraphicsRequests && this._canceledElementGraphicsRequests.size > 0) {
       for (const [connection, requestIds] of this._canceledElementGraphicsRequests) {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        NativeAppRpcInterface.getClient().cancelElementGraphicsRequests(connection.getRpcProps(), requestIds);
+        NativeApp.callBackend("cancelElementGraphicsRequests", connection.getRpcProps(), requestIds);
         this._totalAbortedRequests += requestIds.length;
       }
 
@@ -1215,7 +1243,7 @@ class Admin extends TileAdmin {
     policy.retryInterval = () => retryInterval;
     policy.allowResponseCaching = () => RpcResponseCacheControl.Immutable;
 
-    if (RpcRegistry.instance.isRpcInterfaceInitialized(NativeAppRpcInterface)) {
+    if (FrontendIpc.isValid) {
       this._canceledElementGraphicsRequests = new Map<IModelConnection, string[]>();
       if (this._cancelBackendTileRequests)
         this._canceledIModelTileRequests = new Map<IModelConnection, Map<string, Set<string>>>();

@@ -276,7 +276,7 @@ describe("BeEvent tests", () => {
       const dispatcher = new BeEvent<DummyListener>();
       dispatcher.addOnce(fnOnce);
       dispatcher.addListener(fn);
-      dispatcher.raiseEvent();
+      dispatcher.raiseEvent(new Dummy("a"), 10);
       const hasFn = dispatcher.has(fn);
       const hasOnceFn = dispatcher.has(fnOnce);
       expect(hasFn, "Handler should be present because it was not dropped.").to.equal(true);
@@ -323,10 +323,10 @@ describe("BeEvent tests", () => {
       list.get(event1).addListener(fn1);
       list.get(event2).addListener(fn2);
 
-      list.get(event2).raiseEvent(undefined, 16);
+      list.get(event2).raiseEvent(new Dummy("a"), 16);
       expect(result, 'Result should be "ev2:16.').to.equal("ev2:16");
 
-      list.get(event1).raiseEvent(undefined, 8);
+      list.get(event1).raiseEvent(new Dummy("a"), 8);
       expect(result, 'Result should be "ev1:8.').to.equal("ev1:8");
     });
 

@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { IModelError } from "@bentley/imodeljs-common";
-import { IModelConnection, StandaloneConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection, SnapshotConnection, StandaloneConnection } from "@bentley/imodeljs-frontend";
 
-export async function openStandaloneIModel(filename: string, writable: boolean): Promise<IModelConnection> {
+export async function openStandaloneIModel(filename: string, writable: boolean,): Promise<IModelConnection> {
   try {
-    return StandaloneConnection.openFile(filename, writable ? OpenMode.ReadWrite : OpenMode.Readonly);
+    return StandaloneConnection.openFile(filename, writable ? OpenMode.ReadWrite : OpenMode.Readonly, { key: filename });
   } catch (err) {
     if (writable && err instanceof IModelError && err.errorNumber === IModelStatus.ReadOnly)
-      return StandaloneConnection.openFile(filename, OpenMode.Readonly);
+      return SnapshotConnection.openFile(filename);
     else
       throw err;
   }

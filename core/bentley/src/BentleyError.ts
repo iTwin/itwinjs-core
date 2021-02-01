@@ -95,6 +95,9 @@ export enum IModelStatus {
   NoGeoLocation = IMODEL_ERROR_BASE + 66,
   ServerTimeout = IMODEL_ERROR_BASE + 67,
   NoContent = IMODEL_ERROR_BASE + 68,
+  NotRegistered = IMODEL_ERROR_BASE + 69,
+  FunctionNotFound = IMODEL_ERROR_BASE + 70,
+  NoActiveCommand = IMODEL_ERROR_BASE + 71,
 }
 
 /** Error status from various briefcase operations
@@ -315,6 +318,9 @@ export enum IModelHubStatus {
   FailedToGetProductSettings = IMODELHUBERROR_BASE + 48,
 
   LockChunkDoesNotExist = IMODELHUBERROR_BASE + 49,
+
+  CheckpointAlreadyExists = IMODELHUBERROR_BASE + 50,
+  CheckpointDoesNotExist = IMODELHUBERROR_BASE + 51,
 
   // Errors that are returned for incorrect iModelHub request.
   UndefinedArgumentError = IMODELHUBERROR_REQUESTERRORBASE + 1,

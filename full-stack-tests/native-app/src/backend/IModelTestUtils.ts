@@ -5,25 +5,34 @@
 import { assert } from "chai";
 import { GuidString, Id64, Id64String } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseDb, BriefcaseManager, Element, IModelDb, InformationPartitionElement, PhysicalModel, PhysicalPartition, SubjectOwnsPartitionElements,
+  BriefcaseDb, BriefcaseManager, Element, IModelDb, IModelJsFs, InformationPartitionElement, PhysicalModel, PhysicalPartition,
+  SubjectOwnsPartitionElements,
 } from "@bentley/imodeljs-backend";
-import {
-  BriefcaseProps, Code, CodeProps, ElementProps, IModel, IModelVersion, PhysicalElementProps, RelatedElement, SyncMode,
-} from "@bentley/imodeljs-common";
+import { Code, CodeProps, ElementProps, IModel, IModelVersion, PhysicalElementProps, RelatedElement } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
 export class IModelTestUtils {
   // Helper to open a briefcase db
-  public static async downloadAndOpenBriefcaseDb(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, syncMode: SyncMode, version: IModelVersion = IModelVersion.latest()): Promise<BriefcaseDb> {
+  public static async downloadAndOpenBriefcaseDb(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, briefcaseId?: number, version: IModelVersion = IModelVersion.latest()): Promise<BriefcaseDb> {
     requestContext.enter();
-    const briefcaseProps: BriefcaseProps = await BriefcaseManager.download(requestContext, contextId, iModelId, { syncMode }, version);
+    const props = await BriefcaseManager.downloadBriefcase(requestContext, { contextId, iModelId, briefcaseId, asOf: version.toJSON() });
     requestContext.enter();
-    return BriefcaseDb.open(requestContext, briefcaseProps.key);
+    return BriefcaseDb.open(requestContext, { fileName: props.fileName });
   }
 
   public static async closeAndDeleteBriefcaseDb(requestContext: AuthorizedClientRequestContext, briefcaseDb: BriefcaseDb) {
+    const fileName = briefcaseDb.pathName; // save this before we close - afterwards it is invalid
+    const iModelId = briefcaseDb.iModelId;
     briefcaseDb.close();
-    await BriefcaseManager.delete(requestContext, briefcaseDb.briefcaseKey);
+    await BriefcaseManager.deleteBriefcaseFiles(fileName, requestContext);
+    // try to clean up empty briefcase directories, and empty iModel directories.
+    if (0 === BriefcaseManager.getCachedBriefcases(iModelId).length) {
+      IModelJsFs.removeSync(BriefcaseManager.getBriefcaseBasePath(iModelId));
+      const imodelPath = BriefcaseManager.getIModelPath(iModelId);
+      if (0 === IModelJsFs.readdirSync(imodelPath).length) {
+        IModelJsFs.removeSync(imodelPath);
+      }
+    }
   }
 
   // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.

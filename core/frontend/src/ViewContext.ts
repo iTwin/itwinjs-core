@@ -24,7 +24,7 @@ import { RenderTarget } from "./render/RenderTarget";
 import { Scene } from "./render/Scene";
 import { Tile, TileGraphicType, TileLoadStatus, TileTreeReference } from "./tile/internal";
 import { ViewingSpace } from "./ViewingSpace";
-import { CachedDecoration, ScreenViewport, Viewport, ViewportDecorator } from "./Viewport";
+import { CachedDecoration, ELEMENT_MARKED_FOR_REMOVAL, ScreenViewport, Viewport, ViewportDecorator } from "./Viewport";
 
 const gridConstants = { minSeparation: 20, maxRefLines: 100, gridTransparency: 220, refTransparency: 150, planeTransparency: 225 };
 
@@ -250,7 +250,15 @@ export class DecorateContext extends RenderContext {
     if (this._curCacheableDecorator)
       this._appendToCache({ type: "html", htmlElement: decoration });
 
-    this.screenViewport.decorationDiv.appendChild(decoration);
+    // an element decoration being added might already be on the decorationDiv, just marked for removal
+    if (decoration[ELEMENT_MARKED_FOR_REMOVAL]) {
+      decoration[ELEMENT_MARKED_FOR_REMOVAL] = false;
+    // SEE: decorationDiv doc comment
+    // eslint-disable-next-line deprecation/deprecation
+    } else if (decoration.parentElement !== this.screenViewport.decorationDiv) {
+    // eslint-disable-next-line deprecation/deprecation
+      this.screenViewport.decorationDiv.appendChild(decoration);
+    }
   }
 
   private getClippedGridPlanePoints(vp: Viewport, plane: Plane3dByOriginAndUnitNormal, loopPt: Point3d): Point3d[] | undefined {

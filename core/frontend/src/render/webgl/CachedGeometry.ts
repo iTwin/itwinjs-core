@@ -19,7 +19,7 @@ import { DrawParams, ShaderProgramParams } from "./DrawCommand";
 import { LineCode } from "./LineCode";
 import { fromSumOf, FrustumUniformType } from "./FrustumUniforms";
 import { GL } from "./GL";
-import { BufferHandle, BufferParameters, BuffersContainer, QBufferHandle2d, QBufferHandle3d } from "./Handle";
+import { BufferHandle, BufferParameters, BuffersContainer, QBufferHandle2d, QBufferHandle3d } from "./AttributeBuffers";
 import { InstancedGeometry } from "./InstancedGeometry";
 import { MaterialInfo } from "./Material";
 import { EdgeGeometry, MeshGeometry, SilhouetteEdgeGeometry, SurfaceGeometry } from "./Mesh";
@@ -494,7 +494,7 @@ export class ViewportQuadGeometry extends IndexedGeometry {
   }
   public static create(techniqueId: TechniqueId) {
     const params = ViewportQuad.getInstance().createParams();
-    return undefined !== params ? new ViewportQuadGeometry(params, techniqueId) : undefined;
+    return undefined !== params ? new this(params, techniqueId) : undefined;
   }
 
   public get techniqueId(): TechniqueId { return this._techniqueId; }
@@ -519,6 +519,14 @@ export class TexturedViewportQuadGeometry extends ViewportQuadGeometry {
     // TypeScript compiler will happily accept TextureHandle (or any other type) in place of WebGLTexture.
     // There is no such 'type' as WebGLTexture at run-time.
     assert(this._textures.every((tx) => !(tx instanceof TextureHandle)));
+  }
+
+  public static createTexturedViewportQuadGeometry(techniqueId: TechniqueId, textures: WebGLTexture[]): TexturedViewportQuadGeometry | undefined {
+    const params = ViewportQuad.getInstance().createParams();
+    if (undefined === params)
+      return undefined;
+
+    return new this(params, techniqueId, textures);
   }
 }
 

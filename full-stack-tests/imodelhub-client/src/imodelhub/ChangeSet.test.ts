@@ -60,7 +60,6 @@ describe("iModelHub ChangeSetHandler", () => {
   let imodelId: GuidString;
   let iModelClient: IModelClient;
   let briefcase: Briefcase;
-  const imodelName = "imodeljs-clients ChangeSets test";
   let requestContext: AuthorizedClientRequestContext;
   const maxChangeSetCount = 17;
   const newChangeSetsPerTestSuit = 2; // update this value when adding new tests which create changesets
@@ -77,15 +76,15 @@ describe("iModelHub ChangeSetHandler", () => {
     (requestContext as any).activityId = "iModelHub ChangeSetHandler";
 
     contextId = await utils.getProjectId(requestContext);
-    await utils.createIModel(requestContext, imodelName, contextId);
-    imodelId = await utils.getIModelId(requestContext, imodelName, contextId);
+    await utils.createIModel(requestContext, utils.sharedimodelName, contextId);
+    imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, contextId);
     iModelClient = utils.getDefaultClient();
     if (!TestConfig.enableMocks) {
       const changeSetCount = (await iModelClient.changeSets.get(requestContext, imodelId)).length;
       if (changeSetCount + newChangeSetsPerTestSuit >= maxChangeSetCount) {
         // Recreate iModel if can not create any new changesets
-        await utils.createIModel(requestContext, imodelName, contextId, true);
-        imodelId = await utils.getIModelId(requestContext, imodelName, contextId);
+        await utils.createIModel(requestContext, utils.sharedimodelName, contextId, true);
+        imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, contextId);
       }
     }
     briefcase = (await utils.getBriefcases(requestContext, imodelId, 1))[0];
@@ -109,8 +108,9 @@ describe("iModelHub ChangeSetHandler", () => {
   });
 
   after(async () => {
-    if (!TestConfig.enableMocks)
-      await utils.deleteIModelByName(requestContext, contextId, imodelName);
+    if (TestConfig.enableIModelBank) {
+      await utils.deleteIModelByName(requestContext, contextId, utils.sharedimodelName);
+    }
   });
 
   afterEach(() => {
@@ -465,9 +465,7 @@ describe("iModelHub ChangeSetHandler", () => {
       new ChangeSetQuery().betweenChangeSets(changeSets[0].id!, changeSets[2].id));
     chai.expect(selectedChangeSets.length).to.be.equal(2);
     chai.expect(selectedChangeSets[0].id).to.be.equal(changeSets[1].id);
-    chai.expect(selectedChangeSets[0].seedFileId!.toString()).to.be.equal(changeSets[1].seedFileId!.toString());
     chai.expect(selectedChangeSets[1].id).to.be.equal(changeSets[2].id);
-    chai.expect(selectedChangeSets[1].seedFileId!.toString()).to.be.equal(changeSets[2].seedFileId!.toString());
   });
 
   it("should query between changeset (#iModelBank)", async () => {
@@ -489,11 +487,8 @@ describe("iModelHub ChangeSetHandler", () => {
       new ChangeSetQuery().betweenChangeSets(changeSets[2].id!));
     chai.expect(selectedChangeSets.length).to.be.equal(3);
     chai.expect(selectedChangeSets[0].id).to.be.equal(changeSets[0].id);
-    chai.expect(selectedChangeSets[0].seedFileId!.toString()).to.be.equal(changeSets[0].seedFileId!.toString());
     chai.expect(selectedChangeSets[1].id).to.be.equal(changeSets[1].id);
-    chai.expect(selectedChangeSets[1].seedFileId!.toString()).to.be.equal(changeSets[1].seedFileId!.toString());
     chai.expect(selectedChangeSets[2].id).to.be.equal(changeSets[2].id);
-    chai.expect(selectedChangeSets[2].seedFileId!.toString()).to.be.equal(changeSets[2].seedFileId!.toString());
   });
 
   it("should get version changesets (#iModelBank)", async () => {
@@ -521,7 +516,6 @@ describe("iModelHub ChangeSetHandler", () => {
       new ChangeSetQuery().getVersionChangeSets(versions[versions.length - 1].id!));
     chai.expect(selectedChangeSets.length).to.be.equal(1);
     chai.expect(selectedChangeSets[0].id).to.be.equal(changeSets[0].id);
-    chai.expect(selectedChangeSets[0].seedFileId!.toString()).to.be.equal(changeSets[0].seedFileId!.toString());
   });
 
   it("should get changesets after version (#iModelBank)", async () => {
@@ -549,7 +543,6 @@ describe("iModelHub ChangeSetHandler", () => {
       new ChangeSetQuery().afterVersion(versions[versions.length - 2].id!));
     chai.expect(selectedChangeSets.length).to.be.greaterThan(1);
     chai.expect(selectedChangeSets[0].id).to.be.equal(changeSets[2].id);
-    chai.expect(selectedChangeSets[0].seedFileId!.toString()).to.be.equal(changeSets[2].seedFileId!.toString());
   });
 
   it("should query changesets between versions (#iModelBank)", async () => {
@@ -581,9 +574,7 @@ describe("iModelHub ChangeSetHandler", () => {
       new ChangeSetQuery().betweenVersions(versions[0].id!, versions[2].id!));
     chai.expect(selectedChangeSets.length).to.be.equal(2);
     chai.expect(selectedChangeSets[0].id).to.be.equal(changeSets[1].id);
-    chai.expect(selectedChangeSets[0].seedFileId!.toString()).to.be.equal(changeSets[1].seedFileId!.toString());
     chai.expect(selectedChangeSets[1].id).to.be.equal(changeSets[2].id);
-    chai.expect(selectedChangeSets[1].seedFileId!.toString()).to.be.equal(changeSets[2].seedFileId!.toString());
   });
 
   it("should query changesets between version and changeset (#iModelBank)", async () => {
@@ -616,30 +607,6 @@ describe("iModelHub ChangeSetHandler", () => {
       new ChangeSetQuery().betweenVersionAndChangeSet(versions[versions.length - 1].id!, changeSets[1].id!));
     chai.expect(selectedChangeSets.length).to.be.equal(1);
     chai.expect(selectedChangeSets[0].id).to.be.equal(changeSets[1].id);
-    chai.expect(selectedChangeSets[0].seedFileId!.toString()).to.be.equal(changeSets[1].seedFileId!.toString());
-  });
-
-  it("should query changesets by seed file id (#iModelBank)", async () => {
-    if (TestConfig.enableMocks) {
-      const mockedChangeSets = utils.getMockChangeSets(briefcase).slice(0, 3);
-      utils.mockGetChangeSet(imodelId, true, `&$top=${ChangeSetQuery.defaultPageSize}`, ...mockedChangeSets);
-
-      const filter = `SeedFileId+eq+%27${mockedChangeSets[0].seedFileId!}%27`;
-
-      const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "ChangeSet",
-        `?$filter=${filter}&$top=${ChangeSetQuery.defaultPageSize}`);
-      ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath,
-        ResponseBuilder.generateGetResponse(mockedChangeSets[0]));
-    }
-    const changeSets: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().selectDownloadUrl());
-    chai.expect(changeSets.length).to.be.greaterThan(0);
-
-    const selectedChangeSets: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId,
-      new ChangeSetQuery().bySeedFileId(changeSets[0].seedFileId!));
-    chai.expect(selectedChangeSets.length).to.be.greaterThan(0);
-    selectedChangeSets.forEach((cs: ChangeSet) => {
-      chai.expect(cs.seedFileId!.toString()).to.be.equal(changeSets[0].seedFileId!.toString());
-    });
   });
 
   it("should query changesets application data", async () => {

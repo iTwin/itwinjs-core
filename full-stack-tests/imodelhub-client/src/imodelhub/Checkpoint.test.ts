@@ -25,17 +25,12 @@ function mockGetCheckpoint(imodelId: GuidString, query?: string, ...checkpoints:
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
 }
 
-function mockCheckpoint(mergedChangeSetId: string, mockUrl: boolean = false, mockBCV: boolean = false): Checkpoint {
+function mockCheckpoint(mergedChangeSetId: string, mockUrl: boolean = false): Checkpoint {
   const result = new Checkpoint();
   result.mergedChangeSetId = mergedChangeSetId;
   if (mockUrl)
     result.downloadUrl = "https://imodelhubqasa01.blob.core.windows.net/imodelhubfile";
-  if (mockBCV) {
-    result.bcvAccessKeyAccount = "imodelhubdevsatest";
-    result.bcvAccessKeyContainer = "imodelblocks-3101cca9-707c-4c82-8ef4-7afccfbd2421";
-    result.bcvAccessKeySAS = "?sv=2018-03-28&sr=....";
-    result.bcvAccessKeyDbName = "a016840dd72272624a3b2afb56e5bc51b8874584.bim";
-  }
+
   result.fileName = "Test.bim";
   result.fileSize = utils.getMockFileSize();
   return result;
@@ -47,7 +42,6 @@ describe("iModelHub CheckpointHandler", () => {
   let iModelClient: IModelClient;
   let briefcase: Briefcase;
   let changeSets: ChangeSet[];
-  const imodelName = "imodeljs-clients Checkpoints test";
   let requestContext: AuthorizedClientRequestContext;
 
   before(async function () {
@@ -56,8 +50,8 @@ describe("iModelHub CheckpointHandler", () => {
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
     contextId = await utils.getProjectId(requestContext);
-    await utils.createIModel(requestContext, imodelName, contextId);
-    imodelId = await utils.getIModelId(requestContext, imodelName, contextId);
+    await utils.createIModel(requestContext, utils.sharedimodelName, contextId);
+    imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, contextId);
     iModelClient = utils.getDefaultClient();
     briefcase = (await utils.getBriefcases(requestContext, imodelId, 1))[0];
 
@@ -77,8 +71,9 @@ describe("iModelHub CheckpointHandler", () => {
   });
 
   after(async () => {
-    if (!TestConfig.enableMocks)
-      await utils.deleteIModelByName(requestContext, contextId, imodelName);
+    if (TestConfig.enableIModelBank) {
+      await utils.deleteIModelByName(requestContext, contextId, utils.sharedimodelName);
+    }
   });
 
   afterEach(() => {
@@ -96,22 +91,6 @@ describe("iModelHub CheckpointHandler", () => {
     const progressTracker = new utils.ProgressTracker();
     await iModelClient.checkpoints.download(requestContext, checkpoints[0], path.join(workDir, checkpoints[0].fileName!), progressTracker.track());
     progressTracker.check();
-  });
-
-  // BlockCache not in QA, make unit tests until they can be reenabled as integration tests
-  it("should query and retrieve BlockCacheVfs Checkpoint container SAS token (#unit)", async () => {
-    mockGetCheckpoint(imodelId, `?$select=*,FileAccessKey-forward-BCVAccessKey.*`, mockCheckpoint("", false, true));
-    const checkpoints = await iModelClient.checkpoints.get(requestContext, imodelId, new CheckpointQuery().selectBCVAccessKey());
-    chai.assert(checkpoints);
-    chai.expect(checkpoints.length).to.be.equal(1);
-    chai.assert(checkpoints[0].bcvAccessKeyAccount);
-    chai.expect(checkpoints[0].bcvAccessKeyAccount!.length).to.be.greaterThan(0);
-    chai.assert(checkpoints[0].bcvAccessKeyContainer);
-    chai.assert(checkpoints[0].bcvAccessKeyContainer!.startsWith("imodelblocks-"));
-    chai.assert(checkpoints[0].bcvAccessKeySAS);
-    chai.assert(checkpoints[0].bcvAccessKeySAS!.startsWith("?sv="));
-    chai.assert(checkpoints[0].bcvAccessKeyDbName);
-    chai.assert(checkpoints[0].bcvAccessKeyDbName!.endsWith(".bim"));
   });
 
   it("should query Checkpoint by id", async () => {

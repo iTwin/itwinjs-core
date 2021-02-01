@@ -14,6 +14,7 @@ import {
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "./TestUtility";
 import { testOnScreenViewport } from "../TestViewport";
+import { isElectronRenderer } from "@bentley/bentleyjs-core";
 
 describe("HyperModeling (#integration)", () => {
   const projectName = "iModelJsIntegrationTest";
@@ -206,7 +207,14 @@ describe("HyperModeling (#integration)", () => {
     HyperModeling.replaceConfiguration();
   });
 
-  it("adjusts marker display via key-in", async () => {
+  it("adjusts marker display via key-in", async function () {
+    if (isElectronRenderer) {
+      // The electron version fails to find/parse the hypermodeling package's JSON file containing its keyins.
+      // The browser version has no such problem.
+      // It works fine in a real electron app.
+      this.skip();
+    }
+
     await testOnScreenViewport("0x80", hypermodel, 100, 100, async (vp) => {
       const dec = (await HyperModeling.startOrStop(vp, true))!;
       expect(dec).not.to.be.undefined;

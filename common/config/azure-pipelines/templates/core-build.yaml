@@ -56,13 +56,14 @@ steps:
   - script: node common/scripts/install-run-rush.js audit
     displayName: rush audit
     workingDirectory: ${{ parameters.workingDir }}
-
-  - script: node common/scripts/install-run-rush.js rebuild -v --to-version-policy prerelease-monorepo-lockStep -p max
-    displayName: rush build packages
-    workingDirectory: ${{ parameters.workingDir }}
   - script: node common/scripts/install-run-rush.js build -v -p max
-    displayName: rush build everything else (test-apps and example code)
+    displayName: rush build
     workingDirectory: ${{ parameters.workingDir }}
+    condition: and(succeeded(), not(and(eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Agent.OS'], 'Darwin'))))
+  - script: node common/scripts/install-run-rush.js compile -v -p max
+    displayName: rush build
+    workingDirectory: ${{ parameters.workingDir }}
+    condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Agent.OS'], 'Darwin'))
   - script: node common/scripts/install-run-rush.js lint
     displayName: rush lint
     workingDirectory: ${{ parameters.workingDir }}
@@ -71,16 +72,16 @@ steps:
     workingDirectory: ${{ parameters.workingDir }}
 
   # By default linux agents do not have a real display so use the virtual framebuffer
-  - ${{ if eq(variables['Agent.OS'], 'Linux') }}:
-    - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' node common/scripts/install-run-rush.js cover --verbose
-      displayName: rush cover
-      workingDirectory: ${{ parameters.workingDir }}
+  - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' node common/scripts/install-run-rush.js cover --verbose
+    displayName: rush cover
+    workingDirectory: ${{ parameters.workingDir }}
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
 
   # MacOS and Windows agents work without any virtual display
-  - ${{ if ne(variables['Agent.OS'], 'Linux') }}:
-    - script: node common/scripts/install-run-rush.js cover --verbose
-      displayName: rush cover
-      workingDirectory: ${{ parameters.workingDir }}
+  - script: node common/scripts/install-run-rush.js cover --verbose
+    displayName: rush cover
+    workingDirectory: ${{ parameters.workingDir }}
+    condition: and(succeeded(), ne(variables['Agent.OS'], 'Linux'))
 
   - script: node common/scripts/install-run-rush.js docs
     displayName: rush docs

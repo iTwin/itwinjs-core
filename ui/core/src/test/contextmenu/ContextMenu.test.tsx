@@ -204,6 +204,19 @@ describe("ContextMenu", () => {
         root.dispatchEvent(createBubbledEvent("keyup", { key: "f" }));
         expect(onSelectFake).to.have.been.calledOnce;
       });
+      it("should ignore next keyup when ignoreNextKeyUp=true", () => {
+        const onSelectFake = sinon.fake();
+        const component = render(
+          <ContextMenu opened={true} ignoreNextKeyUp={true}>
+            <ContextMenuItem onSelect={onSelectFake}>~First item</ContextMenuItem>
+            <ContextMenuItem>~Second item</ContextMenuItem>
+          </ContextMenu>);
+        const root = component.getAllByTestId("core-context-menu-root")[0];
+        root.dispatchEvent(createBubbledEvent("keyup", { key: "f" }));
+        expect(onSelectFake).to.not.have.been.called;
+        root.dispatchEvent(createBubbledEvent("keyup", { key: "f" }));
+        expect(onSelectFake).to.have.been.calledOnce;
+      });
       it("should select sub menu list item of hotkey", () => {
         const onSelectFake = sinon.fake();
         const component = render(
@@ -438,6 +451,15 @@ describe("ContextMenu", () => {
       const component = render(<ContextMenuItem onSelect={handleSelect}>Test</ContextMenuItem>);
       const item = component.getByTestId("core-context-menu-item");
       item.dispatchEvent(createBubbledEvent("keyup", { key: SpecialKey.Escape /* <Esc> */ }));
+      handleSelect.should.not.have.been.called;
+    });
+    it("onSelect not called when disabled", () => {
+      const handleSelect = sinon.fake();
+      const component = render(<ContextMenuItem onSelect={handleSelect} disabled={true}>Test</ContextMenuItem>);
+      const item = component.getByTestId("core-context-menu-item");
+      item.dispatchEvent(createBubbledEvent("keyup", { key: SpecialKey.Enter /* <Return> */ }));
+      handleSelect.should.not.have.been.called;
+      item.dispatchEvent(createBubbledEvent("click"));
       handleSelect.should.not.have.been.called;
     });
   });

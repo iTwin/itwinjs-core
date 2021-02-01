@@ -12,6 +12,9 @@ export class AbandonedError extends Error {
 export const addClientRequestContext: (metaData: any) => void;
 
 // @public
+export function areEqualPossiblyUndefined<T, U>(t: T | undefined, u: U | undefined, areEqual: (t: T, u: U) => boolean): boolean;
+
+// @public
 export function asInstanceOf<T>(obj: any, constructor: Constructor<T>): T | undefined;
 
 // @beta
@@ -63,7 +66,7 @@ export class BeEvent<T extends Listener> {
     clear(): void;
     has(listener: T, scope?: any): boolean;
     get numberOfListeners(): number;
-    raiseEvent(...args: any[]): void;
+    raiseEvent(...args: Parameters<T>): void;
     removeListener(listener: T, scope?: any): boolean;
 }
 
@@ -710,6 +713,10 @@ export enum IModelHubStatus {
     // (undocumented)
     ChangeSetPointsToBadSeed = 102414,
     // (undocumented)
+    CheckpointAlreadyExists = 102450,
+    // (undocumented)
+    CheckpointDoesNotExist = 102451,
+    // (undocumented)
     CodeDoesNotExist = 102431,
     // (undocumented)
     CodeReservedByAnotherBriefcase = 102430,
@@ -854,6 +861,8 @@ export enum IModelStatus {
     // (undocumented)
     ForeignKeyConstraint = 65553,
     // (undocumented)
+    FunctionNotFound = 65606,
+    // (undocumented)
     IdExists = 65554,
     // (undocumented)
     IMODEL_ERROR_BASE = 65536,
@@ -888,6 +897,8 @@ export enum IModelStatus {
     // (undocumented)
     MissingId = 65569,
     // (undocumented)
+    NoActiveCommand = 65607,
+    // (undocumented)
     NoContent = 65604,
     // (undocumented)
     NoGeoLocation = 65602,
@@ -909,6 +920,8 @@ export enum IModelStatus {
     NotOpen = 65575,
     // (undocumented)
     NotOpenForWrite = 65576,
+    // (undocumented)
+    NotRegistered = 65605,
     // (undocumented)
     NotSameUnitBase = 65577,
     // (undocumented)
@@ -1014,6 +1027,7 @@ export namespace JsonUtils {
     export function asString(json: any, defaultVal?: string): string;
     export function isEmptyObject(json: any): boolean;
     export function isEmptyObjectOrUndefined(json: any): boolean;
+    export function isNonEmptyObject(value: any): value is Object;
     export function setOrRemoveBoolean(json: any, key: string, val: boolean, defaultVal: boolean): void;
     export function setOrRemoveNumber(json: any, key: string, val: number, defaultVal: number): void;
     export function toObject(val: any): any;
@@ -1138,12 +1152,12 @@ export class MutableCompressedId64Set implements OrderedId64Iterable {
     equals(other: CompressedId64Set | MutableCompressedId64Set | OrderedId64Iterable): boolean;
     get ids(): CompressedId64Set;
     get isEmpty(): boolean;
+    reset(ids?: CompressedId64Set): void;
     }
 
 // @beta
 export class ObservableSet<T> extends Set<T> {
-    // @internal (undocumented)
-    add(item: T): this;
+    constructor(elements?: Iterable<T> | undefined);
     // @internal (undocumented)
     clear(): void;
     // @internal (undocumented)

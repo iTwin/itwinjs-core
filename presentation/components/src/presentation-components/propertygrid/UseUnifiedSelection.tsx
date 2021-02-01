@@ -62,7 +62,6 @@ export function usePropertyDataProviderWithUnifiedSelection(props: PropertyDataP
     }
   }, [requestedContentInstancesLimit, dataProvider]);
 
-
   const selectionHandler = useDisposable(React.useCallback(() => {
     // istanbul ignore next
     const handler = props.selectionHandler ??
@@ -72,7 +71,6 @@ export function usePropertyDataProviderWithUnifiedSelection(props: PropertyDataP
     };
     return handler;
   }, [imodel, rulesetId, name, updateDataProviderSelection, props.selectionHandler]));
-
 
   React.useEffect(() => updateDataProviderSelection(selectionHandler),
     [updateDataProviderSelection, selectionHandler]);

@@ -28,16 +28,26 @@ export class IModeljsLibraryExportsPlugin {
     });
     compiler.hooks.compilation.tap("IModeljsLibraryExportsPlugin", (compilation) => {
       compilation.moduleTemplates.javascript.hooks.content.tap("IModeljsLibraryExportsPlugin", (source, module) => {
-        if (!module.___IS_BENTLEY)
+        // check for a rootModule (for concatenated modules)
+        let rootModule;
+        if (!module.___IS_BENTLEY && module.rootModule && module.rootModule.___IS_BENTLEY) {
+          rootModule = module.rootModule;
+        }
+
+        const isBentley = module.___IS_BENTLEY || (rootModule && rootModule.___IS_BENTLEY);
+        if (!isBentley)
           return source;
-        const pkgName = JSON.stringify(module.___IMJS_NAME);
+
+        const pkgName = JSON.stringify(rootModule ? rootModule.___IMJS_NAME : module.___IMJS_NAME);
+        const pkgVersion = JSON.stringify(rootModule ? rootModule.___IMJS_VER : module.___IMJS_VER);
+
         return new ConcatSource(
           source,
           `\nif ((typeof window !== "undefined") && window && !window.${utils.IMJS_GLOBAL_OBJECT}) window.${utils.IMJS_GLOBAL_OBJECT} = {};`,
           `\nif ((typeof window !== "undefined") && window && !window.${utils.IMJS_GLOBAL_LIBS}) window.${utils.IMJS_GLOBAL_LIBS} = {};`,
           `\nif ((typeof window !== "undefined") && window && !window.${utils.IMJS_GLOBAL_LIBS_VERS}) window.${utils.IMJS_GLOBAL_LIBS_VERS} = {};`,
           `\nwindow.${utils.IMJS_GLOBAL_LIBS}[${pkgName}] = __webpack_require__(${JSON.stringify(module.id)});`,
-          `\nwindow.${utils.IMJS_GLOBAL_LIBS_VERS}[${pkgName}] = ${JSON.stringify(module.___IMJS_VER)};\n`,
+          `\nwindow.${utils.IMJS_GLOBAL_LIBS_VERS}[${pkgName}] = ${pkgVersion};\n`,
         );
       });
     });

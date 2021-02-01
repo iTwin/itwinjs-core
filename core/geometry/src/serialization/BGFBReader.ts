@@ -2,6 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Serialization
+ */
 import { flatbuffers } from "flatbuffers";
 import { BGFBAccessors } from "./BGFBAccessors";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
@@ -32,10 +35,13 @@ import { RuledSweep } from "../solid/RuledSweep";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { BSplineSurface3d, BSplineSurface3dH } from "../bspline/BSplineSurface";
 import { PointString3d } from "../curve/PointString3d";
+import { AuxChannel, AuxChannelData, PolyfaceAuxData } from "../polyface/AuxData";
+import { TransitionSpiral3d } from "../curve/spiral/TransitionSpiral3d";
+import { Geometry } from "../Geometry";
+import { Segment1d } from "../geometry3d/Segment1d";
+import { IntegratedSpiral3d } from "../curve/spiral/IntegratedSpiral3d";
 
-/**
- * Context to write to a flatbuffer blob.
- * @internal
+/** * Context to write to a flatbuffer blob.
  *  * This class is internal.
  *  * Public access is through BentleyGeometryFlatBuffer.geometryToBytes()
  * @internal
@@ -90,6 +96,40 @@ export class BGFBReader {
     return undefined;
   }
   /**
+   * Extract a bspline curve
+   * @param variant read position in the flat buffer.
+   */
+  public readTransitionSpiral(header: BGFBAccessors.TransitionSpiral): TransitionSpiral3d | undefined {
+    const detailHeader = header.detail();
+    if (detailHeader) {
+      const directDetailHeader = header.directDetail();
+      const _extraDataArray = header.extraDataArray();
+      const spiralTypeName = DgnSpiralTypeQueries.typeCodeToString(detailHeader.spiralType());
+      const curvature0 = detailHeader.curvature0();
+      const curvature1 = detailHeader.curvature1();
+      const bearing0Radians = detailHeader.bearing0Radians();
+      const bearing1Radians = detailHeader.bearing1Radians();
+      const fbTransform = detailHeader.transform();
+      const localToWorld = fbTransform ? Transform.createRowValues(
+        fbTransform.axx(), fbTransform.axy(), fbTransform.axz(), fbTransform.axw(),
+        fbTransform.ayx(), fbTransform.ayy(), fbTransform.ayz(), fbTransform.ayw(),
+        fbTransform.azx(), fbTransform.azy(), fbTransform.azz(), fbTransform.azw()) :
+        Transform.createIdentity();
+
+      const activeFractionInterval = Segment1d.create(detailHeader.fractionA(),
+        detailHeader.fractionB());
+      if (!directDetailHeader) {
+        const spiral = IntegratedSpiral3d.createRadiusRadiusBearingBearing(
+          Segment1d.create(IntegratedSpiral3d.curvatureToRadius(curvature0), IntegratedSpiral3d.curvatureToRadius(curvature1)),
+          AngleSweep.createStartEndRadians(bearing0Radians, bearing1Radians),
+          activeFractionInterval, localToWorld, spiralTypeName);
+        if (spiral)
+          return spiral;
+      }
+    }
+    return undefined;
+  }
+  /**
    * Extract a curve primitive
    * @param variant read position in the flat buffer.
    */
@@ -114,7 +154,7 @@ export class BGFBReader {
       const numCoordinates = offsetToLineString.pointsLength();
       const result = LineString3d.create();
       for (let i = 0; i + 2 < numCoordinates; i += 3) {
-        result.packedPoints.pushXYZ(offsetToLineString.points(i)!, offsetToLineString?.points(i + 1)!, offsetToLineString?.points(i + 2)!);
+        result.packedPoints.pushXYZ(offsetToLineString.points(i)!, offsetToLineString.points(i + 1)!, offsetToLineString.points(i + 2)!);
       }
       return result;
     } else if (geometryType === BGFBAccessors.VariantGeometryUnion.tagBsplineCurve) {
@@ -122,6 +162,9 @@ export class BGFBReader {
       if (offsetToBCurve !== null)
         return this.readBSplineCurve(offsetToBCurve);
     } else if (geometryType === BGFBAccessors.VariantGeometryUnion.tagTransitionSpiral) {
+      const offsetToTransitionSpiralTable = variant.geometry(new BGFBAccessors.TransitionSpiral());
+      if (offsetToTransitionSpiralTable !== null)
+        return this.readTransitionSpiral(offsetToTransitionSpiralTable);
     }
     return undefined;
   }
@@ -142,7 +185,66 @@ export class BGFBReader {
     }
     return undefined;
   }
+  /**
+ * Extract auxData for a mesh
+ * @param variant read position in the flat buffer.
+ */
+  public readPolyfaceAuxChannelData(channelDataHeader: BGFBAccessors.PolyfaceAuxChannelData | null): AuxChannelData | undefined {
+    if (channelDataHeader !== null) {
+      const input = channelDataHeader.input();
+      const values = channelDataHeader.valuesArray();
+      if (values !== null)
+        return new AuxChannelData(input, values);
+    }
+    return undefined;
+  }
 
+  /**
+ * Extract auxData for a mesh
+ * @param variant read position in the flat buffer.
+ */
+  public readPolyfaceAuxChannel(channelHeader: BGFBAccessors.PolyfaceAuxChannel | null): AuxChannel | undefined {
+    if (channelHeader) {
+      const dataType = channelHeader.dataType();
+      const dataLength = channelHeader.dataLength();
+      const channelDataArray: AuxChannelData[] = [];
+      const name = channelHeader.name();
+      const inputName = channelHeader.inputName();
+      for (let i = 0; i < dataLength; i++) {
+        const channelData = this.readPolyfaceAuxChannelData(channelHeader.data(i));
+        if (channelData)
+          channelDataArray.push(channelData);
+      }
+      return new AuxChannel(channelDataArray, dataType, name ? name : undefined, inputName ? inputName : undefined);
+    }
+    return undefined;
+  }
+  /**
+ * Extract auxData for a mesh
+ * @param variant read position in the flat buffer.
+ */
+  public readPolyfaceAuxData(auxDataHeader: BGFBAccessors.PolyfaceAuxData | null): PolyfaceAuxData | undefined {
+    if (auxDataHeader) {
+      const channelsLength = auxDataHeader.channelsLength();
+      const indicesArray = auxDataHeader.indicesArray();
+      const indices: number[] = [];
+      const channels: AuxChannel[] = [];
+      if (null !== indicesArray) {
+        for (const i of indicesArray)
+          indices.push(i);
+      }
+      if (0 !== channelsLength) {
+        for (let i = 0; i < channelsLength; i++) {
+          const channelHeader = auxDataHeader.channels(i);
+          const channelContent = this.readPolyfaceAuxChannel(channelHeader);
+          if (channelContent)
+            channels.push(channelContent);
+        }
+      }
+      return new PolyfaceAuxData(channels, indices);
+    }
+    return undefined;
+  }
   /**
  * Extract a mesh
  * @param variant read position in the flat buffer.
@@ -150,20 +252,20 @@ export class BGFBReader {
   public readPolyfaceFromVariant(variant: BGFBAccessors.VariantGeometry): IndexedPolyface | undefined {
     const geometryType = variant.geometryType();
     if (geometryType === BGFBAccessors.VariantGeometryUnion.tagPolyface) {
-      const offsetToPolyface = variant.geometry(new BGFBAccessors.Polyface());
-      if (offsetToPolyface) {
-        const twoSided = offsetToPolyface.twoSided();
-        const meshStyle = offsetToPolyface.meshStyle();
+      const polyfaceHeader = variant.geometry(new BGFBAccessors.Polyface());
+      if (polyfaceHeader) {
+        const twoSided = polyfaceHeader.twoSided();
+        const meshStyle = polyfaceHeader.meshStyle();
 
-        const pointF64 = nullToUndefined<Float64Array>(offsetToPolyface.pointArray());
-        const paramF64 = nullToUndefined<Float64Array>(offsetToPolyface.paramArray());
-        const normalF64 = nullToUndefined<Float64Array>(offsetToPolyface.normalArray());
-        const intColorU32 = nullToUndefined<Uint32Array>(offsetToPolyface.intColorArray());
+        const pointF64 = nullToUndefined<Float64Array>(polyfaceHeader.pointArray());
+        const paramF64 = nullToUndefined<Float64Array>(polyfaceHeader.paramArray());
+        const normalF64 = nullToUndefined<Float64Array>(polyfaceHeader.normalArray());
+        const intColorU32 = nullToUndefined<Uint32Array>(polyfaceHeader.intColorArray());
 
-        const pointIndexI32 = nullToUndefined<Int32Array>(offsetToPolyface.pointIndexArray());
-        const paramIndexI32 = nullToUndefined<Int32Array>(offsetToPolyface.paramIndexArray());
-        const normalIndexI32 = nullToUndefined<Int32Array>(offsetToPolyface.normalIndexArray());
-        const colorIndexI32 = nullToUndefined<Int32Array>(offsetToPolyface.colorIndexArray());
+        const pointIndexI32 = nullToUndefined<Int32Array>(polyfaceHeader.pointIndexArray());
+        const paramIndexI32 = nullToUndefined<Int32Array>(polyfaceHeader.paramIndexArray());
+        const normalIndexI32 = nullToUndefined<Int32Array>(polyfaceHeader.normalIndexArray());
+        const colorIndexI32 = nullToUndefined<Int32Array>(polyfaceHeader.colorIndexArray());
         // const colorIndexI32 = nullToUndefined<Int32Array>(offsetToPolyface.colorIndexArray());
         if (meshStyle === 1 && pointF64 && pointIndexI32) {
           const polyface = IndexedPolyface.create(normalF64 !== undefined, paramF64 !== undefined, intColorU32 !== undefined, twoSided);
@@ -206,10 +308,10 @@ export class BGFBReader {
               i0 = i1 + 1;
             }
           }
+          polyface.data.auxData = this.readPolyfaceAuxData(polyfaceHeader.auxData());
           return polyface;
         }
       }
-
     }
     return undefined;
   }
@@ -343,6 +445,7 @@ export class BGFBReader {
       case BGFBAccessors.VariantGeometryUnion.tagLineString:
       case BGFBAccessors.VariantGeometryUnion.tagEllipticArc:
       case BGFBAccessors.VariantGeometryUnion.tagBsplineCurve:
+      case BGFBAccessors.VariantGeometryUnion.tagTransitionSpiral:
         {
           return this.readCurvePrimitiveFromVariant(variant);
         }
@@ -427,4 +530,54 @@ function createTypedCurveCollection(collectionType: number): CurveCollection {
   if (collectionType === 4) return new ParityRegion();
   if (collectionType === 5) return new UnionRegion();
   return new BagOfCurves();
+}
+/**
+ * mappings between typescript spiral type strings and native integers.
+ * @internal
+ */
+export class DgnSpiralTypeQueries {
+  // remark: this is the full list based on native DSpiral2dBase.h.
+  //   This does not guarantee all types are supported.
+  private static spiralTypeCodeMap = [
+    [10, "clothoid"],
+    [11, "bloss"],
+    [12, "biquadratic"],
+    [13, "cosine"],
+    [14, "sine"],
+    [15, "Viennese"],
+    [16, "weightedViennese"],
+
+    [50, "WesternAustralian"],
+    [51, "Czech"],
+    [52, "AustralianRailCorp"],
+    [53, "Italian"],
+    [54, "PolishCubic"],
+    [55, "Arema"],
+    [56, "MXCubicAlongArc"],
+    [57, "MXCubicAlongTangent"],
+    [58, "ChineseCubic"],
+    [60, "HalfCosine"],
+    [61, "JapaneseCubic"],
+  ];
+  /** Convert native integer type (e.g. from flatbuffer) to typescript string */
+  public static typeCodeToString(typeCode: number): string | undefined {
+    for (const entry of DgnSpiralTypeQueries.spiralTypeCodeMap) {
+      if (entry[0] === typeCode)
+        return entry[1] as string;
+    }
+    return undefined;
+  }
+
+  /** Convert typescript string to native integer type */
+  public static stringToTypeCode(s: string, defaultToClothoid: boolean = true): number | undefined {
+    for (const entry of DgnSpiralTypeQueries.spiralTypeCodeMap) {
+      if (Geometry.equalStringNoCase(s, entry[1] as string))
+        return entry[0] as number;
+    }
+    return defaultToClothoid ? 10 : undefined;
+  }
+  /** Ask if the indicated type code is a "direct" spiral */
+  public static isDirectSpiralType(typeCode: number): boolean {
+    return typeCode >= 50;
+  }
 }

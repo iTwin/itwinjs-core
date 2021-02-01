@@ -136,7 +136,7 @@ describe("AnalyticalSchema", () => {
     assert.isTrue(Id64.isValidId64(iModelDb.elements.getElement<GeometricElement3d>(elementId).typeDefinition!.id), "Expect valid typeDefinition.id");
     elementProps.typeDefinition = undefined;
     iModelDb.elements.updateElement(elementProps);
-    assert.isTrue(Id64.isValidId64(iModelDb.elements.getElement<GeometricElement3d>(elementId).typeDefinition!.id), "Still expect valid typeDefinition.id because undefined causes update to skip it");
+    assert.isUndefined(iModelDb.elements.getElement<GeometricElement3d>(elementId).typeDefinition, "Expect typeDefinition to be undefined");
     elementProps.typeDefinition = RelatedElement.none;
     iModelDb.elements.updateElement(elementProps);
     assert.isUndefined(iModelDb.elements.getElement<GeometricElement3d>(elementId).typeDefinition, "Expect typeDefinition to be undefined");

@@ -8,9 +8,9 @@ import { NodeKey } from "@bentley/presentation-common";
 import { CommonToolbarItem, ConditionalBooleanValue, StagePanelLocation, StageUsage, ToolbarItemUtilities } from "@bentley/ui-abstract";
 import { SelectionMode } from "@bentley/ui-components";
 import {
-  BasicNavigationWidget, BasicToolWidget, ContentGroup, ContentLayoutDef, ContentLayoutProps, ContentProps, CoreTools, CustomItemDef, Frontstage,
-  FrontstageProvider, IModelConnectedViewSelector, ModelsTreeNodeType, StagePanel, StagePanelHeader, StagePanelState, ToolbarHelper,
-  VisibilityComponentHierarchy, VisibilityWidget, Widget, WidgetState, Zone, ZoneLocation, ZoneState,
+  AccuDrawDialog, BasicNavigationWidget, BasicToolWidget, CommandItemDef, ContentGroup, ContentLayoutDef, ContentLayoutProps, ContentProps, CoreTools,
+  CustomItemDef, Frontstage, FrontstageProvider, IModelConnectedViewSelector, ModelessDialogManager, ModelsTreeNodeType, StagePanel,
+  StagePanelHeader, StagePanelState, ToolbarHelper, VisibilityComponentHierarchy, VisibilityWidget, Widget, WidgetState, Zone, ZoneLocation, ZoneState,
 } from "@bentley/ui-framework";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../../../../frontend/index";
 import { EditTools } from "../../../tools/editing/ToolSpecifications";
@@ -20,8 +20,8 @@ import { IModelViewportControl } from "../../contentviews/IModelViewport";
 import { EditStatusBarWidgetControl } from "../../statusbars/editing/EditStatusBar";
 import { ActiveSettingsWidget } from "../../widgets/editing/ActiveSettingsWidget";
 import { ModelCreationWidget } from "../../widgets/editing/ModelCreationWidget";
-import { NavigationTreeWidgetControl } from "../../widgets/NavigationTreeWidget";
 import { VisibilityTreeWidgetControl } from "../../widgets/VisibilityTreeWidget";
+import { Orientation } from "@bentley/ui-core";
 
 /* eslint-disable react/jsx-key */
 
@@ -150,8 +150,6 @@ export class EditFrontstage extends FrontstageProvider {
             defaultState={ZoneState.Minimized}
             initialWidth={350}
             widgets={[
-              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl}
-                applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }} fillZone={true} />,
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VisibilityTree" control={VisibilityTreeWidgetControl}
                 applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,
               <Widget iconSpec={VisibilityWidget.iconSpec} label={VisibilityWidget.label} control={VisibilityWidget}
@@ -230,8 +228,43 @@ class AdditionalTools {
     ToolbarHelper.createToolbarItemFromItemDef(130, EditTools.placeBlockTool),
   ];
 
+  private get _accudrawDialogItemVertical() {
+    const dialogId = "accudraw-vertical";
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder",
+      labelKey: "SampleApp:buttons.accuDrawDialogVertical",
+      execute: () => {
+        ModelessDialogManager.openDialog(
+          <AccuDrawDialog
+            opened={true}
+            dialogId={dialogId}
+            orientation={Orientation.Vertical}
+            onClose={() => ModelessDialogManager.closeDialog(dialogId)}
+          />, dialogId);
+      },
+    });
+  }
+
+  private get _accudrawDialogItemHorizontal() {
+    const dialogId = "accudraw-horizontal";
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder",
+      labelKey: "SampleApp:buttons.accuDrawDialogHorizontal",
+      execute: () => {
+        ModelessDialogManager.openDialog(
+          <AccuDrawDialog
+            opened={true}
+            dialogId={dialogId}
+            orientation={Orientation.Horizontal}
+            onClose={() => ModelessDialogManager.closeDialog(dialogId)}
+          />, dialogId);
+      },
+    });
+  }
+
   public getMiscGroupItem = (): CommonToolbarItem => {
     const children = ToolbarHelper.constructChildToolbarItems([
+      this._accudrawDialogItemVertical, this._accudrawDialogItemHorizontal,
     ]);
 
     const groupHiddenCondition = new ConditionalBooleanValue(() => SampleAppIModelApp.getTestProperty() === "HIDE", [SampleAppUiActionId.setTestProperty]);

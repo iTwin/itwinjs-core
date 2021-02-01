@@ -49,7 +49,6 @@ describe("iModelHub ThumbnailHandler (#unit)", () => {
   let projectId: string;
   let imodelId: GuidString;
   let versions: Version[];
-  const imodelName = "imodeljs-clients Thumbnails test";
   const imodelHubClient: IModelClient = utils.getDefaultClient();
   let requestContext: AuthorizedClientRequestContext;
 
@@ -60,8 +59,8 @@ describe("iModelHub ThumbnailHandler (#unit)", () => {
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
     projectId = await utils.getProjectId(requestContext);
-    await utils.createIModel(requestContext, imodelName, projectId);
-    imodelId = await getIModelId(requestContext, imodelName, projectId);
+    await utils.createIModel(requestContext, utils.sharedimodelName, projectId);
+    imodelId = await getIModelId(requestContext, utils.sharedimodelName, projectId);
 
     if (TestConfig.enableMocks) {
       versions = Array(3).fill(0).map(() => utils.generateVersion());
@@ -98,7 +97,10 @@ describe("iModelHub ThumbnailHandler (#unit)", () => {
     if (!TestConfig.enableMocks) {
       utils.getRequestBehaviorOptionsHandler().resetDefaultBehaviorOptions();
       imodelHubClient.requestOptions.setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
-      await utils.deleteIModelByName(requestContext, projectId, imodelName);
+    }
+
+    if (TestConfig.enableIModelBank) {
+      await utils.deleteIModelByName(requestContext, projectId, utils.sharedimodelName);
     }
   });
 
@@ -114,7 +116,7 @@ describe("iModelHub ThumbnailHandler (#unit)", () => {
       params.thumbnails = await imodelHubClient.thumbnails.get(requestContext, imodelId, params.size);
 
       if (params.thumbnails.length < 3) {
-        await utils.deleteIModelByName(requestContext, projectId, imodelName);
+        await utils.deleteIModelByName(requestContext, projectId, utils.sharedimodelName);
         chai.expect(params.thumbnails.length).to.be.gte(3);
       }
     });
@@ -135,6 +137,7 @@ describe("iModelHub ThumbnailHandler (#unit)", () => {
     it(`should get ${params.size}Thumbnail by version id`, async () => {
       for (let i = 0; i < 3; i++) {
         utils.mockGetThumbnailsByVersionId(imodelId, params.size, versions[i].id!, params.thumbnails[i]);
+        // eslint-disable-next-line deprecation/deprecation
         const actualThumbnail: Thumbnail = (await imodelHubClient.thumbnails.get(requestContext, imodelId, params.size, new ThumbnailQuery().byVersionId(versions[i].id!)))[0];
         chai.assert(!!actualThumbnail);
         chai.expect(actualThumbnail.id!.toString()).to.be.equal(params.thumbnails[i].id!.toString());

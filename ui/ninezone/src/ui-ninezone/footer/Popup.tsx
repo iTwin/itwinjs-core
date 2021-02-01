@@ -10,7 +10,7 @@ import "./Popup.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { RelativePosition } from "@bentley/ui-abstract";
-import { CommonProps, Popup } from "@bentley/ui-core";
+import { Popup, PopupProps } from "@bentley/ui-core";
 
 /** Available footer popup content types.
  * @beta
@@ -25,21 +25,9 @@ export enum FooterPopupContentType {
 /** Properties of [[FooterPopup]] component.
  * @beta
  */
-export interface FooterPopupProps extends CommonProps {
-  /** Popup content. */
-  children?: React.ReactNode;
-  /** Describes content type. */
+export interface FooterPopupProps extends Partial<PopupProps> {
+  /** Describes content type. Defaults to [[FooterPopupContentType.Dialog]]. */
   contentType: FooterPopupContentType;
-  /** Indicates if the popup is open. */
-  isOpen?: boolean;
-  /** Function called when the popup is closed. */
-  onClose?: () => void;
-  /** Function called when user clicks outside of the popup.  */
-  onOutsideClick?: (e: MouseEvent) => void;
-  /** Popup target. */
-  target?: HTMLElement | null;
-  /** Indicates if the popup is pinned. */
-  isPinned?: boolean;
 }
 
 /** Default properties of [[FooterPopup]] component.
@@ -68,9 +56,7 @@ export class FooterPopup extends React.PureComponent<FooterPopupProps> {
         showArrow
         showShadow={false}
         {...props}
-      >
-        {this.props.children}
-      </Popup>
+      />
     );
   }
 }

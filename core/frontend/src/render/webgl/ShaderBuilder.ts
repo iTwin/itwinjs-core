@@ -7,6 +7,7 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
+import { WebGLContext } from "@bentley/webgl-compatibility";
 import { AttributeDetails } from "./AttributeMap";
 import { addInstancedModelMatrixRTC } from "./glsl/Instancing";
 import { volClassOpaqueColor } from "./glsl/PlanarClassification";
@@ -502,10 +503,12 @@ export class ShaderBuilder extends ShaderVariables {
       this._version = "#version 300 es";
       this.addDefine("TEXTURE", "texture");
       this.addDefine("TEXTURE_CUBE", "texture");
+      this.addDefine("TEXTURE_PROJ", "textureProj");
     } else {
       this._version = "#version 100";
       this.addDefine("TEXTURE", "texture2D");
       this.addDefine("TEXTURE_CUBE", "textureCube");
+      this.addDefine("TEXTURE_PROJ", "texture2DProj");
     }
   }
 
@@ -527,13 +530,11 @@ export class ShaderBuilder extends ShaderVariables {
 
   public addFunction(declarationOrFull: string, implementation?: string): void {
     let def = declarationOrFull;
-    if (undefined !== implementation) {
+    if (undefined !== implementation)
       def = SourceBuilder.buildFunctionDefinition(`\n${declarationOrFull}`, implementation);
-    }
 
-    if (undefined === this.findFunction(def)) {
+    if (undefined === this.findFunction(def))
       this._functions.push(def);
-    }
   }
 
   public replaceFunction(existing: string, replacement: string): boolean {
@@ -896,6 +897,8 @@ export const enum FragmentShaderComponent {
  * @internal
  */
 export class FragmentShaderBuilder extends ShaderBuilder {
+  public requiresEarlyZWorkaround = false;
+
   public constructor(flags: ShaderBuilderFlags) {
     super(FragmentShaderComponent.COUNT, flags);
 
@@ -1060,6 +1063,11 @@ export class FragmentShaderBuilder extends ShaderBuilder {
       main.addline("  assignFragData(baseColor);");
     }
 
+    if (this.requiresEarlyZWorkaround) {
+      // Add a conditional discard that never executes to force buggy Intel driver to skip early Z despite our fragment shader writing depth.
+      main.addline("if (v_eyeSpace.z == 9999999.0) discard;");
+    }
+
     prelude.addMain(main.source);
     return prelude.source;
   }
@@ -1070,6 +1078,7 @@ export class FragmentShaderBuilder extends ShaderBuilder {
 
   public copyFrom(src: FragmentShaderBuilder): void {
     this.copyCommon(src);
+    this.requiresEarlyZWorkaround = src.requiresEarlyZWorkaround;
   }
 }
 
@@ -1139,7 +1148,7 @@ export class ProgramBuilder {
   }
 
   /** Assembles the vertex and fragment shader code and returns a ready-to-compile shader program */
-  public buildProgram(gl: WebGLRenderingContext | WebGL2RenderingContext): ShaderProgram {
+  public buildProgram(gl: WebGLContext): ShaderProgram {
     const vertSource = this.vert.buildSource(this._attrMap);
     const fragSource = this.frag.buildSource(); // NB: frag has no need to specify attributes, only vertex does.
     const checkMaxVarying = true;

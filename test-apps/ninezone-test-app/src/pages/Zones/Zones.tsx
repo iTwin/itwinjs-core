@@ -334,9 +334,7 @@ export default function Zones() {
   const [state, dispatch] = React.useReducer(NineZoneStateReducer, {}, () => {
     let initialState = createNineZoneState({
       panels: createPanelsState({
-        top: createHorizontalPanelState("top", {
-          // resizable: false,
-        }),
+        top: createHorizontalPanelState("top"),
         left: createVerticalPanelState("left", {
           pinned: false,
         }),
@@ -457,33 +455,39 @@ export function WidgetContent() {
     <ScrollableWidgetContent>
       <h2>Tab={tabId}</h2>
       <button onClick={() => setState((prev) => !prev)}>state={String(state)}</button>
-      {(tabId === "topStart_1" || tabId === "bottomStart_1") && <>
-        <button onClick={() => side && isHorizontalPanelSide(side) && dispatch({ type: "PANEL_TOGGLE_SPAN", side })}>toggle span</button>
-      </>}
-      {tabId !== "leftStart_1" && <>
-        <br />
-        <br />
-        <div
-          className="nzdemo-scroll-view"
-          ref={scrollViewRef}
-        >
-          <div>Entry 1</div>
-          <div>Entry 2</div>
-          <div>Entry 3</div>
-          <div>Entry 4</div>
-          <div>Entry 5</div>
-          <div>Entry 6</div>
-          <div>Entry 7</div>
-          <div>Entry 8</div>
-          <div>Entry 9</div>
-        </div>
-      </>}
-      {tabId === "leftStart_2" && <>
-        <h1>A</h1>
-        <h1>B</h1>
-        <h1>C</h1>
-        <h1>D</h1>
-      </>}
+      {
+        (tabId === "topStart_1" || tabId === "bottomStart_1") && <>
+          <button onClick={() => side && isHorizontalPanelSide(side) && dispatch({ type: "PANEL_TOGGLE_SPAN", side })}>span</button>
+        </>
+      }
+      {
+        tabId !== "leftStart_1" && <>
+          <br />
+          <br />
+          <div
+            className="nzdemo-scroll-view"
+            ref={scrollViewRef}
+          >
+            <div>Entry 1</div>
+            <div>Entry 2</div>
+            <div>Entry 3</div>
+            <div>Entry 4</div>
+            <div>Entry 5</div>
+            <div>Entry 6</div>
+            <div>Entry 7</div>
+            <div>Entry 8</div>
+            <div>Entry 9</div>
+          </div>
+        </>
+      }
+      {
+        tabId === "leftStart_2" && <>
+          <h1>A</h1>
+          <h1>B</h1>
+          <h1>C</h1>
+          <h1>D</h1>
+        </>
+      }
     </ScrollableWidgetContent>
   );
 }

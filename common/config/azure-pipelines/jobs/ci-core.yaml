@@ -10,12 +10,15 @@ jobs:
       "Windows_${{ parameters.name }}":
         OS: windows-latest
         platform: Windows_NT
+        name: $(win_pool)
       "Linux_${{ parameters.name }}":
         OS: ubuntu-latest
         platform: Linux
+        name: $(linux_pool)
       "MacOS_${{ parameters.name }}":
         OS: macOS-latest
         platform: Darwin
+        name: $(mac_pool)
 
   timeoutInMinutes: 120
 
@@ -38,16 +41,16 @@ jobs:
         git config --local user.name imodeljs-admin
       displayName: git config
 
-    - ${{ if eq(variables['Agent.OS'], 'Windows_NT') }}:
-      - powershell: |
-          # Get the new version number.
-          $json = Get-Content -Raw -Path common/config/rush/version-policies.json | ConvertFrom-Json
-          $currVersion = $json[0].version
+    - powershell: |
+        # Get the new version number.
+        $json = Get-Content -Raw -Path common/config/rush/version-policies.json | ConvertFrom-Json
+        $currVersion = $json[0].version
 
-          $newBuildNumber = $currVersion + "_$(Build.BuildNumber)"
+        $newBuildNumber = $currVersion + "_$(Build.BuildNumber)"
 
-          Write-Host "##vso[build.updatebuildnumber]$newBuildNumber"
-        displayName: Set build number
+        Write-Host "##vso[build.updatebuildnumber]$newBuildNumber"
+      displayName: Set build number
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
 
     - template: ../templates/core-build.yaml
 
@@ -56,5 +59,4 @@ jobs:
       parameters:
         NodeVersion: ${{ parameters.nodeVersion }}
     # The publish script identifies any new packages not previously published and tags the build
-    - ${{ if and(in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT')) }}:
-      - template: ../templates/publish.yaml
+    - template: ../templates/publish.yaml

@@ -189,7 +189,7 @@ export const useResizeGrip = <T extends HTMLElement>(): [(instance: T | null) =>
   const handleRef = React.useCallback((instance: T | null) => {
     ref.current = instance;
     handlePointerCaptorRef(instance);
-  }, [handlePointerCaptorRef]);
+  }, [handlePointerCaptorRef]); // eslint-disable-line react-hooks/exhaustive-deps
   return [handleRef, resizing, active];
 };
 

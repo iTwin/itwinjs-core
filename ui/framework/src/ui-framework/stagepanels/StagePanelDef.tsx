@@ -6,17 +6,20 @@
  * @module Frontstage
  */
 
-import { StagePanelLocation } from "@bentley/ui-abstract";
+import produce, { Draft } from "immer";
+import { StagePanelLocation, StagePanelSection } from "@bentley/ui-abstract";
 import { UiEvent } from "@bentley/ui-core";
+import { NineZoneState, PanelSide } from "@bentley/ui-ninezone";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { WidgetDef } from "../widgets/WidgetDef";
 import { WidgetHost } from "../widgets/WidgetHost";
 import { StagePanelMaxSizeSpec, StagePanelProps, StagePanelZoneProps, StagePanelZonesProps } from "./StagePanel";
-import { getStableWidgetProps } from "../zones/Zone";
+import { getStableWidgetProps, ZoneLocation } from "../zones/Zone";
+import { UiFramework } from "../UiFramework";
 
 /** Enum for StagePanel state.
  * @beta
- */
+ */
 export enum StagePanelState {
   Off,
   Minimized,
@@ -26,7 +29,7 @@ export enum StagePanelState {
 
 /** Panel State Changed Event Args interface.
  * @beta
- */
+ */
 export interface PanelStateChangedEventArgs {
   panelDef: StagePanelDef;
   panelState: StagePanelState;
@@ -34,7 +37,7 @@ export interface PanelStateChangedEventArgs {
 
 /** Widget State Changed Event class.
  * @beta
- */
+ */
 export class PanelStateChangedEvent extends UiEvent<PanelStateChangedEventArgs> { }
 
 /** @internal */
@@ -49,17 +52,19 @@ export class PanelSizeChangedEvent extends UiEvent<PanelSizeChangedEventArgs> { 
 /**
  * A StagePanelDef represents each Stage Panel within a Frontstage.
  * @beta
- */
+ */
 export class StagePanelDef extends WidgetHost {
   private _panelState = StagePanelState.Open;
+  private _defaultState = StagePanelState.Open;
   private _maxSizeSpec: StagePanelMaxSizeSpec | undefined;
   private _minSize: number | undefined;
   private _size: number | undefined;
+  private _defaultSize: number | undefined;
   private _resizable = true;
   private _pinned = true;
   private _applicationData?: any;
   private _location: StagePanelLocation = StagePanelLocation.Left;
-  private _panelZones: StagePanelZonesDef | undefined;
+  private _panelZones = new StagePanelZonesDef();
 
   /** Constructor for PanelDef.
    */
@@ -77,9 +82,20 @@ export class StagePanelDef extends WidgetHost {
   public get size() { return this._size; }
 
   public set size(size) {
-    // istanbul ignore if
     if (this._size === size)
       return;
+
+    if (UiFramework.uiVersion === "2") {
+      const frontstageDef = FrontstageManager.activeFrontstageDef;
+      if (frontstageDef && frontstageDef.nineZoneState) {
+        const side = toPanelSide(this.location);
+        frontstageDef.nineZoneState = setPanelSize(frontstageDef.nineZoneState, side, size);
+        const panel = frontstageDef.nineZoneState.panels[side];
+        if (panel.size === this._size)
+          return;
+        size = panel.size;
+      }
+    }
     this._size = size;
     FrontstageManager.onPanelSizeChangedEvent.emit({
       panelDef: this,
@@ -107,12 +123,39 @@ export class StagePanelDef extends WidgetHost {
   public set panelState(panelState: StagePanelState) {
     if (panelState === this._panelState)
       return;
+    const frontstageDef = FrontstageManager.activeFrontstageDef;
+    if (UiFramework.uiVersion === "2" && frontstageDef && frontstageDef.nineZoneState) {
+      const side = toPanelSide(this.location);
+      frontstageDef.nineZoneState = produce(frontstageDef.nineZoneState, (nineZone) => {
+        const panel = nineZone.panels[side];
+        switch (panelState) {
+          case StagePanelState.Minimized: {
+            panel.collapsed = true;
+            break;
+          }
+          case StagePanelState.Open: {
+            panel.collapsed = false;
+            break;
+          }
+          case StagePanelState.Off: {
+            panel.collapsed = true;
+            break;
+          }
+        }
+      });
+    }
     this._panelState = panelState;
     FrontstageManager.onPanelStateChangedEvent.emit({
       panelDef: this,
       panelState,
     });
   }
+
+  /** @internal */
+  public get defaultState() { return this._defaultState; }
+
+  /** @internal */
+  public get defaultSize() { return this._defaultSize; }
 
   /** Panel zones.
    * @internal
@@ -122,26 +165,27 @@ export class StagePanelDef extends WidgetHost {
   }
 
   /** @internal */
-  public initializePanelState(panelState: StagePanelState) {
-    this._panelState = panelState;
-  }
-
-  /** @internal */
-  public initializeFromProps(props: StagePanelProps, panelLocation?: StagePanelLocation): void {
+  public initializeFromProps(props?: StagePanelProps, panelLocation?: StagePanelLocation): void {
+    if (panelLocation !== undefined)
+      this._location = panelLocation;
+    if (!props)
+      return;
     this._size = props.size;
+    this._defaultSize = props.size;
     this._maxSizeSpec = props.maxSize;
     this._minSize = props.minSize;
     if (panelLocation !== undefined)
       this._location = panelLocation;
-    if (props.defaultState !== undefined)
-      this.initializePanelState(props.defaultState);
+    if (props.defaultState !== undefined) {
+      this._panelState = props.defaultState;
+      this._defaultState = props.defaultState;
+    }
     this._resizable = props.resizable;
     if (props.pinned !== undefined)
       this._pinned = props.pinned;
     if (props.applicationData !== undefined)
       this._applicationData = props.applicationData;
     if (props.panelZones) {
-      this._panelZones = new StagePanelZonesDef();
       this._panelZones.initializeFromProps(props.panelZones, this._location);
     }
 
@@ -155,18 +199,29 @@ export class StagePanelDef extends WidgetHost {
     }
   }
 
-  /** Finds a [[WidgetDef]] based on a given id */
-  public findWidgetDef(id: string): WidgetDef | undefined {
-    // istanbul ignore if
-    if (this.panelZones) {
-      for (const [, panelZone] of this.panelZones) {
-        const widgetDef = panelZone.findWidgetDef(id);
-        if (widgetDef)
-          return widgetDef;
-      }
+  /** Gets the list of Widgets. */
+  public get widgetDefs(): ReadonlyArray<WidgetDef> {
+    const widgetDefs = [...super.widgetDefs];
+    for (const [, panelZone] of this.panelZones) {
+      widgetDefs.push(...panelZone.widgetDefs);
     }
+    return widgetDefs;
+  }
 
-    return super.findWidgetDef(id);
+  /** Gets the list of Widgets (w/o StagePanelZone widgets).
+   * @internal
+   */
+  public get panelWidgetDefs() {
+    return super.widgetDefs;
+  }
+
+  /** @internal */
+  public updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation, _section: StagePanelSection | undefined,
+    widgetDefs: WidgetDef[],
+  ): void {
+    this.panelZones.start.updateDynamicWidgetDefs(stageId, stageUsage, location, StagePanelSection.Start, widgetDefs);
+    this.panelZones.middle.updateDynamicWidgetDefs(stageId, stageUsage, location, StagePanelSection.Middle, widgetDefs);
+    this.panelZones.end.updateDynamicWidgetDefs(stageId, stageUsage, location, StagePanelSection.End, widgetDefs);
   }
 }
 
@@ -177,9 +232,9 @@ const stagePanelZoneDefKeys: StagePanelZoneDefKeys[] = ["start", "middle", "end"
 
 /** @internal */
 export class StagePanelZonesDef {
-  private _start: StagePanelZoneDef | undefined;
-  private _middle: StagePanelZoneDef | undefined;
-  private _end: StagePanelZoneDef | undefined;
+  private _start = new StagePanelZoneDef();
+  private _middle = new StagePanelZoneDef();
+  private _end = new StagePanelZoneDef();
 
   public get start() {
     return this._start;
@@ -196,33 +251,24 @@ export class StagePanelZonesDef {
   /** @internal */
   public initializeFromProps(props: StagePanelZonesProps, panelLocation: StagePanelLocation): void {
     if (props.start) {
-      this._start = new StagePanelZoneDef();
-      this._start.initializeFromProps(props.start, panelLocation, "start");
+      this.start.initializeFromProps(props.start, panelLocation, "start");
     }
     if (props.middle) {
-      this._middle = new StagePanelZoneDef();
-      this._middle.initializeFromProps(props.middle, panelLocation, "middle");
+      this.middle.initializeFromProps(props.middle, panelLocation, "middle");
     }
     if (props.end) {
-      this._end = new StagePanelZoneDef();
-      this._end.initializeFromProps(props.end, panelLocation, "end");
+      this.end.initializeFromProps(props.end, panelLocation, "end");
     }
   }
 
   /** @internal */
-  public [Symbol.iterator](): Iterator<[StagePanelZoneDefKeys, StagePanelZoneDef]> {
-    return definedStagePaneZoneDefs(this);
-  }
-}
-
-function* definedStagePaneZoneDefs(stagePanelZonesDef: StagePanelZonesDef): Generator<[StagePanelZoneDefKeys, StagePanelZoneDef]> {
-  for (const key of stagePanelZoneDefKeys) {
-    const value = stagePanelZonesDef[key];
-    if (value) {
+  public *[Symbol.iterator](): Iterator<[StagePanelZoneDefKeys, StagePanelZoneDef]> {
+    for (const key of stagePanelZoneDefKeys) {
+      const value = this[key];
       yield [key, value];
     }
+    return undefined;
   }
-  return undefined;
 }
 
 /** @internal */
@@ -237,3 +283,29 @@ export class StagePanelZoneDef extends WidgetHost {
     });
   }
 }
+
+/** @internal */
+export function toPanelSide(location: StagePanelLocation): PanelSide {
+  switch (location) {
+    case StagePanelLocation.Bottom:
+    case StagePanelLocation.BottomMost:
+      return "bottom";
+    case StagePanelLocation.Left:
+      return "left";
+    case StagePanelLocation.Right:
+      return "right";
+    case StagePanelLocation.Top:
+    case StagePanelLocation.TopMost:
+      return "top";
+  }
+}
+
+/** @internal */
+export const setPanelSize = produce((
+  nineZone: Draft<NineZoneState>,
+  side: PanelSide,
+  size: number | undefined,
+) => {
+  const panel = nineZone.panels[side];
+  panel.size = size === undefined ? size : Math.min(Math.max(size, panel.minSize), panel.maxSize);
+});

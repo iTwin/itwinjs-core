@@ -16,6 +16,8 @@ import { LessGreaterOperatorProcessor, TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
 import { ConvertedPrimitives } from "./valuetypes/ConvertedTypes";
 
+// cSpell:ignore datepicker valuetypes
+
 /**
  * DateTime Type Converter.
  * @public

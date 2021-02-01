@@ -1,0 +1,22 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@bentley/ui-core/lib/ui-core/style/themecolors";
+
+.uifw-accudraw-field-container {
+  display: flex;
+  padding: 6px;
+}
+
+.uifw-accudraw-field-container-horizontal {
+  flex-direction: row;
+
+  .uifw-accudraw-input-container:not(:last-child) {
+    padding-right: 4px;
+  }
+}
+
+.uifw-accudraw-field-container-vertical {
+  flex-direction: column;
+}

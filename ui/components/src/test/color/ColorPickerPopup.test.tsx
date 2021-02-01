@@ -28,6 +28,13 @@ describe("<ColorPickerPopup/>", () => {
   it("should render", () => {
     const renderedComponent = render(<ColorPickerPopup initialColor={colorDef} />);
     expect(renderedComponent).not.to.be.undefined;
+    expect(renderedComponent.container.querySelector(".components-caret")).to.be.null;
+  });
+
+  it("should render with caret", () => {
+    const renderedComponent = render(<ColorPickerPopup initialColor={colorDef} showCaret />);
+    expect(renderedComponent).not.to.be.undefined;
+    expect(renderedComponent.container.querySelector(".components-caret")).not.to.be.null;
   });
 
   it("button press should open popup and allow color selection", async () => {
@@ -92,6 +99,34 @@ describe("<ColorPickerPopup/>", () => {
     expect(corePopupDiv).not.to.be.null;
     if (corePopupDiv)
       expect(corePopupDiv.classList.contains("visible")).to.be.false;
+  });
+
+  it("button press should open popup and allow trigger color selection when popup closed", async () => {
+    const spyOnColorPopupClosed = sinon.spy();
+
+    function handleColorPopupClosed(color: ColorDef): void {
+      expect(color.tbgr).to.be.equal(ColorDef.green.tbgr);
+      spyOnColorPopupClosed();
+    }
+
+    const renderedComponent = render(<ColorPickerPopup initialColor={colorDef} popupPosition={RelativePosition.BottomRight} colorDefs={[ColorDef.green, ColorDef.black, ColorDef.red]} onClose={handleColorPopupClosed} />);
+    expect(renderedComponent.getByTestId("components-colorpicker-popup-button")).to.exist;
+    const pickerButton = renderedComponent.getByTestId("components-colorpicker-popup-button");
+    // renderedComponent.debug();
+    expect(pickerButton.tagName).to.be.equal("BUTTON");
+    fireEvent.click(pickerButton);
+
+    const popupDiv = await waitForElement(() => renderedComponent.getByTestId("components-colorpicker-panel"));
+    expect(popupDiv).not.to.be.undefined;
+
+    if (popupDiv) {
+      const colorSwatch = popupDiv.querySelector("button.components-colorpicker-panel-swatch") as HTMLElement;
+      expect(colorSwatch).not.to.be.null;
+      fireEvent.click(colorSwatch);
+    }
+
+    fireEvent.click(pickerButton); /* close popup */
+    expect(spyOnColorPopupClosed).to.be.calledOnce;
   });
 
 });
