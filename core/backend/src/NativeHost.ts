@@ -24,7 +24,6 @@ import { NativeAppStorage } from "./NativeAppStorage";
  * @internal
  */
 class NativeAppImpl extends IpcHandler implements NativeAppFunctions {
-
   public get channelName() { return nativeAppChannel; }
   public async checkInternetConnectivity(): Promise<InternetConnectivityStatus> {
     return NativeHost.checkInternetConnectivity();

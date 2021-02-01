@@ -9,7 +9,6 @@ import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import {
   Editor3dRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, SnapshotIModelRpcInterface,
-  StandaloneIModelRpcInterface,
 } from "@bentley/imodeljs-common";
 import {
   AccuSnap, AsyncMethodsOf, ExternalServerExtensionLoader, IModelApp, IpcApp, PromiseReturnType, RenderSystem, SelectionTool, SnapMode, TileAdmin,
@@ -149,7 +148,6 @@ export class DisplayTestApp {
           IModelTileRpcInterface,
           IModelWriteRpcInterface,
           SnapshotIModelRpcInterface,
-          StandaloneIModelRpcInterface,
         ],
       },
       webViewerApp: {

@@ -26,8 +26,6 @@ const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
  * @public
  */
 export abstract class BriefcaseConnection extends IModelConnection {
-  /** @internal */
-
   /** The Guid that identifies the *context* that owns this iModel. */
   public get contextId(): GuidString { return super.contextId!; } // GuidString | undefined for the superclass, but required for BriefcaseConnection
   /** The Guid that identifies this iModel. */
@@ -251,9 +249,9 @@ export class RemoteBriefcaseConnection extends BriefcaseConnection {
    * any un-pushed changes are lost after the close.
    */
   public async close(): Promise<void> {
-    if (this.isClosed) {
+    if (this.isClosed)
       return;
-    }
+
     this.beforeClose();
     const requestContext = await AuthorizedFrontendRequestContext.create();
     requestContext.enter();
@@ -289,7 +287,7 @@ export class LocalBriefcaseConnection extends BriefcaseConnection {
     requestContext.enter();
 
     requestContext.useContextForRpc = true;
-    const iModelProps = await IpcApp.callIpcAppBackend("open", briefcaseProps);
+    const iModelProps = await IpcApp.callIpcAppBackend("openBriefcase", briefcaseProps);
     const connection = new this({ ...briefcaseProps, ...iModelProps });
 
     IModelConnection.onOpen.raiseEvent(connection);

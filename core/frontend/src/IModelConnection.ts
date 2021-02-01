@@ -15,7 +15,7 @@ import {
   GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError,
   IModelReadRpcInterface, IModelStatus, IModelWriteRpcInterface, mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps,
   ModelProps, ModelQueryParams, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager, SnapRequestProps,
-  SnapResponseProps, SnapshotIModelRpcInterface, StandaloneIModelRpcInterface, StandaloneOpenOptions, TextureLoadProps, ThumbnailProps,
+  SnapResponseProps, SnapshotIModelRpcInterface, StandaloneOpenOptions, TextureLoadProps, ThumbnailProps,
   ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps,
 } from "@bentley/imodeljs-common";
 import { BackgroundMapLocation } from "./BackgroundMapGeometry";
@@ -27,6 +27,7 @@ import { IModelApp } from "./IModelApp";
 import { IModelRoutingContext } from "./IModelRoutingContext";
 import { ModelState } from "./ModelState";
 import { HiliteSet, SelectionSet } from "./SelectionSet";
+import { StandaloneConnection } from "./StandaloneConnection";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import { Tiles } from "./Tiles";
 import { ViewState } from "./ViewState";
@@ -596,11 +597,6 @@ export class BlankConnection extends IModelConnection {
   /** A BlankConnection does not have an associated iModel, so its `iModelId` is alway `undefined`. */
   public get iModelId(): undefined { return undefined; } // GuidString | undefined for the superclass, but always undefined for BlankConnection
 
-  /** A BlankConnection does not have a specific backend nor it is associated with a particular iModel, so `false` is always returned.
-   * @returns `false` is always returned since RPC operations and iModel queries are not valid.
-   */
-  public get isOpen(): boolean { return false; }
-
   /** A BlankConnection is always considered closed because it does not have a specific backend nor associated iModel.
    * @returns `true` is always returned since RPC operations and iModel queries are not valid.
    * @note Even though true is always returned, it is still valid to call [[close]] to dispose frontend resources.
@@ -687,55 +683,14 @@ export class SnapshotConnection extends IModelConnection {
    * @see [[openFile]], [[openRemote]]
    */
   public async close(): Promise<void> {
-    if (this.isClosed) {
+    if (this.isClosed)
       return;
-    }
+
     this.beforeClose();
     try {
       if (!this.isRemote) {
         await SnapshotIModelRpcInterface.getClientForRouting(this.routingContext.token).close(this.getRpcProps());
       }
-    } finally {
-      this._isClosed = true;
-      this.subcategories.onIModelConnectionClose();
-    }
-  }
-}
-
-/** A connection to a [StandaloneDb]($backend) hosted on the backend.
- * @internal
- */
-export class StandaloneConnection extends IModelConnection {
-  public isStandaloneConnection(): this is StandaloneConnection { return true; }
-
-  /** The Guid that identifies this iModel. */
-  public get iModelId(): GuidString { return super.iModelId!; } // GuidString | undefined for the superclass, but required for StandaloneConnection
-
-  /** Returns `true` if [[close]] has already been called. */
-  public get isClosed(): boolean { return this._isClosed ? true : false; }
-  private _isClosed?: boolean;
-
-  /** Open an IModelConnection to a standalone iModel.
-   * @note This method is intended for desktop or mobile applications and should not be used for web applications.
-   */
-  public static async openFile(filePath: string, openMode: OpenMode = OpenMode.ReadWrite, opts?: StandaloneOpenOptions): Promise<StandaloneConnection> {
-    const openResponse = await StandaloneIModelRpcInterface.getClient().openFile(filePath, openMode, opts);
-    Logger.logTrace(loggerCategory, "StandaloneConnection.openFile", () => ({ filePath }));
-    const connection = new StandaloneConnection(openResponse);
-    IModelConnection.onOpen.raiseEvent(connection);
-    return connection;
-  }
-
-  /** Close this StandaloneConnection and the underlying [StandaloneDb]($backend) database file.
-   * @see [[openFile]]
-   */
-  public async close(): Promise<void> {
-    if (this.isClosed) {
-      return;
-    }
-    this.beforeClose();
-    try {
-      await StandaloneIModelRpcInterface.getClient().close(this.getRpcProps());
     } finally {
       this._isClosed = true;
       this.subcategories.onIModelConnectionClose();

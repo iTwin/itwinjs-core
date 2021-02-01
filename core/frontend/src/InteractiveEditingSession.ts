@@ -12,8 +12,9 @@ import {
   ElementGeometryChange, GeometryChangeNotifications, IpcAppChannel, ModelGeometryChanges, ModelGeometryChangesProps, RemoveFunction,
 } from "@bentley/imodeljs-common";
 import { BriefcaseConnection, BriefcaseNotificationHandler } from "./BriefcaseConnection";
-import { IModelConnection, StandaloneConnection } from "./IModelConnection";
+import { IModelConnection } from "./IModelConnection";
 import { IpcApp } from "./IpcApp";
+import { StandaloneConnection } from "./StandaloneConnection";
 
 let initialized = false;
 const sessions: InteractiveEditingSession[] = [];

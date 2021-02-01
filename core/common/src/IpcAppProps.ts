@@ -6,9 +6,9 @@
  * @module NativeApp
  */
 
-import { LogLevel } from "@bentley/bentleyjs-core";
+import { LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 import { OpenBriefcaseProps } from "./BriefcaseTypes";
-import { IModelConnectionProps, IModelRpcProps } from "./IModel";
+import { IModelConnectionProps, IModelRpcProps, StandaloneOpenOptions } from "./IModel";
 import { ModelGeometryChangesProps } from "./ModelGeometryChanges";
 
 /** Identifies a list of tile content Ids belonging to a single tile tree.
@@ -56,13 +56,19 @@ export interface IpcAppFunctions {
   /**
    * Open a briefcase file from the local disk.
    */
-  open: (_args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
+  openBriefcase: (_args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
 
   /**
    * Close a briefcase on the backend.
    * @param _key The key from the IModelConnectionProps returned by [[open]]
    */
   closeBriefcase: (_key: string) => Promise<void>;
+
+  /** Open a standalone iModel from a file name. */
+  openStandalone: (_filePath: string, _openMode: OpenMode, _opts?: StandaloneOpenOptions) => Promise<IModelConnectionProps>;
+
+  /** Close a standalone iModel. */
+  closeStandalone: (key: string) => Promise<boolean>;
 
   /** Cancels currently pending or active generation of tile content.
    * @param _iModelToken Identifies the iModel

@@ -6,8 +6,9 @@
  * @module NativeApp
  */
 
-import { GuidString } from "@bentley/bentleyjs-core";
+import { GuidString, OpenMode } from "@bentley/bentleyjs-core";
 import { BriefcaseProps, LocalBriefcaseProps, RequestNewBriefcaseProps } from "./BriefcaseTypes";
+import { IModelConnectionProps, IModelRpcProps, StandaloneOpenOptions } from "./IModel";
 
 /** @internal */
 export const nativeAppChannel = "nativeApp";
@@ -50,6 +51,7 @@ export interface NativeAppNotifications {
  * @internal
  */
 export interface NativeAppFunctions {
+
   /** Check if the internet is reachable. */
   checkInternetConnectivity: () => Promise<InternetConnectivityStatus>;
 

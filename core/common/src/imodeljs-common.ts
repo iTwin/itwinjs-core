@@ -100,7 +100,6 @@ export * from "./rpc/IModelTileRpcInterface";
 export * from "./rpc/IModelWriteRpcInterface";
 export * from "./ModelGeometryChanges";
 export * from "./rpc/SnapshotIModelRpcInterface";
-export * from "./rpc/StandaloneIModelRpcInterface";
 export * from "./rpc/TestRpcManager";
 export * from "./rpc/WipRpcInterface";
 export * from "./rpc/core/RpcConfiguration";

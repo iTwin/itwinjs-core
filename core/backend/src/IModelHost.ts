@@ -38,7 +38,6 @@ import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
 import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";
 import { IModelWriteRpcImpl } from "./rpc-impl/IModelWriteRpcImpl";
 import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
-import { StandaloneIModelRpcImpl } from "./rpc-impl/StandaloneIModelRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
 import { UsageLoggingUtilities } from "./usage-logging/UsageLoggingUtilities";
@@ -445,7 +444,6 @@ export class IModelHost {
       IModelTileRpcImpl,
       IModelWriteRpcImpl,
       SnapshotIModelRpcImpl,
-      StandaloneIModelRpcImpl,
       WipRpcImpl,
       DevToolsRpcImpl,
       Editor3dRpcImpl,

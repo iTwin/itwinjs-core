@@ -53,6 +53,7 @@ export * from "./SpatialClassifiers";
 export * from "./SpatialViewState";
 export * from "./Sprites";
 export * from "./StandardView";
+export * from "./StandaloneConnection";
 export * from "./SubCategoriesCache";
 export * from "./TentativePoint";
 export * from "./Tiles";

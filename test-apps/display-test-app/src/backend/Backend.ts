@@ -12,7 +12,7 @@ import { IModelBankClient } from "@bentley/imodelhub-client";
 import { IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
 import {
   Editor3dRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, RpcInterfaceDefinition, RpcManager,
-  SnapshotIModelRpcInterface, StandaloneIModelRpcInterface,
+  SnapshotIModelRpcInterface,
 } from "@bentley/imodeljs-common";
 import { AndroidHost, IOSHost } from "@bentley/mobile-manager/lib/MobileBackend";
 import { DtaConfiguration } from "../common/DtaConfiguration";
@@ -94,7 +94,6 @@ export const getRpcInterfaces = (): RpcInterfaceDefinition[] => {
     IModelTileRpcInterface,
     IModelWriteRpcInterface,
     SnapshotIModelRpcInterface,
-    StandaloneIModelRpcInterface,
   ];
 
   return rpcs;
