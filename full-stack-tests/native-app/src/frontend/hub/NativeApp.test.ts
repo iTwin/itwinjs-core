@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Config, GuidString } from "@bentley/bentleyjs-core";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronApp";
+import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { BriefcaseDownloader, IModelVersion, SyncMode } from "@bentley/imodeljs-common";
 import { IModelApp, NativeApp, NativeAppLogger } from "@bentley/imodeljs-frontend";
 import { ProgressInfo } from "@bentley/itwin-client";

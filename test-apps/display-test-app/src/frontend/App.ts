@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { isElectronRenderer, MobileUtils } from "@bentley/bentleyjs-core";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronApp";
+import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import {

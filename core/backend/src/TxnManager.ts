@@ -35,7 +35,9 @@ export interface ValidationError {
  * @beta
  */
 export class TxnManager {
+  /** @internal */
   constructor(private _iModel: BriefcaseDb | StandaloneDb) { }
+
   public readonly onGeometryChanged = new BeEvent<(models: ModelGeometryChangesProps[]) => void>();
   /** Array of errors from dependency propagation */
   public readonly validationErrors: ValidationError[] = [];

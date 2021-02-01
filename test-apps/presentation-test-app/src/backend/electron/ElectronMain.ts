@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib/ElectronHost";
+import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib/ElectronBackend";
 import { RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 
 /**

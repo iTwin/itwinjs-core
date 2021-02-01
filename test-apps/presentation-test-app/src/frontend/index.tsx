@@ -7,7 +7,7 @@ import "./index.css";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Config, isElectronRenderer, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronApp";
+import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, RpcConfiguration } from "@bentley/imodeljs-common";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { PresentationUnitSystem } from "@bentley/presentation-common";

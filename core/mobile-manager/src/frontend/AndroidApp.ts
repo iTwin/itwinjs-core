@@ -6,6 +6,7 @@ import { RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import { IModelAppOptions } from "@bentley/imodeljs-frontend";
 import { MobileApp } from "./MobileApp";
 
+/** @beta */
 export class AndroidApp {
 
   private static _isValid = false;

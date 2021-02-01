@@ -9,7 +9,7 @@ import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@bentley/imodeljs-common";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
-import { ElectronHost } from "@bentley/electron-manager/lib/ElectronHost";
+import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
 
 export async function initializeBackend() {
   IModelJsConfig.init(true /* suppress exception */, true /* suppress error message */, Config.App);

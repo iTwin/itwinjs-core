@@ -3,14 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { MobileDevice, MobileHost } from "./MobileHost";
+// THIS FILE EXISTS ONLY FOR DOCUMENTATION GENERATION.
+// It imports both frontend and backend code, which is not legal anywhere.
+// Do not import it in real code!
 
-/** @beta */
-export abstract class IOSDevice extends MobileDevice {
-  // implement and remove abstract
-}
-
-/** @beta */
-export class IOSHost extends MobileHost {
-
-}
+export * from "./backend/DesktopAuthorizationClientIpc";
+export * from "./backend/ElectronHost";
+export * from "./frontend/ElectronApp";

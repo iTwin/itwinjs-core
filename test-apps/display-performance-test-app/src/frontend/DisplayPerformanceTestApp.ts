@@ -5,7 +5,7 @@
 import * as path from "path";
 import { ClientRequestContext, Id64, Id64Arg, Id64String, isElectronRenderer, MobileUtils, OpenMode, StopWatch } from "@bentley/bentleyjs-core";
 import { Project } from "@bentley/context-registry-client";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronApp";
+import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import {
   BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration, FrontendAuthorizationClient,
 } from "@bentley/frontend-authorization-client";

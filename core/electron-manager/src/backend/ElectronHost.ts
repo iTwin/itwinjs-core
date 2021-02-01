@@ -13,7 +13,7 @@ import * as path from "path";
 import { BeDuration, IModelStatus, isElectronMain } from "@bentley/bentleyjs-core";
 import { IModelError, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import { DesktopAuthorizationClientIpc } from "./DesktopAuthorizationClientIpc";
-import { ElectronRpcConfiguration, ElectronRpcManager } from "./ElectronRpcManager";
+import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/ElectronRpcManager";
 import { IModelHostConfiguration, IpcHandler, IpcHost, NativeHost } from "@bentley/imodeljs-backend";
 
 // cSpell:ignore signin devserver webcontents copyfile

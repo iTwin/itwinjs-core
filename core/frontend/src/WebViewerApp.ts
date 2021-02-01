@@ -9,6 +9,10 @@
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, RpcRoutingToken } from "@bentley/imodeljs-common";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
 
+/**
+ * Options for [[WebViewerApp.startup]]
+ * @beta
+ */
 export interface WebViewerAppOptions {
   rpcParams: BentleyCloudRpcParams;
   routing?: RpcRoutingToken;
@@ -17,7 +21,7 @@ export interface WebViewerAppOptions {
 /**
  * The frontend of apps with a shared backend for visualization of iModels. WebViewerApps may only open
  * iModels readonly, and may not use Ipc.
- * @alpha
+ * @beta
  */
 export class WebViewerApp {
 

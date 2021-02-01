@@ -1139,6 +1139,26 @@ export class LRUMap<K, V> extends LRUCache<K, V> {
     constructor(limit: number);
 }
 
+// @internal (undocumented)
+export class MobileUtils {
+    // (undocumented)
+    static get isAndroidBackend(): boolean;
+    // (undocumented)
+    static get isAndroidFrontend(): boolean;
+    // (undocumented)
+    static get isIOSBackend(): boolean;
+    // (undocumented)
+    static get isIOSFrontend(): boolean;
+    // (undocumented)
+    static get isIpadFrontend(): boolean;
+    // (undocumented)
+    static get isITwinBackend(): boolean;
+    // (undocumented)
+    static get isITwinFrontend(): boolean;
+    static get isMobileBackend(): boolean;
+    static get isMobileFrontend(): boolean;
+}
+
 // @alpha
 export class MutableCompressedId64Set implements OrderedId64Iterable {
     [Symbol.iterator](): Iterator<string, any, undefined>;

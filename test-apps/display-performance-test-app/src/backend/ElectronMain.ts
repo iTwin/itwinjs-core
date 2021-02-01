@@ -5,7 +5,7 @@
 import { assert } from "@bentley/bentleyjs-core";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { initializeBackend } from "./backend";
-import { ElectronHost } from "@bentley/electron-manager/lib/ElectronHost";
+import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
 
 const dptaElectronMain = async () => {
 

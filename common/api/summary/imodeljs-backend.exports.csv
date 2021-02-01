@@ -120,7 +120,6 @@ public;ElevationCallout
 public;EmbeddedFileLink 
 public;Entity 
 public;EntityClassType
-internal;EventSink 
 public;ExportGraphics
 public;ExportGraphicsFunction = (info: ExportGraphicsInfo) => void
 public;ExportGraphicsInfo
@@ -204,6 +203,9 @@ public;InformationRecordModel
 public;InformationRecordPartition 
 public;class InformationReferenceElement 
 beta;InstanceChange
+beta;class IpcHandler
+beta;IpcHost
+beta;IpcHostOptions
 public;KnownLocations
 internal;LightLocation 
 public;LineStyle 
@@ -212,10 +214,9 @@ public;class LinkElement
 public;LinkModel 
 public;LinkPartition 
 internal;MetaDataRegistry
-alpha;MobileAuthorizationClient 
 public;Model 
 public;ModelSelector 
-internal;NativeAppBackend
+beta;NativeHost
 public;OrthographicViewDefinition 
 public;class PhysicalElement 
 public;PhysicalElementAssemblesElements 

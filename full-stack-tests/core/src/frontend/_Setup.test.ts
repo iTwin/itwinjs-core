@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { isElectronRenderer } from "@bentley/bentleyjs-core";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronApp";
+import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { BentleyCloudRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 

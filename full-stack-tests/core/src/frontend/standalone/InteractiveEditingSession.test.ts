@@ -8,7 +8,7 @@ import * as path from "path";
 import { isElectronRenderer, OpenMode } from "@bentley/bentleyjs-core";
 import { IModelError } from "@bentley/imodeljs-common";
 import { InteractiveEditingSession, StandaloneConnection } from "@bentley/imodeljs-frontend";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronApp";
+import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);

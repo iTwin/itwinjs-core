@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { ClientRequestContext, Id64, Id64String, isElectronRenderer, OpenMode } from "@bentley/bentleyjs-core";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronApp";
+import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { Angle, Point3d } from "@bentley/geometry-core";
 import { IModelJsFs, PhysicalModel, StandaloneDb } from "@bentley/imodeljs-backend";
 import {

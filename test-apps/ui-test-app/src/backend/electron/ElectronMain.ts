@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { assert } from "@bentley/bentleyjs-core";
-import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib/ElectronHost";
+import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib/ElectronBackend";
 import { RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 
 /**

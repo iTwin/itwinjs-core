@@ -10,10 +10,14 @@ import { AccessToken, CancelRequest, DownloadFailed, ProgressCallback, UserCance
 import { BatteryState, mobileAppChannel, MobileAppFunctions, Orientation } from "../common/MobileAppProps";
 import { MobileAuthorizationClientConfiguration } from "../common/MobileAuthorizationClientConfiguration";
 
+/** @beta */
 export type MobileCompletionCallback = (downloadUrl: string, downloadFileUrl: string, cancelled: boolean, err?: string) => void;
+/** @beta */
 export type MobileProgressCallback = (bytesWritten: number, totalBytesWritten: number, totalBytesExpectedToWrite: number) => void;
+/** @beta */
 export type MobileCancelCallback = () => boolean;
 
+/** @beta */
 export interface MobileDeviceAuthSettings {
   issuerUrl: string;
   clientId: string;
@@ -22,6 +26,9 @@ export interface MobileDeviceAuthSettings {
   stateKey?: string;
 }
 
+/**
+ * @beta
+ */
 export interface DownloadTask {
   url: string;
   downloadPath: string;
@@ -36,6 +43,9 @@ export interface DownloadTask {
   toForeground: () => boolean;
 }
 
+/**
+ * @beta
+ */
 export abstract class MobileDevice {
   public abstract getOrientation(): Orientation;
   public abstract getBatteryState(): BatteryState;
@@ -85,6 +95,9 @@ class MobileAppImpl extends IpcHandler implements MobileAppFunctions {
   }
 }
 
+/**
+ * @beta
+ */
 export class MobileHost {
   private static _device?: MobileDevice;
   public static get device() { return this._device!; }

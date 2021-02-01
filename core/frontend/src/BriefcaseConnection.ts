@@ -104,6 +104,7 @@ export abstract class BriefcaseConnection extends IModelConnection {
   }
 }
 
+/** @alpha */
 export abstract class BriefcaseNotificationHandler extends NotificationHandler {
   constructor(private _key: string) { super(); }
   public abstract get briefcaseChannelName(): string;
@@ -283,13 +284,8 @@ export class LocalBriefcaseConnection extends BriefcaseConnection {
    * @internal
    */
   public static async open(briefcaseProps: OpenBriefcaseProps): Promise<LocalBriefcaseConnection> {
-    const requestContext = new FrontendRequestContext();
-    requestContext.enter();
-
-    requestContext.useContextForRpc = true;
     const iModelProps = await IpcApp.callIpcAppBackend("openBriefcase", briefcaseProps);
     const connection = new this({ ...briefcaseProps, ...iModelProps });
-
     IModelConnection.onOpen.raiseEvent(connection);
     return connection;
   }

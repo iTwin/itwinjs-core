@@ -5,7 +5,7 @@
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { BeDuration, compareStrings, DbOpcode, Id64String, isElectronRenderer, OpenMode } from "@bentley/bentleyjs-core";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronApp";
+import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { IModelJson, LineSegment3d, Point3d, Range3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
 import { BatchType, Code, ElementGeometryChange } from "@bentley/imodeljs-common";
 import {

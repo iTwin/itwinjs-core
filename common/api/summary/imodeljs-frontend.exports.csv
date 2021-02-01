@@ -36,6 +36,8 @@ public;AppearanceOverrideProps
 internal;ArcGisUtilities
 internal;areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): number
 internal;areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise
+beta;AsyncFunction = (...args: any) => Promise
+beta;AsyncMethodsOf
 public;AuthorizedFrontendRequestContext 
 public;AuxCoordSystem2dState 
 public;AuxCoordSystem3dState 
@@ -59,6 +61,7 @@ internal;BingMapsImageryLayerProvider
 beta;BlankConnection 
 beta;BlankConnectionProps
 public;class BriefcaseConnection 
+alpha;class BriefcaseNotificationHandler 
 internal;CachedDecoration =
 internal;CachedIModelCoordinatesResponseProps
 internal;calculateEcefToDbTransformAtLocation(originIn: Point3d, iModel: IModelConnection): Promise
@@ -131,8 +134,6 @@ public;Environment
 internal;ErrorNums
 public;EventController
 public;EventHandled
-beta;EventListener = (eventData: any) => void
-beta;EventSource 
 beta;class Extension
 beta;ExtensionAdmin
 beta;ExtensionAdminProps
@@ -249,10 +250,12 @@ internal;iModelTileTreeParamsFromJSON(props: IModelTileTreeProps, iModel: IModel
 public;class InputCollector 
 public;InputSource
 internal;InstancedGraphicParams
-alpha;InteractiveEditingSession
+alpha;InteractiveEditingSession 
 public;class InteractiveTool 
 internal;internalMapLayerImageryFormats: (typeof WmsMapLayerFormat)[]
 public;IntersectDetail 
+alpha;IpcApp
+beta;IpcAppOptions
 alpha;ItemField
 beta;KeyinParseError
 internal;KeyinStatus
@@ -306,7 +309,6 @@ public;MessageBoxIconType
 public;MessageBoxType
 public;MessageBoxValue
 internal;metersToRange(inputMeters: number, minimumOutput?: number, maximumOutput?: number, maximumInputMeters?: number): number
-alpha;MobileAuthorizationClient 
 internal;MockRender
 internal;ModalOptions
 internal;ModalReturn
@@ -314,9 +316,10 @@ alpha;ModelDisplayTransformProvider
 public;ModelSelectorState 
 public;ModelState 
 internal;ModifyElementSource
-alpha;NativeApp 
+alpha;NativeApp
 internal;NativeAppLogger
 internal;NoRenderApp
+beta;class NotificationHandler
 public;NotificationManager
 public;NotifyMessageDetails
 internal;NullRenderSystem 
@@ -354,6 +357,7 @@ internal;PlanarClassifierMap = Map
 internal;PlanarTilePatch
 public;class PrimitiveTool 
 alpha;PrimitiveVisibility
+beta;PromiseReturnType
 internal;QuadId
 alpha;QuantityFormatsChangedArgs
 alpha;QuantityFormatter 
@@ -374,7 +378,6 @@ internal;RealityTileParams
 internal;RealityTileTree 
 internal;RealityTileTreeParams 
 public;RemoteBriefcaseConnection 
-beta;RemoveEventListener = () => void
 beta;class RenderClipVolume 
 public;RenderContext
 internal;RenderDiagnostics
@@ -582,6 +585,8 @@ public;ViewUndoTool
 public;WalkViewTool 
 internal;WebMercatorProjection
 internal;WebMercatorTilingScheme 
+beta;WebViewerApp
+beta;WebViewerAppOptions
 internal;WheelEventProcessor
 public;WindowAreaTool 
 internal;WmsCapabilities

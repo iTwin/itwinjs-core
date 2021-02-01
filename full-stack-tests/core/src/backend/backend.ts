@@ -17,7 +17,7 @@ import { rpcInterfaces } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
 import { EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
 import * as testCommands from "./TestEditCommands";
-import { ElectronHost } from "@bentley/electron-manager/lib/ElectronHost";
+import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
 
 /* eslint-disable no-console */
 

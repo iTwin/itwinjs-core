@@ -19,6 +19,7 @@ export interface TileTreeContentIds {
   contentIds: string[];
 }
 
+/** @internal */
 export enum IpcAppChannel {
   Functions = "ipc-app",
   GeometryChanges = "geometry-changes",
@@ -33,6 +34,7 @@ export interface GeometryChangeNotifications {
   notifyGeometryChanged: (models: ModelGeometryChangesProps[]) => void;
 }
 
+/** @internal */
 export interface BriefcasePushAndPullNotifications {
   notifyPulledChanges: (arg: { parentChangeSetId: string }) => void;
   notifyPushedChanges: (arg: { parentChangeSetId: string }) => void;

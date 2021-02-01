@@ -11,7 +11,7 @@ import {
   DisplayStyle3dState, GeometricModel3dState, IModelApp, IModelConnection, Pixel, SnapshotConnection,
 } from "@bentley/imodeljs-frontend";
 import { testOnScreenViewport } from "../TestViewport";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronApp";
+import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { rpcInterfaces } from "../../common/RpcInterfaces";
 
 describe("Plan projections", () => {

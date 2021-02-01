@@ -6,7 +6,7 @@ import { AuthStatus, BentleyError, ClientRequestContext, Logger } from "@bentley
 import { DesktopAuthorizationClient, IModelHost, IpcHost } from "@bentley/imodeljs-backend";
 import { DesktopAuthorizationClientConfiguration, DesktopAuthorizationClientMessages } from "@bentley/imodeljs-common";
 import { AccessToken } from "@bentley/itwin-client";
-import { ElectronManagerLoggerCategory } from "./ElectronManagerLoggerCategory";
+import { ElectronManagerLoggerCategory } from "../common/ElectronManagerLoggerCategory";
 
 const loggerCategory: string = ElectronManagerLoggerCategory.Authorization;
 

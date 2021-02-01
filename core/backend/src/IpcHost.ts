@@ -17,16 +17,21 @@ import { BriefcaseDb, IModelDb, StandaloneDb } from "./IModelDb";
 import { IModelHost, IModelHostConfiguration } from "./IModelHost";
 import { cancelTileContentRequests } from "./rpc-impl/IModelTileRpcImpl";
 
+/**
+ * Options for [[IpcHost.startup]]
+ * @beta
+ */
 export interface IpcHostOptions {
+  /** The Ipc socket to use for communications with frontend. Allows undefined only for headless tests. */
   socket?: IpcSocketBackend;
 }
 
 /**
  * Used by applications that have a dedicated backend. IpcHosts may send messages to their corresponding IpcApp.
+ * @note if either end terminates, the other must too.
  * @beta
 */
 export class IpcHost {
-
   private static _ipc: IpcSocketBackend | undefined;
   /** Get the implementation of the [IpcSocketBackend]($common) interface. */
   private static get ipc(): IpcSocketBackend { return this._ipc!; }
@@ -74,10 +79,12 @@ export class IpcHost {
       return this.send(`${channel}:${briefcase.key}`, methodName, ...args);
   }
 
+  /** @internal */
   public static notifyGeometryChanges<T extends keyof GeometryChangeNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<GeometryChangeNotifications[T]>) {
     this.notify(IpcAppChannel.GeometryChanges, briefcase, methodName, ...args);
   }
 
+  /** @internal */
   public static notifyPushAndPull<T extends keyof BriefcasePushAndPullNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<BriefcasePushAndPullNotifications[T]>) {
     this.notify(IpcAppChannel.PushPull, briefcase, methodName, ...args);
   }

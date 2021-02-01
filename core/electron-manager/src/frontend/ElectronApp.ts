@@ -5,8 +5,8 @@
 import { isElectronRenderer } from "@bentley/bentleyjs-core";
 import { IpcListener, IpcSocketFrontend } from "@bentley/imodeljs-common";
 import { AsyncMethodsOf, IModelAppOptions, IpcApp, NativeApp, PromiseReturnType } from "@bentley/imodeljs-frontend";
-import { ITwinElectronApi } from "./ElectronPreload";
-import { ElectronRpcManager } from "./ElectronRpcManager";
+import { ITwinElectronApi } from "../backend/ElectronPreload";
+import { ElectronRpcManager } from "../common/ElectronRpcManager";
 
 /**
  * Frontend Ipc support for Electron apps.
@@ -33,7 +33,10 @@ class ElectronIpc implements IpcSocketFrontend {
   }
 }
 
-// Frontend of an Electron App.
+/**
+ * Frontend of an Electron App.
+ * @beta
+ */
 export class ElectronApp {
   private static _ipc?: ElectronIpc;
   public static get isValid(): boolean { return undefined !== this._ipc; }

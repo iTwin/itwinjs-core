@@ -28,8 +28,12 @@ export type AsyncMethodsOf<T> = { [P in keyof T]: T[P] extends AsyncFunction ? P
  */
 export type PromiseReturnType<T extends AsyncFunction> = T extends (...args: any) => Promise<infer R> ? R : any;
 
+/**
+ * Options for [[IpcApp.startup]]
+ * @beta
+ */
 export interface IpcAppOptions {
-  /** the platform-specific implementation of the [IpcSocketFrontend]($common) interface */
+  /** The platform-specific implementation of the [IpcSocketFrontend]($common) interface */
   ipc: IpcSocketFrontend;
 }
 

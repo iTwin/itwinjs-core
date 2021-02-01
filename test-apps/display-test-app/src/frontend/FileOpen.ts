@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { isElectronRenderer } from "@bentley/bentleyjs-core";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronApp";
+import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { OpenDialogOptions } from "electron";
 
 export interface BrowserFileSelector {

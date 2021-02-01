@@ -13,7 +13,7 @@ import { connect, Provider } from "react-redux";
 import { Store } from "redux"; // createStore,
 import { ClientRequestContext, Config, Id64String, isElectronRenderer, Logger, LogLevel, MobileUtils, OpenMode } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient } from "@bentley/context-registry-client";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronApp";
+import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { FrontendApplicationInsightsClient } from "@bentley/frontend-application-insights-client";
 import {
   BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration, FrontendAuthorizationClient,

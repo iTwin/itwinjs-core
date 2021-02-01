@@ -26,6 +26,7 @@ class MobileAppNotifyHandler extends NotificationHandler implements MobileNotifi
   public notifyWillTerminate() { MobileApp.onWillTerminate.raiseEvent(); }
 }
 
+/** @beta */
 export class MobileApp {
   public static onMemoryWarning = new BeEvent<() => void>();
   public static onOrientationChanged = new BeEvent<() => void>();
