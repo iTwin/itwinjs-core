@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Logger } from "@bentley/bentleyjs-core";
-import { CustomQuantityTypeEntry, IModelApp, UnitSystemKey } from "@bentley/imodeljs-frontend";
+import { CustomQuantityPropEditorSpec, CustomQuantityTypeEntry, IModelApp, UnitSystemKey } from "@bentley/imodeljs-frontend";
 import {
   Format, FormatProps, FormatterSpec, Parser, ParseResult, ParserSpec, QuantityStatus, UnitConversionSpec, UnitProps, UnitsProvider,
 } from "@bentley/imodeljs-quantity";
@@ -12,6 +12,7 @@ import {
 export interface BearingFormatProps extends FormatProps {
   readonly custom?: {
     readonly addDirectionLabelGap?: boolean;
+    readonly angleDirection?: string;   // "clockwise"|"counter-clockwise"
   };
 }
 
@@ -25,7 +26,7 @@ const defaultBearingFormat: BearingFormatProps = {
   precision: 0,
   type: "Decimal",
   uomSeparator: "",
-  custom: {addDirectionLabelGap: true},
+  custom: {addDirectionLabelGap: true, angleDirection: "clockwise"},
 };
 
 class BearingFormatterSpec extends FormatterSpec {
@@ -77,6 +78,26 @@ class BearingFormatterSpec extends FormatterSpec {
   }
 }
 
+function bearingGapPropGetter(props: FormatProps) {
+  return !!props.custom?.addDirectionLabelGap;
+}
+
+function bearingGapPropSetter(props: FormatProps, isChecked: boolean) {
+  const customProps = {...props.custom, addDirectionLabelGap:isChecked};
+  const newProps = {...props, custom:customProps};
+  return newProps;
+}
+
+function bearingAngleDirectionGetter(props: FormatProps) {
+  return props.custom?.angleDirection??"clockwise";
+}
+
+function bearingAngleDirectionSetter(props: FormatProps, value: string) {
+  const customProps = {...props.custom, angleDirection:value};
+  const newProps = {...props, custom:customProps};
+  return newProps;
+}
+
 class BearingParserSpec extends ParserSpec {
   constructor(outUnit: UnitProps, format: Format, conversions: UnitConversionSpec[]) {
     super(outUnit, format, conversions);
@@ -120,7 +141,6 @@ class BearingParserSpec extends ParserSpec {
     const conversions = await Parser.createUnitConversionSpecsForUnit(unitsProvider, outUnit);
     return new BearingParserSpec(outUnit, format, conversions);
   }
-
 }
 
 export class BearingQuantityType implements CustomQuantityTypeEntry {
@@ -183,6 +203,27 @@ export class BearingQuantityType implements CustomQuantityTypeEntry {
   public getFormatPropsBySystem = (_requestedSystem: UnitSystemKey) => {
     return this.formatProps;
   };
+
+  public get primaryPropEditorSpecs(): CustomQuantityPropEditorSpec[] {
+    return [
+      {
+        editorType: "checkbox",
+        label: IModelApp.i18n.translate("SampleApp:BearingQuantityType.bearingGap.label"),
+        getBool: bearingGapPropGetter,
+        setBool: bearingGapPropSetter,
+      },
+      {
+        editorType: "select",
+        selectOptions: [
+          {value: "clockwise", label: IModelApp.i18n.translate("SampleApp:BearingQuantityType.bearingAngleDirection.clockwise") },
+          {value: "counter-clockwise", label: IModelApp.i18n.translate("SampleApp:BearingQuantityType.bearingAngleDirection.counter-clockwise") },
+        ],
+        label: IModelApp.i18n.translate("SampleApp:BearingQuantityType.bearingAngleDirection.label"),
+        getString: bearingAngleDirectionGetter,
+        setString: bearingAngleDirectionSetter,
+      },
+    ];
+  }
 
   public static async registerQuantityType(initialProps?: FormatProps) {
     const quantityTypeEntry = new BearingQuantityType();

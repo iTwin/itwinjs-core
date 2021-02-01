@@ -7,9 +7,9 @@
  */
 
 import * as React from "react";
-import { getQuantityTypeKey, IModelApp, QuantityTypeArg } from "@bentley/imodeljs-frontend";
+import { CustomQuantityPropEditorSpec, getQuantityTypeKey, IModelApp, isCustomQuantityTypeEntry, QuantityTypeArg } from "@bentley/imodeljs-frontend";
 import { FormatProps, UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
-import { Checkbox, CommonProps } from "@bentley/ui-core";
+import { Checkbox, CommonProps, Select } from "@bentley/ui-core";
 import { FormatPanel } from "./FormatPanel";
 
 /** Properties of [[QuantityFormatPanel]] component.
@@ -22,6 +22,74 @@ export interface QuantityFormatPanelProps extends CommonProps {
   showSample?: boolean;
   initialMagnitude?: number;
   enableMinimumProperties?: boolean;
+}
+
+// <Input
+// id={this.props.id}
+// value={context!.values[this.props.id]}
+// onChange={(event) => context!.setValues({ [this.props.id]: event.currentTarget.value })}
+// className="core-form-input"
+// />
+// )}
+// {this.props.editor!.toLowerCase() === "multilinetextbox" && (
+// <Textarea
+// id={this.props.id}
+// value={context!.values[this.props.id]}
+// onChange={(event) => context!.setValues({ [this.props.id]: event.currentTarget.value })}
+// className="core-form-textarea"
+// />
+// )}
+// {this.props.editor!.toLowerCase() === "dropdown" && this.props.options && (
+// <Select
+// id={this.props.id}
+// name={this.props.id}
+// value={context!.values[this.props.id]}
+// onChange={(event) => context!.setValues({ [this.props.id]: event.currentTarget.value })}
+// options={this.props.options}
+// className="core-form-select"
+// />
+// )}
+// *       editor: "dropdown",
+// *       value: "one",
+// *       options: ["one", "two", "three", "four"],
+//
+// editorType: "select",
+// selectOptions: [
+//   {value: "clockwise", label: IModelApp.i18n.translate("SampleApp:BearingQuantityType.bearingAngleDirection.clockwise") },
+//   {value: "counter-clockwise", label: IModelApp.i18n.translate("SampleApp:BearingQuantityType.bearingAngleDirection.counter-clockwise") }
+// ],
+//
+
+function createSelectFormatPropEditor(label: string, options: {label: string, value: string}[] , inProps: FormatProps,
+  getString: (props: FormatProps) => string, setString: (props: FormatProps, value: string) => FormatProps, fireFormatChange: (newProps: FormatProps) => void) {
+  const value = getString (inProps);
+  return (
+    <>
+      <span className={"uicore-label"}>{label}</span>
+      <Select
+        value={value}
+        options={options}
+        onChange={(e) => {
+          const newProps = setString(inProps, e.currentTarget.value);
+          fireFormatChange (newProps);
+        }}
+      />
+    </>
+  );
+}
+
+function createCheckboxFormatPropEditor(label: string, inProps: FormatProps, getBool: (props: FormatProps) => boolean, setBool: (props: FormatProps, isChecked: boolean) => FormatProps, fireFormatChange: (newProps: FormatProps) => void) {
+  const isChecked = getBool (inProps);
+  return (
+    <>
+      <span className={"uicore-label"}>{label}</span>
+      <Checkbox isLabeled={true} checked={isChecked}
+        onChange={(e)=>{
+          const newProps = setBool(inProps, e.target.checked);
+          fireFormatChange (newProps);
+        }} />
+    </>
+  );
 }
 
 /** Component to show/edit Quantity Format.
@@ -52,26 +120,35 @@ export function QuantityFormatPanel(props: QuantityFormatPanelProps) {
     onFormatChange && onFormatChange (newProps);
   }, [onFormatChange]);
 
+  const createCustomPropEditors = React.useCallback( (specs: CustomQuantityPropEditorSpec[], inProps: FormatProps, fireFormatChange: (newProps: FormatProps) => void) => {
+    return specs.map((spec) => {
+      switch (spec.editorType) {
+        case "checkbox":
+          if (spec.getBool  && spec.setBool)
+            return createCheckboxFormatPropEditor(spec.label, inProps, spec.getBool, spec.setBool, fireFormatChange);
+          break;
+        case "select":
+          if (spec.getString && spec.setString && spec.selectOptions)
+            return createSelectFormatPropEditor(spec.label, spec.selectOptions, inProps, spec.getString, spec.setString, fireFormatChange);
+          break;
+        case "text":
+        default:
+          break;
+      }
+      return <div/>;
+    });
+  }, []);
+
   const providePrimaryChildren = React.useCallback(
     (inProps: FormatProps, fireFormatChange: (newProps: FormatProps) => void) => {
       const quantityTypeKey = getQuantityTypeKey(quantityType);
       const quantityTypeEntry = IModelApp.quantityFormatter.quantityTypesRegistry.get(quantityTypeKey);
-      if (quantityTypeEntry && quantityTypeEntry.type === "Bearing") {
-        const addDirectionLabelGap = !!inProps?.custom?.addDirectionLabelGap;
-        return (
-          <>
-            <span className={"uicore-label"}>Add Direction Gap</span>
-            <Checkbox isLabeled={true} checked={addDirectionLabelGap}
-              onChange={(e)=>{
-                const newProps = {...inProps, custom: {addDirectionLabelGap: e.target.checked}};
-                fireFormatChange (newProps);
-              }} />
-          </>
-        );
+      if (quantityTypeEntry && isCustomQuantityTypeEntry(quantityTypeEntry)) {
+        if (quantityTypeEntry.primaryPropEditorSpecs)
+          return createCustomPropEditors (quantityTypeEntry.primaryPropEditorSpecs, inProps, fireFormatChange);
       }
-
       return null;
-    }, [quantityType]);
+    }, [createCustomPropEditors, quantityType]);
 
   const provideSecondaryChildren = React.useCallback(
     (_inProps: FormatProps, _fireFormatChange: (newProps: FormatProps) => void) => {

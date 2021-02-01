@@ -403,6 +403,14 @@
   },
   "BearingQuantityType": {
     "label": "Bearing",
-    "description": "Bearing"
+    "description": "Bearing",
+    "bearingGap": {
+      "label": "Add Direction Gap"
+    },
+    "bearingAngleDirection": {
+      "label": "Angle Direction",
+      "clockwise": "Clockwise",
+      "counter-clockwise": "Counter-Clockwise"
+    }
   }
 }

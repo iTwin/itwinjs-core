@@ -37,6 +37,16 @@ export function getQuantityTypeKey(type: QuantityTypeArg): string {
   return type;
 }
 
+export interface CustomQuantityPropEditorSpec {
+  editorType: "checkbox"|"text"|"select";
+  selectOptions?: {label: string, value: string}[];
+  label: string;
+  getBool?: (props: FormatProps) => boolean;
+  setBool?: (props: FormatProps, isChecked: boolean) => FormatProps;
+  getString?: (props: FormatProps) => string;
+  setString?: (props: FormatProps, value: string) => FormatProps;
+}
+
 export interface QuantityTypeEntry {
   readonly key: QuantityTypeKey;
   readonly type: QuantityTypeArg;
@@ -54,6 +64,8 @@ export interface CustomQuantityTypeEntry extends QuantityTypeEntry {
   generateParserSpec: (formatProps: FormatProps, unitsProvider: UnitsProvider) => Promise<ParserSpec>;
   // to be implemented by custom Quantity Types
   getFormatPropsBySystem: (requestedSystem: UnitSystemKey) => FormatProps;
+  primaryPropEditorSpecs?: CustomQuantityPropEditorSpec[];
+  secondaryPropEditorSpecs?: CustomQuantityPropEditorSpec[];
 }
 
 /** CustomQuantityTypeEntry type guard. */
