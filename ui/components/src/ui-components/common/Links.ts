@@ -6,7 +6,7 @@
  * @module Common
  */
 
- // cSpell:ignore linkify
+// cSpell:ignore linkify
 
 import LinkifyIt = require("linkify-it");
 
