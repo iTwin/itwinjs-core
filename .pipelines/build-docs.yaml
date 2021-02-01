@@ -67,7 +67,7 @@ steps:
   inputs:
     SourceFolder: '$(Build.SourcesDirectory)/generated-docs/domains'
     TargetFolder: '$(System.ArtifactsDirectory)\staging\reference\'
-  condition: and(succeeded(), ne(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/1'), true), ne(variables['System.PullRequest.TargetBranch'], 'refs/heads/hotfix/briefcase-fix'))
+  condition: and(succeeded(), ne(variables['System.PullRequest.TargetBranch'], 'refs/heads/hotfix/briefcase-fix'))
 
 - task: CopyFiles@2
   displayName: 'Copy Extracted Code to staging area'
@@ -129,7 +129,6 @@ steps:
 
 - script: './node_modules/.bin/bmsBuild --strictLinkChecking --topicsMustHaveDesc --source $(System.ArtifactsDirectory)/staging --destination $(agent.builddirectory)/tempDocsBuild/public_build --siteTitle iTwin.js'
   displayName: 'Run bmsBuild'
-  condition: and(succeeded(), true), ne(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/1'), true))
 
 - task: ms-codeanalysis.vss-microsoft-security-code-analysis-devops.build-task-credscan.CredScan@2
   displayName: 'Run Credential Scanner'
