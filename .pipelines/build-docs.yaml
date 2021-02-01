@@ -4,7 +4,6 @@ pool:
 
 variables:
   tempDocsLocation: '$(Agent.BuildDirectory)\tempDocsBuild'
-  tempDocsV1Location: '$(Agent.BuildDirectory)\tempDocsV1Build'
 
 steps:
 - task: NodeTool@0
@@ -68,7 +67,7 @@ steps:
   inputs:
     SourceFolder: '$(Build.SourcesDirectory)/generated-docs/domains'
     TargetFolder: '$(System.ArtifactsDirectory)\staging\reference\'
-  condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/v1.x'), ne(startsWith(variables['System.PullRequest.TargetBranch'], 'refs/heads/v1.x'), true), ne(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/1'), true), ne(variables['System.PullRequest.TargetBranch'], 'refs/heads/hotfix/briefcase-fix'))
+  condition: and(succeeded(), ne(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/1'), true), ne(variables['System.PullRequest.TargetBranch'], 'refs/heads/hotfix/briefcase-fix'))
 
 - task: CopyFiles@2
   displayName: 'Copy Extracted Code to staging area'
@@ -126,40 +125,11 @@ steps:
     command: custom
     verbose: false
     customCommand: 'audit --registry=https://registry.npmjs.org/ --audit-level=high'
-  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/v1.x'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release')))
+  condition: and(succeeded(), or(startsWith(variables['Build.SourceBranch'], 'refs/heads/release')))
 
 - script: './node_modules/.bin/bmsBuild --strictLinkChecking --topicsMustHaveDesc --source $(System.ArtifactsDirectory)/staging --destination $(agent.builddirectory)/tempDocsBuild/public_build --siteTitle iTwin.js'
   displayName: 'Run bmsBuild'
-  condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/v1.x'), ne(startsWith(variables['System.PullRequest.TargetBranch'], 'refs/heads/v1.x'), true), ne(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/1'), true))
-
-- script: './node_modules/.bin/bmsBuild --strictLinkChecking --source $(System.ArtifactsDirectory)/staging --destination $(agent.builddirectory)/tempDocsV1Build/public_build/v1 --siteTitle iTwin.js --siteRoot /v1'
-  displayName: 'Run bmsBuild - v1'
-  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/v1.x'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/1'), startsWith(variables['System.PullRequest.TargetBranch'], 'refs/heads/v1.x')))
-
-- task: DownloadBuildArtifacts@0
-  displayName: 'Download Build Artifacts - Demo Viewer'
-  inputs:
-    buildType: specific
-    project: '2c48216e-e72f-48b4-a4eb-40ff1c04e8e4'
-    pipeline: 674
-    buildVersionToDownload: specific
-    buildId: 374323
-    downloadType: specific
-  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release'),  eq(variables['Build.SourceBranch'], 'refs/heads/v1.x')))
-
-- task: CopyFiles@2
-  displayName: 'Copy demo-viewer to public-viewer'
-  inputs:
-    SourceFolder: '$(System.ArtifactsDirectory)\demo-viewer-frontend'
-    TargetFolder: '$(agent.builddirectory)/tempDocsBuild/public_build/learning/public-viewer-demonstrator'
-  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/2')))
-
-- task: CopyFiles@2
-  displayName: 'Copy demo-viewer to public-viewer - v1'
-  inputs:
-    SourceFolder: '$(System.ArtifactsDirectory)\demo-viewer-frontend'
-    TargetFolder: '$(agent.builddirectory)/tempDocsV1Build/public_build/v1/learning/public-viewer-demonstrator'
-  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/v1.x'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/1')))
+  condition: and(succeeded(), true), ne(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/1'), true))
 
 - task: ms-codeanalysis.vss-microsoft-security-code-analysis-devops.build-task-credscan.CredScan@2
   displayName: 'Run Credential Scanner'
@@ -167,25 +137,19 @@ steps:
     scanFolder: '$(agent.builddirectory)/tempDocsBuild'
   condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/2')))
 
-- task: ms-codeanalysis.vss-microsoft-security-code-analysis-devops.build-task-credscan.CredScan@2
-  displayName: 'Run Credential Scanner v1'
-  inputs:
-    scanFolder: '$(agent.builddirectory)/tempDocsV1Build'
-  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/v1.x'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/1')))
-
 - task: PublishPipelineArtifact@1
   displayName: 'Publish Pipeline Artifact - .updated.json'
   inputs:
     targetPath: '$(System.ArtifactsDirectory)\staging\config\.updated.json'
     artifact: .updated.json
-  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release'),  eq(variables['Build.SourceBranch'], 'refs/heads/v1.x')))
+  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release')))
 
 - task: PublishPipelineArtifact@1
   displayName: 'Publish Pipeline Artifact - Credential Scanner'
   inputs:
     targetPath: '$(Build.ArtifactStagingDirectory)\..\_sdt\logs\CredentialScanner'
     artifact: CredentialScanner
-  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release'),  eq(variables['Build.SourceBranch'], 'refs/heads/v1.x')))
+  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release')))
 
 - task: DownloadPipelineArtifact@2
   displayName: 'Download Pipeline Artifact - Nuget Spec'
@@ -193,19 +157,13 @@ steps:
     buildType: specific
     project: '2c48216e-e72f-48b4-a4eb-40ff1c04e8e4'
     definition: 1830
-  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release'),  eq(variables['Build.SourceBranch'], 'refs/heads/v1.x')))
+  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release')))
 
 - task: qetza.replacetokens.replacetokens-task.replacetokens@3
   displayName: 'Replace tokens in NugetPackage.nuspec'
   inputs:
     targetFiles: '$(Agent.BuildDirectory)\DocsNugetSpecFile\NugetPackage.nuspec'
   condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release')))
-
-- task: qetza.replacetokens.replacetokens-task.replacetokens@3
-  displayName: 'Replace tokens in NugetPackageV1.nuspec'
-  inputs:
-    targetFiles: '$(Agent.BuildDirectory)\DocsNugetSpecFile\NugetPackageV1.nuspec'
-  condition: and(succeeded(), or(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/1'), startsWith(variables['Build.SourceBranch'], 'refs/heads/v1.x')))
 
 - task: DeleteFiles@1
   displayName: 'Delete files from $(tempDocsLocation\public_build'
@@ -214,18 +172,11 @@ steps:
     Contents: index.html
   condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release')))
 
-- task: DeleteFiles@1
-  displayName: 'Delete files from $(tempDocsLocation\public_build - V1'
-  inputs:
-    SourceFolder: '$(tempDocsV1Location\public_build'
-    Contents: index.html
-  condition: and(succeeded(), or(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/1'), startsWith(variables['Build.SourceBranch'], 'refs/heads/v1.x')))
-
 - task: NuGetToolInstaller@0
   displayName: 'Use NuGet 4.9.2'
   inputs:
     versionSpec: 4.9.2
-  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release'),  eq(variables['Build.SourceBranch'], 'refs/heads/v1.x')))
+  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release')))
 
 - task: NuGetCommand@2
   displayName: 'NuGet pack'
@@ -235,25 +186,10 @@ steps:
     versioningScheme: byBuildNumber
   condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/2')))
 
-- task: NuGetCommand@2
-  displayName: 'NuGet pack v1.x'
-  inputs:
-    command: pack
-    packagesToPack: '$(Agent.BuildDirectory)\DocsNugetSpecFile\NugetPackageV1.nuspec'
-    versioningScheme: byBuildNumber
-  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/v1.x'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/1')))
-
 - task: PublishPipelineArtifact@1
   displayName: 'Publish Pipeline Artifact - iModel.jsDocumentation .nupkg'
   inputs:
     targetPath: '$(Build.ArtifactStagingDirectory)\iModeljs.Documentation.$(Build.BuildNumber).nupkg'
     artifact: 'iModeljsDocumentationFiles_$(Build.BuildNumber)'
   condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/2')))
-
-- task: PublishPipelineArtifact@1
-  displayName: 'Publish Pipeline Artifact v1.x only - iModel.jsDocumentation .nupkg '
-  inputs:
-    targetPath: '$(Build.ArtifactStagingDirectory)\iModeljs.Documentation.V1.$(Build.BuildNumber).nupkg'
-    artifact: 'iModeljsDocumentationArchiveFiles_$(Build.BuildNumber)'
-  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/v1.x'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/1')))
 
