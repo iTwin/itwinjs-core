@@ -35,61 +35,66 @@ vec4 volClassColor(vec4 baseColor, float depth) {
 }
 `;
 
-// ###TODO Currently we discard if classifier is pure black (acts as clipping mask).
-// Change it so that fully-transparent classifiers do the clipping.
-const applyPlanarClassificationColor = `
-  const float dimScale = .7;
-  float colorMix = u_pClassPointCloud ? .65 : .35;
-  vec2 classPos = v_pClassPos / v_pClassPosW;
-  bool isOutside = classPos.x < 0.0 || classPos.x > 1.0 || classPos.y < 0.0 || classPos.y > 1.0;
-  if (u_pClassColorParams.x > kClassifierDisplay_Element) { // texture/terrain drape.
-    if (u_pClassColorParams.x > kTextureDrape) {
-      return volClassColor(baseColor, depth);
-    }
-    if (isOutside)
-      discard;
+const applyPlanarClassificationPrelude = `
+const float dimScale = .7;
 
-    vec3 rgb = TEXTURE(s_pClassSampler, classPos.xy).rgb;
-    return vec4(rgb, baseColor.a);
+vec2 classPos = v_pClassPos / v_pClassPosW;
+bool isOutside = classPos.x < 0.0 || classPos.x > 1.0 || classPos.y < 0.0 || classPos.y > 1.0;
+if (u_pClassColorParams.x > kClassifierDisplay_Element) { // texture/terrain drape.
+  if (u_pClassColorParams.x > kTextureDrape) {
+    return volClassColor(baseColor, depth);
   }
-  float imageCount = u_pClassColorParams.z;
-  // For debugging features.
-  // vec4 featureTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, (1.0 + classPos.y) / imageCount));
-  // return (isOutside || featureTexel == vec4(0)) ? vec4(0.0, 1.0, 0.0, 1.0) : vec4 (featureTexel.x, 0.0, 0.0, 1.0);
+  if (isOutside)
+    discard;
+
+  vec3 rgb = TEXTURE(s_pClassSampler, classPos.xy).rgb;
+  return vec4(rgb, baseColor.a);
+}
+float imageCount = u_pClassColorParams.z;
+// For debugging features.
+// vec4 featureTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, (1.0 + classPos.y) / imageCount));
+// return (isOutside || featureTexel == vec4(0)) ? vec4(0.0, 1.0, 0.0, 1.0) : vec4 (featureTexel.x, 0.0, 0.0, 1.0);
 
 
-  vec4 colorTexel = vec4(0);
-  vec4 maskTexel = vec4(0);
-  bool doMask = imageCount != kTextureContentClassifierOnly;
-  bool doClassify = imageCount != kTextureContentMaskOnly;
-  if (!isOutside) {
-    if (imageCount == kTextureContentClassifierOnly) {
-      colorTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, classPos.y / imageCount));
-    } else if (imageCount == kTextureContentMaskOnly) {
-      maskTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, classPos.y));
-    } else if (imageCount == kTextureContentClassifierAndMask) {
-      colorTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, classPos.y / imageCount));
-      maskTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, (2.0 + classPos.y) / imageCount));
-    }
+vec4 colorTexel = vec4(0);
+vec4 maskTexel = vec4(0);
+bool doMask = imageCount != kTextureContentClassifierOnly;
+bool doClassify = imageCount != kTextureContentMaskOnly;
+if (!isOutside) {
+  if (imageCount == kTextureContentClassifierOnly) {
+    colorTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, classPos.y / imageCount));
+  } else if (imageCount == kTextureContentMaskOnly) {
+    maskTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, classPos.y));
+  } else if (imageCount == kTextureContentClassifierAndMask) {
+    colorTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, classPos.y / imageCount));
+    maskTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, (2.0 + classPos.y) / imageCount));
   }
-  if (doMask) {
-    if (!isOutside && (maskTexel.r + maskTexel.g + maskTexel.b + maskTexel.a > 0.0)) {
-      discard;
-      return vec4(0);
-     }
-
-    if (!doClassify)
-      return baseColor;
-    }
-
-
-  bool isClassified = !isOutside && (colorTexel.r + colorTexel.g + colorTexel.b + colorTexel.a > 0.0);
-  float param = isClassified ? u_pClassColorParams.x : u_pClassColorParams.y;
-  if (kClassifierDisplay_Off == param) {
+}
+if (doMask) {
+  if (!isOutside && (maskTexel.r + maskTexel.g + maskTexel.b + maskTexel.a > 0.0)) {
     discard;
     return vec4(0);
+   }
+
+  if (!doClassify)
+    return baseColor;
   }
 
+
+bool isClassified = !isOutside && (colorTexel.r + colorTexel.g + colorTexel.b + colorTexel.a > 0.0);
+float param = isClassified ? u_pClassColorParams.x : u_pClassColorParams.y;
+if (kClassifierDisplay_Off == param) {
+  discard;
+  return vec4(0);
+}
+`
+  ;
+
+// ###TODO Currently we discard if classifier is pure black (acts as clipping mask).
+// Change it so that fully-transparent classifiers do the clipping.
+const applyPlanarClassificationColor = applyPlanarClassificationPrelude +
+  `
+  float colorMix = u_pClassPointCloud ? .65 : .35;
   vec4 classColor;
   if (kClassifierDisplay_On == param)
     classColor = baseColor;
@@ -121,25 +126,8 @@ const applyPlanarClassificationColor = `
   return classColor;
 `;
 
-const applyPlanarClassificationColorForThematic = `
-  vec2 classPos = v_pClassPos / v_pClassPosW;
-  if (u_pClassColorParams.x > kClassifierDisplay_Element) { // texture/terrain drape.
-    if (u_pClassColorParams.x > kTextureDrape) {
-      return volClassColor(baseColor, depth);
-    }
-    if (classPos.x < 0.0 || classPos.x > 1.0 || classPos.y < 0.0 || classPos.y > 1.0)
-      discard;
-
-    vec3 rgb = TEXTURE(s_pClassSampler, classPos.xy).rgb;
-    return vec4(rgb, baseColor.a);
-  }
-
-  vec4 colorTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, classPos.y / 2.0));
-  bool isClassified = colorTexel.r + colorTexel.g + colorTexel.b + colorTexel.a > 0.0;
-  float param = isClassified ? u_pClassColorParams.x : u_pClassColorParams.y;
-  if (kClassifierDisplay_Off == param)
-    return vec4(0.0);
-
+const applyPlanarClassificationColorForThematic = applyPlanarClassificationPrelude +
+  `
   vec4 classColor = baseColor;
 
   if (kClassifierDisplay_Element == param) {
