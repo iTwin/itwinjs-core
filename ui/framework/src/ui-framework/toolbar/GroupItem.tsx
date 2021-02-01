@@ -11,8 +11,8 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { BadgeType, ConditionalStringValue, OnItemExecutedFunc, SpecialKey, StringGetter } from "@bentley/ui-abstract";
 import { BadgeUtilities, CommonProps, Icon, IconSpec, SizeProps, withOnOutsideClick } from "@bentley/ui-core";
 import {
-  Direction, ExpandableItem, Group as ToolGroupComponent, GroupColumn, GroupTool, GroupToolExpander, Item, NestedGroup as NestedToolGroupComponent,
-  ToolbarDirectionContext, withDragInteraction,
+  Direction, ExpandableItem, GroupColumn, GroupTool, GroupToolExpander, Item, NestedGroup as NestedToolGroupComponent, ToolbarDirectionContext,
+  Group as ToolGroupComponent, withDragInteraction,
 } from "@bentley/ui-ninezone";
 import { ToolGroupPanelContext } from "../frontstage/FrontstageComposer";
 import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
