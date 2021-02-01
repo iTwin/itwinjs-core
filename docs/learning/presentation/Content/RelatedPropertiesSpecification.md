@@ -27,6 +27,7 @@ In general, when properties are displayed in a property grid, this attribute pro
 ## Examples
 
 Pick "MyProperty1" and "MyProperty2" properties from all related aspects that have them:
+
 ```JSON
 {
   "propertiesSource": {
@@ -41,6 +42,7 @@ Pick "MyProperty1" and "MyProperty2" properties from all related aspects that ha
 ```
 
 Pick all properties from related model and override label of "UserLabel" property:
+
 ```JSON
 {
   "propertiesSource": {

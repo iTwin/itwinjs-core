@@ -24,10 +24,10 @@ The iModel.js UI library is divided into these NPM packages in the `@bentley` sc
 
 See also:
 
-* [UI 2.0](./FrontstageUi2.md).
-* [Creating an IModelApp that supports Extensible UI](./HostAppUI.md).
-* [Augmenting the UI of an IModelApp](./AugmentingUI.md).
-* [Glossary of terms used in iModel.js UI](./UIGlossary)
-* [React](https://reactjs.org/)
-* [Redux](https://redux.js.org/)
-* [React and Typescript](https://github.com/typescript-cheatsheets/react-typescript-cheatsheet/)
+- [UI 2.0](./FrontstageUi2.md).
+- [Creating an IModelApp that supports Extensible UI](./HostAppUI.md).
+- [Augmenting the UI of an IModelApp](./AugmentingUI.md).
+- [Glossary of terms used in iModel.js UI](./UIGlossary)
+- [React](https://reactjs.org/)
+- [Redux](https://redux.js.org/)
+- [React and Typescript](https://github.com/typescript-cheatsheets/react-typescript-cheatsheet/)

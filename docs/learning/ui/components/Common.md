@@ -14,4 +14,4 @@ The Common category can be broken down further into the following sections:
 
 ## API Reference
 
-* [Common]($ui-components:Common)
+- [Common]($ui-components:Common)
