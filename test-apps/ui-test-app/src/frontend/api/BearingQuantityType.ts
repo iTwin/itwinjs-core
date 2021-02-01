@@ -40,9 +40,16 @@ class BearingFormatterSpec extends FormatterSpec {
     const suffix=["E", "E", "W", "W"];
 
     // magnitude is assumed to be Azimuth angle
+
+    // adjust if measuring counter clockwise direction
+    if (this.format.customProps?.angleDirection === "counter-clockwise") {
+      magnitude = (Math.PI * 2) - magnitude;
+    }
+
     const isNegative = magnitude < 0;
     const positiveRad = Math.abs(magnitude);
     const maxRad = Math.PI*2;
+
     let adjustedRad = (positiveRad + maxRad)%maxRad;
     if (isNegative)
       adjustedRad = maxRad - adjustedRad;
@@ -207,12 +214,6 @@ export class BearingQuantityType implements CustomQuantityTypeEntry {
   public get primaryPropEditorSpecs(): CustomQuantityPropEditorSpec[] {
     return [
       {
-        editorType: "checkbox",
-        label: IModelApp.i18n.translate("SampleApp:BearingQuantityType.bearingGap.label"),
-        getBool: bearingGapPropGetter,
-        setBool: bearingGapPropSetter,
-      },
-      {
         editorType: "select",
         selectOptions: [
           {value: "clockwise", label: IModelApp.i18n.translate("SampleApp:BearingQuantityType.bearingAngleDirection.clockwise") },
@@ -221,6 +222,17 @@ export class BearingQuantityType implements CustomQuantityTypeEntry {
         label: IModelApp.i18n.translate("SampleApp:BearingQuantityType.bearingAngleDirection.label"),
         getString: bearingAngleDirectionGetter,
         setString: bearingAngleDirectionSetter,
+      },
+    ];
+  }
+
+  public get secondaryPropEditorSpecs(): CustomQuantityPropEditorSpec[] {
+    return [
+      {
+        editorType: "checkbox",
+        label: IModelApp.i18n.translate("SampleApp:BearingQuantityType.bearingGap.label"),
+        getBool: bearingGapPropGetter,
+        setBool: bearingGapPropSetter,
       },
     ];
   }

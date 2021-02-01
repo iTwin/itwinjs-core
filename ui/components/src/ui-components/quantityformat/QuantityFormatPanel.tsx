@@ -151,15 +151,15 @@ export function QuantityFormatPanel(props: QuantityFormatPanelProps) {
     }, [createCustomPropEditors, quantityType]);
 
   const provideSecondaryChildren = React.useCallback(
-    (_inProps: FormatProps, _fireFormatChange: (newProps: FormatProps) => void) => {
+    (inProps: FormatProps, fireFormatChange: (newProps: FormatProps) => void) => {
       const quantityTypeKey = getQuantityTypeKey(quantityType);
       const quantityTypeEntry = IModelApp.quantityFormatter.quantityTypesRegistry.get(quantityTypeKey);
-      if (quantityTypeEntry) {
-        // TODO
+      if (quantityTypeEntry && isCustomQuantityTypeEntry(quantityTypeEntry)) {
+        if (quantityTypeEntry.secondaryPropEditorSpecs)
+          return createCustomPropEditors (quantityTypeEntry.secondaryPropEditorSpecs, inProps, fireFormatChange);
       }
-
       return null;
-    }, [quantityType]);
+    }, [createCustomPropEditors, quantityType]);
 
   const provideFormatSpec = React.useCallback(
     async (inProps: FormatProps, _persistenceUnit: UnitProps, _unitsProvider: UnitsProvider) => {
