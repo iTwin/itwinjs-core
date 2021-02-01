@@ -72,7 +72,7 @@ export class CopyExternalsPlugin {
       }
       return;
     }
-    const packageJsonPath = require.resolve(`${pkgName}/package.json`, { paths: [paths.appNodeModules] });
+    const packageJsonPath = require.resolve(`${pkgName}/package.json`, { paths: [paths.appNodeModules, path.join(paths.appNodeModules, "@bentley", "imodeljs-backend")] });
     await this.copyPackage(pkgName, outputDir, path.dirname(packageJsonPath));
     if (!packageJsonPath)
       return;
