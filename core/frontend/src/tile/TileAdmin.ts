@@ -246,8 +246,6 @@ export class TileAdmin {
   /** @internal */
   public get enableExternalTextures(): boolean { return this._enableExternalTextures; }
   /** @internal */
-  public abstract get useProjectExtents(): boolean;
-  /** @internal */
   public get maximumLevelsToSkip() { return this._maximumLevelsToSkip; }
   /** @internal */
   public get mobileExpirationMemoryThreshold() { return this._mobileExpirationMemoryThreshold; }
