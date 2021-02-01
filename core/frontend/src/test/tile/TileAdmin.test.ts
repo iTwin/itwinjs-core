@@ -19,12 +19,12 @@ import {
 
 
 class TestGraphic extends RenderGraphic {
-  public constructor(private _size: number, private _disposedSize: number) {
+  public constructor(private _size: number) {
     super();
   }
 
   public dispose() {
-    this._size = this._disposedSize;
+    this._size = 0;
   }
 
   public collectStatistics(stats: RenderMemory.Statistics) {
@@ -35,9 +35,9 @@ class TestGraphic extends RenderGraphic {
 
 class TestTile extends Tile {
   private readonly _contentSize: number;
-  private readonly _disposedSize: number;
+  public retainMemory = false;
 
-  public constructor(tileTree: TileTree, contentSize: number, disposedSize = 0) {
+  public constructor(tileTree: TileTree, contentSize: number, retainMemory = false) {
     super({
       contentId: contentSize.toString(),
       range: new Range3d(0, 0, 0, 1, 1, 1),
@@ -45,7 +45,7 @@ class TestTile extends Tile {
     }, tileTree);
 
     this._contentSize = contentSize;
-    this._disposedSize = disposedSize;
+    this.retainMemory = retainMemory;
 
     if (contentSize === 0)
       this.setIsReady();
@@ -60,7 +60,7 @@ class TestTile extends Tile {
   }
 
   public async readContent(): Promise<TileContent> {
-    return { graphic: new TestGraphic(this._contentSize, this._disposedSize), isLeaf: true };
+    return { graphic: new TestGraphic(this._contentSize), isLeaf: true };
   }
 }
 
@@ -71,7 +71,7 @@ class TestTree extends TileTree {
   public readonly contentSize: number;
   private readonly _rootTile: TestTile;
 
-  public constructor(contentSize: number, iModel: IModelConnection, disposedContentSize = 0) {
+  public constructor(contentSize: number, iModel: IModelConnection, retainMemory = false) {
     super({
       iModel,
       id: (++TestTree._nextId).toString(),
@@ -82,10 +82,10 @@ class TestTree extends TileTree {
 
     this.treeId = TestTree._nextId;
     this.contentSize = contentSize;
-    this._rootTile = new TestTile(this, contentSize, disposedContentSize);
+    this._rootTile = new TestTile(this, contentSize, retainMemory);
   }
 
-  public get rootTile(): Tile { return this._rootTile; }
+  public get rootTile(): TestTile { return this._rootTile; }
   public get is3d() { return true; }
   public get maxDepth() { return undefined; }
   public get viewFlagOverrides() { return new ViewFlagOverrides(); }
@@ -169,32 +169,38 @@ function isLinked(tile: Tile): boolean {
   return undefined !== tile.previous || undefined !== tile.next;
 }
 
-describe.only("TileAdmin", () => {
-  let imodel: BlankConnection;
+describe("TileAdmin", () => {
+  let imodel1: IModelConnection;
+  let imodel2: IModelConnection;
+
+  function createIModel(name: string): IModelConnection {
+    return BlankConnection.create({
+      name,
+      location: Cartographic.fromDegrees(-75.686694, 40.065757, 0),
+      extents: new Range3d(-1000, -1000, -100, 1000, 1000, 100),
+      contextId: Guid.createValue(),
+    });
+  }
 
   beforeEach(async () => {
     await MockRender.App.startup();
     IModelApp.stopEventLoop();
-
-    const exton = Cartographic.fromDegrees(-75.686694, 40.065757, 0);
-    imodel = BlankConnection.create({
-      name: "test",
-      location: exton,
-      extents: new Range3d(-1000, -1000, -100, 1000, 1000, 100),
-      contextId: Guid.createValue(),
-    });
+    imodel1 = createIModel("imodel1");
+    imodel2 = createIModel("imodel2");
   });
 
   afterEach(async () => {
-    await imodel.close();
-    await MockRender.App.shutdown();
+    await imodel1.close();
+    await imodel2.close();
+    if (IModelApp.initialized)
+      await MockRender.App.shutdown();
   });
 
   const viewDiv = document.createElement("div");
   viewDiv.style.width = viewDiv.style.height = "100px";
   document.body.appendChild(viewDiv);
 
-  function createViewport(): Viewport {
+  function createViewport(imodel: IModelConnection): Viewport {
     const view = SpatialViewState.createBlank(imodel, new Point3d(), new Vector3d(1, 1, 1));
     return ScreenViewport.create(viewDiv, view);
   }
@@ -237,7 +243,7 @@ describe.only("TileAdmin", () => {
     const trees = [];
     const provider = new Provider();
     for (let i = 0; i < 5; i++) {
-      trees[i] = new TestTree(i, imodel);
+      trees[i] = new TestTree(i, imodel1);
       provider.refs.push(new TestRef(trees[i]));
     }
 
@@ -248,7 +254,7 @@ describe.only("TileAdmin", () => {
       expect(isLinked(tile)).to.be.false;
     }
 
-    const viewport = createViewport();
+    const viewport = createViewport(imodel1);
     viewport.addTiledGraphicsProvider(provider);
     await render(viewport);
 
@@ -283,5 +289,29 @@ describe.only("TileAdmin", () => {
     trees[3].dispose();
     expect(isLinked(tiles[3])).to.be.false;
     expect(admin.totalTileContentBytes).to.equal(0);
+  });
+
+  it("disposes of non-selected tiles' contents to satisfy memory limit", async () => {
+  });
+
+  it("frees only enough memory to satisfy memory limit", async () => {
+  });
+
+  it("does not free selected tiles to satisfy memory limit", async () => {
+  });
+
+  it("retains tiles that decline to dispose their content", async () => {
+  });
+
+  it("tracks memory across multiple viewports", async () => {
+  });
+
+  it("removes all tiles when iModel is closed", async () => {
+  });
+
+  it("removes tiles when viewport is disposed of", async () => {
+  });
+
+  it("removes all tiles when IModelApp is shut down", async () => {
   });
 });
