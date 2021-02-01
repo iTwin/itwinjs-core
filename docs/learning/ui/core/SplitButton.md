@@ -44,4 +44,4 @@ and the `drawBorder` prop indicates whether to draw a border around the button.
 
 ## API Reference
 
-* [SplitButton]($ui-core:SplitButton)
+- [SplitButton]($ui-core:SplitButton)
