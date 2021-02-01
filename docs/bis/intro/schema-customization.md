@@ -53,9 +53,9 @@ When BigCo's pump catalog is distributed, it will include:
 QUESTION: *IN PRACTICE, DOES THIS MEAN THAT IF I WANT TO CHANGE A PUMP FROM BIGCO TO LITTLECO, THEN I NEED TO CHANGE THE CLASS OF PUMP AS WELL (IE - I NEED TO DELETE AND RECREATED THE PUMP)?*
 -->
 
-## Data Imported from Other Databases (including via iModel Bridges)
+## Data Imported from Other Databases (including via iModel Connectors)
 
-The technology (often iModel bridges) that converts data from other databases into BIS data will usually need to convert from the class structure in the native database to a BIS class structure. It is rare that a BIS schema will work "out of the box". Typically a dynamic schema will need to be defined by the converter and then the data converted from the native DB into instance of the new dynamic schema's classes (likely along with some instances of standard BIS classes).
+The technology (often iModel connectors) that converts data from other databases into BIS data will usually need to convert from the class structure in the native database to a BIS class structure. It is rare that a BIS schema will work "out of the box". Typically a dynamic schema will need to be defined by the converter and then the data converted from the native DB into instance of the new dynamic schema's classes (likely along with some instances of standard BIS classes).
 
 ## Dynamic Schema Minor Change Considerations
 
