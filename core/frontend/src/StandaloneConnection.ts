@@ -42,11 +42,7 @@ export class StandaloneConnection extends IModelConnection {
       return;
 
     this.beforeClose();
-    try {
-      await IpcApp.callIpcHost("closeStandalone", this.key);
-    } finally {
-      this._isClosed = true;
-      this.subcategories.onIModelConnectionClose();
-    }
+    this._isClosed = true;
+    await IpcApp.callIpcHost("closeStandalone", this.key);
   }
 }

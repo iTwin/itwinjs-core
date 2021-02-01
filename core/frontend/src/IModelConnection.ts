@@ -247,6 +247,7 @@ export abstract class IModelConnection extends IModel {
     this.onClose.raiseEvent(this); // event for this connection
     IModelConnection.onClose.raiseEvent(this); // event for all connections
     this.tiles.dispose();
+    this.subcategories.onIModelConnectionClose();
   }
 
   /** Close this IModelConnection. */
@@ -693,7 +694,6 @@ export class SnapshotConnection extends IModelConnection {
       }
     } finally {
       this._isClosed = true;
-      this.subcategories.onIModelConnectionClose();
     }
   }
 }

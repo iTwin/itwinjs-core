@@ -245,10 +245,7 @@ export class RemoteBriefcaseConnection extends BriefcaseConnection {
     resubmit();
   };
 
-  /** Close this RemoteBriefcaseConnection
-   * In the case of ReadWrite connections ensure all changes are pushed to iModelHub before making this call -
-   * any un-pushed changes are lost after the close.
-   */
+  /** Close this RemoteBriefcaseConnection */
   public async close(): Promise<void> {
     if (this.isClosed)
       return;
@@ -266,12 +263,11 @@ export class RemoteBriefcaseConnection extends BriefcaseConnection {
     } finally {
       requestContext.enter();
       this._isClosed = true;
-      this.subcategories.onIModelConnectionClose();
     }
   }
 }
 
-/** A connection to a [BriefcaseDb]($backend) for a native application
+/** A connection to a [BriefcaseDb]($backend) for an Ipc application
  * @alpha
  */
 export class LocalBriefcaseConnection extends BriefcaseConnection {
@@ -280,9 +276,7 @@ export class LocalBriefcaseConnection extends BriefcaseConnection {
    */
   public isLocalBriefcaseConnection(): this is LocalBriefcaseConnection { return true; }
 
-  /** Open an IModelConnection to a locally downloaded briefcase of an iModel. Only applicable for Native applications
-   * @internal
-   */
+  /** Open an IModelConnection to a briefcase of an iModel. */
   public static async open(briefcaseProps: OpenBriefcaseProps): Promise<LocalBriefcaseConnection> {
     const iModelProps = await IpcApp.callIpcHost("openBriefcase", briefcaseProps);
     const connection = new this({ ...briefcaseProps, ...iModelProps });
@@ -290,26 +284,16 @@ export class LocalBriefcaseConnection extends BriefcaseConnection {
     return connection;
   }
 
-  /** Close this LocalBriefcaseConnection
-   * In the case of ReadWrite connections ensure all changes are pushed to iModelHub before making this call -
-   * any un-pushed changes are lost after the close.
+  /**
+   * Close this LocalBriefcaseConnection.
+   * @note make sure to call SaveChanges before calling this method. Unsaved local changes are abandoned.
    */
   public async close(): Promise<void> {
     if (this.isClosed)
       return;
     this.beforeClose();
-
-    const requestContext = new FrontendRequestContext();
-    requestContext.enter();
-    requestContext.useContextForRpc = true;
-
-    try {
-      await IpcApp.callIpcHost("closeBriefcase", this._fileKey);
-    } finally {
-      requestContext.enter();
-      this._isClosed = true;
-      this.subcategories.onIModelConnectionClose();
-    }
+    this._isClosed = true;
+    await IpcApp.callIpcHost("closeBriefcase", this._fileKey);
   }
 }
 
