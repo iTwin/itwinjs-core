@@ -18,7 +18,7 @@ export class ReadonlyOrderedSet<T> implements Iterable<T> {
   protected readonly _array: SortedArray<T>;
 
   /** Construct a new ReadonlyOrderedSet<T>.
-   * @param compare The function used to compare elements within the array, determining their ordering.
+   * @param compare The function used to compare elements within the set, determining their ordering.
    * @param clone The function invoked to clone a new element for insertion into the set. The default implementation simply returns its input.
    */
   public constructor(compare: OrderedComparator<T>, clone: CloneFunction<T> = shallowClone) {
@@ -44,7 +44,7 @@ export class ReadonlyOrderedSet<T> implements Iterable<T> {
 /** A mutable [[ReadonlyOrderedSet]]. */
 export class OrderedSet<T> extends ReadonlyOrderedSet<T> {
   /** Construct a new OrderedSet<T>.
-   * @param compare The function used to compare elements within the array, determining their ordering.
+   * @param compare The function used to compare elements within the set, determining their ordering.
    * @param clone The function invoked to clone a new element for insertion into the set. The default implementation simply returns its input.
    */
   public constructor(compare: OrderedComparator<T>, clone: CloneFunction<T> = shallowClone) {
