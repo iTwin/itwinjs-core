@@ -8,9 +8,11 @@ import {
   ActivityMessageDetails, ActivityMessageEndReason, IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, OutputMessageType,
   ScreenViewport, ViewState,
 } from "@bentley/imodeljs-frontend";
+import { MapLayersWidgetControl } from "@bentley/map-layers"; // used to test map-layers widget control
 import { NodeKey } from "@bentley/presentation-common";
 import {
-  BadgeType, CommonToolbarItem, ConditionalBooleanValue, RelativePosition, SpecialKey, StagePanelLocation, StageUsage, ToolbarItemUtilities, WidgetState,
+  BadgeType, CommonToolbarItem, ConditionalBooleanValue, RelativePosition, SpecialKey, StagePanelLocation, StageUsage, ToolbarItemUtilities,
+  WidgetState,
 } from "@bentley/ui-abstract";
 import { SelectionMode } from "@bentley/ui-components";
 import { Point, ScrollView } from "@bentley/ui-core";
@@ -28,6 +30,7 @@ import { SampleAppIModelApp, SampleAppUiActionId } from "../../../frontend/index
 // import { SvgPath } from "@bentley/ui-core";
 import { AccuDrawPopupTools } from "../../tools/AccuDrawPopupTools";
 import { AppTools } from "../../tools/ToolSpecifications";
+import { ToolWithDynamicSettings } from "../../tools/ToolWithDynamicSettings";
 import { AppUi } from "../AppUi";
 // cSpell:Ignore contentviews statusbars uitestapp
 import { IModelViewportControl } from "../contentviews/IModelViewport";
@@ -45,8 +48,6 @@ import { ViewportWidget } from "../widgets/ViewportWidget";
 import { VisibilityTreeWidgetControl } from "../widgets/VisibilityTreeWidget";
 import { VisibilityWidgetControl } from "../widgets/VisibilityWidget";
 import { NestedAnimationStage } from "./NestedAnimationStage";
-import { MapLayersWidgetControl } from "@bentley/map-layers"; // used to test map-layers widget control
-import { ToolWithDynamicSettings } from "../../tools/ToolWithDynamicSettings";
 
 /* eslint-disable react/jsx-key */
 
@@ -104,10 +105,10 @@ export class ViewsFrontstage extends FrontstageProvider {
             await HideIsolateEmphasizeManager.isolateSelectedElementsModel(vp);
             break;
           case HideIsolateEmphasizeAction.ClearOverrideModels:
-            await HideIsolateEmphasizeManager.clearOverrideModels(vp);
+            HideIsolateEmphasizeManager.clearOverrideModels(vp);
             break;
           case HideIsolateEmphasizeAction.ClearOverrideCategories:
-            await HideIsolateEmphasizeManager.clearOverrideCategories(vp);
+            HideIsolateEmphasizeManager.clearOverrideCategories(vp);
             break;
           default:
             break;
