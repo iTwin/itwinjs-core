@@ -202,7 +202,7 @@ export class SyncUiEventDispatcher {
   /** Checks to see if an eventId of interest is contained in the set of eventIds */
   public static hasEventOfInterest(eventIds: Set<string>, idsOfInterest: string[]) {
     /* istanbul ignore else */
-    if ((idsOfInterest.length > 0) && idsOfInterest.some((value: string): boolean => eventIds.has(value)))
+    if ((idsOfInterest.length > 0) && idsOfInterest.some((value: string): boolean => eventIds.has(value.toLowerCase())))
       return true;
     return false;
   }
