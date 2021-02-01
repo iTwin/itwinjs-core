@@ -10,67 +10,67 @@ The following shows how to define a couple of Tasks and load them into the TaskM
 Each task references a Frontstage by an Id that has been registered with the FrontstageManager.
 When the Task is launched or activated, the Frontstage is also activated.
 
-```JS
-    const taskPropsList: TaskPropsList = {
-      tasks: [
-        {
-          id: "Task1",
-          primaryStageId: "Test1",
-          iconSpec: "icon-placeholder",
-          labelKey: "SampleApp:backstage.task1",
-        },
-        {
-          id: "Task2",
-          primaryStageId: "Test2",
-          iconSpec: "icon-placeholder",
-          labelKey: "SampleApp:backstage.task2",
-        },
-      ],
-    };
+```ts
+const taskPropsList: TaskPropsList = {
+  tasks: [
+    {
+      id: "Task1",
+      primaryStageId: "Test1",
+      iconSpec: "icon-placeholder",
+      labelKey: "SampleApp:backstage.task1",
+    },
+    {
+      id: "Task2",
+      primaryStageId: "Test2",
+      iconSpec: "icon-placeholder",
+      labelKey: "SampleApp:backstage.task2",
+    },
+  ],
+};
 
-    ConfigurableUiManager.loadTasks(taskPropsList);
+ConfigurableUiManager.loadTasks(taskPropsList);
 ```
 
 ## Defining a Workflow
 
 The following shows how to define a Workflow and load it into the WorkflowManager. It references tasks `Task1` and `Task2` defined above.
 
-```JS
-    const workflowProps: WorkflowProps = {
-      id: "ExampleWorkflow",
-      iconSpec: "icon-placeholder",
-      labelKey: "SampleApp:Test.my-label",
-      defaultTaskId: "task1",
-      tasks: ["Task1", "Task2"],
-    };
+```ts
+const workflowProps: WorkflowProps = {
+  id: "ExampleWorkflow",
+  iconSpec: "icon-placeholder",
+  labelKey: "SampleApp:Test.my-label",
+  defaultTaskId: "task1",
+  tasks: ["Task1", "Task2"],
+};
 
-    ConfigurableUiManager.loadWorkflow(workflowProps);
+ConfigurableUiManager.loadWorkflow(workflowProps);
 ```
 
 ## Launching a Task from the Backstage
 
 A Task can be launched from the Backstage using the **TaskLaunchBackstageItem** Backstage item.
 
-```TSX
-        <TaskLaunchBackstageItem workflowId="ExampleWorkflow" taskId="Task1"
-          labelKey="SampleApp:backstage.viewIModelTask" descriptionKey="SampleApp:backstage.iModelStage"
-          iconSpec="icon-placeholder" />
+```tsx
+<TaskLaunchBackstageItem workflowId="ExampleWorkflow" taskId="Task1"
+  labelKey="SampleApp:backstage.viewIModelTask" descriptionKey="SampleApp:backstage.iModelStage"
+  iconSpec="icon-placeholder" />
 ```
 
 ## Setting a Workflow and Task active programmatically
 
 A Task can be set active programmatically using `WorkflowManager.setActiveWorkflowAndTask`.
 
-```TS
-    const workflow = WorkflowManager.findWorkflow("ExampleWorkflow");
-    if (workflow) {
-      const task = workflow.getTask("Task1");
-      if (task) {
-        await WorkflowManager.setActiveWorkflowAndTask(workflow, task);
-      }
-    }
+```ts
+const workflow = WorkflowManager.findWorkflow("ExampleWorkflow");
+if (workflow) {
+  const task = workflow.getTask("Task1");
+  if (task) {
+    await WorkflowManager.setActiveWorkflowAndTask(workflow, task);
+  }
+}
 ```
 
 ## API Reference
 
-* [Workflows and Tasks]($ui-framework:WorkflowTask)
+- [Workflows and Tasks]($ui-framework:WorkflowTask)
