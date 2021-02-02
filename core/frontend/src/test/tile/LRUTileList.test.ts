@@ -200,6 +200,54 @@ describe("LRUTileList", () => {
     expect(t4.viewportIds).to.be.undefined;
   });
 
+  it("iterates over partitions", () => {
+    const list = new List();
+
+    function expectPartition(which: "selected" | "unselected", ...expected: LRUTileListNode[]): void {
+      const actual = Array.from("selected" === which ? list.selectedTiles : list.unselectedTiles);
+      expect(actual.length).to.equal(expected.length);
+      for (let i = 0; i < actual.length; i++)
+        expect(actual[i]).to.equal(expected[i]);
+    }
+
+    function expectSelected(...expected: LRUTileListNode[]) { expectPartition("selected", ...expected); }
+    function expectUnselected(...expected: LRUTileListNode[]) { expectPartition("unselected", ...expected); }
+
+    expectSelected();
+    expectUnselected();
+
+    const t1 = mockTile(1);
+    const t2 = mockTile(2);
+    const t3 = mockTile(3);
+    list.add(t1);
+    expectUnselected(t1);
+    list.add(t2);
+    expectUnselected(t1, t2);
+    list.add(t3);
+    expectUnselected(t1, t2, t3);
+    list.moveTileToEnd(t1);
+    expectUnselected(t2, t3);
+    expectSelected(t1);
+    list.moveTileToEnd(t2);
+    expectUnselected(t3);
+    expectSelected(t1, t2);
+    list.moveTileToEnd(t3);
+    expectUnselected();
+    expectSelected(t1, t2, t3);
+    list.drop(t3);
+    expectUnselected();
+    expectSelected(t1, t2);
+    list.drop(t1);
+    expectUnselected();
+    expectSelected(t2);
+    list.moveTileBeforeSentinel(t2);
+    expectUnselected(t2);
+    expectSelected();
+    list.drop(t2);
+    expectUnselected();
+    expectSelected();
+  });
+
   it("accumulates total memory used", () => {
     const list = new List();
     expect(list.totalBytesUsed).to.equal(0);

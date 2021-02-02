@@ -167,6 +167,15 @@ function isLinked(node: LRUTileListNode): boolean {
   return undefined !== node.previous || undefined !== node.next;
 }
 
+function * lruListIterator(start: Tile | undefined, end: LRUTileListNode | undefined): Iterator<Tile> {
+  let cur = start;
+  while (cur && cur !== end) {
+    const prev = cur;
+    cur = cur.next as Tile | undefined;
+    yield prev;
+  }
+}
+
 /** An intrusive doubly-linked list of LRUTileListNodes, containing Tiles partitioned by a singleton sentinel node into two partitions and ordered from least-recently- to most-recently-selected for display in any Viewport.
  * Used by TileAdmin to keep track of and impose limits upon the total amount of GPU memory allocated to tile content.
  *
@@ -321,6 +330,21 @@ export class LRUTileList {
       // Otherwise, `tile` remains in the list. Either way, we proceed to the next entry in the list.
       assert((this.computeBytesUsed(tile) > 0) === isLinked(tile));
     }
+  }
+
+  /** Iterate over all of the tiles in the unselected partition. */
+  public get unselectedTiles(): Iterable<Tile> {
+    const start = this._head === this._sentinel ? undefined : this._head as Tile | undefined;
+    return {
+      [Symbol.iterator]: () => lruListIterator(start, this._sentinel),
+    };
+  }
+
+  /** Iterate over all of the tiles in the selected partition. */
+  public get selectedTiles(): Iterable<Tile> {
+    return {
+      [Symbol.iterator]: () => lruListIterator(this._sentinel.next as Tile | undefined, undefined),
+    };
   }
 
   protected computeBytesUsed(tile: Tile): number {
