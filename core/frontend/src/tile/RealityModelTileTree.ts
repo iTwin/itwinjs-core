@@ -8,7 +8,7 @@
 
 import { assert, BentleyStatus, compareNumbers, compareStrings, compareStringsOrUndefined, CompressedId64Set, Guid, Id64String } from "@bentley/bentleyjs-core";
 import { Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Ray3d, Transform, TransformProps, Vector3d, XYZ } from "@bentley/geometry-core";
-import { Cartographic, GeoCoordStatus, IModelError, PlanarClipMaskSettings, PlanarClipMaskProps, ViewFlagOverrides, ViewFlagPresence } from "@bentley/imodeljs-common";
+import { Cartographic, GeoCoordStatus, IModelError, PlanarClipMaskSettings, PlanarClipMaskProps, ViewFlagOverrides, ViewFlagPresence, PlanarClipMaskPriority, PlanarClipMaskMode } from "@bentley/imodeljs-common";
 import { AccessToken, request, RequestOptions } from "@bentley/itwin-client";
 import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
 import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
@@ -425,6 +425,12 @@ export namespace RealityModelTileTree {
     public get modelId() { return this._modelId; }
     public get planarClipMask(): PlanarClipMaskState | undefined { return this._planarClipMask; }
     public set planarClipMask(planarClipMask: PlanarClipMaskState | undefined) { this._planarClipMask = planarClipMask; }
+    public get planarClipMaskPrority(): number {
+      if (this._planarClipMask?.settings.priority !== undefined)
+        return this._planarClipMask.settings.priority;
+
+      return this.isGlobal ? PlanarClipMaskPriority.GlobalRealityModel : PlanarClipMaskPriority.RealityModel;
+    }
 
     public constructor(modelId: Id64String | undefined, iModel: IModelConnection) {
       super();
@@ -531,7 +537,6 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
   private _iModel: IModelConnection;
   private _maskModelIds?: string;
 
-
   public constructor(props: RealityModelTileTree.ReferenceProps) {
     super(props.modelId, props.iModel);
     let transform;
@@ -545,7 +550,7 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
     this._url = props.url;
     this._transform = transform;
     this._iModel = props.iModel;
-    this._planarClipMask = props.planarMask ? PlanarClipMaskState.create(PlanarClipMaskSettings.fromJSON(props.planarMask)) : undefined;
+    this._planarClipMask = (props.planarMask && props.planarMask.mode !== PlanarClipMaskMode.None) ? PlanarClipMaskState.create(PlanarClipMaskSettings.fromJSON(props.planarMask)) : undefined;
     this._maskModelIds = props.planarMask?.modelIds;
 
     if (undefined !== props.classifiers)

@@ -8,7 +8,7 @@
 
 import { BeTimePoint } from "@bentley/bentleyjs-core";
 import { Matrix4d, Range1d, Range3d, Transform } from "@bentley/geometry-core";
-import { ElementAlignedBox3d, FeatureAppearanceProvider, FrustumPlanes, HiddenLine, ViewFlagOverrides } from "@bentley/imodeljs-common";
+import { ElementAlignedBox3d, FeatureAppearanceProvider, FrustumPlanes, HiddenLine, PlanarClipMaskPriority, ViewFlagOverrides } from "@bentley/imodeljs-common";
 import { HitDetail } from "../HitDetail";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 import { RenderClipVolume } from "../render/RenderClipVolume";
@@ -206,4 +206,7 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
 
   /** Return whether this reference has global coverage.  Mapping data is global and some non-primary models such as the OSM building layer have global coverage */
   public get isGlobal(): boolean { return false; }
+
+  /**  Return the clip mask priority for this model - models will be clipped by any other viewed model with a higher proirity.  BIM models have highest prioirty and are never clipped */
+  public get planarClipMaskPrority(): number { return PlanarClipMaskPriority.BIM; }
 }

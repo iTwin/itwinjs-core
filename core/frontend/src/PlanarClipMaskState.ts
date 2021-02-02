@@ -7,7 +7,7 @@
  */
 
 import { assert, CompressedId64Set, Id64Set, Id64String } from "@bentley/bentleyjs-core";
-import { PlanarClipMaskMode, PlanarClipMaskProps, PlanarClipMaskSettings } from "@bentley/imodeljs-common";
+import { PlanarClipMaskMode, PlanarClipMaskPriority, PlanarClipMaskProps, PlanarClipMaskSettings } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { createMaskTreeReference, TileTreeReference, TileTreeSet } from "./tile/internal";
 import { ViewState3d } from "./ViewState";
@@ -36,11 +36,12 @@ export class PlanarClipMaskState {
   }
 
   public getTileTrees(view: ViewState3d, classifiedModelId: Id64String): TileTreeReference[] | undefined {
-    if (this.settings.mode == PlanarClipMaskMode.HigherPriorityModels) {
+    if (this.settings.mode == PlanarClipMaskMode.Priority) {
       const viewTrees = new Array<TileTreeReference>();
+      const thisPriority = this.settings.priority === undefined ? PlanarClipMaskPriority.RealityModel : this.settings.priority;
       view.forEachTileTreeRef((ref) => {
         const tree = ref.treeOwner.load();
-        if (tree && tree.modelId !== classifiedModelId && !tree.isContentUnbounded)
+        if (tree && tree.modelId !== classifiedModelId && ref.planarClipMaskPrority > thisPriority)
           viewTrees.push(ref);
       });
       return viewTrees;

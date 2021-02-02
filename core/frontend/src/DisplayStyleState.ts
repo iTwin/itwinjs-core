@@ -345,7 +345,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     let changed = false;
     if (index < 0) {
       for (let i = 0; i < jsonContextRealityModels.length; i++)
-        changed = changed || func(i, jsonContextRealityModels);
+        changed = func(i, jsonContextRealityModels) || changed;
     } else {
       changed = func(index, jsonContextRealityModels)
     }

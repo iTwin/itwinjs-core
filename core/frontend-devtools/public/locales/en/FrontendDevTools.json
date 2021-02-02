@@ -371,25 +371,25 @@
       }
     },
     "MaskBackgroundMapByElement": {
-      "keyin": "fdt set background map mask elements",
+      "keyin": "fdt set map mask elements",
       "Prompts": {
         "IdentifyMaskElement": "Identify mask element"
       }
     },
     "MaskBackgroundMapByExcludedElement": {
-      "keyin": "fdt set background map mask exclude elements",
+      "keyin": "fdt set map mask exclude elements",
       "Prompts": {
         "IdentifyMaskElement": "Identify excluded mask element"
       }
     },
     "MaskBackgroundMapByModel": {
-      "keyin": "fdt set background map mask model",
+      "keyin": "fdt set map mask model",
       "Prompts": {
         "IdentifyMaskModel": "Identify mask model"
       }
     },
     "MaskBackgroundMapBySubCategory": {
-      "keyin": "fdt set background map mask subcategory",
+      "keyin": "fdt set map mask subcategory",
       "Prompts": {
         "IdentifyMaskSubCategory": "Identify mask subCategory"
       }

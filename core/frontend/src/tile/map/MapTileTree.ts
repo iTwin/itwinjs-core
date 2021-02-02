@@ -8,7 +8,7 @@
 
 import { assert, compareBooleans, compareNumbers, compareStrings, Id64String } from "@bentley/bentleyjs-core";
 import { Angle, AngleSweep, Constant, Ellipsoid, EllipsoidPatch, Point3d, Range1d, Range3d, Ray3d, Transform, Vector3d, XYZProps } from "@bentley/geometry-core";
-import { BackgroundMapSettings, BaseLayerSettings, Cartographic, ColorDef, GeoCoordStatus, GlobeMode, MapLayerSettings, PlanarClipMaskSettings, TerrainHeightOriginMode, TerrainProviderName } from "@bentley/imodeljs-common";
+import { BackgroundMapSettings, BaseLayerSettings, Cartographic, ColorDef, GeoCoordStatus, GlobeMode, MapLayerSettings, PlanarClipMaskPriority, PlanarClipMaskSettings, TerrainHeightOriginMode, TerrainProviderName } from "@bentley/imodeljs-common";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
 import { BackgroundMapGeometry } from "../../BackgroundMapGeometry";
 import { GeoConverter } from "../../GeoServices";
@@ -505,11 +505,12 @@ export class MapTileTreeReference extends TileTreeReference {
       if (undefined !== (tree = IModelApp.mapLayerFormatRegistry.createImageryMapLayerTree(this._layerSettings[i], i + 1, iModel)))
         this._imageryTrees.push(tree);
 
-    if (this._settings.planarClipMask)
+    if (this._settings.planarClipMask && this._settings.planarClipMask.anyDefined)
       this._planarClipMask = PlanarClipMaskState.create(this._settings.planarClipMask)
   }
   public get isGlobal() { return true; }
   public get baseColor(): ColorDef | undefined { return this._baseColor; }
+  public get planarClipMaskPrority(): number { return PlanarClipMaskPriority.BackgroundMap; }
 
   /** Terrain  tiles do not contribute to the range used by "fit view". */
   public unionFitRange(_range: Range3d): void { }

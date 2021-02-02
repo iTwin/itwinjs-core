@@ -8,7 +8,7 @@
  */
 
 import { Id64String } from "@bentley/bentleyjs-core";
-import { PlanarClipMaskSettings, PlanarClipMaskMode, PlanarClipMaskProps } from "@bentley/imodeljs-common";
+import { PlanarClipMaskSettings, PlanarClipMaskMode, PlanarClipMaskProps, PlanarClipMaskPriority } from "@bentley/imodeljs-common";
 import { BeButtonEvent, ContextRealityModelState, EventHandled, GeometricModelState, HitDetail, IModelApp, LocateFilterStatus, LocateResponse, PrimitiveTool, ScreenViewport, Tool, ViewPose } from "@bentley/imodeljs-frontend";
 import { parseToggle } from "./parseToggle";
 
@@ -39,7 +39,7 @@ export class SetMapHigherPriorityMasking extends Tool {
     if (undefined === vp)
       return false;
 
-    applyMapMasking(onOff, PlanarClipMaskSettings.create(PlanarClipMaskMode.HigherPriorityModels)!.toJSON());
+    applyMapMasking(onOff, PlanarClipMaskSettings.createByPriority(PlanarClipMaskPriority.BackgroundMap)!.toJSON());
     return true;
   }
 
@@ -96,7 +96,6 @@ function applyMaskToRealityModel(index: number, onOff: boolean | undefined, mask
 /** Base class for the reality model planar masking tools.
  * @beta
  */
-
 export abstract class PlanarMaskBaseTool extends PrimitiveTool {
   protected readonly _acceptedModelIds = new Set<Id64String>();
   protected readonly _acceptedSubCategoryIds = new Set<Id64String>();
@@ -114,7 +113,8 @@ export abstract class PlanarMaskBaseTool extends PrimitiveTool {
     IModelApp.locateManager.options.allowDecorations = true;    // So we can select "contextual" reality models.
     this.showPrompt();
   }
-  protected abstract targetModelRequired(): boolean;
+  protected targetModelRequired(): boolean { return true; }
+  protected elementRequired(): boolean { return true; }
   protected abstract showPrompt(): void;
   protected abstract createToolInstance(): PlanarMaskBaseTool;
   protected abstract applyMask(vp: ScreenViewport): void;
@@ -151,6 +151,11 @@ export abstract class PlanarMaskBaseTool extends PrimitiveTool {
       if (hit.modelId) {
         const realityIndex = hit.viewport.getRealityModelIndexFromTransientId(hit.modelId);
         this._targetModelId = realityIndex >= 0 ? realityIndex : hit.modelId;
+        if (!this.elementRequired()) {
+          this.applyMask(vp);
+          this.onRestartTool();
+        }
+
       }
     } else if (hit.isElementHit) {
       const sourceId = hit.sourceId;
@@ -292,23 +297,24 @@ export class MaskRealityModelBySubCategoryTool extends PlanarMaskBaseTool {
 export class SetHigherPriorityRealityModelMasking extends PlanarMaskBaseTool {
   public static toolId = "SetHigherPriorityRealityModelMasking";
   protected targetModelRequired() { return true; }
+  protected elementRequired() { return false; }
+  private priority = 0;
+
 
   protected showPrompt(): void {
     IModelApp.notifications.outputPromptByKey("FrontendDevTools:tools.SetHigherPriorityRealityModelMasking.Prompts.IdentifyRealityModel");
   }
   protected createToolInstance(): PlanarMaskBaseTool { return new UnmaskRealityModelTool(); }
   protected applyMask(vp: ScreenViewport): void {
-    vp.overrideRealityModelPlanarClipMask(this._targetModelId!, PlanarClipMaskSettings.create(PlanarClipMaskMode.HigherPriorityModels, this._acceptedModelIds, this._acceptedSubCategoryIds)!);
+    vp.overrideRealityModelPlanarClipMask(this._targetModelId!, PlanarClipMaskSettings.createByPriority(PlanarClipMaskPriority.RealityModel + this.priority)!);
   }
-  public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
-    const hit = await IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, ev.inputSource);
-    if (hit?.modelId) {
-      const realityIndex = hit.viewport.getRealityModelIndexFromTransientId(hit.modelId)
-      hit.viewport.overrideRealityModelPlanarClipMask(realityIndex >= 0 ? realityIndex : hit.modelId, PlanarClipMaskSettings.create(PlanarClipMaskMode.HigherPriorityModels)!);
-      this.onRestartTool();
-    }
+  public static get minArgs() { return 0; }
+  public static get maxArgs() { return 1; }
 
-    return EventHandled.No
+  public parseAndRun(...args: string[]): boolean {
+    let priority = parseInt(args[0], 10);
+    this.priority = (priority === undefined || isNaN(priority)) ? 0 : priority;
+    return this.run();
   }
 }
 
