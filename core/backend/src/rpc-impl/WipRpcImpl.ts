@@ -28,12 +28,6 @@ export class WipRpcImpl extends RpcInterface implements WipRpcInterface {
     ChangeSummaryManager.attachChangeCache(BriefcaseDb.findByKey(tokenProps.key));
   }
 
-  public async detachChangeCache(tokenProps: IModelRpcProps): Promise<void> {
-    const iModel: BriefcaseDb = BriefcaseDb.findByKey(tokenProps.key);
-    if (ChangeSummaryManager.isChangeCacheAttached(iModel))
-      ChangeSummaryManager.detachChangeCache(iModel);
-  }
-
   public async getChangedElements(tokenProps: IModelRpcProps, startChangesetId: string, endChangesetId: string): Promise<ChangedElements | undefined> {
     return ChangedElementsManager.getChangedElements(tokenProps.iModelId!, startChangesetId, endChangesetId);
   }

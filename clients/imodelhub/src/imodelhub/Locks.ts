@@ -17,7 +17,7 @@ const loggerCategory: string = IModelHubClientLoggerCategory.IModelHub;
 
 /**
  * [[Lock]] type describes the kind of object that is locked.
- * @alpha Hide Lock API while focused on readonly viewing scenarios
+ * @internal
  */
 export enum LockType {
   /** Lock for the entire file. This is a global Lock that can only be taken with objectId 1. */
@@ -34,7 +34,7 @@ export enum LockType {
 
 /**
  * [[Lock]] level describes how restrictive the Lock is.
- * @alpha Hide Lock API while focused on readonly viewing scenarios
+ * @internal
  */
 export enum LockLevel {
   /** Lock is not owned. */
@@ -60,7 +60,7 @@ function getLockInstanceId(lock: Lock): string | undefined {
 
 /**
  * Object for specifying options when sending [[Lock]]s update requests. See [[LockHandler.update]].
- * @alpha Hide Lock API while focused on readonly viewing scenarios
+ * @internal
  */
 export interface LockUpdateOptions {
   /** Return [[Lock]]s that could not be acquired. Conflicting Locks will be set to [[ConflictingLocksError.conflictingLocks]]. If unlimitedReporting is enabled and locksPerRequest value is high, some conflicting Locks could be missed. */
@@ -98,7 +98,7 @@ export class DefaultLockUpdateOptionsProvider {
 
 /**
  * Error for conflicting [[Lock]]s. It contains an array of Locks that failed to acquire. This is returned when calling [[LockHandler.update]] with [[LockUpdateOptions.deniedLocks]] set to true.
- * @alpha Hide Lock API while focused on readonly viewing scenarios
+ * @internal
  */
 export class ConflictingLocksError extends IModelHubError {
   /** Locks that couldn't be updated due to other users owning them. */
@@ -144,7 +144,7 @@ export class ConflictingLocksError extends IModelHubError {
 
 /**
  * Base class for [[Lock]]s.
- * @alpha Hide Lock API while focused on readonly viewing scenarios
+ * @internal
  */
 export class LockBase extends WsgInstance {
   /** Type of the Lock. It describes what kind of object is locked. */
@@ -174,7 +174,7 @@ export class LockBase extends WsgInstance {
 
 /**
  * Lock instance. When using pessimistic concurrency, locks ensure that only a single user can modify an object at a time.
- * @alpha Hide Lock API while focused on readonly viewing scenarios
+ * @internal
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.Lock", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class Lock extends LockBase {
@@ -185,7 +185,7 @@ export class Lock extends LockBase {
 
 /**
  * MultiLock: data about locks grouped by BriefcaseId, LockLevel and LockType.
- * @alpha Hide Lock API while focused on readonly viewing scenarios
+ * @internal
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.MultiLock", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class MultiLock extends LockBase {
@@ -195,7 +195,7 @@ export class MultiLock extends LockBase {
 
 /**
  * Query object for getting [[Lock]]s. You can use this to modify the [[LockHandler.get]] results.
- * @alpha Hide Lock API while focused on readonly viewing scenarios
+ * @internal
  */
 export class LockQuery extends WsgQuery {
   private _isMultiLockQuery = true;
@@ -337,7 +337,7 @@ export class LockQuery extends WsgQuery {
 /**
  * Handler for managing [[Lock]]s. Use [[IModelClient.Locks]] to get an instance of this class.
  * In most cases, you should use [ConcurrencyControl]($backend) methods instead. You can read more about concurrency control [here]($docs/learning/backend/concurrencycontrol).
- * @alpha Hide Lock API while focused on readonly viewing scenarios
+ * @internal
  */
 export class LockHandler {
   private _handler: IModelBaseHandler;
@@ -400,7 +400,7 @@ export class LockHandler {
 
   /** Augment update options with defaults returned by the DefaultLockUpdateOptionsProvider.
    * The options passed in by clients override any defaults where necessary.
-   * @param options Options the caller wants to eaugment with the defaults.
+   * @param options Options the caller wants to augment with the defaults.
    */
   private async setupOptionDefaults(options: LockUpdateOptions): Promise<void> {
     if (!LockHandler._defaultUpdateOptionsProvider)
@@ -442,8 +442,8 @@ export class LockHandler {
    * @param updateOptions Options for the update request. You can set this to change
    * how conflicts are handled or to handle different amount of Locks per request.
    * @returns Updated Lock values.
-   * @throws [[ConflictingLocksError]] when [[LockUpdateOptions.deniedLocks]] is set and conflicts occured. See [Handling Conflicts]($docs/learning/iModelHub/CodesAndLocksConflicts.md) for more information.
-   * @throws [[AggregateResponseError]] when multiple requests where sent and more than 1 of the following errors occured.
+   * @throws [[ConflictingLocksError]] when [[LockUpdateOptions.deniedLocks]] is set and conflicts occurred. See [Handling Conflicts]($docs/learning/iModelHub/CodesAndLocksConflicts.md) for more information.
+   * @throws [[AggregateResponseError]] when multiple requests where sent and more than 1 of the following errors occurred.
    * @throws [[IModelHubError]] with status indicating a conflict. See [Handling Conflicts]($docs/learning/iModelHub/CodesAndLocksConflicts.md) section for more information.
    * @throws [[IModelHubError]] with [IModelHubStatus.InvalidBriefcase]($bentley) when including locks with different briefcaseId values in the request.
    * @throws [[IModelHubError]] with [IModelHubStatus.OperationFailed]($bentley) when including multiple identical locks in the request.
@@ -541,7 +541,7 @@ export class LockHandler {
   /** Delete all [[Lock]]s owned by the specified [[Briefcase]].
    * @param requestContext The client request context.
    * @param iModelId Id of the iModel. See [[HubIModel]].
-   * @param briefcaseId Id of the Briefcacase.
+   * @param briefcaseId Id of the Briefcase.
    * @throws [[IModelHubError]] with [IModelHubStatus.BriefcaseDoesNotExist]($bentley) if [[Briefcase]] with specified briefcaseId does not exist. This can happen if number was not given as a Briefcase id yet, or Briefcase with that id was already deleted.
    * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if [[Briefcase]] belongs to another user and user sending the request does not have ManageResources permission.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
@@ -560,7 +560,7 @@ export class LockHandler {
   /** Helper method to iteratively delete chunks of [[Lock]]s for the specified [[Briefcase]] until there are no more left.
    * @param requestContext The client request context.
    * @param iModelId Id of the iModel. See [[HubIModel]].
-   * @param briefcaseId Id of the Briefcacase.
+   * @param briefcaseId Id of the Briefcase.
    */
   private async deleteAllLocksInChunks(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, briefcaseId: number): Promise<void> {
     const relativeUrl = this.getRelativeUrl(iModelId, false, `DeleteChunk-${briefcaseId}`);

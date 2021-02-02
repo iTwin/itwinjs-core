@@ -7,7 +7,7 @@
  */
 
 import {
-  DriverBugWorkarounds, WebGLFeature, WebGLRenderCompatibilityInfo, WebGLRenderCompatibilityStatus,
+  GraphicsDriverBugs, WebGLContext, WebGLFeature, WebGLRenderCompatibilityInfo, WebGLRenderCompatibilityStatus,
 } from "./RenderCompatibility";
 
 /** @internal */
@@ -62,7 +62,7 @@ export enum DepthType {
   // TextureFloat32Stencil8,       // core to WeBGL2
 }
 
-function _detectIsMobile(): boolean {
+function detectIsMobile(): boolean {
   // Modified from package 'detect-gpu': https://github.com/TimvanScherpenzeel/detect-gpu/blob/master/src/index.ts
   // ###TODO: consume and use the actual full 'detect-gpu' package when querying capabilities so we can stay up to date.
 
@@ -106,7 +106,7 @@ export class Capabilities {
 
   private _isWebGL2: boolean = false;
   private _isMobile: boolean = false;
-  private _requiresSurfaceDiscard = false;
+  private _driverBugs: GraphicsDriverBugs = { };
 
   public get maxRenderType(): RenderType { return this._maxRenderType; }
   public get maxDepthType(): DepthType { return this._maxDepthType; }
@@ -121,6 +121,7 @@ export class Capabilities {
   public get maxFragUniformVectors(): number { return this._maxFragUniformVectors; }
   public get maxAntialiasSamples(): number { return this._maxAntialiasSamples; }
   public get isWebGL2(): boolean { return this._isWebGL2; }
+  public get driverBugs(): GraphicsDriverBugs { return this._driverBugs; }
 
   /** These getters check for existence of extension objects to determine availability of features.  In WebGL2, could just return true for some. */
   public get supportsNonPowerOf2Textures(): boolean { return false; }
@@ -150,7 +151,6 @@ export class Capabilities {
   public get supportsAntiAliasing(): boolean { return this._isWebGL2 && this.maxAntialiasSamples > 1; }
 
   public get isMobile(): boolean { return this._isMobile; }
-  public get requiresSurfaceDiscard(): boolean { return this._requiresSurfaceDiscard; }
 
   private findExtension(name: WebGLExtensionName): any {
     const ext = this._extensionMap[name];
@@ -236,11 +236,11 @@ export class Capabilities {
   }
 
   /** Initializes the capabilities based on a GL context. Must be called first. */
-  public init(gl: WebGLRenderingContext | WebGL2RenderingContext, disabledExtensions?: WebGLExtensionName[]): WebGLRenderCompatibilityInfo {
+  public init(gl: WebGLContext, disabledExtensions?: WebGLExtensionName[]): WebGLRenderCompatibilityInfo {
     const gl2 = !(gl instanceof WebGLRenderingContext) ? gl : undefined;
     this._isWebGL2 = undefined !== gl2;
 
-    this._isMobile = _detectIsMobile();
+    this._isMobile = detectIsMobile();
 
     this._maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
     this._maxFragTextureUnits = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
@@ -300,9 +300,9 @@ export class Capabilities {
     const unmaskedRenderer = debugInfo !== null ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : undefined;
     const unmaskedVendor = debugInfo !== null ? gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) : undefined;
 
-    this._requiresSurfaceDiscard = undefined !== unmaskedRenderer && /ANGLE \(Intel\(R\) (U)?HD Graphics 6(2|3)0 Direct3D11/.test(unmaskedRenderer);
-
-    const workarounds: DriverBugWorkarounds | undefined = this._requiresSurfaceDiscard ? { forceSurfaceDiscard: true } : undefined;
+    this._driverBugs = { };
+    if (undefined !== unmaskedRenderer && /ANGLE \(Intel\(R\) (U)?HD Graphics 6(2|3)0 Direct3D11/.test(unmaskedRenderer))
+      this._driverBugs.fragDepthDoesNotDisableEarlyZ = true;
 
     return {
       status: this._getCompatibilityStatus(missingRequiredFeatures, missingOptionalFeatures),
@@ -310,13 +310,13 @@ export class Capabilities {
       missingOptionalFeatures,
       unmaskedRenderer,
       unmaskedVendor,
+      driverBugs: { ...this._driverBugs },
       userAgent: navigator.userAgent,
       createdContext: gl,
-      workarounds,
     };
   }
 
-  public static create(gl: WebGLRenderingContext | WebGL2RenderingContext, disabledExtensions?: WebGLExtensionName[]): Capabilities | undefined {
+  public static create(gl: WebGLContext, disabledExtensions?: WebGLExtensionName[]): Capabilities | undefined {
     const caps = new Capabilities();
     const compatibility = caps.init(gl, disabledExtensions);
     if (WebGLRenderCompatibilityStatus.CannotCreateContext === compatibility.status || WebGLRenderCompatibilityStatus.MissingRequiredFeatures === compatibility.status)
@@ -325,7 +325,7 @@ export class Capabilities {
   }
 
   /** Determines if a particular texture type is color-renderable on the host system. */
-  private isTextureRenderable(gl: WebGLRenderingContext | WebGL2RenderingContext, texType: number): boolean {
+  private isTextureRenderable(gl: WebGLContext, texType: number): boolean {
     const tex: WebGLTexture | null = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, tex);
     if (this.isWebGL2) {
@@ -351,7 +351,7 @@ export class Capabilities {
   }
 
   /** Determines if depth textures can be rendered without also having a color attachment bound on the host system. */
-  private isDepthRenderableWithoutColor(gl: WebGLRenderingContext | WebGL2RenderingContext): boolean {
+  private isDepthRenderableWithoutColor(gl: WebGLContext): boolean {
     const dtExt = this.queryExtensionObject<WEBGL_depth_texture>("WEBGL_depth_texture");
     if (dtExt === undefined)
       return false;
@@ -374,7 +374,7 @@ export class Capabilities {
     return fbStatus === gl.FRAMEBUFFER_COMPLETE;
   }
 
-  public setMaxAnisotropy(desiredMax: number | undefined, gl: WebGLRenderingContext | WebGL2RenderingContext): void {
+  public setMaxAnisotropy(desiredMax: number | undefined, gl: WebGLContext): void {
     const ext = this.queryExtensionObject<EXT_texture_filter_anisotropic>("EXT_texture_filter_anisotropic");
     if (undefined === ext)
       return;

@@ -11,7 +11,7 @@ import { RequestQueryOptions, WsgQuery } from "@bentley/itwin-client";
 import { ArgumentCheck } from "./Errors";
 
 /** Query for instances with string based instance ids.
- * @beta
+ * @public
  */
 export class StringIdQuery extends WsgQuery {
   /** @internal */
@@ -45,7 +45,7 @@ export class StringIdQuery extends WsgQuery {
 }
 
 /** Query for instances with Guid based instance ids.
- * @beta
+ * @public
  */
 export class InstanceIdQuery extends WsgQuery {
   /** @internal */
@@ -87,15 +87,15 @@ export function addSelectFileAccessKey(query: RequestQueryOptions) {
 }
 
 /**
- * Add select for the BCVAccessKey to the query that allows
+ * Add select for the ContainerAccessKey to the query that allows
  * to read/download iModel in blocks incrementally.
  * @internal
  */
-export function addSelectBCVAccessKey(query: RequestQueryOptions) {
+export function addSelectContainerAccessKey(query: RequestQueryOptions) {
   if (!query.$select)
     query.$select = "*";
 
-  query.$select += ",FileAccessKey-forward-BCVAccessKey.*";
+  query.$select += ",HasContainer-forward-ContainerAccessKey.*";
 }
 
 /**

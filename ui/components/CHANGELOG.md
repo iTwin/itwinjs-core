@@ -1,6 +1,87 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Mon, 23 Nov 2020 22:19:30 GMT and should not be manually modified.
+This log was last generated on Thu, 28 Jan 2021 13:39:27 GMT and should not be manually modified.
+
+## 2.11.0
+Thu, 28 Jan 2021 13:39:27 GMT
+
+### Updates
+
+- Update components that support providing refs via React.forwardRef to work better with document generation.
+- Add 'showCaret' prop to ColorPickers that show a popup. The caret icon will face up or down depending of popup state.
+- Updates due to quantity unit system changes.
+- Lock react-select to 3.1.0 and @types/react-select to 3.0.26 until we can fi
+- Created new `CategoryPropertyDataFilterer` which allows us to filter `PropertyCategory` and get matches count.
+- Updated FilteringDataProvider, now it filters not only PropertyRecords, but PropertyCategories also.
+- Updated `VirtualizedPropertyGrid` to pass through `HighlightedPropertyProps` and highlight `PropertyCategory` matches.
+- Implemented `CategoryPropertyDataFilterer` in `presentation-test-app` -> `PropertiesWidget`
+- Updated filterers to return type of the filtered item, so now `VirtualizedPropertyGrid` can distinguish what types of items need to be highlighted. This feature was implemented in `presentation-test-app` -> `PropertiesWidget`
+- Update `NavigationPropertyTypeConverter` to handle navigation properties represented by `InstanceKey`
+- Added ui-core learning docs content and added Notification.md, Style.md & Tooltip.md ui-core learning doc files.
+- Fix test warnings.
+- Update to latest react-dnd version.
+- Always clone the ViewState for a ViewportComponent to avoid attaching the same ViewState to multiple viewports.
+
+## 2.10.3
+Fri, 08 Jan 2021 18:34:03 GMT
+
+_Version update only_
+
+## 2.10.2
+Fri, 08 Jan 2021 14:52:02 GMT
+
+_Version update only_
+
+## 2.10.1
+Tue, 22 Dec 2020 00:53:38 GMT
+
+_Version update only_
+
+## 2.10.0
+Fri, 18 Dec 2020 18:24:01 GMT
+
+### Updates
+
+- Add support for onClose function in ColorPickerPopupProps. This allows color value from popup to be used by caller.
+- Added matchesCount attribute to [[PropertyDataFilterResult]] to optionally tell how many matches there were in a [[PropertyRecord]]. Matches in label and value are separated.
+- Added match counting functionality to [[FilteringPropertyDataProvider]]. The returned [[FilteredPropertyData]] now has total matches count and a function get information about a match at specific index.
+- Added highlightedRecordProps to [[VirtualizedPropertyGridProps]] to allow highlighting specific parts of rendered PropertyRecords.
+- Updated [[FilteringInput]] component. Component's `filteringInProgress` prop was deprecated and new `status` property was introduced. This allows rendering the component in any state, including `filtering finished`, without having to cycle through other states first.
+- fix but in ParsedInput control where formatted text was not updating if underlying parsed value did not change.
+- Refactor DialogItem and Property interfaces to make them eaiser to use.
+- Added support for decimal point in Table numeric filter
+- Enable pointer events in Toolbar items container."
+- Fix issue where entries in ButtonGroup would not properly disable/enable.
+
+## 2.9.9
+Sun, 13 Dec 2020 19:00:03 GMT
+
+_Version update only_
+
+## 2.9.8
+Fri, 11 Dec 2020 02:57:36 GMT
+
+_Version update only_
+
+## 2.9.7
+Wed, 09 Dec 2020 20:58:23 GMT
+
+_Version update only_
+
+## 2.9.6
+Mon, 07 Dec 2020 18:40:48 GMT
+
+_Version update only_
+
+## 2.9.5
+Sat, 05 Dec 2020 01:55:56 GMT
+
+_Version update only_
+
+## 2.9.4
+Wed, 02 Dec 2020 20:55:40 GMT
+
+_Version update only_
 
 ## 2.9.3
 Mon, 23 Nov 2020 20:57:56 GMT

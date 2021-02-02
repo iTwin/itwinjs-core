@@ -32,7 +32,7 @@ export class AuthorizedBackendRequestContext extends AuthorizedClientRequestCont
    * @see [[IModelHost.authorizationClient]] to setup authorization for the backend application.
    */
   public static async create(activityId: string = Guid.createValue()): Promise<AuthorizedBackendRequestContext> {
-    const accessToken: AccessToken = await IModelHost.getAccessToken();
+    const accessToken = await IModelHost.getAccessToken();
     return new AuthorizedBackendRequestContext(accessToken, activityId);
   }
 }

@@ -2,24 +2,23 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as chai from "chai";
-const assert = chai.assert;
-import * as chaiAsPromised from "chai-as-promised";
-chai.use(chaiAsPromised);
-import { BriefcaseDb, IModelDb } from "../../IModelDb";
-import { IModelTestUtils, TestIModelInfo } from "../IModelTestUtils";
-import { ConcurrencyControl } from "../../ConcurrencyControl";
-import { BriefcaseProps, IModel, SubCategoryAppearance, SyncMode } from "@bentley/imodeljs-common";
 import { DbOpcode, Id64String } from "@bentley/bentleyjs-core";
-import { DictionaryModel } from "../../Model";
-import { SpatialCategory } from "../../Category";
-import { AuthorizedBackendRequestContext, ChannelRootAspect } from "../../imodeljs-backend";
+import { IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import { HubUtility } from "./HubUtility";
+import * as chai from "chai";
+import * as chaiAsPromised from "chai-as-promised";
 import { BriefcaseManager } from "../../BriefcaseManager";
+import { SpatialCategory } from "../../Category";
+import { ConcurrencyControl } from "../../ConcurrencyControl";
 import { InformationPartitionElement, Subject } from "../../Element";
-import { HubIModel } from "@bentley/imodelhub-client";
+import { BriefcaseDb, IModelDb } from "../../IModelDb";
+import { AuthorizedBackendRequestContext, ChannelRootAspect, IModelHost } from "../../imodeljs-backend";
+import { DictionaryModel } from "../../Model";
+import { IModelTestUtils, TestIModelInfo } from "../IModelTestUtils";
+import { HubUtility } from "./HubUtility";
 
+const assert = chai.assert;
+chai.use(chaiAsPromised);
 function createAndInsertSpatialCategory(testIModel: IModelDb, name: string): Id64String {
   const dictionary: DictionaryModel = testIModel.models.getModel<DictionaryModel>(IModel.dictionaryId);
   const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, name);
@@ -43,10 +42,10 @@ describe("Channel Control (#integration)", () => {
     managerRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager);
     testProjectId = await HubUtility.queryProjectIdByName(managerRequestContext, "iModelJsIntegrationTest");
     readWriteTestIModelName = HubUtility.generateUniqueName("ChannelControlIModel");
-    const existingIModel: HubIModel | undefined = await HubUtility.queryIModelByName(managerRequestContext, testProjectId, readWriteTestIModelName);
+    const existingIModel = await HubUtility.queryIModelByName(managerRequestContext, testProjectId, readWriteTestIModelName);
     if (existingIModel !== undefined && existingIModel.id !== undefined)
-      await BriefcaseManager.imodelClient.iModels.delete(managerRequestContext, testProjectId, existingIModel.id);
-    await BriefcaseManager.imodelClient.iModels.create(managerRequestContext, testProjectId, readWriteTestIModelName, { description: "Channel Control Test" });
+      await IModelHost.iModelClient.iModels.delete(managerRequestContext, testProjectId, existingIModel.id);
+    await IModelHost.iModelClient.iModels.create(managerRequestContext, testProjectId, readWriteTestIModelName, { description: "Channel Control Test" });
     readWriteTestIModel = await IModelTestUtils.getTestModelInfo(managerRequestContext, testProjectId, readWriteTestIModelName);
 
     // Purge briefcases that are close to reaching the acquire limit
@@ -61,11 +60,11 @@ describe("Channel Control (#integration)", () => {
   });
 
   it("should create channels (#integration)", async () => {
-    const briefcaseProps: BriefcaseProps = await BriefcaseManager.download(managerRequestContext, testProjectId, readWriteTestIModel.id, { syncMode: SyncMode.PullAndPush });
+    const props = await BriefcaseManager.downloadBriefcase(managerRequestContext, { contextId: testProjectId, iModelId: readWriteTestIModel.id });
     managerRequestContext.enter();
-    const imodel1 = await BriefcaseDb.open(managerRequestContext, briefcaseProps.key);
+    const imodel1 = await BriefcaseDb.open(managerRequestContext, { fileName: props.fileName });
     managerRequestContext.enter();
-    imodel1.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
+    imodel1.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
     imodel1.concurrencyControl.startBulkMode();
 
     // We are currently in NO channel
@@ -170,8 +169,8 @@ describe("Channel Control (#integration)", () => {
     //  -- while in channel2...
 
     //    -- you cannot insert a new channel
-    const newChannelParernt = IModelTestUtils.createJobSubjectElement(imodel1, "channel-new");
-    assert.throws(() => cctl.checkCanWriteElementToCurrentChannel(newChannelParernt, req, opcode)); // I am calling onElementwrite directly only for testing purposes. A real app should never call this method directly.
+    const newChannelParent = IModelTestUtils.createJobSubjectElement(imodel1, "channel-new");
+    assert.throws(() => cctl.checkCanWriteElementToCurrentChannel(newChannelParent, req, opcode)); // I am calling onElementWrite directly only for testing purposes. A real app should never call this method directly.
 
     //    -- you can write to channel2
     const e22 = IModelTestUtils.createPhysicalObject(imodel1, m2, catId);
@@ -203,7 +202,7 @@ describe("Channel Control (#integration)", () => {
     assert.isFalse(imodel1.concurrencyControl.pendingRequest.isEmpty);
     assert.isTrue(imodel1.txns.hasUnsavedChanges);
     assert.isFalse(imodel1.txns.hasPendingTxns);
-    await imodel1.concurrencyControl.request(managerRequestContext); // (will throw if pendingReqest has dups)
+    await imodel1.concurrencyControl.request(managerRequestContext); // (will throw if pendingRequest has dups)
     assert.isTrue(imodel1.concurrencyControl.pendingRequest.isEmpty);
     imodel1.saveChanges(newModelCode.value);
     assert.isTrue(imodel1.concurrencyControl.pendingRequest.isEmpty);

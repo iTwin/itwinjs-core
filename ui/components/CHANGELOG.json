@@ -2,6 +2,150 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "2.11.0",
+      "tag": "@bentley/ui-components_v2.11.0",
+      "date": "Thu, 28 Jan 2021 13:39:27 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update components that support providing refs via React.forwardRef to work better with document generation."
+          },
+          {
+            "comment": "Add 'showCaret' prop to ColorPickers that show a popup. The caret icon will face up or down depending of popup state."
+          },
+          {
+            "comment": "Updates due to quantity unit system changes."
+          },
+          {
+            "comment": "Lock react-select to 3.1.0 and @types/react-select to 3.0.26 until we can fi"
+          },
+          {
+            "comment": "Created new `CategoryPropertyDataFilterer` which allows us to filter `PropertyCategory` and get matches count."
+          },
+          {
+            "comment": "Updated FilteringDataProvider, now it filters not only PropertyRecords, but PropertyCategories also."
+          },
+          {
+            "comment": "Updated `VirtualizedPropertyGrid` to pass through `HighlightedPropertyProps` and highlight `PropertyCategory` matches."
+          },
+          {
+            "comment": "Implemented `CategoryPropertyDataFilterer` in `presentation-test-app` -> `PropertiesWidget`"
+          },
+          {
+            "comment": "Updated filterers to return type of the filtered item, so now `VirtualizedPropertyGrid` can distinguish what types of items need to be highlighted. This feature was implemented in `presentation-test-app` -> `PropertiesWidget`"
+          },
+          {
+            "comment": "Update `NavigationPropertyTypeConverter` to handle navigation properties represented by `InstanceKey`"
+          },
+          {
+            "comment": "Added ui-core learning docs content and added Notification.md, Style.md & Tooltip.md ui-core learning doc files."
+          },
+          {
+            "comment": "Fix test warnings."
+          },
+          {
+            "comment": "Update to latest react-dnd version."
+          },
+          {
+            "comment": "Always clone the ViewState for a ViewportComponent to avoid attaching the same ViewState to multiple viewports."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.10.3",
+      "tag": "@bentley/ui-components_v2.10.3",
+      "date": "Fri, 08 Jan 2021 18:34:03 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.10.2",
+      "tag": "@bentley/ui-components_v2.10.2",
+      "date": "Fri, 08 Jan 2021 14:52:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.10.1",
+      "tag": "@bentley/ui-components_v2.10.1",
+      "date": "Tue, 22 Dec 2020 00:53:38 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.10.0",
+      "tag": "@bentley/ui-components_v2.10.0",
+      "date": "Fri, 18 Dec 2020 18:24:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add support for onClose function in ColorPickerPopupProps. This allows color value from popup to be used by caller."
+          },
+          {
+            "comment": "Added matchesCount attribute to [[PropertyDataFilterResult]] to optionally tell how many matches there were in a [[PropertyRecord]]. Matches in label and value are separated."
+          },
+          {
+            "comment": "Added match counting functionality to [[FilteringPropertyDataProvider]]. The returned [[FilteredPropertyData]] now has total matches count and a function get information about a match at specific index."
+          },
+          {
+            "comment": "Added highlightedRecordProps to [[VirtualizedPropertyGridProps]] to allow highlighting specific parts of rendered PropertyRecords."
+          },
+          {
+            "comment": "Updated [[FilteringInput]] component. Component's `filteringInProgress` prop was deprecated and new `status` property was introduced. This allows rendering the component in any state, including `filtering finished`, without having to cycle through other states first."
+          },
+          {
+            "comment": "fix but in ParsedInput control where formatted text was not updating if underlying parsed value did not change."
+          },
+          {
+            "comment": "Refactor DialogItem and Property interfaces to make them eaiser to use."
+          },
+          {
+            "comment": "Added support for decimal point in Table numeric filter"
+          },
+          {
+            "comment": "Enable pointer events in Toolbar items container.\""
+          },
+          {
+            "comment": "Fix issue where entries in ButtonGroup would not properly disable/enable."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.9.9",
+      "tag": "@bentley/ui-components_v2.9.9",
+      "date": "Sun, 13 Dec 2020 19:00:03 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.8",
+      "tag": "@bentley/ui-components_v2.9.8",
+      "date": "Fri, 11 Dec 2020 02:57:36 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.7",
+      "tag": "@bentley/ui-components_v2.9.7",
+      "date": "Wed, 09 Dec 2020 20:58:23 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.6",
+      "tag": "@bentley/ui-components_v2.9.6",
+      "date": "Mon, 07 Dec 2020 18:40:48 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.5",
+      "tag": "@bentley/ui-components_v2.9.5",
+      "date": "Sat, 05 Dec 2020 01:55:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.4",
+      "tag": "@bentley/ui-components_v2.9.4",
+      "date": "Wed, 02 Dec 2020 20:55:40 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.9.3",
       "tag": "@bentley/ui-components_v2.9.3",
       "date": "Mon, 23 Nov 2020 20:57:56 GMT",

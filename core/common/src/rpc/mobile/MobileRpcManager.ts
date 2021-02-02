@@ -10,6 +10,8 @@ import { RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcConfiguration } from "../core/RpcConfiguration";
 import { RpcEndpoint, RpcMobilePlatform } from "../core/RpcConstants";
 import { MobileRpcProtocol } from "./MobileRpcProtocol";
+import { FrontendIpc } from "../../ipc/FrontendIpc";
+import { IpcWebSocketFrontend } from "../../ipc/IpcWebSocket";
 
 /** Holds configuration for the RpcInterfaces used by the application.
  * @beta
@@ -69,13 +71,13 @@ export abstract class MobileRpcConfiguration extends RpcConfiguration {
   /** Return type of mobile platform using browser userAgent */
   public static get platform(): RpcMobilePlatform { return MobileRpcConfiguration.getMobilePlatform(); }
 
-  /** Check if running backend running on mobile */
+  /** Check if backend running on mobile */
   public static get isMobileBackend() { return typeof (process) !== "undefined" && (process.platform as any) === "ios"; }
 
-  /** Check if running backend running on mobile */
+  /** Check if frontend running on mobile */
   public static get isMobileFrontend() { return this.platform !== RpcMobilePlatform.Unknown; }
 
-  /** Check if running backend running on wkwebview on ios */
+  /** Check if frontend running on wkwebview on ios */
   public static get isIOSFrontend() { return MobileRpcConfiguration.isMobileFrontend && (window as any).webkit && (window as any).webkit.messageHandlers; }
 }
 
@@ -112,7 +114,9 @@ export class MobileRpcManager {
 
   /** Initializes MobileRpcManager for the frontend of an application. */
   public static initializeClient(interfaces: RpcInterfaceDefinition[]): MobileRpcConfiguration {
-    return MobileRpcManager.performInitialization(interfaces, RpcEndpoint.Frontend);
+    const config = MobileRpcManager.performInitialization(interfaces, RpcEndpoint.Frontend);
+    FrontendIpc.initialize(new IpcWebSocketFrontend());
+    return config;
   }
   /** Initializes MobileRpcManager for the backend of an application. */
   public static initializeImpl(interfaces: RpcInterfaceDefinition[]): MobileRpcConfiguration {

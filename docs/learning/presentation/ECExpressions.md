@@ -4,9 +4,11 @@ ECExpressions is a very basic language that allows customizing presentation
 rules' behavior.
 
 Symbols that can be used depend on current context. Example:
+
 ```
 this.GetContextB().ContextC.DoSomething()
 ```
+
 Here, symbol `this` returns a context which has a function symbol
 `GetContextB()`. This function returns a context which has a property
 symbol `ContextC`. And the property value is a context that contains a
@@ -247,6 +249,7 @@ Symbol                    | Type    | Value
 
 ECInstance expression context provides access to ECInstance property values.
 Example:
+
 ```
 this.PropertyName
 this.StructPropertyName.PropertyName
@@ -284,14 +287,28 @@ Symbol                            | Deprecated Symbol               | Type    | 
 Symbol                                | Type     | Value
 --------------------------------------|----------|----------
 `Set(number1, number2, ..., numberN)` | number[] | Create a [value list](#value-lists) of the supplied numbers.
+`GetFormattedValue(this.MyProp, "Metric\|UsCustomary\|UsSurvey\|BritishImperial")` | any | Returns property value formatted using specified unit system. If unit system is not specified default presentation units are used to format value
 
 ## Value Lists
 
 Value lists in ECExpressions can be handled with lambdas. Currently the
 presentation rules engine supports only a single simple lambda for
 value lists:
+
 ```
 value_list.AnyMatch(x => x = this.PropertyValue)
 ```
+
 The above expression returns `true` if `value_list` contains the value
 of `this.PropertyValue`.
+
+## Formatted property values
+
+Comparison of formatted property values in ECExpressions can be done using
+`GetFormattedValue` function. Specific unit system can be passed as second argument
+to function or omitted to use default presentation format:
+
+```
+GetFormattedValue(this.Length, "Metric") = "10.0 m"
+GetFormattedValue(this.Length) = "10.0 m"
+```

@@ -11,7 +11,7 @@ import * as sinon from "sinon";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
   Content, ContentDescriptorRequestOptions, Descriptor, DescriptorOverrides, ExtendedContentRequestOptions, Field, Item, KeySet, NestedContentField,
-  Paged, RegisteredRuleset, Ruleset, SelectionInfo,
+  Paged, RegisteredRuleset, SelectionInfo,
 } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { PromiseContainer, ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
@@ -51,6 +51,7 @@ describe("ContentDataProvider", () => {
   let presentationManagerMock: moq.IMock<PresentationManager>;
   let rulesetsManagerMock: moq.IMock<RulesetManager>;
   const imodelMock = moq.Mock.ofType<IModelConnection>();
+  const imodelKey = "test-imodel-Key";
 
   before(() => {
     rulesetId = faker.random.word();
@@ -62,6 +63,9 @@ describe("ContentDataProvider", () => {
     rulesetsManagerMock = mocks.rulesetsManager;
     presentationManagerMock = mocks.presentationManager;
     Presentation.setPresentationManager(presentationManagerMock.object);
+
+    imodelMock.reset();
+    imodelMock.setup((x) => x.key).returns(() => imodelKey);
 
     provider = new Provider({ imodel: imodelMock.object, ruleset: rulesetId, displayType, enableContentAutoUpdate: true });
     invalidateCacheSpy = sinon.spy(provider, "invalidateCache");
@@ -639,26 +643,29 @@ describe("ContentDataProvider", () => {
   describe("reacting to updates", () => {
 
     it("doesn't react to imodel content updates to unrelated rulesets", () => {
-      const ruleset: Ruleset = { id: "unrelated", rules: [] };
-      presentationManagerMock.object.onIModelContentChanged.raiseEvent({ ruleset, updateInfo: "FULL" });
+      presentationManagerMock.object.onIModelContentChanged.raiseEvent({ rulesetId: "unrelated", updateInfo: "FULL", imodelKey });
+      expect(invalidateCacheSpy).to.not.be.called;
+    });
+
+    it("doesn't react to imodel content updates to unrelated imodels", () => {
+      presentationManagerMock.object.onIModelContentChanged.raiseEvent({ rulesetId, updateInfo: "FULL", imodelKey: "unrelated" });
       expect(invalidateCacheSpy).to.not.be.called;
     });
 
     it("invalidates cache when imodel content change happens to related ruleset", () => {
-      const ruleset: Ruleset = { id: rulesetId, rules: [] };
-      presentationManagerMock.object.onIModelContentChanged.raiseEvent({ ruleset, updateInfo: "FULL" });
+      presentationManagerMock.object.onIModelContentChanged.raiseEvent({ rulesetId, updateInfo: "FULL", imodelKey });
       expect(invalidateCacheSpy).to.be.calledOnceWith(CacheInvalidationProps.full());
     });
 
-    it("doesn't react to unrelated ruleset modifications", () => {
-      const ruleset = new RegisteredRuleset({ id: "unrelated", rules: [] }, "", () => { });
-      rulesetsManagerMock.object.onRulesetModified.raiseEvent(ruleset);
+    it("doesn't react to unrelated ruleset modifications", async () => {
+      const ruleset = new RegisteredRuleset(await createRandomRuleset(), "", () => { });
+      rulesetsManagerMock.object.onRulesetModified.raiseEvent(ruleset, { ...ruleset.toJSON() });
       expect(invalidateCacheSpy).to.not.be.called;
     });
 
-    it("invalidates cache when related ruleset is modified", () => {
-      const ruleset = new RegisteredRuleset({ id: rulesetId, rules: [] }, "", () => { });
-      rulesetsManagerMock.object.onRulesetModified.raiseEvent(ruleset);
+    it("invalidates cache when related ruleset is modified", async () => {
+      const ruleset = new RegisteredRuleset({ ...(await createRandomRuleset()), id: rulesetId }, "", () => { });
+      rulesetsManagerMock.object.onRulesetModified.raiseEvent(ruleset, { ...ruleset.toJSON() });
       expect(invalidateCacheSpy).to.be.calledOnceWith(CacheInvalidationProps.full());
     });
 

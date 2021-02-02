@@ -261,6 +261,7 @@ beta;ProgressProps
 internal;RECTANGULAR_DEFAULT_MIN_HEIGHT = 220
 internal;RECTANGULAR_DEFAULT_MIN_WIDTH = 296
 internal;removeTab(state: Draft
+internal;removeWidgetTab(state: Draft
 internal;ResizeAction
 alpha;ResizeDirection
 alpha;ResizeDirectionHelpers
@@ -463,8 +464,6 @@ internal;WidgetOverflow: React.NamedExoticComponent
 internal;WidgetOverflowContext: React.Context
 internal;WidgetOverflowProps
 internal;WidgetPanel: React.NamedExoticComponent
-internal;WidgetPanelComponent: React.NamedExoticComponent
-internal;WidgetPanelComponentProps
 internal;WidgetPanelContext: React.Context
 internal;WidgetPanelContextArgs
 internal;WidgetPanelExpander({ side }: WidgetPanelExpanderProps): JSX.Element
@@ -472,6 +471,8 @@ internal;WidgetPanelExpanderProps
 internal;WidgetPanelExpanders(): JSX.Element
 internal;WidgetPanelGrip: React.NamedExoticComponent
 internal;WidgetPanelProps
+internal;WidgetPanelProvider: React.NamedExoticComponent
+internal;WidgetPanelProviderProps
 internal;WidgetPanels: React.NamedExoticComponent
 internal;WidgetPanelsContent: React.MemoExoticComponent
 internal;WidgetPanelsContentProps 

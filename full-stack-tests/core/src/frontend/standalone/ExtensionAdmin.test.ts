@@ -7,13 +7,13 @@ import { assert } from "chai";
 import { ExternalServerExtensionLoader, IModelApp } from "@bentley/imodeljs-frontend";
 import { isElectronRenderer } from "@bentley/bentleyjs-core";
 
-describe.skip("ExtensionAdmin tests", () => {
+describe("ExtensionAdmin tests", () => {
   before(async () => IModelApp.startup());
   after(async () => IModelApp.shutdown());
 
   if (!isElectronRenderer) {
     it("loads local extension", async () => {
-      IModelApp.extensionAdmin.addExtensionLoaderFront(new ExternalServerExtensionLoader(`http://localhost:${Number(window.location.port) + 3000}`));
+      IModelApp.extensionAdmin.addExtensionLoaderFront(new ExternalServerExtensionLoader(`http://localhost:${Number(window.location.port) + 4000}`));
 
       await IModelApp.extensionAdmin.loadExtension("loadingTestExtension");
 

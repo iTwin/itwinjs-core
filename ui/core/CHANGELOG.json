@@ -2,6 +2,150 @@
   "name": "@bentley/ui-core",
   "entries": [
     {
+      "version": "2.11.0",
+      "tag": "@bentley/ui-core_v2.11.0",
+      "date": "Thu, 28 Jan 2021 13:39:27 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update components that support providing refs via React.forwardRef to work better with document generation.  "
+          },
+          {
+            "comment": "Add option to use a 'x-small' webfont icon."
+          },
+          {
+            "comment": "Add nested popup support to components that use HOC withOnOutsideClick."
+          },
+          {
+            "comment": "Fix bug processing zero value in Select options."
+          },
+          {
+            "comment": "Fix calling of onClick and onSelect calls when ContextMenuItem is disabled"
+          },
+          {
+            "comment": "Lock react-select to 3.1.0 and @types/react-select to 3.0.26 until we can fi"
+          },
+          {
+            "comment": "updated `ExpandableBlock` component to be able to take in title as JSX.Element and a tooltip, in which title string property can be passed"
+          },
+          {
+            "comment": "updated `ExpandableBlock` component to be able to take in title as JSX.Element and a tooltip, in which title string property can be passed"
+          },
+          {
+            "comment": "Add partial checkbox handling to TreeNode"
+          },
+          {
+            "comment": "Initial implementation of AccuDraw UI"
+          },
+          {
+            "comment": "Added ui-core learning docs content and added Notification.md, Style.md & Tooltip.md ui-core learning doc files."
+          },
+          {
+            "comment": "Added support to ExpandableList for updating the active block programmatically"
+          },
+          {
+            "comment": "Fix controlled/uncontrolled react warning in Select component."
+          },
+          {
+            "comment": "Added disabled support to Select component options"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.10.3",
+      "tag": "@bentley/ui-core_v2.10.3",
+      "date": "Fri, 08 Jan 2021 18:34:03 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.10.2",
+      "tag": "@bentley/ui-core_v2.10.2",
+      "date": "Fri, 08 Jan 2021 14:52:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.10.1",
+      "tag": "@bentley/ui-core_v2.10.1",
+      "date": "Tue, 22 Dec 2020 00:53:38 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.10.0",
+      "tag": "@bentley/ui-core_v2.10.0",
+      "date": "Fri, 18 Dec 2020 18:24:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "By default format slider tooltip with same number of decimal places as step specification."
+          },
+          {
+            "comment": "Change warning/success/error colors for labeledInput to themed variables ."
+          },
+          {
+            "comment": "Add ability for Popup to avoid outside click processing when clicking on element in nested Popup."
+          },
+          {
+            "comment": "Add new NumberInput control to replace NumericInput which wrapped react-numeric-input."
+          },
+          {
+            "comment": "Clear FocusTrap timeout on unmount."
+          },
+          {
+            "comment": "Popup - added onContextMenu & closeOnContextMenu props"
+          },
+          {
+            "comment": "Added 'closeOnWheel' and 'onWheel' Popup props"
+          },
+          {
+            "comment": "Unified UI typography systems"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.9.9",
+      "tag": "@bentley/ui-core_v2.9.9",
+      "date": "Sun, 13 Dec 2020 19:00:03 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.8",
+      "tag": "@bentley/ui-core_v2.9.8",
+      "date": "Fri, 11 Dec 2020 02:57:36 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.7",
+      "tag": "@bentley/ui-core_v2.9.7",
+      "date": "Wed, 09 Dec 2020 20:58:23 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.6",
+      "tag": "@bentley/ui-core_v2.9.6",
+      "date": "Mon, 07 Dec 2020 18:40:48 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.5",
+      "tag": "@bentley/ui-core_v2.9.5",
+      "date": "Sat, 05 Dec 2020 01:55:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.4",
+      "tag": "@bentley/ui-core_v2.9.4",
+      "date": "Wed, 02 Dec 2020 20:55:40 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Clear FocusTrap timeout on unmount."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.9.3",
       "tag": "@bentley/ui-core_v2.9.3",
       "date": "Mon, 23 Nov 2020 20:57:56 GMT",

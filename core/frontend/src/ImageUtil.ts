@@ -6,8 +6,9 @@
  * @module Rendering
  */
 
+import { isElectronRenderer } from "@bentley/bentleyjs-core";
 import { Point2d } from "@bentley/geometry-core";
-import { ElectronRpcConfiguration, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat } from "@bentley/imodeljs-common";
+import { ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat } from "@bentley/imodeljs-common";
 import { ViewRect } from "./ViewRect";
 
 interface Rgba {
@@ -204,7 +205,9 @@ export async function imageElementFromUrl(url: string): Promise<HTMLImageElement
   return new Promise((resolve: (image: HTMLImageElement) => void, reject) => {
     const image = new Image();
     image.onload = () => resolve(image);
-    image.onerror = reject;
+
+    // The "error" produced by Image is not an Error. It looks like an Event, but isn't one.
+    image.onerror = () => reject(new Error("Failed to create image from url"));
     image.src = url;
   });
 }
@@ -268,7 +271,7 @@ export function imageBufferToBase64EncodedPng(buffer: ImageBuffer, preserveAlpha
  * @beta
  */
 export function openImageDataUrlInNewWindow(url: string, title?: string): void {
-  if (ElectronRpcConfiguration.isElectron) {
+  if (isElectronRenderer) {
     window.open(url, title);
   } else {
     const win = window.open();

@@ -7,7 +7,8 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import { Compiler } from "webpack";
 import { getAppRelativePath, getSourcePosition, paths } from "../utils/paths";
-
+const getAllDependencies = require("../utils/resolve-recurse/resolve");
+import { Dependency } from "../utils/resolve-recurse/resolve";
 /* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
 const { builtinModules } = require("module");
 const WebpackError = require("webpack/lib/WebpackError");
@@ -24,7 +25,6 @@ class MissingExternalWarning extends WebpackError {
     Error.captureStackTrace(this, this.constructor);
   }
 }
-
 export class CopyExternalsPlugin {
   private _promises: Array<Promise<any>> = [];
   private _copiedPackages: Set<string> = new Set();
@@ -72,8 +72,8 @@ export class CopyExternalsPlugin {
       }
       return;
     }
-
-    const packageJsonPath = await this.copyPackage(pkgName, outputDir);
+    const packageJsonPath = require.resolve(`${pkgName}/package.json`, { paths: [paths.appNodeModules, path.join(paths.appNodeModules, "@bentley", "imodeljs-backend")] });
+    await this.copyPackage(pkgName, outputDir, path.dirname(packageJsonPath));
     if (!packageJsonPath)
       return;
 
@@ -83,47 +83,32 @@ export class CopyExternalsPlugin {
     if (!packageJson.dependencies && !packageJson.optionalDependencies)
       return;
 
-    const dependencies = [...Object.keys(packageJson.dependencies || {}), ...Object.keys(packageJson.optionalDependencies || {})];
+    // Grab external package's dependencies and all of its dependencies and so on recursively
+    const depsFromRecursion = await getAllDependencies({
+      path: path.dirname(packageJsonPath),
+    });
+    await this.recurseDependencies(depsFromRecursion.dependencies, outputDir);
+  }
+  // TODO: Optimize recursion, too many awaits.
+  private async recurseDependencies(dependencies: Dependency[], outputDir: string) {
+    if (dependencies.length === 0)
+      return;
     for (const dep of dependencies) {
-      if (!this._copiedPackages.has(dep)) {
-        await this.copyPackage(dep, outputDir, path.dirname(packageJsonPath));
-        this._copiedPackages.add(dep);
-      }
+      if (this._copiedPackages.has(dep.name))
+        continue;
+      await this.copyPackage(dep.name, outputDir, path.dirname(`${dep.path}/package.json`)); // add package.json to end so that path.dirname in copyPackage gets proper directory instead of the dir above it.
+      this._copiedPackages.add(dep.name);
+      await this.recurseDependencies(dep.dependencies, outputDir);
     }
   }
 
-  private async copyPackage(pkgName: string, outDir: string, parentPath?: string) {
-    const packageJsonPath = this.findPackageJson(pkgName, parentPath);
-    if (!packageJsonPath)
-      return;
-
-    if (!parentPath || !packageJsonPath.startsWith(parentPath)) {
-      this._logger.log(`Copying ${getAppRelativePath(path.dirname(packageJsonPath))} to ${getAppRelativePath(path.resolve(outDir, "node_modules"))}`);
-      await fs.copy(path.dirname(packageJsonPath), path.resolve(outDir, "node_modules", pkgName), { dereference: true });
-    }
-    return packageJsonPath;
+  private async copyPackage(pkgName: string, outDir: string, pathToPackage: string) {
+    this._logger.log(`Copying ${getAppRelativePath(pathToPackage)} to ${getAppRelativePath(path.resolve(outDir, "node_modules"))}`);
+    await fs.copy(pathToPackage, path.resolve(outDir, "node_modules", pkgName), { dereference: true });
   }
 
   private pathToPackageName(p: string) {
     const parts = p.replace(/^.*node_modules[\\\/]/, "").split(/[\\\/]/);
     return (parts[0].startsWith("@")) ? `${parts[0]}/${parts[1]}` : parts[0];
-  }
-
-  private findPackageJson(pkgName: string, parentPath?: string) {
-    const searchPaths = [];
-    if (parentPath) {
-      const parentNodeModules = path.resolve(parentPath, "node_modules");
-      const parentContainingDir = parentPath.replace(/^(.*node_modules).*$/, "$1");
-      searchPaths.push(parentNodeModules, parentContainingDir);
-    }
-    // Also search in node_modules/@bentley/imodeljs-backend, since we can't rely on imodeljs-native being hoisted in a rush monorepo.
-    searchPaths.push(path.join(paths.appNodeModules, "@bentley", "imodeljs-backend"));
-    searchPaths.push(paths.appNodeModules);
-
-    try {
-      return require.resolve(`${pkgName}/package.json`, { paths: searchPaths });
-    } catch (error) {
-      return undefined;
-    }
   }
 }

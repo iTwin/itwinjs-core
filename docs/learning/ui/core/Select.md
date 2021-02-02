@@ -1,7 +1,7 @@
 # Select
 
 The [Select]($ui-core:Select) category in the `@bentley/ui-core` package includes the
-[Select]($ui-core) and [LabeledSelect]($ui-core) components.
+[Select]($ui-core), [LabeledSelect]($ui-core) and [ThemedSelect]($ui-core) components.
 
 ## Select
 
@@ -39,6 +39,10 @@ The list of options popup below the component, or above if there isn't enough ro
 
 ![labeled select](./images/LabeledSelect.png "Labeled Select")
 
+## ThemedSelect
+
+ThemedSelect is a wrapper for [react-select](https://www.npmjs.com/package/react-select) with iModel.js UI theming applied.
+
 ## API Reference
 
-* [Select]($ui-core:Select)
+- [Select]($ui-core:Select)

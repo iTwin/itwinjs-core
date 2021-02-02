@@ -7,6 +7,7 @@
  */
 
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
+import { FormatProps } from "@bentley/imodeljs-quantity";
 
 /**
  * Type of an ECClass ID.
@@ -134,10 +135,10 @@ export interface KindOfQuantityInfo {
    */
   persistenceUnit: string;
   /**
-   * Current format identifier
+   * Active format that was used to format property value.
    * @alpha Still not entirely clear how kind of quantities will be handled and what data we'll need
    */
-  currentFormatId: string;
+  activeFormat?: FormatProps;
 }
 
 /**
@@ -291,7 +292,7 @@ export type RelationshipPath = RelatedClassInfo[];
 export type RelationshipPathJSON = RelatedClassInfoJSON[];
 
 /** @public */
-export namespace RelationshipPath {
+export namespace RelationshipPath { // eslint-disable-line @typescript-eslint/no-redeclare
   /** Reverse direction of the given [[RelationshipPath]] */
   export function reverse(path: RelationshipPath): RelationshipPath {
     return [...path].reverse().map((step) => ({

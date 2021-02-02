@@ -8,7 +8,7 @@
 
 import { BeTimePoint } from "@bentley/bentleyjs-core";
 import { ClipVector, Map4d, Matrix4d, Point3d, Point4d, Range1d, Range3d, Transform } from "@bentley/geometry-core";
-import { FeatureAppearanceProvider, FrustumPlanes, ViewFlagOverrides } from "@bentley/imodeljs-common";
+import { FeatureAppearanceProvider, FrustumPlanes, HiddenLine, ViewFlagOverrides } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { RenderClipVolume } from "../render/RenderClipVolume";
@@ -17,7 +17,7 @@ import { RenderPlanarClassifier } from "../render/RenderPlanarClassifier";
 import { RenderTextureDrape } from "../render/RenderSystem";
 import { SceneContext } from "../ViewContext";
 import { ViewingSpace } from "../ViewingSpace";
-import { CoordSystem } from "../Viewport";
+import { CoordSystem } from "../CoordSystem";
 import { Tile, TileGraphicType, TileTree } from "./internal";
 
 const scratchRange = new Range3d();
@@ -36,9 +36,12 @@ export interface TileDrawArgParams {
   tree: TileTree;
   now: BeTimePoint;
   viewFlagOverrides: ViewFlagOverrides;
-  clipVolume: RenderClipVolume | undefined;
+  clipVolume?: RenderClipVolume;
   parentsAndChildrenExclusive: boolean;
   symbologyOverrides: FeatureSymbology.Overrides | undefined;
+  appearanceProvider?: FeatureAppearanceProvider;
+  hiddenLineSettings?: HiddenLine.Settings;
+  intersectionClip?: ClipVector;
 }
 /**
  * Arguments used when selecting and drawing [[Tile]]s.
@@ -72,7 +75,9 @@ export class TileDrawArgs {
   /** @internal */
   public parentsAndChildrenExclusive: boolean;
   /** @internal */
-  public appearanceProvider?: FeatureAppearanceProvider;
+  private _appearanceProvider?: FeatureAppearanceProvider;
+  /** internal */
+  public hiddenLineSettings?: HiddenLine.Settings;
   /** Tiles that we want to draw and that are ready to draw. May not actually be selected, e.g. if sibling tiles are not yet ready. */
   public readonly readyTiles = new Set<Tile>();
   /** For perspective views, the view-Z of the near plane. */
@@ -81,6 +86,8 @@ export class TileDrawArgs {
   public get viewFlagOverrides(): ViewFlagOverrides { return this.graphics.viewFlagOverrides; }
   /**  Symbology overrides */
   public get symbologyOverrides(): FeatureSymbology.Overrides | undefined { return this.graphics.symbologyOverrides; }
+  /** If defined, tiles will be culled if they do not intersect the clip vector. */
+  public intersectionClip?: ClipVector;
 
   /** Compute the size in pixels of the specified tile at the point on its bounding sphere closest to the camera. */
   public getPixelSize(tile: Tile): number {
@@ -189,6 +196,8 @@ export class TileDrawArgs {
     this.tree = tree;
     this.context = context;
     this.now = now;
+    this._appearanceProvider = params.appearanceProvider;
+    this.hiddenLineSettings = params.hiddenLineSettings;
 
     if (undefined !== clipVolume && !clipVolume.hasOutsideClipColor)
       this.clipVolume = clipVolume;
@@ -238,6 +247,20 @@ export class TileDrawArgs {
     return undefined !== this.clipVolume ? this.clipVolume.clipVector : undefined;
   }
 
+  /** Add a provider to supplement or override the symbology overrides for the view.
+   * @note If a provider already exists, the new provider will be chained such that it sees the base overrides
+   * after they have potentially been modified by the existing provider.
+   * @beta
+   */
+  public addAppearanceProvider(provider: FeatureAppearanceProvider): void {
+    this._appearanceProvider = this._appearanceProvider ? FeatureAppearanceProvider.chain(this._appearanceProvider, provider) : provider;
+  }
+
+  /** @internal */
+  public get appearanceProvider(): FeatureAppearanceProvider | undefined {
+    return this._appearanceProvider;
+  }
+
   /** @internal */
   public produceGraphics(): RenderGraphic | undefined {
     return this._produceGraphicBranch(this.graphics);
@@ -248,9 +271,14 @@ export class TileDrawArgs {
     if (graphics.isEmpty)
       return undefined;
 
-    const classifierOrDrape = undefined !== this.planarClassifier ? this.planarClassifier : this.drape;
-    const appearanceProvider = this.appearanceProvider;
-    const opts = { iModel: this.tree.iModel, clipVolume: this.clipVolume, classifierOrDrape, appearanceProvider };
+    const opts = {
+      iModel: this.tree.iModel,
+      clipVolume: this.clipVolume,
+      classifierOrDrape: this.planarClassifier ?? this.drape,
+      appearanceProvider: this.appearanceProvider,
+      hline: this.hiddenLineSettings,
+    };
+
     return this.context.createGraphicBranch(graphics, this.location, opts);
   }
 

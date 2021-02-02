@@ -1,0 +1,15 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+.uifw-accudraw-dialog {
+  opacity: 0.90;
+
+  &:hover {
+    opacity: 1.00;
+  }
+
+  .core-dialog-container .core-dialog-area {
+    flex-grow: unset;
+  }
+}

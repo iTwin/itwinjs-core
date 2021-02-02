@@ -7,8 +7,8 @@
  * @module Tools
  */
 
-import { ColorDef, Hilite } from "@bentley/imodeljs-common";
-import { IModelApp, TileBoundingBoxes, Tool, Viewport } from "@bentley/imodeljs-frontend";
+import { Camera, ColorDef, Hilite } from "@bentley/imodeljs-common";
+import { DrawingViewState, IModelApp, TileBoundingBoxes, Tool, Viewport } from "@bentley/imodeljs-frontend";
 import { parseArgs } from "./parseArgs";
 import { parseToggle } from "./parseToggle";
 
@@ -354,5 +354,78 @@ export class ToggleViewAttachmentClipShapesTool extends ViewportToggleTool {
   protected toggle(vp: Viewport, enable?: boolean): void {
     if (undefined === enable || enable !== vp.wantViewAttachmentClipShapes)
       vp.wantViewAttachmentClipShapes = !vp.wantViewAttachmentClipShapes;
+  }
+}
+
+/** Toggles display of 2d graphics in a [DrawingViewState]($frontend). This setting affects all drawing views until it is reset.
+ * @beta
+ */
+export class ToggleDrawingGraphicsTool extends ViewportToggleTool {
+  public static toolId = "ToggleDrawingGraphics";
+
+  protected toggle(vp: Viewport, enable?: boolean): void {
+    if (undefined === enable || enable !== DrawingViewState.hideDrawingGraphics) {
+      DrawingViewState.hideDrawingGraphics = !DrawingViewState.hideDrawingGraphics;
+      vp.invalidateScene();
+    }
+  }
+}
+
+/** Toggles whether a [SectionDrawing]($backend)'s spatial view is always displayed along with the 2d graphics by a [DrawingViewState]($frontend), even
+ * if it otherwise would not be. This setting affects all section drawing views until it is reset.
+ * @beta
+ */
+export class ToggleSectionDrawingSpatialViewTool extends ViewportToggleTool {
+  public static toolId = "ToggleSectionDrawingSpatialView";
+
+  protected toggle(vp: Viewport, enable?: boolean): void {
+    if (undefined === enable || enable !== DrawingViewState.alwaysDisplaySpatialView) {
+      DrawingViewState.alwaysDisplaySpatialView = !DrawingViewState.alwaysDisplaySpatialView;
+      if (vp.view instanceof DrawingViewState) {
+        // Force the view to update its section drawing attachment.
+        const view = vp.view.clone();
+        view.changeViewedModel(view.baseModelId).then(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
+          view.load().then(() => vp.changeView(view)); // eslint-disable-line @typescript-eslint/no-floating-promises
+        });
+      }
+    }
+  }
+}
+
+/** Change the camera settings of the selected viewport.
+ * @beta
+ */
+export class ChangeCameraTool extends Tool {
+  public static get minArgs() { return 1; }
+  public static get maxArgs() { return 2; }
+  public static toolId = "ChangeCamera";
+
+  public run(camera?: Camera): boolean {
+    const vp = IModelApp.viewManager.selectedView;
+    if (camera && vp && vp.view.is3d()) {
+      const view = vp.view.clone();
+      view.camera.setFrom(camera);
+      vp.changeView(view);
+    }
+
+    return true;
+  }
+
+  public parseAndRun(...inArgs: string[]): boolean {
+    const vp = IModelApp.viewManager.selectedView;
+    if (!vp || !vp.view.is3d())
+      return false;
+
+    const camera = vp.view.camera.clone();
+    const args = parseArgs(inArgs);
+    const lens = args.getFloat("l");
+    if (undefined !== lens)
+      camera.lens.setDegrees(lens);
+
+    const focusDist = args.getFloat("d");
+    if (undefined !== focusDist)
+      camera.focusDist = focusDist;
+
+    return this.run(camera);
   }
 }

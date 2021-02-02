@@ -1,6 +1,6 @@
 {
   "name": "@bentley/itwin-client",
-  "version": "2.10.0-dev.20",
+  "version": "2.12.0-dev.22",
   "description": "Base client package for iTwin applications",
   "main": "lib/itwin-client.js",
   "typings": "lib/itwin-client",
@@ -12,7 +12,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "extract-api": "betools extract-api --entry=itwin-client",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/itwin-client/file.json --tsIndexFile=itwin-client.ts --onlyJson",
-    "lint": "eslint -f visualstudio --max-warnings 0 ./src/**/*.ts 1>&2",
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "betools test --offline=\"mock\"",
     "cover": "nyc npm test"
   },
@@ -30,18 +30,18 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.10.0-dev.20"
+    "@bentley/bentleyjs-core": "^2.12.0-dev.22"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.10.0-dev.20",
-    "@bentley/build-tools": "2.10.0-dev.20",
-    "@bentley/certa": "2.10.0-dev.20",
-    "@bentley/config-loader": "2.10.0-dev.20",
-    "@bentley/eslint-plugin": "2.10.0-dev.20",
+    "@bentley/bentleyjs-core": "2.12.0-dev.22",
+    "@bentley/build-tools": "2.12.0-dev.22",
+    "@bentley/certa": "2.12.0-dev.22",
+    "@bentley/config-loader": "2.12.0-dev.22",
+    "@bentley/eslint-plugin": "2.12.0-dev.22",
     "@types/chai": "^4.1.4",
     "@types/deep-assign": "^0.1.0",
     "@types/js-base64": "^2.3.1",

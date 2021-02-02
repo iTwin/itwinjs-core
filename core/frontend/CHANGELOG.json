@@ -2,6 +2,210 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "2.11.0",
+      "tag": "@bentley/imodeljs-frontend_v2.11.0",
+      "date": "Thu, 28 Jan 2021 13:39:27 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Don't allow AccuDraw in exaggerated views."
+          },
+          {
+            "comment": "Avoid decoding the same texture image multiple times when receiving multiple simultaneous requests."
+          },
+          {
+            "comment": "Add support for altering the image produced by a Viewport using custom screen-space post-processing effects."
+          },
+          {
+            "comment": "work on NativeApp and editing commands"
+          },
+          {
+            "comment": "Improve ElementGeometry documentation."
+          },
+          {
+            "comment": "Account for aspect ratio skew in core decorations."
+          },
+          {
+            "comment": "Add ability for caller to override format per QuantityType."
+          },
+          {
+            "comment": "Add ability to set unit system for quantity formats to the same four supported by Presentation manager."
+          },
+          {
+            "comment": "Fix hilite silhouette ignoring weight overrides for polylines."
+          },
+          {
+            "comment": "Use optimized planar map corners for size"
+          },
+          {
+            "comment": "The type of ViewState3d.displayStyle is DisplayStyle3dState, to reduce need to cast."
+          },
+          {
+            "comment": "Ensure quantity formatter is initialized once IModelApp.startup is awaited."
+          },
+          {
+            "comment": "Added new WMTS capabilities parser and improved general support of WMTS."
+          },
+          {
+            "comment": "WmtsCapabilities now using 'xml-js' instead of 'fast-xml-parser'."
+          },
+          {
+            "comment": "Apply workaround for Intel HD 620/630 driver bug."
+          },
+          {
+            "comment": "Show iModel.js version rather than Application version in iModel.js Card\""
+          },
+          {
+            "comment": "Bias global reality models to match terrain corrections."
+          },
+          {
+            "comment": "Modified OrbitGT point clouds to be able to override their model color."
+          },
+          {
+            "comment": "Support global navigation with camera off"
+          },
+          {
+            "comment": "Add Viewport.onResized event; add option not to preserve order of geometry added to a GraphicBuilder for an overlay decoration (improves performance)."
+          },
+          {
+            "comment": "Display spatial view in context of section drawing view if so specified."
+          },
+          {
+            "comment": "Add support for section-cut graphics display."
+          },
+          {
+            "comment": "Add notion of attaching and detaching a ViewState to/from a Viewport. On attach, register event listeners to automatically synchronize the Viewport's state when aspects of the ViewState are modified, eliminating the need to manually synchronize or use specific Viewport APIs. In detach, deallocate Viewport-specific resources such as WebGL objects used for rendering view attachments."
+          },
+          {
+            "comment": "#415276 Fixed line widths for wide lines that extend behind the eye."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.10.3",
+      "tag": "@bentley/imodeljs-frontend_v2.10.3",
+      "date": "Fri, 08 Jan 2021 18:34:03 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.10.2",
+      "tag": "@bentley/imodeljs-frontend_v2.10.2",
+      "date": "Fri, 08 Jan 2021 14:52:02 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "WmtsCapabilities now using 'xml-js' instead of 'fast-xml-parser'."
+          },
+          {
+            "comment": "Bias global reality models to match terrain corrections."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.10.1",
+      "tag": "@bentley/imodeljs-frontend_v2.10.1",
+      "date": "Tue, 22 Dec 2020 00:53:38 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added new WMTS capabilities parser and improved general support of WMTS."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.10.0",
+      "tag": "@bentley/imodeljs-frontend_v2.10.0",
+      "date": "Fri, 18 Dec 2020 18:24:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update minimum Node version to 10.17.0"
+          },
+          {
+            "comment": "Support compact representation of DisplayStyleSettings.excludedElements."
+          },
+          {
+            "comment": "Handle missing 'window' object when run in Node for support of Server-Side Rendering"
+          },
+          {
+            "comment": "Ensure proper disposal of WebGL resources owned by Target."
+          },
+          {
+            "comment": "Add tests for undefined values in script."
+          },
+          {
+            "comment": "Fixed an issue where WMS GetFeatureInfo would not work correctly on all sublayers."
+          },
+          {
+            "comment": "Correct reprojection to allow non-rigid linear transform."
+          },
+          {
+            "comment": "Fix tap on measure distance marker showing information for wrong segment."
+          },
+          {
+            "comment": "Add ability for caller to override quantity display format per QuantityType."
+          },
+          {
+            "comment": "Make view globe tools use GCS reprojection as necessary to improve precision when navigating within the iModel extents."
+          },
+          {
+            "comment": "Support display of OSM Buildings."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.9.9",
+      "tag": "@bentley/imodeljs-frontend_v2.9.9",
+      "date": "Sun, 13 Dec 2020 19:00:03 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add ability for caller to override quantity display format per QuantityType."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.9.8",
+      "tag": "@bentley/imodeljs-frontend_v2.9.8",
+      "date": "Fri, 11 Dec 2020 02:57:36 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.7",
+      "tag": "@bentley/imodeljs-frontend_v2.9.7",
+      "date": "Wed, 09 Dec 2020 20:58:23 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed an issue where WMS GetFeatureInfo would not work correctly on all sublayers."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.9.6",
+      "tag": "@bentley/imodeljs-frontend_v2.9.6",
+      "date": "Mon, 07 Dec 2020 18:40:48 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.5",
+      "tag": "@bentley/imodeljs-frontend_v2.9.5",
+      "date": "Sat, 05 Dec 2020 01:55:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.4",
+      "tag": "@bentley/imodeljs-frontend_v2.9.4",
+      "date": "Wed, 02 Dec 2020 20:55:40 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.9.3",
       "tag": "@bentley/imodeljs-frontend_v2.9.3",
       "date": "Mon, 23 Nov 2020 20:57:56 GMT",

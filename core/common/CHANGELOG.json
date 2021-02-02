@@ -2,6 +2,147 @@
   "name": "@bentley/imodeljs-common",
   "entries": [
     {
+      "version": "2.11.0",
+      "tag": "@bentley/imodeljs-common_v2.11.0",
+      "date": "Thu, 28 Jan 2021 13:39:27 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix brep DataProps to/from flatbuffer to account for base64 string header."
+          },
+          {
+            "comment": "Element geometry creation by brep operations. "
+          },
+          {
+            "comment": "add EditCommand"
+          },
+          {
+            "comment": "Improve ElementGeometry documentation."
+          },
+          {
+            "comment": "Remove assertion in supplyPathForOperation when defaulting changeSetId."
+          },
+          {
+            "comment": "Introduced the the Geographic Coordinate System classes and plugged in the Imodel props."
+          },
+          {
+            "comment": "Separated out API to upgrade iModels."
+          },
+          {
+            "comment": "Remove unused trueWidth and trueStart properties from GraphicParams."
+          },
+          {
+            "comment": "Add option to SectionDrawingProps specifying the spatial view should be drawn in the context of the drawing view."
+          },
+          {
+            "comment": "Support for section-cut graphics."
+          },
+          {
+            "comment": "Version compare property checksums"
+          },
+          {
+            "comment": "Add change events to DisplayStyleSettings and ViewDetails."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.10.3",
+      "tag": "@bentley/imodeljs-common_v2.10.3",
+      "date": "Fri, 08 Jan 2021 18:34:03 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.10.2",
+      "tag": "@bentley/imodeljs-common_v2.10.2",
+      "date": "Fri, 08 Jan 2021 14:52:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.10.1",
+      "tag": "@bentley/imodeljs-common_v2.10.1",
+      "date": "Tue, 22 Dec 2020 00:53:38 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.10.0",
+      "tag": "@bentley/imodeljs-common_v2.10.0",
+      "date": "Fri, 18 Dec 2020 18:24:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update minimum Node version to 10.17.0"
+          },
+          {
+            "comment": "Fix cartographicRange computation. The 8 corners are calculated in the ECEF coordinate system but I think they should be calculated in the spatial coordinate system and then converted to ECEF."
+          },
+          {
+            "comment": "Support compact representation of DisplayStyleSettings.excludedElements."
+          },
+          {
+            "comment": "Added ElementGeometry.Builder and ElementGeometry.Iterator."
+          },
+          {
+            "comment": "export ModelLoadProps"
+          },
+          {
+            "comment": "Support display of OSM Buildings."
+          },
+          {
+            "comment": "Version compare top parents ChangedElements update"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.9.9",
+      "tag": "@bentley/imodeljs-common_v2.9.9",
+      "date": "Sun, 13 Dec 2020 19:00:03 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.8",
+      "tag": "@bentley/imodeljs-common_v2.9.8",
+      "date": "Fri, 11 Dec 2020 02:57:36 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.7",
+      "tag": "@bentley/imodeljs-common_v2.9.7",
+      "date": "Wed, 09 Dec 2020 20:58:23 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix cartographicRange computation. The 8 corners are calculated in the ECEF coordinate system but I think they should be calculated in the spatial coordinate system and then converted to ECEF."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.9.6",
+      "tag": "@bentley/imodeljs-common_v2.9.6",
+      "date": "Mon, 07 Dec 2020 18:40:48 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.5",
+      "tag": "@bentley/imodeljs-common_v2.9.5",
+      "date": "Sat, 05 Dec 2020 01:55:56 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Bump Tile Version to 18"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.9.4",
+      "tag": "@bentley/imodeljs-common_v2.9.4",
+      "date": "Wed, 02 Dec 2020 20:55:40 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.9.3",
       "tag": "@bentley/imodeljs-common_v2.9.3",
       "date": "Mon, 23 Nov 2020 20:57:56 GMT",

@@ -56,9 +56,12 @@ class GeoNameMarker extends Marker {
   }
   public onMouseButton(ev: BeButtonEvent): boolean {
     if (InputSource.Mouse === ev.inputSource && ev.isDown && ev.viewport !== undefined && ev.viewport.view instanceof ViewState3d) {
-      if (BeButton.Data === ev.button)
-        ev.viewport.animateFlyoverToGlobalLocation({ center: new Cartographic(this.props.lng * Angle.radiansPerDegree, this.props.lat * Angle.radiansPerDegree) });
-      else if (BeButton.Reset === ev.button && undefined !== this.props.wikipedia && 0 !== this.props.wikipedia.length)
+      if (BeButton.Data === ev.button) {
+        const evViewport = ev.viewport;
+        (async () => {
+          await evViewport.animateFlyoverToGlobalLocation({ center: new Cartographic(this.props.lng * Angle.radiansPerDegree, this.props.lat * Angle.radiansPerDegree) });
+        })().catch(() => { });
+      } else if (BeButton.Reset === ev.button && undefined !== this.props.wikipedia && 0 !== this.props.wikipedia.length)
         window.open(`https://${this.props.wikipedia}`);
     }
     return true;

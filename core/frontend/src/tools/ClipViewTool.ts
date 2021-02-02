@@ -12,7 +12,7 @@ import {
   GrowableXYZArray, LineString3d, Loop, Matrix3d, Path, Plane3dByOriginAndUnitNormal, Point3d, PolygonOps, PolylineOps, Range1d, Range3d, Ray3d,
   Transform, Vector3d,
 } from "@bentley/geometry-core";
-import { ColorDef, LinePixels, Placement2d, Placement2dProps, Placement3d } from "@bentley/imodeljs-common";
+import { ClipStyle, ColorDef, LinePixels, Placement2d, Placement2dProps, Placement3d } from "@bentley/imodeljs-common";
 import { DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription } from "@bentley/ui-abstract";
 import { AccuDraw, AccuDrawHintBuilder } from "../AccuDraw";
 import { LocateResponse } from "../ElementLocateManager";
@@ -22,7 +22,6 @@ import { GraphicBuilder, GraphicType } from "../render/GraphicBuilder";
 import { StandardViewId } from "../StandardView";
 import { DecorateContext } from "../ViewContext";
 import { ScreenViewport, Viewport } from "../Viewport";
-import { AccuDrawShortcuts } from "./AccuDrawTool";
 import { EditManipulator } from "./EditManipulator";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { BeButtonEvent, CoordinateLockOverrides, CoreTools, EventHandled } from "./Tool";
@@ -714,12 +713,6 @@ export class ViewClipByShapeTool extends ViewClipTool {
     this.setupAndPromptForNextAction();
     return true;
   }
-
-  public async onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled> {
-    if (EventHandled.Yes === await super.onKeyTransition(wentDown, keyEvent))
-      return EventHandled.Yes;
-    return (wentDown && AccuDrawShortcuts.processShortcutKey(keyEvent)) ? EventHandled.Yes : EventHandled.No;
-  }
 }
 
 /** @alpha A tool to define a clip volume for a view by specifying range corners */
@@ -954,8 +947,9 @@ export abstract class ViewClipModifyTool extends EditManipulator.HandleTool {
   protected _clipView: Viewport;
   protected _clip: ClipVector;
   protected _viewRange: Range3d;
-  protected _restoreClip: boolean = true;
+  protected _restoreClip = true;
   protected _currentDistance: number = 0.0;
+  private readonly _clipStyle: ClipStyle;
 
   public constructor(manipulator: EditManipulator.HandleProvider, clip: ClipVector, vp: Viewport, hitId: string, ids: string[], controls: ViewClipControlArrow[]) {
     super(manipulator);
@@ -965,6 +959,15 @@ export abstract class ViewClipModifyTool extends EditManipulator.HandleTool {
     this._clipView = vp;
     this._clip = clip;
     this._viewRange = vp.computeViewRange();
+
+    // Don't request section-cut graphics while the user is modifying the clip. We'll restore this when the tool exits.
+    this._clipStyle = vp.clipStyle;
+    if (this._clipStyle.produceCutGeometry) {
+      vp.clipStyle = ClipStyle.fromJSON({
+        ...this._clipStyle.toJSON(),
+        produceCutGeometry: false,
+      });
+    }
   }
 
   protected init(): void {
@@ -972,7 +975,6 @@ export abstract class ViewClipModifyTool extends EditManipulator.HandleTool {
     this.initLocateElements(false, false, undefined, CoordinateLockOverrides.All); // Disable locate/snap/locks for control modification; overrides state inherited from suspended primitive...
     AccuDrawHintBuilder.deactivate();
   }
-
   protected abstract updateViewClip(ev: BeButtonEvent, isAccept: boolean): boolean;
   protected abstract drawViewClip(context: DecorateContext): void;
 
@@ -1040,6 +1042,8 @@ export abstract class ViewClipModifyTool extends EditManipulator.HandleTool {
   public onCleanup(): void {
     if (this._restoreClip && ViewClipTool.hasClip(this._clipView))
       ViewClipTool.setViewClip(this._clipView, this._clip);
+
+    this._clipView.clipStyle = this._clipStyle;
   }
 }
 
@@ -1660,7 +1664,7 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
       let fillHidColorOvr = fillHidColor;
       let fillSelColorOvr = fillSelColor;
       if (undefined !== fillVisColorOvr) {
-        fillVisColorOvr = EditManipulator.HandleUtils.adjustForBackgroundColor(fillVisColorOvr, vp);;
+        fillVisColorOvr = EditManipulator.HandleUtils.adjustForBackgroundColor(fillVisColorOvr, vp);
         fillVisColorOvr = fillVisColorOvr.withAlpha(fillVisColor.getAlpha());
         fillHidColorOvr = fillVisColorOvr.withAlpha(fillHidColor.getAlpha());
         fillSelColorOvr = fillVisColorOvr.inverse().withAlpha(fillSelColor.getAlpha());

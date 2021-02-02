@@ -1,6 +1,107 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Mon, 23 Nov 2020 22:19:30 GMT and should not be manually modified.
+This log was last generated on Thu, 28 Jan 2021 13:39:27 GMT and should not be manually modified.
+
+## 2.11.0
+Thu, 28 Jan 2021 13:39:27 GMT
+
+### Updates
+
+- Don't allow AccuDraw in exaggerated views.
+- Avoid decoding the same texture image multiple times when receiving multiple simultaneous requests.
+- Add support for altering the image produced by a Viewport using custom screen-space post-processing effects.
+- work on NativeApp and editing commands
+- Improve ElementGeometry documentation.
+- Account for aspect ratio skew in core decorations.
+- Add ability for caller to override format per QuantityType.
+- Add ability to set unit system for quantity formats to the same four supported by Presentation manager.
+- Fix hilite silhouette ignoring weight overrides for polylines.
+- Use optimized planar map corners for size
+- The type of ViewState3d.displayStyle is DisplayStyle3dState, to reduce need to cast.
+- Ensure quantity formatter is initialized once IModelApp.startup is awaited.
+- Added new WMTS capabilities parser and improved general support of WMTS.
+- WmtsCapabilities now using 'xml-js' instead of 'fast-xml-parser'.
+- Apply workaround for Intel HD 620/630 driver bug.
+- Show iModel.js version rather than Application version in iModel.js Card"
+- Bias global reality models to match terrain corrections.
+- Modified OrbitGT point clouds to be able to override their model color.
+- Support global navigation with camera off
+- Add Viewport.onResized event; add option not to preserve order of geometry added to a GraphicBuilder for an overlay decoration (improves performance).
+- Display spatial view in context of section drawing view if so specified.
+- Add support for section-cut graphics display.
+- Add notion of attaching and detaching a ViewState to/from a Viewport. On attach, register event listeners to automatically synchronize the Viewport's state when aspects of the ViewState are modified, eliminating the need to manually synchronize or use specific Viewport APIs. In detach, deallocate Viewport-specific resources such as WebGL objects used for rendering view attachments.
+- #415276 Fixed line widths for wide lines that extend behind the eye.
+
+## 2.10.3
+Fri, 08 Jan 2021 18:34:03 GMT
+
+_Version update only_
+
+## 2.10.2
+Fri, 08 Jan 2021 14:52:02 GMT
+
+### Updates
+
+- WmtsCapabilities now using 'xml-js' instead of 'fast-xml-parser'.
+- Bias global reality models to match terrain corrections.
+
+## 2.10.1
+Tue, 22 Dec 2020 00:53:38 GMT
+
+### Updates
+
+- Added new WMTS capabilities parser and improved general support of WMTS.
+
+## 2.10.0
+Fri, 18 Dec 2020 18:24:01 GMT
+
+### Updates
+
+- Update minimum Node version to 10.17.0
+- Support compact representation of DisplayStyleSettings.excludedElements.
+- Handle missing 'window' object when run in Node for support of Server-Side Rendering
+- Ensure proper disposal of WebGL resources owned by Target.
+- Add tests for undefined values in script.
+- Fixed an issue where WMS GetFeatureInfo would not work correctly on all sublayers.
+- Correct reprojection to allow non-rigid linear transform.
+- Fix tap on measure distance marker showing information for wrong segment.
+- Add ability for caller to override quantity display format per QuantityType.
+- Make view globe tools use GCS reprojection as necessary to improve precision when navigating within the iModel extents.
+- Support display of OSM Buildings.
+
+## 2.9.9
+Sun, 13 Dec 2020 19:00:03 GMT
+
+### Updates
+
+- Add ability for caller to override quantity display format per QuantityType.
+
+## 2.9.8
+Fri, 11 Dec 2020 02:57:36 GMT
+
+_Version update only_
+
+## 2.9.7
+Wed, 09 Dec 2020 20:58:23 GMT
+
+### Updates
+
+- Fixed an issue where WMS GetFeatureInfo would not work correctly on all sublayers.
+
+## 2.9.6
+Mon, 07 Dec 2020 18:40:48 GMT
+
+_Version update only_
+
+## 2.9.5
+Sat, 05 Dec 2020 01:55:56 GMT
+
+_Version update only_
+
+## 2.9.4
+Wed, 02 Dec 2020 20:55:40 GMT
+
+_Version update only_
 
 ## 2.9.3
 Mon, 23 Nov 2020 20:57:56 GMT

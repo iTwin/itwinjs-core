@@ -1,6 +1,79 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Mon, 23 Nov 2020 22:19:30 GMT and should not be manually modified.
+This log was last generated on Thu, 28 Jan 2021 13:39:27 GMT and should not be manually modified.
+
+## 2.11.0
+Thu, 28 Jan 2021 13:39:27 GMT
+
+### Updates
+
+- Update components that support providing refs via React.forwardRef to work better with document generation.  
+- Fix backstage not updating when props.items are updated.
+- Propagate isDisabled MenuItem property to ContextMenuItem disabled property
+- Added partially visible instances support to VisibilityHandler
+- Initial implementation of AccuDraw UI
+- Prevent unnecessary 1.0 Toolbar rerenders in ToolbarComposer.
+- Updated UI Learning docs
+- Set active viewport to match active content view when overlay is clicked.
+- Add ability to control panel size and state from StagePanelDef.
+- Update to latest react-dnd version.
+
+## 2.10.3
+Fri, 08 Jan 2021 18:34:03 GMT
+
+_Version update only_
+
+## 2.10.2
+Fri, 08 Jan 2021 14:52:02 GMT
+
+_Version update only_
+
+## 2.10.1
+Tue, 22 Dec 2020 00:53:38 GMT
+
+_Version update only_
+
+## 2.10.0
+Fri, 18 Dec 2020 18:24:01 GMT
+
+### Updates
+
+- Rename 'VisibilityHandler' to 'ModelsVisibilityHandler' and allow subclasses to acces more methods.
+- Avoid throwing exception in ModelsTree VisibilityHandler if RulesetDrivenIdsProvider got undefined content
+- Correctly handler visibility changes in ModelsTree when filter is applied
+- Refactor DialogItem and Property interfaces to make them easier to use.
+- Add a 'hasChildren' hint for categories in ModelsTree. We know that categories always have nodes under them. Tell that with a `hasChildren: "Always"` hint to improve categories' loading performance
+- Disable pointer events in overlay of default view overlay.
+
+## 2.9.9
+Sun, 13 Dec 2020 19:00:03 GMT
+
+_Version update only_
+
+## 2.9.8
+Fri, 11 Dec 2020 02:57:36 GMT
+
+_Version update only_
+
+## 2.9.7
+Wed, 09 Dec 2020 20:58:23 GMT
+
+_Version update only_
+
+## 2.9.6
+Mon, 07 Dec 2020 18:40:48 GMT
+
+_Version update only_
+
+## 2.9.5
+Sat, 05 Dec 2020 01:55:56 GMT
+
+_Version update only_
+
+## 2.9.4
+Wed, 02 Dec 2020 20:55:40 GMT
+
+_Version update only_
 
 ## 2.9.3
 Mon, 23 Nov 2020 20:57:56 GMT

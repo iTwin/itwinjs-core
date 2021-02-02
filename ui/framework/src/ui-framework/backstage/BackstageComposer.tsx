@@ -9,7 +9,7 @@
 import * as React from "react";
 import { BackstageItem, BackstageItemsManager, ConditionalBooleanValue } from "@bentley/ui-abstract";
 import { CommonProps } from "@bentley/ui-core";
-import { BackstageSeparator, Backstage as NZ_Backstage } from "@bentley/ui-ninezone";
+import { Backstage as NZ_Backstage, BackstageSeparator } from "@bentley/ui-ninezone"; // eslint-disable-line sort-imports
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
 import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { BackstageComposerItem } from "./BackstageComposerItem";
@@ -29,7 +29,7 @@ function useBackstageItemSyncEffect(itemsManager: BackstageItemsManager, syncIds
         return;
 
       // istanbul ignore else
-      if (syncIdsOfInterest.some((value: string): boolean => args.eventIds.has(value))) {
+      if (syncIdsOfInterest.some((value: string): boolean => args.eventIds.has(value.toLowerCase()))) {
         // process each item that has interest
         itemsManager.refreshAffectedItems(args.eventIds);
       }
@@ -111,6 +111,16 @@ export interface BackstageComposerProps extends CommonProps {
  * @beta
  */
 export function BackstageComposer(props: BackstageComposerProps) {
+  const [defaultItemsManager, setDefaultItemsManager] = React.useState(new BackstageItemsManager(props.items));
+  const initialItems = React.useRef(props.items);
+
+  React.useEffect(() => {
+    if (initialItems.current !== props.items) {
+      initialItems.current = props.items;
+      setDefaultItemsManager(new BackstageItemsManager(props.items));
+    }
+  }, [props.items]);
+
   const manager = useBackstageManager();
   const isOpen = useIsBackstageOpen(manager);
   const safeAreaInsets = React.useContext(SafeAreaContext);
@@ -118,7 +128,6 @@ export function BackstageComposer(props: BackstageComposerProps) {
     manager.close();
   }, [manager]);
 
-  const [defaultItemsManager] = React.useState(new BackstageItemsManager(props.items));
   const defaultItems = useDefaultBackstageItems(defaultItemsManager);
   const syncIdsOfInterest = React.useMemo(() => BackstageItemsManager.getSyncIdsOfInterest(defaultItems), [defaultItems]);
   useBackstageItemSyncEffect(defaultItemsManager, syncIdsOfInterest);

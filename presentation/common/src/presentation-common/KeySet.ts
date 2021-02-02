@@ -19,7 +19,7 @@ import { NodeKey, NodeKeyJSON } from "./hierarchy/Key";
 export type Key = Readonly<NodeKey> | Readonly<InstanceKey> | Readonly<EntityProps>;
 
 /** @public */
-export namespace Key {
+export namespace Key { // eslint-disable-line @typescript-eslint/no-redeclare
   /** Check if the supplied key is a `NodeKey` */
   export function isNodeKey(key: Key): key is NodeKey {
     return (key as any).type;
@@ -61,7 +61,8 @@ export interface KeySetJSON {
  */
 export class KeySet {
   // note: all keys are stored as strings because we need ability to find them by value
-  private _instanceKeys: Map<string, Set<string>>; // class name => instance ids
+  private _instanceKeys: Map<string, Set<string>>; // lower case class name => instance ids
+  private _lowerCaseMap: Map<string, string>; // lower case class name => most recent class name
   private _nodeKeys: Set<string>;
   private _guid!: GuidString;
 
@@ -71,6 +72,7 @@ export class KeySet {
    */
   constructor(source?: Keys) {
     this._instanceKeys = new Map();
+    this._lowerCaseMap = new Map();
     this._nodeKeys = new Set();
     this.recalculateGuid();
     if (source)
@@ -98,7 +100,7 @@ export class KeySet {
   public get instanceKeys(): Map<string, Set<InstanceId>> {
     const map = new Map<string, Set<InstanceId>>();
     for (const entry of this._instanceKeys)
-      map.set(entry["0"], new Set([...entry["1"]].map((key: string) => Id64.fromJSON(key))));
+      map.set(this._lowerCaseMap.get(entry["0"])!, new Set([...entry["1"]].map((key: string) => Id64.fromJSON(key))));
     return map;
   }
 
@@ -150,6 +152,7 @@ export class KeySet {
       return this;
 
     this._instanceKeys = new Map();
+    this._lowerCaseMap = new Map();
     this._nodeKeys = new Set();
     this.recalculateGuid();
     return this;
@@ -162,12 +165,14 @@ export class KeySet {
     }
     for (const entry of (keyset as any)._instanceKeys) {
       let set = this._instanceKeys.get(entry["0"]);
+      const className = (keyset as KeySet)._lowerCaseMap.get(entry["0"])!;
       if (!set) {
         set = new Set();
         this._instanceKeys.set(entry["0"], set);
+        this._lowerCaseMap.set(entry["0"], className);
       }
       entry["1"].forEach((id: Id64String) => {
-        if (!pred || pred({ className: entry[0], id }))
+        if (!pred || pred({ className, id }))
           set!.add(id);
       });
     }
@@ -176,8 +181,12 @@ export class KeySet {
   private addKeySetJSON(keyset: Readonly<KeySetJSON>): void {
     for (const key of keyset.nodeKeys)
       this._nodeKeys.add(JSON.stringify(key));
-    for (const entry of keyset.instanceKeys)
-      this._instanceKeys.set(entry["0"], new Set(entry["1"]));
+    for (const entry of keyset.instanceKeys) {
+      const lcClassName = entry["0"].toLowerCase();
+      this._instanceKeys.set(lcClassName, new Set(entry["1"]));
+      this._lowerCaseMap.set(lcClassName, entry["0"]);
+    }
+
   }
 
   /**
@@ -198,9 +207,13 @@ export class KeySet {
       if (Key.isEntityProps(value)) {
         this.add({ className: value.classFullName, id: Id64.fromJSON(value.id) } as InstanceKey);
       } else if (Key.isInstanceKey(value)) {
-        if (!this._instanceKeys.has(value.className))
-          this._instanceKeys.set(value.className, new Set());
-        this._instanceKeys.get(value.className)!.add(value.id);
+        const lcClassName = value.className.toLowerCase();
+        if (!this._instanceKeys.has(lcClassName)) {
+          this._instanceKeys.set(lcClassName, new Set());
+          this._lowerCaseMap.set(lcClassName, value.className);
+        }
+        this._lowerCaseMap.set(lcClassName, value.className);
+        this._instanceKeys.get(lcClassName)!.add(value.id);
       } else if (Key.isNodeKey(value)) {
         this._nodeKeys.add(JSON.stringify(value));
       } else {
@@ -216,7 +229,7 @@ export class KeySet {
     for (const key of (keyset as any)._nodeKeys)
       this._nodeKeys.delete(key);
     for (const entry of (keyset as any)._instanceKeys) {
-      const set = this._instanceKeys.get(entry["0"]);
+      const set = this._instanceKeys.get(entry["0"].toLowerCase());
       if (set) {
         entry["1"].forEach((key: string) => {
           set.delete(key);
@@ -242,7 +255,7 @@ export class KeySet {
     } else if (Key.isEntityProps(value)) {
       this.delete({ className: value.classFullName, id: value.id! } as InstanceKey);
     } else if (Key.isInstanceKey(value)) {
-      const set = this._instanceKeys.get(value.className);
+      const set = this._instanceKeys.get(value.className.toLowerCase());
       if (set)
         set.delete(value.id);
     } else if (Key.isNodeKey(value)) {
@@ -265,7 +278,7 @@ export class KeySet {
     if (Key.isEntityProps(value))
       return this.has({ className: value.classFullName, id: value.id! } as InstanceKey);
     if (Key.isInstanceKey(value)) {
-      const set = this._instanceKeys.get(value.className);
+      const set = this._instanceKeys.get(value.className.toLowerCase());
       return !!(set && set.has(value.id));
     }
     if (Key.isNodeKey(value))
@@ -283,7 +296,7 @@ export class KeySet {
       if ([...keys._nodeKeys].some((key) => !this._nodeKeys.has(key)))
         return false;
       for (const otherEntry of keys._instanceKeys) {
-        const thisEntryKeys = this._instanceKeys.get(otherEntry["0"]);
+        const thisEntryKeys = this._instanceKeys.get(otherEntry["0"].toLowerCase());
         if (!thisEntryKeys || thisEntryKeys.size < otherEntry["1"].size)
           return false;
         if ([...otherEntry["1"]].some((key) => !thisEntryKeys.has(key)))
@@ -296,7 +309,7 @@ export class KeySet {
     if ([...keys._nodeKeys].some((key) => this._nodeKeys.has(key)))
       return true;
     for (const otherEntry of keys._instanceKeys) {
-      const thisEntryKeys = this._instanceKeys.get(otherEntry["0"]);
+      const thisEntryKeys = this._instanceKeys.get(otherEntry["0"].toLowerCase());
       if (thisEntryKeys && [...otherEntry["1"]].some((key) => thisEntryKeys.has(key)))
         return true;
     }
@@ -371,7 +384,8 @@ export class KeySet {
   /** Iterate over all keys in this keyset. */
   public some(callback: (key: Key) => boolean) {
     for (const entry of this._instanceKeys) {
-      if (some(entry[1], (id: Id64String) => callback({ className: entry[0], id })))
+      const className = this._lowerCaseMap.get(entry["0"].toLowerCase())!;
+      if (some(entry[1], (id: Id64String) => callback({ className, id })))
         return true;
     }
     return some(this._nodeKeys, (serializedKey: string) => callback(NodeKey.fromJSON(JSON.parse(serializedKey))));
@@ -381,7 +395,8 @@ export class KeySet {
   public forEach(callback: (key: Key, index: number) => void) {
     let index = 0;
     this._instanceKeys.forEach((ids: Set<Id64String>, className: string) => {
-      ids.forEach((id: Id64String) => callback({ className, id }, index++));
+      const recentClassName = this._lowerCaseMap.get(className.toLowerCase())!;
+      ids.forEach((id: Id64String) => callback({ className: recentClassName, id }, index++));
     });
     this._nodeKeys.forEach((serializedKey: string) => {
       callback(NodeKey.fromJSON(JSON.parse(serializedKey)), index++);
@@ -417,8 +432,10 @@ export class KeySet {
   public toJSON(): KeySetJSON {
     const instanceKeys: [string, string[]][] = [];
     for (const entry of this._instanceKeys.entries()) {
-      if (entry["1"].size > 0)
-        instanceKeys.push([entry["0"], [...entry["1"]]]);
+      if (entry["1"].size > 0) {
+        const className = this._lowerCaseMap.get(entry["0"].toLowerCase());
+        instanceKeys.push([className!, [...entry["1"]]]);
+      }
     }
     const nodeKeys: NodeKeyJSON[] = [];
     for (const serializedKey of this._nodeKeys.values())

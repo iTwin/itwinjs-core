@@ -26,6 +26,8 @@ const loggingCategory = "backend-itwin-client.TestUtils";
 
 const bankProjects: string[] = [];
 
+export const sharedimodelName = "imodeljs-clients Shared iModel";
+
 let testInstanceId: GuidString;
 function getTestInstanceId(): GuidString {
   if (!testInstanceId)
@@ -568,11 +570,10 @@ export async function getLastLockObjectId(requestContext: AuthorizedClientReques
 }
 
 export function generateLock(briefcaseId?: number, objectId?: Id64String,
-  lockType?: LockType, lockLevel?: LockLevel, seedFileId?: GuidString,
+  lockType?: LockType, lockLevel?: LockLevel, _seedFileId?: GuidString,
   releasedWithChangeSet?: string, releasedWithChangeSetIndex?: string): Lock {
   const result = new Lock();
   result.briefcaseId = briefcaseId || 1;
-  result.seedFileId = seedFileId;
   result.objectId = Id64.fromJSON(objectId || "0x0");
   result.lockLevel = lockLevel || 1;
   result.lockType = lockType || 1;
@@ -592,7 +593,6 @@ function convertLocksToMultiLocks(locks: Lock[]): MultiLock[] {
       const multiLock = new MultiLock();
       multiLock.changeState = "new";
       multiLock.briefcaseId = lock.briefcaseId;
-      multiLock.seedFileId = lock.seedFileId;
       multiLock.releasedWithChangeSet = lock.releasedWithChangeSet;
       multiLock.releasedWithChangeSetIndex = lock.releasedWithChangeSetIndex;
       multiLock.lockLevel = lock.lockLevel;
@@ -657,7 +657,9 @@ export function generateVersion(name?: string, changesetId?: string, addInstance
   }
   result.changeSetId = changesetId === undefined || changesetId === null ? generateChangeSetId() : changesetId;
   result.name = name || `TestVersion-${result.changeSetId}`;
+  // eslint-disable-next-line deprecation/deprecation
   result.smallThumbnailId = smallThumbnailId;
+  // eslint-disable-next-line deprecation/deprecation
   result.largeThumbnailId = largeThumbnailId;
   result.hidden = hidden;
   return result;
@@ -812,7 +814,6 @@ export function getMockChangeSets(briefcase: Briefcase): ChangeSet[] {
     result.index = regexMatchValue[1]; // first regex group contains file index
     result.fileSize = fs.statSync(path.join(dir, file)).size.toString();
     result.briefcaseId = briefcase.briefcaseId;
-    result.seedFileId = briefcase.fileId;
     result.parentId = parentId;
     result.fileName = `${result.id}.cs`;
     parentId = result.id;

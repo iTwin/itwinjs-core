@@ -2,6 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import * as fs from "fs";
+import * as os from "os";
+import * as path from "path";
+import { assert, BentleyStatus, Guid, GuidString, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 /** @packageDocumentation
  * @module Framework
  */
@@ -10,18 +14,13 @@ import {
   BackendRequestContext, BriefcaseDb, BriefcaseManager, ComputeProjectExtentsOptions, ConcurrencyControl, IModelDb, IModelJsFs, IModelJsNative,
   SnapshotDb, Subject, SubjectOwnsSubjects, UsageLoggingUtilities,
 } from "@bentley/imodeljs-backend";
-import { assert, BentleyStatus, Guid, GuidString, Id64String, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { IModel, IModelError, OpenBriefcaseProps, SubjectProps } from "@bentley/imodeljs-common";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { DomainOptions, DownloadBriefcaseOptions, IModel, IModelError, ProfileOptions, SubjectProps, SyncMode, UpgradeOptions } from "@bentley/imodeljs-common";
-import * as fs from "fs";
-import * as path from "path";
-import * as os from "os";
-
-import { IModelBridge } from "./IModelBridge";
 import { BridgeLoggerCategory } from "./BridgeLoggerCategory";
-import { Synchronizer } from "./Synchronizer";
-import { ServerArgs } from "./IModelHubUtils";
 import { IModelBankArgs, IModelBankUtils } from "./IModelBankUtils";
+import { IModelBridge } from "./IModelBridge";
+import { ServerArgs } from "./IModelHubUtils";
+import { Synchronizer } from "./Synchronizer";
 
 /** @beta */
 export const loggerCategory: string = BridgeLoggerCategory.Framework;
@@ -53,6 +52,8 @@ export class BridgeJobDefArgs {
   public argsJson: any;
   /** Synchronizes a snapshot imodel, outside of iModelHub */
   public isSnapshot: boolean = false;
+  /** The synchronizer will automatically delete any element that wasn't visited. Some bridges do not visit each element on every run. Set this to false to disable automatic deletion */
+  public doDetectDeletedElements: boolean = true;
 }
 
 class StaticTokenStore {
@@ -284,7 +285,9 @@ abstract class IModelDbBuilder {
 
   public async updateExistingData(): Promise<void> {
     await this._updateExistingData();
-    this._bridge.synchronizer.detectDeletedElements();
+    if (this._bridgeArgs.doDetectDeletedElements) {
+      this._bridge.synchronizer.detectDeletedElements();
+    }
 
     const options: ComputeProjectExtentsOptions = {
       reportExtentsWithOutliers: false,
@@ -482,35 +485,15 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
       throw new Error("Must initialize IModelId before using");
 
     // First, download the briefcase
-    const downloadOptions: DownloadBriefcaseOptions = { syncMode: SyncMode.PullAndPush };
-    const briefcaseProps = await BriefcaseManager.download(this._requestContext, this._serverArgs.contextId, this._serverArgs.iModelId, downloadOptions);
-    const briefcaseEntry = BriefcaseManager.findBriefcaseByKey(briefcaseProps.key);
-    if (undefined === briefcaseEntry) {
-      throw new Error("Unable to download briefcase");
-    }
+    const props = await BriefcaseManager.downloadBriefcase(this._requestContext, { contextId: this._serverArgs.contextId, iModelId: this._serverArgs.iModelId });
     let briefcaseDb: BriefcaseDb | undefined;
-    if (this._bridgeArgs.updateDbProfile) {
-      briefcaseProps.openMode = OpenMode.ReadWrite;
-      const profileUpgradeOptions: UpgradeOptions = {
-        profile: ProfileOptions.Upgrade,
-      };
-      briefcaseDb = await BriefcaseDb.open(this._requestContext, briefcaseProps.key, profileUpgradeOptions); // throws if open fails
-      await briefcaseDb.pushChanges(this._requestContext, "Open with Db Profile update");
-      if (this._bridgeArgs.updateDomainSchemas)
-        briefcaseDb.close();
-    }
-
-    if (this._bridgeArgs.updateDomainSchemas) {
-      const domainUpgradeOptions: UpgradeOptions = {
-        domain: DomainOptions.Upgrade,
-      };
-      briefcaseDb = await BriefcaseDb.open(this._requestContext, briefcaseProps.key, domainUpgradeOptions); // throws if open fails
-      await briefcaseDb.pushChanges(this._requestContext, "Open with Domain Schema update");
-    }
-
-    if (briefcaseDb === undefined || !briefcaseDb.isOpen) {
-      briefcaseDb = await BriefcaseDb.open(this._requestContext, briefcaseProps.key); // throws if open fails
-    }
+    const openArgs: OpenBriefcaseProps = {
+      fileName: props.fileName,
+    };
+    if (this._bridgeArgs.updateDbProfile || this._bridgeArgs.updateDomainSchemas)
+      await BriefcaseDb.upgradeSchemas(this._requestContext, props);
+    if (briefcaseDb === undefined || !briefcaseDb.isOpen)
+      briefcaseDb = await BriefcaseDb.open(this._requestContext, openArgs);
 
     this._imodel = briefcaseDb;
     const synchronizer = new Synchronizer(briefcaseDb, this._bridge.supportsMultipleFilesPerChannel(), this._requestContext);
@@ -518,7 +501,6 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
 
     briefcaseDb.concurrencyControl.startBulkMode(); // We will run in bulk mode the whole time.
   }
-
 }
 
 class SnapshotDbBuilder extends IModelDbBuilder {

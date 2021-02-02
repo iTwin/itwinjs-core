@@ -11,7 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
 import { RelativePosition } from "@bentley/ui-abstract";
-import { CommonProps, Popup, useRefs } from "@bentley/ui-core";
+import { CommonProps, Popup, useRefs, WebFontIcon } from "@bentley/ui-core";
 import { ColorSwatch } from "./Swatch";
 
 // cSpell:ignore colorpicker
@@ -49,18 +49,29 @@ export interface ColorPickerProps extends React.ButtonHTMLAttributes<HTMLButtonE
   dropDownTitle?: string;
   /** Number of columns */
   numColumns?: number;
+  /** Provides ability to return reference to HTMLButtonElement */
+  ref?: React.Ref<HTMLButtonElement>;
+  /** If true show up/down caret next to color  */
+  showCaret?: boolean;
 }
 
-/** ColorPickerButton component
- * @note Using forwardRef so the ColorEditor (Type Editor) can access the ref of the button element inside this component.
- * @beta
- */
-export const ColorPickerButton = React.forwardRef<HTMLButtonElement, ColorPickerProps>(
-  function ColorPickerButton(props, ref) {
-    const target = React.useRef<HTMLButtonElement>(null);
+// Defined using following pattern (const ColorPickerButton at bottom) to ensure useful API documentation is extracted
+const ForwardRefColorPickerButton = React.forwardRef<HTMLButtonElement, ColorPickerProps>(
+  function ForwardRefColorPickerButton({ className, colorDefs, disabled, dropDownTitle, initialColor, numColumns, onColorPick, readonly, round, showCaret, style }, ref) {
+    const target = React.useRef<HTMLButtonElement>();
     const refs = useRefs(target, ref);  // combine ref needed for target with the forwardRef needed by the Parent when parent is a Type Editor.
     const [showPopup, setShowPopup] = React.useState(false);
-    const [colorDef, setColorDef] = React.useState(props.initialColor);
+    const [colorDef, setColorDef] = React.useState(initialColor);
+    const initialColorRef = React.useRef(initialColor);
+
+    // See if new initialColor props have changed since component mounted
+    React.useEffect(() => {
+      // istanbul ignore else
+      if (initialColor !== initialColorRef.current) {
+        initialColorRef.current = initialColor;
+      }
+      setColorDef(initialColor);
+    }, [initialColor]);
 
     const defaultColors = React.useRef(
       [
@@ -96,35 +107,50 @@ export const ColorPickerButton = React.forwardRef<HTMLButtonElement, ColorPicker
       // istanbul ignore else
       if (!color.equals(colorDef)) {
         setColorDef(color);
-
-        // istanbul ignore else
-        if (props.onColorPick)
-          props.onColorPick(color);
+        onColorPick && onColorPick(color);
       }
-    }, [closePopup, colorDef, props]);
+    }, [closePopup, colorDef, onColorPick]);
 
     const { b, g, r, t } = colorDef.colors;
     const rgbaString = `rgb(${r},${g},${b},${(255 - t) / 255})`;
 
-    const buttonStyle = { backgroundColor: rgbaString, ...props.style } as React.CSSProperties;
+    const buttonStyle = { ...style } as React.CSSProperties;
+    const swatchStyle = { backgroundColor: rgbaString } as React.CSSProperties;
+
     const buttonClassNames = classnames("components-colorpicker-button",
-      props.round && "round",
-      props.readonly && "readonly",
-      props.className,
+      round && "round",
+      readonly && "readonly",
+      className,
     );
 
-    const colorOptions = props.colorDefs && props.colorDefs.length ? props.colorDefs : defaultColors.current;
+    const colorOptions = colorDefs && colorDefs.length ? colorDefs : defaultColors.current;
     return (
       <>
-        <button data-testid="components-colorpicker-button" onClick={togglePopup} className={buttonClassNames} style={buttonStyle} disabled={props.disabled} ref={refs} />
+        <button data-testid="components-colorpicker-button" data-value={rgbaString} onClick={togglePopup} className={buttonClassNames}
+          style={buttonStyle} disabled={disabled} ref={refs} >
+          <div className="components-colorpicker-button-container">
+            <div className="components-colorpicker-button-color-swatch" style={swatchStyle} />
+            {showCaret && <WebFontIcon className="components-caret" iconName={showPopup ? "icon-caret-up" : "icon-caret-down"} iconSize="x-small" />}
+          </div>
+        </button>
         <Popup
           className="components-colorpicker-popup"
           isOpen={showPopup}
           position={RelativePosition.BottomLeft}
           onClose={closePopup}
-          target={target.current} >
-          <ColorOptions handleColorPicked={handleColorPicked} options={colorOptions} numColumns={props.numColumns ? props.numColumns : 4} round={!!props.round} title={props.dropDownTitle} />
+          target={target.current}
+          closeOnNestedPopupOutsideClick
+        >
+          <ColorOptions handleColorPicked={handleColorPicked} options={colorOptions} numColumns={numColumns ?? 4} round={!!round} title={dropDownTitle} />
         </Popup>
       </>
     );
-  });
+  }
+);
+
+/** ColorPickerButton component
+ * @note Using forwardRef so the ColorEditor (Type Editor) can access the ref of the button element inside this component.
+ * @beta
+ */
+export const ColorPickerButton: (props: ColorPickerProps) => JSX.Element | null = ForwardRefColorPickerButton;
+

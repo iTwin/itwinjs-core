@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as lolex from "lolex";
 import * as sinon from "sinon";
 import { using } from "@bentley/bentleyjs-core";
-import { EventSink } from "@bentley/imodeljs-backend";
+import { EventSink, IModelDb } from "@bentley/imodeljs-backend";
 import { PresentationRpcEvents, PresentationRpcInterface, UpdateInfoJSON } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
@@ -16,10 +16,12 @@ describe("UpdatesTracker", () => {
 
   const eventSinkMock = moq.Mock.ofType<EventSink>();
   const nativePlatformMock = moq.Mock.ofType<NativePlatformDefinition>();
+  const imodelDbMock = moq.Mock.ofType<IModelDb>();
   let clock: lolex.Clock;
   beforeEach(() => {
     nativePlatformMock.reset();
     eventSinkMock.reset();
+    imodelDbMock.reset();
     clock = lolex.install();
   });
   afterEach(() => {
@@ -76,14 +78,39 @@ describe("UpdatesTracker", () => {
 
     it("emits events if there are updates", () => {
       const updates: UpdateInfoJSON = {
-        "a-ruleset": { hierarchy: [] },
-        "b-ruleset": { hierarchy: "FULL" },
-        "c-ruleset": { content: "FULL" },
+        ["imodel-File-Path"]: {
+          "a-ruleset": { hierarchy: [] },
+          "b-ruleset": { hierarchy: "FULL" },
+          "c-ruleset": { content: "FULL" },
+        },
       };
       nativePlatformMock.setup((x) => x.getUpdateInfo()).returns(() => ({ result: updates }));
+      const findDbStub = sinon.stub(IModelDb, "findByFilename");
+      findDbStub.returns(imodelDbMock.object);
+      imodelDbMock.setup((x) => x.getRpcProps()).returns(() => ({ key: "imodelKey" }));
+
       clock.tick(1);
       nativePlatformMock.verify((x) => x.getUpdateInfo(), moq.Times.once());
-      eventSinkMock.verify((x) => x.emit(PresentationRpcInterface.interfaceName, PresentationRpcEvents.Update, updates), moq.Times.once());
+
+      const expectedUpdateInfo: UpdateInfoJSON = {
+        ["imodelKey"]: updates["imodel-File-Path"],
+      };
+      eventSinkMock.verify((x) => x.emit(PresentationRpcInterface.interfaceName, PresentationRpcEvents.Update, expectedUpdateInfo), moq.Times.once());
+    });
+
+    it("does not emit events if imodelDb is not found", () => {
+      const updates: UpdateInfoJSON = {
+        ["imodel-File-Path"]: {
+          "a-ruleset": { hierarchy: "FULL" },
+        },
+      };
+      nativePlatformMock.setup((x) => x.getUpdateInfo()).returns(() => ({ result: updates }));
+      const findDbStub = sinon.stub(IModelDb, "findByFilename");
+      findDbStub.returns(undefined);
+      clock.tick(1);
+      nativePlatformMock.verify((x) => x.getUpdateInfo(), moq.Times.once());
+
+      eventSinkMock.verify((x) => x.emit(PresentationRpcInterface.interfaceName, PresentationRpcEvents.Update, moq.It.isAny()), moq.Times.never());
     });
 
   });

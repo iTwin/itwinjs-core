@@ -2,6 +2,203 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "2.11.0",
+      "tag": "@bentley/imodeljs-backend_v2.11.0",
+      "date": "Thu, 28 Jan 2021 13:39:27 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Changed storageType from azure to azure?sas=1 for getCommandArgs function"
+          },
+          {
+            "comment": "Fix brep DataProps to/from flatbuffer to account for base64 string header."
+          },
+          {
+            "comment": "Element geometry creation by brep operations. "
+          },
+          {
+            "comment": "Reinstated behavior when re-opening files read-write. "
+          },
+          {
+            "comment": "enhance BriefcaseManager and BriefcaseDb for edit commands"
+          },
+          {
+            "comment": "Improve ElementGeometry documentation."
+          },
+          {
+            "comment": "Add a check to verify, and fix, the DbGuid in the iModel if it is different than the Guid in iModelHub."
+          },
+          {
+            "comment": "ConcurrencyControl.setPolicy was allowing incorrectly typed arguments"
+          },
+          {
+            "comment": "update imodeljs-backend package.json to use 2.11.5 for imodeljs-native"
+          },
+          {
+            "comment": "Update to @bentley/imodeljs-native@2.11.8"
+          },
+          {
+            "comment": "Add IModelExportHandler.onProgress and IModelImporter.onProgress callbacks"
+          },
+          {
+            "comment": "Separated out API to upgrade iModels."
+          },
+          {
+            "comment": "Version compare property checksums"
+          }
+        ],
+        "undefined": [
+          {
+            "comment": "return LocalBriefcaseProps from BriefcaseManager.downloadBriefcase"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.10.3",
+      "tag": "@bentley/imodeljs-backend_v2.10.3",
+      "date": "Fri, 08 Jan 2021 18:34:03 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.10.2",
+      "tag": "@bentley/imodeljs-backend_v2.10.2",
+      "date": "Fri, 08 Jan 2021 14:52:02 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to @bentley/imodeljs-native@2.10.10"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.10.1",
+      "tag": "@bentley/imodeljs-backend_v2.10.1",
+      "date": "Tue, 22 Dec 2020 00:53:38 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to @bentley/imodeljs-native@2.10.9"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.10.0",
+      "tag": "@bentley/imodeljs-backend_v2.10.0",
+      "date": "Fri, 18 Dec 2020 18:24:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update minimum Node version to 10.17.0"
+          },
+          {
+            "comment": "ECSql Support for Binding Sets of Ids"
+          },
+          {
+            "comment": "Added CheckpointV2 client"
+          },
+          {
+            "comment": "Support compact representation of DisplayStyleSettings.excludedElements."
+          },
+          {
+            "comment": "Added ElementGeometry.Builder and ElementGeometry.Iterator."
+          },
+          {
+            "comment": "changed type of member \"data\" on Texture from string to UInt8Array. ***breaking change***"
+          },
+          {
+            "comment": "Provide better error message when relationship insert/update/delete is not a linktable relationship."
+          },
+          {
+            "comment": "Compress tiles before upload to blob storage by default."
+          },
+          {
+            "comment": "Update to @bentley/imodeljs-native@2.10.4"
+          },
+          {
+            "comment": "Update to @bentley/imodeljs-native@2.10.6"
+          },
+          {
+            "comment": "Update to @bentley/imodeljs-native@2.10.8"
+          },
+          {
+            "comment": "channel documentation"
+          },
+          {
+            "comment": "Version compare top parents test update"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.9.9",
+      "tag": "@bentley/imodeljs-backend_v2.9.9",
+      "date": "Sun, 13 Dec 2020 19:00:03 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to @bentley/imodeljs-native@2.9.10"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.9.8",
+      "tag": "@bentley/imodeljs-backend_v2.9.8",
+      "date": "Fri, 11 Dec 2020 02:57:36 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to @bentley/imodeljs-native@2.9.9"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.9.7",
+      "tag": "@bentley/imodeljs-backend_v2.9.7",
+      "date": "Wed, 09 Dec 2020 20:58:23 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.6",
+      "tag": "@bentley/imodeljs-backend_v2.9.6",
+      "date": "Mon, 07 Dec 2020 18:40:48 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to @bentley/imodeljs-native@2.9.8 to consume a performance enhancement to Presentation Rules"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.9.5",
+      "tag": "@bentley/imodeljs-backend_v2.9.5",
+      "date": "Sat, 05 Dec 2020 01:55:56 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to @bentley/imodeljs-native@2.9.7"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.9.4",
+      "tag": "@bentley/imodeljs-backend_v2.9.4",
+      "date": "Wed, 02 Dec 2020 20:55:40 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to @bentley/imodeljs-native@2.9.5"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.9.3",
       "tag": "@bentley/imodeljs-backend_v2.9.3",
       "date": "Mon, 23 Nov 2020 20:57:56 GMT",

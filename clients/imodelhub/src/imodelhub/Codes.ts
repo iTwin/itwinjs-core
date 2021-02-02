@@ -17,7 +17,7 @@ const loggerCategory: string = IModelHubClientLoggerCategory.IModelHub;
 
 /**
  * [Code]($common) state describes whether the code is currently in use or owned by a [[Briefcase]].
- * @alpha Hide Code API while focused on readonly viewing scenarios
+ * @internal
  */
 export enum CodeState {
   /** Code with this state is not persisted in iModelHub. Code that is updated to 'Available' state is deleted from iModelHub. */
@@ -31,7 +31,7 @@ export enum CodeState {
 }
 
 /** Base class for [Code]($common)s.
- * @alpha Hide Code API while focused on readonly viewing scenarios
+ * @internal
  */
 export class CodeBase extends WsgInstance {
   /** Code specification Id. */
@@ -61,7 +61,7 @@ export class CodeBase extends WsgInstance {
 
 /**
  * Code instance. Codes ensure uniqueness of names in the file.
- * @alpha Hide Code API while focused on readonly viewing scenarios
+ * @internal
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.Code", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class HubCode extends CodeBase {
@@ -106,7 +106,7 @@ function getCodeInstanceId(code: HubCode): string | undefined {
 
 /**
  * Object for specifying options when sending [Code]($common) update requests. See [[CodeHandler.update]].
- * @alpha Hide Code API while focused on readonly viewing scenarios
+ * @internal
  */
 export interface CodeUpdateOptions {
   /** Return [Code]($common)s that could not be acquired. Conflicting Codes will be set to [[ConflictingCodesError.conflictingCodes]]. If unlimitedReporting is enabled and CodesPerRequest value is high, some conflicting Codes could be missed.  */
@@ -145,7 +145,7 @@ export class DefaultCodeUpdateOptionsProvider {
 
 /**
  * Error for conflicting [Code]($common)s. It contains an array of Codes that failed to acquire. This is returned when calling [[CodeHandler.update]] with [[CodeUpdateOptions.deniedCodes]] set to true.
- * @alpha Hide Code API while focused on readonly viewing scenarios
+ * @internal
  */
 export class ConflictingCodesError extends IModelHubError {
   /** Codes that couldn't be updated due to other users owning them or setting them to [[CodeState.Retired]]. */
@@ -192,7 +192,7 @@ export class ConflictingCodesError extends IModelHubError {
 
 /**
  * Query object for getting [Code]($common)s. You can use this to modify the query. See [[CodeHandler.get]].
- * @alpha Hide Code API while focused on readonly viewing scenarios
+ * @internal
  */
 export class CodeQuery extends WsgQuery {
   private _isMultiCodeQuery = true;
@@ -299,7 +299,7 @@ export class CodeQuery extends WsgQuery {
 }
 
 /** Type of [[CodeSequence]] results.
- * @alpha Hide Code API while focused on readonly viewing scenarios
+ * @internal
  */
 export enum CodeSequenceType {
   /** Return largest already used value. */
@@ -309,7 +309,7 @@ export enum CodeSequenceType {
 }
 
 /** Sequence of [Code]($common)s matching a pattern. This class allows getting next available index based [Code]($common)
- * @alpha Hide Code API while focused on readonly viewing scenarios
+ * @internal
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.CodeSequence", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class CodeSequence extends WsgInstance {
@@ -344,7 +344,7 @@ export class CodeSequence extends WsgInstance {
 
 /**
  * Handler for querying [[CodeSequence]]s. Use [[CodeHandler.Sequences]] to get an instance of this class.
- * @alpha Hide Code API while focused on readonly viewing scenarios
+ * @internal
  */
 export class CodeSequenceHandler {
   private _handler: IModelBaseHandler;
@@ -388,7 +388,7 @@ export class CodeSequenceHandler {
 
 /**
  * Handler for managing [Code]($common)s. Use [[IModelClient.Codes]] to get an instance of this class. In most cases, you should use [ConcurrencyControl]($backend) methods instead. You can read more about concurrency control [here]($docs/learning/backend/concurrencycontrol).
- * @alpha Hide Code API while focused on readonly viewing scenarios
+ * @internal
  */
 export class CodeHandler {
   private _handler: IModelBaseHandler;

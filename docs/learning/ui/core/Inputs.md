@@ -1,7 +1,7 @@
 # Inputs
 
 The [Inputs]($ui-core:Inputs) category in the `@bentley/ui-core` package includes
-components for working with input controls, such as Input, IconInput, NumericInput TextArea.
+components for working with input controls, such as Input, IconInput, NumberInput TextArea.
 
 ## Input
 
@@ -50,19 +50,16 @@ with an icon displayed to the left of the input field.
 
 ![icon input](./images/IconInput.png "Icon Input")
 
-## NumericInput
+## NumberInput
 
-The [NumericInput]($ui-core) React component is an input component that accepts numeric input.
+The [NumberInput]($ui-core) React component is an input component that accepts numeric input.
 It contains up and down arrows to the right that increment and decrement the value.
 
-**Note**: The NumericInput component uses various components from the
-[react-numeric-input](https://www.npmjs.com/package/react-numeric-input) package internally.
-
 ```tsx
-<NumericInput placeholder="Icon Input" min={1} max={100} />
+<NumberInput placeholder="Number Input" min={1} max={100} />
 ```
 
-![numeric input](./images/NumericInput.png "Numeric Input")
+![number input](./images/NumericInput.png "Number Input")
 
 ## Labeled Components
 
@@ -90,4 +87,4 @@ The Input and Textarea components have a labeled version.
 
 ## API Reference
 
-* [Inputs]($ui-core:Inputs)
+- [Inputs]($ui-core:Inputs)

@@ -8,6 +8,6 @@ A backend may need to set [IModelHostConfiguration.appAssetsDir]($backend) to id
 
 *Example:*
 
- ```ts
- [[include:IModelHost.startup]]
- ```
+```ts
+[[include:IModelHost.startup]]
+```

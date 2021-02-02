@@ -52,6 +52,7 @@ async function createNamedVersionWithThumbnail(requestContext: AuthorizedClientR
   if (utils.getCloudEnv().isIModelHub) {
     // Wait for large thumbnail.
     for (let i = 0; i < 50; i++) {
+      // eslint-disable-next-line deprecation/deprecation
       const largeThumbnails = (await imodelClient.thumbnails.get(requestContext, imodelId, "Large", new ThumbnailQuery().byVersionId(version.id!)));
       if (largeThumbnails.length > 0)
         break;
@@ -66,12 +67,12 @@ describe("iModelHub VersionHandler", () => {
   let imodelId2: GuidString;
   let iModelClient: IModelClient;
   let briefcase: Briefcase;
-  const imodelName = "imodeljs-clients Versions test";
-  const imodelName2 = "imodeljs-clients Versions test 2";
-  const baselineiModelName = "imodeljs-clients baseline versions iModel";
-  const firstVersionName = "Version 1";
+
   let requestContext: AuthorizedClientRequestContext;
   let backupTimeout: RequestTimeoutOptions;
+
+  const imodelName2 = "imodeljs-clients Versions test 2";
+  const baselineiModelName = "imodeljs-clients baseline versions iModel";
 
   before(async function () {
     backupTimeout = RequestGlobalOptions.timeout;
@@ -91,10 +92,8 @@ describe("iModelHub VersionHandler", () => {
     (requestContext as any).activityId = "iModelHub VersionHandler";
 
     contextId = await utils.getProjectId(requestContext);
-    await utils.createIModel(requestContext, imodelName, contextId, true, false, true);
-    await utils.createIModel(requestContext, imodelName2, contextId, true, false, true);
-    imodelId = await utils.getIModelId(requestContext, imodelName, contextId);
-    imodelId2 = await utils.getIModelId(requestContext, imodelName2, contextId);
+    await utils.createIModel(requestContext, utils.sharedimodelName, contextId, true, false, true);
+    imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, contextId);
     iModelClient = utils.getDefaultClient();
     briefcase = (await utils.getBriefcases(requestContext, imodelId, 1))[0];
     if (!TestConfig.enableMocks) {
@@ -103,32 +102,26 @@ describe("iModelHub VersionHandler", () => {
       const changeSetCount = (await iModelClient.changeSets.get(requestContext, imodelId)).length;
       if (changeSetCount > 9) {
         // Recreate iModel if can't create any new changesets
-        await utils.createIModel(requestContext, imodelName, contextId, true, true, true);
-        imodelId = await utils.getIModelId(requestContext, imodelName, contextId);
+        await utils.createIModel(requestContext, utils.sharedimodelName, contextId, true, true, true);
+        imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, contextId);
         briefcase = (await utils.getBriefcases(requestContext, imodelId, 1))[0];
-      }
-      // Prepared second iModel
-      const versionsCount = (await iModelClient.versions.get(requestContext, imodelId2)).length;
-      if (versionsCount === 0) {
-        // Create at least 1 named version
-        await createNamedVersionWithThumbnail(requestContext, iModelClient, imodelId2, firstVersionName);
-      }
-      // Cleanup baseline version's iModels if they left undeleted
-      if (!TestConfig.enableIModelBank) {
-        await utils.deleteIModelByName(requestContext, contextId, baselineiModelName);
       }
     }
   });
 
   after(async () => {
     if (!TestConfig.enableMocks) {
-      if (baselineiModelName)
-        await utils.deleteIModelByName(requestContext, contextId, baselineiModelName);
-      await utils.deleteIModelByName(requestContext, contextId, imodelName);
-      await utils.deleteIModelByName(requestContext, contextId, imodelName2);
       utils.getRequestBehaviorOptionsHandler().resetDefaultBehaviorOptions();
       iModelClient?.requestOptions.setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
     }
+
+    await utils.deleteIModelByName(requestContext, contextId, imodelName2);
+    await utils.deleteIModelByName(requestContext, contextId, baselineiModelName);
+
+    if (TestConfig.enableIModelBank) {
+      await utils.deleteIModelByName(requestContext, contextId, utils.sharedimodelName);
+    }
+
     RequestGlobalOptions.timeout = backupTimeout;
   });
 
@@ -155,6 +148,9 @@ describe("iModelHub VersionHandler", () => {
   });
 
   it("should create and get baseline named version", async () => {
+    // Cleanup baseline version's iModels if they left undeleted
+    await utils.deleteIModelByName(requestContext, contextId, baselineiModelName);
+
     // Create new iModel
     let baselineiModelId = Guid.createValue();
     if (!TestConfig.enableMocks) {
@@ -212,37 +208,62 @@ describe("iModelHub VersionHandler", () => {
   });
 
   it("should get named versions with thumbnail id", async () => {
+    const firstVersionName = "Version 1";
+
+    await utils.createIModel(requestContext, imodelName2, contextId, true, false, true);
+    imodelId2 = await utils.getIModelId(requestContext, imodelName2, contextId);
+    if (!TestConfig.enableMocks) {
+      const versionsCount = (await iModelClient.versions.get(requestContext, imodelId2)).length;
+      if (versionsCount === 0) {
+        // Create at least 1 named version
+        await createNamedVersionWithThumbnail(requestContext, iModelClient, imodelId2, firstVersionName);
+      }
+    }
+
     let mockedVersions = Array(1).fill(0).map(() => utils.generateVersion());
     utils.mockGetVersions(imodelId2, `?$filter=Name+eq+%27Version%201%27`, ...mockedVersions);
     let versions: Version[] = await iModelClient.versions.get(requestContext, imodelId2, new VersionQuery().byName(firstVersionName));
     chai.expect(versions.length).to.be.equal(1);
     const firstVersion = versions[0];
+    // eslint-disable-next-line deprecation/deprecation
     chai.expect(firstVersion.smallThumbnailId).to.be.undefined;
+    // eslint-disable-next-line deprecation/deprecation
     chai.expect(firstVersion.largeThumbnailId).to.be.undefined;
 
     const mockedSmallThumbnail = utils.generateThumbnail("Small");
     utils.mockGetThumbnailsByVersionId(imodelId2, "Small", firstVersion.id!, mockedSmallThumbnail);
+    // eslint-disable-next-line deprecation/deprecation
     const smallThumbnail: Thumbnail = (await iModelClient.thumbnails.get(requestContext, imodelId2, "Small", new ThumbnailQuery().byVersionId(firstVersion.id!)))[0];
 
     const mockedLargeThumbnail = utils.generateThumbnail("Large");
     utils.mockGetThumbnailsByVersionId(imodelId2, "Large", firstVersion.id!, mockedLargeThumbnail);
+    // eslint-disable-next-line deprecation/deprecation
     const largeThumbnail: Thumbnail = (await iModelClient.thumbnails.get(requestContext, imodelId2, "Large", new ThumbnailQuery().byVersionId(firstVersion.id!)))[0];
 
     mockedVersions = Array(1).fill(0).map(() => utils.generateVersion(undefined, undefined, true, mockedSmallThumbnail.id, mockedLargeThumbnail.id));
     mockGetVersionsByIdWithThumbnails(imodelId2, firstVersion.id!, ["Small", "Large"], ...mockedVersions);
+    // eslint-disable-next-line deprecation/deprecation
     versions = await iModelClient.versions.get(requestContext, imodelId2, new VersionQuery().byId(firstVersion.id!).selectThumbnailId("Small", "Large"));
     chai.expect(versions.length === 1);
+    // eslint-disable-next-line deprecation/deprecation
     chai.assert(!!versions[0].smallThumbnailId);
+    // eslint-disable-next-line deprecation/deprecation
     chai.expect(versions[0].smallThumbnailId!.toString()).to.be.equal(smallThumbnail.id!.toString());
+    // eslint-disable-next-line deprecation/deprecation
     chai.assert(!!versions[0].largeThumbnailId);
+    // eslint-disable-next-line deprecation/deprecation
     chai.expect(versions[0].largeThumbnailId!.toString()).to.be.equal(largeThumbnail.id!.toString());
 
     mockedVersions = Array(1).fill(0).map(() => utils.generateVersion(undefined, undefined, true, undefined, mockedLargeThumbnail.id));
     mockGetVersionsByNameWithThumbnails(imodelId2, firstVersion.name!, ["Large"], ...mockedVersions);
+    // eslint-disable-next-line deprecation/deprecation
     versions = await iModelClient.versions.get(requestContext, imodelId2, new VersionQuery().byName(firstVersion.name!).selectThumbnailId("Large"));
     chai.expect(versions.length === 1);
+    // eslint-disable-next-line deprecation/deprecation
     chai.expect(versions[0].smallThumbnailId).to.be.undefined;
+    // eslint-disable-next-line deprecation/deprecation
     chai.assert(!!versions[0].largeThumbnailId);
+    // eslint-disable-next-line deprecation/deprecation
     chai.expect(versions[0].largeThumbnailId!.toString()).to.be.equal(largeThumbnail.id!.toString());
 
     chai.expect(smallThumbnail.id!.toString()).to.be.not.equal(largeThumbnail.id!.toString());

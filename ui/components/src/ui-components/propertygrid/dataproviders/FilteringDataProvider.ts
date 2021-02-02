@@ -7,22 +7,23 @@
  */
 import { IDisposable } from "@bentley/bentleyjs-core";
 import { PropertyRecord, PropertyValue, PropertyValueFormat } from "@bentley/ui-abstract";
-import { PropertyRecordMatchInfo } from "../component/VirtualizedPropertyGrid";
+import { HighlightInfo } from "../../common/HighlightingComponentProps";
 import { CategoryRecordsDict } from "../internal/flat-items/MutableGridCategory";
 import { IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent } from "../PropertyDataProvider";
-import { IPropertyDataFilterer } from "./filterers/PropertyDataFiltererBase";
+import { FilteredType, IPropertyDataFilterer, PropertyDataFilterResult } from "./filterers/PropertyDataFiltererBase";
 
 interface FilteredRecords {
   filteredRecords: PropertyRecord[];
   shouldExpandNodeParents: boolean;
   matchesCount: number;
-  activeMatch?: PropertyRecordMatchInfo;
-  filteredResultMatches: { id: string, matchesCount: { label?: number, value?: number } }[];
+  activeMatch?: HighlightInfo;
+  filteredResultMatches: { id: string, matchesCount: number }[];
+  filteredTypes: FilteredType[];
 }
 
 /**
  *  Data returned by [[FilteringPropertyDataProvider]]
- * @alpha
+ * @beta
  */
 export interface FilteredPropertyData extends PropertyData {
   /*
@@ -34,7 +35,9 @@ export interface FilteredPropertyData extends PropertyData {
   * Function used for getting PropertyRecordMatchInfo by index from all the filtered matches.
   * Undefined when filterer is not active
   */
-  getMatchByIndex?: (index: number) => PropertyRecordMatchInfo | undefined;
+  getMatchByIndex?: (index: number) => HighlightInfo | undefined;
+
+  filteredTypes?: FilteredType[];
 }
 
 /**
@@ -72,25 +75,21 @@ export class FilteringPropertyDataProvider implements IPropertyDataProvider, IDi
 
   private async filterPropertyData(propertyData: PropertyData) {
     const { categories, records, label, description } = { ...propertyData };
-    const { filteredCategories, filteredRecords, matchesCount, filteredResultMatches } = await matchHierarchy(this._filterer, categories, records, undefined);
+    const { filteredCategories, filteredRecords, matchesCount, filteredResultMatches, filteredTypes } = await matchHierarchy(this._filterer, categories, records, undefined);
 
+    const uniqueTypes = [...new Set(filteredTypes)];
     const getMatchByIndex = (index: number) => {
-      let activeMatch: PropertyRecordMatchInfo | undefined;
+      let activeMatch: HighlightInfo | undefined;
       if (index <= 0)
         return undefined;
 
       let i = 1;
       for (const record of filteredResultMatches) {
-        const { label: labelCount, value: valueCount } = record.matchesCount;
-        const fullMatchesCount = (labelCount ?? 0) + (valueCount ?? 0);
+        const fullMatchesCount = record.matchesCount;
         if (index < i + fullMatchesCount) {
           activeMatch = {
-            propertyName: record.id,
-            matchIndex: index - i,
-            matchCounts: {
-              label: (labelCount ?? 0),
-              value: (valueCount ?? 0),
-            },
+            highlightedItemIdentifier: record.id,
+            highlightIndex: index - i,
           };
           break;
         }
@@ -108,65 +107,89 @@ export class FilteringPropertyDataProvider implements IPropertyDataProvider, IDi
       reusePropertyDataState: false,
       matchesCount,
       getMatchByIndex,
+      filteredTypes: uniqueTypes,
     };
   }
 }
 
-async function matchHierarchy(filterer: IPropertyDataFilterer, categories: PropertyCategory[], records: CategoryRecordsDict, newRecords?: CategoryRecordsDict) {
+async function matchHierarchy(filterer: IPropertyDataFilterer, categories: PropertyCategory[], records: CategoryRecordsDict, newRecords?: CategoryRecordsDict, parentMatchInfo?: PropertyDataFilterResult) {
   const newCategories: PropertyCategory[] = [];
   newRecords = newRecords ?? {};
   let matchesCount = 0;
-  let allFilteredResultMatches: { id: string, matchesCount: { label?: number, value?: number } }[] = [];
+  let allFilteredResultMatches: { id: string, matchesCount: number }[] = [];
+  let allFilteredTypes: FilteredType[] = [];
 
   for (const category of categories) {
+    const matchInfo = await filterer.categoryMatchesFilter(category, []);
+
+    if (matchInfo.matchesFilter) {
+      allFilteredResultMatches.push({ id: category.name, matchesCount: matchInfo.matchesCount ?? 0 });
+      allFilteredTypes = allFilteredTypes.concat(matchInfo.filteredTypes ?? []);
+      matchesCount += matchInfo.matchesCount ?? 0;
+    }
+
     const childRecords = records[category.name] ?? [];
-    const { filteredRecords, matchesCount: count, filteredResultMatches } = await matchRecordHierarchy(filterer, childRecords, []);
+    const { filteredRecords, matchesCount: count, filteredResultMatches, filteredTypes } = await matchRecordHierarchy(filterer, childRecords, []);
     allFilteredResultMatches = allFilteredResultMatches.concat(filteredResultMatches);
+    allFilteredTypes = allFilteredTypes.concat(filteredTypes);
     matchesCount += count;
 
-    const childCategories = category.childCategories ?? [];
-    const { filteredCategories, matchesCount: childCount, filteredResultMatches: childFilteredResultMatches } = await matchHierarchy(filterer, childCategories, records, newRecords);
-    allFilteredResultMatches = allFilteredResultMatches.concat(childFilteredResultMatches);
+    const parentInfo = parentMatchInfo?.matchesFilter ? parentMatchInfo : matchInfo;
 
+    const childCategories = category.childCategories ?? [];
+    const { filteredCategories, matchesCount: childCount, filteredResultMatches: childFilteredResultMatches, filteredTypes: childFilteredTypes } = await matchHierarchy(filterer, childCategories, records, newRecords, parentInfo);
+    allFilteredResultMatches = allFilteredResultMatches.concat(childFilteredResultMatches);
+    allFilteredTypes = allFilteredTypes.concat(childFilteredTypes);
     matchesCount += childCount;
 
-    if (filteredRecords.length !== 0 || filteredCategories.length !== 0) {
-      const newCategory = copyPropertyCategory(category, filteredCategories);
+    let expand = !(count === 0 && childCount === 0);
+    if (matchInfo.matchesFilter || (parentMatchInfo?.matchesFilter && parentMatchInfo.shouldForceIncludeDescendants)) {
+      newRecords[category.name] = records[category.name];
+      if (matchInfo.matchesFilter) {
+        expand = true;
+      }
+      const newCategory = copyPropertyCategory(category, filteredCategories, expand);
+      newCategories.push(newCategory);
+    }
+
+    if ((filteredRecords.length !== 0 || filteredCategories.length !== 0) && !matchInfo.matchesFilter && !(parentMatchInfo?.shouldExpandNodeParents && parentMatchInfo.matchesFilter)) {
+      const newCategory = copyPropertyCategory(category, filteredCategories, expand);
       newRecords[newCategory.name] = filteredRecords;
       newCategories.push(newCategory);
     }
-  };
+  }
 
-  return { filteredCategories: newCategories, filteredRecords: newRecords, matchesCount, filteredResultMatches: allFilteredResultMatches };
+  return { filteredCategories: newCategories, filteredRecords: newRecords, matchesCount, filteredResultMatches: allFilteredResultMatches, filteredTypes: allFilteredTypes };
 }
 
 async function matchRecordHierarchy(filterer: IPropertyDataFilterer, records: PropertyRecord[], parents: PropertyRecord[], forceIncludeItem: boolean = false): Promise<FilteredRecords> {
   const newMatchedRecords: PropertyRecord[] = [];
   let expandParent = false; // property passed back to parent to indicate whether it should be expanded
   let matchesCount = 0;
-  let filteredResultMatches: { id: string, matchesCount: { label?: number, value?: number } }[] = [];
+  let filteredResultMatches: { id: string, matchesCount: number }[] = [];
+  let filteredTypes: FilteredType[] = [];
 
   for (const record of records) {
-    const matchInfo = await filterer.matchesFilter(record, parents);
+    const matchInfo = await filterer.recordMatchesFilter(record, parents);
     const shouldForceIncludeDescendants = forceIncludeItem || matchInfo.shouldForceIncludeDescendants;
-    const { filteredRecords: filteredChildren, shouldExpandNodeParents, matchesCount: childrenMatchesCount, filteredResultMatches: childrenResultMatches } = await matchRecordHierarchy(filterer, record.getChildrenRecords(), [...parents, record], shouldForceIncludeDescendants);
+    const { filteredRecords: filteredChildren, shouldExpandNodeParents, matchesCount: childrenMatchesCount, filteredResultMatches: childrenResultMatches, filteredTypes: childrenFilteredTypes } = await matchRecordHierarchy(filterer, record.getChildrenRecords(), [...parents, record], shouldForceIncludeDescendants);
     filteredResultMatches = filteredResultMatches.concat(childrenResultMatches);
+    filteredTypes = [...filteredTypes, ...childrenFilteredTypes];
     matchesCount += childrenMatchesCount;
     // if child hierarchy indicates parents should be expanded, then it should be passed back up to the top parent
     expandParent = expandParent || shouldExpandNodeParents;
 
     let newRecord: PropertyRecord | undefined;
     if (matchInfo.matchesFilter) {
-      const { matchesCount: recordMatchesCount } = matchInfo;
-      const { label, value } = recordMatchesCount ?? { label: 0, value: 0 };
-      const matches = (label ?? 0) + (value ?? 0);
-      matchesCount += matches;
+      filteredTypes = [...filteredTypes, ...(matchInfo.filteredTypes ?? [])];
+      const recordMatchesCount = matchInfo.matchesCount ?? 0;
+      matchesCount += recordMatchesCount;
       // Item is included if it matches filter
       // If at least one matched record from records list needs its parent expanded,
       // then `expandParent` should be set to true
       expandParent = expandParent || !!matchInfo.shouldExpandNodeParents;
       newRecord = copyPropertyRecord(record, filteredChildren, shouldExpandNodeParents);
-      filteredResultMatches.push({ id: newRecord?.property.name ?? "", matchesCount: (recordMatchesCount ?? { label: 0, value: 0 }) });
+      filteredResultMatches.push({ id: newRecord.property.name, matchesCount: recordMatchesCount });
     } else if (filteredChildren.length !== 0 || forceIncludeItem) {
       // Item is also included if it has at least one matched child or is forcefully included by its parent
       newRecord = copyPropertyRecord(record, filteredChildren, shouldExpandNodeParents);
@@ -176,14 +199,14 @@ async function matchRecordHierarchy(filterer: IPropertyDataFilterer, records: Pr
       newMatchedRecords.push(newRecord);
   }
 
-  return { filteredRecords: newMatchedRecords, shouldExpandNodeParents: expandParent, matchesCount, filteredResultMatches };
+  return { filteredRecords: newMatchedRecords, shouldExpandNodeParents: expandParent, matchesCount, filteredResultMatches, filteredTypes };
 }
 
-function copyPropertyCategory(propertyCategory: PropertyCategory, newChildren: PropertyCategory[]) {
+function copyPropertyCategory(propertyCategory: PropertyCategory, newChildren: PropertyCategory[], expand: boolean) {
   const newCategory = {
     ...propertyCategory,
     childCategories: newChildren,
-    expand: true,
+    expand,
   };
   newChildren.forEach((child) => child.parentCategory = newCategory);
   return newCategory;

@@ -40,7 +40,7 @@ export interface StatusBarProps extends CommonProps {
 
 /** Status Bar React component.
  * @public
- */
+ */
 export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
 
   public static severityToStatus(severity: MessageSeverity): Status {
@@ -76,7 +76,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
       isActivityMessageVisible: false,
       toastTarget: null,
     };
-  };
+  }
 
   public render(): React.ReactNode {
     let footerSections: React.ReactNode = null;
@@ -179,7 +179,6 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
       />
     );
   }
-
 
   /**
    * Ends canceled process and dismisses ActivityMessage

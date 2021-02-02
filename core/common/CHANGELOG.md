@@ -1,6 +1,86 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Mon, 23 Nov 2020 22:19:30 GMT and should not be manually modified.
+This log was last generated on Thu, 28 Jan 2021 13:39:27 GMT and should not be manually modified.
+
+## 2.11.0
+Thu, 28 Jan 2021 13:39:27 GMT
+
+### Updates
+
+- Fix brep DataProps to/from flatbuffer to account for base64 string header.
+- Element geometry creation by brep operations. 
+- add EditCommand
+- Improve ElementGeometry documentation.
+- Remove assertion in supplyPathForOperation when defaulting changeSetId.
+- Introduced the the Geographic Coordinate System classes and plugged in the Imodel props.
+- Separated out API to upgrade iModels.
+- Remove unused trueWidth and trueStart properties from GraphicParams.
+- Add option to SectionDrawingProps specifying the spatial view should be drawn in the context of the drawing view.
+- Support for section-cut graphics.
+- Version compare property checksums
+- Add change events to DisplayStyleSettings and ViewDetails.
+
+## 2.10.3
+Fri, 08 Jan 2021 18:34:03 GMT
+
+_Version update only_
+
+## 2.10.2
+Fri, 08 Jan 2021 14:52:02 GMT
+
+_Version update only_
+
+## 2.10.1
+Tue, 22 Dec 2020 00:53:38 GMT
+
+_Version update only_
+
+## 2.10.0
+Fri, 18 Dec 2020 18:24:01 GMT
+
+### Updates
+
+- Update minimum Node version to 10.17.0
+- Fix cartographicRange computation. The 8 corners are calculated in the ECEF coordinate system but I think they should be calculated in the spatial coordinate system and then converted to ECEF.
+- Support compact representation of DisplayStyleSettings.excludedElements.
+- Added ElementGeometry.Builder and ElementGeometry.Iterator.
+- export ModelLoadProps
+- Support display of OSM Buildings.
+- Version compare top parents ChangedElements update
+
+## 2.9.9
+Sun, 13 Dec 2020 19:00:03 GMT
+
+_Version update only_
+
+## 2.9.8
+Fri, 11 Dec 2020 02:57:36 GMT
+
+_Version update only_
+
+## 2.9.7
+Wed, 09 Dec 2020 20:58:23 GMT
+
+### Updates
+
+- Fix cartographicRange computation. The 8 corners are calculated in the ECEF coordinate system but I think they should be calculated in the spatial coordinate system and then converted to ECEF.
+
+## 2.9.6
+Mon, 07 Dec 2020 18:40:48 GMT
+
+_Version update only_
+
+## 2.9.5
+Sat, 05 Dec 2020 01:55:56 GMT
+
+### Updates
+
+- Bump Tile Version to 18
+
+## 2.9.4
+Wed, 02 Dec 2020 20:55:40 GMT
+
+_Version update only_
 
 ## 2.9.3
 Mon, 23 Nov 2020 20:57:56 GMT

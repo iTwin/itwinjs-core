@@ -10,6 +10,8 @@ public;HiliteSet
 public;HiliteSetProvider
 public;HiliteSetProviderProps
 beta;IFavoritePropertiesStorage
+alpha;IModelContentChangeEventArgs
+alpha;IModelHierarchyChangeEventArgs
 public;ISelectionProvider
 public;Presentation
 beta;PresentationFrontendLoggerCategory

@@ -12,17 +12,17 @@ iModelHub API covers basic calls to iModelHub that are part of larger workflows.
 
 ## Before you start
 
-* [Obtaining an AccessToken]($docs/learning/common/AccessToken.md)
-* [Creating iModelHub client](./Client)
-* [Permissions](./Permissions)
+- [Obtaining an AccessToken]($docs/learning/common/AccessToken.md)
+- [Creating iModelHub client](./Client)
+- [Permissions](./Permissions)
 
 ## Working through backend classes
 
-* [iModels](./iModels/index)
-* [Briefcases](./Briefcases)
-* [Codes and Locks]($docs/learning/backend/ConcurrencyControl.md)
+- [iModels](./iModels/index)
+- [Briefcases](./Briefcases)
+- [Codes and Locks]($docs/learning/backend/ConcurrencyControl.md)
 
 ## Working through clients package
 
-* [Named Versions](./Versions)
-* [Events](./Events)
+- [Named Versions](./Versions)
+- [Events](./Events)

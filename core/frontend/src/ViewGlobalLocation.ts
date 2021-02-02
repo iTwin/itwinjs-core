@@ -6,12 +6,11 @@
  * @module Views
  */
 
-import { Range3d } from "@bentley/geometry-core";
+import { Point3d, Range3d } from "@bentley/geometry-core";
 import { Cartographic, GlobeMode } from "@bentley/imodeljs-common";
 import { BingElevationProvider } from "./tile/internal";
 import { ScreenViewport } from "./Viewport";
 import { ViewState3d } from "./ViewState";
-
 
 /** Describes a rectangular area of the earth using cartographic data structures.
  * @alpha
@@ -72,6 +71,16 @@ export async function queryTerrainElevationOffset(viewport: ScreenViewport, cart
   return 0;
 }
 
+function _areaToEyeHeight(view3d: ViewState3d, ne?: Point3d, sw?: Point3d, offset = 0): number {
+  if (ne === undefined || sw === undefined)
+    return 0;
+  const diagonal = ne.distance(sw);
+
+  view3d.camera.validateLens();
+  const td = Math.tan(view3d.camera.getLensAngle().radians / 2.0);
+  return 0 !== td ? (diagonal / (2 * td) + offset) : offset;
+}
+
 /** Converts a cartographic area on the globe to an ideal eye height to view that area.
  * Offset in meters, which defaults to 0, is applied to final eye height.
  * @internal
@@ -79,10 +88,17 @@ export async function queryTerrainElevationOffset(viewport: ScreenViewport, cart
 export function areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, offset = 0): number {
   const ne = view3d.cartographicToRoot(area.northeast);
   const sw = view3d.cartographicToRoot(area.southwest);
-  if (ne === undefined || sw === undefined)
-    return 0;
-  const diagonal = ne.distance(sw);
-  return diagonal / Math.tan(view3d.camera.getLensAngle().radians / 2.0) + offset;
+  return _areaToEyeHeight(view3d, ne, sw, offset);
+}
+
+/** Converts a cartographic area on the globe to an ideal eye height to view that area using the GCS.
+ * Offset in meters, which defaults to 0, is applied to final eye height.
+ * @internal
+ */
+export async function areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset = 0): Promise<number> {
+  const ne = await view3d.cartographicToRootFromGcs(area.northeast);
+  const sw = await view3d.cartographicToRootFromGcs(area.southwest);
+  return _areaToEyeHeight(view3d, ne, sw, offset);
 }
 
 /** Converts a root range (often project extents) to a cartographic area.
@@ -106,7 +122,27 @@ export function eyeToCartographicOnGlobe(viewport: ScreenViewport, preserveHeigh
 
   const view3d = viewport.view;
 
-  const eyePointCartographic = view3d.rootToCartographic(view3d.getEyePoint());
+  const eyePointCartographic = view3d.rootToCartographic(view3d.getEyeOrOrthographicViewPoint());
+  if (eyePointCartographic !== undefined) {
+    if (!preserveHeight)
+      eyePointCartographic.height = 0.0;
+    return eyePointCartographic;
+  }
+
+  return undefined;
+}
+
+/** Converts the eye of the camera to a cartographic location on the globe as if it was at height 0 using the GCS.
+ * If preserveHeight is set to true, then height will remain untouched.
+ * @internal
+ */
+export async function eyeToCartographicOnGlobeFromGcs(viewport: ScreenViewport, preserveHeight = false): Promise<Cartographic | undefined> {
+  if (!(viewport.view instanceof ViewState3d) || !viewport.iModel.isGeoLocated)
+    return undefined;
+
+  const view3d = viewport.view;
+
+  const eyePointCartographic = await view3d.rootToCartographicFromGcs(view3d.getEyeOrOrthographicViewPoint());
   if (eyePointCartographic !== undefined) {
     if (!preserveHeight)
       eyePointCartographic.height = 0.0;
@@ -120,11 +156,6 @@ export function eyeToCartographicOnGlobe(viewport: ScreenViewport, preserveHeigh
 export function viewGlobalLocation(viewport: ScreenViewport, doAnimate: boolean, eyeHeight = ViewGlobalLocationConstants.birdHeightAboveEarthInMeters, pitchAngleRadians = 0, location?: GlobalLocation): number {
   if (!(viewport.view instanceof ViewState3d))
     return 0;
-
-  if (!viewport.isCameraOn) {
-    viewport.turnCameraOn();
-    viewport.setupFromView();
-  }
 
   const before = viewport.getFrustum();
   const view3d = viewport.view;

@@ -12,7 +12,9 @@ import {
   Id64String,
   Logger,
 } from "@bentley/bentleyjs-core";
-import { AngleProps, LowAndHighXY, LowAndHighXYZ, TransformProps, XYProps, XYZProps, YawPitchRollProps } from "@bentley/geometry-core";
+import {
+  AngleProps, ClipVectorProps, LowAndHighXY, LowAndHighXYZ, TransformProps, XYProps, XYZProps, YawPitchRollProps,
+} from "@bentley/geometry-core";
 import { CodeProps } from "./Code";
 import { CommonLoggerCategory } from "./CommonLoggerCategory";
 import { EntityProps } from "./EntityProps";
@@ -193,8 +195,11 @@ export interface SectionDrawingProps extends ElementProps {
      * The ClipVector is in spatial coordinates.
      * @alpha
      */
-    drawingBoundaryClip?: any;
-    // ###TODO: Excluded spatial elements; flag to say "exclude all spatial elements" (i.e., don't draw the spatial view at all).
+    drawingBoundaryClip?: ClipVectorProps;
+    /** If true, when displaying the section drawing as a [DrawingViewState]($frontend), the [[spatialView]] will also be displayed.
+     * @alpha
+     */
+    displaySpatialView?: true;
   };
 }
 
@@ -231,7 +236,7 @@ export interface ViewAttachmentProps extends GeometricElement2dProps {
     /** Integer priority in [-500,500]. Where two attachments overlap, the one with the higher priority draws in front of the other. Default: 0. */
     displayPriority?: number;
     /** JSON representation of a [ClipVector]($geometry-core] in sheet coordinate space, used to clip the attachment's graphics on the sheet. */
-    clip?: any;
+    clip?: ClipVectorProps;
     /** Options for customizing how the view attachment is displayed on the sheet. */
     displayOptions?: {
       /** If true, the view attachment is always drawn as a raster image. By default, only 3d perspective views are drawn this way (they always *must* be). Default: false. */
@@ -308,6 +313,22 @@ export interface InformationPartitionElementProps extends DefinitionElementProps
   description?: string;
 }
 
+/** Options for loading a [[DisplayStyleProps]].
+ * @see [[ViewStateLoadProps]].
+ * @public
+ */
+export interface DisplayStyleLoadProps {
+  /** If true, the element Ids in the display style's schedule script will be empty. The element Ids are not required on the frontend for display and can be quite large.
+   * @public
+   */
+  omitScheduleScriptElementIds?: boolean;
+  /** If true, the Ids of excluded elements will be compressed into a single string.
+   * @see [[DisplayStyleSettingsProps.excludedElements]]
+   * @public
+   */
+  compressExcludedElementIds?: boolean;
+}
+
 /** Parameters to specify what element to load for [IModelDb.Elements.getElementProps]($backend).
  * @public
  */
@@ -322,13 +343,7 @@ export interface ElementLoadProps {
   /** Properties to omit when loading a [[DisplayStyle]].
    * @internal
    */
-  displayStyle?: {
-    /** If true, the element Ids in the display style's schedule script will be empty. The element Ids are not required on the frontend for display.
-     * @note [IModelDb.Views.getViewStateData]($backend) sets this to true, affecting the result of [IModelConnection.Views.load]($frontend).
-     * @internal
-     */
-    omitScheduleScriptElementIds?: boolean;
-  };
+  displayStyle?: DisplayStyleLoadProps;
 }
 
 /** Properties of an [ElementAspect]($backend)

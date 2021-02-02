@@ -9,8 +9,9 @@
 import * as React from "react";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
+import { countMatchesInString } from "../../common/countMatchesInString";
 import { HighlightedText } from "../../common/HighlightedText";
-import { HighlightedRecordProps } from "../../propertygrid/component/VirtualizedPropertyGrid";
+import { HighlightingComponentProps } from "../../common/HighlightingComponentProps";
 import { PropertyContainerType, PropertyValueRendererContext, PropertyValueRendererManager } from "../ValueRendererManager";
 
 /**
@@ -46,9 +47,9 @@ export class CommonPropertyRenderer {
     isExpanded?: boolean,
     onExpansionToggled?: () => void,
     onHeightChanged?: (newHeight: number) => void,
-    highlightProps?: HighlightedRecordProps,
+    highlight?: HighlightingComponentProps & { applyOnLabel: boolean, applyOnValue: boolean }
   ) {
-    const highlightCallback = highlightProps ? CommonPropertyRenderer.createHighlightCallback(highlightProps, propertyRecord) : undefined;
+    const highlightCallback = highlight?.applyOnValue ? (CommonPropertyRenderer.createHighlightCallback(highlight, propertyRecord)) : undefined;
     const rendererContext: PropertyValueRendererContext = {
       orientation,
       containerType: PropertyContainerType.PropertyPane,
@@ -71,15 +72,20 @@ export class CommonPropertyRenderer {
     return displayValue;
   }
 
-  private static createHighlightCallback(highlightProps: HighlightedRecordProps, propertyRecord: PropertyRecord) {
-    const activeMatch = highlightProps.activeMatch;
-    const propertyName = activeMatch?.propertyName;
-    const matchIndex = activeMatch?.matchIndex ?? 0;
-    const labelMatches = activeMatch?.matchCounts.label ?? 0;
+  private static createHighlightCallback(highlight: HighlightingComponentProps & {applyOnLabel: boolean}, propertyRecord: PropertyRecord) {
+    const activeMatch = highlight.activeHighlight;
+    const propertyName = activeMatch?.highlightedItemIdentifier;
+    const matchIndex = activeMatch?.highlightIndex ?? 0;
+    let labelMatches: number;
+
+    if (highlight.applyOnLabel) {
+      labelMatches = countMatchesInString(propertyRecord.property.displayLabel.toLowerCase(), highlight.highlightedText);
+    } else {
+      labelMatches = 0;
+    }
 
     const activeMatchIndex = (propertyRecord.property.name === propertyName) && ((matchIndex - labelMatches) >= 0) ? (matchIndex - labelMatches) : undefined;
-
-    const highlightCallback = (text: string) => (<HighlightedText text={text} activeMatchIndex={activeMatchIndex} {...highlightProps} />);
+    const highlightCallback = (text: string) => (<HighlightedText text={text} activeMatchIndex={activeMatchIndex} searchText={highlight.highlightedText} />);
 
     return highlightCallback;
   }

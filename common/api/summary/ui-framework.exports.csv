@@ -1,5 +1,8 @@
 sep=;
 Release Tag;API Item
+alpha;AccuDrawCommandItems
+alpha;AccuDrawDialog(props: AccuDrawDialogProps): JSX.Element
+alpha;AccuDrawDialogProps 
 alpha;AccuDrawPopupManager
 public;Action
 internal;ActionButtonItem(props: ActionButtonProps): JSX.Element
@@ -21,6 +24,7 @@ beta;ActivityMessagePopup(props: ActivityMessagePopupProps): JSX.Element | null
 beta;ActivityMessagePopupProps 
 beta;ActivityMessageProps
 public;ActivityMessageUpdatedEvent 
+internal;addMissingWidgets(frontstageDef: FrontstageDef, initialState: NineZoneState): NineZoneState
 internal;addPanelWidgets(state: NineZoneState, frontstageDef: FrontstageDef, side: PanelSide): NineZoneState
 internal;addWidgets(state: NineZoneState, widgets: ReadonlyArray
 alpha;AnalysisAnimationTimelineDataProvider 
@@ -180,10 +184,12 @@ internal;expandWidget:
 beta;ExtensibleToolbarProps
 public;FooterModeField 
 public;FooterModeFieldProps 
+alpha;FrameworkAccuDraw 
 beta;FrameworkRootState
 internal;FrameworkStagePanel 
 internal;FrameworkStagePanelProps
 beta;FrameworkState
+alpha;FrameworkToolAdmin 
 beta;FrameworkUiAdmin 
 alpha;FrameworkVersion(props: FrameworkVersionProps): JSX.Element
 alpha;FrameworkVersion = "1" | "2"
@@ -226,7 +232,7 @@ internal;getFloatingZoneStyle: (props: ZoneManagerProps) =>
 beta;getIsHiddenIfFeatureOverridesActive(): ConditionalBooleanValue
 beta;getIsHiddenIfSelectionNotActive(): ConditionalBooleanValue
 internal;getNestedStagePanelKey: (location: StagePanelLocation_2) => NestedStagePanelKey
-internal;getPanelSide(location: StagePanelLocation_2): PanelSide
+internal;getPanelZoneWidgets(frontstageDef: FrontstageDef, panelZone: WidgetIdTypes): WidgetDef[]
 beta;getSelectionContextSyncEventIds(): string[]
 internal;getStableWidgetProps(widgetProps: WidgetProps, stableId: string): WidgetProps
 internal;getStagePanelType: (location: StagePanelLocation_2) => StagePanelType
@@ -348,6 +354,8 @@ public;ModelsTree(props: ModelsTreeProps): JSX.Element
 beta;ModelsTreeNodeType
 public;ModelsTreeProps
 beta;ModelsTreeSelectionPredicate = (key: NodeKey, type: ModelsTreeNodeType) => boolean
+alpha;ModelsVisibilityHandler 
+alpha;ModelsVisibilityHandlerProps
 public;MouseDownChangedEvent 
 public;MouseDownChangedEventArgs
 beta;NameToReducerMap
@@ -405,6 +413,7 @@ public;ReducerActions
 public;ReducerMapActions
 beta;ReducerRegistry
 beta;ReducerRegistryInstance: ReducerRegistry
+internal;removeMissingWidgets(frontstageDef: FrontstageDef, initialState: NineZoneState): NineZoneState
 alpha;RestoreFrontstageLayoutTool 
 internal;restoreNineZoneState(frontstageDef: FrontstageDef, saved: SavedNineZoneState): NineZoneState
 beta;ReviewToolWidget 
@@ -419,7 +428,7 @@ alpha;SafeAreaContext: React.Context
 public;SavedView
 public;SavedViewLayout
 public;SavedViewLayoutProps
-public;SavedViewProps
+public;SavedViewProps 
 alpha;ScheduleAnimationTimelineDataProvider 
 beta;SectionsStatusField(props: SectionsStatusFieldProps): JSX.Element
 beta;SectionsStatusFieldProps 
@@ -556,7 +565,7 @@ beta;ToolSettingsEntry
 beta;ToolSettingsGrid({ settings }: ToolSettingsGridProps): JSX.Element
 beta;ToolSettingsGridContainer({ componentGenerator }:
 beta;ToolSettingsGridProps
-internal;ToolSettingsManager
+beta;ToolSettingsManager
 internal;ToolSettingsWidgetContent(): JSX.Element
 internal;ToolSettingsZone 
 internal;ToolSettingsZoneProps 
@@ -567,6 +576,7 @@ beta;ToolWidgetComposerProps
 public;ToolWidgetDef 
 public;ToolWidgetProps 
 public;ToolWidgetPropsEx 
+internal;toPanelSide(location: StagePanelLocation_2): PanelSide
 internal;TrackingTime
 internal;UiActivityEvent 
 internal;UiActivityEventArgs
@@ -627,12 +637,11 @@ beta;ViewSelectorChangedEventArgs
 beta;ViewSelectorDefaultProps = Pick
 beta;ViewSelectorProps
 public;ViewUtilities
+alpha;VisibilityChangeListener = (nodeIds?: string[]) => void
 beta;VisibilityComponent 
 beta;VisibilityComponentConfig
 public;VisibilityComponentHierarchy
 beta;VisibilityComponentProps
-internal;VisibilityHandler 
-internal;VisibilityHandlerProps
 alpha;VisibilityStatus
 alpha;VisibilityTreeEventHandler 
 alpha;VisibilityTreeEventHandlerParams 
@@ -655,6 +664,7 @@ internal;WidgetInfo
 beta;WidgetManager
 internal;WidgetPanelsFrontstage: React.NamedExoticComponent
 internal;WidgetPanelsFrontstageContent(): JSX.Element | null
+internal;WidgetPanelsFrontstageState
 internal;WidgetPanelsStatusBar(props: CommonProps): JSX.Element | null
 internal;WidgetPanelsTab(): JSX.Element
 internal;WidgetPanelsToolbars(): JSX.Element

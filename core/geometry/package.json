@@ -1,6 +1,6 @@
 {
   "name": "@bentley/geometry-core",
-  "version": "2.10.0-dev.20",
+  "version": "2.12.0-dev.22",
   "description": "Bentley Core Geometry library",
   "main": "lib/geometry-core.js",
   "typings": "lib/geometry-core",
@@ -17,7 +17,7 @@
     "docs": "betools docs --tsIndexFile=./geometry-core.ts --json=../../generated-docs/core/geometry-core/file.json --onlyJson",
     "cover": "nyc npm test",
     "cover:docs": "node ./node_modules/@bentley/build-tools/scripts/docscoverage.js",
-    "lint": "eslint -f visualstudio --max-warnings 0 ./src/**/*.ts 1>&2"
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2"
   },
   "repository": {
     "type": "git",
@@ -32,12 +32,12 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.10.0-dev.20"
+    "@bentley/bentleyjs-core": "^2.12.0-dev.22"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.10.0-dev.20",
-    "@bentley/build-tools": "2.10.0-dev.20",
-    "@bentley/eslint-plugin": "2.10.0-dev.20",
+    "@bentley/bentleyjs-core": "2.12.0-dev.22",
+    "@bentley/build-tools": "2.12.0-dev.22",
+    "@bentley/eslint-plugin": "2.12.0-dev.22",
     "@types/chai": "^4.1.4",
     "@types/flatbuffers": "~1.10.0",
     "@types/mocha": "^5.2.5",

@@ -10,37 +10,61 @@ import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "../utils/Props";
 
+/** Properties for a Select option
+ * @public
+ */
+export interface SelectOption {
+  /** Label of the option. If `value` is not set when using SelectOption[], also serves as the value. */
+  label: string;
+  /** Value of the option when using SelectOption[].  */
+  value?: string | number | readonly string[];
+  /** Indicates whether the option is disabled. */
+  disabled?: boolean;
+}
+
 /** Properties for [[Select]] component
  * @public
  */
 export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement>, CommonProps {
-  /** options for select dropdown.
+  /** Options for Select dropdown.
    * @example
-   * // Example of {[key: string]: string} usage:
+   * // Example of {[key: string]: (string | SelectOption)} usage:
    * <Select options={{
    *  option1: "Option 1",
    *  option2: "Option 2",
-   *  option3: "Option 3",
+   *  option3: {label: "Option 3", disabled: true},
    * }} />
    *
-   * // Example of string[] usage:
+   * // Example of (string | SelectOption)[] usage:
    * <Select options={[
    *  "Option 1",
    *  "Option 2",
-   *  "Option 3",
+   *  {label: "Option 3", value: "option3", disabled: true},
    * ]} />
    * }
    */
-  options: string[] | { [key: string]: string };
+  options: (string | SelectOption)[] | { [key: string]: (string | SelectOption) };
   /** Indicates whether to set focus to the select element */
   setFocus?: boolean;
 }
 
-function getCurrentDefaultValue(defaultValue: string | undefined, placeholderValue: string | undefined) {
+function getCurrentDefaultValue(defaultValue: string | number | readonly string[] | undefined, placeholderValue: string | undefined) {
   if (defaultValue)
     return defaultValue;
 
   return placeholderValue;
+}
+
+function getOptionLabel(option: string | SelectOption): string {
+  return (typeof option === "string") ? option : option.label;
+}
+
+function getOptionValue(option: string | SelectOption): string | number | readonly string[] {
+  return (typeof option === "string") ? option : (undefined !== option.value ? option.value : option.label);
+}
+
+function getOptionDisabled(option: string | SelectOption): boolean | undefined {
+  return (typeof option === "string") ? undefined : option.disabled;
 }
 
 /** Basic select component is a wrapper for the `<select>` HTML element.
@@ -61,24 +85,32 @@ export function Select(props: SelectProps) {
   }, []);
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { value: selectValue, required, options, setFocus, className, defaultValue, ...otherProps } = props as any; // pluck off values that will be explicitly set below
-  const showPlaceholder = React.useMemo(() => props.placeholder && (!selectValue || selectValue === placeholderValue.current) && !defaultValue, [defaultValue, selectValue, props.placeholder]);
+  const { value: selectValue, required, options, setFocus, className, defaultValue, ...otherProps } = props; // pluck off values that will be explicitly set below
+  const showPlaceholder = React.useMemo(() => props.placeholder && (undefined === selectValue || selectValue === placeholderValue.current) && !defaultValue, [defaultValue, selectValue, props.placeholder]);
   const isRequired = React.useMemo(() => showPlaceholder || required, [required, showPlaceholder]);
   const currentDefaultValue = React.useMemo(() => getCurrentDefaultValue(defaultValue, showPlaceholder ? placeholderValue.current : undefined), [defaultValue, showPlaceholder]);
-
+  const value = (!isInitialMount.current && undefined === selectValue) ? currentDefaultValue : selectValue;
   return (
     <select ref={selectElement} {...otherProps}
       required={isRequired}
       className={classnames("uicore-inputs-select", className)}
-      value={(!isInitialMount.current && !selectValue) ? currentDefaultValue : selectValue}
-      defaultValue={currentDefaultValue}>
+      value={value}
+      defaultValue={value === undefined ? currentDefaultValue : undefined}>
       {showPlaceholder &&
         <option className="placeholder" disabled key="" value={placeholderValue.current}>{props.placeholder}</option>
       }
       {options instanceof Array ?
-        options.map((value, index) => <option key={index} value={value}>{value}</option>)
+        options.map((option, index) => (
+          <option key={index} value={getOptionValue(option)} disabled={getOptionDisabled(option)} >
+            {getOptionLabel(option)}
+          </option>
+        ))
         :
-        Object.keys(options).map((key) => <option key={key} value={key}>{options[key]}</option>)
+        Object.keys(options).map((key) => (
+          <option key={key} value={key} disabled={getOptionDisabled(options[key])} >
+            {getOptionLabel(options[key])}
+          </option>
+        ))
       }
     </select>
   );

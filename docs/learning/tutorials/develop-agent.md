@@ -1,44 +1,53 @@
-## Developing an agent application
+# Developing an agent application
 
-### Setup
+## Setup
+
 - [Install necessary prerequisites]($docs/getting-started/development-prerequisites)
-- [Register an Agent Application](../registration-dashboard?tab=0&create=AGENT_APP)
-    - Accept all defaults
-- [Clone imodeljs-samples repo](https://github.com/imodeljs/imodeljs-samples)
-- Have access to a cloud hosted iModel. If you do not have access to one, follow one of our tutorials to [create an online iModel]($docs/learning/tutorials/index.md)
-- Add {client_id}@apps.imsoidc.bentley.com as a project participant of your test iModel on the [iModel Registration Dashboard]($docs/getting-started/registration-dashboard)
- > Allow some time after registering the agent application. The identity profile of the agent is being created in the background and can take between 5 and 10 minutes.
+- [Register an Agent Application](../../../getting-started/registration-dashboard/?tab=0&create=AGENT_APP)
+  - Accept all defaults
+  - Be sure to save the secret somewhere safe - it is only shown once
+- [Clone agent-starter repo](https://github.com/imodeljs/agent-starter)
+- If you do not have access to an iModel, follow one of our tutorials to [create an iModel]($docs/learning/tutorials/index.md)
+- Add `{client_id}@apps.imsoidc.bentley.com` as a project participant of your test iModel using the [iModel Registration Dashboard](../../../getting-started/registration-dashboard/?tab=1)
 
+> Allow some time after registering the agent application. The identity profile of the agent is being created in the background and can take between 5 and 10 minutes
 
-### Build
+## Build
+
 - Open the cloned repo in VS Code
 - Open integrated terminal
-- `node ./common/scripts/install-run-rush install`
-- Edit agent-app/query-agent/src/QueryAgentConfig.ts
-    > `imjs_agent_imodel_name` = The name of your iModel<br/>
-`imjs_agent_client_id` = client_id of the registered agent application<br/>
-`imjs_agent_client_secret` = The client secret of registered agent application<br/>
-
-
-- `node ./common/scripts/install-run-rush build -t imodel-query-agent`
-
-### Run
-- `cd agent-app\query-agent`
-- `npm run start`
-- The agent will listen for changesets for 40 seconds
-
-In order to see changesets being logged, you can use the [imodel-changeset-test-utility](https://github.com/imodeljs/imodeljs-samples/tree/master/tools/imodel-changeset-test-utility).
-
-In a second terminal (`Ctrl+Shift+5` in VS Code's integrated terminal)
-- `cd tools\imodel-changeset-test-utility`
-- Edit tools\imodel-changeset-test-utility\src\ChangesetGenerationConfig.ts
-    > `imjs_agent_imodel_name` = The name of your iModel<br/>
-`imjs_agent_client_id` = client_id of the registered agent application<br/>
-`imjs_agent_client_secret` = cThe client secret of registered agent application<br/>
-
 - `npm install`
-- `npm run build`
-- While the query-agent is running and listening for changesets...
-- `npm run start`
+- Create a `.env` file at the project root with the following:
 
-You should see the query-agent receiving events and logging them to \agent-app\query-agent\lib\output\changeSummaries.
+    ``` ps
+    ###############################################################################
+    # This file contains secrets - don't commit or share it!
+    ###############################################################################
+
+    # Specify an iModel
+    CONTEXT_ID=
+    IMODEL_ID=
+
+    # OIDC configuration
+    # Don't forget to add <CLIENT_ID>@apps.imsoidc.bentley.com to your CONNECT project. This can be done in the iModel Registration Dashboard.
+    CLIENT_ID=
+    CLIENT_SECRET=
+    ```
+
+    > The values for `CONTEXT_ID` and `IMODEL_ID` can be obtained from the IDs column of the [iModel registration dashboard](../../../getting-started/registration-dashboard/?tab=1)
+    > The values for `CLIENT_ID` and `CLIENT_SECRET` come from the Agent Application you registered during the Setup step
+
+- `npm run build`
+
+## Run
+
+- `npm start`
+- The agent will listen for changesets pushed to iModelHub
+- Use the [iTwin Synchronizer](https://www.bentley.com/en/products/product-line/digital-twins/itwin-synchronizer) to synchronize a change and exercise the agent.
+- For testing, it can often also be useful to skip the event listening and just run against a specific changeset. To do that, either run `npm start -- --latest` to use the latest changeset, or `npm start -- --changeset=<CHANGESETID>` to use any specific changeset
+
+## Next Steps
+
+- Read the [README](https://github.com/imodeljs/agent-starter/blob/master/README.md) for some more info
+- Implement custom functionality in the agent to fit a business use case
+- Watch our [Jump Start - Creating an Agent tutorial](https://www.youtube.com/watch?v=1E2srOoxc4I&t=46s) which explains in more detail how the agent-sample works

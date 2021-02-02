@@ -7,9 +7,11 @@ import { expect } from "chai";
 import sinon from "sinon";
 import * as moq from "typemoq";
 import { ArrayValue, PropertyRecord } from "@bentley/ui-abstract";
-import { IPropertyDataFilterer, PropertyFilterChangeEvent } from "../../../ui-components";
+import { FilteredType, IPropertyDataFilterer, PropertyFilterChangeEvent } from "../../../ui-components";
 import { FilteringPropertyDataProvider } from "../../../ui-components/propertygrid/dataproviders/FilteringDataProvider";
-import { IPropertyDataProvider, PropertyData, PropertyDataChangeEvent } from "../../../ui-components/propertygrid/PropertyDataProvider";
+import {
+  IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent,
+} from "../../../ui-components/propertygrid/PropertyDataProvider";
 import { TestUtils } from "../../TestUtils";
 import { FlatGridTestUtils } from "../component/internal/flat-items/FlatGridTestUtils";
 
@@ -30,7 +32,14 @@ describe("FilteringDataProvider", () => {
       categories: [
         {
           name: "Cat1", label: "Category 1", expand: true, childCategories: [
-            { name: "Cat1-1", label: "Category 1-1", expand: false },
+            {
+              name: "Cat1-1", label: "Category 1-1", expand: false, childCategories:
+                [{
+                  name: "Cat1-1-1", label: "Category 1-1-1", expand: false, childCategories: [
+                    { name: "Cat1-1-1-1", label: "Category 1-1-1-1", expand: false },
+                  ],
+                }],
+            },
             { name: "Cat1-2", label: "Category 1-2", expand: false },
             { name: "Cat1-3", label: "Category 1-3", expand: false },
           ],
@@ -54,6 +63,8 @@ describe("FilteringDataProvider", () => {
             TestUtils.createPrimitiveStringProperty("Property1-1-1-5", "V1"),
           ], true),
         ],
+        "Cat1-1-1": [],
+        "Cat1-1-1-1": [],
         "Cat1-2": [
           TestUtils.createArrayProperty("Array1-2-1", [
             TestUtils.createPrimitiveStringProperty("Property1-2-1-1", "V1"),
@@ -129,7 +140,8 @@ describe("FilteringDataProvider", () => {
 
     it("Should return empty property data and matchesCount equal to 0 if filter is enabled and nothing matches it", async () => {
       mockFilterer.setup((x) => x.isActive).returns(() => true);
-      mockFilterer.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
+      mockFilterer.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
+      mockFilterer.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
 
       const filteringProvider = new FilteringPropertyDataProvider(dataProvider, mockFilterer.object);
 
@@ -150,8 +162,22 @@ describe("FilteringDataProvider", () => {
         const potentialMatch = findRecord(record.getChildrenRecords(), name);
         if (potentialMatch)
           return potentialMatch;
-      };
+      }
 
+      return undefined;
+    }
+
+    function findCategory(name: string, categories: PropertyCategory[]): PropertyCategory | undefined {
+      for (const category of categories) {
+        if (category.name === name)
+          return category;
+
+        if (category.childCategories) {
+          const potentialMatch = findCategory(name, category.childCategories);
+          if (potentialMatch)
+            return potentialMatch;
+        }
+      }
       return undefined;
     }
 
@@ -168,11 +194,26 @@ describe("FilteringDataProvider", () => {
       throw Error(`Property with name: ${name} not found. Check test data.`);
     }
 
-    const createPropertyData = (records: PropertyRecord[]) => {
+    function findCategoryFromPropertyData(name: string, propertyData: PropertyData): PropertyCategory {
+      for (const category of propertyData.categories) {
+        if (category.name === name)
+          return category;
+
+        if (category.childCategories) {
+          const potentialMatch = findCategory(name, category.childCategories);
+          if (potentialMatch)
+            return potentialMatch;
+        }
+      }
+
+      throw Error(`Property category with name: ${name} not found. Check test data.`);
+    }
+
+    const createPropertyData = (records: PropertyRecord[], categoryName: string) => {
       const data = {
         label: TestUtils.createPrimitiveStringProperty("Label", "Value"),
         description: "Test data",
-        categories: [{ name: "Cat1", label: "Category 1", expand: true, childCategories: [] }],
+        categories: [{ name: categoryName, label: "Category 1", expand: true, childCategories: [] }],
         records: {
           Cat1: records,
         },
@@ -196,7 +237,15 @@ describe("FilteringDataProvider", () => {
         categories: [
           {
             name: "Cat1", label: "Category 1", expand: true, childCategories: [
-              { name: "Cat1-1", label: "Category 1-1", expand: true, childCategories: [] },
+              {
+                name: "Cat1-1", label: "Category 1-1", expand: true, childCategories: [
+                  {
+                    name: "Cat1-1-1", label: "Category 1-1-1", expand: false, childCategories: [
+                      { name: "Cat1-1-1-1", label: "Category 1-1-1-1", expand: false, childCategories: [] },
+                    ],
+                  }, // If parent category was matched, force include descendant categories, if no records were matched in descendant, it should not be expanded
+                ],
+              },
               { name: "Cat1-2", label: "Category 1-2", expand: true, childCategories: [] },
             ],
           },
@@ -206,16 +255,21 @@ describe("FilteringDataProvider", () => {
           "Cat1": [],
           "Cat1-1": [
             TestUtils.createArrayProperty("Array1-1-1", [
+              TestUtils.createPrimitiveStringProperty("Property1-1-1-1", "V1", undefined, undefined),
               TestUtils.createStructProperty("Struct1-1-1-2", { // Matches, force include descendants, expand to node
                 "Array1-1-1-2-1": TestUtils.createArrayProperty("Array1-1-1-2-1", [
-                  TestUtils.createPrimitiveStringProperty("Property1-1-1-2-1-1", "V1", undefined, undefined, false),
-                  TestUtils.createPrimitiveStringProperty("Property1-1-1-2-1-2", "V1", undefined, undefined, false),
-                  TestUtils.createPrimitiveStringProperty("Property1-1-1-2-1-3", "V1", undefined, undefined, false),
+                  TestUtils.createPrimitiveStringProperty("Property1-1-1-2-1-1", "V1", undefined, undefined),
+                  TestUtils.createPrimitiveStringProperty("Property1-1-1-2-1-2", "V1", undefined, undefined),
+                  TestUtils.createPrimitiveStringProperty("Property1-1-1-2-1-3", "V1", undefined, undefined),
                 ], false),
               }, false),
-              TestUtils.createPrimitiveStringProperty("Property1-1-1-3", "V1", undefined, undefined, false), // Match, expand to node
+              TestUtils.createPrimitiveStringProperty("Property1-1-1-3", "V1", undefined, undefined),
+              TestUtils.createPrimitiveStringProperty("Property1-1-1-4", "V1", undefined, undefined),
+              TestUtils.createPrimitiveStringProperty("Property1-1-1-5", "V1", undefined, undefined),
             ], true),
           ],
+          "Cat1-1-1": [], // If parent category was matched, force include all child categories with their records
+          "Cat1-1-1-1": [], // If parent category was matched, force include all child categories with their records
           "Cat1-2": [
             TestUtils.createArrayProperty("Array1-2-1", [
               TestUtils.createStructProperty("Struct1-2-1-2", {
@@ -238,16 +292,18 @@ describe("FilteringDataProvider", () => {
       mockFilterer.setup((x) => x.isActive).returns(() => true);
 
       // Fix itemsTypeName since first child changed
-      (findRecordFromPropertyData("Array1-1-1", originalPropertyData).value as ArrayValue).itemsTypeName = "struct";
       (findRecordFromPropertyData("Array1-2-1", originalPropertyData).value as ArrayValue).itemsTypeName = "struct";
 
-      mockFilterer.setup(async (x) => x.matchesFilter(findRecordFromPropertyData("Struct1-1-1-2", originalPropertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: { label: 3, value: 5 } }));
-      mockFilterer.setup(async (x) => x.matchesFilter(findRecordFromPropertyData("Property1-1-1-3", originalPropertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldExpandNodeParents: true, matchesCount: { label: 2, value: 4 } }));
-      mockFilterer.setup(async (x) => x.matchesFilter(findRecordFromPropertyData("Array1-2-1-2-1", originalPropertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldExpandNodeParents: true, matchesCount: { label: 1, value: 5 } }));
-      mockFilterer.setup(async (x) => x.matchesFilter(findRecordFromPropertyData("Property2-1", originalPropertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: { label: 2, value: 0 } }));
-      mockFilterer.setup(async (x) => x.matchesFilter(findRecordFromPropertyData("Property2-2", originalPropertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldExpandNodeParents: true, matchesCount: { label: 1, value: 3 } }));
-      mockFilterer.setup(async (x) => x.matchesFilter(findRecordFromPropertyData("Property2-3-1", originalPropertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true }));
-      mockFilterer.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
+      mockFilterer.setup(async (x) => x.recordMatchesFilter(findRecordFromPropertyData("Struct1-1-1-2", originalPropertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: 8, filteredTypes: [FilteredType.Label] }));
+      mockFilterer.setup(async (x) => x.recordMatchesFilter(findRecordFromPropertyData("Property1-1-1-3", originalPropertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldExpandNodeParents: true, matchesCount: 6, filteredTypes: [FilteredType.Value, FilteredType.Label] }));
+      mockFilterer.setup(async (x) => x.recordMatchesFilter(findRecordFromPropertyData("Array1-2-1-2-1", originalPropertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldExpandNodeParents: true, matchesCount: 6, filteredTypes: [FilteredType.Label] }));
+      mockFilterer.setup(async (x) => x.recordMatchesFilter(findRecordFromPropertyData("Property2-1", originalPropertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: 2, filteredTypes: [FilteredType.Value] }));
+      mockFilterer.setup(async (x) => x.recordMatchesFilter(findRecordFromPropertyData("Property2-2", originalPropertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldExpandNodeParents: true, matchesCount: 4 }));
+      mockFilterer.setup(async (x) => x.recordMatchesFilter(findRecordFromPropertyData("Property2-3-1", originalPropertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true }));
+      mockFilterer.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
+
+      mockFilterer.setup(async (x) => x.categoryMatchesFilter(findCategoryFromPropertyData("Cat1-1", originalPropertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, shouldForceIncludeDescendants: true, shouldExpandNodeParents: true, matchesCount: 2, filteredTypes: [FilteredType.Category] }));
+      mockFilterer.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
 
       const filteringProvider = new FilteringPropertyDataProvider(dataProvider, mockFilterer.object);
 
@@ -259,7 +315,8 @@ describe("FilteringDataProvider", () => {
       expect(filteredData.description).to.equal(expectedFilteredData.description);
       expect(filteredData.categories).to.deep.equal(expectedFilteredData.categories);
       expect(filteredData.records).to.deep.equal(expectedFilteredData.records);
-      expect(filteredData.matchesCount).to.deep.equal(26);
+      expect(filteredData.matchesCount).to.deep.equal(28);
+      expect(filteredData.filteredTypes).to.deep.equal([FilteredType.Category, FilteredType.Label, FilteredType.Value]);
       expect(filteredData.getMatchByIndex).to.exist;
     });
 
@@ -269,22 +326,24 @@ describe("FilteringDataProvider", () => {
         TestUtils.createPrimitiveStringProperty("Property2", "V2"),
       ];
 
-      const propertyData = createPropertyData(records);
+      const propertyData = createPropertyData(records, "Cat1");
       const dataProv = createDataProvider(propertyData);
 
       mockFilterer.setup((x) => x.isActive).returns(() => true);
 
-      mockFilterer.setup(async (x) => x.matchesFilter(findRecordFromPropertyData("Property1", propertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: { label: 3, value: 5 } }));
-      mockFilterer.setup(async (x) => x.matchesFilter(findRecordFromPropertyData("Property2", propertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: { label: 2, value: 4 } }));
+      mockFilterer.setup(async (x) => x.recordMatchesFilter(findRecordFromPropertyData("Property1", propertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: 8 }));
+      mockFilterer.setup(async (x) => x.recordMatchesFilter(findRecordFromPropertyData("Property2", propertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: 6 }));
+
+      mockFilterer.setup(async (x) => x.categoryMatchesFilter(findCategoryFromPropertyData("Cat1", propertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: 2 }));
 
       const filteringProvider = new FilteringPropertyDataProvider(dataProv, mockFilterer.object);
 
       const filteredData = await filteringProvider.getData();
       let activeMatch;
       if (filteredData.getMatchByIndex)
-        activeMatch = filteredData.getMatchByIndex(9);
+        activeMatch = filteredData.getMatchByIndex(11);
 
-      expect(activeMatch).to.deep.equal({ propertyName: "Property2", matchIndex: 0, matchCounts: { label: 2, value: 4 } });
+      expect(activeMatch).to.deep.equal({ highlightedItemIdentifier: "Property2", highlightIndex: 0 });
     });
 
     it("Should return expected active match when getActiveMatch() is called and only label matches count are provided", async () => {
@@ -293,22 +352,24 @@ describe("FilteringDataProvider", () => {
         TestUtils.createPrimitiveStringProperty("Property2", "V2"),
       ];
 
-      const propertyData = createPropertyData(records);
+      const propertyData = createPropertyData(records, "Cat1");
       const dataProv = createDataProvider(propertyData);
 
       mockFilterer.setup((x) => x.isActive).returns(() => true);
 
-      mockFilterer.setup(async (x) => x.matchesFilter(findRecordFromPropertyData("Property1", propertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: { label: 3 } }));
-      mockFilterer.setup(async (x) => x.matchesFilter(findRecordFromPropertyData("Property2", propertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: { label: 2 } }));
+      mockFilterer.setup(async (x) => x.recordMatchesFilter(findRecordFromPropertyData("Property1", propertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: 3 }));
+      mockFilterer.setup(async (x) => x.recordMatchesFilter(findRecordFromPropertyData("Property2", propertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: 2 }));
+
+      mockFilterer.setup(async (x) => x.categoryMatchesFilter(findCategoryFromPropertyData("Cat1", propertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: 2 }));
 
       const filteringProvider = new FilteringPropertyDataProvider(dataProv, mockFilterer.object);
 
       const filteredData = await filteringProvider.getData();
       let activeMatch;
       if (filteredData.getMatchByIndex)
-        activeMatch = filteredData.getMatchByIndex(4);
+        activeMatch = filteredData.getMatchByIndex(6);
 
-      expect(activeMatch).to.deep.equal({ propertyName: "Property2", matchIndex: 0, matchCounts: { label: 2, value: 0 } });
+      expect(activeMatch).to.deep.equal({ highlightedItemIdentifier: "Property2", highlightIndex: 0 });
     });
 
     it("Should return expected active match when getActiveMatch() is called and only value matches count are provided", async () => {
@@ -317,13 +378,15 @@ describe("FilteringDataProvider", () => {
         TestUtils.createPrimitiveStringProperty("Property2", "V2"),
       ];
 
-      const propertyData = createPropertyData(records);
+      const propertyData = createPropertyData(records, "Cat1");
       const dataProv = createDataProvider(propertyData);
 
       mockFilterer.setup((x) => x.isActive).returns(() => true);
 
-      mockFilterer.setup(async (x) => x.matchesFilter(findRecordFromPropertyData("Property1", propertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: { value: 3 } }));
-      mockFilterer.setup(async (x) => x.matchesFilter(findRecordFromPropertyData("Property2", propertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: { value: 2 } }));
+      mockFilterer.setup(async (x) => x.recordMatchesFilter(findRecordFromPropertyData("Property1", propertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: 3 }));
+      mockFilterer.setup(async (x) => x.recordMatchesFilter(findRecordFromPropertyData("Property2", propertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: 2 }));
+
+      mockFilterer.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: true }));
 
       const filteringProvider = new FilteringPropertyDataProvider(dataProv, mockFilterer.object);
 
@@ -332,7 +395,33 @@ describe("FilteringDataProvider", () => {
       if (filteredData.getMatchByIndex)
         activeMatch = filteredData.getMatchByIndex(4);
 
-      expect(activeMatch).to.deep.equal({ propertyName: "Property2", matchIndex: 0, matchCounts: { label: 0, value: 2 } });
+      expect(activeMatch).to.deep.equal({ highlightedItemIdentifier: "Property2", highlightIndex: 0 });
+    });
+
+    it("Should return expected active match when getActiveMatch() is called and propertyCategory match is returned", async () => {
+      const records: PropertyRecord[] = [
+        TestUtils.createPrimitiveStringProperty("Property1", "V1"),
+        TestUtils.createPrimitiveStringProperty("Property2", "V2"),
+      ];
+
+      const propertyData = createPropertyData(records, "Cat1");
+      const dataProv = createDataProvider(propertyData);
+
+      mockFilterer.setup((x) => x.isActive).returns(() => true);
+
+      mockFilterer.setup(async (x) => x.recordMatchesFilter(findRecordFromPropertyData("Property1", propertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: 3 }));
+      mockFilterer.setup(async (x) => x.recordMatchesFilter(findRecordFromPropertyData("Property2", propertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: 2 }));
+
+      mockFilterer.setup(async (x) => x.categoryMatchesFilter(findCategoryFromPropertyData("Cat1", propertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: 5 }));
+
+      const filteringProvider = new FilteringPropertyDataProvider(dataProv, mockFilterer.object);
+
+      const filteredData = await filteringProvider.getData();
+      let activeMatch;
+      if (filteredData.getMatchByIndex)
+        activeMatch = filteredData.getMatchByIndex(4);
+
+      expect(activeMatch).to.deep.equal({ highlightedItemIdentifier: "Cat1", highlightIndex: 3 });
     });
 
     it("Should return activeMatch as undefined if provided index is <=0 ", async () => {
@@ -340,14 +429,16 @@ describe("FilteringDataProvider", () => {
         TestUtils.createPrimitiveStringProperty("Property1", "V1"),
       ];
 
-      const propertyData = createPropertyData(records);
+      const propertyData = createPropertyData(records, "Cat1");
       const dataProv = createDataProvider(propertyData);
 
       mockFilterer.setup((x) => x.isActive).returns(() => true);
 
       const filteringProvider = new FilteringPropertyDataProvider(dataProv, mockFilterer.object);
 
-      mockFilterer.setup(async (x) => x.matchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
+      mockFilterer.setup(async (x) => x.recordMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
+
+      mockFilterer.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
 
       const filteredData = await filteringProvider.getData();
       let activeMatch;
@@ -362,15 +453,17 @@ describe("FilteringDataProvider", () => {
         TestUtils.createPrimitiveStringProperty("Property1", "V1"),
       ];
 
-      const propertyData = createPropertyData(records);
+      const propertyData = createPropertyData(records, "Cat1");
       const dataProv = createDataProvider(propertyData);
 
       mockFilterer.setup((x) => x.isActive).returns(() => true).verifiable(moq.Times.once());
-      mockFilterer.setup(async (x) => x.matchesFilter(findRecordFromPropertyData("Property1", propertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: { label: 3, value: 5 } }));
+      mockFilterer.setup(async (x) => x.recordMatchesFilter(findRecordFromPropertyData("Property1", propertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: 8 }));
+
+      mockFilterer.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
 
       const filteringProvider = new FilteringPropertyDataProvider(dataProv, mockFilterer.object);
 
-      const filteredData = await filteringProvider.getData();;
+      const filteredData = await filteringProvider.getData();
       const filteredData2 = await filteringProvider.getData();
 
       expect(filteredData === filteredData2).to.be.true;
@@ -382,11 +475,13 @@ describe("FilteringDataProvider", () => {
         TestUtils.createPrimitiveStringProperty("Property1", "V1"),
       ];
 
-      const propertyData = createPropertyData(records);
+      const propertyData = createPropertyData(records, "Cat1");
       const dataProv = createDataProvider(propertyData);
 
       mockFilterer.setup((x) => x.isActive).returns(() => true).verifiable(moq.Times.exactly(2));
-      mockFilterer.setup(async (x) => x.matchesFilter(findRecordFromPropertyData("Property1", propertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: { label: 3, value: 5 } }));
+      mockFilterer.setup(async (x) => x.recordMatchesFilter(findRecordFromPropertyData("Property1", propertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: 8 }));
+
+      mockFilterer.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
 
       const filteringProvider = new FilteringPropertyDataProvider(dataProv, mockFilterer.object);
 
@@ -407,12 +502,14 @@ describe("FilteringDataProvider", () => {
         TestUtils.createPrimitiveStringProperty("Property1", "V1"),
       ];
 
-      const propertyData = createPropertyData(records);
+      const propertyData = createPropertyData(records, "Cat1");
       const dataProv = createDataProvider(propertyData);
 
       mockFilterer.setup((x) => x.isActive).returns(() => true).verifiable(moq.Times.exactly(2));
 
-      mockFilterer.setup(async (x) => x.matchesFilter(findRecordFromPropertyData("Property1", propertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: { label: 3, value: 5 } }));
+      mockFilterer.setup(async (x) => x.recordMatchesFilter(findRecordFromPropertyData("Property1", propertyData), moq.It.isAny())).returns(async () => ({ matchesFilter: true, matchesCount: 8 }));
+
+      mockFilterer.setup(async (x) => x.categoryMatchesFilter(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ matchesFilter: false }));
 
       const filteringProvider = new FilteringPropertyDataProvider(dataProv, mockFilterer.object);
 

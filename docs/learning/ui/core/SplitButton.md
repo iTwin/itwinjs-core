@@ -1,7 +1,7 @@
 # SplitButton
 
 The [SplitButton]($ui-core) React component displays a button with two parts:
-an action button on the left and an arrow button that displays a context menu on the right.
+an action button on the left and an arrow button on the right that opens a context menu.
 
 ## Properties
 
@@ -44,4 +44,4 @@ and the `drawBorder` prop indicates whether to draw a border around the button.
 
 ## API Reference
 
-* [SplitButton]($ui-core:SplitButton)
+- [SplitButton]($ui-core:SplitButton)
