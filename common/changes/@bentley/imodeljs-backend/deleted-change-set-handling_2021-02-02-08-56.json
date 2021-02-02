@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-backend",
+      "comment": "Changes in BriefcaseHandling and ConcurrencyControl to support recovery after deleted changeset",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "70565417+austeja-bentley@users.noreply.github.com"
+}
