@@ -14,7 +14,7 @@ import { BriefcaseIdValue, ChangeSetToken, IModelDb, IModelHost, IModelJsFs } fr
 
 /** DTO to work with iModelHub DeleteChangeSet API */
 @ECJsonTypeMap.classToJson("wsg", "iModelActions.DeleteChangeSet", { schemaPropertyName: "schemaName", classPropertyName: "className" })
-export class DeleteChangeSetAction extends WsgInstance {
+class DeleteChangeSetAction extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "instanceId")
   public id?: GuidString;
 
@@ -651,13 +651,13 @@ export class HubUtility {
   }
 
   private static async waitForEntityToReachState<T>(entityQuery: () => Promise<T>, conditionToSatisfy: (entity: T) => Boolean): Promise<void> {
-    for (var i = 0; i < 50; i++) {
+    for (var i = 0; i < 60; i++) {
       const currentState = await entityQuery();
       if (conditionToSatisfy(currentState))
         break;
-
       await BeDuration.wait(10000);
     }
+    throw new Error("Entity did not reach the expected state in 10 minutes");
   }
 }
 
