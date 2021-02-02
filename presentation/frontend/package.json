@@ -97,6 +97,11 @@
     "lines": 100,
     "require": [
       "jsdom-global/register"
+    ],
+    "exclude": [
+      "src/presentation-frontend.ts",
+      "src/test/**",
+      "lib/test/**"
     ]
   },
   "eslintConfig": {

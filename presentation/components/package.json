@@ -122,6 +122,11 @@
       "ts-node/register",
       "ignore-styles",
       "jsdom-global/register"
+    ],
+    "exclude": [
+      "src/presentation-components.ts",
+      "src/test/**",
+      "lib/test/**"
     ]
   },
   "eslintConfig": {
