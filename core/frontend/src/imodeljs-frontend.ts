@@ -47,6 +47,7 @@ export * from "./NotificationManager";
 export * from "./PerModelCategoryVisibility";
 export * from "./QuantityFormatter";
 export * from "./RenderScheduleState";
+export * from "./RemoteIModelConnection";
 export * from "./SelectionSet";
 export * from "./SheetViewState";
 export * from "./SpatialClassifiers";

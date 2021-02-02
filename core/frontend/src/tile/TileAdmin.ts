@@ -892,7 +892,7 @@ class Admin extends TileAdmin {
     if (this._canceledElementGraphicsRequests && this._canceledElementGraphicsRequests.size > 0) {
       for (const [connection, requestIds] of this._canceledElementGraphicsRequests) {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        IpcApp.callIpcHost("cancelElementGraphicsRequests", connection.getRpcProps(), requestIds);
+        IpcApp.callIpcHost("cancelElementGraphicsRequests", connection.key, requestIds);
         this._totalAbortedRequests += requestIds.length;
       }
 

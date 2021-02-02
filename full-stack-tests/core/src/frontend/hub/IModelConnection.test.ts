@@ -1,13 +1,16 @@
+import { assert, expect } from "chai";
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Guid, Id64, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
+import { Guid, Id64, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Range3d, Transform, XYAndZ } from "@bentley/geometry-core";
 import { BisCodeSpec, CodeSpec, IModelVersion, NavigationValue, RelatedElement } from "@bentley/imodeljs-common";
-import { CategorySelectorState, DisplayStyle2dState, DisplayStyle3dState, DrawingViewState, IModelApp, IModelConnection, MockRender, ModelSelectorState, OrthographicViewState, RemoteBriefcaseConnection, ViewState } from "@bentley/imodeljs-frontend";
+import {
+  CategorySelectorState, DisplayStyle2dState, DisplayStyle3dState, DrawingViewState, IModelApp, IModelConnection, MockRender, ModelSelectorState,
+  OrthographicViewState, RemoteIModelConnection, ViewState,
+} from "@bentley/imodeljs-frontend";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
-import { assert, expect } from "chai";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { TestSeqClient } from "./TestSeqClient";
 import { TestUtility } from "./TestUtility";
@@ -42,7 +45,7 @@ describe("IModelConnection (#integration)", () => {
     const testProjectId = await TestUtility.getTestProjectId(testProjectName);
     const testIModelId = await TestUtility.getTestIModelId(testProjectId, testIModelName);
 
-    iModel = await RemoteBriefcaseConnection.open(testProjectId, testIModelId);
+    iModel = await RemoteIModelConnection.openRemote(testProjectId, testIModelId);
   });
 
   after(async () => {
@@ -137,13 +140,13 @@ describe("IModelConnection (#integration)", () => {
   it("should be able to open an IModel with no versions", async () => {
     const projectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
     const iModelId = await TestUtility.getTestIModelId(projectId, "NoVersionsTest");
-    const noVersionsIModel = await RemoteBriefcaseConnection.open(projectId, iModelId, OpenMode.Readonly, IModelVersion.latest());
+    const noVersionsIModel = await RemoteIModelConnection.openRemote(projectId, iModelId);
     assert.isNotNull(noVersionsIModel);
 
-    const noVersionsIModel2 = await RemoteBriefcaseConnection.open(projectId, iModelId, OpenMode.Readonly, IModelVersion.first());
+    const noVersionsIModel2 = await RemoteIModelConnection.openRemote(projectId, iModelId);
     assert.isNotNull(noVersionsIModel2);
 
-    const noVersionsIModel3 = await RemoteBriefcaseConnection.open(projectId, iModelId, OpenMode.Readonly, IModelVersion.asOfChangeSet(""));
+    const noVersionsIModel3 = await RemoteIModelConnection.openRemote(projectId, iModelId, IModelVersion.asOfChangeSet(""));
     assert.isNotNull(noVersionsIModel3);
   });
 
@@ -158,7 +161,7 @@ describe("IModelConnection (#integration)", () => {
     let n = 0;
     const MAX_CONNECTIONS = 12;
     while (n++ < MAX_CONNECTIONS) {
-      const noVersionsIModel = await RemoteBriefcaseConnection.open(projectId, iModelId, OpenMode.Readonly, IModelVersion.latest());
+      const noVersionsIModel = await RemoteIModelConnection.openRemote(projectId, iModelId);
       assert.isNotNull(noVersionsIModel);
     }
 
@@ -175,13 +178,13 @@ describe("IModelConnection (#integration)", () => {
     const projectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
     const iModelId = await TestUtility.getTestIModelId(projectId, "ReadOnlyTest");
 
-    const readOnlyTest = await RemoteBriefcaseConnection.open(projectId, iModelId, OpenMode.Readonly, IModelVersion.latest());
+    const readOnlyTest = await RemoteIModelConnection.openRemote(projectId, iModelId, IModelVersion.latest());
     assert.isNotNull(readOnlyTest);
 
     const promises = new Array<Promise<void>>();
     let n = 0;
     while (++n < 25) {
-      const promise = RemoteBriefcaseConnection.open(projectId, iModelId, OpenMode.Readonly, IModelVersion.latest())
+      const promise = RemoteIModelConnection.openRemote(projectId, iModelId)
         .then((readOnlyTest2: IModelConnection) => {
           assert.isNotNull(readOnlyTest2);
           assert.isTrue(readOnlyTest.key === readOnlyTest2.key);
@@ -195,7 +198,7 @@ describe("IModelConnection (#integration)", () => {
   it("should be able to request tiles from an IModelConnection", async () => {
     const testProjectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
     const testIModelId = await TestUtility.getTestIModelId(testProjectId, "ConnectionReadTest");
-    iModel = await RemoteBriefcaseConnection.open(testProjectId, testIModelId);
+    iModel = await RemoteIModelConnection.openRemote(testProjectId, testIModelId);
 
     const modelProps = await iModel.models.queryProps({ from: "BisCore.PhysicalModel" });
     expect(modelProps.length).to.equal(1);

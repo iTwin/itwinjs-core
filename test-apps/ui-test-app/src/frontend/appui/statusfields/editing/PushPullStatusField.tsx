@@ -63,7 +63,7 @@ class SyncManager {
   public static changesetListenerInitialized = false;
   public static localChangesListenerInitialized?: RemoveFunction;
 
-  public static get iModelConnection(): BriefcaseConnection {
+  public static get briefcaseConnection(): BriefcaseConnection {
     return UiFramework.getIModelConnection()! as BriefcaseConnection;
   }
 
@@ -72,12 +72,12 @@ class SyncManager {
       return;
     this.changesetListenerInitialized = true;
 
-    const iModelId = this.iModelConnection.iModelId;
+    const iModelId = this.briefcaseConnection.iModelId;
     try {
       const requestContext = await AuthorizedFrontendRequestContext.create();
 
       // Bootstrap the process by finding out if there are newer changesets on the server already.
-      this.state.parentChangesetId = this.iModelConnection.changeSetId!;
+      this.state.parentChangesetId = this.briefcaseConnection.changeSetId!;
 
       if (!!this.state.parentChangesetId) {  // avoid error is imodel has no changesets.
         const allOnServer = await IModelApp.iModelClient.changeSets.get(requestContext, iModelId, new ChangeSetQuery().fromId(this.state.parentChangesetId));
@@ -104,10 +104,10 @@ class SyncManager {
   public static async initializeLocalChangesListener() {
     if (this.localChangesListenerInitialized)
       return;
-    this.localChangesListenerInitialized = (new SyncNotifications(this.iModelConnection.key)).registerImpl();
+    this.localChangesListenerInitialized = (new SyncNotifications(this.briefcaseConnection.key)).registerImpl();
     try {
       // Bootstrap the process by finding out if the briefcase has local txns already.
-      this.state.mustPush = await this.iModelConnection.editing.hasPendingTxns();
+      this.state.mustPush = await this.briefcaseConnection.hasPendingTxns();
     } catch (err) {
       ErrorHandling.onUnexpectedError(err);
     }
@@ -134,8 +134,8 @@ class SyncManager {
     this.onStateChange.raiseEvent();
 
     try {
-      await this.iModelConnection.pushChanges("");
-      const parentChangesetId = this.iModelConnection.changeSetId!;
+      await this.briefcaseConnection.pushChanges("");
+      const parentChangesetId = this.briefcaseConnection.changeSetId!;
       this.updateParentChangesetId(parentChangesetId);
     } catch (err) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, failmsg, err.message, OutputMessageType.Alert, OutputMessageAlert.Dialog));

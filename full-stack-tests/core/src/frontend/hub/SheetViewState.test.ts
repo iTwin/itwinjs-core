@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  IModelApp, RemoteBriefcaseConnection, SheetViewState,
+  IModelApp, RemoteIModelConnection, SheetViewState,
 } from "@bentley/imodeljs-frontend";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "./TestUtility";
@@ -12,7 +12,7 @@ import { testOnScreenViewport } from "../TestViewport";
 
 describe("Sheet views (#integration)", () => {
   const projectName = "iModelJsIntegrationTest";
-  let imodel: RemoteBriefcaseConnection;
+  let imodel: RemoteIModelConnection;
   const sheetViewId = "0x96";
   const attachmentCategoryId = "0x93";
 
@@ -25,7 +25,7 @@ describe("Sheet views (#integration)", () => {
 
     const projectId = await TestUtility.getTestProjectId(projectName);
     const iModelId = await TestUtility.getTestIModelId(projectId, "SectionDrawingLocations");
-    imodel = await RemoteBriefcaseConnection.open(projectId, iModelId);
+    imodel = await RemoteIModelConnection.openRemote(projectId, iModelId);
   });
 
   after(async () => {

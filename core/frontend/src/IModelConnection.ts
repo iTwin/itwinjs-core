@@ -15,17 +15,17 @@ import {
   GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError,
   IModelReadRpcInterface, IModelStatus, IModelWriteRpcInterface, mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps,
   ModelProps, ModelQueryParams, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager, SnapRequestProps,
-  SnapResponseProps, SnapshotIModelRpcInterface, StandaloneOpenOptions, TextureLoadProps, ThumbnailProps,
-  ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps,
+  SnapResponseProps, SnapshotIModelRpcInterface, TextureLoadProps, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps,
 } from "@bentley/imodeljs-common";
 import { BackgroundMapLocation } from "./BackgroundMapGeometry";
-import { BriefcaseConnection, LocalBriefcaseConnection, RemoteBriefcaseConnection } from "./BriefcaseConnection";
+import { BriefcaseConnection } from "./BriefcaseConnection";
 import { EntityState } from "./EntityState";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { GeoServices } from "./GeoServices";
 import { IModelApp } from "./IModelApp";
 import { IModelRoutingContext } from "./IModelRoutingContext";
 import { ModelState } from "./ModelState";
+import { RemoteBriefcaseConnection, RemoteIModelConnection } from "./RemoteIModelConnection";
 import { HiliteSet, SelectionSet } from "./SelectionSet";
 import { StandaloneConnection } from "./StandaloneConnection";
 import { SubCategoriesCache } from "./SubCategoriesCache";
@@ -105,27 +105,28 @@ export abstract class IModelConnection extends IModel {
   /** Type guard for instanceof [[BriefcaseConnection]] */
   public isBriefcaseConnection(): this is BriefcaseConnection { return false; }
 
-  /** Type guard for instanceof [[RemoteBriefcaseConnection]] */
-  public isRemoteBriefcaseConnection(): this is RemoteBriefcaseConnection { return false; }
-
   /** Type guard for instanceof [[RemoteBriefcaseConnection]]
-   * @internal
+   * @deprecated use isRemoteConnection
    */
-  public isLocalBriefcaseConnection(): this is LocalBriefcaseConnection { return false; }
+  public isRemoteBriefcaseConnection(): this is RemoteBriefcaseConnection { return false; } // eslint-disable-line deprecation/deprecation
+
+  /** Type guard for instanceof [[RemoteIModelConnection]] */
+  public isRemoteConnection(): this is RemoteIModelConnection { return false; }
 
   /** Type guard for instanceof [[SnapshotConnection]] */
   public isSnapshotConnection(): this is SnapshotConnection { return false; }
+
   /** Type guard for instanceof [[StandaloneConnection]]
    * @internal
    */
   public isStandaloneConnection(): this is StandaloneConnection { return false; }
-  /** Type guard for instanceof [[BlankConnection]]
-   * @beta
-   */
+
+  /** Type guard for instanceof [[BlankConnection]] */
   public isBlankConnection(): this is BlankConnection { return false; }
 
   /** Returns `true` if this is a briefcase copy of an iModel that is synchronized with iModelHub. */
   public get isBriefcase(): boolean { return this.isBriefcaseConnection(); }
+
   /** Returns `true` if this is a *snapshot* iModel.
    * @see [[SnapshotConnection.openSnapshot]]
    */
@@ -134,9 +135,8 @@ export abstract class IModelConnection extends IModel {
    * @internal
    */
   public get isStandalone(): boolean { return this.isStandaloneConnection(); }
-  /** True if this is a [Blank Connection]($docs/learning/frontend/BlankConnection).
-   * @beta
-   */
+
+  /** True if this is a [Blank Connection]($docs/learning/frontend/BlankConnection).  */
   public get isBlank(): boolean { return this.isBlankConnection(); }
 
   /** Check the [[openMode]] of this IModelConnection to see if it was opened read-only. */
@@ -623,11 +623,11 @@ export class BlankConnection extends IModelConnection {
    * @note A BlankConnection should not be used after calling `close`.
    */
   public async close(): Promise<void> {
-    this.beforeClose(); // raise events and clean up the tile cache
+    this.beforeClose();
   }
 }
 
-/** A connection to a [SnapshotDb]($backend) hosted on the backend.
+/** A connection to a [SnapshotDb]($backend) hosted on a backend.
  * @public
  */
 export class SnapshotConnection extends IModelConnection {
@@ -663,7 +663,7 @@ export class SnapshotConnection extends IModelConnection {
   }
 
   /** Open an IModelConnection to a remote read-only snapshot iModel from a key that will be resolved by the backend.
-   * @note This method is primarily intended for web applications.
+   * @note This method is intended for web applications.
    */
   public static async openRemote(fileKey: string): Promise<SnapshotConnection> {
     const routingContext = IModelRoutingContext.current || IModelRoutingContext.default;

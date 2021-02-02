@@ -3,12 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import {
-  DisplayStyleProps, RenderSchedule,
-} from "@bentley/imodeljs-common";
-import {
-  IModelApp, IModelConnection, RemoteBriefcaseConnection, RenderScheduleState, SpatialViewState, ViewState,
-} from "@bentley/imodeljs-frontend";
+import { DisplayStyleProps, RenderSchedule } from "@bentley/imodeljs-common";
+import { IModelApp, IModelConnection, RemoteIModelConnection, RenderScheduleState, SpatialViewState, ViewState } from "@bentley/imodeljs-frontend";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "./TestUtility";
 
@@ -17,6 +13,7 @@ function countTileTrees(view: ViewState): number {
   view.forEachModelTreeRef((_) => ++numTrees);
   return numTrees;
 }
+// eslint-disable-file deprecation/deprecation
 
 describe("Animated tile trees (#integration)", () => {
   const projectName = "iModelJsIntegrationTest";
@@ -34,7 +31,7 @@ describe("Animated tile trees (#integration)", () => {
     });
     const projectId = await TestUtility.getTestProjectId(projectName);
     const iModelId = await TestUtility.getTestIModelId(projectId, "SYNCHRO.UTK");
-    imodel = await RemoteBriefcaseConnection.open(projectId, iModelId);
+    imodel = await RemoteIModelConnection.openRemote(projectId, iModelId);
   });
 
   after(async () => {

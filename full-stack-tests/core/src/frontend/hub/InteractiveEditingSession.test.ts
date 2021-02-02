@@ -19,6 +19,8 @@ const expect = chai.expect;
 chai.use(chaiAsPromised);
 let codeSuffix = 1;
 
+/* eslint-disable deprecation/deprecation */
+
 // The Web RPC protocol does not support Ipc required for interactive editing.
 if (isElectronRenderer) {
   describe("InteractiveEditingSession (#integration)", () => {

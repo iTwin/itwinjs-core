@@ -46,6 +46,7 @@ describe("Opening IModelConnection (#integration)", () => {
     await MockRender.App.shutdown();
   });
 
+  /* eslint-disable deprecation/deprecation */
   const doTest = async (openMode: OpenMode) => {
     const promiseArray = new Array<Promise<IModelConnection>>();
     let promiseChainWithShortWaits: Promise<any> = Promise.resolve();

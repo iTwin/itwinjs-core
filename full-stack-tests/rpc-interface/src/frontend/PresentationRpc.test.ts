@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { Id64, using } from "@bentley/bentleyjs-core";
 import { RpcManager } from "@bentley/imodeljs-common";
-import { IModelApp, IModelConnection, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, RemoteIModelConnection } from "@bentley/imodeljs-frontend";
 import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/frontend";
 import {
   ContentRpcRequestOptions, Descriptor, DistinctValuesRpcRequestOptions,
@@ -40,7 +40,7 @@ describe("PresentationRpcInterface tests", () => {
     const contextId = testContext.iModelWithChangesets!.contextId;
     const accessToken = testContext.adminUserAccessToken;
     IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
-    iModel = await RemoteBriefcaseConnection.open(contextId, iModelId);
+    iModel = await RemoteIModelConnection.openRemote(contextId, iModelId);
   });
 
   it("getNodes works as expected", async () => {

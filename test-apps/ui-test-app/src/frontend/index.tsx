@@ -24,8 +24,8 @@ import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import { BentleyCloudRpcParams, DesktopAuthorizationClientConfiguration, IModelVersion, RpcConfiguration, SyncMode } from "@bentley/imodeljs-common";
 import {
-  AccuSnap, AuthorizedFrontendRequestContext, DesktopAuthorizationClient, ExternalServerExtensionLoader, IModelApp, IModelAppOptions,
-  IModelConnection, LocalBriefcaseConnection, NativeApp, NativeAppLogger, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool, ViewState, WebViewerApp, WebViewerAppOptions,
+  AccuSnap, AuthorizedFrontendRequestContext, BriefcaseConnection, DesktopAuthorizationClient, ExternalServerExtensionLoader, IModelApp, IModelAppOptions,
+  IModelConnection, NativeApp, NativeAppLogger, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool, ViewState, WebViewerApp, WebViewerAppOptions,
 } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { MarkupApp } from "@bentley/imodeljs-markup";
@@ -307,7 +307,7 @@ export class SampleAppIModelApp {
         console.log(`Progress (${progress.loaded}/${progress.total}) -> ${progress.percent}%`);
       });
       await req.downloadPromise;
-      iModelConnection = await LocalBriefcaseConnection.open({ fileName: req.fileName });
+      iModelConnection = await BriefcaseConnection.openFile({ fileName: req.fileName });
     } else {
       iModelConnection = await UiFramework.iModelServices.openIModel(projectId, iModelId, this.allowWrite ? OpenMode.ReadWrite : OpenMode.Readonly);
     }
@@ -415,7 +415,7 @@ export class SampleAppIModelApp {
           console.log(`Progress (${progress.loaded}/${progress.total}) -> ${progress.percent}%`);
         });
         await req.downloadPromise;
-        iModelConnection = await LocalBriefcaseConnection.open({ fileName: req.fileName });
+        iModelConnection = await BriefcaseConnection.openFile({ fileName: req.fileName });
       } else {
         iModelConnection = await UiFramework.iModelServices.openIModel(contextId, iModelId, this.allowWrite ? OpenMode.ReadWrite : OpenMode.Readonly);
       }

@@ -60,33 +60,36 @@ export interface IpcAppFunctions {
    */
   openBriefcase: (_args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
 
-  /**
-   * Close a briefcase on the backend.
-   * @param _key The key from the IModelConnectionProps returned by [[open]]
-   */
-  closeBriefcase: (_key: string) => Promise<void>;
-
   /** Open a standalone iModel from a file name. */
   openStandalone: (_filePath: string, _openMode: OpenMode, _opts?: StandaloneOpenOptions) => Promise<IModelConnectionProps>;
 
-  /** Close a standalone iModel. */
-  closeStandalone: (key: string) => Promise<boolean>;
+  /** Close a previously opened iModel. */
+  close: (key: string) => Promise<void>;
+
+  /** Save any local changes. */
+  saveChanges: (key: string, description?: string) => Promise<void>;
+
+  /** Determine whether there are outstanding txns . */
+  hasPendingTxns: (key: string) => Promise<boolean>;
+
+  pullAndMergeChanges: (key: string) => Promise<IModelConnectionProps>;
+  pushChanges: (key: string, description: string) => Promise<IModelConnectionProps>;
 
   /** Cancels currently pending or active generation of tile content.
-   * @param _iModelToken Identifies the iModel
-   * @param _contentIds A list of content requests to be canceled, grouped by tile tree Id.
-   * @internal
-   */
-  cancelTileContentRequests: (_iModelToken: IModelRpcProps, _contentIds: TileTreeContentIds[]) => Promise<void>;
+     * @param _iModelToken Identifies the iModel
+     * @param _contentIds A list of content requests to be canceled, grouped by tile tree Id.
+     * @internal
+     */
+  cancelTileContentRequests: (tokenProps: IModelRpcProps, _contentIds: TileTreeContentIds[]) => Promise<void>;
 
   /** Cancel element graphics requests.
    * @see [[IModelTileRpcInterface.requestElementGraphics]].
    */
-  cancelElementGraphicsRequests: (_rpcProps: IModelRpcProps, _requestIds: string[]) => Promise<void>;
+  cancelElementGraphicsRequests: (key: string, _requestIds: string[]) => Promise<void>;
 
   /** @internal */
-  toggleInteractiveEditingSession: (_tokenProps: IModelRpcProps, _startSession: boolean) => Promise<boolean>;
+  toggleInteractiveEditingSession: (key: string, _startSession: boolean) => Promise<boolean>;
   /** @internal */
-  isInteractiveEditingSupported: (_tokenProps: IModelRpcProps) => Promise<boolean>;
+  isInteractiveEditingSupported: (key: string) => Promise<boolean>;
 }
 

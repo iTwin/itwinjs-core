@@ -4,19 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Config } from "@bentley/bentleyjs-core";
-import { AuthorizedFrontendRequestContext, BriefcaseConnection, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
+import { AuthorizedFrontendRequestContext, RemoteIModelConnection } from "@bentley/imodeljs-frontend";
 import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
 import { IModelData } from "../../common/Settings";
-
-/* eslint-disable @typescript-eslint/indent */
 
 export class IModelSession {
 
   public contextId: string;
   public iModelId: string;
 
-  private _iModel?: BriefcaseConnection;
+  private _iModel?: RemoteIModelConnection;
 
   private constructor(contextId: string, imodelId: string) {
     this.contextId = contextId;
@@ -47,21 +45,21 @@ export class IModelSession {
     } else
       imodelId = iModelData.id!;
 
-    console.log(`Using iModel { name:${iModelData.name}, id:${iModelData.id}, projectId:${iModelData.projectId}, changesetId:${iModelData.changeSetId} }`); // eslint-disable-line
+    console.log(`Using iModel { name:${iModelData.name}, id:${iModelData.id}, projectId:${iModelData.projectId}, changesetId:${iModelData.changeSetId} }`); // eslint-disable-line no-console
 
     return new IModelSession(contextId, imodelId);
   }
 
-  public async getConnection(): Promise<BriefcaseConnection> {
+  public async getConnection(): Promise<RemoteIModelConnection> {
     return undefined === this._iModel ? this.open() : this._iModel;
   }
 
-  public async open(): Promise<BriefcaseConnection> {
+  public async open(): Promise<RemoteIModelConnection> {
     try {
       const env = Config.App.get("imjs_buddi_resolve_url_using_region");
       // eslint-disable-next-line no-console
       console.log(`Environment: ${env}`);
-      this._iModel = await RemoteBriefcaseConnection.open(this.contextId, this.iModelId);
+      this._iModel = await RemoteIModelConnection.openRemote(this.contextId, this.iModelId);
       expect(this._iModel).to.exist;
     } catch (e) {
       throw new Error(`Failed to open test iModel. Error: ${e.message}`);

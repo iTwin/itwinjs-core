@@ -13,6 +13,7 @@ import {
   IpcListener, IpcSocketBackend, iTwinChannel, OpenBriefcaseProps, RemoveFunction, StandaloneOpenOptions, TileTreeContentIds,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BriefcaseDb, IModelDb, StandaloneDb } from "./IModelDb";
 import { IModelHost, IModelHostConfiguration } from "./IModelHost";
 import { cancelTileContentRequests } from "./rpc-impl/IModelTileRpcImpl";
@@ -151,8 +152,8 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   public async cancelTileContentRequests(tokenProps: IModelRpcProps, contentIds: TileTreeContentIds[]): Promise<void> {
     return cancelTileContentRequests(tokenProps, contentIds);
   }
-  public async cancelElementGraphicsRequests(rpcProps: IModelRpcProps, requestIds: string[]): Promise<void> {
-    const iModel = IModelDb.findByKey(rpcProps.key);
+  public async cancelElementGraphicsRequests(key: string, requestIds: string[]): Promise<void> {
+    const iModel = IModelDb.findByKey(key);
     return iModel.nativeDb.cancelElementGraphicsRequests(requestIds);
   }
   public async openBriefcase(args: OpenBriefcaseProps): Promise<IModelConnectionProps> {
@@ -161,26 +162,41 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
     requestContext.enter();
     return db.toJSON();
   }
-  public async closeBriefcase(key: string): Promise<void> {
-    BriefcaseDb.findByKey(key).close();
-  }
   public async openStandalone(filePath: string, openMode: OpenMode, opts?: StandaloneOpenOptions): Promise<IModelConnectionProps> {
     return StandaloneDb.openFile(filePath, openMode, opts).getConnectionProps();
   }
-  public async closeStandalone(key: string): Promise<boolean> {
-    StandaloneDb.findByKey(key).close();
-    return true;
+  public async close(key: string): Promise<void> {
+    IModelDb.findByKey(key).close();
   }
-  public async toggleInteractiveEditingSession(tokenProps: IModelRpcProps, startSession: boolean): Promise<boolean> {
-    const imodel = IModelDb.findByKey(tokenProps.key);
+  public async saveChanges(key: string, description?: string): Promise<void> {
+    IModelDb.findByKey(key).saveChanges(description);
+  }
+  public async hasPendingTxns(key: string): Promise<boolean> {
+    return BriefcaseDb.findByKey(key).nativeDb.hasPendingTxns();
+  }
+  public async pullAndMergeChanges(key: string): Promise<IModelConnectionProps> {
+    const iModelDb = BriefcaseDb.findByKey(key);
+    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
+    await iModelDb.pullAndMergeChanges(requestContext);
+    return iModelDb.getConnectionProps();
+  }
+  public async pushChanges(key: string, description: string): Promise<IModelConnectionProps> {
+    const iModelDb = BriefcaseDb.findByKey(key);
+    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
+    await iModelDb.pushChanges(requestContext, description);
+    return iModelDb.getConnectionProps();
+  }
+
+  public async toggleInteractiveEditingSession(key: string, startSession: boolean): Promise<boolean> {
+    const imodel = IModelDb.findByKey(key);
     const val: IModelJsNative.ErrorStatusOrResult<any, boolean> = imodel.nativeDb.setGeometricModelTrackingEnabled(startSession);
     if (val.error)
       throw new IModelError(val.error.status, "Failed to toggle interactive editing session");
 
     return val.result!;
   }
-  public async isInteractiveEditingSupported(tokenProps: IModelRpcProps): Promise<boolean> {
-    const imodel = IModelDb.findByKey(tokenProps.key);
+  public async isInteractiveEditingSupported(key: string): Promise<boolean> {
+    const imodel = IModelDb.findByKey(key);
     return imodel.nativeDb.isGeometricModelTrackingSupported();
   }
 }

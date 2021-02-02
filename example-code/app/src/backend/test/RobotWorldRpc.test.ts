@@ -11,7 +11,7 @@ import {
   BentleyCloudRpcManager, BentleyCloudRpcParams, GeometricElement3dProps, IModel, IModelReadRpcInterface, IModelWriteRpcInterface,
   RpcInterfaceDefinition, SnapshotIModelRpcInterface, TestRpcManager,
 } from "@bentley/imodeljs-common";
-import { LocalBriefcaseConnection, NullRenderSystem } from "@bentley/imodeljs-frontend";
+import { BriefcaseConnection, NullRenderSystem } from "@bentley/imodeljs-frontend";
 import { RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface } from "../../common/RobotWorldRpcInterface";
 import { RobotWorldEngine } from "../RobotWorldEngine";
 import { RobotWorld } from "../RobotWorldSchema";
@@ -61,7 +61,7 @@ if (isElectronRenderer) {
       const roWrite = RobotWorldWriteRpcInterface.getClient();
       const roRead = RobotWorldReadRpcInterface.getClient();
 
-      const iModel = await LocalBriefcaseConnection.open({ fileName: `${KnownTestLocations.outputDir}/` + `RobotWorldRpc.bim` });
+      const iModel = await BriefcaseConnection.openFile({ fileName: `${KnownTestLocations.outputDir}/` + `RobotWorldRpc.bim` });
       assert.isTrue(iModel !== undefined);
       const iToken = iModel.getRpcProps();
 

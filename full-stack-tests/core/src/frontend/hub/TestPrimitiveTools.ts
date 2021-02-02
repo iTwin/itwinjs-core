@@ -58,7 +58,7 @@ export abstract class PrimitiveToolEx extends PrimitiveTool {
     if (this.targetModelId === undefined)
       throw new IModelError(IModelStatus.BadModel, "", Logger.logError, loggingCategory, () => this.targetModelId);
 
-    return this.iModel.editing.concurrencyControl.lockModel(this.targetModelId);
+    // return this.iModel.editing.concurrencyControl.lockModel(this.targetModelId);
   }
 
 }

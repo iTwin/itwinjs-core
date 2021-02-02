@@ -14,6 +14,7 @@ import {
 import { BriefcaseConnection, BriefcaseNotificationHandler } from "./BriefcaseConnection";
 import { IModelConnection } from "./IModelConnection";
 import { IpcApp } from "./IpcApp";
+import { RemoteBriefcaseConnection } from "./RemoteIModelConnection";
 import { StandaloneConnection } from "./StandaloneConnection";
 
 let initialized = false;
@@ -30,7 +31,7 @@ class ModelChanges extends SortedArray<ElementGeometryChange> {
   }
 }
 
-type EditableConnection = BriefcaseConnection | StandaloneConnection;
+type EditableConnection = BriefcaseConnection | StandaloneConnection | RemoteBriefcaseConnection; // eslint-disable-line deprecation/deprecation
 
 /**
  * Represents an active session for performing interactive editing of an [[IModelConnection]].
@@ -77,7 +78,7 @@ export class InteractiveEditingSession extends BriefcaseNotificationHandler impl
    * the BisCore ECSchema older than v0.1.11.
    */
   public static async isSupported(imodel: EditableConnection): Promise<boolean> {
-    return IpcApp.callIpcHost("isInteractiveEditingSupported", imodel.getRpcProps());
+    return IpcApp.callIpcHost("isInteractiveEditingSupported", imodel.key);
   }
 
   /** Get the active editing session for the specified iModel, if any.
@@ -100,7 +101,7 @@ export class InteractiveEditingSession extends BriefcaseNotificationHandler impl
     const session = new InteractiveEditingSession(imodel);
     sessions.push(session);
     try {
-      const sessionStarted = await IpcApp.callIpcHost("toggleInteractiveEditingSession", imodel.getRpcProps(), true);
+      const sessionStarted = await IpcApp.callIpcHost("toggleInteractiveEditingSession", imodel.key, true);
       assert(sessionStarted); // If it didn't, the backend threw an error.
     } catch (e) {
       session.dispose();
@@ -132,7 +133,7 @@ export class InteractiveEditingSession extends BriefcaseNotificationHandler impl
     try {
       this.onEnding.raiseEvent(this);
     } finally {
-      const sessionEnded = await IpcApp.callIpcHost("toggleInteractiveEditingSession", this.iModel.getRpcProps(), false);
+      const sessionEnded = await IpcApp.callIpcHost("toggleInteractiveEditingSession", this.iModel.key, false);
       assert(!sessionEnded);
       try {
         this.onEnded.raiseEvent(this);

@@ -11,8 +11,8 @@ import { StandaloneOpenOptions } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
 import { IpcApp } from "./IpcApp";
 
-/** A connection to a [StandaloneDb]($backend) hosted on the backend.
- * @internal
+/** A connection to a [StandaloneDb]($backend) from an [IpcHost]($backend)
+ * @beta
  */
 export class StandaloneConnection extends IModelConnection {
   public isStandaloneConnection(): this is StandaloneConnection { return true; }
@@ -25,7 +25,7 @@ export class StandaloneConnection extends IModelConnection {
   private _isClosed?: boolean;
 
   /** Open an IModelConnection to a standalone iModel.
-   * @note This method is intended for desktop or mobile applications and should not be used for web applications.
+   * @note This method requires an [[IpcApp]].
    */
   public static async openFile(filePath: string, openMode: OpenMode = OpenMode.ReadWrite, opts?: StandaloneOpenOptions): Promise<StandaloneConnection> {
     const openResponse = await IpcApp.callIpcHost("openStandalone", filePath, openMode, opts);
@@ -34,7 +34,7 @@ export class StandaloneConnection extends IModelConnection {
     return connection;
   }
 
-  /** Close this StandaloneConnection and the underlying [StandaloneDb]($backend) database file.
+  /** Close this StandaloneConnection.
    * @see [[openFile]]
    */
   public async close(): Promise<void> {
@@ -43,6 +43,6 @@ export class StandaloneConnection extends IModelConnection {
 
     this.beforeClose();
     this._isClosed = true;
-    await IpcApp.callIpcHost("closeStandalone", this.key);
+    await IpcApp.callIpcHost("close", this.key);
   }
 }

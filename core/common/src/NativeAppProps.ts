@@ -6,9 +6,8 @@
  * @module NativeApp
  */
 
-import { GuidString, OpenMode } from "@bentley/bentleyjs-core";
+import { GuidString } from "@bentley/bentleyjs-core";
 import { BriefcaseProps, LocalBriefcaseProps, RequestNewBriefcaseProps } from "./BriefcaseTypes";
-import { IModelConnectionProps, IModelRpcProps, StandaloneOpenOptions } from "./IModel";
 
 /** @internal */
 export const nativeAppChannel = "nativeApp";

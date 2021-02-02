@@ -67,7 +67,7 @@ export abstract class PrimitiveToolEx extends PrimitiveTool {
 
     // IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Locking model ..."));
 
-    return this.iModel.editing.concurrencyControl.lockModel(this.targetModelId);
+    // return this.iModel.editing.concurrencyControl.lockModel(this.targetModelId);
   }
 
 }

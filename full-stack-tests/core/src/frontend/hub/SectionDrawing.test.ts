@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  DrawingViewState, IModelApp, IModelConnection, RemoteBriefcaseConnection, SectionDrawingModelState,
+  DrawingViewState, IModelApp, IModelConnection, RemoteIModelConnection, SectionDrawingModelState,
 } from "@bentley/imodeljs-frontend";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "./TestUtility";
@@ -23,7 +23,7 @@ describe("Section Drawings (#integration)", () => {
 
     const projectId = await TestUtility.getTestProjectId(projectName);
     const iModelId = await TestUtility.getTestIModelId(projectId, "SectionDrawingLocations");
-    imodel = await RemoteBriefcaseConnection.open(projectId, iModelId);
+    imodel = await RemoteIModelConnection.openRemote(projectId, iModelId);
   });
 
   after(async () => {

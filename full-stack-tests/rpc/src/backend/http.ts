@@ -7,7 +7,6 @@ import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager } from "@bentley/i
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { AttachedInterface, rpcInterfaces } from "../common/TestRpcInterface";
 import { commonSetup } from "./CommonBackendSetup";
-import { initializeMockMobileTest, setupMockMobileTest } from "./mockmobile";
 import { AttachedInterfaceImpl } from "./TestRpcImpl";
 import { TestServer } from "./TestServer";
 

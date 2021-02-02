@@ -11,6 +11,8 @@ import { AccessToken } from "@bentley/itwin-client";
 import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/frontend";
 import { TestContext } from "./setup/TestContext";
 
+/* eslint-disable deprecation/deprecation */
+
 describe("IModel Read/Write Connection", () => {
   let accessToken: AccessToken;
   let testContext: TestContext;
