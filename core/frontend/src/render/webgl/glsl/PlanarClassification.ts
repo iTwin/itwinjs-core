@@ -72,8 +72,14 @@ if (!isOutside) {
 }
 if (doMask) {
   if (!isOutside && (maskTexel.r + maskTexel.g + maskTexel.b + maskTexel.a > 0.0)) {
-    discard;
-    return vec4(0);
+    if (maskTexel.a >= 1.0)
+      {
+      discard;
+      return vec4(0);
+      }
+    float alpha = baseColor.a * (1.0 - maskTexel.a);
+    baseColor.rgb = baseColor.rgb * (alpha / baseColor.a);
+    baseColor.a = alpha;
    }
 
   if (!doClassify)

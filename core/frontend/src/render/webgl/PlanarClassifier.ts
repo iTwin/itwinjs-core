@@ -567,8 +567,8 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     const prevOverrides = target.currentFeatureSymbologyOverrides;
 
     target.uniforms.style.changeBackgroundColor(this._bgColor); // Avoid white on white reversal. Will be reset in changeRenderPlan below.
-
     target.changeFrustum(this._frustum, this._frustum.getFraction(), true);
+    this._anyTranslucent = false;
 
     const prevProjMatrix = target.uniforms.frustum.projectionMatrix;
     target.uniforms.frustum.changeProjectionMatrix(PlanarClassifier._postProjectionMatrix.multiplyMatrixMatrix(prevProjMatrix));
