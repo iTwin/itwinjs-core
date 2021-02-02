@@ -5,7 +5,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { ExpansionToggle } from "../../ui-core/tree/ExpansionToggle";
+import { ExpansionToggle } from "../../ui-core";
 
 describe("<ExpansionToggle />", () => {
   it("should render", () => {

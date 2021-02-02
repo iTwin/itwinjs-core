@@ -9,7 +9,7 @@ import * as sinon from "sinon";
 import { Checkbox } from "../../ui-core/checkbox/Checkbox";
 import { CheckBoxState } from "../../ui-core/enums/CheckBoxState";
 import { ExpansionToggle } from "../../ui-core/tree/ExpansionToggle";
-import { TreeNode as Node } from "../../ui-core/tree/Node";
+import { TreeNode as Node } from "../../ui-core";
 
 describe("<Node />", () => {
   it("should render", () => {
