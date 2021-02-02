@@ -654,7 +654,7 @@ export class HubUtility {
     for (var i = 0; i < 60; i++) {
       const currentState = await entityQuery();
       if (conditionToSatisfy(currentState))
-        break;
+        return;
       await BeDuration.wait(10000);
     }
     throw new Error("Entity did not reach the expected state in 10 minutes");

@@ -798,5 +798,8 @@ describe("BriefcaseManager (#integration)", () => {
 
     // Assert the final number of changeSets
     assert.equal(4, (await IModelHost.iModelClient.changeSets.get(userContext, iModel.iModelId)).length);
+
+    // Delete the test iModel
+    await testUtility.deleteTestIModel();
   });
 });
