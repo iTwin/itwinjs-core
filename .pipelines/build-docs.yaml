@@ -7,7 +7,7 @@ variables:
 
 steps:
 
-- template: core-build.yaml
+- template: core-steps.yaml
 
 - task: NodeTool@0
   displayName: 'Use Node 10.x'
