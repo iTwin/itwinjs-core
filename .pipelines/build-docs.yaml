@@ -6,126 +6,14 @@ variables:
   tempDocsLocation: '$(Agent.BuildDirectory)\tempDocsBuild'
 
 steps:
+
+- template: core-build.yaml
+
 - task: NodeTool@0
   displayName: 'Use Node 10.x'
   inputs:
     versionSpec: 10.x
     checkLatest: true
-
-- script: |
-   git config --local user.email imodeljs-admin@users.noreply.github.com
-   git config --local user.name imodeljs-admin
-  displayName: 'Setup git config'
-
-- script: 'node common/scripts/install-run-rush.js install --purge'
-  displayName: 'rush install'
-
-- script: 'node common/scripts/install-run-rush.js build -v'
-  displayName: 'rush build'
-  condition: and(succeeded(), ne(startsWith(variables['Build.SourceBranch'], 'refs/heads/master'), true), ne(startsWith(variables['System.PullRequest.TargetBranch'], 'refs/heads/master'), true))
-
-- script: 'node common/scripts/install-run-rush.js compile -v'
-  displayName: 'rush compile'
-  condition: and(succeeded(), ne(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/2'), true), ne(startsWith(variables['System.PullRequest.TargetBranch'], 'refs/heads/release/2'), true))
-
-- script: 'node common/scripts/install-run-rush.js docs'
-  displayName: 'rush docs'
-
-- task: PublishPipelineArtifact@1
-  displayName: 'Publish Pipeline Artifact - TypeDoc json'
-  inputs:
-    targetPath: '$(Build.SourcesDirectory)/generated-docs'
-    artifact: 'TypeDoc json'
-
-- task: CopyFiles@2
-  displayName: 'Copy Core Reference to Staging'
-  inputs:
-    SourceFolder: '$(Build.SourcesDirectory)/generated-docs/core'
-    TargetFolder: '$(System.ArtifactsDirectory)\staging\reference\'
-
-- task: CopyFiles@2
-  displayName: 'Copy Clients Reference to Staging'
-  inputs:
-    SourceFolder: '$(Build.SourcesDirectory)/generated-docs/clients'
-    TargetFolder: '$(System.ArtifactsDirectory)\staging\reference\'
-  continueOnError: true
-
-- task: CopyFiles@2
-  displayName: 'Copy UI reference to staging'
-  inputs:
-    SourceFolder: '$(Build.SourcesDirectory)/generated-docs/ui/'
-    TargetFolder: '$(System.ArtifactsDirectory)\staging\reference\'
-
-- task: CopyFiles@2
-  displayName: 'Copy Presentation reference to staging'
-  inputs:
-    SourceFolder: '$(Build.SourcesDirectory)/generated-docs/presentation/'
-    TargetFolder: '$(System.ArtifactsDirectory)\staging\reference\'
-
-- task: CopyFiles@2
-  displayName: 'Copy Domains reference to staging'
-  inputs:
-    SourceFolder: '$(Build.SourcesDirectory)/generated-docs/domains'
-    TargetFolder: '$(System.ArtifactsDirectory)\staging\reference\'
-  condition: and(succeeded(), ne(variables['System.PullRequest.TargetBranch'], 'refs/heads/hotfix/briefcase-fix'))
-
-- task: CopyFiles@2
-  displayName: 'Copy Extracted Code to staging area'
-  inputs:
-    SourceFolder: '$(Build.SourcesDirectory)/generated-docs/extract/'
-    TargetFolder: '$(System.ArtifactsDirectory)\staging\extract\'
-
-- task: CopyFiles@2
-  displayName: 'Copy imodeljs\docs folder to staging area'
-  inputs:
-    SourceFolder: '$(Build.SourcesDirectory)/docs/'
-    TargetFolder: '$(System.ArtifactsDirectory)/staging'
-
-- task: DownloadPipelineArtifact@2
-  displayName: 'Download Pipeline Artifact - .updated.json'
-  inputs:
-    buildType: specific
-    project: '2c48216e-e72f-48b4-a4eb-40ff1c04e8e4'
-    definition: 1734
-    buildVersionToDownload: latestFromBranch
-    artifactName: .updated.json
-    targetPath: '$(System.ArtifactsDirectory)'
-
-- task: CopyFiles@2
-  displayName: 'Copy .updated.json to staging'
-  inputs:
-    SourceFolder: '$(System.ArtifactsDirectory)'
-    Contents: .updated.json
-    TargetFolder: '$(System.ArtifactsDirectory)\staging\config'
-
-- task: DownloadBuildArtifacts@0
-  displayName: 'Download Bis Docs Artifacts'
-  inputs:
-    buildType: specific
-    project: '2c48216e-e72f-48b4-a4eb-40ff1c04e8e4'
-    pipeline: 1633
-    buildVersionToDownload: specific
-    buildId: 709524
-    artifactName: 'Bis Docs'
-
-- task: CopyFiles@2
-  displayName: 'Copy Bis Docs to staging'
-  inputs:
-    SourceFolder: '$(System.ArtifactsDirectory)/Bis Docs'
-    TargetFolder: '$(System.ArtifactsDirectory)\staging\bis\domains'
-
-- task: Npm@0
-  displayName: 'Install BeMetalsmith'
-  inputs:
-    arguments: '@bentley/bemetalsmith@4.x'
-
-- task: Npm@1
-  displayName: 'npm audit'
-  inputs:
-    command: custom
-    verbose: false
-    customCommand: 'audit --registry=https://registry.npmjs.org/ --audit-level=high'
-  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/release'))
 
 - script: './node_modules/.bin/bmsBuild --strictLinkChecking --topicsMustHaveDesc --source $(System.ArtifactsDirectory)/staging --destination $(agent.builddirectory)/tempDocsBuild/public_build --siteTitle iTwin.js'
   displayName: 'Run bmsBuild'
