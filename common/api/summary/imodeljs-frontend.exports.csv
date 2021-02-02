@@ -58,10 +58,10 @@ public;BeWheelEvent
 public;BeWheelEventProps 
 internal;BingElevationProvider
 internal;BingMapsImageryLayerProvider 
-beta;BlankConnection 
-beta;BlankConnectionProps
-public;class BriefcaseConnection 
-alpha;class BriefcaseNotificationHandler 
+public;BlankConnection 
+public;BlankConnectionProps
+public;BriefcaseConnection 
+beta;class BriefcaseNotificationHandler 
 internal;CachedDecoration =
 internal;CachedIModelCoordinatesResponseProps
 internal;calculateEcefToDbTransformAtLocation(originIn: Point3d, iModel: IModelConnection): Promise
@@ -116,6 +116,9 @@ internal;class DynamicIModelTile
 public;DynamicsContext 
 alpha;EditingFunctions
 alpha;EditingFunctions
+deprecated;CategoryEditor
+deprecated;ConcurrencyControl
+deprecated;ModelEditor
 alpha;EditManipulator
 internal;ELEMENT_MARKED_FOR_REMOVAL: unique symbol
 internal;ElementAgenda
@@ -262,7 +265,6 @@ internal;KeyinStatus
 beta;LengthDescription 
 internal;linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void
 internal;LoadedExtensionProps
-alpha;LocalBriefcaseConnection 
 public;LocateAction
 public;LocateFilterStatus
 public;LocateOptions
@@ -378,6 +380,7 @@ internal;RealityTileParams
 internal;RealityTileTree 
 internal;RealityTileTreeParams 
 public;RemoteBriefcaseConnection 
+public;RemoteIModelConnection 
 beta;class RenderClipVolume 
 public;RenderContext
 internal;RenderDiagnostics
@@ -451,7 +454,7 @@ internal;SpatialTileTreeReferences
 public;SpatialViewState 
 public;Sprite
 public;SpriteLocation 
-internal;StandaloneConnection 
+beta;StandaloneConnection 
 public;StandardView
 public;StandardViewId
 public;StandardViewTool 

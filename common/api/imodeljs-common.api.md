@@ -4036,17 +4036,22 @@ export enum IpcAppChannel {
 
 // @internal
 export interface IpcAppFunctions {
-    cancelElementGraphicsRequests: (_rpcProps: IModelRpcProps, _requestIds: string[]) => Promise<void>;
-    cancelTileContentRequests: (_iModelToken: IModelRpcProps, _contentIds: TileTreeContentIds[]) => Promise<void>;
-    closeBriefcase: (_key: string) => Promise<void>;
-    closeStandalone: (key: string) => Promise<boolean>;
+    cancelElementGraphicsRequests: (key: string, _requestIds: string[]) => Promise<void>;
+    cancelTileContentRequests: (tokenProps: IModelRpcProps, _contentIds: TileTreeContentIds[]) => Promise<void>;
+    close: (key: string) => Promise<void>;
+    hasPendingTxns: (key: string) => Promise<boolean>;
     // (undocumented)
-    isInteractiveEditingSupported: (_tokenProps: IModelRpcProps) => Promise<boolean>;
+    isInteractiveEditingSupported: (key: string) => Promise<boolean>;
     log: (_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any) => Promise<void>;
     openBriefcase: (_args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
     openStandalone: (_filePath: string, _openMode: OpenMode, _opts?: StandaloneOpenOptions) => Promise<IModelConnectionProps>;
     // (undocumented)
-    toggleInteractiveEditingSession: (_tokenProps: IModelRpcProps, _startSession: boolean) => Promise<boolean>;
+    pullAndMergeChanges: (key: string) => Promise<IModelConnectionProps>;
+    // (undocumented)
+    pushChanges: (key: string, description: string) => Promise<IModelConnectionProps>;
+    saveChanges: (key: string, description?: string) => Promise<void>;
+    // (undocumented)
+    toggleInteractiveEditingSession: (key: string, _startSession: boolean) => Promise<boolean>;
 }
 
 // @internal

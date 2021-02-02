@@ -1454,7 +1454,7 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
     get tileWidth(): number;
     }
 
-// @beta
+// @public
 export class BlankConnection extends IModelConnection {
     close(): Promise<void>;
     get contextId(): GuidString | undefined;
@@ -1466,7 +1466,7 @@ export class BlankConnection extends IModelConnection {
     get isClosed(): boolean;
 }
 
-// @beta
+// @public
 export interface BlankConnectionProps {
     contextId?: GuidString;
     extents: Range3dProps;
@@ -1476,30 +1476,27 @@ export interface BlankConnectionProps {
 }
 
 // @public
-export abstract class BriefcaseConnection extends IModelConnection {
-    protected constructor(iModelProps: IModelConnectionProps);
-    // @internal
-    attachChangeCache(): Promise<void>;
-    // @internal
-    changeCacheAttached(): Promise<boolean>;
+export class BriefcaseConnection extends IModelConnection {
+    close(): Promise<void>;
     get contextId(): GuidString;
-    // @alpha
-    get editing(): EditingFunctions;
+    // @beta (undocumented)
+    hasPendingTxns(): Promise<boolean>;
     get iModelId(): GuidString;
     // (undocumented)
     isBriefcaseConnection(): this is BriefcaseConnection;
     get isClosed(): boolean;
     // (undocumented)
     protected _isClosed?: boolean;
-    // @alpha
-    pullAndMergeChanges(): Promise<void>;
-    // @alpha
-    pushChanges(description: string): Promise<void>;
+    static openFile(briefcaseProps: OpenBriefcaseProps): Promise<BriefcaseConnection>;
+    // @beta (undocumented)
+    pullAndMergeChanges(): Promise<IModelConnectionProps>;
+    // @beta (undocumented)
+    pushChanges(description: string): Promise<IModelConnectionProps>;
+    // @beta (undocumented)
     saveChanges(description?: string): Promise<void>;
-    updateProjectExtents(newExtents: AxisAlignedBox3d): Promise<void>;
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export abstract class BriefcaseNotificationHandler extends NotificationHandler {
     constructor(_key: string);
     // (undocumented)
@@ -2322,9 +2319,9 @@ export class DynamicsContext extends RenderContext {
     changeDynamics(): void;
     }
 
-// @alpha
+// @alpha @deprecated
 export class EditingFunctions {
-    constructor(connection: BriefcaseConnection);
+    constructor(connection: IModelConnection);
     get categories(): EditingFunctions.CategoryEditor;
     get codes(): EditingFunctions.Codes;
     get concurrencyControl(): EditingFunctions.ConcurrencyControl;
@@ -2336,24 +2333,27 @@ export class EditingFunctions {
     updateProjectExtents(newExtents: AxisAlignedBox3d): Promise<void>;
 }
 
-// @alpha (undocumented)
+// @alpha @deprecated (undocumented)
 export namespace EditingFunctions {
+    // @deprecated
     export class CategoryEditor {
-        constructor(c: BriefcaseConnection);
+        constructor(c: IModelConnection);
         createAndInsertSpatialCategory(scopeModelId: Id64String, categoryName: string, appearance: SubCategoryAppearance.Props): Promise<Id64String>;
         }
     export class Codes {
-        constructor(c: BriefcaseConnection);
+        constructor(c: IModelConnection);
         makeCode(specName: string, scope: Id64String, value: string): Promise<CodeProps>;
         makeModelCode(scope: Id64String, value: string): Promise<CodeProps>;
     }
+    // @deprecated
     export class ConcurrencyControl {
-        constructor(c: BriefcaseConnection);
+        constructor(c: IModelConnection);
         lockModel(modelId: Id64String, level?: LockLevel): Promise<void>;
         request(): Promise<void>;
         }
+    // @deprecated
     export class ModelEditor {
-        constructor(c: BriefcaseConnection);
+        constructor(c: IModelConnection);
         createAndInsertPhysicalModel(newModelCode: CodeProps, privateModel?: boolean): Promise<Id64String>;
         }
 }
@@ -4115,18 +4115,17 @@ export abstract class IModelConnection extends IModel {
     getToolTipMessage(id: Id64String): Promise<string[]>;
     // @beta
     readonly hilited: HiliteSet;
-    // @beta
     get isBlank(): boolean;
-    // @beta
     isBlankConnection(): this is BlankConnection;
     get isBriefcase(): boolean;
     isBriefcaseConnection(): this is BriefcaseConnection;
     abstract get isClosed(): boolean;
-    // @internal
-    isLocalBriefcaseConnection(): this is LocalBriefcaseConnection;
     get isOpen(): boolean;
     get isReadonly(): boolean;
+    // @deprecated
     isRemoteBriefcaseConnection(): this is RemoteBriefcaseConnection;
+    // @beta
+    isRemoteConnection(): this is RemoteIModelConnection;
     get isSnapshot(): boolean;
     isSnapshotConnection(): this is SnapshotConnection;
     // @internal
@@ -4485,9 +4484,10 @@ export class IntersectDetail extends SnapDetail {
 // @alpha
 export class IpcApp {
     static addListener(channel: string, handler: IpcListener): RemoveFunction;
-    static callBackend(channelName: string, methodName: string, ...args: any[]): Promise<any>;
+    // @internal
+    static callIpcChannel(channelName: string, methodName: string, ...args: any[]): Promise<any>;
     // (undocumented)
-    static callIpcAppBackend<T extends AsyncMethodsOf<IpcAppFunctions>>(methodName: T, ...args: Parameters<IpcAppFunctions[T]>): Promise<PromiseReturnType<IpcAppFunctions[T]>>;
+    static callIpcHost<T extends AsyncMethodsOf<IpcAppFunctions>>(methodName: T, ...args: Parameters<IpcAppFunctions[T]>): Promise<PromiseReturnType<IpcAppFunctions[T]>>;
     static invoke(channel: string, ...args: any[]): Promise<any>;
     static get isValid(): boolean;
     static removeListener(channel: string, listener: IpcListener): void;
@@ -4556,15 +4556,6 @@ export interface LoadedExtensionProps {
     basePath: string;
     // (undocumented)
     props: ExtensionProps;
-}
-
-// @alpha
-export class LocalBriefcaseConnection extends BriefcaseConnection {
-    close(): Promise<void>;
-    // @internal
-    isLocalBriefcaseConnection(): this is LocalBriefcaseConnection;
-    // @internal
-    static open(briefcaseProps: OpenBriefcaseProps): Promise<LocalBriefcaseConnection>;
 }
 
 // @public
@@ -5930,11 +5921,9 @@ export enum ModifyElementSource {
 // @alpha
 export class NativeApp {
     // (undocumented)
-    static callBackend<T extends AsyncMethodsOf<NativeAppFunctions>>(methodName: T, ...args: Parameters<NativeAppFunctions[T]>): Promise<PromiseReturnType<NativeAppFunctions[T]>>;
+    static callNativeHost<T extends AsyncMethodsOf<NativeAppFunctions>>(methodName: T, ...args: Parameters<NativeAppFunctions[T]>): Promise<PromiseReturnType<NativeAppFunctions[T]>>;
     // (undocumented)
     static checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
-    // (undocumented)
-    static closeBriefcase(connection: LocalBriefcaseConnection): Promise<void>;
     static closeStorage(storage: Storage, deleteId: boolean): Promise<void>;
     static deleteBriefcase(fileName: string): Promise<void>;
     // (undocumented)
@@ -5950,8 +5939,6 @@ export class NativeApp {
         accessToken: any;
         err?: string | undefined;
     }) => void>;
-    // (undocumented)
-    static openBriefcase(briefcaseProps: OpenBriefcaseProps): Promise<LocalBriefcaseConnection>;
     static openStorage(name: string): Promise<Storage>;
     // (undocumented)
     static overrideInternetConnectivity(status: InternetConnectivityStatus): Promise<void>;
@@ -6985,11 +6972,34 @@ export interface RealityTileTreeParams extends TileTreeParams {
     readonly yAxisUp?: boolean;
 }
 
-// @public
-export class RemoteBriefcaseConnection extends BriefcaseConnection {
-    close(): Promise<void>;
-    isRemoteBriefcaseConnection(): this is RemoteBriefcaseConnection;
+// @public @deprecated (undocumented)
+export class RemoteBriefcaseConnection extends RemoteIModelConnection {
+    // @internal
+    attachChangeCache(): Promise<void>;
+    // @internal
+    changeCacheAttached(): Promise<boolean>;
+    // @internal
+    get editing(): EditingFunctions;
+    // (undocumented)
     static open(contextId: string, iModelId: string, openMode?: OpenMode, version?: IModelVersion): Promise<RemoteBriefcaseConnection>;
+    pullAndMergeChanges(): Promise<void>;
+    pushChanges(description: string): Promise<void>;
+    saveChanges(description?: string): Promise<void>;
+    updateProjectExtents(newExtents: AxisAlignedBox3d): Promise<void>;
+}
+
+// @public
+export class RemoteIModelConnection extends IModelConnection {
+    close(): Promise<void>;
+    get contextId(): GuidString;
+    get iModelId(): GuidString;
+    get isClosed(): boolean;
+    // (undocumented)
+    protected _isClosed?: boolean;
+    isRemoteConnection(): this is RemoteIModelConnection;
+    // @deprecated
+    static open(contextId: string, iModelId: string, openMode?: OpenMode, version?: IModelVersion): Promise<RemoteIModelConnection>;
+    static openRemote(contextId: string, iModelId: string, version?: IModelVersion): Promise<RemoteIModelConnection>;
     }
 
 // @beta
@@ -8644,7 +8654,7 @@ export class SpriteLocation implements CanvasDecoration {
     readonly position: Point3d;
     }
 
-// @internal
+// @beta
 export class StandaloneConnection extends IModelConnection {
     close(): Promise<void>;
     get iModelId(): GuidString;

@@ -33,18 +33,6 @@ export class BriefcaseConnection extends IModelConnection {
 
   public isBriefcaseConnection(): this is BriefcaseConnection { return true; }
 
-  public async hasPendingTxns(): Promise<boolean> { // eslint-disable-line @bentley/prefer-get
-    return IpcApp.callIpcHost("hasPendingTxns", this.key);
-  }
-
-  public async pullAndMergeChanges(): Promise<IModelConnectionProps> {
-    return IpcApp.callIpcHost("pullAndMergeChanges", this.key);
-  }
-
-  public async pushChanges(description: string): Promise<IModelConnectionProps> {
-    return IpcApp.callIpcHost("pushChanges", this.key, description);
-  }
-
   /** Open an IModelConnection to a briefcase of an iModel. */
   public static async openFile(briefcaseProps: OpenBriefcaseProps): Promise<BriefcaseConnection> {
     const iModelProps = await IpcApp.callIpcHost("openBriefcase", briefcaseProps);
@@ -65,6 +53,22 @@ export class BriefcaseConnection extends IModelConnection {
     await IpcApp.callIpcHost("close", this._fileKey);
   }
 
+  /** @beta */
+  public async hasPendingTxns(): Promise<boolean> { // eslint-disable-line @bentley/prefer-get
+    return IpcApp.callIpcHost("hasPendingTxns", this.key);
+  }
+
+  /** @beta */
+  public async pullAndMergeChanges(): Promise<IModelConnectionProps> {
+    return IpcApp.callIpcHost("pullAndMergeChanges", this.key);
+  }
+
+  /** @beta */
+  public async pushChanges(description: string): Promise<IModelConnectionProps> {
+    return IpcApp.callIpcHost("pushChanges", this.key, description);
+  }
+
+  /** @beta */
   public async saveChanges(description?: string): Promise<void> {
     await IpcApp.callIpcHost("saveChanges", this.key, description);
   }

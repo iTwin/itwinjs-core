@@ -23,6 +23,7 @@ const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
  * Due to the nature of RPC requests, the backend servicing this connection may change over time, and there may even be more than one backend
  * at servicing requests at the same time. For this reason, this type of connection may only be used with Snapshot iModels that are
  * guaranteed to be the same on every backend. Obviously Snapshot iModels only allow readonly access.
+ * @public
  */
 export class RemoteIModelConnection extends IModelConnection {
   /** The Guid that identifies the *context* that owns this iModel. */
@@ -195,6 +196,7 @@ export class RemoteIModelConnection extends IModelConnection {
 /* eslint-disable deprecation/deprecation */
 
 /**
+ * @public
  * @deprecated use RemoteIModelConnection
  */
 export class RemoteBriefcaseConnection extends RemoteIModelConnection {

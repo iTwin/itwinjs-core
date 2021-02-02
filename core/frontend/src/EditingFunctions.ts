@@ -18,6 +18,7 @@ const loggerCategory = FrontendLoggerCategory.IModelConnection;
 
 /**
  * General editing functions. See IModelApp.elementEditor for editing 3D elements.
+ * @alpha
  * @deprecated
  */
 export class EditingFunctions {
@@ -118,6 +119,7 @@ export class EditingFunctions {
 }
 
 /**
+ * @alpha
  * @deprecated
  */
 export namespace EditingFunctions { // eslint-disable-line no-redeclare

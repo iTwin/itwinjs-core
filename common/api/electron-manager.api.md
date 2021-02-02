@@ -21,7 +21,7 @@ export class DesktopAuthorizationClientIpc {
     static initializeIpc(): void;
     }
 
-// @public (undocumented)
+// @beta
 export class ElectronApp {
     static callApp<T extends AsyncMethodsOf<Electron.App>>(methodName: T, ...args: Parameters<Electron.App[T]>): Promise<PromiseReturnType<Electron.App[T]>>;
     static callDialog<T extends AsyncMethodsOf<Electron.Dialog>>(methodName: T, ...args: Parameters<Electron.Dialog[T]>): Promise<PromiseReturnType<Electron.Dialog[T]>>;

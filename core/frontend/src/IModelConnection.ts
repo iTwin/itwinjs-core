@@ -35,7 +35,7 @@ import { ViewState } from "./ViewState";
 const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
 
 /** The properties for creating a [Blank IModelConnection]($docs/learning/frontend/BlankConnection)
- * @beta
+ * @public
  */
 export interface BlankConnectionProps {
   /** A name for this blank connection. */
@@ -110,7 +110,9 @@ export abstract class IModelConnection extends IModel {
    */
   public isRemoteBriefcaseConnection(): this is RemoteBriefcaseConnection { return false; } // eslint-disable-line deprecation/deprecation
 
-  /** Type guard for instanceof [[RemoteIModelConnection]] */
+  /** Type guard for instanceof [[RemoteIModelConnection]]
+   * @beta
+  */
   public isRemoteConnection(): this is RemoteIModelConnection { return false; }
 
   /** Type guard for instanceof [[SnapshotConnection]] */
@@ -585,7 +587,7 @@ export abstract class IModelConnection extends IModel {
 
 /** A connection that exists without an iModel. Useful for connecting to Reality Data services.
  * @note This class exists because our display system requires an IModelConnection type even if only reality data is drawn.
- * @beta
+ * @public
  */
 export class BlankConnection extends IModelConnection {
   public isBlankConnection(): this is BlankConnection { return true; }
