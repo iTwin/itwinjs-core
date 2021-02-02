@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/ui-components",
-      "comment": "Added a hack for identifying non-standard URL values",
+      "comment": "Consider string values starting with `pw:\\` or `pw://` to be URLs without checking the rest of the string.",
       "type": "none"
     }
   ],
