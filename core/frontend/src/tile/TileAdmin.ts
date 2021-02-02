@@ -343,6 +343,20 @@ export class TileAdmin {
     this.freeMemory();
   }
 
+  /** Iterate over the tiles that have content loaded but are not selected for display in any viewport.
+   * @alpha
+   */
+  public get unselectedLoadedTiles(): Iterable<Tile> {
+    return this._lruList.unselectedTiles;
+  }
+
+  /** Iterate over the tiles that have content loaded and are selected for display in any viewport.
+   * @alpha
+   */
+  public get selectedLoadedTiles(): Iterable<Tile> {
+    return this._lruList.selectedTiles;
+  }
+
   /** Returns the number of pending and active requests associated with the specified viewport. */
   public getNumRequestsForViewport(vp: Viewport): number {
     const requests = this.getRequestsForViewport(vp);
@@ -444,8 +458,14 @@ export class TileAdmin {
   }
 
   /** @internal */
+  public forEachViewport(func: (vp: Viewport) => void): void {
+    for (const vp of this._viewports)
+      func(vp);
+  }
+
+  /** @internal */
   public invalidateAllScenes() {
-    this._viewports.forEach((vp) => vp.invalidateScene());
+    this.forEachViewport((vp) => vp.invalidateScene());
   }
 
   /** @internal */
