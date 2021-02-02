@@ -27,9 +27,9 @@ You can test whether an IModelConnection is blank, by using [IModelConnection.is
 
 To open a new blank connection, you can do something like this:
 
-  ```ts
-  [[include:BlankConnection.open]]
-  ```
+```ts
+[[include:BlankConnection.open]]
+```
 
 then, to create a blank spatial view to show data from sources other than iModels, do something like this:
 

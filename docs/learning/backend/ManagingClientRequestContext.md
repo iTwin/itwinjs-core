@@ -6,13 +6,13 @@ Asynchronous backend methods must cooperate to propagate a request's [ActivityId
 
 Every `Promise`-returning functions *must*:
 
-* Take an argument of type [ClientRequestContext]($bentley).
-* Pass the input ClientRequestContext object to each Promise-returning method that it calls.
-* Call the [ClientRequestContext.enter]($bentley) method on the input ClientRequestContext object:
-  * On its first line.
-  * Immediately following each call to `await`.
-  * Immediately upon catching an Error thrown by a rejected `await`.
-  * On the first line of a `.then` or a `.catch` callback that is invoked by a Promise.
+- Take an argument of type [ClientRequestContext]($bentley).
+- Pass the input ClientRequestContext object to each Promise-returning method that it calls.
+- Call the [ClientRequestContext.enter]($bentley) method on the input ClientRequestContext object:
+  - On its first line.
+  - Immediately following each call to `await`.
+  - Immediately upon catching an Error thrown by a rejected `await`.
+  - On the first line of a `.then` or a `.catch` callback that is invoked by a Promise.
 
 A Promise-returning function must *not* call ClientRequestContext.current.
 
@@ -32,14 +32,14 @@ There is one exception to the above rule for Promise-returning functions. An [Rp
 
 Examples of asynchronous functions that invoke callbacks are:
 
-* setTimeout and setInterval
-* XmlHttpRequest (if called in the backend)
-* fs async functions (called only in non-portable backend code)
+- setTimeout and setInterval
+- XmlHttpRequest (if called in the backend)
+- fs async functions (called only in non-portable backend code)
 
 If a callback does any logging or calls functions that do:
 
-* Before invoking an asynchronous function, an app must ensure that the correct ClientRequestContext is assigned to a local variable in the scope that encloses the callback.
-* The callback must, on its first line, call the ClientRequestContext.enter method on that local variable in the enclosing scope.
+- Before invoking an asynchronous function, an app must ensure that the correct ClientRequestContext is assigned to a local variable in the scope that encloses the callback.
+- The callback must, on its first line, call the ClientRequestContext.enter method on that local variable in the enclosing scope.
 
 There are two possible cases:
 
