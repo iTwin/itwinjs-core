@@ -7,9 +7,11 @@
  */
 
 import * as React from "react";
-import { CustomQuantityPropEditorSpec, getQuantityTypeKey, IModelApp, isCustomQuantityTypeEntry, QuantityTypeArg } from "@bentley/imodeljs-frontend";
+import { CustomFormatPropEditorSpec, getQuantityTypeKey, IModelApp,
+  isCheckboxFormatPropEditorSpec, isCustomQuantityTypeEntry, isTextInputFormatPropEditorSpec, isTextSelectFormatPropEditorSpec,
+  QuantityTypeArg } from "@bentley/imodeljs-frontend";
 import { FormatProps, UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
-import { Checkbox, CommonProps, Select } from "@bentley/ui-core";
+import { Checkbox, CommonProps, Input, Select } from "@bentley/ui-core";
 import { FormatPanel } from "./FormatPanel";
 
 /** Properties of [[QuantityFormatPanel]] component.
@@ -24,49 +26,30 @@ export interface QuantityFormatPanelProps extends CommonProps {
   enableMinimumProperties?: boolean;
 }
 
-// <Input
-// id={this.props.id}
-// value={context!.values[this.props.id]}
-// onChange={(event) => context!.setValues({ [this.props.id]: event.currentTarget.value })}
-// className="core-form-input"
-// />
-// )}
-// {this.props.editor!.toLowerCase() === "multilinetextbox" && (
-// <Textarea
-// id={this.props.id}
-// value={context!.values[this.props.id]}
-// onChange={(event) => context!.setValues({ [this.props.id]: event.currentTarget.value })}
-// className="core-form-textarea"
-// />
-// )}
-// {this.props.editor!.toLowerCase() === "dropdown" && this.props.options && (
-// <Select
-// id={this.props.id}
-// name={this.props.id}
-// value={context!.values[this.props.id]}
-// onChange={(event) => context!.setValues({ [this.props.id]: event.currentTarget.value })}
-// options={this.props.options}
-// className="core-form-select"
-// />
-// )}
-// *       editor: "dropdown",
-// *       value: "one",
-// *       options: ["one", "two", "three", "four"],
-//
-// editorType: "select",
-// selectOptions: [
-//   {value: "clockwise", label: IModelApp.i18n.translate("SampleApp:BearingQuantityType.bearingAngleDirection.clockwise") },
-//   {value: "counter-clockwise", label: IModelApp.i18n.translate("SampleApp:BearingQuantityType.bearingAngleDirection.counter-clockwise") }
-// ],
-//
-
-function createSelectFormatPropEditor(label: string, options: {label: string, value: string}[] , inProps: FormatProps,
+function createTextInputFormatPropEditor(key: string, label: string, inProps: FormatProps,
   getString: (props: FormatProps) => string, setString: (props: FormatProps, value: string) => FormatProps, fireFormatChange: (newProps: FormatProps) => void) {
   const value = getString (inProps);
   return (
     <>
-      <span className={"uicore-label"}>{label}</span>
-      <Select
+      <span key={`${key}-label`} className={"uicore-label"}>{label}</span>
+      <Input key={`${key}-editor`}
+        value={value}
+        onChange={(e) => {
+          const newProps = setString(inProps, e.currentTarget.value);
+          fireFormatChange (newProps);
+        }}
+      />
+    </>
+  );
+}
+
+function createSelectFormatPropEditor(key: string, label: string, options: {label: string, value: string}[], inProps: FormatProps,
+  getString: (props: FormatProps) => string, setString: (props: FormatProps, value: string) => FormatProps, fireFormatChange: (newProps: FormatProps) => void) {
+  const value = getString (inProps);
+  return (
+    <>
+      <span key={`${key}-label`} className={"uicore-label"}>{label}</span>
+      <Select key={`${key}-editor`}
         value={value}
         options={options}
         onChange={(e) => {
@@ -78,12 +61,14 @@ function createSelectFormatPropEditor(label: string, options: {label: string, va
   );
 }
 
-function createCheckboxFormatPropEditor(label: string, inProps: FormatProps, getBool: (props: FormatProps) => boolean, setBool: (props: FormatProps, isChecked: boolean) => FormatProps, fireFormatChange: (newProps: FormatProps) => void) {
+function createCheckboxFormatPropEditor(key: string, label: string, inProps: FormatProps,
+  getBool: (props: FormatProps) => boolean, setBool: (props: FormatProps, isChecked: boolean) => FormatProps, fireFormatChange: (newProps: FormatProps) => void) {
   const isChecked = getBool (inProps);
   return (
     <>
-      <span className={"uicore-label"}>{label}</span>
-      <Checkbox isLabeled={true} checked={isChecked}
+      <span key={`${key}-label`} className={"uicore-label"}>{label}</span>
+      <Checkbox  key={`${key}-editor`}
+        checked={isChecked}
         onChange={(e)=>{
           const newProps = setBool(inProps, e.target.checked);
           fireFormatChange (newProps);
@@ -120,22 +105,15 @@ export function QuantityFormatPanel(props: QuantityFormatPanelProps) {
     onFormatChange && onFormatChange (newProps);
   }, [onFormatChange]);
 
-  const createCustomPropEditors = React.useCallback( (specs: CustomQuantityPropEditorSpec[], inProps: FormatProps, fireFormatChange: (newProps: FormatProps) => void) => {
-    return specs.map((spec) => {
-      switch (spec.editorType) {
-        case "checkbox":
-          if (spec.getBool  && spec.setBool)
-            return createCheckboxFormatPropEditor(spec.label, inProps, spec.getBool, spec.setBool, fireFormatChange);
-          break;
-        case "select":
-          if (spec.getString && spec.setString && spec.selectOptions)
-            return createSelectFormatPropEditor(spec.label, spec.selectOptions, inProps, spec.getString, spec.setString, fireFormatChange);
-          break;
-        case "text":
-        default:
-          break;
-      }
-      return <div/>;
+  const createCustomPropEditors = React.useCallback( (specs: CustomFormatPropEditorSpec[], inProps: FormatProps, fireFormatChange: (newProps: FormatProps) => void) => {
+    return specs.map((spec, index) => {
+      if (isCheckboxFormatPropEditorSpec (spec))
+        return createCheckboxFormatPropEditor(`${spec.editorType}-${index}`, spec.label, inProps, spec.getBool, spec.setBool, fireFormatChange);
+      if (isTextSelectFormatPropEditorSpec(spec))
+        return createSelectFormatPropEditor(`${spec.editorType}-${index}`, spec.label, spec.selectOptions, inProps, spec.getString, spec.setString, fireFormatChange);
+      if (isTextInputFormatPropEditorSpec(spec))
+        return createTextInputFormatPropEditor(`${spec.editorType}-${index}`, spec.label, inProps, spec.getString, spec.setString, fireFormatChange);
+      return <div key={index}/>;
     });
   }, []);
 

@@ -37,15 +37,62 @@ export function getQuantityTypeKey(type: QuantityTypeArg): string {
   return type;
 }
 
-export interface CustomQuantityPropEditorSpec {
+/** Base properties that define an EditorSpec for a custom formatting property.
+ * @alpha
+ */
+export interface CustomFormatPropEditorSpec {
   editorType: "checkbox"|"text"|"select";
-  selectOptions?: {label: string, value: string}[];
   label: string;
-  getBool?: (props: FormatProps) => boolean;
-  setBool?: (props: FormatProps, isChecked: boolean) => FormatProps;
-  getString?: (props: FormatProps) => string;
-  setString?: (props: FormatProps, value: string) => FormatProps;
 }
+
+/** CheckboxFormatPropEditorSpec defines getter and setter method for a boolean property editor.
+ * @alpha
+ */
+export interface CheckboxFormatPropEditorSpec extends CustomFormatPropEditorSpec {
+  editorType: "checkbox";
+  getBool: (props: FormatProps) => boolean;
+  setBool: (props: FormatProps, isChecked: boolean) => FormatProps;
+}
+
+/** CheckboxFormatPropEditorSpec type guard.
+ * @alpha
+ */
+export const isCheckboxFormatPropEditorSpec = (item: CustomFormatPropEditorSpec): item is CheckboxFormatPropEditorSpec => {
+  return item.editorType === "checkbox";
+};
+
+/** TextInputFormatPropEditorSpec defines getter and setter method for a text input property editor.
+ * @alpha
+ */
+export interface TextInputFormatPropEditorSpec extends CustomFormatPropEditorSpec {
+  editorType: "text";
+  getString: (props: FormatProps) => string;
+  setString: (props: FormatProps, value: string) => FormatProps;
+}
+
+/** TextInputFormatPropEditorSpec type guard.
+ * @alpha
+ */
+export const isTextInputFormatPropEditorSpec = (item: CustomFormatPropEditorSpec): item is TextInputFormatPropEditorSpec => {
+  return item.editorType === "text";
+};
+
+/** TextSelectFormatPropEditorSpec defines getter and setter method for a Select/Dropdown property editor.
+ * @alpha
+ */
+export interface TextSelectFormatPropEditorSpec extends CustomFormatPropEditorSpec {
+  editorType: "select";
+  selectOptions: {label: string, value: string}[];
+  getString: (props: FormatProps) => string;
+  setString: (props: FormatProps, value: string) => FormatProps;
+}
+
+/** TextSelectFormatPropEditorSpec type guard.
+ * @alpha
+ */
+export const isTextSelectFormatPropEditorSpec = (item: CustomFormatPropEditorSpec): item is TextSelectFormatPropEditorSpec => {
+  return item.editorType === "select";
+};
 
 export interface QuantityTypeEntry {
   readonly key: QuantityTypeKey;
@@ -64,8 +111,8 @@ export interface CustomQuantityTypeEntry extends QuantityTypeEntry {
   generateParserSpec: (formatProps: FormatProps, unitsProvider: UnitsProvider) => Promise<ParserSpec>;
   // to be implemented by custom Quantity Types
   getFormatPropsBySystem: (requestedSystem: UnitSystemKey) => FormatProps;
-  primaryPropEditorSpecs?: CustomQuantityPropEditorSpec[];
-  secondaryPropEditorSpecs?: CustomQuantityPropEditorSpec[];
+  primaryPropEditorSpecs?: CustomFormatPropEditorSpec[];
+  secondaryPropEditorSpecs?: CustomFormatPropEditorSpec[];
 }
 
 /** CustomQuantityTypeEntry type guard. */

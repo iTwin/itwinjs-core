@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Logger } from "@bentley/bentleyjs-core";
-import { CustomQuantityPropEditorSpec, CustomQuantityTypeEntry, IModelApp, UnitSystemKey } from "@bentley/imodeljs-frontend";
+import { CheckboxFormatPropEditorSpec, CustomFormatPropEditorSpec, CustomQuantityTypeEntry, IModelApp, TextSelectFormatPropEditorSpec, UnitSystemKey } from "@bentley/imodeljs-frontend";
 import {
   Format, FormatProps, FormatterSpec, Parser, ParseResult, ParserSpec, QuantityStatus, UnitConversionSpec, UnitProps, UnitsProvider,
 } from "@bentley/imodeljs-quantity";
@@ -83,26 +83,6 @@ class BearingFormatterSpec extends FormatterSpec {
     const conversions: UnitConversionSpec[] = await FormatterSpec.getUnitConversions(format,unitsProvider, persistenceUnit);
     return new BearingFormatterSpec(name, format, conversions, persistenceUnit);
   }
-}
-
-function bearingGapPropGetter(props: FormatProps) {
-  return !!props.custom?.addDirectionLabelGap;
-}
-
-function bearingGapPropSetter(props: FormatProps, isChecked: boolean) {
-  const customProps = {...props.custom, addDirectionLabelGap:isChecked};
-  const newProps = {...props, custom:customProps};
-  return newProps;
-}
-
-function bearingAngleDirectionGetter(props: FormatProps) {
-  return props.custom?.angleDirection??"clockwise";
-}
-
-function bearingAngleDirectionSetter(props: FormatProps, value: string) {
-  const customProps = {...props.custom, angleDirection:value};
-  const newProps = {...props, custom:customProps};
-  return newProps;
 }
 
 class BearingParserSpec extends ParserSpec {
@@ -216,7 +196,7 @@ export class BearingQuantityType implements CustomQuantityTypeEntry {
     return this.formatProps;
   };
 
-  public get primaryPropEditorSpecs(): CustomQuantityPropEditorSpec[] {
+  public get secondaryPropEditorSpecs(): CustomFormatPropEditorSpec[] {
     return [
       {
         editorType: "select",
@@ -225,20 +205,20 @@ export class BearingQuantityType implements CustomQuantityTypeEntry {
           {value: "counter-clockwise", label: IModelApp.i18n.translate("SampleApp:BearingQuantityType.bearingAngleDirection.counter-clockwise") },
         ],
         label: IModelApp.i18n.translate("SampleApp:BearingQuantityType.bearingAngleDirection.label"),
-        getString: bearingAngleDirectionGetter,
-        setString: bearingAngleDirectionSetter,
-      },
+        getString: this.bearingAngleDirectionGetter,
+        setString: this.bearingAngleDirectionSetter,
+      } as TextSelectFormatPropEditorSpec,
     ];
   }
 
-  public get secondaryPropEditorSpecs(): CustomQuantityPropEditorSpec[] {
+  public get primaryPropEditorSpecs(): CustomFormatPropEditorSpec[] {
     return [
       {
         editorType: "checkbox",
         label: IModelApp.i18n.translate("SampleApp:BearingQuantityType.bearingGap.label"),
-        getBool: bearingGapPropGetter,
-        setBool: bearingGapPropSetter,
-      },
+        getBool: this.bearingGapPropGetter,
+        setBool: this.bearingGapPropSetter,
+      } as CheckboxFormatPropEditorSpec,
     ];
   }
 
@@ -252,5 +232,25 @@ export class BearingQuantityType implements CustomQuantityTypeEntry {
       Logger.logInfo("BearingQuantityType",
         `Unable to register QuantityType [BearingQuantityType] with key '${quantityTypeEntry.key}'`);
     }
+  }
+
+  private bearingGapPropGetter(props: FormatProps) {
+    return !!props.custom?.addDirectionLabelGap;
+  }
+
+  private bearingGapPropSetter(props: FormatProps, isChecked: boolean) {
+    const customProps = {...props.custom, addDirectionLabelGap:isChecked};
+    const newProps = {...props, custom:customProps};
+    return newProps;
+  }
+
+  private bearingAngleDirectionGetter(props: FormatProps) {
+    return props.custom?.angleDirection??"clockwise";
+  }
+
+  private bearingAngleDirectionSetter(props: FormatProps, value: string) {
+    const customProps = {...props.custom, angleDirection:value};
+    const newProps = {...props, custom:customProps};
+    return newProps;
   }
 }
