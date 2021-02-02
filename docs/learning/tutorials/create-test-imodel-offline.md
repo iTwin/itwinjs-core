@@ -17,9 +17,9 @@ Download and familiarize yourself with the [iTwin Snapshot]($docs/learning/tutor
 1. Choose where to save the snapshot on your local drive
 1. Select local files by clicking "+"
 1. Click "Create"
-1. Enable any required bridges
+1. Enable any required connectors
 
-The iTwin Snapshot will download and extract the needed bridges, run the bridges on the selected files, and generate the snapshot to the chosen location.
+The iTwin Snapshot will download and extract the needed connectors, run the connectors on the selected files, and generate the snapshot to the chosen location.
 
 ---
 
