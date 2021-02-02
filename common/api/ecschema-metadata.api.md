@@ -466,10 +466,7 @@ export const Diagnostics: {
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: Schema;
             messageArgs?: [string, string] | undefined;
-            category: import("./Diagnostic").DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             */
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         code: string;
         diagnosticType: import("./Diagnostic").DiagnosticType;
@@ -482,10 +479,7 @@ export const Diagnostics: {
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: Schema;
             messageArgs?: [string, string, string, string] | undefined;
-            category: import("./Diagnostic").DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             */
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         code: string;
         diagnosticType: import("./Diagnostic").DiagnosticType;
@@ -498,10 +492,7 @@ export const Diagnostics: {
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: Schema;
             messageArgs?: [string, string] | undefined;
-            category: import("./Diagnostic").DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             */
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         code: string;
         diagnosticType: import("./Diagnostic").DiagnosticType;
@@ -514,10 +505,7 @@ export const Diagnostics: {
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: AnyClass;
             messageArgs?: [string, string] | undefined;
-            category: import("./Diagnostic").DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             */
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
@@ -529,10 +517,7 @@ export const Diagnostics: {
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: AnyClass;
             messageArgs?: [string, string, string] | undefined;
-            category: import("./Diagnostic").DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             */
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
@@ -544,10 +529,7 @@ export const Diagnostics: {
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: AnyClass;
             messageArgs?: [string, string] | undefined;
-            category: import("./Diagnostic").DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             */
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
@@ -559,10 +541,7 @@ export const Diagnostics: {
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: CustomAttributeContainerProps;
             messageArgs?: [string, string] | undefined;
-            category: import("./Diagnostic").DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             */
+            category: import("./Diagnostic").DiagnosticCategory;
         };
     };
     CustomAttributeSchemaMustBeReferenced: {
@@ -573,10 +552,7 @@ export const Diagnostics: {
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: CustomAttributeContainerProps;
             messageArgs?: [string, string] | undefined;
-            category: import("./Diagnostic").DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             */
+            category: import("./Diagnostic").DiagnosticCategory;
         };
     };
     CustomAttributeClassNotFound: {
@@ -587,10 +563,7 @@ export const Diagnostics: {
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: CustomAttributeContainerProps;
             messageArgs?: [string, string] | undefined;
-            category: import("./Diagnostic").DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             */
+            category: import("./Diagnostic").DiagnosticCategory;
         };
     };
     EnumerationTypeUnsupported: {
@@ -601,10 +574,7 @@ export const Diagnostics: {
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: Enumeration;
             messageArgs?: [string] | undefined;
-            category: import("./Diagnostic").DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             */
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
@@ -616,10 +586,7 @@ export const Diagnostics: {
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: EntityClass;
             messageArgs?: [string, string, string] | undefined;
-            category: import("./Diagnostic").DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             */
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
@@ -631,10 +598,7 @@ export const Diagnostics: {
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: AnyProperty;
             messageArgs?: [string, string, string, string, string] | undefined;
-            category: import("./Diagnostic").DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             */
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         code: string;
     };
@@ -646,10 +610,7 @@ export const Diagnostics: {
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: AnyProperty;
             messageArgs?: [string, string, string, string, string] | undefined;
-            category: import("./Diagnostic").DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             */
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         code: string;
     };
@@ -661,10 +622,7 @@ export const Diagnostics: {
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: AnyProperty;
             messageArgs?: [string, string, string, string, string, string, string] | undefined;
-            category: import("./Diagnostic").DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             */
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         code: string;
     };
@@ -676,10 +634,7 @@ export const Diagnostics: {
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: AnyProperty;
             messageArgs?: [string, string] | undefined;
-            category: import("./Diagnostic").DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             */
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         code: string;
     };
@@ -691,10 +646,7 @@ export const Diagnostics: {
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: AnyProperty;
             messageArgs?: [string, string, string] | undefined;
-            category: import("./Diagnostic").DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             */
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         code: string;
     };
@@ -706,10 +658,7 @@ export const Diagnostics: {
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: AnyProperty;
             messageArgs?: [string, string] | undefined;
-            category: import("./Diagnostic").DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             */
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         code: string;
     };
@@ -721,10 +670,7 @@ export const Diagnostics: {
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: AnyProperty;
             messageArgs?: [string, string, string, string] | undefined;
-            category: import("./Diagnostic").DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             */
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         code: string;
     };
@@ -736,10 +682,7 @@ export const Diagnostics: {
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: RelationshipClass;
             messageArgs?: [string, string, string, string] | undefined;
-            category: import("./Diagnostic").DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             */
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
@@ -751,10 +694,7 @@ export const Diagnostics: {
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: RelationshipClass;
             messageArgs?: [string, string, string, string] | undefined;
-            category: import("./Diagnostic").DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             */
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
@@ -766,10 +706,7 @@ export const Diagnostics: {
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: RelationshipClass;
             messageArgs?: [string, string, string, string] | undefined;
-            category: import("./Diagnostic").DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             */
+            category: import("./Diagnostic").DiagnosticCategory;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
@@ -781,10 +718,7 @@ export const Diagnostics: {
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: RelationshipConstraint;
             messageArgs?: [string, string] | undefined;
-            category: import("./Diagnostic").DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             */
+            category: import("./Diagnostic").DiagnosticCategory;
         };
     };
     AbstractConstraintMustExistWithMultipleConstraints: {
@@ -795,10 +729,7 @@ export const Diagnostics: {
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: RelationshipConstraint;
             messageArgs?: [string, string] | undefined;
-            category: import("./Diagnostic").DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             */
+            category: import("./Diagnostic").DiagnosticCategory;
         };
     };
 };
@@ -2942,7 +2873,7 @@ export const SchemaCompareDiagnostics: {
             messageArgs?: [string, any, any] | undefined;
             category: import("./Diagnostic").DiagnosticCategory;
         };
-        diagnosticType: import("./Diagnostic").DiagnosticType;
+        diagnosticType: import("./Diagnostic").DiagnosticType; /** Required message parameters: constraint class */
     };
     SchemaItemMissing: {
         new (ecDefinition: SchemaItem, messageArgs: [], category?: import("./Diagnostic").DiagnosticCategory): {
@@ -2954,7 +2885,7 @@ export const SchemaCompareDiagnostics: {
             messageArgs?: [] | undefined;
             category: import("./Diagnostic").DiagnosticCategory;
         };
-        diagnosticType: import("./Diagnostic").DiagnosticType;
+        diagnosticType: import("./Diagnostic").DiagnosticType; /** Required message parameters: constraint class */
     };
     ClassDelta: {
         new (ecClass: AnyClass, messageArgs: [string, any, any], category?: import("./Diagnostic").DiagnosticCategory): {
@@ -2966,7 +2897,7 @@ export const SchemaCompareDiagnostics: {
             messageArgs?: [string, any, any] | undefined;
             category: import("./Diagnostic").DiagnosticCategory;
         };
-        diagnosticType: import("./Diagnostic").DiagnosticType;
+        diagnosticType: import("./Diagnostic").DiagnosticType; /** Required message parameters: constraint class */
     };
     BaseClassDelta: {
         new (ecClass: AnyClass, messageArgs: [CustomAttributeClass | Mixin | EntityClass | RelationshipClass | import("../ecschema-metadata").StructClass | undefined, CustomAttributeClass | Mixin | EntityClass | RelationshipClass | import("../ecschema-metadata").StructClass | undefined], category?: import("./Diagnostic").DiagnosticCategory): {
@@ -2978,7 +2909,7 @@ export const SchemaCompareDiagnostics: {
             messageArgs?: [CustomAttributeClass | Mixin | EntityClass | RelationshipClass | import("../ecschema-metadata").StructClass | undefined, CustomAttributeClass | Mixin | EntityClass | RelationshipClass | import("../ecschema-metadata").StructClass | undefined] | undefined;
             category: import("./Diagnostic").DiagnosticCategory;
         };
-        diagnosticType: import("./Diagnostic").DiagnosticType;
+        diagnosticType: import("./Diagnostic").DiagnosticType; /** Required message parameters: constraint class */
     };
     PropertyDelta: {
         new (property: import("../ecschema-metadata").AnyProperty, messageArgs?: [string, any, any] | undefined, category?: import("./Diagnostic").DiagnosticCategory): {
@@ -3014,7 +2945,7 @@ export const SchemaCompareDiagnostics: {
             messageArgs?: [Mixin] | undefined;
             category: import("./Diagnostic").DiagnosticCategory;
         };
-        diagnosticType: import("./Diagnostic").DiagnosticType;
+        diagnosticType: import("./Diagnostic").DiagnosticType; /** Required message parameters: constraint class */
     };
     MixinDelta: {
         new (ecDefinition: SchemaItem, messageArgs: [string, any, any], category?: import("./Diagnostic").DiagnosticCategory): {
@@ -3026,7 +2957,7 @@ export const SchemaCompareDiagnostics: {
             messageArgs?: [string, any, any] | undefined;
             category: import("./Diagnostic").DiagnosticCategory;
         };
-        diagnosticType: import("./Diagnostic").DiagnosticType;
+        diagnosticType: import("./Diagnostic").DiagnosticType; /** Required message parameters: constraint class */
     };
     RelationshipDelta: {
         new (ecDefinition: SchemaItem, messageArgs: [string, any, any], category?: import("./Diagnostic").DiagnosticCategory): {
@@ -3038,7 +2969,7 @@ export const SchemaCompareDiagnostics: {
             messageArgs?: [string, any, any] | undefined;
             category: import("./Diagnostic").DiagnosticCategory;
         };
-        diagnosticType: import("./Diagnostic").DiagnosticType;
+        diagnosticType: import("./Diagnostic").DiagnosticType; /** Required message parameters: constraint class */
     };
     RelationshipConstraintDelta: {
         new (constraint: import("../Metadata/RelationshipClass").RelationshipConstraint, messageArgs: [string, any, any], category?: import("./Diagnostic").DiagnosticCategory): {
@@ -3072,7 +3003,7 @@ export const SchemaCompareDiagnostics: {
             messageArgs?: [string, any, any] | undefined;
             category: import("./Diagnostic").DiagnosticCategory;
         };
-        diagnosticType: import("./Diagnostic").DiagnosticType;
+        diagnosticType: import("./Diagnostic").DiagnosticType; /** Required message parameters: constraint class */
     };
     CustomAttributeInstanceClassMissing: {
         new (container: import("../Metadata/CustomAttribute").CustomAttributeContainerProps, messageArgs: [CustomAttribute], category?: import("./Diagnostic").DiagnosticCategory): {
@@ -3095,7 +3026,7 @@ export const SchemaCompareDiagnostics: {
             messageArgs?: [string, string, string] | undefined;
             category: import("./Diagnostic").DiagnosticCategory;
         };
-        diagnosticType: import("./Diagnostic").DiagnosticType;
+        diagnosticType: import("./Diagnostic").DiagnosticType; /** Required message parameters: constraint class */
     };
     EnumeratorMissing: {
         new (ecDefinition: SchemaItem, messageArgs: [AnyEnumerator], category?: import("./Diagnostic").DiagnosticCategory): {
@@ -3107,7 +3038,7 @@ export const SchemaCompareDiagnostics: {
             messageArgs?: [AnyEnumerator] | undefined;
             category: import("./Diagnostic").DiagnosticCategory;
         };
-        diagnosticType: import("./Diagnostic").DiagnosticType;
+        diagnosticType: import("./Diagnostic").DiagnosticType; /** Required message parameters: constraint class */
     };
     EnumeratorDelta: {
         new (ecDefinition: SchemaItem, messageArgs: [AnyEnumerator, string, any, any], category?: import("./Diagnostic").DiagnosticCategory): {
@@ -3119,7 +3050,7 @@ export const SchemaCompareDiagnostics: {
             messageArgs?: [AnyEnumerator, string, any, any] | undefined;
             category: import("./Diagnostic").DiagnosticCategory;
         };
-        diagnosticType: import("./Diagnostic").DiagnosticType;
+        diagnosticType: import("./Diagnostic").DiagnosticType; /** Required message parameters: constraint class */
     };
     KoqDelta: {
         new (ecDefinition: SchemaItem, messageArgs: [string, any, any], category?: import("./Diagnostic").DiagnosticCategory): {
@@ -3131,7 +3062,7 @@ export const SchemaCompareDiagnostics: {
             messageArgs?: [string, any, any] | undefined;
             category: import("./Diagnostic").DiagnosticCategory;
         };
-        diagnosticType: import("./Diagnostic").DiagnosticType;
+        diagnosticType: import("./Diagnostic").DiagnosticType; /** Required message parameters: constraint class */
     };
     PresentationUnitMissing: {
         new (ecDefinition: SchemaItem, messageArgs: [Format | OverrideFormat], category?: import("./Diagnostic").DiagnosticCategory): {
@@ -3143,7 +3074,7 @@ export const SchemaCompareDiagnostics: {
             messageArgs?: [Format | OverrideFormat] | undefined;
             category: import("./Diagnostic").DiagnosticCategory;
         };
-        diagnosticType: import("./Diagnostic").DiagnosticType;
+        diagnosticType: import("./Diagnostic").DiagnosticType; /** Required message parameters: constraint class */
     };
     PropertyCategoryDelta: {
         new (ecDefinition: SchemaItem, messageArgs: [string, any, any], category?: import("./Diagnostic").DiagnosticCategory): {
@@ -3155,7 +3086,7 @@ export const SchemaCompareDiagnostics: {
             messageArgs?: [string, any, any] | undefined;
             category: import("./Diagnostic").DiagnosticCategory;
         };
-        diagnosticType: import("./Diagnostic").DiagnosticType;
+        diagnosticType: import("./Diagnostic").DiagnosticType; /** Required message parameters: constraint class */
     };
     FormatDelta: {
         new (ecDefinition: SchemaItem, messageArgs: [string, any, any], category?: import("./Diagnostic").DiagnosticCategory): {
@@ -3167,7 +3098,7 @@ export const SchemaCompareDiagnostics: {
             messageArgs?: [string, any, any] | undefined;
             category: import("./Diagnostic").DiagnosticCategory;
         };
-        diagnosticType: import("./Diagnostic").DiagnosticType;
+        diagnosticType: import("./Diagnostic").DiagnosticType; /** Required message parameters: constraint class */
     };
     FormatUnitMissing: {
         new (ecDefinition: SchemaItem, messageArgs: [Unit | InvertedUnit], category?: import("./Diagnostic").DiagnosticCategory): {
@@ -3179,7 +3110,7 @@ export const SchemaCompareDiagnostics: {
             messageArgs?: [Unit | InvertedUnit] | undefined;
             category: import("./Diagnostic").DiagnosticCategory;
         };
-        diagnosticType: import("./Diagnostic").DiagnosticType;
+        diagnosticType: import("./Diagnostic").DiagnosticType; /** Required message parameters: constraint class */
     };
     UnitLabelOverrideDelta: {
         new (ecDefinition: SchemaItem, messageArgs: [Unit | InvertedUnit, string | undefined, string | undefined], category?: import("./Diagnostic").DiagnosticCategory): {
@@ -3191,7 +3122,7 @@ export const SchemaCompareDiagnostics: {
             messageArgs?: [Unit | InvertedUnit, string | undefined, string | undefined] | undefined;
             category: import("./Diagnostic").DiagnosticCategory;
         };
-        diagnosticType: import("./Diagnostic").DiagnosticType;
+        diagnosticType: import("./Diagnostic").DiagnosticType; /** Required message parameters: constraint class */
     };
     UnitDelta: {
         new (ecDefinition: SchemaItem, messageArgs: [string, string, string], category?: import("./Diagnostic").DiagnosticCategory): {
@@ -3203,7 +3134,7 @@ export const SchemaCompareDiagnostics: {
             messageArgs?: [string, string, string] | undefined;
             category: import("./Diagnostic").DiagnosticCategory;
         };
-        diagnosticType: import("./Diagnostic").DiagnosticType;
+        diagnosticType: import("./Diagnostic").DiagnosticType; /** Required message parameters: constraint class */
     };
     InvertedUnitDelta: {
         new (ecDefinition: SchemaItem, messageArgs: [string, string, string], category?: import("./Diagnostic").DiagnosticCategory): {
@@ -3215,7 +3146,7 @@ export const SchemaCompareDiagnostics: {
             messageArgs?: [string, string, string] | undefined;
             category: import("./Diagnostic").DiagnosticCategory;
         };
-        diagnosticType: import("./Diagnostic").DiagnosticType;
+        diagnosticType: import("./Diagnostic").DiagnosticType; /** Required message parameters: constraint class */
     };
     PhenomenonDelta: {
         new (ecDefinition: SchemaItem, messageArgs: [string, string, string], category?: import("./Diagnostic").DiagnosticCategory): {
@@ -3227,7 +3158,7 @@ export const SchemaCompareDiagnostics: {
             messageArgs?: [string, string, string] | undefined;
             category: import("./Diagnostic").DiagnosticCategory;
         };
-        diagnosticType: import("./Diagnostic").DiagnosticType;
+        diagnosticType: import("./Diagnostic").DiagnosticType; /** Required message parameters: constraint class */
     };
     ConstantDelta: {
         new (ecDefinition: SchemaItem, messageArgs: [string, string, string], category?: import("./Diagnostic").DiagnosticCategory): {
@@ -3239,7 +3170,7 @@ export const SchemaCompareDiagnostics: {
             messageArgs?: [string, string, string] | undefined;
             category: import("./Diagnostic").DiagnosticCategory;
         };
-        diagnosticType: import("./Diagnostic").DiagnosticType;
+        diagnosticType: import("./Diagnostic").DiagnosticType; /** Required message parameters: constraint class */
     };
 };
 
