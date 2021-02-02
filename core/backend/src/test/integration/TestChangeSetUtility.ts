@@ -86,14 +86,19 @@ export class TestChangeSetUtility {
       throw new Error("Must first call createTestIModel");
 
     const briefcasePath = this._iModel.pathName;
-    const briefcaseId = this._iModel.briefcaseId;
-
     this._iModel.nativeDb.deleteAllTxns();
     await this._iModel.concurrencyControl.abandonResources(this._requestContext);
     this._iModel.close();
     await BriefcaseManager.deleteBriefcaseFiles(briefcasePath);
 
-    this._iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: this._requestContext, contextId: this.projectId, iModelId: this._iModel.iModelId, briefcaseId: briefcaseId });
+    const briefcaseProps = {
+      requestContext: this._requestContext,
+      contextId: this.projectId,
+      iModelId: this._iModel.iModelId,
+      briefcaseId: this._iModel.briefcaseId
+    }
+    this._iModel = await IModelTestUtils.downloadAndOpenBriefcase(briefcaseProps);
+    this._iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
   }
 
   public async deleteTestIModel(): Promise<void> {

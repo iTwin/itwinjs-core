@@ -7,7 +7,7 @@ import { assert } from "chai";
 import * as os from "os";
 import * as path from "path";
 import * as readline from "readline";
-import { BeDuration, BriefcaseStatus, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { BriefcaseStatus, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { IModelError, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
@@ -19,7 +19,6 @@ import {
 import { IModelTestUtils, TestIModelInfo } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 import { TestChangeSetUtility } from "./TestChangeSetUtility";
-import { ConcurrencyControl } from "../../ConcurrencyControl";
 
 async function createIModelOnHub(requestContext: AuthorizedBackendRequestContext, projectId: GuidString, iModelName: string): Promise<string> {
   let iModel = await HubUtility.queryIModelByName(requestContext, projectId, iModelName);
@@ -54,20 +53,20 @@ describe("BriefcaseManager (#integration)", () => {
     // IModelTestUtils.setupDebugLogLevels();
 
     requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
-    testProjectId = '1a0ca7de-1e84-4daa-b297-29901986c99a';
-    // readOnlyTestIModel = await IModelTestUtils.getTestModelInfo(requestContext, testProjectId, "ReadOnlyTest");
-    // noVersionsTestIModel = await IModelTestUtils.getTestModelInfo(requestContext, testProjectId, "NoVersionsTest");
-    // readWriteTestIModel = await IModelTestUtils.getTestModelInfo(requestContext, testProjectId, "ReadWriteTest");
+    testProjectId = await HubUtility.queryProjectIdByName(requestContext, testProjectName);
+    readOnlyTestIModel = await IModelTestUtils.getTestModelInfo(requestContext, testProjectId, "ReadOnlyTest");
+    noVersionsTestIModel = await IModelTestUtils.getTestModelInfo(requestContext, testProjectId, "NoVersionsTest");
+    readWriteTestIModel = await IModelTestUtils.getTestModelInfo(requestContext, testProjectId, "ReadWriteTest");
 
-    // // Purge briefcases that are close to reaching the acquire limit
-    // await HubUtility.purgeAcquiredBriefcases(requestContext, testProjectName, "ReadOnlyTest");
-    // await HubUtility.purgeAcquiredBriefcases(requestContext, testProjectName, "NoVersionsTest");
-    // await HubUtility.purgeAcquiredBriefcases(requestContext, testProjectName, "ReadWriteTest");
-    // await HubUtility.purgeAcquiredBriefcases(requestContext, testProjectName, "Stadium Dataset 1");
+    // Purge briefcases that are close to reaching the acquire limit
+    await HubUtility.purgeAcquiredBriefcases(requestContext, testProjectName, "ReadOnlyTest");
+    await HubUtility.purgeAcquiredBriefcases(requestContext, testProjectName, "NoVersionsTest");
+    await HubUtility.purgeAcquiredBriefcases(requestContext, testProjectName, "ReadWriteTest");
+    await HubUtility.purgeAcquiredBriefcases(requestContext, testProjectName, "Stadium Dataset 1");
     managerRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager);
-    // await HubUtility.purgeAcquiredBriefcases(managerRequestContext, testProjectName, "ReadOnlyTest");
-    // await HubUtility.purgeAcquiredBriefcases(managerRequestContext, testProjectName, "NoVersionsTest");
-    // await HubUtility.purgeAcquiredBriefcases(managerRequestContext, testProjectName, "ReadWriteTest");
+    await HubUtility.purgeAcquiredBriefcases(managerRequestContext, testProjectName, "ReadOnlyTest");
+    await HubUtility.purgeAcquiredBriefcases(managerRequestContext, testProjectName, "NoVersionsTest");
+    await HubUtility.purgeAcquiredBriefcases(managerRequestContext, testProjectName, "ReadWriteTest");
   });
 
   after(() => {
@@ -728,19 +727,18 @@ describe("BriefcaseManager (#integration)", () => {
       assert.equal(err.errorNumber, BriefcaseStatus.DownloadCancelled);
       assert.isTrue(err instanceof UserCancelledError);
       cancelled2 = true;
-    }
 
-    assert.isTrue(cancelled2);
+      assert.isTrue(cancelled2);
+    }
   });
 
-  it.only("Should be able to recover after changeSet deletion (#integration)", async () => {
-    var start = new Date().getTime();
-
-    const userContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager); // todo
-
-    const testIModelName = "DeleteCsTest";
+  it("Should be able to recover after changeSet deletion (#integration)", async () => {
+    const userContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager); // todo: substitute with a valid user
+    const testIModelName = "Delete changeSet test";
     const testUtility = new TestChangeSetUtility(userContext, testIModelName);
     testUtility.projectId = testProjectId; // todo remove
+
+    // Acquire briefcase and push 1 changeSet
     var iModel = await testUtility.createTestIModel();
 
     // Push 2 valid changeSets
@@ -753,13 +751,13 @@ describe("BriefcaseManager (#integration)", () => {
     try {
       var newUploadFunc: (requestContext: AuthorizedClientRequestContext, uploadUrlString: string, path: string, progress?: ProgressCallback) => Promise<void> =
         (requestContext, uploadUrlString, filePath, progress) => {
+          // Replace changeSet file contents with a string and upload the now invalid file
           const changeSetFileContentsLength = IModelJsFs.readFileSync(filePath).length;
           const invalidChangeSetFileContents = 'x'.repeat(changeSetFileContentsLength);
           IModelJsFs.writeFileSync(filePath, invalidChangeSetFileContents);
 
           return oldUploadFunc(requestContext, uploadUrlString, filePath, progress);
         }
-      // newUploadFunc = newUploadFunc.bind(fileHandler);
       fileHandler.uploadFile = newUploadFunc;
       await testUtility.pushTestChangeSet();
     } finally {
@@ -770,10 +768,10 @@ describe("BriefcaseManager (#integration)", () => {
     await testUtility.pushTestChangeSet();
     await testUtility.pushTestChangeSet();
 
-    const lastChangeSetId = iModel.nativeDb.getParentChangeSetId();
     // Ensure that DoNotScheduleRenderThumbnailJob option is disabled
     assert.isFalse(IModelHost.iModelClient.requestOptions.isSet);
     // Create version to trigger checkpoint generation
+    const lastChangeSetId = iModel.nativeDb.getParentChangeSetId();
     await IModelHost.iModelClient.versions.create(userContext, iModel.iModelId, lastChangeSetId, "Version 1");
 
     // Wait until the scheduled checkpoint job fails
@@ -783,7 +781,7 @@ describe("BriefcaseManager (#integration)", () => {
     const deleteChangeSetActionId = (await HubUtility.deleteChangeSet(userContext, iModel.iModelId, 4)).id!;
     await HubUtility.waitForChangeSetDeletion(userContext, iModel.iModelId, deleteChangeSetActionId);
 
-    // Assert that changeSet push now fails
+    // Assert that changeSet push fails
     var error: IModelError;
     try {
       await testUtility.pushTestChangeSet();
@@ -794,22 +792,11 @@ describe("BriefcaseManager (#integration)", () => {
 
     // Redownload briefcase
     await testUtility.redownloadBriefcase();
-    // const briefcasePath = iModel.pathName;
-    // const briefcaseId = iModel.briefcaseId;
 
-    // iModel.nativeDb.deleteAllTxns();
-    // await iModel.concurrencyControl.abandonResources(userContext);
-    // iModel.close();
-    // await BriefcaseManager.deleteBriefcaseFiles(briefcasePath);
+    // Push a new changeSet to ensure that the new briefcase is valid
+    await testUtility.pushTestChangeSet();
 
-    // iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: userContext, contextId: testProjectId, iModelId: iModel.iModelId, briefcaseId: briefcaseId });
-    testUtility.pushTestChangeSet();
-    // iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
-    // IModelTestUtils.createAndInsertPhysicalPartitionAndModel(iModel, IModelTestUtils.getUniqueModelCode(iModel, "TestPhysicalModel2"), true);
-    // await iModel.concurrencyControl.request(userContext);
-    // iModel.saveChanges("Last cs");
-    // await iModel.pushChanges(userContext, "Setup test model");
-
+    // Assert the final number of changeSets
     assert.equal(4, (await IModelHost.iModelClient.changeSets.get(userContext, iModel.iModelId)).length);
   });
 });
