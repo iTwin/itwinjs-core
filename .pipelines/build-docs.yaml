@@ -9,11 +9,19 @@ steps:
 
 - template: core-steps.yaml
 
-- task: NodeTool@0
-  displayName: 'Use Node 10.x'
+- task: Npm@0
+  displayName: 'Install BeMetalsmith'
   inputs:
-    versionSpec: 10.x
-    checkLatest: true
+    arguments: '@bentley/bemetalsmith@4.x'
+
+- task: Npm@1
+  displayName: 'npm audit'
+  inputs:
+    command: custom
+    verbose: false
+    customCommand: 'audit --registry=https://registry.npmjs.org/ --audit-level=high'
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/release'))
+
 
 - script: './node_modules/.bin/bmsBuild --strictLinkChecking --topicsMustHaveDesc --source $(System.ArtifactsDirectory)/staging --destination $(agent.builddirectory)/tempDocsBuild/public_build --siteTitle iTwin.js'
   displayName: 'Run bmsBuild'
