@@ -256,7 +256,7 @@ export interface PresentationManagerProps {
     // @alpha (undocumented)
     contentCacheSize?: number;
     // @alpha
-    defaultFormatsMap?: {
+    defaultFormats?: {
         [phenomenon: string]: {
             unitSystems: string[];
             format: FormatProps;
