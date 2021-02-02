@@ -125,6 +125,15 @@ export abstract class Tile {
     this._childrenLoadStatus = (undefined !== tree.maxDepth && this.depth < tree.maxDepth) ? TileTreeLoadStatus.NotLoaded : TileTreeLoadStatus.Loaded;
   }
 
+  /** Free memory-consuming resources owned by this tile to reduce memory pressure.
+   * By default, this calls [[disposeContents]]. Problematic subclasses (MapTile, ImageryMapTile) may opt out for now by overriding this method to do nothing.
+   * That option may be removed in the future.
+   * @alpha
+   */
+  public freeMemory(): void {
+    this.disposeContents();
+  }
+
   /** Dispose of resources held by this tile. */
   public disposeContents(): void {
     this._state = TileState.NotReady;

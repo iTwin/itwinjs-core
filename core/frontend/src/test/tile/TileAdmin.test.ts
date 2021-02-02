@@ -64,9 +64,9 @@ class TestTile extends Tile {
     return { graphic: new TestGraphic(this._contentSize), isLeaf: true };
   }
 
-  public disposeContents(): void {
+  public freeMemory(): void {
     if (!this.retainMemory)
-      super.disposeContents();
+      super.freeMemory();
   }
 
   public computeBytesUsed(): number {
@@ -309,7 +309,7 @@ describe("TileAdmin", () => {
     admin.freeMemory();
     expect(admin.totalTileContentBytes).to.equal(2 + 3);
 
-    tiles[2].disposeContents();
+    tiles[2].freeMemory();
     expect(isLinked(tiles[2])).to.be.false;
     expect(admin.totalTileContentBytes).to.equal(3);
 

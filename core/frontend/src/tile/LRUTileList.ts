@@ -323,9 +323,9 @@ export class LRUTileList {
     while (prev && prev !== this._sentinel && this.totalBytesUsed > maxBytes) {
       const tile = prev as Tile;
       prev = tile.next;
-      tile.disposeContents();
+      tile.freeMemory();
 
-      // Some tiles (ImageryMapTile) use reference-counting, in which case disposeContents() may not actually free the contents.
+      // Some tiles (ImageryMapTile) use reference-counting, in which case freeMemory() may not actually free the contents.
       // If the contents *were* disposed, then `this.drop` will have been called, and `tile` is no longer in the list.
       // Otherwise, `tile` remains in the list. Either way, we proceed to the next entry in the list.
       assert((this.computeBytesUsed(tile) > 0) === isLinked(tile));

@@ -615,6 +615,10 @@ export class MapTile extends RealityTile {
     this.setIsReady();
   }
 
+  public freeMemory(): void {
+    // ###TODO MapTiles and ImageryMapTiles share resources and don't currently interact well with TileAdmin.freeMemory(). Opt out for now.
+  }
+
   public disposeContents() {
     super.disposeContents();
     this._geometry = dispose(this._geometry);
