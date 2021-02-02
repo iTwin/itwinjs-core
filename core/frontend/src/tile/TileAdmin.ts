@@ -83,7 +83,7 @@ export interface SelectedAndReadyTiles {
  */
 export type GpuMemoryLimit = "none" | "default" | "aggressive" | "relaxed" | number;
 
-/** Defines [[GpuMemoryLimit]]s for mobile and desktop clients.
+/** Defines separate [[GpuMemoryLimit]]s for mobile and desktop clients.
  * @see [[TileAdmin.Props.memoryUsageLimits]] to configure the limit at startup.
  * @see [[GpuMemoryLimit]] for a description of how the available limits and how they are imposed.
  * @beta
@@ -1207,8 +1207,11 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
     tileTreeExpirationTime?: number;
 
     /** Defines optional limits on the total amount of GPU memory allocated to [[Tile]] contents.
-     * If undefined, defaults to "none". If an instance of [[GpuMemoryLimits]], defines separate limits for mobile and non-mobile devices; otherwise, defines the limit for whatever
+     * If an instance of [[GpuMemoryLimits]], defines separate limits for mobile and non-mobile devices; otherwise, defines the limit for whatever
      * type of device the client is running on.
+     *
+     * Default value: "none".
+     *
      * @see [[GpuMemoryLimit]] for a description of the available limits and how they are imposed.
      * @beta
      */
