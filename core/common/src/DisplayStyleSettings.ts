@@ -15,11 +15,12 @@ import { XYZProps } from "@bentley/geometry-core";
 import { AmbientOcclusion } from "./AmbientOcclusion";
 import { AnalysisStyle, AnalysisStyleProps } from "./AnalysisStyle";
 import { BackgroundMapProps, BackgroundMapSettings } from "./BackgroundMapSettings";
+import { ClipStyle, ClipStyleProps } from "./ClipStyle";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 import { DefinitionElementProps } from "./ElementProps";
 import { GroundPlaneProps } from "./GroundPlane";
 import { HiddenLine } from "./HiddenLine";
-import { FeatureAppearance, FeatureAppearanceProps, PlanarClipMaskSettings, PlanarClipMaskProps, SubCategoryOverride } from "./imodeljs-common";
+import { FeatureAppearance, FeatureAppearanceProps, PlanarClipMaskProps, PlanarClipMaskSettings, SubCategoryOverride } from "./imodeljs-common";
 import { LightSettings, LightSettingsProps } from "./LightSettings";
 import { MapImageryProps, MapImagerySettings } from "./MapImagerySettings";
 import { PlanProjectionSettings, PlanProjectionSettingsProps } from "./PlanProjectionSettings";
@@ -30,7 +31,6 @@ import { SpatialClassificationProps } from "./SpatialClassificationProps";
 import { SubCategoryAppearance } from "./SubCategoryAppearance";
 import { ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps } from "./ThematicDisplay";
 import { ViewFlagProps, ViewFlags } from "./ViewFlags";
-import { ClipStyle, ClipStyleProps } from "./ClipStyle";
 
 /** Describes the [[SubCategoryOverride]]s applied to a [[SubCategory]] by a [[DisplayStyle]].
  * @see [[DisplayStyleSettingsProps]]
@@ -49,7 +49,6 @@ export interface DisplayStyleModelAppearanceProps extends FeatureAppearanceProps
   /** The Id of the model whose appearance is to be overridden. */
   modelId?: Id64String;
 }
-
 
 export interface DisplayStylePlanarClipMaskProps extends PlanarClipMaskProps {
   /** The Id of the model to mask. */
@@ -454,7 +453,6 @@ export class DisplayStyleSettings {
    */
   public readonly onPlanarClipMaskOverridesChanged = new BeEvent<(modelId: Id64String, newSettings: PlanarClipMaskSettings | undefined) => void>();
 
-
   /** Construct a new DisplayStyleSettings from an [[ElementProps.jsonProperties]].
    * @param jsonProperties An object with an optional `styles` property containing a display style's settings.
    * @note When the `DisplayStyleSetting`'s properties are modified by public setters, the `jsonProperties`'s `styles` object will be updated to reflect the change.
@@ -740,7 +738,6 @@ export class DisplayStyleSettings {
   public get hasModelAppearanceOverride(): boolean {
     return this._modelAppearanceOverrides.size > 0;
   }
-
 
   /** Set the planar clip mask for a [[Model]]  drawn by this display style.
  * @param modelId The ID of the [[model]] whose appearance is to be overridden.

@@ -8,14 +8,12 @@
 
 import { Id64String, IDisposable } from "@bentley/bentleyjs-core";
 import { Transform } from "@bentley/geometry-core";
-import { PlanarClipMaskSettings } from "@bentley/imodeljs-common";
 import { PlanarClipMaskState } from "../PlanarClipMaskState";
 import { SpatialClassifierTileTreeReference, Tile } from "../tile/internal";
 import { SceneContext } from "../ViewContext";
 
-
 /**  @internal */
-export interface PlanarClassifierTarget { modelId: Id64String, tiles: Tile[], location: Transform, isPointCloud: boolean };
+export interface PlanarClassifierTarget { modelId: Id64String, tiles: Tile[], location: Transform, isPointCloud: boolean }
 /** An opaque representation of a planar classifier applied to geometry within a [[Viewport]].
  * @internal
  */

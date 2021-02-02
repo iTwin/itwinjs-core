@@ -7,13 +7,13 @@
  * @module WebGL
  */
 
-import { assert, CompressedId64Set, dispose, Id64String } from "@bentley/bentleyjs-core";
+import { dispose } from "@bentley/bentleyjs-core";
 import { Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Vector3d } from "@bentley/geometry-core";
-import { ColorDef, Frustum, FrustumPlanes, PlanarClipMaskSettings, PlanarClipMaskMode, RenderMode, RenderTexture, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
+import { ColorDef, Frustum, FrustumPlanes, RenderMode, RenderTexture, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
 import { PlanarClipMaskState } from "../../PlanarClipMaskState";
 import { GraphicsCollectorDrawArgs, SpatialClassifierTileTreeReference, TileTreeReference } from "../../tile/internal";
 import { SceneContext } from "../../ViewContext";
-import { ViewState, ViewState3d } from "../../ViewState";
+import { ViewState3d } from "../../ViewState";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
@@ -36,9 +36,9 @@ import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
 import { Texture, TextureHandle } from "./Texture";
 
-export enum PlanarClassifierContent { None = 0, MaskOnly = 1, ClassifierOnly = 2, ClassifierAndMask = 3 };
+export enum PlanarClassifierContent { None = 0, MaskOnly = 1, ClassifierOnly = 2, ClassifierAndMask = 3 }
 
-function createTexture(handle: TextureHandle) { return new Texture(new RenderTexture.Params(undefined, RenderTexture.Type.TileSection, true), handle) }
+function createTexture(handle: TextureHandle) { return new Texture(new RenderTexture.Params(undefined, RenderTexture.Type.TileSection, true), handle); }
 function createTextureHandle(width: number, height: number, heightMult = 1.0) { return TextureHandle.createForAttachment(width, height * heightMult, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte); }
 
 class ClassifierTextures implements WebGLDisposable {
@@ -209,8 +209,8 @@ class ClassifierMPFrameBuffers extends ClassifierFrameBuffers {
 }
 
 interface TextureAndFbo {
-  texture: Texture,
-  fbo: FrameBuffer
+  texture: Texture;
+  fbo: FrameBuffer;
 }
 
 abstract class SingleTextureFrameBuffer implements WebGLDisposable {
@@ -273,7 +273,6 @@ abstract class CombineTexturesFrameBuffer extends SingleTextureFrameBuffer {
     });
   }
 }
-
 
 class ClassifierCombinationBuffer extends CombineTexturesFrameBuffer {
   public static create(width: number, height: number, classifierColor: Texture, classifierFeature: Texture): ClassifierAndMaskCombinationBuffer | undefined {
@@ -363,7 +362,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   public get anyOpaque(): boolean { return this._anyOpaque; }
   public get anyTranslucent(): boolean { return this._anyTranslucent; }
   public get insideDisplay(): SpatialClassificationProps.Display { return this._classifier ? this._classifier.flags.inside : SpatialClassificationProps.Display.Off; }
-  public get outsideDisplay(): SpatialClassificationProps.Display { return this._classifier ? this._classifier.flags.outside : SpatialClassificationProps.Display.On }
+  public get outsideDisplay(): SpatialClassificationProps.Display { return this._classifier ? this._classifier.flags.outside : SpatialClassificationProps.Display.On; }
   public get isClassifyingPointCloud(): boolean { return true === this._isClassifyingPointCloud; }
 
   public addGraphic(graphic: RenderGraphic) {
@@ -475,7 +474,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
         treeRef.draw(drawArgs);
 
       this._graphics = undefined;
-    }
+    };
     if (this._classifierTreeRef)
       drawTree(this._classifierTreeRef, this._classifierGraphics);
 
@@ -529,7 +528,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
             return;
         }
         this._contentMode = PlanarClassifierContent.ClassifierOnly;
-        combinationBuffer = this._classifierCombinedBuffer
+        combinationBuffer = this._classifierCombinedBuffer;
       } else {
         if (undefined === this._maskBuffer) {
           this._maskBuffer = MaskFrameBuffer.create(this._width, this._height);

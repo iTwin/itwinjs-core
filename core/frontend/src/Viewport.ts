@@ -17,7 +17,8 @@ import {
 import {
   AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, ClipStyle, ColorDef, ContextRealityModelProps, DisplayStyleSettingsProps, Easing,
   ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer, Interpolation, LightSettings, NpcCenter, Placement2d,
-  Placement2dProps, Placement3d, Placement3dProps, PlacementProps, PlanarClipMaskSettings, SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, Tweens, ViewFlags,
+  Placement2dProps, Placement3d, Placement3dProps, PlacementProps, PlanarClipMaskSettings, SolarShadowSettings, SubCategoryAppearance,
+  SubCategoryOverride, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
@@ -34,6 +35,7 @@ import { IModelConnection } from "./IModelConnection";
 import { linePlaneIntersect } from "./LinePlaneIntersect";
 import { ToolTipOptions } from "./NotificationManager";
 import { PerModelCategoryVisibility } from "./PerModelCategoryVisibility";
+import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { CanvasDecoration } from "./render/CanvasDecoration";
 import { Decorations } from "./render/Decorations";
 import { FeatureSymbology } from "./render/FeatureSymbology";
@@ -57,7 +59,6 @@ import { ViewPose } from "./ViewPose";
 import { ViewRect } from "./ViewRect";
 import { ModelDisplayTransformProvider, ViewState } from "./ViewState";
 import { ViewStatus } from "./ViewStatus";
-import { PlanarClipMaskState } from "./PlanarClipMaskState";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -737,7 +738,6 @@ export abstract class Viewport implements IDisposable {
   public getRealityModelAppearanceOverride(index: number): FeatureAppearance | undefined {
     return this.displayStyle.getRealityModelAppearanceOverride(index);
   }
-
 
   /** Return the "contextual" reality model index for a transient model ID or -1 if none found
    * @beta

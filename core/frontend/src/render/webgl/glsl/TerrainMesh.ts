@@ -12,16 +12,16 @@ import { AttributeMap } from "../AttributeMap";
 import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
 import { System } from "../System";
-import { FeatureMode, IsClassified, IsShadowable, IsThematic, TechniqueFlags } from "../TechniqueFlags";
+import { FeatureMode, IsShadowable, IsThematic, TechniqueFlags } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
 import { Texture } from "../Texture";
 import { addUInt32s } from "./Common";
 import { unquantize2d } from "./Decode";
+import { addColorPlanarClassifier } from "./PlanarClassification";
 import { addSolarShadowMap } from "./SolarShadowMapping";
 import { octDecodeNormal } from "./Surface";
-import { addModelViewProjectionMatrix, addNormalMatrix } from "./Vertex";
 import { addThematicDisplay, getComputeThematicIndex } from "./Thematic";
-import { addColorPlanarClassifier } from "./PlanarClassification";
+import { addModelViewProjectionMatrix, addNormalMatrix } from "./Vertex";
 
 const computePosition = "gl_PointSize = 1.0; return MAT_MVP * rawPos;";
 const computeNormal = `

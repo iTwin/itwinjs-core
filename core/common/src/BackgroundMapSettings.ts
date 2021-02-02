@@ -6,7 +6,7 @@
  * @module DisplayStyles
  */
 
-import { PlanarClipMaskSettings, PlanarClipMaskProps } from "./PlanarClipMask";
+import { PlanarClipMaskProps, PlanarClipMaskSettings } from "./PlanarClipMask";
 import { TerrainProps, TerrainSettings } from "./TerrainSettings";
 
 /** Describes the type of background map displayed by a [[DisplayStyle]]
@@ -136,7 +136,6 @@ export class BackgroundMapSettings {
   /** If transparency is overridden, the transparency to apply; otherwise, undefined. */
   public get transparencyOverride(): number | undefined { return false !== this.transparency ? this.transparency : undefined; }
 
-
   private constructor(props: BackgroundMapProps) {
     this.groundBias = props.groundBias ?? 0;
     this.providerName = normalizeProviderName(props.providerName);
@@ -217,7 +216,7 @@ export class BackgroundMapSettings {
       providerData: {
         mapType: changedProps.providerData?.mapType ?? this.mapType,
       },
-      planarClipMask: changedProps.planarClipMask ?? this.planarClipMask.toJSON()
+      planarClipMask: changedProps.planarClipMask ?? this.planarClipMask.toJSON(),
     };
 
     return BackgroundMapSettings.fromJSON(props);

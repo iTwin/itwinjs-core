@@ -7,7 +7,13 @@
  */
 import { assert, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Angle, Point3d, Range1d, Vector3d } from "@bentley/geometry-core";
-import { DisplayStyleProps, DisplayStyleSettings, BackgroundMapSettings, MapImagerySettings, GlobeMode, MapLayerSettings, BaseLayerSettings, BackgroundMapProps, ContextRealityModelProps, PlanarClipMaskMode, FeatureAppearance, PlanarClipMaskSettings, MapLayerProps, ColorDef, MapSubLayerProps, SubLayerId, ViewFlags, SubCategoryOverride, SkyBoxProps, SkyBoxImageType, RenderTexture, SkyCubeProps, GroundPlane, EnvironmentProps, DisplayStyle3dSettings, LightSettings, Cartographic, calculateSolarDirection, SolarShadowSettings, DisplayStyle3dSettingsProps, ThematicDisplayMode, ThematicDisplay, ThematicGradientMode } from "@bentley/imodeljs-common";
+import {
+  BackgroundMapProps, BackgroundMapSettings, BaseLayerSettings, calculateSolarDirection, Cartographic, ColorDef, ContextRealityModelProps,
+  DisplayStyle3dSettings, DisplayStyle3dSettingsProps, DisplayStyleProps, DisplayStyleSettings, EnvironmentProps, FeatureAppearance, GlobeMode,
+  GroundPlane, LightSettings, MapImagerySettings, MapLayerProps, MapLayerSettings, MapSubLayerProps, PlanarClipMaskMode, PlanarClipMaskSettings,
+  RenderTexture, SkyBoxImageType, SkyBoxProps, SkyCubeProps, SolarShadowSettings, SubCategoryOverride, SubLayerId, ThematicDisplay,
+  ThematicDisplayMode, ThematicGradientMode, ViewFlags,
+} from "@bentley/imodeljs-common";
 import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
 import { ContextRealityModelState } from "./ContextRealityModelState";
@@ -19,7 +25,9 @@ import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { AnimationBranchStates } from "./render/GraphicBranch";
 import { RenderSystem, TextureImage } from "./render/RenderSystem";
 import { RenderScheduleState } from "./RenderScheduleState";
-import { getCesiumOSMBuildingsUrl, MapCartoRectangle, MapTileTree, MapTileTreeReference, RealityModelTileTree, TileTreeReference } from "./tile/internal";
+import {
+  getCesiumOSMBuildingsUrl, MapCartoRectangle, MapTileTree, MapTileTreeReference, RealityModelTileTree, TileTreeReference,
+} from "./tile/internal";
 import { viewGlobalLocation, ViewGlobalLocationConstants } from "./ViewGlobalLocation";
 import { OsmBuildingDisplayOptions, ScreenViewport, Viewport } from "./Viewport";
 
@@ -353,7 +361,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       for (let i = 0; i < jsonContextRealityModels.length; i++)
         changed = func(i, jsonContextRealityModels) || changed;
     } else {
-      changed = func(index, jsonContextRealityModels)
+      changed = func(index, jsonContextRealityModels);
     }
     return changed;
   }
@@ -752,7 +760,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       return undefined;
 
     const bimElevationBias = this.backgroundMapElevationBias;
-
 
     const globeMode = this.globeMode;
     if (undefined === this._backgroundMapGeometry || this._backgroundMapGeometry.globeMode !== globeMode || this._backgroundMapGeometry.bimElevationBias !== bimElevationBias) {

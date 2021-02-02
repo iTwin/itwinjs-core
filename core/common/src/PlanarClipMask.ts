@@ -16,7 +16,7 @@ export enum PlanarClipMaskMode {
   IncludeElements = 4,
   ExcludeSubCategories = 5,
   ExcludeElements = 6,
-};
+}
 
 export enum PlanarClipMaskPriority {
   BackgroundMap = -2048,
@@ -24,8 +24,7 @@ export enum PlanarClipMaskPriority {
   RealityModel = 0,
   BIM = 2048,
   Maximum = 4096,
-};
-
+}
 
 export class PlanarClipMaskSettings {
   public readonly mode: PlanarClipMaskMode = PlanarClipMaskMode.None;
@@ -61,7 +60,7 @@ export class PlanarClipMaskSettings {
   }
 
   public static createByPriority(priority: number) {
-    return new PlanarClipMaskSettings(PlanarClipMaskMode.Priority, undefined, undefined, priority)
+    return new PlanarClipMaskSettings(PlanarClipMaskMode.Priority, undefined, undefined, priority);
   }
 
   public toJSON(): PlanarClipMaskProps {

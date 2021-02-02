@@ -8,8 +8,10 @@
  */
 
 import { Id64String } from "@bentley/bentleyjs-core";
-import { PlanarClipMaskSettings, PlanarClipMaskMode, PlanarClipMaskProps, PlanarClipMaskPriority } from "@bentley/imodeljs-common";
-import { BeButtonEvent, ContextRealityModelState, EventHandled, GeometricModelState, HitDetail, IModelApp, LocateFilterStatus, LocateResponse, PrimitiveTool, ScreenViewport, Tool, ViewPose } from "@bentley/imodeljs-frontend";
+import { PlanarClipMaskMode, PlanarClipMaskPriority, PlanarClipMaskProps, PlanarClipMaskSettings } from "@bentley/imodeljs-common";
+import {
+  BeButtonEvent, EventHandled, HitDetail, IModelApp, LocateFilterStatus, LocateResponse, PrimitiveTool, ScreenViewport, Tool,
+} from "@bentley/imodeljs-frontend";
 import { parseToggle } from "./parseToggle";
 
 function applyMapMasking(onOff: boolean | undefined, maskProps: PlanarClipMaskProps) {
@@ -69,30 +71,6 @@ export class UnmaskMapTool extends Tool {
   public parseAndRun(..._args: string[]): boolean { return this.run(); }
 }
 
-function applyToRealityModel(vp: ScreenViewport, index: number, func: (indexOrId: Id64String | number) => boolean): boolean {
-  if (index < 0) {
-    let i = 0;
-    let changed = false;
-    vp.displayStyle.forEachRealityModel((_model: ContextRealityModelState) => changed = changed || func(i++));
-    vp.view.forEachModel((model: GeometricModelState) => { if (model.asSpatialModel && model.asSpatialModel.isRealityModel) changed = changed || func(model.id); });
-    return changed
-  } else {
-    return func(index);
-  }
-}
-
-function applyMaskToRealityModel(index: number, onOff: boolean | undefined, mask: PlanarClipMaskSettings): boolean {
-  const vp = IModelApp.viewManager.selectedView;
-  if (vp === undefined)
-    return false;
-
-  return applyToRealityModel(vp, index, (indexOrId: Id64String | number) => {
-    const currentMask = vp.getRealityModelPlanarClipMask(indexOrId);
-    const maskOn = (onOff === undefined) ? currentMask === undefined : onOff;
-    return maskOn ? vp.overrideRealityModelPlanarClipMask(indexOrId, mask) : vp.dropRealityModelPlanarClipMask(indexOrId);
-  });
-}
-
 /** Base class for the reality model planar masking tools.
  * @beta
  */
@@ -136,8 +114,7 @@ export abstract class PlanarMaskBaseTool extends PrimitiveTool {
 
       const model = this.iModel.models.getLoaded(hit.modelId)?.asSpatialModel;
       return model?.isRealityModel ? LocateFilterStatus.Accept : LocateFilterStatus.Reject;
-    }
-    else
+    } else
       return (hit.isElementHit && !hit.isModelHit && !this._acceptedElementIds.has(hit.sourceId)) ? LocateFilterStatus.Accept : LocateFilterStatus.Reject;
   }
 
@@ -161,7 +138,7 @@ export abstract class PlanarMaskBaseTool extends PrimitiveTool {
       const sourceId = hit.sourceId;
       if (!this._acceptedElementIds.has(sourceId)) {
         this._acceptedElementIds.add(sourceId);
-        this._acceptedModelIds.add(hit.modelId!)
+        this._acceptedModelIds.add(hit.modelId!);
         if (hit.subCategoryId)
           this._acceptedSubCategoryIds.add(hit.subCategoryId);
         this.applyMask(vp);
@@ -238,7 +215,7 @@ export class MaskRealityModelByElementTool extends PlanarMaskBaseTool {
   protected targetModelRequired() { return true; }
 
   protected showPrompt(): void {
-    const key = "FrontendDevTools:tools.MaskRealityModelByElement.Prompts." + (this._targetModelId === undefined ? "IdentifyRealityModel" : "IdentifyMaskElement");
+    const key = `FrontendDevTools:tools.MaskRealityModelByElement.Prompts.${  this._targetModelId === undefined ? "IdentifyRealityModel" : "IdentifyMaskElement"}`;
     IModelApp.notifications.outputPromptByKey(key);
   }
   protected createToolInstance(): PlanarMaskBaseTool { return new MaskRealityModelByElementTool(); }
@@ -251,7 +228,7 @@ export class MaskRealityModelByExcludedElementTool extends PlanarMaskBaseTool {
   protected targetModelRequired() { return true; }
 
   protected showPrompt(): void {
-    const key = "FrontendDevTools:tools.MaskRealityModelByExcludedElement.Prompts." + (this._targetModelId === undefined ? "IdentifyRealityModel" : "IdentifyMaskElement");
+    const key = `FrontendDevTools:tools.MaskRealityModelByExcludedElement.Prompts.${  this._targetModelId === undefined ? "IdentifyRealityModel" : "IdentifyMaskElement"}`;
     IModelApp.notifications.outputPromptByKey(key);
   }
   protected createToolInstance(): PlanarMaskBaseTool { return new MaskRealityModelByElementTool(); }
@@ -267,7 +244,7 @@ export class MaskRealityModelByModelTool extends PlanarMaskBaseTool {
   protected targetModelRequired() { return true; }
 
   protected showPrompt(): void {
-    const key = "FrontendDevTools:tools.MaskRealityModelByModel.Prompts." + (this._targetModelId === undefined ? "IdentifyRealityModel" : "IdentifyMaskModel");
+    const key = `FrontendDevTools:tools.MaskRealityModelByModel.Prompts.${  this._targetModelId === undefined ? "IdentifyRealityModel" : "IdentifyMaskModel"}`;
     IModelApp.notifications.outputPromptByKey(key);
   }
   protected createToolInstance(): PlanarMaskBaseTool { return new MaskRealityModelByElementTool(); }
@@ -282,7 +259,7 @@ export class MaskRealityModelBySubCategoryTool extends PlanarMaskBaseTool {
   protected targetModelRequired() { return true; }
 
   protected showPrompt(): void {
-    const key = "FrontendDevTools:tools.MaskRealityModelByModel.Prompts." + (this._targetModelId === undefined ? "IdentifyRealityModel" : "IdentifyMaskSubCategory");
+    const key = `FrontendDevTools:tools.MaskRealityModelByModel.Prompts.${  this._targetModelId === undefined ? "IdentifyRealityModel" : "IdentifyMaskSubCategory"}`;
     IModelApp.notifications.outputPromptByKey(key);
   }
   protected createToolInstance(): PlanarMaskBaseTool { return new MaskRealityModelBySubCategoryTool(); }
@@ -298,22 +275,21 @@ export class SetHigherPriorityRealityModelMasking extends PlanarMaskBaseTool {
   public static toolId = "SetHigherPriorityRealityModelMasking";
   protected targetModelRequired() { return true; }
   protected elementRequired() { return false; }
-  private priority = 0;
-
+  private _priority = 0;
 
   protected showPrompt(): void {
     IModelApp.notifications.outputPromptByKey("FrontendDevTools:tools.SetHigherPriorityRealityModelMasking.Prompts.IdentifyRealityModel");
   }
   protected createToolInstance(): PlanarMaskBaseTool { return new UnmaskRealityModelTool(); }
   protected applyMask(vp: ScreenViewport): void {
-    vp.overrideRealityModelPlanarClipMask(this._targetModelId!, PlanarClipMaskSettings.createByPriority(PlanarClipMaskPriority.RealityModel + this.priority)!);
+    vp.overrideRealityModelPlanarClipMask(this._targetModelId!, PlanarClipMaskSettings.createByPriority(PlanarClipMaskPriority.RealityModel + this._priority)!);
   }
   public static get minArgs() { return 0; }
   public static get maxArgs() { return 1; }
 
   public parseAndRun(...args: string[]): boolean {
-    let priority = parseInt(args[0], 10);
-    this.priority = (priority === undefined || isNaN(priority)) ? 0 : priority;
+    const priority = parseInt(args[0], 10);
+    this._priority = (priority === undefined || isNaN(priority)) ? 0 : priority;
     return this.run();
   }
 }
@@ -335,7 +311,7 @@ export class UnmaskRealityModelTool extends PlanarMaskBaseTool {
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     const hit = await IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, ev.inputSource);
     if (hit?.modelId) {
-      const realityIndex = hit.viewport.getRealityModelIndexFromTransientId(hit.modelId)
+      const realityIndex = hit.viewport.getRealityModelIndexFromTransientId(hit.modelId);
       hit.viewport.dropRealityModelPlanarClipMask(realityIndex >= 0 ? realityIndex : hit.modelId);
       this.onRestartTool();
     }

@@ -11,6 +11,7 @@ import { PlanarClipMaskMode, PlanarClipMaskPriority, PlanarClipMaskProps, Planar
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { createMaskTreeReference, TileTreeReference, TileTreeSet } from "./tile/internal";
 import { ViewState3d } from "./ViewState";
+
 export class PlanarClipMaskState {
   public readonly settings: PlanarClipMaskSettings;
   private _modelIds?: Id64Set;
@@ -36,7 +37,7 @@ export class PlanarClipMaskState {
   }
 
   public getTileTrees(view: ViewState3d, classifiedModelId: Id64String): TileTreeReference[] | undefined {
-    if (this.settings.mode == PlanarClipMaskMode.Priority) {
+    if (this.settings.mode === PlanarClipMaskMode.Priority) {
       const viewTrees = new Array<TileTreeReference>();
       const thisPriority = this.settings.priority === undefined ? PlanarClipMaskPriority.RealityModel : this.settings.priority;
       view.forEachTileTreeRef((ref) => {

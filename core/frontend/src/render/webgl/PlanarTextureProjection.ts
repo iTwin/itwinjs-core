@@ -12,17 +12,13 @@ import {
   Ray3d, Transform,
 } from "@bentley/geometry-core";
 import { Frustum, FrustumPlanes, Npc, RenderMode } from "@bentley/imodeljs-common";
-import { assert } from "console";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
 import { SceneContext, Tile } from "../../imodeljs-frontend";
 import { TileTreeReference } from "../../tile/internal";
-import { ViewingSpace } from "../../ViewingSpace";
 import { ViewState3d } from "../../ViewState";
-import { TextureUnit } from "./RenderFlags";
 import { RenderState } from "./RenderState";
 import { Target } from "./Target";
 
-const scratchPoint = Point3d.createZero();
 const scratchRange = Range3d.createNull();
 export class PlanarTextureProjection {
   private static _postProjectionMatrixNpc = Matrix4d.createRowValues(/* Row 1 */ 0, 1, 0, 0, /* Row 1 */ 0, 0, 1, 0, /* Row 3 */ 1, 0, 0, 0, /* Row 4 */ 0, 0, 0, 1);
@@ -55,7 +51,7 @@ export class PlanarTextureProjection {
     const viewClipPlanes = ConvexClipPlaneSet.createPlanes(viewPlanes.planes!);
 
     let textureRange = Range3d.createNull();
-    const tileToTexture = textureTransform.multiplyTransformTransform(target.location)
+    const tileToTexture = textureTransform.multiplyTransformTransform(target.location);
     for (const tile of target.tiles) {
       textureRange.extendRange(tileToTexture.multiplyRange(tile.range, scratchRange));
     }
@@ -125,7 +121,7 @@ export class PlanarTextureProjection {
         const nearRange = Range2d.createNull();
         // Create a frustum that includes the entire view frustum and all Z values.
         nearRange.low.x = textureRange.low.x;
-        nearRange.high.x = textureRange.high.x
+        nearRange.high.x = textureRange.high.x;
         farRange.low.x = eyePoint.x + far / near * (textureRange.low.x - eyePoint.x);
         farRange.high.x = eyePoint.x + far / near * (textureRange.high.x - eyePoint.x);
         ClipUtilities.announceLoopsOfConvexClipPlaneSetIntersectRange(viewClipPlanes, textureRange, (points: GrowableXYZArray) => {

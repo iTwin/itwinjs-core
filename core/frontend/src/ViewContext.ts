@@ -11,7 +11,7 @@ import {
   ClipPlane, ClipUtilities, ConvexClipPlaneSet, Geometry, GrowableXYZArray, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d,
   Point3d, Range1d, Range3d, Ray3d, Transform, Vector2d, Vector3d, XAndY,
 } from "@bentley/geometry-core";
-import { ColorDef, Frustum, FrustumPlanes, LinePixels, PlanarClipMaskSettings, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
+import { ColorDef, Frustum, FrustumPlanes, LinePixels, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { CanvasDecoration } from "./render/CanvasDecoration";

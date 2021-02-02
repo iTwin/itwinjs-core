@@ -90,8 +90,8 @@ export class BackgroundMapDrape extends TextureDrape {
     this._width = requiredWidth;
     this._height = requiredHeight;
 
-    const targetTree = this._drapedTree.treeOwner.tileTree
-    const args = this._drapedTree.createDrawArgs(context);;
+    const targetTree = this._drapedTree.treeOwner.tileTree;
+    const args = this._drapedTree.createDrawArgs(context);
     if (!targetTree || !args)
       return;
 

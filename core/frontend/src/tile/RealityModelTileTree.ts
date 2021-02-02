@@ -6,9 +6,14 @@
  * @module Utils
  */
 
-import { assert, BentleyStatus, compareNumbers, compareStrings, compareStringsOrUndefined, CompressedId64Set, Guid, Id64String } from "@bentley/bentleyjs-core";
+import {
+  assert, BentleyStatus, compareNumbers, compareStrings, compareStringsOrUndefined, CompressedId64Set, Guid, Id64String,
+} from "@bentley/bentleyjs-core";
 import { Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Ray3d, Transform, TransformProps, Vector3d, XYZ } from "@bentley/geometry-core";
-import { Cartographic, GeoCoordStatus, IModelError, PlanarClipMaskSettings, PlanarClipMaskProps, ViewFlagOverrides, ViewFlagPresence, PlanarClipMaskPriority, PlanarClipMaskMode } from "@bentley/imodeljs-common";
+import {
+  Cartographic, GeoCoordStatus, IModelError, PlanarClipMaskMode, PlanarClipMaskPriority, PlanarClipMaskProps, PlanarClipMaskSettings,
+  ViewFlagOverrides, ViewFlagPresence,
+} from "@bentley/imodeljs-common";
 import { AccessToken, request, RequestOptions } from "@bentley/itwin-client";
 import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
 import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
@@ -24,8 +29,8 @@ import { SceneContext } from "../ViewContext";
 import { ViewState } from "../ViewState";
 import {
   BatchedTileIdMap, createClassifierTileTreeReference, getCesiumAccessTokenAndEndpointUrl, RealityTile, RealityTileLoader, RealityTileParams,
-  RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile, TileDrawArgs, TileLoadPriority, TileRequest, TileTree, TileTreeOwner,
-  TileTreeReference, TileTreeSet, TileTreeSupplier,
+  RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile, TileDrawArgs, TileLoadPriority, TileRequest, TileTree,
+  TileTreeOwner, TileTreeReference, TileTreeSet, TileTreeSupplier,
 } from "./internal";
 import { createDefaultViewFlagOverrides } from "./ViewFlagOverrides";
 
@@ -523,7 +528,6 @@ export namespace RealityModelTileTree {
     return new RealityModelTileTreeProps(json, tileClient, rootTransform);
   }
 }
-
 
 /** Supplies a reality data [[TileTree]] from a URL. May be associated with a persistent [[GeometricModelState]], or attached at run-time via a [[ContextRealityModelState]].
  * @internal

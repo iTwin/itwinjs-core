@@ -98,7 +98,7 @@ if (kClassifierDisplay_Off == param) {
 
 // ###TODO Currently we discard if classifier is pure black (acts as clipping mask).
 // Change it so that fully-transparent classifiers do the clipping.
-const applyPlanarClassificationColor = applyPlanarClassificationPrelude +
+const applyPlanarClassificationColor = applyPlanarClassificationPrelude + // eslint-disable-line prefer-template
   `
   float colorMix = u_pClassPointCloud ? .65 : .35;
   vec4 classColor;
@@ -132,7 +132,7 @@ const applyPlanarClassificationColor = applyPlanarClassificationPrelude +
   return classColor;
 `;
 
-const applyPlanarClassificationColorForThematic = applyPlanarClassificationPrelude +
+const applyPlanarClassificationColorForThematic = applyPlanarClassificationPrelude + // eslint-disable-line prefer-template
   `
   vec4 classColor = baseColor;
 

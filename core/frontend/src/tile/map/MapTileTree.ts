@@ -7,8 +7,13 @@
  */
 
 import { assert, compareBooleans, compareNumbers, compareStrings, Id64String } from "@bentley/bentleyjs-core";
-import { Angle, AngleSweep, Constant, Ellipsoid, EllipsoidPatch, Point3d, Range1d, Range3d, Ray3d, Transform, Vector3d, XYZProps } from "@bentley/geometry-core";
-import { BackgroundMapSettings, BaseLayerSettings, Cartographic, ColorDef, GeoCoordStatus, GlobeMode, MapLayerSettings, PlanarClipMaskPriority, PlanarClipMaskSettings, TerrainHeightOriginMode, TerrainProviderName } from "@bentley/imodeljs-common";
+import {
+  Angle, AngleSweep, Constant, Ellipsoid, EllipsoidPatch, Point3d, Range1d, Range3d, Ray3d, Transform, Vector3d, XYZProps,
+} from "@bentley/geometry-core";
+import {
+  BackgroundMapSettings, BaseLayerSettings, Cartographic, ColorDef, GeoCoordStatus, GlobeMode, MapLayerSettings, PlanarClipMaskPriority,
+  TerrainHeightOriginMode, TerrainProviderName,
+} from "@bentley/imodeljs-common";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
 import { BackgroundMapGeometry } from "../../BackgroundMapGeometry";
 import { TerrainDisplayOverrides } from "../../DisplayStyleState";
@@ -20,7 +25,12 @@ import { PlanarClipMaskState } from "../../PlanarClipMaskState";
 import { FeatureSymbology } from "../../render/FeatureSymbology";
 import { SceneContext } from "../../ViewContext";
 import { ScreenViewport } from "../../Viewport";
-import { BingElevationProvider, createDefaultViewFlagOverrides, EllipsoidTerrainProvider, getCesiumTerrainProvider, ImageryMapLayerTreeReference, ImageryMapTileTree, MapCartoRectangle, MapTile, MapTileLoader, MapTilingScheme, PlanarTilePatch, QuadId, RealityTileDrawArgs, RealityTileTree, RealityTileTreeParams, Tile, TileDrawArgs, TileLoadPriority, TileParams, TileTree, TileTreeOwner, TileTreeReference, TileTreeSet, TileTreeSupplier, UpsampledMapTile, WebMercatorTilingScheme } from "../internal";
+import {
+  BingElevationProvider, createDefaultViewFlagOverrides, EllipsoidTerrainProvider, getCesiumTerrainProvider, ImageryMapLayerTreeReference,
+  ImageryMapTileTree, MapCartoRectangle, MapTile, MapTileLoader, MapTilingScheme, PlanarTilePatch, QuadId, RealityTileDrawArgs, RealityTileTree,
+  RealityTileTreeParams, Tile, TileDrawArgs, TileLoadPriority, TileParams, TileTree, TileTreeOwner, TileTreeReference, TileTreeSet, TileTreeSupplier,
+  UpsampledMapTile, WebMercatorTilingScheme,
+} from "../internal";
 import { TileTreeLoadStatus } from "../TileTree";
 
 const scratchPoint = Point3d.create();
@@ -511,7 +521,7 @@ export class MapTileTreeReference extends TileTreeReference {
         this._imageryTrees.push(tree);
 
     if (this._settings.planarClipMask && this._settings.planarClipMask.anyDefined)
-      this._planarClipMask = PlanarClipMaskState.create(this._settings.planarClipMask)
+      this._planarClipMask = PlanarClipMaskState.create(this._settings.planarClipMask);
   }
   public get isGlobal() { return true; }
   public get baseColor(): ColorDef | undefined { return this._baseColor; }
@@ -654,7 +664,6 @@ export class MapTileTreeReference extends TileTreeReference {
     const tree = this.treeOwner.load() as MapTileTree;
     if (undefined === tree || !this.initializeImagery())
       return;     // Not loaded yet.
-
 
     if (this._planarClipMask)
       context.addPlanarClassifier(tree.modelId, undefined, this._planarClipMask);

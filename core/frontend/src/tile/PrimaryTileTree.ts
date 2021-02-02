@@ -9,24 +9,18 @@
 import { assert, compareStrings, Id64String } from "@bentley/bentleyjs-core";
 import { Range3d, StringifiedClipVector, Transform } from "@bentley/geometry-core";
 import {
-  BatchType,
-  compareIModelTileTreeIds,
-  FeatureAppearance,
-  FeatureAppearanceProvider,
-  HiddenLine,
-  iModelTileTreeIdToString,
-  PrimaryTileTreeId,
+  BatchType, compareIModelTileTreeIds, FeatureAppearance, FeatureAppearanceProvider, HiddenLine, iModelTileTreeIdToString, PrimaryTileTreeId,
   ViewFlagOverrides,
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
+import { InteractiveEditingSession } from "../InteractiveEditingSession";
 import { GeometricModel3dState, GeometricModelState } from "../ModelState";
 import { RenderClipVolume } from "../render/RenderClipVolume";
+import { RenderScheduleState } from "../RenderScheduleState";
+import { SpatialViewState } from "../SpatialViewState";
 import { SceneContext } from "../ViewContext";
 import { ViewState, ViewState3d } from "../ViewState";
-import { SpatialViewState } from "../SpatialViewState";
-import { RenderScheduleState } from "../RenderScheduleState";
-import { InteractiveEditingSession } from "../InteractiveEditingSession";
 import {
   IModelTileTree, IModelTileTreeParams, iModelTileTreeParamsFromJSON, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
   TileTreeSupplier,
@@ -356,7 +350,6 @@ export function createPrimaryTileTreeReference(view: ViewState, model: Geometric
   return createTreeRef(view, model, undefined);
 }
 
-
 class MaskTreeReference extends TileTreeReference {
   protected _id: PrimaryTreeId;
   private _owner: TileTreeOwner;
@@ -379,10 +372,9 @@ class MaskTreeReference extends TileTreeReference {
     return this._owner;
   }
   protected createTreeId(): PrimaryTileTreeId {
-    return { type: BatchType.Primary, edgesRequired: false, };
+    return { type: BatchType.Primary, edgesRequired: false };
   }
 }
-
 
 /** @internal */
 export function createMaskTreeReference(model: GeometricModelState): TileTreeReference {
