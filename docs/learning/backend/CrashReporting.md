@@ -25,7 +25,7 @@ To opt into crash dumps, the backend program must:
 
 ## Unhandled Exceptions and Other Fatal Errors
 
-An unhandled exception or a fatal error such as running out of memory will cause the backend program to terminate prematurely. The backend program can enable the "node-report" module to generate a report in case of these events. A node-report file is a human-readable text file that includes native-code and Javascript call stacks, plus other information about the state of the session. See https://www.npmjs.com/package/node-report for details.
+An unhandled exception or a fatal error such as running out of memory will cause the backend program to terminate prematurely. The backend program can enable the "node-report" module to generate a report in case of these events. A node-report file is a human-readable text file that includes native-code and Javascript call stacks, plus other information about the state of the session. See <https://www.npmjs.com/package/node-report> for details.
 
 To opt into node-report, the backend program must:
 
@@ -45,12 +45,12 @@ If you set [IModelHostConfiguration]($backend).crashReportingConfig.uploadToBent
 ## Example Code
 
 ```ts
-  // Enable both crash dumps and node-report. Write reports to d://customdumpdir on Windows
-  hostConfig.crashReportingConfig = {
-    crashDir: (process.platform == "win32")? "d:\\customdumpdir": "/tmp";
-    writeDumpsToCrashDir: true,
-    writeNodeReportsToCrashDir: true,
-  };
+// Enable both crash dumps and node-report. Write reports to d://customdumpdir on Windows
+hostConfig.crashReportingConfig = {
+  crashDir: (process.platform == "win32")? "d:\\customdumpdir": "/tmp";
+  writeDumpsToCrashDir: true,
+  writeNodeReportsToCrashDir: true,
+};
 
-  IModelHost.startup(hostConfig);
+IModelHost.startup(hostConfig);
 ```

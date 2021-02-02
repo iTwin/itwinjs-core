@@ -4,12 +4,12 @@ Get started with iModel.js in your local environment. It is free, with no iTwin 
 
 [Snapshot iModels]($docs/learning/backend/accessingimodels.md/#snapshot-imodels) are a static but intelligent format representing the state of an iModel at a point in time. Once created, they can not be modified. And do not have a connection with iModelHub.
 
-
 ## Download iTwin Snapshot
 
 Download and familiarize yourself with the [iTwin Snapshot]($docs/learning/tutorials/itwin-snapshot-app.md), a free tool for creating snapshots.
 
 ## Create a snapshot iModel
+
 1. Launch Snapshot App
 1. Sign In (Optional)
 1. Select "Create snapshot"
