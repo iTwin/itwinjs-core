@@ -36,7 +36,7 @@ export class TestChangeSetUtility {
     this.projectId = await HubUtility.queryProjectIdByName(this._requestContext, this._projectName);
   }
 
-  public async addTestModel(): Promise<void> {
+  private async addTestModel(): Promise<void> {
     this._iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: this._requestContext, contextId: this.projectId, iModelId: this.iModelId });
     this._iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
     [, this._modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(this._iModel, IModelTestUtils.getUniqueModelCode(this._iModel, "TestPhysicalModel"), true);
@@ -44,7 +44,7 @@ export class TestChangeSetUtility {
     this._iModel.saveChanges("Added test model");
   }
 
-  public async addTestCategory(): Promise<void> {
+  private async addTestCategory(): Promise<void> {
     this._categoryId = SpatialCategory.insert(this._iModel, IModel.dictionaryId, "TestSpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
     await this._iModel.concurrencyControl.request(this._requestContext);
     this._iModel.saveChanges("Added test category");
