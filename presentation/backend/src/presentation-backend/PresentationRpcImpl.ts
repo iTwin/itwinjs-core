@@ -250,7 +250,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
         this.getManager(requestOptions.clientId).getContent(options),
       ]);
       if (content)
-        return { size: size!, content: content.toJSON() };
+        return { size, content: content.toJSON() };
       return { size: 0, content: undefined };
     });
   }
@@ -283,7 +283,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
       return {
         descriptor: content.descriptor.toJSON(),
         contentSet: {
-          total: size!,
+          total: size,
           items: content.contentSet.map((i) => i.toJSON()),
         },
       };

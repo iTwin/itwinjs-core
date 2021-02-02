@@ -32,7 +32,7 @@ export abstract class IntrospectionResponseCache {
     }
   }
 
-  protected abstract async storeResponse(key: string, response: IntrospectionResponse): Promise<void>;
+  protected abstract storeResponse(key: string, response: IntrospectionResponse): Promise<void>;
 
   /**
    * Gets the User token for the given key.
@@ -43,7 +43,7 @@ export abstract class IntrospectionResponseCache {
     return this.getResponse(key);
   }
 
-  protected abstract async getResponse(key: string): Promise<IntrospectionResponse | undefined>;
+  protected abstract getResponse(key: string): Promise<IntrospectionResponse | undefined>;
 
   /**
    * Removes the token with the given key from the cache.
@@ -53,7 +53,7 @@ export abstract class IntrospectionResponseCache {
     await this.deleteResponse(key);
   }
 
-  protected abstract async deleteResponse(key: string): Promise<void>;
+  protected abstract deleteResponse(key: string): Promise<void>;
 }
 
 /** @alpha */

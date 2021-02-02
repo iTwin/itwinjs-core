@@ -146,7 +146,7 @@ export abstract class GltfReader {
   ------------------------------------- */
 
   /** Asynchronously deserialize the tile data and return the result. */
-  public async abstract read(): Promise<GltfReaderResult>;
+  public abstract read(): Promise<GltfReaderResult>;
 
   protected get _isCanceled(): boolean { return undefined !== this._canceled && this._canceled(this); }
   protected get _isVolumeClassifier(): boolean { return BatchType.VolumeClassifier === this._type; }

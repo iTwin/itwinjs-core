@@ -38,6 +38,7 @@ export class DesktopAuthorizationClient implements FrontendAuthorizationClient {
   }
 
   /** Create strongly typed access token from untyped object */
+  private createAccessToken<T>(accessTokenObj: T): T extends undefined | false | null ? undefined : AccessToken;
   private createAccessToken(accessTokenObj: any): AccessToken | undefined {
     if (!accessTokenObj)
       return undefined;

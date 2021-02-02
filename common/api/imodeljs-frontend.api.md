@@ -5935,7 +5935,7 @@ export class NativeApp extends ResponseHandler implements NativeAppResponse {
     // (undocumented)
     static onUserStateChanged: BeEvent<(_arg: {
         accessToken: any;
-        err?: string | undefined;
+        err?: string;
     }) => void>;
     // (undocumented)
     static openBriefcase(briefcaseProps: OpenBriefcaseProps): Promise<LocalBriefcaseConnection>;
@@ -6543,7 +6543,8 @@ export abstract class PrimitiveTool extends InteractiveTool {
     // (undocumented)
     targetIsLocked: boolean;
     // (undocumented)
-    targetModelId?: string;
+    get targetModelId(): string | undefined;
+    set targetModelId(v: string | undefined);
     // (undocumented)
     targetView?: Viewport;
     // @internal (undocumented)

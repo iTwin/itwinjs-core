@@ -593,7 +593,7 @@ export class BeInspireTree<TNodePayload> {
   public updateNodesSelection(nodes: BeInspireTreeNodes<TNodePayload> | Inspire.TreeNodes, nodesToSelect?: string[] | ((payload: TNodePayload) => boolean), muteEvents = true) {
     const selectFunc = (predicate: Inspire.NodeIteratee) => {
       let filtered: Inspire.TreeNode[];
-      if ((nodes as Inspire.TreeNodes).filterBy)
+      if ((nodes as Inspire.TreeNodes).filterBy !== undefined)
         filtered = (nodes as Inspire.TreeNodes).filterBy(predicate).map((n) => n);
       else
         filtered = (nodes as BeInspireTreeNodes<TNodePayload>).filter(predicate);

@@ -2583,7 +2583,7 @@ export const getExtendedZone: (zoneId: WidgetZoneId, zones: ZonesManagerProps, d
 export function getFeatureOverrideSyncEventIds(): string[];
 
 // @internal (undocumented)
-export const getFirstItem: (groupItemDef: GroupItemDef) => ActionButtonItemDef | import("../shared/CommandItemDef").CommandItemDef | import("../shared/ToolItemDef").ToolItemDef | GroupItemDef | undefined;
+export const getFirstItem: (groupItemDef: GroupItemDef) => AnyItemDef | undefined;
 
 // @internal (undocumented)
 export const getFirstItemId: (groupItemDef: GroupItemDef) => string;
@@ -3036,7 +3036,8 @@ export abstract class ItemDefBase {
     // (undocumented)
     static initializeDef(me: ItemDefBase, itemProps: ItemProps): void;
     // (undocumented)
-    isActive: boolean;
+    get isActive(): boolean;
+    set isActive(v: boolean);
     // (undocumented)
     isDisabled?: boolean | ConditionalBooleanValue;
     // @deprecated (undocumented)
@@ -6368,7 +6369,7 @@ export function useFrameworkVersion(): FrameworkVersion;
 export function useFrontstageManager(frontstageDef: FrontstageDef): void;
 
 // @internal (undocumented)
-export const useGroupedItems: (items: readonly BackstageItem[]) => GroupedItems;
+export const useGroupedItems: (items: ReadonlyArray<BackstageItem>) => GroupedItems;
 
 // @internal (undocumented)
 export function useHorizontalToolSettingNodes(): ToolSettingsEntry[] | undefined;

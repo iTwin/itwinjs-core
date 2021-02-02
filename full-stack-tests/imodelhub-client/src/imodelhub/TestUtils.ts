@@ -688,9 +688,9 @@ export function mockCreateVersion(imodelId: GuidString, name?: string, changeset
     return;
 
   const requestPath = createRequestUrl(ScopeType.iModel, imodelId.toString(), "Version");
-  const postBodyObject = generateVersion(name, changesetId, false);
+  const postBodyObject: Partial<Version> = generateVersion(name, changesetId, false);
   delete (postBodyObject.wsgId);
-  const postBody = ResponseBuilder.generatePostBody<Version>(postBodyObject);
+  const postBody = ResponseBuilder.generatePostBody<Version>(postBodyObject as Version);
   const requestResponse = ResponseBuilder.generatePostResponse<Version>(generateVersion(name, changesetId, true));
   ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse, 1, postBody);
 }

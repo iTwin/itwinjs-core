@@ -21,7 +21,7 @@ export class SimpleTableDataProvider implements MutableTableDataProvider {
   private _items: RowItem[];
   private _rowItemIndices: number[];     // Used for both filtering and sorting
   private _columns: ColumnDescription[];
-  private _secondarySortColumnStack: number[];
+  private _secondarySortColumnStack?: number[];
   private _sortDirection: SortDirection = SortDirection.NoSort;
   private _sortColumnIndex: number = -1;
   private _filterDescriptors?: CompositeFilterDescriptorCollection;
@@ -136,7 +136,8 @@ export class SimpleTableDataProvider implements MutableTableDataProvider {
     // Secondary sort column support
     // istanbul ignore else
     const column = this._columns[columnIndex];
-    if (column.secondarySortColumn !== undefined &&
+    if (this._secondarySortColumnStack !== undefined &&
+      column.secondarySortColumn !== undefined &&
       column.secondarySortColumn !== columnIndex &&
       this._secondarySortColumnStack.indexOf(column.secondarySortColumn) < 0) {
 

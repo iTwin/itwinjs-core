@@ -120,7 +120,7 @@ export abstract class RpcRequest<TResponse = any> {
   private _raw: ArrayBuffer | string | undefined = undefined;
   private _sending?: Cancellable<number>;
   protected _response: Response | undefined = undefined;
-  protected _rawPromise: Promise<Response>;
+  protected _rawPromise: Promise<Response | undefined>;
 
   /** All RPC requests that are currently in flight. */
   public static get activeRequests(): ReadonlyMap<string, RpcRequest> { return this._activeRequests; }
@@ -158,7 +158,7 @@ export abstract class RpcRequest<TResponse = any> {
   public readonly protocol: RpcProtocol;
 
   /** The implementation response for this request. */
-  public readonly response: Promise<TResponse>;
+  public readonly response: Promise<TResponse | undefined>;
 
   /** The status of this request. */
   public get status() { return this._status; }
@@ -225,7 +225,7 @@ export abstract class RpcRequest<TResponse = any> {
   }
 
   /** The raw implementation response for this request. */
-  public get rawResponse(): Promise<Response> {
+  public get rawResponse(): Promise<Response | undefined> {
     this._hasRawListener = true;
     return this._rawPromise;
   }

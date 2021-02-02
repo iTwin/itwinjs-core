@@ -910,7 +910,7 @@ export namespace Editors {
       if (koqProps.name === undefined) return { errorMessage: `No name was supplied within props.` };
       const newKoQ = (await schema.createKindOfQuantity(koqProps.name)) as MutableKindOfQuantity;
       if (newKoQ === undefined) {
-        return { errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.` };
+        return { errorMessage: `Failed to create class ${koqProps.name} in schema ${schemaKey.toString(true)}.` };
       }
 
       await newKoQ.fromJSON(koqProps);

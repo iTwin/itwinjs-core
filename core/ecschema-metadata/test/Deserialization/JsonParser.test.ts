@@ -241,7 +241,7 @@ describe("JsonParser", () => {
     });
 
     it("should throw for missing type", () => {
-      const json = {
+      const json: Partial<typeof baseJson> = {
         ...baseJson,
       };
       delete json.type;

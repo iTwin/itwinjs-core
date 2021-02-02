@@ -1144,7 +1144,7 @@ export abstract class IModelDb extends IModel {
           if (ret.error !== undefined)
             reject(new Error(ret.error.message));
           else
-            resolve(ret.result);
+            resolve(ret.result!);
         });
       }
     });
@@ -1172,7 +1172,7 @@ export abstract class IModelDb extends IModel {
           if (ret.error !== undefined)
             reject(new Error(ret.error.message));
           else
-            resolve(ret.result);
+            resolve(ret.result!);
         });
       }
     });

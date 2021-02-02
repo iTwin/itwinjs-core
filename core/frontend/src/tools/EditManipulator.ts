@@ -10,13 +10,13 @@ import { AxisOrder, Geometry, Matrix3d, Plane3dByOriginAndUnitNormal, Point3d, R
 import { ColorDef, Npc } from "@bentley/imodeljs-common";
 import { AccuDraw } from "../AccuDraw";
 import { TentativeOrAccuSnap } from "../AccuSnap";
+import { CoordSystem } from "../CoordSystem";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { SelectionSetEvent } from "../SelectionSet";
 import { StandardViewId } from "../StandardView";
 import { DecorateContext } from "../ViewContext";
-import { CoordSystem } from "../CoordSystem";
 import { Viewport } from "../Viewport";
 import { BeButton, BeButtonEvent, BeTouchEvent, CoordinateLockOverrides, EventHandled, InputCollector, InputSource, Tool } from "./Tool";
 import { ManipulatorToolEvent } from "./ToolAdmin";
@@ -119,7 +119,7 @@ export namespace EditManipulator {
     /** Provider is responsible for checking if modification by controls is valid.
      * May still wish to present controls for "transient" geometry in non-read/write applications, etc.
      */
-    protected abstract async createControls(): Promise<boolean>;
+    protected abstract createControls(): Promise<boolean>;
 
     protected async updateControls(): Promise<void> {
       const created = await this.createControls();

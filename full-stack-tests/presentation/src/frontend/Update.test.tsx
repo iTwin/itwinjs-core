@@ -64,7 +64,7 @@ describe("Update", () => {
         const nodeSubscriptions = new Array<Subscription>();
         for (let i = 0; i < numChildren; ++i)
           nodeSubscriptions.push(loader.loadNode(parent, i).subscribe());
-        await new Promise<string[]>((resolve) => {
+        await new Promise<void>((resolve) => {
           from(nodeSubscriptions).subscribe({
             complete: resolve,
           });

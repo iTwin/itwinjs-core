@@ -87,10 +87,10 @@ export abstract class Tile {
   protected abstract _loadChildren(resolve: (children: Tile[] | undefined) => void, reject: (error: Error) => void): void;
 
   /** Return a Promise that resolves to the raw data representing this tile's content. */
-  public abstract async requestContent(isCanceled: () => boolean): Promise<TileRequest.Response>;
+  public abstract requestContent(isCanceled: () => boolean): Promise<TileRequest.Response>;
 
   /** Return a Promise that deserializes this tile's content from raw format produced by [[requestContent]]. */
-  public abstract async readContent(data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<TileContent>;
+  public abstract readContent(data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<TileContent>;
 
   /** Constructor */
   protected constructor(params: TileParams, tree: TileTree) {

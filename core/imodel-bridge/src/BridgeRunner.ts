@@ -219,12 +219,12 @@ abstract class IModelDbBuilder {
     this._jobSubjectName = this._bridge.getJobSubjectName(this._bridgeArgs.sourcePath!);
   }
 
-  public async abstract initialize(): Promise<void>;
-  public async abstract acquire(): Promise<void>;
+  public abstract initialize(): Promise<void>;
+  public abstract acquire(): Promise<void>;
 
-  protected async abstract _updateExistingData(): Promise<void>;
-  protected async abstract _initDomainSchema(): Promise<void>;
-  protected async abstract _importDefinitions(): Promise<void>;
+  protected abstract _updateExistingData(): Promise<void>;
+  protected abstract _initDomainSchema(): Promise<void>;
+  protected abstract _importDefinitions(): Promise<void>;
 
   protected getRevisionComment(pushComments: string): string {
     let comment = "";
@@ -281,7 +281,7 @@ abstract class IModelDbBuilder {
     assert(!this._imodel.txns.hasLocalChanges);
   }
 
-  protected abstract async _enterChannel(channelRootId: Id64String, lockRoot?: boolean): Promise<void>;
+  protected abstract _enterChannel(channelRootId: Id64String, lockRoot?: boolean): Promise<void>;
 
   public async updateExistingData(): Promise<void> {
     await this._updateExistingData();

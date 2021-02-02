@@ -202,7 +202,7 @@ describe("MomentData", () => {
         GeometryCoreTestIO.showMomentData(allGeometry, rawSums, true, x0, y0, 0);
         // GeometryCoreTestIO.showMomentData(allGeometry, principalMoments, true, x0, y0, 0);
         if (g instanceof CurveCollection) {
-          const strokes = g.cloneStroked(strokeOptions);
+          const strokes = (g as CurveCollection).cloneStroked(strokeOptions);
           const strokeSums = RegionOps.computeXYZWireMomentSums(strokes)!;
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, strokes, x0, y0 + dy, 0);
           GeometryCoreTestIO.showMomentData(allGeometry, strokeSums, true, x0, y0 + dy, 0);

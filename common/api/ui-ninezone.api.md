@@ -2900,13 +2900,21 @@ export function useLabel(labelKey: keyof NineZoneLabels): string | undefined;
 export function useMode(widgetId: string): "fit" | "fill" | "minimized";
 
 // @internal
-export function useOverflow(children: React.ReactNode, activeChildIndex?: number): [ReadonlyArray<string> | undefined, (size: number) => void, (size: number) => void, (key: string) => (size: number) => void];
+export function useOverflow(children: React.ReactNode, activeChildIndex?: number): [
+    ReadonlyArray<string> | undefined,
+    (size: number) => void,
+    (size: number) => void,
+    (key: string) => (size: number) => void
+];
 
 // @internal (undocumented)
 export function usePanelsAutoCollapse<T extends Element>(): React.Ref<T>;
 
 // @internal (undocumented)
-export function usePanelTarget<T extends Element>(args: UsePanelTargetArgs): [React.Ref<T>, boolean];
+export function usePanelTarget<T extends Element>(args: UsePanelTargetArgs): [
+    React.Ref<T>,
+    boolean
+];
 
 // @internal (undocumented)
 export interface UsePanelTargetArgs {
@@ -2936,7 +2944,10 @@ export interface UserProfileProps extends CommonProps {
 }
 
 // @internal (undocumented)
-export function useTabTarget<T extends Element>(args: UseTabTargetArgs): [React.Ref<T>, boolean];
+export function useTabTarget<T extends Element>(args: UseTabTargetArgs): [
+    React.Ref<T>,
+    boolean
+];
 
 // @internal (undocumented)
 export interface UseTabTargetArgs {
@@ -2956,7 +2967,10 @@ export function useToolSettingsEntry(): DockedToolSettingsEntryContextArgs;
 export function useTransientState(onSave?: () => void, onRestore?: () => void): void;
 
 // @internal (undocumented)
-export function useWidgetTarget<T extends Element>(args: UseWidgetTargetArgs): [React.Ref<T>, boolean];
+export function useWidgetTarget<T extends Element>(args: UseWidgetTargetArgs): [
+    React.Ref<T>,
+    boolean
+];
 
 // @internal (undocumented)
 export interface UseWidgetTargetArgs {

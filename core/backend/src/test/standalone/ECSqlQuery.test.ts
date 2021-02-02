@@ -66,7 +66,7 @@ describe("ECSql Query", () => {
     let successful = 0;
     let rowCount = 0;
     const cb = async () => {
-      return new Promise(async (resolve, reject) => {
+      return new Promise<void>(async (resolve, reject) => {
         try {
           // eslint-disable-next-line @typescript-eslint/naming-convention
           for await (const _row of imodel1.restartQuery("tag", "SELECT ECInstanceId as Id, Parent.Id as ParentId FROM BisCore.element")) {

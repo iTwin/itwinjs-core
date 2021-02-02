@@ -19,7 +19,9 @@ import { BeButton, BeButtonEvent, CoordinateLockOverrides, CoreTools, Interactiv
  */
 export abstract class PrimitiveTool extends InteractiveTool {
   public targetView?: Viewport;
-  public targetModelId?: string;
+  private _targetModelId?: string;
+  public get targetModelId() { return this._targetModelId; }
+  public set targetModelId(v: string | undefined) { this._targetModelId = v; }
   public targetIsLocked: boolean = false; // If target model is known, set this to true in constructor and override getTargetModel.
 
   /** Get the iModel the tool is operating against. */

@@ -247,7 +247,6 @@ beta;LoadedNodeHierarchy
 beta;LoadedNodeHierarchyItem
 internal;MapMode
 public;MapPayloadToInspireNodeCallback
-public;matchLinks: (text: string) =>
 internal;MenuItem
 alpha;Milestone
 alpha;MilestoneRange

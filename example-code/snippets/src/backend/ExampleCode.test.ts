@@ -31,7 +31,7 @@ describe("Example Code", () => {
   async function asyncFunctionCallsAsync(requestContext: ClientRequestContext): Promise<void> {
     requestContext.enter();        // Rule: A Promise-returning function enters the ClientRequestContext on the first line.
 
-    await new Promise((resolve) => {
+    await new Promise<void>((resolve) => {
       setTimeout(() => {
         requestContext.enter(); // Rule: Enter the client request context of the enclosing JavaScript scope in the callback.
         Logger.logTrace("cat", "callback invoked");

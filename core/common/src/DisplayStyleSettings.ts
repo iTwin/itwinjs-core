@@ -15,6 +15,7 @@ import { XYZProps } from "@bentley/geometry-core";
 import { AmbientOcclusion } from "./AmbientOcclusion";
 import { AnalysisStyle, AnalysisStyleProps } from "./AnalysisStyle";
 import { BackgroundMapProps, BackgroundMapSettings } from "./BackgroundMapSettings";
+import { ClipStyle, ClipStyleProps } from "./ClipStyle";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 import { DefinitionElementProps } from "./ElementProps";
 import { GroundPlaneProps } from "./GroundPlane";
@@ -30,7 +31,6 @@ import { SpatialClassificationProps } from "./SpatialClassificationProps";
 import { SubCategoryAppearance } from "./SubCategoryAppearance";
 import { ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps } from "./ThematicDisplay";
 import { ViewFlagProps, ViewFlags } from "./ViewFlags";
-import { ClipStyle, ClipStyleProps } from "./ClipStyle";
 
 /** Describes the [[SubCategoryOverride]]s applied to a [[SubCategory]] by a [[DisplayStyle]].
  * @see [[DisplayStyleSettingsProps]]
@@ -789,7 +789,7 @@ export class DisplayStyleSettings {
       };
     }
 
-    const viewflags = this.viewFlags.toFullyDefinedJSON();
+    const viewflags: Partial<ViewFlagProps> = this.viewFlags.toFullyDefinedJSON();
     const props: DisplayStyleSettingsProps = {
       viewflags,
       backgroundColor: this.backgroundColor.toJSON(),

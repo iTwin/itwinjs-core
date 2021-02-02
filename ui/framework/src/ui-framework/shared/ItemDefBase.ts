@@ -35,7 +35,9 @@ export abstract class ItemDefBase {
   /** @deprecated */
   public isEnabled: boolean = true;
   public isPressed: boolean = false;
-  public isActive: boolean = false;
+  private _isActive: boolean = false;
+  public get isActive(): boolean { return this._isActive; }
+  public set isActive(v: boolean) { this._isActive = v; }
   public applicationData?: any;
 
   public isHidden?: boolean | ConditionalBooleanValue;

@@ -70,7 +70,7 @@ function debugPrint(msg: string): void {
 }
 
 async function resolveAfterXMilSeconds(ms: number) {
-  return new Promise((resolve) => {
+  return new Promise<void>((resolve) => {
     setTimeout(() => {
       resolve();
     }, ms);

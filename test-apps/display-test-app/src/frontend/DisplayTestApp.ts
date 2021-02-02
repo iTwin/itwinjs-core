@@ -310,7 +310,7 @@ async function initView(iModel: IModelConnection | undefined) {
 
 // Set up the HTML UI elements and wire them to our functions
 async function displayUi() {
-  return new Promise(async (resolve) => { // eslint-disable-line @typescript-eslint/no-misused-promises
+  return new Promise<void>(async (resolve) => { // eslint-disable-line @typescript-eslint/no-misused-promises
     showSpinner();
     resolve();
   });

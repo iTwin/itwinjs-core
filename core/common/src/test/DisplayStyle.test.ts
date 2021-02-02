@@ -335,7 +335,7 @@ describe("DisplayStyleSettings overrides", () => {
 
     const viewflags = ViewFlags.fromJSON(baseProps.viewflags).toFullyDefinedJSON();
 
-    const vfNoMapNoDec = { ...viewflags };
+    const vfNoMapNoDec: Partial<typeof viewflags> = { ...viewflags };
     delete vfNoMapNoDec.acs;
     delete vfNoMapNoDec.grid;
     delete vfNoMapNoDec.backgroundMap;

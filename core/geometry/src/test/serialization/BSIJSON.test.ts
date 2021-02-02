@@ -66,7 +66,7 @@ function isDifferentTypeName(obj: object, noisy: boolean = false): boolean {
   if (obj.constructor) {
     if (obj.constructor !== previousConstructor) {
       if (noisy)
-        console.log("First ", name);
+        console.log("First ", obj.constructor.name);
       previousConstructor = obj.constructor;
       return true;
     }

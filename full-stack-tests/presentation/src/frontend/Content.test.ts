@@ -408,7 +408,7 @@ describe("Content", () => {
 
   describe("when request in the backend exceeds the backend timeout time", () => {
 
-    let raceStub: sinon.SinonStub<[Iterable<unknown>], Promise<unknown>>;
+    let raceStub: sinon.SinonStub<[readonly unknown[]], Promise<unknown>>;
 
     beforeEach(async () => {
       // re-initialize to set backend response timeout to 500 ms

@@ -258,37 +258,37 @@ export class MarkupApp {
             size: number;
             stretch: {
                 "fill-opacity": number;
-                "stroke": string;
-                "fill": string;
+                stroke: string;
+                fill: string;
             };
             rotateLine: {
-                "stroke": string;
+                stroke: string;
                 "fill-opacity": number;
             };
             rotate: {
-                "cursor": string;
+                cursor: string;
                 "fill-opacity": number;
-                "stroke": string;
-                "fill": string;
+                stroke: string;
+                fill: string;
             };
             moveOutline: {
-                "cursor": string;
+                cursor: string;
                 "stroke-dasharray": string;
-                "fill": string;
+                fill: string;
                 "stroke-opacity": number;
-                "stroke": string;
+                stroke: string;
             };
             move: {
-                "cursor": string;
-                "opacity": number;
+                cursor: string;
+                opacity: number;
                 "stroke-width": number;
-                "stroke": string;
+                stroke: string;
             };
             vertex: {
-                "cursor": string;
+                cursor: string;
                 "fill-opacity": number;
-                "stroke": string;
-                "fill": string;
+                stroke: string;
+                fill: string;
             };
         };
         hilite: {
@@ -298,9 +298,9 @@ export class MarkupApp {
         dropShadow: {
             enable: boolean;
             attr: {
-                "stdDeviation": number;
-                "dx": number;
-                "dy": number;
+                stdDeviation: number;
+                dx: number;
+                dy: number;
                 "flood-color": string;
             };
         };
@@ -308,17 +308,17 @@ export class MarkupApp {
             text: {
                 "font-family": string;
                 "font-size": string;
-                "stroke": string;
-                "fill": string;
+                stroke: string;
+                fill: string;
             };
             element: {
-                "stroke": string;
+                stroke: string;
                 "stroke-opacity": number;
                 "stroke-width": number;
                 "stroke-dasharray": number;
                 "stroke-linecap": string;
                 "stroke-linejoin": string;
-                "fill": string;
+                fill: string;
                 "fill-opacity": number;
             };
             arrow: {
@@ -339,24 +339,24 @@ export class MarkupApp {
                 };
                 fontSize: string;
                 textBox: {
-                    "fill": string;
+                    fill: string;
                     "fill-opacity": number;
                     "stroke-opacity": number;
-                    "stroke": string;
+                    stroke: string;
                 };
             };
         };
         borderOutline: {
-            "stroke": string;
+            stroke: string;
             "stroke-width": number;
             "stroke-opacity": number;
-            "fill": string;
+            fill: string;
         };
         borderCorners: {
-            "stroke": string;
+            stroke: string;
             "stroke-width": number;
             "stroke-opacity": number;
-            "fill": string;
+            fill: string;
             "fill-opacity": number;
         };
         result: {
