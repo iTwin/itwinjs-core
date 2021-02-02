@@ -127,7 +127,7 @@ describe("RelationshipRule tests", () => {
 
     it("no base class, rule passes", async () => {
       const baseJson = createBaseRelationship(true, { constraintClasses: ["TestSchema.SBE1"] }, { constraintClasses: ["TestSchema.TBE1"] });
-      const childJson = createChildRelationship(true, { constraintClasses: ["TestSchema.SDE1", "TestSchema.SDE2"] }, { constraintClasses: ["TestSchema.TDE1", "TestSchema.TDE2"] });
+      const childJson: any = createChildRelationship(true, { constraintClasses: ["TestSchema.SDE1", "TestSchema.SDE2"] }, { constraintClasses: ["TestSchema.TDE1", "TestSchema.TDE2"] });
       delete childJson.ChildRelationship.baseClass;
       schema = await Schema.fromJson(createSchemaJson(baseJson, childJson), new SchemaContext());
       const relationship = schema.getItemSync("ChildRelationship") as RelationshipClass;
@@ -202,7 +202,7 @@ describe("RelationshipRule tests", () => {
 
     it("no base class, rule passes", async () => {
       const baseJson = createBaseRelationship(true, { constraintClasses: ["TestSchema.SBE1"] }, { constraintClasses: ["TestSchema.TBE1"] });
-      const childJson = createChildRelationship(true, { constraintClasses: ["TestSchema.SDE1", "TestSchema.SDE2"] }, { constraintClasses: ["TestSchema.TDE1", "TestSchema.TDE2"] });
+      const childJson: any = createChildRelationship(true, { constraintClasses: ["TestSchema.SDE1", "TestSchema.SDE2"] }, { constraintClasses: ["TestSchema.TDE1", "TestSchema.TDE2"] });
       delete childJson.ChildRelationship.baseClass;
       schema = await Schema.fromJson(createSchemaJson(baseJson, childJson), new SchemaContext());
       const relationship = schema.getItemSync("ChildRelationship") as RelationshipClass;
