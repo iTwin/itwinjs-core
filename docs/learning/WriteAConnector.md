@@ -1,6 +1,6 @@
 # Write an iModel Connector
 
-As explained in the [overview](../learning/imodel-bridges.md), a "connector" is a program that:
+As explained in the [overview](../learning/imodel-connectors.md), a "connector" is a program that:
 
 1. Reads information from a data source,
 2. Aligns the source data with the BIS schema and preferably a domain schema, and
@@ -15,7 +15,7 @@ Specifically, a connector must:
 * Convert Changed Data
   * Connect to the data source.
   * Detect changes to the source data.
-  * [Transform](../learning/imodel-bridges.md#data-alignment) the new or changed source data into the target BIS schema.
+  * [Transform](../learning/imodel-connectors.md#data-alignment) the new or changed source data into the target BIS schema.
   * Write the resulting BIS data to the local briefcase.
   * Remove BIS data corresponding to deleted source data.
   * Obtain required [Locks and Codes](./backend/ConcurrencyControl.md) from the iModel server and/or code server.
