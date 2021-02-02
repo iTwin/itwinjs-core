@@ -5,7 +5,7 @@
 import { ReactWrapper, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import * as useTargetedModule from "@bentley/ui-core";
+import * as useTargetedModule from "@bentley/ui-core/lib/ui-core/utils/hooks/useTargeted";
 import { WidgetTarget, WidgetTargetProps } from "../../../ui-ninezone/zones/target/Target";
 import { mount } from "../../Utils";
 

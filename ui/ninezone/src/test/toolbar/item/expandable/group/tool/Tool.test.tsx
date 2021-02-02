@@ -5,7 +5,7 @@
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import * as useTargetedModule from "@bentley/ui-core";
+import * as useTargetedModule from "@bentley/ui-core/lib/ui-core/utils/hooks/useTargeted";
 import { GroupTool } from "../../../../../../ui-ninezone";
 import { mount } from "../../../../../Utils";
 
