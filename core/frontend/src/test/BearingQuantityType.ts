@@ -3,11 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Logger } from "@bentley/bentleyjs-core";
-import { CheckboxFormatPropEditorSpec, CustomFormatPropEditorSpec, CustomQuantityTypeDefinition, IModelApp, TextSelectFormatPropEditorSpec, UnitSystemKey } from "@bentley/imodeljs-frontend";
 import {
   CustomFormatProps, Format, FormatProps, FormatterSpec, Parser, ParseResult, ParserSpec, QuantityStatus, UnitConversionSpec, UnitProps, UnitsProvider,
 } from "@bentley/imodeljs-quantity";
+import { CheckboxFormatPropEditorSpec, CustomFormatPropEditorSpec, CustomQuantityTypeDefinition, TextSelectFormatPropEditorSpec, UnitSystemKey } from "../QuantityFormatter";
 
 export interface BearingFormatProps extends CustomFormatProps {
   readonly custom: {
@@ -154,12 +153,13 @@ export class BearingQuantityType implements CustomQuantityTypeDefinition {
   private  _key = "Bearing";  // key and type should be the same unless a QuantityType enum is specified in _type
   private _type = "Bearing";
   private _persistenceUnitName = "Units.RAD";
-  private _persistenceUnit: UnitProps|undefined;
   private _labelKey = "SampleApp:BearingQuantityType.label";
   private _descriptionKey = "SampleApp:BearingQuantityType.description";
   private _label: string|undefined;
   private _description: string|undefined;
   private _formatProps = defaultBearingFormat;
+
+  constructor(private _persistenceUnit: UnitProps) {}
 
   public get key(): string { return this._key; }
   public get type(): string { return this._type; }
@@ -184,20 +184,14 @@ export class BearingQuantityType implements CustomQuantityTypeDefinition {
 
   public get label(): string {
     if (!this._label) {
-      if (this._labelKey)
-        this._label = IModelApp.i18n.translate(this._labelKey);
-      else
-        this._label = this._type;
+      this._label = this._type;
     }
     return this._label?this._label:"unknown";
   }
 
   public get description(): string {
     if (!this._description) {
-      if (this._descriptionKey)
-        this._description = IModelApp.i18n.translate(this._descriptionKey);
-      else
-        this._description = this.label;
+      this._description = this.label;
     }
     return this._description?this._description:"unknown";
   }
@@ -230,10 +224,10 @@ export class BearingQuantityType implements CustomQuantityTypeDefinition {
       {
         editorType: "select",
         selectOptions: [
-          {value: "clockwise", label: IModelApp.i18n.translate("SampleApp:BearingQuantityType.bearingAngleDirection.clockwise") },
-          {value: "counter-clockwise", label: IModelApp.i18n.translate("SampleApp:BearingQuantityType.bearingAngleDirection.counter-clockwise") },
+          {value: "clockwise", label: "clockwise" },
+          {value: "counter-clockwise", label:"counter-clockwise" },
         ],
-        label: IModelApp.i18n.translate("SampleApp:BearingQuantityType.bearingAngleDirection.label"),
+        label: "AngleDirection",
         getString: this.bearingAngleDirectionGetter,
         setString: this.bearingAngleDirectionSetter,
       } as TextSelectFormatPropEditorSpec,
@@ -244,24 +238,11 @@ export class BearingQuantityType implements CustomQuantityTypeDefinition {
     return [
       {
         editorType: "checkbox",
-        label: IModelApp.i18n.translate("SampleApp:BearingQuantityType.bearingGap.label"),
+        label: "bearingGap",
         getBool: this.bearingGapPropGetter,
         setBool: this.bearingGapPropSetter,
       } as CheckboxFormatPropEditorSpec,
     ];
-  }
-
-  public static async registerQuantityType(initialProps?: FormatProps) {
-    const quantityTypeEntry = new BearingQuantityType();
-    if (initialProps && isBearingFormatProps(initialProps)) {
-      quantityTypeEntry.formatProps = initialProps;
-    }
-    quantityTypeEntry._persistenceUnit = await IModelApp.quantityFormatter.findUnitByName(quantityTypeEntry._persistenceUnitName);
-    const wasRegistered = await IModelApp.quantityFormatter.registerQuantityType (quantityTypeEntry);
-    if (!wasRegistered) {
-      Logger.logInfo("BearingQuantityType",
-        `Unable to register QuantityType [BearingQuantityType] with key '${quantityTypeEntry.key}'`);
-    }
   }
 
   private bearingGapPropGetter(props: FormatProps) {

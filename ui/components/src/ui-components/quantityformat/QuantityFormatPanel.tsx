@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { CustomFormatPropEditorSpec, getQuantityTypeKey, IModelApp,
-  isCheckboxFormatPropEditorSpec, isCustomQuantityTypeEntry, isTextInputFormatPropEditorSpec, isTextSelectFormatPropEditorSpec,
+  isCheckboxFormatPropEditorSpec, isCustomQuantityTypeDefinition, isTextInputFormatPropEditorSpec, isTextSelectFormatPropEditorSpec,
   QuantityTypeArg } from "@bentley/imodeljs-frontend";
 import { FormatProps, UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
 import { Checkbox, CommonProps, Input, Select } from "@bentley/ui-core";
@@ -121,7 +121,7 @@ export function QuantityFormatPanel(props: QuantityFormatPanelProps) {
     (inProps: FormatProps, fireFormatChange: (newProps: FormatProps) => void) => {
       const quantityTypeKey = getQuantityTypeKey(quantityType);
       const quantityTypeEntry = IModelApp.quantityFormatter.quantityTypesRegistry.get(quantityTypeKey);
-      if (quantityTypeEntry && isCustomQuantityTypeEntry(quantityTypeEntry) &&
+      if (quantityTypeEntry && isCustomQuantityTypeDefinition(quantityTypeEntry) &&
         quantityTypeEntry.isCompatibleFormatProps(inProps)) {
         if (quantityTypeEntry.primaryPropEditorSpecs)
           return createCustomPropEditors (quantityTypeEntry.primaryPropEditorSpecs, inProps, fireFormatChange);
@@ -133,7 +133,7 @@ export function QuantityFormatPanel(props: QuantityFormatPanelProps) {
     (inProps: FormatProps, fireFormatChange: (newProps: FormatProps) => void) => {
       const quantityTypeKey = getQuantityTypeKey(quantityType);
       const quantityTypeEntry = IModelApp.quantityFormatter.quantityTypesRegistry.get(quantityTypeKey);
-      if (quantityTypeEntry && isCustomQuantityTypeEntry(quantityTypeEntry) &&
+      if (quantityTypeEntry && isCustomQuantityTypeDefinition(quantityTypeEntry) &&
       quantityTypeEntry.isCompatibleFormatProps(inProps)) {
         if (quantityTypeEntry.secondaryPropEditorSpecs)
           return createCustomPropEditors (quantityTypeEntry.secondaryPropEditorSpecs, inProps, fireFormatChange);

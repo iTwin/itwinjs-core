@@ -94,7 +94,7 @@ export const isTextSelectFormatPropEditorSpec = (item: CustomFormatPropEditorSpe
   return item.editorType === "select";
 };
 
-export interface QuantityTypeEntry {
+export interface QuantityTypeDefinition {
   readonly key: QuantityTypeKey;
   readonly type: QuantityTypeArg;
   readonly persistenceUnit: UnitProps;
@@ -104,7 +104,7 @@ export interface QuantityTypeEntry {
   descriptionKey?: string;
 }
 
-export interface CustomQuantityTypeEntry extends QuantityTypeEntry {
+export interface CustomQuantityTypeDefinition extends QuantityTypeDefinition {
   // to be implemented by custom Quantity Types
   generateFormatterSpec: (formatProps: FormatProps, unitsProvider: UnitsProvider) => Promise<FormatterSpec>;
   // to be implemented by custom Quantity Types
@@ -116,9 +116,9 @@ export interface CustomQuantityTypeEntry extends QuantityTypeEntry {
   secondaryPropEditorSpecs?: CustomFormatPropEditorSpec[];
 }
 
-/** CustomQuantityTypeEntry type guard. */
-export function isCustomQuantityTypeEntry(item: QuantityTypeEntry): item is CustomQuantityTypeEntry {
-  return !!(item as CustomQuantityTypeEntry).generateFormatterSpec;
+/** CustomQuantityTypeDefinition type guard. */
+export function isCustomQuantityTypeDefinition(item: QuantityTypeDefinition): item is CustomQuantityTypeDefinition {
+  return !!(item as CustomQuantityTypeDefinition).generateFormatterSpec;
 }
 
 // ========================================================================================================================================
@@ -621,7 +621,7 @@ export interface QuantityFormatsChangedArgs {
  * @alpha
  */
 export class QuantityFormatter implements UnitsProvider {
-  protected _quantityTypeRegistry: Map<QuantityTypeKey, QuantityTypeEntry> = new Map<QuantityTypeKey, QuantityTypeEntry>();
+  protected _quantityTypeRegistry: Map<QuantityTypeKey, QuantityTypeDefinition> = new Map<QuantityTypeKey, QuantityTypeDefinition>();
   protected _activeUnitSystem: UnitSystemKey = "imperial";
   protected _formatSpecsByKoq = new Map<string, FormatterSpec[]>();
   protected _activeFormatSpecsByType = new Map<QuantityTypeKey, FormatterSpec>();
@@ -683,7 +683,7 @@ export class QuantityFormatter implements UnitsProvider {
     return this as UnitsProvider;
   }
 
-  public async registerQuantityType(entry: CustomQuantityTypeEntry) {
+  public async registerQuantityType(entry: CustomQuantityTypeDefinition) {
     if (this._quantityTypeRegistry.has(entry.key))
       return false;
 
@@ -798,7 +798,7 @@ export class QuantityFormatter implements UnitsProvider {
    */
   protected async loadFormatAndParsingMapsForSystem(systemType?: UnitSystemKey, ignoreOverrides?: boolean): Promise<void> {
     const systemKey = (undefined !== systemType) ? systemType : this._activeUnitSystem;
-    const formatPropsByType = new Map<QuantityTypeEntry, FormatProps>();
+    const formatPropsByType = new Map<QuantityTypeDefinition, FormatProps>();
 
     // load cache for every registered QuantityType
     [...IModelApp.quantityFormatter.quantityTypesRegistry.keys()].forEach((key) => {
@@ -970,7 +970,7 @@ export class QuantityFormatter implements UnitsProvider {
     throw new Error("not yet implemented");
   }
 
-  private async loadFormatAndParserSpec(quantityTypeEntry: QuantityTypeEntry, formatProps: FormatProps) {
+  private async loadFormatAndParserSpec(quantityTypeEntry: QuantityTypeDefinition, formatProps: FormatProps) {
     const formatterSpec = await this.generateFormatterSpec(quantityTypeEntry, formatProps);
     const parserSpec = await this.generateParserSpec(quantityTypeEntry, formatProps);
     this._activeFormatSpecsByType.set(quantityTypeEntry.key, formatterSpec);
@@ -1101,8 +1101,8 @@ export class QuantityFormatter implements UnitsProvider {
     return this._activeFormatSpecsByType.get(this.getQuantityTypeKey(type));
   }
 
-  public async generateFormatterSpec(quantityEntry: QuantityTypeEntry, formatProps: FormatProps) {
-    if (isCustomQuantityTypeEntry(quantityEntry))
+  public async generateFormatterSpec(quantityEntry: QuantityTypeDefinition, formatProps: FormatProps) {
+    if (isCustomQuantityTypeDefinition(quantityEntry))
       return quantityEntry.generateFormatterSpec (formatProps, this.unitsProvider);
 
     const format = await Format.createFromJSON(quantityEntry.key, this, formatProps);
@@ -1117,9 +1117,9 @@ export class QuantityFormatter implements UnitsProvider {
     throw new Error(`Unable to generate FormatSpec for QuantityType ${type}`);
   }
 
-  protected async generateParserSpec(quantityEntry: QuantityTypeEntry, formatProps: FormatProps) {
+  protected async generateParserSpec(quantityEntry: QuantityTypeDefinition, formatProps: FormatProps) {
     const unitsProvider = this.unitsProvider;
-    if (isCustomQuantityTypeEntry(quantityEntry))
+    if (isCustomQuantityTypeDefinition(quantityEntry))
       return quantityEntry.generateParserSpec (formatProps, unitsProvider);
 
     const format = await Format.createFromJSON(quantityEntry.key, this, formatProps);
@@ -1131,7 +1131,7 @@ export class QuantityFormatter implements UnitsProvider {
    * @param system  deprecated argument that should not be used - use setActiveUnitSystem to set unit system.
    * @return A FormatterSpec Promise.
    */
-  protected async getFormatterSpecByQuantityTypeEntryAndSystem(quantityTypeEntry: QuantityTypeEntry, system?: UnitSystemKey): Promise<FormatterSpec | undefined> {
+  protected async getFormatterSpecByQuantityTypeDefinitionAndSystem(quantityTypeEntry: QuantityTypeDefinition, system?: UnitSystemKey): Promise<FormatterSpec | undefined> {
     const requestedSystem = system ?? this.activeUnitSystem;
     const formatProps = this.getFormatPropsByQuantityTypeEntyAndSystem (quantityTypeEntry, requestedSystem);
     return this.generateFormatterSpec (quantityTypeEntry, formatProps);
@@ -1155,12 +1155,12 @@ export class QuantityFormatter implements UnitsProvider {
     const entry = this.quantityTypesRegistry.get(quantityKey);
     if (!entry)
       throw new Error (`Unable to find registered quantity type with key ${quantityKey}`);
-    return this.getFormatterSpecByQuantityTypeEntryAndSystem(entry, requestedSystem);
+    return this.getFormatterSpecByQuantityTypeDefinitionAndSystem(entry, requestedSystem);
   }
 
   /** Asynchronous Call to get a FormatterSpec of a QuantityType.
    * @param type        One of the built-in quantity types supported.
-   * @param isImperial  deprecated argument that should not be used - use setActiveUnitSystem to set unit system.
+   * @param isImperial  deprecated use getFormatterSpecByQuantityTypeAndSystem.
    * @return A FormatterSpec Promise.
    */
   public async getFormatterSpecByQuantityType(type: QuantityTypeArg, isImperial?: boolean): Promise<FormatterSpec | undefined> {
@@ -1269,7 +1269,7 @@ export class QuantityFormatter implements UnitsProvider {
     return false;
   }
 
-  public getQuantityLabel(entry: QuantityTypeEntry): string {
+  public getQuantityLabel(entry: QuantityTypeDefinition): string {
     if (entry.label)
       return entry.label;
     if (entry.labelKey) {
@@ -1280,7 +1280,7 @@ export class QuantityFormatter implements UnitsProvider {
     return entry.key;
   }
 
-  public getQuantityDescription(entry: QuantityTypeEntry): string {
+  public getQuantityDescription(entry: QuantityTypeDefinition): string {
     if (entry.description)
       return entry.description;
     if (entry.descriptionKey) {
@@ -1291,7 +1291,7 @@ export class QuantityFormatter implements UnitsProvider {
     return this.getQuantityLabel(entry);
   }
 
-  protected getFormatPropsByQuantityTypeEntyAndSystem(quantityEntry: QuantityTypeEntry, requestedSystem: UnitSystemKey, ignoreOverrides?: boolean): FormatProps {
+  protected getFormatPropsByQuantityTypeEntyAndSystem(quantityEntry: QuantityTypeDefinition, requestedSystem: UnitSystemKey, ignoreOverrides?: boolean): FormatProps {
     const fallbackProps: FormatProps = {
       formatTraits: ["keepSingleZero", "applyRounding", "showUnitLabel"],
       precision: 4,
@@ -1306,7 +1306,7 @@ export class QuantityFormatter implements UnitsProvider {
         return overrideProps;
     }
 
-    if (isCustomQuantityTypeEntry(quantityEntry))
+    if (isCustomQuantityTypeDefinition(quantityEntry))
       return quantityEntry.getFormatPropsBySystem(requestedSystem);
 
     const defaultUnitSystemData = DEFAULT_FORMATKEY_BY_UNIT_SYSTEM.find((value) => value.system === requestedSystem);
