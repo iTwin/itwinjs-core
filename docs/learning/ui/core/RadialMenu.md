@@ -101,4 +101,4 @@ export class TestRadialMenu extends React.Component<TestRadialMenuProps, TestRad
 
 ## API Reference
 
-* [RadialMenu]($ui-core:RadialMenu)
+- [RadialMenu]($ui-core:RadialMenu)

@@ -1,6 +1,7 @@
 # Unified Selection: Content Components
 
 Content components may react to selection changes in two ways:
+
 - Request and display content for current selection
 - Highlight / distinguish current selection in currently displayed content
 

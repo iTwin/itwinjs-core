@@ -10,9 +10,9 @@ Any interactive app can be configured as a mobile app. A small additional effort
 
 You must write a [mobile-specific main](../learning/AppTailoring.md) to do the following:
 
-* [Configure the backend interfaces](./RpcInterface.md#configure-interfaces) for mobile.
-* [Tailor the GUI](../learning/AppTailoring.md#change-the-gui) to suit the target mobile devices.
-* [Detect and integrate platform-specific mobile functionality](../learning/AppTailoring.md#use-platform-specific-modules).
+- [Configure the backend interfaces](./RpcInterface.md#configure-interfaces) for mobile.
+- [Tailor the GUI](../learning/AppTailoring.md#change-the-gui) to suit the target mobile devices.
+- [Detect and integrate platform-specific mobile functionality](../learning/AppTailoring.md#use-platform-specific-modules).
 
 ## 3. Package and Deploy
 

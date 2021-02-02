@@ -5,26 +5,26 @@ The [DialogItem]($ui-abstract:Dialog) interface is used to specify user interfac
 For example, this code:
 
 ```ts
-  // ------------- boolean based toggle button ---------------
-  private static _lockToggleName = "lockToggle";
-  private static _getLockToggleDescription = (): PropertyDescription => {
-    return {
-      name: SampleTool._lockToggleName,
-      displayLabel: SampleTool.i18n.translate("sampleNameSpace:tools.SampleTool.Prompts.Lock"),
-      typename: "boolean",
-      editor: { name: "toggle" },
-    };
-  }
+// ------------- boolean based toggle button ---------------
+private static _lockToggleName = "lockToggle";
+private static _getLockToggleDescription = (): PropertyDescription => {
+  return {
+    name: SampleTool._lockToggleName,
+    displayLabel: SampleTool.i18n.translate("sampleNameSpace:tools.SampleTool.Prompts.Lock"),
+    typename: "boolean",
+    editor: { name: "toggle" },
+  };
+}
 
-  private _lockValue: DialogItemValue = { value: true };
+private _lockValue: DialogItemValue = { value: true };
 
-  public get lock(): boolean {
-    return this._lockValue.value as boolean;
-  }
+public get lock(): boolean {
+  return this._lockValue.value as boolean;
+}
 
-  public set lock(option: boolean) {
-    this._lockValue.value = option;
-  }
+public set lock(option: boolean) {
+  this._lockValue.value = option;
+}
 
 { value: this._lockValue, property: SampleTool._getLockToggleDescription(), editorPosition: { rowPriority: 5, columnIndex: 2 } }
 ```
@@ -49,4 +49,4 @@ Will result in this group of React components:
 
 ## API Reference
 
-* [DialogItem]($ui-abstract:Dialog)
+- [DialogItem]($ui-abstract:Dialog)

@@ -64,7 +64,7 @@ export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> 
     }
 
     if (!refreshState && this.props.stateSyncIds && this.props.stateSyncIds.length > 0) // eslint-disable-line deprecation/deprecation
-      refreshState = this.props.stateSyncIds.some((value: string): boolean => args.eventIds.has(value)); // eslint-disable-line deprecation/deprecation
+      refreshState = this.props.stateSyncIds.some((value: string): boolean => args.eventIds.has(value.toLowerCase())); // eslint-disable-line deprecation/deprecation
 
     if (refreshState) {
       if (this.props.stateFunc) // eslint-disable-line deprecation/deprecation
