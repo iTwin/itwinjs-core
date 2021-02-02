@@ -111,6 +111,7 @@ export interface CustomQuantityTypeEntry extends QuantityTypeEntry {
   generateParserSpec: (formatProps: FormatProps, unitsProvider: UnitsProvider) => Promise<ParserSpec>;
   // to be implemented by custom Quantity Types
   getFormatPropsBySystem: (requestedSystem: UnitSystemKey) => FormatProps;
+  isCompatibleFormatProps: (formatProps: FormatProps) => boolean;
   primaryPropEditorSpecs?: CustomFormatPropEditorSpec[];
   secondaryPropEditorSpecs?: CustomFormatPropEditorSpec[];
 }
@@ -678,6 +679,10 @@ export class QuantityFormatter implements UnitsProvider {
     return this._quantityTypeRegistry;
   }
 
+  public get unitsProvider() {
+    return this as UnitsProvider;
+  }
+
   public async registerQuantityType(entry: CustomQuantityTypeEntry) {
     if (this._quantityTypeRegistry.has(entry.key))
       return false;
@@ -1098,10 +1103,10 @@ export class QuantityFormatter implements UnitsProvider {
 
   public async generateFormatterSpec(quantityEntry: QuantityTypeEntry, formatProps: FormatProps) {
     if (isCustomQuantityTypeEntry(quantityEntry))
-      return quantityEntry.generateFormatterSpec (formatProps, this as UnitsProvider);
+      return quantityEntry.generateFormatterSpec (formatProps, this.unitsProvider);
 
     const format = await Format.createFromJSON(quantityEntry.key, this, formatProps);
-    return FormatterSpec.create(format.name, format, this as UnitsProvider, quantityEntry.persistenceUnit);
+    return FormatterSpec.create(format.name, format, this.unitsProvider, quantityEntry.persistenceUnit);
   }
 
   public async generateFormatterSpecByType(type: QuantityTypeArg, formatProps: FormatProps) {
@@ -1113,7 +1118,7 @@ export class QuantityFormatter implements UnitsProvider {
   }
 
   protected async generateParserSpec(quantityEntry: QuantityTypeEntry, formatProps: FormatProps) {
-    const unitsProvider = this as UnitsProvider;
+    const unitsProvider = this.unitsProvider;
     if (isCustomQuantityTypeEntry(quantityEntry))
       return quantityEntry.generateParserSpec (formatProps, unitsProvider);
 

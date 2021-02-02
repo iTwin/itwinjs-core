@@ -121,7 +121,8 @@ export function QuantityFormatPanel(props: QuantityFormatPanelProps) {
     (inProps: FormatProps, fireFormatChange: (newProps: FormatProps) => void) => {
       const quantityTypeKey = getQuantityTypeKey(quantityType);
       const quantityTypeEntry = IModelApp.quantityFormatter.quantityTypesRegistry.get(quantityTypeKey);
-      if (quantityTypeEntry && isCustomQuantityTypeEntry(quantityTypeEntry)) {
+      if (quantityTypeEntry && isCustomQuantityTypeEntry(quantityTypeEntry) &&
+        quantityTypeEntry.isCompatibleFormatProps(inProps)) {
         if (quantityTypeEntry.primaryPropEditorSpecs)
           return createCustomPropEditors (quantityTypeEntry.primaryPropEditorSpecs, inProps, fireFormatChange);
       }
@@ -132,7 +133,8 @@ export function QuantityFormatPanel(props: QuantityFormatPanelProps) {
     (inProps: FormatProps, fireFormatChange: (newProps: FormatProps) => void) => {
       const quantityTypeKey = getQuantityTypeKey(quantityType);
       const quantityTypeEntry = IModelApp.quantityFormatter.quantityTypesRegistry.get(quantityTypeKey);
-      if (quantityTypeEntry && isCustomQuantityTypeEntry(quantityTypeEntry)) {
+      if (quantityTypeEntry && isCustomQuantityTypeEntry(quantityTypeEntry) &&
+      quantityTypeEntry.isCompatibleFormatProps(inProps)) {
         if (quantityTypeEntry.secondaryPropEditorSpecs)
           return createCustomPropEditors (quantityTypeEntry.secondaryPropEditorSpecs, inProps, fireFormatChange);
       }
@@ -149,7 +151,7 @@ export function QuantityFormatPanel(props: QuantityFormatPanelProps) {
       {persistenceUnit && formatProps &&
       <FormatPanel onFormatChange={handleOnFormatChanged} {...otherProps}
         initialFormat={formatProps}
-        unitsProvider={IModelApp.quantityFormatter as UnitsProvider}
+        unitsProvider={IModelApp.quantityFormatter.unitsProvider}
         persistenceUnit={persistenceUnit}
         providePrimaryChildren={providePrimaryChildren}
         provideSecondaryChildren={provideSecondaryChildren}

@@ -6,7 +6,7 @@ import { QuantityConstants } from "../Constants";
 import { QuantityError, QuantityStatus } from "../Exception";
 import { UnitProps, UnitsProvider } from "../Interfaces";
 import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "./FormatEnums";
-import { FormatProps } from "./Interfaces";
+import { CustomFormatProps, FormatProps, isCustomFormatProps } from "./Interfaces";
 
 // cSpell:ignore ZERONORMALIZED, nosign, onlynegative, signalways, negativeparentheses
 // cSpell:ignore trailzeroes, keepsinglezero, zeroempty, keepdecimalpoint, applyrounding, fractiondash, showunitlabel, prependunitlabel, exponentonlynegative
@@ -333,7 +333,8 @@ export class Format {
   }
 
   private loadFormatProperties(jsonObj: FormatProps) {
-    this._customProps = jsonObj.custom;
+    if (isCustomFormatProps(jsonObj))
+      this._customProps = jsonObj.custom;
 
     if (undefined === jsonObj.type) // type is required
       throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} does not have the required 'type' attribute.`);
@@ -496,7 +497,25 @@ export class Format {
       };
     }
 
-    const schemaJson: FormatProps = {
+    if (this.customProps)
+      return {
+        type: Format.formatTypeToString(this.type),
+        precision: this.precision,
+        roundFactor: this.roundFactor,
+        minWidth: this.minWidth,
+        showSignOption: Format.showSignOptionToString(this.showSignOption),
+        formatTraits: Format.formatTraitsToArray(this.formatTraits),
+        decimalSeparator: this.decimalSeparator,
+        thousandSeparator: this.thousandSeparator,
+        uomSeparator: this.uomSeparator,
+        scientificType: this.scientificType ? Format.scientificTypeToString(this.scientificType) : undefined,
+        stationOffsetSize: this.stationOffsetSize,
+        stationSeparator: this.stationSeparator,
+        composite,
+        custom: this.customProps,
+      } as CustomFormatProps;
+
+    return {
       type: Format.formatTypeToString(this.type),
       precision: this.precision,
       roundFactor: this.roundFactor,
@@ -510,8 +529,6 @@ export class Format {
       stationOffsetSize: this.stationOffsetSize,
       stationSeparator: this.stationSeparator,
       composite,
-      custom: this.customProps,
     };
-    return schemaJson;
   }
 }

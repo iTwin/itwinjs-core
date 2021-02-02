@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 /** This interface defines the persistence format for defining the format of quantity values.
  * @alpha
  */
@@ -26,6 +27,18 @@ export interface FormatProps {
       readonly label?: string;
     }>;
   };
-  readonly custom?: any;
 }
 
+/** This interface is used when supporting Custom Formatters that need more than the standard set of properties.
+ * @alpha
+ */
+export interface CustomFormatProps extends FormatProps{
+  readonly custom: any;
+}
+
+/** CustomFormatProps type guard.
+ * @alpha
+ */
+export const isCustomFormatProps = (item: FormatProps): item is CustomFormatProps => {
+  return (item as CustomFormatProps).custom !== undefined;
+};

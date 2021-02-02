@@ -109,7 +109,7 @@ function NumericFormatPopup({ persistenceUnitName, initialMagnitude }: { persist
   const [formattedValue, setFormattedValue] = React.useState<string>();
   const handleFormatChange = React.useCallback((inProps: FormatProps) => {
     async function fetchFormatSpec(formatProps: FormatProps) {
-      const unitsProvider = IModelApp.quantityFormatter as UnitsProvider;
+      const unitsProvider = IModelApp.quantityFormatter.unitsProvider;
       if (formatterSpec) {
         const pu = formatterSpec.persistenceUnit;
         if (pu) {
@@ -126,7 +126,7 @@ function NumericFormatPopup({ persistenceUnitName, initialMagnitude }: { persist
 
   React.useEffect(() => {
     async function fetchInitialFormatSpec() {
-      const unitsProvider = IModelApp.quantityFormatter as UnitsProvider;
+      const unitsProvider = IModelApp.quantityFormatter.unitsProvider;
       const pu = await unitsProvider.findUnitByName(persistenceUnitName);
       if (pu) {
         const newSpec = await provideFormatSpec(initialFormatProps, pu, unitsProvider);
@@ -145,7 +145,7 @@ function NumericFormatPopup({ persistenceUnitName, initialMagnitude }: { persist
         <>
           <span>{formattedValue}</span>
           <FormatPopupButton initialFormat={formatterSpec.format.toJSON()} showSample={true} onFormatChange={handleFormatChange}
-            initialMagnitude={initialMagnitude} unitsProvider={IModelApp.quantityFormatter as UnitsProvider} persistenceUnit={formatterSpec.persistenceUnit}
+            initialMagnitude={initialMagnitude} unitsProvider={IModelApp.quantityFormatter.unitsProvider} persistenceUnit={formatterSpec.persistenceUnit}
             provideFormatSpec={provideFormatSpec}
             providePrimaryChildren={providePrimaryChildren}
             provideSecondaryChildren={provideSecondaryChildren}
@@ -163,7 +163,7 @@ function WrappedFormatPopup({ initialFormatterSpec, initialMagnitude }: { initia
     async function fetchFormatSpec(formatProps: FormatProps) {
       const pu = initialFormatterSpec.persistenceUnit;
       const actualFormat = new Format("custom");
-      const unitsProvider = IModelApp.quantityFormatter as UnitsProvider;
+      const unitsProvider = IModelApp.quantityFormatter.unitsProvider;
       await actualFormat.fromJSON(unitsProvider, formatProps);
       const newSpec = await FormatterSpec.create(actualFormat.name, actualFormat, unitsProvider, pu);
       setFormattedValue(newSpec.applyFormatting(initialMagnitude));
@@ -176,7 +176,7 @@ function WrappedFormatPopup({ initialFormatterSpec, initialMagnitude }: { initia
     <div style={{ display: "flex", alignItems: "center" }}>
       <span>{formattedValue}</span>
       <FormatPopupButton initialFormat={formatterSpec.format.toJSON()} showSample={true} onFormatChange={handleFormatChange}
-        initialMagnitude={initialMagnitude} unitsProvider={IModelApp.quantityFormatter as UnitsProvider} persistenceUnit={formatterSpec.persistenceUnit} />
+        initialMagnitude={initialMagnitude} unitsProvider={IModelApp.quantityFormatter.unitsProvider} persistenceUnit={formatterSpec.persistenceUnit} />
     </div>
   );
 }

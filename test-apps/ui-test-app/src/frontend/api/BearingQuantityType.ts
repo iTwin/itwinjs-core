@@ -6,15 +6,21 @@
 import { Logger } from "@bentley/bentleyjs-core";
 import { CheckboxFormatPropEditorSpec, CustomFormatPropEditorSpec, CustomQuantityTypeEntry, IModelApp, TextSelectFormatPropEditorSpec, UnitSystemKey } from "@bentley/imodeljs-frontend";
 import {
-  Format, FormatProps, FormatterSpec, Parser, ParseResult, ParserSpec, QuantityStatus, UnitConversionSpec, UnitProps, UnitsProvider,
+  CustomFormatProps, Format, FormatProps, FormatterSpec, Parser, ParseResult, ParserSpec, QuantityStatus, UnitConversionSpec, UnitProps, UnitsProvider,
 } from "@bentley/imodeljs-quantity";
 
-export interface BearingFormatProps extends FormatProps {
-  readonly custom?: {
-    readonly addDirectionLabelGap?: boolean;
-    readonly angleDirection?: string;   // "clockwise"|"counter-clockwise"
+export interface BearingFormatProps extends CustomFormatProps {
+  readonly custom: {
+    readonly addDirectionLabelGap: boolean;
+    readonly angleDirection: string;   // "clockwise"|"counter-clockwise"
   };
 }
+
+export const isBearingFormatProps = (item: FormatProps): item is BearingFormatProps => {
+  return ((item as CustomFormatProps).custom !== undefined) &&
+    ((item as BearingFormatProps).custom.addDirectionLabelGap !== undefined) &&
+    ((item as BearingFormatProps).custom.angleDirection !== undefined);
+};
 
 const defaultBearingFormat: BearingFormatProps = {
   composite: {
@@ -100,23 +106,32 @@ class BearingParserSpec extends ParserSpec {
     }
     if (adjustedString.endsWith("E") || adjustedString.endsWith("W")){
       suffix = adjustedString.slice(adjustedString.length-1);
-      adjustedString = adjustedString.substr(adjustedString.length-1, 1);
+      adjustedString = adjustedString.substr(0, adjustedString.length-1);
+      adjustedString = adjustedString.trimLeft().trimRight();
     }
 
-    const parsedRadians = Parser.parseToQuantityValue(inString, this.format, this.unitConversions);
-    if (parsedRadians.status === QuantityStatus.Success) {
-      if (prefix === "N" && suffix === "W") {
-        parsedRadians.value = Math.PI - parsedRadians.value!;
-      } else if (prefix === "S" && suffix === "W") {
-        parsedRadians.value = parsedRadians.value! +  Math.PI;
+    const isCCW = this.format.customProps?.angleDirection === "counter-clockwise";
+
+    // const parsedRadians = Parser.parseToQuantityValue(inString, this.format, this.unitConversions);
+    const parsedRadians = Parser.parseToQuantityValue(adjustedString, this.format, this.unitConversions);
+    if (undefined !== parsedRadians.value && parsedRadians.status === QuantityStatus.Success) {
+      if (prefix === "N" && suffix === "E") {
+        if (isCCW)
+          parsedRadians.value = (2*Math.PI) - parsedRadians.value;
       } else if (prefix === "N" && suffix === "W") {
-        parsedRadians.value = (2*Math.PI)- parsedRadians.value!;
+        if (!isCCW)
+          parsedRadians.value = (2*Math.PI) - parsedRadians.value;
+      } else if (prefix === "S" && suffix === "W") {
+        if (isCCW)
+          parsedRadians.value = Math.PI - parsedRadians.value;
+        else
+          parsedRadians.value = parsedRadians.value +  Math.PI;
+      } else if (prefix === "S" && suffix === "E") {
+        if (isCCW)
+          parsedRadians.value = Math.PI + parsedRadians.value;
+        else
+          parsedRadians.value = Math.PI - parsedRadians.value;
       }
-    }
-
-    // adjust if measuring counter clockwise direction
-    if (parsedRadians.value && this.format.customProps?.angleDirection === "counter-clockwise") {
-      parsedRadians.value = parsedRadians.value - (Math.PI * 2);
     }
 
     return parsedRadians;
@@ -149,8 +164,17 @@ export class BearingQuantityType implements CustomQuantityTypeEntry {
   public get key(): string { return this._key; }
   public get type(): string { return this._type; }
 
+  public isCompatibleFormatProps(formatProps: FormatProps) {
+    return isBearingFormatProps(formatProps);
+  }
+
   public get formatProps(): FormatProps { return this._formatProps; }
-  public set formatProps(value: FormatProps) { this._formatProps = value; }
+  public set formatProps(value: FormatProps) {
+    if (isBearingFormatProps(value)) {
+      this._formatProps = value;
+    }
+    throw new Error (`formatProps passed to BearingQuantity setter is not a BearingFormatProps`);
+  }
 
   public get persistenceUnit(): UnitProps {
     if (this._persistenceUnit)
@@ -175,20 +199,25 @@ export class BearingQuantityType implements CustomQuantityTypeEntry {
       else
         this._description = this.label;
     }
-
     return this._description?this._description:"unknown";
   }
 
   public generateFormatterSpec = async (formatProps: FormatProps, unitsProvider: UnitsProvider) => {
-    const format = new Format("Bearing");
-    await format.fromJSON(unitsProvider, formatProps);
-    return BearingFormatterSpec.create(format.name, format, unitsProvider, this.persistenceUnit);
+    if (isBearingFormatProps(formatProps)) {
+      const format = new Format("Bearing");
+      await format.fromJSON(unitsProvider, formatProps);
+      return BearingFormatterSpec.create(format.name, format, unitsProvider, this.persistenceUnit);
+    }
+    throw new Error (`formatProps passed to BearingQuantity type is not a BearingFormatProps`);
   };
 
   public generateParserSpec = async (formatProps: FormatProps, unitsProvider: UnitsProvider) => {
-    const format = new Format("Bearing");
-    await format.fromJSON(unitsProvider, formatProps);
-    return BearingParserSpec.create(format, unitsProvider, this.persistenceUnit);
+    if (isBearingFormatProps(formatProps)) {
+      const format = new Format("Bearing");
+      await format.fromJSON(unitsProvider, formatProps);
+      return BearingParserSpec.create(format, unitsProvider, this.persistenceUnit);
+    }
+    throw new Error (`formatProps passed to BearingQuantity type is not a BearingFormatProps`);
   };
 
   // Bearing is not unit system specific so no need to check that here
@@ -224,8 +253,9 @@ export class BearingQuantityType implements CustomQuantityTypeEntry {
 
   public static async registerQuantityType(initialProps?: FormatProps) {
     const quantityTypeEntry = new BearingQuantityType();
-    if (initialProps)
+    if (initialProps && isBearingFormatProps(initialProps)) {
       quantityTypeEntry.formatProps = initialProps;
+    }
     quantityTypeEntry._persistenceUnit = await IModelApp.quantityFormatter.findUnitByName(quantityTypeEntry._persistenceUnitName);
     const wasRegistered = await IModelApp.quantityFormatter.registerQuantityType (quantityTypeEntry);
     if (!wasRegistered) {
@@ -235,22 +265,35 @@ export class BearingQuantityType implements CustomQuantityTypeEntry {
   }
 
   private bearingGapPropGetter(props: FormatProps) {
-    return !!props.custom?.addDirectionLabelGap;
+    if (isBearingFormatProps(props)) {
+      return props.custom.addDirectionLabelGap;
+    }
+    throw new Error (`formatProps passed to bearingGapPropGetter type is not a BearingFormatProps`);
   }
 
   private bearingGapPropSetter(props: FormatProps, isChecked: boolean) {
-    const customProps = {...props.custom, addDirectionLabelGap:isChecked};
-    const newProps = {...props, custom:customProps};
-    return newProps;
+    if (isBearingFormatProps(props)) {
+      const customProps = {...props.custom, addDirectionLabelGap:isChecked};
+      const newProps = {...props, custom:customProps};
+      return newProps;
+    }
+    throw new Error (`formatProps passed to bearingGapPropSetter type is not a BearingFormatProps`);
   }
 
   private bearingAngleDirectionGetter(props: FormatProps) {
-    return props.custom?.angleDirection??"clockwise";
+    if (isBearingFormatProps(props)) {
+      return props.custom.angleDirection;
+    }
+    throw new Error (`formatProps passed to bearingAngleDirectionGetter type is not a BearingFormatProps`);
   }
 
   private bearingAngleDirectionSetter(props: FormatProps, value: string) {
-    const customProps = {...props.custom, angleDirection:value};
-    const newProps = {...props, custom:customProps};
-    return newProps;
+    if (isBearingFormatProps(props)) {
+      const customProps = {...props.custom, angleDirection:value};
+      const newProps = {...props, custom:customProps};
+      return newProps;
+    }
+    throw new Error (`formatProps passed to bearingAngleDirectionSetter type is not a BearingFormatProps`);
   }
+
 }
