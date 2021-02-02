@@ -63,7 +63,9 @@ export interface BackgroundMapProps {
    * allows the user to select elements that are behind the map.
    */
   nonLocatable?: boolean;
-  /** Planar Clip Mask */
+  /** A planar mask applied to the map geometry
+   * @beta
+   */
   planarClipMask?: PlanarClipMaskProps;
 }
 
@@ -117,7 +119,9 @@ export class BackgroundMapSettings {
   public readonly terrainSettings: TerrainSettings;
   /** Globe display mode. */
   public readonly globeMode: GlobeMode;
-  /** Planar Mask - used to mask the background map to avoid overlapping with other geometry */
+  /** Planar Mask - used to mask the background map to avoid overlapping with other geometry
+   * @beta
+   */
   public readonly planarClipMask: PlanarClipMaskSettings;
   private readonly _locatable: boolean;
   /** If false, the map will be treated as non-locatable - i.e., tools will not interact with it. This is particularly useful when the map is transparent - it
@@ -180,7 +184,7 @@ export class BackgroundMapSettings {
         break;
       }
     }
-    props.planarClipMask = this.planarClipMask.anyDefined ? this.planarClipMask.toJSON() : undefined;
+    props.planarClipMask = this.planarClipMask.isValid ? this.planarClipMask.toJSON() : undefined;
 
     return props;
   }

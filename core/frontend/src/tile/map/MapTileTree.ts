@@ -520,7 +520,7 @@ export class MapTileTreeReference extends TileTreeReference {
       if (undefined !== (tree = IModelApp.mapLayerFormatRegistry.createImageryMapLayerTree(this._layerSettings[i], i + 1, iModel)))
         this._imageryTrees.push(tree);
 
-    if (this._settings.planarClipMask && this._settings.planarClipMask.anyDefined)
+    if (this._settings.planarClipMask && this._settings.planarClipMask.isValid)
       this._planarClipMask = PlanarClipMaskState.create(this._settings.planarClipMask);
   }
   public get isGlobal() { return true; }

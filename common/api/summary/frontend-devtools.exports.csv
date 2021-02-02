@@ -98,6 +98,14 @@ alpha;MapLayerSubLayerVisiblityTool
 alpha;MapLayerTransparencyTool 
 alpha;MapLayerVisibilityTool 
 alpha;MapLayerZoomTool 
+beta;MaskBackgroundMapByElementTool 
+beta;MaskBackgroundMapByExcludedElementTool 
+beta;MaskBackgroundMapByModelTool 
+beta;MaskBackgroundMapBySubCategoryTool 
+beta;MaskRealityModelByElementTool 
+beta;MaskRealityModelByExcludedElementTool 
+beta;MaskRealityModelByModelTool 
+beta;MaskRealityModelBySubCategoryTool 
 alpha;MeasureTileLoadTimeTool 
 beta;MemoryTracker
 alpha;NestedMenu
@@ -109,6 +117,7 @@ alpha;class OverrideSubCategoryPriorityTool
 beta;parseArgs(args: string[]): ToolArgs
 beta;parseBoolean(arg: string | undefined): boolean | undefined
 beta;parseToggle(arg: string | undefined): string | boolean | undefined
+beta;class PlanarMaskBaseTool 
 beta;ProjectExtentsDecoration
 alpha;RadioBox
 alpha;RadioBoxEntry
@@ -135,7 +144,9 @@ beta;SelectElementsByIdTool
 beta;serializeViewState(view: ViewState): ViewStateProps
 internal;SetAASamplesTool 
 alpha;SetAspectRatioSkewTool 
+beta;SetHigherPriorityRealityModelMasking 
 alpha;SetMapBaseTool 
+alpha;SetMapHigherPriorityMasking 
 beta;SetModelColorTool 
 beta;SetModelEmphasizedTool 
 beta;SetModelIgnoresMaterialsTool 
@@ -194,6 +205,8 @@ internal;ToggleVolClassIntersect
 beta;ToggleWiremeshTool 
 beta;ToolArgs
 alpha;ToolSettingsTracker
+alpha;UnmaskMapTool 
+beta;UnmaskRealityModelTool 
 beta;UnsharpenEffect 
 alpha;ViewportAddRealityModel 
 alpha;ViewportTileSizeModifierTool 

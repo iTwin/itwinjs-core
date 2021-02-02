@@ -8,16 +8,27 @@
 
 import { compareNumbersOrUndefined, compareStringsOrUndefined, CompressedId64Set, Id64Set } from "@bentley/bentleyjs-core";
 
+/** The [[planarClipMask]] values that describe how planar clip masks geometry is collected
+ * @see [[PlanarClipMaskProps]]
+ * @see [[PlanarClipMaskSettings]]
+ * @beta
+ */
 export enum PlanarClipMaskMode {
   None = 0,
   Priority = 1,
   Models = 2,
   IncludeSubCategories = 3,
   IncludeElements = 4,
-  ExcludeSubCategories = 5,
-  ExcludeElements = 6,
+  ExcludeElements = 5,
 }
 
+/** The default priority values for a [[PlanrClipMask]]  models.  Models with [[PlanarClipMaskMode]] set to priority are
+ * clipped by by any model with a higher priority.  The enumerated values are the defaults and may be overriden by setting
+ * [[PlanarClipMask]].priority.
+ * @see [[PlanarClipMaskProps]]
+ * @see [[PlanarClipMaskSettings]]
+ *  @beta
+ */
 export enum PlanarClipMaskPriority {
   BackgroundMap = -2048,
   GlobalRealityModel = -1024,
@@ -26,20 +37,41 @@ export enum PlanarClipMaskPriority {
   Maximum = 4096,
 }
 
-export class PlanarClipMaskSettings {
-  public readonly mode: PlanarClipMaskMode = PlanarClipMaskMode.None;
-  public readonly priority?: number;
-  public readonly modelIds?: CompressedId64Set;
-  public readonly subCategoryOrElementIds?: CompressedId64Set;
+/** JSON representation of the [[PlanarClipMask]]  properties.
+ * @beta
+ */
+export interface PlanarClipMaskProps {
+  /** The mode that controls how the mask geometry is collected */
+  mode: PlanarClipMaskMode;
+  /** The model IDs for the mask geometry.  If omitted then the models viewed in the masked model viewport are used */
+  modelIds?: CompressedId64Set;
+  /** The SubCategory ids if mode is [[PlanarClipMaskMode.IncludeSubCategorie]] or element Ids if mode is [[PlanarClipMaskMode.IncludeElements] or [[PlanarClipMaskMode.ExcludeElements]] */
+  subCategoryOrElementIds?: CompressedId64Set;
+  /** Priority value if mode is [[PlanarClipMaskMode.Priority]]. */
+  priority?: number;
+}
 
-  /** Create a new SubCategoryOverride from a JSON object */
+/** Normalized representation of [[PlanarClipMaskProps]] with validation and default values applied.
+ * @beta
+ */
+export class PlanarClipMaskSettings {
+  /** The mode that controls how the mask geometry is collected */
+  public readonly mode: PlanarClipMaskMode = PlanarClipMaskMode.None;
+  /** The model IDs for the mask geometry.  If omitted then the models viewed in the masked model viewport are used */
+  public readonly modelIds?: CompressedId64Set;
+  /** The SubCategory ids if mode is [[PlanarClipMaskMode.IncludeSubCategorie]] or element Ids if mode is [[PlanarClipMaskMode.IncludeElements] or [[PlanarClipMaskMode.ExcludeElements]] */
+  public readonly subCategoryOrElementIds?: CompressedId64Set;
+  /** Priority value if mode is [[PlanarClipMaskMode.Priority]]. */
+  public readonly priority?: number;
+
+  /** Create a new [[PlanarClipMaskSettings]] object from a JSON object */
   public static fromJSON(json?: PlanarClipMaskProps): PlanarClipMaskSettings {
     if (!json)
       return this.defaults;
 
     return new PlanarClipMaskSettings(json.mode, json.modelIds, json.subCategoryOrElementIds, json.priority);
   }
-
+  /** Create a [[PlanarClipMaskAettings]] object */
   public static create(mode: PlanarClipMaskMode, modelIds?: Id64Set, subCategoryOrElementIds?: Id64Set): PlanarClipMaskSettings | undefined {
     switch (mode) {
       case PlanarClipMaskMode.None:
@@ -59,15 +91,20 @@ export class PlanarClipMaskSettings {
     }
   }
 
+  /** Create [[planarClipMaskSettings]] object by priority
+   * @see [[PlanarClipMaskPriority]]
+   */
   public static createByPriority(priority: number) {
     return new PlanarClipMaskSettings(PlanarClipMaskMode.Priority, undefined, undefined, priority);
   }
 
+  /** Create JSON object representing this [[PlanarClipMaskSettings]] */
   public toJSON(): PlanarClipMaskProps {
     return { mode: this.mode, modelIds: this.modelIds, subCategoryOrElementIds: this.subCategoryOrElementIds, priority: this.priority };
   }
 
-  public get anyDefined(): boolean { return this.mode !== PlanarClipMaskMode.None; }
+  /**  */
+  public get isValid(): boolean { return this.mode !== PlanarClipMaskMode.None; }
 
   public equals(other: PlanarClipMaskSettings): boolean {
     return this.mode === other.mode &&
@@ -84,12 +121,5 @@ export class PlanarClipMaskSettings {
   }
   /** A default PlanarClipMask which masks nothing. */
   public static defaults = new PlanarClipMaskSettings(PlanarClipMaskMode.None);
-}
-
-export interface PlanarClipMaskProps {
-  mode: PlanarClipMaskMode;
-  modelIds?: CompressedId64Set;
-  subCategoryOrElementIds?: CompressedId64Set;
-  priority?: number;
 }
 

@@ -12,6 +12,10 @@ import { FeatureSymbology } from "./render/FeatureSymbology";
 import { createMaskTreeReference, TileTreeReference, TileTreeSet } from "./tile/internal";
 import { ViewState3d } from "./ViewState";
 
+/** The State of Planar Clip Mask applied to a reality model or background map.
+ * Handles loading models and their associated tiles for models that are used by masks but may not be otherwise loaded or displayed.
+ * @beta
+ */
 export class PlanarClipMaskState {
   public readonly settings: PlanarClipMaskSettings;
   private _modelIds?: Id64Set;

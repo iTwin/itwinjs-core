@@ -50,6 +50,9 @@ export interface DisplayStyleModelAppearanceProps extends FeatureAppearanceProps
   modelId?: Id64String;
 }
 
+/** Describes the [[PlanarClipMask]] applied to a model.
+ * @beta
+ */
 export interface DisplayStylePlanarClipMaskProps extends PlanarClipMaskProps {
   /** The Id of the model to mask. */
   modelId?: Id64String;
@@ -522,7 +525,7 @@ export class DisplayStyleSettings {
         const modelId = Id64.fromJSON(ovrJson.modelId);
         if (Id64.isValid(modelId)) {
           const mask = PlanarClipMaskSettings.fromJSON(ovrJson);
-          if (mask.anyDefined)
+          if (mask.isValid)
             this.changePlanarClipMaskOverride(modelId, false, mask);
         }
       }
@@ -744,22 +747,25 @@ export class DisplayStyleSettings {
  * @param planarClipMask The clip mask to apply to the [[Model]].
  * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[Viewport.overrideModelPlanarClipMask]] to ensure
  * the changes are promptly visible on the screen.
- * @see [[dropModelAppearanceOverride]]
+ * @see [[dropModelPlanarClipMaskOverride]]
+ * @beta
  */
   public overrideModelPlanarClipMask(modelId: Id64String, planarClipMask: PlanarClipMaskSettings): boolean { return this.changePlanarClipMaskOverride(modelId, true, planarClipMask); }
 
-  /** Remove any planar applied to a [[Model]] by this style.
+  /** Remove planar clip mask applied to a [[Model]] by this style.
    * @param modelId The ID of the [[Model]].
    * @param planarClipMask The planar clip mask to apply to the [[Model]].
-   * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[Viewport.dropModelAppearanceOverride]] to ensure
+   * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[Viewport.overrideModelPlanarClipMask]] to ensure
    * the changes are promptly visible on the screen.
-   * @see [[SetModelPlanarClipMask]]
+   * @see [[overrideModelPlanarClipMask]]
+   * @beta
    */
   public dropModelPlanarClipMaskOverride(id: Id64String): boolean { return this.changePlanarClipMaskOverride(id, true); }
 
-  /** Obtain the planar clip applied to a [[Model]] by this style.
+  /** Obtain the planar clip applied to a [[Model]] by this style.b
     * @param id The ID of the [[Model]].
     * @returns The corresponding planar clip mask, or undefined if none exist.
+    * @beta
     */
   public getModelPlanarClipMask(id: Id64String): PlanarClipMaskSettings | undefined {
     return this._planarClipMaskOverrides.get(id);

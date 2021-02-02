@@ -184,6 +184,8 @@ import { ParseResults } from '@bentley/ui-abstract';
 import { ParserSpec } from '@bentley/imodeljs-quantity';
 import { Path } from '@bentley/geometry-core';
 import { PlacementProps } from '@bentley/imodeljs-common';
+import { PlanarClipMaskProps } from '@bentley/imodeljs-common';
+import { PlanarClipMaskSettings } from '@bentley/imodeljs-common';
 import { Plane3dByOriginAndUnitNormal } from '@bentley/geometry-core';
 import { Point2d } from '@bentley/geometry-core';
 import { Point3d } from '@bentley/geometry-core';
@@ -1695,6 +1697,9 @@ export class ContextRealityModelState {
     readonly name: string;
     // (undocumented)
     readonly orbitGtBlob?: OrbitGtBlobProps;
+    // (undocumented)
+    get planarClipMask(): PlanarClipMaskState | undefined;
+    set planarClipMask(planarClipMask: PlanarClipMaskState | undefined);
     readonly realityDataId?: string;
     // (undocumented)
     toJSON(): ContextRealityModelProps;
@@ -1764,6 +1769,9 @@ export function createDefaultViewFlagOverrides(options: {
 
 // @internal (undocumented)
 export function createEmptyRenderPlan(): RenderPlan;
+
+// @internal (undocumented)
+export function createMaskTreeReference(model: GeometricModelState): TileTreeReference;
 
 // @internal (undocumented)
 export function createOrbitGtTileTreeReference(props: OrbitGtTileTree.ReferenceProps): RealityModelTileTree.Reference;
@@ -2113,7 +2121,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @beta
     dropModelAppearanceOverride(modelId: Id64String): void;
     // @beta
-    dropRealityModelAppearanceOverride(index: number): void;
+    dropRealityModelAppearanceOverride(index: number): boolean;
+    // @beta
+    dropRealityModelPlanarClipMask(modelIdOrIndex: Id64String | number): boolean;
     dropSubCategoryOverride(id: Id64String): void;
     equalState(other: DisplayStyleState): boolean;
     // @internal (undocumented)
@@ -2149,6 +2159,10 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     getOSMBuildingDisplayIndex(): number;
     // @beta
     getRealityModelAppearanceOverride(index: number): FeatureAppearance | undefined;
+    // @beta
+    getRealityModelIndexFromTransientId(id: Id64String): number;
+    // @beta
+    getRealityModelPlanarClipMask(modelIdOrIndex: Id64String | number): PlanarClipMaskState | undefined;
     getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
     // @internal (undocumented)
     get globeMode(): GlobeMode;
@@ -2185,6 +2199,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     overrideModelAppearance(modelId: Id64String, ovr: FeatureAppearance): void;
     // @beta
     overrideRealityModelAppearance(index: number, overrides: FeatureAppearance): boolean;
+    // @beta
+    overrideRealityModelPlanarClipMask(modelIdOrIndex: Id64String | number, mask: PlanarClipMaskSettings): boolean;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     // @internal (undocumented)
     abstract overrideTerrainDisplay(): TerrainDisplayOverrides | undefined;
@@ -5163,11 +5179,15 @@ export class MapTileTreeReference extends TileTreeReference {
     // (undocumented)
     initializeImagery(): boolean;
     // (undocumented)
+    get isGlobal(): boolean;
+    // (undocumented)
     protected get _isLoadingComplete(): boolean;
     // (undocumented)
     isOverlay: boolean;
     // (undocumented)
     layerFromTreeModelIds(mapTreeModelId: Id64String, layerTreeModelId: Id64String): MapLayerSettings | undefined;
+    // (undocumented)
+    get planarClipMaskPrority(): number;
     // (undocumented)
     setBaseLayerSettings(baseLayerSettings: BaseLayerSettings): void;
     // (undocumented)
@@ -6509,6 +6529,34 @@ export namespace Pixel {
 export type PlanarClassifierMap = Map<Id64String, RenderPlanarClassifier>;
 
 // @internal (undocumented)
+export interface PlanarClassifierTarget {
+    // (undocumented)
+    isPointCloud: boolean;
+    // (undocumented)
+    location: Transform;
+    // (undocumented)
+    modelId: Id64String;
+    // (undocumented)
+    tiles: Tile[];
+}
+
+// @beta
+export class PlanarClipMaskState {
+    // (undocumented)
+    static create(settings: PlanarClipMaskSettings): PlanarClipMaskState;
+    // (undocumented)
+    discloseTileTrees(trees: TileTreeSet): void;
+    // (undocumented)
+    static fromJSON(props: PlanarClipMaskProps): PlanarClipMaskState;
+    // (undocumented)
+    getPlanarClipMaskSymbologyOverrides(): FeatureSymbology.Overrides | undefined;
+    // (undocumented)
+    getTileTrees(view: ViewState3d, classifiedModelId: Id64String): TileTreeReference[] | undefined;
+    // (undocumented)
+    readonly settings: PlanarClipMaskSettings;
+    }
+
+// @internal (undocumented)
 export class PlanarTilePatch {
     constructor(corners: Point3d[], normal: Vector3d, _chordHeight: number);
     // (undocumented)
@@ -6725,7 +6773,16 @@ export namespace RealityModelTileTree {
         // (undocumented)
         abstract get classifiers(): SpatialClassifiers | undefined;
         // (undocumented)
+        get isGlobal(): boolean;
+        // (undocumented)
         get modelId(): string;
+        // (undocumented)
+        get planarClipMask(): PlanarClipMaskState | undefined;
+        set planarClipMask(planarClipMask: PlanarClipMaskState | undefined);
+        // (undocumented)
+        protected _planarClipMask?: PlanarClipMaskState;
+        // (undocumented)
+        get planarClipMaskPrority(): number;
         // (undocumented)
         unionFitRange(union: Range3d): void;
     }
@@ -6739,6 +6796,8 @@ export namespace RealityModelTileTree {
         modelId?: Id64String;
         // (undocumented)
         name?: string;
+        // (undocumented)
+        planarMask?: PlanarClipMaskProps;
         // (undocumented)
         requestAuthorization?: string;
         // (undocumented)
@@ -7243,9 +7302,11 @@ export interface RenderPlan {
 // @internal
 export abstract class RenderPlanarClassifier implements IDisposable {
     // (undocumented)
-    abstract collectGraphics(context: SceneContext, classifiedTree: TileTreeReference, tileTree: TileTreeReference): void;
+    abstract collectGraphics(context: SceneContext, target: PlanarClassifierTarget): void;
     // (undocumented)
     abstract dispose(): void;
+    // (undocumented)
+    abstract setSource(classifierTreeRef?: SpatialClassifierTileTreeReference, planarClipMask?: PlanarClipMaskState): void;
 }
 
 // @internal (undocumented)
@@ -7585,7 +7646,7 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
     // (undocumented)
     createGraphicBuilder(type: GraphicType, viewport: Viewport, placement?: Transform, pickableId?: Id64String): import("./GraphicBuilder").GraphicBuilder;
     // (undocumented)
-    createPlanarClassifier(_properties: SpatialClassificationProps.Classifier): RenderPlanarClassifier | undefined;
+    createPlanarClassifier(_properties?: SpatialClassificationProps.Classifier): RenderPlanarClassifier | undefined;
     // (undocumented)
     cssPixelsToDevicePixels(cssPixels: number, floor?: boolean): number;
     // (undocumented)
@@ -7760,7 +7821,7 @@ export class SceneContext extends RenderContext {
     // @internal (undocumented)
     addBackgroundDrapedModel(drapedTreeRef: TileTreeReference, _heightRange: Range1d | undefined): RenderTextureDrape | undefined;
     // @internal (undocumented)
-    addPlanarClassifier(props: SpatialClassificationProps.Classifier, tileTree: TileTreeReference, classifiedTree: TileTreeReference): RenderPlanarClassifier | undefined;
+    addPlanarClassifier(classifiedModelId: Id64String, classifierTree?: SpatialClassifierTileTreeReference, planarClipMask?: PlanarClipMaskState): RenderPlanarClassifier | undefined;
     // @internal (undocumented)
     get backgroundGraphics(): RenderGraphic[];
     // @internal (undocumented)
@@ -7778,8 +7839,6 @@ export class SceneContext extends RenderContext {
     markChildrenLoading(): void;
     // @internal (undocumented)
     readonly missingTiles: Set<Tile>;
-    // @internal (undocumented)
-    readonly modelClassifiers: Map<string, string>;
     // @internal (undocumented)
     outputGraphic(graphic: RenderGraphic): void;
     // @internal (undocumented)
@@ -8508,7 +8567,11 @@ export interface SpatialClassifiersContainer {
 // @internal (undocumented)
 export abstract class SpatialClassifierTileTreeReference extends TileTreeReference {
     // (undocumented)
+    abstract get activeClassifier(): SpatialClassificationProps.Classifier | undefined;
+    // (undocumented)
     abstract get classifiers(): SpatialClassifiers;
+    // (undocumented)
+    abstract get isPlanar(): boolean;
 }
 
 // @public
@@ -8526,6 +8589,8 @@ export class SpatialModelState extends GeometricModel3dState {
     readonly classifiers?: SpatialClassifiers;
     // @internal (undocumented)
     static get className(): string;
+    // @beta
+    get isRealityModel(): boolean;
 }
 
 // @internal
@@ -8854,7 +8919,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     copyImageToCanvas(): HTMLCanvasElement;
     // (undocumented)
-    createPlanarClassifier(properties: SpatialClassificationProps.Classifier): PlanarClassifier;
+    createPlanarClassifier(properties?: SpatialClassificationProps.Classifier): PlanarClassifier;
     // (undocumented)
     protected cssViewRectToDeviceViewRect(rect: ViewRect): ViewRect;
     // (undocumented)
@@ -9759,10 +9824,13 @@ export abstract class TileTreeReference {
     getTerrainHeight(_terrainHeights: Range1d): void;
     getToolTip(_hit: HitDetail): Promise<HTMLElement | string | undefined>;
     protected getViewFlagOverrides(tree: TileTree): ViewFlagOverrides;
+    get isGlobal(): boolean;
     // @internal
     get isLoadingComplete(): boolean;
     // @internal
     protected get _isLoadingComplete(): boolean;
+    get isPrimary(): boolean;
+    get planarClipMaskPrority(): number;
     abstract get treeOwner(): TileTreeOwner;
     unionFitRange(union: Range3d): void;
 }
@@ -11376,6 +11444,8 @@ export abstract class Viewport implements IDisposable {
     dropModelAppearanceOverride(id: Id64String): void;
     // @beta
     dropRealityModelAppearanceOverride(index: number): void;
+    // @beta
+    dropRealityModelPlanarClipMask(modelIdOrIndex: Id64String | number): boolean;
     dropSubCategoryOverride(id: Id64String): void;
     // @beta
     dropTiledGraphicsProvider(provider: TiledGraphicsProvider): void;
@@ -11422,6 +11492,10 @@ export abstract class Viewport implements IDisposable {
     getPixelSizeAtPoint(point?: Point3d): number;
     // @beta
     getRealityModelAppearanceOverride(index: number): FeatureAppearance | undefined;
+    // @beta
+    getRealityModelIndexFromTransientId(id: Id64String): number;
+    // @beta
+    getRealityModelPlanarClipMask(modelIdOrIndex: Id64String | number): PlanarClipMaskState | undefined;
     // @internal (undocumented)
     getSubCategories(categoryId: Id64String): Id64Set | undefined;
     getSubCategoryAppearance(id: Id64String): SubCategoryAppearance;
@@ -11507,6 +11581,8 @@ export abstract class Viewport implements IDisposable {
     overrideModelAppearance(id: Id64String, ovr: FeatureAppearance): void;
     // @beta
     overrideRealityModelAppearance(index: number, overrides: FeatureAppearance): boolean;
+    // @beta
+    overrideRealityModelPlanarClipMask(modelIdOrIndex: Id64String | number, planarClipMask: PlanarClipMaskSettings): boolean;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     // @beta
     get perModelCategoryVisibility(): PerModelCategoryVisibility.Overrides;

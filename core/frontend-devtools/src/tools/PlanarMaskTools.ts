@@ -20,7 +20,7 @@ function applyMapMasking(onOff: boolean | undefined, maskProps: PlanarClipMaskPr
     if (undefined === vp || !vp.view.isSpatialView())
       return false;
 
-  const maskOn = (onOff === undefined) ? !vp.displayStyle.backgroundMapSettings.planarClipMask.anyDefined : onOff;
+  const maskOn = (onOff === undefined) ? !vp.displayStyle.backgroundMapSettings.planarClipMask.isValid : onOff;
 
   vp.changeBackgroundMapProps({ planarClipMask: maskOn ? maskProps : { mode: PlanarClipMaskMode.None } });
   vp.invalidateRenderPlan();
@@ -223,6 +223,10 @@ export class MaskRealityModelByElementTool extends PlanarMaskBaseTool {
     vp.overrideRealityModelPlanarClipMask(this._targetModelId!, PlanarClipMaskSettings.create(PlanarClipMaskMode.IncludeElements, this._acceptedModelIds, this._acceptedElementIds)!);
   }
 }
+
+/** Tool to mask reality model by excluded elements
+ * @beta
+ */
 export class MaskRealityModelByExcludedElementTool extends PlanarMaskBaseTool {
   public static toolId = "MaskRealityModelByExcludedElement";
   protected targetModelRequired() { return true; }
@@ -237,7 +241,9 @@ export class MaskRealityModelByExcludedElementTool extends PlanarMaskBaseTool {
   }
 }
 
-/** Tool to mask reality model by geometric models */
+/** Tool to mask reality model by geometric models
+ * @beta
+ */
 
 export class MaskRealityModelByModelTool extends PlanarMaskBaseTool {
   public static toolId = "MaskRealityModelByModel";
@@ -253,7 +259,9 @@ export class MaskRealityModelByModelTool extends PlanarMaskBaseTool {
   }
 }
 
-/** Tool to mask reality model by SubCategories */
+/** Tool to mask reality model by SubCategories
+ * @beta
+ */
 export class MaskRealityModelBySubCategoryTool extends PlanarMaskBaseTool {
   public static toolId = "MaskRealityModelBySubCategory";
   protected targetModelRequired() { return true; }
