@@ -14,7 +14,7 @@ import {
 import { BriefcaseConnection, BriefcaseNotificationHandler } from "./BriefcaseConnection";
 import { IModelConnection } from "./IModelConnection";
 import { IpcApp } from "./IpcApp";
-import { RemoteBriefcaseConnection } from "./RemoteIModelConnection";
+import { RemoteBriefcaseConnection } from "./CheckpointConnection";
 import { StandaloneConnection } from "./StandaloneConnection";
 
 let initialized = false;

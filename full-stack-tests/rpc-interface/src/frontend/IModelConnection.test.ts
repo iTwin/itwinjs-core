@@ -9,7 +9,7 @@ import {
   EcefLocation, GeoCoordStatus, IModelCoordinatesResponseProps, IModelReadRpcInterface, IModelTileRpcInterface, MassPropertiesOperation,
   MassPropertiesRequestProps, ModelQueryParams, SnapResponseProps,
 } from "@bentley/imodeljs-common";
-import { IModelApp, IModelConnection, RemoteIModelConnection, SpatialModelState, ViewState } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, CheckpointConnection, SpatialModelState, ViewState } from "@bentley/imodeljs-frontend";
 import { AccessToken } from "@bentley/itwin-client";
 import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/frontend";
 import { TestContext } from "./setup/TestContext";
@@ -42,7 +42,7 @@ describe("IModel Connection", () => {
     const contextId = testContext.iModelWithChangesets!.contextId;
     const iModelId = testContext.iModelWithChangesets!.iModelId;
 
-    const iModel: IModelConnection = await RemoteIModelConnection.openRemote(contextId, iModelId);
+    const iModel: IModelConnection = await CheckpointConnection.openRemote(contextId, iModelId);
 
     expect(iModel).to.exist.and.be.not.empty;
 
@@ -53,7 +53,7 @@ describe("IModel Connection", () => {
   it("should successfully close an open an IModelConnection", async () => {
     const iModelId = testContext.iModelWithChangesets!.iModelId;
     const contextId = testContext.iModelWithChangesets!.contextId;
-    const iModel = await RemoteIModelConnection.openRemote(contextId, iModelId);
+    const iModel = await CheckpointConnection.openRemote(contextId, iModelId);
 
     expect(iModel).to.exist;
     return expect(iModel.close()).to.eventually.be.fulfilled;
@@ -77,7 +77,7 @@ describe("IModelConnection Tiles", () => {
     contextId = testContext.iModelWithChangesets!.contextId;
     accessToken = testContext.adminUserAccessToken;
     IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
-    iModel = await RemoteIModelConnection.openRemote(contextId, iModelId);
+    iModel = await CheckpointConnection.openRemote(contextId, iModelId);
   });
 
   it("IModelTileRpcInterface method getTileCacheContainerUrl should work as expected", async () => {
@@ -207,7 +207,7 @@ describe("IModelReadRpcInterface Methods requestable from an IModelConnection", 
     contextId = testContext.iModelWithChangesets!.contextId;
     accessToken = testContext.adminUserAccessToken;
     IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
-    iModel = await RemoteIModelConnection.openRemote(contextId, iModelId);
+    iModel = await CheckpointConnection.openRemote(contextId, iModelId);
   });
 
   it("IModelReadRpcInterface method queryEntityIds should work as expected", async () => {
@@ -438,7 +438,7 @@ describe("Snapping", () => {
     contextId = testContext.iModelWithChangesets!.contextId;
     accessToken = testContext.adminUserAccessToken;
     IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
-    iModel = await RemoteIModelConnection.openRemote(contextId, iModelId);
+    iModel = await CheckpointConnection.openRemote(contextId, iModelId);
   });
 
   it("should be able to request a snap", async () => {

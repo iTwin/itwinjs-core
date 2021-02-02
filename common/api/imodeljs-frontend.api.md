@@ -1641,6 +1641,20 @@ export interface ChangeViewedModel2dOptions {
     doFit?: boolean;
 }
 
+// @public
+export class CheckpointConnection extends IModelConnection {
+    close(): Promise<void>;
+    get contextId(): GuidString;
+    get iModelId(): GuidString;
+    isCheckpointConnection(): this is CheckpointConnection;
+    get isClosed(): boolean;
+    // (undocumented)
+    protected _isClosed?: boolean;
+    // @deprecated
+    static open(contextId: string, iModelId: string, openMode?: OpenMode, version?: IModelVersion): Promise<CheckpointConnection>;
+    static openRemote(contextId: string, iModelId: string, version?: IModelVersion): Promise<CheckpointConnection>;
+    }
+
 // @alpha
 export enum ClipEventType {
     // (undocumented)
@@ -4119,13 +4133,13 @@ export abstract class IModelConnection extends IModel {
     isBlankConnection(): this is BlankConnection;
     get isBriefcase(): boolean;
     isBriefcaseConnection(): this is BriefcaseConnection;
+    // @beta
+    isCheckpointConnection(): this is CheckpointConnection;
     abstract get isClosed(): boolean;
     get isOpen(): boolean;
     get isReadonly(): boolean;
     // @deprecated
     isRemoteBriefcaseConnection(): this is RemoteBriefcaseConnection;
-    // @beta
-    isRemoteConnection(): this is RemoteIModelConnection;
     get isSnapshot(): boolean;
     isSnapshotConnection(): this is SnapshotConnection;
     // @internal
@@ -6973,7 +6987,7 @@ export interface RealityTileTreeParams extends TileTreeParams {
 }
 
 // @public @deprecated (undocumented)
-export class RemoteBriefcaseConnection extends RemoteIModelConnection {
+export class RemoteBriefcaseConnection extends CheckpointConnection {
     // @internal
     attachChangeCache(): Promise<void>;
     // @internal
@@ -6987,20 +7001,6 @@ export class RemoteBriefcaseConnection extends RemoteIModelConnection {
     saveChanges(description?: string): Promise<void>;
     updateProjectExtents(newExtents: AxisAlignedBox3d): Promise<void>;
 }
-
-// @public
-export class RemoteIModelConnection extends IModelConnection {
-    close(): Promise<void>;
-    get contextId(): GuidString;
-    get iModelId(): GuidString;
-    get isClosed(): boolean;
-    // (undocumented)
-    protected _isClosed?: boolean;
-    isRemoteConnection(): this is RemoteIModelConnection;
-    // @deprecated
-    static open(contextId: string, iModelId: string, openMode?: OpenMode, version?: IModelVersion): Promise<RemoteIModelConnection>;
-    static openRemote(contextId: string, iModelId: string, version?: IModelVersion): Promise<RemoteIModelConnection>;
-    }
 
 // @beta
 export abstract class RenderClipVolume implements IDisposable {

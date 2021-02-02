@@ -73,6 +73,7 @@ public;CategorySelectorState
 beta;ChangeFlag
 beta;ChangeFlags
 public;ChangeViewedModel2dOptions
+public;CheckpointConnection 
 alpha;ClipEventType
 internal;ClipResult
 public;Cluster
@@ -380,7 +381,6 @@ internal;RealityTileParams
 internal;RealityTileTree 
 internal;RealityTileTreeParams 
 public;RemoteBriefcaseConnection 
-public;RemoteIModelConnection 
 beta;class RenderClipVolume 
 public;RenderContext
 internal;RenderDiagnostics

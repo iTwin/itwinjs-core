@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { DisplayStyleProps, RenderSchedule } from "@bentley/imodeljs-common";
-import { IModelApp, IModelConnection, RemoteIModelConnection, RenderScheduleState, SpatialViewState, ViewState } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, CheckpointConnection, RenderScheduleState, SpatialViewState, ViewState } from "@bentley/imodeljs-frontend";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "./TestUtility";
 
@@ -31,7 +31,7 @@ describe("Animated tile trees (#integration)", () => {
     });
     const projectId = await TestUtility.getTestProjectId(projectName);
     const iModelId = await TestUtility.getTestIModelId(projectId, "SYNCHRO.UTK");
-    imodel = await RemoteIModelConnection.openRemote(projectId, iModelId);
+    imodel = await CheckpointConnection.openRemote(projectId, iModelId);
   });
 
   after(async () => {

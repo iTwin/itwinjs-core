@@ -5,7 +5,6 @@
 
 import { MobileRpcConfiguration, MobileRpcManager } from "@bentley/mobile-manager/lib/MobileBackend";
 import { setupIpcTest } from "./ipc";
-import { setupPushTest } from "./push";
 
 export async function setupMockMobileTest(port: number) {
   MobileRpcConfiguration.setup = {
@@ -17,6 +16,5 @@ export async function setupMockMobileTest(port: number) {
 export async function initializeMockMobileTest() {
   MobileRpcManager.initializeImpl([]);
 
-  await setupPushTest(async () => MobileRpcManager.ready());
   await setupIpcTest(async () => MobileRpcManager.ready());
 }

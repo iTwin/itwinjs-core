@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Config } from "@bentley/bentleyjs-core";
-import { AuthorizedFrontendRequestContext, RemoteIModelConnection } from "@bentley/imodeljs-frontend";
+import { AuthorizedFrontendRequestContext, CheckpointConnection } from "@bentley/imodeljs-frontend";
 import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
 import { IModelData } from "../../common/Settings";
@@ -14,7 +14,7 @@ export class IModelSession {
   public contextId: string;
   public iModelId: string;
 
-  private _iModel?: RemoteIModelConnection;
+  private _iModel?: CheckpointConnection;
 
   private constructor(contextId: string, imodelId: string) {
     this.contextId = contextId;
@@ -50,16 +50,16 @@ export class IModelSession {
     return new IModelSession(contextId, imodelId);
   }
 
-  public async getConnection(): Promise<RemoteIModelConnection> {
+  public async getConnection(): Promise<CheckpointConnection> {
     return undefined === this._iModel ? this.open() : this._iModel;
   }
 
-  public async open(): Promise<RemoteIModelConnection> {
+  public async open(): Promise<CheckpointConnection> {
     try {
       const env = Config.App.get("imjs_buddi_resolve_url_using_region");
       // eslint-disable-next-line no-console
       console.log(`Environment: ${env}`);
-      this._iModel = await RemoteIModelConnection.openRemote(this.contextId, this.iModelId);
+      this._iModel = await CheckpointConnection.openRemote(this.contextId, this.iModelId);
       expect(this._iModel).to.exist;
     } catch (e) {
       throw new Error(`Failed to open test iModel. Error: ${e.message}`);

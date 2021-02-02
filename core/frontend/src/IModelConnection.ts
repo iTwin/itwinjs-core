@@ -25,7 +25,7 @@ import { GeoServices } from "./GeoServices";
 import { IModelApp } from "./IModelApp";
 import { IModelRoutingContext } from "./IModelRoutingContext";
 import { ModelState } from "./ModelState";
-import { RemoteBriefcaseConnection, RemoteIModelConnection } from "./RemoteIModelConnection";
+import { CheckpointConnection, RemoteBriefcaseConnection } from "./CheckpointConnection";
 import { HiliteSet, SelectionSet } from "./SelectionSet";
 import { StandaloneConnection } from "./StandaloneConnection";
 import { SubCategoriesCache } from "./SubCategoriesCache";
@@ -110,10 +110,10 @@ export abstract class IModelConnection extends IModel {
    */
   public isRemoteBriefcaseConnection(): this is RemoteBriefcaseConnection { return false; } // eslint-disable-line deprecation/deprecation
 
-  /** Type guard for instanceof [[RemoteIModelConnection]]
+  /** Type guard for instanceof [[CheckpointConnection]]
    * @beta
   */
-  public isRemoteConnection(): this is RemoteIModelConnection { return false; }
+  public isCheckpointConnection(): this is CheckpointConnection { return false; }
 
   /** Type guard for instanceof [[SnapshotConnection]] */
   public isSnapshotConnection(): this is SnapshotConnection { return false; }

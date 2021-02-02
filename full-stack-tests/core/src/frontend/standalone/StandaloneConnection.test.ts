@@ -5,22 +5,23 @@
 import { assert } from "chai";
 import * as path from "path";
 import { Guid, isElectronRenderer, OpenMode } from "@bentley/bentleyjs-core";
+import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { ElementProps, IModel } from "@bentley/imodeljs-common";
-import { IModelApp, StandaloneConnection } from "@bentley/imodeljs-frontend";
+import { StandaloneConnection } from "@bentley/imodeljs-frontend";
 
 if (isElectronRenderer) { // StandaloneConnection tests only run on electron
   describe("StandaloneConnection", () => {
     before(async () => {
-      await IModelApp.startup();
+      await ElectronApp.startup();
     });
 
     after(async () => {
-      await IModelApp.shutdown();
+      await ElectronApp.shutdown();
     });
 
     it("StandaloneConnection properties", async () => {
       const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");
-      const connection: StandaloneConnection = await StandaloneConnection.openFile(filePath);
+      const connection = await StandaloneConnection.openFile(filePath);
 
       assert.isTrue(connection.isOpen);
       assert.equal(connection.openMode, OpenMode.ReadWrite);

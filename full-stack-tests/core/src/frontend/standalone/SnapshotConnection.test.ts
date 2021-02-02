@@ -54,9 +54,9 @@ describe("SnapshotConnection", () => {
     assert.isFalse(snapshotR2.isBriefcase);
     assert.isFalse(snapshotF1.isBriefcase);
 
-    assert.isFalse(snapshotR1.isRemoteConnection());
-    assert.isFalse(snapshotR2.isRemoteConnection());
-    assert.isFalse(snapshotF1.isRemoteConnection());
+    assert.isFalse(snapshotR1.isCheckpointConnection());
+    assert.isFalse(snapshotR2.isCheckpointConnection());
+    assert.isFalse(snapshotF1.isCheckpointConnection());
 
     const elementPropsR1 = await snapshotR1.elements.getProps(IModel.rootSubjectId);
     assert.equal(1, elementPropsR1.length);

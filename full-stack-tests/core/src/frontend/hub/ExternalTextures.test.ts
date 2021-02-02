@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { ImageSourceFormat, RenderTexture } from "@bentley/imodeljs-common";
-import { IModelApp, IModelConnection, RemoteIModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, CheckpointConnection } from "@bentley/imodeljs-frontend";
 import { ExternalTextureLoader, ExternalTextureRequest, GL, Texture2DHandle } from "@bentley/imodeljs-frontend/lib/webgl";
 import { TestUtility } from "./TestUtility";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
@@ -35,7 +35,7 @@ describe("external texture requests (#integration)", () => {
     });
     const projectId = await TestUtility.getTestProjectId(projectName);
     const iModelId = await TestUtility.getTestIModelId(projectId, "SmallTex");
-    imodel = await RemoteIModelConnection.openRemote(projectId, iModelId);
+    imodel = await CheckpointConnection.openRemote(projectId, iModelId);
   });
 
   after(async () => {

@@ -8,7 +8,7 @@ import { Range3d, Transform, XYAndZ } from "@bentley/geometry-core";
 import { BisCodeSpec, CodeSpec, IModelVersion, NavigationValue, RelatedElement } from "@bentley/imodeljs-common";
 import {
   CategorySelectorState, DisplayStyle2dState, DisplayStyle3dState, DrawingViewState, IModelApp, IModelConnection, MockRender, ModelSelectorState,
-  OrthographicViewState, RemoteIModelConnection, ViewState,
+  OrthographicViewState, CheckpointConnection, ViewState,
 } from "@bentley/imodeljs-frontend";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
@@ -45,7 +45,7 @@ describe("IModelConnection (#integration)", () => {
     const testProjectId = await TestUtility.getTestProjectId(testProjectName);
     const testIModelId = await TestUtility.getTestIModelId(testProjectId, testIModelName);
 
-    iModel = await RemoteIModelConnection.openRemote(testProjectId, testIModelId);
+    iModel = await CheckpointConnection.openRemote(testProjectId, testIModelId);
   });
 
   after(async () => {
@@ -140,13 +140,13 @@ describe("IModelConnection (#integration)", () => {
   it("should be able to open an IModel with no versions", async () => {
     const projectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
     const iModelId = await TestUtility.getTestIModelId(projectId, "NoVersionsTest");
-    const noVersionsIModel = await RemoteIModelConnection.openRemote(projectId, iModelId);
+    const noVersionsIModel = await CheckpointConnection.openRemote(projectId, iModelId);
     assert.isNotNull(noVersionsIModel);
 
-    const noVersionsIModel2 = await RemoteIModelConnection.openRemote(projectId, iModelId);
+    const noVersionsIModel2 = await CheckpointConnection.openRemote(projectId, iModelId);
     assert.isNotNull(noVersionsIModel2);
 
-    const noVersionsIModel3 = await RemoteIModelConnection.openRemote(projectId, iModelId, IModelVersion.asOfChangeSet(""));
+    const noVersionsIModel3 = await CheckpointConnection.openRemote(projectId, iModelId, IModelVersion.asOfChangeSet(""));
     assert.isNotNull(noVersionsIModel3);
   });
 
@@ -161,7 +161,7 @@ describe("IModelConnection (#integration)", () => {
     let n = 0;
     const MAX_CONNECTIONS = 12;
     while (n++ < MAX_CONNECTIONS) {
-      const noVersionsIModel = await RemoteIModelConnection.openRemote(projectId, iModelId);
+      const noVersionsIModel = await CheckpointConnection.openRemote(projectId, iModelId);
       assert.isNotNull(noVersionsIModel);
     }
 
@@ -178,13 +178,13 @@ describe("IModelConnection (#integration)", () => {
     const projectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
     const iModelId = await TestUtility.getTestIModelId(projectId, "ReadOnlyTest");
 
-    const readOnlyTest = await RemoteIModelConnection.openRemote(projectId, iModelId, IModelVersion.latest());
+    const readOnlyTest = await CheckpointConnection.openRemote(projectId, iModelId, IModelVersion.latest());
     assert.isNotNull(readOnlyTest);
 
     const promises = new Array<Promise<void>>();
     let n = 0;
     while (++n < 25) {
-      const promise = RemoteIModelConnection.openRemote(projectId, iModelId)
+      const promise = CheckpointConnection.openRemote(projectId, iModelId)
         .then((readOnlyTest2: IModelConnection) => {
           assert.isNotNull(readOnlyTest2);
           assert.isTrue(readOnlyTest.key === readOnlyTest2.key);
@@ -198,7 +198,7 @@ describe("IModelConnection (#integration)", () => {
   it("should be able to request tiles from an IModelConnection", async () => {
     const testProjectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
     const testIModelId = await TestUtility.getTestIModelId(testProjectId, "ConnectionReadTest");
-    iModel = await RemoteIModelConnection.openRemote(testProjectId, testIModelId);
+    iModel = await CheckpointConnection.openRemote(testProjectId, testIModelId);
 
     const modelProps = await iModel.models.queryProps({ from: "BisCore.PhysicalModel" });
     expect(modelProps.length).to.equal(1);

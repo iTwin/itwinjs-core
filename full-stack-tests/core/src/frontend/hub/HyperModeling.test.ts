@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { Point3d } from "@bentley/geometry-core";
 import { SectionType } from "@bentley/imodeljs-common";
 import {
-  IModelApp, IModelConnection, ParseAndRunResult, RemoteIModelConnection, SnapshotConnection,
+  IModelApp, IModelConnection, ParseAndRunResult, CheckpointConnection, SnapshotConnection,
 } from "@bentley/imodeljs-frontend";
 import {
   HyperModeling, HyperModelingDecorator, SectionDrawingLocationState, SectionMarker, SectionMarkerConfig, SectionMarkerHandler,
@@ -33,7 +33,7 @@ describe("HyperModeling (#integration)", () => {
 
     const projectId = await TestUtility.getTestProjectId(projectName);
     const iModelId = await TestUtility.getTestIModelId(projectId, "SectionDrawingLocations");
-    hypermodel = await RemoteIModelConnection.openRemote(projectId, iModelId);
+    hypermodel = await CheckpointConnection.openRemote(projectId, iModelId);
   });
 
   after(async () => {

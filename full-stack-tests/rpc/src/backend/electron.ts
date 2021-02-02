@@ -5,7 +5,6 @@
 import { registerBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { commonSetup } from "./CommonBackendSetup";
-import { setupPushTest } from "./push";
 import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
 
 async function init() {
@@ -16,7 +15,6 @@ async function init() {
     return true;
   });
 
-  await setupPushTest();
 }
 
 module.exports = init();

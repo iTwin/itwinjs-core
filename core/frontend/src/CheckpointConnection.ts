@@ -19,13 +19,13 @@ import { AuthorizedFrontendRequestContext, FrontendLoggerCategory, IModelRouting
 const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
 
 /**
- * An IModelConnection to a IModelDb hosted on a remote backend over RPC.
+ * An IModelConnection to a checkpoint of an iModel, hosted on a remote backend over RPC.
  * Due to the nature of RPC requests, the backend servicing this connection may change over time, and there may even be more than one backend
- * at servicing requests at the same time. For this reason, this type of connection may only be used with Snapshot iModels that are
- * guaranteed to be the same on every backend. Obviously Snapshot iModels only allow readonly access.
+ * at servicing requests at the same time. For this reason, this type of connection may only be used with Checkpoint iModels that are
+ * guaranteed to be the same on every backend. Obviously Checkpoint iModels only allow readonly access.
  * @public
  */
-export class RemoteIModelConnection extends IModelConnection {
+export class CheckpointConnection extends IModelConnection {
   /** The Guid that identifies the *context* that owns this iModel. */
   public get contextId(): GuidString { return super.contextId!; } // GuidString | undefined for the superclass, but required for BriefcaseConnection
   /** The Guid that identifies this iModel. */
@@ -35,22 +35,22 @@ export class RemoteIModelConnection extends IModelConnection {
   public get isClosed(): boolean { return this._isClosed ? true : false; }
   protected _isClosed?: boolean;
 
-  /** Type guard for instanceof [[RemoteIModelConnection]] */
-  public isRemoteConnection(): this is RemoteIModelConnection { return true; }
+  /** Type guard for instanceof [[CheckpointConnection]] */
+  public isCheckpointConnection(): this is CheckpointConnection { return true; }
 
   /**
    * Open a readonly IModelConnection to an iModel over RPC.
    */
-  public static async openRemote(contextId: string, iModelId: string, version: IModelVersion = IModelVersion.latest()): Promise<RemoteIModelConnection> {
+  public static async openRemote(contextId: string, iModelId: string, version: IModelVersion = IModelVersion.latest()): Promise<CheckpointConnection> {
     return this.open(contextId, iModelId, OpenMode.Readonly, version); // eslint-disable-line deprecation/deprecation
   }
 
-  /** Open an IModelConnection to an iModel.
+  /** Open a CheckpointConnection to a checkpoint of an iModel.
    * @deprecated use openRemote
-   * @note this function will be removed in a future release to remove the openMode argument. All RemoteIModelConnections must be readonly.
+   * @note this function will be removed in a future release to remove the openMode argument. All CheckpointConnections must be readonly.
    * If you're using a writeable connection, your application must use IpcApp/IpcHost and BriefcaseConnection.
    */
-  public static async open(contextId: string, iModelId: string, openMode: OpenMode = OpenMode.Readonly, version: IModelVersion = IModelVersion.latest()): Promise<RemoteIModelConnection> {
+  public static async open(contextId: string, iModelId: string, openMode: OpenMode = OpenMode.Readonly, version: IModelVersion = IModelVersion.latest()): Promise<CheckpointConnection> {
     const routingContext = IModelRoutingContext.current || IModelRoutingContext.default;
 
     const requestContext = await AuthorizedFrontendRequestContext.create();
@@ -155,7 +155,7 @@ export class RemoteIModelConnection extends IModelConnection {
     Logger.logTrace(loggerCategory, "Attempting to reopen connection", () => iModelRpcProps);
 
     try {
-      const openResponse = await RemoteIModelConnection.callOpen(requestContext, iModelRpcProps, this.openMode, this.routingContext);
+      const openResponse = await CheckpointConnection.callOpen(requestContext, iModelRpcProps, this.openMode, this.routingContext);
       // The new/reopened connection may have a new rpcKey and/or changeSetId, but the other IModelRpcTokenProps should be the same
       this._fileKey = openResponse.key;
       this._changeSetId = openResponse.changeSetId;
@@ -171,7 +171,7 @@ export class RemoteIModelConnection extends IModelConnection {
     resubmit();
   };
 
-  /** Close this RemoteIModelConnection */
+  /** Close this CheckpointConnection */
   public async close(): Promise<void> {
     if (this.isClosed)
       return;
@@ -197,9 +197,9 @@ export class RemoteIModelConnection extends IModelConnection {
 
 /**
  * @public
- * @deprecated use RemoteIModelConnection
+ * @deprecated use CheckpointConnection
  */
-export class RemoteBriefcaseConnection extends RemoteIModelConnection {
+export class RemoteBriefcaseConnection extends CheckpointConnection {
   private _editing: EditingFunctions | undefined;
 
   public static async open(contextId: string, iModelId: string, openMode: OpenMode = OpenMode.Readonly, version: IModelVersion = IModelVersion.latest()): Promise<RemoteBriefcaseConnection> {

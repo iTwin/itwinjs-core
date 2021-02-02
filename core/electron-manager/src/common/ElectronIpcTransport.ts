@@ -216,18 +216,16 @@ let transport: ElectronIpcTransport | undefined;
 
 /** @internal */
 export function initializeIpc(protocol: ElectronRpcProtocol) {
-  if (transport)
-    throw new IModelError(BentleyStatus.ERROR, `Electron IPC already initialized.`);
-
-  try { // Wrapping require in a try/catch signals to webpack that this is only an optional dependency
-    if (isElectronRenderer) {
-      transport = new FrontendIpcTransport(protocol);
-    } else {
-      transport = new BackendIpcTransport(protocol);
+  if (undefined === transport) {
+    try { // Wrapping require in a try/catch signals to webpack that this is only an optional dependency
+      if (isElectronRenderer) {
+        transport = new FrontendIpcTransport(protocol);
+      } else {
+        transport = new BackendIpcTransport(protocol);
+      }
+    } catch (err) {
+      throw new IModelError(BentleyStatus.ERROR, `cannot load electron: ${err}`);
     }
-  } catch (err) {
-    throw new IModelError(BentleyStatus.ERROR, `cannot load electron: ${err}`);
   }
-
   return transport;
 }
