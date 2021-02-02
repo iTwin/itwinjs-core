@@ -1578,7 +1578,7 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
     }
 
     public close(saveChanges: boolean) {
-      if (!this._locksFileName || !IModelJsFs.existsSync(this._locksFileName))
+      if (!this.doesCacheFileExist())
         return;
 
       if (saveChanges)
