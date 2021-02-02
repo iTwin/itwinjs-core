@@ -727,9 +727,9 @@ describe("BriefcaseManager (#integration)", () => {
       assert.equal(err.errorNumber, BriefcaseStatus.DownloadCancelled);
       assert.isTrue(err instanceof UserCancelledError);
       cancelled2 = true;
-
-      assert.isTrue(cancelled2);
     }
+
+    assert.isTrue(cancelled2);
   });
 
   it("Should be able to recover after changeSet deletion (#integration)", async () => {
