@@ -7,7 +7,7 @@ import { ContextRegistryClient, Project } from "@bentley/context-registry-client
 import { BriefcaseQuery, ChangeSet, ChangeSetQuery, Briefcase as HubBriefcase, HubIModel, IModelHubClient, IModelQuery, Version, VersionQuery, IModelBaseHandler, CheckpointQuery, InitializationState, Checkpoint } from "@bentley/imodelhub-client";
 import { IModelError } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { AuthorizedClientRequestContext, ECJsonTypeMap, WsgInstance, WsgQuery } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext, ECJsonTypeMap, WsgInstance } from "@bentley/itwin-client";
 import * as os from "os";
 import * as path from "path";
 import { BriefcaseIdValue, ChangeSetToken, IModelDb, IModelHost, IModelJsFs } from "../../imodeljs-backend";
