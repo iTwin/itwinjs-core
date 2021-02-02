@@ -49,11 +49,56 @@ export interface SelectedAndReadyTiles {
   readonly external: ExternalTileStatistics;
 }
 
-/** Provides functionality associated with [[Tile]]s, mostly in the area of scheduling requests for tile content.
- * The TileAdmin tracks [[Viewport]]s which have requested tile content, maintaining a priority queue of pending requests and
- * a set of active requests. On each update it identifies previously-requested tiles whose content no viewport is interested in any longer and
- * cancels them. It then pulls pending requests off the queue and dispatches them into the active set until either the maximum number of
- * simultaneously-active requests is reached or the queue becomes empty.
+/** Describes a strategy for imposing limits upon the amount of GPU memory consumed by [[Tile]] content.
+ *
+ * For a given view, a set of tiles is required to display its contents. As the user navigates the view by panning, rotating, zooming, etc, that set of tiles changes.
+ * Previously-displayed tiles can remain in memory for a short while so that if they are subsequently required for display again they will be immediately available.
+ * Keeping too many tiles in memory can consume excessive amounts of GPU memory; in extreme cases, more GPU memory can be consumed than is available, resulting in loss of
+ * the WebGL context, which causes all rendering to stop.
+ *
+ * Over-consumption of GPU memory can be prevented by imposing a limit on the maximum amount that can be in use at any one time. When the limit is exceeded, the contents
+ * of [[Tile]]s that are not currently being displayed by any [[Viewport]] are discarded, freeing up memory, until the limit is satisfied or all
+ * undisplayed tiles' contents have been discarded. The least-recently-displayed tiles' contents are discarded first, under the assumption that they are the least likely to
+ * be displayed again in the near future. Contents of tiles that are currently being displayed by at least one viewport will not be discarded.
+ *
+ * WebGL provides no direct access to the GPU, so the amount of memory actually being consumed can only be estimated based on the amount of memory
+ * requested from it; the actual amount will invariably be larger - sometimes much larger.
+ *
+ * The number of bytes corresponding to the various limits is estimated at run-time based on whether the client is running on a mobile device or not - tighter limits
+ * are imposed on mobile devices due to their tighter resource constraints.
+ *
+ * In addition to the memory limits, tile contents are naturally discarded after a certain length of time during which they have been displayed by no viewports based on
+ * [[TileAdmin.Props.tileExpirationTime]].
+ *
+ * The options are:
+ * - "none" - no limits are imposed. Tile contents are discarded solely based on [[TileAdmin.Props.tileExpirationTime]].
+ * - "aggressive" - a small limit resulting in tile contents being more aggressively discarded.
+ * - "default" - a moderate limit that strives to balance limiting memory consumption while keeping tiles likely to be displayed again in memory.
+ * - "relaxed" - a larger limit that may be appropriate for devices equipped with ample GPU memory.
+ * - number - an explicit limit, in number of bytes. Because of the vagaries of actual GPU memory consumption under WebGL, this should be a conservative estimate - no more than perhaps 1/4 of the total GPU memory available, depending on the device.
+ * @see [[TileAdmin.Props.memoryUsageLimits]] to configure the limit at startup.
+ * @see [[TileAdmin.memoryUsageLimit]] to adjust the limit after startup.
+ * @see [[TileAdmin.totalTileContentBytes]] for the current amount of GPU memory being used for tile contents.
+ * @beta
+ */
+export type GpuMemoryLimit = "none" | "default" | "aggressive" | "relaxed" | number;
+
+/** Defines [[GpuMemoryLimit]]s for mobile and desktop clients.
+ * @see [[TileAdmin.Props.memoryUsageLimits]] to configure the limit at startup.
+ * @see [[GpuMemoryLimit]] for a description of how the available limits and how they are imposed.
+ * @beta
+ */
+export interface GpuMemoryLimits {
+  /** Limits applied to clients running on mobile devices. Defaults to "none" if undefined. */
+  mobile?: GpuMemoryLimit;
+  /** Limits applied to clients running on non-mobile devices. Defaults to "none" if undefined. */
+  desktop?: GpuMemoryLimit;
+}
+
+/** Manages [[Tile]]s and [[TileTree]]s on behalf of [[IModelApp]]. Its responsibilities include scheduling requests for tile content via a priority queue;
+ * keeping track of and imposing limits upon the amount of GPU memory consumed by tiles; and notifying listeners of tile-related events.
+ * @see [[IModelApp.tileAdmin]] to access the instance of the TileAdmin.
+ * @see [[TileAdmin.Props]] to configure the TileAdmin at startup.
  * @beta
  */
 export class TileAdmin {
@@ -1160,6 +1205,14 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      * @alpha
      */
     tileTreeExpirationTime?: number;
+
+    /** Defines optional limits on the total amount of GPU memory allocated to [[Tile]] contents.
+     * If undefined, defaults to "none". If an instance of [[GpuMemoryLimits]], defines separate limits for mobile and non-mobile devices; otherwise, defines the limit for whatever
+     * type of device the client is running on.
+     * @see [[GpuMemoryLimit]] for a description of the available limits and how they are imposed.
+     * @beta
+     */
+    gpuMemoryLimits?: GpuMemoryLimit | GpuMemoryLimits;
 
     /** When the total used memory of all tile trees exceeds this many bytes, tiles belonging to the trees will be immediately considered eligible for disposal if they are unused by any viewport.
      * This disposal will occur by calling the `forcePrune` method on every tree.
