@@ -113,6 +113,12 @@ export interface HybridCacheConfig extends HierarchyCacheConfigBase {
   disk?: DiskHierarchyCacheConfig;
 }
 
+/**
+ * Map for setting up format to a number of UnitSystems.
+ * It is used in [[PresentationManager]] to setup DefaultFormats.
+ * DefaultFormats are constructed by mapping a phenomenon with UnitSystemFormat.
+ * @alpha
+ */
 export interface UnitSystemFormat {
   unitSystems: PresentationUnitSystem[];
   format: FormatProps;

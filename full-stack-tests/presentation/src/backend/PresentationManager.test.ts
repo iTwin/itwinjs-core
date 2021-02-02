@@ -26,7 +26,7 @@ describe("PresentationManager", () => {
     await terminate();
   });
 
-  describe("Property value Formatting", () => {
+  describe("Property value formatting", () => {
 
     const ruleset: Ruleset = {
       id: Guid.createValue(),
