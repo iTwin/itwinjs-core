@@ -20,6 +20,7 @@ Name | Required? | Type | Default | Meaning
 ### Color Value Formats
 
 Colors in `foreColor` and `backColor` attributes may be evaluated to one of the following formats:
+
 - color name: `Red`, `Blue`, etc.
 - RGB: `rgb(100, 200, 255)`
 - HEX: `#0f0f0f`
@@ -27,6 +28,7 @@ Colors in `foreColor` and `backColor` attributes may be evaluated to one of the 
 ### Font Styles
 
 Font style in `fontStyle` attribute may be evaluated to one of the following values:
+
 - `Bold`
 - `Italic`
 - `Italic,Bold`
