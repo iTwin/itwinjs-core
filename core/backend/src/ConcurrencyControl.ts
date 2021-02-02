@@ -1577,6 +1577,10 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
       return !foundSignature;
     }
 
+    private doesCacheFileExist(): boolean {
+      return this._locksFileName !== undefined && IModelJsFs.existsSync(this._locksFileName);
+    }
+
     public close(saveChanges: boolean) {
       if (!this.doesCacheFileExist())
         return;
@@ -1604,10 +1608,6 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
         if (DbResult.BE_SQLITE_DONE !== rc)
           throw new IModelError(rc, "", Logger.logError, loggerCategory, () => sql);
       });
-    }
-
-    private doesCacheFileExist(): boolean {
-      return this._locksFileName !== undefined && IModelJsFs.existsSync(this._locksFileName);
     }
 
     public open(): boolean {
@@ -1653,8 +1653,7 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
       if (this.isOpen)
         this.close(false);
 
-      if (this._locksFileName)
-        IModelJsFs.unlinkSync(this._locksFileName);
+      IModelJsFs.unlinkSync(this._locksFileName!);
     }
 
     public clear() {
