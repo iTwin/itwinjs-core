@@ -1,14 +1,16 @@
+# Spirals
+
 "Spirals" are a class of curve that are used to provide smooth transition from one turning radius to another.
 
 | Description | Geometry |
-|---|---|---|---|---|
+|---|---|
 | Blue line joints directly to green arc. <br> Curvature changes instantaneously from 0 to the arc radius | ![>](./figs/Spiral/LineArcR300.png) |
 | With the red spiral added, ><r> curvature changes smoothly from 0 to the arc radius.  | ![>](./figs/Spiral/LineSpiralL100R300Arc.png) |
 | components  |  |
 
 The geometry of a spiral is more difficult than for lines, arcs, and ellipses.  There are a menagerie of spiral types with varying smoothness and equational complexity.
 
-# "Integrated" spirals
+## "Integrated" spirals
 
 The "best" spirals are those that controlled by controlling curvature -- _not xy position_ -- as a function of distance along the transition.   Getting from the curvature to position requires integrals.   The integrations are highly reliable to nearly full 16-digit machine precision.   These spiral types are objects of type `IntegratedSpiral3d`.
 
@@ -18,10 +20,11 @@ Each type of `IntegratedSpiral3d` has a "snap function" (implemented by a `Norma
 
 The table below shows curvature transitions and derivatives for the various integrated spiral types.
 The horizontal axis is "distance along the curve" and the y axis is "curvature".
-* In the "curvature" column the incoming blue horizontal is the zero curvature of the incoming line in the two figures above. The outgoing green is the nonzero curvature of the outgoing arc.  The red is the spiral transition. We want the thick red curvature value to move smoothly from the lower level to the upper level.
-* In the "derivative" column, the incoming and outgoing green lines are both at the _zero_  level.  The incoming line obviously has no changes in curvature happening.  The outgoing arc has changing _direction_ but is at constant curvature, so its _derivative_ of curvature is back down at the lower level.
-* The zoom column shows a closeup of the derivative at the line-to-spiral transition.  (The step change clothoid is omitted -- it is clear in the derivative column.)
-* The derivative plots reveal subtle differences that are extremely hard to see in the curvature plots themselves.
+
+- In the "curvature" column the incoming blue horizontal is the zero curvature of the incoming line in the two figures above. The outgoing green is the nonzero curvature of the outgoing arc.  The red is the spiral transition. We want the thick red curvature value to move smoothly from the lower level to the upper level.
+- In the "derivative" column, the incoming and outgoing green lines are both at the _zero_  level.  The incoming line obviously has no changes in curvature happening.  The outgoing arc has changing _direction_ but is at constant curvature, so its _derivative_ of curvature is back down at the lower level.
+- The zoom column shows a closeup of the derivative at the line-to-spiral transition.  (The step change clothoid is omitted -- it is clear in the derivative column.)
+- The derivative plots reveal subtle differences that are extremely hard to see in the curvature plots themselves.
 
 (Curvature gets a numeric value as 1 divided by the radius of turning.   Plotting radius itself is not helpful because it goes to infinity in straight sections.)
 
@@ -47,5 +50,6 @@ Note that in the "zoomed derivative" column, there the biquadratic, bloss, and c
 | cosine  | ![>](./figs/Spiral/cosineK.png) | ![>](./figs/Spiral/cosineKPrime.png) | ![>](./figs/Spiral/cosineKPrimeZoom.png) |
 | sine  | ![>](./figs/Spiral/sineK.png) | ![>](./figs/Spiral/sineKPrime.png) | ![>](./figs/Spiral/sineKPrimeZoom.png) |
 
-# "Direct" Spirals
+## "Direct" Spirals
+
 A "Direct" spiral is one for which xy position can be computed "directly" in some equation, with no recourse to integrals of the snap functions above.   The good side of this is that the code complexity to _draw_ the curve is similar to that of that of a bspline curve or elliptic arc.    The bad side of this it that they only approximately match entry and exit radius conditions.

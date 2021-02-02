@@ -12,6 +12,7 @@ $hovered-icon-color: $buic-foreground-primary-tone;
     flex-direction: column;
     width: 100%;
     align-items: flex-start;
+    margin-bottom: 15px;
 
     * {
       box-sizing: border-box;
@@ -21,27 +22,11 @@ $hovered-icon-color: $buic-foreground-primary-tone;
       display: flex;
       align-items: center;
       width: 100%;
-      margin-top: 2px;
-
-      button.map-manager-item-visibility {
-        background-color: transparent;
-        border: none;
-        margin: 0 2px;
-        color: $buic-foreground-body;
-        background-color: transparent;
-
-        &:hover {
-          color: $hovered-icon-color;
-        }
-        &:focus {
-          outline: none;
-          box-shadow: $uicore-button-focus-boxshadow;
-        }
-      }
+      margin-top: 5px;
 
       .map-transparency-popup-button {
         background-color: transparent;
-        margin-left: auto;
+        margin-left: 5px;
         width: 40px;
         border: none;
         color: $buic-foreground-body;
@@ -51,13 +36,8 @@ $hovered-icon-color: $buic-foreground-primary-tone;
         }
       }
     }
-
     .map-manager-base-label {
-      font-size: $uicore-font-size;
-      width: auto;
-      white-space: nowrap;
-      flex: 1 1 auto;
-      margin-bottom: 4px;
+      padding-right: 10px;
     }
     .map-manager-base-item {
       display: flex;

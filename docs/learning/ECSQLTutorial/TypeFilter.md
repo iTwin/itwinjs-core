@@ -14,9 +14,11 @@ ECSQL allows filters by type
 > *Goal:* Returns elements only if it's either of type GeometricElement3d, GeometricElement2d, or any of their sub-classes
 >
 > *ECSQL*
+>
 > ```sql
 > SELECT * FROM bis.Element WHERE ECClassId IS (bis.GeometricElement3d, bis.GeometricElement2d
 > ```
+>
 <iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT * FROM bis.Element WHERE ECClassId IS (bis.GeometricElement3d, bis.GeometricElement2d)"></iframe>
 
 ---
@@ -26,9 +28,11 @@ ECSQL allows filters by type
 > *Goal:* Returns elements only if it's exactly of the specified types - sub-classes are not included
 >
 > *ECSQL*
+>
 > ```sql
 > SELECT * FROM bis.Element WHERE ECClassId IS (ONLY Generic.PhysicalObject, ONLY BisCore.LightLocation)
 > ```
+>
 <iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT * FROM bis.Element WHERE ECClassId IS (ONLY Generic.PhysicalObject, ONLY BisCore.LightLocation)"></iframe>
 
 ---
@@ -38,9 +42,13 @@ ECSQL allows filters by type
 > *Goal:* Inverts the selection set
 >
 > *ECSQL*
+>
 > ```sql
 > SELECT * FROM bis.Element WHERE ECClassId IS NOT (ONLY Generic.PhysicalObject, ONLY BisCore.LightLocation)
 > ```
+>
 <iframe class="embedded-console" src="/console/?imodel=HouseSample&query=SELECT * FROM bis.Element WHERE ECClassId IS NOT (ONLY Generic.PhysicalObject, ONLY Biscore.LightLocation)"></iframe>
 
 ---
+
+[**< Previous**](./ChangeSummaryQueries.md) &nbsp; | &nbsp; [**Next >**](./ConditionalExpr.md)

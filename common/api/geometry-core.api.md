@@ -1916,7 +1916,7 @@ export class Geometry {
     static clampToStartEnd(x: number, a: number, b: number): number;
     static conditionalDivideCoordinate(numerator: number, denominator: number, largestResult?: number): number | undefined;
     static conditionalDivideFraction(numerator: number, denominator: number): number | undefined;
-    static correctSmallMetricDistance(distance: number, replacement?: number): number;
+    static correctSmallMetricDistance(distance: number | undefined, replacement?: number): number;
     static crossProductMagnitude(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number): number;
     static crossProductXYXY(ux: number, uy: number, vx: number, vy: number): number;
     static crossProductXYZXYZ(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number, result?: Vector3d): Vector3d;
@@ -3701,7 +3701,7 @@ export class PlaneByOriginAndVectors4d {
 export class Point2d extends XY implements BeJSONFunctions {
     constructor(x?: number, y?: number);
     addForwardLeft(tangentFraction: number, leftFraction: number, vector: Vector2d): Point2d;
-    clone(): Point2d;
+    clone(result?: Point2d): Point2d;
     static create(x?: number, y?: number, result?: Point2d): Point2d;
     static createFrom(xy: XAndY | undefined, result?: Point2d): Point2d;
     static createZero(result?: Point2d): Point2d;
@@ -5411,7 +5411,7 @@ export type VariantCurveExtendParameter = boolean | CurveExtendMode | CurveExten
 export class Vector2d extends XY implements BeJSONFunctions {
     constructor(x?: number, y?: number);
     angleTo(vectorB: XAndY): Angle;
-    clone(): Vector2d;
+    clone(result?: Vector2d): Vector2d;
     static create(x?: number, y?: number, result?: Vector2d): Vector2d;
     static createFrom(data: XAndY | Float64Array, result?: Vector2d): Vector2d;
     static createOffsetBisector(unitPerpA: Vector2d, unitPerpB: Vector2d, offset: number): Vector2d | undefined;

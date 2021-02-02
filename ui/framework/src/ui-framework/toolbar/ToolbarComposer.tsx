@@ -271,26 +271,13 @@ export function ToolbarComposer(props: ExtensibleToolbarProps) {
   const useProximityOpacity = useProximityOpacitySetting();
 
   if ("1" === version) {
-    const createReactNodes = (): React.ReactNode => {
-      const availableItems = toolbarItems;
-      if (0 === availableItems.length)
-        return null;
-
-      const createdNodes = availableItems.map((item: CommonToolbarItem) => {
-        return ToolbarHelper.createNodeForToolbarItem(item);
-      });
-      return createdNodes;
-    };
-
-    return <Toolbar
-      expandsTo={expandsTo}
-      panelAlignment={panelAlignment}
-      items={
-        <>
-          {createReactNodes()}
-        </>
-      }
-    />;
+    return (
+      <ToolbarUi1
+        items={toolbarItems}
+        expandsTo={expandsTo}
+        panelAlignment={panelAlignment}
+      />
+    );
   }
 
   return <ToolbarWithOverflow
@@ -300,5 +287,39 @@ export function ToolbarComposer(props: ExtensibleToolbarProps) {
     useDragInteraction={isDragEnabled}
     toolbarOpacitySetting={useProximityOpacity && !UiFramework.isMobile() ? ToolbarOpacitySetting.Proximity : /* istanbul ignore next */ ToolbarOpacitySetting.Defaults}
   />;
-
 }
+
+interface ToolbarUi1Props {
+  items: CommonToolbarItem[];
+  expandsTo: Direction;
+  panelAlignment: ToolbarPanelAlignment;
+}
+
+/** Toolbar rendered in 1.0 mode.
+ * @internal
+ */
+const ToolbarUi1 = React.memo<ToolbarUi1Props>(function ToolbarUi1({
+  items,
+  expandsTo,
+  panelAlignment,
+}) {
+  const createReactNodes = (): React.ReactNode => {
+    if (0 === items.length)
+      return null;
+
+    const createdNodes = items.map((item: CommonToolbarItem) => {
+      return ToolbarHelper.createNodeForToolbarItem(item);
+    });
+    return createdNodes;
+  };
+
+  return <Toolbar
+    expandsTo={expandsTo}
+    panelAlignment={panelAlignment}
+    items={
+      <>
+        {createReactNodes()}
+      </>
+    }
+  />;
+});

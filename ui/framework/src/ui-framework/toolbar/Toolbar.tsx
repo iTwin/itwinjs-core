@@ -135,7 +135,7 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
     // Review all the itemDefs to see if any are monitoring sync events in SyncUiEventArgs
     for (const item of itemList) {
       if (item.stateFunc && item.stateSyncIds && item.stateSyncIds.length > 0 && // eslint-disable-line deprecation/deprecation
-        item.stateSyncIds.some((value: string): boolean => args.eventIds.has(value))) { // eslint-disable-line deprecation/deprecation
+        item.stateSyncIds.some((value: string): boolean => args.eventIds.has(value.toLowerCase()))) { // eslint-disable-line deprecation/deprecation
         if (item instanceof GroupItemDef) {
           this.setCurrentStateValues(item);
           this._processSyncUiEvent(item.items, args);

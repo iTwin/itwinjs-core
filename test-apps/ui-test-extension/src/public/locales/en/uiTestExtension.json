@@ -22,6 +22,8 @@
     "Units": "Units",
     "Metric": "Metric",
     "Imperial": "Imperial",
+    "UsSurvey": "US Survey",
+    "UsCustomary": "US Customary",
     "UnitsFlyover": "Update the units system active in the user interface"
   },
   "tools": {
@@ -58,6 +60,20 @@
       "Prompts": {
         "identifyElement": "Identify Element",
         "identifyPosition": "Identify Position"
+      }
+    }
+  },
+  "properties": {
+    "widget-label": "Properties",
+    "too-many-elements-selected": "Too many elements selected",
+    "context-menu": {
+      "add-favorite": {
+        "label": "Add to Favorite",
+        "description": "Add this property to Favorite category"
+      },
+      "remove-favorite": {
+        "label": "Remove from Favorite",
+        "description": "Remove this property from Favorite category"
       }
     }
   }

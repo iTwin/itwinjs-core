@@ -54,6 +54,7 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
 * `fdt project extents` - Toggles display of a decoration illustrating the iModel's project extents.
 * `fdt freeze scene` - Toggles scene freeze for the active viewport. While scene freeze is enabled, the same set of tiles will continue to be displayed until the scene is unfrozen - no new tiles will be loaded. Useful for zooming in or out to inspect geometry inside specific tiles.
 * `fdt section cut` - Specify whether a clip volume applied to the view should produce cut geometry at intersections with the design models. This controls `ViewState.details.clipStyle.produceCutGeometry`.
+* `fdt particle snow` - Toggle a particle effect simulating snowfall for the active viewport.
 * `fdt frustum selected` - Toggles a decoration representing the current frustum of the selected viewport. The decoration is displayed in any *other* open viewports - so if no other viewports are open, this key-in has no effect.
 * `fdt shadow frustum` - Like `fdt frustum selected`, but visualizes the frustum used to select tiles for the shadow map (when shadows are enabled).
 * `fdt frustum snapshot` - Toggles a decoration representing the current frustum of the active viewport. The decoration remains displayed until it is toggled back off. `fdt frustum selected` is much more useful, but requires at least two open viewports.  Including `fdt snapshot preload` will also display the preload frustum decoration.
@@ -82,9 +83,11 @@ This package supplies several examples of screen-space post-processing effects t
 
 * `fdt effect add` - append the specified effect to the selected viewport's list of effects. Effects are applied in the order in which they appear in that list. Available effect names are:
   * "lensdistortion" - simulates the "fish-eye" distortion produced by real-world cameras with very wide fields of view.
+  * "saturation" - adjusts the saturation of each pixel in the image.
   * "flip" - mostly useless except for demonstration purposes: flips the image horizontally and/or vertically, and/or inverts the color of each pixel.
   * Six "convolution kernel" effects that alter the image by blending neighboring pixels in different ways: "blur", "sharpen", "unsharpen", "emboss", "edgedetect", and "sharpness".
 * `fdt effect clear` - remove all effects from the selected viewport.
+* `fdt effect config saturation` - configure the saturation effect. Accepts one argument of the form `multiplier=x` where `x` is a floating point number by which to multiply each color's saturation. The default multiplier is 2.0.
 * `fdt effect config flip` - configure the "flip" effect. Accepts any combination of the following arguments; any argument omitted defaults to 0.
   * "horizontal=0|1" - 1 to flip horizontally.
   * "vertical=0|1" - 1  to flip vertically.
@@ -92,6 +95,12 @@ This package supplies several examples of screen-space post-processing effects t
 * `fdt effect config lensdistortion` - configure the lens distortion effect. Accepts any combination of the following arguments, any argument omitted defaults to 0.5.
   * "strength=[0..1]" - the magnitude of the distortion. 0 = perspective; 1 = stereographic.
   * "ratio=[0..1]" - the cylindrical ratio of the distortion. 1 = spherical.
+
+### Particle effect key-ins
+
+This package supplies a couple of examples illustrating how to implement particle effects using decorators, exposed via the following key-ins:
+
+* `fdt particle snow` - Toggle a snowfall effect for the active viewport.
 
 ### Other key-ins
 

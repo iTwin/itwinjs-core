@@ -10,7 +10,7 @@ The build-tools package includes a number of preconfigured node.js scripts to ea
 
 Suggested Package:
 
-* [TypeScript](https://www.typescriptlang.org/)
+- [TypeScript](https://www.typescriptlang.org/)
 
 With a properly configured tsconfig.json file, running the TypeScript compiler with `tsc` should be enough for backend libraries and simple backend agents/services. For more information about tsconfig properties, see the [TypeScript website](https://www.typescriptlang.org/docs/handbook/tsconfig-json.html).  Frontend services or applications may require the use of Webpack or another more involved build solution.
 
@@ -18,7 +18,7 @@ With a properly configured tsconfig.json file, running the TypeScript compiler w
 
 Suggested Package:
 
-* [rimraf](https://github.com/isaacs/rimraf)
+- [rimraf](https://github.com/isaacs/rimraf)
 
 Use rimraf as a cross-platform way to remove output folders (For example: rimraf ./lib). This package functions in a similar manner to the `rm -rf` command in Unix shells.
 
@@ -26,7 +26,7 @@ Use rimraf as a cross-platform way to remove output folders (For example: rimraf
 
 Suggested Package:
 
-* [cpx](https://www.npmjs.com/package/cpx)
+- [cpx](https://www.npmjs.com/package/cpx)
 
 cpx is a cross-platform copy utility for copying globs of files from a source to a destination directory. Useful for copying around files such as test files or assets.
 
@@ -34,7 +34,7 @@ cpx is a cross-platform copy utility for copying globs of files from a source to
 
 Suggested Package:
 
-* [mocha](https://mochajs.org/)
+- [mocha](https://mochajs.org/)
 
 Mocha is a flexible javascript test runner that can be used to run TypeScript test code in two ways: by either running the compiled JavaScript output of the TypeScript tests, or by running the TypeScript tests/source code directly using the [ts-node](https://github.com/TypeStrong/ts-node). Running Mocha with ts-node allows us to generate accurate code coverage numbers for the TypeScript source files.
 
@@ -42,17 +42,9 @@ Mocha is a flexible javascript test runner that can be used to run TypeScript te
 
 Suggested Package:
 
-* [nyc](https://github.com/istanbuljs/nyc) (this is the command line utility for [Istanbul](https://istanbul.js.org/))
+- [nyc](https://github.com/istanbuljs/nyc) (this is the command line utility for [Istanbul](https://istanbul.js.org/))
 
 Istanbul can be [used together with mocha](http://rundef.com/typescript-code-coverage-istanbul-nyc) (in a ts-node configuration) to provide code coverage numbers and reports based on the package's test suite. This can be accomplished by running a ts-node test command directly with nyc (ex: `nyc run npm test:tsnode`). Several types of reports are available, such as a summary of coverage in the console window or an html output that shows specifically which statements have been covered.
-
-## Linting
-
-Suggested Package:
-
-* [tslint](https://palantir.github.io/tslint/)
-
-TSLint can be run separate from VS Code by using the package's CLI. This can be useful for verifying code before committing or for testing linting rules as part of a continuous integration process.
 
 ## Other useful packages
 

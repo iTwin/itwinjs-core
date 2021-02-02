@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Presentation } from "@bentley/presentation-frontend";
-import { initializeLocalization } from "./presentation-components/common/Utils";
+import { initializeLocalization, initializePropertyValueRenderers } from "./presentation-components/common/Utils";
 
 /* eslint-disable deprecation/deprecation */
 
@@ -11,7 +11,7 @@ import { initializeLocalization } from "./presentation-components/common/Utils";
  * @module Core
  *
  * @docs-group-description Core
- * Common types used all across presentation-component package.
+ * Common types used all across ($presentation-components) package.
  */
 export { IPresentationDataProvider } from "./presentation-components/common/IPresentationDataProvider";
 export { IUnifiedSelectionComponent } from "./presentation-components/common/IUnifiedSelectionComponent";
@@ -24,15 +24,23 @@ export { useRulesetRegistration } from "./presentation-components/hooks/UseRules
  * @module Logging
  *
  * @docs-group-description Logging
- * Types related to logging in this package.
+ * Types related to logging in ($presentation-components) package.
  */
 export * from "./presentation-components/ComponentsLoggerCategory";
+
+/**
+ * @module Properties
+ *
+ * @docs-group-description Properties
+ * Presentation-specific [Properties]($ui-components:Properties).
+ */
+export { InstanceKeyValueRenderer } from "./presentation-components/properties/InstanceKeyValueRenderer";
 
 /**
  * @module PropertyGrid
  *
  * @docs-group-description PropertyGrid
- * Types related to `PropertyGrid` component in `@bentley/ui-components` package.
+ * Presentation features for [PropertyGrid]($ui-components) component.
  */
 export { IPresentationPropertyDataProvider, PresentationPropertyDataProvider, PresentationPropertyDataProviderProps, DEFAULT_PROPERTY_GRID_RULESET } from "./presentation-components/propertygrid/DataProvider";
 export { propertyGridWithUnifiedSelection, PropertyGridWithUnifiedSelectionProps } from "./presentation-components/propertygrid/WithUnifiedSelection";
@@ -43,7 +51,7 @@ export * from "./presentation-components/propertygrid/UseUnifiedSelection";
  * @module FavoriteProperties
  *
  * @docs-group-description FavoriteProperties
- * Types related to `FavoriteProperties` component in `@bentley/ui-components` package.
+ * Presentation features for [Favorite properties]($ui-components:Favorite).
  */
 export { FavoritePropertiesDataProvider, FavoritePropertiesDataProviderProps } from "./presentation-components/favorite-properties/DataProvider";
 
@@ -51,7 +59,7 @@ export { FavoritePropertiesDataProvider, FavoritePropertiesDataProviderProps } f
  * @module Table
  *
  * @docs-group-description Table
- * Types related to `Table` component in `@bentley/ui-components` package.
+ * Presentation features for [Table]($ui-components) component.
  */
 export { IPresentationTableDataProvider, PresentationTableDataProvider, PresentationTableDataProviderProps } from "./presentation-components/table/DataProvider";
 export { tableWithUnifiedSelection, TableWithUnifiedSelectionProps } from "./presentation-components/table/WithUnifiedSelection";
@@ -60,10 +68,11 @@ export { tableWithUnifiedSelection, TableWithUnifiedSelectionProps } from "./pre
  * @module Tree
  *
  * @docs-group-description Tree
- * Types related to `Tree` component in `@bentley/ui-components` package.
+ * Presentation features for [Tree]($ui-components:Tree) component.
  */
 export { PresentationTreeDataProvider, PresentationTreeDataProviderProps, PresentationTreeDataProviderDataSourceEntryPoints } from "./presentation-components/tree/DataProvider";
 export { IPresentationTreeDataProvider } from "./presentation-components/tree/IPresentationTreeDataProvider";
+export { IFilteredPresentationTreeDataProvider } from "./presentation-components/tree/FilteredDataProvider";
 export { DEPRECATED_treeWithUnifiedSelection, TreeWithUnifiedSelectionProps } from "./presentation-components/tree/WithUnifiedSelection";
 export { DEPRECATED_treeWithFilteringSupport, TreeWithFilteringSupportProps } from "./presentation-components/tree/WithFilteringSupport";
 export { UnifiedSelectionTreeEventHandler, UnifiedSelectionTreeEventHandlerParams, useUnifiedSelectionTreeEventHandler } from "./presentation-components/tree/controlled/UseUnifiedSelection";
@@ -76,7 +85,7 @@ export { usePresentationTreeNodeLoader, PresentationTreeNodeLoaderProps } from "
  * @module Viewport
  *
  * @docs-group-description Viewport
- * Types related to `Viewport` component in `@bentley/ui-components` package.
+ * Presentation features for [ViewportComponent]($ui-components).
  */
 export { viewWithUnifiedSelection, ViewWithUnifiedSelectionProps } from "./presentation-components/viewport/WithUnifiedSelection";
 
@@ -84,8 +93,17 @@ export { viewWithUnifiedSelection, ViewWithUnifiedSelectionProps } from "./prese
  * @module DisplayLabels
  *
  * @docs-group-description DisplayLabels
- * Types related to display labels
+ * Types related to display labels.
  */
 export { IPresentationLabelsProvider, PresentationLabelsProvider, PresentationLabelsProviderProps } from "./presentation-components/labels/LabelsProvider";
 
+/**
+ * @module UnifiedSelection
+ *
+ * @docs-group-description UnifiedSelection
+ * Utilities for working with [Unified Selection]($docs/learning/presentation/Unified-Selection/index.md) within [React](https://reactjs.org/) components.
+ */
+export { UnifiedSelectionContext, UnifiedSelectionContextProvider, UnifiedSelectionContextProviderProps, UnifiedSelectionState, useUnifiedSelectionContext } from "./presentation-components/unified-selection/UnifiedSelectionContext";
+
 Presentation.registerInitializationHandler(initializeLocalization);
+Presentation.registerInitializationHandler(initializePropertyValueRenderers);

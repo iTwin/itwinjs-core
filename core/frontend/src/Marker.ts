@@ -284,8 +284,9 @@ export class Marker implements CanvasDecoration {
   public addMarker(context: DecorateContext) {
     context.addCanvasDecoration(this);
     if (undefined !== this.htmlElement) {
-      context.addHtmlDecoration(this.htmlElement);    // if this Marker has an HTMLElement, add it to the DOM
-      this.positionHtml(); // and position it relative to the Marker location
+      // add this Marker to the DOM
+      context.addHtmlDecoration(this.htmlElement);
+      this.positionHtml(); // always reposition it
     }
   }
 

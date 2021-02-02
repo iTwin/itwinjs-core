@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-// import { expect } from "chai";
+import { expect } from "chai";
 import * as sinon from "sinon";
 
 import { AccuDrawField, AccuDrawMode, AccuDrawUiAdmin } from "../../ui-abstract/accudraw/AccuDrawUiAdmin";
@@ -18,7 +18,7 @@ describe("AccuDrawUiAdmin", () => {
   it("setFieldValueToUi should emit AccuDrawSetFieldValueToUiEvent", () => {
     const spy = sinon.spy();
     const remove = AccuDrawUiAdmin.onAccuDrawSetFieldValueToUiEvent.addListener(spy);
-    accuDrawUiAdmin.setFieldValueToUi(AccuDrawField.Angle, 1.0);
+    accuDrawUiAdmin.setFieldValueToUi(AccuDrawField.Angle, 1.0, "1.0");
     spy.calledOnce.should.true;
     remove();
   });
@@ -26,7 +26,7 @@ describe("AccuDrawUiAdmin", () => {
   it("setFieldValueFromUi should emit AccuDrawSetFieldValueFromUiEvent", () => {
     const spy = sinon.spy();
     const remove = AccuDrawUiAdmin.onAccuDrawSetFieldValueFromUiEvent.addListener(spy);
-    accuDrawUiAdmin.setFieldValueFromUi(AccuDrawField.Angle, 1.0, "1.0");
+    accuDrawUiAdmin.setFieldValueFromUi(AccuDrawField.Angle, "1.0");
     spy.calledOnce.should.true;
     remove();
   });
@@ -53,6 +53,18 @@ describe("AccuDrawUiAdmin", () => {
     accuDrawUiAdmin.setMode(AccuDrawMode.Rectangular);
     spy.calledOnce.should.true;
     remove();
+  });
+
+  it("grabInputFocus should emit AccuDrawGrabInputFocusEvent", () => {
+    const spy = sinon.spy();
+    const remove = AccuDrawUiAdmin.onAccuDrawGrabInputFocusEvent.addListener(spy);
+    accuDrawUiAdmin.grabInputFocus();
+    spy.calledOnce.should.true;
+    remove();
+  });
+
+  it("hasInputFocus should return false", () => {
+    expect(accuDrawUiAdmin.hasInputFocus).to.be.false;
   });
 
 });

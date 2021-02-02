@@ -18,11 +18,17 @@ import { Texture } from "../Texture";
 import { addUInt32s } from "./Common";
 import { unquantize2d } from "./Decode";
 import { addSolarShadowMap } from "./SolarShadowMapping";
-import { addModelViewProjectionMatrix } from "./Vertex";
+import { octDecodeNormal } from "./Surface";
+import { addModelViewProjectionMatrix, addNormalMatrix } from "./Vertex";
 import { addThematicDisplay, getComputeThematicIndex } from "./Thematic";
 import { addColorPlanarClassifier } from "./PlanarClassification";
 
 const computePosition = "gl_PointSize = 1.0; return MAT_MVP * rawPos;";
+const computeNormal = `
+  vec3 normal = octDecodeNormal(a_norm); // normal coming in for terrain is already in world space
+  g_hillshadeIndex = normal.z;           // save off world Z for thematic hill shade mode index
+  return normalize(u_worldToViewN * normal);
+`;
 
 const applyTexture = `
 bool applyTexture(inout vec4 col, sampler2D sampler, mat4 params) {
@@ -167,8 +173,17 @@ export default function createTerrainMeshBuilder(flags: TechniqueFlags, _feature
     addColorPlanarClassifier(builder, true /* Transparency? */, thematic);
 
   if (IsThematic.Yes === thematic) {
+    addNormalMatrix(builder.vert);
+    builder.vert.addFunction(octDecodeNormal);
+    builder.vert.addGlobal("g_hillshadeIndex", VariableType.Float);
+    builder.addFunctionComputedVarying("v_n", VariableType.Vec3, "computeLightingNormal", computeNormal);
     addThematicDisplay(builder, false, true);
-    builder.addInlineComputedVarying("v_thematicIndex", VariableType.Float, getComputeThematicIndex(builder.vert.usesInstancedGeometry, true)); // For now do not support slope and hillshade
+    builder.addInlineComputedVarying("v_thematicIndex", VariableType.Float, getComputeThematicIndex(builder.vert.usesInstancedGeometry, false, false));
+    builder.vert.addUniform("u_worldToViewN", VariableType.Mat3, (prog) => {
+      prog.addGraphicUniform("u_worldToViewN", (uniform, params) => {
+        params.target.uniforms.branch.bindWorldToViewNTransform(uniform, params.geometry, false);
+      });
+    });
     builder.frag.addUniform("s_texture", VariableType.Sampler2D, (prog) => {
       prog.addGraphicUniform("s_texture", (uniform, params) => {
         params.target.uniforms.thematic.bindTexture(uniform, gradientTextureUnit >= 0 ? gradientTextureUnit : (params.target.drawForReadPixels ? TextureUnit.ShadowMap : TextureUnit.PickDepthAndOrder));

@@ -1,3 +1,6 @@
+---
+ignoreMarkdownIssues: true
+---
 # Markdown Introduction
 
 We have standardized on [markdown](http://commonmark.org/) files for programmer guide documentation.
@@ -28,59 +31,72 @@ Use 3 hyphens for a horizontal rule:
 
 ---
 
-## Bullet list:
+## Bullet list
 
 ```md
-* apples
-* oranges
-* pears
-  * subList
-  * subList
+- apples
+- oranges
+- pears
+  - subList
+  - subList
 ```
-* apples
-* oranges
-* pears
-  * subList
-  * subList
+
+- apples
+- oranges
+- pears
+  - subList
+  - subList
 
 ---
-## Numbered list:
+
+## Numbered list
 
 ```md
   1. apples
-     * subList
-     * subList
+     - subList
+     - subList
   1. oranges
   1. pears
 ```
+
   1. apples
-     * subList
-     * subList
+      - subList
+      - subList
   2. oranges
   3. pears
 
 ---
+
 ## Notes
+
 ```md
 > Note: this is an example note.
 ```
+
 > Note: this is an example note.
 
 ---
+
 ## HTTP Links
+
 ```md
 A [link](https://en.wikipedia.org/wiki/Markdown)
 ```
+
 A [link](https://en.wikipedia.org/wiki/Markdown)
 
 ---
+
 ## Images
+
 ```md
 An image: ![alternate text](logo.png "tooltip text")
 ```
+
 An image: ![alternate text](logo.png "tooltip text")
 
 ---
+
 ## Source Code
 
 Use backticks for inline source code: `public static myPublicStaticMethod(x: number): Promise<string>`
@@ -100,6 +116,7 @@ public static myPublicStaticMethod(x: number): Promise<string> {
 ## Tables
 
 Tables are created by adding pipes as dividers between each cell, and by adding a line of dashes (also separated by bars) beneath the header. Note that the pipes do not need to be vertically aligned.
+
 ```md
 Option|Description
 ---|---
@@ -107,6 +124,7 @@ data |path to data files that will be passed into templates.
 engine |engine to be used for processing templates.
 ext|extension to be used for destination files.
 ```
+
 Option|Description
 ---|---
 data |path to data files that will be passed into templates.
@@ -129,7 +147,6 @@ ignore: true
 
 The markdown will not be processed and will not be present in the final output.
 
-
 ## LaTex-like syntax
 
 We have implemented a math typesetting library with a syntax similar to LaTex, called [KaTex](https://katex.org/). To insert an equation, add a source code snippet with the language `math` or equation.
@@ -139,24 +156,31 @@ f(x) = \int_{-\infty}^\infty
     \hat f(\xi)\,e^{2 \pi i \xi x}
     \,d\xi
 ```
+
 Results in
+
 ```equation
 f(x) = \int_{-\infty}^\infty
     \hat f(\xi)\,e^{2 \pi i \xi x}
     \,d\xi
 ```
 
-#### KaTex options
+### KaTex options
 
 KaTex options can be customized by editing the `katexOptions` entry in docs/config/docSites.json. For example, a KaTex macro can be defined in `macros`:
+
 ```json
   "\\rowXYZ": "{\\begin{bmatrix} #1 & #2 & #3\\end{bmatrix}}"
 ```
+
 Then
+
 ```md
   \rowXYZ{x}{y}{z}
 ```
+
 Results in
+
 ```math
   \rowXYZ{x}{y}{z}
 ```

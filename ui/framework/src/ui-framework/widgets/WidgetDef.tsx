@@ -118,6 +118,7 @@ export class WidgetDef {
   private _tooltip: string | ConditionalStringValue | StringGetter = "";
   private _widgetReactNode: React.ReactNode;
   private _widgetControl!: WidgetControl;
+  private _defaultState: WidgetState = WidgetState.Unloaded;
   private _state: WidgetState = WidgetState.Unloaded;
   private _id: string;
   private _classId: string | ConfigurableUiControlConstructor | undefined = undefined;
@@ -171,6 +172,9 @@ export class WidgetDef {
   public get tabLocation() { return this._tabLocation; }
   public set tabLocation(tabLocation: TabLocation) { this._tabLocation = tabLocation; }
 
+  /** @internal */
+  public get defaultState() { return this._defaultState; }
+
   constructor(widgetProps: WidgetProps) {
     if (widgetProps.id !== undefined)
       this._id = widgetProps.id;
@@ -201,8 +205,10 @@ export class WidgetDef {
     else if (widgetProps.classId !== undefined)
       me._classId = widgetProps.classId;
 
-    if (widgetProps.defaultState !== undefined)
+    if (widgetProps.defaultState !== undefined) {
       me._state = widgetProps.defaultState;
+      me._defaultState = widgetProps.defaultState;
+    }
 
     if (widgetProps.isFreeform !== undefined) {
       me._isFreeform = widgetProps.isFreeform;
@@ -258,7 +264,7 @@ export class WidgetDef {
   }
 
   private _handleSyncUiEvent = (args: SyncUiEventArgs): void => {
-    if ((this.syncEventIds.length > 0) && this.syncEventIds.some((value: string): boolean => args.eventIds.has(value))) {
+    if ((this.syncEventIds.length > 0) && this.syncEventIds.some((value: string): boolean => args.eventIds.has(value.toLowerCase()))) {
       // istanbul ignore else
       if (this.stateFunc) {
         let newState = this.state;

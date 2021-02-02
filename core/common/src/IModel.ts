@@ -77,13 +77,13 @@ export interface IModelProps {
 }
 
 /** Supplies the name of the [EventSource]($frontend) through which the backend pushes notifications to the frontend.
- * @internal
+ * @alpha
  */
 export interface IModelEventSourceProps {
   eventSourceName: string;
 }
 
-/** @internal */
+/** @alpha */
 export type IModelConnectionProps = IModelProps & IModelRpcProps & IModelEventSourceProps;
 
 /** The properties that can be supplied when creating a *new* iModel.
@@ -126,6 +126,8 @@ export interface OpenDbKey {
 export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey {
   /** @internal */
   lazyBlockCache?: boolean;
+  /** @internal */
+  autoUploadBlocks?: boolean;
 }
 
 /** Options that can be supplied when opening an existing StandaloneDb.

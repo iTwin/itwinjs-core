@@ -376,6 +376,8 @@ export interface ContextMenuProps extends CommonProps {
     edgeLimit?: boolean;
     floating?: boolean;
     hotkeySelect?: boolean;
+    // @internal (undocumented)
+    ignoreNextKeyUp?: boolean;
     onEsc?: (data: any) => any;
     onOutsideClick?: (event: MouseEvent) => any;
     onSelect?: (event: any) => any;
@@ -2445,7 +2447,7 @@ export function WebFontIcon(props: WebFontIconProps): JSX.Element;
 export interface WebFontIconProps extends CommonProps {
     iconClassName?: string;
     iconName: string;
-    iconSize?: "small" | "medium" | "large" | "x-large";
+    iconSize?: "x-small" | "small" | "medium" | "large" | "x-large";
     onClick?: React.MouseEventHandler<HTMLSpanElement>;
     title?: string;
 }

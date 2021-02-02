@@ -15,16 +15,12 @@ import getSupportedRpcs from "../common/rpcs";
 import { initializeLogging } from "./web/BackendServer";
 import { BackendApplicationInsightsClient } from "@bentley/backend-application-insights-client";
 
-if (electron) {
-  require("@bentley/electron-manager"); // static electron manager initialization
-}
-
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   try {
     // Load .env file first so it's added to `Config.App` below when it parses the environment variables.
     if (fs.existsSync(path.join(process.cwd(), ".env"))) {
       require("dotenv-expand")( // eslint-disable-line @typescript-eslint/no-var-requires
-        require("dotenv").config(),
+        require("dotenv").config(), // eslint-disable-line @typescript-eslint/no-var-requires
       );
     }
 

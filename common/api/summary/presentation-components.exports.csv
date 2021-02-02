@@ -20,6 +20,8 @@ alpha;FavoritePropertiesDataFiltererProps
 beta;FavoritePropertiesDataProvider 
 beta;FavoritePropertiesDataProviderProps
 public;IContentDataProvider 
+public;IFilteredPresentationTreeDataProvider 
+beta;InstanceKeyValueRenderer 
 public;IPresentationDataProvider 
 public;IPresentationLabelsProvider
 public;IPresentationPropertyDataProvider = IPropertyDataProvider & IContentDataProvider
@@ -44,12 +46,17 @@ public;tableWithUnifiedSelection
 public;TableWithUnifiedSelectionProps
 public;TreeWithFilteringSupportProps
 public;TreeWithUnifiedSelectionProps
+beta;UnifiedSelectionContext
+beta;UnifiedSelectionContextProvider(props: UnifiedSelectionContextProviderProps): React.ReactElement
+beta;UnifiedSelectionContextProviderProps
+beta;UnifiedSelectionState = (selectionLevel?: number) => Readonly
 beta;UnifiedSelectionTreeEventHandler 
 beta;UnifiedSelectionTreeEventHandlerParams
 beta;useControlledTreeFiltering(props: ControlledTreeFilteringProps):
 beta;usePresentationTreeNodeLoader(props: PresentationTreeNodeLoaderProps): PagedTreeNodeLoader
 beta;usePropertyDataProviderWithUnifiedSelection(props: PropertyDataProviderWithUnifiedSelectionProps):
 public;useRulesetRegistration(ruleset: Ruleset): void
+beta;useUnifiedSelectionContext(): UnifiedSelectionContext | undefined
 beta;useUnifiedSelectionTreeEventHandler(props: UnifiedSelectionTreeEventHandlerParams): UnifiedSelectionTreeEventHandler
 public;viewWithUnifiedSelection
 public;ViewWithUnifiedSelectionProps

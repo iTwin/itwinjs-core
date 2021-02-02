@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import imperialIconSvg from "@bentley/icons-generic/icons/app-2.svg?sprite";
+import automationIconSvg from "@bentley/icons-generic/icons/automation.svg?sprite";
 import {
   IModelApp, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType,
   QuantityType,
@@ -33,108 +34,48 @@ import { PresentationUnitSystem } from "@bentley/presentation-common";
 // cSpell:ignore appui appuiprovider
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function UnitsFormatDialog() {
-  const [unitFormat, setUnitFormat] = React.useState(IModelApp.quantityFormatter.useImperialFormats ? "imperial" : "metric");
+  const [unitFormat, setUnitFormat] = React.useState(IModelApp.quantityFormatter.activeUnitSystem);
   const dialogTitle = React.useRef("Select Unit Format");
 
   React.useEffect(() => {
-    async function setFormatType() {
-      const usingImperialFormats = IModelApp.quantityFormatter.useImperialFormats;
-      if (!usingImperialFormats) {
-        if (unitFormat !== "metric")
-          setUnitFormat("metric");
-        return;
-      }
-      const formatSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length, true);
-      if (formatSpec.unitConversions[0].name === "Units.US_SURVEY_FT") {
-        if (unitFormat !== "us-survey")
-          setUnitFormat("us-survey");
-      } else {
-        if (unitFormat !== "imperial")
-          setUnitFormat("imperial");
-      }
-    }
+    const handleUnitSystemChanged = ((): void => {
+      setUnitFormat(IModelApp.quantityFormatter.activeUnitSystem);
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Set Unit System to '${IModelApp.quantityFormatter.activeUnitSystem}'`));
+    });
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    setFormatType();
-  }, [unitFormat, setUnitFormat]);
+    IModelApp.quantityFormatter.onActiveFormattingUnitSystemChanged.addListener(handleUnitSystemChanged);
+    return () => {
+      IModelApp.quantityFormatter.onActiveFormattingUnitSystemChanged.removeListener(handleUnitSystemChanged);
+    };
+  }, [unitFormat]);
 
   const handleClose = React.useCallback(() => {
     ModalDialogManager.closeDialog();
   }, []);
 
   const onRadioChange = React.useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const unitSystem = event.target.value;
 
-    const overrideLengthAndCoordinateEntry = {
-      metric: {
-        composite: {
-          includeZero: true,
-          spacer: " ",
-          units: [{ label: "m", name: "Units.M" }],
-        },
-        formatTraits: ["keepSingleZero", "showUnitLabel"],
-        precision: 4,
-        type: "Decimal",
-      },
-      imperial: {
-        composite: {
-          includeZero: true,
-          spacer: " ",
-          units: [{ label: "ft (US Survey)", name: "Units.US_SURVEY_FT" }],
-        },
-        formatTraits: ["keepSingleZero", "showUnitLabel"],
-        precision: 4,
-        type: "Decimal",
-      },
-    };
-
-    const areaOverrideEntry = {
-      metric: {
-        composite: {
-          includeZero: true,
-          spacer: " ",
-          units: [{ label: "m�", name: "Units.SQ_M" }],
-        },
-        formatTraits: ["keepSingleZero", "showUnitLabel"],
-        precision: 4,
-        type: "Decimal",
-      },
-      imperial: {
-        composite: {
-          includeZero: true,
-          spacer: " ",
-          units: [{ label: "ft� (US Survey)", name: "Units.SQ_US_SURVEY_FT" }],
-        },
-        formatTraits: ["keepSingleZero", "showUnitLabel"],
-        precision: 4,
-        type: "Decimal",
-      },
-    };
-
-    const format = event.target.value;
-
-    switch (format) {
+    switch (unitSystem) {
       case "imperial":
-        await IModelApp.quantityFormatter.clearAllOverrideFormats();
-        IModelApp.quantityFormatter.useImperialFormats = true;
+        setUnitFormat(unitSystem);
         Presentation.presentation.activeUnitSystem = PresentationUnitSystem.BritishImperial;
-        setUnitFormat(format);
-        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Set Format to Imperial"));
+        await IModelApp.quantityFormatter.setActiveUnitSystem(unitSystem);
         break;
       case "metric":
-        await IModelApp.quantityFormatter.clearAllOverrideFormats();
+        setUnitFormat(unitSystem);
         Presentation.presentation.activeUnitSystem = PresentationUnitSystem.Metric;
-        IModelApp.quantityFormatter.useImperialFormats = false;
-        setUnitFormat(format);
-        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Set Format to Metric"));
+        await IModelApp.quantityFormatter.setActiveUnitSystem(unitSystem);
         break;
-      case "us-survey":
-        await IModelApp.quantityFormatter.setOverrideFormats(QuantityType.Length, overrideLengthAndCoordinateEntry);
-        await IModelApp.quantityFormatter.setOverrideFormats(QuantityType.Coordinate, overrideLengthAndCoordinateEntry);
-        await IModelApp.quantityFormatter.setOverrideFormats(QuantityType.Area, areaOverrideEntry);
-        IModelApp.quantityFormatter.useImperialFormats = true;
+      case "usSurvey":
+        setUnitFormat(unitSystem);
         Presentation.presentation.activeUnitSystem = PresentationUnitSystem.UsSurvey;
-        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Set US Survey Overrides"));
-        setUnitFormat(format);
+        await IModelApp.quantityFormatter.setActiveUnitSystem(unitSystem);
+        break;
+      case "usCustomary":
+        setUnitFormat(unitSystem);
+        Presentation.presentation.activeUnitSystem = PresentationUnitSystem.UsCustomary;
+        await IModelApp.quantityFormatter.setActiveUnitSystem(unitSystem);
         break;
       default:
         break;
@@ -161,9 +102,10 @@ export function UnitsFormatDialog() {
         trapFocus={false}
       >
         <div>
-          <Radio label="US Survey" name="unitFormat" value="us-survey" onChange={onRadioChange} checked={unitFormat === "us-survey"} />
           <Radio label="Imperial" name="unitFormat" value="imperial" onChange={onRadioChange} checked={unitFormat === "imperial"} />
           <Radio label="Metric" name="unitFormat" value="metric" onChange={onRadioChange} checked={unitFormat === "metric"} />
+          <Radio label="US Survey" name="unitFormat" value="usSurvey" onChange={onRadioChange} checked={unitFormat === "usSurvey"} />
+          <Radio label="USCustomary" name="unitFormat" value="usCustomary" onChange={onRadioChange} checked={unitFormat === "usCustomary"} />
         </div>
       </Dialog>
     </div>
@@ -373,7 +315,7 @@ export class AppTools {
       iconSpec: pathIconSpec,
       labelKey: "SampleApp:buttons.setLengthFormatMetric",
       execute: () => {
-        IModelApp.quantityFormatter.useImperialFormats = false;
+        IModelApp.quantityFormatter.useImperialFormats = false; // eslint-disable-line deprecation/deprecation
         Presentation.presentation.activeUnitSystem = PresentationUnitSystem.Metric;
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Set Length Format to Metric"));
       },
@@ -387,31 +329,69 @@ export class AppTools {
       iconSpec: spriteIconSpec,
       labelKey: "SampleApp:buttons.setLengthFormatImperial",
       execute: () => {
-        IModelApp.quantityFormatter.useImperialFormats = true;
+        IModelApp.quantityFormatter.useImperialFormats = true; // eslint-disable-line deprecation/deprecation
         Presentation.presentation.activeUnitSystem = PresentationUnitSystem.BritishImperial;
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Set Length Format to Imperial"));
       },
     });
   }
 
-  public static get toggleLengthFormatCommand() {
-    return new CommandItemDef({
-      commandId: "toggleLengthFormat",
-      iconSpec: "icon-info",
-      labelKey: "SampleApp:buttons.toggleLengthFormat",
-      execute: () => {
-        const useImperialFormats = !IModelApp.quantityFormatter.useImperialFormats;
-        IModelApp.quantityFormatter.useImperialFormats = useImperialFormats;
-        Presentation.presentation.activeUnitSystem = useImperialFormats
-          ? PresentationUnitSystem.BritishImperial
-          : PresentationUnitSystem.Metric;
-        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, IModelApp.quantityFormatter.useImperialFormats ? "Set Length Format to Imperial" : "Set Length Format to Metric"));
+  public static get toggleLengthFormatOverrideCommand() {
+    const overrideLengthFormats = {
+      metric: {
+        composite: {
+          includeZero: true,
+          spacer: " ",
+          units: [{ label: "cm", name: "Units.CM" }],
+        },
+        formatTraits: ["keepSingleZero", "showUnitLabel"],
+        precision: 4,
+        type: "Decimal",
       },
-      stateSyncIds: [SyncUiEventId.ActiveContentChanged],
-      stateFunc: (currentState: Readonly<BaseItemState>): BaseItemState => {
-        const returnState: BaseItemState = { ...currentState };
-        returnState.isVisible = ContentViewManager.isContent3dView(ContentViewManager.getActiveContentControl());
-        return returnState;
+      imperial: {
+        composite: {
+          includeZero: true,
+          spacer: " ",
+          units: [{ label: "in", name: "Units.IN" }],
+        },
+        formatTraits: ["keepSingleZero", "showUnitLabel"],
+        precision: 4,
+        type: "Decimal",
+      },
+      usCustomary: {
+        composite: {
+          includeZero: true,
+          spacer: " ",
+          units: [{ label: "in", name: "Units.IN" }],
+        },
+        formatTraits: ["keepSingleZero", "showUnitLabel"],
+        precision: 4,
+        type: "Decimal",
+      },
+      usSurvey: {
+        composite: {
+          includeZero: true,
+          spacer: " ",
+          units: [{ label: "in", name: "Units.US_SURVEY_IN" }],
+        },
+        formatTraits: ["keepSingleZero", "showUnitLabel"],
+        precision: 4,
+        type: "Decimal",
+      },
+    };
+
+    return new CommandItemDef({
+      commandId: "toggleLengthFormatOverride",
+      iconSpec: `svg:${automationIconSvg}`,
+      labelKey: "SampleApp:buttons.toggleLengthFormatOverride",
+      execute: async () => {
+        if (IModelApp.quantityFormatter.hasActiveOverride(QuantityType.Length)) {
+          await IModelApp.quantityFormatter.clearOverrideFormats(QuantityType.Length);
+          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Length Overrides cleared"));
+        } else {
+          await IModelApp.quantityFormatter.setOverrideFormats(QuantityType.Length, overrideLengthFormats);
+          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Length Overrides set"));
+        }
       },
     });
   }

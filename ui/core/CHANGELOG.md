@@ -1,6 +1,55 @@
 # Change Log - @bentley/ui-core
 
-This log was last generated on Sun, 13 Dec 2020 19:00:03 GMT and should not be manually modified.
+This log was last generated on Thu, 28 Jan 2021 13:39:27 GMT and should not be manually modified.
+
+## 2.11.0
+Thu, 28 Jan 2021 13:39:27 GMT
+
+### Updates
+
+- Update components that support providing refs via React.forwardRef to work better with document generation.  
+- Add option to use a 'x-small' webfont icon.
+- Add nested popup support to components that use HOC withOnOutsideClick.
+- Fix bug processing zero value in Select options.
+- Fix calling of onClick and onSelect calls when ContextMenuItem is disabled
+- Lock react-select to 3.1.0 and @types/react-select to 3.0.26 until we can fi
+- updated `ExpandableBlock` component to be able to take in title as JSX.Element and a tooltip, in which title string property can be passed
+- updated `ExpandableBlock` component to be able to take in title as JSX.Element and a tooltip, in which title string property can be passed
+- Add partial checkbox handling to TreeNode
+- Initial implementation of AccuDraw UI
+- Added ui-core learning docs content and added Notification.md, Style.md & Tooltip.md ui-core learning doc files.
+- Added support to ExpandableList for updating the active block programmatically
+- Fix controlled/uncontrolled react warning in Select component.
+- Added disabled support to Select component options
+
+## 2.10.3
+Fri, 08 Jan 2021 18:34:03 GMT
+
+_Version update only_
+
+## 2.10.2
+Fri, 08 Jan 2021 14:52:02 GMT
+
+_Version update only_
+
+## 2.10.1
+Tue, 22 Dec 2020 00:53:38 GMT
+
+_Version update only_
+
+## 2.10.0
+Fri, 18 Dec 2020 18:24:01 GMT
+
+### Updates
+
+- By default format slider tooltip with same number of decimal places as step specification.
+- Change warning/success/error colors for labeledInput to themed variables .
+- Add ability for Popup to avoid outside click processing when clicking on element in nested Popup.
+- Add new NumberInput control to replace NumericInput which wrapped react-numeric-input.
+- Clear FocusTrap timeout on unmount.
+- Popup - added onContextMenu & closeOnContextMenu props
+- Added 'closeOnWheel' and 'onWheel' Popup props
+- Unified UI typography systems
 
 ## 2.9.9
 Sun, 13 Dec 2020 19:00:03 GMT

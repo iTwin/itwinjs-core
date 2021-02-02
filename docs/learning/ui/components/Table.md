@@ -7,9 +7,9 @@ classes and components for working with a Table control.
 
 The following React components comprise the Table control.
 
-* [Table]($ui-components) - renders data rows and columns in a grid along with a header
-* [TableCell]($ui-components) - renders a table cell
-* [TableCellContent]($ui-components) - renders table cell content
+- [Table]($ui-components) - renders data rows and columns in a grid along with a header
+- [TableCell]($ui-components) - renders a table cell
+- [TableCellContent]($ui-components) - renders table cell content
 
 There are a number of value renderer components for different types that can be found in the [Properties]($ui-components:Properties) category.
 Those components are managed by the [PropertyValueRendererManager]($ui-components).
@@ -91,12 +91,12 @@ For selection support, the `selectionMode` prop specifies the desired [Selection
 and the `tableSelectionTarget` prop specifies the desired [TableSelectionTarget]($ui-components).
 There are a number of selection related callback functions:
 
-* isRowSelected - Callback for determining if row is selected
-* onRowsSelected - Callback for when rows are selected
-* onRowsDeselected - Callback for when rows are deselected
-* isCellSelected - Callback for determining if cell is selected
-* onCellsSelected - Callback for when cells are selected
-* onCellsDeselected - Callback for when cells are deselected
+- isRowSelected - Callback for determining if row is selected
+- onRowsSelected - Callback for when rows are selected
+- onRowsDeselected - Callback for when rows are deselected
+- isCellSelected - Callback for determining if cell is selected
+- onCellsSelected - Callback for when cells are selected
+- onCellsDeselected - Callback for when cells are deselected
 
 For cell editing support, the `onPropertyUpdated` callback function is called when properties are updated.
 The `ColumnDescription.editable` member should be set to true to enable cell editing.
@@ -151,6 +151,6 @@ const rulesetId = "Default";
 
 ## API Reference
 
-* [Table in @bentley/ui-components]($ui-components:Table)
-* [Properties in @bentley/ui-components]($ui-components:Properties)
-* [Properties in @bentley/ui-abstract]($ui-abstract:Properties)
+- [Table in @bentley/ui-components]($ui-components:Table)
+- [Properties in @bentley/ui-components]($ui-components:Properties)
+- [Properties in @bentley/ui-abstract]($ui-abstract:Properties)

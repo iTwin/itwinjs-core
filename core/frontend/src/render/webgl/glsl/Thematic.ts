@@ -181,17 +181,15 @@ const applyThematicColorPostludeForPointClouds = `
   return rgba;
 `;
 
-function _getShader(isPointCloud: boolean, isTerrainMesh: boolean) {
+function _getShader(isPointCloud: boolean) {
   return isPointCloud ?
     applyThematicColorPrelude + applyThematicColorPostludeForPointClouds : // do not include slope and hillshade for point clouds
-    (isTerrainMesh ?
-      applyThematicColorPrelude + applyThematicColorPostlude : // do not include slope and hillshade for terrain (for now)
-      applyThematicColorPrelude + slopeAndHillShadeShader + applyThematicColorPostlude); // include all modes for everything else
+    applyThematicColorPrelude + slopeAndHillShadeShader + applyThematicColorPostlude; // include all modes for everything else
 }
 
 // Compute the value for the varying to be interpolated to the fragment shader in order to access the color in the thematic gradient texture
 // We will project a vector onto another vector using this equation: proju = (v . u) / (v . v) * v
-export function getComputeThematicIndex(instanced: boolean, skipSlopeAndHillShade: boolean = false): string {
+export function getComputeThematicIndex(instanced: boolean, skipSlopeAndHillShade: boolean, decodeNormal: boolean): string {
   const modelPos = instanced ? "(g_instancedRtcMatrix * rawPosition)" : "rawPosition";
   const heightMode = `
   if (kThematicDisplayMode_Height == u_thematicDisplayMode) {
@@ -208,10 +206,13 @@ export function getComputeThematicIndex(instanced: boolean, skipSlopeAndHillShad
     tc.x += 3.0 * g_vert_stepX;
     vec4 enc = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
     vec2 normal = u_surfaceFlags[kSurfaceBitIndex_HasColorAndNormal] ? enc.xy : g_vertexData2;
-    vec3 norm = u_surfaceFlags[kSurfaceBitIndex_HasNormals] ? normalize(octDecodeNormal(normal)) : vec3(0.0);
+    vec3 norm = u_surfaceFlags[kSurfaceBitIndex_HasNormals] ? octDecodeNormal(normal) : vec3(0.0);
     v_thematicIndex = norm.z;
   }`;
-  return skipSlopeAndHillShade ? heightMode : heightMode + hillShadeMode;
+  const hillShadeMode2 = ` else if (kThematicDisplayMode_HillShade == u_thematicDisplayMode) {
+    v_thematicIndex = g_hillshadeIndex;
+  }`;
+  return skipSlopeAndHillShade ? heightMode : heightMode + (decodeNormal ? hillShadeMode : hillShadeMode2);
 }
 
 // Determine the fractional position of c on line segment ab.  Assumes the three points are aligned on the same axis.
@@ -269,7 +270,7 @@ export function addThematicDisplay(builder: ProgramBuilder, isForPointClouds = f
     });
   });
 
-  if (!isForPointClouds && !isForTerrainMesh) {
+  if (!isForPointClouds) {
     builder.addUniform("u_thematicSunDirection", VariableType.Vec3, (prog) => {
       prog.addGraphicUniform("u_thematicSunDirection", (uniform, params) => {
         params.target.uniforms.thematic.bindSunDirection(uniform);
@@ -370,5 +371,5 @@ export function addThematicDisplay(builder: ProgramBuilder, isForPointClouds = f
   frag.addFunction(getColor);
   frag.addFunction(getIsoLineColor);
 
-  frag.set(FragmentShaderComponent.ApplyThematicDisplay, _getShader(isForPointClouds, isForTerrainMesh));
+  frag.set(FragmentShaderComponent.ApplyThematicDisplay, _getShader(isForPointClouds));
 }

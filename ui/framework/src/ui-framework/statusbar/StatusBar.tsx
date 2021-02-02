@@ -76,7 +76,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
       isActivityMessageVisible: false,
       toastTarget: null,
     };
-  };
+  }
 
   public render(): React.ReactNode {
     let footerSections: React.ReactNode = null;

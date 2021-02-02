@@ -10,6 +10,7 @@ import { AnalysisStyle } from '@bentley/imodeljs-common';
 import { Angle } from '@bentley/geometry-core';
 import { AngleSweep } from '@bentley/geometry-core';
 import { Arc3d } from '@bentley/geometry-core';
+import { AsyncMethodsOf } from '@bentley/imodeljs-common';
 import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
 import { AuxCoordSystem2dProps } from '@bentley/imodeljs-common';
 import { AuxCoordSystem3dProps } from '@bentley/imodeljs-common';
@@ -87,7 +88,6 @@ import { FeatureOverrides } from '@bentley/imodeljs-common';
 import { FeatureTable } from '@bentley/imodeljs-common';
 import { FillFlags } from '@bentley/imodeljs-common';
 import { FontMap } from '@bentley/imodeljs-common';
-import { Format } from '@bentley/imodeljs-quantity';
 import { FormatProps } from '@bentley/imodeljs-quantity';
 import { FormatterSpec } from '@bentley/imodeljs-quantity';
 import { FrontendAuthorizationClient } from '@bentley/frontend-authorization-client';
@@ -170,6 +170,8 @@ import { ModelProps } from '@bentley/imodeljs-common';
 import { ModelQueryParams } from '@bentley/imodeljs-common';
 import { ModelSelectorProps } from '@bentley/imodeljs-common';
 import { MonochromeMode } from '@bentley/imodeljs-common';
+import { NativeAppIpc } from '@bentley/imodeljs-common';
+import { NativeAppResponse } from '@bentley/imodeljs-common';
 import { ObservableSet } from '@bentley/bentleyjs-core';
 import { OctEncodedNormal } from '@bentley/imodeljs-common';
 import { OpenBriefcaseProps } from '@bentley/imodeljs-common';
@@ -195,6 +197,7 @@ import { PolylineFlags } from '@bentley/imodeljs-common';
 import { PolylineTypeFlags } from '@bentley/imodeljs-common';
 import { PrimaryTileTreeId } from '@bentley/imodeljs-common';
 import { ProgressCallback } from '@bentley/itwin-client';
+import { PromiseReturnType } from '@bentley/imodeljs-common';
 import { PropertyDescription } from '@bentley/ui-abstract';
 import { QParams2d } from '@bentley/imodeljs-common';
 import { QParams3d } from '@bentley/imodeljs-common';
@@ -220,6 +223,7 @@ import { RenderSchedule } from '@bentley/imodeljs-common';
 import { RenderTexture } from '@bentley/imodeljs-common';
 import { RequestBasicCredentials } from '@bentley/itwin-client';
 import { RequestOptions } from '@bentley/itwin-client';
+import { ResponseHandler } from '@bentley/imodeljs-common';
 import { RgbColor } from '@bentley/imodeljs-common';
 import { RpcRoutingToken } from '@bentley/imodeljs-common';
 import { SectionDrawingViewProps } from '@bentley/imodeljs-common';
@@ -245,6 +249,7 @@ import { SubLayerId } from '@bentley/imodeljs-common';
 import { SyncMode } from '@bentley/imodeljs-common';
 import { TelemetryManager } from '@bentley/telemetry-client';
 import { TerrainProviderName } from '@bentley/imodeljs-common';
+import { TextureLoadProps } from '@bentley/imodeljs-common';
 import { TextureMapping } from '@bentley/imodeljs-common';
 import { ThematicDisplay } from '@bentley/imodeljs-common';
 import { ThematicDisplaySensor } from '@bentley/imodeljs-common';
@@ -1466,8 +1471,6 @@ export abstract class BriefcaseConnection extends IModelConnection {
     // @internal
     changeCacheAttached(): Promise<boolean>;
     get contextId(): GuidString;
-    // @internal
-    detachChangeCache(): Promise<void>;
     get iModelId(): GuidString;
     get isClosed(): boolean;
     // (undocumented)
@@ -2030,7 +2033,7 @@ export class DisplayStyle2dState extends DisplayStyleState {
     // @internal (undocumented)
     static get className(): string;
     // @internal (undocumented)
-    overrideTerrainSkirtDisplay(): boolean | undefined;
+    overrideTerrainDisplay(): TerrainDisplayOverrides | undefined;
     // (undocumented)
     get settings(): DisplayStyleSettings;
     }
@@ -2041,7 +2044,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
     // @internal (undocumented)
     static get className(): string;
     // @internal (undocumented)
-    clone(iModel: IModelConnection): this;
+    clone(iModel?: IModelConnection): this;
     get environment(): Environment;
     set environment(env: Environment);
     // (undocumented)
@@ -2050,7 +2053,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
     // @internal
     loadSkyBoxParams(system: RenderSystem, vp?: Viewport): SkyBox.CreateParams | undefined;
     // @internal (undocumented)
-    overrideTerrainSkirtDisplay(): boolean | undefined;
+    overrideTerrainDisplay(): TerrainDisplayOverrides | undefined;
     // @internal (undocumented)
     protected registerSettingsEventListeners(): void;
     setSunTime(time: number): void;
@@ -2184,7 +2187,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     overrideRealityModelAppearance(index: number, overrides: FeatureAppearance): boolean;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     // @internal (undocumented)
-    abstract overrideTerrainSkirtDisplay(): boolean | undefined;
+    abstract overrideTerrainDisplay(): TerrainDisplayOverrides | undefined;
     // @internal (undocumented)
     protected registerSettingsEventListeners(): void;
     // @internal (undocumented)
@@ -2201,7 +2204,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     get wantShadows(): boolean;
 }
 
-// @internal
+// @alpha
 export interface DownloadBriefcaseOptions {
     // (undocumented)
     fileName?: string;
@@ -2445,6 +2448,9 @@ export namespace EditManipulator {
 }
 
 // @internal (undocumented)
+export const ELEMENT_MARKED_FOR_REMOVAL: unique symbol;
+
+// @internal (undocumented)
 export class ElementAgenda {
     constructor(iModel: IModelConnection);
     add(arg: Id64Arg): boolean;
@@ -2606,7 +2612,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     clearHiddenElements(vp: Viewport): boolean;
     clearIsolatedElements(vp: Viewport): boolean;
     clearNeverDrawnElements(vp: Viewport): boolean;
-    clearOverriddenElements(vp: Viewport, key?: number): boolean;
+    clearOverriddenElements(vp: Viewport, keyOrIds?: number | Id64Arg): boolean;
     // @internal (undocumented)
     protected createAppearanceFromKey(key: number): FeatureAppearance;
     createDefaultAppearance(): FeatureAppearance;
@@ -2986,6 +2992,9 @@ export class FlyViewTool extends ViewManip {
     static toolId: string;
 }
 
+// @internal
+export type FormatPropsByUnitSystem = Map<UnitSystemKey, FormatProps>;
+
 // @beta
 export abstract class FormattedQuantityDescription extends BaseQuantityDescription {
     constructor(name: string, displayLabel: string, iconSpec?: string);
@@ -3001,6 +3010,25 @@ export abstract class FormattedQuantityDescription extends BaseQuantityDescripti
     get parserSpec(): ParserSpec | undefined;
     // (undocumented)
     protected parseString(userInput: string): ParseResults;
+}
+
+// @alpha
+export interface FormatterParserSpecsProvider {
+    // (undocumented)
+    createFormatterSpec: (unitSystem: UnitSystemKey) => Promise<FormatterSpec>;
+    // (undocumented)
+    createParserSpec: (unitSystem: UnitSystemKey) => Promise<ParserSpec>;
+    // (undocumented)
+    quantityType: QuantityTypeArg;
+}
+
+// @internal
+export type FormatterSpecByQuantityType = Map<QuantityTypeKey, FormatterSpec>;
+
+// @alpha
+export interface FormattingUnitSystemChangedArgs {
+    // (undocumented)
+    readonly system: UnitSystemKey;
 }
 
 // @internal (undocumented)
@@ -3231,7 +3259,7 @@ export function getCesiumAssetUrl(osmAssetId: number, requestKey: string): strin
 export function getCesiumOSMBuildingsUrl(): string;
 
 // @internal (undocumented)
-export function getCesiumTerrainProvider(iModel: IModelConnection, modelId: Id64String, wantSkirts: boolean, exaggeration: number): Promise<TerrainMeshProvider | undefined>;
+export function getCesiumTerrainProvider(iModel: IModelConnection, modelId: Id64String, wantSkirts: boolean, wantNormals: boolean, exaggeration: number): Promise<TerrainMeshProvider | undefined>;
 
 // @beta
 export function getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes?: number, minCompressionQuality?: number): string | undefined;
@@ -3507,6 +3535,8 @@ export abstract class GraphicBuilder {
     pickId?: string;
     get placement(): Transform;
     set placement(tf: Transform);
+    // @beta
+    preserveOrder: boolean;
     setBlankingFill(fillColor: ColorDef): void;
     setSymbology(lineColor: ColorDef, fillColor: ColorDef, lineWidth: number, linePixels?: LinePixels): void;
     readonly type: GraphicType;
@@ -3944,8 +3974,6 @@ export class IModelApp {
     static get iModelClient(): IModelClient;
     // @internal (undocumented)
     static get initialized(): boolean;
-    // @internal
-    static get isNativeApp(): boolean;
     // @internal (undocumented)
     static get locateManager(): ElementLocateManager;
     // @internal (undocumented)
@@ -4076,6 +4104,8 @@ export abstract class IModelConnection extends IModel {
     getGeometryContainment(requestProps: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
     // @beta
     getMassProperties(requestProps: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
+    // @alpha
+    getTextureImage(textureLoadProps: TextureLoadProps): Promise<Uint8Array | undefined>;
     getToolTipMessage(id: Id64String): Promise<string[]>;
     // @beta
     readonly hilited: HiliteSet;
@@ -4107,11 +4137,11 @@ export abstract class IModelConnection extends IModel {
     // @beta
     readonly onClose: BeEvent<(_imodel: IModelConnection) => void>;
     static readonly onOpen: BeEvent<(_imodel: IModelConnection) => void>;
-    query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any>;
+    query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority, abbreviateBlobs?: boolean): AsyncIterableIterator<any>;
     queryEntityIds(params: EntityQueryParams): Promise<Id64Set>;
     queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number>;
     // @internal
-    queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string): Promise<QueryResponse>;
+    queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string, abbreviateBlobs?: boolean): Promise<QueryResponse>;
     requestSnap(props: SnapRequestProps): Promise<SnapResponseProps>;
     // @beta
     restartQuery(token: string, ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any>;
@@ -4496,9 +4526,10 @@ export interface LoadedExtensionProps {
     props: ExtensionProps;
 }
 
-// @internal
+// @alpha
 export class LocalBriefcaseConnection extends BriefcaseConnection {
     close(): Promise<void>;
+    // @internal
     static open(briefcaseProps: OpenBriefcaseProps): Promise<LocalBriefcaseConnection>;
 }
 
@@ -5108,7 +5139,7 @@ export class MapTileTree extends RealityTileTree {
 
 // @internal
 export class MapTileTreeReference extends TileTreeReference {
-    constructor(settings: BackgroundMapSettings, _baseLayerSettings: BaseLayerSettings | undefined, _layerSettings: MapLayerSettings[], iModel: IModelConnection, isOverlay: boolean, _isDrape: boolean, _overrideSkirtDisplay?: CheckSkirtDisplayOverride | undefined);
+    constructor(settings: BackgroundMapSettings, _baseLayerSettings: BaseLayerSettings | undefined, _layerSettings: MapLayerSettings[], iModel: IModelConnection, isOverlay: boolean, _isDrape: boolean, _overrideTerrainDisplay?: CheckTerrainDisplayOverride | undefined);
     addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void;
     addToScene(context: SceneContext): void;
     // (undocumented)
@@ -5329,8 +5360,6 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
-    onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled>;
-    // (undocumented)
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
     // (undocumented)
     onPostInstall(): void;
@@ -5430,8 +5459,6 @@ export class MeasureDistanceTool extends PrimitiveTool {
     }[];
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
-    onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled>;
     // (undocumented)
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
     // (undocumented)
@@ -5876,8 +5903,10 @@ export enum ModifyElementSource {
     Unknown = 0
 }
 
-// @internal
-export class NativeApp {
+// @alpha
+export class NativeApp extends ResponseHandler implements NativeAppResponse {
+    // (undocumented)
+    static callBackend<T extends AsyncMethodsOf<NativeAppIpc>>(methodName: T, ...args: Parameters<NativeAppIpc[T]>): Promise<PromiseReturnType<NativeAppIpc[T]>>;
     // (undocumented)
     static checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
     // (undocumented)
@@ -5889,9 +5918,25 @@ export class NativeApp {
     static getCachedBriefcases(iModelId?: GuidString): Promise<LocalBriefcaseProps[]>;
     static getStorageNames(): Promise<string[]>;
     // (undocumented)
+    static get isValid(): boolean;
+    // (undocumented)
+    notifyInternetConnectivityChanged(status: InternetConnectivityStatus): void;
+    // (undocumented)
+    notifyMemoryWarning(): void;
+    // (undocumented)
+    notifyUserStateChanged(arg: {
+        accessToken: any;
+        err?: string;
+    }): void;
+    // (undocumented)
     static onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void>;
     // (undocumented)
     static onMemoryWarning: BeEvent<() => void>;
+    // (undocumented)
+    static onUserStateChanged: BeEvent<(_arg: {
+        accessToken: any;
+        err?: string | undefined;
+    }) => void>;
     // (undocumented)
     static openBriefcase(briefcaseProps: OpenBriefcaseProps): Promise<LocalBriefcaseConnection>;
     static openStorage(name: string): Promise<Storage>;
@@ -5900,8 +5945,9 @@ export class NativeApp {
     // (undocumented)
     static requestDownloadBriefcase(contextId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions, asOf?: IModelVersion, progress?: ProgressCallback): Promise<BriefcaseDownloader>;
     // (undocumented)
-    static shutdown(): Promise<void>;
+    get responseChannel(): string;
     // (undocumented)
+    static shutdown(): Promise<void>;
     static startup(opts?: IModelAppOptions): Promise<void>;
     }
 
@@ -6247,9 +6293,13 @@ export enum OutputMessageType {
 // @alpha
 export interface OverrideFormatEntry {
     // (undocumented)
-    imperial: FormatProps;
+    imperial?: FormatProps;
     // (undocumented)
-    metric: FormatProps;
+    metric?: FormatProps;
+    // (undocumented)
+    usCustomary?: FormatProps;
+    // (undocumented)
+    usSurvey?: FormatProps;
 }
 
 // @internal
@@ -6290,6 +6340,36 @@ export interface ParseKeyinError {
 
 // @beta
 export type ParseKeyinResult = ParsedKeyin | ParseKeyinError;
+
+// @beta
+export interface ParticleCollectionBuilder {
+    addParticle: (particle: ParticleProps) => void;
+    finish: () => RenderGraphic | undefined;
+    size: XAndY;
+    transparency: number;
+}
+
+// @beta (undocumented)
+export namespace ParticleCollectionBuilder {
+    export function create(params: ParticleCollectionBuilderParams): ParticleCollectionBuilder;
+}
+
+// @beta
+export interface ParticleCollectionBuilderParams {
+    isViewCoords?: boolean;
+    origin?: XYAndZ;
+    pickableId?: Id64String;
+    size: XAndY | number;
+    texture: RenderTexture;
+    transparency?: number;
+    viewport: Viewport;
+}
+
+// @beta
+export interface ParticleProps extends XYAndZ {
+    size?: XAndY | number;
+    transparency?: number;
+}
 
 // @beta
 export class PendingExtension {
@@ -6512,67 +6592,70 @@ export class QuadId {
 }
 
 // @alpha
-export class QuantityFormatter implements UnitsProvider {
-    constructor(showMetricValues?: boolean);
+export interface QuantityFormatsChangedArgs {
     // (undocumented)
-    protected _activeSystemIsImperial: boolean;
+    readonly quantityType: string;
+}
+
+// @alpha
+export class QuantityFormatter implements UnitsProvider {
+    constructor(showMetricOrUnitSystem?: boolean | UnitSystemKey);
+    // (undocumented)
+    protected _activeFormatSpecsByType: Map<string, FormatterSpec>;
+    // (undocumented)
+    protected _activeParserSpecsByType: Map<string, ParserSpec>;
+    get activeUnitSystem(): UnitSystemKey;
+    // (undocumented)
+    protected _activeUnitSystem: UnitSystemKey;
     // (undocumented)
     clearAllOverrideFormats(): Promise<void>;
     // (undocumented)
     clearOverrideFormats(type: QuantityType): Promise<void>;
-    findFormatterSpecByQuantityType(type: QuantityType, imperial?: boolean): FormatterSpec | undefined;
+    findFormatterSpecByQuantityType(type: QuantityTypeArg, _unused?: boolean): FormatterSpec | undefined;
     protected findKoqFormatterSpec(koq: string, useImperial: boolean): FormatterSpec | undefined;
-    findParserSpecByQuantityType(type: QuantityType, imperial?: boolean): ParserSpec | undefined;
+    findParserSpecByQuantityType(type: QuantityTypeArg, _unused?: boolean): ParserSpec | undefined;
     findUnit(unitLabel: string, unitFamily?: string): Promise<UnitProps>;
     findUnitByName(unitName: string): Promise<UnitProps>;
     // (undocumented)
     protected findUnitDefinition(name: string): UnitDefinition | undefined;
-    formatQuantity(magnitude: number, formatSpec: FormatterSpec): string;
+    formatQuantity(magnitude: number, formatSpec: FormatterSpec | undefined): string;
+    // (undocumented)
+    protected _formatSpecProviders: FormatterParserSpecsProvider[];
     // (undocumented)
     protected _formatSpecsByKoq: Map<string, FormatterSpec[]>;
     getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversion>;
-    // (undocumented)
-    protected getFormatByQuantityType(type: QuantityType, imperial: boolean): Promise<Format>;
-    getFormatterSpecByQuantityType(type: QuantityType, imperial?: boolean): Promise<FormatterSpec>;
+    getFormatterSpecByQuantityType(type: QuantityTypeArg, isImperial?: boolean): Promise<FormatterSpec | undefined>;
     protected getKoqFormatterSpec(koq: string, useImperial: boolean): Promise<FormatterSpec | undefined>;
     protected getKoqFormatterSpecsAsync(koq: string, useImperial: boolean): Promise<FormatterSpec[] | undefined>;
-    // (undocumented)
-    protected getOverrideFormat(type: QuantityType, imperial: boolean): Promise<FormatProps | undefined>;
-    getParserSpecByQuantityType(type: QuantityType, imperial?: boolean): Promise<ParserSpec>;
-    // (undocumented)
-    protected _getStandardFormatterSpec(type: QuantityType, useImperial: boolean): Promise<FormatterSpec>;
+    getParserSpecByQuantityType(type: QuantityTypeArg, isImperial?: boolean): Promise<ParserSpec | undefined>;
+    protected getPersistenceUnitByQuantityType(type: QuantityTypeKey): Promise<UnitProps>;
+    getQuantityTypeKey(type: QuantityTypeArg): string;
     protected getUnitByQuantityType(type: QuantityType): Promise<UnitProps>;
     getUnitsByFamily(unitFamily: string): Promise<UnitProps[]>;
+    getUnitSystemFromString(inputSystem: string, fallback?: UnitSystemKey): UnitSystemKey;
     // (undocumented)
-    protected _imperialFormatsByType: Map<QuantityType, Format>;
-    // (undocumented)
-    protected _imperialFormatSpecsByType: Map<QuantityType, FormatterSpec>;
-    // (undocumented)
-    protected _imperialParserSpecsByType: Map<QuantityType, ParserSpec>;
-    loadFormatAndParsingMaps(useImperial: boolean, restartActiveTool?: boolean): Promise<void>;
-    protected loadFormatSpecsForQuantityType(quantityType: QuantityType, useImperial: boolean): Promise<void>;
-    protected loadFormatSpecsForQuantityTypes(useImperial: boolean): Promise<void>;
+    hasActiveOverride(type: QuantityTypeArg, checkOnlyActiveUnitSystem?: boolean): boolean;
+    // @deprecated
+    loadFormatAndParsingMaps(useImperial: boolean, _restartActiveTool?: boolean): Promise<void>;
+    // @internal
+    protected loadFormatAndParsingMapsForSystem(systemType?: UnitSystemKey): Promise<void>;
     protected loadKoqFormatSpecs(koq: string): Promise<void>;
-    protected loadParsingSpecsForQuantityType(quantityType: QuantityType, useImperial: boolean): Promise<void>;
-    protected loadParsingSpecsForQuantityTypes(useImperial: boolean): Promise<void>;
-    // (undocumented)
-    protected loadStdFormat(type: QuantityType, imperial: boolean): Promise<Format>;
-    // (undocumented)
-    protected _metricFormatsByType: Map<QuantityType, Format>;
-    // (undocumented)
-    protected _metricFormatSpecsByType: Map<QuantityType, FormatterSpec>;
-    // (undocumented)
-    protected _metricUnitParserSpecsByType: Map<QuantityType, ParserSpec>;
+    readonly onActiveFormattingUnitSystemChanged: BeUiEvent<FormattingUnitSystemChangedArgs>;
+    // @deprecated
     readonly onActiveUnitSystemChanged: BeUiEvent<{
         useImperial: boolean;
     }>;
     // (undocumented)
-    onInitialized(): void;
+    onInitialized(): Promise<void>;
+    readonly onQuantityFormatsChanged: BeUiEvent<QuantityFormatsChangedArgs>;
     // (undocumented)
-    protected _overrideFormatDataByType: Map<QuantityType, OverrideFormatEntry>;
-    parseIntoQuantityValue(inString: string, parserSpec: ParserSpec): ParseResult;
+    protected _overrideFormatPropsByQuantityType: Map<string, OverrideFormatEntry>;
+    parseToQuantityValue(inString: string, parserSpec: ParserSpec | undefined): ParseResult;
+    registerFormatterParserSpecsProviders(provider: FormatterParserSpecsProvider): Promise<boolean>;
+    setActiveUnitSystem(isImperialOrUnitSystem: UnitSystemKey | boolean, restartActiveTool?: boolean): Promise<void>;
     // (undocumented)
-    setOverrideFormats(type: QuantityType, entry: OverrideFormatEntry): Promise<void>;
+    setOverrideFormats(type: QuantityType, overrideEntry: OverrideFormatEntry): Promise<void>;
+    // @deprecated (undocumented)
     get useImperialFormats(): boolean;
     set useImperialFormats(useImperial: boolean);
 }
@@ -6598,6 +6681,9 @@ export enum QuantityType {
     // (undocumented)
     Volume = 4
 }
+
+// @alpha
+export type QuantityTypeArg = QuantityType | string;
 
 // @internal
 export function queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise<number>;
@@ -7385,6 +7471,7 @@ export abstract class RenderSystem implements IDisposable {
     createTerrainMeshGraphic(_terrainGeometry: RenderTerrainMeshGeometry, _featureTable: PackedFeatureTable, _tileId: string, _baseColor: ColorDef | undefined, _baseTransparent: boolean, _textures?: TerrainTexture[]): RenderGraphic | undefined;
     // @internal
     createTextureFromCubeImages(_posX: HTMLImageElement, _negX: HTMLImageElement, _posY: HTMLImageElement, _negY: HTMLImageElement, _posZ: HTMLImageElement, _negZ: HTMLImageElement, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined;
+    createTextureFromElement(_id: Id64String, _imodel: IModelConnection, _params: RenderTexture.Params, _format: ImageSourceFormat): RenderTexture | undefined;
     createTextureFromImage(_image: HTMLImageElement, _hasAlpha: boolean, _imodel: IModelConnection | undefined, _params: RenderTexture.Params): RenderTexture | undefined;
     createTextureFromImageBuffer(_image: ImageBuffer, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined;
     createTextureFromImageSource(source: ImageSource, imodel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined>;
@@ -7787,6 +7874,7 @@ export class ScreenViewport extends Viewport {
     changeView(view: ViewState, opts?: ViewChangeOptions): void;
     clearViewUndo(): void;
     static create(parentDiv: HTMLDivElement, view: ViewState): ScreenViewport;
+    // @deprecated
     readonly decorationDiv: HTMLDivElement;
     doRedo(animationTime?: BeDuration): void;
     doUndo(animationTime?: BeDuration): void;
@@ -7797,6 +7885,8 @@ export class ScreenViewport extends Viewport {
     get isUndoPossible(): boolean;
     // @beta
     get logo(): HTMLImageElement;
+    // @internal (undocumented)
+    static markAllChildrenForRemoval(el: HTMLDivElement): void;
     maxUndoSteps: number;
     // @internal (undocumented)
     mouseMovementFromEvent(ev: MouseEvent): XAndY;
@@ -7815,6 +7905,8 @@ export class ScreenViewport extends Viewport {
     pickNearestVisibleGeometry(pickPoint: Point3d, radius?: number, allowNonLocatable?: boolean, out?: Point3d): Point3d | undefined;
     // @internal
     static removeAllChildren(el: HTMLDivElement): void;
+    // @internal (undocumented)
+    static removeMarkedChildren(el: HTMLDivElement): void;
     // @internal
     get rendersToScreen(): boolean;
     set rendersToScreen(toScreen: boolean);
@@ -8084,8 +8176,6 @@ export class SetupCameraTool extends PrimitiveTool {
     isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean;
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
-    onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled>;
     // (undocumented)
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
     // (undocumented)
@@ -8597,10 +8687,11 @@ export enum StartOrResume {
     Start = 1
 }
 
-// @internal
+// @alpha
 export class Storage {
     constructor(id: string, _isOpen?: boolean);
     close(deleteIt?: boolean): Promise<void>;
+    // @internal
     getData(key: string): Promise<StorageValue | undefined>;
     getKeys(): Promise<string[]>;
     // (undocumented)
@@ -8608,6 +8699,7 @@ export class Storage {
     get isOpen(): boolean;
     removeAll(): Promise<void>;
     removeData(key: string): Promise<void>;
+    // @internal
     setData(key: string, value: StorageValue): Promise<void>;
 }
 
@@ -8993,6 +9085,14 @@ export class TentativePoint {
     viewport?: ScreenViewport;
 }
 
+// @internal (undocumented)
+export class TerrainDisplayOverrides {
+    // (undocumented)
+    wantNormals?: boolean;
+    // (undocumented)
+    wantSkirts?: boolean;
+}
+
 // @internal
 export abstract class TerrainMeshProvider {
     constructor(_iModel: IModelConnection, _modelId: Id64String);
@@ -9203,6 +9303,8 @@ export abstract class TileAdmin {
     // @internal (undocumented)
     abstract get emptyViewportSet(): ReadonlyViewportSet;
     // @internal (undocumented)
+    abstract get enableExternalTextures(): boolean;
+    // @internal (undocumented)
     abstract get enableImprovedElision(): boolean;
     // @internal (undocumented)
     abstract get enableInstancing(): boolean;
@@ -9219,6 +9321,8 @@ export abstract class TileAdmin {
     abstract getViewportSetForRequest(vp: Viewport, vps?: ReadonlyViewportSet): ReadonlyViewportSet;
     // @internal (undocumented)
     abstract get ignoreAreaPatterns(): boolean;
+    // @internal (undocumented)
+    abstract invalidateAllScenes(): void;
     // @internal
     abstract isTileInUse(marker: TileUsageMarker): boolean;
     // @internal
@@ -9289,6 +9393,7 @@ export namespace TileAdmin {
         contextPreloadParentSkip?: number;
         defaultTileSizeModifier?: number;
         disableMagnification?: boolean;
+        enableExternalTextures?: boolean;
         enableImprovedElision?: boolean;
         enableInstancing?: boolean;
         ignoreAreaPatterns?: boolean;
@@ -9796,6 +9901,10 @@ export class ToolAdmin {
     readonly manipulatorToolEvent: BeEvent<(tool: Tool, event: ManipulatorToolEvent) => void>;
     // (undocumented)
     markupView?: ScreenViewport;
+    onCtrlKeyPressed(keyEvent: KeyboardEvent): Promise<{
+        handled: boolean;
+        result: boolean;
+    }>;
     // @internal (undocumented)
     onInitialized(): void;
     // @internal (undocumented)
@@ -9812,6 +9921,7 @@ export class ToolAdmin {
     get primitiveTool(): PrimitiveTool | undefined;
     // @internal
     processEvent(): Promise<void>;
+    processShortcutKey(keyEvent: KeyboardEvent, wentDown: boolean): boolean;
     processWheelEvent(ev: BeWheelEvent, doUpdate: boolean): Promise<EventHandled>;
     // @internal
     get reloadToolSettingsHandler(): (() => void) | undefined;
@@ -10192,6 +10302,9 @@ export enum UniformType {
     Vec4 = 5
 }
 
+// @alpha
+export type UnitSystemKey = "metric" | "imperial" | "usCustomary" | "usSurvey";
+
 // @internal (undocumented)
 export class UpsampledMapTile extends MapTile {
     // (undocumented)
@@ -10343,8 +10456,6 @@ export class ViewClipByShapeTool extends ViewClipTool {
     protected _matrix?: Matrix3d;
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
-    onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled>;
     // (undocumented)
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
     // (undocumented)
@@ -11378,6 +11489,8 @@ export abstract class Viewport implements IDisposable {
     readonly onFeatureOverridesChanged: BeEvent<(vp: Viewport) => void>;
     readonly onNeverDrawnChanged: BeEvent<(vp: Viewport) => void>;
     readonly onRender: BeEvent<(vp: Viewport) => void>;
+    // @beta
+    readonly onResized: BeEvent<(vp: Viewport) => void>;
     readonly onViewChanged: BeEvent<(vp: Viewport) => void>;
     readonly onViewedCategoriesChanged: BeEvent<(vp: Viewport) => void>;
     readonly onViewedCategoriesPerModelChanged: BeEvent<(vp: Viewport) => void>;
@@ -11888,6 +12001,8 @@ export abstract class ViewState3d extends ViewState {
     decorate(context: DecorateContext): void;
     // @beta
     get details(): ViewDetails3d;
+    get displayStyle(): DisplayStyle3dState;
+    set displayStyle(style: DisplayStyle3dState);
     // @internal (undocumented)
     protected drawGroundPlane(context: DecorateContext): void;
     // @internal (undocumented)
@@ -11899,12 +12014,13 @@ export abstract class ViewState3d extends ViewState {
     getBackDistance(): number;
     // (undocumented)
     getCartographicHeight(point: XYAndZ): number | undefined;
-    // (undocumented)
     getDisplayStyle3d(): DisplayStyle3dState;
     // (undocumented)
     getExtents(): Vector3d;
     // (undocumented)
     getEyeCartographicHeight(): number | undefined;
+    // @internal (undocumented)
+    getEyeOrOrthographicViewPoint(): Point3d;
     getEyePoint(): Point3d;
     getFocusDistance(): number;
     getFrontDistance(): number;
