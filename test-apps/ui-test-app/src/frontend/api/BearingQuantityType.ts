@@ -134,6 +134,11 @@ class BearingParserSpec extends ParserSpec {
       }
     }
 
+    // adjust if measuring counter clockwise direction
+    if (parsedRadians.value && this.format.customProps?.angleDirection === "counter-clockwise") {
+      parsedRadians.value = parsedRadians.value - (Math.PI * 2);
+    }
+
     return parsedRadians;
   }
 
