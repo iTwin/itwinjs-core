@@ -8,7 +8,7 @@ import { ColorDef, IModel, SubCategoryAppearance } from "@bentley/imodeljs-commo
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { SpatialCategory } from "../../Category";
 import { ConcurrencyControl } from "../../ConcurrencyControl";
-import { BriefcaseDb, IModelHost } from "../../imodeljs-backend";
+import { BriefcaseDb, BriefcaseManager, IModelHost } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 
@@ -36,7 +36,7 @@ export class TestChangeSetUtility {
     this.projectId = await HubUtility.queryProjectIdByName(this._requestContext, this._projectName);
   }
 
-  private async addTestModel(): Promise<void> {
+  public async addTestModel(): Promise<void> {
     this._iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: this._requestContext, contextId: this.projectId, iModelId: this.iModelId });
     this._iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
     [, this._modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(this._iModel, IModelTestUtils.getUniqueModelCode(this._iModel, "TestPhysicalModel"), true);
@@ -44,7 +44,7 @@ export class TestChangeSetUtility {
     this._iModel.saveChanges("Added test model");
   }
 
-  private async addTestCategory(): Promise<void> {
+  public async addTestCategory(): Promise<void> {
     this._categoryId = SpatialCategory.insert(this._iModel, IModel.dictionaryId, "TestSpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
     await this._iModel.concurrencyControl.request(this._requestContext);
     this._iModel.saveChanges("Added test category");
@@ -79,6 +79,21 @@ export class TestChangeSetUtility {
       throw new Error("Must first call createTestIModel");
     await this.addTestElements();
     await this._iModel.pushChanges(this._requestContext, "Added test elements");
+  }
+
+  public async redownloadBriefcase(): Promise<void> {
+    if (!this._iModel)
+      throw new Error("Must first call createTestIModel");
+
+    const briefcasePath = this._iModel.pathName;
+    const briefcaseId = this._iModel.briefcaseId;
+
+    this._iModel.nativeDb.deleteAllTxns();
+    await this._iModel.concurrencyControl.abandonResources(this._requestContext);
+    this._iModel.close();
+    await BriefcaseManager.deleteBriefcaseFiles(briefcasePath);
+
+    this._iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: this._requestContext, contextId: this.projectId, iModelId: this._iModel.iModelId, briefcaseId: briefcaseId });
   }
 
   public async deleteTestIModel(): Promise<void> {

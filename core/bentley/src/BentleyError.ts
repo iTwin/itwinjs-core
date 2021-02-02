@@ -113,6 +113,7 @@ export enum BriefcaseStatus {
   VersionNotFound = BRIEFCASE_STATUS_BASE + 5,
   CannotApplyChanges = BRIEFCASE_STATUS_BASE + 6,
   DownloadCancelled = BRIEFCASE_STATUS_BASE + 7,
+  ContainsDeletedChangeSets = BRIEFCASE_STATUS_BASE + 8,
 }
 
 /** RpcInterface status codes
@@ -589,6 +590,7 @@ export class BentleyError extends Error {
       case BriefcaseStatus.CannotDelete: return "CannotDelete";
       case BriefcaseStatus.VersionNotFound: return "VersionNotFound";
       case BriefcaseStatus.DownloadCancelled: return "DownloadCancelled";
+      case BriefcaseStatus.ContainsDeletedChangeSets: return "ContainsDeletedChangeSets";
 
       // RpcInterface
       case RpcInterfaceStatus.IncompatibleVersion: return "RpcInterfaceStatus.IncompatibleVersion";

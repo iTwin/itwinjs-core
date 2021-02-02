@@ -7,7 +7,7 @@ import { assert } from "chai";
 import * as os from "os";
 import * as path from "path";
 import * as readline from "readline";
-import { BriefcaseStatus, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { BeDuration, BriefcaseStatus, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { IModelError, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
@@ -19,6 +19,7 @@ import {
 import { IModelTestUtils, TestIModelInfo } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 import { TestChangeSetUtility } from "./TestChangeSetUtility";
+import { ConcurrencyControl } from "../../ConcurrencyControl";
 
 async function createIModelOnHub(requestContext: AuthorizedBackendRequestContext, projectId: GuidString, iModelName: string): Promise<string> {
   let iModel = await HubUtility.queryIModelByName(requestContext, projectId, iModelName);
@@ -733,14 +734,14 @@ describe("BriefcaseManager (#integration)", () => {
   });
 
   it.only("Should be able to recover after changeSet deletion (#integration)", async () => {
-    const userContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager); // User2 is used for the test
-    const projectId = "1a0ca7de-1e84-4daa-b297-29901986c99a";
+    var start = new Date().getTime();
+
+    const userContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager); // todo
 
     const testIModelName = "DeleteCsTest";
     const testUtility = new TestChangeSetUtility(userContext, testIModelName);
-    testUtility.projectId = projectId; // todo
+    testUtility.projectId = testProjectId; // todo remove
     var iModel = await testUtility.createTestIModel();
-    assert.exists(iModel);
 
     // Push 2 valid changeSets
     await testUtility.pushTestChangeSet();
@@ -782,26 +783,33 @@ describe("BriefcaseManager (#integration)", () => {
     const deleteChangeSetActionId = (await HubUtility.deleteChangeSet(userContext, iModel.iModelId, 4)).id!;
     await HubUtility.waitForChangeSetDeletion(userContext, iModel.iModelId, deleteChangeSetActionId);
 
+    // Assert that changeSet push now fails
+    var error: IModelError;
+    try {
+      await testUtility.pushTestChangeSet();
+    } catch (err) {
+      error = err;
+    }
+    assert.equal(BriefcaseStatus.ContainsDeletedChangeSets, error!.errorNumber);
+
     // Redownload briefcase
-    const args = {
-      contextId: projectId,
-      iModelId: iModel.iModelId,
-      briefcaseId: iModel.briefcaseId,
-      fileName: iModel.pathName
-    };
+    await testUtility.redownloadBriefcase();
+    // const briefcasePath = iModel.pathName;
+    // const briefcaseId = iModel.briefcaseId;
 
-    iModel.close();
-    const newBriefcase = await BriefcaseManager.downloadBriefcase(requestContext, args);
-    iModel.open();
-    requestContext.enter();
-
-    // Assert that user can now push another changeSet
-    await testUtility.pushTestChangeSet();
-
-
+    // iModel.nativeDb.deleteAllTxns();
+    // await iModel.concurrencyControl.abandonResources(userContext);
     // iModel.close();
+    // await BriefcaseManager.deleteBriefcaseFiles(briefcasePath);
 
-    // Delete iModel from the Hub and disk
-    await testUtility.deleteTestIModel(); // todo
+    // iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: userContext, contextId: testProjectId, iModelId: iModel.iModelId, briefcaseId: briefcaseId });
+    testUtility.pushTestChangeSet();
+    // iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
+    // IModelTestUtils.createAndInsertPhysicalPartitionAndModel(iModel, IModelTestUtils.getUniqueModelCode(iModel, "TestPhysicalModel2"), true);
+    // await iModel.concurrencyControl.request(userContext);
+    // iModel.saveChanges("Last cs");
+    // await iModel.pushChanges(userContext, "Setup test model");
+
+    assert.equal(4, (await IModelHost.iModelClient.changeSets.get(userContext, iModel.iModelId)).length);
   });
 });
