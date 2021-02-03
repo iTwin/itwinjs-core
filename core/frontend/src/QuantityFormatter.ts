@@ -226,20 +226,6 @@ export interface FormatterParserSpecsProvider {
   createParserSpec: (unitSystem: UnitSystemKey) => Promise<ParserSpec>;
 }
 
-// ====================================== END OF DEFAULT DATA ======================================
-
-/** Mapping of FormatterSpecs by QuantityType. A FormatterSpec contains unit conversion factors for all composite units to go from the "persistence unit" to the
- * display format without requiring an async unit look up. See method `getPersistenceUnitByQuantityType` for default persistence units.
- * @internal
- */
-export type FormatterSpecByQuantityType = Map<QuantityTypeKey, FormatterSpec>;
-
-/** Mapping of FormatterSpecs by QuantityType. A FormatterSpec contains unit conversion factors for all composite units to go from the "persistence unit" to the
- * display format without requiring an async unit look up. See method `getPersistenceUnitByQuantityType` for default persistence units.
- * @internal
- */
-export type FormatPropsByUnitSystem = Map<UnitSystemKey, FormatProps>;
-
 /** Arguments sent to FormattingUnitSystemChanged event listeners.
  * @alpha
  */
@@ -307,34 +293,6 @@ export class QuantityFormatter implements UnitsProvider {
       return undefined;
 
     return overrideMap.get(quantityTypeKey);
-  }
-
-  private async loadSpecs(systemKey: UnitSystemKey, provider: FormatterParserSpecsProvider) {
-    const formatterSpec = await provider.createFormatterSpec(systemKey);
-    const parserSpec = await provider.createParserSpec(systemKey);
-    this._activeFormatSpecsByType.set(this.getQuantityTypeKey(provider.quantityType), formatterSpec);
-    this._activeParserSpecsByType.set(this.getQuantityTypeKey(provider.quantityType), parserSpec);
-  }
-
-  public get quantityTypesRegistry() {
-    return this._quantityTypeRegistry;
-  }
-
-  public get unitsProvider() {
-    return this as UnitsProvider;
-  }
-
-  public async registerQuantityType(entry: CustomQuantityTypeDefinition) {
-    if (this._quantityTypeRegistry.has(entry.key))
-      return false;
-
-    this._quantityTypeRegistry.set(entry.key, entry);
-    if (entry.getDefaultFormatPropsBySystem) {
-      const formatProps = entry.getDefaultFormatPropsBySystem(this.activeUnitSystem);
-      await this.loadFormatAndParserSpec(entry, formatProps);
-      return true;
-    }
-    return false;
   }
 
   protected async initializeQuantityTypesRegistry() {
@@ -409,43 +367,6 @@ export class QuantityFormatter implements UnitsProvider {
     await Promise.all(formatPropPromises);
   }
 
-  public async onInitialized() {
-    await this.initializeQuantityTypesRegistry();
-
-    // initialize default format and parsing specs
-    await this.loadFormatAndParsingMapsForSystem();
-  }
-
-  /** Set the Active unit system to one of the supported types. This will asynchronously load the formatter and parser specs for the activated system. */
-  public async setActiveUnitSystem(isImperialOrUnitSystem: UnitSystemKey | boolean, restartActiveTool?: boolean): Promise<void> {
-    let systemType: UnitSystemKey;
-    if (typeof isImperialOrUnitSystem === "boolean")
-      systemType = isImperialOrUnitSystem ? "imperial" : "metric";
-    else
-      systemType = isImperialOrUnitSystem;
-
-    if (this._activeUnitSystem === systemType)
-      return;
-
-    this._activeUnitSystem = systemType;
-    await this.loadFormatAndParsingMapsForSystem(systemType);
-    // fire deprecated event
-    this.onActiveUnitSystemChanged.emit({ useImperial: systemType === "imperial" }); // eslint-disable-line deprecation/deprecation
-    // fire current event
-    this.onActiveFormattingUnitSystemChanged.emit({ system: systemType });
-    if (IModelApp.toolAdmin && restartActiveTool)
-      IModelApp.toolAdmin.startDefaultTool();
-  }
-
-  /** True if tool quantity values should be displayed in imperial units; false for metric. Changing this flag triggers an asynchronous request to refresh the cached formats. */
-  public get activeUnitSystem(): UnitSystemKey { return this._activeUnitSystem; }
-
-  /** @deprecated use setActiveUnitSystem method and activeUnitSystem property */
-  public get useImperialFormats(): boolean { return this._activeUnitSystem === "imperial"; }
-  public set useImperialFormats(useImperial: boolean) {
-    this.setActiveUnitSystem(useImperial ? "imperial" : "metric", true); // eslint-disable-line @typescript-eslint/no-floating-promises
-  }
-
   /** method used to load format for KOQ into cache */
   protected async loadKoqFormatSpecs(koq: string): Promise<void> {
     if (koq.length === 0)
@@ -488,40 +409,31 @@ export class QuantityFormatter implements UnitsProvider {
     throw new Error("not yet implemented");
   }
 
-  private async loadFormatAndParserSpec(quantityTypeEntry: QuantityTypeDefinition, formatProps: FormatProps) {
-    const formatterSpec = await quantityTypeEntry.generateFormatterSpec(formatProps, this.unitsProvider);
-    const parserSpec = await quantityTypeEntry.generateParserSpec(formatProps, this.unitsProvider);
-    this._activeFormatSpecsByType.set(quantityTypeEntry.key, formatterSpec);
-    this._activeParserSpecsByType.set(quantityTypeEntry.key, parserSpec);
+  private getFormatPropsByQuantityTypeEntyAndSystem(quantityEntry: QuantityTypeDefinition, requestedSystem: UnitSystemKey, ignoreOverrides?: boolean): FormatProps {
+    if (!ignoreOverrides) {
+      const overrideProps = this.getOverrideFormatPropsByQuantityType (quantityEntry.key, requestedSystem);
+      if (overrideProps)
+        return overrideProps;
+    }
+
+    return quantityEntry.getDefaultFormatPropsBySystem(requestedSystem);
+  }
+
+  private async loadFormatAndParserSpec(quantityTypeDefinition: QuantityTypeDefinition, formatProps: FormatProps) {
+    const formatterSpec = await quantityTypeDefinition.generateFormatterSpec(formatProps, this.unitsProvider);
+    const parserSpec = await quantityTypeDefinition.generateParserSpec(formatProps, this.unitsProvider);
+    this._activeFormatSpecsByType.set(quantityTypeDefinition.key, formatterSpec);
+    this._activeParserSpecsByType.set(quantityTypeDefinition.key, parserSpec);
   }
 
   // repopulate formatSpec and parserSpec entries using only default format
   private async loadDefaultFormatAndParserSpecForQuantity(typeKey: QuantityTypeKey) {
-    const quantityTypeEntry = this.quantityTypesRegistry.get(typeKey);
-    if (!quantityTypeEntry)
+    const quantityTypeDefinition = this.quantityTypesRegistry.get(typeKey);
+    if (!quantityTypeDefinition)
       throw new Error (`Unable to locate QuantityType by key ${typeKey}`);
 
-    const defaultFormat =  quantityTypeEntry.getDefaultFormatPropsBySystem(this.activeUnitSystem);
-    await this.loadFormatAndParserSpec(quantityTypeEntry, defaultFormat);
-  }
-
-  /** Method called to clear override and restore defaults formatter and parser spec */
-  private async clearOverrideFormatsByQuantityTypeKey(type: QuantityTypeKey) {
-    const unitSystem = this.activeUnitSystem;
-    if (this.getOverrideFormatPropsByQuantityType(type, unitSystem)) {
-      const overrideMap = this._overrideFormatPropsByUnitSystem.get(unitSystem);
-      if (overrideMap && overrideMap.has(type)) {
-        overrideMap.delete(type);
-
-        await this.loadDefaultFormatAndParserSpecForQuantity(type);
-        // trigger a message to let callers know the format has changed.
-        this.onQuantityFormatsChanged.emit({ quantityType: type });
-      }
-    }
-  }
-
-  public async clearOverrideFormats(type: QuantityTypeArg) {
-    await this.clearOverrideFormatsByQuantityTypeKey(this.getQuantityTypeKey(type));
+    const defaultFormat =  quantityTypeDefinition.getDefaultFormatPropsBySystem(this.activeUnitSystem);
+    await this.loadFormatAndParserSpec(quantityTypeDefinition, defaultFormat);
   }
 
   private async setOverrideFormatsByQuantityTypeKey(typeKey: QuantityTypeKey, overrideEntry: OverrideFormatEntry) {
@@ -549,6 +461,86 @@ export class QuantityFormatter implements UnitsProvider {
         this.onQuantityFormatsChanged.emit({ quantityType: typeKey });
       }
     }
+  }
+
+  /** Method called to clear override and restore defaults formatter and parser spec */
+  private async clearOverrideFormatsByQuantityTypeKey(type: QuantityTypeKey) {
+    const unitSystem = this.activeUnitSystem;
+    if (this.getOverrideFormatPropsByQuantityType(type, unitSystem)) {
+      const overrideMap = this._overrideFormatPropsByUnitSystem.get(unitSystem);
+      if (overrideMap && overrideMap.has(type)) {
+        overrideMap.delete(type);
+
+        await this.loadDefaultFormatAndParserSpecForQuantity(type);
+        // trigger a message to let callers know the format has changed.
+        this.onQuantityFormatsChanged.emit({ quantityType: type });
+      }
+    }
+  }
+
+  /** This method is called during IModelApp initialization to load the standard quantity types into the registry and to initialize the cache.
+   * @internal
+   */
+  public async onInitialized() {
+    await this.initializeQuantityTypesRegistry();
+
+    // initialize default format and parsing specs
+    await this.loadFormatAndParsingMapsForSystem();
+  }
+
+  public get quantityTypesRegistry() {
+    return this._quantityTypeRegistry;
+  }
+
+  public get unitsProvider() {
+    return this as UnitsProvider;
+  }
+
+  public async registerQuantityType(entry: CustomQuantityTypeDefinition) {
+    if (this._quantityTypeRegistry.has(entry.key))
+      return false;
+
+    this._quantityTypeRegistry.set(entry.key, entry);
+    if (entry.getDefaultFormatPropsBySystem) {
+      const formatProps = entry.getDefaultFormatPropsBySystem(this.activeUnitSystem);
+      await this.loadFormatAndParserSpec(entry, formatProps);
+      return true;
+    }
+    return false;
+  }
+
+  /** Set the Active unit system to one of the supported types. This will asynchronously load the formatter and parser specs for the activated system. */
+  public async setActiveUnitSystem(isImperialOrUnitSystem: UnitSystemKey | boolean, restartActiveTool?: boolean): Promise<void> {
+    let systemType: UnitSystemKey;
+    if (typeof isImperialOrUnitSystem === "boolean")
+      systemType = isImperialOrUnitSystem ? "imperial" : "metric";
+    else
+      systemType = isImperialOrUnitSystem;
+
+    if (this._activeUnitSystem === systemType)
+      return;
+
+    this._activeUnitSystem = systemType;
+    await this.loadFormatAndParsingMapsForSystem(systemType);
+    // fire deprecated event
+    this.onActiveUnitSystemChanged.emit({ useImperial: systemType === "imperial" }); // eslint-disable-line deprecation/deprecation
+    // fire current event
+    this.onActiveFormattingUnitSystemChanged.emit({ system: systemType });
+    if (IModelApp.toolAdmin && restartActiveTool)
+      IModelApp.toolAdmin.startDefaultTool();
+  }
+
+  /** True if tool quantity values should be displayed in imperial units; false for metric. Changing this flag triggers an asynchronous request to refresh the cached formats. */
+  public get activeUnitSystem(): UnitSystemKey { return this._activeUnitSystem; }
+
+  /** @deprecated use setActiveUnitSystem method and activeUnitSystem property */
+  public get useImperialFormats(): boolean { return this._activeUnitSystem === "imperial"; }
+  public set useImperialFormats(useImperial: boolean) {
+    this.setActiveUnitSystem(useImperial ? "imperial" : "metric", true); // eslint-disable-line @typescript-eslint/no-floating-promises
+  }
+
+  public async clearOverrideFormats(type: QuantityTypeArg) {
+    await this.clearOverrideFormatsByQuantityTypeKey(this.getQuantityTypeKey(type));
   }
 
   public async setOverrideFormats(type: QuantityTypeArg, overrideEntry: OverrideFormatEntry) {
@@ -597,19 +589,8 @@ export class QuantityFormatter implements UnitsProvider {
     return getQuantityTypeKey(type);
   }
 
-  /** Get the 'persistence' unit from the UnitsProvider. For a tool this 'persistence' unit is the unit being used by the tool internally. */
-  protected async getPersistenceUnitByQuantityType(type: QuantityTypeKey) {
-    if (this.quantityTypesRegistry.has(type)) {
-      const entry = this.quantityTypesRegistry.get(type);
-      if (entry)
-        return entry.persistenceUnit;
-    }
-    throw new Error(`Cannot find quantityType with key ${type} in QuantityTypesRegistry`);
-  }
-
-  /** get the 'persistence' unit from the UnitsProvider. For a tool this 'persistence' unit is the unit being used by the tool internally. */
-  protected  async getUnitByQuantityType(type: QuantityTypeArg) {
-    return this.getPersistenceUnitByQuantityType(this.getQuantityTypeKey(type));
+  public getQuantityDefiniton(type: QuantityTypeArg) {
+    return this.quantityTypesRegistry.get(this.getQuantityTypeKey(type));
   }
 
   /** Synchronous call to get a FormatterSpec of a QuantityType. If the FormatterSpec is not yet cached an undefined object is returned. The
@@ -619,20 +600,12 @@ export class QuantityFormatter implements UnitsProvider {
     return this._activeFormatSpecsByType.get(this.getQuantityTypeKey(type));
   }
 
-  public async generateFormatterSpec(quantityEntry: QuantityTypeDefinition, formatProps: FormatProps) {
-    return quantityEntry.generateFormatterSpec (formatProps, this.unitsProvider);
-  }
-
   public async generateFormatterSpecByType(type: QuantityTypeArg, formatProps: FormatProps) {
-    const quantityTypeEntry = this.quantityTypesRegistry.get(this.getQuantityTypeKey(type));
-    if (quantityTypeEntry)
-      return this.generateFormatterSpec(quantityTypeEntry, formatProps);
+    const quantityTypeDefinition = this.quantityTypesRegistry.get(this.getQuantityTypeKey(type));
+    if (quantityTypeDefinition)
+      return quantityTypeDefinition.generateFormatterSpec(formatProps, this.unitsProvider);
 
     throw new Error(`Unable to generate FormatSpec for QuantityType ${type}`);
-  }
-
-  protected async generateParserSpec(quantityEntry: QuantityTypeDefinition, formatProps: FormatProps) {
-    return quantityEntry.generateParserSpec (formatProps, this.unitsProvider);
   }
 
   /** Asynchronous Call to get a FormatterSpec of a QuantityType.
@@ -656,18 +629,15 @@ export class QuantityFormatter implements UnitsProvider {
     return entry.generateFormatterSpec(this.getFormatPropsByQuantityTypeEntyAndSystem(entry, requestedSystem), this.unitsProvider);
   }
 
-  /** Asynchronous Call to get a FormatterSpec of a QuantityType.
+  /** Asynchronous Call to get a FormatterSpec for a QuantityType.
    * @param type        One of the built-in quantity types supported.
-   * @param isImperial  deprecated use getFormatterSpecByQuantityTypeAndSystem.
+   * @param isImperial  Argument to specify use of imperial or metric unit system. If left undefined the active unit system is used.
    * @return A FormatterSpec Promise.
-   *
-   * @deprecated use `getFormatterSpecByQuantityTypeAndSystem`
    */
   public async getFormatterSpecByQuantityType(type: QuantityTypeArg, isImperial?: boolean): Promise<FormatterSpec | undefined> {
     let requestedSystem = this.activeUnitSystem;
     if (undefined !== isImperial)
       requestedSystem = isImperial ? "imperial" : "metric";
-
     return this.getFormatterSpecByQuantityTypeAndSystem (type, requestedSystem);
   }
 
@@ -695,20 +665,15 @@ export class QuantityFormatter implements UnitsProvider {
   }
 
   /** Asynchronous Call to get a ParserSpec for a QuantityType.
-   * @param type        either a default quantity type or one from a registered provider.
-   * @param isImperial  deprecated argument that should not be used, if undefined the 1active1 unit system is used.
-   * @return A promise to return a ParserSpec.
-   * @deprecated use `getParserSpecByQuantityTypeAndSystem`
+   * @param type        One of the built-in quantity types supported.
+   * @param isImperial  Argument to specify use of imperial or metric unit system. If left undefined the active unit system is used.
+   * @return A FormatterSpec Promise.
    */
   public async getParserSpecByQuantityType(type: QuantityTypeArg, isImperial?: boolean): Promise<ParserSpec | undefined> {
     let requestedSystem = this.activeUnitSystem;
     if (undefined !== isImperial)
       requestedSystem = isImperial ? "imperial" : "metric";
-
-    if (requestedSystem !== this.activeUnitSystem)
-      await this.setActiveUnitSystem(requestedSystem);
-
-    return this.getParserSpecByQuantityTypeAndSystem(type, requestedSystem);
+    return this.getParserSpecByQuantityTypeAndSystem (type, requestedSystem);
   }
 
   /** Generates a formatted string for a quantity given its format spec.
@@ -775,16 +740,6 @@ export class QuantityFormatter implements UnitsProvider {
         return true;
     }
     return false;
-  }
-
-  protected getFormatPropsByQuantityTypeEntyAndSystem(quantityEntry: QuantityTypeDefinition, requestedSystem: UnitSystemKey, ignoreOverrides?: boolean): FormatProps {
-    if (!ignoreOverrides) {
-      const overrideProps = this.getOverrideFormatPropsByQuantityType (quantityEntry.key, requestedSystem);
-      if (overrideProps)
-        return overrideProps;
-    }
-
-    return quantityEntry.getDefaultFormatPropsBySystem(requestedSystem);
   }
 
   public getFormatPropsByQuantityType(quantityType: QuantityTypeArg, requestedSystem?: UnitSystemKey, ignoreOverrides?: boolean) {

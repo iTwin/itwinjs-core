@@ -362,12 +362,12 @@ describe("Test Custom QuantityType", async () => {
 
   it("QuantityFormatter should handle unit system changes properly", async () => {
     const persistenceUnit = await quantityFormatter.findUnitByName("Units.RAD");
-    const quantityTypeEntry = new BearingQuantityType(persistenceUnit);
+    const quantityTypeDefinition = new BearingQuantityType(persistenceUnit);
 
-    let wasRegistered = await quantityFormatter.registerQuantityType (quantityTypeEntry);
+    let wasRegistered = await quantityFormatter.registerQuantityType (quantityTypeDefinition);
     assert.equal(wasRegistered, true);
     // only allow a single registration
-    wasRegistered = await quantityFormatter.registerQuantityType (quantityTypeEntry);
+    wasRegistered = await quantityFormatter.registerQuantityType (quantityTypeDefinition);
     assert.equal(wasRegistered, false);
 
     const formatterSpec = await quantityFormatter.getFormatterSpecByQuantityType("Bearing");

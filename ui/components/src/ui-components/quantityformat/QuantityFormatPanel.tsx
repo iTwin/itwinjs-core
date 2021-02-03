@@ -85,8 +85,8 @@ export function QuantityFormatPanel(props: QuantityFormatPanelProps) {
   const [formatProps, setFormatProps] = React.useState<FormatProps>();
   const [persistenceUnit, setPersistenceUnit] = React.useState(()=>{
     const quantityTypeKey = getQuantityTypeKey(quantityType);
-    const quantityTypeEntry = IModelApp.quantityFormatter.quantityTypesRegistry.get(quantityTypeKey);
-    return quantityTypeEntry?.persistenceUnit;
+    const quantityTypeDefinition = IModelApp.quantityFormatter.quantityTypesRegistry.get(quantityTypeKey);
+    return quantityTypeDefinition?.persistenceUnit;
   });
 
   React.useEffect(() => {
@@ -96,8 +96,8 @@ export function QuantityFormatPanel(props: QuantityFormatPanelProps) {
 
   React.useEffect(() => {
     const quantityTypeKey = getQuantityTypeKey(quantityType);
-    const quantityTypeEntry = IModelApp.quantityFormatter.quantityTypesRegistry.get(quantityTypeKey);
-    setPersistenceUnit(quantityTypeEntry?.persistenceUnit);
+    const quantityTypeDefinition = IModelApp.quantityFormatter.quantityTypesRegistry.get(quantityTypeKey);
+    setPersistenceUnit(quantityTypeDefinition?.persistenceUnit);
   }, [quantityType]);
 
   const handleOnFormatChanged = React.useCallback(async (newProps: FormatProps) => {
@@ -120,11 +120,11 @@ export function QuantityFormatPanel(props: QuantityFormatPanelProps) {
   const providePrimaryChildren = React.useCallback(
     (inProps: FormatProps, fireFormatChange: (newProps: FormatProps) => void) => {
       const quantityTypeKey = getQuantityTypeKey(quantityType);
-      const quantityTypeEntry = IModelApp.quantityFormatter.quantityTypesRegistry.get(quantityTypeKey);
-      if (quantityTypeEntry && isCustomQuantityTypeDefinition(quantityTypeEntry) &&
-        quantityTypeEntry.isCompatibleFormatProps(inProps)) {
-        if (quantityTypeEntry.primaryPropEditorSpecs)
-          return createCustomPropEditors (quantityTypeEntry.primaryPropEditorSpecs, inProps, fireFormatChange);
+      const quantityTypeDefinition = IModelApp.quantityFormatter.quantityTypesRegistry.get(quantityTypeKey);
+      if (quantityTypeDefinition && isCustomQuantityTypeDefinition(quantityTypeDefinition) &&
+        quantityTypeDefinition.isCompatibleFormatProps(inProps)) {
+        if (quantityTypeDefinition.primaryPropEditorSpecs)
+          return createCustomPropEditors (quantityTypeDefinition.primaryPropEditorSpecs, inProps, fireFormatChange);
       }
       return null;
     }, [createCustomPropEditors, quantityType]);
@@ -132,11 +132,11 @@ export function QuantityFormatPanel(props: QuantityFormatPanelProps) {
   const provideSecondaryChildren = React.useCallback(
     (inProps: FormatProps, fireFormatChange: (newProps: FormatProps) => void) => {
       const quantityTypeKey = getQuantityTypeKey(quantityType);
-      const quantityTypeEntry = IModelApp.quantityFormatter.quantityTypesRegistry.get(quantityTypeKey);
-      if (quantityTypeEntry && isCustomQuantityTypeDefinition(quantityTypeEntry) &&
-      quantityTypeEntry.isCompatibleFormatProps(inProps)) {
-        if (quantityTypeEntry.secondaryPropEditorSpecs)
-          return createCustomPropEditors (quantityTypeEntry.secondaryPropEditorSpecs, inProps, fireFormatChange);
+      const quantityTypeDefinition = IModelApp.quantityFormatter.quantityTypesRegistry.get(quantityTypeKey);
+      if (quantityTypeDefinition && isCustomQuantityTypeDefinition(quantityTypeDefinition) &&
+      quantityTypeDefinition.isCompatibleFormatProps(inProps)) {
+        if (quantityTypeDefinition.secondaryPropEditorSpecs)
+          return createCustomPropEditors (quantityTypeDefinition.secondaryPropEditorSpecs, inProps, fireFormatChange);
       }
       return null;
     }, [createCustomPropEditors, quantityType]);

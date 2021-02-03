@@ -234,8 +234,8 @@ export class BearingQuantityType implements CustomQuantityTypeDefinition {
           {value: "counter-clockwise", label: IModelApp.i18n.translate("SampleApp:BearingQuantityType.bearingAngleDirection.counter-clockwise") },
         ],
         label: IModelApp.i18n.translate("SampleApp:BearingQuantityType.bearingAngleDirection.label"),
-        getString: this.bearingAngleDirectionGetter,
-        setString: this.bearingAngleDirectionSetter,
+        getString: BearingQuantityType.bearingAngleDirectionGetter,
+        setString: BearingQuantityType.bearingAngleDirectionSetter,
       } as TextSelectFormatPropEditorSpec,
     ];
   }
@@ -245,33 +245,33 @@ export class BearingQuantityType implements CustomQuantityTypeDefinition {
       {
         editorType: "checkbox",
         label: IModelApp.i18n.translate("SampleApp:BearingQuantityType.bearingGap.label"),
-        getBool: this.bearingGapPropGetter,
-        setBool: this.bearingGapPropSetter,
+        getBool: BearingQuantityType.bearingGapPropGetter,
+        setBool: BearingQuantityType.bearingGapPropSetter,
       } as CheckboxFormatPropEditorSpec,
     ];
   }
 
   public static async registerQuantityType(initialProps?: FormatProps) {
-    const quantityTypeEntry = new BearingQuantityType();
+    const quantityTypeDefinition = new BearingQuantityType();
     if (initialProps && isBearingFormatProps(initialProps)) {
-      quantityTypeEntry.formatProps = initialProps;
+      quantityTypeDefinition.formatProps = initialProps;
     }
-    quantityTypeEntry._persistenceUnit = await IModelApp.quantityFormatter.findUnitByName(quantityTypeEntry._persistenceUnitName);
-    const wasRegistered = await IModelApp.quantityFormatter.registerQuantityType (quantityTypeEntry);
+    quantityTypeDefinition._persistenceUnit = await IModelApp.quantityFormatter.findUnitByName(quantityTypeDefinition._persistenceUnitName);
+    const wasRegistered = await IModelApp.quantityFormatter.registerQuantityType (quantityTypeDefinition);
     if (!wasRegistered) {
       Logger.logInfo("BearingQuantityType",
-        `Unable to register QuantityType [BearingQuantityType] with key '${quantityTypeEntry.key}'`);
+        `Unable to register QuantityType [BearingQuantityType] with key '${quantityTypeDefinition.key}'`);
     }
   }
 
-  private bearingGapPropGetter(props: FormatProps) {
+  private static bearingGapPropGetter(props: FormatProps) {
     if (isBearingFormatProps(props)) {
       return props.custom.addDirectionLabelGap;
     }
     throw new Error (`formatProps passed to bearingGapPropGetter type is not a BearingFormatProps`);
   }
 
-  private bearingGapPropSetter(props: FormatProps, isChecked: boolean) {
+  private static bearingGapPropSetter(props: FormatProps, isChecked: boolean) {
     if (isBearingFormatProps(props)) {
       const customProps = {...props.custom, addDirectionLabelGap:isChecked};
       const newProps = {...props, custom:customProps};
@@ -280,14 +280,14 @@ export class BearingQuantityType implements CustomQuantityTypeDefinition {
     throw new Error (`formatProps passed to bearingGapPropSetter type is not a BearingFormatProps`);
   }
 
-  private bearingAngleDirectionGetter(props: FormatProps) {
+  private static bearingAngleDirectionGetter(props: FormatProps) {
     if (isBearingFormatProps(props)) {
       return props.custom.angleDirection;
     }
     throw new Error (`formatProps passed to bearingAngleDirectionGetter type is not a BearingFormatProps`);
   }
 
-  private bearingAngleDirectionSetter(props: FormatProps, value: string) {
+  private static bearingAngleDirectionSetter(props: FormatProps, value: string) {
     if (isBearingFormatProps(props)) {
       const customProps = {...props.custom, angleDirection:value};
       const newProps = {...props, custom:customProps};

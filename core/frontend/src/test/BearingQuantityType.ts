@@ -228,8 +228,8 @@ export class BearingQuantityType implements CustomQuantityTypeDefinition {
           {value: "counter-clockwise", label:"counter-clockwise" },
         ],
         label: "AngleDirection",
-        getString: this.bearingAngleDirectionGetter,
-        setString: this.bearingAngleDirectionSetter,
+        getString: BearingQuantityType.bearingAngleDirectionGetter,
+        setString: BearingQuantityType.bearingAngleDirectionSetter,
       } as TextSelectFormatPropEditorSpec,
     ];
   }
@@ -239,20 +239,20 @@ export class BearingQuantityType implements CustomQuantityTypeDefinition {
       {
         editorType: "checkbox",
         label: "bearingGap",
-        getBool: this.bearingGapPropGetter,
-        setBool: this.bearingGapPropSetter,
+        getBool: BearingQuantityType.bearingGapPropGetter,
+        setBool: BearingQuantityType.bearingGapPropSetter,
       } as CheckboxFormatPropEditorSpec,
     ];
   }
 
-  private bearingGapPropGetter(props: FormatProps) {
+  private static bearingGapPropGetter(props: FormatProps) {
     if (isBearingFormatProps(props)) {
       return props.custom.addDirectionLabelGap;
     }
     throw new Error (`formatProps passed to bearingGapPropGetter type is not a BearingFormatProps`);
   }
 
-  private bearingGapPropSetter(props: FormatProps, isChecked: boolean) {
+  private static bearingGapPropSetter(props: FormatProps, isChecked: boolean) {
     if (isBearingFormatProps(props)) {
       const customProps = {...props.custom, addDirectionLabelGap:isChecked};
       const newProps = {...props, custom:customProps};
@@ -261,14 +261,14 @@ export class BearingQuantityType implements CustomQuantityTypeDefinition {
     throw new Error (`formatProps passed to bearingGapPropSetter type is not a BearingFormatProps`);
   }
 
-  private bearingAngleDirectionGetter(props: FormatProps) {
+  private static bearingAngleDirectionGetter(props: FormatProps) {
     if (isBearingFormatProps(props)) {
       return props.custom.angleDirection;
     }
     throw new Error (`formatProps passed to bearingAngleDirectionGetter type is not a BearingFormatProps`);
   }
 
-  private bearingAngleDirectionSetter(props: FormatProps, value: string) {
+  private static bearingAngleDirectionSetter(props: FormatProps, value: string) {
     if (isBearingFormatProps(props)) {
       const customProps = {...props.custom, angleDirection:value};
       const newProps = {...props, custom:customProps};

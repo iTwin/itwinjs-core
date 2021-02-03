@@ -160,10 +160,8 @@ alpha;findAvailableUnattachedRealityModels(contextId: GuidString, iModel?: IMode
 public;FitViewTool 
 internal;Flags
 public;FlyViewTool 
-internal;FormatPropsByUnitSystem = Map
 beta;class FormattedQuantityDescription 
 alpha;FormatterParserSpecsProvider
-internal;FormatterSpecByQuantityType = Map
 alpha;FormattingUnitSystemChangedArgs
 internal;FrameBeforeRenderData
 internal;FrameCameraFrustumData

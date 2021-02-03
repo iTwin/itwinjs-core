@@ -20,7 +20,7 @@ import { ParsedInput } from "./ParsedInput";
  * @beta
  */
 export interface QuantityProps extends CommonProps {
-  /** Initial magnitude in 'persistence' units. See `getUnitByQuantityType` in [QuantityFormatter]($imodeljs-frontend) */
+  /** Initial magnitude in 'persistence' units. See `getPersistenceUnitByQuantityType` in [QuantityFormatter]($imodeljs-frontend) */
   initialValue: number;
   /** Type of quantity being input. */
   quantityType: QuantityTypeArg;
