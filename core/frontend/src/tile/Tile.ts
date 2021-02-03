@@ -49,6 +49,14 @@ const scratchPoint4d = Point4d.createZero();
 const scratchFrustum = new Frustum();
 
 /** A 3d tile within a [[TileTree]].
+ * A tile represents the contents of some sub-volume of the tile tree's volume. It may produce graphics representing those contents, or may have no graphics.
+ * A tile can have child tiles that further sub-divide its own volume, providing higher-resolution representations of its contents. A tile that has no children is
+ * referred to as a "leaf" of the tile tree. A non-leaf tile's children are produced when they are needed, and discarded when no longer needed.
+ * A tile's contents can be discarded at any time by [[TileAdmin]] when GPU memory needs to be reclaimed; or when the Tile itself is discarded via
+ * [[Tile.dispose]].
+ *
+ * Several public [[Tile]] methods carry a warning that they should **not** be overridden by subclasses; typically a protected method exists that can be overridden instead.
+ * For example, [[collectStatistics]] should not be overridden, but it calls [[_collectStatistics]], which should be overridden if the tile owns WebGL resources besides its [[RenderGraphic]].
  * @beta
  */
 export abstract class Tile {
