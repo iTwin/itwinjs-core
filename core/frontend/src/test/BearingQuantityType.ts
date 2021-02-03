@@ -215,7 +215,7 @@ export class BearingQuantityType implements CustomQuantityTypeDefinition {
   };
 
   // Bearing is not unit system specific so no need to check that here
-  public getFormatPropsBySystem = (_requestedSystem: UnitSystemKey) => {
+  public getDefaultFormatPropsBySystem = (_requestedSystem: UnitSystemKey) => {
     return this.formatProps;
   };
 

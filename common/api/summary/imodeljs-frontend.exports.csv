@@ -70,13 +70,13 @@ public;CategorySelectorState
 beta;ChangeFlag
 beta;ChangeFlags
 public;ChangeViewedModel2dOptions
+alpha;CheckboxFormatPropEditorSpec 
 alpha;ClipEventType
 internal;ClipResult
 public;Cluster
 internal;CompassMode
 internal;ContextMode
 beta;ContextRealityModelState
-alpha;ConversionData 
 public;CoordinateLockOverrides
 public;CoordSource
 public;CoordSystem
@@ -90,6 +90,8 @@ internal;createRealityTileTreeReference(props: RealityModelTileTree.ReferencePro
 internal;createRenderPlanFromViewport(vp: Viewport): RenderPlan
 internal;CurrentInputState
 internal;CurrentState
+alpha;CustomFormatPropEditorSpec
+alpha;CustomQuantityTypeDefinition 
 internal;DebugShaderFile
 public;DecorateContext 
 public;Decorations 
@@ -189,6 +191,7 @@ beta;getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes?: number, m
 internal;getGcsConverterAvailable(iModel: IModelConnection): Promise
 public;getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined
 public;getImageSourceMimeType(format: ImageSourceFormat): string
+beta;getQuantityTypeKey(type: QuantityTypeArg): QuantityTypeKey
 alpha;GlobalLocation
 alpha;GlobalLocationArea
 internal;GlobeAnimator 
@@ -253,6 +256,10 @@ alpha;InteractiveEditingSession
 public;class InteractiveTool 
 internal;internalMapLayerImageryFormats: (typeof WmsMapLayerFormat)[]
 public;IntersectDetail 
+alpha;isCheckboxFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is CheckboxFormatPropEditorSpec
+alpha;isCustomQuantityTypeDefinition(item: QuantityTypeDefinition): item is CustomQuantityTypeDefinition
+alpha;isTextInputFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextInputFormatPropEditorSpec
+alpha;isTextSelectFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextSelectFormatPropEditorSpec
 alpha;ItemField
 beta;KeyinParseError
 internal;KeyinStatus
@@ -358,7 +365,9 @@ internal;QuadId
 alpha;QuantityFormatsChangedArgs
 alpha;QuantityFormatter 
 beta;QuantityType
-alpha;QuantityTypeArg = QuantityType | string
+beta;QuantityTypeArg = QuantityType | string
+alpha;QuantityTypeDefinition
+beta;QuantityTypeKey = string
 internal;queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise
 internal;rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined
 internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined
@@ -466,6 +475,8 @@ internal;TerrainDisplayOverrides
 internal;class TerrainMeshProvider
 internal;TerrainTexture
 internal;TerrainTileContent 
+alpha;TextInputFormatPropEditorSpec 
+alpha;TextSelectFormatPropEditorSpec 
 internal;TextureDrapeMap = Map
 internal;TextureImage
 internal;ThreeAxes

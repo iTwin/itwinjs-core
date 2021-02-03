@@ -120,8 +120,8 @@ function QuantityFormatStage({ initialQuantityType }: { initialQuantityType: Qua
             {
               [...IModelApp.quantityFormatter.quantityTypesRegistry.keys()].map((key) => {
                 const entry = IModelApp.quantityFormatter.quantityTypesRegistry.get(key)!;
-                const description = IModelApp.quantityFormatter.getQuantityDescription(entry);
-                const label = IModelApp.quantityFormatter.getQuantityLabel(entry);
+                const description = entry.description;
+                const label = entry.label;
                 return (
                   <ListboxItem key={entry.key} className="quantity-type-list-entry" value={entry.key}>
                     <span className="map-source-list-entry-name" title={description}>{label}</span>
