@@ -489,7 +489,7 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
       if(this._bridgeArgs.argsJson) {
         this._bridgeArgs.argsJson.briefcaseId = props.briefcaseId; // don't overwrite other arguments if anything is passed in
       } else {
-      this._bridgeArgs.argsJson= {briefcaseId: props.briefcaseId};
+        this._bridgeArgs.argsJson= {briefcaseId: props.briefcaseId};
       }
     }
     let briefcaseDb: BriefcaseDb | undefined;
