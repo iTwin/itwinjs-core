@@ -81,14 +81,15 @@ export class TelemetryEvent {
 
 // @alpha (undocumented)
 export class TelemetryManager {
-    constructor(...subClients: TelemetryClient[]);
+    constructor(...clients: TelemetryClient[]);
     // (undocumented)
     addClient(client: TelemetryClient): void;
     // (undocumented)
-    hasClient(client: TelemetryClient): boolean;
-    postTelemetry(requestContext: AuthorizedClientRequestContext, telemetryEvent: TelemetryEvent): Promise<void>;
+    protected readonly _clients: Set<TelemetryClient>;
     // (undocumented)
-    protected readonly _subClients: Set<TelemetryClient>;
+    hasClient(client: TelemetryClient): boolean;
+    // (undocumented)
+    postTelemetry(requestContext: AuthorizedClientRequestContext, telemetryEvent: TelemetryEvent): Promise<void>;
 }
 
 
