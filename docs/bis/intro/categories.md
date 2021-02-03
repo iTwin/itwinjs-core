@@ -87,11 +87,11 @@ DrawingCategories are similar to drawing layer/level standards and are ultimatel
 
 <!-- TODO: Elaborate on how user can (or will be able to) control drawing standards in the future. They won't be manually changing GeometricElement2dIsInCategory? -->
 
-## iModel Bridges and Categories
+## iModel Connectors and Categories
 
-Each iModel Bridge job should create a `DefinitionModel` for its Categories. That way each bridge can have its own set of Categories without risk of name collision with other jobs.
+Each iModel Connector job should create a `DefinitionModel` for its Categories. That way each connector can have its own set of Categories without risk of name collision with other jobs.
 
-iModel Bridges should respect and use the standard SpatialCategories defined by the Domains.
+iModel Connectors should respect and use the standard SpatialCategories defined by the Domains.
 
 ---
 | Next: [Schema Customization](./schema-customization.md)
