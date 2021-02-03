@@ -83,7 +83,7 @@ export abstract class PlanarMaskBaseTool extends PrimitiveTool {
 
   public requireWriteableTarget(): boolean { return false; }
   public onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
-  public onCleanup(): void { if (0 !== this._acceptedElementIds.size) this.iModel.hilited.setHilite(this._acceptedElementIds, false); }
+
   public onUnsuspend(): void { this.showPrompt(); }
   private setupAndPromptForNextAction(): void {
     this._useSelection = (undefined !== this.targetView && this.targetView.iModel.selectionSet.isActive);
@@ -96,11 +96,22 @@ export abstract class PlanarMaskBaseTool extends PrimitiveTool {
   protected abstract showPrompt(): void;
   protected abstract createToolInstance(): PlanarMaskBaseTool;
   protected abstract applyMask(vp: ScreenViewport): void;
+  private clearIds() {
+    this._acceptedElementIds.clear();
+    this._acceptedModelIds.clear();
+  }
 
   public onRestartTool(): void {
+    this.clearIds();
+    this._acceptedSubCategoryIds.clear();
     const tool = this.createToolInstance();
     if (!tool.run())
       this.exitTool();
+  }
+  public onCleanup(): void {
+    if (0 !== this._acceptedElementIds.size)
+      this.iModel.hilited.setHilite(this._acceptedElementIds, false);
+    this.clearIds();
   }
 
   public async filterHit(hit: HitDetail, _out?: LocateResponse): Promise<LocateFilterStatus> {
