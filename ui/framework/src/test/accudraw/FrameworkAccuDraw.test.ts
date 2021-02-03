@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
 import { expect } from "chai";
-import { BeButtonEvent, CompassMode, CurrentState, IModelApp, IModelAppOptions, ItemField, MockRender } from "@bentley/imodeljs-frontend";
+import { BeButtonEvent, CompassMode, CurrentState, IModelApp, IModelAppOptions, ItemField, MockRender, RotationMode } from "@bentley/imodeljs-frontend";
 import TestUtils from "../TestUtils";
 import { FrameworkAccuDraw } from "../../ui-framework/accudraw/FrameworkAccuDraw";
-import { AccuDrawUiAdmin } from "@bentley/ui-abstract";
+import { AccuDrawUiAdmin, ConditionalBooleanValue } from "@bentley/ui-abstract";
 import { FrameworkUiAdmin } from "../../ui-framework/uiadmin/FrameworkUiAdmin";
 
 // cspell:ignore dont uiadmin
@@ -112,6 +112,54 @@ describe("FrameworkAccuDraw", () => {
 
     remove();
     removeFocusSpy();
+  });
+
+  it("FrameworkAccuDraw.isTopRotationConditional should be true after setRotationMode(RotationMode.Top)", () => {
+    IModelApp.accuDraw.setRotationMode(RotationMode.Top);
+    FrameworkAccuDraw.isTopRotationConditional.refresh();
+    expect(ConditionalBooleanValue.getValue(FrameworkAccuDraw.isTopRotationConditional)).to.be.true;
+  });
+
+  it("FrameworkAccuDraw.isFrontRotationConditional should be true after setRotationMode(RotationMode.Front)", () => {
+    IModelApp.accuDraw.setRotationMode(RotationMode.Front);
+    FrameworkAccuDraw.isFrontRotationConditional.refresh();
+    expect(ConditionalBooleanValue.getValue(FrameworkAccuDraw.isFrontRotationConditional)).to.be.true;
+  });
+
+  it("FrameworkAccuDraw.isSideRotationConditional should be true after setRotationMode(RotationMode.Side)", () => {
+    IModelApp.accuDraw.setRotationMode(RotationMode.Side);
+    FrameworkAccuDraw.isSideRotationConditional.refresh();
+    expect(ConditionalBooleanValue.getValue(FrameworkAccuDraw.isSideRotationConditional)).to.be.true;
+  });
+
+  it("FrameworkAccuDraw.isViewRotationConditional should be true after setRotationMode(RotationMode.View)", () => {
+    IModelApp.accuDraw.setRotationMode(RotationMode.View);
+    FrameworkAccuDraw.isViewRotationConditional.refresh();
+    expect(ConditionalBooleanValue.getValue(FrameworkAccuDraw.isViewRotationConditional)).to.be.true;
+  });
+
+  it("FrameworkAccuDraw.isACSRotationConditional should be true after setRotationMode(RotationMode.ACS)", () => {
+    IModelApp.accuDraw.setRotationMode(RotationMode.ACS);
+    FrameworkAccuDraw.isACSRotationConditional.refresh();
+    expect(ConditionalBooleanValue.getValue(FrameworkAccuDraw.isACSRotationConditional)).to.be.true;
+  });
+
+  it("FrameworkAccuDraw.isContextRotationConditional should be true after setRotationMode(RotationMode.Context)", () => {
+    IModelApp.accuDraw.setRotationMode(RotationMode.Context);
+    FrameworkAccuDraw.isContextRotationConditional.refresh();
+    expect(ConditionalBooleanValue.getValue(FrameworkAccuDraw.isContextRotationConditional)).to.be.true;
+  });
+
+  it("FrameworkAccuDraw.isPolarModeConditional should be true after setCompassMode(CompassMode.Polar)", () => {
+    IModelApp.accuDraw.setCompassMode(CompassMode.Polar);
+    FrameworkAccuDraw.isPolarModeConditional.refresh();
+    expect(ConditionalBooleanValue.getValue(FrameworkAccuDraw.isPolarModeConditional)).to.be.true;
+  });
+
+  it("FrameworkAccuDraw.isRectangularModeConditional should be true after setCompassMode(CompassMode.Rectangular)", () => {
+    IModelApp.accuDraw.setCompassMode(CompassMode.Rectangular);
+    FrameworkAccuDraw.isRectangularModeConditional.refresh();
+    expect(ConditionalBooleanValue.getValue(FrameworkAccuDraw.isRectangularModeConditional)).to.be.true;
   });
 
 });

@@ -6,14 +6,32 @@
  * @module AccuDraw
  */
 
-import { AccuDraw, BeButtonEvent, CompassMode, IModelApp, ItemField, QuantityType } from "@bentley/imodeljs-frontend";
-import { AccuDrawField, AccuDrawMode, AccuDrawSetFieldValueFromUiEventArgs, AccuDrawUiAdmin } from "@bentley/ui-abstract";
+import { AccuDraw, BeButtonEvent, CompassMode, IModelApp, ItemField, QuantityType, RotationMode } from "@bentley/imodeljs-frontend";
+import { AccuDrawField, AccuDrawMode, AccuDrawSetFieldValueFromUiEventArgs, AccuDrawUiAdmin, ConditionalBooleanValue } from "@bentley/ui-abstract";
 import { UiFramework } from "../UiFramework";
+import { SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 
 // cspell:ignore dont
 
 /** @alpha */
 export class FrameworkAccuDraw extends AccuDraw {
+
+  /** Determines if AccuDraw.rotationMode === RotationMode.Top */
+  public static readonly isTopRotationConditional = new ConditionalBooleanValue(() => IModelApp.accuDraw.rotationMode === RotationMode.Top, [SyncUiEventId.AccuDrawRotationChanged]);
+  /** Determines if AccuDraw.rotationMode === RotationMode.Front */
+  public static readonly isFrontRotationConditional = new ConditionalBooleanValue(() => IModelApp.accuDraw.rotationMode === RotationMode.Front, [SyncUiEventId.AccuDrawRotationChanged]);
+  /** Determines if AccuDraw.rotationMode === RotationMode.Side */
+  public static readonly isSideRotationConditional = new ConditionalBooleanValue(() => IModelApp.accuDraw.rotationMode === RotationMode.Side, [SyncUiEventId.AccuDrawRotationChanged]);
+  /** Determines if AccuDraw.rotationMode === RotationMode.View */
+  public static readonly isViewRotationConditional = new ConditionalBooleanValue(() => IModelApp.accuDraw.rotationMode === RotationMode.View, [SyncUiEventId.AccuDrawRotationChanged]);
+  /** Determines if AccuDraw.rotationMode === RotationMode.ACS */
+  public static readonly isACSRotationConditional = new ConditionalBooleanValue(() => IModelApp.accuDraw.rotationMode === RotationMode.ACS, [SyncUiEventId.AccuDrawRotationChanged]);
+  /** Determines if AccuDraw.rotationMode === RotationMode.Context */
+  public static readonly isContextRotationConditional = new ConditionalBooleanValue(() => IModelApp.accuDraw.rotationMode === RotationMode.Context, [SyncUiEventId.AccuDrawRotationChanged]);
+  /** Determines if AccuDraw.compassMode === CompassMode.Polar */
+  public static readonly isPolarModeConditional = new ConditionalBooleanValue(() => IModelApp.accuDraw.compassMode === CompassMode.Polar, [SyncUiEventId.AccuDrawCompassModeChanged]);
+  /** Determines if AccuDraw.compassMode === CompassMode.Rectangular */
+  public static readonly isRectangularModeConditional = new ConditionalBooleanValue(() => IModelApp.accuDraw.compassMode === CompassMode.Rectangular, [SyncUiEventId.AccuDrawCompassModeChanged]);
 
   constructor() {
     super();
@@ -77,6 +95,12 @@ export class FrameworkAccuDraw extends AccuDraw {
   public onCompassModeChange(): void {
     const accuDrawMode = this.compassMode === CompassMode.Rectangular ? AccuDrawMode.Rectangular : AccuDrawMode.Polar;
     IModelApp.uiAdmin.accuDrawUi.setMode(accuDrawMode);
+    SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.AccuDrawCompassModeChanged);
+  }
+
+  /** @internal */
+  public onRotationModeChange(): void {
+    SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.AccuDrawRotationChanged);
   }
 
   /** @internal */
