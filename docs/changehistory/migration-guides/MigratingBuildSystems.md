@@ -59,25 +59,27 @@ With the above background in mind, the quickest/easiest migration pattern for al
     ```
 
 1. Add a separate `tsconfig.json` for backend build called `tsconfig.backend.json`.
-  - The build between the frontend and backend are now slightly different in their configuration meaning that an app now needs two separate tsconfigs
-  - The contents of the `tsconfig.backend.json` should be similar to the following:
-    - ```json
-        {
-          "extends": "./node_modules/@bentley/build-tools/tsconfig-base.json",
-          "compilerOptions": {
-            "target": "es2017",
-            "module": "commonjs",
-            "outDir": "./lib"
-          },
-          "include": [
-            "./src/backend/*.ts",
-            "./src/common/*.ts"
-          ],
-          "exclude": [
-            "lib",
-            "node_modules"
-          ]
-        }
+
+    - The build between the frontend and backend are now slightly different in their configuration meaning that an app now needs two separate tsconfigs
+    - The contents of the `tsconfig.backend.json` should be similar to the following:
+
+      ```json
+          {
+            "extends": "./node_modules/@bentley/build-tools/tsconfig-base.json",
+            "compilerOptions": {
+              "target": "es2017",
+              "module": "commonjs",
+              "outDir": "./lib"
+            },
+            "include": [
+              "./src/backend/*.ts",
+              "./src/common/*.ts"
+            ],
+            "exclude": [
+              "lib",
+              "node_modules"
+            ]
+          }
       ```
 
 ## FAQ

@@ -264,7 +264,7 @@ export class WidgetDef {
   }
 
   private _handleSyncUiEvent = (args: SyncUiEventArgs): void => {
-    if ((this.syncEventIds.length > 0) && this.syncEventIds.some((value: string): boolean => args.eventIds.has(value))) {
+    if ((this.syncEventIds.length > 0) && this.syncEventIds.some((value: string): boolean => args.eventIds.has(value.toLowerCase()))) {
       // istanbul ignore else
       if (this.stateFunc) {
         let newState = this.state;

@@ -3,10 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
-import { CompassMode, IModelApp, IModelAppOptions, ItemField, MockRender } from "@bentley/imodeljs-frontend";
+import { expect } from "chai";
+import { BeButtonEvent, CompassMode, CurrentState, IModelApp, IModelAppOptions, ItemField, MockRender } from "@bentley/imodeljs-frontend";
 import TestUtils from "../TestUtils";
 import { FrameworkAccuDraw } from "../../ui-framework/accudraw/FrameworkAccuDraw";
 import { AccuDrawUiAdmin } from "@bentley/ui-abstract";
+import { FrameworkUiAdmin } from "../../ui-framework/uiadmin/FrameworkUiAdmin";
+
+// cspell:ignore dont uiadmin
 
 describe("FrameworkAccuDraw", () => {
   before(async () => {
@@ -14,6 +18,7 @@ describe("FrameworkAccuDraw", () => {
 
     const opts: IModelAppOptions = {};
     opts.accuDraw = new FrameworkAccuDraw();
+    opts.uiAdmin = new FrameworkUiAdmin();
     await MockRender.App.startup(opts);
   });
 
@@ -62,11 +67,51 @@ describe("FrameworkAccuDraw", () => {
     remove();
   });
 
-  it("should call setFocusItem & emit onAccuDrawSetFieldFocusEvent", () => {
+  it("should emit onAccuDrawSetFieldFocusEvent", () => {
     const spy = sinon.spy();
     const remove = AccuDrawUiAdmin.onAccuDrawSetFieldFocusEvent.addListener(spy);
     IModelApp.accuDraw.setFocusItem(ItemField.X_Item);
     spy.calledOnce.should.true;
     remove();
   });
+
+  it("should emit onAccuDrawGrabInputFocusEvent", () => {
+    const spy = sinon.spy();
+    const remove = AccuDrawUiAdmin.onAccuDrawGrabInputFocusEvent.addListener(spy);
+    IModelApp.accuDraw.grabInputFocus();
+    spy.calledOnce.should.true;
+    remove();
+  });
+
+  it("hasInputFocus should return false", () => {
+    expect(IModelApp.accuDraw.hasInputFocus).to.be.false;
+  });
+
+  it("should emit onAccuDrawSetFieldValueToUiEvent & onAccuDrawSetFieldFocusEvent", () => {
+    const spyValue = sinon.spy();
+    const remove = AccuDrawUiAdmin.onAccuDrawSetFieldValueToUiEvent.addListener(spyValue);
+    const spyFocus = sinon.spy();
+    const removeFocusSpy = AccuDrawUiAdmin.onAccuDrawSetFieldFocusEvent.addListener(spyFocus);
+
+    IModelApp.accuDraw.currentState = CurrentState.Deactivated;
+    IModelApp.accuDraw.onMotion(new BeButtonEvent());
+    spyValue.called.should.false;
+    spyValue.resetHistory();
+
+    IModelApp.accuDraw.currentState = CurrentState.Active;
+    IModelApp.accuDraw.onMotion(new BeButtonEvent());
+    spyValue.called.should.true;
+    spyFocus.called.should.true;
+    spyValue.resetHistory();
+    spyFocus.resetHistory();
+
+    IModelApp.accuDraw.dontMoveFocus = true;
+    IModelApp.accuDraw.onMotion(new BeButtonEvent());
+    spyValue.called.should.true;
+    spyFocus.called.should.false;
+
+    remove();
+    removeFocusSpy();
+  });
+
 });
