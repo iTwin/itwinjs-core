@@ -193,7 +193,7 @@ Load new functionality to a running instance of an application in a web browser.
 
 Create iModels from data from external BIM/CAD/GIS/etc. applications.
 
-[iModel Bridges](.\imodel-bridges.md) read data from external formats and *bridge* it into an iModel. They create ChangeSets that are sent to iModelHub.
+[iModel Connectors](.\imodel-connectors.md) read data from external formats and *connect* it into an iModel. They create ChangeSets that are sent to iModelHub.
 
 ## Application and User Settings
 
