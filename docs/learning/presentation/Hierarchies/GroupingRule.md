@@ -5,11 +5,13 @@
 Grouping rules provide advanced ways to group instances when creating hierarchies.
 
 It allows to define these types of groupings:
+
 - Group by base class.
 - Group by any property of the instance by a common value or a range of values.
 - Group multiple instances with the same label in to one ECInstance node. This can be used in cases when these instances represent the same object for the user.
 
 The rule works in conjunction with other grouping options available in [navigation specifications](./index.md#specifications): `groupByClass` and `groupByLabel`. The grouping hierarchy looks like this:
+
 - Base ECClass grouping node (specified by [base class grouping specification](#base-class-grouping))
   - ECClass grouping node (specified by `groupByClass` property)
     - ECProperty grouping node 1 (specified by 1st [property grouping specification](#property-grouping))

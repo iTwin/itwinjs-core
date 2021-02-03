@@ -69,4 +69,4 @@ and that prop is used in this example.
 
 ## API Reference
 
-* [Expandable]($ui-core:Expandable)
+- [Expandable]($ui-core:Expandable)

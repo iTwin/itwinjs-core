@@ -49,6 +49,6 @@ Sometimes it may be desirable to hide the logo in specialized viewports, particu
 
 Please keep in mind:
 
-* The icon may not be replaced with anything other than the iModel.js logo. Place your logo on a Logo Card.
-* The icon may be positioned anywhere in the view where it is least obtrusive, but the opacity should not be set below 40% and its size should not be smaller than 24 pixels.
-* The icon **may not** be removed entirely in views that may show maps, terrain, point clouds, or other copyrighted material, since it is required to show the copyright attribution of data suppliers.
+- The icon may not be replaced with anything other than the iModel.js logo. Place your logo on a Logo Card.
+- The icon may be positioned anywhere in the view where it is least obtrusive, but the opacity should not be set below 40% and its size should not be smaller than 24 pixels.
+- The icon **may not** be removed entirely in views that may show maps, terrain, point clouds, or other copyrighted material, since it is required to show the copyright attribution of data suppliers.

@@ -115,4 +115,4 @@ In tsconfig.json, add a `types` entry for `@bentley/webpack-tools` in the `compi
 
 ## API Reference
 
-* [Icon]($ui-core:Icon)
+- [Icon]($ui-core:Icon)

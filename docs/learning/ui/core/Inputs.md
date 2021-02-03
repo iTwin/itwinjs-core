@@ -87,4 +87,4 @@ The Input and Textarea components have a labeled version.
 
 ## API Reference
 
-* [Inputs]($ui-core:Inputs)
+- [Inputs]($ui-core:Inputs)
