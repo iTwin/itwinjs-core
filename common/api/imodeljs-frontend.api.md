@@ -6647,7 +6647,7 @@ export class QuantityFormatter implements UnitsProvider {
     clearOverrideFormats(type: QuantityTypeArg): Promise<void>;
     findFormatterSpecByQuantityType(type: QuantityTypeArg, _unused?: boolean): FormatterSpec | undefined;
     protected findKoqFormatterSpec(koq: string, useImperial: boolean): FormatterSpec | undefined;
-    findParserSpecByQuantityType(type: QuantityTypeArg, _unused?: boolean): ParserSpec | undefined;
+    findParserSpecByQuantityType(type: QuantityTypeArg): ParserSpec | undefined;
     findUnit(unitLabel: string, unitFamily?: string): Promise<UnitProps>;
     findUnitByName(unitName: string): Promise<UnitProps>;
     // (undocumented)
@@ -6666,12 +6666,15 @@ export class QuantityFormatter implements UnitsProvider {
     getFormatPropsByQuantityType(quantityType: QuantityTypeArg, requestedSystem?: UnitSystemKey, ignoreOverrides?: boolean): FormatProps | undefined;
     // (undocumented)
     protected getFormatPropsByQuantityTypeEntyAndSystem(quantityEntry: QuantityTypeDefinition, requestedSystem: UnitSystemKey, ignoreOverrides?: boolean): FormatProps;
+    // @deprecated
     getFormatterSpecByQuantityType(type: QuantityTypeArg, isImperial?: boolean): Promise<FormatterSpec | undefined>;
     getFormatterSpecByQuantityTypeAndSystem(type: QuantityTypeArg, system?: UnitSystemKey): Promise<FormatterSpec | undefined>;
-    protected getFormatterSpecByQuantityTypeDefinitionAndSystem(quantityTypeEntry: QuantityTypeDefinition, system?: UnitSystemKey): Promise<FormatterSpec | undefined>;
     protected getKoqFormatterSpec(koq: string, useImperial: boolean): Promise<FormatterSpec | undefined>;
     protected getKoqFormatterSpecsAsync(koq: string, useImperial: boolean): Promise<FormatterSpec[] | undefined>;
+    // @deprecated
     getParserSpecByQuantityType(type: QuantityTypeArg, isImperial?: boolean): Promise<ParserSpec | undefined>;
+    // (undocumented)
+    getParserSpecByQuantityTypeAndSystem(type: QuantityTypeArg, system?: UnitSystemKey): Promise<ParserSpec | undefined>;
     protected getPersistenceUnitByQuantityType(type: QuantityTypeKey): Promise<UnitProps>;
     getQuantityTypeKey(type: QuantityTypeArg): string;
     protected getUnitByQuantityType(type: QuantityTypeArg): Promise<UnitProps>;
@@ -6682,7 +6685,7 @@ export class QuantityFormatter implements UnitsProvider {
     // (undocumented)
     protected initializeQuantityTypesRegistry(): Promise<void>;
     // @internal
-    protected loadFormatAndParsingMapsForSystem(systemType?: UnitSystemKey, ignoreOverrides?: boolean): Promise<void>;
+    protected loadFormatAndParsingMapsForSystem(systemType?: UnitSystemKey): Promise<void>;
     protected loadKoqFormatSpecs(koq: string): Promise<void>;
     readonly onActiveFormattingUnitSystemChanged: BeUiEvent<FormattingUnitSystemChangedArgs>;
     // @deprecated
