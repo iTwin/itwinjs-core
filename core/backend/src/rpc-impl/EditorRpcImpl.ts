@@ -7,10 +7,10 @@
  * @module RpcInterface
  */
 
-import { ClientRequestContext, GuidString, Id64Array } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, GuidString, Id64Array, IModelStatus } from "@bentley/bentleyjs-core";
 import { Point3d, TransformProps, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  BentleyError, Editor3dRpcInterface, Editor3dRpcInterfaceWriteOptions, GeometricElement3dProps, IModelRpcProps, IModelStatus, RpcInterface, RpcManager,
+  BentleyError, Editor3dRpcInterface, Editor3dRpcInterfaceWriteOptions, GeometricElement3dProps, IModelRpcProps, RpcInterface, RpcManager,
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { GeometricElement3dEditor } from "../ElementEditor";

@@ -7,9 +7,9 @@
  */
 
 import * as path from "path";
-import { assert, DbResult, GuidString, Id64String, Logger, PerfLogger, using } from "@bentley/bentleyjs-core";
+import { assert, DbResult, GuidString, Id64String, IModelStatus, Logger, PerfLogger, using } from "@bentley/bentleyjs-core";
 import { ChangeSet, ChangeSetQuery } from "@bentley/imodelhub-client";
-import { ChangedValueState, ChangeOpCode, IModelError, IModelStatus, IModelVersion } from "@bentley/imodeljs-common";
+import { ChangedValueState, ChangeOpCode, IModelError, IModelVersion } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";

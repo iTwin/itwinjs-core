@@ -6,8 +6,8 @@
  * @module ECDb
  */
 
-import { assert, ClientRequestContext, DbResult, IDisposable, Logger, OpenMode } from "@bentley/bentleyjs-core";
-import { IModelError, IModelStatus, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus } from "@bentley/imodeljs-common";
+import { assert, ClientRequestContext, DbResult, IDisposable, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { IModelError, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";

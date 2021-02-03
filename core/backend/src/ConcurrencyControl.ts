@@ -8,9 +8,9 @@
 
 import * as deepAssign from "deep-assign";
 import * as path from "path";
-import { assert, DbOpcode, DbResult, Id64, Id64String, Logger, RepositoryStatus } from "@bentley/bentleyjs-core";
+import { assert, DbOpcode, DbResult, Id64, Id64String, IModelStatus, Logger, RepositoryStatus } from "@bentley/bentleyjs-core";
 import { CodeQuery, CodeState, HubCode, Lock, LockLevel, LockQuery, LockType } from "@bentley/imodelhub-client";
-import { ChannelConstraintError, CodeProps, ElementProps, IModelError, IModelStatus, ModelProps } from "@bentley/imodeljs-common";
+import { ChannelConstraintError, CodeProps, ElementProps, IModelError, ModelProps } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
