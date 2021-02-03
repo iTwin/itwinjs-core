@@ -2,10 +2,10 @@
   "changes": [
     {
       "packageName": "@bentley/imodel-bridge",
-      "comment": "",
+      "comment": "Allow briefcaseId to be passed in",
       "type": "none"
     }
   ],
   "packageName": "@bentley/imodel-bridge",
-  "email": "31107829+calebmshafer@users.noreply.github.com"
+  "email": "admccarthy1@users.noreply.github.com"
 }
