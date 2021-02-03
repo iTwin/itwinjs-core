@@ -13,6 +13,7 @@ import { CustomFormatPropEditorSpec, getQuantityTypeKey, IModelApp,
 import { FormatProps, UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
 import { Checkbox, CommonProps, Input, Select } from "@bentley/ui-core";
 import { FormatPanel } from "./FormatPanel";
+import { DeepCompare } from "@bentley/geometry-core";
 
 /** Properties of [[QuantityFormatPanel]] component.
  * @alpha
@@ -77,12 +78,19 @@ function createCheckboxFormatPropEditor(key: string, label: string, inProps: For
   );
 }
 
+function formatAreEqual(obj1: FormatProps, obj2: FormatProps) {
+  const compare = new DeepCompare();
+  return compare.compare(obj1, obj2);
+}
+
 /** Component to show/edit Quantity Format.
  * @alpha
  */
 export function QuantityFormatPanel(props: QuantityFormatPanelProps) {
   const { quantityType, onFormatChange, ...otherProps } = props;
   const [formatProps, setFormatProps] = React.useState<FormatProps>();
+  const initialFormatProps = React.useRef <FormatProps>();
+
   const [persistenceUnit, setPersistenceUnit] = React.useState(()=>{
     const quantityTypeKey = getQuantityTypeKey(quantityType);
     const quantityTypeDefinition = IModelApp.quantityFormatter.quantityTypesRegistry.get(quantityTypeKey);
@@ -91,8 +99,22 @@ export function QuantityFormatPanel(props: QuantityFormatPanelProps) {
 
   React.useEffect(() => {
     const newFormatProps = IModelApp.quantityFormatter.getFormatPropsByQuantityType(quantityType);
+    if (!initialFormatProps.current)
+      initialFormatProps.current = newFormatProps;
     setFormatProps(newFormatProps);
-  }, [quantityType]);
+  }, [quantityType]); // no dependencies defined as we want this to run on every render
+
+  // handle case where quantityType does not change but the formatProps for that quantity type has (ie after a Set or Clear)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  React.useEffect(() => {
+    const newFormatProps = IModelApp.quantityFormatter.getFormatPropsByQuantityType(quantityType);
+    if (initialFormatProps.current && newFormatProps) {
+      if (!formatAreEqual (newFormatProps, initialFormatProps.current)) {
+        initialFormatProps.current = newFormatProps;
+        setFormatProps(newFormatProps);
+      }
+    }
+  }); // no dependencies defined as we want this to run on every render
 
   React.useEffect(() => {
     const quantityTypeKey = getQuantityTypeKey(quantityType);
