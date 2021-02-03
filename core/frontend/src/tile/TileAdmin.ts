@@ -153,6 +153,7 @@ export class TileAdmin {
   private readonly _lruList = new LRUTileList();
   private _maxTotalTileContentBytes?: number;
   private _gpuMemoryLimit: GpuMemoryLimit = "none";
+  private readonly _isMobile: boolean;
 
   /** Create a TileAdmin suitable for passing to [[IModelApp.startup]] via [[IModelAppOptions.tileAdmin]] to customize aspects of
    * its behavior.
@@ -160,7 +161,14 @@ export class TileAdmin {
    * @returns the TileAdmin
    */
   public static create(props?: TileAdmin.Props): TileAdmin {
-    return new TileAdmin(props);
+    return this.createForDeviceType(detectIsMobile() ? "mobile" : "non-mobile", props);
+  }
+
+  /** Strictly for tests.
+   * @internal
+   */
+  public static createForDeviceType(type: "mobile" | "non-mobile", props?: TileAdmin.Props): TileAdmin {
+    return new this("mobile" === type, props);
   }
 
   /** @internal */
@@ -201,7 +209,8 @@ export class TileAdmin {
       this._totalCacheMisses = this._totalDispatchedRequests = this._totalAbortedRequests = 0;
   }
 
-  private constructor(options?: TileAdmin.Props) {
+  protected constructor(isMobile: boolean, options?: TileAdmin.Props) {
+    this._isMobile = isMobile;
     if (undefined === options)
       options = {};
 
@@ -220,7 +229,6 @@ export class TileAdmin {
     this._useProjectExtents = options.useProjectExtents ?? defaultTileOptions.useProjectExtents;
     this._mobileRealityTileMinToleranceRatio = Math.max(options.mobileRealityTileMinToleranceRatio ?? 3.0, 1.0);
 
-    const isMobile = detectIsMobile();
     const gpuMemoryLimits = options.gpuMemoryLimits;
     let gpuMemoryLimit: GpuMemoryLimit | undefined;
     if (typeof gpuMemoryLimits === "object")
@@ -228,10 +236,10 @@ export class TileAdmin {
     else
       gpuMemoryLimit = gpuMemoryLimits;
 
-    if (!gpuMemoryLimit && isMobile)
+    if (undefined === gpuMemoryLimit && isMobile)
       gpuMemoryLimit = "default";
 
-    if (gpuMemoryLimit)
+    if (undefined !== gpuMemoryLimit)
       this.gpuMemoryLimit = gpuMemoryLimit;
 
     if (undefined !== options.maximumLevelsToSkip)
@@ -401,7 +409,7 @@ export class TileAdmin {
         case "default":
         case "aggressive":
         case "relaxed":
-          const spec = detectIsMobile() ? TileAdmin.mobileGpuMemoryLimits : TileAdmin.nonMobileGpuMemoryLimits;
+          const spec = this._isMobile ? TileAdmin.mobileGpuMemoryLimits : TileAdmin.nonMobileGpuMemoryLimits;
           maxBytes = spec[limit];
           break;
         case "none":
