@@ -37,7 +37,7 @@ import { ToggleTileRequestDecorationTool } from "./tools/TileRequestDecoration";
 import { ToggleTileTreeBoundsDecorationTool } from "./tools/TileTreeBoundsDecoration";
 import { ToggleToolTipsTool } from "./tools/ToolTipProvider";
 import { ChangeCameraTool } from "./tools/ViewportTools";
-import { SetMaxTileMemoryTool } from "./tools/SetMaxTileMemoryTool";
+import { SetGpuMemoryLimitTool } from "./tools/SetGpuMemoryLimitTool";
 import { ClearEffectsTool } from "./effects/EffectTools";
 import { FlipImageConfig, FlipImageEffect } from "./effects/FlipImage";
 import { LensDistortionConfig, LensDistortionEffect } from "./effects/LensDistortion";
@@ -164,7 +164,7 @@ export class FrontendDevTools {
       AttachRealityModelTool,
       DetachRealityModelTool,
       SaveRealityModelTool,
-      SetMaxTileMemoryTool,
+      SetGpuMemoryLimitTool,
       SetRealityModelLocateTool,
       SetRealityModelEmphasizedTool,
       SetRealityModelTransparencyTool,

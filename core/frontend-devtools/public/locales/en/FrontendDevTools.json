@@ -336,8 +336,8 @@
     "ClearEffects": {
       "keyin": "fdt effect clear"
     },
-    "SetMaxTileMemory": {
-      "keyin": "fdt max tile mem"
+    "SetGpuMemoryLimit": {
+      "keyin": "fdt gpu mem limit"
     }
   }
 }
