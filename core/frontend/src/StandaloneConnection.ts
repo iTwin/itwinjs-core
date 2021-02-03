@@ -24,9 +24,7 @@ export class StandaloneConnection extends IModelConnection {
   public get isClosed(): boolean { return this._isClosed ? true : false; }
   private _isClosed?: boolean;
 
-  /** Open an IModelConnection to a standalone iModel.
-   * @note This method requires an [[IpcApp]].
-   */
+  /** Open an IModelConnection to a standalone iModel.  */
   public static async openFile(filePath: string, openMode: OpenMode = OpenMode.ReadWrite, opts?: StandaloneOpenOptions): Promise<StandaloneConnection> {
     const openResponse = await IpcApp.callIpcHost("openStandalone", filePath, openMode, opts);
     const connection = new StandaloneConnection(openResponse);
@@ -34,9 +32,7 @@ export class StandaloneConnection extends IModelConnection {
     return connection;
   }
 
-  /** Close this StandaloneConnection.
-   * @see [[openFile]]
-   */
+  /** Close this StandaloneConnection.  */
   public async close(): Promise<void> {
     if (this.isClosed)
       return;

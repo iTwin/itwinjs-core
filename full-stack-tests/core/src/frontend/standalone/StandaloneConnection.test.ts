@@ -6,7 +6,7 @@ import { assert } from "chai";
 import * as path from "path";
 import { Guid, isElectronRenderer, OpenMode } from "@bentley/bentleyjs-core";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
-import { ElementProps, IModel } from "@bentley/imodeljs-common";
+import { IModel } from "@bentley/imodeljs-common";
 import { StandaloneConnection } from "@bentley/imodeljs-frontend";
 
 if (isElectronRenderer) { // StandaloneConnection tests only run on electron
@@ -34,13 +34,14 @@ if (isElectronRenderer) { // StandaloneConnection tests only run on electron
       assert.isFalse(connection.isSnapshotConnection());
       assert.isFalse(connection.isBriefcaseConnection());
       assert.isFalse(connection.isBlankConnection());
+      assert.isFalse(connection.isCheckpointConnection());
 
       assert.isTrue(connection.isStandalone);
       assert.isFalse(connection.isBriefcase);
       assert.isFalse(connection.isSnapshot);
       assert.isFalse(connection.isBlank);
 
-      const elementProps: ElementProps[] = await connection.elements.getProps(IModel.rootSubjectId);
+      const elementProps = await connection.elements.getProps(IModel.rootSubjectId);
       assert.equal(1, elementProps.length);
       assert.equal(elementProps[0].id, IModel.rootSubjectId);
       await connection.close();
@@ -48,7 +49,7 @@ if (isElectronRenderer) { // StandaloneConnection tests only run on electron
       assert.isFalse(connection.isOpen);
       assert.isTrue(connection.isClosed);
 
-      const readOnlyConnection: StandaloneConnection = await StandaloneConnection.openFile(filePath, OpenMode.Readonly);
+      const readOnlyConnection = await StandaloneConnection.openFile(filePath, OpenMode.Readonly);
       assert.equal(readOnlyConnection.openMode, OpenMode.Readonly);
       await readOnlyConnection.close();
     });

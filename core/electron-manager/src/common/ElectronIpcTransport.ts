@@ -216,16 +216,7 @@ let transport: ElectronIpcTransport | undefined;
 
 /** @internal */
 export function initializeIpc(protocol: ElectronRpcProtocol) {
-  if (undefined === transport) {
-    try { // Wrapping require in a try/catch signals to webpack that this is only an optional dependency
-      if (isElectronRenderer) {
-        transport = new FrontendIpcTransport(protocol);
-      } else {
-        transport = new BackendIpcTransport(protocol);
-      }
-    } catch (err) {
-      throw new IModelError(BentleyStatus.ERROR, `cannot load electron: ${err}`);
-    }
-  }
+  if (undefined === transport)
+    transport = isElectronRenderer ? new FrontendIpcTransport(protocol) : new BackendIpcTransport(protocol);
   return transport;
 }

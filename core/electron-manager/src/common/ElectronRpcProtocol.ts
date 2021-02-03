@@ -35,11 +35,7 @@ export class ElectronRpcProtocol extends RpcProtocol {
   public constructor(configuration: ElectronRpcConfiguration, ipcSocket: IpcSocket) {
     super(configuration);
     this.ipcSocket = ipcSocket;
-    const transport = initializeIpc(this);
-    if (!transport)
-      throw new IModelError(BentleyStatus.ERROR, `Failed to initialize electron IPC.`);
-
-    this.transport = transport;
+    this.transport = initializeIpc(this);
   }
 
   /** @internal */
