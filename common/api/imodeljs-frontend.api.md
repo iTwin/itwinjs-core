@@ -3456,6 +3456,15 @@ export interface GLTimerResult {
 // @internal (undocumented)
 export type GLTimerResultCallback = (result: GLTimerResult) => void;
 
+// @beta
+export type GpuMemoryLimit = "none" | "default" | "aggressive" | "relaxed" | number;
+
+// @beta
+export interface GpuMemoryLimits {
+    mobile?: GpuMemoryLimit;
+    nonMobile?: GpuMemoryLimit;
+}
+
 // @public
 export class GraphicBranch implements IDisposable {
     constructor(ownsEntries?: boolean);
@@ -3879,6 +3888,8 @@ export class ImageryMapTile extends RealityTile {
     // (undocumented)
     disposeContents(): void;
     // (undocumented)
+    freeMemory(): void;
+    // (undocumented)
     imageryTree: ImageryMapTileTree;
     // (undocumented)
     get isDisplayable(): boolean;
@@ -4030,6 +4041,8 @@ export class IModelApp {
     // @internal (undocumented)
     static startEventLoop(): void;
     static startup(opts?: IModelAppOptions): Promise<void>;
+    // @internal
+    static stopEventLoop(): void;
     // @internal
     static readonly telemetry: TelemetryManager;
     // @internal (undocumented)
@@ -4311,8 +4324,6 @@ export class IModelTileTree extends TileTree {
     debugMaxDepth?: number;
     // (undocumented)
     draw(args: TileDrawArgs): void;
-    // (undocumented)
-    forcePrune(): void;
     // (undocumented)
     readonly geometryGuid?: string;
     // (undocumented)
@@ -4645,8 +4656,11 @@ export class LRUTileList {
     protected assertList(): void;
     clearSelectedForViewport(viewportId: number): void;
     // (undocumented)
+    protected computeBytesUsed(tile: Tile): number;
+    // (undocumented)
     dispose(): void;
     drop(tile: Tile): void;
+    freeMemory(maxBytes: number): void;
     // (undocumented)
     protected _head: LRUTileListNode;
     markSelectedForViewport(viewportId: number, tiles: Iterable<Tile>): void;
@@ -4654,16 +4668,19 @@ export class LRUTileList {
     protected moveBeforeSentinel(tile: Tile): void;
     // (undocumented)
     protected moveToEnd(tile: Tile): void;
+    get selectedTiles(): Iterable<Tile>;
     // (undocumented)
     protected readonly _sentinel: LRUTileListNode;
     // (undocumented)
     protected readonly _stats: RenderMemory.Statistics;
     // (undocumented)
     protected _tail: LRUTileListNode;
+    get totalBytesUsed(): number;
     // (undocumented)
     protected _totalBytesUsed: number;
     // (undocumented)
     protected unlink(tile: Tile): void;
+    get unselectedTiles(): Iterable<Tile>;
     // (undocumented)
     protected readonly _viewportIdSets: ViewportIdSets;
 }
@@ -4975,6 +4992,8 @@ export class MapTile extends RealityTile {
     // (undocumented)
     everLoaded: boolean;
     forceSelectRealityTile(): boolean;
+    // (undocumented)
+    freeMemory(): void;
     // (undocumented)
     get geometry(): RenderTerrainMeshGeometry | undefined;
     // (undocumented)
@@ -6252,8 +6271,6 @@ export class OrbitGtTileTree extends TileTree {
     // (undocumented)
     draw(args: TileDrawArgs): void;
     // (undocumented)
-    forcePrune(): void;
-    // (undocumented)
     get is3d(): boolean;
     // (undocumented)
     get isContentUnbounded(): boolean;
@@ -6964,8 +6981,6 @@ export class RealityTileTree extends TileTree {
     createTile(props: TileParams): RealityTile;
     // (undocumented)
     draw(args: TileDrawArgs): void;
-    // (undocumented)
-    forcePrune(): void;
     // (undocumented)
     getBaseRealityDepth(_sceneContext: SceneContext): number;
     // (undocumented)
@@ -9269,6 +9284,8 @@ export abstract class Tile {
     drawGraphics(args: TileDrawArgs): void;
     // @internal (undocumented)
     extendRangeForContent(range: Range3d, matrix: Matrix4d, treeTransform: Transform, frustumPlanes?: FrustumPlanes): void;
+    // @alpha
+    freeMemory(): void;
     // @internal (undocumented)
     getRangeGraphic(context: SceneContext): RenderGraphic | undefined;
     // @internal
@@ -9336,6 +9353,7 @@ export abstract class Tile {
 
 // @beta
 export class TileAdmin {
+    protected constructor(isMobile: boolean, options?: TileAdmin.Props);
     // @internal
     addExternalTilesForViewport(vp: Viewport, statistics: ExternalTileStatistics): void;
     // @internal
@@ -9359,6 +9377,8 @@ export class TileAdmin {
     // @internal (undocumented)
     get contextPreloadParentSkip(): number;
     static create(props?: TileAdmin.Props): TileAdmin;
+    // @internal
+    static createForDeviceType(type: "mobile" | "non-mobile", props?: TileAdmin.Props): TileAdmin;
     get defaultTileSizeModifier(): number;
     set defaultTileSizeModifier(modifier: number);
     // @internal (undocumented)
@@ -9366,13 +9386,17 @@ export class TileAdmin {
     // @internal (undocumented)
     get emptyViewportSet(): ReadonlyViewportSet;
     // @internal (undocumented)
-    abstract get enableExternalTextures(): boolean;
+    get enableExternalTextures(): boolean;
     // @internal (undocumented)
     get enableImprovedElision(): boolean;
     // @internal (undocumented)
     get enableInstancing(): boolean;
+    // @internal (undocumented)
+    forEachViewport(func: (vp: Viewport) => void): void;
     // @internal
     forgetViewport(vp: Viewport): void;
+    // @internal
+    freeMemory(): void;
     getMaximumMajorTileFormatVersion(formatVersion?: number): number;
     getNumRequestsForViewport(vp: Viewport): number;
     // @internal
@@ -9381,10 +9405,12 @@ export class TileAdmin {
     getTilesForViewport(vp: Viewport): SelectedAndReadyTiles | undefined;
     // @internal
     getViewportSetForRequest(vp: Viewport, vps?: ReadonlyViewportSet): ReadonlyViewportSet;
+    get gpuMemoryLimit(): GpuMemoryLimit;
+    set gpuMemoryLimit(limit: GpuMemoryLimit);
     // @internal (undocumented)
     get ignoreAreaPatterns(): boolean;
     // @internal (undocumented)
-    abstract invalidateAllScenes(): void;
+    invalidateAllScenes(): void;
     // @internal
     isTileInUse(marker: TileUsageMarker): boolean;
     // @internal
@@ -9395,10 +9421,9 @@ export class TileAdmin {
     get maximumLevelsToSkip(): number;
     // @internal (undocumented)
     get maximumMajorTileFormatVersion(): number;
+    get maxTotalTileContentBytes(): number | undefined;
     // @internal (undocumented)
     get minimumSpatialTolerance(): number;
-    // @internal (undocumented)
-    get mobileExpirationMemoryThreshold(): number;
     // @internal (undocumented)
     get mobileRealityTileMinToleranceRatio(): number;
     // @internal (undocumented)
@@ -9409,6 +9434,10 @@ export class TileAdmin {
     readonly onTileChildrenLoad: BeEvent<(parentTile: Tile) => void>;
     // @internal (undocumented)
     onTileCompleted(tile: Tile): void;
+    // @internal
+    onTileContentDisposed(tile: Tile): void;
+    // @internal
+    onTileContentLoaded(tile: Tile): void;
     // @internal (undocumented)
     onTileFailed(_tile: Tile): void;
     // @internal
@@ -9434,6 +9463,8 @@ export class TileAdmin {
     // @internal (undocumented)
     requestTileTreeProps(iModel: IModelConnection, treeId: string): Promise<IModelTileTreeProps>;
     resetStatistics(): void;
+    // @alpha
+    get selectedLoadedTiles(): Iterable<Tile>;
     get statistics(): TileAdmin.Statistics;
     // @internal (undocumented)
     terminateTileTreePropsRequest(request: TileTreePropsRequest): void;
@@ -9441,6 +9472,9 @@ export class TileAdmin {
     get tileExpirationTime(): BeDuration;
     // @internal (undocumented)
     get tileTreeExpirationTime(): BeDuration;
+    get totalTileContentBytes(): number;
+    // @alpha
+    get unselectedLoadedTiles(): Iterable<Tile>;
     // @internal (undocumented)
     get useProjectExtents(): boolean;
     }
@@ -9463,6 +9497,7 @@ export namespace TileAdmin {
         enableExternalTextures?: boolean;
         enableImprovedElision?: boolean;
         enableInstancing?: boolean;
+        gpuMemoryLimits?: GpuMemoryLimit | GpuMemoryLimits;
         // @alpha
         ignoreAreaPatterns?: boolean;
         // @internal
@@ -9476,8 +9511,6 @@ export namespace TileAdmin {
         maximumMajorTileFormatVersion?: number;
         // @alpha
         minimumSpatialTolerance?: number;
-        // @alpha
-        mobileExpirationMemoryThreshold?: number;
         // @alpha
         mobileRealityTileMinToleranceRatio?: number;
         // @alpha
@@ -9504,6 +9537,16 @@ export namespace TileAdmin {
         totalTimedOutRequests: number;
         totalUndisplayableTiles: number;
     }
+    const nonMobileGpuMemoryLimits: {
+        default: number;
+        aggressive: number;
+        relaxed: number;
+    };
+    const mobileGpuMemoryLimits: {
+        default: number;
+        aggressive: number;
+        relaxed: number;
+    };
 }
 
 // @internal (undocumented)
@@ -9744,8 +9787,6 @@ export abstract class TileTree {
     dispose(): void;
     abstract draw(args: TileDrawArgs): void;
     readonly expirationTime: BeDuration;
-    // @alpha
-    abstract forcePrune(): void;
     readonly id: string;
     // (undocumented)
     readonly iModel: IModelConnection;

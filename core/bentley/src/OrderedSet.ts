@@ -41,7 +41,9 @@ export class ReadonlyOrderedSet<T> implements Iterable<T> {
   }
 }
 
-/** A mutable [[ReadonlyOrderedSet]]. */
+/** A mutable [[ReadonlyOrderedSet]].
+ * @public
+ */
 export class OrderedSet<T> extends ReadonlyOrderedSet<T> {
   /** Construct a new OrderedSet<T>.
    * @param compare The function used to compare elements within the set, determining their ordering.

@@ -136,6 +136,7 @@ beta;SelectElementsByIdTool
 beta;serializeViewState(view: ViewState): ViewStateProps
 internal;SetAASamplesTool 
 alpha;SetAspectRatioSkewTool 
+beta;SetGpuMemoryLimitTool 
 alpha;SetMapBaseTool 
 beta;SetModelColorTool 
 beta;SetModelEmphasizedTool 

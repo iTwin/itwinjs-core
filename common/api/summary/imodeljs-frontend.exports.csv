@@ -198,6 +198,8 @@ internal;GltfReaderProps
 internal;GltfReaderResult 
 internal;GLTimerResult
 internal;GLTimerResultCallback = (result: GLTimerResult) => void
+beta;GpuMemoryLimit = "none" | "default" | "aggressive" | "relaxed" | number
+beta;GpuMemoryLimits
 public;GraphicBranch 
 internal;GraphicBranchFrustum
 internal;GraphicBranchOptions
