@@ -401,9 +401,10 @@ export class TileAdmin {
     if (limit === this.gpuMemoryLimit)
       return;
 
-    let maxBytes = 0;
+    let maxBytes: number | undefined;
     if (typeof limit === "number") {
-      maxBytes = Math.max(0, limit);
+      limit = Math.max(0, limit);
+      maxBytes = limit;
     } else {
       switch (limit) {
         case "default":
@@ -412,10 +413,11 @@ export class TileAdmin {
           const spec = this._isMobile ? TileAdmin.mobileGpuMemoryLimits : TileAdmin.nonMobileGpuMemoryLimits;
           maxBytes = spec[limit];
           break;
-        case "none":
-          break;
         default:
           limit = "none";
+          // fall-through intentional
+        case "none":
+          maxBytes = undefined;
           break;
       }
     }

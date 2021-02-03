@@ -34,6 +34,7 @@ describe("TileAdmin", () => {
 
     const mobileLimits = TileAdmin.mobileGpuMemoryLimits;
     const desktopLimits = TileAdmin.nonMobileGpuMemoryLimits;
+    const keys: Array<"relaxed" | "default" | "aggressive"> = [ "relaxed", "default", "aggressive" ];
 
     it("defaults to 'default' on mobile", () => {
       expectAdmin(true, undefined, "default", mobileLimits.default);
@@ -46,7 +47,6 @@ describe("TileAdmin", () => {
     it("can be specified at initialization", () => {
       for (const isMobile of [ true, false ]) {
         const limits = isMobile ? mobileLimits : desktopLimits;
-        const keys: Array<"relaxed" | "default" | "aggressive"> = [ "relaxed", "default", "aggressive" ];
         for (const key of keys)
           expectAdmin(isMobile, key, key, limits[key]);
 
@@ -58,16 +58,37 @@ describe("TileAdmin", () => {
     });
 
     it("can be changed after initialization", () => {
+      for (const isMobile of [ true, false ]) {
+        const limits = isMobile ? mobileLimits : desktopLimits;
+        const admin = expectAdmin(isMobile, "default", "default", limits.default);
 
+        for (const key of keys) {
+          admin.gpuMemoryLimit = key;
+          expectLimits(admin, key, limits[key]);
+        }
+
+        admin.gpuMemoryLimit = "none";
+        expectLimits(admin, "none", undefined);
+
+        for (const numBytes of [ 0, 1024, 1024 * 1024, 1024 * 1024 * 1024 * 4 ]) {
+          admin.gpuMemoryLimit = numBytes;
+          expectLimits(admin, numBytes, numBytes);
+        }
+      }
     });
 
-    it("cannot exceed zero bytes", () => {
+    it("cannot be less than zero bytes", () => {
+      expectAdmin(false, -100, 0, 0);
+    });
+
+    it("defaults to 'none' for invalid input", () => {
+      expectAdmin(false, "invalid" as unknown as GpuMemoryLimit, "none", undefined);
     });
 
     it("uses different number of bytes on mobile vs desktop", () => {
-    });
-
-    it("ignores mobile limit on desktop and vice-versa", () => {
+      const limits = { mobile: 1234, nonMobile: 5678 };
+      expectAdmin(false, 5678, 5678, 5678);
+      expectAdmin(true, 1234, 1234, 1234);
     });
   });
 
