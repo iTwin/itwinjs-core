@@ -14,7 +14,6 @@ import {
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { RenderMemory } from "../render/RenderMemory";
 import { Viewport } from "../Viewport";
 import { ReadonlyViewportSet, UniqueViewportSets } from "../ViewportSet";
 import { InteractiveEditingSession } from "../InteractiveEditingSession";
@@ -415,7 +414,7 @@ export class TileAdmin {
           break;
         default:
           limit = "none";
-          // fall-through intentional
+        // eslint-disable-next-line no-fallthrough
         case "none":
           maxBytes = undefined;
           break;
@@ -1334,7 +1333,7 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
     default: 1024 * 1024 * 1024, // 1 GB
     aggressive: 500 * 1024 * 1024, // 400 MB
     relaxed: 2.5 * 1024 * 1024 * 1024, // 2.5 GB
-  }
+  };
 
   /** The number of bytes of GPU memory associated with the various [[GpuMemoryLimit]]s for mobile devices.
    * @see [[TileAdmin.Props.gpuMemoryLimits]] to specify the limit at startup.
@@ -1346,7 +1345,7 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
     default: 200 * 1024 * 1024, // 200 MB
     aggressive: 75 * 1024 * 1024, // 75 MB
     relaxed: 500 * 1024 * 1024 * 1024, // 500 MB
-  }
+  };
 }
 
 function comparePriorities(lhs: TileRequest, rhs: TileRequest): number {

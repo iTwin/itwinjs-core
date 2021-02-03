@@ -18,7 +18,6 @@ import {
   TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "../../tile/internal";
 
-
 describe("TileAdmin", () => {
   describe("memory limit configuration", () => {
     function expectLimits(admin: TileAdmin, limit: GpuMemoryLimit, maxBytes: number | undefined): void {
@@ -87,8 +86,8 @@ describe("TileAdmin", () => {
 
     it("uses different number of bytes on mobile vs desktop", () => {
       const limits = { mobile: 1234, nonMobile: 5678 };
-      expectAdmin(false, 5678, 5678, 5678);
-      expectAdmin(true, 1234, 1234, 1234);
+      expectAdmin(false, limits, 5678, 5678);
+      expectAdmin(true, limits, 1234, 1234);
     });
   });
 
@@ -145,7 +144,7 @@ describe("TileAdmin", () => {
       }
 
       public computeBytesUsed(): number {
-        const stats = new RenderMemory.Statistics;
+        const stats = new RenderMemory.Statistics();
         this.collectStatistics(stats);
         return stats.totalBytes;
       }
@@ -177,7 +176,7 @@ describe("TileAdmin", () => {
       public get viewFlagOverrides() { return new ViewFlagOverrides(); }
       public get isContentUnbounded() { return false; }
 
-      public _selectTiles(args: TileDrawArgs): Tile[] {
+      protected _selectTiles(args: TileDrawArgs): Tile[] {
         const tiles = [];
         const tile = this.rootTile;
         if (tile.visible) {
@@ -245,8 +244,8 @@ describe("TileAdmin", () => {
         if (allLoaded)
           return;
 
-      await new Promise<void>((resolve: any) => setTimeout(resolve, 10));
-      return this.loadAllTrees();
+        await new Promise<void>((resolve: any) => setTimeout(resolve, 10));
+        return this.loadAllTrees();
       }
     }
 
@@ -254,91 +253,90 @@ describe("TileAdmin", () => {
       return undefined !== tile.previous || undefined !== tile.next;
     }
 
+    let imodel1: IModelConnection;
+    let imodel2: IModelConnection;
 
-      let imodel1: IModelConnection;
-      let imodel2: IModelConnection;
-
-      function createIModel(name: string): IModelConnection {
-        return BlankConnection.create({
-          name,
-          location: Cartographic.fromDegrees(-75.686694, 40.065757, 0),
-          extents: new Range3d(-1000, -1000, -100, 1000, 1000, 100),
-          contextId: Guid.createValue(),
-        });
-      }
-
-      beforeEach(async () => {
-        await MockRender.App.startup();
-        IModelApp.stopEventLoop();
-        imodel1 = createIModel("imodel1");
-        imodel2 = createIModel("imodel2");
+    function createIModel(name: string): IModelConnection {
+      return BlankConnection.create({
+        name,
+        location: Cartographic.fromDegrees(-75.686694, 40.065757, 0),
+        extents: new Range3d(-1000, -1000, -100, 1000, 1000, 100),
+        contextId: Guid.createValue(),
       });
+    }
 
-      afterEach(async () => {
-        await imodel1.close();
-        await imodel2.close();
-        if (IModelApp.initialized)
-          await MockRender.App.shutdown();
-      });
+    beforeEach(async () => {
+      await MockRender.App.startup();
+      IModelApp.stopEventLoop();
+      imodel1 = createIModel("imodel1");
+      imodel2 = createIModel("imodel2");
+    });
 
-      const viewDiv = document.createElement("div");
-      viewDiv.style.width = viewDiv.style.height = "100px";
-      document.body.appendChild(viewDiv);
+    afterEach(async () => {
+      await imodel1.close();
+      await imodel2.close();
+      if (IModelApp.initialized)
+        await MockRender.App.shutdown();
+    });
 
-      function createViewport(imodel: IModelConnection): Viewport {
-        const view = SpatialViewState.createBlank(imodel, new Point3d(), new Vector3d(1, 1, 1));
-        return ScreenViewport.create(viewDiv, view);
-      }
+    const viewDiv = document.createElement("div");
+    viewDiv.style.width = viewDiv.style.height = "100px";
+    document.body.appendChild(viewDiv);
 
-      async function render(...viewports: Viewport[]): Promise<void> {
-        const loadTrees = new Array<Promise<void>>();
-        for (const viewport of viewports)
-          viewport.forEachTiledGraphicsProvider((p) => loadTrees.push((p as Provider).loadAllTrees()));
+    function createViewport(imodel: IModelConnection): Viewport {
+      const view = SpatialViewState.createBlank(imodel, new Point3d(), new Vector3d(1, 1, 1));
+      return ScreenViewport.create(viewDiv, view);
+    }
 
-        await Promise.all(loadTrees);
+    async function render(...viewports: Viewport[]): Promise<void> {
+      const loadTrees = new Array<Promise<void>>();
+      for (const viewport of viewports)
+        viewport.forEachTiledGraphicsProvider((p) => loadTrees.push((p as Provider).loadAllTrees()));
 
-        const loadTiles = async (): Promise<void> => {
-          for (const viewport of viewports) {
-            viewport.invalidateScene();
-            viewport.renderFrame();
-          }
+      await Promise.all(loadTrees);
 
-          IModelApp.tileAdmin.process();
-
-          for (const viewport of viewports) {
-            if (viewport.numRequestedTiles > 0) {
-              await new Promise<void>((resolve: any) => setTimeout(resolve, 10));
-              return loadTiles();
-            }
-          }
-        };
-
-        return loadTiles();
-      }
-
-      function expectSelectedTiles(viewport: Viewport, tiles: Tile[]): void {
-        const selected = IModelApp.tileAdmin.getTilesForViewport(viewport)?.selected;
-        if (selected) {
-          for (const tile of tiles)
-            expect(selected.has(tile)).to.be.true;
-        } else {
-          expect(tiles.length).to.equal(0);
-        }
-      }
-
-      function addTilesToViewport(viewport: Viewport, ...contentSizes: number[]): TestTile[] {
-        const tiles = [];
-        const provider = new Provider();
-        viewport.addTiledGraphicsProvider(provider);
-
-        for (const contentSize of contentSizes) {
-          const tree = new TestTree(contentSize, viewport.iModel);
-          tiles.push(tree.rootTile);
-          provider.refs.push(new TestRef(tree));
+      const loadTiles = async (): Promise<void> => {
+        for (const viewport of viewports) {
+          viewport.invalidateScene();
+          viewport.renderFrame();
         }
 
-        return tiles;
+        IModelApp.tileAdmin.process();
+
+        for (const viewport of viewports) {
+          if (viewport.numRequestedTiles > 0) {
+            await new Promise<void>((resolve: any) => setTimeout(resolve, 10));
+            return loadTiles();
+          }
+        }
+      };
+
+      return loadTiles();
+    }
+
+    function expectSelectedTiles(viewport: Viewport, tiles: Tile[]): void {
+      const selected = IModelApp.tileAdmin.getTilesForViewport(viewport)?.selected;
+      if (selected) {
+        for (const tile of tiles)
+          expect(selected.has(tile)).to.be.true;
+      } else {
+        expect(tiles.length).to.equal(0);
       }
+    }
+
+    function addTilesToViewport(viewport: Viewport, ...contentSizes: number[]): TestTile[] {
+      const tiles = [];
+      const provider = new Provider();
+      viewport.addTiledGraphicsProvider(provider);
+
+      for (const contentSize of contentSizes) {
+        const tree = new TestTree(contentSize, viewport.iModel);
+        tiles.push(tree.rootTile);
+        provider.refs.push(new TestRef(tree));
+      }
+
+      return tiles;
+    }
 
     it("updates LRU list as tile contents are loaded and unloaded", async () => {
       const trees = [];

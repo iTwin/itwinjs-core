@@ -318,7 +318,7 @@ describe("Tile unloading", async () => {
       expect(selectedTiles.length).greaterThan(0);
 
       // Unload content for all parents.
-      let parents = collectLoadedParents(selectedTiles);
+      const parents = collectLoadedParents(selectedTiles);
       expect(parents.size).greaterThan(0);
       for (const parent of parents) {
         expect(parent.isReady).to.be.true;
