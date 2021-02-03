@@ -110,7 +110,7 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
 
     // istanbul ignore else
     if (this.props.stateSyncIds && this.props.stateSyncIds.length > 0) // eslint-disable-line deprecation/deprecation
-      refreshState = this.props.stateSyncIds.some((value: string): boolean => args.eventIds.has(value)); // eslint-disable-line deprecation/deprecation
+      refreshState = this.props.stateSyncIds.some((value: string): boolean => args.eventIds.has(value.toLowerCase())); // eslint-disable-line deprecation/deprecation
 
     // istanbul ignore else
     if (refreshState) {

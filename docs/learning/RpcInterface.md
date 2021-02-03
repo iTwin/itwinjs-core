@@ -4,19 +4,19 @@ This article discusses RPC communication in iModel.js. See also [RPC vs IPC](./R
 
 Table of Contents:
 
-* [Overview](#overview)
-* Implementing RpcInterfaces
-  * [RpcInterfaces are Typescript Classes](#rpcinterfaces-are-typescript-classes)
-  * [RpcInterface Performance](#rpcinterface-performance)
-  * [Define the Interface](#define-the-interface)
-  * [Client Stub](#client-stub)
-  * [Server Implementation](#server-implementation)
-* Configuring RpcInterfaces
-  * [Server-side Configuration](#server-side-configuration)
-  * [Client-side Configuration](#client-side-configuration)
-* [Serve the Interfaces](#serve-the-interfaces)
-* [Asynchronous Nature of RpcInterfaces](#asynchronous-nature-of-rpcinterfaces)
-* [Logging and ActivityIds](#logging-and-activityids)
+- [Overview](#overview)
+- Implementing RpcInterfaces
+  - [RpcInterfaces are Typescript Classes](#rpcinterfaces-are-typescript-classes)
+  - [RpcInterface Performance](#rpcinterface-performance)
+  - [Define the Interface](#define-the-interface)
+  - [Client Stub](#client-stub)
+  - [Server Implementation](#server-implementation)
+- Configuring RpcInterfaces
+  - [Server-side Configuration](#server-side-configuration)
+  - [Client-side Configuration](#client-side-configuration)
+- [Serve the Interfaces](#serve-the-interfaces)
+- [Asynchronous Nature of RpcInterfaces](#asynchronous-nature-of-rpcinterfaces)
+- [Logging and ActivityIds](#logging-and-activityids)
 
 ## Overview
 
@@ -26,9 +26,9 @@ As described in the [software architecture overview](./SoftwareArchitecture.md),
 
 The diagram above shows an app frontend requesting operations from some backend. The terms *client* and *server* specify the two *roles* of an RpcInterface:
 
-* *client* -- the code that runs on the frontend, and calls methods on an RpcInterface.
+- *client* -- the code that runs on the frontend, and calls methods on an RpcInterface.
 
-* *server* -- the code that runs on the backend, and implements the RpcInterface.
+- *server* -- the code that runs on the backend, and implements the RpcInterface.
 
 Classes that derive from [RpcInterface]($common) define a set of operations implemented by a server, callable from a client.
 

@@ -19,4 +19,4 @@ A Radio button allows the selection of a single option amongst a predefined set 
 
 ## API Reference
 
-* [Radio]($ui-core:Radio)
+- [Radio]($ui-core:Radio)

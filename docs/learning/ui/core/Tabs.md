@@ -48,4 +48,4 @@ The `green` prop indicates whether the bar on the active tab is green instead of
 
 ## API Reference
 
-* [Tabs]($ui-core:Tabs)
+- [Tabs]($ui-core:Tabs)

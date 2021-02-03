@@ -1,11 +1,11 @@
 # Transform and Matrix3d operations
 
 ## Types
-* A `Matrix3d` is a 3x3 matrix.    It can be used for 3D rotation and scaling.
-  * A matrix _alone_ acts on xyz data, but always leaves the origin in place.
-  * A matrix must be bundled into a transform (which carries an additional origin/translation term) to cause scaling and rotation around a point other than the origin.
-* A `Transform` is a 3x3 matrix with an additional point which is variously called "origin" or "translation".
 
+- A `Matrix3d` is a 3x3 matrix. It can be used for 3D rotation and scaling.
+  - A matrix _alone_ acts on xyz data, but always leaves the origin in place.
+  - A matrix must be bundled into a transform (which carries an additional origin/translation term) to cause scaling and rotation around a point other than the origin.
+- A `Transform` is a 3x3 matrix with an additional point which is variously called "origin" or "translation".
 
 ## Notation
 
@@ -19,12 +19,12 @@
 
 ## Remarks on the entries in a Matrix3d
 
-* Some common uses of Matrix3d are for:
-  * Pure rotation: the matrix "picks something up" and spins it.   In the final position, there is not change of distance between any two points marked on the original geometry.
-    * the relation of the 9 numbers in the matrix with  intuitive description of the rotation is tricky.
-    * You cannot pull just a few numbers from the matrix and directly map them to what rotation happened.
-  * Uniform scaling: the matrix expands or contracts everything uniformly about the origin.
-    * This matrix structure is simple:  the scale factor appears on the diagonal.
+- Some common uses of Matrix3d are for:
+  - Pure rotation: the matrix "picks something up" and spins it.   In the final position, there is not change of distance between any two points marked on the original geometry.
+    - the relation of the 9 numbers in the matrix with  intuitive description of the rotation is tricky.
+    - You cannot pull just a few numbers from the matrix and directly map them to what rotation happened.
+  - Uniform scaling: the matrix expands or contracts everything uniformly about the origin.
+    - This matrix structure is simple:  the scale factor appears on the diagonal.
      ![>](./figs/Equations/DiagonalScale.png)
 
 ## Constructor and full update methods
@@ -56,7 +56,6 @@
 | rotation around any vector | newMatrix = Matrix3d.createRotationAroundVector (axisVector, angle) | | | |
 | most direct rotation that moves vectorA to vectorB | newMatrix = Matrix3d.createRotationVectorToVector (vectorA, vectorB) | | | |
 | rotation that moves vectorA a fraction of the shortest rotation towards vectorB | newMatrix = Matrix3d.createPartialRotationVectorToVector (vectorA, fraction, vectorB) | | | |
-
 
 # Simple Queries with matrix rows and columns
 
@@ -91,7 +90,6 @@
 | get row or column | vector = matrix.getColumn (columnIndex, result?) |
 | | vector= matrix.getRow (columnIndex, result) |
 
-
 # Rigid Matrix constructions
 
 These methods return individual vectors with special perpendicular conditions related to the input vector and the global axes.  These constructions are central to constructing a rigid axis matrix that has a "heads up" sense.
@@ -108,7 +106,6 @@ These methods return individual vectors with special perpendicular conditions re
 | extract axis of rotation | Rigit axis matrix | rigidMatrix->getAxisAndAngleOfRotation () : {axis: Vector3d, angle: Angle, ok: boolean} | |
 
 # Multiplying points and vectors
-
 
 | method | remarks |
 |---|---|
