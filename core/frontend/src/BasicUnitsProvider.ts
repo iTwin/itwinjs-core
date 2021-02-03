@@ -10,8 +10,11 @@ import {
   BadUnit, BasicUnit, UnitConversion, UnitProps, UnitsProvider,
 } from "@bentley/imodeljs-quantity";
 
-// cSpell:ignore FORMATPROPS FORMATKEY ussurvey uscustomary USCUSTOM
+// cSpell:ignore ussurvey USCUSTOM
 
+/** Units provider that provides a limited number of UnitDefinitions that are needed to support basic tools.
+ * @internal
+ */
 export class BasicUnitsProvider implements UnitsProvider {
   /** Find a unit given the unitLabel. */
   public async findUnit(unitLabel: string, unitFamily?: string): Promise<UnitProps> {
