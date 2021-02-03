@@ -1,11 +1,15 @@
+import { expect } from "chai";
+import { CompressedId64Set } from "@bentley/bentleyjs-core";
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Vector3d } from "@bentley/geometry-core";
-import { BackgroundMapType, ColorByName, DisplayStyle3dProps, DisplayStyle3dSettingsProps, FeatureAppearance, SpatialClassificationProps, ThematicDisplayMode } from "@bentley/imodeljs-common";
+import {
+  BackgroundMapType, ColorByName, DisplayStyle3dProps, DisplayStyle3dSettingsProps, FeatureAppearance, PlanarClipMaskSettings,
+  SpatialClassificationProps, ThematicDisplayMode,
+} from "@bentley/imodeljs-common";
 import { ContextRealityModelState, DisplayStyle3dState, IModelConnection, MockRender, SnapshotConnection } from "@bentley/imodeljs-frontend";
-import { expect } from "chai";
 
 describe("DisplayStyle", () => {
   let imodel: IModelConnection;
@@ -83,6 +87,25 @@ describe("DisplayStyle", () => {
     const modelId = "0x001f";
     style.overrideModelAppearance(modelId, appearanceOverride);
     expect(appearanceOverride).to.deep.equal(style.getModelAppearanceOverride(modelId));
+  });
+
+  it("Should reality model planar clip masks correctly", () => {
+    const style = new DisplayStyle3dState(styleProps, imodel);
+    const compressedModelIds = CompressedId64Set.compressArray([ "0x001", "0x002", "0x003"]);
+    const compressedElementIds =  CompressedId64Set.compressArray([ "0x004", "0x004", "0x006"]);
+    const planarClipMask = PlanarClipMaskSettings.fromJSON({
+      mode: 1,
+      modelIds: compressedModelIds,
+      subCategoryOrElementIds: compressedElementIds,
+    });
+
+    let index = 0;
+    style.forEachRealityModel((_realityModel) => {
+      style.overrideRealityModelPlanarClipMask(index, planarClipMask);
+
+      expect(planarClipMask).to.deep.equal(style.getRealityModelPlanarClipMask(index));
+      index++;
+    });
   });
 
   it("should use iModel extents for thematic height range if unspecified", () => {
