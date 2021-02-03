@@ -9,7 +9,7 @@
 import "./ContextMenu.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { SpecialKey } from "@bentley/ui-abstract";
+import { ConditionalBooleanValue, SpecialKey } from "@bentley/ui-abstract";
 import { CommonProps } from "../utils/Props";
 import { DivWithOutsideClick } from "../base/DivWithOutsideClick";
 import { ContextMenuDirection } from "./ContextMenuDirection";
@@ -251,7 +251,8 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
     // add inheritance data to submenu children
     const ch = React.Children.map(children, (child: React.ReactNode) => {
       // Capture only ContextSubMenus and ContextMenuItems.
-      if (child && typeof child === "object" && "props" in child && !child.props.disabled && (child.type === ContextSubMenu || child.type === ContextMenuItem)) {
+      if (child && typeof child === "object" && "props" in child && (child.type === ContextSubMenu || child.type === ContextMenuItem) &&
+        !ConditionalBooleanValue.getValue(child.props.disabled) && !ConditionalBooleanValue.getValue(child.props.hidden)) {
         const id = index; // get separate id variable so value stays the same when onHover is called later.
         const onHover = () => {
           this.setState({ selectedIndex: id });

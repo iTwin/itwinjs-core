@@ -22,7 +22,7 @@
     "extract-api": "betools extract-api --entry=backend-itwin-client",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "pretest": "npm run copy:test-assets",
-    "test": "",
+    "test": "betools test --grep=\"#integration\" --invert",
     "test:integration": "npm run pretest && betools test --grep=\"#integration\""
   },
   "repository": {
@@ -73,6 +73,7 @@
     "@types/nock": "^9.1.2",
     "@types/node": "10.14.1",
     "@types/semver": "^5.5.0",
+    "@types/sinon": "^9.0.0",
     "chai": "^4.1.2",
     "cpx": "^1.5.0",
     "eslint": "^6.8.0",
@@ -80,6 +81,7 @@
     "nock": "^9.2.3",
     "nyc": "^14.0.0",
     "rimraf": "^3.0.2",
+    "sinon": "^9.0.2",
     "source-map-support": "^0.5.6",
     "ts-node": "^7.0.1",
     "typescript": "~3.7.4"

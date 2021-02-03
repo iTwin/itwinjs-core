@@ -24,8 +24,9 @@ import * as React from "react";
 import { BadgeType, FunctionKey, StagePanelLocation, StageUsage } from "@bentley/ui-abstract";
 import { FillCentered } from "@bentley/ui-core";
 import {
-  AccuDrawCommandItems, CommandItemDef, ConfigurableUiManager, ContentGroupProps, ContentLayoutProps, FrontstageManager,
-  KeyboardShortcutManager, KeyboardShortcutProps, StagePanelSection, TaskPropsList, UiFramework, WidgetDef, WidgetProvider, WidgetState, WorkflowProps,
+  AccuDrawCommandItems, CommandItemDef, ConfigurableUiManager, ContentGroupProps, ContentLayoutProps, FrameworkAccuDraw,
+  FrontstageManager, KeyboardShortcutManager, KeyboardShortcutProps, StagePanelSection, TaskPropsList, UiFramework, WidgetDef, WidgetProvider, WidgetState,
+  WorkflowProps,
   WorkflowPropsList,
   ZoneLocation,
 } from "@bentley/ui-framework";
@@ -360,22 +361,27 @@ export class AppUi {
           {
             key: "x",
             item: AccuDrawCommandItems.lockX,
+            isHidden: FrameworkAccuDraw.isPolarModeConditional,
           },
           {
             key: "y",
             item: AccuDrawCommandItems.lockY,
+            isHidden: FrameworkAccuDraw.isPolarModeConditional,
           },
           {
             key: "z",
             item: AccuDrawCommandItems.lockZ,
+            isHidden: FrameworkAccuDraw.isPolarModeConditional,
           },
           {
             key: "a",
             item: AccuDrawCommandItems.lockAngle,
+            isHidden: FrameworkAccuDraw.isRectangularModeConditional,
           },
           {
             key: "d",
             item: AccuDrawCommandItems.lockDistance,
+            isHidden: FrameworkAccuDraw.isRectangularModeConditional,
           },
         ],
       },
@@ -386,18 +392,22 @@ export class AppUi {
           {
             key: "t",
             item: AccuDrawCommandItems.rotateTop,
+            isDisabled: FrameworkAccuDraw.isTopRotationConditional,
           },
           {
             key: "s",
             item: AccuDrawCommandItems.rotateSide,
+            isDisabled: FrameworkAccuDraw.isSideRotationConditional,
           },
           {
             key: "f",
             item: AccuDrawCommandItems.rotateFront,
+            isDisabled: FrameworkAccuDraw.isFrontRotationConditional,
           },
           {
             key: "v",
             item: AccuDrawCommandItems.rotateView,
+            isDisabled: FrameworkAccuDraw.isViewRotationConditional,
           },
           {
             key: "c",
