@@ -256,11 +256,6 @@ export class OrbitGtTileTree extends TileTree {
     this._doPrune(olderThan);
   }
 
-  public forcePrune() {
-    const rightNow = BeTimePoint.now();
-    this._doPrune(rightNow);
-  }
-
   public collectStatistics(stats: RenderMemory.Statistics): void {
     for (const tileGraphic of this._tileGraphics)
       tileGraphic[1].graphic.collectStatistics(stats);

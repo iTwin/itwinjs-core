@@ -94,12 +94,6 @@ export abstract class TileTree {
   /** @internal */
   public get parentsAndChildrenExclusive(): boolean { return true; }
 
-  /** This function will forcibly prune any unused tiles associated with the tree, ignoring any expiration times.
-   * An unused tile is a tile that is not currently in use by any viewport.
-   * @alpha
-   **/
-  public abstract forcePrune(): void;
-
   /** Constructor */
   protected constructor(params: TileTreeParams) {
     this._lastSelected = BeTimePoint.now();

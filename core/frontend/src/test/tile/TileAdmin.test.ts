@@ -124,7 +124,6 @@ class TestTree extends TileTree {
   }
 
   public prune() { }
-  public forcePrune() { }
 }
 
 class Supplier implements TileTreeSupplier {
@@ -305,7 +304,7 @@ describe("TileAdmin", () => {
     admin.freeMemory();
     expect(admin.totalTileContentBytes).to.equal(1 + 2 + 3 + 4);
 
-    admin.maxTotalTileContentBytes = 0;
+    admin.gpuMemoryLimit = 0;
     admin.freeMemory();
     expect(admin.totalTileContentBytes).to.equal(2 + 3);
 
@@ -320,7 +319,7 @@ describe("TileAdmin", () => {
 
   it("disposes of non-selected tiles' contents to satisfy memory limit", async () => {
     const admin = IModelApp.tileAdmin;
-    admin.maxTotalTileContentBytes = 0;
+    admin.gpuMemoryLimit = 0;
 
     const viewport = createViewport(imodel1);
     const tiles = addTilesToViewport(viewport, 1, 10, 100, 1000, 10000);
@@ -352,7 +351,7 @@ describe("TileAdmin", () => {
 
   it("frees only enough memory to satisfy memory limit", async () => {
     const admin = IModelApp.tileAdmin;
-    admin.maxTotalTileContentBytes = 200;
+    admin.gpuMemoryLimit = 200;
 
     const viewport = createViewport(imodel1);
     const tiles = addTilesToViewport(viewport, 99, 99, 99);
@@ -368,18 +367,18 @@ describe("TileAdmin", () => {
     expectSelectedTiles(viewport, []);
     expect(admin.totalTileContentBytes).to.equal(99 * 2);
 
-    admin.maxTotalTileContentBytes = 100;
+    admin.gpuMemoryLimit = 100;
     await render(viewport);
     expect(admin.totalTileContentBytes).to.equal(99);
 
-    admin.maxTotalTileContentBytes = 98;
+    admin.gpuMemoryLimit = 98;
     await render(viewport);
     expect(admin.totalTileContentBytes).to.equal(0);
   });
 
   it("does not free selected tiles to satisfy memory limit", async () => {
     const admin = IModelApp.tileAdmin;
-    admin.maxTotalTileContentBytes = 0;
+    admin.gpuMemoryLimit = 0;
 
     const viewport = createViewport(imodel1);
     const tiles = addTilesToViewport(viewport, 1, 2, 3);
@@ -394,7 +393,7 @@ describe("TileAdmin", () => {
 
   it("retains tiles that decline to dispose their content", async () => {
     const admin = IModelApp.tileAdmin;
-    admin.maxTotalTileContentBytes = 0;
+    admin.gpuMemoryLimit = 0;
     const viewport = createViewport(imodel1);
     const tiles = addTilesToViewport(viewport, 1, 10, 100);
     for (const tile of tiles)
@@ -429,7 +428,7 @@ describe("TileAdmin", () => {
 
   it("manages memory across multiple viewports", async () => {
     const admin = IModelApp.tileAdmin;
-    admin.maxTotalTileContentBytes = 0;
+    admin.gpuMemoryLimit = 0;
     const trees = [ new TestTree(1, imodel1), new TestTree(10, imodel1), new TestTree(100, imodel1) ];
     const tiles = trees.map((x) => x.rootTile);
 
@@ -472,7 +471,7 @@ describe("TileAdmin", () => {
 
   it("removes tiles when viewport is disposed of", async () => {
     const admin = IModelApp.tileAdmin;
-    admin.maxTotalTileContentBytes = 0;
+    admin.gpuMemoryLimit = 0;
     const vp1 = createViewport(imodel1);
     const vp2 = createViewport(imodel2);
     const tile1 = addTilesToViewport(vp1, 1)[0];

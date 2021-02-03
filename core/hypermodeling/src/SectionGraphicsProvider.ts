@@ -203,7 +203,6 @@ abstract class ProxyTree extends TileTree {
     return this.isDisplayed ? [this.rootTile] : [];
   }
 
-  public forcePrune(): void { }
   public prune(): void {
     // Our single tile is only a proxy. Our proxied tree(s) will be pruned separately
   }

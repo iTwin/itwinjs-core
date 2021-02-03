@@ -7,6 +7,7 @@
  */
 
 import { assert, BeDuration, BeEvent, BeTimePoint, Id64Array, Id64String, PriorityQueue } from "@bentley/bentleyjs-core";
+import { detectIsMobile } from "@bentley/webgl-compatibility";
 import {
   defaultTileOptions, ElementGraphicsRequestProps, FrontendIpc, getMaximumMajorTileFormatVersion, IModelTileRpcInterface, IModelTileTreeProps, ModelGeometryChanges,
   RpcOperation, RpcResponseCacheControl, ServerTimeoutError, TileTreeContentIds,
@@ -76,23 +77,23 @@ export interface SelectedAndReadyTiles {
  * - "default" - a moderate limit that strives to balance limiting memory consumption while keeping tiles likely to be displayed again in memory.
  * - "relaxed" - a larger limit that may be appropriate for devices equipped with ample GPU memory.
  * - number - an explicit limit, in number of bytes. Because of the vagaries of actual GPU memory consumption under WebGL, this should be a conservative estimate - no more than perhaps 1/4 of the total GPU memory available, depending on the device.
- * @see [[TileAdmin.Props.memoryUsageLimits]] to configure the limit at startup.
- * @see [[TileAdmin.memoryUsageLimit]] to adjust the limit after startup.
+ * @see [[TileAdmin.Props.gpuMemoryLimits]] to configure the limit at startup.
+ * @see [[TileAdmin.gpuMemoryLimit]] to adjust the limit after startup.
  * @see [[TileAdmin.totalTileContentBytes]] for the current amount of GPU memory being used for tile contents.
  * @beta
  */
 export type GpuMemoryLimit = "none" | "default" | "aggressive" | "relaxed" | number;
 
 /** Defines separate [[GpuMemoryLimit]]s for mobile and desktop clients.
- * @see [[TileAdmin.Props.memoryUsageLimits]] to configure the limit at startup.
+ * @see [[TileAdmin.Props.gpuMemoryLimits]] to configure the limit at startup.
  * @see [[GpuMemoryLimit]] for a description of how the available limits and how they are imposed.
  * @beta
  */
 export interface GpuMemoryLimits {
-  /** Limits applied to clients running on mobile devices. Defaults to "none" if undefined. */
+  /** Limits applied to clients running on mobile devices. Defaults to "default" if undefined. */
   mobile?: GpuMemoryLimit;
   /** Limits applied to clients running on non-mobile devices. Defaults to "none" if undefined. */
-  desktop?: GpuMemoryLimit;
+  nonMobile?: GpuMemoryLimit;
 }
 
 /** Manages [[Tile]]s and [[TileTree]]s on behalf of [[IModelApp]]. Its responsibilities include scheduling requests for tile content via a priority queue;
@@ -122,7 +123,6 @@ export class TileAdmin {
   private readonly _maxMajorVersion: number;
   private readonly _useProjectExtents: boolean;
   private readonly _maximumLevelsToSkip: number;
-  private readonly _mobileExpirationMemoryThreshold: number;
   private readonly _mobileRealityTileMinToleranceRatio: number;
   private readonly _removeIModelConnectionOnCloseListener: () => void;
   private _activeRequests = new Set<TileRequest>();
@@ -143,8 +143,6 @@ export class TileAdmin {
   private _nextPruneTime: BeTimePoint;
   private _nextPurgeTime: BeTimePoint;
   private readonly _treeExpirationTime: BeDuration;
-  private _nextPruneForMemoryUsageTime: BeTimePoint;
-  private readonly _pruneForMemoryUsageTime: BeDuration;
   private readonly _contextPreloadParentDepth: number;
   private readonly _contextPreloadParentSkip: number;
   private _canceledIModelTileRequests?: Map<IModelConnection, Map<string, Set<string>>>;
@@ -153,7 +151,8 @@ export class TileAdmin {
   private _tileTreePropsRequests: TileTreePropsRequest[] = [];
   private _cleanup?: () => void;
   private readonly _lruList = new LRUTileList();
-  private _maxBytes?: number;
+  private _maxTotalTileContentBytes?: number;
+  private _gpuMemoryLimit: GpuMemoryLimit = "none";
 
   /** Create a TileAdmin suitable for passing to [[IModelApp.startup]] via [[IModelAppOptions.tileAdmin]] to customize aspects of
    * its behavior.
@@ -219,9 +218,21 @@ export class TileAdmin {
     this._alwaysSubdivideIncompleteTiles = options.alwaysSubdivideIncompleteTiles ?? defaultTileOptions.alwaysSubdivideIncompleteTiles;
     this._maxMajorVersion = options.maximumMajorTileFormatVersion ?? defaultTileOptions.maximumMajorTileFormatVersion;
     this._useProjectExtents = options.useProjectExtents ?? defaultTileOptions.useProjectExtents;
-    this._mobileExpirationMemoryThreshold = Math.max(options.mobileExpirationMemoryThreshold ?? 200000000, 100000000);
     this._mobileRealityTileMinToleranceRatio = Math.max(options.mobileRealityTileMinToleranceRatio ?? 3.0, 1.0);
-    this._pruneForMemoryUsageTime = BeDuration.fromSeconds(1);
+
+    const isMobile = detectIsMobile();
+    const gpuMemoryLimits = options.gpuMemoryLimits;
+    let gpuMemoryLimit: GpuMemoryLimit | undefined;
+    if (typeof gpuMemoryLimits === "object")
+      gpuMemoryLimit = isMobile ? gpuMemoryLimits.mobile : gpuMemoryLimits.nonMobile;
+    else
+      gpuMemoryLimit = gpuMemoryLimits;
+
+    if (!gpuMemoryLimit && isMobile)
+      gpuMemoryLimit = "default";
+
+    if (gpuMemoryLimit)
+      this.gpuMemoryLimit = gpuMemoryLimit;
 
     if (undefined !== options.maximumLevelsToSkip)
       this._maximumLevelsToSkip = Math.floor(Math.max(0, options.maximumLevelsToSkip));
@@ -252,7 +263,6 @@ export class TileAdmin {
     const now = BeTimePoint.now();
     this._nextPruneTime = now.plus(this._tileExpirationTime);
     this._nextPurgeTime = now.plus(this._treeExpirationTime);
-    this._nextPruneForMemoryUsageTime = now.plus(this._pruneForMemoryUsageTime);
 
     this._removeIModelConnectionOnCloseListener = IModelConnection.onClose.addListener((iModel) => this.onIModelClosed(iModel));
 
@@ -292,8 +302,6 @@ export class TileAdmin {
   public get enableExternalTextures(): boolean { return this._enableExternalTextures; }
   /** @internal */
   public get maximumLevelsToSkip() { return this._maximumLevelsToSkip; }
-  /** @internal */
-  public get mobileExpirationMemoryThreshold() { return this._mobileExpirationMemoryThreshold; }
   /** @internal */
   public get mobileRealityTileMinToleranceRatio() { return this._mobileRealityTileMinToleranceRatio; }
   /** @internal */
@@ -356,7 +364,7 @@ export class TileAdmin {
   }
 
   /** The total number of bytes of GPU memory allocated to [[Tile]] contents.
-   * @see [[maxTotalTileContentBytes]] to impose limits on how high this can grow.
+   * @see [[gpuMemoryLimit]] to impose limits on how high this can grow.
    * @beta
    */
   public get totalTileContentBytes(): number {
@@ -366,13 +374,46 @@ export class TileAdmin {
   /** The maximum number of bytes of GPU memory that can be allocated to the contents of [[Tile]]s. When this limit is exceeded, the contents of the least-recently-drawn
    * tiles are discarded until the total is below this limit or all undisplayed tiles' contents have been discarded.
    * @see [[totalTileContentBytes]] for the current GPU memory usage.
+   * @see [[gpuMemoryLimit]] to adjust this maximum.
    * @beta
    */
   public get maxTotalTileContentBytes(): number | undefined {
-    return this._maxBytes;
+    return this._maxTotalTileContentBytes;
   }
-  public set maxTotalTileContentBytes(max: number | undefined) {
-    this._maxBytes = max;
+
+  /** The strategy for limiting the amount of GPU memory allocated to [[Tile]] graphics.
+   * @see [[TileAdmin.Props.gpuMemoryLimits]] to configure this at startup.
+   * @see [[maxTotalTileContentBytes]] for the limit as a maximum number of bytes.
+   * @beta
+   */
+  public get gpuMemoryLimit(): GpuMemoryLimit {
+    return this._gpuMemoryLimit;
+  }
+  public set gpuMemoryLimit(limit: GpuMemoryLimit) {
+    if (limit === this.gpuMemoryLimit)
+      return;
+
+    let maxBytes = 0;
+    if (typeof limit === "number") {
+      maxBytes = Math.max(0, limit);
+    } else {
+      switch (limit) {
+        case "default":
+        case "aggressive":
+        case "relaxed":
+          const spec = detectIsMobile() ? TileAdmin.mobileGpuMemoryLimits : TileAdmin.nonMobileGpuMemoryLimits;
+          maxBytes = spec[limit];
+          break;
+        case "none":
+          break;
+        default:
+          limit = "none";
+          break;
+      }
+    }
+
+    this._gpuMemoryLimit = limit;
+    this._maxTotalTileContentBytes = maxBytes;
   }
 
   /** Invoked from the [[ToolAdmin]] event loop to process any pending or active requests for tiles.
@@ -821,50 +862,14 @@ export class TileAdmin {
     }
   }
 
-  // Possibly prune tiles belonging to trees based on overall tree memory usage.
-  // Note: this currently only occurs on mobile devices.
-  private pruneForMemoryUsage(): void {
-    const memoryTrees = new DisclosedTileTreeSet();
-    for (const vp of this._viewports) {
-      if (vp.iModel.isOpen)
-        vp.discloseTileTrees(memoryTrees);
-    }
-
-    let exceedsThreshold = false;
-
-    // Gather total memory used by trees.
-    const stats = new RenderMemory.Statistics();
-    for (const tree of memoryTrees) {
-      tree.collectStatistics(stats);
-      if (stats.totalBytes > this.mobileExpirationMemoryThreshold) {
-        exceedsThreshold = true;
-        break;
-      }
-    }
-
-    // Force pruning those trees if total bytes consumed exceeds the threshold.
-    if (exceedsThreshold) {
-      for (const tree of memoryTrees)
-        tree.forcePrune();
-    }
-  }
-
   /** Exported strictly for tests. @internal */
   public freeMemory(): void {
-    if (undefined !== this._maxBytes)
-      this._lruList.freeMemory(this._maxBytes);
+    if (undefined !== this._maxTotalTileContentBytes)
+      this._lruList.freeMemory(this._maxTotalTileContentBytes);
   }
 
   private pruneAndPurge(): void {
     const now = BeTimePoint.now();
-    if (IModelApp.renderSystem.isMobile) {
-      const needPruneForMemoryUsage = this._nextPruneForMemoryUsageTime.before(now);
-      if (needPruneForMemoryUsage) {
-        this.pruneForMemoryUsage();
-        this._nextPruneForMemoryUsageTime = now.plus(this._pruneForMemoryUsageTime);
-      }
-    }
-
     const needPrune = this._nextPruneTime.before(now);
     const needPurge = this._nextPurgeTime.before(now);
     if (!needPrune && !needPurge)
@@ -1210,25 +1215,12 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      * If an instance of [[GpuMemoryLimits]], defines separate limits for mobile and non-mobile devices; otherwise, defines the limit for whatever
      * type of device the client is running on.
      *
-     * Default value: "none".
+     * Default value: `{ "mobile": "default" }`.
      *
      * @see [[GpuMemoryLimit]] for a description of the available limits and how they are imposed.
      * @beta
      */
     gpuMemoryLimits?: GpuMemoryLimit | GpuMemoryLimits;
-
-    /** When the total used memory of all tile trees exceeds this many bytes, tiles belonging to the trees will be immediately considered eligible for disposal if they are unused by any viewport.
-     * This disposal will occur by calling the `forcePrune` method on every tree.
-     * This pruning criteria exists in addition to the pruning eligibility based on expiration time.
-     *
-     * @note This value only has an effect on mobile devices. On non-mobile devices, unused tiles will only be pruned based on expiration time, not memory usage.
-     *
-     * Default value: 200MB (200,000,000 bytes)
-     * Minimum value: 100MB (100,000,000 bytes)
-     *
-     * @alpha
-     */
-    mobileExpirationMemoryThreshold?: number;
 
     /** Nominally the error on screen size of a reality tile. The minimum value of 1.0 will apply a direct 1:1 scale.
      * A ratio higher than 1.0 will result in lower quality display as the reality tile refinement becomes more coarse.
@@ -1320,6 +1312,30 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      * @alpha
      */
     minimumSpatialTolerance?: number;
+  }
+
+  /** The number of bytes of GPU memory associated with the various [[GpuMemoryLimit]]s for non-mobile devices.
+   * @see [[TileAdmin.Props.gpuMemoryLimits]] to specify the limit at startup.
+   * @see [[TileAdmin.gpuMemoryLimit]] to adjust the actual limit after startup.
+   * @see [[TileAdmin.mobileMemoryLimits]] for mobile devices.
+   * @beta
+   */
+  export const nonMobileGpuMemoryLimits = {
+    default: 1024 * 1024 * 1024, // 1 GB
+    aggressive: 500 * 1024 * 1024, // 400 MB
+    relaxed: 2.5 * 1024 * 1024 * 1024, // 2.5 GB
+  }
+
+  /** The number of bytes of GPU memory associated with the various [[GpuMemoryLimit]]s for mobile devices.
+   * @see [[TileAdmin.Props.gpuMemoryLimits]] to specify the limit at startup.
+   * @see [[TileAdmin.gpuMemoryLimit]] to adjust the actual limit after startup.
+   * @see [[TileAdmin.nonMobileMemoryLimits]] for non-mobile devices.
+   * @beta
+   */
+  export const mobileGpuMemoryLimits = {
+    default: 200 * 1024 * 1024, // 200 MB
+    aggressive: 75 * 1024 * 1024, // 75 MB
+    relaxed: 500 * 1024 * 1024 * 1024, // 500 MB
   }
 }
 
