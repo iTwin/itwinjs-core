@@ -92,6 +92,7 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: false,
             cacheConfig: { mode: HierarchyCacheMode.Disk, directory: "" },
             contentCacheSize: undefined,
+            useMmap: undefined,
           });
         });
       });
@@ -112,6 +113,7 @@ describe("PresentationManager", () => {
           updatesPollInterval: 1,
           cacheConfig,
           contentCacheSize: 999,
+          useMmap: 666,
         };
         const expectedCacheConfig = {
           mode: HierarchyCacheMode.Memory,
@@ -126,6 +128,7 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: true,
             cacheConfig: expectedCacheConfig,
             contentCacheSize: 999,
+            useMmap: 666,
           });
         });
       });
@@ -142,6 +145,7 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: false,
             cacheConfig: { mode: HierarchyCacheMode.Disk, directory: "" },
             contentCacheSize: undefined,
+            useMmap: undefined,
           });
         });
         constructorSpy.resetHistory();
@@ -160,6 +164,7 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: false,
             cacheConfig: expectedConfig,
             contentCacheSize: undefined,
+            useMmap: undefined,
           });
         });
       });
@@ -176,6 +181,7 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: false,
             cacheConfig: { mode: HierarchyCacheMode.Hybrid, disk: undefined },
             contentCacheSize: undefined,
+            useMmap: undefined,
           });
         });
         constructorSpy.resetHistory();
@@ -199,6 +205,7 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: false,
             cacheConfig: expectedConfig,
             contentCacheSize: undefined,
+            useMmap: undefined,
           });
         });
       });
