@@ -5,7 +5,7 @@
 
 import * as fs from "fs";
 import * as path from "path";
-import { Config, Logger, LogLevel, MobileUtils } from "@bentley/bentleyjs-core";
+import { Config, Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@bentley/imodeljs-common";
 import { AndroidHost, IOSHost, MobileRpcManager } from "@bentley/mobile-manager/lib/MobileBackend";
@@ -25,7 +25,7 @@ import { PresentationRpcInterface } from "@bentley/presentation-common";
     IModelJsConfig.init(true /* suppress error */, true /* suppress message */, Config.App);
 
     // initialize imodeljs-backend
-    if (MobileUtils.isIOSBackend)
+    if (ProcessDetector.isIOSAppBackend)
       await IOSHost.startup();
     else
       await AndroidHost.startup();

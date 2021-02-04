@@ -269,6 +269,8 @@ export interface PresentationManagerProps {
     };
     // @alpha
     updatesPollInterval?: number;
+    // @alpha
+    useMmap?: boolean | number;
 }
 
 // @public

@@ -7,18 +7,18 @@ import "./RpcImpl";
 import "@bentley/oidc-signin-tool/lib/certa/certaBackend";
 import * as http from "http";
 import * as path from "path";
-import serveHandler = require("serve-handler");
-import { Config, isElectronMain, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Config, Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
 import { IModelJsExpressServer } from "@bentley/express-server";
 import { FileNameResolver, IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
 import { BentleyCloudRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
+import { EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
-import { EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
 import * as testCommands from "./TestEditCommands";
-import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
 
+import serveHandler = require("serve-handler");
 /* eslint-disable no-console */
 
 async function init() {
@@ -33,7 +33,7 @@ async function init() {
   iModelHost.concurrentQuery.concurrent = 2;
   iModelHost.concurrentQuery.pollInterval = 5;
 
-  if (isElectronMain) {
+  if (ProcessDetector.isElectronAppBackend) {
     await ElectronHost.startup({ electronHost: { rpcInterfaces }, iModelHost });
     EditCommandAdmin.registerModule(testCommands);
   } else {

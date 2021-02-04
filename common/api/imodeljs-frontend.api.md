@@ -8654,14 +8654,11 @@ export class SpriteLocation implements CanvasDecoration {
     readonly position: Point3d;
     }
 
-// @beta
-export class StandaloneConnection extends IModelConnection {
-    close(): Promise<void>;
-    get iModelId(): GuidString;
-    get isClosed(): boolean;
+// @internal
+export class StandaloneConnection extends BriefcaseConnection {
     // (undocumented)
     isStandaloneConnection(): this is StandaloneConnection;
-    static openFile(filePath: string, openMode?: OpenMode, opts?: StandaloneOpenOptions): Promise<StandaloneConnection>;
+    static openStandalone(filePath: string, openMode?: OpenMode, opts?: StandaloneOpenOptions): Promise<StandaloneConnection>;
 }
 
 // @public

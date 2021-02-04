@@ -2,20 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/* eslint-disable @typescript-eslint/promise-function-async */
 import { expect } from "chai";
 import * as faker from "faker";
 import sinon from "sinon";
-import { BeEvent, Logger } from "@bentley/bentleyjs-core";
-import { IModelRpcProps } from "@bentley/imodeljs-common";
-import { IModelConnection, NativeApp } from "@bentley/imodeljs-frontend";
+import { BeDuration, BeEvent, Logger, using } from "@bentley/bentleyjs-core";
+import { IModelRpcProps, IpcListener, RemoveFunction } from "@bentley/imodeljs-common";
+import { IModelConnection, IpcApp } from "@bentley/imodeljs-frontend";
 import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
 import {
   Content, ContentDescriptorRequestOptions, ContentRequestOptions, Descriptor, DisplayLabelRequestOptions, DisplayLabelsRequestOptions,
   DisplayValueGroup, DistinctValuesRequestOptions, ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, FieldDescriptor,
   FieldDescriptorType, HierarchyRequestOptions, InstanceKey, Item, KeySet, LabelDefinition, LabelRequestOptions, Node, NodeKey, NodePathElement,
-  Paged, PresentationDataCompareOptions, PresentationError, PresentationStatus, PresentationUnitSystem, RegisteredRuleset, RequestPriority,
-  RpcRequestsHandler, Ruleset, RulesetVariable, VariableValueTypes,
+  Paged, PresentationDataCompareOptions, PresentationError, PresentationIpcEvents, PresentationStatus, PresentationUnitSystem, RegisteredRuleset,
+  RequestPriority, RpcRequestsHandler, Ruleset, RulesetVariable, UpdateInfo, VariableValueTypes,
 } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import {
@@ -123,12 +122,12 @@ describe("PresentationManager", () => {
       expect(mgr.rpcRequestsHandler.clientId).to.eq(props.clientId);
     });
 
-    // it("starts listening to update events", async () => {
-    //   sinon.stub(NativeApp, "isValid").get(() => true);
-    //   const eventSourceStub = sinon.createStubInstance(EventSource);
-    //   using(PresentationManager.create({ eventSource: (eventSourceStub as unknown as EventSource) }), (_) => { });
-    //   expect(eventSourceStub.on).to.be.calledOnceWith(PresentationRpcInterface.interfaceName, PresentationRpcEvents.Update, sinon.match((arg) => typeof arg === "function"));
-    // });
+    it("starts listening to update events", async () => {
+      sinon.stub(IpcApp, "isValid").get(() => true);
+      const addListenerSpy = sinon.stub(IpcApp, "addListener").returns(() => { });
+      using(PresentationManager.create(), (_) => { });
+      expect(addListenerSpy).to.be.calledOnceWith(PresentationIpcEvents.Update, sinon.match((arg) => typeof arg === "function"));
+    });
 
   });
 
@@ -139,14 +138,13 @@ describe("PresentationManager", () => {
       rpcRequestsHandlerMock.verify((x) => x.dispose(), moq.Times.once());
     });
 
-    // it("stops listening to update events", async () => {
-    //   sinon.stub(NativeApp, "isValid").get(() => true);
-    //   const offSpy = sinon.stub();
-    //   const eventSourceStub = sinon.createStubInstance(EventSource);
-    //   eventSourceStub.on.returns(offSpy);
-    //   using(PresentationManager.create({ eventSource: (eventSourceStub as unknown as EventSource) }), (_) => { });
-    //   expect(offSpy).to.be.calledOnce;
-    // });
+    it("stops listening to update events", async () => {
+      sinon.stub(IpcApp, "isValid").get(() => true);
+      const offSpy = sinon.stub();
+      const addListenerSpy = sinon.stub(IpcApp, "addListener").returns(offSpy);
+      using(PresentationManager.create(), (_) => { });
+      expect(offSpy).to.be.calledOnce;
+    });
 
   });
 
@@ -1333,20 +1331,19 @@ describe("PresentationManager", () => {
 
   });
 
-  describe.skip("listening to updates", () => {
+  describe("listening to updates", () => {
 
-    // let eventSourceListener: (report: UpdateInfo) => void;
+    let ipcAppAddListenerStub: sinon.SinonStub<[string, IpcListener], RemoveFunction>;
     let hierarchyUpdatesSpy: sinon.SinonSpy<[IModelHierarchyChangeEventArgs], void>;
     let contentUpdatesSpy: sinon.SinonSpy<[IModelContentChangeEventArgs], void>;
 
     beforeEach(() => {
-      sinon.stub(NativeApp, "isValid").get(() => true);
+      sinon.stub(IpcApp, "isValid").get(() => true);
+      ipcAppAddListenerStub = sinon.stub(IpcApp, "addListener");
 
-      // const eventSource = sinon.createStubInstance(EventSource);
-      // manager = PresentationManager.create({ eventSource: eventSource as unknown as EventSource });
+      manager = PresentationManager.create();
 
-      // eventSourceListener = eventSource.on.args[0][2];
-      // expect(eventSourceListener).to.not.be.undefined;
+      expect(ipcAppAddListenerStub).to.be.calledOnce;
 
       hierarchyUpdatesSpy = sinon.spy() as any;
       manager.onIModelHierarchyChanged.addListener(hierarchyUpdatesSpy);
@@ -1355,61 +1352,61 @@ describe("PresentationManager", () => {
       manager.onIModelContentChanged.addListener(contentUpdatesSpy);
     });
 
-    // it("triggers appropriate hierarchy and content events on update event", async () => {
-    //   const imodelKey = "test-imodel-key";
-    //   const ruleset1: Ruleset = { id: "1", rules: [] };
-    //   const ruleset2: Ruleset = { id: "2", rules: [] };
-    //   const ruleset3: Ruleset = { id: "3", rules: [] };
-    //   const ruleset4: Ruleset = { id: "4", rules: [] };
-    //   rulesetsManagerMock.setup((x) => x.get(ruleset1.id)).returns(async () => new RegisteredRuleset(ruleset1, "", () => { }));
-    //   rulesetsManagerMock.setup((x) => x.get(ruleset2.id)).returns(async () => new RegisteredRuleset(ruleset2, "", () => { }));
-    //   rulesetsManagerMock.setup((x) => x.get(ruleset3.id)).returns(async () => new RegisteredRuleset(ruleset3, "", () => { }));
-    //   rulesetsManagerMock.setup((x) => x.get(ruleset4.id)).returns(async () => undefined);
+    it("triggers appropriate hierarchy and content events on update event", async () => {
+      const imodelKey = "test-imodel-key";
+      const ruleset1: Ruleset = { id: "1", rules: [] };
+      const ruleset2: Ruleset = { id: "2", rules: [] };
+      const ruleset3: Ruleset = { id: "3", rules: [] };
+      const ruleset4: Ruleset = { id: "4", rules: [] };
+      rulesetsManagerMock.setup((x) => x.get(ruleset1.id)).returns(async () => new RegisteredRuleset(ruleset1, "", () => { }));
+      rulesetsManagerMock.setup((x) => x.get(ruleset2.id)).returns(async () => new RegisteredRuleset(ruleset2, "", () => { }));
+      rulesetsManagerMock.setup((x) => x.get(ruleset3.id)).returns(async () => new RegisteredRuleset(ruleset3, "", () => { }));
+      rulesetsManagerMock.setup((x) => x.get(ruleset4.id)).returns(async () => undefined);
 
-    //   const report: UpdateInfo = {
-    //     [imodelKey]: {
-    //       [ruleset1.id]: {
-    //         hierarchy: "FULL",
-    //         content: "FULL",
-    //       },
-    //       [ruleset2.id]: {
-    //         hierarchy: [],
-    //       },
-    //       [ruleset3.id]: {
-    //         content: "FULL",
-    //       },
-    //       [ruleset4.id]: {},
-    //     },
-    //   };
-    //   eventSourceListener(report);
+      const report: UpdateInfo = {
+        [imodelKey]: {
+          [ruleset1.id]: {
+            hierarchy: "FULL",
+            content: "FULL",
+          },
+          [ruleset2.id]: {
+            hierarchy: [],
+          },
+          [ruleset3.id]: {
+            content: "FULL",
+          },
+          [ruleset4.id]: {},
+        },
+      };
+      ipcAppAddListenerStub.firstCall.args[1](new Event(PresentationIpcEvents.Update), report);
 
-    //   // workaround for a floating promise...
-    //   await BeDuration.wait(1);
+      // workaround for a floating promise...
+      await BeDuration.wait(1);
 
-    //   expect(hierarchyUpdatesSpy).to.be.calledTwice;
-    //   expect(hierarchyUpdatesSpy.firstCall).to.be.calledWith({
-    //     rulesetId: ruleset1.id,
-    //     updateInfo: "FULL",
-    //     imodelKey,
-    //   });
-    //   expect(hierarchyUpdatesSpy.secondCall).to.be.calledWith({
-    //     rulesetId: ruleset2.id,
-    //     updateInfo: [],
-    //     imodelKey,
-    //   });
+      expect(hierarchyUpdatesSpy).to.be.calledTwice;
+      expect(hierarchyUpdatesSpy.firstCall).to.be.calledWith({
+        rulesetId: ruleset1.id,
+        updateInfo: "FULL",
+        imodelKey,
+      });
+      expect(hierarchyUpdatesSpy.secondCall).to.be.calledWith({
+        rulesetId: ruleset2.id,
+        updateInfo: [],
+        imodelKey,
+      });
 
-    //   expect(contentUpdatesSpy).to.be.calledTwice;
-    //   expect(contentUpdatesSpy.firstCall).to.be.calledWith({
-    //     rulesetId: ruleset1.id,
-    //     updateInfo: "FULL",
-    //     imodelKey,
-    //   });
-    //   expect(contentUpdatesSpy.secondCall).to.be.calledWith({
-    //     rulesetId: ruleset3.id,
-    //     updateInfo: "FULL",
-    //     imodelKey,
-    //   });
-    // });
+      expect(contentUpdatesSpy).to.be.calledTwice;
+      expect(contentUpdatesSpy.firstCall).to.be.calledWith({
+        rulesetId: ruleset1.id,
+        updateInfo: "FULL",
+        imodelKey,
+      });
+      expect(contentUpdatesSpy.secondCall).to.be.calledWith({
+        rulesetId: ruleset3.id,
+        updateInfo: "FULL",
+        imodelKey,
+      });
+    });
 
   });
 

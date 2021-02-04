@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { Point3d } from "@bentley/geometry-core";
 import { SectionType } from "@bentley/imodeljs-common";
 import {
-  IModelApp, IModelConnection, ParseAndRunResult, CheckpointConnection, SnapshotConnection,
+  CheckpointConnection, IModelApp, IModelConnection, ParseAndRunResult, SnapshotConnection,
 } from "@bentley/imodeljs-frontend";
 import {
   HyperModeling, HyperModelingDecorator, SectionDrawingLocationState, SectionMarker, SectionMarkerConfig, SectionMarkerHandler,
@@ -14,7 +14,7 @@ import {
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "./TestUtility";
 import { testOnScreenViewport } from "../TestViewport";
-import { isElectronRenderer } from "@bentley/bentleyjs-core";
+import { ProcessDetector } from "@bentley/bentleyjs-core";
 
 describe("HyperModeling (#integration)", () => {
   const projectName = "iModelJsIntegrationTest";
@@ -208,7 +208,7 @@ describe("HyperModeling (#integration)", () => {
   });
 
   it("adjusts marker display via key-in", async function () {
-    if (isElectronRenderer) {
+    if (ProcessDetector.isElectronAppFrontend) {
       // The electron version fails to find/parse the hypermodeling package's JSON file containing its keyins.
       // The browser version has no such problem.
       // It works fine in a real electron app.

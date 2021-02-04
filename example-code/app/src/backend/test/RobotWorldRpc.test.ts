@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { ClientRequestContext, Id64, Id64String, isElectronRenderer, OpenMode } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Id64, Id64String, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { Angle, Point3d } from "@bentley/geometry-core";
 import { IModelJsFs, PhysicalModel, StandaloneDb } from "@bentley/imodeljs-backend";
@@ -41,7 +41,7 @@ async function setUpTest() {
   iModel.close();
 }
 
-if (isElectronRenderer) {
+if (ProcessDetector.isElectronAppFrontend) {
   describe("RobotWorldRpc", () => {
 
     // This node-based implementation of XHR is *not* required by our RPC mechanism. It is required by our

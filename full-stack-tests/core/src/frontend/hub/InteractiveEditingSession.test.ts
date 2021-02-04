@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
-import { BeDuration, compareStrings, DbOpcode, Id64String, isElectronRenderer, OpenMode } from "@bentley/bentleyjs-core";
+import { BeDuration, compareStrings, DbOpcode, Id64String, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { IModelJson, LineSegment3d, Point3d, Range3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
 import { BatchType, Code, ElementGeometryChange } from "@bentley/imodeljs-common";
@@ -22,7 +22,7 @@ let codeSuffix = 1;
 /* eslint-disable deprecation/deprecation */
 
 // The Web RPC protocol does not support Ipc required for interactive editing.
-if (isElectronRenderer) {
+if (ProcessDetector.isElectronAppFrontend) {
   describe("InteractiveEditingSession (#integration)", () => {
     let briefcase: RemoteBriefcaseConnection | undefined;
     let imodelId: string;

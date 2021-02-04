@@ -6,8 +6,8 @@
  * @module Schema
  */
 
-import { Logger } from "@bentley/bentleyjs-core";
-import { IModelError, IModelStatus } from "@bentley/imodeljs-common";
+import { IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { IModelError } from "@bentley/imodeljs-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ClassRegistry } from "./ClassRegistry";
 

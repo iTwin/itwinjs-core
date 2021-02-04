@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { isElectronRenderer, MobileUtils } from "@bentley/bentleyjs-core";
+import { ProcessDetector } from "@bentley/bentleyjs-core";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
@@ -113,7 +113,7 @@ class ShutDownTool extends Tool {
 
   public run(_args: any[]): boolean {
     DisplayTestApp.surface.closeAllViewers();
-    if (isElectronRenderer)
+    if (ProcessDetector.isElectronAppFrontend)
       ElectronApp.shutdown();// eslint-disable-line @typescript-eslint/no-floating-promises
     else
       IModelApp.shutdown(); // eslint-disable-line @typescript-eslint/no-floating-promises
@@ -157,11 +157,11 @@ export class DisplayTestApp {
       },
     };
 
-    if (isElectronRenderer)
+    if (ProcessDetector.isElectronAppFrontend)
       await ElectronApp.startup(opts);
-    else if (MobileUtils.isIOSFrontend)
+    else if (ProcessDetector.isIOSAppFrontend)
       await IOSApp.startup(opts);
-    else if (MobileUtils.isAndroidFrontend)
+    else if (ProcessDetector.isAndroidAppFrontend)
       await AndroidApp.startup(opts);
     else
       await WebViewerApp.startup(opts);

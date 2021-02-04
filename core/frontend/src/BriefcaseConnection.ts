@@ -6,8 +6,8 @@
  * @module IModelConnection
  */
 
-import { GuidString } from "@bentley/bentleyjs-core";
-import { IModelConnectionProps, OpenBriefcaseProps } from "@bentley/imodeljs-common";
+import { GuidString, OpenMode } from "@bentley/bentleyjs-core";
+import { IModelConnectionProps, OpenBriefcaseProps, StandaloneOpenOptions } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
 import { IpcApp, NotificationHandler } from "./IpcApp";
 
@@ -74,3 +74,18 @@ export class BriefcaseConnection extends IModelConnection {
   }
 }
 
+/** A connection to a [StandaloneDb]($backend) from an [IpcHost]($backend)
+ * @internal
+ */
+export class StandaloneConnection extends BriefcaseConnection {
+  public isStandaloneConnection(): this is StandaloneConnection { return true; }
+
+  /** Open an IModelConnection to a standalone iModel.  */
+  public static async openStandalone(filePath: string, openMode: OpenMode = OpenMode.ReadWrite, opts?: StandaloneOpenOptions): Promise<StandaloneConnection> {
+    const openResponse = await IpcApp.callIpcHost("openStandalone", filePath, openMode, opts);
+    const connection = new StandaloneConnection(openResponse);
+    IModelConnection.onOpen.raiseEvent(connection);
+    return connection;
+  }
+
+}

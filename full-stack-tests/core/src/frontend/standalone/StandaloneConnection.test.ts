@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { Guid, isElectronRenderer, OpenMode } from "@bentley/bentleyjs-core";
+import { Guid, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { IModel } from "@bentley/imodeljs-common";
 import { StandaloneConnection } from "@bentley/imodeljs-frontend";
 
-if (isElectronRenderer) { // StandaloneConnection tests only run on electron
+if (ProcessDetector.isElectronAppFrontend) { // StandaloneConnection tests only run on electron
   describe("StandaloneConnection", () => {
     before(async () => {
       await ElectronApp.startup();
@@ -21,7 +21,7 @@ if (isElectronRenderer) { // StandaloneConnection tests only run on electron
 
     it("StandaloneConnection properties", async () => {
       const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");
-      const connection = await StandaloneConnection.openFile(filePath);
+      const connection = await StandaloneConnection.openStandalone(filePath);
 
       assert.isTrue(connection.isOpen);
       assert.equal(connection.openMode, OpenMode.ReadWrite);
@@ -49,7 +49,7 @@ if (isElectronRenderer) { // StandaloneConnection tests only run on electron
       assert.isFalse(connection.isOpen);
       assert.isTrue(connection.isClosed);
 
-      const readOnlyConnection = await StandaloneConnection.openFile(filePath, OpenMode.Readonly);
+      const readOnlyConnection = await StandaloneConnection.openStandalone(filePath, OpenMode.Readonly);
       assert.equal(readOnlyConnection.openMode, OpenMode.Readonly);
       await readOnlyConnection.close();
     });

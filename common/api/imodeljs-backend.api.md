@@ -98,7 +98,6 @@ import { IModelJsNative } from '@bentley/imodeljs-native';
 import { IModelRpcOpenProps } from '@bentley/imodeljs-common';
 import { IModelRpcProps } from '@bentley/imodeljs-common';
 import { IModelStatus } from '@bentley/bentleyjs-core';
-import { IModelStatus as IModelStatus_2 } from '@bentley/imodeljs-common';
 import { IModelTileTreeProps } from '@bentley/imodeljs-common';
 import { IModelVersion } from '@bentley/imodeljs-common';
 import { ImsAuthorizationClient } from '@bentley/itwin-client';
@@ -229,20 +228,6 @@ export class AnnotationElement2d extends GraphicalElement2d {
 // @beta
 export interface AppActivityMonitor {
     isIdle: boolean;
-}
-
-// @alpha
-export enum ApplicationType {
-    // (undocumented)
-    MobileApp = 4,
-    // (undocumented)
-    NativeApp = 3,
-    // (undocumented)
-    WebAgent = 0,
-    // (undocumented)
-    WebEditorApp = 2,
-    // (undocumented)
-    WebReadonlyApp = 1
 }
 
 // @public
@@ -443,10 +428,10 @@ export class BriefcaseDb extends IModelDb {
     pushChanges(requestContext: AuthorizedClientRequestContext, description: string, changeType?: ChangesType): Promise<void>;
     reinstateChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
     // @internal (undocumented)
-    reinstateTxn(): IModelStatus_2;
+    reinstateTxn(): IModelStatus;
     reverseChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
     // @internal (undocumented)
-    reverseTxns(numOperations: number, allowCrossSessions?: boolean): IModelStatus_2;
+    reverseTxns(numOperations: number, allowCrossSessions?: boolean): IModelStatus;
     saveChanges(description?: string): void;
     // (undocumented)
     static tryFindByKey(key: string): BriefcaseDb | undefined;
@@ -2525,13 +2510,13 @@ export abstract class IModelDb extends IModel {
     // (undocumented)
     readFontJson(): string;
     // @internal (undocumented)
-    reinstateTxn(): IModelStatus_2;
+    reinstateTxn(): IModelStatus;
     get relationships(): Relationships;
     // (undocumented)
     requestSnap(requestContext: ClientRequestContext, sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps>;
     restartQuery(token: string, ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any>;
     // @internal (undocumented)
-    reverseTxns(numOperations: number, allowCrossSessions?: boolean): IModelStatus_2;
+    reverseTxns(numOperations: number, allowCrossSessions?: boolean): IModelStatus;
     saveChanges(description?: string): void;
     saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): DbResult;
     // (undocumented)
@@ -2719,7 +2704,7 @@ export class IModelHost {
     // (undocumented)
     static get isValid(): boolean;
     // @internal (undocumented)
-    static loadNative(region: number, applicationType?: ApplicationType, iModelClientType?: IModelClient): void;
+    static loadNative(region: number, applicationType?: IModelJsNative.ApplicationType, iModelClient?: IModelClient): void;
     static get logTileLoadTimeThreshold(): number;
     static get logTileSizeThreshold(): number;
     static readonly onAfterStartup: BeEvent<() => void>;
@@ -2753,8 +2738,8 @@ export class IModelHost {
 // @public
 export class IModelHostConfiguration {
     appAssetsDir?: string;
-    // @alpha
-    applicationType?: ApplicationType;
+    // @internal
+    applicationType?: IModelJsNative.ApplicationType;
     // @deprecated
     briefcaseCacheDir?: string;
     cacheDir?: string;
@@ -2774,6 +2759,7 @@ export class IModelHostConfiguration {
     logTileLoadTimeThreshold: number;
     // @internal
     logTileSizeThreshold: number;
+    // @deprecated
     nativePlatform?: any;
     // @beta
     restrictTileUrlsByClientIp?: boolean;

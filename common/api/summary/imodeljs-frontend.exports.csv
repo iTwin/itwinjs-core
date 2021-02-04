@@ -454,7 +454,7 @@ internal;SpatialTileTreeReferences
 public;SpatialViewState 
 public;Sprite
 public;SpriteLocation 
-beta;StandaloneConnection 
+internal;StandaloneConnection 
 public;StandardView
 public;StandardViewId
 public;StandardViewTool 

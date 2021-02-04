@@ -7,14 +7,14 @@
  */
 
 import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
-import { isElectronMain, isElectronRenderer } from "@bentley/bentleyjs-core";
+import { ProcessDetector } from "@bentley/bentleyjs-core";
 import { IpcSocket, IpcSocketBackend, IpcSocketFrontend, RpcConfiguration, RpcInterfaceDefinition, RpcManager } from "@bentley/imodeljs-common";
 
 /** RPC interface configuration for an Electron-based application.
  * @internal
  */
 export abstract class ElectronRpcConfiguration extends RpcConfiguration {
-  public static readonly isElectron = isElectronMain || isElectronRenderer;
+  public static readonly isElectron = ProcessDetector.isElectronAppBackend || ProcessDetector.isElectronAppFrontend;
 
   public static targetWindowId?: number;
 

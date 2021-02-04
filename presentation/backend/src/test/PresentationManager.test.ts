@@ -10,7 +10,7 @@ import * as path from "path";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { ClientRequestContext, DbResult, using } from "@bentley/bentleyjs-core";
-import { BriefcaseDb, ECSqlStatement, ECSqlValue, IModelDb, IModelHost } from "@bentley/imodeljs-backend";
+import { BriefcaseDb, ECSqlStatement, ECSqlValue, IModelDb, IModelHost, IpcHost } from "@bentley/imodeljs-backend";
 import {
   ArrayTypeDescription, ContentDescriptorRequestOptions, ContentFlags, ContentJSON, ContentRequestOptions, DefaultContentDisplayTypes, Descriptor,
   DescriptorJSON, DiagnosticsOptions, DiagnosticsScopeLogs, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions,
@@ -34,6 +34,7 @@ import {
 import { RulesetManagerImpl } from "../presentation-backend/RulesetManager";
 import { RulesetVariablesManagerImpl } from "../presentation-backend/RulesetVariablesManager";
 import { SelectionScopesHelper } from "../presentation-backend/SelectionScopesHelper";
+import { UpdatesTracker } from "../presentation-backend/UpdatesTracker";
 import { WithClientRequestContext } from "../presentation-backend/Utils";
 
 const deepEqual = require("deep-equal"); // eslint-disable-line @typescript-eslint/no-var-requires
@@ -92,6 +93,7 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: false,
             cacheConfig: { mode: HierarchyCacheMode.Disk, directory: "" },
             contentCacheSize: undefined,
+            useMmap: undefined,
           });
         });
       });
@@ -112,6 +114,7 @@ describe("PresentationManager", () => {
           updatesPollInterval: 1,
           cacheConfig,
           contentCacheSize: 999,
+          useMmap: 666,
         };
         const expectedCacheConfig = {
           mode: HierarchyCacheMode.Memory,
@@ -126,6 +129,7 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: true,
             cacheConfig: expectedCacheConfig,
             contentCacheSize: 999,
+            useMmap: 666,
           });
         });
       });
@@ -142,6 +146,7 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: false,
             cacheConfig: { mode: HierarchyCacheMode.Disk, directory: "" },
             contentCacheSize: undefined,
+            useMmap: undefined,
           });
         });
         constructorSpy.resetHistory();
@@ -160,6 +165,7 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: false,
             cacheConfig: expectedConfig,
             contentCacheSize: undefined,
+            useMmap: undefined,
           });
         });
       });
@@ -176,6 +182,7 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: false,
             cacheConfig: { mode: HierarchyCacheMode.Hybrid, disk: undefined },
             contentCacheSize: undefined,
+            useMmap: undefined,
           });
         });
         constructorSpy.resetHistory();
@@ -199,6 +206,7 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: false,
             cacheConfig: expectedConfig,
             contentCacheSize: undefined,
+            useMmap: undefined,
           });
         });
       });
@@ -297,16 +305,15 @@ describe("PresentationManager", () => {
         });
       });
 
-      // it("creates an `UpdateTracker` when in read-write mode and `updatesPollInterval` is specified", () => {
-      //   const eventSink = sinon.createStubInstance(EventSink) as unknown as EventSink;
-      //   const tracker = sinon.createStubInstance(UpdatesTracker) as unknown as UpdatesTracker;
-      //   const stub = sinon.stub(UpdatesTracker, "create").returns(tracker);
-      //   using(new PresentationManager({ addon: addon.object, mode: PresentationManagerMode.ReadWrite, updatesPollInterval: 123, eventSink }), (_) => {
-      //     expect(stub).to.be.calledOnceWith(sinon.match({ pollInterval: 123, eventSink }));
-      //     expect(tracker.dispose).to.not.be.called; // eslint-disable-line @typescript-eslint/unbound-method
-      //   });
-      //   expect(tracker.dispose).to.be.calledOnce; // eslint-disable-line @typescript-eslint/unbound-method
-      // });
+      it("creates an `UpdateTracker` when in read-write mode and `updatesPollInterval` is specified", () => {
+        const tracker = sinon.createStubInstance(UpdatesTracker) as unknown as UpdatesTracker;
+        const stub = sinon.stub(UpdatesTracker, "create").returns(tracker);
+        using(new PresentationManager({ addon: addon.object, mode: PresentationManagerMode.ReadWrite, updatesPollInterval: 123 }), (_) => {
+          expect(stub).to.be.calledOnceWith(sinon.match({ pollInterval: 123 }));
+          expect(tracker.dispose).to.not.be.called; // eslint-disable-line @typescript-eslint/unbound-method
+        });
+        expect(tracker.dispose).to.be.calledOnce; // eslint-disable-line @typescript-eslint/unbound-method
+      });
 
     });
 
@@ -491,12 +498,12 @@ describe("PresentationManager", () => {
       expect(manager.getRulesetId(ruleset)).to.contain(ruleset.id);
     });
 
-    // it("returns correct id when input is a ruleset and in native app mode", async () => {
-    //   sinon.stub(IModelHost, "isNativeAppBackend").get(() => true);
-    //   manager = new PresentationManager({ addon: moq.Mock.ofType<NativePlatformDefinition>().object });
-    //   const ruleset = await createRandomRuleset();
-    //   expect(manager.getRulesetId(ruleset)).to.eq(ruleset.id);
-    // });
+    it("returns correct id when input is a ruleset and in one-backend-one-frontend mode", async () => {
+      sinon.stub(IpcHost, "isValid").get(() => true);
+      manager = new PresentationManager({ addon: moq.Mock.ofType<NativePlatformDefinition>().object });
+      const ruleset = await createRandomRuleset();
+      expect(manager.getRulesetId(ruleset)).to.eq(ruleset.id);
+    });
 
   });
 

@@ -264,8 +264,6 @@ export interface PresentationManagerProps {
     activeUnitSystem?: PresentationUnitSystem;
     clientId?: string;
     // @internal (undocumented)
-    eventSource?: EventSource;
-    // @internal (undocumented)
     rpcRequestsHandler?: RpcRequestsHandler;
 }
 
