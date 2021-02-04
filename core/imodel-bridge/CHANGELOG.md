@@ -22,13 +22,18 @@ Thu, 18 Feb 2021 22:10:13 GMT
 
 _Version update only_
 
+## 2.11.1
+Thu, 04 Feb 2021 17:22:41 GMT
+
+_Version update only_
+
 ## 2.11.0
 Thu, 28 Jan 2021 13:39:27 GMT
 
 ### Updates
 
 - Add option to disable automatic element deletion
-- Separated out API to upgrade iModels. 
+- Separated out API to upgrade iModels.
 
 ## 2.10.3
 Fri, 08 Jan 2021 18:34:03 GMT
@@ -261,7 +266,7 @@ Fri, 10 Jul 2020 17:23:14 GMT
 ### Updates
 
 - First working version
-- Setup BriefcaseDb.open() to allow profile and domain schema validation and upgrades. 
+- Setup BriefcaseDb.open() to allow profile and domain schema validation and upgrades.
 
 ## 2.2.1
 Tue, 07 Jul 2020 14:44:52 GMT

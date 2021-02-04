@@ -24,6 +24,11 @@ Thu, 18 Feb 2021 22:10:13 GMT
 - AccuDraw bi-directional value updates
 - Correctly handle capitalized SyncEventIds.
 
+## 2.11.1
+Thu, 04 Feb 2021 17:22:41 GMT
+
+_Version update only_
+
 ## 2.11.0
 Thu, 28 Jan 2021 13:39:27 GMT
 
@@ -318,7 +323,7 @@ Wed, 06 May 2020 13:17:49 GMT
 - In source documentation. Some learning docs & API changes.
 - TOC for UI 2.0 Docs, @alpha to @beta, Components Examples
 - Started ui-components Learning doc section
-- Update doc tags for automatic UI creation 
+- Update doc tags for automatic UI creation
 - Refactor to remove duplicate ComponentGenerator instantiation. Rename files and components to remove React reference.
 - Update auto-generated dialog items to work with the Tool Settings Bar.
 - Add ConditionalBoolean support for isHidden and isDisabled properties.

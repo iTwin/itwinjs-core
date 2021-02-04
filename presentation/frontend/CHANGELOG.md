@@ -8,7 +8,7 @@ Tue, 09 Mar 2021 20:28:13 GMT
 ### Updates
 
 - Fixed broken double angle bracket link syntax
-- Changed 'compareHierarchy' to build result in pages for massive result sets. 
+- Changed 'compareHierarchy' to build result in pages for massive result sets.
 - HiliteSetProvider: return geometric elements grouped by BisCore.GroupInformationElement
 - Updated to use TypeScript 4.1
 - begin rename project from iModel.js to iTwin.js
@@ -24,6 +24,11 @@ Thu, 18 Feb 2021 22:10:13 GMT
 ### Updates
 
 - Add iModel key to imodel data change events.
+
+## 2.11.1
+Thu, 04 Feb 2021 17:22:41 GMT
+
+_Version update only_
 
 ## 2.11.0
 Thu, 28 Jan 2021 13:39:27 GMT
@@ -431,7 +436,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Do not include transient element IDs when syncing with logical selection
 - Always compute selection when syncing tool selection with logical selection - that's necessary to determine concrete element class names. Without that, we're adding keys with "BisCore:Element" class to selection and then our keys compare fails (presentation components like the table always have concrete class names). This can cause rows / nodes not to be highlighted in components.
 - Remove IModelApp subclasses
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
 - Upgrade TypeDoc dependency to 0.14.2
 
 ## 0.190.0

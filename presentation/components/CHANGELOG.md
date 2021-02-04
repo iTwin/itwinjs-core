@@ -24,6 +24,11 @@ Thu, 18 Feb 2021 22:10:13 GMT
 - Ignore update records for unrelated iModels.
 - Added IFilteredPresentationTreeDataProvider interface
 
+## 2.11.1
+Thu, 04 Feb 2021 17:22:41 GMT
+
+_Version update only_
+
 ## 2.11.0
 Thu, 28 Jan 2021 13:39:27 GMT
 
@@ -660,7 +665,7 @@ Thu, 08 Nov 2018 17:59:21 GMT
 
 ### Updates
 
-- Deprecated dev-cors-proxy-server and use of it. 
+- Deprecated dev-cors-proxy-server and use of it.
 - Fix filtered tree rendering "0 matches found" when there's no filtering applied and data provider returns 0 nodes
 - Updated to TypeScript 3.1
 - React to Tree API changes

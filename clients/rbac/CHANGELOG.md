@@ -20,6 +20,11 @@ Thu, 18 Feb 2021 22:10:13 GMT
 
 _Version update only_
 
+## 2.11.1
+Thu, 04 Feb 2021 17:22:41 GMT
+
+_Version update only_
+
 ## 2.11.0
 Thu, 28 Jan 2021 13:39:27 GMT
 
@@ -267,7 +272,7 @@ Wed, 06 May 2020 13:17:49 GMT
 ### Updates
 
 - react to renaming of imodeljs-clients
-- Re-enabled RbacClient integration tests. 
+- Re-enabled RbacClient integration tests.
 - Updated docs
 - create new package from imodeljs-clients
 - Upgrade to Rush 5.23.2

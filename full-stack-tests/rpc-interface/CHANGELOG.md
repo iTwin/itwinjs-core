@@ -21,6 +21,11 @@ Thu, 18 Feb 2021 22:10:13 GMT
 
 _Version update only_
 
+## 2.11.1
+Thu, 04 Feb 2021 17:22:41 GMT
+
+_Version update only_
+
 ## 2.11.0
 Thu, 28 Jan 2021 13:39:27 GMT
 
@@ -272,9 +277,9 @@ Wed, 06 May 2020 13:17:49 GMT
 - Fix issue with detecting whether or not to run a test suite.
 - react to renaming of imodeljs-clients
 - update tests to utilize FrontendAuthorizationClient
-- Renamed the folder and name of tests that run both the frontend and backend to "fullstack" instead of "integration". 
-- Renamed the folder and name of tests that run both the frontend and backend to "fullstack" instead of "integration". 
-- Options to download/open briefcase. Differentiated RemoteBriefcaseConnection and LocalBriefcaseConnection. 
+- Renamed the folder and name of tests that run both the frontend and backend to "fullstack" instead of "integration".
+- Renamed the folder and name of tests that run both the frontend and backend to "fullstack" instead of "integration".
+- Options to download/open briefcase. Differentiated RemoteBriefcaseConnection and LocalBriefcaseConnection.
 - React to changes in presentation APIs
 - react to new clients packages from imodeljs-clients
 - Upgrade to Rush 5.23.2

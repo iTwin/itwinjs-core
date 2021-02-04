@@ -23,6 +23,11 @@ Thu, 18 Feb 2021 22:10:13 GMT
 
 - Test fixes to setup mock with the new PrecedingCheckpointV2 relationship
 
+## 2.11.1
+Thu, 04 Feb 2021 17:22:41 GMT
+
+_Version update only_
+
 ## 2.11.0
 Thu, 28 Jan 2021 13:39:27 GMT
 
@@ -272,7 +277,7 @@ Fri, 10 Jul 2020 17:23:14 GMT
 
 ### Updates
 
-- Switched projects for some iModelHub tests. 
+- Switched projects for some iModelHub tests.
 
 ## 2.2.1
 Tue, 07 Jul 2020 14:44:52 GMT
