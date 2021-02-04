@@ -334,7 +334,6 @@ export class TileAdmin {
    * return the maximum *major* format version to be used to request tile content from the backend.
    * @see [[TileAdmin.Props.maximumMajorTileFormatVersion]]
    * @see [[CurrentImdlVersion]]
-   * @see [IModelTileTreeProps.formatVersion]($common)
    */
   public getMaximumMajorTileFormatVersion(formatVersion?: number): number {
     return getMaximumMajorTileFormatVersion(this.maximumMajorTileFormatVersion, formatVersion);
