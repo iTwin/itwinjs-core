@@ -1,14 +1,10 @@
 # Learning iTwin.js UI
 
-For a quick-start approach to creating an iTwin.js app with AppUI, see [Getting Started with App UI](./GettingStartedUI.md).
+For a quick-start approach to creating an iTwin.js app with AppUI, see [Quick start for AppUI](./QuickStartUI.md).
 
-## Why React?
+## React version requirements
 
-iTwin.js UI bases its controls on the [React](https://reactjs.org/) JavaScript library. For more information about why, see [Why We Chose React](./React.md).
-
-### React version requirements
-
-iTwin.js UI is compatible with React 16.8 and later.
+iTwin.js UI bases its controls on the [React](https://reactjs.org/) JavaScript library and is compatible with React 16.8 and later.
 
 ## Library Organization
 
@@ -30,3 +26,4 @@ See also:
 - [React](https://reactjs.org/)
 - [Redux](https://redux.js.org/)
 - [React and Typescript](https://github.com/typescript-cheatsheets/react-typescript-cheatsheet/)
+- [Why we chose React](./React.md)
