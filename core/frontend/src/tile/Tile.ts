@@ -17,7 +17,9 @@ import { RenderMemory } from "../render/RenderMemory";
 import { RenderSystem } from "../render/RenderSystem";
 import { SceneContext } from "../ViewContext";
 import { Viewport } from "../Viewport";
-import { TileContent, TileDrawArgs, TileParams, TileRequest, TileTree, TileTreeLoadStatus, TileUsageMarker } from "./internal";
+import {
+  LRUTileListNode, TileContent, TileDrawArgs, TileParams, TileRequest, TileTree, TileTreeLoadStatus, TileUsageMarker, ViewportIdSet,
+} from "./internal";
 
 // cSpell:ignore undisplayable bitfield
 
@@ -47,6 +49,14 @@ const scratchPoint4d = Point4d.createZero();
 const scratchFrustum = new Frustum();
 
 /** A 3d tile within a [[TileTree]].
+ * A tile represents the contents of some sub-volume of the tile tree's volume. It may produce graphics representing those contents, or may have no graphics.
+ * A tile can have child tiles that further sub-divide its own volume, providing higher-resolution representations of its contents. A tile that has no children is
+ * referred to as a "leaf" of the tile tree. A non-leaf tile's children are produced when they are needed, and discarded when no longer needed.
+ * A tile's contents can be discarded at any time by [[TileAdmin]] when GPU memory needs to be reclaimed; or when the Tile itself is discarded via
+ * [[Tile.dispose]].
+ *
+ * Several public [[Tile]] methods carry a warning that they should **not** be overridden by subclasses; typically a protected method exists that can be overridden instead.
+ * For example, [[collectStatistics]] should not be overridden, but it calls [[_collectStatistics]], which should be overridden if the tile owns WebGL resources besides its [[RenderGraphic]].
  * @beta
  */
 export abstract class Tile {
@@ -56,6 +66,8 @@ export abstract class Tile {
   private _rangeGraphicType: TileBoundingBoxes = TileBoundingBoxes.None;
   /** This tile's renderable content. */
   protected _graphic?: RenderGraphic;
+  /** True if the tile's content was loaded at some point and possibly later unloaded. */
+  protected _wasLoaded = false;
   /** Uniquely identifies this tile's content. */
   protected _contentId: string;
   /** Child tiles are loaded on-demand, potentially asynchronously. This tracks their current loading state. */
@@ -82,6 +94,15 @@ export abstract class Tile {
   public readonly radius: number;
   /** Tracks the usage of this tile. After a period of disuse, the tile may be [[prune]]d to free up memory. */
   public readonly usageMarker = new TileUsageMarker();
+
+  /** Exclusively for use by LRUTileList. @internal */
+  public previous?: LRUTileListNode;
+  /** Exclusively for use by LRUTileList. @internal */
+  public next?: LRUTileListNode;
+  /** Exclusively for use by LRUTileList. @internal */
+  public bytesUsed = 0;
+  /** Exclusively for use by LRUTileList. @internal */
+  public viewportIds?: ViewportIdSet;
 
   /** Load this tile's children, possibly asynchronously. Pass them to `resolve`, or an error to `reject`. */
   protected abstract _loadChildren(resolve: (children: Tile[] | undefined) => void, reject: (error: Error) => void): void;
@@ -112,12 +133,22 @@ export abstract class Tile {
     this._childrenLoadStatus = (undefined !== tree.maxDepth && this.depth < tree.maxDepth) ? TileTreeLoadStatus.NotLoaded : TileTreeLoadStatus.Loaded;
   }
 
+  /** Free memory-consuming resources owned by this tile to reduce memory pressure.
+   * By default, this calls [[disposeContents]]. Problematic subclasses (MapTile, ImageryMapTile) may opt out for now by overriding this method to do nothing.
+   * That option may be removed in the future.
+   * @alpha
+   */
+  public freeMemory(): void {
+    this.disposeContents();
+  }
+
   /** Dispose of resources held by this tile. */
   public disposeContents(): void {
     this._state = TileState.NotReady;
     this._graphic = dispose(this._graphic);
     this._rangeGraphic = dispose(this._rangeGraphic);
     this._rangeGraphicType = TileBoundingBoxes.None;
+    IModelApp.tileAdmin.onTileContentDisposed(this);
   }
 
   /** Dispose of resources held by this tile and all of its children, marking it and all of its children as "abandoned". */
@@ -152,8 +183,9 @@ export abstract class Tile {
 
   /** @internal */
   public setIsReady(): void {
+    this._wasLoaded = true;
     this._state = TileState.Ready;
-    IModelApp.tileAdmin.onTileLoad.raiseEvent(this);
+    IModelApp.tileAdmin.onTileContentLoaded(this);
   }
 
   /** @internal */
@@ -267,14 +299,17 @@ export abstract class Tile {
    */
   protected _collectStatistics(_stats: RenderMemory.Statistics): void { }
 
-  /** Disclose resources owned by this tile and all of its child tiles.
+  /** Disclose resources owned by this tile and (by default) all of its child tiles.
+   * @note Do not override this method! Override `_collectStatistics` instead.
    * @internal
    */
-  public collectStatistics(stats: RenderMemory.Statistics): void {
+  public collectStatistics(stats: RenderMemory.Statistics, includeChildren = true): void {
     if (undefined !== this._graphic)
       this._graphic.collectStatistics(stats);
 
     this._collectStatistics(stats);
+    if (!includeChildren)
+      return;
 
     const children = this.children;
     if (undefined !== children)

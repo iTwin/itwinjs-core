@@ -98,6 +98,9 @@ export enum DepthType {
     TextureUnsignedInt32 = 2
 }
 
+// @internal
+export function detectIsMobile(): boolean;
+
 // @beta
 export interface GraphicsDriverBugs {
     fragDepthDoesNotDisableEarlyZ?: true;
