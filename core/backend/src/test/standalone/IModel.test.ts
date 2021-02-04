@@ -1950,7 +1950,7 @@ describe("iModel", () => {
     assert.equal(standaloneDb1.elements.getRootSubject().code.getValue(), standaloneRootSubjectName);
     assert.isTrue(standaloneDb1.isOpen);
     assert.isTrue(Guid.isV4Guid(standaloneDb1.iModelId));
-    assert.isUndefined(standaloneDb1.contextId);
+    assert.equal(standaloneDb1.contextId, Guid.empty);
     assert.isUndefined(standaloneDb1.changeSetId);
     assert.equal(standaloneDb1.openMode, OpenMode.ReadWrite);
     standaloneDb1.close();

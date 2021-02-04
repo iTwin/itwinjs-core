@@ -13,7 +13,7 @@ import {
   RelatedElement, RpcInterface, RpcManager, SubCategoryAppearance, SyncMode, ThumbnailProps,
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { BriefcaseDb, IModelDb } from "../IModelDb";
+import { BriefcaseDb, IModelDb, StandaloneDb } from "../IModelDb";
 import {
   AuthorizedBackendRequestContext, ConcurrencyControl, Element, PhysicalModel, PhysicalPartition, SpatialCategory, SubjectOwnsPartitionElements,
 } from "../imodeljs-backend";
@@ -186,7 +186,9 @@ export class IModelWriteRpcImpl extends RpcInterface implements IModelWriteRpcIn
   }
 
   public async undoRedo(rpc: IModelRpcProps, undo: boolean): Promise<IModelStatus> {
-    const txns = BriefcaseDb.findByKey(rpc.key).txns;
-    return undo ? txns.reverseSingleTxn() : txns.reinstateTxn();
+    const db = IModelDb.findByKey(rpc.key);
+    if (db instanceof BriefcaseDb || db instanceof StandaloneDb)
+      return undo ? db.txns.reverseSingleTxn() : db.txns.reinstateTxn();
+    return IModelStatus.WrongIModel;
   }
 }

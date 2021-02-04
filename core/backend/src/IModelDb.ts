@@ -838,7 +838,7 @@ export abstract class IModelDb extends IModel {
   public static findByKey(key: string): IModelDb {
     const iModelDb = this.tryFindByKey(key);
     if (undefined === iModelDb) {
-      Logger.logError(loggerCategory, "IModelDb not open", () => ({ key }));
+      Logger.logError(loggerCategory, "IModelDb not open or wrong type", () => ({ key }));
       throw new IModelNotFoundResponse(); // a very specific status for the RpcManager
     }
     return iModelDb;
@@ -2636,7 +2636,7 @@ export class StandaloneDb extends IModelDb {
 
   private constructor(nativeDb: IModelJsNative.DgnDb, key: string) {
     const openMode = nativeDb.isReadonly() ? OpenMode.Readonly : OpenMode.ReadWrite;
-    const iModelRpcProps: IModelRpcProps = { key, iModelId: nativeDb.getDbGuid(), openMode };
+    const iModelRpcProps: IModelRpcProps = { key, iModelId: nativeDb.getDbGuid(), openMode, contextId: nativeDb.queryProjectGuid() };
     super(nativeDb, iModelRpcProps, openMode);
     this.txns = new TxnManager(this);
   }

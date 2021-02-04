@@ -18,7 +18,7 @@ export abstract class BriefcaseNotificationHandler extends NotificationHandler {
   public get channelName() { return `${this.briefcaseChannelName}:${this._key}`; }
 }
 
-/** A connection to a [BriefcaseDb]($backend) on the backend.
+/** A connection to a briefcase on the backend.
  * @public
  */
 export class BriefcaseConnection extends IModelConnection {
@@ -33,10 +33,21 @@ export class BriefcaseConnection extends IModelConnection {
 
   public isBriefcaseConnection(): this is BriefcaseConnection { return true; }
 
-  /** Open an IModelConnection to a briefcase of an iModel. */
+  /** Open a BriefcaseConnection to a [BriefcaseDb]($backend). */
   public static async openFile(briefcaseProps: OpenBriefcaseProps): Promise<BriefcaseConnection> {
     const iModelProps = await IpcApp.callIpcHost("openBriefcase", briefcaseProps);
     const connection = new this({ ...briefcaseProps, ...iModelProps });
+    IModelConnection.onOpen.raiseEvent(connection);
+    return connection;
+  }
+
+  /** Open a BriefcaseConnection to a StandaloneDb.
+   * @note StandaloneDbs, by definition, may not push or pull changes. Attempting to do so will throw exceptions.
+   * @internal
+   */
+  public static async openStandalone(filePath: string, openMode: OpenMode = OpenMode.ReadWrite, opts?: StandaloneOpenOptions): Promise<BriefcaseConnection> {
+    const openResponse = await IpcApp.callIpcHost("openStandalone", filePath, openMode, opts);
+    const connection = new this(openResponse);
     IModelConnection.onOpen.raiseEvent(connection);
     return connection;
   }
@@ -74,18 +85,3 @@ export class BriefcaseConnection extends IModelConnection {
   }
 }
 
-/** A connection to a [StandaloneDb]($backend) from an [IpcHost]($backend)
- * @internal
- */
-export class StandaloneConnection extends BriefcaseConnection {
-  public isStandaloneConnection(): this is StandaloneConnection { return true; }
-
-  /** Open an IModelConnection to a standalone iModel.  */
-  public static async openStandalone(filePath: string, openMode: OpenMode = OpenMode.ReadWrite, opts?: StandaloneOpenOptions): Promise<StandaloneConnection> {
-    const openResponse = await IpcApp.callIpcHost("openStandalone", filePath, openMode, opts);
-    const connection = new StandaloneConnection(openResponse);
-    IModelConnection.onOpen.raiseEvent(connection);
-    return connection;
-  }
-
-}

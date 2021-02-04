@@ -7,10 +7,10 @@ import * as path from "path";
 import { Guid, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { IModel } from "@bentley/imodeljs-common";
-import { StandaloneConnection } from "@bentley/imodeljs-frontend";
+import { BriefcaseConnection } from "@bentley/imodeljs-frontend";
 
-if (ProcessDetector.isElectronAppFrontend) { // StandaloneConnection tests only run on electron
-  describe("StandaloneConnection", () => {
+if (ProcessDetector.isElectronAppFrontend) { // BriefcaseConnection tests only run on electron
+  describe("BriefcaseConnection.openStandalone", () => {
     before(async () => {
       await ElectronApp.startup();
     });
@@ -19,9 +19,9 @@ if (ProcessDetector.isElectronAppFrontend) { // StandaloneConnection tests only 
       await ElectronApp.shutdown();
     });
 
-    it("StandaloneConnection properties", async () => {
+    it("openStandalone properties", async () => {
       const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");
-      const connection = await StandaloneConnection.openStandalone(filePath);
+      const connection = await BriefcaseConnection.openStandalone(filePath);
 
       assert.isTrue(connection.isOpen);
       assert.equal(connection.openMode, OpenMode.ReadWrite);
@@ -30,14 +30,13 @@ if (ProcessDetector.isElectronAppFrontend) { // StandaloneConnection tests only 
       assert.isDefined(connection.iModelId);
       assert.isTrue(Guid.isV4Guid(connection.iModelId));
 
-      assert.isTrue(connection.isStandaloneConnection());
+      assert.isTrue(connection.isBriefcaseConnection());
       assert.isFalse(connection.isSnapshotConnection());
       assert.isFalse(connection.isBriefcaseConnection());
       assert.isFalse(connection.isBlankConnection());
       assert.isFalse(connection.isCheckpointConnection());
 
-      assert.isTrue(connection.isStandalone);
-      assert.isFalse(connection.isBriefcase);
+      assert.isTrue(connection.isBriefcase);
       assert.isFalse(connection.isSnapshot);
       assert.isFalse(connection.isBlank);
 
@@ -49,7 +48,7 @@ if (ProcessDetector.isElectronAppFrontend) { // StandaloneConnection tests only 
       assert.isFalse(connection.isOpen);
       assert.isTrue(connection.isClosed);
 
-      const readOnlyConnection = await StandaloneConnection.openStandalone(filePath, OpenMode.Readonly);
+      const readOnlyConnection = await BriefcaseConnection.openStandalone(filePath, OpenMode.Readonly);
       assert.equal(readOnlyConnection.openMode, OpenMode.Readonly);
       await readOnlyConnection.close();
     });

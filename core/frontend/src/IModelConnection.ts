@@ -18,7 +18,7 @@ import {
   SnapResponseProps, SnapshotIModelRpcInterface, TextureLoadProps, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps,
 } from "@bentley/imodeljs-common";
 import { BackgroundMapLocation } from "./BackgroundMapGeometry";
-import { BriefcaseConnection, StandaloneConnection } from "./BriefcaseConnection";
+import { BriefcaseConnection } from "./BriefcaseConnection";
 import { EntityState } from "./EntityState";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { GeoServices } from "./GeoServices";
@@ -117,11 +117,6 @@ export abstract class IModelConnection extends IModel {
   /** Type guard for instanceof [[SnapshotConnection]] */
   public isSnapshotConnection(): this is SnapshotConnection { return false; }
 
-  /** Type guard for instanceof [[StandaloneConnection]]
-   * @internal
-   */
-  public isStandaloneConnection(): this is StandaloneConnection { return false; }
-
   /** Type guard for instanceof [[BlankConnection]] */
   public isBlankConnection(): this is BlankConnection { return false; }
 
@@ -132,10 +127,6 @@ export abstract class IModelConnection extends IModel {
    * @see [[SnapshotConnection.openSnapshot]]
    */
   public get isSnapshot(): boolean { return this.isSnapshotConnection(); }
-  /** True if this is a [[StandaloneConnection]].
-   * @internal
-   */
-  public get isStandalone(): boolean { return this.isStandaloneConnection(); }
 
   /** True if this is a [Blank Connection]($docs/learning/frontend/BlankConnection).  */
   public get isBlank(): boolean { return this.isBlankConnection(); }
