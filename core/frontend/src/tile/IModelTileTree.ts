@@ -373,10 +373,6 @@ export class IModelTileTree extends TileTree {
     this._rootTile.prune(olderThan);
   }
 
-  public forcePrune(): void {
-    this._rootTile.prune(BeTimePoint.now());
-  }
-
   /** Exposed strictly for tests. */
   public get tileState(): "static" | "dynamic" | "interactive" | "disposed" {
     return this._rootTile.tileState.type;
