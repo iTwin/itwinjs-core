@@ -14,8 +14,8 @@ import {
   HierarchyRequestOptions, HierarchyUpdateInfo, InstanceKey, isContentDescriptorRequestOptions, isDisplayLabelRequestOptions,
   isDisplayLabelsRequestOptions, isExtendedContentRequestOptions, isExtendedHierarchyRequestOptions, Item, Key, KeySet, LabelDefinition,
   LabelRequestOptions, Node, NodeKey, NodeKeyJSON, NodePathElement, Paged, PagedResponse, PageOptions, PartialHierarchyModification,
-  PresentationDataCompareOptions, PresentationError, PresentationIpcEvents, PresentationStatus, PresentationUnitSystem, RequestPriority, RpcRequestsHandler, Ruleset,
-  RulesetVariable, SelectionInfo, UpdateInfo, UpdateInfoJSON,
+  PresentationDataCompareOptions, PresentationError, PresentationIpcEvents, PresentationStatus, PresentationUnitSystem, RequestPriority,
+  RpcRequestsHandler, Ruleset, RulesetVariable, SelectionInfo, UpdateInfo, UpdateInfoJSON,
 } from "@bentley/presentation-common";
 import { PresentationFrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { LocalizationHelper } from "./LocalizationHelper";
@@ -80,9 +80,6 @@ export interface PresentationManagerProps {
 
   /** @internal */
   rpcRequestsHandler?: RpcRequestsHandler;
-
-  /** @internal */
-  eventSource?: EventSource;
 }
 
 /**

@@ -331,6 +331,9 @@ export class PresentationManager {
       this._disposeIModelOpenedListener = BriefcaseDb.onOpened.addListener(this.onIModelOpened);
 
     this._isOneFrontendPerBackend = IpcHost.isValid;
+
+    // TODO: updates tracker should only be created for native app backends, but that's a breaking
+    // change - make it when moving to 3.0
     if (isChangeTrackingEnabled) {
       this._updatesTracker = UpdatesTracker.create({
         nativePlatformGetter: this.getNativePlatform,
