@@ -1,6 +1,6 @@
 # Learning iTwin.js UI
 
-This section provides explanations of the concepts that are in the iModel.js UI.
+For a quick-start approach to creating an iTwin.js app with AppUI, see [Getting Started with App UI](./GettingStartedUI.md).
 
 ## Why React?
 
@@ -24,9 +24,8 @@ The iTwin.js UI library is divided into these NPM packages in the `@bentley` sco
 
 See also:
 
-- [Getting Started with App UI](./GettingStarted.md).
 - [Creating an IModelApp that supports Extensible UI](./HostAppUI.md).
-- [Augmenting the UI of an iTwinApp](./AugmentingUI.md).
+- [Augmenting the UI of an iTwin App](./AugmentingUI.md).
 - [Glossary of terms used in iTwin.js UI](./UIGlossary)
 - [React](https://reactjs.org/)
 - [Redux](https://redux.js.org/)
