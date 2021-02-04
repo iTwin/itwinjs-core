@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Config, isElectronMain, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Config, ProcessDetector, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { registerBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { IModelHost } from "@bentley/imodeljs-backend";
@@ -17,7 +17,7 @@ export async function commonSetup(): Promise<void> {
   RpcConfiguration.developmentMode = true;
 
   // Start the backend
-  if (isElectronMain)
+  if (ProcessDetector.isElectronAppBackend)
     await ElectronHost.startup({ electronHost: { rpcInterfaces } });
   else
     await IModelHost.startup();

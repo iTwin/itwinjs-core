@@ -14,7 +14,7 @@ import {
   RequestHost,
 } from "@bentley/backend-itwin-client";
 import {
-  assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, Config, Guid, GuidString, IModelStatus, isElectronMain, Logger, LogLevel,
+  assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, Config, Guid, GuidString, IModelStatus, ProcessDetector, Logger, LogLevel,
 } from "@bentley/bentleyjs-core";
 import { IModelBankClient, IModelClient, IModelHubClient } from "@bentley/imodelhub-client";
 import { BentleyStatus, IModelError, RpcConfiguration, SerializedRpcRequest } from "@bentley/imodeljs-common";
@@ -78,23 +78,15 @@ export interface CrashReportingConfig {
   /** Upload crash dump and node-reports to Bentley's crash-reporting service? Defaults to false */
   uploadToBentley?: boolean;
 }
-/**
- * Type of the backend application
- * @alpha
- */
-export enum ApplicationType {
-  WebAgent,
-  WebReadonlyApp,
-  WebEditorApp,
-  NativeApp,
-  MobileApp,
-}
 
 /** Configuration of imodeljs-backend.
  * @public
  */
 export class IModelHostConfiguration {
-  /** The native platform to use -- normally, the app should leave this undefined. [[IModelHost.startup]] will set it to the appropriate nativePlatform automatically. */
+  /**
+   * The native platform to use -- normally, the app should leave this undefined. [[IModelHost.startup]] will set it to the appropriate nativePlatform automatically.
+   * @deprecated - this is unused
+   */
   public nativePlatform?: any;
 
   /**
@@ -198,10 +190,10 @@ export class IModelHostConfiguration {
   };
 
   /**
-   * Application (host) type
-   * @alpha
+   * Application (host) type for native logging
+   * @internal
    */
-  public applicationType?: ApplicationType;
+  public applicationType?: IModelJsNative.ApplicationType;
 }
 
 /** IModelHost initializes ($backend) and captures its configuration. A backend must call [[IModelHost.startup]] before using any backend classes.
@@ -275,10 +267,14 @@ export class IModelHost {
   }
 
   /** @internal */
-  public static loadNative(region: number, applicationType?: ApplicationType, iModelClientType?: IModelClient): void {
+  public static loadNative(region: number, applicationType?: IModelJsNative.ApplicationType, iModelClient?: IModelClient): void {
     const platform = Platform.load();
     this.registerPlatform(platform);
-    this.initializeUsageLogging(platform, region, applicationType, iModelClientType);
+
+    const iModelClientType = iModelClient && iModelClient instanceof IModelBankClient
+      ? IModelJsNative.IModelClientType.IModelBank
+      : IModelJsNative.IModelClientType.IModelHub;
+    platform.NativeUlasClient.initialize(region, applicationType, iModelClientType);
   }
 
   private static registerPlatform(platform: typeof IModelJsNative): void {
@@ -290,19 +286,6 @@ export class IModelHost {
       this.validateNativePlatformVersion();
 
     platform.logger = Logger;
-  }
-
-  private static initializeUsageLogging(platform: typeof IModelJsNative, region: number, applicationType?: ApplicationType, iModelClient?: IModelClient): void {
-    const nativeApplicationType = applicationType === ApplicationType.WebAgent
-      ? IModelJsNative.ApplicationType.WebAgent
-      : applicationType === ApplicationType.NativeApp
-        ? IModelJsNative.ApplicationType.NativeApp
-        : IModelJsNative.ApplicationType.WebApplicationBackend;
-    const iModelClientType = !!iModelClient && iModelClient instanceof IModelBankClient
-      ? IModelJsNative.IModelClientType.IModelBank
-      : IModelJsNative.IModelClientType.IModelHub;
-
-    platform.NativeUlasClient.initialize(region, nativeApplicationType, iModelClientType);
   }
 
   private static validateNativePlatformVersion(): void {
@@ -397,17 +380,12 @@ export class IModelHost {
     const region: number = Config.App.getNumber(UrlDiscoveryClient.configResolveUrlUsingRegion, 0);
     if (!this._isNativePlatformLoaded) {
       try {
-        if (configuration.nativePlatform !== undefined) {
-          this.registerPlatform(configuration.nativePlatform);
-        } else {
-          this.loadNative(region, configuration.applicationType, configuration.imodelClient);
-        }
+        this.loadNative(region, configuration.applicationType, configuration.imodelClient);
       } catch (error) {
         Logger.logError(loggerCategory, "Error registering/loading the native platform API", () => (configuration));
         throw error;
       }
     }
-    this.initializeUsageLogging(IModelHost.platform, region, configuration.applicationType, configuration.imodelClient);
 
     if (configuration.crashReportingConfig && configuration.crashReportingConfig.crashDir && this._platform && !Platform.isElectron && !Platform.isMobile) {
       this._platform.setCrashReporting(configuration.crashReportingConfig);
@@ -469,7 +447,7 @@ export class IModelHost {
       this._clientAuthIntrospectionManager = new ImsClientAuthIntrospectionManager(introspectionClient);
     }
 
-    if (!IModelHost.isUsingIModelBankClient && configuration.applicationType !== ApplicationType.WebAgent) { // ULAS does not support usage without a user (i.e. agent clients)
+    if (!IModelHost.isUsingIModelBankClient && configuration.applicationType !== IModelJsNative.ApplicationType.WebAgent) { // ULAS does not support usage without a user (i.e. agent clients)
       const usageLoggingClient = new BackendFeatureUsageTelemetryClient({ backendApplicationId: this.applicationId, backendApplicationVersion: this.applicationVersion, backendMachineName: os.hostname(), clientAuthManager: this._clientAuthIntrospectionManager });
       this.telemetry.addClient(usageLoggingClient);
     }
@@ -637,12 +615,12 @@ export class Platform {
   }
 
   /** Query if this is an electron backend */
-  public static get isElectron(): boolean { return isElectronMain; }
+  public static get isElectron(): boolean { return ProcessDetector.isElectronAppBackend; }
 
   /** Query if this is a desktop backend
    * @deprecated use isElectron
    */
-  public static get isDesktop(): boolean { return isElectronMain; }
+  public static get isDesktop(): boolean { return ProcessDetector.isElectronAppBackend; }
 
   /** Query if this is a mobile backend */
   public static get isMobile(): boolean { return typeof (process) !== "undefined" && (process.platform as any) === "ios"; }

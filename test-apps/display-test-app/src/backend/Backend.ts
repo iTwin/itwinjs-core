@@ -5,7 +5,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { UrlFileHandler } from "@bentley/backend-itwin-client";
-import { Config, isElectronMain, Logger, LogLevel, MobileUtils } from "@bentley/bentleyjs-core";
+import { Config, Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib/ElectronBackend";
 import { IModelBankClient } from "@bentley/imodelhub-client";
@@ -22,7 +22,7 @@ import { FakeTileCacheService } from "./FakeTileCacheService";
 class DisplayTestAppRpc extends DtaRpcInterface {
 
   public async readExternalSavedViews(bimFileName: string): Promise<string> {
-    if (MobileUtils.isMobileBackend && process.env.DOCS) {
+    if (ProcessDetector.isMobileAppBackend && process.env.DOCS) {
       const docPath = process.env.DOCS;
       bimFileName = path.join(docPath, bimFileName);
     }
@@ -36,7 +36,7 @@ class DisplayTestAppRpc extends DtaRpcInterface {
   }
 
   public async writeExternalSavedViews(bimFileName: string, namedViews: string): Promise<void> {
-    if (MobileUtils.isMobileBackend && process.env.DOCS) {
+    if (ProcessDetector.isMobileAppBackend && process.env.DOCS) {
       const docPath = process.env.DOCS;
       bimFileName = path.join(docPath, bimFileName);
     }
@@ -104,7 +104,7 @@ const setupStandaloneConfiguration = () => {
   IModelJsConfig.init(true /* suppress exception */, true /* suppress error message */, Config.App);
 
   const configuration: DtaConfiguration = {};
-  if (MobileUtils.isMobileBackend)
+  if (ProcessDetector.isMobileAppBackend)
     return configuration;
 
   // Currently display-test-app ONLY supports opening files from local disk - i.e., "standalone" mode.
@@ -235,7 +235,7 @@ export const initializeDtaBackend = async (electronHost?: ElectronHostOptions) =
   iModelHost.logTileSizeThreshold = 500000;
 
   let logLevel = LogLevel.None;
-  if (MobileUtils.isMobileBackend) {
+  if (ProcessDetector.isMobileAppBackend) {
     // Does not seem DtaConfiguration is used anymore.
   } else {
     if (dtaConfig.customOrchestratorUri)
@@ -251,11 +251,11 @@ export const initializeDtaBackend = async (electronHost?: ElectronHostOptions) =
 
   /** register the implementation of our RPCs. */
   RpcManager.registerImpl(DtaRpcInterface, DisplayTestAppRpc);
-  if (isElectronMain)
+  if (ProcessDetector.isElectronAppBackend)
     await ElectronHost.startup({ electronHost, iModelHost });
-  else if (MobileUtils.isIOSBackend)
+  else if (ProcessDetector.isIOSAppBackend)
     await IOSHost.startup();
-  else if (MobileUtils.isAndroidBackend)
+  else if (ProcessDetector.isAndroidAppBackend)
     await AndroidHost.startup();
   else
     await IModelHost.startup(iModelHost);

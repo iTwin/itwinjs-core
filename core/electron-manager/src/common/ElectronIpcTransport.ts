@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BentleyStatus, isElectronRenderer } from "@bentley/bentleyjs-core";
+import { BentleyStatus, ProcessDetector } from "@bentley/bentleyjs-core";
 import {
   IModelError, iTwinChannel, RpcPushChannel, RpcPushConnection, RpcRequestFulfillment, RpcSerializedValue, SerializedRpcRequest,
 } from "@bentley/imodeljs-common";
@@ -217,6 +217,6 @@ let transport: ElectronIpcTransport | undefined;
 /** @internal */
 export function initializeIpc(protocol: ElectronRpcProtocol) {
   if (undefined === transport)
-    transport = isElectronRenderer ? new FrontendIpcTransport(protocol) : new BackendIpcTransport(protocol);
+    transport = ProcessDetector.isElectronAppFrontend ? new FrontendIpcTransport(protocol) : new BackendIpcTransport(protocol);
   return transport;
 }

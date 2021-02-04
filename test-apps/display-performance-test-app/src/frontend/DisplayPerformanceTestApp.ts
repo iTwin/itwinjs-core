@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import { ClientRequestContext, Id64, Id64Arg, Id64String, isElectronRenderer, MobileUtils, OpenMode, StopWatch } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Id64, Id64Arg, Id64String, OpenMode, ProcessDetector, StopWatch } from "@bentley/bentleyjs-core";
 import { Project } from "@bentley/context-registry-client";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import {
@@ -138,7 +138,7 @@ class DisplayPerfTestApp {
     iModelApp = iModelApp ?? {};
     iModelApp.i18n = { urlTemplate: "locales/en/{{ns}}.json" } as I18NOptions;
     iModelApp.rpcInterfaces = rpcInterfaces;
-    if (isElectronRenderer)
+    if (ProcessDetector.isElectronAppFrontend)
       await ElectronApp.startup({ iModelApp });
     else
       await IModelApp.startup(iModelApp);
@@ -557,7 +557,7 @@ function removeOptsFromString(input: string, ignore: string[] | string | undefin
 
 function getImageString(configs: DefaultConfigs, prefix = ""): string {
   const filename = `${getTestName(configs, prefix, true)}.png`;
-  if (MobileUtils.isMobileFrontend)
+  if (ProcessDetector.isMobileAppFrontend)
     return filename; // skip path for mobile - we use device's Documents path as determined by mobile backend
   return path.join(configs.outputPath ? configs.outputPath : "", filename);
 }
@@ -641,7 +641,7 @@ class DefaultConfigs {
       this.numRendersToTime = 100;
       this.numRendersToSkip = 50;
       this.outputName = "performanceResults.csv";
-      this.outputPath = MobileUtils.isMobileFrontend ? undefined : "D:\\output\\performanceData\\";
+      this.outputPath = ProcessDetector.isMobileAppFrontend ? undefined : "D:\\output\\performanceData\\";
       this.iModelName = "TimingTest_General.bim";
       this.iModelHubProject = "iModel Testing";
       this.viewName = "*"; // If no view is specified, test all views
@@ -943,7 +943,7 @@ async function openView(state: SimpleViewState, viewSize: ViewSize) {
 async function createOidcClient(requestContext: ClientRequestContext): Promise<FrontendAuthorizationClient> {
   const scope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party";
 
-  if (isElectronRenderer) {
+  if (ProcessDetector.isElectronAppFrontend) {
     const clientId = "imodeljs-electron-test";
     const redirectUri = "http://localhost:3000/signin-callback";
     const oidcConfiguration: DesktopAuthorizationClientConfiguration = { clientId, redirectUri, scope: `${scope} offline_access` };
@@ -1009,7 +1009,7 @@ async function openImodelAndLoadExtViews(testConfig: DefaultConfigs, extViews?: 
   activeViewState = new SimpleViewState();
 
   // Open an iModel from a local file
-  let openLocalIModel = (testConfig.iModelLocation !== undefined) || MobileUtils.isMobileFrontend;
+  let openLocalIModel = (testConfig.iModelLocation !== undefined) || ProcessDetector.isMobileAppFrontend;
   if (openLocalIModel) {
     try {
       activeViewState.iModelConnection = await SnapshotConnection.openFile(testConfig.iModelFile!);
@@ -1028,7 +1028,7 @@ async function openImodelAndLoadExtViews(testConfig: DefaultConfigs, extViews?: 
   }
 
   // Open an iModel from iModelHub
-  if (!openLocalIModel && testConfig.iModelHubProject !== undefined && !MobileUtils.isMobileFrontend) {
+  if (!openLocalIModel && testConfig.iModelHubProject !== undefined && !ProcessDetector.isMobileAppFrontend) {
     const signedIn: boolean = await signIn();
     if (!signedIn)
       return;
@@ -1631,7 +1631,7 @@ window.onload = async () => {
   RpcConfiguration.developmentMode = true;
   RpcConfiguration.disableRoutingValidation = true;
 
-  if (!isElectronRenderer && !MobileUtils.isMobileFrontend) {
+  if (!ProcessDetector.isElectronAppFrontend && !ProcessDetector.isMobileAppFrontend) {
     const uriPrefix = "http://localhost:3001";
     BentleyCloudRpcManager.initializeClient({ info: { title: "DisplayPerformanceTestApp", version: "v1.0" }, uriPrefix }, [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]);
   }

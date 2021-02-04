@@ -5,14 +5,14 @@
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import * as path from "path";
-import { isElectronRenderer, OpenMode } from "@bentley/bentleyjs-core";
+import { OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
 import { IModelError } from "@bentley/imodeljs-common";
 import { InteractiveEditingSession, StandaloneConnection } from "@bentley/imodeljs-frontend";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);
-if (isElectronRenderer) {
+if (ProcessDetector.isElectronAppFrontend) {
   describe("InteractiveEditingSession", () => {
     let imodel: StandaloneConnection | undefined;
     // Editable; BisCore version < 1.0.11

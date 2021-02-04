@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { isElectronRenderer } from "@bentley/bentleyjs-core";
+import { ProcessDetector } from "@bentley/bentleyjs-core";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { BentleyCloudRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
 import { rpcInterfaces } from "../common/RpcInterfaces";
@@ -11,7 +11,7 @@ import { rpcInterfaces } from "../common/RpcInterfaces";
 RpcConfiguration.developmentMode = true;
 RpcConfiguration.disableRoutingValidation = true;
 
-if (isElectronRenderer) {
+if (ProcessDetector.isElectronAppFrontend) {
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
   ElectronApp.startup({ iModelApp: { rpcInterfaces } });
 } else {

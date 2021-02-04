@@ -8,7 +8,6 @@
  */
 
 import { UserManager, UserManagerSettings } from "oidc-client";
-import { assert, isElectronRenderer } from "@bentley/bentleyjs-core";
 import { BrowserAuthorizationLogger } from "./BrowserAuthorizationLogger";
 
 export abstract class BrowserAuthorizationBase<TConfig> {
@@ -18,8 +17,6 @@ export abstract class BrowserAuthorizationBase<TConfig> {
   protected _advancedSettings?: UserManagerSettings;
 
   protected constructor(configuration: TConfig) {
-    assert(!isElectronRenderer, "Cannot use Browser-based authorization classes within Electron");
-
     this._basicSettings = configuration;
     BrowserAuthorizationLogger.initializeLogger();
   }

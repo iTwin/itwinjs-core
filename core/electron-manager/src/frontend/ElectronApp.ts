@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { isElectronRenderer } from "@bentley/bentleyjs-core";
+import { ProcessDetector } from "@bentley/bentleyjs-core";
 import { IpcListener, IpcSocketFrontend } from "@bentley/imodeljs-common";
 import { AsyncMethodsOf, IModelAppOptions, IpcApp, NativeApp, PromiseReturnType } from "@bentley/imodeljs-frontend";
 import { ITwinElectronApi } from "../backend/ElectronPreload";
@@ -44,10 +44,10 @@ export class ElectronApp {
   /**
    * Start the frontend of an Electron application.
    * @param opts Options for your ElectronApp
-   * @note This method must only be called from the frontend of an Electron app (i.e. when [isElectronRenderer]($bentley) is `true`).
+   * @note This method must only be called from the frontend of an Electron app (i.e. when [ProcessDetector.isElectronAppFrontend]($bentley) is `true`).
    */
   public static async startup(opts?: { iModelApp?: IModelAppOptions }) {
-    if (!isElectronRenderer)
+    if (!ProcessDetector.isElectronAppFrontend)
       throw new Error("Not running under Electron");
     if (!this.isValid) {
       this._ipc = new ElectronIpc();

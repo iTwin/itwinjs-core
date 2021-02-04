@@ -10,7 +10,7 @@ import { BrowserWindow, BrowserWindowConstructorOptions } from "electron";
 
 import * as fs from "fs";
 import * as path from "path";
-import { BeDuration, IModelStatus, isElectronMain } from "@bentley/bentleyjs-core";
+import { BeDuration, IModelStatus, ProcessDetector } from "@bentley/bentleyjs-core";
 import { IModelError, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import { DesktopAuthorizationClientIpc } from "./DesktopAuthorizationClientIpc";
 import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/ElectronRpcManager";
@@ -182,9 +182,9 @@ export class ElectronHost {
    * This method configures the backend for all of the inter-process communication (RPC and IPC) for an
    * Electron app. It should be called from your Electron main function.
    * @param opts Options that control aspects of your backend.
-   * @note This method must only be called from the backend of an Electron app (i.e. when [isElectronMain]($bentley) is `true`). */
+   * @note This method must only be called from the backend of an Electron app (i.e. when [ProcessDetector.isElectronAppBackend]($bentley) is `true`). */
   public static async startup(opts?: { electronHost?: ElectronHostOptions, iModelHost?: IModelHostConfiguration }) {
-    if (!isElectronMain)
+    if (!ProcessDetector.isElectronAppBackend)
       throw new Error("Not running under Electron");
 
     if (!this.isValid) {

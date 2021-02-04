@@ -11,7 +11,7 @@ import reactAxe from "react-axe";
 import * as ReactDOM from "react-dom";
 import { connect, Provider } from "react-redux";
 import { Store } from "redux"; // createStore,
-import { ClientRequestContext, Config, Id64String, isElectronRenderer, Logger, LogLevel, MobileUtils, OpenMode } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Config, Id64String, Logger, LogLevel, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient } from "@bentley/context-registry-client";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { FrontendApplicationInsightsClient } from "@bentley/frontend-application-insights-client";
@@ -201,12 +201,12 @@ export class SampleAppIModelApp {
   public static get appUiSettings(): AppUiSettings { return SampleAppIModelApp._appUiSettings; }
 
   public static async startup(opts: { webViewerApp: WebViewerAppOptions, iModelApp: IModelAppOptions }): Promise<void> {
-    if (isElectronRenderer) {
+    if (ProcessDetector.isElectronAppFrontend) {
       await ElectronApp.startup(opts);
       NativeAppLogger.initialize();
-    } else if (MobileUtils.isIOSFrontend) {
+    } else if (ProcessDetector.isIOSAppFrontend) {
       await IOSApp.startup(opts);
-    } else if (MobileUtils.isAndroidFrontend)
+    } else if (ProcessDetector.isAndroidAppFrontend)
       await AndroidApp.startup(opts);
     else
       await WebViewerApp.startup(opts);
@@ -301,7 +301,7 @@ export class SampleAppIModelApp {
       `openIModelAndViews: projectId=${projectId}&iModelId=${iModelId} mode=${this.allowWrite ? "ReadWrite" : "Readonly"}`);
 
     let iModelConnection: IModelConnection | undefined;
-    if (MobileUtils.isMobileFrontend) {
+    if (ProcessDetector.isMobileAppFrontend) {
       const req = await NativeApp.requestDownloadBriefcase(projectId, iModelId, { syncMode: SyncMode.FixedVersion }, IModelVersion.latest(), async (progress: ProgressInfo) => {
         // eslint-disable-next-line no-console
         console.log(`Progress (${progress.loaded}/${progress.total}) -> ${progress.percent}%`);
@@ -409,7 +409,7 @@ export class SampleAppIModelApp {
         `showIModelIndex: projectId=${contextId}&iModelId=${iModelId} mode=${this.allowWrite ? "ReadWrite" : "Readonly"}`);
 
       let iModelConnection: IModelConnection | undefined;
-      if (MobileUtils.isMobileFrontend) {
+      if (ProcessDetector.isMobileAppFrontend) {
         const req = await NativeApp.requestDownloadBriefcase(contextId, iModelId, { syncMode: SyncMode.FixedVersion }, IModelVersion.latest(), async (progress: ProgressInfo) => {
           // eslint-disable-next-line no-console
           console.log(`Progress (${progress.loaded}/${progress.total}) -> ${progress.percent}%`);
@@ -658,7 +658,7 @@ window.addEventListener("beforeunload", async () => { // eslint-disable-line @ty
 
 function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | DesktopAuthorizationClientConfiguration {
   let redirectUri = "http://localhost:3000/signin-callback";
-  if (MobileUtils.isMobileFrontend) {
+  if (ProcessDetector.isMobileAppFrontend) {
     redirectUri = "imodeljs://app/signin-callback";
   }
   const baseOidcScopes = [
@@ -674,7 +674,7 @@ function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | Deskt
     "imodel-extension-service-api",
   ];
 
-  return isElectronRenderer || MobileUtils.isMobileFrontend
+  return ProcessDetector.isElectronAppFrontend || ProcessDetector.isMobileAppFrontend
     ? {
       clientId: "imodeljs-electron-test",
       redirectUri,
@@ -689,11 +689,11 @@ function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | Deskt
 }
 
 async function createOidcClient(requestContext: ClientRequestContext, oidcConfiguration: BrowserAuthorizationClientConfiguration | DesktopAuthorizationClientConfiguration): Promise<FrontendAuthorizationClient> {
-  if (isElectronRenderer) {
+  if (ProcessDetector.isElectronAppFrontend) {
     const desktopClient = new DesktopAuthorizationClient(oidcConfiguration as DesktopAuthorizationClientConfiguration);
     await desktopClient.initialize(requestContext);
     return desktopClient;
-  } else if (MobileUtils.isMobileFrontend) {
+  } else if (ProcessDetector.isMobileAppFrontend) {
     const mobileClient = new MobileAuthorizationClient(oidcConfiguration as MobileAuthorizationClientConfiguration);
     await mobileClient.initialize(requestContext);
     return mobileClient;
@@ -722,7 +722,7 @@ async function main() {
   // Logger.setLevel("ui-framework.DefaultToolSettings", LogLevel.Trace);  // used to show detailed output calculating default toolsettings
 
   // retrieve, set, and output the global configuration variable
-  if (!isElectronRenderer) {
+  if (!ProcessDetector.isElectronAppFrontend) {
     SampleAppIModelApp.testAppConfiguration = {
       snapshotPath: process.env.imjs_TESTAPP_SNAPSHOT_FILEPATH,
       startWithSnapshots: process.env.imjs_TESTAPP_START_WITH_SNAPSHOTS,

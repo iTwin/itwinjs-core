@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
-import { isElectronRenderer } from "@bentley/bentleyjs-core";
+import { ProcessDetector } from "@bentley/bentleyjs-core";
 import { EditTool } from "@bentley/imodeljs-editor-frontend";
 import { IModelApp, SnapshotConnection, Viewport } from "@bentley/imodeljs-frontend";
 import { testCmdIds, TestCmdOjb1, TestCmdResult, TestCommandIpc } from "../../common/TestEditCommandIpc";
@@ -32,7 +32,7 @@ class TestEditTool1 extends EditTool {
   }
 }
 
-if (isElectronRenderer) {
+if (ProcessDetector.isElectronAppFrontend) {
   describe("EditTools", () => {
 
     before(async () => {

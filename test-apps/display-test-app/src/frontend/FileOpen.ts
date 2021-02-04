@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { isElectronRenderer } from "@bentley/bentleyjs-core";
+import { ProcessDetector } from "@bentley/bentleyjs-core";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { OpenDialogOptions } from "electron";
 
@@ -13,7 +13,7 @@ export interface BrowserFileSelector {
 }
 
 export async function selectFileName(selector: BrowserFileSelector | undefined): Promise<string | undefined> {
-  if (isElectronRenderer) {
+  if (ProcessDetector.isElectronAppFrontend) {
     const opts: OpenDialogOptions = {
       properties: ["openFile"],
       filters: [{ name: "iModels", extensions: ["ibim", "bim"] }],

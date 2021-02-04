@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 /** @internal */
-export class MobileUtils {
+export class ProcessDetector {
   public static get isITwinFrontend() {
     return (typeof window === "object" && typeof window.navigator === "object") && undefined !== (window as any).itwin;
   }

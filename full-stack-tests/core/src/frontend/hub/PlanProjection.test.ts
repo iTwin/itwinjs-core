@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Id64, isElectronRenderer } from "@bentley/bentleyjs-core";
+import { Id64, ProcessDetector } from "@bentley/bentleyjs-core";
 import {
   BackgroundMapSettings, ColorByName, ColorDef, GlobeMode, PlanProjectionSettings, PlanProjectionSettingsProps,
 } from "@bentley/imodeljs-common";
@@ -29,7 +29,7 @@ describe("Plan projections", () => {
     };
 
     await IModelApp.shutdown();
-    if (isElectronRenderer)
+    if (ProcessDetector.isElectronAppFrontend)
       await ElectronApp.startup(opts);
     else
       await IModelApp.startup(opts.iModelApp);

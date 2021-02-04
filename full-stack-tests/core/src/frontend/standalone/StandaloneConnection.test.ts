@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { Guid, isElectronRenderer, OpenMode } from "@bentley/bentleyjs-core";
+import { Guid, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { IModel } from "@bentley/imodeljs-common";
 import { StandaloneConnection } from "@bentley/imodeljs-frontend";
 
-if (isElectronRenderer) { // StandaloneConnection tests only run on electron
+if (ProcessDetector.isElectronAppFrontend) { // StandaloneConnection tests only run on electron
   describe("StandaloneConnection", () => {
     before(async () => {
       await ElectronApp.startup();
