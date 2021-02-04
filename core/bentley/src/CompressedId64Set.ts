@@ -173,7 +173,7 @@ export namespace CompressedId64Set {
     public add(rhs: Uint64): void {
       let lower = rhs.lower;
       let upper = rhs.upper;
-      if (lower >= Uint64._base) {
+      if (lower + this.lower >= Uint64._base) {
         lower -= Uint64._base;
         upper += 1;
       }
