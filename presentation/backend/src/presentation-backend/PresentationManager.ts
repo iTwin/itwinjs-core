@@ -264,6 +264,8 @@ export interface PresentationManagerProps {
   defaultFormats?: {
     [phenomenon: string]: UnitSystemFormat;
   };
+
+  /**
    * Use [SQLite's Memory-Mapped I/O](https://sqlite.org/mmap.html) for worker connections. This mode improves performance of handling
    * requests with high I/O intensity, e.g. filtering large tables on non-indexed columns. No downsides have been noticed.
    *
