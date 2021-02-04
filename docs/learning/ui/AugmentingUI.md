@@ -1,4 +1,4 @@
-# Augmenting the UI of an IModelApp
+# Augmenting the UI of an iTwin App
 
 There are two basic ways to augment the UI of a host IModelApp. The first way is for an extension or a package to provide an entire stage definition and call `ConfigurableUiManager.addFrontstageProvider` to register it. A [UiItemsProvider]($ui-abstract) may also need to be registered if the backstage is to be used to activate the frontstage. The second way is to use a `UiItemsProvider` to provide definitions for Tool buttons, Status Bar items, and Widgets to add to an existing frontstage. In this scenario, as frontstage components are constructed at runtime, calls are made to all registered UiItemsProviders to gather item definitions to insert into the host applications UI. The item definitions are sorted and arranged by their itemPriority value.
 
@@ -34,7 +34,7 @@ export class MyUiItemProvider {
 Register the UiItemsProvider.
 
 ```ts
-UiItemsManager.register(new MyUiItemProvider(IModelApp.i18n));
+UiItemsManager.register(new MyUiItemProvider(iTwinApp.i18n));
 ```
 
 ## Adding ToolButtons, Status Bar items, and Widgets to existing application frontstage

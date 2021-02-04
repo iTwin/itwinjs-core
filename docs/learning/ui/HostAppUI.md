@@ -1,4 +1,4 @@
-# Creating an IModelApp that supports Extensible UI
+# Creating an iTwin App that supports Extensible UI
 
 The following topics provide information to help ensure the host IModelApp is properly set up to support extensions to augment the basic set of UI component it provides.
 
