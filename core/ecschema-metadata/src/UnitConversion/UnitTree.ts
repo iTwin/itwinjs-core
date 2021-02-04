@@ -14,7 +14,7 @@ import {
 import * as g from "graphlib";
 import { isConstant, isUnit } from "./Helper";
 import { LinearMap } from "./LinearMap";
-import { UnitDef, UnitPaser } from "./Parser";
+import { UnitDef, parseDefinition } from "./Parser";
 
 export class GraphUtils {
   /**
@@ -190,7 +190,7 @@ export class UnitGraph {
     this.graph.setNode(unit.key.fullName, unit);
     if (this.isIdentity(unit)) return;
 
-    const umap = UnitPaser.parse(unit.definition);
+    const umap = parseDefinition(unit.definition);
     const resolved = await Promise.all<[Unit | Constant, UnitDef]>(
       umap.map((def) =>
         this.resolveUnit(def.name, unit.schema).then((u) => [u, def])
