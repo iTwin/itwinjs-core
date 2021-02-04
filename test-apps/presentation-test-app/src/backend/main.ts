@@ -9,14 +9,12 @@ import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { loadEnv } from "@bentley/config-loader";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { RpcConfiguration, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
-import {
-  PresentationBackendLoggerCategory, PresentationBackendNativeLoggerCategory,
-} from "@bentley/presentation-backend";
 // __PUBLISH_EXTRACT_START__ Presentation.Backend.Initialization
 import { RequestPriority } from "@bentley/presentation-common";
 import { Presentation, PresentationManagerMode } from "@bentley/presentation-backend";
 import rpcs from "../common/Rpcs";
 // __PUBLISH_EXTRACT_END__
+import { PresentationBackendLoggerCategory, PresentationBackendNativeLoggerCategory } from "@bentley/presentation-backend"; // eslint-disable-line no-duplicate-imports
 
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   loadEnv(path.join(__dirname, "..", "..", ".env"));
