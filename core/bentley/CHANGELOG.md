@@ -1,6 +1,13 @@
 # Change Log - @bentley/bentleyjs-core
 
-This log was last generated on Thu, 28 Jan 2021 13:39:27 GMT and should not be manually modified.
+This log was last generated on Thu, 04 Feb 2021 17:22:41 GMT and should not be manually modified.
+
+## 2.11.1
+Thu, 04 Feb 2021 17:22:41 GMT
+
+### Updates
+
+- Fix 64-bit addition for CompressedId64Set.
 
 ## 2.11.0
 Thu, 28 Jan 2021 13:39:27 GMT

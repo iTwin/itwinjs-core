@@ -2,6 +2,18 @@
   "name": "@bentley/bentleyjs-core",
   "entries": [
     {
+      "version": "2.11.1",
+      "tag": "@bentley/bentleyjs-core_v2.11.1",
+      "date": "Thu, 04 Feb 2021 17:22:41 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix 64-bit addition for CompressedId64Set."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.11.0",
       "tag": "@bentley/bentleyjs-core_v2.11.0",
       "date": "Thu, 28 Jan 2021 13:39:27 GMT",
