@@ -14,7 +14,7 @@ import { FeatureSymbology } from "../render/FeatureSymbology";
 import { RenderClipVolume } from "../render/RenderClipVolume";
 import { RenderMemory } from "../render/RenderMemory";
 import { DecorateContext, SceneContext } from "../ViewContext";
-import { TileDrawArgs, TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeSet } from "./internal";
+import { DisclosedTileTreeSet, TileDrawArgs, TileTree, TileTreeLoadStatus, TileTreeOwner } from "./internal";
 
 /** Describes the type of graphics produced by a [[TileTreeReference]].
  * @beta
@@ -44,7 +44,7 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
    * Override this and call super if you have such auxiliary trees.
    * @note Any tree *NOT* disclosed becomes a candidate for *purging* (being unloaded from memory along with all of its tiles and graphics).
    */
-  public discloseTileTrees(trees: TileTreeSet): void {
+  public discloseTileTrees(trees: DisclosedTileTreeSet): void {
     const tree = this.treeOwner.tileTree;
     if (undefined !== tree)
       trees.add(tree);
