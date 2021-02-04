@@ -10,11 +10,13 @@ import { loadEnv } from "@bentley/config-loader";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { RpcConfiguration, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import {
-  Presentation, PresentationBackendLoggerCategory, PresentationBackendNativeLoggerCategory, PresentationManagerMode,
+  PresentationBackendLoggerCategory, PresentationBackendNativeLoggerCategory,
 } from "@bentley/presentation-backend";
 // __PUBLISH_EXTRACT_START__ Presentation.Backend.Initialization
 import { RequestPriority } from "@bentley/presentation-common";
+import { Presentation, PresentationManagerMode } from "@bentley/presentation-backend";
 import rpcs from "../common/Rpcs";
+// __PUBLISH_EXTRACT_END__
 
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   loadEnv(path.join(__dirname, "..", "..", ".env"));

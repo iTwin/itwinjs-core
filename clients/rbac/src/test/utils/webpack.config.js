@@ -6,7 +6,7 @@
 const path = require("path");
 const glob = require("glob");
 const webpack = require("webpack");
-require("@bentley/config-loader").loadEnv(path.join(__dirname, "..", ".."));
+require("@bentley/config-loader").loadEnv(path.join(__dirname, "..", "..", "..", ".env"));
 
 const clientsLib = path.resolve(__dirname, "../../../lib");
 
