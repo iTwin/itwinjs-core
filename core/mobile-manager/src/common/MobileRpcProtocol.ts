@@ -11,6 +11,7 @@ import {
   IModelError, IpcWebSocket, RpcEndpoint, RpcProtocol, RpcPushChannel, RpcPushConnection, RpcRequest, RpcRequestFulfillment, RpcSerializedValue,
   SerializedRpcRequest,
 } from "@bentley/imodeljs-common";
+import { MobileEventLoop } from "./MobileEventLoop";
 import { MobileIpcTransport } from "./MobileIpc";
 import { MobilePushConnection, MobilePushTransport } from "./MobilePush";
 import { MobileRpcConfiguration } from "./MobileRpcManager";
@@ -317,7 +318,10 @@ export class MobileRpcProtocol extends RpcProtocol {
       return;
     }
 
+    MobileEventLoop.addTask();
     const fulfillment = await this.fulfill(request);
+    MobileEventLoop.removeTask();
+
     const response = MobileRpcProtocol.encodeResponse(fulfillment);
     this.sendToFrontend(response, connection);
   }

@@ -7,6 +7,7 @@
  */
 
 import { RpcMarshaling, RpcPushChannel, RpcPushConnection, RpcPushTransport, RpcRequestFulfillment } from "@bentley/imodeljs-common";
+import { MobileEventLoop } from "./MobileEventLoop";
 import { MobileRpcProtocol } from "./MobileRpcProtocol";
 
 const PUSH = "__push__";
@@ -50,7 +51,10 @@ export class MobilePushConnection<T> extends RpcPushConnection<T> {
   }
 
   public async send(messageData: any) {
+    MobileEventLoop.addTask();
     const result = await RpcMarshaling.serialize(this._protocol, messageData);
+    MobileEventLoop.removeTask();
+
     const fulfillment: RpcRequestFulfillment = { result, rawResult: messageData, interfaceName: PUSH, id: this.channel.id, status: ++this._next };
     const encoded = MobileRpcProtocol.encodeResponse(fulfillment);
     this._protocol.sendToFrontend(encoded);
