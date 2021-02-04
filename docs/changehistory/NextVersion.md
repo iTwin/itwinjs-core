@@ -39,3 +39,21 @@ In order to support partial updates and clearing an existing value, the update e
 The new behavior is documented as part of the method documentation here:
 
 [IModelDb.Elements.updateElement]($backend)
+
+## Presentation
+
+### Setting up default formats
+
+A new feature was introduced, which allows us to supply a map of default unit formats to use for formatting properties that don't have a presentation format in requested unit system.
+These formats are stored in a `defaultFormats` map which can be viewed in `presentation-backend\PresentationManagerProps.defaultFormats`.
+
+To setup `DefaultFormats`, `Phenomenon`, array of `UnitSystem` and `FormatProps` need to be specified in the map like so:
+
+```ts
+const defaultFormats = {
+          length: { unitSystems: [PresentationUnitSystem.BritishImperial], format: formatPropsLength },
+          area: { unitSystems: [PresentationUnitSystem.UsCustomary, PresentationUnitSystem.UsSurvey], format: formatPropsAre }
+        };
+```
+
+Phenomenon's name is case-insensitive.

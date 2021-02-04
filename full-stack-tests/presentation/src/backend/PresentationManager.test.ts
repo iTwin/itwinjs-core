@@ -57,8 +57,7 @@ describe("PresentationManager", () => {
       };
 
       const defaultFormats = {
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        AREA: { unitSystems: [PresentationUnitSystem.BritishImperial], format: formatProps },
+        area: { unitSystems: [PresentationUnitSystem.BritishImperial], format: formatProps },
       };
 
       await checkExpectedAreaDisplayValue("0.1616 ft²", PresentationUnitSystem.BritishImperial, imodel, keys, ruleset, defaultFormats);
@@ -80,8 +79,7 @@ describe("PresentationManager", () => {
       };
 
       const defaultFormats = {
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        AREA: { unitSystems: [PresentationUnitSystem.Metric], format: formatProps },
+        area: { unitSystems: [PresentationUnitSystem.Metric], format: formatProps },
       };
 
       await checkExpectedAreaDisplayValue("150.1235 cm²", PresentationUnitSystem.Metric, imodel, keys, ruleset, defaultFormats);

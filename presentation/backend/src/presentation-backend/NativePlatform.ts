@@ -99,7 +99,7 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
       } = {};
       Object.keys(defaultMap).forEach((key) => {
         const value = defaultMap[key];
-        res[key] = {unitSystems: value.unitSystems, serializedFormat: JSON.stringify(value.format)};
+        res[key.toUpperCase()] = { unitSystems: value.unitSystems, serializedFormat: JSON.stringify(value.format) };
       });
 
       return res;

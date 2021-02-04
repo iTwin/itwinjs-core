@@ -109,7 +109,9 @@ describe("PresentationManager", () => {
           composite: {
             includeZero:true,
             spacer:" ",
-            units: [{label:"'",name:"IN"}],
+            units: [
+              { label:"'", name:"IN" },
+            ],
           },
           formatTraits:"KeepSingleZero|KeepDecimalPoint|ShowUnitLabel",
           precision:4,
@@ -117,8 +119,7 @@ describe("PresentationManager", () => {
           uomSeparator:"",
         };
         const defaultFormats = {
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-          LENGTH: { unitSystems: [PresentationUnitSystem.BritishImperial], format: formatProps },
+          length: { unitSystems: [PresentationUnitSystem.BritishImperial], format: formatProps },
         };
         const props: PresentationManagerProps = {
           id: faker.random.uuid(),
