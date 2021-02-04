@@ -6,6 +6,8 @@
 // Note: only import types! Does not create a `require("electron")` in JavaScript after transpiling. That's important so this file can
 // be imported by apps that sometimes use Electron and sometimes not. Call to `ElectronBackend.initialize`
 // will do the necessary `require("electron")`
+// IMPORTANT: Do not call or construct any of these imports. Otherwise, a require("electron") call will be emitted at top level.
+// Instead, access using require("electron").<type> at point of use in the code.
 import { BrowserWindow, BrowserWindowConstructorOptions } from "electron";
 
 import * as fs from "fs";
@@ -27,7 +29,7 @@ class ElectronIpc implements IpcSocketBackend {
     ElectronHost.ipcMain.removeListener(channel, listener);
   }
   public send(channel: string, ...args: any[]): void {
-    const window = ElectronHost.mainWindow ?? BrowserWindow.getAllWindows()[0];
+    const window = ElectronHost.mainWindow ?? ElectronHost.electron.BrowserWindow.getAllWindows()[0];
     window?.webContents.send(channel, ...args);
   }
   public handle(channel: string, listener: (evt: any, ...args: any[]) => Promise<any>): RemoveFunction {
@@ -122,7 +124,7 @@ export class ElectronHost {
       ...options, // overrides everything above
     };
 
-    this._mainWindow = new BrowserWindow(opts);
+    this._mainWindow = new (this.electron.BrowserWindow)(opts);
     ElectronRpcConfiguration.targetWindowId = this._mainWindow.id;
     this._mainWindow.on("closed", () => this._mainWindow = undefined);
     this._mainWindow.loadURL(this.frontendURL); // eslint-disable-line @typescript-eslint/no-floating-promises
@@ -170,7 +172,7 @@ export class ElectronHost {
 
     if (!this._developmentServer) {
       // handle any "electron://" requests and redirect them to "file://" URLs
-      require("electron").protocol.registerFileProtocol("electron", (request, callback) => callback(this.parseElectronUrl(request.url))); // eslint-disable-line @typescript-eslint/no-var-requires
+      this.electron.protocol.registerFileProtocol("electron", (request, callback) => callback(this.parseElectronUrl(request.url))); // eslint-disable-line @typescript-eslint/no-var-requires
     }
 
     this._openWindow(windowOptions);
