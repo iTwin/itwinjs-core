@@ -54,8 +54,7 @@
     "typescript": "~3.7.4",
     "xmldom": "^0.1.27",
     "@types/graphlib": "^2.1.7",
-    "graphlib": "^2.1.8",
-    "chevrotain": "^7.0.3"
+    "graphlib": "^2.1.8"
   },
   "peerDependencies": {
     "@bentley/bentleyjs-core": "^2.13.0-dev.1",
