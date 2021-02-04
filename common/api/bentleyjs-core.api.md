@@ -1005,10 +1005,10 @@ export class IndexMap<T> {
     protected readonly _maximumSize: number;
 }
 
-// @internal
+// @internal @deprecated
 export const isElectronMain: boolean;
 
-// @internal
+// @internal @deprecated
 export const isElectronRenderer: boolean;
 
 // @public
@@ -1139,26 +1139,6 @@ export class LRUMap<K, V> extends LRUCache<K, V> {
     constructor(limit: number);
 }
 
-// @internal (undocumented)
-export class MobileUtils {
-    // (undocumented)
-    static get isAndroidBackend(): boolean;
-    // (undocumented)
-    static get isAndroidFrontend(): boolean;
-    // (undocumented)
-    static get isIOSBackend(): boolean;
-    // (undocumented)
-    static get isIOSFrontend(): boolean;
-    // (undocumented)
-    static get isIpadFrontend(): boolean;
-    // (undocumented)
-    static get isITwinBackend(): boolean;
-    // (undocumented)
-    static get isITwinFrontend(): boolean;
-    static get isMobileBackend(): boolean;
-    static get isMobileFrontend(): boolean;
-}
-
 // @alpha
 export class MutableCompressedId64Set implements OrderedId64Iterable {
     [Symbol.iterator](): Iterator<string, any, undefined>;
@@ -1259,6 +1239,24 @@ export class PriorityQueue<T> implements Iterable<T> {
     sort(): void;
     // (undocumented)
     protected _swap(a: number, b: number): void;
+}
+
+// @beta
+export class ProcessDetector {
+    static get isAndroidAppBackend(): boolean;
+    static get isAndroidAppFrontend(): boolean;
+    static get isAndroidBrowser(): boolean;
+    static get isBrowserProcess(): boolean;
+    static get isElectronAppBackend(): boolean;
+    static get isElectronAppFrontend(): boolean;
+    static get isIOSAppBackend(): boolean;
+    static get isIOSAppFrontend(): boolean;
+    static get isIOSBrowser(): boolean;
+    static get isIpadBrowser(): boolean;
+    static get isMobileAppBackend(): boolean;
+    static get isMobileAppFrontend(): boolean;
+    static get isMobileBrowser(): boolean;
+    static get isNodeProcess(): boolean;
 }
 
 // @public

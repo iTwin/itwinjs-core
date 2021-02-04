@@ -230,20 +230,6 @@ export interface AppActivityMonitor {
     isIdle: boolean;
 }
 
-// @alpha
-export enum ApplicationType {
-    // (undocumented)
-    MobileApp = 4,
-    // (undocumented)
-    NativeApp = 3,
-    // (undocumented)
-    WebAgent = 0,
-    // (undocumented)
-    WebEditorApp = 2,
-    // (undocumented)
-    WebReadonlyApp = 1
-}
-
 // @public
 export class AuthorizedBackendRequestContext extends AuthorizedClientRequestContext {
     constructor(accessToken: AccessToken, activityId?: string);
@@ -2718,7 +2704,7 @@ export class IModelHost {
     // (undocumented)
     static get isValid(): boolean;
     // @internal (undocumented)
-    static loadNative(region: number, applicationType?: ApplicationType, iModelClientType?: IModelClient): void;
+    static loadNative(region: number, applicationType?: IModelJsNative.ApplicationType, iModelClient?: IModelClient): void;
     static get logTileLoadTimeThreshold(): number;
     static get logTileSizeThreshold(): number;
     static readonly onAfterStartup: BeEvent<() => void>;
@@ -2752,8 +2738,8 @@ export class IModelHost {
 // @public
 export class IModelHostConfiguration {
     appAssetsDir?: string;
-    // @alpha
-    applicationType?: ApplicationType;
+    // @internal
+    applicationType?: IModelJsNative.ApplicationType;
     // @deprecated
     briefcaseCacheDir?: string;
     cacheDir?: string;
@@ -2773,6 +2759,7 @@ export class IModelHostConfiguration {
     logTileLoadTimeThreshold: number;
     // @internal
     logTileSizeThreshold: number;
+    // @deprecated
     nativePlatform?: any;
     // @beta
     restrictTileUrlsByClientIp?: boolean;

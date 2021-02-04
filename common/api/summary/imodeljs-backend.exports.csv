@@ -3,7 +3,6 @@ Release Tag;API Item
 beta;AliCloudStorageService 
 public;AnnotationElement2d 
 beta;AppActivityMonitor
-alpha;ApplicationType
 public;AuthorizedBackendRequestContext 
 beta;AutoPush
 beta;AutoPushEventHandler = (etype: AutoPushEventType, autoPush: AutoPush) => void
