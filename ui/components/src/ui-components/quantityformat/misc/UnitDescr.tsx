@@ -11,7 +11,7 @@ import { UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
 import { CommonProps, Input, Select, SelectOption } from "@bentley/ui-core";
 
 /** Properties of [[UnitDescr]] component.
- * @alpha
+ * @internal
  */
 export interface UnitDescrProps extends CommonProps {
   name: string;
@@ -53,8 +53,8 @@ function getUnitName(fullUnitName: string) {
   throw Error("Bad unit name encountered");
 }
 
-/** Component use to set Quantity Format thousand group separator.
- * @alpha
+/** Component use to display dropdown list of possible units.
+ * @internal
  */
 export function UnitDescr(props: UnitDescrProps) {
   const { name, label, parentUnitName, index, onUnitChange, onLabelChange, readonly, unitsProvider } = props;

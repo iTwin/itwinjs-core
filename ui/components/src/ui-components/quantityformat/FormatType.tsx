@@ -76,9 +76,11 @@ export function FormatTypeOption(props: FormatTypeOptionProps) {
   }, [formatProps, onChange]);
 
   const formatType = Format.parseFormatType(formatProps.type, "format");
+  const label = React.useRef (UiComponents.translate("QuantityFormat.labels.type"));
+
   return (
     <>
-      <span className={"uicore-label"}>Type</span>
+      <span className={"uicore-label.current"}>{label.current}</span>
       <FormatTypeSelector type={formatType} onChange={handleFormatTypeChange} />
     </>
   );

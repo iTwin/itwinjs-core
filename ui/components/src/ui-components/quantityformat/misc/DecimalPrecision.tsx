@@ -8,19 +8,19 @@
 
 import * as React from "react";
 import { CommonProps, Select, SelectOption } from "@bentley/ui-core";
-import { UiComponents } from "../UiComponents";
+import { UiComponents } from "../../UiComponents";
 
 /** Properties of [[DecimalPrecisionSelector]] component.
- * @alpha
+ * @internal
  */
 export interface DecimalPrecisionSelectorProps extends CommonProps {
   precision: number;
   onChange: (value: number) => void;
 }
 
-/** Component use to set Quantity Format UOM separator, this is the character to put between the magnitude and
+/** Component use to set Decimal Precision
  * the unit label.
- * @alpha
+ * @internal
  */
 export function DecimalPrecisionSelector(props: DecimalPrecisionSelectorProps) {
   const { precision, onChange, ...otherProps } = props;

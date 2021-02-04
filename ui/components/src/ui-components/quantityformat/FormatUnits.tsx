@@ -9,7 +9,8 @@
 import * as React from "react";
 import { CommonProps, Input } from "@bentley/ui-core";
 import { FormatProps, UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
-import { UnitDescr } from "./UnitDescr";
+import { UnitDescr } from "./misc/UnitDescr";
+import { UiComponents } from "../UiComponents";
 
 /** Properties of [[FormatPanel]] component.
  * @alpha
@@ -101,6 +102,8 @@ export function FormatUnits(props: FormatUnitsProps) {
     }
   }, [formatProps, handleSetFormatProps]);
 
+  const compositeSpacer = React.useRef (UiComponents.translate("QuantityFormat.labels.compositeSpacer"));
+
   return (
     <>
       {(formatProps.composite?.units && formatProps.composite?.units.length > 0)
@@ -116,7 +119,7 @@ export function FormatUnits(props: FormatUnitsProps) {
 
       {(formatProps.composite?.units && formatProps.composite?.units.length > 1) &&
         <>
-          <span className={"uicore-label"}>Composite Spacer</span>
+          <span className={"uicore-label"}>{compositeSpacer.current}</span>
           <Input value={formatProps.composite?.spacer ?? ""} onChange={handleOnSpacerChange} />
         </>
       }

@@ -10,6 +10,7 @@ import * as React from "react";
 import { FormatterSpec } from "@bentley/imodeljs-quantity";
 import { SpecialKey } from "@bentley/ui-abstract";
 import { CommonProps, Input, WebFontIcon } from "@bentley/ui-core";
+import { UiComponents } from "../UiComponents";
 
 /** Properties of [[UomSeparatorSelector]] component.
  * @alpha
@@ -64,13 +65,16 @@ export function FormatSample(props: FormatSampleProps) {
   const activePersistenceUnitLabel = formatSpec ? formatSpec.persistenceUnit.label : "";
   const formattedValue = formatSpec ? formatSpec.applyFormatting(magnitude) : "";
 
+  const valueLabel = React.useRef (UiComponents.translate("QuantityFormat.labels.value"));
+  const formattedLabel = React.useRef (UiComponents.translate("QuantityFormat.labels.formatted"));
+
   return (
     <>
-      {!hideLabels && <span className={"uicore-label"}>{"Value"}</span>}
+      {!hideLabels && <span className={"uicore-label"}>{valueLabel.current}</span>}
       <span className="components-inline">
         <Input className={"components-quantity-persistence-input"} value={sampleValue} onChange={handleOnValueChange} onKeyDown={handleKeyDown} onBlur={handleOnValueBlur} />{activePersistenceUnitLabel}
       </span>
-      {!hideLabels && <span className={"uicore-label"}>{"Formatted"}</span>}
+      {!hideLabels && <span className={"uicore-label"}>{formattedLabel.current}</span>}
       <span>{hideLabels && (formattedValue.length > 0) && <WebFontIcon iconName="icon-progress-forward-2" />}<span className={"uicore-label components-quantity-formatted-sample"}>{formattedValue}</span></span>
     </>
   );

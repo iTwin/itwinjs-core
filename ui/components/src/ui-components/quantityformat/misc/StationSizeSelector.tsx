@@ -8,10 +8,10 @@
 
 import * as React from "react";
 import { CommonProps, Select, SelectOption } from "@bentley/ui-core";
-import { UiComponents } from "../UiComponents";
+import { UiComponents } from "../../UiComponents";
 
 /** Properties of [[StationSizeSelector]] component.
- * @alpha
+ * @internal
  */
 export interface StationSizeSelectorProps extends CommonProps {
   value: number;
@@ -19,8 +19,8 @@ export interface StationSizeSelectorProps extends CommonProps {
   onChange: (value: number) => void;
 }
 
-/** Component use to set Quantity Format thousand group separator.
- * @alpha
+/** Component use to set Station size (number of digits from right until '+').
+ * @internal
  */
 export function StationSizeSelector(props: StationSizeSelectorProps) {
   const { value, disabled, onChange, ...otherProps } = props;

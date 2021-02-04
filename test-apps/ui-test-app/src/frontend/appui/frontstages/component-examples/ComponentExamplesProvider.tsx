@@ -14,7 +14,7 @@ import { Format, FormatProps, FormatterSpec, FormatTraits, UnitProps, UnitsProvi
 import { DateFormatter, IconSpecUtilities, ParseResults, RelativePosition, TimeDisplay } from "@bentley/ui-abstract";
 import {
   adjustDateToTimezone, ColorPickerButton, ColorPickerDialog, ColorPickerPopup, ColorSwatch, DatePickerPopupButton, DatePickerPopupButtonProps,
-  FormatPopupButton, IntlFormatter, LineWeightSwatch, ParsedInput, QuantityInput, WeightPickerButton,
+  IntlFormatter, LineWeightSwatch, ParsedInput, QuantityInput, WeightPickerButton,
 } from "@bentley/ui-components";
 import {
   BetaBadge, BlockText, BodyText, Button, ButtonSize, ButtonType, Checkbox, CheckListBox, CheckListBoxItem, CheckListBoxSeparator, ContextMenuItem,
@@ -31,6 +31,7 @@ import { SampleContextMenu } from "./SampleContextMenu";
 import { SampleExpandableBlock } from "./SampleExpandableBlock";
 import { SampleImageCheckBox } from "./SampleImageCheckBox";
 import { SamplePopupContextMenu } from "./SamplePopupContextMenu";
+import { FormatPopupButton } from "./FormatPopupButton";
 
 function setFormatTrait(formatProps: FormatProps, trait: FormatTraits, setActive: boolean) {
   const traitStr = Format.getTraitString(trait);
@@ -152,31 +153,6 @@ function NumericFormatPopup({ persistenceUnitName, initialMagnitude }: { persist
           />
         </>
       }
-    </div>
-  );
-}
-
-function WrappedFormatPopup({ initialFormatterSpec, initialMagnitude }: { initialFormatterSpec: FormatterSpec, initialMagnitude: number }) {
-  const [formatterSpec, setFormatterSpec] = React.useState(initialFormatterSpec);
-  const [formattedValue, setFormattedValue] = React.useState(() => formatterSpec.applyFormatting(initialMagnitude));
-  const handleFormatChange = React.useCallback((format: FormatProps) => {
-    async function fetchFormatSpec(formatProps: FormatProps) {
-      const pu = initialFormatterSpec.persistenceUnit;
-      const actualFormat = new Format("custom");
-      const unitsProvider = IModelApp.quantityFormatter.unitsProvider;
-      await actualFormat.fromJSON(unitsProvider, formatProps);
-      const newSpec = await FormatterSpec.create(actualFormat.name, actualFormat, unitsProvider, pu);
-      setFormattedValue(newSpec.applyFormatting(initialMagnitude));
-      setFormatterSpec(newSpec);
-    }
-    fetchFormatSpec(format); // eslint-disable-line @typescript-eslint/no-floating-promises
-  }, [initialFormatterSpec.persistenceUnit, initialMagnitude]);
-
-  return (
-    <div style={{ display: "flex", alignItems: "center" }}>
-      <span>{formattedValue}</span>
-      <FormatPopupButton initialFormat={formatterSpec.format.toJSON()} showSample={true} onFormatChange={handleFormatChange}
-        initialMagnitude={initialMagnitude} unitsProvider={IModelApp.quantityFormatter.unitsProvider} persistenceUnit={formatterSpec.persistenceUnit} />
     </div>
   );
 }

@@ -6,12 +6,11 @@
  * @module QuantityFormat
  */
 
+import * as React from "react";
 import { FormatProps } from "@bentley/imodeljs-quantity";
 import { RelativePosition, SpecialKey } from "@bentley/ui-abstract";
 import { Button, ButtonType, Popup, WebFontIcon } from "@bentley/ui-core";
-import * as React from "react";
-import { UiComponents } from "../UiComponents";
-import { FormatPanel, FormatPanelProps } from "./FormatPanel";
+import { FormatPanel, FormatPanelProps, UiComponents } from "@bentley/ui-components";
 import "./FormatPopupButton.scss";
 
 /** Props used by [[FormatPopupButton]] component.

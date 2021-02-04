@@ -8,15 +8,16 @@
 
 import classnames from "classnames";
 import * as React from "react";
+import { SpecialKey } from "@bentley/ui-abstract";
 import { Checkbox, CommonProps } from "@bentley/ui-core";
 import { Format, FormatProps, FormatTraits, FormatType, ScientificType, ShowSignOption } from "@bentley/imodeljs-quantity";
-import { SignOptionSelector } from "./SignOption";
-import { ThousandsSeparator } from "./ThousandsSeparator";
-import { DecimalSeparatorSelector } from "./DecimalSeparator";
-import { ScientificTypeSelector } from "./ScientificType";
-import { SpecialKey } from "@bentley/ui-abstract";
-import { StationSeparatorSelector } from "./StationSeparatorSelector";
-import { StationSizeSelector } from "./StationSizeSelector";
+import { SignOptionSelector } from "./misc/SignOption";
+import { ThousandsSeparator } from "./misc/ThousandsSeparator";
+import { DecimalSeparatorSelector } from "./misc/DecimalSeparator";
+import { ScientificTypeSelector } from "./misc/ScientificType";
+import { StationSeparatorSelector } from "./misc/StationSeparatorSelector";
+import { StationSizeSelector } from "./misc/StationSizeSelector";
+import { UiComponents } from "../UiComponents";
 
 /** Properties of [[MiscFormatOptions]] component.
  * @alpha
@@ -143,52 +144,67 @@ export function MiscFormatOptions(props: MiscFormatOptionsProps) {
     handleSetFormatProps(newFormatProps);
   }, [formatProps, handleSetFormatProps]);
 
+  const signOptionLabel = React.useRef (UiComponents.translate("QuantityFormat.labels.signOptionLabel"));
+  const stationOffsetLabel = React.useRef (UiComponents.translate("QuantityFormat.labels.stationOffsetLabel"));
+  const stationSeparatorLabel = React.useRef (UiComponents.translate("QuantityFormat.labels.stationSeparatorLabel"));
+  const decimalSeparatorLabel = React.useRef (UiComponents.translate("QuantityFormat.labels.decimalSeparatorLabel"));
+  const showTrailZerosLabel = React.useRef (UiComponents.translate("QuantityFormat.labels.showTrailZerosLabel"));
+  const keepSingleZeroLabel = React.useRef (UiComponents.translate("QuantityFormat.labels.keepSingleZeroLabel"));
+  const zeroEmptyLabel = React.useRef (UiComponents.translate("QuantityFormat.labels.zeroEmptyLabel"));
+  const moreLabel = React.useRef (UiComponents.translate("QuantityFormat.labels.moreLabel"));
+  const lessLabel = React.useRef (UiComponents.translate("QuantityFormat.labels.lessLabel"));
+  const keepDecimalPointLabel = React.useRef (UiComponents.translate("QuantityFormat.labels.keepDecimalPointLabel"));
+  const fractionDashLabel = React.useRef (UiComponents.translate("QuantityFormat.labels.fractionDashLabel"));
+  const scientificTypeLabel = React.useRef (UiComponents.translate("QuantityFormat.labels.scientificTypeLabel"));
+
   return (
     <>
       { // eslint-disable-next-line jsx-a11y/anchor-is-valid
-        enableMinimumProperties && !showOptions && <a onClick={handleToggleButtonClick} onKeyUp={handleKeyUpOnLink} className={"components-quantityFormat-more-less"} role="link" tabIndex={0} >More</a>}
+        enableMinimumProperties && !showOptions && <a onClick={handleToggleButtonClick} onKeyUp={handleKeyUpOnLink}
+          className={"components-quantityFormat-more-less"} role="link" tabIndex={0} >{moreLabel.current}</a>}
       {
         (!enableMinimumProperties || showOptions) &&
         <>
-          <span className={"uicore-label"}>Sign Option</span>
+          <span className={"uicore-label"}>{signOptionLabel.current}</span>
           <SignOptionSelector signOption={showSignOption} onChange={handleShowSignChange} />
 
-          <span className={classnames("uicore-label", formatType !== FormatType.Station && "uicore-disabled")}>Station Offset</span>
+          <span className={classnames("uicore-label", formatType !== FormatType.Station && "uicore-disabled")}>{stationOffsetLabel.current}</span>
           <StationSizeSelector value={(formatProps.stationOffsetSize ?? 2)}
             disabled={formatType !== FormatType.Station} onChange={handleStationOffsetChange} />
 
-          <span className={classnames("uicore-label", formatType !== FormatType.Station && "uicore-disabled")}>Station Separator</span>
+          <span className={classnames("uicore-label", formatType !== FormatType.Station && "uicore-disabled")}>{stationSeparatorLabel.current}</span>
           <StationSeparatorSelector separator={(undefined !== formatProps.stationSeparator ? formatProps.stationSeparator : "+")}
             disabled={formatType !== FormatType.Station} onChange={handleStationSeparatorChange} />
 
           <ThousandsSeparator formatProps={formatProps} onChange={handleFormatChange} />
 
-          <span className={classnames("uicore-label", formatType === FormatType.Fractional && "uicore-disabled")}>Decimal Separator</span>
+          <span className={classnames("uicore-label", formatType === FormatType.Fractional && "uicore-disabled")}>{decimalSeparatorLabel.current}</span>
           <DecimalSeparatorSelector separator={formatProps.decimalSeparator ?? "."} onChange={handleDecimalSeparatorChange} disabled={formatType === FormatType.Fractional} />
 
-          <span className={"uicore-label"}>Show Trailing Zeros</span>
+          <span className={"uicore-label"}>{showTrailZerosLabel.current}</span>
           <Checkbox isLabeled={true} checked={isFormatTraitSet(FormatTraits.TrailZeroes)} onChange={handleShowTrailingZeroesChange} />
 
-          <span className={classnames("uicore-label", formatType === FormatType.Fractional && "uicore-disabled")} >Keep Decimal Point</span>
+          <span className={classnames("uicore-label", formatType === FormatType.Fractional && "uicore-disabled")}>{keepDecimalPointLabel.current}</span>
           <Checkbox isLabeled={true} checked={isFormatTraitSet(FormatTraits.KeepDecimalPoint)} onChange={handleKeepDecimalPointChange} />
 
-          <span className={"uicore-label"}>Keep Single Zero</span>
+          <span className={"uicore-label"}>{keepSingleZeroLabel.current}</span>
           <Checkbox isLabeled={true} checked={isFormatTraitSet(FormatTraits.KeepSingleZero)} onChange={handleKeepSingleZeroChange} />
 
-          <span className={"uicore-label"}>Zero Empty</span>
+          <span className={"uicore-label"}>{zeroEmptyLabel.current}</span>
           <Checkbox isLabeled={true} checked={isFormatTraitSet(FormatTraits.ZeroEmpty)} onChange={handleZeroEmptyChange} />
 
-          <span className={classnames("uicore-label", formatType !== FormatType.Fractional && "uicore-disabled")}>Fraction Dash</span>
+          <span className={classnames("uicore-label", formatType !== FormatType.Fractional && "uicore-disabled")}>{fractionDashLabel.current}</span>
           <Checkbox isLabeled={true} checked={isFormatTraitSet(FormatTraits.FractionDash)} onChange={handleUseFractionDashChange} disabled={formatType !== FormatType.Fractional} />
 
-          <span className={classnames("uicore-label", formatType !== FormatType.Scientific && "uicore-disabled")}>Scientific Type</span>
+          <span className={classnames("uicore-label", formatType !== FormatType.Scientific && "uicore-disabled")}>{scientificTypeLabel.current}</span>
           <ScientificTypeSelector type={(formatProps.scientificType && formatProps.scientificType.length > 0) ? Format.parseScientificType(formatProps.scientificType, "custom") : ScientificType.Normalized}
             disabled={formatType !== FormatType.Scientific} onChange={handleScientificTypeChange} />
 
           {props.children}
 
           { // eslint-disable-next-line jsx-a11y/anchor-is-valid
-            enableMinimumProperties && showOptions && <a onClick={handleToggleButtonClick} onKeyUp={handleKeyUpOnLink} className={"components-quantityFormat-more-less"} role="link" tabIndex={0} >Less</a>}
+            enableMinimumProperties && showOptions && <a onClick={handleToggleButtonClick} onKeyUp={handleKeyUpOnLink}
+              className={"components-quantityFormat-more-less"} role="link" tabIndex={0}>{lessLabel.current}</a>}
         </>
       }
     </>

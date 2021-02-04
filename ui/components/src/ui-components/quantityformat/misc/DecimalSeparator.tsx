@@ -8,10 +8,10 @@
 
 import * as React from "react";
 import { CommonProps, Select, SelectOption } from "@bentley/ui-core";
-import { UiComponents } from "../UiComponents";
+import { UiComponents } from "../../UiComponents";
 
 /** Properties of [[DecimalSeparatorSelector]] component.
- * @alpha
+ * @internal
  */
 export interface DecimalSeparatorSelectorProps extends CommonProps {
   separator: string;
@@ -19,9 +19,8 @@ export interface DecimalSeparatorSelectorProps extends CommonProps {
   onChange: (value: string) => void;
 }
 
-/** Component use to set Quantity Format UOM separator, this is the character to put between the magnitude and
- * the unit label.
- * @alpha
+/** Component use to set Decimal Separator
+ * @internal
  */
 export function DecimalSeparatorSelector(props: DecimalSeparatorSelectorProps) {
   const { separator, onChange, ...otherProps } = props;

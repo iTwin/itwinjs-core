@@ -8,11 +8,11 @@
 
 import * as React from "react";
 import { CommonProps, Select, SelectOption } from "@bentley/ui-core";
-import { UiComponents } from "../UiComponents";
+import { UiComponents } from "../../UiComponents";
 import { ScientificType } from "@bentley/imodeljs-quantity";
 
 /** Properties of [[ScientificTypeSelector]] component.
- * @alpha
+ * @internal
  */
 export interface ScientificTypeSelectorProps extends CommonProps {
   type: ScientificType;
@@ -20,9 +20,8 @@ export interface ScientificTypeSelectorProps extends CommonProps {
   disabled?: boolean;
 }
 
-/** Component use to set Quantity Format UOM separator, this is the character to put between the magnitude and
- * the unit label.
- * @alpha
+/** Component use to set Scientific type.
+ * @internal
  */
 export function ScientificTypeSelector(props: ScientificTypeSelectorProps) {
   const { type, onChange, ...otherProps } = props;

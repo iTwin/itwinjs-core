@@ -104,11 +104,14 @@ export function FormatUnitLabel(props: FormatUnitLabelProps) {
     setFormatTrait(FormatTraits.ShowUnitLabel, e.target.checked);
   }, [setFormatTrait]);
 
+  const appendUnitLabel = React.useRef (UiComponents.translate("QuantityFormat.labels.appendUnitLabel"));
+  const labelSeparator = React.useRef (UiComponents.translate("QuantityFormat.labels.labelSeparator"));
+
   return (
     <>
-      <span className={"uicore-label"}>Append Unit Label</span>
+      <span className={"uicore-label"}>{appendUnitLabel.current}</span>
       <Checkbox isLabeled={true} checked={isFormatTraitSet(FormatTraits.ShowUnitLabel)} onChange={handleShowUnitLabelChange} />
-      <span className={classnames("uicore-label", !isFormatTraitSet(FormatTraits.ShowUnitLabel) && "uicore-disabled")}>Label Separator</span>
+      <span className={classnames("uicore-label", !isFormatTraitSet(FormatTraits.ShowUnitLabel) && "uicore-disabled")}>{labelSeparator.current}</span>
       <UomSeparatorSelector separator={formatProps.uomSeparator ?? ""} onChange={handleUomSeparatorChange} disabled={!isFormatTraitSet(FormatTraits.ShowUnitLabel)} />
     </>
   );

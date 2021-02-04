@@ -6,23 +6,23 @@
  * @module QuantityFormat
  */
 
-import "./FormatPanel.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { Checkbox, CommonProps } from "@bentley/ui-core";
 import { Format, FormatProps, FormatTraits } from "@bentley/imodeljs-quantity";
 import { ThousandsSelector } from "./ThousandsSelector";
+import { UiComponents } from "../../UiComponents";
 
 /** Properties of [[ThousandsSeparator]] component.
- * @alpha
+ * @internal
  */
 export interface ThousandsSeparatorProps extends CommonProps {
   formatProps: FormatProps;
   onChange?: (format: FormatProps) => void;
 }
 
-/** Component to show/edit Quantity Format.
- * @alpha
+/** Component use to set Quantity Format thousand group separator.
+ * @internal
  */
 export function ThousandsSeparator(props: ThousandsSeparatorProps) {
   const { formatProps, onChange } = props;
@@ -79,11 +79,14 @@ export function ThousandsSeparator(props: ThousandsSeparatorProps) {
     handleSetFormatProps(newFormatProps);
   }, [formatProps, isFormatTraitSet, handleSetFormatProps]);
 
+  const useThousandSeparatorLabel = React.useRef (UiComponents.translate("QuantityFormat.labels.useThousandSeparatorLabel"));
+  const thousandSeparatorLabel = React.useRef (UiComponents.translate("QuantityFormat.labels.thousandSeparatorLabel"));
+
   return (
     <>
-      <span className={"uicore-label"}>Use Thousand Separator</span>
+      <span className={"uicore-label"}>{useThousandSeparatorLabel.current}</span>
       <Checkbox isLabeled={true} checked={isFormatTraitSet(FormatTraits.Use1000Separator)} onChange={handleUseThousandsSeparatorChange} />
-      <span className={classnames("uicore-label", !(isFormatTraitSet(FormatTraits.Use1000Separator)) && "uicore-disabled")}>Thousand Separator</span>
+      <span className={classnames("uicore-label", !(isFormatTraitSet(FormatTraits.Use1000Separator)) && "uicore-disabled")}>{thousandSeparatorLabel.current}</span>
       <ThousandsSelector separator={formatProps.thousandSeparator ?? ","} disabled={!isFormatTraitSet(FormatTraits.Use1000Separator)} onChange={handleThousandSeparatorChange} />
     </>
   );

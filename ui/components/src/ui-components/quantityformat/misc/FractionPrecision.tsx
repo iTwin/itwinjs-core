@@ -8,19 +8,18 @@
 
 import * as React from "react";
 import { CommonProps, Select, SelectOption } from "@bentley/ui-core";
-import { UiComponents } from "../UiComponents";
+import { UiComponents } from "../../UiComponents";
 
 /** Properties of [[FractionPrecisionSelector]] component.
- * @alpha
+ * @internal
  */
 export interface FractionPrecisionSelectorProps extends CommonProps {
   precision: number;
   onChange: (value: number) => void;
 }
 
-/** Component use to set Quantity Format UOM separator, this is the character to put between the magnitude and
- * the unit label.
- * @alpha
+/** Component use to set Fraction precision
+ * @internal
  */
 export function FractionPrecisionSelector(props: FractionPrecisionSelectorProps) {
   const { precision, onChange, ...otherProps } = props;

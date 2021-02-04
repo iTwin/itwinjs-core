@@ -8,25 +8,27 @@
 
 import * as React from "react";
 import { CommonProps, Select, SelectOption } from "@bentley/ui-core";
-import { UiComponents } from "../UiComponents";
+import { UiComponents } from "../../UiComponents";
 
-/** Properties of [[ThousandsSelector]] component.
- * @alpha
+/** Properties of [[StationSeparatorSelector]] component.
+ * @internal
  */
-export interface ThousandsSelectorProps extends CommonProps {
+export interface StationSeparatorSelectorProps extends CommonProps {
   separator: string;
   disabled: boolean;
   onChange: (value: string) => void;
 }
 
-/** Component use to set Quantity Format thousand group separator.
- * @alpha
+/** Component use to setStation separator.
+ * @internal
  */
-export function ThousandsSelector(props: ThousandsSelectorProps) {
+export function StationSeparatorSelector(props: StationSeparatorSelectorProps) {
   const { separator, disabled, onChange, ...otherProps } = props;
   const uomDefaultEntries = React.useRef<SelectOption[]>([
-    { value: ",", label: UiComponents.translate("QuantityFormat.thousand_separator.comma") },
-    { value: ".", label: UiComponents.translate("QuantityFormat.thousand_separator.point") },
+    { value: "+", label: UiComponents.translate("QuantityFormat.station_separator.plus") },
+    { value: "-", label: UiComponents.translate("QuantityFormat.station_separator.minus") },
+    { value: " ", label: UiComponents.translate("QuantityFormat.station_separator.blank") },
+    { value: "^", label: UiComponents.translate("QuantityFormat.station_separator.caret") },
   ]);
 
   const handleOnChange = React.useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {

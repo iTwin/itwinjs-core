@@ -8,20 +8,19 @@
 
 import * as React from "react";
 import { CommonProps, Select, SelectOption } from "@bentley/ui-core";
-import { UiComponents } from "../UiComponents";
+import { UiComponents } from "../../UiComponents";
 import { ShowSignOption } from "@bentley/imodeljs-quantity";
 
 /** Properties of [[SignOptionSelector]] component.
- * @alpha
+ * @internal
  */
 export interface SignOptionSelectorProps extends CommonProps {
   signOption: ShowSignOption;
   onChange: (value: ShowSignOption) => void;
 }
 
-/** Component use to set Quantity Format UOM separator, this is the character to put between the magnitude and
- * the unit label.
- * @alpha
+/** Component use to set Sign option.
+ * @internal
  */
 export function SignOptionSelector(props: SignOptionSelectorProps) {
   const { signOption, onChange, ...otherProps } = props;
