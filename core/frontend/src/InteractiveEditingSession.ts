@@ -15,7 +15,6 @@ import { BriefcaseConnection, BriefcaseNotificationHandler } from "./BriefcaseCo
 import { IModelConnection } from "./IModelConnection";
 import { IpcApp } from "./IpcApp";
 import { RemoteBriefcaseConnection } from "./CheckpointConnection";
-import { StandaloneConnection } from "./StandaloneConnection";
 
 let initialized = false;
 const sessions: InteractiveEditingSession[] = [];
@@ -31,7 +30,7 @@ class ModelChanges extends SortedArray<ElementGeometryChange> {
   }
 }
 
-type EditableConnection = BriefcaseConnection | StandaloneConnection | RemoteBriefcaseConnection; // eslint-disable-line deprecation/deprecation
+type EditableConnection = BriefcaseConnection | RemoteBriefcaseConnection; // eslint-disable-line deprecation/deprecation
 
 /**
  * Represents an active session for performing interactive editing of an [[IModelConnection]].

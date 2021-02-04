@@ -41,28 +41,28 @@ if (ProcessDetector.isElectronAppFrontend) {
     });
 
     it("should not be supported for read-only connections", async () => {
-      imodel = await StandaloneConnection.openFile(oldFilePath, OpenMode.Readonly);
+      imodel = await StandaloneConnection.openStandalone(oldFilePath, OpenMode.Readonly);
       expect(imodel.openMode).to.equal(OpenMode.Readonly);
       expect(await InteractiveEditingSession.isSupported(imodel)).to.be.false;
       await expect(InteractiveEditingSession.begin(imodel)).to.be.rejectedWith(IModelError);
     });
 
     it("should not be supported for iModels with BisCore < 1.0.11", async () => {
-      imodel = await StandaloneConnection.openFile(oldFilePath);
+      imodel = await StandaloneConnection.openStandalone(oldFilePath);
       expect(imodel.openMode).to.equal(OpenMode.ReadWrite);
       expect(await InteractiveEditingSession.isSupported(imodel)).to.be.false;
       await expect(InteractiveEditingSession.begin(imodel)).to.be.rejectedWith(IModelError);
     });
 
     it("should not be supported for read-only iModels with BisCore >= 1.0.11", async () => {
-      imodel = await StandaloneConnection.openFile(newFilePath, OpenMode.Readonly);
+      imodel = await StandaloneConnection.openStandalone(newFilePath, OpenMode.Readonly);
       expect(imodel.openMode).to.equal(OpenMode.Readonly);
       expect(await InteractiveEditingSession.isSupported(imodel)).to.be.false;
       await expect(InteractiveEditingSession.begin(imodel)).to.be.rejectedWith(IModelError);
     });
 
     it("should be supported for writable iModels with BisCore >= 1.0.11", async () => {
-      imodel = await StandaloneConnection.openFile(newFilePath, OpenMode.ReadWrite);
+      imodel = await StandaloneConnection.openStandalone(newFilePath, OpenMode.ReadWrite);
       expect(imodel.openMode).to.equal(OpenMode.ReadWrite);
       expect(await InteractiveEditingSession.isSupported(imodel)).to.be.true;
       const session = await InteractiveEditingSession.begin(imodel);
@@ -71,7 +71,7 @@ if (ProcessDetector.isElectronAppFrontend) {
 
     async function openWritable(): Promise<StandaloneConnection> {
       expect(imodel).to.be.undefined;
-      return StandaloneConnection.openFile(newFilePath, OpenMode.ReadWrite);
+      return StandaloneConnection.openStandalone(newFilePath, OpenMode.ReadWrite);
     }
 
     it("throws if begin is called repeatedly", async () => {

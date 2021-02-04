@@ -21,7 +21,7 @@ if (ProcessDetector.isElectronAppFrontend) { // StandaloneConnection tests only 
 
     it("StandaloneConnection properties", async () => {
       const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");
-      const connection = await StandaloneConnection.openFile(filePath);
+      const connection = await StandaloneConnection.openStandalone(filePath);
 
       assert.isTrue(connection.isOpen);
       assert.equal(connection.openMode, OpenMode.ReadWrite);
@@ -49,7 +49,7 @@ if (ProcessDetector.isElectronAppFrontend) { // StandaloneConnection tests only 
       assert.isFalse(connection.isOpen);
       assert.isTrue(connection.isClosed);
 
-      const readOnlyConnection = await StandaloneConnection.openFile(filePath, OpenMode.Readonly);
+      const readOnlyConnection = await StandaloneConnection.openStandalone(filePath, OpenMode.Readonly);
       assert.equal(readOnlyConnection.openMode, OpenMode.Readonly);
       await readOnlyConnection.close();
     });

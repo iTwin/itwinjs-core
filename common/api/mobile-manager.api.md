@@ -234,7 +234,9 @@ export type MobileProgressCallback = (bytesWritten: number, totalBytesWritten: n
 export abstract class MobileRpcConfiguration extends RpcConfiguration {
     static get args(): any;
     static get isIOSFrontend(): any;
+    // @deprecated
     static get isMobileBackend(): boolean;
+    // @deprecated
     static get isMobileFrontend(): boolean;
     static get platform(): RpcMobilePlatform;
     // (undocumented)

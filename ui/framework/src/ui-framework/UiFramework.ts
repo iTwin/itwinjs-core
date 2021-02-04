@@ -7,7 +7,7 @@
  */
 
 import { Store } from "redux";
-import { GuidString, Logger } from "@bentley/bentleyjs-core";
+import { GuidString, Logger, ProcessDetector } from "@bentley/bentleyjs-core";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { AuthorizedFrontendRequestContext, IModelApp, IModelConnection, SnapMode, ViewState } from "@bentley/imodeljs-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
@@ -450,14 +450,7 @@ export class UiFramework {
 
   /** @public */
   public static isMobile() {  // eslint-disable-line @bentley/prefer-get
-    let mobile = false;
-    // istanbul ignore if
-    if ((/Mobi|Android/i.test(navigator.userAgent))) {
-      mobile = true;
-    } else /* istanbul ignore next */ if (/Mobi|iPad|iPhone|iPod/i.test(navigator.userAgent)) {
-      mobile = true;
-    }
-    return mobile;
+    return ProcessDetector.isMobileBrowser;
   }
 
   /** Returns the Ui Version.
