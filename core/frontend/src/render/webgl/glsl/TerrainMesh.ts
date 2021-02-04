@@ -19,7 +19,7 @@ import { addUInt32s } from "./Common";
 import { unquantize2d } from "./Decode";
 import { addColorPlanarClassifier } from "./PlanarClassification";
 import { addSolarShadowMap } from "./SolarShadowMapping";
-import { octDecodeNormal } from "./Surface";
+import { addClassificationTranslucencyDiscard, octDecodeNormal } from "./Surface";
 import { addThematicDisplay, getComputeThematicIndex } from "./Thematic";
 import { addModelViewProjectionMatrix, addNormalMatrix } from "./Vertex";
 
@@ -169,8 +169,10 @@ export default function createTerrainMeshBuilder(flags: TechniqueFlags, _feature
     });
   });
   addTextures(builder, textureCount);
-  if (flags.isClassified)
+  if (flags.isClassified) {
     addColorPlanarClassifier(builder, true /* Transparency? */, thematic);
+    addClassificationTranslucencyDiscard(builder);
+  }
 
   if (IsThematic.Yes === thematic) {
     addNormalMatrix(builder.vert);

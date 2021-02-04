@@ -16,9 +16,9 @@ import { TerrainMeshPrimitive } from "../primitives/mesh/TerrainMeshPrimitive";
 import { RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
 import { RenderSystem, RenderTerrainMeshGeometry, TerrainTexture } from "../RenderSystem";
+import { BufferHandle, BufferParameters, QBufferHandle2d, QBufferHandle3d } from "./AttributeBuffers";
 import { AttributeMap } from "./AttributeMap";
 import { GL } from "./GL";
-import { BufferHandle, BufferParameters, QBufferHandle2d, QBufferHandle3d } from "./AttributeBuffers";
 import { Primitive } from "./Primitive";
 import { RenderOrder, RenderPass } from "./RenderFlags";
 import { System } from "./System";
@@ -232,7 +232,7 @@ export class TerrainMeshGeometry extends IndexedGeometry implements RenderTerrai
     if (target.nonLocatableTerrain && !target.drawNonLocatable)
       return RenderPass.None;
 
-    if (target.terrainTransparency > 0.0 || this._baseIsTransparent ||
+    if (target.terrainTransparency > 0.0 || this._baseIsTransparent || target.currentPlanarClassifier?.anyTranslucent  ||
       (target.wantThematicDisplay && target.uniforms.thematic.wantIsoLines))
       return RenderPass.Translucent;
 

@@ -8,25 +8,10 @@
  */
 
 import { Id64String } from "@bentley/bentleyjs-core";
-import { PlanarClipMaskMode, PlanarClipMaskPriority, PlanarClipMaskProps, PlanarClipMaskSettings } from "@bentley/imodeljs-common";
+import { PlanarClipMaskMode, PlanarClipMaskPriority, PlanarClipMaskSettings } from "@bentley/imodeljs-common";
 import {
   BeButtonEvent, EventHandled, HitDetail, IModelApp, LocateFilterStatus, LocateResponse, PrimitiveTool, ScreenViewport, Tool,
 } from "@bentley/imodeljs-frontend";
-import { parseToggle } from "./parseToggle";
-
-function applyMapMasking(onOff: boolean | undefined, maskProps: PlanarClipMaskProps) {
-  const vp = IModelApp.viewManager.selectedView;
-  if (undefined === vp || !vp.view.isSpatialView())
-    if (undefined === vp || !vp.view.isSpatialView())
-      return false;
-
-  const maskOn = (onOff === undefined) ? !vp.displayStyle.backgroundMapSettings.planarClipMask.isValid : onOff;
-
-  vp.changeBackgroundMapProps({ planarClipMask: maskOn ? maskProps : { mode: PlanarClipMaskMode.None } });
-  vp.invalidateRenderPlan();
-
-  return true;
-}
 
 /** Set Map Masking by selected models.
  * @alpha
@@ -36,18 +21,19 @@ export class SetMapHigherPriorityMasking extends Tool {
   public static get minArgs() { return 0; }
   public static get maxArgs() { return 1; }
 
-  public run(onOff?: boolean): boolean {
+  public run(transparency?: number): boolean {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp)
       return false;
 
-    applyMapMasking(onOff, PlanarClipMaskSettings.createByPriority(PlanarClipMaskPriority.BackgroundMap)!.toJSON());
+    vp.changeBackgroundMapProps({ planarClipMask: { mode: PlanarClipMaskMode.Priority, transparency } });
+    vp.invalidateRenderPlan();
     return true;
   }
 
   public parseAndRun(...args: string[]): boolean {
-    const toggle = parseToggle(args[0]);
-    return this.run(typeof toggle === "string" ? undefined : toggle);
+    const transparency =  parseFloat(args[0]);
+    return this.run( (transparency !== undefined && transparency  < 1.0) ? transparency : undefined);
   }
 }
 
@@ -78,6 +64,7 @@ export abstract class PlanarMaskBaseTool extends PrimitiveTool {
   protected readonly _acceptedModelIds = new Set<Id64String>();
   protected readonly _acceptedSubCategoryIds = new Set<Id64String>();
   protected readonly _acceptedElementIds = new Set<Id64String>();
+  protected _transparency?: number;
   protected _useSelection: boolean = false;
   protected _targetModelId?: Id64String | number;
 
@@ -100,6 +87,10 @@ export abstract class PlanarMaskBaseTool extends PrimitiveTool {
     this._acceptedElementIds.clear();
     this._acceptedModelIds.clear();
   }
+  public exitTool() {
+    super.exitTool();
+    this._transparency = undefined;
+  }
 
   public onRestartTool(): void {
     this.clearIds();
@@ -108,6 +99,13 @@ export abstract class PlanarMaskBaseTool extends PrimitiveTool {
     if (!tool.run())
       this.exitTool();
   }
+
+  public parseAndRun(...args: string[]): boolean {
+    const transparency =  parseFloat(args[0]);
+    this._transparency = (transparency !== undefined && transparency  < 1.0) ? transparency : undefined;
+    return this.run();
+  }
+
   public onCleanup(): void {
     if (0 !== this._acceptedElementIds.size)
       this.iModel.hilited.setHilite(this._acceptedElementIds, false);
@@ -164,13 +162,15 @@ export abstract class PlanarMaskBaseTool extends PrimitiveTool {
  */
 export class MaskBackgroundMapByElementTool extends PlanarMaskBaseTool {
   public static toolId = "MaskBackgroundMapByElement";
+  public static get minArgs() { return 0; }
+  public static get maxArgs() { return 1; }
   protected targetModelRequired() { return false; }
   protected showPrompt(): void {
     IModelApp.notifications.outputPromptByKey("FrontendDevTools:tools.MaskBackgroundMapByElement.Prompts.IdentifyMaskElement");
   }
   protected createToolInstance(): PlanarMaskBaseTool { return new MaskBackgroundMapByElementTool(); }
   protected applyMask(vp: ScreenViewport): void {
-    vp.changeBackgroundMapProps({ planarClipMask: PlanarClipMaskSettings.create(PlanarClipMaskMode.IncludeElements, this._acceptedModelIds, this._acceptedElementIds) });
+    vp.changeBackgroundMapProps({ planarClipMask: PlanarClipMaskSettings.create(PlanarClipMaskMode.IncludeElements, this._acceptedModelIds, this._acceptedElementIds, this._transparency) });
   }
 }
 /** Tool to mask background map by excluded elements
@@ -178,13 +178,15 @@ export class MaskBackgroundMapByElementTool extends PlanarMaskBaseTool {
  */
 export class MaskBackgroundMapByExcludedElementTool extends PlanarMaskBaseTool {
   public static toolId = "MaskBackgroundMapByExcludedElement";
+  public static get minArgs() { return 0; }
+  public static get maxArgs() { return 1; }
   protected targetModelRequired() { return false; }
   protected showPrompt(): void {
     IModelApp.notifications.outputPromptByKey("FrontendDevTools:tools.MaskBackgroundMapByExcludedElement.Prompts.IdentifyMaskElement");
   }
   protected createToolInstance(): PlanarMaskBaseTool { return new MaskBackgroundMapByElementTool(); }
   protected applyMask(vp: ScreenViewport): void {
-    vp.changeBackgroundMapProps({ planarClipMask: PlanarClipMaskSettings.create(PlanarClipMaskMode.ExcludeElements, this._acceptedModelIds, this._acceptedElementIds) });
+    vp.changeBackgroundMapProps({ planarClipMask: PlanarClipMaskSettings.create(PlanarClipMaskMode.ExcludeElements, this._acceptedModelIds, this._acceptedElementIds, this._transparency) });
   }
 }
 
@@ -193,13 +195,15 @@ export class MaskBackgroundMapByExcludedElementTool extends PlanarMaskBaseTool {
  */
 export class MaskBackgroundMapBySubCategoryTool extends PlanarMaskBaseTool {
   public static toolId = "MaskBackgroundMapBySubCategory";
+  public static get minArgs() { return 0; }
+  public static get maxArgs() { return 1; }
   protected targetModelRequired() { return false; }
   protected showPrompt(): void {
     IModelApp.notifications.outputPromptByKey("FrontendDevTools:tools.MaskBackgroundMapBySubCategory.Prompts.IdentifyMaskSubCategory");
   }
   protected createToolInstance(): PlanarMaskBaseTool { return new MaskBackgroundMapBySubCategoryTool(); }
   protected applyMask(vp: ScreenViewport): void {
-    vp.changeBackgroundMapProps({ planarClipMask: PlanarClipMaskSettings.create(PlanarClipMaskMode.IncludeSubCategories, this._acceptedModelIds, this._acceptedSubCategoryIds) });
+    vp.changeBackgroundMapProps({ planarClipMask: PlanarClipMaskSettings.create(PlanarClipMaskMode.IncludeSubCategories, this._acceptedModelIds, this._acceptedSubCategoryIds, this._transparency) });
   }
 }
 
@@ -208,13 +212,15 @@ export class MaskBackgroundMapBySubCategoryTool extends PlanarMaskBaseTool {
  */
 export class MaskBackgroundMapByModelTool extends PlanarMaskBaseTool {
   public static toolId = "MaskBackgroundMapByModel";
+  public static get minArgs() { return 0; }
+  public static get maxArgs() { return 1; }
   protected targetModelRequired() { return false; }
   protected showPrompt(): void {
     IModelApp.notifications.outputPromptByKey("FrontendDevTools:tools.MaskBackgroundMapByModel.Prompts.IdentifyMaskModel");
   }
   protected createToolInstance(): PlanarMaskBaseTool { return new MaskBackgroundMapByModelTool(); }
   protected applyMask(vp: ScreenViewport): void {
-    vp.changeBackgroundMapProps({ planarClipMask: PlanarClipMaskSettings.create(PlanarClipMaskMode.Models, this._acceptedModelIds) });
+    vp.changeBackgroundMapProps({ planarClipMask: PlanarClipMaskSettings.create(PlanarClipMaskMode.Models, this._acceptedModelIds, undefined, this._transparency) });
   }
 }
 
@@ -223,6 +229,8 @@ export class MaskBackgroundMapByModelTool extends PlanarMaskBaseTool {
  */
 export class MaskRealityModelByElementTool extends PlanarMaskBaseTool {
   public static toolId = "MaskRealityModelByElement";
+  public static get minArgs() { return 0; }
+  public static get maxArgs() { return 1; }
   protected targetModelRequired() { return true; }
 
   protected showPrompt(): void {
@@ -231,7 +239,7 @@ export class MaskRealityModelByElementTool extends PlanarMaskBaseTool {
   }
   protected createToolInstance(): PlanarMaskBaseTool { return new MaskRealityModelByElementTool(); }
   protected applyMask(vp: ScreenViewport): void {
-    vp.overrideRealityModelPlanarClipMask(this._targetModelId!, PlanarClipMaskSettings.create(PlanarClipMaskMode.IncludeElements, this._acceptedModelIds, this._acceptedElementIds)!);
+    vp.overrideRealityModelPlanarClipMask(this._targetModelId!, PlanarClipMaskSettings.create(PlanarClipMaskMode.IncludeElements, this._acceptedModelIds, this._acceptedElementIds, this._transparency)!);
   }
 }
 
@@ -240,6 +248,8 @@ export class MaskRealityModelByElementTool extends PlanarMaskBaseTool {
  */
 export class MaskRealityModelByExcludedElementTool extends PlanarMaskBaseTool {
   public static toolId = "MaskRealityModelByExcludedElement";
+  public static get minArgs() { return 0; }
+  public static get maxArgs() { return 1; }
   protected targetModelRequired() { return true; }
 
   protected showPrompt(): void {
@@ -248,7 +258,7 @@ export class MaskRealityModelByExcludedElementTool extends PlanarMaskBaseTool {
   }
   protected createToolInstance(): PlanarMaskBaseTool { return new MaskRealityModelByElementTool(); }
   protected applyMask(vp: ScreenViewport): void {
-    vp.overrideRealityModelPlanarClipMask(this._targetModelId!, PlanarClipMaskSettings.create(PlanarClipMaskMode.ExcludeElements, this._acceptedModelIds, this._acceptedElementIds)!);
+    vp.overrideRealityModelPlanarClipMask(this._targetModelId!, PlanarClipMaskSettings.create(PlanarClipMaskMode.ExcludeElements, this._acceptedModelIds, this._acceptedElementIds, this._transparency)!);
   }
 }
 
@@ -258,6 +268,9 @@ export class MaskRealityModelByExcludedElementTool extends PlanarMaskBaseTool {
 
 export class MaskRealityModelByModelTool extends PlanarMaskBaseTool {
   public static toolId = "MaskRealityModelByModel";
+  public static get minArgs() { return 0; }
+  public static get maxArgs() { return 1; }
+
   protected targetModelRequired() { return true; }
 
   protected showPrompt(): void {
@@ -266,7 +279,7 @@ export class MaskRealityModelByModelTool extends PlanarMaskBaseTool {
   }
   protected createToolInstance(): PlanarMaskBaseTool { return new MaskRealityModelByElementTool(); }
   protected applyMask(vp: ScreenViewport): void {
-    vp.overrideRealityModelPlanarClipMask(this._targetModelId!, PlanarClipMaskSettings.create(PlanarClipMaskMode.Models, this._acceptedModelIds)!);
+    vp.overrideRealityModelPlanarClipMask(this._targetModelId!, PlanarClipMaskSettings.create(PlanarClipMaskMode.Models, this._acceptedModelIds, undefined,  this._transparency)!);
   }
 }
 
@@ -275,6 +288,8 @@ export class MaskRealityModelByModelTool extends PlanarMaskBaseTool {
  */
 export class MaskRealityModelBySubCategoryTool extends PlanarMaskBaseTool {
   public static toolId = "MaskRealityModelBySubCategory";
+  public static get minArgs() { return 0; }
+  public static get maxArgs() { return 1; }
   protected targetModelRequired() { return true; }
 
   protected showPrompt(): void {
@@ -283,7 +298,7 @@ export class MaskRealityModelBySubCategoryTool extends PlanarMaskBaseTool {
   }
   protected createToolInstance(): PlanarMaskBaseTool { return new MaskRealityModelBySubCategoryTool(); }
   protected applyMask(vp: ScreenViewport): void {
-    vp.overrideRealityModelPlanarClipMask(this._targetModelId!, PlanarClipMaskSettings.create(PlanarClipMaskMode.IncludeSubCategories, this._acceptedModelIds, this._acceptedSubCategoryIds)!);
+    vp.overrideRealityModelPlanarClipMask(this._targetModelId!, PlanarClipMaskSettings.create(PlanarClipMaskMode.IncludeSubCategories, this._acceptedModelIds, this._acceptedSubCategoryIds, this._transparency)!);
   }
 }
 
@@ -292,6 +307,8 @@ export class MaskRealityModelBySubCategoryTool extends PlanarMaskBaseTool {
  */
 export class SetHigherPriorityRealityModelMasking extends PlanarMaskBaseTool {
   public static toolId = "SetHigherPriorityRealityModelMasking";
+  public static get minArgs() { return 0; }
+  public static get maxArgs() { return 2; }
   protected targetModelRequired() { return true; }
   protected elementRequired() { return false; }
   private _priority = 0;
@@ -301,13 +318,12 @@ export class SetHigherPriorityRealityModelMasking extends PlanarMaskBaseTool {
   }
   protected createToolInstance(): PlanarMaskBaseTool { return new UnmaskRealityModelTool(); }
   protected applyMask(vp: ScreenViewport): void {
-    vp.overrideRealityModelPlanarClipMask(this._targetModelId!, PlanarClipMaskSettings.createByPriority(PlanarClipMaskPriority.RealityModel + this._priority)!);
+    vp.overrideRealityModelPlanarClipMask(this._targetModelId!, PlanarClipMaskSettings.createByPriority(PlanarClipMaskPriority.RealityModel + this._priority, this._transparency)!);
   }
-  public static get minArgs() { return 0; }
-  public static get maxArgs() { return 1; }
 
   public parseAndRun(...args: string[]): boolean {
-    const priority = parseInt(args[0], 10);
+    super.parseAndRun(...args);
+    const priority = parseInt(args[1], 10);
     this._priority = (priority === undefined || isNaN(priority)) ? 0 : priority;
     return this.run();
   }

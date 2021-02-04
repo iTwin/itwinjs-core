@@ -51,15 +51,12 @@ if (u_pClassColorParams.x > kClassifierDisplay_Element) { // texture/terrain dra
   return vec4(rgb, baseColor.a);
 }
 float imageCount = u_pClassColorParams.z;
-// For debugging features.
-// vec4 featureTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, (1.0 + classPos.y) / imageCount));
-// return (isOutside || featureTexel == vec4(0)) ? vec4(0.0, 1.0, 0.0, 1.0) : vec4 (featureTexel.x, 0.0, 0.0, 1.0);
-
 
 vec4 colorTexel = vec4(0);
 vec4 maskTexel = vec4(0);
 bool doMask = imageCount != kTextureContentClassifierOnly;
 bool doClassify = imageCount != kTextureContentMaskOnly;
+
 if (!isOutside) {
   if (imageCount == kTextureContentClassifierOnly) {
     colorTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, classPos.y / imageCount));
@@ -72,14 +69,13 @@ if (!isOutside) {
 }
 if (doMask) {
   if (!isOutside && (maskTexel.r + maskTexel.g + maskTexel.b + maskTexel.a > 0.0)) {
-    if (maskTexel.a >= 1.0)
-      {
+    float   maskTransparency = u_pClassColorParams.w < 0.0 ? (1.0 - maskTexel.a) : u_pClassColorParams.w;
+    if (maskTransparency <= 0.0) {
       discard;
       return vec4(0);
       }
-    float alpha = baseColor.a * (1.0 - maskTexel.a);
-    baseColor.rgb = baseColor.rgb * (alpha / baseColor.a);
-    baseColor.a = alpha;
+
+    baseColor.a = baseColor.a * maskTransparency;
    }
 
   if (!doClassify)
@@ -183,7 +179,7 @@ const computeClassifierPosW = "v_pClassPosW = classProj.w;";
 const scratchBytes = new Uint8Array(4);
 const scratchBatchBaseId = new Uint32Array(scratchBytes.buffer);
 const scratchBatchBaseComponents = [0, 0, 0, 0];
-const scratchColorParams = new Float32Array(3);      // Unclassified scale, classified base scale, classified classifier scale.
+const scratchColorParams = new Float32Array(4);      // Unclassified scale, classified base scale, classified classifier scale.
 const scratchModel = Matrix4d.createIdentity();
 const scratchModelProjection = Matrix4d.createIdentity();
 const scratchMatrix = new Matrix4();
@@ -242,7 +238,7 @@ export function addColorPlanarClassifier(builder: ProgramBuilder, translucent: b
     });
   });
 
-  frag.addUniform("u_pClassColorParams", VariableType.Vec3, (prog) => {
+  frag.addUniform("u_pClassColorParams", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_pClassColorParams", (uniform, params) => {
       const source = params.target.currentPlanarClassifierOrDrape;
       const volClass = params.target.activeVolumeClassifierTexture;
@@ -253,8 +249,9 @@ export function addColorPlanarClassifier(builder: ProgramBuilder, translucent: b
         scratchColorParams[0] = 6.0;      // Volume classifier, by element color.
         scratchColorParams[1] = 0.5;      // used for alpha value
         scratchColorParams[2] = 0.0;      // Not used for volume.
+        scratchColorParams[3] = 0.0;      // Not used for volume.
       }
-      uniform.setUniform3fv(scratchColorParams);
+      uniform.setUniform4fv(scratchColorParams);
     });
   });
 

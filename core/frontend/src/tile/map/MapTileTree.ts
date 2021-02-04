@@ -114,7 +114,9 @@ export class MapTileTree extends RealityTileTree {
     this.imageryTrees.length = 0;
     this._layerSettings.clear();
   }
-  public get isTransparent() { return this.mapTransparent || this.baseTransparent; }
+  public get isTransparent() {
+    return this.mapTransparent || this.baseTransparent;
+  }
 
   public get maxDepth() {
     let maxDepth = this.loader.maxDepth;

@@ -49,6 +49,8 @@ export interface PlanarClipMaskProps {
   subCategoryOrElementIds?: CompressedId64Set;
   /** Priority value if mode is [[PlanarClipMaskMode.Priority]]. */
   priority?: number;
+  /** A value between 0 and 1 indicating mask transparency - A transparency of 0 (the default) indicates complete masking.  1 is completely transparent (no masking). */
+  transparency?: number;
 }
 
 /** Normalized representation of [[PlanarClipMaskProps]] with validation and default values applied.
@@ -63,28 +65,30 @@ export class PlanarClipMaskSettings {
   public readonly subCategoryOrElementIds?: CompressedId64Set;
   /** Priority value if mode is [[PlanarClipMaskMode.Priority]]. */
   public readonly priority?: number;
+  /** A value between 0 and 1 indicating mask transparency - A transparency of 0 (the default) indicates complete masking.  1 is completely transparent (no masking). */
+  public readonly transparency?: number;
 
   /** Create a new [[PlanarClipMaskSettings]] object from a JSON object */
   public static fromJSON(json?: PlanarClipMaskProps): PlanarClipMaskSettings {
     if (!json)
       return this.defaults;
 
-    return new PlanarClipMaskSettings(json.mode, json.modelIds, json.subCategoryOrElementIds, json.priority);
+    return new PlanarClipMaskSettings(json.mode, json.transparency, json.modelIds, json.subCategoryOrElementIds, json.priority);
   }
   /** Create a [[PlanarClipMaskAettings]] object */
-  public static create(mode: PlanarClipMaskMode, modelIds?: Id64Set, subCategoryOrElementIds?: Id64Set): PlanarClipMaskSettings | undefined {
+  public static create(mode: PlanarClipMaskMode, modelIds?: Id64Set, subCategoryOrElementIds?: Id64Set, transparency?: number): PlanarClipMaskSettings | undefined {
     switch (mode) {
       case PlanarClipMaskMode.None:
       case PlanarClipMaskMode.Priority:
         return new PlanarClipMaskSettings(mode);
 
       case PlanarClipMaskMode.Models:
-        return modelIds === undefined ? undefined : new PlanarClipMaskSettings(mode, CompressedId64Set.compressSet(modelIds));
+        return modelIds === undefined ? undefined : new PlanarClipMaskSettings(mode, transparency, CompressedId64Set.compressSet(modelIds));
 
       case PlanarClipMaskMode.IncludeSubCategories:
       case PlanarClipMaskMode.IncludeElements:
       case PlanarClipMaskMode.ExcludeElements:
-        return subCategoryOrElementIds === undefined ? undefined : new PlanarClipMaskSettings(mode, modelIds ? CompressedId64Set.compressSet(modelIds) : undefined, CompressedId64Set.compressSet(subCategoryOrElementIds));
+        return subCategoryOrElementIds === undefined ? undefined : new PlanarClipMaskSettings(mode, transparency, modelIds ? CompressedId64Set.compressSet(modelIds) : undefined, CompressedId64Set.compressSet(subCategoryOrElementIds));
 
       default:
         return undefined;
@@ -94,13 +98,13 @@ export class PlanarClipMaskSettings {
   /** Create [[planarClipMaskSettings]] object by priority
    * @see [[PlanarClipMaskPriority]]
    */
-  public static createByPriority(priority: number) {
-    return new PlanarClipMaskSettings(PlanarClipMaskMode.Priority, undefined, undefined, priority);
+  public static createByPriority(priority: number, transparency?: number) {
+    return new PlanarClipMaskSettings(PlanarClipMaskMode.Priority, transparency, undefined, undefined, priority);
   }
 
   /** Create JSON object representing this [[PlanarClipMaskSettings]] */
   public toJSON(): PlanarClipMaskProps {
-    return { mode: this.mode, modelIds: this.modelIds, subCategoryOrElementIds: this.subCategoryOrElementIds, priority: this.priority };
+    return { mode: this.mode, modelIds: this.modelIds, subCategoryOrElementIds: this.subCategoryOrElementIds, priority: this.priority, transparency: this.transparency  };
   }
 
   /**  */
@@ -109,15 +113,17 @@ export class PlanarClipMaskSettings {
   public equals(other: PlanarClipMaskSettings): boolean {
     return this.mode === other.mode &&
       compareNumbersOrUndefined(this.priority, other.priority) === 0 &&
+      compareNumbersOrUndefined(this.transparency, other.transparency) === 0 &&
       compareStringsOrUndefined(this.modelIds, other.modelIds) === 0 &&
       compareStringsOrUndefined(this.subCategoryOrElementIds, other.subCategoryOrElementIds) === 0;
   }
 
-  private constructor(mode: PlanarClipMaskMode, modelIds?: CompressedId64Set, subCategoryOrElementIds?: CompressedId64Set, priority?: number) {
+  private constructor(mode: PlanarClipMaskMode, transparency?: number, modelIds?: CompressedId64Set, subCategoryOrElementIds?: CompressedId64Set, priority?: number) {
     this.mode = mode;
     this.modelIds = modelIds;
     this.subCategoryOrElementIds = subCategoryOrElementIds;
     this.priority = priority;
+    this.transparency = transparency;
   }
   /** A default PlanarClipMask which masks nothing. */
   public static defaults = new PlanarClipMaskSettings(PlanarClipMaskMode.None);

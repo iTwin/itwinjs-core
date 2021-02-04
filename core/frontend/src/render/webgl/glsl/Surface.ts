@@ -476,7 +476,7 @@ export function addTexture(builder: ProgramBuilder, animated: IsAnimated, isThem
   });
 }
 
-const discardClassifiedByAlpha = `
+export const discardClassifiedByAlpha = `
   if (u_no_classifier_discard)
     return false;
 
@@ -561,26 +561,29 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
   builder.frag.addGlobal("g_surfaceTexel", VariableType.Vec4);
   builder.frag.set(FragmentShaderComponent.ComputeBaseColor, (flags.isThematic === IsThematic.No) ? computeBaseColor : "return getSurfaceColor();");
 
-  if (flags.isClassified) {
-    // For unclassified geometry, we need to render in both the translucent and opaque passes if any feature transparency overrides are applied that would change the default render pass used.
-    // Those shaders compute the transparency in the vertex shader and discard the vertex in one pass or the other.
-    // For classified geometry, the transparency comes from the classifier geometry (when using Display.ElementColor), so even if there are no feature overrides, we may need to draw in both passes.
-    // Since the transparency is not known until the fragment shader, we must perform the discard there instead.
-    addMaxAlpha(builder.frag);
-    addRenderPass(builder.frag);
-
-    // Do not discard transparent classified geometry if we're trying to do a pick...
-    builder.frag.addUniform("u_no_classifier_discard", VariableType.Boolean, (prog) => {
-      prog.addProgramUniform("u_no_classifier_discard", (uniform, params) => {
-        uniform.setUniform1i(params.target.isReadPixelsInProgress ? 1 : 0);
-      });
-    });
-
-    builder.frag.set(FragmentShaderComponent.DiscardByAlpha, discardClassifiedByAlpha);
-  }
+  if (flags.isClassified)
+    addClassificationTranslucencyDiscard(builder);
 
   addSurfaceMonochrome(builder.frag);
   addMaterial(builder);
 
   return builder;
+}
+
+export function addClassificationTranslucencyDiscard(builder: ProgramBuilder) {
+  // For unclassified geometry, we need to render in both the translucent and opaque passes if any feature transparency overrides are applied that would change the default render pass used.
+  // Those shaders compute the transparency in the vertex shader and discard the vertex in one pass or the other.
+  // For classified geometry, the transparency comes from the classifier geometry (when using Display.ElementColor), so even if there are no feature overrides, we may need to draw in both passes.
+  // Since the transparency is not known until the fragment shader, we must perform the discard there instead.
+  addMaxAlpha(builder.frag);
+  addRenderPass(builder.frag);
+
+  // Do not discard transparent classified geometry if we're trying to do a pick...
+  builder.frag.addUniform("u_no_classifier_discard", VariableType.Boolean, (prog) => {
+    prog.addProgramUniform("u_no_classifier_discard", (uniform, params) => {
+      uniform.setUniform1i(params.target.isReadPixelsInProgress ? 1 : 0);
+    });
+  });
+
+  builder.frag.set(FragmentShaderComponent.DiscardByAlpha, discardClassifiedByAlpha);
 }
