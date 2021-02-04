@@ -66,7 +66,7 @@ export class MyUiItemProvider {
 Register the UiItemsProvider.
 
 ```ts
-UiItemsManager.register(new MyUiItemProvider(iTwinApp.i18n));
+UiItemsManager.register(new MyUiItemProvider(IModelApp.i18n));
 ```
 
 ## StateManager and ReducerRegistry
