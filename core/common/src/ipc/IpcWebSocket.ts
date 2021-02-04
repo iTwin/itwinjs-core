@@ -11,7 +11,6 @@ import { IpcListener, IpcSocket, IpcSocketBackend, IpcSocketFrontend, RemoveFunc
 /** @internal */
 export abstract class IpcWebSocketTransport {
   public abstract send(message: IpcWebSocketMessage): void;
-  public abstract listen(handler: (evt: Event, message: IpcWebSocketMessage) => void): void;
 }
 
 /** @internal */
@@ -35,11 +34,12 @@ export interface IpcWebSocketMessage {
 /** @internal */
 export abstract class IpcWebSocket implements IpcSocket {
   public static transport: IpcWebSocketTransport;
+  public static receivers: Set<(evt: Event, message: IpcWebSocketMessage) => void> = new Set();
 
   protected _channels = new Map<string, Set<IpcListener>>();
 
   public constructor() {
-    IpcWebSocket.transport.listen(async (e, m) => this.broadcast(e, m));
+    IpcWebSocket.receivers.add(async (e, m) => this.broadcast(e, m));
   }
 
   public abstract send(channel: string, ...data: any[]): void;
@@ -85,7 +85,7 @@ export class IpcWebSocketFrontend extends IpcWebSocket implements IpcSocketFront
 
   public constructor() {
     super();
-    IpcWebSocket.transport.listen(async (e, m) => this.dispatch(e, m));
+    IpcWebSocket.receivers.add(async (e, m) => this.dispatch(e, m));
   }
 
   public send(channel: string, ...data: any[]): void {
@@ -116,18 +116,18 @@ export class IpcWebSocketFrontend extends IpcWebSocket implements IpcSocketFront
 
 /** @internal */
 export class IpcWebSocketBackend extends IpcWebSocket implements IpcSocketBackend {
-  private _handlers = new Map<string, (methodName: string, ...args: any[]) => Promise<any>>();
+  private _handlers = new Map<string, (event: Event, methodName: string, ...args: any[]) => Promise<any>>();
 
   public constructor() {
     super();
-    IpcWebSocket.transport.listen(async (e, m) => this.dispatch(e, m));
+    IpcWebSocket.receivers.add(async (e, m) => this.dispatch(e, m));
   }
 
   public send(channel: string, ...data: any[]): void {
     IpcWebSocket.transport.send({ type: IpcWebSocketMessageType.Push, channel, data });
   }
 
-  public handle(channel: string, handler: (methodName: string, ...args: any[]) => Promise<any>): RemoveFunction {
+  public handle(channel: string, handler: (event: Event, methodName: string, ...args: any[]) => Promise<any>): RemoveFunction {
     this._handlers.set(channel, handler);
 
     return () => {
@@ -148,7 +148,7 @@ export class IpcWebSocketBackend extends IpcWebSocket implements IpcSocketBacken
     if (typeof (args) === "undefined")
       args = [];
 
-    const response = await handler(message.method, ...args);
+    const response = await handler({} as any, message.method, ...args);
 
     IpcWebSocket.transport.send({
       type: IpcWebSocketMessageType.Response,
