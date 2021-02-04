@@ -34,13 +34,13 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
-  "dependencies": {
-    "@bentley/bentleyjs-core": "2.13.0-dev.2"
-  },
   "peerDependencies": {
-    "@bentley/itwin-client": "^2.13.0-dev.2"
+    "@bentley/bentleyjs-core": "^2.13.0-dev.2",
+    "@bentley/itwin-client": "^2.13.0-dev.2",
+    "@bentley/context-registry-client": "^2.13.0-dev.2"
   },
   "devDependencies": {
+    "@bentley/bentleyjs-core": "2.13.0-dev.2",
     "@bentley/build-tools": "2.13.0-dev.2",
     "@bentley/certa": "2.13.0-dev.2",
     "@bentley/config-loader": "2.13.0-dev.2",

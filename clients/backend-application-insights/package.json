@@ -30,14 +30,16 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/backend-itwin-client": "2.13.0-dev.2",
-    "@bentley/bentleyjs-core": "2.13.0-dev.2",
     "applicationinsights": "^1.7.5"
   },
   "peerDependencies": {
+    "@bentley/backend-itwin-client": "^2.13.0-dev.2",
+    "@bentley/bentleyjs-core": "^2.13.0-dev.2",
     "@bentley/itwin-client": "^2.13.0-dev.2"
   },
   "devDependencies": {
+    "@bentley/backend-itwin-client": "2.13.0-dev.2",
+    "@bentley/bentleyjs-core": "2.13.0-dev.2",
     "@bentley/build-tools": "2.13.0-dev.2",
     "@bentley/certa": "2.13.0-dev.2",
     "@bentley/config-loader": "2.13.0-dev.2",

@@ -42,6 +42,7 @@
     "@bentley/itwin-client": "^2.13.0-dev.2"
   },
   "devDependencies": {
+    "@bentley/bentleyjs-core": "2.13.0-dev.2",
     "@bentley/build-tools": "2.13.0-dev.2",
     "@bentley/certa": "2.13.0-dev.2",
     "@bentley/config-loader": "2.13.0-dev.2",
