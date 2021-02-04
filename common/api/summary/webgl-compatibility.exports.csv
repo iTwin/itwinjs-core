@@ -3,6 +3,7 @@ Release Tag;API Item
 internal;Capabilities
 beta;ContextCreator = (canvas: HTMLCanvasElement, useWebGL2: boolean, inputContextAttributes?: WebGLContextAttributes) => WebGLContext | undefined
 internal;DepthType
+internal;detectIsMobile(): boolean
 beta;GraphicsDriverBugs
 beta;queryRenderCompatibility(useWebGL2: boolean, createContext?: ContextCreator): WebGLRenderCompatibilityInfo
 internal;RenderType
