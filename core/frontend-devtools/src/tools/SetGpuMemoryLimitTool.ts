@@ -13,7 +13,7 @@ import { GpuMemoryLimit, IModelApp, Tool } from "@bentley/imodeljs-frontend";
  * @beta
  */
 export class SetGpuMemoryLimitTool extends Tool {
-  public static toolId = "SetMaxTileMemory";
+  public static toolId = "SetGpuMemoryLimit";
   public static get minArgs() { return 1; }
   public static get maxArgs() { return 1; }
 
