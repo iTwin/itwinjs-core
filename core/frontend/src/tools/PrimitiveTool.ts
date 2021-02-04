@@ -7,7 +7,7 @@
  */
 
 import { IModelApp } from "../IModelApp";
-import { BriefcaseConnection } from "../imodeljs-frontend";
+import { BriefcaseConnection, EditableConnection } from "../imodeljs-frontend";
 import { NotifyMessageDetails, OutputMessagePriority } from "../NotificationManager";
 import { Viewport } from "../Viewport";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
@@ -23,7 +23,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
   public targetIsLocked: boolean = false; // If target model is known, set this to true in constructor and override getTargetModel.
 
   /** Get the iModel the tool is operating against. */
-  public get iModel(): BriefcaseConnection { return this.targetView!.view.iModel as BriefcaseConnection; }
+  public get iModel(): EditableConnection { return this.targetView!.view.iModel as EditableConnection; }
 
   /**
    * Establish this tool as the active PrimitiveTool.

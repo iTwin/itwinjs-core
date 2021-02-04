@@ -9,7 +9,7 @@ import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { IModelJson, LineSegment3d, Point3d, Range3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
 import { BatchType, Code, ElementGeometryChange } from "@bentley/imodeljs-common";
 import {
-  ElementEditor3d, GeometricModel3dState, IModelTileTree, IModelTileTreeParams, InteractiveEditingSession, RemoteBriefcaseConnection,
+  ElementEditor3d, GeometricModel3dState, IModelApp, IModelTileTree, IModelTileTreeParams, InteractiveEditingSession, RemoteBriefcaseConnection,
   TileLoadPriority,
 } from "@bentley/imodeljs-frontend";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
@@ -37,12 +37,11 @@ if (ProcessDetector.isElectronAppFrontend) {
 
     before(async () => {
       const projectName = "iModelJsIntegrationTest";
-      await ElectronApp.startup({
-        iModelApp: {
-          authorizationClient: await TestUtility.initializeTestProject(projectName, TestUsers.regular),
-          imodelClient: TestUtility.imodelCloudEnv.imodelClient,
-          applicationVersion: "1.2.1.1",
-        },
+      await IModelApp.shutdown(); // so we can use opts below
+      await IModelApp.startup({
+        authorizationClient: await TestUtility.initializeTestProject(projectName, TestUsers.regular),
+        imodelClient: TestUtility.imodelCloudEnv.imodelClient,
+        applicationVersion: "1.2.1.1",
       });
 
       projectId = await TestUtility.getTestProjectId(projectName);
@@ -60,7 +59,7 @@ if (ProcessDetector.isElectronAppFrontend) {
     after(async () => {
       await closeIModel();
       await TestUtility.deleteIModel(imodelId, projectId);
-      await ElectronApp.shutdown();
+      await IModelApp.shutdown();
     });
 
     function makeLine(p1?: Point3d, p2?: Point3d): LineSegment3d {
@@ -171,7 +170,7 @@ if (ProcessDetector.isElectronAppFrontend) {
       await editor.end();
     });
 
-    it("updates state of tile trees", async () => {
+    it.only("updates state of tile trees", async () => {
       expect(briefcase).not.to.be.undefined;
       const imodel = briefcase!;
 
