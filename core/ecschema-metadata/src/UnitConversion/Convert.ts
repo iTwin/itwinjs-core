@@ -7,8 +7,8 @@ import { SchemaContext } from "../Context";
 import { SchemaItemType } from "../ECObjects";
 import { Unit } from "../Metadata/Unit";
 import { SchemaItemKey } from "../SchemaKey";
-import { LinearMap } from "./linear-map";
-import { UnitGraph } from "./unit-tree";
+import { LinearMap } from "./LinearMap";
+import { UnitGraph } from "./UnitTree";
 
 /**
  * Convertor function type. Given a unit magnitude in a source unit, return the converted magnitude of the target unit.

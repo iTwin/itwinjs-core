@@ -10,11 +10,11 @@ import {
   SchemaItemKey,
   SchemaKey,
   Unit,
-} from "@bentley/ecschema-metadata";
+} from "../ecschema-metadata";
 import * as g from "graphlib";
-import { isConstant, isUnit } from "./helper";
-import { LinearMap } from "./linear-map";
-import { UnitDef, UnitPaser } from "./parser";
+import { isConstant, isUnit } from "./Helper";
+import { LinearMap } from "./LinearMap";
+import { UnitDef, UnitPaser } from "./Parser";
 
 export class GraphUtils {
   /**
@@ -263,7 +263,7 @@ export class UnitGraph {
           const thisMap = this.graph.node(c)
             ? LinearMap.from(this.graph.node(c) as Unit | Constant)
             : LinearMap.Identity;
-          const other = cmap || LinearMap.Identity
+          const other = cmap || LinearMap.Identity;
           const result = other.compose(thisMap);
           p.set(c, result);
         } else {
