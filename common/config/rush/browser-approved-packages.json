@@ -359,6 +359,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "chevrotain",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "child_process",
       "allowedCategories": [ "internal" ]
     },
@@ -537,6 +541,10 @@
     {
       "name": "glob",
       "allowedCategories": [ "backend", "edit", "frontend", "internal", "tools" ]
+    },
+    {
+      "name": "graphlib",
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "highlight.js",

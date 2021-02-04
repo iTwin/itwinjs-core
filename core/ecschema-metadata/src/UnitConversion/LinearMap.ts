@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Constant, Unit } from "@bentley/ecschema-metadata";
-import { Float } from "./float";
-import { isUnit } from "./helper";
+import { Constant, Unit } from "../ecschema-metadata";
+import { Float } from "./Float";
+import { isUnit } from "./Helper";
 
 export class LinearMap {
   constructor(
