@@ -5,7 +5,6 @@
 - [Install necessary prerequisites]($docs/getting-started/development-prerequisites).
 - From a terminal, `npx create-react-app your-app-name --template @bentley/itwin-viewer --scripts-version @bentley/react-scripts`.
   - This will generate a new application based on the iTwin Viewer React component in the `your-app-name` directory.
-- In the `your-app-name` directory, `npm install`.
 - Open the `your-app-name` directory in VS Code.
 - Add a valid contextId (i.e. Project Id) and iModelId for your user to the IMJS_CONTEXT_ID and IMJS_IMODEL_ID variables in the .env file within the application's root directory.
   - You can obtain these ids from the "GUIDs" column of your [registration dashboard](https://www.itwinjs.org/getting-started/registration-dashboard?tab=1)
