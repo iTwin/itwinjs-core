@@ -335,6 +335,9 @@
     },
     "ClearEffects": {
       "keyin": "fdt effect clear"
+    },
+    "SetGpuMemoryLimit": {
+      "keyin": "fdt gpu mem limit"
     }
   }
 }

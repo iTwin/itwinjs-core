@@ -31,7 +31,7 @@ import { RenderClipVolume } from "./render/RenderClipVolume";
 import { RenderMemory } from "./render/RenderMemory";
 import { RenderScheduleState } from "./RenderScheduleState";
 import { StandardView, StandardViewId } from "./StandardView";
-import { TileTreeReference, TileTreeSet } from "./tile/internal";
+import { DisclosedTileTreeSet, TileTreeReference } from "./tile/internal";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { areaToEyeHeight, areaToEyeHeightFromGcs, GlobalLocation } from "./ViewGlobalLocation";
 import { ViewingSpace } from "./ViewingSpace";
@@ -380,7 +380,7 @@ export abstract class ViewState extends ElementState {
   /** Disclose *all* TileTrees currently in use by this view. This set may include trees not reported by [[forEachTileTreeRef]] - e.g., those used by view attachments, map-draped terrain, etc.
    * @internal
    */
-  public discloseTileTrees(trees: TileTreeSet): void {
+  public discloseTileTrees(trees: DisclosedTileTreeSet): void {
     this.forEachTileTreeRef((ref) => trees.disclose(ref));
   }
 
@@ -388,9 +388,9 @@ export abstract class ViewState extends ElementState {
    * @internal
    */
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    const trees = new TileTreeSet();
+    const trees = new DisclosedTileTreeSet();
     this.discloseTileTrees(trees);
-    for (const tree of trees.trees)
+    for (const tree of trees)
       tree.collectStatistics(stats);
 
     this.collectNonTileTreeStatistics(stats);
