@@ -32,7 +32,6 @@ if (ProcessDetector.isElectronAppFrontend) { // BriefcaseConnection tests only r
 
       assert.isTrue(connection.isBriefcaseConnection());
       assert.isFalse(connection.isSnapshotConnection());
-      assert.isFalse(connection.isBriefcaseConnection());
       assert.isFalse(connection.isBlankConnection());
       assert.isFalse(connection.isCheckpointConnection());
 
