@@ -44,16 +44,19 @@ The new behavior is documented as part of the method documentation here:
 
 ### Setting up default formats
 
-A new feature was introduced, which allows us to supply a map of default unit formats to use for formatting properties that don't have a presentation format in requested unit system.
-These formats are stored in a `defaultFormats` map which can be viewed in `presentation-backend\PresentationManagerProps.defaultFormats`.
-
-To setup `DefaultFormats`, `Phenomenon`, array of `UnitSystem` and `FormatProps` need to be specified in the map like so:
+A new feature was introduced, which allows supplying default unit formats to use for formatting properties that don't have a presentation unit for requested unit system. The formats are set when initializing [Presentation]($presentation-backend) and passing [PresentationManagerProps.defaultFormats]($presentation-backend).
+Example:
 
 ```ts
-const defaultFormats = {
-          length: { unitSystems: [PresentationUnitSystem.BritishImperial], format: formatPropsLength },
-          area: { unitSystems: [PresentationUnitSystem.UsCustomary, PresentationUnitSystem.UsSurvey], format: formatPropsArea },
-        };
-```
-
-Phenomenon's name is case-insensitive.
+Presentation.initialize({
+  defaultFormats: {
+    length: {
+      unitSystems: [PresentationUnitSystem.BritishImperial],
+      format: MY_DEFAULT_FORMAT_FOR_LENGTHS_IN_BRITISH_IMPERIAL_UNITS,
+    },
+    area: {
+      unitSystems: [PresentationUnitSystem.UsCustomary, PresentationUnitSystem.UsSurvey],
+      format: MY_DEFAULT_FORMAT_FOR_AREAS_IN_US_UNITS,
+    },
+  },
+});

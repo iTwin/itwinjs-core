@@ -257,10 +257,7 @@ export interface PresentationManagerProps {
     contentCacheSize?: number;
     // @alpha
     defaultFormats?: {
-        [phenomenon: string]: {
-            unitSystems: string[];
-            format: FormatProps;
-        };
+        [phenomenon: string]: UnitSystemFormat;
     };
     enableSchemasPreload?: boolean;
     // @internal (undocumented)
