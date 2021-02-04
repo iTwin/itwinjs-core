@@ -262,7 +262,7 @@ export class IModelTile extends Tile {
 
     // This tile is too coarse to draw. Try to draw something more appropriate.
     // If it is not ready to draw, we may want to skip loading in favor of loading its descendants.
-    let canSkipThisTile = this.depth < this.iModelTree.maxInitialTilesToSkip;
+    let canSkipThisTile = this._wasLoaded || this.depth < this.iModelTree.maxInitialTilesToSkip;
     if (canSkipThisTile) {
       numSkipped = 1;
     } else {
