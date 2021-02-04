@@ -38,6 +38,7 @@ import { PresentationBackendLoggerCategory, PresentationBackendNativeLoggerCateg
     taskAllocationsMap: {
       [RequestPriority.Max]: 1,
     },
+    useMmap: true,
   });
   // __PUBLISH_EXTRACT_END__
 

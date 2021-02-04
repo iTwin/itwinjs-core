@@ -162,7 +162,7 @@ describe("FilteringDataProvider", () => {
         const potentialMatch = findRecord(record.getChildrenRecords(), name);
         if (potentialMatch)
           return potentialMatch;
-      };
+      }
 
       return undefined;
     }
@@ -463,7 +463,7 @@ describe("FilteringDataProvider", () => {
 
       const filteringProvider = new FilteringPropertyDataProvider(dataProv, mockFilterer.object);
 
-      const filteredData = await filteringProvider.getData();;
+      const filteredData = await filteringProvider.getData();
       const filteredData2 = await filteringProvider.getData();
 
       expect(filteredData === filteredData2).to.be.true;

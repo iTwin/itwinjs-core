@@ -69,6 +69,7 @@ export interface DefaultNativePlatformProps {
   cacheConfig?: IModelJsNative.ECPresentationHierarchyCacheConfig;
   contentCacheSize?: number;
   defaultFormats?: { [phenomenon: string]: UnitSystemFormat };
+  useMmap?: boolean | number;
 }
 
 /** @internal */

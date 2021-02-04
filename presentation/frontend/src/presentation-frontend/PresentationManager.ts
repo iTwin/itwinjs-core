@@ -34,7 +34,7 @@ export interface IModelHierarchyChangeEventArgs {
   updateInfo: HierarchyUpdateInfo;
   /** Key of iModel that was used to create hierarchy. It matches [[IModelConnection.key]] property. */
   imodelKey: string;
-};
+}
 
 /**
  * Data structure that describes iModel content change event arguments.

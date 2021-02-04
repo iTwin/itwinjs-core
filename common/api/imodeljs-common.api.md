@@ -1473,6 +1473,8 @@ export enum ContentFlags {
     // (undocumented)
     AllowInstancing = 1,
     // (undocumented)
+    ExternalTextures = 8,
+    // (undocumented)
     IgnoreAreaPatterns = 4,
     // (undocumented)
     ImprovedElision = 2,
@@ -1553,8 +1555,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 1441792,
-    Major = 22,
+    Combined = 1507328,
+    Major = 23,
     Minor = 0
 }
 
@@ -2392,14 +2394,6 @@ export namespace Events {
     export namespace NativeApp {
         const // (undocumented)
         namespace = "NativeApp";
-        const // (undocumented)
-        onMemoryWarning = "onMemoryWarning";
-        const // (undocumented)
-        onBriefcaseDownloadProgress = "download-progress";
-        const // (undocumented)
-        onInternetConnectivityChanged = "onInternetConnectivityChanged";
-        const // (undocumented)
-        onUserStateChanged = "onUserStateChanged";
         const modelGeometryChanges = "modelGeometryChanges";
     }
 }
@@ -3618,7 +3612,7 @@ export class ImageBuffer {
     protected constructor(data: Uint8Array, format: ImageBufferFormat, width: number);
     // @internal (undocumented)
     protected static computeHeight(data: Uint8Array, format: ImageBufferFormat, width: number): number;
-    static create(data: Uint8Array, format: ImageBufferFormat, width: number): ImageBuffer | undefined;
+    static create(data: Uint8Array, format: ImageBufferFormat, width: number): ImageBuffer;
     readonly data: Uint8Array;
     readonly format: ImageBufferFormat;
     static getNumBytesPerPixel(format: ImageBufferFormat): number;
@@ -3868,6 +3862,8 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     getMassProperties(_iModelToken: IModelRpcProps, _props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     // (undocumented)
     getModelProps(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<ModelProps[]>;
+    // @alpha (undocumented)
+    getTextureImage(_iModelToken: IModelRpcProps, _textureLoadProps: TextureLoadProps): Promise<Uint8Array | undefined>;
     // (undocumented)
     getToolTipMessage(_iModelToken: IModelRpcProps, _elementId: string): Promise<string[]>;
     // (undocumented)
@@ -4780,6 +4776,22 @@ export interface NativeAppIpc {
     // (undocumented)
     toggleInteractiveEditingSession: (_tokenProps: IModelRpcProps, _startSession: boolean) => Promise<boolean>;
 }
+
+// @internal
+export interface NativeAppResponse {
+    // (undocumented)
+    notifyInternetConnectivityChanged: (status: InternetConnectivityStatus) => void;
+    // (undocumented)
+    notifyMemoryWarning: () => void;
+    // (undocumented)
+    notifyUserStateChanged: (arg: {
+        accessToken: any;
+        err?: string;
+    }) => void;
+}
+
+// @internal (undocumented)
+export const nativeAppResponse = "nativeApp-notify";
 
 // @public
 export interface NavigationBindingValue {
@@ -5899,6 +5911,12 @@ export interface RequestNewBriefcaseProps {
     contextId: GuidString;
     fileName?: string;
     iModelId: GuidString;
+}
+
+// @beta
+export abstract class ResponseHandler {
+    static register(): RemoveFunction;
+    abstract get responseChannel(): string;
 }
 
 // @public (undocumented)
@@ -7172,6 +7190,11 @@ export enum TextureFlags {
     None = 0
 }
 
+// @alpha
+export interface TextureLoadProps {
+    name: Id64String;
+}
+
 // @beta
 export class TextureMapping {
     constructor(tx: RenderTexture, params: TextureMapping.Params);
@@ -7496,6 +7519,8 @@ export interface TileOptions {
     readonly alwaysSubdivideIncompleteTiles: boolean;
     // (undocumented)
     readonly disableMagnification: boolean;
+    // (undocumented)
+    readonly enableExternalTextures: boolean;
     // (undocumented)
     readonly enableImprovedElision: boolean;
     // (undocumented)

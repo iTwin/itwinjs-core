@@ -264,6 +264,14 @@ export interface PresentationManagerProps {
   defaultFormats?: {
     [phenomenon: string]: UnitSystemFormat;
   };
+   * Use [SQLite's Memory-Mapped I/O](https://sqlite.org/mmap.html) for worker connections. This mode improves performance of handling
+   * requests with high I/O intensity, e.g. filtering large tables on non-indexed columns. No downsides have been noticed.
+   *
+   * Set to a falsy value to turn off. `true` for memory-mapping the whole iModel. Number value for memory-mapping the specified amount of bytes.
+   *
+   * @alpha
+   */
+  useMmap?: boolean | number;
 
   /**
    * An identifier which helps separate multiple presentation managers. It's
@@ -327,6 +335,7 @@ export class PresentationManager {
         cacheConfig: createCacheConfig(this._props.cacheConfig),
         contentCacheSize: this._props.contentCacheSize,
         defaultFormats: this._props.defaultFormats,
+        useMmap: this._props.useMmap,
       });
       this._nativePlatform = new nativePlatformImpl();
     }
