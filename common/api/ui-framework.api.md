@@ -1935,6 +1935,8 @@ export interface FooterModeFieldProps extends StatusFieldProps {
 // @alpha (undocumented)
 export class FrameworkAccuDraw extends AccuDraw {
     constructor();
+    static get displayNotifications(): boolean;
+    static set displayNotifications(v: boolean);
     // (undocumented)
     static getFieldDisplayValue(index: ItemField): string;
     // @internal
