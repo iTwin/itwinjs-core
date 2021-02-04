@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import {
-  ContentSpecificationTypes, DefaultContentDisplayTypes, Descriptor, DisplayValueGroup, Field, FieldDescriptor, InstanceKey, KeySet,
+  ContentSpecificationTypes, DefaultContentDisplayTypes, Descriptor, DisplayValueGroup, Field, FieldDescriptor, findFieldByLabel, InstanceKey, KeySet,
   NestedContentField, PresentationError, PresentationStatus, RelationshipDirection, Ruleset, RuleTypes,
 } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
@@ -573,27 +573,4 @@ class ECClassHierarchy {
       derivedClassIds: this.getAllDerivedClassIds(id),
     };
   }
-}
-
-export function findFieldByLabel(fields: Field[], label: string, allFields?: Field[]): Field | undefined {
-  const isTopLevel = (undefined === allFields);
-  if (!allFields)
-    allFields = new Array<Field>();
-  for (const field of fields) {
-    if (field.label === label)
-      return field;
-
-    if (field.isNestedContentField()) {
-      const nestedMatchingField = findFieldByLabel(field.nestedFields, label, allFields);
-      if (nestedMatchingField)
-        return nestedMatchingField;
-    }
-
-    allFields.push(field);
-  }
-  if (isTopLevel) {
-    // eslint-disable-next-line no-console
-    console.error(`Field '${label}' not found. Available fields: [${allFields.map((f) => `"${f.label}"`).join(", ")}]`);
-  }
-  return undefined;
 }

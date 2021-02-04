@@ -81,7 +81,7 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
       const mode = (props.mode === PresentationManagerMode.ReadOnly) ? IModelJsNative.ECPresentationManagerMode.ReadOnly : IModelJsNative.ECPresentationManagerMode.ReadWrite;
       const cacheConfig = props.cacheConfig ?? { mode: HierarchyCacheMode.Disk, directory: "" };
       const defaultFormats = props.defaultFormats ? this.getSerializedDefaultFormatsMap(props.defaultFormats) : {};
-      this._nativeAddon = new IModelHost.platform.ECPresentationManager({ ...props, mode, cacheConfig, defaultFormats});
+      this._nativeAddon = new IModelHost.platform.ECPresentationManager({ ...props, mode, cacheConfig, defaultFormats });
     }
     private getStatus(responseStatus: IModelJsNative.ECPresentationStatus): PresentationStatus {
       switch (responseStatus) {

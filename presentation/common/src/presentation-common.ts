@@ -12,6 +12,7 @@ export * from "./presentation-common/AsyncTasks";
 export * from "./presentation-common/Diagnostics";
 export * from "./presentation-common/EC";
 export * from "./presentation-common/Error";
+export * from "./presentation-common/findFieldByLabel";
 export * from "./presentation-common/KeySet";
 export * from "./presentation-common/LabelDefinition";
 export * from "./presentation-common/Logging";

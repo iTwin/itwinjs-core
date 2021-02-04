@@ -114,9 +114,8 @@ export interface HybridCacheConfig extends HierarchyCacheConfigBase {
 }
 
 /**
- * Map for setting up format to a number of UnitSystems.
- * It is used in [[PresentationManager]] to setup DefaultFormats.
- * DefaultFormats are constructed by mapping a phenomenon with UnitSystemFormat.
+ * A data structure that associates some unit systems with a format. The associations are used for
+ * assigning default unit formats for specific phenomenons (see [[PresentationManagerProps.defaultFormats]])
  * @alpha
  */
 export interface UnitSystemFormat {
@@ -259,7 +258,8 @@ export interface PresentationManagerProps {
   contentCacheSize?: number;
 
   /**
-   * A map for setting up default formats.
+   * A map of default unit formats to use for formatting properties that don't have a presentation format
+   * in requested unit system.
    *  @alpha */
   defaultFormats?: {
     [phenomenon: string]: UnitSystemFormat;

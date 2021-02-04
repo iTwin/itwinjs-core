@@ -105,6 +105,21 @@ describe("PresentationManager", () => {
         const cacheConfig = {
           mode: HierarchyCacheMode.Memory,
         };
+        const formatProps = {
+          composite: {
+            includeZero:true,
+            spacer:" ",
+            units: [{label:"'",name:"IN"}],
+          },
+          formatTraits:"KeepSingleZero|KeepDecimalPoint|ShowUnitLabel",
+          precision:4,
+          type:"Decimal",
+          uomSeparator:"",
+        };
+        const defaultFormats = {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+          LENGTH: { unitSystems: [PresentationUnitSystem.BritishImperial], format: formatProps },
+        };
         const props: PresentationManagerProps = {
           id: faker.random.uuid(),
           presentationAssetsRoot: "/test",
@@ -114,6 +129,7 @@ describe("PresentationManager", () => {
           updatesPollInterval: 1,
           cacheConfig,
           contentCacheSize: 999,
+          defaultFormats,
         };
         const expectedCacheConfig = {
           mode: HierarchyCacheMode.Memory,
@@ -128,7 +144,8 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: true,
             cacheConfig: expectedCacheConfig,
             contentCacheSize: 999,
-            defaultFormats: {},
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            defaultFormats: {LENGTH: {unitSystems: [PresentationUnitSystem.BritishImperial], serializedFormat: JSON.stringify(formatProps)}},
           });
         });
       });
