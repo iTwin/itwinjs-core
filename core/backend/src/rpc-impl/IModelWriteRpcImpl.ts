@@ -84,11 +84,11 @@ export class IModelWriteRpcImpl extends RpcInterface implements IModelWriteRpcIn
   }
 
   public async hasUnsavedChanges(tokenProps: IModelRpcProps): Promise<boolean> {
-    return BriefcaseDb.findByKey(tokenProps.key).txns.hasUnsavedChanges;
+    return IModelDb.findByKey(tokenProps.key).nativeDb.hasUnsavedChanges();
   }
 
   public async hasPendingTxns(tokenProps: IModelRpcProps): Promise<boolean> {
-    return BriefcaseDb.findByKey(tokenProps.key).txns.hasPendingTxns;
+    return IModelDb.findByKey(tokenProps.key).nativeDb.hasPendingTxns();
   }
 
   public async getParentChangeset(tokenProps: IModelRpcProps): Promise<string> {
