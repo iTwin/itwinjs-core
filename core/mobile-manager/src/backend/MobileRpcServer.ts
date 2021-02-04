@@ -5,9 +5,10 @@
 
 import * as ws from "ws";
 import { BentleyStatus, IModelError } from "@bentley/imodeljs-common";
-import { MobileRpcGateway } from "../common/MobileRpcProtocol";
+import { MobileRpcGateway, MobileRpcProtocol } from "../common/MobileRpcProtocol";
 import { MobileRpcConfiguration } from "../MobileBackend";
 import { MobileHost } from "./MobileHost";
+import { MobileApp } from "../MobileFrontend";
 
 export class MobileRpcServer {
   private static _nextId = -1;
@@ -117,21 +118,21 @@ export class MobileRpcServer {
   }
 }
 
-// function setupMobileRpc() {
-//   let server: MobileRpcServer | null = new MobileRpcServer();
+export function setupMobileRpc() {
+  let server: MobileRpcServer | null = new MobileRpcServer();
 
-//   MobileDevice.currentDevice.onEnterBackground.addListener(() => {
-//     if (server === null) {
-//       return;
-//     }
+  MobileApp.onEnterBackground.addListener(() => {
+    if (server === null) {
+      return;
+    }
 
-//     server.dispose();
-//     server = null;
-//   });
+    server.dispose();
+    server = null;
+  });
 
-//   MobileDevice.currentDevice.onEnterForeground.addListener(() => {
-//     server = new MobileRpcServer();
-//   });
+  MobileApp.onEnterForeground.addListener(() => {
+    server = new MobileRpcServer();
+  });
 
-//   MobileRpcProtocol.obtainInterop = () => MobileRpcServer.interop;
-// }
+  MobileRpcProtocol.obtainInterop = () => MobileRpcServer.interop;
+}

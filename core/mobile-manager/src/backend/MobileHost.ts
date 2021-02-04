@@ -9,6 +9,7 @@ import { IpcApp } from "@bentley/imodeljs-frontend";
 import { AccessToken, CancelRequest, DownloadFailed, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
 import { BatteryState, mobileAppChannel, MobileAppFunctions, Orientation } from "../common/MobileAppProps";
 import { MobileAuthorizationClientConfiguration } from "../common/MobileAuthorizationClientConfiguration";
+import { setupMobileRpc } from "./MobileRpcServer";
 
 /** @beta */
 export type MobileCompletionCallback = (downloadUrl: string, downloadFileUrl: string, cancelled: boolean, err?: string) => void;
@@ -213,6 +214,8 @@ export class MobileHost {
    * Start the backend of a mobile app.
    */
   public static async startup(opt?: { mobileHost: { device: MobileDevice }, ipcHost?: IpcHostOptions, iModelHost?: IModelHostConfiguration }): Promise<void> {
+    setupMobileRpc();
+
     if (!this.isValid) {
       this._device = opt?.mobileHost.device;
       this.onUserStateChanged.addListener((accessToken?: string, err?: string) => {
