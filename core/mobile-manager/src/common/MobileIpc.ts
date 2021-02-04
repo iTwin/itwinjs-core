@@ -10,6 +10,7 @@ import {
   IpcWebSocketMessage, IpcWebSocketMessageType, IpcWebSocketTransport, RpcInterface, RpcManager, RpcMarshaling, RpcRequestFulfillment,
   SerializedRpcRequest,
 } from "@bentley/imodeljs-common";
+import { MobileEventLoop } from "./MobileEventLoop";
 import { MobileRpcProtocol } from "./MobileRpcProtocol";
 import { MobileRpcRequest } from "./MobileRpcRequest";
 
@@ -73,7 +74,10 @@ export class MobileIpcTransport extends IpcWebSocketTransport {
   }
 
   private async sendToFrontend(message: IpcWebSocketMessage) {
+    MobileEventLoop.addTask();
     const result = await RpcMarshaling.serialize(this._protocol, message);
+    MobileEventLoop.removeTask();
+
     const fulfillment: RpcRequestFulfillment = { result, rawResult: message, interfaceName: IPC, id: message.channel, status: 0 };
     const encoded = MobileRpcProtocol.encodeResponse(fulfillment);
     this._protocol.sendToFrontend(encoded);
