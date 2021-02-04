@@ -146,7 +146,7 @@ export class AzureFileHandler implements FileHandler {
     fs.mkdirSync(dirPath);
   }
 
-  private async downloadFileUsingAzCopy(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, _fileSize?: number, progressCallback?: ProgressCallback): Promise<void> {
+  private async transferFileUsingAzCopy(requestContext: AuthorizedClientRequestContext, source: string, target: string, progressCallback?: ProgressCallback): Promise<void> {
     requestContext.enter();
     Logger.logTrace(loggerCategory, `Using AzCopy with verison ${AzCopy.getVersion()} located at ${AzCopy.execPath}`);
 
@@ -180,7 +180,7 @@ export class AzureFileHandler implements FileHandler {
       Logger.logInfo(loggerCategory, `AzCopy runtime error: ${args}`);
     });
     // start download by spawning in a azcopy process
-    const rc = await azcopy.copy(downloadUrl, downloadToPathname);
+    const rc = await azcopy.copy(source, target);
     if (rc !== 0) {
       throw new Error(`AzCopy failed with return code: ${rc}`);
     }
@@ -298,6 +298,23 @@ export class AzureFileHandler implements FileHandler {
   }
 
   /**
+   * Determine if azcopy should be used for file transfer
+   * @param fileSize size of the transferred file in bytes
+   */
+  private useAzCopyForFileTransfer(fileSize?: number): boolean {
+    let useAzcopy = AzCopy.isAvailable;
+
+    // suppress azcopy for smaller file as it take longer to spawn and exit then it take Http downloader to download it.
+    if (useAzcopy && fileSize) {
+      const minFileSize = Config.App.getNumber("imjs_az_min_filesize_threshold", 500 * 1024 * 1024 /** 500 Mb */);
+      if (fileSize < minFileSize)
+        useAzcopy = false;
+    }
+
+    return useAzcopy;
+  }
+
+  /**
    * Download a file from AzureBlobStorage for iModelHub. Creates the directory containing the file if necessary. If there is an error in the operation, incomplete file is deleted from disk.
    * @param requestContext The client request context
    * @param downloadUrl URL to download file from.
@@ -323,15 +340,8 @@ export class AzureFileHandler implements FileHandler {
 
     AzureFileHandler.makeDirectoryRecursive(path.dirname(downloadToPathname));
     try {
-      // suppress azcopy for smaller file as it take longer to spawn and exit then it take Http downloader to download it.
-      let useAzcopy = AzCopy.isAvailable;
-      if (useAzcopy && fileSize) {
-        const minFileSize = Config.App.getNumber("imjs_az_min_filesize_threshold", 500 * 1024 * 1024 /** 500 Mb */);
-        if (fileSize < minFileSize)
-          useAzcopy = false;
-      }
-      if (useAzcopy) {
-        await this.downloadFileUsingAzCopy(requestContext, downloadUrl, downloadToPathname, fileSize, progressCallback);
+      if (this.useAzCopyForFileTransfer(fileSize)) {
+        await this.transferFileUsingAzCopy(requestContext, downloadUrl, downloadToPathname, progressCallback);
       } else {
         await this.downloadFileUsingHttps(requestContext, downloadUrl, downloadToPathname, fileSize, progressCallback, cancelRequest);
       }
@@ -403,9 +413,16 @@ export class AzureFileHandler implements FileHandler {
     ArgumentCheck.defined("uploadFromPathname", uploadFromPathname);
 
     const fileSize = this.getFileSize(uploadFromPathname);
+    if (this.useAzCopyForFileTransfer(fileSize)) {
+      await this.transferFileUsingAzCopy(requestContext, uploadFromPathname, uploadUrlString, progressCallback);
+    } else {
+      await this.uploadFileUsingHttps(requestContext, uploadUrlString, uploadFromPathname, fileSize, progressCallback);
+    }
+  }
+
+  private async uploadFileUsingHttps(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string, fileSize: number, progressCallback?: ProgressCallback): Promise<void> {
     const file = fs.openSync(uploadFromPathname, "r");
     const chunkSize = 4 * 1024 * 1024;
-
     try {
       let blockList = '<?xml version=\"1.0\" encoding=\"utf-8\"?><BlockList>';
       let i = 0;
