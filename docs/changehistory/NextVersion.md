@@ -52,7 +52,7 @@ To setup `DefaultFormats`, `Phenomenon`, array of `UnitSystem` and `FormatProps`
 ```ts
 const defaultFormats = {
           length: { unitSystems: [PresentationUnitSystem.BritishImperial], format: formatPropsLength },
-          area: { unitSystems: [PresentationUnitSystem.UsCustomary, PresentationUnitSystem.UsSurvey], format: formatPropsAre }
+          area: { unitSystems: [PresentationUnitSystem.UsCustomary, PresentationUnitSystem.UsSurvey], format: formatPropsAre },
         };
 ```
 

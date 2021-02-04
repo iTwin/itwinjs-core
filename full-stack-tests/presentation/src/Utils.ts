@@ -2,11 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @packageDocumentation
- * @module Core
- */
 
-import { Field } from "../presentation-common";
+import { Field } from "@bentley/presentation-common";
 
 /** Returns field by given label.
  * @internal

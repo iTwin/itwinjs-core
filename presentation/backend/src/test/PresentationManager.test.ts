@@ -107,16 +107,16 @@ describe("PresentationManager", () => {
         };
         const formatProps = {
           composite: {
-            includeZero:true,
-            spacer:" ",
+            includeZero: true,
+            spacer: " ",
             units: [
-              { label:"'", name:"IN" },
+              { label: "'", name: "IN" },
             ],
           },
-          formatTraits:"KeepSingleZero|KeepDecimalPoint|ShowUnitLabel",
-          precision:4,
-          type:"Decimal",
-          uomSeparator:"",
+          formatTraits: "KeepSingleZero|KeepDecimalPoint|ShowUnitLabel",
+          precision: 4,
+          type: "Decimal",
+          uomSeparator: "",
         };
         const defaultFormats = {
           length: { unitSystems: [PresentationUnitSystem.BritishImperial], format: formatProps },
@@ -145,8 +145,7 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: true,
             cacheConfig: expectedCacheConfig,
             contentCacheSize: 999,
-            // eslint-disable-next-line @typescript-eslint/naming-convention
-            defaultFormats: {LENGTH: {unitSystems: [PresentationUnitSystem.BritishImperial], serializedFormat: JSON.stringify(formatProps)}},
+            defaultFormats: { length: { unitSystems: [PresentationUnitSystem.BritishImperial], serializedFormat: JSON.stringify(formatProps) } },
           });
         });
       });

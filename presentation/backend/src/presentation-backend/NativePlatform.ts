@@ -90,7 +90,7 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
         default: return PresentationStatus.Error;
       }
     }
-    private getSerializedDefaultFormatsMap(defaultMap: { [phenomenon: string]: UnitSystemFormat }){
+    private getSerializedDefaultFormatsMap(defaultMap: { [phenomenon: string]: UnitSystemFormat }) {
       const res: {
         [phenomenon: string]: {
           unitSystems: string[];
@@ -99,7 +99,7 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
       } = {};
       Object.keys(defaultMap).forEach((key) => {
         const value = defaultMap[key];
-        res[key.toUpperCase()] = { unitSystems: value.unitSystems, serializedFormat: JSON.stringify(value.format) };
+        res[key] = { unitSystems: value.unitSystems, serializedFormat: JSON.stringify(value.format) };
       });
 
       return res;
