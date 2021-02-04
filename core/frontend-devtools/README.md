@@ -19,6 +19,7 @@ Because this is a developer-only package, its functionality is not expected to e
   * `FpsTracker` - displays the average frames-per-second.
   * `TileStatisticsTracker` - displays the state of tile requests in the system.
   * `MemoryTracker` - displays statistics about GPU memory allocated by the display system.
+  * `TileMemoryBreakdown` - breaks down GPU memory used by tiles based on their relationship to the set of displayed tiles.
   * `GpuProfiler` - displays GPU timing queries and allows recording for viewing in chrome://tracing. See https://aras-p.info/blog/2017/01/23/Chrome-Tracing-as-Profiler-Frontend/ for more information.
   * `DiagnosticsPanel` - combines all of the above widgets into a single panel.
 
@@ -151,6 +152,7 @@ This package supplies a couple of examples illustrating how to implement particl
   * "v", "h": The visible or hidden ratio in [0..1].
   * "s": The silhouette as an integer in [0..2] (see Hilite.Silhouette enum).
 * `fdt emphasis settings` - Modifies the hilite settings used for emphasized elements in the selected viewport. If no arguments are specified, it does nothing. See `fdt hilite settings` for supported arguments.
+* `fdt gpu mem limit` - Changes the value of `TileAdmin.gpuMemoryLimit` controlling how much GPU memory can be allocated to tile graphics before graphics of least-recently-drawn tiles begin to be discarded. Accepts one integer greater than or equal to zero representing the amount of memory in bytes; or one of "default", "relaxed", "aggressive", or "none". Any other input is treated as "none".
 * `fdt tilesize default` - Changes the default tile size modifier used by viewports that don't explicitly override it. Accepts a floating point number greater than zero.
 * `fdt tilesize viewport` - Overrides the tile size modifier for the selected viewport (if a floating point number is supplied) or clears the override (if the string "reset" is supplied). The modifier must be greater than zero.
 * `fdt webgl report compatibility` - Opens a modal dialog with information about the client's level of support for various features of the iModel.js display system.
