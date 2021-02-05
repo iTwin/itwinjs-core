@@ -2601,7 +2601,7 @@ export class SnapshotDb extends IModelDb {
 }
 
 /** Standalone iModels are read/write files that are not managed by iModelHub.
- * They are relevant only for single-practitioner scenarios where team collaboration is not necessary.
+ * They are relevant only for single-practitioner scenarios where team collaboration is necessary.
  * However, Standalone iModels are designed such that the API interaction between Standalone iModels and Briefcase
  * iModels (those synchronized with iModelHub) are as similar and consistent as possible.
  * This leads to a straightforward process where the practitioner can optionally choose to upgrade to iModelHub.

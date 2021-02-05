@@ -19,7 +19,7 @@ const loggerCategory = FrontendLoggerCategory.IModelConnection;
 /**
  * General editing functions. See IModelApp.elementEditor for editing 3D elements.
  * @alpha
- * @deprecated
+ * @deprecated this was an experimental class that was replaced by EditCommands
  */
 export class EditingFunctions {
   private _connection: IModelConnection;
@@ -120,7 +120,7 @@ export class EditingFunctions {
 
 /**
  * @alpha
- * @deprecated
+ * @deprecated this was an experimental class that was replaced by EditCommands
  */
 export namespace EditingFunctions { // eslint-disable-line no-redeclare
   /**
@@ -156,7 +156,7 @@ export namespace EditingFunctions { // eslint-disable-line no-redeclare
   }
 
   /** Helper class for creating SpatialCategories.
-   * @deprecated
+ * @deprecated this was an experimental class that was replaced by EditCommands
    */
   export class CategoryEditor {
     private _connection: IModelConnection;
@@ -197,7 +197,7 @@ export namespace EditingFunctions { // eslint-disable-line no-redeclare
   }
 
   /** Concurrency control functions.
-   * @deprecated
+   * @deprecated this was an experimental class that was replaced by EditCommands
    */
   export class ConcurrencyControl {
     private _connection: IModelConnection;

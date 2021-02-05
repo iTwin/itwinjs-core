@@ -7,7 +7,7 @@
  */
 
 import { IModelApp } from "../IModelApp";
-import { BriefcaseConnection, EditableConnection } from "../imodeljs-frontend";
+import { EditableConnection } from "../InteractiveEditingSession";
 import { NotifyMessageDetails, OutputMessagePriority } from "../NotificationManager";
 import { Viewport } from "../Viewport";
 import { AccuDrawShortcuts } from "./AccuDrawTool";

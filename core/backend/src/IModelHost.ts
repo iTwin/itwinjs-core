@@ -14,7 +14,7 @@ import {
   RequestHost,
 } from "@bentley/backend-itwin-client";
 import {
-  assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, Config, Guid, GuidString, IModelStatus, ProcessDetector, Logger, LogLevel,
+  assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, Config, Guid, GuidString, IModelStatus, Logger, LogLevel, ProcessDetector,
 } from "@bentley/bentleyjs-core";
 import { IModelBankClient, IModelClient, IModelHubClient } from "@bentley/imodelhub-client";
 import { BentleyStatus, IModelError, RpcConfiguration, SerializedRpcRequest } from "@bentley/imodeljs-common";

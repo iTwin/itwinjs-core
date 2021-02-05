@@ -5,13 +5,11 @@
 import { expect } from "chai";
 import { Id64, using } from "@bentley/bentleyjs-core";
 import { RpcManager } from "@bentley/imodeljs-common";
-import { IModelApp, IModelConnection, CheckpointConnection } from "@bentley/imodeljs-frontend";
+import { CheckpointConnection, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/frontend";
 import {
-  ContentRpcRequestOptions, Descriptor, DistinctValuesRpcRequestOptions,
-  FieldDescriptorType, HierarchyRpcRequestOptions, InstanceKey,
-  KeySet, Paged, PresentationDataCompareRpcOptions,
-  PresentationRpcInterface, PresentationStatus, RegisteredRuleset, Ruleset,
+  ContentRpcRequestOptions, Descriptor, DistinctValuesRpcRequestOptions, FieldDescriptorType, HierarchyRpcRequestOptions, InstanceKey, KeySet, Paged,
+  PresentationDataCompareRpcOptions, PresentationRpcInterface, PresentationStatus, RegisteredRuleset, Ruleset,
 } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import * as defaultRuleset from "./rulesets/default.json";

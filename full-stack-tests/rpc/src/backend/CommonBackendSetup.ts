@@ -2,15 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Config, ProcessDetector, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Config, Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
 import { registerBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { IModelReadRpcInterface, RpcConfiguration } from "@bentley/imodeljs-common";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { rpcInterfaces } from "../common/TestRpcInterface";
 import { resetOp8Initializer, TestRpcImpl2 } from "./TestRpcImpl";
-import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
 
 export async function commonSetup(): Promise<void> {
   IModelJsConfig.init(true, true, Config.App);

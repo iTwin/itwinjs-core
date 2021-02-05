@@ -165,7 +165,7 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   public async openStandalone(filePath: string, openMode: OpenMode, opts?: StandaloneOpenOptions): Promise<IModelConnectionProps> {
     return StandaloneDb.openFile(filePath, openMode, opts).getConnectionProps();
   }
-  public async close(key: string): Promise<void> {
+  public async closeIModel(key: string): Promise<void> {
     IModelDb.findByKey(key).close();
   }
   public async saveChanges(key: string, description?: string): Promise<void> {

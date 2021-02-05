@@ -9,7 +9,7 @@ import {
   EcefLocation, GeoCoordStatus, IModelCoordinatesResponseProps, IModelReadRpcInterface, IModelTileRpcInterface, MassPropertiesOperation,
   MassPropertiesRequestProps, ModelQueryParams, SnapResponseProps,
 } from "@bentley/imodeljs-common";
-import { IModelApp, IModelConnection, CheckpointConnection, SpatialModelState, ViewState } from "@bentley/imodeljs-frontend";
+import { CheckpointConnection, IModelApp, IModelConnection, SpatialModelState, ViewState } from "@bentley/imodeljs-frontend";
 import { AccessToken } from "@bentley/itwin-client";
 import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/frontend";
 import { TestContext } from "./setup/TestContext";

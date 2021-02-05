@@ -142,7 +142,7 @@ export class DisplayTestApp {
         renderSys,
         rpcInterfaces: [
           DtaRpcInterface,
-          Editor3dRpcInterface,
+          Editor3dRpcInterface, // eslint-disable-line deprecation/deprecation
           IModelReadRpcInterface,
           IModelTileRpcInterface,
           IModelWriteRpcInterface,

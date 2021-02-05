@@ -197,7 +197,7 @@ export class CheckpointConnection extends IModelConnection {
 
 /**
  * @public
- * @deprecated use CheckpointConnection
+ * @deprecated use BriefcaseConnection with an IpcApp
  */
 export class RemoteBriefcaseConnection extends CheckpointConnection {
   private _editing: EditingFunctions | undefined;

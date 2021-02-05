@@ -55,7 +55,7 @@ export abstract class PrimitiveToolEx extends PrimitiveTool {
   }
 
   public async lockTargetModel(): Promise<void> {
-    if (this.targetModelId === undefined || !(this.iModel instanceof RemoteBriefcaseConnection))
+    if (this.targetModelId === undefined || !(this.iModel instanceof RemoteBriefcaseConnection)) // eslint-disable-line deprecation/deprecation
       throw new IModelError(IModelStatus.BadModel, "", Logger.logError, loggingCategory, () => this.targetModelId);
 
     return this.iModel.editing.concurrencyControl.lockModel(this.targetModelId);

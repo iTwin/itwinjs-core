@@ -121,7 +121,7 @@ export interface HybridCacheConfig extends HierarchyCacheConfigBase {
 export interface UnitSystemFormat {
   unitSystems: PresentationUnitSystem[];
   format: FormatProps;
-};
+}
 
 /**
  * Properties that can be used to configure [[PresentationManager]]
