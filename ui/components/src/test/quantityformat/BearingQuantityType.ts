@@ -83,9 +83,7 @@ class BearingFormatterSpec extends FormatterSpec {
   /** Static async method to create a FormatSpec given the format and unit of the quantity that will be passed to the Formatter. The input unit will
    * be used to generate conversion information for each unit specified in the Format. This method is async due to the fact that the units provider must make
    * async calls to lookup unit definitions.
-   *  @param name     The name of a format specification.
-   *  @param unitsProvider The units provider is used to look up unit definitions and provide conversion information for converting between units.
-   *  @param persistenceUnit The unit of the value to be formatted.
+   * @internal
    */
   public static async create(name: string, format: Format, unitsProvider: UnitsProvider, persistenceUnit: UnitProps): Promise<FormatterSpec> {
     const conversions: UnitConversionSpec[] = await FormatterSpec.getUnitConversions(format,unitsProvider, persistenceUnit);

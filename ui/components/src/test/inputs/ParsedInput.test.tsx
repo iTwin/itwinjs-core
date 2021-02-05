@@ -73,7 +73,11 @@ describe("ParsedInput", () => {
     fireEvent.change(input, { target: { value: "32F" } });
     fireEvent.keyDown(input, { key: SpecialKey.Enter });
     expect(spyOnChange).to.have.been.called;
+    spyOnChange.resetHistory();
     expect(input.value).to.eq("0.0C");
+    fireEvent.change(input, { target: { value: "0.0C" } });
+    fireEvent.keyDown(input, { key: SpecialKey.Enter });
+    expect(spyOnChange).to.not.have.been.called;
   });
 
 });

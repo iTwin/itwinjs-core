@@ -94,7 +94,10 @@ export function QuantityFormatPanel(props: QuantityFormatPanelProps) {
   const [persistenceUnit, setPersistenceUnit] = React.useState(()=>{
     const quantityTypeKey = getQuantityTypeKey(quantityType);
     const quantityTypeDefinition = IModelApp.quantityFormatter.quantityTypesRegistry.get(quantityTypeKey);
-    return quantityTypeDefinition?.persistenceUnit;
+    if (quantityTypeDefinition)
+      return quantityTypeDefinition.persistenceUnit;
+    // istanbul ignore next
+    throw Error(`Unable to locate a quantity type with type ${quantityType}`);
   });
 
   React.useEffect(() => {
@@ -121,7 +124,9 @@ export function QuantityFormatPanel(props: QuantityFormatPanelProps) {
   React.useEffect(() => {
     const quantityTypeKey = getQuantityTypeKey(quantityType);
     const quantityTypeDefinition = IModelApp.quantityFormatter.quantityTypesRegistry.get(quantityTypeKey);
-    setPersistenceUnit(quantityTypeDefinition?.persistenceUnit);
+    // istanbul ignore else
+    if (quantityTypeDefinition)
+      setPersistenceUnit(quantityTypeDefinition.persistenceUnit);
   }, [quantityType]);
 
   const handleOnFormatChanged = React.useCallback(async (newProps: FormatProps) => {
@@ -135,8 +140,10 @@ export function QuantityFormatPanel(props: QuantityFormatPanelProps) {
         return createCheckboxFormatPropEditor(`${spec.editorType}-${index}`, spec.label, inProps, spec.getBool, spec.setBool, fireFormatChange);
       if (isTextSelectFormatPropEditorSpec(spec))
         return createSelectFormatPropEditor(`${spec.editorType}-${index}`, spec.label, spec.selectOptions, inProps, spec.getString, spec.setString, fireFormatChange);
+      /* istanbul ignore else */
       if (isTextInputFormatPropEditorSpec(spec))
         return createTextInputFormatPropEditor(`${spec.editorType}-${index}`, spec.label, inProps, spec.getString, spec.setString, fireFormatChange);
+      /* istanbul ignore next */
       return <div key={index}/>;
     });
   }, []);
@@ -147,6 +154,7 @@ export function QuantityFormatPanel(props: QuantityFormatPanelProps) {
       const quantityTypeDefinition = IModelApp.quantityFormatter.quantityTypesRegistry.get(quantityTypeKey);
       if (quantityTypeDefinition && isCustomQuantityTypeDefinition(quantityTypeDefinition) &&
         quantityTypeDefinition.isCompatibleFormatProps(inProps)) {
+        // istanbul ignore else
         if (quantityTypeDefinition.primaryPropEditorSpecs)
           return createCustomPropEditors (quantityTypeDefinition.primaryPropEditorSpecs, inProps, fireFormatChange);
       }
@@ -159,6 +167,7 @@ export function QuantityFormatPanel(props: QuantityFormatPanelProps) {
       const quantityTypeDefinition = IModelApp.quantityFormatter.quantityTypesRegistry.get(quantityTypeKey);
       if (quantityTypeDefinition && isCustomQuantityTypeDefinition(quantityTypeDefinition) &&
       quantityTypeDefinition.isCompatibleFormatProps(inProps)) {
+        // istanbul ignore else
         if (quantityTypeDefinition.secondaryPropEditorSpecs)
           return createCustomPropEditors (quantityTypeDefinition.secondaryPropEditorSpecs, inProps, fireFormatChange);
       }

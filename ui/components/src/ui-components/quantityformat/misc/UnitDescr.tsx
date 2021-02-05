@@ -62,6 +62,14 @@ export function UnitDescr(props: UnitDescrProps) {
   const { name, label, parentUnitName, index, onUnitChange, onLabelChange, readonly, unitsProvider } = props;
   const [unitOptions, setUnitOptions] = React.useState<SelectOption[]>([{ value: name, label: getUnitName(name) }]);
   const [currentUnit, setCurrentUnit] = React.useState({ name, label });
+  const isMounted = React.useRef(false);
+
+  React.useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  });
 
   React.useEffect(() => {
     async function fetchAllowableUnitSelections() {
@@ -92,8 +100,12 @@ export function UnitDescr(props: UnitDescrProps) {
 
         if (index !== 0)
           options.push({ value: "REMOVEUNIT", label: "Remove" });
-        setUnitOptions(options);
-        setCurrentUnit(currentUnitProps);
+
+        // istanbul ignore else
+        if (isMounted.current) {
+          setUnitOptions(options);
+          setCurrentUnit(currentUnitProps);
+        }
       }
     }
     fetchAllowableUnitSelections(); // eslint-disable-line @typescript-eslint/no-floating-promises

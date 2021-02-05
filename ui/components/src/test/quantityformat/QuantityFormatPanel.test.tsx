@@ -9,8 +9,9 @@ import { act, fireEvent, render, wait } from "@testing-library/react";
 import { IModelApp, MockRender, QuantityType } from "@bentley/imodeljs-frontend";
 import TestUtils from "../TestUtils";
 import { QuantityFormatPanel } from "../../ui-components/quantityformat/QuantityFormatPanel";
-import { FormatType, ScientificType, ShowSignOption } from "@bentley/imodeljs-quantity";
+import { FormatProps, FormatType, ScientificType, ShowSignOption } from "@bentley/imodeljs-quantity";
 import { BearingQuantityType } from "./BearingQuantityType";
+import { SpecialKey } from "@bentley/ui-abstract";
 
 describe("QuantityInput", () => {
   const rnaDescriptorToRestore = Object.getOwnPropertyDescriptor(IModelApp, "requestNextAnimation")!;
@@ -46,31 +47,85 @@ describe("QuantityInput", () => {
     expect(renderedComponent).not.to.be.null;
   });
 
-  it("should handle onFormatChange UOM separator", () => {
+  it("should render new sample when format is changed", async () => {
+    const overrideLengthFormat: FormatProps = {
+      composite: {
+        includeZero: true,
+        spacer: " ",
+        units: [{ label: "in", name: "Units.IN" }],
+      },
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      precision: 4,
+      type: "Decimal",
+    };
+    const renderedComponent = render(<QuantityFormatPanel quantityType={QuantityType.Length} showSample initialMagnitude={123.45} enableMinimumProperties />);
+    await TestUtils.flushAsyncOperations();
+    const spanElement = renderedComponent.getByTestId("format-sample-formatted") as HTMLSpanElement;
+    expect(spanElement.textContent).to.be.eql (`405'-0 1/4"`);
+    await IModelApp.quantityFormatter.setOverrideFormat(QuantityType.Length, overrideLengthFormat);
+    renderedComponent.rerender(<QuantityFormatPanel quantityType={QuantityType.Length} showSample initialMagnitude={123.45} enableMinimumProperties />);
+    await TestUtils.flushAsyncOperations();
+    expect(spanElement.textContent).to.be.eql ("4860.2362 in");
+    await IModelApp.quantityFormatter.clearOverrideFormats(QuantityType.Length);
+  });
+
+  it("should handle onFormatChange UOM separator", async () => {
     const spy = sinon.spy();
     const renderedComponent = render(<QuantityFormatPanel quantityType={QuantityType.Length} showSample initialMagnitude={123.45} onFormatChange={spy} />);
     expect(renderedComponent).not.to.be.null;
     expect(spy).to.not.be.called;
+    const spanElement = renderedComponent.getByTestId("format-sample-formatted") as HTMLSpanElement;
 
     // change from default none to space
     fireEvent.change(renderedComponent.getByTestId("uom-separator-select"), {target: { value: " " }});
     expect(spy).to.be.called;
     spy.resetHistory();
+    await TestUtils.flushAsyncOperations();
+    expect(spanElement.textContent).to.be.eql (`405 '-0 1/4 "`);
+
+    // change from default none to space
+    fireEvent.change(renderedComponent.getByTestId("uom-separator-select"), {target: { value: "" }});
+    expect(spy).to.be.called;
+    spy.resetHistory();
+    await TestUtils.flushAsyncOperations();
+    expect(spanElement.textContent).to.be.eql (`405'-0 1/4"`);
 
     fireEvent.click(renderedComponent.getByTestId("show-unit-label-checkbox"));
     expect(spy).to.be.called;
     spy.resetHistory();
+    await TestUtils.flushAsyncOperations();
+    expect(spanElement.textContent).to.be.eql (`405:-0 1/4`);  // TODO does this match Native formatter?
+
+    fireEvent.click(renderedComponent.getByTestId("show-unit-label-checkbox"));
+    expect(spy).to.be.called;
+    spy.resetHistory();
+    await TestUtils.flushAsyncOperations();
+    expect(spanElement.textContent).to.be.eql (`405'-0 1/4"`);
   });
 
-  it("should handle onFormatChange Composite separator", () => {
+  it("should handle onFormatChange Composite separator", async () => {
     // default QuantityType.Length should show ft-in (ie composite)
     const spy = sinon.spy();
     const renderedComponent = render(<QuantityFormatPanel quantityType={QuantityType.Length} showSample initialMagnitude={123.45} onFormatChange={spy} />);
-    expect(renderedComponent).not.to.be.null;
     expect(spy).to.not.be.called;
+    await TestUtils.flushAsyncOperations();
+
+    const spanElement = renderedComponent.getByTestId("format-sample-formatted") as HTMLSpanElement;
+    expect(spanElement.textContent).to.be.eql (`405'-0 1/4"`);
 
     // change from default none to space
     fireEvent.change(renderedComponent.getByTestId("composite-spacer"), {target: { value: "x" }});
+    await TestUtils.flushAsyncOperations();
+    expect(spanElement.textContent).to.be.eql (`405'x0 1/4"`);
+
+    expect(spy).to.be.called;
+    spy.resetHistory();
+
+    // change from default none to space
+    fireEvent.change(renderedComponent.getByTestId("composite-spacer"), {target: { value: "xxx" }});
+    await TestUtils.flushAsyncOperations();
+    expect(spanElement.textContent).to.be.eql (`405'x0 1/4"`);
+
     expect(spy).to.be.called;
     spy.resetHistory();
   });
@@ -124,10 +179,19 @@ describe("QuantityInput", () => {
     });
   });
 
-  it("should handle processing more/less", () => {
+  it("should handle processing more/less", async () => {
     const renderedComponent = render(<QuantityFormatPanel quantityType={QuantityType.Length} showSample initialMagnitude={123.45} enableMinimumProperties />);
     fireEvent.click(renderedComponent.getByTestId("quantityFormat-more"));
+    await TestUtils.flushAsyncOperations();
+
     fireEvent.click(renderedComponent.getByTestId("quantityFormat-less"));
+    await TestUtils.flushAsyncOperations();
+
+    fireEvent.keyUp(renderedComponent.getByTestId("quantityFormat-more"), { key: SpecialKey.Enter });
+    await TestUtils.flushAsyncOperations();
+
+    fireEvent.keyUp(renderedComponent.getByTestId("quantityFormat-less"), { key: SpecialKey.Space });
+    await TestUtils.flushAsyncOperations();
   });
 
   it("should handle onFormatChange when changing sign option", () => {
@@ -175,61 +239,66 @@ describe("QuantityInput", () => {
   it("should handle onFormatChange when changing thousands separator", async () => {
     const spy = sinon.spy();
     const renderedComponent = render(<QuantityFormatPanel quantityType={QuantityType.Length} showSample initialMagnitude={12345.67} onFormatChange={spy} />);
+    await TestUtils.flushAsyncOperations();
 
     /* turn on */
-    act(() => {
-      fireEvent.click(renderedComponent.getByTestId("use-thousands-separator"));
-    });
-    await wait(() => {
-      expect(spy).to.be.called;
-      spy.resetHistory();
-    });
+    fireEvent.click(renderedComponent.getByTestId("use-thousands-separator"));
+    await TestUtils.flushAsyncOperations();
+    expect(spy).to.be.called;
+    spy.resetHistory();
 
     const typeSelector = renderedComponent.getByTestId("thousands-separator-selector");
-    act(() => {
-      fireEvent.change(typeSelector, {target: { value: "." }});
-    });
-    await wait(() => {
-      expect(spy).to.be.called;
-      spy.resetHistory();
-      renderedComponent.getByText(`40.504'-2"`);
-    });
-
-    act(() => {
-      fireEvent.change(typeSelector, {target: { value: "," }});
-    });
-    await wait(() => {
-      expect(spy).to.be.called;
-      spy.resetHistory();
-      renderedComponent.getByText(`40,504'-2"`);
-    });
+    fireEvent.change(typeSelector, {target: { value: "." }});
+    await TestUtils.flushAsyncOperations();
 
     /* turn off */
-    act(() => {
-      fireEvent.click(renderedComponent.getByTestId("use-thousands-separator"));
-    });
-    await wait(() => {
-      expect(spy).to.be.called;
-      spy.resetHistory();
-    });
+    fireEvent.click(renderedComponent.getByTestId("use-thousands-separator"));
+    await TestUtils.flushAsyncOperations();
+    expect(spy).to.be.called;
+    spy.resetHistory();
 
+    /* turn on */
+    fireEvent.click(renderedComponent.getByTestId("use-thousands-separator"));
+    await TestUtils.flushAsyncOperations();
+    expect(spy).to.be.called;
+    spy.resetHistory();
+    renderedComponent.getByText(`40.504'-2"`);
+
+    fireEvent.change(typeSelector, {target: { value: "," }});
+    await TestUtils.flushAsyncOperations();
+    expect(spy).to.be.called;
+    spy.resetHistory();
+    renderedComponent.getByText(`40,504'-2"`);
   });
 
-  it("should handle onFormatChange when changing decimal separator", () => {
+  it("should handle onFormatChange when changing decimal separator", async () => {
     const spy = sinon.spy();
     const renderedComponent = render(<QuantityFormatPanel quantityType={QuantityType.Length} showSample initialMagnitude={12345.67} onFormatChange={spy} />);
+    await TestUtils.flushAsyncOperations();
 
     const typeSelector = renderedComponent.getByTestId("format-type-selector");
     fireEvent.change(typeSelector, {target: { value: FormatType.Decimal.toString() }});
+    await TestUtils.flushAsyncOperations();
+
+    expect(spy).to.be.called;
+    spy.resetHistory();
+
+    /* turn on 1000 separator */
+    fireEvent.click(renderedComponent.getByTestId("use-thousands-separator"));
+    await TestUtils.flushAsyncOperations();
     expect(spy).to.be.called;
     spy.resetHistory();
 
     const separatorSelector = renderedComponent.getByTestId("decimal-separator-selector");
-    [",", "." ].forEach ((selectValue) => {
-      fireEvent.change(separatorSelector, {target: { value: selectValue }});
-      expect(spy).to.be.called;
-      spy.resetHistory();
-    });
+    fireEvent.change(separatorSelector, {target: { value: "," }});
+    await TestUtils.flushAsyncOperations();
+    expect(spy).to.be.called;
+    spy.resetHistory();
+
+    fireEvent.change(separatorSelector, {target: { value: "." }});
+    await TestUtils.flushAsyncOperations();
+    expect(spy).to.be.called;
+    spy.resetHistory();
   });
 
   it("should handle onFormatChange when changing traits", () => {
@@ -274,22 +343,38 @@ describe("QuantityInput", () => {
     });
   });
 
-  it("should handle onFormatChange when changing composite units", () => {
+  it("should handle onFormatChange when changing composite units", async () => {
     const spy = sinon.spy();
     const renderedComponent = render(<QuantityFormatPanel quantityType={QuantityType.Length} showSample initialMagnitude={123.45} onFormatChange={spy} />);
+    await TestUtils.flushAsyncOperations();
 
     const secondaryUnitsSelector = renderedComponent.getByTestId("unit-Units.IN");
     fireEvent.change(secondaryUnitsSelector, {target: { value: "REMOVEUNIT" }});
+    await TestUtils.flushAsyncOperations();
     expect(spy).to.be.called;
     spy.resetHistory();
   });
 
-  it("should handle onFormatChange when changing adding composite unit", () => {
+  it("should handle onFormatChange when changing adding composite unit", async () => {
     const spy = sinon.spy();
     const renderedComponent = render(<QuantityFormatPanel quantityType={QuantityType.LengthEngineering} showSample initialMagnitude={123.45} onFormatChange={spy} />);
+    await TestUtils.flushAsyncOperations();
+
+    const primaryUnitSelector = renderedComponent.getByTestId("unit-Units.FT");
+    fireEvent.change(primaryUnitSelector, {target: { value: "Units.IN:in" }});
+    await TestUtils.flushAsyncOperations();
+    expect(spy).to.be.called;
+    spy.resetHistory();
+  });
+
+  it("should handle onFormatChange when changing primary unit", async () => {
+    const spy = sinon.spy();
+    const renderedComponent = render(<QuantityFormatPanel quantityType={QuantityType.LengthEngineering} showSample initialMagnitude={123.45} onFormatChange={spy} />);
+    await TestUtils.flushAsyncOperations();
 
     const primaryUnitSelector = renderedComponent.getByTestId("unit-Units.FT");
     fireEvent.change(primaryUnitSelector, {target: { value: "ADDSUBUNIT:Units.IN:in" }});
+    await TestUtils.flushAsyncOperations();
     expect(spy).to.be.called;
     spy.resetHistory();
   });
@@ -314,6 +399,18 @@ describe("QuantityInput", () => {
       fireEvent.keyDown(sampleInput, { key: "Enter", code: 13 });
       renderedComponent.getByDisplayValue("0");
     });
+
+    sampleInput.focus();
+    fireEvent.change(sampleInput, { target: { value: "14.12" } });
+    sampleInput.blur();
+    await TestUtils.flushAsyncOperations();
+    renderedComponent.getByDisplayValue("14.12");
+
+    sampleInput.focus();
+    fireEvent.change(sampleInput, { target: { value: "a" } });
+    sampleInput.blur();
+    await TestUtils.flushAsyncOperations();
+    renderedComponent.getByDisplayValue("0");
 
     // cover update props case
     renderedComponent.rerender (<QuantityFormatPanel quantityType={QuantityType.LengthEngineering} showSample initialMagnitude={4} />);

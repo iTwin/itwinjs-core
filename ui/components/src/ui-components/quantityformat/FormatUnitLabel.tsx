@@ -33,6 +33,7 @@ function UomSeparatorSelector(props: UomSeparatorSelectorProps) {
 
   const separatorOptions = React.useMemo(() => {
     const completeListOfEntries: SelectOption[] = [];
+    // istanbul ignore next (only used if format already has a character that does not match standard options)
     if (undefined === uomDefaultEntries.current.find((option) => option.value as string === separator)) {
       completeListOfEntries.push({ value: separator, label: separator });
     }
@@ -69,33 +70,28 @@ export function FormatUnitLabel(props: FormatUnitLabelProps) {
 
   const setFormatTrait = React.useCallback((trait: FormatTraits, setActive: boolean) => {
     const traitStr = Format.getTraitString(trait);
-    if (undefined === traitStr)
-      return;
-    let formatTraits: string[] | undefined;
-
-    if (setActive) {
-      // setting trait
-      if (!formatProps.formatTraits) {
-        formatTraits = [traitStr];
-      } else {
-        const traits = Array.isArray(formatProps.formatTraits) ? formatProps.formatTraits : formatProps.formatTraits.split(/,|;|\|/);
+    let formatTraits: string[] = [traitStr];
+    if (setActive) {// setting trait
+      // istanbul ignore else
+      if (formatProps.formatTraits) {
+        const traits = Array.isArray(formatProps.formatTraits) ? formatProps.formatTraits : /* istanbul ignore next */ formatProps.formatTraits.split(/,|;|\|/);
+        // istanbul ignore else
         if (!traits.find((traitEntry) => traitStr === traitEntry)) {
           formatTraits = [...traits, traitStr];
         }
       }
-    } else {
-      // clearing trait
+    } else {// clearing trait
+      // istanbul ignore next
       if (!formatProps.formatTraits)
         return;
-      const traits = Array.isArray(formatProps.formatTraits) ? formatProps.formatTraits : formatProps.formatTraits.split(/,|;|\|/);
+      const traits = Array.isArray(formatProps.formatTraits) ? formatProps.formatTraits : /* istanbul ignore next */ formatProps.formatTraits.split(/,|;|\|/);
       formatTraits = traits.filter((traitEntry) => traitEntry !== traitStr);
     }
     const newFormatProps = { ...formatProps, formatTraits };
     handleSetFormatProps(newFormatProps);
   }, [formatProps, handleSetFormatProps]);
 
-  const handleUomSeparatorChange = React.useCallback((separator: string) => {
-    const newSeparator = separator.length > 1 ? separator[0] : separator;
+  const handleUomSeparatorChange = React.useCallback((newSeparator: string) => {
     const newFormatProps = { ...formatProps, uomSeparator: newSeparator };
     handleSetFormatProps(newFormatProps);
   }, [formatProps, handleSetFormatProps]);
