@@ -48,8 +48,10 @@ async function getPossibleUnits(parentUnit: UnitProps, unitsProvider: UnitsProvi
 
 function getUnitName(fullUnitName: string) {
   const nameParts = fullUnitName.split(/[.:]/);
+  // istanbul ignore else
   if (nameParts.length > 0)
     return nameParts[nameParts.length - 1];
+  // istanbul ignore next
   throw Error("Bad unit name encountered");
 }
 
@@ -65,9 +67,11 @@ export function UnitDescr(props: UnitDescrProps) {
     async function fetchAllowableUnitSelections() {
       const currentUnitProps = await unitsProvider.findUnitByName(name);
       const parentUnit = await unitsProvider.findUnitByName(parentUnitName ? parentUnitName : name);
+      // istanbul ignore else
       if (parentUnit && currentUnitProps) {
         let potentialSubUnit: UnitProps | undefined;
         const potentialUnits = await getPossibleUnits(parentUnit, unitsProvider, index !== 0);
+        // istanbul ignore else
         if (index < 3) {
           const potentialSubUnits = await getPossibleUnits(currentUnitProps, unitsProvider, true);
           if (potentialSubUnits.length)
@@ -78,7 +82,7 @@ export function UnitDescr(props: UnitDescrProps) {
           potentialUnits.map((unitValue) => {
             return { value: `${unitValue.name}:${unitValue.label}`, label: getUnitName(unitValue.name) };
           }).sort((a, b) => a.label.localeCompare(b.label))
-          :
+          : /* istanbul ignore next */
           [{ value: `${currentUnitProps.name}:${currentUnitProps.label}`, label: getUnitName(name) }];
 
         if (potentialSubUnit) {

@@ -33,26 +33,19 @@ export function ThousandsSeparator(props: ThousandsSeparatorProps) {
 
   const setFormatTrait = React.useCallback((trait: FormatTraits, setActive: boolean) => {
     const traitStr = Format.getTraitString(trait);
-    if (undefined === traitStr)
-      return;
-    let formatTraits: string[] | undefined;
-
-    if (setActive) {
-      // setting trait
-      if (!formatProps.formatTraits) {
-        formatTraits = [traitStr];
-      } else {
-        const traits = Array.isArray(formatProps.formatTraits) ? formatProps.formatTraits : formatProps.formatTraits.split(/,|;|\|/);
-        if (!traits.find((traitEntry) => traitStr === traitEntry)) {
-          formatTraits = [...traits, traitStr];
-        }
+    let formatTraits: string[] = [traitStr];
+    if (setActive) {// setting trait
+      // istanbul ignore else
+      if (formatProps.formatTraits) {
+        const traits = Array.isArray(formatProps.formatTraits) ? formatProps.formatTraits : /* istanbul ignore next */ formatProps.formatTraits.split(/,|;|\|/);
+        formatTraits = [...traits, traitStr];
       }
-    } else {
-      // clearing trait
-      if (!formatProps.formatTraits)
-        return;
-      const traits = Array.isArray(formatProps.formatTraits) ? formatProps.formatTraits : formatProps.formatTraits.split(/,|;|\|/);
-      formatTraits = traits.filter((traitEntry) => traitEntry !== traitStr);
+    } else { // clearing trait
+      // istanbul ignore else
+      if (formatProps.formatTraits) {
+        const traits = Array.isArray(formatProps.formatTraits) ? formatProps.formatTraits : /* istanbul ignore next */ formatProps.formatTraits.split(/,|;|\|/);
+        formatTraits = traits.filter((traitEntry) => traitEntry !== traitStr);
+      }
     }
     const newFormatProps = { ...formatProps, formatTraits };
     handleSetFormatProps(newFormatProps);
@@ -69,10 +62,11 @@ export function ThousandsSeparator(props: ThousandsSeparatorProps) {
   const handleThousandSeparatorChange = React.useCallback((thousandSeparator: string) => {
     let decimalSeparator = formatProps.decimalSeparator;
     // make sure 1000 and decimal separator do not match
+    // istanbul ignore else
     if (isFormatTraitSet(FormatTraits.Use1000Separator)) {
       if (thousandSeparator === ".")
         decimalSeparator = ",";
-      else if (thousandSeparator === ",")
+      else // thousandSeparator === ","
         decimalSeparator = ".";
     }
     const newFormatProps = { ...formatProps, thousandSeparator, decimalSeparator };

@@ -99,6 +99,7 @@ export function QuantityFormatPanel(props: QuantityFormatPanelProps) {
 
   React.useEffect(() => {
     const newFormatProps = IModelApp.quantityFormatter.getFormatPropsByQuantityType(quantityType);
+    // istanbul ignore else
     if (!initialFormatProps.current)
       initialFormatProps.current = newFormatProps;
     setFormatProps(newFormatProps);
@@ -108,6 +109,7 @@ export function QuantityFormatPanel(props: QuantityFormatPanelProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   React.useEffect(() => {
     const newFormatProps = IModelApp.quantityFormatter.getFormatPropsByQuantityType(quantityType);
+    // istanbul ignore else
     if (initialFormatProps.current && newFormatProps) {
       if (!formatAreEqual (newFormatProps, initialFormatProps.current)) {
         initialFormatProps.current = newFormatProps;

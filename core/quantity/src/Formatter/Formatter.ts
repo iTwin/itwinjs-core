@@ -316,11 +316,13 @@ export class Formatter {
       const hiPart = Math.floor(tVal / denominator);
       const lowPart = tVal - hiPart * denominator;
       const fract = posMagnitude - tVal;
-      const fractionPart = Math.floor(0.5 + fract * precisionScale);
+      const fractionPart = Math.floor(fract * precisionScale + FPV_ROUNDFACTOR);
       const stationString = hiPart.toFixed(0) + spec.format.stationSeparator + lowPart.toFixed(0).padStart(spec.format.stationOffsetSize!, "0");
       let fractionString = "";
       if (fractionPart > 0) {
-        fractionString = fractionPart.toFixed(0).padEnd(spec.format.precision, "0");
+        fractionString = (fractionPart/precisionScale).toFixed(spec.format.precision);
+        // remove leading "0."
+        fractionString = fractionString.substr(2).padEnd(spec.format.precision, "0");
         if (!isKeepTrailingZeroes) fractionString = Formatter.trimTrailingZeroes(fractionString);
         formattedValue = stationString + spec.format.decimalSeparator + fractionString;
       } else {

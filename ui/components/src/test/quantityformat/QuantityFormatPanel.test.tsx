@@ -172,20 +172,47 @@ describe("QuantityInput", () => {
     });
   });
 
-  it("should handle onFormatChange when changing thousands separator", () => {
+  it("should handle onFormatChange when changing thousands separator", async () => {
     const spy = sinon.spy();
     const renderedComponent = render(<QuantityFormatPanel quantityType={QuantityType.Length} showSample initialMagnitude={12345.67} onFormatChange={spy} />);
 
-    fireEvent.click(renderedComponent.getByTestId("use-thousands-separator"));
-    expect(spy).to.be.called;
-    spy.resetHistory();
-
-    const typeSelector = renderedComponent.getByTestId("thousands-separator-selector");
-    [".","," ].forEach ((selectValue) => {
-      fireEvent.change(typeSelector, {target: { value: selectValue }});
+    /* turn on */
+    act(() => {
+      fireEvent.click(renderedComponent.getByTestId("use-thousands-separator"));
+    });
+    await wait(() => {
       expect(spy).to.be.called;
       spy.resetHistory();
     });
+
+    const typeSelector = renderedComponent.getByTestId("thousands-separator-selector");
+    act(() => {
+      fireEvent.change(typeSelector, {target: { value: "." }});
+    });
+    await wait(() => {
+      expect(spy).to.be.called;
+      spy.resetHistory();
+      renderedComponent.getByText(`40.504'-2"`);
+    });
+
+    act(() => {
+      fireEvent.change(typeSelector, {target: { value: "," }});
+    });
+    await wait(() => {
+      expect(spy).to.be.called;
+      spy.resetHistory();
+      renderedComponent.getByText(`40,504'-2"`);
+    });
+
+    /* turn off */
+    act(() => {
+      fireEvent.click(renderedComponent.getByTestId("use-thousands-separator"));
+    });
+    await wait(() => {
+      expect(spy).to.be.called;
+      spy.resetHistory();
+    });
+
   });
 
   it("should handle onFormatChange when changing decimal separator", () => {

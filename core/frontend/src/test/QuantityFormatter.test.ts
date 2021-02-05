@@ -420,6 +420,7 @@ describe("Test Formatted Quantities", async () => {
     await testFormatting(QuantityType.LengthEngineering, 1000.0, "1000 m");
     await testFormatting(QuantityType.LengthSurvey, 1000.0, "1000 m");
     await testFormatting(QuantityType.Stationing, 1000.0, "1+000.00");
+    await testFormatting(QuantityType.Stationing, 15918.01 , "15+918.01");
     await testFormatting(QuantityType.Volume, 1000.0, "1000 m³");
 
     await quantityFormatter.setActiveUnitSystem("usCustomary");

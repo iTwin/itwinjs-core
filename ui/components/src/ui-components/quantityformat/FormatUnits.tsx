@@ -94,6 +94,7 @@ export function FormatUnits(props: FormatUnitsProps) {
   }, [formatProps, handleSetFormatProps]);
 
   const handleOnSpacerChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    // istanbul ignore else
     if (formatProps.composite) {
       const spacerValue = e.target.value.length ? e.target.value[0] : ""; // spacer can only be empty or a single character
       const composite = { ...formatProps.composite, spacer: spacerValue };

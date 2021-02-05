@@ -69,7 +69,7 @@ export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, C
   public render(): JSX.Element {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { onClick, className, style, onSelect, icon, disabled, hidden, onHover, isSelected, parentMenu, onHotKeyParsed, badgeType, iconRight,
-      ...props } = this.props;
+      hideIconContainer, ...props } = this.props;
     const badge = BadgeUtilities.getComponentForBadgeType(badgeType);
     const isDisabled = ConditionalBooleanValue.getValue(disabled);
     const isHidden = ConditionalBooleanValue.getValue(hidden);
@@ -99,7 +99,7 @@ export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, C
         aria-disabled={isDisabled}
         aria-hidden={isHidden}
       >
-        {!this.props.hideIconContainer && <div className="core-context-menu-icon">
+        {!hideIconContainer && <div className="core-context-menu-icon">
           {icon !== undefined && <Icon iconSpec={icon} />}
         </div>}
         <div className={"core-context-menu-content"}>

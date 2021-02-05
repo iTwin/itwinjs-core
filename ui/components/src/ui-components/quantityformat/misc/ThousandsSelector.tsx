@@ -36,6 +36,7 @@ export function ThousandsSelector(props: ThousandsSelectorProps) {
 
   const separatorOptions = React.useMemo(() => {
     const completeListOfEntries: SelectOption[] = [];
+    // istanbul ignore next (only used if format already has a character that does not match standard options)
     if (undefined === uomDefaultEntries.current.find((option) => option.value as string === separator)) {
       completeListOfEntries.push({ value: separator, label: separator });
     }
