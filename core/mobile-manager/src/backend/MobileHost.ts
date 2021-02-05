@@ -4,8 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { BeEvent, BriefcaseStatus, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { IModelHostConfiguration, IpcHandler, IpcHostOptions, NativeHost } from "@bentley/imodeljs-backend";
-import { IpcApp } from "@bentley/imodeljs-frontend";
+import { IModelHostConfiguration, IpcHandler, IpcHost, IpcHostOptions, NativeHost } from "@bentley/imodeljs-backend";
 import { AccessToken, CancelRequest, DownloadFailed, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
 import { BatteryState, mobileAppChannel, MobileAppFunctions, Orientation } from "../common/MobileAppProps";
 import { MobileAuthorizationClientConfiguration } from "../common/MobileAuthorizationClientConfiguration";
@@ -224,7 +223,7 @@ export class MobileHost {
       });
     }
     await NativeHost.startup(opt);
-    if (IpcApp.isValid)
+    if (IpcHost.isValid)
       MobileAppHandler.register();
   }
 }
