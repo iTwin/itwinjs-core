@@ -2,6 +2,7 @@ sep=;
 Release Tag;API Item
 alpha;BadUnit 
 alpha;BasicUnit 
+alpha;CustomFormatProps 
 alpha;DecimalPrecision
 alpha;Format
 alpha;FormatProps
@@ -10,6 +11,7 @@ alpha;FormatterSpec
 alpha;FormatTraits
 alpha;FormatType
 alpha;FractionalPrecision
+alpha;isCustomFormatProps: (item: FormatProps) => item is CustomFormatProps
 alpha;Parser
 alpha;ParseResult
 alpha;ParserSpec

@@ -15,12 +15,14 @@ export class BadUnit implements UnitProps {
     // (undocumented)
     name: string;
     // (undocumented)
+    system: string;
+    // (undocumented)
     unitFamily: string;
 }
 
 // @alpha
 export class BasicUnit implements UnitProps {
-    constructor(name: string, label: string, unitFamily: string, alternateLabels?: string[]);
+    constructor(name: string, label: string, unitFamily: string, alternateLabels?: string[], system?: string);
     // (undocumented)
     alternateLabels?: string[];
     // (undocumented)
@@ -30,7 +32,15 @@ export class BasicUnit implements UnitProps {
     // (undocumented)
     name: string;
     // (undocumented)
+    system: string;
+    // (undocumented)
     unitFamily: string;
+}
+
+// @alpha
+export interface CustomFormatProps extends FormatProps {
+    // (undocumented)
+    readonly custom: any;
 }
 
 // @alpha (undocumented)
@@ -66,6 +76,11 @@ export enum DecimalPrecision {
 // @alpha
 export class Format {
     constructor(name: string);
+    static createFromJSON(name: string, unitsProvider: UnitsProvider, formatProps: FormatProps): Promise<Format>;
+    // (undocumented)
+    get customProps(): any;
+    // (undocumented)
+    protected _customProps?: any;
     // (undocumented)
     get decimalSeparator(): string;
     // (undocumented)
@@ -77,6 +92,7 @@ export class Format {
     static formatTraitsToArray(currentFormatTrait: FormatTraits): string[];
     static formatTypeToString(type: FormatType): string;
     fromJSON(unitsProvider: UnitsProvider, jsonObj: FormatProps): Promise<void>;
+    static getTraitString(trait: FormatTraits): "keepSingleZero" | "zeroEmpty" | "keepDecimalPoint" | "applyRounding" | "fractionDash" | "showUnitLabel" | "prependUnitLabel" | "use1000Separator" | "exponentOnlyNegative";
     hasFormatTraitSet(formatTrait: FormatTraits): boolean;
     // (undocumented)
     get hasUnits(): boolean;
@@ -85,6 +101,8 @@ export class Format {
     // (undocumented)
     protected _includeZero: boolean;
     // (undocumented)
+    static isFormatTraitSetInProps(formatProps: FormatProps, trait: FormatTraits): boolean;
+    // (undocumented)
     get minWidth(): number | undefined;
     // (undocumented)
     protected _minWidth?: number;
@@ -92,6 +110,7 @@ export class Format {
     get name(): string;
     static parseDecimalPrecision(jsonObjPrecision: number): DecimalPrecision;
     static parseFormatTrait(stringToCheck: string, currentFormatTrait: number): FormatTraits;
+    static parseFormatTraits(formatTraitsFromJson: string | string[] | undefined): FormatTraits | undefined;
     static parseFormatType(jsonObjType: string, formatName: string): FormatType;
     static parseFractionalPrecision(jsonObjPrecision: number, formatName: string): FractionalPrecision;
     static parsePrecision(precision: number, formatName: string, type: FormatType): DecimalPrecision | FractionalPrecision;
@@ -191,7 +210,7 @@ export class Formatter {
 
 // @alpha
 export class FormatterSpec {
-    constructor(name: string, format: Format, conversions?: UnitConversionSpec[]);
+    constructor(name: string, format: Format, conversions?: UnitConversionSpec[], persistenceUnit?: UnitProps);
     applyFormatting(magnitude: number): string;
     // (undocumented)
     protected _conversions: UnitConversionSpec[];
@@ -200,10 +219,15 @@ export class FormatterSpec {
     get format(): Format;
     // (undocumented)
     protected _format: Format;
+    static getUnitConversions(format: Format, unitsProvider: UnitsProvider, inputUnit?: UnitProps): Promise<UnitConversionSpec[]>;
     // (undocumented)
     get name(): string;
     // (undocumented)
     protected _name: string;
+    // (undocumented)
+    get persistenceUnit(): UnitProps;
+    // (undocumented)
+    protected _persistenceUnit: UnitProps;
     get unitConversions(): UnitConversionSpec[];
 }
 
@@ -264,6 +288,9 @@ export enum FractionalPrecision {
     // (undocumented)
     TwoHundredFiftySix = 256
 }
+
+// @alpha
+export const isCustomFormatProps: (item: FormatProps) => item is CustomFormatProps;
 
 // @alpha
 export class Parser {
@@ -440,6 +467,7 @@ export interface UnitProps {
     readonly isValid: boolean;
     readonly label: string;
     readonly name: string;
+    readonly system: string;
     readonly unitFamily: string;
 }
 
