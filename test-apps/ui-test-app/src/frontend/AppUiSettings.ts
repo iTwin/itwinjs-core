@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { UiSetting, UiSettings } from "@bentley/ui-core";
-import { UiFramework, UiShowHideManager } from "@bentley/ui-framework";
+import { FrameworkAccuDraw, UiFramework, UiShowHideManager } from "@bentley/ui-framework";
 import { SampleAppIModelApp, SampleAppUiActionId } from ".";
 
 export class AppUiSettings {
@@ -17,6 +17,7 @@ export class AppUiSettings {
   public dragInteraction: UiSetting<boolean>;
   public frameworkVersion: UiSetting<string>;
   public escapeToHome: UiSetting<boolean>;
+  public accuDrawNotifications: UiSetting<boolean>;
 
   constructor() {
     this._settings = [];
@@ -49,6 +50,10 @@ export class AppUiSettings {
     this.escapeToHome = new UiSetting<boolean>(AppUiSettings._settingNamespace, "EscapeToHome",
       () => UiFramework.escapeToHome, (value: boolean) => UiFramework.escapeToHome = value);
     this._settings.push(this.escapeToHome);
+
+    this.accuDrawNotifications = new UiSetting<boolean>(AppUiSettings._settingNamespace, "AccuDrawNotifications",
+      () => FrameworkAccuDraw.displayNotifications, (value: boolean) => FrameworkAccuDraw.displayNotifications = value);
+    this._settings.push(this.accuDrawNotifications);
   }
 
   public async apply(uiSettings: UiSettings): Promise<void> {
