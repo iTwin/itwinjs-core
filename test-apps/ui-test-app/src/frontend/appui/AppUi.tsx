@@ -24,14 +24,13 @@ import * as React from "react";
 import { BadgeType, FunctionKey, StagePanelLocation, StageUsage } from "@bentley/ui-abstract";
 import { FillCentered } from "@bentley/ui-core";
 import {
-  AccuDrawCommandItems, CommandItemDef, ConfigurableUiManager, ContentGroupProps, ContentLayoutProps, FrameworkAccuDraw,
-  FrontstageManager, KeyboardShortcutManager, KeyboardShortcutProps, StagePanelSection, TaskPropsList, UiFramework, WidgetDef, WidgetProvider, WidgetState,
+  AccuDrawKeyboardShortcuts, CommandItemDef, ConfigurableUiManager, ContentGroupProps,
+  ContentLayoutProps, FrontstageManager, KeyboardShortcutManager, KeyboardShortcutProps, StagePanelSection, TaskPropsList, UiFramework, WidgetDef, WidgetProvider,
+  WidgetState,
   WorkflowProps,
   WorkflowPropsList,
   ZoneLocation,
 } from "@bentley/ui-framework";
-// import { AccuDrawPopupTools } from "../tools/AccuDrawPopupTools";
-// import { AppTools } from "../tools/ToolSpecifications";
 import { IModelViewportControl } from "./contentviews/IModelViewport";
 import { Frontstage1 } from "./frontstages/Frontstage1";
 import { Frontstage2 } from "./frontstages/Frontstage2";
@@ -342,87 +341,6 @@ export class AppUi {
    */
   private static defineKeyboardShortcuts() {
     const keyboardShortcutList: KeyboardShortcutProps[] = [
-      {
-        key: "a",
-        labelKey: "SampleApp:buttons.accuDrawSubMenu",
-        shortcuts: [
-          {
-            key: "s",
-            item: AccuDrawCommandItems.lockSmart,
-          },
-          {
-            key: "r",
-            item: AccuDrawCommandItems.setOrigin,
-          },
-          {
-            key: "t",
-            item: AccuDrawCommandItems.changeCompassMode,
-          },
-          {
-            key: "x",
-            item: AccuDrawCommandItems.lockX,
-            isHidden: FrameworkAccuDraw.isPolarModeConditional,
-          },
-          {
-            key: "y",
-            item: AccuDrawCommandItems.lockY,
-            isHidden: FrameworkAccuDraw.isPolarModeConditional,
-          },
-          {
-            key: "z",
-            item: AccuDrawCommandItems.lockZ,
-            isHidden: FrameworkAccuDraw.isPolarModeConditional,
-          },
-          {
-            key: "a",
-            item: AccuDrawCommandItems.lockAngle,
-            isHidden: FrameworkAccuDraw.isRectangularModeConditional,
-          },
-          {
-            key: "d",
-            item: AccuDrawCommandItems.lockDistance,
-            isHidden: FrameworkAccuDraw.isRectangularModeConditional,
-          },
-        ],
-      },
-      {
-        key: "r",
-        labelKey: "SampleApp:buttons.accuDrawRotate",
-        shortcuts: [
-          {
-            key: "t",
-            item: AccuDrawCommandItems.rotateTop,
-            isDisabled: FrameworkAccuDraw.isTopRotationConditional,
-          },
-          {
-            key: "s",
-            item: AccuDrawCommandItems.rotateSide,
-            isDisabled: FrameworkAccuDraw.isSideRotationConditional,
-          },
-          {
-            key: "f",
-            item: AccuDrawCommandItems.rotateFront,
-            isDisabled: FrameworkAccuDraw.isFrontRotationConditional,
-          },
-          {
-            key: "v",
-            item: AccuDrawCommandItems.rotateView,
-            isDisabled: FrameworkAccuDraw.isViewRotationConditional,
-          },
-          {
-            key: "c",
-            item: AccuDrawCommandItems.rotateCycle,
-          },
-          {
-            key: "a",
-            item: AccuDrawCommandItems.rotateAxes,
-          },
-          {
-            key: "e",
-            item: AccuDrawCommandItems.rotateToElement,
-          },
-        ],
-      },
       // {
       //   key: "r",
       //   item: AppUi._toggleZonesCommand,
@@ -500,6 +418,8 @@ export class AppUi {
     ];
 
     ConfigurableUiManager.loadKeyboardShortcuts(keyboardShortcutList);
+
+    ConfigurableUiManager.loadKeyboardShortcuts(AccuDrawKeyboardShortcuts.getKeyboardShortcuts());
   }
 
   private static get _showShortcutsMenuCommand() {
