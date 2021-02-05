@@ -395,7 +395,7 @@
       }
     },
     "MaskBackgroundMapByModel": {
-      "keyin": "fdt set map mask model",
+      "keyin": "fdt set map mask models",
       "Prompts": {
         "IdentifyMaskModel": "Identify mask model"
       }

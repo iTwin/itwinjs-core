@@ -26,7 +26,7 @@ export class SetMapHigherPriorityMasking extends Tool {
     if (undefined === vp)
       return false;
 
-    vp.changeBackgroundMapProps({ planarClipMask: { mode: PlanarClipMaskMode.Priority, transparency } });
+    vp.changeBackgroundMapProps({ planarClipMask: { mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.BackgroundMap, transparency } });
     vp.invalidateRenderPlan();
     return true;
   }
@@ -54,7 +54,9 @@ export class UnmaskMapTool extends Tool {
     vp.invalidateRenderPlan();
     return true;
   }
-  public parseAndRun(..._args: string[]): boolean { return this.run(); }
+  public parseAndRun(..._args: string[]): boolean {
+    return this.run();
+  }
 }
 
 /** Base class for the reality model planar masking tools.
