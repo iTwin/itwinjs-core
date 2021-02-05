@@ -180,7 +180,7 @@ class RootTile extends Tile {
       this._contentRange = this.staticBranch.contentRange.clone();
 
     // Determine initial state.
-    const session = tree.iModel.isBriefcaseConnection() ? InteractiveEditingSession.get(tree.iModel) : undefined;
+    const session = InteractiveEditingSession.get(tree.iModel);
     if (undefined === session) {
       this._tileState = new StaticState(this);
     } else {

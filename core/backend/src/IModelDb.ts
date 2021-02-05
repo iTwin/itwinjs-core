@@ -2600,24 +2600,27 @@ export class SnapshotDb extends IModelDb {
   }
 }
 
-/** Standalone iModels are read/write files that are not managed by nor synchronized with iModelHub.
- * They are relevant for single-practitioner scenarios where team collaboration requirements may not be important.
- * However, Standalone iModels are designed such that the API interaction between Standalone iModels and Briefcase iModels (those synchronized with iModelHub) are as similar and consistent as possible.
+/** Standalone iModels are read/write files that are not managed by iModelHub.
+ * They are relevant only for single-practitioner scenarios where team collaboration is not necessary.
+ * However, Standalone iModels are designed such that the API interaction between Standalone iModels and Briefcase
+ * iModels (those synchronized with iModelHub) are as similar and consistent as possible.
  * This leads to a straightforward process where the practitioner can optionally choose to upgrade to iModelHub.
  *
- * Some additional details:
- * - Standalone iModels are known to the application developer and end user as unmanaged files
- * - Standalone iModels can be read/write
- * - Cannot apply a changeset to nor generate a changeset from a Standalone iModel
- * - Standalone iModels can optionally support undo/redo via txns
- * - The Standalone iModel capability is only available to authorized applications
- *
+ * Some additional details. Standalone iModels:
+ * - always have [Guid.empty]($bentley) for their contextId (they are "unassociated" files)
+ * - always have BriefcaseId === [BriefcaseIdValue.Standalone]($backend)
+ * - are connected to the frontend via [BriefcaseConnection.openStandalone]($frontend)
+ * - may be opened without supplying any user credentials
+ * - may be opened read/write
+ * - may optionally support undo/redo via [[TxmManager]]
+ * - cannot apply a changeset to nor generate a changesets
+ * - are only available to authorized applications
  * @internal
  */
 export class StandaloneDb extends IModelDb {
   /** @beta */
   public readonly txns: TxnManager;
-  /** The full path to the snapshot iModel file.
+  /** The full path to the standalone iModel file.
    * @deprecated use pathName
    */
   public get filePath(): string { return this.pathName; }
@@ -2636,7 +2639,7 @@ export class StandaloneDb extends IModelDb {
 
   private constructor(nativeDb: IModelJsNative.DgnDb, key: string) {
     const openMode = nativeDb.isReadonly() ? OpenMode.Readonly : OpenMode.ReadWrite;
-    const iModelRpcProps: IModelRpcProps = { key, iModelId: nativeDb.getDbGuid(), openMode, contextId: nativeDb.queryProjectGuid() };
+    const iModelRpcProps: IModelRpcProps = { key, iModelId: nativeDb.getDbGuid(), openMode, contextId: Guid.empty };
     super(nativeDb, iModelRpcProps, openMode);
     this.txns = new TxnManager(this);
   }
@@ -2650,13 +2653,16 @@ export class StandaloneDb extends IModelDb {
     const argsString = JSON.stringify(args);
     let status = nativeDb.createIModel(filePath, argsString);
     if (DbResult.BE_SQLITE_OK !== status)
-      throw new IModelError(status, "Could not create standalone iModel", Logger.logError, loggerCategory, () => ({ filePath }));
+      throw new IModelError(status, `Could not create standalone iModel: ${filePath}`, Logger.logError, loggerCategory);
 
     nativeDb.saveLocalValue(IModelDb._edit, undefined === args.allowEdit ? "" : args.allowEdit);
+    nativeDb.saveProjectGuid(Guid.empty);
 
     status = nativeDb.resetBriefcaseId(BriefcaseIdValue.Standalone);
-    if (DbResult.BE_SQLITE_OK !== status)
-      throw new IModelError(status, "Could not set briefcaseId", Logger.logError, loggerCategory, () => ({ filePath }));
+    if (DbResult.BE_SQLITE_OK !== status) {
+      nativeDb.closeIModel();
+      throw new IModelError(status, `Could not set briefcaseId for iModel:  ${filePath}`, Logger.logError, loggerCategory);
+    }
 
     nativeDb.saveChanges();
     return new StandaloneDb(nativeDb, Guid.createValue());
@@ -2683,15 +2689,23 @@ export class StandaloneDb extends IModelDb {
    * @param filePath The path of the standalone iModel file.
    * @param openMode Optional open mode for the standalone iModel. The default is read/write.
    * @returns a new StandaloneDb if the file is not currently open, and the existing StandaloneDb if it is already
-   * @throws [[IModelError]]
+   * @throws [[IModelError]] if the file is not a standalone iModel.
    */
   public static openFile(filePath: string, openMode: OpenMode = OpenMode.ReadWrite, options?: StandaloneOpenOptions): StandaloneDb {
     const file = { path: filePath, key: options?.key };
     const nativeDb = this.openDgnDb(file, openMode);
 
-    if (openMode === OpenMode.ReadWrite && (!BriefcaseManager.isStandaloneBriefcaseId(nativeDb.getBriefcaseId()) || undefined === nativeDb.queryLocalValue(IModelDb._edit))) {
+    try {
+      const projectId = nativeDb.queryProjectGuid();
+      const briefcaseId = nativeDb.getBriefcaseId();
+      if (projectId !== Guid.empty || !BriefcaseManager.isStandaloneBriefcaseId(briefcaseId))
+        throw new IModelError(IModelStatus.WrongIModel, `${filePath} is not a Standalone db. projectId=${projectId}, briefcaseId=${briefcaseId}`, Logger.logError, loggerCategory);
+
+      if (openMode === OpenMode.ReadWrite && (undefined === nativeDb.queryLocalValue(IModelDb._edit)))
+        throw new IModelError(IModelStatus.ReadOnly, `${filePath} is not editable`, Logger.logError, loggerCategory);
+    } catch (error) {
       nativeDb.closeIModel();
-      throw new IModelError(IModelStatus.ReadOnly, `${filePath} is not an editable Standalone db`, Logger.logError, loggerCategory);
+      throw error;
     }
 
     return new StandaloneDb(nativeDb, file.key!);

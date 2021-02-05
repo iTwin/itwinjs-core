@@ -83,7 +83,7 @@ export class InteractiveEditingSession extends BriefcaseNotificationHandler impl
   /** Get the active editing session for the specified iModel, if any.
    * @note Only one editing session can be active for a given iModel at any given time.
    */
-  public static get(imodel: EditableConnection): InteractiveEditingSession | undefined {
+  public static get(imodel: IModelConnection): InteractiveEditingSession | undefined {
     return sessions.find((x) => x.iModel === imodel);
   }
 

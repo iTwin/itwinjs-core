@@ -5,7 +5,6 @@
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { BeDuration, compareStrings, DbOpcode, Id64String, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { IModelJson, LineSegment3d, Point3d, Range3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
 import { BatchType, Code, ElementGeometryChange } from "@bentley/imodeljs-common";
 import {
@@ -37,7 +36,7 @@ if (ProcessDetector.isElectronAppFrontend) {
 
     before(async () => {
       const projectName = "iModelJsIntegrationTest";
-      await IModelApp.shutdown(); // so we can use opts below
+      await IModelApp.shutdown(); // we call ElectronApp.startup in _Setup.test.ts. Shutdown IModelApp so we can use new IModelAppOptions in call to startup below
       await IModelApp.startup({
         authorizationClient: await TestUtility.initializeTestProject(projectName, TestUsers.regular),
         imodelClient: TestUtility.imodelCloudEnv.imodelClient,
@@ -170,7 +169,7 @@ if (ProcessDetector.isElectronAppFrontend) {
       await editor.end();
     });
 
-    it.only("updates state of tile trees", async () => {
+    it("updates state of tile trees", async () => {
       expect(briefcase).not.to.be.undefined;
       const imodel = briefcase!;
 
