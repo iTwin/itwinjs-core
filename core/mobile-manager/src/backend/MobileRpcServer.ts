@@ -118,7 +118,13 @@ export class MobileRpcServer {
   }
 }
 
+let mobileReady = false;
+
 export function setupMobileRpc() {
+  if (mobileReady) {
+    return;
+  }
+
   let server: MobileRpcServer | null = new MobileRpcServer();
 
   MobileApp.onEnterBackground.addListener(() => {
@@ -135,4 +141,5 @@ export function setupMobileRpc() {
   });
 
   MobileRpcProtocol.obtainInterop = () => MobileRpcServer.interop;
+  mobileReady = true;
 }

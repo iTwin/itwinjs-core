@@ -6,7 +6,7 @@
 /** @internal */
 export class ProcessDetector {
   public static get isITwinFrontend() {
-    return (typeof window === "object" && typeof window.navigator === "object") && undefined !== (window as any).itwin;
+    return (typeof window === "object" && typeof window.navigator === "object") && (undefined !== (window as any).itwin || window.location.origin === "imodeljs://app");
   }
   public static get isITwinBackend() {
     return typeof (process) !== "undefined" && (undefined !== process.platform);

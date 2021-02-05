@@ -10,7 +10,7 @@ import { ClientRequestContext, IModelStatus, Logger, LogLevel, OpenMode } from "
 import {
   BriefcasePushAndPullNotifications, GeometryChangeNotifications, IModelConnectionProps, IModelError, IModelRpcProps, IpcAppChannel, IpcAppFunctions,
   IpcInvokeReturn,
-  IpcListener, IpcSocketBackend, iTwinChannel, OpenBriefcaseProps, RemoveFunction, StandaloneOpenOptions, TileTreeContentIds,
+  IpcListener, IpcSocketBackend, IpcWebSocketBackend, iTwinChannel, OpenBriefcaseProps, RemoveFunction, StandaloneOpenOptions, TileTreeContentIds,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -91,7 +91,7 @@ export class IpcHost {
   }
 
   public static async startup(opt?: { ipcHost?: IpcHostOptions, iModelHost?: IModelHostConfiguration }): Promise<void> {
-    this._ipc = opt?.ipcHost?.socket;
+    this._ipc = opt?.ipcHost?.socket || new IpcWebSocketBackend();
     if (this.isValid) // for tests, we use IpcHost but don't have a frontend
       IpcAppHandler.register();
     await IModelHost.startup(opt?.iModelHost);
