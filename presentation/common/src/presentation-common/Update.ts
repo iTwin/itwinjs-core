@@ -180,3 +180,40 @@ export interface NodeUpdateInfoJSON {
     new: unknown;
   }>;
 }
+
+/** @alpha */
+export interface HierarchyCompareInfoJSON {
+  changes: PartialHierarchyModificationJSON[];
+  continuationToken?: {
+    prevHierarchyNode: string;
+    currHierarchyNode: string;
+  };
+}
+
+/** @alpha */
+export interface HierarchyCompareInfo {
+  changes: PartialHierarchyModification[];
+  continuationToken?: {
+    prevHierarchyNode: string;
+    currHierarchyNode: string;
+  };
+}
+
+/** @alpha */
+export namespace HierarchyCompareInfo {
+  /** Serialize given object to JSON. */
+  export function toJSON(obj: HierarchyCompareInfo): HierarchyCompareInfoJSON {
+    return {
+      ...obj,
+      changes: obj.changes.map((change) => PartialHierarchyModification.toJSON(change)),
+    };
+  }
+
+  /** Deserialize given object from JSON */
+  export function fromJSON(json: HierarchyCompareInfoJSON): HierarchyCompareInfo {
+    return {
+      ...json,
+      changes: json.changes.map((change) => PartialHierarchyModification.fromJSON(change)),
+    };
+  }
+}

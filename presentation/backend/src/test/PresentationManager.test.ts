@@ -15,8 +15,8 @@ import {
   ArrayTypeDescription, ContentDescriptorRequestOptions, ContentFlags, ContentJSON, ContentRequestOptions, DefaultContentDisplayTypes, Descriptor,
   DescriptorJSON, DiagnosticsOptions, DiagnosticsScopeLogs, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions,
   ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, FieldDescriptor, FieldDescriptorType, FieldJSON, getLocalesDirectory,
-  HierarchyRequestOptions, InstanceKey, ItemJSON, KeySet, KindOfQuantityInfo, LabelDefinition, LabelRequestOptions, NestedContentFieldJSON, NodeJSON,
-  NodeKey, Paged, PageOptions, PartialHierarchyModification, PartialHierarchyModificationJSON, PresentationDataCompareOptions, PresentationError,
+  HierarchyCompareInfo, HierarchyCompareInfoJSON, HierarchyRequestOptions, InstanceKey, ItemJSON, KeySet, KindOfQuantityInfo, LabelDefinition,
+  LabelRequestOptions, NestedContentFieldJSON, NodeJSON, NodeKey, Paged, PageOptions, PresentationDataCompareOptions, PresentationError,
   PresentationUnitSystem, PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, RequestPriority, Ruleset,
   SelectClassInfoJSON, SelectionInfo, SelectionScope, StandardNodeTypes, StructTypeDescription, VariableValueTypes,
 } from "@bentley/presentation-common";
@@ -94,6 +94,7 @@ describe("PresentationManager", () => {
             cacheConfig: { mode: HierarchyCacheMode.Disk, directory: "" },
             contentCacheSize: undefined,
             defaultFormats: {},
+            useMmap: undefined,
           });
         });
       });
@@ -131,6 +132,7 @@ describe("PresentationManager", () => {
           cacheConfig,
           contentCacheSize: 999,
           defaultFormats,
+          useMmap: 666,
         };
         const expectedCacheConfig = {
           mode: HierarchyCacheMode.Memory,
@@ -146,6 +148,7 @@ describe("PresentationManager", () => {
             cacheConfig: expectedCacheConfig,
             contentCacheSize: 999,
             defaultFormats: { length: { unitSystems: [PresentationUnitSystem.BritishImperial], serializedFormat: JSON.stringify(formatProps) } },
+            useMmap: 666,
           });
         });
       });
@@ -163,6 +166,7 @@ describe("PresentationManager", () => {
             cacheConfig: { mode: HierarchyCacheMode.Disk, directory: "" },
             contentCacheSize: undefined,
             defaultFormats: {},
+            useMmap: undefined,
           });
         });
         constructorSpy.resetHistory();
@@ -182,6 +186,7 @@ describe("PresentationManager", () => {
             cacheConfig: expectedConfig,
             contentCacheSize: undefined,
             defaultFormats: {},
+            useMmap: undefined,
           });
         });
       });
@@ -199,6 +204,7 @@ describe("PresentationManager", () => {
             cacheConfig: { mode: HierarchyCacheMode.Hybrid, disk: undefined },
             contentCacheSize: undefined,
             defaultFormats: {},
+            useMmap: undefined,
           });
         });
         constructorSpy.resetHistory();
@@ -223,6 +229,7 @@ describe("PresentationManager", () => {
             cacheConfig: expectedConfig,
             contentCacheSize: undefined,
             defaultFormats: {},
+            useMmap: undefined,
           });
         });
       });
@@ -1153,11 +1160,13 @@ describe("PresentationManager", () => {
         };
 
         // what the addon returns
-        const addonResponse: PartialHierarchyModificationJSON[] = setup([{
-          type: "Insert",
-          position: 1,
-          node: createRandomECInstancesNodeJSON(),
-        }]);
+        const addonResponse: HierarchyCompareInfoJSON = setup({
+          changes: [{
+            type: "Insert",
+            position: 1,
+            node: createRandomECInstancesNodeJSON(),
+          }],
+        });
 
         // test
         const options: PresentationDataCompareOptions<IModelDb, NodeKey> = {
@@ -1171,7 +1180,7 @@ describe("PresentationManager", () => {
           expandedNodeKeys: [nodeKey],
         };
         const result = await manager.compareHierarchies(ClientRequestContext.current, options);
-        verifyWithExpectedResult(result, addonResponse.map(PartialHierarchyModification.fromJSON), expectedParams);
+        verifyWithExpectedResult(result, HierarchyCompareInfo.fromJSON(addonResponse).changes, expectedParams);
       });
 
       it("requests addon to compare hierarchies based on ruleset and variables' changes", async () => {
@@ -1192,11 +1201,13 @@ describe("PresentationManager", () => {
         };
 
         // what the addon returns
-        const addonResponse: PartialHierarchyModificationJSON[] = setup([{
-          type: "Insert",
-          position: 1,
-          node: createRandomECInstancesNodeJSON(),
-        }]);
+        const addonResponse: HierarchyCompareInfoJSON = setup({
+          changes: [{
+            type: "Insert",
+            position: 1,
+            node: createRandomECInstancesNodeJSON(),
+          }],
+        });
 
         // test
         const options: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>> = {
@@ -1211,7 +1222,7 @@ describe("PresentationManager", () => {
           expandedNodeKeys: [nodeKey],
         };
         const result = await manager.compareHierarchies(options);
-        verifyWithExpectedResult(result, addonResponse.map(PartialHierarchyModification.fromJSON), expectedParams);
+        verifyWithExpectedResult(result, HierarchyCompareInfo.fromJSON(addonResponse), expectedParams);
       });
 
       it("requests addon to compare hierarchies based on ruleset changes", async () => {
@@ -1228,10 +1239,12 @@ describe("PresentationManager", () => {
         };
 
         // what the addon returns
-        const addonResponse: PartialHierarchyModificationJSON[] = setup([{
-          type: "Delete",
-          node: createRandomECInstancesNodeJSON(),
-        }]);
+        const addonResponse: HierarchyCompareInfoJSON = setup({
+          changes: [{
+            type: "Delete",
+            node: createRandomECInstancesNodeJSON(),
+          }],
+        });
 
         // test
         const options: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>> = {
@@ -1243,7 +1256,7 @@ describe("PresentationManager", () => {
           rulesetOrId: "test",
         };
         const result = await manager.compareHierarchies(options);
-        verifyWithExpectedResult(result, addonResponse.map(PartialHierarchyModification.fromJSON), expectedParams);
+        verifyWithExpectedResult(result, HierarchyCompareInfo.fromJSON(addonResponse), expectedParams);
       });
 
       it("requests addon to compare hierarchies based on ruleset variables' changes", async () => {
@@ -1263,11 +1276,13 @@ describe("PresentationManager", () => {
         };
 
         // what the addon returns
-        const addonResponse: PartialHierarchyModificationJSON[] = setup([{
-          type: "Update",
-          node: createRandomECInstancesNodeJSON(),
-          changes: [],
-        }]);
+        const addonResponse: HierarchyCompareInfoJSON = setup({
+          changes: [{
+            type: "Update",
+            node: createRandomECInstancesNodeJSON(),
+            changes: [],
+          }],
+        });
 
         // test
         const options: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>> = {
@@ -1280,7 +1295,7 @@ describe("PresentationManager", () => {
           rulesetVariables: [var2],
         };
         const result = await manager.compareHierarchies(options);
-        verifyWithExpectedResult(result, addonResponse.map(PartialHierarchyModification.fromJSON), expectedParams);
+        verifyWithExpectedResult(result, HierarchyCompareInfo.fromJSON(addonResponse), expectedParams);
       });
 
       it("returns empty result if neither ruleset nor ruleset variables changed", async () => {
@@ -1292,7 +1307,7 @@ describe("PresentationManager", () => {
           rulesetOrId: "test",
         });
         nativePlatformMock.verify(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
-        expect(result).to.deep.eq([]);
+        expect(result).to.deep.eq({ changes: [] });
       });
 
       it("throws when trying to compare hierarchies with different ruleset ids", async () => {
@@ -1327,7 +1342,9 @@ describe("PresentationManager", () => {
         };
 
         // what the addon returns
-        setup([]);
+        const addonResponse: HierarchyCompareInfoJSON = setup({
+          changes: [],
+        });
 
         // test
         const options: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>> = {
@@ -1340,7 +1357,7 @@ describe("PresentationManager", () => {
           expandedNodeKeys: [],
         };
         const result = await manager.compareHierarchies(options);
-        verifyWithExpectedResult(result, [], expectedParams);
+        verifyWithExpectedResult(result, HierarchyCompareInfo.fromJSON(addonResponse), expectedParams);
       });
 
       it("uses `locale` from options for comparison", async () => {
@@ -1360,7 +1377,9 @@ describe("PresentationManager", () => {
         };
 
         // what the addon returns
-        setup([]);
+        const addonResponse: HierarchyCompareInfoJSON = setup({
+          changes: [],
+        });
 
         // test
         const options: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>> = {
@@ -1374,7 +1393,7 @@ describe("PresentationManager", () => {
           expandedNodeKeys: [],
         };
         const result = await manager.compareHierarchies(options);
-        verifyWithExpectedResult(result, [], expectedParams);
+        verifyWithExpectedResult(result, HierarchyCompareInfo.fromJSON(addonResponse), expectedParams);
       });
 
     });

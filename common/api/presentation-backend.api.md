@@ -20,6 +20,7 @@ import { EventSink } from '@bentley/imodeljs-backend';
 import { ExtendedContentRequestOptions } from '@bentley/presentation-common';
 import { ExtendedHierarchyRequestOptions } from '@bentley/presentation-common';
 import { FormatProps } from '@bentley/imodeljs-quantity';
+import { HierarchyCompareInfo } from '@bentley/presentation-common';
 import { HierarchyRequestOptions } from '@bentley/presentation-common';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
@@ -158,7 +159,7 @@ export class PresentationManager {
     // @deprecated (undocumented)
     compareHierarchies(requestContext: ClientRequestContext, requestOptions: PresentationDataCompareOptions<IModelDb, NodeKey>): Promise<PartialHierarchyModification[]>;
     // @beta
-    compareHierarchies(requestOptions: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>>): Promise<PartialHierarchyModification[]>;
+    compareHierarchies(requestOptions: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>>): Promise<HierarchyCompareInfo>;
     // @deprecated
     computeSelection(requestContext: ClientRequestContext, requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[], scopeId: string): Promise<KeySet>;
     // @beta
@@ -277,6 +278,8 @@ export interface PresentationManagerProps {
     };
     // @alpha
     updatesPollInterval?: number;
+    // @alpha
+    useMmap?: boolean | number;
 }
 
 // @public

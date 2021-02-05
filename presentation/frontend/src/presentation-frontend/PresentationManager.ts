@@ -192,10 +192,22 @@ export class PresentationManager implements IDisposable {
       return [];
 
     const options = await this.addRulesetAndVariablesToOptions(props);
-    let modifications: PartialHierarchyModification[];
+    let modifications: PartialHierarchyModification[] = [];
+
     try {
-      modifications = (await this.rpcRequestsHandler.compareHierarchies(this.toRpcTokenOptions(options)))
-        .map(PartialHierarchyModification.fromJSON);
+      while (true) {
+        const result = (await this.rpcRequestsHandler.compareHierarchiesPaged(this.toRpcTokenOptions(options)));
+        modifications.push(...result.changes.map(PartialHierarchyModification.fromJSON));
+        if (!result.continuationToken)
+          break;
+
+        if (result.changes.length === 0) {
+          Logger.logError(PresentationFrontendLoggerCategory.Package, "Hierarchy compare returned no changes but has continuation token.");
+          return [];
+        }
+
+        options.continuationToken = result.continuationToken;
+      }
     } catch (e) {
       if (e instanceof PresentationError && e.errorNumber === PresentationStatus.Canceled) {
         modifications = [];
