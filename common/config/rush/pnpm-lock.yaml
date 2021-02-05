@@ -197,7 +197,6 @@ dependencies:
   chai-string: 1.5.0_chai@4.2.0
   chai-subset: 1.6.0
   chalk: 3.0.0
-  chevrotain: 7.1.0
   child_process: 1.0.2
   chrome-launcher: 0.10.7
   classnames: 2.2.6
@@ -365,6 +364,7 @@ dependencies:
   typemoq: 2.1.0
   typescript: 3.7.5
   typescript-json-schema: 0.43.0
+  ulp: 1.0.1
   url-loader: 1.1.2_webpack@4.42.0
   username: 5.1.0
   uuid: 7.0.3
@@ -17796,6 +17796,10 @@ packages:
       node: '>= 0.8'
     resolution:
       integrity: sha512-KPHm4VL5dDXKz01UuEd88Df+KzynaohSL9fBh096KWAxSKZQDI2uBrVqtvRM4rwrIrRRKsdLNML/lnaaVSRioA==
+  /ulp/1.0.1:
+    dev: false
+    resolution:
+      integrity: sha1-46SltN6b0PquY+RUTuY6DZvTS8U=
   /undefsafe/2.0.3:
     dependencies:
       debug: 2.6.9
@@ -19314,12 +19318,13 @@ packages:
       sinon: 9.2.4
       ts-node: 7.0.1
       typescript: 3.7.5
+      ulp: 1.0.1
       xmldom: 0.1.31
       xmlhttprequest: 1.8.0
     dev: false
     name: '@rush-temp/ecschema-metadata'
     resolution:
-      integrity: sha512-mj0AVgk1+q7bxDu19BB3prUcbmmG3KzS/Tb8bdzjOJgf5PrsShmO3BHRa+6xuC0IzajhluEPu9mggMCtCl0KEw==
+      integrity: sha512-sanbliSoB+qJNCtq8MfNmlB/t/WFmEz53i1FxU65kOkH7q1HVKXg8HRB+SjBWLmmd57O2WaoIKwGgYIE7O1+fQ==
       tarball: 'file:projects/ecschema-metadata.tgz'
     version: 0.0.0
   'file:projects/ecschema2ts.tgz':
@@ -21505,7 +21510,6 @@ specifiers:
   chai-string: ^1.5.0
   chai-subset: 1.6.0
   chalk: ^3.0.0
-  chevrotain: ^7.0.3
   child_process: ^1.0.2
   chrome-launcher: ^0.10.5
   classnames: ^2.2.5
@@ -21673,6 +21677,7 @@ specifiers:
   typemoq: ^2.1.0
   typescript: ~3.7.4
   typescript-json-schema: ^0.43.0
+  ulp: ^1.0.1
   url-loader: ^1.0.1
   username: ^5.1.0
   uuid: ^7.0.3
