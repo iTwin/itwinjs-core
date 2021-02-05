@@ -19,6 +19,7 @@ import { DistinctValuesRequestOptions } from '@bentley/presentation-common';
 import { EventSink } from '@bentley/imodeljs-backend';
 import { ExtendedContentRequestOptions } from '@bentley/presentation-common';
 import { ExtendedHierarchyRequestOptions } from '@bentley/presentation-common';
+import { FormatProps } from '@bentley/imodeljs-quantity';
 import { HierarchyCompareInfo } from '@bentley/presentation-common';
 import { HierarchyRequestOptions } from '@bentley/presentation-common';
 import { Id64String } from '@bentley/bentleyjs-core';
@@ -255,6 +256,10 @@ export interface PresentationManagerProps {
     cacheConfig?: HierarchyCacheConfig;
     // @alpha (undocumented)
     contentCacheSize?: number;
+    // @alpha
+    defaultFormats?: {
+        [phenomenon: string]: UnitSystemFormat;
+    };
     enableSchemasPreload?: boolean;
     // @internal (undocumented)
     eventSink?: EventSink;
@@ -273,6 +278,8 @@ export interface PresentationManagerProps {
     };
     // @alpha
     updatesPollInterval?: number;
+    // @alpha
+    useMmap?: boolean | number;
 }
 
 // @public

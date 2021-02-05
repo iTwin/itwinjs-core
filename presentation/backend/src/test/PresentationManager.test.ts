@@ -93,6 +93,8 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: false,
             cacheConfig: { mode: HierarchyCacheMode.Disk, directory: "" },
             contentCacheSize: undefined,
+            defaultFormats: {},
+            useMmap: undefined,
           });
         });
       });
@@ -104,6 +106,22 @@ describe("PresentationManager", () => {
         const cacheConfig = {
           mode: HierarchyCacheMode.Memory,
         };
+        const formatProps = {
+          composite: {
+            includeZero: true,
+            spacer: " ",
+            units: [
+              { label: "'", name: "IN" },
+            ],
+          },
+          formatTraits: "KeepSingleZero|KeepDecimalPoint|ShowUnitLabel",
+          precision: 4,
+          type: "Decimal",
+          uomSeparator: "",
+        };
+        const defaultFormats = {
+          length: { unitSystems: [PresentationUnitSystem.BritishImperial], format: formatProps },
+        };
         const props: PresentationManagerProps = {
           id: faker.random.uuid(),
           presentationAssetsRoot: "/test",
@@ -113,6 +131,8 @@ describe("PresentationManager", () => {
           updatesPollInterval: 1,
           cacheConfig,
           contentCacheSize: 999,
+          defaultFormats,
+          useMmap: 666,
         };
         const expectedCacheConfig = {
           mode: HierarchyCacheMode.Memory,
@@ -127,6 +147,8 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: true,
             cacheConfig: expectedCacheConfig,
             contentCacheSize: 999,
+            defaultFormats: { length: { unitSystems: [PresentationUnitSystem.BritishImperial], serializedFormat: JSON.stringify(formatProps) } },
+            useMmap: 666,
           });
         });
       });
@@ -143,6 +165,8 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: false,
             cacheConfig: { mode: HierarchyCacheMode.Disk, directory: "" },
             contentCacheSize: undefined,
+            defaultFormats: {},
+            useMmap: undefined,
           });
         });
         constructorSpy.resetHistory();
@@ -161,6 +185,8 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: false,
             cacheConfig: expectedConfig,
             contentCacheSize: undefined,
+            defaultFormats: {},
+            useMmap: undefined,
           });
         });
       });
@@ -177,6 +203,8 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: false,
             cacheConfig: { mode: HierarchyCacheMode.Hybrid, disk: undefined },
             contentCacheSize: undefined,
+            defaultFormats: {},
+            useMmap: undefined,
           });
         });
         constructorSpy.resetHistory();
@@ -200,6 +228,8 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: false,
             cacheConfig: expectedConfig,
             contentCacheSize: undefined,
+            defaultFormats: {},
+            useMmap: undefined,
           });
         });
       });
