@@ -15,25 +15,13 @@ import { Checkbox, CommonProps, Input, Select } from "@bentley/ui-core";
 import { FormatPanel } from "./FormatPanel";
 import { DeepCompare } from "@bentley/geometry-core";
 
-/** Properties of [[QuantityFormatPanel]] component.
- * @alpha
- */
-export interface QuantityFormatPanelProps extends CommonProps {
-  quantityType: QuantityTypeArg;
-  onFormatChange?: (format: FormatProps) => void;
-  /** props below are to be passed on to FormatPanel */
-  showSample?: boolean;
-  initialMagnitude?: number;
-  enableMinimumProperties?: boolean;
-}
-
 function createTextInputFormatPropEditor(key: string, label: string, inProps: FormatProps,
   getString: (props: FormatProps) => string, setString: (props: FormatProps, value: string) => FormatProps, fireFormatChange: (newProps: FormatProps) => void) {
   const value = getString (inProps);
   return (
     <>
       <span key={`${key}-label`} className={"uicore-label"}>{label}</span>
-      <Input key={`${key}-editor`}
+      <Input data-testid={`${key}-editor`} key={`${key}-editor`}
         value={value}
         onChange={(e) => {
           const newProps = setString(inProps, e.currentTarget.value);
@@ -50,7 +38,7 @@ function createSelectFormatPropEditor(key: string, label: string, options: {labe
   return (
     <>
       <span key={`${key}-label`} className={"uicore-label"}>{label}</span>
-      <Select key={`${key}-editor`}
+      <Select data-testid={`${key}-editor`} key={`${key}-editor`}
         value={value}
         options={options}
         onChange={(e) => {
@@ -68,7 +56,7 @@ function createCheckboxFormatPropEditor(key: string, label: string, inProps: For
   return (
     <>
       <span key={`${key}-label`} className={"uicore-label"}>{label}</span>
-      <Checkbox  key={`${key}-editor`}
+      <Checkbox data-testid={`${key}-editor`} key={`${key}-editor`}
         checked={isChecked}
         onChange={(e)=>{
           const newProps = setBool(inProps, e.target.checked);
@@ -83,7 +71,19 @@ function formatAreEqual(obj1: FormatProps, obj2: FormatProps) {
   return compare.compare(obj1, obj2);
 }
 
-/** Component to show/edit Quantity Format.
+/** Properties of [[QuantityFormatPanel]] component.
+ * @alpha
+ */
+export interface QuantityFormatPanelProps extends CommonProps {
+  quantityType: QuantityTypeArg;
+  onFormatChange?: (format: FormatProps) => void;
+  /** props below are to be passed on to FormatPanel */
+  showSample?: boolean;
+  initialMagnitude?: number;
+  enableMinimumProperties?: boolean;
+}
+
+/** Component to set properties that control Quantity Formatting.
  * @alpha
  */
 export function QuantityFormatPanel(props: QuantityFormatPanelProps) {

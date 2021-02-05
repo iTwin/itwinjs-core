@@ -10,11 +10,18 @@ import * as React from "react";
 import { CommonProps, Select, SelectOption } from "@bentley/ui-core";
 import { UiComponents } from "../UiComponents";
 import { DecimalPrecision, Format, FormatProps, FormatType, FractionalPrecision, ScientificType } from "@bentley/imodeljs-quantity";
+
+/** Properties of [[FormatTypeSelector]] component.
+ * @alpha
+ */
 interface FormatTypeSelectorProps extends CommonProps {
   type: FormatType;
   onChange: (value: FormatType) => void;
 }
 
+/** Component to select the format type.
+ * @alpha
+ */
 function FormatTypeSelector(props: FormatTypeSelectorProps) {
   const { type, onChange, ...otherProps } = props;
   const formatOptions = React.useRef<SelectOption[]>([
@@ -43,7 +50,7 @@ export interface FormatTypeOptionProps extends CommonProps {
   onChange?: (format: FormatProps) => void;
 }
 
-/** Component to show/edit Quantity Format.
+/** Component to set the Quantity Format type.
  * @alpha
  */
 export function FormatTypeOption(props: FormatTypeOptionProps) {
@@ -59,7 +66,7 @@ export function FormatTypeOption(props: FormatTypeOptionProps) {
         scientificType = Format.scientificTypeToString(ScientificType.Normalized);
         break;
       case FormatType.Decimal:
-        precision = DecimalPrecision.Six;
+        precision = DecimalPrecision.Four;
         break;
       case FormatType.Station:
         precision = DecimalPrecision.Two;
@@ -81,7 +88,7 @@ export function FormatTypeOption(props: FormatTypeOptionProps) {
   return (
     <>
       <span className={"uicore-label.current"}>{label.current}</span>
-      <FormatTypeSelector type={formatType} onChange={handleFormatTypeChange} />
+      <FormatTypeSelector data-testid="format-type-selector" type={formatType} onChange={handleFormatTypeChange} />
     </>
   );
 }

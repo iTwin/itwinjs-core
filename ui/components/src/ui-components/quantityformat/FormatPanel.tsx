@@ -34,7 +34,6 @@ export interface FormatPanelProps extends CommonProps {
   provideSecondaryChildren?: (formatProps: FormatProps, fireFormatChange: (newProps: FormatProps) => void) => React.ReactNode;
 }
 
-// TODO pass in QuantityType and get spec from it.
 async function generateFormatSpec(formatProps: FormatProps, persistenceUnit: UnitProps, unitsProvider: UnitsProvider) {
   const actualFormat = await Format.createFromJSON("custom", unitsProvider, formatProps);
   return FormatterSpec.create(actualFormat.name, actualFormat, unitsProvider, persistenceUnit);

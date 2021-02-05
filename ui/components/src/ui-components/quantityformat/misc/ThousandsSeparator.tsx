@@ -85,9 +85,9 @@ export function ThousandsSeparator(props: ThousandsSeparatorProps) {
   return (
     <>
       <span className={"uicore-label"}>{useThousandSeparatorLabel.current}</span>
-      <Checkbox isLabeled={true} checked={isFormatTraitSet(FormatTraits.Use1000Separator)} onChange={handleUseThousandsSeparatorChange} />
+      <Checkbox data-testid="use-thousands-separator" isLabeled={true} checked={isFormatTraitSet(FormatTraits.Use1000Separator)} onChange={handleUseThousandsSeparatorChange} />
       <span className={classnames("uicore-label", !(isFormatTraitSet(FormatTraits.Use1000Separator)) && "uicore-disabled")}>{thousandSeparatorLabel.current}</span>
-      <ThousandsSelector separator={formatProps.thousandSeparator ?? ","} disabled={!isFormatTraitSet(FormatTraits.Use1000Separator)} onChange={handleThousandSeparatorChange} />
+      <ThousandsSelector data-testid="thousands-separator-selector" separator={formatProps.thousandSeparator ?? ","} disabled={!isFormatTraitSet(FormatTraits.Use1000Separator)} onChange={handleThousandSeparatorChange} />
     </>
   );
 }

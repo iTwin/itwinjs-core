@@ -12,7 +12,7 @@ import { SpecialKey } from "@bentley/ui-abstract";
 import { CommonProps, Input, WebFontIcon } from "@bentley/ui-core";
 import { UiComponents } from "../UiComponents";
 
-/** Properties of [[UomSeparatorSelector]] component.
+/** Properties of [[FormatSample]] component.
  * @alpha
  */
 export interface FormatSampleProps extends CommonProps {
@@ -21,7 +21,7 @@ export interface FormatSampleProps extends CommonProps {
   hideLabels?: boolean;
 }
 
-/** Component to show/edit Quantity Format.
+/** Component to show the persistence value and formatted value given a FormatterSpec.
  * @alpha
  */
 export function FormatSample(props: FormatSampleProps) {
@@ -53,14 +53,14 @@ export function FormatSample(props: FormatSampleProps) {
   const handleKeyDown = React.useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     // istanbul ignore else
     if (e.key === SpecialKey.Enter) {
-      let newValue = Number.parseFloat(e.currentTarget.value);
+      let newValue = Number.parseFloat(sampleValue);
       if (Number.isNaN(newValue))
         newValue = 0;
       setMagnitude(newValue);
       setSampleValue(newValue.toString());
       e.preventDefault();
     }
-  }, []);
+  }, [sampleValue]);
 
   const activePersistenceUnitLabel = formatSpec ? formatSpec.persistenceUnit.label : "";
   const formattedValue = formatSpec ? formatSpec.applyFormatting(magnitude) : "";
@@ -72,7 +72,7 @@ export function FormatSample(props: FormatSampleProps) {
     <>
       {!hideLabels && <span className={"uicore-label"}>{valueLabel.current}</span>}
       <span className="components-inline">
-        <Input className={"components-quantity-persistence-input"} value={sampleValue} onChange={handleOnValueChange} onKeyDown={handleKeyDown} onBlur={handleOnValueBlur} />{activePersistenceUnitLabel}
+        <Input data-testid="format-sample-input" className={"components-quantity-persistence-input"} value={sampleValue} onChange={handleOnValueChange} onKeyDown={handleKeyDown} onBlur={handleOnValueBlur} />{activePersistenceUnitLabel}
       </span>
       {!hideLabels && <span className={"uicore-label"}>{formattedLabel.current}</span>}
       <span>{hideLabels && (formattedValue.length > 0) && <WebFontIcon iconName="icon-progress-forward-2" />}<span className={"uicore-label components-quantity-formatted-sample"}>{formattedValue}</span></span>

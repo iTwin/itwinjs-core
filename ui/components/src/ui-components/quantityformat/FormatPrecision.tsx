@@ -13,7 +13,7 @@ import { DecimalPrecisionSelector } from "./misc/DecimalPrecision";
 import { FractionPrecisionSelector } from "./misc/FractionPrecision";
 import { UiComponents } from "../UiComponents";
 
-/** Properties of [[UomSeparatorSelector]] component.
+/** Properties of [[FormatPrecision]] component.
  * @alpha
  */
 export interface FormatPrecisionProps extends CommonProps {
@@ -21,7 +21,7 @@ export interface FormatPrecisionProps extends CommonProps {
   onChange?: (format: FormatProps) => void;
 }
 
-/** Component to show/edit Quantity Format.
+/** Component to show/edit Quantity Format Precision.
  * @alpha
  */
 export function FormatPrecision(props: FormatPrecisionProps) {
@@ -39,8 +39,8 @@ export function FormatPrecision(props: FormatPrecisionProps) {
     <>
       <span className={"uicore-label"}>{label.current}</span>
       {formatType === FormatType.Fractional ?
-        <FractionPrecisionSelector precision={formatProps.precision ?? 0} onChange={handlePrecisionChange} /> :
-        <DecimalPrecisionSelector precision={formatProps.precision ?? 0} onChange={handlePrecisionChange} />
+        <FractionPrecisionSelector data-testid="fraction-precision-selector" precision={formatProps.precision ?? 0} onChange={handlePrecisionChange} /> :
+        <DecimalPrecisionSelector data-testid="decimal-precision-selector"  precision={formatProps.precision ?? 0} onChange={handlePrecisionChange} />
       }
     </>
   );

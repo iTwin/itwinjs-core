@@ -53,7 +53,7 @@ export interface FormatUnitLabelProps extends CommonProps {
   onUnitLabelChange?: (format: FormatProps) => void;
 }
 
-/** Component to show/edit Quantity Format.
+/** Component to set the label separator definition in a Quantity Format and if it the label is to be displayed.
  * @alpha
  */
 export function FormatUnitLabel(props: FormatUnitLabelProps) {
@@ -110,9 +110,9 @@ export function FormatUnitLabel(props: FormatUnitLabelProps) {
   return (
     <>
       <span className={"uicore-label"}>{appendUnitLabel.current}</span>
-      <Checkbox isLabeled={true} checked={isFormatTraitSet(FormatTraits.ShowUnitLabel)} onChange={handleShowUnitLabelChange} />
+      <Checkbox data-testid="show-unit-label-checkbox" isLabeled={true} checked={isFormatTraitSet(FormatTraits.ShowUnitLabel)} onChange={handleShowUnitLabelChange} />
       <span className={classnames("uicore-label", !isFormatTraitSet(FormatTraits.ShowUnitLabel) && "uicore-disabled")}>{labelSeparator.current}</span>
-      <UomSeparatorSelector separator={formatProps.uomSeparator ?? ""} onChange={handleUomSeparatorChange} disabled={!isFormatTraitSet(FormatTraits.ShowUnitLabel)} />
+      <UomSeparatorSelector data-testid="uom-separator-select" separator={formatProps.uomSeparator ?? ""} onChange={handleUomSeparatorChange} disabled={!isFormatTraitSet(FormatTraits.ShowUnitLabel)} />
     </>
   );
 }

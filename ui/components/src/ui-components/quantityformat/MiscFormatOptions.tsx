@@ -31,7 +31,7 @@ export interface MiscFormatOptionsProps extends CommonProps {
   children?: React.ReactNode;
 }
 
-/** Component to show/edit Quantity Format.
+/** Component use to set miscellaneous properties is a Formatted Quantity.
  * @alpha
  */
 export function MiscFormatOptions(props: MiscFormatOptionsProps) {
@@ -161,50 +161,50 @@ export function MiscFormatOptions(props: MiscFormatOptionsProps) {
     <>
       { // eslint-disable-next-line jsx-a11y/anchor-is-valid
         enableMinimumProperties && !showOptions && <a onClick={handleToggleButtonClick} onKeyUp={handleKeyUpOnLink}
-          className={"components-quantityFormat-more-less"} role="link" tabIndex={0} >{moreLabel.current}</a>}
+          className={"components-quantityFormat-more-less"} role="link" data-testid="quantityFormat-more" tabIndex={0} >{moreLabel.current}</a>}
       {
         (!enableMinimumProperties || showOptions) &&
         <>
           <span className={"uicore-label"}>{signOptionLabel.current}</span>
-          <SignOptionSelector signOption={showSignOption} onChange={handleShowSignChange} />
+          <SignOptionSelector data-testid="sign-option-selector" signOption={showSignOption} onChange={handleShowSignChange} />
 
           <span className={classnames("uicore-label", formatType !== FormatType.Station && "uicore-disabled")}>{stationOffsetLabel.current}</span>
-          <StationSizeSelector value={(formatProps.stationOffsetSize ?? 2)}
+          <StationSizeSelector data-testid="station-size-selector" value={(formatProps.stationOffsetSize ?? 2)}
             disabled={formatType !== FormatType.Station} onChange={handleStationOffsetChange} />
 
           <span className={classnames("uicore-label", formatType !== FormatType.Station && "uicore-disabled")}>{stationSeparatorLabel.current}</span>
-          <StationSeparatorSelector separator={(undefined !== formatProps.stationSeparator ? formatProps.stationSeparator : "+")}
+          <StationSeparatorSelector data-testid="station-separator-selector" separator={(undefined !== formatProps.stationSeparator ? formatProps.stationSeparator : "+")}
             disabled={formatType !== FormatType.Station} onChange={handleStationSeparatorChange} />
 
           <ThousandsSeparator formatProps={formatProps} onChange={handleFormatChange} />
 
           <span className={classnames("uicore-label", formatType === FormatType.Fractional && "uicore-disabled")}>{decimalSeparatorLabel.current}</span>
-          <DecimalSeparatorSelector separator={formatProps.decimalSeparator ?? "."} onChange={handleDecimalSeparatorChange} disabled={formatType === FormatType.Fractional} />
+          <DecimalSeparatorSelector  data-testid="decimal-separator-selector" separator={formatProps.decimalSeparator ?? "."} onChange={handleDecimalSeparatorChange} disabled={formatType === FormatType.Fractional} />
 
           <span className={"uicore-label"}>{showTrailZerosLabel.current}</span>
-          <Checkbox isLabeled={true} checked={isFormatTraitSet(FormatTraits.TrailZeroes)} onChange={handleShowTrailingZeroesChange} />
+          <Checkbox data-testid="show-trail-zeros" isLabeled={true} checked={isFormatTraitSet(FormatTraits.TrailZeroes)} onChange={handleShowTrailingZeroesChange} />
 
           <span className={classnames("uicore-label", formatType === FormatType.Fractional && "uicore-disabled")}>{keepDecimalPointLabel.current}</span>
-          <Checkbox isLabeled={true} checked={isFormatTraitSet(FormatTraits.KeepDecimalPoint)} onChange={handleKeepDecimalPointChange} />
+          <Checkbox data-testid="keep-decimal-point" isLabeled={true} checked={isFormatTraitSet(FormatTraits.KeepDecimalPoint)} onChange={handleKeepDecimalPointChange} />
 
           <span className={"uicore-label"}>{keepSingleZeroLabel.current}</span>
-          <Checkbox isLabeled={true} checked={isFormatTraitSet(FormatTraits.KeepSingleZero)} onChange={handleKeepSingleZeroChange} />
+          <Checkbox data-testid="keep-single-zero" isLabeled={true} checked={isFormatTraitSet(FormatTraits.KeepSingleZero)} onChange={handleKeepSingleZeroChange} />
 
           <span className={"uicore-label"}>{zeroEmptyLabel.current}</span>
-          <Checkbox isLabeled={true} checked={isFormatTraitSet(FormatTraits.ZeroEmpty)} onChange={handleZeroEmptyChange} />
+          <Checkbox data-testid="zero-empty" isLabeled={true} checked={isFormatTraitSet(FormatTraits.ZeroEmpty)} onChange={handleZeroEmptyChange} />
 
           <span className={classnames("uicore-label", formatType !== FormatType.Fractional && "uicore-disabled")}>{fractionDashLabel.current}</span>
-          <Checkbox isLabeled={true} checked={isFormatTraitSet(FormatTraits.FractionDash)} onChange={handleUseFractionDashChange} disabled={formatType !== FormatType.Fractional} />
+          <Checkbox data-testid="fraction-dash" isLabeled={true} checked={isFormatTraitSet(FormatTraits.FractionDash)} onChange={handleUseFractionDashChange} disabled={formatType !== FormatType.Fractional} />
 
           <span className={classnames("uicore-label", formatType !== FormatType.Scientific && "uicore-disabled")}>{scientificTypeLabel.current}</span>
-          <ScientificTypeSelector type={(formatProps.scientificType && formatProps.scientificType.length > 0) ? Format.parseScientificType(formatProps.scientificType, "custom") : ScientificType.Normalized}
+          <ScientificTypeSelector data-testid="scientific-type-selector" type={(formatProps.scientificType && formatProps.scientificType.length > 0) ? Format.parseScientificType(formatProps.scientificType, "custom") : ScientificType.Normalized}
             disabled={formatType !== FormatType.Scientific} onChange={handleScientificTypeChange} />
 
           {props.children}
 
           { // eslint-disable-next-line jsx-a11y/anchor-is-valid
             enableMinimumProperties && showOptions && <a onClick={handleToggleButtonClick} onKeyUp={handleKeyUpOnLink}
-              className={"components-quantityFormat-more-less"} role="link" tabIndex={0}>{lessLabel.current}</a>}
+              className={"components-quantityFormat-more-less"} role="link" data-testid="quantityFormat-less" tabIndex={0}>{lessLabel.current}</a>}
         </>
       }
     </>

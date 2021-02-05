@@ -12,7 +12,7 @@ import { FormatProps, UnitProps, UnitsProvider } from "@bentley/imodeljs-quantit
 import { UnitDescr } from "./misc/UnitDescr";
 import { UiComponents } from "../UiComponents";
 
-/** Properties of [[FormatPanel]] component.
+/** Properties of [[FormatUnits]] component.
  * @alpha
  */
 export interface FormatUnitsProps extends CommonProps {
@@ -22,7 +22,7 @@ export interface FormatUnitsProps extends CommonProps {
   onUnitsChange?: (format: FormatProps) => void;
 }
 
-/** Component to show/edit Units used when Formatting.
+/** Component to show/edit Units used for Quantity Formatting.
  * @alpha
  */
 export function FormatUnits(props: FormatUnitsProps) {
@@ -120,7 +120,7 @@ export function FormatUnits(props: FormatUnitsProps) {
       {(formatProps.composite?.units && formatProps.composite?.units.length > 1) &&
         <>
           <span className={"uicore-label"}>{compositeSpacer.current}</span>
-          <Input value={formatProps.composite?.spacer ?? ""} onChange={handleOnSpacerChange} />
+          <Input data-testid="composite-spacer" value={formatProps.composite?.spacer ?? ""} onChange={handleOnSpacerChange} />
         </>
       }
     </>

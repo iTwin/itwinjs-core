@@ -6,16 +6,18 @@
 import {
   CustomFormatProps, Format, FormatProps, FormatterSpec, Parser, ParseResult, ParserSpec, QuantityStatus, UnitConversionSpec, UnitProps, UnitsProvider,
 } from "@bentley/imodeljs-quantity";
-import { CheckboxFormatPropEditorSpec, CustomFormatPropEditorSpec, CustomQuantityTypeDefinition, TextSelectFormatPropEditorSpec, UnitSystemKey } from "../QuantityFormatter";
+import { CheckboxFormatPropEditorSpec, CustomFormatPropEditorSpec, CustomQuantityTypeDefinition,
+  TextInputFormatPropEditorSpec, TextSelectFormatPropEditorSpec, UnitSystemKey } from "../QuantityFormatter";
 
-export interface BearingFormatProps extends CustomFormatProps {
+interface BearingFormatProps extends CustomFormatProps {
   readonly custom: {
     readonly addDirectionLabelGap: boolean;
     readonly angleDirection: string;   // "clockwise"|"counter-clockwise"
+    readonly testString: string;   // for testing control creation only
   };
 }
 
-export const isBearingFormatProps = (item: FormatProps): item is BearingFormatProps => {
+const isBearingFormatProps = (item: FormatProps): item is BearingFormatProps => {
   return ((item as CustomFormatProps).custom !== undefined) &&
     ((item as BearingFormatProps).custom.addDirectionLabelGap !== undefined) &&
     ((item as BearingFormatProps).custom.angleDirection !== undefined);
@@ -31,7 +33,7 @@ const defaultBearingFormat: BearingFormatProps = {
   precision: 0,
   type: "Decimal",
   uomSeparator: "",
-  custom: {addDirectionLabelGap: true, angleDirection: "clockwise"},
+  custom: {addDirectionLabelGap: true, angleDirection: "clockwise", testString: "test-string"},
 };
 
 class BearingFormatterSpec extends FormatterSpec {
@@ -227,10 +229,16 @@ export class BearingQuantityType implements CustomQuantityTypeDefinition {
           {value: "clockwise", label: "clockwise" },
           {value: "counter-clockwise", label:"counter-clockwise" },
         ],
-        label: "AngleDirection",
+        label: "Angle Direction",
         getString: BearingQuantityType.bearingAngleDirectionGetter,
         setString: BearingQuantityType.bearingAngleDirectionSetter,
       } as TextSelectFormatPropEditorSpec,
+      {
+        editorType: "text",
+        label: "Test Text",
+        getString: BearingQuantityType.bearingTextGetter,
+        setString: BearingQuantityType.bearingTextSetter,
+      } as TextInputFormatPropEditorSpec,
     ];
   }
 
@@ -277,4 +285,19 @@ export class BearingQuantityType implements CustomQuantityTypeDefinition {
     throw new Error (`formatProps passed to bearingAngleDirectionSetter type is not a BearingFormatProps`);
   }
 
+  private static bearingTextGetter(props: FormatProps) {
+    if (isBearingFormatProps(props)) {
+      return props.custom.testString;
+    }
+    throw new Error (`formatProps passed to bearingTextGetter type is not a BearingFormatProps`);
+  }
+
+  private static bearingTextSetter(props: FormatProps, value: string) {
+    if (isBearingFormatProps(props)) {
+      const customProps = {...props.custom, testString:value};
+      const newProps = {...props, custom:customProps};
+      return newProps;
+    }
+    throw new Error (`formatProps passed to bearingTextSetter type is not a BearingFormatProps`);
+  }
 }
