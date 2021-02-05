@@ -57,3 +57,24 @@ In order to support partial updates and clearing an existing value, the update e
 The new behavior is documented as part of the method documentation here:
 
 [IModelDb.Elements.updateElement]($backend)
+
+## Presentation
+
+### Setting up default formats
+
+A new feature was introduced, which allows supplying default unit formats to use for formatting properties that don't have a presentation unit for requested unit system. The formats are set when initializing [Presentation]($presentation-backend) and passing [PresentationManagerProps.defaultFormats]($presentation-backend).
+Example:
+
+```ts
+Presentation.initialize({
+  defaultFormats: {
+    length: {
+      unitSystems: [PresentationUnitSystem.BritishImperial],
+      format: MY_DEFAULT_FORMAT_FOR_LENGTHS_IN_BRITISH_IMPERIAL_UNITS,
+    },
+    area: {
+      unitSystems: [PresentationUnitSystem.UsCustomary, PresentationUnitSystem.UsSurvey],
+      format: MY_DEFAULT_FORMAT_FOR_AREAS_IN_US_UNITS,
+    },
+  },
+});

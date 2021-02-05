@@ -10,6 +10,7 @@ import * as hash from "object-hash";
 import * as path from "path";
 import { ClientRequestContext, Id64String, Logger } from "@bentley/bentleyjs-core";
 import { BriefcaseDb, EventSink, IModelDb, IModelHost, IModelJsNative } from "@bentley/imodeljs-backend";
+import { FormatProps } from "@bentley/imodeljs-quantity";
 import {
   Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides,
   DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ExtendedContentRequestOptions,
@@ -111,6 +112,16 @@ export interface HybridCacheConfig extends HierarchyCacheConfigBase {
    */
   disk?: DiskHierarchyCacheConfig;
 }
+
+/**
+ * A data structure that associates some unit systems with a format. The associations are used for
+ * assigning default unit formats for specific phenomenons (see [[PresentationManagerProps.defaultFormats]])
+ * @alpha
+ */
+export interface UnitSystemFormat {
+  unitSystems: PresentationUnitSystem[];
+  format: FormatProps;
+};
 
 /**
  * Properties that can be used to configure [[PresentationManager]]
@@ -247,6 +258,14 @@ export interface PresentationManagerProps {
   contentCacheSize?: number;
 
   /**
+   * A map of default unit formats to use for formatting properties that don't have a presentation format
+   * in requested unit system.
+   *  @alpha */
+  defaultFormats?: {
+    [phenomenon: string]: UnitSystemFormat;
+  };
+
+  /**
    * Use [SQLite's Memory-Mapped I/O](https://sqlite.org/mmap.html) for worker connections. This mode improves performance of handling
    * requests with high I/O intensity, e.g. filtering large tables on non-indexed columns. No downsides have been noticed.
    *
@@ -317,6 +336,7 @@ export class PresentationManager {
         isChangeTrackingEnabled,
         cacheConfig: createCacheConfig(this._props.cacheConfig),
         contentCacheSize: this._props.contentCacheSize,
+        defaultFormats: this._props.defaultFormats,
         useMmap: this._props.useMmap,
       });
       this._nativePlatform = new nativePlatformImpl();
