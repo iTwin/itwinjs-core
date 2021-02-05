@@ -576,6 +576,7 @@ export class DisplayStyleSettings {
    * Handles keeping the map imagery layers in synch after changes have been made (used internally only by front end)
    */
   public synchMapImagery() {
+    this.onMapImageryChanged.raiseEvent(this._mapImagery);
     this._json.mapImagery = this._mapImagery.toJSON();
   }
 

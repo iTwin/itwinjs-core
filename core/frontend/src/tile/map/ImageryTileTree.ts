@@ -229,9 +229,9 @@ class ImageryMapLayerTreeSupplier implements TileTreeSupplier {
   public compareTileTreeIds(lhs: ImageryMapLayerTreeId, rhs: ImageryMapLayerTreeId): number {
     let cmp = compareStrings(lhs.settings.url, rhs.settings.url);
     if (0 === cmp) {
-      cmp = compareStringsOrUndefined(lhs.settings.userName, rhs.settings.userName)
+      cmp = compareStringsOrUndefined(lhs.settings.userName, rhs.settings.userName);
       if (0 === cmp) {
-        cmp = compareStringsOrUndefined(lhs.settings.password, rhs.settings.password)
+        cmp = compareStringsOrUndefined(lhs.settings.password, rhs.settings.password);
         if (0 === cmp) {
           cmp = compareBooleans(lhs.settings.transparentBackground, rhs.settings.transparentBackground);
           if (0 === cmp) {

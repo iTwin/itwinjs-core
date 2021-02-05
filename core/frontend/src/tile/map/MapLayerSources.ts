@@ -18,6 +18,7 @@ import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationM
 /** @internal */
 export enum MapLayerSourceStatus {
   Valid,
+  InvalidCredentials,
   InvalidFormat,
   InvalidTileTree,
   InvalidUrl,
@@ -36,8 +37,8 @@ export class MapLayerSource implements MapLayerProps {
     return (typeof json.name === "string" && typeof json.url === "string" && typeof json.formatId === "string") ? new MapLayerSource(json.formatId, json.name, json.url, baseMap, json.transparentBackground === undefined ? true : json.transparentBackground, json.maxZoom, json.userName, json.password) : undefined;
   }
 
-  public async validateSource(): Promise<MapLayerSourceValidation> {
-    return IModelApp.mapLayerFormatRegistry.validateSource(this.formatId, this.url, this.getCredentials());
+  public async validateSource(ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
+    return IModelApp.mapLayerFormatRegistry.validateSource(this.formatId, this.url, this.getCredentials(), ignoreCache);
   }
   public static fromBackgroundMapProps(props: BackgroundMapProps) {
     const settings = BackgroundMapSettings.fromJSON(props);

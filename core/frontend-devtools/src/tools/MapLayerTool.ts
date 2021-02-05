@@ -7,7 +7,7 @@
  * @module Tools
  */
 
-import { ColorDef, MapLayerStatus } from "@bentley/imodeljs-common";
+import { ColorDef } from "@bentley/imodeljs-common";
 import { IModelApp, MapLayerSource, MapLayerSources, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority, Tool, WmsUtilities } from "@bentley/imodeljs-frontend";
 import { parseToggle } from "./parseToggle";
 
@@ -41,14 +41,6 @@ class AttachMapLayerBaseTool extends Tool {
         } else if (validation.status === MapLayerSourceStatus.RequireAuth) {
           const msg = IModelApp.i18n.translate("FrontendDevTools:AttachMapLayerTool.Messages.MapLayerAttachedRequiresAuth", { sourceName: source.name });
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
-          // Set layer status
-          const layerIdx = vp.displayStyle.findMapLayerIndexByNameAndUrl(source.name, source.url, !this._isBackground);
-          if (-1 !== layerIdx) {
-            const layerSettings = vp.displayStyle.mapLayerAtIndex(layerIdx, !this._isBackground);
-            if (layerSettings) {
-              layerSettings.status = MapLayerStatus.RequireAuth;
-            }
-          }
         }
 
       } else {

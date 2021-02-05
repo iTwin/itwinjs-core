@@ -9,18 +9,17 @@
 
 import * as React from "react";
 import { Draggable, DraggableChildrenFn, Droppable, DroppableProvided, DroppableStateSnapshot } from "react-beautiful-dnd";
-import { ScreenViewport } from "@bentley/imodeljs-frontend";
-import { MapLayerStatus } from "@bentley/imodeljs-common";
+import { MapLayerImageryProviderStatus, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { Button, Icon } from "@bentley/ui-core";
 import { assert } from "@bentley/bentleyjs-core";
 import { SubLayersPopupButton } from "./SubLayersPopupButton";
 import { AttachLayerButtonType, AttachLayerPopupButton } from "./AttachLayerPopupButton";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
-import "./MapLayerManager.scss";
 import { MapTypesOptions, StyleMapLayerSettings } from "../Interfaces";
 import { MapLayerSettingsMenu } from "./MapLayerSettingsMenu";
 import { MapUrlDialog } from "./MapUrlDialog";
 import { ModalDialogManager } from "@bentley/ui-framework";
+import "./MapLayerManager.scss";
 
 /** @internal */
 interface MapLayerDroppableProps {
@@ -61,11 +60,22 @@ export function MapLayerDroppable(props: MapLayerDroppableProps) {
             <SubLayersPopupButton mapLayerSettings={activeLayer} activeViewport={props.activeViewport} />
           }
         </div>
-        {activeLayer.status === MapLayerStatus.RequireAuth &&
+        {activeLayer.provider?.status === MapLayerImageryProviderStatus.RequireAuth &&
           <Button
             className="map-manager-item-requireAuth"
             onClick={() => {
-              ModalDialogManager.openDialog(<MapUrlDialog activeViewport={props.activeViewport} isOverlay={props.isOverlay} layerToEdit={activeLayer} onOkResult={props.onItemEdited} mapTypesOptions={props.mapTypesOptions} />);
+              const indexInDisplayStyle = props.activeViewport?.displayStyle.findMapLayerIndexByNameAndUrl(activeLayer.name, activeLayer.url, activeLayer.isOverlay);
+              if (indexInDisplayStyle !== undefined && indexInDisplayStyle >= 0) {
+                const layerSettings = props.activeViewport.displayStyle.mapLayerAtIndex(indexInDisplayStyle, activeLayer.isOverlay);
+
+                ModalDialogManager.openDialog(<MapUrlDialog activeViewport={props.activeViewport}
+                  isOverlay={props.isOverlay}
+                  layerToEdit={layerSettings?.toJSON()}
+                  onOkResult={props.onItemEdited}
+                  mapTypesOptions={props.mapTypesOptions}
+                  askForCredentialsOnly={true} />);
+              }
+
             }}
             title={requireAuthTooltip}
           >
@@ -95,7 +105,7 @@ export function MapLayerDroppable(props: MapLayerDroppableProps) {
             :
             <>
               <span className="map-manager-no-layers-label">{label}</span>
-              <AttachLayerPopupButton buttonType={AttachLayerButtonType.Blue} isOverlay={false} />
+              <AttachLayerPopupButton buttonType={AttachLayerButtonType.Blue} isOverlay={props.isOverlay} />
             </>
           }
         </div>;

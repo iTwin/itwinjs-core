@@ -16,8 +16,11 @@ import { ArcGisTokenManager } from "./ArcGisTokenManager";
  * @module Tiles
  */
 export enum ArcGisErrorCode {
+  InvalidCredentials = 401,
   InvalidToken = 498,
   TokenRequired = 499,
+  UnknownError = 1000,
+  NoTokenService = 1001,
 }
 
 export class ArcGisUtilities {
@@ -116,15 +119,15 @@ export class ArcGisUtilities {
     return sources;
   }
 
-  public static async validateSource(url: string, credentials?: RequestBasicCredentials): Promise<MapLayerSourceValidation> {
-    const json = await this.getServiceJson(url, credentials);
+  public static async validateSource(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
+    const json = await this.getServiceJson(url, credentials, ignoreCache);
     if (json === undefined) {
       return { status: MapLayerSourceStatus.InvalidUrl };
     } else if (json.error !== undefined) {
       if (json.error.code === ArcGisErrorCode.TokenRequired) {
         return { status: MapLayerSourceStatus.RequireAuth };
-      }
-      return { status: MapLayerSourceStatus.InvalidUrl };
+      } else if (json.error.code === ArcGisErrorCode.InvalidCredentials)
+        return { status: MapLayerSourceStatus.InvalidCredentials };
     }
 
     let subLayers;
@@ -142,10 +145,12 @@ export class ArcGisUtilities {
 
   }
   private static _serviceCache = new Map<string, any>();
-  public static async getServiceJson(url: string, credentials?: RequestBasicCredentials): Promise<any> {
-    const cached = ArcGisUtilities._serviceCache.get(url);
-    if (cached !== undefined)
-      return cached;
+  public static async getServiceJson(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<any> {
+    if (!ignoreCache) {
+      const cached = ArcGisUtilities._serviceCache.get(url);
+      if (cached !== undefined)
+        return cached;
+    }
 
     try {
       const options: RequestOptions = {
@@ -155,8 +160,10 @@ export class ArcGisUtilities {
       let tokenParam = "";
       if (credentials) {
         const token = await ArcGisTokenManager.getToken(url, credentials.user, credentials.password, { client: ArcGisTokenClientType.referer });
-        if (token)
+        if (token?.token) {
           tokenParam = `&token=${token.token}`;
+        } else if (token?.error)
+          return token;   // An error occurred, return immediately
       }
       const finalUrl = `${url}?f=json${tokenParam}`;
       const data = await request(new FrontendRequestContext(""), finalUrl, options);
@@ -184,7 +191,7 @@ export class ArcGisUtilities {
       let tokenParam = "";
       if (credentials) {
         const token = await ArcGisTokenManager.getToken(url, credentials.user, credentials.password, { client: ArcGisTokenClientType.referer });
-        if (token)
+        if (token?.token)
           tokenParam = `&token=${token.token}`;
       }
       const json = await getJson(new FrontendRequestContext(""), `${url}?f=json&option=footprints&outSR=4326${tokenParam}`);

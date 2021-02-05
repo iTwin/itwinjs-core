@@ -14,7 +14,7 @@ export class ArcGisTokenManager {
   private static _cache = new Map<string, ArcGisToken>();
   private static _generator: ArcGisTokenGenerator | undefined;
 
-  public static async getToken(esriRestServiceUrl: string, userName: string, password: string, options: ArcGisGenerateTokenOptions): Promise<ArcGisToken | undefined> {
+  public static async getToken(esriRestServiceUrl: string, userName: string, password: string, options: ArcGisGenerateTokenOptions): Promise<any> {
     if (!ArcGisTokenManager._generator)
       ArcGisTokenManager._generator = new ArcGisTokenGenerator();
 
@@ -30,8 +30,8 @@ export class ArcGisTokenManager {
 
     // Nothing in cache, generate a new token
     const newToken = await ArcGisTokenManager._generator.generate(esriRestServiceUrl, userName, password, options);
-    if (newToken !== undefined) {
-      ArcGisTokenManager._cache.set(tokenCacheKey, newToken);
+    if (newToken.token) {
+      ArcGisTokenManager._cache.set(tokenCacheKey, newToken as ArcGisToken);
     }
 
     return newToken;

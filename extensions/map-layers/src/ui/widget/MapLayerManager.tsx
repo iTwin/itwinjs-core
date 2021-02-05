@@ -9,10 +9,10 @@
 
 import * as React from "react";
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
-import { MapSubLayerProps, MapSubLayerSettings } from "@bentley/imodeljs-common";
+import { MapImagerySettings, MapSubLayerProps, MapSubLayerSettings } from "@bentley/imodeljs-common";
 import {
-  DisplayStyleState, IModelApp, MapLayerSettingsService, MapLayerSource, MapLayerSources, NotifyMessageDetails, OutputMessagePriority,
-  ScreenViewport, Viewport,
+  DisplayStyleState, ImageryMapTileTree, IModelApp, MapLayerImageryProvider, MapLayerSettingsService, MapLayerSource,
+  MapLayerSources, NotifyMessageDetails, OutputMessagePriority, ScreenViewport, TileTreeOwner, Viewport,
 } from "@bentley/imodeljs-frontend";
 import { Toggle } from "@bentley/ui-core";
 import { AttachLayerPopupButton } from "./AttachLayerPopupButton";
@@ -56,35 +56,21 @@ function getMapLayerSettingsFromStyle(displayStyle: DisplayStyleState | undefine
 
   const layers = new Array<StyleMapLayerSettings>();
 
-  if (getBackgroundMap) {
-    displayStyle.backgroundMapLayers.forEach((layerSettings) => {
-      layers.push({
-        visible: layerSettings.visible,
-        name: layerSettings.name,
-        url: layerSettings.url,
-        transparency: layerSettings.transparency,
-        transparentBackground: layerSettings.transparentBackground,
-        subLayers: populateSubLayers ? getSubLayerProps(layerSettings.subLayers) : undefined,
-        showSubLayers: false,
-        isOverlay: false,
-        provider: IModelApp.mapLayerFormatRegistry.createImageryProvider(layerSettings),
-        status: layerSettings.status,
-      });
-    });
-  } else {
-    displayStyle.overlayMapLayers.forEach((layerSettings) => {
-      layers.push({
-        visible: layerSettings.visible,
-        name: layerSettings.name,
-        url: layerSettings.url,
-        transparency: layerSettings.transparency,
-        transparentBackground: layerSettings.transparentBackground,
-        subLayers: populateSubLayers ? getSubLayerProps(layerSettings.subLayers) : undefined,
-        showSubLayers: false,
-        isOverlay: true,
-        provider: IModelApp.mapLayerFormatRegistry.createImageryProvider(layerSettings),
-        status: layerSettings.status,
-      });
+  const displayStyleLayers = (getBackgroundMap ? displayStyle.backgroundMapLayers : displayStyle.overlayMapLayers);
+  for (let layerIdx = 0; layerIdx < displayStyleLayers.length; layerIdx++) {
+    const layerSettings = displayStyleLayers[layerIdx];
+    const isOverlay = !getBackgroundMap;
+    const layerProvider = displayStyle.getMapLayerImageryProvider(layerIdx, isOverlay);
+    layers.push({
+      visible: layerSettings.visible,
+      name: layerSettings.name,
+      url: layerSettings.url,
+      transparency: layerSettings.transparency,
+      transparentBackground: layerSettings.transparentBackground,
+      subLayers: populateSubLayers ? getSubLayerProps(layerSettings.subLayers) : undefined,
+      showSubLayers: false,
+      isOverlay,
+      provider: layerProvider,
     });
   }
 
@@ -125,6 +111,59 @@ export function MapLayerManager(props: MapLayerManagerProps) {
   });
 
   const isMounted = React.useRef(false);
+
+  // Setup onTileTreeLoad events listening.
+  // This is needed because we need to know when the imagery provider
+  // is created, and be able to monitor to status change.
+  React.useEffect(() => {
+    const handleTileTreeLoad = (args: TileTreeOwner) => {
+
+      // Ignore non-map tile trees
+      if (args.tileTree instanceof ImageryMapTileTree) {
+        loadMapLayerSettingsFromStyle(activeViewport.displayStyle);
+      }
+    };
+
+    IModelApp.tileAdmin.onTileTreeLoad.addListener(handleTileTreeLoad);
+
+    return () => {
+      IModelApp.tileAdmin.onTileTreeLoad.removeListener(handleTileTreeLoad);
+    };
+
+  }, [activeViewport, loadMapLayerSettingsFromStyle]);
+
+  // Setup onMapImageryChanged events listening.
+
+  React.useEffect(() => {
+    const handleMapImageryChanged = (args: Readonly<MapImagerySettings>) => {
+
+      if (args.backgroundLayers.length !== (backgroundMapLayers ? backgroundMapLayers.length : 0)
+        || args.overlayLayers.length !== (overlayMapLayers ? overlayMapLayers.length : 0)) {
+        loadMapLayerSettingsFromStyle(activeViewport.displayStyle);
+      }
+    };
+    activeViewport?.displayStyle.settings.onMapImageryChanged.addListener(handleMapImageryChanged);
+
+    return () => {
+      activeViewport?.displayStyle.settings.onMapImageryChanged.removeListener(handleMapImageryChanged);
+    };
+  }, [activeViewport.displayStyle, backgroundMapLayers, loadMapLayerSettingsFromStyle, overlayMapLayers]);
+
+  const handleProviderStatusChanged = React.useCallback((_args: MapLayerImageryProvider) => {
+    loadMapLayerSettingsFromStyle(activeViewport.displayStyle);
+  }, [loadMapLayerSettingsFromStyle, activeViewport]);
+
+  // Triggered whenever a provider status change
+  React.useEffect(() => {
+    backgroundMapLayers?.forEach((layer) => { layer.provider?.onStatusChanged.addListener(handleProviderStatusChanged); });
+    overlayMapLayers?.forEach((layer) => { layer.provider?.onStatusChanged.addListener(handleProviderStatusChanged); });
+
+    return () => {
+      backgroundMapLayers?.forEach((layer) => { layer.provider?.onStatusChanged.removeListener(handleProviderStatusChanged); });
+      overlayMapLayers?.forEach((layer) => { layer.provider?.onStatusChanged.removeListener(handleProviderStatusChanged); });
+    };
+
+  }, [backgroundMapLayers, overlayMapLayers, activeViewport, loadMapLayerSettingsFromStyle, handleProviderStatusChanged]);
 
   React.useEffect(() => {
     isMounted.current = true;
@@ -181,7 +220,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
     };
     activeViewport?.onDisplayStyleChanged.addListener(handleDisplayStyleChange);
     return () => {
-      activeViewport?.onDisplayStyleChanged.addListener(handleDisplayStyleChange);
+      activeViewport?.onDisplayStyleChanged.removeListener(handleDisplayStyleChange);
     };
   }, [activeViewport, loadMapLayerSettingsFromStyle]);
 
@@ -292,10 +331,6 @@ export function MapLayerManager(props: MapLayerManagerProps) {
         }
 
         activeViewport.displayStyle.attachMapLayer(layerProps, !fromMapLayer.isOverlay, toIndexInDisplayStyle);
-        const newlyInsertedLayer = activeViewport.displayStyle.mapLayerAtIndex(toIndexInDisplayStyle, !fromMapLayer.isOverlay);
-        if (newlyInsertedLayer && fromMapLayer.status !== undefined) {
-          newlyInsertedLayer.status = fromMapLayer.status;
-        }
       }
     } else {
       if (undefined === destination.index) {

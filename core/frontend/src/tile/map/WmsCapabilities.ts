@@ -180,10 +180,12 @@ export class WmsCapabilities {
       this.layer = new WmsCapability.Layer(_json.Capability.Layer);
   }
 
-  public static async create(url: string, credentials?: RequestBasicCredentials): Promise<WmsCapabilities | undefined> {
-    const cached = WmsCapabilities._capabilitiesCache.get(url);
-    if (cached !== undefined)
-      return cached;
+  public static async create(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<WmsCapabilities | undefined> {
+    if (!ignoreCache) {
+      const cached = WmsCapabilities._capabilitiesCache.get(url);
+      if (cached !== undefined)
+        return cached;
+    }
 
     const xmlCapabilities = await getXml(new ClientRequestContext(""), `${WmsUtilities.getBaseUrl(url)}?request=GetCapabilities&service=WMS`, credentials);
 

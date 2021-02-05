@@ -619,7 +619,9 @@ export class MapTileTreeReference extends TileTreeReference {
     return this._iModel.tiles.getTileTreeOwner(id, mapTreeSupplier);
   }
   public getLayerImageryTreeRef(index: number) {
-    return index < 0 || index >= this._imageryTrees.length ? undefined : this._imageryTrees[index];
+    const baseLayerIndex = this._baseImageryLayerIncluded ? 1 : 0;
+    const treeIndex = index + baseLayerIndex;
+    return index < 0 || treeIndex >= this._imageryTrees.length ? undefined : this._imageryTrees[treeIndex];
   }
 
   public initializeImagery(): boolean {

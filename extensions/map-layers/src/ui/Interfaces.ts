@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { MapLayerStatus, MapSubLayerProps } from "@bentley/imodeljs-common";
+import { MapSubLayerProps } from "@bentley/imodeljs-common";
 import { MapLayerImageryProvider } from "@bentley/imodeljs-frontend";
 
 export interface StyleMapLayerSettings {
@@ -24,7 +24,6 @@ export interface StyleMapLayerSettings {
   showSubLayers: boolean;
   /** Some format can publish only a single layer at a time (i.e WMTS) */
   provider?: MapLayerImageryProvider;
-  status?: MapLayerStatus;
 }
 
 export interface MapTypesOptions {

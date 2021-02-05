@@ -6,9 +6,9 @@
  * @module Tiles
  */
 
-import { AbandonedError, ClientRequestContext, Dictionary, IModelStatus } from "@bentley/bentleyjs-core";
+import { BeEvent, ClientRequestContext, Dictionary, IModelStatus } from "@bentley/bentleyjs-core";
 import { Point2d } from "@bentley/geometry-core";
-import { Cartographic, ImageSource, ImageSourceFormat, MapLayerSettings, MapLayerStatus, MapSubLayerProps, ServerError } from "@bentley/imodeljs-common";
+import { Cartographic, ImageSource, ImageSourceFormat, MapLayerSettings, MapSubLayerProps, ServerError } from "@bentley/imodeljs-common";
 import { getJson, request, RequestBasicCredentials, RequestOptions, Response } from "@bentley/itwin-client";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
@@ -25,6 +25,11 @@ const tileImageSize = 256, untiledImageSize = 256;
 // eslint-disable-next-line prefer-const
 let doToolTips = true;
 
+export enum MapLayerImageryProviderStatus {
+  Valid,
+  RequireAuth,
+}
+
 const scratchPoint2d = Point2d.createZero();
 
 /** Base class imagery map layer formats.  Subclasses should override formatId and [[MapLayerFormat.createImageryProvider]].
@@ -40,6 +45,9 @@ export class ImageryMapLayerFormat extends MapLayerFormat {
  * @internal
  */
 export abstract class MapLayerImageryProvider {
+  public status: MapLayerImageryProviderStatus = MapLayerImageryProviderStatus.Valid;
+  public readonly onStatusChanged = new BeEvent<(provider: MapLayerImageryProvider) => void>();
+
   public get tileSize(): number { return this._usesCachedTiles ? tileImageSize : untiledImageSize; }
   public get maximumScreenSize() { return 2 * this.tileSize; }
   public get minimumZoomLevel(): number { return 4; }
@@ -447,8 +455,9 @@ class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
   }
 
   public async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
-    if (this._settings.status !== MapLayerStatus.Valid) {
-      throw new AbandonedError("Layer status not valid.");
+
+    if ((this.status === MapLayerImageryProviderStatus.RequireAuth)) {
+      return undefined;
     }
 
     try {
@@ -473,14 +482,15 @@ class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
         // don't make additional invalid requests..
         if (tileResponse && ArcGisUtilities.hasTokenError(tileResponse)) {
           // Check again layer status, it might have change during await.
-          if (this._settings.status === MapLayerStatus.Valid) {
-            this._settings.status = MapLayerStatus.RequireAuth;
+          if (this.status === MapLayerImageryProviderStatus.Valid) {
+            this.status = MapLayerImageryProviderStatus.RequireAuth;
+            this.onStatusChanged.raiseEvent(this);
 
             const msg = IModelApp.i18n.translate("iModelJs:MapLayers.Messages.LoadTileTokenError", { layerName: this._settings.name });
             IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
           }
 
-          throw new AbandonedError("Map layer requires authentication");
+          return undefined;
         }
       }
       return this.getImageFromTileResponse(tileResponse, zoomLevel);
@@ -604,8 +614,8 @@ class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
       // don't make additional invalid requests..
       if (json?.error?.code === ArcGisErrorCode.TokenRequired || json?.error?.code === ArcGisErrorCode.InvalidToken) {
         // Check again layer status, it might have change during await.
-        if (this._settings.status === MapLayerStatus.Valid) {
-          this._settings.status = MapLayerStatus.RequireAuth;
+        if (this.status === MapLayerImageryProviderStatus.Valid) {
+          this.status = MapLayerImageryProviderStatus.RequireAuth;
           const msg = IModelApp.i18n.translate("iModelJs:MapLayers.Messages.FetchTooltipTokenError", { layerName: this._settings.name });
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
         }
@@ -653,7 +663,7 @@ class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
           {
             client: ArcGisTokenClientType.referer,
           });
-        if (token)
+        if (token?.token)
           tokenParam = `&token=${token.token}`;
       } catch {
       }
@@ -747,11 +757,11 @@ class WmsMapLayerFormat extends ImageryMapLayerFormat {
   public static createImageryProvider(settings: MapLayerSettings): MapLayerImageryProvider | undefined {
     return new WmsMapLayerImageryProvider(settings);
   }
-  public static async validateSource(url: string, credentials?: RequestBasicCredentials): Promise<MapLayerSourceValidation> {
+  public static async validateSource(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
     try {
       let subLayers: MapSubLayerProps[] | undefined;
       const maxVisibleSubLayers = 50;
-      const capabilities = await WmsCapabilities.create(url, credentials);
+      const capabilities = await WmsCapabilities.create(url, credentials, ignoreCache);
       if (capabilities !== undefined) {
         subLayers = capabilities.getSubLayers(false);
         const rootsSubLayer = subLayers?.find((sublayer) => sublayer.parent === undefined);
@@ -807,10 +817,10 @@ class WmtsMapLayerFormat extends ImageryMapLayerFormat {
     return new WmtsMapLayerImageryProvider(settings);
   }
 
-  public static async validateSource(url: string, credentials?: RequestBasicCredentials): Promise<MapLayerSourceValidation> {
+  public static async validateSource(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
     try {
       const subLayers: MapSubLayerProps[] = [];
-      const capabilities = await WmtsCapabilities.create(url, credentials);
+      const capabilities = await WmtsCapabilities.create(url, credentials, ignoreCache);
       if (!capabilities)
         return { status: MapLayerSourceStatus.InvalidUrl };
 
@@ -850,8 +860,8 @@ class WmtsMapLayerFormat extends ImageryMapLayerFormat {
 
 class ArcGISMapLayerFormat extends ImageryMapLayerFormat {
   public static formatId = "ArcGIS";
-  public static async validateSource(url: string, credentials?: RequestBasicCredentials): Promise<MapLayerSourceValidation> {
-    return ArcGisUtilities.validateSource(url, credentials);
+  public static async validateSource(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
+    return ArcGisUtilities.validateSource(url, credentials, ignoreCache);
   }
   public static createImageryProvider(settings: MapLayerSettings): MapLayerImageryProvider | undefined {
     return new ArcGISMapLayerImageryProvider(settings);

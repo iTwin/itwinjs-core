@@ -10,7 +10,6 @@ import { ModalDialogManager } from "@bentley/ui-framework";
 import { useSourceMapContext } from "./MapLayerManager";
 import { MapUrlDialog } from "./MapUrlDialog";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
-import { MapLayerStatus } from "@bentley/imodeljs-common";
 
 // cSpell:ignore droppable Sublayer
 
@@ -47,6 +46,11 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
     return false;
   }, [backgroundLayers, overlayLayers]);
 
+  const handleModalUrlDialogOk = React.useCallback(() => {
+    // close popup and refresh UI
+    onLayerAttached();
+  }, [onLayerAttached]);
+
   React.useEffect(() => {
     async function attemptToAddLayer(layerName: string) {
       if (layerName && activeViewport) {
@@ -61,27 +65,28 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
             setLoading(true);
             const { status, subLayers } = await mapLayerSettings.validateSource();
             if (status === MapLayerSourceStatus.Valid || status === MapLayerSourceStatus.RequireAuth) {
+
               const source = Object.assign({}, mapLayerSettings);  // shallow copy
-              source.subLayers = subLayers;
-              activeViewport.displayStyle.attachMapLayer(source, isOverlay);
 
               if (status === MapLayerSourceStatus.Valid) {
+                source.subLayers = subLayers;
+                activeViewport.displayStyle.attachMapLayer(source, isOverlay);
+
                 activeViewport.invalidateRenderPlan();
+
                 const msg = IModelApp.i18n.translate("mapLayers:Messages.MapLayerAttached", { sourceName: source.name, sourceUrl: source.url });
                 IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
 
               } else if (status === MapLayerSourceStatus.RequireAuth) {
-                const msg = IModelApp.i18n.translate("mapLayers:Messages.MapLayerAttachedRequiresAuth", { sourceName: source.name });
-                IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
-
-                // Set layer status
-                const layerIdx = activeViewport.displayStyle.findMapLayerIndexByNameAndUrl(source.name, source.url, isOverlay);
-                if (-1 !== layerIdx) {
-                  const layerSettings = activeViewport.displayStyle.mapLayerAtIndex(layerIdx, isOverlay);
-                  if (layerSettings) {
-                    layerSettings.status = MapLayerStatus.RequireAuth;
-                  }
-                }
+                ModalDialogManager.openDialog(
+                  <MapUrlDialog
+                    activeViewport={activeViewport}
+                    isOverlay={isOverlay}
+                    layerToEdit={source}
+                    onOkResult={handleModalUrlDialogOk}
+                    mapTypesOptions={mapTypesOptions}
+                    askForCredentialsOnly={true} />
+                );
               }
 
               setLoading(false);
@@ -109,7 +114,7 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
       attemptToAddLayer(layerNameToAdd); // eslint-disable-line @typescript-eslint/no-floating-promises
       setLayerNameToAdd(undefined);
     }
-  }, [setLayerNameToAdd, layerNameToAdd, activeViewport, sources, backgroundLayers, isOverlay, overlayLayers, onLayerAttached]);
+  }, [setLayerNameToAdd, layerNameToAdd, activeViewport, sources, backgroundLayers, isOverlay, overlayLayers, onLayerAttached, handleModalUrlDialogOk, mapTypesOptions]);
 
   const options = React.useMemo(() => sources?.filter((source) => !styleContainsLayer(source.name)).map((value) => value.name), [sources, styleContainsLayer]);
   const filteredOptions = React.useMemo(() => {
@@ -119,11 +124,6 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
       return options?.filter((option) => option.toLowerCase().includes(sourceFilterString?.toLowerCase()));
     }
   }, [options, sourceFilterString]);
-
-  const handleModalUrlDialogOk = React.useCallback(() => {
-    // close popop and refresh UI
-    onLayerAttached();
-  }, [onLayerAttached]);
 
   const handleAddNewMapSource = React.useCallback(() => {
     ModalDialogManager.openDialog(<MapUrlDialog isOverlay={isOverlay} onOkResult={handleModalUrlDialogOk} mapTypesOptions={mapTypesOptions} />);

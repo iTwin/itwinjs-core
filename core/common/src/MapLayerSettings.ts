@@ -6,6 +6,7 @@
  * @module DisplayStyles
  */
 
+import { compareStringsOrUndefined } from "@bentley/bentleyjs-core";
 import { BackgroundMapSettings, BackgroundMapType } from "./BackgroundMapSettings";
 
 /** @alpha */
@@ -142,10 +143,6 @@ export interface MapLayerKey {
   key: string;
   value: string;
 }
-export enum MapLayerStatus {
-  Valid,
-  RequireAuth,
-}
 
 /** Normalized representation of a [[MapLayerProps]] for which values have been  validated and default values have been applied where explicit values not defined.
  * One or more map layers may be included within [[MapImagerySettings]] object.
@@ -165,14 +162,10 @@ export class MapLayerSettings {
   public readonly password?: string;
   public readonly accessKey?: MapLayerKey;
 
-  /** Status of the layer (i.e. layer may require credentials to be provided) */
-  public status: MapLayerStatus = MapLayerStatus.Valid;
-
   // eslint-disable-next-line no-undef-init
   private constructor(url: string, name: string, formatId: string = "WMS", visible = true,
     jsonSubLayers: MapSubLayerProps[] | undefined = undefined, transparency: number = 0,
-    transparentBackground = true, isBase = false, userName?: string, password?: string, accessKey?: MapLayerKey,
-    status?: MapLayerStatus) {
+    transparentBackground = true, isBase = false, userName?: string, password?: string, accessKey?: MapLayerKey) {
     this.formatId = formatId;
     this.name = name;
     this.visible = visible;
@@ -318,8 +311,18 @@ export class MapLayerSettings {
 
   /** @internal */
   public displayMatches(other: MapLayerSettings): boolean {
-    if (!this.matchesNameAndUrl(other.name, other.url) || this.visible !== other.visible || this.transparency !== other.transparency || this.transparentBackground !== other.transparentBackground || this.subLayers.length !== other.subLayers.length)
+    if (!this.matchesNameAndUrl(other.name, other.url)
+      || this.visible !== other.visible
+      || this.transparency !== other.transparency
+      || this.transparentBackground !== other.transparentBackground
+      || this.subLayers.length !== other.subLayers.length) {
       return false;
+    }
+
+    if (0 !== compareStringsOrUndefined(this.userName, other.userName) ||
+      0 !== compareStringsOrUndefined(this.password, other.password)) {
+      return false;
+    }
 
     for (let i = 0; i < this.subLayers.length; i++)
       if (!this.subLayers[i].displayMatches(other.subLayers[i]))

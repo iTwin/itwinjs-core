@@ -96,13 +96,12 @@ export class ArcGisTokenGenerator {
   }
 
   // base url:  ArcGis REST service base URL (format must be "https://<host>/<instance>/rest/")
-  public async generate(esriRestServiceUrl: string, userName: string, password: string, options: ArcGisGenerateTokenOptions): Promise<ArcGisToken | undefined> {
-
+  public async generate(esriRestServiceUrl: string, userName: string, password: string, options: ArcGisGenerateTokenOptions): Promise<any> {
     const tokenServiceUrl = await this.getTokenServiceUrl(esriRestServiceUrl);
     if (!tokenServiceUrl)
       return undefined;
 
-    let token: ArcGisToken | undefined;
+    let token: undefined;
     try {
       const encodedUsername = encodeURIComponent(userName);
       const encodedPassword = encodeURIComponent(password);
@@ -126,7 +125,7 @@ export class ArcGisTokenGenerator {
         clientStr = `&client=referer&referer=${refererStr}`;
       } else if (options.client === ArcGisTokenClientType.ip) {
         if (options.ip === undefined)
-          return undefined;
+          return token;
         clientStr = `&client=ip&ip=${options.ip}`;
       } else if (options.client === ArcGisTokenClientType.requestIp) {
         clientStr = `&client=requestip&ip=`;
@@ -140,7 +139,10 @@ export class ArcGisTokenGenerator {
       };
 
       const response = await request(new FrontendRequestContext(""), tokenServiceUrl, httpRequestOptions);
+
+      // Check a token was really generated (an error could be part of the body)
       token = response?.body;
+
     } catch (_error) {
     }
     return token;
