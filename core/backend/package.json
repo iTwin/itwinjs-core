@@ -96,6 +96,7 @@
     "@types/semver": "^5.5.0",
     "@types/sinon": "^9.0.0",
     "@types/ws": "^6.0.4",
+    "@types/follow-redirects": "^1.13.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "cpx": "^1.5.0",
@@ -128,7 +129,8 @@
     "open": "^7.0.0",
     "semver": "^5.5.0",
     "username": "^5.1.0",
-    "ws": "^7.2.0"
+    "ws": "^7.2.0",
+    "follow-redirects": "^1.13.2"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"

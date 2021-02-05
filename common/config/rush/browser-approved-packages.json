@@ -519,6 +519,10 @@
       "allowedCategories": [ "common" ]
     },
     {
+      "name": "follow-redirects",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "form-data",
       "allowedCategories": [ "backend" ]
     },

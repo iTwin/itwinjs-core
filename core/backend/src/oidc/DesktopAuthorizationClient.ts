@@ -17,13 +17,14 @@ import {
   BaseTokenRequestHandler, GRANT_TYPE_AUTHORIZATION_CODE, GRANT_TYPE_REFRESH_TOKEN, RevokeTokenRequest, RevokeTokenRequestJson, TokenRequest,
   TokenRequestHandler, TokenRequestJson, TokenResponse,
 } from "@openid/appauth";
-import { NodeCrypto, NodeRequestor } from "@openid/appauth/built/node_support";
+import { NodeCrypto } from "@openid/appauth/built/node_support";
 import { StringMap } from "@openid/appauth/built/types";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { ElectronAuthorizationEvents } from "./ElectronAuthorizationEvents";
 import { ElectronAuthorizationRequestHandler } from "./ElectronAuthorizationRequestHandler";
 import { ElectronTokenStore } from "./ElectronTokenStore";
 import { LoopbackWebServer } from "./LoopbackWebServer";
+import { CustomNodeRequestor } from "./CustomNodeRequestor";
 
 const loggerCategory = BackendLoggerCategory.Authorization;
 // cSpell:ignore openid appauth signin Pkce Signout
@@ -54,7 +55,7 @@ export class DesktopAuthorizationClient extends ImsAuthorizationClient implement
    */
   public async initialize(requestContext: ClientRequestContext): Promise<void> {
     const url = await this.getUrl(requestContext);
-    const tokenRequestor = new NodeRequestor(); // the Node.js based HTTP client
+    const tokenRequestor = new CustomNodeRequestor(); // the Node.js based HTTP client
     this._configuration = await AuthorizationServiceConfiguration.fetchFromIssuer(
       url,
       tokenRequestor,
@@ -307,7 +308,7 @@ export class DesktopAuthorizationClient extends ImsAuthorizationClient implement
     /* eslint-enable @typescript-eslint/naming-convention */
 
     const tokenRequest = new TokenRequest(tokenRequestJson);
-    const tokenRequestor = new NodeRequestor();
+    const tokenRequestor = new CustomNodeRequestor();
     const tokenHandler: TokenRequestHandler = new BaseTokenRequestHandler(tokenRequestor);
     return tokenHandler.performTokenRequest(this._configuration, tokenRequest);
   }
@@ -327,7 +328,7 @@ export class DesktopAuthorizationClient extends ImsAuthorizationClient implement
     /* eslint-enable @typescript-eslint/naming-convention */
 
     const tokenRequest = new TokenRequest(tokenRequestJson);
-    const tokenRequestor = new NodeRequestor();
+    const tokenRequestor = new CustomNodeRequestor();
     const tokenHandler: TokenRequestHandler = new BaseTokenRequestHandler(tokenRequestor);
     return tokenHandler.performTokenRequest(this._configuration, tokenRequest);
   }
@@ -350,7 +351,7 @@ export class DesktopAuthorizationClient extends ImsAuthorizationClient implement
     /* eslint-enable @typescript-eslint/naming-convention */
 
     const revokeTokenRequest = new RevokeTokenRequest(revokeTokenRequestJson);
-    const tokenRequestor = new NodeRequestor();
+    const tokenRequestor = new CustomNodeRequestor();
     const tokenHandler: TokenRequestHandler = new BaseTokenRequestHandler(tokenRequestor);
     await tokenHandler.performRevokeTokenRequest(this._configuration, revokeTokenRequest);
     requestContext.enter();
