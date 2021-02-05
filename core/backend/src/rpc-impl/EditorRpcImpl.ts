@@ -17,6 +17,8 @@ import { GeometricElement3dEditor } from "../ElementEditor";
 import { IModelDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
 
+/* eslint-disable deprecation/deprecation */
+
 function getEditor(editorId: GuidString): GeometricElement3dEditor {
   const ed = IModelHost.elementEditors.get(editorId);
   if (ed === undefined || !(ed instanceof GeometricElement3dEditor))

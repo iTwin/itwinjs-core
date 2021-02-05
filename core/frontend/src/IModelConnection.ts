@@ -105,7 +105,7 @@ export abstract class IModelConnection extends IModel {
   public isBriefcaseConnection(): this is BriefcaseConnection { return false; }
 
   /** Type guard for instanceof [[RemoteBriefcaseConnection]]
-   * @deprecated use isRemoteConnection
+   * @deprecated use BriefcaseConnection with an IpcApp
    */
   public isRemoteBriefcaseConnection(): this is RemoteBriefcaseConnection { return false; } // eslint-disable-line deprecation/deprecation
 

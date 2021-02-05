@@ -89,7 +89,7 @@ class DisplayTestAppRpc extends DtaRpcInterface {
 export const getRpcInterfaces = (): RpcInterfaceDefinition[] => {
   const rpcs: RpcInterfaceDefinition[] = [
     DtaRpcInterface,
-    Editor3dRpcInterface,
+    Editor3dRpcInterface, // eslint-disable-line deprecation/deprecation
     IModelReadRpcInterface,
     IModelTileRpcInterface,
     IModelWriteRpcInterface,

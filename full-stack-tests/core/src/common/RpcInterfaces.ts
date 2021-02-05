@@ -70,7 +70,7 @@ export const rpcInterfaces = [
   IModelReadRpcInterface,
   IModelTileRpcInterface,
   IModelWriteRpcInterface,
-  Editor3dRpcInterface,
+  Editor3dRpcInterface, // eslint-disable-line deprecation/deprecation
   SnapshotIModelRpcInterface,
   TestRpcInterface,
   WipRpcInterface,

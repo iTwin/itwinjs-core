@@ -64,7 +64,7 @@ export interface IpcAppFunctions {
   openStandalone: (_filePath: string, _openMode: OpenMode, _opts?: StandaloneOpenOptions) => Promise<IModelConnectionProps>;
 
   /** Close a previously opened iModel. */
-  close: (key: string) => Promise<void>;
+  closeIModel: (key: string) => Promise<void>;
 
   /** Save any local changes. */
   saveChanges: (key: string, description?: string) => Promise<void>;

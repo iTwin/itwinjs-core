@@ -13,6 +13,8 @@ import { IModelRpcProps } from "../IModel";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
 
+/* eslint-disable deprecation/deprecation */
+
 /** @alpha */
 export enum Editor3dRpcInterfaceWriteReturnType {
   /** don't return anything from write */
@@ -40,6 +42,7 @@ export interface Editor3dRpcInterfaceWriteOptions {
 /** The RPC interface for editing Spatial and other 3D elements and Models in an iModel.
  * All operations require read+write access.
  * @alpha
+ * @deprecated use EditCommands
  */
 export abstract class Editor3dRpcInterface extends RpcInterface {
   /** Returns the client instance for the frontend. */

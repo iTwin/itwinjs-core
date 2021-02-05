@@ -94,6 +94,7 @@ describe("PresentationManager", () => {
             cacheConfig: { mode: HierarchyCacheMode.Disk, directory: "" },
             contentCacheSize: undefined,
             useMmap: undefined,
+            defaultFormats: {},
           });
         });
       });
@@ -105,6 +106,22 @@ describe("PresentationManager", () => {
         const cacheConfig = {
           mode: HierarchyCacheMode.Memory,
         };
+        const formatProps = {
+          composite: {
+            includeZero: true,
+            spacer: " ",
+            units: [
+              { label: "'", name: "IN" },
+            ],
+          },
+          formatTraits: "KeepSingleZero|KeepDecimalPoint|ShowUnitLabel",
+          precision: 4,
+          type: "Decimal",
+          uomSeparator: "",
+        };
+        const defaultFormats = {
+          length: { unitSystems: [PresentationUnitSystem.BritishImperial], format: formatProps },
+        };
         const props: PresentationManagerProps = {
           id: faker.random.uuid(),
           presentationAssetsRoot: "/test",
@@ -115,6 +132,7 @@ describe("PresentationManager", () => {
           cacheConfig,
           contentCacheSize: 999,
           useMmap: 666,
+          defaultFormats,
         };
         const expectedCacheConfig = {
           mode: HierarchyCacheMode.Memory,
@@ -129,6 +147,7 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: true,
             cacheConfig: expectedCacheConfig,
             contentCacheSize: 999,
+            defaultFormats: { length: { unitSystems: [PresentationUnitSystem.BritishImperial], serializedFormat: JSON.stringify(formatProps) } },
             useMmap: 666,
           });
         });
@@ -147,6 +166,7 @@ describe("PresentationManager", () => {
             cacheConfig: { mode: HierarchyCacheMode.Disk, directory: "" },
             contentCacheSize: undefined,
             useMmap: undefined,
+            defaultFormats: {},
           });
         });
         constructorSpy.resetHistory();
@@ -166,6 +186,7 @@ describe("PresentationManager", () => {
             cacheConfig: expectedConfig,
             contentCacheSize: undefined,
             useMmap: undefined,
+            defaultFormats: {},
           });
         });
       });
@@ -183,6 +204,7 @@ describe("PresentationManager", () => {
             cacheConfig: { mode: HierarchyCacheMode.Hybrid, disk: undefined },
             contentCacheSize: undefined,
             useMmap: undefined,
+            defaultFormats: {},
           });
         });
         constructorSpy.resetHistory();
@@ -207,6 +229,7 @@ describe("PresentationManager", () => {
             cacheConfig: expectedConfig,
             contentCacheSize: undefined,
             useMmap: undefined,
+            defaultFormats: {},
           });
         });
       });

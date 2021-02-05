@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { ProcessDetector } from "@bentley/bentleyjs-core";
 import { RpcConfiguration, RpcEndpoint, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import { MobileRpcProtocol } from "./MobileRpcProtocol";
 
@@ -86,7 +87,7 @@ export abstract class MobileRpcConfiguration extends RpcConfiguration {
   /** Check if frontend running on wkwebview on ios
    * @deprcated use ProcessDetector.isIOSAppFrontend
    */
-  public static get isIOSFrontend() { return MobileRpcConfiguration.isMobileFrontend && (window as any).webkit && (window as any).webkit.messageHandlers; }
+  public static get isIOSFrontend() { return ProcessDetector.isIOSAppFrontend; }
 }
 
 /** Coordinates usage of RPC interfaces for an Mobile-based application.

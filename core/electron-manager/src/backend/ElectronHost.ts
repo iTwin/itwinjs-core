@@ -7,7 +7,7 @@
 // be imported by apps that sometimes use Electron and sometimes not. Call to `ElectronBackend.initialize`
 // will do the necessary `require("electron")`
 // IMPORTANT: Do not call or construct any of these imports. Otherwise, a require("electron") call will be emitted at top level.
-// Instead, access using require("electron").<type> at point of use in the code.
+// Instead, access using `ElectronHost.electron.<type>` at point of use in the code.
 import { BrowserWindow, BrowserWindowConstructorOptions } from "electron";
 
 import * as fs from "fs";

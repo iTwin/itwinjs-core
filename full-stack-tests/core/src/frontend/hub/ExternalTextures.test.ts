@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { ImageSourceFormat, RenderTexture } from "@bentley/imodeljs-common";
-import { IModelApp, IModelConnection, CheckpointConnection } from "@bentley/imodeljs-frontend";
+import { CheckpointConnection, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { ExternalTextureLoader, ExternalTextureRequest, GL, Texture2DHandle } from "@bentley/imodeljs-frontend/lib/webgl";
-import { TestUtility } from "./TestUtility";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
+import { TestUtility } from "./TestUtility";
 
 describe("external texture requests (#integration)", () => {
   const projectName = "iModelJsIntegrationTest";

@@ -28,7 +28,7 @@ export class BriefcaseConnection extends IModelConnection {
   public get iModelId(): GuidString { return super.iModelId!; } // GuidString | undefined for the superclass, but required for BriefcaseConnection
 
   /** Returns `true` if [[close]] has already been called. */
-  public get isClosed(): boolean { return this._isClosed ? true : false; }
+  public get isClosed(): boolean { return this._isClosed === true; }
   protected _isClosed?: boolean;
 
   public isBriefcaseConnection(): this is BriefcaseConnection { return true; }
@@ -61,7 +61,7 @@ export class BriefcaseConnection extends IModelConnection {
       return;
     this.beforeClose();
     this._isClosed = true;
-    await IpcApp.callIpcHost("close", this._fileKey);
+    await IpcApp.callIpcHost("closeIModel", this._fileKey);
   }
 
   /** @beta */
