@@ -1027,6 +1027,10 @@
       "allowedCategories": [ "common" ]
     },
     {
+      "name": "ulp",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "url-loader",
       "allowedCategories": [ "tools" ]
     },
