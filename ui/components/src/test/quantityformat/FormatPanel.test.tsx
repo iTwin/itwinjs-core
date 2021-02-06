@@ -49,7 +49,7 @@ function provideSecondaryChildren(formatProps: FormatProps, fireFormatChange: (n
   return (
     <>
       <span className={"uicore-label"}>Secondary (1000 sep)</span>
-      <Checkbox isLabeled={true} checked={Format.isFormatTraitSetInProps(formatProps, FormatTraits.Use1000Separator)} onChange={handleUseThousandsSeparatorChange} />
+      <Checkbox hasExternalLabel={true} checked={Format.isFormatTraitSetInProps(formatProps, FormatTraits.Use1000Separator)} onChange={handleUseThousandsSeparatorChange} />
     </>
   );
 }
@@ -66,13 +66,13 @@ function providePrimaryChildren(formatProps: FormatProps, fireFormatChange: (new
   return (
     <>
       <span className={"uicore-label"}>Primary (1000 sep)</span>
-      <Checkbox isLabeled={true} checked={Format.isFormatTraitSetInProps(formatProps, FormatTraits.Use1000Separator)} onChange={handleUseThousandsSeparatorChange} />
+      <Checkbox hasExternalLabel={true} checked={Format.isFormatTraitSetInProps(formatProps, FormatTraits.Use1000Separator)} onChange={handleUseThousandsSeparatorChange} />
     </>
   );
 }
 
 async function provideFormatSpec(formatProps: FormatProps, persistenceUnit: UnitProps, unitsProvider: UnitsProvider, formatName?: string) {
-  const actualFormat = await Format.createFromJSON(formatName ?? "custom",unitsProvider, formatProps);
+  const actualFormat = await Format.createFromJSON(formatName ?? "custom", unitsProvider, formatProps);
   return FormatterSpec.create(actualFormat.name, actualFormat, unitsProvider, persistenceUnit);
 }
 
@@ -106,7 +106,7 @@ describe("FormatPanel", () => {
   it("should render panel", async () => {
     const unitsProvider = IModelApp.quantityFormatter.unitsProvider;
     const pu = await unitsProvider.findUnitByName("Units.M");
-    const formatterSpec = await provideFormatSpec (initialFormatProps, pu, unitsProvider, "numeric" );
+    const formatterSpec = await provideFormatSpec(initialFormatProps, pu, unitsProvider, "numeric");
     const spy = sinon.spy();
 
     const renderedComponent = render(<FormatPanel initialFormat={formatterSpec.format.toJSON()} showSample={true} onFormatChange={spy}
@@ -118,13 +118,13 @@ describe("FormatPanel", () => {
 
     await TestUtils.flushAsyncOperations();
     const spanElement = renderedComponent.getByTestId("format-sample-formatted") as HTMLSpanElement;
-    expect(spanElement.textContent).to.be.eql (`123.45 m`);
+    expect(spanElement.textContent).to.be.eql(`123.45 m`);
   });
 
   it("should use generic format spec generator is not specified", async () => {
     const unitsProvider = IModelApp.quantityFormatter.unitsProvider;
     const pu = await unitsProvider.findUnitByName("Units.M");
-    const formatterSpec = await provideFormatSpec (initialFormatProps, pu, unitsProvider, "numeric" );
+    const formatterSpec = await provideFormatSpec(initialFormatProps, pu, unitsProvider, "numeric");
     const spy = sinon.spy();
 
     const renderedComponent = render(<FormatPanel initialFormat={formatterSpec.format.toJSON()} showSample={true} onFormatChange={spy}
@@ -135,7 +135,7 @@ describe("FormatPanel", () => {
 
     await TestUtils.flushAsyncOperations();
     const spanElement = renderedComponent.getByTestId("format-sample-formatted") as HTMLSpanElement;
-    expect(spanElement.textContent).to.be.eql (`123.45 m`);
+    expect(spanElement.textContent).to.be.eql(`123.45 m`);
   });
 
 });

@@ -7,9 +7,11 @@
  */
 
 import * as React from "react";
-import { CustomFormatPropEditorSpec, getQuantityTypeKey, IModelApp,
+import {
+  CustomFormatPropEditorSpec, getQuantityTypeKey, IModelApp,
   isCheckboxFormatPropEditorSpec, isCustomQuantityTypeDefinition, isTextInputFormatPropEditorSpec, isTextSelectFormatPropEditorSpec,
-  QuantityTypeArg } from "@bentley/imodeljs-frontend";
+  QuantityTypeArg
+} from "@bentley/imodeljs-frontend";
 import { FormatProps, UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
 import { Checkbox, CommonProps, Input, Select } from "@bentley/ui-core";
 import { FormatPanel } from "./FormatPanel";
@@ -17,52 +19,52 @@ import { DeepCompare } from "@bentley/geometry-core";
 
 function createTextInputFormatPropEditor(key: string, label: string, inProps: FormatProps,
   getString: (props: FormatProps) => string, setString: (props: FormatProps, value: string) => FormatProps, fireFormatChange: (newProps: FormatProps) => void) {
-  const value = getString (inProps);
+  const value = getString(inProps);
   return (
-    <>
+    <React.Fragment key={`${key}`}>
       <span key={`${key}-label`} className={"uicore-label"}>{label}</span>
       <Input data-testid={`${key}-editor`} key={`${key}-editor`}
         value={value}
         onChange={(e) => {
           const newProps = setString(inProps, e.currentTarget.value);
-          fireFormatChange (newProps);
+          fireFormatChange(newProps);
         }}
       />
-    </>
+    </React.Fragment>
   );
 }
 
-function createSelectFormatPropEditor(key: string, label: string, options: {label: string, value: string}[], inProps: FormatProps,
+function createSelectFormatPropEditor(key: string, label: string, options: { label: string, value: string }[], inProps: FormatProps,
   getString: (props: FormatProps) => string, setString: (props: FormatProps, value: string) => FormatProps, fireFormatChange: (newProps: FormatProps) => void) {
-  const value = getString (inProps);
+  const value = getString(inProps);
   return (
-    <>
+    <React.Fragment key={`${key}`}>
       <span key={`${key}-label`} className={"uicore-label"}>{label}</span>
       <Select data-testid={`${key}-editor`} key={`${key}-editor`}
         value={value}
         options={options}
         onChange={(e) => {
           const newProps = setString(inProps, e.currentTarget.value);
-          fireFormatChange (newProps);
+          fireFormatChange(newProps);
         }}
       />
-    </>
+    </React.Fragment>
   );
 }
 
 function createCheckboxFormatPropEditor(key: string, label: string, inProps: FormatProps,
   getBool: (props: FormatProps) => boolean, setBool: (props: FormatProps, isChecked: boolean) => FormatProps, fireFormatChange: (newProps: FormatProps) => void) {
-  const isChecked = getBool (inProps);
+  const isChecked = getBool(inProps);
   return (
-    <>
+    <React.Fragment key={`${key}`}>
       <span key={`${key}-label`} className={"uicore-label"}>{label}</span>
       <Checkbox data-testid={`${key}-editor`} key={`${key}-editor`}
         checked={isChecked}
-        onChange={(e)=>{
+        onChange={(e) => {
           const newProps = setBool(inProps, e.target.checked);
-          fireFormatChange (newProps);
+          fireFormatChange(newProps);
         }} />
-    </>
+    </React.Fragment>
   );
 }
 
@@ -89,9 +91,9 @@ export interface QuantityFormatPanelProps extends CommonProps {
 export function QuantityFormatPanel(props: QuantityFormatPanelProps) {
   const { quantityType, onFormatChange, ...otherProps } = props;
   const [formatProps, setFormatProps] = React.useState<FormatProps>();
-  const initialFormatProps = React.useRef <FormatProps>();
+  const initialFormatProps = React.useRef<FormatProps>();
 
-  const [persistenceUnit, setPersistenceUnit] = React.useState(()=>{
+  const [persistenceUnit, setPersistenceUnit] = React.useState(() => {
     const quantityTypeKey = getQuantityTypeKey(quantityType);
     const quantityTypeDefinition = IModelApp.quantityFormatter.quantityTypesRegistry.get(quantityTypeKey);
     if (quantityTypeDefinition)
@@ -114,7 +116,7 @@ export function QuantityFormatPanel(props: QuantityFormatPanelProps) {
     const newFormatProps = IModelApp.quantityFormatter.getFormatPropsByQuantityType(quantityType);
     // istanbul ignore else
     if (initialFormatProps.current && newFormatProps) {
-      if (!formatAreEqual (newFormatProps, initialFormatProps.current)) {
+      if (!formatAreEqual(newFormatProps, initialFormatProps.current)) {
         initialFormatProps.current = newFormatProps;
         setFormatProps(newFormatProps);
       }
@@ -131,12 +133,12 @@ export function QuantityFormatPanel(props: QuantityFormatPanelProps) {
 
   const handleOnFormatChanged = React.useCallback(async (newProps: FormatProps) => {
     setFormatProps(newProps);
-    onFormatChange && onFormatChange (newProps);
+    onFormatChange && onFormatChange(newProps);
   }, [onFormatChange]);
 
-  const createCustomPropEditors = React.useCallback( (specs: CustomFormatPropEditorSpec[], inProps: FormatProps, fireFormatChange: (newProps: FormatProps) => void) => {
+  const createCustomPropEditors = React.useCallback((specs: CustomFormatPropEditorSpec[], inProps: FormatProps, fireFormatChange: (newProps: FormatProps) => void) => {
     return specs.map((spec, index) => {
-      if (isCheckboxFormatPropEditorSpec (spec))
+      if (isCheckboxFormatPropEditorSpec(spec))
         return createCheckboxFormatPropEditor(`${spec.editorType}-${index}`, spec.label, inProps, spec.getBool, spec.setBool, fireFormatChange);
       if (isTextSelectFormatPropEditorSpec(spec))
         return createSelectFormatPropEditor(`${spec.editorType}-${index}`, spec.label, spec.selectOptions, inProps, spec.getString, spec.setString, fireFormatChange);
@@ -144,7 +146,7 @@ export function QuantityFormatPanel(props: QuantityFormatPanelProps) {
       if (isTextInputFormatPropEditorSpec(spec))
         return createTextInputFormatPropEditor(`${spec.editorType}-${index}`, spec.label, inProps, spec.getString, spec.setString, fireFormatChange);
       /* istanbul ignore next */
-      return <div key={index}/>;
+      return <div key={index} />;
     });
   }, []);
 
@@ -156,7 +158,7 @@ export function QuantityFormatPanel(props: QuantityFormatPanelProps) {
         quantityTypeDefinition.isCompatibleFormatProps(inProps)) {
         // istanbul ignore else
         if (quantityTypeDefinition.primaryPropEditorSpecs)
-          return createCustomPropEditors (quantityTypeDefinition.primaryPropEditorSpecs, inProps, fireFormatChange);
+          return createCustomPropEditors(quantityTypeDefinition.primaryPropEditorSpecs, inProps, fireFormatChange);
       }
       return null;
     }, [createCustomPropEditors, quantityType]);
@@ -166,10 +168,10 @@ export function QuantityFormatPanel(props: QuantityFormatPanelProps) {
       const quantityTypeKey = getQuantityTypeKey(quantityType);
       const quantityTypeDefinition = IModelApp.quantityFormatter.quantityTypesRegistry.get(quantityTypeKey);
       if (quantityTypeDefinition && isCustomQuantityTypeDefinition(quantityTypeDefinition) &&
-      quantityTypeDefinition.isCompatibleFormatProps(inProps)) {
+        quantityTypeDefinition.isCompatibleFormatProps(inProps)) {
         // istanbul ignore else
         if (quantityTypeDefinition.secondaryPropEditorSpecs)
-          return createCustomPropEditors (quantityTypeDefinition.secondaryPropEditorSpecs, inProps, fireFormatChange);
+          return createCustomPropEditors(quantityTypeDefinition.secondaryPropEditorSpecs, inProps, fireFormatChange);
       }
       return null;
     }, [createCustomPropEditors, quantityType]);
@@ -182,14 +184,14 @@ export function QuantityFormatPanel(props: QuantityFormatPanelProps) {
   return (
     <div className="components-quantityFormat-quantityPanel">
       {persistenceUnit && formatProps &&
-      <FormatPanel onFormatChange={handleOnFormatChanged} {...otherProps}
-        initialFormat={formatProps}
-        unitsProvider={IModelApp.quantityFormatter.unitsProvider}
-        persistenceUnit={persistenceUnit}
-        providePrimaryChildren={providePrimaryChildren}
-        provideSecondaryChildren={provideSecondaryChildren}
-        provideFormatSpec={provideFormatSpec}
-      /> }
+        <FormatPanel onFormatChange={handleOnFormatChanged} {...otherProps}
+          initialFormat={formatProps}
+          unitsProvider={IModelApp.quantityFormatter.unitsProvider}
+          persistenceUnit={persistenceUnit}
+          providePrimaryChildren={providePrimaryChildren}
+          provideSecondaryChildren={provideSecondaryChildren}
+          provideFormatSpec={provideFormatSpec}
+        />}
     </div>
   );
 }

@@ -73,13 +73,13 @@ export function ThousandsSeparator(props: ThousandsSeparatorProps) {
     handleSetFormatProps(newFormatProps);
   }, [formatProps, isFormatTraitSet, handleSetFormatProps]);
 
-  const useThousandSeparatorLabel = React.useRef (UiComponents.translate("QuantityFormat.labels.useThousandSeparatorLabel"));
-  const thousandSeparatorLabel = React.useRef (UiComponents.translate("QuantityFormat.labels.thousandSeparatorLabel"));
+  const useThousandSeparatorLabel = React.useRef(UiComponents.translate("QuantityFormat.labels.useThousandSeparatorLabel"));
+  const thousandSeparatorLabel = React.useRef(UiComponents.translate("QuantityFormat.labels.thousandSeparatorLabel"));
 
   return (
     <>
       <span className={"uicore-label"}>{useThousandSeparatorLabel.current}</span>
-      <Checkbox data-testid="use-thousands-separator" isLabeled={true} checked={isFormatTraitSet(FormatTraits.Use1000Separator)} onChange={handleUseThousandsSeparatorChange} />
+      <Checkbox data-testid="use-thousands-separator" hasExternalLabel={true} checked={isFormatTraitSet(FormatTraits.Use1000Separator)} onChange={handleUseThousandsSeparatorChange} />
       <span className={classnames("uicore-label", !(isFormatTraitSet(FormatTraits.Use1000Separator)) && "uicore-disabled")}>{thousandSeparatorLabel.current}</span>
       <ThousandsSelector data-testid="thousands-separator-selector" separator={formatProps.thousandSeparator ?? ","} disabled={!isFormatTraitSet(FormatTraits.Use1000Separator)} onChange={handleThousandSeparatorChange} />
     </>
