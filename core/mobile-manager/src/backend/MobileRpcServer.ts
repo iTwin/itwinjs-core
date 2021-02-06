@@ -8,7 +8,6 @@ import { BentleyStatus, IModelError } from "@bentley/imodeljs-common";
 import { MobileRpcGateway, MobileRpcProtocol } from "../common/MobileRpcProtocol";
 import { MobileRpcConfiguration } from "../MobileBackend";
 import { MobileHost } from "./MobileHost";
-import { MobileApp } from "../MobileFrontend";
 
 export class MobileRpcServer {
   private static _nextId = -1;
@@ -127,7 +126,7 @@ export function setupMobileRpc() {
 
   let server: MobileRpcServer | null = new MobileRpcServer();
 
-  MobileApp.onEnterBackground.addListener(() => {
+  MobileHost.onEnterBackground.addListener(() => {
     if (server === null) {
       return;
     }
@@ -136,7 +135,7 @@ export function setupMobileRpc() {
     server = null;
   });
 
-  MobileApp.onEnterForeground.addListener(() => {
+  MobileHost.onEnterForeground.addListener(() => {
     server = new MobileRpcServer();
   });
 
