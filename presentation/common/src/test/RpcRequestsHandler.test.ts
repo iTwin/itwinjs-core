@@ -9,9 +9,9 @@ import * as moq from "typemoq";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { IModelRpcProps, RpcInterface, RpcInterfaceDefinition, RpcManager } from "@bentley/imodeljs-common";
 import {
-  ContentRequestOptions, DescriptorJSON, DistinctValuesRpcRequestOptions, HierarchyRequestOptions, KeySet, KeySetJSON, Paged,
-  PartialHierarchyModificationJSON, PresentationError, PresentationRpcInterface, PresentationRpcRequestOptions, PresentationRpcResponse,
-  PresentationStatus, RpcRequestsHandler, SelectionInfo, SelectionScopeRequestOptions,
+  ContentRequestOptions, DescriptorJSON, DistinctValuesRpcRequestOptions, HierarchyRequestOptions, KeySet, KeySetJSON, Paged, PresentationError,
+  PresentationRpcInterface, PresentationRpcRequestOptions, PresentationRpcResponse, PresentationStatus, RpcRequestsHandler, SelectionInfo,
+  SelectionScopeRequestOptions,
 } from "../presentation-common";
 import { FieldDescriptorType } from "../presentation-common/content/Fields";
 import { ItemJSON } from "../presentation-common/content/Item";
@@ -25,6 +25,7 @@ import {
   ContentDescriptorRpcRequestOptions, DisplayLabelRpcRequestOptions, DisplayLabelsRpcRequestOptions, ExtendedContentRpcRequestOptions,
   ExtendedHierarchyRpcRequestOptions, PresentationDataCompareRpcOptions,
 } from "../presentation-common/PresentationRpcInterface";
+import { HierarchyCompareInfoJSON, PartialHierarchyModificationJSON } from "../presentation-common/Update";
 import {
   createRandomDescriptorJSON, createRandomECInstanceKeyJSON, createRandomECInstancesNodeJSON, createRandomECInstancesNodeKeyJSON,
   createRandomLabelDefinitionJSON, createRandomNodePathElementJSON, createRandomSelectionScope,
@@ -497,7 +498,7 @@ describe("RpcRequestsHandler", () => {
       rpcInterfaceMock.verifyAll();
     });
 
-    it("forwards compareHierarchies call", async () => {
+    it("[deprecated] forwards compareHierarchies call", async () => {
       const handlerOptions: PresentationDataCompareOptions<IModelRpcProps, NodeKeyJSON> = {
         imodel: token,
         prev: {
@@ -514,9 +515,36 @@ describe("RpcRequestsHandler", () => {
         rulesetOrId: "test2",
         expandedNodeKeys: [...handlerOptions.expandedNodeKeys!],
       };
-      const result = new Array<PartialHierarchyModificationJSON>();
-      rpcInterfaceMock.setup(async (x) => x.compareHierarchies(token, rpcOptions)).returns(async () => successResponse(result)).verifiable();
+      const result: PartialHierarchyModificationJSON[] = [];
+      rpcInterfaceMock.setup(async (x) => x.compareHierarchies(token, rpcOptions)).returns(async () => successResponse(result)).verifiable(); // eslint-disable-line deprecation/deprecation
       expect(await handler.compareHierarchies(handlerOptions)).to.eq(result);
+      rpcInterfaceMock.verifyAll();
+    });
+
+    it("forwards compareHierarchiesPaged call", async () => {
+      const handlerOptions: PresentationDataCompareOptions<IModelRpcProps, NodeKeyJSON> = {
+        imodel: token,
+        prev: {
+          rulesetOrId: "test1",
+        },
+        rulesetOrId: "test2",
+        expandedNodeKeys: [createRandomECInstancesNodeKeyJSON()],
+        resultSetSize: 10,
+      };
+      const rpcOptions: PresentationDataCompareRpcOptions = {
+        clientId,
+        prev: {
+          rulesetOrId: "test1",
+        },
+        rulesetOrId: "test2",
+        expandedNodeKeys: [...handlerOptions.expandedNodeKeys!],
+        resultSetSize: 10,
+      };
+      const result: HierarchyCompareInfoJSON = {
+        changes: [],
+      };
+      rpcInterfaceMock.setup(async (x) => x.compareHierarchiesPaged(token, rpcOptions)).returns(async () => successResponse(result)).verifiable(); // eslint-disable-line deprecation/deprecation
+      expect(await handler.compareHierarchiesPaged(handlerOptions)).to.eq(result);
       rpcInterfaceMock.verifyAll();
     });
 

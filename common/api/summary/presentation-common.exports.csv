@@ -104,6 +104,9 @@ public;GroupingRule
 public;GroupingSpecification = ClassGroup | PropertyGroup | SameLabelInstanceGroup
 public;GroupingSpecificationBase
 public;GroupingSpecificationTypes
+alpha;HierarchyCompareInfo
+alpha;HierarchyCompareInfo
+alpha;HierarchyCompareInfoJSON
 public;HierarchyRequestOptions
 public;HierarchyRpcRequestOptions = PresentationRpcRequestOptions
 alpha;HierarchyUpdateInfo = typeof UPDATE_FULL | PartialHierarchyModification[]

@@ -14,9 +14,10 @@ import { FormatProps } from "@bentley/imodeljs-quantity";
 import {
   Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides,
   DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ExtendedContentRequestOptions,
-  ExtendedHierarchyRequestOptions, getLocalesDirectory, HierarchyRequestOptions, InstanceKey, KeySet, LabelDefinition, LabelRequestOptions, Node,
-  NodeKey, NodePathElement, Paged, PagedResponse, PartialHierarchyModification, PresentationDataCompareOptions, PresentationError, PresentationStatus,
-  PresentationUnitSystem, RequestPriority, Ruleset, SelectionInfo, SelectionScope, SelectionScopeRequestOptions,
+  ExtendedHierarchyRequestOptions, getLocalesDirectory, HierarchyCompareInfo, HierarchyRequestOptions, InstanceKey, KeySet, LabelDefinition,
+  LabelRequestOptions, Node, NodeKey, NodePathElement, Paged, PagedResponse, PartialHierarchyModification, PresentationDataCompareOptions,
+  PresentationError, PresentationStatus, PresentationUnitSystem, RequestPriority, Ruleset, SelectionInfo, SelectionScope,
+  SelectionScopeRequestOptions,
 } from "@bentley/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "./Constants";
@@ -882,14 +883,14 @@ export class PresentationManager {
    * TODO: Return results in pages
    * @beta
    */
-  public async compareHierarchies(requestOptions: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>>): Promise<PartialHierarchyModification[]>;
-  public async compareHierarchies(requestContextOrOptions: ClientRequestContext | WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>>, deprecatedRequestOptions?: PresentationDataCompareOptions<IModelDb, NodeKey>): Promise<PartialHierarchyModification[]> {
+  public async compareHierarchies(requestOptions: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>>): Promise<HierarchyCompareInfo>;
+  public async compareHierarchies(requestContextOrOptions: ClientRequestContext | WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>>, deprecatedRequestOptions?: PresentationDataCompareOptions<IModelDb, NodeKey>): Promise<HierarchyCompareInfo | PartialHierarchyModification[]> {
     if (requestContextOrOptions instanceof ClientRequestContext) {
-      return this.compareHierarchies({ ...deprecatedRequestOptions!, requestContext: requestContextOrOptions });
+      return (await this.compareHierarchies({ ...deprecatedRequestOptions!, requestContext: requestContextOrOptions })).changes;
     }
 
     if (!requestContextOrOptions.prev.rulesetOrId && !requestContextOrOptions.prev.rulesetVariables)
-      return [];
+      return { changes: [] };
 
     const { strippedOptions: { prev, rulesetVariables, ...options } } = this.registerRuleset(requestContextOrOptions);
 
@@ -910,7 +911,7 @@ export class PresentationManager {
       currRulesetVariables: JSON.stringify(currRulesetVariables),
       expandedNodeKeys: JSON.stringify(options.expandedNodeKeys ?? []),
     };
-    return this.request(params, (key: string, value: any) => ((key === "") ? value.map(PartialHierarchyModification.fromJSON) : value));
+    return this.request(params, (key: string, value: any) => ((key === "") ? HierarchyCompareInfo.fromJSON(value) : value));
   }
 }
 
