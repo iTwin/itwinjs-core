@@ -24,6 +24,10 @@
     gap: 4px;
   }
 
+  > label.core-checkbox.core-checkbox-no-label {
+    min-height: 1.57em;
+  }
+
   >button.components-quantityFormat-more-button {
     grid-column: 1 / span 2;
     border: none;

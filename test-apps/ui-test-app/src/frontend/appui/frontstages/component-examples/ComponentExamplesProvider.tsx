@@ -70,7 +70,7 @@ function provideSecondaryChildren(formatProps: FormatProps, fireFormatChange: (n
   return (
     <>
       <span className={"uicore-label"}>Secondary (1000 sep)</span>
-      <Checkbox isLabeled={true} checked={Format.isFormatTraitSetInProps(formatProps, FormatTraits.Use1000Separator)} onChange={handleUseThousandsSeparatorChange} />
+      <Checkbox checked={Format.isFormatTraitSetInProps(formatProps, FormatTraits.Use1000Separator)} onChange={handleUseThousandsSeparatorChange} />
     </>
   );
 }
@@ -87,7 +87,7 @@ function providePrimaryChildren(formatProps: FormatProps, fireFormatChange: (new
   return (
     <>
       <span className={"uicore-label"}>Primary (1000 sep)</span>
-      <Checkbox isLabeled={true} checked={Format.isFormatTraitSetInProps(formatProps, FormatTraits.Use1000Separator)} onChange={handleUseThousandsSeparatorChange} />
+      <Checkbox checked={Format.isFormatTraitSetInProps(formatProps, FormatTraits.Use1000Separator)} onChange={handleUseThousandsSeparatorChange} />
     </>
   );
 }

@@ -106,7 +106,7 @@ export function FormatUnitLabel(props: FormatUnitLabelProps) {
   return (
     <>
       <span className={"uicore-label"}>{appendUnitLabel.current}</span>
-      <Checkbox data-testid="show-unit-label-checkbox" hasExternalLabel={true} checked={isFormatTraitSet(FormatTraits.ShowUnitLabel)} onChange={handleShowUnitLabelChange} />
+      <Checkbox data-testid="show-unit-label-checkbox"  checked={isFormatTraitSet(FormatTraits.ShowUnitLabel)} onChange={handleShowUnitLabelChange} />
       <span className={classnames("uicore-label", !isFormatTraitSet(FormatTraits.ShowUnitLabel) && "uicore-disabled")}>{labelSeparator.current}</span>
       <UomSeparatorSelector data-testid="uom-separator-select" separator={formatProps.uomSeparator ?? ""} onChange={handleUomSeparatorChange} disabled={!isFormatTraitSet(FormatTraits.ShowUnitLabel)} />
     </>

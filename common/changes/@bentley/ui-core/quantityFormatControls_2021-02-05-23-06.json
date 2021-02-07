@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/ui-core",
-      "comment": "Keep hideIconContainer prop from bleeding into div. Add hasExternalLabel option to checkbox to avoid displaying internal label.",
+      "comment": "Keep hideIconContainer prop from bleeding into div.",
       "type": "none"
     }
   ],
