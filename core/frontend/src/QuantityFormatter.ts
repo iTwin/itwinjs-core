@@ -51,7 +51,9 @@ export function getQuantityTypeKey(type: QuantityTypeArg): QuantityTypeKey {
   return type;
 }
 
-/** Base properties that defines an EditorSpec for a custom formatting property.
+/** Properties that define an EditorSpec for editing a custom formatting property that is stored in the "custom" property in the FormatProps.
+ * The editor controls will be automatically generated in the UI and are limited to a checkbox to set a boolean value, a text dropdown/select
+ * component to pick a string value from a list of options, and a text input component that returns a string value.
  * @alpha
  */
 export interface CustomFormatPropEditorSpec {
@@ -112,33 +114,40 @@ export const isTextSelectFormatPropEditorSpec = (item: CustomFormatPropEditorSpe
  * @alpha
  */
 export interface QuantityTypeDefinition {
-  /** String used as a key to look up the quantity type */
+  /** String used as a key to look up the quantity type. If defining a [[CustomQuantityTypeDefinition]] the QuantityTypeKey
+   * should match the QuantityTypeArg. */
   readonly key: QuantityTypeKey;
-  /** The Type that can be one of the standard QuantityType enum values or a string for a custom type. */
+  /** The type value which can be one of the standard QuantityType enum values or a unique string if defining a custom type. */
   readonly type: QuantityTypeArg;
-  /** The unit that the magnitude of the quantity is stored ie. Meter for Length and Radian for Angle. */
+  /** The unit that the magnitude of the quantity is stored ie. (Meter for Length and Radian for Angle). The persistence unit is
+   * also used during formatting if the FormatProps does not define one or more composite units.  */
   readonly persistenceUnit: UnitProps;
-  /** localized label to display in UI */
+  /** Localized label to display in UI */
   label: string;
   /** Localized description that may be used to provide detailed description for the Quantity type. */
   description: string;
   /* Provide a default FormatProps for a unit system. */
   getDefaultFormatPropsBySystem: (requestedSystem: UnitSystemKey) => FormatProps;
-  /** generate a FormatterSpec that will be called to format values.*/
+  /** Generate a [FormatterSpec]$(imodeljs-quantity) that will be called to format values.*/
   generateFormatterSpec: (formatProps: FormatProps, unitsProvider: UnitsProvider) => Promise<FormatterSpec>;
-  /** generate a ParserSpec that will be called to parse a string into a quantity value.*/
+  /** Generate a [ParserSpec]$(imodeljs-quantity) that will be called to parse a string into a quantity value.*/
   generateParserSpec: (formatProps: FormatProps, unitsProvider: UnitsProvider) => Promise<ParserSpec>;
 }
 
-/** CustomQuantityTypeDefinition interface is used to define a Custom quantity type that can be registered with the QuantityFormatter. A custom quantity formatter must
- * be able to generate a FormatterSpec and ParserSpec that will be called to format and parse values.
- * Optionally it can provide specification of custom properties that it will use to define any formatting options.
+/** CustomQuantityTypeDefinition interface is used to define a Custom quantity type that can be registered with the [[QuantityFormatter]].
+ * A custom quantity formatter must be able to generate a FormatterSpec and ParserSpec that will be called to format and parse values.
+ * Optionally it can provide specification of custom properties that it will use to define any formatting options. CustomQuantityTypeDefinitions
+ * must be registered with the [[QuantityFormatter]] using the method `IModelApp.quantityFormatter.registerQuantityType`.
  * @alpha
  */
 export interface CustomQuantityTypeDefinition extends QuantityTypeDefinition {
-  /** return true if the FormatProps have the necessary `custom` property definition */
+  /** Return true if the FormatProps have the necessary `custom` property definition */
   isCompatibleFormatProps: (formatProps: FormatProps) => boolean;
+  /** An array of specifications that are used to generate a label and editor in the UI used to display and edit the FormatProps.
+   * UI items defined as primary will be shown higher in the list of UI components. */
   primaryPropEditorSpecs?: CustomFormatPropEditorSpec[];
+  /** An array of specifications that are used to generate a label and editor in the UI used to display and edit the FormatProps.
+   * UI items defined as secondary will be shown below other UI components that edit FormatProps. */
   secondaryPropEditorSpecs?: CustomFormatPropEditorSpec[];
 }
 
@@ -243,16 +252,21 @@ export interface QuantityFormatsChangedArgs {
   readonly quantityType: string;
 }
 
-/** Class that supports Formatting quantity values into strings and Parsing strings into quantity units. This class also maintains
+/** Class that supports formatting quantity values into strings and parsing strings into quantity values. This class also maintains
  * the "active" unit system and caches FormatterSpecs and ParserSpecs for the "active" unit system to allow synchronous access to
- * parsing and formatting values.
+ * parsing and formatting values. The support unit systems are defined by [[UnitSystemKey]] and is kept in synch with the unit systems
+ * provided by the Presentation Manager on the backend. The QuantityFormatter contains a registry of quantity type definitions. These definitions implement
+ * the [[QuantityTypeDefinition]] interface, which among other things, provide default [FormatProps]$(imodeljs-quantity), and provide methods
+ * to generate both a [FormatterSpec]$(imodeljs-quantity) and a [ParserSpec]$(imodeljs-quantity). There are built-in quantity types that are
+ * identified by the [[QuantityType]] enum. [[CustomQuantityTypeDefinition]] can be registered to extend the available quantity types available
+ * by frontend tools. The QuantityFormatter also allows the default formats to be overriden.
+ *
  * @alpha
  */
 export class QuantityFormatter implements UnitsProvider {
   private _unitsProvider: UnitsProvider = new BasicUnitsProvider();
   protected _quantityTypeRegistry: Map<QuantityTypeKey, QuantityTypeDefinition> = new Map<QuantityTypeKey, QuantityTypeDefinition>();
   protected _activeUnitSystem: UnitSystemKey = "imperial";
-  protected _formatSpecsByKoq = new Map<string, FormatterSpec[]>();
   protected _activeFormatSpecsByType = new Map<QuantityTypeKey, FormatterSpec>();
   protected _activeParserSpecsByType = new Map<QuantityTypeKey, ParserSpec>();
   protected _overrideFormatPropsByUnitSystem = new Map<UnitSystemKey, Map<QuantityTypeKey, FormatProps>>();
@@ -370,48 +384,6 @@ export class QuantityFormatter implements UnitsProvider {
       formatPropPromises.push(this.loadFormatAndParserSpec(entry, formatProps));
     }
     await Promise.all(formatPropPromises);
-  }
-
-  /** method used to load format for KOQ into cache */
-  protected async loadKoqFormatSpecs(koq: string): Promise<void> {
-    if (koq.length === 0)
-      throw new Error("bad koq specification");
-
-    if (!this._formatSpecsByKoq.has(koq)) {
-      // get koq and get formats from it
-    }
-
-    throw new Error("not yet implemented");
-  }
-
-  /** Async method to return the array of presentation formats for the specified KOQ */
-  protected async getKoqFormatterSpecsAsync(koq: string, useImperial: boolean): Promise<FormatterSpec[] | undefined> {
-    if (koq.length === 0 && useImperial)
-      throw new Error("bad koq specification");
-
-    return this._formatSpecsByKoq.get(koq);
-  }
-
-  /** Async method to return the 'active' FormatSpec for the specified KOQ */
-  protected async getKoqFormatterSpec(koq: string, useImperial: boolean): Promise<FormatterSpec | undefined> {
-    if (koq.length === 0 && useImperial)
-      throw new Error("bad koq specification");
-
-    const formatterSpecArray = await Promise.resolve(this._formatSpecsByKoq.get(koq));
-    if (formatterSpecArray && formatterSpecArray.length > 0) {
-      const activeFormatIndex = 0; // TODO - get active format based on user selected format or default format
-      return formatterSpecArray[activeFormatIndex];
-    }
-
-    throw new Error("not yet implemented");
-  }
-
-  /** Method used to get cached FormatterSpec or undefined if FormatterSpec is unavailable */
-  protected findKoqFormatterSpec(koq: string, useImperial: boolean): FormatterSpec | undefined {
-    if (koq.length === 0 && useImperial)
-      return undefined;
-
-    throw new Error("not yet implemented");
   }
 
   private getFormatPropsByQuantityTypeEntyAndSystem(quantityEntry: QuantityTypeDefinition, requestedSystem: UnitSystemKey, ignoreOverrides?: boolean): FormatProps {

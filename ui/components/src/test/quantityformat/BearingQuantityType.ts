@@ -10,20 +10,26 @@ import {
   CustomFormatProps, Format, FormatProps, FormatterSpec, Parser, ParseResult, ParserSpec, QuantityStatus, UnitConversionSpec, UnitProps, UnitsProvider,
 } from "@bentley/imodeljs-quantity";
 
+/* Interface that defines custom properties used to format and parse Bearing values. */
 interface BearingFormatProps extends CustomFormatProps {
   readonly custom: {
-    readonly addDirectionLabelGap: boolean;
+    readonly addDirectionLabelGap: boolean; // add gap between the compass direction and the angle value. (ie N DD°MM'SS" E vs NDD°MM'SS"E)
     readonly angleDirection: string;   // "clockwise"|"counter-clockwise"
     readonly testString: string;   // for testing control creation only
   };
 }
 
+/** Type guard that checks the FormatProps to see if it contains the necessary props to be considered
+ * BearingFormatProps. */
 const isBearingFormatProps = (item: FormatProps): item is BearingFormatProps => {
   return ((item as CustomFormatProps).custom !== undefined) &&
     ((item as BearingFormatProps).custom.addDirectionLabelGap !== undefined) &&
     ((item as BearingFormatProps).custom.angleDirection !== undefined);
 };
 
+/** Define the default Bearing Props that will create a formatted angle value that display Degrees, Minutes, and Seconds. This includes
+ * defining the default values for addDirectionLabelGap and angleDirection.
+*/
 const defaultBearingFormat: BearingFormatProps = {
   composite: {
     includeZero: true,
@@ -37,6 +43,8 @@ const defaultBearingFormat: BearingFormatProps = {
   custom: {addDirectionLabelGap: true, angleDirection: "clockwise", testString: "test-string"},
 };
 
+/** Class that is the FormatterSpec for an angle.  It leaves the conversion from Radians to DMS to the base FormatterSpec and handle the adding
+ * of the direction letters. */
 class BearingFormatterSpec extends FormatterSpec {
   constructor(name: string, format: Format, conversions: UnitConversionSpec[], persistenceUnit: UnitProps) {
     super(name, format, conversions, persistenceUnit);
@@ -47,7 +55,7 @@ class BearingFormatterSpec extends FormatterSpec {
     const prefix=["N", "S", "S", "N"];
     const suffix=["E", "E", "W", "W"];
 
-    // magnitude is assumed to be Azimuth angle
+    // magnitude is assumed to be Azimuth angle in radians.
 
     // adjust if measuring counter clockwise direction
     if (this.format.customProps?.angleDirection === "counter-clockwise") {
@@ -80,17 +88,19 @@ class BearingFormatterSpec extends FormatterSpec {
     return `${prefix[quadrant-1]}${gapChar}${formattedValue}${gapChar}${suffix[quadrant-1]}`;
   }
 
-  /** Static async method to create a FormatSpec given the format and unit of the quantity that will be passed to the Formatter. The input unit will
-   * be used to generate conversion information for each unit specified in the Format. This method is async due to the fact that the units provider must make
-   * async calls to lookup unit definitions.
+  /** Static async method to create a BearingFormatterSpec given the format and unit. The persistenceUnit unit will
+   * be used to generate conversion information for each unit specified in the Format. This method is async due to
+   * the fact that the units provider must make async calls to lookup unit conversion.
    * @internal
    */
   public static async create(name: string, format: Format, unitsProvider: UnitsProvider, persistenceUnit: UnitProps): Promise<FormatterSpec> {
-    const conversions: UnitConversionSpec[] = await FormatterSpec.getUnitConversions(format,unitsProvider, persistenceUnit);
+    const conversions: UnitConversionSpec[] = await FormatterSpec.getUnitConversions(format, unitsProvider, persistenceUnit);
     return new BearingFormatterSpec(name, format, conversions, persistenceUnit);
   }
 }
 
+/** Class that is the ParserSpec for an angle which converts a string value into radians that represent the angle..  It leaves the parsing
+ *  from string to Radians to the base ParserSpec and handles the adjustment necessary due to the direction letters being present in the string. */
 class BearingParserSpec extends ParserSpec {
   constructor(outUnit: UnitProps, format: Format, conversions: UnitConversionSpec[]) {
     super(outUnit, format, conversions);
@@ -137,9 +147,9 @@ class BearingParserSpec extends ParserSpec {
     return parsedRadians;
   }
 
-  /** Static async method to create a ParserSpec given the format and unit of the quantity that will be passed to the Parser. The input unit will
+  /** Static async method to create a BearingParserSpec given the format and unit of the quantity that will be passed to the Parser. The input unit will
    * be used to generate conversion information for each unit specified in the Format. This method is async due to the fact that the units provider must make
-   * async calls to lookup unit definitions.
+   * async calls to lookup unit definitions conversion.
    *  @param format     The format specification.
    *  @param unitsProvider The units provider is used to look up unit definitions and provide conversion information for converting between units.
    *  @param outUnit The unit the value to be formatted. This unit is often referred to as persistence unit.
@@ -150,7 +160,8 @@ class BearingParserSpec extends ParserSpec {
   }
 }
 
-/** @internal */
+/** Custom BearingQuantityType that reads and writes radian value ahd returns formatted strings values that display bearing in degrees, minutes, and seconds.
+ * @internal */
 export class BearingQuantityType implements CustomQuantityTypeDefinition {
   private  _key = "Bearing";  // key and type should be the same unless a QuantityType enum is specified in _type
   private _type = "Bearing";
