@@ -8,9 +8,8 @@
 
 import * as React from "react";
 import {
-  CustomFormatPropEditorSpec, getQuantityTypeKey, IModelApp,
-  isCheckboxFormatPropEditorSpec, isCustomQuantityTypeDefinition, isTextInputFormatPropEditorSpec, isTextSelectFormatPropEditorSpec,
-  QuantityTypeArg
+  CustomFormatPropEditorSpec, getQuantityTypeKey, IModelApp, isCheckboxFormatPropEditorSpec, isCustomQuantityTypeDefinition,
+  isTextInputFormatPropEditorSpec, isTextSelectFormatPropEditorSpec, QuantityTypeArg,
 } from "@bentley/imodeljs-frontend";
 import { FormatProps, UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
 import { Checkbox, CommonProps, Input, Select } from "@bentley/ui-core";
