@@ -231,6 +231,11 @@ export interface AccuDrawDialogProps extends CommonProps {
 }
 
 // @alpha
+export class AccuDrawKeyboardShortcuts {
+    static getDefaultShortcuts(): KeyboardShortcutProps[];
+}
+
+// @alpha
 export class AccuDrawPopupManager {
     // (undocumented)
     static hideCalculator(): boolean;
@@ -1935,12 +1940,22 @@ export interface FooterModeFieldProps extends StatusFieldProps {
 // @alpha (undocumented)
 export class FrameworkAccuDraw extends AccuDraw {
     constructor();
+    static get displayNotifications(): boolean;
+    static set displayNotifications(v: boolean);
     // (undocumented)
     static getFieldDisplayValue(index: ItemField): string;
     // @internal
     grabInputFocus(): void;
     // @internal (undocumented)
     get hasInputFocus(): boolean;
+    static readonly isACSRotationConditional: ConditionalBooleanValue;
+    static readonly isContextRotationConditional: ConditionalBooleanValue;
+    static readonly isFrontRotationConditional: ConditionalBooleanValue;
+    static readonly isPolarModeConditional: ConditionalBooleanValue;
+    static readonly isRectangularModeConditional: ConditionalBooleanValue;
+    static readonly isSideRotationConditional: ConditionalBooleanValue;
+    static readonly isTopRotationConditional: ConditionalBooleanValue;
+    static readonly isViewRotationConditional: ConditionalBooleanValue;
     // @internal (undocumented)
     onCompassModeChange(): void;
     // @internal (undocumented)
@@ -1949,6 +1964,8 @@ export class FrameworkAccuDraw extends AccuDraw {
     onFieldValueChange(index: ItemField): void;
     // @internal
     onMotion(_ev: BeButtonEvent): void;
+    // @internal (undocumented)
+    onRotationModeChange(): void;
     // @internal (undocumented)
     setFocusItem(index: ItemField): void;
     // @internal (undocumented)
@@ -2583,7 +2600,7 @@ export const getExtendedZone: (zoneId: WidgetZoneId, zones: ZonesManagerProps, d
 export function getFeatureOverrideSyncEventIds(): string[];
 
 // @internal (undocumented)
-export const getFirstItem: (groupItemDef: GroupItemDef) => ActionButtonItemDef | import("../shared/CommandItemDef").CommandItemDef | import("../shared/ToolItemDef").ToolItemDef | GroupItemDef | undefined;
+export const getFirstItem: (groupItemDef: GroupItemDef) => import("../shared/CommandItemDef").CommandItemDef | ActionButtonItemDef | import("../shared/ToolItemDef").ToolItemDef | GroupItemDef | undefined;
 
 // @internal (undocumented)
 export const getFirstItemId: (groupItemDef: GroupItemDef) => string;
@@ -3152,6 +3169,7 @@ export class KeyboardShortcutManager {
     static get cursorY(): number;
     static displayShortcutsMenu(): void;
     static getShortcut(keyMapKey: string): KeyboardShortcut | undefined;
+    static initialize(): void;
     static get isFocusOnHome(): boolean;
     static loadKeyboardShortcut(shortcutProps: KeyboardShortcutProps): void;
     static loadKeyboardShortcuts(shortcutList: KeyboardShortcutProps[]): void;
@@ -5582,6 +5600,8 @@ export class SyncUiEventDispatcher {
 
 // @public
 export enum SyncUiEventId {
+    AccuDrawCompassModeChanged = "accudrawcompassmodechanged",
+    AccuDrawRotationChanged = "accudrawrotationchanged",
     ActiveContentChanged = "activecontentchanged",
     ActiveViewportChanged = "activeviewportchanged",
     // @deprecated

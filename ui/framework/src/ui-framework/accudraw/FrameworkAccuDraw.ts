@@ -6,14 +6,37 @@
  * @module AccuDraw
  */
 
-import { AccuDraw, BeButtonEvent, CompassMode, IModelApp, ItemField, QuantityType } from "@bentley/imodeljs-frontend";
-import { AccuDrawField, AccuDrawMode, AccuDrawSetFieldValueFromUiEventArgs, AccuDrawUiAdmin } from "@bentley/ui-abstract";
+import { AccuDraw, BeButtonEvent, CompassMode, IModelApp, ItemField, NotifyMessageDetails, OutputMessagePriority, QuantityType, RotationMode } from "@bentley/imodeljs-frontend";
+import { AccuDrawField, AccuDrawMode, AccuDrawSetFieldValueFromUiEventArgs, AccuDrawUiAdmin, ConditionalBooleanValue } from "@bentley/ui-abstract";
 import { UiFramework } from "../UiFramework";
+import { SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 
 // cspell:ignore dont
 
 /** @alpha */
 export class FrameworkAccuDraw extends AccuDraw {
+  private static _displayNotifications = false;
+
+  /** Determines if AccuDraw.rotationMode === RotationMode.Top */
+  public static readonly isTopRotationConditional = new ConditionalBooleanValue(() => IModelApp.accuDraw.rotationMode === RotationMode.Top, [SyncUiEventId.AccuDrawRotationChanged]);
+  /** Determines if AccuDraw.rotationMode === RotationMode.Front */
+  public static readonly isFrontRotationConditional = new ConditionalBooleanValue(() => IModelApp.accuDraw.rotationMode === RotationMode.Front, [SyncUiEventId.AccuDrawRotationChanged]);
+  /** Determines if AccuDraw.rotationMode === RotationMode.Side */
+  public static readonly isSideRotationConditional = new ConditionalBooleanValue(() => IModelApp.accuDraw.rotationMode === RotationMode.Side, [SyncUiEventId.AccuDrawRotationChanged]);
+  /** Determines if AccuDraw.rotationMode === RotationMode.View */
+  public static readonly isViewRotationConditional = new ConditionalBooleanValue(() => IModelApp.accuDraw.rotationMode === RotationMode.View, [SyncUiEventId.AccuDrawRotationChanged]);
+  /** Determines if AccuDraw.rotationMode === RotationMode.ACS */
+  public static readonly isACSRotationConditional = new ConditionalBooleanValue(() => IModelApp.accuDraw.rotationMode === RotationMode.ACS, [SyncUiEventId.AccuDrawRotationChanged]);
+  /** Determines if AccuDraw.rotationMode === RotationMode.Context */
+  public static readonly isContextRotationConditional = new ConditionalBooleanValue(() => IModelApp.accuDraw.rotationMode === RotationMode.Context, [SyncUiEventId.AccuDrawRotationChanged]);
+  /** Determines if AccuDraw.compassMode === CompassMode.Polar */
+  public static readonly isPolarModeConditional = new ConditionalBooleanValue(() => IModelApp.accuDraw.compassMode === CompassMode.Polar, [SyncUiEventId.AccuDrawCompassModeChanged]);
+  /** Determines if AccuDraw.compassMode === CompassMode.Rectangular */
+  public static readonly isRectangularModeConditional = new ConditionalBooleanValue(() => IModelApp.accuDraw.compassMode === CompassMode.Rectangular, [SyncUiEventId.AccuDrawCompassModeChanged]);
+
+  /** Determines if notifications should be displayed for AccuDraw changes */
+  public static get displayNotifications(): boolean { return FrameworkAccuDraw._displayNotifications; }
+  public static set displayNotifications(v: boolean) { FrameworkAccuDraw._displayNotifications = v; }
 
   constructor() {
     super();
@@ -77,23 +100,33 @@ export class FrameworkAccuDraw extends AccuDraw {
   public onCompassModeChange(): void {
     const accuDrawMode = this.compassMode === CompassMode.Rectangular ? AccuDrawMode.Rectangular : AccuDrawMode.Polar;
     IModelApp.uiAdmin.accuDrawUi.setMode(accuDrawMode);
+    SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.AccuDrawCompassModeChanged);
+
+    this.outputCompassModeMessage();
   }
 
   /** @internal */
-  public onFieldLockChange(index: ItemField) {
+  public onRotationModeChange(): void {
+    SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.AccuDrawRotationChanged);
+
+    this.outputRotationMessage();
+  }
+
+  /** @internal */
+  public onFieldLockChange(index: ItemField): void {
     const field = FrameworkAccuDraw.translateFromItemField(index);
     IModelApp.uiAdmin.accuDrawUi.setFieldLock(field, this.getFieldLock(index));
   }
 
   /** @internal */
-  public onFieldValueChange(index: ItemField) {
+  public onFieldValueChange(index: ItemField): void {
     const field = FrameworkAccuDraw.translateFromItemField(index);
     const value = this.getValueByIndex(index);
     const formattedValue = FrameworkAccuDraw.getFieldDisplayValue(index);
     IModelApp.uiAdmin.accuDrawUi.setFieldValueToUi(field, value, formattedValue);
   }
 
-  private fieldValuesChanged() {
+  private fieldValuesChanged(): void {
     this.onFieldValueChange(ItemField.X_Item);
     this.onFieldValueChange(ItemField.Y_Item);
     this.onFieldValueChange(ItemField.Z_Item);
@@ -102,7 +135,7 @@ export class FrameworkAccuDraw extends AccuDraw {
   }
 
   /** @internal */
-  public setFocusItem(index: ItemField) {
+  public setFocusItem(index: ItemField): void {
     const field = FrameworkAccuDraw.translateFromItemField(index);
     IModelApp.uiAdmin.accuDrawUi.setFieldFocus(field);
   }
@@ -123,14 +156,14 @@ export class FrameworkAccuDraw extends AccuDraw {
   }
 
   /** @internal */
-  public get hasInputFocus() {
+  public get hasInputFocus(): boolean {
     return IModelApp.uiAdmin.accuDrawUi.hasInputFocus;
   }
 
   /** Implement this method to set focus to the AccuDraw UI.
    * @internal
    */
-  public grabInputFocus() {
+  public grabInputFocus(): void {
     IModelApp.uiAdmin.accuDrawUi.grabInputFocus();
   }
 
@@ -146,4 +179,55 @@ export class FrameworkAccuDraw extends AccuDraw {
     return formattedValue;
   }
 
+  private outputInfoMessage(message: string): void {
+    // istanbul ignore else
+    if (FrameworkAccuDraw.displayNotifications)
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, message));
+  }
+
+  private outputCompassModeMessage(): void {
+    if (FrameworkAccuDraw.displayNotifications) {
+      let modeKey = "";
+      switch(IModelApp.accuDraw.compassMode) {
+        case CompassMode.Polar:
+          modeKey = "polar";
+          break;
+        case CompassMode.Rectangular:
+          modeKey = "rectangular";
+          break;
+      }
+      const modeString = UiFramework.translate(`accuDraw.compassMode.${modeKey}`);
+      const modeMessage = UiFramework.i18n.translateWithNamespace(UiFramework.i18nNamespace, "accuDraw.compassModeSet", {modeString});
+      this.outputInfoMessage(modeMessage);
+    }
+  }
+
+  private outputRotationMessage(): void {
+    if (FrameworkAccuDraw.displayNotifications) {
+      let rotationKey = "";
+      switch(IModelApp.accuDraw.rotationMode) {
+        case RotationMode.Top:
+          rotationKey = "top";
+          break;
+        case RotationMode.Front:
+          rotationKey = "front";
+          break;
+        case RotationMode.Side:
+          rotationKey = "side";
+          break;
+        case RotationMode.View:
+          rotationKey = "view";
+          break;
+        case RotationMode.ACS:
+          rotationKey = "ACS";
+          break;
+        case RotationMode.Context:
+          rotationKey = "context";
+          break;
+      }
+      const rotationString = UiFramework.translate(`accuDraw.rotation.${rotationKey}`);
+      const rotationMessage = UiFramework.i18n.translateWithNamespace(UiFramework.i18nNamespace, "accuDraw.rotationSet", {rotationString});
+      this.outputInfoMessage(rotationMessage);
+    }
+  }
 }

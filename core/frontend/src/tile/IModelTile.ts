@@ -262,7 +262,8 @@ export class IModelTile extends Tile {
 
     // This tile is too coarse to draw. Try to draw something more appropriate.
     // If it is not ready to draw, we may want to skip loading in favor of loading its descendants.
-    let canSkipThisTile = this.depth < this.iModelTree.maxInitialTilesToSkip;
+    // If we previously loaded and later unloaded content for this tile to free memory, don't force it to reload its content - proceed to children.
+    let canSkipThisTile = (this._hadGraphics && !this.hasGraphics) || this.depth < this.iModelTree.maxInitialTilesToSkip;
     if (canSkipThisTile) {
       numSkipped = 1;
     } else {
