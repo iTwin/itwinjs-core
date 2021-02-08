@@ -3,6 +3,7 @@ Release Tag;API Item
 alpha;AccuDrawCommandItems
 alpha;AccuDrawDialog(props: AccuDrawDialogProps): JSX.Element
 alpha;AccuDrawDialogProps 
+alpha;AccuDrawKeyboardShortcuts
 alpha;AccuDrawPopupManager
 public;Action
 internal;ActionButtonItem(props: ActionButtonProps): JSX.Element
