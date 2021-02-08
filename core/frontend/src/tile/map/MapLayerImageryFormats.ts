@@ -426,6 +426,7 @@ class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
 const scratchQuadId = new QuadId(0, 0, 0);
 
 class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
+  private _hasSuccessfullyFetchedTile = false;
   private _maxDepthFromLod = 0;
   private _copyrightText = "Copyright";
   private _querySupported = false;
@@ -486,12 +487,22 @@ class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
             this.status = MapLayerImageryProviderStatus.RequireAuth;
             this.onStatusChanged.raiseEvent(this);
 
-            const msg = IModelApp.i18n.translate("iModelJs:MapLayers.Messages.LoadTileTokenError", { layerName: this._settings.name });
-            IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
+            // Only report error to end-user if we were previously able to fetch tiles
+            // and then encountered an error, otherwise I assume an error was already reported
+            // through the source validation process.
+            if (this._hasSuccessfullyFetchedTile) {
+              const msg = IModelApp.i18n.translate("iModelJs:MapLayers.Messages.LoadTileTokenError", { layerName: this._settings.name });
+              IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
+            }
+
           }
 
           return undefined;
         }
+      }
+
+      if (!this._hasSuccessfullyFetchedTile) {
+        this._hasSuccessfullyFetchedTile = true;
       }
       return this.getImageFromTileResponse(tileResponse, zoomLevel);
     } catch (error) {
