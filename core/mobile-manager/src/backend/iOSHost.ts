@@ -4,32 +4,26 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { IpcHostOptions, IModelHostConfiguration } from "@bentley/imodeljs-backend";
+import { IModelHostConfiguration, IpcHostOptions } from "@bentley/imodeljs-backend";
 import { IpcWebSocketBackend } from "@bentley/imodeljs-common";
-import { Orientation, BatteryState } from "../common/MobileAppProps";
+import { BatteryState, Orientation } from "../common/MobileAppProps";
 import { DownloadTask, MobileCompletionCallback, MobileDevice, MobileDeviceAuthSettings, MobileHost, MobileProgressCallback } from "./MobileHost";
 
-enum DeviceEvents {
-  MemoryWarning = "memoryWarning",
-  OrientationChanged = "orientationChanged",
-  EnterForeground = "enterForeground",
-  EnterBackground = "enterBackground",
-  WillTerminate = "willTerminate",
-}
+type DeviceEvents = "memoryWarning" | "orientationChanged" | "enterForeground" | "enterBackground" | "willTerminate";
 
 /** @beta */
 export class IOSDevice extends MobileDevice {
   public emit(eventName: DeviceEvents, ...args: any[]) {
     switch (eventName) {
-      case DeviceEvents.MemoryWarning:
+      case "memoryWarning":
         MobileHost.onMemoryWarning.raiseEvent(...args); break;
-      case DeviceEvents.OrientationChanged:
+      case "orientationChanged":
         MobileHost.onOrientationChanged.raiseEvent(...args); break;
-      case DeviceEvents.EnterForeground:
+      case "enterForeground":
         MobileHost.onEnterForeground.raiseEvent(...args); break;
-      case DeviceEvents.EnterBackground:
+      case "enterBackground":
         MobileHost.onEnterBackground.raiseEvent(...args); break;
-      case DeviceEvents.WillTerminate:
+      case "willTerminate":
         MobileHost.onWillTerminate.raiseEvent(...args); break;
     }
   }

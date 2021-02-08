@@ -282,7 +282,7 @@ export class IModelHost {
     if (undefined === platform)
       return;
 
-    if (!Platform.isMobile)
+    if (!ProcessDetector.isMobileAppBackend)
       this.validateNativePlatformVersion();
 
     platform.logger = Logger;
@@ -387,7 +387,7 @@ export class IModelHost {
       }
     }
 
-    if (configuration.crashReportingConfig && configuration.crashReportingConfig.crashDir && this._platform && !Platform.isElectron && !Platform.isMobile) {
+    if (configuration.crashReportingConfig && configuration.crashReportingConfig.crashDir && this._platform && !ProcessDetector.isElectronAppBackend && !ProcessDetector.isMobileAppBackend) {
       this._platform.setCrashReporting(configuration.crashReportingConfig);
 
       Logger.logTrace(loggerCategory, "Configured crash reporting", () => ({
