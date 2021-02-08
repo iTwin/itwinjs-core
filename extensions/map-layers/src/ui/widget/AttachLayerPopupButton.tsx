@@ -66,17 +66,17 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
             const { status, subLayers } = await mapLayerSettings.validateSource();
             if (status === MapLayerSourceStatus.Valid || status === MapLayerSourceStatus.RequireAuth) {
 
-              const source = Object.assign({}, mapLayerSettings);  // shallow copy
-
               if (status === MapLayerSourceStatus.Valid) {
-                source.subLayers = subLayers;
-                const layerSettings = source.toLayerSettings();
+
+                const layerSettings = mapLayerSettings.toLayerSettings();
+
                 if (layerSettings) {
-                  activeViewport.displayStyle.attachMapLayerSettings(layerSettings, isOverlay);
+                  const updatedLayerSettings = layerSettings.clone({ subLayers });
+                  activeViewport.displayStyle.attachMapLayerSettings(updatedLayerSettings, isOverlay);
 
                   activeViewport.invalidateRenderPlan();
 
-                  const msg = IModelApp.i18n.translate("mapLayers:Messages.MapLayerAttached", { sourceName: source.name, sourceUrl: source.url });
+                  const msg = IModelApp.i18n.translate("mapLayers:Messages.MapLayerAttached", { sourceName: layerSettings.name, sourceUrl: layerSettings.url });
                   IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
                 }
 
@@ -85,7 +85,7 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
                   <MapUrlDialog
                     activeViewport={activeViewport}
                     isOverlay={isOverlay}
-                    layerToEdit={source}
+                    layerToEdit={mapLayerSettings.toJSON()}
                     onOkResult={handleModalUrlDialogOk}
                     mapTypesOptions={mapTypesOptions}
                     askForCredentialsOnly={true} />

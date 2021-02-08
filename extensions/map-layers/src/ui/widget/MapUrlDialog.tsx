@@ -62,11 +62,6 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   const [userNameLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:AuthenticationInputs.Username"));
   const [settingsStorage, setSettingsStorageRadio] = React.useState("Project");
 
-  // Is Setting service available (i.e. should we should the options in the UI and attempt to save to settings service)
-  const [settingsStorageAvailable] = React.useState(!props.askForCredentialsOnly && !!IModelApp.viewManager?.selectedView?.iModel?.contextId && !!IModelApp.viewManager?.selectedView?.iModel?.iModelId);
-
-  // Even though the settings storage is available, we might want to disable it in the UI
-  const [settingsStorageDisabled, setSettingsStorageDisabled] = React.useState(settingsStorageAvailable);
   const [mapType, setMapType] = React.useState(props.layerToEdit?.formatId ?? MAP_TYPES.arcGis);
 
   const [mapTypes] = React.useState((): string[] => {
@@ -75,6 +70,16 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
       types.push(MAP_TYPES.tileUrl);
     return types;
   });
+
+  const isSettingsStorageAvailable = React.useCallback(() => {
+    return !props.askForCredentialsOnly
+      && !!IModelApp.viewManager?.selectedView?.iModel?.contextId
+      && !!IModelApp.viewManager?.selectedView?.iModel?.iModelId;
+  }, [props.askForCredentialsOnly]);
+
+  // Even though the settings storage is available, we might want to disable it in the UI
+  // ArcGIS support only for now, to revisit later.
+  const [settingsStorageDisabled, setSettingsStorageDisabled] = React.useState(isSettingsStorageAvailable() && (mapType === MAP_TYPES.arcGis || (!userName && !password)));
 
   const [authSupported] = React.useState(() =>
     (mapType === MAP_TYPES.wms && (mapTypesOptions?.supportWmsAuthentication ? true : false))
@@ -133,10 +138,10 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   }, [setPassword, invalidCredentialsProvided, setInvalidCredentialsProvided]);
 
   React.useEffect(() => {
-    if (settingsStorageAvailable) {
-      setSettingsStorageDisabled(mapType === MAP_TYPES.wms && (userName.length > 0 || password.length > 0));
+    if (isSettingsStorageAvailable()) {
+      setSettingsStorageDisabled(mapType !== MAP_TYPES.arcGis && (userName.length > 0 || password.length > 0));
     }
-  }, [mapType, userName, password, setSettingsStorageDisabled, settingsStorageAvailable]);
+  }, [mapType, userName, password, setSettingsStorageDisabled, isSettingsStorageAvailable]);
 
   const doAttach = React.useCallback(async (source: MapLayerSource): Promise<boolean> => {
 
@@ -185,7 +190,8 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
                 provider.status = MapLayerImageryProviderStatus.Valid;
               }
             } else {
-              if (!settingsStorageDisabled) {
+              // Update service settings if storage is available and we are not prompting user for credentials
+              if (!settingsStorageDisabled && !props.askForCredentialsOnly) {
                 if (!(await MapLayerSettingsService.storeSourceInSettingsService(source, storeOnIModel, vp.iModel.contextId!, vp.iModel.iModelId!)))
                   return;
               }
@@ -217,7 +223,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
         resolve(true);
       });
     });
-  }, [isOverlay, onOkResult, settingsStorage, settingsStorageDisabled, invalidCredentialsProvided, layerIdxToEdit, serverRequireCredentials]);
+  }, [isOverlay, onOkResult, settingsStorage, invalidCredentialsProvided, layerIdxToEdit, serverRequireCredentials, props.askForCredentialsOnly, settingsStorageDisabled]);
 
   const onNameChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     setMapName(event.target.value);
@@ -315,7 +321,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
             }
 
             {/* Store settings options, not shown when editing a layer */}
-            {settingsStorageAvailable && <div title={settingsStorageDisabled ? noSaveSettingsWarning : ""}>
+            {isSettingsStorageAvailable() && <div title={settingsStorageDisabled ? noSaveSettingsWarning : ""}>
               <Radio disabled={settingsStorageDisabled}
                 name="settingsStorage" value="Project"
                 label={projectSettingsLabel} checked={settingsStorage === "Project"}
