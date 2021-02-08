@@ -4,11 +4,11 @@
 WITH [RECURSIVE] cte-table-name AS ( select-stmt )[,...] primary-select-stmt
 ```
 
-## What is Common Table Expressions?
-Common table expressions or CTEs act like temporary views that exist only for the duration of a single ECSQL statement. There are following two type of CTEs
+## What are Common Table Expressions?
+Common table expressions ("CTEs") act like temporary views that exist only for the duration of a single ECSQL statement. There are two types of CTE:
 
 ### Ordinary Common Table Expressions
-This is many used to factoring out subqueries and making the overall ECSQL statement easier to read and understand. It contain just a select statement with or without `RECURSIVE` key word.
+This is mainly used to factor out subqueries, making the overall ECSQL statement easier to read and understand. It contains just a `SELECT` statement with or without `RECURSIVE` keyword.
 
 ```sql
   WITH
@@ -19,14 +19,13 @@ This is many used to factoring out subqueries and making the overall ECSQL state
 
 ### Recursive Common Table Expressions
 
-A recursive common table expression can be used to walk a tree or graph. It is of the
-following form.
+A recursive common table expression can be used to walk a tree or graph. It is of the following form:
 
 ```
   cte-table-name AS ( initial-select) UNION [ALL] recursive-select)
 ```
 
-Take simple example to see how we can write a CTE. In following query we want to generate a sequence from 1 through 5. The initial value of x = 1 and then we recursively do x+1 until the value of x is less then 6.
+Here is a simple example of how we can write a CTE. In the following query we want to generate a sequence from 1 through 5. We start with an initial value of x = 1 and then recursively do x+1 until the value of x is less then 6.
 
 ```sql
   WITH RECURSIVE
@@ -48,7 +47,7 @@ Take simple example to see how we can write a CTE. In following query we want to
   6
 ```
 
-Take another example where we like to traverse class hierarchy starting from a class down to all derived classes and generate a path string show where each of them are along with the depth of the derived class w.r.t `GeomerticElement3d`
+As another example, we might want to traverse a class hierarchy starting from a base class down to all derived classes, generating a row for each class. Each row should could contain 2 columns: the depth of the derived class relative to the base class and a path string describing its relationship to the base class. Using `BisCore:GeometricElement2d` as the base class produces the following ECSql and resultant output:
 
 ```sql
 WITH RECURSIVE
