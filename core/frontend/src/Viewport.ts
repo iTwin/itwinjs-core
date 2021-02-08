@@ -48,7 +48,7 @@ import { RenderTarget } from "./render/RenderTarget";
 import { SheetViewState } from "./SheetViewState";
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
-import { TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference, TileTreeSet } from "./tile/internal";
+import { DisclosedTileTreeSet, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference } from "./tile/internal";
 import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolSettings";
 import { Animator, ViewAnimationOptions, ViewChangeOptions } from "./ViewAnimation";
@@ -1469,7 +1469,7 @@ export abstract class Viewport implements IDisposable {
   /** Disclose *all* TileTrees currently in use by this Viewport. This set may include trees not reported by [[forEachTileTreeRef]] - e.g., those used by view attachments, map-draped terrain, etc.
    * @internal
    */
-  public discloseTileTrees(trees: TileTreeSet): void {
+  public discloseTileTrees(trees: DisclosedTileTreeSet): void {
     this.forEachTiledGraphicsProviderTree((ref) => trees.disclose(ref));
     trees.disclose(this.view);
   }
@@ -2455,9 +2455,9 @@ export abstract class Viewport implements IDisposable {
 
   /** @internal */
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    const trees = new TileTreeSet();
+    const trees = new DisclosedTileTreeSet();
     this.discloseTileTrees(trees);
-    for (const tree of trees.trees)
+    for (const tree of trees)
       tree.collectStatistics(stats);
 
     this.view.collectNonTileTreeStatistics(stats);

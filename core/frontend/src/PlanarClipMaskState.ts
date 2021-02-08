@@ -9,7 +9,7 @@
 import { assert, CompressedId64Set, Id64Set, Id64String } from "@bentley/bentleyjs-core";
 import { PlanarClipMaskMode, PlanarClipMaskPriority, PlanarClipMaskProps, PlanarClipMaskSettings } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "./render/FeatureSymbology";
-import { createMaskTreeReference, TileTreeReference, TileTreeSet } from "./tile/internal";
+import { createMaskTreeReference, DisclosedTileTreeSet, TileTreeReference } from "./tile/internal";
 import { ViewState3d } from "./ViewState";
 
 /** The State of Planar Clip Mask applied to a reality model or background map.
@@ -35,7 +35,7 @@ export class PlanarClipMaskState {
   public static fromJSON(props: PlanarClipMaskProps): PlanarClipMaskState {
     return this.create(PlanarClipMaskSettings.fromJSON(props));
   }
-  public discloseTileTrees(trees: TileTreeSet): void {
+  public discloseTileTrees(trees: DisclosedTileTreeSet): void {
     if (this._tileTreeRefs)
       this._tileTreeRefs.forEach((treeRef) => treeRef.discloseTileTrees(trees));
   }

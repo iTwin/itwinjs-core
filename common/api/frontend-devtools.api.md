@@ -14,6 +14,7 @@ import { Decorator } from '@bentley/imodeljs-frontend';
 import { EmphasizeElements } from '@bentley/imodeljs-frontend';
 import { EventHandled } from '@bentley/imodeljs-frontend';
 import { GeometrySummaryOptions } from '@bentley/imodeljs-common';
+import { GpuMemoryLimit } from '@bentley/imodeljs-frontend';
 import { Hilite } from '@bentley/imodeljs-common';
 import { HitDetail } from '@bentley/imodeljs-frontend';
 import { Id64Arg } from '@bentley/bentleyjs-core';
@@ -642,6 +643,7 @@ export interface DiagnosticsPanelProps {
         fps?: boolean;
         tileStats?: boolean;
         memory?: boolean;
+        tileMemoryBreakdown?: boolean;
         gpuProfiler?: boolean;
         toolSettings?: boolean;
     };
@@ -790,6 +792,9 @@ export class FlipImageEffect extends AddEffectTool {
     // (undocumented)
     static toolId: string;
 }
+
+// @internal (undocumented)
+export function formatMemory(numBytes: number): string;
 
 // @beta
 export class FpsTracker {
@@ -1559,13 +1564,7 @@ export class SetAspectRatioSkewTool extends Tool {
 }
 
 // @beta
-export class SetHigherPriorityRealityModelMasking extends PlanarMaskBaseTool {
-    // (undocumented)
-    protected applyMask(vp: ScreenViewport): void;
-    // (undocumented)
-    protected createToolInstance(): PlanarMaskBaseTool;
-    // (undocumented)
-    protected elementRequired(): boolean;
+export class SetGpuMemoryLimitTool extends Tool {
     // (undocumented)
     static get maxArgs(): number;
     // (undocumented)
@@ -1575,7 +1574,6 @@ export class SetHigherPriorityRealityModelMasking extends PlanarMaskBaseTool {
     // (undocumented)
     protected showPrompt(): void;
     // (undocumented)
-    protected targetModelRequired(): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -1936,6 +1934,13 @@ export interface TextBoxProps {
     // (undocumented)
     tooltip?: string;
 }
+
+// @beta
+export class TileMemoryBreakdown {
+    constructor(parent: HTMLElement);
+    // (undocumented)
+    dispose(): void;
+    }
 
 // @beta
 export class TileStatisticsTracker {

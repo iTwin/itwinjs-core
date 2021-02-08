@@ -76,6 +76,7 @@ internal;ExtensionServiceTool
 beta;FadeOutTool 
 beta;FlipImageConfig 
 beta;FlipImageEffect 
+internal;formatMemory(numBytes: number): string
 beta;FpsTracker
 beta;FreezeSceneTool 
 beta;FrontendDevTools
@@ -144,7 +145,11 @@ beta;SelectElementsByIdTool
 beta;serializeViewState(view: ViewState): ViewStateProps
 internal;SetAASamplesTool 
 alpha;SetAspectRatioSkewTool 
+<<<<<<< HEAD
 beta;SetHigherPriorityRealityModelMasking 
+=======
+beta;SetGpuMemoryLimitTool 
+>>>>>>> master
 alpha;SetMapBaseTool 
 alpha;SetMapHigherPriorityMasking 
 beta;SetModelColorTool 
@@ -175,6 +180,7 @@ beta;TextBox
 alpha;TextBoxHandler = (textbox: HTMLInputElement) => void
 alpha;TextBoxKeyPressHandler = (textbox: HTMLInputElement, ev: KeyboardEvent) => void
 alpha;TextBoxProps
+beta;TileMemoryBreakdown
 beta;TileStatisticsTracker
 alpha;Toggle3dManipulationsTool 
 beta;ToggleDPIForLODTool 

@@ -434,8 +434,8 @@ export class MapTile extends RealityTile {
     return (this._patch instanceof PlanarTilePatch) ? this._patch.getClipShape() : [this._cornerRays![0].origin, this._cornerRays![1].origin, this._cornerRays![3].origin, this._cornerRays![2].origin];
   }
 
-  public collectStatistics(stats: RenderMemory.Statistics): void {
-    super.collectStatistics(stats);
+  protected _collectStatistics(stats: RenderMemory.Statistics): void {
+    super._collectStatistics(stats);
 
     if (undefined !== this._geometry)
       this._geometry.collectStatistics(stats);
@@ -462,7 +462,10 @@ export class MapTile extends RealityTile {
     assert(false);
     return Range1d.createNull();
   }
-  public get mapTilingScheme() { return this.mapTree.sourceTilingScheme; }
+
+  public get mapTilingScheme() {
+    return this.mapTree.sourceTilingScheme;
+  }
 
   public adjustHeights(minHeight: number, maxHeight: number) {
     if (undefined === this._heightRange)
@@ -610,6 +613,10 @@ export class MapTile extends RealityTile {
       this._contentRange = content.contentRange;
 
     this.setIsReady();
+  }
+
+  public freeMemory(): void {
+    // ###TODO MapTiles and ImageryMapTiles share resources and don't currently interact well with TileAdmin.freeMemory(). Opt out for now.
   }
 
   public disposeContents() {

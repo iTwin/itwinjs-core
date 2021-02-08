@@ -336,6 +336,9 @@
     "ClearEffects": {
       "keyin": "fdt effect clear"
     },
+    "SetGpuMemoryLimit": {
+      "keyin": "fdt gpu mem limit"
+    },
     "SetHigherPriorityRealityModelMasking": {
       "keyin": "fdt set reality model mask by priority",
       "Prompts": {
