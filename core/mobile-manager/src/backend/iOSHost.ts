@@ -55,17 +55,11 @@ export class IOSHost extends MobileHost {
   /**
    * Start the backend of an IOS app.
    */
-  public static async startup(opt?: { mobileHost: { device: MobileDevice }, ipcHost?: IpcHostOptions, iModelHost?: IModelHostConfiguration }): Promise<void> {
-    if (!opt) {
-      opt = { mobileHost: { device: new IOSDevice() } };
-    }
-
-    (global as any).MobileDeviceRpcImpl = opt.mobileHost.device; //for native side
-
-    if (!opt.ipcHost) {
-      opt.ipcHost = { socket: new IpcWebSocketBackend() };
-    }
-
-    await MobileHost.startup(opt);
+  public static async startup(opt?: { mobileHost?: { device: MobileDevice }, ipcHost?: IpcHostOptions, iModelHost?: IModelHostConfiguration }): Promise<void> {
+    const device = opt?.mobileHost?.device ?? new IOSDevice();
+    const socket = opt?.ipcHost?.socket ?? new IpcWebSocketBackend();
+    (global as any).MobileDeviceRpcImpl = device; // for native side
+    return MobileHost.startup({ ...opt, mobileHost: { device }, ipcHost: { socket } });
   }
+}
 }
