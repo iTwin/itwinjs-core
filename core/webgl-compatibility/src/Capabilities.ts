@@ -62,7 +62,11 @@ export enum DepthType {
   // TextureFloat32Stencil8,       // core to WeBGL2
 }
 
-function detectIsMobile(): boolean {
+/** Exported for use by TileAdmin because it needs to know this before IModelApp.startup is called (otherwise it could ask the RenderSystem).
+ * ###TODO Replace with `MobileUtils.isMobileFrontend()` when https://github.com/imodeljs/imodeljs/pull/687 is completed.
+ * @internal
+ */
+export function detectIsMobile(): boolean {
   // Modified from package 'detect-gpu': https://github.com/TimvanScherpenzeel/detect-gpu/blob/master/src/index.ts
   // ###TODO: consume and use the actual full 'detect-gpu' package when querying capabilities so we can stay up to date.
 
