@@ -30,6 +30,7 @@ class ModelChanges extends SortedArray<ElementGeometryChange> {
   }
 }
 
+/** @alpha */
 export type EditableConnection = BriefcaseConnection | RemoteBriefcaseConnection; // eslint-disable-line deprecation/deprecation
 
 /**

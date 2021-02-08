@@ -590,49 +590,34 @@ export class IModelHost {
  * @public
  */
 export class Platform {
-  /** The imodeljs mobile info object, if this is running in the imodeljs mobile platform.
-   * @beta
-   */
-  public static get imodeljsMobile(): any { return (typeof (self) !== "undefined") ? (self as any).imodeljsMobile : undefined; }
-
-  /** Get the name of the platform. Possible return values are: "win32", "linux", "darwin", "ios", "android", or "uwp". */
-  public static get platformName(): string {
-    return process.platform;
+  /** Get the name of the platform. */
+  public static get platformName(): "win32" | "linux" | "darwin" | "ios" | "android" | "uwp" {
+    return process.platform as any;
   }
 
-  /** The Electron info object, if this is running in Electron.
-   * @beta
-   * @deprecated use isElectron
+  /** Query if this is an electron backend
+   * @deprecated use ProcessDetector.isElectronAppBackend
    */
-  public static get electron(): any {
-    if ((typeof (process) !== "undefined") && ("electron" in process.versions)) {
-      // Wrapping this require in a try/catch signals to webpack that this is only an optional dependency
-      try {
-        return require("electron"); // eslint-disable-line @typescript-eslint/no-var-requires
-      } catch (error) { }
-    }
-    return undefined;
-  }
-
-  /** Query if this is an electron backend */
   public static get isElectron(): boolean { return ProcessDetector.isElectronAppBackend; }
 
   /** Query if this is a desktop backend
-   * @deprecated use isElectron
+   * @deprecated use ProcessDetector.isElectronAppBackend
    */
   public static get isDesktop(): boolean { return ProcessDetector.isElectronAppBackend; }
 
-  /** Query if this is a mobile backend */
-  public static get isMobile(): boolean { return typeof (process) !== "undefined" && (process.platform as any) === "ios"; }
+  /** Query if this is a mobile backend
+   * @deprecated use ProcessDetector.isMobileAppBackend
+   */
+  public static get isMobile(): boolean { return ProcessDetector.isMobileAppBackend; }
 
-  /** Query if this is running in Node.js
-   * @deprecated always returns true
-  */
-  public static get isNodeJs(): boolean { return true; }
+  /** Query if this is backend running in Node.js
+   * @deprecated use ProcessDetector.isNodeProcess
+   */
+  public static get isNodeJs(): boolean { return ProcessDetector.isNodeProcess; }
 
   /** @internal */
   public static load(): typeof IModelJsNative {
-    return this.isMobile ? (process as any)._linkedBinding("iModelJsNative") : NativeLibrary.load();
+    return ProcessDetector.isMobileAppBackend ? (process as any)._linkedBinding("iModelJsNative") : NativeLibrary.load();
   }
 }
 

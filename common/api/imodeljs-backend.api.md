@@ -3426,19 +3426,17 @@ export class PlanCallout extends Callout {
 
 // @public
 export class Platform {
-    // @beta @deprecated
-    static get electron(): any;
-    // @beta
-    static get imodeljsMobile(): any;
     // @deprecated
     static get isDesktop(): boolean;
+    // @deprecated
     static get isElectron(): boolean;
+    // @deprecated
     static get isMobile(): boolean;
     // @deprecated
     static get isNodeJs(): boolean;
     // @internal (undocumented)
     static load(): typeof IModelJsNative;
-    static get platformName(): string;
+    static get platformName(): "win32" | "linux" | "darwin" | "ios" | "android" | "uwp";
 }
 
 // @internal

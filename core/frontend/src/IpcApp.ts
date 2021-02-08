@@ -38,8 +38,8 @@ export interface IpcAppOptions {
 }
 
 /**
- * The frontend of apps with a dedicated backend
- * @alpha
+ * The frontend of apps with a dedicated backend that can use [Ipc]($docs/learning/IpcInterface.md).
+ * @beta
  */
 export class IpcApp {
   private static _ipc: IpcSocketFrontend | undefined;

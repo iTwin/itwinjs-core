@@ -264,7 +264,7 @@ internal;IModelTileTreeId = PrimaryTileTreeId | ClassifierTileTreeId
 internal;iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTileTreeId, options: TileOptions): string
 internal;IModelTileTreeProps 
 public;IModelVersion
-public;IModelVersionProps
+public;IModelVersionProps =
 internal;class IModelWriteRpcInterface 
 public;InformationPartitionElementProps 
 internal;initializeRpcRequest: () => void

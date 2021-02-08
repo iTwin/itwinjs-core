@@ -1488,6 +1488,8 @@ export class BriefcaseConnection extends IModelConnection {
     // (undocumented)
     protected _isClosed?: boolean;
     static openFile(briefcaseProps: OpenBriefcaseProps): Promise<BriefcaseConnection>;
+    // @internal
+    static openStandalone(filePath: string, openMode?: OpenMode, opts?: StandaloneOpenOptions): Promise<BriefcaseConnection>;
     // @beta (undocumented)
     pullAndMergeChanges(): Promise<IModelConnectionProps>;
     // @beta (undocumented)
@@ -1496,7 +1498,7 @@ export class BriefcaseConnection extends IModelConnection {
     saveChanges(description?: string): Promise<void>;
 }
 
-// @beta (undocumented)
+// @beta
 export abstract class BriefcaseNotificationHandler extends NotificationHandler {
     constructor(_key: string);
     // (undocumented)
@@ -2332,6 +2334,9 @@ export class DynamicsContext extends RenderContext {
     // @internal (undocumented)
     changeDynamics(): void;
     }
+
+// @alpha (undocumented)
+export type EditableConnection = BriefcaseConnection | RemoteBriefcaseConnection;
 
 // @alpha @deprecated
 export class EditingFunctions {
@@ -4142,10 +4147,6 @@ export abstract class IModelConnection extends IModel {
     isRemoteBriefcaseConnection(): this is RemoteBriefcaseConnection;
     get isSnapshot(): boolean;
     isSnapshotConnection(): this is SnapshotConnection;
-    // @internal
-    get isStandalone(): boolean;
-    // @internal
-    isStandaloneConnection(): this is StandaloneConnection;
     loadFontMap(): Promise<FontMap>;
     readonly models: IModelConnection.Models;
     // @internal
@@ -4410,7 +4411,7 @@ export class InteractiveEditingSession extends BriefcaseNotificationHandler impl
     // (undocumented)
     get briefcaseChannelName(): IpcAppChannel;
     end(): Promise<void>;
-    static get(imodel: EditableConnection): InteractiveEditingSession | undefined;
+    static get(imodel: IModelConnection): InteractiveEditingSession | undefined;
     getGeometryChanges(): Iterable<ModelGeometryChanges>;
     getGeometryChangesForModel(modelId: Id64String): Iterable<ElementGeometryChange> | undefined;
     readonly iModel: EditableConnection;
@@ -4495,7 +4496,7 @@ export class IntersectDetail extends SnapDetail {
     readonly otherPrimitive: CurvePrimitive;
 }
 
-// @alpha
+// @beta
 export class IpcApp {
     static addListener(channel: string, handler: IpcListener): RemoveFunction;
     // @internal
@@ -6551,7 +6552,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
     // (undocumented)
     exitTool(): void;
     getPrompt(): string;
-    get iModel(): BriefcaseConnection;
+    get iModel(): EditableConnection;
     isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
     isValidLocation(ev: BeButtonEvent, isButtonEvent: boolean): boolean;
     onRedoPreviousStep(): Promise<boolean>;
@@ -8653,13 +8654,6 @@ export class SpriteLocation implements CanvasDecoration {
     get isActive(): boolean;
     readonly position: Point3d;
     }
-
-// @internal
-export class StandaloneConnection extends BriefcaseConnection {
-    // (undocumented)
-    isStandaloneConnection(): this is StandaloneConnection;
-    static openStandalone(filePath: string, openMode?: OpenMode, opts?: StandaloneOpenOptions): Promise<StandaloneConnection>;
-}
 
 // @public
 export class StandardView {

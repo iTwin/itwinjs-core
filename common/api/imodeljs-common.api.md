@@ -2086,7 +2086,7 @@ export class EdgeArgs {
     get numEdges(): number;
 }
 
-// @alpha
+// @alpha @deprecated
 export abstract class Editor3dRpcInterface extends RpcInterface {
     // (undocumented)
     applyTransform(_tokenProps: IModelRpcProps, _editorId: GuidString, _tprops: TransformProps): Promise<any>;
@@ -3931,16 +3931,27 @@ export class IModelVersion {
     }
 
 // @public
-export interface IModelVersionProps {
-    // (undocumented)
-    afterChangeSetId?: GuidString;
-    // (undocumented)
-    first?: boolean;
-    // (undocumented)
-    latest?: boolean;
-    // (undocumented)
-    versionName?: string;
-}
+export type IModelVersionProps = {
+    first: true;
+    latest?: never;
+    afterChangeSetId?: never;
+    versionName?: never;
+} | {
+    latest: true;
+    first?: never;
+    afterChangeSetId?: never;
+    versionName?: never;
+} | {
+    afterChangeSetId: GuidString;
+    first?: never;
+    latest?: never;
+    versionName?: never;
+} | {
+    versionName: string;
+    first?: never;
+    latest?: never;
+    afterChangeSetId?: never;
+};
 
 // @internal
 export abstract class IModelWriteRpcInterface extends RpcInterface {
@@ -4038,7 +4049,7 @@ export enum IpcAppChannel {
 export interface IpcAppFunctions {
     cancelElementGraphicsRequests: (key: string, _requestIds: string[]) => Promise<void>;
     cancelTileContentRequests: (tokenProps: IModelRpcProps, _contentIds: TileTreeContentIds[]) => Promise<void>;
-    close: (key: string) => Promise<void>;
+    closeIModel: (key: string) => Promise<void>;
     hasPendingTxns: (key: string) => Promise<boolean>;
     // (undocumented)
     isInteractiveEditingSupported: (key: string) => Promise<boolean>;
@@ -4095,6 +4106,8 @@ export abstract class IpcWebSocket implements IpcSocket {
     // (undocumented)
     protected _channels: Map<string, Set<IpcListener>>;
     // (undocumented)
+    static receivers: Set<(evt: Event, message: IpcWebSocketMessage) => void>;
+    // (undocumented)
     removeListener(channel: string, listener: IpcListener): void;
     // (undocumented)
     abstract send(channel: string, ...data: any[]): void;
@@ -4106,7 +4119,7 @@ export abstract class IpcWebSocket implements IpcSocket {
 export class IpcWebSocketBackend extends IpcWebSocket implements IpcSocketBackend {
     constructor();
     // (undocumented)
-    handle(channel: string, handler: (methodName: string, ...args: any[]) => Promise<any>): RemoveFunction;
+    handle(channel: string, handler: (event: Event, methodName: string, ...args: any[]) => Promise<any>): RemoveFunction;
     // (undocumented)
     send(channel: string, ...data: any[]): void;
 }
@@ -4150,8 +4163,6 @@ export enum IpcWebSocketMessageType {
 
 // @internal (undocumented)
 export abstract class IpcWebSocketTransport {
-    // (undocumented)
-    abstract listen(handler: (evt: Event, message: IpcWebSocketMessage) => void): void;
     // (undocumented)
     abstract send(message: IpcWebSocketMessage): void;
 }

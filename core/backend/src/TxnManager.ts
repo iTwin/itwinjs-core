@@ -14,6 +14,7 @@ import { Relationship, RelationshipProps } from "./Relationship";
 
 /** @public */
 export enum TxnAction { None = 0, Commit = 1, Abandon = 2, Reverse = 3, Reinstate = 4, Merge = 5 }
+
 /** A string that identifies a Txn.
  * @public
  */
@@ -31,7 +32,8 @@ export interface ValidationError {
   message?: string;
 }
 
-/** Local Txns in an IModelDb. Local Txns persist only until [[BriefcaseDb.pushChanges]] is called.
+/**
+ * Manages local changes to an iModel via [Txns]($docs/learning/InteractiveEditing.md)
  * @beta
  */
 export class TxnManager {

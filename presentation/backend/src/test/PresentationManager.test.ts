@@ -95,7 +95,6 @@ describe("PresentationManager", () => {
             contentCacheSize: undefined,
             useMmap: undefined,
             defaultFormats: {},
-            useMmap: undefined,
           });
         });
       });
@@ -134,7 +133,6 @@ describe("PresentationManager", () => {
           contentCacheSize: 999,
           useMmap: 666,
           defaultFormats,
-          useMmap: 666,
         };
         const expectedCacheConfig = {
           mode: HierarchyCacheMode.Memory,
@@ -169,7 +167,6 @@ describe("PresentationManager", () => {
             contentCacheSize: undefined,
             useMmap: undefined,
             defaultFormats: {},
-            useMmap: undefined,
           });
         });
         constructorSpy.resetHistory();
@@ -190,7 +187,6 @@ describe("PresentationManager", () => {
             contentCacheSize: undefined,
             useMmap: undefined,
             defaultFormats: {},
-            useMmap: undefined,
           });
         });
       });
@@ -209,7 +205,6 @@ describe("PresentationManager", () => {
             contentCacheSize: undefined,
             useMmap: undefined,
             defaultFormats: {},
-            useMmap: undefined,
           });
         });
         constructorSpy.resetHistory();
@@ -235,7 +230,6 @@ describe("PresentationManager", () => {
             contentCacheSize: undefined,
             useMmap: undefined,
             defaultFormats: {},
-            useMmap: undefined,
           });
         });
       });

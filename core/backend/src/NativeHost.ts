@@ -21,7 +21,6 @@ import { NativeAppStorage } from "./NativeAppStorage";
 
 /**
  * Implementation of NativeAppFunctions
- * @internal
  */
 class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   public get channelName() { return nativeAppChannel; }

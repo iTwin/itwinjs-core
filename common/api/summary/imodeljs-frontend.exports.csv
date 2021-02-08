@@ -115,6 +115,7 @@ public;DrawingModelState
 public;DrawingViewState 
 internal;class DynamicIModelTile 
 public;DynamicsContext 
+alpha;EditableConnection = BriefcaseConnection | RemoteBriefcaseConnection
 alpha;EditingFunctions
 alpha;EditingFunctions
 deprecated;CategoryEditor
@@ -258,7 +259,7 @@ alpha;InteractiveEditingSession
 public;class InteractiveTool 
 internal;internalMapLayerImageryFormats: (typeof WmsMapLayerFormat)[]
 public;IntersectDetail 
-alpha;IpcApp
+beta;IpcApp
 beta;IpcAppOptions
 alpha;ItemField
 beta;KeyinParseError
@@ -454,7 +455,6 @@ internal;SpatialTileTreeReferences
 public;SpatialViewState 
 public;Sprite
 public;SpriteLocation 
-internal;StandaloneConnection 
 public;StandardView
 public;StandardViewId
 public;StandardViewTool 

@@ -77,15 +77,15 @@ export abstract class MobileRpcConfiguration extends RpcConfiguration {
   /** Check if backend running on mobile
    * @deprecated use ProcessDetector.isMobileAppBackend
    */
-  public static get isMobileBackend() { return typeof (process) !== "undefined" && (process.platform as any) === "ios"; }
+  public static get isMobileBackend() { return ProcessDetector.isMobileAppBackend; }
 
   /** Check if frontend running on mobile
    * @deprecated use ProcessDetector.isMobileAppFrontend
    */
-  public static get isMobileFrontend() { return this.platform !== RpcMobilePlatform.Unknown; }
+  public static get isMobileFrontend() { return ProcessDetector.isMobileAppFrontend; }
 
-  /** Check if frontend running on wkwebview on ios
-   * @deprcated use ProcessDetector.isIOSAppFrontend
+  /** Check if frontend running on ios
+   * @deprecated use ProcessDetector.isIOSAppFrontend
    */
   public static get isIOSFrontend() { return ProcessDetector.isIOSAppFrontend; }
 }
