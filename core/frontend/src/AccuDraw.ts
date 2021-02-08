@@ -966,7 +966,7 @@ export class AccuDraw {
     switch (index) {
       case ItemField.DIST_Item:
         parseResult = this.stringToDistance(input);
-        if (undefined !== parseResult.value && parseResult?.status === QuantityStatus.Success) {
+        if (undefined !== parseResult.value && parseResult.status === QuantityStatus.Success) {
           this._distance = parseResult.value;
           break;
         }
@@ -974,7 +974,7 @@ export class AccuDraw {
 
       case ItemField.ANGLE_Item:
         parseResult =this.stringToAngle(input);
-        if (undefined !== parseResult.value && parseResult?.status === QuantityStatus.Success) {
+        if (undefined !== parseResult.value && parseResult.status === QuantityStatus.Success) {
           this._angle = parseResult.value;
           break;
         }
@@ -982,7 +982,7 @@ export class AccuDraw {
 
       case ItemField.X_Item:
         parseResult = this.stringToDistance(input);
-        if (undefined !== parseResult.value && parseResult?.status === QuantityStatus.Success) {
+        if (undefined !== parseResult.value && parseResult.status === QuantityStatus.Success) {
           this.delta.x = parseResult.value;
 
           this._xIsExplicit = (input[0] === "+" || input[0] === "-");
@@ -996,7 +996,7 @@ export class AccuDraw {
 
       case ItemField.Y_Item:
         parseResult = this.stringToDistance(input);
-        if (undefined !== parseResult.value && parseResult?.status === QuantityStatus.Success) {
+        if (undefined !== parseResult.value && parseResult.status === QuantityStatus.Success) {
           this.delta.y = parseResult.value;
 
           this._yIsExplicit = (input[0] === "+" || input[0] === "-");
@@ -1010,7 +1010,7 @@ export class AccuDraw {
 
       case ItemField.Z_Item:
         parseResult = this.stringToDistance(input);
-        if (undefined !== parseResult.value && parseResult?.status === QuantityStatus.Success) {
+        if (undefined !== parseResult.value && parseResult.status === QuantityStatus.Success) {
           this.delta.z = parseResult.value;
           break;
         }
