@@ -386,4 +386,4 @@ ECSQL has a number of [built-in geometry functions](./GeometrySqlFuncs.md)
 
 ## Common Table Expressions
 
-ECSQL can do regular and recursive [CTE queries](./CommonTableExp./md)
+ECSQL can do regular and recursive [CTE queries](./CommonTableExp.md)
