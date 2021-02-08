@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodelhub-client",
-  "version": "2.13.0-dev.2",
+  "version": "2.13.0-dev.6",
   "description": "iModel.js iModelHub Client",
   "main": "lib/imodelhub-client.js",
   "typings": "lib/imodelhub-client",
@@ -37,20 +37,20 @@
     "js-base64": "^2.4.5"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.13.0-dev.2",
-    "@bentley/context-registry-client": "^2.13.0-dev.2",
-    "@bentley/frontend-authorization-client": "^2.13.0-dev.2",
-    "@bentley/itwin-client": "^2.13.0-dev.2",
-    "@bentley/rbac-client": "^2.13.0-dev.2"
+    "@bentley/bentleyjs-core": "^2.13.0-dev.6",
+    "@bentley/context-registry-client": "^2.13.0-dev.6",
+    "@bentley/frontend-authorization-client": "^2.13.0-dev.6",
+    "@bentley/itwin-client": "^2.13.0-dev.6",
+    "@bentley/rbac-client": "^2.13.0-dev.6"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.13.0-dev.2",
-    "@bentley/build-tools": "2.13.0-dev.2",
-    "@bentley/context-registry-client": "2.13.0-dev.2",
-    "@bentley/eslint-plugin": "2.13.0-dev.2",
-    "@bentley/frontend-authorization-client": "2.13.0-dev.2",
-    "@bentley/itwin-client": "2.13.0-dev.2",
-    "@bentley/rbac-client": "2.13.0-dev.2",
+    "@bentley/bentleyjs-core": "2.13.0-dev.6",
+    "@bentley/build-tools": "2.13.0-dev.6",
+    "@bentley/context-registry-client": "2.13.0-dev.6",
+    "@bentley/eslint-plugin": "2.13.0-dev.6",
+    "@bentley/frontend-authorization-client": "2.13.0-dev.6",
+    "@bentley/itwin-client": "2.13.0-dev.6",
+    "@bentley/rbac-client": "2.13.0-dev.6",
     "@types/deep-assign": "^0.1.0",
     "@types/js-base64": "^2.3.1",
     "@types/node": "10.14.1",

@@ -45,7 +45,9 @@
     "snapWidgetOpacityTitle": "Snap Widget Opacity",
     "snapWidgetOpacityDescription": "Immediately change the toolbar opacity when the mouse gets close",
     "escapeToHomeTitle": "Escape To Home",
-    "escapeToHomeDescription": "Pressing the Escape key puts focus in Home position for shortcuts"
+    "escapeToHomeDescription": "Pressing the Escape key puts focus in Home position for shortcuts",
+    "accuDrawNotificationsTitle": "Display AccuDraw Notifications",
+    "accuDrawNotificationsDescription": "Display toast notifications when AccuDraw status changes"
   },
   "backstage": {
     "command": "Command",
