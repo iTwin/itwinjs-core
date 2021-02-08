@@ -429,8 +429,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public getMapLayers(isOverlay: boolean) { return isOverlay ? this.overlayMapLayers : this.backgroundMapLayers; }
 
   /** @internal */
-  public attachMapLayer(props: MapLayerProps, isOverlay: boolean, insertIndex = -1): void {
-    const layerSettings = MapLayerSettings.fromJSON(props);
+  public attachMapLayerSettings(settings: MapLayerSettings, isOverlay: boolean, insertIndex = -1): void {
+    const layerSettings = settings.clone({});
     if (undefined === layerSettings)
       return;
 
@@ -443,6 +443,15 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     }
 
     this._synchBackgroundMapImagery();
+  }
+
+  /** @internal */
+  public attachMapLayer(props: MapLayerProps, isOverlay: boolean, insertIndex = -1): void {
+    const layerSettings = MapLayerSettings.fromJSON(props);
+    if (undefined === layerSettings)
+      return;
+
+    this.attachMapLayerSettings(layerSettings, isOverlay, insertIndex);
   }
 
   /** @internal */
@@ -521,6 +530,14 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     if (index < 0 || index >= layers.length)
       return;
     layers[index] = layers[index].clone(props);
+    this._synchBackgroundMapImagery();
+  }
+
+  public changeMapLayerCredentials(index: number, isOverlay: boolean, userName?: string, password?: string,) {
+    const layers = this.getMapLayers(isOverlay);
+    if (index < 0 || index >= layers.length)
+      return;
+    layers[index].setCredentials(userName, password);
     this._synchBackgroundMapImagery();
   }
 

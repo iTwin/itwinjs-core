@@ -55,10 +55,18 @@ export class MapLayerSource implements MapLayerProps {
   public toJSON() {
     return { url: this.url, name: this.name, formatId: this.formatId, maxZoom: this.maxZoom, transparentBackground: this.transparentBackground };
   }
+
+  public toLayerSettings(): MapLayerSettings | undefined {
+    const layerSettings = MapLayerSettings.fromJSON(this.toJSON());
+    layerSettings?.setCredentials(this.userName, this.password);
+    return layerSettings;
+  }
+
   private getCredentials(): RequestBasicCredentials | undefined {
     return this.userName && this.password ? { user: this.userName, password: this.password } : undefined;
   }
 }
+
 /** A collection of [[MapLayerSource]] objects.
  * @internal
  */

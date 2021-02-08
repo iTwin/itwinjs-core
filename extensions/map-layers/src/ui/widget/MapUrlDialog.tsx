@@ -171,14 +171,13 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
           if (validation.status === MapLayerSourceStatus.Valid) {
             source.subLayers = validation.subLayers;
 
-            // Attach layer and update settings service (only if not editing)
+            // Attach layer and update settings service (only if editing)
             if (layerIdxToEdit !== undefined) {
               // Update username / password
               vp.displayStyle.changeMapLayerProps({
-                userName: source.userName,
-                password: source.password,
                 subLayers: validation.subLayers,
               }, layerIdxToEdit, isOverlay);
+              vp.displayStyle.changeMapLayerCredentials(layerIdxToEdit, isOverlay, source.userName, source.password,);
 
               // Reset the provider's status
               const provider = vp.displayStyle.getMapLayerImageryProvider(layerIdxToEdit, isOverlay);
@@ -190,10 +189,18 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
                 if (!(await MapLayerSettingsService.storeSourceInSettingsService(source, storeOnIModel, vp.iModel.contextId!, vp.iModel.iModelId!)))
                   return;
               }
-              vp.displayStyle.attachMapLayer(source, isOverlay);
+              const layerSettings = source.toLayerSettings();
+              if (layerSettings) {
+                vp.displayStyle.attachMapLayerSettings(layerSettings, isOverlay, undefined);
 
-              const msg = IModelApp.i18n.translate("mapLayers:Messages.MapLayerAttached", { sourceName: source.name, sourceUrl: source.url });
-              IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
+                const msg = IModelApp.i18n.translate("mapLayers:Messages.MapLayerAttached", { sourceName: source.name, sourceUrl: source.url });
+                IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
+              } else {
+                const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.AttachError");
+                const error = "Conversion to layer settings failed";
+                IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${msg} ${source.url}-${error}`));
+              }
+
             }
 
             vp.invalidateRenderPlan();

@@ -31,24 +31,27 @@ class AttachMapLayerBaseTool extends Tool {
         if (this._isBase) {
           vp.displayStyle.changeBaseMapProps(source);
         } else {
-          vp.displayStyle.attachMapLayer(source, !this._isBackground);
+          const layerSettings = source.toLayerSettings();
+          if (layerSettings) {
+            vp.displayStyle.attachMapLayerSettings(layerSettings, !this._isBackground);
+          }
         }
 
         if (validation.status === MapLayerSourceStatus.Valid) {
           vp.invalidateRenderPlan();
-          const msg = IModelApp.i18n.translate("FrontendDevTools:AttachMapLayerTool.Messages.MapLayerAttached", { sourceName: source.name, sourceUrl: source.url });
+          const msg = IModelApp.i18n.translate("FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerAttached", { sourceName: source.name, sourceUrl: source.url });
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
         } else if (validation.status === MapLayerSourceStatus.RequireAuth) {
-          const msg = IModelApp.i18n.translate("FrontendDevTools:AttachMapLayerTool.Messages.MapLayerAttachedRequiresAuth", { sourceName: source.name });
+          const msg = IModelApp.i18n.translate("FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerAttachedRequiresAuth", { sourceName: source.name });
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
         }
 
       } else {
-        const msg = IModelApp.i18n.translate("FrontendDevTools:AttachMapLayerTool.Messages.MapLayerValidationFailed", { sourceUrl: source.url });
+        const msg = IModelApp.i18n.translate("FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerValidationFailed", { sourceUrl: source.url });
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
       }
     }).catch((error) => {
-      const msg = IModelApp.i18n.translate("FrontendDevTools:AttachMapLayerTool.Messages.MapLayerAttachError", { error, sourceUrl: source.url });
+      const msg = IModelApp.i18n.translate("FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerAttachError", { error, sourceUrl: source.url });
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
     });
   }

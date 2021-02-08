@@ -319,8 +319,8 @@ export function MapLayerManager(props: MapLayerManagerProps) {
 
     if (destination.droppableId !== source.droppableId) {
       // see if we moved from "overlayMapLayers" to "backgroundMapLayers" or vice-versa
-      const layerProps = activeViewport.displayStyle.mapLayerAtIndex(fromIndexInDisplayStyle, fromMapLayer.isOverlay)?.toJSON();
-      if (layerProps) {
+      const layerSettings = activeViewport.displayStyle.mapLayerAtIndex(fromIndexInDisplayStyle, fromMapLayer.isOverlay);
+      if (layerSettings) {
         activeViewport.displayStyle.detachMapLayerByIndex(fromIndexInDisplayStyle, fromMapLayer.isOverlay);
 
         // Manually reverse index when moved from one section to the other
@@ -330,7 +330,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
           toIndexInDisplayStyle = overlayMapLayers.length - destination.index;
         }
 
-        activeViewport.displayStyle.attachMapLayer(layerProps, !fromMapLayer.isOverlay, toIndexInDisplayStyle);
+        activeViewport.displayStyle.attachMapLayerSettings(layerSettings, !fromMapLayer.isOverlay, toIndexInDisplayStyle);
       }
     } else {
       if (undefined === destination.index) {

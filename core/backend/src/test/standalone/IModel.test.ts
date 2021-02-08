@@ -652,7 +652,7 @@ describe("iModel", () => {
 
     const mapImagery: MapImageryProps = {
       backgroundBase: ColorDef.red.tbgr,
-      backgroundLayers: [{ transparency: 0.5, userName: "blah" }],
+      backgroundLayers: [{ transparency: 0.5 }],
     };
 
     const props: DisplayStyleSettingsProps = {

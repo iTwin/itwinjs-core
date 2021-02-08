@@ -70,12 +70,15 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
 
               if (status === MapLayerSourceStatus.Valid) {
                 source.subLayers = subLayers;
-                activeViewport.displayStyle.attachMapLayer(source, isOverlay);
+                const layerSettings = source.toLayerSettings();
+                if (layerSettings) {
+                  activeViewport.displayStyle.attachMapLayerSettings(layerSettings, isOverlay);
 
-                activeViewport.invalidateRenderPlan();
+                  activeViewport.invalidateRenderPlan();
 
-                const msg = IModelApp.i18n.translate("mapLayers:Messages.MapLayerAttached", { sourceName: source.name, sourceUrl: source.url });
-                IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
+                  const msg = IModelApp.i18n.translate("mapLayers:Messages.MapLayerAttached", { sourceName: source.name, sourceUrl: source.url });
+                  IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
+                }
 
               } else if (status === MapLayerSourceStatus.RequireAuth) {
                 ModalDialogManager.openDialog(

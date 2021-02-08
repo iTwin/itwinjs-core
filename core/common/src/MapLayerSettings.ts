@@ -128,10 +128,6 @@ export interface MapLayerProps {
   maxZoom?: number;
   /** Is a base layer */
   isBase?: boolean;
-  /** User name - if required for authentication. */
-  userName?: string;
-  /** Password - if required for authentication */
-  password?: string;
   /** Access Key for the Layer, like a subscription key or access token */
   accessKey?: MapLayerKey;
 }
@@ -158,9 +154,14 @@ export class MapLayerSettings {
   public readonly subLayers: MapSubLayerSettings[];
   public readonly transparentBackground: boolean;
   public readonly isBase: boolean;
-  public readonly userName?: string;
-  public readonly password?: string;
+  public userName?: string;
+  public password?: string;
   public readonly accessKey?: MapLayerKey;
+
+  public setCredentials(userName?: string, password?: string) {
+    this.userName = userName;
+    this.password = password;
+  }
 
   // eslint-disable-next-line no-undef-init
   private constructor(url: string, name: string, formatId: string = "WMS", visible = true,
@@ -189,9 +190,6 @@ export class MapLayerSettings {
     this.accessKey = accessKey;
     this.transparency = transparency;
     this.url = url;
-
-    if (status !== undefined)
-      this.status = status;
   }
   /** Construct from JSON, performing validation and applying default values for undefined fields. */
   public static fromJSON(json?: MapLayerProps): MapLayerSettings | undefined {
@@ -199,7 +197,7 @@ export class MapLayerSettings {
       return undefined;
 
     const transparentBackground = (json.transparentBackground === undefined) ? true : json.transparentBackground;
-    return new MapLayerSettings(json.url, json.name, json.formatId, json.visible, json.subLayers, json.transparency, transparentBackground, json.isBase === true, json.userName, json.password, json.accessKey);
+    return new MapLayerSettings(json.url, json.name, json.formatId, json.visible, json.subLayers, json.transparency, transparentBackground, json.isBase === true, undefined, undefined, json.accessKey);
   }
   /** return JSON representation of this MapLayerSettings object */
   public toJSON(): MapLayerProps {
@@ -215,8 +213,6 @@ export class MapLayerSettings {
     props.formatId = this.formatId;
     props.name = this.name;
     props.url = this.url;
-    props.userName = this.userName;
-    props.password = this.password;
     props.accessKey = this.accessKey;
     if (0 !== this.transparency)
       props.transparency = this.transparency;
@@ -226,6 +222,7 @@ export class MapLayerSettings {
       props.isBase = this.isBase;
     return props;
   }
+
   /** @internal */
   private static mapTypeName(type: BackgroundMapType) {   // TBD.. Localization.
     switch (type) {
@@ -298,14 +295,14 @@ export class MapLayerSettings {
       transparency: undefined !== changedProps.transparency ? changedProps.transparency : this.transparency,
       transparentBackground: undefined !== changedProps.transparentBackground ? changedProps.transparentBackground : this.transparentBackground,
       subLayers: undefined !== changedProps.subLayers ? changedProps.subLayers : this.subLayers,
-      userName: undefined !== changedProps.userName ? changedProps.userName : this.userName,
-      password: undefined !== changedProps.password ? changedProps.password : this.password,
       accessKey: undefined !== changedProps.accessKey ? changedProps.accessKey : this.accessKey,
     };
     const clone = MapLayerSettings.fromJSON(props)!;
 
     // Clone members not part of MapLayerProps
-    clone.status = this.status;
+    clone.userName = this.userName;
+    clone.password = this.password;
+
     return clone;
   }
 
