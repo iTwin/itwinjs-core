@@ -14,9 +14,9 @@ import { FrameworkAccuDraw } from "./FrameworkAccuDraw";
  * @alpha
  */
 export class AccuDrawKeyboardShortcuts {
-  /** Add AccuDraw Keyboard Shortcuts list.
+  /** Get default AccuDraw Keyboard Shortcuts list.
    */
-  public static getKeyboardShortcuts(): KeyboardShortcutProps[] {
+  public static getDefaultShortcuts(): KeyboardShortcutProps[] {
     const keyboardShortcutList: KeyboardShortcutProps[] = [
       {
         key: "a",

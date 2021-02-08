@@ -327,7 +327,7 @@ describe("KeyboardShortcut", () => {
   });
 
   it("should support loading the AccuDraw keyboard shortcuts", async () => {
-    KeyboardShortcutManager.loadKeyboardShortcuts(AccuDrawKeyboardShortcuts.getKeyboardShortcuts());
+    KeyboardShortcutManager.loadKeyboardShortcuts(AccuDrawKeyboardShortcuts.getDefaultShortcuts());
 
     const shortcutA = KeyboardShortcutManager.getShortcut("a");
     expect(shortcutA).to.not.be.undefined;

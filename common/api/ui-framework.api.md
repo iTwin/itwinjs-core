@@ -232,7 +232,7 @@ export interface AccuDrawDialogProps extends CommonProps {
 
 // @alpha
 export class AccuDrawKeyboardShortcuts {
-    static getKeyboardShortcuts(): KeyboardShortcutProps[];
+    static getDefaultShortcuts(): KeyboardShortcutProps[];
 }
 
 // @alpha

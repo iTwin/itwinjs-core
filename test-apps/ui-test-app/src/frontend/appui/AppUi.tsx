@@ -24,8 +24,19 @@ import * as React from "react";
 import { BadgeType, FunctionKey, StagePanelLocation, StageUsage } from "@bentley/ui-abstract";
 import { FillCentered } from "@bentley/ui-core";
 import {
-  AccuDrawKeyboardShortcuts, CommandItemDef, ConfigurableUiManager, ContentGroupProps,
-  ContentLayoutProps, FrontstageManager, KeyboardShortcutManager, KeyboardShortcutProps, StagePanelSection, TaskPropsList, UiFramework, WidgetDef, WidgetProvider,
+  AccuDrawKeyboardShortcuts,
+  CommandItemDef,
+  ConfigurableUiManager,
+  ContentGroupProps,
+  ContentLayoutProps,
+  FrontstageManager,
+  KeyboardShortcutManager,
+  KeyboardShortcutProps,
+  StagePanelSection,
+  TaskPropsList,
+  UiFramework,
+  WidgetDef,
+  WidgetProvider,
   WidgetState,
   WorkflowProps,
   WorkflowPropsList,
@@ -41,6 +52,8 @@ import { IModelIndexFrontstage } from "./frontstages/IModelIndexFrontstage";
 import { IModelOpenFrontstage } from "./frontstages/IModelOpenFrontstage";
 import { ScheduleAnimationFrontstage } from "./frontstages/ScheduleAnimationFrontstage";
 import { SignInFrontstage } from "./frontstages/SignInFrontstage";
+import { AccuDrawPopupTools } from "../tools/AccuDrawPopupTools";
+import { AppTools } from "../tools/ToolSpecifications";
 
 // cSpell:ignore uitestapp
 
@@ -341,76 +354,40 @@ export class AppUi {
    */
   private static defineKeyboardShortcuts() {
     const keyboardShortcutList: KeyboardShortcutProps[] = [
-      // {
-      //   key: "r",
-      //   item: AppUi._toggleZonesCommand,
-      // },
-      // {
-      //   key: "p",
-      //   labelKey: "SampleApp:buttons.shortcutsSubMenu",
-      //   shortcuts: [
-      //     {
-      //       key: "n",
-      //       item: AppTools.verticalPropertyGridOpenCommand,
-      //     },
-      //     {
-      //       key: "f",
-      //       item: AppTools.verticalPropertyGridOffCommand,
-      //     },
-      //   ],
-      // },
-      // {
-      //   key: "d",
-      //   labelKey: "SampleApp:buttons.shortcutsSubMenu",
-      //   shortcuts: [
-      //     {
-      //       key: "1",
-      //       item: AppTools.tool1,
-      //     },
-      //     {
-      //       key: "2",
-      //       item: AppTools.tool2,
-      //     },
-      //     {
-      //       key: "s",
-      //       item: CoreTools.selectElementCommand,
-      //     },
-      //   ],
-      // },
-      // {
-      //   key: "f",
-      //   item: AppTools.setLengthFormatImperialCommand,
-      // },
-      // {
-      //   key: "m",
-      //   labelKey: "SampleApp:buttons.accudrawSubMenu",
-      //   shortcuts: [
-      //     {
-      //       key: "a",
-      //       item: AccuDrawPopupTools.addMenuButton,
-      //     },
-      //     {
-      //       key: "h",
-      //       item: AccuDrawPopupTools.hideMenuButton,
-      //     },
-      //     {
-      //       key: "c",
-      //       item: AccuDrawPopupTools.showCalculator,
-      //     },
-      //     {
-      //       key: "m",
-      //       item: AccuDrawPopupTools.showContextMenu,
-      //     },
-      //     {
-      //       key: "t",
-      //       item: AccuDrawPopupTools.showToolbar,
-      //     },
-      //     {
-      //       key: "l",
-      //       item: AccuDrawPopupTools.showHTMLElement,
-      //     },
-      //   ],
-      // },
+      {
+        key: "f",
+        item: AppTools.setLengthFormatImperialCommand,
+      },
+      {
+        key: "m",
+        labelKey: "SampleApp:buttons.accuDrawSubMenu",
+        shortcuts: [
+          {
+            key: "b",
+            item: AccuDrawPopupTools.addMenuButton,
+          },
+          {
+            key: "h",
+            item: AccuDrawPopupTools.hideMenuButton,
+          },
+          {
+            key: "c",
+            item: AccuDrawPopupTools.showCalculator,
+          },
+          {
+            key: "m",
+            item: AccuDrawPopupTools.showContextMenu,
+          },
+          {
+            key: "t",
+            item: AccuDrawPopupTools.showToolbar,
+          },
+          {
+            key: "l",
+            item: AccuDrawPopupTools.showHTMLElement,
+          },
+        ],
+      },
       {
         key: FunctionKey.F7,
         item: AppUi._showShortcutsMenuCommand,
@@ -419,7 +396,7 @@ export class AppUi {
 
     ConfigurableUiManager.loadKeyboardShortcuts(keyboardShortcutList);
 
-    ConfigurableUiManager.loadKeyboardShortcuts(AccuDrawKeyboardShortcuts.getKeyboardShortcuts());
+    ConfigurableUiManager.loadKeyboardShortcuts(AccuDrawKeyboardShortcuts.getDefaultShortcuts());
   }
 
   private static get _showShortcutsMenuCommand() {
