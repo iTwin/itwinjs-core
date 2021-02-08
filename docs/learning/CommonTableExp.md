@@ -47,7 +47,7 @@ Here is a simple example of how we can write a CTE. In the following query we wa
   6
 ```
 
-As another example, we might want to traverse a class hierarchy starting from a base class down to all derived classes, generating a row for each class. Each row should could contain 2 columns: the depth of the derived class relative to the base class and a path string describing its relationship to the base class. Using `BisCore:GeometricElement2d` as the base class produces the following ECSql and resultant output:
+As another example, we might want to traverse a class hierarchy starting from a base class down to all derived classes, generating a row for each class. Each row should could contain 2 columns: the depth of the derived class relative to the base class and a path string describing its relationship to the base class. Using `BisCore:GeometricElement2d` as the base class produces the following ECSQL and resultant output:
 
 ```sql
 WITH RECURSIVE
