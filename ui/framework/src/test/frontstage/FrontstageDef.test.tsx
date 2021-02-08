@@ -157,7 +157,7 @@ describe("FrontstageDef", () => {
       UiItemsManager.unregister("WidgetsProvider");
     });
 
-    it.skip("should add extension widgets to stage panel zones", async () => {
+    it("should add extension widgets to stage panel zones", async () => {
       const frontstageProvider = new EmptyFrontstageProvider();
       FrontstageManager.addFrontstageProvider(frontstageProvider);
       await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);

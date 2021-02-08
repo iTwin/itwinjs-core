@@ -53,10 +53,6 @@
       "allowedCategories": [ "backend", "tools" ]
     },
     {
-      "name": "@bentley/electron_manager",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "@bentley/electron-manager",
       "allowedCategories": [ "internal" ]
     },

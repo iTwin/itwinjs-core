@@ -21,11 +21,12 @@ import "./tooluiproviders/Tool2UiProvider";
 import "./statusbars/AppStatusBar";
 import "./navigationaids/CubeExampleNavigationAid";
 import * as React from "react";
-import { AccuDrawField, BadgeType, FunctionKey, StagePanelLocation, StageUsage } from "@bentley/ui-abstract";
+import { BadgeType, FunctionKey, StagePanelLocation, StageUsage } from "@bentley/ui-abstract";
 import { FillCentered } from "@bentley/ui-core";
 import {
-  AccuDrawCommandItems, CommandItemDef, ConfigurableUiManager, ContentGroupProps, ContentLayoutProps, FrontstageManager,
-  KeyboardShortcutManager, KeyboardShortcutProps, StagePanelSection, TaskPropsList, UiFramework, WidgetDef, WidgetProvider, WidgetState, WorkflowProps,
+  AccuDrawCommandItems, CommandItemDef, ConfigurableUiManager, ContentGroupProps, ContentLayoutProps, FrameworkAccuDraw,
+  FrontstageManager, KeyboardShortcutManager, KeyboardShortcutProps, StagePanelSection, TaskPropsList, UiFramework, WidgetDef, WidgetProvider, WidgetState,
+  WorkflowProps,
   WorkflowPropsList,
   ZoneLocation,
 } from "@bentley/ui-framework";
@@ -41,7 +42,6 @@ import { IModelIndexFrontstage } from "./frontstages/IModelIndexFrontstage";
 import { IModelOpenFrontstage } from "./frontstages/IModelOpenFrontstage";
 import { ScheduleAnimationFrontstage } from "./frontstages/ScheduleAnimationFrontstage";
 import { SignInFrontstage } from "./frontstages/SignInFrontstage";
-import { IModelApp } from "@bentley/imodeljs-frontend";
 
 // cSpell:ignore uitestapp
 
@@ -358,31 +358,30 @@ export class AppUi {
             key: "t",
             item: AccuDrawCommandItems.changeCompassMode,
           },
-        ],
-      },
-      {
-        key: "l",
-        labelKey: "SampleApp:buttons.accuDrawLocks",
-        shortcuts: [
           {
             key: "x",
             item: AccuDrawCommandItems.lockX,
+            isHidden: FrameworkAccuDraw.isPolarModeConditional,
           },
           {
             key: "y",
             item: AccuDrawCommandItems.lockY,
+            isHidden: FrameworkAccuDraw.isPolarModeConditional,
           },
           {
             key: "z",
             item: AccuDrawCommandItems.lockZ,
+            isHidden: FrameworkAccuDraw.isPolarModeConditional,
           },
           {
             key: "a",
             item: AccuDrawCommandItems.lockAngle,
+            isHidden: FrameworkAccuDraw.isRectangularModeConditional,
           },
           {
             key: "d",
             item: AccuDrawCommandItems.lockDistance,
+            isHidden: FrameworkAccuDraw.isRectangularModeConditional,
           },
         ],
       },
@@ -393,44 +392,34 @@ export class AppUi {
           {
             key: "t",
             item: AccuDrawCommandItems.rotateTop,
+            isDisabled: FrameworkAccuDraw.isTopRotationConditional,
           },
           {
             key: "s",
             item: AccuDrawCommandItems.rotateSide,
+            isDisabled: FrameworkAccuDraw.isSideRotationConditional,
           },
           {
             key: "f",
             item: AccuDrawCommandItems.rotateFront,
+            isDisabled: FrameworkAccuDraw.isFrontRotationConditional,
           },
           {
             key: "v",
             item: AccuDrawCommandItems.rotateView,
-          },
-        ],
-      },
-      {
-        key: "v",
-        label: "AccuDraw Value Tests",
-        shortcuts: [
-          {
-            key: "x",
-            item: AppUi._setValueX,
+            isDisabled: FrameworkAccuDraw.isViewRotationConditional,
           },
           {
-            key: "y",
-            item: AppUi._setValueY,
-          },
-          {
-            key: "z",
-            item: AppUi._setValueZ,
+            key: "c",
+            item: AccuDrawCommandItems.rotateCycle,
           },
           {
             key: "a",
-            item: AppUi._setValueAngle,
+            item: AccuDrawCommandItems.rotateAxes,
           },
           {
-            key: "d",
-            item: AppUi._setValueDistance,
+            key: "e",
+            item: AccuDrawCommandItems.rotateToElement,
           },
         ],
       },
@@ -521,57 +510,6 @@ export class AppUi {
       execute: () => {
         KeyboardShortcutManager.displayShortcutsMenu();
       },
-    });
-  }
-
-  private static get _toggleZonesCommand() {
-    return new CommandItemDef({
-      commandId: "toggleZones",
-      labelKey: "SampleApp:buttons.showhideZones",
-      execute: () => {
-        const isVisible = UiFramework.getIsUiVisible();
-        UiFramework.setIsUiVisible(!isVisible);
-      },
-    });
-  }
-
-  private static get _setValueX() {
-    return new CommandItemDef({
-      commandId: "setValueX",
-      label: "Set Value X",
-      execute: () => IModelApp.uiAdmin.accuDrawUi.setFieldValueToUi(AccuDrawField.X, 123.456),
-    });
-  }
-
-  private static get _setValueY() {
-    return new CommandItemDef({
-      commandId: "setValueY",
-      label: "Set Value Y",
-      execute: () => IModelApp.uiAdmin.accuDrawUi.setFieldValueToUi(AccuDrawField.Y, 234.567),
-    });
-  }
-
-  private static get _setValueZ() {
-    return new CommandItemDef({
-      commandId: "setValueZ",
-      label: "Set Value Z",
-      execute: () => IModelApp.uiAdmin.accuDrawUi.setFieldValueToUi(AccuDrawField.Z, 345.678),
-    });
-  }
-
-  private static get _setValueAngle() {
-    return new CommandItemDef({
-      commandId: "setValueAngle",
-      label: "Set Value Angle",
-      execute: () => IModelApp.uiAdmin.accuDrawUi.setFieldValueToUi(AccuDrawField.Angle, 12.34),
-    });
-  }
-
-  private static get _setValueDistance() {
-    return new CommandItemDef({
-      commandId: "setValueDistance",
-      label: "Set Value Distance",
-      execute: () => IModelApp.uiAdmin.accuDrawUi.setFieldValueToUi(AccuDrawField.Distance, 56.78),
     });
   }
 

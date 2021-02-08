@@ -20,7 +20,7 @@ export async function setupIpcTest(before = async () => { }) {
         }
       });
 
-      socket.handle("testinvoke", async (methodName: string, ...args: any[]) => {
+      socket.handle("testinvoke", async (_event: Event, methodName: string, ...args: any[]) => {
         return [methodName, ...args];
       });
     });

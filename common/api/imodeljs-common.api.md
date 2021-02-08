@@ -277,6 +277,14 @@ export namespace AreaPattern {
     }
 }
 
+// @beta
+export type AsyncFunction = (...args: any) => Promise<any>;
+
+// @beta
+export type AsyncMethodsOf<T> = {
+    [P in keyof T]: T[P] extends AsyncFunction ? P : never;
+}[keyof T];
+
 export { AuthStatus }
 
 // @public
@@ -777,6 +785,10 @@ export interface ChangedElements {
     elements: Id64String[];
     // (undocumented)
     modelIds?: Id64String[];
+    // (undocumented)
+    newChecksums?: number[][];
+    // (undocumented)
+    oldChecksums?: number[][];
     // (undocumented)
     opcodes: number[];
     // (undocumented)
@@ -1461,6 +1473,8 @@ export enum ContentFlags {
     // (undocumented)
     AllowInstancing = 1,
     // (undocumented)
+    ExternalTextures = 8,
+    // (undocumented)
     IgnoreAreaPatterns = 4,
     // (undocumented)
     ImprovedElision = 2,
@@ -1541,8 +1555,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 1441792,
-    Major = 22,
+    Combined = 1507328,
+    Major = 23,
     Minor = 0
 }
 
@@ -2380,14 +2394,6 @@ export namespace Events {
     export namespace NativeApp {
         const // (undocumented)
         namespace = "NativeApp";
-        const // (undocumented)
-        onMemoryWarning = "onMemoryWarning";
-        const // (undocumented)
-        onBriefcaseDownloadProgress = "download-progress";
-        const // (undocumented)
-        onInternetConnectivityChanged = "onInternetConnectivityChanged";
-        const // (undocumented)
-        onUserStateChanged = "onUserStateChanged";
         const modelGeometryChanges = "modelGeometryChanges";
     }
 }
@@ -3606,7 +3612,7 @@ export class ImageBuffer {
     protected constructor(data: Uint8Array, format: ImageBufferFormat, width: number);
     // @internal (undocumented)
     protected static computeHeight(data: Uint8Array, format: ImageBufferFormat, width: number): number;
-    static create(data: Uint8Array, format: ImageBufferFormat, width: number): ImageBuffer | undefined;
+    static create(data: Uint8Array, format: ImageBufferFormat, width: number): ImageBuffer;
     readonly data: Uint8Array;
     readonly format: ImageBufferFormat;
     static getNumBytesPerPixel(format: ImageBufferFormat): number;
@@ -3856,6 +3862,8 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     getMassProperties(_iModelToken: IModelRpcProps, _props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     // (undocumented)
     getModelProps(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<ModelProps[]>;
+    // @alpha (undocumented)
+    getTextureImage(_iModelToken: IModelRpcProps, _textureLoadProps: TextureLoadProps): Promise<Uint8Array | undefined>;
     // (undocumented)
     getToolTipMessage(_iModelToken: IModelRpcProps, _elementId: string): Promise<string[]>;
     // (undocumented)
@@ -3875,7 +3883,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     // (undocumented)
     queryModelRanges(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<Range3dProps[]>;
     // (undocumented)
-    queryRows(_iModelToken: IModelRpcProps, _ecsql: string, _bindings?: any[] | object, _limit?: QueryLimit, _quota?: QueryQuota, _priority?: QueryPriority, _restartToken?: string): Promise<QueryResponse>;
+    queryRows(_iModelToken: IModelRpcProps, _ecsql: string, _bindings?: any[] | object, _limit?: QueryLimit, _quota?: QueryQuota, _priority?: QueryPriority, _restartToken?: string, _abbreviateBlobs?: boolean): Promise<QueryResponse>;
     // (undocumented)
     readFontJson(_iModelToken: IModelRpcProps): Promise<any>;
     // @beta (undocumented)
@@ -4090,6 +4098,8 @@ export abstract class IpcWebSocket implements IpcSocket {
     // (undocumented)
     protected _channels: Map<string, Set<IpcListener>>;
     // (undocumented)
+    static receivers: Set<(evt: Event, message: IpcWebSocketMessage) => void>;
+    // (undocumented)
     removeListener(channel: string, listener: IpcListener): void;
     // (undocumented)
     abstract send(channel: string, ...data: any[]): void;
@@ -4101,7 +4111,7 @@ export abstract class IpcWebSocket implements IpcSocket {
 export class IpcWebSocketBackend extends IpcWebSocket implements IpcSocketBackend {
     constructor();
     // (undocumented)
-    handle(channel: string, handler: (methodName: string, ...args: any[]) => Promise<any>): RemoveFunction;
+    handle(channel: string, handler: (event: Event, methodName: string, ...args: any[]) => Promise<any>): RemoveFunction;
     // (undocumented)
     send(channel: string, ...data: any[]): void;
 }
@@ -4145,8 +4155,6 @@ export enum IpcWebSocketMessageType {
 
 // @internal (undocumented)
 export abstract class IpcWebSocketTransport {
-    // (undocumented)
-    abstract listen(handler: (evt: Event, message: IpcWebSocketMessage) => void): void;
     // (undocumented)
     abstract send(message: IpcWebSocketMessage): void;
 }
@@ -4769,6 +4777,22 @@ export interface NativeAppIpc {
     toggleInteractiveEditingSession: (_tokenProps: IModelRpcProps, _startSession: boolean) => Promise<boolean>;
 }
 
+// @internal
+export interface NativeAppResponse {
+    // (undocumented)
+    notifyInternetConnectivityChanged: (status: InternetConnectivityStatus) => void;
+    // (undocumented)
+    notifyMemoryWarning: () => void;
+    // (undocumented)
+    notifyUserStateChanged: (arg: {
+        accessToken: any;
+        err?: string;
+    }) => void;
+}
+
+// @internal (undocumented)
+export const nativeAppResponse = "nativeApp-notify";
+
 // @public
 export interface NavigationBindingValue {
     id: Id64String;
@@ -5356,6 +5380,9 @@ export enum ProfileOptions {
 }
 
 // @beta
+export type PromiseReturnType<T extends AsyncFunction> = T extends (...args: any) => Promise<infer R> ? R : any;
+
+// @beta
 export type PropertyCallback = (name: string, meta: PropertyMetaData) => void;
 
 // @beta
@@ -5884,6 +5911,12 @@ export interface RequestNewBriefcaseProps {
     contextId: GuidString;
     fileName?: string;
     iModelId: GuidString;
+}
+
+// @beta
+export abstract class ResponseHandler {
+    static register(): RemoveFunction;
+    abstract get responseChannel(): string;
 }
 
 // @public (undocumented)
@@ -7157,6 +7190,11 @@ export enum TextureFlags {
     None = 0
 }
 
+// @alpha
+export interface TextureLoadProps {
+    name: Id64String;
+}
+
 // @beta
 export class TextureMapping {
     constructor(tx: RenderTexture, params: TextureMapping.Params);
@@ -7481,6 +7519,8 @@ export interface TileOptions {
     readonly alwaysSubdivideIncompleteTiles: boolean;
     // (undocumented)
     readonly disableMagnification: boolean;
+    // (undocumented)
+    readonly enableExternalTextures: boolean;
     // (undocumented)
     readonly enableImprovedElision: boolean;
     // (undocumented)

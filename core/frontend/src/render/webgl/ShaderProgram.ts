@@ -14,7 +14,7 @@ import { WebGLDisposable } from "./Disposable";
 import { DrawParams, ShaderProgramParams } from "./DrawCommand";
 import { GL } from "./GL";
 import { Batch, Branch } from "./Graphic";
-import { UniformHandle } from "./Handle";
+import { UniformHandle } from "./UniformHandle";
 import { RenderPass } from "./RenderFlags";
 import { System } from "./System";
 import { Target } from "./Target";

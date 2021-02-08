@@ -29,7 +29,7 @@ export type CompressedId64Set = string;
  * @see [[OrderedId64Iterable]] for a generic representation of an ordered set of Ids (compressed or otherwise).
  * @beta
  */
-export namespace CompressedId64Set {
+export namespace CompressedId64Set { // eslint-disable-line @typescript-eslint/no-redeclare
   function isHexDigit(ch: number): boolean {
     // ascii values:
     // '0' = 48
@@ -173,7 +173,7 @@ export namespace CompressedId64Set {
     public add(rhs: Uint64): void {
       let lower = rhs.lower;
       let upper = rhs.upper;
-      if (lower >= Uint64._base) {
+      if (lower + this.lower >= Uint64._base) {
         lower -= Uint64._base;
         upper += 1;
       }

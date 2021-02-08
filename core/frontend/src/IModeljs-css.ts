@@ -20,6 +20,14 @@ let iModelJsCss: string | undefined = `
   --foreground-success:#56a91c;
   --foreground-alert:#d30a0a;
   --foreground-warning:#f18b12;
+  --safe-area-top: constant(safe-area-inset-top);
+  --safe-area-top: env(safe-area-inset-top);
+  --safe-area-left: constant(safe-area-inset-left);
+  --safe-area-left: env(safe-area-inset-left);
+  --safe-area-bottom: constant(safe-area-inset-bottom);
+  --safe-area-bottom: env(safe-area-inset-bottom);
+  --safe-area-right: constant(safe-area-inset-right);
+  --safe-area-right: env(safe-area-inset-right);
 }
 
 .logo-card-logo {
@@ -79,6 +87,29 @@ let iModelJsCss: string | undefined = `
   font-style:normal;
   letter-spacing:normal;
   text-align:left;
+  --width-border: max(var(--safe-area-left), var(--safe-area-right), 16px);
+  --height-border: max(var(--safe-area-top), var(--safe-area-bottom), 16px);
+  max-height: calc(100% - (2 * var(--height-border)));
+  overflow: auto;
+}
+
+@media (max-width:450px) {
+  .imodeljs-about .logo-card-logo {
+    width: 90px;
+  }
+}
+
+@media (max-height:450px) {
+  .imodeljs-about {
+    max-width: calc(100% - (2 * var(--width-border))) !important;
+    width: unset !important;
+  }
+  .imodeljs-about .logo-card-message p {
+    margin-block-end: 1em;
+  }
+  .imodeljs-about .logo-cards {
+    margin-bottom: 2em;
+  }
 }
 
 .imodeljs-modal-close {
@@ -103,8 +134,10 @@ let iModelJsCss: string | undefined = `
   filter:drop-shadow(1px 1px 1px black)
 }
 
-.imodeljs-icon:hover {
-  opacity:1.0
+@media (hover: hover) {
+  .imodeljs-icon:hover {
+    opacity:1.0;
+  }
 }
 `;
 

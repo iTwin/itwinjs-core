@@ -94,12 +94,6 @@ export abstract class TileTree {
   /** @internal */
   public get parentsAndChildrenExclusive(): boolean { return true; }
 
-  /** This function will forcibly prune any unused tiles associated with the tree, ignoring any expiration times.
-   * An unused tile is a tile that is not currently in use by any viewport.
-   * @alpha
-   **/
-  public abstract forcePrune(): void;
-
   /** Constructor */
   protected constructor(params: TileTreeParams) {
     this._lastSelected = BeTimePoint.now();
@@ -155,37 +149,4 @@ export abstract class TileTree {
   public accumulateTransformedRange(range: Range3d, matrix: Matrix4d, location: Transform, frustumPlanes?: FrustumPlanes): void {
     this.rootTile.extendRangeForContent(range, matrix, location, frustumPlanes);
   }
-}
-
-/** Interface adopted by an object that contains references to [[TileTree]]s, to expose those trees.
- * @beta
- */
-export interface TileTreeDiscloser {
-  /** Add all [[TileTree]]s referenced by this object to the set. */
-  discloseTileTrees: (trees: TileTreeSet) => void;
-}
-
-/** A set of TileTrees, populated by a call to a `discloseTileTrees` function on an object like a [[Viewport]], [[ViewState]], or [[TileTreeReference]].
- * @beta
- */
-export class TileTreeSet {
-  private readonly _processed = new Set<TileTreeDiscloser>();
-  /** The set of tile trees. */
-  public readonly trees = new Set<TileTree>();
-
-  /** Add a tile tree to the set. */
-  public add(tree: TileTree): void {
-    this.trees.add(tree);
-  }
-
-  /** Add all tile trees referenced by `discloser` to the set. */
-  public disclose(discloser: TileTreeDiscloser): void {
-    if (!this._processed.has(discloser)) {
-      this._processed.add(discloser);
-      discloser.discloseTileTrees(this);
-    }
-  }
-
-  /** The number of tile trees in the set. */
-  public get size(): number { return this.trees.size; }
 }

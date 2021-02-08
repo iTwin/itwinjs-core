@@ -45,4 +45,4 @@ ThemedSelect is a wrapper for [react-select](https://www.npmjs.com/package/react
 
 ## API Reference
 
-* [Select]($ui-core:Select)
+- [Select]($ui-core:Select)

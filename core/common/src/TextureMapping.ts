@@ -82,8 +82,9 @@ export namespace TextureMapping { // eslint-disable-line no-redeclare
   export interface ParamProps {
     /** The matrix used to map the image to a surface. */
     textureMat2x3?: TextureMapping.Trans2x3;
-    /** The ratio in [0, 1] with which to mix the color sampled from the texture with the element's color.
-     * A value of 0.0 uses only the element color. A value of 1.0 uses only the texture color.
+    /** The ratio in [0, 1] with which to mix the color sampled from the texture with the surface's color.
+     * A value of 0.0 uses only the surface color. A value of 1.0 uses only the texture color. A value of 0.5 uses an even mix of both.
+     * @note This affects only the red, green, and blue components of the color. The alpha sampled from the texture is always multiplied by the surface color's alpha.
      * @note Defaults to 1.0
      */
     textureWeight?: number;

@@ -43,4 +43,4 @@ export function FooterIndicator(props: FooterIndicatorProps) {
       {children}
     </div>
   );
-};
+}

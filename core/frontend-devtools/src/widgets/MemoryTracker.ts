@@ -8,7 +8,9 @@
  */
 
 import { assert, BeTimePoint } from "@bentley/bentleyjs-core";
-import { IModelApp, RenderMemory, TileTreeOwner, TileTreeSet, Viewport } from "@bentley/imodeljs-frontend";
+import {
+  DisclosedTileTreeSet, IModelApp, RenderMemory, TileTree, TileTreeOwner, Viewport,
+} from "@bentley/imodeljs-frontend";
 import { ComboBoxEntry, createComboBox } from "../ui/ComboBox";
 
 function collectTileTreeMemory(stats: RenderMemory.Statistics, owner: TileTreeOwner): void {
@@ -24,9 +26,10 @@ type PurgeMem = (olderThan?: BeTimePoint) => void;
 const enum MemIndex { // eslint-disable-line no-restricted-syntax
   None = -1,
   ViewportTileTrees,
+  SelectedTiles,
   AllTileTrees,
   RenderTarget,
-  // eslint-disable-next-line no-shadow
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   Viewport, // RenderTarget + Viewed Tile Trees
   System,
   All, // All Tile Trees + System + (RenderTarget for each ViewManager viewport)
@@ -38,6 +41,7 @@ const enum MemIndex { // eslint-disable-line no-restricted-syntax
 const memLabels = [
   "None",
   "Viewed Tile Trees",
+  "Selected Tiles",
   "All Tile Trees",
   "Render Target",
   "Viewport",
@@ -47,8 +51,21 @@ const memLabels = [
 
 function collectStatisticsForViewedTileTrees(vp: Viewport, stats: RenderMemory.Statistics): number {
   vp.collectStatistics(stats);
-  const trees = new TileTreeSet();
+  const trees = new DisclosedTileTreeSet();
   vp.discloseTileTrees(trees);
+  return trees.size;
+}
+
+function collectStatisticsForSelectedTiles(vp: Viewport, stats: RenderMemory.Statistics): number {
+  const trees = new Set<TileTree>();
+  const selectedTiles = IModelApp.tileAdmin.getTilesForViewport(vp)?.selected;
+  if (selectedTiles) {
+    for (const tile of selectedTiles) {
+      trees.add(tile.tree);
+      tile.collectStatistics(stats);
+    }
+  }
+
   return trees.size;
 }
 
@@ -64,6 +81,7 @@ function collectStatisticsForAllTileTrees(vp: Viewport, stats: RenderMemory.Stat
 
 const calcMem: CalcMem[] = [
   (stats, vp) => collectStatisticsForViewedTileTrees(vp, stats),
+  (stats, vp) => collectStatisticsForSelectedTiles(vp, stats),
   (stats, vp) => collectStatisticsForAllTileTrees(vp, stats),
   (stats, vp) => {
     vp.target.collectStatistics(stats);
@@ -90,7 +108,8 @@ const purgeMem: Array<PurgeMem | undefined> = [
   (olderThan?) => IModelApp.viewManager.purgeTileTrees(olderThan ? olderThan : BeTimePoint.now()),
 ];
 
-function formatMemory(numBytes: number): string {
+/** @internal */
+export function formatMemory(numBytes: number): string {
   let suffix = "b";
   if (numBytes >= 1024) {
     numBytes /= 1024;
@@ -120,7 +139,7 @@ class MemoryPanel {
     this._header.style.fontWeight = "bold";
     this._div.appendChild(this._header);
 
-    const numElems = labels.length; // because stupid tslint is stupid.
+    const numElems = labels.length;
     for (let i = 0; i < numElems; i++) {
       const elem = document.createElement("label");
       this._elems.push(elem);
@@ -128,8 +147,6 @@ class MemoryPanel {
     }
 
     parent.appendChild(this._div);
-
-    assert(undefined !== this._elems);
   }
 
   public update(stats: RenderMemory.Consumers[], total: number): void {

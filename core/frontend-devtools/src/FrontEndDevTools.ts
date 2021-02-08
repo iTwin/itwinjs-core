@@ -37,11 +37,14 @@ import { ToggleTileRequestDecorationTool } from "./tools/TileRequestDecoration";
 import { ToggleTileTreeBoundsDecorationTool } from "./tools/TileTreeBoundsDecoration";
 import { ToggleToolTipsTool } from "./tools/ToolTipProvider";
 import { ChangeCameraTool } from "./tools/ViewportTools";
+import { SetGpuMemoryLimitTool } from "./tools/SetGpuMemoryLimitTool";
 import { ClearEffectsTool } from "./effects/EffectTools";
 import { FlipImageConfig, FlipImageEffect } from "./effects/FlipImage";
 import { LensDistortionConfig, LensDistortionEffect } from "./effects/LensDistortion";
 import { EdgeDetectionEffect, EmbossEffect, GaussianBlurEffect, SharpenEffect, SharpnessEffect, UnsharpenEffect } from "./effects/Convolution";
+import { SaturationConfig, SaturationEffect } from "./effects/Saturation";
 import { SnowEffect } from "./effects/Snow";
+import { ExplosionEffect } from "./effects/Explosion";
 
 /** Entry-point for the package. Before using the package you *must* call [[FrontendDevTools.initialize]].
  * @beta
@@ -92,6 +95,7 @@ export class FrontendDevTools {
       EmbossEffect,
       ElementIdFromSourceAspectIdTool,
       EmphasizeSelectedElementsTool,
+      ExplosionEffect,
       ExtensionServiceTool,
       FadeOutTool,
       FlipImageConfig,
@@ -114,6 +118,8 @@ export class FrontendDevTools {
       RealityTransitionTool,
       ReorderMapLayers,
       ReportWebGLCompatibilityTool,
+      SaturationConfig,
+      SaturationEffect,
       SaveRenderingStyleTool,
       SaveViewTool,
       SelectElementsByIdTool,
@@ -158,6 +164,7 @@ export class FrontendDevTools {
       AttachRealityModelTool,
       DetachRealityModelTool,
       SaveRealityModelTool,
+      SetGpuMemoryLimitTool,
       SetRealityModelLocateTool,
       SetRealityModelEmphasizedTool,
       SetRealityModelTransparencyTool,
