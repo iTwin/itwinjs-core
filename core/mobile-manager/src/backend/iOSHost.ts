@@ -62,4 +62,3 @@ export class IOSHost extends MobileHost {
     return MobileHost.startup({ ...opt, mobileHost: { device }, ipcHost: { socket } });
   }
 }
-}
