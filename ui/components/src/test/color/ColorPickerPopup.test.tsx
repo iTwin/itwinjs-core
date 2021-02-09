@@ -5,9 +5,9 @@
 
 import { expect } from "chai";
 import React from "react";
-import sinon from "sinon";
+import sinon, { spy } from "sinon";
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
-import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
+import { cleanup, createEvent, fireEvent, render, waitForElement } from "@testing-library/react";
 import { ColorPickerPopup } from "../../ui-components/color/ColorPickerPopup";
 import TestUtils from "../TestUtils";
 import { RelativePosition } from "@bentley/ui-abstract";
@@ -129,4 +129,27 @@ describe("<ColorPickerPopup/>", () => {
     expect(spyOnColorPopupClosed).to.be.calledOnce;
   });
 
+  it("captureClicks property should stop mouse click propagation", () =>{
+    const spyOnClick = sinon.spy();
+
+    /* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */
+    const renderedComponent = render(<div onClick={spyOnClick}>
+      <ColorPickerPopup initialColor={colorDef} popupPosition={RelativePosition.BottomRight} colorDefs={[ColorDef.green, ColorDef.black, ColorDef.red]} captureClicks={true} />
+    </div>);
+    const pickerButton = renderedComponent.getByTestId("components-colorpicker-popup-button");
+    fireEvent.click(pickerButton);
+    expect(spyOnClick).not.to.be.called;
+  });
+
+  it("mouse click should propagate if captureClicks not set to true", () =>{
+    const spyOnClick = sinon.spy();
+
+    /* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */
+    const renderedComponent = render(<div onClick={spyOnClick}>
+      <ColorPickerPopup initialColor={colorDef} popupPosition={RelativePosition.BottomRight} colorDefs={[ColorDef.green, ColorDef.black, ColorDef.red]} />
+    </div>);
+    const pickerButton = renderedComponent.getByTestId("components-colorpicker-popup-button");
+    fireEvent.click(pickerButton);
+    expect(spyOnClick).to.be.called;
+  });
 });
