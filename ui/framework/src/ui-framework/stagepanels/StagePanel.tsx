@@ -147,7 +147,7 @@ export class StagePanel extends React.Component<StagePanelProps, StagePanelCompo
     const panelState = this.props.runtimeProps?.panelDef.panelState;
     this.state = {
       panelState: panelState === undefined ? StagePanelState.Open : panelState,
-      stagePanelWidgets: this._getVisibileStagePanelWidgets(),
+      stagePanelWidgets: this._getVisibleStagePanelWidgets(),
     };
   }
 
@@ -163,7 +163,7 @@ export class StagePanel extends React.Component<StagePanelProps, StagePanelCompo
   public componentDidUpdate(prevProps: StagePanelProps) {
     if (prevProps.runtimeProps?.panelDef !== this.props.runtimeProps?.panelDef) {
       this.setState({
-        stagePanelWidgets: this._getVisibileStagePanelWidgets(),
+        stagePanelWidgets: this._getVisibleStagePanelWidgets(),
       });
     }
   }
@@ -230,11 +230,11 @@ export class StagePanel extends React.Component<StagePanelProps, StagePanelCompo
     if (!runtimeProps.panelDef.findWidgetDef(widgetDef.id))
       return;
     this.setState({
-      stagePanelWidgets: this._getVisibileStagePanelWidgets(),
+      stagePanelWidgets: this._getVisibleStagePanelWidgets(),
     });
   };
 
-  private _getVisibileStagePanelWidgets() {
+  private _getVisibleStagePanelWidgets() {
     const panelDef = this.props.runtimeProps?.panelDef;
     if (!panelDef)
       return [];
