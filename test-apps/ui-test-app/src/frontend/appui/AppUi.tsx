@@ -24,14 +24,24 @@ import * as React from "react";
 import { BadgeType, FunctionKey, StagePanelLocation, StageUsage } from "@bentley/ui-abstract";
 import { FillCentered } from "@bentley/ui-core";
 import {
-  AccuDrawCommandItems, CommandItemDef, ConfigurableUiManager, ContentGroupProps, ContentLayoutProps, FrameworkAccuDraw,
-  FrontstageManager, KeyboardShortcutManager, KeyboardShortcutProps, StagePanelSection, TaskPropsList, UiFramework, WidgetDef, WidgetProvider, WidgetState,
+  AccuDrawKeyboardShortcuts,
+  CommandItemDef,
+  ConfigurableUiManager,
+  ContentGroupProps,
+  ContentLayoutProps,
+  FrontstageManager,
+  KeyboardShortcutManager,
+  KeyboardShortcutProps,
+  StagePanelSection,
+  TaskPropsList,
+  UiFramework,
+  WidgetDef,
+  WidgetProvider,
+  WidgetState,
   WorkflowProps,
   WorkflowPropsList,
   ZoneLocation,
 } from "@bentley/ui-framework";
-// import { AccuDrawPopupTools } from "../tools/AccuDrawPopupTools";
-// import { AppTools } from "../tools/ToolSpecifications";
 import { IModelViewportControl } from "./contentviews/IModelViewport";
 import { Frontstage1 } from "./frontstages/Frontstage1";
 import { Frontstage2 } from "./frontstages/Frontstage2";
@@ -42,6 +52,8 @@ import { IModelIndexFrontstage } from "./frontstages/IModelIndexFrontstage";
 import { IModelOpenFrontstage } from "./frontstages/IModelOpenFrontstage";
 import { ScheduleAnimationFrontstage } from "./frontstages/ScheduleAnimationFrontstage";
 import { SignInFrontstage } from "./frontstages/SignInFrontstage";
+import { AccuDrawPopupTools } from "../tools/AccuDrawPopupTools";
+import { AppTools } from "../tools/ToolSpecifications";
 
 // cSpell:ignore uitestapp
 
@@ -343,156 +355,39 @@ export class AppUi {
   private static defineKeyboardShortcuts() {
     const keyboardShortcutList: KeyboardShortcutProps[] = [
       {
-        key: "a",
+        key: "f",
+        item: AppTools.setLengthFormatImperialCommand,
+      },
+      {
+        key: "m",
         labelKey: "SampleApp:buttons.accuDrawSubMenu",
         shortcuts: [
           {
-            key: "s",
-            item: AccuDrawCommandItems.lockSmart,
+            key: "b",
+            item: AccuDrawPopupTools.addMenuButton,
           },
           {
-            key: "r",
-            item: AccuDrawCommandItems.setOrigin,
-          },
-          {
-            key: "t",
-            item: AccuDrawCommandItems.changeCompassMode,
-          },
-          {
-            key: "x",
-            item: AccuDrawCommandItems.lockX,
-            isHidden: FrameworkAccuDraw.isPolarModeConditional,
-          },
-          {
-            key: "y",
-            item: AccuDrawCommandItems.lockY,
-            isHidden: FrameworkAccuDraw.isPolarModeConditional,
-          },
-          {
-            key: "z",
-            item: AccuDrawCommandItems.lockZ,
-            isHidden: FrameworkAccuDraw.isPolarModeConditional,
-          },
-          {
-            key: "a",
-            item: AccuDrawCommandItems.lockAngle,
-            isHidden: FrameworkAccuDraw.isRectangularModeConditional,
-          },
-          {
-            key: "d",
-            item: AccuDrawCommandItems.lockDistance,
-            isHidden: FrameworkAccuDraw.isRectangularModeConditional,
-          },
-        ],
-      },
-      {
-        key: "r",
-        labelKey: "SampleApp:buttons.accuDrawRotate",
-        shortcuts: [
-          {
-            key: "t",
-            item: AccuDrawCommandItems.rotateTop,
-            isDisabled: FrameworkAccuDraw.isTopRotationConditional,
-          },
-          {
-            key: "s",
-            item: AccuDrawCommandItems.rotateSide,
-            isDisabled: FrameworkAccuDraw.isSideRotationConditional,
-          },
-          {
-            key: "f",
-            item: AccuDrawCommandItems.rotateFront,
-            isDisabled: FrameworkAccuDraw.isFrontRotationConditional,
-          },
-          {
-            key: "v",
-            item: AccuDrawCommandItems.rotateView,
-            isDisabled: FrameworkAccuDraw.isViewRotationConditional,
+            key: "h",
+            item: AccuDrawPopupTools.hideMenuButton,
           },
           {
             key: "c",
-            item: AccuDrawCommandItems.rotateCycle,
+            item: AccuDrawPopupTools.showCalculator,
           },
           {
-            key: "a",
-            item: AccuDrawCommandItems.rotateAxes,
+            key: "m",
+            item: AccuDrawPopupTools.showContextMenu,
           },
           {
-            key: "e",
-            item: AccuDrawCommandItems.rotateToElement,
+            key: "t",
+            item: AccuDrawPopupTools.showToolbar,
+          },
+          {
+            key: "l",
+            item: AccuDrawPopupTools.showHTMLElement,
           },
         ],
       },
-      // {
-      //   key: "r",
-      //   item: AppUi._toggleZonesCommand,
-      // },
-      // {
-      //   key: "p",
-      //   labelKey: "SampleApp:buttons.shortcutsSubMenu",
-      //   shortcuts: [
-      //     {
-      //       key: "n",
-      //       item: AppTools.verticalPropertyGridOpenCommand,
-      //     },
-      //     {
-      //       key: "f",
-      //       item: AppTools.verticalPropertyGridOffCommand,
-      //     },
-      //   ],
-      // },
-      // {
-      //   key: "d",
-      //   labelKey: "SampleApp:buttons.shortcutsSubMenu",
-      //   shortcuts: [
-      //     {
-      //       key: "1",
-      //       item: AppTools.tool1,
-      //     },
-      //     {
-      //       key: "2",
-      //       item: AppTools.tool2,
-      //     },
-      //     {
-      //       key: "s",
-      //       item: CoreTools.selectElementCommand,
-      //     },
-      //   ],
-      // },
-      // {
-      //   key: "f",
-      //   item: AppTools.setLengthFormatImperialCommand,
-      // },
-      // {
-      //   key: "m",
-      //   labelKey: "SampleApp:buttons.accudrawSubMenu",
-      //   shortcuts: [
-      //     {
-      //       key: "a",
-      //       item: AccuDrawPopupTools.addMenuButton,
-      //     },
-      //     {
-      //       key: "h",
-      //       item: AccuDrawPopupTools.hideMenuButton,
-      //     },
-      //     {
-      //       key: "c",
-      //       item: AccuDrawPopupTools.showCalculator,
-      //     },
-      //     {
-      //       key: "m",
-      //       item: AccuDrawPopupTools.showContextMenu,
-      //     },
-      //     {
-      //       key: "t",
-      //       item: AccuDrawPopupTools.showToolbar,
-      //     },
-      //     {
-      //       key: "l",
-      //       item: AccuDrawPopupTools.showHTMLElement,
-      //     },
-      //   ],
-      // },
       {
         key: FunctionKey.F7,
         item: AppUi._showShortcutsMenuCommand,
@@ -500,6 +395,8 @@ export class AppUi {
     ];
 
     ConfigurableUiManager.loadKeyboardShortcuts(keyboardShortcutList);
+
+    ConfigurableUiManager.loadKeyboardShortcuts(AccuDrawKeyboardShortcuts.getDefaultShortcuts());
   }
 
   private static get _showShortcutsMenuCommand() {
