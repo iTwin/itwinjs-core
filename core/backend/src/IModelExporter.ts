@@ -242,7 +242,7 @@ export class IModelExporter {
     this.exportModelContainer(this.sourceDb.models.getModel(IModel.repositoryModelId));
     this.exportElement(IModel.rootSubjectId);
     await this.exportRepositoryLinks();
-    this.exportSubModels(IModel.repositoryModelId);
+    await this.exportSubModels(IModel.repositoryModelId);
     await this.exportRelationships(ElementRefersToElements.classFullName);
   }
 
@@ -270,7 +270,7 @@ export class IModelExporter {
     await this.exportCodeSpecs();
     await this.exportFonts();
     this.exportElement(IModel.rootSubjectId);
-    this.exportSubModels(IModel.repositoryModelId);
+    await this.exportSubModels(IModel.repositoryModelId);
     await this.exportRelationships(ElementRefersToElements.classFullName);
     // handle deletes
     if (this.visitElements) {
@@ -413,7 +413,7 @@ export class IModelExporter {
   /** Export the model container, contents, and sub-models from the source iModel.
    * @note This method is called from [[exportChanges]] and [[exportAll]], so it only needs to be called directly when exporting a subset of an iModel.
    */
-  public exportModel(modeledElementId: Id64String): void {
+  public async exportModel(modeledElementId: Id64String): Promise<void> {
     const model: Model = this.sourceDb.models.getModel(modeledElementId);
     if (model.isTemplate && !this.wantTemplateModels) {
       return;
@@ -424,7 +424,7 @@ export class IModelExporter {
       this.exportModelContainer(model);
       if (this.visitElements) {
         this.exportModelContents(modeledElementId);
-        this.exportSubModels(modeledElementId);
+        await this.exportSubModels(modeledElementId);
       }
     }
   }
@@ -471,7 +471,7 @@ export class IModelExporter {
   /** Export the sub-models directly below the specified model.
    * @note This method is called from [[exportChanges]] and [[exportAll]], so it only needs to be called directly when exporting a subset of an iModel.
    */
-  public exportSubModels(parentModelId: Id64String): void {
+  public async exportSubModels(parentModelId: Id64String): Promise<void> {
     const definitionModelIds: Id64String[] = [];
     const otherModelIds: Id64String[] = [];
     const sql = `SELECT ECInstanceId FROM ${Model.classFullName} WHERE ParentModel.Id=:parentModelId ORDER BY ECInstanceId`;
@@ -488,8 +488,12 @@ export class IModelExporter {
       }
     });
     // export DefinitionModels before other types of Models
-    definitionModelIds.forEach((modelId: Id64String) => this.exportModel(modelId));
-    otherModelIds.forEach((modelId: Id64String) => this.exportModel(modelId));
+    for (const definitionModelId of definitionModelIds) {
+      await this.exportModel(definitionModelId);
+    }
+    for (const otherModelId of otherModelIds) {
+      await this.exportModel(otherModelId);
+    }
   }
 
   /** Returns true if the specified element should be exported. */

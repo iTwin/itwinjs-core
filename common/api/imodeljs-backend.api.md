@@ -2656,13 +2656,13 @@ export class IModelExporter {
     exportFontByName(fontName: string): Promise<void>;
     exportFontByNumber(fontNumber: number): Promise<void>;
     exportFonts(): Promise<void>;
-    exportModel(modeledElementId: Id64String): void;
+    exportModel(modeledElementId: Id64String): Promise<void>;
     exportModelContents(modelId: Id64String, elementClassFullName?: string): void;
     exportRelationship(relClassFullName: string, relInstanceId: Id64String): Promise<void>;
     exportRelationships(baseRelClassFullName: string): Promise<void>;
     exportRepositoryLinks(): Promise<void>;
     exportSchemas(): Promise<void>;
-    exportSubModels(parentModelId: Id64String): void;
+    exportSubModels(parentModelId: Id64String): Promise<void>;
     protected get handler(): IModelExportHandler;
     progressInterval: number;
     registerHandler(handler: IModelExportHandler): void;

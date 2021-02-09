@@ -717,7 +717,7 @@ export class IModelTransformer extends IModelExportHandler {
     // The RepositoryModel and root Subject of the target iModel should not be transformed.
     this.exporter.exportChildElements(IModel.rootSubjectId); // start below the root Subject
     await this.exporter.exportRepositoryLinks();
-    this.exporter.exportSubModels(IModel.repositoryModelId); // start below the RepositoryModel
+    await this.exporter.exportSubModels(IModel.repositoryModelId); // start below the RepositoryModel
     await this.exporter.exportRelationships(ElementRefersToElements.classFullName);
     this.processDeferredElements();
     if (!this._isReverseSynchronization) {
