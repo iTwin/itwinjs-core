@@ -10,6 +10,7 @@
 }
 
 .uifw-accudraw-field-container-horizontal {
+  max-width: 550px;
   flex-direction: row;
 
   .uifw-accudraw-input-container:not(:last-child) {
@@ -18,5 +19,6 @@
 }
 
 .uifw-accudraw-field-container-vertical {
+  max-width: 250px;
   flex-direction: column;
 }
