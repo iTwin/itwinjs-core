@@ -180,7 +180,6 @@ import { OrbitGtBlobProps } from '@bentley/imodeljs-common';
 import { OrbitGtDataManager } from '@bentley/orbitgt-core';
 import { OrderedComparator } from '@bentley/bentleyjs-core';
 import { PackedFeatureTable } from '@bentley/imodeljs-common';
-import { ParseResult } from '@bentley/imodeljs-quantity';
 import { ParseResults } from '@bentley/ui-abstract';
 import { ParserSpec } from '@bentley/imodeljs-quantity';
 import { Path } from '@bentley/geometry-core';
@@ -206,6 +205,7 @@ import { QPoint2d } from '@bentley/imodeljs-common';
 import { QPoint2dList } from '@bentley/imodeljs-common';
 import { QPoint3d } from '@bentley/imodeljs-common';
 import { QPoint3dList } from '@bentley/imodeljs-common';
+import { QuantityParseResult } from '@bentley/imodeljs-quantity';
 import { QueryLimit } from '@bentley/imodeljs-common';
 import { QueryPriority } from '@bentley/imodeljs-common';
 import { QueryQuota } from '@bentley/imodeljs-common';
@@ -6722,7 +6722,7 @@ export class QuantityFormatter implements UnitsProvider {
     readonly onQuantityFormatsChanged: BeUiEvent<QuantityFormatsChangedArgs>;
     // (undocumented)
     protected _overrideFormatPropsByQuantityType: Map<string, OverrideFormatEntry>;
-    parseToQuantityValue(inString: string, parserSpec: ParserSpec | undefined): ParseResult;
+    parseToQuantityValue(inString: string, parserSpec: ParserSpec | undefined): QuantityParseResult;
     registerFormatterParserSpecsProviders(provider: FormatterParserSpecsProvider): Promise<boolean>;
     setActiveUnitSystem(isImperialOrUnitSystem: UnitSystemKey | boolean, restartActiveTool?: boolean): Promise<void>;
     // (undocumented)
