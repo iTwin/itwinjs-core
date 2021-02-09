@@ -66,6 +66,15 @@ if (!isOutside) {
     colorTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, classPos.y / imageCount));
     maskTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, (2.0 + classPos.y) / imageCount));
   }
+  if (colorTexel.b >= 0.5) {
+    if (u_shaderFlags[kShaderBit_IgnoreNonLocatable]) {
+      discard;
+      return vec4(0.0);
+    }
+    colorTexel.b = (colorTexel.b * 255.0 - 128.0) / 127.0;
+  } else {
+    colorTexel.b *= 255.0 / 127.0;
+  }
 }
 if (doMask) {
   if (!isOutside && (maskTexel.r + maskTexel.g + maskTexel.b + maskTexel.a > 0.0)) {
@@ -82,21 +91,11 @@ if (doMask) {
     return baseColor;
   }
 
-if (colorTexel.b >= 0.5) {
-  if (u_shaderFlags[kShaderBit_IgnoreNonLocatable]) {
+  bool isClassified = !isOutside && (colorTexel.r + colorTexel.g + colorTexel.b + colorTexel.a > 0.0);
+  float param = isClassified ? u_pClassColorParams.x : u_pClassColorParams.y;
+  if (kClassifierDisplay_Off == param) {
     discard;
-    return vec4(0.0);
-  }
-  colorTexel.b = (colorTexel.b * 255.0 - 128.0) / 127.0;
-} else {
-  colorTexel.b *= 255.0 / 127.0;
-}
-
-bool isClassified = !isOutside && (colorTexel.r + colorTexel.g + colorTexel.b + colorTexel.a > 0.0);
-float param = isClassified ? u_pClassColorParams.x : u_pClassColorParams.y;
-if (kClassifierDisplay_Off == param) {
-  discard;
-  return vec4(0);
+    return vec4(0);
 }
 `
   ;
