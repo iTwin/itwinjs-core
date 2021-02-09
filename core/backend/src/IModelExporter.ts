@@ -236,14 +236,14 @@ export class IModelExporter {
   /** Export all entity instance types from the source iModel.
    * @note [[exportSchemas]] must be called separately.
    */
-  public exportAll(): void {
-    this.exportCodeSpecs();
-    this.exportFonts();
+  public async exportAll(): Promise<void> {
+    await this.exportCodeSpecs();
+    await this.exportFonts();
     this.exportModelContainer(this.sourceDb.models.getModel(IModel.repositoryModelId));
     this.exportElement(IModel.rootSubjectId);
-    this.exportRepositoryLinks();
+    await this.exportRepositoryLinks();
     this.exportSubModels(IModel.repositoryModelId);
-    this.exportRelationships(ElementRefersToElements.classFullName);
+    await this.exportRelationships(ElementRefersToElements.classFullName);
   }
 
   /** Export changes from the source iModel.
@@ -258,7 +258,8 @@ export class IModelExporter {
       throw new IModelError(IModelStatus.BadRequest, "Must be a briefcase to export changes", Logger.logError, loggerCategory);
     }
     if ((undefined === this.sourceDb.changeSetId) || ("" === this.sourceDb.changeSetId)) {
-      this.exportAll(); // no changesets, so revert to exportAll
+      await this.exportAll(); // no changesets, so revert to exportAll
+      requestContext.enter();
       return;
     }
     if (undefined === startChangeSetId) {
@@ -266,11 +267,11 @@ export class IModelExporter {
     }
     this._sourceDbChanges = await ChangedInstanceIds.initialize(requestContext, this.sourceDb, startChangeSetId);
     requestContext.enter();
-    this.exportCodeSpecs();
-    this.exportFonts();
+    await this.exportCodeSpecs();
+    await this.exportFonts();
     this.exportElement(IModel.rootSubjectId);
     this.exportSubModels(IModel.repositoryModelId);
-    this.exportRelationships(ElementRefersToElements.classFullName);
+    await this.exportRelationships(ElementRefersToElements.classFullName);
     // handle deletes
     if (this.visitElements) {
       for (const elementId of this._sourceDbChanges.element.deleteIds) {
@@ -291,7 +292,7 @@ export class IModelExporter {
   /** Export schemas from the source iModel.
    * @note This must be called separately from [[exportAll]] or [[exportChanges]].
    */
-  public exportSchemas(): void {
+  public async exportSchemas(): Promise<void> {
     const schemaLoader = new IModelSchemaLoader(this.sourceDb);
     const sql = "SELECT Name FROM ECDbMeta.ECSchemaDef ORDER BY ECInstanceId"; // ensure schema dependency order
     let readyToExport: boolean = this.wantSystemSchemas ? true : false;
@@ -318,13 +319,13 @@ export class IModelExporter {
   /** Export all CodeSpecs from the source iModel.
    * @note This method is called from [[exportChanges]] and [[exportAll]], so it only needs to be called directly when exporting a subset of an iModel.
    */
-  public exportCodeSpecs(): void {
+  public async exportCodeSpecs(): Promise<void> {
     Logger.logTrace(loggerCategory, `exportCodeSpecs()`);
     const sql = `SELECT Name FROM BisCore:CodeSpec ORDER BY ECInstanceId`;
-    this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
+    await this.sourceDb.withPreparedStatement(sql, async (statement: ECSqlStatement): Promise<void> => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         const codeSpecName: string = statement.getValue(0).getString();
-        this.exportCodeSpecByName(codeSpecName);
+        await this.exportCodeSpecByName(codeSpecName);
       }
     });
   }
@@ -332,7 +333,7 @@ export class IModelExporter {
   /** Export a single CodeSpec from the source iModel.
    * @note This method is called from [[exportChanges]] and [[exportAll]], so it only needs to be called directly when exporting a subset of an iModel.
    */
-  public exportCodeSpecByName(codeSpecName: string): void {
+  public async exportCodeSpecByName(codeSpecName: string): Promise<void> {
     const codeSpec: CodeSpec = this.sourceDb.codeSpecs.getByName(codeSpecName);
     let isUpdate: boolean | undefined;
     if (undefined !== this._sourceDbChanges) { // is changeSet information available?
@@ -360,36 +361,36 @@ export class IModelExporter {
   /** Export a single CodeSpec from the source iModel.
    * @note This method is called from [[exportChanges]] and [[exportAll]], so it only needs to be called directly when exporting a subset of an iModel.
    */
-  public exportCodeSpecById(codeSpecId: Id64String): void {
+  public async exportCodeSpecById(codeSpecId: Id64String): Promise<void> {
     const codeSpec: CodeSpec = this.sourceDb.codeSpecs.getById(codeSpecId);
-    this.exportCodeSpecByName(codeSpec.name);
+    return this.exportCodeSpecByName(codeSpec.name);
   }
 
   /** Export all fonts from the source iModel.
    * @note This method is called from [[exportChanges]] and [[exportAll]], so it only needs to be called directly when exporting a subset of an iModel.
    */
-  public exportFonts(): void {
+  public async exportFonts(): Promise<void> {
     Logger.logTrace(loggerCategory, `exportFonts()`);
     for (const font of this.sourceDb.fontMap.fonts.values()) {
-      this.exportFontByNumber(font.id);
+      await this.exportFontByNumber(font.id);
     }
   }
 
   /** Export a single font from the source iModel.
    * @note This method is called from [[exportChanges]] and [[exportAll]], so it only needs to be called directly when exporting a subset of an iModel.
    */
-  public exportFontByName(fontName: string): void {
+  public async exportFontByName(fontName: string): Promise<void> {
     Logger.logTrace(loggerCategory, `exportFontByName(${fontName})`);
     const font: FontProps | undefined = this.sourceDb.fontMap.getFont(fontName);
     if (undefined !== font) {
-      this.exportFontByNumber(font.id);
+      await this.exportFontByNumber(font.id);
     }
   }
 
   /** Export a single font from the source iModel.
    * @note This method is called from [[exportChanges]] and [[exportAll]], so it only needs to be called directly when exporting a subset of an iModel.
    */
-  public exportFontByNumber(fontNumber: number): void {
+  public async exportFontByNumber(fontNumber: number): Promise<void> {
     let isUpdate: boolean | undefined;
     if (undefined !== this._sourceDbChanges) { // is changeSet information available?
       const fontId: Id64String = Id64.fromUint32Pair(fontNumber, 0); // changeset information uses Id64String, not number
@@ -566,7 +567,7 @@ export class IModelExporter {
   }
 
   /** Export RepositoryLinks in the RepositoryModel. */
-  public exportRepositoryLinks(): void {
+  public async exportRepositoryLinks(): Promise<void> {
     if (!this.visitElements) {
       Logger.logTrace(loggerCategory, `visitElements=false, skipping exportRepositoryLinks()`);
       return;
@@ -631,24 +632,24 @@ export class IModelExporter {
   /** Exports all relationships that subclass from the specified base class.
    * @note This method is called from [[exportChanges]] and [[exportAll]], so it only needs to be called directly when exporting a subset of an iModel.
    */
-  public exportRelationships(baseRelClassFullName: string): void {
+  public async exportRelationships(baseRelClassFullName: string): Promise<void> {
     if (!this.visitRelationships) {
       Logger.logTrace(loggerCategory, `visitRelationships=false, skipping exportRelationships()`);
       return;
     }
     Logger.logTrace(loggerCategory, `exportRelationships(${baseRelClassFullName})`);
     const sql = `SELECT ECInstanceId FROM ${baseRelClassFullName}`;
-    this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
+    await this.sourceDb.withPreparedStatement(sql, async (statement: ECSqlStatement): Promise<void> => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         const relInstanceId: Id64String = statement.getValue(0).getId();
         const relProps: RelationshipProps = this.sourceDb.relationships.getInstanceProps(baseRelClassFullName, relInstanceId);
-        this.exportRelationship(relProps.classFullName, relInstanceId); // must call exportRelationship using the actual classFullName, not baseRelClassFullName
+        await this.exportRelationship(relProps.classFullName, relInstanceId); // must call exportRelationship using the actual classFullName, not baseRelClassFullName
       }
     });
   }
 
   /** Export a relationship from the source iModel. */
-  public exportRelationship(relClassFullName: string, relInstanceId: Id64String): void {
+  public async exportRelationship(relClassFullName: string, relInstanceId: Id64String): Promise<void> {
     if (!this.visitRelationships) {
       Logger.logTrace(loggerCategory, `visitRelationships=false, skipping exportRelationship(${relClassFullName}, ${relInstanceId})`);
       return;

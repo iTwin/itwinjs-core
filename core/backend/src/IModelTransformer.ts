@@ -424,8 +424,8 @@ export class IModelTransformer extends IModelExportHandler {
    * @param sourceModeledElementId Import this [Model]($backend) from the source IModelDb.
    * @note This method is called from [[processChanges]] and [[processAll]], so it only needs to be called directly when processing a subset of an iModel.
    */
-  public processModel(sourceModeledElementId: Id64String): void {
-    this.exporter.exportModel(sourceModeledElementId);
+  public async processModel(sourceModeledElementId: Id64String): Promise<void> {
+    return this.exporter.exportModel(sourceModeledElementId);
   }
 
   /** Cause the model contents to be exported from the source iModel and imported into the target iModel.
@@ -434,40 +434,40 @@ export class IModelTransformer extends IModelExportHandler {
    * @param elementClassFullName Optional classFullName of an element subclass to limit import query against the source model.
    * @note This method is called from [[processChanges]] and [[processAll]], so it only needs to be called directly when processing a subset of an iModel.
    */
-  public processModelContents(sourceModelId: Id64String, targetModelId: Id64String, elementClassFullName: string = Element.classFullName): void {
+  public async processModelContents(sourceModelId: Id64String, targetModelId: Id64String, elementClassFullName: string = Element.classFullName): Promise<void> {
     this.targetDb.models.getModel(targetModelId); // throws if Model does not exist
     this.context.remapElement(sourceModelId, targetModelId); // set remapping in case importModelContents is called directly
-    this.exporter.exportModelContents(sourceModelId, elementClassFullName);
+    return this.exporter.exportModelContents(sourceModelId, elementClassFullName);
   }
 
   /** Cause all sub-models that recursively descend from the specified Subject to be exported from the source iModel and imported into the target iModel. */
-  private processSubjectSubModels(sourceSubjectId: Id64String): void {
+  private async processSubjectSubModels(sourceSubjectId: Id64String): Promise<void> {
     // import DefinitionModels first
     const childDefinitionPartitionSql = `SELECT ECInstanceId FROM ${DefinitionPartition.classFullName} WHERE Parent.Id=:subjectId`;
-    this.sourceDb.withPreparedStatement(childDefinitionPartitionSql, (statement: ECSqlStatement) => {
+    await this.sourceDb.withPreparedStatement(childDefinitionPartitionSql, async (statement: ECSqlStatement) => {
       statement.bindId("subjectId", sourceSubjectId);
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
-        this.processModel(statement.getValue(0).getId());
+        await this.processModel(statement.getValue(0).getId());
       }
     });
     // import other partitions next
     const childPartitionSql = `SELECT ECInstanceId FROM ${InformationPartitionElement.classFullName} WHERE Parent.Id=:subjectId`;
-    this.sourceDb.withPreparedStatement(childPartitionSql, (statement: ECSqlStatement) => {
+    await this.sourceDb.withPreparedStatement(childPartitionSql, async (statement: ECSqlStatement) => {
       statement.bindId("subjectId", sourceSubjectId);
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         const modelId: Id64String = statement.getValue(0).getId();
         const model: Model = this.sourceDb.models.getModel(modelId);
         if (!(model instanceof DefinitionModel)) {
-          this.processModel(modelId);
+          await this.processModel(modelId);
         }
       }
     });
     // recurse into child Subjects
     const childSubjectSql = `SELECT ECInstanceId FROM ${Subject.classFullName} WHERE Parent.Id=:subjectId`;
-    this.sourceDb.withPreparedStatement(childSubjectSql, (statement: ECSqlStatement) => {
+    await this.sourceDb.withPreparedStatement(childSubjectSql, async (statement: ECSqlStatement) => {
       statement.bindId("subjectId", sourceSubjectId);
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
-        this.processSubjectSubModels(statement.getValue(0).getId());
+        await this.processSubjectSubModels(statement.getValue(0).getId());
       }
     });
   }
@@ -508,8 +508,8 @@ export class IModelTransformer extends IModelExportHandler {
    * @param baseRelClassFullName The specified base relationship class.
    * @note This method is called from [[processChanges]] and [[processAll]], so it only needs to be called directly when processing a subset of an iModel.
    */
-  public processRelationships(baseRelClassFullName: string): void {
-    this.exporter.exportRelationships(baseRelClassFullName);
+  public async processRelationships(baseRelClassFullName: string): Promise<void> {
+    return this.exporter.exportRelationships(baseRelClassFullName);
   }
 
   /** Override of [IModelExportHandler.shouldExportRelationship]($backend) that is called to determine if a [Relationship]($backend) should be exported.
@@ -664,8 +664,8 @@ export class IModelTransformer extends IModelExportHandler {
   /** Cause all fonts to be exported from the source iModel and imported into the target iModel.
    * @note This method is called from [[processChanges]] and [[processAll]], so it only needs to be called directly when processing a subset of an iModel.
    */
-  public processFonts(): void {
-    this.exporter.exportFonts();
+  public async processFonts(): Promise<void> {
+    return this.exporter.exportFonts();
   }
 
   /** Override of [IModelExportHandler.onExportFont]($backend) that imports a font into the target iModel when it is exported from the source iModel. */
@@ -676,15 +676,15 @@ export class IModelTransformer extends IModelExportHandler {
   /** Cause all CodeSpecs to be exported from the source iModel and imported into the target iModel.
    * @note This method is called from [[processChanges]] and [[processAll]], so it only needs to be called directly when processing a subset of an iModel.
    */
-  public processCodeSpecs(): void {
-    this.exporter.exportCodeSpecs();
+  public async processCodeSpecs(): Promise<void> {
+    return this.exporter.exportCodeSpecs();
   }
 
   /** Cause a single CodeSpec to be exported from the source iModel and imported into the target iModel.
    * @note This method is called from [[processChanges]] and [[processAll]], so it only needs to be called directly when processing a subset of an iModel.
    */
-  public processCodeSpec(codeSpecName: string): void {
-    this.exporter.exportCodeSpecByName(codeSpecName);
+  public async processCodeSpec(codeSpecName: string): Promise<void> {
+    return this.exporter.exportCodeSpecByName(codeSpecName);
   }
 
   /** Override of [IModelExportHandler.shouldExportCodeSpec]($backend) that is called to determine if a CodeSpec should be exported from the source iModel.
@@ -698,27 +698,27 @@ export class IModelTransformer extends IModelExportHandler {
   }
 
   /** Recursively import all Elements and sub-Models that descend from the specified Subject */
-  public processSubject(sourceSubjectId: Id64String, targetSubjectId: Id64String): void {
+  public async processSubject(sourceSubjectId: Id64String, targetSubjectId: Id64String): Promise<void> {
     this.sourceDb.elements.getElement(sourceSubjectId, Subject); // throws if sourceSubjectId is not a Subject
     this.targetDb.elements.getElement(targetSubjectId, Subject); // throws if targetSubjectId is not a Subject
     this.context.remapElement(sourceSubjectId, targetSubjectId);
     this.processChildElements(sourceSubjectId);
-    this.processSubjectSubModels(sourceSubjectId);
+    await this.processSubjectSubModels(sourceSubjectId);
     this.processDeferredElements();
   }
 
   /** Export everything from the source iModel and import the transformed entities into the target iModel.
    * @note [[processSchemas]] is not called automatically since the target iModel may want a different collection of schemas.
    */
-  public processAll(): void {
+  public async processAll(): Promise<void> {
     this.initFromExternalSourceAspects();
-    this.exporter.exportCodeSpecs();
-    this.exporter.exportFonts();
+    await this.exporter.exportCodeSpecs();
+    await this.exporter.exportFonts();
     // The RepositoryModel and root Subject of the target iModel should not be transformed.
     this.exporter.exportChildElements(IModel.rootSubjectId); // start below the root Subject
-    this.exporter.exportRepositoryLinks();
+    await this.exporter.exportRepositoryLinks();
     this.exporter.exportSubModels(IModel.repositoryModelId); // start below the RepositoryModel
-    this.exporter.exportRelationships(ElementRefersToElements.classFullName);
+    await this.exporter.exportRelationships(ElementRefersToElements.classFullName);
     this.processDeferredElements();
     if (!this._isReverseSynchronization) {
       this.detectElementDeletes();
