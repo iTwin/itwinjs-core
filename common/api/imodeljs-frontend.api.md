@@ -1094,7 +1094,7 @@ export interface ArcGisGenerateTokenOptions {
     // (undocumented)
     expiration?: number;
     // (undocumented)
-    ip?: number;
+    ip?: string;
     // (undocumented)
     referer?: string;
 }
