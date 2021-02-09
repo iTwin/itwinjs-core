@@ -6,7 +6,7 @@
 import { BeEvent, BriefcaseStatus, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import { IModelHostConfiguration, IpcHandler, IpcHost, IpcHostOptions, NativeHost } from "@bentley/imodeljs-backend";
 import { AccessToken, CancelRequest, DownloadFailed, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
-import { BatteryState, mobileAppChannel, MobileAppFunctions, Orientation } from "../common/MobileAppProps";
+import { BatteryState, DeviceEvents, mobileAppChannel, MobileAppFunctions, Orientation } from "../common/MobileAppProps";
 import { MobileAuthorizationClientConfiguration } from "../common/MobileAuthorizationClientConfiguration";
 import { setupMobileRpc } from "./MobileRpcServer";
 
@@ -47,6 +47,21 @@ export interface DownloadTask {
  * @beta
  */
 export abstract class MobileDevice {
+  public emit(eventName: DeviceEvents, ...args: any[]) {
+    switch (eventName) {
+      case "memoryWarning":
+        MobileHost.onMemoryWarning.raiseEvent(...args); break;
+      case "orientationChanged":
+        MobileHost.onOrientationChanged.raiseEvent(...args); break;
+      case "enterForeground":
+        MobileHost.onEnterForeground.raiseEvent(...args); break;
+      case "enterBackground":
+        MobileHost.onEnterBackground.raiseEvent(...args); break;
+      case "willTerminate":
+        MobileHost.onWillTerminate.raiseEvent(...args); break;
+    }
+  }
+
   public abstract getOrientation(): Orientation;
   public abstract getBatteryState(): BatteryState;
   public abstract getBatteryLevel(): number;

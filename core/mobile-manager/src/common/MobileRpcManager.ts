@@ -97,7 +97,7 @@ export class MobileRpcManager {
   /** @internal */
   public static async ready() {
     return new Promise<void>(async (resolve) => {
-      while (!(global as any).__imodeljsRpcReady) {
+      while (!(global as any).__iTwinJsRpcReady) {
         await new Promise((r) => setTimeout(r));
       }
 

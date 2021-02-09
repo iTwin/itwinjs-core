@@ -55,7 +55,7 @@ export class MobileRpcServer {
 
   private _notifyConnected() {
     MobileRpcServer.interop.port = this._port;
-    (global as any).__imodeljsRpcPort = this._port;
+    (global as any).__iTwinJsRpcPort = this._port;
 
     if (this._connectionId !== 0) {
       MobileHost.reconnect(this._port);
@@ -67,7 +67,7 @@ export class MobileRpcServer {
       this._connection = connection;
       this._connection.on("message", (data) => this._onConnectionMessage(data));
       this._createSender();
-      (global as any).__imodeljsRpcReady = true;
+      (global as any).__iTwinJsRpcReady = true;
     });
   }
 

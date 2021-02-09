@@ -33,6 +33,8 @@ export interface MobileNotifications {
   notifyWillTerminate: () => void;
 }
 
+export type DeviceEvents = "memoryWarning" | "orientationChanged" | "enterForeground" | "enterBackground" | "willTerminate";
+
 /**
 * The methods that may be invoked via Ipc from the frontend of a Mobile App that are implemented on its backend.
 * @internal
