@@ -4201,7 +4201,7 @@ export interface ProjectServices {
 }
 
 // @public @deprecated
-export const PromptField: import("react-redux").ConnectedComponent<typeof PromptFieldComponent, Pick<React.ClassAttributes<PromptFieldComponent> & PromptFieldProps, "ref" | "style" | "key" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
+export const PromptField: import("react-redux").ConnectedComponent<typeof PromptFieldComponent, Pick<React.ClassAttributes<PromptFieldComponent> & PromptFieldProps, "style" | "className" | "ref" | "key" | "isInFooterMode" | "onOpenWidget" | "openWidget">>;
 
 // @public
 export class PropsHelper {
@@ -4413,10 +4413,10 @@ export class SelectionContextToolDefinitions {
 }
 
 // @public
-export const SelectionInfoField: import("react-redux").ConnectedComponent<typeof SelectionInfoFieldComponent, Pick<React.ClassAttributes<SelectionInfoFieldComponent> & SelectionInfoFieldProps, "ref" | "style" | "key" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
+export const SelectionInfoField: import("react-redux").ConnectedComponent<typeof SelectionInfoFieldComponent, Pick<React.ClassAttributes<SelectionInfoFieldComponent> & SelectionInfoFieldProps, "style" | "className" | "ref" | "key" | "isInFooterMode" | "onOpenWidget" | "openWidget">>;
 
 // @public
-export const SelectionScopeField: import("react-redux").ConnectedComponent<typeof SelectionScopeFieldComponent, Pick<React.ClassAttributes<SelectionScopeFieldComponent> & SelectionScopeFieldProps, "ref" | "style" | "key" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
+export const SelectionScopeField: import("react-redux").ConnectedComponent<typeof SelectionScopeFieldComponent, Pick<React.ClassAttributes<SelectionScopeFieldComponent> & SelectionScopeFieldProps, "style" | "className" | "ref" | "key" | "isInFooterMode" | "onOpenWidget" | "openWidget">>;
 
 // @public
 export class SeparatorBackstageItem extends React.PureComponent<BackstageItemProps> {
@@ -5092,7 +5092,7 @@ export class SignOutModalFrontstage implements ModalFrontstageInfo {
     }
 
 // @public
-export const SnapModeField: import("react-redux").ConnectedComponent<typeof SnapModeFieldComponent, Pick<React.ClassAttributes<SnapModeFieldComponent> & SnapModeFieldProps, "ref" | "style" | "key" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
+export const SnapModeField: import("react-redux").ConnectedComponent<typeof SnapModeFieldComponent, Pick<React.ClassAttributes<SnapModeFieldComponent> & SnapModeFieldProps, "style" | "className" | "ref" | "key" | "isInFooterMode" | "onOpenWidget" | "openWidget">>;
 
 // @alpha
 export class SolarTimelineDataProvider extends BaseSolarDataProvider {
@@ -5730,7 +5730,7 @@ export interface TaskPropsList {
 }
 
 // @public
-export const ThemeManager: import("react-redux").ConnectedComponent<typeof ThemeManagerComponent, Pick<React.ClassAttributes<ThemeManagerComponent> & ThemeProps, "ref" | "children" | "key">>;
+export const ThemeManager: import("react-redux").ConnectedComponent<typeof ThemeManagerComponent, Pick<React.ClassAttributes<ThemeManagerComponent> & ThemeProps, "children" | "ref" | "key">>;
 
 // @beta
 export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, TileLoadingIndicatorState> {
@@ -7177,7 +7177,7 @@ export enum WidgetType {
 }
 
 // @beta
-export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => (props: JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "isInFooterMode" | "openWidget" | "targetRef" | "onOpenWidget">>>) => JSX.Element;
+export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => (props: JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "isInFooterMode" | "targetRef" | "onOpenWidget" | "openWidget">>>) => JSX.Element;
 
 // @alpha
 export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => {
@@ -7235,7 +7235,7 @@ export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: (
 };
 
 // @beta
-export const withStatusFieldProps: <P extends StatusFieldProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => (props: JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "isInFooterMode" | "openWidget" | "onOpenWidget">>>) => JSX.Element;
+export const withStatusFieldProps: <P extends StatusFieldProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => (props: JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "isInFooterMode" | "onOpenWidget" | "openWidget">>>) => JSX.Element;
 
 // @public
 export class Workflow extends ItemDefBase {
