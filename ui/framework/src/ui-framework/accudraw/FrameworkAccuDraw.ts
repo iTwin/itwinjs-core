@@ -13,6 +13,36 @@ import { SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispa
 
 // cspell:ignore dont
 
+const itemToFieldMap = new Map<ItemField, AccuDrawField>([
+  [ItemField.X_Item, AccuDrawField.X],
+  [ItemField.Y_Item, AccuDrawField.Y],
+  [ItemField.Z_Item, AccuDrawField.Z],
+  [ItemField.ANGLE_Item, AccuDrawField.Angle],
+  [ItemField.DIST_Item, AccuDrawField.Distance],
+]);
+
+const fieldToItemMap = new Map<AccuDrawField, ItemField>([
+  [AccuDrawField.X, ItemField.X_Item],
+  [AccuDrawField.Y,ItemField.Y_Item],
+  [AccuDrawField.Z, ItemField.Z_Item],
+  [AccuDrawField.Angle, ItemField.ANGLE_Item],
+  [AccuDrawField.Distance, ItemField.DIST_Item],
+]);
+
+const compassModeToKeyMap = new Map<CompassMode, string>([
+  [CompassMode.Polar, "polar"],
+  [CompassMode.Rectangular, "rectangular"],
+]);
+
+const rotationModeToKeyMap = new Map<RotationMode, string>([
+  [RotationMode.Top, "top"],
+  [RotationMode.Front, "front"],
+  [RotationMode.Side, "side"],
+  [RotationMode.View, "view"],
+  [RotationMode.ACS, "ACS"],
+  [RotationMode.Context, "context"],
+]);
+
 /** @alpha */
 export class FrameworkAccuDraw extends AccuDraw {
   private static _displayNotifications = false;
@@ -50,49 +80,19 @@ export class FrameworkAccuDraw extends AccuDraw {
 
   /** @internal */
   public static translateFromItemField(item: ItemField): AccuDrawField {
-    let field: AccuDrawField;
-    switch (item) {
-      case ItemField.Y_Item:
-        field = AccuDrawField.Y;
-        break;
-      case ItemField.Z_Item:
-        field = AccuDrawField.Z;
-        break;
-      case ItemField.ANGLE_Item:
-        field = AccuDrawField.Angle;
-        break;
-      case ItemField.DIST_Item:
-        field = AccuDrawField.Distance;
-        break;
-      case ItemField.X_Item:
-      default:
-        field = AccuDrawField.X;
-        break;
-    }
+    let field = itemToFieldMap.get(item);
+    // istanbul ignore if
+    if (field === undefined)
+      field = AccuDrawField.X;
     return field;
   }
 
   /** @internal */
   public static translateToItemField(field: AccuDrawField): ItemField {
-    let item: ItemField;
-    switch (field) {
-      case AccuDrawField.Y:
-        item = ItemField.Y_Item;
-        break;
-      case AccuDrawField.Z:
-        item = ItemField.Z_Item;
-        break;
-      case AccuDrawField.Angle:
-        item = ItemField.ANGLE_Item;
-        break;
-      case AccuDrawField.Distance:
-        item = ItemField.DIST_Item;
-        break;
-      case AccuDrawField.X:
-      default:
-        item = ItemField.X_Item;
-        break;
-    }
+    let item = fieldToItemMap.get(field);
+    // istanbul ignore if
+    if (item === undefined)
+      item = ItemField.X_Item;
     return item;
   }
 
@@ -187,15 +187,10 @@ export class FrameworkAccuDraw extends AccuDraw {
 
   private outputCompassModeMessage(): void {
     if (FrameworkAccuDraw.displayNotifications) {
-      let modeKey = "";
-      switch(IModelApp.accuDraw.compassMode) {
-        case CompassMode.Polar:
-          modeKey = "polar";
-          break;
-        case CompassMode.Rectangular:
-          modeKey = "rectangular";
-          break;
-      }
+      let modeKey = compassModeToKeyMap.get(IModelApp.accuDraw.compassMode);
+      // istanbul ignore if
+      if (modeKey === undefined)
+        modeKey = "polar";
       const modeString = UiFramework.translate(`accuDraw.compassMode.${modeKey}`);
       const modeMessage = UiFramework.i18n.translateWithNamespace(UiFramework.i18nNamespace, "accuDraw.compassModeSet", {modeString});
       this.outputInfoMessage(modeMessage);
@@ -204,27 +199,10 @@ export class FrameworkAccuDraw extends AccuDraw {
 
   private outputRotationMessage(): void {
     if (FrameworkAccuDraw.displayNotifications) {
-      let rotationKey = "";
-      switch(IModelApp.accuDraw.rotationMode) {
-        case RotationMode.Top:
-          rotationKey = "top";
-          break;
-        case RotationMode.Front:
-          rotationKey = "front";
-          break;
-        case RotationMode.Side:
-          rotationKey = "side";
-          break;
-        case RotationMode.View:
-          rotationKey = "view";
-          break;
-        case RotationMode.ACS:
-          rotationKey = "ACS";
-          break;
-        case RotationMode.Context:
-          rotationKey = "context";
-          break;
-      }
+      let rotationKey = rotationModeToKeyMap.get(IModelApp.accuDraw.rotationMode);
+      // istanbul ignore if
+      if (rotationKey === undefined)
+        rotationKey = "top";
       const rotationString = UiFramework.translate(`accuDraw.rotation.${rotationKey}`);
       const rotationMessage = UiFramework.i18n.translateWithNamespace(UiFramework.i18nNamespace, "accuDraw.rotationSet", {rotationString});
       this.outputInfoMessage(rotationMessage);
