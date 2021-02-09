@@ -25,7 +25,7 @@ export enum ParseError {
  * @alpha
  */
 export interface ParseQuantityError {
-  /** Union discriminator for [[ParseKeyinResult]]. */
+  /** Union discriminator for [[QuantityParseResult]]. */
   ok: false;
   /** The specific error that occurred during parsing. */
   error: ParseError;
@@ -35,7 +35,7 @@ export interface ParseQuantityError {
  * @alpha
  */
 export interface ParsedQuantity {
-  /** Union discriminator for [[ParseKeyinResult]]. */
+  /** Union discriminator for [[QuantityParseResult]]. */
   ok: true;
   /** The magnitude of the parsed quantity. */
   value: number;
