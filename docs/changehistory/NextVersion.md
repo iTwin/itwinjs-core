@@ -38,3 +38,7 @@ This feature replaces the `@alpha` `TileAdmin.Props.mobileExpirationMemoryThresh
 ## Breaking changes to alpha class QuantityFormatter
 
 The QuantityFormatter now registers its own standard QuantityTypeDefinitions during initialization. CustomQuantityTypeDefinitions must now be registered to support additional QuantityTypes. This replaces the use of FormatterParserSpecsProvider to provide custom quantity types. Removed koq methods that were never implemented.
+
+## Common table expression support in ECSQL
+
+CTE are now supported in ECSQL. For more information read [Common Table Expression](..\learning\CommonTableExp.md)
