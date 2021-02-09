@@ -201,7 +201,7 @@ export enum ChangeSetStatus {
     NoTransactions = 90127,
     ParentMismatch = 90128,
     ProcessSchemaChangesOnOpen = 90134,
-    ReverseOrReinstateSchemaChangesOnOpen = 90133,
+    ReverseOrReinstateSchemaChanges = 90133,
     SQLiteError = 90129,
     // (undocumented)
     Success = 0,

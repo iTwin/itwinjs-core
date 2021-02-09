@@ -58,6 +58,13 @@ The new behavior is documented as part of the method documentation here:
 
 [IModelDb.Elements.updateElement]($backend)
 
+### Moving properties within an existing ECSchema
+
+ECDb now supports moving properties within the existing class hierarchy. Columns will be remapped or data will be moved to match the new structure.
+Inserting a new base class in the middle of the hierarchy which has properties is now also supported.
+As this requires data modifications during schema updates, we will no longer support reverse and reinstate on schema changesets. Attempts to do so will now raise an error.
+`ChangeStatus.ChangeSetStatus.ReverseOrReinstateSchemaChangesOnOpen` renamed to `ChangeStatus.ChangeSetStatus.ReverseOrReinstateSchemaChanges`.
+
 ## Presentation
 
 ### Setting up default formats
