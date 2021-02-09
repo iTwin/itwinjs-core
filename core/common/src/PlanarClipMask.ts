@@ -65,7 +65,7 @@ export class PlanarClipMaskSettings {
   public readonly subCategoryOrElementIds?: CompressedId64Set;
   /** Priority value if mode is [[PlanarClipMaskMode.Priority]]. */
   public readonly priority?: number;
-  /** A value between 0 and 1 indicating mask transparency - A transparency of 0 (the default) indicates complete masking.  1 is completely transparent (no masking). */
+  /** A value between 0 and 1 indicating am override for mask transparency - A transparency of 0 (the default) indicates complete masking.  1 is completely transparent (no masking).  If no transparency is defined then the transparency of the mask elements are used */
   public readonly transparency?: number;
 
   /** Create a new [[PlanarClipMaskSettings]] object from a JSON object */
