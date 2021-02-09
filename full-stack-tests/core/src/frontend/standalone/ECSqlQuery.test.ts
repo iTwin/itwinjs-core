@@ -66,7 +66,7 @@ describe("ECSql Query", () => {
     assert.isAtLeast(rowCount, 1);
   });
 
-  it.only("Geom functions over concurrent query", async () => {
+  it("Geom functions over concurrent query", async () => {
     let totalArea = 0;
     for await (const row of imodel1.query("SELECT iModel_bbox_areaxy(iModel_bbox(BBoxLow.X,BBoxLow.Y,BBoxLow.Z,BBoxHigh.X,BBoxHigh.Y,BBoxHigh.Z)) areaxy FROM bis.GeometricElement3d order by ecinstanceid")) {
       totalArea += row.areaxy;
