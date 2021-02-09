@@ -13,7 +13,6 @@ import { getJson, request, RequestBasicCredentials, RequestOptions, Response } f
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { ArcGisErrorCode, NotifyMessageDetails, OutputMessagePriority } from "../../imodeljs-frontend";
-import { InteractiveEditingSession } from "../../InteractiveEditingSession";
 import { ScreenViewport } from "../../Viewport";
 import { ArcGisTokenClientType, BingMapsImageryLayerProvider, ImageryMapLayerTreeReference, ImageryMapTile, ImageryMapTileTree, MapLayerFormat, MapLayerSourceStatus, MapLayerSourceValidation, MapLayerTileTreeReference, QuadId, WmsUtilities } from "../internal";
 import { ArcGisTokenManager } from "./ArcGisTokenManager";
