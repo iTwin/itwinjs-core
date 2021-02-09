@@ -8,7 +8,7 @@
 
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { ImsAuthorizationClient } from "@bentley/itwin-client";
-import { ClientMetadata, Issuer, Client as OpenIdClient } from "openid-client";
+import { ClientMetadata, Issuer, Client as OpenIdClient, custom as OpenIdCustom } from "openid-client";
 
 /**
  * Client configuration to create OIDC/OAuth tokens for backend applications
@@ -44,6 +44,13 @@ export abstract class BackendAuthorizationClient extends ImsAuthorizationClient 
 
     if (this._issuer)
       return this._issuer;
+
+    // Due to issues with a timeout or failed request to the authorization service increasing the standard timeout and adding retries.
+    // Docs for this option here, https://github.com/panva/node-openid-client/tree/master/docs#customizing-http-requests
+    OpenIdCustom.setHttpOptionsDefaults({
+      timeout: 10000,
+      retry: 3,
+    });
 
     const url = await this.getUrl(requestContext);
     this._issuer = await Issuer.discover(url);

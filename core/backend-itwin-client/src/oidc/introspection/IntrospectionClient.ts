@@ -8,7 +8,7 @@
 
 import { Logger } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, ImsAuthorizationClient, IncludePrefix } from "@bentley/itwin-client";
-import { ClientMetadata, Issuer, Client as OpenIdClient } from "openid-client";
+import { ClientMetadata, Issuer, Client as OpenIdClient, custom as OpenIdCustom } from "openid-client";
 import { BackendITwinClientLoggerCategory } from "../../BackendITwinClientLoggerCategory";
 import { IntrospectionResponse } from "./IntrospectionResponse";
 import { IntrospectionResponseCache, MemoryIntrospectionResponseCache } from "./IntrospectionResponseCache";
@@ -35,6 +35,13 @@ export class IntrospectionClient {
     if (this._client) {
       return this._client;
     }
+
+    // Due to issues with a timeout or failed request to the authorization service increasing the standard timeout and adding retries.
+    // Docs for this option here, https://github.com/panva/node-openid-client/tree/master/docs#customizing-http-requests
+    OpenIdCustom.setHttpOptionsDefaults({
+      timeout: 10000,
+      retry: 3,
+    });
 
     const issuerUrl = await this.getIssuerUrl(requestContext);
     const issuer = await Issuer.discover(issuerUrl);
