@@ -85,44 +85,14 @@ export class IOSApp {
 }
 
 // @beta (undocumented)
-export class IOSDevice extends MobileDevice {
-    // (undocumented)
-    authGetAccessToken(_ctx: ClientRequestContext, _callback: (accessToken?: string, err?: string) => void): void;
-    // (undocumented)
-    authInit(_ctx: ClientRequestContext, _settings: MobileDeviceAuthSettings, _callback: (err?: string) => void): void;
-    // (undocumented)
-    authSignIn(_ctx: ClientRequestContext, _callback: (err?: string) => void): void;
-    // (undocumented)
-    authSignOut(_ctx: ClientRequestContext, _callback: (err?: string) => void): void;
-    // (undocumented)
-    authStateChanged(_accessToken?: string, _err?: string): void;
-    // (undocumented)
-    cancelDownloadTask(_cancelId: number): boolean;
-    // (undocumented)
-    createDownloadTask(_downloadUrl: string, _isBackground: boolean, _downloadTo: string, _completion: MobileCompletionCallback, _progress?: MobileProgressCallback): number;
-    // (undocumented)
-    emit(eventName: DeviceEvents, ...args: any[]): void;
-    // (undocumented)
-    getBatteryLevel(): number;
-    // (undocumented)
-    getBatteryState(): BatteryState;
-    // (undocumented)
-    getDownloadTasks(): DownloadTask[];
-    // (undocumented)
-    getOrientation(): Orientation;
-    // (undocumented)
-    reconnect(_connection: number): void;
-    // (undocumented)
-    resumeDownloadInBackground(_requestId: number): boolean;
-    // (undocumented)
-    resumeDownloadInForeground(_requestId: number): boolean;
+export abstract class IOSDevice extends MobileDevice {
 }
 
 // @beta (undocumented)
 export class IOSHost extends MobileHost {
     static startup(opt?: {
         mobileHost?: {
-            device: MobileDevice;
+            device: IOSDevice;
         };
         ipcHost?: IpcHostOptions;
         iModelHost?: IModelHostConfiguration;
@@ -195,6 +165,8 @@ export abstract class MobileDevice {
     abstract cancelDownloadTask(cancelId: number): boolean;
     // (undocumented)
     abstract createDownloadTask(downloadUrl: string, isBackground: boolean, downloadTo: string, completion: MobileCompletionCallback, progress?: MobileProgressCallback): number;
+    // (undocumented)
+    emit(eventName: DeviceEvents, ...args: any[]): void;
     // (undocumented)
     abstract getBatteryLevel(): number;
     // (undocumented)
