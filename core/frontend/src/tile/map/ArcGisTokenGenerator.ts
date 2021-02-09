@@ -22,12 +22,14 @@ export interface ArcGisToken {
 }
 
 // client application's base URL, a user-specified IP address, or the IP address that is making the request.
+/** @internal */
 export enum ArcGisTokenClientType {
   ip,
   referer,
   requestIp,
 }
 
+/** @internal */
 export interface ArcGisGenerateTokenOptions {
 
   // The client type that will be granted access to the token.

@@ -15,6 +15,7 @@ import { ArcGisTokenManager } from "./ArcGisTokenManager";
 /** @packageDocumentation
  * @module Tiles
  */
+/** @internal */
 export enum ArcGisErrorCode {
   InvalidCredentials = 401,
   InvalidToken = 498,
@@ -23,6 +24,7 @@ export enum ArcGisErrorCode {
   NoTokenService = 1001,
 }
 
+/** @internal */
 export class ArcGisUtilities {
 
   public static hasTokenError(response: Response): boolean {

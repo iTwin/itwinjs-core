@@ -13,6 +13,7 @@ import { getJson, request, RequestBasicCredentials, RequestOptions, Response } f
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { ArcGisErrorCode, NotifyMessageDetails, OutputMessagePriority } from "../../imodeljs-frontend";
+import { InteractiveEditingSession } from "../../InteractiveEditingSession";
 import { ScreenViewport } from "../../Viewport";
 import { ArcGisTokenClientType, BingMapsImageryLayerProvider, ImageryMapLayerTreeReference, ImageryMapTile, ImageryMapTileTree, MapLayerFormat, MapLayerSourceStatus, MapLayerSourceValidation, MapLayerTileTreeReference, QuadId, WmsUtilities } from "../internal";
 import { ArcGisTokenManager } from "./ArcGisTokenManager";
@@ -25,6 +26,7 @@ const tileImageSize = 256, untiledImageSize = 256;
 // eslint-disable-next-line prefer-const
 let doToolTips = true;
 
+/** @internal */
 export enum MapLayerImageryProviderStatus {
   Valid,
   RequireAuth,
