@@ -111,7 +111,6 @@ export abstract class MapLayerImageryProvider {
     return new ImageSource(byteArray, imageFormat);
   }
 
-  // returns a Uint8Array with the contents of the tile.
   public async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
     const tileRequestOptions: RequestOptions = { method: "GET", responseType: "arraybuffer" };
     tileRequestOptions.auth = this.getRequestAuthorization();
