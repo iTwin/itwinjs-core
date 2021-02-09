@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-frontend",
+      "comment": "fix for running display-performance-test-app with a saved view which has volume classification using overrides",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "36053767+MarcNeely@users.noreply.github.com"
+}

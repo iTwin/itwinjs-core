@@ -2,7 +2,7 @@
 tableRowAnchors: true
 ---
 
-# Glossary of terms in iModel.js UI
+# Glossary of terms in iTwin.js UI
 
 |Term | Definition
 |------------|------------|
