@@ -5,9 +5,9 @@
 
 import { expect } from "chai";
 import React from "react";
-import sinon, { spy } from "sinon";
+import sinon from "sinon";
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
-import { cleanup, createEvent, fireEvent, render, waitForElement } from "@testing-library/react";
+import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
 import { ColorPickerPopup } from "../../ui-components/color/ColorPickerPopup";
 import TestUtils from "../TestUtils";
 import { RelativePosition } from "@bentley/ui-abstract";
