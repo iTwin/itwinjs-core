@@ -38,3 +38,8 @@ This feature replaces the `@alpha` `TileAdmin.Props.mobileExpirationMemoryThresh
 ## Common table expression support in ECSQL
 
 CTE are now supported in ECSQL. For more information read [Common Table Expression](..\learning\CommonTableExp.md)
+
+## Breaking API change in quantity package
+
+The alpha interface `ParseResult` has changed to `QuantityParserResult` which can either be a `ParseQuantityError` or a `ParsedQuantity`.
+New static type guards `Parser.isParsedQuantity` and `Parser.isParseError` can be used to coerce the result into the appropriate type.

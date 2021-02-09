@@ -25,7 +25,7 @@ import { linePlaneIntersect } from "./LinePlaneIntersect";
 import { ScreenViewport, Viewport } from "./Viewport";
 import { ViewState } from "./ViewState";
 import { QuantityType } from "./QuantityFormatter";
-import { ParseResult, QuantityStatus } from "@bentley/imodeljs-quantity";
+import { ParseError, Parser, QuantityParseResult } from "@bentley/imodeljs-quantity";
 
 // cspell:ignore dont primitivetools
 
@@ -932,20 +932,20 @@ export class AccuDraw {
     rMatrix.multiplyTransposeVector(this.vector);
   }
 
-  private stringToDistance(str: string): ParseResult {
+  private stringToDistance(str: string): QuantityParseResult {
     const parserSpec = IModelApp.quantityFormatter.findParserSpecByQuantityType(QuantityType.Length);
     if(parserSpec)
       return parserSpec.parseToQuantityValue(str);
-    return {status: QuantityStatus.UnknownUnit};
+    return {ok: false, error: ParseError.InvalidParserSpec};
   }
 
-  private stringToAngle(inString: string): ParseResult {
+  private stringToAngle(inString: string): QuantityParseResult {
     // Need to update once there is an official "Bearing" QuantityType. Once available then
     // use QuantityType.Angle for isBearing=false and "Bearing" for isBearing=true.
     const parserSpec = IModelApp.quantityFormatter.findParserSpecByQuantityType(QuantityType.Angle);
     if (parserSpec)
       return parserSpec.parseToQuantityValue(inString);
-    return {status: QuantityStatus.UnknownUnit};
+    return {ok: false, error: ParseError.InvalidParserSpec};
   }
 
   private updateFieldValue(index: ItemField, input: string, _out: { isBearing: boolean }): BentleyStatus {
@@ -966,7 +966,7 @@ export class AccuDraw {
     switch (index) {
       case ItemField.DIST_Item:
         parseResult = this.stringToDistance(input);
-        if (undefined !== parseResult.value && parseResult.status === QuantityStatus.Success) {
+        if (Parser.isParsedQuantity(parseResult)) {
           this._distance = parseResult.value;
           break;
         }
@@ -974,7 +974,7 @@ export class AccuDraw {
 
       case ItemField.ANGLE_Item:
         parseResult =this.stringToAngle(input);
-        if (undefined !== parseResult.value && parseResult.status === QuantityStatus.Success) {
+        if (Parser.isParsedQuantity(parseResult)) {
           this._angle = parseResult.value;
           break;
         }
@@ -982,7 +982,7 @@ export class AccuDraw {
 
       case ItemField.X_Item:
         parseResult = this.stringToDistance(input);
-        if (undefined !== parseResult.value && parseResult.status === QuantityStatus.Success) {
+        if (Parser.isParsedQuantity(parseResult)) {
           this.delta.x = parseResult.value;
 
           this._xIsExplicit = (input[0] === "+" || input[0] === "-");
@@ -996,7 +996,7 @@ export class AccuDraw {
 
       case ItemField.Y_Item:
         parseResult = this.stringToDistance(input);
-        if (undefined !== parseResult.value && parseResult.status === QuantityStatus.Success) {
+        if (Parser.isParsedQuantity(parseResult)) {
           this.delta.y = parseResult.value;
 
           this._yIsExplicit = (input[0] === "+" || input[0] === "-");
@@ -1010,7 +1010,7 @@ export class AccuDraw {
 
       case ItemField.Z_Item:
         parseResult = this.stringToDistance(input);
-        if (undefined !== parseResult.value && parseResult.status === QuantityStatus.Success) {
+        if (Parser.isParsedQuantity(parseResult)) {
           this.delta.z = parseResult.value;
           break;
         }
