@@ -609,6 +609,8 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     if (this._maskGraphics.length > 0 && this._maskBuffer) {
       if (this._planarClipMaskOverrides)
         target.overrideFeatureSymbology(this._planarClipMaskOverrides);
+      if (this._planarClipMask && this._planarClipMask.settings.transparency !== undefined &&  this._planarClipMask.settings.transparency > 0.0)
+        this._anyTranslucent = true;
 
       this._maskBuffer.draw(getDrawCommands(this._maskGraphics), target);
 
