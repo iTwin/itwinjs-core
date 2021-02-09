@@ -6617,7 +6617,7 @@ export class PlanarClipMaskState {
     // (undocumented)
     static create(settings: PlanarClipMaskSettings): PlanarClipMaskState;
     // (undocumented)
-    discloseTileTrees(trees: TileTreeSet): void;
+    discloseTileTrees(trees: DisclosedTileTreeSet): void;
     // (undocumented)
     static fromJSON(props: PlanarClipMaskProps): PlanarClipMaskState;
     // (undocumented)

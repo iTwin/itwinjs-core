@@ -5277,12 +5277,13 @@ export interface PlanarClipMaskProps {
     modelIds?: CompressedId64Set;
     priority?: number;
     subCategoryOrElementIds?: CompressedId64Set;
+    transparency?: number;
 }
 
 // @beta
 export class PlanarClipMaskSettings {
-    static create(mode: PlanarClipMaskMode, modelIds?: Id64Set, subCategoryOrElementIds?: Id64Set): PlanarClipMaskSettings | undefined;
-    static createByPriority(priority: number): PlanarClipMaskSettings;
+    static create(mode: PlanarClipMaskMode, modelIds?: Id64Set, subCategoryOrElementIds?: Id64Set, transparency?: number): PlanarClipMaskSettings | undefined;
+    static createByPriority(priority: number, transparency?: number): PlanarClipMaskSettings;
     static defaults: PlanarClipMaskSettings;
     // (undocumented)
     equals(other: PlanarClipMaskSettings): boolean;
@@ -5294,6 +5295,7 @@ export class PlanarClipMaskSettings {
     readonly priority?: number;
     readonly subCategoryOrElementIds?: CompressedId64Set;
     toJSON(): PlanarClipMaskProps;
+    readonly transparency?: number;
 }
 
 // @beta

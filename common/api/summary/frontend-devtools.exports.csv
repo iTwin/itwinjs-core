@@ -145,11 +145,8 @@ beta;SelectElementsByIdTool
 beta;serializeViewState(view: ViewState): ViewStateProps
 internal;SetAASamplesTool 
 alpha;SetAspectRatioSkewTool 
-<<<<<<< HEAD
-beta;SetHigherPriorityRealityModelMasking 
-=======
 beta;SetGpuMemoryLimitTool 
->>>>>>> master
+beta;SetHigherPriorityRealityModelMasking 
 alpha;SetMapBaseTool 
 alpha;SetMapHigherPriorityMasking 
 beta;SetModelColorTool 
