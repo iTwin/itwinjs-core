@@ -2,6 +2,30 @@
   "name": "@bentley/presentation-common",
   "entries": [
     {
+      "version": "2.11.0",
+      "tag": "@bentley/presentation-common_v2.11.0",
+      "date": "Thu, 28 Jan 2021 13:39:27 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Include all properties into properties field descriptor to make descriptor match any field that has at least one of those properties"
+          },
+          {
+            "comment": "Updated class names in `KeySet` to be case-insensitive"
+          },
+          {
+            "comment": "Added 'activeFormat' property on 'KindOfQuantityInfo' interface."
+          },
+          {
+            "comment": "Add class information to navigation properties"
+          },
+          {
+            "comment": "Repeat RPC requests when unknown failures happen"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.10.3",
       "tag": "@bentley/presentation-common_v2.10.3",
       "date": "Fri, 08 Jan 2021 18:34:03 GMT",

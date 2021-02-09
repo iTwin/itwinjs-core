@@ -71,4 +71,4 @@ Several props control whether the popup closes for certain events (all default t
 
 ## API Reference
 
-* [Popup]($ui-core:Popup)
+- [Popup]($ui-core:Popup)

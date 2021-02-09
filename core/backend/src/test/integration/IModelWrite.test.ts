@@ -52,7 +52,6 @@ function toHubLock(props: ConcurrencyControl.LockProps, briefcaseId: number): Lo
   lock.lockType = props.type;
   lock.objectId = props.objectId;
   // lock.releasedWithChangeSet =
-  // lock.seedFileId = concurrencyControl.iModel.briefcase.fileId!;
   return lock;
 }
 
@@ -157,7 +156,6 @@ describe("IModelWriteTest (#integration)", () => {
     codeSpecsLock.lockLevel = LockLevel.Exclusive;
     codeSpecsLock.lockType = LockType.CodeSpecs;
     codeSpecsLock.objectId = "0x1";
-    codeSpecsLock.seedFileId = model.iModelId;
     await model.pullAndMergeChanges(superRequestContext);
     codeSpecsLock.releasedWithChangeSet = model.changeSetId;
     const locks = await IModelHost.iModelClient.locks.update(superRequestContext, model.iModelId, [codeSpecsLock]);

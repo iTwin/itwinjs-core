@@ -102,6 +102,7 @@ alpha;DepthPointSource
 public;DepthRangeNpc
 alpha;DesktopAuthorizationClient 
 internal;DevTools
+beta;DisclosedTileTreeSet 
 public;DisplayStyle2dState 
 public;DisplayStyle3dState 
 public;class DisplayStyleState 
@@ -197,6 +198,8 @@ internal;GltfReaderProps
 internal;GltfReaderResult 
 internal;GLTimerResult
 internal;GLTimerResultCallback = (result: GLTimerResult) => void
+beta;GpuMemoryLimit = "none" | "default" | "aggressive" | "relaxed" | number
+beta;GpuMemoryLimits
 public;GraphicBranch 
 internal;GraphicBranchFrustum
 internal;GraphicBranchOptions
@@ -268,6 +271,8 @@ internal;LockedStates
 internal;loggerCategory = "imodeljs-frontend.Extension"
 beta;LookAndMoveTool 
 public;LookViewTool 
+internal;LRUTileList
+internal;LRUTileListNode
 alpha;ManipulatorToolEvent
 internal;MapCartoRectangle 
 internal;MapLayerFormat
@@ -470,8 +475,8 @@ internal;TextureDrapeMap = Map
 internal;TextureImage
 internal;ThreeAxes
 beta;class Tile
-alpha;class TileAdmin
-alpha;TileAdmin
+beta;TileAdmin
+beta;TileAdmin
 internal;TileAvailability
 internal;TileBoundingBoxes
 beta;TileContent
@@ -493,7 +498,6 @@ beta;TileTreeLoadStatus
 beta;TileTreeOwner
 beta;TileTreeParams
 beta;class TileTreeReference
-beta;TileTreeSet
 beta;TileTreeSupplier
 beta;TileUsageMarker
 beta;TileVisibility
@@ -566,6 +570,8 @@ public;ViewManager
 public;class ViewManip 
 public;class Viewport 
 public;ViewportDecorator
+internal;ViewportIdSet 
+internal;ViewportIdSets 
 public;class ViewPose
 internal;ViewPose2d 
 internal;ViewPose3d 

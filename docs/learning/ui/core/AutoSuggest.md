@@ -27,4 +27,4 @@ There are props for several handlers:
 
 ## API Reference
 
-* [AutoSuggest]($ui-core:AutoSuggest)
+- [AutoSuggest]($ui-core:AutoSuggest)

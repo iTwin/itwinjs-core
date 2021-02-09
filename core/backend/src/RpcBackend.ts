@@ -8,7 +8,7 @@
 
 import * as multiparty from "multiparty";
 import * as FormData from "form-data";
-import { BentleyStatus, HttpServerRequest, IModelError, MobileRpcConfiguration, MobileRpcGateway, MobileRpcProtocol, RpcMultipart, RpcSerializedValue } from "@bentley/imodeljs-common";
+import { BackendIpc, BentleyStatus, HttpServerRequest, IModelError, IpcWebSocketBackend, MobileRpcConfiguration, MobileRpcGateway, MobileRpcProtocol, RpcMultipart, RpcSerializedValue } from "@bentley/imodeljs-common";
 import * as ws from "ws";
 import { MobileDevice } from "./MobileDevice";
 
@@ -75,6 +75,7 @@ export function initializeRpcBackend() {
 
   if (MobileRpcConfiguration.setup.checkPlatform()) {
     setupMobileRpc();
+    BackendIpc.initialize(new IpcWebSocketBackend());
   }
 }
 

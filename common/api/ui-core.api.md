@@ -7,6 +7,7 @@
 import { ActionMeta } from 'react-select/src/types';
 import { BadgeType } from '@bentley/ui-abstract';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
+import { ConditionalBooleanValue } from '@bentley/ui-abstract';
 import { ConditionalStringValue } from '@bentley/ui-abstract';
 import * as CSS from 'csstype';
 import { FocusEventHandler } from 'react-select/src/types';
@@ -351,9 +352,10 @@ export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, C
     }
 
 // @public
-export interface ContextMenuItemProps extends React.AllHTMLAttributes<HTMLDivElement>, CommonProps {
+export interface ContextMenuItemProps extends Omit<React.AllHTMLAttributes<HTMLDivElement>, "disabled" | "hidden">, CommonProps {
     badgeType?: BadgeType;
-    disabled?: boolean;
+    disabled?: boolean | ConditionalBooleanValue;
+    hidden?: boolean | ConditionalBooleanValue;
     hideIconContainer?: boolean;
     icon?: IconSpec;
     iconRight?: IconSpec;
@@ -376,6 +378,8 @@ export interface ContextMenuProps extends CommonProps {
     edgeLimit?: boolean;
     floating?: boolean;
     hotkeySelect?: boolean;
+    // @internal (undocumented)
+    ignoreNextKeyUp?: boolean;
     onEsc?: (data: any) => any;
     onOutsideClick?: (event: MouseEvent) => any;
     onSelect?: (event: any) => any;

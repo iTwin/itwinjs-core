@@ -2,6 +2,21 @@
   "name": "@bentley/imodel-bridge",
   "entries": [
     {
+      "version": "2.11.0",
+      "tag": "@bentley/imodel-bridge_v2.11.0",
+      "date": "Thu, 28 Jan 2021 13:39:27 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add option to disable automatic element deletion"
+          },
+          {
+            "comment": "Separated out API to upgrade iModels. "
+          }
+        ]
+      }
+    },
+    {
       "version": "2.10.3",
       "tag": "@bentley/imodel-bridge_v2.10.3",
       "date": "Fri, 08 Jan 2021 18:34:03 GMT",

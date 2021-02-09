@@ -996,9 +996,9 @@ export class AccuDrawShortcuts {
       case "r":
         AccuDrawShortcuts.defineACSByPoints();
         return true;
-      default:
-        return false;
     }
+
+    return false;
   }
 }
 

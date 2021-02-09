@@ -2,6 +2,24 @@
   "name": "@bentley/map-layers",
   "entries": [
     {
+      "version": "2.11.0",
+      "tag": "@bentley/map-layers_v2.11.0",
+      "date": "Thu, 28 Jan 2021 13:39:27 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Refreshed MapLayerManager UI. Fixed minor issues with layer dragging order.  Code refactoring."
+          },
+          {
+            "comment": "Correctly handle WMTS layers (only one layer can be visible at a time)"
+          },
+          {
+            "comment": "Lock react-select to 3.1.0 and @types/react-select to 3.0.26 until we can fix compile errors for later versions."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.10.3",
       "tag": "@bentley/map-layers_v2.10.3",
       "date": "Fri, 08 Jan 2021 18:34:03 GMT",

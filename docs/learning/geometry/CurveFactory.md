@@ -9,8 +9,9 @@ Given a linestring and fillet radius, this constructs fillet arcs at each interi
 Radius may be given as a single value or as an array of radius per point of the linestring.
 
 A parameter `allowBackupAlongEdge` indicates how to handle edges where the incoming and outgoing fillets overlap.
-  * if `false` the edge can be output full length, without the arcs.
-  * if `true` the arcs are constructed and the output edge moves in reverse to connect the overlapped arcs.
+
+- if `false` the edge can be output full length, without the arcs.
+- if `true` the arcs are constructed and the output edge moves in reverse to connect the overlapped arcs.
 
 The arc constructions are full 3D -- each arc is in the plane of its two line segments.
 (In the figures below, the linestring is slightly out-of-plane, and the visible fillets appear slightly elliptic because of being viewed at an angle.)
@@ -23,12 +24,11 @@ The arc constructions are full 3D -- each arc is in the plane of its two line se
 | large fillet, no backup | ![>](./figs/CurveFactory/FilletLineStringD.png)  |
 | varying size fillets | ![>](./figs/CurveFactory/FilletLineStringE.png)  |
 
-
 Unit Test
-  * source: imodeljs/core/geometry/src/test/curve/CurveFactory.test.ts
-  * test name: "FilletsInLinestring"
-  * output: imodeljs/core/geometry/src/test/output/CurveFactory/FilletsInLineString.imjs
 
+- source: imodeljs/core/geometry/src/test/curve/CurveFactory.test.ts
+- test name: "FilletsInLinestring"
+- output: imodeljs/core/geometry/src/test/output/CurveFactory/FilletsInLineString.imjs
 
 ## `CurveFactory.createPipeSegments(centerline, radius)`
 
@@ -39,8 +39,9 @@ This is usually used with centerline created by `CurveFactory.createFilletsInLin
 The `centerline` parameter can be either a single curve primitive or a chain in a `Path` or `Loop`.
 
 The pipe creation according to centerline segment is
- * `LineSegment3d`: simple cylinder (`Cone` object with constant radius) with axis from the line segment start to end.
- * `Arc3d`: `TorusPipe` primitive with the arc as its major arc.
+
+- `LineSegment3d`: simple cylinder (`Cone` object with constant radius) with axis from the line segment start to end.
+- `Arc3d`: `TorusPipe` primitive with the arc as its major arc.
 
 | | |
 |-----|-----|
@@ -48,6 +49,7 @@ The pipe creation according to centerline segment is
 | output of createPipeSegments | ![>](./figs/CurveFactory/PipeConstructionB.png)
 
 Unit Test
-  * source: imodeljs/core/geometry/src/test/curve/PipePath.test.ts
-  * test name: "KeyPointPath"
-  * output: imodeljs/core/geometry/src/test/output/PipePath/KeyPointPath.imjs
+
+- source: imodeljs/core/geometry/src/test/curve/PipePath.test.ts
+- test name: "KeyPointPath"
+- output: imodeljs/core/geometry/src/test/output/PipePath/KeyPointPath.imjs
