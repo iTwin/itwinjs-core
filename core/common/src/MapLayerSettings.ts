@@ -316,8 +316,7 @@ export class MapLayerSettings {
       return false;
     }
 
-    if (0 !== compareStringsOrUndefined(this.userName, other.userName) ||
-      0 !== compareStringsOrUndefined(this.password, other.password)) {
+    if (this.userName !== other.userName || this.password !== other.password) {
       return false;
     }
 

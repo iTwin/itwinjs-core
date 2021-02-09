@@ -40,7 +40,7 @@ export interface ArcGisGenerateTokenOptions {
   // The IP address that will be using the created token for access.
   // On the Generate Token page, the IP address is specified in the IP Address field. This is required when client has been set as ip.
   // Example ip=11.11.111.111
-  ip?: number;
+  ip?: string;
 
   // The base URL of the client application that will use the token.
   // On the Generate Token page, the referrer URL is specified in the Webapp URL field.
