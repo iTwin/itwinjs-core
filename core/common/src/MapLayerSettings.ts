@@ -6,7 +6,6 @@
  * @module DisplayStyles
  */
 
-import { compareStringsOrUndefined } from "@bentley/bentleyjs-core";
 import { BackgroundMapSettings, BackgroundMapType } from "./BackgroundMapSettings";
 
 /** @alpha */
